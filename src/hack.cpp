@@ -57,7 +57,6 @@ bool hack::shutdown = false;
 
 void hack::InitHacks() {
 	ADD_HACK(AutoStrafe);
-	if (TF) ADD_HACK(AntiDisguise);
 	if (TF) ADD_HACK(AutoReflect);
 	//ADD_HACK(FollowBot);
 	ADD_HACK(Misc);
@@ -65,7 +64,6 @@ void hack::InitHacks() {
 	ADD_HACK(Bunnyhop);
 	ADD_HACK(ESP);
 	if (TF) ADD_HACK(AutoSticky);
-	if (TF) ADD_HACK(AutoHeal);
 	if (TF2) ADD_HACK(Glow);
 	ADD_HACK(KillSay);
 	ADD_HACK(Spam);
@@ -192,7 +190,6 @@ void hack::Shutdown() {
 	if (hooks::hkStudioRender) hooks::hkStudioRender->Kill();
 	ConVar_Unregister();
 	DELETE_HACK(AutoStrafe);
-	if (TF) DELETE_HACK(AntiDisguise);
 	if (TF) DELETE_HACK(AutoReflect);
 	//DELETE_HACK(FollowBot);
 	DELETE_HACK(Misc);
@@ -200,7 +197,6 @@ void hack::Shutdown() {
 	DELETE_HACK(Bunnyhop);
 	DELETE_HACK(ESP);
 	if (TF) DELETE_HACK(AutoSticky);
-	if (TF) DELETE_HACK(AutoHeal);
 	if (TF) DELETE_HACK(Glow);
 	DELETE_HACK(KillSay);
 	if (TF2) DELETE_HACK(Noisemaker);

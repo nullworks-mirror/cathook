@@ -125,8 +125,8 @@ void CMenuWindow::AddElements() {
 	tab->AddChild(new CBaseButton("ach_lock", tab, "Lock Achievements", [this](CBaseButton*) {
 		Achievements_Lock();
 	}));*/
-	if (TF) ADDCVAR(g_phAutoHeal->v_bEnabled);
-	if (TF) ADDCVAR(g_phAntiDisguise->v_bEnabled);
+	if (TF) ADDCVAR(&hacks::tf::autoheal::enabled);
+	if (TF) ADDCVAR(&hacks::tf2::antidisguise::enabled);
 	if (TF2C) {
 		ADDCVAR(g_phMisc->v_bTauntSlide);
 		ADDCVAR(g_phMisc->v_bCritHack);
