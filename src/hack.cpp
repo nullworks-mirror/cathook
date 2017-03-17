@@ -99,7 +99,6 @@ bool test_handleevent(IMatSystemSurface* thisptr, const InputEvent_t& event) {
 }
 
 void hack::Initialize() {
-	logging::Initialize();
 	srand(time(0));
 	prctl(PR_SET_DUMPABLE,0,42,42,42);
 	sharedobj::LoadAllSharedObjects();
@@ -138,8 +137,8 @@ void hack::Initialize() {
 	hack::c_Cat = CreateConCommand(CON_NAME, &hack::CC_Cat, "Info");
 	hack::InitHacks();
 	g_Settings.Init();
-	g_pGUI = new CatGUI();
 	EndConVars();
+	g_pGUI = new CatGUI();
 	g_pGUI->Setup();
 	gNetvars.init();
 	InitNetVars();

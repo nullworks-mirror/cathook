@@ -21,7 +21,7 @@ void logging::Initialize() {
 }
 
 void logging::Info(const char* fmt, ...) {
-	if (logging::handle == 0) return;
+	if (logging::handle == 0) logging::Initialize();
 	char* buffer = new char[1024];
 	va_list list;
 	va_start(list, fmt);
@@ -33,8 +33,8 @@ void logging::Info(const char* fmt, ...) {
 	fprintf(logging::handle, "%s", result);
 	fflush(logging::handle);
 	if (interfaces::cvar) {
-		if (!g_Settings.bDebugLog || g_Settings.bDebugLog->GetBool())
-		interfaces::cvar->ConsolePrintf("%s", result);
+		if (g_Settings.bDebugLog && g_Settings.bDebugLog->convar_parent && g_Settings.bDebugLog->GetBool())
+			interfaces::cvar->ConsolePrintf("%s", result);
 	}
 	delete [] buffer;
 	delete [] result;

@@ -368,13 +368,12 @@ const char *KeyValues::GetStringForSymbolGrowable( int symbol )
 	return s_pGrowableStringTable->GetStringForSymbol( symbol );
 }
 
-
-
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
 KeyValues::KeyValues( const char *setName )
 {
+
 	TRACK_KV_ADD( this, setName );
 
 	Init();

@@ -89,20 +89,19 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_END;
 }
 
+CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
+CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
+
 void OverrideView_hook(void* thisptr, CViewSetup* setup) {
 	SEGV_BEGIN;
 	((OverrideView_t*)hooks::hkClientMode->GetMethod(hooks::offOverrideView))(thisptr, setup);
 	if (!g_Settings.bHackEnabled->GetBool()) return;
-	if (g_Settings.flForceFOV && g_Settings.flForceFOVZoomed && g_Settings.bZoomedFOV) {
-		bool zoomed = g_pLocalPlayer->bZoomed;
-		if (g_Settings.bZoomedFOV->GetBool() && zoomed) {
-			if (g_Settings.flForceFOVZoomed->GetBool()) {
-				setup->fov = g_Settings.flForceFOVZoomed->GetFloat();
-			}
-		} else {
-			if (g_Settings.flForceFOV->GetBool()) {
-		setup->fov = g_Settings.flForceFOV->GetFloat();
-			}
+	bool zoomed = g_pLocalPlayer->bZoomed;
+	if (zoomed && override_fov_zoomed) {
+		setup->fov = override_fov_zoomed;
+	} else {
+		if (override_fov) {
+			setup->fov = override_fov;
 		}
 	}
 	SEGV_END;

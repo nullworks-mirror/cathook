@@ -132,18 +132,19 @@ void CMenuWindow::AddElements() {
 		ADDCVAR(g_phMisc->v_bCritHack);
 	}
 	ADDCVAR(g_phMisc->v_bAntiAFK);
-	ADDCVAR(g_Settings.bCleanScreenshots);
+	// FIXME add CVARS TO MENU!!
+	//ADDCVAR(g_Settings.bCleanScreenshots);
 	ADDCVAR(g_Settings.bHackEnabled);
 	if (TF) ADDCVAR(g_Settings.bIgnoreTaunting);
-	ADDCVAR(g_Settings.bNoVisuals);
-	if (TF) ADDCVAR(g_Settings.bNoZoom);
+	//ADDCVAR(g_Settings.bNoVisuals);
+	//if (TF) ADDCVAR(g_Settings.bNoZoom);
 	//ADDCVAR(g_Settings.bSendPackets);
-	ADDCVAR(g_Settings.bShowLogo);
+	//ADDCVAR(g_Settings.bShowLogo);
 	ADDCVAR(g_Settings.bShowAntiAim);
 	if (TF) ADDCVAR(g_Settings.bThirdperson);
-	ADDCVAR(g_Settings.bZoomedFOV);
-	ADDCVAR(g_Settings.flForceFOVZoomed);
-	ADDCVAR(g_Settings.flForceFOV);
+	//ADDCVAR(g_Settings.bZoomedFOV);
+	//ADDCVAR(g_Settings.flForceFOVZoomed);
+	//ADDCVAR(g_Settings.flForceFOV);
 	ADDCVAR(g_Settings.sDisconnectMsg);
 	if (TF2C) ADDCVAR(g_Settings.kRollSpeedhack);
 	ADDCVAR(g_phMisc->v_bCleanChat);

@@ -22,22 +22,14 @@ public:
 	void Init();
 // TODO
 //	CatVar* bMaxPerformance;
-	CatVar* flForceFOV;
-	CatVar* flForceFOVZoomed;
-	CatVar* bZoomedFOV;
 	CatVar* bHackEnabled;
 	CatVar* bIgnoreTaunting;
 //	CatVar* bProfiler;
-	CatVar* bNoZoom;
 //	CatVar* bNoFlinch;
 	CatVar* bSendPackets;
-	CatVar* bShowLogo;
-	CatVar* flDrawingOpacity;
 	CatVar* sDisconnectMsg;
 	CatVar* bShowAntiAim;
 	CatVar* bThirdperson;
-	CatVar* bNoVisuals;
-	CatVar* bCleanScreenshots;
 	CatVar* bDebugLog;
 	Vector last_angles;
 	CatVar* bFastOutline;

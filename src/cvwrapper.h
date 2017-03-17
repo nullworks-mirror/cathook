@@ -16,8 +16,8 @@ class ConVar;
 #include <string>
 #include <vector>
 #include <functional>
-#include <stack>
 #include "aftercheaders.h"
+
 
 //#define CREATE_CV(type, name, defaults, description) \
 //	new CatVar(CreateConVar(CON_PREFIX name, defaults, description), type);
@@ -56,9 +56,9 @@ public:
 	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float min_val, float max_val);
 	CatVar(CatEnum& cat_enum, std::string name, std::string defaults, std::string desc_short, std::string desc_long);
 
-	inline explicit operator bool() const { return !!convar_parent->m_nValue; }
-	inline explicit operator int() const { return convar_parent->m_nValue; }
-	inline explicit operator float() const { return convar_parent->m_fValue; }
+	inline operator bool() const { return !!convar_parent->m_nValue; }
+	inline operator int() const { return convar_parent->m_nValue; }
+	inline operator float() const { return convar_parent->m_fValue; }
 	inline void operator =(const int& value) { convar_parent->InternalSetIntValue(value); }
 	inline void operator =(const float& value) { convar_parent->InternalSetFloatValue(value); }
 	inline bool operator ==(const int& value) const { return convar_parent->m_nValue == value; }
@@ -66,11 +66,8 @@ public:
 
 	void Register();
 	typedef std::function<void(CatVar*)> RegisterCallbackFn;
-	std::stack<RegisterCallbackFn> callbacks;
-	inline void OnRegister(RegisterCallbackFn fn) {
-		if (registered) fn(this);
-		else callbacks.push(fn);
-	}
+	std::vector<RegisterCallbackFn> callbacks {};
+	void OnRegister(RegisterCallbackFn fn);
 
 	[[deprecated]]
 	inline bool GetBool() const { return this->operator bool();  }
@@ -88,7 +85,7 @@ public:
 	bool restricted;
 	float max;
 	float min;
-	bool registered;
+	bool registered {false};
 
 	const CatVar_t type;
 	const std::string name;
@@ -100,7 +97,7 @@ public:
 	ConVar* convar_parent;
 };
 
-extern std::stack<CatVar*> g_UnregisteredCatVars;
+extern std::vector<CatVar*> catVarRegisterArray;
 void RegisterCatVars();
 
 #endif /* CVWRAPPER_H_ */

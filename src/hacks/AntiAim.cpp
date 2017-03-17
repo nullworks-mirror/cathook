@@ -22,7 +22,7 @@ CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "1", "Pitch mode", "Pitch mo
 CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll", "Roll angle (viewangles.z)", -180, 180);
 CatVar no_clamping(CV_SWITCH, "aa_no_clamp", "0", "Don't clamp angles", "Use this with STATIC mode for unclamped manual angles");
 CatVar spin(CV_FLOAT, "aa_spin", "10.0", "Spin speed", "Spin speed (degrees/second)");
-CatVar lisp(CV_SWITCH, "aa_lisp", "0", "Lisp angles", "Big numbers");
+//CatVar lisp(CV_SWITCH, "aa_lisp", "0", "Lisp angles", "Big numbers");
 
 float cur_yaw = 0.0f;
 int safe_space = 0;
