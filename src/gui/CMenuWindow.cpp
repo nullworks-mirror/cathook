@@ -95,16 +95,16 @@ void CMenuWindow::AddElements() {
 	ADDCVAR(g_phESP->v_bShowEntityID);
 	AddTab("triggerbot", "Triggerbot");
 	tab = GetTab("triggerbot");
-	ADDCVAR(g_phTriggerbot->v_bEnabled);
-	if (TF) ADDCVAR(g_phTriggerbot->v_bAmbassadorCharge);
-	ADDCVAR(g_phTriggerbot->v_bBodyshot);
-	ADDCVAR(g_phTriggerbot->v_bBuildings);
-	ADDCVAR(g_phTriggerbot->v_bFinishingHit);
-	if (TF) ADDCVAR(g_phTriggerbot->v_bRespectCloak);
-	if (TF) ADDCVAR(g_phTriggerbot->v_bIgnoreVaccinator);
-	if (TF) ADDCVAR(g_phTriggerbot->v_bZoomedOnly);
-	ADDCVAR(g_phTriggerbot->v_iHitbox);
-	ADDCVAR(g_phTriggerbot->v_iMaxRange);
+	ADDCVAR(&hacks::shared::triggerbot::enabled);
+	if (TF) ADDCVAR(&hacks::shared::triggerbot::ambassador);
+	ADDCVAR(&hacks::shared::triggerbot::bodyshot);
+	ADDCVAR(&hacks::shared::triggerbot::buildings);
+	ADDCVAR(&hacks::shared::triggerbot::finishing_hit);
+	if (TF) ADDCVAR(&hacks::shared::triggerbot::respect_cloak);
+	if (TF) ADDCVAR(&hacks::shared::triggerbot::ignore_vaccinator);
+	if (TF) ADDCVAR(&hacks::shared::triggerbot::zoomed_only);
+	ADDCVAR(&hacks::shared::triggerbot::hitbox);
+	ADDCVAR(&hacks::shared::triggerbot::max_range);
 	if (TF) {
 		ADDLABEL("AutoSticky");
 		ADDCVAR(g_phAutoSticky->v_bEnabled);

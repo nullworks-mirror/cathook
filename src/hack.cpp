@@ -64,7 +64,6 @@ void hack::InitHacks() {
 	ADD_HACK(Aimbot);
 	ADD_HACK(Bunnyhop);
 	ADD_HACK(ESP);
-	ADD_HACK(Triggerbot);
 	if (TF) ADD_HACK(AutoSticky);
 	if (TF) ADD_HACK(AutoHeal);
 	if (TF) ADD_HACK(SpyAlert);
@@ -201,7 +200,6 @@ void hack::Shutdown() {
 	DELETE_HACK(Aimbot);
 	DELETE_HACK(Bunnyhop);
 	DELETE_HACK(ESP);
-	DELETE_HACK(Triggerbot);
 	if (TF) DELETE_HACK(AutoSticky);
 	if (TF) DELETE_HACK(AutoHeal);
 	DELETE_HACK(SpyAlert);

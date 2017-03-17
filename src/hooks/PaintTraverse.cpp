@@ -88,7 +88,6 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		if (TF) SAFE_CALL(HACK_DRAW(AntiDisguise));
 		SAFE_CALL(HACK_DRAW(Misc));
 		SAFE_CALL(HACK_DRAW(ESP));
-		SAFE_CALL(HACK_DRAW(Triggerbot));
 		if (TF) SAFE_CALL(HACK_DRAW(SpyAlert));
 		Vector screen;
 		for (int i = 0; i < HIGHEST_ENTITY; i++) {

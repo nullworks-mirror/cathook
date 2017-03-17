@@ -12,27 +12,23 @@
 
 class CatVar;
 
-class Triggerbot : public IHack {
-public:
-	Triggerbot();
-	~Triggerbot();
+namespace hacks { namespace shared { namespace triggerbot {
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
-	virtual void Draw() override;
+extern CatVar enabled;
+extern CatVar respect_cloak; // TODO move to Targeting
+extern CatVar zoomed_only;
+extern CatVar hitbox;
+extern CatVar bodyshot;
+extern CatVar finishing_hit;
+extern CatVar max_range;
+extern CatVar buildings;
+extern CatVar ignore_vaccinator;
+extern CatVar ambassador;
+extern CatVar accuracy;
 
-	CatVar* v_bEnabled;
-	CatVar* v_bRespectCloak;
-	CatVar* v_bZoomedOnly;
-	CatVar* v_iHitbox;
-	CatVar* v_bBodyshot;
-	CatVar* v_bFinishingHit;
-	CatVar* v_iMaxRange;
-	CatVar* v_bBuildings;
-	CatVar* v_bIgnoreVaccinator;
-	CatVar* v_bAmbassadorCharge;
-	CatVar* v_bImproveAccuracy;
-};
+void CreateMove();
+void Draw();
 
-DECLARE_HACK_SINGLETON(Triggerbot);
+}}}
 
 #endif /* HTRIGGER_H_ */

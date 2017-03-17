@@ -142,7 +142,6 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 //	LEVEL_SHUTDOWN(FollowBot);
 	LEVEL_INIT(Misc);
 	//if (TF) LEVEL_INIT(SpyAlert);
-	//LEVEL_INIT(Triggerbot);
 	if (TF2) LEVEL_INIT(Glow);
 	g_pChatStack->Reset();
 }
@@ -164,7 +163,6 @@ void LevelShutdown_hook(void* thisptr) {
 //	LEVEL_SHUTDOWN(FollowBot);
 	LEVEL_SHUTDOWN(Misc);
 	if (TF) LEVEL_SHUTDOWN(SpyAlert);
-	LEVEL_SHUTDOWN(Triggerbot);
 	if (TF2) LEVEL_SHUTDOWN(Glow);
 	g_pChatStack->Reset();
 }
