@@ -57,7 +57,6 @@ T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int st
 		else if (i < 100) zeros = 1;
 		for (int j = 0; j < zeros; j++) stream << '0';
 		stream << i;
-		logging::Info("trying %s", stream.str().c_str());
 		result = reinterpret_cast<T*>(object->CreateInterface(stream.str()));
 		if (result) return result;
 	}

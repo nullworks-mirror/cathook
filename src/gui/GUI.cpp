@@ -36,15 +36,11 @@ CatGUI::~CatGUI() {
 }
 
 void CatGUI::Setup() {
-	logging::Info("A");
 	m_pRootWindow = new RootWindow();
-	logging::Info("A");
 	m_pRootWindow->Setup();
-	logging::Info("A");
 	gui_visible.OnRegister([](CatVar* var) {
 		var->convar->InstallChangeCallback(GUIVisibleCallback);
 	});
-	logging::Info("A");
 }
 
 void CatGUI::ShowTooltip(std::string text) {
