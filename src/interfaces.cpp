@@ -46,12 +46,18 @@ IStudioRender* g_IStudioRender = nullptr;
 IVDebugOverlay* g_IVDebugOverlay = nullptr;
 
 template<typename T>
-T* BruteforceInterface(std::string name, sharedobj::SharedObject* object) {
+T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start) {
 	T* result = nullptr;
 	std::stringstream stream;
-	for (int i = 0; i < 100; i++) {
-		stream.str(name);
-		for (int j = 0; j < i % 10; j++) stream << '0';
+	for (int i = start; i < 100; i++) {
+		stream.str("");
+		stream << name;
+		int zeros = 0;
+		if (i < 10) zeros = 2;
+		else if (i < 100) zeros = 1;
+		for (int j = 0; j < zeros; j++) stream << '0';
+		stream << i;
+		logging::Info("trying %s", stream.str().c_str());
 		result = reinterpret_cast<T*>(object->CreateInterface(stream.str()));
 		if (result) return result;
 	}
@@ -67,7 +73,7 @@ void CreateInterfaces() {
 	g_AppID = g_IEngine->GetAppID();
 	g_IEntityList = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client);
 	g_IPanel = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2);
-	g_ISteamClient = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient);
+	g_ISteamClient = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient, 17);
 	g_ISurface = BruteforceInterface<vgui::ISurface>("VGUI_Surface", sharedobj::vguimatsurface);
 	g_IEventManager2 = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine);
 	g_IBaseClient = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client);
@@ -86,9 +92,9 @@ void CreateInterfaces() {
 	else if (TF2C) g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF 92 A8 00 00 00 A1 ? ? ? ? 8B 10")));
 	else if (HL2DM)  g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? 8B 10 89 04 24 FF 52 78 A1 ? ? ? ? 8B 10")));
 	if (TF2 || HL2DM)
-		g_pMatSystemSurface = **reinterpret_cast<IMatSystemSurface***>((uintptr_t)19 + gSignatures.GetClientSignature("FF 92 94 02 00 00 8B 8D C4 FE FF FF 89 85 B0 FE FF FF A1 ? ? ? ? 8B 10 89 4C 24 0C"));
+		g_IMatSystemSurface = **reinterpret_cast<IMatSystemSurface***>((uintptr_t)19 + gSignatures.GetClientSignature("FF 92 94 02 00 00 8B 8D C4 FE FF FF 89 85 B0 FE FF FF A1 ? ? ? ? 8B 10 89 4C 24 0C"));
 	else if (TF2C)
-		g_pMatSystemSurface = **reinterpret_cast<IMatSystemSurface***>((uintptr_t)53 + gSignatures.GetClientSignature("C7 44 24 1C FF 00 00 00 C7 44 24 18 FF 00 00 00 C7 44 24 14 FF 00 00 00 C7 44 24 10 00 00 00 00 89 74 24 08 8B 83 D0 E1 00 00 89 95 A4 FE FF FF 89 44 24 04 A1 ? ? ? ? 89 04 24 FF 91 88 02 00 00 8B 95 A4 FE FF FF A1 ? ? ? ? 29 FA 8B 08 89 54 24 0C"));
+		g_IMatSystemSurface = **reinterpret_cast<IMatSystemSurface***>((uintptr_t)53 + gSignatures.GetClientSignature("C7 44 24 1C FF 00 00 00 C7 44 24 18 FF 00 00 00 C7 44 24 14 FF 00 00 00 C7 44 24 10 00 00 00 00 89 74 24 08 8B 83 D0 E1 00 00 89 95 A4 FE FF FF 89 44 24 04 A1 ? ? ? ? 89 04 24 FF 91 88 02 00 00 8B 95 A4 FE FF FF A1 ? ? ? ? 29 FA 8B 08 89 54 24 0C"));
 	g_ISteamUser = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
 	g_IAchievementMgr = g_IEngine->GetAchievementMgr();
 	g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");

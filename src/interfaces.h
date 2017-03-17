@@ -68,7 +68,7 @@ extern IStudioRender* g_IStudioRender;
 extern IVDebugOverlay* g_IVDebugOverlay;
 
 template<typename T>
-T* BruteforceInterface(std::string name, sharedobj::SharedObject* object);
+T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start = 0);
 
 void CreateInterfaces();
 
