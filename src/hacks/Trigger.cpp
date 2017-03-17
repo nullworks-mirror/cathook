@@ -16,22 +16,22 @@
 
 namespace hacks { namespace shared { namespace triggerbot {
 
-CatVar enabled(CV_SWITCH, "trigger_enabled", "0", "Enable", NULL, "Master Triggerbot switch");
-CatVar respect_cloak(CV_SWITCH, "trigger_respect_cloak", "1", "Respect cloak", NULL, "Don't shoot at cloaked spies");
-CatVar zoomed_only(CV_SWITCH, "trigger_zoomed", "1", "Zoomed only", NULL, "Don't shoot if you aren't zoomed in");
+CatVar enabled(CV_SWITCH, "trigger_enabled", "0", "Enable", "Master Triggerbot switch");
+CatVar respect_cloak(CV_SWITCH, "trigger_respect_cloak", "1", "Respect cloak", "Don't shoot at cloaked spies");
+CatVar zoomed_only(CV_SWITCH, "trigger_zoomed", "1", "Zoomed only", "Don't shoot if you aren't zoomed in");
 CatEnum hitbox_enum({
 	"ANY", "HEAD", "PELVIS", "SPINE 0", "SPINE 1", "SPINE 2", "SPINE 3", "UPPER ARM L", "LOWER ARM L",
 	"HAND L", "UPPER ARM R", "LOWER ARM R", "HAND R", "HIP L", "KNEE L", "FOOT L", "HIP R",
 	"KNEE R", "FOOT R"
 }, -1);
 CatVar hitbox(hitbox_enum, "trigger_hitbox", "-1", "Hitbox", "Triggerbot hitbox. Only useful settings are ANY and HEAD. Use ANY for scatter or any other shotgun-based weapon, HEAD for ambassador/sniper rifle");
-CatVar bodyshot(CV_SWITCH, "trigger_bodyshot", "1", "Bodyshot", NULL, "Triggerbot will bodyshot enemies if you have enough charge to 1tap them");
-CatVar finishing_hit(CV_SWITCH, "trigger_finish", "1", "Noscope weak enemies", NULL, "If enemy has <50 HP, noscope them");
-CatVar max_range(CV_INT, "trigger_range", "0", "Max range", NULL, "Triggerbot won't shoot if enemy is too far away", true, 4096.0f);
-CatVar buildings(CV_SWITCH, "trigger_buildings", "1", "Trigger at buildings", NULL, "Shoot buildings");
-CatVar ignore_vaccinator(CV_SWITCH, "trigger_respect_vaccinator", "1", "Respect vaccinator", NULL, "Don't shoot at bullet-vaccinated enemies");
-CatVar ambassador(CV_SWITCH, "trigger_ambassador", "1", "Smart Ambassador", NULL, "Don't shoot if your ambassador can't headshot yet (Keep that enabled!)");
-CatVar accuracy(CV_SWITCH, "trigger_accuracy", "0", "Improve accuracy (NOT WORKING)", NULL, "Might cause more lag (NOT WORKING YET!)");
+CatVar bodyshot(CV_SWITCH, "trigger_bodyshot", "1", "Bodyshot", "Triggerbot will bodyshot enemies if you have enough charge to 1tap them");
+CatVar finishing_hit(CV_SWITCH, "trigger_finish", "1", "Noscope weak enemies", "If enemy has <50 HP, noscope them");
+CatVar max_range(CV_INT, "trigger_range", "0", "Max range", "Triggerbot won't shoot if enemy is too far away", true, 4096.0f);
+CatVar buildings(CV_SWITCH, "trigger_buildings", "1", "Trigger at buildings", "Shoot buildings");
+CatVar ignore_vaccinator(CV_SWITCH, "trigger_respect_vaccinator", "1", "Respect vaccinator", "Don't shoot at bullet-vaccinated enemies");
+CatVar ambassador(CV_SWITCH, "trigger_ambassador", "1", "Smart Ambassador", "Don't shoot if your ambassador can't headshot yet (Keep that enabled!)");
+CatVar accuracy(CV_SWITCH, "trigger_accuracy", "0", "Improve accuracy (NOT WORKING)", "Might cause more lag (NOT WORKING YET!)");
 
 std::unique_ptr<trace_t> trace(new trace_t);
 

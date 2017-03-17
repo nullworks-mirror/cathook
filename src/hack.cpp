@@ -66,7 +66,6 @@ void hack::InitHacks() {
 	ADD_HACK(ESP);
 	if (TF) ADD_HACK(AutoSticky);
 	if (TF) ADD_HACK(AutoHeal);
-	if (TF) ADD_HACK(SpyAlert);
 	if (TF2) ADD_HACK(Glow);
 	ADD_HACK(KillSay);
 	ADD_HACK(Spam);
@@ -202,7 +201,6 @@ void hack::Shutdown() {
 	DELETE_HACK(ESP);
 	if (TF) DELETE_HACK(AutoSticky);
 	if (TF) DELETE_HACK(AutoHeal);
-	DELETE_HACK(SpyAlert);
 	if (TF) DELETE_HACK(Glow);
 	DELETE_HACK(KillSay);
 	if (TF2) DELETE_HACK(Noisemaker);
