@@ -20,7 +20,6 @@ public:
 	virtual void ProcessUserCmd(CUserCmd*) override;
 	virtual void Draw() override;
 
-	//ConVar* v_bNoShootUntilCanHeadshot;
 	CatVar* v_bDebugInfo;
 	ConCommand* c_Name;
 	ConVar* v_bInfoSpam;

@@ -58,7 +58,6 @@ bool hack::shutdown = false;
 void hack::InitHacks() {
 	//ADD_HACK(FollowBot);
 	ADD_HACK(Misc);
-	ADD_HACK(Bunnyhop);
 	ADD_HACK(ESP);
 }
 
@@ -183,7 +182,6 @@ void hack::Shutdown() {
 	ConVar_Unregister();
 	//DELETE_HACK(FollowBot);
 	DELETE_HACK(Misc);
-	DELETE_HACK(Bunnyhop);
 	DELETE_HACK(ESP);
 	hacks::shared::killsay::Shutdown();
 }

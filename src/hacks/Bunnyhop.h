@@ -12,20 +12,12 @@
 
 class ConVar;
 
-class Bunnyhop : public IHack {
-public:
-	Bunnyhop();
+namespace hacks { namespace shared { namespace bunnyhop {
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
+extern CatVar enabled;
 
-	CatVar* v_bEnabled;
-	CatVar* v_iPerfectJumpLimit;
-	CatVar* v_bImperfect;
-	CatVar* v_bAutoJump;
-	CatVar* v_iAutoJumpSpeed;
-	bool m_bFakeLagFix;
-};
+void CreateMove();
 
-DECLARE_HACK_SINGLETON(Bunnyhop);
+}}}
 
 #endif /* HBUNNYHOP_H_ */
