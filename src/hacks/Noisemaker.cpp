@@ -40,6 +40,11 @@ void Noisemaker::ProcessUserCmd(CUserCmd*) {
 		logging::Info("Calling 0x%08x 0x%08x", engine, kv);
 		(*reinterpret_cast<Send*>(engine + 512u))(engine, kv);
 		logging::Info("Sent!");*/
+		if (g_GlobalVars->framecount % 100 == 0) {
+			KeyValues* kv = new KeyValues("use_action_slot_item_server");
+			kv->m_iValue = 0x10000;
+			g_IEngine->ServerCmdKeyValues(kv);
+		}
 	}
 	return;
 }

@@ -98,7 +98,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		//RunEnginePrediction(g_pLocalPlayer->entity, cmd);
 		SAFE_CALL(HACK_PROCESS_USERCMD(ESP, cmd));
 		if (!g_pLocalPlayer->life_state) {
-			//if (TF2) SAFE_CALL(HACK_PROCESS_USERCMD(Noisemaker, cmd));
+			if (TF2) SAFE_CALL(HACK_PROCESS_USERCMD(Noisemaker, cmd));
 			SAFE_CALL(HACK_PROCESS_USERCMD(Bunnyhop, cmd));
 			SAFE_CALL(HACK_PROCESS_USERCMD(AutoStrafe, cmd));
 			SAFE_CALL(HACK_PROCESS_USERCMD(Aimbot, cmd));
@@ -107,8 +107,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoReflect, cmd));
 			SAFE_CALL(hacks::shared::triggerbot::CreateMove());
 		}
-		if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AntiDisguise, cmd));
-		if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoHeal, cmd));
+		if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
 		if (TF2) SAFE_CALL(HACK_PROCESS_USERCMD(Glow, cmd));
 		//SAFE_CALL(CREATE_MOVE(FollowBot));
 		SAFE_CALL(HACK_PROCESS_USERCMD(Misc, cmd));

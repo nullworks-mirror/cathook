@@ -163,9 +163,9 @@ void CMenuWindow::AddElements() {
 	ADDCVAR(g_Settings.bFastOutline);
 	if (TF) {
 		ADDLABEL("Spy Alert");
-		ADDCVAR(g_phSpyAlert->v_bEnabled);
-		ADDCVAR(g_phSpyAlert->v_flBackstabDistance);
-		ADDCVAR(g_phSpyAlert->v_flWarningDistance);
+		ADDCVAR(&hacks::tf::spyalert::enabled);
+		ADDCVAR(&hacks::tf::spyalert::distance_warning);
+		ADDCVAR(&hacks::tf::spyalert::distance_backstab);
 	}
 	ADDLABEL("Bunnyhop");
 	ADDCVAR(g_phBunnyhop->v_bEnabled);

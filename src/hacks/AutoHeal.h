@@ -10,21 +10,17 @@
 
 #include "IHack.h"
 
-class AutoHeal : public IHack {
-public:
-	AutoHeal();
+namespace hacks { namespace tf { namespace autoheal {
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
+extern CatVar enabled;
+extern CatVar silent;
+// TODO extern CatVar target_only;
+void CreateMove();
 
-	int GetBestHealingTarget();
-	int GetHealingPriority(int idx);
-	bool CanHeal(int idx);
-	int m_iCurrentHealingTarget;
-	int m_iNewTarget;
-	CatVar* v_bEnabled;
-	CatVar* v_bSilent;
-};
+int BestTarget();
+int HealingPriority(int idx);
+bool CanHeal(int idx);
 
-DECLARE_HACK_SINGLETON(AutoHeal);
+}}}
 
 #endif /* HACKS_AUTOHEAL_H_ */

@@ -85,7 +85,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		AddSideString(colors::RainbowCurrent(), "cathook by d4rkc4t");
 	}
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
-		if (TF) SAFE_CALL(HACK_DRAW(AntiDisguise));
+		if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
 		SAFE_CALL(HACK_DRAW(Misc));
 		SAFE_CALL(HACK_DRAW(ESP));
 		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
