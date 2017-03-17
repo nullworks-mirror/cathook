@@ -13,7 +13,7 @@ namespace chat_stack {
 
 void OnCreateMove() {
 	if (last_say > g_GlobalVars->curtime) last_say = 0;
-	if (g_GlobalVars->curtime - CHATSTACK_INTERVAL <= last_say) return;
+	if (g_GlobalVars->curtime - last_say <= CHATSTACK_INTERVAL) return;
 	std::string message;
 	if (!stack.empty()) {
 		message = stack.top();

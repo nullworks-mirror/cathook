@@ -61,8 +61,6 @@ void hack::InitHacks() {
 	ADD_HACK(Aimbot);
 	ADD_HACK(Bunnyhop);
 	ADD_HACK(ESP);
-	ADD_HACK(KillSay);
-	ADD_HACK(Spam);
 }
 
 ConCommand* hack::c_Cat = 0;
@@ -165,8 +163,8 @@ void hack::Initialize() {
 	hooks::hkClient->Apply();
 	if (TF2) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
+	hacks::shared::killsay::Init();
 	logging::Info("Init done.");
-	g_pChatStack = new ChatStack();
 }
 
 void hack::Think() {
@@ -189,6 +187,5 @@ void hack::Shutdown() {
 	DELETE_HACK(Aimbot);
 	DELETE_HACK(Bunnyhop);
 	DELETE_HACK(ESP);
-	DELETE_HACK(KillSay);
-	DELETE_HACK(Spam);
+	hacks::shared::killsay::Shutdown();
 }

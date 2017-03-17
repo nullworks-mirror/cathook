@@ -16,6 +16,8 @@
 #include <pwd.h>
 #include <stdio.h>
 
+TextFile::TextFile() : lines {} {};
+
 void TextFile::Load(std::string name) {
 	uid_t uid = geteuid();
 	passwd* pw = getpwuid(uid);
@@ -23,6 +25,7 @@ void TextFile::Load(std::string name) {
 		logging::Info("can't get the username!");
 		return;
 	}
+	std::string test_format = format(123);
 	std::string filename = format("/home/", pw->pw_name, "/.cathook/", name);
 	std::ifstream file(filename, std::ios::in);
 	if (file.bad()) {

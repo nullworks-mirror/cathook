@@ -137,7 +137,8 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 //	LEVEL_SHUTDOWN(FollowBot);
 	LEVEL_INIT(Misc);
 	//if (TF) LEVEL_INIT(SpyAlert);
-	g_pChatStack->Reset();
+	chat_stack::Reset();
+	hacks::shared::spam::Reset();
 }
 
 bool CanInspect_hook(IClientEntity*) { return true; }
@@ -151,6 +152,7 @@ void LevelShutdown_hook(void* thisptr) {
 	LEVEL_SHUTDOWN(ESP);
 //	LEVEL_SHUTDOWN(FollowBot);
 	LEVEL_SHUTDOWN(Misc);
-	g_pChatStack->Reset();
+	chat_stack::Reset();
+	hacks::shared::spam::Reset();
 }
 

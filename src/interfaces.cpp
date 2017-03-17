@@ -74,7 +74,7 @@ void CreateInterfaces() {
 	g_IPanel = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2);
 	g_ISteamClient = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient, 17);
 	g_ISurface = BruteforceInterface<vgui::ISurface>("VGUI_Surface", sharedobj::vguimatsurface);
-	g_IEventManager2 = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine);
+	g_IEventManager2 = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine, 2);
 	g_IBaseClient = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client);
 	g_ITrace = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine);
 	g_IModelInfo = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine);

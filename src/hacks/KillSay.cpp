@@ -10,9 +10,17 @@
 #include "../sdk.h"
 #include <pwd.h>
 
-DEFINE_HACK_SINGLETON(KillSay);
+void KillSayEventListener::FireGameEvent(IGameEvent* event) {
+	if (!hacks::shared::killsay::enabled) return;
+	std::string message = hacks::shared::killsay::ComposeKillSay(event);
+	if (message.size()) {
+		chat_stack::stack.push(message);
+	}
+}
 
-const char* tf_classes_killsay[] = {
+namespace hacks { namespace shared { namespace killsay {
+
+const std::string tf_classes_killsay[] = {
 	"class",
 	"scout",
 	"sniper",
@@ -25,62 +33,56 @@ const char* tf_classes_killsay[] = {
 	"engineer"
 };
 
-const char* tf_teams_killsay[] = {
+const std::string tf_teams_killsay[] = {
 	"RED",
 	"BLU"
 };
 
-void KillSayEventListener::FireGameEvent(IGameEvent* event) {
-	if (!g_phKillSay->v_bEnabled->GetBool()) return;
-	SEGV_BEGIN;
-	const char* msg = g_phKillSay->ComposeKillSay(event);
-	if (msg) {
-		g_pChatStack->Push(msg);
-		delete msg;
-	}
-	SEGV_END;
-}
+TextFile file {};
 
-const char* KillSay::ComposeKillSay(IGameEvent* event) {
-	if (m_TextFile->GetLineCount() == 0) return 0;
+std::string ComposeKillSay(IGameEvent* event) {
+	if (file.LineCount() == 0) return 0;
 	if (!event) return 0;
 	int vid = event->GetInt("userid");
 	int kid = event->GetInt("attacker");
 	if (kid == vid) return 0;
 	if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer()) return 0;
-	char* msg = strfmt("%s", m_TextFile->GetLine(rand() % m_TextFile->GetLineCount()));
+	std::string msg = file.Line(rand() % file.LineCount());
 	player_info_s info;
 	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
-	ReplaceString(msg, "%name%", info.name);
+	ReplaceString(msg, "%name%", std::string(info.name));
 	CachedEntity* ent = ENTITY(g_IEngine->GetPlayerForUserID(vid));
 	int clz = g_pPlayerResource->GetClass(ent);
-	ReplaceString(msg, "%class%", (char*)tf_classes_killsay[clz]);
+	ReplaceString(msg, "%class%", tf_classes_killsay[clz]);
 	player_info_s infok;
 	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(kid), &infok);
-	ReplaceString(msg, "%killer%", (char*)infok.name);
-	ReplaceString(msg, "%team%", (char*)tf_teams_killsay[ent->m_iTeam - 2]);
-	ReplaceString(msg, "%myteam%", (char*)tf_teams_killsay[LOCAL_E->m_iTeam - 2]);
-	ReplaceString(msg, "%myclass%", (char*)tf_classes_killsay[g_pPlayerResource->GetClass(LOCAL_E)]);
+	ReplaceString(msg, "%killer%", std::string(infok.name));
+	ReplaceString(msg, "%team%", tf_teams_killsay[ent->m_iTeam - 2]);
+	ReplaceString(msg, "%myteam%", tf_teams_killsay[LOCAL_E->m_iTeam - 2]);
+	ReplaceString(msg, "%myclass%", tf_classes_killsay[g_pPlayerResource->GetClass(LOCAL_E)]);
 	ReplaceString(msg, "\\n", "\n");
 	return msg;
 }
 
-KillSay::KillSay() {
-	v_bEnabled = new CatVar(CV_SWITCH, "killsay", "0", "KillSay", NULL, "Enable KillSay");
-	v_sFileName = new CatVar(CV_STRING, "killsay_file", "killsays.txt", "Killsay file (~/.cathook/)", NULL, "Killsay file name. Should be located in ~/.cathook folder.");
-	CreateConCommand("cat_killsay_reload", CC_KillSay_ReloadFile, "Reload KillSay");
-	m_TextFile = new TextFile(256, 1024);
-	g_IEventManager2->AddListener(&m_Listener, "player_death", false);
+CatVar enabled(CV_SWITCH, "killsay", "0", "KillSay", "Enable KillSay");
+CatVar filename(CV_STRING, "killsay_file", "killsays.txt", "Killsay file (~/.cathook/)", "Killsay file name. Should be located in ~/.cathook folder.");
+CatCommand reload("killsay_reload", "Reload killsays", Reload);
+
+KillSayEventListener& getListener() {
+	static KillSayEventListener listener;
+	return listener;
 }
 
-KillSay::~KillSay() {
-	g_IEventManager2->RemoveListener(&m_Listener);
+void Reload() {
+	file.Load(std::string(filename.GetString()));
 }
 
-void KillSay::Reload() {
-	m_TextFile->LoadFile(v_sFileName->GetString());
+void Init() {
+	g_IEventManager2->AddListener(&getListener(), (const char*)"player_death", false);
 }
 
-void CC_KillSay_ReloadFile(const CCommand& args) {
-	SAFE_CALL(g_phKillSay->Reload());
+void Shutdown() {
+	g_IEventManager2->RemoveListener(&getListener());
 }
+
+}}}

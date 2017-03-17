@@ -109,8 +109,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 		//SAFE_CALL(CREATE_MOVE(FollowBot));
 		SAFE_CALL(HACK_PROCESS_USERCMD(Misc, cmd));
-		SAFE_CALL(HACK_PROCESS_USERCMD(KillSay, cmd));
-		SAFE_CALL(HACK_PROCESS_USERCMD(Spam, cmd));
+		SAFE_CALL(hacks::shared::spam::CreateMove());
 //		PROF_END("Hacks processing");
 		if (time_replaced) g_GlobalVars->curtime = curtime_old;
 	}
@@ -120,8 +119,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 	}*/
 	g_Settings.bInvalid = false;
-	if (g_pChatStack)
-		g_pChatStack->OnCreateMove();
+	chat_stack::OnCreateMove();
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		bool speedapplied = false;
 		if (g_Settings.kRollSpeedhack->GetBool() && g_pGUI->m_bPressedState[g_Settings.kRollSpeedhack->GetInt()] && !(cmd->buttons & IN_ATTACK)) {

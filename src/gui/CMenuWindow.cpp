@@ -185,17 +185,17 @@ void CMenuWindow::AddElements() {
 	AddTab("spam", "Spam/Killsay");
 	tab = GetTab("spam");
 	ADDLABEL("Spam");
-	ADDCVAR(g_phSpam->v_bSpam);
-	ADDCVAR(g_phSpam->v_bSpamNewlines);
-	ADDCVAR(g_phSpam->v_sSpamFile);
+	ADDCVAR(&hacks::shared::spam::enabled);
+	ADDCVAR(&hacks::shared::spam::newlines);
+	ADDCVAR(&hacks::shared::spam::filename);
 	tab->AddChild(new CBaseButton("spam_reload", tab, "Reload spam", [this](CBaseButton*) {
-		g_phSpam->Reload();
+		hacks::shared::spam::Reload();
 	}));
 	ADDLABEL("Killsay");
-	ADDCVAR(g_phKillSay->v_bEnabled);
-	ADDCVAR(g_phKillSay->v_sFileName);
+	ADDCVAR(&hacks::shared::killsay::enabled);
+	ADDCVAR(&hacks::shared::killsay::filename);
 	tab->AddChild(new CBaseButton("killsay_reload", tab, "Reload killsays", [this](CBaseButton*) {
-		g_phKillSay->Reload();
+		hacks::shared::killsay::Reload();
 	}));
 }
 

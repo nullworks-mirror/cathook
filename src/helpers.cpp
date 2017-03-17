@@ -110,6 +110,8 @@ const char* GetBuildingName(CachedEntity* ent) {
 	return "[NULL]";
 }
 
+void format_internal(std::stringstream& stream) {}
+
 std::string WordWrap(std::string& in, int max) {
 	std::stringstream result;
 	std::stringstream line;
@@ -143,6 +145,14 @@ std::string WordWrap(std::string& in, int max) {
 	}
 	result << line.str();
 	return result.str();
+}
+
+void ReplaceString(std::string& input, const std::string& what, const std::string& with_what) {
+	size_t index = input.find(what);
+	while (index != std::string::npos) {
+		input.replace(index, what.size(), with_what);
+		index = input.find(what, index + with_what.size());
+	}
 }
 
 powerup_type GetPowerupOnPlayer(CachedEntity* player) {
