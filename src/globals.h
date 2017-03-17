@@ -17,17 +17,17 @@ extern EstimateAbsVelocity_t* EstimateAbsVelocity;
 
 extern int g_AppID;
 
+extern CatVar cathook; // Master switch
+
 class GlobalSettings {
 public:
 	void Init();
 // TODO
 //	CatVar* bMaxPerformance;
-	CatVar* bHackEnabled;
 	CatVar* bIgnoreTaunting;
 //	CatVar* bProfiler;
 //	CatVar* bNoFlinch;
 	CatVar* bSendPackets;
-	CatVar* sDisconnectMsg;
 	CatVar* bShowAntiAim;
 	CatVar* bThirdperson;
 	CatVar* bDebugLog;

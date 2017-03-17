@@ -134,7 +134,7 @@ void CMenuWindow::AddElements() {
 	ADDCVAR(g_phMisc->v_bAntiAFK);
 	// FIXME add CVARS TO MENU!!
 	//ADDCVAR(g_Settings.bCleanScreenshots);
-	ADDCVAR(g_Settings.bHackEnabled);
+	ADDCVAR(&cathook);
 	if (TF) ADDCVAR(g_Settings.bIgnoreTaunting);
 	//ADDCVAR(g_Settings.bNoVisuals);
 	//if (TF) ADDCVAR(g_Settings.bNoZoom);
@@ -145,7 +145,8 @@ void CMenuWindow::AddElements() {
 	//ADDCVAR(g_Settings.bZoomedFOV);
 	//ADDCVAR(g_Settings.flForceFOVZoomed);
 	//ADDCVAR(g_Settings.flForceFOV);
-	ADDCVAR(g_Settings.sDisconnectMsg);
+	// FIXME add ConVars to menu!!
+	//ADDCVAR(g_Settings.sDisconnectMsg);
 	if (TF2C) ADDCVAR(g_Settings.kRollSpeedhack);
 	ADDCVAR(g_phMisc->v_bCleanChat);
 	if (TF2) {

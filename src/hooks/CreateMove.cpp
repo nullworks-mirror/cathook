@@ -50,7 +50,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		return ret;
 	}
 
-	if (!g_Settings.bHackEnabled->GetBool()) {
+	if (!cathook) {
 		return ret;
 	}
 

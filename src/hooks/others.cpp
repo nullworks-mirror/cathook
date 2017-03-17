@@ -31,7 +31,7 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 	SEGV_BEGIN;
 
 	//logging::Info("Sending NetMsg! %i", msg.GetType());
-	if (hacks::shared::airstuck::IsStuck() && g_Settings.bHackEnabled->GetBool() && !g_Settings.bInvalid) {
+	if (hacks::shared::airstuck::IsStuck() && cathook && !g_Settings.bInvalid) {
 		switch (msg.GetType()) {
 		case net_NOP:
 		case net_SignonState:
@@ -46,14 +46,12 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 	return false;
 }
 
+CatVar disconnect_reason(CV_STRING, "disconnect_reason", "", "Disconnect reason", "A custom disconnect reason");
+
 void Shutdown_hook(void* thisptr, const char* reason) {
 	SEGV_BEGIN;
-	if (g_Settings.bHackEnabled->GetBool()) {
-		const char* new_reason = reason;
-		if (g_Settings.sDisconnectMsg->convar->m_StringLength > 3) {
-			new_reason = g_Settings.sDisconnectMsg->GetString();
-		}
-		((Shutdown_t*)hooks::hkNetChannel->GetMethod(hooks::offShutdown))(thisptr, new_reason);
+	if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) && strstr(reason, "user")) {
+		((Shutdown_t*)hooks::hkNetChannel->GetMethod(hooks::offShutdown))(thisptr, disconnect_reason.GetString());
 	} else {
 		((Shutdown_t*)hooks::hkNetChannel->GetMethod(hooks::offShutdown))(thisptr, reason);
 	}
@@ -68,7 +66,7 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 	//logging::Info("fsi begin");// TODO dbg
 	SVDBG("FSN %i", __LINE__);
 	// TODO hack FSN hook
-	if (TF && g_Settings.bHackEnabled->GetBool() && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		SVDBG("FSN %i", __LINE__);
 		if (g_Settings.bThirdperson->GetBool() && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
 			SVDBG("FSN %i", __LINE__);
@@ -95,7 +93,7 @@ CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with th
 void OverrideView_hook(void* thisptr, CViewSetup* setup) {
 	SEGV_BEGIN;
 	((OverrideView_t*)hooks::hkClientMode->GetMethod(hooks::offOverrideView))(thisptr, setup);
-	if (!g_Settings.bHackEnabled->GetBool()) return;
+	if (!cathook) return;
 	bool zoomed = g_pLocalPlayer->bZoomed;
 	if (zoomed && override_fov_zoomed) {
 		setup->fov = override_fov_zoomed;

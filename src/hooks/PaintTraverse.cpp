@@ -31,8 +31,8 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	static unsigned long panel_top = 0;
 	static bool draw_flag = false;
 	bool call_default = true;
-	if (g_Settings.bHackEnabled->GetBool() && panel_scope && no_zoom && vp == panel_scope) call_default = false;
-	if (g_Settings.bHackEnabled->GetBool()) {
+	if (cathook && panel_scope && no_zoom && vp == panel_scope) call_default = false;
+	if (cathook) {
 		bool vis = gui_visible;
 		interfaces::surface->SetCursorAlwaysVisible(vis);
 	}
@@ -41,7 +41,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
 	PROF_SECTION(PaintTraverse);
 	if (vp == panel_top) draw_flag = true;
-	if (!g_Settings.bHackEnabled->GetBool()) return;
+	if (!cathook) return;
 	// Because of single-multi thread shit I'm gonna put this thing riiiight here.
 
 	static bool autoexec_done = false;
