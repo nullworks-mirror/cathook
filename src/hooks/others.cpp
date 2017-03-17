@@ -130,7 +130,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 void LevelInit_hook(void* thisptr, const char* newmap) {
 	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
 	g_IEngine->ExecuteClientCmd("exec cat_matchexec");
-	LEVEL_INIT(Aimbot);
+	hacks::shared::aimbot::Reset();
 	hacks::shared::airstuck::Reset();
 	LEVEL_INIT(Bunnyhop);
 	LEVEL_INIT(ESP);
@@ -146,7 +146,7 @@ bool CanInspect_hook(IClientEntity*) { return true; }
 void LevelShutdown_hook(void* thisptr) {
 	((LevelShutdown_t*) hooks::hkClientMode->GetMethod(hooks::offLevelShutdown))(thisptr);
 	g_Settings.bInvalid = true;
-	LEVEL_SHUTDOWN(Aimbot);
+	hacks::shared::aimbot::Reset();
 	hacks::shared::airstuck::Reset();
 	LEVEL_SHUTDOWN(Bunnyhop);
 	LEVEL_SHUTDOWN(ESP);

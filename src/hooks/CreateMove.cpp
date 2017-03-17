@@ -100,7 +100,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
 			if (TF2) SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
 			SAFE_CALL(HACK_PROCESS_USERCMD(Bunnyhop, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(Aimbot, cmd));
+			SAFE_CALL(hacks::shared::aimbot::CreateMove());
 			SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
 			if (TF) SAFE_CALL(hacks::tf::autosticky::CreateMove());
 			if (TF) SAFE_CALL(hacks::tf::autoreflect::CreateMove());

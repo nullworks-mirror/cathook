@@ -28,7 +28,7 @@ CMenuWindow::CMenuWindow(std::string name, IWidget* parent) : CBaseWindow(name, 
 void CMenuWindow::AddElements() {
 	AddTab("aimbot", "Aimbot");
 	CMenuContainer* tab = GetTab("aimbot");
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bEnabled));
+	/*tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bEnabled));
 	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bAimAtTeammates));
 	if (TF) tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bAimBuildings));
 	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_eHitboxMode));
@@ -52,7 +52,7 @@ void CMenuWindow::AddElements() {
 	//tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iMaxAutoshootRange));
 	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iMaxRange));
 	//tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iSeenDelay));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_kAimKey));
+	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_kAimKey));*/
 	AddTab("esp", "ESP");
 	tab = GetTab("esp");
 	ADDCVAR(g_phESP->v_bEnabled);
