@@ -10,15 +10,12 @@
 
 #include "IHack.h"
 
-class Noisemaker : public IHack {
-public:
-	Noisemaker();
+namespace hacks { namespace tf2 { namespace noisemaker {
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
+extern CatVar enabled;
 
-	CatVar* v_bEnabled;
-};
+void CreateMove();
 
-DECLARE_HACK_SINGLETON(Noisemaker);
+}}}
 
 #endif /* HACKS_NOISEMAKER_H_ */

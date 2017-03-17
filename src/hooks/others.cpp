@@ -132,15 +132,11 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 	g_IEngine->ExecuteClientCmd("exec cat_matchexec");
 	LEVEL_INIT(Aimbot);
 	hacks::shared::airstuck::Reset();
-	if (TF) LEVEL_INIT(AutoReflect);
-	if (TF) LEVEL_INIT(AutoSticky);
-	LEVEL_INIT(AutoStrafe);
 	LEVEL_INIT(Bunnyhop);
 	LEVEL_INIT(ESP);
 //	LEVEL_SHUTDOWN(FollowBot);
 	LEVEL_INIT(Misc);
 	//if (TF) LEVEL_INIT(SpyAlert);
-	if (TF2) LEVEL_INIT(Glow);
 	g_pChatStack->Reset();
 }
 
@@ -151,14 +147,10 @@ void LevelShutdown_hook(void* thisptr) {
 	g_Settings.bInvalid = true;
 	LEVEL_SHUTDOWN(Aimbot);
 	hacks::shared::airstuck::Reset();
-	if (TF) LEVEL_SHUTDOWN(AutoReflect);
-	if (TF) LEVEL_SHUTDOWN(AutoSticky);
-	LEVEL_SHUTDOWN(AutoStrafe);
 	LEVEL_SHUTDOWN(Bunnyhop);
 	LEVEL_SHUTDOWN(ESP);
 //	LEVEL_SHUTDOWN(FollowBot);
 	LEVEL_SHUTDOWN(Misc);
-	if (TF2) LEVEL_SHUTDOWN(Glow);
 	g_pChatStack->Reset();
 }
 

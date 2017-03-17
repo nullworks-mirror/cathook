@@ -97,18 +97,16 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 //		PROF_BEGIN();
 		//RunEnginePrediction(g_pLocalPlayer->entity, cmd);
 		SAFE_CALL(HACK_PROCESS_USERCMD(ESP, cmd));
-		if (!g_pLocalPlayer->life_state) {
-			if (TF2) SAFE_CALL(HACK_PROCESS_USERCMD(Noisemaker, cmd));
+		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
+			if (TF2) SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
 			SAFE_CALL(HACK_PROCESS_USERCMD(Bunnyhop, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(AutoStrafe, cmd));
 			SAFE_CALL(HACK_PROCESS_USERCMD(Aimbot, cmd));
 			SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
-			if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoSticky, cmd));
-			if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoReflect, cmd));
+			if (TF) SAFE_CALL(hacks::tf::autosticky::CreateMove());
+			if (TF) SAFE_CALL(hacks::tf::autoreflect::CreateMove());
 			SAFE_CALL(hacks::shared::triggerbot::CreateMove());
+			if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
 		}
-		if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
-		if (TF2) SAFE_CALL(HACK_PROCESS_USERCMD(Glow, cmd));
 		//SAFE_CALL(CREATE_MOVE(FollowBot));
 		SAFE_CALL(HACK_PROCESS_USERCMD(Misc, cmd));
 		SAFE_CALL(HACK_PROCESS_USERCMD(KillSay, cmd));

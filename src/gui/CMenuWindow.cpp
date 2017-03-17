@@ -107,14 +107,14 @@ void CMenuWindow::AddElements() {
 	ADDCVAR(&hacks::shared::triggerbot::max_range);
 	if (TF) {
 		ADDLABEL("AutoSticky");
-		ADDCVAR(g_phAutoSticky->v_bEnabled);
-		ADDCVAR(g_phAutoSticky->v_bBuildings);
-		ADDCVAR(g_phAutoSticky->v_flDetonateDistance);
+		ADDCVAR(&hacks::tf::autosticky::enabled);
+		ADDCVAR(&hacks::tf::autosticky::buildings);
+		ADDCVAR(&hacks::tf::autosticky::distance);
 		ADDLABEL("AutoReflect");
-		ADDCVAR(g_phAutoReflect->v_bEnabled);
-		ADDCVAR(g_phAutoReflect->v_bDisableWhenAttacking);
-		ADDCVAR(g_phAutoReflect->v_bReflectStickies);
-		ADDCVAR(g_phAutoReflect->v_iReflectDistance);
+		ADDCVAR(&hacks::tf::autoreflect::enabled);
+		ADDCVAR(&hacks::tf::autoreflect::idle_only);
+		ADDCVAR(&hacks::tf::autoreflect::stickies);
+		ADDCVAR(&hacks::tf::autoreflect::max_distance);
 	}
 	AddTab("misc", "Misc");
 	tab = GetTab("misc");
