@@ -104,7 +104,7 @@ Aimbot::Aimbot() {
 
 bool Aimbot::ShouldAim(CUserCmd* cmd) {
 	if (this->v_kAimKey->GetBool() && this->v_eAimKeyMode->GetBool()) {
-		bool key_down = interfaces::input->IsButtonDown((ButtonCode_t)this->v_kAimKey->GetInt());
+		bool key_down = g_IInputSystem->IsButtonDown((ButtonCode_t)this->v_kAimKey->GetInt());
 		switch (this->v_eAimKeyMode->GetInt()) {
 		case AimKeyMode_t::PRESS_TO_ENABLE:
 			if (key_down) break;
@@ -144,7 +144,7 @@ bool Aimbot::ShouldAim(CUserCmd* cmd) {
 	}
 
 	if (IsAmbassador(g_pLocalPlayer->weapon())) { // TODO AmbassadorCanHeadshot()
-		if ((interfaces::gvars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 1.0) {
+		if ((g_GlobalVars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 1.0) {
 			return false;
 		}
 	}
@@ -269,7 +269,7 @@ void Aimbot::ProcessUserCmd(CUserCmd* cmd) {
 				float begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
 				float charge = 0;
 				if (begincharge != 0) {
-					charge = interfaces::gvars->curtime - begincharge;
+					charge = g_GlobalVars->curtime - begincharge;
 					if (charge > 1.0f) charge = 1.0f;
 					m_bSilentHuntsman = true;
 				}

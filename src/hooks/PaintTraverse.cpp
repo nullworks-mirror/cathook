@@ -34,7 +34,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	if (cathook && panel_scope && no_zoom && vp == panel_scope) call_default = false;
 	if (cathook) {
 		bool vis = gui_visible;
-		interfaces::surface->SetCursorAlwaysVisible(vis);
+		g_ISurface->SetCursorAlwaysVisible(vis);
 	}
 
 
@@ -46,14 +46,14 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 
 	static bool autoexec_done = false;
 	if (!autoexec_done) {
-		interfaces::engineClient->ExecuteClientCmd("exec cat_autoexec");
-		interfaces::engineClient->ExecuteClientCmd("cat_killsay_reload");
-		interfaces::engineClient->ExecuteClientCmd("cat_spam_reload");
+		g_IEngine->ExecuteClientCmd("exec cat_autoexec");
+		g_IEngine->ExecuteClientCmd("cat_killsay_reload");
+		g_IEngine->ExecuteClientCmd("cat_spam_reload");
 		autoexec_done = true;
 	}
 
 	if (!panel_top) {
-		const char* name = interfaces::panel->GetName(vp);
+		const char* name = g_IPanel->GetName(vp);
 		if (strlen(name) > 4) {
 			if (name[0] == 'M' && name[3] == 'S') {
 				panel_top = vp;
@@ -64,16 +64,16 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		}
 	}
 	if (!panel_scope) {
-		if (!strcmp(interfaces::panel->GetName(vp), "HudScope")) {
+		if (!strcmp(g_IPanel->GetName(vp), "HudScope")) {
 			panel_scope = vp;
 		}
 	}
-	if (!interfaces::engineClient->IsInGame()) {
+	if (!g_IEngine->IsInGame()) {
 		g_Settings.bInvalid = true;
 	}
 
 	if (disable_visuals) return;
-	if (clean_screenshots && interfaces::engineClient->IsTakingScreenshot()) return;
+	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
 
 	ResetStrings();
 

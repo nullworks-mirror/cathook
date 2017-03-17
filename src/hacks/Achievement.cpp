@@ -18,12 +18,12 @@ void Lock() {
 		ConColorMsg({ 255, 0, 0, 255}, "Switch " CON_PREFIX "achievement_safety to 0 before using any achievement commands!\n");
 		return;
 	}
-	interfaces::stats->RequestCurrentStats();
-	for (int i = 0; i < interfaces::achievements->GetAchievementCount(); i++) {
-		interfaces::stats->ClearAchievement(interfaces::achievements->GetAchievementByIndex(i)->GetName());
+	g_ISteamUserStats->RequestCurrentStats();
+	for (int i = 0; i < g_IAchievementMgr->GetAchievementCount(); i++) {
+		g_ISteamUserStats->ClearAchievement(g_IAchievementMgr->GetAchievementByIndex(i)->GetName());
 	}
-	interfaces::stats->StoreStats();
-	interfaces::stats->RequestCurrentStats();
+	g_ISteamUserStats->StoreStats();
+	g_ISteamUserStats->RequestCurrentStats();
 }
 
 void Unlock() {
@@ -31,8 +31,8 @@ void Unlock() {
 		ConColorMsg({ 255, 0, 0, 255}, "Switch " CON_PREFIX "achievement_safety to 0 before using any achievement commands!\n");
 		return;
 	}
-	for (int i = 0; i < interfaces::achievements->GetAchievementCount(); i++) {
-		interfaces::achievements->AwardAchievement(interfaces::achievements->GetAchievementByIndex(i)->GetAchievementID());
+	for (int i = 0; i < g_IAchievementMgr->GetAchievementCount(); i++) {
+		g_IAchievementMgr->AwardAchievement(g_IAchievementMgr->GetAchievementByIndex(i)->GetAchievementID());
 	}
 }
 

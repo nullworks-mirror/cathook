@@ -20,12 +20,12 @@ ChatStack::~ChatStack() {
 
 void ChatStack::OnCreateMove() {
 	if (m_nStackDepth <= 0) return;
-	if (m_fLastSay > interfaces::gvars->curtime) m_fLastSay = 0;
-	if (interfaces::gvars->curtime - CHATSTACK_INTERVAL <= m_fLastSay) return;
+	if (m_fLastSay > g_GlobalVars->curtime) m_fLastSay = 0;
+	if (g_GlobalVars->curtime - CHATSTACK_INTERVAL <= m_fLastSay) return;
 	const char* msg = Pop();
 	const char* cmd = strfmt("say \"%s\"", msg);
-	interfaces::engineClient->ServerCmd(cmd);
-	m_fLastSay = interfaces::gvars->curtime;
+	g_IEngine->ServerCmd(cmd);
+	m_fLastSay = g_GlobalVars->curtime;
 	delete [] cmd;
 }
 

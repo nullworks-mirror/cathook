@@ -12,7 +12,7 @@
 #include <link.h>
 
 bool RandomCrits() {
-	static ConVar* tf_weapon_criticals = interfaces::cvar->FindVar("tf_weapon_criticals");
+	static ConVar* tf_weapon_criticals = g_ICvar->FindVar("tf_weapon_criticals");
 	return tf_weapon_criticals->GetBool();
 }
 

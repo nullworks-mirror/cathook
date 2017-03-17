@@ -43,7 +43,7 @@ void CachedEntity::Update(int idx) {
 	m_ESPOrigin.Zero();
 
 	m_IDX = idx;
-	m_pEntity = interfaces::entityList->GetClientEntity(idx);
+	m_pEntity = g_IEntityList->GetClientEntity(idx);
 	if (!m_pEntity) {
 		return;
 	}
@@ -51,19 +51,19 @@ void CachedEntity::Update(int idx) {
 
 	Vector origin = m_pEntity->GetAbsOrigin();
 	//if (TF2 && EstimateAbsVelocity) EstimateAbsVelocity(m_pEntity, m_vecVelocity);
-	/*if ((interfaces::gvars->realtime - m_fLastUpdate) >= 0.05f) {
-		//if (interfaces::gvars->tickcount - m_nLastTick > 1) {
-			//logging::Info("Running %i ticks behind!", interfaces::gvars->tickcount - m_nLastTick);
+	/*if ((gvars->realtime - m_fLastUpdate) >= 0.05f) {
+		//if (gvars->tickcount - m_nLastTick > 1) {
+			//logging::Info("Running %i ticks behind!", gvars->tickcount - m_nLastTick);
 		//}
-		//Vector velnew = (origin - m_vecVOrigin) * (0.05f / (m_fLastUpdate - interfaces::gvars->realtime)) * 20;
+		//Vector velnew = (origin - m_vecVOrigin) * (0.05f / (m_fLastUpdate - gvars->realtime)) * 20;
 		Vector velnew;
 		if (EstimateAbsVelocity)
 			EstimateAbsVelocity(m_pEntity, velnew);
 		m_vecAcceleration = (velnew - m_vecVelocity);
 		m_vecVelocity = (m_vecVelocity + velnew) / 2;
-		//logging::Info("Multiplier for %i: %f", m_IDX, (0.1f / (m_fLastUpdate - interfaces::gvars->realtime)));
+		//logging::Info("Multiplier for %i: %f", m_IDX, (0.1f / (m_fLastUpdate - gvars->realtime)));
 		m_vecVOrigin = origin;
-		m_fLastUpdate = interfaces::gvars->realtime;
+		m_fLastUpdate = gvars->realtime;
 	}*/
 	m_vecOrigin = origin;
 
@@ -138,7 +138,7 @@ void CachedEntity::Update(int idx) {
 			m_pPlayerInfo = 0;
 		}
 		m_pPlayerInfo = new player_info_s;
-		interfaces::engineClient->GetPlayerInfo(m_IDX, m_pPlayerInfo);
+		g_IEngine->GetPlayerInfo(m_IDX, m_pPlayerInfo);
 		m_iTeam = CE_INT(this, netvar.iTeamNum); // TODO
 		m_bEnemy = (m_iTeam != g_pLocalPlayer->team);
 		m_iHealth = CE_INT(this, netvar.iHealth);
@@ -226,7 +226,7 @@ ESPStringCompound& CachedEntity::GetESPString(int idx) {
 
 matrix3x4_t* CachedEntity::GetBones() {
 	if (!m_bBonesSetup) {
-		m_bBonesSetup = m_pEntity->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, 0); // interfaces::gvars->curtime
+		m_bBonesSetup = m_pEntity->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, 0); // gvars->curtime
 	}
 	return m_Bones;
 }
@@ -248,7 +248,7 @@ void EntityCache::PruneStrings() {
 }
 
 void EntityCache::Update() {
-	m_nMax = interfaces::entityList->GetHighestEntityIndex();
+	m_nMax = g_IEntityList->GetHighestEntityIndex();
 	for (int i = 0; i < m_nMax && i < MAX_ENTITIES; i++) {
 		//logging::Info("Updating %i", i);
 		m_pArray[i].Update(i);

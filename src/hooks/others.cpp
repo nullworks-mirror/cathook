@@ -62,7 +62,7 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;
 	//logging::Info("FrameStageNotify %i", stage);
 	// Ambassador to festive ambassador changer. simple.
-	if (!interfaces::engineClient->IsInGame()) g_Settings.bInvalid = true;
+	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
 	//logging::Info("fsi begin");// TODO dbg
 	SVDBG("FSN %i", __LINE__);
 	// TODO hack FSN hook
@@ -73,7 +73,7 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
 		}
 		SVDBG("FSN %i", __LINE__);
-		if (stage == 5 && g_Settings.bShowAntiAim->GetBool() && interfaces::iinput->CAM_IsThirdPerson()) {
+		if (stage == 5 && g_Settings.bShowAntiAim->GetBool() && g_IInput->CAM_IsThirdPerson()) {
 			SVDBG("FSN %i", __LINE__);
 			if (CE_GOOD(g_pLocalPlayer->entity)) {
 				CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 4) = g_Settings.last_angles.x;
@@ -129,7 +129,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 
 void LevelInit_hook(void* thisptr, const char* newmap) {
 	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
-	interfaces::engineClient->ExecuteClientCmd("exec cat_matchexec");
+	g_IEngine->ExecuteClientCmd("exec cat_matchexec");
 	LEVEL_INIT(Aimbot);
 	hacks::shared::airstuck::Reset();
 	if (TF) LEVEL_INIT(AntiDisguise);

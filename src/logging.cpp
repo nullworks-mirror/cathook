@@ -32,9 +32,9 @@ void logging::Info(const char* fmt, ...) {
 	sprintf(result, "[CAT] %s\n", buffer);
 	fprintf(logging::handle, "%s", result);
 	fflush(logging::handle);
-	if (interfaces::cvar) {
+	if (g_ICvar) {
 		if (g_Settings.bDebugLog && g_Settings.bDebugLog->convar_parent && g_Settings.bDebugLog->GetBool())
-			interfaces::cvar->ConsolePrintf("%s", result);
+			g_ICvar->ConsolePrintf("%s", result);
 	}
 	delete [] buffer;
 	delete [] result;

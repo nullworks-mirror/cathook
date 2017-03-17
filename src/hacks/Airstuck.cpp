@@ -17,7 +17,7 @@ namespace hacks { namespace shared { namespace airstuck {
 CatVar stuck(CV_SWITCH, "airstuck", "0", "Airstuck active");
 
 void SendNOP() {
-	INetChannel* ch = (INetChannel*)interfaces::engineClient->GetNetChannelInfo();
+	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
 	NET_NOP packet;
 	packet.SetNetChannel(ch);
 	packet.SetReliable(false);
@@ -26,7 +26,7 @@ void SendNOP() {
 
 void CreateMove() {
 	if (stuck) {
-		if (interfaces::gvars->tickcount % 60 == 0) {
+		if (g_GlobalVars->tickcount % 60 == 0) {
 			SendNOP();
 		}
 	}

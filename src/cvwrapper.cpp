@@ -40,7 +40,7 @@ void CatCommand::Register() {
 	if (callback) cmd = new ConCommand(name_c, callback, help_c);
 	else if (callback_void) cmd = new ConCommand(name_c, callback_void, help_c);
 	else throw std::logic_error("no callback in CatCommand");
-	interfaces::cvar->RegisterConCommand(cmd);
+	g_ICvar->RegisterConCommand(cmd);
 	// name_c and help_c are not freed because ConCommandBase doesn't copy them
 }
 
