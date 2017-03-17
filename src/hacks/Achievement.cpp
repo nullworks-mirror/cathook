@@ -9,26 +9,16 @@
 #include "../common.h"
 #include "../sdk.h"
 
-DEFINE_HACK_SINGLETON(AchievementHack);
+namespace hacks { namespace tf2 { namespace achievement {
 
-AchievementHack::AchievementHack() {
-	c_Unlock = CreateConCommand(CON_PREFIX "achievement_unlock", &CC_Achievement_Unlock, "Unlocks all achievements.");
-	c_Lock = CreateConCommand(CON_PREFIX "achievement_lock", &CC_Achievement_Lock, "Locks all achievements.");
-}
+CatVar safety(CV_SWITCH, "achievement_safety", "1", "Achievement commands safety switch");
 
-void CC_Achievement_Unlock(const CCommand& args) {
-	g_phAchievementHack->UnlockAll();
-}
-
-void AchievementHack::UnlockAll() {
-	for (int i = 0; i < interfaces::achievements->GetAchievementCount(); i++) {
-		interfaces::achievements->AwardAchievement(interfaces::achievements->GetAchievementByIndex(i)->GetAchievementID());
+void Lock() {
+	if (safety) {
+		ConColorMsg({ 255, 0, 0, 255}, "Switch " CON_PREFIX "achievement_safety to 0 before using any achievement commands!\n");
+		return;
 	}
-}
-
-void AchievementHack::LockAll() {
 	interfaces::stats->RequestCurrentStats();
-	//interfaces::stats->ResetAllStats(true);
 	for (int i = 0; i < interfaces::achievements->GetAchievementCount(); i++) {
 		interfaces::stats->ClearAchievement(interfaces::achievements->GetAchievementByIndex(i)->GetName());
 	}
@@ -36,6 +26,17 @@ void AchievementHack::LockAll() {
 	interfaces::stats->RequestCurrentStats();
 }
 
-void CC_Achievement_Lock(const CCommand& args) {
-	g_phAchievementHack->LockAll();
+void Unlock() {
+	if (safety) {
+		ConColorMsg({ 255, 0, 0, 255}, "Switch " CON_PREFIX "achievement_safety to 0 before using any achievement commands!\n");
+		return;
+	}
+	for (int i = 0; i < interfaces::achievements->GetAchievementCount(); i++) {
+		interfaces::achievements->AwardAchievement(interfaces::achievements->GetAchievementByIndex(i)->GetAchievementID());
+	}
 }
+
+CatCommand lock("achievement_lock", "Lock all achievements", Lock);
+CatCommand unlock("achievement_unlock", "Unlock all achievements", Unlock);
+
+}}}

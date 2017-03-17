@@ -38,6 +38,8 @@ public:
 	bool bInvalid;
 };
 
+class CUserCmd;
+extern CUserCmd* g_pUserCmd;
 extern const char* g_pszTFPath;
 
 extern GlobalSettings g_Settings;

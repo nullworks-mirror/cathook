@@ -33,11 +33,15 @@ CatCommand::CatCommand(std::string name, std::string help, FnCommandCallbackVoid
 }
 
 void CatCommand::Register() {
-	char name_c[256] = { 0 };
-	char help_c[256] = { 0 };
-	strcpy(name_c, name.c_str());
-	strcpy(help_c, help.c_str());
-	cmd = new ConCommand(name_c, callback ? callback : callback_void, help_c);
+	char* name_c = new char[256];
+	char* help_c = new char[256];
+	strncpy(name_c, (CON_PREFIX + name).c_str(), 255);
+	strncpy(help_c, help.c_str(), 255);
+	if (callback) cmd = new ConCommand(name_c, callback, help_c);
+	else if (callback_void) cmd = new ConCommand(name_c, callback_void, help_c);
+	else throw std::logic_error("no callback in CatCommand");
+	interfaces::cvar->RegisterConCommand(cmd);
+	// name_c and help_c are not freed because ConCommandBase doesn't copy them
 }
 
 void RegisterCatCommands() {

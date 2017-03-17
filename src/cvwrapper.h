@@ -67,9 +67,9 @@ void RegisterCatCommands();
 class CatVar {
 public:
 	[[deprecated]]
-	CatVar(CatVar_t type, std::string name, std::string value, std::string help, CatEnum* enum_type = 0, std::string long_description = "no description", bool hasminmax = false, float max = 1.0f, float min = 0.0f);
+	CatVar(CatVar_t type, std::string name, std::string value, std::string help, CatEnum* enum_type, std::string long_description = "no description", bool hasminmax = false, float max = 1.0f, float min = 0.0f);
 
-	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long);
+	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long = "no description");
 	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float max_val);
 	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float min_val, float max_val);
 	CatVar(CatEnum& cat_enum, std::string name, std::string defaults, std::string desc_short, std::string desc_long);

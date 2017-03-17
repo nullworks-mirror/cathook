@@ -31,7 +31,7 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 	SEGV_BEGIN;
 
 	//logging::Info("Sending NetMsg! %i", msg.GetType());
-	if (g_phAirstuck->v_bStuck->GetBool() && g_Settings.bHackEnabled->GetBool() && !g_Settings.bInvalid) {
+	if (hacks::shared::airstuck::IsStuck() && g_Settings.bHackEnabled->GetBool() && !g_Settings.bInvalid) {
 		switch (msg.GetType()) {
 		case net_NOP:
 		case net_SignonState:
@@ -133,7 +133,7 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
 	interfaces::engineClient->ExecuteClientCmd("exec cat_matchexec");
 	LEVEL_INIT(Aimbot);
-	LEVEL_INIT(Airstuck);
+	hacks::shared::airstuck::Reset();
 	if (TF) LEVEL_INIT(AntiDisguise);
 	if (TF) LEVEL_INIT(AutoHeal);
 	if (TF) LEVEL_INIT(AutoReflect);
@@ -155,7 +155,7 @@ void LevelShutdown_hook(void* thisptr) {
 	((LevelShutdown_t*) hooks::hkClientMode->GetMethod(hooks::offLevelShutdown))(thisptr);
 	g_Settings.bInvalid = true;
 	LEVEL_SHUTDOWN(Aimbot);
-	LEVEL_SHUTDOWN(Airstuck);
+	hacks::shared::airstuck::Reset();
 	if (TF) LEVEL_SHUTDOWN(AntiDisguise);
 	if (TF) LEVEL_SHUTDOWN(AutoHeal);
 	if (TF) LEVEL_SHUTDOWN(AutoReflect);

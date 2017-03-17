@@ -41,6 +41,7 @@ void GlobalSettings::Init() {
 	bInvalid = true;
 }
 
+CUserCmd* g_pUserCmd = nullptr;
 const char* g_pszTFPath = 0;
 
 GlobalSettings g_Settings;

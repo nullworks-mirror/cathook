@@ -66,13 +66,11 @@ void hack::InitHacks() {
 	ADD_HACK(ESP);
 	ADD_HACK(Triggerbot);
 	if (TF) ADD_HACK(AutoSticky);
-	ADD_HACK(Airstuck);
 	if (TF) ADD_HACK(AutoHeal);
 	if (TF) ADD_HACK(SpyAlert);
 	if (TF2) ADD_HACK(Glow);
 	ADD_HACK(KillSay);
 	ADD_HACK(Spam);
-	if (TF) ADD_HACK(AchievementHack);
 	if (TF2) ADD_HACK(Noisemaker);
 }
 
@@ -205,12 +203,10 @@ void hack::Shutdown() {
 	DELETE_HACK(ESP);
 	DELETE_HACK(Triggerbot);
 	if (TF) DELETE_HACK(AutoSticky);
-	DELETE_HACK(Airstuck);
 	if (TF) DELETE_HACK(AutoHeal);
 	DELETE_HACK(SpyAlert);
 	if (TF) DELETE_HACK(Glow);
 	DELETE_HACK(KillSay);
-	if (TF) DELETE_HACK(AchievementHack);
 	if (TF2) DELETE_HACK(Noisemaker);
 	DELETE_HACK(Spam);
 }

@@ -35,6 +35,7 @@ void BeginConVars() {
 
 void EndConVars() {
 	RegisterCatVars();
+	RegisterCatCommands();
 	if (hConVarsFile) {
 		fprintf(hConVarsFile, "\nexec cat_autoexec\n");
 		fprintf(hConVarsFile, "cat_killsay_reload\ncat_spam_reload\n");
@@ -89,7 +90,7 @@ ConVar* CreateConVar(std::string name, std::string value, std::string help) {
 	//logging::Info("Creating ConVar: %s %s %s", namec, valuec, helpc);
 	ConVar* ret = new ConVar((const char*)namec, (const char*)valuec, 0, (const char*)helpc);
 	if (hConVarsFile)
-		fprintf(hConVarsFile, "%s %s\n", name.c_str(), value.c_str());
+		fprintf(hConVarsFile, "%s \"%s\"\n", name.c_str(), value.c_str());
 	interfaces::cvar->RegisterConCommand(ret);
 	g_ConVars.push_back(ret);
 	return ret;

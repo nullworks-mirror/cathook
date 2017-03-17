@@ -35,6 +35,8 @@ float AngleDiff( float destAngle, float srcAngle )
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	SEGV_BEGIN;
 
+	g_pUserCmd = cmd;
+
 	if (TF2C && g_phMisc->v_bMinigunJump->GetBool() && CE_GOOD(LOCAL_W)) {
 		//RemoveCondition(LOCAL_E, TFCond_Slowed);
 		CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
@@ -100,7 +102,6 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			SAFE_CALL(HACK_PROCESS_USERCMD(Bunnyhop, cmd));
 			SAFE_CALL(HACK_PROCESS_USERCMD(AutoStrafe, cmd));
 			SAFE_CALL(HACK_PROCESS_USERCMD(Aimbot, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(Airstuck, cmd));
 			SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
 			if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoSticky, cmd));
 			if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoReflect, cmd));
