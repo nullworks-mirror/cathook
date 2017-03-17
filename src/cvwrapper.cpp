@@ -16,24 +16,51 @@ std::vector<CatVar*>& registrationArray() {
 	return vector;
 }
 
+std::vector<CatCommand*>& commandRegistrationArray() {
+	static std::vector<CatCommand*> vector;
+	return vector;
+}
+
+
+CatCommand::CatCommand(std::string name, std::string help, FnCommandCallback_t callback)
+	: name(name), help(help), callback(callback) {
+	commandRegistrationArray().push_back(this);
+}
+
+CatCommand::CatCommand(std::string name, std::string help, FnCommandCallbackVoid_t callback)
+	: name(name), help(help), callback_void(callback) {
+	commandRegistrationArray().push_back(this);
+}
+
+void CatCommand::Register() {
+	char name_c[256] = { 0 };
+	char help_c[256] = { 0 };
+	strcpy(name_c, name.c_str());
+	strcpy(help_c, help.c_str());
+	cmd = new ConCommand(name_c, callback ? callback : callback_void, help_c);
+}
+
+void RegisterCatCommands() {
+	while (!commandRegistrationArray().empty()) {
+		CatCommand* cmd = commandRegistrationArray().back();
+		cmd->Register();
+		commandRegistrationArray().pop_back();
+	}
+}
+
 CatVar::CatVar(CatVar_t type, std::string name, std::string value, std::string help, CatEnum* enum_type, std::string long_description, bool hasminmax, float maxv, float minv)
 	: type(type), name(name), defaults(value), desc_short(help), desc_long(long_description), enum_type(enum_type), callbacks{} {
-	logging::Info("Var %s", name.c_str());
 	min = minv;
 	max = maxv;
 	restricted = hasminmax;
 	registrationArray().push_back(this);
-	logging::Info("%d", registrationArray().size());
 }
 
 CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long)
 	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(false), callbacks{} {
-	// For some reason, adding min(0.0f), max(0.0f) gives a compilation error.
-	logging::Info("Var %s", name.c_str());
 	min = 0.0f;
 	max = 0.0f;
 	registrationArray().push_back(this);
-	logging::Info("%d", registrationArray().size());
 }
 
 CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float max_val)
@@ -73,10 +100,8 @@ void CatVar::Register() {
 }
 
 void RegisterCatVars() {
-	logging::Info("%d", registrationArray().size());
 	while (registrationArray().size()) {
 		CatVar* var = registrationArray().back();
-		logging::Info("Registering %s", var->name.c_str());
 		var->Register();
 		registrationArray().pop_back();
 	}

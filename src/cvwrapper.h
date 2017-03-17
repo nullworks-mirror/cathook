@@ -46,6 +46,24 @@ public:
 	int m_iLength;
 };
 
+class CatCommand {
+public:
+	CatCommand(std::string name, std::string help, FnCommandCallback_t callback);
+	CatCommand(std::string name, std::string help, FnCommandCallbackVoid_t callback);
+
+	void Register();
+
+	const std::string name;
+	const std::string help;
+
+	ConCommand* cmd { nullptr };
+
+	FnCommandCallback_t callback { nullptr };
+	FnCommandCallbackVoid_t callback_void { nullptr };
+};
+
+void RegisterCatCommands();
+
 class CatVar {
 public:
 	[[deprecated]]
@@ -97,7 +115,6 @@ public:
 	ConVar* convar_parent;
 };
 
-extern std::vector<CatVar*> catVarRegisterArray;
 void RegisterCatVars();
 
 #endif /* CVWRAPPER_H_ */
