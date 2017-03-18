@@ -136,7 +136,7 @@ void CreateMove() {
 		}
 	}
 	if (CE_GOOD(target_highest)) {
-		target_highest->m_ESPColorFG = colors::pink;
+		hacks::shared::esp::SetEntityColor(target_highest, colors::pink);
 		if (ShouldAim(cmd)) {
 			last_target = target_highest->m_IDX;
 			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFCompoundBow) { // There is no Huntsman in TF2C.

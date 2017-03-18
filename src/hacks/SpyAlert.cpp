@@ -26,9 +26,9 @@ void Draw() {
 		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team) continue;
 		float distance = ent->m_flDistance;
 		if (distance < (float)distance_backstab) {
-			AddCenterString(colors::red, "BACKSTAB WARNING! %im", (int)(distance / 64 * 1.22f));
+			AddCenterString(format("BACKSTAB WARNING! ", (int)(distance / 64 * 1.22f), 'm'), colors::red);
 		} else if (distance < (float)distance_warning) {
-			AddCenterString(colors::yellow, "Incoming spy! %im", (int)(distance / 64 * 1.22f));
+			AddCenterString(format("Incoming spy! ", (int)(distance / 64 * 1.22f), 'm'), colors::yellow);
 		}
 	}
 }

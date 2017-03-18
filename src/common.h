@@ -10,7 +10,9 @@
 
 #include "beforecheaders.h"
 #include <vector>
-
+#include <string>
+#include <array>
+#include <functional>
 #include "aftercheaders.h"
 #include "drawing.h"
 #include "entitycache.h"

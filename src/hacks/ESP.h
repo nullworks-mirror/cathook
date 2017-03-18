@@ -13,6 +13,13 @@
 class ConVar;
 class CachedEntity;
 
+#include "../sdk.h" // VECTOR
+
+#include "../beforecheaders.h"
+#include <array>
+#include <string>
+#include "../aftercheaders.h"
+
 namespace hacks { namespace shared { namespace esp {
 
 extern CatVar local_esp;
@@ -46,6 +53,25 @@ extern CatVar proj_esp;
 extern CatVar entity_model;
 extern CatVar item_weapon_spawners;
 extern CatVar item_adrenaline;
+
+class ESPString {
+public:
+	std::string data { "" };
+	int color { 0 };
+};
+
+class ESPData {
+public:
+	int color { 0 };
+	int string_count { 0 };
+	std::array<ESPString, 16> strings {};
+	Vector esp_origin { 0, 0, 0 };
+};
+
+extern std::array<ESPData, 2048> data;
+void ResetEntityStrings();
+void AddEntityString(CachedEntity* entity, const std::string& string, int color = 0x0);
+void SetEntityColor(CachedEntity* entity, int color);
 
 void CreateMove();
 void Draw();

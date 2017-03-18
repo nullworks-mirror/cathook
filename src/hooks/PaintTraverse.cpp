@@ -82,32 +82,13 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	draw_flag = false;
 
 	if (logo) {
-		AddSideString(colors::RainbowCurrent(), "cathook by d4rkc4t");
+		AddSideString("cathook by d4rkc4t", colors::RainbowCurrent());
 	}
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
 		if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
 		SAFE_CALL(hacks::shared::misc::Draw());
 		SAFE_CALL(hacks::shared::esp::Draw());
 		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
-		Vector screen;
-		for (int i = 0; i < HIGHEST_ENTITY; i++) {
-			CachedEntity* ce = gEntityCache.GetEntity(i);
-			if (CE_BAD(ce)) continue;
-			if (ce->m_ESPOrigin.IsZero(1.0f))
-				if (!draw::EntityCenterToScreen(ce, screen)) continue;
-			for (int j = 0; j < ce->m_nESPStrings; j++) {
-				ESPStringCompound str = ce->GetESPString(j);
-				int color = str.m_bColored ? str.m_nColor : ce->m_ESPColorFG;
-				if (!ce->m_ESPOrigin.IsZero(1.0)) {
-					draw::String(fonts::ESP, ce->m_ESPOrigin.x, ce->m_ESPOrigin.y, color, 2, str.m_String);
-					ce->m_ESPOrigin.y += 12;
-				} else {
-					auto l = draw::GetStringLength(fonts::ESP, std::string(str.m_String));
-					draw::String(fonts::ESP, screen.x - l.first / 2, screen.y, color, 2, str.m_String);
-					screen.y += 11;
-				}
-			}
-		}
 	}
 
 #if GUI_ENABLED == true
