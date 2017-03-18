@@ -26,6 +26,7 @@ CMenuWindow::CMenuWindow(std::string name, IWidget* parent) : CBaseWindow(name, 
 #define ADDLABEL(x) tab->AddChild(new CTextLabel("label", tab, x, true))
 
 void CMenuWindow::AddElements() {
+	AddChild(new CTextLabel("notice", this, "NOTICE: MOST CONVARS ARE MISSING FROM MENU! USE CONSOLE!", true));
 	AddTab("aimbot", "Aimbot");
 	CMenuContainer* tab = GetTab("aimbot");
 	/*tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bEnabled));
@@ -55,7 +56,7 @@ void CMenuWindow::AddElements() {
 	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_kAimKey));*/
 	AddTab("esp", "ESP");
 	tab = GetTab("esp");
-	ADDCVAR(g_phESP->v_bEnabled);
+	/*ADDCVAR(g_phESP->v_bEnabled);
 	if (TF) ADDCVAR(g_phESP->v_bShowTank);
 	if (TF) ADDCVAR(g_phESP->v_bBuildingESP);
 	ADDLABEL("Player ESP");
@@ -92,7 +93,7 @@ void CMenuWindow::AddElements() {
 	}
 	ADDLABEL("");
 	ADDCVAR(g_phESP->v_bEntityESP);
-	ADDCVAR(g_phESP->v_bShowEntityID);
+	ADDCVAR(g_phESP->v_bShowEntityID);*/
 	AddTab("triggerbot", "Triggerbot");
 	tab = GetTab("triggerbot");
 	ADDCVAR(&hacks::shared::triggerbot::enabled);
@@ -128,14 +129,14 @@ void CMenuWindow::AddElements() {
 	if (TF) ADDCVAR(&hacks::tf::autoheal::enabled);
 	if (TF) ADDCVAR(&hacks::tf2::antidisguise::enabled);
 	if (TF2C) {
-		ADDCVAR(g_phMisc->v_bTauntSlide);
-		ADDCVAR(g_phMisc->v_bCritHack);
+		//ADDCVAR(g_phMisc->v_bTauntSlide);
+		//ADDCVAR(g_phMisc->v_bCritHack);
 	}
-	ADDCVAR(g_phMisc->v_bAntiAFK);
+	//ADDCVAR(g_phMisc->v_bAntiAFK);
 	// FIXME add CVARS TO MENU!!
 	//ADDCVAR(g_Settings.bCleanScreenshots);
 	ADDCVAR(&cathook);
-	if (TF) ADDCVAR(g_Settings.bIgnoreTaunting);
+	/*if (TF) ADDCVAR(g_Settings.bIgnoreTaunting);
 	//ADDCVAR(g_Settings.bNoVisuals);
 	//if (TF) ADDCVAR(g_Settings.bNoZoom);
 	//ADDCVAR(g_Settings.bSendPackets);
@@ -147,20 +148,20 @@ void CMenuWindow::AddElements() {
 	//ADDCVAR(g_Settings.flForceFOV);
 	// FIXME add ConVars to menu!!
 	//ADDCVAR(g_Settings.sDisconnectMsg);
-	if (TF2C) ADDCVAR(g_Settings.kRollSpeedhack);
-	ADDCVAR(g_phMisc->v_bCleanChat);
+	if (TF2C) ADDCVAR(g_Settings.kRollSpeedhack);*/
+	//ADDCVAR(g_phMisc->v_bCleanChat);
 	if (TF2) {
-		CBaseButton* but = new CBaseButton("schema", tab, "Load Custom Schema", [this](CBaseButton*) {
-			Schema_Reload();
-		});
-		but->Props()->SetString("tooltip", "Loads a custom item schema from ~/.cathook/\nitems_game.txt");
-		tab->AddChild(but);
+		/*CBaseButton* but = new CBaseButton("schema", tab, "Load Custom Schema", [this](CBaseButton*) {
+			//Schema_Reload();
+		});*/
+		//but->Props()->SetString("tooltip", "Loads a custom item schema from ~/.cathook/\nitems_game.txt");
+		//tab->AddChild(but);
 	}
-	if (TF2C) ADDCVAR(g_phMisc->v_bMinigunJump);
+	//if (TF2C) ADDCVAR(g_phMisc->v_bMinigunJump);
 	//ADDCVAR(g_phMisc->v_bDebugInfo);
-	if (HL2DM) ADDCVAR(g_phMisc->v_bFlashlightSpam);
-	ADDCVAR(g_phMisc->v_iFakeLag);
-	ADDCVAR(g_Settings.bFastOutline);
+	//if (HL2DM) ADDCVAR(g_phMisc->v_bFlashlightSpam);
+	//ADDCVAR(g_phMisc->v_iFakeLag);
+	//ADDCVAR(g_Settings.bFastOutline);
 	if (TF) {
 		ADDLABEL("Spy Alert");
 		ADDCVAR(&hacks::tf::spyalert::enabled);
@@ -168,9 +169,9 @@ void CMenuWindow::AddElements() {
 		ADDCVAR(&hacks::tf::spyalert::distance_backstab);
 	}
 	ADDLABEL("Bunnyhop");
-	ADDCVAR(g_phBunnyhop->v_bEnabled);
-	ADDCVAR(g_phBunnyhop->v_bAutoJump);
-	ADDCVAR(g_phBunnyhop->v_iAutoJumpSpeed);
+	//ADDCVAR(g_phBunnyhop->v_bEnabled);
+	//ADDCVAR(g_phBunnyhop->v_bAutoJump);
+	//ADDCVAR(g_phBunnyhop->v_iAutoJumpSpeed);
 	AddTab("antiaim", "Anti-Aim");
 	tab = GetTab("antiaim");
 	ADDCVAR(&hacks::shared::antiaim::enabled);

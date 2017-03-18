@@ -86,8 +86,8 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	}
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
 		if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
-		SAFE_CALL(HACK_DRAW(Misc));
-		SAFE_CALL(HACK_DRAW(ESP));
+		SAFE_CALL(hacks::shared::misc::Draw());
+		SAFE_CALL(hacks::shared::esp::Draw());
 		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
 		Vector screen;
 		for (int i = 0; i < HIGHEST_ENTITY; i++) {

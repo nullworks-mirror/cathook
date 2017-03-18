@@ -153,6 +153,8 @@ void CachedEntity::Update(int idx) {
 	SEGV_END_INFO("Updating entity")
 }
 
+static CatVar fast_vischeck(CV_SWITCH, "fast_vischeck", "0", "Fast VisCheck", "VisCheck only certain player hitboxes");
+
 bool CachedEntity::IsVisible() {
 	PROF_SECTION(CE_IsVisible);
 	if (m_bVisCheckComplete) return m_bAnyHitboxVisible;
@@ -166,7 +168,7 @@ bool CachedEntity::IsVisible() {
 		return true;
 	}
 
-	if (m_Type == ENTITY_PLAYER && g_Settings.bFastVischeck->GetBool()) {
+	if (m_Type == ENTITY_PLAYER && fast_vischeck) {
 		static const int hitboxes[] = { hitbox_t::head, hitbox_t::foot_L, hitbox_t::hand_R, hitbox_t::spine_1 };
 		for (int i = 0; i < 4; i++) {
 			if (m_pHitboxCache->VisibilityCheck(hitboxes[i])) {

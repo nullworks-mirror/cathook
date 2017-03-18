@@ -196,10 +196,6 @@ int colors::EntityF(CachedEntity* ent) {
 		}
 	}
 
-	if (g_phESP->v_bVisCheck->GetBool()) {
-		if (!ent->IsVisible()) result = Transparent(result);
-	}
-
 	return result;
 }
 

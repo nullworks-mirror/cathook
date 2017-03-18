@@ -52,14 +52,6 @@ void RegisterCatCommands() {
 	}
 }
 
-CatVar::CatVar(CatVar_t type, std::string name, std::string value, std::string help, CatEnum* enum_type, std::string long_description, bool hasminmax, float maxv, float minv)
-	: type(type), name(name), defaults(value), desc_short(help), desc_long(long_description), enum_type(enum_type), callbacks{} {
-	min = minv;
-	max = maxv;
-	restricted = hasminmax;
-	registrationArray().push_back(this);
-}
-
 CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long)
 	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(false), callbacks{} {
 	min = 0.0f;

@@ -12,7 +12,7 @@
 
 bool CanPacket_hook(void* thisptr) {
 	SEGV_BEGIN;
-	return g_Settings.bSendPackets->GetBool() && ((CanPacket_t*)hooks::hkNetChannel->GetMethod(hooks::offCanPacket))(thisptr);
+	return send_packets && ((CanPacket_t*)hooks::hkNetChannel->GetMethod(hooks::offCanPacket))(thisptr);
 	SEGV_END;
 	return false;
 }
@@ -68,12 +68,12 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 	// TODO hack FSN hook
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		SVDBG("FSN %i", __LINE__);
-		if (g_Settings.bThirdperson->GetBool() && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
+		if (force_thirdperson && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
 			SVDBG("FSN %i", __LINE__);
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
 		}
 		SVDBG("FSN %i", __LINE__);
-		if (stage == 5 && g_Settings.bShowAntiAim->GetBool() && g_IInput->CAM_IsThirdPerson()) {
+		if (stage == 5 && show_antiaim && g_IInput->CAM_IsThirdPerson()) {
 			SVDBG("FSN %i", __LINE__);
 			if (CE_GOOD(g_pLocalPlayer->entity)) {
 				CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 4) = g_Settings.last_angles.x;
@@ -105,9 +105,11 @@ void OverrideView_hook(void* thisptr, CViewSetup* setup) {
 	SEGV_END;
 }
 
+static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat", "Removes newlines from chat");
+
 bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 	SEGV_BEGIN;
-	if (g_phMisc->v_bCleanChat->GetBool()) {
+	if (clean_chat) {
 		if (type == 4) {
 			int s = buf.GetNumBytesLeft();
 			char* data = new char[s];
@@ -116,7 +118,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 			int j = 0;
 			for (int i = 0; i < 3; i++) {
 				while (char c = data[j++]) {
-					if (c == '\n' && (i == 1 || i == 2)) data[j - 1] = ' ';
+					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '?';
 				}
 			}
 			buf = bf_read(data, s);
@@ -132,10 +134,7 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 	g_IEngine->ExecuteClientCmd("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();
 	hacks::shared::airstuck::Reset();
-	LEVEL_INIT(Bunnyhop);
-	LEVEL_INIT(ESP);
 //	LEVEL_SHUTDOWN(FollowBot);
-	LEVEL_INIT(Misc);
 	//if (TF) LEVEL_INIT(SpyAlert);
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
@@ -148,10 +147,6 @@ void LevelShutdown_hook(void* thisptr) {
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();
 	hacks::shared::airstuck::Reset();
-	LEVEL_SHUTDOWN(Bunnyhop);
-	LEVEL_SHUTDOWN(ESP);
-//	LEVEL_SHUTDOWN(FollowBot);
-	LEVEL_SHUTDOWN(Misc);
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
 }

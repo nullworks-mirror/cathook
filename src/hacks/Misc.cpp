@@ -15,6 +15,10 @@
 #include <pwd.h>
 #include <fcntl.h>
 
+#include "../beforecheaders.h"
+#include <fstream>
+#include "../aftercheaders.h"
+
 #include <link.h>
 #include "../sharedobj.h"
 
@@ -25,36 +29,206 @@
 #include "../netmessage.h"
 #include "../copypasted/CSignature.h"
 
-DEFINE_HACK_SINGLETON(Misc);
+namespace hacks { namespace shared { namespace misc {
 
-void CC_SayLines(const CCommand& args) {
-	char cmd[256];
-	sprintf(cmd, "say %s", args.ArgS());
-	for (int i = 0; i < strlen(cmd); i++) {
-		if (cmd[i] == '^') cmd[i] = '\n';
+void CreateMove() {
+	static bool flswitch = false;
+
+	if (TF2C && tauntslide)
+		RemoveCondition(LOCAL_E, TFCond_Taunting);
+	bool crit = IsAttackACrit(g_pUserCmd);
+	if (crit_suppress && !crit_hack && WeaponCanCrit()) {
+		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
+			g_pUserCmd->buttons &= ~IN_ATTACK;
+		}
+	} else if (((GetWeaponMode(LOCAL_E) == weapon_melee && crit_melee) || crit_hack) && RandomCrits() && WeaponCanCrit()) {
+		if (!crit) g_pUserCmd->buttons &= ~IN_ATTACK;
 	}
-	g_IEngine->ServerCmd(cmd);
+
+	if (flashlight_spam) {
+		if (flswitch && !g_pUserCmd->impulse) g_pUserCmd->impulse = 100;
+		flswitch = !flswitch;
+	}
+	if (anti_afk) {
+		g_pUserCmd->sidemove = RandFloatRange(-450.0, 450.0);
+		g_pUserCmd->forwardmove  = RandFloatRange(-450.0, 450.0);
+		g_pUserCmd->buttons = rand();
+	}
 }
 
-void CC_Shutdown(const CCommand& args) {
-	hack::Shutdown();
+void Draw() {
+	if (crit_info && CE_GOOD(LOCAL_W)) {
+		if (crit_hack) {
+			AddCenterString(colors::red, "FORCED CRITS: ON");
+		}
+		if (TF2) {
+			if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465, 0)(RAW_ENT(LOCAL_W)))
+				AddCenterString(colors::white, "Random crits are disabled");
+			else {
+				if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W)))
+					AddCenterString(colors::white, "Weapon can't randomly crit");
+				else
+					AddCenterString(colors::white, "Weapon can randomly crit");
+			}
+			AddCenterString(colors::white, "Bucket: %.2f", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u));
+		}
+	}
+
+
+	if (!debug_info) return;
+		if (CE_GOOD(g_pLocalPlayer->weapon())) {
+			AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
+			//AddSideString(colors::white, "flNextPrimaryAttack: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));
+			//AddSideString(colors::white, "nTickBase: %f", (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * gvars->interval_per_tick);
+			AddSideString(colors::white, "CanShoot: %i", CanShoot());
+			//AddSideString(colors::white, "Damage: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage));
+			if (TF2) AddSideString(colors::white, "DefIndex: %i", CE_INT(g_pLocalPlayer->weapon(), netvar.iItemDefinitionIndex));
+			//AddSideString(colors::white, "GlobalVars: 0x%08x", gvars);
+			//AddSideString(colors::white, "realtime: %f", gvars->realtime);
+			//AddSideString(colors::white, "interval_per_tick: %f", gvars->interval_per_tick);
+			//if (TF2) AddSideString(colors::white, "ambassador_can_headshot: %i", (gvars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) > 0.95);
+			AddSideString(colors::white, "WeaponMode: %i", GetWeaponMode(g_pLocalPlayer->entity));
+			AddSideString(colors::white, "ToGround: %f", DistanceToGround(g_pLocalPlayer->v_Origin));
+			AddSideString(colors::white, "ServerTime: %f", CE_FLOAT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick);
+			AddSideString(colors::white, "CurTime: %f", g_GlobalVars->curtime);
+			AddSideString(colors::white, "FrameCount: %i", g_GlobalVars->framecount);
+			float speed, gravity;
+			GetProjectileData(g_pLocalPlayer->weapon(), speed, gravity);
+			AddSideString(colors::white, "ALT: %i", g_pLocalPlayer->bAttackLastTick);
+			AddSideString(colors::white, "Speed: %f", speed);
+			AddSideString(colors::white, "Gravity: %f", gravity);
+			AddSideString(colors::white, "CIAC: %i", *(bool*)(RAW_ENT(LOCAL_W) + 2380));
+			if (TF2) AddSideString(colors::white, "Melee: %i", vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 1860 / 4, 0)(RAW_ENT(LOCAL_W)));
+			if (TF2) AddSideString(colors::white, "Bucket: %.2f", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u));
+			//if (TF2C) AddSideString(colors::white, "Seed: %i", *(int*)(sharedobj::client->lmap->l_addr + 0x00D53F68ul));
+			//AddSideString(colors::white, "IsZoomed: %i", g_pLocalPlayer->bZoomed);
+			//AddSideString(colors::white, "CanHeadshot: %i", CanHeadshot());
+			//AddSideString(colors::white, "IsThirdPerson: %i", iinput->CAM_IsThirdPerson());
+			//if (TF2C) AddSideString(colors::white, "Crits: %i", s_bCrits);
+			//if (TF2C) AddSideString(colors::white, "CritMult: %i", RemapValClampedNC( CE_INT(LOCAL_E, netvar.iCritMult), 0, 255, 1.0, 6 ));
+			for (int i = 0; i < HIGHEST_ENTITY; i++) {
+				CachedEntity* e = ENTITY(i);
+				if (CE_GOOD(e)) {
+					if (e->m_Type == EntityType::ENTITY_PROJECTILE) {
+						//logging::Info("Entity %i [%s]: V %.2f (X: %.2f, Y: %.2f, Z: %.2f) ACC %.2f (X: %.2f, Y: %.2f, Z: %.2f)", i, RAW_ENT(e)->GetClientClass()->GetName(), e->m_vecVelocity.Length(), e->m_vecVelocity.x, e->m_vecVelocity.y, e->m_vecVelocity.z, e->m_vecAcceleration.Length(), e->m_vecAcceleration.x, e->m_vecAcceleration.y, e->m_vecAcceleration.z);
+						AddSideString(colors::white, "Entity %i [%s]: V %.2f (X: %.2f, Y: %.2f, Z: %.2f) ACC %.2f (X: %.2f, Y: %.2f, Z: %.2f)", i, RAW_ENT(e)->GetClientClass()->GetName(), e->m_vecVelocity.Length(), e->m_vecVelocity.x, e->m_vecVelocity.y, e->m_vecVelocity.z, e->m_vecAcceleration.Length(), e->m_vecAcceleration.x, e->m_vecAcceleration.y, e->m_vecAcceleration.z);
+					}
+				}
+			}//AddSideString(draw::white, draw::black, "???: %f", NET_FLOAT(g_pLocalPlayer->entity, netvar.test));
+			//AddSideString(draw::white, draw::black, "VecPunchAngle: %f %f %f", pa.x, pa.y, pa.z);
+			//draw::DrawString(10, y, draw::white, draw::black, false, "VecPunchAngleVel: %f %f %f", pav.x, pav.y, pav.z);
+			//y += 14;
+			//AddCenterString(draw::font_handle, input->GetAnalogValue(AnalogCode_t::MOUSE_X), input->GetAnalogValue(AnalogCode_t::MOUSE_Y), draw::white, L"S\u0FD5");
+		}
 }
 
-void CC_AddFriend(const CCommand& args) {
-	if (args.ArgC() < 1) return;
-	if (!atoi(args[1])) return;
-	logging::Info("Adding friend %s", args.Arg(1));
-	friends[n_friends++] = atoi(args[1]);
+void Schema_Reload() {
+	static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 4C 0F B6 7D 14 C7 04 ? ? ? ? 01 8B 5D 18 8B 75 0C 89 5C 24 04 E8 ? ? ? ? 89 F8 C7 45 C8 00 00 00 00 8D 7D C8 84 C0 8B 45 10 C7 45 CC");
+	typedef void(*InitSchema_t)(void*, void*, CUtlBuffer& buffer, bool byte, unsigned version);
+	static InitSchema_t InitSchema = (InitSchema_t)InitSchema_s;
+	static uintptr_t GetItemSchema_s = gSignatures.GetClientSignature("55 89 E5 83 EC 18 89 5D F8 8B 1D ? ? ? ? 89 7D FC 85 DB 74 12 89 D8 8B 7D FC 8B 5D F8 89 EC 5D C3 8D B6 00 00 00 00 C7 04 24 A8 06 00 00 E8 ? ? ? ? B9 AA 01 00 00 89 C3 31 C0 89 DF");
+	typedef void*(*GetItemSchema_t)(void);
+	static GetItemSchema_t GetItemSchema = (GetItemSchema_t)GetItemSchema_s;//(*(uintptr_t*)GetItemSchema_s + GetItemSchema_s + 4);
+
+	logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
+	void* itemschema = (GetItemSchema() + 4);
+	void* data;
+	passwd* pwd = getpwuid(getuid());
+	char* user = pwd->pw_name;
+	char* path = strfmt("/home/%s/.cathook/items_game.txt", user);
+	FILE* file = fopen(path, "r");
+	delete [] path;
+	fseek(file, 0L, SEEK_END);
+	char buffer[4 * 1000 * 1000];
+	size_t len = ftell(file);
+	rewind(file);
+	buffer[len + 1] = 0;
+	fread(&buffer, sizeof(char), len, file);
+	fclose(file);
+	CUtlBuffer buf(&buffer, 4 * 1000 * 1000, 9);
+	logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
+	InitSchema(0, itemschema, buf, false, 0xDEADCA7);
 }
 
-void CC_AddRage(const CCommand& args) {
-	if (args.ArgC() < 1) return;
-	if (!atoi(args[1])) return;
-	logging::Info("Adding rage %s", args.Arg(1));
-	rage[n_rage++] = atoi(args[1]);
-}
+CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info", "Shows some debug info in-game");
+CatVar flashlight_spam(CV_SWITCH, "flashlight", "0", "Flashlight spam", "HL2DM flashlight spam");
+CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info"); // TODO separate
+CatVar crit_hack(CV_SWITCH, "crit_hack", "0", "Crithack");
+CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
+CatVar crit_suppress(CV_SWITCH, "crit_suppress", "0", "Disable random crits", "Can help saving crit bucket for forced crits");
+CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK", "Sends random commands to prevent being kicked from server");
+CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide", "Allows moving and shooting while taunting");
 
-void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char* ft, unsigned acc_offset) {
+CatCommand name("name", "Change name", [](const CCommand& args) {
+	if (args.ArgC() < 2) {
+		logging::Info("Set a name, silly");
+		return;
+	}
+	if (g_Settings.bInvalid) {
+		logging::Info("Only works ingame!");
+		return;
+	}
+	std::string new_name(args.ArgS());
+	ReplaceString(new_name, "\\n", "\n");
+	NET_SetConVar setname("name", new_name.c_str());
+	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+	if (ch) {
+		setname.SetNetChannel(ch);
+		setname.SetReliable(false);
+		ch->SendNetMsg(setname, false);
+	}
+});
+CatCommand save_settings("save", "Save settings (optional filename)", [](const CCommand& args) {
+	std::string filename("lastcfg");
+	if (args.ArgC() > 1) {
+		filename = std::string(args.Arg(1));
+	}
+	std::string path = format(g_pszTFPath, "cfg/cat_", filename, ".cfg");
+	logging::Info("Saving settings to %s", path.c_str());
+	std::ofstream file(path, std::ios::out);
+	if (file.bad()) {
+		logging::Info("Couldn't open the file!");
+		return;
+	}
+	for (auto i : g_ConVars) {
+		if (i) {
+			if (strcmp(i->GetString(), i->GetDefault())) {
+				file << i->GetName() << " \"" << i->GetString() << "\"";
+			}
+		}
+	}
+	file.close();
+});
+CatCommand say_lines("say_lines", "Say with newlines (\\n)", [](const CCommand& args) {
+	std::string message(args.ArgS());
+	ReplaceString(message, "\\n", "\n");
+	std::string cmd = format("say ", message);
+	g_IEngine->ServerCmd(cmd.c_str());
+});
+CatCommand disconnect("disconnect", "Disconnect with custom reason", [](const CCommand& args) {
+	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+	if (!ch) return;
+	ch->Shutdown(args.ArgS());
+});
+CatCommand schema("schema", "Load custom schema", Schema_Reload);
+CatCommand disconnect_vac("disconnect_vac", "Disconnect (fake VAC)", []() {
+	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+	if (!ch) return;
+	ch->Shutdown("VAC banned from secure server\n");
+});
+CatCommand set_value("set", "Set value", [](const CCommand& args) {
+	if (args.ArgC() < 2) return;
+	ConVar* var = g_ICvar->FindVar(args.Arg(1));
+	if (!var) return;
+	std::string value(args.Arg(2));
+	ReplaceString(value, "\\n", "\n");
+	var->SetValue(value.c_str());
+	logging::Info("Set '%s' to '%s'", args.Arg(1), value.c_str());
+});
+
+}}}
+
+/*void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char* ft, unsigned acc_offset) {
 	bool forcetable = ft && strlen(ft);
 	if (!forcetable || !strcmp(ft, table->GetName()))
 		logging::Info("==== TABLE: %s", table->GetName());
@@ -98,185 +272,18 @@ void CC_DumpVars(const CCommand& args) {
 	logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
 	const char* ft = (args.ArgC() > 1 ? args[2] : 0);
 	DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
-}
+}*/
 
-void CC_ResetLists(const CCommand& args) {
-	n_friends = 0;
-	n_rage = 0;
-}
-
-void CC_DumpPlayers(const CCommand& args) {
-	for (int i = 0; i < 33 && i < HIGHEST_ENTITY; i++) {
-		player_info_s* pi = new player_info_s;
-		g_IEngine->GetPlayerInfo(i, pi);
-		logging::Info("[%i] FriendID: %lu ; Name: %s", i, pi->friendsID, pi->name);
-	}
-}
-
-void LockConCommand(const char* name, bool lock) {
-	ConCommandBase* cmd = g_ICvar->FindCommandBase(name);
-	if (lock) {
-		// TODO LockConCommand FIX!
-		cmd->m_nFlags |= FCVAR_CHEAT;
-		cmd->m_nFlags |= FCVAR_REPLICATED;
-	} else {
-		cmd->m_nFlags &= ~FCVAR_CHEAT;
-		cmd->m_nFlags &= ~FCVAR_REPLICATED;
-	}
-}
-
-void CC_SaveConVars(const CCommand& args) {
-	std::string filename("lastcfg");
-	if (args.ArgC() > 1) {
-		filename = std::string(args.Arg(1));
-	}
-	char* path = strfmt("%scfg/cat_%s.cfg", g_pszTFPath, filename.c_str());
-	logging::Info("Saving settings to %s", path);
-	FILE* file = fopen(path, "w");
-	if (!file) {
-		logging::Info("Couldn't open the file!");
-		return;
-	}
-	for (auto i : g_ConVars) {
-		if (i) {
-			if (strcmp(i->GetString(), i->GetDefault())) {
-				//logging::Info("Saving %s", i->GetName());
-				//logging::Info("Value: %s", i->GetString());
-				fprintf(file, "%s \"%s\"\n", i->GetName(), i->GetString());
-			}
-		}
-	}
-	fclose(file);
-}
-
-void CC_Unrestricted(const CCommand& args) {
-	logging::Info("executing '%s'", args.ArgS());
-	g_IEngine->ClientCmd_Unrestricted(args.ArgS());
-}
-
-void LockConCommands(bool lock) {
-	LockConCommand("sv_cheats", lock);
-}
-
-ConCommandBase* teamname = 0;
-
-void CC_SetName(const CCommand& args) {
-	if (args.ArgC() < 2) {
-		logging::Info("Set a name, silly");
-		return;
-	}
-	if (g_Settings.bInvalid) {
-		logging::Info("Only works ingame!");
-		return;
-	}
-
-	char* name = new char[32];
-	snprintf(name, 32, "%s", args.Arg(1));
-	if (args.ArgC() > 1 && atoi(args.Arg(2))) {
-		for (int i = 0; i < strlen(name); i++) {
-			if (name[i] == '^') name[i] = '\n';
-		}
-	}
-	NET_SetConVar setname("name", (const char*)name);
-	//logging::Info("Created!");
-	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-	if (ch) {
-		setname.SetNetChannel(ch);
-		setname.SetReliable(false);
-		//logging::Info("Sending!");
-		ch->SendNetMsg(setname, false);
-	}
-	delete [] name;
-}
-
-void CC_Lockee(const CCommand& args) {
-	if (args.ArgC() > 1) {
-		LockConCommands(atoi(args.Arg(1)));
-	}
-	ConVar* name = g_ICvar->FindVar("name");
-	/*name->m_fnChangeCallback = 0;
-	logging::Info("callback: 0x%08x", name->m_fnChangeCallback);
-	name->SetValue(g_phMisc->v_strName->GetString());
-	name->InternalSetValue(g_phMisc->v_strName->GetString());
-	name->m_StringLength = strlen(g_phMisc->v_strName->GetString());
-	name->m_pszString = (char*)g_phMisc->v_strName->GetString();
-	logging::Info("set %s, value: %s", g_phMisc->v_strName->GetString(), name->GetString());
-*/}
-
-void CC_Teamname(const CCommand& args) {
-	if (!teamname) {
-		logging::Info("searching");
-		teamname = g_ICvar->FindCommandBase("tournament_teamname");
-	}
-	logging::Info("Teamname 0x%08x", teamname);
-	if (!teamname) return;
-
-	/*CCommand cmd;
-	char* buf = new char[256];
-	sprintf(buf, "tournament_teamname %s", args.Arg(1));
-	logging::Info("Z");
-	cmd.Tokenize(buf);
-	logging::Info("A");
-	teamname->Dispatch(cmd);
-	logging::Info("B");*/
-}
-
-void CC_SayInfo(const CCommand& args) {
-	int id = atoi(args.Arg(1));
-	player_info_t info;
-	if (!g_IEngine->GetPlayerInfo(id, &info)) return;
-	//char* buf = new char[256];
-
-}
-
-void CC_Disconnect(const CCommand& args) {
-	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-	//logging::Info("userid %i rate %i", client->GetUserID(), client->GetRate());
-	//INetChannel* ch = client->GetNetChannel();
-	if (!ch) {
-		logging::Info("No net channel!");
-		return;
-	}
-	logging::Info("version %i", ch->GetProtocolVersion());
-	ch->Shutdown(args.ArgS());
-}
-
-void CC_Misc_Disconnect_VAC(const CCommand& args) {
-	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-	if (!ch) {
-		logging::Info("No net channel!");
-		return;
-	}
-	//logging::Info("version %i", ch->GetProtocolVersion());
-	ch->Shutdown("VAC banned from secure server\n");
-}
-
-void CC_DumpAttribs(const CCommand& args) {
+/*void CC_DumpAttribs(const CCommand& args) {
 	if (CE_GOOD(g_pLocalPlayer->weapon())) {
 		for (int i = 0; i < 15; i++) {
 			logging::Info("%i %f", CE_INT(g_pLocalPlayer->weapon(), netvar.AttributeList + i * 12),
 					CE_FLOAT(g_pLocalPlayer->weapon(), netvar.AttributeList + i * 12 + 4));
 		}
 	}
-}
+}*/
 
-void CC_SetValue(const CCommand& args) {
-	if (args.ArgC() < 2) return;
-	ConVar* var = g_ICvar->FindVar(args.Arg(1));
-	if (!var) return;
-	char* value = new char[256];
-	snprintf(value, 256, "%s", args.Arg(2));
-	if (args.ArgC() > 2 && atoi(args.Arg(3))) {
-		for (size_t i = 0; i < strlen(value); i++) {
-			if (value[i] == '^') value[i] = '\n';
-		}
-	}
-	var->SetValue(value);
-	logging::Info("Set '%s' to '%s'", args.Arg(1), value);
-	delete [] value;
-}
-
-void CC_DumpConds(const CCommand& args) {
+/*void CC_DumpConds(const CCommand& args) {
 	if (args.ArgC() < 1) return;
 	if (!atoi(args[1])) return;
 	int idx = atoi(args[1]);
@@ -288,41 +295,9 @@ void CC_DumpConds(const CCommand& args) {
 	}
 	condition_data_s d2 = FromOldNetvars(ent);
 	logging::Info("0x%08x 0x%08x 0x%08x 0x%08x", d2.cond_0, d2.cond_1, d2.cond_2, d2.cond_3);
-}
+}*/
 
-void Schema_Reload() {
-	static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 4C 0F B6 7D 14 C7 04 ? ? ? ? 01 8B 5D 18 8B 75 0C 89 5C 24 04 E8 ? ? ? ? 89 F8 C7 45 C8 00 00 00 00 8D 7D C8 84 C0 8B 45 10 C7 45 CC");
-	typedef void(*InitSchema_t)(void*, void*, CUtlBuffer& buffer, bool byte, unsigned version);
-	static InitSchema_t InitSchema = (InitSchema_t)InitSchema_s;
-	static uintptr_t GetItemSchema_s = gSignatures.GetClientSignature("55 89 E5 83 EC 18 89 5D F8 8B 1D ? ? ? ? 89 7D FC 85 DB 74 12 89 D8 8B 7D FC 8B 5D F8 89 EC 5D C3 8D B6 00 00 00 00 C7 04 24 A8 06 00 00 E8 ? ? ? ? B9 AA 01 00 00 89 C3 31 C0 89 DF");
-	typedef void*(*GetItemSchema_t)(void);
-	static GetItemSchema_t GetItemSchema = (GetItemSchema_t)GetItemSchema_s;//(*(uintptr_t*)GetItemSchema_s + GetItemSchema_s + 4);
-
-	logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-	void* itemschema = (GetItemSchema() + 4);
-	void* data;
-	passwd* pwd = getpwuid(getuid());
-	char* user = pwd->pw_name;
-	char* path = strfmt("/home/%s/.cathook/items_game.txt", user);
-	FILE* file = fopen(path, "r");
-	delete [] path;
-	fseek(file, 0L, SEEK_END);
-	char buffer[4 * 1000 * 1000];
-	size_t len = ftell(file);
-	rewind(file);
-	buffer[len + 1] = 0;
-	fread(&buffer, sizeof(char), len, file);
-	fclose(file);
-	CUtlBuffer buf(&buffer, 4 * 1000 * 1000, 9);
-	logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-	InitSchema(0, itemschema, buf, false, 0xDEADCA7);
-}
-
-void CC_Misc_Schema(const CCommand& args) {
-	Schema_Reload();
-}
-
-Misc::Misc() {
+/*Misc::Misc() {
 	if (TF2C) v_bMinigunJump = new CatVar(CV_SWITCH, "minigun_jump", "0", "Minigun Jump", NULL, "Allows you to jump while with minigun spun up");
 	v_bDebugInfo = new CatVar(CV_SWITCH, "misc_debug", "0", "Debug info", NULL, "Log stuff to console, enable this if tf2 crashes");
 	c_Name = CreateConCommand(CON_PREFIX "name", CC_SetName, "Sets custom name");
@@ -357,225 +332,4 @@ Misc::Misc() {
 	if (TF) v_bSuppressCrits = new CatVar(CV_SWITCH, "suppress_crits", "1", "Suppress non-forced crits", NULL, "Helps to save the crit bucket");
 	//if (TF2) v_bHookInspect = new CatVar(CV_SWITCH, "hook_inspect", "0", "Hook CanInspect", NULL, "Once enabled, can't be turned off. cathook can't be unloaded after enabling it");
 	//eventManager->AddListener(&listener, "player_death", false);
-}
-
-int sa_switch = 0;
-
-bool s_bCrits;
-
-float clampNC( float val, float minVal, float maxVal )
-{
-	val = fpmax(minVal, val);
-	val = fpmin(maxVal, val);
-	return val;
-}
-
-float RemapValClampedNC( float val, float A, float B, float C, float D)
-{
-	if ( A == B )
-		return val >= B ? D : C;
-	float cVal = (val - A) / (B - A);
-	cVal = clampNC( cVal, 0.0f, 1.0f );
-
-	return C + (D - C) * cVal;
-}
-
-
-int ciac_s = false;
-float lastcheck = 0;
-
-bool canmeleecrit(IClientEntity* weapon) {
-	IClientEntity* owner = RAW_ENT(LOCAL_E);//vfunc<IClientEntity*(*)(IClientEntity*)>(weapon, 0, 0)(weapon);
-	if (owner) {
-
-	}
-	return false;
-}
-
-void Misc::ProcessUserCmd(CUserCmd* cmd) {
-	static bool flswitch = false;
-
-	/*if (TF2 && v_bHookInspect->GetBool()) {
-		if (CE_GOOD(LOCAL_W)) {
-			//logging::Info("%i", vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), offCanInspect, 0)(RAW_ENT(LOCAL_W)));
-			uintptr_t* vtable = *(uintptr_t**)(RAW_ENT(LOCAL_W));
-			if (vtable[offCanInspect] != (uintptr_t)CanInspect_hook) {
-				uintptr_t patch = (uintptr_t)CanInspect_hook;
-				Patch((void*)((uintptr_t)vtable + offCanInspect * 4), &patch, 4);
-				//vtable[offCanInspect] = (uintptr_t*)CanInspect_hook;
-			}
-			//logging::Info("%i", vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), offCanInspect, 0)(RAW_ENT(LOCAL_W)));
-		}
-	}
-*/
-	if (TF2C && v_bTauntSlide->GetBool())
-		RemoveCondition(LOCAL_E, TFCond_Taunting);
-	bool crit = IsAttackACrit(cmd);
-	if (v_bSuppressCrits->GetBool() && !v_bCritHack->GetBool() && WeaponCanCrit()) {
-		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
-			cmd->buttons &= ~IN_ATTACK;
-			//logging::Info("suppressing crit");
-		}
-	} else if (v_bCritHack->GetBool() && RandomCrits() && WeaponCanCrit()) {
-		if (!crit) cmd->buttons &= ~IN_ATTACK;
-	}
-
-	g_Settings.bSendPackets->SetValue(true);
-	if (v_iFakeLag->GetInt()) {
-		static int fakelag = 0;
-		if (!g_phBunnyhop->m_bFakeLagFix && !(cmd->buttons & IN_ATTACK)) {
-			g_Settings.bSendPackets->SetValue(false);
-		}
-		if (fakelag > v_iFakeLag->GetInt()) {
-			fakelag = 0;
-			g_Settings.bSendPackets->SetValue(true);
-		}
-		fakelag++;
-	}
-	if (v_bFlashlightSpam->GetBool()) {
-		if (flswitch && !cmd->impulse) cmd->impulse = 100;
-		flswitch = !flswitch;
-	}
-	if (v_bAntiAFK->GetBool()) {
-		cmd->sidemove = RandFloatRange(-450.0, 450.0);
-		cmd->forwardmove  = RandFloatRange(-450.0, 450.0);
-		cmd->buttons = rand();
-	}
-	/*if (v_bDebugCrits->GetBool()) {
-		static float last = 0.0f;
-		if (gvars->curtime - last >= 1.0f) {
-			RandomSeed(cmd->random_seed);
-			float chance = 0.02f * RemapValClampedNC( CE_INT(LOCAL_E, netvar.iCritMult), 0, 255, 1.0, 6 );
-			s_bCrits = (RandomInt(0, 10000) < chance * 10000);
-			last = gvars->curtime;
-			RandomSeed(cmd->random_seed);
-		}
-	}*/
-	//SetEntityValue<int>(g_pLocalPlayer->entity, eoffsets.iCond, g_pLocalPlayer->cond_0 &~ cond::taunting);
-	/*if (false && v_strName->GetString()[0] != '\0') {
-		//logging::Info("Name: %s", v_strName->GetString());
-		NET_SetConVar setname("name", v_strName->GetString());
-		//logging::Info("Created!");
-		INetChannel* ch = (INetChannel*)engineClient->GetNetChannelInfo();
-		setname.SetNetChannel(ch);
-		setname.SetReliable(false);
-		//logging::Info("Sending!");
-		ch->SendNetMsg(setname, false);
-		//logging::Info("Sent!");
-		//ch->SendNetMsg(*(INetMessage*)&setname);
-		//setname.WriteToBuffer(0);
-	}*/
-	if (v_bFastCrouch->GetBool()) {
-		if (g_GlobalVars->tickcount % 4 == 0) {
-			cmd->buttons &= ~IN_DUCK;
-		}
-	}
-	static int curindex = 0;
-	static int lastsay = 0;
-	if (lastsay && lastsay < 200) {
-		lastsay++;
-	} else lastsay = 0;
-	if (v_bInfoSpam->GetBool() && (lastsay == 0)) {
-		/*IClientEntity* ent = ENTITY(curindex++);
-		if (curindex >= 64) curindex = 0;
-		//logging::Info("Making string for %i", curindex);
-		if (!ent || ent->IsDormant()) goto breakif;
-		//logging::Info("a");
-		if (ent->GetClientClass()->m_ClassID != g_pClassID->C_Player) goto breakif;
-		//logging::Info("a");
-		if (NET_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team) goto breakif;
-		//logging::Info("Making string for %i", curindex);
-		const char* str = MakeInfoString(ent);
-		if (str) {
-			engineClient->ServerCmd(strfmt("say %s", str));
-			lastsay = 1;
-		}*/
-	}
-}
-
-void Misc::Draw() {
-	if (v_bDebugCrits->GetBool() && CE_GOOD(LOCAL_W)) {
-		if (v_bCritHack->GetBool()) {
-			AddCenterString(colors::red, "FORCED CRITS: ON");
-		}
-		if (TF2) {
-			if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465, 0)(RAW_ENT(LOCAL_W)))
-				AddCenterString(colors::white, "Random crits are disabled");
-			else {
-				if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W)))
-					AddCenterString(colors::white, "Weapon can't randomly crit");
-				else
-					AddCenterString(colors::white, "Weapon can randomly crit");
-			}
-			AddCenterString(colors::white, "Bucket: %.2f", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u));
-		}
-	}
-
-
-	if (!v_bDebugInfo->GetBool())return;
-	/*if (!input->IsButtonDown(ButtonCode_t::KEY_F)) {
-		baseClient->IN_ActivateMouse();
-	} else {
-		baseClient->IN_DeactivateMouse();
-	}*/
-
-		if (CE_GOOD(g_pLocalPlayer->weapon())) {
-			if (v_bDebugCrits->GetBool()) {
-				if (TF2) {
-					if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465, 0)(RAW_ENT(LOCAL_W)))
-						AddCenterString(colors::white, "Random crits are disabled");
-					else {
-						if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W)))
-							AddCenterString(colors::white, "Weapon can't randomly crit");
-						else
-							AddCenterString(colors::white, "Weapon can randomly crit");
-					}
-				}
-
-
-			}
-			AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
-			//AddSideString(colors::white, "flNextPrimaryAttack: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));
-			//AddSideString(colors::white, "nTickBase: %f", (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * gvars->interval_per_tick);
-			AddSideString(colors::white, "CanShoot: %i", CanShoot());
-			//AddSideString(colors::white, "Damage: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage));
-			if (TF2) AddSideString(colors::white, "DefIndex: %i", CE_INT(g_pLocalPlayer->weapon(), netvar.iItemDefinitionIndex));
-			//AddSideString(colors::white, "GlobalVars: 0x%08x", gvars);
-			//AddSideString(colors::white, "realtime: %f", gvars->realtime);
-			//AddSideString(colors::white, "interval_per_tick: %f", gvars->interval_per_tick);
-			//if (TF2) AddSideString(colors::white, "ambassador_can_headshot: %i", (gvars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) > 0.95);
-			AddSideString(colors::white, "WeaponMode: %i", GetWeaponMode(g_pLocalPlayer->entity));
-			AddSideString(colors::white, "ToGround: %f", DistanceToGround(g_pLocalPlayer->v_Origin));
-			AddSideString(colors::white, "ServerTime: %f", CE_FLOAT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick);
-			AddSideString(colors::white, "CurTime: %f", g_GlobalVars->curtime);
-			AddSideString(colors::white, "FrameCount: %i", g_GlobalVars->framecount);
-			float speed, gravity;
-			GetProjectileData(g_pLocalPlayer->weapon(), speed, gravity);
-			AddSideString(colors::white, "ALT: %i", g_pLocalPlayer->bAttackLastTick);
-			AddSideString(colors::white, "Speed: %f", speed);
-			AddSideString(colors::white, "Gravity: %f", gravity);
-			AddSideString(colors::white, "CIAC: %i", *(bool*)(RAW_ENT(LOCAL_W) + 2380));
-			if (TF2) AddSideString(colors::white, "Melee: %i", vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 1860 / 4, 0)(RAW_ENT(LOCAL_W)));
-			if (TF2) AddSideString(colors::white, "Last CIAC: %.2f", lastcheck);
-			if (TF2) AddSideString(colors::white, "Bucket: %.2f", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u));
-			//if (TF2C) AddSideString(colors::white, "Seed: %i", *(int*)(sharedobj::client->lmap->l_addr + 0x00D53F68ul));
-			//AddSideString(colors::white, "IsZoomed: %i", g_pLocalPlayer->bZoomed);
-			//AddSideString(colors::white, "CanHeadshot: %i", CanHeadshot());
-			//AddSideString(colors::white, "IsThirdPerson: %i", iinput->CAM_IsThirdPerson());
-			//if (TF2C) AddSideString(colors::white, "Crits: %i", s_bCrits);
-			//if (TF2C) AddSideString(colors::white, "CritMult: %i", RemapValClampedNC( CE_INT(LOCAL_E, netvar.iCritMult), 0, 255, 1.0, 6 ));
-			for (int i = 0; i < HIGHEST_ENTITY; i++) {
-				CachedEntity* e = ENTITY(i);
-				if (CE_GOOD(e)) {
-					if (e->m_Type == EntityType::ENTITY_PROJECTILE) {
-						//logging::Info("Entity %i [%s]: V %.2f (X: %.2f, Y: %.2f, Z: %.2f) ACC %.2f (X: %.2f, Y: %.2f, Z: %.2f)", i, RAW_ENT(e)->GetClientClass()->GetName(), e->m_vecVelocity.Length(), e->m_vecVelocity.x, e->m_vecVelocity.y, e->m_vecVelocity.z, e->m_vecAcceleration.Length(), e->m_vecAcceleration.x, e->m_vecAcceleration.y, e->m_vecAcceleration.z);
-						AddSideString(colors::white, "Entity %i [%s]: V %.2f (X: %.2f, Y: %.2f, Z: %.2f) ACC %.2f (X: %.2f, Y: %.2f, Z: %.2f)", i, RAW_ENT(e)->GetClientClass()->GetName(), e->m_vecVelocity.Length(), e->m_vecVelocity.x, e->m_vecVelocity.y, e->m_vecVelocity.z, e->m_vecAcceleration.Length(), e->m_vecAcceleration.x, e->m_vecAcceleration.y, e->m_vecAcceleration.z);
-					}
-				}
-			}//AddSideString(draw::white, draw::black, "???: %f", NET_FLOAT(g_pLocalPlayer->entity, netvar.test));
-			//AddSideString(draw::white, draw::black, "VecPunchAngle: %f %f %f", pa.x, pa.y, pa.z);
-			//draw::DrawString(10, y, draw::white, draw::black, false, "VecPunchAngleVel: %f %f %f", pav.x, pav.y, pav.z);
-			//y += 14;
-			//AddCenterString(draw::font_handle, input->GetAnalogValue(AnalogCode_t::MOUSE_X), input->GetAnalogValue(AnalogCode_t::MOUSE_Y), draw::white, L"S\u0FD5");
-		}
-}
+}*/

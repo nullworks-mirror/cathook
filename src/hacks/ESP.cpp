@@ -10,9 +10,42 @@
 #include "../common.h"
 #include "../sdk.h"
 
-DEFINE_HACK_SINGLETON(ESP);
+namespace hacks { namespace shared { namespace esp {
 
-const char* classes[] = {
+CatVar local_esp(CV_SWITCH, "esp_local", "1", "ESP Local Player", "Shows local player ESP in thirdperson");
+CatVar buildings(CV_SWITCH, "esp_buildings", "1", "Building ESP", "Show buildings");
+CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP", "Master ESP switch");
+CatVar entity_info(CV_SWITCH, "esp_entity", "0", "Entity ESP", "Show entity info (debug)");
+CatVar teammates(CV_SWITCH, "esp_teammates", "0", "ESP Teammates", "Teammate ESP");
+CatVar item_esp(CV_SWITCH, "esp_item", "1", "Item ESP", "Master Item ESP switch (health packs, etc.)");
+CatVar item_dropped_weapons(CV_SWITCH, "esp_item_weapons", "0", "Dropped weapons", "Show dropped weapons");
+CatVar item_ammo_packs(CV_SWITCH, "esp_item_ammo", "0", "Ammo packs", "Show ammo packs");
+CatVar item_health_packs(CV_SWITCH, "esp_item_health", "1", "Health packs", "Show health packs");
+CatVar item_powerups(CV_SWITCH, "esp_item_powerups", "1", "Powerups", "Show powerups");
+CatVar item_money(CV_SWITCH, "esp_money", "1", "MvM money", "Show MvM money");
+CatVar item_money_red(CV_SWITCH, "esp_money_red", "1", "Red MvM money", "Show red MvM money");
+CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID", "Used with Entity ESP. Shows entityID");
+CatVar tank(CV_SWITCH, "esp_show_tank", "1", "Show tank", "Show tank");
+CatVar box_esp(CV_SWITCH, "esp_box", "1", "Box", "Draw 2D box with healthbar. fancy.");
+CatVar show_distance(CV_SWITCH, "esp_distance", "1", "Distance ESP", "Show distance to target");
+CatVar show_name(CV_SWITCH, "esp_name", "1", "Name ESP", "Show name");
+CatVar show_class(CV_SWITCH, "esp_class", "1", "Class ESP", "Show class");
+CatVar show_conditions(CV_SWITCH, "esp_conds", "1", "Conditions ESP", "Show conditions");
+CatVar vischeck(CV_SWITCH, "esp_vischeck", "1", "VisCheck", "ESP visibility check - makes enemy info behind walls darker, disable this if you get FPS drops");
+CatVar legit(CV_SWITCH, "esp_legit", "0", "Legit Mode", "Don't show invisible enemies");
+CatVar show_health(CV_SWITCH, "esp_health_num", "1", "Health numbers", "Show health in numbers");
+CatEnum proj_esp_enum({ "OFF", "ALL", "CRIT" });
+CatVar proj_rockets(proj_esp_enum, "esp_proj_rockets", "1", "Rockets", "Rockets");
+CatVar proj_arrows(proj_esp_enum, "esp_proj_arrows", "1", "Arrows", "Arrows");
+CatVar proj_pipes(proj_esp_enum, "esp_proj_pipes", "1", "Pipes", "Pipebombs");
+CatVar proj_stickies(proj_esp_enum, "esp_proj_stickies", "1", "Stickies", "Stickybombs");
+CatVar proj_enemy(CV_SWITCH, "esp_proj_enemy", "1", "Only enemy projectiles", "Don't show friendly projectiles");
+CatVar proj_esp(CV_SWITCH, "esp_proj", "1", "Projectile ESP", "Projectile ESP");
+CatVar entity_model(CV_SWITCH, "esp_model_name", "0", "Model name ESP", "Model name esp (DEBUG ONLY)");
+CatVar item_weapon_spawners(CV_SWITCH, "esp_weapon_spawners", "1", "Show weapon spawners", "TF2C deathmatch weapon spawners");
+CatVar item_adrenaline(CV_SWITCH, "esp_item_adrenaline", "0", "Show Adrenaline", "TF2C adrenaline pills");
+
+const std::string classes[] = {
 	"Scout",
 	"Sniper",
 	"Soldier",
@@ -24,56 +57,29 @@ const char* classes[] = {
 	"Engineer"
 };
 
-void ESP::Draw() {
-	if (CE_BAD(g_pLocalPlayer->entity)) return;
-	for (int i = 0; i < HIGHEST_ENTITY; i++) {
+void CreateMove() {
+	int limit = HIGHEST_ENTITY;
+	if (!buildings && !proj_esp && !item_esp) limit = min(32, HIGHEST_ENTITY);
+	for (int i = 0; i < limit; i++) {
+		ProcessEntity(ENTITY(i));
+		if (ENTITY(i)->m_nESPStrings) {
+			ENTITY(i)->m_ESPColorFG = colors::EntityF(ENTITY(i));
+			if (vischeck) {
+				if (!ENTITY(i)->IsVisible()) ENTITY(i)->m_ESPColorFG = colors::Transparent(ENTITY(i)->m_ESPColorFG);
+			}
+		}
+	}
+}
+
+void Draw() {
+	int limit = HIGHEST_ENTITY;
+	if (!buildings && !proj_esp && !item_esp) limit = min(32, HIGHEST_ENTITY);
+	for (int i = 0; i < limit; i++) {
 		ProcessEntityPT(ENTITY(i));
 	}
 }
 
-ESP::ESP() {
-	this->v_bSeeLocal = new CatVar(CV_SWITCH, "esp_local", "1", "ESP Local Player", NULL, "Shows local player ESP in thirdperson");
-	this->v_bEnabled = new CatVar(CV_SWITCH, "esp_enabled", "0", "ESP", NULL, "Master ESP switch");
-	this->v_bEntityESP = new CatVar(CV_SWITCH, "esp_entity", "0", "Entity ESP", NULL, "Show entity info (debug)");
-	this->v_bTeammates = new CatVar(CV_SWITCH, "esp_teammates", "0", "ESP Teammates", NULL, "Teammate ESP");
-	this->v_bItemESP = new CatVar(CV_SWITCH, "esp_item", "1", "Item ESP", NULL, "Master Item ESP switch (health packs, etc.)");
-	this->v_bTeammatePowerup = new CatVar(CV_SWITCH, "esp_powerup_team", "1", "Teammate powerups", NULL, "Show Mannpower powerups on your teammates");
-	this->v_bShowEntityID = new CatVar(CV_SWITCH, "esp_entity_id", "1", "Entity ID", NULL, "Used with Entity ESP. Shows entityID");
-	this->v_bShowDistance = new CatVar(CV_SWITCH, "esp_distance", "1", "Distance ESP", NULL, "Show distance to target");
-	this->v_bBox = new CatVar(CV_SWITCH, "esp_box", "1", "Box", NULL, "Draw 2D box with healthbar. fancy.");
-	this->v_bShowFriendID = new CatVar(CV_SWITCH, "esp_friendid", "0", "Show FriendID", NULL, "Show SteamID");
-	this->v_bShowFriends = new CatVar(CV_SWITCH, "esp_friends", "1", "Show friends", NULL, "Always show friends");
-	this->v_bVisCheck = new CatVar(CV_SWITCH, "esp_vischeck", "1", "VisCheck", NULL, "ESP visibility check - makes enemy info behind walls darker, disable this if you get FPS drops");
-	this->v_bLegit = new CatVar(CV_SWITCH, "esp_legit", "0", "Legit Mode", NULL, "Don't show invisible enemies");
-//	this->v_iLegitSeenTicks = new CatVar(CV_INT, "esp_legit_seenticks", "150", "Legit delay", NULL, "Delay after enemy gone behind a wall where you can still see them", true, 200.0);
-	v_bShowDroppedWeapons = new CatVar(CV_SWITCH, "esp_item_weapons", "0", "Dropped weapons", NULL, "Show dropped weapons");
-	v_bShowAmmoPacks = new CatVar(CV_SWITCH, "esp_item_ammo", "0", "Ammo packs", NULL, "Show ammo packs");
-	v_bShowHealthPacks = new CatVar(CV_SWITCH, "esp_item_health", "1", "Health packs", NULL, "Show health packs");
-	v_bShowPowerups = new CatVar(CV_SWITCH, "esp_item_powerups", "1", "Powerups", NULL, "Show powerups");
-	this->v_bShowTank = new CatVar(CV_SWITCH, "esp_show_tank", "1", "Show tank", NULL, "Show tank");
-	v_bShowHealthNumbers = new CatVar(CV_SWITCH, "esp_health_num", "1", "Health numbers", NULL, "Show health in numbers");
-	v_bShowMoney = new CatVar(CV_SWITCH, "esp_money", "1", "MvM money", NULL, "Show MvM money");
-	v_bShowRedMoney = new CatVar(CV_SWITCH, "esp_money_red", "1", "Red MvM money", NULL, "Show/Hide red MvM money");
-	CatEnum* proj = new CatEnum({ "OFF", "ALL", "CRIT" });
-	this->v_iShowRockets = new CatVar(CV_ENUM, "esp_proj_rockets", "1", "Rockets", proj, "Rockets");
-	this->v_iShowArrows = new CatVar(CV_ENUM, "esp_proj_arrows", "1", "Arrows", proj, "Arrows");
-	this->v_iShowStickies = new CatVar(CV_ENUM, "esp_proj_stickies", "1", "Stickies", proj, "Stickybombs");
-	this->v_iShowPipes = new CatVar(CV_ENUM, "esp_proj_pipes", "1", "Pipes", proj, "Pipebombs");
-	this->v_bOnlyEnemyProjectiles = new CatVar(CV_SWITCH, "esp_proj_enemy", "1", "Only enemy projectiles", NULL, "Don't show friendly projectiles");
-	this->v_bProjectileESP = new CatVar(CV_SWITCH, "esp_proj", "1", "Projectile ESP", NULL, "Projectile ESP");
-	v_bShowName = new CatVar(CV_SWITCH, "esp_name", "1", "Name ESP", NULL, "Show name");
-	v_bShowClass = new CatVar(CV_SWITCH, "esp_class", "1", "Class ESP", NULL, "Show class");
-	v_bShowConditions = new CatVar(CV_SWITCH, "esp_conds", "1", "Conditions ESP", NULL, "Show conditions");
-	this->v_bBuildingESP = new CatVar(CV_SWITCH, "esp_buildings", "1", "Building ESP", NULL, "Show buildings");
-	this->v_bShowWeaponSpawners = new CatVar(CV_SWITCH, "esp_weapon_spawners", "1", "Show weapon spawners", NULL, "TF2C deathmatch weapon spawners");
-	v_bShowAdrenaline = new CatVar(CV_SWITCH, "esp_item_adrenaline", "0", "Show Adrenaline", NULL, "TF2C adrenaline pills");
-
-	v_bModelName = new CatVar(CV_SWITCH, "esp_model_name", "0", "Model name ESP", NULL, "Model name esp (DEBUG ONLY)");
-}
-
-#define ESP_HEIGHT 14
-
-void ESP::DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
+void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
 	if (CE_BAD(ent)) return;
 	bool cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
 	Vector min, max;
@@ -118,66 +124,30 @@ void ESP::DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight
 	//draw::OutlineRect(min(smin.x, smax.x), min(smin.y, smax.y), max(smin.x, smax.x), max(smin.y, smax.y), clr);
 }
 
-void ESP::ProcessEntityPT(CachedEntity* ent) {
-	if (!this->v_bEnabled->GetBool()) return;
-	if (!this->v_bBox->GetBool()) return;
-	if (CE_BAD(ent)) return;
-	if (!(this->v_bSeeLocal->GetBool() && g_IInput->CAM_IsThirdPerson()) &&
-		ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
-	int fg = ent->m_ESPColorFG;
-	switch (ent->m_Type) {
-	case ENTITY_PLAYER: {
-		bool cloak = IsPlayerInvisible(ent);
-		if (v_bLegit->GetBool() && ent->m_iTeam != g_pLocalPlayer->team && !GetRelation(ent)) {
-			if (cloak) return;
-			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
-				return;
-			}*/
-		}
-		if (!ent->m_bEnemy && !v_bTeammates->GetBool() && !GetRelation(ent)) break;
-		if (!ent->m_bAlivePlayer) break;
-
-		DrawBox(ent, fg, 3.0f, -15.0f, true, CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
-	break;
-	}
-	case ENTITY_BUILDING: {
-		if (v_bLegit->GetBool() && ent->m_iTeam != g_pLocalPlayer->team) {
-			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
-				return;
-			}*/
-		}
-		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !v_bTeammates->GetBool()) break;
-		DrawBox(ent, fg, 1.0f, 0.0f, true, CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
-	break;
-	}
-	}
-}
-
-void ESP::ProcessEntity(CachedEntity* ent) {
-	if (!this->v_bEnabled->GetBool()) return;
+void ProcessEntity(CachedEntity* ent) {
+	if (!enabled) return;
 	if (CE_BAD(ent)) return;
 
-	ent->m_ESPColorFG = colors::EntityF(ent);
 	//if (ent->IsVisible()) ent->AddESPString("VISIBLE");
 
-	if (v_bEntityESP->GetBool()) {
+	if (entity_info) {
 		ent->AddESPString("%s [%i]", RAW_ENT(ent)->GetClientClass()->m_pNetworkName, ent->m_iClassID);
-		if (v_bShowEntityID->GetBool()) {
+		if (entity_id) {
 			ent->AddESPString("%i", ent->m_IDX);
 		}
 		//ent->AddESPString("Type: %i", ent->m_Type);
-		if (v_bModelName->GetBool()) {
+		if (entity_model) {
 			const model_t* model = RAW_ENT(ent)->GetModel();
 			if (model) ent->AddESPString("%s", g_IModelInfo->GetModelName(model));
 		}
 	}
 
-	if (ent->m_Type == ENTITY_PROJECTILE && v_bProjectileESP->GetBool() && (ent->m_bEnemy || (v_bTeammates->GetBool() && !v_bOnlyEnemyProjectiles->GetBool()))) {
+	if (ent->m_Type == ENTITY_PROJECTILE && proj_esp && (ent->m_bEnemy || (teammates && !proj_enemy))) {
 		if (ent->m_iClassID == g_pClassID->CTFProjectile_Rocket || ent->m_iClassID ==  g_pClassID->CTFProjectile_SentryRocket) {
-			if (v_iShowRockets->GetBool()) {
-				if (v_iShowRockets->GetInt() != 2 || ent->m_bCritProjectile) {
+			if (proj_rockets) {
+				if ((int)proj_rockets != 2 || ent->m_bCritProjectile) {
 					ent->AddESPString("[ ==> ]");
-					if (this->v_bShowDistance->GetBool()) {
+					if (show_distance) {
 						ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 					}
 				}
@@ -185,22 +155,22 @@ void ESP::ProcessEntity(CachedEntity* ent) {
 		} else if (ent->m_iClassID == g_pClassID->CTFGrenadePipebombProjectile) {
 			switch (CE_INT(ent, netvar.iPipeType)) {
 			case 0:
-				if (!v_iShowPipes->GetBool()) break;
-				if (v_iShowPipes->GetInt() == 2 && !ent->m_bCritProjectile) break;
+				if (!proj_pipes) break;
+				if ((int)proj_pipes == 2 && !ent->m_bCritProjectile) break;
 				ent->AddESPString("[ (PP) ]");
 				break;
 			case 1:
-				if (!v_iShowStickies->GetBool()) break;
-				if (v_iShowStickies->GetInt() == 2 && !ent->m_bCritProjectile) break;
+				if (!proj_stickies) break;
+				if ((int)proj_stickies == 2 && !ent->m_bCritProjectile) break;
 				ent->AddESPString("[ {*} ]");
 			}
-			if (this->v_bShowDistance->GetBool()) {
+			if (show_distance) {
 				ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 			}
 		} else if (ent->m_iClassID == g_pClassID->CTFProjectile_Arrow) {
-			if (v_iShowArrows->GetInt() != 2 || ent->m_bCritProjectile) {
+			if ((int)proj_arrows != 2 || ent->m_bCritProjectile) {
 				ent->AddESPString("[ >>---> ]");
-				if (this->v_bShowDistance->GetBool()) {
+				if (show_distance) {
 					ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 				}
 			}
@@ -208,7 +178,7 @@ void ESP::ProcessEntity(CachedEntity* ent) {
 	}
 
 	if (HL2DM) {
-		if (v_bItemESP->GetBool() && v_bShowDroppedWeapons->GetBool()) {
+		if (item_esp && item_dropped_weapons) {
 			if (CE_BYTE(ent, netvar.hOwner) == (unsigned char)-1) {
 				int a = ent->m_nESPStrings;
 				if (ent->m_iClassID == g_pClassID->CWeapon_SLAM) ent->AddESPString("SLAM");
@@ -224,27 +194,24 @@ void ESP::ProcessEntity(CachedEntity* ent) {
 				else if (ent->m_iClassID == g_pClassID->CWeaponRPG) ent->AddESPString("RPG");
 				if (a != ent->m_nESPStrings) {
 					ent->m_ESPColorFG = colors::yellow;
-					if (this->v_bShowDistance->GetBool()) {
+					if (show_distance) {
 						ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 					}
 				}
 			}
 		}
-		if (v_bItemESP->GetBool() && v_bShowHealthPacks->GetBool()) {
-			//if (ent->m_iClassID == g_pClassID->)
-		}
 	}
 
-	if (ent->m_iClassID == g_pClassID->CTFTankBoss && this->v_bShowTank->GetBool()) {
+	if (ent->m_iClassID == g_pClassID->CTFTankBoss && tank) {
 		ent->AddESPString("Tank");
-	} else if (ent->m_iClassID == g_pClassID->CTFDroppedWeapon && this->v_bItemESP->GetBool() && this->v_bShowDroppedWeapons->GetBool()) {
-		ent->AddESPString("WEAPON");
-		if (this->v_bShowDistance->GetBool()) {
+	} else if (ent->m_iClassID == g_pClassID->CTFDroppedWeapon && item_esp && item_dropped_weapons) {
+		ent->AddESPString("WEAPON %s", ent->m_pEntity->GetClientClass()->GetName());
+		if (show_distance) {
 			ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 		}
-	} else if (ent->m_iClassID == g_pClassID->CCurrencyPack && v_bShowMoney->GetBool()) {
+	} else if (ent->m_iClassID == g_pClassID->CCurrencyPack && item_money) {
 		if (CE_BYTE(ent, netvar.bDistributed)) {
-			if (this->v_bShowRedMoney->GetBool()) {
+			if (item_money_red) {
 				ent->AddESPString("$$$");
 				ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 			}
@@ -252,53 +219,53 @@ void ESP::ProcessEntity(CachedEntity* ent) {
 			ent->AddESPString("$$$");
 			ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 		}
-	} else if (ent->m_ItemType != ITEM_NONE && this->v_bItemESP->GetBool()) {
+	} else if (ent->m_ItemType != ITEM_NONE && item_esp) {
 		bool shown = false;
-		if (this->v_bShowHealthPacks->GetBool() && (ent->m_ItemType >= ITEM_HEALTH_SMALL && ent->m_ItemType <= ITEM_HEALTH_LARGE || ent->m_ItemType == ITEM_HL_BATTERY)) {
+		if (item_health_packs && (ent->m_ItemType >= ITEM_HEALTH_SMALL && ent->m_ItemType <= ITEM_HEALTH_LARGE || ent->m_ItemType == ITEM_HL_BATTERY)) {
 			if (ent->m_ItemType == ITEM_HEALTH_SMALL) ent->AddESPString("[+]");
 			if (ent->m_ItemType == ITEM_HEALTH_MEDIUM) ent->AddESPString("[++]");
 			if (ent->m_ItemType == ITEM_HEALTH_LARGE) ent->AddESPString("[+++]");
 			if (ent->m_ItemType == ITEM_HL_BATTERY) ent->AddESPString("[Z]");
-		} else if (this->v_bShowAdrenaline->GetBool() && ent->m_ItemType == ITEM_TF2C_PILL) {
+		} else if (item_adrenaline && ent->m_ItemType == ITEM_TF2C_PILL) {
 			ent->AddESPString("[a]");
-		} else if (this->v_bShowAmmoPacks->GetBool() && ent->m_ItemType >= ITEM_AMMO_SMALL && ent->m_ItemType <= ITEM_AMMO_LARGE) {
+		} else if (item_ammo_packs && ent->m_ItemType >= ITEM_AMMO_SMALL && ent->m_ItemType <= ITEM_AMMO_LARGE) {
 			if (ent->m_ItemType == ITEM_AMMO_SMALL) ent->AddESPString("{i}");
 			if (ent->m_ItemType == ITEM_AMMO_MEDIUM) ent->AddESPString("{ii}");
 			if (ent->m_ItemType == ITEM_AMMO_LARGE) ent->AddESPString("{iii}");
-		} else if (this->v_bShowPowerups->GetBool() && ent->m_ItemType >= ITEM_POWERUP_FIRST && ent->m_ItemType <= ITEM_POWERUP_LAST) {
+		} else if (item_powerups && ent->m_ItemType >= ITEM_POWERUP_FIRST && ent->m_ItemType <= ITEM_POWERUP_LAST) {
 			ent->AddESPString("%s PICKUP", powerups[ent->m_ItemType - ITEM_POWERUP_FIRST]);
-		} else if (this->v_bShowWeaponSpawners->GetBool() && ent->m_ItemType >= ITEM_TF2C_W_FIRST && ent->m_ItemType <= ITEM_TF2C_W_LAST) {
+		} else if (item_weapon_spawners && ent->m_ItemType >= ITEM_TF2C_W_FIRST && ent->m_ItemType <= ITEM_TF2C_W_LAST) {
 			ent->AddESPString("%s SPAWNER", tf2c_weapon_names[ent->m_ItemType - ITEM_TF2C_W_FIRST].c_str());
 			if (CE_BYTE(ent, netvar.bRespawning)) ent->AddESPString("-- RESPAWNING --");
 		}
-		if (this->v_bShowDistance->GetBool() && shown) {
+		if (show_distance && shown) {
 			ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 		}
-	} else if (ent->m_Type == ENTITY_BUILDING && v_bBuildingESP->GetBool()) {
-		if (!ent->m_bEnemy && !v_bTeammates->GetBool()) return;
+	} else if (ent->m_Type == ENTITY_BUILDING && buildings) {
+		if (!ent->m_bEnemy && !teammates) return;
 		int level = CE_INT(ent, netvar.iUpgradeLevel);
 		const char* name = (ent->m_iClassID == g_pClassID->CObjectTeleporter ? "Teleporter" : (ent->m_iClassID == g_pClassID->CObjectSentrygun ? "Sentry Gun" : "Dispenser"));
-		if (v_bLegit->GetBool() && ent->m_iTeam != g_pLocalPlayer->team) {
+		if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
 			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
 				return;
 			}*/
 		}
 		ent->AddESPString("LV %i %s", level, name);
-		if (this->v_bShowHealthNumbers->GetBool()) {
+		if (show_health) {
 			ent->AddESPString("%i / %i HP", ent->m_iHealth, ent->m_iMaxHealth);
 			ent->GetESPString(ent->m_nESPStrings - 1).m_bColored = true;
-			if (v_bVisCheck->GetBool()) {
+			if (vischeck) {
 				ent->GetESPString(ent->m_nESPStrings - 1).m_nColor = colors::Transparent(colors::Health(ent->m_iHealth, ent->m_iMaxHealth), ent->IsVisible() ? 1.0 : 0.5f);
 			} else {
 				ent->GetESPString(ent->m_nESPStrings - 1).m_nColor = colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 			}
 		}
-		if (this->v_bShowDistance->GetBool()) {
+		if (show_distance) {
 			ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 		}
 		return;
 	} else if (ent->m_Type == ENTITY_PLAYER && ent->m_bAlivePlayer) {
-		if (!(this->v_bSeeLocal->GetBool() && g_IInput->CAM_IsThirdPerson()) &&
+		if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
 			ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
 		int pclass = CE_INT(ent, netvar.iClass);
 		player_info_t info;
@@ -306,35 +273,32 @@ void ESP::ProcessEntity(CachedEntity* ent) {
 		powerup_type power = GetPowerupOnPlayer(ent);
 		// If target is enemy, always show powerups, if player is teammate, show powerups
 		// only if bTeammatePowerup or bTeammates is true
-		if (v_bLegit->GetBool() && ent->m_iTeam != g_pLocalPlayer->team  && !GetRelation(ent)) {
+		if (legit && ent->m_iTeam != g_pLocalPlayer->team  && !GetRelation(ent)) {
 			if (IsPlayerInvisible(ent)) return;
 			/*if (ent->m_lLastSeen > (unsigned)v_iLegitSeenTicks->GetInt()) {
 				return;
 			}*/
 		}
-		if (power >= 0 && (ent->m_bEnemy || this->v_bTeammatePowerup->GetBool() || this->v_bTeammates->GetBool())) {
+		if (power >= 0 && (ent->m_bEnemy || teammates)) {
 			ent->AddESPString("HAS [%s]", powerups[power]);
 		}
-		if (ent->m_bEnemy || v_bTeammates->GetBool() || GetRelation(ent)) {
-			if (v_bShowName->GetBool())
+		if (ent->m_bEnemy || teammates || GetRelation(ent)) {
+			if (show_name)
 				ent->AddESPString("%s", info.name);
-			if (v_bShowFriendID->GetBool()) {
-				ent->AddESPString("%lu", info.friendsID);
-			}
-			if (v_bShowClass->GetBool()) {
+			if (show_class) {
 				if (pclass > 0 && pclass < 10)
-					ent->AddESPString("%s", classes[pclass - 1]);
+					ent->AddESPString("%s", classes[pclass - 1].c_str());
 			}
-			if (this->v_bShowHealthNumbers->GetBool()) {
+			if (show_health) {
 				ent->AddESPString("%i / %i HP", ent->m_iHealth, ent->m_iMaxHealth);
 				ent->GetESPString(ent->m_nESPStrings - 1).m_bColored = true;
-				if (v_bVisCheck->GetBool()) {
+				if (vischeck) {
 					ent->GetESPString(ent->m_nESPStrings - 1).m_nColor = colors::Transparent(colors::Health(ent->m_iHealth, ent->m_iMaxHealth), ent->IsVisible() ? 1.0 : 0.5f);
 				} else {
 					ent->GetESPString(ent->m_nESPStrings - 1).m_nColor = colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 				}
 			}
-			if (v_bShowConditions->GetBool() && TF) {
+			if (show_conditions && TF) {
 				if (IsPlayerInvisible(ent)) {
 					ent->AddESPString("INVISIBLE");
 				}
@@ -351,7 +315,7 @@ void ESP::ProcessEntity(CachedEntity* ent) {
 					ent->AddESPString("CRIT BOOSTED");
 				}
 			}
-			if (this->v_bShowDistance->GetBool()) {
+			if (show_distance) {
 				ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 			}
 		}
@@ -359,10 +323,39 @@ void ESP::ProcessEntity(CachedEntity* ent) {
 	}
 }
 
-void ESP::ProcessUserCmd(CUserCmd*) {
-	if (CE_BAD(g_pLocalPlayer->entity)) return;
-	for (int i = 0; i < HIGHEST_ENTITY; i++) {
-		CachedEntity* ent = ENTITY(i);
-		if (CE_GOOD(ent)) { ProcessEntity(ent); }
+void ProcessEntityPT(CachedEntity* ent) {
+	if (!enabled) return;
+	if (!box_esp) return;
+	if (CE_BAD(ent)) return;
+	if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
+		ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
+	int fg = ent->m_ESPColorFG;
+	switch (ent->m_Type) {
+	case ENTITY_PLAYER: {
+		bool cloak = IsPlayerInvisible(ent);
+		if (legit && ent->m_iTeam != g_pLocalPlayer->team && !GetRelation(ent)) {
+			if (cloak) return;
+			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
+				return;
+			}*/
+		}
+		if (!ent->m_bEnemy && !teammates && !GetRelation(ent)) break;
+		if (!ent->m_bAlivePlayer) break;
+
+		DrawBox(ent, fg, 3.0f, -15.0f, true, CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
+	break;
 	}
-};
+	case ENTITY_BUILDING: {
+		if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
+			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
+				return;
+			}*/
+		}
+		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
+		DrawBox(ent, fg, 1.0f, 0.0f, true, CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
+	break;
+	}
+	}
+}
+
+}}}

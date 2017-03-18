@@ -12,7 +12,7 @@
 
 namespace hacks { namespace shared { namespace bunnyhop {
 
-CatVar enabled(CV_SWITCH, "bhop_enabled", "0", "Bunnyhop", NULL, "Enable Bunnyhop. All extra features like autojump and perfect jump limit were temporary removed.");
+CatVar enabled(CV_SWITCH, "bhop_enabled", "0", "Bunnyhop", "Enable Bunnyhop. All extra features like autojump and perfect jump limit were temporary removed.");
 
 int iTicksFlying { 0 };
 int iTicksLastJump { 0 };

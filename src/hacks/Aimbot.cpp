@@ -181,7 +181,7 @@ int ShouldTarget(CachedEntity* entity) {
 	// Just assuming CE is good
 	if (entity->m_Type == ENTITY_PLAYER) {
 		if (TF) {
-			if (g_Settings.bIgnoreTaunting->GetBool() && HasCondition(entity, TFCond_Taunting)) return 1;
+			if (ignore_taunting && HasCondition(entity, TFCond_Taunting)) return 1;
 			if (IsPlayerInvulnerable(entity)) return 4;
 			if (respect_cloak && IsPlayerInvisible(entity)) return 6;
 			weaponmode mode = GetWeaponMode(LOCAL_E);
@@ -366,7 +366,7 @@ bool ShouldAim(CUserCmd* cmd) {
 			if (!CanHeadshot()) return false;
 		}
 	}
-	if (g_phMisc->v_bCritHack->GetBool()) {
+	if (hacks::shared::misc::crit_hack) {
 		if (RandomCrits() && WeaponCanCrit() && !IsAttackACrit(cmd)) return false;
 	}
 	return true;
@@ -429,7 +429,7 @@ CatEnum aimkey_modes_enum({ "DISABLED", "AIMKEY", "REVERSE", "TOGGLE" });
 CatVar aimkey_mode(aimkey_modes_enum, "aimbot_aimkey_mode", "1", "Aimkey mode", "DISABLED: aimbot is always active\nAIMKEY: aimbot is active when key is down\nREVERSE: aimbot is disabled when key is down\nTOGGLE: pressing key toggles aimbot");
 CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "STATIC" });
 CatVar hitbox_mode(hitbox_mode_enum, "aimbot_hitboxmode", "0", "Hitbox Mode", "Defines hitbox selection mode");
-CatVar enabled(CV_SWITCH, "aimbot_enabled", "0", "Enable Aimbot", NULL, "Main aimbot switch");
+CatVar enabled(CV_SWITCH, "aimbot_enabled", "0", "Enable Aimbot", "Main aimbot switch");
 CatVar fov(CV_FLOAT, "aimbot_fov", "0", "Aimbot FOV", "FOV range for aimbot to lock targets. \"Smart FOV\" coming eventually.", 360.0f);
 CatEnum hitbox_enum({
 		"HEAD", "PELVIS", "SPINE 0", "SPINE 1", "SPINE 2", "SPINE 3", "UPPER ARM L", "LOWER ARM L",

@@ -56,9 +56,6 @@
 bool hack::shutdown = false;
 
 void hack::InitHacks() {
-	//ADD_HACK(FollowBot);
-	ADD_HACK(Misc);
-	ADD_HACK(ESP);
 }
 
 ConCommand* hack::c_Cat = 0;
@@ -180,8 +177,5 @@ void hack::Shutdown() {
 	if (hooks::hkNetChannel) hooks::hkNetChannel->Kill();
 	if (hooks::hkStudioRender) hooks::hkStudioRender->Kill();
 	ConVar_Unregister();
-	//DELETE_HACK(FollowBot);
-	DELETE_HACK(Misc);
-	DELETE_HACK(ESP);
 	hacks::shared::killsay::Shutdown();
 }

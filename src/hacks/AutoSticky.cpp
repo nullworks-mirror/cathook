@@ -12,9 +12,9 @@
 
 namespace hacks { namespace tf { namespace autosticky {
 
-CatVar enabled(CV_SWITCH, "sticky_enabled", "0", "AutoSticky", NULL, "Master AutoSticky switch");
-CatVar buildings(CV_SWITCH, "sticky_buildings", "1", "Detonate buildings", NULL, "Stickies react to buildings");
-CatVar distance(CV_INT, "sticky_distance", "200", "Distance", NULL, "Maximum distance to detonate");
+CatVar enabled(CV_SWITCH, "sticky_enabled", "0", "AutoSticky", "Master AutoSticky switch");
+CatVar buildings(CV_SWITCH, "sticky_buildings", "1", "Detonate buildings", "Stickies react to buildings");
+CatVar distance(CV_INT, "sticky_distance", "200", "Distance", "Maximum distance to detonate");
 
 bool ShouldDetonate(CachedEntity* bomb) {
 	for (int i = 0; i < HIGHEST_ENTITY; i++) {

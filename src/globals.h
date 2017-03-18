@@ -18,24 +18,19 @@ extern EstimateAbsVelocity_t* EstimateAbsVelocity;
 extern int g_AppID;
 
 extern CatVar cathook; // Master switch
+extern CatVar ignore_taunting;
+extern CatVar send_packets;
+extern CatVar show_antiaim;
+extern CatVar force_thirdperson;
+extern CatVar console_logging;
+extern CatVar fast_outline;
+extern CatVar roll_speedhack;
 
 class GlobalSettings {
 public:
 	void Init();
-// TODO
-//	CatVar* bMaxPerformance;
-	CatVar* bIgnoreTaunting;
-//	CatVar* bProfiler;
-//	CatVar* bNoFlinch;
-	CatVar* bSendPackets;
-	CatVar* bShowAntiAim;
-	CatVar* bThirdperson;
-	CatVar* bDebugLog;
+	bool bInvalid { true };
 	Vector last_angles;
-	CatVar* bFastOutline;
-	CatVar* kRollSpeedhack;
-	CatVar* bFastVischeck;
-	bool bInvalid;
 };
 
 class CUserCmd;

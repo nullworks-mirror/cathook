@@ -11,9 +11,32 @@
 #include "IHack.h"
 
 class ConVar;
-class ConCommand;
+class CatCommand;
 
-class Misc : public IHack {
+namespace hacks { namespace shared { namespace misc {
+
+void CreateMove();
+void Draw();
+
+extern CatVar debug_info;
+extern CatVar flashlight_spam;
+extern CatVar crit_info; // TODO separate
+extern CatVar crit_hack;
+extern CatVar crit_melee;
+extern CatVar crit_suppress;
+extern CatVar anti_afk;
+extern CatVar tauntslide;
+extern CatCommand name;
+extern CatCommand save_settings;
+extern CatCommand say_lines;
+extern CatCommand disconnect;
+extern CatCommand schema;
+extern CatCommand disconnect_vac;
+extern CatCommand set_value;
+
+}}}
+
+/*class Misc : public IHack {
 public:
 	Misc();
 
@@ -58,6 +81,6 @@ public:
 void Schema_Reload();
 void CC_Misc_Disconnect_VAC();
 
-DECLARE_HACK_SINGLETON(Misc);
+DECLARE_HACK_SINGLETON(Misc);*/
 
 #endif /* HACKS_MISC_H_ */

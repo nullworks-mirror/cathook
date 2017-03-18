@@ -24,8 +24,8 @@ void GUIVisibleCallback(IConVar* var, const char* pOldValue, float flOldValue) {
 	}
 }
 
-extern CatVar gui_visible(CV_SWITCH, "gui_visible", "0", "GUI Active", NULL, "GUI switch (bind it to a key!)");
-extern CatVar gui_draw_bounds(CV_SWITCH, "gui_bounds", "0", "Draw Bounds", NULL, "Draw GUI elements' bounding boxes");
+extern CatVar gui_visible(CV_SWITCH, "gui_visible", "0", "GUI Active", "GUI switch (bind it to a key!)");
+extern CatVar gui_draw_bounds(CV_SWITCH, "gui_bounds", "0", "Draw Bounds", "Draw GUI elements' bounding boxes");
 
 CatGUI::CatGUI() {
 	m_pRootWindow = 0;
@@ -65,7 +65,7 @@ void CatGUI::Update() {
 					else m_pRootWindow->OnMouseRelease();
 				} else {
 					if (i == ButtonCode_t::KEY_INSERT && down) {
-						gui_visible.SetValue(!gui_visible);
+						gui_visible = !gui_visible;
 					}
 					if (down) m_pRootWindow->OnKeyPress((ButtonCode_t)i, false);
 					else m_pRootWindow->OnKeyRelease((ButtonCode_t)i);

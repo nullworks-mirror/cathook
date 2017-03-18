@@ -32,15 +32,15 @@ float AngleDiff( float destAngle, float srcAngle )
 
 #include "../profiler.h"
 
+static CatVar minigun_jump(CV_SWITCH, "minigun_jump", "0", "TF2C minigun jump", "Allows jumping while shooting with minigun");
+
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	SEGV_BEGIN;
 
 	g_pUserCmd = cmd;
 
-	if (TF2C && g_phMisc->v_bMinigunJump->GetBool() && CE_GOOD(LOCAL_W)) {
-		//RemoveCondition(LOCAL_E, TFCond_Slowed);
+	if (TF2C && CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == g_pClassID->CTFMinigun) {
 		CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
-		//RemoveCondition(LOCAL_E, TFCond_Taunting);
 	}
 	bool ret = ((CreateMove_t*)hooks::hkClientMode->GetMethod(hooks::offCreateMove))(thisptr, inputSample, cmd);
 
@@ -96,7 +96,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
 //		PROF_BEGIN();
 		//RunEnginePrediction(g_pLocalPlayer->entity, cmd);
-		SAFE_CALL(HACK_PROCESS_USERCMD(ESP, cmd));
+		SAFE_CALL(hacks::shared::esp::CreateMove());
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
 			if (TF2) SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
 			SAFE_CALL(hacks::shared::bunnyhop::CreateMove());
@@ -108,7 +108,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
 		}
 		//SAFE_CALL(CREATE_MOVE(FollowBot));
-		SAFE_CALL(HACK_PROCESS_USERCMD(Misc, cmd));
+		SAFE_CALL(hacks::shared::misc::CreateMove());
 		SAFE_CALL(hacks::shared::spam::CreateMove());
 //		PROF_END("Hacks processing");
 		if (time_replaced) g_GlobalVars->curtime = curtime_old;
@@ -122,7 +122,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	chat_stack::OnCreateMove();
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		bool speedapplied = false;
-		if (g_Settings.kRollSpeedhack->GetBool() && g_pGUI->m_bPressedState[g_Settings.kRollSpeedhack->GetInt()] && !(cmd->buttons & IN_ATTACK)) {
+		if (roll_speedhack && g_pGUI->m_bPressedState[(int)roll_speedhack] && !(cmd->buttons & IN_ATTACK)) { // FIXME OOB
 			float speed = cmd->forwardmove;
 			if (fabs(speed) > 0.0f) {
 				cmd->forwardmove = -speed;
