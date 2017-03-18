@@ -10,21 +10,15 @@
 
 #include "IHack.h"
 
-class CachedEntity;
+namespace hacks { namespace tf { namespace autosticky {
 
-class AutoSticky : public IHack {
-public:
-	AutoSticky();
+extern CatVar enabled;
+extern CatVar buildings;
+extern CatVar distance;
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
+bool ShouldDetonate(CachedEntity* bomb);
+void CreateMove();
 
-	bool ShouldDetonate(CachedEntity* bomb);
-	CatVar* v_bEnabled;
-	CatVar* v_bBuildings;
-	CatVar* v_bScottish;
-	CatVar* v_flDetonateDistance;
-};
-
-DECLARE_HACK_SINGLETON(AutoSticky);
+}}}
 
 #endif /* HACKS_AUTOSTICKY_H_ */

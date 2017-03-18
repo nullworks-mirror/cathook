@@ -8,22 +8,22 @@
 #ifndef CHATSTACK_H_
 #define CHATSTACK_H_
 
-#define CHATSTACK_SIZE 32
 #define CHATSTACK_INTERVAL 0.8f
 
-class ChatStack {
-public:
-	ChatStack();
-	~ChatStack();
-	void OnCreateMove();
-	void Reset();
-	void Push(const char* message);
-	const char* Pop();
-	int m_nStackDepth;
-	char* m_Buffer;
-	float m_fLastSay;
-};
+#include "beforecheaders.h"
+#include <string>
+#include <stack>
+#include <functional>
+#include "aftercheaders.h"
 
-extern ChatStack* g_pChatStack;
+namespace chat_stack {
+
+void OnCreateMove();
+void Reset();
+
+extern std::stack<std::string> stack;
+extern float last_say;
+
+};
 
 #endif /* CHATSTACK_H_ */

@@ -22,13 +22,14 @@ CMenuWindow::CMenuWindow(std::string name, IWidget* parent) : CBaseWindow(name, 
 	AddChild(m_pTitle = new CTitleBar(this, "cathook menu"));
 }
 
-#define ADDCVAR(x) tab->AddChild(new CCVarContainer(tab, x))
+#define ADDCVAR(x) tab->AddChild(new CCVarContainer(tab, (x)))
 #define ADDLABEL(x) tab->AddChild(new CTextLabel("label", tab, x, true))
 
 void CMenuWindow::AddElements() {
+	AddChild(new CTextLabel("notice", this, "NOTICE: MOST CONVARS ARE MISSING FROM MENU! USE CONSOLE!", true));
 	AddTab("aimbot", "Aimbot");
 	CMenuContainer* tab = GetTab("aimbot");
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bEnabled));
+	/*tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bEnabled));
 	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bAimAtTeammates));
 	if (TF) tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bAimBuildings));
 	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_eHitboxMode));
@@ -52,10 +53,10 @@ void CMenuWindow::AddElements() {
 	//tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iMaxAutoshootRange));
 	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iMaxRange));
 	//tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iSeenDelay));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_kAimKey));
+	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_kAimKey));*/
 	AddTab("esp", "ESP");
 	tab = GetTab("esp");
-	ADDCVAR(g_phESP->v_bEnabled);
+	/*ADDCVAR(g_phESP->v_bEnabled);
 	if (TF) ADDCVAR(g_phESP->v_bShowTank);
 	if (TF) ADDCVAR(g_phESP->v_bBuildingESP);
 	ADDLABEL("Player ESP");
@@ -92,29 +93,29 @@ void CMenuWindow::AddElements() {
 	}
 	ADDLABEL("");
 	ADDCVAR(g_phESP->v_bEntityESP);
-	ADDCVAR(g_phESP->v_bShowEntityID);
+	ADDCVAR(g_phESP->v_bShowEntityID);*/
 	AddTab("triggerbot", "Triggerbot");
 	tab = GetTab("triggerbot");
-	ADDCVAR(g_phTriggerbot->v_bEnabled);
-	if (TF) ADDCVAR(g_phTriggerbot->v_bAmbassadorCharge);
-	ADDCVAR(g_phTriggerbot->v_bBodyshot);
-	ADDCVAR(g_phTriggerbot->v_bBuildings);
-	ADDCVAR(g_phTriggerbot->v_bFinishingHit);
-	if (TF) ADDCVAR(g_phTriggerbot->v_bRespectCloak);
-	if (TF) ADDCVAR(g_phTriggerbot->v_bIgnoreVaccinator);
-	if (TF) ADDCVAR(g_phTriggerbot->v_bZoomedOnly);
-	ADDCVAR(g_phTriggerbot->v_iHitbox);
-	ADDCVAR(g_phTriggerbot->v_iMaxRange);
+	ADDCVAR(&hacks::shared::triggerbot::enabled);
+	if (TF) ADDCVAR(&hacks::shared::triggerbot::ambassador);
+	ADDCVAR(&hacks::shared::triggerbot::bodyshot);
+	ADDCVAR(&hacks::shared::triggerbot::buildings);
+	ADDCVAR(&hacks::shared::triggerbot::finishing_hit);
+	if (TF) ADDCVAR(&hacks::shared::triggerbot::respect_cloak);
+	if (TF) ADDCVAR(&hacks::shared::triggerbot::ignore_vaccinator);
+	if (TF) ADDCVAR(&hacks::shared::triggerbot::zoomed_only);
+	ADDCVAR(&hacks::shared::triggerbot::hitbox);
+	ADDCVAR(&hacks::shared::triggerbot::max_range);
 	if (TF) {
 		ADDLABEL("AutoSticky");
-		ADDCVAR(g_phAutoSticky->v_bEnabled);
-		ADDCVAR(g_phAutoSticky->v_bBuildings);
-		ADDCVAR(g_phAutoSticky->v_flDetonateDistance);
+		ADDCVAR(&hacks::tf::autosticky::enabled);
+		ADDCVAR(&hacks::tf::autosticky::buildings);
+		ADDCVAR(&hacks::tf::autosticky::distance);
 		ADDLABEL("AutoReflect");
-		ADDCVAR(g_phAutoReflect->v_bEnabled);
-		ADDCVAR(g_phAutoReflect->v_bDisableWhenAttacking);
-		ADDCVAR(g_phAutoReflect->v_bReflectStickies);
-		ADDCVAR(g_phAutoReflect->v_iReflectDistance);
+		ADDCVAR(&hacks::tf::autoreflect::enabled);
+		ADDCVAR(&hacks::tf::autoreflect::idle_only);
+		ADDCVAR(&hacks::tf::autoreflect::stickies);
+		ADDCVAR(&hacks::tf::autoreflect::max_distance);
 	}
 	AddTab("misc", "Misc");
 	tab = GetTab("misc");
@@ -125,74 +126,77 @@ void CMenuWindow::AddElements() {
 	tab->AddChild(new CBaseButton("ach_lock", tab, "Lock Achievements", [this](CBaseButton*) {
 		Achievements_Lock();
 	}));*/
-	if (TF) ADDCVAR(g_phAutoHeal->v_bEnabled);
-	if (TF) ADDCVAR(g_phAntiDisguise->v_bEnabled);
+	if (TF) ADDCVAR(&hacks::tf::autoheal::enabled);
+	if (TF) ADDCVAR(&hacks::tf2::antidisguise::enabled);
 	if (TF2C) {
-		ADDCVAR(g_phMisc->v_bTauntSlide);
-		ADDCVAR(g_phMisc->v_bCritHack);
+		//ADDCVAR(g_phMisc->v_bTauntSlide);
+		//ADDCVAR(g_phMisc->v_bCritHack);
 	}
-	ADDCVAR(g_phMisc->v_bAntiAFK);
-	ADDCVAR(g_Settings.bCleanScreenshots);
-	ADDCVAR(g_Settings.bHackEnabled);
-	if (TF) ADDCVAR(g_Settings.bIgnoreTaunting);
-	ADDCVAR(g_Settings.bNoVisuals);
-	if (TF) ADDCVAR(g_Settings.bNoZoom);
+	//ADDCVAR(g_phMisc->v_bAntiAFK);
+	// FIXME add CVARS TO MENU!!
+	//ADDCVAR(g_Settings.bCleanScreenshots);
+	ADDCVAR(&cathook);
+	/*if (TF) ADDCVAR(g_Settings.bIgnoreTaunting);
+	//ADDCVAR(g_Settings.bNoVisuals);
+	//if (TF) ADDCVAR(g_Settings.bNoZoom);
 	//ADDCVAR(g_Settings.bSendPackets);
-	ADDCVAR(g_Settings.bShowLogo);
+	//ADDCVAR(g_Settings.bShowLogo);
 	ADDCVAR(g_Settings.bShowAntiAim);
 	if (TF) ADDCVAR(g_Settings.bThirdperson);
-	ADDCVAR(g_Settings.bZoomedFOV);
-	ADDCVAR(g_Settings.flForceFOVZoomed);
-	ADDCVAR(g_Settings.flForceFOV);
-	ADDCVAR(g_Settings.sDisconnectMsg);
-	if (TF2C) ADDCVAR(g_Settings.kRollSpeedhack);
-	ADDCVAR(g_phMisc->v_bCleanChat);
+	//ADDCVAR(g_Settings.bZoomedFOV);
+	//ADDCVAR(g_Settings.flForceFOVZoomed);
+	//ADDCVAR(g_Settings.flForceFOV);
+	// FIXME add ConVars to menu!!
+	//ADDCVAR(g_Settings.sDisconnectMsg);
+	if (TF2C) ADDCVAR(g_Settings.kRollSpeedhack);*/
+	//ADDCVAR(g_phMisc->v_bCleanChat);
 	if (TF2) {
-		CBaseButton* but = new CBaseButton("schema", tab, "Load Custom Schema", [this](CBaseButton*) {
-			Schema_Reload();
-		});
-		but->Props()->SetString("tooltip", "Loads a custom item schema from ~/.cathook/\nitems_game.txt");
-		tab->AddChild(but);
+		/*CBaseButton* but = new CBaseButton("schema", tab, "Load Custom Schema", [this](CBaseButton*) {
+			//Schema_Reload();
+		});*/
+		//but->Props()->SetString("tooltip", "Loads a custom item schema from ~/.cathook/\nitems_game.txt");
+		//tab->AddChild(but);
 	}
-	if (TF2C) ADDCVAR(g_phMisc->v_bMinigunJump);
+	//if (TF2C) ADDCVAR(g_phMisc->v_bMinigunJump);
 	//ADDCVAR(g_phMisc->v_bDebugInfo);
-	if (HL2DM) ADDCVAR(g_phMisc->v_bFlashlightSpam);
-	ADDCVAR(g_phMisc->v_iFakeLag);
-	ADDCVAR(g_Settings.bFastOutline);
+	//if (HL2DM) ADDCVAR(g_phMisc->v_bFlashlightSpam);
+	//ADDCVAR(g_phMisc->v_iFakeLag);
+	//ADDCVAR(g_Settings.bFastOutline);
 	if (TF) {
 		ADDLABEL("Spy Alert");
-		ADDCVAR(g_phSpyAlert->v_bEnabled);
-		ADDCVAR(g_phSpyAlert->v_flBackstabDistance);
-		ADDCVAR(g_phSpyAlert->v_flWarningDistance);
+		ADDCVAR(&hacks::tf::spyalert::enabled);
+		ADDCVAR(&hacks::tf::spyalert::distance_warning);
+		ADDCVAR(&hacks::tf::spyalert::distance_backstab);
 	}
 	ADDLABEL("Bunnyhop");
-	ADDCVAR(g_phBunnyhop->v_bEnabled);
-	ADDCVAR(g_phBunnyhop->v_bAutoJump);
-	ADDCVAR(g_phBunnyhop->v_iAutoJumpSpeed);
+	//ADDCVAR(g_phBunnyhop->v_bEnabled);
+	//ADDCVAR(g_phBunnyhop->v_bAutoJump);
+	//ADDCVAR(g_phBunnyhop->v_iAutoJumpSpeed);
 	AddTab("antiaim", "Anti-Aim");
 	tab = GetTab("antiaim");
-	ADDCVAR(g_phAntiAim->v_bEnabled);
-	ADDCVAR(g_phAntiAim->v_PitchMode);
-	ADDCVAR(g_phAntiAim->v_flPitch);
-	ADDCVAR(g_phAntiAim->v_YawMode);
-	ADDCVAR(g_phAntiAim->v_flYaw);
-	ADDCVAR(g_phAntiAim->v_flSpinSpeed);
-	ADDCVAR(g_phAntiAim->v_bNoClamping);
-	ADDCVAR(g_phAntiAim->v_flRoll);
+	ADDCVAR(&hacks::shared::antiaim::enabled);
+	/*ADDCVAR(&hacks::shared::antiaim::lisp);
+	ADDCVAR(&hacks::shared::antiaim::yaw_mode;
+	ADDCVAR(&hacks::shared::antiaim::yaw);
+	ADDCVAR(&hacks::shared::antiaim::pitch);
+	ADDCVAR(&hacks::shared::antiaim::pitch_mode);
+	ADDCVAR(&hacks::shared::antiaim::no_clamping);
+	ADDCVAR(&hacks::shared::antiaim::roll);
+	ADDCVAR(&hacks::shared::antiaim::spin);*/
 	AddTab("spam", "Spam/Killsay");
 	tab = GetTab("spam");
 	ADDLABEL("Spam");
-	ADDCVAR(g_phSpam->v_bSpam);
-	ADDCVAR(g_phSpam->v_bSpamNewlines);
-	ADDCVAR(g_phSpam->v_sSpamFile);
+	ADDCVAR(&hacks::shared::spam::enabled);
+	ADDCVAR(&hacks::shared::spam::newlines);
+	ADDCVAR(&hacks::shared::spam::filename);
 	tab->AddChild(new CBaseButton("spam_reload", tab, "Reload spam", [this](CBaseButton*) {
-		g_phSpam->Reload();
+		hacks::shared::spam::Reload();
 	}));
 	ADDLABEL("Killsay");
-	ADDCVAR(g_phKillSay->v_bEnabled);
-	ADDCVAR(g_phKillSay->v_sFileName);
+	ADDCVAR(&hacks::shared::killsay::enabled);
+	ADDCVAR(&hacks::shared::killsay::filename);
 	tab->AddChild(new CBaseButton("killsay_reload", tab, "Reload killsays", [this](CBaseButton*) {
-		g_phKillSay->Reload();
+		hacks::shared::killsay::Reload();
 	}));
 }
 

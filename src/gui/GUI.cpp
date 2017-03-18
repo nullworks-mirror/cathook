@@ -14,22 +14,21 @@
 #include "../sdk.h"
 
 void GUIVisibleCallback(IConVar* var, const char* pOldValue, float flOldValue) {
-	interfaces::input->SetCursorPosition(draw::width / 2, draw::height / 2);
-	interfaces::surface->SetCursor(vgui::CursorCode::dc_none);
-	interfaces::matsurface->SetCursorAlwaysVisible(false);
-	if (g_pGUI->v_bGUIVisible) {
-		if (g_pGUI->v_bGUIVisible->GetBool()) {
-			interfaces::matsurface->UnlockCursor();
-		} else {
-			interfaces::matsurface->LockCursor();
-		}
+	g_IInputSystem->SetCursorPosition(draw::width / 2, draw::height / 2);
+	g_ISurface->SetCursor(vgui::CursorCode::dc_none);
+	g_IMatSystemSurface->SetCursorAlwaysVisible(false);
+	if (gui_visible) {
+		g_IMatSystemSurface->UnlockCursor();
+	} else {
+		g_IMatSystemSurface->LockCursor();
 	}
 }
 
+extern CatVar gui_visible(CV_SWITCH, "gui_visible", "0", "GUI Active", "GUI switch (bind it to a key!)");
+extern CatVar gui_draw_bounds(CV_SWITCH, "gui_bounds", "0", "Draw Bounds", "Draw GUI elements' bounding boxes");
+
 CatGUI::CatGUI() {
 	m_pRootWindow = 0;
-	v_bGUIVisible = new CatVar(CV_SWITCH, "gui_visible", "0", "GUI Active", NULL, "GUI switch (bind it to a key!)");
-	v_bDrawBounds = new CatVar(CV_SWITCH, "gui_bounds", "0", "Draw Bounds", NULL, "Draw GUI elements' bounding boxes");
 }
 
 CatGUI::~CatGUI() {
@@ -39,7 +38,7 @@ CatGUI::~CatGUI() {
 void CatGUI::Setup() {
 	m_pRootWindow = new RootWindow();
 	m_pRootWindow->Setup();
-	v_bGUIVisible->OnRegister([](CatVar* var) {
+	gui_visible.OnRegister([](CatVar* var) {
 		var->convar->InstallChangeCallback(GUIVisibleCallback);
 	});
 }
@@ -54,9 +53,9 @@ void CatGUI::ShowTooltip(std::string text) {
 void CatGUI::Update() {
 	m_bShowTooltip = false;
 	for (int i = 0; i < ButtonCode_t::BUTTON_CODE_COUNT; i++) {
-		bool down = interfaces::input->IsButtonDown((ButtonCode_t)(i));
+		bool down = g_IInputSystem->IsButtonDown((ButtonCode_t)(i));
 		bool changed = m_bPressedState[i] != down;
-		if (changed && down) m_iPressedFrame[i] = interfaces::gvars->framecount;
+		if (changed && down) m_iPressedFrame[i] = g_GlobalVars->framecount;
 		m_bPressedState[i] = down;
 		if (m_bKeysInit) {
 			if (changed) {
@@ -66,14 +65,14 @@ void CatGUI::Update() {
 					else m_pRootWindow->OnMouseRelease();
 				} else {
 					if (i == ButtonCode_t::KEY_INSERT && down) {
-						v_bGUIVisible->SetValue(!v_bGUIVisible->GetBool());
+						gui_visible = !gui_visible;
 					}
 					if (down) m_pRootWindow->OnKeyPress((ButtonCode_t)i, false);
 					else m_pRootWindow->OnKeyRelease((ButtonCode_t)i);
 				}
 			} else {
 				if (down) {
-					int frame = interfaces::gvars->framecount - m_iPressedFrame[i];
+					int frame = g_GlobalVars->framecount - m_iPressedFrame[i];
 					bool shouldrepeat = false;
 					if (frame) {
 						if (frame > 150) {
@@ -91,11 +90,11 @@ void CatGUI::Update() {
 	}
 
 
-	m_iMouseX = interfaces::input->GetAnalogValue(AnalogCode_t::MOUSE_X);
-	m_iMouseY = interfaces::input->GetAnalogValue(AnalogCode_t::MOUSE_Y);
+	m_iMouseX = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_X);
+	m_iMouseY = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_Y);
 
 	if (!m_bKeysInit) m_bKeysInit = 1;
-	if (v_bGUIVisible->GetBool()) {
+	if (gui_visible) {
 		if (!m_pRootWindow->IsVisible())
 			m_pRootWindow->Show();
 		m_pRootWindow->Update();
@@ -103,7 +102,7 @@ void CatGUI::Update() {
 		m_pRootWindow->Draw(0, 0);
 		draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colors::Transparent(colors::white));
 		draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colors::pink);
-		if (v_bDrawBounds->GetBool()) {
+		if (gui_draw_bounds) {
 			m_pRootWindow->DrawBounds(0, 0);
 		}
 	} else {

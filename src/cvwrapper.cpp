@@ -10,59 +10,96 @@
 #include "common.h"
 #include "sdk.h"
 
-CatVar::CatVar(CatVar_t type, std::string name, std::string value, std::string help, CatEnum* enum_type, std::string long_description, bool hasminmax, float maxv, float minv)
-	: type(type), name(name), defaults(value), desc_short(help), desc_long(long_description), enum_type(enum_type) {
-	min = minv;
-	max = maxv;
-	restricted = hasminmax;
-	g_UnregisteredCatVars.push(this);
+// Prevent initialization errors.
+std::vector<CatVar*>& registrationArray() {
+	static std::vector<CatVar*> vector;
+	return vector;
+}
+
+std::vector<CatCommand*>& commandRegistrationArray() {
+	static std::vector<CatCommand*> vector;
+	return vector;
+}
+
+
+CatCommand::CatCommand(std::string name, std::string help, FnCommandCallback_t callback)
+	: name(name), help(help), callback(callback) {
+	commandRegistrationArray().push_back(this);
+}
+
+CatCommand::CatCommand(std::string name, std::string help, FnCommandCallbackVoid_t callback)
+	: name(name), help(help), callback_void(callback) {
+	commandRegistrationArray().push_back(this);
+}
+
+void CatCommand::Register() {
+	char* name_c = new char[256];
+	char* help_c = new char[256];
+	strncpy(name_c, (CON_PREFIX + name).c_str(), 255);
+	strncpy(help_c, help.c_str(), 255);
+	if (callback) cmd = new ConCommand(name_c, callback, help_c);
+	else if (callback_void) cmd = new ConCommand(name_c, callback_void, help_c);
+	else throw std::logic_error("no callback in CatCommand");
+	g_ICvar->RegisterConCommand(cmd);
+	// name_c and help_c are not freed because ConCommandBase doesn't copy them
+}
+
+void RegisterCatCommands() {
+	while (!commandRegistrationArray().empty()) {
+		CatCommand* cmd = commandRegistrationArray().back();
+		cmd->Register();
+		commandRegistrationArray().pop_back();
+	}
 }
 
 CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long)
-	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(false) {
-	// For some reason, adding min(0.0f), max(0.0f) gives a compilation error.
+	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(false), callbacks{} {
 	min = 0.0f;
 	max = 0.0f;
-	g_UnregisteredCatVars.push(this);
+	registrationArray().push_back(this);
 }
 
 CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float max_val)
-	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(true) {
+	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(true), callbacks{} {
 	min = 0.0f;
 	max = max_val;
-	g_UnregisteredCatVars.push(this);
+	registrationArray().push_back(this);
 }
 
 CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float min_val, float max_val)
-	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(true) {
+	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(true), callbacks{} {
 	min = min_val;
 	max = max_val;
-	g_UnregisteredCatVars.push(this);
+	registrationArray().push_back(this);
 }
 
-CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, CatEnum& cat_enum)
-	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(&cat_enum), restricted(true) {
+CatVar::CatVar(CatEnum& cat_enum, std::string name, std::string defaults, std::string desc_short, std::string desc_long)
+	: type(CV_ENUM), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(&cat_enum), restricted(true), callbacks{} {
 	min = cat_enum.Minimum();
 	max = cat_enum.Maximum();
-	g_UnregisteredCatVars.push(this);
+	registrationArray().push_back(this);
+}
+
+void CatVar::OnRegister(CatVar::RegisterCallbackFn fn) {
+	if (registered) fn(this);
+	else callbacks.push_back(fn);
 }
 
 void CatVar::Register() {
 	convar = CreateConVar(CON_PREFIX + name, defaults, desc_short);
 	convar_parent = convar->m_pParent;
 	while (!callbacks.empty()) {
-		callbacks.top()(this);
-		callbacks.pop();
+		callbacks.back()(this);
+		callbacks.pop_back();
 	}
 	registered = true;
 }
 
-std::stack<CatVar*> g_UnregisteredCatVars;
 void RegisterCatVars() {
-	while (g_UnregisteredCatVars.size()) {
-		CatVar* var = g_UnregisteredCatVars.top();
+	while (registrationArray().size()) {
+		CatVar* var = registrationArray().back();
 		var->Register();
-		g_UnregisteredCatVars.pop();
+		registrationArray().pop_back();
 	}
 }
 

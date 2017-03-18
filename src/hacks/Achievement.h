@@ -10,20 +10,11 @@
 
 #include "IHack.h"
 
-class AchievementHack : public IHack {
-public:
-	AchievementHack();
+namespace hacks { namespace tf2 { namespace achievement {
 
-	void UnlockAll();
-	void LockAll();
+void Lock();
+void Unlock();
 
-	ConCommand* c_Unlock;
-	ConCommand* c_Lock;
-};
-
-void CC_Achievement_Unlock(const CCommand& args);
-void CC_Achievement_Lock(const CCommand& args);
-
-DECLARE_HACK_SINGLETON(AchievementHack);
+}}}
 
 #endif /* HACKS_ACHIEVEMENT_H_ */

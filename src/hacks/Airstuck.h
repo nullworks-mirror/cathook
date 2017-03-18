@@ -10,17 +10,15 @@
 
 #include "IHack.h"
 
-class Airstuck : public IHack {
-public:
-	Airstuck();
+namespace hacks { namespace shared { namespace airstuck {
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
-	virtual void OnLevelInit() override;
-	virtual void OnLevelShutdown() override;
+extern CatVar stuck;
 
-	ConVar* v_bStuck;
-};
+void SendNOP();
+void CreateMove();
+bool IsStuck();
+void Reset();
 
-DECLARE_HACK_SINGLETON(Airstuck);
+}}}
 
 #endif /* HACKS_AIRSTUCK_H_ */

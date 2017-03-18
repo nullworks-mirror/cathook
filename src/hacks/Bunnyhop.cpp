@@ -10,7 +10,37 @@
 #include "../common.h"
 #include "../sdk.h"
 
-DEFINE_HACK_SINGLETON(Bunnyhop);
+namespace hacks { namespace shared { namespace bunnyhop {
+
+CatVar enabled(CV_SWITCH, "bhop_enabled", "0", "Bunnyhop", "Enable Bunnyhop. All extra features like autojump and perfect jump limit were temporary removed.");
+
+int iTicksFlying { 0 };
+int iTicksLastJump { 0 };
+
+void CreateMove() {
+	if (!enabled) return;
+	if (HasCondition(g_pLocalPlayer->entity, TFCond_GrapplingHook)) return;
+	int flags = CE_INT(g_pLocalPlayer->entity, netvar.iFlags);
+
+	bool ground = (flags & (1 << 0));
+	bool jump = (g_pUserCmd->buttons & IN_JUMP);
+
+	if (ground) {
+		iTicksFlying = 0;
+	} else {
+		iTicksFlying++;
+	}
+
+	if (!ground && jump) {
+		if (iTicksLastJump++ >= 20) g_pUserCmd->buttons = g_pUserCmd->buttons &~ IN_JUMP;
+	}
+	if (!jump) iTicksLastJump = 0;
+	return;
+}
+
+}}}
+
+/*DEFINE_HACK_SINGLETON(Bunnyhop);
 
 Bunnyhop::Bunnyhop() {
 	this->v_bEnabled = new CatVar(CV_SWITCH, "bhop_enabled", "0", "Enable", NULL, "Enable Bunnyhop");
@@ -71,4 +101,4 @@ void Bunnyhop::ProcessUserCmd(CUserCmd* cmd) {
 	}
 	if (!jump) iTicksLastJump = 0;
 	return;
-}
+}*/

@@ -56,41 +56,22 @@
 bool hack::shutdown = false;
 
 void hack::InitHacks() {
-	ADD_HACK(AutoStrafe);
-	ADD_HACK(AntiAim);
-	if (TF) ADD_HACK(AntiDisguise);
-	if (TF) ADD_HACK(AutoReflect);
-	//ADD_HACK(FollowBot);
-	ADD_HACK(Misc);
-	ADD_HACK(Aimbot);
-	ADD_HACK(Bunnyhop);
-	ADD_HACK(ESP);
-	ADD_HACK(Triggerbot);
-	if (TF) ADD_HACK(AutoSticky);
-	ADD_HACK(Airstuck);
-	if (TF) ADD_HACK(AutoHeal);
-	if (TF) ADD_HACK(SpyAlert);
-	if (TF2) ADD_HACK(Glow);
-	ADD_HACK(KillSay);
-	ADD_HACK(Spam);
-	if (TF) ADD_HACK(AchievementHack);
-	if (TF2) ADD_HACK(Noisemaker);
 }
 
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
-	interfaces::cvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), "cathook");
-	interfaces::cvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), " by ");
-	interfaces::cvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), "d4rkc4t\n");
-	interfaces::cvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "build: " CATHOOK_BUILD_NUMBER " \"" CATHOOK_BUILD_NAME "\"\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), "cathook");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), " by ");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), "d4rkc4t\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "build: " CATHOOK_BUILD_NUMBER " \"" CATHOOK_BUILD_NAME "\"\n");
 #if _DEVELOPER
-	interfaces::cvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "[DEVELOPER BUILD]\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "[DEVELOPER BUILD]\n");
 #else
-	interfaces::cvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "Build for user " __DRM_NAME " (Early Access)\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "Build for user " __DRM_NAME " (Early Access)\n");
 #endif
 #ifdef __DRM_NOTES
-	interfaces::cvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "Build notes: " __DRM_NOTES "\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "Build notes: " __DRM_NOTES "\n");
 #endif
 }
 
@@ -100,15 +81,14 @@ bool test_handleevent(IMatSystemSurface* thisptr, const InputEvent_t& event) {
 }
 
 void hack::Initialize() {
-	logging::Initialize();
 	srand(time(0));
 	prctl(PR_SET_DUMPABLE,0,42,42,42);
 	sharedobj::LoadAllSharedObjects();
 	g_pszTFPath = tf_path_from_maps();
-	interfaces::CreateInterfaces();
+	CreateInterfaces();
 	CDumper dumper;
 	dumper.SaveDump();
-	ClientClass* cc = interfaces::baseClient->GetAllClasses();
+	ClientClass* cc = g_IBaseClient->GetAllClasses();
 	FILE* cd = fopen("/tmp/cathook-classdump.txt", "w");
 	while (cc) {
 		fprintf(cd, "[%d] %s\n", cc->m_ClassID, cc->GetName());
@@ -139,25 +119,25 @@ void hack::Initialize() {
 	hack::c_Cat = CreateConCommand(CON_NAME, &hack::CC_Cat, "Info");
 	hack::InitHacks();
 	g_Settings.Init();
-	g_pGUI = new CatGUI();
 	EndConVars();
+	g_pGUI = new CatGUI();
 	g_pGUI->Setup();
 	gNetvars.init();
 	InitNetVars();
 	g_pLocalPlayer = new LocalPlayer();
 	g_pPlayerResource = new TFPlayerResource();
 	hooks::hkPanel = new hooks::VMTHook();
-	hooks::hkPanel->Init(interfaces::panel, 0);
+	hooks::hkPanel->Init(g_IPanel, 0);
 	//hooks::hkPanel->HookMethod((void*)&hack::Hk_PaintTraverse, hooks::offPaintTraverse);
 	hooks::hkPanel->HookMethod((void*)PaintTraverse_hook, hooks::offPaintTraverse);
 	hooks::hkPanel->Apply();
 	hooks::hkClientMode = new hooks::VMTHook();
 	uintptr_t* clientMode = 0;
-	while(!(clientMode = **(uintptr_t***)((uintptr_t)((*(void***)interfaces::baseClient)[10]) + 1))) {
+	while(!(clientMode = **(uintptr_t***)((uintptr_t)((*(void***)g_IBaseClient)[10]) + 1))) {
 		sleep(1);
 	}
 	//hooks::hkMatSurface = new hooks::VMTHook();
-	//hooks::hkMatSurface->Init((void*)interfaces::matsurface, 0);
+	//hooks::hkMatSurface->Init((void*)matsurface, 0);
 	//hooks::hkMatSurface->HookMethod((void*)test_handleevent, 1);
 	hooks::hkClientMode->Init((void*)clientMode, 0);
 	//hooks::hkClientMode->HookMethod((void*)&hack::Hk_CreateMove, hooks::offCreateMove);
@@ -167,19 +147,19 @@ void hack::Initialize() {
 	hooks::hkClientMode->HookMethod((void*)LevelShutdown_hook, hooks::offLevelShutdown);
 	hooks::hkClientMode->Apply();
 	hooks::hkStudioRender = new hooks::VMTHook();
-	hooks::hkStudioRender->Init((void*)interfaces::render, 0);
+	hooks::hkStudioRender->Init((void*)g_IStudioRender, 0);
 	hooks::hkStudioRender->HookMethod((void*)BeginFrame_hook, hooks::offBeginFrame);
 	hooks::hkStudioRender->Apply();
 	hooks::hkClient = new hooks::VMTHook();
-	hooks::hkClient->Init((void*)interfaces::baseClient, 0);
+	hooks::hkClient->Init((void*)g_IBaseClient, 0);
 	hooks::hkClient->HookMethod((void*)FrameStageNotify_hook, hooks::offFrameStageNotify);
 	hooks::hkClient->HookMethod((void*)DispatchUserMessage_hook, hooks::offFrameStageNotify + 1);
 	hooks::hkClient->HookMethod((void*)IN_KeyEvent_hook, hooks::offKeyEvent);
 	hooks::hkClient->Apply();
 	if (TF2) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
+	hacks::shared::killsay::Init();
 	logging::Info("Init done.");
-	g_pChatStack = new ChatStack();
 }
 
 void hack::Think() {
@@ -197,23 +177,5 @@ void hack::Shutdown() {
 	if (hooks::hkNetChannel) hooks::hkNetChannel->Kill();
 	if (hooks::hkStudioRender) hooks::hkStudioRender->Kill();
 	ConVar_Unregister();
-	DELETE_HACK(AutoStrafe);
-	DELETE_HACK(AntiAim);
-	if (TF) DELETE_HACK(AntiDisguise);
-	if (TF) DELETE_HACK(AutoReflect);
-	//DELETE_HACK(FollowBot);
-	DELETE_HACK(Misc);
-	DELETE_HACK(Aimbot);
-	DELETE_HACK(Bunnyhop);
-	DELETE_HACK(ESP);
-	DELETE_HACK(Triggerbot);
-	if (TF) DELETE_HACK(AutoSticky);
-	DELETE_HACK(Airstuck);
-	if (TF) DELETE_HACK(AutoHeal);
-	DELETE_HACK(SpyAlert);
-	if (TF) DELETE_HACK(Glow);
-	DELETE_HACK(KillSay);
-	if (TF) DELETE_HACK(AchievementHack);
-	if (TF2) DELETE_HACK(Noisemaker);
-	DELETE_HACK(Spam);
+	hacks::shared::killsay::Shutdown();
 }

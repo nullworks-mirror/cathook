@@ -17,35 +17,24 @@ extern EstimateAbsVelocity_t* EstimateAbsVelocity;
 
 extern int g_AppID;
 
+extern CatVar cathook; // Master switch
+extern CatVar ignore_taunting;
+extern CatVar send_packets;
+extern CatVar show_antiaim;
+extern CatVar force_thirdperson;
+extern CatVar console_logging;
+extern CatVar fast_outline;
+extern CatVar roll_speedhack;
+
 class GlobalSettings {
 public:
 	void Init();
-// TODO
-//	CatVar* bMaxPerformance;
-	CatVar* flForceFOV;
-	CatVar* flForceFOVZoomed;
-	CatVar* bZoomedFOV;
-	CatVar* bHackEnabled;
-	CatVar* bIgnoreTaunting;
-//	CatVar* bProfiler;
-	CatVar* bNoZoom;
-//	CatVar* bNoFlinch;
-	CatVar* bSendPackets;
-	CatVar* bShowLogo;
-	CatVar* flDrawingOpacity;
-	CatVar* sDisconnectMsg;
-	CatVar* bShowAntiAim;
-	CatVar* bThirdperson;
-	CatVar* bNoVisuals;
-	CatVar* bCleanScreenshots;
-	CatVar* bDebugLog;
+	bool bInvalid { true };
 	Vector last_angles;
-	CatVar* bFastOutline;
-	CatVar* kRollSpeedhack;
-	CatVar* bFastVischeck;
-	bool bInvalid;
 };
 
+class CUserCmd;
+extern CUserCmd* g_pUserCmd;
 extern const char* g_pszTFPath;
 
 extern GlobalSettings g_Settings;

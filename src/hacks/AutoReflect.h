@@ -10,19 +10,16 @@
 
 #include "IHack.h"
 
-class AutoReflect : public IHack {
-public:
-	AutoReflect();
+namespace hacks { namespace tf { namespace autoreflect {
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
+extern CatVar enabled;
+extern CatVar idle_only;
+extern CatVar stickies;
+extern CatVar max_distance;
 
-	bool ShouldReflect(CachedEntity* ent);
-	CatVar* v_bEnabled;
-	CatVar* v_bDisableWhenAttacking;
-	CatVar* v_bReflectStickies;
-	CatVar* v_iReflectDistance;
-};
+void CreateMove();
+bool ShouldReflect(CachedEntity* ent);
 
-DECLARE_HACK_SINGLETON(AutoReflect);
+}}}
 
 #endif /* HACKS_AUTOREFLECT_H_ */

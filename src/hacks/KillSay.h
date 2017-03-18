@@ -13,29 +13,24 @@
 #include "../fixsdk.h"
 #include <igameevents.h>
 
-class TextFile;
+
+class CatCommand;
 
 class KillSayEventListener : public IGameEventListener2 {
 	virtual void FireGameEvent(IGameEvent* event);
 };
 
-class KillSay : public IHack {
-public:
-	KillSay();
-	~KillSay();
-	const char* ComposeKillSay(IGameEvent* evt);
-	void Reload();
+namespace hacks { namespace shared { namespace killsay {
 
-	CatVar* v_bEnabled;
-	CatVar* v_sFileName;
+extern CatVar enabled;
+extern CatVar filename;
+extern CatCommand reload;
 
-	TextFile* m_TextFile;
-	KillSayEventListener m_Listener;
-};
+void Init();
+void Shutdown();
+void Reload();
+std::string ComposeKillSay(IGameEvent* event);
 
-//void CC_PushKillsayDBG(const CCommand& args);
-void CC_KillSay_ReloadFile(const CCommand& args);
-
-DECLARE_HACK_SINGLETON(KillSay);
+}}}
 
 #endif /* HACKS_KILLSAY_H_ */

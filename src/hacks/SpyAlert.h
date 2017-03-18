@@ -10,17 +10,14 @@
 
 #include "IHack.h"
 
-class SpyAlert : public IHack {
-public:
-	SpyAlert();
+namespace hacks { namespace tf { namespace spyalert {
 
-	virtual void Draw() override;
+extern CatVar enabled;
+extern CatVar distance_warning;
+extern CatVar distance_backstab;
 
-	CatVar* v_bEnabled;
-	CatVar* v_flWarningDistance;
-	CatVar* v_flBackstabDistance;
-};
+void Draw();
 
-DECLARE_HACK_SINGLETON(SpyAlert);
+}}}
 
 #endif /* HACKS_SPYALERT_H_ */

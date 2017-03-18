@@ -12,7 +12,7 @@
 
 bool CanPacket_hook(void* thisptr) {
 	SEGV_BEGIN;
-	return g_Settings.bSendPackets->GetBool() && ((CanPacket_t*)hooks::hkNetChannel->GetMethod(hooks::offCanPacket))(thisptr);
+	return send_packets && ((CanPacket_t*)hooks::hkNetChannel->GetMethod(hooks::offCanPacket))(thisptr);
 	SEGV_END;
 	return false;
 }
@@ -31,7 +31,7 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 	SEGV_BEGIN;
 
 	//logging::Info("Sending NetMsg! %i", msg.GetType());
-	if (g_phAirstuck->v_bStuck->GetBool() && g_Settings.bHackEnabled->GetBool() && !g_Settings.bInvalid) {
+	if (hacks::shared::airstuck::IsStuck() && cathook && !g_Settings.bInvalid) {
 		switch (msg.GetType()) {
 		case net_NOP:
 		case net_SignonState:
@@ -46,14 +46,12 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 	return false;
 }
 
+CatVar disconnect_reason(CV_STRING, "disconnect_reason", "", "Disconnect reason", "A custom disconnect reason");
+
 void Shutdown_hook(void* thisptr, const char* reason) {
 	SEGV_BEGIN;
-	if (g_Settings.bHackEnabled->GetBool()) {
-		const char* new_reason = reason;
-		if (g_Settings.sDisconnectMsg->convar->m_StringLength > 3) {
-			new_reason = g_Settings.sDisconnectMsg->GetString();
-		}
-		((Shutdown_t*)hooks::hkNetChannel->GetMethod(hooks::offShutdown))(thisptr, new_reason);
+	if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) && strstr(reason, "user")) {
+		((Shutdown_t*)hooks::hkNetChannel->GetMethod(hooks::offShutdown))(thisptr, disconnect_reason.GetString());
 	} else {
 		((Shutdown_t*)hooks::hkNetChannel->GetMethod(hooks::offShutdown))(thisptr, reason);
 	}
@@ -64,18 +62,18 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;
 	//logging::Info("FrameStageNotify %i", stage);
 	// Ambassador to festive ambassador changer. simple.
-	if (!interfaces::engineClient->IsInGame()) g_Settings.bInvalid = true;
+	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
 	//logging::Info("fsi begin");// TODO dbg
 	SVDBG("FSN %i", __LINE__);
 	// TODO hack FSN hook
-	if (TF && g_Settings.bHackEnabled->GetBool() && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		SVDBG("FSN %i", __LINE__);
-		if (g_Settings.bThirdperson->GetBool() && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
+		if (force_thirdperson && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
 			SVDBG("FSN %i", __LINE__);
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
 		}
 		SVDBG("FSN %i", __LINE__);
-		if (stage == 5 && g_Settings.bShowAntiAim->GetBool() && interfaces::iinput->CAM_IsThirdPerson()) {
+		if (stage == 5 && show_antiaim && g_IInput->CAM_IsThirdPerson()) {
 			SVDBG("FSN %i", __LINE__);
 			if (CE_GOOD(g_pLocalPlayer->entity)) {
 				CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 4) = g_Settings.last_angles.x;
@@ -89,28 +87,29 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_END;
 }
 
+CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
+CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
+
 void OverrideView_hook(void* thisptr, CViewSetup* setup) {
 	SEGV_BEGIN;
 	((OverrideView_t*)hooks::hkClientMode->GetMethod(hooks::offOverrideView))(thisptr, setup);
-	if (!g_Settings.bHackEnabled->GetBool()) return;
-	if (g_Settings.flForceFOV && g_Settings.flForceFOVZoomed && g_Settings.bZoomedFOV) {
-		bool zoomed = g_pLocalPlayer->bZoomed;
-		if (g_Settings.bZoomedFOV->GetBool() && zoomed) {
-			if (g_Settings.flForceFOVZoomed->GetBool()) {
-				setup->fov = g_Settings.flForceFOVZoomed->GetFloat();
-			}
-		} else {
-			if (g_Settings.flForceFOV->GetBool()) {
-		setup->fov = g_Settings.flForceFOV->GetFloat();
-			}
+	if (!cathook) return;
+	bool zoomed = g_pLocalPlayer->bZoomed;
+	if (zoomed && override_fov_zoomed) {
+		setup->fov = override_fov_zoomed;
+	} else {
+		if (override_fov) {
+			setup->fov = override_fov;
 		}
 	}
 	SEGV_END;
 }
 
+static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat", "Removes newlines from chat");
+
 bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 	SEGV_BEGIN;
-	if (g_phMisc->v_bCleanChat->GetBool()) {
+	if (clean_chat) {
 		if (type == 4) {
 			int s = buf.GetNumBytesLeft();
 			char* data = new char[s];
@@ -119,7 +118,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 			int j = 0;
 			for (int i = 0; i < 3; i++) {
 				while (char c = data[j++]) {
-					if (c == '\n' && (i == 1 || i == 2)) data[j - 1] = ' ';
+					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '?';
 				}
 			}
 			buf = bf_read(data, s);
@@ -132,23 +131,13 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 
 void LevelInit_hook(void* thisptr, const char* newmap) {
 	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
-	interfaces::engineClient->ExecuteClientCmd("exec cat_matchexec");
-	LEVEL_INIT(Aimbot);
-	LEVEL_INIT(Airstuck);
-	LEVEL_INIT(AntiAim);
-	if (TF) LEVEL_INIT(AntiDisguise);
-	if (TF) LEVEL_INIT(AutoHeal);
-	if (TF) LEVEL_INIT(AutoReflect);
-	if (TF) LEVEL_INIT(AutoSticky);
-	LEVEL_INIT(AutoStrafe);
-	LEVEL_INIT(Bunnyhop);
-	LEVEL_INIT(ESP);
+	g_IEngine->ExecuteClientCmd("exec cat_matchexec");
+	hacks::shared::aimbot::Reset();
+	hacks::shared::airstuck::Reset();
 //	LEVEL_SHUTDOWN(FollowBot);
-	LEVEL_INIT(Misc);
 	//if (TF) LEVEL_INIT(SpyAlert);
-	//LEVEL_INIT(Triggerbot);
-	if (TF2) LEVEL_INIT(Glow);
-	g_pChatStack->Reset();
+	chat_stack::Reset();
+	hacks::shared::spam::Reset();
 }
 
 bool CanInspect_hook(IClientEntity*) { return true; }
@@ -156,21 +145,9 @@ bool CanInspect_hook(IClientEntity*) { return true; }
 void LevelShutdown_hook(void* thisptr) {
 	((LevelShutdown_t*) hooks::hkClientMode->GetMethod(hooks::offLevelShutdown))(thisptr);
 	g_Settings.bInvalid = true;
-	LEVEL_SHUTDOWN(Aimbot);
-	LEVEL_SHUTDOWN(Airstuck);
-	LEVEL_SHUTDOWN(AntiAim);
-	if (TF) LEVEL_SHUTDOWN(AntiDisguise);
-	if (TF) LEVEL_SHUTDOWN(AutoHeal);
-	if (TF) LEVEL_SHUTDOWN(AutoReflect);
-	if (TF) LEVEL_SHUTDOWN(AutoSticky);
-	LEVEL_SHUTDOWN(AutoStrafe);
-	LEVEL_SHUTDOWN(Bunnyhop);
-	LEVEL_SHUTDOWN(ESP);
-//	LEVEL_SHUTDOWN(FollowBot);
-	LEVEL_SHUTDOWN(Misc);
-	if (TF) LEVEL_SHUTDOWN(SpyAlert);
-	LEVEL_SHUTDOWN(Triggerbot);
-	if (TF2) LEVEL_SHUTDOWN(Glow);
-	g_pChatStack->Reset();
+	hacks::shared::aimbot::Reset();
+	hacks::shared::airstuck::Reset();
+	chat_stack::Reset();
+	hacks::shared::spam::Reset();
 }
 

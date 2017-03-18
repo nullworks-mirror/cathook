@@ -52,7 +52,7 @@ void EntityHitboxCache::Init() {
 	SAFE_CALL(model = (model_t*)RAW_ENT(m_pParentEntity)->GetModel());
 	if (!model) return;
 	if (!m_bModelSet || model != m_pLastModel) {
-		studiohdr_t* shdr = interfaces::model->GetStudiomodel(model);
+		studiohdr_t* shdr = g_IModelInfo->GetStudiomodel(model);
 		if (!shdr) return;
 		mstudiohitboxset_t* set = shdr->pHitboxSet(CE_INT(m_pParentEntity, netvar.iHitboxSet));
 		if (!dynamic_cast<mstudiohitboxset_t*>(set)) return;

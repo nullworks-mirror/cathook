@@ -13,159 +13,32 @@
 #include "../sdk/in_buttons.h"
 #include "Aimbot.h"
 
-DEFINE_HACK_SINGLETON(Aimbot);
+namespace hacks { namespace shared { namespace aimbot {
 
+bool aimkey_switch { false };
+int minigun_fix_ticks { 0 };
+bool projectile_mode { false };
+float cur_proj_speed { 0.0f };
+float cur_proj_grav { 0.0f };
+bool headonly { false };
+int last_target { -1 };
+bool silent_huntsman { false };
 
-enum TargetSystem_t {
-	SMART = 0,
-	FOV = 1,
-	DISTANCE = 2
-};
-
-Aimbot::Aimbot() {
-	m_bAimKeySwitch = false;
-	this->v_eAimKeyMode = new CatVar(CV_ENUM, "aimbot_aimkey_mode", "1", "Aimkey mode", new CatEnum({ "DISABLED", "AIMKEY", "REVERSE", "TOGGLE" }),
-			"DISABLED: aimbot is always active\nAIMKEY: aimbot is active when key is down\nREVERSE: aimbot is disabled when key is down\nTOGGLE: pressing key toggles aimbot", false);
-	this->v_bEnabled = new CatVar(CV_SWITCH, "aimbot_enabled", "0", "Enable Aimbot", NULL,
-			"Main aimbot switch");
-	this->v_eHitbox = new CatVar(CV_ENUM, "aimbot_hitbox", "0", "Hitbox", new CatEnum({
-		"HEAD", "PELVIS", "SPINE 0", "SPINE 1", "SPINE 2", "SPINE 3", "UPPER ARM L", "LOWER ARM L",
-		"HAND L", "UPPER ARM R", "LOWER ARM R", "HAND R", "HIP L", "KNEE L", "FOOT L", "HIP R",
-		"KNEE R", "FOOT R" }),
-			"Hitbox to aim at. Ignored if AutoHitbox is on");
-	/*this->v_bAutoHitbox = new CatVar(CV_SWITCH, "aimbot_autohitbox", "1", "Autohitbox", NULL,
-			"Automatically decide the hitbox to aim at.\n"
-			"For example: Sniper rifles and Ambassador always aim at head, "
-			"rocket launchers aim at feet if enemy is standing and at body "
-			"if enemy is midair for easy airshots");*/
-	this->v_eHitboxMode = new CatVar(CV_ENUM, "aimbot_hitboxmode", "0", "Hitbox Mode", new CatEnum({
-		"AUTO-HEAD", "AUTO-CLOSEST", "STATIC"
-	}), "Defines hitbox selection mode");
-	this->v_bInterpolation = new CatVar(CV_SWITCH, "aimbot_interp", "1", "Latency interpolation", NULL,
-			"Enable basic latency interpolation");
-	this->v_bAutoShoot = new CatVar(CV_SWITCH, "aimbot_autoshoot", "1", "Autoshoot", NULL,
-			"Shoot automatically when the target is locked, isn't compatible with 'Enable when attacking'");
-	this->v_bSilent = new CatVar(CV_SWITCH, "aimbot_silent", "1", "Silent", NULL,
-			"Your screen doesn't get snapped to the point where aimbot aims at");
-	this->v_bZoomedOnly = new CatVar(CV_SWITCH, "aimbot_zoomed", "1", "Zoomed only", NULL,
-			"Don't autoshoot with unzoomed rifles");
-	/*this->v_iAutoShootCharge = CREATE_CV(
-			CV_FLOAT, "aimbot_autoshoot_charge", "0.0", "Autoshoot Charge");*/
-	this->v_iMaxRange = new CatVar(CV_INT, "aimbot_maxrange", "0", "Max distance", NULL,
-			"Max range for aimbot\n"
-			"900-1100 range is efficient for scout/widowmaker engineer", true, 4096.0f);
-	this->v_bRespectCloak = new CatVar(CV_SWITCH, "aimbot_respect_cloak", "1", "Respect cloak", NULL,
-			"Don't aim at invisible enemies");
-	this->v_bEnabledAttacking = new CatVar(CV_SWITCH, "aimbot_enable_attack_only", "0", "Active when attacking", NULL,
-			"Basically makes Mouse1 an AimKey\n"
-			"Isn't compatible with AutoShoot");
-	this->v_bProjectileAimbot = new CatVar(CV_SWITCH, "aimbot_projectile", "1", "Projectile aimbot", NULL,
-			"If you turn it off, aimbot won't try to aim "
-			"with projectile weapons");
-	this->v_fOverrideProjSpeed = new CatVar(CV_FLOAT, "aimbot_proj_speed", "0", "Projectile speed", NULL,
-			"Force override projectile speed.\n"
-			"Can be useful for playing with MvM upgrades or on x10 servers "
-			"since there is no \"automatic\" projectile speed detection in "
-			"cathook. Yet.");
-	this->v_fOverrideProjGravity = new CatVar(CV_FLOAT, "aimbot_proj_gravity", "0", "Projectile gravity", NULL,
-			"Force override projectile gravity. Useful for debugging.", true);
-	this->v_fFOV = new CatVar(CV_FLOAT, "aimbot_fov", "0", "Aimbot FOV", NULL,
-			"FOV range for aimbot to lock targets.\n"
-			"\"Smart FOV\" coming soon.", true, 360.0f);
-	this->v_fAutoShootHuntsmanCharge = new CatVar(CV_FLOAT, "aimbot_huntsman_charge", "0.5", "Huntsman autoshoot", NULL,
-			"Minimum charge for autoshooting with huntsman.\n"
-			"Set it to 0.01 if you want to shoot as soon as you start "
-			"pulling the arrow", true, 1.0f, 0.01f);
-	this->v_kAimKey = new CatVar(CV_KEY, "aimbot_aimkey", "0", "Aimkey", NULL,
-			"Aimkey. Look at Aimkey Mode too!");
-	this->v_ePriorityMode = new CatVar(CV_ENUM, "aimbot_prioritymode", "0", "Priority mode",
-			new CatEnum({ "SMART", "FOV", "DISTANCE", "HEALTH" }),
-			"Priority mode.\n"
-			"SMART: Basically Auto-Threat. Will be tweakable eventually.\n"
-			"FOV, DISTANCE, HEALTH are self-explainable.\n"
-			"HEALTH picks the weakest enemy");
-	v_bAimBuildings = new CatVar(CV_SWITCH, "aimbot_buildings", "1", "Aim at buildings", NULL,
-			"Should aimbot aim at buildings?");
-	v_bActiveOnlyWhenCanShoot = new CatVar(CV_SWITCH, "aimbot_only_when_can_shoot", "1", "Active when can shoot", NULL,
-			"Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators");
-	//v_fSmoothAutoshootTreshold = new CatVar(CV_FLOAT, "aimbot_smooth_autoshoot_treshold", "0.01", "Smooth autoshoot");
-	//this->v_fSmoothRandomness = CREATE_CV(CV_FLOAT, "aimbot_smooth_randomness", "1.0", "Smooth randomness");
-//	this->v_iSeenDelay = new CatVar(CV_INT, "aimbot_delay", "0", "Aimbot delay", NULL,
-//			"# of ticks that should've passed since you can see any hitbox of enemy before aimbot will aim at them", true, 300.0f);
-	this->v_bProjPredVisibility = new CatVar(CV_SWITCH, "aimbot_proj_vispred", "0", "Projectile visibility prediction", NULL,
-			"If disabled, aimbot won't lock at enemies that are behind walls, but will come out soon");
-	this->v_bProjPredFOV = new CatVar(CV_SWITCH, "aimbot_proj_fovpred", "0", "Projectile FOV mode", NULL,
-			"If disabled, FOV restrictions apply to current target position");
-	this->v_bAimAtTeammates = new CatVar(CV_SWITCH, "aimbot_teammates", "0", "Aim at teammates", NULL,
-			"Aim at your own team. Useful for HL2DM");
-	//this->v_bAdvancedSapperAim = new CatVar(CV_SWITCH, "aimbot_sapper", "1", "Advanced Sapper Aim", NULL,
-	//		"Aim at buildings while holding sapper");
+int ClosestHitbox(CachedEntity* target) {
+	int closest = -1;
+	float closest_fov = 256;
+	for (int i = 0; i < target->m_pHitboxCache->GetNumHitboxes(); i++) {
+		float fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, target->m_pHitboxCache->GetHitbox(i)->center);
+		if (fov < closest_fov || closest == -1) {
+			closest = i;
+			closest_fov = fov;
+		}
+	}
+	return closest;
 }
 
-bool Aimbot::ShouldAim(CUserCmd* cmd) {
-	if (this->v_kAimKey->GetBool() && this->v_eAimKeyMode->GetBool()) {
-		bool key_down = interfaces::input->IsButtonDown((ButtonCode_t)this->v_kAimKey->GetInt());
-		switch (this->v_eAimKeyMode->GetInt()) {
-		case AimKeyMode_t::PRESS_TO_ENABLE:
-			if (key_down) break;
-			else return false;
-		case AimKeyMode_t::PRESS_TO_DISABLE:
-			if (key_down) return false;
-			else break;
-		case AimKeyMode_t::PRESS_TO_TOGGLE:
-			m_bAimKeySwitch = !m_bAimKeySwitch;
-			if (!m_bAimKeySwitch) return false;
-		}
-	}
-	if (this->v_bActiveOnlyWhenCanShoot->GetBool()) {
-		// Miniguns should shoot and aim continiously. TODO smg
-		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFMinigun) {
-			// Melees are weird, they should aim continiously like miniguns too.
-			if (GetWeaponMode(g_pLocalPlayer->entity) != weaponmode::weapon_melee) {
-				// Finally, CanShoot() check.
-				if (!CanShoot()) return false;
-			}
-		}
-	}
-	if (this->v_bEnabledAttacking->GetBool() && !(cmd->buttons & IN_ATTACK)) {
-		return false;
-	}
-	if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun) {
-		if (!HasCondition(g_pLocalPlayer->entity, TFCond_Slowed)) {
-			return false;
-		}
-		if (!(cmd->buttons & IN_ATTACK2)) {
-			return false;
-		}
-		if (m_nMinigunFixTicks > 0) {
-			m_nMinigunFixTicks--;
-			cmd->buttons |= IN_ATTACK;
-		}
-	}
-
-	if (IsAmbassador(g_pLocalPlayer->weapon())) { // TODO AmbassadorCanHeadshot()
-		if ((interfaces::gvars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 1.0) {
-			return false;
-		}
-	}
-	if (g_pLocalPlayer->bZoomed) {
-		// TODO IsSniperRifle()
-		if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle ||
-			g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
-			if (!CanHeadshot()) return false;
-		}
-	}
-	if (g_phMisc->v_bCritHack->GetBool()) {
-		if (RandomCrits() && WeaponCanCrit() && !IsAttackACrit(cmd)) return false;
-	}
-	return true;
-}
-
-void Aimbot::ProcessUserCmd(CUserCmd* cmd) {
-	if (!this->v_bEnabled->GetBool()) return;
-	if (CE_BAD(g_pLocalPlayer->entity) || CE_BAD(g_pLocalPlayer->weapon())) return;
-	if (g_pLocalPlayer->life_state) return;
-	//this->m_iLastTarget = -1
+void CreateMove() {
+	if (!enabled) return;
 
 	if (HasCondition(g_pLocalPlayer->entity, TFCond_Taunting)) return;
 
@@ -177,8 +50,10 @@ void Aimbot::ProcessUserCmd(CUserCmd* cmd) {
 	case weapon_invalid:
 		return;
 	case weapon_projectile:
-		if (!v_bProjectileAimbot->GetBool()) return;
+		if (!projectile_aimbot) return;
 	};
+
+	CUserCmd* cmd = g_pUserCmd; // FIXME
 
 	if (HasCondition(g_pLocalPlayer->entity, TFCond_Cloaked)) return; // TODO other kinds of cloak
 	// TODO m_bFeignDeathReady no aim
@@ -189,16 +64,15 @@ void Aimbot::ProcessUserCmd(CUserCmd* cmd) {
 		cmd->buttons = cmd->buttons &~ IN_ATTACK;
 	}*/
 
-	m_bHeadOnly = false;
+	headonly = false;
 
-	m_iPreferredHitbox = this->v_eHitbox->GetInt();
 	if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFGrapplingHook) return;
 
-	m_bProjectileMode = (GetProjectileData(g_pLocalPlayer->weapon(), m_flProjSpeed, m_flProjGravity));
-	if (v_fOverrideProjSpeed->GetBool())
-		m_flProjSpeed = v_fOverrideProjSpeed->GetFloat();
-	if (v_fOverrideProjGravity->GetBool())
-		m_flProjGravity = v_fOverrideProjGravity->GetFloat();
+	projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
+	if (proj_speed)
+		cur_proj_speed = (float)proj_speed;
+	if (proj_gravity)
+		cur_proj_grav = (float)proj_gravity;
 
 	// TODO priority modes (FOV, Smart, Distance, etc)
 	CachedEntity* target_highest = 0;
@@ -208,12 +82,12 @@ void Aimbot::ProcessUserCmd(CUserCmd* cmd) {
 		if (CE_BAD(ent)) continue;
 		int tg = ShouldTarget(ent);
 		if (!tg) {
-			if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee || this->v_ePriorityMode->GetInt() == 2) {
+			if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee || (int)priority_mode == 2) {
 				Vector result;
 				if (ent->m_Type == ENTITY_BUILDING) {
 					result = GetBuildingPosition(ent);
 				} else {
-					GetHitbox(ent, BestHitbox(ent, m_iPreferredHitbox), result);
+					GetHitbox(ent, BestHitbox(ent), result);
 				}
 				float scr = 4096.0f - result.DistTo(g_pLocalPlayer->v_Eye);
 				if (scr > target_highest_score) {
@@ -221,7 +95,7 @@ void Aimbot::ProcessUserCmd(CUserCmd* cmd) {
 					target_highest = ent;
 				}
 			} else {
-				switch (this->v_ePriorityMode->GetInt()) {
+				switch ((int)priority_mode) {
 				case 0: {
 					int scr = GetScoreForEntity(ent);
 					if (scr > target_highest_score) {
@@ -234,7 +108,7 @@ void Aimbot::ProcessUserCmd(CUserCmd* cmd) {
 					if (ent->m_Type == ENTITY_BUILDING) {
 						result = GetBuildingPosition(ent);
 					} else {
-						GetHitbox(ent, BestHitbox(ent, m_iPreferredHitbox), result);
+						GetHitbox(ent, BestHitbox(ent), result);
 					}
 					float scr = 360.0f - GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, result);
 					if (scr > target_highest_score) {
@@ -264,64 +138,252 @@ void Aimbot::ProcessUserCmd(CUserCmd* cmd) {
 	if (CE_GOOD(target_highest)) {
 		target_highest->m_ESPColorFG = colors::pink;
 		if (ShouldAim(cmd)) {
-			this->m_iLastTarget = target_highest->m_IDX;
+			last_target = target_highest->m_IDX;
 			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFCompoundBow) { // There is no Huntsman in TF2C.
 				float begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
 				float charge = 0;
 				if (begincharge != 0) {
-					charge = interfaces::gvars->curtime - begincharge;
+					charge = g_GlobalVars->curtime - begincharge;
 					if (charge > 1.0f) charge = 1.0f;
-					m_bSilentHuntsman = true;
+					silent_huntsman = true;
 				}
-				if (charge >= v_fAutoShootHuntsmanCharge->GetFloat()) {
+				if (charge >= (float)huntsman_autoshoot) {
 					cmd->buttons &= ~IN_ATTACK;
-					g_phAntiAim->AddSafeTicks(3);
+					hacks::shared::antiaim::SetSafeSpace(3);
 				}
-				if (!(cmd->buttons & IN_ATTACK) && m_bSilentHuntsman) {
+				if (!(cmd->buttons & IN_ATTACK) && silent_huntsman) {
 					Aim(target_highest, cmd);
-					m_bSilentHuntsman = false;
+					silent_huntsman = false;
 				}
 			} else {
 				Aim(target_highest, cmd);
 			}
 			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun)
-				m_nMinigunFixTicks = 40;
+				minigun_fix_ticks = 40;
 		}
 	}
 	if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun &&
 			target_highest == 0 &&
-			IDX_GOOD(m_iLastTarget) &&
-			m_nMinigunFixTicks && ShouldAim(cmd)) {
-		Aim(ENTITY(m_iLastTarget), cmd);
+			IDX_GOOD(last_target) &&
+			minigun_fix_ticks && ShouldAim(cmd)) {
+		Aim(ENTITY(last_target), cmd);
 	}
-	if (this->v_bSilent->GetBool()) g_pLocalPlayer->bUseSilentAngles = true;
+	if (silent) g_pLocalPlayer->bUseSilentAngles = true;
 	return;
 }
-// FIXME move
-int ClosestHitbox(CachedEntity* target) {
-	int closest = -1;
-	float closest_fov = 256;
-	for (int i = 0; i < target->m_pHitboxCache->GetNumHitboxes(); i++) {
-		float fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, target->m_pHitboxCache->GetHitbox(i)->center);
-		if (fov < closest_fov || closest == -1) {
-			closest = i;
-			closest_fov = fov;
-		}
-	}
-	return closest;
+
+void Reset() {
+	last_target = -1;
+	projectile_mode = false;
 }
 
-int Aimbot::BestHitbox(CachedEntity* target, int preferred) {
-	switch (v_eHitboxMode->GetInt()) {
+int ShouldTarget(CachedEntity* entity) {
+	// Just assuming CE is good
+	if (entity->m_Type == ENTITY_PLAYER) {
+		if (TF) {
+			if (ignore_taunting && HasCondition(entity, TFCond_Taunting)) return 1;
+			if (IsPlayerInvulnerable(entity)) return 4;
+			if (respect_cloak && IsPlayerInvisible(entity)) return 6;
+			weaponmode mode = GetWeaponMode(LOCAL_E);
+			if (mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == g_pClassID->CTFCompoundBow)
+				if (HasCondition(entity, TFCond_UberBulletResist)) return 10;
+		}
+
+#if NO_DEVIGNORE != true
+		if (Developer(entity)) return 2; // TODO developer relation
+#endif
+		//if (entity->m_lSeenTicks < (unsigned)this->v_iSeenDelay->GetInt()) return 3;
+		if (!entity->m_bAlivePlayer) return 5;
+		if (!entity->m_bEnemy && !teammates) return 7;
+		if (max_range) {
+			if (entity->m_flDistance > (int)max_range) return 8;
+		}
+		if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee) {
+			if (entity->m_flDistance > 95) return 9;
+		}
+		if (GetRelation(entity) == relation::FRIEND) return 11;
+		Vector resultAim;
+		int hitbox = BestHitbox(entity);
+		//if (m_bHeadOnly && hitbox) return 12;
+		if (projectile_mode) {
+			if (proj_fov) {
+				if (proj_visibility) {
+					if (!GetHitbox(entity, hitbox, resultAim)) return 13;
+					if (!IsEntityVisible(entity, hitbox)) return 14;
+				}
+				resultAim = ProjectilePrediction(entity, hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
+			} else {
+				if (!GetHitbox(entity, hitbox, resultAim)) return 15;
+			}
+			if (!IsVectorVisible(g_pLocalPlayer->v_Eye, resultAim)) return 16;
+		} else {
+			/*if (v_bMachinaPenetration->GetBool()) {
+				if (!GetHitbox(entity, hitbox, resultAim)) return false;
+				if (!IsEntityVisiblePenetration(entity, v_eHitbox->GetInt())) return false;
+			} else*/ {
+				if (!GetHitbox(entity, hitbox, resultAim)) return 17;
+				if (!IsEntityVisible(entity, hitbox)) return 18;
+			}
+		}
+		if ((float)fov > 0.0f && (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, resultAim) > (float)fov)) return 25;
+		return false;
+	} else if (entity->m_Type == ENTITY_BUILDING) {
+		if (!buildings) return 19;
+		int team = CE_INT(entity, netvar.iTeamNum);
+		if (team == g_pLocalPlayer->team) return 20;
+		if (max_range) {
+			if (entity->m_flDistance > (int)max_range) return 21;
+		}
+		if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee) {
+			if (entity->m_flDistance > 95) return 22;
+		}
+		Vector resultAim;
+		// TODO fix proj buildings
+		if (projectile_mode) {
+			if (!IsBuildingVisible(entity)) return 23;
+			resultAim = GetBuildingPosition(entity);
+			//resultAim = entity->GetAbsOrigin();
+			//if (!PredictProjectileAim(g_pLocalPlayer->v_Eye, entity, (hitbox_t)m_iHitbox, m_flProjSpeed, m_bProjArc, m_flProjGravity, resultAim)) return false;
+		} else {
+			//logging::Info("IsVisible?");
+			resultAim = GetBuildingPosition(entity);
+			if (!IsBuildingVisible(entity)) return 24;
+		}
+		//logging::Info("IsFOV?");
+		if ((float)fov > 0.0f && (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, resultAim) > (float)fov)) return 25;
+		//logging::Info("Tru");
+		return 0;
+	} else {
+		return 26;
+	}
+	return 27;
+}
+
+bool Aim(CachedEntity* entity, CUserCmd* cmd) {
+	//logging::Info("Aiming!");
+	Vector hit;
+	Vector angles;
+	if (CE_BAD(entity)) return false;
+	int hitbox = BestHitbox(entity);
+	//if (m_bHeadOnly) hitbox = 0;
+	if (entity->m_Type == ENTITY_PLAYER) {
+		//logging::Info("A");
+		GetHitbox(entity, hitbox, hit);
+		//logging::Info("B");
+		if (lerp) SimpleLatencyPrediction(entity, hitbox);
+		//logging::Info("C");
+	} else if (entity->m_Type == ENTITY_BUILDING) {
+		hit = GetBuildingPosition(entity);
+	}
+	if (projectile_mode) {
+		if (proj_speed)
+			cur_proj_speed = (float)proj_speed;
+		if (proj_gravity)
+			cur_proj_grav = (float)proj_gravity;
+		bool succ = false;
+		hit = ProjectilePrediction(entity, hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
+	}
+	//logging::Info("ayyming!");
+	Vector tr = (hit - g_pLocalPlayer->v_Eye);
+	fVectorAngles(tr, angles);
+	bool smoothed = false;
+	/*if (this->v_bSmooth->GetBool()) {
+		Vector da = (angles - g_pLocalPlayer->v_OrigViewangles);
+		fClampAngle(da);
+		smoothed = true;
+		if (da.IsZero(v_fSmoothAutoshootTreshold->GetFloat())) smoothed = false;
+		da *= this->v_fSmoothValue->GetFloat() * (((float)rand() / (float)RAND_MAX) * this->v_fSmoothRandomness->GetFloat());
+		angles = g_pLocalPlayer->v_OrigViewangles + da;
+	}*/
+	fClampAngle(angles);
+	cmd->viewangles = angles;
+	if (silent) {
+		g_pLocalPlayer->bUseSilentAngles = true;
+	}
+	if (autoshoot) {
+		if (g_pLocalPlayer->clazz == tf_class::tf_sniper) {
+			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle || g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
+				if (zoomed_only && !CanHeadshot()) return true;
+			}
+		}
+		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFCompoundBow) {
+			cmd->buttons |= IN_ATTACK;
+		}
+	}
+	return true;
+}
+
+bool ShouldAim(CUserCmd* cmd) {
+	if (aimkey && aimkey_mode) {
+		bool key_down = g_IInputSystem->IsButtonDown((ButtonCode_t)(int)aimkey);
+		switch ((int)aimkey_mode) {
+		case AimKeyMode_t::PRESS_TO_ENABLE:
+			if (key_down) break;
+			else return false;
+		case AimKeyMode_t::PRESS_TO_DISABLE:
+			if (key_down) return false;
+			else break;
+		case AimKeyMode_t::PRESS_TO_TOGGLE:
+			aimkey_switch = !aimkey_switch;
+			if (!aimkey_switch) return false;
+		}
+	}
+	if (only_can_shoot) {
+		// Miniguns should shoot and aim continiously. TODO smg
+		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFMinigun) {
+			// Melees are weird, they should aim continiously like miniguns too.
+			if (GetWeaponMode(g_pLocalPlayer->entity) != weaponmode::weapon_melee) {
+				// Finally, CanShoot() check.
+				if (!CanShoot()) return false;
+			}
+		}
+	}
+	if (attack_only && !(cmd->buttons & IN_ATTACK)) {
+		return false;
+	}
+	if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun) {
+		if (!HasCondition(g_pLocalPlayer->entity, TFCond_Slowed)) {
+			return false;
+		}
+		if (!(cmd->buttons & IN_ATTACK2)) {
+			return false;
+		}
+		if (minigun_fix_ticks > 0) {
+			minigun_fix_ticks--;
+			cmd->buttons |= IN_ATTACK;
+		}
+	}
+
+	if (IsAmbassador(g_pLocalPlayer->weapon())) { // TODO AmbassadorCanHeadshot()
+		if ((g_GlobalVars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 1.0) {
+			return false;
+		}
+	}
+	if (g_pLocalPlayer->bZoomed) {
+		// TODO IsSniperRifle()
+		if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle ||
+			g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
+			if (!CanHeadshot()) return false;
+		}
+	}
+	if (hacks::shared::misc::crit_hack) {
+		if (RandomCrits() && WeaponCanCrit() && !IsAttackACrit(cmd)) return false;
+	}
+	return true;
+}
+
+int BestHitbox(CachedEntity* target) {
+	int preferred = hitbox;
+	switch ((int)hitbox_mode) {
 	case 0: { // AUTO-HEAD
 		int ci = g_pLocalPlayer->weapon()->m_iClassID;
 		if (ci == g_pClassID->CTFSniperRifle ||
 			ci == g_pClassID->CTFSniperRifleDecap) {
-			m_bHeadOnly = CanHeadshot();
+			headonly = CanHeadshot();
 		} else if (ci == g_pClassID->CTFCompoundBow) {
-			m_bHeadOnly = true;
+			headonly = true;
 		} else if (ci == g_pClassID->CTFRevolver) {
-			m_bHeadOnly = IsAmbassador(g_pLocalPlayer->weapon());
+			headonly = IsAmbassador(g_pLocalPlayer->weapon());
 		} else if (ci == g_pClassID->CTFRocketLauncher ||
 				ci == g_pClassID->CTFRocketLauncher_AirStrike ||
 				ci == g_pClassID->CTFRocketLauncher_DirectHit ||
@@ -343,12 +405,12 @@ int Aimbot::BestHitbox(CachedEntity* target, int preferred) {
 			float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
 			if (CanHeadshot() && cdmg > target->m_iHealth) {
 				preferred = ClosestHitbox(target);
-				m_bHeadOnly = false;
+				headonly = false;
 			}
 		}
-		if (m_bHeadOnly) return hitbox_t::head;
+		if (headonly) return hitbox_t::head;
 		if (target->m_pHitboxCache->VisibilityCheck(preferred)) return preferred;
-		for (int i = m_bProjectileMode ? 1 : 0; i < target->m_pHitboxCache->GetNumHitboxes(); i++) {
+		for (int i = projectile_mode ? 1 : 0; i < target->m_pHitboxCache->GetNumHitboxes(); i++) {
 			if (target->m_pHitboxCache->VisibilityCheck(i)) return i;
 		}
 	} break;
@@ -356,150 +418,53 @@ int Aimbot::BestHitbox(CachedEntity* target, int preferred) {
 		return ClosestHitbox(target);
 	} break;
 	case 2: { // STATIC
-		return v_eHitbox->GetInt();;
+		return (int)hitbox;
 	} break;
 	}
 	return -1;
 }
 
-int Aimbot::ShouldTarget(CachedEntity* entity) {
-	// Just assuming CE is good
-	if (entity->m_Type == ENTITY_PLAYER) {
-		if (TF) {
-			if (g_Settings.bIgnoreTaunting->GetBool() && HasCondition(entity, TFCond_Taunting)) return 1;
-			if (IsPlayerInvulnerable(entity)) return 4;
-			if (v_bRespectCloak->GetBool() && IsPlayerInvisible(entity)) return 6;
-			weaponmode mode = GetWeaponMode(LOCAL_E);
-			if (mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == g_pClassID->CTFCompoundBow)
-				if (HasCondition(entity, TFCond_UberBulletResist)) return 10;
-		}
+CatVar aimkey(CV_KEY, "aimbot_aimkey", "0", "Aimkey", "Aimkey. Look at Aimkey Mode too!");
+CatEnum aimkey_modes_enum({ "DISABLED", "AIMKEY", "REVERSE", "TOGGLE" });
+CatVar aimkey_mode(aimkey_modes_enum, "aimbot_aimkey_mode", "1", "Aimkey mode", "DISABLED: aimbot is always active\nAIMKEY: aimbot is active when key is down\nREVERSE: aimbot is disabled when key is down\nTOGGLE: pressing key toggles aimbot");
+CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "STATIC" });
+CatVar hitbox_mode(hitbox_mode_enum, "aimbot_hitboxmode", "0", "Hitbox Mode", "Defines hitbox selection mode");
+CatVar enabled(CV_SWITCH, "aimbot_enabled", "0", "Enable Aimbot", "Main aimbot switch");
+CatVar fov(CV_FLOAT, "aimbot_fov", "0", "Aimbot FOV", "FOV range for aimbot to lock targets. \"Smart FOV\" coming eventually.", 360.0f);
+CatEnum hitbox_enum({
+		"HEAD", "PELVIS", "SPINE 0", "SPINE 1", "SPINE 2", "SPINE 3", "UPPER ARM L", "LOWER ARM L",
+		"HAND L", "UPPER ARM R", "LOWER ARM R", "HAND R", "HIP L", "KNEE L", "FOOT L", "HIP R",
+		"KNEE R", "FOOT R" });
+CatVar hitbox(hitbox_enum, "aimbot_hitbox", "0", "Hitbox", "Hitbox to aim at. Ignored if AutoHitbox is on");
+CatVar lerp(CV_SWITCH, "aimbot_interp", "1", "Latency interpolation", "Enable basic latency interpolation");
+CatVar autoshoot(CV_SWITCH, "aimbot_autoshoot", "1", "Autoshoot", "Shoot automatically when the target is locked, isn't compatible with 'Enable when attacking'");
+CatVar silent(CV_SWITCH, "aimbot_silent", "1", "Silent", "Your screen doesn't get snapped to the point where aimbot aims at");
+CatVar zoomed_only(CV_SWITCH, "aimbot_zoomed", "1", "Zoomed only", "Don't autoshoot with unzoomed rifles");
+CatVar teammates(CV_SWITCH, "aimbot_teammates", "0", "Aim at teammates", "Aim at your own team. Useful for HL2DM");
+CatVar huntsman_autoshoot(CV_FLOAT, "aimbot_huntsman_charge", "0.5", "Huntsman autoshoot", "Minimum charge for autoshooting with huntsman.\n"
+		"Set it to 0.01 if you want to shoot as soon as you start pulling the arrow", 1.0f, 0.01f);
+CatVar max_range(CV_INT, "aimbot_maxrange", "0", "Max distance",
+		"Max range for aimbot\n"
+		"900-1100 range is efficient for scout/widowmaker engineer", 4096.0f);
+//CatVar* v_iMaxAutoshootRange; // TODO IMPLEMENT
+CatVar respect_cloak(CV_SWITCH, "aimbot_respect_cloak", "1", "Respect cloak", "Don't aim at invisible enemies");
+CatVar attack_only(CV_SWITCH, "aimbot_enable_attack_only", "0", "Active when attacking", "Basically makes Mouse1 an AimKey, isn't compatible with AutoShoot");
+CatVar projectile_aimbot(CV_SWITCH, "aimbot_projectile", "1", "Projectile aimbot", "If you turn it off, aimbot won't try to aim with projectile weapons");
+CatVar proj_speed(CV_FLOAT, "aimbot_proj_speed", "0", "Projectile speed",
+		"Force override projectile speed.\n"
+		"Can be useful for playing with MvM upgrades or on x10 servers "
+		"since there is no \"automatic\" projectile speed detection in "
+		"cathook. Yet.");
+CatVar proj_gravity(CV_FLOAT, "aimbot_proj_gravity", "0", "Projectile gravity",
+		"Force override projectile gravity. Useful for debugging.", 1.0f);
+CatVar buildings(CV_SWITCH, "aimbot_buildings", "1", "Aim at buildings", "Should aimbot aim at buildings?");
+CatVar only_can_shoot(CV_SWITCH, "aimbot_only_when_can_shoot", "1", "Active when can shoot", "Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators");
+CatEnum priority_mode_enum({ "SMART", "FOV", "DISTANCE", "HEALTH" });
+CatVar priority_mode(CV_ENUM, "aimbot_prioritymode", "0", "Priority mode", "Priority mode.\n"
+		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
+		"FOV, DISTANCE, HEALTH are self-explainable. HEALTH picks the weakest enemy");
+CatVar proj_visibility(CV_SWITCH, "aimbot_proj_vispred", "0", "Projectile visibility prediction", "If disabled, aimbot won't lock at enemies that are behind walls, but will come out soon");
+CatVar proj_fov(CV_SWITCH, "aimbot_proj_fovpred", "0", "Projectile FOV mode", "If disabled, FOV restrictions apply to current target position");
 
-#if NO_DEVIGNORE != true
-		if (Developer(entity)) return 2; // TODO developer relation
-#endif
-		//if (entity->m_lSeenTicks < (unsigned)this->v_iSeenDelay->GetInt()) return 3;
-		if (!entity->m_bAlivePlayer) return 5;
-		if (!entity->m_bEnemy && !v_bAimAtTeammates->GetBool()) return 7;
-		if (v_iMaxRange->GetInt() > 0) {
-			if (entity->m_flDistance > v_iMaxRange->GetInt()) return 8;
-		}
-		if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee) {
-			if (entity->m_flDistance > 95) return 9;
-		}
-		if (GetRelation(entity) == relation::FRIEND) return 11;
-		Vector resultAim;
-		int hitbox = BestHitbox(entity, m_iPreferredHitbox);
-		//if (m_bHeadOnly && hitbox) return 12;
-		if (m_bProjectileMode) {
-			if (v_bProjPredFOV->GetBool()) {
-				if (v_bProjPredVisibility->GetBool()) {
-					if (!GetHitbox(entity, hitbox, resultAim)) return 13;
-					if (!IsEntityVisible(entity, hitbox)) return 14;
-				}
-				resultAim = ProjectilePrediction(entity, hitbox, m_flProjSpeed, m_flProjGravity, PlayerGravityMod(entity));
-			} else {
-				if (!GetHitbox(entity, hitbox, resultAim)) return 15;
-			}
-			if (!IsVectorVisible(g_pLocalPlayer->v_Eye, resultAim)) return 16;
-		} else {
-			/*if (v_bMachinaPenetration->GetBool()) {
-				if (!GetHitbox(entity, hitbox, resultAim)) return false;
-				if (!IsEntityVisiblePenetration(entity, v_eHitbox->GetInt())) return false;
-			} else*/ {
-				if (!GetHitbox(entity, hitbox, resultAim)) return 17;
-				if (!IsEntityVisible(entity, hitbox)) return 18;
-			}
-		}
-		if (v_fFOV->GetFloat() > 0.0f && (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, resultAim) > v_fFOV->GetFloat())) return 25;
-		return false;
-	} else if (entity->m_Type == ENTITY_BUILDING) {
-		if (!v_bAimBuildings->GetBool()) return 19;
-		int team = CE_INT(entity, netvar.iTeamNum);
-		if (team == g_pLocalPlayer->team) return 20;
-		if (v_iMaxRange->GetInt() > 0) {
-			if (entity->m_flDistance > v_iMaxRange->GetInt()) return 21;
-		}
-		if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee) {
-			if (entity->m_flDistance > 95) return 22;
-		}
-		Vector resultAim;
-		// TODO fix proj buildings
-		if (m_bProjectileMode) {
-			if (!IsBuildingVisible(entity)) return 23;
-			resultAim = GetBuildingPosition(entity);
-			//resultAim = entity->GetAbsOrigin();
-			//if (!PredictProjectileAim(g_pLocalPlayer->v_Eye, entity, (hitbox_t)m_iHitbox, m_flProjSpeed, m_bProjArc, m_flProjGravity, resultAim)) return false;
-		} else {
-			//logging::Info("IsVisible?");
-			resultAim = GetBuildingPosition(entity);
-			if (!IsBuildingVisible(entity)) return 24;
-		}
-		//logging::Info("IsFOV?");
-		if (v_fFOV->GetFloat() > 0.0f && (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, resultAim) > v_fFOV->GetFloat())) return 25;
-		//logging::Info("Tru");
-		return 0;
-	} else {
-		return 26;
-	}
-	return 27;
-}
+}}}
 
-// TODO Vector objects
-bool Aimbot::Aim(CachedEntity* entity, CUserCmd* cmd) {
-	//logging::Info("Aiming!");
-	Vector hit;
-	Vector angles;
-	if (CE_BAD(entity)) return false;
-	int hitbox = BestHitbox(entity, m_iPreferredHitbox);
-	//if (m_bHeadOnly) hitbox = 0;
-	if (entity->m_Type == ENTITY_PLAYER) {
-		//logging::Info("A");
-		GetHitbox(entity, hitbox, hit);
-		//logging::Info("B");
-		if (this->v_bInterpolation->GetBool()) SimpleLatencyPrediction(entity, hitbox);
-		//logging::Info("C");
-	} else if (entity->m_Type == ENTITY_BUILDING) {
-		hit = GetBuildingPosition(entity);
-	}
-	if (m_bProjectileMode) {
-		if (v_fOverrideProjSpeed->GetBool())
-			m_flProjSpeed = v_fOverrideProjSpeed->GetFloat();
-		if (v_fOverrideProjGravity->GetBool())
-			m_flProjGravity = v_fOverrideProjGravity->GetFloat();
-		bool succ = false;
-		hit = ProjectilePrediction(entity, hitbox, m_flProjSpeed, m_flProjGravity, PlayerGravityMod(entity));
-	}
-	//logging::Info("ayyming!");
-	Vector tr = (hit - g_pLocalPlayer->v_Eye);
-	fVectorAngles(tr, angles);
-	bool smoothed = false;
-	/*if (this->v_bSmooth->GetBool()) {
-		Vector da = (angles - g_pLocalPlayer->v_OrigViewangles);
-		fClampAngle(da);
-		smoothed = true;
-		if (da.IsZero(v_fSmoothAutoshootTreshold->GetFloat())) smoothed = false;
-		da *= this->v_fSmoothValue->GetFloat() * (((float)rand() / (float)RAND_MAX) * this->v_fSmoothRandomness->GetFloat());
-		angles = g_pLocalPlayer->v_OrigViewangles + da;
-	}*/
-	fClampAngle(angles);
-	cmd->viewangles = angles;
-	if (this->v_bSilent->GetBool()) {
-		g_pLocalPlayer->bUseSilentAngles = true;
-	}
-	if (this->v_bAutoShoot->GetBool()) {
-		if (g_pLocalPlayer->clazz == tf_class::tf_sniper) {
-			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle || g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
-				if (v_bZoomedOnly->GetBool() && !CanHeadshot()) return true;
-			}
-		}
-		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFCompoundBow) {
-			cmd->buttons |= IN_ATTACK;
-		}
-	}
-	return true;
-}
-
-void Aimbot::OnLevelInit() {
-	m_iLastTarget = -1;
-	m_bProjectileMode = false;
-}

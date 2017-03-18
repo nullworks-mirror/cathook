@@ -32,13 +32,15 @@ float AngleDiff( float destAngle, float srcAngle )
 
 #include "../profiler.h"
 
+static CatVar minigun_jump(CV_SWITCH, "minigun_jump", "0", "TF2C minigun jump", "Allows jumping while shooting with minigun");
+
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	SEGV_BEGIN;
 
-	if (TF2C && g_phMisc->v_bMinigunJump->GetBool() && CE_GOOD(LOCAL_W)) {
-		//RemoveCondition(LOCAL_E, TFCond_Slowed);
+	g_pUserCmd = cmd;
+
+	if (TF2C && CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == g_pClassID->CTFMinigun) {
 		CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
-		//RemoveCondition(LOCAL_E, TFCond_Taunting);
 	}
 	bool ret = ((CreateMove_t*)hooks::hkClientMode->GetMethod(hooks::offCreateMove))(thisptr, inputSample, cmd);
 
@@ -48,18 +50,18 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		return ret;
 	}
 
-	if (!g_Settings.bHackEnabled->GetBool()) {
+	if (!cathook) {
 		return ret;
 	}
 
-	if (!interfaces::engineClient->IsInGame()) {
+	if (!g_IEngine->IsInGame()) {
 		g_Settings.bInvalid = true;
 		return true;
 	}
 
 //	PROF_BEGIN();
 
-	INetChannel* ch = (INetChannel*)interfaces::engineClient->GetNetChannelInfo();
+	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
 	if (ch && !hooks::IsHooked((void*)((uintptr_t)ch))) {
 		hooks::hkNetChannel = new hooks::VMTHook();
 		hooks::hkNetChannel->Init(ch, 0);
@@ -72,10 +74,10 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	//if (!cmd) return ret;
 
 	bool time_replaced = false;
-	float curtime_old = interfaces::gvars->curtime;;
+	float curtime_old = g_GlobalVars->curtime;;
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
-		float servertime = (float)CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) * interfaces::gvars->interval_per_tick;
-		interfaces::gvars->curtime = servertime;
+		float servertime = (float)CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
+		g_GlobalVars->curtime = servertime;
 		time_replaced = true;
 	}
 	if (g_Settings.bInvalid) {
@@ -94,27 +96,22 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
 //		PROF_BEGIN();
 		//RunEnginePrediction(g_pLocalPlayer->entity, cmd);
-		SAFE_CALL(HACK_PROCESS_USERCMD(ESP, cmd));
-		if (!g_pLocalPlayer->life_state) {
-			//if (TF2) SAFE_CALL(HACK_PROCESS_USERCMD(Noisemaker, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(Bunnyhop, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(AutoStrafe, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(Aimbot, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(Airstuck, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(AntiAim, cmd));
-			if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoSticky, cmd));
-			if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoReflect, cmd));
-			SAFE_CALL(HACK_PROCESS_USERCMD(Triggerbot, cmd));
+		SAFE_CALL(hacks::shared::esp::CreateMove());
+		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
+			if (TF2) SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
+			SAFE_CALL(hacks::shared::bunnyhop::CreateMove());
+			SAFE_CALL(hacks::shared::aimbot::CreateMove());
+			SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
+			if (TF) SAFE_CALL(hacks::tf::autosticky::CreateMove());
+			if (TF) SAFE_CALL(hacks::tf::autoreflect::CreateMove());
+			SAFE_CALL(hacks::shared::triggerbot::CreateMove());
+			if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
 		}
-		if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AntiDisguise, cmd));
-		if (TF) SAFE_CALL(HACK_PROCESS_USERCMD(AutoHeal, cmd));
-		if (TF2) SAFE_CALL(HACK_PROCESS_USERCMD(Glow, cmd));
 		//SAFE_CALL(CREATE_MOVE(FollowBot));
-		SAFE_CALL(HACK_PROCESS_USERCMD(Misc, cmd));
-		SAFE_CALL(HACK_PROCESS_USERCMD(KillSay, cmd));
-		SAFE_CALL(HACK_PROCESS_USERCMD(Spam, cmd));
+		SAFE_CALL(hacks::shared::misc::CreateMove());
+		SAFE_CALL(hacks::shared::spam::CreateMove());
 //		PROF_END("Hacks processing");
-		if (time_replaced) interfaces::gvars->curtime = curtime_old;
+		if (time_replaced) g_GlobalVars->curtime = curtime_old;
 	}
 	/*for (IHack* i_hack : hack::hacks) {
 		if (!i_hack->CreateMove(thisptr, inputSample, cmd)) {
@@ -122,11 +119,10 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 	}*/
 	g_Settings.bInvalid = false;
-	if (g_pChatStack)
-		g_pChatStack->OnCreateMove();
+	chat_stack::OnCreateMove();
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		bool speedapplied = false;
-		if (g_Settings.kRollSpeedhack->GetBool() && g_pGUI->m_bPressedState[g_Settings.kRollSpeedhack->GetInt()] && !(cmd->buttons & IN_ATTACK)) {
+		if (roll_speedhack && g_pGUI->m_bPressedState[(int)roll_speedhack] && !(cmd->buttons & IN_ATTACK)) { // FIXME OOB
 			float speed = cmd->forwardmove;
 			if (fabs(speed) > 0.0f) {
 				cmd->forwardmove = -speed;

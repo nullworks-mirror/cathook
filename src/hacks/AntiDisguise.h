@@ -10,15 +10,12 @@
 
 #include "IHack.h"
 
-class AntiDisguise : public IHack {
-public:
-	AntiDisguise();
+namespace hacks { namespace tf2 { namespace antidisguise {
 
-	virtual void Draw() override;
+extern CatVar enabled;
 
-	CatVar* v_bEnabled;
-};
+void Draw();
 
-DECLARE_HACK_SINGLETON(AntiDisguise);
+}}}
 
 #endif /* HACKS_ANTIDISGUISE_H_ */

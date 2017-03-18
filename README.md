@@ -3,7 +3,9 @@ I know that the style sucks. There is a lot of design errors and cancerous patte
 
 # Compilation
 `git submodule update --init --recursive` after cloning, then
-`make`
+`cd cathook && make -j4`
+
+Compilation issues? Try installing `g++-multilib`!
 
 # Injection
 `sudo ./attach-backtrace` if you want to see backtrace after the game crashes.

@@ -16,8 +16,8 @@ class ConVar;
 #include <string>
 #include <vector>
 #include <functional>
-#include <stack>
 #include "aftercheaders.h"
+
 
 //#define CREATE_CV(type, name, defaults, description) \
 //	new CatVar(CreateConVar(CON_PREFIX name, defaults, description), type);
@@ -46,19 +46,34 @@ public:
 	int m_iLength;
 };
 
+class CatCommand {
+public:
+	CatCommand(std::string name, std::string help, FnCommandCallback_t callback);
+	CatCommand(std::string name, std::string help, FnCommandCallbackVoid_t callback);
+
+	void Register();
+
+	const std::string name;
+	const std::string help;
+
+	ConCommand* cmd { nullptr };
+
+	FnCommandCallback_t callback { nullptr };
+	FnCommandCallbackVoid_t callback_void { nullptr };
+};
+
+void RegisterCatCommands();
+
 class CatVar {
 public:
-	[[deprecated]]
-	CatVar(CatVar_t type, std::string name, std::string value, std::string help, CatEnum* enum_type = 0, std::string long_description = "no description", bool hasminmax = false, float max = 1.0f, float min = 0.0f);
-
-	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long);
+	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long = "no description");
 	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float max_val);
 	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float min_val, float max_val);
-	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, CatEnum& cat_enum);
+	CatVar(CatEnum& cat_enum, std::string name, std::string defaults, std::string desc_short, std::string desc_long);
 
-	inline explicit operator bool() const { return !!convar_parent->m_nValue; }
-	inline explicit operator int() const { return convar_parent->m_nValue; }
-	inline explicit operator float() const { return convar_parent->m_fValue; }
+	inline operator bool() const { return !!convar_parent->m_nValue; }
+	inline operator int() const { return convar_parent->m_nValue; }
+	inline operator float() const { return convar_parent->m_fValue; }
 	inline void operator =(const int& value) { convar_parent->InternalSetIntValue(value); }
 	inline void operator =(const float& value) { convar_parent->InternalSetFloatValue(value); }
 	inline bool operator ==(const int& value) const { return convar_parent->m_nValue == value; }
@@ -66,11 +81,8 @@ public:
 
 	void Register();
 	typedef std::function<void(CatVar*)> RegisterCallbackFn;
-	std::stack<RegisterCallbackFn> callbacks;
-	inline void OnRegister(RegisterCallbackFn fn) {
-		if (registered) fn(this);
-		else callbacks.push(fn);
-	}
+	std::vector<RegisterCallbackFn> callbacks {};
+	void OnRegister(RegisterCallbackFn fn);
 
 	[[deprecated]]
 	inline bool GetBool() const { return this->operator bool();  }
@@ -88,7 +100,7 @@ public:
 	bool restricted;
 	float max;
 	float min;
-	bool registered;
+	bool registered {false};
 
 	const CatVar_t type;
 	const std::string name;
@@ -100,7 +112,6 @@ public:
 	ConVar* convar_parent;
 };
 
-extern std::stack<CatVar*> g_UnregisteredCatVars;
 void RegisterCatVars();
 
 #endif /* CVWRAPPER_H_ */

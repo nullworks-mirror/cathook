@@ -23,6 +23,9 @@ class CatVar;
 class CTooltip;
 class RootWindow;
 
+extern CatVar gui_visible;
+extern CatVar gui_draw_bounds;
+
 class CatGUI {
 public:
 	CatGUI();
@@ -37,8 +40,6 @@ public:
 
 	CTooltip* m_pTooltip;
 	RootWindow* m_pRootWindow;
-	CatVar* v_bGUIVisible;
-	CatVar* v_bDrawBounds;
 
 	bool m_bShowTooltip;
 	bool m_bConsumeKeys;

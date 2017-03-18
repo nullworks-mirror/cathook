@@ -10,31 +10,21 @@
 
 #include "IHack.h"
 
-#define SPAM_MAX_AMOUNT 64
-#define SPAM_MAX_LENGTH 256
+#include "../textfile.h"
 
-class TextFile;
+class CatCommand;
 
-class Spam : public IHack {
-public:
-	Spam();
+namespace hacks { namespace shared { namespace spam {
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
-	virtual void OnLevelShutdown() override;
-	virtual void OnLevelInit() override;
+extern CatVar enabled;
+extern CatVar filename;
+extern CatVar newlines;
+extern CatCommand reload;
 
-	void Reload();
-	CatVar* v_bSpam;
-	CatVar* v_sSpamFile;
-	CatVar* v_bSpamNewlines;
-	ConCommand* c_Reload;
-	int m_iCurrentIndex;
-	TextFile* m_TextFile;
-	float m_fLastSpam;
-};
+void CreateMove();
+void Reset();
+void Reload();
 
-DECLARE_HACK_SINGLETON(Spam);
-
-void CC_Spam_ReloadFile(const CCommand& args);
+}}}
 
 #endif /* HACKS_SPAM_H_ */

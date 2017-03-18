@@ -1,14 +1,3 @@
-/Debug/src/
-/HL2DM/*
-/Debug/src_/
-/Debug/makefile
-/Debug/objects.mk
-/Debug/sources.mk
-/Debug/
-/src_/
-/TF2/
-/HL2DM/
-/Lilac/
-/obj/*
-/bin/*
-/ssdk/*
+*.d
+*.o
+bin/*

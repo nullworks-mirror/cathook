@@ -25,6 +25,7 @@ void SetCVarInterface(ICvar* iface);
 //#define DEG2RAD(x) (float)(x) * (float)(PI / 180.0f)
 
 #include "enums.h"
+#include "logging.h"
 
 #include "beforecheaders.h"
 #include <string>
@@ -114,6 +115,21 @@ bool Developer(CachedEntity* ent);
 Vector CalcAngle(Vector src, Vector dst);
 void MakeVector(Vector ang, Vector& out);
 float GetFov(Vector ang, Vector src, Vector dst);
+
+void ReplaceString(std::string& input, const std::string& what, const std::string& with_what);
+
+void format_internal(std::stringstream& stream);
+template<typename T, typename... Targs>
+void format_internal(std::stringstream& stream, T value, Targs... args) {
+	stream << value;
+	format_internal(stream, args...);
+}
+template<typename... Args>
+std::string format(const Args&... args) {
+	std::stringstream stream;
+	format_internal(stream, args...);
+	return stream.str();
+}
 
 extern const char* tfclasses[10];
 extern const char* powerups[POWERUP_COUNT];
