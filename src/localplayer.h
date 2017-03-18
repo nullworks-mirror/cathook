@@ -28,7 +28,7 @@ public:
 	Vector v_Origin;
 	Vector v_Eye;
 	int entity_idx;
-	CachedEntity* entity;
+	CachedEntity* entity { 0 };
 	CachedEntity* weapon();
 	Vector v_OrigViewangles;
 	Vector v_SilentAngles;
