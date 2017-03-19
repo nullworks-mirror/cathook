@@ -10,7 +10,9 @@ SRC_DIR = src
 OUT_NAME = libcathook.so
 TARGET_DIR = bin
 TARGET = $(TARGET_DIR)/$(OUT_NAME)
+SIMPLE_IPC_DIR = simple-ipc/src/include
 SOURCES = $(shell find $(SRC_DIR) -name "*.cpp" -print)
+SOURCES += $(shell find $(SIMPLE_IPC_DIR) -name "*.cpp" -print)
 OBJECTS = $(SOURCES:.cpp=.o)
 DEPENDS = $(SOURCES:.cpp=.d)
 SRC_SUBDIRS=$(shell find $(SRC_DIR) -type d -print)
