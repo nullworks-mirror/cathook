@@ -33,7 +33,6 @@
 #include "prediction.h"
 #include "conditions.h"
 #include "itemtypes.h"
-#include "ipc/ipcctl.h"
 #include "chatstack.h"
 #include "textfile.h"
 #include "gui/GUI.h"
@@ -77,7 +76,6 @@
 #else
 #define DEBUG_SEGV false
 #endif
-#define NO_IPC true
 #define STR(c) #c
 
 #if DEBUG_SEGV == true

@@ -41,11 +41,11 @@ const std::string tf_teams_killsay[] = {
 TextFile file {};
 
 std::string ComposeKillSay(IGameEvent* event) {
-	if (file.LineCount() == 0) return 0;
-	if (!event) return 0;
+	if (file.LineCount() == 0) return "";
+	if (!event) return "";
 	int vid = event->GetInt("userid");
 	int kid = event->GetInt("attacker");
-	if (kid == vid) return 0;
+	if (kid == vid) return "";
 	if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer()) return 0;
 	std::string msg = file.Line(rand() % file.LineCount());
 	player_info_s info;
