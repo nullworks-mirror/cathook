@@ -15,7 +15,14 @@ class bf_read;
 class ConCommand;
 class CCommand;
 
+#include "beforecheaders.h"
+#include <stack>
+#include <string>
+#include "aftercheaders.h"
+
 namespace hack {
+
+std::stack<std::string>& command_stack();
 
 extern bool shutdown;
 

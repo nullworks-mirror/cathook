@@ -53,6 +53,11 @@
 
 bool hack::shutdown = false;
 
+std::stack<std::string>& hack::command_stack() {
+	static std::stack<std::string> stack;
+	return stack;
+}
+
 void hack::InitHacks() {
 }
 
@@ -157,6 +162,9 @@ void hack::Initialize() {
 	if (TF2) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
 	hacks::shared::killsay::Init();
+	hack::command_stack().push("exec cat_autoexec");
+	hack::command_stack().push("cat_killsay_reload");
+	hack::command_stack().push("cat_spam_reload");
 	logging::Info("Init done.");
 }
 
