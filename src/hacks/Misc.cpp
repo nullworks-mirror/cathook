@@ -59,25 +59,25 @@ void CreateMove() {
 void Draw() {
 	if (crit_info && CE_GOOD(LOCAL_W)) {
 		if (crit_hack) {
-			AddCenterString(colors::red, "FORCED CRITS: ON");
+			AddCenterString("FORCED CRITS!", colors::red);
 		}
 		if (TF2) {
 			if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465, 0)(RAW_ENT(LOCAL_W)))
-				AddCenterString(colors::white, "Random crits are disabled");
+				AddCenterString("Random crits are disabled", colors::yellow);
 			else {
 				if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W)))
-					AddCenterString(colors::white, "Weapon can't randomly crit");
+					AddCenterString("Weapon can't randomly crit", colors::yellow);
 				else
-					AddCenterString(colors::white, "Weapon can randomly crit");
+					AddCenterString("Weapon can randomly crit");
 			}
-			AddCenterString(colors::white, "Bucket: %.2f", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u));
+			AddCenterString(format("Bucket: %.2f", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u)));
 		}
 	}
 
 
 	if (!debug_info) return;
 		if (CE_GOOD(g_pLocalPlayer->weapon())) {
-			AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
+			/*AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
 			//AddSideString(colors::white, "flNextPrimaryAttack: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));
 			//AddSideString(colors::white, "nTickBase: %f", (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * gvars->interval_per_tick);
 			AddSideString(colors::white, "CanShoot: %i", CanShoot());
@@ -118,7 +118,7 @@ void Draw() {
 			//AddSideString(draw::white, draw::black, "VecPunchAngle: %f %f %f", pa.x, pa.y, pa.z);
 			//draw::DrawString(10, y, draw::white, draw::black, false, "VecPunchAngleVel: %f %f %f", pav.x, pav.y, pav.z);
 			//y += 14;
-			//AddCenterString(draw::font_handle, input->GetAnalogValue(AnalogCode_t::MOUSE_X), input->GetAnalogValue(AnalogCode_t::MOUSE_Y), draw::white, L"S\u0FD5");
+			//AddCenterString(draw::font_handle, input->GetAnalogValue(AnalogCode_t::MOUSE_X), input->GetAnalogValue(AnalogCode_t::MOUSE_Y), draw::white, L"S\u0FD5");*/
 		}
 }
 

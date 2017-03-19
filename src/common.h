@@ -10,7 +10,9 @@
 
 #include "beforecheaders.h"
 #include <vector>
-
+#include <string>
+#include <array>
+#include <functional>
 #include "aftercheaders.h"
 #include "drawing.h"
 #include "entitycache.h"
@@ -31,7 +33,6 @@
 #include "prediction.h"
 #include "conditions.h"
 #include "itemtypes.h"
-#include "ipc/ipcctl.h"
 #include "chatstack.h"
 #include "textfile.h"
 #include "gui/GUI.h"
@@ -75,7 +76,6 @@
 #else
 #define DEBUG_SEGV false
 #endif
-#define NO_IPC true
 #define STR(c) #c
 
 #if DEBUG_SEGV == true

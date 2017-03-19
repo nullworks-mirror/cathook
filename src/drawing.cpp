@@ -8,77 +8,45 @@
 #include "common.h"
 #include "sdk.h"
 
-int g_nStringsSide = 0;
-int g_nStringsCenter = 0;
-ESPStringCompound* g_pStringsSide;
-ESPStringCompound* g_pStringsCenter;
+std::array<std::string, 32> side_strings;
+std::array<std::string, 32> center_strings;
+std::array<int, 32> side_strings_colors { 0 };
+std::array<int, 32> center_strings_colors { 0 };
+int side_strings_count { 0 };
+int center_strings_count { 0 };
 
 void InitStrings() {
-	g_pStringsSide = new ESPStringCompound[32]();
-	g_pStringsCenter = new ESPStringCompound[32]();
 	ResetStrings();
 }
 
 void ResetStrings() {
-	g_nStringsSide = 0;
-	g_nStringsCenter = 0;
+	side_strings_count = 0;
+	center_strings_count = 0;
 }
 
-void AddSideString(int fg, const char* fmt, ...) {
-	if (!g_pStringsSide) return;
-	if (g_pStringsSide[g_nStringsSide].m_String) {
-		delete g_pStringsSide[g_nStringsSide].m_String;
-	}
-	char* buffer = new char[1024]();
-	va_list list;
-	va_start(list, fmt);
-	vsprintf(buffer, fmt, list);
-	va_end(list);
-	if (g_nStringsSide >= 32) {
-		logging::Info("Can't attach more than %i strings to an entity", 32);
-		return;
-	}
-	g_pStringsSide[g_nStringsSide].m_nColor = fg;
-	g_pStringsSide[g_nStringsSide].m_String = buffer;
-	g_pStringsSide[g_nStringsSide].m_bColored = true;
-	g_nStringsSide++;
+void AddSideString(const std::string& string, int color) {
+	side_strings[side_strings_count] = string;
+	side_strings_colors[side_strings_count] = color;
+	side_strings_count++;
 }
 
 void DrawStrings() {
-	int y = 8;
-	for (int i = 0; i < g_nStringsSide; i++) {
-		//draw::DrawString(8, y, g_pStringsSide[i].m_Color, g_pStringsSide[i].m_Background, false, g_pStringsSide[i].m_String);
-		draw::String(fonts::ESP, 8, y, g_pStringsSide[i].m_nColor, 2, g_pStringsSide[i].m_String);
+	int y { 8 };
+	for (int i = 0; i < side_strings_count; i++) {
+		draw::String(fonts::ESP, 8, y, side_strings_colors[i], 2, side_strings[i]);
 		y += 14;
 	}
 	y = draw::height / 2;
-	for (int i = 0; i < g_nStringsCenter; i++) {
-		draw::String(fonts::ESP, draw::width / 2, y, g_pStringsCenter[i].m_nColor, 2, g_pStringsCenter[i].m_String);
+	for (int i = 0; i < center_strings_count; i++) {
+		draw::String(fonts::ESP, draw::width / 2, y, center_strings_colors[i], 2, center_strings[i]);
 		y += 14;
 	}
 }
 
-ESPStringCompound::~ESPStringCompound() {
-	//if (m_String) delete [] m_String;
-}
-
-void AddCenterString(int fg, const char* fmt, ...) {
-	if (g_pStringsCenter[g_nStringsCenter].m_String) {
-		delete g_pStringsCenter[g_nStringsCenter].m_String;
-	}
-	char* buffer = new char[1024]();
-	va_list list;
-	va_start(list, fmt);
-	vsprintf(buffer, fmt, list);
-	va_end(list);
-	if (g_nStringsCenter >= 32) {
-		logging::Info("Can't attach more than %i strings to an entity", 32);
-		return;
-	}
-	g_pStringsCenter[g_nStringsCenter].m_nColor = fg;
-	g_pStringsCenter[g_nStringsCenter].m_String = buffer;
-	g_pStringsCenter[g_nStringsCenter].m_bColored = true;
-	g_nStringsCenter++;
+void AddCenterString(const std::string& string, int color) {
+	center_strings[center_strings_count] = string;
+	center_strings_colors[center_strings_count] = color;
+	center_strings_count++;
 }
 
 
@@ -254,12 +222,6 @@ int colors::Health(int health, int max) {
 void draw::DrawRect(int x, int y, int w, int h, int color) {
 	g_ISurface->DrawSetColor(*reinterpret_cast<Color*>(&color));
 	g_ISurface->DrawFilledRect(x, y, x + w, y + h);
-}
-
-ESPStringCompound::ESPStringCompound() {
-	m_String = nullptr;
-	m_bColored = false;
-	m_nColor = colors::white;
 }
 
 void draw::Initialize() {

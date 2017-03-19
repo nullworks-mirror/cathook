@@ -17,16 +17,6 @@ class CachedEntity;
 class Vector;
 class IClientEntity;
 
-struct ESPStringCompound {
-	ESPStringCompound();
-	~ESPStringCompound();
-	char* m_String;
-	bool m_bColored;
-	int m_nColor;
-	//Color m_Color;
-	//Color m_Background;
-};
-
 namespace fonts {
 
 extern unsigned long ESP;
@@ -67,15 +57,9 @@ int EntityF(CachedEntity* ent);
 
 void InitStrings();
 void ResetStrings();
-void AddCenterString(int fg, const char* fmt, ...);
-void AddSideString(int fg, const char* fmt, ...);
+void AddCenterString(const std::string& string, int color = 0xFFFFFFFF);
+void AddSideString(const std::string& string, int color = 0xFFFFFFFF);
 void DrawStrings();
-
-extern ESPStringCompound* g_pStringsSide;
-extern int g_nStringsSide;
-extern ESPStringCompound* g_pStringsCenter;
-extern int g_nStringsCenter;
-
 
 namespace draw {
 

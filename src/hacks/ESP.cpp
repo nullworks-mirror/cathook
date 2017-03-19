@@ -45,6 +45,26 @@ CatVar entity_model(CV_SWITCH, "esp_model_name", "0", "Model name ESP", "Model n
 CatVar item_weapon_spawners(CV_SWITCH, "esp_weapon_spawners", "1", "Show weapon spawners", "TF2C deathmatch weapon spawners");
 CatVar item_adrenaline(CV_SWITCH, "esp_item_adrenaline", "0", "Show Adrenaline", "TF2C adrenaline pills");
 
+std::array<ESPData, 2048> data;
+
+void ResetEntityStrings() {
+	for (auto& i : data) {
+		i.string_count = 0;
+		i.color = 0;
+	}
+}
+
+void SetEntityColor(CachedEntity* entity, int color) {
+	data[entity->m_IDX].color = color;
+}
+
+void AddEntityString(CachedEntity* entity, const std::string& string, int color) {
+	ESPData& entity_data = data[entity->m_IDX];
+	entity_data.strings[entity_data.string_count].data = string;
+	entity_data.strings[entity_data.string_count].color = color;
+	entity_data.string_count++;
+}
+
 const std::string classes[] = {
 	"Scout",
 	"Sniper",
@@ -58,14 +78,16 @@ const std::string classes[] = {
 };
 
 void CreateMove() {
+	ResetEntityStrings();
 	int limit = HIGHEST_ENTITY;
 	if (!buildings && !proj_esp && !item_esp) limit = min(32, HIGHEST_ENTITY);
 	for (int i = 0; i < limit; i++) {
-		ProcessEntity(ENTITY(i));
-		if (ENTITY(i)->m_nESPStrings) {
-			ENTITY(i)->m_ESPColorFG = colors::EntityF(ENTITY(i));
-			if (vischeck) {
-				if (!ENTITY(i)->IsVisible()) ENTITY(i)->m_ESPColorFG = colors::Transparent(ENTITY(i)->m_ESPColorFG);
+		CachedEntity* ent = ENTITY(i);
+		ProcessEntity(ent);
+		if (data[i].string_count) {
+			SetEntityColor(ent, colors::EntityF(ent));
+			if (show_distance) {
+				AddEntityString(ent, format((int)(ENTITY(i)->m_flDistance / 64 * 1.22f), 'm'));
 			}
 		}
 	}
@@ -105,8 +127,8 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 	//draw::DrawString(min(smin.x, smax.x), min(smin.y, smax.y), clr, false, "min");
 	//draw::DrawString(max(smin.x, smax.x), max(smin.y, smax.y), clr, false, "max");
 	//draw::DrawString((int)so.x, (int)so.y, draw::white, false, "origin");
-	ent->m_ESPOrigin.x = so.x + width / 2 + 1;
-	ent->m_ESPOrigin.y = so.y - height;
+	data[ent->m_IDX].esp_origin.x = so.x + width / 2 + 1;
+	data[ent->m_IDX].esp_origin.y = so.y - height;
 	unsigned char alpha = clr >> 24;
 	float trf = (float)((float)alpha / 255.0f);
 	int border = cloak ? colors::Create(160, 160, 160, alpha) : colors::Transparent(colors::black, trf);
@@ -128,17 +150,14 @@ void ProcessEntity(CachedEntity* ent) {
 	if (!enabled) return;
 	if (CE_BAD(ent)) return;
 
-	//if (ent->IsVisible()) ent->AddESPString("VISIBLE");
-
 	if (entity_info) {
-		ent->AddESPString("%s [%i]", RAW_ENT(ent)->GetClientClass()->m_pNetworkName, ent->m_iClassID);
+		AddEntityString(ent, format(RAW_ENT(ent)->GetClientClass()->m_pNetworkName, " [", ent->m_iClassID, "]"));
 		if (entity_id) {
-			ent->AddESPString("%i", ent->m_IDX);
+			AddEntityString(ent, std::to_string(ent->m_IDX));
 		}
-		//ent->AddESPString("Type: %i", ent->m_Type);
 		if (entity_model) {
 			const model_t* model = RAW_ENT(ent)->GetModel();
-			if (model) ent->AddESPString("%s", g_IModelInfo->GetModelName(model));
+			if (model) AddEntityString(ent, std::string(g_IModelInfo->GetModelName(model)));
 		}
 	}
 
@@ -146,10 +165,7 @@ void ProcessEntity(CachedEntity* ent) {
 		if (ent->m_iClassID == g_pClassID->CTFProjectile_Rocket || ent->m_iClassID ==  g_pClassID->CTFProjectile_SentryRocket) {
 			if (proj_rockets) {
 				if ((int)proj_rockets != 2 || ent->m_bCritProjectile) {
-					ent->AddESPString("[ ==> ]");
-					if (show_distance) {
-						ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
-					}
+					AddEntityString(ent, "[ ==> ]");
 				}
 			}
 		} else if (ent->m_iClassID == g_pClassID->CTFGrenadePipebombProjectile) {
@@ -157,22 +173,16 @@ void ProcessEntity(CachedEntity* ent) {
 			case 0:
 				if (!proj_pipes) break;
 				if ((int)proj_pipes == 2 && !ent->m_bCritProjectile) break;
-				ent->AddESPString("[ (PP) ]");
+				AddEntityString(ent, "[ (PP) ]");
 				break;
 			case 1:
 				if (!proj_stickies) break;
 				if ((int)proj_stickies == 2 && !ent->m_bCritProjectile) break;
-				ent->AddESPString("[ {*} ]");
-			}
-			if (show_distance) {
-				ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
+				AddEntityString(ent, "[ {*} ]");
 			}
 		} else if (ent->m_iClassID == g_pClassID->CTFProjectile_Arrow) {
 			if ((int)proj_arrows != 2 || ent->m_bCritProjectile) {
-				ent->AddESPString("[ >>---> ]");
-				if (show_distance) {
-					ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
-				}
+				AddEntityString(ent, "[ >>---> ]");
 			}
 		}
 	}
@@ -180,88 +190,68 @@ void ProcessEntity(CachedEntity* ent) {
 	if (HL2DM) {
 		if (item_esp && item_dropped_weapons) {
 			if (CE_BYTE(ent, netvar.hOwner) == (unsigned char)-1) {
-				int a = ent->m_nESPStrings;
-				if (ent->m_iClassID == g_pClassID->CWeapon_SLAM) ent->AddESPString("SLAM");
-				else if (ent->m_iClassID == g_pClassID->CWeapon357) ent->AddESPString(".357");
-				else if (ent->m_iClassID == g_pClassID->CWeaponAR2) ent->AddESPString("AR2");
-				else if (ent->m_iClassID == g_pClassID->CWeaponAlyxGun) ent->AddESPString("Alyx Gun");
-				else if (ent->m_iClassID == g_pClassID->CWeaponAnnabelle) ent->AddESPString("Annabelle");
-				else if (ent->m_iClassID == g_pClassID->CWeaponBinoculars) ent->AddESPString("Binoculars");
-				else if (ent->m_iClassID == g_pClassID->CWeaponBugBait) ent->AddESPString("Bug Bait");
-				else if (ent->m_iClassID == g_pClassID->CWeaponCrossbow) ent->AddESPString("Crossbow");
-				else if (ent->m_iClassID == g_pClassID->CWeaponShotgun) ent->AddESPString("Shotgun");
-				else if (ent->m_iClassID == g_pClassID->CWeaponSMG1) ent->AddESPString("SMG");
-				else if (ent->m_iClassID == g_pClassID->CWeaponRPG) ent->AddESPString("RPG");
-				if (a != ent->m_nESPStrings) {
-					ent->m_ESPColorFG = colors::yellow;
-					if (show_distance) {
-						ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
-					}
+				int a = data[ent->m_IDX].string_count;
+				if (ent->m_iClassID == g_pClassID->CWeapon_SLAM) AddEntityString(ent, "SLAM");
+				else if (ent->m_iClassID == g_pClassID->CWeapon357) AddEntityString(ent, ".357");
+				else if (ent->m_iClassID == g_pClassID->CWeaponAR2) AddEntityString(ent, "AR2");
+				else if (ent->m_iClassID == g_pClassID->CWeaponAlyxGun) AddEntityString(ent, "Alyx Gun");
+				else if (ent->m_iClassID == g_pClassID->CWeaponAnnabelle) AddEntityString(ent, "Annabelle");
+				else if (ent->m_iClassID == g_pClassID->CWeaponBinoculars) AddEntityString(ent, "Binoculars");
+				else if (ent->m_iClassID == g_pClassID->CWeaponBugBait) AddEntityString(ent, "Bug Bait");
+				else if (ent->m_iClassID == g_pClassID->CWeaponCrossbow) AddEntityString(ent, "Crossbow");
+				else if (ent->m_iClassID == g_pClassID->CWeaponShotgun) AddEntityString(ent, "Shotgun");
+				else if (ent->m_iClassID == g_pClassID->CWeaponSMG1) AddEntityString(ent, "SMG");
+				else if (ent->m_iClassID == g_pClassID->CWeaponRPG) AddEntityString(ent, "RPG");
+				if (a != data[ent->m_IDX].string_count) {
+					SetEntityColor(ent, colors::yellow);
 				}
 			}
 		}
 	}
 
 	if (ent->m_iClassID == g_pClassID->CTFTankBoss && tank) {
-		ent->AddESPString("Tank");
+		AddEntityString(ent, "Tank");
 	} else if (ent->m_iClassID == g_pClassID->CTFDroppedWeapon && item_esp && item_dropped_weapons) {
-		ent->AddESPString("WEAPON %s", ent->m_pEntity->GetClientClass()->GetName());
-		if (show_distance) {
-			ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
-		}
+		AddEntityString(ent, format("WEAPON ", ent->m_pEntity->GetClientClass()->GetName()));
 	} else if (ent->m_iClassID == g_pClassID->CCurrencyPack && item_money) {
 		if (CE_BYTE(ent, netvar.bDistributed)) {
 			if (item_money_red) {
-				ent->AddESPString("$$$");
-				ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
+				AddEntityString(ent, "~$~");
 			}
 		} else {
-			ent->AddESPString("$$$");
-			ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
+			AddEntityString(ent, "$$$");
 		}
 	} else if (ent->m_ItemType != ITEM_NONE && item_esp) {
 		bool shown = false;
 		if (item_health_packs && (ent->m_ItemType >= ITEM_HEALTH_SMALL && ent->m_ItemType <= ITEM_HEALTH_LARGE || ent->m_ItemType == ITEM_HL_BATTERY)) {
-			if (ent->m_ItemType == ITEM_HEALTH_SMALL) ent->AddESPString("[+]");
-			if (ent->m_ItemType == ITEM_HEALTH_MEDIUM) ent->AddESPString("[++]");
-			if (ent->m_ItemType == ITEM_HEALTH_LARGE) ent->AddESPString("[+++]");
-			if (ent->m_ItemType == ITEM_HL_BATTERY) ent->AddESPString("[Z]");
+			if (ent->m_ItemType == ITEM_HEALTH_SMALL) AddEntityString(ent, "[+]");
+			if (ent->m_ItemType == ITEM_HEALTH_MEDIUM) AddEntityString(ent, "[++]");
+			if (ent->m_ItemType == ITEM_HEALTH_LARGE) AddEntityString(ent, "[+++]");
+			if (ent->m_ItemType == ITEM_HL_BATTERY) AddEntityString(ent, "[Z]");
 		} else if (item_adrenaline && ent->m_ItemType == ITEM_TF2C_PILL) {
-			ent->AddESPString("[a]");
+			AddEntityString(ent, "[a]");
 		} else if (item_ammo_packs && ent->m_ItemType >= ITEM_AMMO_SMALL && ent->m_ItemType <= ITEM_AMMO_LARGE) {
-			if (ent->m_ItemType == ITEM_AMMO_SMALL) ent->AddESPString("{i}");
-			if (ent->m_ItemType == ITEM_AMMO_MEDIUM) ent->AddESPString("{ii}");
-			if (ent->m_ItemType == ITEM_AMMO_LARGE) ent->AddESPString("{iii}");
+			if (ent->m_ItemType == ITEM_AMMO_SMALL) AddEntityString(ent, "{i}");
+			if (ent->m_ItemType == ITEM_AMMO_MEDIUM) AddEntityString(ent, "{ii}");
+			if (ent->m_ItemType == ITEM_AMMO_LARGE) AddEntityString(ent, "{iii}");
 		} else if (item_powerups && ent->m_ItemType >= ITEM_POWERUP_FIRST && ent->m_ItemType <= ITEM_POWERUP_LAST) {
-			ent->AddESPString("%s PICKUP", powerups[ent->m_ItemType - ITEM_POWERUP_FIRST]);
+			AddEntityString(ent, format(powerups[ent->m_ItemType - ITEM_POWERUP_FIRST], " PICKUP"));
 		} else if (item_weapon_spawners && ent->m_ItemType >= ITEM_TF2C_W_FIRST && ent->m_ItemType <= ITEM_TF2C_W_LAST) {
-			ent->AddESPString("%s SPAWNER", tf2c_weapon_names[ent->m_ItemType - ITEM_TF2C_W_FIRST].c_str());
-			if (CE_BYTE(ent, netvar.bRespawning)) ent->AddESPString("-- RESPAWNING --");
-		}
-		if (show_distance && shown) {
-			ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
+			AddEntityString(ent, format(tf2c_weapon_names[ent->m_ItemType - ITEM_TF2C_W_FIRST], " SPAWNER"));
+			if (CE_BYTE(ent, netvar.bRespawning)) AddEntityString(ent, "-- RESPAWNING --");
 		}
 	} else if (ent->m_Type == ENTITY_BUILDING && buildings) {
 		if (!ent->m_bEnemy && !teammates) return;
 		int level = CE_INT(ent, netvar.iUpgradeLevel);
-		const char* name = (ent->m_iClassID == g_pClassID->CObjectTeleporter ? "Teleporter" : (ent->m_iClassID == g_pClassID->CObjectSentrygun ? "Sentry Gun" : "Dispenser"));
+		const std::string& name = (ent->m_iClassID == g_pClassID->CObjectTeleporter ? "Teleporter" : (ent->m_iClassID == g_pClassID->CObjectSentrygun ? "Sentry Gun" : "Dispenser"));
 		if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
 			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
 				return;
 			}*/
 		}
-		ent->AddESPString("LV %i %s", level, name);
+		AddEntityString(ent, format("LV ", level, ' ', name));
 		if (show_health) {
-			ent->AddESPString("%i / %i HP", ent->m_iHealth, ent->m_iMaxHealth);
-			ent->GetESPString(ent->m_nESPStrings - 1).m_bColored = true;
-			if (vischeck) {
-				ent->GetESPString(ent->m_nESPStrings - 1).m_nColor = colors::Transparent(colors::Health(ent->m_iHealth, ent->m_iMaxHealth), ent->IsVisible() ? 1.0 : 0.5f);
-			} else {
-				ent->GetESPString(ent->m_nESPStrings - 1).m_nColor = colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
-			}
-		}
-		if (show_distance) {
-			ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
+			AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 		}
 		return;
 	} else if (ent->m_Type == ENTITY_PLAYER && ent->m_bAlivePlayer) {
@@ -280,43 +270,34 @@ void ProcessEntity(CachedEntity* ent) {
 			}*/
 		}
 		if (power >= 0 && (ent->m_bEnemy || teammates)) {
-			ent->AddESPString("HAS [%s]", powerups[power]);
+			AddEntityString(ent, format("HAS ", powerups[power]));
 		}
 		if (ent->m_bEnemy || teammates || GetRelation(ent)) {
 			if (show_name)
-				ent->AddESPString("%s", info.name);
+				AddEntityString(ent, std::string(info.name));
 			if (show_class) {
 				if (pclass > 0 && pclass < 10)
-					ent->AddESPString("%s", classes[pclass - 1].c_str());
+					AddEntityString(ent, classes[pclass - 1]);
 			}
 			if (show_health) {
-				ent->AddESPString("%i / %i HP", ent->m_iHealth, ent->m_iMaxHealth);
-				ent->GetESPString(ent->m_nESPStrings - 1).m_bColored = true;
-				if (vischeck) {
-					ent->GetESPString(ent->m_nESPStrings - 1).m_nColor = colors::Transparent(colors::Health(ent->m_iHealth, ent->m_iMaxHealth), ent->IsVisible() ? 1.0 : 0.5f);
-				} else {
-					ent->GetESPString(ent->m_nESPStrings - 1).m_nColor = colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
-				}
+				AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 			}
 			if (show_conditions && TF) {
 				if (IsPlayerInvisible(ent)) {
-					ent->AddESPString("INVISIBLE");
+					AddEntityString(ent, "INVISIBLE");
 				}
 				if (IsPlayerInvulnerable(ent)) {
-					ent->AddESPString("INVULNERABLE");
+					AddEntityString(ent, "INVULNERABLE");
 				}
 				if (HasCondition(ent, TFCond_UberBulletResist)) {
-					ent->AddESPString("VACCINATOR ACTIVE");
+					AddEntityString(ent, "VACCINATOR ACTIVE");
 				}
 				if (HasCondition(ent, TFCond_SmallBulletResist)) {
-					ent->AddESPString("VACCINATOR PASSIVE");
+					AddEntityString(ent, "VACCINATOR PASSIVE");
 				}
 				if (IsPlayerCritBoosted(ent)) {
-					ent->AddESPString("CRIT BOOSTED");
+					AddEntityString(ent, "CRIT BOOSTED");
 				}
-			}
-			if (show_distance) {
-				ent->AddESPString("%im", (int)(ent->m_flDistance / 64 * 1.22f));
 			}
 		}
 		return;
@@ -329,7 +310,9 @@ void ProcessEntityPT(CachedEntity* ent) {
 	if (CE_BAD(ent)) return;
 	if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
 		ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
-	int fg = ent->m_ESPColorFG;
+	const ESPData& ent_data = data[ent->m_IDX];
+	int fg = ent_data.color;
+	bool transparent { false };
 	switch (ent->m_Type) {
 	case ENTITY_PLAYER: {
 		bool cloak = IsPlayerInvisible(ent);
@@ -339,9 +322,11 @@ void ProcessEntityPT(CachedEntity* ent) {
 				return;
 			}*/
 		}
+
 		if (!ent->m_bEnemy && !teammates && !GetRelation(ent)) break;
 		if (!ent->m_bAlivePlayer) break;
-
+		if (vischeck && !ent->IsVisible()) transparent = true;
+		if (transparent) fg = colors::Transparent(fg);
 		DrawBox(ent, fg, 3.0f, -15.0f, true, CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
 	break;
 	}
@@ -352,10 +337,35 @@ void ProcessEntityPT(CachedEntity* ent) {
 			}*/
 		}
 		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
+		if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
+		if (transparent) fg = colors::Transparent(fg);
 		DrawBox(ent, fg, 1.0f, 0.0f, true, CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
 	break;
 	}
 	}
+
+	if (ent_data.string_count) {
+		Vector screen;
+		bool origin_is_zero = ent_data.esp_origin.IsZero(1.0f);
+		if (!origin_is_zero || draw::EntityCenterToScreen(ent, screen)) {
+			if (vischeck && !ent->IsVisible()) transparent = true;
+			Vector draw_point = origin_is_zero ? screen : ent_data.esp_origin;
+			for (int j = 0; j < ent_data.string_count; j++) {
+				const ESPString& string = ent_data.strings[j];
+				int color = string.color ? string.color : ent_data.color;
+				if (transparent) color = colors::Transparent(color);
+				if (!origin_is_zero) {
+					draw::String(fonts::ESP, draw_point.x, draw_point.y, color, 2, string.data);
+					draw_point.y += 11;
+				} else {
+					auto l = draw::GetStringLength(fonts::ESP, string.data);
+					draw::String(fonts::ESP, draw_point.x - l.first / 2, draw_point.y, color, 2, string.data);
+					draw_point.y += 11;
+				}
+			}
+		}
+	}
+
 }
 
 }}}

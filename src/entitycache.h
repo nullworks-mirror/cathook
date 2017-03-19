@@ -16,7 +16,6 @@
 struct matrix3x4_t;
 
 class IClientEntity;
-struct ESPStringCompound;
 struct player_info_s;
 struct model_t;
 struct mstudiohitboxset_t;
@@ -107,9 +106,6 @@ public:
 	~CachedEntity();
 
 	void Update(int idx);
-	void PruneStrings();
-	void AddESPString(const char* string, ...);
-	ESPStringCompound& GetESPString(int idx);
 
 	// Entity fields start here.
 
@@ -151,10 +147,6 @@ public:
 	int m_IDX;
 	IClientEntity* InternalEntity();
 	IClientEntity* m_pEntity;
-	ESPStringCompound* m_Strings;
-	int m_ESPColorFG;
-	int m_nESPStrings;
-	Vector m_ESPOrigin;
 	Vector m_vecVOrigin;
 	Vector m_vecVelocity;
 	Vector m_vecAcceleration;
@@ -167,7 +159,6 @@ public:
 	~EntityCache();
 
 	void Update();
-	void PruneStrings();
 	void Invalidate();
 	CachedEntity* GetEntity(int idx);
 

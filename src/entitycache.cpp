@@ -13,8 +13,6 @@
 
 CachedEntity::CachedEntity() {
 	m_pEntity = nullptr;
-	m_Strings = new ESPStringCompound[MAX_STRINGS]();
-	m_nESPStrings = 0;
 	m_Bones = 0;
 	m_Bones = new matrix3x4_t[MAXSTUDIOBONES];
 	m_pHitboxCache = new EntityHitboxCache(this);
@@ -23,7 +21,6 @@ CachedEntity::CachedEntity() {
 }
 
 CachedEntity::~CachedEntity() {
-	delete [] m_Strings;
 	delete [] m_Bones;
 	delete m_pHitboxCache;
 }
@@ -39,8 +36,6 @@ void EntityCache::Invalidate() {
 
 void CachedEntity::Update(int idx) {
 	SEGV_BEGIN
-
-	m_ESPOrigin.Zero();
 
 	m_IDX = idx;
 	m_pEntity = g_IEntityList->GetClientEntity(idx);
@@ -197,35 +192,6 @@ bool CachedEntity::IsVisible() {
 	return false;
 }
 
-void CachedEntity::AddESPString(const char* fmt, ...) {
-	if (m_Strings[m_nESPStrings].m_String) {
-		delete m_Strings[m_nESPStrings].m_String;
-	}
-	m_Strings[m_nESPStrings].m_bColored = false;
-	char* buffer = new char[1024]();
-	va_list list;
-	va_start(list, fmt);
-	vsprintf(buffer, fmt, list);
-	va_end(list);
-	if (m_nESPStrings >= MAX_STRINGS) {
-		logging::Info("Can't attach more than %i strings to an entity", MAX_STRINGS);
-		return;
-	}
-	if (m_nESPStrings < 0) {
-		logging::Info("Invalid string count !!!");
-		return;
-	}
-	m_Strings[m_nESPStrings].m_String = buffer;
-	//logging::Info("String: %s", m_Strings[m_nESPStrings].m_String);
-	m_nESPStrings++;
-}
-
-ESPStringCompound& CachedEntity::GetESPString(int idx) {
-	//if (idx >= 0 && idx < m_nESPStrings) {
-	return m_Strings[idx];
-
-}
-
 matrix3x4_t* CachedEntity::GetBones() {
 	if (!m_bBonesSetup) {
 		m_bBonesSetup = m_pEntity->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, 0); // gvars->curtime
@@ -239,14 +205,6 @@ EntityCache::EntityCache() {
 
 EntityCache::~EntityCache() {
 	delete [] m_pArray;
-}
-
-void CachedEntity::PruneStrings() {
-	m_nESPStrings = 0;
-}
-
-void EntityCache::PruneStrings() {
-	for (int i = 0; i < m_nMax && i < MAX_ENTITIES; i++) m_pArray[i].PruneStrings();
 }
 
 void EntityCache::Update() {
