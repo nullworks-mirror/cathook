@@ -18,10 +18,12 @@ class CCommand;
 #include "beforecheaders.h"
 #include <stack>
 #include <string>
+#include <mutex>
 #include "aftercheaders.h"
 
 namespace hack {
 
+extern std::mutex command_stack_mutex;
 std::stack<std::string>& command_stack();
 
 extern bool shutdown;

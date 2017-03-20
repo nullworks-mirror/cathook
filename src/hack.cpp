@@ -61,6 +61,7 @@ std::stack<std::string>& hack::command_stack() {
 void hack::InitHacks() {
 }
 
+std::mutex hack::command_stack_mutex;
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
@@ -93,11 +94,13 @@ void hack::Initialize() {
 	dumper.SaveDump();
 	ClientClass* cc = g_IBaseClient->GetAllClasses();
 	FILE* cd = fopen("/tmp/cathook-classdump.txt", "w");
-	while (cc) {
-		fprintf(cd, "[%d] %s\n", cc->m_ClassID, cc->GetName());
-		cc = cc->m_pNext;
+	if (cd) {
+		while (cc) {
+			fprintf(cd, "[%d] %s\n", cc->m_ClassID, cc->GetName());
+			cc = cc->m_pNext;
+		}
+		fclose(cd);
 	}
-	fclose(cd);
 	if (TF2) g_pClassID = new ClassIDTF2();
 	else if (TF2C) g_pClassID = new ClassIDTF2C();
 	else if (HL2DM) g_pClassID = new ClassIDHL2DM();

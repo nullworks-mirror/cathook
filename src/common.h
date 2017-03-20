@@ -13,6 +13,8 @@
 #include <string>
 #include <array>
 #include <functional>
+#include <mutex>
+#include <atomic>
 #include "aftercheaders.h"
 #include "drawing.h"
 #include "entitycache.h"

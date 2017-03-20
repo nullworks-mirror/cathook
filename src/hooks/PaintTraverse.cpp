@@ -40,14 +40,17 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 
 	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
 	// To avoid threading problems.
-	while (!hack::command_stack().empty()) {
-		g_IEngine->ExecuteClientCmd(hack::command_stack().top().c_str());
-		hack::command_stack().pop();
+	{
+		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
+		while (!hack::command_stack().empty()) {
+			g_IEngine->ExecuteClientCmd(hack::command_stack().top().c_str());
+			hack::command_stack().pop();
+		}
 	}
+
 	PROF_SECTION(PaintTraverse);
 	if (vp == panel_top) draw_flag = true;
 	if (!cathook) return;
-	// Because of single-multi thread shit I'm gonna put this thing riiiight here.
 
 	if (!panel_top) {
 		const char* name = g_IPanel->GetName(vp);
