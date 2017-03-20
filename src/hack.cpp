@@ -168,7 +168,7 @@ void hack::Initialize() {
 	hack::command_stack().push("exec cat_autoexec");
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
-	logging::Info("Init done.");
+	logging::Info("Hooked!");
 }
 
 void hack::Think() {
