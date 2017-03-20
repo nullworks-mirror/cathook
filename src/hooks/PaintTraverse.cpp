@@ -41,7 +41,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
 	// To avoid threading problems.
 	{
-		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
+		//std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
 		while (!hack::command_stack().empty()) {
 			g_IEngine->ExecuteClientCmd(hack::command_stack().top().c_str());
 			hack::command_stack().pop();
@@ -89,6 +89,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		SAFE_CALL(hacks::shared::misc::Draw());
 		SAFE_CALL(hacks::shared::esp::Draw());
 		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
+		hacks::shared::followbot::PrintDebug();
 	}
 
 #if GUI_ENABLED == true

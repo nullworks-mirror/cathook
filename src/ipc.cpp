@@ -14,7 +14,7 @@ namespace ipc {
 
 void CommandCallback(cat_ipc::command_s& command, void* payload) {
 	if (!strcmp("exec", (const char*)command.cmd_data) && payload) {
-		std::lock_guard<std::mutex> lock(hack::command_stack_mutex);
+		//std::lock_guard<std::mutex> lock(hack::command_stack_mutex);
 		hack::command_stack().push(std::string((const char*)payload));
 	}
 }

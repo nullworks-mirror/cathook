@@ -23,7 +23,7 @@ class CCommand;
 
 namespace hack {
 
-extern std::mutex command_stack_mutex;
+//extern std::mutex command_stack_mutex;
 std::stack<std::string>& command_stack();
 
 extern bool shutdown;

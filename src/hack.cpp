@@ -61,7 +61,7 @@ std::stack<std::string>& hack::command_stack() {
 void hack::InitHacks() {
 }
 
-std::mutex hack::command_stack_mutex;
+//std::mutex hack::command_stack_mutex;
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {

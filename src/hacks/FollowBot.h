@@ -22,6 +22,7 @@ extern unsigned follow_steamid;
 extern int following_idx;
 
 void DoWalking();
+void PrintDebug();
 
 }}}
 
