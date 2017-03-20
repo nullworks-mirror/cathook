@@ -160,6 +160,8 @@ int colors::EntityF(CachedEntity* ent) {
 				result = yellow; break;
 			case DEVELOPER:
 				result = RainbowCurrent(); break;
+			case BOT:
+				result = colors::orange; break;
 			}
 		}
 	}

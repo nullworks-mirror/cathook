@@ -540,11 +540,15 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 	return (rspeed || rgrav);
 }
 
+constexpr unsigned developer_list[] = { 347272825, 401679596 };
+
 bool Developer(CachedEntity* ent) {
-#if _DEVELOPER == 1
-	return (ent == LOCAL_E);
-#endif
-	return (ent->m_pPlayerInfo && ent->m_pPlayerInfo->friendsID == 347272825UL);
+	if (ent->m_pPlayerInfo) {
+		for (int i = 0; i < sizeof(developer_list) / sizeof(unsigned); i++) {
+			if (developer_list[i] == ent->m_pPlayerInfo->friendsID) return true;
+		}
+	}
+	return false;
 }
 
 /*const char* MakeInfoString(IClientEntity* player) {
@@ -620,6 +624,15 @@ relation GetRelation(CachedEntity* ent) {
 		if (rage[i] == ent->m_pPlayerInfo->friendsID) return relation::RAGE;
 	}
 	if (Developer(ent)) return relation::DEVELOPER;
+
+	if (ipc::peer) {
+		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+			if (!ipc::peer->memory->peer_data[i].free && ipc::peer->memory->peer_user_data[i].friendid == ent->m_pPlayerInfo->friendsID) {
+				return relation::BOT;
+			}
+		}
+	}
+
 	return relation::NEUTRAL;
 }
 

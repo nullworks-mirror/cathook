@@ -15,6 +15,7 @@
 #include <functional>
 #include <mutex>
 #include <atomic>
+#include <cmath>
 #include "aftercheaders.h"
 #include "drawing.h"
 #include "entitycache.h"
@@ -37,6 +38,7 @@
 #include "itemtypes.h"
 #include "chatstack.h"
 #include "textfile.h"
+#include "ipc.h"
 #include "gui/GUI.h"
 #include "classid.h"
 #include "crits.h"

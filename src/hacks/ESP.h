@@ -26,6 +26,7 @@ extern CatVar local_esp;
 extern CatVar buildings;
 extern CatVar enabled;
 extern CatVar entity_info;
+extern CatVar show_bot_id;
 extern CatVar teammates;
 extern CatVar item_esp;
 extern CatVar item_dropped_weapons;

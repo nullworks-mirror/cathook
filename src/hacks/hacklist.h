@@ -25,5 +25,6 @@
 #include "Achievement.h"
 #include "Spam.h"
 #include "Noisemaker.h"
+#include "FollowBot.h"
 
 #endif /* HACKS_HACKLIST_H_ */
