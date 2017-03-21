@@ -53,9 +53,15 @@
 
 bool hack::shutdown = false;
 
+std::stack<std::string>& hack::command_stack() {
+	static std::stack<std::string> stack;
+	return stack;
+}
+
 void hack::InitHacks() {
 }
 
+//std::mutex hack::command_stack_mutex;
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
@@ -88,11 +94,13 @@ void hack::Initialize() {
 	dumper.SaveDump();
 	ClientClass* cc = g_IBaseClient->GetAllClasses();
 	FILE* cd = fopen("/tmp/cathook-classdump.txt", "w");
-	while (cc) {
-		fprintf(cd, "[%d] %s\n", cc->m_ClassID, cc->GetName());
-		cc = cc->m_pNext;
+	if (cd) {
+		while (cc) {
+			fprintf(cd, "[%d] %s\n", cc->m_ClassID, cc->GetName());
+			cc = cc->m_pNext;
+		}
+		fclose(cd);
 	}
-	fclose(cd);
 	if (TF2) g_pClassID = new ClassIDTF2();
 	else if (TF2C) g_pClassID = new ClassIDTF2C();
 	else if (HL2DM) g_pClassID = new ClassIDHL2DM();
@@ -157,7 +165,10 @@ void hack::Initialize() {
 	if (TF2) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
 	hacks::shared::killsay::Init();
-	logging::Info("Init done.");
+	hack::command_stack().push("exec cat_autoexec");
+	hack::command_stack().push("cat_killsay_reload");
+	hack::command_stack().push("cat_spam_reload");
+	logging::Info("Hooked!");
 }
 
 void hack::Think() {

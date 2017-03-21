@@ -39,18 +39,18 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 
 
 	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
+	// To avoid threading problems.
+	{
+		//std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
+		while (!hack::command_stack().empty()) {
+			g_IEngine->ExecuteClientCmd(hack::command_stack().top().c_str());
+			hack::command_stack().pop();
+		}
+	}
+
 	PROF_SECTION(PaintTraverse);
 	if (vp == panel_top) draw_flag = true;
 	if (!cathook) return;
-	// Because of single-multi thread shit I'm gonna put this thing riiiight here.
-
-	static bool autoexec_done = false;
-	if (!autoexec_done) {
-		g_IEngine->ExecuteClientCmd("exec cat_autoexec");
-		g_IEngine->ExecuteClientCmd("cat_killsay_reload");
-		g_IEngine->ExecuteClientCmd("cat_spam_reload");
-		autoexec_done = true;
-	}
 
 	if (!panel_top) {
 		const char* name = g_IPanel->GetName(vp);
@@ -89,6 +89,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		SAFE_CALL(hacks::shared::misc::Draw());
 		SAFE_CALL(hacks::shared::esp::Draw());
 		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
+		//hacks::shared::followbot::PrintDebug();
 	}
 
 #if GUI_ENABLED == true

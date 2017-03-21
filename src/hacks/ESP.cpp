@@ -18,6 +18,7 @@ CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP", "Master ESP switch");
 CatVar entity_info(CV_SWITCH, "esp_entity", "0", "Entity ESP", "Show entity info (debug)");
 CatVar teammates(CV_SWITCH, "esp_teammates", "0", "ESP Teammates", "Teammate ESP");
 CatVar item_esp(CV_SWITCH, "esp_item", "1", "Item ESP", "Master Item ESP switch (health packs, etc.)");
+CatVar show_bot_id(CV_SWITCH, "esp_followbot_id", "1", "Followbot ESP", "Show followbot ID");
 CatVar item_dropped_weapons(CV_SWITCH, "esp_item_weapons", "0", "Dropped weapons", "Show dropped weapons");
 CatVar item_ammo_packs(CV_SWITCH, "esp_item_ammo", "0", "Ammo packs", "Show ammo packs");
 CatVar item_health_packs(CV_SWITCH, "esp_item_health", "1", "Health packs", "Show health packs");
@@ -278,6 +279,14 @@ void ProcessEntity(CachedEntity* ent) {
 			if (show_class) {
 				if (pclass > 0 && pclass < 10)
 					AddEntityString(ent, classes[pclass - 1]);
+			}
+			if (show_bot_id && ipc::peer && ent != LOCAL_E) {
+				for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+					if (!ipc::peer->memory->peer_data[i].free && ipc::peer->memory->peer_user_data[i].friendid == info.friendsID) {
+						AddEntityString(ent, format("BOT #", i));
+						break;
+					}
+				}
 			}
 			if (show_health) {
 				AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));

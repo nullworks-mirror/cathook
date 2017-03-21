@@ -64,12 +64,23 @@ int HealingPriority(int idx) {
 	int overheal = maxoverheal - (maxbuffedhealth - health);
 	float overhealp = ((float)overheal / (float)maxoverheal);
 	float healthp = ((float)health / (float)maxhealth);
-	if (GetRelation(ent) == relation::FRIEND) {
+	switch (GetRelation(ent)) {
+	case relation::FRIEND:
 		priority += 70 * (1 - healthp);
 		priority += 15 * (1 - overhealp);
-	} else {
+		break;
+	case relation::BOT:
+		priority += 100 * (1 - healthp);
+		priority += 15 * (1 - overhealp);
+		break;
+	default:
 		priority += 50 * (1 - healthp);
 		priority += 10 * (1 - overhealp);
+	}
+	if (ipc::peer) {
+		if (hacks::shared::followbot::bot && hacks::shared::followbot::following_idx == idx) {
+			priority += 75;
+		}
 	}
 	return priority;
 }
