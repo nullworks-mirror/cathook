@@ -71,7 +71,7 @@ int HealingPriority(int idx) {
 		break;
 	case relation::BOT:
 		priority += 100 * (1 - healthp);
-		priority += 15 * (1 - overhealp);
+		priority += 20 * (1 - overhealp);
 		break;
 	default:
 		priority += 50 * (1 - healthp);
@@ -79,7 +79,7 @@ int HealingPriority(int idx) {
 	}
 	if (ipc::peer) {
 		if (hacks::shared::followbot::bot && hacks::shared::followbot::following_idx == idx) {
-			priority += 75;
+			priority += 70;
 		}
 	}
 	return priority;
