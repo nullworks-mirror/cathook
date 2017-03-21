@@ -29,8 +29,8 @@ if grep -q $(realpath bin/libcathook.so) /proc/${arr[$1]}/maps; then
     -ex "print \$library" \
     -ex "call \$dlclose(\$library)" \
     -ex "call \$dlclose(\$library)" \
-    -ex "detach" \
-    -ex "quit"
+    -ex "continue" \
+	-ex "backtrace"
   echo "Detached"
 else
 	echo "not found!"

@@ -89,7 +89,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		SAFE_CALL(hacks::shared::misc::Draw());
 		SAFE_CALL(hacks::shared::esp::Draw());
 		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
-		hacks::shared::followbot::PrintDebug();
+		//hacks::shared::followbot::PrintDebug();
 	}
 
 #if GUI_ENABLED == true

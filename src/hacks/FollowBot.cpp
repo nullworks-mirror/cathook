@@ -27,6 +27,30 @@ CatCommand follow_entity("fb_follow_entity", "Follows entity with specified enti
 });
 CatVar bot(CV_SWITCH, "fb_bot", "0", "This player is a bot", "Set to 1 in followbots' configs");
 
+std::pair<float, float> ComputeMove(const Vector& a, const Vector& b) {
+	Vector diff = (b - a);
+	if (diff.Length() == 0) return { 0, 0 };
+	float v_cos = diff.x / diff.Length();
+	float rad = acos(v_cos);
+	if (diff.y < 0) rad = -rad;
+	float yan = g_Settings.last_angles.y;
+	float yaw = DEG2RAD(yan);
+	float rad_diff = yaw - rad;
+	//g_pUserCmd->forwardmove = std::cos(rad_diff) * 450.0f;
+	//g_pUserCmd->sidemove = -std::sin(rad_diff) * 450.0f;
+	//float deg_move = DEG2RAD(g_pUserCmd->viewangles.y);
+	// xcosA + ysinA
+	// xsinA + ycosA
+	const float x = diff.x / diff.Length();
+	const float y = diff.y / diff.Length();
+
+	const float xmove = (std::cos(yaw) * x + std::sin(yaw) * y);
+	const float ymove = (yaw < 0 ? 1 : 1) * (std::sin(yaw) * x + std::cos(yaw) * y);
+	const float movesum = std::abs(xmove) + std::abs(ymove);
+
+	return { (xmove / movesum) * 450.0f, (ymove / movesum) * 450.0f };
+}
+
 void WalkTo(const Vector& vector) {
 	if (CE_VECTOR(LOCAL_E, netvar.vVelocity).IsZero(1.0f)) {
 		if (LOCAL_E->m_vecOrigin.DistTo(vector) > 200.0f) {
@@ -34,36 +58,10 @@ void WalkTo(const Vector& vector) {
 				g_pUserCmd->buttons |= IN_JUMP;
 		}
 	}
-	const Vector& current = LOCAL_E->m_vecOrigin;
-	Vector diff = (last_direction - current);
-	float v_cos = diff.x / diff.Length();
-	float rad = acos(v_cos);
-	float yan = g_Settings.last_angles.y;
-	float cur_rad = DEG2RAD(yan);
-	float rad_diff = cur_rad - rad;
-	//g_pUserCmd->forwardmove = std::cos(rad_diff) * 450.0f;
-	//g_pUserCmd->sidemove = -std::sin(rad_diff) * 450.0f;
-	//float deg_move = DEG2RAD(g_pUserCmd->viewangles.y);
-	g_pUserCmd->forwardmove = std::cos(rad_diff) * ((diff.x > 0) - (diff.x < 0)) * 450.0f;
-	g_pUserCmd->sidemove = std::sin(rad_diff) * ((diff.y > 0) - (diff.y < 0)) * 450.0f;
-}
+	auto result = ComputeMove(LOCAL_E->m_vecOrigin, last_direction);
 
-void PrintDebug() {
-	const Vector& current = LOCAL_E->m_vecOrigin;
-	Vector diff = (last_direction - current);
-	float v_cos = diff.x / diff.Length();
-	AddSideString(format("cos: ", v_cos));
-	float rad = acos(v_cos);
-	AddSideString(format("rad: ", rad / PI, " PI"));
-	float yan = g_Settings.last_angles.y;
-	AddSideString(format("view y: ", yan));
-	float cur_rad = DEG2RAD(yan);
-	AddSideString(format("view y rad: ", cur_rad / PI, " PI"));
-	float rad_diff = cur_rad + rad;
-	AddSideString(format("diff: ", rad_diff / PI, " PI"));
-	//g_pUserCmd->forwardmove = std::cos(rad_diff) * 450.0f;
-	//g_pUserCmd->sidemove = -std::sin(rad_diff) * 450.0f;
-	//float deg_move = DEG2RAD(g_pUserCmd->viewangles.y);
+	g_pUserCmd->forwardmove = result.first;
+	g_pUserCmd->sidemove = result.second;
 }
 
 void DoWalking() {
@@ -72,6 +70,7 @@ void DoWalking() {
 	for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
 		CachedEntity* ent = ENTITY(i);
 		if (CE_BAD(ent)) continue;
+		if (!ent->m_pPlayerInfo) continue;
 		if (ent->m_pPlayerInfo->friendsID == follow_steamid) {
 			following_idx = i;
 			break;

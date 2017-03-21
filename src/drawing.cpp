@@ -99,6 +99,7 @@ void colors::Init() {
 	blu_u = Create(167, 75, 252, 255);
 	yellow = Create(255, 255, 0, 255);
 	green = Create(0, 255, 0, 255);
+	orange = Create(255, 120, 0, 255);
 }
 
 int colors::EntityF(CachedEntity* ent) {
