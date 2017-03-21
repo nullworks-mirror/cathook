@@ -88,6 +88,7 @@ int HealingPriority(int idx) {
 bool CanHeal(int idx) {
 	CachedEntity* ent = ENTITY(idx);
 	if (!ent) return false;
+	if (CE_BAD(ent)) return false;
 	if (ent->m_Type != ENTITY_PLAYER) return false;
 	if (g_IEngine->GetLocalPlayer() == idx) return false;
 	if (!ent->m_bAlivePlayer) return false;

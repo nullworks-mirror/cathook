@@ -178,13 +178,16 @@ void hack::Think() {
 void hack::Shutdown() {
 	if (hack::shutdown) return;
 	hack::shutdown = true;
-	logging::Shutdown();
+	logging::Info("Killing hooks..");
 	if (hooks::hkPanel) hooks::hkPanel->Kill();
 	if (hooks::hkClientMode) hooks::hkClientMode->Kill();
 	if (hooks::hkClient) hooks::hkClient->Kill();
 	if (hooks::hkMatSurface) hooks::hkMatSurface->Kill();
 	if (hooks::hkNetChannel) hooks::hkNetChannel->Kill();
 	if (hooks::hkStudioRender) hooks::hkStudioRender->Kill();
+	logging::Info("Unregistering convars..");
 	ConVar_Unregister();
+	logging::Info("Shutting down killsay...");
 	hacks::shared::killsay::Shutdown();
+	logging::Info("Success..");
 }
