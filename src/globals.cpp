@@ -26,7 +26,7 @@ CatVar send_packets(CV_SWITCH, "sendpackets", "1", "Send packets", "Internal use
 CatVar show_antiaim(CV_SWITCH, "thirdperson_angles", "1", "Real TP angles", "You can see your own AA/Aimbot angles in thirdperson");
 CatVar force_thirdperson(CV_SWITCH, "thirdperson", "0", "Thirdperson", "Enable thirdperson view");
 CatVar console_logging(CV_SWITCH, "log", "1", "Debug Log", "Disable this if you don't need cathook messages in your console");
-CatVar fast_outline(CV_SWITCH, "fastoutline", "0", "Low quality outline", "Might increase performance when there is a lot of ESP text to draw");
+//CatVar fast_outline(CV_SWITCH, "fastoutline", "0", "Low quality outline", "Might increase performance when there is a lot of ESP text to draw");
 CatVar roll_speedhack(CV_KEY, "rollspeedhack", "0", "Roll Speedhack", "Roll speedhack key");
 
 void GlobalSettings::Init() {

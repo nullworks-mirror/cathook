@@ -6,7 +6,7 @@ INCLUDES=-I$(SIMPLE_IPC_DIR) -I$(SDKFOLDER)/public -I$(SDKFOLDER)/mathlib -I$(SD
 CXXFLAGS += $(INCLUDES)
 LIB_DIR=lib
 LDFLAGS=-m32 -fno-gnu-unique -D_GLIBCXX_USE_CXX11_ABI=0 -shared -L$(realpath $(LIB_DIR))
-LDLIBS=-static -l:libc.so.6 -l:libstdc++.so.6 -ltier0 -lvstdlib
+LDLIBS=-static -lc -lstdc++ -ltier0 -lvstdlib
 SRC_DIR = src
 OUT_NAME = libcathook.so
 TARGET_DIR = bin

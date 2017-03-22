@@ -36,6 +36,10 @@ CCVarContainer::CCVarContainer(IWidget* parent, CatVar* var) : CBaseContainer("c
 		m_pControl = cb;
 	} break;
 	case CatVar_t::CV_ENUM: { // Most difficult thing, dropdown menu
+		if (!var->enum_type) {
+			logging::Info("VAR %s HAS NO ENUM TYPE!! ERROR!!", var->name.c_str());
+			break;
+		}
 		CDropdown* dd = new CDropdown(GetName() + "_control", this);
 		for (int i = var->enum_type->Minimum(); i <= var->enum_type->Maximum(); i++) {
 			dd->AddValue(var->enum_type->Name(i));

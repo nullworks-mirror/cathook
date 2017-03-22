@@ -14,7 +14,7 @@
 
 namespace hacks { namespace shared { namespace airstuck {
 
-CatVar stuck(CV_SWITCH, "airstuck", "0", "Airstuck active");
+CatVar stuck(CV_KEY, "airstuck", "0", "Airstuck key");
 
 void SendNOP() {
 	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
@@ -25,7 +25,7 @@ void SendNOP() {
 }
 
 void CreateMove() {
-	if (stuck) {
+	if (g_IInputSystem->IsButtonDown((ButtonCode_t)int(stuck))) {
 		if (g_GlobalVars->tickcount % 60 == 0) {
 			SendNOP();
 		}
@@ -34,11 +34,11 @@ void CreateMove() {
 
 bool IsStuck() {
 	if (g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2)) return false;
-	return stuck;
+	return g_IInputSystem->IsButtonDown((ButtonCode_t)int(stuck));
 }
 
 void Reset() {
-	stuck = false;
+
 }
 
 }}}

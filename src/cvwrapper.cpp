@@ -86,6 +86,7 @@ void CatVar::OnRegister(CatVar::RegisterCallbackFn fn) {
 }
 
 void CatVar::Register() {
+	CatVarList().push_back(this);
 	convar = CreateConVar(CON_PREFIX + name, defaults, desc_short);
 	convar_parent = convar->m_pParent;
 	while (!callbacks.empty()) {
@@ -122,5 +123,10 @@ int CatEnum::Maximum() const {
 
 int CatEnum::Minimum() const {
 	return m_iMin;
+}
+
+std::vector<CatVar*>& CatVarList() {
+	static std::vector<CatVar*> object {};
+	return object;
 }
 
