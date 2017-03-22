@@ -15,6 +15,7 @@
 namespace hacks { namespace shared { namespace airstuck {
 
 CatVar stuck(CV_KEY, "airstuck", "0", "Airstuck key");
+CatVar stuck_toggle(CV_SWITCH, "airstuck_toggle", "0", "Airstuck toggle", "Use this in bot instances/when using phlog to block cart!");
 
 void SendNOP() {
 	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
@@ -25,7 +26,7 @@ void SendNOP() {
 }
 
 void CreateMove() {
-	if (g_IInputSystem->IsButtonDown((ButtonCode_t)int(stuck))) {
+	if (IsStuck()) {
 		if (g_GlobalVars->tickcount % 60 == 0) {
 			SendNOP();
 		}
@@ -34,11 +35,11 @@ void CreateMove() {
 
 bool IsStuck() {
 	if (g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2)) return false;
-	return g_IInputSystem->IsButtonDown((ButtonCode_t)int(stuck));
+	return (g_IInputSystem->IsButtonDown((ButtonCode_t)int(stuck)) || stuck_toggle);
 }
 
 void Reset() {
-
+	stuck_toggle = false;
 }
 
 }}}
