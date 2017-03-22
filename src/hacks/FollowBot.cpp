@@ -17,6 +17,13 @@ float lost_time { 0 };
 float idle_time { 0 };
 int following_idx { 0 };
 
+CatCommand follow_me("fb_follow_me", "Makes all bots follow you", []() {
+	if (ipc::peer) {
+		unsigned id = g_ISteamUser->GetSteamID().GetAccountID();
+		ipc::peer->SendMessage("owner", 0, &id, sizeof(id));
+	}
+});
+
 CatCommand move_to_crosshair("fb_move_to_point", "Moves a bot (or all bots) to crosshair", [](const CCommand& args) {
 	logging::Info("not yet implemented.");
 });
