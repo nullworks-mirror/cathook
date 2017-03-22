@@ -112,6 +112,7 @@ public:
 	ConVar* convar_parent;
 };
 
+std::vector<CatVar*>& CatVarList();
 void RegisterCatVars();
 
 #endif /* CVWRAPPER_H_ */

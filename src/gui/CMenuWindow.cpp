@@ -25,143 +25,42 @@ CMenuWindow::CMenuWindow(std::string name, IWidget* parent) : CBaseWindow(name, 
 #define ADDCVAR(x) tab->AddChild(new CCVarContainer(tab, (x)))
 #define ADDLABEL(x) tab->AddChild(new CTextLabel("label", tab, x, true))
 
+std::vector<CatVar*> FindCatVars(const std::string name) {
+	std::vector<CatVar*> result = {};
+	for (auto var : CatVarList()) {
+		if (var->name.find(name) == 0) result.push_back(var);
+	}
+	return result;
+}
+
 void CMenuWindow::AddElements() {
 	AddChild(new CTextLabel("notice", this, "NOTICE: MOST CONVARS ARE MISSING FROM MENU! USE CONSOLE!", true));
 	AddTab("aimbot", "Aimbot");
 	CMenuContainer* tab = GetTab("aimbot");
-	/*tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bEnabled));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bAimAtTeammates));
-	if (TF) tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bAimBuildings));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_eHitboxMode));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bAutoShoot));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bActiveOnlyWhenCanShoot));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bEnabledAttacking));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bInterpolation));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bProjPredFOV));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bProjPredVisibility));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bProjectileAimbot));
-	if (TF) tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bRespectCloak));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bSilent));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_bZoomedOnly));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_eAimKeyMode));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_eHitbox));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_ePriorityMode));
-	if (TF) tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_fAutoShootHuntsmanCharge));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_fFOV));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_fOverrideProjGravity));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_fOverrideProjSpeed));
-	//tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iMaxAutoshootRange));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iMaxRange));
-	//tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_iSeenDelay));
-	tab->AddChild(new CCVarContainer(tab, g_phAimbot->v_kAimKey));*/
+	for (auto var : FindCatVars("aimbot_")) ADDCVAR(var);
 	AddTab("esp", "ESP");
 	tab = GetTab("esp");
-	/*ADDCVAR(g_phESP->v_bEnabled);
-	if (TF) ADDCVAR(g_phESP->v_bShowTank);
-	if (TF) ADDCVAR(g_phESP->v_bBuildingESP);
-	ADDLABEL("Player ESP");
-	ADDCVAR(g_phESP->v_bBox);
-	ADDCVAR(g_phESP->v_bTeammates);
-	ADDCVAR(g_phESP->v_bLegit);
-	//ADDCVAR(g_phESP->v_iLegitSeenTicks);
-	ADDCVAR(g_phESP->v_bShowHealthNumbers);
-	ADDCVAR(g_phESP->v_bShowName);
-	if (TF) ADDCVAR(g_phESP->v_bShowClass);
-	if (TF) ADDCVAR(g_phESP->v_bShowConditions);
-	ADDCVAR(g_phESP->v_bSeeLocal);
-	if (TF) ADDCVAR(g_phESP->v_bTeammatePowerup);
-	ADDCVAR(g_phESP->v_bShowFriends);
-	ADDCVAR(g_phESP->v_bShowFriendID);
-	ADDLABEL("Item ESP");
-	ADDCVAR(g_phESP->v_bItemESP);
-	ADDCVAR(g_phESP->v_bShowMoney);
-	ADDCVAR(g_phESP->v_bShowHealthPacks);
-	if (TF2C) ADDCVAR(g_phESP->v_bShowWeaponSpawners);
-	if (TF2C) ADDCVAR(g_phESP->v_bShowAdrenaline);
-	if (TF) ADDCVAR(g_phESP->v_bShowAmmoPacks);
-	ADDCVAR(g_phESP->v_bShowDroppedWeapons);
-	if (TF) ADDCVAR(g_phESP->v_bShowPowerups);
-	if (TF) ADDCVAR(g_phESP->v_bShowRedMoney);
-	if (TF) {
-		ADDLABEL("Projectile ESP");
-		ADDCVAR(g_phESP->v_bProjectileESP);
-		ADDCVAR(g_phESP->v_bOnlyEnemyProjectiles);
-		ADDCVAR(g_phESP->v_iShowArrows);
-		ADDCVAR(g_phESP->v_iShowPipes);
-		ADDCVAR(g_phESP->v_iShowRockets);
-		ADDCVAR(g_phESP->v_iShowStickies);
-	}
-	ADDLABEL("");
-	ADDCVAR(g_phESP->v_bEntityESP);
-	ADDCVAR(g_phESP->v_bShowEntityID);*/
+	for (auto var : FindCatVars("esp_")) ADDCVAR(var);
 	AddTab("triggerbot", "Triggerbot");
 	tab = GetTab("triggerbot");
-	ADDCVAR(&hacks::shared::triggerbot::enabled);
-	if (TF) ADDCVAR(&hacks::shared::triggerbot::ambassador);
-	ADDCVAR(&hacks::shared::triggerbot::bodyshot);
-	ADDCVAR(&hacks::shared::triggerbot::buildings);
-	ADDCVAR(&hacks::shared::triggerbot::finishing_hit);
-	if (TF) ADDCVAR(&hacks::shared::triggerbot::respect_cloak);
-	if (TF) ADDCVAR(&hacks::shared::triggerbot::ignore_vaccinator);
-	if (TF) ADDCVAR(&hacks::shared::triggerbot::zoomed_only);
-	ADDCVAR(&hacks::shared::triggerbot::hitbox);
-	ADDCVAR(&hacks::shared::triggerbot::max_range);
+	for (auto var : FindCatVars("triggerbot_")) ADDCVAR(var);
 	if (TF) {
 		ADDLABEL("AutoSticky");
-		ADDCVAR(&hacks::tf::autosticky::enabled);
-		ADDCVAR(&hacks::tf::autosticky::buildings);
-		ADDCVAR(&hacks::tf::autosticky::distance);
+		for (auto var : FindCatVars("sticky_")) ADDCVAR(var);
 		ADDLABEL("AutoReflect");
-		ADDCVAR(&hacks::tf::autoreflect::enabled);
-		ADDCVAR(&hacks::tf::autoreflect::idle_only);
-		ADDCVAR(&hacks::tf::autoreflect::stickies);
-		ADDCVAR(&hacks::tf::autoreflect::max_distance);
+		for (auto var : FindCatVars("reflect_")) ADDCVAR(var);
 	}
 	AddTab("misc", "Misc");
 	tab = GetTab("misc");
-	//ADDLABEL("To lock/unlock achievements use cat_achievement_ commands!");
-	/*tab->AddChild(new CBaseButton("ach_unlock", tab, "Unlock Achievements (DO NOT USE INGAME)", [this](CBaseButton*) {
-		Achievements_Unlock();
-	}));
-	tab->AddChild(new CBaseButton("ach_lock", tab, "Lock Achievements", [this](CBaseButton*) {
-		Achievements_Lock();
-	}));*/
+
 	if (TF) ADDCVAR(&hacks::tf::autoheal::enabled);
 	if (TF) ADDCVAR(&hacks::tf2::antidisguise::enabled);
 	if (TF2C) {
-		//ADDCVAR(g_phMisc->v_bTauntSlide);
-		//ADDCVAR(g_phMisc->v_bCritHack);
+
 	}
-	//ADDCVAR(g_phMisc->v_bAntiAFK);
-	// FIXME add CVARS TO MENU!!
-	//ADDCVAR(g_Settings.bCleanScreenshots);
+
 	ADDCVAR(&cathook);
-	/*if (TF) ADDCVAR(g_Settings.bIgnoreTaunting);
-	//ADDCVAR(g_Settings.bNoVisuals);
-	//if (TF) ADDCVAR(g_Settings.bNoZoom);
-	//ADDCVAR(g_Settings.bSendPackets);
-	//ADDCVAR(g_Settings.bShowLogo);
-	ADDCVAR(g_Settings.bShowAntiAim);
-	if (TF) ADDCVAR(g_Settings.bThirdperson);
-	//ADDCVAR(g_Settings.bZoomedFOV);
-	//ADDCVAR(g_Settings.flForceFOVZoomed);
-	//ADDCVAR(g_Settings.flForceFOV);
-	// FIXME add ConVars to menu!!
-	//ADDCVAR(g_Settings.sDisconnectMsg);
-	if (TF2C) ADDCVAR(g_Settings.kRollSpeedhack);*/
-	//ADDCVAR(g_phMisc->v_bCleanChat);
-	if (TF2) {
-		/*CBaseButton* but = new CBaseButton("schema", tab, "Load Custom Schema", [this](CBaseButton*) {
-			//Schema_Reload();
-		});*/
-		//but->Props()->SetString("tooltip", "Loads a custom item schema from ~/.cathook/\nitems_game.txt");
-		//tab->AddChild(but);
-	}
-	//if (TF2C) ADDCVAR(g_phMisc->v_bMinigunJump);
-	//ADDCVAR(g_phMisc->v_bDebugInfo);
-	//if (HL2DM) ADDCVAR(g_phMisc->v_bFlashlightSpam);
-	//ADDCVAR(g_phMisc->v_iFakeLag);
-	//ADDCVAR(g_Settings.bFastOutline);
+
 	if (TF) {
 		ADDLABEL("Spy Alert");
 		ADDCVAR(&hacks::tf::spyalert::enabled);
@@ -169,20 +68,11 @@ void CMenuWindow::AddElements() {
 		ADDCVAR(&hacks::tf::spyalert::distance_backstab);
 	}
 	ADDLABEL("Bunnyhop");
-	//ADDCVAR(g_phBunnyhop->v_bEnabled);
-	//ADDCVAR(g_phBunnyhop->v_bAutoJump);
-	//ADDCVAR(g_phBunnyhop->v_iAutoJumpSpeed);
+
 	AddTab("antiaim", "Anti-Aim");
 	tab = GetTab("antiaim");
 	ADDCVAR(&hacks::shared::antiaim::enabled);
-	/*ADDCVAR(&hacks::shared::antiaim::lisp);
-	ADDCVAR(&hacks::shared::antiaim::yaw_mode;
-	ADDCVAR(&hacks::shared::antiaim::yaw);
-	ADDCVAR(&hacks::shared::antiaim::pitch);
-	ADDCVAR(&hacks::shared::antiaim::pitch_mode);
-	ADDCVAR(&hacks::shared::antiaim::no_clamping);
-	ADDCVAR(&hacks::shared::antiaim::roll);
-	ADDCVAR(&hacks::shared::antiaim::spin);*/
+
 	AddTab("spam", "Spam/Killsay");
 	tab = GetTab("spam");
 	ADDLABEL("Spam");
