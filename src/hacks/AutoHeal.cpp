@@ -79,7 +79,7 @@ int HealingPriority(int idx) {
 	}
 	if (ipc::peer) {
 		if (hacks::shared::followbot::bot && hacks::shared::followbot::following_idx == idx) {
-			priority += 70;
+			priority *= 2.0f;
 		}
 	}
 	return priority;
