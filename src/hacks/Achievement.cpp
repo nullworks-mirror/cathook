@@ -36,6 +36,42 @@ void Unlock() {
 	}
 }
 
+CatCommand dump_achievement("achievement_dump", "Dump achievements to file (development)", []() {
+	std::ofstream out("/tmp/cathook_achievements.txt", std::ios::out);
+	if (out.bad()) return;
+	for (int i = 0; i < g_IAchievementMgr->GetAchievementCount(); i++) {
+		out << '[' << i << "] " << g_IAchievementMgr->GetAchievementByIndex(i)->GetName() << ' ' << g_IAchievementMgr->GetAchievementByIndex(i)->GetAchievementID() << "\n";
+	}
+	out.close();
+});
+CatCommand unlock_single("achievement_unlock_single", "Unlocks single achievement by ID", [](const CCommand& args) {
+	char* out = nullptr;
+	int id = strtol(args.Arg(1), &out, 10);
+	if (out == args.Arg(1)) {
+		logging::Info("NaN achievement ID!");
+		return;
+	}
+	IAchievement* ach = (IAchievement*)g_IAchievementMgr->GetAchievementByID(id);
+	if (ach) {
+		g_IAchievementMgr->AwardAchievement(id);
+	}
+});
+// For some reason it SEGV's when I try to GetAchievementByID();
+CatCommand lock_single("achievement_lock_single", "Locks single achievement by INDEX!", [](const CCommand& args) {
+	char* out = nullptr;
+	int index = strtol(args.Arg(1), &out, 10);
+	if (out == args.Arg(1)) {
+		logging::Info("NaN achievement INDEX!");
+		return;
+	}
+	IAchievement* ach = g_IAchievementMgr->GetAchievementByIndex(index);
+	if (ach) {
+		g_ISteamUserStats->RequestCurrentStats();
+		g_ISteamUserStats->ClearAchievement(ach->GetName());
+		g_ISteamUserStats->StoreStats();
+		g_ISteamUserStats->RequestCurrentStats();
+	}
+});
 CatCommand lock("achievement_lock", "Lock all achievements", Lock);
 CatCommand unlock("achievement_unlock", "Unlock all achievements", Unlock);
 

@@ -16,6 +16,7 @@
 #include <mutex>
 #include <atomic>
 #include <cmath>
+#include <fstream>
 #include "aftercheaders.h"
 #include "drawing.h"
 #include "entitycache.h"
