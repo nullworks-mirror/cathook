@@ -24,6 +24,7 @@ CMenuWindow::CMenuWindow(std::string name, IWidget* parent) : CBaseWindow(name, 
 
 #define ADDCVAR(x) tab->AddChild(new CCVarContainer(tab, (x)))
 #define ADDLABEL(x) tab->AddChild(new CTextLabel("label", tab, x, true))
+#define ADDCVARS(x) for (auto var : FindCatVars(x)) ADDCVAR(var)
 
 std::vector<CatVar*> FindCatVars(const std::string name) {
 	std::vector<CatVar*> result = {};
@@ -34,7 +35,6 @@ std::vector<CatVar*> FindCatVars(const std::string name) {
 }
 
 void CMenuWindow::AddElements() {
-	AddChild(new CTextLabel("notice", this, "NOTICE: MOST CONVARS ARE MISSING FROM MENU! USE CONSOLE!", true));
 	AddTab("aimbot", "Aimbot");
 	CMenuContainer* tab = GetTab("aimbot");
 	for (auto var : FindCatVars("aimbot_")) ADDCVAR(var);
@@ -52,6 +52,19 @@ void CMenuWindow::AddElements() {
 	}
 	AddTab("misc", "Misc");
 	tab = GetTab("misc");
+	ADDCVARS("thirdperson");
+	ADDCVARS("log");
+	ADDCVARS("no_");
+	ADDCVARS("fov");
+	ADDCVARS("clean_");
+	ADDCVARS("tauntslide");
+	ADDCVARS("airstuck");
+	ADDCVARS("fast_");
+	ADDCVARS("ignore_");
+	ADDCVARS("rollspeedhack");
+	ADDCVARS("minigun");
+	ADDCVARS("logo");
+	ADDCVARS("disconnect");
 
 	if (TF) ADDCVAR(&hacks::tf::autoheal::enabled);
 	if (TF) ADDCVAR(&hacks::tf2::antidisguise::enabled);
@@ -63,31 +76,30 @@ void CMenuWindow::AddElements() {
 
 	if (TF) {
 		ADDLABEL("Spy Alert");
-		ADDCVAR(&hacks::tf::spyalert::enabled);
-		ADDCVAR(&hacks::tf::spyalert::distance_warning);
-		ADDCVAR(&hacks::tf::spyalert::distance_backstab);
+		for (auto var : FindCatVars("spyalert_")) ADDCVAR(var);
 	}
 	ADDLABEL("Bunnyhop");
-
+	ADDCVARS("bhop");
 	AddTab("antiaim", "Anti-Aim");
 	tab = GetTab("antiaim");
-	ADDCVAR(&hacks::shared::antiaim::enabled);
-
+	for (auto var : FindCatVars("aa_")) ADDCVAR(var);
 	AddTab("spam", "Spam/Killsay");
 	tab = GetTab("spam");
 	ADDLABEL("Spam");
-	ADDCVAR(&hacks::shared::spam::enabled);
-	ADDCVAR(&hacks::shared::spam::newlines);
-	ADDCVAR(&hacks::shared::spam::filename);
+	ADDCVARS("spam");
 	tab->AddChild(new CBaseButton("spam_reload", tab, "Reload spam", [this](CBaseButton*) {
 		hacks::shared::spam::Reload();
 	}));
 	ADDLABEL("Killsay");
-	ADDCVAR(&hacks::shared::killsay::enabled);
-	ADDCVAR(&hacks::shared::killsay::filename);
+	ADDCVARS("killsay");
 	tab->AddChild(new CBaseButton("killsay_reload", tab, "Reload killsays", [this](CBaseButton*) {
 		hacks::shared::killsay::Reload();
 	}));
+	AddTab("multibox", "Bots");
+	tab = GetTab("multibox");
+	for (auto var : FindCatVars("ipc_")) ADDCVAR(var);
+	for (auto var : FindCatVars("fb_")) ADDCVAR(var);
+	ADDLABEL("Stats window/bot management coming soon!");
 }
 
 CMenuContainer* CMenuWindow::GetTab(std::string tab) {
