@@ -35,6 +35,12 @@ void* listen(void*) {
 	return 0;
 }
 
+CatCommand fix_deadlock("ipc_fix_deadlock", "Fix deadlock", []() {
+	if (peer) {
+		pthread_mutex_unlock(&peer->memory->mutex);
+	}
+});
+
 CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 	if (peer || thread_running) {
 		logging::Info("Already connected!");

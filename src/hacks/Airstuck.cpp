@@ -34,7 +34,7 @@ void CreateMove() {
 }
 
 bool IsStuck() {
-	if (g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2)) return false;
+	if (g_Settings.bInvalid || (g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2))) return false;
 	return (g_IInputSystem->IsButtonDown((ButtonCode_t)int(stuck)) || stuck_toggle);
 }
 

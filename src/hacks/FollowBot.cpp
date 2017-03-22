@@ -123,6 +123,11 @@ void DoWalking() {
 			WalkTo(found_entity->m_vecOrigin);
 		}
 		last_direction = found_entity->m_vecOrigin;
+		if (CE_INT(found_entity, netvar.iClass) == tf_heavy) {
+			if (HasCondition(found_entity, TFCond_Slowed)) {
+				g_pUserCmd->buttons |= IN_ATTACK2;
+			}
+		}
 		if (HasCondition(found_entity, TFCond_Zoomed)) {
 			if (!g_pLocalPlayer->bZoomed && g_pLocalPlayer->clazz == tf_sniper) {
 				g_pUserCmd->buttons |= IN_ATTACK2;

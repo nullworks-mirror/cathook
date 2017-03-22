@@ -36,8 +36,10 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 		case net_NOP:
 		case net_SignonState:
 		case net_StringCmd:
+		case 16: // cmdKeyValues
 			break;
 		default:
+			//logging::Info("Blocked net message %i %s", msg.GetType(), msg.GetName());
 			return false;
 		}
 	}

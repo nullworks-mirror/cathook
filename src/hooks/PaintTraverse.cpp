@@ -40,13 +40,6 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 
 	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
 	// To avoid threading problems.
-	{
-		//std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
-		while (!hack::command_stack().empty()) {
-			g_IEngine->ExecuteClientCmd(hack::command_stack().top().c_str());
-			hack::command_stack().pop();
-		}
-	}
 
 	PROF_SECTION(PaintTraverse);
 	if (vp == panel_top) draw_flag = true;
@@ -72,25 +65,38 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		g_Settings.bInvalid = true;
 	}
 
-	if (disable_visuals) return;
-	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
-
 	ResetStrings();
 
 	if (vp != panel_focus) return;
 	if (!draw_flag) return;
 	draw_flag = false;
 
+	{
+			while (!hack::command_stack().empty()) {
+				logging::Info("executing %s", hack::command_stack().top().c_str());
+				g_IEngine->ExecuteClientCmd(hack::command_stack().top().c_str());
+				hack::command_stack().pop();
+			}
+		}
+
+	if (disable_visuals) return;
+
+	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
+
 	if (logo) {
 		AddSideString("cathook by d4rkc4t", colors::RainbowCurrent());
 	}
-	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
-		if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
-		SAFE_CALL(hacks::shared::misc::Draw());
-		SAFE_CALL(hacks::shared::esp::Draw());
-		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
-		//hacks::shared::followbot::PrintDebug();
+
+	if (!hacks::shared::airstuck::IsStuck()) {
+		if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
+			if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
+			SAFE_CALL(hacks::shared::misc::Draw());
+			SAFE_CALL(hacks::shared::esp::Draw());
+			if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
+			//hacks::shared::followbot::PrintDebug();
+		}
 	}
+
 
 #if GUI_ENABLED == true
 		g_pGUI->Update();
