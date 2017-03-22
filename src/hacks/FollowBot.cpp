@@ -80,9 +80,6 @@ void WalkTo(const Vector& vector) {
 	if (CE_VECTOR(LOCAL_E, netvar.vVelocity).IsZero(1.0f)) {
 		if (!idle_time) idle_time = g_GlobalVars->curtime;
 		if (LOCAL_E->m_vecOrigin.DistTo(vector) > 200.0f) {
-			if (LOCAL_E->m_vecOrigin.DistTo(vector) > 500.0f) {
-				if (g_pLocalPlayer->bZoomed) g_pUserCmd->buttons |= IN_ATTACK2;
-			}
 			if (g_GlobalVars->curtime - idle_time > 2.0f) {
 				if (!g_pLocalPlayer->bZoomed)
 					g_pUserCmd->buttons |= IN_JUMP;
@@ -119,10 +116,17 @@ void DoWalking() {
 		}
 	} else {
 		lost_time = 0;
-		if (found_entity->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin) > 200.0f) WalkTo(found_entity->m_vecOrigin);
+		if (found_entity->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin) > 200.0f) {
+			if (LOCAL_E->m_vecOrigin.DistTo(found_entity->m_vecOrigin) > 500.0f) {
+				if (g_pLocalPlayer->bZoomed) g_pUserCmd->buttons |= IN_ATTACK2;
+			}
+			WalkTo(found_entity->m_vecOrigin);
+		}
 		last_direction = found_entity->m_vecOrigin;
 		if (HasCondition(found_entity, TFCond_Zoomed)) {
-			if (!g_pLocalPlayer->bZoomed) g_pUserCmd->buttons |= IN_ATTACK2;
+			if (!g_pLocalPlayer->bZoomed && g_pLocalPlayer->clazz == tf_sniper) {
+				g_pUserCmd->buttons |= IN_ATTACK2;
+			}
 		}
 	}
 }
