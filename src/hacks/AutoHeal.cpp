@@ -19,6 +19,8 @@ extern CatVar silent(CV_SWITCH, "autoheal_silent", "1", "Silent AutoHeal", "Sile
 int m_iCurrentHealingTarget { -1 };
 int m_iNewTarget { 0 };
 
+static CatVar pop_uber(CV_FLOAT, "autoheal_uber_health", "20", "Pop uber if health% <");
+
 void CreateMove() {
 	if (!enabled) return;
 	if (GetWeaponMode(g_pLocalPlayer->entity) != weapon_medigun) return;
@@ -37,6 +39,9 @@ void CreateMove() {
 	AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
 	if (silent) g_pLocalPlayer->bUseSilentAngles = true;
 	if (!m_iNewTarget && (g_GlobalVars->tickcount % 60)) g_pUserCmd->buttons |= IN_ATTACK;
+	if (((float)target->m_iHealth / (float)target->m_iMaxHealth) * 100 < (float)pop_uber) {
+		g_pUserCmd->buttons |= IN_ATTACK2;
+	}
 	return;
 }
 

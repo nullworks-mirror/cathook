@@ -123,7 +123,7 @@ void DoWalking() {
 			WalkTo(found_entity->m_vecOrigin);
 		}
 		last_direction = found_entity->m_vecOrigin;
-		if (CE_INT(found_entity, netvar.iClass) == tf_heavy) {
+		if (CE_INT(found_entity, netvar.iClass) == tf_heavy && g_pLocalPlayer->clazz == tf_heavy) {
 			if (HasCondition(found_entity, TFCond_Slowed)) {
 				g_pUserCmd->buttons |= IN_ATTACK2;
 			}

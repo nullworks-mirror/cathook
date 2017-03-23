@@ -345,9 +345,9 @@ bool ShouldAim(CUserCmd* cmd) {
 		if (!HasCondition(g_pLocalPlayer->entity, TFCond_Slowed)) {
 			return false;
 		}
-		if (!(cmd->buttons & IN_ATTACK2)) {
+		/*if (!(cmd->buttons & IN_ATTACK2)) {
 			return false;
-		}
+		}*/
 		if (minigun_fix_ticks > 0) {
 			minigun_fix_ticks--;
 			cmd->buttons |= IN_ATTACK;
