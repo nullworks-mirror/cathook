@@ -53,15 +53,20 @@
 
 bool hack::shutdown = false;
 
+std::mutex hack::command_stack_mutex;
 std::stack<std::string>& hack::command_stack() {
 	static std::stack<std::string> stack;
 	return stack;
 }
 
+void hack::ExecuteCommand(const std::string command) {
+	std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
+	hack::command_stack().push(command);
+}
+
 void hack::InitHacks() {
 }
 
-//std::mutex hack::command_stack_mutex;
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {

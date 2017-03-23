@@ -34,6 +34,7 @@ CatCommand follow_entity("fb_follow_entity", "Follows entity with specified enti
 	logging::Info("not yet implemented.");
 });
 CatVar bot(CV_SWITCH, "fb_bot", "0", "This player is a bot", "Set to 1 in followbots' configs");
+CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "1", "Mimic selected weapon", "If enabled, this bot will select same weapon slot as the owner");
 
 // I've spent 2 days on writing this method.
 // I couldn't succeed.
@@ -107,6 +108,19 @@ void DoWalking() {
 		}
 	}
 	CachedEntity* found_entity = ENTITY(following_idx);
+
+	if (mimic_slot) {
+		CachedEntity* owner_weapon = ENTITY(CE_INT(found_entity, netvar.hActiveWeapon) & 0xFFF);
+		if (CE_GOOD(owner_weapon) && CE_GOOD(g_pLocalPlayer->weapon())) {
+			// FIXME proper classes
+			const int my_slot = vfunc<int(*)(IClientEntity*)>(g_pLocalPlayer->weapon()->m_pEntity, 395, 0)(g_pLocalPlayer->weapon()->m_pEntity);
+			const int owner_slot = vfunc<int(*)(IClientEntity*)>(owner_weapon->m_pEntity, 395, 0)(owner_weapon->m_pEntity);
+			if (my_slot != owner_slot) {
+				g_IEngine->ExecuteClientCmd(format("slot", owner_slot + 1).c_str());
+			}
+		}
+	}
+
 	if (!found_entity->IsVisible()) {
 		if (!lost_time) {
 			lost_time = g_GlobalVars->curtime;

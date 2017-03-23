@@ -72,12 +72,13 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	draw_flag = false;
 
 	{
-			while (!hack::command_stack().empty()) {
-				logging::Info("executing %s", hack::command_stack().top().c_str());
-				g_IEngine->ExecuteClientCmd(hack::command_stack().top().c_str());
-				hack::command_stack().pop();
-			}
+		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
+		while (!hack::command_stack().empty()) {
+			logging::Info("executing %s", hack::command_stack().top().c_str());
+			g_IEngine->ClientCmd_Unrestricted(hack::command_stack().top().c_str());
+			hack::command_stack().pop();
 		}
+	}
 
 	if (disable_visuals) return;
 

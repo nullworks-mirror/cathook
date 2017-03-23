@@ -12,6 +12,7 @@
 
 namespace hacks { namespace shared { namespace esp {
 
+CatVar show_weapon(CV_SWITCH, "esp_weapon", "1", "Show weapon name", "Show which weapon does the enemy use");
 CatVar local_esp(CV_SWITCH, "esp_local", "1", "ESP Local Player", "Shows local player ESP in thirdperson");
 CatVar buildings(CV_SWITCH, "esp_buildings", "1", "Building ESP", "Show buildings");
 CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP", "Master ESP switch");
@@ -306,6 +307,12 @@ void ProcessEntity(CachedEntity* ent) {
 				}
 				if (IsPlayerCritBoosted(ent)) {
 					AddEntityString(ent, "CRIT BOOSTED");
+				}
+			}
+			CachedEntity* weapon = ENTITY(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
+			if (CE_GOOD(weapon)) {
+				if (show_weapon) {
+					AddEntityString(ent, std::string(vfunc<const char*(*)(IClientEntity*)>(weapon->m_pEntity, 398, 0)(weapon->m_pEntity)));
 				}
 			}
 		}
