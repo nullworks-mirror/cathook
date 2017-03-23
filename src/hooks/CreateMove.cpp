@@ -34,6 +34,9 @@ float AngleDiff( float destAngle, float srcAngle )
 
 static CatVar minigun_jump(CV_SWITCH, "minigun_jump", "0", "TF2C minigun jump", "Allows jumping while shooting with minigun");
 
+CatVar jointeam(CV_SWITCH, "fb_autoteam", "1", "Joins player team automatically (NYI)");
+CatVar joinclass(CV_STRING, "fb_autoclass", "spy", "Class that will be picked after joining a team (NYI)");
+
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	SEGV_BEGIN;
 
@@ -96,6 +99,51 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	g_Settings.bInvalid = false;
 	// Disabled because this causes EXTREME aimbot inaccuracy
 	//if (!cmd->command_number) return ret;
+
+	if (hacks::shared::followbot::bot) {
+		static int team_joining_state = 0;
+		static float last_jointeam_try = 0;
+
+		if (g_GlobalVars->curtime < last_jointeam_try) last_jointeam_try = 0.0f;
+
+		if (!g_pLocalPlayer->team) team_joining_state = 1;
+		else {
+			if (team_joining_state) {
+				logging::Info("Trying to change CLASS");
+				g_IEngine->ExecuteClientCmd(format("join_class ", joinclass.GetString()).c_str());
+			}
+			team_joining_state = 0;
+		}
+
+		if (team_joining_state) {
+			CachedEntity* found_entity = nullptr;
+			for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
+				CachedEntity* ent = ENTITY(i);
+				if (CE_BAD(ent)) continue;
+				if (!ent->m_pPlayerInfo) continue;
+				if (ent->m_pPlayerInfo->friendsID == hacks::shared::followbot::follow_steamid) {
+					found_entity = ent;
+					break;
+				}
+			}
+
+			if (found_entity && CE_GOOD(found_entity)) {
+				if (jointeam && team_joining_state == 1 && (g_GlobalVars->curtime - last_jointeam_try) > 1.0f) {
+					last_jointeam_try = g_GlobalVars->curtime;
+					switch (CE_INT(found_entity, netvar.iTeamNum)) {
+					case TEAM_RED:
+						logging::Info("Trying to join team RED");
+						g_IEngine->ExecuteClientCmd("jointeam red"); break;
+					case TEAM_BLU:
+						logging::Info("Trying to join team BLUE");
+						g_IEngine->ExecuteClientCmd("jointeam blue"); break;
+					}
+				}
+			}
+		}
+
+	}
+
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
 //		PROF_BEGIN();

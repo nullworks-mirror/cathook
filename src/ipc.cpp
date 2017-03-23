@@ -47,14 +47,19 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		return;
 	}
 	peer = new peer_t("cathook_followbot_server", false, false);
-	peer->Connect();
-	logging::Info("peer count: %i", peer->memory->peer_count);
-	logging::Info("magic number: 0x%08x", peer->memory->global_data.magic_number);
-	logging::Info("magic number offset: 0x%08x", (uintptr_t)&peer->memory->global_data.magic_number - (uintptr_t)peer->memory);
-	peer->SetCallback(CommandCallback);
-	StoreClientData();
-	thread_running = true;
-	pthread_create(&listener_thread, nullptr, listen, nullptr);
+	try {
+		peer->Connect();
+		logging::Info("peer count: %i", peer->memory->peer_count);
+		logging::Info("magic number: 0x%08x", peer->memory->global_data.magic_number);
+		logging::Info("magic number offset: 0x%08x", (uintptr_t)&peer->memory->global_data.magic_number - (uintptr_t)peer->memory);
+		peer->SetCallback(CommandCallback);
+		StoreClientData();
+		thread_running = true;
+		pthread_create(&listener_thread, nullptr, listen, nullptr);
+	} catch (std::runtime_error& error) {
+		logging::Info("Runtime error: %s", error.what());
+	}
+
 });
 CatCommand disconnect("ipc_disconnect", "Disconnect from IPC server", []() {
 	thread_running = false;
