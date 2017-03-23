@@ -21,8 +21,8 @@ CatVar logo(CV_SWITCH, "logo", "1", "Show logo", "Show cathook text in top left 
 void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 #if DEBUG_SEGV == true
 	if (!segvcatch::handler_fpe || !segvcatch::handler_segv) {
-		//segvcatch::init_segv();
-		//segvcatch::init_fpe();
+		if (!segvcatch::handler_fpe) segvcatch::init_segv();
+		if (!segvcatch::handler_segv) segvcatch::init_fpe();
 	}
 #endif
 	SEGV_BEGIN;

@@ -80,7 +80,7 @@ void PrintDebug() {
 void WalkTo(const Vector& vector) {
 	if (CE_VECTOR(LOCAL_E, netvar.vVelocity).IsZero(1.0f)) {
 		if (!idle_time) idle_time = g_GlobalVars->curtime;
-		if (LOCAL_E->m_vecOrigin.DistTo(vector) > 200.0f) {
+		if (LOCAL_E->m_vecOrigin.DistTo(vector) > 150.0f) {
 			if (g_GlobalVars->curtime - idle_time > 2.0f) {
 				if (!g_pLocalPlayer->bZoomed)
 					g_pUserCmd->buttons |= IN_JUMP;
@@ -109,16 +109,26 @@ void DoWalking() {
 	}
 	CachedEntity* found_entity = ENTITY(following_idx);
 
-	if (mimic_slot && !g_pLocalPlayer->life_state && !CE_BYTE(found_entity, netvar.iLifeState)) {
-		CachedEntity* owner_weapon = ENTITY(CE_INT(found_entity, netvar.hActiveWeapon) & 0xFFF);
-		if (CE_GOOD(owner_weapon) && CE_GOOD(g_pLocalPlayer->weapon())) {
-			// FIXME proper classes
-			const int my_slot = vfunc<int(*)(IClientEntity*)>(g_pLocalPlayer->weapon()->m_pEntity, 395, 0)(g_pLocalPlayer->weapon()->m_pEntity);
-			const int owner_slot = vfunc<int(*)(IClientEntity*)>(owner_weapon->m_pEntity, 395, 0)(owner_weapon->m_pEntity);
-			if (my_slot != owner_slot) {
-				g_IEngine->ExecuteClientCmd(format("slot", owner_slot + 1).c_str());
+	static float last_slot_check = 0.0f;
+	if (g_GlobalVars->curtime < last_slot_check) last_slot_check = 0.0f;
+
+	if (mimic_slot && (g_GlobalVars->curtime - last_slot_check > 1.0f) && !g_pLocalPlayer->life_state && !CE_BYTE(found_entity, netvar.iLifeState)) {
+		int owner_weapon_eid = (CE_INT(found_entity, netvar.hActiveWeapon) & 0xFFF);
+		IClientEntity* owner_weapon = g_IEntityList->GetClientEntity(owner_weapon_eid);
+		if (owner_weapon && CE_GOOD(g_pLocalPlayer->weapon())) {
+			// IsBaseCombatWeapon()
+			if (vfunc<bool(*)(IClientEntity*)>(g_pLocalPlayer->weapon()->m_pEntity, 190, 0)(g_pLocalPlayer->weapon()->m_pEntity) &&
+			    vfunc<bool(*)(IClientEntity*)>(owner_weapon, 190, 0)(owner_weapon)) {
+				int my_slot = vfunc<int(*)(IClientEntity*)>(g_pLocalPlayer->weapon()->m_pEntity, 395, 0)(g_pLocalPlayer->weapon()->m_pEntity);
+				int owner_slot = vfunc<int(*)(IClientEntity*)>(owner_weapon, 395, 0)(owner_weapon);
+				if (my_slot != owner_slot) {
+					g_IEngine->ExecuteClientCmd(format("slot", owner_slot + 1).c_str());
+				}
 			}
+			// FIXME proper classes
+			// FIXME IsBaseCombatWeapon
 		}
+		last_slot_check = g_GlobalVars->curtime;
 	}
 
 	if (!found_entity->IsVisible()) {
@@ -130,8 +140,8 @@ void DoWalking() {
 		}
 	} else {
 		lost_time = 0;
-		if (found_entity->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin) > 200.0f) {
-			if (LOCAL_E->m_vecOrigin.DistTo(found_entity->m_vecOrigin) > 500.0f) {
+		if (found_entity->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin) > 150.0f) {
+			if (LOCAL_E->m_vecOrigin.DistTo(found_entity->m_vecOrigin) > 350.0f) {
 				if (g_pLocalPlayer->bZoomed) g_pUserCmd->buttons |= IN_ATTACK2;
 			}
 			WalkTo(found_entity->m_vecOrigin);
