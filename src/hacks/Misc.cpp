@@ -193,7 +193,7 @@ CatCommand save_settings("save", "Save settings (optional filename)", [](const C
 	for (auto i : g_ConVars) {
 		if (i) {
 			if (strcmp(i->GetString(), i->GetDefault())) {
-				file << i->GetName() << " \"" << i->GetString() << "\"";
+				file << i->GetName() << " \"" << i->GetString() << "\"\n";
 			}
 		}
 	}
