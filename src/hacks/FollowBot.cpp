@@ -109,7 +109,7 @@ void DoWalking() {
 	}
 	CachedEntity* found_entity = ENTITY(following_idx);
 
-	if (mimic_slot && !g_pLocalPlayer->life_state) {
+	if (mimic_slot && !g_pLocalPlayer->life_state && !CE_BYTE(found_entity, netvar.iLifeState)) {
 		CachedEntity* owner_weapon = ENTITY(CE_INT(found_entity, netvar.hActiveWeapon) & 0xFFF);
 		if (CE_GOOD(owner_weapon) && CE_GOOD(g_pLocalPlayer->weapon())) {
 			// FIXME proper classes
