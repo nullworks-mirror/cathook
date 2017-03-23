@@ -63,7 +63,6 @@ void CMenuWindow::AddElements() {
 	ADDCVARS("ignore_");
 	ADDCVARS("rollspeedhack");
 	ADDCVARS("minigun");
-	ADDCVARS("logo");
 	ADDCVARS("disconnect");
 
 	if (TF) ADDCVAR(&hacks::tf::autoheal::enabled);
