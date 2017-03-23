@@ -345,9 +345,15 @@ bool ShouldAim(CUserCmd* cmd) {
 		if (!HasCondition(g_pLocalPlayer->entity, TFCond_Slowed)) {
 			return false;
 		}
-		/*if (!(cmd->buttons & IN_ATTACK2)) {
-			return false;
-		}*/
+		if (hacks::shared::followbot::bot) {
+			CachedEntity* player = ENTITY(hacks::shared::followbot::following_idx);
+			if (CE_BAD(player)) return false;
+			if (!HasCondition(player, TFCond_Slowed)) return false;
+		} else {
+			if (!(cmd->buttons & IN_ATTACK2)) {
+				return false;
+			}
+		}
 		if (minigun_fix_ticks > 0) {
 			minigun_fix_ticks--;
 			cmd->buttons |= IN_ATTACK;
