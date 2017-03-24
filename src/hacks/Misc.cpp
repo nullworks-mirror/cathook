@@ -41,7 +41,7 @@ void CreateMove() {
 		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
 			g_pUserCmd->buttons &= ~IN_ATTACK;
 		}
-	} else if (((GetWeaponMode(LOCAL_E) == weapon_melee && crit_melee) || crit_hack) && RandomCrits() && WeaponCanCrit()) {
+	} else if (((GetWeaponMode(LOCAL_E) == weapon_melee && crit_melee) || crit_hack) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife)) {
 		if (!crit) g_pUserCmd->buttons &= ~IN_ATTACK;
 	}
 

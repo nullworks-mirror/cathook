@@ -220,7 +220,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state) {
-			SAFE_CALL(hacks::shared::followbot::DoWalking());
+			SAFE_CALL(hacks::shared::followbot::AfterCreateMove());
 		}
 		if (cmd)
 			g_Settings.last_angles = cmd->viewangles;

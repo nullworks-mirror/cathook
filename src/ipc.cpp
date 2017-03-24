@@ -52,7 +52,7 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		StoreClientData();
 		thread_running = true;
 		pthread_create(&listener_thread, nullptr, listen, nullptr);
-	} catch (std::runtime_error& error) {
+	} catch (std::exception& error) {
 		logging::Info("Runtime error: %s", error.what());
 	}
 

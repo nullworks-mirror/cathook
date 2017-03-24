@@ -83,6 +83,8 @@ void ReplaceString(char* target, char* what, char* with_what);
 // TODO move that to weaponid.h
 bool IsAmbassador(CachedEntity* ent);
 
+void WhatIAmLookingAt(int* result_eindex, Vector* result_pos);
+
 void Patch(void* address, void* patch, size_t length);
 
 void AimAt(Vector origin, Vector target, CUserCmd* cmd);

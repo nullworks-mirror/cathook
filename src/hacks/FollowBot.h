@@ -10,6 +10,7 @@
 
 class CatCommand;
 class CatVar;
+class CachedEntity;
 
 #include "../ipc.h"
 
@@ -23,9 +24,11 @@ extern CatVar bot;
 extern unsigned follow_steamid;
 extern int following_idx;
 
+bool IsBot(CachedEntity* entity);
 void DoWalking();
 void PrintDebug();
 void AddMessageHandlers(ipc::peer_t* peer);
+void AfterCreateMove();
 
 }}}
 
