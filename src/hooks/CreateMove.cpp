@@ -128,7 +128,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			}
 
 			if (found_entity && CE_GOOD(found_entity)) {
-				if (jointeam && team_joining_state == 1 && (g_GlobalVars->curtime - last_jointeam_try) > 1.0f) {
+				if (jointeam && (g_GlobalVars->curtime - last_jointeam_try) > 1.0f) {
 					last_jointeam_try = g_GlobalVars->curtime;
 					switch (CE_INT(found_entity, netvar.iTeamNum)) {
 					case TEAM_RED:
@@ -220,7 +220,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state) {
-			SAFE_CALL(hacks::shared::followbot::DoWalking());
+			SAFE_CALL(hacks::shared::followbot::AfterCreateMove());
 		}
 		if (cmd)
 			g_Settings.last_angles = cmd->viewangles;

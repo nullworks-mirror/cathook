@@ -636,6 +636,34 @@ relation GetRelation(CachedEntity* ent) {
 	return relation::NEUTRAL;
 }
 
+void WhatIAmLookingAt(int* result_eindex, Vector* result_pos) {
+	Ray_t ray;
+	trace::g_pFilterDefault->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+	Vector forward;
+	float sp, sy, cp, cy;
+	QAngle angle;
+	g_IEngine->GetViewAngles(angle);
+	sy = sinf(DEG2RAD(angle[1]));
+	cy = cosf(DEG2RAD(angle[1]));
+	sp = sinf(DEG2RAD(angle[0]));
+	cp = cosf(DEG2RAD(angle[0]));
+	forward.x = cp * cy;
+	forward.y = cp * sy;
+	forward.z = -sp;
+	forward = forward * 8192.0f + g_pLocalPlayer->v_Eye;
+	ray.Init(g_pLocalPlayer->v_Eye, forward);
+	trace_t trace;
+	g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, &trace);
+	if (result_pos)
+		*result_pos = trace.endpos;
+	if (result_eindex) {
+		*result_eindex = 0;
+	}
+	if (trace.m_pEnt && result_eindex) {
+		*result_eindex = ((IClientEntity*)(trace.m_pEnt))->entindex();
+	}
+}
+
 bool IsSentryBuster(CachedEntity* entity) {
 	return (entity->m_Type == EntityType::ENTITY_PLAYER &&
 			CE_INT(entity, netvar.iClass) == tf_class::tf_demoman &&

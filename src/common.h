@@ -17,6 +17,8 @@
 #include <atomic>
 #include <cmath>
 #include <fstream>
+#include <set>
+#include <algorithm>
 #include "aftercheaders.h"
 #include "drawing.h"
 #include "entitycache.h"
