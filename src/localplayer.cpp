@@ -12,6 +12,7 @@ void LocalPlayer::Update() {
 	entity_idx = g_IEngine->GetLocalPlayer();
 	entity = ENTITY(entity_idx);
 	if (CE_BAD(entity)) {
+		team = 0;
 		return;
 	}
 	team = CE_INT(entity, netvar.iTeamNum);

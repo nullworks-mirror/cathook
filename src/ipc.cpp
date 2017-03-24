@@ -12,14 +12,6 @@
 
 namespace ipc {
 
-void CommandCallback(cat_ipc::command_s& command, void* payload) {
-	if (!strcmp("exec", (const char*)command.cmd_data) && payload) {
-		//std::lock_guard<std::mutex> lock(hack::command_stack_mutex);
-		hack::command_stack().push(std::string((const char*)payload));
-	} else if (!strcmp("owner", (const char*)command.cmd_data) && payload) {
-	}
-}
-
 std::atomic<bool> thread_running(false);
 pthread_t listener_thread { 0 };
 
@@ -50,6 +42,12 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		logging::Info("peer count: %i", peer->memory->peer_count);
 		logging::Info("magic number: 0x%08x", peer->memory->global_data.magic_number);
 		logging::Info("magic number offset: 0x%08x", (uintptr_t)&peer->memory->global_data.magic_number - (uintptr_t)peer->memory);
+		peer->SetCommandHandler(commands::execute_client_cmd, [](cat_ipc::command_s& command, void* payload) {
+			hack::command_stack().push(std::string((const char*)&command.cmd_data));
+		});
+		peer->SetCommandHandler(commands::execute_client_cmd_long, [](cat_ipc::command_s& command, void* payload) {
+			hack::command_stack().push(std::string((const char*)payload));
+		});
 		hacks::shared::followbot::AddMessageHandlers(peer);
 		StoreClientData();
 		thread_running = true;

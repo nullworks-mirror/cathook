@@ -128,7 +128,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			}
 
 			if (found_entity && CE_GOOD(found_entity)) {
-				if (jointeam && team_joining_state == 1 && (g_GlobalVars->curtime - last_jointeam_try) > 1.0f) {
+				if (jointeam && (g_GlobalVars->curtime - last_jointeam_try) > 1.0f) {
 					last_jointeam_try = g_GlobalVars->curtime;
 					switch (CE_INT(found_entity, netvar.iTeamNum)) {
 					case TEAM_RED:
