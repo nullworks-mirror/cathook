@@ -17,8 +17,6 @@ void CommandCallback(cat_ipc::command_s& command, void* payload) {
 		//std::lock_guard<std::mutex> lock(hack::command_stack_mutex);
 		hack::command_stack().push(std::string((const char*)payload));
 	} else if (!strcmp("owner", (const char*)command.cmd_data) && payload) {
-		logging::Info("Bot owner set to %ld", *(unsigned*)payload);
-		hacks::shared::followbot::follow_steamid = *(unsigned*)payload;
 	}
 }
 
@@ -52,7 +50,7 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		logging::Info("peer count: %i", peer->memory->peer_count);
 		logging::Info("magic number: 0x%08x", peer->memory->global_data.magic_number);
 		logging::Info("magic number offset: 0x%08x", (uintptr_t)&peer->memory->global_data.magic_number - (uintptr_t)peer->memory);
-		peer->SetCallback(CommandCallback);
+		hacks::shared::followbot::AddMessageHandlers(peer);
 		StoreClientData();
 		thread_running = true;
 		pthread_create(&listener_thread, nullptr, listen, nullptr);
@@ -87,10 +85,21 @@ CatCommand exec("ipc_exec", "Execute command (first argument = bot ID)", [](cons
 	}
 	std::string command = std::string(args.ArgS());
 	command = command.substr(command.find(' ', 0) + 1);
-	peer->SendMessage("exec", (1 << target_id), command.c_str(), command.length() + 1);
+	ReplaceString(command, " && ", " ; ");
+	if (command.length() >= 63) {
+		peer->SendMessage(0, (1 << target_id), ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
+	} else {
+		peer->SendMessage(command.c_str(), (1 << target_id), ipc::commands::execute_client_cmd, 0, 0);
+	}
 });
 CatCommand exec_all("ipc_exec_all", "Execute command (on every peer)", [](const CCommand& args) {
-	peer->SendMessage("exec", 0, args.ArgS(), strlen(args.ArgS()) + 1);
+	std::string command = args.ArgS();
+	ReplaceString(command, " && ", " ; ");
+	if (command.length() >= 63) {
+		peer->SendMessage(0, 0, ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
+	} else {
+		peer->SendMessage(command.c_str(), 0, ipc::commands::execute_client_cmd, 0, 0);
+	}
 });
 CatVar server_name(CV_STRING, "ipc_server", "cathook_followbot_server", "IPC server name");
 

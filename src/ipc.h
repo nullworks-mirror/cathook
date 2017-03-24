@@ -8,13 +8,23 @@
 #ifndef IPC_H_
 #define IPC_H_
 
+#include "beforecheaders.h"
 #include "ipcb.hpp"
 #include "pthread.h"
+#include "aftercheaders.h"
 
 class CatCommand;
 class CatVar;
 
 namespace ipc {
+
+namespace commands {
+
+constexpr unsigned execute_client_cmd = 1;
+constexpr unsigned set_follow_steamid = 2;
+constexpr unsigned execute_client_cmd_long = 3;
+
+}
 
 extern CatCommand connect;
 extern CatCommand disconnect;

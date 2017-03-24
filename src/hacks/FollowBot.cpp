@@ -17,10 +17,17 @@ float lost_time { 0 };
 float idle_time { 0 };
 int following_idx { 0 };
 
+void AddMessageHandlers(ipc::peer_t* peer) {
+	peer->SetCommandHandler(ipc::commands::set_follow_steamid, [](cat_ipc::command_s& command, void* payload) {
+		logging::Info("IPC Message: now following %ld", *(unsigned*)&command.cmd_data);
+		hacks::shared::followbot::follow_steamid = *(unsigned*)&command.cmd_data;
+	});
+}
+
 CatCommand follow_me("fb_follow_me", "Makes all bots follow you", []() {
 	if (ipc::peer) {
 		unsigned id = g_ISteamUser->GetSteamID().GetAccountID();
-		ipc::peer->SendMessage("owner", 0, &id, sizeof(id));
+		ipc::peer->SendMessage((const char*)&id, 0, ipc::commands::set_follow_steamid, 0, 0);
 	}
 });
 

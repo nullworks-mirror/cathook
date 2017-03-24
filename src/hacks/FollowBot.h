@@ -11,6 +11,8 @@
 class CatCommand;
 class CatVar;
 
+#include "../ipc.h"
+
 namespace hacks { namespace shared { namespace followbot {
 
 extern CatCommand move_to_crosshair;
@@ -23,6 +25,7 @@ extern int following_idx;
 
 void DoWalking();
 void PrintDebug();
+void AddMessageHandlers(ipc::peer_t* peer);
 
 }}}
 
