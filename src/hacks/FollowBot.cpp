@@ -17,6 +17,8 @@ float lost_time { 0 };
 float idle_time { 0 };
 int following_idx { 0 };
 
+std::vector<int> selection {};
+
 void AddMessageHandlers(ipc::peer_t* peer) {
 	peer->SetCommandHandler(ipc::commands::set_follow_steamid, [](cat_ipc::command_s& command, void* payload) {
 		logging::Info("IPC Message: now following %ld", *(unsigned*)&command.cmd_data);
@@ -28,6 +30,22 @@ CatCommand follow_me("fb_follow_me", "Makes all bots follow you", []() {
 	if (ipc::peer) {
 		unsigned id = g_ISteamUser->GetSteamID().GetAccountID();
 		ipc::peer->SendMessage((const char*)&id, 0, ipc::commands::set_follow_steamid, 0, 0);
+	}
+});
+
+CatCommand tool("fb_tool", "Followbot multitool", [](const CCommand& args) {
+	if (args.ArgC() == 1) {
+
+	} else {
+		if (!strcmp(args.Arg(1), "select")) {
+
+		} else if (!strcmp(args.Arg(1), "move")) {
+
+		} else if (!strcmp(args.Arg(1), "stay")) {
+
+		} else if (!strcmp(args.Arg(1), "follow")) {
+
+		}
 	}
 });
 
@@ -100,6 +118,11 @@ void WalkTo(const Vector& vector) {
 
 	g_pUserCmd->forwardmove = result.first;
 	g_pUserCmd->sidemove = result.second;
+}
+
+void CreateMove() {
+
+	DoWalking();
 }
 
 void DoWalking() {
