@@ -251,7 +251,7 @@ bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
 	Vector world;
 	Vector min, max;
 	RAW_ENT(entity)->GetRenderBounds(min, max);
-	world = entity->m_vecOrigin;
+	world = RAW_ENT(entity)->GetAbsOrigin();
 	world.z += (min.z + max.z) / 2;
 	Vector scr;
 	bool succ = draw::WorldToScreen(world, scr);

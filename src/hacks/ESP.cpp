@@ -322,47 +322,50 @@ void ProcessEntity(CachedEntity* ent) {
 
 void ProcessEntityPT(CachedEntity* ent) {
 	if (!enabled) return;
-	if (!box_esp) return;
 	if (CE_BAD(ent)) return;
-	if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
+		if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
 		ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
 	const ESPData& ent_data = data[ent->m_IDX];
 	int fg = ent_data.color;
 	bool transparent { false };
-	switch (ent->m_Type) {
-	case ENTITY_PLAYER: {
-		bool cloak = IsPlayerInvisible(ent);
-		if (legit && ent->m_iTeam != g_pLocalPlayer->team && !GetRelation(ent)) {
-			if (cloak) return;
-			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
-				return;
-			}*/
-		}
 
-		if (!ent->m_bEnemy && !teammates && !GetRelation(ent)) break;
-		if (!ent->m_bAlivePlayer) break;
-		if (vischeck && !ent->IsVisible()) transparent = true;
-		if (transparent) fg = colors::Transparent(fg);
-		DrawBox(ent, fg, 3.0f, -15.0f, true, CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
-	break;
-	}
-	case ENTITY_BUILDING: {
-		if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
-			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
-				return;
-			}*/
+	if (box_esp) {
+		switch (ent->m_Type) {
+		case ENTITY_PLAYER: {
+			bool cloak = IsPlayerInvisible(ent);
+			if (legit && ent->m_iTeam != g_pLocalPlayer->team && !GetRelation(ent)) {
+				if (cloak) return;
+				/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
+					return;
+				}*/
+			}
+
+			if (!ent->m_bEnemy && !teammates && !GetRelation(ent)) break;
+			if (!ent->m_bAlivePlayer) break;
+			if (vischeck && !ent->IsVisible()) transparent = true;
+			if (transparent) fg = colors::Transparent(fg);
+			DrawBox(ent, fg, 3.0f, -15.0f, true, CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
+		break;
 		}
-		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
-		if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
-		if (transparent) fg = colors::Transparent(fg);
-		DrawBox(ent, fg, 1.0f, 0.0f, true, CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
-	break;
-	}
+		case ENTITY_BUILDING: {
+			if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
+				/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
+					return;
+				}*/
+			}
+			if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
+			if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
+			if (transparent) fg = colors::Transparent(fg);
+			DrawBox(ent, fg, 1.0f, 0.0f, true, CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
+		break;
+		}
+		}
 	}
 
 	if (ent_data.string_count) {
 		Vector screen;
-		bool origin_is_zero = ent_data.esp_origin.IsZero(1.0f);
+		// FIXME
+		bool origin_is_zero = !box_esp || ent_data.esp_origin.IsZero(1.0f);
 		if (!origin_is_zero || draw::EntityCenterToScreen(ent, screen)) {
 			if (vischeck && !ent->IsVisible()) transparent = true;
 			Vector draw_point = origin_is_zero ? screen : ent_data.esp_origin;
