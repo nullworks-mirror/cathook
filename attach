@@ -17,21 +17,24 @@ if [ $inst -gt ${#arr[@]} ] || [ $inst == ${#arr[@]} ]; then
 	exit
 fi
 
-echo Running instances: ${arr[@]}
-echo Attaching to ${arr[$1]}
+proc=${arr[$inst]}
 
-if grep -q $(realpath bin/libcathook.so) /proc/${arr[$1]}/maps; then
+echo Running instances: ${arr[@]}
+echo Attaching to $proc
+
+sudo ./detach $inst bin/libcathook.so
+
+if grep -q $(realpath bin/libcathook.so) /proc/$proc/maps; then
   echo already loaded
   exit
 fi
 
-echo loading $(realpath bin/libcathook.so) to ${arr[$1]}
+echo loading $(realpath bin/libcathook.so) to $proc
 gdb -n -q -batch \
-  -ex "attach ${arr[$1]}" \
+  -ex "attach $proc" \
   -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
   -ex "call \$dlopen(\"$(realpath bin/libcathook.so)\", 1)" \
   -ex "call dlerror()" \
   -ex 'print (char *) $2' \
   -ex "detach" \
   -ex "quit"
-
