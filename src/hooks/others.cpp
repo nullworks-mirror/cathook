@@ -127,6 +127,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 			buf.Seek(0);
 		}
 	}
+	//if (type != net_Tick) logging::Info("Got message: %s", type);
 	return ((DispatchUserMessage_t*)hooks::hkClient->GetMethod(hooks::offFrameStageNotify + 1))(thisptr, type, buf);
 	SEGV_END; return false;
 }

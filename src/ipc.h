@@ -33,6 +33,7 @@ extern CatCommand connect;
 extern CatCommand disconnect;
 extern CatCommand exec;
 extern CatCommand exec_all;
+extern CatCommand lobby;
 extern CatVar server_name;
 
 extern pthread_t listener_thread;

@@ -54,8 +54,23 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		pthread_create(&listener_thread, nullptr, listen, nullptr);
 	} catch (std::exception& error) {
 		logging::Info("Runtime error: %s", error.what());
+		delete peer;
+		peer = nullptr;
 	}
 
+});
+CatCommand lobby("ipc_lobby", "Join a lobby", [](const CCommand& args) {
+	std::string input(args.ArgS());
+	std::size_t lobby_id_start = input.find("[L:1:");
+	if (lobby_id_start == std::string::npos) {
+		logging::Info("couldn't find lobby ID!");
+		return;
+	}
+	input = input.substr(lobby_id_start + 5);
+	unsigned long lobby32 = strtoul(input.c_str(), nullptr, 10);
+	unsigned long long lobby64 = ((25559040ull << 32) | lobby32);
+	logging::Info("lobby64 ID: %llu", lobby64);
+	peer->SendMessage(format("connect_lobby ", lobby64).c_str(), 0, ipc::commands::execute_client_cmd, 0, 0);
 });
 CatCommand disconnect("ipc_disconnect", "Disconnect from IPC server", []() {
 	thread_running = false;

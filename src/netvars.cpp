@@ -54,6 +54,8 @@ void NetVars::Init() {
 		this->iPlayerClass = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerClass");
 		this->angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata", "m_angEyeAngles[0]");
 		this->iWeaponState = gNetvars.get_offset("DT_WeaponMinigun", "m_iWeaponState");
+		this->flChargeLevel = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
+		this->bChargeRelease = gNetvars.get_offset("DT_WeaponMedigun", "m_bChargeRelease");
 	}
 	if (TF2C) this->iCritMult = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iCritMult");
 	if (TF2C) {

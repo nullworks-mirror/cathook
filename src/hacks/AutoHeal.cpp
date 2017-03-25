@@ -12,18 +12,52 @@
 
 namespace hacks { namespace tf { namespace autoheal {
 
-extern CatVar enabled(CV_SWITCH, "autoheal_enabled", "0", "AutoHeal", "Automatically heals nearby teammates");
-extern CatVar silent(CV_SWITCH, "autoheal_silent", "1", "Silent AutoHeal", "Silent AutoHeal. Disable this to make ghetto followbot");
+CatVar enabled(CV_SWITCH, "autoheal_enabled", "0", "AutoHeal", "Automatically heals nearby teammates");
+CatVar silent(CV_SWITCH, "autoheal_silent", "1", "Silent AutoHeal", "Silent AutoHeal. Disable this to make ghetto followbot");
 //extern CatVar target_only;
 
 int m_iCurrentHealingTarget { -1 };
 int m_iNewTarget { 0 };
 
-static CatVar pop_uber(CV_FLOAT, "autoheal_uber_health", "20", "Pop uber if health% <");
+static CatVar pop_uber_auto(CV_SWITCH, "autoheal_uber", "1", "AutoUber");
+static CatVar pop_uber_percent(CV_FLOAT, "autoheal_uber_health", "30", "Pop uber if health% <");
+static CatVar share_uber(CV_SWITCH, "autoheal_share_uber", "1", "Share ubercharge");
+
+bool IsPopped() {
+	CachedEntity* weapon = g_pLocalPlayer->weapon();
+	if (CE_BAD(weapon) || weapon->m_iClassID != g_pClassID->CWeaponMedigun) return false;
+	return CE_BYTE(weapon, netvar.bChargeRelease);
+}
+
+bool ShouldChargePlayer(int idx) {
+	CachedEntity* target = ENTITY(idx);
+	const float damage_accum_duration = g_GlobalVars->curtime - data[idx].accum_damage_start;
+	const int health = target->m_iHealth;
+	if (!data[idx].accum_damage_start) return false;
+	if (health > 30 && data[idx].accum_damage < 45) return false;
+	const float dd = ((float)data[idx].accum_damage / damage_accum_duration);
+	if (dd > 40) {
+		return true;
+	}
+	if (health < 30 && data[idx].accum_damage > 10) return true;
+	return false;
+}
+
+bool ShouldPop() {
+	if (IsPopped()) return false;
+	if (m_iCurrentHealingTarget != -1) {
+		CachedEntity* target = ENTITY(m_iCurrentHealingTarget);
+		if (CE_GOOD(target)) {
+			if (ShouldChargePlayer(m_iCurrentHealingTarget)) return true;
+		}
+	}
+	return ShouldChargePlayer(LOCAL_E->m_IDX);
+}
 
 void CreateMove() {
 	if (!enabled) return;
 	if (GetWeaponMode(g_pLocalPlayer->entity) != weapon_medigun) return;
+	UpdateData();
 	int old_target = m_iCurrentHealingTarget;
 	m_iCurrentHealingTarget = BestTarget();
 	if (m_iNewTarget > 0 && m_iNewTarget < 10) m_iNewTarget++;
@@ -38,11 +72,35 @@ void CreateMove() {
 	GetHitbox(target, 7, out);
 	AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
 	if (silent) g_pLocalPlayer->bUseSilentAngles = true;
-	if (!m_iNewTarget && (g_GlobalVars->tickcount % 60)) g_pUserCmd->buttons |= IN_ATTACK;
-	if (((float)target->m_iHealth / (float)target->m_iMaxHealth) * 100 < (float)pop_uber) {
-		g_pUserCmd->buttons |= IN_ATTACK2;
-	}
+	if (!m_iNewTarget && (g_GlobalVars->tickcount % 300)) g_pUserCmd->buttons |= IN_ATTACK;
+	if (ShouldPop()) g_pUserCmd->buttons |= IN_ATTACK2;
 	return;
+}
+
+std::vector<patient_data_s> data(32);
+void UpdateData() {
+	for (int i = 1; i < 32; i++) {
+		CachedEntity* ent = ENTITY(i);
+		if (CE_GOOD(ent)) {
+			int health = ent->m_iHealth;
+			if (data[i].last_damage > g_GlobalVars->curtime) {
+				data[i].last_damage = 0.0f;
+			}
+			if (g_GlobalVars->curtime - data[i].last_damage > 5.0f) {
+				data[i].accum_damage = 0;
+				data[i].accum_damage_start = 0.0f;
+			}
+			const int last_health = data[i].last_health;
+			if (health != last_health) {
+				data[i].last_health = health;
+				if (health < last_health) {
+					data[i].accum_damage += (last_health - health);
+					if (!data[i].accum_damage_start) data[i].accum_damage_start = g_GlobalVars->curtime;
+					data[i].last_damage = g_GlobalVars->curtime;
+				}
+			}
+		}
+	}
 }
 
 int BestTarget() {
@@ -61,6 +119,10 @@ int BestTarget() {
 int HealingPriority(int idx) {
 	if (!CanHeal(idx)) return -1;
 	CachedEntity* ent = ENTITY(idx);
+	if (share_uber && IsPopped()) {
+		return !HasCondition(ent, TFCond_Ubercharged);
+	}
+
 	int priority = 0;
 	int health = CE_INT(ent, netvar.iHealth);
 	int maxhealth = g_pPlayerResource->GetMaxHealth(ent);
