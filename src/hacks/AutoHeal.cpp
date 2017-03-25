@@ -73,7 +73,7 @@ void CreateMove() {
 	AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
 	if (silent) g_pLocalPlayer->bUseSilentAngles = true;
 	if (!m_iNewTarget && (g_GlobalVars->tickcount % 300)) g_pUserCmd->buttons |= IN_ATTACK;
-	if (ShouldPop()) g_pUserCmd->buttons |= IN_ATTACK2;
+	if (pop_uber_auto && ShouldPop()) g_pUserCmd->buttons |= IN_ATTACK2;
 	return;
 }
 
