@@ -214,7 +214,7 @@ void ProcessEntity(CachedEntity* ent) {
 	if (ent->m_iClassID == g_pClassID->CTFTankBoss && tank) {
 		AddEntityString(ent, "Tank");
 	} else if (ent->m_iClassID == g_pClassID->CTFDroppedWeapon && item_esp && item_dropped_weapons) {
-		AddEntityString(ent, format("WEAPON ", ent->m_pEntity->GetClientClass()->GetName()));
+		AddEntityString(ent, format("WEAPON ", RAW_ENT(ent)->GetClientClass()->GetName()));
 	} else if (ent->m_iClassID == g_pClassID->CCurrencyPack && item_money) {
 		if (CE_BYTE(ent, netvar.bDistributed)) {
 			if (item_money_red) {
@@ -312,7 +312,7 @@ void ProcessEntity(CachedEntity* ent) {
 			CachedEntity* weapon = ENTITY(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
 			if (CE_GOOD(weapon)) {
 				if (show_weapon) {
-					AddEntityString(ent, std::string(vfunc<const char*(*)(IClientEntity*)>(weapon->m_pEntity, 398, 0)(weapon->m_pEntity)));
+					AddEntityString(ent, std::string(vfunc<const char*(*)(IClientEntity*)>(RAW_ENT(weapon), 398, 0)(RAW_ENT(weapon))));
 				}
 			}
 		}

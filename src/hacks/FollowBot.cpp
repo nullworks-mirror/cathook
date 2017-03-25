@@ -256,9 +256,9 @@ void DoWalking() {
 		IClientEntity* owner_weapon = g_IEntityList->GetClientEntity(owner_weapon_eid);
 		if (owner_weapon && CE_GOOD(g_pLocalPlayer->weapon())) {
 			// IsBaseCombatWeapon()
-			if (vfunc<bool(*)(IClientEntity*)>(g_pLocalPlayer->weapon()->m_pEntity, 190, 0)(g_pLocalPlayer->weapon()->m_pEntity) &&
+			if (vfunc<bool(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 190, 0)(RAW_ENT(g_pLocalPlayer->weapon())) &&
 			    vfunc<bool(*)(IClientEntity*)>(owner_weapon, 190, 0)(owner_weapon)) {
-				int my_slot = vfunc<int(*)(IClientEntity*)>(g_pLocalPlayer->weapon()->m_pEntity, 395, 0)(g_pLocalPlayer->weapon()->m_pEntity);
+				int my_slot = vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon()));
 				int owner_slot = vfunc<int(*)(IClientEntity*)>(owner_weapon, 395, 0)(owner_weapon);
 				if (g_pLocalPlayer->clazz == tf_medic && always_medigun) {
 					if (my_slot != 1) {

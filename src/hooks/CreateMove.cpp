@@ -143,7 +143,6 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 
 	}
-
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
 //		PROF_BEGIN();
@@ -225,7 +224,6 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		if (cmd)
 			g_Settings.last_angles = cmd->viewangles;
 	}
-
 
 //	PROF_END("CreateMove");
 	g_pLocalPlayer->bAttackLastTick = (cmd->buttons & IN_ATTACK);

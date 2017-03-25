@@ -12,7 +12,9 @@
 #include "profiler.h"
 
 CachedEntity::CachedEntity() {
+#if PROXY_ENTITY != true
 	m_pEntity = nullptr;
+#endif
 	m_Bones = 0;
 	m_Bones = new matrix3x4_t[MAXSTUDIOBONES];
 	m_pHitboxCache = new EntityHitboxCache(this);
@@ -26,7 +28,7 @@ CachedEntity::~CachedEntity() {
 }
 
 IClientEntity* CachedEntity::InternalEntity() {
-	return m_pEntity;
+	return g_IEntityList->GetClientEntity(m_IDX);
 }
 
 void EntityCache::Invalidate() {
@@ -38,13 +40,16 @@ void CachedEntity::Update(int idx) {
 	SEGV_BEGIN
 
 	m_IDX = idx;
+	if (!RAW_ENT(this)) return;
+#if PROXY_ENTITY != true
 	m_pEntity = g_IEntityList->GetClientEntity(idx);
 	if (!m_pEntity) {
 		return;
 	}
-	m_iClassID = m_pEntity->GetClientClass()->m_ClassID;
+#endif
+	m_iClassID = RAW_ENT(this)->GetClientClass()->m_ClassID;
 
-	Vector origin = m_pEntity->GetAbsOrigin();
+	Vector origin = RAW_ENT(this)->GetAbsOrigin();
 	//if (TF2 && EstimateAbsVelocity) EstimateAbsVelocity(m_pEntity, m_vecVelocity);
 	/*if ((gvars->realtime - m_fLastUpdate) >= 0.05f) {
 		//if (gvars->tickcount - m_nLastTick > 1) {
@@ -74,7 +79,6 @@ void CachedEntity::Update(int idx) {
 	if (m_pHitboxCache) {
 		SAFE_CALL(m_pHitboxCache->Update());
 	}
-
 	if (m_iClassID == g_pClassID->C_Player) {
 		m_Type = EntityType::ENTITY_PLAYER;
 	} else if (m_iClassID == g_pClassID->CTFGrenadePipebombProjectile ||
@@ -105,7 +109,6 @@ void CachedEntity::Update(int idx) {
 		m_flDistance = (g_pLocalPlayer->v_Origin.DistTo(m_vecOrigin));
 	}
 	m_bAlivePlayer = false;
-
 	// TODO temporary!
 	/*m_bCritProjectile = false;
 	m_bIsVisible = false;
@@ -127,7 +130,7 @@ void CachedEntity::Update(int idx) {
 	}
 
 	if (m_Type == EntityType::ENTITY_PLAYER) {
-		m_bAlivePlayer = !(NET_BYTE(m_pEntity, netvar.iLifeState));
+		m_bAlivePlayer = !(NET_BYTE(RAW_ENT(this), netvar.iLifeState));
 		if (m_pPlayerInfo) {
 			delete m_pPlayerInfo;
 			m_pPlayerInfo = 0;
@@ -145,7 +148,7 @@ void CachedEntity::Update(int idx) {
 		m_iHealth = CE_INT(this, netvar.iBuildingHealth);
 		m_iMaxHealth = CE_INT(this, netvar.iBuildingMaxHealth);
 	}
-	SEGV_END_INFO("Updating entity")
+	SEGV_END_INFO("Updating entity");
 }
 
 static CatVar fast_vischeck(CV_SWITCH, "fast_vischeck", "0", "Fast VisCheck", "VisCheck only certain player hitboxes");
@@ -194,7 +197,7 @@ bool CachedEntity::IsVisible() {
 
 matrix3x4_t* CachedEntity::GetBones() {
 	if (!m_bBonesSetup) {
-		m_bBonesSetup = m_pEntity->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, 0); // gvars->curtime
+		m_bBonesSetup = RAW_ENT(this)->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, 0); // gvars->curtime
 	}
 	return m_Bones;
 }
@@ -210,9 +213,7 @@ EntityCache::~EntityCache() {
 void EntityCache::Update() {
 	m_nMax = g_IEntityList->GetHighestEntityIndex();
 	for (int i = 0; i < m_nMax && i < MAX_ENTITIES; i++) {
-		//logging::Info("Updating %i", i);
 		m_pArray[i].Update(i);
-		//logging::Info("Back!");
 	}
 }
 
