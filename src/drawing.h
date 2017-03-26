@@ -45,9 +45,23 @@ extern int green;
 
 void Init();
 
-int Create(int r, int g, int b, int a);
+constexpr int Create(int r, int g, int b, int a) {
+	unsigned char _r = (r) & 0xFF;
+	unsigned char _g = (g) & 0xFF;
+	unsigned char _b = (b) & 0xFF;
+	unsigned char _a = (a) & 0xFF;
+	return (int)(_r << 24) | (int)(_g << 16) | (int)(_b << 8) | (int)_a;
+}
 
-int Transparent(int base, float mod = 0.5f);
+constexpr int Transparent(int base, float mod = 0.5f) {
+	unsigned char _r = (base >> 24) & 0xFF;
+	unsigned char _g = (base >> 16) & 0xFF;
+	unsigned char _b = (base >> 8)  & 0xFF;
+	unsigned char _a = (base) & 0xFF;
+	_a *= mod;
+	return Create(_r, _g, _b, _a * mod);
+}
+
 int FromHSL(float h, float s, float l);
 int RainbowCurrent();
 int Health(int health, int max);

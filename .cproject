@@ -106,7 +106,8 @@
 					<sourceEntries>
 						<entry excluding="ncc|source-sdk-2013|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="autogen|vtables|segvcatch|gui|targeting|ipc|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry excluding="depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry excluding="ncc|depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui/ncc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/segvcatch"/>
 					</sourceEntries>
 				</configuration>
@@ -158,7 +159,8 @@
 					<sourceEntries>
 						<entry excluding="ncc|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="autogen|vtables|segvcatch|gui|hooks|hacks|copypasted|targeting|ipc|mem|sdk" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry excluding="depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry excluding="ncc|depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui/ncc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/hooks"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/segvcatch"/>
 					</sourceEntries>
@@ -253,7 +255,8 @@
 					<sourceEntries>
 						<entry excluding="ncc|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="autogen|vtables|segvcatch|gui|hooks|targeting|ipc|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry excluding="depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry excluding="ncc|depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui/ncc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/hooks"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/segvcatch"/>
 					</sourceEntries>
@@ -346,7 +349,8 @@
 					<sourceEntries>
 						<entry excluding="ncc|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="autogen|vtables|segvcatch|gui|hooks|targeting|ipc|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry excluding="depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry excluding="ncc|depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui/ncc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/hooks"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/segvcatch"/>
 					</sourceEntries>

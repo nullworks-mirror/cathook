@@ -75,15 +75,6 @@ int green;
 
 }
 
-int colors::Create(int r, int g, int b, int a) {
-	unsigned char bytes[4];
-	bytes[0] = r;
-	bytes[1] = g;
-	bytes[2] = b;
-	bytes[3] = a;
-	return *(int*)bytes;
-}
-
 void colors::Init() {
 	using namespace colors;
 	pink = Create(255, 105, 180, 255);
@@ -168,12 +159,6 @@ int colors::EntityF(CachedEntity* ent) {
 	}
 
 	return result;
-}
-
-int colors::Transparent(int base, float mod /*= 0.5f*/) {
-	unsigned char* result = (unsigned char*)&base;
-	result[3] *= mod;
-	return *(int*)result;
 }
 
 int colors::RainbowCurrent() {

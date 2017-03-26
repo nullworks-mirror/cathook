@@ -17,6 +17,9 @@ class CatVar;
 #include <string>
 #include "../aftercheaders.h"
 
+#include "ncc/Root.hpp"
+#include "ncc/Menu.hpp"
+
 #include "../fixsdk.h"
 #include "../inputsystem/ButtonCode.h"
 
@@ -25,6 +28,7 @@ class RootWindow;
 
 extern CatVar gui_visible;
 extern CatVar gui_draw_bounds;
+extern CatVar gui_nullcore;
 
 class CatGUI {
 public:
@@ -40,6 +44,9 @@ public:
 
 	CTooltip* m_pTooltip;
 	RootWindow* m_pRootWindow;
+
+	// TODO NullCore tooltip
+	menu::ncc::Root* root_nullcore;
 
 	bool m_bShowTooltip;
 	bool m_bConsumeKeys;
