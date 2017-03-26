@@ -132,7 +132,7 @@ void CreateMove() {
 			}
 		} else {
 			//if (tg != 26)
-			//logging::Info("Shouldn't target ent %i %i", ent->m_IDX, tg);
+			//	logging::Info("Shouldn't target ent %i %i", ent->m_IDX, tg);
 		}
 	}
 	if (CE_GOOD(target_highest)) {
@@ -215,7 +215,7 @@ int ShouldTarget(CachedEntity* entity) {
 			} else {
 				if (!GetHitbox(entity, hitbox, resultAim)) return 15;
 			}
-			if (!IsVectorVisible(g_pLocalPlayer->v_Eye, resultAim)) return 16;
+			if (!IsVectorVisible(g_pLocalPlayer->v_Eye, resultAim)) { return 16; }
 		} else {
 			/*if (v_bMachinaPenetration->GetBool()) {
 				if (!GetHitbox(entity, hitbox, resultAim)) return false;
@@ -393,7 +393,7 @@ int BestHitbox(CachedEntity* target) {
 				ci == g_pClassID->CTFRocketLauncher_AirStrike ||
 				ci == g_pClassID->CTFRocketLauncher_DirectHit ||
 				ci == g_pClassID->CTFRocketLauncher_Mortar) {
-			preferred = hitbox_t::foot_L;
+			preferred = hitbox_t::hip_L;
 		} else {
 			preferred = hitbox_t::pelvis;
 		}

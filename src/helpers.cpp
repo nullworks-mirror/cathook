@@ -571,22 +571,18 @@ bool Developer(CachedEntity* ent) {
 	return buf;
 }*/
 
-trace::FilterNoPlayer* vec_filter;
 bool IsVectorVisible(Vector origin, Vector target) {
 	//logging::Info("ISVV");
-	if (!vec_filter) {
-		vec_filter = new trace::FilterNoPlayer();
-	}
 	trace_t trace_visible;
 	Ray_t ray;
-	vec_filter->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+	trace::g_pFilterNoPlayer->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	ray.Init(origin, target);
-	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, vec_filter, &trace_visible);
-	float dist2 = origin.DistToSqr(trace_visible.endpos);
-	float dist1 = origin.DistToSqr(target);
+	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, trace::g_pFilterNoPlayer, &trace_visible);
+//	float dist2 = origin.DistToSqr(trace_visible.endpos);
+//	float dist1 = origin.DistToSqr(target);
 	//logging::Info("Target: %.1f, %.1f, %.1f; ENDPOS: %.1f, %.1f, %.1f", target.x, target.y, target.z, trace_visible.endpos.x, trace_visible.endpos.y, trace_visible.endpos.z);
 	//logging::Info("Dist1: %f, Dist2: %f");
-	return (dist1 <= dist2);
+	return (trace_visible.fraction == 1.0f);
 }
 
 /*bool PredictProjectileAim(Vector origin, IClientEntity* target, hitbox_t hb, float speed, bool arc, float gravity, Vector& result) {
