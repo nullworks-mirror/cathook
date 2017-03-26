@@ -20,9 +20,9 @@ List::List(std::string title) : open_sublist(nullptr), title(title), items {} {
 
 void List::Draw(int x, int y) {
 	const auto& size = GetSize();
-	draw::OutlineRect(x, y, size.first, size.second, color_fg);
+	draw::OutlineRect(x, y, size.first, size.second, GUIColor());
 	for (int i = 1; i < ChildCount(); i++) {
-		draw::DrawLine(x + 1, y + 15 * i, 220, 0, color_fg);
+		draw::DrawLine(x + 1, y + 15 * i, 220, 0, GUIColor());
 	}
 	CBaseContainer::Draw(x, y);
 }

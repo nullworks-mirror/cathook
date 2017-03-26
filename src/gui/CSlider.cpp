@@ -72,7 +72,7 @@ void CSlider::Update() {
 void CSlider::Draw(int x, int y) {
 	auto size = GetSize();
 	draw::DrawRect(x, y, size.first, size.second, colors::Create(0, 0, 0, 200));
-	draw::DrawRect(x, y, m_nSliderPos, size.second, colors::pink);
+	draw::DrawRect(x, y, m_nSliderPos, size.second, GUIColor());
 	char* s = strfmt("%.2f", Value());
 	std::string str(s);
 	delete [] s;

@@ -40,6 +40,15 @@ CatGUI::~CatGUI() {
 	delete m_pRootWindow;
 }
 
+CatVar gui_color_r(CV_INT, "gui_color_r", "255", "Main GUI color (red)", "Defines red component of main gui color", 0, 255);
+CatVar gui_color_g(CV_INT, "gui_color_g", "105", "Main GUI color (green)", "Defines green component of main gui color", 0, 255);
+CatVar gui_color_b(CV_INT, "gui_color_b", "180", "Main GUI color (blue)", "Defines blue component of main gui color", 0, 255);
+
+static CatVar gui_rainbow(CV_SWITCH, "gui_rainbow", "0", "Rainbow GUI");
+int GUIColor() {
+	return gui_rainbow ? colors::RainbowCurrent() : colors::Create((int)gui_color_r, (int)gui_color_g, (int)gui_color_b, 255);
+}
+
 void CatGUI::Setup() {
 	m_pRootWindow = new RootWindow();
 	m_pRootWindow->Setup();
@@ -111,7 +120,7 @@ void CatGUI::Update() {
 		if (!m_bShowTooltip && m_pTooltip->IsVisible()) m_pTooltip->Hide();
 		root->Draw(0, 0);
 		draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colors::Transparent(colors::white));
-		draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, gui_nullcore ? menu::ncc::color_fg : colors::pink);
+		draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, GUIColor());
 		if (gui_draw_bounds) {
 			root->DrawBounds(0, 0);
 		}

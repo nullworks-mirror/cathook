@@ -26,6 +26,11 @@ class CatVar;
 class CTooltip;
 class RootWindow;
 
+extern CatVar gui_color_r;
+extern CatVar gui_color_g;
+extern CatVar gui_color_b;
+int GUIColor();
+
 extern CatVar gui_visible;
 extern CatVar gui_draw_bounds;
 extern CatVar gui_nullcore;

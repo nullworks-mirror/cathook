@@ -28,7 +28,7 @@ void CKeyInput::Draw(int x, int y) {
 	int color = colors::white;
 	if (Props()->GetBool("capturing")) {
 		key = "< PRESS >";
-		color = colors::pink;
+		color = GUIColor();
 	} else {
 		if (!Value()) {
 			if (!IsFocused()) {

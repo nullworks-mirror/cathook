@@ -19,7 +19,7 @@ Item::Item() : CBaseWidget("ncc_menu_item", nullptr) {
 
 void Item::Draw(int x, int y) {
 	const auto& size = GetSize();
-	draw::DrawRect(x, y, size.first, size.second, IsHovered() ? color_bg_hover : color_bg);
+	draw::DrawRect(x, y, size.first, size.second, IsHovered() ? colors::Transparent(GUIColor(), 0.32f) : colors::Transparent(GUIColor(), 0.07f));
 }
 
 }}
