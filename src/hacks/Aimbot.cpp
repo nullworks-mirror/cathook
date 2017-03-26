@@ -15,6 +15,8 @@
 
 namespace hacks { namespace shared { namespace aimbot {
 
+CatVar huntsman_full_auto(CV_SWITCH, "aimbot_full_auto_huntsman", "1", "Auto Huntsman", "Autoshoot will pull huntsman's string");
+
 bool aimkey_switch { false };
 int minigun_fix_ticks { 0 };
 bool projectile_mode { false };
@@ -150,6 +152,8 @@ void CreateMove() {
 				if (charge >= (float)huntsman_autoshoot) {
 					cmd->buttons &= ~IN_ATTACK;
 					hacks::shared::antiaim::SetSafeSpace(3);
+				} else if (autoshoot && huntsman_full_auto) {
+					cmd->buttons |= IN_ATTACK;
 				}
 				if (!(cmd->buttons & IN_ATTACK) && silent_huntsman) {
 					Aim(target_highest, cmd);
@@ -306,7 +310,7 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 				if (zoomed_only && !CanHeadshot()) return true;
 			}
 		}
-		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFCompoundBow) {
+		if ((g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFCompoundBow)) {
 			cmd->buttons |= IN_ATTACK;
 		}
 	}
