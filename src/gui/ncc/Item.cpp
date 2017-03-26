@@ -12,7 +12,7 @@
 
 namespace menu { namespace ncc {
 
-Item::Item() {
+Item::Item() : CBaseWidget("ncc_menu_item", nullptr) {
 	SetSize(220, 16);
 	SetMaxSize(220, 16);
 }

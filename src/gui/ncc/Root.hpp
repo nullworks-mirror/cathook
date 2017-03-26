@@ -16,6 +16,7 @@ class Root : public CBaseWindow {
 public:
 	Root();
 	void Setup();
+	virtual void Draw(int x, int y) override;
 	inline virtual void MoveChildren() override {};
 };
 

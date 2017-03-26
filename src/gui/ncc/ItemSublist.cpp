@@ -18,7 +18,7 @@ ItemSublist::ItemSublist(std::string title, List* list) :
 
 void ItemSublist::Draw(int x, int y) {
 	Item::Draw(x, y);
-	draw::String(font_item, x + 2, y + 2, colors::white, 2, format((IsHovered() ? "[-] " : "[+] "), title));
+	draw::String(font_item, x + 2, y, colors::white, 2, format((IsHovered() ? "[-] " : "[+] "), title));
 }
 
 void ItemSublist::OnKeyPress(ButtonCode_t code, bool repeated) {

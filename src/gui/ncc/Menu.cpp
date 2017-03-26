@@ -19,8 +19,8 @@ unsigned long font_item  = 0;
 void Init() {
 	font_title = g_ISurface->CreateFont();
 	font_item  = g_ISurface->CreateFont();
-	g_ISurface->SetFontGlyphSet(font_title, "Verdana Bold", 10, 0, 0, 0, 0x0);
-	g_ISurface->SetFontGlyphSet(font_title, "Verdana", 10, 0, 0, 0, 0x0);
+	g_ISurface->SetFontGlyphSet(font_title, "Verdana Bold", 14, 0, 0, 0, 0x0);
+	g_ISurface->SetFontGlyphSet(font_item, "Verdana", 12, 0, 0, 0, 0x0);
 	// TODO add stuff
 	MainList().AddChild(new ItemSublist("Aim Bot", nullptr));
 	MainList().AddChild(new ItemSublist("Trigger Bot", nullptr));
