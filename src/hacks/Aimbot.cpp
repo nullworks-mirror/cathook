@@ -137,6 +137,12 @@ void CreateMove() {
 			//	logging::Info("Shouldn't target ent %i %i", ent->m_IDX, tg);
 		}
 	}
+	static int huntsman_ticks = 0;
+	if (huntsman_ticks) {
+		g_pUserCmd->buttons |= IN_ATTACK;
+		huntsman_ticks = max(0, huntsman_ticks - 1);
+	}
+
 	if (CE_GOOD(target_highest)) {
 		hacks::shared::esp::SetEntityColor(target_highest, colors::pink);
 		if (ShouldAim(cmd)) {
@@ -153,6 +159,7 @@ void CreateMove() {
 					cmd->buttons &= ~IN_ATTACK;
 					hacks::shared::antiaim::SetSafeSpace(3);
 				} else if (autoshoot && huntsman_full_auto) {
+					huntsman_ticks = 3;
 					cmd->buttons |= IN_ATTACK;
 				}
 				if (!(cmd->buttons & IN_ATTACK) && silent_huntsman) {
@@ -205,7 +212,7 @@ int ShouldTarget(CachedEntity* entity) {
 		if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee) {
 			if (entity->m_flDistance > 95) return 9;
 		}
-		if (GetRelation(entity) == relation::FRIEND) return 11;
+		if (GetRelation(entity) == relation::FRIEND || GetRelation(entity) == relation::BOT) return 11;
 		Vector resultAim;
 		int hitbox = BestHitbox(entity);
 		//if (m_bHeadOnly && hitbox) return 12;

@@ -104,7 +104,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="source-sdk-2013|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ncc|source-sdk-2013|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="autogen|vtables|segvcatch|gui|targeting|ipc|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry excluding="depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/segvcatch"/>
@@ -156,7 +156,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ncc|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="autogen|vtables|segvcatch|gui|hooks|hacks|copypasted|targeting|ipc|mem|sdk" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry excluding="depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/hooks"/>
@@ -251,7 +251,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ncc|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="autogen|vtables|segvcatch|gui|hooks|targeting|ipc|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry excluding="depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/hooks"/>
@@ -344,7 +344,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ncc|autogen|vtables|segvcatch|gui|copypasted|targeting|ipc|mem|hooks|sdk|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="autogen|vtables|segvcatch|gui|hooks|targeting|ipc|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry excluding="depr" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/hooks"/>
