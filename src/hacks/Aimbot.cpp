@@ -372,9 +372,8 @@ bool ShouldAim(CUserCmd* cmd) {
 			if (!CanHeadshot()) return false;
 		}
 	}
-	if (hacks::shared::misc::crit_hack) {
-		if (RandomCrits() && WeaponCanCrit() && !IsAttackACrit(cmd)) return false;
-	}
+	// Crit hack checking
+	if (!AllowAttacking()) { return false; }
 	return true;
 }
 

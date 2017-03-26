@@ -36,14 +36,7 @@ void CreateMove() {
 
 	if (TF2C && tauntslide)
 		RemoveCondition(LOCAL_E, TFCond_Taunting);
-	bool crit = IsAttackACrit(g_pUserCmd);
-	if (crit_suppress && !crit_hack && WeaponCanCrit()) {
-		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
-			g_pUserCmd->buttons &= ~IN_ATTACK;
-		}
-	} else if (((GetWeaponMode(LOCAL_E) == weapon_melee && crit_melee) || crit_hack) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife)) {
-		if (!crit) g_pUserCmd->buttons &= ~IN_ATTACK;
-	}
+	if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
 
 	if (flashlight_spam) {
 		if (flswitch && !g_pUserCmd->impulse) g_pUserCmd->impulse = 100;

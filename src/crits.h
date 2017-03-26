@@ -11,6 +11,7 @@
 class CUserCmd;
 class IClientEntity;
 
+bool AllowAttacking();
 bool RandomCrits();
 bool WeaponCanCrit();
 bool IsAttackACrit(CUserCmd* cmd);

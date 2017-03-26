@@ -11,6 +11,19 @@
 #include "copypasted/CSignature.h"
 #include <link.h>
 
+bool AllowAttacking() {
+	if (!hacks::shared::misc::crit_hack) return true;
+	bool crit = IsAttackACrit(g_pUserCmd);
+	if (hacks::shared::misc::crit_suppress && !hacks::shared::misc::crit_hack && WeaponCanCrit()) {
+		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
+			return false;
+		}
+	} else if (((GetWeaponMode(LOCAL_E) == weapon_melee && hacks::shared::misc::crit_melee) || hacks::shared::misc::crit_hack) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife)) {
+		if (!crit) return false;
+	}
+	return true;
+}
+
 bool RandomCrits() {
 	static ConVar* tf_weapon_criticals = g_ICvar->FindVar("tf_weapon_criticals");
 	return tf_weapon_criticals->GetBool();
