@@ -86,6 +86,10 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 
 	if (logo) {
 		AddSideString("cathook by d4rkc4t", colors::RainbowCurrent());
+#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
+		AddSideString("commit #" GIT_COMMIT_HASH);
+		AddSideString("at " GIT_COMMIT_DATE);
+#endif
 	}
 
 	if (!hacks::shared::airstuck::IsStuck()) {

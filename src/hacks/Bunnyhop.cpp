@@ -19,8 +19,10 @@ int iTicksLastJump { 0 };
 
 void CreateMove() {
 	if (!enabled) return;
-	if (HasCondition(g_pLocalPlayer->entity, TFCond_GrapplingHook)) return;
+	//if (HasCondition(g_pLocalPlayer->entity, TFCond_GrapplingHook)) return;
 	int flags = CE_INT(g_pLocalPlayer->entity, netvar.iFlags);
+
+	if (CE_INT(g_pLocalPlayer->entity, netvar.movetype) == MOVETYPE_FLY) return;
 
 	bool ground = (flags & (1 << 0));
 	bool jump = (g_pUserCmd->buttons & IN_JUMP);

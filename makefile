@@ -17,6 +17,11 @@ OBJECTS = $(SOURCES:.cpp=.o)
 DEPENDS = $(SOURCES:.cpp=.d)
 SRC_SUBDIRS=$(shell find $(SRC_DIR) -type d -print)
 
+GIT_COMMIT_HASH=$(shell git log -1 --pretty="%h")
+GIT_COMMIT_DATE=$(shell git log -1 --pretty="%ai")
+
+CXXFLAGS += -DGIT_COMMIT_HASH="\"$(GIT_COMMIT_HASH)\"" -DGIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
+
 .PHONY: clean directories
 
 all:
