@@ -17,9 +17,9 @@ public:
 
 	void AddChild(IWidget* child);
 	int ChildCount();
-	IWidget* ChildByIndex(int idx);
-	IWidget* ChildByName(std::string name);
-	IWidget* ChildByPoint(int x, int y);
+	virtual IWidget* ChildByIndex(int idx);
+	virtual IWidget* ChildByName(std::string name);
+	virtual IWidget* ChildByPoint(int x, int y);
 
 	virtual bool ConsumesKey(ButtonCode_t key);
 	virtual void Draw(int x, int y);

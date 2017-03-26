@@ -14,8 +14,10 @@
 
 namespace menu { namespace ncc {
 
-extern unsigned long font_title; // Verdana Bold 10px
-extern unsigned long font_item;  // Verdana 	 10px
+class List;
+
+extern unsigned long font_title; // Verdana Bold 10px?
+extern unsigned long font_item;  // Verdana 	 10px?
 
 void Init();
 List& MainList();

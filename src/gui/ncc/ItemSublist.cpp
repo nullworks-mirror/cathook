@@ -16,8 +16,19 @@ ItemSublist::ItemSublist(std::string title, List* list) :
 	Item(), title(title), list(list){
 }
 
+bool ItemSublist::IsHovered() {
+	List* parent = dynamic_cast<List*>(GetParent());
+	if (!parent) throw std::runtime_error("Sublist parent can't be casted to List!");
+	return Item::IsHovered() || (dynamic_cast<List*>(parent->open_sublist) == list && !parent->open_sublist->ShouldClose());
+}
+
 void ItemSublist::Draw(int x, int y) {
 	Item::Draw(x, y);
+	List* parent = dynamic_cast<List*>(GetParent());
+	if (!parent) throw std::runtime_error("Sublist parent can't be casted to List!");
+	const auto& size = GetSize();
+	if (parent->open_sublist == list)
+		draw::DrawRect(x, y, size.first, size.second, colors::Transparent(GUIColor(), 0.5f));
 	draw::String(font_item, x + 2, y, colors::white, 2, format((IsHovered() ? "[-] " : "[+] "), title));
 }
 
@@ -27,10 +38,20 @@ void ItemSublist::OnKeyPress(ButtonCode_t code, bool repeated) {
 
 void ItemSublist::OnMouseEnter() {
 	Item::OnMouseEnter();
+	List* parent = dynamic_cast<List*>(GetParent());
+	if (!parent) throw std::runtime_error("Sublist parent can't be casted to List!");
+	parent->OpenSublist(list, GetOffset().second - 1);
 }
 
 void ItemSublist::OnMouseLeave() {
 	Item::OnMouseLeave();
+	List* parent = dynamic_cast<List*>(GetParent());
+	if (!parent) throw std::runtime_error("Sublist parent can't be casted to List!");
+	if (dynamic_cast<List*>(parent->open_sublist)) {
+		if (parent->open_sublist->ShouldClose()) {
+//			parent->OpenSublist(nullptr, 0);
+		}
+	}
 }
 
 }}
