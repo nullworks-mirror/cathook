@@ -104,9 +104,15 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		static int team_joining_state = 0;
 		static float last_jointeam_try = 0;
 
-		if (g_GlobalVars->curtime < last_jointeam_try) last_jointeam_try = 0.0f;
+		if (g_GlobalVars->curtime < last_jointeam_try) {
+			team_joining_state = 0;
+			last_jointeam_try = 0.0f;
+		}
 
-		if (!g_pLocalPlayer->team || (g_pLocalPlayer->team == TEAM_SPEC)) team_joining_state = 1;
+		if (!g_pLocalPlayer->team || (g_pLocalPlayer->team == TEAM_SPEC)) {
+			//if (!team_joining_state) logging::Info("Bad team, trying to join...");
+			team_joining_state = 1;
+		}
 		else {
 			if (team_joining_state) {
 				logging::Info("Trying to change CLASS");
