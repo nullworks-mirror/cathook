@@ -23,4 +23,8 @@ void Root::Setup() {
 	menu::ncc::MainList().SetOffset(500, 500);
 }
 
+void Root::OnKeyPress(ButtonCode_t key, bool repeat) {
+	if (GetHoveredChild()) GetHoveredChild()->OnKeyPress(key, repeat);
+}
+
 }}

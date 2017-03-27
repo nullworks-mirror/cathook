@@ -23,9 +23,10 @@ public:
 	void OpenSublist(List* sublist, int dy);
 	bool ShouldClose();
 
-	virtual IWidget* ChildByPoint(int x, int y) override;
+	//virtual IWidget* ChildByPoint(int x, int y) override;
 	inline virtual void SortByZIndex() override {};
 	virtual void Show() override;
+	virtual void OnKeyPress(ButtonCode_t key, bool repeat) override;
 	virtual void OnMouseEnter() override;
 	virtual void Draw(int x, int y) override;
 	virtual void Update() override;

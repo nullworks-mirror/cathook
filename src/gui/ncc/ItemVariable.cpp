@@ -11,7 +11,7 @@
 
 namespace menu { namespace ncc {
 
-ItemVariable::ItemVariable(CatVar& variable) : Item(), catvar(variable) {
+ItemVariable::ItemVariable(CatVar& variable) : Item("ncc_item_variable_" + variable.name), catvar(variable) {
 
 }
 
@@ -37,12 +37,15 @@ void ItemVariable::Change(float amount) {
 
 bool ItemVariable::ConsumesKey(ButtonCode_t key) {
 	if (capturing) return true;
-	if (key == ButtonCode_t::MOUSE_WHEEL_DOWN || key == ButtonCode_t::MOUSE_WHEEL_UP) return true;
+	if (key == ButtonCode_t::MOUSE_WHEEL_DOWN || key == ButtonCode_t::MOUSE_WHEEL_UP || key == ButtonCode_t::MOUSE_FIRST) return true;
 	return false;
 }
 
 void ItemVariable::OnMousePress() {
-	capturing = true;
+	if (catvar.type == CV_KEY)
+		capturing = true;
+	if (catvar.type == CV_SWITCH)
+		catvar = !catvar;
 }
 
 void ItemVariable::OnFocusLose() {
@@ -52,25 +55,27 @@ void ItemVariable::OnFocusLose() {
 void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat) {
 	if (capturing) {
 		catvar = (int)key;
+		capturing = false;
 		return;
 	}
+
 	float change = 0.0f;
 
 	switch (catvar.type) {
+	case CV_ENUM:
 	case CV_SWITCH:
 		change = 1.0f; break;
 	case CV_INT:
-	case CV_FLOAT:
-	case CV_ENUM: {
+	case CV_FLOAT: {
 		if (catvar.restricted) {
-			change = float(catvar.max - catvar.min) / 100.0f;
+			change = float(catvar.max - catvar.min) / 50.0f;
 		} else {
 			change = 1.0f;
 		}
 	}
 	}
 
-	if (key == ButtonCode_t::MOUSE_WHEEL_UP) {
+	if ((catvar.type == CV_SWITCH && key == ButtonCode_t::MOUSE_FIRST) || key == ButtonCode_t::MOUSE_WHEEL_UP) {
 		Change(change);
 	} else if (key == ButtonCode_t::MOUSE_WHEEL_DOWN) {
 		Change(-change);

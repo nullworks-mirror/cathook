@@ -13,7 +13,14 @@
 namespace menu { namespace ncc {
 
 ItemSublist::ItemSublist(std::string title, List* list) :
-	Item(), title(title), list(list){
+	Item("ncc_item_sublist"), title(title), list(list) {
+}
+
+void ItemSublist::SetParent(IWidget* widget) {
+	Item::SetParent(widget);
+	List* listp = dynamic_cast<List*>(widget);
+	if (!listp) throw std::runtime_error("ItemSublist parent isnt List");
+	listp->AddChild(list);
 }
 
 bool ItemSublist::IsHovered() {

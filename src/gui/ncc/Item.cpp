@@ -12,13 +12,14 @@
 
 namespace menu { namespace ncc {
 
-Item::Item() : CBaseWidget("ncc_menu_item", nullptr) {
-	SetSize(220, 16);
-	SetMaxSize(220, 16);
+Item::Item(std::string name) : CBaseWidget(name, nullptr) {
+	SetSize(220, 15);
+	SetMaxSize(220, 15);
 }
 
 void Item::Draw(int x, int y) {
 	const auto& size = GetSize();
+	//draw::DrawRect(x, y, size.first, size.second, colors::red);
 	draw::DrawRect(x, y, size.first, size.second, IsHovered() ? colors::Transparent(GUIColor(), 0.32f) : colors::Transparent(GUIColor(), 0.07f));
 }
 

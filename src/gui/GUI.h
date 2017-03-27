@@ -53,6 +53,7 @@ public:
 	// TODO NullCore tooltip
 	menu::ncc::Root* root_nullcore;
 
+	int  last_scroll_value;
 	bool m_bShowTooltip;
 	bool m_bConsumeKeys;
 	bool m_bKeysInit;

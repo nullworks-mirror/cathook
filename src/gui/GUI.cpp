@@ -72,9 +72,32 @@ void CatGUI::Update() {
 	if (gui_nullcore) m_pRootWindow->Hide();
 	else root_nullcore->Hide();
 	m_bShowTooltip = false;
+	int new_scroll = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_WHEEL);
+	//logging::Info("scroll: %i", new_scroll);
+	if (last_scroll_value < new_scroll) {
+		// Scrolled up
+		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = false;
+		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = true;
+	} else if (last_scroll_value > new_scroll) {
+		// Scrolled down
+		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = true;
+		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = false;
+	} else {
+		// Didn't scroll
+		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = false;
+		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = false;
+	}
+
+	last_scroll_value = new_scroll;
 	for (int i = 0; i < ButtonCode_t::BUTTON_CODE_COUNT; i++) {
-		bool down = g_IInputSystem->IsButtonDown((ButtonCode_t)(i));
-		bool changed = m_bPressedState[i] != down;
+		bool down = false, changed = false;;
+		if (i != ButtonCode_t::MOUSE_WHEEL_DOWN && i != ButtonCode_t::MOUSE_WHEEL_UP) {
+			down = g_IInputSystem->IsButtonDown((ButtonCode_t)(i));
+			changed = m_bPressedState[i] != down;
+		} else {
+			down = m_bPressedState[i];
+			changed = down;
+		}
 		if (changed && down) m_iPressedFrame[i] = g_GlobalVars->framecount;
 		m_bPressedState[i] = down;
 		if (m_bKeysInit) {

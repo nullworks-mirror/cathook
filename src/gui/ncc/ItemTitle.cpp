@@ -12,7 +12,7 @@
 
 namespace menu { namespace ncc {
 
-ItemTitle::ItemTitle(std::string title) : Item(), title(title) {}
+ItemTitle::ItemTitle(std::string title) : Item("ncc_list_title"), title(title) {}
 
 void ItemTitle::Draw(int x, int y) {
 	Item::Draw(x, y);

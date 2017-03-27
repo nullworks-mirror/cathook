@@ -14,7 +14,7 @@ namespace menu { namespace ncc {
 
 class Item : public CBaseWidget {
 public:
-	Item();
+	Item(std::string name = "ncc_menu_item");
 
 	virtual void Draw(int x, int y) override;
 };

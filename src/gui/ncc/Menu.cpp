@@ -42,6 +42,7 @@ void Init() {
 	List* esp_list = new List("ESP Menu");
 	esp_list->FillWithCatVars(FindCatVars("esp_"));
 	MainList().AddChild(new ItemSublist("ESP", esp_list));
+	MainList().Show();
 	// Radar
 	/*MainList().AddChild(new ItemSublist("Bunny Hop", nullptr));
 	MainList().AddChild(new ItemSublist("Air Stuck", nullptr));
