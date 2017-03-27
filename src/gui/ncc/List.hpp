@@ -19,6 +19,7 @@ class List : public CBaseContainer {
 public:
 	List(std::string title);
 
+	void FillWithCatVars(std::vector<std::string> vec);
 	void FillWithCatVars(std::vector<CatVar*> vec);
 	void OpenSublist(List* sublist, int dy);
 	bool ShouldClose();
@@ -28,10 +29,13 @@ public:
 	virtual void Show() override;
 	virtual void OnKeyPress(ButtonCode_t key, bool repeat) override;
 	virtual void OnMouseEnter() override;
+	virtual void OnMouseLeave() override;
 	virtual void Draw(int x, int y) override;
 	virtual void Update() override;
 	virtual void MoveChildren() override;
+	virtual void SetParent(IWidget* parent) override;
 public:
+	List* root_list { nullptr };
 	bool got_mouse { false };
 	List* open_sublist { nullptr };
 	const std::string title;

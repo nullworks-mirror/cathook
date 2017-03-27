@@ -61,6 +61,8 @@ public:
 	int  m_iPressedFrame[ButtonCode_t::BUTTON_CODE_COUNT];
 	int  m_iMouseX;
 	int  m_iMouseY;
+	int  mouse_dx;
+	int  mouse_dy;
 };
 
 extern CatGUI* g_pGUI;

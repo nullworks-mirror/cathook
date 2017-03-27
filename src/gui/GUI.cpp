@@ -68,88 +68,98 @@ void CatGUI::ShowTooltip(std::string text) {
 }
 
 void CatGUI::Update() {
-	CBaseWindow* root = gui_nullcore ? dynamic_cast<CBaseWindow*>(root_nullcore) : dynamic_cast<CBaseWindow*>(m_pRootWindow);
-	if (gui_nullcore) m_pRootWindow->Hide();
-	else root_nullcore->Hide();
-	m_bShowTooltip = false;
-	int new_scroll = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_WHEEL);
-	//logging::Info("scroll: %i", new_scroll);
-	if (last_scroll_value < new_scroll) {
-		// Scrolled up
-		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = false;
-		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = true;
-	} else if (last_scroll_value > new_scroll) {
-		// Scrolled down
-		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = true;
-		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = false;
-	} else {
-		// Didn't scroll
-		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = false;
-		m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = false;
-	}
-
-	last_scroll_value = new_scroll;
-	for (int i = 0; i < ButtonCode_t::BUTTON_CODE_COUNT; i++) {
-		bool down = false, changed = false;;
-		if (i != ButtonCode_t::MOUSE_WHEEL_DOWN && i != ButtonCode_t::MOUSE_WHEEL_UP) {
-			down = g_IInputSystem->IsButtonDown((ButtonCode_t)(i));
-			changed = m_bPressedState[i] != down;
+	try {
+		CBaseWindow* root = gui_nullcore ? dynamic_cast<CBaseWindow*>(root_nullcore) : dynamic_cast<CBaseWindow*>(m_pRootWindow);
+		if (gui_nullcore) m_pRootWindow->Hide();
+		else root_nullcore->Hide();
+		m_bShowTooltip = false;
+		int new_scroll = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_WHEEL);
+		//logging::Info("scroll: %i", new_scroll);
+		if (last_scroll_value < new_scroll) {
+			// Scrolled up
+			m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = false;
+			m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = true;
+		} else if (last_scroll_value > new_scroll) {
+			// Scrolled down
+			m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = true;
+			m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = false;
 		} else {
-			down = m_bPressedState[i];
-			changed = down;
+			// Didn't scroll
+			m_bPressedState[ButtonCode_t::MOUSE_WHEEL_DOWN] = false;
+			m_bPressedState[ButtonCode_t::MOUSE_WHEEL_UP] = false;
 		}
-		if (changed && down) m_iPressedFrame[i] = g_GlobalVars->framecount;
-		m_bPressedState[i] = down;
-		if (m_bKeysInit) {
-			if (changed) {
-				//logging::Info("Key %i changed! Now %i.", i, down);
-				if (i == ButtonCode_t::MOUSE_LEFT) {
-					if (down) root->OnMousePress();
-					else root->OnMouseRelease();
-				} else {
-					if (i == ButtonCode_t::KEY_INSERT && down) {
-						gui_visible = !gui_visible;
-					}
-					if (down) root->OnKeyPress((ButtonCode_t)i, false);
-					else root->OnKeyRelease((ButtonCode_t)i);
-				}
+
+		last_scroll_value = new_scroll;
+		for (int i = 0; i < ButtonCode_t::BUTTON_CODE_COUNT; i++) {
+			bool down = false, changed = false;;
+			if (i != ButtonCode_t::MOUSE_WHEEL_DOWN && i != ButtonCode_t::MOUSE_WHEEL_UP) {
+				down = g_IInputSystem->IsButtonDown((ButtonCode_t)(i));
+				changed = m_bPressedState[i] != down;
 			} else {
-				if (down) {
-					int frame = g_GlobalVars->framecount - m_iPressedFrame[i];
-					bool shouldrepeat = false;
-					if (frame) {
-						if (frame > 150) {
-							if (frame > 400) {
-								if (frame % 30 == 0) shouldrepeat = true;
-							} else {
-								if (frame % 80 == 0) shouldrepeat = true;
+				down = m_bPressedState[i];
+				changed = down;
+			}
+			if (changed && down) m_iPressedFrame[i] = g_GlobalVars->framecount;
+			m_bPressedState[i] = down;
+			if (m_bKeysInit) {
+				if (changed) {
+					//logging::Info("Key %i changed! Now %i.", i, down);
+					if (i == ButtonCode_t::MOUSE_LEFT) {
+						if (down) root->OnMousePress();
+						else root->OnMouseRelease();
+					} else {
+						if (i == ButtonCode_t::KEY_INSERT && down) {
+							gui_visible = !gui_visible;
+						}
+						if (down) root->OnKeyPress((ButtonCode_t)i, false);
+						else root->OnKeyRelease((ButtonCode_t)i);
+					}
+				} else {
+					if (down) {
+						int frame = g_GlobalVars->framecount - m_iPressedFrame[i];
+						bool shouldrepeat = false;
+						if (frame) {
+							if (frame > 150) {
+								if (frame > 400) {
+									if (frame % 30 == 0) shouldrepeat = true;
+								} else {
+									if (frame % 80 == 0) shouldrepeat = true;
+								}
 							}
 						}
+						if (shouldrepeat) root->OnKeyPress((ButtonCode_t)i, true);
 					}
-					if (shouldrepeat) root->OnKeyPress((ButtonCode_t)i, true);
 				}
 			}
 		}
-	}
 
-	m_iMouseX = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_X);
-	m_iMouseY = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_Y);
+		int nx = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_X);
+		int ny = g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_Y);
 
-	if (!m_bKeysInit) m_bKeysInit = 1;
-	if (gui_visible) {
-		if (!root->IsVisible())
-			root->Show();
-		root->Update();
-		if (!m_bShowTooltip && m_pTooltip->IsVisible()) m_pTooltip->Hide();
-		root->Draw(0, 0);
-		draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colors::Transparent(colors::white));
-		draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, GUIColor());
-		if (gui_draw_bounds) {
-			root->DrawBounds(0, 0);
+		mouse_dx = nx - m_iMouseX;
+		mouse_dy = ny - m_iMouseY;
+
+		m_iMouseX = nx;
+		m_iMouseY = ny;
+
+		if (!m_bKeysInit) m_bKeysInit = 1;
+		if (gui_visible) {
+			if (!root->IsVisible())
+				root->Show();
+			root->Update();
+			if (!m_bShowTooltip && m_pTooltip->IsVisible()) m_pTooltip->Hide();
+			root->Draw(0, 0);
+			draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colors::Transparent(colors::white));
+			draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, GUIColor());
+			if (gui_draw_bounds) {
+				root->DrawBounds(0, 0);
+			}
+		} else {
+			if (root->IsVisible())
+				root->Hide();
 		}
-	} else {
-		if (root->IsVisible())
-			root->Hide();
+	} catch (std::exception& ex) {
+		logging::Info("ERROR: %s", ex.what());
 	}
 
 }

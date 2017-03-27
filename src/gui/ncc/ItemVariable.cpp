@@ -15,6 +15,12 @@ ItemVariable::ItemVariable(CatVar& variable) : Item("ncc_item_variable_" + varia
 
 }
 
+void ItemVariable::Update() {
+	Item::Update();
+	if (catvar.desc_long.length() && IsHovered())
+		ShowTooltip(catvar.desc_long);
+}
+
 void ItemVariable::Change(float amount) {
 	if (!amount) return;
 	switch (catvar.type) {

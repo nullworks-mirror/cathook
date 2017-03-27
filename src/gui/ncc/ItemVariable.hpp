@@ -20,6 +20,7 @@ public:
 
 	void Change(float amount);
 
+	virtual void Update() override;
 	virtual bool ConsumesKey(ButtonCode_t key) override;
 	virtual void OnMousePress() override;
 	virtual void OnFocusLose() override;

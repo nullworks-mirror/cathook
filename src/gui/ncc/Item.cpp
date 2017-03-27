@@ -20,7 +20,10 @@ Item::Item(std::string name) : CBaseWidget(name, nullptr) {
 void Item::Draw(int x, int y) {
 	const auto& size = GetSize();
 	//draw::DrawRect(x, y, size.first, size.second, colors::red);
-	draw::DrawRect(x, y, size.first, size.second, IsHovered() ? colors::Transparent(GUIColor(), 0.32f) : colors::Transparent(GUIColor(), 0.07f));
+	draw::DrawRect(x, y, size.first, size.second, colors::Create(0, 0, 0, 65));
+	if (IsHovered()) {
+		draw::DrawRect(x, y, size.first, size.second, colors::Transparent(GUIColor(), 0.32f));
+	}
 }
 
 }}

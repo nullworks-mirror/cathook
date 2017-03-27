@@ -18,6 +18,7 @@ namespace menu { namespace ncc {
 List::List(std::string title) : open_sublist(nullptr), title(title), got_mouse(false), CBaseContainer("ncc_list") {
 	AddChild(new ItemTitle(title));
 	Hide();
+	root_list = this;
 }
 
 void List::Show() {
@@ -66,6 +67,29 @@ bool List::ShouldClose() {
 	return nullptr;
 }*/
 
+CatVar* FindCatVar(const std::string name) {
+	for (auto var : CatVarList()) {
+		if (var->name == name) return var;
+	}
+	throw std::runtime_error("can't find catvar " + name);
+}
+
+void List::FillWithCatVars(std::vector<std::string> vec) {
+	for (const auto& string : vec) {
+		AddChild(new ItemVariable(*FindCatVar(string)));
+	}
+}
+
+void List::OnMouseLeave() {
+	CBaseContainer::OnMouseLeave();
+	if (ShouldClose()) {
+		List* parent_list = dynamic_cast<List*>(GetParent());
+		if (parent_list) {
+			parent_list->OpenSublist(nullptr, 0);
+		}
+	}
+}
+
 void List::Draw(int x, int y) {
 	//const auto& size = GetSize();
 	draw::OutlineRect(x, y, 222, Props()->GetInt("items") * 15 + 2, GUIColor());
@@ -77,7 +101,7 @@ void List::Draw(int x, int y) {
 		Item* item = dynamic_cast<Item*>(ChildByIndex(i));
 		if (!item) {
 			if (ChildByIndex(i)->GetName().find("ncc_list") == 0) continue;
-			throw std::runtime_error("Invalid cast in NCC-List!");
+			throw std::runtime_error("Invalid cast in NCC-List:Draw!");
 		}
 		const auto& offset = item->GetOffset();
 		item->Draw(x + offset.first, y + offset.second);
@@ -93,8 +117,20 @@ void List::OnMouseEnter() {
 	got_mouse = true;
 }
 
+void List::SetParent(IWidget* parent) {
+	CBaseContainer::SetParent(parent);
+	List* parent_list = dynamic_cast<List*>(parent);
+	if (parent_list) {
+		root_list = parent_list->root_list;
+	} else root_list = this;
+}
+
 void List::Update() {
 	CBaseContainer::Update();
+	if (IsPressed() && root_list == this) {
+		const auto& offset = root_list->GetOffset();
+		root_list->SetOffset(offset.first + g_pGUI->mouse_dx, offset.second + g_pGUI->mouse_dy);
+	}
 }
 
 void List::MoveChildren() {
@@ -104,7 +140,7 @@ void List::MoveChildren() {
 		Item* item = dynamic_cast<Item*>(ChildByIndex(i));
 		if (!item) {
 			if (ChildByIndex(i)->GetName().find("ncc_list") == 0) continue;
-			throw std::runtime_error("Invalid cast in NCC-List!");
+			throw std::runtime_error("Invalid cast in NCC-List:MoveChildren! Offender " + ChildByIndex(i)->GetName());
 		}
 		item->SetOffset(1, j * 15 + 1);
 		accy += 15;

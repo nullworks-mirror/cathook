@@ -6,6 +6,8 @@
  */
 
 #include "Root.hpp"
+#include "Menu.hpp"
+#include "Tooltip.hpp"
 #include "../../common.h"
 
 namespace menu { namespace ncc {
@@ -14,11 +16,21 @@ Root::Root() : CBaseWindow("root_nullcore", nullptr) {
 	SetMaxSize(draw::width, draw::height);
 }
 
+void Root::Update() {
+	tooltip->Hide();
+	CBaseWindow::Update();
+}
+
 void Root::Draw(int x, int y) {
+	if (tooltip->IsVisible()) {
+		tooltip->SetOffset(g_pGUI->m_iMouseX + 8, g_pGUI->m_iMouseY + 8);
+	}
 	CBaseContainer::Draw(x, y);
 }
 
 void Root::Setup() {
+	tooltip = new Tooltip();
+	AddChild(tooltip);
 	AddChild(&menu::ncc::MainList());
 	menu::ncc::MainList().SetOffset(500, 500);
 }
