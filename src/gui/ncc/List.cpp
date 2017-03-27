@@ -10,6 +10,7 @@
 #include "ItemTitle.hpp"
 #include "Menu.hpp"
 #include "ItemVariable.hpp"
+#include "ItemSublist.hpp"
 
 #include "../../common.h"
 
@@ -17,6 +18,11 @@ namespace menu { namespace ncc {
 
 List::List(std::string title) : open_sublist(nullptr), title(title), got_mouse(false), CBaseContainer("ncc_list") {
 	AddChild(new ItemTitle(title));
+	Hide();
+	root_list = this;
+}
+
+List::List() : open_sublist(nullptr), title(""), got_mouse(false), CBaseContainer("ncc_list") {
 	Hide();
 	root_list = this;
 }
@@ -72,6 +78,66 @@ CatVar* FindCatVar(const std::string name) {
 		if (var->name == name) return var;
 	}
 	throw std::runtime_error("can't find catvar " + name);
+}
+// abc def, ghj, [, fdg sgf saqw rter, ], gs
+void FillFromTokens(List* list, const std::vector<std::string>& tokens) {
+	list->title = tokens[0];
+	list->AddChild(new ItemTitle(tokens[0]));
+	for (int i = 1; i < tokens.size(); i++) {
+		const std::string& str = tokens.at(i);
+		if (i == tokens.size() - 1 || tokens[i + 1] != "[") {
+			list->AddChild(new ItemVariable(*FindCatVar(str)));
+		} else {
+			list->AddChild(new ItemSublist(str, List::FromString(tokens[i + 2])));
+			i += 3;
+		}
+	}
+}
+
+List* List::FromString(const std::string& string) {
+	List* result = new List();
+	bool readingkey = false;
+	std::string last_read_key = "";
+	std::stringstream readkey("");
+	std::vector<std::string> tokens = {};
+	int brackets = 0;
+	for (const auto& c : string) {
+		if (c == '[') {
+			brackets++;
+			if (brackets == 1) {
+				tokens.push_back("[");
+				readkey.str("");
+				readkey.clear();
+				continue;
+			}
+		} else if (c == ']') {
+			brackets--;
+			if (!brackets) {
+				tokens.push_back(readkey.str());
+				tokens.push_back("]");
+				readkey.str("");
+				readkey.clear();
+				continue;
+			}
+		}
+		if (!brackets) {
+			if (c == '"') {
+				readingkey = !readingkey;
+				if (!readingkey) {
+					tokens.push_back(readkey.str());
+					readkey.str("");
+					readkey.clear();
+				}
+			} else {
+				if (readingkey) readkey << c;
+			}
+		} else {
+			readkey << c;
+		}
+	}
+	FillFromTokens(result, tokens);
+	logging::Info("done making list %s - has %i children.", result->title.c_str(), result->ChildCount());
+	return result;
 }
 
 void List::FillWithCatVars(std::vector<std::string> vec) {

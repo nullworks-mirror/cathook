@@ -32,6 +32,7 @@ void Root::Setup() {
 	tooltip = new Tooltip();
 	AddChild(tooltip);
 	AddChild(&menu::ncc::MainList());
+	menu::ncc::MainList().Show();
 	menu::ncc::MainList().SetOffset(500, 500);
 }
 

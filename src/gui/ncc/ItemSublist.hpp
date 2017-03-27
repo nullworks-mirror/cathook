@@ -21,6 +21,7 @@ public:
 
 	virtual void SetParent(IWidget*) override;
 	virtual bool IsHovered() override;
+	virtual void Update() override;
 	virtual void Draw(int x, int y) override;
 	virtual void OnKeyPress(ButtonCode_t code, bool repeated) override;
 	virtual void OnMouseEnter();

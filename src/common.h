@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include <cassert>>
 #include <functional>
 #include <mutex>
 #include <atomic>

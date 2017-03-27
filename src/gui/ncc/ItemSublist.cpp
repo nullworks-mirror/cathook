@@ -29,6 +29,16 @@ bool ItemSublist::IsHovered() {
 	return Item::IsHovered() || (dynamic_cast<List*>(parent->open_sublist) == list && !parent->open_sublist->ShouldClose());
 }
 
+void ItemSublist::Update() {
+	if (!IsHovered()) {
+		List* parent = dynamic_cast<List*>(GetParent());
+		if (!parent) throw std::runtime_error("Sublist parent can't be casted to List!");
+		if (dynamic_cast<List*>(parent->open_sublist) == list) {
+			parent->OpenSublist(nullptr, 0);
+		}
+	}
+}
+
 void ItemSublist::Draw(int x, int y) {
 	Item::Draw(x, y);
 	List* parent = dynamic_cast<List*>(GetParent());
