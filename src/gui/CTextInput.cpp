@@ -39,9 +39,9 @@ void CTextInput::Draw(int x, int y) {
 	auto wsize = draw::GetStringLength(fonts::MENU, "W");
 	auto size = GetSize();
 	int color = colors::Create(0, 0, 0, 80);
-	if (IsFocused()) color = colors::Transparent(colors::pink, 0.25);
+	if (IsFocused()) color = colors::Transparent(GUIColor(), 0.25);
 	draw::DrawRect(x, y, size.first, size.second, color);
-	draw::OutlineRect(x, y, size.first, size.second, colors::pink);
+	draw::OutlineRect(x, y, size.first, size.second, GUIColor());
 	int ml = 0;
 	int md = 0;
 	auto dotssize = draw::GetStringLength(fonts::MENU, "..."); // TODO static?

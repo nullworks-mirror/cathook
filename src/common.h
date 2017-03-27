@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <array>
+#include <cassert>>
 #include <functional>
 #include <mutex>
 #include <atomic>
@@ -77,9 +78,8 @@
 #define DEG2RAD(x) (float)(x) * (PI / 180.0f)
 #endif
 
-#define NO_DEVIGNORE false
 #if _DEVELOPER == true || __DRM_ENABLED == false
-#define DEBUG_SEGV true
+#define DEBUG_SEGV false
 #else
 #define DEBUG_SEGV false
 #endif

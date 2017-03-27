@@ -144,11 +144,13 @@ void CBaseContainer::OnMouseLeave() {
 }
 
 void CBaseContainer::OnMousePress() {
+	CBaseWidget::OnMousePress();
 	auto abs = AbsolutePosition();
 	PressOn(ChildByPoint(g_pGUI->m_iMouseX - abs.first, g_pGUI->m_iMouseY - abs.second));
 }
 
 void CBaseContainer::OnMouseRelease() {
+	CBaseWidget::OnMouseRelease();
 	if (GetPressedChild()) GetPressedChild()->OnMouseRelease();
 }
 

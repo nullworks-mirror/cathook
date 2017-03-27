@@ -17,14 +17,23 @@ class CatVar;
 #include <string>
 #include "../aftercheaders.h"
 
+#include "ncc/Root.hpp"
+#include "ncc/Menu.hpp"
+
 #include "../fixsdk.h"
 #include "../inputsystem/ButtonCode.h"
 
 class CTooltip;
 class RootWindow;
 
+extern CatVar gui_color_r;
+extern CatVar gui_color_g;
+extern CatVar gui_color_b;
+int GUIColor();
+
 extern CatVar gui_visible;
 extern CatVar gui_draw_bounds;
+extern CatVar gui_nullcore;
 
 class CatGUI {
 public:
@@ -41,6 +50,10 @@ public:
 	CTooltip* m_pTooltip;
 	RootWindow* m_pRootWindow;
 
+	// TODO NullCore tooltip
+	menu::ncc::Root* root_nullcore;
+
+	int  last_scroll_value;
 	bool m_bShowTooltip;
 	bool m_bConsumeKeys;
 	bool m_bKeysInit;
@@ -48,6 +61,8 @@ public:
 	int  m_iPressedFrame[ButtonCode_t::BUTTON_CODE_COUNT];
 	int  m_iMouseX;
 	int  m_iMouseY;
+	int  mouse_dx;
+	int  mouse_dy;
 };
 
 extern CatGUI* g_pGUI;

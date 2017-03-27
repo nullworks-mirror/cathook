@@ -46,6 +46,6 @@ void CBaseWindow::Draw(int x, int y) {
 	auto abs = AbsolutePosition();
 	auto size = GetSize();
 	draw::DrawRect(abs.first, abs.second, size.first, size.second, colors::Transparent(colors::black, 0.9));
-	draw::OutlineRect(abs.first, abs.second, size.first, size.second, colors::pink);
+	draw::OutlineRect(abs.first, abs.second, size.first, size.second, GUIColor());
 	CBaseContainer::Draw(x, y);
 }

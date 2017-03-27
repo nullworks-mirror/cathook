@@ -37,6 +37,6 @@ void CMenuContainer::MoveChildren() {
 void CMenuContainer::Draw(int x, int y) {
 	CBaseContainer::Draw(x, y);
 	for (int i = 0; i < Props()->GetInt("columns"); i++) {
-		draw::DrawLine(x + (350 + 3) * (i + 1), y, 0, GetMaxSize().second, colors::pink);
+		draw::DrawLine(x + (350 + 3) * (i + 1), y, 0, GetMaxSize().second, GUIColor());
 	}
 }
