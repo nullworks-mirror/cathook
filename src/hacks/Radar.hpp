@@ -30,12 +30,19 @@ extern unsigned char _binary_sniper_blue_start;
 extern unsigned char _binary_spy_start;
 extern unsigned char _binary_spy_blue_start;
 
+extern unsigned char _binary_dispenser_start;
+
 namespace hacks { namespace tf { namespace radar {
 
 extern Texture textures[2][9];
+extern Texture buildings[1];
 
 extern CatVar size;
 extern CatVar zoom;
+extern CatVar radar_enabled;
+extern CatVar radar_x;
+extern CatVar radar_y;
+
 
 void Init();
 std::pair<int, int> WorldToRadar(int x, int y);

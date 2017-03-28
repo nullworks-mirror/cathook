@@ -24,9 +24,9 @@ void Texture::Load() {
 	g_ISurface->DrawSetTextureRGBAEx(id, start_addr, w, h, ImageFormat::IMAGE_FORMAT_RGBA8888);
 }
 
-void Texture::Draw(int x, int y, int sw, int sh) {
+void Texture::Draw(int x, int y, int sw, int sh, int color) {
 	if (!g_ISurface->IsTextureIDValid(id)) throw std::runtime_error("Invalid texture ID!");
-	g_ISurface->DrawSetColor(255, 255, 255, 255);
+	g_ISurface->DrawSetColor(*reinterpret_cast<Color*>(&color));
 	g_ISurface->DrawSetTexture(id);
 	g_ISurface->DrawTexturedRect(x, y, x + sw, y + sh);
 }
