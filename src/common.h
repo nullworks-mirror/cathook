@@ -10,9 +10,10 @@
 
 #include "beforecheaders.h"
 #include <vector>
+#include <bitset>
 #include <string>
 #include <array>
-#include <cassert>>
+#include <cassert>
 #include <functional>
 #include <mutex>
 #include <atomic>

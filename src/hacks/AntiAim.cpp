@@ -16,7 +16,7 @@ CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim", "Master AntiAim switch"
 CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
 CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch", "Static pitch (up/down)", -89.0, 89.0);
 CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM", "SPIN" });
-CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FAKE?" });
+CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP", "FAKEFLIP", "FAKEUP", "FAKEDOWN", "UP", "DOWN" });
 CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "3", "Yaw mode", "Yaw mode");
 CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "1", "Pitch mode", "Pitch mode");
 CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll", "Roll angle (viewangles.z)", -180, 180);
@@ -104,6 +104,24 @@ void ProcessUserCmd(CUserCmd* cmd) {
 		break;
 	case 4:
 		p = flip ? 89.0f : -89.0f;
+		break;
+	case 5:
+		p = flip ? 271.0f : -271.0f;
+		clamp = false;
+		break;
+	case 6:
+		p = 271.0f;
+		clamp = false;
+		break;
+	case 7:
+		p = -271.0f;
+		clamp = false;
+		break;
+	case 8:
+		p = -89.0f;
+		break;
+	case 9:
+		p = 89.0f;
 		break;
 	}
 	flip = !flip;
