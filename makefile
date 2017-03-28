@@ -8,12 +8,14 @@ LIB_DIR=lib
 LDFLAGS=-m32 -fno-gnu-unique -D_GLIBCXX_USE_CXX11_ABI=0 -shared -L$(realpath $(LIB_DIR))
 LDLIBS=-static -lc -lstdc++ -ltier0 -lvstdlib
 SRC_DIR = src
+RES_DIR = res
 OUT_NAME = libcathook.so
 TARGET_DIR = bin
 TARGET = $(TARGET_DIR)/$(OUT_NAME)
 SOURCES = $(shell find $(SRC_DIR) -name "*.cpp" -print)
 SOURCES += $(shell find $(SIMPLE_IPC_DIR) -name "*.cpp" -print)
 OBJECTS = $(SOURCES:.cpp=.o)
+OBJECTS += $(shell find $(RES_DIR) -name "*.o" -print)
 DEPENDS = $(SOURCES:.cpp=.d)
 SRC_SUBDIRS=$(shell find $(SRC_DIR) -type d -print)
 
@@ -38,8 +40,8 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJECTS) $(LDLIBS) -o $(TARGET)
 
 clean:
-	find . -type f -name '*.o' -delete
-	find . -type f -name '*.d' -delete
+	find src -type f -name '*.o' -delete
+	find src -type f -name '*.d' -delete
 	rm -rf ./bin
 	
 ifneq ($(MAKECMDGOALS), clean)

@@ -8,6 +8,7 @@
 #include "Root.hpp"
 #include "Menu.hpp"
 #include "Tooltip.hpp"
+#include "Radar.hpp"
 #include "../../common.h"
 
 namespace menu { namespace ncc {
@@ -32,6 +33,7 @@ void Root::Setup() {
 	tooltip = new Tooltip();
 	AddChild(tooltip);
 	AddChild(&menu::ncc::MainList());
+	AddChild(new Radar());
 	menu::ncc::MainList().Show();
 	menu::ncc::MainList().SetOffset(500, 500);
 }

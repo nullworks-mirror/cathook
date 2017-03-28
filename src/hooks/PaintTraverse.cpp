@@ -18,6 +18,7 @@ CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Com
 CatVar no_zoom(CV_SWITCH, "no_zoom", "1", "Disable scope", "Disables black scope overlay");
 CatVar logo(CV_SWITCH, "logo", "1", "Show logo", "Show cathook text in top left corner");
 
+
 void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 #if DEBUG_SEGV == true
 	if (!segvcatch::handler_fpe || !segvcatch::handler_segv) {
@@ -26,6 +27,12 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	}
 #endif
 	SEGV_BEGIN;
+	static bool textures_loaded = false;
+	if (!textures_loaded) {
+		textures_loaded = true;
+		hacks::tf::radar::Init();
+	}
+
 	static unsigned long panel_focus = 0;
 	static unsigned long panel_scope = 0;
 	static unsigned long panel_top = 0;
@@ -98,6 +105,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 			SAFE_CALL(hacks::shared::misc::Draw());
 			SAFE_CALL(hacks::shared::esp::Draw());
 			if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
+			if (TF) SAFE_CALL(hacks::tf::radar::Draw());
 			//hacks::shared::followbot::PrintDebug();
 		}
 	}

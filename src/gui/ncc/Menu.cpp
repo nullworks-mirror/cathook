@@ -277,7 +277,20 @@ List& MainList() {
     "gui_bounds"
     "gui_nullcore"
     "gui_visible"
-])");
+]
+
+"Radar" [
+	"Radar Menu"
+	"radar"
+	"radar_size"
+	"radar_zoom"
+	"radar_health"
+	"radar_enemies_top"
+	"radar_icon_size"
+	"radar_x"
+	"radar_y"
+]
+)");
 	return *main;
 }
 
