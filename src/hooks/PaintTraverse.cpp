@@ -18,6 +18,8 @@ CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Com
 CatVar no_zoom(CV_SWITCH, "no_zoom", "1", "Disable scope", "Disables black scope overlay");
 CatVar logo(CV_SWITCH, "logo", "1", "Show logo", "Show cathook text in top left corner");
 
+extern unsigned char _binary_spy_blue_start;
+
 void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 #if DEBUG_SEGV == true
 	if (!segvcatch::handler_fpe || !segvcatch::handler_segv) {
@@ -67,9 +69,14 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 
 	ResetStrings();
 
+	static Texture text(&_binary_spy_blue_start, 128, 128);
+	if (!text.id) text.Load();
+
 	if (vp != panel_focus) return;
 	if (!draw_flag) return;
 	draw_flag = false;
+
+	text.Draw(0, 0, 64, 64);
 
 	{
 		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);

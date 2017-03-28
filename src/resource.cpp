@@ -19,6 +19,7 @@ Texture::~Texture() {
 
 void Texture::Load() {
 	id = g_ISurface->CreateNewTextureID(true);
+	logging::Info("Loading texture: got id %i", id);
 	g_ISurface->DrawSetTextureRGBA(id, start_addr, w, h, 0, 0);
 }
 
@@ -26,5 +27,5 @@ void Texture::Draw(int x, int y, int sw, int sh) {
 	if (!g_ISurface->IsTextureIDValid(id)) throw std::runtime_error("Invalid texture ID!");
 	g_ISurface->DrawSetColor(255, 255, 255, 255);
 	g_ISurface->DrawSetTexture(id);
-	g_ISurface->DrawTexturedRect(x, y, sw, sh);
+	g_ISurface->DrawTexturedRect(x, y, x + sw, y + sh);
 }
