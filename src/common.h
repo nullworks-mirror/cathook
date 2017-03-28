@@ -23,6 +23,7 @@
 #include <algorithm>
 #include "aftercheaders.h"
 #include "drawing.h"
+#include "resource.hpp"
 #include "entitycache.h"
 #include "enums.h"
 #include "globals.h"

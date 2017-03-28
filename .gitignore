@@ -1,4 +1,5 @@
 *.d
 *.o
+!res/
 bin/*
 /core
