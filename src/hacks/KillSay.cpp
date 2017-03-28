@@ -46,7 +46,7 @@ std::string ComposeKillSay(IGameEvent* event) {
 	int vid = event->GetInt("userid");
 	int kid = event->GetInt("attacker");
 	if (kid == vid) return "";
-	if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer()) return 0;
+	if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer()) return "";
 	std::string msg = file.Line(rand() % file.LineCount());
 	player_info_s info;
 	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
