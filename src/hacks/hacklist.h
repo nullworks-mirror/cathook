@@ -26,5 +26,6 @@
 #include "Spam.h"
 #include "Noisemaker.h"
 #include "FollowBot.h"
+#include "Radar.hpp"
 
 #endif /* HACKS_HACKLIST_H_ */

@@ -19,8 +19,9 @@ Texture::~Texture() {
 
 void Texture::Load() {
 	id = g_ISurface->CreateNewTextureID(true);
-	logging::Info("Loading texture: got id %i", id);
-	g_ISurface->DrawSetTextureRGBA(id, start_addr, w, h, 0, 0);
+	logging::Info("Loading %ix%i texture from 0x%08x: got id %i", w, h, start_addr, id);
+	//g_ISurface->DrawSetTextureRGBA(id, start_addr, w, h, 0, 0);
+	g_ISurface->DrawSetTextureRGBAEx(id, start_addr, w, h, ImageFormat::IMAGE_FORMAT_RGBA8888);
 }
 
 void Texture::Draw(int x, int y, int sw, int sh) {
