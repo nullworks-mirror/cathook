@@ -271,7 +271,7 @@ void ProcessEntity(CachedEntity* ent) {
 				return;
 			}*/
 		}
-		if (power >= 0 && (ent->m_bEnemy || teammates)) {
+		if (power >= 0) {
 			AddEntityString(ent, format("HAS ", powerups[power]));
 		}
 		if (ent->m_bEnemy || teammates || GetRelation(ent)) {
