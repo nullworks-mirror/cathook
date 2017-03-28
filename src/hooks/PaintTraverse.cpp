@@ -105,7 +105,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 			SAFE_CALL(hacks::shared::misc::Draw());
 			SAFE_CALL(hacks::shared::esp::Draw());
 			if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
-			if (TF) SAFE_CALL(hacks::tf::radar::Draw(100, 100));
+			if (TF) SAFE_CALL(hacks::tf::radar::Draw());
 			//hacks::shared::followbot::PrintDebug();
 		}
 	}

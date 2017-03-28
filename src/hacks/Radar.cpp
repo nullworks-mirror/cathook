@@ -40,6 +40,9 @@ CatVar zoom(CV_FLOAT, "radar_zoom", "20", "Radar zoom", "Defines radar zoom (1px
 CatVar healthbar(CV_SWITCH, "radar_health", "1", "Radar healthbar", "Show radar healthbar");
 CatVar enemies_over_teammates(CV_SWITCH, "radar_enemies_top", "1", "Show enemies on top", "If true, radar will render enemies on top of teammates");
 CatVar icon_size(CV_INT, "radar_icon_size", "20", "Icon size", "Defines radar icon size");
+CatVar radar_enabled(CV_SWITCH, "radar", "0", "Enable", "Enable Radar");
+CatVar radar_x(CV_INT, "radar_x", "100", "Radar X", "Defines radar position (X)");
+CatVar radar_y(CV_INT, "radar_y", "100", "Radar Y", "Defines radar position (Y)");
 
 void Init() {
 	for (int i = 0; i < 2; i++) {
@@ -59,7 +62,9 @@ std::pair<int, int> WorldToRadar(int x, int y) {
 
 	QAngle angle;
 	g_IEngine->GetViewAngles(angle);
-	float ry = DEG2RAD(angle.y) - PI * 0.5;
+	float ry = DEG2RAD(angle.y) + PI / 2;
+
+	dx = -dx;
 
 	float nx = dx * std::cos(ry) - dy * std::sin(ry);
 	float ny = dx * std::sin(ry) + dy * std::cos(ry);
@@ -95,7 +100,10 @@ void DrawEntity(int x, int y, CachedEntity* ent) {
 	}
 }
 
-void Draw(int x, int y) {
+void Draw() {
+	if (!radar_enabled) return;
+	const int x = (int)radar_x;
+	const int y = (int)radar_y;
 	draw::DrawRect(x, y, (int)size, (int)size, colors::Transparent(colors::black, 0.4f));
 	draw::OutlineRect(x, y, (int)size, (int)size, GUIColor());
 	draw::DrawLine(x + (int)size / 2, y, 0, (int)size, GUIColor());
