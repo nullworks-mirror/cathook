@@ -312,7 +312,8 @@ void ProcessEntity(CachedEntity* ent) {
 			CachedEntity* weapon = ENTITY(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
 			if (CE_GOOD(weapon)) {
 				if (show_weapon) {
-					AddEntityString(ent, std::string(vfunc<const char*(*)(IClientEntity*)>(RAW_ENT(weapon), 398, 0)(RAW_ENT(weapon))));
+					const char* name = vfunc<const char*(*)(IClientEntity*)>(RAW_ENT(weapon), 398, 0)(RAW_ENT(weapon));
+					if (name) AddEntityString(ent, std::string(name));
 				}
 			}
 		}
