@@ -116,6 +116,8 @@ public:
 
 	offset_t flChargeLevel;
 	offset_t bChargeRelease;
+
+	offset_t m_flStealthNoAttackExpire;
 };
 
 extern NetVars netvar;

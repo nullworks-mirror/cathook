@@ -32,6 +32,7 @@ void NetVars::Init() {
 		this->flLastFireTime = gNetvars.get_offset("DT_TFWeaponBase", "LocalActiveTFWeaponData", "m_flLastFireTime");
 		this->bDistributed = gNetvars.get_offset("DT_CurrencyPack", "m_bDistributed");
 		this->_condition_bits = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_ConditionList", "_condition_bits");
+		this->m_flStealthNoAttackExpire = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "tfsharedlocaldata", "m_flStealthNoAttackExpire");
 	}
 	if (TF2 || TF2C) {
 		this->iCond = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCond");

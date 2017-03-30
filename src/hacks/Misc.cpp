@@ -31,8 +31,16 @@
 
 namespace hacks { namespace shared { namespace misc {
 
+//static CatVar remove_conditions(CV_SWITCH, "remove_conditions", "0", "Remove conditions");
+
 void CreateMove() {
 	static bool flswitch = false;
+
+	/*(if (TF2 && remove_conditions) {
+		RemoveCondition(LOCAL_E, TFCond_CloakFlicker);
+		RemoveCondition(LOCAL_E, TFCond_Jarated);
+		CE_FLOAT(LOCAL_E, netvar.m_flStealthNoAttackExpire) = 0.0f;
+	}*/
 
 	if (TF2C && tauntslide)
 		RemoveCondition(LOCAL_E, TFCond_Taunting);

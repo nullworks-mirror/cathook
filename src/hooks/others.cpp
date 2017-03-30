@@ -27,9 +27,13 @@ int IN_KeyEvent_hook(void* thisptr, int eventcode, int keynum, const char* pszCu
 	return 0;
 }
 
+static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent messages");
+
 bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	SEGV_BEGIN;
-
+	if (log_sent) {
+		logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(), msg.ToString());
+	}
 	//logging::Info("Sending NetMsg! %i", msg.GetType());
 	if (hacks::shared::airstuck::IsStuck() && cathook && !g_Settings.bInvalid) {
 		switch (msg.GetType()) {
@@ -108,6 +112,7 @@ void OverrideView_hook(void* thisptr, CViewSetup* setup) {
 }
 
 static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat", "Removes newlines from chat");
+static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0", "Log dispatched user messages");
 
 bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 	SEGV_BEGIN;
@@ -126,6 +131,9 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 			buf = bf_read(data, s);
 			buf.Seek(0);
 		}
+	}
+	if (dispatch_log) {
+		logging::Info("D> %i", type);
 	}
 	//if (type != net_Tick) logging::Info("Got message: %s", type);
 	return ((DispatchUserMessage_t*)hooks::hkClient->GetMethod(hooks::offFrameStageNotify + 1))(thisptr, type, buf);

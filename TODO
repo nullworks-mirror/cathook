@@ -16,14 +16,11 @@ Auto backstab, noise maker spam, kill say, team name spam (pre round team name s
 
 Player List
 dominatesay assistsay worldsay
-DS esp slow
-menu reorder
 AutoDetonator
 
 ProjPredOrigin
 MAX -> MIN priority
 Crit Hack
-Radar
 AutoTrashtalk
 Noisemaker Spam
 Deflected by enemy player
@@ -31,7 +28,6 @@ Deflected by enemy player
 FLAG ESP
 no aim sapper
 Improve Projectile Aimbot. A lot.
-Integrate SEGVCATCH
 Proper AutoHitbox
 Smoothe the smooth aim
 Display on the left
