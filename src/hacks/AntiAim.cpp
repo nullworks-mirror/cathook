@@ -15,7 +15,7 @@ namespace hacks { namespace shared { namespace antiaim {
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim", "Master AntiAim switch");
 CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
 CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch", "Static pitch (up/down)", -89.0, 89.0);
-CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM", "SPIN" });
+CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM", "SPIN", "OFFSETKEEP" });
 CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP", "FAKEFLIP", "FAKEUP", "FAKEDOWN", "UP", "DOWN" });
 CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "3", "Yaw mode", "Yaw mode");
 CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "1", "Pitch mode", "Pitch mode");
@@ -89,6 +89,9 @@ void ProcessUserCmd(CUserCmd* cmd) {
 		if (cur_yaw > 180) cur_yaw = -180;
 		if (cur_yaw < 180) cur_yaw = 180;
 		y = cur_yaw;
+		break;
+	case 6: // OFFSETKEEP
+		y += (float)yaw;
 		break;
 	}
 	switch ((int)pitch_mode) {
