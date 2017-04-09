@@ -8,13 +8,14 @@ I know that the style sucks. There is a lot of design errors and cancerous patte
 
 ### Full install script for ubuntu (installs g++\-6 and cathook)
 ```
-sudo apt-get update && \
-sudo apt-get install build-essential software-properties-common -y && \
+sudo apt update && \
+sudo apt install build-essential software-properties-common -y && \
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
-sudo apt-get update && \
-sudo apt-get install gcc-snapshot -y && \
-sudo apt-get update && \
-sudo apt-get install gcc-6 g++-6 g++-6-multilib -y && \
+sudo apt update && \
+sudo apt install gcc-snapshot -y && \
+sudo apt update && \
+sudo apt install gcc-6 g++-6 g++-6-multilib -y && \
+sudo apt install gdb
 git clone --recursive https://github.com/nullifiedcat/cathook && \
 cd cathook && \
 make -j4
