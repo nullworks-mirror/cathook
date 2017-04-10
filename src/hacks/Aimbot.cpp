@@ -75,7 +75,6 @@ void CreateMove() {
 		cur_proj_speed = (float)proj_speed;
 	if (proj_gravity)
 		cur_proj_grav = (float)proj_gravity;
-
 	// TODO priority modes (FOV, Smart, Distance, etc)
 	CachedEntity* target_highest = 0;
 	float target_highest_score = -256;
@@ -287,11 +286,6 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 		hit = GetBuildingPosition(entity);
 	}
 	if (projectile_mode) {
-		if (proj_speed)
-			cur_proj_speed = (float)proj_speed;
-		if (proj_gravity)
-			cur_proj_grav = (float)proj_gravity;
-		bool succ = false;
 		hit = ProjectilePrediction(entity, hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
 	}
 	//logging::Info("ayyming!");

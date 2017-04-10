@@ -540,7 +540,7 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 	return (rspeed || rgrav);
 }
 
-constexpr unsigned developer_list[] = { 347272825, 401679596 };
+constexpr unsigned developer_list[] = { 306902159, 347272825, 401679596 };
 
 bool Developer(CachedEntity* ent) {
 	if (ent->m_pPlayerInfo) {
