@@ -95,6 +95,7 @@ List& MainList() {
     "aimbot_proj_fovpred"
     "aimbot_proj_vispred"
     "aimbot_interp"
+    "aimbot_charge"
     "Auto Heal" [
         "Auto Heal Menu"
         "autoheal_enabled"

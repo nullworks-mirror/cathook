@@ -187,10 +187,21 @@ void Reset() {
 	projectile_mode = false;
 }
 
+static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge");
+
 int ShouldTarget(CachedEntity* entity) {
 	// Just assuming CE is good
+	// TODO IsSniperRifle.. ugh
 	if (entity->m_Type == ENTITY_PLAYER) {
 		if (TF) {
+			// idk wtf
+			if (wait_for_charge && (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle || g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap)) {
+				float bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
+				if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f) bdmg = 50.0f;
+				if ((bdmg * 3) < entity->m_iHealth) {
+					return 28;
+				}
+			}
 			if (ignore_taunting && HasCondition(entity, TFCond_Taunting)) return 1;
 			if (IsPlayerInvulnerable(entity)) return 4;
 			if (respect_cloak && IsPlayerInvisible(entity)) return 6;
