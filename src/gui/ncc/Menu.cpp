@@ -161,6 +161,13 @@ List& MainList() {
     "esp_name"
     "esp_distance"
     "esp_box"
+    "3D Box" [
+        "3D Box Settings"
+        "esp_3d_box"
+        "esp_3d_box_thick"
+        "esp_3d_box_health"
+        "esp_3d_box_expand"
+    ]
     "esp_legit"
     "esp_health_num"
     "esp_weapon_spawners"

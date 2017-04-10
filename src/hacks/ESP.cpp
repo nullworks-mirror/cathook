@@ -103,6 +103,73 @@ void Draw() {
 	}
 }
 
+static CatVar esp_3d_box_health(CV_SWITCH, "esp_3d_box_health", "1", "3D box health color");
+static CatVar esp_3d_box_thick(CV_SWITCH, "esp_3d_box_thick", "1", "Thick 3D box");
+static CatVar esp_3d_box_expand(CV_SWITCH, "esp_3d_box_expand", "1", "Expand 3D box");
+
+void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healthmax) {
+	Vector mins, maxs;
+	bool set = false;
+	for (int i = 0; i < ent->m_pHitboxCache->GetNumHitboxes(); i++) {
+		CachedHitbox* hb = ent->m_pHitboxCache->GetHitbox(i);
+		if (!hb) return;
+		if (!set || hb->min.x < mins.x) mins.x = hb->min.x;
+		if (!set || hb->min.y < mins.y) mins.y = hb->min.y;
+		if (!set || hb->min.z < mins.z) mins.z = hb->min.z;
+		if (!set || hb->max.x > maxs.x) maxs.x = hb->max.x;
+		if (!set || hb->max.y > maxs.y) maxs.y = hb->max.y;
+		if (!set || hb->max.z > maxs.z) maxs.z = hb->max.z;
+		set = true;
+	}
+	// Expand it a bit
+
+	static const Vector expand_vector(8.5, 8.5, 8.5);
+
+	if (esp_3d_box_expand) {
+		maxs += expand_vector;
+		mins -= expand_vector;
+	}
+
+	Vector points_r[8];
+	const float x = maxs.x - mins.x;
+	const float y = maxs.y - mins.y;
+	const float z = maxs.z - mins.z;
+	points_r[0] = mins;
+	points_r[1] = mins + Vector(x, 0, 0);
+	points_r[2] = mins + Vector(x, y, 0);
+	points_r[3] = mins + Vector(0, y, 0);
+	points_r[4] = mins + Vector(0, 0, z);
+	points_r[5] = mins + Vector(x, 0, z);
+	points_r[6] = mins + Vector(x, y, z);
+	points_r[7] = mins + Vector(0, y, z);
+	Vector points[8];
+	bool success = true;
+	for (int i = 0; i < 8; i++) {
+		if (!draw::WorldToScreen(points_r[i], points[i])) success = false;
+	}
+	if (!success) return;
+	//draw::String(fonts::ESP, points[0].x, points[0].y, clr, 1, "MIN");
+	//draw::String(fonts::ESP, points[6].x, points[6].y, clr, 1, "MAX");
+	constexpr int indices[][2] = {
+		{ 0, 1 }, { 0, 3 }, { 1, 2 }, { 2, 3 },
+		{ 4, 5 }, { 4, 7 }, { 5, 6 }, { 6, 7 },
+		{ 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 }
+	};
+
+	if (esp_3d_box_health) clr = colors::Health(health, healthmax);
+
+	for (int i = 0; i < 12; i++) {
+		const Vector& p1 = points[indices[i][0]];
+		const Vector& p2 = points[indices[i][1]];
+		draw::DrawLine(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y, clr);
+		if (esp_3d_box_thick) {
+			draw::DrawLine(p1.x + 1, p1.y, p2.x - p1.x, p2.y - p1.y, clr);
+			draw::DrawLine(p1.x, p1.y + 1, p2.x - p1.x, p2.y - p1.y, clr);
+			draw::DrawLine(p1.x + 1, p1.y + 1, p2.x - p1.x, p2.y - p1.y, clr);
+		}
+	}
+}
+
 void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
 	if (CE_BAD(ent)) return;
 	bool cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
@@ -321,6 +388,9 @@ void ProcessEntity(CachedEntity* ent) {
 	}
 }
 
+static CatVar esp_3d_box(CV_SWITCH, "esp_3d_box", "0", "3D box");
+
+
 void ProcessEntityPT(CachedEntity* ent) {
 	if (!enabled) return;
 	if (CE_BAD(ent)) return;
@@ -329,6 +399,10 @@ void ProcessEntityPT(CachedEntity* ent) {
 	const ESPData& ent_data = data[ent->m_IDX];
 	int fg = ent_data.color;
 	bool transparent { false };
+
+	Vector screen;
+	static Vector origin_screen;
+	if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin, origin_screen)) return;
 
 	if (box_esp) {
 		switch (ent->m_Type) {
@@ -345,7 +419,11 @@ void ProcessEntityPT(CachedEntity* ent) {
 			if (!ent->m_bAlivePlayer) break;
 			if (vischeck && !ent->IsVisible()) transparent = true;
 			if (transparent) fg = colors::Transparent(fg);
-			DrawBox(ent, fg, 3.0f, -15.0f, true, CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
+			if (esp_3d_box) {
+				Draw3DBox(ent, fg, true, CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
+			} else {
+				DrawBox(ent, fg, 3.0f, -15.0f, true, CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
+			}
 		break;
 		}
 		case ENTITY_BUILDING: {
@@ -357,31 +435,32 @@ void ProcessEntityPT(CachedEntity* ent) {
 			if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
 			if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
 			if (transparent) fg = colors::Transparent(fg);
-			DrawBox(ent, fg, 1.0f, 0.0f, true, CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
+			if (esp_3d_box) {
+				Draw3DBox(ent, fg, true, CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
+			} else {
+				DrawBox(ent, fg, 1.0f, 0.0f, true, CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
+			}
 		break;
 		}
 		}
 	}
 
 	if (ent_data.string_count) {
-		Vector screen;
 		// FIXME
 		bool origin_is_zero = !box_esp || ent_data.esp_origin.IsZero(1.0f);
-		if (!origin_is_zero || draw::EntityCenterToScreen(ent, screen)) {
-			if (vischeck && !ent->IsVisible()) transparent = true;
-			Vector draw_point = origin_is_zero ? screen : ent_data.esp_origin;
-			for (int j = 0; j < ent_data.string_count; j++) {
-				const ESPString& string = ent_data.strings[j];
-				int color = string.color ? string.color : ent_data.color;
-				if (transparent) color = colors::Transparent(color);
-				if (!origin_is_zero) {
-					draw::String(fonts::ESP, draw_point.x, draw_point.y, color, 2, string.data);
-					draw_point.y += 11;
-				} else {
-					auto l = draw::GetStringLength(fonts::ESP, string.data);
-					draw::String(fonts::ESP, draw_point.x - l.first / 2, draw_point.y, color, 2, string.data);
-					draw_point.y += 11;
-				}
+		if (vischeck && !ent->IsVisible()) transparent = true;
+		Vector draw_point = origin_is_zero ? screen : ent_data.esp_origin;
+		for (int j = 0; j < ent_data.string_count; j++) {
+			const ESPString& string = ent_data.strings[j];
+			int color = string.color ? string.color : ent_data.color;
+			if (transparent) color = colors::Transparent(color);
+			if (!origin_is_zero) {
+				draw::String(fonts::ESP, draw_point.x, draw_point.y, color, 2, string.data);
+				draw_point.y += 11;
+			} else {
+				auto l = draw::GetStringLength(fonts::ESP, string.data);
+				draw::String(fonts::ESP, draw_point.x - l.first / 2, draw_point.y, color, 2, string.data);
+				draw_point.y += 11;
 			}
 		}
 	}
