@@ -16,6 +16,12 @@ bool RandomCrits();
 bool WeaponCanCrit();
 bool IsAttackACrit(CUserCmd* cmd);
 
+#include "beforecheaders.h"
+#include <unordered_map>
+#include "aftercheaders.h"
+
+extern std::unordered_map<int, int> command_number_mod;
+
 //bool CalcIsAttackCritical(IClientEntity* weapon);
 
 

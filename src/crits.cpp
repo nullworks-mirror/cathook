@@ -11,6 +11,8 @@
 #include "copypasted/CSignature.h"
 #include <link.h>
 
+std::unordered_map<int, int> command_number_mod {};
+
 bool AllowAttacking() {
 	if (!hacks::shared::misc::crit_hack) return true;
 	bool crit = IsAttackACrit(g_pUserCmd);

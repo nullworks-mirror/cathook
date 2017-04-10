@@ -17,6 +17,18 @@ bool CanPacket_hook(void* thisptr) {
 	return false;
 }
 
+CUserCmd* GetUserCmd_hook(IInput* thisptr, int sequence_number) {
+	CUserCmd* def = ((GetUserCmd_t*)(hooks::hkInput->GetMethod(hooks::offGetUserCmd)))(thisptr, sequence_number);
+	if (def && command_number_mod.find(def->command_number) != command_number_mod.end()) {
+		logging::Info("Replacing command %i with %i", def->command_number, command_number_mod[def->command_number]);
+		int oldcmd = def->command_number;
+		def->command_number = command_number_mod[def->command_number];
+		def->random_seed = MD5_PseudoRandom(def->command_number) & 0x7fffffff;
+		command_number_mod.erase(command_number_mod.find(oldcmd));
+	}
+	return def;
+}
+
 int IN_KeyEvent_hook(void* thisptr, int eventcode, int keynum, const char* pszCurrentBinding) {
 	SEGV_BEGIN;
 	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum)) {

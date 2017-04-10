@@ -167,6 +167,10 @@ void hack::Initialize() {
 	hooks::hkClient->HookMethod((void*)DispatchUserMessage_hook, hooks::offFrameStageNotify + 1);
 	hooks::hkClient->HookMethod((void*)IN_KeyEvent_hook, hooks::offKeyEvent);
 	hooks::hkClient->Apply();
+	hooks::hkInput = new hooks::VMTHook();
+	hooks::hkInput->Init((void*)g_IInput, 0);
+	hooks::hkInput->HookMethod((void*)GetUserCmd_hook, hooks::offGetUserCmd);
+	hooks::hkInput->Apply();
 	if (TF2) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
 	hacks::shared::killsay::Init();
@@ -190,6 +194,7 @@ void hack::Shutdown() {
 	if (hooks::hkMatSurface) hooks::hkMatSurface->Kill();
 	if (hooks::hkNetChannel) hooks::hkNetChannel->Kill();
 	if (hooks::hkStudioRender) hooks::hkStudioRender->Kill();
+	if (hooks::hkInput) hooks::hkInput->Kill();
 	//if (hooks::hkCTFPlayer) hooks::hkCTFPlayer->Kill();
 	logging::Info("Unregistering convars..");
 	ConVar_Unregister();

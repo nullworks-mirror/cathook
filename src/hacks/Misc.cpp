@@ -48,6 +48,8 @@ bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
 	}
 }
 
+static CatVar crit_hack_experimental(CV_SWITCH, "crit_hack_experimental", "0", "Experimental crit hack");
+
 void CreateMove() {
 	static bool flswitch = false;
 
@@ -73,7 +75,47 @@ void CreateMove() {
 
 	if (TF2C && tauntslide)
 		RemoveCondition(LOCAL_E, TFCond_Taunting);
-	if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
+
+	if (crit_hack_experimental && TF2 && CE_GOOD(LOCAL_W) && (g_pUserCmd->buttons & IN_ATTACK)) {
+		IClientEntity* weapon = RAW_ENT(LOCAL_W);
+		if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
+			static uintptr_t CalcIsAttackCritical_s = gSignatures.GetClientSignature("55 89 E5 83 EC 28 89 5D F4 8B 5D 08 89 75 F8 89 7D FC 89 1C 24 E8 ? ? ? ? 85 C0 89 C6 74 60 8B 00 89 34 24 FF 90 E0 02 00 00 84 C0 74 51 A1 ? ? ? ? 8B 40 04");
+			typedef void(*CalcIsAttackCritical_t)(IClientEntity*);
+			CalcIsAttackCritical_t CIACFn = (CalcIsAttackCritical_t)(CalcIsAttackCritical_s);
+			if (g_pUserCmd->command_number) {
+				int tries = 0;
+				int cmdn = g_pUserCmd->command_number;
+				bool chc = false;
+				while (!chc && tries < 4096) {
+					int md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
+					int rseed = md5seed;
+					float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
+					int& a = *(int*)((uintptr_t)(sharedobj::client->lmap->l_addr) + 0x01F8B228);
+					a = md5seed;
+					int c = LOCAL_W->m_IDX << 8;
+					int b = LOCAL_E->m_IDX;
+					rseed = rseed ^ (b | c);
+					*(float*)(weapon + 2856ul) = 0.0f;
+					RandomSeed(rseed);
+					chc = vfunc<bool(*)(IClientEntity*)>(weapon, 1836 / 4, 0)(weapon);
+					if (!chc) {
+						tries++;
+						cmdn++;
+					}
+				}
+				if (chc) {
+					logging::Info("Found crit at: %i, original: %i", cmdn, g_pUserCmd->command_number);
+					command_number_mod[g_pUserCmd->command_number] = cmdn;
+					//*(int*)(sharedobj::engine->Pointer(0x00B6C91C)) = cmdn - 1;
+				} else {
+					g_pUserCmd->buttons &= ~IN_ATTACK;
+				}
+				//if (!crits) *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u) = bucket;
+			}
+		}
+	} else {
+		if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
+	}
 
 	if (flashlight_spam) {
 		if (flswitch && !g_pUserCmd->impulse) g_pUserCmd->impulse = 100;

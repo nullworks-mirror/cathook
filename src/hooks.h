@@ -39,7 +39,9 @@ extern VMTHook* hkNetChannel;
 extern VMTHook* hkClientDLL;
 extern VMTHook* hkMatSurface;
 extern VMTHook* hkStudioRender;
+extern VMTHook* hkInput;
 
+constexpr unsigned int offGetUserCmd = 8;
 constexpr unsigned int offShouldDraw = 136;
 extern unsigned int offHandleInputEvent;
 extern unsigned int offPaintTraverse;
