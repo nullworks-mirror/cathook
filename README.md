@@ -2,7 +2,7 @@
 I know that the style sucks. There is a lot of design errors and cancerous patterns. Most of the code was intended to be *temporary*.
 
 # Discord Server
-[Official Discord Server](https://discord.gg/RywBUSc)
+[Official Discord Server](https://discord.gg/7bu3AFw)
 
 # You need g++\-6 to compile/use cathook
 
