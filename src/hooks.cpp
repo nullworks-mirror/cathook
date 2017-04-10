@@ -72,6 +72,7 @@ void hooks::VMTHook::Apply() {
 	*vmt = array + 3;
 }
 
+//hooks::VMTHook* hooks::hkCTFPlayer = nullptr;
 hooks::VMTHook* hooks::hkClientMode = 0;
 hooks::VMTHook* hooks::hkPanel = 0;
 hooks::VMTHook* hooks::hkClient = 0;

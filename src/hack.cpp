@@ -190,6 +190,7 @@ void hack::Shutdown() {
 	if (hooks::hkMatSurface) hooks::hkMatSurface->Kill();
 	if (hooks::hkNetChannel) hooks::hkNetChannel->Kill();
 	if (hooks::hkStudioRender) hooks::hkStudioRender->Kill();
+	//if (hooks::hkCTFPlayer) hooks::hkCTFPlayer->Kill();
 	logging::Info("Unregistering convars..");
 	ConVar_Unregister();
 	logging::Info("Shutting down killsay...");

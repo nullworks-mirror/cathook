@@ -320,7 +320,7 @@ void draw::String (unsigned long font, int x, int y, int color, int shadow, cons
 void draw::String(unsigned long font, int x, int y, int color, int shadow, std::string text) {
 	draw::String(font, x, y, color, shadow, text.c_str());
 }
-
+CatVar fast_outline(CV_SWITCH, "fast_outline", "0", "Fast font outline", "Use only single repaint to increase performance");
 void draw::WString(unsigned long font, int x, int y, int color, int shadow, const wchar_t* text) {
 	if (shadow) {
 		unsigned char alpha = (color >> 24);
@@ -328,7 +328,7 @@ void draw::WString(unsigned long font, int x, int y, int color, int shadow, cons
 		if (shadow > 0) {
 			draw::WString(font, x + 1, y + 1, black_t, false, text);
 		}
-		if (shadow > 1) {
+		if (shadow > 1 && !fast_outline) {
 			draw::WString(font, x - 1, y + 1, black_t, false, text);
 			draw::WString(font, x - 1, y - 1, black_t, false, text);
 			draw::WString(font, x + 1, y - 1, black_t, false, text);

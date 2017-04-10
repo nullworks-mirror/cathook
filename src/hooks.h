@@ -31,6 +31,7 @@ protected:
 	void **array;
 };
 
+//extern VMTHook* hkCTFPlayer;
 extern VMTHook* hkPanel;
 extern VMTHook* hkClientMode;
 extern VMTHook* hkClient;
@@ -39,6 +40,7 @@ extern VMTHook* hkClientDLL;
 extern VMTHook* hkMatSurface;
 extern VMTHook* hkStudioRender;
 
+constexpr unsigned int offShouldDraw = 136;
 extern unsigned int offHandleInputEvent;
 extern unsigned int offPaintTraverse;
 extern unsigned int offCreateMove;

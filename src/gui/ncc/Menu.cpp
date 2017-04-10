@@ -240,6 +240,8 @@ List& MainList() {
 "Miscellaneous" [
     "Miscellaneous Settings"
     "enabled"
+    "fast_outline"
+    "render_zoomed"
     "bhop_enabled"
     "thirdperson"
     "thirdperson_angles"

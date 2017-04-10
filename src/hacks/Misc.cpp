@@ -33,8 +33,37 @@ namespace hacks { namespace shared { namespace misc {
 
 //static CatVar remove_conditions(CV_SWITCH, "remove_conditions", "0", "Remove conditions");
 
+static CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0", "Render model when zoomed-in", "Renders player model while being zoomed in as Sniper");
+
+void* C_TFPlayer__ShouldDraw_original = nullptr;
+
+bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
+	if (thisptr == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && g_pLocalPlayer->bZoomed && thisptr) {
+		NET_INT(thisptr, netvar.iCond) &= ~(1 << TFCond_Zoomed);
+		bool result = ((bool(*)(IClientEntity*))C_TFPlayer__ShouldDraw_original)(thisptr);
+		NET_INT(thisptr, netvar.iCond) |=  (1 << TFCond_Zoomed);
+		return result;
+	} else {
+		return ((bool(*)(IClientEntity*))C_TFPlayer__ShouldDraw_original)(thisptr);
+	}
+}
+
 void CreateMove() {
 	static bool flswitch = false;
+
+
+	// TODO FIXME HOOKING WITHOUT UNHOOKING = 100% SEGV ON UNINJECT.
+	IClientEntity* localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+	if (TF && render_zoomed && localplayer) {
+		void** vtable = *(void***)(localplayer);
+		if (vtable[hooks::offShouldDraw] != C_TFPlayer__ShouldDraw_hook) {
+			C_TFPlayer__ShouldDraw_original = vtable[hooks::offShouldDraw];
+			void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
+			mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
+			vtable[hooks::offShouldDraw] = (void*)C_TFPlayer__ShouldDraw_hook;
+			mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
+		}
+	}
 
 	/*(if (TF2 && remove_conditions) {
 		RemoveCondition(LOCAL_E, TFCond_CloakFlicker);
