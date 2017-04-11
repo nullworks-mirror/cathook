@@ -14,6 +14,7 @@ class INetMessage;
 class bf_read;
 class CViewSetup;
 class IClientEntity;
+class IInput;
 
 typedef bool(CreateMove_t)(void*, float, CUserCmd*);
 typedef void(PaintTraverse_t)(void*, unsigned int, bool, bool);

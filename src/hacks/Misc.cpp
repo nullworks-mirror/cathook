@@ -39,10 +39,10 @@ void* C_TFPlayer__ShouldDraw_original = nullptr;
 
 bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
 	if (thisptr == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && g_pLocalPlayer->bZoomed && thisptr) {
-		NET_INT(thisptr, netvar.iCond) &= ~(1 << TFCond_Zoomed);
-		bool result = ((bool(*)(IClientEntity*))C_TFPlayer__ShouldDraw_original)(thisptr);
-		NET_INT(thisptr, netvar.iCond) |=  (1 << TFCond_Zoomed);
-		return result;
+		//NET_INT(thisptr, netvar.iCond) &= ~(1 << TFCond_Zoomed);
+		//bool result = ((bool(*)(IClientEntity*))C_TFPlayer__ShouldDraw_original)(thisptr);
+		//NET_INT(thisptr, netvar.iCond) |=  (1 << TFCond_Zoomed);
+		return true;
 	} else {
 		return ((bool(*)(IClientEntity*))C_TFPlayer__ShouldDraw_original)(thisptr);
 	}
