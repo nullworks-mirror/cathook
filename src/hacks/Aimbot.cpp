@@ -193,6 +193,7 @@ int ShouldTarget(CachedEntity* entity) {
 	// Just assuming CE is good
 	// TODO IsSniperRifle.. ugh
 	if (entity->m_Type == ENTITY_PLAYER) {
+		if (entity == LOCAL_E) return 29;
 		if (TF) {
 			// idk wtf
 			if (wait_for_charge && (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle || g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap)) {
