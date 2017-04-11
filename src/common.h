@@ -8,6 +8,8 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#include <pwd.h>
+
 #include "beforecheaders.h"
 #include <vector>
 #include <bitset>
@@ -32,7 +34,6 @@
 #include "localplayer.h"
 #include "logging.h"
 #include "playerresource.h"
-#include "relations.h"
 #include "usercmd.h"
 #include "trace.h"
 #include "cvwrapper.h"
