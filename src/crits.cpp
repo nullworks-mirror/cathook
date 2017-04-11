@@ -14,13 +14,13 @@
 std::unordered_map<int, int> command_number_mod {};
 
 bool AllowAttacking() {
-	if (!hacks::shared::misc::crit_hack) return true;
+	if (!(hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee))) return true;
 	bool crit = IsAttackACrit(g_pUserCmd);
-	if (hacks::shared::misc::crit_suppress && !hacks::shared::misc::crit_hack && WeaponCanCrit()) {
+	if (hacks::shared::misc::crit_suppress && !(hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee))) {
 		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
 			return false;
 		}
-	} else if (((GetWeaponMode(LOCAL_E) == weapon_melee && hacks::shared::misc::crit_melee) || hacks::shared::misc::crit_hack) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife)) {
+	} else if ((hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee)) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife)) {
 		if (!crit) return false;
 	}
 	return true;

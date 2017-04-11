@@ -157,7 +157,8 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	};
 
 	if (esp_3d_box_health) clr = colors::Health(health, healthmax);
-
+	bool cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
+	if (cloak) clr = colors::Transparent(clr, 0.2);
 	for (int i = 0; i < 12; i++) {
 		const Vector& p1 = points[indices[i][0]];
 		const Vector& p2 = points[indices[i][1]];
@@ -339,7 +340,8 @@ void ProcessEntity(CachedEntity* ent) {
 			}*/
 		}
 		if (power >= 0) {
-			AddEntityString(ent, format("HAS ", powerups[power]));
+			// FIXME Disabled powerup ESP.
+			//AddEntityString(ent, format("HAS ", powerups[power]));
 		}
 		if (ent->m_bEnemy || teammates || GetRelation(ent)) {
 			if (show_name)

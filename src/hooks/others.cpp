@@ -154,7 +154,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 
 void LevelInit_hook(void* thisptr, const char* newmap) {
 	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
-	g_IEngine->ExecuteClientCmd("exec cat_matchexec");
+	g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();
 	hacks::shared::airstuck::Reset();
 //	LEVEL_SHUTDOWN(FollowBot);

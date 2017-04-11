@@ -464,7 +464,7 @@ weaponmode GetWeaponMode(CachedEntity* player) {
 	}
 	CachedEntity* weapon = (ENTITY(weapon_handle & 0xFFF));
 	if (CE_BAD(weapon)) return weaponmode::weapon_invalid;
-	if (IsMeleeWeapon(weapon)) return weaponmode::weapon_melee;
+	if (vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon())) == 2) return weaponmode::weapon_melee;
 	if (weapon->m_iClassID == g_pClassID->CTFLunchBox ||
 		weapon->m_iClassID == g_pClassID->CTFLunchBox_Drink ||
 		weapon->m_iClassID == g_pClassID->CTFBuffItem) {
