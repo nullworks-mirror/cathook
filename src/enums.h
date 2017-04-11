@@ -90,12 +90,4 @@ enum hitbox_t {
 	foot_R = 17
 };
 
-enum relation {
-	NEUTRAL = 0,
-	FRIEND = 1,
-	RAGE = 2,
-	DEVELOPER = 3,
-	BOT
-};
-
 #endif /* ENUMS_H_ */

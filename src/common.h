@@ -8,6 +8,8 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#include <pwd.h>
+
 #include "beforecheaders.h"
 #include <vector>
 #include <bitset>
@@ -20,6 +22,7 @@
 #include <cmath>
 #include <fstream>
 #include <set>
+#include <unordered_map>
 #include <algorithm>
 #include "aftercheaders.h"
 #include "drawing.h"
@@ -28,11 +31,11 @@
 #include "enums.h"
 #include "globals.h"
 #include "helpers.h"
+#include "playerlist.hpp"
 #include "interfaces.h"
 #include "localplayer.h"
 #include "logging.h"
 #include "playerresource.h"
-#include "relations.h"
 #include "usercmd.h"
 #include "trace.h"
 #include "cvwrapper.h"

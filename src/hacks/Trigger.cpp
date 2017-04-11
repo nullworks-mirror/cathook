@@ -88,8 +88,7 @@ void CreateMove() {
 		return;
 	}
 	if (HasCondition(entity, TFCond_UberBulletResist) && ignore_vaccinator) return;
-	relation rel = GetRelation(entity);
-	if (rel == relation::FRIEND || rel == relation::DEVELOPER) return;
+	if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return;
 	if (IsPlayerInvulnerable(entity)) return;
 	if (respect_cloak && (IsPlayerInvisible(entity))) return;
 	int health = CE_INT(entity, netvar.iHealth);

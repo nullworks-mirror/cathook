@@ -145,16 +145,8 @@ int colors::EntityF(CachedEntity* ent) {
 				if (ent->m_iTeam == TEAM_BLU) result = blu_v;
 				else if (ent->m_iTeam == TEAM_RED) result = red_v;
 			}
-			switch (GetRelation(ent)) {
-			case FRIEND:
-				result = green; break;
-			case RAGE:
-				result = yellow; break;
-			case DEVELOPER:
-				result = RainbowCurrent(); break;
-			case BOT:
-				result = colors::orange; break;
-			}
+			int plclr = playerlist::Color(ent);
+			if (plclr) result = plclr;
 		}
 	}
 

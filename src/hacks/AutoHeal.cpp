@@ -131,12 +131,12 @@ int HealingPriority(int idx) {
 	int overheal = maxoverheal - (maxbuffedhealth - health);
 	float overhealp = ((float)overheal / (float)maxoverheal);
 	float healthp = ((float)health / (float)maxhealth);
-	switch (GetRelation(ent)) {
-	case relation::FRIEND:
+	switch (playerlist::AccessData(ent).state) {
+	case playerlist::k_EState::FRIEND:
 		priority += 70 * (1 - healthp);
 		priority += 15 * (1 - overhealp);
 		break;
-	case relation::BOT:
+	case playerlist::k_EState::IPC:
 		priority += 100 * (1 - healthp);
 		priority += 20 * (1 - overhealp);
 		break;

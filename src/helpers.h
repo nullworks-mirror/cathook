@@ -76,7 +76,6 @@ void fVectorAngles(Vector &forward, Vector &angles);
 //const char* MakeInfoString(IClientEntity* player);
 bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity);
 bool IsVectorVisible(Vector a, Vector b);
-relation GetRelation(CachedEntity* ent); // TODO new relations
 bool IsSentryBuster(CachedEntity* ent);
 char* strfmt(const char* fmt, ...);
 void ReplaceString(char* target, char* what, char* with_what);
@@ -135,9 +134,5 @@ std::string format(const Args&... args) {
 
 extern const char* tfclasses[10];
 extern const char* powerups[POWERUP_COUNT];
-extern uint32 friends[256];
-extern int n_friends;
-extern int n_rage;
-extern uint32 rage[256];
 
 #endif /* HELPERS_H_ */
