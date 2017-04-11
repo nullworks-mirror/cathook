@@ -22,6 +22,7 @@
 #include <cmath>
 #include <fstream>
 #include <set>
+#include <unordered_map>
 #include <algorithm>
 #include "aftercheaders.h"
 #include "drawing.h"
@@ -30,6 +31,7 @@
 #include "enums.h"
 #include "globals.h"
 #include "helpers.h"
+#include "playerlist.hpp"
 #include "interfaces.h"
 #include "localplayer.h"
 #include "logging.h"

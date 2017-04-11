@@ -16,22 +16,36 @@ constexpr int SERIALIZE_VERSION = 2;
 
 enum class k_EState {
 	DEFAULT,
-	IGNORE,
+	FRIEND,
 	RAGE,
-	STATE_LAST = RAGE
+	IPC,
+	DEVELOPER,
+	STATE_LAST = DEVELOPER
 };
+
+
+constexpr int k_Colors[] = { 0, colors::Create(99, 226, 161, 255), colors::Create(226, 204, 99, 255), colors::Create(232, 134, 6, 255), 0 };
+const std::string k_Names[] = { "DEFAULT", "FRIEND", "RAGE", "IPC", "DEVELOPER" };
 
 struct userdata {
 	k_EState state { k_EState::DEFAULT };
 	int color { 0 };
 };
 
-extern std::unordered_map<int, userdata> data;
+extern std::unordered_map<unsigned, userdata> data;
 
 void Save();
 void Load();
 
-userdata& AccessData(int steamid);
+void DoNotKillMe();
+
+constexpr bool IsFriendly(k_EState state) {
+	return state == k_EState::DEVELOPER || state == k_EState::FRIEND || state == k_EState::IPC;
+}
+
+int Color(unsigned steamid);
+int Color(CachedEntity* player);
+userdata& AccessData(unsigned steamid);
 userdata& AccessData(CachedEntity* player);
 
 }

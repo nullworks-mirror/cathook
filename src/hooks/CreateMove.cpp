@@ -177,6 +177,13 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	}*/
 	g_Settings.bInvalid = false;
 	chat_stack::OnCreateMove();
+
+	// TODO Auto Steam Friend
+	if (g_GlobalVars->framecount % 1000 == 0) {
+		playerlist::DoNotKillMe();
+		ipc::UpdatePlayerlist();
+	}
+
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		bool speedapplied = false;
 		if (roll_speedhack && g_pGUI->m_bPressedState[(int)roll_speedhack] && !(cmd->buttons & IN_ATTACK)) { // FIXME OOB

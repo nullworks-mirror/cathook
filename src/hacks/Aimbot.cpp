@@ -223,7 +223,7 @@ int ShouldTarget(CachedEntity* entity) {
 		if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee) {
 			if (entity->m_flDistance > 95) return 9;
 		}
-		if (GetRelation(entity) == relation::FRIEND || GetRelation(entity) == relation::BOT) return 11;
+		if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return 11;
 		Vector resultAim;
 		int hitbox = BestHitbox(entity);
 		//if (m_bHeadOnly && hitbox) return 12;

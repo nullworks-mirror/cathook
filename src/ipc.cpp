@@ -125,4 +125,16 @@ void StoreClientData() {
 	strncpy(data.name, g_ISteamFriends->GetPersonaName(), sizeof(data.name));
 }
 
+void UpdatePlayerlist() {
+	if (peer) {
+		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+			if (!peer->memory->peer_data[i].free) {
+				playerlist::userdata& info = playerlist::AccessData(peer->memory->peer_user_data[i].friendid);
+				if (info.state != playerlist::k_EState::DEFAULT)
+					info.state = playerlist::k_EState::IPC;
+			}
+		}
+	}
+}
+
 }

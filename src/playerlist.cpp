@@ -10,7 +10,7 @@
 
 namespace playerlist {
 
-std::unordered_map<int, userdata> data {};
+std::unordered_map<unsigned, userdata> data {};
 
 constexpr userdata null_data {};
 
@@ -91,20 +91,41 @@ void Load() {
 	}
 }
 
-userdata& AccessData(int steamid) {
+void DoNotKillMe() {
+	constexpr unsigned developer_alts[] = { 306902159, 347272825, 401679596 };
+	for (int i = 0; i < sizeof(developer_alts) / sizeof(int); i++) AccessData(developer_alts[i]).state = k_EState::DEVELOPER;
+}
+
+int Color(unsigned steamid) {
+	if (AccessData(steamid).state == k_EState::DEVELOPER) return colors::RainbowCurrent();
+	if (AccessData(steamid).color) {
+		return AccessData(steamid).color;
+	} else {
+		return k_Colors[static_cast<int>(AccessData(steamid).state)];
+	}
+}
+
+int Color(CachedEntity* player) {
+	if (player->m_pPlayerInfo)
+		return Color(player->m_pPlayerInfo->friendsID);
+	return 0;
+}
+
+userdata& AccessData(unsigned steamid) {
 	try {
 		return data.at(steamid);
 	} catch (std::out_of_range& oor) {
-		data.emplace(steamid, userdata());
+		data.emplace(steamid, userdata{});
 		return data.at(steamid);
 	}
 }
 
 // Assume player is non-null
 userdata& AccessData(CachedEntity* player) {
-	if (player->m_pPlayerInfo)
-		return data.at(player->m_pPlayerInfo->friendsID);
-	return data.at(0);
+	if (CE_GOOD(player) && player->m_pPlayerInfo)
+		return AccessData(player->m_pPlayerInfo->friendsID);
+	return AccessData(0U);
+
 }
 
 CatCommand pl_save("pl_save", "Save playerlist", Save);
@@ -115,7 +136,7 @@ CatCommand pl_set_state("pl_set_state", "pl_set_state uniqueid state\nfor exampl
 		logging::Info("Invalid call");
 		return;
 	}
-	int steamid = strtol(args.Arg(1), nullptr, 10);
+	unsigned steamid = strtoul(args.Arg(1), nullptr, 10);
 	k_EState state = static_cast<k_EState>(strtol(args.Arg(2), nullptr, 10));
 	if (state < k_EState::DEFAULT || state > k_EState::STATE_LAST) state = k_EState::DEFAULT;
 	AccessData(steamid).state = state;
@@ -127,7 +148,7 @@ CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b", [](const 
 		logging::Info("Invalid call");
 		return;
 	}
-	int steamid = strtol(args.Arg(1), nullptr, 10);
+	unsigned steamid = strtoul(args.Arg(1), nullptr, 10);
 	int r = strtol(args.Arg(2), nullptr, 10);
 	int g = strtol(args.Arg(3), nullptr, 10);
 	int b = strtol(args.Arg(4), nullptr, 10);
@@ -141,12 +162,12 @@ CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand& args) {
 		logging::Info("Invalid call");
 		return;
 	}
-	int steamid = strtol(args.Arg(1), nullptr, 10);
+	unsigned steamid = strtoul(args.Arg(1), nullptr, 10);
 	logging::Info("Data for %i: ", steamid);
 	logging::Info("   State: %i", AccessData(steamid).state);
 	int clr = AccessData(steamid).color;
 	if (clr) {
-		ConColorMsg(*reinterpret_cast<Color*>(&clr), "[CUSTOM COLOR]\n");
+		ConColorMsg(*reinterpret_cast<::Color*>(&clr), "[CUSTOM COLOR]\n");
 	}
 });
 

@@ -611,27 +611,6 @@ bool IsVectorVisible(Vector origin, Vector target) {
 	return IsVectorVisible(origin, res1);
 }*/
 
-relation GetRelation(CachedEntity* ent) {
-	if (!ent->m_pPlayerInfo) return relation::NEUTRAL;
-	for (int i = 0; i < n_friends; i++) {
-		if (friends[i] == ent->m_pPlayerInfo->friendsID) return relation::FRIEND;
-	}
-	for (int i = 0; i < n_rage; i++) {
-		if (rage[i] == ent->m_pPlayerInfo->friendsID) return relation::RAGE;
-	}
-	if (Developer(ent)) return relation::DEVELOPER;
-
-	if (ipc::peer) {
-		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
-			if (!ipc::peer->memory->peer_data[i].free && ipc::peer->memory->peer_user_data[i].friendid == ent->m_pPlayerInfo->friendsID) {
-				return relation::BOT;
-			}
-		}
-	}
-
-	return relation::NEUTRAL;
-}
-
 void WhatIAmLookingAt(int* result_eindex, Vector* result_pos) {
 	Ray_t ray;
 	trace::g_pFilterDefault->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
@@ -891,12 +870,6 @@ const char* powerups[] = {
 	"SUPERNOVA",
 	"CRITS"
 };
-
-uint32 friends[256];
-uint32 rage[256];
-
-int n_friends = 0;
-int n_rage = 0;
 
 const char* tfclasses[] = {
 	"[NULL]",

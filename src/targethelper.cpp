@@ -80,7 +80,7 @@ int GetScoreForEntity(CachedEntity* entity) {
 		}
 	}
 	if (total > 99) total = 99;
-	if (GetRelation(entity) == relation::RAGE) total = 999;
+	if (playerlist::AccessData(entity).state == playerlist::k_EState::RAGE) total = 999;
 	if (IsSentryBuster(entity)) total = 0;
 	if (clazz == tf_medic) total = 999; // TODO only for mvm
 	return total;
