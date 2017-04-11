@@ -41,10 +41,30 @@ int IN_KeyEvent_hook(void* thisptr, int eventcode, int keynum, const char* pszCu
 
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent messages");
 
+static CatCommand plus_use_action_slot_item_server("+cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
+	KeyValues* kv = new KeyValues("+use_action_slot_item_server");
+	g_IEngine->ServerCmdKeyValues(kv);
+});
+
+static CatCommand minus_use_action_slot_item_server("-cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
+	KeyValues* kv = new KeyValues("-use_action_slot_item_server");
+	g_IEngine->ServerCmdKeyValues(kv);
+});
+
 bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	SEGV_BEGIN;
-	if (log_sent) {
+	if (log_sent && msg.GetType() != 3 && msg.GetType() != 9) {
 		logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(), msg.ToString());
+		unsigned char buf[4096];
+		bf_write buffer("cathook_debug_buffer", buf, 4096);
+		logging::Info("Writing %i", msg.WriteToBuffer(buffer));
+		std::string bytes = "";
+		constexpr char h2c[] = "0123456789abcdef";
+		for (int i = 0; i <  buffer.GetNumBytesWritten(); i++) {
+			//bytes += format(h2c[(buf[i] & 0xF0) >> 4], h2c[(buf[i] & 0xF)], ' ');
+			bytes += format((unsigned short)buf[i], ' ');
+		}
+		logging::Info("%i bytes => %s", buffer.GetNumBytesWritten(), bytes.c_str());
 	}
 	//logging::Info("Sending NetMsg! %i", msg.GetType());
 	if (hacks::shared::airstuck::IsStuck() && cathook && !g_Settings.bInvalid) {

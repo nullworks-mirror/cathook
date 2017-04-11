@@ -35,7 +35,11 @@ CatCommand::CatCommand(std::string name, std::string help, FnCommandCallbackVoid
 void CatCommand::Register() {
 	char* name_c = new char[256];
 	char* help_c = new char[256];
-	strncpy(name_c, (CON_PREFIX + name).c_str(), 255);
+	if (name.at(0) == '+' || name.at(0) == '-') {
+		strncpy(name_c, (name).c_str(), 255);
+	} else {
+		strncpy(name_c, (CON_PREFIX + name).c_str(), 255);
+	}
 	strncpy(help_c, help.c_str(), 255);
 	if (callback) cmd = new ConCommand(name_c, callback, help_c);
 	else if (callback_void) cmd = new ConCommand(name_c, callback_void, help_c);
