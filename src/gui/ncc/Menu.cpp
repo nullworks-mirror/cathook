@@ -247,6 +247,7 @@ List& MainList() {
 "Miscellaneous" [
     "Miscellaneous Settings"
     "enabled"
+    "noisemaker"
     "fast_outline"
     "render_zoomed"
     "bhop_enabled"
