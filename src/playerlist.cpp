@@ -15,7 +15,7 @@ std::unordered_map<int, userdata> data {};
 constexpr userdata null_data {};
 
 bool ShouldSave(const userdata& data) {
-	return data.color && (data.state != k_EState::DEFAULT);
+	return data.color || (data.state != k_EState::DEFAULT);
 }
 
 void Save() {
@@ -52,6 +52,7 @@ void Save() {
 }
 
 void Load() {
+	data.clear();
 	uid_t uid = geteuid();
 	passwd* pw = getpwuid(uid);
 	if (!pw) {
@@ -118,7 +119,7 @@ CatCommand pl_set_state("pl_set_state", "pl_set_state uniqueid state\nfor exampl
 	k_EState state = static_cast<k_EState>(strtol(args.Arg(2), nullptr, 10));
 	if (state < k_EState::DEFAULT || state > k_EState::STATE_LAST) state = k_EState::DEFAULT;
 	AccessData(steamid).state = state;
-	logging::Info("Set %i to %i", steamid, state);
+	logging::Info("Set %d to %d", steamid, state);
 });
 
 CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b", [](const CCommand& args) {
@@ -132,7 +133,7 @@ CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b", [](const 
 	int b = strtol(args.Arg(4), nullptr, 10);
 	int color = colors::Create(r, g, b, 255);
 	AccessData(steamid).color = color;
-	logging::Info("Set %i's color to 0x%08x", color);
+	logging::Info("Set %d's color to 0x%08x", steamid, (unsigned int)color);
 });
 
 CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand& args) {
