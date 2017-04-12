@@ -173,6 +173,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 }
 
 void LevelInit_hook(void* thisptr, const char* newmap) {
+	playerlist::Save();
 	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
 	g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();
