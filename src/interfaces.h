@@ -42,7 +42,9 @@ class IAchievementMgr;
 class ISteamUserStats;
 class IStudioRender;
 class IVDebugOverlay;
+class IVModelRender;
 
+extern IVModelRender* g_IVModelRender;
 extern ISteamClient* g_ISteamClient;
 extern ISteamFriends* g_ISteamFriends;
 extern IVEngineClient013* g_IEngine;

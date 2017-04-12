@@ -81,3 +81,4 @@ hooks::VMTHook* hooks::hkNetChannel = 0;
 hooks::VMTHook* hooks::hkClientDLL = 0;
 hooks::VMTHook* hooks::hkMatSurface = 0;
 hooks::VMTHook* hooks::hkStudioRender = 0;
+hooks::VMTHook* hooks::hkIVModelRender = nullptr;

@@ -10,6 +10,19 @@
 #include "../hack.h"
 #include "hookedmethods.h"
 
+void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix) {
+	IClientUnknown* unknown = info.pRenderable->GetIClientUnknown();
+	if (unknown) {
+		IClientEntity* entity = unknown->GetIClientEntity();
+		if (entity && entity->entindex() != -1) {
+			if (entity->GetClientClass() == g_pClassID->C_Player) {
+				//CMatRenderContextPtr ptr();
+			}
+		}
+	}
+	((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
+}
+
 bool CanPacket_hook(void* thisptr) {
 	SEGV_BEGIN;
 	return send_packets && ((CanPacket_t*)hooks::hkNetChannel->GetMethod(hooks::offCanPacket))(thisptr);

@@ -21,6 +21,7 @@
 
 //class ISteamFriends002;
 
+IVModelRender* g_IVModelRender = nullptr;
 ISteamClient* g_ISteamClient = nullptr;
 ISteamFriends* g_ISteamFriends = nullptr;
 IVEngineClient013* g_IEngine = nullptr;
@@ -83,6 +84,7 @@ void CreateInterfaces() {
 	g_IVDebugOverlay = BruteforceInterface<IVDebugOverlay>("VDebugOverlay", sharedobj::engine);
 	HSteamPipe sp = g_ISteamClient->CreateSteamPipe();
 	HSteamUser su = g_ISteamClient->ConnectToGlobalUser(sp);
+	g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine, 16);
 	g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
 	g_GlobalVars = **(reinterpret_cast<CGlobalVarsBase***>((uintptr_t)11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
 	g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client);

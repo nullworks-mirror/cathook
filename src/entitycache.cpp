@@ -38,7 +38,6 @@ void EntityCache::Invalidate() {
 
 void CachedEntity::Update(int idx) {
 	SEGV_BEGIN
-
 	m_IDX = idx;
 	if (!RAW_ENT(this)) return;
 #if PROXY_ENTITY != true
