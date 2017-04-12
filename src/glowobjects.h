@@ -36,4 +36,8 @@ public:
 
 extern CGlowObjectManager* g_GlowObjectManager;
 
+bool CanEntityEvenGlow(int idx);
+int GetEntityGlowColor(int idx);
+bool ShouldEntityGlow(int idx);
+
 #endif /* GLOWOBJECTS_H_ */

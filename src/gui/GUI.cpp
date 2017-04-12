@@ -18,11 +18,14 @@
 void GUIVisibleCallback(IConVar* var, const char* pOldValue, float flOldValue) {
 	g_IInputSystem->SetCursorPosition(draw::width / 2, draw::height / 2);
 	g_ISurface->SetCursor(vgui::CursorCode::dc_none);
-	g_IMatSystemSurface->SetCursorAlwaysVisible(false);
+	g_ISurface->SetCursorAlwaysVisible(false);
+	//g_IMatSystemSurface->SetCursorAlwaysVisible(false);
 	if (gui_visible) {
-		g_IMatSystemSurface->UnlockCursor();
+		g_ISurface->UnlockCursor();
+		//g_IMatSystemSurface->UnlockCursor();
 	} else {
-		g_IMatSystemSurface->LockCursor();
+		g_ISurface->LockCursor();
+		//g_IMatSystemSurface->LockCursor();
 	}
 }
 

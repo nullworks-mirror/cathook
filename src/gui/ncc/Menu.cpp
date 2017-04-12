@@ -153,6 +153,16 @@ List& MainList() {
     ]
 ]
  
+"Glow" [
+    "Glow Menu"
+    "glow_enabled"
+    "glow_color_scheme"
+    "glow_teammates"
+    "glow_teammate_buildings"
+    "glow_buildings"
+    "glow_stickies"
+]
+
 "ESP" [
     "ESP Menu"
     "esp_enabled"
@@ -161,6 +171,7 @@ List& MainList() {
     "esp_name"
     "esp_distance"
     "esp_box"
+    "esp_box_text_position"
     "3D Box" [
         "3D Box Settings"
         "esp_3d_box"
@@ -262,7 +273,6 @@ List& MainList() {
     "tauntslide"
     "anti_afk"
     "flashlight"
-    "noisemaker"
     "minigun_jump"
     "no_zoom"
     "no_visuals"
