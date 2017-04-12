@@ -103,11 +103,13 @@ void Draw() {
 	}
 }
 
+static CatEnum esp_box_text_position_enum({"TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE", "BELOW" });
+static CatVar esp_box_text_position(esp_box_text_position_enum, "esp_box_text_position", "0", "Text position", "Defines text position");
 static CatVar esp_3d_box_health(CV_SWITCH, "esp_3d_box_health", "1", "3D box health color");
 static CatVar esp_3d_box_thick(CV_SWITCH, "esp_3d_box_thick", "1", "Thick 3D box");
 static CatVar esp_3d_box_expand(CV_SWITCH, "esp_3d_box_expand", "1", "Expand 3D box");
 static CatEnum esp_3d_box_smoothing_enum({"None", "Origin offset", "Bone update (NOT IMPL)"});
-static CatVar esp_3d_box_smoothing(esp_3d_box_smoothing_enum, "esp_3d_box_smoothing", "0", "3D box smoothing", "3D box smoothing method");
+static CatVar esp_3d_box_smoothing(esp_3d_box_smoothing_enum, "esp_3d_box_smoothing", "1", "3D box smoothing", "3D box smoothing method");
 
 void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healthmax) {
 	Vector mins, maxs;
@@ -154,7 +156,31 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	for (int i = 0; i < 8; i++) {
 		if (!draw::WorldToScreen(points_r[i], points[i])) success = false;
 	}
+	int max_x = -1, max_y = -1, min_x = 65536, min_y = 65536;
+	for (int i = 0; i < 8; i++) {
+		if (points[i].x > max_x) max_x = points[i].x;
+		if (points[i].y > max_y) max_y = points[i].y;
+		if (points[i].x < min_x) min_x = points[i].x;
+		if (points[i].y < min_y) min_y = points[i].y;
+	}
 	if (!success) return;
+	data.at(ent->m_IDX).esp_origin.Zero();
+	switch ((int)esp_box_text_position) {
+	case 0: { // TOP RIGHT
+		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, min_y, 0);
+	} break;
+	case 1: { // BOTTOM RIGHT
+		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, max_y - data.at(ent->m_IDX).string_count * 13, 0);
+	} break;
+	case 2: { // CENTER
+	} break;
+	case 3: { // ABOVE
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * 13, 0);
+	} break;
+	case 4: { // BELOW
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
+	}
+	}
 	//draw::String(fonts::ESP, points[0].x, points[0].y, clr, 1, "MIN");
 	//draw::String(fonts::ESP, points[6].x, points[6].y, clr, 1, "MAX");
 	constexpr int indices[][2] = {
@@ -204,8 +230,28 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 	//draw::DrawString(min(smin.x, smax.x), min(smin.y, smax.y), clr, false, "min");
 	//draw::DrawString(max(smin.x, smax.x), max(smin.y, smax.y), clr, false, "max");
 	//draw::DrawString((int)so.x, (int)so.y, draw::white, false, "origin");
-	data[ent->m_IDX].esp_origin.x = so.x + width / 2 + 1;
-	data[ent->m_IDX].esp_origin.y = so.y - height;
+	int min_x, min_y, max_x, max_y;
+	data.at(ent->m_IDX).esp_origin.Zero();
+	max_x = so.x + width / 2 + 1;
+	min_y = so.y - height;
+	max_y = so.y;
+	min_x = so.x - width / 2;
+	switch ((int)esp_box_text_position) {
+	case 0: { // TOP RIGHT
+		data.at(ent->m_IDX).esp_origin = Vector(max_x, min_y, 0);
+	} break;
+	case 1: { // BOTTOM RIGHT
+		data.at(ent->m_IDX).esp_origin = Vector(max_x, max_y - data.at(ent->m_IDX).string_count * 13, 0);
+	} break;
+	case 2: { // CENTER
+	} break;
+	case 3: { // ABOVE
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * 13, 0);
+	} break;
+	case 4: { // BELOW
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
+	}
+	}
 	unsigned char alpha = clr >> 24;
 	float trf = (float)((float)alpha / 255.0f);
 	int border = cloak ? colors::Create(160, 160, 160, alpha) : colors::Transparent(colors::black, trf);
