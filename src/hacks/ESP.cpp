@@ -106,6 +106,8 @@ void Draw() {
 static CatVar esp_3d_box_health(CV_SWITCH, "esp_3d_box_health", "1", "3D box health color");
 static CatVar esp_3d_box_thick(CV_SWITCH, "esp_3d_box_thick", "1", "Thick 3D box");
 static CatVar esp_3d_box_expand(CV_SWITCH, "esp_3d_box_expand", "1", "Expand 3D box");
+static CatEnum esp_3d_box_smoothing_enum({"None", "Origin offset", "Bone update (NOT IMPL)"});
+static CatVar esp_3d_box_smoothing(esp_3d_box_smoothing_enum, "esp_3d_box_smoothing", "0", "3D box smoothing", "3D box smoothing method");
 
 void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healthmax) {
 	Vector mins, maxs;
@@ -122,6 +124,11 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 		set = true;
 	}
 	// Expand it a bit
+
+	if ((int)esp_3d_box_smoothing == 1) {
+		mins += (RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin);
+		maxs += (RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin);
+	}
 
 	static const Vector expand_vector(8.5, 8.5, 8.5);
 
