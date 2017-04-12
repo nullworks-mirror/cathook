@@ -178,6 +178,7 @@ void hack::Initialize() {
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
 	logging::Info("Hooked!");
+	playerlist::Load();
 }
 
 void hack::Think() {
@@ -187,6 +188,7 @@ void hack::Think() {
 void hack::Shutdown() {
 	if (hack::shutdown) return;
 	hack::shutdown = true;
+	playerlist::Save();
 	logging::Info("Killing hooks..");
 	if (hooks::hkPanel) hooks::hkPanel->Kill();
 	if (hooks::hkClientMode) hooks::hkClientMode->Kill();
