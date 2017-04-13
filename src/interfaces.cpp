@@ -45,6 +45,9 @@ IAchievementMgr* g_IAchievementMgr = nullptr;
 ISteamUserStats* g_ISteamUserStats = nullptr;
 IStudioRender* g_IStudioRender = nullptr;
 IVDebugOverlay* g_IVDebugOverlay = nullptr;
+IVModelRender* g_IVModelRender = nullptr;
+IMaterialSystem* g_IMaterialSystem = nullptr;
+IVRenderView* g_IVRenderView = nullptr;
 
 template<typename T>
 T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start) {
@@ -89,6 +92,9 @@ void CreateInterfaces() {
 	g_GlobalVars = **(reinterpret_cast<CGlobalVarsBase***>((uintptr_t)11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
 	g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client);
 	g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client);
+	g_IVRenderView = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine);
+	g_IMaterialSystem = BruteforceInterface<IMaterialSystem>("VMaterialSystem", sharedobj::materialsystem, 81);
+	g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine);
 	if (TF2) {
 		// FIXME static pointer
 		g_pScreenSpaceEffects = *(IScreenSpaceEffectManager**)sharedobj::client->Pointer(0x01F73E74);

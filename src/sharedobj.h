@@ -39,6 +39,7 @@ extern SharedObject* vstdlib;
 extern SharedObject* tier0;
 extern SharedObject* inputsystem;
 extern SharedObject* studiorender;
+extern SharedObject* materialsystem;
 
 void LoadAllSharedObjects();
 

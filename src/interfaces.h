@@ -43,6 +43,9 @@ class ISteamUserStats;
 class IStudioRender;
 class IVDebugOverlay;
 class IVModelRender;
+class IVModelRender;
+class IVRenderView;
+class IMaterialSystem;
 
 extern IVModelRender* g_IVModelRender;
 extern ISteamClient* g_ISteamClient;
@@ -68,6 +71,9 @@ extern IAchievementMgr* g_IAchievementMgr;
 extern ISteamUserStats* g_ISteamUserStats;
 extern IStudioRender* g_IStudioRender;
 extern IVDebugOverlay* g_IVDebugOverlay;
+extern IMaterialSystem* g_IMaterialSystem;
+extern IVModelRender* g_IVModelRender;
+extern IVRenderView* g_IVRenderView;
 
 template<typename T>
 T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start = 0);
