@@ -31,7 +31,7 @@ void GUIVisibleCallback(IConVar* var, const char* pOldValue, float flOldValue) {
 
 CatVar gui_visible(CV_SWITCH, "gui_visible", "0", "GUI Active", "GUI switch (bind it to a key!)");
 CatVar gui_draw_bounds(CV_SWITCH, "gui_bounds", "0", "Draw Bounds", "Draw GUI elements' bounding boxes");
-CatVar gui_nullcore(CV_SWITCH, "gui_nullcore", "0", "NullCore GUI", "Use NullCoreCheat GUI");
+CatVar gui_nullcore(CV_SWITCH, "gui_nullcore", "1", "NullCore GUI", "Use NullCoreCheat GUI");
 
 CatGUI::CatGUI() {
 	root_nullcore = nullptr;

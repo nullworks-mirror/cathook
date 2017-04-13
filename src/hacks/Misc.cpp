@@ -83,6 +83,10 @@ void CreateMove() {
 			typedef void(*CalcIsAttackCritical_t)(IClientEntity*);
 			CalcIsAttackCritical_t CIACFn = (CalcIsAttackCritical_t)(CalcIsAttackCritical_s);
 			if (g_pUserCmd->command_number) {
+				if (!g_PredictionRandomSeed) {
+					uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ?");
+					g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
+				}
 				int tries = 0;
 				int cmdn = g_pUserCmd->command_number;
 				bool chc = false;
@@ -90,8 +94,7 @@ void CreateMove() {
 					int md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
 					int rseed = md5seed;
 					float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
-					int& a = *(int*)((uintptr_t)(sharedobj::client->lmap->l_addr) + 0x01F8B228);
-					a = md5seed;
+					*g_PredictionRandomSeed = md5seed;
 					int c = LOCAL_W->m_IDX << 8;
 					int b = LOCAL_E->m_IDX;
 					rseed = rseed ^ (b | c);
