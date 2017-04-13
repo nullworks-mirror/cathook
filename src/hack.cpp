@@ -183,6 +183,12 @@ void hack::Initialize() {
 	hack::command_stack().push("cat_spam_reload");
 	logging::Info("Hooked!");
 	playerlist::Load();
+	g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &g_EffectGlow);
+	for (CScreenSpaceEffectRegistration* reg = *g_ppScreenSpaceRegistrationHead; reg; reg = reg->m_pNext) {
+		logging::Info("%s", reg->m_pEffectName);
+	}
+	g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
+	logging::Info("SSE enabled..");
 }
 
 void hack::Think() {

@@ -15,7 +15,7 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 	if (unknown) {
 		IClientEntity* entity = unknown->GetIClientEntity();
 		if (entity && entity->entindex() != -1) {
-			if (entity->GetClientClass() == g_pClassID->C_Player) {
+			if (entity->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
 				//CMatRenderContextPtr ptr();
 			}
 		}

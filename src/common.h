@@ -33,6 +33,7 @@
 #include "helpers.h"
 #include "playerlist.hpp"
 #include "interfaces.h"
+#include "EffectGlow.hpp"
 #include "localplayer.h"
 #include "logging.h"
 #include "playerresource.h"
