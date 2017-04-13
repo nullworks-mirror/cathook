@@ -45,7 +45,6 @@ IAchievementMgr* g_IAchievementMgr = nullptr;
 ISteamUserStats* g_ISteamUserStats = nullptr;
 IStudioRender* g_IStudioRender = nullptr;
 IVDebugOverlay* g_IVDebugOverlay = nullptr;
-IVModelRender* g_IVModelRender = nullptr;
 IMaterialSystem* g_IMaterialSystem = nullptr;
 IVRenderView* g_IVRenderView = nullptr;
 
@@ -94,9 +93,8 @@ void CreateInterfaces() {
 	g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client);
 	g_IVRenderView = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine);
 	g_IMaterialSystem = BruteforceInterface<IMaterialSystem>("VMaterialSystem", sharedobj::materialsystem, 81);
-	g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine);
 	if (TF2) {
-		// FIXME static pointer
+		// FIXME static offset FIXME FIXME FIXME FIXME IMPORTANT!
 		g_pScreenSpaceEffects = *(IScreenSpaceEffectManager**)sharedobj::client->Pointer(0x01F73E74);
 		g_ppScreenSpaceRegistrationHead = (CScreenSpaceEffectRegistration**)sharedobj::client->Pointer(0x02018E30);
 	}

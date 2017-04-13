@@ -47,7 +47,6 @@ class IVModelRender;
 class IVRenderView;
 class IMaterialSystem;
 
-extern IVModelRender* g_IVModelRender;
 extern ISteamClient* g_ISteamClient;
 extern ISteamFriends* g_ISteamFriends;
 extern IVEngineClient013* g_IEngine;

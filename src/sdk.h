@@ -21,6 +21,7 @@
 #include <gametrace.h>
 #include <engine/IEngineTrace.h>
 #include <globalvars_base.h>
+#include <materialsystem/itexture.h>
 #include <engine/ivmodelinfo.h>
 #include <inputsystem/iinputsystem.h>
 #include <mathlib/vector.h>
@@ -30,6 +31,7 @@
 #include <igameevents.h>
 #include <iclient.h>
 #include <inetchannel.h>
+#include <ivrenderview.h>
 #include <iconvar.h>
 #include <studio.h>
 #include <vgui/ISurface.h>
