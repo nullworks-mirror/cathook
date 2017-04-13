@@ -87,7 +87,7 @@ void ProcessUserCmd(CUserCmd* cmd) {
 	case 5: // SPIN
 		cur_yaw += (float)spin;
 		if (cur_yaw > 180) cur_yaw = -180;
-		if (cur_yaw < 180) cur_yaw = 180;
+		if (cur_yaw < -180) cur_yaw = 180;
 		y = cur_yaw;
 		break;
 	case 6: // OFFSETKEEP
