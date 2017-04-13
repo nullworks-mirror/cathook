@@ -109,6 +109,8 @@ void Shutdown_hook(void* thisptr, const char* reason) {
 	SEGV_END;
 }
 
+static CatVar glow_enabled(CV_SWITCH, "glow_enabled", "0", "Enable", "Make sure to enable glow_outline_effect_enable in tf2 settings");
+
 void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;
 	//logging::Info("FrameStageNotify %i", stage);
@@ -118,6 +120,63 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 	SVDBG("FSN %i", __LINE__);
 	// TODO hack FSN hook
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+		if (glow_enabled) {
+			for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.m_Size; i++) {
+				GlowObjectDefinition_t& glowobject = g_GlowObjectManager->m_GlowObjectDefinitions[i];
+				if (glowobject.m_nNextFreeSlot != ENTRY_IN_USE)
+					continue;
+				int color = GetEntityGlowColor(glowobject.m_hEntity.m_Index & 0xFFF);
+				unsigned char _b = (color >> 16) & 0xFF;
+				unsigned char _g = (color >> 8)  & 0xFF;
+				unsigned char _r = (color) & 0xFF;
+				glowobject.m_vGlowColor.x = (float)_r / 255.0f;
+				glowobject.m_vGlowColor.y = (float)_g / 255.0f;
+				glowobject.m_vGlowColor.z = (float)_b / 255.0f;
+			}
+		}
+		// Remove glow from dead entities
+		for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Count(); i++) {
+			if (g_GlowObjectManager->m_GlowObjectDefinitions[i].m_nNextFreeSlot != ENTRY_IN_USE) continue;
+			IClientEntity* ent = (IClientEntity*)g_IEntityList->GetClientEntityFromHandle(g_GlowObjectManager->m_GlowObjectDefinitions[i].m_hEntity);
+			if (ent && ent->IsDormant()) {
+				g_GlowObjectManager->DisableGlow(i);
+			} else if (ent && ent->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
+				if (NET_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) {
+					g_GlowObjectManager->DisableGlow(i);
+				}
+			}
+		}
+		if (glow_enabled) {
+			for (int i = 1; i < g_IEntityList->GetHighestEntityIndex(); i++) {
+				IClientEntity* entity = g_IEntityList->GetClientEntity(i);
+				if (!entity || i == g_IEngine->GetLocalPlayer() || entity->IsDormant())
+					continue;
+				if (!CanEntityEvenGlow(i)) continue;
+				int clazz = entity->GetClientClass()->m_ClassID;
+				int current_handle = g_GlowObjectManager->GlowHandle(entity);
+				bool shouldglow = ShouldEntityGlow(i);
+				if (current_handle != -1) {
+					if (!shouldglow) {
+						g_GlowObjectManager->DisableGlow(current_handle);
+					}
+				} else {
+					if (shouldglow) {
+						g_GlowObjectManager->EnableGlow(entity, colors::white);
+					}
+				}
+				/*bool old_byte = NET_BYTE(entity, 0xDA1);
+				bool new_byte = (glow_enabled && ShouldEntityGlow(i));
+				if (CanEntityEvenGlow(i)) NET_BYTE(entity, 0xDA1) = new_byte;
+				if (old_byte != new_byte && clazz == g_pClassID->CTFPlayer) {
+					if (new_byte) {
+						vfunc<void(*)(IClientEntity*)>(entity, 290, 0)(entity);
+					} else {
+						vfunc<void(*)(IClientEntity*)>(entity, 291, 0)(entity);
+					}
+				}*/
+
+			}
+		}
 		SVDBG("FSN %i", __LINE__);
 		if (force_thirdperson && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
 			SVDBG("FSN %i", __LINE__);
@@ -186,6 +245,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 }
 
 void LevelInit_hook(void* thisptr, const char* newmap) {
+	playerlist::Save();
 	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
 	g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();

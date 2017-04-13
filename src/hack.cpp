@@ -120,11 +120,11 @@ void hack::Initialize() {
 			Patch((void*)mmmf, (void*)patch1, 3);
 			Patch((void*)(mmmf + 8), (void*)patch2, 3);
 		}
-		uintptr_t canInspectSig = (gSignatures.GetClientSignature("55 0F 57 C0 89 E5 83 EC 48 8B 45 08 F3 0F 11 04 24 F3 0F 11 45 E8 C7 44 24 10 01 00 00 00 C7 44 24 0C 00 00 00 00 89 44 24 08 C7 44 24 ? ? ? ? ? E8 ? ? ? ? F3 0F 10 45 E8 D9 5D E4 F3 0F 10 4D E4 C9 0F 2F C8 0F 95 C0 C3") + 72);
+		/*uintptr_t canInspectSig = (gSignatures.GetClientSignature("55 0F 57 C0 89 E5 83 EC 48 8B 45 08 F3 0F 11 04 24 F3 0F 11 45 E8 C7 44 24 10 01 00 00 00 C7 44 24 0C 00 00 00 00 89 44 24 08 C7 44 24 ? ? ? ? ? E8 ? ? ? ? F3 0F 10 45 E8 D9 5D E4 F3 0F 10 4D E4 C9 0F 2F C8 0F 95 C0 C3") + 72);
 		if (canInspectSig) {
 			unsigned char patch[] = { 0xB0, 0x01, 0x90 };
 			Patch((void*)canInspectSig, (void*)patch, 3);
-		}
+		}*/
 	}
 	BeginConVars();
 	hack::c_Cat = CreateConCommand(CON_NAME, &hack::CC_Cat, "Info");
@@ -182,6 +182,7 @@ void hack::Initialize() {
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
 	logging::Info("Hooked!");
+	playerlist::Load();
 }
 
 void hack::Think() {
@@ -191,6 +192,7 @@ void hack::Think() {
 void hack::Shutdown() {
 	if (hack::shutdown) return;
 	hack::shutdown = true;
+	playerlist::Save();
 	logging::Info("Killing hooks..");
 	if (hooks::hkPanel) hooks::hkPanel->Kill();
 	if (hooks::hkClientMode) hooks::hkClientMode->Kill();

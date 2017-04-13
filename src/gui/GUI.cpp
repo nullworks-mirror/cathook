@@ -18,17 +18,20 @@
 void GUIVisibleCallback(IConVar* var, const char* pOldValue, float flOldValue) {
 	g_IInputSystem->SetCursorPosition(draw::width / 2, draw::height / 2);
 	g_ISurface->SetCursor(vgui::CursorCode::dc_none);
-	g_IMatSystemSurface->SetCursorAlwaysVisible(false);
+	g_ISurface->SetCursorAlwaysVisible(false);
+	//g_IMatSystemSurface->SetCursorAlwaysVisible(false);
 	if (gui_visible) {
-		g_IMatSystemSurface->UnlockCursor();
+		g_ISurface->UnlockCursor();
+		//g_IMatSystemSurface->UnlockCursor();
 	} else {
-		g_IMatSystemSurface->LockCursor();
+		g_ISurface->LockCursor();
+		//g_IMatSystemSurface->LockCursor();
 	}
 }
 
 CatVar gui_visible(CV_SWITCH, "gui_visible", "0", "GUI Active", "GUI switch (bind it to a key!)");
 CatVar gui_draw_bounds(CV_SWITCH, "gui_bounds", "0", "Draw Bounds", "Draw GUI elements' bounding boxes");
-CatVar gui_nullcore(CV_SWITCH, "gui_nullcore", "0", "NullCore GUI", "Use NullCoreCheat GUI");
+CatVar gui_nullcore(CV_SWITCH, "gui_nullcore", "1", "NullCore GUI", "Use NullCoreCheat GUI");
 
 CatGUI::CatGUI() {
 	root_nullcore = nullptr;

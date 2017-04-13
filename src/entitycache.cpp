@@ -47,7 +47,6 @@ void CachedEntity::Update(int idx) {
 	}
 #endif
 	m_iClassID = RAW_ENT(this)->GetClientClass()->m_ClassID;
-
 	Vector origin = RAW_ENT(this)->GetAbsOrigin();
 	//if (TF2 && EstimateAbsVelocity) EstimateAbsVelocity(m_pEntity, m_vecVelocity);
 	/*if ((gvars->realtime - m_fLastUpdate) >= 0.05f) {

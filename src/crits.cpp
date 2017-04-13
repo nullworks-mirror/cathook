@@ -13,6 +13,8 @@
 
 std::unordered_map<int, int> command_number_mod {};
 
+int* g_PredictionRandomSeed = nullptr;
+
 bool AllowAttacking() {
 	if (!(hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee))) return true;
 	bool crit = IsAttackACrit(g_pUserCmd);
@@ -55,6 +57,10 @@ bool IsAttackACrit(CUserCmd* cmd) {
 				return *(bool*)((uintptr_t)RAW_ENT(LOCAL_W) + 2454ul);
 			}
 		} else if (TF2) {
+			if (!g_PredictionRandomSeed) {
+				uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ?");
+				g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
+			}
 			if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
 				static uintptr_t CalcIsAttackCritical_s = gSignatures.GetClientSignature("55 89 E5 83 EC 28 89 5D F4 8B 5D 08 89 75 F8 89 7D FC 89 1C 24 E8 ? ? ? ? 85 C0 89 C6 74 60 8B 00 89 34 24 FF 90 E0 02 00 00 84 C0 74 51 A1 ? ? ? ? 8B 40 04");
 				typedef void(*CalcIsAttackCritical_t)(IClientEntity*);
@@ -66,8 +72,7 @@ bool IsAttackACrit(CUserCmd* cmd) {
 					int md5seed = MD5_PseudoRandom(cmd->command_number) & 0x7fffffff;
 					int rseed = md5seed;
 					float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
-					int& a = *(int*)((uintptr_t)(sharedobj::client->lmap->l_addr) + 0x01F8B228);
-					a = md5seed;
+					*g_PredictionRandomSeed = md5seed;
 					int c = LOCAL_W->m_IDX << 8;
 					int b = LOCAL_E->m_IDX;
 					rseed = rseed ^ (b | c);

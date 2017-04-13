@@ -20,6 +20,7 @@ bool IsAttackACrit(CUserCmd* cmd);
 #include <unordered_map>
 #include "aftercheaders.h"
 
+extern int* g_PredictionRandomSeed;
 extern std::unordered_map<int, int> command_number_mod;
 
 //bool CalcIsAttackCritical(IClientEntity* weapon);

@@ -103,9 +103,16 @@ void Draw() {
 	}
 }
 
+static CatEnum esp_box_text_position_enum({"TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE", "BELOW" });
+static CatVar esp_box_text_position(esp_box_text_position_enum, "esp_box_text_position", "0", "Text position", "Defines text position");
 static CatVar esp_3d_box_health(CV_SWITCH, "esp_3d_box_health", "1", "3D box health color");
 static CatVar esp_3d_box_thick(CV_SWITCH, "esp_3d_box_thick", "1", "Thick 3D box");
+static CatVar esp_3d_box_expand_rate(CV_FLOAT, "esp_3d_box_expand_size", "10", "3D Box Expand Size", "Expand 3D box by X units", 50.0f);
 static CatVar esp_3d_box_expand(CV_SWITCH, "esp_3d_box_expand", "1", "Expand 3D box");
+static CatEnum esp_3d_box_smoothing_enum({"None", "Origin offset", "Bone update (NOT IMPL)"});
+static CatVar esp_3d_box_smoothing(esp_3d_box_smoothing_enum, "esp_3d_box_smoothing", "1", "3D box smoothing", "3D box smoothing method");
+static CatVar esp_3d_box_nodraw(CV_SWITCH, "esp_3d_box_nodraw", "0", "Invisible 3D box", "Don't draw 3d box");
+static CatVar esp_3d_box_healthbar(CV_SWITCH, "esp_3d_box_healthbar", "1", "Health bar");
 
 void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healthmax) {
 	Vector mins, maxs;
@@ -121,13 +128,23 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 		if (!set || hb->max.z > maxs.z) maxs.z = hb->max.z;
 		set = true;
 	}
-	// Expand it a bit
 
-	static const Vector expand_vector(8.5, 8.5, 8.5);
+	// This is weird, smoothing only makes it worse on local servers
+	if ((int)esp_3d_box_smoothing == 1) {
+		mins += (RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin);
+		maxs += (RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin);
+	}
+
+	//static const Vector expand_vector(8.5, 8.5, 8.5);
 
 	if (esp_3d_box_expand) {
-		maxs += expand_vector;
-		mins -= expand_vector;
+		const float& exp = (float)esp_3d_box_expand_rate;
+		maxs.x += exp;
+		maxs.y += exp;
+		maxs.z += exp;
+		mins.x -= exp;
+		mins.y -= exp;
+		mins.z -= exp;
 	}
 
 	Vector points_r[8];
@@ -147,7 +164,31 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	for (int i = 0; i < 8; i++) {
 		if (!draw::WorldToScreen(points_r[i], points[i])) success = false;
 	}
+	int max_x = -1, max_y = -1, min_x = 65536, min_y = 65536;
+	for (int i = 0; i < 8; i++) {
+		if (points[i].x > max_x) max_x = points[i].x;
+		if (points[i].y > max_y) max_y = points[i].y;
+		if (points[i].x < min_x) min_x = points[i].x;
+		if (points[i].y < min_y) min_y = points[i].y;
+	}
 	if (!success) return;
+	data.at(ent->m_IDX).esp_origin.Zero();
+	switch ((int)esp_box_text_position) {
+	case 0: { // TOP RIGHT
+		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, min_y, 0);
+	} break;
+	case 1: { // BOTTOM RIGHT
+		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, max_y - data.at(ent->m_IDX).string_count * 13, 0);
+	} break;
+	case 2: { // CENTER
+	} break;
+	case 3: { // ABOVE
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * 13, 0);
+	} break;
+	case 4: { // BELOW
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
+	}
+	}
 	//draw::String(fonts::ESP, points[0].x, points[0].y, clr, 1, "MIN");
 	//draw::String(fonts::ESP, points[6].x, points[6].y, clr, 1, "MAX");
 	constexpr int indices[][2] = {
@@ -159,14 +200,21 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	if (esp_3d_box_health) clr = colors::Health(health, healthmax);
 	bool cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
 	if (cloak) clr = colors::Transparent(clr, 0.2);
-	for (int i = 0; i < 12; i++) {
-		const Vector& p1 = points[indices[i][0]];
-		const Vector& p2 = points[indices[i][1]];
-		draw::DrawLine(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y, clr);
-		if (esp_3d_box_thick) {
-			draw::DrawLine(p1.x + 1, p1.y, p2.x - p1.x, p2.y - p1.y, clr);
-			draw::DrawLine(p1.x, p1.y + 1, p2.x - p1.x, p2.y - p1.y, clr);
-			draw::DrawLine(p1.x + 1, p1.y + 1, p2.x - p1.x, p2.y - p1.y, clr);
+	if (esp_3d_box_healthbar) {
+		draw::OutlineRect(min_x - 6, min_y, 6, max_y - min_y, colors::black);
+		int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
+		draw::DrawRect(min_x - 5, max_y - 1 - hbh, 4, hbh, colors::Health(health, healthmax));
+	}
+	if (!esp_3d_box_nodraw) {
+		for (int i = 0; i < 12; i++) {
+			const Vector& p1 = points[indices[i][0]];
+			const Vector& p2 = points[indices[i][1]];
+			draw::DrawLine(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y, clr);
+			if (esp_3d_box_thick) {
+				draw::DrawLine(p1.x + 1, p1.y, p2.x - p1.x, p2.y - p1.y, clr);
+				draw::DrawLine(p1.x, p1.y + 1, p2.x - p1.x, p2.y - p1.y, clr);
+				draw::DrawLine(p1.x + 1, p1.y + 1, p2.x - p1.x, p2.y - p1.y, clr);
+			}
 		}
 	}
 }
@@ -197,8 +245,28 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 	//draw::DrawString(min(smin.x, smax.x), min(smin.y, smax.y), clr, false, "min");
 	//draw::DrawString(max(smin.x, smax.x), max(smin.y, smax.y), clr, false, "max");
 	//draw::DrawString((int)so.x, (int)so.y, draw::white, false, "origin");
-	data[ent->m_IDX].esp_origin.x = so.x + width / 2 + 1;
-	data[ent->m_IDX].esp_origin.y = so.y - height;
+	int min_x, min_y, max_x, max_y;
+	data.at(ent->m_IDX).esp_origin.Zero();
+	max_x = so.x + width / 2 + 1;
+	min_y = so.y - height;
+	max_y = so.y;
+	min_x = so.x - width / 2;
+	switch ((int)esp_box_text_position) {
+	case 0: { // TOP RIGHT
+		data.at(ent->m_IDX).esp_origin = Vector(max_x, min_y, 0);
+	} break;
+	case 1: { // BOTTOM RIGHT
+		data.at(ent->m_IDX).esp_origin = Vector(max_x, max_y - data.at(ent->m_IDX).string_count * 13, 0);
+	} break;
+	case 2: { // CENTER
+	} break;
+	case 3: { // ABOVE
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * 13, 0);
+	} break;
+	case 4: { // BELOW
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
+	}
+	}
 	unsigned char alpha = clr >> 24;
 	float trf = (float)((float)alpha / 255.0f);
 	int border = cloak ? colors::Create(160, 160, 160, alpha) : colors::Transparent(colors::black, trf);
