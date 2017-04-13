@@ -11,12 +11,11 @@
 #define END_OF_FREE_LIST -1
 #define ENTRY_IN_USE -2
 
-#include "fixsdk.h"
-#include <tier1/utlvector.h>
-#include <mathlib/vector.h>
-#include <basehandle.h>
+#include "common.h"
 
 //template<typename T> class CUtlVector;
+
+extern std::set<int> g_CathookManagedGlowObjects;
 
 struct GlowObjectDefinition_t {
     CBaseHandle m_hEntity;
@@ -30,6 +29,9 @@ struct GlowObjectDefinition_t {
 
 class CGlowObjectManager {
 public:
+	int EnableGlow(IClientEntity* entity, int color);
+	void DisableGlow(int idx);
+	int GlowHandle(IClientEntity* entity) const;
 	CUtlVector<GlowObjectDefinition_t> m_GlowObjectDefinitions;
 	int m_nFirstFreeSlot;
 };

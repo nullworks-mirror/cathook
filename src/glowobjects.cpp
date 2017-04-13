@@ -11,12 +11,58 @@
 static CatEnum glow_color_scheme_enum({"ESP", "HEALTH"});
 static CatVar glow_color_scheme(glow_color_scheme_enum, "glow_color_scheme", "1", "Colors", "Doesn't need a description");
 // Doesn't work - has to be registered manually.
-//static CatVar glow_ammo_boxes(CV_SWITCH, "glow_ammo_boxes", "0", "Ammo");
-//static CatVar glow_health_packs(CV_SWITCH, "glow_health_packs", "0", "Health");
+static CatVar glow_ammo_boxes(CV_SWITCH, "glow_ammo_boxes", "0", "Ammo");
+static CatVar glow_health_packs(CV_SWITCH, "glow_health_packs", "0", "Health");
 static CatVar glow_teammates(CV_SWITCH, "glow_teammates", "0", "Teammates");
 static CatVar glow_teammate_buildings(CV_SWITCH, "glow_teammate_buildings", "0", "Teammate buildings");
 static CatVar glow_buildings(CV_SWITCH, "glow_buildings", "1", "Buildings");
 static CatVar glow_stickies(CV_SWITCH, "glow_stickies", "0", "Stickies");
+
+int CGlowObjectManager::EnableGlow(IClientEntity* entity, int color) {
+	int idx = GlowHandle(entity);
+	if (idx != -1) {
+		logging::Info("[WARNING] Glow handle exists!!!");
+		return idx;
+	}
+	if (m_nFirstFreeSlot == END_OF_FREE_LIST) {
+		idx = m_GlowObjectDefinitions.AddToTail();
+	} else {
+		idx = m_nFirstFreeSlot;
+		m_nFirstFreeSlot = m_GlowObjectDefinitions[idx].m_nNextFreeSlot;
+	}
+	g_CathookManagedGlowObjects.insert(idx);
+	GlowObjectDefinition_t& def = m_GlowObjectDefinitions[idx];
+	def.m_bRenderWhenOccluded = true;
+	def.m_bRenderWhenUnoccluded = true;
+	def.m_flGlowAlpha = 1.0f;
+	def.m_hEntity = CBaseHandle();
+	def.m_hEntity.Set(entity);
+	unsigned char _b = (color >> 16) & 0xFF;
+	unsigned char _g = (color >> 8)  & 0xFF;
+	unsigned char _r = (color) & 0xFF;
+	def.m_vGlowColor = Vector((float)_r / 255.0f, (float)_g / 255.0f, (float)_b / 255.0f);
+	def.m_nNextFreeSlot = ENTRY_IN_USE;
+	def.m_nSplitScreenSlot = -1;
+	return idx;
+}
+
+void CGlowObjectManager::DisableGlow(int idx) {
+	const auto& it = g_CathookManagedGlowObjects.find(idx);
+	if (it == g_CathookManagedGlowObjects.end()) {
+		return;
+	}
+	g_CathookManagedGlowObjects.erase(it);
+	m_GlowObjectDefinitions[idx].m_nNextFreeSlot = m_nFirstFreeSlot;
+	m_GlowObjectDefinitions[idx].m_hEntity = NULL;
+	m_nFirstFreeSlot = idx;
+}
+
+int CGlowObjectManager::GlowHandle(IClientEntity* entity) const {
+	for (int i = 0; i < m_GlowObjectDefinitions.Count(); i++) {
+		if (m_GlowObjectDefinitions[i].m_nNextFreeSlot == ENTRY_IN_USE && (m_GlowObjectDefinitions[i].m_hEntity.m_Index & 0xFFF) == entity->entindex()) return i;
+	}
+	return -1;
+}
 
 int GetEntityGlowColor(int idx) {
 	if (idx < 0 || idx > g_IEntityList->GetHighestEntityIndex()) return colors::white;
@@ -59,7 +105,7 @@ bool ShouldEntityGlow(int idx) {
 			return true;
 		}
 		break;
-	/*case ENTITY_GENERIC:
+	case ENTITY_GENERIC:
 		switch (ent->m_ItemType) {
 		case ITEM_HEALTH_LARGE:
 		case ITEM_HEALTH_MEDIUM:
@@ -70,9 +116,11 @@ bool ShouldEntityGlow(int idx) {
 		case ITEM_AMMO_SMALL:
 			return glow_ammo_boxes;
 		}
-		break;*/
+		break;
 	}
 	return false;
 }
+
+std::set<int> g_CathookManagedGlowObjects {};
 
 CGlowObjectManager* g_GlowObjectManager = 0;
