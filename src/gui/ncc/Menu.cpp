@@ -157,6 +157,8 @@ List& MainList() {
     "Glow Menu"
     "glow_enabled"
     "glow_color_scheme"
+    "glow_health_packs"
+    "glow_ammo_boxes"
     "glow_teammates"
     "glow_teammate_buildings"
     "glow_buildings"
@@ -179,6 +181,8 @@ List& MainList() {
         "esp_3d_box_health"
         "esp_3d_box_expand"
         "esp_3d_box_smoothing"
+        "esp_3d_box_expand_size"
+        "esp_3d_box_healthbar"
     ]
     "esp_legit"
     "esp_health_num"
