@@ -267,7 +267,7 @@ List& MainList() {
     "Anti Backstab Menu"
     "antibackstab"
     "antibackstab_nope"
-    "antibackstab_anble"
+    "antibackstab_angle"
     "antibackstab_distance"
     "antibackstab_silent"
 ]
