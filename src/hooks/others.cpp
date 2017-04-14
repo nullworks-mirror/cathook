@@ -113,6 +113,9 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 				if (glowobject.m_nNextFreeSlot != ENTRY_IN_USE)
 					continue;
 				int color = GetEntityGlowColor(glowobject.m_hEntity.m_Index & 0xFFF);
+				if (color == 0) {
+					glowobject.m_flGlowAlpha = 0.0f;
+				}
 				unsigned char _b = (color >> 16) & 0xFF;
 				unsigned char _g = (color >> 8)  & 0xFF;
 				unsigned char _r = (color) & 0xFF;
