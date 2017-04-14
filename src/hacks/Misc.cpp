@@ -50,6 +50,52 @@ bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
 
 static CatVar crit_hack_experimental(CV_SWITCH, "crit_hack_experimental", "0", "Experimental crit hack");
 
+void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char* ft, unsigned acc_offset) {
+	bool forcetable = ft && strlen(ft);
+	if (!forcetable || !strcmp(ft, table->GetName()))
+		logging::Info("==== TABLE: %s", table->GetName());
+	for (int i = 0; i < table->GetNumProps(); i++) {
+		RecvProp* prop = table->GetProp(i);
+		if (!prop) continue;
+		if (prop->GetDataTable()) {
+			DumpRecvTable(ent, prop->GetDataTable(), depth + 1, ft, acc_offset + prop->GetOffset());
+		}
+		if (forcetable && strcmp(ft, table->GetName())) continue;
+		switch (prop->GetType()) {
+		case SendPropType::DPT_Float:
+			logging::Info("%s [0x%04x] = %f", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()));
+		break;
+		case SendPropType::DPT_Int:
+			logging::Info("%s [0x%04x] = %i | %u | %hd | %hu", prop->GetName(), prop->GetOffset(), CE_INT(ent, acc_offset + prop->GetOffset()), CE_VAR(ent, acc_offset +  prop->GetOffset(), unsigned int), CE_VAR(ent, acc_offset + prop->GetOffset(), short), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned short));
+		break;
+		case SendPropType::DPT_String:
+			logging::Info("%s [0x%04x] = %s", prop->GetName(), prop->GetOffset(), CE_VAR(ent, prop->GetOffset(), char*));
+		break;
+		case SendPropType::DPT_Vector:
+			logging::Info("%s [0x%04x] = (%f, %f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 8));
+		break;
+		case SendPropType::DPT_VectorXY:
+			logging::Info("%s [0x%04x] = (%f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent,acc_offset +  prop->GetOffset() + 4));
+		break;
+		}
+
+	}
+	if (!ft || !strcmp(ft, table->GetName()))
+		logging::Info("==== END OF TABLE: %s", table->GetName());
+}
+
+static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](const CCommand& args) {
+	if (args.ArgC() < 1) return;
+	if (!atoi(args[1])) return;
+	int idx = atoi(args[1]);
+	CachedEntity* ent = ENTITY(idx);
+	if (CE_BAD(ent)) return;
+	ClientClass* clz = RAW_ENT(ent)->GetClientClass();
+	logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
+	const char* ft = (args.ArgC() > 1 ? args[2] : 0);
+	DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
+});
+
 void CreateMove() {
 	static bool flswitch = false;
 

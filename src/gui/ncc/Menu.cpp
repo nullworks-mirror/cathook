@@ -106,6 +106,7 @@ List& MainList() {
     ]
     "Preferences" [
         "Aim Bot Preferences"
+        "aimbot_ignore_hoovy"
         "aimbot_buildings"
         "aimbot_respect_cloak"
         "aimbot_only_when_can_shoot"

@@ -118,6 +118,8 @@ public:
 	offset_t bChargeRelease;
 
 	offset_t m_flStealthNoAttackExpire;
+	offset_t m_flDuckTimer;
+	offset_t m_bDucked;
 };
 
 extern NetVars netvar;

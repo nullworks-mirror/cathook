@@ -26,6 +26,8 @@ bool headonly { false };
 int last_target { -1 };
 bool silent_huntsman { false };
 
+static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
+
 int ClosestHitbox(CachedEntity* target) {
 	int closest = -1;
 	float closest_fov = 256;
@@ -224,6 +226,14 @@ int ShouldTarget(CachedEntity* entity) {
 			if (entity->m_flDistance > 95) return 9;
 		}
 		if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return 11;
+		if (ignore_hoovy) {
+			CachedEntity* weapon = ENTITY(CE_INT(entity, netvar.hActiveWeapon) & 0xFFF);
+			if (CE_GOOD(weapon)) {
+				if ((CE_INT(entity, netvar.iFlags) & FL_DUCKING) && weapon->m_iClassID == g_pClassID->CTFLunchBox && CE_INT(entity, netvar.iClass) == tf_heavy) {
+					return 29;
+				}
+			}
+		}
 		Vector resultAim;
 		int hitbox = BestHitbox(entity);
 		//if (m_bHeadOnly && hitbox) return 12;

@@ -448,6 +448,10 @@ void ProcessEntity(CachedEntity* ent) {
 			}
 			CachedEntity* weapon = ENTITY(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
 			if (CE_GOOD(weapon)) {
+				if ((CE_INT(ent, netvar.iFlags) & FL_DUCKING) && weapon->m_iClassID == g_pClassID->CTFLunchBox && pclass == tf_heavy) {
+					AddEntityString(ent, "Hoovy");
+				}
+
 				if (show_weapon) {
 					const char* name = vfunc<const char*(*)(IClientEntity*)>(RAW_ENT(weapon), 398, 0)(RAW_ENT(weapon));
 					if (name) AddEntityString(ent, std::string(name));

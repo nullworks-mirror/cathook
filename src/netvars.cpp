@@ -35,6 +35,8 @@ void NetVars::Init() {
 		this->m_flStealthNoAttackExpire = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "tfsharedlocaldata", "m_flStealthNoAttackExpire");
 	}
 	if (TF2 || TF2C) {
+		this->m_bDucked = gNetvars.get_offset("DT_TFPlayer", "localdata", "m_Local", "m_bDucked");
+		this->m_flDuckTimer = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_flDuckTimer");
 		this->iCond = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCond");
 		this->iCond1 = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCondEx");
 		this->iCond2 = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCondEx2");
