@@ -229,6 +229,15 @@ List& MainList() {
     "aa_spin"
     "aa_roll"
     "aa_no_clamp"
+    "Anti-Anti-AA" [
+        "Anti-Anti-Anti-Aim Menu"
+        "aa_aaaa_enabled"
+        "aa_aaaa_interval"
+        "aa_aaaa_interval_low"
+        "aa_aaaa_interval_high"
+        "aa_aaaa_mode"
+        "aa_aaaa_flip_key"
+    ]
 ]
  
 "Crit Hack" [
