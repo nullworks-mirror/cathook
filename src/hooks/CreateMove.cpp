@@ -165,6 +165,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			if (TF) SAFE_CALL(hacks::tf::autoreflect::CreateMove());
 			SAFE_CALL(hacks::shared::triggerbot::CreateMove());
 			if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
+			if (TF2) SAFE_CALL(hacks::tf2::autobackstab::CreateMove());
 		}
 		//SAFE_CALL(CREATE_MOVE(FollowBot));
 		SAFE_CALL(hacks::shared::misc::CreateMove());

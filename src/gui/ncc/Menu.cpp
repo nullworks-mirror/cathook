@@ -128,6 +128,7 @@ List& MainList() {
  
 "Trigger Bot" [
     "Trigger Bot Menu"
+    "autobackstab"
     "trigger_enabled"
     "trigger_accuracy"
     "trigger_ambassador"

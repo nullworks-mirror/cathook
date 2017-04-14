@@ -120,6 +120,8 @@ public:
 	offset_t m_flStealthNoAttackExpire;
 	offset_t m_flDuckTimer;
 	offset_t m_bDucked;
+	offset_t m_angEyeAngles;
+	offset_t m_bReadyToBackstab;
 };
 
 extern NetVars netvar;
