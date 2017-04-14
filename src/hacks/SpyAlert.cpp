@@ -43,14 +43,14 @@ void Draw() {
 	if (closest_spy && closest_spy_distance < (float)distance_warning) {
 		if (closest_spy_distance < (float)distance_backstab) {
 			if (!backstab_triggered) {
-				g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
+				if (sound_alerts) g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
 				backstab_triggered = true;
 			}
 			AddCenterString(format("BACKSTAB WARNING! ", (int)(closest_spy_distance / 64 * 1.22f), "m (", spy_count, ")"), colors::red);
 		} else if (closest_spy_distance < (float)distance_warning) {
 			backstab_triggered = false;
 			if (!warning_triggered) {
-				g_ISurface->PlaySound("vo/demoman_cloakedspy01.mp3");
+				if (sound_alerts) g_ISurface->PlaySound("vo/demoman_cloakedspy01.mp3");
 				warning_triggered = true;
 			}
 			AddCenterString(format("Incoming spy! ", (int)(closest_spy_distance / 64 * 1.22f), "m (", spy_count, ")"), colors::yellow);

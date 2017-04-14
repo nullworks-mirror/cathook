@@ -96,6 +96,13 @@ static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](c
 	DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
 });
 
+static CatCommand clear_conds("debug_clear_conds", "Actually doesn't do anything", [](const CCommand& args) {
+	RemoveCondition(LOCAL_E, TFCond_Taunting);
+	RemoveCondition(LOCAL_E, TFCond_Jarated);
+	RemoveCondition(LOCAL_E, TFCond_OnFire);
+	RemoveCondition(LOCAL_E, TFCond_Milked);
+});
+
 void CreateMove() {
 	static bool flswitch = false;
 
