@@ -15,9 +15,16 @@ namespace hacks { namespace tf { namespace spyalert {
 CatVar enabled(CV_SWITCH, "spyalert_enabled", "0", "Enable", "Master SpyAlert switch");
 CatVar distance_warning(CV_FLOAT, "spyalert_warning", "500.0", "Warning distance", "Distance where yellow warning shows");
 CatVar distance_backstab(CV_FLOAT, "spyalert_backstab", "200.0", "Backstab distance", "Distance where red warning shows");
+CatVar sound_alerts(CV_SWITCH, "spyalert_sound", "1", "Sound Alerts", "???");
+
+bool warning_triggered = false;
+bool backstab_triggered = false;
 
 void Draw() {
 	if (!enabled) return;
+	CachedEntity* closest_spy = nullptr;
+	float closest_spy_distance = 0.0f;
+	int spy_count = 0;
 	for (int i = 0; i < HIGHEST_ENTITY && i < 64; i++) {
 		CachedEntity* ent = ENTITY(i);
 		if (CE_BAD(ent)) continue;
@@ -25,11 +32,32 @@ void Draw() {
 		if (CE_INT(ent, netvar.iClass) != tf_class::tf_spy) continue;
 		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team) continue;
 		float distance = ent->m_flDistance;
-		if (distance < (float)distance_backstab) {
-			AddCenterString(format("BACKSTAB WARNING! ", (int)(distance / 64 * 1.22f), 'm'), colors::red);
-		} else if (distance < (float)distance_warning) {
-			AddCenterString(format("Incoming spy! ", (int)(distance / 64 * 1.22f), 'm'), colors::yellow);
+		if (distance < closest_spy_distance || !closest_spy_distance) {
+			closest_spy_distance = distance;
+			closest_spy = ent;
 		}
+		if (distance < (float)distance_warning) {
+			spy_count++;
+		}
+	}
+	if (closest_spy && closest_spy_distance < (float)distance_warning) {
+		if (closest_spy_distance < (float)distance_backstab) {
+			if (!backstab_triggered) {
+				g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
+				backstab_triggered = true;
+			}
+			AddCenterString(format("BACKSTAB WARNING! ", (int)(closest_spy_distance / 64 * 1.22f), "m (", spy_count, ")"), colors::red);
+		} else if (closest_spy_distance < (float)distance_warning) {
+			backstab_triggered = false;
+			if (!warning_triggered) {
+				g_ISurface->PlaySound("vo/demoman_cloakedspy01.mp3");
+				warning_triggered = true;
+			}
+			AddCenterString(format("Incoming spy! ", (int)(closest_spy_distance / 64 * 1.22f), "m (", spy_count, ")"), colors::yellow);
+		}
+	} else {
+		warning_triggered = false;
+		backstab_triggered = false;
 	}
 }
 

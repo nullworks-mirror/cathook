@@ -268,6 +268,7 @@ List& MainList() {
     "spyalert_enabled"
     "spyalert_warning"
     "spyalert_backstab"
+    "spyalert_sound"
 ]
  
 "Miscellaneous" [
