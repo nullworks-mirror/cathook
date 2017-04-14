@@ -28,6 +28,7 @@
 #include "drawing.h"
 #include "resource.hpp"
 #include "entitycache.h"
+#include "hoovy.hpp"
 #include "enums.h"
 #include "globals.h"
 #include "helpers.h"
