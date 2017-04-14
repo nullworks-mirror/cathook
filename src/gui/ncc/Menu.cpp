@@ -263,6 +263,15 @@ List& MainList() {
     "clean_chat"
 ]
  
+"Anti Backstab" [
+    "Anti Backstab Menu"
+    "antibackstab"
+    "antibackstab_nope"
+    "antibackstab_anble"
+    "antibackstab_distance"
+    "antibackstab_silent"
+]
+
 "Spy Alert" [
     "Spy Alert Settings"
     "spyalert_enabled"
