@@ -9,7 +9,7 @@
 
 namespace hacks { namespace shared { namespace chams {
 
-static CatVar enable(CV_SWITCH, "chams_enable", "0", "Enable");
+CatVar enable(CV_SWITCH, "chams_enable", "0", "Enable");
 static CatVar flat(CV_SWITCH, "chams_flat", "0", "Flat");
 static CatVar health(CV_SWITCH, "chams_health", "0", "Health");
 static CatVar teammates(CV_SWITCH, "chams_teammates", "0", "Teammates");
@@ -80,6 +80,7 @@ int GetChamColor(int idx) {
 		}
 		break;
 	case ENTITY_PLAYER:
+		if (!players) return 0;
 		if (!ent->m_bEnemy && !teammates) return 0;
 		if (health) {
 			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
@@ -106,6 +107,7 @@ bool ShouldCham(int idx) {
 		if (!ent->m_bEnemy && !(teammate_buildings || teammates)) return false;
 		return true;
 	case ENTITY_PLAYER:
+		if (!players) return false;
 		if (!teammates && !ent->m_bEnemy) return false;
 		if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) return false;
 		return true;

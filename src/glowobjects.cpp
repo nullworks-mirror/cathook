@@ -17,6 +17,7 @@ static CatVar glow_teammates(CV_SWITCH, "glow_teammates", "0", "Teammates");
 static CatVar glow_teammate_buildings(CV_SWITCH, "glow_teammate_buildings", "0", "Teammate buildings");
 static CatVar glow_buildings(CV_SWITCH, "glow_buildings", "1", "Buildings");
 static CatVar glow_stickies(CV_SWITCH, "glow_stickies", "0", "Stickies");
+static CatVar glow_players(CV_SWITCH, "glow_players", "1", "Players");
 
 int CGlowObjectManager::EnableGlow(IClientEntity* entity, int color) {
 	int idx = GlowHandle(entity);
@@ -78,6 +79,7 @@ int GetEntityGlowColor(int idx) {
 		}
 		break;
 	case ENTITY_PLAYER:
+		if (!glow_players) return 0;
 		if (!ent->m_bEnemy && !glow_teammates) return 0;
 		if ((int)glow_color_scheme == 1) {
 			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
@@ -103,6 +105,7 @@ bool ShouldEntityGlow(int idx) {
 		if (!ent->m_bEnemy && !(glow_teammate_buildings || glow_teammates)) return false;
 		return true;
 	case ENTITY_PLAYER:
+		if (!glow_players) return false;
 		if (!glow_teammates && !ent->m_bEnemy) return false;
 		if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) return false;
 		return true;

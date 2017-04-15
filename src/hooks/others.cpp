@@ -36,6 +36,11 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 			}
 		}
 	}*/
+	if (!(no_arms || no_hats || hacks::shared::chams::enable)) {
+		((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
+		return;
+	}
+
 	if (no_arms || no_hats) {
 		if (info.pModel) {
 			const char* name = g_IModelInfo->GetModelName(info.pModel);
