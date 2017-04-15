@@ -29,7 +29,6 @@ CMaterialReference mat_lit;
 CMaterialReference mat_lit_z;
 
 void Init() {
-	if (!materials) materials = g_IMaterialSystem;
 	{
 		KeyValues* kv = new KeyValues("UnlitGeneric");
 		kv->SetString("$basetexture", "vgui/white_additive");

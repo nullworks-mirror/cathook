@@ -32,15 +32,13 @@ CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration( const char *pNam
 }*/
 
 IMaterial* GetGlowMaterial() {
-	return vfunc<IMaterial*(*)(IMaterialSystem*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/glow_color", TEXTURE_GROUP_OTHER, true, 0);
+	return vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/glow_color", TEXTURE_GROUP_OTHER, true, 0);
 }
 
 static CatVar glow_experimental(CV_SWITCH, "glow_experimental", "0", "Experimental Glow");
 
 void EffectGlow::Init() {
 	logging::Info("Init EffectGlow...");
-	if (!materials) materials = g_IMaterialSystem;
-	logging::Info("materials: 0x%08x", materials);
 	rt_A.InitRenderTarget(1920/2, 1080/2, RT_SIZE_DEFAULT, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, false, "__cathook_glow_rta");
 	rt_B.InitRenderTarget(1920/2, 1080/2, RT_SIZE_DEFAULT, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, false, "__cathook_glow_rtb");
 	logging::Info("Textures init!");
@@ -60,17 +58,17 @@ void EffectGlow::Init() {
 	result_material->Refresh();
 	logging::Info("Material init!");
 	//dev_glow_color.Init(vfunc<IMaterial*(*)(IMaterialSystem*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/glow_color", TEXTURE_GROUP_OTHER, true, 0));
-	dev_bloomdadd.Init(vfunc<IMaterial*(*)(IMaterialSystem*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/bloomadd", TEXTURE_GROUP_OTHER, true, 0));
-	dev_blurfilterx.Init(vfunc<IMaterial*(*)(IMaterialSystem*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/blurfilterx", TEXTURE_GROUP_OTHER, true, 0));
-	dev_blurfiltery.Init(vfunc<IMaterial*(*)(IMaterialSystem*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/blurfiltery", TEXTURE_GROUP_OTHER, true, 0));
-	dev_halo_add_to_screen.Init(vfunc<IMaterial*(*)(IMaterialSystem*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, true, 0));
+	dev_bloomdadd.Init(vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/bloomadd", TEXTURE_GROUP_OTHER, true, 0));
+	dev_blurfilterx.Init(vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/blurfilterx", TEXTURE_GROUP_OTHER, true, 0));
+	dev_blurfiltery.Init(vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/blurfiltery", TEXTURE_GROUP_OTHER, true, 0));
+	dev_halo_add_to_screen.Init(vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, true, 0));
 
 	logging::Info("Init done!");
 	init = true;
 }
 
 void EffectGlow::BeginRenderGlow() {
-	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystem*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
+	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
 	ptr->PushRenderTargetAndViewport(rt_A);
 	g_IVModelRender->SuppressEngineLighting(true);
 	g_IVRenderView->GetColorModulation(orig_modulation);
@@ -81,7 +79,7 @@ void EffectGlow::BeginRenderGlow() {
 }
 
 void EffectGlow::EndRenderGlow() {
-	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystem*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
+	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
 	g_IVRenderView->SetColorModulation(orig_modulation);
 	g_IStudioRender->ForcedMaterialOverride(nullptr);
 	g_IVModelRender->SuppressEngineLighting(false);
@@ -89,7 +87,7 @@ void EffectGlow::EndRenderGlow() {
 }
 
 void EffectGlow::RenderGlow(int idx) {
-	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystem*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
+	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
 	ptr->PushRenderTargetAndViewport( rt_A );
 
 	g_IVModelRender->SuppressEngineLighting( true );
@@ -120,7 +118,7 @@ void EffectGlow::RenderGlow(int idx) {
 void EffectGlow::Render(int x, int y, int w, int h) {
 	if (!init) Init();
 	if (!glow_experimental) return;
-	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystem*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
+	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
 
 	//ptr->Viewport(x, y, w, h);
 

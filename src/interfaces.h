@@ -45,7 +45,7 @@ class IVDebugOverlay;
 class IVModelRender;
 class IVModelRender;
 class IVRenderView;
-class IMaterialSystem;
+class IMaterialSystemFixed;
 
 extern ISteamClient* g_ISteamClient;
 extern ISteamFriends* g_ISteamFriends;
@@ -70,7 +70,7 @@ extern IAchievementMgr* g_IAchievementMgr;
 extern ISteamUserStats* g_ISteamUserStats;
 extern IStudioRender* g_IStudioRender;
 extern IVDebugOverlay* g_IVDebugOverlay;
-extern IMaterialSystem* g_IMaterialSystem;
+extern IMaterialSystemFixed* g_IMaterialSystem;
 extern IVModelRender* g_IVModelRender;
 extern IVRenderView* g_IVRenderView;
 

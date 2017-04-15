@@ -77,6 +77,7 @@ CatVar* FindCatVar(const std::string name) {
 	for (auto var : CatVarList()) {
 		if (var->name == name) return var;
 	}
+	logging::Info("can't find %s", name.c_str());
 	throw std::runtime_error("can't find catvar " + name);
 }
 // abc def, ghj, [, fdg sgf saqw rter, ], gs

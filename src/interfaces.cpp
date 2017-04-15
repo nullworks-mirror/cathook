@@ -45,7 +45,7 @@ IAchievementMgr* g_IAchievementMgr = nullptr;
 ISteamUserStats* g_ISteamUserStats = nullptr;
 IStudioRender* g_IStudioRender = nullptr;
 IVDebugOverlay* g_IVDebugOverlay = nullptr;
-IMaterialSystem* g_IMaterialSystem = nullptr;
+IMaterialSystemFixed* g_IMaterialSystem = nullptr;
 IVRenderView* g_IVRenderView = nullptr;
 
 template<typename T>
@@ -92,7 +92,7 @@ void CreateInterfaces() {
 	g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client);
 	g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client);
 	g_IVRenderView = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine);
-	g_IMaterialSystem = BruteforceInterface<IMaterialSystem>("VMaterialSystem", sharedobj::materialsystem, 81);
+	g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem, 81);
 	if (TF2) {
 		// FIXME static offset FIXME FIXME FIXME FIXME IMPORTANT!
 		g_pScreenSpaceEffects = **(IScreenSpaceEffectManager***)(gSignatures.GetClientSignature("F3 0F 10 83 40 05 00 00 C7 44 24 04 ? ? ? ? 89 34 24 F3 0F 11 44 24 08 E8 ? ? ? ? A1 ? ? ? ? 8B 10 89 04 24 89 74 24 08 C7 44 24 04 ? ? ? ? FF 52 0C A1 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 14") + 31);
