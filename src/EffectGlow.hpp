@@ -12,7 +12,7 @@
 
 class EffectGlow : public IScreenSpaceEffect {
 public:
-	inline virtual void Init( ) {};
+	virtual void Init( );
 	inline virtual void Shutdown( ) {};
 
 	inline virtual void SetParameters( KeyValues *params ) {};
@@ -22,8 +22,21 @@ public:
 	inline virtual void Enable( bool bEnable ) { enabled = bEnable; };
 	inline virtual bool IsEnabled( ) { return enabled; };
 
+	void RenderGlow(int idx);
+	void BeginRenderGlow();
+	void EndRenderGlow();
 public:
+	bool init { false };
 	bool enabled;
+	float orig_modulation[3];
+	CTextureReference rt_A;
+	CTextureReference rt_B;
+	CMaterialReference result_material;
+	CMaterialReference glow_material;
+	CMaterialReference dev_bloomdadd;
+	CMaterialReference dev_halo_add_to_screen;
+	CMaterialReference dev_blurfilterx;
+	CMaterialReference dev_blurfiltery;
 };
 
 extern EffectGlow g_EffectGlow;

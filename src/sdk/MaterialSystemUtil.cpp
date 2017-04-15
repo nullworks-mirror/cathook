@@ -12,6 +12,8 @@
 #include "materialsystem/imaterialsystem.h"
 #include "tier1/KeyValues.h"
 
+#include "../vfunc.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -191,7 +193,9 @@ void CTextureReference::InitRenderTarget( int w, int h, RenderTargetSizeMode_t s
 	int renderTargetFlags = bHDR ? CREATERENDERTARGETFLAGS_HDR : 0;
 
 	// NOTE: Refcount returned by CreateRenderTargetTexture is 1
-	m_pTexture = materials->CreateNamedRenderTargetTextureEx( pStrOptionalName, w, h, sizeMode, fmt, 
+	//m_pTexture = vfunc<ITexture*(*)(IMaterialSystem*, char const*,int,int,RenderTargetSizeMode_t,ImageFormat,MaterialRenderTargetDepth_t,uint,uint)>(materials, 87, 0)(materials, pStrOptionalName, w, h, sizeMode, fmt,
+	//		depth, textureFlags, renderTargetFlags);
+	m_pTexture = materials->CreateNamedRenderTargetTextureEx( pStrOptionalName, w, h, sizeMode, fmt,
 		depth, textureFlags, renderTargetFlags );
 
 	Assert( m_pTexture );

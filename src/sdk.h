@@ -20,6 +20,7 @@
 #include <inetchannelinfo.h>
 #include <gametrace.h>
 #include <engine/IEngineTrace.h>
+#include <materialsystem/imaterialvar.h>
 #include <globalvars_base.h>
 #include <materialsystem/itexture.h>
 #include <engine/ivmodelinfo.h>

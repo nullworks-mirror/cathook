@@ -95,8 +95,8 @@ void CreateInterfaces() {
 	g_IMaterialSystem = BruteforceInterface<IMaterialSystem>("VMaterialSystem", sharedobj::materialsystem, 81);
 	if (TF2) {
 		// FIXME static offset FIXME FIXME FIXME FIXME IMPORTANT!
-		g_pScreenSpaceEffects = *(IScreenSpaceEffectManager**)sharedobj::client->Pointer(0x01F73E74);
-		g_ppScreenSpaceRegistrationHead = (CScreenSpaceEffectRegistration**)sharedobj::client->Pointer(0x02018E30);
+		g_pScreenSpaceEffects = **(IScreenSpaceEffectManager***)(gSignatures.GetClientSignature("F3 0F 10 83 40 05 00 00 C7 44 24 04 ? ? ? ? 89 34 24 F3 0F 11 44 24 08 E8 ? ? ? ? A1 ? ? ? ? 8B 10 89 04 24 89 74 24 08 C7 44 24 04 ? ? ? ? FF 52 0C A1 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 14") + 31);
+		g_ppScreenSpaceRegistrationHead = *(CScreenSpaceEffectRegistration***)(gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 8B 1D ? ? ? ? 85 DB 74 25 8D B4 26 00 00 00 00 8B 43 04 85 C0 74 10") + 9);
 	}
 	if (TF2) g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF 92 B4 00 00 00 A1 ? ? ? ? 8B 10")));
 	else if (TF2C) g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF 92 A8 00 00 00 A1 ? ? ? ? 8B 10")));

@@ -188,6 +188,7 @@ void hack::Initialize() {
 		logging::Info("%s", reg->m_pEffectName);
 	}
 	g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
+	//g_EffectGlow.Init();
 	logging::Info("SSE enabled..");
 }
 
