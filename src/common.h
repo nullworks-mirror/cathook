@@ -51,6 +51,7 @@
 #include "textfile.h"
 #include "ipc.h"
 #include "gui/GUI.h"
+#include "hooks/hookedmethods.h"
 #include "classid.h"
 #include "crits.h"
 

@@ -23,6 +23,7 @@
 #include "Misc.h"
 #include "SpyAlert.h"
 #include "Trigger.h"
+#include "Chams.hpp"
 #include "KillSay.h"
 #include "Achievement.h"
 #include "Spam.h"
