@@ -302,6 +302,8 @@ List& MainList() {
     "enabled"
     "noisemaker"
     "fast_outline"
+    "no_hands"
+    "no_hats"
     "render_zoomed"
     "bhop_enabled"
     "thirdperson"
