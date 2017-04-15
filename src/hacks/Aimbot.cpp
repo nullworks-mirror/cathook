@@ -26,6 +26,8 @@ bool headonly { false };
 int last_target { -1 };
 bool silent_huntsman { false };
 
+static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
+
 int ClosestHitbox(CachedEntity* target) {
 	int closest = -1;
 	float closest_fov = 256;
@@ -224,6 +226,9 @@ int ShouldTarget(CachedEntity* entity) {
 			if (entity->m_flDistance > 95) return 9;
 		}
 		if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return 11;
+		if (ignore_hoovy) {
+			if (IsHoovy(entity)) return 29;
+		}
 		Vector resultAim;
 		int hitbox = BestHitbox(entity);
 		//if (m_bHeadOnly && hitbox) return 12;
@@ -323,7 +328,17 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 				if (zoomed_only && !CanHeadshot()) return true;
 			}
 		}
-		if ((g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFCompoundBow)) {
+		// Don't autoshoot with the knife!
+		static int forbiddenWeapons[] = { g_pClassID->CTFCompoundBow, g_pClassID->CTFKnife };
+		int weapon_class = g_pLocalPlayer->weapon()->m_iClassID;
+		bool attack = true;
+		for (int i = 0; i < 2; i++) {
+			if (weapon_class == forbiddenWeapons[i]) {
+				attack = false;
+				break;
+			}
+		}
+		if (attack) {
 			cmd->buttons |= IN_ATTACK;
 		}
 	}
@@ -358,6 +373,7 @@ bool ShouldAim(CUserCmd* cmd) {
 	if (attack_only && !(cmd->buttons & IN_ATTACK)) {
 		return false;
 	}
+
 	if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun) {
 		if (!HasCondition(g_pLocalPlayer->entity, TFCond_Slowed)) {
 			return false;

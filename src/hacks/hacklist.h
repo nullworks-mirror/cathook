@@ -17,6 +17,8 @@
 #include "AutoSticky.h"
 #include "Bunnyhop.h"
 #include "ESP.h"
+#include "AntiBackstab.hpp"
+#include "AutoBackstab.hpp"
 #include "FollowBot.h"
 #include "Misc.h"
 #include "SpyAlert.h"

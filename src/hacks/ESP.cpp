@@ -446,6 +446,7 @@ void ProcessEntity(CachedEntity* ent) {
 					AddEntityString(ent, "CRIT BOOSTED");
 				}
 			}
+			if (IsHoovy(ent)) AddEntityString(ent, "Hoovy");
 			CachedEntity* weapon = ENTITY(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
 			if (CE_GOOD(weapon)) {
 				if (show_weapon) {

@@ -110,6 +110,7 @@ void Shutdown_hook(void* thisptr, const char* reason) {
 }
 
 static CatVar glow_enabled(CV_SWITCH, "glow_enabled", "0", "Enable", "Make sure to enable glow_outline_effect_enable in tf2 settings");
+static CatVar glow_alpha(CV_FLOAT, "glow_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
 
 void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;
@@ -126,6 +127,11 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 				if (glowobject.m_nNextFreeSlot != ENTRY_IN_USE)
 					continue;
 				int color = GetEntityGlowColor(glowobject.m_hEntity.m_Index & 0xFFF);
+				if (color == 0) {
+					glowobject.m_flGlowAlpha = 0.0f;
+				} else {
+					glowobject.m_flGlowAlpha = (float)glow_alpha;
+				}
 				unsigned char _b = (color >> 16) & 0xFF;
 				unsigned char _g = (color >> 8)  & 0xFF;
 				unsigned char _r = (color) & 0xFF;

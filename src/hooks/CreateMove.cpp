@@ -150,11 +150,13 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 	}
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
+		if (TF2) SAFE_CALL(UpdateHoovyList());
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
 //		PROF_BEGIN();
 		//RunEnginePrediction(g_pLocalPlayer->entity, cmd);
 		SAFE_CALL(hacks::shared::esp::CreateMove());
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
+			if (TF2) SAFE_CALL(hacks::tf2::antibackstab::CreateMove());
 			if (TF2) SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
 			SAFE_CALL(hacks::shared::bunnyhop::CreateMove());
 			SAFE_CALL(hacks::shared::aimbot::CreateMove());
@@ -163,6 +165,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			if (TF) SAFE_CALL(hacks::tf::autoreflect::CreateMove());
 			SAFE_CALL(hacks::shared::triggerbot::CreateMove());
 			if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
+			if (TF2) SAFE_CALL(hacks::tf2::autobackstab::CreateMove());
 		}
 		//SAFE_CALL(CREATE_MOVE(FollowBot));
 		SAFE_CALL(hacks::shared::misc::CreateMove());

@@ -70,7 +70,15 @@ int GetEntityGlowColor(int idx) {
 	if (CE_BAD(ent)) return colors::white;
 	switch (ent->m_Type) {
 	case ENTITY_BUILDING:
+		if (!ent->m_bEnemy && !(glow_teammates || glow_teammate_buildings)) {
+			return 0;
+		}
+		if ((int)glow_color_scheme == 1) {
+			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
+		}
+		break;
 	case ENTITY_PLAYER:
+		if (!ent->m_bEnemy && !glow_teammates) return 0;
 		if ((int)glow_color_scheme == 1) {
 			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 		}

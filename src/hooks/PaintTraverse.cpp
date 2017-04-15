@@ -101,6 +101,8 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 
 	if (!hacks::shared::airstuck::IsStuck()) {
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
+			// FIXME
+			//if (TF2) SAFE_CALL(hacks::tf2::antibackstab::PaintTraverse());
 			if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
 			SAFE_CALL(hacks::shared::misc::Draw());
 			SAFE_CALL(hacks::shared::esp::Draw());

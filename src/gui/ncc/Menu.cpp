@@ -106,6 +106,7 @@ List& MainList() {
     ]
     "Preferences" [
         "Aim Bot Preferences"
+        "aimbot_ignore_hoovy"
         "aimbot_buildings"
         "aimbot_respect_cloak"
         "aimbot_only_when_can_shoot"
@@ -127,6 +128,7 @@ List& MainList() {
  
 "Trigger Bot" [
     "Trigger Bot Menu"
+    "autobackstab"
     "trigger_enabled"
     "trigger_accuracy"
     "trigger_ambassador"
@@ -229,6 +231,15 @@ List& MainList() {
     "aa_spin"
     "aa_roll"
     "aa_no_clamp"
+    "Anti-Anti-AA" [
+        "Anti-Anti-Anti-Aim Menu"
+        "aa_aaaa_enabled"
+        "aa_aaaa_interval"
+        "aa_aaaa_interval_low"
+        "aa_aaaa_interval_high"
+        "aa_aaaa_mode"
+        "aa_aaaa_flip_key"
+    ]
 ]
  
 "Crit Hack" [
@@ -253,11 +264,21 @@ List& MainList() {
     "clean_chat"
 ]
  
+"Anti Backstab" [
+    "Anti Backstab Menu"
+    "antibackstab"
+    "antibackstab_nope"
+    "antibackstab_angle"
+    "antibackstab_distance"
+    "antibackstab_silent"
+]
+
 "Spy Alert" [
     "Spy Alert Settings"
     "spyalert_enabled"
     "spyalert_warning"
     "spyalert_backstab"
+    "spyalert_sound"
 ]
  
 "Miscellaneous" [
