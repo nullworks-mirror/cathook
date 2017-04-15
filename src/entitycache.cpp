@@ -210,7 +210,8 @@ EntityCache::~EntityCache() {
 
 void EntityCache::Update() {
 	m_nMax = g_IEntityList->GetHighestEntityIndex();
-	for (int i = 0; i < m_nMax && i < MAX_ENTITIES; i++) {
+	// idk that can break something i guess
+	for (int i = 0; i <= m_nMax && i < MAX_ENTITIES; i++) {
 		m_pArray[i].Update(i);
 	}
 }
