@@ -155,9 +155,25 @@ List& MainList() {
     ]
 ]
  
+"Chams" [
+    "Chams Menu"
+    "chams_enable"
+    "chams_health"
+    "chams_players"
+    "chams_teammates"
+    "chams_buildings"
+    "chams_teammate_buildings"
+    "chams_flat"
+    "chams_weapons"
+    "chams_medkits"
+    "chams_ammo"
+    "chams_stickies"
+]
+
 "Glow" [
     "Glow Menu"
     "glow_enabled"
+    "glow_players"
     "glow_color_scheme"
     "glow_health_packs"
     "glow_ammo_boxes"

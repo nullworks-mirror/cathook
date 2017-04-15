@@ -10,6 +10,59 @@
 #include "../hack.h"
 #include "hookedmethods.h"
 
+static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility", "Useful with chams!");
+
+int C_TFPlayer__DrawModel_hook(IClientEntity* _this, int flags) {
+	float old_invis = *(float*)((uintptr_t)_this + 79u);
+	if (no_invisibility) {
+		if (old_invis < 1.0f) {
+			*(float*)((uintptr_t)_this + 79u) = 0.5f;
+		}
+	}
+
+	*(float*)((uintptr_t)_this + 79u) = old_invis;
+}
+
+static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms");
+static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats");
+
+void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix) {
+	/*IClientUnknown* unknown = info.pRenderable->GetIClientUnknown();
+	if (unknown) {
+		IClientEntity* entity = unknown->GetIClientEntity();
+		if (entity && entity->entindex() != -1) {
+			if (entity->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
+				//CMatRenderContextPtr ptr();
+			}
+		}
+	}*/
+	if (!(no_arms || no_hats || hacks::shared::chams::enable)) {
+		((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
+		return;
+	}
+
+	if (no_arms || no_hats) {
+		if (info.pModel) {
+			const char* name = g_IModelInfo->GetModelName(info.pModel);
+			if (name) {
+				std::string sname(name);
+				if (no_arms && sname.find("arms") != std::string::npos) {
+					return;
+				} else if (no_hats && sname.find("player/items") != std::string::npos) {
+					return;
+				}
+			}
+		}
+	}
+
+	float mod_old[3] { 0.0f };
+	g_IVRenderView->GetColorModulation(mod_old);
+	hacks::shared::chams::DrawModelExecute(_this, state, info, matrix);
+	((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
+	g_IVModelRender->ForcedMaterialOverride(nullptr);
+	g_IVRenderView->SetColorModulation(mod_old);
+}
+
 bool CanPacket_hook(void* thisptr) {
 	SEGV_BEGIN;
 	return send_packets && ((CanPacket_t*)hooks::hkNetChannel->GetMethod(hooks::offCanPacket))(thisptr);

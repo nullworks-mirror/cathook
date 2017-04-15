@@ -8,13 +8,7 @@
 #ifndef HOOKEDMETHODS_H_
 #define HOOKEDMETHODS_H_
 
-class IStudioRender;
-class CUserCmd;
-class INetMessage;
-class bf_read;
-class CViewSetup;
-class IClientEntity;
-class IInput;
+#include "../common.h"
 
 typedef bool(CreateMove_t)(void*, float, CUserCmd*);
 typedef void(PaintTraverse_t)(void*, unsigned int, bool, bool);
@@ -29,6 +23,7 @@ typedef void(LevelInit_t)(void*, const char*);
 typedef void(LevelShutdown_t)(void*);
 typedef void(BeginFrame_t)(IStudioRender*);
 typedef bool(*CanInspect_t)(IClientEntity*);
+typedef void(*DrawModelExecute_t)(IVModelRender*, const DrawModelState_t&, const ModelRenderInfo_t&, matrix3x4_t*);
 typedef CUserCmd*(GetUserCmd_t)(IInput*, int);
 //typedef void(*CInput__CreateMove_t)(void*, int, float, bool);
 //void CInput__CreateMove_hook(void*, int sequence_number, float input_sample_frametime, bool active);
@@ -36,6 +31,7 @@ bool CanInspect_hook(IClientEntity*);
 const unsigned int offCanInspect = 512;
 void BeginFrame_hook(IStudioRender*);
 CUserCmd* GetUserCmd_hook(IInput*, int);
+void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix);
 
 #include "CreateMove.h"
 #include "PaintTraverse.h"

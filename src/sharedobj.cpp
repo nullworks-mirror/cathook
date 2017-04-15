@@ -77,6 +77,7 @@ sharedobj::SharedObject* sharedobj::vstdlib = 0;
 sharedobj::SharedObject* sharedobj::tier0 = 0;
 sharedobj::SharedObject* sharedobj::inputsystem = 0;
 sharedobj::SharedObject* sharedobj::studiorender = 0;
+sharedobj::SharedObject* sharedobj::materialsystem = 0;
 
 sharedobj::SharedObject::SharedObject(const std::string& name, bool factory) {
 	while (!(this->path = path_from_proc_maps(name))) {
@@ -132,5 +133,6 @@ void sharedobj::LoadAllSharedObjects() {
 	sharedobj::vstdlib = new SharedObject("libvstdlib.so", true);
 	sharedobj::inputsystem = new SharedObject("inputsystem.so", true);
 	sharedobj::studiorender = new SharedObject("studiorender.so", true);
+	sharedobj::materialsystem = new SharedObject("materialsystem.so", true);
 }
 
