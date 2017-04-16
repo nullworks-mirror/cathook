@@ -11,6 +11,19 @@
 class CUserCmd;
 class IClientEntity;
 
+struct crithack_saved_state {
+	float bucket; // 2612
+	bool unknown2831;
+	int seed; // 2868
+	float time; // 2872
+	int unknown2616;
+	int unknown2620;
+	float unknown2856;
+	float unknown2860;
+	void Save(IClientEntity* entity);
+	void Load(IClientEntity* entity);
+};
+
 bool AllowAttacking();
 bool RandomCrits();
 bool WeaponCanCrit();

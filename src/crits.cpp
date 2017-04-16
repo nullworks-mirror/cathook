@@ -37,16 +37,18 @@ bool WeaponCanCrit() {
 	return TF && CE_GOOD(LOCAL_W) && vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W));
 }
 
-struct crithack_saved_state {
-	float bucket; // 2612
-	bool unknown2831;
-	int seed; // 2868
-	float time; // 2872
-	int unknown2616;
-	int unknown2620;
-	float unknown2856;
-	float unknown2860;
-	void Save(IClientEntity* entity) {
+void crithack_saved_state::Load(IClientEntity* entity) {
+	*(float*)((uintptr_t)entity + 2612) = bucket;
+	*(float*)((uintptr_t)entity + 2831) = unknown2831;
+	*(int*)((uintptr_t)entity + 2868) = seed;
+	*(float*)((uintptr_t)entity + 2872) = time;
+	*(int*)((uintptr_t)entity + 2616) = unknown2616;
+	*(int*)((uintptr_t)entity + 2620) = unknown2620;
+	 *(float*)((uintptr_t)entity + 2856) = unknown2856;
+	*(float*)((uintptr_t)entity + 2860) = unknown2860;
+}
+
+void crithack_saved_state::Save(IClientEntity* entity) {
 		bucket = *(float*)((uintptr_t)entity + 2612);
 		unknown2831 = *(float*)((uintptr_t)entity + 2831);
 		seed = *(int*)((uintptr_t)entity + 2868);
@@ -56,17 +58,6 @@ struct crithack_saved_state {
 		unknown2856 = *(float*)((uintptr_t)entity + 2856);
 		unknown2860 = *(float*)((uintptr_t)entity + 2860);
 	}
-	void Load(IClientEntity* entity) {
-		*(float*)((uintptr_t)entity + 2612) = bucket;
-		*(float*)((uintptr_t)entity + 2831) = unknown2831;
-		*(int*)((uintptr_t)entity + 2868) = seed;
-		*(float*)((uintptr_t)entity + 2872) = time;
-		*(int*)((uintptr_t)entity + 2616) = unknown2616;
-		*(int*)((uintptr_t)entity + 2620) = unknown2620;
-		 *(float*)((uintptr_t)entity + 2856) = unknown2856;
-		*(float*)((uintptr_t)entity + 2860) = unknown2860;
-	}
-};
 
 static crithack_saved_state state;
 static bool state_saved { false };
@@ -102,7 +93,9 @@ bool IsAttackACrit(CUserCmd* cmd) {
 			}
 		} else if (TF2) {
 			if (!g_PredictionRandomSeed) {
-				uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ?");
+				uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
+				logging::Info("Random Seed: 0x%08x", sig + 32);
+				logging::Info("Random Seed: 0x%08x", *(int**)(sig + 32));
 				g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
 			}
 			if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
