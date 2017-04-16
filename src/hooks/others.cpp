@@ -36,7 +36,7 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 			}
 		}
 	}*/
-	if (!(no_arms || no_hats || hacks::shared::chams::enable)) {
+	if (!(no_arms || no_hats || hacks::shared::chams::enable) || (clean_screenshots && g_IEngine->IsTakingScreenshot())) {
 		((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
 		return;
 	}
