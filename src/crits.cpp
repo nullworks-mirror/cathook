@@ -16,7 +16,7 @@ std::unordered_map<int, int> command_number_mod {};
 int* g_PredictionRandomSeed = nullptr;
 
 bool AllowAttacking() {
-	if (!(hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee))) return true;
+	if (!(hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee)) && !hacks::shared::misc::crit_suppress) return true;
 	bool crit = IsAttackACrit(g_pUserCmd);
 	if (hacks::shared::misc::crit_suppress && !(hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee))) {
 		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
@@ -35,6 +35,50 @@ bool RandomCrits() {
 
 bool WeaponCanCrit() {
 	return TF && CE_GOOD(LOCAL_W) && vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W));
+}
+
+struct crithack_saved_state {
+	float bucket; // 2612
+	bool unknown2831;
+	int seed; // 2868
+	float time; // 2872
+	int unknown2616;
+	int unknown2620;
+	float unknown2856;
+	float unknown2860;
+	void Save(IClientEntity* entity) {
+		bucket = *(float*)((uintptr_t)entity + 2612);
+		unknown2831 = *(float*)((uintptr_t)entity + 2831);
+		seed = *(int*)((uintptr_t)entity + 2868);
+		time = *(float*)((uintptr_t)entity + 2872);
+		unknown2616 = *(int*)((uintptr_t)entity + 2616);
+		unknown2620 = *(int*)((uintptr_t)entity + 2620);
+		unknown2856 = *(float*)((uintptr_t)entity + 2856);
+		unknown2860 = *(float*)((uintptr_t)entity + 2860);
+	}
+	void Load(IClientEntity* entity) {
+		*(float*)((uintptr_t)entity + 2612) = bucket;
+		*(float*)((uintptr_t)entity + 2831) = unknown2831;
+		*(int*)((uintptr_t)entity + 2868) = seed;
+		*(float*)((uintptr_t)entity + 2872) = time;
+		*(int*)((uintptr_t)entity + 2616) = unknown2616;
+		*(int*)((uintptr_t)entity + 2620) = unknown2620;
+		 *(float*)((uintptr_t)entity + 2856) = unknown2856;
+		*(float*)((uintptr_t)entity + 2860) = unknown2860;
+	}
+};
+
+static crithack_saved_state state;
+static bool state_saved { false };
+void LoadSavedState() {
+	if (!state_saved) return;
+	if (CE_GOOD(LOCAL_W) && TF) {
+		IClientEntity* weapon = RAW_ENT(LOCAL_W);
+		state.Load(weapon);
+	}
+}
+void ResetCritHack() {
+	state_saved = false;
 }
 
 bool IsAttackACrit(CUserCmd* cmd) {
@@ -71,14 +115,18 @@ bool IsAttackACrit(CUserCmd* cmd) {
 					bool chc = false;
 					int md5seed = MD5_PseudoRandom(cmd->command_number) & 0x7fffffff;
 					int rseed = md5seed;
-					float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
+					//float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
 					*g_PredictionRandomSeed = md5seed;
 					int c = LOCAL_W->m_IDX << 8;
 					int b = LOCAL_E->m_IDX;
 					rseed = rseed ^ (b | c);
-					*(float*)(weapon + 2856ul) = 0.0f;
 					RandomSeed(rseed);
+					state.Save(weapon);
+					state_saved = true;
+					//float saved_time = *(float*)(weapon + 2872ul);
+					//*(float*)(weapon + 2872ul) = 0.0f;
 					bool crits = vfunc<bool(*)(IClientEntity*)>(weapon, 1836 / 4, 0)(weapon);
+					//*(float*)(weapon + 2872ul) = saved_time;
 					//if (!crits) *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u) = bucket;
 					return crits;
 				}

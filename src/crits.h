@@ -15,6 +15,8 @@ bool AllowAttacking();
 bool RandomCrits();
 bool WeaponCanCrit();
 bool IsAttackACrit(CUserCmd* cmd);
+void ResetCritHack();
+void LoadSavedState();
 
 #include "beforecheaders.h"
 #include <unordered_map>

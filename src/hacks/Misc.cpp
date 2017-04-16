@@ -146,12 +146,12 @@ void CreateMove() {
 				while (!chc && tries < 4096) {
 					int md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
 					int rseed = md5seed;
-					float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
+					//float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
 					*g_PredictionRandomSeed = md5seed;
 					int c = LOCAL_W->m_IDX << 8;
 					int b = LOCAL_E->m_IDX;
 					rseed = rseed ^ (b | c);
-					*(float*)(weapon + 2856ul) = 0.0f;
+					*(float*)(weapon + 2872ul) = 0.0f;
 					RandomSeed(rseed);
 					chc = vfunc<bool(*)(IClientEntity*)>(weapon, 1836 / 4, 0)(weapon);
 					if (!chc) {
@@ -198,7 +198,8 @@ void Draw() {
 				else
 					AddCenterString("Weapon can randomly crit");
 			}
-			AddCenterString(format("Bucket: %.2f", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u)));
+			AddCenterString(format("Bucket: ", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u)));
+			//AddCenterString(format("Time: ", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2872u)));
 		}
 	}
 
