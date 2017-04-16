@@ -50,6 +50,7 @@
 #include "itemtypes.h"
 #include "chatstack.h"
 #include "textfile.h"
+#include "EffectChams.hpp"
 #include "ipc.h"
 #include "gui/GUI.h"
 #include "hooks/hookedmethods.h"
