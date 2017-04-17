@@ -122,6 +122,7 @@ public:
 	offset_t m_bDucked;
 	offset_t m_angEyeAngles;
 	offset_t m_bReadyToBackstab;
+	offset_t m_Collision;
 };
 
 extern NetVars netvar;

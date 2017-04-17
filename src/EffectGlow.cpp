@@ -137,6 +137,39 @@ bool EffectGlow::ShouldRenderChams(IClientEntity* entity) {
 	return false;
 }
 
+struct ShaderStencilState_t
+{
+	bool m_bEnable;
+	StencilOperation_t m_FailOp;
+	StencilOperation_t m_ZFailOp;
+	StencilOperation_t m_PassOp;
+	StencilComparisonFunction_t m_CompareFunc;
+	int m_nReferenceValue;
+	uint32 m_nTestMask;
+	uint32 m_nWriteMask;
+
+	ShaderStencilState_t()
+	{
+		m_bEnable = false;
+		m_PassOp = m_FailOp = m_ZFailOp = STENCILOPERATION_KEEP;
+		m_CompareFunc = STENCILCOMPARISONFUNCTION_ALWAYS;
+		m_nReferenceValue = 0;
+		m_nTestMask = m_nWriteMask = 0xFFFFFFFF;
+	}
+
+	void SetStencilState( CMatRenderContextPtr &pRenderContext  )
+	{
+		pRenderContext->SetStencilEnable( m_bEnable );
+		pRenderContext->SetStencilFailOperation( m_FailOp );
+		pRenderContext->SetStencilZFailOperation( m_ZFailOp );
+		pRenderContext->SetStencilPassOperation( m_PassOp );
+		pRenderContext->SetStencilCompareFunction( m_CompareFunc );
+		pRenderContext->SetStencilReferenceValue( m_nReferenceValue );
+		pRenderContext->SetStencilTestMask( m_nTestMask );
+		pRenderContext->SetStencilWriteMask( m_nWriteMask );
+	}
+};
+
 static CTextureReference buffers[4] {};
 
 ITexture* GetBuffer(int i) {
@@ -189,7 +222,36 @@ IMaterial* GetBlurY() {
 	return blur;
 }
 
+static CatVar solid_when(CV_INT, "glow_experimental_solid_when", "0", "...", "Never, Always, Unoccluded, Occluded");
 
+void EffectGlow::DrawToStencil(IClientEntity* entity) {
+	ShaderStencilState_t state;
+	state.m_bEnable = true;
+	switch ((int)solid_when) {
+	case 0:
+		state.m_PassOp = STENCILOPERATION_REPLACE;
+		state.m_FailOp = STENCILOPERATION_KEEP;
+		state.m_ZFailOp = STENCILOPERATION_KEEP;
+		break;
+	case 2:
+	case 3:
+	}
+}
+
+void EffectGlow::DrawToBuffer(IClientEntity* entity) {
+
+}
+
+void EffectGlow::DrawEntity(IClientEntity* entity) {
+	entity->DrawModel(1);
+	IClientEntity* attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
+	while (attach) {
+		if (attach->ShouldDraw()) {
+			attach->DrawModel(1);
+		}
+		attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 20) & 0xFFF);
+	}
+}
 
 void EffectGlow::RenderChams(int idx) {
 	CMatRenderContextPtr ptr(g_IMaterialSystem->GetRenderContext());
@@ -206,13 +268,7 @@ void EffectGlow::RenderChams(int idx) {
 			ptr->DepthRange(0.0f, 0.01f);
 			g_IVRenderView->SetColorModulation(color_1);
 			g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
-			entity->DrawModel(1);
-			//((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
-			mat_unlit->AlphaModulate(1.0f);
-			g_IVRenderView->SetColorModulation(color_2);
-			ptr->DepthRange(0.0f, 1.0f);
-			g_IVModelRender->ForcedMaterialOverride(mat_unlit);
-			entity->DrawModel(1);
+			DrawEntity(entity);
 		}
 	}
 }
@@ -255,6 +311,7 @@ void EffectGlow::Render(int x, int y, int w, int h) {
 	ptr->DrawScreenSpaceRectangle(GetBlurY(), x, y, w, h, 0, 0, w - 1, h - 1, w, h);
 	ptr->Viewport(x, y, w, h);
 	ptr->PopRenderTargetAndViewport();
+	g_IVRenderView->SetBlend(0.0f);
 	ptr->DrawScreenSpaceRectangle(blitmat, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
 }
 
