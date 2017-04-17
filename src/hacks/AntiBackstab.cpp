@@ -47,6 +47,7 @@ CachedEntity* ClosestSpy() {
 		if (CE_BYTE(ent, netvar.iLifeState)) continue;
 		if (CE_INT(ent, netvar.iClass) != tf_class::tf_spy) continue;
 		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team) continue;
+		if (IsPlayerInvisible(ent)) continue;
 		float dist = ent->m_flDistance;
 		if (fabs(GetAngle(ent)) > (float)angle) {
 			break;

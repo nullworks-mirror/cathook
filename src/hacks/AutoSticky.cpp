@@ -22,6 +22,9 @@ bool ShouldDetonate(CachedEntity* bomb) {
 		if (CE_BAD(ent)) continue;
 		if (ent->m_Type != ENTITY_PLAYER && (ent->m_Type != ENTITY_BUILDING || !buildings)) continue;
 		if (ent->m_iTeam == CE_INT(bomb, netvar.iTeamNum)) continue;
+		if (ent->m_Type == ENTITY_PLAYER) {
+			if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) continue;
+		}
 		if (ent->m_vecOrigin.DistToSqr(bomb->m_vecOrigin) > SQR((float)distance)) continue;
 		return true;
 	}
