@@ -58,7 +58,7 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 	IClientUnknown* unk = info.pRenderable->GetIClientUnknown();
 	if (unk) {
 		IClientEntity* ent = unk->GetIClientEntity();
-		if (ent && !g_EffectChams.drawing && g_EffectChams.ShouldRenderChams(ent)) {
+		if (ent && !effect_chams::g_EffectChams.drawing && effect_chams::g_EffectChams.ShouldRenderChams(ent)) {
 			return;
 		}
 	}

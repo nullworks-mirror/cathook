@@ -10,7 +10,6 @@
 
 IMaterialSystem* materials = nullptr;
 
-// FIXME move to sdk
 CScreenSpaceEffectRegistration *CScreenSpaceEffectRegistration::s_pHead = NULL;
 IScreenSpaceEffectManager* g_pScreenSpaceEffects = nullptr;
 CScreenSpaceEffectRegistration** g_ppScreenSpaceRegistrationHead = nullptr;
@@ -24,156 +23,242 @@ CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration( const char *pNam
 	logging::Info("New head: 0x%08x", *g_ppScreenSpaceRegistrationHead);
 }
 
-/*IMaterial* GetRenderTarget() {
-	if (!tr_cathook_rt) {
-		tr_cathook_rt.InitRenderTarget(256, 256, RT_SIZE_FULL_FRAME_BUFFER, IMAGE_FORMAT_ARGB8888, MATERIAL_RT_DEPTH_NONE, false, "cathook_rt");
-	}
-	return tr_cathook_rt.;
-}*/
+namespace effect_glow {
 
-IMaterial* GetGlowMaterial() {
-	return vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/glow_color", TEXTURE_GROUP_OTHER, true, 0);
-}
-
-static CatVar glow_experimental(CV_SWITCH, "glow_experimental", "0", "Experimental Glow");
+CatVar enable(CV_SWITCH, "glow_experimental_enable", "0", "Enable");
+static CatVar health(CV_SWITCH, "glow_experimental_health", "0", "Health");
+static CatVar teammates(CV_SWITCH, "glow_experimental_teammates", "0", "Teammates");
+static CatVar players(CV_SWITCH, "glow_experimental_players", "1", "Players");
+static CatVar medkits(CV_SWITCH, "glow_experimental_medkits", "0", "Medkits");
+static CatVar ammobox(CV_SWITCH, "glow_experimental_ammo", "0", "Ammoboxes");
+static CatVar buildings(CV_SWITCH, "glow_experimental_buildings", "0", "Buildings");
+static CatVar stickies(CV_SWITCH, "glow_experimental_stickies", "0", "Stickies");
+static CatVar teammate_buildings(CV_SWITCH, "glow_experimental_teammate_buildings", "0", "Teammate Buildings");
 
 void EffectGlow::Init() {
-	logging::Info("Init EffectGlow...");
-	rt_A.InitRenderTarget(1920/2, 1080/2, RT_SIZE_DEFAULT, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, false, "__cathook_glow_rta");
-	rt_B.InitRenderTarget(1920/2, 1080/2, RT_SIZE_DEFAULT, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, false, "__cathook_glow_rtb");
-	logging::Info("Textures init!");
-	//rt_B.InitRenderTarget(256, 256, RT_SIZE_FULL_FRAME_BUFFER, IMAGE_FORMAT_ARGB8888, MATERIAL_RT_DEPTH_NONE, false, "__cathook_glow_rtB");
-	KeyValues *kv2 = new KeyValues( "VertexLitGeneric" );
-	kv2->SetString( "$basetexture", "vgui/white" );
-	kv2->SetInt( "$selfillum", 1 );
-	kv2->SetString( "$selfillummask", "vgui/white" );
-	kv2->SetInt( "$vertexalpha", 1 );
-	kv2->SetInt( "$model", 1 );
-	glow_material.Init( "__cathook_glow_mat_color", TEXTURE_GROUP_CLIENT_EFFECTS, kv2 );
-	glow_material->Refresh();
-	KeyValues* kv = new KeyValues("UnlitGeneric");
-	kv->SetString("$basetexture", "_rt_FullFrameFB");
-	kv->SetInt("$additive", 1);
-	result_material.Init("__cathook_glow_mat", TEXTURE_GROUP_CLIENT_EFFECTS, kv);
-	result_material->Refresh();
-	logging::Info("Material init!");
-	//dev_glow_color.Init(vfunc<IMaterial*(*)(IMaterialSystem*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/glow_color", TEXTURE_GROUP_OTHER, true, 0));
-	dev_bloomdadd.Init(vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/bloomadd", TEXTURE_GROUP_OTHER, true, 0));
-	dev_blurfilterx.Init(vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/blurfilterx", TEXTURE_GROUP_OTHER, true, 0));
-	dev_blurfiltery.Init(vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/blurfiltery", TEXTURE_GROUP_OTHER, true, 0));
-	dev_halo_add_to_screen.Init(vfunc<IMaterial*(*)(IMaterialSystemFixed*, const char*, const char*, bool, const char*)>(g_IMaterialSystem, 73)(g_IMaterialSystem, "dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, true, 0));
-
+	logging::Info("Init EffectChams...");
+	{
+		KeyValues* kv = new KeyValues("UnlitGeneric");
+		kv->SetString("$basetexture", "vgui/white_additive");
+		kv->SetInt("$ignorez", 0);
+		mat_unlit.Init("__cathook_echams_unlit", kv);
+	}
+	{
+		KeyValues* kv = new KeyValues("UnlitGeneric");
+		kv->SetString("$basetexture", "vgui/white_additive");
+		kv->SetInt("$ignorez", 1);
+		mat_unlit_z.Init("__cathook_echams_unlit_z", kv);
+	}
 	logging::Info("Init done!");
 	init = true;
 }
 
-void EffectGlow::BeginRenderGlow() {
+void EffectGlow::BeginRenderChams() {
+	drawing = true;
 	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
-	ptr->PushRenderTargetAndViewport(rt_A);
-	g_IVModelRender->SuppressEngineLighting(true);
-	g_IVRenderView->GetColorModulation(orig_modulation);
-	static Vector red(1.0f, 0.1f, 0.1f);
-	g_IVRenderView->SetColorModulation(red.Base());
-	g_IStudioRender->ForcedMaterialOverride(glow_material);
-	g_IVRenderView->SetBlend(1.0f);
 }
 
-void EffectGlow::EndRenderGlow() {
+void EffectGlow::EndRenderChams() {
+	drawing = false;
 	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
-	g_IVRenderView->SetColorModulation(orig_modulation);
-	g_IStudioRender->ForcedMaterialOverride(nullptr);
-	g_IVModelRender->SuppressEngineLighting(false);
-	ptr->PopRenderTargetAndViewport();
+	g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
 
-void EffectGlow::RenderGlow(int idx) {
-	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
-	ptr->PushRenderTargetAndViewport( rt_A );
+int  EffectGlow::ChamsColor(IClientEntity* entity) {
+	CachedEntity* ent = ENTITY(entity->entindex());
+	if (CE_BAD(ent)) return colors::white;
+	if (vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
+		IClientEntity* owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
+		if (owner) {
+			return ChamsColor(owner);
+		}
+	}
+	switch (ent->m_Type) {
+	case ENTITY_BUILDING:
+		if (!ent->m_bEnemy && !(teammates || teammate_buildings)) {
+			return 0;
+		}
+		if (health) {
+			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
+		}
+		break;
+	case ENTITY_PLAYER:
+		if (!players) return 0;
+		if (!ent->m_bEnemy && !teammates) return 0;
+		if (health) {
+			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
+		}
+		break;
+	}
+	return colors::EntityF(ent);
+}
 
-	g_IVModelRender->SuppressEngineLighting( true );
-
-	// Set the glow tint since selfillum trumps color modulation
-	IMaterialVar *var = glow_material->FindVar( "$selfillumtint", NULL, false );
-	static float color[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-	var->SetVecValue( color, 4 ); // Fixed compilation error
-	var = glow_material->FindVar( "$alpha", NULL, false );
-	var->SetFloatValue( color[3] ); // Fixed compilation error
-
-	g_IVModelRender->ForcedMaterialOverride( glow_material );
-		IClientEntity* ent = g_IEntityList->GetClientEntity(idx);
-		if (ent) ent->DrawModel(1);
-	g_IVModelRender->ForcedMaterialOverride( NULL );
-
-	g_IVModelRender->SuppressEngineLighting( false );
-
-	ptr->PopRenderTargetAndViewport();
-
-
-	/*IClientEntity* ent = g_IEntityList->GetClientEntity(idx);
-	if (ent) {
-		ent->DrawModel(1);
+bool EffectGlow::ShouldRenderChams(IClientEntity* entity) {
+	if (!enable) return false;
+	if (entity->entindex() < 0) return false;
+	CachedEntity* ent = ENTITY(entity->entindex());
+	if (CE_BAD(ent)) return false;
+	/*if (weapons && vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
+		IClientEntity* owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
+		if (owner) {
+			return ShouldRenderChams(owner);
+		}
 	}*/
+	switch (ent->m_Type) {
+	case ENTITY_BUILDING:
+		if (!buildings) return false;
+		if (!ent->m_bEnemy && !(teammate_buildings || teammates)) return false;
+		return true;
+	case ENTITY_PLAYER:
+		if (!players) return false;
+		if (!teammates && !ent->m_bEnemy) return false;
+		if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) return false;
+		return true;
+		break;
+	case ENTITY_PROJECTILE:
+		if (!ent->m_bEnemy) return false;
+		if (stickies && ent->m_iClassID == g_pClassID->CTFGrenadePipebombProjectile) {
+			return true;
+		}
+		break;
+	case ENTITY_GENERIC:
+		switch (ent->m_ItemType) {
+		case ITEM_HEALTH_LARGE:
+		case ITEM_HEALTH_MEDIUM:
+		case ITEM_HEALTH_SMALL:
+			return medkits;
+		case ITEM_AMMO_LARGE:
+		case ITEM_AMMO_MEDIUM:
+		case ITEM_AMMO_SMALL:
+			return ammobox;
+		}
+		break;
+	}
+	return false;
+}
+
+static CTextureReference buffers[4] {};
+
+ITexture* GetBuffer(int i) {
+	if (!buffers[i]) {
+		ITexture* fullframe = g_IMaterialSystem->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
+		char* newname = new char[32];
+		std::string name = format("_cathook_buff", i);
+		strncpy(newname, name.c_str(), 30);
+		logging::Info("Creating new buffer %d with size %dx%d %s", i, fullframe->GetActualWidth(), fullframe->GetActualHeight(), newname);
+
+		int textureFlags = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT | TEXTUREFLAGS_EIGHTBITALPHA;
+		int renderTargetFlags = CREATERENDERTARGETFLAGS_HDR;
+
+		ITexture* texture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx( newname, fullframe->GetActualWidth(), fullframe->GetActualHeight(), RT_SIZE_LITERAL, IMAGE_FORMAT_RGBA8888,
+			MATERIAL_RT_DEPTH_SEPARATE, textureFlags, renderTargetFlags );
+		buffers[i].Init(texture);
+		//buffers[i].InitRenderTarget(fullframe->GetActualWidth(), fullframe->GetActualHeight(), RenderTargetSizeMode_t::RT_SIZE_FULL_FRAME_BUFFER, IMAGE_FORMAT_ABGR8888, MaterialRenderTargetDepth_t::MATERIAL_RT_DEPTH_SEPARATE, true, newname);
+	}
+	return buffers[i];
+}
+
+IMaterial* GetBlurX() {
+	static CMaterialReference blur;
+	if (!blur) {
+		GetBuffer(1);
+		KeyValues* kv = new KeyValues("BlurFilterX");
+		kv->SetString("$basetexture", "_cathook_buff1");
+		kv->SetInt("$ignorez", 1);
+		kv->SetInt("$translucent", 1);
+		kv->SetInt("$alphatest", 1);
+		blur.Init("_cathook_blurx", kv);
+		blur->Refresh();
+	}
+	return blur;
+}
+
+IMaterial* GetBlurY() {
+	static CMaterialReference blur;
+	if (!blur) {
+		GetBuffer(2);
+		KeyValues* kv = new KeyValues("BlurFilterY");
+		kv->SetString("$basetexture", "_cathook_buff2");
+		kv->SetInt("$bloomamount", 5);
+		kv->SetInt("$ignorez", 1);
+		kv->SetInt("$translucent", 1);
+		kv->SetInt("$alphatest", 1);
+		blur.Init("_cathook_blury", kv);
+		blur->Refresh();
+	}
+	return blur;
+}
+
+
+
+void EffectGlow::RenderChams(int idx) {
+	CMatRenderContextPtr ptr(g_IMaterialSystem->GetRenderContext());
+	IClientEntity* entity = g_IEntityList->GetClientEntity(idx);
+	if (entity && !entity->IsDormant()) {
+		if (ShouldRenderChams(entity)) {
+			int color = ChamsColor(entity);
+			unsigned char _b = (color >> 16) & 0xFF;
+			unsigned char _g = (color >> 8)  & 0xFF;
+			unsigned char _r = (color) & 0xFF;
+			float color_1[] = { (float)_r / 255.0f, (float)_g / 255.0f, (float)_b / 255.0f };
+			float color_2[] = { color_1[0] * 0.6f, color_1[1] * 0.6f, color_1[2] * 0.6f };
+			mat_unlit_z->AlphaModulate(1.0f);
+			ptr->DepthRange(0.0f, 0.01f);
+			g_IVRenderView->SetColorModulation(color_1);
+			g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
+			entity->DrawModel(1);
+			//((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
+			mat_unlit->AlphaModulate(1.0f);
+			g_IVRenderView->SetColorModulation(color_2);
+			ptr->DepthRange(0.0f, 1.0f);
+			g_IVModelRender->ForcedMaterialOverride(mat_unlit);
+			entity->DrawModel(1);
+		}
+	}
 }
 
 void EffectGlow::Render(int x, int y, int w, int h) {
 	if (!init) Init();
-	if (!glow_experimental) return;
-	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
+	if (g_IEngine->IsTakingScreenshot() && clean_screenshots) return;
+	if (!enable) return;
+	CMatRenderContextPtr ptr(g_IMaterialSystem->GetRenderContext());
 
-	//ptr->Viewport(x, y, w, h);
-
-	ITexture* rt = ptr->GetRenderTarget();
-
-	IMaterialVar* var;
-	var = dev_blurfilterx->FindVar("$basetexture", nullptr);
-	var->SetTextureValue(rt_A);
-	var = dev_blurfiltery->FindVar("$basetexture", nullptr);
-	var->SetTextureValue(rt_B);
-	var = result_material->FindVar("$basetexture", nullptr);
-	var->SetTextureValue(rt_A);
-	//var = dev_blurfilterx->FindVar("$bloomamount", nullptr);
-	//var->SetFloatValue(10);
-	var = dev_blurfiltery->FindVar("$bloomamount", nullptr);
-	var->SetFloatValue(10);
-
-	ptr->ClearColor4ub(0, 0, 0, 255);
-	ptr->PushRenderTargetAndViewport(rt_A);
-		ptr->ClearBuffers(true, true);
-	ptr->PopRenderTargetAndViewport();
-	ptr->PushRenderTargetAndViewport(rt_B);
-		ptr->ClearBuffers(true, true);
-	ptr->PopRenderTargetAndViewport();
-
-	ptr->ClearStencilBufferRectangle( 0, 0, 1920, 1080, 0 );
-
-	BeginRenderGlow();
-	for (int i = 1; i < 32; i++) {
+	ITexture* orig = ptr->GetRenderTarget();
+	ptr->ClearColor4ub(0, 0, 0, 0);
+	ptr->PushRenderTargetAndViewport();
+	ptr->SetRenderTarget(GetBuffer(1));
+	ptr->Viewport(x, y, w, h);
+	ptr->OverrideAlphaWriteEnable( true, true );
+	g_IVRenderView->SetBlend(0.99f);
+	ptr->ClearBuffers(true, false);
+	BeginRenderChams();
+	for (int i = 1; i < HIGHEST_ENTITY; i++) {
 		IClientEntity* ent = g_IEntityList->GetClientEntity(i);
-		if (ent && !ent->IsDormant() && NET_BYTE(ent, netvar.iLifeState) == LIFE_ALIVE) {
-			//BeginRenderGlow();
-			RenderGlow(i);
-			//EndRenderGlow();
+		if (ent && !ent->IsDormant()) {
+			RenderChams(i);
 		}
 	}
-
-	ptr->PushRenderTargetAndViewport( rt_B );
+	EndRenderChams();
+	ptr->SetRenderTarget(GetBuffer(2));
 	ptr->Viewport(x, y, w, h);
-	ptr->DrawScreenSpaceQuad( dev_blurfilterx );
+	ptr->ClearBuffers(true, false);
+	ptr->DrawScreenSpaceRectangle(GetBlurX(), x, y, w, h, 0, 0, w - 1, h - 1, w, h);
+	static CMaterialReference blitmat;
+	if (!blitmat) {
+		KeyValues *kv = new KeyValues( "UnlitGeneric" );
+		kv->SetString( "$basetexture", "_cathook_buff1" );
+		kv->SetInt( "$additive", 1 );
+		blitmat.Init( "_cathook_composite", TEXTURE_GROUP_CLIENT_EFFECTS, kv );
+		blitmat->Refresh();
+	}
+	ptr->SetRenderTarget(GetBuffer(1));
+	ptr->DrawScreenSpaceRectangle(GetBlurY(), x, y, w, h, 0, 0, w - 1, h - 1, w, h);
+	ptr->Viewport(x, y, w, h);
 	ptr->PopRenderTargetAndViewport();
-
-	ptr->PushRenderTargetAndViewport( rt_A );
-	ptr->Viewport(x, y, w, h);
-	ptr->DrawScreenSpaceQuad( dev_blurfiltery );
-	ptr->PopRenderTargetAndViewport();
-
-	ptr->SetRenderTarget(rt);
-	ptr->Viewport(x, y, w, h);
-
-	ptr->DrawScreenSpaceQuad(result_material);
-	var = result_material->FindVar("$basetexture", nullptr);
-	//var->SetTextureValue(rt_B);
-	//ptr->DrawScreenSpaceQuad(result_material);
+	ptr->DrawScreenSpaceRectangle(blitmat, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
 }
 
 EffectGlow g_EffectGlow;
 CScreenSpaceEffectRegistration* g_pEffectGlow = nullptr;
+
+}

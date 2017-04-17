@@ -10,6 +10,8 @@
 
 #include "common.h"
 
+namespace effect_glow {
+
 class EffectGlow : public IScreenSpaceEffect {
 public:
 	virtual void Init( );
@@ -22,24 +24,23 @@ public:
 	inline virtual void Enable( bool bEnable ) { enabled = bEnable; };
 	inline virtual bool IsEnabled( ) { return enabled; };
 
-	void RenderGlow(int idx);
-	void BeginRenderGlow();
-	void EndRenderGlow();
+	int ChamsColor(IClientEntity* entity);
+	bool ShouldRenderChams(IClientEntity* entity);
+	void RenderChams(int idx);
+	void BeginRenderChams();
+	void EndRenderChams();
 public:
 	bool init { false };
+	bool drawing { false };
 	bool enabled;
 	float orig_modulation[3];
-	CTextureReference rt_A;
-	CTextureReference rt_B;
-	CMaterialReference result_material;
-	CMaterialReference glow_material;
-	CMaterialReference dev_bloomdadd;
-	CMaterialReference dev_halo_add_to_screen;
-	CMaterialReference dev_blurfilterx;
-	CMaterialReference dev_blurfiltery;
+	CMaterialReference mat_unlit;
+	CMaterialReference mat_unlit_z;
 };
 
 extern EffectGlow g_EffectGlow;
 extern CScreenSpaceEffectRegistration* g_pEffectGlow;
+
+}
 
 #endif /* EFFECTGLOW_HPP_ */
