@@ -252,7 +252,6 @@ void EffectGlow::BeginRenderGlow() {
 	ptr->ClearBuffers(true, false);
 	mat_unlit_z->AlphaModulate(1.0f);
 	ptr->DepthRange(0.0f, 0.01f);
-	g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
 }
 
 void EffectGlow::EndRenderGlow() {
@@ -309,9 +308,11 @@ void EffectGlow::DrawToBuffer(IClientEntity* entity) {
 }
 
 void EffectGlow::DrawEntity(IClientEntity* entity) {
+	g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
 	entity->DrawModel(1);
 	IClientEntity* attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
-	while (attach) {
+	int passes = 0;
+	while (attach && passes++ < 32) {
 		if (attach->ShouldDraw()) {
 			attach->DrawModel(1);
 		}
@@ -332,7 +333,7 @@ void EffectGlow::RenderGlow(IClientEntity* entity) {
 
 void EffectGlow::Render(int x, int y, int w, int h) {
 	if (!init) Init();
-	if (!cathook || (g_IEngine->IsTakingScreenshot() && clean_screenshots)) return;
+	if (!cathook || (g_IEngine->IsTakingScreenshot() && clean_screenshots) || g_Settings.bInvalid) return;
 	if (!enable) return;
 	CMatRenderContextPtr ptr(g_IMaterialSystem->GetRenderContext());
 	ITexture* orig = ptr->GetRenderTarget();
@@ -360,7 +361,7 @@ void EffectGlow::Render(int x, int y, int w, int h) {
 	ptr->ClearBuffers(true, false);
 	ptr->DrawScreenSpaceRectangle(mat_blur_x, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
 	ptr->SetRenderTarget(GetBuffer(1));
-	static IMaterialVar* blury_bloomamount = mat_blur_y->FindVar("$bloomamount", nullptr);
+	IMaterialVar* blury_bloomamount = mat_blur_y->FindVar("$bloomamount", nullptr);
 	blury_bloomamount->SetIntValue((int)blur_scale);
 	ptr->DrawScreenSpaceRectangle(mat_blur_y, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
 	ptr->Viewport(x, y, w, h);
