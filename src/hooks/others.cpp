@@ -58,7 +58,7 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 	IClientUnknown* unk = info.pRenderable->GetIClientUnknown();
 	if (unk) {
 		IClientEntity* ent = unk->GetIClientEntity();
-		if (ent && !g_EffectChams.drawing && g_EffectChams.ShouldRenderChams(ent)) {
+		if (ent && !effect_chams::g_EffectChams.drawing && effect_chams::g_EffectChams.ShouldRenderChams(ent)) {
 			return;
 		}
 	}
@@ -152,8 +152,8 @@ void Shutdown_hook(void* thisptr, const char* reason) {
 	SEGV_END;
 }
 
-static CatVar glow_enabled(CV_SWITCH, "glow_enabled", "0", "Enable", "Make sure to enable glow_outline_effect_enable in tf2 settings");
-static CatVar glow_alpha(CV_FLOAT, "glow_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
+static CatVar glow_enabled(CV_SWITCH, "glow_old_enabled", "0", "Enable", "Make sure to enable glow_outline_effect_enable in tf2 settings");
+static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
 
 void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;

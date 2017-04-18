@@ -10,6 +10,8 @@
 
 #include "common.h"
 
+namespace effect_chams {
+
 class EffectChams : public IScreenSpaceEffect {
 public:
 	virtual void Init( );
@@ -40,5 +42,7 @@ public:
 
 extern EffectChams g_EffectChams;
 extern CScreenSpaceEffectRegistration* g_pEffectChams;
+
+}
 
 #endif /* EFFECTCHAMS_HPP_ */

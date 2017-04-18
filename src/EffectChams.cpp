@@ -10,6 +10,8 @@
 
 //static CatVar chams_experimental(CV_SWITCH, "chams_effect", "0", "Experimental Chams");
 
+namespace effect_chams {
+
 CatVar enable(CV_SWITCH, "chams_enable", "0", "Enable");
 static CatVar flat(CV_SWITCH, "chams_flat", "0", "Flat");
 static CatVar health(CV_SWITCH, "chams_health", "0", "Health");
@@ -57,7 +59,6 @@ void EffectChams::Init() {
 void EffectChams::BeginRenderChams() {
 	drawing = true;
 	CMatRenderContextPtr ptr(vfunc<IMatRenderContext*(*)(IMaterialSystemFixed*)>(g_IMaterialSystem, 100, 0)(g_IMaterialSystem));
-	g_IVRenderView->SetBlend(1.0f);
 }
 
 void EffectChams::EndRenderChams() {
@@ -170,7 +171,6 @@ void EffectChams::Render(int x, int y, int w, int h) {
 	if (g_IEngine->IsTakingScreenshot() && clean_screenshots) return;
 	if (!enable) return;
 	CMatRenderContextPtr ptr(g_IMaterialSystem->GetRenderContext());
-
 	BeginRenderChams();
 	for (int i = 1; i < HIGHEST_ENTITY; i++) {
 		IClientEntity* ent = g_IEntityList->GetClientEntity(i);
@@ -183,3 +183,5 @@ void EffectChams::Render(int x, int y, int w, int h) {
 
 EffectChams g_EffectChams;
 CScreenSpaceEffectRegistration* g_pEffectChams = nullptr;
+
+}

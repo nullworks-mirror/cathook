@@ -20,6 +20,7 @@ void NetVars::Init() {
 	this->iHitboxSet = gNetvars.get_offset("DT_BaseAnimating", "m_nHitboxSet");
 	this->vVelocity = gNetvars.get_offset("DT_BasePlayer", "localdata", "m_vecVelocity[0]");
 	this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
+	this->m_Collision = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
 	if (TF2) {
 		m_angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata", "m_angEyeAngles[0]");
 		this->bGlowEnabled = gNetvars.get_offset("DT_TFPlayer", "m_bGlowEnabled");

@@ -172,15 +172,31 @@ List& MainList() {
 
 "Glow" [
     "Glow Menu"
-    "glow_enabled"
+    "glow_enable"
+    "glow_solid_when"
+    "glow_blur_scale"
+    "glow_health"
     "glow_players"
-    "glow_color_scheme"
-    "glow_health_packs"
-    "glow_ammo_boxes"
     "glow_teammates"
-    "glow_teammate_buildings"
     "glow_buildings"
+    "glow_teammate_buildings"
+    "glow_medkits"
+    "glow_ammo"
     "glow_stickies"
+]
+
+"TF2 Glow Outline" [
+    "TF2 Glow Menu"
+    "glow_old_enabled"
+    "glow_old_players"
+    "glow_old_color_scheme"
+    "glow_old_health_packs"
+    "glow_old_ammo_boxes"
+    "glow_old_alpha"
+    "glow_old_teammates"
+    "glow_old_teammate_buildings"
+    "glow_old_buildings"
+    "glow_old_stickies"
 ]
 
 "ESP" [
