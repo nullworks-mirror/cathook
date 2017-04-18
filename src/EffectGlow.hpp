@@ -29,16 +29,19 @@ public:
 	void DrawEntity(IClientEntity* entity);
 	void DrawToStencil(IClientEntity* entity);
 	void DrawToBuffer(IClientEntity* entity);
-	int ChamsColor(IClientEntity* entity);
-	bool ShouldRenderChams(IClientEntity* entity);
-	void RenderChams(IClientEntity* entity);
-	void BeginRenderChams();
-	void EndRenderChams();
+	int GlowColor(IClientEntity* entity);
+	bool ShouldRenderGlow(IClientEntity* entity);
+	void RenderGlow(IClientEntity* entity);
+	void BeginRenderGlow();
+	void EndRenderGlow();
 public:
 	bool init { false };
 	bool drawing { false };
 	bool enabled;
 	float orig_modulation[3];
+	CMaterialReference mat_blit;
+	CMaterialReference mat_blur_x;
+	CMaterialReference mat_blur_y;
 	CMaterialReference mat_unlit;
 	CMaterialReference mat_unlit_z;
 };
