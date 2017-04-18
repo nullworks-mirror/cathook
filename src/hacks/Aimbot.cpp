@@ -41,7 +41,10 @@ int ClosestHitbox(CachedEntity* target) {
 	return closest;
 }
 
+CachedEntity* target_highest = 0;
+
 void CreateMove() {
+	target_highest = 0;
 	if (!enabled) return;
 
 	if (HasCondition(g_pLocalPlayer->entity, TFCond_Taunting)) return;
@@ -78,7 +81,6 @@ void CreateMove() {
 	if (proj_gravity)
 		cur_proj_grav = (float)proj_gravity;
 	// TODO priority modes (FOV, Smart, Distance, etc)
-	CachedEntity* target_highest = 0;
 	float target_highest_score = -256;
 	for (int i = 0; i < HIGHEST_ENTITY; i++) {
 		CachedEntity* ent = ENTITY(i);

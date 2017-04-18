@@ -219,6 +219,9 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	}
 }
 
+static CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "Don't draw 2D box");
+static CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
+
 void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
 	if (CE_BAD(ent)) return;
 	bool cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
@@ -251,6 +254,15 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 	min_y = so.y - height;
 	max_y = so.y;
 	min_x = so.x - width / 2;
+
+	if (box_expand) {
+		const float& exp = (float)box_expand;
+		max_x += exp;
+		max_y += exp;
+		min_x -= exp;
+		min_y -= exp;
+	}
+
 	switch ((int)esp_box_text_position) {
 	case 0: { // TOP RIGHT
 		data.at(ent->m_IDX).esp_origin = Vector(max_x, min_y, 0);
@@ -270,15 +282,20 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 	unsigned char alpha = clr >> 24;
 	float trf = (float)((float)alpha / 255.0f);
 	int border = cloak ? colors::Create(160, 160, 160, alpha) : colors::Transparent(colors::black, trf);
+	if (!box_nodraw) {
+		draw::OutlineRect(min_x, min_y, max_x - min_x, max_y - min_y, border);
+		draw::OutlineRect(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr);
+		draw::OutlineRect(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border);
+		//draw::OutlineRect(so.x - width / 2 - 1, so.y - 1 - height, width + 2, height + 2, border);
+		//draw::OutlineRect(so.x - width / 2, so.y - height, width, height, clr);
+		//draw::OutlineRect(so.x - width / 2 + 1, so.y + 1 - height, width - 2, height - 2, border);
+	}
 
-	draw::OutlineRect(so.x - width / 2 - 1, so.y - 1 - height, width + 2, height + 2, border);
-	draw::OutlineRect(so.x - width / 2, so.y - height, width, height, clr);
-	draw::OutlineRect(so.x - width / 2 + 1, so.y + 1 - height, width - 2, height - 2, border);
 	if (healthbar) {
 		int hp = colors::Transparent(colors::Health(health, healthmax), trf);
 		int hbh = (height) * min((float)health / (float)healthmax, 1.0f);
-		draw::DrawRect(so.x - width / 2 - 7, so.y - 1 - height, 6, height + 2, border);
-		draw::DrawRect(so.x - width / 2 - 6, so.y - hbh, 5, hbh, hp);
+		draw::OutlineRect(min_x - 6, min_y, 7, max_y - min_y, border);
+		draw::DrawRect(min_x - 5, max_y - hbh - 1, 5, hbh, hp);
 	}
 	//draw::OutlineRect(min(smin.x, smax.x) - 1, min(smin.y, smax.y) - 1, max(smin.x, smax.x), max(smin.y, smax.y), draw::black);
 	//draw::OutlineRect(min(smin.x, smax.x), min(smin.y, smax.y), max(smin.x, smax.x), max(smin.y, smax.y), clr);

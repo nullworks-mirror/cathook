@@ -210,6 +210,8 @@ List& MainList() {
     "esp_distance"
     "esp_box"
     "esp_box_text_position"
+    "esp_box_nodraw"
+    "esp_box_expand"
     "3D Box" [
         "3D Box Settings"
         "esp_3d_box"

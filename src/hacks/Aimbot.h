@@ -29,6 +29,8 @@ struct AimKeyMode_t {
 void CreateMove();
 void Reset();
 
+extern CachedEntity* target_highest;
+
 int ShouldTarget(CachedEntity* entity);
 bool Aim(CachedEntity* entity, CUserCmd* cmd);
 bool ShouldAim(CUserCmd* cmd);
