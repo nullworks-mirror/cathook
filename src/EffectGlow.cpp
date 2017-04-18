@@ -315,7 +315,7 @@ void EffectGlow::RenderChams(IClientEntity* entity) {
 
 void EffectGlow::Render(int x, int y, int w, int h) {
 	if (!init) Init();
-	if (g_IEngine->IsTakingScreenshot() && clean_screenshots) return;
+	if (!cathook || (g_IEngine->IsTakingScreenshot() && clean_screenshots)) return;
 	if (!enable) return;
 	CMatRenderContextPtr ptr(g_IMaterialSystem->GetRenderContext());
 	ITexture* orig = ptr->GetRenderTarget();
