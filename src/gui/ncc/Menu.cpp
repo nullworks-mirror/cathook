@@ -202,6 +202,8 @@ List& MainList() {
 "ESP" [
     "ESP Menu"
     "esp_enabled"
+    "font_esp_family"
+    "font_esp_height"
     "esp_conds"
     "esp_class"
     "esp_name"

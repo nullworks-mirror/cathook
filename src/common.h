@@ -62,6 +62,11 @@
 
 #include "sdk.h"
 
+template<typename T>
+constexpr T _clamp(T _min, T _max, T _val) {
+	return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
+}
+
 #define TF2C (g_AppID == 243750)
 #define TF2  (g_AppID == 440)
 #define TF (TF2C || TF2)

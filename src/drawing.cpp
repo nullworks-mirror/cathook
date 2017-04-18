@@ -51,9 +51,6 @@ void AddCenterString(const std::string& string, int color) {
 
 
 // TODO globals
-unsigned long fonts::ESP = 0;
-unsigned long fonts::MENU = 0;
-unsigned long fonts::MENU_BIG = 0;
 int draw::width = 0;
 int draw::height = 0;
 
@@ -204,18 +201,46 @@ void draw::DrawRect(int x, int y, int w, int h, int color) {
 	g_ISurface->DrawFilledRect(x, y, x + w, y + h);
 }
 
+namespace fonts {
+
+unsigned long ESP = 0;
+unsigned long MENU = 0;
+unsigned long MENU_BIG = 0;
+
+static const std::vector<std::string> fonts = {"Tahoma Bold", "Tahoma", "TF2 Build", "Verdana", "Verdana Bold", "Arial", "Courier New", "Ubuntu Mono Bold"};
+static CatEnum family_enum(fonts);
+CatVar esp_family(family_enum, "font_esp_family", "2", "ESP font", "ESP font family");
+CatVar esp_height(CV_INT, "font_esp_height", "14", "ESP height", "ESP font height");
+
+void Update() {
+	fonts::ESP = g_ISurface->CreateFont();
+	g_ISurface->SetFontGlyphSet(fonts::ESP, fonts::fonts[_clamp(0, 7, (int)fonts::esp_family)].c_str(), (int)fonts::esp_height, 0, 0, 0, 0); // or Ubuntu Mono Bold
+	//g_ISurface->ResetFontCaches();
+}
+
+}
+
 void draw::Initialize() {
 	fonts::ESP = g_ISurface->CreateFont();
 	fonts::MENU = g_ISurface->CreateFont();
 	fonts::MENU_BIG = g_ISurface->CreateFont();
-
 	if (!draw::width || !draw::height) {
 		g_IEngine->GetScreenSize(draw::width, draw::height);
 	}
 
-	g_ISurface->SetFontGlyphSet(fonts::ESP, "TF2 Build", fonts::ESP_HEIGHT, 0, 0, 0, 0); // or Ubuntu Mono Bold
-	g_ISurface->SetFontGlyphSet(fonts::MENU, "Verdana", fonts::MENU_HEIGHT, 0, 0, 0, 0);
-	g_ISurface->SetFontGlyphSet(fonts::MENU_BIG, "Verdana Bold", fonts::MENU_BIG_HEIGHT, 0, 0, 0, 0x0);
+	const auto install_callback_fn = [](CatVar* var) {
+		var->convar_parent->InstallChangeCallback([](IConVar* var, const char* pOldValue, float flOldValue) {
+			fonts::Update();
+		});
+	};
+
+	fonts::esp_family.OnRegister(install_callback_fn);
+	fonts::esp_height.OnRegister(install_callback_fn);
+
+	fonts::Update();
+	g_ISurface->SetFontGlyphSet(fonts::MENU, fonts::fonts[_clamp(0, 5, (int)fonts::esp_family)].c_str(), (int)fonts::esp_height, 0, 0, 0, 0);
+	g_ISurface->SetFontGlyphSet(fonts::MENU, "Verdana", 12, 0, 0, 0, 0);
+	g_ISurface->SetFontGlyphSet(fonts::MENU_BIG, "Verdana Bold", 30, 0, 0, 0, 0x0);
 }
 
 void draw::DrawLine(int x, int y, int dx, int dy, int color) {

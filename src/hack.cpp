@@ -64,9 +64,6 @@ void hack::ExecuteCommand(const std::string command) {
 	hack::command_stack().push(command);
 }
 
-void hack::InitHacks() {
-}
-
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
@@ -110,7 +107,6 @@ void hack::Initialize() {
 	else if (TF2C) g_pClassID = new ClassIDTF2C();
 	else if (HL2DM) g_pClassID = new ClassIDHL2DM();
 	g_pClassID->Init();
-	draw::Initialize();
 	colors::Init();
 	if (TF2) {
 		uintptr_t mmmf = (gSignatures.GetClientSignature("C7 44 24 04 09 00 00 00 BB ? ? ? ? C7 04 24 00 00 00 00 E8 ? ? ? ? BA ? ? ? ? 85 C0 B8 ? ? ? ? 0F 44 DA") + 37);
@@ -128,9 +124,9 @@ void hack::Initialize() {
 	}
 	BeginConVars();
 	hack::c_Cat = CreateConCommand(CON_NAME, &hack::CC_Cat, "Info");
-	hack::InitHacks();
 	g_Settings.Init();
 	EndConVars();
+	draw::Initialize();
 	g_pGUI = new CatGUI();
 	g_pGUI->Setup();
 	gNetvars.init();

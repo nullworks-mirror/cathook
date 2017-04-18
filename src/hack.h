@@ -33,8 +33,6 @@ void Initialize();
 void Think();
 void Shutdown();
 
-void InitHacks();
-
 void CC_Cat(const CCommand& args);
 extern ConCommand* c_Cat;
 

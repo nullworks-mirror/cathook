@@ -178,12 +178,12 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, min_y, 0);
 	} break;
 	case 1: { // BOTTOM RIGHT
-		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, max_y - data.at(ent->m_IDX).string_count * 13, 0);
+		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 1), 0);
 	} break;
 	case 2: { // CENTER
 	} break;
 	case 3: { // ABOVE
-		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * 13, 0);
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 1), 0);
 	} break;
 	case 4: { // BELOW
 		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
@@ -256,12 +256,12 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 		data.at(ent->m_IDX).esp_origin = Vector(max_x, min_y, 0);
 	} break;
 	case 1: { // BOTTOM RIGHT
-		data.at(ent->m_IDX).esp_origin = Vector(max_x, max_y - data.at(ent->m_IDX).string_count * 13, 0);
+		data.at(ent->m_IDX).esp_origin = Vector(max_x, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 1), 0);
 	} break;
 	case 2: { // CENTER
 	} break;
 	case 3: { // ABOVE
-		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * 13, 0);
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 1), 0);
 	} break;
 	case 4: { // BELOW
 		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
@@ -527,11 +527,11 @@ void ProcessEntityPT(CachedEntity* ent) {
 			if (transparent) color = colors::Transparent(color);
 			if (!origin_is_zero) {
 				draw::String(fonts::ESP, draw_point.x, draw_point.y, color, 2, string.data);
-				draw_point.y += 11;
+				draw_point.y += (int)fonts::esp_height - 3;
 			} else {
 				auto l = draw::GetStringLength(fonts::ESP, string.data);
 				draw::String(fonts::ESP, draw_point.x - l.first / 2, draw_point.y, color, 2, string.data);
-				draw_point.y += 11;
+				draw_point.y += (int)fonts::esp_height - 3;
 			}
 		}
 	}

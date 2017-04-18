@@ -15,17 +15,20 @@
 
 class CachedEntity;
 class Vector;
+class CatVar;
 class IClientEntity;
 
 namespace fonts {
 
+// FIXME add menu fonts
 extern unsigned long ESP;
 extern unsigned long MENU;
 extern unsigned long MENU_BIG;
 
-const int ESP_HEIGHT = 14;
-const int MENU_HEIGHT = 12;
-const int MENU_BIG_HEIGHT = 30;
+void Update();
+
+extern CatVar esp_family;
+extern CatVar esp_height;
 
 }
 
