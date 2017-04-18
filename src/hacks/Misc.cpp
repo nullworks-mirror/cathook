@@ -168,7 +168,7 @@ void CreateMove() {
 				if (chc) {
 					found_crit_weapon = weapon;
 					found_crit_number = cmdn;
-					logging::Info("Found crit at: %i, original: %i", cmdn, g_pUserCmd->command_number);
+					//logging::Info("Found crit at: %i, original: %i", cmdn, g_pUserCmd->command_number);
 					//command_number_mod[g_pUserCmd->command_number] = cmdn;
 					//*(int*)(sharedobj::engine->Pointer(0x00B6C91C)) = cmdn - 1;
 				}

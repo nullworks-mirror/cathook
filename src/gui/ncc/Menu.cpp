@@ -279,6 +279,7 @@ List& MainList() {
 "Crit Hack" [
     "Crit Hack Menu"
     "crit_info"
+    "crit_hack_next"
     "crit_hack"
     "crit_suppress"
     "crit_melee"
