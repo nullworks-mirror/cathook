@@ -10,11 +10,11 @@
 
 namespace hacks { namespace tf2 { namespace antibackstab {
 
-static CatVar enabled(CV_SWITCH, "antibackstab", "0", "Enable");
-static CatVar distance(CV_FLOAT, "antibackstab_distance", "200", "Distance");
-static CatVar silent(CV_SWITCH, "antibackstab_silent", "1", "Silent");
+static CatVar enabled(CV_SWITCH, "antibackstab", "0", "Enable", "Main anti-backstab switch);
+static CatVar distance(CV_FLOAT, "antibackstab_distance", "200", "Distance", "Distance Until anti-backstab reacts");
+static CatVar silent(CV_SWITCH, "antibackstab_silent", "1", "Silent", "Works silently without moving your view");
 static CatVar angle(CV_FLOAT, "antibackstab_angle", "150", "Detection Angle");
-static CatVar sayno(CV_SWITCH, "antibackstab_nope", "0", "Nope!", "Memes (non-silent only)");
+static CatVar sayno(CV_SWITCH, "antibackstab_nope", "0", "Nope!", "Memes");
 
 void SayNope() {
 	static float last_say = 0.0f;

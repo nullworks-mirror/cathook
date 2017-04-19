@@ -47,7 +47,7 @@ CatVar gui_color_r(CV_INT, "gui_color_r", "255", "Main GUI color (red)", "Define
 CatVar gui_color_g(CV_INT, "gui_color_g", "105", "Main GUI color (green)", "Defines green component of main gui color", 0, 255);
 CatVar gui_color_b(CV_INT, "gui_color_b", "180", "Main GUI color (blue)", "Defines blue component of main gui color", 0, 255);
 
-static CatVar gui_rainbow(CV_SWITCH, "gui_rainbow", "0", "Rainbow GUI");
+static CatVar gui_rainbow(CV_SWITCH, "gui_rainbow", "0", "Rainbow GUI", "RGB all the things!!!");
 int GUIColor() {
 	return gui_rainbow ? colors::RainbowCurrent() : colors::Create((int)gui_color_r, (int)gui_color_g, (int)gui_color_b, 255);
 }

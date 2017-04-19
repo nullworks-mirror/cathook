@@ -12,17 +12,17 @@
 
 namespace effect_chams {
 
-CatVar enable(CV_SWITCH, "chams_enable", "0", "Enable");
-static CatVar flat(CV_SWITCH, "chams_flat", "0", "Flat");
-static CatVar health(CV_SWITCH, "chams_health", "0", "Health");
-static CatVar teammates(CV_SWITCH, "chams_teammates", "0", "Teammates");
-static CatVar players(CV_SWITCH, "chams_players", "1", "Players");
-static CatVar medkits(CV_SWITCH, "chams_medkits", "0", "Medkits");
-static CatVar ammobox(CV_SWITCH, "chams_ammo", "0", "Ammoboxes");
-static CatVar buildings(CV_SWITCH, "chams_buildings", "0", "Buildings");
-static CatVar stickies(CV_SWITCH, "chams_stickies", "0", "Stickies");
-static CatVar teammate_buildings(CV_SWITCH, "chams_teammate_buildings", "0", "Teammate Buildings");
-static CatVar weapons(CV_SWITCH, "chams_weapons", "1", "Weapons");
+CatVar enable(CV_SWITCH, "chams_enable", "0", "Enable", "Main chams switch");
+static CatVar flat(CV_SWITCH, "chams_flat", "0", "Flat", "Makes chams brighter and more full");
+static CatVar health(CV_SWITCH, "chams_health", "0", "Health", "Change chams color based on their health");
+static CatVar teammates(CV_SWITCH, "chams_teammates", "0", "Teammates", "Render chams on teammates");
+static CatVar players(CV_SWITCH, "chams_players", "1", "Players", "Render chams on player models");
+static CatVar medkits(CV_SWITCH, "chams_medkits", "0", "Medkits", "Render chams on medkits");
+static CatVar ammobox(CV_SWITCH, "chams_ammo", "0", "Ammoboxes", "Render chams on ammoboxes");
+static CatVar buildings(CV_SWITCH, "chams_buildings", "0", "Buildings", "Render chams on buildings");
+static CatVar stickies(CV_SWITCH, "chams_stickies", "0", "Stickies", "Render chams on stickybombs");
+static CatVar teammate_buildings(CV_SWITCH, "chams_teammate_buildings", "0", "Teammate Buildings", "Render chams on teammates buildings");
+static CatVar weapons(CV_SWITCH, "chams_weapons", "1", "Weapons", "Render chams on players weapons");
 
 void EffectChams::Init() {
 	logging::Info("Init EffectChams...");

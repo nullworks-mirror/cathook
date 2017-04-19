@@ -25,15 +25,15 @@ CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration( const char *pNam
 
 namespace effect_glow {
 
-CatVar enable(CV_SWITCH, "glow_enable", "0", "Enable");
-static CatVar health(CV_SWITCH, "glow_health", "0", "Health");
-static CatVar teammates(CV_SWITCH, "glow_teammates", "0", "Teammates");
-static CatVar players(CV_SWITCH, "glow_players", "1", "Players");
-static CatVar medkits(CV_SWITCH, "glow_medkits", "0", "Medkits");
-static CatVar ammobox(CV_SWITCH, "glow_ammo", "0", "Ammoboxes");
-static CatVar buildings(CV_SWITCH, "glow_buildings", "0", "Buildings");
-static CatVar stickies(CV_SWITCH, "glow_stickies", "0", "Stickies");
-static CatVar teammate_buildings(CV_SWITCH, "glow_teammate_buildings", "0", "Teammate Buildings");
+CatVar enable(CV_SWITCH, "glow_enable", "0", "Enable", "Main glow switch");
+static CatVar health(CV_SWITCH, "glow_health", "0", "Health", "Change glow color based on their health");
+static CatVar teammates(CV_SWITCH, "glow_teammates", "0", "Teammates", "Render glow on teammates");
+static CatVar players(CV_SWITCH, "glow_players", "1", "Players", "Render glow on player models");
+static CatVar medkits(CV_SWITCH, "glow_medkits", "0", "Medkits", "Render glow on medkits");
+static CatVar ammobox(CV_SWITCH, "glow_ammo", "0", "Ammoboxes", "Render glow on ammoboxes");
+static CatVar buildings(CV_SWITCH, "glow_buildings", "0", "Buildings", "Render glow on buildings");
+static CatVar stickies(CV_SWITCH, "glow_stickies", "0", "Stickies", "Render glow on stickybombs");
+static CatVar teammate_buildings(CV_SWITCH, "glow_teammate_buildings", "0", "Teammate Buildings", "Render glow on teammates buildings");
 
 
 struct ShaderStencilState_t
@@ -275,7 +275,7 @@ void EffectGlow::EndRenderGlow() {
 
 // https://puu.sh/vobH4/5da8367aef.png
 static CatEnum solid_when_enum({"Never", "Always", "Invisible"});
-static CatVar blur_scale(CV_INT, "glow_blur_scale", "5", "Blur amount");
+static CatVar blur_scale(CV_INT, "glow_blur_scale", "5", "Blur amount", "Ammount to blur the glow");
 static CatVar solid_when(solid_when_enum, "glow_solid_when", "0", "Solid when", "Glow will be solid when entity is...");
 
 void EffectGlow::StartStenciling() {

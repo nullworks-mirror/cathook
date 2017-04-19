@@ -105,14 +105,14 @@ void Draw() {
 
 static CatEnum esp_box_text_position_enum({"TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE", "BELOW" });
 static CatVar esp_box_text_position(esp_box_text_position_enum, "esp_box_text_position", "0", "Text position", "Defines text position");
-static CatVar esp_3d_box_health(CV_SWITCH, "esp_3d_box_health", "1", "3D box health color");
-static CatVar esp_3d_box_thick(CV_SWITCH, "esp_3d_box_thick", "1", "Thick 3D box");
+static CatVar esp_3d_box_health(CV_SWITCH, "esp_3d_box_health", "1", "3D box health color", "Adds a health bar to 3d esp box");
+static CatVar esp_3d_box_thick(CV_SWITCH, "esp_3d_box_thick", "1", "Thick 3D box", "Makes the 3d box thicker\nMost times, easier to see");
 static CatVar esp_3d_box_expand_rate(CV_FLOAT, "esp_3d_box_expand_size", "10", "3D Box Expand Size", "Expand 3D box by X units", 50.0f);
-static CatVar esp_3d_box_expand(CV_SWITCH, "esp_3d_box_expand", "1", "Expand 3D box");
+static CatVar esp_3d_box_expand(CV_SWITCH, "esp_3d_box_expand", "1", "Expand 3D box", "Makes the 3d bigger");
 static CatEnum esp_3d_box_smoothing_enum({"None", "Origin offset", "Bone update (NOT IMPL)"});
 static CatVar esp_3d_box_smoothing(esp_3d_box_smoothing_enum, "esp_3d_box_smoothing", "1", "3D box smoothing", "3D box smoothing method");
 static CatVar esp_3d_box_nodraw(CV_SWITCH, "esp_3d_box_nodraw", "0", "Invisible 3D box", "Don't draw 3d box");
-static CatVar esp_3d_box_healthbar(CV_SWITCH, "esp_3d_box_healthbar", "1", "Health bar");
+static CatVar esp_3d_box_healthbar(CV_SWITCH, "esp_3d_box_healthbar", "1", "Health bar", "Adds a health bar to the esp");
 
 void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healthmax) {
 	Vector mins, maxs;

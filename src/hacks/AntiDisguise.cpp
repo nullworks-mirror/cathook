@@ -12,7 +12,7 @@
 
 namespace hacks { namespace tf2 { namespace antidisguise {
 
-CatVar enabled(CV_SWITCH, "antidisguise", "0", "Remove spy disguise");
+CatVar enabled(CV_SWITCH, "antidisguise", "0", "Remove spy disguise", "Removes the disguise from spys\nUsefull for aimbot");
 
 void Draw() {
 	if (!enabled) return;

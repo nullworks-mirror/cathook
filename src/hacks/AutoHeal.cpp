@@ -19,9 +19,9 @@ CatVar silent(CV_SWITCH, "autoheal_silent", "1", "Silent AutoHeal", "Silent Auto
 int m_iCurrentHealingTarget { -1 };
 int m_iNewTarget { 0 };
 
-static CatVar pop_uber_auto(CV_SWITCH, "autoheal_uber", "1", "AutoUber");
-static CatVar pop_uber_percent(CV_FLOAT, "autoheal_uber_health", "30", "Pop uber if health% <");
-static CatVar share_uber(CV_SWITCH, "autoheal_share_uber", "1", "Share ubercharge");
+static CatVar pop_uber_auto(CV_SWITCH, "autoheal_uber", "1", "AutoUber", "Use ubercharge automatically");
+static CatVar pop_uber_percent(CV_FLOAT, "autoheal_uber_health", "30", "Pop uber if health% <", "When under a percentage of health, use ubercharge");
+static CatVar share_uber(CV_SWITCH, "autoheal_share_uber", "1", "Share ubercharge", "Aimbot will attempt to share uber charge with un-ubered players");
 
 int force_healing_target { 0 };
 

@@ -191,7 +191,7 @@ void Reset() {
 	projectile_mode = false;
 }
 
-static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge");
+static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits untill it has enough charge to kill");
 
 int ShouldTarget(CachedEntity* entity) {
 	// Just assuming CE is good

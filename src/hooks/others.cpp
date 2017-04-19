@@ -23,8 +23,8 @@ int C_TFPlayer__DrawModel_hook(IClientEntity* _this, int flags) {
 	*(float*)((uintptr_t)_this + 79u) = old_invis;
 }
 
-static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms");
-static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats");
+static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms", "Removes arms from first person");
+static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats", "Removes non-stock hats");
 
 void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix) {
 	/*IClientUnknown* unknown = info.pRenderable->GetIClientUnknown();
