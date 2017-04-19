@@ -59,6 +59,7 @@ void EffectChams::Init() {
 void EffectChams::BeginRenderChams() {
 	drawing = true;
 	CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
+	g_IVRenderView->SetBlend(1.0f);
 }
 
 void EffectChams::EndRenderChams() {
