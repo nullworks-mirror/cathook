@@ -319,7 +319,6 @@ void EffectGlow::DrawToBuffer(IClientEntity* entity) {
 }
 
 void EffectGlow::DrawEntity(IClientEntity* entity) {
-	g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
 	entity->DrawModel(1);
 	IClientEntity* attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
 	int passes = 0;
@@ -339,6 +338,7 @@ void EffectGlow::RenderGlow(IClientEntity* entity) {
 	unsigned char _r = (color) & 0xFF;
 	float color_1[] = { (float)_r / 255.0f, (float)_g / 255.0f, (float)_b / 255.0f };
 	g_IVRenderView->SetColorModulation(color_1);
+	g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
 	DrawEntity(entity);
 }
 
