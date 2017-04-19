@@ -580,7 +580,6 @@ static const std::string list_tf2 = R"(
         "log"
     ]
 ]
-<<<<<<< HEAD
 )";
 
 List& MainList() {
