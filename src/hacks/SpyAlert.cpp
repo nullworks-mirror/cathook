@@ -15,7 +15,7 @@ namespace hacks { namespace tf { namespace spyalert {
 CatVar enabled(CV_SWITCH, "spyalert_enabled", "0", "Enable", "Master SpyAlert switch");
 CatVar distance_warning(CV_FLOAT, "spyalert_warning", "500.0", "Warning distance", "Distance where yellow warning shows");
 CatVar distance_backstab(CV_FLOAT, "spyalert_backstab", "200.0", "Backstab distance", "Distance where red warning shows");
-CatVar sound_alerts(CV_SWITCH, "spyalert_sound", "1", "Sound Alerts", "???");
+CatVar sound_alerts(CV_SWITCH, "spyalert_sound", "1", "Sound Alerts", "Demoman yells spy when a spy is within distance");
 CatVar sound_alert_interval(CV_FLOAT, "spyalert_interval", "3", "Alert Interval", "Sound alert interval");
 
 bool warning_triggered = false;

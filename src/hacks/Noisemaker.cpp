@@ -13,7 +13,7 @@
 
 namespace hacks { namespace tf2 { namespace noisemaker {
 
-extern CatVar enabled(CV_SWITCH, "noisemaker", "0", "Noisemaker spam");
+extern CatVar enabled(CV_SWITCH, "noisemaker", "0", "Noisemaker spam", "Spams noisemakers Infinitly\nWorks with limited use noisemakers");
 
 void CreateMove() {
 	if (enabled) {

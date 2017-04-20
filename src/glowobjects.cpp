@@ -11,13 +11,13 @@
 static CatEnum glow_color_scheme_enum({"ESP", "HEALTH"});
 static CatVar glow_color_scheme(glow_color_scheme_enum, "glow_old_color_scheme", "1", "Colors", "Doesn't need a description");
 // Doesn't work - has to be registered manually.
-static CatVar glow_ammo_boxes(CV_SWITCH, "glow_old_ammo_boxes", "0", "Ammo");
-static CatVar glow_health_packs(CV_SWITCH, "glow_old_health_packs", "0", "Health");
-static CatVar glow_teammates(CV_SWITCH, "glow_old_teammates", "0", "Teammates");
-static CatVar glow_teammate_buildings(CV_SWITCH, "glow_old_teammate_buildings", "0", "Teammate buildings");
-static CatVar glow_buildings(CV_SWITCH, "glow_old_buildings", "1", "Buildings");
-static CatVar glow_stickies(CV_SWITCH, "glow_old_stickies", "0", "Stickies");
-static CatVar glow_players(CV_SWITCH, "glow_old_players", "1", "Players");
+static CatVar glow_ammo_boxes(CV_SWITCH, "glow_old_ammo_boxes", "0", "Ammo", "Render glow on ammoboxes");
+static CatVar glow_health_packs(CV_SWITCH, "glow_old_health_packs", "0", "Health", "Render glow on medkits");
+static CatVar glow_teammates(CV_SWITCH, "glow_old_teammates", "0", "Teammates", "Render glow on teammates");
+static CatVar glow_teammate_buildings(CV_SWITCH, "glow_old_teammate_buildings", "0", "Teammate buildings", "Render glow on teammates buildings");
+static CatVar glow_buildings(CV_SWITCH, "glow_old_buildings", "1", "Buildings", "Render glow on buildings");
+static CatVar glow_stickies(CV_SWITCH, "glow_old_stickies", "0", "Stickies", "Render glow on stickybombs");
+static CatVar glow_players(CV_SWITCH, "glow_old_players", "1", "Players", "Render glow on player models");
 
 int CGlowObjectManager::EnableGlow(IClientEntity* entity, int color) {
 	int idx = GlowHandle(entity);
