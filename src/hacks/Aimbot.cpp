@@ -191,7 +191,9 @@ void Reset() {
 	projectile_mode = false;
 }
 
-static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits untill it has enough charge to kill");
+static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits until it has enough charge to kill");
+
+static CatVar respect_vaccinator(CV_SWITCH, "aimbot_respect_vaccinator", "1", "Respect Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 
 int ShouldTarget(CachedEntity* entity) {
 	// Just assuming CE is good
@@ -212,7 +214,7 @@ int ShouldTarget(CachedEntity* entity) {
 			if (respect_cloak && IsPlayerInvisible(entity)) return 6;
 			weaponmode mode = GetWeaponMode(LOCAL_E);
 			if (mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == g_pClassID->CTFCompoundBow)
-				if (HasCondition(entity, TFCond_UberBulletResist)) return 10;
+				if (respect_vaccinator && HasCondition(entity, TFCond_UberBulletResist)) return 10;
 		}
 
 #if NO_DEVIGNORE != true
