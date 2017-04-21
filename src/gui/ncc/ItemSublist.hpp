@@ -15,6 +15,8 @@ class CatVar;
 
 namespace menu { namespace ncc {
 
+class List; // ????
+
 class ItemSublist : public Item {
 public:
 	ItemSublist(std::string title, List* list);

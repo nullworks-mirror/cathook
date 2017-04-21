@@ -67,18 +67,6 @@ void AddEntityString(CachedEntity* entity, const std::string& string, int color)
 	entity_data.string_count++;
 }
 
-const std::string classes[] = {
-	"Scout",
-	"Sniper",
-	"Soldier",
-	"Demoman",
-	"Medic",
-	"Heavy",
-	"Pyro",
-	"Spy",
-	"Engineer"
-};
-
 void CreateMove() {
 	ResetEntityStrings();
 	int limit = HIGHEST_ENTITY;
@@ -418,7 +406,7 @@ void ProcessEntity(CachedEntity* ent) {
 		powerup_type power = GetPowerupOnPlayer(ent);
 		// If target is enemy, always show powerups, if player is teammate, show powerups
 		// only if bTeammatePowerup or bTeammates is true
-		if (legit && ent->m_iTeam != g_pLocalPlayer->team  && playerlist::AccessData(ent).state != playerlist::k_EState::DEFAULT) {
+		if (legit && ent->m_iTeam != g_pLocalPlayer->team && playerlist::IsDefault(info.friendsID)) {
 			if (IsPlayerInvisible(ent)) return;
 			/*if (ent->m_lLastSeen > (unsigned)v_iLegitSeenTicks->GetInt()) {
 				return;
@@ -428,7 +416,7 @@ void ProcessEntity(CachedEntity* ent) {
 			// FIXME Disabled powerup ESP.
 			//AddEntityString(ent, format("HAS ", powerups[power]));
 		}
-		if (ent->m_bEnemy || teammates || playerlist::AccessData(ent).state != playerlist::k_EState::DEFAULT) {
+		if (ent->m_bEnemy || teammates || !playerlist::IsDefault(info.friendsID)) {
 			if (show_name)
 				AddEntityString(ent, std::string(info.name));
 			if (show_class) {
@@ -496,14 +484,14 @@ void ProcessEntityPT(CachedEntity* ent) {
 		switch (ent->m_Type) {
 		case ENTITY_PLAYER: {
 			bool cloak = IsPlayerInvisible(ent);
-			if (legit && ent->m_iTeam != g_pLocalPlayer->team && playerlist::AccessData(ent).state == playerlist::k_EState::DEFAULT) {
+			if (legit && ent->m_iTeam != g_pLocalPlayer->team && playerlist::IsDefault(ent)) {
 				if (cloak) return;
 				/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
 					return;
 				}*/
 			}
 
-			if (!ent->m_bEnemy && !teammates && playerlist::AccessData(ent).state == playerlist::k_EState::DEFAULT) break;
+			if (!ent->m_bEnemy && !teammates && playerlist::IsDefault(ent)) break;
 			if (!ent->m_bAlivePlayer) break;
 			if (vischeck && !ent->IsVisible()) transparent = true;
 			if (transparent) fg = colors::Transparent(fg);

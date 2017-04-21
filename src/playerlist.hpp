@@ -47,6 +47,8 @@ int Color(unsigned steamid);
 int Color(CachedEntity* player);
 userdata& AccessData(unsigned steamid);
 userdata& AccessData(CachedEntity* player);
+bool IsDefault(unsigned steamid);
+bool IsDefault(CachedEntity* player);
 
 }
 

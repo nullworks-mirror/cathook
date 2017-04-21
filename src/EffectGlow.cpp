@@ -190,16 +190,11 @@ int  EffectGlow::GlowColor(IClientEntity* entity) {
 	}
 	switch (ent->m_Type) {
 	case ENTITY_BUILDING:
-		if (!ent->m_bEnemy && !(teammates || teammate_buildings)) {
-			return 0;
-		}
 		if (health) {
 			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 		}
 		break;
 	case ENTITY_PLAYER:
-		if (!players) return 0;
-		if (!ent->m_bEnemy && !teammates) return 0;
 		if (health) {
 			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 		}
@@ -226,7 +221,7 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity* entity) {
 		return true;
 	case ENTITY_PLAYER:
 		if (!players) return false;
-		if (!teammates && !ent->m_bEnemy) return false;
+		if (!teammates && !ent->m_bEnemy && playerlist::IsDefault(ent)) return false;
 		if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) return false;
 		return true;
 		break;

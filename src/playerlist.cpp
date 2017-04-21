@@ -125,7 +125,17 @@ userdata& AccessData(CachedEntity* player) {
 	if (CE_GOOD(player) && player->m_pPlayerInfo)
 		return AccessData(player->m_pPlayerInfo->friendsID);
 	return AccessData(0U);
+}
 
+bool IsDefault(unsigned steamid) {
+	const userdata& data = AccessData(steamid);
+	return data.state == k_EState::DEFAULT && !data.color;
+}
+
+bool IsDefault(CachedEntity* entity) {
+	if (CE_GOOD(entity) && entity->m_pPlayerInfo)
+		return IsDefault(entity->m_pPlayerInfo->friendsID);
+	return true;
 }
 
 CatCommand pl_save("pl_save", "Save playerlist", Save);

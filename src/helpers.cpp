@@ -872,8 +872,7 @@ const char* powerups[] = {
 	"CRITS"
 };
 
-const char* tfclasses[] = {
-	"[NULL]",
+const std::string classes[] = {
 	"Scout",
 	"Sniper",
 	"Soldier",

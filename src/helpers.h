@@ -132,7 +132,7 @@ std::string format(const Args&... args) {
 	return stream.str();
 }
 
-extern const char* tfclasses[10];
+extern const std::string classes[10];
 extern const char* powerups[POWERUP_COUNT];
 
 #endif /* HELPERS_H_ */

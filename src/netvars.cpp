@@ -22,6 +22,7 @@ void NetVars::Init() {
 	this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
 	this->m_Collision = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
 	if (TF2) {
+		res_m_iTeam = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
 		m_angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata", "m_angEyeAngles[0]");
 		this->bGlowEnabled = gNetvars.get_offset("DT_TFPlayer", "m_bGlowEnabled");
 		this->iMaxBuffedHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");

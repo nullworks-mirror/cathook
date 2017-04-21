@@ -295,6 +295,7 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 bool CanInspect_hook(IClientEntity*) { return true; }
 
 void LevelShutdown_hook(void* thisptr) {
+	playerlist::Save();
 	((LevelShutdown_t*) hooks::hkClientMode->GetMethod(hooks::offLevelShutdown))(thisptr);
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();

@@ -115,7 +115,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity* entity) {
 		return true;
 	case ENTITY_PLAYER:
 		if (!players) return false;
-		if (!teammates && !ent->m_bEnemy) return false;
+		if (!teammates && !ent->m_bEnemy && playerlist::IsDefault(ent)) return false;
 		if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) return false;
 		return true;
 		break;

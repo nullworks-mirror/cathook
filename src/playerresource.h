@@ -16,6 +16,7 @@ public:
 	int GetMaxHealth(CachedEntity* player);
 	int GetMaxBuffedHealth(CachedEntity* player);
 	int GetClass(CachedEntity* player);
+	int GetTeam(int idx);
 
 	CachedEntity* m_pEntity;
 };

@@ -123,6 +123,7 @@ public:
 	offset_t m_angEyeAngles;
 	offset_t m_bReadyToBackstab;
 	offset_t m_Collision;
+	offset_t res_m_iTeam;
 };
 
 extern NetVars netvar;

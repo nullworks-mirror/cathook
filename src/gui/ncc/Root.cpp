@@ -36,6 +36,9 @@ void Root::Setup() {
 	AddChild(new Radar());
 	menu::ncc::MainList().Show();
 	menu::ncc::MainList().SetOffset(draw::width / 2, draw::height / 2);
+	PlayerList* pl = new PlayerList();
+	pl->SetOffset(200, 200);
+	AddChild(pl);
 }
 
 void Root::OnKeyPress(ButtonCode_t key, bool repeat) {
