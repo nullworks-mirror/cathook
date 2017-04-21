@@ -107,6 +107,7 @@ static CatCommand minus_use_action_slot_item_server("-cat_use_action_slot_item_s
 	g_IEngine->ServerCmdKeyValues(kv);
 });
 
+// Not used anymore..
 bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	SEGV_BEGIN;
 	if (log_sent && msg.GetType() != 3 && msg.GetType() != 9) {
@@ -121,19 +122,6 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 			bytes += format((unsigned short)buf[i], ' ');
 		}
 		logging::Info("%i bytes => %s", buffer.GetNumBytesWritten(), bytes.c_str());
-	}
-	//logging::Info("Sending NetMsg! %i", msg.GetType());
-	if (hacks::shared::airstuck::IsStuck() && cathook && !g_Settings.bInvalid) {
-		switch (msg.GetType()) {
-		case net_NOP:
-		case net_SignonState:
-		case net_StringCmd:
-		case 16: // cmdKeyValues
-			break;
-		default:
-			//logging::Info("Blocked net message %i %s", msg.GetType(), msg.GetName());
-			return false;
-		}
 	}
 	return ((SendNetMsg_t*)hooks::hkNetChannel->GetMethod(hooks::offSendNetMsg))(thisptr, msg, bForceReliable, bVoice);
 	SEGV_END;
@@ -298,7 +286,6 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
 	g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();
-	hacks::shared::airstuck::Reset();
 //	LEVEL_SHUTDOWN(FollowBot);
 	//if (TF) LEVEL_INIT(SpyAlert);
 	chat_stack::Reset();
@@ -311,7 +298,6 @@ void LevelShutdown_hook(void* thisptr) {
 	((LevelShutdown_t*) hooks::hkClientMode->GetMethod(hooks::offLevelShutdown))(thisptr);
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();
-	hacks::shared::airstuck::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
 }

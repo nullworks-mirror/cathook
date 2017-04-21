@@ -69,7 +69,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		hooks::hkNetChannel = new hooks::VMTHook();
 		hooks::hkNetChannel->Init(ch, 0);
 		hooks::hkNetChannel->HookMethod((void*)CanPacket_hook, hooks::offCanPacket);
-		hooks::hkNetChannel->HookMethod((void*)SendNetMsg_hook, hooks::offSendNetMsg);
+		//hooks::hkNetChannel->HookMethod((void*)SendNetMsg_hook, hooks::offSendNetMsg);
 		hooks::hkNetChannel->HookMethod((void*)Shutdown_hook, hooks::offShutdown);
 		hooks::hkNetChannel->Apply();
 	}
@@ -78,10 +78,6 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 	bool time_replaced = false;
 	float curtime_old = g_GlobalVars->curtime;
-
-	if (hacks::shared::airstuck::IsStuck()) {
-		return ret;
-	}
 
 	if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity)) {
 		float servertime = (float)CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick;

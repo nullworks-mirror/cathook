@@ -12,7 +12,7 @@
 namespace menu { namespace ncc {
 
 Tooltip::Tooltip() : CTextLabel("ncc_tooltip") {
-SetZIndex(999);
+	SetZIndex(999);
 	SetPadding(2, 1);
 	SetMaxSize(220, -1);
 	SetAutoSize(false);

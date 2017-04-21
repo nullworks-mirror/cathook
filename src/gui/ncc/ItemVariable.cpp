@@ -17,7 +17,7 @@ ItemVariable::ItemVariable(CatVar& variable) : Item("ncc_item_variable_" + varia
 
 void ItemVariable::Update() {
 	Item::Update();
-	if (catvar.desc_long.length() && IsHovered())
+	if (catvar.desc_long.length() && IsHovered() && catvar.desc_long != "no description")
 		ShowTooltip(catvar.desc_long);
 }
 

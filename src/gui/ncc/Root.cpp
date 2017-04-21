@@ -24,7 +24,7 @@ void Root::Update() {
 
 void Root::Draw(int x, int y) {
 	if (tooltip->IsVisible()) {
-		tooltip->SetOffset(g_pGUI->m_iMouseX + 8, g_pGUI->m_iMouseY + 8);
+		tooltip->SetOffset(g_pGUI->m_iMouseX + 24, g_pGUI->m_iMouseY + 8);
 	}
 	CBaseContainer::Draw(x, y);
 }
@@ -35,7 +35,7 @@ void Root::Setup() {
 	AddChild(&menu::ncc::MainList());
 	AddChild(new Radar());
 	menu::ncc::MainList().Show();
-	menu::ncc::MainList().SetOffset(500, 500);
+	menu::ncc::MainList().SetOffset(draw::width / 2, draw::height / 2);
 }
 
 void Root::OnKeyPress(ButtonCode_t key, bool repeat) {

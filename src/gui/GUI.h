@@ -33,7 +33,7 @@ int GUIColor();
 
 extern CatVar gui_visible;
 extern CatVar gui_draw_bounds;
-extern CatVar gui_nullcore;
+constexpr bool gui_nullcore = true;
 
 class CatGUI {
 public:

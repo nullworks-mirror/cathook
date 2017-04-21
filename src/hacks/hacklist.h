@@ -9,7 +9,6 @@
 #define HACKS_HACKLIST_H_
 
 #include "Aimbot.h"
-#include "Airstuck.h"
 #include "AntiAim.h"
 #include "AntiDisguise.h"
 #include "AutoHeal.h"
