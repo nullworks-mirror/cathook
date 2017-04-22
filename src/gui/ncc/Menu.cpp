@@ -246,6 +246,7 @@ static const std::string list_tf2 = R"(
     "aimbot_charge"
     "Ignore" [
         "Ignore/Respect Menu"
+        "aimbot_respect_vaccinator"
         "ignore_taunting"
         "aimbot_ignore_hoovy"
         "aimbot_respect_cloak"
