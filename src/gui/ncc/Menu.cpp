@@ -240,6 +240,7 @@ static const std::string list_tf2 = R"(
     "aimbot_aimkey"
     "aimbot_aimkey_mode"
     "aimbot_autoshoot"
+    "aimbot_autoshoot_delay"
     "aimbot_hitboxmode"
     "aimbot_fov"
     "aimbot_prioritymode"
@@ -525,6 +526,7 @@ static const std::string list_tf2 = R"(
     ]
     "bhop_enabled"
     "noisemaker"
+    "nopush_enabled"
     "fast_vischeck"
     "anti_afk"
     "rollspeedhack"
