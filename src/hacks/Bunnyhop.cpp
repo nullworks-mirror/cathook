@@ -34,7 +34,7 @@ void CreateMove() {
 	}
 
 	if (!ground && jump) {
-		if (iTicksLastJump++ >= 20) g_pUserCmd->buttons = g_pUserCmd->buttons &~ IN_JUMP;
+		if (iTicksLastJump++ >= 5) g_pUserCmd->buttons = g_pUserCmd->buttons &~ IN_JUMP;
 	}
 	if (!jump) iTicksLastJump = 0;
 	return;
