@@ -26,6 +26,9 @@ bool headonly { false };
 int last_target { -1 };
 bool silent_huntsman { false };
 
+int iTickAutoshootDelay { 0 };
+static CatVar autoshoot_delay(CV_FLOAT, "aimbot_autoshoot_delay", "0", "Autoshoot Delay", "Delays your shot to increase accuracy", 100.0);
+
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 
 int ClosestHitbox(CachedEntity* target) {
@@ -343,9 +346,25 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 				break;
 			}
 		}
-		if (attack) {
-			cmd->buttons |= IN_ATTACK;
-		}
+		bool autoshoot_delay_bool = false;
+		if ( autoshoot_delay == 0 ) {
+            bool autoshoot_delay_bool = false;
+        } else {
+            bool autoshoot_delay_bool = true;
+        }
+        int autoshootdelayvar = autoshoot_delay;
+        if ( attack == false ) {
+            iTickAutoshootDelay = 0;
+        }
+		if ( attack && autoshoot_delay_bool ) {
+            if ( (iTickAutoshootDelay++ / 200 ) >= autoshootdelayvar ) {
+                cmd->buttons |= IN_ATTACK;
+            }
+        } else {
+            if ( attack ) {
+                cmd->buttons |= IN_ATTACK;
+            }
+        }
 	}
 	return true;
 }
