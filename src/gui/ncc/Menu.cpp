@@ -525,6 +525,7 @@ static const std::string list_tf2 = R"(
     ]
     "bhop_enabled"
     "noisemaker"
+    "nopush_enabled"
     "fast_vischeck"
     "anti_afk"
     "rollspeedhack"

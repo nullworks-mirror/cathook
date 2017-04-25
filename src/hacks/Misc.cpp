@@ -103,6 +103,8 @@ static CatCommand clear_conds("debug_clear_conds", "Actually doesn't do anything
 	RemoveCondition(LOCAL_E, TFCond_Milked);
 });
 
+CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push", "Prevents other players from pushing you around.");
+
 static IClientEntity* found_crit_weapon = nullptr;
 static int found_crit_number = 0;
 static int last_number = 0;
@@ -189,6 +191,17 @@ void CreateMove() {
 		g_pUserCmd->forwardmove  = RandFloatRange(-450.0, 450.0);
 		g_pUserCmd->buttons = rand();
 	}
+	//Pasted by Julianacat from F1ssion
+	ConVar * pNoPush = g_ICvar->FindVar( "tf_avoidteammates_pushaway" );
+    int nopushvar = nopush_enabled;
+	if ( nopushvar == (pNoPush -> GetInt()) ) {
+        if (nopushvar == 1) {
+            pNoPush->SetValue( 0 );
+        } else {
+            pNoPush->SetValue( 1 );
+        }
+        
+    }
 }
 
 void Draw() {
