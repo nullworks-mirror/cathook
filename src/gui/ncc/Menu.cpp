@@ -245,7 +245,6 @@ static const std::string list_tf2 = R"(
     "aimbot_prioritymode"
     "aimbot_charge"
     "aimbot_slow"
-    "aimbot_slow_shunt"
     "Ignore" [
         "Ignore/Respect Menu"
         "aimbot_respect_vaccinator"
@@ -270,6 +269,7 @@ static const std::string list_tf2 = R"(
         "aimbot_zoomed"
         "aimbot_only_when_can_shoot"
         "aimbot_enable_attack_only"
+	"aimbot_slow_shunt"
         "aimbot_maxrange"
         "aimbot_interp"
         "Projectile Aimbot" [
