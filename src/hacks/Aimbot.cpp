@@ -304,10 +304,14 @@ float origx;
 float origy;
 float angiex;
 float angiey;
-static CatVar meme1(CV_FLOAT, "debug_sl_1", "0", "origx", "kill", 1000);
-static CatVar meme2(CV_FLOAT, "debug_sl_2", "0", "angix", "kill", 1000);
-static CatVar meme3(CV_FLOAT, "debug_sl_3", "0", "changex", "kill", 1000);
-static CatVar meme4(CV_FLOAT, "debug_sl_4", "0", "sai", "kill", 1000);
+int slowfliptype;
+int slowdiry1;
+
+static CatVar meme1(CV_FLOAT, "debug_sl_1", "0", "origy", "kill", 1000);
+static CatVar meme2(CV_FLOAT, "debug_sl_2", "0", "angiy", "kill", 1000);
+static CatVar meme3(CV_FLOAT, "debug_sl_3", "0", "changey", "kill", 1000);
+static CatVar meme4(CV_FLOAT, "debug_sl_4", "0", "showfliptype", "kill", 1000);
+static CatVar meme5(CV_FLOAT, "debug_sl_5", "0", "slowdiry", "kill", 1000);
 bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	//logging::Info("Aiming!");
 	Vector hit;
@@ -332,47 +336,121 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	fVectorAngles(tr, angles);
 	bool smoothed = false;
 	if ( (slowaim == 1) && (silent == false) ) {
+        //Some of cats original code that I dont dare to touch.
 		Vector da = (angles - g_pLocalPlayer->v_OrigViewangles);
 		fClampAngle(da);
 		smoothed = true;
 		if (da.IsZero(slowaim_threshhold)) smoothed = false;
+        
+        //Save info to vars that are easy to work with
         sai = slowaim_intensity;
         origx = cmd->viewangles.x;
         origy = cmd->viewangles.y;
         angiex = angles.x;
         angiey = angles.y;
         
-        /*if ( origy != angiey ) {
-            if ( origy > angiey ) {
-                changey = ( origy + angiey ) / (sai*sai) ;
-                angles.y = origy + changey;
-            } else {
-                changey = ( origy + angiey ) / (sai*sai) ;
-                angles.y = origy - changey;
+        //Angle clamping for when the aimbot chooses a too high of value
+        if (angiey > 180) angiey = angiey - 360;
+        if (angiey < -180) angiey = angiey + 360;
+        
+        //Determine whether to move the mouse at all for the yaw
+        if ( origy != angiey ) {
+            
+            //Fliping The main axis to prevent 180s from happening when the bot trys to cross -180y and 180y
+            slowfliptype = 0;
+            if ( ((angiey < -90) && (origy > 90))  && (slowfliptype == 0) ) {
+                slowfliptype = 1;
+                angiey = angiey + 90;
+                origy = origy - 90;
+                meme4 = 1;
+                logging::Info("Flip 1");
             }
-        }*/
-        if ( origx != angiex ) {
-            if ( origx > angiex ) {
-                changex = ( std::abs(origx - angiex ) ) / (sai) ;
-                angles.x = origx - changex;
-            } 
-            if ( origx < angiex ) {
-                changex = ( std::abs(origx - angiex ) ) / (sai) ;
-                angles.x = origx + changex;
-                logging::Info("Adding");
+            if ( ((angiey > 90) && (origy < -90)) && (slowfliptype == 0) ) {
+                slowfliptype = 2;
+                angiey = angiey - 90;
+                origy = origy + 90;
+                meme4 = 2;
+                logging::Info("Flip 2");
             }
-            meme1 = origx;
-            meme2 = angiex;
-            meme3 = changex;
-            meme4 = sai;
+            /*
+            if ( ((angiey > 90) && (origy > 90)) && (slowfliptype == 0) ) {
+                slowfliptype = 3;
+                angiey = angiey - 90;
+                origy = origy - 90;
+                logging::Info("Flip 3");
+            }
+            if ( ((angiey < -90) && (origy < -90)) && (slowfliptype == 0) ) {
+                slowfliptype = 4;
+                angiey = angiey + 90;
+                origy = origy + 90;
+                logging::Info("Flip 4");
+            }
+            */
+            //Math to calculate how much to move the mouse
+            changey = ( std::abs(origy - angiey) ) / (sai) ;
+            
+            //Determine the direction to move in before reseting the flipped angles
+            slowdiry1 = 0;
+            if ( (origy > angiey) && (slowdiry1 == 0) ) slowdiry1 = 1;
+            if ( (origy < angiey) && (slowdiry1 == 0) ) slowdiry1 = 2;
+            meme1 = origy;
+            meme2 = angiey;
+            meme3 = changey;
+            meme4 = slowfliptype;
+
+            //Reset Flipped angles
+            if (slowfliptype == 1) {
+                slowfliptype = 0;
+                angiey = angiey - 90;
+                origy = origy + 90;
+                slowdiry1 = 2;
+                logging::Info("Fix Flip 1");
+            }
+            if (slowfliptype == 2) {
+                slowfliptype = 0;
+                angiey = angiey + 90;
+                origy = origy - 90;
+                slowdiry1 = 1;
+                logging::Info("Fix Flip 2");
+            }
+            /*
+            if (slowfliptype == 3) {
+                slowfliptype = 0;
+                angiey = angiey + 90;
+                origy = origy + 90;
+                logging::Info("Fix Flip 3");
+            }
+            if (slowfliptype == 4) {
+                slowfliptype = 0;
+                angiey = angiey - 90;
+                origy = origy - 90;
+                logging::Info("Fix Flip 4");
+            }*/
+            
+            //Move in the direction determined before the fliped angles
+            meme5 = slowdiry1;
+            if ( slowdiry1 == 1 ) angles.y = origy - changey;
+            if ( slowdiry1 == 2 ) angles.y = origy + changey;
             
         }
-        //logging::Info("ayyming!");
+        
+        //Angle clamping for when the aimbot chooses a too high of value, fixes for when players are above your player
+        if ( angiex > 89 ) angiex = angiex - 360;
+        
+        //Determine whether to move the mouse at all for the pitch
+        if ( origx != angiex ) {
+            changex = ( std::abs(origx - angiex) ) / (sai) ;
+            //Determine the direction to move in
+            if ( origx > angiex ) angles.x = origx - changex; 
+            if ( origx < angiex ) angles.x = origx + changex;
+        }
+        
+        //Set the newly determined angles
         fClampAngle(angles);
-        cmd->viewangles.x = angles.x;
-        //fClampAngle(angles);
-        //cmd->viewangles = angles;
+        cmd->viewangles = angles;
+        
 	} else {
+        //When slow aim is off, use the default angles.
         fClampAngle(angles);
         cmd->viewangles = angles;
     }
