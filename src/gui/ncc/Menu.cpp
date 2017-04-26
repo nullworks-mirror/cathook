@@ -240,10 +240,12 @@ static const std::string list_tf2 = R"(
     "aimbot_aimkey"
     "aimbot_aimkey_mode"
     "aimbot_autoshoot"
-    "aimbot_autoshoot_delay"
     "aimbot_hitboxmode"
     "aimbot_fov"
     "aimbot_prioritymode"
+    "aimbot_slow"
+    "aimbot_slow_intensity"
+    "aimbot_slow_threshhold"
     "aimbot_charge"
     "Ignore" [
         "Ignore/Respect Menu"
@@ -538,6 +540,10 @@ static const std::string list_tf2 = R"(
         "log"
     ]
 ]
+"debug_sl_1"
+"debug_sl_2"
+"debug_sl_3"
+"debug_sl_4"
 )";
 
 List& MainList() {

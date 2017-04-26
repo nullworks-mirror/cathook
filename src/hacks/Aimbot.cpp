@@ -25,10 +25,14 @@ float cur_proj_grav { 0.0f };
 bool headonly { false };
 int last_target { -1 };
 bool silent_huntsman { false };
-
+/*Broken Autoshoot delay code
 int iTickAutoshootDelay { 0 };
 static CatVar autoshoot_delay(CV_FLOAT, "aimbot_autoshoot_delay", "0", "Autoshoot Delay", "Delays your shot to increase accuracy", 100.0);
-
+*/
+static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nGreat for legit configs\nSilent disables this");
+static CatVar slowaim_intensity(CV_FLOAT, "aimbot_slow_intensity", "0", "Slow Aim Intensity", "How strongly to pull your crosshair you an enemies head.", 100);
+static CatVar slowaim_threshhold(CV_FLOAT, "aimbot_slow_threshhold", "0", "Slow Aim Threshhold", "How close to shoot", 100);
+//static CatVar slowaim_randomness(CV_FLOAT, "aimbot_slow_random", "0", "meme", "succ", 100);
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 
 int ClosestHitbox(CachedEntity* target) {
@@ -293,7 +297,17 @@ int ShouldTarget(CachedEntity* entity) {
 	}
 	return 27;
 }
-
+float changey;
+float changex;
+float sai;
+float origx;
+float origy;
+float angiex;
+float angiey;
+static CatVar meme1(CV_FLOAT, "debug_sl_1", "0", "origx", "kill", 1000);
+static CatVar meme2(CV_FLOAT, "debug_sl_2", "0", "angix", "kill", 1000);
+static CatVar meme3(CV_FLOAT, "debug_sl_3", "0", "changex", "kill", 1000);
+static CatVar meme4(CV_FLOAT, "debug_sl_4", "0", "sai", "kill", 1000);
 bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	//logging::Info("Aiming!");
 	Vector hit;
@@ -317,16 +331,51 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	Vector tr = (hit - g_pLocalPlayer->v_Eye);
 	fVectorAngles(tr, angles);
 	bool smoothed = false;
-	/*if (this->v_bSmooth->GetBool()) {
+	if ( (slowaim == 1) && (silent == false) ) {
 		Vector da = (angles - g_pLocalPlayer->v_OrigViewangles);
 		fClampAngle(da);
 		smoothed = true;
-		if (da.IsZero(v_fSmoothAutoshootTreshold->GetFloat())) smoothed = false;
-		da *= this->v_fSmoothValue->GetFloat() * (((float)rand() / (float)RAND_MAX) * this->v_fSmoothRandomness->GetFloat());
-		angles = g_pLocalPlayer->v_OrigViewangles + da;
-	}*/
-	fClampAngle(angles);
-	cmd->viewangles = angles;
+		if (da.IsZero(slowaim_threshhold)) smoothed = false;
+        sai = slowaim_intensity;
+        origx = cmd->viewangles.x;
+        origy = cmd->viewangles.y;
+        angiex = angles.x;
+        angiey = angles.y;
+        
+        /*if ( origy != angiey ) {
+            if ( origy > angiey ) {
+                changey = ( origy + angiey ) / (sai*sai) ;
+                angles.y = origy + changey;
+            } else {
+                changey = ( origy + angiey ) / (sai*sai) ;
+                angles.y = origy - changey;
+            }
+        }*/
+        if ( origx != angiex ) {
+            if ( origx > angiex ) {
+                changex = ( std::abs(origx - angiex ) ) / (sai) ;
+                angles.x = origx - changex;
+            } 
+            if ( origx < angiex ) {
+                changex = ( std::abs(origx - angiex ) ) / (sai) ;
+                angles.x = origx + changex;
+                logging::Info("Adding");
+            }
+            meme1 = origx;
+            meme2 = angiex;
+            meme3 = changex;
+            meme4 = sai;
+            
+        }
+        //logging::Info("ayyming!");
+        fClampAngle(angles);
+        cmd->viewangles.x = angles.x;
+        //fClampAngle(angles);
+        //cmd->viewangles = angles;
+	} else {
+        fClampAngle(angles);
+        cmd->viewangles = angles;
+    }
 	if (silent) {
 		g_pLocalPlayer->bUseSilentAngles = true;
 	}
@@ -346,7 +395,8 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 				break;
 			}
 		}
-		bool autoshoot_delay_bool = false;
+		//Broken Autoshoot Delay code
+		/*bool autoshoot_delay_bool = false;
 		if ( autoshoot_delay == 0 ) {
             bool autoshoot_delay_bool = false;
         } else {
@@ -357,18 +407,39 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
             iTickAutoshootDelay = 0;
         }
 		if ( attack && autoshoot_delay_bool ) {
-            if ( (iTickAutoshootDelay++ / 200 ) >= autoshootdelayvar ) {
-                cmd->buttons |= IN_ATTACK;
-            }
+            UpdateAutoShootTimer();
         } else {
             if ( attack ) {
                 cmd->buttons |= IN_ATTACK;
             }
+        }*/
+        if ( attack ) {
+            cmd->buttons |= IN_ATTACK;
         }
+        
 	}
 	return true;
 }
 
+/*Broken Autoshoot delay code
+//Ripped from AAAA timer
+float autoshoot_timer_start = 0.0f;
+float autoshoot_timer = 0.0f;
+
+void UpdateAutoShootTimer() {
+	const float& curtime = g_GlobalVars->curtime;
+	if (autoshoot_timer_start > curtime) autoshoot_timer_start = 0.0f;
+	if (!autoshoot_timer || !autoshoot_timer_start) {
+		autoshoot_timer = autoshoot_delay;
+		autoshoot_timer_start = curtime;
+	} else {
+		if (curtime - autoshoot_timer_start > autoshoot_timer) {
+			cmd->buttons |= IN_ATTACK;
+			autoshoot_timer_start = curtime;
+			autoshoot_timer = autoshoot_delay;
+		}
+	}
+}*/
 bool ShouldAim(CUserCmd* cmd) {
 	if (aimkey && aimkey_mode) {
 		bool key_down = g_IInputSystem->IsButtonDown((ButtonCode_t)(int)aimkey);
