@@ -25,14 +25,7 @@ float cur_proj_grav { 0.0f };
 bool headonly { false };
 int last_target { -1 };
 bool silent_huntsman { false };
-/*Broken Autoshoot delay code
-int iTickAutoshootDelay { 0 };
-static CatVar autoshoot_delay(CV_FLOAT, "aimbot_autoshoot_delay", "0", "Autoshoot Delay", "Delays your shot to increase accuracy", 100.0);
-*/
-static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nGreat for legit configs\nSilent disables this");
-static CatVar slowaim_intensity(CV_FLOAT, "aimbot_slow_intensity", "0", "Slow Aim Intensity", "How strongly to pull your crosshair you an enemies head.", 100);
-static CatVar slowaim_threshhold(CV_FLOAT, "aimbot_slow_threshhold", "0", "Slow Aim Threshhold", "How close to shoot", 100);
-//static CatVar slowaim_randomness(CV_FLOAT, "aimbot_slow_random", "0", "meme", "succ", 100);
+
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 
 int ClosestHitbox(CachedEntity* target) {
@@ -297,6 +290,10 @@ int ShouldTarget(CachedEntity* entity) {
 	}
 	return 27;
 }
+
+//Initialize vars for slow aim
+static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nUse with triggerbot.\nSilent breaks this");
+static CatVar slowaim_shunting(CV_FLOAT, "aimbot_slow_shunt", "0", "Slow Aim Shunt", "How strongly to shunt the aiming.", 100);
 float changey;
 float changex;
 float sai;
@@ -305,13 +302,8 @@ float origy;
 float angiex;
 float angiey;
 int slowfliptype;
-int slowdiry1;
+int slowdir;
 
-static CatVar meme1(CV_FLOAT, "debug_sl_1", "0", "origy", "kill", 1000);
-static CatVar meme2(CV_FLOAT, "debug_sl_2", "0", "angiy", "kill", 1000);
-static CatVar meme3(CV_FLOAT, "debug_sl_3", "0", "changey", "kill", 1000);
-static CatVar meme4(CV_FLOAT, "debug_sl_4", "0", "showfliptype", "kill", 1000);
-static CatVar meme5(CV_FLOAT, "debug_sl_5", "0", "slowdiry", "kill", 1000);
 bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	//logging::Info("Aiming!");
 	Vector hit;
@@ -334,16 +326,13 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	//logging::Info("ayyming!");
 	Vector tr = (hit - g_pLocalPlayer->v_Eye);
 	fVectorAngles(tr, angles);
-	bool smoothed = false;
-	if ( (slowaim == 1) && (silent == false) ) {
+    
+    //Needed for logic to determine whether to use slow aim. Without this, sai set to 0 will loop and freeze system
+    sai = slowaim_shunting;
+	if ( (slowaim == 1) && (silent == false) && (sai > 0) ) {
         //Some of cats original code that I dont dare to touch.
 		Vector da = (angles - g_pLocalPlayer->v_OrigViewangles);
-		fClampAngle(da);
-		smoothed = true;
-		if (da.IsZero(slowaim_threshhold)) smoothed = false;
-        
         //Save info to vars that are easy to work with
-        sai = slowaim_intensity;
         origx = cmd->viewangles.x;
         origy = cmd->viewangles.y;
         angiex = angles.x;
@@ -354,70 +343,57 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
         if (angiey < -180) angiey = angiey + 360;
         
         //Determine whether to move the mouse at all for the yaw
-        if ( origy != angiey ) {
+        if (origy != angiey) {
             
-            //Fliping The main axis to prevent 180s from happening when the bot trys to cross -180y and 180y
+            //Fliping The main axis to prevent 360s from happening when the bot trys to cross -180y and 180y
             slowfliptype = 0;
-            if ( ((angiey < -90) && (origy > 90))  && (slowfliptype == 0) ) {
+            if ( ((angiey < -90) && (origy > 90)) && (slowfliptype == 0) ) {
                 slowfliptype = 1;
                 angiey = angiey - 90;
                 origy = origy + 90;
-                meme4 = 1;
-                logging::Info("Flip 1");
             }
             if ( ((angiey > 90) && (origy < -90)) && (slowfliptype == 0) ) {
                 slowfliptype = 2;
                 angiey = angiey + 90;
                 origy = origy - 90;
-                meme4 = 2;
-                logging::Info("Flip 2");
             }
             
             //Math to calculate how much to move the mouse
-            changey = ( std::abs(origy - angiey) ) / (sai) ;
+            changey = (std::abs(origy - angiey)) / (sai) ;
             //Use stronger shunting due to the flip
             if (slowfliptype != 0) changey = ((( std::abs(origy - angiey) ) / (sai * sai)) / sai) ;
             
             //Determine the direction to move in before reseting the flipped angles
-            slowdiry1 = 0;
-            if ( (origy > angiey) && (slowdiry1 == 0) ) slowdiry1 = 1;
-            if ( (origy < angiey) && (slowdiry1 == 0) ) slowdiry1 = 2;
-            meme1 = origy;
-            meme2 = angiey;
-            meme3 = changey;
+            slowdir = 0;
+            if ((origy > angiey) && (slowdir == 0)) slowdir = 1;
+            if ((origy < angiey) && (slowdir == 0)) slowdir = 2;
 
-            //Reset Flipped angles
+            //Reset Flipped angles and fix directions
             if (slowfliptype == 1) {
                 angiey = angiey + 90;
                 origy = origy - 90;
-                slowdiry1 = 2;
-                logging::Info("Fix Flip 1");
+                slowdir = 2;
             }
             if (slowfliptype == 2) {
                 angiey = angiey - 90;
                 origy = origy + 90;
-                slowdiry1 = 1;
-                logging::Info("Fix Flip 2");
+                slowdir = 1;
             }
             
             //Move in the direction determined before the fliped angles
-            if ( slowdiry1 == 1 ) angles.y = origy - changey;
-            if ( slowdiry1 == 2 ) angles.y = origy + changey;
-            if ( slowfliptype != 0 ) {
-                meme5 = angles.y;
-            }
-             
+            if (slowdir == 1) angles.y = origy - changey;
+            if (slowdir == 2) angles.y = origy + changey;
         }
         
         //Angle clamping for when the aimbot chooses a too high of value, fixes for when players are above your player
-        if ( angiex > 89 ) angiex = angiex - 360;
+        if (angiex > 89) angiex = angiex - 360;
         
         //Determine whether to move the mouse at all for the pitch
-        if ( origx != angiex ) {
-            changex = ( std::abs(origx - angiex) ) / (sai) ;
+        if (origx != angiex) {
+            changex = (std::abs(origx - angiex)) / (sai) ;
             //Determine the direction to move in
-            if ( origx > angiex ) angles.x = origx - changex; 
-            if ( origx < angiex ) angles.x = origx + changex;
+            if (origx > angiex) angles.x = origx - changex; 
+            if (origx < angiex) angles.x = origx + changex;
         }
         
         //Set the newly determined angles
@@ -442,30 +418,14 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 		static int forbiddenWeapons[] = { g_pClassID->CTFCompoundBow, g_pClassID->CTFKnife };
 		int weapon_class = g_pLocalPlayer->weapon()->m_iClassID;
 		bool attack = true;
-		for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {
 			if (weapon_class == forbiddenWeapons[i]) {
 				attack = false;
 				break;
 			}
 		}
-		//Broken Autoshoot Delay code
-		/*bool autoshoot_delay_bool = false;
-		if ( autoshoot_delay == 0 ) {
-            bool autoshoot_delay_bool = false;
-        } else {
-            bool autoshoot_delay_bool = true;
-        }
-        int autoshootdelayvar = autoshoot_delay;
-        if ( attack == false ) {
-            iTickAutoshootDelay = 0;
-        }
-		if ( attack && autoshoot_delay_bool ) {
-            UpdateAutoShootTimer();
-        } else {
-            if ( attack ) {
-                cmd->buttons |= IN_ATTACK;
-            }
-        }*/
+		//Autoshoot breaks Slow aimbot
+		if (slowaim == true) attack = false;
         if ( attack ) {
             cmd->buttons |= IN_ATTACK;
         }
@@ -506,6 +466,8 @@ bool ShouldAim(CUserCmd* cmd) {
 		case AimKeyMode_t::PRESS_TO_TOGGLE:
 			aimkey_switch = !aimkey_switch;
 			if (!aimkey_switch) return false;
+            //Dont autoshoot with slow aim on.
+            if (slowaim) return false;
 		}
 	}
 	if (only_can_shoot) {

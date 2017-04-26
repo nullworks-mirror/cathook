@@ -245,7 +245,7 @@ static const std::string list_tf2 = R"(
     "aimbot_prioritymode"
     "aimbot_charge"
     "aimbot_slow"
-    "aimbot_slow_intensity"
+    "aimbot_slow_shunt"
     "Ignore" [
         "Ignore/Respect Menu"
         "aimbot_respect_vaccinator"
@@ -539,11 +539,6 @@ static const std::string list_tf2 = R"(
         "log"
     ]
 ]
-"debug_sl_1"
-"debug_sl_2"
-"debug_sl_3"
-"debug_sl_4"
-"debug_sl_5"
 )";
 
 List& MainList() {
