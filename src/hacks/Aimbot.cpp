@@ -360,34 +360,23 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
             slowfliptype = 0;
             if ( ((angiey < -90) && (origy > 90))  && (slowfliptype == 0) ) {
                 slowfliptype = 1;
-                angiey = angiey + 90;
-                origy = origy - 90;
+                angiey = angiey - 90;
+                origy = origy + 90;
                 meme4 = 1;
                 logging::Info("Flip 1");
             }
             if ( ((angiey > 90) && (origy < -90)) && (slowfliptype == 0) ) {
                 slowfliptype = 2;
-                angiey = angiey - 90;
-                origy = origy + 90;
+                angiey = angiey + 90;
+                origy = origy - 90;
                 meme4 = 2;
                 logging::Info("Flip 2");
             }
-            /*
-            if ( ((angiey > 90) && (origy > 90)) && (slowfliptype == 0) ) {
-                slowfliptype = 3;
-                angiey = angiey - 90;
-                origy = origy - 90;
-                logging::Info("Flip 3");
-            }
-            if ( ((angiey < -90) && (origy < -90)) && (slowfliptype == 0) ) {
-                slowfliptype = 4;
-                angiey = angiey + 90;
-                origy = origy + 90;
-                logging::Info("Flip 4");
-            }
-            */
+            
             //Math to calculate how much to move the mouse
             changey = ( std::abs(origy - angiey) ) / (sai) ;
+            //Use stronger shunting due to the flip
+            if (slowfliptype != 0) changey = ((( std::abs(origy - angiey) ) / (sai * sai)) / sai) ;
             
             //Determine the direction to move in before reseting the flipped angles
             slowdiry1 = 0;
@@ -396,42 +385,28 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
             meme1 = origy;
             meme2 = angiey;
             meme3 = changey;
-            meme4 = slowfliptype;
 
             //Reset Flipped angles
             if (slowfliptype == 1) {
-                slowfliptype = 0;
-                angiey = angiey - 90;
-                origy = origy + 90;
+                angiey = angiey + 90;
+                origy = origy - 90;
                 slowdiry1 = 2;
                 logging::Info("Fix Flip 1");
             }
             if (slowfliptype == 2) {
-                slowfliptype = 0;
-                angiey = angiey + 90;
-                origy = origy - 90;
+                angiey = angiey - 90;
+                origy = origy + 90;
                 slowdiry1 = 1;
                 logging::Info("Fix Flip 2");
             }
-            /*
-            if (slowfliptype == 3) {
-                slowfliptype = 0;
-                angiey = angiey + 90;
-                origy = origy + 90;
-                logging::Info("Fix Flip 3");
-            }
-            if (slowfliptype == 4) {
-                slowfliptype = 0;
-                angiey = angiey - 90;
-                origy = origy - 90;
-                logging::Info("Fix Flip 4");
-            }*/
             
             //Move in the direction determined before the fliped angles
-            meme5 = slowdiry1;
             if ( slowdiry1 == 1 ) angles.y = origy - changey;
             if ( slowdiry1 == 2 ) angles.y = origy + changey;
-            
+            if ( slowfliptype != 0 ) {
+                meme5 = angles.y;
+            }
+             
         }
         
         //Angle clamping for when the aimbot chooses a too high of value, fixes for when players are above your player
