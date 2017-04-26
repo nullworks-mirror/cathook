@@ -615,4 +615,4 @@ CatVar proj_visibility(CV_SWITCH, "aimbot_proj_vispred", "0", "Projectile visibi
 CatVar proj_fov(CV_SWITCH, "aimbot_proj_fovpred", "0", "Projectile FOV mode", "If disabled, FOV restrictions apply to current target position");
 
 }}}
-
+ 
