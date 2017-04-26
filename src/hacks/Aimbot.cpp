@@ -330,8 +330,6 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
     //Needed for logic to determine whether to use slow aim. Without this, sai set to 0 will loop and freeze system
     sai = slowaim_shunting;
 	if ( (slowaim == 1) && (silent == false) && (sai > 0) ) {
-        //Some of cats original code that I dont dare to touch.
-		Vector da = (angles - g_pLocalPlayer->v_OrigViewangles);
         //Save info to vars that are easy to work with
         origx = cmd->viewangles.x;
         origy = cmd->viewangles.y;
