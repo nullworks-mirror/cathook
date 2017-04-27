@@ -26,9 +26,6 @@ bool headonly { false };
 int last_target { -1 };
 bool silent_huntsman { false };
 
-int iTickAutoshootDelay { 0 };
-static CatVar autoshoot_delay(CV_FLOAT, "aimbot_autoshoot_delay", "0", "Autoshoot Delay", "Delays your shot to increase accuracy", 100.0);
-
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 
 int ClosestHitbox(CachedEntity* target) {
@@ -294,6 +291,19 @@ int ShouldTarget(CachedEntity* entity) {
 	return 27;
 }
 
+//Initialize vars for slow aim
+static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nUse with triggerbot.\nSilent breaks this");
+static CatVar slowaim_shunting(CV_FLOAT, "aimbot_slow_shunt", "0", "Slow Aim Shunt", "How strongly to shunt the aiming.", 100);
+float changey;
+float changex;
+float sai;
+float origx;
+float origy;
+float angiex;
+float angiey;
+int slowfliptype;
+int slowdir;
+
 bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	//logging::Info("Aiming!");
 	Vector hit;
@@ -316,17 +326,83 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	//logging::Info("ayyming!");
 	Vector tr = (hit - g_pLocalPlayer->v_Eye);
 	fVectorAngles(tr, angles);
-	bool smoothed = false;
-	/*if (this->v_bSmooth->GetBool()) {
-		Vector da = (angles - g_pLocalPlayer->v_OrigViewangles);
-		fClampAngle(da);
-		smoothed = true;
-		if (da.IsZero(v_fSmoothAutoshootTreshold->GetFloat())) smoothed = false;
-		da *= this->v_fSmoothValue->GetFloat() * (((float)rand() / (float)RAND_MAX) * this->v_fSmoothRandomness->GetFloat());
-		angles = g_pLocalPlayer->v_OrigViewangles + da;
-	}*/
-	fClampAngle(angles);
-	cmd->viewangles = angles;
+    
+    //Needed for logic to determine whether to use slow aim. Without this, sai set to 0 will loop and freeze system
+    sai = slowaim_shunting;
+	if ( (slowaim == 1) && (silent == false) && (sai > 0) ) {
+        //Save info to vars that are easy to work with
+        origx = cmd->viewangles.x;
+        origy = cmd->viewangles.y;
+        angiex = angles.x;
+        angiey = angles.y;
+        
+        //Angle clamping for when the aimbot chooses a too high of value
+        if (angiey > 180) angiey = angiey - 360;
+        if (angiey < -180) angiey = angiey + 360;
+        
+        //Determine whether to move the mouse at all for the yaw
+        if (origy != angiey) {
+            
+            //Fliping The main axis to prevent 360s from happening when the bot trys to cross -180y and 180y
+            slowfliptype = 0;
+            if ( ((angiey < -90) && (origy > 90)) && (slowfliptype == 0) ) {
+                slowfliptype = 1;
+                angiey = angiey - 90;
+                origy = origy + 90;
+            }
+            if ( ((angiey > 90) && (origy < -90)) && (slowfliptype == 0) ) {
+                slowfliptype = 2;
+                angiey = angiey + 90;
+                origy = origy - 90;
+            }
+            
+            //Math to calculate how much to move the mouse
+            changey = (std::abs(origy - angiey)) / (sai) ;
+            //Use stronger shunting due to the flip
+            if (slowfliptype != 0) changey = ((( std::abs(origy - angiey) ) / (sai * sai)) / sai) ;
+            
+            //Determine the direction to move in before reseting the flipped angles
+            slowdir = 0;
+            if ((origy > angiey) && (slowdir == 0)) slowdir = 1;
+            if ((origy < angiey) && (slowdir == 0)) slowdir = 2;
+
+            //Reset Flipped angles and fix directions
+            if (slowfliptype == 1) {
+                angiey = angiey + 90;
+                origy = origy - 90;
+                slowdir = 2;
+            }
+            if (slowfliptype == 2) {
+                angiey = angiey - 90;
+                origy = origy + 90;
+                slowdir = 1;
+            }
+            
+            //Move in the direction determined before the fliped angles
+            if (slowdir == 1) angles.y = origy - changey;
+            if (slowdir == 2) angles.y = origy + changey;
+        }
+        
+        //Angle clamping for when the aimbot chooses a too high of value, fixes for when players are above your player
+        if (angiex > 89) angiex = angiex - 360;
+        
+        //Determine whether to move the mouse at all for the pitch
+        if (origx != angiex) {
+            changex = (std::abs(origx - angiex)) / (sai) ;
+            //Determine the direction to move in
+            if (origx > angiex) angles.x = origx - changex; 
+            if (origx < angiex) angles.x = origx + changex;
+        }
+        
+        //Set the newly determined angles
+        fClampAngle(angles);
+        cmd->viewangles = angles;
+        
+	} else {
+        //When slow aim is off, use the default angles.
+        fClampAngle(angles);
+        cmd->viewangles = angles;
+    }
 	if (silent) {
 		g_pLocalPlayer->bUseSilentAngles = true;
 	}
@@ -340,35 +416,41 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 		static int forbiddenWeapons[] = { g_pClassID->CTFCompoundBow, g_pClassID->CTFKnife };
 		int weapon_class = g_pLocalPlayer->weapon()->m_iClassID;
 		bool attack = true;
-		for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {
 			if (weapon_class == forbiddenWeapons[i]) {
 				attack = false;
 				break;
 			}
 		}
-		bool autoshoot_delay_bool = false;
-		if ( autoshoot_delay == 0 ) {
-            bool autoshoot_delay_bool = false;
-        } else {
-            bool autoshoot_delay_bool = true;
+		//Autoshoot breaks Slow aimbot
+		if (slowaim == true) attack = false;
+        if ( attack ) {
+            cmd->buttons |= IN_ATTACK;
         }
-        int autoshootdelayvar = autoshoot_delay;
-        if ( attack == false ) {
-            iTickAutoshootDelay = 0;
-        }
-		if ( attack && autoshoot_delay_bool ) {
-            if ( (iTickAutoshootDelay++ / 200 ) >= autoshootdelayvar ) {
-                cmd->buttons |= IN_ATTACK;
-            }
-        } else {
-            if ( attack ) {
-                cmd->buttons |= IN_ATTACK;
-            }
-        }
+        
 	}
 	return true;
 }
 
+/*Broken Autoshoot delay code
+//Ripped from AAAA timer
+float autoshoot_timer_start = 0.0f;
+float autoshoot_timer = 0.0f;
+
+void UpdateAutoShootTimer() {
+	const float& curtime = g_GlobalVars->curtime;
+	if (autoshoot_timer_start > curtime) autoshoot_timer_start = 0.0f;
+	if (!autoshoot_timer || !autoshoot_timer_start) {
+		autoshoot_timer = autoshoot_delay;
+		autoshoot_timer_start = curtime;
+	} else {
+		if (curtime - autoshoot_timer_start > autoshoot_timer) {
+			cmd->buttons |= IN_ATTACK;
+			autoshoot_timer_start = curtime;
+			autoshoot_timer = autoshoot_delay;
+		}
+	}
+}*/
 bool ShouldAim(CUserCmd* cmd) {
 	if (aimkey && aimkey_mode) {
 		bool key_down = g_IInputSystem->IsButtonDown((ButtonCode_t)(int)aimkey);
@@ -382,6 +464,8 @@ bool ShouldAim(CUserCmd* cmd) {
 		case AimKeyMode_t::PRESS_TO_TOGGLE:
 			aimkey_switch = !aimkey_switch;
 			if (!aimkey_switch) return false;
+            //Dont autoshoot with slow aim on.
+            if (slowaim) return false;
 		}
 	}
 	if (only_can_shoot) {
@@ -529,4 +613,4 @@ CatVar proj_visibility(CV_SWITCH, "aimbot_proj_vispred", "0", "Projectile visibi
 CatVar proj_fov(CV_SWITCH, "aimbot_proj_fovpred", "0", "Projectile FOV mode", "If disabled, FOV restrictions apply to current target position");
 
 }}}
-
+ 
