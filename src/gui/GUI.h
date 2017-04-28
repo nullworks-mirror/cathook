@@ -40,6 +40,7 @@ public:
 	CatGUI();
 	~CatGUI();
 
+	bool Visible();
 	void Update();
 	void Setup();
 	RootWindow* GetRootWindow();

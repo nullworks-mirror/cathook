@@ -43,6 +43,10 @@ CatGUI::~CatGUI() {
 	delete m_pRootWindow;
 }
 
+bool CatGUI::Visible() {
+	return gui_visible;
+}
+
 CatVar gui_color_r(CV_INT, "gui_color_r", "255", "Main GUI color (red)", "Defines red component of main gui color", 0, 255);
 CatVar gui_color_g(CV_INT, "gui_color_g", "105", "Main GUI color (green)", "Defines green component of main gui color", 0, 255);
 CatVar gui_color_b(CV_INT, "gui_color_b", "180", "Main GUI color (blue)", "Defines blue component of main gui color", 0, 255);
@@ -146,7 +150,17 @@ void CatGUI::Update() {
 		m_iMouseY = ny;
 
 		if (!m_bKeysInit) m_bKeysInit = 1;
-		if (gui_visible) {
+		if (!root->IsVisible())
+			root->Show();
+		root->Update();
+		if (!m_bShowTooltip && m_pTooltip->IsVisible()) m_pTooltip->Hide();
+		root->Draw(0, 0);
+		//draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colors::Transparent(colors::white));
+		//draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, GUIColor());
+		if (gui_draw_bounds) {
+			root->DrawBounds(0, 0);
+		}
+		/*if (gui_visible) {
 			if (!root->IsVisible())
 				root->Show();
 			root->Update();
@@ -160,7 +174,7 @@ void CatGUI::Update() {
 		} else {
 			if (root->IsVisible())
 				root->Hide();
-		}
+		}*/
 	} catch (std::exception& ex) {
 		logging::Info("ERROR: %s", ex.what());
 	}

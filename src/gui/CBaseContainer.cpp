@@ -62,7 +62,8 @@ void CBaseContainer::Draw(int x, int y) {
 	for (auto child : m_children) {
 		if (child->IsVisible()) {
 			auto off = child->GetOffset();
-			child->Draw(x + off.first, y + off.second);
+			if (AlwaysVisible() || g_pGUI->Visible() || child->AlwaysVisible())
+				child->Draw(x + off.first, y + off.second);
 		}
 	}
 }
@@ -182,7 +183,8 @@ void CBaseContainer::Update() {
 	MoveChildren();
 	UpdateHovers();
 	for (auto child : m_children) {
-		child->Update();
+		if (AlwaysVisible() || g_pGUI->Visible() || child->AlwaysVisible())
+			child->Update();
 	}
 	CBaseWidget::Update();
 }

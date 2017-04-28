@@ -11,30 +11,40 @@
 #include "Menu.hpp"
 
 extern unsigned char _binary_snowflake_start;
+extern unsigned char _binary_flame_start;
+extern unsigned char _binary_raindrop_start;
 
 namespace menu { namespace ncc {
 
 class Background : public CBaseWidget {
 public:
-	struct Snowflake {
+	struct Particle {
 		float x, y;
+		float vx, vy;
 		int show_in { 0 };
 		bool dead { false };
-		Snowflake* next { nullptr };
-		Snowflake* prev { nullptr };
+		Texture* texture { nullptr };
+		Particle* next { nullptr };
+		Particle* prev { nullptr };
 		void Update();
 	};
 public:
 	Background();
 	~Background();
+	virtual bool AlwaysVisible() override;
 	virtual void Draw(int x, int y) override;
 	virtual void Update() override;
-	void MakeSnowflake();
-	void KillSnowflake(Snowflake* flake);
+	void LoadTextures();
+	void MakeParticle();
+	void KillParticle(Particle* flake);
 public:
-	Texture snowflake_texture;
-	Snowflake* list { nullptr };
-	Snowflake* list_tail { nullptr };
+	// FIXME array or something
+	bool textures_loaded { false };
+	Texture tx_snowflake;
+	Texture tx_raindrop;
+	Texture tx_flame;
+	Particle* list { nullptr };
+	Particle* list_tail { nullptr };
 };
 
 }}

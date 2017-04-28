@@ -17,6 +17,18 @@ void CBaseWidget::DrawBounds(int x, int y) {
 	draw::OutlineRect(x, y, size.first, size.second, m_KeyValues->GetInt("bounds_color"));
 }
 
+bool CBaseWidget::IsHovered() {
+	return g_pGUI->Visible() && m_KeyValues->GetBool("hover");
+}
+
+bool CBaseWidget::IsFocused() {
+	return g_pGUI->Visible() && m_KeyValues->GetBool("focus");
+}
+
+bool CBaseWidget::IsPressed() {
+	return g_pGUI->Visible() && m_KeyValues->GetBool("press");
+}
+
 CBaseWidget::CBaseWidget(std::string name, IWidget* parent) : m_KeyValues(new KeyValues(std::string(name + "_kv").c_str())) {
 	m_pParent = parent;
 	Props()->SetString("name", name.c_str());

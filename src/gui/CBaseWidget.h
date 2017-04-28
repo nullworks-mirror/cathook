@@ -9,7 +9,6 @@
 #define CBASEWIDGET_H_
 
 #include "IWidget.h"
-
 #include "../beforecheaders.h"
 #include <memory>
 #include <vector>
@@ -45,6 +44,8 @@ public:
 
 	inline virtual bool ConsumesKey(ButtonCode_t key) { return false; }
 
+	inline virtual bool AlwaysVisible() { return m_KeyValues->GetBool("always_visible"); }
+
 	inline virtual void Show() { m_KeyValues->SetBool("visible", true); }
 	inline virtual void Hide() { m_KeyValues->SetBool("visible", false); }
 	inline virtual bool IsVisible() {
@@ -52,9 +53,9 @@ public:
 		return m_KeyValues->GetBool("visible");
 	}
 
-	inline virtual bool IsHovered() { return m_KeyValues->GetBool("hover"); }
-	inline virtual bool IsFocused() { return m_KeyValues->GetBool("focus"); }
-	inline virtual bool IsPressed() { return m_KeyValues->GetBool("press"); }
+	virtual bool IsHovered();
+	virtual bool IsFocused();
+	virtual bool IsPressed();
 
 	inline virtual bool DoesStealFocus() { return true; }
 

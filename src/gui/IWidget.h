@@ -45,6 +45,8 @@ public:
 
 	virtual bool ConsumesKey(ButtonCode_t key) = 0;
 
+	// Widget will be visible even when gui is turned off
+	virtual bool AlwaysVisible() = 0;
 	virtual void Show() = 0;
 	virtual void Hide() = 0;
 	virtual bool IsVisible() = 0;

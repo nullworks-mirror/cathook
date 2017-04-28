@@ -9,10 +9,15 @@
 
 namespace menu { namespace ncc {
 
-CatVar logo(CV_SWITCH, "logo", "1", "Show logo", "Show cathook logo when GUI is open");
+static CatEnum logo_enum({"NEVER", "MENU", "ALWAYS"});
+CatVar logo(logo_enum, "logo", "1", "Show logo", "Show cathook logo when");
 
 Logo::Logo() : CBaseWidget("nc_logo"), texture(&_binary_logo_start, 576, 288) {
 	SetSize(576, 288);
+}
+
+bool Logo::AlwaysVisible() {
+	return (int)logo == 2;
 }
 
 void Logo::Draw(int x, int y) {
