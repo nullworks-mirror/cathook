@@ -191,17 +191,9 @@ void CreateMove() {
 		g_pUserCmd->forwardmove  = RandFloatRange(-450.0, 450.0);
 		g_pUserCmd->buttons = rand();
 	}
-	//Pasted by Julianacat from F1ssion
-	ConVar * pNoPush = g_ICvar->FindVar( "tf_avoidteammates_pushaway" );
-    int nopushvar = nopush_enabled;
-	if ( nopushvar == (pNoPush -> GetInt()) ) {
-        if (nopushvar == 1) {
-            pNoPush->SetValue( 0 );
-        } else {
-            pNoPush->SetValue( 1 );
-        }
-        
-    }
+	
+	static ConVar * pNoPush = g_ICvar->FindVar( "tf_avoidteammates_pushaway" );
+    if (nopush_enabled == pNoPush-> GetBool()) pNoPush->SetValue (!nopush_enabled);
 }
 
 void Draw() {
