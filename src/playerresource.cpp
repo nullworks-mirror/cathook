@@ -8,41 +8,47 @@
 #include "common.h"
 
 void TFPlayerResource::Update() {
-	m_pEntity = 0;
+	entity = 0;
 	for (int i = 0; i < HIGHEST_ENTITY; i++) {
-		CachedEntity* ent = ENTITY(i);
-		if (CE_GOOD(ent) && ent->m_iClassID == (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) {
-			m_pEntity = ent;
+		IClientEntity* ent = g_IEntityList->GetClientEntity(i);
+		if (ent && ent->GetClientClass()->m_ClassID == (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) {
+			entity = i;
+			return;
 		}
 	}
 }
 
 int TFPlayerResource::GetMaxHealth(CachedEntity* player) {
-	if (!m_pEntity) return 0;
 	if (HL2DM) return 100;
+	IClientEntity* ent = g_IEntityList->GetClientEntity(entity);
+	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;
 	int idx = player->m_IDX;
 	if (idx >= 64 || idx < 0) return 0;
-	return *(int*)((unsigned int)RAW_ENT(m_pEntity) + netvar.iMaxHealth + 4 * idx);
+	return *(int*)((unsigned)ent + netvar.iMaxHealth + 4 * idx);
 }
 
 int TFPlayerResource::GetMaxBuffedHealth(CachedEntity* player) {
 	if (!TF2) return GetMaxHealth(player);
-	if (!m_pEntity) return 0;
+	IClientEntity* ent = g_IEntityList->GetClientEntity(entity);
+	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;
 	int idx = player->m_IDX;
 	if (idx >= 64 || idx < 0) return 0;
-	return *(int*)((unsigned int)RAW_ENT(m_pEntity) + netvar.iMaxBuffedHealth + 4 * idx);
+	return *(int*)((unsigned)ent + netvar.iMaxBuffedHealth + 4 * idx);
 }
 
 int TFPlayerResource::GetTeam(int idx) {
 	if (idx >= 64 || idx < 0) return 0;
-	return *(int*)((unsigned int)RAW_ENT(m_pEntity) + netvar.res_m_iTeam + 4 * idx);
+	IClientEntity* ent = g_IEntityList->GetClientEntity(entity);
+	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;
+	return *(int*)((unsigned)ent + netvar.res_m_iTeam + 4 * idx);
 }
 
 int TFPlayerResource::GetClass(CachedEntity* player) {
-	if (CE_BAD(m_pEntity)) return 0;
+	IClientEntity* ent = g_IEntityList->GetClientEntity(entity);
+	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;
 	int idx = player->m_IDX;
 	if (idx >= 64 || idx < 0) return 0;
-	return *(int*)((unsigned int)RAW_ENT(m_pEntity) + netvar.iPlayerClass + 4 * idx);
+	return *(int*)((unsigned)ent + netvar.iPlayerClass + 4 * idx);
 }
 
 

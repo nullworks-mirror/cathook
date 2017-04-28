@@ -18,7 +18,7 @@ public:
 	int GetClass(CachedEntity* player);
 	int GetTeam(int idx);
 
-	CachedEntity* m_pEntity;
+	int entity;
 };
 
 extern TFPlayerResource* g_pPlayerResource;

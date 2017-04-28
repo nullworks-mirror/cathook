@@ -44,7 +44,6 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		g_ISurface->SetCursorAlwaysVisible(vis);
 	}
 
-
 	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
 	// To avoid threading problems.
 
@@ -75,6 +74,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	ResetStrings();
 
 	if (vp != panel_focus) return;
+	g_IPanel->SetTopmostPopup(panel_focus, true);
 	if (!draw_flag) return;
 	draw_flag = false;
 

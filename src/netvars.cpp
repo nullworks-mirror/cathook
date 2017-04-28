@@ -22,10 +22,10 @@ void NetVars::Init() {
 	this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
 	this->m_Collision = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
 	if (TF2) {
-		res_m_iTeam = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
+		res_iTeam = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
+		this->res_iMaxBuffedHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");
 		m_angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata", "m_angEyeAngles[0]");
 		this->bGlowEnabled = gNetvars.get_offset("DT_TFPlayer", "m_bGlowEnabled");
-		this->iMaxBuffedHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");
 		//this->iDecapitations = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iDecapitations");
 		//this->flReloadPriorNextFire = gNetvars.get_offset("DT_TFWeaponBase", "LocalActiveTFWeaponData", "m_flReloadPriorNextFire");
 		//this->flObservedCritChance = gNetvars.get_offset("DT_TFWeaponBase", "LocalActiveTFWeaponData", "m_flObservedCritChance");
@@ -38,6 +38,8 @@ void NetVars::Init() {
 		this->m_flStealthNoAttackExpire = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "tfsharedlocaldata", "m_flStealthNoAttackExpire");
 	}
 	if (TF2 || TF2C) {
+		this->res_iMaxHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");
+		this->res_iPlayerClass = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerClass");
 		this->m_bReadyToBackstab = gNetvars.get_offset("DT_TFWeaponKnife", "m_bReadyToBackstab");
 		this->m_bDucked = gNetvars.get_offset("DT_TFPlayer", "localdata", "m_Local", "m_bDucked");
 		this->m_flDuckTimer = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_flDuckTimer");
@@ -52,13 +54,11 @@ void NetVars::Init() {
 		this->iBuildingHealth = gNetvars.get_offset("DT_BaseObject", "m_iHealth");
 		this->iBuildingMaxHealth = gNetvars.get_offset("DT_BaseObject", "m_iMaxHealth");
 		this->iReloadMode = gNetvars.get_offset("DT_TFWeaponBase", "m_iReloadMode");
-		this->iMaxHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");
 		this->Rocket_iDeflected = gNetvars.get_offset("DT_TFBaseRocket", "m_iDeflected");
 		this->Grenade_iDeflected = gNetvars.get_offset("DT_TFWeaponBaseGrenadeProj", "m_iDeflected");
 		this->nForceTauntCam = gNetvars.get_offset("DT_TFPlayer", "m_nForceTauntCam");
 		this->Rocket_bCritical = gNetvars.get_offset("DT_TFProjectile_Rocket", "m_bCritical");
 		this->Grenade_bCritical = gNetvars.get_offset("DT_TFWeaponBaseGrenadeProj", "m_bCritical");
-		this->iPlayerClass = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerClass");
 		this->angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata", "m_angEyeAngles[0]");
 		this->iWeaponState = gNetvars.get_offset("DT_WeaponMinigun", "m_iWeaponState");
 		this->flChargeLevel = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
