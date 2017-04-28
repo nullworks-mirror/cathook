@@ -69,7 +69,7 @@ public:
 	offset_t movetype;
 	offset_t iGlowIndex;
 	offset_t iReloadMode;
-	offset_t iMaxHealth;
+	offset_t res_iMaxHealth;
 	offset_t flNextAttack;
 	offset_t iNextMeleeCrit;
 	offset_t flNextPrimaryAttack;
@@ -78,7 +78,7 @@ public:
 	//offset_t flObservedCritChance;
 	offset_t nTickBase;
 	//offset_t iDecapitations;
-	offset_t iMaxBuffedHealth;
+	offset_t res_iMaxBuffedHealth;
 	offset_t bRespawning;
 	offset_t iItemDefinitionIndex;
 	offset_t AttributeList;
@@ -108,7 +108,7 @@ public:
 	offset_t iDefaultFOV;
 	offset_t iFOV;
 	offset_t _condition_bits;
-	offset_t iPlayerClass;
+	offset_t res_iPlayerClass;
 
 	offset_t hOwner;
 	offset_t iWeaponState;
@@ -123,7 +123,7 @@ public:
 	offset_t m_angEyeAngles;
 	offset_t m_bReadyToBackstab;
 	offset_t m_Collision;
-	offset_t res_m_iTeam;
+	offset_t res_iTeam;
 };
 
 extern NetVars netvar;
