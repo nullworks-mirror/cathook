@@ -1,5 +1,5 @@
 *.d
 *.o
 !res/
-bin/*
+/bin/*
 /core

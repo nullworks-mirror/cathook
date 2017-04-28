@@ -13,6 +13,8 @@
 
 namespace menu { namespace ncc {
 
+Texture logo_texture(&_binary_logo_start, 768, 384);
+
 Root::Root() : CBaseWindow("root_nullcore", nullptr) {
 	SetMaxSize(draw::width, draw::height);
 }
@@ -31,6 +33,9 @@ void Root::Draw(int x, int y) {
 
 void Root::Setup() {
 	tooltip = new Tooltip();
+	Logo* logo = new Logo();
+	logo->SetOffset(draw::width / 2 - 288, 25);
+	AddChild(logo);
 	AddChild(tooltip);
 	AddChild(&menu::ncc::MainList());
 	AddChild(new Radar());

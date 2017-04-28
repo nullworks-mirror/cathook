@@ -16,8 +16,7 @@
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1", "Clean screenshots", "Don't draw visuals while taking a screenshot");
 CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Completely hides cathook");
 CatVar no_zoom(CV_SWITCH, "no_zoom", "0", "Disable scope", "Disables black scope overlay");
-CatVar logo(CV_SWITCH, "logo", "1", "Show logo", "Show cathook text in top left corner");
-
+CatVar info_text(CV_SWITCH, "info", "1", "Show info", "Show cathook version in top left corner");
 
 void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 #if DEBUG_SEGV == true
@@ -91,8 +90,8 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 
 	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
 
-	if (logo) {
-		AddSideString("cathook by d4rkc4t", colors::RainbowCurrent());
+	if (info_text) {
+		AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
 #if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
 		AddSideString("commit #" GIT_COMMIT_HASH);
 		AddSideString("at " GIT_COMMIT_DATE);
@@ -100,14 +99,11 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	}
 
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
-		// FIXME
-		//if (TF2) SAFE_CALL(hacks::tf2::antibackstab::PaintTraverse());
 		if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
 		SAFE_CALL(hacks::shared::misc::Draw());
 		SAFE_CALL(hacks::shared::esp::Draw());
 		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
 		if (TF) SAFE_CALL(hacks::tf::radar::Draw());
-		//hacks::shared::followbot::PrintDebug();
 	}
 
 

@@ -23,6 +23,7 @@
 #include "Radar.hpp"
 #include "Root.hpp"
 #include "Tooltip.hpp"
+#include "Logo.hpp"
 
 namespace menu { namespace ncc {
 

@@ -24,7 +24,7 @@ int TFPlayerResource::GetMaxHealth(CachedEntity* player) {
 	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;
 	int idx = player->m_IDX;
 	if (idx >= 64 || idx < 0) return 0;
-	return *(int*)((unsigned)ent + netvar.iMaxHealth + 4 * idx);
+	return *(int*)((unsigned)ent + netvar.res_iMaxHealth + 4 * idx);
 }
 
 int TFPlayerResource::GetMaxBuffedHealth(CachedEntity* player) {
@@ -33,14 +33,14 @@ int TFPlayerResource::GetMaxBuffedHealth(CachedEntity* player) {
 	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;
 	int idx = player->m_IDX;
 	if (idx >= 64 || idx < 0) return 0;
-	return *(int*)((unsigned)ent + netvar.iMaxBuffedHealth + 4 * idx);
+	return *(int*)((unsigned)ent + netvar.res_iMaxBuffedHealth + 4 * idx);
 }
 
 int TFPlayerResource::GetTeam(int idx) {
 	if (idx >= 64 || idx < 0) return 0;
 	IClientEntity* ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;
-	return *(int*)((unsigned)ent + netvar.res_m_iTeam + 4 * idx);
+	return *(int*)((unsigned)ent + netvar.res_iTeam + 4 * idx);
 }
 
 int TFPlayerResource::GetClass(CachedEntity* player) {
@@ -48,7 +48,7 @@ int TFPlayerResource::GetClass(CachedEntity* player) {
 	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;
 	int idx = player->m_IDX;
 	if (idx >= 64 || idx < 0) return 0;
-	return *(int*)((unsigned)ent + netvar.iPlayerClass + 4 * idx);
+	return *(int*)((unsigned)ent + netvar.res_iPlayerClass + 4 * idx);
 }
 
 

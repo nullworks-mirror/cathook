@@ -195,7 +195,7 @@ static const std::string list_hl2dm = R"(
 		    "flashlight"
 		    "no_visuals"
 		    "clean_screenshots"
-		    "logo"
+		    "info"
 		    "debug_info"
 		    "log"
 		]
@@ -210,6 +210,7 @@ static const std::string list_hl2dm = R"(
 		 
 		"GUI" [
 		    "GUI Settings"
+            "logo"
 		    "gui_color_b"
 		    "gui_color_g"
 		    "gui_color_r"
@@ -437,6 +438,7 @@ static const std::string list_tf2 = R"(
     ]    
     "GUI" [
         "GUI Settings"
+        "logo"
         "gui_color_b"
         "gui_color_g"
         "gui_color_r"
@@ -531,6 +533,7 @@ static const std::string list_tf2 = R"(
     "fast_vischeck"
     "anti_afk"
     "rollspeedhack"
+    "info"
     "Debug" [
         "Debug Menu"
         "enabled"

@@ -12,8 +12,6 @@
 
 namespace menu { namespace ncc {
 
-
-
 class Root : public CBaseWindow {
 public:
 	Root();
