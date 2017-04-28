@@ -35,6 +35,7 @@ void Root::Setup() {
 	tooltip = new Tooltip();
 	Logo* logo = new Logo();
 	logo->SetOffset(draw::width / 2 - 288, 25);
+	AddChild(new Background());
 	AddChild(logo);
 	AddChild(tooltip);
 	AddChild(&menu::ncc::MainList());

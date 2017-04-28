@@ -21,6 +21,7 @@
 #include <atomic>
 #include <cmath>
 #include <iomanip>
+#include <list>
 #include <fstream>
 #include <set>
 #include <unordered_map>

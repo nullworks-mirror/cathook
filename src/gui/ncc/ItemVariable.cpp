@@ -81,6 +81,8 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat) {
 	}
 	}
 
+	if (change < 1.0f && catvar.type == CV_INT) change = 1.0f;
+
 	if ((catvar.type == CV_SWITCH && key == ButtonCode_t::MOUSE_FIRST) || key == ButtonCode_t::MOUSE_WHEEL_UP) {
 		Change(change);
 	} else if (key == ButtonCode_t::MOUSE_WHEEL_DOWN) {
