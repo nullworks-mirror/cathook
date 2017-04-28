@@ -13,6 +13,7 @@ Background::Background() : CBaseWidget("nc_background"), snowflake_texture(&_bin
 	SetSize(draw::width, draw::height);
 }
 
+static CatVar snowflakes(CV_SWITCH, "gui_snowflakes", "0", "Snowflakes");
 static CatVar snowflake_chance(CV_INT, "gui_snowflake_chance", "10", "Snowflake Spawn Rate", "Defines snowflake spawn rate (HAS TO BE NONZERO!)", 1.0f, 100.0f);
 static CatVar snowflake_pack_size(CV_INT, "gui_snowflake_pack_size", "10", "Snowflake Max Pack", "Defines max snowflake spawn pack size (HAS TO BE NONZERO!)", 1.0f, 100.0f);
 static CatVar snowflake_safe(CV_INT, "gui_snowflake_safe_zone", "100", "Snowflake Safe Zone", "Defines snowflake safe zone (they will decay after reaching that point)", 0.0f, 400.0f);
@@ -21,6 +22,7 @@ static CatVar snowflake_jittering(CV_INT, "gui_snowflake_jittering", "2", "Snowf
 static CatVar snowflake_jittering_chance(CV_INT, "gui_snowflake_jittering_chance", "60", "Snowflake Jittering Rate", "Defines snowflake jittering rate (HAS TO BE NONZERO!)", 1.0f, 20.0f);
 
 void Background::Update() {
+	if (!snowflakes) return;
 	Snowflake* current = list;
 	while (current) {
 		Snowflake* next = current->next;
@@ -45,6 +47,7 @@ Background::~Background() {
 }
 
 void Background::Draw(int x, int y) {
+	if (!snowflakes) return;
 	if (!snowflake_texture.id) {
 		snowflake_texture.Load();
 	}

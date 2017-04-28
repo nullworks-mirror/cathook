@@ -439,6 +439,7 @@ static const std::string list_tf2 = R"(
     "GUI" [
         "GUI Settings"
         "logo"
+        "gui_snowflakes"
         "gui_snowflake_chance"
         "gui_snowflake_pack_size"
         "gui_snowflake_safe_zone"
