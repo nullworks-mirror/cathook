@@ -13,17 +13,18 @@ Background::Background() : CBaseWidget("nc_background"),
 	tx_snowflake(&_binary_snowflake_start, 16, 16),
 	tx_raindrop(&_binary_raindrop_start, 16, 16),
 	tx_flame(&_binary_flame_start, 16, 16),
-	tx_heart(&_binary_heart_start, 16, 16) {
+	tx_heart(&_binary_heart_start, 16, 16),
+	tx_raindrop2(&_binary_raindrop2_start, 16, 16) {
 	SetSize(draw::width, draw::height);
 }
 
 static CatVar particles(CV_SWITCH, "gui_bg_particles", "0", "Particles");
-static CatEnum particle_type_enum({"Snowflake", "Raindrop", "Flame", "Heart", "Random"});
+static CatEnum particle_type_enum({"Snowflake", "Raindrop", "Flame", "Heart", "Raindrop 2", "Random"});
 static CatVar particle_type(particle_type_enum, "gui_bg_particles_type", "0", "Particles Type", "Defines particle type");
 static CatVar particle_chance(CV_INT, "gui_bg_particles_chance", "10", "Particles Spawn Rate", "Defines snowflake spawn rate (HAS TO BE NONZERO!)", 1.0f, 100.0f);
 static CatVar particle_pack_size(CV_INT, "gui_bg_particles_pack_size", "10", "Particles Max Pack", "Defines max snowflake spawn pack size (HAS TO BE NONZERO!)", 1.0f, 100.0f);
 static CatVar particle_safe(CV_INT, "gui_bg_particles_safe_zone", "100", "Particles Safe Zone", "Defines snowflake safe zone (they will decay after reaching that point)", 0.0f, 400.0f);
-static CatVar particle_gravity(CV_FLOAT, "gui_bg_particles_gravity", "700", "Particles Gravity", "Defines snowflake gravity (HAS TO BE NONZERO!)", 0.01f, 5.0f);
+static CatVar particle_gravity(CV_FLOAT, "gui_bg_particles_gravity", "700", "Particles Gravity", "Defines snowflake gravity (HAS TO BE NONZERO!)", 0.01f, 2400.0f);
 static CatVar particle_jittering(CV_INT, "gui_bg_particles_jittering", "2", "Particles Jittering", "Defines snowflake jittering amount", 0.0f, 10.0f);
 static CatVar particle_wind(CV_INT, "gui_bg_particles_wind", "0", "Particles Wind", "Wind strength and direction", -500.0f, 500.0f);
 static CatVar particle_jittering_chance(CV_INT, "gui_bg_particles_jittering_chance", "60", "Snowflake Jittering Rate", "Defines snowflake jittering rate (HAS TO BE NONZERO!)", 1.0f, 20.0f);
@@ -67,6 +68,7 @@ void Background::LoadTextures() {
 	tx_raindrop.Load();
 	tx_snowflake.Load();
 	tx_heart.Load();
+	tx_raindrop2.Load();
 	textures_loaded = true;
 }
 
@@ -96,7 +98,7 @@ void Background::MakeParticle() {
 	flake->dead = false;
 	flake->next = nullptr;
 	flake->show_in = rand() % 4;
-	switch (((int)particle_type == 4) ? (rand() % 4) : (int)particle_type) {
+	switch (((int)particle_type == 5) ? (rand() % 5) : (int)particle_type) {
 	case 1:
 		flake->texture = &tx_raindrop;
 		break;
@@ -105,6 +107,9 @@ void Background::MakeParticle() {
 		break;
 	case 3:
 		flake->texture = &tx_heart;
+		break;
+	case 4:
+		flake->texture = &tx_raindrop2;
 		break;
 	default:
 		flake->texture = &tx_snowflake;
@@ -133,7 +138,7 @@ void Background::KillParticle(Particle* flake) {
 void Background::Particle::Update(float dt) {
 	if (show_in) show_in--;
 	if (particle_wind) {
-		vx += (float)particle_wind * dt;
+		vx += (float)particle_wind * dt * 10.0f;
 	}
 	if (!(rand() % (int)(particle_jittering_chance))) {
 		x += (rand() % 2) ? (int)particle_jittering : -(int)particle_jittering;
