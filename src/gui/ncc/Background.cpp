@@ -12,12 +12,13 @@ namespace menu { namespace ncc {
 Background::Background() : CBaseWidget("nc_background"),
 	tx_snowflake(&_binary_snowflake_start, 16, 16),
 	tx_raindrop(&_binary_raindrop_start, 16, 16),
-	tx_flame(&_binary_flame_start, 16, 16){
+	tx_flame(&_binary_flame_start, 16, 16),
+	tx_heart(&_binary_heart_start, 16, 16) {
 	SetSize(draw::width, draw::height);
 }
 
 static CatVar particles(CV_SWITCH, "gui_bg_particles", "0", "Particles");
-static CatEnum particle_type_enum({"Snowflake", "Raindrop", "Flame"});
+static CatEnum particle_type_enum({"Snowflake", "Raindrop", "Flame", "Heart", "Random"});
 static CatVar particle_type(particle_type_enum, "gui_bg_particles_type", "0", "Particles Type", "Defines particle type");
 static CatVar particle_chance(CV_INT, "gui_bg_particles_chance", "10", "Particles Spawn Rate", "Defines snowflake spawn rate (HAS TO BE NONZERO!)", 1.0f, 100.0f);
 static CatVar particle_pack_size(CV_INT, "gui_bg_particles_pack_size", "10", "Particles Max Pack", "Defines max snowflake spawn pack size (HAS TO BE NONZERO!)", 1.0f, 100.0f);
@@ -62,6 +63,7 @@ void Background::LoadTextures() {
 	tx_flame.Load();
 	tx_raindrop.Load();
 	tx_snowflake.Load();
+	tx_heart.Load();
 	textures_loaded = true;
 }
 
@@ -91,12 +93,15 @@ void Background::MakeParticle() {
 	flake->dead = false;
 	flake->next = nullptr;
 	flake->show_in = rand() % 4;
-	switch ((int)particle_type) {
+	switch (((int)particle_type == 4) ? (rand() % 4) : (int)particle_type) {
 	case 1:
 		flake->texture = &tx_raindrop;
 		break;
 	case 2:
 		flake->texture = &tx_flame;
+		break;
+	case 3:
+		flake->texture = &tx_heart;
 		break;
 	default:
 		flake->texture = &tx_snowflake;

@@ -13,6 +13,7 @@
 extern unsigned char _binary_snowflake_start;
 extern unsigned char _binary_flame_start;
 extern unsigned char _binary_raindrop_start;
+extern unsigned char _binary_heart_start;
 
 namespace menu { namespace ncc {
 
@@ -43,6 +44,7 @@ public:
 	Texture tx_snowflake;
 	Texture tx_raindrop;
 	Texture tx_flame;
+	Texture tx_heart;
 	Particle* list { nullptr };
 	Particle* list_tail { nullptr };
 };
