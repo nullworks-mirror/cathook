@@ -112,14 +112,18 @@ void CatGUI::Update() {
 				if (changed) {
 					//logging::Info("Key %i changed! Now %i.", i, down);
 					if (i == ButtonCode_t::MOUSE_LEFT) {
-						if (down) root->OnMousePress();
-						else root->OnMouseRelease();
+						if (Visible()) {
+							if (down) root->OnMousePress();
+							else root->OnMouseRelease();
+						}
 					} else {
 						if (i == ButtonCode_t::KEY_INSERT && down) {
 							gui_visible = !gui_visible;
 						}
-						if (down) root->OnKeyPress((ButtonCode_t)i, false);
-						else root->OnKeyRelease((ButtonCode_t)i);
+						if (Visible()) {
+							if (down) root->OnKeyPress((ButtonCode_t)i, false);
+							else root->OnKeyRelease((ButtonCode_t)i);
+						}
 					}
 				} else {
 					if (down) {
@@ -134,7 +138,9 @@ void CatGUI::Update() {
 								}
 							}
 						}
-						if (shouldrepeat) root->OnKeyPress((ButtonCode_t)i, true);
+						if (Visible()) {
+							if (shouldrepeat) root->OnKeyPress((ButtonCode_t)i, true);
+						}
 					}
 				}
 			}

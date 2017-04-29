@@ -141,6 +141,7 @@ void Background::Particle::Update(float dt) {
 	vy += (float)particle_gravity * dt;
 	x += vx * dt;
 	y += vy * dt;
+	if (x > draw::width + 16) x = -16;
 	if (y > (int)particle_safe + 255) dead = true;
 }
 
