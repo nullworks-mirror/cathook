@@ -27,7 +27,7 @@ public:
 		Texture* texture { nullptr };
 		Particle* next { nullptr };
 		Particle* prev { nullptr };
-		void Update();
+		void Update(float dt);
 	};
 public:
 	Background();
@@ -45,6 +45,7 @@ public:
 	Texture tx_raindrop;
 	Texture tx_flame;
 	Texture tx_heart;
+	std::chrono::time_point<std::chrono::system_clock> last_update;
 	Particle* list { nullptr };
 	Particle* list_tail { nullptr };
 };

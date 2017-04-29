@@ -387,7 +387,7 @@ void ProcessEntity(CachedEntity* ent) {
 				return;
 			}*/
 		}
-		if (show_name) AddEntityString(ent, format("LV ", level, ' ', name));
+		if (show_name || show_class) AddEntityString(ent, format("LV ", level, ' ', name));
 		if (show_health) {
 			AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 		}

@@ -23,9 +23,9 @@ static CatVar particle_type(particle_type_enum, "gui_bg_particles_type", "0", "P
 static CatVar particle_chance(CV_INT, "gui_bg_particles_chance", "10", "Particles Spawn Rate", "Defines snowflake spawn rate (HAS TO BE NONZERO!)", 1.0f, 100.0f);
 static CatVar particle_pack_size(CV_INT, "gui_bg_particles_pack_size", "10", "Particles Max Pack", "Defines max snowflake spawn pack size (HAS TO BE NONZERO!)", 1.0f, 100.0f);
 static CatVar particle_safe(CV_INT, "gui_bg_particles_safe_zone", "100", "Particles Safe Zone", "Defines snowflake safe zone (they will decay after reaching that point)", 0.0f, 400.0f);
-static CatVar particle_gravity(CV_FLOAT, "gui_bg_particles_gravity", "0.9", "Particles Gravity", "Defines snowflake gravity (HAS TO BE NONZERO!)", 0.01f, 5.0f);
+static CatVar particle_gravity(CV_FLOAT, "gui_bg_particles_gravity", "700", "Particles Gravity", "Defines snowflake gravity (HAS TO BE NONZERO!)", 0.01f, 5.0f);
 static CatVar particle_jittering(CV_INT, "gui_bg_particles_jittering", "2", "Particles Jittering", "Defines snowflake jittering amount", 0.0f, 10.0f);
-static CatVar particle_wind(CV_INT, "gui_bg_particles_wind", "0", "Particles Wind", "Wind strength and direction", -50.0f, 50.0f);
+static CatVar particle_wind(CV_INT, "gui_bg_particles_wind", "0", "Particles Wind", "Wind strength and direction", -500.0f, 500.0f);
 static CatVar particle_jittering_chance(CV_INT, "gui_bg_particles_jittering_chance", "60", "Snowflake Jittering Rate", "Defines snowflake jittering rate (HAS TO BE NONZERO!)", 1.0f, 20.0f);
 static CatEnum background_visible_enum({"NEVER", "MENU", "ALWAYS"});
 static CatVar background_visible(background_visible_enum, "gui_bg_visible", "1", "Render background", "Render background when");
@@ -36,10 +36,12 @@ bool Background::AlwaysVisible() {
 
 void Background::Update() {
 	if (!particles) return;
+	auto newtime = std::chrono::system_clock::now();
+	std::chrono::duration<float> dt = newtime - last_update;
 	Particle* current = list;
 	while (current) {
 		Particle* next = current->next;
-		current->Update();
+		current->Update(dt.count());
 		if (current->dead) {
 			KillParticle(current);
 		}
@@ -48,6 +50,7 @@ void Background::Update() {
 	if (!(rand() % (int)particle_chance)) {
 		for (int i = 0; i < rand() % (int)particle_pack_size; i++) MakeParticle();
 	}
+	last_update = newtime;
 }
 
 Background::~Background() {
@@ -127,17 +130,17 @@ void Background::KillParticle(Particle* flake) {
 	delete flake;
 }
 
-void Background::Particle::Update() {
+void Background::Particle::Update(float dt) {
 	if (show_in) show_in--;
 	if (particle_wind) {
-		vx += (float)particle_wind * 0.005f;
+		vx += (float)particle_wind * dt;
 	}
 	if (!(rand() % (int)(particle_jittering_chance))) {
 		x += (rand() % 2) ? (int)particle_jittering : -(int)particle_jittering;
 	}
-	vy += (float)particle_gravity / 60.0f;
-	x += vx;
-	y += vy;
+	vy += (float)particle_gravity * dt;
+	x += vx * dt;
+	y += vy * dt;
 	if (y > (int)particle_safe + 255) dead = true;
 }
 
