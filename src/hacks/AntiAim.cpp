@@ -21,6 +21,7 @@ CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "0", "Yaw mode", "Yaw mode");
 CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "0", "Pitch mode", "Pitch mode");
 CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll", "Roll angle (viewangles.z)", -180, 180);
 CatVar no_clamping(CV_SWITCH, "aa_no_clamp", "0", "Don't clamp angles", "Use this with STATIC mode for unclamped manual angles");
+CatVar edge(CV_SWITCH, "aa_edge", "0", "Edge", "Automaticly selects yaw for edging");
 CatVar spin(CV_FLOAT, "aa_spin", "10.0", "Spin speed", "Spin speed (degrees/second)");
 
 CatVar aaaa_enabled(CV_SWITCH, "aa_aaaa_enabled", "0", "Enable AAAA", "Enable Anti-Anti-Anti-Aim (Overrides AA Pitch)");
@@ -124,37 +125,130 @@ bool ShouldAA(CUserCmd* cmd) {
 	return true;
 }
 
+//Initialize Edge vars
+float edgeYaw = 0;
+float edgeToEdgeOn = 0;
+
+//Function to return distance from you to a yaw directed to
+float edgeDistance(float edgeRayYaw) {
+    //Main ray tracing area
+    std::unique_ptr<trace_t> trace(new trace_t);
+    Ray_t ray;
+    Vector forward;
+    float sp, sy, cp, cy;
+    sy = sinf(DEG2RAD(edgeRayYaw)); // yaw
+    cy = cosf(DEG2RAD(edgeRayYaw));
+    sp = sinf(DEG2RAD(0)); // pitch
+    cp = cosf(DEG2RAD(0));
+    forward.x = cp * cy;
+    forward.y = cp * sy;
+    forward.z = -sp;
+    forward = forward * 8192.0f + g_pLocalPlayer->v_Eye;
+    ray.Init(g_pLocalPlayer->v_Eye, forward);
+    //trace::g_pFilterNoPlayer to only focus on the enviroment
+    g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterNoPlayer, trace.get());
+    //Pythagorean theorem to calculate distance
+    float edgeDistance = ( sqrt( pow(trace->startpos.x - trace->endpos.x, 2) + pow(trace->startpos.y - trace->endpos.y, 2) ) );
+    return edgeDistance;
+}
+
+//Function to Find an edge and report if one is found at all
+bool findEdge(float edgeOrigYaw) {
+    //Stop the finstion and report that no edge has been found
+    if (!edge) return false;
+    
+    //distance two vectors and report their combined distances
+    float edgeLeftDist = edgeDistance(edgeOrigYaw - 21);
+    edgeLeftDist = edgeLeftDist + edgeDistance(edgeOrigYaw - 27);
+    float edgeRightDist = edgeDistance(edgeOrigYaw + 21);
+    edgeRightDist = edgeRightDist + edgeDistance(edgeOrigYaw + 27);
+    
+    //If the distance is too far, then set the distance to max so the angle isnt used
+    if (edgeLeftDist >= 260) edgeLeftDist = 999999999;
+    if (edgeRightDist >= 260) edgeRightDist = 999999999;
+    
+    //If none of the vectors found a wall, then dont edge
+    if (edgeLeftDist == edgeRightDist) return false;
+
+    //Depending on the edge, choose a direction to face
+    if (edgeRightDist < edgeLeftDist) {
+        edgeToEdgeOn = 1;
+        //Correction for pitches to keep the head behind walls
+        if ( ((int)pitch_mode == 7) || ((int)pitch_mode == 2) || ((int)pitch_mode == 8)) edgeToEdgeOn = 2;
+        return true;
+    } else {
+        edgeToEdgeOn = 2;
+        //Same as above
+        if ( ((int)pitch_mode == 7) || ((int)pitch_mode == 2) || ((int)pitch_mode == 8)) edgeToEdgeOn = 1;
+        return true;
+    }
+}   
+
+//Function to give you a static angle to use
+float useEdge(float edgeViewAngle) {
+    //Var to be disabled when a angle is choosen to prevent the others from conflicting
+    bool edgeTest = true;
+    if (((edgeViewAngle < -135) || (edgeViewAngle > 135)) && edgeTest == true) {
+        if (edgeToEdgeOn == 1) edgeYaw = (float)-90;
+        if (edgeToEdgeOn == 2) edgeYaw = (float)90;
+        edgeTest = false;
+    }
+    if ((edgeViewAngle >= -135) && (edgeViewAngle < -45) && edgeTest == true) {
+        if (edgeToEdgeOn == 1) edgeYaw = (float)0;
+        if (edgeToEdgeOn == 2) edgeYaw = (float)179;
+        edgeTest = false;
+    }
+    if ((edgeViewAngle >= -45) && (edgeViewAngle < 45) && edgeTest == true) {
+        if (edgeToEdgeOn == 1) edgeYaw = (float)90;
+        if (edgeToEdgeOn == 2) edgeYaw = (float)-90;
+        edgeTest = false;
+    }
+    if ((edgeViewAngle <= 135) && (edgeViewAngle >= 45) && edgeTest == true) {
+        if (edgeToEdgeOn == 1) edgeYaw = (float)179;
+        if (edgeToEdgeOn == 2) edgeYaw = (float)0;
+        edgeTest = false;
+    }
+    //return with the angle choosen
+    return edgeYaw;
+}
+
 void ProcessUserCmd(CUserCmd* cmd) {
 	if (!ShouldAA(cmd)) return;
 	float& p = cmd->viewangles.x;
 	float& y = cmd->viewangles.y;
 	static bool flip = false;
 	bool clamp = !no_clamping;
-	switch ((int)yaw_mode) {
-	case 1: // FIXED
-		y = (float)yaw;
-		break;
-	case 2: // JITTER
-		if (flip) y += 90;
-		else y -= 90;
-		break;
-	case 3: // BIGRANDOM
-		y = RandFloatRange(-65536.0f, 65536.0f);
-		clamp = false;
-		break;
-	case 4: // RANDOM
-		y = RandFloatRange(-180.0f, 180.0f);
-		break;
-	case 5: // SPIN
-		cur_yaw += (float)spin;
-		if (cur_yaw > 180) cur_yaw = -180;
-		if (cur_yaw < -180) cur_yaw = 180;
-		y = cur_yaw;
-		break;
-	case 6: // OFFSETKEEP
-		y += (float)yaw;
-		break;
-	}
+    //Attemt to find an edge
+    if (findEdge(y)) {
+        //use the edge found
+        y = useEdge(y);
+    } else {
+        switch ((int)yaw_mode) {
+        case 1: // FIXED
+            y = (float)yaw;
+            break;
+        case 2: // JITTER
+            if (flip) y += 90;
+            else y -= 90;
+            break;
+        case 3: // BIGRANDOM
+            y = RandFloatRange(-65536.0f, 65536.0f);
+            clamp = false;
+            break;
+        case 4: // RANDOM
+            y = RandFloatRange(-180.0f, 180.0f);
+            break;
+        case 5: // SPIN
+            cur_yaw += (float)spin;
+            if (cur_yaw > 180) cur_yaw = -180;
+            if (cur_yaw < -180) cur_yaw = 180;
+            y = cur_yaw;
+            break;
+        case 6: // OFFSETKEEP
+            y += (float)yaw;
+            break;
+        }
+    }
 	switch ((int)pitch_mode) {
 	case 1:
 		p = (float)pitch;
