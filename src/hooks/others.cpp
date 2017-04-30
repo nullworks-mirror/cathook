@@ -87,7 +87,7 @@ CUserCmd* GetUserCmd_hook(IInput* thisptr, int sequence_number) {
 
 int IN_KeyEvent_hook(void* thisptr, int eventcode, int keynum, const char* pszCurrentBinding) {
 	SEGV_BEGIN;
-	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum)) {
+	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
 		return 0;
 	}
 	return ((IN_KeyEvent_t*)hooks::hkClient->GetMethod(hooks::offKeyEvent))(thisptr, eventcode, keynum, pszCurrentBinding);
