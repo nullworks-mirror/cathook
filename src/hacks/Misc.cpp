@@ -182,6 +182,27 @@ void CreateMove() {
 		if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
 	}
 
+	if (CE_GOOD(LOCAL_W)) {
+		IClientEntity* weapon = RAW_ENT(LOCAL_W);
+		float& bucket = *(float*)((uintptr_t)(weapon) + 2612);
+		static float last_bucket = 0.0f;
+		static IClientEntity* last_weapon = weapon;
+		static bool changed = false;
+		if (g_pUserCmd->command_number) {
+			changed = false;
+		}
+		if (bucket != last_bucket) {
+			if (changed && weapon == last_weapon) {
+				bucket = last_bucket;
+			} else {
+				//logging::Info("db: %.2f", g_pUserCmd->command_number, bucket - last_bucket);
+			}
+			changed = true;
+		}
+		last_weapon = weapon;
+		last_bucket = bucket;
+	}
+
 	if (flashlight_spam) {
 		if (flswitch && !g_pUserCmd->impulse) g_pUserCmd->impulse = 100;
 		flswitch = !flswitch;

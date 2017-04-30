@@ -18,6 +18,7 @@ int* g_PredictionRandomSeed = nullptr;
 bool AllowAttacking() {
 	if (!(hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee)) && !hacks::shared::misc::crit_suppress) return true;
 	bool crit = IsAttackACrit(g_pUserCmd);
+	LoadSavedState();
 	if (hacks::shared::misc::crit_suppress && !(hacks::shared::misc::crit_hack || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee))) {
 		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
 			return false;
@@ -49,15 +50,15 @@ void crithack_saved_state::Load(IClientEntity* entity) {
 }
 
 void crithack_saved_state::Save(IClientEntity* entity) {
-		bucket = *(float*)((uintptr_t)entity + 2612);
-		unknown2831 = *(float*)((uintptr_t)entity + 2831);
-		seed = *(int*)((uintptr_t)entity + 2868);
-		time = *(float*)((uintptr_t)entity + 2872);
-		unknown2616 = *(int*)((uintptr_t)entity + 2616);
-		unknown2620 = *(int*)((uintptr_t)entity + 2620);
-		unknown2856 = *(float*)((uintptr_t)entity + 2856);
-		unknown2860 = *(float*)((uintptr_t)entity + 2860);
-	}
+	bucket = *(float*)((uintptr_t)entity + 2612);
+	unknown2831 = *(float*)((uintptr_t)entity + 2831);
+	seed = *(int*)((uintptr_t)entity + 2868);
+	time = *(float*)((uintptr_t)entity + 2872);
+	unknown2616 = *(int*)((uintptr_t)entity + 2616);
+	unknown2620 = *(int*)((uintptr_t)entity + 2620);
+	unknown2856 = *(float*)((uintptr_t)entity + 2856);
+	unknown2860 = *(float*)((uintptr_t)entity + 2860);
+}
 
 static crithack_saved_state state;
 static bool state_saved { false };
@@ -109,12 +110,17 @@ bool IsAttackACrit(CUserCmd* cmd) {
 					int md5seed = MD5_PseudoRandom(cmd->command_number) & 0x7fffffff;
 					int rseed = md5seed;
 					//float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
+
 					*g_PredictionRandomSeed = md5seed;
 					int c = LOCAL_W->m_IDX << 8;
 					int b = LOCAL_E->m_IDX;
 					rseed = rseed ^ (b | c);
 					RandomSeed(rseed);
+					if (GetWeaponMode(LOCAL_E) == weapon_melee) {
+						*(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u) = 1000.0f;
+					}
 					state.Save(weapon);
+
 					state_saved = true;
 					//float saved_time = *(float*)(weapon + 2872ul);
 					//*(float*)(weapon + 2872ul) = 0.0f;
