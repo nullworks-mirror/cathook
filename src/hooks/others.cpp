@@ -145,11 +145,7 @@ static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transpa
 
 void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;
-	//logging::Info("FrameStageNotify %i", stage);
-	// Ambassador to festive ambassador changer. simple.
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
-	//logging::Info("fsi begin");// TODO dbg
-	SVDBG("FSN %i", __LINE__);
 	// TODO hack FSN hook
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		if (glow_enabled) {
@@ -201,35 +197,18 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 						g_GlowObjectManager->EnableGlow(entity, colors::white);
 					}
 				}
-				/*bool old_byte = NET_BYTE(entity, 0xDA1);
-				bool new_byte = (glow_enabled && ShouldEntityGlow(i));
-				if (CanEntityEvenGlow(i)) NET_BYTE(entity, 0xDA1) = new_byte;
-				if (old_byte != new_byte && clazz == g_pClassID->CTFPlayer) {
-					if (new_byte) {
-						vfunc<void(*)(IClientEntity*)>(entity, 290, 0)(entity);
-					} else {
-						vfunc<void(*)(IClientEntity*)>(entity, 291, 0)(entity);
-					}
-				}*/
-
 			}
 		}
-		SVDBG("FSN %i", __LINE__);
 		if (force_thirdperson && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
-			SVDBG("FSN %i", __LINE__);
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
 		}
-		SVDBG("FSN %i", __LINE__);
 		if (stage == 5 && show_antiaim && g_IInput->CAM_IsThirdPerson()) {
-			SVDBG("FSN %i", __LINE__);
 			if (CE_GOOD(g_pLocalPlayer->entity)) {
 				CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 4) = g_Settings.last_angles.x;
 				CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 8) = g_Settings.last_angles.y;
 			}
-			SVDBG("FSN %i", __LINE__);
 		}
 	}
-	SVDBG("FSN %i", __LINE__);
 	SAFE_CALL(((FrameStageNotify_t*)hooks::hkClient->GetMethod(hooks::offFrameStageNotify))(thisptr, stage));
 	SEGV_END;
 }
