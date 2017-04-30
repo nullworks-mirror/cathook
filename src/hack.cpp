@@ -177,6 +177,7 @@ void hack::Initialize() {
 	hack::command_stack().push("exec cat_autoexec");
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
+	hack::command_stack().push("cl_software_cursor 1");
 	logging::Info("Hooked!");
 	playerlist::Load();
 	if (TF2 || HL2DM) {
@@ -189,7 +190,6 @@ void hack::Initialize() {
 	//for (CScreenSpaceEffectRegistration* reg = *g_ppScreenSpaceRegistrationHead; reg; reg = reg->m_pNext) {
 	//	logging::Info("%s", reg->m_pEffectName);
 	//}
-	g_ICvar->FindVar("cl_software_cursor")->SetValue(1);
 	logging::Info("SSE enabled..");
 }
 
