@@ -189,6 +189,7 @@ void hack::Initialize() {
 	//for (CScreenSpaceEffectRegistration* reg = *g_ppScreenSpaceRegistrationHead; reg; reg = reg->m_pNext) {
 	//	logging::Info("%s", reg->m_pEffectName);
 	//}
+	g_ICvar->FindVar("cl_software_cursor")->SetValue(1);
 	logging::Info("SSE enabled..");
 }
 

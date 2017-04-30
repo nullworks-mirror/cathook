@@ -93,9 +93,10 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	if (info_text) {
 		AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
 #if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
-		AddSideString("commit #" GIT_COMMIT_HASH);
-		AddSideString("at " GIT_COMMIT_DATE);
+		AddSideString("Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE, GUIColor());
 #endif
+		AddSideString("Press 'INSERT' key to open/close cheat menu.", GUIColor());
+		AddSideString("Use mouse to navigate in menu.", GUIColor());
 	}
 
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
