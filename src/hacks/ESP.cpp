@@ -166,15 +166,15 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, min_y, 0);
 	} break;
 	case 1: { // BOTTOM RIGHT
-		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 1), 0);
+		data.at(ent->m_IDX).esp_origin = Vector(max_x + 1, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 3), 0);
 	} break;
 	case 2: { // CENTER
 	} break;
 	case 3: { // ABOVE
-		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 1), 0);
+		data.at(ent->m_IDX).esp_origin = Vector(min_x + 1, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 3), 0);
 	} break;
 	case 4: { // BELOW
-		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
+		data.at(ent->m_IDX).esp_origin = Vector(min_x + 1, max_y, 0);
 	}
 	}
 	//draw::String(fonts::ESP, points[0].x, points[0].y, clr, 1, "MIN");
@@ -256,15 +256,15 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 		data.at(ent->m_IDX).esp_origin = Vector(max_x, min_y, 0);
 	} break;
 	case 1: { // BOTTOM RIGHT
-		data.at(ent->m_IDX).esp_origin = Vector(max_x, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 1), 0);
+		data.at(ent->m_IDX).esp_origin = Vector(max_x, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 3), 0);
 	} break;
 	case 2: { // CENTER
 	} break;
 	case 3: { // ABOVE
-		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 1), 0);
+		data.at(ent->m_IDX).esp_origin = Vector(min_x + 1, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::esp_height - 3), 0);
 	} break;
 	case 4: { // BELOW
-		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
+		data.at(ent->m_IDX).esp_origin = Vector(min_x + 1, max_y, 0);
 	}
 	}
 	unsigned char alpha = clr >> 24;
