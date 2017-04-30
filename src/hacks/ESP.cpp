@@ -519,7 +519,6 @@ void ProcessEntityPT(CachedEntity* ent) {
 	}
 
 	if (ent_data.string_count) {
-		// FIXME
 		bool origin_is_zero = !box_esp || ent_data.esp_origin.IsZero(1.0f);
 		if (vischeck && !ent->IsVisible()) transparent = true;
 		Vector draw_point = origin_is_zero ? screen : ent_data.esp_origin;
