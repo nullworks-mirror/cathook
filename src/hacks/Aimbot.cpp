@@ -468,6 +468,12 @@ bool ShouldAim(CUserCmd* cmd) {
             if (slowaim) return false;
 		}
 	}
+	if (zoomed_only) {
+		if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle ||
+			g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
+			return false;
+		}
+	}
 	if (only_can_shoot) {
 		// Miniguns should shoot and aim continiously. TODO smg
 		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFMinigun) {
