@@ -37,6 +37,31 @@ static CatVar minigun_jump(CV_SWITCH, "minigun_jump", "0", "TF2C minigun jump", 
 CatVar jointeam(CV_SWITCH, "fb_autoteam", "1", "Joins player team automatically (NYI)");
 CatVar joinclass(CV_STRING, "fb_autoclass", "spy", "Class that will be picked after joining a team (NYI)");
 
+namespace engine_prediction {
+
+float o_curtime;
+float o_frametime;
+
+void Start() {
+	o_curtime = g_GlobalVars->curtime;
+	o_frametime = g_GlobalVars->frametime;
+	*g_PredictionRandomSeed = MD5_PseudoRandom(g_pUserCmd->command_number) & 0x7FFFFFFF;
+	g_GlobalVars->curtime = CE_INT(LOCAL_E, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
+	g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
+	g_IGameMovement->StartTrackPredictionErrors((CBasePlayer*)(RAW_ENT(LOCAL_E)));
+
+	CMoveData data;
+
+}
+
+void End() {
+	*g_PredictionRandomSeed = -1;
+	g_GlobalVars->curtime = o_curtime;
+	g_GlobalVars->frametime = o_frametime;
+}
+
+}
+
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	SEGV_BEGIN;
 

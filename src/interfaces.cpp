@@ -46,6 +46,7 @@ IVDebugOverlay* g_IVDebugOverlay = nullptr;
 IMaterialSystemFixed* g_IMaterialSystem = nullptr;
 IVRenderView* g_IVRenderView = nullptr;
 IMaterialSystem* g_IMaterialSystemHL = nullptr;
+IMoveHelperServer* g_IMoveHelperServer = nullptr;
 
 template<typename T>
 T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start) {
@@ -102,6 +103,9 @@ void CreateInterfaces() {
 	} else if (HL2DM) {
 		g_pScreenSpaceEffects = **(IScreenSpaceEffectManager***)(gSignatures.GetClientSignature("FF 52 14 E9 E0 FE FF FF 8D 76 00 A1 ? ? ? ? 8B 5D F4 8B 75 F8 8B 7D FC 8B 10 C7 45 0C ? ? ? ? 89 45 08 8B 42 1C 89 EC 5D FF E0") + 12);
 		g_ppScreenSpaceRegistrationHead = *(CScreenSpaceEffectRegistration***)(gSignatures.GetClientSignature("E8 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 28 85 C0 75 4B 8B 35 ? ? ? ? 85 F6 74 31 90 8B 5E 04 85 DB 74 22 8B 03 89 1C 24") + 27);
+	}
+	if (TF2) {
+		//g_IMoveHelper = *(reinterpret_cast<IMoveHelper**>(gSignatures.GetClientSignature("? ? ? ? 8B 10 89 04 24 FF 52 28 0F B7 CF 8B 10 89 4C 24 04 89 04 24 FF 52 1C 8B 13 89 1C 24 89 44 24 04 FF 92 74 05 00 00 8D 95 C8 FE FF FF C7 44 24 08 00 00 00 00")));
 	}
 	if (TF2) g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF 92 B4 00 00 00 A1 ? ? ? ? 8B 10")));
 	else if (TF2C) g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF 92 A8 00 00 00 A1 ? ? ? ? 8B 10")));
