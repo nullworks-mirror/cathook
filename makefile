@@ -29,10 +29,10 @@ CXXFLAGS += -DGIT_COMMIT_HASH="\"$(GIT_COMMIT_HASH)\"" -DGIT_COMMIT_DATE="\"$(GI
 all:
 	mkdir -p $(TARGET_DIR)
 	$(MAKE) $(TARGET)
-	
+
 .cpp.o:
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-	
+
 %.d: %.cpp
 	$(CXX) -M $(CXXFLAGS) $< > $@
 
@@ -43,7 +43,7 @@ clean:
 	find src -type f -name '*.o' -delete
 	find src -type f -name '*.d' -delete
 	rm -rf ./bin
-	
+
 ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPENDS)
 endif
