@@ -481,7 +481,6 @@ static const std::string list_tf2 = R"(
     "aa_yaw_mode"
     "aa_spin"
     "aa_roll"
-    "aa_edge"
     "aa_no_clamp"
     "Anti-Anti-AA" [
         "Anti-Anti-Anti-Aim Menu"
