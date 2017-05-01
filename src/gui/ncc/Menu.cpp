@@ -458,6 +458,7 @@ static const std::string list_tf2 = R"(
     ]
     "Miscellaneous" [
         "Miscellaneous"
+        "pure_bypass"
         "antidisguise"
         "no_arms"
         "no_hats"
