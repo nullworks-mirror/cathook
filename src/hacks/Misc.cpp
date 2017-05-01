@@ -219,7 +219,7 @@ void CreateMove() {
 
 void Draw() {
 	if (crit_info && CE_GOOD(LOCAL_W)) {
-		if (crit_hack) {
+		if (CritKeyDown()) {
 			AddCenterString("FORCED CRITS!", colors::red);
 		}
 		if (TF2) {
@@ -319,7 +319,7 @@ void Schema_Reload() {
 CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info", "Shows some debug info in-game");
 CatVar flashlight_spam(CV_SWITCH, "flashlight", "0", "Flashlight spam", "HL2DM flashlight spam");
 CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info"); // TODO separate
-CatVar crit_hack(CV_SWITCH, "crit_hack", "0", "Crithack");
+CatVar crit_hack(CV_KEY, "crit_hack", "0", "Crit Key");
 CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
 CatVar crit_suppress(CV_SWITCH, "crit_suppress", "0", "Disable random crits", "Can help saving crit bucket for forced crits");
 CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK", "Sends random commands to prevent being kicked from server");

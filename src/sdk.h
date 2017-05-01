@@ -51,10 +51,12 @@
 #include <steam/steam_api.h>
 #include <vgui/Cursor.h>
 #include <engine/ivdebugoverlay.h>
+#include <iprediction.h>
 
 #include "sdk/in_buttons.h"
 #include "sdk/imaterialsystemfixed.h"
 #include "sdk/ScreenSpaceEffects.h"
 #include "sdk/iinput.h"
+#include "sdk/igamemovement.h"
 
 #endif /* SDK_H_ */

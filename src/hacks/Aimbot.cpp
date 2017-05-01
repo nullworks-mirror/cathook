@@ -471,7 +471,8 @@ bool ShouldAim(CUserCmd* cmd) {
 	if (zoomed_only) {
 		if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle ||
 			g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
-			return false;
+			// confused_nigga.jpg
+			return g_pLocalPlayer->bZoomed;
 		}
 	}
 	if (only_can_shoot) {

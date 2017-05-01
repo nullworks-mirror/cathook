@@ -23,6 +23,107 @@ static CatVar pop_uber_auto(CV_SWITCH, "autoheal_uber", "1", "AutoUber", "Use ub
 static CatVar pop_uber_percent(CV_FLOAT, "autoheal_uber_health", "30", "Pop uber if health% <", "When under a percentage of health, use ubercharge");
 static CatVar share_uber(CV_SWITCH, "autoheal_share_uber", "1", "Share ubercharge", "Aimbot will attempt to share uber charge with un-ubered players");
 
+int vaccinator_change_stage = 0;
+int vaccinator_change_ticks = 0;
+int vaccinator_ideal_resist = 0;
+
+int BulletDangerValue(CachedEntity* patient) {
+	// Find zoomed in snipers in other team
+	bool any_zoomed_snipers = false;
+	for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
+		CachedEntity* ent = ENTITY(i);
+		if (!ent->m_bEnemy) continue;
+		if (g_pPlayerResource->GetClass(ent) != tf_sniper) continue;
+		if (CE_BYTE(ent, netvar.iLifeState)) continue;
+		if (!HasCondition(ent, TFCond_Zoomed)) continue;
+		any_zoomed_snipers = true;
+		// TODO VisCheck from patient.
+		if (!IsEntityVisible(ent, head)) continue;
+		return 2;
+	}
+	return any_zoomed_snipers;
+}
+
+int FireDangerValue(CachedEntity* patient) {
+	// Find nearby pyros
+	for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
+		CachedEntity* ent = ENTITY(i);
+		if (!ent->m_bEnemy) continue;
+		if (g_pPlayerResource->GetClass(ent) != tf_pyro) continue;
+		if (CE_BYTE(ent, netvar.iLifeState)) continue;
+		if (patient->m_vecOrigin.DistToSqr(ent->m_vecOrigin) > 300.0f * 300.0f) continue;
+		IClientEntity* pyro_weapon = g_IEntityList->GetClientEntity(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
+		return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == g_pClassID->CTFFlameThrower) ? 2 : 0;
+	}
+	if (HasCondition(patient, TFCond_OnFire)) {
+		return 1;
+	}
+	return 0;
+}
+
+int BlastDangerValue(CachedEntity* patient) {
+	// Find crit rockets/pipes nearby
+	for (int i = 32; i < HIGHEST_ENTITY; i++) {
+		CachedEntity* ent = ENTITY(i);
+		if (CE_BAD(ent)) continue;
+		if (!ent->m_bEnemy) continue;
+		if (ent->m_Type != ENTITY_PROJECTILE) continue;
+		if (patient->m_vecOrigin.DistToSqr(ent->m_vecOrigin) > 420.0f * 420.0f) continue;
+		// TODO Velocity checking
+		return ((ent->m_bCritProjectile || (patient->m_iHealth < 80)) ? 2 : 1);
+	}
+	return 0;
+}
+
+int CurrentResistance() {
+	if (LOCAL_W->m_iClassID != g_pClassID->CWeaponMedigun) return 0;
+	return CE_INT(LOCAL_W, netvar.m_nChargeResistType);
+}
+
+int OptimalResistance(CachedEntity* patient, bool* shouldPop) {
+	int bd = BlastDangerValue(patient),
+		fd = FireDangerValue(patient),
+		hd = BulletDangerValue(patient);
+	if (shouldPop) {
+		if (bd > 1 || fd > 1 || hd > 1) *shouldPop = true;
+	}
+	if (!hd && !fd && !bd) return -1;
+	if (hd >= fd && hd >= bd) return 0;
+	if (bd >= fd && bd >= hd) return 1;
+	if (fd >= hd && fd >= bd) return 2;
+	return -1;
+}
+
+void SetResistance(int resistance) {
+	vaccinator_ideal_resist = resistance;
+	int cur = CurrentResistance();
+	if (resistance == cur) return;
+	if (resistance > cur) vaccinator_change_stage = resistance - cur;
+	else vaccinator_change_stage = 3 - cur + resistance;
+}
+
+void DoResistSwitching() {
+	if (!vaccinator_change_stage) return;
+	if (CurrentResistance() == vaccinator_ideal_resist) {
+		vaccinator_change_ticks = 0;
+		vaccinator_change_stage = 0;
+		return;
+	}
+	if (g_pUserCmd->buttons & IN_RELOAD) {
+		vaccinator_change_ticks = 8;
+		return;
+	}
+	else {
+		if (vaccinator_change_ticks <= 0) {
+			g_pUserCmd->buttons |= IN_RELOAD;
+			vaccinator_change_stage--;
+			vaccinator_change_ticks = 8;
+		} else {
+			vaccinator_change_ticks--;
+		}
+	}
+}
+
 int force_healing_target { 0 };
 
 static CatCommand heal_steamid("autoheal_heal_steamid", "Heals a player with SteamID (ONCE. Use for easy airstuck med setup)", [](const CCommand& args) {
@@ -40,6 +141,16 @@ static CatCommand heal_steamid("autoheal_heal_steamid", "Heals a player with Ste
 			return;
 		}
 	}
+});
+
+static CatCommand vaccinator_bullet("vacc_bullet", "Bullet Vaccinator", []() {
+	SetResistance(0);
+});
+static CatCommand vaccinator_blast("vacc_blast", "Blast Vaccinator", []() {
+	SetResistance(1);
+});
+static CatCommand vaccinator_fire("vacc_fire", "Fire Vaccinator", []() {
+	SetResistance(2);
 });
 
 bool IsPopped() {
@@ -73,7 +184,25 @@ bool ShouldPop() {
 	return ShouldChargePlayer(LOCAL_E->m_IDX);
 }
 
+bool IsVaccinator() {
+	// DefIDX: 998
+	return CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 998;
+}
+
+static CatVar auto_vacc(CV_SWITCH, "auto_vacc", "0", "Auto Vaccinator", "Pick resistance for incoming damage types");
+
 void CreateMove() {
+	bool pop = false;
+	if (IsVaccinator() && auto_vacc) {
+		DoResistSwitching();
+		int my_opt = OptimalResistance(LOCAL_E, &pop);
+		if (my_opt >= 0 && my_opt != CurrentResistance()) {
+			SetResistance(my_opt);
+		}
+		if (pop && CurrentResistance() == my_opt) {
+			g_pUserCmd->buttons |= IN_ATTACK2;
+		}
+	}
 	if (!enabled && !force_healing_target) return;
 	if (GetWeaponMode(g_pLocalPlayer->entity) != weapon_medigun) return;
 	if (force_healing_target) {
@@ -103,7 +232,15 @@ void CreateMove() {
 	AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
 	if (silent) g_pLocalPlayer->bUseSilentAngles = true;
 	if (!m_iNewTarget && (g_GlobalVars->tickcount % 300)) g_pUserCmd->buttons |= IN_ATTACK;
-	if (pop_uber_auto && ShouldPop()) g_pUserCmd->buttons |= IN_ATTACK2;
+	if (IsVaccinator() && CE_GOOD(target) && auto_vacc) {
+		int opt = OptimalResistance(target, &pop);
+		if (!pop && opt != -1) SetResistance(opt);
+		if (pop && CurrentResistance() == opt) {
+			g_pUserCmd->buttons |= IN_ATTACK2;
+		}
+	} else {
+		if (pop_uber_auto && ShouldPop()) g_pUserCmd->buttons |= IN_ATTACK2;
+	}
 	return;
 }
 

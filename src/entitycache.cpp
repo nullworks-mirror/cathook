@@ -195,7 +195,7 @@ bool CachedEntity::IsVisible() {
 
 matrix3x4_t* CachedEntity::GetBones() {
 	if (!m_bBonesSetup) {
-		m_bBonesSetup = RAW_ENT(this)->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, 0); // gvars->curtime
+		m_bBonesSetup = RAW_ENT(this)->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, g_GlobalVars->curtime); // gvars->curtime
 	}
 	return m_Bones;
 }

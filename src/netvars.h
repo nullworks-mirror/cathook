@@ -124,6 +124,7 @@ public:
 	offset_t m_bReadyToBackstab;
 	offset_t m_Collision;
 	offset_t res_iTeam;
+	offset_t m_nChargeResistType;
 };
 
 extern NetVars netvar;

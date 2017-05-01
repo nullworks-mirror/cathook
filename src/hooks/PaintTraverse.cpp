@@ -11,12 +11,16 @@
 #include "hookedmethods.h"
 #include "../gui/GUI.h"
 #include "../segvcatch/segvcatch.h"
+#include "../copypasted/CSignature.h"
 #include "../profiler.h"
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1", "Clean screenshots", "Don't draw visuals while taking a screenshot");
 CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Completely hides cathook");
 CatVar no_zoom(CV_SWITCH, "no_zoom", "0", "Disable scope", "Disables black scope overlay");
 CatVar info_text(CV_SWITCH, "info", "1", "Show info", "Show cathook version in top left corner");
+CatVar pure_bypass(CV_SWITCH, "pure_bypass", "0", "Pure Bypass", "Bypass sv_pure");
+void* pure_orig = nullptr;
+void** pure_addr = nullptr;
 
 void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 #if DEBUG_SEGV == true
@@ -31,7 +35,17 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		textures_loaded = true;
 		hacks::tf::radar::Init();
 	}
-
+	if (pure_bypass) {
+		if (!pure_addr) {
+			pure_addr = *reinterpret_cast<void***>(gSignatures.GetEngineSignature("55 89 E5 83 EC 18 A1 ? ? ? ? 89 04 24 E8 0D FF FF FF A1 ? ? ? ? 85 C0 74 08 89 04 24 E8 ? ? ? ? C9 C3") + 7);
+		}
+		if (*pure_addr)
+			pure_orig = *pure_addr;
+		*pure_addr = (void*)0;
+	} else if (pure_orig) {
+		*pure_addr = pure_orig;
+		pure_orig = (void*)0;
+	}
 	static unsigned long panel_focus = 0;
 	static unsigned long panel_scope = 0;
 	static unsigned long panel_top = 0;
