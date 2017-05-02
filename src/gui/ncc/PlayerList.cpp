@@ -18,7 +18,7 @@ PlayerList::PlayerList() : CBaseContainer() {
 void PlayerList::Draw(int x, int y) {
 	if (g_Settings.bInvalid) return;
 	const auto& size = GetSize();
-	draw::DrawRect(x, y, size.first, size.second, colors::Create(0, 0, 0, 65));
+	draw::DrawRect(x, y, size.first, size.second, colors::Create(0, 0, 0, 77));
 	draw::OutlineRect(x, y, size.first, size.second, GUIColor());
 	for (int i = 0; i < Props()->GetInt("vischildren"); i++) {
 		draw::DrawLine(x, y + i * 17, size_table_width(), 0, GUIColor());

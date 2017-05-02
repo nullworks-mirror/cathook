@@ -46,7 +46,7 @@ void CTextLabel::SetText(std::string text) {
 		if (ms.first > 0) {
 			std::string txt = WordWrap(text, ms.first - 2 * padding.first);
 			auto size2 = draw::GetStringLength(fonts::MENU, txt);
-			SetSize(-1, size2.second + padding.second * 2);
+			SetSize(size2.first + padding.first * 2, size2.second + padding.second * 2);
 			Props()->SetString("text", txt.c_str());
 		}
 	}
