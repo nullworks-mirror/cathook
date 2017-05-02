@@ -25,6 +25,8 @@ extern CatVar force_thirdperson;
 extern CatVar console_logging;
 extern CatVar fast_outline;
 extern CatVar roll_speedhack;
+extern CatVar force_name;
+extern bool need_name_change;
 
 class GlobalSettings {
 public:

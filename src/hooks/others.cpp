@@ -289,16 +289,42 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 	//if (TF) LEVEL_INIT(SpyAlert);
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	need_name_change = true;
+	if (force_name.convar->m_StringLength > 2) {
+		//static ConVar* name_cv = g_ICvar->FindVar("name");
+		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+		if (ch) {
+			logging::Info("Sending new name");
+			NET_SetConVar setname("name", force_name.GetString());
+			setname.SetNetChannel(ch);
+			setname.SetReliable(false);
+			ch->SendNetMsg(setname, false);
+			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
+		}
+	}
 }
 
 bool CanInspect_hook(IClientEntity*) { return true; }
 
 void LevelShutdown_hook(void* thisptr) {
+	need_name_change = true;
 	playerlist::Save();
 	((LevelShutdown_t*) hooks::hkClientMode->GetMethod(hooks::offLevelShutdown))(thisptr);
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	if (force_name.convar->m_StringLength > 2) {
+		//static ConVar* name_cv = g_ICvar->FindVar("name");
+		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+		if (ch) {
+			logging::Info("Sending new name");
+			NET_SetConVar setname("name", force_name.GetString());
+			setname.SetNetChannel(ch);
+			setname.SetReliable(false);
+			ch->SendNetMsg(setname, false);
+			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
+		}
+	}
 }
 

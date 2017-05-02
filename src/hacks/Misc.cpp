@@ -325,7 +325,7 @@ CatVar crit_suppress(CV_SWITCH, "crit_suppress", "0", "Disable random crits", "C
 CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK", "Sends random commands to prevent being kicked from server");
 CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide", "Allows moving and shooting while taunting");
 
-CatCommand name("name", "Change name", [](const CCommand& args) {
+CatCommand name("name_set", "Immediate name change", [](const CCommand& args) {
 	if (args.ArgC() < 2) {
 		logging::Info("Set a name, silly");
 		return;
