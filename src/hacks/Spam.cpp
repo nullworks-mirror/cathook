@@ -11,7 +11,7 @@
 #include <pwd.h>
 
 namespace hacks { namespace shared { namespace spam {
-static CatEnum spam_enum({"DISABLED", "DEFAULT", "LENNYFACES", "BLANKS", "FROM FILE"});
+static CatEnum spam_enum({"DISABLED", "CUSTOM", "DEFAULT", "LENNYFACES", "BLANKS", "NULLCORE", "LMAOBOX", "LITHIUM"});
 CatVar spam_source(spam_enum, "spam", "0", "Chat Spam", "Defines source of spam lines. CUSTOM spam file must be set in cat_spam_file and loaded with cat_spam_reload (Use console!)");
 CatVar random_order(CV_SWITCH, "spam_random", "0", "Random Order");
 CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file (~/.cathook/...)", "Spam file name. Each line should be no longer than 100 characters, file must be located in ~/.cathook folder");
@@ -27,13 +27,19 @@ void CreateMove() {
 	const std::vector<std::string>* source = nullptr;
 	switch ((int)spam_source) {
 	case 1:
-		source = &builtin_default; break;
-	case 2:
-		source = &builtin_lennyfaces; break;
-	case 3:
-		source = &builtin_blanks; break;
-	case 4:
 		source = &file.lines; break;
+	case 2:
+		source = &builtin_default; break;
+	case 3:
+		source = &builtin_lennyfaces; break;
+	case 4:
+		source = &builtin_blanks; break;
+	case 5:
+		source = &builtin_nonecore; break;
+	case 6:
+		source = &builtin_lmaobox; break;
+	case 7:
+		source = &builtin_lithium; break;
 	default:
 		return;
 	}
@@ -70,6 +76,31 @@ const std::vector<std::string> builtin_lennyfaces = {
 		"༼ つ  ͡° ͜ʖ ͡° ༽つ" };
 const std::vector<std::string> builtin_blanks = {
 		". \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n "
+};
+
+const std::vector<std::string> builtin_nonecore = {
+		"NULL CORE - REDUCE YOUR RISK OF BEING OWNED!",
+		"NULL CORE - WAY TO THE TOP!",
+		"NULL CORE - BEST TF2 CHEAT!",
+		"NULL CORE - NOW WITH BLACKJACK AND HOOKERS!",
+		"NULL CORE - BUTTHURT IN 10 SECONDS FLAT!",
+		"NULL CORE - WHOLE SERVER OBSERVING!",
+		"NULL CORE - GET BACK TO PWNING!",
+		"NULL CORE - WHEN PVP IS TOO HARDCORE!",
+		"NULL CORE - CAN CAUSE KIDS TO RAGE!",
+		"NULL CORE - F2P NOOBS WILL BE 100% NERFED!"
+};
+const std::vector<std::string> builtin_lmaobox = {
+		"GET GOOD, GET LMAOBOX!",
+		"LMAOBOX - WAY TO THE TOP",
+		"WWW.LMAOBOX.NET - BEST FREE TF2 HACK!"
+};
+const std::vector<std::string> builtin_lithium = {
+		"CHECK OUT www.YouTube.com/c/DurRud FOR MORE INFORMATION!",
+		"PWNING AIMBOTS WITH OP ANTI-AIMS SINCE 2015 - LITHIUMCHEAT",
+		"STOP GETTING MAD AND STABILIZE YOUR MOOD WITH LITHIUMCHEAT!",
+		"SAVE YOUR MONEY AND GET LITHIUMCHEAT! IT IS FREE!",
+		"GOT ROLLED BY LITHIUM? HEY, THAT MEANS IT'S TIME TO GET LITHIUMCHEAT!!"
 };
 
 }}}
