@@ -492,7 +492,7 @@ static const std::string list_tf2 = R"(
     ]
 ]
  
-"Anti-Aim" [
+"Anti-/Anti-Aim" [
     "Anti-Aim Menu"
     "aa_enabled"
     "aa_pitch"
@@ -503,7 +503,7 @@ static const std::string list_tf2 = R"(
     "aa_roll"
     "aa_no_clamp"
     "resolver"
-    "Anti-Anti-AA" [
+    "Anti-Anti-Anti-Aim" [
         "Anti-Anti-Anti-Aim Menu"
         "aa_aaaa_enabled"
         "aa_aaaa_interval"
