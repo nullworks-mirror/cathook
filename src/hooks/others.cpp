@@ -301,6 +301,9 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 			ch->SendNetMsg(setname, false);
 			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
 		}
+		static ConVar* name_cv = g_ICvar->FindVar("name");
+		name_cv->SetValue(force_name.GetString());
+		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
 	}
 }
 
@@ -325,6 +328,9 @@ void LevelShutdown_hook(void* thisptr) {
 			ch->SendNetMsg(setname, false);
 			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
 		}
+		static ConVar* name_cv = g_ICvar->FindVar("name");
+		name_cv->SetValue(force_name.GetString());
+		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
 	}
 }
 
