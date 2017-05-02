@@ -524,12 +524,11 @@ static const std::string list_tf2 = R"(
 
 "Chat" [
     "Chat Options Menu"
-    "killsay"
-    "spam"
-    "spam_source"
-    "spam_random"
     "chat_newlines"
     "clean_chat"
+    "killsay"
+    "spam"
+    "spam_random"
 ]
  
 "Follow Bot" [

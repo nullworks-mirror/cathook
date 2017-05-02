@@ -108,18 +108,26 @@ static CatCommand minus_use_action_slot_item_server("-cat_use_action_slot_item_s
 });
 
 static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add # newlines before each your message");
+//static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages", "Use this if you want to use spam/killsay and still be able to chat normally (without having your msgs eaten by valve cooldown)");
 
 bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	SEGV_BEGIN;
 	// net_StringCmd
-	if (msg.GetType() == 4 && newlines_msg) {
+	if (msg.GetType() == 4 && (newlines_msg)) {
 		std::string str(msg.ToString());
-		if (str.find("net_StringCmd: \"say \"") == 0) {
-			std::string newlines = std::string((int)newlines_msg, '\n');
-			str.insert(21, newlines);
+		auto say_idx = str.find("net_StringCmd: \"say \"");
+		auto say_team_idx = str.find("net_StringCmd: \"say_team \"");
+		if (!say_idx || !say_team_idx) {
+			int offset = say_idx ? 26 : 21;
+			if (newlines_msg) {
+				std::string newlines = std::string((int)newlines_msg, '\n');
+				str.insert(offset, newlines);
+			}
 			str = str.substr(16, str.length() - 17);
-			NET_StringCmd stringcmd(str.c_str());
-			return ((SendNetMsg_t*)hooks::hkNetChannel->GetMethod(hooks::offSendNetMsg))(thisptr, stringcmd, bForceReliable, bVoice);
+			//if (queue_messages && !chat_stack::CanSend()) {
+				NET_StringCmd stringcmd(str.c_str());
+				return ((SendNetMsg_t*)hooks::hkNetChannel->GetMethod(hooks::offSendNetMsg))(thisptr, stringcmd, bForceReliable, bVoice);
+			//}
 		}
 	}
 	if (log_sent && msg.GetType() != 3 && msg.GetType() != 9) {

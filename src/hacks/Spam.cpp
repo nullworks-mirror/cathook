@@ -11,10 +11,8 @@
 #include <pwd.h>
 
 namespace hacks { namespace shared { namespace spam {
-
-CatVar enabled(CV_SWITCH, "spam", "0", "Chat spam", "Enable Spam");
-static CatEnum spam_enum({"DEFAULT", "LENNYFACES", "BLANKS", "FROM FILE"});
-CatVar spam_source(spam_enum, "spam_source", "0", "Spam Source", "Defines source of spam lines. CUSTOM spam file must be set in cat_spam_file and loaded with cat_spam_reload (Use console!)");
+static CatEnum spam_enum({"DISABLED", "DEFAULT", "LENNYFACES", "BLANKS", "FROM FILE"});
+CatVar spam_source(spam_enum, "spam", "0", "Chat Spam", "Defines source of spam lines. CUSTOM spam file must be set in cat_spam_file and loaded with cat_spam_reload (Use console!)");
 CatVar random_order(CV_SWITCH, "spam_random", "0", "Random Order");
 CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file (~/.cathook/...)", "Spam file name. Each line should be no longer than 100 characters, file must be located in ~/.cathook folder");
 CatCommand reload("spam_reload", "Reload spam file", Reload);
@@ -24,17 +22,17 @@ float last_spam { 0.0f };
 TextFile file {};
 
 void CreateMove() {
-	if (!enabled) return;
+	if (!spam_source) return;
 	if (last_spam > g_GlobalVars->curtime) last_spam = 0.0f;
 	const std::vector<std::string>* source = nullptr;
 	switch ((int)spam_source) {
-	case 0:
-		source = &builtin_default; break;
 	case 1:
-		source = &builtin_lennyfaces; break;
+		source = &builtin_default; break;
 	case 2:
-		source = &builtin_blanks; break;
+		source = &builtin_lennyfaces; break;
 	case 3:
+		source = &builtin_blanks; break;
+	case 4:
 		source = &file.lines; break;
 	default:
 		return;
