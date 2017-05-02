@@ -184,6 +184,10 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 		}
 	}
 	if (stage == FRAME_NET_UPDATE_START) {
+		static int next_name_change = 0;
+		if (next_name_change == 0) {
+			need_name_change = true;
+		} else next_name_change--;
 		if (force_name.convar->m_StringLength > 2 && need_name_change) {
 			INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
 			if (ch) {
@@ -194,10 +198,12 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 				ch->SendNetMsg(setname, false);
 				need_name_change = false;
 			}
+			next_name_change = 60 * 100;
 		}
 		static ConVar* name_cv = g_ICvar->FindVar("name");
-		name_cv->SetValue(force_name.GetString());
+		//name_cv->SetValue(force_name.GetString());
 		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
+		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
 	}
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		if (glow_enabled) {
@@ -334,8 +340,8 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
 		}
 		static ConVar* name_cv = g_ICvar->FindVar("name");
-		name_cv->SetValue(force_name.GetString());
 		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
+		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
 	}
 }
 
@@ -361,8 +367,8 @@ void LevelShutdown_hook(void* thisptr) {
 			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
 		}
 		static ConVar* name_cv = g_ICvar->FindVar("name");
-		name_cv->SetValue(force_name.GetString());
 		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
+		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
 	}
 }
 
