@@ -12,6 +12,9 @@ class INetMessage;
 class CViewSetup;
 class bf_read;
 class SDL_Window;
+class CatVar;
+
+extern CatVar disconnect_reason;
 
 bool CanPacket_hook(void*);
 int IN_KeyEvent_hook(void*, int, int, const char*);

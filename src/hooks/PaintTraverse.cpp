@@ -13,6 +13,7 @@
 #include "../segvcatch/segvcatch.h"
 #include "../copypasted/CSignature.h"
 #include "../profiler.h"
+#include "../netmessage.h"
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1", "Clean screenshots", "Don't draw visuals while taking a screenshot");
 CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Completely hides cathook");
@@ -55,6 +56,18 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 	if (cathook) {
 		bool vis = gui_visible;
 		g_ISurface->SetCursorAlwaysVisible(vis);
+	}
+
+	if (force_name.convar->m_StringLength > 2 && need_name_change) {
+		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+		if (ch) {
+			logging::Info("Sending new name");
+			NET_SetConVar setname("name", force_name.GetString());
+			setname.SetNetChannel(ch);
+			setname.SetReliable(false);
+			ch->SendNetMsg(setname, false);
+			need_name_change = false;
+		}
 	}
 
 	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
@@ -111,6 +124,16 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 #endif
 		AddSideString("Press 'INSERT' key to open/close cheat menu.", GUIColor());
 		AddSideString("Use mouse to navigate in menu.", GUIColor());
+		if (!g_IEngine->IsInGame() || g_pGUI->Visible()) {
+			const char* name = (force_name.convar->m_StringLength > 2 ? force_name.GetString() : "*Not Set*");
+			AddSideString(""); // foolish
+			std::string name_stripped(name); // RIP fps
+			ReplaceString(name_stripped, "\n", "\\n");
+			std::string reason_stripped(disconnect_reason.GetString());
+			ReplaceString(reason_stripped, "\n", "\\n");
+			AddSideString(format("Custom Name: ", name_stripped), GUIColor());
+			AddSideString(format("Custom Disconnect Reason: ", (reason_stripped.length() > 3 ? reason_stripped : "*Not Set*")), GUIColor());
+		}
 	}
 
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {

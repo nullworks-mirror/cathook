@@ -37,6 +37,7 @@ void NetVars::Init() {
 		this->_condition_bits = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_ConditionList", "_condition_bits");
 		this->m_flStealthNoAttackExpire = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "tfsharedlocaldata", "m_flStealthNoAttackExpire");
 		this->m_nChargeResistType = gNetvars.get_offset("DT_WeaponMedigun", "m_nChargeResistType");
+		this->m_flChargeLevel = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
 	}
 	if (TF2 || TF2C) {
 		this->res_iMaxHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");

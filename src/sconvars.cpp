@@ -15,6 +15,7 @@ SpoofedConVar::SpoofedConVar(ConVar* var) : original(var) {
 	int flags = var->m_nFlags;
 	const char* name = var->m_pszName;
 	char* s_name = strfmt("q_%s", name);
+	if (g_ICvar->FindVar(s_name)) return;
 	var->m_pszName = s_name;
 	var->m_nFlags = 0;
 	ConVar* svar = new ConVar(name, var->m_pszDefaultValue, flags, var->m_pszHelpString, var->m_bHasMin, var->m_fMinVal, var->m_bHasMax, var->m_fMaxVal, var->m_fnChangeCallback);

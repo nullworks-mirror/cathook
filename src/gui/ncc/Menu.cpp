@@ -289,6 +289,25 @@ static const std::string list_tf2 = R"(
     "Trigger Bot Menu"
     "trigger_enabled"
     "autobackstab"
+    "Auto Vaccinator" [
+        "Auto Vaccinator"
+        "auto_vacc"
+        "auto_vacc_reset_timer"
+        "auto_vacc_default_resist"
+        "auto_vacc_bullets"
+        "auto_vacc_blast"
+        "auto_vacc_fire"
+        "auto_vacc_sniper_pop"
+        "auto_vacc_blast_pop_health"
+        "auto_vacc_blast_pop_crit"
+        "auto_vacc_rocket_range"
+        "auto_vacc_fire_pop_pyro"
+        "auto_vacc_afterburn"
+        "auto_vacc_pyro_range"
+        "auto_vacc_bullet_pop_ubers"
+        "auto_vacc_blast_pop_ubers"
+        "auto_vacc_fire_pop_ubers"
+    ]
     "Auto Sticky" [
         "Auto Sticky Menu"
         "sticky_enabled"
@@ -505,10 +524,11 @@ static const std::string list_tf2 = R"(
 
 "Chat" [
     "Chat Options Menu"
+    "chat_newlines"
+    "clean_chat"
     "killsay"
     "spam"
-    "spam_newlines"
-    "clean_chat"
+    "spam_random"
 ]
  
 "Follow Bot" [

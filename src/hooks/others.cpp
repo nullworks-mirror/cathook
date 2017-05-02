@@ -107,9 +107,29 @@ static CatCommand minus_use_action_slot_item_server("-cat_use_action_slot_item_s
 	g_IEngine->ServerCmdKeyValues(kv);
 });
 
-// Not used anymore..
+static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add # newlines before each your message");
+//static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages", "Use this if you want to use spam/killsay and still be able to chat normally (without having your msgs eaten by valve cooldown)");
+
 bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	SEGV_BEGIN;
+	// net_StringCmd
+	if (msg.GetType() == 4 && (newlines_msg)) {
+		std::string str(msg.ToString());
+		auto say_idx = str.find("net_StringCmd: \"say \"");
+		auto say_team_idx = str.find("net_StringCmd: \"say_team \"");
+		if (!say_idx || !say_team_idx) {
+			int offset = say_idx ? 26 : 21;
+			if (newlines_msg) {
+				std::string newlines = std::string((int)newlines_msg, '\n');
+				str.insert(offset, newlines);
+			}
+			str = str.substr(16, str.length() - 17);
+			//if (queue_messages && !chat_stack::CanSend()) {
+				NET_StringCmd stringcmd(str.c_str());
+				return ((SendNetMsg_t*)hooks::hkNetChannel->GetMethod(hooks::offSendNetMsg))(thisptr, stringcmd, bForceReliable, bVoice);
+			//}
+		}
+	}
 	if (log_sent && msg.GetType() != 3 && msg.GetType() != 9) {
 		logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(), msg.ToString());
 		unsigned char buf[4096];
@@ -269,16 +289,48 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 	//if (TF) LEVEL_INIT(SpyAlert);
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	need_name_change = true;
+	if (force_name.convar->m_StringLength > 2) {
+		//static ConVar* name_cv = g_ICvar->FindVar("name");
+		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+		if (ch) {
+			logging::Info("Sending new name");
+			NET_SetConVar setname("name", force_name.GetString());
+			setname.SetNetChannel(ch);
+			setname.SetReliable(false);
+			ch->SendNetMsg(setname, false);
+			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
+		}
+		static ConVar* name_cv = g_ICvar->FindVar("name");
+		name_cv->SetValue(force_name.GetString());
+		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
+	}
 }
 
 bool CanInspect_hook(IClientEntity*) { return true; }
 
 void LevelShutdown_hook(void* thisptr) {
+	need_name_change = true;
 	playerlist::Save();
 	((LevelShutdown_t*) hooks::hkClientMode->GetMethod(hooks::offLevelShutdown))(thisptr);
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	if (force_name.convar->m_StringLength > 2) {
+		//static ConVar* name_cv = g_ICvar->FindVar("name");
+		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+		if (ch) {
+			logging::Info("Sending new name");
+			NET_SetConVar setname("name", force_name.GetString());
+			setname.SetNetChannel(ch);
+			setname.SetReliable(false);
+			ch->SendNetMsg(setname, false);
+			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
+		}
+		static ConVar* name_cv = g_ICvar->FindVar("name");
+		name_cv->SetValue(force_name.GetString());
+		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
+	}
 }
 

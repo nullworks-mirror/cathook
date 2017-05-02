@@ -16,9 +16,12 @@ class CatCommand;
 
 namespace hacks { namespace shared { namespace spam {
 
+extern const std::vector<std::string> builtin_default;
+extern const std::vector<std::string> builtin_lennyfaces;
+extern const std::vector<std::string> builtin_blanks;
+
 extern CatVar enabled;
 extern CatVar filename;
-extern CatVar newlines;
 extern CatCommand reload;
 
 void CreateMove();

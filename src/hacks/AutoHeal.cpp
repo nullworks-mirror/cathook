@@ -26,7 +26,17 @@ static CatVar share_uber(CV_SWITCH, "autoheal_share_uber", "1", "Share ubercharg
 int vaccinator_change_stage = 0;
 int vaccinator_change_ticks = 0;
 int vaccinator_ideal_resist = 0;
+int vaccinator_change_timer = 0;
 
+static CatVar auto_vacc_bullets(CV_SWITCH, "auto_vacc_bullets", "1", "Check bullet danger");
+static CatEnum vacc_sniper_enum({"NEVER", "ZOOM & VISIBLE", "ANY ZOOMED"});
+static CatVar vacc_sniper(vacc_sniper_enum, "auto_vacc_sniper_pop", "1", "Pop if Sniper", "Defines Auto-Vacc behaviour with snipers");
+
+int ChargeCount() {
+	return (CE_FLOAT(LOCAL_W, netvar.m_flChargeLevel) / 0.25f);
+}
+
+// TODO Angle Checking
 int BulletDangerValue(CachedEntity* patient) {
 	// Find zoomed in snipers in other team
 	bool any_zoomed_snipers = false;
@@ -38,39 +48,85 @@ int BulletDangerValue(CachedEntity* patient) {
 		if (!HasCondition(ent, TFCond_Zoomed)) continue;
 		any_zoomed_snipers = true;
 		// TODO VisCheck from patient.
-		if (!IsEntityVisible(ent, head)) continue;
-		return 2;
+		if ((int)vacc_sniper == 1)
+			if (!IsEntityVisible(ent, head)) continue;
+		return vacc_sniper ? 2 : 1;
 	}
 	return any_zoomed_snipers;
 }
 
+static CatVar auto_vacc_fire_checking(CV_SWITCH, "auto_vacc_fire", "1", "Check fire danger");
+static CatEnum pyro_enum({"NEVER", "PRIMARY OUT", "ALWAYS"});
+static CatVar auto_vacc_pop_if_pyro(pyro_enum, "auto_vacc_fire_pop_pyro", "1", "Pop if pyro is near", "Defines Auto-Vacc behaviour with pyros");
+static CatVar auto_vacc_check_on_fire(CV_SWITCH, "auto_vacc_afterburn", "1", "Anti-Afterburn");
+static CatVar auto_vacc_pyro_range(CV_INT, "auto_vacc_pyro_range", "450", "Pyro Danger Range");
+
 int FireDangerValue(CachedEntity* patient) {
 	// Find nearby pyros
-	for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
-		CachedEntity* ent = ENTITY(i);
-		if (!ent->m_bEnemy) continue;
-		if (g_pPlayerResource->GetClass(ent) != tf_pyro) continue;
-		if (CE_BYTE(ent, netvar.iLifeState)) continue;
-		if (patient->m_vecOrigin.DistToSqr(ent->m_vecOrigin) > 300.0f * 300.0f) continue;
-		IClientEntity* pyro_weapon = g_IEntityList->GetClientEntity(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
-		return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == g_pClassID->CTFFlameThrower) ? 2 : 0;
+	if (!auto_vacc_fire_checking) return 0;
+	if (auto_vacc_pop_if_pyro) {
+		for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
+			CachedEntity* ent = ENTITY(i);
+			if (!ent->m_bEnemy) continue;
+			if (g_pPlayerResource->GetClass(ent) != tf_pyro) continue;
+			if (CE_BYTE(ent, netvar.iLifeState)) continue;
+			if (patient->m_vecOrigin.DistTo(ent->m_vecOrigin) > (int)auto_vacc_pyro_range) continue;
+			if ((int)auto_vacc_pop_if_pyro == 2) return 2;
+			IClientEntity* pyro_weapon = g_IEntityList->GetClientEntity(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
+			return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == g_pClassID->CTFFlameThrower) ? 2 : 0;
+		}
 	}
 	if (HasCondition(patient, TFCond_OnFire)) {
-		return 1;
+		return (bool)auto_vacc_check_on_fire;
 	}
 	return 0;
 }
 
+struct proj_data_s {
+	int eid;
+	Vector last_pos;
+};
+
+std::vector<proj_data_s> proj_data_array;
+
+static CatVar auto_vacc_blast_health(CV_INT, "auto_vacc_blast_pop_health", "80", "Pop Blast if rocket & HP <");
+static CatVar auto_vacc_blast_crit_pop(CV_SWITCH, "auto_vacc_blast_pop_crit", "1", "Pop Blast if crit rocket near");
+static CatVar auto_vacc_blast_checking(CV_SWITCH, "auto_vacc_blast", "1", "Check blast danger");
+static CatVar auto_vacc_proj_danger_range(CV_INT, "auto_vacc_rocket_range", "650", "Rocket Danger Range", "This range should be high enough to give more time to change resistances.");
+
 int BlastDangerValue(CachedEntity* patient) {
+	if (!auto_vacc_blast_checking) return 0;
+	// Check rockets for being closer
+	bool hasCritRockets = false;
+	bool hasRockets = false;
+	for (auto it = proj_data_array.begin(); it != proj_data_array.end();) {
+		const auto& d = *it;
+		CachedEntity* ent = ENTITY(d.eid);
+		if (CE_GOOD(ent)) {
+			// Rocket is getting closer
+			if (patient->m_vecOrigin.DistToSqr(d.last_pos) > patient->m_vecOrigin.DistToSqr(ent->m_vecOrigin)) {
+				if (ent->m_bCritProjectile) hasCritRockets = true;
+				hasRockets = true;
+			}
+			it++;
+		} else {
+			proj_data_array.erase(it);
+		}
+	}
+	if (hasRockets) {
+		if (patient->m_iHealth < (int)auto_vacc_blast_health || (auto_vacc_blast_crit_pop && hasCritRockets)) {
+			return 2;
+		}
+		return 1;
+	}
 	// Find crit rockets/pipes nearby
 	for (int i = 32; i < HIGHEST_ENTITY; i++) {
 		CachedEntity* ent = ENTITY(i);
 		if (CE_BAD(ent)) continue;
 		if (!ent->m_bEnemy) continue;
 		if (ent->m_Type != ENTITY_PROJECTILE) continue;
-		if (patient->m_vecOrigin.DistToSqr(ent->m_vecOrigin) > 420.0f * 420.0f) continue;
-		// TODO Velocity checking
-		return ((ent->m_bCritProjectile || (patient->m_iHealth < 80)) ? 2 : 1);
+		if (patient->m_vecOrigin.DistTo(ent->m_vecOrigin) > (int)auto_vacc_proj_danger_range) continue;
+		proj_data_array.push_back(proj_data_s{i, ent->m_vecOrigin});
 	}
 	return 0;
 }
@@ -80,21 +136,36 @@ int CurrentResistance() {
 	return CE_INT(LOCAL_W, netvar.m_nChargeResistType);
 }
 
+static CatVar change_timer(CV_INT, "auto_vacc_reset_timer", "200", "Reset Timer", "If no dangers were detected for # ticks, resistance will be reset to default, 0 to disable");
+
+static CatVar auto_vacc_bullet_pop_ubers(CV_INT, "auto_vacc_bullet_pop_ubers", "0", "Pop Bullet if Ubers >=", "Only pop an uber if you have >= # Ubercharges in your Vaccinator", 0, 4);
+static CatVar auto_vacc_fire_pop_ubers(CV_INT, "auto_vacc_fire_pop_ubers", "0", "Pop Fire if Ubers >=", "Only pop an uber if you have >= # Ubercharges in your Vaccinator", 0, 4);
+static CatVar auto_vacc_blast_pop_ubers(CV_INT, "auto_vacc_blast_pop_ubers", "0", "Pop Blast if Ubers >=", "Only pop an uber if you have >= # Ubercharges in your Vaccinator", 0, 4);
+
 int OptimalResistance(CachedEntity* patient, bool* shouldPop) {
 	int bd = BlastDangerValue(patient),
 		fd = FireDangerValue(patient),
 		hd = BulletDangerValue(patient);
 	if (shouldPop) {
-		if (bd > 1 || fd > 1 || hd > 1) *shouldPop = true;
+		int charges = ChargeCount();
+		if (bd > 1 && charges >= (int)auto_vacc_blast_pop_ubers) *shouldPop = true;
+		if (fd > 1 && charges >= (int)auto_vacc_fire_pop_ubers) *shouldPop = true;
+		if (hd > 1 && charges >= (int)auto_vacc_bullet_pop_ubers) *shouldPop = true;
 	}
 	if (!hd && !fd && !bd) return -1;
+	vaccinator_change_timer = (int)change_timer;
 	if (hd >= fd && hd >= bd) return 0;
 	if (bd >= fd && bd >= hd) return 1;
 	if (fd >= hd && fd >= bd) return 2;
 	return -1;
 }
 
+static CatEnum resistances_enum({"BULLET", "BLAST", "FIRE"});
+static CatVar default_resistance(resistances_enum, "auto_vacc_default_resist", "0", "Default Resistance", "Select default resistance type");
+
 void SetResistance(int resistance) {
+	resistance = _clamp(0, 2, resistance);
+	vaccinator_change_timer = (int)change_timer;
 	vaccinator_ideal_resist = resistance;
 	int cur = CurrentResistance();
 	if (resistance == cur) return;
@@ -103,6 +174,12 @@ void SetResistance(int resistance) {
 }
 
 void DoResistSwitching() {
+	if (vaccinator_change_timer > 0) {
+		if (vaccinator_change_timer == 1) {
+			SetResistance((int)default_resistance);
+		}
+		vaccinator_change_timer--;
+	}
 	if (!vaccinator_change_stage) return;
 	if (CurrentResistance() == vaccinator_ideal_resist) {
 		vaccinator_change_ticks = 0;
