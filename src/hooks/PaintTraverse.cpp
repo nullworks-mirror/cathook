@@ -124,10 +124,16 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 #endif
 		AddSideString("Press 'INSERT' key to open/close cheat menu.", GUIColor());
 		AddSideString("Use mouse to navigate in menu.", GUIColor());
-		const char* name = (force_name.convar->m_StringLength > 2 ? force_name.GetString() : "*Not Set*");
-		AddSideString(""); // foolish
-		AddSideString(format("Custom Name: ", name), GUIColor());
-		AddSideString(format("Custom Disconnect Reason: ", (disconnect_reason.convar->m_StringLength > 3 ? disconnect_reason.GetString() : "*Not Set*")), GUIColor());
+		if (!g_IEngine->IsInGame() || g_pGUI->Visible()) {
+			const char* name = (force_name.convar->m_StringLength > 2 ? force_name.GetString() : "*Not Set*");
+			AddSideString(""); // foolish
+			std::string name_stripped(name); // RIP fps
+			ReplaceString(name_stripped, "\n", "\\n");
+			std::string reason_stripped(disconnect_reason.GetString());
+			ReplaceString(reason_stripped, "\n", "\\n");
+			AddSideString(format("Custom Name: ", name_stripped), GUIColor());
+			AddSideString(format("Custom Disconnect Reason: ", (reason_stripped.length() > 3 ? reason_stripped : "*Not Set*")), GUIColor());
+		}
 	}
 
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
