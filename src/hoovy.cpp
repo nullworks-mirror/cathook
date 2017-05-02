@@ -10,7 +10,9 @@
 static bool hoovy_list[32] = { 0 };
 
 bool HasSandvichOut(CachedEntity* entity) {
-	CachedEntity* weapon = ENTITY(CE_INT(entity, netvar.hActiveWeapon) & 0xFFF);
+	int weapon_idx = CE_INT(entity, netvar.hActiveWeapon) & 0xFFF;
+	if (!(weapon_idx > 0 && weapon_idx < HIGHEST_ENTITY)) return false;
+	CachedEntity* weapon = ENTITY(weapon_idx);
 	if (CE_GOOD(weapon)) {
 		if (weapon->m_iClassID == g_pClassID->CTFLunchBox && CE_INT(entity, netvar.iClass) == tf_heavy) {
 			return true;

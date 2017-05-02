@@ -34,7 +34,7 @@ static CatVar ammobox(CV_SWITCH, "glow_ammo", "0", "Ammoboxes", "Render glow on 
 static CatVar buildings(CV_SWITCH, "glow_buildings", "0", "Buildings", "Render glow on buildings");
 static CatVar stickies(CV_SWITCH, "glow_stickies", "0", "Stickies", "Render glow on stickybombs");
 static CatVar teammate_buildings(CV_SWITCH, "glow_teammate_buildings", "0", "Teammate Buildings", "Render glow on teammates buildings");
-
+//static CatVar weapons_white(CV_SWITCH, "glow_weapons_white", "1", "White Weapon Glow", "Weapons will glow white");
 
 struct ShaderStencilState_t
 {
