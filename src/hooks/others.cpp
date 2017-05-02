@@ -107,7 +107,9 @@ static CatCommand minus_use_action_slot_item_server("-cat_use_action_slot_item_s
 	g_IEngine->ServerCmdKeyValues(kv);
 });
 
-static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add # newlines before each your message");
+static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add # newlines before each your message", 0, 24);
+// TODO replace \\n with \n
+// TODO name \\n = \n
 //static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages", "Use this if you want to use spam/killsay and still be able to chat normally (without having your msgs eaten by valve cooldown)");
 
 bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
@@ -180,6 +182,22 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 				while (angles.y < -180) angles.y += 360;
 			}
 		}
+	}
+	if (stage == FRAME_NET_UPDATE_START) {
+		if (force_name.convar->m_StringLength > 2 && need_name_change) {
+			INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+			if (ch) {
+				logging::Info("Sending new name");
+				NET_SetConVar setname("name", force_name.GetString());
+				setname.SetNetChannel(ch);
+				setname.SetReliable(false);
+				ch->SendNetMsg(setname, false);
+				need_name_change = false;
+			}
+		}
+		static ConVar* name_cv = g_ICvar->FindVar("name");
+		name_cv->SetValue(force_name.GetString());
+		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
 	}
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		if (glow_enabled) {

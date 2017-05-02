@@ -83,18 +83,6 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		}
 	}
 
-	if (force_name.convar->m_StringLength > 2 && need_name_change) {
-		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-		if (ch) {
-			logging::Info("Sending new name");
-			NET_SetConVar setname("name", force_name.GetString());
-			setname.SetNetChannel(ch);
-			setname.SetReliable(false);
-			ch->SendNetMsg(setname, false);
-			need_name_change = false;
-		}
-	}
-
 	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
 	// To avoid threading problems.
 
