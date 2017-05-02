@@ -23,6 +23,9 @@ CatVar pure_bypass(CV_SWITCH, "pure_bypass", "0", "Pure Bypass", "Bypass sv_pure
 void* pure_orig = nullptr;
 void** pure_addr = nullptr;
 
+CatEnum software_cursor_enum({"KEEP", "ALWAYS", "NEVER", "MENU ON", "MENU OFF"});
+CatVar software_cursor_mode(software_cursor_enum, "software_cursor_mode", "1", "Software cursor", "Try to change this and see what works best for you");
+
 void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 #if DEBUG_SEGV == true
 	if (!segvcatch::handler_fpe || !segvcatch::handler_segv) {
@@ -58,15 +61,25 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		g_ISurface->SetCursorAlwaysVisible(vis);
 	}
 
-	if (force_name.convar->m_StringLength > 2 && need_name_change) {
-		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-		if (ch) {
-			logging::Info("Sending new name");
-			NET_SetConVar setname("name", force_name.GetString());
-			setname.SetNetChannel(ch);
-			setname.SetReliable(false);
-			ch->SendNetMsg(setname, false);
-			need_name_change = false;
+	if (software_cursor_mode) {
+		static ConVar* software_cursor = g_ICvar->FindVar("cl_software_cursor");
+		bool cur = software_cursor->GetBool();
+		switch ((int)software_cursor_mode) {
+		case 1:
+			if (!software_cursor->GetBool()) software_cursor->SetValue(1);
+			break;
+		case 2:
+			if (software_cursor->GetBool()) software_cursor->SetValue(0);
+			break;
+		case 3:
+			if (cur != g_pGUI->Visible()) {
+				software_cursor->SetValue(g_pGUI->Visible());
+			}
+			break;
+		case 4:
+			if (cur == g_pGUI->Visible()) {
+				software_cursor->SetValue(!g_pGUI->Visible());
+			}
 		}
 	}
 
@@ -125,7 +138,8 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		AddSideString("Press 'INSERT' key to open/close cheat menu.", GUIColor());
 		AddSideString("Use mouse to navigate in menu.", GUIColor());
 		if (!g_IEngine->IsInGame() || g_pGUI->Visible()) {
-			const char* name = (force_name.convar->m_StringLength > 2 ? force_name.GetString() : "*Not Set*");
+			std::string name(force_name.GetString());
+			if (name.length() < 3) name = "*Not Set*";
 			AddSideString(""); // foolish
 			std::string name_stripped(name); // RIP fps
 			ReplaceString(name_stripped, "\n", "\\n");
