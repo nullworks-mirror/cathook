@@ -526,7 +526,7 @@ static const std::string list_tf2 = R"(
     "Chat Options Menu"
     "killsay"
     "spam"
-    "spam_newlines"
+    "chat_newlines"
     "clean_chat"
 ]
  

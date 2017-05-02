@@ -107,9 +107,21 @@ static CatCommand minus_use_action_slot_item_server("-cat_use_action_slot_item_s
 	g_IEngine->ServerCmdKeyValues(kv);
 });
 
-// Not used anymore..
+static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add # newlines before each your message");
+
 bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	SEGV_BEGIN;
+	// net_StringCmd
+	if (msg.GetType() == 4 && newlines_msg) {
+		std::string str(msg.ToString());
+		if (str.find("net_StringCmd: \"say \"") == 0) {
+			std::string newlines = std::string((int)newlines_msg, '\n');
+			str.insert(21, newlines);
+			str = str.substr(16, str.length() - 17);
+			NET_StringCmd stringcmd(str.c_str());
+			return ((SendNetMsg_t*)hooks::hkNetChannel->GetMethod(hooks::offSendNetMsg))(thisptr, stringcmd, bForceReliable, bVoice);
+		}
+	}
 	if (log_sent && msg.GetType() != 3 && msg.GetType() != 9) {
 		logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(), msg.ToString());
 		unsigned char buf[4096];

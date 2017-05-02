@@ -18,7 +18,6 @@ namespace hacks { namespace shared { namespace spam {
 
 extern CatVar enabled;
 extern CatVar filename;
-extern CatVar newlines;
 extern CatCommand reload;
 
 void CreateMove();

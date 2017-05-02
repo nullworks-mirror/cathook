@@ -13,8 +13,8 @@
 namespace hacks { namespace shared { namespace spam {
 
 CatVar enabled(CV_SWITCH, "spam", "0", "Chat spam", "Enable Spam");
+//static CatEnum spam_enum({""});
 CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file (~/.cathook/...)", "Spam file name. Each line should be no longer than 100 characters, file must be located in ~/.cathook folder");
-CatVar newlines(CV_SWITCH, "spam_newlines", "1", "Spam newlines", "If enabled, several newlines will be added before each message");
 CatCommand reload("spam_reload", "Reload spam file", Reload);
 
 int current_index { 0 };
@@ -28,7 +28,7 @@ void CreateMove() {
 	if (g_GlobalVars->curtime - last_spam > 0.8f) {
 		if (chat_stack::stack.empty()) {
 			if (current_index >= file.LineCount()) current_index = 0;
-			std::string spamString = (newlines ? format("\n\n\n\n\n\n\n\n\n\n\n\n", file.Line(current_index)) : file.Line(current_index));
+			std::string spamString = file.Line(current_index);
 			ReplaceString(spamString, "\\n", "\n");
 			chat_stack::stack.push(spamString);
 			current_index++;
