@@ -162,11 +162,25 @@ void Shutdown_hook(void* thisptr, const char* reason) {
 
 static CatVar glow_enabled(CV_SWITCH, "glow_old_enabled", "0", "Enable", "Make sure to enable glow_outline_effect_enable in tf2 settings");
 static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
+static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
 void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
 	// TODO hack FSN hook
+	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
+		for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
+			if (i == g_IEngine->GetLocalPlayer()) continue;
+			IClientEntity* ent = g_IEntityList->GetClientEntity(i);
+			if (ent && !ent->IsDormant() && !NET_BYTE(ent, netvar.iLifeState)) {
+				Vector& angles = NET_VECTOR(ent, netvar.m_angEyeAngles);
+				if (angles.x >= 90) angles.x = -89;
+				if (angles.x <= -90) angles.x = 89;
+				while (angles.y > 180) angles.y -= 360;
+				while (angles.y < -180) angles.y += 360;
+			}
+		}
+	}
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		if (glow_enabled) {
 			for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.m_Size; i++) {

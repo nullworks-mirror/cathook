@@ -502,6 +502,7 @@ static const std::string list_tf2 = R"(
     "aa_spin"
     "aa_roll"
     "aa_no_clamp"
+    "resolver"
     "Anti-Anti-AA" [
         "Anti-Anti-Anti-Aim Menu"
         "aa_aaaa_enabled"
@@ -566,6 +567,7 @@ static const std::string list_tf2 = R"(
     "info"
     "Debug" [
         "Debug Menu"
+        "software_cursor_mode"
         "enabled"
         "no_visuals"
         "debug_info"
