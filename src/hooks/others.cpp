@@ -166,6 +166,13 @@ static CatVar glow_enabled(CV_SWITCH, "glow_old_enabled", "0", "Enable", "Make s
 static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
+const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
+	if ((force_name.convar->m_StringLength > 2) && steamID == g_ISteamUser->GetSteamID()) {
+		return force_name.GetString();
+	}
+	return ((GetFriendPersonaName_t*)(hooks::hkSteamFriends->GetMethod(hooks::offGetFriendPersonaName)))(_this, steamID);
+}
+
 void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
@@ -182,29 +189,6 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 				while (angles.y < -180) angles.y += 360;
 			}
 		}
-	}
-	if (stage == FRAME_NET_UPDATE_START) {
-		static int next_name_change = 0;
-		if (next_name_change <= 0 || need_name_change) {
-			need_name_change = true;
-			next_name_change = 0;
-		} else next_name_change--;
-		if (force_name.convar->m_StringLength > 2 && need_name_change) {
-			INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-			if (ch) {
-				logging::Info("Sending new name");
-				NET_SetConVar setname("name", force_name.GetString());
-				setname.SetNetChannel(ch);
-				setname.SetReliable(false);
-				ch->SendNetMsg(setname, false);
-				need_name_change = false;
-			}
-			next_name_change = 60 * 100;
-		}
-		static ConVar* name_cv = g_ICvar->FindVar("name");
-		//name_cv->SetValue(force_name.GetString());
-		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
-		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
 	}
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		if (glow_enabled) {
@@ -328,22 +312,6 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 	//if (TF) LEVEL_INIT(SpyAlert);
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
-	need_name_change = true;
-	if (force_name.convar->m_StringLength > 2) {
-		//static ConVar* name_cv = g_ICvar->FindVar("name");
-		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-		if (ch) {
-			logging::Info("Sending new name");
-			NET_SetConVar setname("name", force_name.GetString());
-			setname.SetNetChannel(ch);
-			setname.SetReliable(false);
-			ch->SendNetMsg(setname, false);
-			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
-		}
-		static ConVar* name_cv = g_ICvar->FindVar("name");
-		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
-		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
-	}
 }
 
 bool CanInspect_hook(IClientEntity*) { return true; }
@@ -356,21 +324,5 @@ void LevelShutdown_hook(void* thisptr) {
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
-	need_name_change = true;
-	if (force_name.convar->m_StringLength > 2) {
-		//static ConVar* name_cv = g_ICvar->FindVar("name");
-		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-		if (ch) {
-			logging::Info("Sending new name");
-			NET_SetConVar setname("name", force_name.GetString());
-			setname.SetNetChannel(ch);
-			setname.SetReliable(false);
-			ch->SendNetMsg(setname, false);
-			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
-		}
-		static ConVar* name_cv = g_ICvar->FindVar("name");
-		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
-		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
-	}
 }
 

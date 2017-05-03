@@ -35,6 +35,10 @@ bool ProcessGetCvarValue_hook(CBaseClientState* _this, SVC_GetCvarValue* msg);
 //void CInput__CreateMove_hook(void*, int sequence_number, float input_sample_frametime, bool active);
 bool CanInspect_hook(IClientEntity*);
 const unsigned int offCanInspect = 512;
+
+typedef const char*(GetFriendPersonaName_t)(ISteamFriends*, CSteamID);
+const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID);
+
 void BeginFrame_hook(IStudioRender*);
 CUserCmd* GetUserCmd_hook(IInput*, int);
 void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix);

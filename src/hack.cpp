@@ -167,10 +167,16 @@ void hack::Initialize() {
 	hooks::hkInput->Init((void*)g_IInput, 0);
 	hooks::hkInput->HookMethod((void*)GetUserCmd_hook, hooks::offGetUserCmd);
 	hooks::hkInput->Apply();
+	logging::Info("Before hacking: %s", g_ISteamFriends->GetPersonaName());
 	hooks::hkIVModelRender = new hooks::VMTHook();
 	hooks::hkIVModelRender->Init(g_IVModelRender, 0);
 	hooks::hkIVModelRender->HookMethod((void*)DrawModelExecute_hook, hooks::offDrawModelExecute);
 	hooks::hkIVModelRender->Apply();
+	hooks::hkSteamFriends = new hooks::VMTHook();
+	hooks::hkSteamFriends->Init(g_ISteamFriends, 0);
+	hooks::hkSteamFriends->HookMethod((void*)GetFriendPersonaName_hook, hooks::offGetFriendPersonaName);
+	hooks::hkSteamFriends->Apply();
+	logging::Info("After hacking: %s", g_ISteamFriends->GetPersonaName());
 	// Sadly, it doesn't work as expected :(
 	/*hooks::hkBaseClientState = new hooks::VMTHook();
 	hooks::hkBaseClientState->Init((void*)g_IBaseClientState, 0);
