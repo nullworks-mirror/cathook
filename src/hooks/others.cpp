@@ -185,8 +185,9 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 	}
 	if (stage == FRAME_NET_UPDATE_START) {
 		static int next_name_change = 0;
-		if (next_name_change == 0) {
+		if (next_name_change <= 0 || need_name_change) {
 			need_name_change = true;
+			next_name_change = 0;
 		} else next_name_change--;
 		if (force_name.convar->m_StringLength > 2 && need_name_change) {
 			INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
@@ -355,6 +356,7 @@ void LevelShutdown_hook(void* thisptr) {
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	need_name_change = true;
 	if (force_name.convar->m_StringLength > 2) {
 		//static ConVar* name_cv = g_ICvar->FindVar("name");
 		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
