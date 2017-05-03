@@ -23,6 +23,18 @@ TextFile file {};
 
 void CreateMove() {
 	if (!spam_source) return;
+	static int safety_ticks = 0;
+	static int last_spam = 0;
+	if ((int)spam_source != last_spam) {
+		safety_ticks = 300;
+		last_spam = (int)spam_source;
+	}
+	if (safety_ticks > 0) {
+		safety_ticks--;
+		return;
+	} else {
+		safety_ticks = 0;
+	}
 	if (last_spam > g_GlobalVars->curtime) last_spam = 0.0f;
 	const std::vector<std::string>* source = nullptr;
 	switch ((int)spam_source) {
@@ -68,7 +80,8 @@ const std::vector<std::string> builtin_default = {
 		"cathook - more fun than a ball of yarn!",
 		"GNU/Linux is the best OS!",
 		"get cathook: discord.gg/7bu3AFw",
-		"cathook - free tf2 cheat!"
+		"cathook - free tf2 cheat!",
+		"cathook - ca(n)t stop me meow!"
 };
 const std::vector<std::string> builtin_lennyfaces = {
 		"( ͡° ͜ʖ ͡°)", "( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)", "ʕ•ᴥ•ʔ",

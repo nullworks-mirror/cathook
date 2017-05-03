@@ -48,6 +48,7 @@ class IVRenderView;
 class IMaterialSystemFixed;
 class IMaterialSystem;
 class IMoveHelperServer;
+class CBaseClientState;
 
 extern ISteamClient* g_ISteamClient;
 extern ISteamFriends* g_ISteamFriends;
@@ -75,6 +76,7 @@ extern IMaterialSystem* g_IMaterialSystemHL;
 extern IVModelRender* g_IVModelRender;
 extern IVRenderView* g_IVRenderView;
 extern IMoveHelperServer* g_IMoveHelperServer;
+extern CBaseClientState* g_IBaseClientState;
 
 template<typename T>
 T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start = 0);

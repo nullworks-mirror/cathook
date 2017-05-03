@@ -303,7 +303,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 			int j = 0;
 			for (int i = 0; i < 3; i++) {
 				while (char c = data[j++]) {
-					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '?';
+					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
 				}
 			}
 			buf = bf_read(data, s);

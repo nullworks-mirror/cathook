@@ -137,6 +137,33 @@ protected:
 
 #define MAX_OSPATH 260
 
+#define NETMSG_TYPE_BITS 5
+typedef int QueryCvarCookie_t;
+typedef enum
+{
+	eQueryCvarValueStatus_ValueIntact=0,	// It got the value fine.
+	eQueryCvarValueStatus_CvarNotFound=1,
+	eQueryCvarValueStatus_NotACvar=2,		// There's a ConCommand, but it's not a ConVar.
+	eQueryCvarValueStatus_CvarProtected=3	// The cvar was marked with FCVAR_SERVER_CAN_NOT_QUERY, so the server is not allowed to have its value.
+} EQueryCvarValueStatus;
+
+class CLC_RespondCvarValue : public CNetMessage
+{
+public:
+	DECLARE_CLC_MESSAGE( RespondCvarValue );
+
+	QueryCvarCookie_t		m_iCookie;
+
+	const char				*m_szCvarName;
+	const char				*m_szCvarValue;	// The sender sets this, and it automatically points it at m_szCvarNameBuffer when receiving.
+
+	EQueryCvarValueStatus	m_eStatusCode;
+
+private:
+	char		m_szCvarNameBuffer[256];
+	char		m_szCvarValueBuffer[256];
+};
+
 class NET_NOP : public CNetMessage {
 	DECLARE_NET_MESSAGE( NOP );
 
@@ -158,6 +185,17 @@ public:
 	int			m_nSpawnCount;			// server spawn count (session number)
 };
 
+class SVC_GetCvarValue : public CNetMessage
+{
+public:
+	DECLARE_SVC_MESSAGE( GetCvarValue );
+
+	QueryCvarCookie_t	m_iCookie;
+	const char			*m_szCvarName;	// The sender sets this, and it automatically points it at m_szCvarNameBuffer when receiving.
+
+private:
+	char		m_szCvarNameBuffer[256];
+};
 
 class NET_SetConVar : public CNetMessage
 {

@@ -7,6 +7,7 @@
 
 #include "netmessage.h"
 #include "logging.h"
+#include "common.h"
 
 bf_write::bf_write()
 {
@@ -334,6 +335,40 @@ void bf_write::WriteByte(int val)
 void bf_write::WriteLong(long val)
 {
 	WriteSBitLong(val, sizeof(long) << 3);
+}
+
+bool CLC_RespondCvarValue::WriteToBuffer( bf_write &buffer )
+{
+	buffer.WriteUBitLong( GetType(), NETMSG_TYPE_BITS );
+
+	buffer.WriteSBitLong( m_iCookie, 32 );
+	buffer.WriteSBitLong( m_eStatusCode, 4 );
+
+	buffer.WriteString( m_szCvarName );
+	buffer.WriteString( m_szCvarValue );
+
+	return !buffer.IsOverflowed();
+}
+
+bool CLC_RespondCvarValue::ReadFromBuffer( bf_read &buffer )
+{
+	m_iCookie = buffer.ReadSBitLong( 32 );
+	m_eStatusCode = (EQueryCvarValueStatus)buffer.ReadSBitLong( 4 );
+
+	// Read the name.
+	buffer.ReadString( m_szCvarNameBuffer, sizeof( m_szCvarNameBuffer ) );
+	m_szCvarName = m_szCvarNameBuffer;
+
+	// Read the value.
+	buffer.ReadString( m_szCvarValueBuffer, sizeof( m_szCvarValueBuffer ) );
+	m_szCvarValue = m_szCvarValueBuffer;
+
+	return !buffer.IsOverflowed();
+}
+
+const char *CLC_RespondCvarValue::ToString(void) const
+{
+	return strfmt("%s: status: %d, value: %s, cookie: %d", GetName(), m_eStatusCode, m_szCvarValue, m_iCookie );
 }
 
 bool NET_NOP::WriteToBuffer( bf_write &buffer )

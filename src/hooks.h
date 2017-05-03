@@ -41,10 +41,15 @@ extern VMTHook* hkMatSurface;
 extern VMTHook* hkStudioRender;
 extern VMTHook* hkInput;
 extern VMTHook* hkIVModelRender;
+extern VMTHook* hkBaseClientState;
+extern VMTHook* hkBaseClientState8;
 
 constexpr unsigned int offGetUserCmd = 8;
 constexpr unsigned int offShouldDraw = 136;
 constexpr unsigned int offDrawModelExecute = 19;
+constexpr unsigned int offGetClientName = 44;
+constexpr unsigned int offProcessSetConVar = 4;
+constexpr unsigned int offProcessGetCvarValue = 29;
 extern unsigned int offHandleInputEvent;
 extern unsigned int offPaintTraverse;
 extern unsigned int offCreateMove;

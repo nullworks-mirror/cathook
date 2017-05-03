@@ -74,6 +74,8 @@ void hooks::VMTHook::Apply() {
 
 //hooks::VMTHook* hooks::hkCTFPlayer = nullptr;
 hooks::VMTHook* hooks::hkInput = nullptr;
+hooks::VMTHook* hooks::hkBaseClientState = nullptr;
+hooks::VMTHook* hooks::hkBaseClientState8 = nullptr;
 hooks::VMTHook* hooks::hkClientMode = 0;
 hooks::VMTHook* hooks::hkPanel = 0;
 hooks::VMTHook* hooks::hkClient = 0;
