@@ -272,7 +272,6 @@ static const std::string list_tf2 = R"(
         "aimbot_interp"
         "aimbot_slow"
         "aimbot_slow_smooth"
-        "aimbot_slow_salt"
         "aimbot_slow_autoshoot"
         "Projectile Aimbot" [
             "Projectile Aimbot Tweaks"
