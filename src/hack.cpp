@@ -67,17 +67,11 @@ void hack::ExecuteCommand(const std::string command) {
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), "cathook");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), " by ");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), "d4rkc4t\n");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "build: " CATHOOK_BUILD_NUMBER " \"" CATHOOK_BUILD_NAME "\"\n");
-#if _DEVELOPER
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "[DEVELOPER BUILD]\n");
-#else
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "Build for user " __DRM_NAME " (Early Access)\n");
-#endif
-#ifdef __DRM_NOTES
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "Build notes: " __DRM_NOTES "\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "cathook");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), " by ");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "nullifiedcat\n");
+#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "commit: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE "\n");
 #endif
 }
 
@@ -167,7 +161,7 @@ void hack::Initialize() {
 	hooks::hkInput->Init((void*)g_IInput, 0);
 	hooks::hkInput->HookMethod((void*)GetUserCmd_hook, hooks::offGetUserCmd);
 	hooks::hkInput->Apply();
-	logging::Info("Before hacking: %s", g_ISteamFriends->GetPersonaName());
+	//logging::Info("Before hacking: %s", g_ISteamFriends->GetPersonaName());
 	hooks::hkIVModelRender = new hooks::VMTHook();
 	hooks::hkIVModelRender->Init(g_IVModelRender, 0);
 	hooks::hkIVModelRender->HookMethod((void*)DrawModelExecute_hook, hooks::offDrawModelExecute);
@@ -176,7 +170,7 @@ void hack::Initialize() {
 	hooks::hkSteamFriends->Init(g_ISteamFriends, 0);
 	hooks::hkSteamFriends->HookMethod((void*)GetFriendPersonaName_hook, hooks::offGetFriendPersonaName);
 	hooks::hkSteamFriends->Apply();
-	logging::Info("After hacking: %s", g_ISteamFriends->GetPersonaName());
+	//logging::Info("After hacking: %s", g_ISteamFriends->GetPersonaName());
 	// Sadly, it doesn't work as expected :(
 	/*hooks::hkBaseClientState = new hooks::VMTHook();
 	hooks::hkBaseClientState->Init((void*)g_IBaseClientState, 0);
