@@ -531,6 +531,11 @@ static const std::string list_tf2 = R"(
     "killsay"
     "spam"
     "spam_random"
+    "uberspam"
+    "uberspam_build"
+    "uberspam_ready"
+    "uberspam_used"
+    "uberspam_ended"
 ]
  
 "Follow Bot" [

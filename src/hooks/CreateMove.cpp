@@ -178,6 +178,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		//RunEnginePrediction(g_pLocalPlayer->entity, cmd);
 		SAFE_CALL(hacks::shared::esp::CreateMove());
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
+			if (TF) SAFE_CALL(hacks::tf::uberspam::CreateMove());
 			if (TF2) SAFE_CALL(hacks::tf2::antibackstab::CreateMove());
 			if (TF2) SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
 			SAFE_CALL(hacks::shared::bunnyhop::CreateMove());

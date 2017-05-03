@@ -23,6 +23,7 @@
 #include "SpyAlert.h"
 #include "Trigger.h"
 #include "KillSay.h"
+#include "UberSpam.hpp"
 #include "Achievement.h"
 #include "Spam.h"
 #include "Noisemaker.h"
