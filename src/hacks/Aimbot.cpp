@@ -292,17 +292,109 @@ int ShouldTarget(CachedEntity* entity) {
 }
 
 //Initialize vars for slow aim
-static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nUse with triggerbot.\nSilent breaks this");
-static CatVar slowaim_shunting(CV_FLOAT, "aimbot_slow_shunt", "0", "Slow Aim Shunt", "How strongly to shunt the aiming.", 100);
-float changey;
-float changex;
-float sai;
-float origx;
-float origy;
-float angiex;
-float angiey;
-int slowfliptype;
-int slowdir;
+static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nDoesn't work with Silent or Anti-aim");
+static CatVar slowaim_smoothing(CV_INT, "aimbot_slow_smooth", "10", "Slow Aim Smooth", "How slow the slow aim's aiming should be", 50);
+static CatVar slowaim_autoshoot(CV_INT, "aimbot_slow_autoshoot", "10", "Slow Aim Threshhold", "Distance to autoshoot while smooth aiming", 25);
+bool slowCanShoot = false;
+/*//Salting vars that need to be saved due to them being time based
+static CatVar slowaim_salting(CV_SWITCH, "aimbot_slow_salt", "1", "Slow Aim Smooth", "Makes the slowaim more random", 5);
+float saltWait = 0;
+int saltRandom = 0;*/
+
+void slowAim(Vector &inputAngle, Vector userAngle) {
+    //Initialize vars for slow aim
+    int slowfliptype;
+    int slowdir;
+    float changey;
+    float changex;
+    
+    /*//Use rand to randomize the change speed
+    if (slowaim_salting) {
+        if ((g_GlobalVars->curtime - 0.15F) > saltWait) {
+            saltWait = g_GlobalVars->curtime;
+            saltRandom = rand() % 3;
+        }
+    }*/
+    
+    //Angle clamping for when the aimbot chooses a too high of value
+    if (inputAngle.y > 180) inputAngle.y = inputAngle.y - 360;
+    if (inputAngle.y < -180) inputAngle.y = inputAngle.y + 360;
+        
+    //Determine whether to move the mouse at all for the yaw
+    if (userAngle.y != inputAngle.y) {
+        
+        //Fliping The main axis to prevent 360s from happening when the bot trys to cross -180y and 180y
+        slowfliptype = 0;
+        if ( ((inputAngle.y < -90) && (userAngle.y > 90)) && (slowfliptype == 0) ) {
+            slowfliptype = 1;
+            inputAngle.y = inputAngle.y - 90;
+            userAngle.y = userAngle.y + 90;
+        }
+        if ( ((inputAngle.y > 90) && (userAngle.y < -90)) && (slowfliptype == 0) ) {
+            slowfliptype = 2;
+            inputAngle.y = inputAngle.y + 90;
+            userAngle.y = userAngle.y - 90;
+        }
+        
+        //Math to calculate how much to move the mouse
+        changey = (std::abs(userAngle.y - inputAngle.y)) / ((int)slowaim_smoothing) ;
+        //Use stronger shunting due to the flip
+        if (slowfliptype != 0) changey = ((( std::abs(userAngle.y - inputAngle.y) ) / ((int)slowaim_smoothing * (int)slowaim_smoothing)) / (int)slowaim_smoothing) ;
+        
+        //Determine the direction to move in before reseting the flipped angles
+        slowdir = 0;
+        if ((userAngle.y > inputAngle.y) && (slowdir == 0)) slowdir = 1;
+        if ((userAngle.y < inputAngle.y) && (slowdir == 0)) slowdir = 2;
+
+        //Reset Flipped angles and fix directions
+        if (slowfliptype == 1) {
+            inputAngle.y = inputAngle.y + 90;
+            userAngle.y = userAngle.y - 90;
+            slowdir = 2;
+        }
+        if (slowfliptype == 2) {
+            inputAngle.y = inputAngle.y - 90;
+            userAngle.y = userAngle.y + 90;
+            slowdir = 1;
+        }
+        
+        /*//If salted, then randomize the speed here
+        if (slowaim_salting) {
+            if (saltRandom == 0) changey = changey - (changey/2);
+            if (saltRandom == 1) changey = changey - (changey/2.5);  
+            if (saltRandom == 2) changey = changey + (changey/4);
+            if (saltRandom == 3) changey = changey + (changey/3);  
+        }*/
+        
+        //Move in the direction determined before the fliped angles
+        if (slowdir == 1) inputAngle.y = userAngle.y - changey;
+        if (slowdir == 2) inputAngle.y = userAngle.y + changey;
+    }
+    
+    //Angle clamping for when the aimbot chooses a too high of value, fixes for when players are above your player
+    if (inputAngle.x > 89) inputAngle.x = inputAngle.x - 360;
+    
+    //Determine whether to move the mouse at all for the pitch
+    if (userAngle.x != inputAngle.x) {
+        changex = (std::abs(userAngle.x - inputAngle.x)) / ((int)slowaim_smoothing) ;
+        
+        /*//If salted, then randomize the speed here
+        if (slowaim_salting) {
+            if (saltRandom == 0) changex = changex - (changex/2);
+            if (saltRandom == 1) changex = changex - (changex/2.5);  
+            if (saltRandom == 2) changex = changex + (changex/4);
+            if (saltRandom == 3) changex = changex + (changex/3);  
+        }*/
+        
+        //Determine the direction to move in
+        if (userAngle.x > inputAngle.x) inputAngle.x = userAngle.x - changex; 
+        if (userAngle.x < inputAngle.x) inputAngle.x = userAngle.x + changex;
+    }
+
+    //Check if can autoshoot with slowaim
+    slowCanShoot = false;
+    if (changey < (0.02*(int)slowaim_autoshoot) && changex < (0.02*(int)slowaim_autoshoot)) slowCanShoot = true;
+}
 
 bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	//logging::Info("Aiming!");
@@ -327,82 +419,13 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 	Vector tr = (hit - g_pLocalPlayer->v_Eye);
 	fVectorAngles(tr, angles);
     
-    //Needed for logic to determine whether to use slow aim. Without this, sai set to 0 will loop and freeze system
-    sai = slowaim_shunting;
-	if ( (slowaim == 1) && (silent == false) && (sai > 0) ) {
-        //Save info to vars that are easy to work with
-        origx = cmd->viewangles.x;
-        origy = cmd->viewangles.y;
-        angiex = angles.x;
-        angiey = angles.y;
-        
-        //Angle clamping for when the aimbot chooses a too high of value
-        if (angiey > 180) angiey = angiey - 360;
-        if (angiey < -180) angiey = angiey + 360;
-        
-        //Determine whether to move the mouse at all for the yaw
-        if (origy != angiey) {
-            
-            //Fliping The main axis to prevent 360s from happening when the bot trys to cross -180y and 180y
-            slowfliptype = 0;
-            if ( ((angiey < -90) && (origy > 90)) && (slowfliptype == 0) ) {
-                slowfliptype = 1;
-                angiey = angiey - 90;
-                origy = origy + 90;
-            }
-            if ( ((angiey > 90) && (origy < -90)) && (slowfliptype == 0) ) {
-                slowfliptype = 2;
-                angiey = angiey + 90;
-                origy = origy - 90;
-            }
-            
-            //Math to calculate how much to move the mouse
-            changey = (std::abs(origy - angiey)) / (sai) ;
-            //Use stronger shunting due to the flip
-            if (slowfliptype != 0) changey = ((( std::abs(origy - angiey) ) / (sai * sai)) / sai) ;
-            
-            //Determine the direction to move in before reseting the flipped angles
-            slowdir = 0;
-            if ((origy > angiey) && (slowdir == 0)) slowdir = 1;
-            if ((origy < angiey) && (slowdir == 0)) slowdir = 2;
+    //Slow the aiming to the aimpoint if true
+	if (slowaim && !silent) slowAim(angles, cmd->viewangles);
+    
+	//Set angles
+    fClampAngle(angles);
+    cmd->viewangles = angles;
 
-            //Reset Flipped angles and fix directions
-            if (slowfliptype == 1) {
-                angiey = angiey + 90;
-                origy = origy - 90;
-                slowdir = 2;
-            }
-            if (slowfliptype == 2) {
-                angiey = angiey - 90;
-                origy = origy + 90;
-                slowdir = 1;
-            }
-            
-            //Move in the direction determined before the fliped angles
-            if (slowdir == 1) angles.y = origy - changey;
-            if (slowdir == 2) angles.y = origy + changey;
-        }
-        
-        //Angle clamping for when the aimbot chooses a too high of value, fixes for when players are above your player
-        if (angiex > 89) angiex = angiex - 360;
-        
-        //Determine whether to move the mouse at all for the pitch
-        if (origx != angiex) {
-            changex = (std::abs(origx - angiex)) / (sai) ;
-            //Determine the direction to move in
-            if (origx > angiex) angles.x = origx - changex; 
-            if (origx < angiex) angles.x = origx + changex;
-        }
-        
-        //Set the newly determined angles
-        fClampAngle(angles);
-        cmd->viewangles = angles;
-        
-	} else {
-        //When slow aim is off, use the default angles.
-        fClampAngle(angles);
-        cmd->viewangles = angles;
-    }
 	if (silent) {
 		g_pLocalPlayer->bUseSilentAngles = true;
 	}
@@ -422,8 +445,9 @@ bool Aim(CachedEntity* entity, CUserCmd* cmd) {
 				break;
 			}
 		}
-		//Autoshoot breaks Slow aimbot
-		if (slowaim == true) attack = false;
+		//Autoshoot breaks Slow aimbot, so use a workaround to detect when it can
+		if (slowaim && !slowCanShoot) attack = false;
+
         if ( attack ) {
             cmd->buttons |= IN_ATTACK;
         }
