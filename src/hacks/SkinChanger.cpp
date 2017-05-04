@@ -58,26 +58,27 @@ static CatCommand set_redirect("skinchanger_redirect", "Set Redirect", [](const 
 	GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).defidx_redirect = redirect;
 	InvalidateCookies();
 });
+static CatCommand dump_attrs("skinchanger_debug_attrs", "Dump attributes", []() {
+	CAttributeList* list = CE_VAR(LOCAL_W, netvar.AttributeList, CAttributeList*);
+	logging::Info("ATTRIBUTE LIST: %i", list->m_Attributes.Size());
+	for (int i = 0; i < 15; i++) {
+		logging::Info("%i %.2f", list->m_Attributes[i].defidx, list->m_Attributes[i].value);
+	}
+});
 static CatCommand invalidate_cookies("skinchanger_invalidate_cookies", "Invalidate Cookies", InvalidateCookies);
 
 void FrameStageNotify(int stage) {
 	if (!enabled) return;
-	CachedEntity* weapon = LOCAL_W;
-	if (CE_BAD(weapon)) return;
-	if (!GetCookie(weapon->m_IDX).Check()) {
-		CAttributeList* list = CE_VAR(weapon, 0x9c0, CAttributeList*);
-		logging::Info("ATTRIBUTE LIST (BEFORE UPDATE): ");
-		for (int i = 0; i < list->m_Attributes.Size(); i++) {
-			logging::Info("%i %.2f", list->m_Attributes[i].defidx, list->m_Attributes[i].value);
-		}
+	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START) return;
+	int handle = CE_INT(g_pLocalPlayer->entity, netvar.hActiveWeapon);
+	int eid = handle & 0xFFF;
+	IClientEntity* entity = g_IEntityList->GetClientEntity(eid);
+	GetModifier(NET_INT(entity, netvar.iItemDefinitionIndex)).Apply(eid);
+	/*if (!GetCookie(weapon->m_IDX).Check()) {
 		logging::Info("Cookie bad for %i", weapon->m_IDX); // FIXME DEBUG LOGS!
 		GetModifier(CE_INT(weapon, netvar.iItemDefinitionIndex)).Apply(weapon->m_IDX);
 		GetCookie(weapon->m_IDX).Update(weapon->m_IDX);
-		logging::Info("ATTRIBUTE LIST (AFTER UPDATE): ");
-		for (int i = 0; i < list->m_Attributes.Size(); i++) {
-			logging::Info("%i %.2f", list->m_Attributes[i].defidx, list->m_Attributes[i].value);
-		}
-	}
+	}*/
 }
 
 void PaintTraverse() {
@@ -116,6 +117,8 @@ void patched_weapon_cookie::Update(int entity) {
 	IClientEntity* ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent || ent->IsDormant()) return;
 	logging::Info("Updating cookie for %i", entity); // FIXME DEBUG LOGS!
+	CAttributeList* list = NET_VAR(ent, 0x9c0, CAttributeList*);
+	attrs = list->m_Attributes.Size();
 	eidx = entity;
 	defidx = NET_INT(ent, netvar.iItemDefinitionIndex);
 	eclass = ent->GetClientClass()->m_ClassID;
@@ -126,6 +129,8 @@ bool patched_weapon_cookie::Check() {
 	if (!valid) return false;
 	IClientEntity* ent = g_IEntityList->GetClientEntity(eidx);
 	if (!ent || ent->IsDormant()) return false;
+	CAttributeList* list = NET_VAR(ent, 0x9c0, CAttributeList*);
+	if (attrs != list->m_Attributes.Size()) return false;
 	if (eclass != ent->GetClientClass()->m_ClassID) return false;
 	if (defidx != NET_INT(ent, netvar.iItemDefinitionIndex)) return false;
 	return true;
@@ -133,22 +138,22 @@ bool patched_weapon_cookie::Check() {
 
 void def_attribute_modifier::Apply(int entity) {
 	IClientEntity* ent = g_IEntityList->GetClientEntity(entity);
-	if (!ent || ent->IsDormant()) return;
-	logging::Info("Applying modifiers for %i %i %i", entity, NET_INT(ent, netvar.iItemDefinitionIndex), defidx_redirect);
+	if (!ent) return;
+	//logging::Info("Applying modifiers for %i %i %i", entity, NET_INT(ent, netvar.iItemDefinitionIndex), defidx_redirect);
 	if (defidx_redirect && NET_INT(ent, netvar.iItemDefinitionIndex) != defidx_redirect) {
 		NET_INT(ent, netvar.iItemDefinitionIndex) = defidx_redirect;
 		logging::Info("Updated DefIDX to %i", NET_INT(ent, netvar.iItemDefinitionIndex));
 		GetCookie(entity).valid = false;
 		return;
 	}
-	CAttributeList* list = NET_VAR(ent, 0x9c0, CAttributeList*);
+	CAttributeList* list = NET_VAR(ent, netvar.AttributeList, CAttributeList*);
 	//::Info("Attribute list: 0x%08x 0x%08x 0x%08x 0x%08x", 0x9c0, ent, list, (uint32_t)list - (uint32_t)ent);
 	list->m_Attributes.m_Size = list->m_Attributes.Size();
-	logging::Info("Length: %i", list->m_Attributes.m_Size);
+	//logging::Info("Length: %i", list->m_Attributes.m_Size);
 	//logging::Info("Base: 0x%08x", list->m_Attributes.Base());
 	for (const auto& mod : modifiers) {
 		if (mod.defidx) {
-			logging::Info("Setting %i to %.2f", mod.defidx, mod.value); // FIXME DEBUG LOGS!
+			//logging::Info("Setting %i to %.2f", mod.defidx, mod.value); // FIXME DEBUG LOGS!
 			list->SetAttribute(mod.defidx, mod.value);
 		}
 	}

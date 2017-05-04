@@ -25,7 +25,7 @@ class CAttribute {
 public:
 	CAttribute(uint16_t iAttributeDefinitionIndex, float flValue);
 public:
-	void* pad00;
+	void* vtable;
 	uint16_t defidx;
 	float value;
 	unsigned int pad01;
@@ -37,7 +37,7 @@ public:
 	void SetAttribute(int index, float value);
 	void RemoveAttribute(int index);
 public:
-	void* pad;
+	uint32_t unknown;
 	CUtlVector<CAttribute, CUtlMemory<CAttribute>> m_Attributes;
 };
 
@@ -64,6 +64,7 @@ public:
 	int eidx { 0 };
 	int defidx { 0 };
 	int eclass { 0 };
+	int attrs { 0 };
 	bool valid { false };
 };
 
