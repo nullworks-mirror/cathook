@@ -48,7 +48,8 @@ void VMTHook::Set(ptr_t inst, uint32_t offset) {
 }
 
 void VMTHook::Release() {
-	if (vtable_ptr) {
+	if (vtable_ptr && *vtable_ptr == &vtable_hooked[2]) {
+		logging::Info("Un-hooking 0x%08x (vtable @ 0x%08x)", vtable_ptr, *vtable_ptr);
 		if ((*vtable_ptr)[-1] == (method_t)GUARD) {
 			*vtable_ptr = vtable_original;
 		}
