@@ -127,49 +127,39 @@ void hack::Initialize() {
 	InitNetVars();
 	g_pLocalPlayer = new LocalPlayer();
 	g_pPlayerResource = new TFPlayerResource();
-	hooks::hkPanel = new hooks::VMTHook();
-	hooks::hkPanel->Init(g_IPanel, 0);
-	//hooks::hkPanel->HookMethod((void*)&hack::Hk_PaintTraverse, hooks::offPaintTraverse);
-	hooks::hkPanel->HookMethod((void*)PaintTraverse_hook, hooks::offPaintTraverse);
-	hooks::hkPanel->Apply();
-	hooks::hkClientMode = new hooks::VMTHook();
+
+	/*
+	 * TIME FOR HOOKING! wow
+	 */
+	hooks::panel.Set(g_IPanel);
+	hooks::panel.HookMethod((void*)PaintTraverse_hook, offsets::PaintTraverse());
+	hooks::panel.Apply();
 	uintptr_t* clientMode = 0;
+	// Bad way to get clientmode.
+	// FIXME [MP]?
 	while(!(clientMode = **(uintptr_t***)((uintptr_t)((*(void***)g_IBaseClient)[10]) + 1))) {
 		sleep(1);
 	}
-	//hooks::hkMatSurface = new hooks::VMTHook();
-	//hooks::hkMatSurface->Init((void*)matsurface, 0);
-	//hooks::hkMatSurface->HookMethod((void*)test_handleevent, 1);
-	hooks::hkClientMode->Init((void*)clientMode, 0);
-	//hooks::hkClientMode->HookMethod((void*)&hack::Hk_CreateMove, hooks::offCreateMove);
-	hooks::hkClientMode->HookMethod((void*)CreateMove_hook, hooks::offCreateMove);
-	hooks::hkClientMode->HookMethod((void*)OverrideView_hook, hooks::offOverrideView);
-	hooks::hkClientMode->HookMethod((void*)LevelInit_hook, hooks::offLevelInit);
-	hooks::hkClientMode->HookMethod((void*)LevelShutdown_hook, hooks::offLevelShutdown);
-	hooks::hkClientMode->Apply();
-	hooks::hkStudioRender = new hooks::VMTHook();
-	hooks::hkStudioRender->Init((void*)g_IStudioRender, 0);
-	hooks::hkStudioRender->HookMethod((void*)BeginFrame_hook, hooks::offBeginFrame);
-	hooks::hkStudioRender->Apply();
-	hooks::hkClient = new hooks::VMTHook();
-	hooks::hkClient->Init((void*)g_IBaseClient, 0);
-	hooks::hkClient->HookMethod((void*)FrameStageNotify_hook, hooks::offFrameStageNotify);
-	hooks::hkClient->HookMethod((void*)DispatchUserMessage_hook, hooks::offFrameStageNotify + 1);
-	hooks::hkClient->HookMethod((void*)IN_KeyEvent_hook, hooks::offKeyEvent);
-	hooks::hkClient->Apply();
-	hooks::hkInput = new hooks::VMTHook();
-	hooks::hkInput->Init((void*)g_IInput, 0);
-	hooks::hkInput->HookMethod((void*)GetUserCmd_hook, hooks::offGetUserCmd);
-	hooks::hkInput->Apply();
-	//logging::Info("Before hacking: %s", g_ISteamFriends->GetPersonaName());
-	hooks::hkIVModelRender = new hooks::VMTHook();
-	hooks::hkIVModelRender->Init(g_IVModelRender, 0);
-	hooks::hkIVModelRender->HookMethod((void*)DrawModelExecute_hook, hooks::offDrawModelExecute);
-	hooks::hkIVModelRender->Apply();
-	hooks::hkSteamFriends = new hooks::VMTHook();
-	hooks::hkSteamFriends->Init(g_ISteamFriends, 0);
-	hooks::hkSteamFriends->HookMethod((void*)GetFriendPersonaName_hook, hooks::offGetFriendPersonaName);
-	hooks::hkSteamFriends->Apply();
+	hooks::clientmode.Set((void*)clientMode);
+	hooks::clientmode.HookMethod((void*)CreateMove_hook, offsets::CreateMove());
+	hooks::clientmode.HookMethod((void*)OverrideView_hook, offsets::OverrideView());
+	hooks::clientmode.HookMethod((void*)LevelInit_hook, offsets::LevelInit());
+	hooks::clientmode.HookMethod((void*)LevelShutdown_hook, offsets::LevelShutdown());
+	hooks::clientmode.Apply();
+	hooks::client.Set(g_IBaseClient);
+	hooks::client.HookMethod((void*)FrameStageNotify_hook, offsets::FrameStageNotify());
+	hooks::client.HookMethod((void*)DispatchUserMessage_hook, offsets::DispatchUserMessage());
+	hooks::client.HookMethod((void*)IN_KeyEvent_hook, offsets::IN_KeyEvent());
+	hooks::client.Apply();
+	hooks::input.Set(g_IInput);
+	hooks::input.HookMethod((void*)GetUserCmd_hook, offsets::GetUserCmd());
+	hooks::input.Apply();
+	hooks::modelrender.Set(g_IVModelRender);
+	hooks::modelrender.HookMethod((void*)DrawModelExecute_hook, offsets::DrawModelExecute());
+	hooks::modelrender.Apply();
+	hooks::steamfriends.Set(g_ISteamFriends);
+	hooks::steamfriends.HookMethod((void*)GetFriendPersonaName_hook, offsets::GetFriendPersonaName());
+	hooks::steamfriends.Apply();
 	//logging::Info("After hacking: %s", g_ISteamFriends->GetPersonaName());
 	// Sadly, it doesn't work as expected :(
 	/*hooks::hkBaseClientState = new hooks::VMTHook();
@@ -181,6 +171,8 @@ void hack::Initialize() {
 	//hooks::hkBaseClientState8->HookMethod((void*)ProcessSetConVar_hook, hooks::offProcessSetConVar);
 	//hooks::hkBaseClientState8->HookMethod((void*)ProcessGetCvarValue_hook, hooks::offProcessGetCvarValue);
 	//hooks::hkBaseClientState8->Apply();
+
+	// FIXME [MP]
 	if (TF2) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
 	hacks::shared::killsay::Init();
@@ -211,18 +203,6 @@ void hack::Shutdown() {
 	if (hack::shutdown) return;
 	hack::shutdown = true;
 	playerlist::Save();
-	logging::Info("Killing hooks..");
-	if (hooks::hkPanel) hooks::hkPanel->Kill();
-	if (hooks::hkClientMode) hooks::hkClientMode->Kill();
-	if (hooks::hkClient) hooks::hkClient->Kill();
-	if (hooks::hkMatSurface) hooks::hkMatSurface->Kill();
-	if (hooks::hkNetChannel) hooks::hkNetChannel->Kill();
-	if (hooks::hkStudioRender) hooks::hkStudioRender->Kill();
-	if (hooks::hkInput) hooks::hkInput->Kill();
-	if (hooks::hkIVModelRender) hooks::hkIVModelRender->Kill();
-	if (hooks::hkBaseClientState) hooks::hkBaseClientState->Kill();
-	if (hooks::hkBaseClientState8) hooks::hkBaseClientState8->Kill();
-	//if (hooks::hkCTFPlayer) hooks::hkCTFPlayer->Kill();
 	logging::Info("Unregistering convars..");
 	ConVar_Unregister();
 	logging::Info("Shutting down killsay...");

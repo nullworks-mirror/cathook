@@ -112,16 +112,15 @@ static int last_number = 0;
 void CreateMove() {
 	static bool flswitch = false;
 
-
-	// TODO FIXME HOOKING WITHOUT UNHOOKING = 100% SEGV ON UNINJECT.
+	// TODO FIXME this should be moved out of here
 	IClientEntity* localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
 	if (TF && render_zoomed && localplayer) {
 		void** vtable = *(void***)(localplayer);
-		if (vtable[hooks::offShouldDraw] != C_TFPlayer__ShouldDraw_hook) {
-			C_TFPlayer__ShouldDraw_original = vtable[hooks::offShouldDraw];
+		if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook) {
+			C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];
 			void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
 			mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-			vtable[hooks::offShouldDraw] = (void*)C_TFPlayer__ShouldDraw_hook;
+			vtable[offsets::ShouldDraw()] = (void*)C_TFPlayer__ShouldDraw_hook;
 			mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
 		}
 	}

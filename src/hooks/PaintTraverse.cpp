@@ -26,7 +26,8 @@ void** pure_addr = nullptr;
 CatEnum software_cursor_enum({"KEEP", "ALWAYS", "NEVER", "MENU ON", "MENU OFF"});
 CatVar software_cursor_mode(software_cursor_enum, "software_cursor_mode", "1", "Software cursor", "Try to change this and see what works best for you");
 
-void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
+void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
+	static const PaintTraverse_t original = (PaintTraverse_t)hooks::panel.GetMethod(offsets::PaintTraverse());
 #if DEBUG_SEGV == true
 	if (!segvcatch::handler_fpe || !segvcatch::handler_segv) {
 		if (!segvcatch::handler_fpe) segvcatch::init_segv();
@@ -83,7 +84,7 @@ void PaintTraverse_hook(void* p, unsigned int vp, bool fr, bool ar) {
 		}
 	}
 
-	if (call_default) SAFE_CALL(((PaintTraverse_t*)hooks::hkPanel->GetMethod(hooks::offPaintTraverse))(p, vp, fr, ar));
+	if (call_default) SAFE_CALL(original(_this, vp, fr, ar));
 	// To avoid threading problems.
 
 	PROF_SECTION(PaintTraverse);
