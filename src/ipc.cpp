@@ -5,12 +5,13 @@
  *      Author: nullifiedcat
  */
 
-#ifdef IPC_ENABLED
 
 #include "ipc.h"
 
 #include "common.h"
 #include "hack.h"
+
+#ifdef IPC_ENABLED
 
 namespace ipc {
 

@@ -179,6 +179,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
 	// TODO hack FSN hook
+	hacks::tf2::skinchanger::FrameStageNotify(stage);
 	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
 			if (i == g_IEngine->GetLocalPlayer()) continue;

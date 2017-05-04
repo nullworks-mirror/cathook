@@ -157,6 +157,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		SAFE_CALL(hacks::shared::esp::Draw());
 		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
 		if (TF) SAFE_CALL(hacks::tf::radar::Draw());
+		if (TF2) SAFE_CALL(hacks::tf2::skinchanger::PaintTraverse());
 	}
 
 
