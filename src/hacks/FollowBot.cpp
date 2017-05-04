@@ -20,10 +20,114 @@ int following_idx { 0 };
 std::set<int> selection {};
 std::set<int> selection_secondary {};
 
+//Cats vars for old followbot
 float  destination_point_time { 0.0f };
 Vector destination_point {};
 bool   destination_reached { false };
 bool allow_moving { true };
+
+//Initalize vars for BreadCrumb followbot
+//An array for storing the breadcrumbs
+static CatVar crumbFollowDistance(CV_FLOAT, "fb_follow_distance", "150", "Followbot Distance", "How close the bots should stay to you");
+Vector breadcrumbs [55];
+float crumbWait = 0;
+int crumbBottom = 0;
+int crumbTop = 0;
+int crumbArrayLength = 0;
+bool crumbAbleToMove = false;
+bool crumbStopped = true;
+bool crumbFindNew = false;
+bool crumbForceMove = false;
+//Debug vars
+//CatVar deboog12(CV_FLOAT, "deboog12", "69", "succc", "Medics will always use Medigun");
+//CatVar deboog13(CV_FLOAT, "deboog13", "69", "succc", "Medics will always use Medigun");
+
+//A function to start the crumb followbot up
+void CrumbStart() {
+    //A check to make sure using the fb tool repeatedly doesnt clear the cache of crumbs
+    if (crumbStopped || !crumbAbleToMove) {
+        crumbTop = 0;
+        crumbBottom = 0;
+        crumbArrayLength = 0;
+        crumbWait = 0;
+        crumbFindNew = true;
+        crumbStopped = false;
+        crumbAbleToMove = true;
+        logging::Info("Crumb Start");
+    }
+}
+
+//A function to place a crumb into the array 
+void CrumbTopAdd(Vector crumbToAdd) {
+    //Once the crumbs have hit the limit of the array, loop around and over write unused spots
+    if (crumbTop == 55) {
+        crumbTop = 0;
+    } else { 
+        //Else, bump the top number market of the array
+        crumbTop = crumbTop + 1;
+    }
+    
+    //Put the newly determined crumb into the array and add to the length
+    crumbArrayLength = crumbArrayLength + 1;
+    breadcrumbs[crumbTop] = crumbToAdd; 
+    logging::Info("Crumb Top add");
+    
+    //The array can only hold so many crumbs, once it goes over its cap, stop the bot to prevent un-needed movement
+    if (crumbArrayLength > 55) {
+        crumbStopped = true;
+        logging::Info("Crumb Overload!\nDumping array");
+    }
+}
+
+//A function to free a crumb from the array
+void CrumbBottomAdd() {
+    //Once the crumbs have hit the limit of the array, loop around and over write unused spots
+    if (crumbBottom == 55) {
+        crumbBottom = 0;
+    } else {
+        //Else, bump the top number market of the array
+        crumbBottom = crumbBottom + 1;
+    }
+    
+    //Subtract from the length to make room for more crumbs 
+    crumbArrayLength = crumbArrayLength - 1;
+    logging::Info("Crumb Bottom add");
+    
+    //A check to detect if too many crumbs have been removed. Without crumbs the bot will just use random variables in the array.
+    //To prevent un-nessasary movement, just clear the array and wait for player
+    if (crumbArrayLength < 0) {
+        crumbStopped = true;
+        logging::Info("Crumb Over-Prune!\nDumping array");
+    }
+}
+
+//A function to calculate distance from a vector, to the floor
+//I really dont want to raytrace to find the distance to the floor bit i dont know any other way
+//Problems, It sometimes cant find the floor on some surfaces, that leads into massive lag
+//due to the ray trace going for a long length without finding anything, fixed by limiting how long it can trace for
+//TODO Find a better method of finding distance to floor
+float crumbDistanceToFloor(Vector toTest) {
+    //Main ray tracing area
+    std::unique_ptr<trace_t> trace(new trace_t);
+    Ray_t ray;
+    Vector forward;
+    float sp, sy, cp, cy;
+    sy = sinf(DEG2RAD(0)); // yaw
+    cy = cosf(DEG2RAD(0));
+    sp = sinf(DEG2RAD(89)); // pitch
+    cp = cosf(DEG2RAD(89));
+    forward.x = cp * cy;
+    forward.y = cp * sy;
+    forward.z = -sp;
+    forward = forward * 300.0f + toTest;
+    ray.Init(toTest, forward);
+    //trace::g_pFilterNoPlayer to only focus on the enviroment
+    g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterNoPlayer, trace.get());
+    //Pythagorean theorem to calculate distance
+    float crumbFloorDistance = std::abs(toTest.z - trace->endpos.z);
+    return crumbFloorDistance;
+}
+
 
 bool IsBot(CachedEntity* entity) {
 	if (!ipc::peer) return false;
@@ -59,6 +163,9 @@ void AddMessageHandlers(ipc::peer_t* peer) {
 	peer->SetCommandHandler(ipc::commands::set_follow_steamid, [](cat_ipc::command_s& command, void* payload) {
 		logging::Info("IPC Message: now following %ld", *(unsigned*)&command.cmd_data);
 		hacks::shared::followbot::follow_steamid = *(unsigned*)&command.cmd_data;
+        //Tell followbot to follow
+        crumbForceMove = true;
+        CrumbStart();
 	});
 	peer->SetCommandHandler(ipc::commands::move_to_vector, [](cat_ipc::command_s& command, void* payload) {
 		float* data = (float*)&command.cmd_data;
@@ -66,12 +173,18 @@ void AddMessageHandlers(ipc::peer_t* peer) {
 		destination_point = Vector(data[0], data[1], data[2]);
 		destination_point_time = g_GlobalVars->curtime;
 		destination_reached = false;
+        //prevent followbot from following
+        crumbAbleToMove = false;
+        crumbStopped = true;
 	});
 	peer->SetCommandHandler(ipc::commands::start_moving, [](cat_ipc::command_s& command, void* payload) {
 		allow_moving = true;
+        //Tell followbot to follow
+        crumbAbleToMove = true;
 	});
 	peer->SetCommandHandler(ipc::commands::stop_moving, [](cat_ipc::command_s& command, void* payload) {
 		allow_moving = false;
+        crumbStopped = true;
 	});
 }
 
@@ -275,32 +388,107 @@ void DoWalking() {
 		}
 		last_slot_check = g_GlobalVars->curtime;
 	}
+	
+    //Nullified Cats Followbot code used for followbot tool
+    //Keeping this for the followbot move and stay commands
+    //TODO remove player follow from this or change it to be a backup for the crumb follow bot
+    if (!crumbAbleToMove) {
+        if (destination_point_time > g_GlobalVars->curtime) destination_point_time = 0.0f;
 
-	if (destination_point_time > g_GlobalVars->curtime) destination_point_time = 0.0f;
-
-	if (!destination_reached && (g_GlobalVars->curtime - destination_point_time < 5.0f)) {
-		WalkTo(destination_point);
-		last_direction = destination_point;
-		if (g_pLocalPlayer->v_Origin.DistTo(destination_point) < 50.0f) destination_reached = true;
-	} else if (following_idx) {
-		if (allow_moving) {
-			if (!found_entity->IsVisible()) {
-				if (!lost_time) {
-					lost_time = g_GlobalVars->curtime;
-				}
-				if (g_GlobalVars->curtime - lost_time < 2.0f) {
-					WalkTo(last_direction);
-				}
-			} else {
-				lost_time = 0;
-				if (found_entity->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin) > 150.0f) {
-					WalkTo(found_entity->m_vecOrigin);
-				}
-				last_direction = found_entity->m_vecOrigin;
-			}
-		}
-	}
-
+        if (!destination_reached && (g_GlobalVars->curtime - destination_point_time < 5.0f)) {
+            WalkTo(destination_point);
+            last_direction = destination_point;
+            if (g_pLocalPlayer->v_Origin.DistTo(destination_point) < 50.0f) destination_reached = true;
+        } else if (following_idx) {
+            if (allow_moving) {
+                if (!found_entity->IsVisible()) {
+                    if (!lost_time) {
+                        lost_time = g_GlobalVars->curtime;
+                    }
+                    if (g_GlobalVars->curtime - lost_time < 2.0f) {
+                        WalkTo(last_direction);
+                    }
+                } else {
+                    lost_time = 0;
+                    if (found_entity->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin) > 150.0f) {
+                        WalkTo(found_entity->m_vecOrigin);
+                    }
+                    last_direction = found_entity->m_vecOrigin;
+                }
+            }
+        }
+    }
+    
+    //Breadcrumb followbot
+    if (allow_moving && crumbAbleToMove && !crumbStopped) {
+        //Generate new breadcrumbs made by the player only if they are close to the ground. If the bot is told to generate a starting point, it does that as well.
+        if ((found_entity->m_vecOrigin.DistTo(breadcrumbs[crumbTop]) > 40.0F || crumbFindNew) && crumbDistanceToFloor(found_entity->m_vecOrigin) < 30.0F) {
+            //Add to the crumb.
+            CrumbTopAdd(found_entity->m_vecOrigin);
+            
+            //If the bot was forced to select a point, add a buffer crumb and bump to the newly selected point and use it
+            if (crumbFindNew) {
+                crumbFindNew = false;
+                CrumbTopAdd(found_entity->m_vecOrigin);
+                CrumbBottomAdd();
+            }
+        }
+        
+        //Prune used crumbs from the stack to make way for new ones when you get close to them.
+        if (g_pLocalPlayer->v_Origin.DistTo(breadcrumbs[crumbBottom]) < 40.0F) {
+            //Debug Logging
+            logging::Info("Pruning");
+            
+            //When the bot is forced to move to the player, since they have reached their destenation we reset the var
+            crumbForceMove = false;
+            
+            //Check 15 times for close crumbs to prune, this allows simple miss steps to be smoothed out as well as make room for new crumbs
+            for (int i = 0; i < 15; i++) {
+                //When one is close or too high, just bump the array and reset the stuck timer
+                if (g_pLocalPlayer->v_Origin.DistTo(breadcrumbs[crumbBottom]) < 60.0F) {
+                    CrumbBottomAdd();
+                    crumbWait = g_GlobalVars->curtime;
+                    
+                //When pruning is finished. Break the loop
+                } else {
+                    logging::Info("Finish Prune");
+                    break;
+                }
+            }
+        }
+        
+        //When the player is not visible to the bot, within 3 seconds of no pruning occuring and it not being visible we stop the bot and wait for the player to collect it
+        if (!found_entity->IsVisible()) {
+            if (g_GlobalVars->curtime - 3.0F > crumbWait) {
+                crumbStopped = true;
+                logging::Info("Crumb Lost!");
+            }
+            
+        //If the player is visible, then reset our lost timer.
+        } else crumbWait = g_GlobalVars->curtime;
+        
+        //When player to follow is too far away. the bot cant see the player or the bot is forced to the player, then follow breadcrumbs
+        if ((g_pLocalPlayer->v_Origin.DistTo(found_entity->m_vecOrigin) > (float)crumbFollowDistance || !found_entity->IsVisible() || crumbForceMove) && crumbArrayLength >= 1 ) {
+            WalkTo(breadcrumbs[crumbBottom]);
+            
+        //If the bot is next to the player then we clear our crumbs as theres no need to follow previously generated ones.
+        } else if (g_pLocalPlayer->v_Origin.DistTo(found_entity->m_vecOrigin) < 125.0F && found_entity->IsVisible()) {
+            crumbForceMove = false;
+        	crumbStopped = true;
+        	CrumbStart();
+        }
+        
+    //If the bot is lost but it finds the player again, start the followbot again.
+    } else if (crumbStopped && allow_moving && crumbAbleToMove && found_entity->IsVisible() && (g_pLocalPlayer->v_Origin.DistTo(found_entity->m_vecOrigin) < 3000.0F)) {
+        crumbForceMove = true;
+        CrumbStart();
+        logging::Info("Crumb found player!");
+    }
+    //Debug vars
+    //For some reason, deboog12 reports the highest the raytrace can trace. Idk how to fix rip
+    //deboog12 = crumbDistanceToFloor(found_entity->m_vecOrigin);
+    //deboog13 = crumbDistanceToFloor(breadcrumbs[crumbBottom]);
+    
 	if (following_idx) {
 		if (found_entity->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin) > 150.0f) {
 			if (LOCAL_E->m_vecOrigin.DistTo(found_entity->m_vecOrigin) > 350.0f) {
