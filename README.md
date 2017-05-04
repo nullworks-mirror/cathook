@@ -6,7 +6,7 @@
 Ubuntu (and probably Debian) users can run this script:
 
 ```
-sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot -y && sudo apt update && sudo apt install libc6-dev gcc-6 g++-6 g++-6-multilib gdb -y && git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4
+sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot -y && sudo apt update && sudo apt install git libc6-dev gcc-6 g++-6 libc6-dev:i386 g++-6-multilib gdb -y && git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4
 ```
 
 **Errors while installing?**

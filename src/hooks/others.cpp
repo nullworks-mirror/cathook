@@ -166,6 +166,13 @@ static CatVar glow_enabled(CV_SWITCH, "glow_old_enabled", "0", "Enable", "Make s
 static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
+const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
+	if ((force_name.convar->m_StringLength > 2) && steamID == g_ISteamUser->GetSteamID()) {
+		return force_name.GetString();
+	}
+	return ((GetFriendPersonaName_t*)(hooks::hkSteamFriends->GetMethod(hooks::offGetFriendPersonaName)))(_this, steamID);
+}
+
 void FrameStageNotify_hook(void* thisptr, int stage) {
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
@@ -183,76 +190,57 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 			}
 		}
 	}
-	if (stage == FRAME_NET_UPDATE_START) {
-		static int next_name_change = 0;
-		if (next_name_change == 0) {
-			need_name_change = true;
-		} else next_name_change--;
-		if (force_name.convar->m_StringLength > 2 && need_name_change) {
-			INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-			if (ch) {
-				logging::Info("Sending new name");
-				NET_SetConVar setname("name", force_name.GetString());
-				setname.SetNetChannel(ch);
-				setname.SetReliable(false);
-				ch->SendNetMsg(setname, false);
-				need_name_change = false;
-			}
-			next_name_change = 60 * 100;
-		}
-		static ConVar* name_cv = g_ICvar->FindVar("name");
-		//name_cv->SetValue(force_name.GetString());
-		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
-		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
-	}
+	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
-		if (glow_enabled) {
-			for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.m_Size; i++) {
-				GlowObjectDefinition_t& glowobject = g_GlowObjectManager->m_GlowObjectDefinitions[i];
-				if (glowobject.m_nNextFreeSlot != ENTRY_IN_USE)
-					continue;
-				int color = GetEntityGlowColor(glowobject.m_hEntity.m_Index & 0xFFF);
-				if (color == 0) {
-					glowobject.m_flGlowAlpha = 0.0f;
-				} else {
-					glowobject.m_flGlowAlpha = (float)glow_alpha;
-				}
-				unsigned char _b = (color >> 16) & 0xFF;
-				unsigned char _g = (color >> 8)  & 0xFF;
-				unsigned char _r = (color) & 0xFF;
-				glowobject.m_vGlowColor.x = (float)_r / 255.0f;
-				glowobject.m_vGlowColor.y = (float)_g / 255.0f;
-				glowobject.m_vGlowColor.z = (float)_b / 255.0f;
-			}
-		}
-		// Remove glow from dead entities
-		for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Count(); i++) {
-			if (g_GlowObjectManager->m_GlowObjectDefinitions[i].m_nNextFreeSlot != ENTRY_IN_USE) continue;
-			IClientEntity* ent = (IClientEntity*)g_IEntityList->GetClientEntityFromHandle(g_GlowObjectManager->m_GlowObjectDefinitions[i].m_hEntity);
-			if (ent && ent->IsDormant()) {
-				g_GlowObjectManager->DisableGlow(i);
-			} else if (ent && ent->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
-				if (NET_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) {
-					g_GlowObjectManager->DisableGlow(i);
-				}
-			}
-		}
-		if (glow_enabled) {
-			for (int i = 1; i < g_IEntityList->GetHighestEntityIndex(); i++) {
-				IClientEntity* entity = g_IEntityList->GetClientEntity(i);
-				if (!entity || i == g_IEngine->GetLocalPlayer() || entity->IsDormant())
-					continue;
-				if (!CanEntityEvenGlow(i)) continue;
-				int clazz = entity->GetClientClass()->m_ClassID;
-				int current_handle = g_GlowObjectManager->GlowHandle(entity);
-				bool shouldglow = ShouldEntityGlow(i);
-				if (current_handle != -1) {
-					if (!shouldglow) {
-						g_GlowObjectManager->DisableGlow(current_handle);
+		if (glow_outline_effect->GetBool()) {
+			if (glow_enabled) {
+				for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.m_Size; i++) {
+					GlowObjectDefinition_t& glowobject = g_GlowObjectManager->m_GlowObjectDefinitions[i];
+					if (glowobject.m_nNextFreeSlot != ENTRY_IN_USE)
+						continue;
+					int color = GetEntityGlowColor(glowobject.m_hEntity.m_Index & 0xFFF);
+					if (color == 0) {
+						glowobject.m_flGlowAlpha = 0.0f;
+					} else {
+						glowobject.m_flGlowAlpha = (float)glow_alpha;
 					}
-				} else {
-					if (shouldglow) {
-						g_GlowObjectManager->EnableGlow(entity, colors::white);
+					unsigned char _b = (color >> 16) & 0xFF;
+					unsigned char _g = (color >> 8)  & 0xFF;
+					unsigned char _r = (color) & 0xFF;
+					glowobject.m_vGlowColor.x = (float)_r / 255.0f;
+					glowobject.m_vGlowColor.y = (float)_g / 255.0f;
+					glowobject.m_vGlowColor.z = (float)_b / 255.0f;
+				}
+			}
+			// Remove glow from dead entities
+			for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Count(); i++) {
+				if (g_GlowObjectManager->m_GlowObjectDefinitions[i].m_nNextFreeSlot != ENTRY_IN_USE) continue;
+				IClientEntity* ent = (IClientEntity*)g_IEntityList->GetClientEntityFromHandle(g_GlowObjectManager->m_GlowObjectDefinitions[i].m_hEntity);
+				if (ent && ent->IsDormant()) {
+					g_GlowObjectManager->DisableGlow(i);
+				} else if (ent && ent->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
+					if (NET_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) {
+						g_GlowObjectManager->DisableGlow(i);
+					}
+				}
+			}
+			if (glow_enabled) {
+				for (int i = 1; i < g_IEntityList->GetHighestEntityIndex(); i++) {
+					IClientEntity* entity = g_IEntityList->GetClientEntity(i);
+					if (!entity || i == g_IEngine->GetLocalPlayer() || entity->IsDormant())
+						continue;
+					if (!CanEntityEvenGlow(i)) continue;
+					int clazz = entity->GetClientClass()->m_ClassID;
+					int current_handle = g_GlowObjectManager->GlowHandle(entity);
+					bool shouldglow = ShouldEntityGlow(i);
+					if (current_handle != -1) {
+						if (!shouldglow) {
+							g_GlowObjectManager->DisableGlow(current_handle);
+						}
+					} else {
+						if (shouldglow) {
+							g_GlowObjectManager->EnableGlow(entity, colors::white);
+						}
 					}
 				}
 			}
@@ -303,7 +291,7 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 			int j = 0;
 			for (int i = 0; i < 3; i++) {
 				while (char c = data[j++]) {
-					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '?';
+					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
 				}
 			}
 			buf = bf_read(data, s);
@@ -327,22 +315,6 @@ void LevelInit_hook(void* thisptr, const char* newmap) {
 	//if (TF) LEVEL_INIT(SpyAlert);
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
-	need_name_change = true;
-	if (force_name.convar->m_StringLength > 2) {
-		//static ConVar* name_cv = g_ICvar->FindVar("name");
-		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-		if (ch) {
-			logging::Info("Sending new name");
-			NET_SetConVar setname("name", force_name.GetString());
-			setname.SetNetChannel(ch);
-			setname.SetReliable(false);
-			ch->SendNetMsg(setname, false);
-			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
-		}
-		static ConVar* name_cv = g_ICvar->FindVar("name");
-		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
-		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
-	}
 }
 
 bool CanInspect_hook(IClientEntity*) { return true; }
@@ -355,20 +327,5 @@ void LevelShutdown_hook(void* thisptr) {
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
-	if (force_name.convar->m_StringLength > 2) {
-		//static ConVar* name_cv = g_ICvar->FindVar("name");
-		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-		if (ch) {
-			logging::Info("Sending new name");
-			NET_SetConVar setname("name", force_name.GetString());
-			setname.SetNetChannel(ch);
-			setname.SetReliable(false);
-			ch->SendNetMsg(setname, false);
-			//name_cv->m_pszString = strfmt("%s", force_name.GetString());
-		}
-		static ConVar* name_cv = g_ICvar->FindVar("name");
-		name_cv->m_pszString = (char*)strfmt("%s", force_name.GetString());
-		name_cv->m_StringLength = strlen(force_name.GetString()) + 1;
-	}
 }
 

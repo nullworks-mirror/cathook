@@ -47,6 +47,7 @@ IMaterialSystemFixed* g_IMaterialSystem = nullptr;
 IVRenderView* g_IVRenderView = nullptr;
 IMaterialSystem* g_IMaterialSystemHL = nullptr;
 IMoveHelperServer* g_IMoveHelperServer = nullptr;
+CBaseClientState* g_IBaseClientState = nullptr;
 
 template<typename T>
 T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start) {
@@ -86,7 +87,10 @@ void CreateInterfaces() {
 	HSteamPipe sp = g_ISteamClient->CreateSteamPipe();
 	HSteamUser su = g_ISteamClient->ConnectToGlobalUser(sp);
 	g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine, 16);
-	g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
+	uintptr_t sig_steamapi = gSignatures.GetEngineSignature("55 0F 57 C0 89 E5 83 EC 18 F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F 10 05 ? ? ? ? C7 04 24 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? C7 44 24 08 ? ? ? ? C7 44 24 04 ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3");
+	logging::Info("SteamAPI: 0x%08x", sig_steamapi);
+	void** SteamAPI_engine = *reinterpret_cast<void***>(sig_steamapi + 36);
+	g_ISteamFriends = (ISteamFriends*)(SteamAPI_engine[1]);//g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
 	g_GlobalVars = **(reinterpret_cast<CGlobalVarsBase***>((uintptr_t)11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
 	g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client);
 	g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client);
@@ -111,6 +115,7 @@ void CreateInterfaces() {
 	else if (TF2C) g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF 92 A8 00 00 00 A1 ? ? ? ? 8B 10")));
 	else if (HL2DM)  g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? 8B 10 89 04 24 FF 52 78 A1 ? ? ? ? 8B 10")));
 	g_ISteamUser = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
+	g_IBaseClientState = *(reinterpret_cast<CBaseClientState**>(gSignatures.GetEngineSignature("55 89 E5 83 EC 18 C7 44 24 04 01 00 00 00 C7 04 24 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ? 85 C0 74 15 A1 ? ? ? ? 8B 10 89 04 24 FF 52 38 C9 C3") + 17));
 	g_IAchievementMgr = g_IEngine->GetAchievementMgr();
 	g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
 }
