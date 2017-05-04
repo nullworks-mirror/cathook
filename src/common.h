@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include "aftercheaders.h"
+#include "offsets.hpp"
 #include "drawing.h"
 #include "resource.hpp"
 #include "entitycache.h"

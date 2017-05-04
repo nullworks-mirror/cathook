@@ -8,62 +8,56 @@
 #ifndef HOOKS_H_
 #define HOOKS_H_
 
-namespace hooks {
-
 // Parts of copypasted code
 // Credits: Casual_Hacker
 
-unsigned int CountMethods(void** vmt);
-void**& GetVMT(void* inst, unsigned int offset);
-bool IsHooked(void* inst);
+#include <stdint.h>
+#include <stddef.h>
+
+namespace hooks {
+
+typedef void*			ptr_t;
+typedef void* 			method_t;
+typedef method_t* 		method_table_t;
+typedef method_table_t* table_ptr_t;
+typedef method_table_t& table_ref_t;
+
+constexpr size_t ptr_size = sizeof(ptr_t);
+
+unsigned CountMethods(method_table_t table);
+table_ref_t GetVMT(ptr_t inst, uint32_t offset = 0);
+bool IsHooked(ptr_t inst, uint32_t offset = 0);
+
+constexpr uint32_t GUARD = 0xD34DC477;
 
 class VMTHook {
 public:
-	enum { GUARD = 0xD34DC477 };
-	void Init(void* inst, unsigned int offset);
-	void Kill();
-	void HookMethod(void* func, unsigned int idx);
-	void* GetMethod(unsigned int idx) const;
+	VMTHook();
+	~VMTHook();
+	void Set(ptr_t inst, uint32_t offset = 0);
+	void Release();
+	void HookMethod(ptr_t func, uint32_t idx);
+	void* GetMethod(uint32_t idx) const;
 	void Apply();
-protected:
-	void ***vmt;
-	void **oldvmt;
-	void **array;
+public:
+	ptr_t object 					{ nullptr };
+	table_ptr_t vtable_ptr 			{ nullptr };
+	method_table_t vtable_original 	{ nullptr };
+	method_table_t vtable_hooked 	{ nullptr };
 };
 
-//extern VMTHook* hkCTFPlayer;
-extern VMTHook* hkPanel;
-extern VMTHook* hkClientMode;
-extern VMTHook* hkClient;
-extern VMTHook* hkNetChannel;
-extern VMTHook* hkClientDLL;
-extern VMTHook* hkMatSurface;
-extern VMTHook* hkStudioRender;
-extern VMTHook* hkInput;
-extern VMTHook* hkIVModelRender;
-extern VMTHook* hkBaseClientState;
-extern VMTHook* hkBaseClientState8;
-extern VMTHook* hkSteamFriends;
-
-constexpr unsigned int offGetUserCmd = 8;
-constexpr unsigned int offShouldDraw = 136;
-constexpr unsigned int offDrawModelExecute = 19;
-constexpr unsigned int offGetClientName = 44;
-constexpr unsigned int offProcessSetConVar = 4;
-constexpr unsigned int offProcessGetCvarValue = 29;
-constexpr unsigned int offGetFriendPersonaName = 7;
-extern unsigned int offHandleInputEvent;
-extern unsigned int offPaintTraverse;
-extern unsigned int offCreateMove;
-extern unsigned int offOverrideView;
-extern unsigned int offFrameStageNotify;
-extern unsigned int offCanPacket;
-extern unsigned int offSendNetMsg;
-extern unsigned int offShutdown;
-extern unsigned int offKeyEvent;
-extern unsigned int offLevelInit;
-extern unsigned int offLevelShutdown;
-extern unsigned int offBeginFrame;
+extern VMTHook panel;
+extern VMTHook clientmode;
+extern VMTHook client;
+extern VMTHook netchannel;
+extern VMTHook clientdll;
+extern VMTHook matsurface;
+extern VMTHook studiorender;
+extern VMTHook input;
+extern VMTHook modelrender;
+extern VMTHook baseclientstate;
+extern VMTHook baseclientstate8;
+extern VMTHook steamfriends;
 
 }
 

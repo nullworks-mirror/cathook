@@ -12,6 +12,7 @@
 #include "../common.h"
 #include "hookedmethods.h"
 
+// FIXME remove this temporary code already!
 float AngleDiff( float destAngle, float srcAngle )
 {
 	float delta;
@@ -28,7 +29,7 @@ float AngleDiff( float destAngle, float srcAngle )
 			delta += 360;
 	}
 	return delta;
-}//TODO temporary
+}
 
 #include "../profiler.h"
 
@@ -70,7 +71,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	if (TF2C && CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == g_pClassID->CTFMinigun) {
 		CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
 	}
-	bool ret = ((CreateMove_t*)hooks::hkClientMode->GetMethod(hooks::offCreateMove))(thisptr, inputSample, cmd);
+
+	static CreateMove_t original_method = (CreateMove_t)hooks::clientmode.GetMethod(offsets::CreateMove());
+	bool ret = original_method(thisptr, inputSample, cmd);
 
 	PROF_SECTION(CreateMove);
 
@@ -90,13 +93,12 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 //	PROF_BEGIN();
 
 	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
-	if (ch && !hooks::IsHooked((void*)((uintptr_t)ch))) {
-		hooks::hkNetChannel = new hooks::VMTHook();
-		hooks::hkNetChannel->Init(ch, 0);
-		hooks::hkNetChannel->HookMethod((void*)CanPacket_hook, hooks::offCanPacket);
-		hooks::hkNetChannel->HookMethod((void*)SendNetMsg_hook, hooks::offSendNetMsg);
-		hooks::hkNetChannel->HookMethod((void*)Shutdown_hook, hooks::offShutdown);
-		hooks::hkNetChannel->Apply();
+	if (ch && !hooks::IsHooked((void*)ch)) {
+		hooks::netchannel.Set(ch);
+		hooks::netchannel.HookMethod((void*)CanPacket_hook, offsets::CanPacket());
+		hooks::netchannel.HookMethod((void*)SendNetMsg_hook, offsets::SendNetMsg());
+		hooks::netchannel.HookMethod((void*)Shutdown_hook, offsets::Shutdown());
+		hooks::netchannel.Apply();
 	}
 	//logging::Info("canpacket: %i", ch->CanPacket());
 	//if (!cmd) return ret;
