@@ -133,6 +133,12 @@ constexpr T _clamp(T _min, T _max, T _val) {
 
 #define GET_RENDER_CONTEXT (TF2 ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
 
+#ifdef LINUX
+#define IPC_ENABLED 1
+#else
+#undef IPC_ENABLED
+#endif
+
 /*#define ADD_HACK(x) \
 	hack::AddHack(g_ph##x = new x());
 

@@ -5,6 +5,8 @@
  *      Author: nullifiedcat
  */
 
+#ifdef IPC_ENABLED
+
 #include "FollowBot.h"
 
 #include "../common.h"
@@ -321,3 +323,5 @@ void DoWalking() {
 }
 
 }}}
+
+#endif

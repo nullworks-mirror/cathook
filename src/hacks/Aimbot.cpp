@@ -517,11 +517,15 @@ bool ShouldAim(CUserCmd* cmd) {
 		if (!HasCondition(g_pLocalPlayer->entity, TFCond_Slowed)) {
 			return false;
 		}
+		// syntax gymnastics
+#ifdef IPC_ENABLED
 		if (hacks::shared::followbot::bot) {
 			CachedEntity* player = ENTITY(hacks::shared::followbot::following_idx);
 			if (CE_BAD(player)) return false;
 			if (!HasCondition(player, TFCond_Slowed)) return false;
-		} else {
+		} else
+#endif
+		{
 			if (!(cmd->buttons & IN_ATTACK2)) {
 				return false;
 			}

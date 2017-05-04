@@ -5,6 +5,8 @@
  *      Author: nullifiedcat
  */
 
+#ifdef IPC_ENABLED
+
 #ifndef HACKS_FOLLOWBOT_H_
 #define HACKS_FOLLOWBOT_H_
 
@@ -33,3 +35,5 @@ void AfterCreateMove();
 }}}
 
 #endif /* HACKS_FOLLOWBOT_H_ */
+
+#endif

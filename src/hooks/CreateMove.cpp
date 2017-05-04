@@ -122,7 +122,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	g_Settings.bInvalid = false;
 	// Disabled because this causes EXTREME aimbot inaccuracy
 	//if (!cmd->command_number) return ret;
-
+#ifdef IPC_ENABLED
 	if (hacks::shared::followbot::bot) {
 		static int team_joining_state = 0;
 		static float last_jointeam_try = 0;
@@ -172,6 +172,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 
 	}
+#endif
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		ResetCritHack();
 		if (TF2) SAFE_CALL(UpdateHoovyList());
@@ -209,7 +210,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	// TODO Auto Steam Friend
 	if (g_GlobalVars->framecount % 1000 == 0) {
 		playerlist::DoNotKillMe();
+#ifdef IPC_ENABLED
 		ipc::UpdatePlayerlist();
+#endif
 	}
 
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
@@ -258,10 +261,11 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 			ret = false;
 		}
-
+#ifdef IPC_ENABLED
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state) {
 			SAFE_CALL(hacks::shared::followbot::AfterCreateMove());
 		}
+#endif
 		if (cmd)
 			g_Settings.last_angles = cmd->viewangles;
 	}

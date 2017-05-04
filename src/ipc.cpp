@@ -5,6 +5,8 @@
  *      Author: nullifiedcat
  */
 
+#ifdef IPC_ENABLED
+
 #include "ipc.h"
 
 #include "common.h"
@@ -138,3 +140,5 @@ void UpdatePlayerlist() {
 }
 
 }
+
+#endif

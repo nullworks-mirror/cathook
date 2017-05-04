@@ -1,3 +1,13 @@
+MULTIPLATFORM:
+
+Signature Scanner
+Whole IPC thing | actually, no. cathook for windows WON'T have followbots/ipc.
+Signatures and offsets
+File handling (playerlist, spam, etc...)
+CMake?
+
+------------====-----------
+
 alias clearcond "host_timescale 300;wait 500;host_timescale 1"
 alias clearcond_taunt "taunt;wait 50;host_timescale 300;wait 500;host_timescale 1"
 bind l clearcond_taunt
