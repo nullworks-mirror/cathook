@@ -25,17 +25,19 @@ class CAttribute {
 public:
 	CAttribute(uint16_t iAttributeDefinitionIndex, float flValue);
 public:
-	uint32_t pad00;
-	attribute_s data;
-	uint32_t pad01;
+	void* pad00;
+	uint16_t defidx;
+	float value;
+	unsigned int pad01;
 };
 
 class CAttributeList {
 public:
+	CAttributeList();
 	void SetAttribute(int index, float value);
 	void RemoveAttribute(int index);
 public:
-	uint32_t pad00;
+	void* pad;
 	CUtlVector<CAttribute, CUtlMemory<CAttribute>> m_Attributes;
 };
 
@@ -69,7 +71,9 @@ struct def_attribute_modifier {
 	void Apply(int entity);
 	void Set(int id, float value);
 	int defidx { 0 };
+	int defidx_redirect { 0 };
 	std::array<attribute_s, 15> modifiers { attribute_s{ 0, 0 } };
+	int first_free_mod { 0 };
 };
 
 extern std::unordered_map<int, def_attribute_modifier> modifier_map;

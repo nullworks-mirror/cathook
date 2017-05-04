@@ -10,32 +10,38 @@
 namespace hacks { namespace tf2 { namespace skinchanger {
 
 CAttribute::CAttribute(uint16_t iAttributeDefinitionIndex, float flValue) {
-	data.defidx = iAttributeDefinitionIndex;
-	data.value = flValue;
+	defidx = iAttributeDefinitionIndex;
+	value = flValue;
 }
 
 void CAttributeList::RemoveAttribute(int index) {
 	for (int i = 0; i < m_Attributes.Count(); i++) {
 		const auto& a = m_Attributes[i];
-		if (a.data.defidx == index) {
+		if (a.defidx == index) {
 			m_Attributes.Remove(i);
 			return;
 		}
 	}
 }
 
+CAttributeList::CAttributeList() {}
+
 void CAttributeList::SetAttribute(int index, float value) {
 	// Let's check if attribute exists already. We don't want dupes.
 	for (int i = 0; i < m_Attributes.Count(); i++) {
 		auto& a = m_Attributes[i];
-		if (a.data.defidx == index) {
-			a.data.value = value;
+		if (a.defidx == index) {
+			a.value = value;
 			return;
 		}
 	}
 
 	if (m_Attributes.Count() > 14)
 		return;
+
+	//m_Attributes.m_Memory.m_nGrowSize = -1;
+	logging::Info("0x%08x 0x%08x 0x%08x", m_Attributes.m_Memory.m_nAllocationCount, m_Attributes.m_Memory.m_nGrowSize, m_Attributes.m_Memory.m_pMemory);
+	//m_Attributes.m_Memory.SetExternalBuffer(m_Attributes.m_Memory.Base(), 15);
 
 	m_Attributes.AddToTail(CAttribute { index, value });
 }
@@ -44,9 +50,15 @@ static CatVar enabled(CV_SWITCH, "skinchanger", "0", "Skin Changer");
 static CatCommand set_attr("skinchanger_set", "Set Attribute", [](const CCommand& args) {
 	unsigned attrid = strtoul(args.Arg(1), nullptr, 10);
 	unsigned attrv = strtoul(args.Arg(2), nullptr, 10);
-	GetModifier(LOCAL_W->m_IDX).Set(attrid, attrv);
+	GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).Set(attrid, attrv);
 	InvalidateCookies();
 });
+static CatCommand set_redirect("skinchanger_redirect", "Set Redirect", [](const CCommand& args) {
+	unsigned redirect = strtoul(args.Arg(1), nullptr, 10);
+	GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).defidx_redirect = redirect;
+	InvalidateCookies();
+});
+static CatCommand invalidate_cookies("skinchanger_invalidate_cookies", "Invalidate Cookies", InvalidateCookies);
 
 void FrameStageNotify(int stage) {
 	if (!enabled) return;
@@ -61,6 +73,8 @@ void FrameStageNotify(int stage) {
 
 void PaintTraverse() {
 	if (!enabled) return;
+	if (CE_GOOD(LOCAL_W))
+		AddSideString(format("dIDX: ", CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)));
 	// Debug info?
 }
 
@@ -71,7 +85,8 @@ void def_attribute_modifier::Set(int id, float value) {
 			return;
 		}
 	}
-	attribute_s& attr = modifiers.at(modifiers.size());
+	attribute_s& attr = modifiers.at(first_free_mod);
+	first_free_mod++;
 	attr.defidx = id;
 	attr.value = value;
 }
@@ -103,13 +118,23 @@ bool patched_weapon_cookie::Check() {
 	if (!ent || ent->IsDormant()) return false;
 	if (eclass != ent->GetClientClass()->m_ClassID) return false;
 	if (defidx != NET_INT(ent, netvar.iItemDefinitionIndex)) return false;
+	return true;
 }
 
 void def_attribute_modifier::Apply(int entity) {
 	IClientEntity* ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent || ent->IsDormant()) return;
-	CAttributeList* list = NET_VAR(ent, netvar.AttributeList, CAttributeList*);
-	logging::Info("Applying modifiers for %i", entity);
+	logging::Info("Applying modifiers for %i %i %i", entity, NET_INT(ent, netvar.iItemDefinitionIndex), defidx_redirect);
+	if (defidx_redirect && NET_INT(ent, netvar.iItemDefinitionIndex) != defidx_redirect) {
+		NET_INT(ent, netvar.iItemDefinitionIndex) = defidx_redirect;
+		logging::Info("Updated DefIDX to %i", NET_INT(ent, netvar.iItemDefinitionIndex));
+		GetCookie(entity).valid = false;
+		return;
+	}
+	CAttributeList* list = NET_VAR(ent, 0x9c0, CAttributeList*);
+	logging::Info("Attribute list: 0x%08x 0x%08x 0x%08x 0x%08x", 0x9c0, ent, list, (uint32_t)list - (uint32_t)ent);
+	logging::Info("Length: %i", list->m_Attributes.m_Size);
+	logging::Info("Base: 0x%08x", list->m_Attributes.Base());
 	for (const auto& mod : modifiers) {
 		if (mod.defidx) {
 			logging::Info("Setting %i to %.2f", mod.defidx, mod.value); // FIXME DEBUG LOGS!
