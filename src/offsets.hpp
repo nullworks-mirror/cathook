@@ -35,9 +35,8 @@ struct offsets {
 		case platform::PLATFORM_OSX:
 			result = offset_osx; break;
 		}
-		if (result == -1) {
-			throw std::logic_error("No offset defined for this platform!");
-		}
+		// pCompileError.
+		//static_assert(result != -1, "No offset defined for this platform!");
 		return result;
 	}
 	static constexpr uint32_t GetUserCmd() { 		return PlatformOffset(8, -1, -1); }
