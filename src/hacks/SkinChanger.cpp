@@ -40,10 +40,10 @@ void CAttributeList::SetAttribute(int index, float value) {
 		return;
 
 	//m_Attributes.m_Memory.m_nGrowSize = -1;
-	logging::Info("0x%08x 0x%08x 0x%08x", m_Attributes.m_Memory.m_nAllocationCount, m_Attributes.m_Memory.m_nGrowSize, m_Attributes.m_Memory.m_pMemory);
+	//logging::Info("0x%08x 0x%08x 0x%08x", m_Attributes.m_Memory.m_nAllocationCount, m_Attributes.m_Memory.m_nGrowSize, m_Attributes.m_Memory.m_pMemory);
 	//m_Attributes.m_Memory.SetExternalBuffer(m_Attributes.m_Memory.Base(), 15);
-
-	m_Attributes.AddToTail(CAttribute { index, value });
+	CAttribute attr( index, value );
+	m_Attributes.AddToTail(attr);
 }
 
 static CatVar enabled(CV_SWITCH, "skinchanger", "0", "Skin Changer");
@@ -65,9 +65,18 @@ void FrameStageNotify(int stage) {
 	CachedEntity* weapon = LOCAL_W;
 	if (CE_BAD(weapon)) return;
 	if (!GetCookie(weapon->m_IDX).Check()) {
+		CAttributeList* list = CE_VAR(weapon, 0x9c0, CAttributeList*);
+		logging::Info("ATTRIBUTE LIST (BEFORE UPDATE): ");
+		for (int i = 0; i < list->m_Attributes.Size(); i++) {
+			logging::Info("%i %.2f", list->m_Attributes[i].defidx, list->m_Attributes[i].value);
+		}
 		logging::Info("Cookie bad for %i", weapon->m_IDX); // FIXME DEBUG LOGS!
 		GetModifier(CE_INT(weapon, netvar.iItemDefinitionIndex)).Apply(weapon->m_IDX);
 		GetCookie(weapon->m_IDX).Update(weapon->m_IDX);
+		logging::Info("ATTRIBUTE LIST (AFTER UPDATE): ");
+		for (int i = 0; i < list->m_Attributes.Size(); i++) {
+			logging::Info("%i %.2f", list->m_Attributes[i].defidx, list->m_Attributes[i].value);
+		}
 	}
 }
 
@@ -89,6 +98,7 @@ void def_attribute_modifier::Set(int id, float value) {
 	first_free_mod++;
 	attr.defidx = id;
 	attr.value = value;
+	logging::Info("new attr: %i %.2f %i", attr.defidx, attr.value, first_free_mod);
 }
 
 void InvalidateCookies() {
@@ -132,9 +142,10 @@ void def_attribute_modifier::Apply(int entity) {
 		return;
 	}
 	CAttributeList* list = NET_VAR(ent, 0x9c0, CAttributeList*);
-	logging::Info("Attribute list: 0x%08x 0x%08x 0x%08x 0x%08x", 0x9c0, ent, list, (uint32_t)list - (uint32_t)ent);
+	//::Info("Attribute list: 0x%08x 0x%08x 0x%08x 0x%08x", 0x9c0, ent, list, (uint32_t)list - (uint32_t)ent);
+	list->m_Attributes.m_Size = list->m_Attributes.Size();
 	logging::Info("Length: %i", list->m_Attributes.m_Size);
-	logging::Info("Base: 0x%08x", list->m_Attributes.Base());
+	//logging::Info("Base: 0x%08x", list->m_Attributes.Base());
 	for (const auto& mod : modifiers) {
 		if (mod.defidx) {
 			logging::Info("Setting %i to %.2f", mod.defidx, mod.value); // FIXME DEBUG LOGS!
