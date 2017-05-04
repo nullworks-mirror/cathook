@@ -62,7 +62,7 @@ void CreateMove() {
 			if (random_order) current_index = rand() % source->size();
 			std::string spamString = source->at(current_index);
 			ReplaceString(spamString, "\\n", "\n");
-			chat_stack::stack.push(spamString);
+			chat_stack::Say(spamString);
 			current_index++;
 		}
 	}
