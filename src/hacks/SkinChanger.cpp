@@ -6,8 +6,26 @@
  */
 
 #include "SkinChanger.hpp"
+#include "../copypasted/CSignature.h"
 
 namespace hacks { namespace tf2 { namespace skinchanger {
+
+// Because fuck you, that's why.
+const char* sig_GetAttributeDefinition = "55 89 E5 57 56 53 83 EC 6C C7 45 9C 00 00 00 00 8B 75 08 C7 45 A4 00 00 00 00 8B 45 0C C6 45 A8 00 C6 45 A9 00 C6 45 AA 00 8B BE B0 01 00 00 C6 45 AB 00 C6 45 B4 00 C7 45 B8 00 00 00 00 C7 45 BC 02 00 00 00 83 FF FF C7 45 C0 00 00 00 00 C7 45 C4 00 00 00 00 C7 45 C8 00 00 00 00 C7 45 CC 00 00 00 00 C7 45 D0 00 00 00 00 C6 45 D4 00 C6 45 D5 00 C7 45 D8 FF FF FF FF C7 45 DC 00 00 00 00 89 45 98 0F 84 86 01 00 00 8B 86 A4 01 00 00 EB 21";
+const char* sig_SetRuntimeAttributeValue = "55 89 E5 57 56 53 83 EC 3C 8B 5D 08 8B 4B 10 85 C9 7E 33 8B 75 0C 8B 43 04 0F B7 7E 04 66 3B 78 04 0F 84 CA 00 00 00 83 C0 10 31 D2 EB 11 66 90 89 C6 83 C0 10 66 39 78 F4 0F 84 B9 00 00 00";
+const char* sig_GetItemSchema = "55 89 E5 57 56 53 83 EC 1C 8B 1D ? ? ? ? 85 DB 89 D8 74 0B 83 C4 1C 5B 5E 5F 5D C3";
+
+ItemSystem_t ItemSystem { nullptr };
+GetAttributeDefinition_t GetAttributeDefinitionFn { nullptr };
+SetRuntimeAttributeValue_t SetRuntimeAttributeValueFn { nullptr };
+
+ItemSchemaPtr_t GetItemSchema(void) {
+	if (!ItemSystem) {
+		ItemSystem = (ItemSystem_t)gSignatures.GetClientSignature((char*)sig_GetItemSchema);
+	}
+	logging::Info("ItemSystem: 0x%08x 0x%08x", ItemSystem, ItemSystem());
+	return (void*)((uint32_t)(ItemSystem()) + 4);
+}
 
 CAttribute::CAttribute(uint16_t iAttributeDefinitionIndex, float flValue) {
 	defidx = iAttributeDefinitionIndex;
@@ -27,8 +45,13 @@ void CAttributeList::RemoveAttribute(int index) {
 CAttributeList::CAttributeList() {}
 
 void CAttributeList::SetAttribute(int index, float value) {
+	ItemSchemaPtr_t schema = GetItemSchema();
+	logging::Info("Schema: 0x%08x", schema);
+	AttributeDefinitionPtr_t attrib = GetAttributeDefinitionFn(schema, index);
+	logging::Info("Attrib: 0x%08x", attrib);
+	SetRuntimeAttributeValueFn(this, attrib, value);
 	// Let's check if attribute exists already. We don't want dupes.
-	for (int i = 0; i < m_Attributes.Count(); i++) {
+	/*for (int i = 0; i < m_Attributes.Count(); i++) {
 		auto& a = m_Attributes[i];
 		if (a.defidx == index) {
 			a.value = value;
@@ -43,7 +66,7 @@ void CAttributeList::SetAttribute(int index, float value) {
 	//logging::Info("0x%08x 0x%08x 0x%08x", m_Attributes.m_Memory.m_nAllocationCount, m_Attributes.m_Memory.m_nGrowSize, m_Attributes.m_Memory.m_pMemory);
 	//m_Attributes.m_Memory.SetExternalBuffer(m_Attributes.m_Memory.Base(), 15);
 	CAttribute attr( index, value );
-	m_Attributes.AddToTail(attr);
+	m_Attributes.AddToTail(attr);*/
 }
 
 static CatVar enabled(CV_SWITCH, "skinchanger", "0", "Skin Changer");
@@ -69,6 +92,15 @@ static CatCommand invalidate_cookies("skinchanger_invalidate_cookies", "Invalida
 
 void FrameStageNotify(int stage) {
 	if (!enabled) return;
+	if (!SetRuntimeAttributeValueFn) {
+		SetRuntimeAttributeValueFn = (SetRuntimeAttributeValue_t)(gSignatures.GetClientSignature((char*)sig_SetRuntimeAttributeValue));
+		logging::Info("SetRuntimeAttributeValue: 0x%08x", SetRuntimeAttributeValueFn);
+	}
+	if (!GetAttributeDefinitionFn) {
+		GetAttributeDefinitionFn = (GetAttributeDefinition_t)(gSignatures.GetClientSignature((char*)sig_GetAttributeDefinition));
+		logging::Info("GetAttributeDefinition: 0x%08x", GetAttributeDefinitionFn);
+	}
+
 	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START) return;
 	int handle = CE_INT(g_pLocalPlayer->entity, netvar.hActiveWeapon);
 	int eid = handle & 0xFFF;

@@ -12,6 +12,26 @@
 
 namespace hacks { namespace tf2 { namespace skinchanger {
 
+class CAttributeList;
+class CAttribute;
+
+typedef void* ItemSchemaPtr_t;
+typedef void* AttributeDefinitionPtr_t;
+
+// FIXME move to separate header
+
+typedef ItemSchemaPtr_t(*ItemSystem_t)(void);
+typedef void*(*SetRuntimeAttributeValue_t)(CAttributeList*, AttributeDefinitionPtr_t, float);
+typedef AttributeDefinitionPtr_t(*GetAttributeDefinition_t)(ItemSchemaPtr_t, int);
+ItemSchemaPtr_t GetItemSchema(void);
+
+extern const char* sig_GetItemSchema;
+extern const char* sig_GetAttributeDefinition;
+extern const char* sig_SetRuntimeAttributeValue;
+extern ItemSystem_t ItemSystemFn;
+extern GetAttributeDefinition_t GetAttributeDefinitionFn;
+extern SetRuntimeAttributeValue_t SetRuntimeAttributeValueFn;
+
 // TOTALLY NOT A PASTE.
 // Seriously tho, it's modified at least.
 // Credits: blackfire62
