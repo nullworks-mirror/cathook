@@ -447,7 +447,7 @@ void DoWalking() {
         
         //When the player is not visible to the bot, within 5 seconds of it not being visible we stop the bot and wait for the player to collect it
         if (!found_entity->IsVisible()) {
-            if (g_GlobalVars->curtime - 5.0F > crumbWaitVis) {
+            if (g_GlobalVars->curtime - 5.0F > crumbWaitVis && g_GlobalVars->curtime - 2.5F > crumbWaitPrune) {
                 //crumbStopped = true;
                 logging::Info("Crumb Lost!");
             }
