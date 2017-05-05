@@ -606,7 +606,7 @@ int BestHitbox(CachedEntity* target) {
 				cdmg = (cdmg / 1.20) - 1;
 			}
 			//If can headshot and if bodyshot kill from charge damage, or if crit boosted and they have 150 health, or if player isnt zoomed, or if the enemy has less than 40, due to darwins, and only if they have less than 150 health will it try to bodyshot
-			if (CanHeadshot() && (cdmg > target->m_iHealth || IsPlayerCritBoosted(g_pLocalPlayer->entity) || !g_pLocalPlayer->bZoomed || target->m_iHealth < bdmg)  && target->m_iHealth <= 150) {
+			if (CanHeadshot() && (cdmg >= target->m_iHealth || IsPlayerCritBoosted(g_pLocalPlayer->entity) || !g_pLocalPlayer->bZoomed || target->m_iHealth <= bdmg)  && target->m_iHealth <= 150) {
 				preferred = ClosestHitbox(target);
 				headonly = false;
 			}
