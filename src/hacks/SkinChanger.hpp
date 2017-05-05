@@ -54,6 +54,7 @@ public:
 class CAttributeList {
 public:
 	CAttributeList();
+	float GetAttribute(int defindex);
 	void SetAttribute(int index, float value);
 	void RemoveAttribute(int index);
 public:
@@ -66,7 +67,8 @@ enum class Attributes {
 	is_australium_item = 2027,
 	item_style_override = 542,
 	sheen = 2014,
-	killstreak_tier = 2025
+	killstreak_tier = 2025,
+	set_item_texture_wear = 725
 };
 
 enum class UnusualEffects {
@@ -74,6 +76,16 @@ enum class UnusualEffects {
 	ISOTOPE,
 	COOL,
 	ENERGY_ORB
+};
+
+enum class Sheens {
+	TEAM_SHINE = 1,
+	DEADLY_DAFFODIL,
+	MANNDARIN,
+	MEAN_GREEN,
+	AGONIZING_EMERALD,
+	VILLAINOUS_VIOLET,
+	HOT_ROD
 };
 
 struct patched_weapon_cookie {
@@ -91,19 +103,24 @@ public:
 struct def_attribute_modifier {
 	void Apply(int entity);
 	void Set(int id, float value);
+	void Remove(int id);
 	int defidx { 0 };
 	int defidx_redirect { 0 };
-	std::array<attribute_s, 15> modifiers { attribute_s{ 0, 0 } };
-	int first_free_mod { 0 };
+	std::vector<attribute_s> modifiers { };
 };
 
 extern std::unordered_map<int, def_attribute_modifier> modifier_map;
-extern std::unordered_map<int, patched_weapon_cookie> cookie_map;
+extern patched_weapon_cookie cookie;
+//extern std::unordered_map<int, patched_weapon_cookie> cookie_map;
 
 def_attribute_modifier& GetModifier(int idx);
-patched_weapon_cookie& GetCookie(int idx);
+//patched_weapon_cookie& GetCookie(int idx);
 
-void InvalidateCookies();
+constexpr unsigned SERIALIZE_VERSION = 1;
+void Save(std::string filename);
+void Load(std::string filename);
+
+void InvalidateCookie();
 void FrameStageNotify(int stage);
 void PaintTraverse();
 

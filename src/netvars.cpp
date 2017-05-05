@@ -30,7 +30,7 @@ void NetVars::Init() {
 		//this->flReloadPriorNextFire = gNetvars.get_offset("DT_TFWeaponBase", "LocalActiveTFWeaponData", "m_flReloadPriorNextFire");
 		//this->flObservedCritChance = gNetvars.get_offset("DT_TFWeaponBase", "LocalActiveTFWeaponData", "m_flObservedCritChance");
 		this->iItemDefinitionIndex = gNetvars.get_offset("DT_EconEntity", "m_AttributeManager", "m_Item", "m_iItemDefinitionIndex");
-		this->AttributeList = gNetvars.get_offset("DT_EconEntity", "m_AttributeManager", "m_Item", "m_AttributeList") + 8; // hmmm
+		this->AttributeList = gNetvars.get_offset("DT_EconEntity", "m_AttributeManager", "m_Item", "m_AttributeList"); // hmmm
 		this->flChargeBeginTime = gNetvars.get_offset("DT_WeaponPipebombLauncher", "PipebombLauncherLocalData", "m_flChargeBeginTime");
 		this->flLastFireTime = gNetvars.get_offset("DT_TFWeaponBase", "LocalActiveTFWeaponData", "m_flLastFireTime");
 		this->bDistributed = gNetvars.get_offset("DT_CurrencyPack", "m_bDistributed");
