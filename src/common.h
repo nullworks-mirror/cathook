@@ -10,6 +10,14 @@
 
 #include <pwd.h>
 
+
+#ifdef LINUX
+#define IPC_ENABLED 1
+#else
+#undef IPC_ENABLED
+#endif
+
+
 #include "beforecheaders.h"
 #include <vector>
 #include <bitset>
@@ -27,6 +35,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include "aftercheaders.h"
+#include "offsets.hpp"
 #include "drawing.h"
 #include "resource.hpp"
 #include "entitycache.h"
@@ -131,7 +140,6 @@ constexpr T _clamp(T _min, T _max, T _val) {
 #endif
 
 #define GET_RENDER_CONTEXT (TF2 ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
-
 /*#define ADD_HACK(x) \
 	hack::AddHack(g_ph##x = new x());
 

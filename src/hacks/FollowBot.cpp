@@ -5,9 +5,12 @@
  *      Author: nullifiedcat
  */
 
+
 #include "FollowBot.h"
 
 #include "../common.h"
+
+#ifdef IPC_ENABLED
 
 namespace hacks { namespace shared { namespace followbot {
 
@@ -509,3 +512,5 @@ void DoWalking() {
 }
 
 }}}
+
+#endif

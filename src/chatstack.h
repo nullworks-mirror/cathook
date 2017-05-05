@@ -18,10 +18,16 @@
 
 namespace chat_stack {
 
+struct msg_t {
+	std::string text;
+	bool team;
+};
+
+void Say(const std::string& message, bool team = false);
 void OnCreateMove();
 void Reset();
 
-extern std::stack<std::string> stack;
+extern std::stack<msg_t> stack;
 extern float last_say;
 
 };

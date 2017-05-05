@@ -5,6 +5,8 @@
  *      Author: nullifiedcat
  */
 
+#ifdef IPC_ENABLED
+
 #ifndef IPC_H_
 #define IPC_H_
 
@@ -58,3 +60,5 @@ void UpdatePlayerlist();
 }
 
 #endif /* IPC_H_ */
+
+#endif

@@ -5,10 +5,13 @@
  *      Author: nullifiedcat
  */
 
+
 #include "ipc.h"
 
 #include "common.h"
 #include "hack.h"
+
+#ifdef IPC_ENABLED
 
 namespace ipc {
 
@@ -138,3 +141,5 @@ void UpdatePlayerlist() {
 }
 
 }
+
+#endif

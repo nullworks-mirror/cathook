@@ -536,6 +536,7 @@ static const std::string list_tf2 = R"(
     "uberspam_ready"
     "uberspam_used"
     "uberspam_ended"
+    "uberspam_team"
 ]
  
 "Follow Bot" [

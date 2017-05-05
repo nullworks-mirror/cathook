@@ -12,6 +12,7 @@
 
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility", "Useful with chams!");
 
+// This hook isn't used yet!
 int C_TFPlayer__DrawModel_hook(IClientEntity* _this, int flags) {
 	float old_invis = *(float*)((uintptr_t)_this + 79u);
 	if (no_invisibility) {
@@ -27,17 +28,9 @@ static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms", "Removes arms from f
 static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats", "Removes non-stock hats");
 
 void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix) {
-	/*IClientUnknown* unknown = info.pRenderable->GetIClientUnknown();
-	if (unknown) {
-		IClientEntity* entity = unknown->GetIClientEntity();
-		if (entity && entity->entindex() != -1) {
-			if (entity->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
-				//CMatRenderContextPtr ptr();
-			}
-		}
-	}*/
+	static const DrawModelExecute_t original = (DrawModelExecute_t)hooks::modelrender.GetMethod(offsets::DrawModelExecute());
 	if (!cathook || !(no_arms || no_hats || (clean_screenshots && g_IEngine->IsTakingScreenshot()))) {
-		((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
+		original(_this, state, info, matrix);
 		return;
 	}
 
@@ -63,18 +56,20 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 		}
 	}
 
-	((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
+	original(_this, state, info, matrix);
 }
 
-bool CanPacket_hook(void* thisptr) {
+bool CanPacket_hook(void* _this) {
+	const CanPacket_t original = (CanPacket_t)hooks::netchannel.GetMethod(offsets::CanPacket());
 	SEGV_BEGIN;
-	return send_packets && ((CanPacket_t*)hooks::hkNetChannel->GetMethod(hooks::offCanPacket))(thisptr);
+	return send_packets && original(_this);
 	SEGV_END;
 	return false;
 }
 
-CUserCmd* GetUserCmd_hook(IInput* thisptr, int sequence_number) {
-	CUserCmd* def = ((GetUserCmd_t*)(hooks::hkInput->GetMethod(hooks::offGetUserCmd)))(thisptr, sequence_number);
+CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
+	static const GetUserCmd_t original = (GetUserCmd_t)hooks::input.GetMethod(offsets::GetUserCmd());
+	CUserCmd* def = original(_this, sequence_number);
 	if (def && command_number_mod.find(def->command_number) != command_number_mod.end()) {
 		logging::Info("Replacing command %i with %i", def->command_number, command_number_mod[def->command_number]);
 		int oldcmd = def->command_number;
@@ -85,12 +80,13 @@ CUserCmd* GetUserCmd_hook(IInput* thisptr, int sequence_number) {
 	return def;
 }
 
-int IN_KeyEvent_hook(void* thisptr, int eventcode, int keynum, const char* pszCurrentBinding) {
+int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
+	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
 	SEGV_BEGIN;
 	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
 		return 0;
 	}
-	return ((IN_KeyEvent_t*)hooks::hkClient->GetMethod(hooks::offKeyEvent))(thisptr, eventcode, keynum, pszCurrentBinding);
+	return original(_this, eventcode, keynum, pszCurrentBinding);
 	SEGV_END;
 	return 0;
 }
@@ -112,7 +108,9 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add
 // TODO name \\n = \n
 //static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages", "Use this if you want to use spam/killsay and still be able to chat normally (without having your msgs eaten by valve cooldown)");
 
-bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
+bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
+	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
+	const SendNetMsg_t original = (SendNetMsg_t)hooks::netchannel.GetMethod(offsets::SendNetMsg());
 	SEGV_BEGIN;
 	// net_StringCmd
 	if (msg.GetType() == 4 && (newlines_msg)) {
@@ -128,7 +126,7 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 			str = str.substr(16, str.length() - 17);
 			//if (queue_messages && !chat_stack::CanSend()) {
 				NET_StringCmd stringcmd(str.c_str());
-				return ((SendNetMsg_t*)hooks::hkNetChannel->GetMethod(hooks::offSendNetMsg))(thisptr, stringcmd, bForceReliable, bVoice);
+				return original(_this, stringcmd, bForceReliable, bVoice);
 			//}
 		}
 	}
@@ -145,19 +143,21 @@ bool SendNetMsg_hook(void* thisptr, INetMessage& msg, bool bForceReliable = fals
 		}
 		logging::Info("%i bytes => %s", buffer.GetNumBytesWritten(), bytes.c_str());
 	}
-	return ((SendNetMsg_t*)hooks::hkNetChannel->GetMethod(hooks::offSendNetMsg))(thisptr, msg, bForceReliable, bVoice);
+	return original(_this, msg, bForceReliable, bVoice);
 	SEGV_END;
 	return false;
 }
 
 CatVar disconnect_reason(CV_STRING, "disconnect_reason", "", "Disconnect reason", "A custom disconnect reason");
 
-void Shutdown_hook(void* thisptr, const char* reason) {
+void Shutdown_hook(void* _this, const char* reason) {
+	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
+	const Shutdown_t original = (Shutdown_t)hooks::netchannel.GetMethod(offsets::Shutdown());
 	SEGV_BEGIN;
 	if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) && strstr(reason, "user")) {
-		((Shutdown_t*)hooks::hkNetChannel->GetMethod(hooks::offShutdown))(thisptr, disconnect_reason.GetString());
+		original(_this, disconnect_reason.GetString());
 	} else {
-		((Shutdown_t*)hooks::hkNetChannel->GetMethod(hooks::offShutdown))(thisptr, reason);
+		original(_this, reason);
 	}
 	SEGV_END;
 }
@@ -167,16 +167,19 @@ static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transpa
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
+	static const GetFriendPersonaName_t original = (GetFriendPersonaName_t)hooks::steamfriends.GetMethod(offsets::GetFriendPersonaName());
 	if ((force_name.convar->m_StringLength > 2) && steamID == g_ISteamUser->GetSteamID()) {
 		return force_name.GetString();
 	}
-	return ((GetFriendPersonaName_t*)(hooks::hkSteamFriends->GetMethod(hooks::offGetFriendPersonaName)))(_this, steamID);
+	return original(_this, steamID);
 }
 
-void FrameStageNotify_hook(void* thisptr, int stage) {
+void FrameStageNotify_hook(void* _this, int stage) {
+	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
 	// TODO hack FSN hook
+	hacks::tf2::skinchanger::FrameStageNotify(stage);
 	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
 			if (i == g_IEngine->GetLocalPlayer()) continue;
@@ -255,16 +258,17 @@ void FrameStageNotify_hook(void* thisptr, int stage) {
 			}
 		}
 	}
-	SAFE_CALL(((FrameStageNotify_t*)hooks::hkClient->GetMethod(hooks::offFrameStageNotify))(thisptr, stage));
+	SAFE_CALL(original(_this, stage));
 	SEGV_END;
 }
 
 CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
 CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
 
-void OverrideView_hook(void* thisptr, CViewSetup* setup) {
+void OverrideView_hook(void* _this, CViewSetup* setup) {
+	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
 	SEGV_BEGIN;
-	((OverrideView_t*)hooks::hkClientMode->GetMethod(hooks::offOverrideView))(thisptr, setup);
+	original(_this, setup);
 	if (!cathook) return;
 	bool zoomed = g_pLocalPlayer->bZoomed;
 	if (zoomed && override_fov_zoomed) {
@@ -280,7 +284,8 @@ void OverrideView_hook(void* thisptr, CViewSetup* setup) {
 static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat", "Removes newlines from chat");
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0", "Log dispatched user messages");
 
-bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
+bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
+	static const DispatchUserMessage_t original = (DispatchUserMessage_t)hooks::client.GetMethod(offsets::DispatchUserMessage());
 	SEGV_BEGIN;
 	if (clean_chat) {
 		if (type == 4) {
@@ -301,31 +306,29 @@ bool DispatchUserMessage_hook(void* thisptr, int type, bf_read& buf) {
 	if (dispatch_log) {
 		logging::Info("D> %i", type);
 	}
-	//if (type != net_Tick) logging::Info("Got message: %s", type);
-	return ((DispatchUserMessage_t*)hooks::hkClient->GetMethod(hooks::offFrameStageNotify + 1))(thisptr, type, buf);
-	SEGV_END; return false;
+	return original(_this, type, buf);
+	SEGV_END;
+	return false;
 }
 
-void LevelInit_hook(void* thisptr, const char* newmap) {
+void LevelInit_hook(void* _this, const char* newmap) {
+	static const LevelInit_t original = (LevelInit_t)hooks::clientmode.GetMethod(offsets::LevelInit());
 	playerlist::Save();
-	((LevelInit_t*) hooks::hkClientMode->GetMethod(hooks::offLevelInit))(thisptr, newmap);
 	g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();
-//	LEVEL_SHUTDOWN(FollowBot);
-	//if (TF) LEVEL_INIT(SpyAlert);
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	original(_this, newmap);
 }
 
-bool CanInspect_hook(IClientEntity*) { return true; }
-
-void LevelShutdown_hook(void* thisptr) {
+void LevelShutdown_hook(void* _this) {
+	static const LevelShutdown_t original = (LevelShutdown_t)hooks::clientmode.GetMethod(offsets::LevelShutdown());
 	need_name_change = true;
 	playerlist::Save();
-	((LevelShutdown_t*) hooks::hkClientMode->GetMethod(hooks::offLevelShutdown))(thisptr);
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	original(_this);
 }
 

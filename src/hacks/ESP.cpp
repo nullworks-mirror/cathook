@@ -418,6 +418,7 @@ void ProcessEntity(CachedEntity* ent) {
 				if (pclass > 0 && pclass < 10)
 					AddEntityString(ent, classes[pclass - 1]);
 			}
+#ifdef IPC_ENABLED
 			if (show_bot_id && ipc::peer && ent != LOCAL_E) {
 				for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
 					if (!ipc::peer->memory->peer_data[i].free && ipc::peer->memory->peer_user_data[i].friendid == info.friendsID) {
@@ -426,6 +427,7 @@ void ProcessEntity(CachedEntity* ent) {
 					}
 				}
 			}
+#endif
 			if (show_health) {
 				AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 			}

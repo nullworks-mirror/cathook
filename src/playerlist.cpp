@@ -8,6 +8,10 @@
 #include "playerlist.hpp"
 #include "common.h"
 
+#include <stdint.h>
+#include <dirent.h>
+#include <sys/stat.h>
+
 namespace playerlist {
 
 std::unordered_map<unsigned, userdata> data {};

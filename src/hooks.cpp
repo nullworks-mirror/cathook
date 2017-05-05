@@ -10,78 +10,79 @@
 #include "logging.h"
 
 #include <stdlib.h>
+#include <string.h>
 
-unsigned int hooks::offCreateMove = 22;
-unsigned int hooks::offPaintTraverse = 42;
-unsigned int hooks::offOverrideView = 17;
-unsigned int hooks::offFrameStageNotify = 35;
-unsigned int hooks::offCanPacket = 57;
-unsigned int hooks::offSendNetMsg = 41;
-unsigned int hooks::offShutdown = 37;
-unsigned int hooks::offKeyEvent = 20;
-unsigned int hooks::offHandleInputEvent = 78;
-unsigned int hooks::offLevelInit = 23;
-unsigned int hooks::offLevelShutdown = 24;
-unsigned int hooks::offBeginFrame = 5;
+namespace hooks {
 
-// This thing had been copypasted from somewhere, maybe from F1Public.
-
-bool hooks::IsHooked(void* inst) {
-	return hooks::GetVMT(inst, 0)[-2] == (void*)VMTHook::GUARD;
-}
-
-unsigned int hooks::CountMethods(void** vmt) {
+unsigned CountMethods(method_table_t table) {
 	unsigned int i = -1;
-	do ++i; while (vmt[i]);
+	do ++i; while (table[i]);
 	return i;
 }
 
-void**& hooks::GetVMT(void* inst, unsigned int offset) {
-	return *reinterpret_cast<void***>((char*)inst + offset);
+table_ref_t GetVMT(ptr_t inst, uint32_t offset) {
+	return *reinterpret_cast<table_ptr_t>((uint32_t)inst + offset);
 }
 
-void hooks::VMTHook::Init(void* inst, unsigned int offset) {
-	vmt = &GetVMT(inst, offset);
-	oldvmt = *vmt;
-	unsigned int cnt = CountMethods(oldvmt);
-	void **arr = array = (void**)malloc((cnt + 4) * sizeof(void*));
-	arr[0] = this;
-	arr[1] = (void* )GUARD;
-	(arr + 3)[cnt] = 0;
-	unsigned int i = -1;
-	do arr[i + 3] = oldvmt[i]; while (++i < cnt);
+bool IsHooked(ptr_t inst, uint32_t offset) {
+	return GetVMT(inst, offset)[-1] == (method_t)GUARD;
 }
 
-void hooks::VMTHook::Kill() {
-	if (vmt)
-		*vmt = oldvmt;
-	vmt = 0;
-	free(array);
-	array = 0;
+VMTHook::VMTHook() {
+	static_assert(ptr_size == 4, "Pointer size must be DWORD.");
+};
+
+VMTHook::~VMTHook() {
+	Release();
 }
 
-void hooks::VMTHook::HookMethod(void* func, unsigned int idx) {
-	array[idx + 3] = func;
+void VMTHook::Set(ptr_t inst, uint32_t offset) {
+	Release();
+	vtable_ptr = &GetVMT(inst, offset);
+	vtable_original = *vtable_ptr;
+	int mc = CountMethods(vtable_original);
+	vtable_hooked = static_cast<method_table_t>(calloc(mc + 3, sizeof(ptr_t)));
+	memcpy(&vtable_hooked[2], vtable_original, sizeof(ptr_t) * mc);
+	vtable_hooked[0] = this;
+	vtable_hooked[1] = (void*)GUARD;
 }
 
-void* hooks::VMTHook::GetMethod(unsigned int idx) const {
-	return oldvmt[idx];
+void VMTHook::Release() {
+	if (vtable_ptr && *vtable_ptr == &vtable_hooked[2]) {
+		logging::Info("Un-hooking 0x%08x (vtable @ 0x%08x)", vtable_ptr, *vtable_ptr);
+		if ((*vtable_ptr)[-1] == (method_t)GUARD) {
+			*vtable_ptr = vtable_original;
+		}
+		free(vtable_hooked);
+		vtable_ptr = nullptr;
+		vtable_hooked = nullptr;
+		vtable_original = nullptr;
+	}
 }
 
-void hooks::VMTHook::Apply() {
-	*vmt = array + 3;
+void* VMTHook::GetMethod(uint32_t idx) const {
+	return vtable_original[idx];
 }
 
-//hooks::VMTHook* hooks::hkCTFPlayer = nullptr;
-hooks::VMTHook* hooks::hkInput = nullptr;
-hooks::VMTHook* hooks::hkSteamFriends = nullptr;
-hooks::VMTHook* hooks::hkBaseClientState = nullptr;
-hooks::VMTHook* hooks::hkBaseClientState8 = nullptr;
-hooks::VMTHook* hooks::hkClientMode = 0;
-hooks::VMTHook* hooks::hkPanel = 0;
-hooks::VMTHook* hooks::hkClient = 0;
-hooks::VMTHook* hooks::hkNetChannel = 0;
-hooks::VMTHook* hooks::hkClientDLL = 0;
-hooks::VMTHook* hooks::hkMatSurface = 0;
-hooks::VMTHook* hooks::hkStudioRender = 0;
-hooks::VMTHook* hooks::hkIVModelRender = nullptr;
+void VMTHook::HookMethod(ptr_t func, uint32_t idx) {
+	vtable_hooked[2 + idx] = func;
+}
+
+void VMTHook::Apply() {
+	*vtable_ptr = &vtable_hooked[2];
+}
+
+VMTHook input {};
+VMTHook steamfriends {};
+VMTHook baseclientstate {};
+VMTHook baseclientstate8 {};
+VMTHook clientmode {};
+VMTHook panel {};
+VMTHook client {};
+VMTHook netchannel {};
+VMTHook clientdll {};
+VMTHook matsurface {};
+VMTHook studiorender {};
+VMTHook modelrender {};
+
+}

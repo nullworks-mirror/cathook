@@ -24,6 +24,7 @@
 #include "Trigger.h"
 #include "KillSay.h"
 #include "UberSpam.hpp"
+#include "SkinChanger.hpp"
 #include "Achievement.h"
 #include "Spam.h"
 #include "Noisemaker.h"
