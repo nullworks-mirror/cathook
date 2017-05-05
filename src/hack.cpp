@@ -140,6 +140,8 @@ void hack::Initialize() {
 	while(!(clientMode = **(uintptr_t***)((uintptr_t)((*(void***)g_IBaseClient)[10]) + 1))) {
 		sleep(1);
 	}
+	logging::Info("SizeOf SkinChanger::CAttribute = %04d", sizeof(hacks::tf2::skinchanger::CAttribute));
+	logging::Info("Sizeof SkinChanger::CAttributeList = %04d", sizeof(hacks::tf2::skinchanger::CAttributeList));
 	hooks::clientmode.Set((void*)clientMode);
 	hooks::clientmode.HookMethod((void*)CreateMove_hook, offsets::CreateMove());
 	hooks::clientmode.HookMethod((void*)OverrideView_hook, offsets::OverrideView());
