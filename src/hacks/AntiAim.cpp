@@ -142,7 +142,7 @@ float edgeDistance(float edgeRayYaw) {
     forward.x = cp * cy;
     forward.y = cp * sy;
     forward.z = -sp;
-    forward = forward * 8192.0f + g_pLocalPlayer->v_Eye;
+    forward = forward * 300.0f + g_pLocalPlayer->v_Eye;
     ray.Init(g_pLocalPlayer->v_Eye, forward);
     //trace::g_pFilterNoPlayer to only focus on the enviroment
     g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterNoPlayer, trace.get());
