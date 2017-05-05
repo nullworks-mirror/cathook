@@ -142,16 +142,24 @@ void FrameStageNotify(int stage) {
 	}
 
 	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START) return;
-	int handle = CE_INT(g_pLocalPlayer->entity, netvar.hActiveWeapon);
-	int eid = handle & 0xFFF;
-	IClientEntity* entity = g_IEntityList->GetClientEntity(eid);
-	if (!entity || entity->IsDormant()) return;
+	int* weapon_list = (int*)((unsigned)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
+	int my_weapon = CE_INT(g_pLocalPlayer->entity, netvar.hActiveWeapon);
+	IClientEntity* my_weapon_ptr = g_IEntityList->GetClientEntity(my_weapon & 0xFFF);
 	static IClientEntity* last_weapon_out = nullptr;
-	if ((last_weapon_out != entity) || !cookie.Check()) {
-		GetModifier(NET_INT(entity, netvar.iItemDefinitionIndex)).Apply(eid);
-		cookie.Update(eid);
+	for (int i = 0; i < 5; i++) {
+		int handle = weapon_list[i];
+		int eid = handle & 0xFFF;
+		if (eid < 32 || eid > HIGHEST_ENTITY) continue;
+		//logging::Info("eid, %i", eid);
+		IClientEntity* entity = g_IEntityList->GetClientEntity(eid);
+		if (!entity) continue;
+		if ((my_weapon_ptr != last_weapon_out) || !cookie.Check()) {
+			GetModifier(NET_INT(entity, netvar.iItemDefinitionIndex)).Apply(eid);
+		}
 	}
-	last_weapon_out = entity;
+	if ((my_weapon_ptr != last_weapon_out) || !cookie.Check())
+		cookie.Update(my_weapon & 0xFFF);
+	last_weapon_out = my_weapon_ptr;
 }
 
 static CatVar show_debug_info(CV_SWITCH, "skinchanger_debug", "1", "Debug Skinchanger");

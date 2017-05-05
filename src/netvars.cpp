@@ -17,6 +17,7 @@ void NetVars::Init() {
 	this->iTeamNum = gNetvars.get_offset("DT_BaseEntity", "m_iTeamNum");
 	this->vViewOffset = gNetvars.get_offset("DT_BasePlayer", "localdata", "m_vecViewOffset[0]");
 	this->hActiveWeapon = gNetvars.get_offset("DT_BaseCombatCharacter", "m_hActiveWeapon");
+	this->hMyWeapons = gNetvars.get_offset("DT_BaseCombatCharacter", "m_hMyWeapons");
 	this->iHitboxSet = gNetvars.get_offset("DT_BaseAnimating", "m_nHitboxSet");
 	this->vVelocity = gNetvars.get_offset("DT_BasePlayer", "localdata", "m_vecVelocity[0]");
 	this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
@@ -77,7 +78,6 @@ void NetVars::Init() {
 	this->vecPunchAngle = gNetvars.get_offset("DT_BasePlayer", "localdata", "m_Local", "m_vecPunchAngle");
 	this->vecPunchAngleVel = gNetvars.get_offset("DT_BasePlayer", "localdata", "m_Local", "m_vecPunchAngleVel");
 	this->hThrower = gNetvars.get_offset("DT_BaseGrenade", "m_hThrower");
-	this->hMyWeapons = gNetvars.get_offset("DT_BaseCombatCharacter", "m_hMyWeapons");
 	this->iObserverMode = gNetvars.get_offset("DT_BasePlayer", "m_iObserverMode");
 	this->hObserverTarget = gNetvars.get_offset("DT_BasePlayer", "m_hObserverTarget");
 	this->deadflag = gNetvars.get_offset("DT_BasePlayer", "pl", "deadflag");
