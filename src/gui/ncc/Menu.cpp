@@ -545,6 +545,7 @@ static const std::string list_tf2 = R"(
     "fb_mimic_slot"
     "fb_always_medigun"
     "fb_autoclass"
+    "fb_follow_distance"
 ]
 
 "Miscellaneous" [
