@@ -30,7 +30,7 @@ static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovie
 
 int ClosestHitbox(CachedEntity* target) {
 	//If you can see the spine, no need to check for another hitbox
-	if (target->m_pHitboxCache->VisibilityCheck(hitbox_t::spine_3)) return hitbox_t::spine_3;
+	if (target->m_pHitboxCache->VisibilityCheck(hitbox_t::pelvis)) return hitbox_t::pelvis;
 	int closest = -1;
 	float closest_fov = 256;
 	for (int i = 0; i < target->m_pHitboxCache->GetNumHitboxes(); i++) {
@@ -586,7 +586,27 @@ int BestHitbox(CachedEntity* target) {
 		}
 		if (LOCAL_W->m_iClassID == g_pClassID->CTFSniperRifle || LOCAL_W->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
 			float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
-			if (CanHeadshot() && cdmg > target->m_iHealth || IsPlayerCritBoosted(g_pLocalPlayer->entity) && target->m_iHealth <= 150 || !g_pLocalPlayer->bZoomed) {
+			int bdmg = 50;
+			//Darwins damage correction
+			if (target->m_iMaxHealth == 150 && target->m_iClassID == tf_sniper) {
+				bdmg = (bdmg / 1.15) - 1;
+				cdmg = (cdmg / 1.15) - 1;
+			}
+			//Vaccinator damage correction
+			if (HasCondition(target, TFCond_UberBulletResist)) {
+				bdmg = (bdmg / 1.75) - 1;
+				cdmg = (cdmg / 1.75) - 1;
+			} else if (HasCondition(target, TFCond_SmallBulletResist)) {
+				bdmg = (bdmg / 1.1) - 1;
+				cdmg = (cdmg / 1.1) - 1;
+			}
+			//Invis damage correction
+			if (IsPlayerInvisible(target)) {
+				bdmg = (bdmg / 1.20) - 1;
+				cdmg = (cdmg / 1.20) - 1;
+			}
+			//If can headshot and if bodyshot kill from charge damage, or if crit boosted and they have 150 health, or if player isnt zoomed, or if the enemy has less than 40, due to darwins, and only if they have less than 150 health will it try to bodyshot
+			if (CanHeadshot() && (cdmg > target->m_iHealth || IsPlayerCritBoosted(g_pLocalPlayer->entity) || !g_pLocalPlayer->bZoomed || target->m_iHealth < bdmg)  && target->m_iHealth <= 150) {
 				preferred = ClosestHitbox(target);
 				headonly = false;
 			}
