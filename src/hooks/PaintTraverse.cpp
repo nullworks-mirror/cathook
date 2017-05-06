@@ -24,7 +24,7 @@ void* pure_orig = nullptr;
 void** pure_addr = nullptr;
 
 CatEnum software_cursor_enum({"KEEP", "ALWAYS", "NEVER", "MENU ON", "MENU OFF"});
-CatVar software_cursor_mode(software_cursor_enum, "software_cursor_mode", "1", "Software cursor", "Try to change this and see what works best for you");
+CatVar software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0", "Software cursor", "Try to change this and see what works best for you");
 
 void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	static const PaintTraverse_t original = (PaintTraverse_t)hooks::panel.GetMethod(offsets::PaintTraverse());
