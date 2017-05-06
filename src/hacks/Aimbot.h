@@ -36,6 +36,7 @@ enum class EAimbotLocalState {
 	// Aimbot can activate
 	GOOD = 0,
 	// Aimbot won't activate
+	AIMKEY_RELEASED,
 	TAUNTING, // Local player is taunting
 	CLOAKED, // Local player is cloaked, you can't shoot
 	DEAD_RINGER_OUT, // You can't shoot with DR out
@@ -97,7 +98,7 @@ extern int target_eid;
 float EffectiveTargetingRange();
 float EffectiveShootingRange();
 
-void UpdateAimkey();
+bool UpdateAimkey();
 CachedEntity* CurrentTarget();
 EAimbotTargetState TargetState(CachedEntity* entity);
 bool Aim(CachedEntity* entity);

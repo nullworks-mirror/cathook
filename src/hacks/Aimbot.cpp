@@ -139,7 +139,6 @@ void CreateMove() {
 	} else {
 		state = EAimbotState::ENABLED;
 	}
-	UpdateAimkey();
 
 	EAimbotLocalState local_state = ShouldAim();
 
@@ -284,7 +283,10 @@ bool VischeckPredictedEntity(CachedEntity* entity) {
 	AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
 	if (cd.vcheck_tick == tickcount) return cd.visible;
 	cd.vcheck_tick = tickcount;
-	cd.visible = IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity));
+	if (entity->m_Type == ENTITY_PLAYER)
+		cd.visible = IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity));
+	else
+		cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
 	return cd.visible;
 }
 
@@ -515,7 +517,7 @@ void UpdateAutoShootTimer() {
 	}
 }*/
 
-void UpdateAimkey() {
+bool UpdateAimkey() {
 	static bool aimkey_flip = false;
 	static bool pressed_last_tick = false;
 	if (aimkey && aimkey_mode) {
@@ -539,7 +541,7 @@ void UpdateAimkey() {
 		}
 		pressed_last_tick = key_down;
 	}
-	return;
+	return state != EAimbotState::INACTIVE;
 }
 
 
@@ -563,6 +565,7 @@ EAimbotLocalState ShouldAim() {
 	if (g_pLocalPlayer->using_action_slot_item) return EAimbotLocalState::ACTION_SLOT_ITEM;
 	if (CE_BYTE(g_pLocalPlayer->entity, netvar.m_bCarryingObject)) return EAimbotLocalState::CARRYING_BUILDING;
 	if (CE_BYTE(g_pLocalPlayer->entity, netvar.m_bFeignDeathReady)) return EAimbotLocalState::DEAD_RINGER_OUT;
+	if (!UpdateAimkey()) return EAimbotLocalState::AIMKEY_RELEASED;
 	if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle) {
 		if (!g_pLocalPlayer->bZoomed && !(g_pUserCmd->buttons & IN_ATTACK)) return EAimbotLocalState::NOT_ZOOMED;
 	}
