@@ -11,7 +11,9 @@
 #include <time.h>
 #include "profiler.h"
 
-CachedEntity::CachedEntity() {
+// This method of const'ing the index is weird.
+CachedEntity::CachedEntity() :
+	m_IDX(((unsigned)this - (unsigned)&entity_cache::array) / sizeof(CachedEntity)) {
 #if PROXY_ENTITY != true
 	m_pEntity = nullptr;
 #endif
@@ -31,14 +33,8 @@ IClientEntity* CachedEntity::InternalEntity() {
 	return g_IEntityList->GetClientEntity(m_IDX);
 }
 
-void EntityCache::Invalidate() {
-	delete [] m_pArray;
-	m_pArray = new CachedEntity[MAX_ENTITIES]();
-}
-
-void CachedEntity::Update(int idx) {
+void CachedEntity::Update() {
 	SEGV_BEGIN
-	m_IDX = idx;
 	if (!RAW_ENT(this)) return;
 #if PROXY_ENTITY != true
 	m_pEntity = g_IEntityList->GetClientEntity(idx);
@@ -200,28 +196,24 @@ matrix3x4_t* CachedEntity::GetBones() {
 	return m_Bones;
 }
 
-EntityCache::EntityCache() {
-	m_pArray = new CachedEntity[MAX_ENTITIES]();
-}
+namespace entity_cache {
 
-EntityCache::~EntityCache() {
-	delete [] m_pArray;
-}
+CachedEntity array[MAX_ENTITIES] {};
 
-void EntityCache::Update() {
-	m_nMax = g_IEntityList->GetHighestEntityIndex();
-	// idk that can break something i guess
-	for (int i = 0; i <= m_nMax && i < MAX_ENTITIES; i++) {
-		m_pArray[i].Update(i);
+void Update() {
+	max = g_IEntityList->GetHighestEntityIndex();
+	if (max >= MAX_ENTITIES) max = MAX_ENTITIES - 1;
+	for (int i = 0; i <= max; i++) {
+		array[i].Update();
 	}
 }
 
-CachedEntity* EntityCache::GetEntity(int idx) {
-	if (idx < 0 || idx > m_nMax) {
-		logging::Info("Requested invalid entity: %i max %i", idx, m_nMax);
+void Invalidate() {
+	for (auto& ent : array) {
+		ent.m_pEntity = nullptr;
 	}
-	//logging::Info("Request entity: %i, 0x%08x", idx, m_pArray[idx].m_pEntity);
-	return &(m_pArray[idx]);
 }
 
-EntityCache gEntityCache;
+int max = 0;
+
+}

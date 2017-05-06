@@ -43,11 +43,11 @@ struct mstudiobbox_t;
 #define CE_GOOD(entity) (!g_Settings.bInvalid && dynamic_cast<CachedEntity*>(entity) && RAW_ENT(entity) && !RAW_ENT(entity)->IsDormant())
 #define CE_BAD(entity) (!CE_GOOD(entity))
 
-#define IDX_GOOD(idx) (idx >= 0 && idx < HIGHEST_ENTITY && idx < MAX_ENTITIES)
+#define IDX_GOOD(idx) (idx >= 0 && idx <= HIGHEST_ENTITY && idx < MAX_ENTITIES)
 #define IDX_BAD(idx) !IDX_GOOD(idx)
 
-#define HIGHEST_ENTITY gEntityCache.m_nMax
-#define ENTITY(idx) gEntityCache.GetEntity(idx)
+#define HIGHEST_ENTITY (entity_cache::max)
+#define ENTITY(idx) (&entity_cache::Get(idx))
 
 struct CachedHitbox {
 	Vector min;
@@ -89,37 +89,36 @@ public:
 	CachedEntity();
 	~CachedEntity();
 
-	void Update(int idx);
+	void Update();
 
-	// Entity fields start here.
+	// Entity fields start here
+	EntityType m_Type { ENTITY_GENERIC };
 
-	EntityType m_Type;
+	int m_iClassID { 0 };
+	float m_flDistance { 0.0f };
 
-	int m_iClassID;
-	float m_flDistance;
+	bool m_bCritProjectile { false };
+	bool m_bGrenadeProjectile { false };
 
-	bool m_bCritProjectile;
-	bool m_bGrenadeProjectile;
-
-	bool m_bAnyHitboxVisible;
-	bool m_bVisCheckComplete;
+	bool m_bAnyHitboxVisible { false };
+	bool m_bVisCheckComplete { false };
 	bool IsVisible();
 
-	Vector m_vecOrigin;
+	Vector m_vecOrigin { 0 };
 
-	k_EItemType m_ItemType;
-	int  m_iTeam;
-	bool m_bAlivePlayer;
-	bool m_bEnemy;
-	int m_iMaxHealth;
-	int m_iHealth;
+	k_EItemType m_ItemType { ITEM_NONE };
+	int  m_iTeam { 0 };
+	bool m_bAlivePlayer { false };
+	bool m_bEnemy { false };
+	int m_iMaxHealth { 0 };
+	int m_iHealth { 0 };
 
-	unsigned long m_lSeenTicks;
-	unsigned long m_lLastSeen;
+	unsigned long m_lSeenTicks { 0 };
+	unsigned long m_lLastSeen { 0 };
 
-	player_info_s* m_pPlayerInfo;
-	matrix3x4_t* m_Bones;
-	bool m_bBonesSetup;
+	player_info_s* m_pPlayerInfo { nullptr };
+	matrix3x4_t* m_Bones { nullptr };
+	bool m_bBonesSetup { false };
 	matrix3x4_t* GetBones();
 
 	// Players, Buildings, Stickies
@@ -127,31 +126,29 @@ public:
 
 	// Entity fields end here.
 
-	EntityHitboxCache* m_pHitboxCache;
-	int m_IDX;
+	EntityHitboxCache* m_pHitboxCache { nullptr };
+	const int m_IDX;
 	IClientEntity* InternalEntity();
-	Vector m_vecVOrigin;
-	Vector m_vecVelocity;
-	Vector m_vecAcceleration;
-	float m_fLastUpdate;
+	Vector m_vecVOrigin { 0 };
+	Vector m_vecVelocity { 0 };
+	Vector m_vecAcceleration { 0 };
+	float m_fLastUpdate { 0.0f };
 #if PROXY_ENTITY != true || 1 // FIXME??
-	IClientEntity* m_pEntity;
+	IClientEntity* m_pEntity { nullptr };
 #endif
 };
 
-class EntityCache {
-public:
-	EntityCache();
-	~EntityCache();
+namespace entity_cache {
 
-	void Update();
-	void Invalidate();
-	CachedEntity* GetEntity(int idx);
+extern CachedEntity array[MAX_ENTITIES];
+inline CachedEntity& Get(int idx) {
+	if (idx < 0 || idx >= 2048) throw std::out_of_range("Entity index out of range!");
+	return array[idx];
+}
+void Update();
+void Invalidate();
+extern int max;
 
-	CachedEntity* m_pArray;
-	int m_nMax;
-};
-
-extern EntityCache gEntityCache;
+}
 
 #endif /* ENTITYCACHE_H_ */
