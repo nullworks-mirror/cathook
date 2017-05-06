@@ -115,6 +115,7 @@ void CreateMove() {
 	// TODO FIXME this should be moved out of here
 	IClientEntity* localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
 	if (TF && render_zoomed && localplayer) {
+		// Patchking local player
 		void** vtable = *(void***)(localplayer);
 		if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook) {
 			C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];

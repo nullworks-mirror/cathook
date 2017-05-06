@@ -132,6 +132,7 @@ static CatCommand invalidate_cookies("skinchanger_bite_cookie", "Bite Cookie", I
 
 void FrameStageNotify(int stage) {
 	if (!enabled) return;
+	if (CE_BAD(LOCAL_E)) return;
 	if (!SetRuntimeAttributeValueFn) {
 		SetRuntimeAttributeValueFn = (SetRuntimeAttributeValue_t)(gSignatures.GetClientSignature((char*)sig_SetRuntimeAttributeValue));
 		logging::Info("SetRuntimeAttributeValue: 0x%08x", SetRuntimeAttributeValueFn);

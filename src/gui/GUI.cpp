@@ -75,24 +75,9 @@ void CatGUI::ShowTooltip(std::string text) {
 	m_bShowTooltip = true;
 }
 
-static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "0", "Cursor fix");
 
 void CatGUI::Update() {
 	try {
-		if (cursor_fix_experimental) {
-			//g_ISurface->SetCursorAlwaysVisible(false);
-			if (gui_visible) {
-				g_ISurface->SetCursor(vgui::CursorCode::dc_arrow);
-				g_ISurface->UnlockCursor();
-				//g_ISurface->SetCursorAlwaysVisible(true);
-				//g_IMatSystemSurface->UnlockCursor();
-			} else {
-				g_ISurface->SetCursor(vgui::CursorCode::dc_none);
-				g_ISurface->LockCursor();
-				//g_ISurface->SetCursorAlwaysVisible(false);
-				//g_IMatSystemSurface->LockCursor();
-			}
-		}
 		CBaseWindow* root = gui_nullcore ? dynamic_cast<CBaseWindow*>(root_nullcore) : dynamic_cast<CBaseWindow*>(m_pRootWindow);
 		if (gui_nullcore) m_pRootWindow->Hide();
 		else root_nullcore->Hide();

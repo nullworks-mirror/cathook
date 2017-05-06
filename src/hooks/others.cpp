@@ -176,6 +176,8 @@ const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	return original(_this, steamID);
 }
 
+static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "0", "Cursor fix");
+
 void FrameStageNotify_hook(void* _this, int stage) {
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
@@ -197,6 +199,20 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	}
 	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+		if (cursor_fix_experimental) {
+			if (gui_visible) {
+				//g_ISurface->SetCursor(vgui::CursorCode::dc_arrow);
+				//g_ISurface->UnlockCursor();
+				g_ISurface->SetCursorAlwaysVisible(true);
+				//g_IMatSystemSurface->UnlockCursor();
+			} else {
+				//g_ISurface->SetCursor(vgui::CursorCode::dc_none);
+				//g_ISurface->LockCursor();
+				g_ISurface->SetCursorAlwaysVisible(false);
+				//g_IMatSystemSurface->LockCursor();
+			}
+		}
+		if (CE_GOOD(LOCAL_E)) RemoveCondition(LOCAL_E, TFCond_Zoomed);
 		if (glow_outline_effect->GetBool()) {
 			if (glow_enabled) {
 				for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.m_Size; i++) {

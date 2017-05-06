@@ -57,10 +57,10 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	static bool draw_flag = false;
 	bool call_default = true;
 	if (cathook && panel_scope && no_zoom && vp == panel_scope) call_default = false;
-	if (cathook) {
+	/*if (cathook) {
 		bool vis = gui_visible;
 		g_ISurface->SetCursorAlwaysVisible(vis);
-	}
+	}*/
 
 	if (software_cursor_mode) {
 		static ConVar* software_cursor = g_ICvar->FindVar("cl_software_cursor");
