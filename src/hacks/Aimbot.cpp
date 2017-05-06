@@ -260,7 +260,7 @@ void Reset() {
 const Vector& PredictEntity(CachedEntity* entity) {
 	AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
 	Vector& result = cd.aim_position;
-	if (g_GlobalVars->curtime == cd.predict_time) return result;
+	if (cd.predict_tick == tickcount) return result;
 	if ((entity->m_Type == ENTITY_PLAYER)) {
 		if (projectile_mode) {
 			result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
@@ -275,15 +275,15 @@ const Vector& PredictEntity(CachedEntity* entity) {
 	} else {
 		result = entity->m_vecOrigin;
 	}
-	cd.predict_time = g_GlobalVars->curtime;
+	cd.predict_tick = tickcount;
 	cd.fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, result);
 	return result;
 }
 
 bool VischeckPredictedEntity(CachedEntity* entity) {
 	AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
-	if (g_GlobalVars->curtime == cd.vischeck_time) return cd.vischeck_time;
-	cd.vischeck_time = g_GlobalVars->curtime;
+	if (cd.vcheck_tick == tickcount) return cd.visible;
+	cd.vcheck_tick = tickcount;
 	cd.visible = IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity));
 	return cd.visible;
 }

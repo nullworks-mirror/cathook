@@ -77,9 +77,9 @@ enum class EAimbotTargetState {
 };
 
 struct AimbotCalculatedData_s {
-	float predict_time { 0.0f };
+	unsigned long predict_tick { 0.0f };
 	Vector aim_position { 0 };
-	float vischeck_time { 0.0f };
+	unsigned long vcheck_tick { 0 };
 	bool visible { false };
 	float fov { 0 };
 	int hitbox { 0 };

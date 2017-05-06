@@ -65,7 +65,7 @@ void End() {
 
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	SEGV_BEGIN;
-
+	tickcount++;
 	g_pUserCmd = cmd;
 
 	if (TF2C && CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == g_pClassID->CTFMinigun) {

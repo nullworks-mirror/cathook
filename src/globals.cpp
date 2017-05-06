@@ -20,6 +20,7 @@ void ThirdpersonCallback(IConVar* var, const char* pOldValue, float flOldValue) 
 	}
 }
 
+unsigned long tickcount = 0;
 bool need_name_change = true;
 CatVar force_name(CV_STRING, "name", "", "Force name");
 CatVar cathook(CV_SWITCH, "enabled", "1", "CatHook enabled", "Disabling this completely disables cathook (can be re-enabled)");
