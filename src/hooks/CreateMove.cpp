@@ -112,10 +112,13 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		time_replaced = true;
 	}
 	if (g_Settings.bInvalid) {
-		gEntityCache.Invalidate();
+		entity_cache::Invalidate();
 	}
 //	PROF_BEGIN();
-	{ PROF_SECTION(EntityCache); SAFE_CALL(gEntityCache.Update()); }
+	{
+		PROF_SECTION(EntityCache);
+		SAFE_CALL(entity_cache::Update());
+	}
 //	PROF_END("Entity Cache updating");
 	SAFE_CALL(g_pPlayerResource->Update());
 	SAFE_CALL(g_pLocalPlayer->Update());
