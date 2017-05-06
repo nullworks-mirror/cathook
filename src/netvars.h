@@ -126,6 +126,8 @@ public:
 	offset_t res_iTeam;
 	offset_t m_nChargeResistType;
 	offset_t m_flChargeLevel;
+
+	offset_t m_rgflCoordinateFrame;
 };
 
 extern NetVars netvar;

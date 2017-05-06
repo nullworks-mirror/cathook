@@ -84,6 +84,7 @@ void NetVars::Init() {
 	this->iFOV = gNetvars.get_offset("DT_BasePlayer", "m_iFOV");
 	this->iDefaultFOV = gNetvars.get_offset("DT_BasePlayer", "m_iDefaultFOV");
 	this->hOwner = gNetvars.get_offset("DT_BaseCombatWeapon", "m_hOwner");
+	this->m_rgflCoordinateFrame = 0x324;
 }
 
 void InitNetVars() {
