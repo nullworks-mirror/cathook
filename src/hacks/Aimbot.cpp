@@ -30,7 +30,9 @@ static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovie
 
 int ClosestHitbox(CachedEntity* target) {
 	//If you can see the spine, no need to check for another hitbox
-	if (target->m_pHitboxCache->VisibilityCheck(hitbox_t::spine_1)) return hitbox_t::spine_1;
+    if ((int)hitbox_mode == 0) {
+        if (target->m_pHitboxCache->VisibilityCheck(hitbox_t::spine_1)) return hitbox_t::spine_1;
+    }
 	int closest = -1;
 	float closest_fov = 256;
 	for (int i = 0; i < target->m_pHitboxCache->GetNumHitboxes(); i++) {
