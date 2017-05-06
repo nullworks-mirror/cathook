@@ -95,11 +95,13 @@ static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent mess
 
 static CatCommand plus_use_action_slot_item_server("+cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
 	KeyValues* kv = new KeyValues("+use_action_slot_item_server");
+	g_pLocalPlayer->using_action_slot_item = true;
 	g_IEngine->ServerCmdKeyValues(kv);
 });
 
 static CatCommand minus_use_action_slot_item_server("-cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
 	KeyValues* kv = new KeyValues("-use_action_slot_item_server");
+	g_pLocalPlayer->using_action_slot_item = false;
 	g_IEngine->ServerCmdKeyValues(kv);
 });
 

@@ -176,6 +176,16 @@ powerup_type GetPowerupOnPlayer(CachedEntity* player) {
 	return powerup_type::not_powerup;
 }
 
+bool HasDarwins(CachedEntity* ent) {
+	if (CE_INT(ent, netvar.iClass) != tf_sniper) return false;
+	int* hweapons = (int*)((unsigned)(RAW_ENT(ent) + netvar.hMyWeapons));
+	for (int i = 0; i < 4; i++) {
+		IClientEntity* weapon = g_IEntityList->GetClientEntityFromHandle(hweapons[i]);
+		if (weapon && NET_INT(weapon, netvar.iItemDefinitionIndex) == 231) return true;
+	}
+	return false;
+}
+
 void VectorTransform (const float *in1, const matrix3x4_t& in2, float *out)
 {
 	out[0] = (in1[0] * in2[0][0] + in1[1] * in2[0][1] + in1[2] * in2[0][2]) + in2[0][3];
@@ -312,6 +322,15 @@ bool IsPlayerInvisible(CachedEntity* player) {
 		 HasCondition(player, TFCond_OnFire) || HasCondition(player, TFCond_Jarated)
 		 || HasCondition(player, TFCond_CloakFlicker) || HasCondition(player, TFCond_Milked)
 		 || HasCondition(player, TFCond_Bleeding)));
+}
+
+bool AmbassadorCanHeadshot() {
+	if (IsAmbassador(g_pLocalPlayer->weapon())) {
+		if ((g_GlobalVars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 0.95) {
+			return false;
+		}
+	}
+	return true;
 }
 
 float RandFloatRange(float min, float max)
@@ -464,10 +483,13 @@ weaponmode GetWeaponMode(CachedEntity* player) {
 	}
 	CachedEntity* weapon = (ENTITY(weapon_handle & 0xFFF));
 	if (CE_BAD(weapon)) return weaponmode::weapon_invalid;
-	if (vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon())) == 2) return weaponmode::weapon_melee;
-	if (weapon->m_iClassID == g_pClassID->CTFLunchBox ||
-		weapon->m_iClassID == g_pClassID->CTFLunchBox_Drink ||
-		weapon->m_iClassID == g_pClassID->CTFBuffItem) {
+	int slot = vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon()));
+	if (slot == 2) return weaponmode::weapon_melee;
+	if (slot > 2) {
+		return weaponmode::weapon_pda;
+	} else if (weapon->m_iClassID == g_pClassID->CTFLunchBox ||
+			weapon->m_iClassID == g_pClassID->CTFLunchBox_Drink ||
+			weapon->m_iClassID == g_pClassID->CTFBuffItem) {
 		return weaponmode::weapon_consumable;
 	} else if ( weapon->m_iClassID == g_pClassID->CTFRocketLauncher_DirectHit ||
 				weapon->m_iClassID == g_pClassID->CTFRocketLauncher ||
@@ -483,10 +505,6 @@ weaponmode GetWeaponMode(CachedEntity* player) {
 	} else if (weapon->m_iClassID == g_pClassID->CTFJar ||
 			   weapon->m_iClassID == g_pClassID->CTFJarMilk) {
 		return weaponmode::weapon_throwable;
-	} else if (weapon->m_iClassID == g_pClassID->CTFWeaponPDA_Engineer_Build ||
-			   weapon->m_iClassID == g_pClassID->CTFWeaponPDA_Engineer_Destroy ||
-			   weapon->m_iClassID == g_pClassID->CTFWeaponPDA_Spy) {
-		return weaponmode::weapon_pda;
 	} else if (weapon->m_iClassID == g_pClassID->CWeaponMedigun) {
 		return weaponmode::weapon_medigun;
 	}

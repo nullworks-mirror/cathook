@@ -128,6 +128,8 @@ public:
 	offset_t m_flChargeLevel;
 
 	offset_t m_rgflCoordinateFrame;
+	offset_t m_bFeignDeathReady;
+	offset_t m_bCarryingObject;
 };
 
 extern NetVars netvar;
