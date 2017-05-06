@@ -15,6 +15,11 @@ void LocalPlayer::Update() {
 		team = 0;
 		return;
 	}
+	holding_sniper_rifle = false;
+	CachedEntity* wep = weapon();
+	if (CE_GOOD(wep)) {
+		if (wep->m_iClassID == g_pClassID->CTFSniperRifle || wep->m_iClassID == g_pClassID->CTFSniperRifleDecap) holding_sniper_rifle = true;
+	}
 	team = CE_INT(entity, netvar.iTeamNum);
 	life_state = CE_BYTE(entity, netvar.iLifeState);
 	v_ViewOffset = CE_VECTOR(entity, netvar.vViewOffset);

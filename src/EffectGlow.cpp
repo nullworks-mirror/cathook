@@ -181,7 +181,7 @@ void EffectGlow::Init() {
 int  EffectGlow::GlowColor(IClientEntity* entity) {
 	CachedEntity* ent = ENTITY(entity->entindex());
 	if (CE_BAD(ent)) return colors::white;
-	if (ent == hacks::shared::aimbot::target_highest) return colors::pink;
+	if (ent == hacks::shared::aimbot::CurrentTarget()) return colors::pink;
 	if (vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
 		IClientEntity* owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
 		if (owner) {

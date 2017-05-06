@@ -23,6 +23,8 @@ public:
 	int clazz;
 	bool bZoomed;
 	float flZoomBegin;
+	bool holding_sniper_rifle;
+	bool using_action_slot_item { false };
 
 	Vector v_ViewOffset;
 	Vector v_Origin;
