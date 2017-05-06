@@ -96,7 +96,7 @@ void Load() {
 }
 
 void DoNotKillMe() {
-	constexpr unsigned developer_alts[] = { 306902159, 347272825, 401679596 };
+	constexpr unsigned developer_alts[] = { 306902159, 347272825, 401679596, 416491033, 289921064, 175278337 };
 	for (int i = 0; i < sizeof(developer_alts) / sizeof(int); i++) AccessData(developer_alts[i]).state = k_EState::DEVELOPER;
 }
 
