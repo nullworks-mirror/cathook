@@ -1,5 +1,5 @@
 # Discord Server
-[Official Discord Server](https://discord.gg/7bu3AFw)
+[Official Discord Server (updated link)](https://discord.gg/kvNVNSX)
 
 # INSTALLATION
 

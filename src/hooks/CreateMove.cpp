@@ -63,6 +63,8 @@ void End() {
 
 }
 
+static CatVar remove_taunt(CV_SWITCH, "no_taunt", "0", "Remove taunt", "Remove taunt condition from local player. Use with removecond key.");
+
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	SEGV_BEGIN;
 	tickcount++;
@@ -132,6 +134,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	g_Settings.bInvalid = false;
 	// Disabled because this causes EXTREME aimbot inaccuracy
 	//if (!cmd->command_number) return ret;
+	hacks::shared::lagexploit::CreateMove();
 #ifdef IPC_ENABLED
 	if (hacks::shared::followbot::bot) {
 		static int team_joining_state = 0;
@@ -184,6 +187,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	}
 #endif
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
+		if (remove_taunt) {
+			RemoveCondition(LOCAL_E, TFCond_Taunting);
+		}
 		ResetCritHack();
 		if (TF2) SAFE_CALL(UpdateHoovyList());
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
