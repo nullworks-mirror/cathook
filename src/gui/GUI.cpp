@@ -18,13 +18,14 @@
 void GUIVisibleCallback(IConVar* var, const char* pOldValue, float flOldValue) {
 	g_IInputSystem->SetCursorPosition(draw::width / 2, draw::height / 2);
 	g_ISurface->SetCursor(vgui::CursorCode::dc_none);
-	g_ISurface->SetCursorAlwaysVisible(false);
 	//g_IMatSystemSurface->SetCursorAlwaysVisible(false);
 	if (gui_visible) {
 		g_ISurface->UnlockCursor();
+		g_ISurface->SetCursorAlwaysVisible(true);
 		//g_IMatSystemSurface->UnlockCursor();
 	} else {
 		g_ISurface->LockCursor();
+		g_ISurface->SetCursorAlwaysVisible(false);
 		//g_IMatSystemSurface->LockCursor();
 	}
 }
@@ -74,6 +75,7 @@ void CatGUI::ShowTooltip(std::string text) {
 	m_bShowTooltip = true;
 }
 
+
 void CatGUI::Update() {
 	try {
 		CBaseWindow* root = gui_nullcore ? dynamic_cast<CBaseWindow*>(root_nullcore) : dynamic_cast<CBaseWindow*>(m_pRootWindow);
@@ -117,7 +119,7 @@ void CatGUI::Update() {
 							else root->OnMouseRelease();
 						}
 					} else {
-						if (i == ButtonCode_t::KEY_INSERT && down) {
+						if ((i == ButtonCode_t::KEY_INSERT || i == ButtonCode_t::KEY_F11) && down) {
 							gui_visible = !gui_visible;
 						}
 						if (Visible()) {

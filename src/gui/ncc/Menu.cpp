@@ -522,6 +522,7 @@ static const std::string list_tf2 = R"(
     "crit_hack"
     "crit_suppress"
     "crit_melee"
+    "crit_hack_experimental"
 ]
 
 "Chat" [
@@ -550,6 +551,7 @@ static const std::string list_tf2 = R"(
 
 "Miscellaneous" [
     "Miscellaneous Settings"
+    "removecond_key"
     "Spy Alert" [
         "Spy Alert Settings"
         "spyalert_enabled"

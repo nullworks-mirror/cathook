@@ -24,7 +24,7 @@ void* pure_orig = nullptr;
 void** pure_addr = nullptr;
 
 CatEnum software_cursor_enum({"KEEP", "ALWAYS", "NEVER", "MENU ON", "MENU OFF"});
-CatVar software_cursor_mode(software_cursor_enum, "software_cursor_mode", "1", "Software cursor", "Try to change this and see what works best for you");
+CatVar software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0", "Software cursor", "Try to change this and see what works best for you");
 
 void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	static const PaintTraverse_t original = (PaintTraverse_t)hooks::panel.GetMethod(offsets::PaintTraverse());
@@ -57,10 +57,10 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	static bool draw_flag = false;
 	bool call_default = true;
 	if (cathook && panel_scope && no_zoom && vp == panel_scope) call_default = false;
-	if (cathook) {
+	/*if (cathook) {
 		bool vis = gui_visible;
 		g_ISurface->SetCursorAlwaysVisible(vis);
-	}
+	}*/
 
 	if (software_cursor_mode) {
 		static ConVar* software_cursor = g_ICvar->FindVar("cl_software_cursor");
@@ -136,7 +136,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 #if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
 		AddSideString("Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE, GUIColor());
 #endif
-		AddSideString("Press 'INSERT' key to open/close cheat menu.", GUIColor());
+		AddSideString("Press 'INSERT' or 'F11' key to open/close cheat menu.", GUIColor());
 		AddSideString("Use mouse to navigate in menu.", GUIColor());
 		if (!g_IEngine->IsInGame() || g_pGUI->Visible()) {
 			std::string name(force_name.GetString());

@@ -81,6 +81,8 @@ char* strfmt(const char* fmt, ...);
 void ReplaceString(char* target, char* what, char* with_what);
 // TODO move that to weaponid.h
 bool IsAmbassador(CachedEntity* ent);
+bool HasDarwins(CachedEntity* ent);
+bool AmbassadorCanHeadshot();
 
 void WhatIAmLookingAt(int* result_eindex, Vector* result_pos);
 

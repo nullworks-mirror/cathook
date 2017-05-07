@@ -116,6 +116,7 @@ void CreateInterfaces() {
 	else if (HL2DM)  g_IInput = **(reinterpret_cast<IInput***>((uintptr_t)1 + gSignatures.GetClientSignature("A1 ? ? ? ? 8B 10 89 04 24 FF 52 78 A1 ? ? ? ? 8B 10")));
 	g_ISteamUser = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
 	g_IBaseClientState = *(reinterpret_cast<CBaseClientState**>(gSignatures.GetEngineSignature("55 89 E5 83 EC 18 C7 44 24 04 01 00 00 00 C7 04 24 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ? 85 C0 74 15 A1 ? ? ? ? 8B 10 89 04 24 FF 52 38 C9 C3") + 17));
+	logging::Info("BaseClientState: 0x%08x", g_IBaseClientState);
 	g_IAchievementMgr = g_IEngine->GetAchievementMgr();
 	g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
 }

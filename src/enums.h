@@ -58,6 +58,13 @@ enum tf_class {
 	tf_engineer
 };
 
+enum MinigunState_t {
+	AC_STATE_IDLE = 0,
+    AC_STATE_STARTFIRING,
+    AC_STATE_FIRING,
+    AC_STATE_SPINNING
+};
+
 enum weaponmode {
 	weapon_invalid = -1,
 	weapon_hitscan = 0,

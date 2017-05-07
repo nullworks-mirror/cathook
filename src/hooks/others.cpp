@@ -62,7 +62,7 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 bool CanPacket_hook(void* _this) {
 	const CanPacket_t original = (CanPacket_t)hooks::netchannel.GetMethod(offsets::CanPacket());
 	SEGV_BEGIN;
-	return send_packets && original(_this);
+	return *bSendPackets && original(_this);
 	SEGV_END;
 	return false;
 }
@@ -71,12 +71,17 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 	static const GetUserCmd_t original = (GetUserCmd_t)hooks::input.GetMethod(offsets::GetUserCmd());
 	CUserCmd* def = original(_this, sequence_number);
 	if (def && command_number_mod.find(def->command_number) != command_number_mod.end()) {
-		logging::Info("Replacing command %i with %i", def->command_number, command_number_mod[def->command_number]);
+		//logging::Info("Replacing command %i with %i", def->command_number, command_number_mod[def->command_number]);
 		int oldcmd = def->command_number;
 		def->command_number = command_number_mod[def->command_number];
 		def->random_seed = MD5_PseudoRandom(def->command_number) & 0x7fffffff;
 		command_number_mod.erase(command_number_mod.find(oldcmd));
+		*(int*)((unsigned)g_IBaseClientState + offsets::lastoutgoingcommand()) = def->command_number - 1;
+		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();//*(INetChannel**)((unsigned)g_IBaseClientState + offsets::m_NetChannel());
+		int& m_nOutSequenceNr = *(int*)((unsigned)ch + offsets::m_nOutSequenceNr());
+		m_nOutSequenceNr = def->command_number - 1;
 	}
+	hacks::shared::lagexploit::GetUserCmd(def, sequence_number);
 	return def;
 }
 
@@ -95,11 +100,13 @@ static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent mess
 
 static CatCommand plus_use_action_slot_item_server("+cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
 	KeyValues* kv = new KeyValues("+use_action_slot_item_server");
+	g_pLocalPlayer->using_action_slot_item = true;
 	g_IEngine->ServerCmdKeyValues(kv);
 });
 
 static CatCommand minus_use_action_slot_item_server("-cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
 	KeyValues* kv = new KeyValues("-use_action_slot_item_server");
+	g_pLocalPlayer->using_action_slot_item = false;
 	g_IEngine->ServerCmdKeyValues(kv);
 });
 
@@ -174,6 +181,8 @@ const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	return original(_this, steamID);
 }
 
+static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "0", "Cursor fix");
+
 void FrameStageNotify_hook(void* _this, int stage) {
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
@@ -195,6 +204,20 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	}
 	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+		if (cursor_fix_experimental) {
+			if (gui_visible) {
+				//g_ISurface->SetCursor(vgui::CursorCode::dc_arrow);
+				//g_ISurface->UnlockCursor();
+				g_ISurface->SetCursorAlwaysVisible(true);
+				//g_IMatSystemSurface->UnlockCursor();
+			} else {
+				//g_ISurface->SetCursor(vgui::CursorCode::dc_none);
+				//g_ISurface->LockCursor();
+				g_ISurface->SetCursorAlwaysVisible(false);
+				//g_IMatSystemSurface->LockCursor();
+			}
+		}
+		if (CE_GOOD(LOCAL_E)) RemoveCondition(LOCAL_E, TFCond_Zoomed);
 		if (glow_outline_effect->GetBool()) {
 			if (glow_enabled) {
 				for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.m_Size; i++) {

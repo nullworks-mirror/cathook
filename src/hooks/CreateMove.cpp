@@ -65,7 +65,7 @@ void End() {
 
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	SEGV_BEGIN;
-
+	tickcount++;
 	g_pUserCmd = cmd;
 
 	if (TF2C && CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == g_pClassID->CTFMinigun) {
@@ -100,6 +100,13 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		hooks::netchannel.HookMethod((void*)Shutdown_hook, offsets::Shutdown());
 		hooks::netchannel.Apply();
 	}
+
+	/**bSendPackets = true;
+	if (hacks::shared::lagexploit::ExploitActive()) {
+		*bSendPackets = ((g_pUserCmd->command_number % 4) == 0);
+		//logging::Info("%d", *bSendPackets);
+	}*/
+
 	//logging::Info("canpacket: %i", ch->CanPacket());
 	//if (!cmd) return ret;
 
@@ -112,10 +119,13 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		time_replaced = true;
 	}
 	if (g_Settings.bInvalid) {
-		gEntityCache.Invalidate();
+		entity_cache::Invalidate();
 	}
 //	PROF_BEGIN();
-	{ PROF_SECTION(EntityCache); SAFE_CALL(gEntityCache.Update()); }
+	{
+		PROF_SECTION(EntityCache);
+		SAFE_CALL(entity_cache::Update());
+	}
 //	PROF_END("Entity Cache updating");
 	SAFE_CALL(g_pPlayerResource->Update());
 	SAFE_CALL(g_pLocalPlayer->Update());

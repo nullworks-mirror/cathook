@@ -11,6 +11,9 @@
 #include "copypasted/CSignature.h"
 #include <link.h>
 
+
+CatVar experimental_crit_hack(CV_KEY, "crit_hack_experimental", "0", "Unstable Crit Hack", "Experimental crit hack, use this **OR** old crit hack, do not use both!\nNEEDS NEXT CRIT INFO TO BE ACTIVE!");
+
 std::unordered_map<int, int> command_number_mod {};
 
 int* g_PredictionRandomSeed = nullptr;

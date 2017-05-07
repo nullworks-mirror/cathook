@@ -52,6 +52,7 @@
 #include <vgui/Cursor.h>
 #include <engine/ivdebugoverlay.h>
 #include <iprediction.h>
+#include <engine/ICollideable.h>
 
 #include "sdk/in_buttons.h"
 #include "sdk/imaterialsystemfixed.h"

@@ -39,6 +39,8 @@ void NetVars::Init() {
 		this->m_flStealthNoAttackExpire = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "tfsharedlocaldata", "m_flStealthNoAttackExpire");
 		this->m_nChargeResistType = gNetvars.get_offset("DT_WeaponMedigun", "m_nChargeResistType");
 		this->m_flChargeLevel = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
+		m_bFeignDeathReady = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bFeignDeathReady");
+		m_bCarryingObject = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bCarryingObject");
 	}
 	if (TF2 || TF2C) {
 		this->res_iMaxHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");
@@ -84,6 +86,7 @@ void NetVars::Init() {
 	this->iFOV = gNetvars.get_offset("DT_BasePlayer", "m_iFOV");
 	this->iDefaultFOV = gNetvars.get_offset("DT_BasePlayer", "m_iDefaultFOV");
 	this->hOwner = gNetvars.get_offset("DT_BaseCombatWeapon", "m_hOwner");
+	this->m_rgflCoordinateFrame = 0x324;
 }
 
 void InitNetVars() {
