@@ -94,7 +94,6 @@ void Reset();
 
 extern EAimbotState state;
 extern int target_eid;
-extern bool instant_rezoom_shoot;
 
 float EffectiveTargetingRange();
 float EffectiveShootingRange();

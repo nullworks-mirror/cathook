@@ -438,9 +438,6 @@ void slowAim(Vector &inputAngle, Vector userAngle) {
     if (changey < (0.02*(int)slowaim_autoshoot) && changex < (0.02*(int)slowaim_autoshoot)) slowCanShoot = true;
 }
 
-static CatVar instant_rezoom_enabled(CV_SWITCH, "aimbot_instant_rezoom_enabled", "0", "Instant rezoom", "Allows you to instantly zoom after you shoot\nGreat for pre-charging charged shots");
-bool instant_rezoom_shoot = false;
-
 bool Aim(CachedEntity* entity) {
 	state = EAimbotState::AIMING;
 	//logging::Info("Aiming!");
@@ -496,15 +493,7 @@ bool Aim(CachedEntity* entity) {
 
         if ( attack ) {
         	g_pUserCmd->buttons |= IN_ATTACK;
-
         }
-
-		//Tell reset conds to function
-		if (instant_rezoom_enabled) {
-			if (attack && g_pLocalPlayer->bZoomed && !instant_rezoom_shoot) {
-				instant_rezoom_shoot = true;
-			}
-		}
         
 	}
 	return true;
