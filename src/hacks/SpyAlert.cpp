@@ -25,20 +25,24 @@ float last_say = 0.0f;
 
 
 void Draw() {
+	static CachedEntity *closest_spy, *ent;
+	static float closest_spy_distance, distance;
+	static int spy_count;
+
 	if (!enabled) return;
 	if (g_pLocalPlayer->life_state) return;	
-	CachedEntity* closest_spy = nullptr;
-	float closest_spy_distance = 0.0f;
-	int spy_count = 0;
+	closest_spy = nullptr;
+	closest_spy_distance = 0.0f;
+	spy_count = 0;
 	if (last_say > g_GlobalVars->curtime) last_say = 0;
 	for (int i = 0; i < HIGHEST_ENTITY && i < 64; i++) {
-		CachedEntity* ent = ENTITY(i);
+		ent = ENTITY(i);
 		if (CE_BAD(ent)) continue;
 		if (CE_BYTE(ent, netvar.iLifeState)) continue;
 		if (CE_INT(ent, netvar.iClass) != tf_class::tf_spy) continue;
 		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team) continue;
 		if (IsPlayerInvisible(ent)) continue;
-		float distance = ent->m_flDistance;
+		distance = ent->m_flDistance;
 		if (distance < closest_spy_distance || !closest_spy_distance) {
 			closest_spy_distance = distance;
 			closest_spy = ent;
