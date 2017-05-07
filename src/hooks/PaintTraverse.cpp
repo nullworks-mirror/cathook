@@ -136,7 +136,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 #if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
 		AddSideString("Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE, GUIColor());
 #endif
-		AddSideString("Press 'INSERT' key to open/close cheat menu.", GUIColor());
+		AddSideString("Press 'INSERT' or 'F11' key to open/close cheat menu.", GUIColor());
 		AddSideString("Use mouse to navigate in menu.", GUIColor());
 		if (!g_IEngine->IsInGame() || g_pGUI->Visible()) {
 			std::string name(force_name.GetString());

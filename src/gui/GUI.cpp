@@ -119,7 +119,7 @@ void CatGUI::Update() {
 							else root->OnMouseRelease();
 						}
 					} else {
-						if (i == ButtonCode_t::KEY_INSERT && down) {
+						if ((i == ButtonCode_t::KEY_INSERT || i == ButtonCode_t::KEY_F11) && down) {
 							gui_visible = !gui_visible;
 						}
 						if (Visible()) {
