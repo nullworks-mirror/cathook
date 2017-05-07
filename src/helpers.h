@@ -72,7 +72,7 @@ bool LineIntersectsBox(Vector& bmin, Vector& bmax, Vector& lmin, Vector& lmax);
 
 float DistToSqr(CachedEntity* entity);
 void fClampAngle(Vector& qaAng);
-void fVectorAngles(Vector &forward, Vector &angles);
+void VectorAngles(Vector &forward, Vector &angles);
 //const char* MakeInfoString(IClientEntity* player);
 bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity);
 bool IsVectorVisible(Vector a, Vector b);
