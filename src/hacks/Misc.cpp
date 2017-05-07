@@ -120,7 +120,7 @@ typedef int(*StartSceneEvent_t)(IClientEntity* _this, int, int, void*, void*, IC
 StartSceneEvent_t StartSceneEvent_original = nullptr;
 int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene, void* choreoEvent, void* choreoActor, IClientEntity* unknown) {
 	const char* str = (const char*)((unsigned)choreoScene + 396);
-	if (spycrab_mode && CE_GOOD(LOCAL_W) && LOCAL_W->m_iClassID == g_pClassID->CTFWeaponPDA_Spy) {
+	if (_this == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && spycrab_mode && CE_GOOD(LOCAL_W) && LOCAL_W->m_iClassID == g_pClassID->CTFWeaponPDA_Spy) {
 		if (!strcmp(str, "scenes/player/spy/low/taunt05.vcd")) {
 			if ((int)spycrab_mode == 2) {
 				RemoveCondition(LOCAL_E, TFCond_Taunting);
