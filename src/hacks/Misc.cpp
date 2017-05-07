@@ -109,11 +109,53 @@ static IClientEntity* found_crit_weapon = nullptr;
 static int found_crit_number = 0;
 static int last_number = 0;
 
+// SUPER SECRET CODE DONOT STEEL
+
+static CatEnum spycrab_mode_enum({"DISABLED", "FORCE CRAB", "FORCE NON-CRAB"});
+static CatVar spycrab_mode(spycrab_mode_enum, "spycrab", "0", "Spycrab", "Defines spycrab taunting mode");
+
+int no_taunt_ticks = 0;
+
+typedef int(*StartSceneEvent_t)(IClientEntity* _this, int, int, void*, void*, IClientEntity*);
+StartSceneEvent_t StartSceneEvent_original = nullptr;
+int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene, void* choreoEvent, void* choreoActor, IClientEntity* unknown) {
+	const char* str = (const char*)((unsigned)choreoScene + 396);
+	if (_this == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && spycrab_mode && CE_GOOD(LOCAL_W) && LOCAL_W->m_iClassID == g_pClassID->CTFWeaponPDA_Spy) {
+		if (!strcmp(str, "scenes/player/spy/low/taunt05.vcd")) {
+			if ((int)spycrab_mode == 2) {
+				RemoveCondition(LOCAL_E, TFCond_Taunting);
+				no_taunt_ticks = 6;
+				hacks::shared::lagexploit::AddExploitTicks(15);
+			}
+		} else if (strstr(str, "scenes/player/spy/low/taunt")) {
+			if ((int)spycrab_mode == 1) {
+				RemoveCondition(LOCAL_E, TFCond_Taunting);
+				no_taunt_ticks = 6;
+				hacks::shared::lagexploit::AddExploitTicks(15);
+			}
+		}
+	}
+	return StartSceneEvent_original(_this, sceneInfo, choreoScene, choreoEvent, choreoActor, unknown);
+}
+
 void CreateMove() {
 	static bool flswitch = false;
-
+	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
+		RemoveCondition(LOCAL_E, TFCond_Taunting);
+		no_taunt_ticks--;
+	}
 	// TODO FIXME this should be moved out of here
 	IClientEntity* localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+	if (localplayer && spycrab_mode) {
+		void** vtable = *(void***)(localplayer);
+		if (vtable[0x111] != StartSceneEvent_hooked) {
+			StartSceneEvent_original = (StartSceneEvent_t)vtable[0x111];
+			void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
+			mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
+			vtable[0x111] = (void*)StartSceneEvent_hooked;
+			mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
+		}
+	}
 	if (TF && render_zoomed && localplayer) {
 		// Patchking local player
 		void** vtable = *(void***)(localplayer);
@@ -258,6 +300,9 @@ void Draw() {
 	if (!debug_info) return;
 		if (CE_GOOD(g_pLocalPlayer->weapon())) {
 			AddSideString(format("Slot: ", vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon()))));
+			AddSideString(format("Taunt Concept: ", CE_INT(LOCAL_E, netvar.m_iTauntConcept)));
+			AddSideString(format("Taunt Index: ", CE_INT(LOCAL_E, netvar.m_iTauntIndex)));
+			AddSideString(format("Sequence: ", CE_INT(LOCAL_E, netvar.m_nSequence)));
 			/*AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
 			//AddSideString(colors::white, "flNextPrimaryAttack: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));
 			//AddSideString(colors::white, "nTickBase: %f", (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * gvars->interval_per_tick);

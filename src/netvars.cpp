@@ -41,6 +41,9 @@ void NetVars::Init() {
 		this->m_flChargeLevel = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
 		m_bFeignDeathReady = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bFeignDeathReady");
 		m_bCarryingObject = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bCarryingObject");
+		m_nSequence = gNetvars.get_offset("DT_BaseAnimating", "m_nSequence");
+		m_iTauntIndex = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntIndex");
+		m_iTauntConcept = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntConcept");
 	}
 	if (TF2 || TF2C) {
 		this->res_iMaxHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");

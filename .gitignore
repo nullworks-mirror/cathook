@@ -3,3 +3,5 @@
 /bin/*
 !res/bin/*
 /core
+Debug/
+.vs/cathook/v15/Browse.VC.db

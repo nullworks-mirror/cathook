@@ -130,6 +130,10 @@ public:
 	offset_t m_rgflCoordinateFrame;
 	offset_t m_bFeignDeathReady;
 	offset_t m_bCarryingObject;
+
+	offset_t m_iTauntConcept;
+	offset_t m_iTauntIndex;
+	offset_t m_nSequence;
 };
 
 extern NetVars netvar;
