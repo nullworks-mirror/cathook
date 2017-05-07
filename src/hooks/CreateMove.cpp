@@ -100,6 +100,13 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		hooks::netchannel.HookMethod((void*)Shutdown_hook, offsets::Shutdown());
 		hooks::netchannel.Apply();
 	}
+
+	/**bSendPackets = true;
+	if (hacks::shared::lagexploit::ExploitActive()) {
+		*bSendPackets = ((g_pUserCmd->command_number % 4) == 0);
+		//logging::Info("%d", *bSendPackets);
+	}*/
+
 	//logging::Info("canpacket: %i", ch->CanPacket());
 	//if (!cmd) return ret;
 

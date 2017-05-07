@@ -20,7 +20,7 @@ extern unsigned long tickcount;
 
 extern CatVar cathook; // Master switch
 extern CatVar ignore_taunting;
-extern CatVar send_packets;
+extern bool* bSendPackets;
 extern CatVar show_antiaim;
 extern CatVar force_thirdperson;
 extern CatVar console_logging;

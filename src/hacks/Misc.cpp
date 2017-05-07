@@ -48,7 +48,7 @@ bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
 	}
 }
 
-static CatVar crit_hack_experimental(CV_SWITCH, "crit_hack_next", "0", "Next crit info");
+static CatVar crit_hack_next(CV_SWITCH, "crit_hack_next", "0", "Next crit info");
 
 void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char* ft, unsigned acc_offset) {
 	bool forcetable = ft && strlen(ft);
@@ -135,11 +135,23 @@ void CreateMove() {
 	if (TF2C && tauntslide)
 		RemoveCondition(LOCAL_E, TFCond_Taunting);
 
+	static int critWarmup = 0;
+
 	if (g_pUserCmd->command_number && found_crit_number > g_pUserCmd->command_number + 66 * 20) found_crit_number = 0;
 	if (g_pUserCmd->command_number) last_number = g_pUserCmd->command_number;
-	if (crit_hack_experimental && TF2 && CE_GOOD(LOCAL_W)) {
+	if (crit_hack_next && TF2 && CE_GOOD(LOCAL_W)) {
 		IClientEntity* weapon = RAW_ENT(LOCAL_W);
 		if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
+			if (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack))) {
+				if (!g_pUserCmd->command_number || critWarmup < 8) {
+					if (g_pUserCmd->buttons & IN_ATTACK) {
+						critWarmup++;
+					} else {
+						critWarmup = 0;
+					}
+					g_pUserCmd->buttons &= ~(IN_ATTACK);
+				}
+			}
 			if (g_pUserCmd->command_number && (found_crit_weapon != weapon || found_crit_number < g_pUserCmd->command_number)) {
 				if (!g_PredictionRandomSeed) {
 					uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
@@ -148,7 +160,7 @@ void CreateMove() {
 				int tries = 0;
 				int cmdn = g_pUserCmd->command_number;
 				bool chc = false;
-				crithack_saved_state state;
+				static crithack_saved_state state;
 				state.Save(weapon);
 				while (!chc && tries < 4096) {
 					int md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
@@ -171,7 +183,10 @@ void CreateMove() {
 					found_crit_weapon = weapon;
 					found_crit_number = cmdn;
 					//logging::Info("Found crit at: %i, original: %i", cmdn, g_pUserCmd->command_number);
-					//command_number_mod[g_pUserCmd->command_number] = cmdn;
+					if (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack))) {
+						//if (g_pUserCmd->buttons & IN_ATTACK)
+							command_number_mod[g_pUserCmd->command_number] = cmdn;
+					}
 					//*(int*)(sharedobj::engine->Pointer(0x00B6C91C)) = cmdn - 1;
 				}
 				//if (!crits) *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u) = bucket;
@@ -232,7 +247,7 @@ void Draw() {
 					AddCenterString("Weapon can randomly crit");
 			}
 			AddCenterString(format("Bucket: ", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u)));
-			if (crit_hack_experimental && found_crit_number > last_number && found_crit_weapon == RAW_ENT(LOCAL_W)) {
+			if (crit_hack_next && found_crit_number > last_number && found_crit_weapon == RAW_ENT(LOCAL_W)) {
 				AddCenterString(format("Next crit in: ", roundf(((found_crit_number - last_number) / 66.0f) * 10.0f) / 10.0f, 's'));
 			}
 			//AddCenterString(format("Time: ", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2872u)));

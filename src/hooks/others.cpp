@@ -62,7 +62,7 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 bool CanPacket_hook(void* _this) {
 	const CanPacket_t original = (CanPacket_t)hooks::netchannel.GetMethod(offsets::CanPacket());
 	SEGV_BEGIN;
-	return send_packets && original(_this);
+	return *bSendPackets && original(_this);
 	SEGV_END;
 	return false;
 }
@@ -71,12 +71,17 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 	static const GetUserCmd_t original = (GetUserCmd_t)hooks::input.GetMethod(offsets::GetUserCmd());
 	CUserCmd* def = original(_this, sequence_number);
 	if (def && command_number_mod.find(def->command_number) != command_number_mod.end()) {
-		logging::Info("Replacing command %i with %i", def->command_number, command_number_mod[def->command_number]);
+		//logging::Info("Replacing command %i with %i", def->command_number, command_number_mod[def->command_number]);
 		int oldcmd = def->command_number;
 		def->command_number = command_number_mod[def->command_number];
 		def->random_seed = MD5_PseudoRandom(def->command_number) & 0x7fffffff;
 		command_number_mod.erase(command_number_mod.find(oldcmd));
+		*(int*)((unsigned)g_IBaseClientState + offsets::lastoutgoingcommand()) = def->command_number - 1;
+		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();//*(INetChannel**)((unsigned)g_IBaseClientState + offsets::m_NetChannel());
+		int& m_nOutSequenceNr = *(int*)((unsigned)ch + offsets::m_nOutSequenceNr());
+		m_nOutSequenceNr = def->command_number - 1;
 	}
+	hacks::shared::lagexploit::GetUserCmd(def, sequence_number);
 	return def;
 }
 

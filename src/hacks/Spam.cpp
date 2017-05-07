@@ -222,7 +222,7 @@ void Reload() {
 const std::vector<std::string> builtin_default = {
 		"cathook - more fun than a ball of yarn!",
 		"GNU/Linux is the best OS!",
-		"get cathook: discord.gg/7bu3AFw",
+		"visit youtube.com/c/nullifiedcat for more information!",
 		"cathook - free tf2 cheat!",
 		"cathook - ca(n)t stop me meow!"
 };

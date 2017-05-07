@@ -35,6 +35,8 @@ void LoadSavedState();
 #include "beforecheaders.h"
 #include <unordered_map>
 #include "aftercheaders.h"
+class CatVar;
+extern CatVar experimental_crit_hack;
 
 extern int* g_PredictionRandomSeed;
 extern std::unordered_map<int, int> command_number_mod;
