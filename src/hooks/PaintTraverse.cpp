@@ -123,7 +123,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	if (!draw_flag) return;
 	draw_flag = false;
 
-	{
+	if (!hack::command_stack().empty()) {
 		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
 		while (!hack::command_stack().empty()) {
 			logging::Info("executing %s", hack::command_stack().top().c_str());

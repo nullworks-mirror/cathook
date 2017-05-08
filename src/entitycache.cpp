@@ -43,7 +43,6 @@ void CachedEntity::Update() {
 	}
 #endif
 	m_iClassID = RAW_ENT(this)->GetClientClass()->m_ClassID;
-	Vector origin = RAW_ENT(this)->GetAbsOrigin();
 	//if (TF2 && EstimateAbsVelocity) EstimateAbsVelocity(m_pEntity, m_vecVelocity);
 	/*if ((gvars->realtime - m_fLastUpdate) >= 0.05f) {
 		//if (gvars->tickcount - m_nLastTick > 1) {
@@ -59,7 +58,7 @@ void CachedEntity::Update() {
 		m_vecVOrigin = origin;
 		m_fLastUpdate = gvars->realtime;
 	}*/
-	m_vecOrigin = origin;
+	m_vecOrigin = RAW_ENT(this)->GetAbsOrigin();
 
 	m_ItemType = ITEM_NONE;
 
@@ -148,10 +147,13 @@ void CachedEntity::Update() {
 static CatVar fast_vischeck(CV_SWITCH, "fast_vischeck", "0", "Fast VisCheck", "VisCheck only certain player hitboxes");
 
 bool CachedEntity::IsVisible() {
+	static const int hitboxes[] = { hitbox_t::head, hitbox_t::foot_L, hitbox_t::hand_R, hitbox_t::spine_1 };
+	static bool vischeck0, vischeck;
+
 	PROF_SECTION(CE_IsVisible);
 	if (m_bVisCheckComplete) return m_bAnyHitboxVisible;
 
-	bool vischeck0 = false;
+	vischeck0 = false;
 	SAFE_CALL(vischeck0 = IsEntityVectorVisible(this, m_vecOrigin));
 
 	if (vischeck0) {
@@ -161,7 +163,6 @@ bool CachedEntity::IsVisible() {
 	}
 
 	if (m_Type == ENTITY_PLAYER && fast_vischeck) {
-		static const int hitboxes[] = { hitbox_t::head, hitbox_t::foot_L, hitbox_t::hand_R, hitbox_t::spine_1 };
 		for (int i = 0; i < 4; i++) {
 			if (m_pHitboxCache->VisibilityCheck(hitboxes[i])) {
 				m_bAnyHitboxVisible = true;
@@ -175,7 +176,7 @@ bool CachedEntity::IsVisible() {
 	}
 
 	for (int i = 0; i < m_pHitboxCache->m_nNumHitboxes; i++) {
-		bool vischeck = false;
+		vischeck = false;
 		SAFE_CALL(vischeck = m_pHitboxCache->VisibilityCheck(i));
 		if (vischeck) {
 			m_bAnyHitboxVisible = true;
