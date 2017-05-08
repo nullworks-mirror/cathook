@@ -307,8 +307,6 @@ void Draw() {
 			AddSideString(format("Taunt Concept: ", CE_INT(LOCAL_E, netvar.m_iTauntConcept)));
 			AddSideString(format("Taunt Index: ", CE_INT(LOCAL_E, netvar.m_iTauntIndex)));
 			AddSideString(format("Sequence: ", CE_INT(LOCAL_E, netvar.m_nSequence)));
-			static int last_cmd_number = 0;
-			if (g_pUserCmd && g_pUserCmd->command_number) last_cmd_number = g_pUserCmd->command_number;
 			if (g_pUserCmd) AddSideString(format("command_number: ", last_cmd_number));
 			/*AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
 			//AddSideString(colors::white, "flNextPrimaryAttack: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));

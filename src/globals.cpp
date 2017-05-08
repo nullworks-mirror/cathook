@@ -22,6 +22,7 @@ void ThirdpersonCallback(IConVar* var, const char* pOldValue, float flOldValue) 
 
 unsigned long tickcount = 0;
 bool need_name_change = true;
+int last_cmd_number = 0;
 CatVar force_name(CV_STRING, "name", "", "Force name");
 CatVar cathook(CV_SWITCH, "enabled", "1", "CatHook enabled", "Disabling this completely disables cathook (can be re-enabled)");
 CatVar ignore_taunting(CV_SWITCH, "ignore_taunting", "1", "Ignore taunting", "Aimbot/Triggerbot won't attack taunting enemies");

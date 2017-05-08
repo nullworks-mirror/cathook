@@ -553,6 +553,10 @@ static const std::string list_tf2 = R"(
 "Miscellaneous" [
     "Miscellaneous Settings"
     "removecond_key"
+    "removecond_fire"
+    "removecond_taunt"
+    "removecond_bleeding"
+    "removecond_stun"
     "spycrab"
     "Spy Alert" [
         "Spy Alert Settings"

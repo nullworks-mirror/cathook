@@ -63,8 +63,6 @@ void End() {
 
 }
 
-static CatVar remove_taunt(CV_SWITCH, "no_taunt", "0", "Remove taunt", "Remove taunt condition from local player. Use with removecond key.");
-
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	static CreateMove_t original_method = (CreateMove_t)hooks::clientmode.GetMethod(offsets::CreateMove());
 	static bool time_replaced, ret, speedapplied;
@@ -98,6 +96,8 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	}
 
 //	PROF_BEGIN();
+
+	if (g_pUserCmd && g_pUserCmd->command_number) last_cmd_number = g_pUserCmd->command_number;
 
 	ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
 	if (ch && !hooks::IsHooked((void*)ch)) {
@@ -195,9 +195,6 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	}
 #endif
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
-		if (remove_taunt) {
-			RemoveCondition(LOCAL_E, TFCond_Taunting);
-		}
 		ResetCritHack();
 		if (TF2) SAFE_CALL(UpdateHoovyList());
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
