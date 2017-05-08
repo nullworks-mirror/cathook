@@ -15,8 +15,8 @@ namespace hacks { namespace shared { namespace antiaim {
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim", "Master AntiAim switch");
 CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
 CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch", "Static pitch (up/down)", -89.0, 89.0);
-CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM", "SPIN", "OFFSETKEEP", "EDGE" });
-CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP", "FAKEFLIP", "FAKEUP", "FAKEDOWN", "UP", "DOWN" });
+CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM", "SPIN", "OFFSETKEEP", "EDGE", "HECK" });
+CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP", "FAKEFLIP", "FAKEUP", "FAKEDOWN", "UP", "DOWN", "HECK" });
 CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "0", "Yaw mode", "Yaw mode");
 CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "0", "Pitch mode", "Pitch mode");
 CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll", "Roll angle (viewangles.z)", -180, 180);
@@ -85,6 +85,73 @@ void UpdateAAAATimer() {
 			aaaa_timer = GetAAAATimerLength();
 		}
 	}
+}
+
+enum k_EFuckMode {
+	FM_INCREMENT,
+	FM_RANDOMVARS,
+	FM_JITTER,
+	FM_SIGNFLIP,
+	FM_COUNT
+};
+
+struct FuckData_s {
+	float fl1, fl2, fl3, fl4;
+	int i1, i2;
+	bool b1, b2;
+};
+
+/*
+ * Not yet implemented.
+ */
+
+void FuckPitch(float& io_pitch) {
+	constexpr float min_pitch = -149489.97f;
+	constexpr float max_pitch =  149489.97f;
+	static FuckData_s fuck_data;
+	static k_EFuckMode fuckmode = k_EFuckMode::FM_RANDOMVARS;
+	static int fuckmode_ticks = 0;
+
+	/*if (!fuckmode_ticks) {
+		fuckmode = rand() % k_EFuckMode::FM_COUNT;
+		fuckmode_ticks = rand() % 333;
+		switch (fuckmode) {
+		case k_EFuckMode::FM_INCREMENT:
+			fuck_data.fl1 = RandFloatRange(-400.0f, 400.0f);
+			fuck_data.i1 = rand() % 3;
+			break;
+		case k_EFuckMode::FM_JITTER:
+			fuck_data.fl1 = RandFloatRange(1.0f, 4.0f);
+			break;
+		case k_EFuckMode::FM_RANDOMVARS:
+			break;
+		}
+	}*/
+
+	switch (fuckmode) {
+	case k_EFuckMode::FM_RANDOMVARS:
+		io_pitch = RandFloatRange(min_pitch, max_pitch);
+	}
+
+	if (io_pitch < min_pitch) io_pitch = min_pitch;
+	if (io_pitch > max_pitch) io_pitch = max_pitch;
+}
+
+void FuckYaw(float& io_yaw) {
+	constexpr float min_yaw = -359999.97f;
+	constexpr float max_yaw =  359999.97f;
+
+	static FuckData_s fuck_data;
+	static k_EFuckMode fuckmode = k_EFuckMode::FM_RANDOMVARS;
+	static int fuckmode_ticks = 0;
+
+	switch (fuckmode) {
+	case k_EFuckMode::FM_RANDOMVARS:
+		io_yaw = RandFloatRange(min_yaw, max_yaw);
+	}
+
+	if (io_yaw < min_yaw) io_yaw = min_yaw;
+	if (io_yaw > max_yaw) io_yaw = max_yaw;
 }
 
 void SetSafeSpace(int safespace) {
@@ -242,6 +309,9 @@ void ProcessUserCmd(CUserCmd* cmd) {
         //Attemt to find an edge and if found, edge
         if (findEdge(y)) y = useEdge(y);
         break;
+    case 8:
+    	FuckYaw(y);
+		clamp = false;
     }
     
 	switch ((int)pitch_mode) {
@@ -276,6 +346,9 @@ void ProcessUserCmd(CUserCmd* cmd) {
 	case 9:
 		p = 89.0f;
 		break;
+	case 10:
+		FuckPitch(p);
+		clamp = false;
 	}
 	flip = !flip;
 	if (clamp) fClampAngle(cmd->viewangles);
