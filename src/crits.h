@@ -31,6 +31,7 @@ bool WeaponCanCrit();
 bool IsAttackACrit(CUserCmd* cmd);
 void ResetCritHack();
 void LoadSavedState();
+void ModifyCommandNumber();
 
 #include "beforecheaders.h"
 #include <unordered_map>

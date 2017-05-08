@@ -322,13 +322,17 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 	SEGV_BEGIN;
 	if (clean_chat) {
 		if (type == 4) {
+			int loop_index = 0;
+
 			int s = buf.GetNumBytesLeft();
 			char* data = new char[s];
 			for (int i = 0; i < s; i++)
 				data[i] = buf.ReadByte();
 			int j = 0;
+			char c;
 			for (int i = 0; i < 3; i++) {
-				while (char c = data[j++]) {
+				while ((c = data[j++]) && (loop_index < 128)) {
+					loop_index++;
 					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
 				}
 			}

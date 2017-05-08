@@ -19,7 +19,7 @@ std::unordered_map<int, int> command_number_mod {};
 int* g_PredictionRandomSeed = nullptr;
 
 bool CritKeyDown() {
-	return g_IInputSystem->IsButtonDown(static_cast<ButtonCode_t>((int)hacks::shared::misc::crit_hack));
+	return g_IInputSystem->IsButtonDown(static_cast<ButtonCode_t>((int)hacks::shared::misc::crit_hack));// || g_IInputSystem->IsButtonDown(static_cast<ButtonCode_t>((int)experimental_crit_hack));
 }
 
 bool AllowAttacking() {
@@ -34,6 +34,10 @@ bool AllowAttacking() {
 		if (!crit) return false;
 	}
 	return true;
+}
+
+void ModifyCommandNumber() {
+
 }
 
 bool RandomCrits() {

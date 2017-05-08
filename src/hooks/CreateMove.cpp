@@ -102,7 +102,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
 	if (ch && !hooks::IsHooked((void*)ch)) {
 		hooks::netchannel.Set(ch);
-		hooks::netchannel.HookMethod((void*)CanPacket_hook, offsets::CanPacket());
+		//hooks::netchannel.HookMethod((void*)CanPacket_hook, offsets::CanPacket());
 		hooks::netchannel.HookMethod((void*)SendNetMsg_hook, offsets::SendNetMsg());
 		hooks::netchannel.HookMethod((void*)Shutdown_hook, offsets::Shutdown());
 		hooks::netchannel.Apply();
