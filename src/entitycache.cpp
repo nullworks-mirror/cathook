@@ -202,8 +202,10 @@ matrix3x4_t* CachedEntity::GetBones() {
 	case 2:
 		if (CE_GOOD(LOCAL_E))
 			bones_setup_time = g_GlobalVars->interval_per_tick * CE_INT(LOCAL_E, netvar.nTickBase);
-		else
-			bones_setup_time = g_GlobalVars->curtime;
+		break;
+	case 3:
+		if (CE_GOOD(this))
+			bones_setup_time = CE_FLOAT(this, netvar.m_flSimulationTime);
 	}
 	if (!m_bBonesSetup) {
 		m_bBonesSetup = RAW_ENT(this)->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, bones_setup_time); // gvars->curtime
