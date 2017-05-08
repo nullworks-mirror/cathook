@@ -40,7 +40,7 @@ void CreateMove() {
 
 	Vector tr = (closest->m_vecOrigin - g_pLocalPlayer->v_Eye);
 	Vector angles;
-	fVectorAngles(tr, angles);
+	VectorAngles(tr, angles);
 	fClampAngle(angles);
 	g_pUserCmd->viewangles = angles;
 	g_pLocalPlayer->bUseSilentAngles = true;

@@ -66,6 +66,12 @@ void End() {
 static CatVar remove_taunt(CV_SWITCH, "no_taunt", "0", "Remove taunt", "Remove taunt condition from local player. Use with removecond key.");
 
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
+	static CreateMove_t original_method = (CreateMove_t)hooks::clientmode.GetMethod(offsets::CreateMove());
+	static bool time_replaced, ret, speedapplied;
+	static float curtime_old, servertime, speed, yaw;
+	static Vector vsilent, ang;
+	static INetChannel* ch;
+
 	SEGV_BEGIN;
 	tickcount++;
 	g_pUserCmd = cmd;
@@ -74,8 +80,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
 	}
 
-	static CreateMove_t original_method = (CreateMove_t)hooks::clientmode.GetMethod(offsets::CreateMove());
-	bool ret = original_method(thisptr, inputSample, cmd);
+	ret = original_method(thisptr, inputSample, cmd);
 
 	PROF_SECTION(CreateMove);
 
@@ -94,7 +99,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 //	PROF_BEGIN();
 
-	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
+	ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
 	if (ch && !hooks::IsHooked((void*)ch)) {
 		hooks::netchannel.Set(ch);
 		hooks::netchannel.HookMethod((void*)CanPacket_hook, offsets::CanPacket());
@@ -112,11 +117,12 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	//logging::Info("canpacket: %i", ch->CanPacket());
 	//if (!cmd) return ret;
 
-	bool time_replaced = false;
-	float curtime_old = g_GlobalVars->curtime;
+
+	time_replaced = false;
+	curtime_old = g_GlobalVars->curtime;
 
 	if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity)) {
-		float servertime = (float)CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
+		servertime = (float)CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
 		g_GlobalVars->curtime = servertime;
 		time_replaced = true;
 	}
@@ -136,9 +142,11 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	//if (!cmd->command_number) return ret;
 	hacks::shared::lagexploit::CreateMove();
 #ifdef IPC_ENABLED
+	static int team_joining_state = 0;
+	static float last_jointeam_try = 0;
+	static CachedEntity *found_entity, *ent;
+
 	if (hacks::shared::followbot::bot) {
-		static int team_joining_state = 0;
-		static float last_jointeam_try = 0;
 
 		if (g_GlobalVars->curtime < last_jointeam_try) {
 			team_joining_state = 0;
@@ -158,9 +166,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 
 		if (team_joining_state) {
-			CachedEntity* found_entity = nullptr;
+			found_entity = nullptr;
 			for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
-				CachedEntity* ent = ENTITY(i);
+				ent = ENTITY(i);
 				if (CE_BAD(ent)) continue;
 				if (!ent->m_pPlayerInfo) continue;
 				if (ent->m_pPlayerInfo->friendsID == hacks::shared::followbot::follow_steamid) {
@@ -232,9 +240,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	}
 
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
-		bool speedapplied = false;
+		speedapplied = false;
 		if (roll_speedhack && g_pGUI->m_bPressedState[(int)roll_speedhack] && !(cmd->buttons & IN_ATTACK)) { // FIXME OOB
-			float speed = cmd->forwardmove;
+			speed = cmd->forwardmove;
 			if (fabs(speed) > 0.0f) {
 				cmd->forwardmove = -speed;
 				cmd->sidemove = 0.0f;
@@ -245,32 +253,16 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 				g_pLocalPlayer->bUseSilentAngles = true;
 				speedapplied = true;
 			}
-			/*Vector vecMove( cmd->forwardmove, 0.0f, 0.0f );
-			float flLength = vecMove.Length();
-			if( flLength > 0.0f && !(cmd->buttons & IN_ATTACK) )
-			{
-
-				//Vector nvm = -vecMove;
-				Vector angMoveReverse;
-				VectorAngles( vecMove, angMoveReverse );
-				cmd->forwardmove = -flLength;
-				cmd->sidemove = 0.0f; // Move only backwards, no sidemove
-				cmd->viewangles.y = AngleDiff( cmd->viewangles.y , angMoveReverse.y ) ;
-				logging::Info("yaw %.2f", cmd->viewangles.y);
-				cmd->viewangles.y += 180.0f;
-				if (cmd->viewangles.y > 180.0f) cmd->viewangles.y -= 360.0f;
-				cmd->viewangles.z = 89.0f; // OMFG SUPER 1337 SPEEDHAQ METHODS 8)
-				g_pLocalPlayer->bUseSilentAngles = true;
-			}*/
 		}
 
 		if (g_pLocalPlayer->bUseSilentAngles) {
 			if (!speedapplied) {
-				Vector vsilent(cmd->forwardmove, cmd->sidemove, cmd->upmove);
-				float speed = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
-				Vector ang;
+				vsilent.x = cmd->forwardmove;
+				vsilent.y = cmd->sidemove;
+				vsilent.z = cmd->upmove;
+				speed = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
 				VectorAngles(vsilent, ang);
-				float yaw = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y + cmd->viewangles.y);
+				yaw = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y + cmd->viewangles.y);
 				cmd->forwardmove = cos(yaw) * speed;
 				cmd->sidemove = sin(yaw) * speed;
 			}

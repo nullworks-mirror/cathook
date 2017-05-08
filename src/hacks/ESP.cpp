@@ -68,11 +68,15 @@ void AddEntityString(CachedEntity* entity, const std::string& string, int color)
 }
 
 void CreateMove() {
+	static int limit;
+	static int max_clients = g_IEngine->GetMaxClients();
+	static CachedEntity* ent;
+
 	ResetEntityStrings();
-	int limit = HIGHEST_ENTITY;
-	if (!buildings && !proj_esp && !item_esp) limit = min(32, HIGHEST_ENTITY);
+	limit = HIGHEST_ENTITY;
+	if (!buildings && !proj_esp && !item_esp) limit = min(max_clients, HIGHEST_ENTITY);
 	for (int i = 0; i < limit; i++) {
-		CachedEntity* ent = ENTITY(i);
+		ent = ENTITY(i);
 		ProcessEntity(ent);
 		if (data[i].string_count) {
 			SetEntityColor(ent, colors::EntityF(ent));
@@ -84,8 +88,10 @@ void CreateMove() {
 }
 
 void Draw() {
-	int limit = HIGHEST_ENTITY;
-	if (!buildings && !proj_esp && !item_esp) limit = min(32, HIGHEST_ENTITY);
+	static int limit;
+	static int max_clients = g_IEngine->GetMaxClients();
+	limit = HIGHEST_ENTITY;
+	if (!buildings && !proj_esp && !item_esp) limit = min(max_clients, HIGHEST_ENTITY);
 	for (int i = 0; i < limit; i++) {
 		ProcessEntityPT(ENTITY(i));
 	}
@@ -103,10 +109,19 @@ static CatVar esp_3d_box_nodraw(CV_SWITCH, "esp_3d_box_nodraw", "0", "Invisible 
 static CatVar esp_3d_box_healthbar(CV_SWITCH, "esp_3d_box_healthbar", "1", "Health bar", "Adds a health bar to the esp");
 
 void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healthmax) {
-	Vector mins, maxs;
-	bool set = false;
+	static Vector mins, maxs;
+	static Vector points_r[8];
+	static Vector points[8];
+	static bool set, success, cloak;
+	static float x, y, z;
+	static int hbh, max_x, max_y, min_x, min_y;
+	static CachedHitbox* hb;
+
+	set = false;
+	success = true;
+
 	for (int i = 0; i < ent->m_pHitboxCache->GetNumHitboxes(); i++) {
-		CachedHitbox* hb = ent->m_pHitboxCache->GetHitbox(i);
+		hb = ent->m_pHitboxCache->GetHitbox(i);
 		if (!hb) return;
 		if (!set || hb->min.x < mins.x) mins.x = hb->min.x;
 		if (!set || hb->min.y < mins.y) mins.y = hb->min.y;
@@ -135,10 +150,9 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 		mins.z -= exp;
 	}
 
-	Vector points_r[8];
-	const float x = maxs.x - mins.x;
-	const float y = maxs.y - mins.y;
-	const float z = maxs.z - mins.z;
+	x = maxs.x - mins.x;
+	y = maxs.y - mins.y;
+	z = maxs.z - mins.z;
 	points_r[0] = mins;
 	points_r[1] = mins + Vector(x, 0, 0);
 	points_r[2] = mins + Vector(x, y, 0);
@@ -147,19 +161,21 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	points_r[5] = mins + Vector(x, 0, z);
 	points_r[6] = mins + Vector(x, y, z);
 	points_r[7] = mins + Vector(0, y, z);
-	Vector points[8];
-	bool success = true;
+	success = true;
 	for (int i = 0; i < 8; i++) {
 		if (!draw::WorldToScreen(points_r[i], points[i])) success = false;
 	}
-	int max_x = -1, max_y = -1, min_x = 65536, min_y = 65536;
+	if (!success) return;
+	max_x = -1;
+	max_y = -1;
+	min_x = 65536;
+	min_y = 65536;
 	for (int i = 0; i < 8; i++) {
 		if (points[i].x > max_x) max_x = points[i].x;
 		if (points[i].y > max_y) max_y = points[i].y;
 		if (points[i].x < min_x) min_x = points[i].x;
 		if (points[i].y < min_y) min_y = points[i].y;
 	}
-	if (!success) return;
 	data.at(ent->m_IDX).esp_origin.Zero();
 	switch ((int)esp_box_text_position) {
 	case 0: { // TOP RIGHT
@@ -186,15 +202,16 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	};
 
 	if (esp_3d_box_health) clr = colors::Health(health, healthmax);
-	bool cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
+	cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
 	if (cloak) clr = colors::Transparent(clr, 0.2);
 	if (esp_3d_box_healthbar) {
 		draw::OutlineRect(min_x - 6, min_y, 6, max_y - min_y, colors::black);
-		int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
+		hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
 		draw::DrawRect(min_x - 5, max_y - 1 - hbh, 4, hbh, colors::Health(health, healthmax));
 	}
 	if (!esp_3d_box_nodraw) {
 		for (int i = 0; i < 12; i++) {
+			// I'll let compiler optimize this.
 			const Vector& p1 = points[indices[i][0]];
 			const Vector& p2 = points[indices[i][1]];
 			draw::DrawLine(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y, clr);
@@ -211,32 +228,34 @@ static CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "
 static CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
 
 void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
+	static Vector min, max, origin, so, omin, omax, smin, smax;
+	static float height, width, trf;
+	static bool cloak;
+	static int min_x, min_y, max_x, max_y, border, hp, hbh;
+	static unsigned char alpha;
+
 	if (CE_BAD(ent)) return;
-	bool cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
-	Vector min, max;
+
+	cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
 	RAW_ENT(ent)->GetRenderBounds(min, max);
-	Vector origin = RAW_ENT(ent)->GetAbsOrigin();
-	Vector so;
+	origin = RAW_ENT(ent)->GetAbsOrigin();
 	draw::WorldToScreen(origin, so);
 	//if (!a) return;
 	//logging::Info("%f %f", so.x, so.y);
-	Vector omin, omax;
 	omin = origin + Vector(0, 0, min.z);
 	omax = origin + Vector(0, 0, max.z + addHeight);
-	Vector smin, smax;
 	bool a = draw::WorldToScreen(omin, smin);
 	a = a && draw::WorldToScreen(omax, smax);
 	if (!a) return;
-	float height = abs(smax.y - smin.y);
+	height = abs(smax.y - smin.y);
 	//logging::Info("height: %f", height);
-	float width = height / widthFactor;
+	width = height / widthFactor;
 	//bool a = draw::WorldToScreen(omin, smin);
 	//a = a && draw::WorldToScreen(omax, smax);
 	//if (!a) return;
 	//draw::DrawString(min(smin.x, smax.x), min(smin.y, smax.y), clr, false, "min");
 	//draw::DrawString(max(smin.x, smax.x), max(smin.y, smax.y), clr, false, "max");
 	//draw::DrawString((int)so.x, (int)so.y, draw::white, false, "origin");
-	int min_x, min_y, max_x, max_y;
 	data.at(ent->m_IDX).esp_origin.Zero();
 	max_x = so.x + width / 2 + 1;
 	min_y = so.y - height;
@@ -267,9 +286,9 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 		data.at(ent->m_IDX).esp_origin = Vector(min_x + 1, max_y, 0);
 	}
 	}
-	unsigned char alpha = clr >> 24;
-	float trf = (float)((float)alpha / 255.0f);
-	int border = cloak ? colors::Create(160, 160, 160, alpha) : colors::Transparent(colors::black, trf);
+	alpha = clr >> 24;
+	trf = (float)((float)alpha / 255.0f);
+	border = cloak ? colors::Create(160, 160, 160, alpha) : colors::Transparent(colors::black, trf);
 	if (!box_nodraw) {
 		draw::OutlineRect(min_x, min_y, max_x - min_x, max_y - min_y, border);
 		draw::OutlineRect(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr);
@@ -277,14 +296,22 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 	}
 
 	if (healthbar) {
-		int hp = colors::Transparent(colors::Health(health, healthmax), trf);
-		int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
+		hp = colors::Transparent(colors::Health(health, healthmax), trf);
+		hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
 		draw::OutlineRect(min_x - 6, min_y, 7, max_y - min_y, border);
 		draw::DrawRect(min_x - 5, max_y - hbh - 1, 5, hbh, hp);
 	}
 }
 
 void ProcessEntity(CachedEntity* ent) {
+	static const model_t* model;
+	static int string_count_backup, level, pclass;
+	static bool shown;
+	static player_info_s info;
+	static powerup_type power;
+	static CachedEntity* weapon;
+	static const char* weapon_name;
+
 	if (!enabled) return;
 	if (CE_BAD(ent)) return;
 
@@ -294,7 +321,7 @@ void ProcessEntity(CachedEntity* ent) {
 			AddEntityString(ent, std::to_string(ent->m_IDX));
 		}
 		if (entity_model) {
-			const model_t* model = RAW_ENT(ent)->GetModel();
+			model = RAW_ENT(ent)->GetModel();
 			if (model) AddEntityString(ent, std::string(g_IModelInfo->GetModelName(model)));
 		}
 	}
@@ -328,7 +355,7 @@ void ProcessEntity(CachedEntity* ent) {
 	if (HL2DM) {
 		if (item_esp && item_dropped_weapons) {
 			if (CE_BYTE(ent, netvar.hOwner) == (unsigned char)-1) {
-				int a = data[ent->m_IDX].string_count;
+				string_count_backup = data[ent->m_IDX].string_count;
 				if (ent->m_iClassID == g_pClassID->CWeapon_SLAM) AddEntityString(ent, "SLAM");
 				else if (ent->m_iClassID == g_pClassID->CWeapon357) AddEntityString(ent, ".357");
 				else if (ent->m_iClassID == g_pClassID->CWeaponAR2) AddEntityString(ent, "AR2");
@@ -340,7 +367,7 @@ void ProcessEntity(CachedEntity* ent) {
 				else if (ent->m_iClassID == g_pClassID->CWeaponShotgun) AddEntityString(ent, "Shotgun");
 				else if (ent->m_iClassID == g_pClassID->CWeaponSMG1) AddEntityString(ent, "SMG");
 				else if (ent->m_iClassID == g_pClassID->CWeaponRPG) AddEntityString(ent, "RPG");
-				if (a != data[ent->m_IDX].string_count) {
+				if (string_count_backup != data[ent->m_IDX].string_count) {
 					SetEntityColor(ent, colors::yellow);
 				}
 			}
@@ -360,7 +387,7 @@ void ProcessEntity(CachedEntity* ent) {
 			AddEntityString(ent, "$$$");
 		}
 	} else if (ent->m_ItemType != ITEM_NONE && item_esp) {
-		bool shown = false;
+		shown = false;
 		if (item_health_packs && (ent->m_ItemType >= ITEM_HEALTH_SMALL && ent->m_ItemType <= ITEM_HEALTH_LARGE || ent->m_ItemType == ITEM_HL_BATTERY)) {
 			if (ent->m_ItemType == ITEM_HEALTH_SMALL) AddEntityString(ent, "[+]");
 			if (ent->m_ItemType == ITEM_HEALTH_MEDIUM) AddEntityString(ent, "[++]");
@@ -380,7 +407,7 @@ void ProcessEntity(CachedEntity* ent) {
 		}
 	} else if (ent->m_Type == ENTITY_BUILDING && buildings) {
 		if (!ent->m_bEnemy && !teammates) return;
-		int level = CE_INT(ent, netvar.iUpgradeLevel);
+		level = CE_INT(ent, netvar.iUpgradeLevel);
 		const std::string& name = (ent->m_iClassID == g_pClassID->CObjectTeleporter ? "Teleporter" : (ent->m_iClassID == g_pClassID->CObjectSentrygun ? "Sentry Gun" : "Dispenser"));
 		if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
 			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
@@ -395,10 +422,9 @@ void ProcessEntity(CachedEntity* ent) {
 	} else if (ent->m_Type == ENTITY_PLAYER && ent->m_bAlivePlayer) {
 		if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
 			ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
-		int pclass = CE_INT(ent, netvar.iClass);
-		player_info_t info;
+		pclass = CE_INT(ent, netvar.iClass);
 		if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info)) return;
-		powerup_type power = GetPowerupOnPlayer(ent);
+		power = GetPowerupOnPlayer(ent);
 		// If target is enemy, always show powerups, if player is teammate, show powerups
 		// only if bTeammatePowerup or bTeammates is true
 		if (legit && ent->m_iTeam != g_pLocalPlayer->team && playerlist::IsDefault(info.friendsID)) {
@@ -449,11 +475,11 @@ void ProcessEntity(CachedEntity* ent) {
 				}
 			}
 			if (IsHoovy(ent)) AddEntityString(ent, "Hoovy");
-			CachedEntity* weapon = ENTITY(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
+			weapon = ENTITY(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
 			if (CE_GOOD(weapon)) {
 				if (show_weapon) {
-					const char* name = vfunc<const char*(*)(IClientEntity*)>(RAW_ENT(weapon), 398, 0)(RAW_ENT(weapon));
-					if (name) AddEntityString(ent, std::string(name));
+					weapon_name = vfunc<const char*(*)(IClientEntity*)>(RAW_ENT(weapon), 398, 0)(RAW_ENT(weapon));
+					if (weapon_name) AddEntityString(ent, std::string(weapon_name));
 				}
 			}
 		}
@@ -465,22 +491,28 @@ static CatVar esp_3d_box(CV_SWITCH, "esp_3d_box", "0", "3D box");
 static CatVar box_healthbar(CV_SWITCH, "esp_box_healthbar", "1", "Box Healthbar");
 
 void ProcessEntityPT(CachedEntity* ent) {
+	static int fg, color;
+	static bool transparent, cloak, origin_is_zero;
+	static Vector screen, origin_screen, draw_point;
+
 	if (!enabled) return;
 	if (CE_BAD(ent)) return;
-		if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
-		ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
-	const ESPData& ent_data = data[ent->m_IDX];
-	int fg = ent_data.color;
-	bool transparent { false };
 
-	Vector screen;
-	static Vector origin_screen;
+
+	transparent = false;
+
+	if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
+		ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
+
+	const ESPData& ent_data = data[ent->m_IDX];
+	fg = ent_data.color;
+
 	if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin, origin_screen)) return;
 
 	if (box_esp) {
 		switch (ent->m_Type) {
 		case ENTITY_PLAYER: {
-			bool cloak = IsPlayerInvisible(ent);
+			cloak = IsPlayerInvisible(ent);
 			if (legit && ent->m_iTeam != g_pLocalPlayer->team && playerlist::IsDefault(ent)) {
 				if (cloak) return;
 				/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
@@ -521,12 +553,12 @@ void ProcessEntityPT(CachedEntity* ent) {
 	}
 
 	if (ent_data.string_count) {
-		bool origin_is_zero = !box_esp || ent_data.esp_origin.IsZero(1.0f);
+		origin_is_zero = !box_esp || ent_data.esp_origin.IsZero(1.0f);
 		if (vischeck && !ent->IsVisible()) transparent = true;
-		Vector draw_point = origin_is_zero ? screen : ent_data.esp_origin;
+		draw_point = origin_is_zero ? screen : ent_data.esp_origin;
 		for (int j = 0; j < ent_data.string_count; j++) {
 			const ESPString& string = ent_data.strings[j];
-			int color = string.color ? string.color : ent_data.color;
+			color = string.color ? string.color : ent_data.color;
 			if (transparent) color = colors::Transparent(color);
 			if (!origin_is_zero) {
 				draw::String(fonts::ESP, draw_point.x, draw_point.y, color, 2, string.data);

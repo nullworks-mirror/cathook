@@ -29,6 +29,11 @@ static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats", "Removes non-stock h
 
 void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix) {
 	static const DrawModelExecute_t original = (DrawModelExecute_t)hooks::modelrender.GetMethod(offsets::DrawModelExecute());
+	static const char* name;
+	static std::string sname;
+	static IClientUnknown *unk;
+	static IClientEntity *ent;
+
 	if (!cathook || !(no_arms || no_hats || (clean_screenshots && g_IEngine->IsTakingScreenshot()))) {
 		original(_this, state, info, matrix);
 		return;
@@ -36,9 +41,9 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 
 	if (no_arms || no_hats) {
 		if (info.pModel) {
-			const char* name = g_IModelInfo->GetModelName(info.pModel);
+			name = g_IModelInfo->GetModelName(info.pModel);
 			if (name) {
-				std::string sname(name);
+				sname = name;
 				if (no_arms && sname.find("arms") != std::string::npos) {
 					return;
 				} else if (no_hats && sname.find("player/items") != std::string::npos) {
@@ -48,9 +53,9 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 		}
 	}
 
-	IClientUnknown* unk = info.pRenderable->GetIClientUnknown();
+	unk = info.pRenderable->GetIClientUnknown();
 	if (unk) {
-		IClientEntity* ent = unk->GetIClientEntity();
+		ent = unk->GetIClientEntity();
 		if (ent && !effect_chams::g_EffectChams.drawing && effect_chams::g_EffectChams.ShouldRenderChams(ent)) {
 			return;
 		}
@@ -69,17 +74,20 @@ bool CanPacket_hook(void* _this) {
 
 CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 	static const GetUserCmd_t original = (GetUserCmd_t)hooks::input.GetMethod(offsets::GetUserCmd());
-	CUserCmd* def = original(_this, sequence_number);
+	static CUserCmd* def;
+	static int oldcmd;
+	static INetChannel* ch;
+
+	def = original(_this, sequence_number);
 	if (def && command_number_mod.find(def->command_number) != command_number_mod.end()) {
 		//logging::Info("Replacing command %i with %i", def->command_number, command_number_mod[def->command_number]);
-		int oldcmd = def->command_number;
+		oldcmd = def->command_number;
 		def->command_number = command_number_mod[def->command_number];
 		def->random_seed = MD5_PseudoRandom(def->command_number) & 0x7fffffff;
 		command_number_mod.erase(command_number_mod.find(oldcmd));
 		*(int*)((unsigned)g_IBaseClientState + offsets::lastoutgoingcommand()) = def->command_number - 1;
-		INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();//*(INetChannel**)((unsigned)g_IBaseClientState + offsets::m_NetChannel());
-		int& m_nOutSequenceNr = *(int*)((unsigned)ch + offsets::m_nOutSequenceNr());
-		m_nOutSequenceNr = def->command_number - 1;
+		ch = (INetChannel*)g_IEngine->GetNetChannelInfo();//*(INetChannel**)((unsigned)g_IBaseClientState + offsets::m_NetChannel());
+		*(int*)((unsigned)ch + offsets::m_nOutSequenceNr()) = def->command_number - 1;
 	}
 	hacks::shared::lagexploit::GetUserCmd(def, sequence_number);
 	return def;
@@ -116,23 +124,29 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add
 //static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages", "Use this if you want to use spam/killsay and still be able to chat normally (without having your msgs eaten by valve cooldown)");
 
 bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
+	static size_t say_idx, say_team_idx;
+	static int offset;
+	static std::string newlines;
+	static NET_StringCmd stringcmd;
+
 	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
 	const SendNetMsg_t original = (SendNetMsg_t)hooks::netchannel.GetMethod(offsets::SendNetMsg());
 	SEGV_BEGIN;
 	// net_StringCmd
 	if (msg.GetType() == 4 && (newlines_msg)) {
 		std::string str(msg.ToString());
-		auto say_idx = str.find("net_StringCmd: \"say \"");
-		auto say_team_idx = str.find("net_StringCmd: \"say_team \"");
+		say_idx = str.find("net_StringCmd: \"say \"");
+		say_team_idx = str.find("net_StringCmd: \"say_team \"");
 		if (!say_idx || !say_team_idx) {
-			int offset = say_idx ? 26 : 21;
+			offset = say_idx ? 26 : 21;
 			if (newlines_msg) {
-				std::string newlines = std::string((int)newlines_msg, '\n');
+				// TODO move out? update in a value change callback?
+				newlines = std::string((int)newlines_msg, '\n');
 				str.insert(offset, newlines);
 			}
 			str = str.substr(16, str.length() - 17);
 			//if (queue_messages && !chat_stack::CanSend()) {
-				NET_StringCmd stringcmd(str.c_str());
+				stringcmd.m_szCommand = str.c_str();
 				return original(_this, stringcmd, bForceReliable, bVoice);
 			//}
 		}
@@ -184,6 +198,9 @@ const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "0", "Cursor fix");
 
 void FrameStageNotify_hook(void* _this, int stage) {
+	static IClientEntity *ent;
+	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
+
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
@@ -192,7 +209,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
 			if (i == g_IEngine->GetLocalPlayer()) continue;
-			IClientEntity* ent = g_IEntityList->GetClientEntity(i);
+			ent = g_IEntityList->GetClientEntity(i);
 			if (ent && !ent->IsDormant() && !NET_BYTE(ent, netvar.iLifeState)) {
 				Vector& angles = NET_VECTOR(ent, netvar.m_angEyeAngles);
 				if (angles.x >= 90) angles.x = -89;
@@ -202,19 +219,12 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
-	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 		if (cursor_fix_experimental) {
 			if (gui_visible) {
-				//g_ISurface->SetCursor(vgui::CursorCode::dc_arrow);
-				//g_ISurface->UnlockCursor();
 				g_ISurface->SetCursorAlwaysVisible(true);
-				//g_IMatSystemSurface->UnlockCursor();
 			} else {
-				//g_ISurface->SetCursor(vgui::CursorCode::dc_none);
-				//g_ISurface->LockCursor();
 				g_ISurface->SetCursorAlwaysVisible(false);
-				//g_IMatSystemSurface->LockCursor();
 			}
 		}
 		if (CE_GOOD(LOCAL_E)) RemoveCondition(LOCAL_E, TFCond_Zoomed);
@@ -290,11 +300,11 @@ CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with th
 
 void OverrideView_hook(void* _this, CViewSetup* setup) {
 	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
+	static bool zoomed;
 	SEGV_BEGIN;
 	original(_this, setup);
 	if (!cathook) return;
-	bool zoomed = g_pLocalPlayer->bZoomed;
-	if (zoomed && override_fov_zoomed) {
+	if (g_pLocalPlayer->bZoomed && override_fov_zoomed) {
 		setup->fov = override_fov_zoomed;
 	} else {
 		if (override_fov) {

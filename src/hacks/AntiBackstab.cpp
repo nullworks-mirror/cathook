@@ -25,13 +25,15 @@ void SayNope() {
 }
 
 float GetAngle(CachedEntity* spy) {
+	static float yaw, yaw2, anglediff;
+	static Vector diff;
+	yaw = g_pLocalPlayer->v_OrigViewangles.y;
 	const Vector& A = LOCAL_E->m_vecOrigin;
 	const Vector& B = spy->m_vecOrigin;
-	const float yaw = g_pLocalPlayer->v_OrigViewangles.y;
-	const Vector diff = (A - B);
-	float yaw2 = acos(diff.x / diff.Length()) * 180.0f / PI;
+	diff = (A - B);
+	yaw2 = acos(diff.x / diff.Length()) * 180.0f / PI;
 	if (diff.y < 0) yaw2 = -yaw2;
-	float anglediff = yaw - yaw2;
+	anglediff = yaw - yaw2;
 	if (anglediff > 180) anglediff -= 360;
 	if (anglediff < -180) anglediff += 360;
 	//logging::Info("Angle: %.2f | %.2f | %.2f | %.2f", yaw, yaw2, anglediff, yaw - yaw2);
@@ -39,16 +41,20 @@ float GetAngle(CachedEntity* spy) {
 }
 
 CachedEntity* ClosestSpy() {
-	CachedEntity* closest = nullptr;
-	float closest_dist = 0.0f;
+	static CachedEntity *closest, *ent;
+	static float closest_dist, dist;
+
+	closest = nullptr;
+	closest_dist = 0.0f;
+
 	for (int i = 1; i < 32 && i < g_IEntityList->GetHighestEntityIndex(); i++) {
-		CachedEntity* ent = ENTITY(i);
+		ent = ENTITY(i);
 		if (CE_BAD(ent)) continue;
 		if (CE_BYTE(ent, netvar.iLifeState)) continue;
 		if (CE_INT(ent, netvar.iClass) != tf_class::tf_spy) continue;
 		if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team) continue;
 		if (IsPlayerInvisible(ent)) continue;
-		float dist = ent->m_flDistance;
+		dist = ent->m_flDistance;
 		if (fabs(GetAngle(ent)) > (float)angle) {
 			break;
 			//logging::Info("Backstab???");
@@ -62,17 +68,21 @@ CachedEntity* ClosestSpy() {
 }
 
 void CreateMove() {
+	static CachedEntity *spy;
+	static Vector diff;
+	static float yaw2, resultangle;
+
 	if (!enabled) return;
-	CachedEntity* spy = ClosestSpy();
+	spy = ClosestSpy();
 	if (spy) {
 		const Vector& A = LOCAL_E->m_vecOrigin;
 		const Vector& B = spy->m_vecOrigin;
-		const Vector diff = (A - B);
-		float yaw2 = acos(diff.x / diff.Length()) * 180.0f / PI;
+		diff = (A - B);
+		yaw2 = acos(diff.x / diff.Length()) * 180.0f / PI;
 		if (diff.y < 0) yaw2 = -yaw2;
 		if (yaw2 < -180) yaw2 += 360;
 		if (yaw2 > 180) yaw2 -= 360;
-		float resultangle = -180 + yaw2;
+		resultangle = -180 + yaw2;
 		if (resultangle < -180) resultangle += 360;
 		g_pUserCmd->viewangles.y = resultangle;
 		if (silent) {
@@ -86,7 +96,7 @@ void CreateMove() {
 
 void PaintTraverse() {
 	if (!enabled) return;
-	CachedEntity* spy = ClosestSpy();
+	/*CachedEntity* spy = ClosestSpy();
 	if (!spy) return;
 	const Vector& A = LOCAL_E->m_vecOrigin;
 	const Vector& B = spy->m_vecOrigin;
@@ -101,7 +111,7 @@ void PaintTraverse() {
 	AddSideString(format("yaw: ", yaw));
 	AddSideString(format("diff: ", diff.x, ' ', diff.y, ' ', diff.z));
 	AddSideString(format("yaw2: ", yaw2));
-	AddSideString(format("anglediff: ", anglediff));
+	AddSideString(format("anglediff: ", anglediff));*/
 }
 
 }}}

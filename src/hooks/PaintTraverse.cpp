@@ -28,6 +28,14 @@ CatVar software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0", "
 
 void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	static const PaintTraverse_t original = (PaintTraverse_t)hooks::panel.GetMethod(offsets::PaintTraverse());
+	static bool textures_loaded = false;
+	static unsigned long panel_focus = 0;
+	static unsigned long panel_scope = 0;
+	static unsigned long panel_top = 0;
+	static bool cur, draw_flag = false;
+	static bool call_default = true;
+	static ConVar* software_cursor = g_ICvar->FindVar("cl_software_cursor");
+	static const char *name;
 #if DEBUG_SEGV == true
 	if (!segvcatch::handler_fpe || !segvcatch::handler_segv) {
 		if (!segvcatch::handler_fpe) segvcatch::init_segv();
@@ -35,7 +43,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	}
 #endif
 	SEGV_BEGIN;
-	static bool textures_loaded = false;
 	if (!textures_loaded) {
 		textures_loaded = true;
 		hacks::tf::radar::Init();
@@ -51,20 +58,11 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		*pure_addr = pure_orig;
 		pure_orig = (void*)0;
 	}
-	static unsigned long panel_focus = 0;
-	static unsigned long panel_scope = 0;
-	static unsigned long panel_top = 0;
-	static bool draw_flag = false;
-	bool call_default = true;
+	call_default = true;
 	if (cathook && panel_scope && no_zoom && vp == panel_scope) call_default = false;
-	/*if (cathook) {
-		bool vis = gui_visible;
-		g_ISurface->SetCursorAlwaysVisible(vis);
-	}*/
 
 	if (software_cursor_mode) {
-		static ConVar* software_cursor = g_ICvar->FindVar("cl_software_cursor");
-		bool cur = software_cursor->GetBool();
+		cur = software_cursor->GetBool();
 		switch ((int)software_cursor_mode) {
 		case 1:
 			if (!software_cursor->GetBool()) software_cursor->SetValue(1);
@@ -92,18 +90,25 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	if (!cathook) return;
 
 	if (!panel_top) {
-		const char* name = g_IPanel->GetName(vp);
+		name = g_IPanel->GetName(vp);
 		if (strlen(name) > 4) {
 			if (name[0] == 'M' && name[3] == 'S') {
 				panel_top = vp;
 			}
+
+		}
+	}
+	if (!panel_focus) {
+		name = g_IPanel->GetName(vp);
+		if (strlen(name) > 5) {
 			if (name[0] == 'F' && name[5] == 'O') {
 				panel_focus = vp;
 			}
 		}
 	}
 	if (!panel_scope) {
-		if (!strcmp(g_IPanel->GetName(vp), "HudScope")) {
+		name = g_IPanel->GetName(vp);
+		if (!strcmp(name, "HudScope")) {
 			panel_scope = vp;
 		}
 	}
@@ -118,7 +123,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	if (!draw_flag) return;
 	draw_flag = false;
 
-	{
+	if (!hack::command_stack().empty()) {
 		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
 		while (!hack::command_stack().empty()) {
 			logging::Info("executing %s", hack::command_stack().top().c_str());
