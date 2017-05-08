@@ -190,9 +190,23 @@ bool CachedEntity::IsVisible() {
 	return false;
 }
 
+static CatEnum setupbones_time_enum({ "ZERO",  "CURTIME", "SERVERTIME" });
+static CatVar setupbones_time(setupbones_time_enum, "setupbones_time", "2", "Setupbones", "Defines setupbones 4th argument");
+
 matrix3x4_t* CachedEntity::GetBones() {
+	static float bones_setup_time = 0.0f;
+	switch ((int)setupbones_time) {
+	case 1:
+		bones_setup_time = g_GlobalVars->curtime;
+		break;
+	case 2:
+		if (CE_GOOD(LOCAL_E))
+			bones_setup_time = g_GlobalVars->interval_per_tick * CE_INT(LOCAL_E, netvar.nTickBase);
+		else
+			bones_setup_time = g_GlobalVars->curtime;
+	}
 	if (!m_bBonesSetup) {
-		m_bBonesSetup = RAW_ENT(this)->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, g_GlobalVars->curtime); // gvars->curtime
+		m_bBonesSetup = RAW_ENT(this)->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, bones_setup_time); // gvars->curtime
 	}
 	return m_Bones;
 }
