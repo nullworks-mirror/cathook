@@ -109,6 +109,8 @@ bool slowCanShoot = false;
 static CatVar slowaim_salting(CV_SWITCH, "aimbot_slow_salt", "1", "Slow Aim Smooth", "Makes the slowaim more random", 5);
 float saltWait = 0;
 int saltRandom = 0;*/
+static CatVar instant_rezoom_enabled(CV_SWITCH, "aimbot_instant_rezoom_enabled", "0", "Instant rezoom", "Allows you to instantly zoom after you shoot\nGreat for pre-charging charged shots\nOccasionally fails");
+bool instant_rezoom_shoot = false;
 
 CachedEntity* CurrentTarget() {
 	if (state == EAimbotState::TARGET_FOUND || state == EAimbotState::AIMING)
@@ -494,6 +496,13 @@ bool Aim(CachedEntity* entity) {
         if ( attack ) {
         	g_pUserCmd->buttons |= IN_ATTACK;
         }
+        
+        //Tell reset conds to function
+		if (instant_rezoom_enabled) {
+			if (attack && g_pLocalPlayer->bZoomed && !instant_rezoom_shoot) {
+				instant_rezoom_shoot = true;
+			}
+		}
         
 	}
 	return true;
