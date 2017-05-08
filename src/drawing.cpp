@@ -285,8 +285,8 @@ void draw::OutlineRect(int x, int y, int w, int h, int color) {
 }
 
 void draw::GetStringLength(unsigned long font, char* string, int& length, int& height) {
-	static wchar_t buf[1024];
-	buf[0] = 0;
+	static wchar_t buf[512];
+	memset(buf, 0, sizeof(wchar_t) * 512);
 	mbstowcs(buf, string, strlen(string));
 	g_ISurface->GetTextSize(font, buf, length, height);
 }
@@ -294,21 +294,24 @@ void draw::GetStringLength(unsigned long font, char* string, int& length, int& h
 void draw::String (unsigned long font, int x, int y, int color, int shadow, const char* text) {
 	static bool newlined;
 	static int w, h, s, n;
-	static char ch[1024];
-	static wchar_t string[1024];
+	static char ch[512];
+	static wchar_t string[512];
+	static size_t len;
 
 	newlined = false;
-	for (int i = 0; i < strlen(text); i++) {
+	len = strlen(text);
+	for (int i = 0; i < len; i++) {
 		if (text[i] == '\n') {
 			newlined = true; break;
 		}
 	}
 	if (newlined) {
+		memset(ch, 0, sizeof(char) * 512);
 		GetStringLength(font, "W", w, h);
-		strncpy(ch, text, 1024);
+		strncpy(ch, text, 511);
 		s = 0;
 		n = 0;
-		for (int i = 0; i < strlen(text); i++) {
+		for (int i = 0; i < len; i++) {
 			if (ch[i] == '\n') {
 				ch[i] = 0;
 				draw::String(font, x, y + n * (h), color, shadow, &ch[0] + s);
@@ -318,8 +321,8 @@ void draw::String (unsigned long font, int x, int y, int color, int shadow, cons
 		}
 		draw::String(font, x, y + n * (h), color, shadow, &ch[0] + s);
 	} else {
-		string[0] = 0;
-		mbstowcs(string, text, 1024);
+		memset(string, 0, sizeof(wchar_t) * 512);
+		mbstowcs(string, text, 511);
 		draw::WString(font, x, y, color, shadow, string);
 	}
 }
@@ -329,8 +332,8 @@ void draw::String(unsigned long font, int x, int y, int color, int shadow, std::
 }
 CatVar fast_outline(CV_SWITCH, "fast_outline", "0", "Fast font outline", "Use only single repaint to increase performance");
 void draw::WString(unsigned long font, int x, int y, int color, int shadow, const wchar_t* text) {
-	unsigned char alpha;
-	int black_t;
+	static unsigned char alpha;
+	static int black_t;
 
 	if (shadow) {
 		alpha = (color >> 24);
