@@ -140,12 +140,22 @@ int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene,
 
 void CreateMove() {
 	static bool flswitch = false;
+	static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
+	static int critWarmup = 0;
+	static int tries, cmdn, md5seed, rseed, c, b;
+	static crithack_saved_state state;
+	static bool chc;
+	static float last_bucket = 0.0f;
+	static bool changed = false;
+	static ConVar *pNoPush = g_ICvar->FindVar("tf_avoidteammates_pushaway");
+
+
 	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
 		RemoveCondition(LOCAL_E, TFCond_Taunting);
 		no_taunt_ticks--;
 	}
 	// TODO FIXME this should be moved out of here
-	IClientEntity* localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+	localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
 	if (localplayer && spycrab_mode) {
 		void** vtable = *(void***)(localplayer);
 		if (vtable[0x111] != StartSceneEvent_hooked) {
@@ -177,12 +187,11 @@ void CreateMove() {
 	if (TF2C && tauntslide)
 		RemoveCondition(LOCAL_E, TFCond_Taunting);
 
-	static int critWarmup = 0;
 
 	if (g_pUserCmd->command_number && found_crit_number > g_pUserCmd->command_number + 66 * 20) found_crit_number = 0;
 	if (g_pUserCmd->command_number) last_number = g_pUserCmd->command_number;
 	if (crit_hack_next && TF2 && CE_GOOD(LOCAL_W)) {
-		IClientEntity* weapon = RAW_ENT(LOCAL_W);
+		weapon = RAW_ENT(LOCAL_W);
 		if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
 			if (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack))) {
 				if (!g_pUserCmd->command_number || critWarmup < 8) {
@@ -199,18 +208,17 @@ void CreateMove() {
 					uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
 					g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
 				}
-				int tries = 0;
-				int cmdn = g_pUserCmd->command_number;
-				bool chc = false;
-				static crithack_saved_state state;
+				tries = 0;
+				cmdn = g_pUserCmd->command_number;
+				chc = false;
 				state.Save(weapon);
 				while (!chc && tries < 4096) {
-					int md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
-					int rseed = md5seed;
+					md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
+					rseed = md5seed;
 					//float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
 					*g_PredictionRandomSeed = md5seed;
-					int c = LOCAL_W->m_IDX << 8;
-					int b = LOCAL_E->m_IDX;
+					c = LOCAL_W->m_IDX << 8;
+					b = LOCAL_E->m_IDX;
 					rseed = rseed ^ (b | c);
 					*(float*)(weapon + 2872ul) = 0.0f;
 					RandomSeed(rseed);
@@ -240,11 +248,8 @@ void CreateMove() {
 	}
 
 	if (CE_GOOD(LOCAL_W)) {
-		IClientEntity* weapon = RAW_ENT(LOCAL_W);
+		weapon = RAW_ENT(LOCAL_W);
 		float& bucket = *(float*)((uintptr_t)(weapon) + 2612);
-		static float last_bucket = 0.0f;
-		static IClientEntity* last_weapon = weapon;
-		static bool changed = false;
 		if (g_pUserCmd->command_number) {
 			changed = false;
 		}
@@ -270,7 +275,6 @@ void CreateMove() {
 		g_pUserCmd->buttons = rand();
 	}
 	
-	static ConVar * pNoPush = g_ICvar->FindVar( "tf_avoidteammates_pushaway" );
     if (nopush_enabled == pNoPush-> GetBool()) pNoPush->SetValue (!nopush_enabled);
 }
 
@@ -303,6 +307,9 @@ void Draw() {
 			AddSideString(format("Taunt Concept: ", CE_INT(LOCAL_E, netvar.m_iTauntConcept)));
 			AddSideString(format("Taunt Index: ", CE_INT(LOCAL_E, netvar.m_iTauntIndex)));
 			AddSideString(format("Sequence: ", CE_INT(LOCAL_E, netvar.m_nSequence)));
+			static int last_cmd_number = 0;
+			if (g_pUserCmd && g_pUserCmd->command_number) last_cmd_number = g_pUserCmd->command_number;
+			if (g_pUserCmd) AddSideString(format("command_number: ", last_cmd_number));
 			/*AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
 			//AddSideString(colors::white, "flNextPrimaryAttack: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));
 			//AddSideString(colors::white, "nTickBase: %f", (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * gvars->interval_per_tick);
