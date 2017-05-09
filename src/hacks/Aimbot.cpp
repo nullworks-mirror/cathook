@@ -598,7 +598,7 @@ EAimbotLocalState ShouldAim() {
 	if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFPipebombLauncher) return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
 	if (only_can_shoot) {
 		// Miniguns should shoot and aim continiously. TODO smg
-		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFMinigun && g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFSMG) {
+		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFMinigun) {
 			// Melees are weird, they should aim continiously like miniguns too.
 			if (GetWeaponMode(g_pLocalPlayer->entity) != weaponmode::weapon_melee) {
 				// Finally, CanShoot() check.
