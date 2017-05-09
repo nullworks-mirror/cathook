@@ -214,8 +214,9 @@ void FrameStageNotify_hook(void* _this, int stage) {
 				Vector& angles = NET_VECTOR(ent, netvar.m_angEyeAngles);
 				if (angles.x >= 90) angles.x = -89;
 				if (angles.x <= -90) angles.x = 89;
-				while (angles.y > 180) angles.y -= 360;
-				while (angles.y < -180) angles.y += 360;
+				angles.y = fmod(angles.y + 180.0f, 360.0f);
+				if (angles.y < 0) angles.y += 360.0f;
+				angles.y -= 180.0f;
 			}
 		}
 	}

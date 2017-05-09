@@ -252,6 +252,10 @@ void CreateMove() {
 				minigun_fix_ticks = 40;
 		}
 	}
+	if (minigun_fix_ticks > 0) {
+		minigun_fix_ticks--;
+		g_pUserCmd->buttons |= IN_ATTACK;
+	}
 	if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun &&
 			target_highest == 0 &&
 			IDX_GOOD(last_target) &&
