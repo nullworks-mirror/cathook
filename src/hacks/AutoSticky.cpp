@@ -43,7 +43,7 @@ bool stickyVisable(CachedEntity* targetTrace, CachedEntity* bombTrace) {
     static trace_t trace;
     trace::g_pFilterDefault->SetSelf(RAW_ENT(bombTrace));
     Ray_t ray;
-    ray.Init(bombTrace->m_vecOrigin, targetTrace->m_vecOrigin);
+    ray.Init(bombTrace->m_vecOrigin, RAW_ENT(targetTrace)->GetCollideable()->GetCollisionOrigin());
     g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, &trace);
     //deboog1 = bombTrace.DistToSqr(trace->endpos);
     if (trace.m_pEnt) {
