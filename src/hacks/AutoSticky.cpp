@@ -15,6 +15,8 @@ namespace hacks { namespace tf { namespace autosticky {
 CatVar enabled(CV_SWITCH, "sticky_enabled", "0", "AutoSticky", "Master AutoSticky switch");
 CatVar buildings(CV_SWITCH, "sticky_buildings", "1", "Detonate buildings", "Stickies react to buildings");
 CatVar distance(CV_INT, "sticky_distance", "150", "Distance", "Maximum distance to detonate");
+CatVar visCheck(CV_SWITCH, "sticky_visable", "1", "Vis check", "Simple check to see if the sticky will hit someone");
+//CatVar legit(CV_SWITCH, "sticky_legit", "0", "Legit", "Stickys only detonate when you see them");
 
 std::vector<CachedEntity*> bombs;
 std::vector<CachedEntity*> targets;
@@ -37,6 +39,19 @@ bool IsTarget(CachedEntity* ent) {
 	return false;
 }
 
+bool stickyVisable(CachedEntity* targetTrace, CachedEntity* bombTrace) {
+    static trace_t trace;
+    trace::g_pFilterDefault->SetSelf(RAW_ENT(bombTrace));
+    Ray_t ray;
+    ray.Init(bombTrace->m_vecOrigin, targetTrace->m_vecOrigin);
+    g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, &trace);
+    //deboog1 = bombTrace.DistToSqr(trace->endpos);
+    if (trace.m_pEnt) {
+        if (((IClientEntity*)(trace.m_pEnt))->entindex() == targetTrace->m_IDX) return true;
+	}
+    return false;
+}
+
 void CreateMove() {
 	if (!enabled) return;
 	if (g_pLocalPlayer->clazz != tf_demoman) return;
@@ -54,8 +69,18 @@ void CreateMove() {
 	for (auto bomb : bombs) {
 		for (auto target : targets) {
 			if (bomb->m_vecOrigin.DistToSqr(target->m_vecOrigin) < ((float)distance * (float)distance)) {
-				g_pUserCmd->buttons |= IN_ATTACK2;
-				return;
+                if (visCheck) {
+                    if (stickyVisable(target, bomb)) {
+                        logging::Info("Det"); 
+                        g_pUserCmd->buttons |= IN_ATTACK2;
+                        /*if (legit) {
+                            if (stickyVisable(g_pLocalPlayer->entity, bomb)) g_pUserCmd->buttons |= IN_ATTACK2;
+                        } else g_pUserCmd->buttons |= IN_ATTACK2;
+                        */
+                    }
+                } else g_pUserCmd->buttons |= IN_ATTACK2;
+
+            return;
 			}
 		}
 	}
