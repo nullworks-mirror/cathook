@@ -67,197 +67,197 @@ void RefreshFonts() {
 }
 
 static const std::string list_hl2dm = R"(
-		"Cat Hook"
-		"Aim Bot" [
-		    "Aim Bot Menu"
-		    "aimbot_enabled"
-		    "aimbot_aimkey"
-		    "aimbot_aimkey_mode"
-		    "aimbot_autoshoot"
-		    "aimbot_silent"
-		    "aimbot_hitboxmode"
-		    "aimbot_fov"
-		    "aimbot_prioritymode"
-		    "aimbot_projectile"
-		    "aimbot_proj_fovpred"
-		    "aimbot_proj_vispred"
-		    "aimbot_interp"
-		    "Preferences" [
-		        "Aim Bot Preferences"
-		        "aimbot_only_when_can_shoot"
-		        "aimbot_enable_attack_only"
-		        "aimbot_maxrange"
-		        "aimbot_teammates"
-		        "aimbot_zoomed"
-		        "aimbot_hitbox"
-		        "Projectile Aimbot" [
-		            "Projectile Aimbot Tweaks"
-		            "aimbot_proj_gravity"
-		            "aimbot_proj_speed"
-		        ]
-		    ]
-		]
-		 
-		"Trigger Bot" [
-		    "Trigger Bot Menu"
-		    "trigger_enabled"
-		    "trigger_accuracy"
-		    "trigger_range"
-		    "trigger_hitbox"
-		]
-		 
-		"Chams" [
-		    "Chams Menu"
-		    "chams_enable"
-		    "chams_health"
-		    "chams_players"
-		    "chams_teammates"
-		    "chams_flat"
-		    "chams_weapons"
-		    "chams_medkits"
-		    "chams_ammo"
-		]
+"Cat Hook"
+"Aim Bot" [
+	"Aim Bot Menu"
+	"aimbot_enabled"
+	"aimbot_aimkey"
+	"aimbot_aimkey_mode"
+	"aimbot_autoshoot"
+	"aimbot_hitboxmode"
+	"aimbot_fov"
+	"aimbot_prioritymode"
+	"aimbot_charge"
+    "aimbot_teammates"
+	"Preferences" [
+		"Aim Bot Preferences"
+		"aimbot_silent"
+		"aimbot_hitbox"
+		"aimbot_only_when_can_shoot"
+		"aimbot_enable_attack_only"
+		"aimbot_maxrange"
+		"aimbot_interp"
+		"aimbot_slow"
+		"aimbot_slow_smooth"
+		"aimbot_slow_autoshoot"
+	]
+]
+ 
+"Trigger Bot" [
+	"Trigger Bot Menu"
+	"trigger_enabled"
+	"trigger_accuracy"
+	"trigger_range"
+	"trigger_hitbox"
+]
+ 
 
-		"Glow" [
-		    "Glow Menu"
-		    "glow_enable"
-		    "glow_solid_when"
-		    "glow_blur_scale"
-		    "glow_health"
-		    "glow_players"
-		    "glow_teammates"
-		    "glow_medkits"
-		    "glow_ammo"
-		    "glow_stickies"
-		]
 
-		"ESP" [
-		    "ESP Menu"
-		    "esp_enabled"
-		    "font_esp_family"
-		    "font_esp_height"
-		    "esp_name"
-		    "esp_distance"
-		    "esp_box"
-		    "esp_box_text_position"
-		    "esp_box_nodraw"
-		    "esp_box_expand"
-		    "3D Box" [
-		        "3D Box Settings"
-		        "esp_3d_box"
-		        "esp_3d_box_thick"
-		        "esp_3d_box_health"
-		        "esp_3d_box_expand"
-		        "esp_3d_box_smoothing"
-		        "esp_3d_box_expand_size"
-		        "esp_3d_box_healthbar"
-		    ]
-		    "esp_legit"
-		    "esp_health_num"
-		    "esp_model_name"
-		    "esp_weapon"
-		    "esp_vischeck"
-		    "esp_entity_id"
-		    "esp_followbot_id"
-		    "esp_teammates"
-		    "esp_entity"
-		    "esp_buildings"
-		    "esp_local"
-		    "Items" [
-		        "Item ESP Menu"
-		        "esp_item"
-		        "esp_item_health"
-		        "esp_item_ammo"
-		        "esp_item_weapons"
-		        "esp_money_red"
-		        "esp_money"
-		    ]
+"Visuals" [
+	"Visuals Menu"
+	"ESP" [
+		"ESP Menu"
+		"esp_enabled"
+		"font_esp_family"
+		"font_esp_height"
+		"esp_name"
+		"esp_distance"
+		"esp_box"
+		"esp_box_text_position"
+		"esp_box_nodraw"
+		"esp_box_expand"
+		"3D Box" [
+			"3D Box Settings"
+			"esp_3d_box"
+			"esp_3d_box_thick"
+			"esp_3d_box_health"
+			"esp_3d_box_expand"
+			"esp_3d_box_smoothing"
+			"esp_3d_box_expand_size"
+			"esp_3d_box_healthbar"
 		]
-		 
-		"Anti-Aim" [
-		    "Anti-Aim Menu"
-		    "aa_enabled"
-		    "aa_pitch"
-		    "aa_pitch_mode"
-		    "aa_yaw"
-		    "aa_yaw_mode"
-		    "aa_spin"
-		    "aa_roll"
-		    "aa_no_clamp"
-		    "Anti-Anti-AA" [
-		        "Anti-Anti-Anti-Aim Menu"
-		        "aa_aaaa_enabled"
-		        "aa_aaaa_interval"
-		        "aa_aaaa_interval_low"
-		        "aa_aaaa_interval_high"
-		        "aa_aaaa_mode"
-		        "aa_aaaa_flip_key"
-		    ]
+		"esp_legit"
+		"esp_health_num"
+		"esp_weapon_spawners"
+		"esp_model_name"
+		"esp_weapon"
+		"esp_vischeck"
+		"esp_entity_id"
+		"esp_followbot_id"
+		"esp_teammates"
+		"esp_entity"
+		"esp_local"
+		"Items" [
+			"Item ESP Menu"
+			"esp_item"
+			"esp_item_adrenaline"
+			"esp_item_powerups"
+			"esp_item_health"
+			"esp_item_ammo"
+			"esp_item_weapons"
 		]
-		 
-		"Airstuck" [
-		    "Airstuck Menu"
-		    "airstuck"
-		    "airstuck_toggle"
-		]
-		 
-		"Chat" [
-		    "Chat Options Menu"
-		    "killsay"
-		    "spam"
-		    "spam_newlines"
-		    "clean_chat"
-		]
-		 
-		"Miscellaneous" [
-		    "Miscellaneous Settings"
-		    "enabled"
-		    "fast_outline"
-		    "no_arms"
-		    "bhop_enabled"
-		    "fov"
-		    "rollspeedhack"
-		    "fast_vischeck"
-		    "anti_afk"
-		    "flashlight"
-		    "no_visuals"
-		    "clean_screenshots"
-		    "info"
-		    "debug_info"
-		    "log"
-		]
-		 
-		"Follow Bot" [
-		    "Follow Bot Settings"
-		    "fb_bot"
-		    "fb_mimic_slot"
-		    "fb_always_medigun"
-		    "fb_autoclass"
-		]
-		 
-		"GUI" [
-		    "GUI Settings"
-		    "gui_color_b"
-		    "gui_color_g"
-		    "gui_color_r"
-		    "gui_rainbow"
-		    "gui_bounds"
-		    "gui_nullcore"
-		    "gui_visible"
-		]
+	]
+	"Chams" [
+		"Chams Menu"
+		"chams_enable"
+		"chams_health"
+		"chams_players"
+		"chams_teammates"
+		"chams_flat"
+		"chams_weapons"
+		"chams_medkits"
+		"chams_ammo"
+	]
 
-		"Radar" [
-			"Radar Menu"
-			"radar"
-			"radar_size"
-			"radar_zoom"
-			"radar_health"
-			"radar_enemies_top"
-			"radar_icon_size"
-			"radar_x"
-			"radar_y"
-		]
-		)";
+	"Glow" [
+		"Glow Menu"
+		"glow_enable"
+		"glow_solid_when"
+		"glow_blur_scale"
+		"glow_health"
+		"glow_players"
+		"glow_teammates"
+		"glow_medkits"
+		"glow_ammo"
+	]
+	"GUI" [
+		"GUI Settings"
+		"logo"
+		"gui_bg_particles"
+		"gui_bg_particles_type"
+		"gui_bg_particles_chance"
+		"gui_bg_particles_pack_size"
+		"gui_bg_particles_safe_zone"
+		"gui_bg_particles_gravity"
+		"gui_bg_particles_jittering"
+		"gui_bg_particles_jittering_chance"
+		"gui_bg_particles_wind"
+		"gui_bg_visible"
+		"gui_color_b"
+		"gui_color_g"
+		"gui_color_r"
+		"gui_rainbow"
+		"fast_outline"
+		"gui_bounds"
+		"gui_visible"
+	]
+	"Miscellaneous" [
+		"Miscellaneous"
+		"pure_bypass"
+		"no_arms"
+		"fov"
+		"clean_screenshots"
+		"logo"
+	]
+]
+ 
+"Anti-/Anti-Aim" [
+	"Anti-Aim Menu"
+	"aa_enabled"
+	"aa_pitch"
+	"aa_pitch_mode"
+	"aa_yaw"
+	"aa_yaw_mode"
+	"aa_spin"
+	"aa_roll"
+	"aa_no_clamp"
+	"resolver"
+	"Anti-Anti-Anti-Aim" [
+		"Anti-Anti-Anti-Aim Menu"
+		"aa_aaaa_enabled"
+		"aa_aaaa_interval"
+		"aa_aaaa_interval_low"
+		"aa_aaaa_interval_high"
+		"aa_aaaa_mode"
+		"aa_aaaa_flip_key"
+	]
+]
+
+"Chat" [
+	"Chat Options Menu"
+	"chat_newlines"
+	"clean_chat"
+	"killsay"
+	"spam"
+	"spam_random"
+]
+ 
+"Follow Bot" [
+	"Follow Bot Settings"
+	"fb_bot"
+	"fb_mimic_slot"
+	"fb_always_medigun"
+	"fb_autoclass"
+	"fb_follow_distance"
+]
+
+"Miscellaneous" [
+	"Miscellaneous Settings"
+	"bhop_enabled"
+	"fast_vischeck"
+	"anti_afk"
+	"rollspeedhack"
+	"info"
+	"Debug" [
+		"Debug Menu"
+		"software_cursor_mode"
+		"enabled"
+		"no_visuals"
+		"debug_info"
+		"log"
+	]
+]
+)";
 
 static const std::string list_tf2 = R"(
 "Cat Hook"

@@ -38,7 +38,8 @@ void PlayerListEntry::Update() {
 					safename[j++] = info.name[i];
 				}
 				name->text = format(safename);
-				int iclazz = g_pPlayerResource->GetClass(ENTITY(idx));
+				int iclazz = 0;
+				if (TF) iclazz = g_pPlayerResource->GetClass(ENTITY(idx));
 				int team = g_pPlayerResource->GetTeam(idx);
 				clazz->color_bg = 0;
 				if (idx != g_IEngine->GetLocalPlayer()) {
