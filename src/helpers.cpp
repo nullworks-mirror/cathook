@@ -215,7 +215,7 @@ bool GetHitbox(CachedEntity* entity, int hb, Vector& out) {
 	static CachedHitbox *box;
 
 	if (CE_BAD(entity)) return false;
-	box = entity->m_pHitboxCache->GetHitbox(hb);
+	box = entity->hitboxes.GetHitbox(hb);
 	if (!box) out = entity->m_vecOrigin;
 	else out = box->center;
 	return true;
@@ -360,7 +360,7 @@ bool IsEntityVisible(CachedEntity* entity, int hb) {
 	if (hb == -1) {
 		return IsEntityVectorVisible(entity, entity->m_vecOrigin);
 	} else {
-		return entity->m_pHitboxCache->VisibilityCheck(hb);
+		return entity->hitboxes.VisibilityCheck(hb);
 	}
 
 }
@@ -556,10 +556,8 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 constexpr unsigned developer_list[] = { 306902159, 347272825, 401679596 };
 
 bool Developer(CachedEntity* ent) {
-	if (ent->m_pPlayerInfo) {
-		for (int i = 0; i < sizeof(developer_list) / sizeof(unsigned); i++) {
-			if (developer_list[i] == ent->m_pPlayerInfo->friendsID) return true;
-		}
+	for (int i = 0; i < sizeof(developer_list) / sizeof(unsigned); i++) {
+		if (developer_list[i] == ent->player_info.friendsID) return true;
 	}
 	return false;
 }

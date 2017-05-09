@@ -125,12 +125,12 @@ int ClosestHitbox(CachedEntity* target) {
 
 	//If you can see the spine, no need to check for another hitbox
     if ((int)hitbox_mode == 0) {
-        if (target->m_pHitboxCache->VisibilityCheck(hitbox_t::spine_1)) return hitbox_t::spine_1;
+        if (target->hitboxes.VisibilityCheck(hitbox_t::spine_1)) return hitbox_t::spine_1;
     }
 	closest = -1;
 	closest_fov = 256;
-	for (int i = 0; i < target->m_pHitboxCache->GetNumHitboxes(); i++) {
-		fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, target->m_pHitboxCache->GetHitbox(i)->center);
+	for (int i = 0; i < target->hitboxes.GetNumHitboxes(); i++) {
+		fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, target->hitboxes.GetHitbox(i)->center);
 		if (fov < closest_fov || closest == -1) {
 			closest = i;
 			closest_fov = fov;
@@ -717,9 +717,9 @@ int BestHitbox(CachedEntity* target) {
 		}
 
 		if (headonly) return hitbox_t::head;
-		if (target->m_pHitboxCache->VisibilityCheck(preferred)) return preferred;
-		for (int i = projectile_mode ? 1 : 0; i < target->m_pHitboxCache->GetNumHitboxes(); i++) {
-			if (target->m_pHitboxCache->VisibilityCheck(i)) return i;
+		if (target->hitboxes.VisibilityCheck(preferred)) return preferred;
+		for (int i = projectile_mode ? 1 : 0; i < target->hitboxes.GetNumHitboxes(); i++) {
+			if (target->hitboxes.VisibilityCheck(i)) return i;
 		}
 	} break;
 	case 1: { // AUTO-CLOSEST
