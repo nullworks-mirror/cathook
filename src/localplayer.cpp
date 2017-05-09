@@ -9,6 +9,8 @@
 #include "sdk.h"
 
 void LocalPlayer::Update() {
+	static CachedEntity *wep;
+
 	entity_idx = g_IEngine->GetLocalPlayer();
 	entity = ENTITY(entity_idx);
 	if (CE_BAD(entity)) {
@@ -16,7 +18,7 @@ void LocalPlayer::Update() {
 		return;
 	}
 	holding_sniper_rifle = false;
-	CachedEntity* wep = weapon();
+	wep = weapon();
 	if (CE_GOOD(wep)) {
 		if (wep->m_iClassID == g_pClassID->CTFSniperRifle || wep->m_iClassID == g_pClassID->CTFSniperRifleDecap) holding_sniper_rifle = true;
 	}
@@ -37,9 +39,11 @@ void LocalPlayer::Update() {
 }
 
 CachedEntity* LocalPlayer::weapon() {
+	static int handle, eid;
+
 	if (CE_BAD(entity)) return 0;
-	int handle = CE_INT(entity, netvar.hActiveWeapon);
-	int eid = handle & 0xFFF;
+	handle = CE_INT(entity, netvar.hActiveWeapon);
+	eid = handle & 0xFFF;
 	if (IDX_BAD(eid)) return 0;
 	return ENTITY(eid);
 }

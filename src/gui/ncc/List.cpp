@@ -46,6 +46,15 @@ void List::OpenSublist(List* sublist, int dy) {
 	if (open_sublist) open_sublist->Hide();
 	open_sublist = sublist;
 	if (sublist) {
+		/*auto absp = AbsolutePosition();
+		int x = 221;
+		int y = dy;
+		if (absp.first + 221 * 2 > draw::width)
+			x = 0;
+		auto sls = sublist->GetSize();
+		if (absp.second + dy + sls.second > draw::height)
+			y = dy - sls.second;*
+		sublist->SetOffset(x, y);*/
 		sublist->SetOffset(221, dy);
 		sublist->Show();
 	}

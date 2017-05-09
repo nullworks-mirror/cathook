@@ -30,9 +30,12 @@ void trace::FilterDefault::SetSelf(IClientEntity* self) {
 }
 
 bool trace::FilterDefault::ShouldHitEntity(IHandleEntity* handle, int mask) {
+	static IClientEntity *entity;
+	static ClientClass *clazz;
+
 	if (!handle) return false;
-	IClientEntity* entity = (IClientEntity*) handle;
-	ClientClass* clazz = entity->GetClientClass();
+	entity = (IClientEntity*) handle;
+	clazz = entity->GetClientClass();
 	/* Ignore invisible entities that we don't wanna hit */
 	switch(clazz->m_ClassID) {
 	// TODO magic numbers: invisible entity ids
@@ -67,9 +70,12 @@ void trace::FilterNoPlayer::SetSelf(IClientEntity* self) {
 }
 
 bool trace::FilterNoPlayer::ShouldHitEntity(IHandleEntity* handle, int mask) {
+	static IClientEntity *entity;
+	static ClientClass *clazz;
+
 	if (!handle) return false;
-	IClientEntity* entity = (IClientEntity*) handle;
-	ClientClass* clazz = entity->GetClientClass();
+	entity = (IClientEntity*) handle;
+	clazz = entity->GetClientClass();
 	/* Ignore invisible entities that we don't wanna hit */
 	switch(clazz->m_ClassID) {
 	// TODO magic numbers: invisible entity ids
@@ -104,9 +110,12 @@ void trace::FilterPenetration::SetSelf(IClientEntity* self) {
 }
 
 bool trace::FilterPenetration::ShouldHitEntity(IHandleEntity* handle, int mask) {
+	static IClientEntity *entity;
+	static ClientClass *clazz;
+
 	if (!handle) return false;
-	IClientEntity* entity = (IClientEntity*) handle;
-	ClientClass* clazz = entity->GetClientClass();
+	entity = (IClientEntity*) handle;
+	clazz = entity->GetClientClass();
 	/* Ignore invisible entities that we don't wanna hit */
 	switch(clazz->m_ClassID) {
 	// TODO magic numbers: invisible entity ids

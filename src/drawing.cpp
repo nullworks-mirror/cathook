@@ -91,13 +91,16 @@ void colors::Init() {
 }
 
 int colors::EntityF(CachedEntity* ent) {
+	static int result, skin, plclr;
+	static k_EItemType type;
+
 	using namespace colors;
-	int result = white;
-	k_EItemType type = ent->m_ItemType;
+	result = white;
+	type = ent->m_ItemType;
 	if (type) {
 		if (type >= ITEM_HEALTH_SMALL && type <= ITEM_HEALTH_LARGE || type == ITEM_TF2C_PILL) result = green;
 		else if (type >= ITEM_POWERUP_FIRST && type <= ITEM_POWERUP_LAST) {
-			int skin = RAW_ENT(ent)->GetSkin();
+			skin = RAW_ENT(ent)->GetSkin();
 			if (skin == 1) result = red;
 			else if (skin == 2) result = blu;
 			else result = yellow;
@@ -142,7 +145,7 @@ int colors::EntityF(CachedEntity* ent) {
 				if (ent->m_iTeam == TEAM_BLU) result = blu_v;
 				else if (ent->m_iTeam == TEAM_RED) result = red_v;
 			}
-			int plclr = playerlist::Color(ent);
+			plclr = playerlist::Color(ent);
 			if (plclr) result = plclr;
 		}
 	}
@@ -155,8 +158,8 @@ int colors::RainbowCurrent() {
 }
 
 int colors::FromHSL(float h, float s, float v) {
-	double      hh, p, q, t, ff;
-	long        i;
+	static double hh, p, q, t, ff;
+	static long i;
 
 	if(s <= 0.0) {       // < is bogus, just shuts up warnings
 		return colors::Create(v * 255, v * 255, v * 255, 255);
@@ -189,7 +192,8 @@ int colors::FromHSL(float h, float s, float v) {
 }
 
 int colors::Health(int health, int max) {
-	float hf = (float)health / (float)max;
+	static float hf;
+	hf = (float)health / (float)max;
 	if (hf > 1) {
 		return colors::Create(64, 128, 255, 255);
 	}
@@ -249,24 +253,25 @@ void draw::DrawLine(int x, int y, int dx, int dy, int color) {
 }
 
 bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
+	static Vector world, min, max;
+	static bool succ;
+
 	if (!entity) return false;
-	Vector world;
-	Vector min, max;
 	RAW_ENT(entity)->GetRenderBounds(min, max);
 	world = RAW_ENT(entity)->GetAbsOrigin();
 	world.z += (min.z + max.z) / 2;
-	Vector scr;
-	bool succ = draw::WorldToScreen(world, scr);
-	out = scr;
+	succ = draw::WorldToScreen(world, out);
 	return succ;
 }
 
 bool draw::WorldToScreen(Vector& origin, Vector& screen) {
-	VMatrix wts = g_IEngine->WorldToScreenMatrix();
+	static float w, odw;
+
+	const VMatrix& wts = g_IEngine->WorldToScreenMatrix();
 	screen.z = 0;
-	float w = wts[3][0] * origin[0] + wts[3][1] * origin[1] + wts[3][2] * origin[2] + wts[3][3];
+	w = wts[3][0] * origin[0] + wts[3][1] * origin[1] + wts[3][2] * origin[2] + wts[3][3];
 	if (w > 0.001) {
-		float odw = 1.0f / w;
+		odw = 1.0f / w;
 		screen.x = (draw::width / 2) + (0.5 * ((wts[0][0] * origin[0] + wts[0][1] * origin[1] + wts[0][2] * origin[2] + wts[0][3]) * odw) * draw::width + 0.5);
 		screen.y = (draw::height / 2) - (0.5 * ((wts[1][0] * origin[0] + wts[1][1] * origin[1] + wts[1][2] * origin[2] + wts[1][3]) * odw) * draw::height + 0.5);
 		return true;
@@ -280,45 +285,33 @@ void draw::OutlineRect(int x, int y, int w, int h, int color) {
 }
 
 void draw::GetStringLength(unsigned long font, char* string, int& length, int& height) {
-	wchar_t buf[1024] = {'\0'};
+	static wchar_t buf[512];
+	memset(buf, 0, sizeof(wchar_t) * 512);
 	mbstowcs(buf, string, strlen(string));
 	g_ISurface->GetTextSize(font, buf, length, height);
 }
 
 void draw::String (unsigned long font, int x, int y, int color, int shadow, const char* text) {
-	/*if (shadow) {
-		unsigned char alpha = (color >> 24);
-		int black_t = ((alpha == 255) ? colors::black : colors::Create(0, 0, 0, alpha / shadow));
-		if (shadow > 0) {
-			draw::String(font, x + 1, y + 1, black_t, false, text);
-		}
-		if (shadow > 1) {
-			draw::String(font, x - 1, y + 1, black_t, false, text);
-			draw::String(font, x - 1, y - 1, black_t, false, text);
-			draw::String(font, x + 1, y - 1, black_t, false, text);
-			draw::String(font, x + 1, y, black_t, false, text);
-			draw::String(font, x, y + 1, black_t, false, text);
-			draw::String(font, x, y - 1, black_t, false, text);
-			draw::String(font, x - 1, y, black_t, false, text);
-		}
-	}
-	char* col = new char[4];
-	*(int*)col = color;
-	matsurface->DrawColoredText(font, x, y, col[0], col[1], col[2], col[3], "%s", text);
-	*/bool newlined = false;
-	for (int i = 0; i < strlen(text); i++) {
+	static bool newlined;
+	static int w, h, s, n;
+	static char ch[512];
+	static wchar_t string[512];
+	static size_t len;
+
+	newlined = false;
+	len = strlen(text);
+	for (int i = 0; i < len; i++) {
 		if (text[i] == '\n') {
 			newlined = true; break;
 		}
 	}
 	if (newlined) {
-		int w, h;
+		memset(ch, 0, sizeof(char) * 512);
 		GetStringLength(font, "W", w, h);
-		char ch[1024];
-		memcpy(ch, text, 1024);
-		int s = 0;
-		int n = 0;
-		for (int i = 0; i < strlen(text); i++) {
+		strncpy(ch, text, 511);
+		s = 0;
+		n = 0;
+		for (int i = 0; i < len; i++) {
 			if (ch[i] == '\n') {
 				ch[i] = 0;
 				draw::String(font, x, y + n * (h), color, shadow, &ch[0] + s);
@@ -328,8 +321,8 @@ void draw::String (unsigned long font, int x, int y, int color, int shadow, cons
 		}
 		draw::String(font, x, y + n * (h), color, shadow, &ch[0] + s);
 	} else {
-		wchar_t string[1024] = { '\0' };
-		mbstowcs(string, text, 1024);
+		memset(string, 0, sizeof(wchar_t) * 512);
+		mbstowcs(string, text, 511);
 		draw::WString(font, x, y, color, shadow, string);
 	}
 }
@@ -339,9 +332,12 @@ void draw::String(unsigned long font, int x, int y, int color, int shadow, std::
 }
 CatVar fast_outline(CV_SWITCH, "fast_outline", "0", "Fast font outline", "Use only single repaint to increase performance");
 void draw::WString(unsigned long font, int x, int y, int color, int shadow, const wchar_t* text) {
+	static unsigned char alpha;
+	static int black_t;
+
 	if (shadow) {
-		unsigned char alpha = (color >> 24);
-		int black_t = ((alpha == 255) ? colors::black : colors::Create(0, 0, 0, alpha / shadow));
+		alpha = (color >> 24);
+		black_t = ((alpha == 255) ? colors::black : colors::Create(0, 0, 0, alpha / shadow));
 		if (shadow > 0) {
 			draw::WString(font, x + 1, y + 1, black_t, false, text);
 		}

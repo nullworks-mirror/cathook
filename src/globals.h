@@ -28,6 +28,7 @@ extern CatVar fast_outline;
 extern CatVar roll_speedhack;
 extern CatVar force_name;
 extern bool need_name_change;
+extern int last_cmd_number;
 
 class GlobalSettings {
 public:

@@ -22,6 +22,7 @@ void NetVars::Init() {
 	this->vVelocity = gNetvars.get_offset("DT_BasePlayer", "localdata", "m_vecVelocity[0]");
 	this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
 	this->m_Collision = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
+	m_flSimulationTime = gNetvars.get_offset("DT_BaseEntity", "m_flSimulationTime");
 	if (TF2) {
 		res_iTeam = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
 		this->res_iMaxBuffedHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");

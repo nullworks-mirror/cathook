@@ -16,8 +16,10 @@
 std::vector<ConVar*> g_ConVars;
 FILE* hConVarsFile = 0;
 void BeginConVars() {
+	static FILE *hAutoexec, *hMatchexec;
+
 	hConVarsFile = fopen(strfmt("%scfg/cat_defaults.cfg", g_pszTFPath), "w");
-	FILE* hAutoexec = fopen(strfmt("%scfg/cat_autoexec.cfg", g_pszTFPath), "r+");
+	hAutoexec = fopen(strfmt("%scfg/cat_autoexec.cfg", g_pszTFPath), "r+");
 	if (!hAutoexec) {
 		hAutoexec = fopen(strfmt("%scfg/cat_autoexec.cfg", g_pszTFPath), "w");
 		if (hAutoexec) {
@@ -25,7 +27,7 @@ void BeginConVars() {
 			fclose(hAutoexec);
 		}
 	} else fclose(hAutoexec);
-	FILE* hMatchexec = fopen(strfmt("%scfg/cat_matchexec.cfg", g_pszTFPath), "r+");
+	hMatchexec = fopen(strfmt("%scfg/cat_matchexec.cfg", g_pszTFPath), "r+");
 	if (!hMatchexec) {
 		hMatchexec = fopen(strfmt("%scfg/cat_matchexec.cfg", g_pszTFPath), "w");
 		if (hMatchexec) {
@@ -50,13 +52,17 @@ void EndConVars() {
 
 // StackOverflow copypasta xddd
 void ReplaceString(char* target, char* what, char* with_what) {
-	char buffer[1024] = { 0 };
-	char *insert_point = &buffer[0];
-	const char *tmp = target;
-	size_t needle_len = strlen(what);
-	size_t repl_len = strlen(with_what);
+	static char buffer[1024] = { 0 };
+	static char *insert_point;
+	static const char *tmp, *p;
+	static size_t needle_len, repl_len;
+	buffer[0] = 0;
+	insert_point = &buffer[0];
+	tmp = target;
+	needle_len = strlen(what);
+	repl_len = strlen(with_what);
 	while (1) {
-		const char *p = strstr(tmp, what);
+		p = strstr(tmp, what);
 		if (p == NULL) {
 			strcpy(insert_point, tmp);
 			break;
@@ -70,12 +76,16 @@ void ReplaceString(char* target, char* what, char* with_what) {
 	strcpy(target, buffer);
 }
 
+// TODO Source Engine
+// CTFPlayerShared::IsInvulnerable(CTFPlayerShared *this)
 bool IsPlayerInvulnerable(CachedEntity* player) {
 	return (HasCondition(player, TFCond_Ubercharged) || HasCondition(player, TFCond_UberchargedCanteen)
 	 || HasCondition(player, TFCond_UberchargedHidden) || HasCondition(player, TFCond_UberchargedOnTakeDamage)
 	 || HasCondition(player, TFCond_Bonked) || HasCondition(player, TFCond_DefenseBuffMmmph));
 }
 
+// TODO Source Engine
+// CTFPlayerShared::IsCritBoosted@<eax>(long double a1@<st0>, CTFPlayerShared *this)
 bool IsPlayerCritBoosted(CachedEntity* player) {
 	return (HasCondition(player, TFCond_Kritzkrieged) || HasCondition(player, TFCond_CritRuneTemp)
 		 || HasCondition(player, TFCond_CritCanteen) || HasCondition(player, TFCond_CritMmmph)
@@ -86,10 +96,10 @@ bool IsPlayerCritBoosted(CachedEntity* player) {
 
 ConVar* CreateConVar(std::string name, std::string value, std::string help) {
 	char* namec = new char[256];
-	strncpy(namec, name.c_str(), 255);
 	char* valuec = new char[256];
-	strncpy(valuec, value.c_str(), 255);
 	char* helpc = new char[256];
+	strncpy(namec, name.c_str(), 255);
+	strncpy(valuec, value.c_str(), 255);
 	strncpy(helpc, help.c_str(), 255);
 	//logging::Info("Creating ConVar: %s %s %s", namec, valuec, helpc);
 	ConVar* ret = new ConVar((const char*)namec, (const char*)valuec, 0, (const char*)helpc);
@@ -117,14 +127,21 @@ const char* GetBuildingName(CachedEntity* ent) {
 void format_internal(std::stringstream& stream) {}
 
 std::string WordWrap(std::string& in, int max) {
-	std::stringstream result;
-	std::stringstream line;
-	std::stringstream wordstream;
-	std::stringstream next;
+	static std::stringstream result, line, wordstream, next;
+	static std::string word;
+	static char ch;
+	result.str("");
+	result.clear();
+	line.str("");
+	line.clear();
+	wordstream.str("");
+	wordstream.clear();
+	next.str("");
+	next.clear();
 	for (int i = 0; i < in.size(); i++) {
-		char ch = in.at(i);
+		ch = in.at(i);
 		if (ch == ' ' || ch == '\n') {
-			std::string word = wordstream.str();
+			word = wordstream.str();
 			//logging::Info("got word: '%s'", word.c_str());
 			wordstream.str("");
 			auto size = draw::GetStringLength(fonts::MENU, line.str() + word);
@@ -138,7 +155,7 @@ std::string WordWrap(std::string& in, int max) {
 			wordstream << ch;
 		}
 	}
-	std::string word = wordstream.str();
+	word = wordstream.str();
 	wordstream.str("");
 	auto size = draw::GetStringLength(fonts::MENU, line.str() + word);
 	if (size.first >= max) {
@@ -152,7 +169,8 @@ std::string WordWrap(std::string& in, int max) {
 }
 
 void ReplaceString(std::string& input, const std::string& what, const std::string& with_what) {
-	size_t index = input.find(what);
+	static size_t index;
+	index = input.find(what);
 	while (index != std::string::npos) {
 		input.replace(index, what.size(), with_what);
 		index = input.find(what, index + with_what.size());
@@ -177,32 +195,34 @@ powerup_type GetPowerupOnPlayer(CachedEntity* player) {
 }
 
 bool HasDarwins(CachedEntity* ent) {
+	static int *hWeapons;
 	if (CE_INT(ent, netvar.iClass) != tf_sniper) return false;
-	int* hweapons = (int*)((unsigned)(RAW_ENT(ent) + netvar.hMyWeapons));
+	hWeapons = (int*)((unsigned)(RAW_ENT(ent) + netvar.hMyWeapons));
 	for (int i = 0; i < 4; i++) {
-		IClientEntity* weapon = g_IEntityList->GetClientEntityFromHandle(hweapons[i]);
+		IClientEntity* weapon = g_IEntityList->GetClientEntityFromHandle(hWeapons[i]);
 		if (weapon && NET_INT(weapon, netvar.iItemDefinitionIndex) == 231) return true;
 	}
 	return false;
 }
 
-void VectorTransform (const float *in1, const matrix3x4_t& in2, float *out)
-{
+void VectorTransform (const float *in1, const matrix3x4_t& in2, float *out) {
 	out[0] = (in1[0] * in2[0][0] + in1[1] * in2[0][1] + in1[2] * in2[0][2]) + in2[0][3];
 	out[1] = (in1[0] * in2[1][0] + in1[1] * in2[1][1] + in1[2] * in2[1][2]) + in2[1][3];
 	out[2] = (in1[0] * in2[2][0] + in1[1] * in2[2][1] + in1[2] * in2[2][2]) + in2[2][3];
 }
 
 bool GetHitbox(CachedEntity* entity, int hb, Vector& out) {
+	static CachedHitbox *box;
+
 	if (CE_BAD(entity)) return false;
-	CachedHitbox* box = entity->m_pHitboxCache->GetHitbox(hb);
+	box = entity->m_pHitboxCache->GetHitbox(hb);
 	if (!box) out = entity->m_vecOrigin;
 	else out = box->center;
 	return true;
 }
 
 void VectorAngles(Vector &forward, Vector &angles) {
-	float tmp, yaw, pitch;
+	static float tmp, yaw, pitch;
 
 	if(forward[1] == 0 && forward[0] == 0)
 	{
@@ -301,20 +321,16 @@ char GetChar(ButtonCode_t button) {
 }
 
 void FixMovement(CUserCmd& cmd, Vector& viewangles) {
-	Vector movement(cmd.forwardmove, cmd.sidemove, cmd.upmove);
-	float speed = sqrt(movement.x * movement.x + movement.y * movement.y);
-	Vector ang;
+	static Vector movement, ang;
+	static float speed, yaw;
+	movement.x = cmd.forwardmove;
+	movement.y = cmd.sidemove;
+	movement.z = cmd.upmove;
+	speed = sqrt(movement.x * movement.x + movement.y * movement.y);
 	VectorAngles(movement, ang);
-	float yaw = DEG2RAD(ang.y - viewangles.y + cmd.viewangles.y);
+	yaw = DEG2RAD(ang.y - viewangles.y + cmd.viewangles.y);
 	cmd.forwardmove = cos(yaw) * speed;
 	cmd.sidemove = sin(yaw) * speed;
-	/*Vector vsilent(cmd->forwardmove, cmd->sidemove, cmd->upmove);
-	float speed = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
-	Vector ang;
-	VectorAngles(vsilent, ang);
-	float yaw = deg2rad(ang.y - viewangles_old.y + cmd->viewangles.y);
-	cmd->forwardmove = cos(yaw) * speed;
-	cmd->sidemove = sin(yaw) * speed;*/
 }
 
 bool IsPlayerInvisible(CachedEntity* player) {
@@ -333,15 +349,14 @@ bool AmbassadorCanHeadshot() {
 	return true;
 }
 
-float RandFloatRange(float min, float max)
-{
+float RandFloatRange(float min, float max) {
     return (min + 1) + (((float) rand()) / (float) RAND_MAX) * (max - (min + 1));
 }
 
 bool IsEntityVisible(CachedEntity* entity, int hb) {
+	static Vector hit;
 	if (g_Settings.bInvalid) return false;
 	if (entity == g_pLocalPlayer->entity) return true;
-	Vector hit;
 	if (hb == -1) {
 		return IsEntityVectorVisible(entity, entity->m_vecOrigin);
 	} else {
@@ -351,12 +366,13 @@ bool IsEntityVisible(CachedEntity* entity, int hb) {
 }
 
 bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos) {
+	static trace_t trace_object;
+	static Ray_t ray;
+
 	if (g_Settings.bInvalid) return false;
 	if (entity == g_pLocalPlayer->entity) return true;
 	if (CE_BAD(g_pLocalPlayer->entity)) return false;
 	if (CE_BAD(entity)) return false;
- 	trace_t trace_object;
-	Ray_t ray;
 	trace::g_pFilterDefault->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	ray.Init(g_pLocalPlayer->v_Eye, endpos);
 	{
@@ -367,7 +383,8 @@ bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos) {
 }
 
 Vector GetBuildingPosition(CachedEntity* ent) {
-	Vector res = ent->m_vecOrigin;
+	static Vector res;
+	res = ent->m_vecOrigin;
 	if (ent->m_iClassID == g_pClassID->CObjectDispenser) res.z += 30;
 	if (ent->m_iClassID == g_pClassID->CObjectTeleporter) res.z += 8;
 	if (ent->m_iClassID == g_pClassID->CObjectSentrygun) {
@@ -388,34 +405,6 @@ Vector GetBuildingPosition(CachedEntity* ent) {
 
 bool IsBuildingVisible(CachedEntity* ent) {
 	return IsEntityVectorVisible(ent, GetBuildingPosition(ent));
-}
-
-void fVectorAngles(Vector &forward, Vector &angles) {
-	float tmp, yaw, pitch;
-
-	if(forward[1] == 0 && forward[0] == 0)
-	{
-		yaw = 0;
-		if(forward[2] > 0)
-			pitch = 270;
-		else
-			pitch = 90;
-	}
-	else
-	{
-		yaw = (atan2(forward[1], forward[0]) * 180 / PI);
-		if(yaw < 0)
-			yaw += 360;
-
-		tmp = sqrt((forward[0] * forward[0] + forward[1] * forward[1]));
-		pitch = (atan2(-forward[2], tmp) * 180 / PI);
-		if(pitch < 0)
-			pitch += 360;
-	}
-
-	angles[0] = pitch;
-	angles[1] = yaw;
-	angles[2] = 0;
 }
 
 void fClampAngle(Vector& qaAng) {
@@ -475,15 +464,18 @@ bool IsProjectileCrit(CachedEntity* ent) {
 }
 
 weaponmode GetWeaponMode(CachedEntity* player) {
+	static int weapon_handle, slot;
+	static CachedEntity *weapon;
+
 	if (CE_BAD(player)) return weapon_invalid;
-	int weapon_handle = CE_INT(player, netvar.hActiveWeapon);
+	weapon_handle = CE_INT(player, netvar.hActiveWeapon);
 	if (IDX_BAD((weapon_handle & 0xFFF))) {
 		//logging::Info("IDX_BAD: %i", weapon_handle & 0xFFF);
 		return weaponmode::weapon_invalid;
 	}
-	CachedEntity* weapon = (ENTITY(weapon_handle & 0xFFF));
+	weapon = (ENTITY(weapon_handle & 0xFFF));
 	if (CE_BAD(weapon)) return weaponmode::weapon_invalid;
-	int slot = vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon()));
+	slot = vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon()));
 	if (slot == 2) return weaponmode::weapon_melee;
 	if (slot > 2) {
 		return weaponmode::weapon_pda;
@@ -523,9 +515,11 @@ bool LineIntersectsBox(Vector& bmin, Vector& bmax, Vector& lmin, Vector& lmax) {
 
 // TODO FIX this function
 bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
+	static float rspeed, rgrav;
+
 	if (CE_BAD(weapon)) return false;
-	float rspeed = 0.0f;
-	float rgrav = 0.0f;
+	rspeed = 0.0f;
+	rgrav = 0.0f;
 	typedef float(GetProjectileData)(IClientEntity*);
 
 	if (weapon->m_iClassID == g_pClassID->CTFRocketLauncher_DirectHit) {
@@ -591,51 +585,23 @@ bool Developer(CachedEntity* ent) {
 }*/
 
 bool IsVectorVisible(Vector origin, Vector target) {
-	//logging::Info("ISVV");
-	trace_t trace_visible;
-	Ray_t ray;
+	static trace_t trace_visible;
+	static Ray_t ray;
+
 	trace::g_pFilterNoPlayer->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	ray.Init(origin, target);
 	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, trace::g_pFilterNoPlayer, &trace_visible);
-//	float dist2 = origin.DistToSqr(trace_visible.endpos);
-//	float dist1 = origin.DistToSqr(target);
-	//logging::Info("Target: %.1f, %.1f, %.1f; ENDPOS: %.1f, %.1f, %.1f", target.x, target.y, target.z, trace_visible.endpos.x, trace_visible.endpos.y, trace_visible.endpos.z);
-	//logging::Info("Dist1: %f, Dist2: %f");
 	return (trace_visible.fraction == 1.0f);
 }
 
-/*bool PredictProjectileAim(Vector origin, IClientEntity* target, hitbox_t hb, float speed, bool arc, float gravity, Vector& result) {
-	if (!target) return false;
-	//logging::Info("PRED PROJ AIM");
-	//logging::Info("ProjSpeed: %f", speed);
-	Vector res1 = result;
-	if (GetHitboxPosition(target, hb, result)) {
-		res1 = target->GetAbsOrigin();
-	}
-	int flags = NET_INT(target, eoffsets.iFlags);
-	bool ground = (flags & (1 << 0));
-	float distance = origin.DistTo(res1);
-	float latency = engineClient->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
-		engineClient->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
-	if (speed == 0) return false;
-	float time = distance / speed + latency;
-	if (!ground) {
-		res1.z -= (400 * time * time);
-	}
-	res1 += NET_VECTOR(target, eoffsets.vVelocity) * time;
-	if (arc)
-		res1.z += (800 * 0.5 * gravity * time * time);
-	result = res1;
-	//if (!IsVisible();
-	return IsVectorVisible(origin, res1);
-}*/
-
 void WhatIAmLookingAt(int* result_eindex, Vector* result_pos) {
-	Ray_t ray;
+	static Ray_t ray;
+	static Vector forward;
+	static float sp, sy, cp, cy;
+	static QAngle angle;
+	static trace_t trace;
+
 	trace::g_pFilterDefault->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-	Vector forward;
-	float sp, sy, cp, cy;
-	QAngle angle;
 	g_IEngine->GetViewAngles(angle);
 	sy = sinf(DEG2RAD(angle[1]));
 	cy = cosf(DEG2RAD(angle[1]));
@@ -646,7 +612,6 @@ void WhatIAmLookingAt(int* result_eindex, Vector* result_pos) {
 	forward.z = -sp;
 	forward = forward * 8192.0f + g_pLocalPlayer->v_Eye;
 	ray.Init(g_pLocalPlayer->v_Eye, forward);
-	trace_t trace;
 	g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, &trace);
 	if (result_pos)
 		*result_pos = trace.endpos;
@@ -667,15 +632,16 @@ bool IsSentryBuster(CachedEntity* entity) {
 bool IsAmbassador(CachedEntity* entity) {
 	if (!TF2) return false;
 	if (entity->m_iClassID != g_pClassID->CTFRevolver) return false;
-	int defidx = CE_INT(entity, netvar.iItemDefinitionIndex);
+	const int& defidx = CE_INT(entity, netvar.iItemDefinitionIndex);
 	return (defidx == 61 || defidx == 1006);
 }
 
 // F1 c&p
 Vector CalcAngle(Vector src, Vector dst) {
-	Vector AimAngles;
-	Vector delta = src - dst;
-	float hyp = sqrtf((delta.x * delta.x) + (delta.y * delta.y)); //SUPER SECRET IMPROVEMENT CODE NAME DONUT STEEL
+	static Vector AimAngles, delta;
+	static float hyp;
+	delta = src - dst;
+	hyp = sqrtf((delta.x * delta.x) + (delta.y * delta.y)); //SUPER SECRET IMPROVEMENT CODE NAME DONUT STEEL
 	AimAngles.x = atanf(delta.z / hyp) * RADPI;
 	AimAngles.y = atanf(delta.y / delta.x) * RADPI;
 	AimAngles.z = 0.0f;
@@ -684,26 +650,26 @@ Vector CalcAngle(Vector src, Vector dst) {
 	return AimAngles;
 }
 
-void MakeVector(Vector angle, Vector& vector)
-{
-	float pitch = float(angle[0] * PI / 180);
-	float yaw = float(angle[1] * PI / 180);
-	float tmp = float(cos(pitch));
+void MakeVector(Vector angle, Vector& vector) {
+	static float pitch, yaw, tmp;
+	pitch = float(angle[0] * PI / 180);
+	yaw = float(angle[1] * PI / 180);
+	tmp = float(cos(pitch));
 	vector[0] = float(-tmp * -cos(yaw));
 	vector[1] = float(sin(yaw)*tmp);
 	vector[2] = float(-sin(pitch));
 }
 
-float GetFov(Vector angle, Vector src, Vector dst)
-{
-	Vector ang, aim;
+float GetFov(Vector angle, Vector src, Vector dst) {
+	static Vector ang, aim;
+	static float mag, u_dot_v;
 	ang = CalcAngle(src, dst);
 
 	MakeVector(angle, aim);
 	MakeVector(ang, ang);
 
-	float mag = sqrtf(pow(aim.x, 2) + pow(aim.y, 2) + pow(aim.z, 2));
-	float u_dot_v = aim.Dot(ang);
+	mag = sqrtf(pow(aim.x, 2) + pow(aim.y, 2) + pow(aim.z, 2));
+	u_dot_v = aim.Dot(ang);
 
 	return RAD2DEG(acos(u_dot_v / (pow(mag, 2))));
 }
@@ -713,9 +679,11 @@ bool CanHeadshot() {
 }
 
 bool CanShoot() {
-	float tickbase = (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * g_GlobalVars->interval_per_tick;
-	float nextattack = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack);
-	return nextattack <= tickbase;
+	static float servertime, nextattack;
+
+	servertime = (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * g_GlobalVars->interval_per_tick;
+	nextattack = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack);
+	return nextattack <= servertime;
 }
 
 QAngle VectorToQAngle(Vector in) {
@@ -727,42 +695,47 @@ Vector QAngleToVector(QAngle in) {
 }
 
 void AimAt(Vector origin, Vector target, CUserCmd* cmd) {
-	Vector angles;
-	Vector tr = (target - origin);
-	fVectorAngles(tr, angles);
+	static Vector angles, tr;
+	tr = (target - origin);
+	VectorAngles(tr, angles);
 	fClampAngle(angles);
 	cmd->viewangles = angles;
 }
 
 void AimAtHitbox(CachedEntity* ent, int hitbox, CUserCmd* cmd) {
-	Vector r = ent->m_vecOrigin;
+	static Vector r;
+	r = ent->m_vecOrigin;
 	GetHitbox(ent, hitbox, r);
 	AimAt(g_pLocalPlayer->v_Eye, r, cmd);
 }
 
 bool IsEntityVisiblePenetration(CachedEntity* entity, int hb) {
+	static trace_t trace_visible;
+	static Ray_t ray;
+	static Vector hit;
+	static int ret;
+	static bool correct_entity;
+	static IClientEntity *ent;
+
 	if (!trace::g_pFilterPenetration) {
 		trace::g_pFilterPenetration = new trace::FilterPenetration();
 	}
-	trace_t trace_visible;
-	Ray_t ray;
 	trace::g_pFilterPenetration->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	trace::g_pFilterPenetration->Reset();
-	Vector hit;
-	int ret = GetHitbox(entity, hb, hit);
+	ret = GetHitbox(entity, hb, hit);
 	if (ret) {
 		return false;
 	}
 	ray.Init(g_pLocalPlayer->v_Origin + g_pLocalPlayer->v_ViewOffset, hit);
 	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, trace::g_pFilterPenetration, &trace_visible);
-	bool s = false;
+	correct_entity = false;
 	if (trace_visible.m_pEnt) {
-		s = ((IClientEntity*)trace_visible.m_pEnt) == RAW_ENT(entity);
+		correct_entity = ((IClientEntity*)trace_visible.m_pEnt) == RAW_ENT(entity);
 	}
-	if (!s) return false;
+	if (!correct_entity) return false;
 	g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, &trace_visible);
 	if (trace_visible.m_pEnt) {
-		IClientEntity* ent = (IClientEntity*)trace_visible.m_pEnt;
+		ent = (IClientEntity*)trace_visible.m_pEnt;
 		if (ent) {
 			if (ent->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
 				if (ent == RAW_ENT(entity)) return false;
@@ -865,6 +838,8 @@ void EndPrediction() {
 	gvars->frametime = oldFrametime;
 }*/
 
+
+// You are responsible for delete[]'ing the resulting string.
 char* strfmt(const char* fmt, ...) {
 	char* buf = new char[1024];
 	va_list list;

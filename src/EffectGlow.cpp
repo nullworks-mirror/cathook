@@ -48,6 +48,10 @@ struct ShaderStencilState_t
 	uint32 m_nWriteMask;
 
 	ShaderStencilState_t() {
+		Reset();
+	}
+
+	inline void Reset() {
 		m_bEnable = false;
 		m_PassOp = m_FailOp = m_ZFailOp = STENCILOPERATION_KEEP;
 		m_CompareFunc = STENCILCOMPARISONFUNCTION_ALWAYS;
@@ -55,7 +59,7 @@ struct ShaderStencilState_t
 		m_nTestMask = m_nWriteMask = 0xFFFFFFFF;
 	}
 
-	void SetStencilState(CMatRenderContextPtr &pRenderContext) const {
+	inline void SetStencilState(CMatRenderContextPtr &pRenderContext) const {
 		pRenderContext->SetStencilEnable( m_bEnable );
 		pRenderContext->SetStencilFailOperation( m_FailOp );
 		pRenderContext->SetStencilZFailOperation( m_ZFailOp );
@@ -179,11 +183,14 @@ void EffectGlow::Init() {
 }
 
 int  EffectGlow::GlowColor(IClientEntity* entity) {
-	CachedEntity* ent = ENTITY(entity->entindex());
+	static CachedEntity *ent;
+	static IClientEntity *owner;
+
+	ent = ENTITY(entity->entindex());
 	if (CE_BAD(ent)) return colors::white;
 	if (ent == hacks::shared::aimbot::CurrentTarget()) return colors::pink;
 	if (vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
-		IClientEntity* owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
+		owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
 		if (owner) {
 			return GlowColor(owner);
 		}
@@ -204,9 +211,11 @@ int  EffectGlow::GlowColor(IClientEntity* entity) {
 }
 
 bool EffectGlow::ShouldRenderGlow(IClientEntity* entity) {
+	static CachedEntity *ent;
+
 	if (!enable) return false;
 	if (entity->entindex() < 0) return false;
-	CachedEntity* ent = ENTITY(entity->entindex());
+	ent = ENTITY(entity->entindex());
 	if (CE_BAD(ent)) return false;
 	/*if (weapons && vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
 		IClientEntity* owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
@@ -274,7 +283,8 @@ static CatVar blur_scale(CV_INT, "glow_blur_scale", "5", "Blur amount", "Ammount
 static CatVar solid_when(solid_when_enum, "glow_solid_when", "0", "Solid when", "Glow will be solid when entity is...");
 
 void EffectGlow::StartStenciling() {
-	ShaderStencilState_t state;
+	static ShaderStencilState_t state;
+	state.Reset();
 	state.m_bEnable = true;
 	CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
 	switch ((int)solid_when) {
@@ -297,9 +307,10 @@ void EffectGlow::StartStenciling() {
 }
 
 void EffectGlow::EndStenciling() {
+	static ShaderStencilState_t state;
+	state.Reset();
 	g_IVModelRender->ForcedMaterialOverride(nullptr);
 	CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-	ShaderStencilState_t state {};
 	state.SetStencilState(ptr);
 	ptr->DepthRange(0.0f, 1.0f);
 	g_IVRenderView->SetBlend(1.0f);
@@ -314,9 +325,12 @@ void EffectGlow::DrawToBuffer(IClientEntity* entity) {
 }
 
 void EffectGlow::DrawEntity(IClientEntity* entity) {
+	static IClientEntity *attach;
+	static int passes;
+	passes = 0;
+
 	entity->DrawModel(1);
-	IClientEntity* attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
-	int passes = 0;
+	attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
 	while (attach && passes++ < 32) {
 		if (attach->ShouldDraw()) {
 			attach->DrawModel(1);
@@ -326,26 +340,36 @@ void EffectGlow::DrawEntity(IClientEntity* entity) {
 }
 
 void EffectGlow::RenderGlow(IClientEntity* entity) {
+	static unsigned char _r, _g, _b;
+	static int color;
+	static float color_1[3];
+
 	CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-	int color = GlowColor(entity);
-	unsigned char _b = (color >> 16) & 0xFF;
-	unsigned char _g = (color >> 8)  & 0xFF;
-	unsigned char _r = (color) & 0xFF;
-	float color_1[] = { (float)_r / 255.0f, (float)_g / 255.0f, (float)_b / 255.0f };
+	color = GlowColor(entity);
+	_b = (color >> 16) & 0xFF;
+	_g = (color >> 8)  & 0xFF;
+	_r = (color) & 0xFF;
+	color_1[0] = (float)_r / 255.0f;
+	color_1[1] = (float)_g / 255.0f;
+	color_1[2] = (float)_b / 255.0f;
 	g_IVRenderView->SetColorModulation(color_1);
 	g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
 	DrawEntity(entity);
 }
 
 void EffectGlow::Render(int x, int y, int w, int h) {
+	static ITexture *orig;
+	static IClientEntity *ent;
+	static IMaterialVar *blury_bloomamount;
+
 	if (!init) Init();
 	if (!cathook || (g_IEngine->IsTakingScreenshot() && clean_screenshots) || g_Settings.bInvalid) return;
 	if (!enable) return;
 	CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-	ITexture* orig = ptr->GetRenderTarget();
+	orig = ptr->GetRenderTarget();
 	BeginRenderGlow();
 	for (int i = 1; i < HIGHEST_ENTITY; i++) {
-		IClientEntity* ent = g_IEntityList->GetClientEntity(i);
+		ent = g_IEntityList->GetClientEntity(i);
 		if (ent && !ent->IsDormant() && ShouldRenderGlow(ent)) {
 			RenderGlow(ent);
 		}
@@ -355,7 +379,7 @@ void EffectGlow::Render(int x, int y, int w, int h) {
 		ptr->ClearStencilBufferRectangle(x, y, w, h, 0);
 		StartStenciling();
 		for (int i = 1; i < HIGHEST_ENTITY; i++) {
-			IClientEntity* ent = g_IEntityList->GetClientEntity(i);
+			ent = g_IEntityList->GetClientEntity(i);
 			if (ent && !ent->IsDormant() && ShouldRenderGlow(ent)) {
 				DrawToStencil(ent);
 			}
@@ -367,7 +391,7 @@ void EffectGlow::Render(int x, int y, int w, int h) {
 	ptr->ClearBuffers(true, false);
 	ptr->DrawScreenSpaceRectangle(mat_blur_x, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
 	ptr->SetRenderTarget(GetBuffer(1));
-	IMaterialVar* blury_bloomamount = mat_blur_y->FindVar("$bloomamount", nullptr);
+	blury_bloomamount = mat_blur_y->FindVar("$bloomamount", nullptr);
 	blury_bloomamount->SetIntValue((int)blur_scale);
 	ptr->DrawScreenSpaceRectangle(mat_blur_y, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
 	ptr->Viewport(x, y, w, h);
