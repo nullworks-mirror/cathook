@@ -134,8 +134,10 @@ void FrameStageNotify(int stage) {
 	static int my_weapon, handle, eid, *weapon_list;
 	static IClientEntity *entity, *my_weapon_ptr, *last_weapon_out = nullptr;
 
+	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START) return;
 	if (!enabled) return;
 	if (CE_BAD(LOCAL_E)) return;
+
 	if (!SetRuntimeAttributeValueFn) {
 		SetRuntimeAttributeValueFn = (SetRuntimeAttributeValue_t)(gSignatures.GetClientSignature((char*)sig_SetRuntimeAttributeValue));
 		logging::Info("SetRuntimeAttributeValue: 0x%08x", SetRuntimeAttributeValueFn);
@@ -145,17 +147,21 @@ void FrameStageNotify(int stage) {
 		logging::Info("GetAttributeDefinition: 0x%08x", GetAttributeDefinitionFn);
 	}
 
-	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START) return;
 	weapon_list = (int*)((unsigned)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
 	my_weapon = CE_INT(g_pLocalPlayer->entity, netvar.hActiveWeapon);
 	my_weapon_ptr = g_IEntityList->GetClientEntity(my_weapon & 0xFFF);
-	for (int i = 0; i < 5; i++) {
+	if (!my_weapon_ptr) return;
+	if (!vfunc<bool(*)(IClientEntity*)>(my_weapon_ptr, 190, 0)(my_weapon_ptr)) return;
+	for (int i = 0; i < 4; i++) {
 		handle = weapon_list[i];
 		eid = handle & 0xFFF;
 		if (eid < 32 || eid > HIGHEST_ENTITY) continue;
 		//logging::Info("eid, %i", eid);
 		entity = g_IEntityList->GetClientEntity(eid);
 		if (!entity) continue;
+		// TODO IsBaseCombatWeapon
+		// or TODO PlatformOffset
+		if (!vfunc<bool(*)(IClientEntity*)>(entity, 190, 0)(entity)) continue;
 		if ((my_weapon_ptr != last_weapon_out) || !cookie.Check()) {
 			GetModifier(NET_INT(entity, netvar.iItemDefinitionIndex)).Apply(eid);
 		}
@@ -292,7 +298,8 @@ void patched_weapon_cookie::Update(int entity) {
 
 	ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent || ent->IsDormant()) return;
-	logging::Info("Updating cookie for %i", entity); // FIXME DEBUG LOGS!
+	if (show_debug_info)
+		logging::Info("Updating cookie for %i", entity); // FIXME DEBUG LOGS!
 	list = (CAttributeList*)((uintptr_t)ent + netvar.AttributeList);
 	attrs = list->m_Attributes.Size();
 	eidx = entity;
@@ -332,9 +339,11 @@ void def_attribute_modifier::Apply(int entity) {
 
 	ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent) return;
+	if (!vfunc<bool(*)(IClientEntity*)>(ent, 190, 0)(ent)) return;
 	if (defidx_redirect && NET_INT(ent, netvar.iItemDefinitionIndex) != defidx_redirect) {
 		NET_INT(ent, netvar.iItemDefinitionIndex) = defidx_redirect;
-		logging::Info("Redirect -> %i", NET_INT(ent, netvar.iItemDefinitionIndex));
+		if (show_debug_info)
+			logging::Info("Redirect -> %i", NET_INT(ent, netvar.iItemDefinitionIndex));
 		GetModifier(defidx_redirect).Apply(entity);
 		return;
 	}
