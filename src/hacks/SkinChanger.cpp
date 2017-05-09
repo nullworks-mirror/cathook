@@ -121,11 +121,21 @@ static CatCommand load("skinchanger_load", "Load", [](const CCommand& args) {
 	}
 	Load(filename);
 });
+static CatCommand load_merge("skinchanger_load_merge", "Load with merge", [](const CCommand& args) {
+	std::string filename = "skinchanger";
+	if (args.ArgC() > 1) {
+		filename = args.Arg(1);
+	}
+	Load(filename, true);
+});
 static CatCommand remove_redirect("skinchanger_remove_redirect", "Remove redirect", [](const CCommand& args) {
 	unsigned redirectid = strtoul(args.Arg(1), nullptr, 10);
 	GetModifier(redirectid).defidx_redirect = 0;
 	logging::Info("Redirect removed");
 	InvalidateCookie();
+});
+static CatCommand reset("skinchanger_reset", "Reset", []() {
+	modifier_map.clear();
 });
 
 static CatCommand invalidate_cookies("skinchanger_bite_cookie", "Bite Cookie", InvalidateCookie);
@@ -227,7 +237,7 @@ void Save(std::string filename) {
 	}
 }
 
-void Load(std::string filename) {
+void Load(std::string filename, bool merge) {
 	uid_t uid = geteuid();
 	passwd* pw = getpwuid(uid);
 	if (!pw) {
@@ -252,7 +262,8 @@ void Load(std::string filename) {
 		size_t size = 0;
 		BINARY_FILE_READ(file, size);
 		logging::Info("Reading %i entries...", size);
-		modifier_map.clear();
+		if (!merge)
+			modifier_map.clear();
 		for (int i = 0; i < size; i++) {
 			int defindex;
 			BINARY_FILE_READ(file, defindex);
@@ -262,7 +273,13 @@ void Load(std::string filename) {
 			BINARY_FILE_READ(file, count);
 			modifier.modifiers.resize(count);
 			file.read(reinterpret_cast<char*>(modifier.modifiers.data()), sizeof(attribute_s) * count);
-			modifier_map.insert(std::make_pair(defindex, std::move(modifier)));
+			if (!merge) {
+				modifier_map.insert(std::make_pair(defindex, std::move(modifier)));
+			} else {
+				if (!modifier.Default()) {
+					modifier_map[defindex] = modifier;
+				}
+			}
 		}
 		file.close();
 		logging::Info("Reading successful! Result: %i entries.", modifier_map.size());
@@ -331,6 +348,10 @@ void def_attribute_modifier::Remove(int id) {
 		   ++it;
 		}
 	}
+}
+
+bool def_attribute_modifier::Default() const {
+	return defidx_redirect == 0 && modifiers.empty();
 }
 
 void def_attribute_modifier::Apply(int entity) {
