@@ -24,6 +24,7 @@ public:
 	virtual void Update() override;
 	virtual void OnKeyPress(ButtonCode_t key, bool repeat) override;
 	virtual void MoveChildren() override;
+	virtual bool IsVisible() override;
 	inline virtual void SortByZIndex() override {};
 };
 

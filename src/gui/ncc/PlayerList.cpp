@@ -23,6 +23,10 @@ PlayerList::PlayerList() : CBaseContainer() {
 	}
 }
 
+bool PlayerList::IsVisible() {
+	return !g_Settings.bInvalid;
+}
+
 void PlayerList::Draw(int x, int y) {
 	if (g_Settings.bInvalid) return;
 	const auto& size = GetSize();

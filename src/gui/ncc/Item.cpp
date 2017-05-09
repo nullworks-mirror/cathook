@@ -30,7 +30,6 @@ void Item::Draw(int x, int y) {
 }
 
 void Item::HandleCustomEvent(KeyValues* event) {
-	logging::Info("CustomEvent: %s", event->GetName());
 	if (!strcmp(event->GetName(), "scale_update")) {
 		size_x = psize_x * (float)scale;
 		size_y = psize_y * (float)scale;
