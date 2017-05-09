@@ -342,6 +342,7 @@ static const std::string list_tf2 = R"(
         "sticky_enabled"
         "sticky_distance"
         "sticky_buildings"
+        "sticky_visable"
     ]
     "Auto Reflect" [
         "Auto Reflect Menu"
