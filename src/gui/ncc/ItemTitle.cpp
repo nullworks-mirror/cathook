@@ -18,7 +18,7 @@ void ItemTitle::Draw(int x, int y) {
 	Item::Draw(x, y);
 	const std::string str = format(">>> ", title, " <<<");
 	const auto& size = draw::GetStringLength(font_title, str);
-	draw::String(font_title, x + (110 - size.first / 2), y, colors::white, 2, str);
+	draw::String(font_title, x + ((Item::size_x - size.first) / 2), y, colors::white, 2, str);
 }
 
 }}

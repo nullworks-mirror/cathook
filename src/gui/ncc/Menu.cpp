@@ -17,7 +17,12 @@ namespace menu { namespace ncc {
 unsigned long font_title = 0;
 unsigned long font_item  = 0;
 
-Tooltip* tooltip = 0;
+CatVar scale(CV_FLOAT, "gui_ncc_scale", "1", "NCC GUI Scale", "Defines scale of NCC gui", 0.5f, 4.0f);
+CatVar font_family(fonts::family_enum, "gui_ncc_font_family", "3", "NCC Font Family", "Defines font family for NCC menu");
+CatVar font_title_family(fonts::family_enum, "gui_ncc_font_title_family", "4", "NCC Title Family", "Defines font family for NCC menu titles");
+
+Tooltip* tooltip = nullptr;;
+Root* root = nullptr;
 
 void ShowTooltip(const std::string& text) {
 	tooltip->Show();
@@ -32,11 +37,33 @@ std::vector<CatVar*> FindCatVars(const std::string name) {
 	return result;
 }
 
+bool init_done = false;
+
+void ChangeCallback(IConVar* var, const char* pszOldValue, float flOldValue) {
+	if (init_done)
+		RefreshFonts();
+}
+
 void Init() {
+	root = new Root();
+	root->Setup();
+	scale.InstallChangeCallback([](IConVar* var, const char* pszOldValue, float flOldValue) {
+		if (init_done) RefreshFonts();
+		logging::Info("Scale Changed");
+		root->HandleCustomEvent(KeyValues::AutoDelete("scale_update"));
+	});
+	font_family.InstallChangeCallback(ChangeCallback);
+	font_title_family.InstallChangeCallback(ChangeCallback);
+	init_done = true;
+	RefreshFonts();
+}
+
+void RefreshFonts() {
 	font_title = g_ISurface->CreateFont();
 	font_item  = g_ISurface->CreateFont();
-	g_ISurface->SetFontGlyphSet(font_title, "Verdana Bold", 14, 0, 0, 0, 0x0);
-	g_ISurface->SetFontGlyphSet(font_item, "Verdana", 12, 0, 0, 0, 0x0);
+	g_ISurface->SetFontGlyphSet(font_title, fonts::fonts.at(_clamp(0, (int)(fonts::fonts.size() - 1), (int)font_title_family)).c_str(), psize_font_title * (float)scale, 0, 0, 0, 0x0);
+	g_ISurface->SetFontGlyphSet(font_item, fonts::fonts.at(_clamp(0, (int)(fonts::fonts.size() - 1), (int)font_family)).c_str(), psize_font_item * (float)scale, 0, 0, 0, 0x0);
+	root->HandleCustomEvent(KeyValues::AutoDelete("font_update"));
 }
 
 static const std::string list_hl2dm = R"(

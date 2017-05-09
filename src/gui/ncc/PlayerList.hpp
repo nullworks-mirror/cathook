@@ -9,17 +9,12 @@
 #define GUI_NCC_PLAYERLIST_HPP_
 
 #include "../CBaseContainer.h"
+#include "Menu.hpp"
 
 namespace menu { namespace ncc {
 
 constexpr int size_table[] = { 32, 32, 80, 160, 80, 80, 32, 32, 32 };
-constexpr int size_table_width() {
-	int accum = 1;
-	for (int i = 0; i < sizeof(size_table) / sizeof(int); i++) {
-		accum += (size_table[i] + 1);
-	}
-	return accum;
-}
+int size_table_width();
 
 class PlayerList : public CBaseContainer {
 public:

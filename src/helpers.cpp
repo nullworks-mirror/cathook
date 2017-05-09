@@ -126,7 +126,7 @@ const char* GetBuildingName(CachedEntity* ent) {
 
 void format_internal(std::stringstream& stream) {}
 
-std::string WordWrap(std::string& in, int max) {
+std::string WordWrap(std::string& in, int max, unsigned long font) {
 	static std::stringstream result, line, wordstream, next;
 	static std::string word;
 	static char ch;
@@ -144,7 +144,7 @@ std::string WordWrap(std::string& in, int max) {
 			word = wordstream.str();
 			//logging::Info("got word: '%s'", word.c_str());
 			wordstream.str("");
-			auto size = draw::GetStringLength(fonts::MENU, line.str() + word);
+			auto size = draw::GetStringLength(font, line.str() + word);
 			if (size.first >= max) {
 				//logging::Info("wrapping: '%s'", line.str().c_str());
 				result << line.str() << '\n';
