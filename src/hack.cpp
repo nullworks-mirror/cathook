@@ -34,9 +34,11 @@
 #include "hooks.h"
 #include "netmessage.h"
 #include "profiler.h"
-#include "gui/GUI.h"
-//#include "gui/controls.h"
 #include "cvwrapper.h"
+
+#if NOGUI != 1
+#include "gui/GUI.h"
+#endif
 
 #include "hooks/hookedmethods.h"
 
@@ -53,6 +55,25 @@
 
 bool hack::shutdown = false;
 
+const std::string& hack::GetVersion() {
+	static std::string version("Unknown Version");
+	static bool version_set = false;
+	if (version_set) return version;
+#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
+		version = "Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE;
+#if NOGUI == 1
+		version += " NOGUI";
+#endif
+#ifdef FORCE_SINGLE_GAME
+		version += " S";
+#else
+		version += " U";
+#endif
+#endif
+	version_set = true;
+	return version;
+}
+
 std::mutex hack::command_stack_mutex;
 std::stack<std::string>& hack::command_stack() {
 	static std::stack<std::string> stack;
@@ -67,12 +88,12 @@ void hack::ExecuteCommand(const std::string command) {
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "cathook");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), " by ");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "nullifiedcat\n");
-#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "commit: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE "\n");
-#endif
+	int white = colors::white, blu = colors::blu, red = colors::red;
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "cathook");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&blu), " by ");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&red), "nullifiedcat\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), GetVersion().c_str());
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "\n");
 }
 
 typedef bool(handlevent_t)(IMatSystemSurface* thisptr, const InputEvent_t& event);
@@ -101,7 +122,6 @@ void hack::Initialize() {
 	else if (TF2C) g_pClassID = new ClassIDTF2C();
 	else if (HL2DM) g_pClassID = new ClassIDHL2DM();
 	g_pClassID->Init();
-	colors::Init();
 	if (TF2) {
 		uintptr_t mmmf = (gSignatures.GetClientSignature("C7 44 24 04 09 00 00 00 BB ? ? ? ? C7 04 24 00 00 00 00 E8 ? ? ? ? BA ? ? ? ? 85 C0 B8 ? ? ? ? 0F 44 DA") + 37);
 		if (mmmf) {
@@ -121,8 +141,10 @@ void hack::Initialize() {
 	g_Settings.Init();
 	EndConVars();
 	draw::Initialize();
+#if NOGUI != 1
 	g_pGUI = new CatGUI();
 	g_pGUI->Setup();
+#endif
 	gNetvars.init();
 	InitNetVars();
 	g_pLocalPlayer = new LocalPlayer();

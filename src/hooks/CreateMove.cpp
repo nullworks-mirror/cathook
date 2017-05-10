@@ -237,7 +237,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		speedapplied = false;
-		if (roll_speedhack && g_pGUI->m_bPressedState[(int)roll_speedhack] && !(cmd->buttons & IN_ATTACK)) { // FIXME OOB
+		if (roll_speedhack && g_IInputSystem->IsButtonDown((ButtonCode_t)((int)roll_speedhack)) && !(cmd->buttons & IN_ATTACK)) {
 			speed = cmd->forwardmove;
 			if (fabs(speed) > 0.0f) {
 				cmd->forwardmove = -speed;

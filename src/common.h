@@ -62,10 +62,13 @@
 #include "textfile.h"
 #include "EffectChams.hpp"
 #include "ipc.h"
-#include "gui/GUI.h"
 #include "hooks/hookedmethods.h"
 #include "classid.h"
 #include "crits.h"
+
+#if NOGUI != 1
+#include "gui/GUI.h"
+#endif
 
 #include "hacks/hacklist.h"
 #include "glowobjects.h"

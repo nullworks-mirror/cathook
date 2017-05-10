@@ -6,17 +6,20 @@
  */
 
 #include "profiler.h"
-
+#include "cvwrapper.h"
 #include "logging.h"
 
-ProfilerSection::ProfilerSection(std::string name) {
+ProfilerSection::ProfilerSection(std::string name, ProfilerSection* parent) {
 	m_name = name;
 	m_calls = 0;
 	m_log = std::chrono::high_resolution_clock::now();
 	m_min = std::chrono::nanoseconds::zero();
 	m_max = std::chrono::nanoseconds::zero();
 	m_sum = std::chrono::nanoseconds::zero();
+	m_parent = parent;
 }
+
+static CatVar do_profiler_logging(CV_SWITCH, "profiler_log", "0", "Profiler Log");
 
 void ProfilerSection::OnNodeDeath(ProfilerNode& node) {
 	auto dur = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - node.m_start);
@@ -29,10 +32,11 @@ void ProfilerSection::OnNodeDeath(ProfilerNode& node) {
 	m_calls++;
 
 	if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - m_log).count() > 3) {
-		logging::Info("[P] stats for '%-32s': MIN{%12llu} MAX{%12llu} AVG{%12llu}", m_name.c_str(),
-			std::chrono::duration_cast<std::chrono::nanoseconds>(m_min).count(),
-			std::chrono::duration_cast<std::chrono::nanoseconds>(m_max).count(),
-			std::chrono::duration_cast<std::chrono::nanoseconds>(m_sum).count() / (m_calls ? m_calls : 1));
+		if (do_profiler_logging)
+			logging::Info("[P] stats for '%-32s': MIN{%12llu} MAX{%12llu} AVG{%12llu}", m_name.c_str(),
+					std::chrono::duration_cast<std::chrono::nanoseconds>(m_min).count(),
+					std::chrono::duration_cast<std::chrono::nanoseconds>(m_max).count(),
+					std::chrono::duration_cast<std::chrono::nanoseconds>(m_sum).count() / (m_calls ? m_calls : 1));
 		m_log = std::chrono::high_resolution_clock::now();
 		m_min = std::chrono::nanoseconds::zero();
 		m_max = std::chrono::nanoseconds::zero();

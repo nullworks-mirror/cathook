@@ -13,6 +13,14 @@ OUT_NAME = libcathook.so
 TARGET_DIR = bin
 TARGET = $(TARGET_DIR)/$(OUT_NAME)
 SOURCES = $(shell find $(SRC_DIR) -name "*.cpp" -print)
+ifdef NOGUI
+$(info GUI disabled)
+SOURCES := $(filter-out $(shell find $(SRC_DIR)/gui -name "*.cpp" -print),$(SOURCES))
+$(info $(SOURCES))
+CXXFLAGS += -DNOGUI=1
+else
+$(info GUI enabled)
+endif
 SOURCES += $(shell find $(SIMPLE_IPC_DIR) -name "*.cpp" -print)
 OBJECTS = $(SOURCES:.cpp=.o)
 OBJECTS += $(shell find $(RES_DIR) -name "*.o" -print)
@@ -24,11 +32,18 @@ GIT_COMMIT_DATE=$(shell git log -1 --pretty="%ai")
 
 CXXFLAGS += -DGIT_COMMIT_HASH="\"$(GIT_COMMIT_HASH)\"" -DGIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
 
-.PHONY: clean directories
+ifdef GAME
+CXXFLAGS += -DGAME=$(GAME)
+endif
+
+.PHONY: clean directories echo
 
 all:
 	mkdir -p $(TARGET_DIR)
 	$(MAKE) $(TARGET)
+	
+echo:
+	echo $(SOURCES)
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) -c $< -o $@

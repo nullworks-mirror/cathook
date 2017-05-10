@@ -95,13 +95,14 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 
 int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
 	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
+#if NOGUI != 1
 	SEGV_BEGIN;
 	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
 		return 0;
 	}
-	return original(_this, eventcode, keynum, pszCurrentBinding);
 	SEGV_END;
-	return 0;
+#endif
+	return original(_this, eventcode, keynum, pszCurrentBinding);
 }
 
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent messages");
@@ -221,6 +222,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 		}
 	}
 	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+#if NOGUI != 1
 		if (cursor_fix_experimental) {
 			if (gui_visible) {
 				g_ISurface->SetCursorAlwaysVisible(true);
@@ -228,6 +230,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 				g_ISurface->SetCursorAlwaysVisible(false);
 			}
 		}
+#endif
 		if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition(LOCAL_E, TFCond_Zoomed);
 		if (glow_outline_effect->GetBool()) {
 			if (glow_enabled) {

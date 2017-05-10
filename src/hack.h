@@ -29,6 +29,7 @@ void ExecuteCommand(const std::string command);
 
 extern bool shutdown;
 
+const std::string& GetVersion();
 void Initialize();
 void Think();
 void Shutdown();

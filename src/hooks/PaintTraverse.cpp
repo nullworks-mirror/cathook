@@ -9,11 +9,14 @@
 #include "../common.h"
 #include "../hack.h"
 #include "hookedmethods.h"
-#include "../gui/GUI.h"
 #include "../segvcatch/segvcatch.h"
 #include "../copypasted/CSignature.h"
 #include "../profiler.h"
 #include "../netmessage.h"
+
+#if NOGUI != 1
+#include "../gui/GUI.h"
+#endif
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1", "Clean screenshots", "Don't draw visuals while taking a screenshot");
 CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Completely hides cathook");
@@ -71,6 +74,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		case 2:
 			if (software_cursor->GetBool()) software_cursor->SetValue(0);
 			break;
+#if NOGUI != 1
 		case 3:
 			if (cur != g_pGUI->Visible()) {
 				software_cursor->SetValue(g_pGUI->Visible());
@@ -80,6 +84,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 			if (cur == g_pGUI->Visible()) {
 				software_cursor->SetValue(!g_pGUI->Visible());
 			}
+#endif
 		}
 	}
 
@@ -139,12 +144,16 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	if (info_text) {
 		AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
-#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
-		AddSideString("Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE, GUIColor());
-#endif
+		AddSideString(hack::GetVersion(), GUIColor());
+#if NOGUI != 1
 		AddSideString("Press 'INSERT' or 'F11' key to open/close cheat menu.", GUIColor());
 		AddSideString("Use mouse to navigate in menu.", GUIColor());
-		if (!g_IEngine->IsInGame() || g_pGUI->Visible()) {
+#endif
+		if (!g_IEngine->IsInGame()
+#if NOGUI != 1
+			|| g_pGUI->Visible()
+#endif
+		) {
 			name_s = force_name.GetString();
 			if (name_s.length() < 3) name = "*Not Set*";
 			AddSideString(""); // foolish
@@ -167,7 +176,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	}
 
 
-#if GUI_ENABLED == true
+#if NOGUI != 1
 		g_pGUI->Update();
 #endif
 
