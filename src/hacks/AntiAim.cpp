@@ -198,7 +198,7 @@ float edgeToEdgeOn = 0;
 //Function to return distance from you to a yaw directed to
 float edgeDistance(float edgeRayYaw) {
     //Main ray tracing area
-    std::unique_ptr<trace_t> trace(new trace_t);
+    trace_t trace;
     Ray_t ray;
     Vector forward;
     float sp, sy, cp, cy;
@@ -212,9 +212,9 @@ float edgeDistance(float edgeRayYaw) {
     forward = forward * 300.0f + g_pLocalPlayer->v_Eye;
     ray.Init(g_pLocalPlayer->v_Eye, forward);
     //trace::g_pFilterNoPlayer to only focus on the enviroment
-    g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterNoPlayer, trace.get());
+    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
     //Pythagorean theorem to calculate distance
-    float edgeDistance = ( sqrt( pow(trace->startpos.x - trace->endpos.x, 2) + pow(trace->startpos.y - trace->endpos.y, 2) ) );
+    float edgeDistance = ( sqrt( pow(trace.startpos.x - trace.endpos.x, 2) + pow(trace.startpos.y - trace.endpos.y, 2) ) );
     return edgeDistance;
 }
 

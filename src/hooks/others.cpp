@@ -231,7 +231,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 #endif
-		if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition(LOCAL_E, TFCond_Zoomed);
+		if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition<TFCond_Zoomed>(LOCAL_E);
 		if (glow_outline_effect->GetBool()) {
 			if (glow_enabled) {
 				for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Size(); i++) {
@@ -322,26 +322,29 @@ static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat", "Removes ne
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0", "Log dispatched user messages");
 
 bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
+	int loop_index, s, i, j;
+	char *data, c;
+
 	static const DispatchUserMessage_t original = (DispatchUserMessage_t)hooks::client.GetMethod(offsets::DispatchUserMessage());
 	SEGV_BEGIN;
 	if (clean_chat) {
 		if (type == 4) {
-			int loop_index = 0;
-
-			int s = buf.GetNumBytesLeft();
-			char* data = new char[s];
-			for (int i = 0; i < s; i++)
-				data[i] = buf.ReadByte();
-			int j = 0;
-			char c;
-			for (int i = 0; i < 3; i++) {
-				while ((c = data[j++]) && (loop_index < 128)) {
-					loop_index++;
-					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+			loop_index = 0;
+			s = buf.GetNumBytesLeft();
+			if (s < 256) {
+				data = (char*)alloca(s);
+				for (i = 0; i < s; i++)
+					data[i] = buf.ReadByte();
+				j = 0;
+				for (i = 0; i < 3; i++) {
+					while ((c = data[j++]) && (loop_index < 128)) {
+						loop_index++;
+						if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+					}
 				}
+				buf = bf_read(data, s);
+				buf.Seek(0);
 			}
-			buf = bf_read(data, s);
-			buf.Seek(0);
 		}
 	}
 	if (dispatch_log) {

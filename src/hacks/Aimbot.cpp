@@ -328,12 +328,12 @@ EAimbotTargetState TargetState(CachedEntity* entity) {
 					return EAimbotTargetState::NOT_ENOUGH_CHARGE;
 				}
 			}
-			if (ignore_taunting && HasCondition(entity, TFCond_Taunting)) return EAimbotTargetState::TAUNTING;
+			if (ignore_taunting && HasCondition<TFCond_Taunting>(entity)) return EAimbotTargetState::TAUNTING;
 			if (IsPlayerInvulnerable(entity)) return EAimbotTargetState::INVULNERABLE;
 			if (respect_cloak && IsPlayerInvisible(entity)) return EAimbotTargetState::INVISIBLE;
 			mode = GetWeaponMode(LOCAL_E);
 			if (mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == g_pClassID->CTFCompoundBow)
-				if (respect_vaccinator && HasCondition(entity, TFCond_UberBulletResist)) return EAimbotTargetState::VACCINATED;
+				if (respect_vaccinator && HasCondition<TFCond_UberBulletResist>(entity)) return EAimbotTargetState::VACCINATED;
 		}
 		if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return EAimbotTargetState::FRIENDLY;
 		if (TF && ignore_hoovy) {
@@ -597,7 +597,7 @@ EAimbotLocalState ShouldAim() {
 		if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle) {
 			if (!g_pLocalPlayer->bZoomed && !(g_pUserCmd->buttons & IN_ATTACK)) return EAimbotLocalState::NOT_ZOOMED;
 		}
-		if (HasCondition(g_pLocalPlayer->entity, TFCond_Taunting)) return EAimbotLocalState::TAUNTING;
+		if (HasCondition<TFCond_Taunting>(g_pLocalPlayer->entity)) return EAimbotLocalState::TAUNTING;
 		if (IsPlayerInvisible(g_pLocalPlayer->entity)) return EAimbotLocalState::CLOAKED;
 		if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFPipebombLauncher) return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
 	}
@@ -632,7 +632,7 @@ EAimbotLocalState ShouldAim() {
 	if (hacks::shared::followbot::bot) {
 		CachedEntity* player = ENTITY(hacks::shared::followbot::following_idx);
 		if (CE_GOOD(player)) {
-			if (HasCondition(player, TFCond_Slowed)) {
+			if (HasCondition<TFCond_Slowed>(player)) {
 				do_minigun_checks = false;
 			}
 		}
@@ -698,10 +698,10 @@ int BestHitbox(CachedEntity* target) {
 				cdmg = (cdmg / 1.15) - 1;
 			}
 			//Vaccinator damage correction
-			if (HasCondition(target, TFCond_UberBulletResist)) {
+			if (HasCondition<TFCond_UberBulletResist>(target)) {
 				bdmg = (bdmg / 1.75) - 1;
 				cdmg = (cdmg / 1.75) - 1;
-			} else if (HasCondition(target, TFCond_SmallBulletResist)) {
+			} else if (HasCondition<TFCond_SmallBulletResist>(target)) {
 				bdmg = (bdmg / 1.1) - 1;
 				cdmg = (cdmg / 1.1) - 1;
 			}

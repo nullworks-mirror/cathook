@@ -19,6 +19,7 @@
 
 
 #include "beforecheaders.h"
+#include <emmintrin.h>
 #include <vector>
 #include <bitset>
 #include <string>
@@ -80,10 +81,9 @@ constexpr T _clamp(T _min, T _max, T _val) {
 	return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
 }
 
-#define TF2C (g_AppID == 243750)
-#define TF2  (g_AppID == 440)
-#define TF (TF2C || TF2)
-#define HL2DM (g_AppID == 320)
+#define _FASTCALL __attribute__((fastcall))
+
+#include "gameinfo.hpp"
 
 #define SQR(x) x * x
 
@@ -143,10 +143,5 @@ constexpr T _clamp(T _min, T _max, T _val) {
 #endif
 
 #define GET_RENDER_CONTEXT (TF2 ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
-/*#define ADD_HACK(x) \
-	hack::AddHack(g_ph##x = new x());
-
-#define CREATE_MOVE(x) \
-	g_ph##x->CreateMove(thisptr, inputSample, cmd)*/
 
 #endif /* COMMON_H_ */

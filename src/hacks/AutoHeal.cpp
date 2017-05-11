@@ -45,7 +45,7 @@ int BulletDangerValue(CachedEntity* patient) {
 		if (!ent->m_bEnemy) continue;
 		if (g_pPlayerResource->GetClass(ent) != tf_sniper) continue;
 		if (CE_BYTE(ent, netvar.iLifeState)) continue;
-		if (!HasCondition(ent, TFCond_Zoomed)) continue;
+		if (!HasCondition<TFCond_Zoomed>(ent)) continue;
 		any_zoomed_snipers = true;
 		// TODO VisCheck from patient.
 		if ((int)vacc_sniper == 1)
@@ -76,7 +76,7 @@ int FireDangerValue(CachedEntity* patient) {
 			return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == g_pClassID->CTFFlameThrower) ? 2 : 0;
 		}
 	}
-	if (HasCondition(patient, TFCond_OnFire)) {
+	if (HasCondition<TFCond_OnFire>(patient)) {
 		return (bool)auto_vacc_check_on_fire;
 	}
 	return 0;
@@ -363,7 +363,7 @@ int HealingPriority(int idx) {
 	if (!CanHeal(idx)) return -1;
 	CachedEntity* ent = ENTITY(idx);
 	if (share_uber && IsPopped()) {
-		return !HasCondition(ent, TFCond_Ubercharged);
+		return !HasCondition<TFCond_Ubercharged>(ent);
 	}
 
 	int priority = 0;

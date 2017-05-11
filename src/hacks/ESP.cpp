@@ -464,10 +464,10 @@ void ProcessEntity(CachedEntity* ent) {
 				if (IsPlayerInvulnerable(ent)) {
 					AddEntityString(ent, "INVULNERABLE");
 				}
-				if (HasCondition(ent, TFCond_UberBulletResist)) {
+				if (HasCondition<TFCond_UberBulletResist>(ent)) {
 					AddEntityString(ent, "VACCINATOR ACTIVE");
 				}
-				if (HasCondition(ent, TFCond_SmallBulletResist)) {
+				if (HasCondition<TFCond_SmallBulletResist>(ent)) {
 					AddEntityString(ent, "VACCINATOR PASSIVE");
 				}
 				if (IsPlayerCritBoosted(ent)) {

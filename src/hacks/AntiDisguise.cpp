@@ -22,7 +22,7 @@ void Draw() {
 		if (CE_BAD(ent)) continue;
 		if (ent->m_Type == ENTITY_PLAYER) {
 			if (CE_INT(ent, netvar.iClass) == tf_class::tf_spy) {
-				RemoveCondition(ent, TFCond_Disguised);
+				RemoveCondition<TFCond_Disguised>(ent);
 			}
 		}
 	}

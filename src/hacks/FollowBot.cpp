@@ -483,11 +483,11 @@ void DoWalking() {
 			}
 		}
 		if (CE_INT(found_entity, netvar.iClass) == tf_heavy && g_pLocalPlayer->clazz == tf_heavy) {
-			if (HasCondition(found_entity, TFCond_Slowed)) {
+			if (HasCondition<TFCond_Slowed>(found_entity)) {
 				g_pUserCmd->buttons |= IN_ATTACK2;
 			}
 		}
-		if (HasCondition(found_entity, TFCond_Zoomed)) {
+		if (HasCondition<TFCond_Zoomed>(found_entity)) {
 			if (!g_pLocalPlayer->bZoomed && g_pLocalPlayer->clazz == tf_sniper) {
 				g_pUserCmd->buttons |= IN_ATTACK2;
 			}

@@ -25,6 +25,8 @@ void SetCVarInterface(ICvar* iface);
 //#define DEG2RAD(x) (float)(x) * (float)(PI / 180.0f)
 
 #include "enums.h"
+#include "conditions.h"
+#include "entitycache.h"
 #include "logging.h"
 
 #include "beforecheaders.h"
@@ -44,9 +46,20 @@ extern FILE* hConVarsFile;
 void BeginConVars();
 void EndConVars();
 
-bool IsPlayerCritBoosted(CachedEntity* player);
-bool IsPlayerInvulnerable(CachedEntity* player);
-bool IsPlayerInvisible(CachedEntity* player);
+// Calling source engine functions would get me more accurate result at cost of speed, so idk.
+// TODO?
+
+inline bool IsPlayerInvulnerable(CachedEntity* player) {
+	return HasConditionMask<KInvulnerabilityMask.cond_0, KInvulnerabilityMask.cond_1, KInvulnerabilityMask.cond_2, KInvulnerabilityMask.cond_3>(player);
+}
+
+inline bool IsPlayerCritBoosted(CachedEntity* player) {
+	return HasConditionMask<KCritBoostMask.cond_0, KCritBoostMask.cond_1, KCritBoostMask.cond_2, KCritBoostMask.cond_3>(player);
+}
+
+inline bool IsPlayerInvisible(CachedEntity* player) {
+	return HasConditionMask<KInvisibilityMask.cond_0, KInvisibilityMask.cond_1, KInvisibilityMask.cond_2, KInvisibilityMask.cond_3>(player);
+}
 
 const char* GetBuildingName(CachedEntity* ent);
 Vector GetBuildingPosition(CachedEntity* ent);

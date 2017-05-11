@@ -33,7 +33,7 @@ CatVar ignore_vaccinator(CV_SWITCH, "trigger_respect_vaccinator", "1", "Respect 
 CatVar ambassador(CV_SWITCH, "trigger_ambassador", "1", "Smart Ambassador", "Don't shoot if your ambassador can't headshot yet (Keep that enabled!)");
 CatVar accuracy(CV_SWITCH, "trigger_accuracy", "0", "Improve accuracy (NOT WORKING)", "Might cause more lag (NOT WORKING YET!)");
 
-std::unique_ptr<trace_t> trace(new trace_t);
+trace_t trace_object;
 
 void CreateMove() {
 	if (!enabled) return;
@@ -46,7 +46,7 @@ void CreateMove() {
 		}
 	}
 	Ray_t ray;
-	trace::g_pFilterDefault->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+	trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	Vector forward;
 	float sp, sy, cp, cy;
 	sy = sinf(DEG2RAD(g_pUserCmd->viewangles[1])); // yaw
@@ -60,9 +60,9 @@ void CreateMove() {
 	forward.z = -sp;
 	forward = forward * 8192.0f + g_pLocalPlayer->v_Eye;
 	ray.Init(g_pLocalPlayer->v_Eye, forward);
-	g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, trace.get());
+	g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace_object);
 
-	IClientEntity* raw_entity = (IClientEntity*)(trace->m_pEnt);
+	IClientEntity* raw_entity = (IClientEntity*)(trace_object.m_pEnt);
 	if (!raw_entity) return;
 	CachedEntity* entity = ENTITY(raw_entity->entindex());
 	if (!entity->m_bEnemy) return;
@@ -87,7 +87,7 @@ void CreateMove() {
 		g_pUserCmd->buttons |= IN_ATTACK;
 		return;
 	}
-	if (HasCondition(entity, TFCond_UberBulletResist) && ignore_vaccinator) return;
+	if (HasCondition<TFCond_UberBulletResist>(entity) && ignore_vaccinator) return;
 	if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return;
 	if (IsPlayerInvulnerable(entity)) return;
 	if (respect_cloak && (IsPlayerInvisible(entity))) return;
@@ -113,7 +113,7 @@ void CreateMove() {
 	}
 	//debug->AddBoxOverlay(enemy_trace->endpos, Vector(-1.0f, -1.0f, -1.0f), Vector(1.0f, 1.0f, 1.0f), QAngle(0, 0, 0), 255, 0, 0, 255, 2.0f);
 	//IClientEntity* weapon;
-	CachedHitbox* hb = entity->hitboxes.GetHitbox(trace->hitbox);
+	CachedHitbox* hb = entity->hitboxes.GetHitbox(trace_object.hitbox);
 	//logging::Info("hitbox: %i 0x%08x", enemy_trace->hitbox, hb);
 
 	/*if (v_bImproveAccuracy->GetBool()) {
@@ -135,7 +135,7 @@ void CreateMove() {
 		} else return;
 	}*/
 	if ((int)hitbox >= 0 && !bodyshot) {
-		if (trace->hitbox != (int)hitbox) return;
+		if (trace_object.hitbox != (int)hitbox) return;
 	}
 	g_pUserCmd->buttons |= IN_ATTACK;
 }

@@ -106,7 +106,7 @@ int colors::EntityF(CachedEntity* ent) {
 				if (ent->m_iTeam == TEAM_BLU) result = blu_u;
 				else if (ent->m_iTeam == TEAM_RED) result = red_u;
 			}
-			if (HasCondition(ent, TFCond_UberBulletResist)) {
+			if (HasCondition<TFCond_UberBulletResist>(ent)) {
 				if (ent->m_iTeam == TEAM_BLU) result = blu_v;
 				else if (ent->m_iTeam == TEAM_RED) result = red_v;
 			}

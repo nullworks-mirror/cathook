@@ -96,13 +96,6 @@ static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](c
 	DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
 });
 
-static CatCommand clear_conds("debug_clear_conds", "Actually doesn't do anything", [](const CCommand& args) {
-	RemoveCondition(LOCAL_E, TFCond_Taunting);
-	RemoveCondition(LOCAL_E, TFCond_Jarated);
-	RemoveCondition(LOCAL_E, TFCond_OnFire);
-	RemoveCondition(LOCAL_E, TFCond_Milked);
-});
-
 CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push", "Prevents other players from pushing you around.");
 
 static IClientEntity* found_crit_weapon = nullptr;
@@ -123,13 +116,13 @@ int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene,
 	if (_this == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && spycrab_mode && CE_GOOD(LOCAL_W) && LOCAL_W->m_iClassID == g_pClassID->CTFWeaponPDA_Spy) {
 		if (!strcmp(str, "scenes/player/spy/low/taunt05.vcd")) {
 			if ((int)spycrab_mode == 2) {
-				RemoveCondition(LOCAL_E, TFCond_Taunting);
+				RemoveCondition<TFCond_Taunting>(LOCAL_E);
 				no_taunt_ticks = 6;
 				hacks::shared::lagexploit::AddExploitTicks(15);
 			}
 		} else if (strstr(str, "scenes/player/spy/low/taunt")) {
 			if ((int)spycrab_mode == 1) {
-				RemoveCondition(LOCAL_E, TFCond_Taunting);
+				RemoveCondition<TFCond_Taunting>(LOCAL_E);
 				no_taunt_ticks = 6;
 				hacks::shared::lagexploit::AddExploitTicks(15);
 			}
@@ -151,7 +144,7 @@ void CreateMove() {
 
 
 	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
-		RemoveCondition(LOCAL_E, TFCond_Taunting);
+		RemoveCondition<TFCond_Taunting>(LOCAL_E);
 		no_taunt_ticks--;
 	}
 	// TODO FIXME this should be moved out of here
@@ -185,7 +178,7 @@ void CreateMove() {
 	}*/
 
 	if (TF2C && tauntslide)
-		RemoveCondition(LOCAL_E, TFCond_Taunting);
+		RemoveCondition<TFCond_Taunting>(LOCAL_E);
 
 
 	if (g_pUserCmd->command_number && found_crit_number > g_pUserCmd->command_number + 66 * 20) found_crit_number = 0;
@@ -505,62 +498,3 @@ void CC_DumpVars(const CCommand& args) {
 	DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
 }*/
 
-/*void CC_DumpAttribs(const CCommand& args) {
-	if (CE_GOOD(g_pLocalPlayer->weapon())) {
-		for (int i = 0; i < 15; i++) {
-			logging::Info("%i %f", CE_INT(g_pLocalPlayer->weapon(), netvar.AttributeList + i * 12),
-					CE_FLOAT(g_pLocalPlayer->weapon(), netvar.AttributeList + i * 12 + 4));
-		}
-	}
-}*/
-
-/*void CC_DumpConds(const CCommand& args) {
-	if (args.ArgC() < 1) return;
-	if (!atoi(args[1])) return;
-	int idx = atoi(args[1]);
-	CachedEntity* ent = ENTITY(idx);
-	if (CE_BAD(ent)) return;
-	if (TF2) {
-		condition_data_s d1 = CE_VAR(ent, netvar._condition_bits, condition_data_s);
-		logging::Info("0x%08x 0x%08x 0x%08x 0x%08x", d1.cond_0, d1.cond_1, d1.cond_2, d1.cond_3);
-	}
-	condition_data_s d2 = FromOldNetvars(ent);
-	logging::Info("0x%08x 0x%08x 0x%08x 0x%08x", d2.cond_0, d2.cond_1, d2.cond_2, d2.cond_3);
-}*/
-
-/*Misc::Misc() {
-	if (TF2C) v_bMinigunJump = new CatVar(CV_SWITCH, "minigun_jump", "0", "Minigun Jump", NULL, "Allows you to jump while with minigun spun up");
-	v_bDebugInfo = new CatVar(CV_SWITCH, "misc_debug", "0", "Debug info", NULL, "Log stuff to console, enable this if tf2 crashes");
-	c_Name = CreateConCommand(CON_PREFIX "name", CC_SetName, "Sets custom name");
-	if (TF2) c_DumpItemAttributes = CreateConCommand(CON_PREFIX "dump_item_attribs", CC_DumpAttribs, "Dump active weapon attributes");
-	v_bAntiAFK = new CatVar(CV_SWITCH, "noafk", "0", "Anti AFK", NULL, "Sends random stuff to server to not be kicked for idling");
-	c_SayLine = CreateConCommand(CON_PREFIX "say_lines", CC_SayLines, "Uses ^ as a newline character");
-	c_Shutdown = CreateConCommand(CON_PREFIX "shutdown", CC_Shutdown, "Stops the hack");
-	c_AddFriend = CreateConCommand(CON_PREFIX "addfriend", CC_AddFriend, "Adds a friend");
-	c_AddRage = CreateConCommand(CON_PREFIX "addrage", CC_AddRage, "Adds player to rage list");
-	c_DumpVars = CreateConCommand(CON_PREFIX "dumpent", CC_DumpVars, "Dumps entity data");
-	c_DumpPlayers = CreateConCommand(CON_PREFIX "dumpplayers", CC_DumpPlayers, "Dumps player data");
-	c_DumpConds = CreateConCommand(CON_PREFIX "dumpconds", CC_DumpConds, "Dumps conditions");
-	c_Teamname = CreateConCommand(CON_PREFIX "teamname", CC_Teamname, "Team name");
-	c_Lockee = CreateConCommand(CON_PREFIX "lockee", CC_Lockee, "Lock/Unlock commands");
-	c_Reset = CreateConCommand(CON_PREFIX "reset_lists", CC_ResetLists, "Remove all friends and rage");
-	c_Disconnect = CreateConCommand(CON_PREFIX "disconnect", CC_Disconnect, "Disconnect");
-	c_DisconnectVAC = CreateConCommand(CON_PREFIX "disconnect_vac", CC_Misc_Disconnect_VAC, "Disconnect (VAC)");
-	v_bInfoSpam = CreateConVar(CON_PREFIX "info_spam", "0", "Info spam");
-	v_bFastCrouch = CreateConVar(CON_PREFIX "fakecrouch", "0", "Fast crouch");
-	v_bFlashlightSpam = new CatVar(CV_SWITCH, "flashlight_spam", "0", "Flashlight Spam", NULL, "Quickly turns flashlight on and off");
-	v_iFakeLag = new CatVar(CV_INT, "fakelag", "0", "Fakelag", NULL, "# of packets jammed", true, 25.0f);
-	c_Unrestricted = CreateConCommand(CON_PREFIX "cmd", CC_Unrestricted, "Execute a ConCommand");
-	c_SaveSettings = CreateConCommand(CON_PREFIX "save", CC_SaveConVars, CON_PREFIX "save [file]\nSave settings to cfg/cat_[file].cfg, file is lastcfg by default\n");
-	//v_bDumpEventInfo = CreateConVar(CON_PREFIX "debug_event_info", "0", "Show event info");
-	CreateConCommand(CON_PREFIX "set", CC_SetValue, "Set ConVar value (if third argument is 1 the ^'s will be converted into newlines)");
-	if (TF2C) v_bTauntSlide = new CatVar(CV_SWITCH, "tauntslide", "0", "Taunt Slide", NULL, "Works only in TF2 Classic!");
-	if (TF) v_bCritHack = new CatVar(CV_SWITCH, "crits", "0", "Crit Hack", NULL, "BindToggle that to a key, while enabled, you can only shoot criticals. Be careful not to exhaust the crit bucket!");
-	//v_bDebugCrits = new CatVar(CV_SWITCH, "debug_crits", "0", "Debug Crits", NULL, "???");
-	v_bCleanChat = new CatVar(CV_SWITCH, "clean_chat", "1", "Remove newlines from messages", NULL, "Removes newlines from messages, at least it should do that. Might be broken.");
-	if (TF2) c_Schema = CreateConCommand(CON_PREFIX "schema", CC_Misc_Schema, "Load item schema");
-	if (TF) v_bDebugCrits = new CatVar(CV_SWITCH, "debug_crits", "0", "???", NULL, "???");
-	if (TF) v_bSuppressCrits = new CatVar(CV_SWITCH, "suppress_crits", "1", "Suppress non-forced crits", NULL, "Helps to save the crit bucket");
-	//if (TF2) v_bHookInspect = new CatVar(CV_SWITCH, "hook_inspect", "0", "Hook CanInspect", NULL, "Once enabled, can't be turned off. cathook can't be unloaded after enabling it");
-	//eventManager->AddListener(&listener, "player_death", false);
-}*/

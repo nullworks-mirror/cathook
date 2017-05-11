@@ -142,9 +142,9 @@ void trace::FilterPenetration::Reset() {
 	m_pIgnoreFirst = 0;
 }
 
-trace::FilterDefault* trace::g_pFilterDefault = new trace::FilterDefault();
-trace::FilterNoPlayer* trace::g_pFilterNoPlayer = new trace::FilterNoPlayer();
-trace::FilterPenetration* trace::g_pFilterPenetration = new trace::FilterPenetration();
+trace::FilterDefault trace::filter_default {};
+trace::FilterNoPlayer trace::filter_no_player {};
+trace::FilterPenetration trace::filter_penetration {};
 
 
 

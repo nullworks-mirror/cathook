@@ -76,24 +76,6 @@ void ReplaceString(char* target, char* what, char* with_what) {
 	strcpy(target, buffer);
 }
 
-// TODO Source Engine
-// CTFPlayerShared::IsInvulnerable(CTFPlayerShared *this)
-bool IsPlayerInvulnerable(CachedEntity* player) {
-	return (HasCondition(player, TFCond_Ubercharged) || HasCondition(player, TFCond_UberchargedCanteen)
-	 || HasCondition(player, TFCond_UberchargedHidden) || HasCondition(player, TFCond_UberchargedOnTakeDamage)
-	 || HasCondition(player, TFCond_Bonked) || HasCondition(player, TFCond_DefenseBuffMmmph));
-}
-
-// TODO Source Engine
-// CTFPlayerShared::IsCritBoosted@<eax>(long double a1@<st0>, CTFPlayerShared *this)
-bool IsPlayerCritBoosted(CachedEntity* player) {
-	return (HasCondition(player, TFCond_Kritzkrieged) || HasCondition(player, TFCond_CritRuneTemp)
-		 || HasCondition(player, TFCond_CritCanteen) || HasCondition(player, TFCond_CritMmmph)
-		 || HasCondition(player, TFCond_CritOnKill) || HasCondition(player, TFCond_CritOnDamage)
-		 || HasCondition(player, TFCond_CritOnFirstBlood) || HasCondition(player, TFCond_CritOnWin)
-		 || HasCondition(player, TFCond_CritRuneTemp) || HasCondition(player, TFCond_HalloweenCritCandy));
-}
-
 ConVar* CreateConVar(std::string name, std::string value, std::string help) {
 	char* namec = new char[256];
 	char* valuec = new char[256];
@@ -179,18 +161,18 @@ void ReplaceString(std::string& input, const std::string& what, const std::strin
 
 powerup_type GetPowerupOnPlayer(CachedEntity* player) {
 	if (CE_BAD(player)) return powerup_type::not_powerup;
-	if (HasCondition(player, TFCond_RuneStrength)) return powerup_type::strength;
-	if (HasCondition(player, TFCond_RuneHaste)) return powerup_type::haste;
-	if (HasCondition(player, TFCond_RuneRegen)) return powerup_type::regeneration;
-	if (HasCondition(player, TFCond_RuneResist)) return powerup_type::resistance;
-	if (HasCondition(player, TFCond_RuneVampire)) return powerup_type::vampire;
-	if (HasCondition(player, TFCond_RuneWarlock)) return powerup_type::reflect;
-	if (HasCondition(player, TFCond_RunePrecision)) return powerup_type::precision;
-	if (HasCondition(player, TFCond_RuneAgility)) return powerup_type::agility;
-	if (HasCondition(player, TFCond_RuneKnockout)) return powerup_type::knockout;
-	if (HasCondition(player, TFCond_KingRune)) return powerup_type::king;
-	if (HasCondition(player, TFCond_PlagueRune)) return powerup_type::plague;
-	if (HasCondition(player, TFCond_SupernovaRune)) return powerup_type::supernova;
+	if (HasCondition<TFCond_RuneStrength>(player)) return powerup_type::strength;
+	if (HasCondition<TFCond_RuneHaste>(player)) return powerup_type::haste;
+	if (HasCondition<TFCond_RuneRegen>(player)) return powerup_type::regeneration;
+	if (HasCondition<TFCond_RuneResist>(player)) return powerup_type::resistance;
+	if (HasCondition<TFCond_RuneVampire>(player)) return powerup_type::vampire;
+	if (HasCondition<TFCond_RuneWarlock>(player)) return powerup_type::reflect;
+	if (HasCondition<TFCond_RunePrecision>(player)) return powerup_type::precision;
+	if (HasCondition<TFCond_RuneAgility>(player)) return powerup_type::agility;
+	if (HasCondition<TFCond_RuneKnockout>(player)) return powerup_type::knockout;
+	if (HasCondition<TFCond_KingRune>(player)) return powerup_type::king;
+	if (HasCondition<TFCond_PlagueRune>(player)) return powerup_type::plague;
+	if (HasCondition<TFCond_SupernovaRune>(player)) return powerup_type::supernova;
 	return powerup_type::not_powerup;
 }
 
@@ -333,13 +315,6 @@ void FixMovement(CUserCmd& cmd, Vector& viewangles) {
 	cmd.sidemove = sin(yaw) * speed;
 }
 
-bool IsPlayerInvisible(CachedEntity* player) {
-	return (HasCondition(player, TFCond_Cloaked) && !(
-		 HasCondition(player, TFCond_OnFire) || HasCondition(player, TFCond_Jarated)
-		 || HasCondition(player, TFCond_CloakFlicker) || HasCondition(player, TFCond_Milked)
-		 || HasCondition(player, TFCond_Bleeding)));
-}
-
 bool AmbassadorCanHeadshot() {
 	if (IsAmbassador(g_pLocalPlayer->weapon())) {
 		if ((g_GlobalVars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 0.95) {
@@ -373,11 +348,11 @@ bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos) {
 	if (entity == g_pLocalPlayer->entity) return true;
 	if (CE_BAD(g_pLocalPlayer->entity)) return false;
 	if (CE_BAD(entity)) return false;
-	trace::g_pFilterDefault->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+	trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	ray.Init(g_pLocalPlayer->v_Eye, endpos);
 	{
 		PROF_SECTION(IEVV_TraceRay);
-		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, trace::g_pFilterDefault, &trace_object);
+		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace_object);
 	}
 	return (trace_object.fraction >= 0.99f || (((IClientEntity*)trace_object.m_pEnt)) == RAW_ENT(entity));
 }
@@ -586,9 +561,9 @@ bool IsVectorVisible(Vector origin, Vector target) {
 	static trace_t trace_visible;
 	static Ray_t ray;
 
-	trace::g_pFilterNoPlayer->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+	trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	ray.Init(origin, target);
-	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, trace::g_pFilterNoPlayer, &trace_visible);
+	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player, &trace_visible);
 	return (trace_visible.fraction == 1.0f);
 }
 
@@ -599,7 +574,7 @@ void WhatIAmLookingAt(int* result_eindex, Vector* result_pos) {
 	static QAngle angle;
 	static trace_t trace;
 
-	trace::g_pFilterDefault->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+	trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	g_IEngine->GetViewAngles(angle);
 	sy = sinf(DEG2RAD(angle[1]));
 	cy = cosf(DEG2RAD(angle[1]));
@@ -610,7 +585,7 @@ void WhatIAmLookingAt(int* result_eindex, Vector* result_pos) {
 	forward.z = -sp;
 	forward = forward * 8192.0f + g_pLocalPlayer->v_Eye;
 	ray.Init(g_pLocalPlayer->v_Eye, forward);
-	g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, &trace);
+	g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);
 	if (result_pos)
 		*result_pos = trace.endpos;
 	if (result_eindex) {
@@ -714,24 +689,20 @@ bool IsEntityVisiblePenetration(CachedEntity* entity, int hb) {
 	static int ret;
 	static bool correct_entity;
 	static IClientEntity *ent;
-
-	if (!trace::g_pFilterPenetration) {
-		trace::g_pFilterPenetration = new trace::FilterPenetration();
-	}
-	trace::g_pFilterPenetration->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-	trace::g_pFilterPenetration->Reset();
+	trace::filter_penetration.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+	trace::filter_penetration.Reset();
 	ret = GetHitbox(entity, hb, hit);
 	if (ret) {
 		return false;
 	}
 	ray.Init(g_pLocalPlayer->v_Origin + g_pLocalPlayer->v_ViewOffset, hit);
-	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, trace::g_pFilterPenetration, &trace_visible);
+	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_penetration, &trace_visible);
 	correct_entity = false;
 	if (trace_visible.m_pEnt) {
 		correct_entity = ((IClientEntity*)trace_visible.m_pEnt) == RAW_ENT(entity);
 	}
 	if (!correct_entity) return false;
-	g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, &trace_visible);
+	g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace_visible);
 	if (trace_visible.m_pEnt) {
 		ent = (IClientEntity*)trace_visible.m_pEnt;
 		if (ent) {
