@@ -10,8 +10,8 @@
 static bool hoovy_list[32] = { 0 };
 
 bool HasSandvichOut(CachedEntity* entity) {
-	static int weapon_idx;
-	static CachedEntity *weapon;
+	int weapon_idx;
+	CachedEntity *weapon;
 
 	weapon_idx = CE_INT(entity, netvar.hActiveWeapon) & 0xFFF;
 	if (!(weapon_idx > 0 && weapon_idx < HIGHEST_ENTITY)) return false;

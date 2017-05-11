@@ -97,11 +97,11 @@ float DistanceToGround(CachedEntity* ent) {
 }
 
 float DistanceToGround(Vector origin) {
-	static trace_t* ground_trace = new trace_t();
+	trace_t ground_trace;
 	Ray_t ray;
 	Vector endpos = origin;
 	endpos.z -= 8192;
 	ray.Init(origin, endpos);
-	g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, ground_trace);
-	return 8192.0f * ground_trace->fraction;
+	g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &ground_trace);
+	return 8192.0f * ground_trace.fraction;
 }

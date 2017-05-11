@@ -8,7 +8,7 @@
 #include "common.h"
 
 void TFPlayerResource::Update() {
-	static IClientEntity *ent;
+	IClientEntity *ent;
 
 	entity = 0;
 	for (int i = 0; i < HIGHEST_ENTITY; i++) {
@@ -21,8 +21,8 @@ void TFPlayerResource::Update() {
 }
 
 int TFPlayerResource::GetMaxHealth(CachedEntity* player) {
-	static IClientEntity *ent;
-	static int idx;
+	IClientEntity *ent;
+	int idx;
 
 	if (HL2DM) return 100;
 	ent = g_IEntityList->GetClientEntity(entity);
@@ -33,8 +33,8 @@ int TFPlayerResource::GetMaxHealth(CachedEntity* player) {
 }
 
 int TFPlayerResource::GetMaxBuffedHealth(CachedEntity* player) {
-	static IClientEntity *ent;
-	static int idx;
+	IClientEntity *ent;
+	int idx;
 
 	if (!TF2) return GetMaxHealth(player);
 	ent = g_IEntityList->GetClientEntity(entity);
@@ -45,7 +45,7 @@ int TFPlayerResource::GetMaxBuffedHealth(CachedEntity* player) {
 }
 
 int TFPlayerResource::GetTeam(int idx) {
-	static IClientEntity *ent;
+	IClientEntity *ent;
 
 	if (idx >= 64 || idx < 0) return 0;
 	ent = g_IEntityList->GetClientEntity(entity);
@@ -54,8 +54,8 @@ int TFPlayerResource::GetTeam(int idx) {
 }
 
 int TFPlayerResource::GetClass(CachedEntity* player) {
-	static IClientEntity *ent;
-	static int idx;
+	IClientEntity *ent;
+	int idx;
 
 	ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent || ent->GetClientClass()->m_ClassID != (TF ? g_pClassID->CTFPlayerResource : g_pClassID->CPlayerResource)) return 0;

@@ -65,10 +65,10 @@ void End() {
 
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	static CreateMove_t original_method = (CreateMove_t)hooks::clientmode.GetMethod(offsets::CreateMove());
-	static bool time_replaced, ret, speedapplied;
-	static float curtime_old, servertime, speed, yaw;
-	static Vector vsilent, ang;
-	static INetChannel* ch;
+	bool time_replaced, ret, speedapplied;
+	float curtime_old, servertime, speed, yaw;
+	Vector vsilent, ang;
+	INetChannel* ch;
 
 	SEGV_BEGIN;
 	tickcount++;
@@ -143,7 +143,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 #ifdef IPC_ENABLED
 	static int team_joining_state = 0;
 	static float last_jointeam_try = 0;
-	static CachedEntity *found_entity, *ent;
+	CachedEntity *found_entity, *ent;
 
 	if (hacks::shared::followbot::bot) {
 

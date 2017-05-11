@@ -68,9 +68,9 @@ void AddEntityString(CachedEntity* entity, const std::string& string, int color)
 }
 
 void CreateMove() {
-	static int limit;
+	int limit;
 	static int max_clients = g_IEngine->GetMaxClients();
-	static CachedEntity* ent;
+	CachedEntity* ent;
 
 	ResetEntityStrings();
 	limit = HIGHEST_ENTITY;
@@ -88,7 +88,7 @@ void CreateMove() {
 }
 
 void Draw() {
-	static int limit;
+	int limit;
 	static int max_clients = g_IEngine->GetMaxClients();
 	limit = HIGHEST_ENTITY;
 	if (!buildings && !proj_esp && !item_esp) limit = min(max_clients, HIGHEST_ENTITY);
@@ -109,13 +109,13 @@ static CatVar esp_3d_box_nodraw(CV_SWITCH, "esp_3d_box_nodraw", "0", "Invisible 
 static CatVar esp_3d_box_healthbar(CV_SWITCH, "esp_3d_box_healthbar", "1", "Health bar", "Adds a health bar to the esp");
 
 void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healthmax) {
-	static Vector mins, maxs;
-	static Vector points_r[8];
-	static Vector points[8];
-	static bool set, success, cloak;
-	static float x, y, z;
-	static int hbh, max_x, max_y, min_x, min_y;
-	static CachedHitbox* hb;
+	Vector mins, maxs;
+	Vector points_r[8];
+	Vector points[8];
+	bool set, success, cloak;
+	float x, y, z;
+	int hbh, max_x, max_y, min_x, min_y;
+	CachedHitbox* hb;
 
 	set = false;
 	success = true;
@@ -228,11 +228,11 @@ static CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "
 static CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
 
 void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
-	static Vector min, max, origin, so, omin, omax, smin, smax;
-	static float height, width, trf;
-	static bool cloak;
-	static int min_x, min_y, max_x, max_y, border, hp, hbh;
-	static unsigned char alpha;
+	Vector min, max, origin, so, omin, omax, smin, smax;
+	float height, width, trf;
+	bool cloak;
+	int min_x, min_y, max_x, max_y, border, hp, hbh;
+	unsigned char alpha;
 
 	if (CE_BAD(ent)) return;
 

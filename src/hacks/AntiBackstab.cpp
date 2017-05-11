@@ -25,8 +25,8 @@ void SayNope() {
 }
 
 float GetAngle(CachedEntity* spy) {
-	static float yaw, yaw2, anglediff;
-	static Vector diff;
+	float yaw, yaw2, anglediff;
+	Vector diff;
 	yaw = g_pLocalPlayer->v_OrigViewangles.y;
 	const Vector& A = LOCAL_E->m_vecOrigin;
 	const Vector& B = spy->m_vecOrigin;
@@ -41,8 +41,8 @@ float GetAngle(CachedEntity* spy) {
 }
 
 CachedEntity* ClosestSpy() {
-	static CachedEntity *closest, *ent;
-	static float closest_dist, dist;
+	CachedEntity *closest, *ent;
+	float closest_dist, dist;
 
 	closest = nullptr;
 	closest_dist = 0.0f;
@@ -68,9 +68,9 @@ CachedEntity* ClosestSpy() {
 }
 
 void CreateMove() {
-	static CachedEntity *spy;
-	static Vector diff;
-	static float yaw2, resultangle;
+	CachedEntity *spy;
+	Vector diff;
+	float yaw2, resultangle;
 
 	if (!enabled) return;
 	spy = ClosestSpy();

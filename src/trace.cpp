@@ -30,8 +30,8 @@ void trace::FilterDefault::SetSelf(IClientEntity* self) {
 }
 
 bool trace::FilterDefault::ShouldHitEntity(IHandleEntity* handle, int mask) {
-	static IClientEntity *entity;
-	static ClientClass *clazz;
+	IClientEntity *entity;
+	ClientClass *clazz;
 
 	if (!handle) return false;
 	entity = (IClientEntity*) handle;
@@ -70,8 +70,8 @@ void trace::FilterNoPlayer::SetSelf(IClientEntity* self) {
 }
 
 bool trace::FilterNoPlayer::ShouldHitEntity(IHandleEntity* handle, int mask) {
-	static IClientEntity *entity;
-	static ClientClass *clazz;
+	IClientEntity *entity;
+	ClientClass *clazz;
 
 	if (!handle) return false;
 	entity = (IClientEntity*) handle;
@@ -110,8 +110,8 @@ void trace::FilterPenetration::SetSelf(IClientEntity* self) {
 }
 
 bool trace::FilterPenetration::ShouldHitEntity(IHandleEntity* handle, int mask) {
-	static IClientEntity *entity;
-	static ClientClass *clazz;
+	IClientEntity *entity;
+	ClientClass *clazz;
 
 	if (!handle) return false;
 	entity = (IClientEntity*) handle;

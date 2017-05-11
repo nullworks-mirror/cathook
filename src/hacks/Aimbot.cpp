@@ -120,8 +120,8 @@ CachedEntity* CurrentTarget() {
 
 int ClosestHitbox(CachedEntity* target) {
 	// FIXME this will break multithreading if it will be ever implemented. When implementing it, these should be made non-static
-	static int closest;
-	static float closest_fov, fov;
+	int closest;
+	float closest_fov, fov;
 
 	//If you can see the spine, no need to check for another hitbox
     if ((int)hitbox_mode == 0) {
@@ -140,11 +140,11 @@ int ClosestHitbox(CachedEntity* target) {
 }
 
 void CreateMove() {
-	static EAimbotLocalState local_state;
-	static float target_highest_score, scr, begincharge, charge;
-	static CachedEntity* ent;
-	static EAimbotTargetState tg;
-	static int huntsman_ticks = 0;
+	EAimbotLocalState local_state;
+	float target_highest_score, scr, begincharge, charge;
+	CachedEntity* ent;
+	EAimbotTargetState tg;
+	int huntsman_ticks = 0;
 
 	target_highest = 0;
 	if (!enabled) {
@@ -307,11 +307,11 @@ bool VischeckPredictedEntity(CachedEntity* entity) {
 }
 
 EAimbotTargetState TargetState(CachedEntity* entity) {
-	static float bdmg;
-	static weaponmode mode;
-	static Vector resultAim;
-	static int hitbox;
-	static int team;
+	float bdmg;
+	weaponmode mode;
+	Vector resultAim;
+	int hitbox;
+	int team;
 
 	if (entity->m_Type == ENTITY_PLAYER) {
 		if (entity == LOCAL_E) return EAimbotTargetState::LOCAL;
@@ -458,9 +458,9 @@ void slowAim(Vector &inputAngle, Vector userAngle) {
 }
 
 bool Aim(CachedEntity* entity) {
-	static Vector angles, tr;
-	static int hitbox, weapon_class;
-	static bool attack;
+	Vector angles, tr;
+	int hitbox, weapon_class;
+	bool attack;
 	static int forbiddenWeapons[] = { g_pClassID->CTFCompoundBow, g_pClassID->CTFKnife };
 
 	state = EAimbotState::AIMING;
@@ -544,7 +544,7 @@ void UpdateAutoShootTimer() {
 bool UpdateAimkey() {
 	static bool aimkey_flip = false;
 	static bool pressed_last_tick = false;
-	static bool key_down;
+	bool key_down;
 	if (aimkey && aimkey_mode) {
 		key_down = g_IInputSystem->IsButtonDown((ButtonCode_t)(int)aimkey);
 		switch (static_cast<EAimKeyMode>((int)aimkey_mode)) {
@@ -582,8 +582,8 @@ float EffectiveShootingRange() {
 }
 
 EAimbotLocalState ShouldAim() {
-	static bool do_minigun_checks;
-	static int weapon_state;
+	bool do_minigun_checks;
+	int weapon_state;
 	// Checks should be in order: cheap -> expensive
 	if (attack_only && !(g_pUserCmd->buttons & IN_ATTACK)) {
 		return EAimbotLocalState::NOT_ATTACKING;
@@ -658,9 +658,9 @@ EAimbotLocalState ShouldAim() {
 }
 
 int BestHitbox(CachedEntity* target) {
-	static int preferred, ci, flags, bdmg;
-	static float cdmg;
-	static bool ground;
+	int preferred, ci, flags, bdmg;
+	float cdmg;
+	bool ground;
 	preferred = hitbox;
 	switch ((int)hitbox_mode) {
 	case 0: { // AUTO-HEAD

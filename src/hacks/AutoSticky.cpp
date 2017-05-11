@@ -40,7 +40,7 @@ bool IsTarget(CachedEntity* ent) {
 }
 
 bool stickyVisable(CachedEntity* targetTrace, CachedEntity* bombTrace) {
-    static trace_t trace;
+    trace_t trace;
     trace::filter_default.SetSelf(RAW_ENT(bombTrace));
     Ray_t ray;
     ray.Init(bombTrace->m_vecOrigin, RAW_ENT(targetTrace)->GetCollideable()->GetCollisionOrigin());

@@ -9,7 +9,7 @@
 #include "sdk.h"
 
 void LocalPlayer::Update() {
-	static CachedEntity *wep;
+	CachedEntity *wep;
 
 	entity_idx = g_IEngine->GetLocalPlayer();
 	entity = ENTITY(entity_idx);
@@ -39,7 +39,7 @@ void LocalPlayer::Update() {
 }
 
 CachedEntity* LocalPlayer::weapon() {
-	static int handle, eid;
+	int handle, eid;
 
 	if (CE_BAD(entity)) return 0;
 	handle = CE_INT(entity, netvar.hActiveWeapon);

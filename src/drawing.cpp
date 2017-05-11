@@ -56,8 +56,8 @@ int draw::width = 0;
 int draw::height = 0;
 
 int colors::EntityF(CachedEntity* ent) {
-	static int result, skin, plclr;
-	static k_EItemType type;
+	int result, skin, plclr;
+	k_EItemType type;
 
 	using namespace colors;
 	result = white;
@@ -123,8 +123,8 @@ int colors::RainbowCurrent() {
 }
 
 int colors::FromHSL(float h, float s, float v) {
-	static double hh, p, q, t, ff;
-	static long i;
+	double hh, p, q, t, ff;
+	long i;
 
 	if(s <= 0.0) {       // < is bogus, just shuts up warnings
 		return colors::Create(v * 255, v * 255, v * 255, 255);
@@ -157,7 +157,7 @@ int colors::FromHSL(float h, float s, float v) {
 }
 
 int colors::Health(int health, int max) {
-	static float hf;
+	float hf;
 	hf = (float)health / (float)max;
 	if (hf > 1) {
 		return colors::Create(64, 128, 255, 255);
@@ -218,8 +218,8 @@ void draw::DrawLine(int x, int y, int dx, int dy, int color) {
 }
 
 bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
-	static Vector world, min, max;
-	static bool succ;
+	Vector world, min, max;
+	bool succ;
 
 	if (!entity) return false;
 	RAW_ENT(entity)->GetRenderBounds(min, max);
@@ -230,7 +230,7 @@ bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
 }
 
 bool draw::WorldToScreen(Vector& origin, Vector& screen) {
-	static float w, odw;
+	float w, odw;
 
 	const VMatrix& wts = g_IEngine->WorldToScreenMatrix();
 	screen.z = 0;
@@ -250,18 +250,18 @@ void draw::OutlineRect(int x, int y, int w, int h, int color) {
 }
 
 void draw::GetStringLength(unsigned long font, char* string, int& length, int& height) {
-	static wchar_t buf[512];
+	wchar_t buf[512];
 	memset(buf, 0, sizeof(wchar_t) * 512);
 	mbstowcs(buf, string, strlen(string));
 	g_ISurface->GetTextSize(font, buf, length, height);
 }
 
 void draw::String (unsigned long font, int x, int y, int color, int shadow, const char* text) {
-	static bool newlined;
-	static int w, h, s, n;
-	static char ch[512];
-	static wchar_t string[512];
-	static size_t len;
+	bool newlined;
+	int w, h, s, n;
+	char ch[512];
+	wchar_t string[512];
+	size_t len;
 
 	newlined = false;
 	len = strlen(text);
@@ -297,8 +297,8 @@ void draw::String(unsigned long font, int x, int y, int color, int shadow, std::
 }
 CatVar fast_outline(CV_SWITCH, "fast_outline", "0", "Fast font outline", "Use only single repaint to increase performance");
 void draw::WString(unsigned long font, int x, int y, int color, int shadow, const wchar_t* text) {
-	static unsigned char alpha;
-	static int black_t;
+	unsigned char alpha;
+	int black_t;
 
 	if (shadow) {
 		alpha = (color >> 24);

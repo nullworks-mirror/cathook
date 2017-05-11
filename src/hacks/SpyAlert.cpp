@@ -25,9 +25,9 @@ float last_say = 0.0f;
 
 
 void Draw() {
-	static CachedEntity *closest_spy, *ent;
-	static float closest_spy_distance, distance;
-	static int spy_count;
+	CachedEntity *closest_spy, *ent;
+	float closest_spy_distance, distance;
+	int spy_count;
 
 	if (!enabled) return;
 	if (g_pLocalPlayer->life_state) return;	
