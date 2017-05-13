@@ -633,16 +633,18 @@ EAimbotLocalState ShouldAim() {
 			}
 		}
 	}
-	switch (GetWeaponMode()) {
-	case weapon_hitscan:
-	case weapon_melee:
-		break;
-	case weapon_projectile:
-		if (!projectile_aimbot) return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
-		break;
-	default:
-		return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
-	};
+	IF_GAME (IsTF2()) {
+		switch (GetWeaponMode()) {
+		case weapon_hitscan:
+		case weapon_melee:
+			break;
+		case weapon_projectile:
+			if (!projectile_aimbot) return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
+			break;
+		default:
+			return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
+		};
+	}
 	IF_GAME (IsTF()) {
 		if (g_pLocalPlayer->bZoomed) {
 			if (!(g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2))) {

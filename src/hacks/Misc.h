@@ -12,12 +12,18 @@
 
 class ConVar;
 class CatCommand;
+class IClientEntity;
 
 namespace hacks { namespace shared { namespace misc {
 
 void CreateMove();
 void Draw();
 
+extern IClientEntity* found_crit_weapon;
+extern int found_crit_number;
+extern int last_number;
+
+extern CatVar crit_hack_next;
 extern CatVar debug_info;
 extern CatVar flashlight_spam;
 extern CatVar crit_info; // TODO separate

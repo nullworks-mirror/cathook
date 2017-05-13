@@ -48,7 +48,7 @@ bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
 	}
 }
 
-static CatVar crit_hack_next(CV_SWITCH, "crit_hack_next", "0", "Next crit info");
+CatVar crit_hack_next(CV_SWITCH, "crit_hack_next", "0", "Next crit info");
 
 void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char* ft, unsigned acc_offset) {
 	bool forcetable = ft && strlen(ft);
@@ -98,9 +98,9 @@ static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](c
 
 CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push", "Prevents other players from pushing you around.");
 
-static IClientEntity* found_crit_weapon = nullptr;
-static int found_crit_number = 0;
-static int last_number = 0;
+IClientEntity* found_crit_weapon = nullptr;
+int found_crit_number = 0;
+int last_number = 0;
 
 // SUPER SECRET CODE DONOT STEEL
 
@@ -189,7 +189,7 @@ void CreateMove() {
 		if (crit_hack_next && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
 			PROF_SECTION(CM_misc_crit_hack_prediction);
 			weapon = RAW_ENT(LOCAL_W);
-			if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
+			if (weapon && vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
 				if (experimental_crit_hack.KeyDown()) {
 					if (!g_pUserCmd->command_number || critWarmup < 8) {
 						if (g_pUserCmd->buttons & IN_ATTACK) {
@@ -285,7 +285,7 @@ void CreateMove() {
 
 void Draw() {
 	if (crit_info && CE_GOOD(LOCAL_W)) {
-		if (CritKeyDown()) {
+		if (CritKeyDown() || experimental_crit_hack.KeyDown()) {
 			AddCenterString("FORCED CRITS!", colors::red);
 		}
 		IF_GAME (IsTF2()) {
