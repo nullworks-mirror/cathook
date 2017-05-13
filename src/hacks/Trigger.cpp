@@ -37,7 +37,7 @@ trace_t trace_object;
 
 void CreateMove() {
 	if (!enabled) return;
-	if (GetWeaponMode(g_pLocalPlayer->entity) != weapon_hitscan) return;
+	if (GetWeaponMode() != weapon_hitscan) return;
 	if (ambassador) {
 		if (IsAmbassador(g_pLocalPlayer->weapon())) {
 			if ((g_GlobalVars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 1.0) {

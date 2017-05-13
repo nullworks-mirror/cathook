@@ -176,7 +176,7 @@ void CreateMove() {
 		if (CE_BAD(ent)) continue;
 		tg = TargetState(ent);
 		if (tg == EAimbotTargetState::GOOD) {
-			if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee || (int)priority_mode == 2) {
+			if (GetWeaponMode() == weaponmode::weapon_melee || (int)priority_mode == 2) {
 				scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
 				if (scr > target_highest_score) {
 					target_highest_score = scr;
@@ -199,11 +199,7 @@ void CreateMove() {
 					}
 				} break;
 				case 3: {
-					if (ent->m_Type == ENTITY_BUILDING) {
-						scr = 450.0f - CE_INT(ent, netvar.iBuildingHealth);
-					} else {
-						scr = 450.0f - CE_INT(ent, netvar.iHealth);
-					}
+					scr = 450.0f - ent->m_iHealth;
 					if (scr > target_highest_score) {
 						target_highest_score = scr;
 						target_highest = ent;
@@ -331,7 +327,7 @@ EAimbotTargetState TargetState(CachedEntity* entity) {
 			if (ignore_taunting && HasCondition<TFCond_Taunting>(entity)) return EAimbotTargetState::TAUNTING;
 			if (IsPlayerInvulnerable(entity)) return EAimbotTargetState::INVULNERABLE;
 			if (respect_cloak && IsPlayerInvisible(entity)) return EAimbotTargetState::INVISIBLE;
-			mode = GetWeaponMode(LOCAL_E);
+			mode = GetWeaponMode();
 			if (mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == g_pClassID->CTFCompoundBow)
 				if (respect_vaccinator && HasCondition<TFCond_UberBulletResist>(entity)) return EAimbotTargetState::VACCINATED;
 		}
@@ -489,7 +485,7 @@ bool Aim(CachedEntity* entity) {
 		g_pLocalPlayer->bUseSilentAngles = true;
 	}
 	if (autoshoot) {
-		if (g_pLocalPlayer->clazz == tf_class::tf_sniper) {
+		if (TF && g_pLocalPlayer->clazz == tf_class::tf_sniper) {
 			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle || g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
 				if (zoomed_only && !CanHeadshot()) return true;
 			}
@@ -511,7 +507,7 @@ bool Aim(CachedEntity* entity) {
         }
         
         //Tell reset conds to function
-		if (instant_rezoom_enabled) {
+		if (TF && instant_rezoom_enabled) {
 			if (attack && g_pLocalPlayer->bZoomed && !instant_rezoom_shoot) {
 				instant_rezoom_shoot = true;
 			}
@@ -571,7 +567,7 @@ bool UpdateAimkey() {
 
 
 float EffectiveTargetingRange() {
-	if (GetWeaponMode(g_pLocalPlayer->weapon()) == weapon_melee) {
+	if (GetWeaponMode() == weapon_melee) {
 		return 100.0f;
 	}
 	return (float)max_range;
@@ -605,13 +601,13 @@ EAimbotLocalState ShouldAim() {
 		// Miniguns should shoot and aim continiously. TODO smg
 		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFMinigun) {
 			// Melees are weird, they should aim continiously like miniguns too.
-			if (GetWeaponMode(g_pLocalPlayer->entity) != weaponmode::weapon_melee) {
+			if (GetWeaponMode() != weaponmode::weapon_melee) {
 				// Finally, CanShoot() check.
 				if (!CanShoot()) return EAimbotLocalState::CANT_SHOOT;
 			}
 		}
 	}
-	switch (GetWeaponMode(g_pLocalPlayer->entity)) {
+	switch (GetWeaponMode()) {
 	case weapon_hitscan:
 	case weapon_melee:
 		break;
@@ -683,7 +679,7 @@ int BestHitbox(CachedEntity* target) {
 		flags = CE_INT(target, netvar.iFlags);
 		ground = (flags & (1 << 0));
 		if (!ground) {
-			if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_projectile) {
+			if (GetWeaponMode() == weaponmode::weapon_projectile) {
 				if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFCompoundBow) {
 					preferred = hitbox_t::spine_3;
 				}

@@ -23,14 +23,14 @@ bool CritKeyDown() {
 }
 
 bool AllowAttacking() {
-	if (!(CritKeyDown() || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee)) && !hacks::shared::misc::crit_suppress) return true;
+	if (!(CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee)) && !hacks::shared::misc::crit_suppress) return true;
 	bool crit = IsAttackACrit(g_pUserCmd);
 	LoadSavedState();
-	if (hacks::shared::misc::crit_suppress && !(CritKeyDown() || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee))) {
+	if (hacks::shared::misc::crit_suppress && !(CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee))) {
 		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
 			return false;
 		}
-	} else if ((CritKeyDown() || ((GetWeaponMode(LOCAL_E) == weapon_melee) && hacks::shared::misc::crit_melee)) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife)) {
+	} else if ((CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee)) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife)) {
 		if (!crit) return false;
 	}
 	return true;
@@ -127,7 +127,7 @@ bool IsAttackACrit(CUserCmd* cmd) {
 					int b = LOCAL_E->m_IDX;
 					rseed = rseed ^ (b | c);
 					RandomSeed(rseed);
-					if (GetWeaponMode(LOCAL_E) == weapon_melee) {
+					if (GetWeaponMode() == weapon_melee) {
 						*(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u) = 1000.0f;
 					}
 					state.Save(weapon);

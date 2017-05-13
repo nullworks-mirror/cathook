@@ -73,7 +73,7 @@ powerup_type GetPowerupOnPlayer(CachedEntity* player);
 // It's better if it won't create a new object each time it gets called.
 // So it returns a success state, and the values are stored in out reference.
 bool GetHitbox(CachedEntity* entity, int hb, Vector& out);
-weaponmode GetWeaponMode(CachedEntity* player);
+weaponmode GetWeaponMode();
 
 void FixMovement(CUserCmd& cmd, Vector& viewangles);
 void VectorAngles(Vector &forward, Vector &angles);
@@ -106,7 +106,6 @@ void AimAtHitbox(CachedEntity* ent, int hitbox, CUserCmd* cmd);
 
 std::string WordWrap(std::string& in, int max, unsigned long font);
 
-bool IsMeleeWeapon(CachedEntity* ent);
 bool IsProjectileCrit(CachedEntity* ent);
 
 QAngle VectorToQAngle(Vector in);

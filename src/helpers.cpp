@@ -395,28 +395,6 @@ float DistToSqr(CachedEntity* entity) {
 	return g_pLocalPlayer->v_Origin.DistToSqr(entity->m_vecOrigin);
 }
 
-bool IsMeleeWeapon(CachedEntity* ent) {
-
-	if (ent->m_iClassID == g_pClassID->CTFBat ||
-		ent->m_iClassID == g_pClassID->CTFBat_Fish ||
-		ent->m_iClassID == g_pClassID->CTFBat_Giftwrap ||
-		ent->m_iClassID == g_pClassID->CTFBat_Wood ||
-		ent->m_iClassID == g_pClassID->CTFShovel ||
-		ent->m_iClassID == g_pClassID->CTFKatana ||
-		ent->m_iClassID == g_pClassID->CTFFireAxe ||
-		ent->m_iClassID == g_pClassID->CTFBottle ||
-		ent->m_iClassID == g_pClassID->CTFSword ||
-		ent->m_iClassID == g_pClassID->CTFFists ||
-		ent->m_iClassID == g_pClassID->CTFWrench ||
-		ent->m_iClassID == g_pClassID->CTFRobotArm ||
-		ent->m_iClassID == g_pClassID->CTFKnife ||
-		ent->m_iClassID == g_pClassID->CTFBonesaw ||
-		ent->m_iClassID == g_pClassID->CTFClub) {
-		return true;
-	}
-	return false;
-}
-
 void Patch(void* address, void* patch, size_t length) {
 	void* page = (void*)((uintptr_t)address &~ 0xFFF);
 	mprotect(page, 0xFFF, PROT_WRITE | PROT_EXEC);
@@ -430,12 +408,12 @@ bool IsProjectileCrit(CachedEntity* ent) {
 	return CE_BYTE(ent, netvar.Rocket_bCritical);
 }
 
-weaponmode GetWeaponMode(CachedEntity* player) {
+weaponmode GetWeaponMode() {
 	int weapon_handle, slot;
 	CachedEntity *weapon;
 
-	if (CE_BAD(player)) return weapon_invalid;
-	weapon_handle = CE_INT(player, netvar.hActiveWeapon);
+	if (CE_BAD(LOCAL_E)) return weapon_invalid;
+	weapon_handle = CE_INT(LOCAL_E, netvar.hActiveWeapon);
 	if (IDX_BAD((weapon_handle & 0xFFF))) {
 		//logging::Info("IDX_BAD: %i", weapon_handle & 0xFFF);
 		return weaponmode::weapon_invalid;

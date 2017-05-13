@@ -167,7 +167,7 @@ bool ShouldAA(CUserCmd* cmd) {
 		}
 	}
 	if ((cmd->buttons & IN_ATTACK2) && g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFLunchBox) return false;
-	switch (GetWeaponMode(g_pLocalPlayer->entity)) {
+	switch (GetWeaponMode()) {
 	case weapon_projectile:
 		if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFCompoundBow) {
 			if (!(cmd->buttons & IN_ATTACK)) {

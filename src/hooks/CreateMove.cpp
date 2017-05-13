@@ -135,8 +135,14 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		SAFE_CALL(entity_cache::Update());
 	}
 //	PROF_END("Entity Cache updating");
-	SAFE_CALL(g_pPlayerResource->Update());
-	SAFE_CALL(g_pLocalPlayer->Update());
+	{
+		PROF_SECTION(CM_PlayerResource);
+		SAFE_CALL(g_pPlayerResource->Update());
+	}
+	{
+		PROF_SECTION(CM_LocalPlayer);
+		SAFE_CALL(g_pLocalPlayer->Update());
+	}
 	g_Settings.bInvalid = false;
 	// Disabled because this causes EXTREME aimbot inaccuracy
 	//if (!cmd->command_number) return ret;
@@ -196,39 +202,80 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		ResetCritHack();
 		if (TF2) SAFE_CALL(UpdateHoovyList());
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
-//		PROF_BEGIN();
-		//RunEnginePrediction(g_pLocalPlayer->entity, cmd);
-		SAFE_CALL(hacks::shared::esp::CreateMove());
+		{
+			PROF_SECTION(CM_esp);
+			SAFE_CALL(hacks::shared::esp::CreateMove());
+		}
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
-			if (TF) SAFE_CALL(hacks::tf::uberspam::CreateMove());
-			if (TF2) SAFE_CALL(hacks::tf2::antibackstab::CreateMove());
-			if (TF2) SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
-			SAFE_CALL(hacks::shared::bunnyhop::CreateMove());
-			SAFE_CALL(hacks::shared::aimbot::CreateMove());
-			SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
-			if (TF) SAFE_CALL(hacks::tf::autosticky::CreateMove());
-			if (TF) SAFE_CALL(hacks::tf::autoreflect::CreateMove());
-			SAFE_CALL(hacks::shared::triggerbot::CreateMove());
-			if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
-			if (TF2) SAFE_CALL(hacks::tf2::autobackstab::CreateMove());
+			if (TF) {
+				PROF_SECTION(CM_uberspam);
+				SAFE_CALL(hacks::tf::uberspam::CreateMove());
+			}
+			if (TF2) {
+				PROF_SECTION(CM_antibackstab);
+				SAFE_CALL(hacks::tf2::antibackstab::CreateMove());
+			}
+			if (TF2) {
+				PROF_SECTION(CM_noisemaker);
+				SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
+			}
+			{
+				PROF_SECTION(CM_bunnyhop);
+				SAFE_CALL(hacks::shared::bunnyhop::CreateMove());
+			}
+			{
+				PROF_SECTION(CM_aimbot);
+				SAFE_CALL(hacks::shared::aimbot::CreateMove());
+			}
+			{
+				PROF_SECTION(CM_antiaim);
+				SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
+			}
+			if (TF) {
+				PROF_SECTION(CM_autosticky);
+				SAFE_CALL(hacks::tf::autosticky::CreateMove());
+			}
+			if (TF) {
+				PROF_SECTION(CM_autoreflect);
+				SAFE_CALL(hacks::tf::autoreflect::CreateMove());
+			}
+			{
+				PROF_SECTION(CM_triggerbot);
+				SAFE_CALL(hacks::shared::triggerbot::CreateMove());
+			}
+			if (TF) {
+				PROF_SECTION(CM_autoheal);
+				SAFE_CALL(hacks::tf::autoheal::CreateMove());
+			}
+			if (TF2) {
+				PROF_SECTION(CM_autobackstab);
+				SAFE_CALL(hacks::tf2::autobackstab::CreateMove());
+			}
 		}
-		//SAFE_CALL(CREATE_MOVE(FollowBot));
-		SAFE_CALL(hacks::shared::misc::CreateMove());
-		SAFE_CALL(hacks::shared::spam::CreateMove());
-//		PROF_END("Hacks processing");
-		if (time_replaced) g_GlobalVars->curtime = curtime_old;
+		{
+			PROF_SECTION(CM_misc);
+			SAFE_CALL(hacks::shared::misc::CreateMove());
+		}
+		{
+			PROF_SECTION(CM_spam);
+			SAFE_CALL(hacks::shared::spam::CreateMove());
+		}
 	}
-	/*for (IHack* i_hack : hack::hacks) {
-		if (!i_hack->CreateMove(thisptr, inputSample, cmd)) {
-			ret = false;
-		}
-	}*/
+	if (time_replaced) g_GlobalVars->curtime = curtime_old;
 	g_Settings.bInvalid = false;
-	chat_stack::OnCreateMove();
-	hacks::shared::lagexploit::CreateMove();
+	{
+		PROF_SECTION(CM_chat_stack);
+		chat_stack::OnCreateMove();
+	}
+	{
+		PROF_SECTION(CM_lagexploit);
+		hacks::shared::lagexploit::CreateMove();
+	}
 
 	// TODO Auto Steam Friend
+
 	if (g_GlobalVars->framecount % 1000 == 0) {
+		PROF_SECTION(CM_playerlist);
 		playerlist::DoNotKillMe();
 #ifdef IPC_ENABLED
 		ipc::UpdatePlayerlist();
@@ -267,6 +314,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 #ifdef IPC_ENABLED
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state) {
+			PROF_SECTION(CM_followbot);
 			SAFE_CALL(hacks::shared::followbot::AfterCreateMove());
 		}
 #endif

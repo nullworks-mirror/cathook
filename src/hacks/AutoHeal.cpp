@@ -280,7 +280,7 @@ void CreateMove() {
 		}
 	}
 	if (!enabled && !force_healing_target) return;
-	if (GetWeaponMode(g_pLocalPlayer->entity) != weapon_medigun) return;
+	if (GetWeaponMode() != weapon_medigun) return;
 	if (force_healing_target) {
 		CachedEntity* target = ENTITY(force_healing_target);
 		if (CE_GOOD(target)) {

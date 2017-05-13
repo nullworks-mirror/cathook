@@ -46,7 +46,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		if (!segvcatch::handler_segv) segvcatch::init_fpe();
 	}
 #endif
-	SEGV_BEGIN;
 	if (!textures_loaded) {
 		textures_loaded = true;
 		hacks::tf::radar::Init();
@@ -91,7 +90,8 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	if (call_default) SAFE_CALL(original(_this, vp, fr, ar));
 	// To avoid threading problems.
 
-	PROF_SECTION(PaintTraverse);
+	PROF_SECTION(PT_total);
+
 	if (vp == panel_top) draw_flag = true;
 	if (!cathook) return;
 
@@ -130,6 +130,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	draw_flag = false;
 
 	if (!hack::command_stack().empty()) {
+		PROF_SECTION(PT_command_stack);
 		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
 		while (!hack::command_stack().empty()) {
 			logging::Info("executing %s", hack::command_stack().top().c_str());
@@ -142,7 +143,10 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
 
+	PROF_SECTION(PT_active);
+
 	if (info_text) {
+		PROF_SECTION(PT_info_text);
 		AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
 		AddSideString(hack::GetVersion(), GUIColor());
 #if NOGUI != 1
@@ -167,12 +171,31 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	}
 
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
-		if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
-		SAFE_CALL(hacks::shared::misc::Draw());
-		SAFE_CALL(hacks::shared::esp::Draw());
-		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
-		if (TF) SAFE_CALL(hacks::tf::radar::Draw());
-		if (TF2) SAFE_CALL(hacks::tf2::skinchanger::PaintTraverse());
+		PROF_SECTION(PT_total_hacks);
+		if (TF) {
+			PROF_SECTION(PT_antidisguise);
+			SAFE_CALL(hacks::tf2::antidisguise::Draw());
+		}
+		{
+			PROF_SECTION(PT_misc);
+			SAFE_CALL(hacks::shared::misc::Draw());
+		}
+		{
+			PROF_SECTION(PT_esp);
+			SAFE_CALL(hacks::shared::esp::Draw());
+		}
+		if (TF) {
+			PROF_SECTION(PT_spyalert);
+			SAFE_CALL(hacks::tf::spyalert::Draw());
+		}
+		if (TF) {
+			PROF_SECTION(PT_radar);
+			SAFE_CALL(hacks::tf::radar::Draw());
+		}
+		if (TF2) {
+			PROF_SECTION(PT_skinchanger);
+			SAFE_CALL(hacks::tf2::skinchanger::PaintTraverse());
+		}
 	}
 
 
@@ -180,7 +203,10 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		g_pGUI->Update();
 #endif
 
-	DrawStrings();
+	{
+		PROF_SECTION(PT_draw_strings);
+		DrawStrings();
+	}
 	SEGV_END;
 }
 

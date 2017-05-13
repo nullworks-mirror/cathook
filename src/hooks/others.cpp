@@ -39,6 +39,8 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 		return;
 	}
 
+	PROF_SECTION(DrawModelExecute);
+
 	if (no_arms || no_hats) {
 		if (info.pModel) {
 			name = g_IModelInfo->GetModelName(info.pModel);
@@ -202,12 +204,18 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	static IClientEntity *ent;
 	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
 
+	PROF_SECTION(FrameStageNotify_TOTAL);
+
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
 	// TODO hack FSN hook
-	hacks::tf2::skinchanger::FrameStageNotify(stage);
+	{
+		PROF_SECTION(FSN_skinchanger);
+		hacks::tf2::skinchanger::FrameStageNotify(stage);
+	}
 	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
+		PROF_SECTION(FSN_resolver);
 		for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
 			if (i == g_IEngine->GetLocalPlayer()) continue;
 			ent = g_IEntityList->GetClientEntity(i);
@@ -233,6 +241,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 #endif
 		if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition<TFCond_Zoomed>(LOCAL_E);
 		if (glow_outline_effect->GetBool()) {
+			PROF_SECTION(FSN_outline);
 			if (glow_enabled) {
 				for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Size(); i++) {
 					GlowObjectDefinition_t& glowobject = g_GlowObjectManager->m_GlowObjectDefinitions[i];

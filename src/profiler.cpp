@@ -33,10 +33,12 @@ void ProfilerSection::OnNodeDeath(ProfilerNode& node) {
 
 	if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - m_log).count() > 3) {
 		if (do_profiler_logging)
-			logging::Info("[P] stats for '%-32s': MIN{%12llu} MAX{%12llu} AVG{%12llu}", m_name.c_str(),
+			logging::Info("[P],'%-32s',%12llu,%12llu,%12llu,%12llu,%u", m_name.c_str(),
+					std::chrono::duration_cast<std::chrono::nanoseconds>(m_sum).count(),
+					std::chrono::duration_cast<std::chrono::nanoseconds>(m_sum).count() / (m_calls ? m_calls : 1),
 					std::chrono::duration_cast<std::chrono::nanoseconds>(m_min).count(),
 					std::chrono::duration_cast<std::chrono::nanoseconds>(m_max).count(),
-					std::chrono::duration_cast<std::chrono::nanoseconds>(m_sum).count() / (m_calls ? m_calls : 1));
+					m_calls);
 		m_log = std::chrono::high_resolution_clock::now();
 		m_min = std::chrono::nanoseconds::zero();
 		m_max = std::chrono::nanoseconds::zero();
