@@ -162,14 +162,18 @@ bool ShouldAA(CUserCmd* cmd) {
 	if (!enabled) return false;
 	if (cmd->buttons & IN_USE) return false;
 	if (cmd->buttons & IN_ATTACK) {
-		if (!(TF2 && g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFCompoundBow)) {
-			if (CanShoot()) return false;
+		IF_GAME (IsTF2()) {
+			if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow)) {
+				goto i_dont_know_how_to_break_if;
+			}
 		}
+		if (CanShoot()) return false;
 	}
-	if ((cmd->buttons & IN_ATTACK2) && g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFLunchBox) return false;
+	i_dont_know_how_to_break_if:
+	if ((cmd->buttons & IN_ATTACK2) && g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFLunchBox)) return false;
 	switch (GetWeaponMode()) {
 	case weapon_projectile:
-		if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFCompoundBow) {
+		if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow)) {
 			if (!(cmd->buttons & IN_ATTACK)) {
 				if (g_pLocalPlayer->bAttackLastTick) SetSafeSpace(4);
 			}

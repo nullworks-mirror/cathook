@@ -74,8 +74,10 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	tickcount++;
 	g_pUserCmd = cmd;
 
-	if (TF2C && CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == g_pClassID->CTFMinigun) {
-		CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
+	IF_GAME (IsTF2C()) {
+		if (CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == CL_CLASS(CTFMinigun)) {
+			CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
+		}
 	}
 
 	ret = original_method(thisptr, inputSample, cmd);
@@ -200,22 +202,24 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 #endif
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		ResetCritHack();
-		if (TF2) SAFE_CALL(UpdateHoovyList());
+		IF_GAME (IsTF2()) {
+			SAFE_CALL(UpdateHoovyList());
+		}
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
 		{
 			PROF_SECTION(CM_esp);
 			SAFE_CALL(hacks::shared::esp::CreateMove());
 		}
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
-			if (TF) {
+			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_uberspam);
 				SAFE_CALL(hacks::tf::uberspam::CreateMove());
 			}
-			if (TF2) {
+			IF_GAME (IsTF2()) {
 				PROF_SECTION(CM_antibackstab);
 				SAFE_CALL(hacks::tf2::antibackstab::CreateMove());
 			}
-			if (TF2) {
+			IF_GAME (IsTF2()) {
 				PROF_SECTION(CM_noisemaker);
 				SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
 			}
@@ -231,11 +235,11 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 				PROF_SECTION(CM_antiaim);
 				SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
 			}
-			if (TF) {
+			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_autosticky);
 				SAFE_CALL(hacks::tf::autosticky::CreateMove());
 			}
-			if (TF) {
+			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_autoreflect);
 				SAFE_CALL(hacks::tf::autoreflect::CreateMove());
 			}
@@ -243,11 +247,11 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 				PROF_SECTION(CM_triggerbot);
 				SAFE_CALL(hacks::shared::triggerbot::CreateMove());
 			}
-			if (TF) {
+			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_autoheal);
 				SAFE_CALL(hacks::tf::autoheal::CreateMove());
 			}
-			if (TF2) {
+			IF_GAME (IsTF2()) {
 				PROF_SECTION(CM_autobackstab);
 				SAFE_CALL(hacks::tf2::autobackstab::CreateMove());
 			}

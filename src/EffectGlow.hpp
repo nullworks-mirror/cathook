@@ -9,6 +9,8 @@
 #define EFFECTGLOW_HPP_
 
 #include "common.h"
+#include "sdk/ScreenSpaceEffects.h"
+#include "sdk.h"
 
 namespace effect_glow {
 

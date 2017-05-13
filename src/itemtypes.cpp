@@ -62,7 +62,7 @@ ItemManager::ItemManager() : mapper() {
 	//RegisterModelMapping("models/pickups/pickup_powerup_reflect.mdl", ITEM_POWERUP_REFLECT);
 
 	RegisterSpecialMapping([](CachedEntity* ent) -> bool {
-		return ent->m_iClassID == g_pClassID->CTFAmmoPack;
+		return ent->m_iClassID == CL_CLASS(CTFAmmoPack);
 	}, ITEM_AMMO_MEDIUM);
 
 	RegisterModelMapping("models/items/medkit_overheal.mdl", ITEM_TF2C_PILL);
@@ -146,7 +146,7 @@ ItemManager::ItemManager() : mapper() {
 			return result;
 		}();
 
-		if (entity->m_iClassID == g_pClassID->CWeaponSpawner) {
+		if (entity->m_iClassID == CL_CLASS(CWeaponSpawner)) {
 			return tf2c_weapon_mapper.GetItemType(entity);
 		}
 		return ITEM_NONE;

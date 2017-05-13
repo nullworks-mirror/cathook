@@ -82,7 +82,7 @@ int colors::EntityF(CachedEntity* ent) {
 		}
 	}
 
-	if (ent->m_iClassID == g_pClassID->CCurrencyPack) {
+	if (ent->m_iClassID == CL_CLASS(CCurrencyPack)) {
 		if (CE_BYTE(ent, netvar.bDistributed))
 			result = red;
 		else

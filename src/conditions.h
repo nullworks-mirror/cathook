@@ -217,8 +217,10 @@ inline bool CondMaskCheck(condition_data_s& data) {
 
 template<uint32_t c0, uint32_t c1, uint32_t c2, uint32_t c3>
 inline bool HasConditionMask(CachedEntity* ent) {
-	if (!TF) return false;
-	if (TF2 && CondMaskCheck<c0, c1, c2, c3>(CE_VAR(ent, netvar._condition_bits, condition_data_s))) return true;
+	IF_GAME (!IsTF()) return false;
+	IF_GAME (IsTF2()) {
+		if (CondMaskCheck<c0, c1, c2, c3>(CE_VAR(ent, netvar._condition_bits, condition_data_s))) return true;
+	}
 	return CondMaskCheck<c0, c1, c2, c3>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
 
@@ -249,22 +251,28 @@ inline void CondBitSet(condition_data_s& data) {
 
 template<condition cond>
 inline bool HasCondition(CachedEntity* ent) {
-	if (!TF) return false;
-	if (TF2 && CondBitCheck<cond>(CE_VAR(ent, netvar._condition_bits, condition_data_s))) return true;
+	IF_GAME (!IsTF()) return false;
+	IF_GAME (IsTF2()) {
+		if (CondBitCheck<cond>(CE_VAR(ent, netvar._condition_bits, condition_data_s))) return true;
+	}
 	return CondBitCheck<cond>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
 
 template<condition cond>
 inline void AddCondition(CachedEntity* ent) {
-	if (!TF) return;
-	if (TF2) CondBitSet<cond, true>(CE_VAR(ent, netvar._condition_bits, condition_data_s));
+	IF_GAME (!IsTF()) return;
+	IF_GAME (IsTF2()) {
+		CondBitSet<cond, true>(CE_VAR(ent, netvar._condition_bits, condition_data_s));
+	}
 	CondBitSet<cond, true>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
 
 template<condition cond>
 inline void RemoveCondition(CachedEntity* ent) {
-	if (!TF) return;
-	if (TF2) CondBitSet<cond, false>(CE_VAR(ent, netvar._condition_bits, condition_data_s));
+	IF_GAME (!IsTF()) return;
+	IF_GAME (IsTF2()) {
+		CondBitSet<cond, false>(CE_VAR(ent, netvar._condition_bits, condition_data_s));
+	}
 	CondBitSet<cond, false>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
 

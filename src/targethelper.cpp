@@ -21,7 +21,7 @@ int GetScoreForEntity(CachedEntity* entity) {
 	if (!entity) return 0;
 	// TODO
 	if (entity->m_Type == ENTITY_BUILDING) {
-		if (entity->m_iClassID == g_pClassID->CObjectSentrygun) {
+		if (entity->m_iClassID == CL_CLASS(CObjectSentrygun)) {
 			return 1;
 		}
 		return 0;

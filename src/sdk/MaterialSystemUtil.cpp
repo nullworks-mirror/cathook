@@ -44,7 +44,7 @@ CMaterialReference::~CMaterialReference()
 void CMaterialReference::Init( char const* pMaterialName, const char *pTextureGroupName, bool bComplain )
 {
 	IMaterial *pMaterial;
-	if (TF2) {
+	IF_GAME (IsTF2()) {
 		pMaterial = g_IMaterialSystem->FindMaterial( pMaterialName, pTextureGroupName, bComplain);
 	} else {
 		pMaterial = g_IMaterialSystemHL->FindMaterial( pMaterialName, pTextureGroupName, bComplain);
@@ -65,7 +65,7 @@ void CMaterialReference::Init( const char *pMaterialName, KeyValues *pVMTKeyValu
 {
 	// CreateMaterial has a refcount of 1
 	Shutdown();
-	if (TF2)
+	IF_GAME (IsTF2())
 		m_pMaterial = g_IMaterialSystem->CreateMaterial( pMaterialName, pVMTKeyValues );
 	else
 		m_pMaterial = g_IMaterialSystemHL->CreateMaterial( pMaterialName, pVMTKeyValues );
@@ -74,7 +74,7 @@ void CMaterialReference::Init( const char *pMaterialName, KeyValues *pVMTKeyValu
 void CMaterialReference::Init( const char *pMaterialName, const char *pTextureGroupName, KeyValues *pVMTKeyValues )
 {
 	IMaterial *pMaterial;
-	if (TF2)
+	IF_GAME (IsTF2())
 		pMaterial = g_IMaterialSystem->FindProceduralMaterial( pMaterialName, pTextureGroupName, pVMTKeyValues );
 	else
 		pMaterial = g_IMaterialSystemHL->FindProceduralMaterial( pMaterialName, pTextureGroupName, pVMTKeyValues );
@@ -161,7 +161,7 @@ CTextureReference::~CTextureReference( )
 void CTextureReference::Init( char const* pTextureName, const char *pTextureGroupName, bool bComplain )
 {
 	Shutdown();
-	if (TF2)
+	IF_GAME (IsTF2())
 		m_pTexture = g_IMaterialSystem->FindTexture( pTextureName, pTextureGroupName, bComplain );
 	else
 		m_pTexture = g_IMaterialSystemHL->FindTexture( pTextureName, pTextureGroupName, bComplain );
@@ -186,7 +186,7 @@ void CTextureReference::InitProceduralTexture( const char *pTextureName, const c
 {
 	Shutdown();
 
-	if (TF2)
+	IF_GAME (IsTF2())
 		m_pTexture = g_IMaterialSystem->CreateProceduralTexture( pTextureName, pTextureGroupName, w, h, fmt, nFlags );
 	else
 		m_pTexture = g_IMaterialSystemHL->CreateProceduralTexture( pTextureName, pTextureGroupName, w, h, fmt, nFlags );
@@ -212,7 +212,7 @@ void CTextureReference::InitRenderTarget( int w, int h, RenderTargetSizeMode_t s
 	// NOTE: Refcount returned by CreateRenderTargetTexture is 1
 	//m_pTexture = vfunc<ITexture*(*)(IMaterialSystem*, char const*,int,int,RenderTargetSizeMode_t,ImageFormat,MaterialRenderTargetDepth_t,uint,uint)>(materials, 87, 0)(materials, pStrOptionalName, w, h, sizeMode, fmt,
 	//		depth, textureFlags, renderTargetFlags);
-	if (TF2) {
+	IF_GAME (IsTF2()) {
 		m_pTexture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx( pStrOptionalName, w, h, sizeMode, fmt, depth, textureFlags, renderTargetFlags );
 	} else {
 		m_pTexture = g_IMaterialSystemHL->CreateNamedRenderTargetTextureEx( pStrOptionalName, w, h, sizeMode, fmt, depth, textureFlags, renderTargetFlags );

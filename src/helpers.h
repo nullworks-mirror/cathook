@@ -49,17 +49,9 @@ void EndConVars();
 // Calling source engine functions would get me more accurate result at cost of speed, so idk.
 // TODO?
 
-inline bool IsPlayerInvulnerable(CachedEntity* player) {
-	return HasConditionMask<KInvulnerabilityMask.cond_0, KInvulnerabilityMask.cond_1, KInvulnerabilityMask.cond_2, KInvulnerabilityMask.cond_3>(player);
-}
-
-inline bool IsPlayerCritBoosted(CachedEntity* player) {
-	return HasConditionMask<KCritBoostMask.cond_0, KCritBoostMask.cond_1, KCritBoostMask.cond_2, KCritBoostMask.cond_3>(player);
-}
-
-inline bool IsPlayerInvisible(CachedEntity* player) {
-	return HasConditionMask<KInvisibilityMask.cond_0, KInvisibilityMask.cond_1, KInvisibilityMask.cond_2, KInvisibilityMask.cond_3>(player);
-}
+bool IsPlayerInvulnerable(CachedEntity* player);
+bool IsPlayerCritBoosted(CachedEntity* player);
+bool IsPlayerInvisible(CachedEntity* player);
 
 const char* GetBuildingName(CachedEntity* ent);
 Vector GetBuildingPosition(CachedEntity* ent);

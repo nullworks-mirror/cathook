@@ -3,6 +3,9 @@
 	NON-CONSTEXPR HEADER FOR hl2dm
 */
 
+#ifndef hl2dm_AUTOGEN_HPP
+#define hl2dm_AUTOGEN_HPP
+
 namespace client_classes {
 	
 	class hl2dm {
@@ -489,5 +492,7 @@ namespace client_classes {
 
 	};
 	
-	hl2dm hl2dm_list;
+	extern hl2dm hl2dm_list;
 }
+
+#endif /* hl2dm_AUTOGEN_HPP */

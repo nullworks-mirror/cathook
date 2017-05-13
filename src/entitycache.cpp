@@ -93,26 +93,26 @@ void CachedEntity::Update() {
 
 	SAFE_CALL(hitboxes.Update());
 
-	if (m_iClassID == g_pClassID->C_Player) {
+	if (m_iClassID == RCC_PLAYER) {
 		m_Type = EntityType::ENTITY_PLAYER;
-	} else if (m_iClassID == g_pClassID->CTFGrenadePipebombProjectile ||
-			   m_iClassID == g_pClassID->CTFProjectile_Cleaver ||
-			   m_iClassID == g_pClassID->CTFProjectile_Jar ||
-			   m_iClassID == g_pClassID->CTFProjectile_JarMilk) {
+	} else if (m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_Cleaver) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_Jar) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_JarMilk)) {
 		m_Type = EntityType::ENTITY_PROJECTILE;
 		m_bGrenadeProjectile = true;
-	} else if (m_iClassID == g_pClassID->CObjectTeleporter ||
-			   m_iClassID == g_pClassID->CObjectSentrygun ||
-			   m_iClassID == g_pClassID->CObjectDispenser) {
+	} else if (m_iClassID == CL_CLASS(CObjectTeleporter) ||
+			   m_iClassID == CL_CLASS(CObjectSentrygun) ||
+			   m_iClassID == CL_CLASS(CObjectDispenser)) {
 		m_Type = EntityType::ENTITY_BUILDING;
-	} else if (m_iClassID == g_pClassID->CTFProjectile_Arrow ||
-			   m_iClassID == g_pClassID->CTFProjectile_EnergyBall ||
-			   m_iClassID == g_pClassID->CTFProjectile_EnergyRing ||
-			   m_iClassID == g_pClassID->CTFProjectile_GrapplingHook ||
-			   m_iClassID == g_pClassID->CTFProjectile_HealingBolt ||
-			   m_iClassID == g_pClassID->CTFProjectile_Rocket ||
-			   m_iClassID == g_pClassID->CTFProjectile_SentryRocket ||
-			   m_iClassID == g_pClassID->CTFProjectile_Flare) {
+	} else if (m_iClassID == CL_CLASS(CTFProjectile_Arrow) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_EnergyBall) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_EnergyRing) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_GrapplingHook) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_HealingBolt) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_Rocket) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_SentryRocket) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_Flare)) {
 		m_Type = EntityType::ENTITY_PROJECTILE;
 	} else {
 		m_ItemType = g_ItemManager.GetItemType(this);

@@ -36,6 +36,9 @@
 #include "profiler.h"
 #include "cvwrapper.h"
 
+#define STRINGIFY(x) #x
+#define TO_STRING(x) STRINGIFY(x)
+
 #if NOGUI != 1
 #include "gui/GUI.h"
 #endif
@@ -64,8 +67,8 @@ const std::string& hack::GetVersion() {
 #if NOGUI == 1
 		version += " NOGUI";
 #endif
-#ifdef FORCE_SINGLE_GAME
-		version += " S";
+#ifdef BUILD_GAME
+		version += " S " TO_STRING(BUILD_GAME);
 #else
 		version += " U";
 #endif
@@ -104,11 +107,13 @@ void hack::Initialize() {
 	CreateInterfaces();
 	CDumper dumper;
 	dumper.SaveDump();
-	if (TF2) g_pClassID = new ClassIDTF2();
-	else if (TF2C) g_pClassID = new ClassIDTF2C();
-	else if (HL2DM) g_pClassID = new ClassIDHL2DM();
-	if (g_pClassID) g_pClassID->Init();
-	if (TF2) {
+	logging::Info("Is TF2? %d", IsTF2());
+	logging::Info("Is TF2C? %d", IsTF2C());
+	logging::Info("Is HL2DM? %d", IsHL2DM());
+	logging::Info("Is CSS? %d", IsCSS());
+	logging::Info("Is TF? %d", IsTF());
+	InitClassTable();
+	IF_GAME (IsTF2()) {
 		uintptr_t mmmf = (gSignatures.GetClientSignature("C7 44 24 04 09 00 00 00 BB ? ? ? ? C7 04 24 00 00 00 00 E8 ? ? ? ? BA ? ? ? ? 85 C0 B8 ? ? ? ? 0F 44 DA") + 37);
 		if (mmmf) {
 			unsigned char patch1[] = { 0x89, 0xD3, 0x90 };
@@ -181,16 +186,15 @@ void hack::Initialize() {
 	//hooks::hkBaseClientState8->Apply();
 
 	// FIXME [MP]
-	if (TF2) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
+	IF_GAME (IsTF2()) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
 	hacks::shared::killsay::Init();
 	hack::command_stack().push("exec cat_autoexec");
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
-	hack::command_stack().push("cl_software_cursor 1");
 	logging::Info("Hooked!");
 	playerlist::Load();
-	if (TF2 || HL2DM) {
+	if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects) {
 		effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
 		g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
 		effect_chams::g_EffectChams.Init();

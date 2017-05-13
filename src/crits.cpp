@@ -30,7 +30,7 @@ bool AllowAttacking() {
 		if (crit && !IsPlayerCritBoosted(LOCAL_E)) {
 			return false;
 		}
-	} else if ((CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee)) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife)) {
+	} else if ((CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee)) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife))) {
 		if (!crit) return false;
 	}
 	return true;
@@ -46,7 +46,8 @@ bool RandomCrits() {
 }
 
 bool WeaponCanCrit() {
-	return TF && CE_GOOD(LOCAL_W) && vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W));
+	IF_GAME (!IsTF()) return false;
+	return CE_GOOD(LOCAL_W) && vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W));
 }
 
 void crithack_saved_state::Load(IClientEntity* entity) {
@@ -74,8 +75,10 @@ void crithack_saved_state::Save(IClientEntity* entity) {
 static crithack_saved_state state;
 static bool state_saved { false };
 void LoadSavedState() {
+	// TODO TF2C Crit Hack
+	IF_GAME (!IsTF2()) return;
 	if (!state_saved) return;
-	if (CE_GOOD(LOCAL_W) && TF) {
+	if (CE_GOOD(LOCAL_W)) {
 		IClientEntity* weapon = RAW_ENT(LOCAL_W);
 		state.Load(weapon);
 	}
@@ -85,9 +88,11 @@ void ResetCritHack() {
 }
 
 bool IsAttackACrit(CUserCmd* cmd) {
-	if (CE_GOOD(LOCAL_W) && TF) {
+	// TODO TF2C Crit Hack
+	IF_GAME (!IsTF2()) return false;
+	if (CE_GOOD(LOCAL_W)) {
 		IClientEntity* weapon = RAW_ENT(LOCAL_W);
-		if (TF2C) {
+		/*if (TF2C) {
 			if (vfunc<bool(*)(IClientEntity*)>(weapon, 1824 / 4, 0)(weapon)) {
 				static uintptr_t CalcIsAttackCritical_s = gSignatures.GetClientSignature("55 89 E5 56 53 83 EC 10 8B 5D 08 89 1C 24 E8 ? ? ? ? 85 C0 89 C6 74 59 8B 00 89 34 24 FF 90 E0 02 00 00 84 C0 74 4A A1 ? ? ? ? 8B 40 04 3B 83 A8 09 00 00 74 3A");
 				typedef void(*CalcIsAttackCritical_t)(IClientEntity*);
@@ -103,7 +108,8 @@ bool IsAttackACrit(CUserCmd* cmd) {
 				CIACFn(RAW_ENT(LOCAL_W));
 				return *(bool*)((uintptr_t)RAW_ENT(LOCAL_W) + 2454ul);
 			}
-		} else if (TF2) {
+		} else if (TF2) */
+		{
 			if (!g_PredictionRandomSeed) {
 				uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
 				logging::Info("Random Seed: 0x%08x", sig + 32);

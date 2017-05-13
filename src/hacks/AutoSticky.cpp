@@ -22,7 +22,7 @@ std::vector<CachedEntity*> bombs;
 std::vector<CachedEntity*> targets;
 
 bool IsBomb(CachedEntity* ent) {
-	if (ent->m_iClassID != g_pClassID->CTFGrenadePipebombProjectile) return false;
+	if (ent->m_iClassID != CL_CLASS(CTFGrenadePipebombProjectile)) return false;
 	if (CE_INT(ent, netvar.iPipeType) != 1) return false;
 	if ((CE_INT(ent, netvar.hThrower) & 0xFFF) != g_pLocalPlayer->entity->m_IDX) return false;
 	return true;

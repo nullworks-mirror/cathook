@@ -19,6 +19,67 @@ static CatVar glow_buildings(CV_SWITCH, "glow_old_buildings", "1", "Buildings", 
 static CatVar glow_stickies(CV_SWITCH, "glow_old_stickies", "0", "Stickies", "Render glow on stickybombs");
 static CatVar glow_players(CV_SWITCH, "glow_old_players", "1", "Players", "Render glow on player models");
 
+static CatVar glow_enabled(CV_SWITCH, "glow_old_enabled", "0", "Enable", "Make sure to enable glow_outline_effect_enable in tf2 settings");
+static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
+
+void GlowFrameStageNotify(int stage) {
+	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
+	if (glow_outline_effect->GetBool()) {
+		PROF_SECTION(FSN_outline);
+		if (glow_enabled) {
+			for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Size(); i++) {
+				GlowObjectDefinition_t& glowobject = g_GlowObjectManager->m_GlowObjectDefinitions[i];
+				if (glowobject.m_nNextFreeSlot != ENTRY_IN_USE)
+					continue;
+				int color = GetEntityGlowColor(glowobject.m_hEntity.m_Index & 0xFFF);
+				if (color == 0) {
+					glowobject.m_flGlowAlpha = 0.0f;
+				} else {
+					glowobject.m_flGlowAlpha = (float)glow_alpha;
+				}
+				unsigned char _b = (color >> 16) & 0xFF;
+				unsigned char _g = (color >> 8)  & 0xFF;
+				unsigned char _r = (color) & 0xFF;
+				glowobject.m_vGlowColor.x = (float)_r / 255.0f;
+				glowobject.m_vGlowColor.y = (float)_g / 255.0f;
+				glowobject.m_vGlowColor.z = (float)_b / 255.0f;
+			}
+		}
+		// Remove glow from dead entities
+		for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Count(); i++) {
+			if (g_GlowObjectManager->m_GlowObjectDefinitions[i].m_nNextFreeSlot != ENTRY_IN_USE) continue;
+			IClientEntity* ent = (IClientEntity*)g_IEntityList->GetClientEntityFromHandle(g_GlowObjectManager->m_GlowObjectDefinitions[i].m_hEntity);
+			if (ent && ent->IsDormant()) {
+				g_GlowObjectManager->DisableGlow(i);
+			} else if (ent && ent->GetClientClass()->m_ClassID == RCC_PLAYER) {
+				if (NET_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) {
+					g_GlowObjectManager->DisableGlow(i);
+				}
+			}
+		}
+		if (glow_enabled) {
+			for (int i = 1; i < g_IEntityList->GetHighestEntityIndex(); i++) {
+				IClientEntity* entity = g_IEntityList->GetClientEntity(i);
+				if (!entity || i == g_IEngine->GetLocalPlayer() || entity->IsDormant())
+					continue;
+				if (!CanEntityEvenGlow(i)) continue;
+				int clazz = entity->GetClientClass()->m_ClassID;
+				int current_handle = g_GlowObjectManager->GlowHandle(entity);
+				bool shouldglow = ShouldEntityGlow(i);
+				if (current_handle != -1) {
+					if (!shouldglow) {
+						g_GlowObjectManager->DisableGlow(current_handle);
+					}
+				} else {
+					if (shouldglow) {
+						g_GlowObjectManager->EnableGlow(entity, colors::white);
+					}
+				}
+			}
+		}
+	}
+}
+
 int CGlowObjectManager::EnableGlow(IClientEntity* entity, int color) {
 	int idx = GlowHandle(entity);
 	if (idx != -1) {
@@ -93,7 +154,7 @@ bool CanEntityEvenGlow(int idx) {
 	IClientEntity* entity = g_IEntityList->GetClientEntity(idx);
 	if (!entity) return false;
 	int classid = entity->GetClientClass()->m_ClassID;
-	return (classid == g_pClassID->CTFAmmoPack || classid == g_pClassID->CTFPlayer || classid == g_pClassID->CTFGrenadePipebombProjectile || classid == g_pClassID->CObjectDispenser || classid == g_pClassID->CObjectSentrygun || classid == g_pClassID->CObjectTeleporter || classid == g_pClassID->CBaseAnimating);
+	return (classid == CL_CLASS(CTFAmmoPack) || classid == CL_CLASS(CTFPlayer) || classid == CL_CLASS(CTFGrenadePipebombProjectile) || classid == CL_CLASS(CObjectDispenser) || classid == CL_CLASS(CObjectSentrygun) || classid == CL_CLASS(CObjectTeleporter) || classid == CL_CLASS(CBaseAnimating));
 }
 
 bool ShouldEntityGlow(int idx) {
@@ -112,7 +173,7 @@ bool ShouldEntityGlow(int idx) {
 		break;
 	case ENTITY_PROJECTILE:
 		if (!ent->m_bEnemy) return false;
-		if (glow_stickies && ent->m_iClassID == g_pClassID->CTFGrenadePipebombProjectile) {
+		if (glow_stickies && ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile)) {
 			return true;
 		}
 		break;

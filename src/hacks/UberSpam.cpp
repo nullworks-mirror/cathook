@@ -49,7 +49,7 @@ int ChargePercentLineIndex(float chargef) {
 
 void CreateMove() {
 	if (!GetSource()) return;
-	if (LOCAL_W->m_iClassID != g_pClassID->CWeaponMedigun) return;
+	if (LOCAL_W->m_iClassID != CL_CLASS(CWeaponMedigun)) return;
 	if (GetSource()->size() < 4) return;
 	float charge = CE_FLOAT(LOCAL_W, netvar.m_flChargeLevel);
 	static bool release_last_frame = false;

@@ -113,7 +113,7 @@ typedef int(*StartSceneEvent_t)(IClientEntity* _this, int, int, void*, void*, IC
 StartSceneEvent_t StartSceneEvent_original = nullptr;
 int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene, void* choreoEvent, void* choreoActor, IClientEntity* unknown) {
 	const char* str = (const char*)((unsigned)choreoScene + 396);
-	if (_this == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && spycrab_mode && CE_GOOD(LOCAL_W) && LOCAL_W->m_iClassID == g_pClassID->CTFWeaponPDA_Spy) {
+	if (_this == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && spycrab_mode && CE_GOOD(LOCAL_W) && LOCAL_W->m_iClassID == CL_CLASS(CTFWeaponPDA_Spy)) {
 		if (!strcmp(str, "scenes/player/spy/low/taunt05.vcd")) {
 			if ((int)spycrab_mode == 2) {
 				RemoveCondition<TFCond_Taunting>(LOCAL_E);
@@ -148,7 +148,7 @@ void CreateMove() {
 		no_taunt_ticks--;
 	}
 	// TODO FIXME this should be moved out of here
-	{
+	IF_GAME (IsTF2()) {
 		PROF_SECTION(CM_misc_hook_checks);
 		localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
 		if (localplayer && spycrab_mode) {
@@ -161,7 +161,7 @@ void CreateMove() {
 				mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
 			}
 		}
-		if (TF && render_zoomed && localplayer) {
+		if (render_zoomed && localplayer) {
 			// Patchking local player
 			void** vtable = *(void***)(localplayer);
 			if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook) {
@@ -174,8 +174,9 @@ void CreateMove() {
 		}
 	}
 
-	if (TF2C && tauntslide)
-		RemoveCondition<TFCond_Taunting>(LOCAL_E);
+	IF_GAME (IsTF2C()) {
+		if (tauntslide) RemoveCondition<TFCond_Taunting>(LOCAL_E);
+	}
 
 
 	if (g_pUserCmd->command_number && found_crit_number > g_pUserCmd->command_number + 66 * 20) found_crit_number = 0;
@@ -184,62 +185,65 @@ void CreateMove() {
 	static int last_checked_command_number = 0;
 	static IClientEntity* last_checked_weapon = nullptr;
 
-	if (crit_hack_next && TF2 && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
-		PROF_SECTION(CM_misc_crit_hack_prediction);
-		weapon = RAW_ENT(LOCAL_W);
-		if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
-			if (experimental_crit_hack.KeyDown()) {
-				if (!g_pUserCmd->command_number || critWarmup < 8) {
-					if (g_pUserCmd->buttons & IN_ATTACK) {
-						critWarmup++;
-					} else {
-						critWarmup = 0;
-					}
-					g_pUserCmd->buttons &= ~(IN_ATTACK);
-				}
-			}
-			if (g_pUserCmd->command_number && (last_checked_weapon != weapon || last_checked_command_number < g_pUserCmd->command_number)) {
-				if (!g_PredictionRandomSeed) {
-					uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
-					g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
-				}
-				tries = 0;
-				cmdn = g_pUserCmd->command_number;
-				chc = false;
-				state.Save(weapon);
-				while (!chc && tries < 4096) {
-					md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
-					rseed = md5seed;
-					//float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
-					*g_PredictionRandomSeed = md5seed;
-					c = LOCAL_W->m_IDX << 8;
-					b = LOCAL_E->m_IDX;
-					rseed = rseed ^ (b | c);
-					*(float*)(weapon + 2872ul) = 0.0f;
-					RandomSeed(rseed);
-					chc = vfunc<bool(*)(IClientEntity*)>(weapon, 1836 / 4, 0)(weapon);
-					if (!chc) {
-						tries++;
-						cmdn++;
+	IF_GAME (IsTF2()) {
+		if (crit_hack_next && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
+			PROF_SECTION(CM_misc_crit_hack_prediction);
+			weapon = RAW_ENT(LOCAL_W);
+			if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
+				if (experimental_crit_hack.KeyDown()) {
+					if (!g_pUserCmd->command_number || critWarmup < 8) {
+						if (g_pUserCmd->buttons & IN_ATTACK) {
+							critWarmup++;
+						} else {
+							critWarmup = 0;
+						}
+						g_pUserCmd->buttons &= ~(IN_ATTACK);
 					}
 				}
-				last_checked_command_number = cmdn;
-				last_checked_weapon = weapon;
-				state.Load(weapon);
-				if (chc) {
-					found_crit_weapon = weapon;
-					found_crit_number = cmdn;
+				if (g_pUserCmd->command_number && (last_checked_weapon != weapon || last_checked_command_number < g_pUserCmd->command_number)) {
+					if (!g_PredictionRandomSeed) {
+						uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
+						g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
+					}
+					tries = 0;
+					cmdn = g_pUserCmd->command_number;
+					chc = false;
+					state.Save(weapon);
+					while (!chc && tries < 4096) {
+						md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
+						rseed = md5seed;
+						//float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
+						*g_PredictionRandomSeed = md5seed;
+						c = LOCAL_W->m_IDX << 8;
+						b = LOCAL_E->m_IDX;
+						rseed = rseed ^ (b | c);
+						*(float*)(weapon + 2872ul) = 0.0f;
+						RandomSeed(rseed);
+						chc = vfunc<bool(*)(IClientEntity*)>(weapon, 1836 / 4, 0)(weapon);
+						if (!chc) {
+							tries++;
+							cmdn++;
+						}
+					}
+					last_checked_command_number = cmdn;
+					last_checked_weapon = weapon;
+					state.Load(weapon);
+					if (chc) {
+						found_crit_weapon = weapon;
+						found_crit_number = cmdn;
+					}
 				}
-			}
-			if (g_pUserCmd->buttons & (IN_ATTACK)) {
-				if (found_crit_weapon == weapon && g_pUserCmd->command_number < found_crit_number) {
-					if (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack))) {
-						command_number_mod[g_pUserCmd->command_number] = cmdn;
+				if (g_pUserCmd->buttons & (IN_ATTACK)) {
+					if (found_crit_weapon == weapon && g_pUserCmd->command_number < found_crit_number) {
+						if (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack))) {
+							command_number_mod[g_pUserCmd->command_number] = cmdn;
+						}
 					}
 				}
 			}
 		}
 	}
+
 	{
 		PROF_SECTION(CM_misc_crit_hack_apply);
 		if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
@@ -274,7 +278,9 @@ void CreateMove() {
 		g_pUserCmd->buttons = rand();
 	}
 	
-    if (TF2 && nopush_enabled == pNoPush-> GetBool()) pNoPush->SetValue (!nopush_enabled);
+    IF_GAME (IsTF2()) {
+    	if (nopush_enabled == pNoPush-> GetBool()) pNoPush->SetValue (!nopush_enabled);
+    }
 }
 
 void Draw() {
@@ -282,7 +288,7 @@ void Draw() {
 		if (CritKeyDown()) {
 			AddCenterString("FORCED CRITS!", colors::red);
 		}
-		if (TF2) {
+		IF_GAME (IsTF2()) {
 			if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465, 0)(RAW_ENT(LOCAL_W)))
 				AddCenterString("Random crits are disabled", colors::yellow);
 			else {

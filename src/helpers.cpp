@@ -100,9 +100,9 @@ ConCommand* CreateConCommand(const char* name, FnCommandCallback_t callback, con
 
 const char* GetBuildingName(CachedEntity* ent) {
 	if (!ent) return "[NULL]";
-	if (ent->m_iClassID == g_pClassID->CObjectSentrygun) return "Sentry";
-	if (ent->m_iClassID == g_pClassID->CObjectDispenser) return "Dispenser";
-	if (ent->m_iClassID == g_pClassID->CObjectTeleporter) return "Teleporter";
+	if (ent->m_iClassID == CL_CLASS(CObjectSentrygun)) return "Sentry";
+	if (ent->m_iClassID == CL_CLASS(CObjectDispenser)) return "Dispenser";
+	if (ent->m_iClassID == CL_CLASS(CObjectTeleporter)) return "Teleporter";
 	return "[NULL]";
 }
 
@@ -353,9 +353,9 @@ bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos) {
 Vector GetBuildingPosition(CachedEntity* ent) {
 	Vector res;
 	res = ent->m_vecOrigin;
-	if (ent->m_iClassID == g_pClassID->CObjectDispenser) res.z += 30;
-	if (ent->m_iClassID == g_pClassID->CObjectTeleporter) res.z += 8;
-	if (ent->m_iClassID == g_pClassID->CObjectSentrygun) {
+	if (ent->m_iClassID == CL_CLASS(CObjectDispenser)) res.z += 30;
+	if (ent->m_iClassID == CL_CLASS(CObjectTeleporter)) res.z += 8;
+	if (ent->m_iClassID == CL_CLASS(CObjectSentrygun)) {
 		switch (CE_INT(ent, netvar.iUpgradeLevel)) {
 		case 1:
 			res.z += 30;
@@ -425,25 +425,25 @@ weaponmode GetWeaponMode() {
 	if (slot == 2) return weaponmode::weapon_melee;
 	if (slot > 2) {
 		return weaponmode::weapon_pda;
-	} else if (weapon->m_iClassID == g_pClassID->CTFLunchBox ||
-			weapon->m_iClassID == g_pClassID->CTFLunchBox_Drink ||
-			weapon->m_iClassID == g_pClassID->CTFBuffItem) {
+	} else if (weapon->m_iClassID == CL_CLASS(CTFLunchBox) ||
+			weapon->m_iClassID == CL_CLASS(CTFLunchBox_Drink) ||
+			weapon->m_iClassID == CL_CLASS(CTFBuffItem)) {
 		return weaponmode::weapon_consumable;
-	} else if ( weapon->m_iClassID == g_pClassID->CTFRocketLauncher_DirectHit ||
-				weapon->m_iClassID == g_pClassID->CTFRocketLauncher ||
-				weapon->m_iClassID == g_pClassID->CTFGrenadeLauncher ||
-				weapon->m_iClassID == g_pClassID->CTFPipebombLauncher ||
-				weapon->m_iClassID == g_pClassID->CTFCompoundBow ||
-				weapon->m_iClassID == g_pClassID->CTFBat_Wood ||
-				weapon->m_iClassID == g_pClassID->CTFBat_Giftwrap ||
-				weapon->m_iClassID == g_pClassID->CTFFlareGun ||
-				weapon->m_iClassID == g_pClassID->CTFFlareGun_Revenge ||
-				weapon->m_iClassID == g_pClassID->CTFSyringeGun) {
+	} else if ( weapon->m_iClassID == CL_CLASS(CTFRocketLauncher_DirectHit) ||
+				weapon->m_iClassID == CL_CLASS(CTFRocketLauncher) ||
+				weapon->m_iClassID == CL_CLASS(CTFGrenadeLauncher) ||
+				weapon->m_iClassID == CL_CLASS(CTFPipebombLauncher) ||
+				weapon->m_iClassID == CL_CLASS(CTFCompoundBow) ||
+				weapon->m_iClassID == CL_CLASS(CTFBat_Wood) ||
+				weapon->m_iClassID == CL_CLASS(CTFBat_Giftwrap) ||
+				weapon->m_iClassID == CL_CLASS(CTFFlareGun) ||
+				weapon->m_iClassID == CL_CLASS(CTFFlareGun_Revenge) ||
+				weapon->m_iClassID == CL_CLASS(CTFSyringeGun)) {
 		return weaponmode::weapon_projectile;
-	} else if (weapon->m_iClassID == g_pClassID->CTFJar ||
-			   weapon->m_iClassID == g_pClassID->CTFJarMilk) {
+	} else if (weapon->m_iClassID == CL_CLASS(CTFJar) ||
+			   weapon->m_iClassID == CL_CLASS(CTFJarMilk)) {
 		return weaponmode::weapon_throwable;
-	} else if (weapon->m_iClassID == g_pClassID->CWeaponMedigun) {
+	} else if (weapon->m_iClassID == CL_CLASS(CWeaponMedigun)) {
 		return weaponmode::weapon_medigun;
 	}
 	return weaponmode::weapon_hitscan;
@@ -468,29 +468,29 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 	rgrav = 0.0f;
 	typedef float(GetProjectileData)(IClientEntity*);
 
-	if (weapon->m_iClassID == g_pClassID->CTFRocketLauncher_DirectHit) {
+	if (weapon->m_iClassID == CL_CLASS(CTFRocketLauncher_DirectHit)) {
 		rspeed = 1980.0f;
-	} else if (weapon->m_iClassID == g_pClassID->CTFRocketLauncher) {
+	} else if (weapon->m_iClassID == CL_CLASS(CTFRocketLauncher)) {
 		rspeed = 1100.0f;
-	} else if (weapon->m_iClassID == g_pClassID->CTFGrenadeLauncher) {
-		if (TF2) {
+	} else if (weapon->m_iClassID == CL_CLASS(CTFGrenadeLauncher)) {
+		IF_GAME (IsTF2()) {
 			rspeed = vfunc<GetProjectileData*>(RAW_ENT(weapon), 527)(RAW_ENT(weapon));
 			// TODO Wrong grenade launcher gravity
 			rgrav = 0.5f;
-		} else if (TF2C) {
+		} else IF_GAME (IsTF2C()) {
 			rspeed = 1100.0f;
 			rgrav = 0.5f;
 		}
-	} else if (weapon->m_iClassID == g_pClassID->CTFCompoundBow) {
+	} else if (weapon->m_iClassID == CL_CLASS(CTFCompoundBow)) {
 		rspeed = vfunc<GetProjectileData*>(RAW_ENT(weapon), 527)(RAW_ENT(weapon));
 		rgrav = vfunc<GetProjectileData*>(RAW_ENT(weapon), 528)(RAW_ENT(weapon));
-	} else if (weapon->m_iClassID == g_pClassID->CTFBat_Wood) {
+	} else if (weapon->m_iClassID == CL_CLASS(CTFBat_Wood)) {
 		rspeed = 3000.0f;
 		rgrav = 0.5f;
-	} else if (weapon->m_iClassID == g_pClassID->CTFFlareGun) {
+	} else if (weapon->m_iClassID == CL_CLASS(CTFFlareGun)) {
 		rspeed = 2000.0f;
 		rgrav = 0.25f;
-	} else if (weapon->m_iClassID == g_pClassID->CTFSyringeGun) {
+	} else if (weapon->m_iClassID == CL_CLASS(CTFSyringeGun)) {
 		rgrav = 0.2f;
 		rspeed = 990.0f;
 	}
@@ -574,10 +574,22 @@ bool IsSentryBuster(CachedEntity* entity) {
 }
 
 bool IsAmbassador(CachedEntity* entity) {
-	if (!TF2) return false;
-	if (entity->m_iClassID != g_pClassID->CTFRevolver) return false;
+	IF_GAME (!IsTF2()) return false;
+	if (entity->m_iClassID != CL_CLASS(CTFRevolver)) return false;
 	const int& defidx = CE_INT(entity, netvar.iItemDefinitionIndex);
 	return (defidx == 61 || defidx == 1006);
+}
+
+bool IsPlayerInvulnerable(CachedEntity* player) {
+	return HasConditionMask<KInvulnerabilityMask.cond_0, KInvulnerabilityMask.cond_1, KInvulnerabilityMask.cond_2, KInvulnerabilityMask.cond_3>(player);
+}
+
+bool IsPlayerCritBoosted(CachedEntity* player) {
+	return HasConditionMask<KCritBoostMask.cond_0, KCritBoostMask.cond_1, KCritBoostMask.cond_2, KCritBoostMask.cond_3>(player);
+}
+
+bool IsPlayerInvisible(CachedEntity* player) {
+	return HasConditionMask<KInvisibilityMask.cond_0, KInvisibilityMask.cond_1, KInvisibilityMask.cond_2, KInvisibilityMask.cond_3>(player);
 }
 
 // F1 c&p
@@ -677,7 +689,7 @@ bool IsEntityVisiblePenetration(CachedEntity* entity, int hb) {
 	if (trace_visible.m_pEnt) {
 		ent = (IClientEntity*)trace_visible.m_pEnt;
 		if (ent) {
-			if (ent->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
+			if (ent->GetClientClass()->m_ClassID == RCC_PLAYER) {
 				if (ent == RAW_ENT(entity)) return false;
 				if (trace_visible.hitbox >= 0) {
 					return true;

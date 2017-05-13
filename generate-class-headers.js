@@ -26,6 +26,9 @@ var header_constexpr = `/*
 	CONSTEXPR HEADER FOR $mod
 */
 
+#ifndef $mod_CONSTEXPR_AUTOGEN_HPP
+#define $mod_CONSTEXPR_AUTOGEN_HPP
+
 namespace client_classes_constexpr {
 	
 	class $mod {
@@ -36,6 +39,9 @@ var header = `/*
 	AUTO-GENERATED HEADER - DO NOT MODIFY
 	NON-CONSTEXPR HEADER FOR $mod
 */
+
+#ifndef $mod_AUTOGEN_HPP
+#define $mod_AUTOGEN_HPP
 
 namespace client_classes {
 	
@@ -53,12 +59,16 @@ for (var clz in full_class_table) {
 header += `
 	};
 	
-	$mod $mod_list;
-}\n`;
+	extern $mod $mod_list;
+}
+
+#endif /* $mod_AUTOGEN_HPP */`;
 
 header_constexpr += `
 	};
-}\n`;
+}
+
+#endif /* $mod_CONSTEXPR_AUTOGEN_HPP */`;
 
 fs.writeFileSync('src/classinfo/' + modname + '.gen.hpp', header.replace(/\$mod/g, modname));
 fs.writeFileSync('src/classinfo/' + modname + '_constexpr.gen.hpp', header_constexpr.replace(/\$mod/g, modname));

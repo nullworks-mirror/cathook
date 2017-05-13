@@ -76,7 +76,7 @@ static CTextureReference buffers[4] {};
 ITexture* GetBuffer(int i) {
 	if (!buffers[i]) {
 		ITexture* fullframe;
-		if (TF2)
+		IF_GAME (IsTF2())
 			fullframe = g_IMaterialSystem->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
 		else
 			fullframe = g_IMaterialSystemHL->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
@@ -89,7 +89,7 @@ ITexture* GetBuffer(int i) {
 		int renderTargetFlags = CREATERENDERTARGETFLAGS_HDR;
 
 		ITexture* texture;
-		if (TF2) {
+		IF_GAME (IsTF2()) {
 			texture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx( newname, fullframe->GetActualWidth(), fullframe->GetActualHeight(), RT_SIZE_LITERAL, IMAGE_FORMAT_RGBA8888,
 					MATERIAL_RT_DEPTH_SEPARATE, textureFlags, renderTargetFlags );
 		} else {
@@ -236,7 +236,7 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity* entity) {
 		break;
 	case ENTITY_PROJECTILE:
 		if (!ent->m_bEnemy) return false;
-		if (stickies && ent->m_iClassID == g_pClassID->CTFGrenadePipebombProjectile) {
+		if (stickies && ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile)) {
 			return true;
 		}
 		break;

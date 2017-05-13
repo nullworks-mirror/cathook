@@ -3,6 +3,9 @@
 	CONSTEXPR HEADER FOR tf2
 */
 
+#ifndef tf2_CONSTEXPR_AUTOGEN_HPP
+#define tf2_CONSTEXPR_AUTOGEN_HPP
+
 namespace client_classes_constexpr {
 	
 	class tf2 {
@@ -489,3 +492,5 @@ namespace client_classes_constexpr {
 
 	};
 }
+
+#endif /* tf2_CONSTEXPR_AUTOGEN_HPP */

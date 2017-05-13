@@ -3,6 +3,9 @@
 	CONSTEXPR HEADER FOR hl2dm
 */
 
+#ifndef hl2dm_CONSTEXPR_AUTOGEN_HPP
+#define hl2dm_CONSTEXPR_AUTOGEN_HPP
+
 namespace client_classes_constexpr {
 	
 	class hl2dm {
@@ -489,3 +492,5 @@ namespace client_classes_constexpr {
 
 	};
 }
+
+#endif /* hl2dm_CONSTEXPR_AUTOGEN_HPP */

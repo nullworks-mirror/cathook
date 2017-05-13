@@ -23,7 +23,7 @@ void NetVars::Init() {
 	this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
 	this->m_Collision = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
 	m_flSimulationTime = gNetvars.get_offset("DT_BaseEntity", "m_flSimulationTime");
-	if (TF2) {
+	IF_GAME (IsTF2()) {
 		res_iTeam = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
 		this->res_iMaxBuffedHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");
 		m_angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata", "m_angEyeAngles[0]");
@@ -46,7 +46,7 @@ void NetVars::Init() {
 		m_iTauntIndex = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntIndex");
 		m_iTauntConcept = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntConcept");
 	}
-	if (TF2 || TF2C) {
+	IF_GAME (IsTF()) {
 		this->res_iMaxHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");
 		this->res_iPlayerClass = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerClass");
 		this->m_bReadyToBackstab = gNetvars.get_offset("DT_TFWeaponKnife", "m_bReadyToBackstab");
@@ -73,8 +73,8 @@ void NetVars::Init() {
 		this->flChargeLevel = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
 		this->bChargeRelease = gNetvars.get_offset("DT_WeaponMedigun", "m_bChargeRelease");
 	}
-	if (TF2C) this->iCritMult = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iCritMult");
-	if (TF2C) {
+	IF_GAME (IsTF2C()) {
+		this->iCritMult = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iCritMult");
 		this->bRespawning = gNetvars.get_offset("DT_WeaponSpawner", "m_bRespawning");
 	}
 	this->flNextAttack = gNetvars.get_offset("DT_BaseCombatCharacter", "bcc_localdata", "m_flNextAttack");

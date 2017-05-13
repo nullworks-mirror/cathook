@@ -3,6 +3,9 @@
 	NON-CONSTEXPR HEADER FOR css
 */
 
+#ifndef css_AUTOGEN_HPP
+#define css_AUTOGEN_HPP
+
 namespace client_classes {
 	
 	class css {
@@ -489,5 +492,7 @@ namespace client_classes {
 
 	};
 	
-	css css_list;
+	extern css css_list;
 }
+
+#endif /* css_AUTOGEN_HPP */

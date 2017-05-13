@@ -186,8 +186,6 @@ void Shutdown_hook(void* _this, const char* reason) {
 	SEGV_END;
 }
 
-static CatVar glow_enabled(CV_SWITCH, "glow_old_enabled", "0", "Enable", "Make sure to enable glow_outline_effect_enable in tf2 settings");
-static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
@@ -202,7 +200,6 @@ static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "0",
 
 void FrameStageNotify_hook(void* _this, int stage) {
 	static IClientEntity *ent;
-	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
 
 	PROF_SECTION(FrameStageNotify_TOTAL);
 
@@ -229,7 +226,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
-	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 #if NOGUI != 1
 		if (cursor_fix_experimental) {
 			if (gui_visible) {
@@ -239,60 +236,11 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 #endif
-		if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition<TFCond_Zoomed>(LOCAL_E);
-		if (glow_outline_effect->GetBool()) {
-			PROF_SECTION(FSN_outline);
-			if (glow_enabled) {
-				for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Size(); i++) {
-					GlowObjectDefinition_t& glowobject = g_GlowObjectManager->m_GlowObjectDefinitions[i];
-					if (glowobject.m_nNextFreeSlot != ENTRY_IN_USE)
-						continue;
-					int color = GetEntityGlowColor(glowobject.m_hEntity.m_Index & 0xFFF);
-					if (color == 0) {
-						glowobject.m_flGlowAlpha = 0.0f;
-					} else {
-						glowobject.m_flGlowAlpha = (float)glow_alpha;
-					}
-					unsigned char _b = (color >> 16) & 0xFF;
-					unsigned char _g = (color >> 8)  & 0xFF;
-					unsigned char _r = (color) & 0xFF;
-					glowobject.m_vGlowColor.x = (float)_r / 255.0f;
-					glowobject.m_vGlowColor.y = (float)_g / 255.0f;
-					glowobject.m_vGlowColor.z = (float)_b / 255.0f;
-				}
-			}
-			// Remove glow from dead entities
-			for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Count(); i++) {
-				if (g_GlowObjectManager->m_GlowObjectDefinitions[i].m_nNextFreeSlot != ENTRY_IN_USE) continue;
-				IClientEntity* ent = (IClientEntity*)g_IEntityList->GetClientEntityFromHandle(g_GlowObjectManager->m_GlowObjectDefinitions[i].m_hEntity);
-				if (ent && ent->IsDormant()) {
-					g_GlowObjectManager->DisableGlow(i);
-				} else if (ent && ent->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
-					if (NET_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) {
-						g_GlowObjectManager->DisableGlow(i);
-					}
-				}
-			}
-			if (glow_enabled) {
-				for (int i = 1; i < g_IEntityList->GetHighestEntityIndex(); i++) {
-					IClientEntity* entity = g_IEntityList->GetClientEntity(i);
-					if (!entity || i == g_IEngine->GetLocalPlayer() || entity->IsDormant())
-						continue;
-					if (!CanEntityEvenGlow(i)) continue;
-					int clazz = entity->GetClientClass()->m_ClassID;
-					int current_handle = g_GlowObjectManager->GlowHandle(entity);
-					bool shouldglow = ShouldEntityGlow(i);
-					if (current_handle != -1) {
-						if (!shouldglow) {
-							g_GlowObjectManager->DisableGlow(current_handle);
-						}
-					} else {
-						if (shouldglow) {
-							g_GlowObjectManager->EnableGlow(entity, colors::white);
-						}
-					}
-				}
-			}
+		IF_GAME(IsTF()) {
+			if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition<TFCond_Zoomed>(LOCAL_E);
+		}
+		IF_GAME(IsTF2()) {
+			GlowFrameStageNotify(stage);
 		}
 		if (force_thirdperson && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;

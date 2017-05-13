@@ -3,6 +3,9 @@
 	CONSTEXPR HEADER FOR css
 */
 
+#ifndef css_CONSTEXPR_AUTOGEN_HPP
+#define css_CONSTEXPR_AUTOGEN_HPP
+
 namespace client_classes_constexpr {
 	
 	class css {
@@ -489,3 +492,5 @@ namespace client_classes_constexpr {
 
 	};
 }
+
+#endif /* css_CONSTEXPR_AUTOGEN_HPP */

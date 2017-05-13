@@ -49,6 +49,7 @@
 #include "interfaces.h"
 #include "EffectGlow.hpp"
 #include "localplayer.h"
+#include "conditions.h"
 #include "logging.h"
 #include "playerresource.h"
 #include "usercmd.h"
@@ -65,7 +66,7 @@
 #include "EffectChams.hpp"
 #include "ipc.h"
 #include "hooks/hookedmethods.h"
-#include "classid.h"
+#include "classinfo/classinfo.hpp"
 #include "crits.h"
 
 #if NOGUI != 1
@@ -83,6 +84,7 @@ constexpr T _clamp(T _min, T _max, T _val) {
 }
 
 #define _FASTCALL __attribute__((fastcall))
+#define STRINGIFY(x) #x
 
 #include "gameinfo.hpp"
 
@@ -143,6 +145,6 @@ constexpr T _clamp(T _min, T _max, T _val) {
 
 #endif
 
-#define GET_RENDER_CONTEXT (TF2 ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
+#define GET_RENDER_CONTEXT (IsTF2() ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
 
 #endif /* COMMON_H_ */

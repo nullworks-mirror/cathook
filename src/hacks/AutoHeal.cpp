@@ -73,7 +73,7 @@ int FireDangerValue(CachedEntity* patient) {
 			if (patient->m_vecOrigin.DistTo(ent->m_vecOrigin) > (int)auto_vacc_pyro_range) continue;
 			if ((int)auto_vacc_pop_if_pyro == 2) return 2;
 			IClientEntity* pyro_weapon = g_IEntityList->GetClientEntity(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
-			return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == g_pClassID->CTFFlameThrower) ? 2 : 0;
+			return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == CL_CLASS(CTFFlameThrower)) ? 2 : 0;
 		}
 	}
 	if (HasCondition<TFCond_OnFire>(patient)) {
@@ -132,7 +132,7 @@ int BlastDangerValue(CachedEntity* patient) {
 }
 
 int CurrentResistance() {
-	if (LOCAL_W->m_iClassID != g_pClassID->CWeaponMedigun) return 0;
+	if (LOCAL_W->m_iClassID != CL_CLASS(CWeaponMedigun)) return 0;
 	return CE_INT(LOCAL_W, netvar.m_nChargeResistType);
 }
 
@@ -231,7 +231,7 @@ static CatCommand vaccinator_fire("vacc_fire", "Fire Vaccinator", []() {
 
 bool IsPopped() {
 	CachedEntity* weapon = g_pLocalPlayer->weapon();
-	if (CE_BAD(weapon) || weapon->m_iClassID != g_pClassID->CWeaponMedigun) return false;
+	if (CE_BAD(weapon) || weapon->m_iClassID != CL_CLASS(CWeaponMedigun)) return false;
 	return CE_BYTE(weapon, netvar.bChargeRelease);
 }
 

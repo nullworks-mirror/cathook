@@ -121,7 +121,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity* entity) {
 		break;
 	case ENTITY_PROJECTILE:
 		if (!ent->m_bEnemy) return false;
-		if (stickies && ent->m_iClassID == g_pClassID->CTFGrenadePipebombProjectile) {
+		if (stickies && ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile)) {
 			return true;
 		}
 		break;

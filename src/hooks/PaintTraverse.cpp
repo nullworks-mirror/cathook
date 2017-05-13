@@ -172,7 +172,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
 		PROF_SECTION(PT_total_hacks);
-		if (TF) {
+		IF_GAME(IsTF()) {
 			PROF_SECTION(PT_antidisguise);
 			SAFE_CALL(hacks::tf2::antidisguise::Draw());
 		}
@@ -184,17 +184,20 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 			PROF_SECTION(PT_esp);
 			SAFE_CALL(hacks::shared::esp::Draw());
 		}
-		if (TF) {
+		IF_GAME(IsTF()) {
 			PROF_SECTION(PT_spyalert);
 			SAFE_CALL(hacks::tf::spyalert::Draw());
 		}
-		if (TF) {
+		IF_GAME(IsTF()) {
 			PROF_SECTION(PT_radar);
 			SAFE_CALL(hacks::tf::radar::Draw());
 		}
-		if (TF2) {
+		IF_GAME(IsTF2()) {
 			PROF_SECTION(PT_skinchanger);
 			SAFE_CALL(hacks::tf2::skinchanger::PaintTraverse());
+		}
+		{
+			SAFE_CALL(hacks::shared::aimbot::PaintTraverse());
 		}
 	}
 
