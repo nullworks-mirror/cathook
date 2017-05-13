@@ -230,7 +230,7 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 static CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "Don't draw 2D box");
 static CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
 
-void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
+void _FASTCALL DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
 	PROF_SECTION(PT_esp_drawbox);
 	Vector min, max, origin, so, omin, omax, smin, smax;
 	float height, width, trf;
@@ -307,7 +307,7 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 	}
 }
 
-void ProcessEntity(CachedEntity* ent) {
+void _FASTCALL ProcessEntity(CachedEntity* ent) {
 	const model_t* model;
 	int string_count_backup, level, pclass;
 	bool shown;
@@ -502,7 +502,7 @@ static CatVar box_healthbar(CV_SWITCH, "esp_box_healthbar", "1", "Box Healthbar"
  * According to profiler, this function is the most time-consuming (and gets called up to 200K times a second)
  */
 
-void ProcessEntityPT(CachedEntity* ent) {
+void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	PROF_SECTION(PT_esp_process_entity);
 
 	int fg, color;

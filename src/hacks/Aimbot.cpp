@@ -119,6 +119,8 @@ CachedEntity* CurrentTarget() {
 }
 
 int ClosestHitbox(CachedEntity* target) {
+	PROF_SECTION(CM_aimbot_closesthitbox);
+
 	// FIXME this will break multithreading if it will be ever implemented. When implementing it, these should be made non-static
 	int closest;
 	float closest_fov, fov;
@@ -171,45 +173,48 @@ void CreateMove() {
 		cur_proj_grav = (float)proj_gravity;
 	// TODO priority modes (FOV, Smart, Distance, etc)
 	target_highest_score = -256;
-	for (int i = 0; i < HIGHEST_ENTITY; i++) {
-		ent = ENTITY(i);
-		if (CE_BAD(ent)) continue;
-		tg = TargetState(ent);
-		if (tg == EAimbotTargetState::GOOD) {
-			if (GetWeaponMode() == weaponmode::weapon_melee || (int)priority_mode == 2) {
-				scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
-				if (scr > target_highest_score) {
-					target_highest_score = scr;
-					target_highest = ent;
+	{
+		PROF_SECTION(CM_aimbot_finding_target);
+		for (int i = 0; i < HIGHEST_ENTITY; i++) {
+			ent = ENTITY(i);
+			if (CE_BAD(ent)) continue;
+			tg = TargetState(ent);
+			if (tg == EAimbotTargetState::GOOD) {
+				if (GetWeaponMode() == weaponmode::weapon_melee || (int)priority_mode == 2) {
+					scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
+					if (scr > target_highest_score) {
+						target_highest_score = scr;
+						target_highest = ent;
+					}
+				} else {
+					switch ((int)priority_mode) {
+					case 0: {
+						scr = GetScoreForEntity(ent);
+						if (scr > target_highest_score) {
+							target_highest_score = scr;
+							target_highest = ent;
+						}
+					} break;
+					case 1: {
+						scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
+						if (scr > target_highest_score) {
+							target_highest_score = scr;
+							target_highest = ent;
+						}
+					} break;
+					case 3: {
+						scr = 450.0f - ent->m_iHealth;
+						if (scr > target_highest_score) {
+							target_highest_score = scr;
+							target_highest = ent;
+						}
+					}
+					}
 				}
 			} else {
-				switch ((int)priority_mode) {
-				case 0: {
-					scr = GetScoreForEntity(ent);
-					if (scr > target_highest_score) {
-						target_highest_score = scr;
-						target_highest = ent;
-					}
-				} break;
-				case 1: {
-					scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
-					if (scr > target_highest_score) {
-						target_highest_score = scr;
-						target_highest = ent;
-					}
-				} break;
-				case 3: {
-					scr = 450.0f - ent->m_iHealth;
-					if (scr > target_highest_score) {
-						target_highest_score = scr;
-						target_highest = ent;
-					}
-				}
-				}
+				//if (tg != 26)
+				//	logging::Info("Shouldn't target ent %i %i", ent->m_IDX, tg);
 			}
-		} else {
-			//if (tg != 26)
-			//	logging::Info("Shouldn't target ent %i %i", ent->m_IDX, tg);
 		}
 	}
 	if (huntsman_ticks) {
@@ -221,6 +226,7 @@ void CreateMove() {
 		state = EAimbotState::TARGET_FOUND;
 		hacks::shared::esp::SetEntityColor(target_highest, colors::pink);
 		if (local_state == EAimbotLocalState::GOOD) {
+			PROF_SECTION(CM_aimbot_aiming);
 			last_target = target_highest->m_IDX;
 			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFCompoundBow) { // There is no Huntsman in TF2C.
 				begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
@@ -578,6 +584,8 @@ float EffectiveShootingRange() {
 }
 
 EAimbotLocalState ShouldAim() {
+	PROF_SECTION(CM_aimbot_calc_localstate);
+
 	bool do_minigun_checks;
 	int weapon_state;
 	// Checks should be in order: cheap -> expensive
@@ -654,6 +662,8 @@ EAimbotLocalState ShouldAim() {
 }
 
 int BestHitbox(CachedEntity* target) {
+	PROF_SECTION(CM_aimbot_besthitbox);
+
 	int preferred, ci, flags, bdmg;
 	float cdmg;
 	bool ground;

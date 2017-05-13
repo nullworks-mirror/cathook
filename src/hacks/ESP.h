@@ -72,15 +72,15 @@ public:
 
 extern std::array<ESPData, 2048> data;
 void ResetEntityStrings();
-void AddEntityString(CachedEntity* entity, const std::string& string, int color = 0x0) _FASTCALL;
+void AddEntityString(CachedEntity* entity, const std::string& string, int color = 0x0);
 void SetEntityColor(CachedEntity* entity, int color);
 
 void CreateMove();
 void Draw();
 
-void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) _FASTCALL;
-void ProcessEntity(CachedEntity* ent) _FASTCALL;
-void ProcessEntityPT(CachedEntity* ent) _FASTCALL;
+void __attribute__((fastcall)) DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax);
+void __attribute__((fastcall)) ProcessEntity(CachedEntity* ent);
+void __attribute__((fastcall)) ProcessEntityPT(CachedEntity* ent);
 
 }}}
 

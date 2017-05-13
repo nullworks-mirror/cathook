@@ -148,34 +148,31 @@ void CreateMove() {
 		no_taunt_ticks--;
 	}
 	// TODO FIXME this should be moved out of here
-	localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
-	if (localplayer && spycrab_mode) {
-		void** vtable = *(void***)(localplayer);
-		if (vtable[0x111] != StartSceneEvent_hooked) {
-			StartSceneEvent_original = (StartSceneEvent_t)vtable[0x111];
-			void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
-			mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-			vtable[0x111] = (void*)StartSceneEvent_hooked;
-			mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
+	{
+		PROF_SECTION(CM_misc_hook_checks);
+		localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+		if (localplayer && spycrab_mode) {
+			void** vtable = *(void***)(localplayer);
+			if (vtable[0x111] != StartSceneEvent_hooked) {
+				StartSceneEvent_original = (StartSceneEvent_t)vtable[0x111];
+				void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
+				mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
+				vtable[0x111] = (void*)StartSceneEvent_hooked;
+				mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
+			}
+		}
+		if (TF && render_zoomed && localplayer) {
+			// Patchking local player
+			void** vtable = *(void***)(localplayer);
+			if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook) {
+				C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];
+				void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
+				mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
+				vtable[offsets::ShouldDraw()] = (void*)C_TFPlayer__ShouldDraw_hook;
+				mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
+			}
 		}
 	}
-	if (TF && render_zoomed && localplayer) {
-		// Patchking local player
-		void** vtable = *(void***)(localplayer);
-		if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook) {
-			C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];
-			void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
-			mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-			vtable[offsets::ShouldDraw()] = (void*)C_TFPlayer__ShouldDraw_hook;
-			mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
-		}
-	}
-
-	/*(if (TF2 && remove_conditions) {
-		RemoveCondition(LOCAL_E, TFCond_CloakFlicker);
-		RemoveCondition(LOCAL_E, TFCond_Jarated);
-		CE_FLOAT(LOCAL_E, netvar.m_flStealthNoAttackExpire) = 0.0f;
-	}*/
 
 	if (TF2C && tauntslide)
 		RemoveCondition<TFCond_Taunting>(LOCAL_E);
@@ -183,10 +180,15 @@ void CreateMove() {
 
 	if (g_pUserCmd->command_number && found_crit_number > g_pUserCmd->command_number + 66 * 20) found_crit_number = 0;
 	if (g_pUserCmd->command_number) last_number = g_pUserCmd->command_number;
-	if (crit_hack_next && TF2 && CE_GOOD(LOCAL_W)) {
+
+	static int last_checked_command_number = 0;
+	static IClientEntity* last_checked_weapon = nullptr;
+
+	if (crit_hack_next && TF2 && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
+		PROF_SECTION(CM_misc_crit_hack_prediction);
 		weapon = RAW_ENT(LOCAL_W);
 		if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
-			if (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack))) {
+			if (experimental_crit_hack.KeyDown()) {
 				if (!g_pUserCmd->command_number || critWarmup < 8) {
 					if (g_pUserCmd->buttons & IN_ATTACK) {
 						critWarmup++;
@@ -196,7 +198,7 @@ void CreateMove() {
 					g_pUserCmd->buttons &= ~(IN_ATTACK);
 				}
 			}
-			if (g_pUserCmd->command_number && (found_crit_weapon != weapon || found_crit_number < g_pUserCmd->command_number)) {
+			if (g_pUserCmd->command_number && (last_checked_weapon != weapon || last_checked_command_number < g_pUserCmd->command_number)) {
 				if (!g_PredictionRandomSeed) {
 					uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
 					g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
@@ -221,26 +223,30 @@ void CreateMove() {
 						cmdn++;
 					}
 				}
+				last_checked_command_number = cmdn;
+				last_checked_weapon = weapon;
 				state.Load(weapon);
 				if (chc) {
 					found_crit_weapon = weapon;
 					found_crit_number = cmdn;
-					//logging::Info("Found crit at: %i, original: %i", cmdn, g_pUserCmd->command_number);
-					if (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack))) {
-						//if (g_pUserCmd->buttons & IN_ATTACK)
-							command_number_mod[g_pUserCmd->command_number] = cmdn;
-					}
-					//*(int*)(sharedobj::engine->Pointer(0x00B6C91C)) = cmdn - 1;
 				}
-				//if (!crits) *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u) = bucket;
+			}
+			if (g_pUserCmd->buttons & (IN_ATTACK)) {
+				if (found_crit_weapon == weapon && g_pUserCmd->command_number < found_crit_number) {
+					if (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack))) {
+						command_number_mod[g_pUserCmd->command_number] = cmdn;
+					}
+				}
 			}
 		}
 	}
 	{
+		PROF_SECTION(CM_misc_crit_hack_apply);
 		if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
 	}
 
 	if (CE_GOOD(LOCAL_W)) {
+		PROF_SECTION(CM_misc_crit_hack_bucket_fixing);
 		weapon = RAW_ENT(LOCAL_W);
 		float& bucket = *(float*)((uintptr_t)(weapon) + 2612);
 		if (g_pUserCmd->command_number) {
@@ -280,7 +286,7 @@ void Draw() {
 			if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465, 0)(RAW_ENT(LOCAL_W)))
 				AddCenterString("Random crits are disabled", colors::yellow);
 			else {
-				if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W)))
+				if (!WeaponCanCrit())
 					AddCenterString("Weapon can't randomly crit", colors::yellow);
 				else
 					AddCenterString("Weapon can randomly crit");
