@@ -24,6 +24,7 @@ public:
 	std::chrono::nanoseconds m_min;
 	std::chrono::nanoseconds m_max;
 	std::chrono::nanoseconds m_sum;
+	unsigned m_spewcount;
 	unsigned m_calls;
 	std::chrono::time_point<std::chrono::high_resolution_clock> m_log;
 	std::string m_name;
@@ -39,7 +40,7 @@ public:
 	ProfilerSection& m_section;
 };
 
-#define ENABLE_PROFILER true
+#define ENABLE_PROFILER false
 #if ENABLE_PROFILER
 #define PROF_SECTION(id) \
 	static ProfilerSection __PROFILER__##id(#id); \
