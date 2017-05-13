@@ -12,7 +12,7 @@ namespace menu { namespace ncc {
 
 CatVar ci_enabled(CV_SWITCH, "gui_ncc_crit_indicator", "1", "Crit Indicator");
 CatVar ci_x(CV_INT, "gui_ncc_crit_indicator_x", "400", "Crit Indicator X");
-CatVar ci_y(CV_INT, "gui_ncc_crit_indicator_x", "150", "Crit Indicator Y");
+CatVar ci_y(CV_INT, "gui_ncc_crit_indicator_y", "150", "Crit Indicator Y");
 
 CritIndicator::CritIndicator() : CBaseWidget("ncc_crit_indicator"),
 	crit_normal(&_binary_crit_1_start, 64, 64),
