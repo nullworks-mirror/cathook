@@ -309,7 +309,7 @@ void FixMovement(CUserCmd& cmd, Vector& viewangles) {
 
 bool AmbassadorCanHeadshot() {
 	if (IsAmbassador(g_pLocalPlayer->weapon())) {
-		if ((g_GlobalVars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 0.95) {
+		if ((g_GlobalVars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 1.0) {
 			return false;
 		}
 	}
