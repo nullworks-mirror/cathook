@@ -313,9 +313,9 @@ bool VischeckPredictedEntity(CachedEntity* entity) {
 	AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
 	if (cd.vcheck_tick == tickcount) return cd.visible;
 	cd.vcheck_tick = tickcount;
-	if (entity->m_Type == ENTITY_PLAYER)
-		cd.visible = IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity));
-	else
+	//if (entity->m_Type == ENTITY_PLAYER)
+	//	cd.visible = IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity));
+	//else
 		cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
 	return cd.visible;
 }
@@ -688,7 +688,7 @@ EAimbotLocalState ShouldAim() {
 void PaintTraverse() {
 	if (!aimbot_debug) return;
 	if (!enabled) return;
-
+	AddSideString(format("AimbotState: ", static_cast<int>(local_state_last)));
 }
 
 int BestHitbox(CachedEntity* target) {
@@ -751,8 +751,15 @@ int BestHitbox(CachedEntity* target) {
 					headonly = false;
 				}
 			}
+		} else IF_GAME (IsCSS()) {
+			headonly = true;
 		}
-		if (headonly) return hitbox_t::head;
+		if (headonly) {
+			IF_GAME (IsTF())
+				return hitbox_t::head;
+			IF_GAME (IsCSS())
+				return 12;
+		}
 		if (target->hitboxes.VisibilityCheck(preferred)) return preferred;
 		for (int i = projectile_mode ? 1 : 0; i < target->hitboxes.GetNumHitboxes(); i++) {
 			if (target->hitboxes.VisibilityCheck(i)) return i;

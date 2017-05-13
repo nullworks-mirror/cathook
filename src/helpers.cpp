@@ -463,6 +463,8 @@ bool LineIntersectsBox(Vector& bmin, Vector& bmax, Vector& lmin, Vector& lmax) {
 bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 	float rspeed, rgrav;
 
+	IF_GAME (!IsTF()) return false;
+
 	if (CE_BAD(weapon)) return false;
 	rspeed = 0.0f;
 	rgrav = 0.0f;
