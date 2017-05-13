@@ -96,11 +96,6 @@ void hack::CC_Cat(const CCommand& args) {
 	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "\n");
 }
 
-typedef bool(handlevent_t)(IMatSystemSurface* thisptr, const InputEvent_t& event);
-bool test_handleevent(IMatSystemSurface* thisptr, const InputEvent_t& event) {
-
-}
-
 void hack::Initialize() {
 	srand(time(0));
 	prctl(PR_SET_DUMPABLE,0,42,42,42);
@@ -109,19 +104,10 @@ void hack::Initialize() {
 	CreateInterfaces();
 	CDumper dumper;
 	dumper.SaveDump();
-	ClientClass* cc = g_IBaseClient->GetAllClasses();
-	FILE* cd = fopen("/tmp/cathook-classdump.txt", "w");
-	if (cd) {
-		while (cc) {
-			fprintf(cd, "[%d] %s\n", cc->m_ClassID, cc->GetName());
-			cc = cc->m_pNext;
-		}
-		fclose(cd);
-	}
 	if (TF2) g_pClassID = new ClassIDTF2();
 	else if (TF2C) g_pClassID = new ClassIDTF2C();
 	else if (HL2DM) g_pClassID = new ClassIDHL2DM();
-	g_pClassID->Init();
+	if (g_pClassID) g_pClassID->Init();
 	if (TF2) {
 		uintptr_t mmmf = (gSignatures.GetClientSignature("C7 44 24 04 09 00 00 00 BB ? ? ? ? C7 04 24 00 00 00 00 E8 ? ? ? ? BA ? ? ? ? 85 C0 B8 ? ? ? ? 0F 44 DA") + 37);
 		if (mmmf) {
@@ -162,8 +148,6 @@ void hack::Initialize() {
 	while(!(clientMode = **(uintptr_t***)((uintptr_t)((*(void***)g_IBaseClient)[10]) + 1))) {
 		sleep(1);
 	}
-	logging::Info("SizeOf SkinChanger::CAttribute = %04d", sizeof(hacks::tf2::skinchanger::CAttribute));
-	logging::Info("Sizeof SkinChanger::CAttributeList = %04d", sizeof(hacks::tf2::skinchanger::CAttributeList));
 	hooks::clientmode.Set((void*)clientMode);
 	hooks::clientmode.HookMethod((void*)CreateMove_hook, offsets::CreateMove());
 	hooks::clientmode.HookMethod((void*)OverrideView_hook, offsets::OverrideView());

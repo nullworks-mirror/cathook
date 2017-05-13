@@ -153,6 +153,7 @@ void ReplaceString(std::string& input, const std::string& what, const std::strin
 
 powerup_type GetPowerupOnPlayer(CachedEntity* player) {
 	if (CE_BAD(player)) return powerup_type::not_powerup;
+	if (!HasCondition<TFCond_HasRune>(player)) return powerup_type::not_powerup;
 	if (HasCondition<TFCond_RuneStrength>(player)) return powerup_type::strength;
 	if (HasCondition<TFCond_RuneHaste>(player)) return powerup_type::haste;
 	if (HasCondition<TFCond_RuneRegen>(player)) return powerup_type::regeneration;
