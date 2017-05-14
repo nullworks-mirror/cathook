@@ -131,6 +131,8 @@ int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene,
 	return StartSceneEvent_original(_this, sceneInfo, choreoScene, choreoEvent, choreoActor, unknown);
 }
 
+float last_bucket = 0;
+
 void CreateMove() {
 	static bool flswitch = false;
 	static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
@@ -138,7 +140,6 @@ void CreateMove() {
 	static int tries, cmdn, md5seed, rseed, c, b;
 	static crithack_saved_state state;
 	static bool chc;
-	static float last_bucket = 0.0f;
 	static bool changed = false;
 	static ConVar *pNoPush = g_ICvar->FindVar("tf_avoidteammates_pushaway");
 
@@ -189,8 +190,10 @@ void CreateMove() {
 		if (crit_hack_next && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
 			PROF_SECTION(CM_misc_crit_hack_prediction);
 			weapon = RAW_ENT(LOCAL_W);
-			if (weapon && vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
-				if (experimental_crit_hack.KeyDown()) {
+			// IsBaseCombatWeapon
+			if (weapon &&
+				vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
+				/*if (experimental_crit_hack.KeyDown()) {
 					if (!g_pUserCmd->command_number || critWarmup < 8) {
 						if (g_pUserCmd->buttons & IN_ATTACK) {
 							critWarmup++;
@@ -199,7 +202,7 @@ void CreateMove() {
 						}
 						g_pUserCmd->buttons &= ~(IN_ATTACK);
 					}
-				}
+				}*/
 				if (g_pUserCmd->command_number && (last_checked_weapon != weapon || last_checked_command_number < g_pUserCmd->command_number)) {
 					if (!g_PredictionRandomSeed) {
 						uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
@@ -228,6 +231,7 @@ void CreateMove() {
 					last_checked_command_number = cmdn;
 					last_checked_weapon = weapon;
 					state.Load(weapon);
+					last_bucket = state.bucket;
 					if (chc) {
 						found_crit_weapon = weapon;
 						found_crit_number = cmdn;
@@ -249,7 +253,7 @@ void CreateMove() {
 		if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
 	}
 
-	if (CE_GOOD(LOCAL_W)) {
+	if (WeaponCanCrit()) {
 		PROF_SECTION(CM_misc_crit_hack_bucket_fixing);
 		weapon = RAW_ENT(LOCAL_W);
 		float& bucket = *(float*)((uintptr_t)(weapon) + 2612);

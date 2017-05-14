@@ -196,7 +196,7 @@ const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	return original(_this, steamID);
 }
 
-static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "0", "Cursor fix");
+static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1", "Cursor fix");
 
 void FrameStageNotify_hook(void* _this, int stage) {
 	static IClientEntity *ent;

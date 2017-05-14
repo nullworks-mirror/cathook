@@ -45,9 +45,13 @@ bool RandomCrits() {
 	return tf_weapon_criticals->GetBool();
 }
 
+bool weapon_can_crit_last = false;
+
 bool WeaponCanCrit() {
 	IF_GAME (!IsTF()) return false;
-	return CE_GOOD(LOCAL_W) && vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465 + 21, 0)(RAW_ENT(LOCAL_W));
+	IClientEntity* weapon = RAW_ENT(LOCAL_W);
+	weapon_can_crit_last = CE_GOOD(LOCAL_W) && vfunc<bool(*)(IClientEntity*)>(weapon, 190, 0)(weapon) && vfunc<bool(*)(IClientEntity*)>(weapon, 465 + 21, 0)(weapon);
+	return weapon_can_crit_last;
 }
 
 void crithack_saved_state::Load(IClientEntity* entity) {

@@ -18,7 +18,7 @@ extern CatVar enabled;
 extern CatVar respect_cloak; // TODO move to Targeting
 extern CatVar zoomed_only;
 extern CatVar hitbox;
-extern CatVar bodyshot;
+extern CatVar allow_bodyshot;
 extern CatVar finishing_hit;
 extern CatVar max_range;
 extern CatVar buildings;

@@ -34,7 +34,8 @@ void CritIndicator::Draw(int x, int y) {
 	if (!crit_ready.id) crit_ready.Load();
 	Texture* tx = &crit_none;
 	bool critkey { false };
-	if (RandomCrits() && WeaponCanCrit()) {
+	bool crits { false };
+	if (RandomCrits() && weapon_can_crit_last) {
 		// It's safe to be 1 tick behind real values to prevent flickering.
 		if (hacks::shared::misc::found_crit_number >= hacks::shared::misc::last_number - 1 && hacks::shared::misc::found_crit_weapon == RAW_ENT(LOCAL_W)) {
 			tx = &crit_normal;
@@ -42,6 +43,7 @@ void CritIndicator::Draw(int x, int y) {
 				tx = &crit_ready;
 				critkey = true;
 			}
+			crits = true;
 		}
 	} else {
 		tx = &crit_disabled;
@@ -50,9 +52,8 @@ void CritIndicator::Draw(int x, int y) {
 	tx->Draw(x, y, 64, 64);
 	draw::OutlineRect(x, y, 64, 72, critkey ? colors::pink : GUIColor());
 	draw::DrawLine(x, y + 64, 64, 0, critkey ? colors::pink : GUIColor());
-	if (CE_GOOD(LOCAL_W)) {
-		float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u);
-		draw::DrawRect(x + 1, y + 65, 62.0f * (bucket / 1000.0f), 6, colors::Create(20, 235, 20, 255));
+	if (crits) {
+		draw::DrawRect(x + 1, y + 65,  1 + 61.0f * (hacks::shared::misc::last_bucket / 1000.0f), 6, (!crits) ? colors::Create(235, 20, 20, 255) : colors::Create(20, 235, 20, 255));
 	}
 }
 

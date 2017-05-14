@@ -40,6 +40,8 @@ extern CatCommand schema;
 extern CatCommand disconnect_vac;
 extern CatCommand set_value;
 
+extern float last_bucket;
+
 }}}
 
 /*class Misc : public IHack {
