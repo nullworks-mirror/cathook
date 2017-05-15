@@ -19,7 +19,7 @@ CatVar max_distance(CV_INT, "reflect_distance", "200", "Distance", "Maximum dist
 
 void CreateMove() {
 	if (!enabled) return;
-	if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFFlameThrower) return;
+	if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFFlameThrower)) return;
 	if (idle_only && (g_pUserCmd->buttons & IN_ATTACK)) return;
 
 	CachedEntity* closest = 0;
@@ -56,7 +56,7 @@ bool ShouldReflect(CachedEntity* ent) {
 	if (CE_INT(ent, (ent->m_bGrenadeProjectile ?
 			/* NetVar for grenades */ netvar.Grenade_iDeflected :
 			/* For rockets */ netvar.Rocket_iDeflected))) return false;
-	if (ent->m_iClassID == g_pClassID->CTFGrenadePipebombProjectile) {
+	if (ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile)) {
 		if (CE_INT(ent, netvar.iPipeType) == 1) {
 			if (!stickies) return false;
 		}

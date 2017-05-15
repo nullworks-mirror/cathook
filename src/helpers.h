@@ -25,6 +25,8 @@ void SetCVarInterface(ICvar* iface);
 //#define DEG2RAD(x) (float)(x) * (float)(PI / 180.0f)
 
 #include "enums.h"
+#include "conditions.h"
+#include "entitycache.h"
 #include "logging.h"
 
 #include "beforecheaders.h"
@@ -44,8 +46,11 @@ extern FILE* hConVarsFile;
 void BeginConVars();
 void EndConVars();
 
-bool IsPlayerCritBoosted(CachedEntity* player);
+// Calling source engine functions would get me more accurate result at cost of speed, so idk.
+// TODO?
+
 bool IsPlayerInvulnerable(CachedEntity* player);
+bool IsPlayerCritBoosted(CachedEntity* player);
 bool IsPlayerInvisible(CachedEntity* player);
 
 const char* GetBuildingName(CachedEntity* ent);
@@ -60,7 +65,7 @@ powerup_type GetPowerupOnPlayer(CachedEntity* player);
 // It's better if it won't create a new object each time it gets called.
 // So it returns a success state, and the values are stored in out reference.
 bool GetHitbox(CachedEntity* entity, int hb, Vector& out);
-weaponmode GetWeaponMode(CachedEntity* player);
+weaponmode GetWeaponMode();
 
 void FixMovement(CUserCmd& cmd, Vector& viewangles);
 void VectorAngles(Vector &forward, Vector &angles);
@@ -93,7 +98,6 @@ void AimAtHitbox(CachedEntity* ent, int hitbox, CUserCmd* cmd);
 
 std::string WordWrap(std::string& in, int max, unsigned long font);
 
-bool IsMeleeWeapon(CachedEntity* ent);
 bool IsProjectileCrit(CachedEntity* ent);
 
 QAngle VectorToQAngle(Vector in);

@@ -621,7 +621,7 @@ static const std::string list_tf2 = R"(
 )";
 
 List& MainList() {
-	static List* main = List::FromString(TF2 ? list_tf2 : list_hl2dm);
+	static List* main = List::FromString(IsTF2() ? list_tf2 : list_hl2dm);
 	return *main;
 }
 

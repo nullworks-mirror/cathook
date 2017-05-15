@@ -39,7 +39,7 @@ Vector SimpleLatencyPrediction(CachedEntity* ent, int hb) {
 float PlayerGravityMod(CachedEntity* player) {
 	int movetype = CE_INT(player, netvar.movetype);
 	if (movetype == MOVETYPE_FLY || movetype == MOVETYPE_NOCLIP) return 0.0f;
-	if (HasCondition(player, TFCond_Parachute)) return 0.448f;
+	if (HasCondition<TFCond_Parachute>(player)) return 0.448f;
 	return 1.0f;
 }
 
@@ -97,11 +97,11 @@ float DistanceToGround(CachedEntity* ent) {
 }
 
 float DistanceToGround(Vector origin) {
-	static trace_t* ground_trace = new trace_t();
+	trace_t ground_trace;
 	Ray_t ray;
 	Vector endpos = origin;
 	endpos.z -= 8192;
 	ray.Init(origin, endpos);
-	g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, trace::g_pFilterNoPlayer, ground_trace);
-	return 8192.0f * ground_trace->fraction;
+	g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &ground_trace);
+	return 8192.0f * ground_trace.fraction;
 }

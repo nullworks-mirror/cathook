@@ -22,7 +22,7 @@ std::vector<CachedEntity*> bombs;
 std::vector<CachedEntity*> targets;
 
 bool IsBomb(CachedEntity* ent) {
-	if (ent->m_iClassID != g_pClassID->CTFGrenadePipebombProjectile) return false;
+	if (ent->m_iClassID != CL_CLASS(CTFGrenadePipebombProjectile)) return false;
 	if (CE_INT(ent, netvar.iPipeType) != 1) return false;
 	if ((CE_INT(ent, netvar.hThrower) & 0xFFF) != g_pLocalPlayer->entity->m_IDX) return false;
 	return true;
@@ -40,11 +40,11 @@ bool IsTarget(CachedEntity* ent) {
 }
 
 bool stickyVisable(CachedEntity* targetTrace, CachedEntity* bombTrace) {
-    static trace_t trace;
-    trace::g_pFilterDefault->SetSelf(RAW_ENT(bombTrace));
+    trace_t trace;
+    trace::filter_default.SetSelf(RAW_ENT(bombTrace));
     Ray_t ray;
     ray.Init(bombTrace->m_vecOrigin, RAW_ENT(targetTrace)->GetCollideable()->GetCollisionOrigin());
-    g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, &trace);
+    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);
     //deboog1 = bombTrace.DistToSqr(trace->endpos);
     if (trace.m_pEnt) {
         if (((IClientEntity*)(trace.m_pEnt))->entindex() == targetTrace->m_IDX) return true;

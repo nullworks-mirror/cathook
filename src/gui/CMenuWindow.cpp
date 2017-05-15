@@ -35,7 +35,7 @@ std::vector<CatVar*> FindCatVars(const std::string name) {
 }
 
 void CMenuWindow::AddElements() {
-	AddTab("aimbot", "Aimbot");
+	/*AddTab("aimbot", "Aimbot");
 	CMenuContainer* tab = GetTab("aimbot");
 	for (auto var : FindCatVars("aimbot_")) ADDCVAR(var);
 	AddTab("esp", "ESP");
@@ -98,7 +98,7 @@ void CMenuWindow::AddElements() {
 	tab = GetTab("multibox");
 	for (auto var : FindCatVars("ipc_")) ADDCVAR(var);
 	for (auto var : FindCatVars("fb_")) ADDCVAR(var);
-	ADDLABEL("Stats window/bot management coming soon!");
+	ADDLABEL("Stats window/bot management coming soon!");*/
 }
 
 CMenuContainer* CMenuWindow::GetTab(std::string tab) {

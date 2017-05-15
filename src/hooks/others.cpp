@@ -39,6 +39,8 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 		return;
 	}
 
+	PROF_SECTION(DrawModelExecute);
+
 	if (no_arms || no_hats) {
 		if (info.pModel) {
 			name = g_IModelInfo->GetModelName(info.pModel);
@@ -95,13 +97,14 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 
 int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
 	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
+#if NOGUI != 1
 	SEGV_BEGIN;
 	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
 		return 0;
 	}
-	return original(_this, eventcode, keynum, pszCurrentBinding);
 	SEGV_END;
-	return 0;
+#endif
+	return original(_this, eventcode, keynum, pszCurrentBinding);
 }
 
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent messages");
@@ -183,8 +186,6 @@ void Shutdown_hook(void* _this, const char* reason) {
 	SEGV_END;
 }
 
-static CatVar glow_enabled(CV_SWITCH, "glow_old_enabled", "0", "Enable", "Make sure to enable glow_outline_effect_enable in tf2 settings");
-static CatVar glow_alpha(CV_FLOAT, "glow_old_alpha", "1", "Alpha", "Glow Transparency", 0.0f, 1.0f);
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
@@ -195,18 +196,23 @@ const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	return original(_this, steamID);
 }
 
-static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "0", "Cursor fix");
+static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1", "Cursor fix");
 
 void FrameStageNotify_hook(void* _this, int stage) {
 	static IClientEntity *ent;
-	static ConVar* glow_outline_effect = g_ICvar->FindVar("glow_outline_effect_enable");
+
+	PROF_SECTION(FrameStageNotify_TOTAL);
 
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
 	// TODO hack FSN hook
-	hacks::tf2::skinchanger::FrameStageNotify(stage);
+	{
+		PROF_SECTION(FSN_skinchanger);
+		hacks::tf2::skinchanger::FrameStageNotify(stage);
+	}
 	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
+		PROF_SECTION(FSN_resolver);
 		for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++) {
 			if (i == g_IEngine->GetLocalPlayer()) continue;
 			ent = g_IEntityList->GetClientEntity(i);
@@ -220,7 +226,8 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
-	if (TF && cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
+#if NOGUI != 1
 		if (cursor_fix_experimental) {
 			if (gui_visible) {
 				g_ISurface->SetCursorAlwaysVisible(true);
@@ -228,59 +235,12 @@ void FrameStageNotify_hook(void* _this, int stage) {
 				g_ISurface->SetCursorAlwaysVisible(false);
 			}
 		}
-		if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition(LOCAL_E, TFCond_Zoomed);
-		if (glow_outline_effect->GetBool()) {
-			if (glow_enabled) {
-				for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Size(); i++) {
-					GlowObjectDefinition_t& glowobject = g_GlowObjectManager->m_GlowObjectDefinitions[i];
-					if (glowobject.m_nNextFreeSlot != ENTRY_IN_USE)
-						continue;
-					int color = GetEntityGlowColor(glowobject.m_hEntity.m_Index & 0xFFF);
-					if (color == 0) {
-						glowobject.m_flGlowAlpha = 0.0f;
-					} else {
-						glowobject.m_flGlowAlpha = (float)glow_alpha;
-					}
-					unsigned char _b = (color >> 16) & 0xFF;
-					unsigned char _g = (color >> 8)  & 0xFF;
-					unsigned char _r = (color) & 0xFF;
-					glowobject.m_vGlowColor.x = (float)_r / 255.0f;
-					glowobject.m_vGlowColor.y = (float)_g / 255.0f;
-					glowobject.m_vGlowColor.z = (float)_b / 255.0f;
-				}
-			}
-			// Remove glow from dead entities
-			for (int i = 0; i < g_GlowObjectManager->m_GlowObjectDefinitions.Count(); i++) {
-				if (g_GlowObjectManager->m_GlowObjectDefinitions[i].m_nNextFreeSlot != ENTRY_IN_USE) continue;
-				IClientEntity* ent = (IClientEntity*)g_IEntityList->GetClientEntityFromHandle(g_GlowObjectManager->m_GlowObjectDefinitions[i].m_hEntity);
-				if (ent && ent->IsDormant()) {
-					g_GlowObjectManager->DisableGlow(i);
-				} else if (ent && ent->GetClientClass()->m_ClassID == g_pClassID->C_Player) {
-					if (NET_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) {
-						g_GlowObjectManager->DisableGlow(i);
-					}
-				}
-			}
-			if (glow_enabled) {
-				for (int i = 1; i < g_IEntityList->GetHighestEntityIndex(); i++) {
-					IClientEntity* entity = g_IEntityList->GetClientEntity(i);
-					if (!entity || i == g_IEngine->GetLocalPlayer() || entity->IsDormant())
-						continue;
-					if (!CanEntityEvenGlow(i)) continue;
-					int clazz = entity->GetClientClass()->m_ClassID;
-					int current_handle = g_GlowObjectManager->GlowHandle(entity);
-					bool shouldglow = ShouldEntityGlow(i);
-					if (current_handle != -1) {
-						if (!shouldglow) {
-							g_GlowObjectManager->DisableGlow(current_handle);
-						}
-					} else {
-						if (shouldglow) {
-							g_GlowObjectManager->EnableGlow(entity, colors::white);
-						}
-					}
-				}
-			}
+#endif
+		IF_GAME(IsTF()) {
+			if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition<TFCond_Zoomed>(LOCAL_E);
+		}
+		IF_GAME(IsTF2()) {
+			GlowFrameStageNotify(stage);
 		}
 		if (force_thirdperson && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
@@ -319,26 +279,29 @@ static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat", "Removes ne
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0", "Log dispatched user messages");
 
 bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
+	int loop_index, s, i, j;
+	char *data, c;
+
 	static const DispatchUserMessage_t original = (DispatchUserMessage_t)hooks::client.GetMethod(offsets::DispatchUserMessage());
 	SEGV_BEGIN;
 	if (clean_chat) {
 		if (type == 4) {
-			int loop_index = 0;
-
-			int s = buf.GetNumBytesLeft();
-			char* data = new char[s];
-			for (int i = 0; i < s; i++)
-				data[i] = buf.ReadByte();
-			int j = 0;
-			char c;
-			for (int i = 0; i < 3; i++) {
-				while ((c = data[j++]) && (loop_index < 128)) {
-					loop_index++;
-					if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+			loop_index = 0;
+			s = buf.GetNumBytesLeft();
+			if (s < 256) {
+				data = (char*)alloca(s);
+				for (i = 0; i < s; i++)
+					data[i] = buf.ReadByte();
+				j = 0;
+				for (i = 0; i < 3; i++) {
+					while ((c = data[j++]) && (loop_index < 128)) {
+						loop_index++;
+						if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+					}
 				}
+				buf = bf_read(data, s);
+				buf.Seek(0);
 			}
-			buf = bf_read(data, s);
-			buf.Seek(0);
 		}
 	}
 	if (dispatch_log) {

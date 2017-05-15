@@ -34,9 +34,14 @@
 #include "hooks.h"
 #include "netmessage.h"
 #include "profiler.h"
-#include "gui/GUI.h"
-//#include "gui/controls.h"
 #include "cvwrapper.h"
+
+#define STRINGIFY(x) #x
+#define TO_STRING(x) STRINGIFY(x)
+
+#if NOGUI != 1
+#include "gui/GUI.h"
+#endif
 
 #include "hooks/hookedmethods.h"
 
@@ -53,6 +58,25 @@
 
 bool hack::shutdown = false;
 
+const std::string& hack::GetVersion() {
+	static std::string version("Unknown Version");
+	static bool version_set = false;
+	if (version_set) return version;
+#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
+		version = "Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE;
+#if NOGUI == 1
+		version += " NOGUI";
+#endif
+#ifdef BUILD_GAME
+		version += " S " TO_STRING(BUILD_GAME);
+#else
+		version += " U";
+#endif
+#endif
+	version_set = true;
+	return version;
+}
+
 std::mutex hack::command_stack_mutex;
 std::stack<std::string>& hack::command_stack() {
 	static std::stack<std::string> stack;
@@ -67,17 +91,12 @@ void hack::ExecuteCommand(const std::string command) {
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "cathook");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::blu), " by ");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::red), "nullifiedcat\n");
-#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&colors::white), "commit: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE "\n");
-#endif
-}
-
-typedef bool(handlevent_t)(IMatSystemSurface* thisptr, const InputEvent_t& event);
-bool test_handleevent(IMatSystemSurface* thisptr, const InputEvent_t& event) {
-
+	int white = colors::white, blu = colors::blu, red = colors::red;
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "cathook");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&blu), " by ");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&red), "nullifiedcat\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), GetVersion().c_str());
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "\n");
 }
 
 void hack::Initialize() {
@@ -88,21 +107,13 @@ void hack::Initialize() {
 	CreateInterfaces();
 	CDumper dumper;
 	dumper.SaveDump();
-	ClientClass* cc = g_IBaseClient->GetAllClasses();
-	FILE* cd = fopen("/tmp/cathook-classdump.txt", "w");
-	if (cd) {
-		while (cc) {
-			fprintf(cd, "[%d] %s\n", cc->m_ClassID, cc->GetName());
-			cc = cc->m_pNext;
-		}
-		fclose(cd);
-	}
-	if (TF2) g_pClassID = new ClassIDTF2();
-	else if (TF2C) g_pClassID = new ClassIDTF2C();
-	else if (HL2DM) g_pClassID = new ClassIDHL2DM();
-	g_pClassID->Init();
-	colors::Init();
-	if (TF2) {
+	logging::Info("Is TF2? %d", IsTF2());
+	logging::Info("Is TF2C? %d", IsTF2C());
+	logging::Info("Is HL2DM? %d", IsHL2DM());
+	logging::Info("Is CSS? %d", IsCSS());
+	logging::Info("Is TF? %d", IsTF());
+	InitClassTable();
+	IF_GAME (IsTF2()) {
 		uintptr_t mmmf = (gSignatures.GetClientSignature("C7 44 24 04 09 00 00 00 BB ? ? ? ? C7 04 24 00 00 00 00 E8 ? ? ? ? BA ? ? ? ? 85 C0 B8 ? ? ? ? 0F 44 DA") + 37);
 		if (mmmf) {
 			unsigned char patch1[] = { 0x89, 0xD3, 0x90 };
@@ -121,8 +132,10 @@ void hack::Initialize() {
 	g_Settings.Init();
 	EndConVars();
 	draw::Initialize();
+#if NOGUI != 1
 	g_pGUI = new CatGUI();
 	g_pGUI->Setup();
+#endif
 	gNetvars.init();
 	InitNetVars();
 	g_pLocalPlayer = new LocalPlayer();
@@ -140,8 +153,6 @@ void hack::Initialize() {
 	while(!(clientMode = **(uintptr_t***)((uintptr_t)((*(void***)g_IBaseClient)[10]) + 1))) {
 		sleep(1);
 	}
-	logging::Info("SizeOf SkinChanger::CAttribute = %04d", sizeof(hacks::tf2::skinchanger::CAttribute));
-	logging::Info("Sizeof SkinChanger::CAttributeList = %04d", sizeof(hacks::tf2::skinchanger::CAttributeList));
 	hooks::clientmode.Set((void*)clientMode);
 	hooks::clientmode.HookMethod((void*)CreateMove_hook, offsets::CreateMove());
 	hooks::clientmode.HookMethod((void*)OverrideView_hook, offsets::OverrideView());
@@ -175,16 +186,15 @@ void hack::Initialize() {
 	//hooks::hkBaseClientState8->Apply();
 
 	// FIXME [MP]
-	if (TF2) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
+	IF_GAME (IsTF2()) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
 	hacks::shared::killsay::Init();
 	hack::command_stack().push("exec cat_autoexec");
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
-	hack::command_stack().push("cl_software_cursor 1");
 	logging::Info("Hooked!");
 	playerlist::Load();
-	if (TF2 || HL2DM) {
+	if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects) {
 		effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
 		g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
 		effect_chams::g_EffectChams.Init();

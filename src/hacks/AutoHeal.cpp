@@ -45,7 +45,7 @@ int BulletDangerValue(CachedEntity* patient) {
 		if (!ent->m_bEnemy) continue;
 		if (g_pPlayerResource->GetClass(ent) != tf_sniper) continue;
 		if (CE_BYTE(ent, netvar.iLifeState)) continue;
-		if (!HasCondition(ent, TFCond_Zoomed)) continue;
+		if (!HasCondition<TFCond_Zoomed>(ent)) continue;
 		any_zoomed_snipers = true;
 		// TODO VisCheck from patient.
 		if ((int)vacc_sniper == 1)
@@ -73,10 +73,10 @@ int FireDangerValue(CachedEntity* patient) {
 			if (patient->m_vecOrigin.DistTo(ent->m_vecOrigin) > (int)auto_vacc_pyro_range) continue;
 			if ((int)auto_vacc_pop_if_pyro == 2) return 2;
 			IClientEntity* pyro_weapon = g_IEntityList->GetClientEntity(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
-			return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == g_pClassID->CTFFlameThrower) ? 2 : 0;
+			return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == CL_CLASS(CTFFlameThrower)) ? 2 : 0;
 		}
 	}
-	if (HasCondition(patient, TFCond_OnFire)) {
+	if (HasCondition<TFCond_OnFire>(patient)) {
 		return (bool)auto_vacc_check_on_fire;
 	}
 	return 0;
@@ -132,7 +132,7 @@ int BlastDangerValue(CachedEntity* patient) {
 }
 
 int CurrentResistance() {
-	if (LOCAL_W->m_iClassID != g_pClassID->CWeaponMedigun) return 0;
+	if (LOCAL_W->m_iClassID != CL_CLASS(CWeaponMedigun)) return 0;
 	return CE_INT(LOCAL_W, netvar.m_nChargeResistType);
 }
 
@@ -231,7 +231,7 @@ static CatCommand vaccinator_fire("vacc_fire", "Fire Vaccinator", []() {
 
 bool IsPopped() {
 	CachedEntity* weapon = g_pLocalPlayer->weapon();
-	if (CE_BAD(weapon) || weapon->m_iClassID != g_pClassID->CWeaponMedigun) return false;
+	if (CE_BAD(weapon) || weapon->m_iClassID != CL_CLASS(CWeaponMedigun)) return false;
 	return CE_BYTE(weapon, netvar.bChargeRelease);
 }
 
@@ -280,7 +280,7 @@ void CreateMove() {
 		}
 	}
 	if (!enabled && !force_healing_target) return;
-	if (GetWeaponMode(g_pLocalPlayer->entity) != weapon_medigun) return;
+	if (GetWeaponMode() != weapon_medigun) return;
 	if (force_healing_target) {
 		CachedEntity* target = ENTITY(force_healing_target);
 		if (CE_GOOD(target)) {
@@ -363,7 +363,7 @@ int HealingPriority(int idx) {
 	if (!CanHeal(idx)) return -1;
 	CachedEntity* ent = ENTITY(idx);
 	if (share_uber && IsPopped()) {
-		return !HasCondition(ent, TFCond_Ubercharged);
+		return !HasCondition<TFCond_Ubercharged>(ent);
 	}
 
 	int priority = 0;

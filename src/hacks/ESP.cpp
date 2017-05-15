@@ -53,6 +53,7 @@ void ResetEntityStrings() {
 	for (auto& i : data) {
 		i.string_count = 0;
 		i.color = 0;
+		i.needs_paint = false;
 	}
 }
 
@@ -65,14 +66,18 @@ void AddEntityString(CachedEntity* entity, const std::string& string, int color)
 	entity_data.strings[entity_data.string_count].data = string;
 	entity_data.strings[entity_data.string_count].color = color;
 	entity_data.string_count++;
+	entity_data.needs_paint = true;
 }
 
+std::vector<int> entities_need_repaint {};
+
 void CreateMove() {
-	static int limit;
+	int limit;
 	static int max_clients = g_IEngine->GetMaxClients();
-	static CachedEntity* ent;
+	CachedEntity* ent;
 
 	ResetEntityStrings();
+	entities_need_repaint.clear();
 	limit = HIGHEST_ENTITY;
 	if (!buildings && !proj_esp && !item_esp) limit = min(max_clients, HIGHEST_ENTITY);
 	for (int i = 0; i < limit; i++) {
@@ -84,15 +89,12 @@ void CreateMove() {
 				AddEntityString(ent, format((int)(ENTITY(i)->m_flDistance / 64 * 1.22f), 'm'));
 			}
 		}
+		if (data[ent->m_IDX].needs_paint) entities_need_repaint.push_back(ent->m_IDX);
 	}
 }
 
 void Draw() {
-	static int limit;
-	static int max_clients = g_IEngine->GetMaxClients();
-	limit = HIGHEST_ENTITY;
-	if (!buildings && !proj_esp && !item_esp) limit = min(max_clients, HIGHEST_ENTITY);
-	for (int i = 0; i < limit; i++) {
+	for (auto& i : entities_need_repaint) {
 		ProcessEntityPT(ENTITY(i));
 	}
 }
@@ -109,13 +111,14 @@ static CatVar esp_3d_box_nodraw(CV_SWITCH, "esp_3d_box_nodraw", "0", "Invisible 
 static CatVar esp_3d_box_healthbar(CV_SWITCH, "esp_3d_box_healthbar", "1", "Health bar", "Adds a health bar to the esp");
 
 void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healthmax) {
-	static Vector mins, maxs;
-	static Vector points_r[8];
-	static Vector points[8];
-	static bool set, success, cloak;
-	static float x, y, z;
-	static int hbh, max_x, max_y, min_x, min_y;
-	static CachedHitbox* hb;
+	PROF_SECTION(PT_esp_draw3dbox);
+	Vector mins, maxs;
+	Vector points_r[8];
+	Vector points[8];
+	bool set, success, cloak;
+	float x, y, z;
+	int hbh, max_x, max_y, min_x, min_y;
+	CachedHitbox* hb;
 
 	set = false;
 	success = true;
@@ -202,7 +205,7 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	};
 
 	if (esp_3d_box_health) clr = colors::Health(health, healthmax);
-	cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
+	cloak = ent->m_Type == ENTITY_PLAYER && IsPlayerInvisible(ent);
 	if (cloak) clr = colors::Transparent(clr, 0.2);
 	if (esp_3d_box_healthbar) {
 		draw::OutlineRect(min_x - 6, min_y, 6, max_y - min_y, colors::black);
@@ -227,16 +230,17 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 static CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "Don't draw 2D box");
 static CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
 
-void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
-	static Vector min, max, origin, so, omin, omax, smin, smax;
-	static float height, width, trf;
-	static bool cloak;
-	static int min_x, min_y, max_x, max_y, border, hp, hbh;
-	static unsigned char alpha;
+void _FASTCALL DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax) {
+	PROF_SECTION(PT_esp_drawbox);
+	Vector min, max, origin, so, omin, omax, smin, smax;
+	float height, width, trf;
+	bool cloak;
+	int min_x, min_y, max_x, max_y, border, hp, hbh;
+	unsigned char alpha;
 
 	if (CE_BAD(ent)) return;
 
-	cloak = ent->m_iClassID == g_pClassID->C_Player && IsPlayerInvisible(ent);
+	cloak = ent->m_iClassID == RCC_PLAYER && IsPlayerInvisible(ent);
 	RAW_ENT(ent)->GetRenderBounds(min, max);
 	origin = RAW_ENT(ent)->GetAbsOrigin();
 	draw::WorldToScreen(origin, so);
@@ -303,17 +307,19 @@ void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, boo
 	}
 }
 
-void ProcessEntity(CachedEntity* ent) {
-	static const model_t* model;
-	static int string_count_backup, level, pclass;
-	static bool shown;
-	static player_info_s info;
-	static powerup_type power;
-	static CachedEntity* weapon;
-	static const char* weapon_name;
+void _FASTCALL ProcessEntity(CachedEntity* ent) {
+	const model_t* model;
+	int string_count_backup, level, pclass;
+	bool shown;
+	player_info_s info;
+	powerup_type power;
+	CachedEntity* weapon;
+	const char* weapon_name;
 
 	if (!enabled) return;
 	if (CE_BAD(ent)) return;
+
+	ESPData& espdata = data[ent->m_IDX];
 
 	if (entity_info) {
 		AddEntityString(ent, format(RAW_ENT(ent)->GetClientClass()->m_pNetworkName, " [", ent->m_iClassID, "]"));
@@ -327,13 +333,13 @@ void ProcessEntity(CachedEntity* ent) {
 	}
 
 	if (ent->m_Type == ENTITY_PROJECTILE && proj_esp && (ent->m_bEnemy || (teammates && !proj_enemy))) {
-		if (ent->m_iClassID == g_pClassID->CTFProjectile_Rocket || ent->m_iClassID ==  g_pClassID->CTFProjectile_SentryRocket) {
+		if (ent->m_iClassID == CL_CLASS(CTFProjectile_Rocket) || ent->m_iClassID ==  CL_CLASS(CTFProjectile_SentryRocket)) {
 			if (proj_rockets) {
 				if ((int)proj_rockets != 2 || ent->m_bCritProjectile) {
 					AddEntityString(ent, "[ ==> ]");
 				}
 			}
-		} else if (ent->m_iClassID == g_pClassID->CTFGrenadePipebombProjectile) {
+		} else if (ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile)) {
 			switch (CE_INT(ent, netvar.iPipeType)) {
 			case 0:
 				if (!proj_pipes) break;
@@ -345,28 +351,28 @@ void ProcessEntity(CachedEntity* ent) {
 				if ((int)proj_stickies == 2 && !ent->m_bCritProjectile) break;
 				AddEntityString(ent, "[ {*} ]");
 			}
-		} else if (ent->m_iClassID == g_pClassID->CTFProjectile_Arrow) {
+		} else if (ent->m_iClassID == CL_CLASS(CTFProjectile_Arrow)) {
 			if ((int)proj_arrows != 2 || ent->m_bCritProjectile) {
 				AddEntityString(ent, "[ >>---> ]");
 			}
 		}
 	}
 
-	if (HL2DM) {
+	IF_GAME (IsHL2DM()) {
 		if (item_esp && item_dropped_weapons) {
 			if (CE_BYTE(ent, netvar.hOwner) == (unsigned char)-1) {
 				string_count_backup = data[ent->m_IDX].string_count;
-				if (ent->m_iClassID == g_pClassID->CWeapon_SLAM) AddEntityString(ent, "SLAM");
-				else if (ent->m_iClassID == g_pClassID->CWeapon357) AddEntityString(ent, ".357");
-				else if (ent->m_iClassID == g_pClassID->CWeaponAR2) AddEntityString(ent, "AR2");
-				else if (ent->m_iClassID == g_pClassID->CWeaponAlyxGun) AddEntityString(ent, "Alyx Gun");
-				else if (ent->m_iClassID == g_pClassID->CWeaponAnnabelle) AddEntityString(ent, "Annabelle");
-				else if (ent->m_iClassID == g_pClassID->CWeaponBinoculars) AddEntityString(ent, "Binoculars");
-				else if (ent->m_iClassID == g_pClassID->CWeaponBugBait) AddEntityString(ent, "Bug Bait");
-				else if (ent->m_iClassID == g_pClassID->CWeaponCrossbow) AddEntityString(ent, "Crossbow");
-				else if (ent->m_iClassID == g_pClassID->CWeaponShotgun) AddEntityString(ent, "Shotgun");
-				else if (ent->m_iClassID == g_pClassID->CWeaponSMG1) AddEntityString(ent, "SMG");
-				else if (ent->m_iClassID == g_pClassID->CWeaponRPG) AddEntityString(ent, "RPG");
+				if (ent->m_iClassID == CL_CLASS(CWeapon_SLAM)) AddEntityString(ent, "SLAM");
+				else if (ent->m_iClassID == CL_CLASS(CWeapon357)) AddEntityString(ent, ".357");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponAR2)) AddEntityString(ent, "AR2");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponAlyxGun)) AddEntityString(ent, "Alyx Gun");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponAnnabelle)) AddEntityString(ent, "Annabelle");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponBinoculars)) AddEntityString(ent, "Binoculars");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponBugBait)) AddEntityString(ent, "Bug Bait");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponCrossbow)) AddEntityString(ent, "Crossbow");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponShotgun)) AddEntityString(ent, "Shotgun");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponSMG1)) AddEntityString(ent, "SMG");
+				else if (ent->m_iClassID == CL_CLASS(CWeaponRPG)) AddEntityString(ent, "RPG");
 				if (string_count_backup != data[ent->m_IDX].string_count) {
 					SetEntityColor(ent, colors::yellow);
 				}
@@ -374,11 +380,11 @@ void ProcessEntity(CachedEntity* ent) {
 		}
 	}
 
-	if (ent->m_iClassID == g_pClassID->CTFTankBoss && tank) {
+	if (ent->m_iClassID == CL_CLASS(CTFTankBoss) && tank) {
 		AddEntityString(ent, "Tank");
-	} else if (ent->m_iClassID == g_pClassID->CTFDroppedWeapon && item_esp && item_dropped_weapons) {
+	} else if (ent->m_iClassID == CL_CLASS(CTFDroppedWeapon) && item_esp && item_dropped_weapons) {
 		AddEntityString(ent, format("WEAPON ", RAW_ENT(ent)->GetClientClass()->GetName()));
-	} else if (ent->m_iClassID == g_pClassID->CCurrencyPack && item_money) {
+	} else if (ent->m_iClassID == CL_CLASS(CCurrencyPack) && item_money) {
 		if (CE_BYTE(ent, netvar.bDistributed)) {
 			if (item_money_red) {
 				AddEntityString(ent, "~$~");
@@ -408,7 +414,7 @@ void ProcessEntity(CachedEntity* ent) {
 	} else if (ent->m_Type == ENTITY_BUILDING && buildings) {
 		if (!ent->m_bEnemy && !teammates) return;
 		level = CE_INT(ent, netvar.iUpgradeLevel);
-		const std::string& name = (ent->m_iClassID == g_pClassID->CObjectTeleporter ? "Teleporter" : (ent->m_iClassID == g_pClassID->CObjectSentrygun ? "Sentry Gun" : "Dispenser"));
+		const std::string& name = (ent->m_iClassID == CL_CLASS(CObjectTeleporter) ? "Teleporter" : (ent->m_iClassID == CL_CLASS(CObjectSentrygun) ? "Sentry Gun" : "Dispenser"));
 		if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
 			/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
 				return;
@@ -418,6 +424,7 @@ void ProcessEntity(CachedEntity* ent) {
 		if (show_health) {
 			AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 		}
+		espdata.needs_paint = true;
 		return;
 	} else if (ent->m_Type == ENTITY_PLAYER && ent->m_bAlivePlayer) {
 		if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
@@ -457,21 +464,29 @@ void ProcessEntity(CachedEntity* ent) {
 			if (show_health) {
 				AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 			}
-			if (show_conditions && TF) {
-				if (IsPlayerInvisible(ent)) {
-					AddEntityString(ent, "INVISIBLE");
-				}
-				if (IsPlayerInvulnerable(ent)) {
-					AddEntityString(ent, "INVULNERABLE");
-				}
-				if (HasCondition(ent, TFCond_UberBulletResist)) {
-					AddEntityString(ent, "VACCINATOR ACTIVE");
-				}
-				if (HasCondition(ent, TFCond_SmallBulletResist)) {
-					AddEntityString(ent, "VACCINATOR PASSIVE");
-				}
-				if (IsPlayerCritBoosted(ent)) {
-					AddEntityString(ent, "CRIT BOOSTED");
+			IF_GAME (IsTF()) {
+				if (show_conditions) {
+					if (IsPlayerInvisible(ent)) {
+						AddEntityString(ent, "INVISIBLE");
+					}
+					if (IsPlayerInvulnerable(ent)) {
+						AddEntityString(ent, "INVULNERABLE");
+					}
+					if (HasCondition<TFCond_UberBulletResist>(ent)) {
+						AddEntityString(ent, "VACCINATOR ACTIVE");
+					}
+					if (HasCondition<TFCond_SmallBulletResist>(ent)) {
+						AddEntityString(ent, "VACCINATOR PASSIVE");
+					}
+					if (IsPlayerCritBoosted(ent)) {
+						AddEntityString(ent, "CRIT BOOSTED");
+					}
+					if (HasCondition<TFCond_Zoomed>(ent)) {
+						AddEntityString(ent, "*ZOOMING*");
+					}
+					if (HasCondition<TFCond_Slowed>(ent)) {
+						AddEntityString(ent, "*SLOWED*");
+					};
 				}
 			}
 			if (IsHoovy(ent)) AddEntityString(ent, "Hoovy");
@@ -482,6 +497,7 @@ void ProcessEntity(CachedEntity* ent) {
 					if (weapon_name) AddEntityString(ent, std::string(weapon_name));
 				}
 			}
+			espdata.needs_paint = true;
 		}
 		return;
 	}
@@ -490,19 +506,23 @@ void ProcessEntity(CachedEntity* ent) {
 static CatVar esp_3d_box(CV_SWITCH, "esp_3d_box", "0", "3D box");
 static CatVar box_healthbar(CV_SWITCH, "esp_box_healthbar", "1", "Box Healthbar");
 
-void ProcessEntityPT(CachedEntity* ent) {
-	static int fg, color;
-	static bool transparent, cloak, origin_is_zero;
-	static Vector screen, origin_screen, draw_point;
+/*
+ * According to profiler, this function is the most time-consuming (and gets called up to 200K times a second)
+ */
 
-	if (!enabled) return;
+void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
+	PROF_SECTION(PT_esp_process_entity);
+
+	int fg, color;
+	bool transparent, cloak, origin_is_zero;
+	Vector screen, origin_screen, draw_point;
+
 	if (CE_BAD(ent)) return;
-
 
 	transparent = false;
 
-	if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
-		ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
+	//if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
+	//	ent->m_IDX == g_IEngine->GetLocalPlayer()) return;
 
 	const ESPData& ent_data = data[ent->m_IDX];
 	fg = ent_data.color;
@@ -513,15 +533,8 @@ void ProcessEntityPT(CachedEntity* ent) {
 		switch (ent->m_Type) {
 		case ENTITY_PLAYER: {
 			cloak = IsPlayerInvisible(ent);
-			if (legit && ent->m_iTeam != g_pLocalPlayer->team && playerlist::IsDefault(ent)) {
-				if (cloak) return;
-				/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
-					return;
-				}*/
-			}
-
-			if (!ent->m_bEnemy && !teammates && playerlist::IsDefault(ent)) break;
-			if (!ent->m_bAlivePlayer) break;
+			//if (!ent->m_bEnemy && !teammates && playerlist::IsDefault(ent)) break;
+			//if (!ent->m_bAlivePlayer) break;
 			if (vischeck && !ent->IsVisible()) transparent = true;
 			if (!fg) fg = colors::EntityF(ent);
 			if (transparent) fg = colors::Transparent(fg);
@@ -533,11 +546,6 @@ void ProcessEntityPT(CachedEntity* ent) {
 		break;
 		}
 		case ENTITY_BUILDING: {
-			if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
-				/*if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
-					return;
-				}*/
-			}
 			if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
 			if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
 			if (!fg) fg = colors::EntityF(ent);
@@ -553,6 +561,7 @@ void ProcessEntityPT(CachedEntity* ent) {
 	}
 
 	if (ent_data.string_count) {
+		PROF_SECTION(PT_esp_drawstrings);
 		origin_is_zero = !box_esp || ent_data.esp_origin.IsZero(1.0f);
 		if (vischeck && !ent->IsVisible()) transparent = true;
 		draw_point = origin_is_zero ? screen : ent_data.esp_origin;

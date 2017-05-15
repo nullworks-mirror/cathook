@@ -41,5 +41,6 @@ extern CGlowObjectManager* g_GlowObjectManager;
 bool CanEntityEvenGlow(int idx);
 int GetEntityGlowColor(int idx);
 bool ShouldEntityGlow(int idx);
+void GlowFrameStageNotify(int stage);
 
 #endif /* GLOWOBJECTS_H_ */

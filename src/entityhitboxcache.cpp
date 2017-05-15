@@ -37,9 +37,9 @@ void EntityHitboxCache::Update() {
 }
 
 void EntityHitboxCache::Init() {
-	static model_t *model;
-	static studiohdr_t *shdr;
-	static mstudiohitboxset_t *set;
+	model_t *model;
+	studiohdr_t *shdr;
+	mstudiohitboxset_t *set;
 
 	m_bInit = true;
 	model = 0;
@@ -64,7 +64,7 @@ void EntityHitboxCache::Init() {
 }
 
 bool EntityHitboxCache::VisibilityCheck(int id) {
-	static CachedHitbox *hitbox;
+	CachedHitbox *hitbox;
 
 	if (!m_bInit) Init();
 	if (id < 0 || id >= m_nNumHitboxes) return 0;
@@ -92,7 +92,7 @@ void EntityHitboxCache::Reset() {
 }
 
 CachedHitbox* EntityHitboxCache::GetHitbox(int id) {
-	static mstudiobbox_t *box;
+	mstudiobbox_t *box;
 
 	if (!m_bInit) Init();
 	if (id < 0 || id >= m_nNumHitboxes) return 0;

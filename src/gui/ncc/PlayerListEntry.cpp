@@ -39,7 +39,7 @@ void PlayerListEntry::Update() {
 				}
 				name->text = format(safename);
 				int iclazz = 0;
-				if (TF) iclazz = g_pPlayerResource->GetClass(ENTITY(idx));
+				IF_GAME (IsTF()) iclazz = g_pPlayerResource->GetClass(ENTITY(idx));
 				int team = g_pPlayerResource->GetTeam(idx);
 				clazz->color_bg = 0;
 				if (idx != g_IEngine->GetLocalPlayer()) {

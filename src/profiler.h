@@ -17,16 +17,18 @@ class ProfilerNode;
 
 class ProfilerSection {
 public:
-	ProfilerSection(std::string name);
+	ProfilerSection(std::string name, ProfilerSection* parent = nullptr);
 
 	void OnNodeDeath(ProfilerNode& node);
 
 	std::chrono::nanoseconds m_min;
 	std::chrono::nanoseconds m_max;
 	std::chrono::nanoseconds m_sum;
+	unsigned m_spewcount;
 	unsigned m_calls;
 	std::chrono::time_point<std::chrono::high_resolution_clock> m_log;
 	std::string m_name;
+	ProfilerSection* m_parent;
 };
 
 class ProfilerNode {

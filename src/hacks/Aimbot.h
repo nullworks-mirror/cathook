@@ -90,6 +90,7 @@ const Vector& PredictEntity(CachedEntity* entity);
 bool VischeckPredictedEntity(CachedEntity* entity);
 
 void CreateMove();
+void PaintTraverse();
 void Reset();
 
 extern EAimbotState state;

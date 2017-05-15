@@ -19,6 +19,7 @@
 
 
 #include "beforecheaders.h"
+#include <emmintrin.h>
 #include <vector>
 #include <bitset>
 #include <string>
@@ -35,6 +36,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include "aftercheaders.h"
+#include "profiler.h"
 #include "offsets.hpp"
 #include "drawing.h"
 #include "resource.hpp"
@@ -47,6 +49,7 @@
 #include "interfaces.h"
 #include "EffectGlow.hpp"
 #include "localplayer.h"
+#include "conditions.h"
 #include "logging.h"
 #include "playerresource.h"
 #include "usercmd.h"
@@ -62,10 +65,13 @@
 #include "textfile.h"
 #include "EffectChams.hpp"
 #include "ipc.h"
-#include "gui/GUI.h"
 #include "hooks/hookedmethods.h"
-#include "classid.h"
+#include "classinfo/classinfo.hpp"
 #include "crits.h"
+
+#if NOGUI != 1
+#include "gui/GUI.h"
+#endif
 
 #include "hacks/hacklist.h"
 #include "glowobjects.h"
@@ -77,10 +83,10 @@ constexpr T _clamp(T _min, T _max, T _val) {
 	return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
 }
 
-#define TF2C (g_AppID == 243750)
-#define TF2  (g_AppID == 440)
-#define TF (TF2C || TF2)
-#define HL2DM (g_AppID == 320)
+#define _FASTCALL __attribute__((fastcall))
+#define STRINGIFY(x) #x
+
+#include "gameinfo.hpp"
 
 #define SQR(x) x * x
 
@@ -139,11 +145,6 @@ constexpr T _clamp(T _min, T _max, T _val) {
 
 #endif
 
-#define GET_RENDER_CONTEXT (TF2 ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
-/*#define ADD_HACK(x) \
-	hack::AddHack(g_ph##x = new x());
-
-#define CREATE_MOVE(x) \
-	g_ph##x->CreateMove(thisptr, inputSample, cmd)*/
+#define GET_RENDER_CONTEXT (IsTF2() ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
 
 #endif /* COMMON_H_ */

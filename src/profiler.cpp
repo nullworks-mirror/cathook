@@ -6,16 +6,23 @@
  */
 
 #include "profiler.h"
-
+#include "cvwrapper.h"
 #include "logging.h"
 
-ProfilerSection::ProfilerSection(std::string name) {
+unsigned g_spewcount { 0 };
+
+static CatCommand profiler_begin("profiler_spew", "Spew and reset", []() {
+	g_spewcount++;
+});
+
+ProfilerSection::ProfilerSection(std::string name, ProfilerSection* parent) {
 	m_name = name;
 	m_calls = 0;
 	m_log = std::chrono::high_resolution_clock::now();
 	m_min = std::chrono::nanoseconds::zero();
 	m_max = std::chrono::nanoseconds::zero();
 	m_sum = std::chrono::nanoseconds::zero();
+	m_parent = parent;
 }
 
 void ProfilerSection::OnNodeDeath(ProfilerNode& node) {
@@ -28,16 +35,19 @@ void ProfilerSection::OnNodeDeath(ProfilerNode& node) {
 	m_sum += dur;
 	m_calls++;
 
-	if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - m_log).count() > 3) {
-		logging::Info("[P] stats for '%-32s': MIN{%12llu} MAX{%12llu} AVG{%12llu}", m_name.c_str(),
-			std::chrono::duration_cast<std::chrono::nanoseconds>(m_min).count(),
-			std::chrono::duration_cast<std::chrono::nanoseconds>(m_max).count(),
-			std::chrono::duration_cast<std::chrono::nanoseconds>(m_sum).count() / (m_calls ? m_calls : 1));
+	if (g_spewcount > m_spewcount) {
+		logging::Info("[P],'%-32s',%12llu,%12llu,%12llu,%12llu,%u", m_name.c_str(),
+				std::chrono::duration_cast<std::chrono::nanoseconds>(m_sum).count(),
+				std::chrono::duration_cast<std::chrono::nanoseconds>(m_sum).count() / (m_calls ? m_calls : 1),
+				std::chrono::duration_cast<std::chrono::nanoseconds>(m_min).count(),
+				std::chrono::duration_cast<std::chrono::nanoseconds>(m_max).count(),
+				m_calls);
 		m_log = std::chrono::high_resolution_clock::now();
 		m_min = std::chrono::nanoseconds::zero();
 		m_max = std::chrono::nanoseconds::zero();
 		m_sum = std::chrono::nanoseconds::zero();
 		m_calls = 0;
+		m_spewcount = g_spewcount;
 	}
 }
 

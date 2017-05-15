@@ -29,13 +29,13 @@ static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab", "Does not
 void CreateMove() {
 	// lmao thanks valve
 	if (!enabled) return;
-	if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife) return;
+	if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife)) return;
 	if (CE_BYTE(g_pLocalPlayer->weapon(), netvar.m_bReadyToBackstab)) {
 		g_pUserCmd->buttons |= IN_ATTACK;
 		return;
 	}
 
-	/*if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFKnife) return;
+	/*if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife)) return;
 	for (int i = 1; i < g_IEntityList->GetHighestEntityIndex() && i < 32; i++) {
 		CachedEntity* ent = ENTITY(i);
 		if (CE_BAD(ent)) continue;

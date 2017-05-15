@@ -15,7 +15,6 @@
 #include <cmath>
 
 #include "../aftercheaders.h"
-#include "../classid.h"
 #include "../common.h"
 #include "../conditions.h"
 #include "../crits.h"
@@ -104,6 +103,8 @@ static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automa
 static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nDoesn't work with Silent or Anti-aim");
 static CatVar slowaim_smoothing(CV_INT, "aimbot_slow_smooth", "10", "Slow Aim Smooth", "How slow the slow aim's aiming should be", 50);
 static CatVar slowaim_autoshoot(CV_INT, "aimbot_slow_autoshoot", "10", "Slow Aim Threshhold", "Distance to autoshoot while smooth aiming", 25);
+static CatVar aimbot_debug(CV_SWITCH, "aimbot_debug", "0", "Aimbot Debug", "Print some internal state info for aimbot");
+
 bool slowCanShoot = false;
 /*//Salting vars that need to be saved due to them being time based
 static CatVar slowaim_salting(CV_SWITCH, "aimbot_slow_salt", "1", "Slow Aim Smooth", "Makes the slowaim more random", 5);
@@ -119,9 +120,11 @@ CachedEntity* CurrentTarget() {
 }
 
 int ClosestHitbox(CachedEntity* target) {
+	PROF_SECTION(CM_aimbot_closesthitbox);
+
 	// FIXME this will break multithreading if it will be ever implemented. When implementing it, these should be made non-static
-	static int closest;
-	static float closest_fov, fov;
+	int closest;
+	float closest_fov, fov;
 
 	//If you can see the spine, no need to check for another hitbox
     if ((int)hitbox_mode == 0) {
@@ -139,12 +142,14 @@ int ClosestHitbox(CachedEntity* target) {
 	return closest;
 }
 
+static EAimbotLocalState local_state_last;
+
 void CreateMove() {
-	static EAimbotLocalState local_state;
-	static float target_highest_score, scr, begincharge, charge;
-	static CachedEntity* ent;
-	static EAimbotTargetState tg;
-	static int huntsman_ticks = 0;
+	EAimbotLocalState local_state;
+	float target_highest_score, scr, begincharge, charge;
+	CachedEntity* ent;
+	EAimbotTargetState tg;
+	int huntsman_ticks = 0;
 
 	target_highest = 0;
 	if (!enabled) {
@@ -155,6 +160,10 @@ void CreateMove() {
 	}
 
 	local_state = ShouldAim();
+
+	if (aimbot_debug) {
+		local_state_last = local_state;
+	}
 
 	if (local_state != EAimbotLocalState::GOOD) {
 		state = EAimbotState::INACTIVE;
@@ -171,49 +180,53 @@ void CreateMove() {
 		cur_proj_grav = (float)proj_gravity;
 	// TODO priority modes (FOV, Smart, Distance, etc)
 	target_highest_score = -256;
-	for (int i = 0; i < HIGHEST_ENTITY; i++) {
-		ent = ENTITY(i);
-		if (CE_BAD(ent)) continue;
-		tg = TargetState(ent);
-		if (tg == EAimbotTargetState::GOOD) {
-			if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_melee || (int)priority_mode == 2) {
-				scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
-				if (scr > target_highest_score) {
-					target_highest_score = scr;
-					target_highest = ent;
+	{
+		PROF_SECTION(CM_aimbot_finding_target);
+		for (int i = 0; i < HIGHEST_ENTITY; i++) {
+			ent = ENTITY(i);
+			if (CE_BAD(ent)) continue;
+			tg = TargetState(ent);
+			if (tg == EAimbotTargetState::GOOD) {
+				if (GetWeaponMode() == weaponmode::weapon_melee || (int)priority_mode == 2) {
+					scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
+					if (scr > target_highest_score) {
+						target_highest_score = scr;
+						target_highest = ent;
+					}
+				} else {
+					switch ((int)priority_mode) {
+					case 0: {
+						scr = GetScoreForEntity(ent);
+						if (scr > target_highest_score) {
+							target_highest_score = scr;
+							target_highest = ent;
+						}
+					} break;
+					case 1: {
+						scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
+						if (scr > target_highest_score) {
+							target_highest_score = scr;
+							target_highest = ent;
+						}
+					} break;
+					case 3: {
+						scr = 450.0f - ent->m_iHealth;
+						if (scr > target_highest_score) {
+							target_highest_score = scr;
+							target_highest = ent;
+						}
+					}
+					}
 				}
 			} else {
-				switch ((int)priority_mode) {
-				case 0: {
-					scr = GetScoreForEntity(ent);
-					if (scr > target_highest_score) {
-						target_highest_score = scr;
-						target_highest = ent;
-					}
-				} break;
-				case 1: {
-					scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
-					if (scr > target_highest_score) {
-						target_highest_score = scr;
-						target_highest = ent;
-					}
-				} break;
-				case 3: {
-					if (ent->m_Type == ENTITY_BUILDING) {
-						scr = 450.0f - CE_INT(ent, netvar.iBuildingHealth);
-					} else {
-						scr = 450.0f - CE_INT(ent, netvar.iHealth);
-					}
-					if (scr > target_highest_score) {
-						target_highest_score = scr;
-						target_highest = ent;
+				if (aimbot_debug) {
+					if (CE_GOOD(ent)) {
+						hacks::shared::esp::AddEntityString(ent, format("AIMBOT_STATE: ", static_cast<int>(tg)));
 					}
 				}
-				}
+				//if (tg != 26)
+				//	logging::Info("Shouldn't target ent %i %i", ent->m_IDX, tg);
 			}
-		} else {
-			//if (tg != 26)
-			//	logging::Info("Shouldn't target ent %i %i", ent->m_IDX, tg);
 		}
 	}
 	if (huntsman_ticks) {
@@ -225,8 +238,9 @@ void CreateMove() {
 		state = EAimbotState::TARGET_FOUND;
 		hacks::shared::esp::SetEntityColor(target_highest, colors::pink);
 		if (local_state == EAimbotLocalState::GOOD) {
+			PROF_SECTION(CM_aimbot_aiming);
 			last_target = target_highest->m_IDX;
-			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFCompoundBow) { // There is no Huntsman in TF2C.
+			if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow)) { // There is no Huntsman in TF2C.
 				begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
 				charge = 0;
 				if (begincharge != 0) {
@@ -248,7 +262,7 @@ void CreateMove() {
 			} else {
 				Aim(target_highest);
 			}
-			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun)
+			if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun))
 				minigun_fix_ticks = 40;
 		}
 	}
@@ -256,7 +270,7 @@ void CreateMove() {
 		minigun_fix_ticks--;
 		g_pUserCmd->buttons |= IN_ATTACK;
 	}
-	if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun &&
+	if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun) &&
 			target_highest == 0 &&
 			IDX_GOOD(last_target) &&
 			minigun_fix_ticks && (local_state == EAimbotLocalState::GOOD)) {
@@ -299,19 +313,19 @@ bool VischeckPredictedEntity(CachedEntity* entity) {
 	AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
 	if (cd.vcheck_tick == tickcount) return cd.visible;
 	cd.vcheck_tick = tickcount;
-	if (entity->m_Type == ENTITY_PLAYER)
-		cd.visible = IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity));
-	else
+	//if (entity->m_Type == ENTITY_PLAYER)
+	//	cd.visible = IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity));
+	//else
 		cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
 	return cd.visible;
 }
 
 EAimbotTargetState TargetState(CachedEntity* entity) {
-	static float bdmg;
-	static weaponmode mode;
-	static Vector resultAim;
-	static int hitbox;
-	static int team;
+	float bdmg;
+	weaponmode mode;
+	Vector resultAim;
+	int hitbox;
+	int team;
 
 	if (entity->m_Type == ENTITY_PLAYER) {
 		if (entity == LOCAL_E) return EAimbotTargetState::LOCAL;
@@ -320,7 +334,7 @@ EAimbotTargetState TargetState(CachedEntity* entity) {
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > EffectiveTargetingRange()) return EAimbotTargetState::OUT_OF_RANGE;
 		}
-		if (TF) {
+		IF_GAME (IsTF()) {
 			if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle) {
 				bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
 				if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f) bdmg = 50.0f;
@@ -328,16 +342,18 @@ EAimbotTargetState TargetState(CachedEntity* entity) {
 					return EAimbotTargetState::NOT_ENOUGH_CHARGE;
 				}
 			}
-			if (ignore_taunting && HasCondition(entity, TFCond_Taunting)) return EAimbotTargetState::TAUNTING;
+			if (ignore_taunting && HasCondition<TFCond_Taunting>(entity)) return EAimbotTargetState::TAUNTING;
 			if (IsPlayerInvulnerable(entity)) return EAimbotTargetState::INVULNERABLE;
 			if (respect_cloak && IsPlayerInvisible(entity)) return EAimbotTargetState::INVISIBLE;
-			mode = GetWeaponMode(LOCAL_E);
-			if (mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == g_pClassID->CTFCompoundBow)
-				if (respect_vaccinator && HasCondition(entity, TFCond_UberBulletResist)) return EAimbotTargetState::VACCINATED;
+			mode = GetWeaponMode();
+			if (mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == CL_CLASS(CTFCompoundBow))
+				if (respect_vaccinator && HasCondition<TFCond_UberBulletResist>(entity)) return EAimbotTargetState::VACCINATED;
 		}
 		if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return EAimbotTargetState::FRIENDLY;
-		if (TF && ignore_hoovy) {
-			if (IsHoovy(entity)) return EAimbotTargetState::HOOVY;
+		IF_GAME (IsTF()) {
+			if (ignore_hoovy && IsHoovy(entity)) {
+				return EAimbotTargetState::HOOVY;
+			}
 		}
 		hitbox = BestHitbox(entity);
 		AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
@@ -458,10 +474,10 @@ void slowAim(Vector &inputAngle, Vector userAngle) {
 }
 
 bool Aim(CachedEntity* entity) {
-	static Vector angles, tr;
-	static int hitbox, weapon_class;
-	static bool attack;
-	static int forbiddenWeapons[] = { g_pClassID->CTFCompoundBow, g_pClassID->CTFKnife };
+	Vector angles, tr;
+	int hitbox, weapon_class;
+	bool attack;
+	static int forbiddenWeapons[] = { CL_CLASS(CTFCompoundBow), CL_CLASS(CTFKnife) };
 
 	state = EAimbotState::AIMING;
 	if (CE_BAD(entity)) return false;
@@ -489,11 +505,14 @@ bool Aim(CachedEntity* entity) {
 		g_pLocalPlayer->bUseSilentAngles = true;
 	}
 	if (autoshoot) {
-		if (g_pLocalPlayer->clazz == tf_class::tf_sniper) {
-			if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifle || g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
-				if (zoomed_only && !CanHeadshot()) return true;
+		IF_GAME (IsTF()) {
+			if (g_pLocalPlayer->clazz == tf_class::tf_sniper) {
+				if (g_pLocalPlayer->holding_sniper_rifle) {
+					if (zoomed_only && !CanHeadshot()) return true;
+				}
 			}
 		}
+
 		// Don't autoshoot with the knife!
 		weapon_class = g_pLocalPlayer->weapon()->m_iClassID;
 		attack = true;
@@ -511,12 +530,13 @@ bool Aim(CachedEntity* entity) {
         }
         
         //Tell reset conds to function
-		if (instant_rezoom_enabled) {
-			if (attack && g_pLocalPlayer->bZoomed && !instant_rezoom_shoot) {
-				instant_rezoom_shoot = true;
+        IF_GAME (IsTF()) {
+        	if (instant_rezoom_enabled) {
+				if (attack && g_pLocalPlayer->bZoomed && !instant_rezoom_shoot) {
+					instant_rezoom_shoot = true;
+				}
 			}
-		}
-        
+        }
 	}
 	return true;
 }
@@ -544,7 +564,7 @@ void UpdateAutoShootTimer() {
 bool UpdateAimkey() {
 	static bool aimkey_flip = false;
 	static bool pressed_last_tick = false;
-	static bool key_down;
+	bool key_down;
 	if (aimkey && aimkey_mode) {
 		key_down = g_IInputSystem->IsButtonDown((ButtonCode_t)(int)aimkey);
 		switch (static_cast<EAimKeyMode>((int)aimkey_mode)) {
@@ -571,7 +591,7 @@ bool UpdateAimkey() {
 
 
 float EffectiveTargetingRange() {
-	if (GetWeaponMode(g_pLocalPlayer->weapon()) == weapon_melee) {
+	if (GetWeaponMode() == weapon_melee) {
 		return 100.0f;
 	}
 	return (float)max_range;
@@ -582,8 +602,10 @@ float EffectiveShootingRange() {
 }
 
 EAimbotLocalState ShouldAim() {
-	static bool do_minigun_checks;
-	static int weapon_state;
+	PROF_SECTION(CM_aimbot_calc_localstate);
+
+	bool do_minigun_checks;
+	int weapon_state;
 	// Checks should be in order: cheap -> expensive
 	if (attack_only && !(g_pUserCmd->buttons & IN_ATTACK)) {
 		return EAimbotLocalState::NOT_ATTACKING;
@@ -591,133 +613,155 @@ EAimbotLocalState ShouldAim() {
 	if (g_pUserCmd->buttons & IN_USE) return EAimbotLocalState::USE_BUTTON;
 	if (g_pLocalPlayer->using_action_slot_item) return EAimbotLocalState::ACTION_SLOT_ITEM;
 	if (!UpdateAimkey()) return EAimbotLocalState::AIMKEY_RELEASED;
-	if (TF2) {
+	IF_GAME (IsTF2()) {
 		if (CE_BYTE(g_pLocalPlayer->entity, netvar.m_bCarryingObject)) return EAimbotLocalState::CARRYING_BUILDING;
 		if (CE_BYTE(g_pLocalPlayer->entity, netvar.m_bFeignDeathReady)) return EAimbotLocalState::DEAD_RINGER_OUT;
 		if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle) {
 			if (!g_pLocalPlayer->bZoomed && !(g_pUserCmd->buttons & IN_ATTACK)) return EAimbotLocalState::NOT_ZOOMED;
 		}
-		if (HasCondition(g_pLocalPlayer->entity, TFCond_Taunting)) return EAimbotLocalState::TAUNTING;
+		if (HasCondition<TFCond_Taunting>(g_pLocalPlayer->entity)) return EAimbotLocalState::TAUNTING;
 		if (IsPlayerInvisible(g_pLocalPlayer->entity)) return EAimbotLocalState::CLOAKED;
-		if (g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFPipebombLauncher) return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
+		if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPipebombLauncher)) return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
 	}
 	if (only_can_shoot) {
 		// Miniguns should shoot and aim continiously. TODO smg
-		if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFMinigun) {
+		if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFMinigun)) {
 			// Melees are weird, they should aim continiously like miniguns too.
-			if (GetWeaponMode(g_pLocalPlayer->entity) != weaponmode::weapon_melee) {
+			if (GetWeaponMode() != weaponmode::weapon_melee) {
 				// Finally, CanShoot() check.
 				if (!CanShoot()) return EAimbotLocalState::CANT_SHOOT;
 			}
 		}
 	}
-	switch (GetWeaponMode(g_pLocalPlayer->entity)) {
-	case weapon_hitscan:
-	case weapon_melee:
-		break;
-	case weapon_projectile:
-		if (!projectile_aimbot) return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
-		break;
-	default:
-		return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
-	};
-	if (TF && g_pLocalPlayer->bZoomed) {
-		if (!(g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2))) {
-			if (!CanHeadshot()) return EAimbotLocalState::SNIPER_RIFLE_DELAY;
+	IF_GAME (IsTF2()) {
+		switch (GetWeaponMode()) {
+		case weapon_hitscan:
+		case weapon_melee:
+			break;
+		case weapon_projectile:
+			if (!projectile_aimbot) return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
+			break;
+		default:
+			return EAimbotLocalState::DISABLED_FOR_THIS_WEAPON;
+		};
+	}
+	IF_GAME (IsTF()) {
+		if (g_pLocalPlayer->bZoomed) {
+			if (!(g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2))) {
+				if (!CanHeadshot()) return EAimbotLocalState::SNIPER_RIFLE_DELAY;
+			}
 		}
 	}
-	if (TF2 && !AmbassadorCanHeadshot()) return EAimbotLocalState::AMBASSADOR_COOLDOWN;
+	IF_GAME (IsTF2()) {
+		if (!AmbassadorCanHeadshot()) return EAimbotLocalState::AMBASSADOR_COOLDOWN;
+	}
 	do_minigun_checks = true;
 #ifdef IPC_ENABLED
 	if (hacks::shared::followbot::bot) {
 		CachedEntity* player = ENTITY(hacks::shared::followbot::following_idx);
 		if (CE_GOOD(player)) {
-			if (HasCondition(player, TFCond_Slowed)) {
+			if (HasCondition<TFCond_Slowed>(player)) {
 				do_minigun_checks = false;
 			}
 		}
 	}
 #endif
-	if (TF && do_minigun_checks && g_pLocalPlayer->weapon()->m_iClassID == g_pClassID->CTFMinigun) {
-		weapon_state = CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
-		if ((weapon_state == MinigunState_t::AC_STATE_IDLE || weapon_state == MinigunState_t::AC_STATE_STARTFIRING) && !auto_spin_up) {
-			return EAimbotLocalState::MINIGUN_IDLE;
+	IF_GAME (IsTF()) {
+		if (do_minigun_checks && g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun)) {
+			weapon_state = CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
+			if ((weapon_state == MinigunState_t::AC_STATE_IDLE || weapon_state == MinigunState_t::AC_STATE_STARTFIRING) && !auto_spin_up) {
+				return EAimbotLocalState::MINIGUN_IDLE;
+			}
+			if (!(g_pUserCmd->buttons & (IN_ATTACK2 | IN_ATTACK))) {
+				return EAimbotLocalState::MINIGUN_BUTTON_RELEASED;
+			}
+			// This doesn't belong here
+			/*if (minigun_fix_ticks > 0) {
+				minigun_fix_ticks--;
+				cmd->buttons |= IN_ATTACK;
+			}*/
 		}
-		if (!(g_pUserCmd->buttons & (IN_ATTACK2 | IN_ATTACK))) {
-			return EAimbotLocalState::MINIGUN_BUTTON_RELEASED;
-		}
-		// This doesn't belong here
-		/*if (minigun_fix_ticks > 0) {
-			minigun_fix_ticks--;
-			cmd->buttons |= IN_ATTACK;
-		}*/
+		if (!AllowAttacking())
+			return EAimbotLocalState::CRIT_HACK_LOCKS_ATTACK;
 	}
-	if (TF && !AllowAttacking())
-		return EAimbotLocalState::CRIT_HACK_LOCKS_ATTACK;
 	return EAimbotLocalState::GOOD;
 }
 
+void PaintTraverse() {
+	if (!aimbot_debug) return;
+	if (!enabled) return;
+	AddSideString(format("AimbotState: ", static_cast<int>(local_state_last)));
+}
+
 int BestHitbox(CachedEntity* target) {
-	static int preferred, ci, flags, bdmg;
-	static float cdmg;
-	static bool ground;
+	PROF_SECTION(CM_aimbot_besthitbox);
+
+	int preferred, ci, flags, bdmg;
+	float cdmg;
+	bool ground;
 	preferred = hitbox;
 	switch ((int)hitbox_mode) {
 	case 0: { // AUTO-HEAD
 		ci = g_pLocalPlayer->weapon()->m_iClassID;
-		if (ci == g_pClassID->CTFSniperRifle ||
-			ci == g_pClassID->CTFSniperRifleDecap) {
-			headonly = CanHeadshot();
-		} else if (ci == g_pClassID->CTFCompoundBow) {
-			headonly = true;
-		} else if (ci == g_pClassID->CTFRevolver) {
-			headonly = IsAmbassador(g_pLocalPlayer->weapon());
-		} else if (ci == g_pClassID->CTFRocketLauncher ||
-				ci == g_pClassID->CTFRocketLauncher_AirStrike ||
-				ci == g_pClassID->CTFRocketLauncher_DirectHit ||
-				ci == g_pClassID->CTFRocketLauncher_Mortar) {
-			preferred = hitbox_t::hip_L;
-		} else {
+		IF_GAME (IsTF()) {
 			preferred = hitbox_t::pelvis;
-		}
-		flags = CE_INT(target, netvar.iFlags);
-		ground = (flags & (1 << 0));
-		if (!ground) {
-			if (GetWeaponMode(g_pLocalPlayer->entity) == weaponmode::weapon_projectile) {
-				if (g_pLocalPlayer->weapon()->m_iClassID != g_pClassID->CTFCompoundBow) {
-					preferred = hitbox_t::spine_3;
+			if (g_pLocalPlayer->holding_sniper_rifle) {
+				headonly = CanHeadshot();
+			} else if (ci == CL_CLASS(CTFCompoundBow)) {
+				headonly = true;
+			} else if (IsAmbassador(g_pLocalPlayer->weapon())) {
+				headonly = true;
+			} else if (ci == CL_CLASS(CTFRocketLauncher) ||
+					ci == CL_CLASS(CTFRocketLauncher_AirStrike) ||
+					ci == CL_CLASS(CTFRocketLauncher_DirectHit) ||
+					ci == CL_CLASS(CTFRocketLauncher_Mortar)) {
+				preferred = hitbox_t::hip_L;
+			}
+			flags = CE_INT(target, netvar.iFlags);
+			ground = (flags & (1 << 0));
+			if (!ground) {
+				if (GetWeaponMode() == weaponmode::weapon_projectile) {
+					if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
+						preferred = hitbox_t::spine_3;
+					}
 				}
 			}
+			if (g_pLocalPlayer->holding_sniper_rifle) {
+				cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
+				bdmg = 50;
+				//Darwins damage correction
+				if (target->m_iMaxHealth == 150 && target->m_iClassID == tf_sniper) {
+					bdmg = (bdmg / 1.15) - 1;
+					cdmg = (cdmg / 1.15) - 1;
+				}
+				//Vaccinator damage correction
+				if (HasCondition<TFCond_UberBulletResist>(target)) {
+					bdmg = (bdmg / 1.75) - 1;
+					cdmg = (cdmg / 1.75) - 1;
+				} else if (HasCondition<TFCond_SmallBulletResist>(target)) {
+					bdmg = (bdmg / 1.1) - 1;
+					cdmg = (cdmg / 1.1) - 1;
+				}
+				//Invis damage correction
+				if (IsPlayerInvisible(target)) {
+					bdmg = (bdmg / 1.20) - 1;
+					cdmg = (cdmg / 1.20) - 1;
+				}
+				//If can headshot and if bodyshot kill from charge damage, or if crit boosted and they have 150 health, or if player isnt zoomed, or if the enemy has less than 40, due to darwins, and only if they have less than 150 health will it try to bodyshot
+				if (CanHeadshot() && (cdmg >= target->m_iHealth || IsPlayerCritBoosted(g_pLocalPlayer->entity) || !g_pLocalPlayer->bZoomed || target->m_iHealth <= bdmg)  && target->m_iHealth <= 150) {
+					preferred = ClosestHitbox(target);
+					headonly = false;
+				}
+			}
+		} else IF_GAME (IsCSS()) {
+			headonly = true;
 		}
-		if (LOCAL_W->m_iClassID == g_pClassID->CTFSniperRifle || LOCAL_W->m_iClassID == g_pClassID->CTFSniperRifleDecap) {
-			cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
-			bdmg = 50;
-			//Darwins damage correction
-			if (target->m_iMaxHealth == 150 && target->m_iClassID == tf_sniper) {
-				bdmg = (bdmg / 1.15) - 1;
-				cdmg = (cdmg / 1.15) - 1;
-			}
-			//Vaccinator damage correction
-			if (HasCondition(target, TFCond_UberBulletResist)) {
-				bdmg = (bdmg / 1.75) - 1;
-				cdmg = (cdmg / 1.75) - 1;
-			} else if (HasCondition(target, TFCond_SmallBulletResist)) {
-				bdmg = (bdmg / 1.1) - 1;
-				cdmg = (cdmg / 1.1) - 1;
-			}
-			//Invis damage correction
-			if (IsPlayerInvisible(target)) {
-				bdmg = (bdmg / 1.20) - 1;
-				cdmg = (cdmg / 1.20) - 1;
-			}
-			//If can headshot and if bodyshot kill from charge damage, or if crit boosted and they have 150 health, or if player isnt zoomed, or if the enemy has less than 40, due to darwins, and only if they have less than 150 health will it try to bodyshot
-			if (CanHeadshot() && (cdmg >= target->m_iHealth || IsPlayerCritBoosted(g_pLocalPlayer->entity) || !g_pLocalPlayer->bZoomed || target->m_iHealth <= bdmg)  && target->m_iHealth <= 150) {
-				preferred = ClosestHitbox(target);
-				headonly = false;
-			}
+		if (headonly) {
+			IF_GAME (IsTF())
+				return hitbox_t::head;
+			IF_GAME (IsCSS())
+				return 12;
 		}
-
-		if (headonly) return hitbox_t::head;
 		if (target->hitboxes.VisibilityCheck(preferred)) return preferred;
 		for (int i = projectile_mode ? 1 : 0; i < target->hitboxes.GetNumHitboxes(); i++) {
 			if (target->hitboxes.VisibilityCheck(i)) return i;

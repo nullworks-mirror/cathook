@@ -24,6 +24,8 @@ struct crithack_saved_state {
 	void Load(IClientEntity* entity);
 };
 
+extern bool weapon_can_crit_last;
+
 bool CritKeyDown();
 bool AllowAttacking();
 bool RandomCrits();

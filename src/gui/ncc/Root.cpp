@@ -46,6 +46,7 @@ void Root::Setup() {
 	PlayerList* pl = new PlayerList();
 	pl->SetOffset(200, 200);
 	AddChild(pl);
+	AddChild(new CritIndicator());
 }
 
 void Root::OnKeyPress(ButtonCode_t key, bool repeat) {

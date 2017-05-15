@@ -25,19 +25,62 @@ CatEnum hitbox_enum({
 	"KNEE R", "FOOT R"
 }, -1);
 CatVar hitbox(hitbox_enum, "trigger_hitbox", "-1", "Hitbox", "Triggerbot hitbox. Only useful settings are ANY and HEAD. Use ANY for scatter or any other shotgun-based weapon, HEAD for ambassador/sniper rifle");
-CatVar bodyshot(CV_SWITCH, "trigger_bodyshot", "1", "Bodyshot", "Triggerbot will bodyshot enemies if you have enough charge to 1tap them");
+CatVar allow_bodyshot(CV_SWITCH, "trigger_bodyshot", "1", "Bodyshot", "Triggerbot will bodyshot enemies if you have enough charge to 1tap them");
 CatVar finishing_hit(CV_SWITCH, "trigger_finish", "1", "Noscope weak enemies", "If enemy has <50 HP, noscope them");
 CatVar max_range(CV_INT, "trigger_range", "0", "Max range", "Triggerbot won't shoot if enemy is too far away", true, 4096.0f);
 CatVar buildings(CV_SWITCH, "trigger_buildings", "1", "Trigger at buildings", "Shoot buildings");
 CatVar ignore_vaccinator(CV_SWITCH, "trigger_respect_vaccinator", "1", "Respect vaccinator", "Don't shoot at bullet-vaccinated enemies");
 CatVar ambassador(CV_SWITCH, "trigger_ambassador", "1", "Smart Ambassador", "Don't shoot if your ambassador can't headshot yet (Keep that enabled!)");
-CatVar accuracy(CV_SWITCH, "trigger_accuracy", "0", "Improve accuracy (NOT WORKING)", "Might cause more lag (NOT WORKING YET!)");
+CatVar accuracy(CV_INT, "trigger_accuracy", "0", "Improve accuracy", "Improves triggerbot accuracy when aiming for specific hitbox");
 
-std::unique_ptr<trace_t> trace(new trace_t);
+trace_t trace_object;
+
+// TEMPORARY CODE.
+// TODO
+
+bool GetIntersection(float fDst1, float fDst2, Vector P1, Vector P2, Vector& Hit) {
+    if ((fDst1 * fDst2) >= 0.0f) return false;
+    if (fDst1 == fDst2) return false;
+    Hit = P1 + (P2 - P1) * (-fDst1 / (fDst2 - fDst1));
+    return true;
+}
+
+bool InBox(Vector Hit, Vector B1, Vector B2, int Axis) {
+    if (Axis == 1 && Hit.z > B1.z && Hit.z < B2.z && Hit.y > B1.y && Hit.y < B2.y) return true;
+    if (Axis == 2 && Hit.z > B1.z && Hit.z < B2.z && Hit.x > B1.x && Hit.x < B2.x) return true;
+    if (Axis == 3 && Hit.x > B1.x && Hit.x < B2.x && Hit.y > B1.y && Hit.y < B2.y) return true;
+    return false;
+}
+
+bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector& Hit) {
+    if (L2.x < B1.x && L1.x < B1.x) return false;
+    if (L2.x > B2.x && L1.x > B2.x) return false;
+    if (L2.y < B1.y && L1.y < B1.y) return false;
+    if (L2.y > B2.y && L1.y > B2.y) return false;
+    if (L2.z < B1.z && L1.z < B1.z) return false;
+    if (L2.z > B2.z && L1.z > B2.z) return false;
+    if (L1.x > B1.x && L1.x < B2.x &&
+        L1.y > B1.y && L1.y < B2.y &&
+        L1.z > B1.z && L1.z < B2.z)
+    {
+        Hit = L1;
+        return true;
+    }
+    if ((GetIntersection(L1.x - B1.x, L2.x - B1.x, L1, L2, Hit) && InBox(Hit, B1, B2, 1))
+      || (GetIntersection(L1.y - B1.y, L2.y - B1.y, L1, L2, Hit) && InBox(Hit, B1, B2, 2))
+      || (GetIntersection(L1.z - B1.z, L2.z - B1.z, L1, L2, Hit) && InBox(Hit, B1, B2, 3))
+      || (GetIntersection(L1.x - B2.x, L2.x - B2.x, L1, L2, Hit) && InBox(Hit, B1, B2, 1))
+      || (GetIntersection(L1.y - B2.y, L2.y - B2.y, L1, L2, Hit) && InBox(Hit, B1, B2, 2))
+      || (GetIntersection(L1.z - B2.z, L2.z - B2.z, L1, L2, Hit) && InBox(Hit, B1, B2, 3)))
+        return true;
+
+    return false;
+}
+
 
 void CreateMove() {
 	if (!enabled) return;
-	if (GetWeaponMode(g_pLocalPlayer->entity) != weapon_hitscan) return;
+	if (GetWeaponMode() != weapon_hitscan) return;
 	if (ambassador) {
 		if (IsAmbassador(g_pLocalPlayer->weapon())) {
 			if ((g_GlobalVars->curtime - CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime)) <= 1.0) {
@@ -46,7 +89,7 @@ void CreateMove() {
 		}
 	}
 	Ray_t ray;
-	trace::g_pFilterDefault->SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+	trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 	Vector forward;
 	float sp, sy, cp, cy;
 	sy = sinf(DEG2RAD(g_pUserCmd->viewangles[1])); // yaw
@@ -60,9 +103,9 @@ void CreateMove() {
 	forward.z = -sp;
 	forward = forward * 8192.0f + g_pLocalPlayer->v_Eye;
 	ray.Init(g_pLocalPlayer->v_Eye, forward);
-	g_ITrace->TraceRay(ray, 0x4200400B, trace::g_pFilterDefault, trace.get());
+	g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace_object);
 
-	IClientEntity* raw_entity = (IClientEntity*)(trace->m_pEnt);
+	IClientEntity* raw_entity = (IClientEntity*)(trace_object.m_pEnt);
 	if (!raw_entity) return;
 	CachedEntity* entity = ENTITY(raw_entity->entindex());
 	if (!entity->m_bEnemy) return;
@@ -87,7 +130,7 @@ void CreateMove() {
 		g_pUserCmd->buttons |= IN_ATTACK;
 		return;
 	}
-	if (HasCondition(entity, TFCond_UberBulletResist) && ignore_vaccinator) return;
+	if (HasCondition<TFCond_UberBulletResist>(entity) && ignore_vaccinator) return;
 	if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return;
 	if (IsPlayerInvulnerable(entity)) return;
 	if (respect_cloak && (IsPlayerInvisible(entity))) return;
@@ -99,7 +142,7 @@ void CreateMove() {
 			do_bodyshot = true;
 		}
 		// If we need charge...
-		if (!bodyshot && bodyshot) {
+		if (!allow_bodyshot) {
 			float bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
 			if (CanHeadshot() && (bdmg) >= health) {
 				do_bodyshot = true;
@@ -111,33 +154,27 @@ void CreateMove() {
 		!((g_pLocalPlayer->bZoomed) && CanHeadshot())) {
 		return;
 	}
-	//debug->AddBoxOverlay(enemy_trace->endpos, Vector(-1.0f, -1.0f, -1.0f), Vector(1.0f, 1.0f, 1.0f), QAngle(0, 0, 0), 255, 0, 0, 255, 2.0f);
-	//IClientEntity* weapon;
-	CachedHitbox* hb = entity->hitboxes.GetHitbox(trace->hitbox);
-	//logging::Info("hitbox: %i 0x%08x", enemy_trace->hitbox, hb);
 
-	/*if (v_bImproveAccuracy->GetBool()) {
-		if (hb) {
-			Vector siz = hb->max - hb->min;
-			Vector mns = hb->min + siz * 0.2f;
-			Vector mxs = hb->max - siz * 0.2f;
-			g_IVDebugOverlay->AddLineOverlay(enemy_trace->startpos, forward, 0, 0, 255, true, -1.0f);
-			if (LineIntersectsBox(mns, mxs, enemy_trace->startpos, forward)) {
-				g_IVDebugOverlay->AddBoxOverlay(mns, Vector(0, 0, 0), mxs - mns, QAngle(0, 0, 0), 0, 255, 0, 255, 1.0f);
-				g_IVDebugOverlay->AddLineOverlay(enemy_trace->startpos, forward, 255, 0, 0, true, 1.0f);
-				//logging::Info("%.2f %.2f %.2f", hb->center.DistToSqr(enemy_trace->endpos), SQR(hb->min.DistToSqr(hb->min)), SQR(hb->min.DistToSqr(hb->min) * 0.9f));
+	CachedHitbox* hb = entity->hitboxes.GetHitbox(trace_object.hitbox);
 
-			} else {
-				g_IVDebugOverlay->AddBoxOverlay(hb->min, Vector(0, 0, 0), hb->max - hb->min, QAngle(0, 0, 0), 0, 255, 255, 255, -1.0f);
-				g_IVDebugOverlay->AddBoxOverlay(mns, Vector(0, 0, 0), mxs - mns, QAngle(0, 0, 0), 255, 255, 0, 255, 0.5f);
-				return;
-			}
-		} else return;
-	}*/
-	if ((int)hitbox >= 0 && !bodyshot) {
-		if (trace->hitbox != (int)hitbox) return;
+	if ((int)hitbox >= 0 && !do_bodyshot) {
+		if (trace_object.hitbox != (int)hitbox) return;
 	}
-	g_pUserCmd->buttons |= IN_ATTACK;
+
+	if (accuracy && hb) {
+		Vector minz(min(hb->min.x, hb->max.x), min(hb->min.y, hb->max.y), min(hb->min.z, hb->max.z));
+		Vector maxz(max(hb->min.x, hb->max.x), max(hb->min.y, hb->max.y), max(hb->min.z, hb->max.z));
+		Vector size = maxz - minz;
+		Vector smod = size * 0.05f * (int)accuracy;
+		minz += smod;
+		maxz -= smod;
+		Vector hit;
+		if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit)) {
+			g_pUserCmd->buttons |= IN_ATTACK;
+		}
+	} else {
+		g_pUserCmd->buttons |= IN_ATTACK;
+	}
 }
 
 void Draw() {

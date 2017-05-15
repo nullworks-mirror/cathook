@@ -8,7 +8,7 @@
 #ifndef HESP_H_
 #define HESP_H_
 
-#include "IHack.h"
+#include "../common.h"
 
 class ConVar;
 class CachedEntity;
@@ -67,6 +67,7 @@ public:
 	int string_count { 0 };
 	std::array<ESPString, 16> strings {};
 	Vector esp_origin { 0, 0, 0 };
+	bool needs_paint { false };
 };
 
 extern std::array<ESPData, 2048> data;
@@ -77,9 +78,9 @@ void SetEntityColor(CachedEntity* entity, int color);
 void CreateMove();
 void Draw();
 
-void DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax);
-void ProcessEntity(CachedEntity* ent);
-void ProcessEntityPT(CachedEntity* ent);
+void __attribute__((fastcall)) DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax);
+void __attribute__((fastcall)) ProcessEntity(CachedEntity* ent);
+void __attribute__((fastcall)) ProcessEntityPT(CachedEntity* ent);
 
 }}}
 

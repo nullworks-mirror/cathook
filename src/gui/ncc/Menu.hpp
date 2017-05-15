@@ -24,6 +24,7 @@
 #include "Root.hpp"
 #include "Tooltip.hpp"
 #include "Background.hpp"
+#include "CritIndicator.hpp"
 #include "Logo.hpp"
 
 namespace menu { namespace ncc {

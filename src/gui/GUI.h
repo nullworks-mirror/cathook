@@ -11,8 +11,6 @@
 class IWidget;
 class CatVar;
 
-#define GUI_ENABLED true
-
 #include "../beforecheaders.h"
 #include <string>
 #include "../aftercheaders.h"

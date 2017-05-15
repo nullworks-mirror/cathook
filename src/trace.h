@@ -52,9 +52,9 @@ public:
 	virtual TraceType_t GetTraceType() const;
 };
 
-extern FilterDefault* g_pFilterDefault;
-extern FilterNoPlayer* g_pFilterNoPlayer;
-extern FilterPenetration* g_pFilterPenetration;
+extern FilterDefault filter_default;
+extern FilterNoPlayer filter_no_player;
+extern FilterPenetration filter_penetration;
 
 }
 

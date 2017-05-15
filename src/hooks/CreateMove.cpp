@@ -65,17 +65,19 @@ void End() {
 
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	static CreateMove_t original_method = (CreateMove_t)hooks::clientmode.GetMethod(offsets::CreateMove());
-	static bool time_replaced, ret, speedapplied;
-	static float curtime_old, servertime, speed, yaw;
-	static Vector vsilent, ang;
-	static INetChannel* ch;
+	bool time_replaced, ret, speedapplied;
+	float curtime_old, servertime, speed, yaw;
+	Vector vsilent, ang;
+	INetChannel* ch;
 
 	SEGV_BEGIN;
 	tickcount++;
 	g_pUserCmd = cmd;
 
-	if (TF2C && CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == g_pClassID->CTFMinigun) {
-		CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
+	IF_GAME (IsTF2C()) {
+		if (CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID == CL_CLASS(CTFMinigun)) {
+			CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
+		}
 	}
 
 	ret = original_method(thisptr, inputSample, cmd);
@@ -135,15 +137,21 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		SAFE_CALL(entity_cache::Update());
 	}
 //	PROF_END("Entity Cache updating");
-	SAFE_CALL(g_pPlayerResource->Update());
-	SAFE_CALL(g_pLocalPlayer->Update());
+	{
+		PROF_SECTION(CM_PlayerResource);
+		SAFE_CALL(g_pPlayerResource->Update());
+	}
+	{
+		PROF_SECTION(CM_LocalPlayer);
+		SAFE_CALL(g_pLocalPlayer->Update());
+	}
 	g_Settings.bInvalid = false;
 	// Disabled because this causes EXTREME aimbot inaccuracy
 	//if (!cmd->command_number) return ret;
 #ifdef IPC_ENABLED
 	static int team_joining_state = 0;
 	static float last_jointeam_try = 0;
-	static CachedEntity *found_entity, *ent;
+	CachedEntity *found_entity, *ent;
 
 	if (hacks::shared::followbot::bot) {
 
@@ -194,41 +202,84 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 #endif
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		ResetCritHack();
-		if (TF2) SAFE_CALL(UpdateHoovyList());
+		IF_GAME (IsTF2()) {
+			SAFE_CALL(UpdateHoovyList());
+		}
 			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
-//		PROF_BEGIN();
-		//RunEnginePrediction(g_pLocalPlayer->entity, cmd);
-		SAFE_CALL(hacks::shared::esp::CreateMove());
+		{
+			PROF_SECTION(CM_esp);
+			SAFE_CALL(hacks::shared::esp::CreateMove());
+		}
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
-			if (TF) SAFE_CALL(hacks::tf::uberspam::CreateMove());
-			if (TF2) SAFE_CALL(hacks::tf2::antibackstab::CreateMove());
-			if (TF2) SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
-			SAFE_CALL(hacks::shared::bunnyhop::CreateMove());
-			SAFE_CALL(hacks::shared::aimbot::CreateMove());
-			SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
-			if (TF) SAFE_CALL(hacks::tf::autosticky::CreateMove());
-			if (TF) SAFE_CALL(hacks::tf::autoreflect::CreateMove());
-			SAFE_CALL(hacks::shared::triggerbot::CreateMove());
-			if (TF) SAFE_CALL(hacks::tf::autoheal::CreateMove());
-			if (TF2) SAFE_CALL(hacks::tf2::autobackstab::CreateMove());
+			IF_GAME (IsTF()) {
+				PROF_SECTION(CM_uberspam);
+				SAFE_CALL(hacks::tf::uberspam::CreateMove());
+			}
+			IF_GAME (IsTF2()) {
+				PROF_SECTION(CM_antibackstab);
+				SAFE_CALL(hacks::tf2::antibackstab::CreateMove());
+			}
+			IF_GAME (IsTF2()) {
+				PROF_SECTION(CM_noisemaker);
+				SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
+			}
+			{
+				PROF_SECTION(CM_bunnyhop);
+				SAFE_CALL(hacks::shared::bunnyhop::CreateMove());
+			}
+			{
+				PROF_SECTION(CM_aimbot);
+				SAFE_CALL(hacks::shared::aimbot::CreateMove());
+			}
+			{
+				PROF_SECTION(CM_antiaim);
+				SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
+			}
+			IF_GAME (IsTF()) {
+				PROF_SECTION(CM_autosticky);
+				SAFE_CALL(hacks::tf::autosticky::CreateMove());
+			}
+			IF_GAME (IsTF()) {
+				PROF_SECTION(CM_autoreflect);
+				SAFE_CALL(hacks::tf::autoreflect::CreateMove());
+			}
+			{
+				PROF_SECTION(CM_triggerbot);
+				SAFE_CALL(hacks::shared::triggerbot::CreateMove());
+			}
+			IF_GAME (IsTF()) {
+				PROF_SECTION(CM_autoheal);
+				SAFE_CALL(hacks::tf::autoheal::CreateMove());
+			}
+			IF_GAME (IsTF2()) {
+				PROF_SECTION(CM_autobackstab);
+				SAFE_CALL(hacks::tf2::autobackstab::CreateMove());
+			}
 		}
-		//SAFE_CALL(CREATE_MOVE(FollowBot));
-		SAFE_CALL(hacks::shared::misc::CreateMove());
-		SAFE_CALL(hacks::shared::spam::CreateMove());
-//		PROF_END("Hacks processing");
-		if (time_replaced) g_GlobalVars->curtime = curtime_old;
+		{
+			PROF_SECTION(CM_misc);
+			SAFE_CALL(hacks::shared::misc::CreateMove());
+		}
+		{
+			PROF_SECTION(CM_spam);
+			SAFE_CALL(hacks::shared::spam::CreateMove());
+		}
 	}
-	/*for (IHack* i_hack : hack::hacks) {
-		if (!i_hack->CreateMove(thisptr, inputSample, cmd)) {
-			ret = false;
-		}
-	}*/
+	if (time_replaced) g_GlobalVars->curtime = curtime_old;
 	g_Settings.bInvalid = false;
-	chat_stack::OnCreateMove();
-	hacks::shared::lagexploit::CreateMove();
+	{
+		PROF_SECTION(CM_chat_stack);
+		chat_stack::OnCreateMove();
+	}
+	{
+		PROF_SECTION(CM_lagexploit);
+		hacks::shared::lagexploit::CreateMove();
+	}
 
 	// TODO Auto Steam Friend
+
 	if (g_GlobalVars->framecount % 1000 == 0) {
+		PROF_SECTION(CM_playerlist);
 		playerlist::DoNotKillMe();
 #ifdef IPC_ENABLED
 		ipc::UpdatePlayerlist();
@@ -237,7 +288,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		speedapplied = false;
-		if (roll_speedhack && g_pGUI->m_bPressedState[(int)roll_speedhack] && !(cmd->buttons & IN_ATTACK)) { // FIXME OOB
+		if (roll_speedhack && g_IInputSystem->IsButtonDown((ButtonCode_t)((int)roll_speedhack)) && !(cmd->buttons & IN_ATTACK)) {
 			speed = cmd->forwardmove;
 			if (fabs(speed) > 0.0f) {
 				cmd->forwardmove = -speed;
@@ -267,6 +318,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 #ifdef IPC_ENABLED
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state) {
+			PROF_SECTION(CM_followbot);
 			SAFE_CALL(hacks::shared::followbot::AfterCreateMove());
 		}
 #endif

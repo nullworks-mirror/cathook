@@ -142,7 +142,8 @@ static CatCommand invalidate_cookies("skinchanger_bite_cookie", "Bite Cookie", I
 
 void FrameStageNotify(int stage) {
 	static int my_weapon, handle, eid, *weapon_list;
-	static IClientEntity *entity, *my_weapon_ptr, *last_weapon_out = nullptr;
+	static IClientEntity *entity, *my_weapon_ptr;
+	static IClientEntity *last_weapon_out = nullptr;
 
 	if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START) return;
 	if (!enabled) return;
@@ -184,7 +185,7 @@ void FrameStageNotify(int stage) {
 static CatVar show_debug_info(CV_SWITCH, "skinchanger_debug", "1", "Debug Skinchanger");
 
 void PaintTraverse() {
-	static CAttributeList *list;
+	CAttributeList *list;
 
 	if (!enabled) return;
 	if (!show_debug_info) return;
@@ -310,8 +311,8 @@ void InvalidateCookie() {
 patched_weapon_cookie::patched_weapon_cookie(int entity) {}
 
 void patched_weapon_cookie::Update(int entity) {
-	static IClientEntity *ent;
-	static CAttributeList *list;
+	IClientEntity *ent;
+	CAttributeList *list;
 
 	ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent || ent->IsDormant()) return;
@@ -326,8 +327,8 @@ void patched_weapon_cookie::Update(int entity) {
 }
 
 bool patched_weapon_cookie::Check() {
-	static IClientEntity *ent;
-	static CAttributeList *list;
+	IClientEntity *ent;
+	CAttributeList *list;
 
 	if (!valid) return false;
 	ent = g_IEntityList->GetClientEntity(eidx);
@@ -355,8 +356,8 @@ bool def_attribute_modifier::Default() const {
 }
 
 void def_attribute_modifier::Apply(int entity) {
-	static IClientEntity *ent;
-	static CAttributeList *list;
+	IClientEntity *ent;
+	CAttributeList *list;
 
 	ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent) return;

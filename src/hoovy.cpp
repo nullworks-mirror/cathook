@@ -10,14 +10,16 @@
 static bool hoovy_list[32] = { 0 };
 
 bool HasSandvichOut(CachedEntity* entity) {
-	static int weapon_idx;
-	static CachedEntity *weapon;
+	IF_GAME (!IsTF2()) return false;
+
+	int weapon_idx;
+	CachedEntity *weapon;
 
 	weapon_idx = CE_INT(entity, netvar.hActiveWeapon) & 0xFFF;
 	if (!(weapon_idx > 0 && weapon_idx < HIGHEST_ENTITY)) return false;
 	weapon = ENTITY(weapon_idx);
 	if (CE_GOOD(weapon)) {
-		if (weapon->m_iClassID == g_pClassID->CTFLunchBox && CE_INT(entity, netvar.iClass) == tf_heavy) {
+		if (weapon->m_iClassID == CL_CLASS(CTFLunchBox) && CE_INT(entity, netvar.iClass) == tf_heavy) {
 			return true;
 		}
 	}

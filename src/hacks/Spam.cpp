@@ -157,7 +157,7 @@ bool FormatSpamMessage(std::string& message) {
 	ReplaceString(message, "\\n", "\n");
 	bool team = g_pLocalPlayer->team - 2;
 	bool enemy_team = !team;
-	if (TF2) {
+	IF_GAME (IsTF2()) {
 		ReplaceString(message, "%myteam%", teams[team]);
 		ReplaceString(message, "%enemyteam%", teams[enemy_team]);
 	}

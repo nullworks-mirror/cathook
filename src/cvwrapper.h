@@ -11,6 +11,7 @@
 class ConVar;
 
 #include "sdk.h"
+#include "interfaces.h"
 
 #include "beforecheaders.h"
 #include <string>
@@ -97,6 +98,10 @@ public:
 	inline void SetValue(std::string value) { convar_parent->SetValue(value.c_str()); }
 	[[deprecated]]
 	inline void SetValue(int value) { this->operator =(value); }
+
+	inline bool KeyDown() {
+		return g_IInputSystem->IsButtonDown((ButtonCode_t)((int)*this));
+	}
 
 	bool restricted;
 	float max;

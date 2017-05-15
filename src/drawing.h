@@ -37,20 +37,6 @@ extern CatVar esp_height;
 }
 
 namespace colors {
-extern int pink;
-
-extern int white;
-extern int black;
-
-extern int red,    blu;
-extern int red_b,  blu_b;  // Background
-extern int red_v,  blu_v;  // Vaccinator
-extern int red_u,  blu_u;  // Ubercharged
-extern int yellow; // Deprecated
-extern int orange;
-extern int green;
-
-void Init();
 
 constexpr int Create(int r, int g, int b, int a) {
 	unsigned char _r = (r) & 0xFF;
@@ -67,6 +53,19 @@ constexpr int Transparent(int base, float mod = 0.5f) {
 	unsigned char _r = (base) & 0xFF;
 	return Create(_r, _g, _b, (int)((float)(_a) * mod));
 }
+
+constexpr int pink = Create(255, 105, 180, 255);
+
+constexpr int white = Create(255, 255, 255, 255);
+constexpr int black = Create(0, 0, 0, 255);
+
+constexpr int red = Create(237, 42, 42, 255), blu = Create(28, 108, 237, 255);
+constexpr int red_b = Create(64, 32, 32, 178),  blu_b = Create(32, 32, 64, 178);  // Background
+constexpr int red_v = Create(196, 102, 108, 255),  blu_v = Create(102, 182, 196, 255);  // Vaccinator
+constexpr int red_u = Create(216, 34, 186, 255),  blu_u = Create(167, 75, 252, 255);  // Ubercharged
+constexpr int yellow = Create(255, 255, 0, 255);
+constexpr int orange = Create(255, 120, 0, 255);
+constexpr int green = Create(0, 255, 0, 255);
 
 int FromHSL(float h, float s, float l);
 int RainbowCurrent();
@@ -106,5 +105,11 @@ std::pair<int, int> GetStringLength(unsigned long font, std::string string);
 //void DrawString(unsigned font_handle, int x, int y, Color color, const char* text, ...);
 
 }
+
+#if NOGUI == 1
+constexpr int GUIColor() {
+	return colors::white;
+}
+#endif
 
 #endif /* DRAWING_H_ */

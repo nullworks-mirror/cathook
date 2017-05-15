@@ -9,11 +9,14 @@
 #include "../common.h"
 #include "../hack.h"
 #include "hookedmethods.h"
-#include "../gui/GUI.h"
 #include "../segvcatch/segvcatch.h"
 #include "../copypasted/CSignature.h"
 #include "../profiler.h"
 #include "../netmessage.h"
+
+#if NOGUI != 1
+#include "../gui/GUI.h"
+#endif
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1", "Clean screenshots", "Don't draw visuals while taking a screenshot");
 CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Completely hides cathook");
@@ -43,7 +46,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		if (!segvcatch::handler_segv) segvcatch::init_fpe();
 	}
 #endif
-	SEGV_BEGIN;
 	if (!textures_loaded) {
 		textures_loaded = true;
 		hacks::tf::radar::Init();
@@ -71,6 +73,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		case 2:
 			if (software_cursor->GetBool()) software_cursor->SetValue(0);
 			break;
+#if NOGUI != 1
 		case 3:
 			if (cur != g_pGUI->Visible()) {
 				software_cursor->SetValue(g_pGUI->Visible());
@@ -80,13 +83,15 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 			if (cur == g_pGUI->Visible()) {
 				software_cursor->SetValue(!g_pGUI->Visible());
 			}
+#endif
 		}
 	}
 
 	if (call_default) SAFE_CALL(original(_this, vp, fr, ar));
 	// To avoid threading problems.
 
-	PROF_SECTION(PaintTraverse);
+	PROF_SECTION(PT_total);
+
 	if (vp == panel_top) draw_flag = true;
 	if (!cathook) return;
 
@@ -125,6 +130,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	draw_flag = false;
 
 	if (!hack::command_stack().empty()) {
+		PROF_SECTION(PT_command_stack);
 		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
 		while (!hack::command_stack().empty()) {
 			logging::Info("executing %s", hack::command_stack().top().c_str());
@@ -137,14 +143,21 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
 
+	PROF_SECTION(PT_active);
+
 	if (info_text) {
+		PROF_SECTION(PT_info_text);
 		AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
-#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
-		AddSideString("Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE, GUIColor());
-#endif
+		AddSideString(hack::GetVersion(), GUIColor());
+#if NOGUI != 1
 		AddSideString("Press 'INSERT' or 'F11' key to open/close cheat menu.", GUIColor());
 		AddSideString("Use mouse to navigate in menu.", GUIColor());
-		if (!g_IEngine->IsInGame() || g_pGUI->Visible()) {
+#endif
+		if (!g_IEngine->IsInGame()
+#if NOGUI != 1
+			|| g_pGUI->Visible()
+#endif
+		) {
 			name_s = force_name.GetString();
 			if (name_s.length() < 3) name = "*Not Set*";
 			AddSideString(""); // foolish
@@ -158,20 +171,45 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	}
 
 	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
-		if (TF) SAFE_CALL(hacks::tf2::antidisguise::Draw());
-		SAFE_CALL(hacks::shared::misc::Draw());
-		SAFE_CALL(hacks::shared::esp::Draw());
-		if (TF) SAFE_CALL(hacks::tf::spyalert::Draw());
-		if (TF) SAFE_CALL(hacks::tf::radar::Draw());
-		if (TF2) SAFE_CALL(hacks::tf2::skinchanger::PaintTraverse());
+		PROF_SECTION(PT_total_hacks);
+		IF_GAME(IsTF()) {
+			PROF_SECTION(PT_antidisguise);
+			SAFE_CALL(hacks::tf2::antidisguise::Draw());
+		}
+		{
+			PROF_SECTION(PT_misc);
+			SAFE_CALL(hacks::shared::misc::Draw());
+		}
+		{
+			PROF_SECTION(PT_esp);
+			SAFE_CALL(hacks::shared::esp::Draw());
+		}
+		IF_GAME(IsTF()) {
+			PROF_SECTION(PT_spyalert);
+			SAFE_CALL(hacks::tf::spyalert::Draw());
+		}
+		IF_GAME(IsTF()) {
+			PROF_SECTION(PT_radar);
+			SAFE_CALL(hacks::tf::radar::Draw());
+		}
+		IF_GAME(IsTF2()) {
+			PROF_SECTION(PT_skinchanger);
+			SAFE_CALL(hacks::tf2::skinchanger::PaintTraverse());
+		}
+		{
+			SAFE_CALL(hacks::shared::aimbot::PaintTraverse());
+		}
 	}
 
 
-#if GUI_ENABLED == true
+#if NOGUI != 1
 		g_pGUI->Update();
 #endif
 
-	DrawStrings();
+	{
+		PROF_SECTION(PT_draw_strings);
+		DrawStrings();
+	}
 	SEGV_END;
 }
 

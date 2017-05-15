@@ -9,7 +9,7 @@
 #include "sdk.h"
 
 void LocalPlayer::Update() {
-	static CachedEntity *wep;
+	CachedEntity *wep;
 
 	entity_idx = g_IEngine->GetLocalPlayer();
 	entity = ENTITY(entity_idx);
@@ -20,7 +20,7 @@ void LocalPlayer::Update() {
 	holding_sniper_rifle = false;
 	wep = weapon();
 	if (CE_GOOD(wep)) {
-		if (wep->m_iClassID == g_pClassID->CTFSniperRifle || wep->m_iClassID == g_pClassID->CTFSniperRifleDecap) holding_sniper_rifle = true;
+		if (wep->m_iClassID == CL_CLASS(CTFSniperRifle) || wep->m_iClassID == CL_CLASS(CTFSniperRifleDecap)) holding_sniper_rifle = true;
 	}
 	team = CE_INT(entity, netvar.iTeamNum);
 	life_state = CE_BYTE(entity, netvar.iLifeState);
@@ -39,7 +39,7 @@ void LocalPlayer::Update() {
 }
 
 CachedEntity* LocalPlayer::weapon() {
-	static int handle, eid;
+	int handle, eid;
 
 	if (CE_BAD(entity)) return 0;
 	handle = CE_INT(entity, netvar.hActiveWeapon);

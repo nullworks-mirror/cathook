@@ -107,7 +107,7 @@ void DrawEntity(int x, int y, CachedEntity* ent) {
 				draw::DrawRect(x + wtr.first + 1, y + wtr.second + (int)icon_size + 1, ((float)icon_size - 2.0f) * healthp, 2, clr);
 			}
 		} else if (ent->m_Type == ENTITY_BUILDING) {
-			/*if (ent->m_iClassID == g_pClassID->CObjectDispenser) {
+			/*if (ent->m_iClassID == CL_CLASS(CObjectDispenser)) {
 				const int& team = CE_INT(ent, netvar.iTeamNum);
 				int idx = team - 2;
 				if (idx < 0 || idx > 1) return;

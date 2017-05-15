@@ -21,7 +21,7 @@ int GetScoreForEntity(CachedEntity* entity) {
 	if (!entity) return 0;
 	// TODO
 	if (entity->m_Type == ENTITY_BUILDING) {
-		if (entity->m_iClassID == g_pClassID->CObjectSentrygun) {
+		if (entity->m_iClassID == CL_CLASS(CObjectSentrygun)) {
 			return 1;
 		}
 		return 0;
@@ -29,8 +29,8 @@ int GetScoreForEntity(CachedEntity* entity) {
 	int clazz = CE_INT(entity, netvar.iClass);
 	int health = CE_INT(entity, netvar.iHealth);
 	float distance = (g_pLocalPlayer->v_Origin - entity->m_vecOrigin).Length();
-	bool zoomed = HasCondition(entity, TFCond_Zoomed);
-	bool pbullet = HasCondition(entity, TFCond_SmallBulletResist);
+	bool zoomed = HasCondition<TFCond_Zoomed>(entity);
+	bool pbullet = HasCondition<TFCond_SmallBulletResist>(entity);
 	bool special = false;
 	bool kritz = IsPlayerCritBoosted(entity);
 	int total = 0;
@@ -52,7 +52,7 @@ int GetScoreForEntity(CachedEntity* entity) {
 		special = true;
 	break;
 	case tf_soldier:
-		if (HasCondition(entity, TFCond_BlastJumping)) total += 30;
+		if (HasCondition<TFCond_BlastJumping>(entity)) total += 30;
 	break;
 	}
 	if (!special) {
