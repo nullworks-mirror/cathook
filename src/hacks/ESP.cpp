@@ -33,6 +33,7 @@ CatVar show_distance(CV_SWITCH, "esp_distance", "1", "Distance ESP", "Show dista
 CatVar show_name(CV_SWITCH, "esp_name", "1", "Name ESP", "Show name");
 CatVar show_class(CV_SWITCH, "esp_class", "1", "Class ESP", "Show class");
 CatVar show_conditions(CV_SWITCH, "esp_conds", "1", "Conditions ESP", "Show conditions");
+CatVar show_ubercharge(CV_SWITCH, "esp_ubercharge", "1", "Ubercharge ESP", "Show ubercharge percentage while players medigun is out");
 CatVar vischeck(CV_SWITCH, "esp_vischeck", "1", "VisCheck", "ESP visibility check - makes enemy info behind walls darker, disable this if you get FPS drops");
 CatVar legit(CV_SWITCH, "esp_legit", "0", "Legit Mode", "Don't show invisible enemies");
 CatVar show_health(CV_SWITCH, "esp_health_num", "1", "Health numbers", "Show health in numbers");
@@ -309,7 +310,7 @@ void _FASTCALL DrawBox(CachedEntity* ent, int clr, float widthFactor, float addH
 
 void _FASTCALL ProcessEntity(CachedEntity* ent) {
 	const model_t* model;
-	int string_count_backup, level, pclass;
+	int string_count_backup, level, pclass, *weapon_list, handle, eid;
 	bool shown;
 	player_info_s info;
 	powerup_type power;
@@ -465,6 +466,24 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 				AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 			}
 			IF_GAME (IsTF()) {
+				if (show_ubercharge) {
+					if (CE_INT(ent, netvar.iClass) == tf_medic) {
+						weapon_list = (int*)((unsigned)(RAW_ENT(ent)) + netvar.hMyWeapons);
+						for (int i = 0; weapon_list[i]; i++) {
+							handle = weapon_list[i];
+							eid = handle & 0xFFF;
+							if (eid >= 32 && eid <= HIGHEST_ENTITY) {
+								weapon = ENTITY(eid);
+								if (!CE_BAD(weapon) && weapon->m_iClassID == CL_CLASS(CWeaponMedigun) && weapon) {
+									if (CE_INT(weapon, netvar.iItemDefinitionIndex) != 998) {
+										AddEntityString(ent, format(floor( CE_FLOAT(weapon, netvar.m_flChargeLevel) * 100 ), '%', " Uber"), colors::Health(( CE_FLOAT(weapon, netvar.m_flChargeLevel) * 100 ), 100));
+									} else AddEntityString(ent, format(floor( CE_FLOAT(weapon, netvar.m_flChargeLevel) * 100 ), '%', " Uber | Charges: ", floor( CE_FLOAT(weapon, netvar.m_flChargeLevel) / 0.25f )), colors::Health(( CE_FLOAT(weapon, netvar.m_flChargeLevel) * 100 ), 100));
+									break;
+								}
+							}
+						}
+					}
+				}
 				if (show_conditions) {
 					if (IsPlayerInvisible(ent)) {
 						AddEntityString(ent, "INVISIBLE");
