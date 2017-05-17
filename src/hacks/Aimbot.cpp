@@ -696,8 +696,8 @@ void PaintTraverse() {
 int BestHitbox(CachedEntity* target) {
 	PROF_SECTION(CM_aimbot_besthitbox);
 
-	int preferred, ci, flags, bdmg, bodmg;
-	float cdmg;
+	int preferred, ci, flags, bdmg;
+	float cdmg, bodmg;
 	bool ground;
 	preferred = hitbox;
 	switch ((int)hitbox_mode) {
