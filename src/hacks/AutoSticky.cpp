@@ -43,11 +43,14 @@ bool stickyVisable(CachedEntity* targetTrace, CachedEntity* bombTrace) {
     trace_t trace;
     trace::filter_default.SetSelf(RAW_ENT(bombTrace));
     Ray_t ray;
-    ray.Init(bombTrace->m_vecOrigin, RAW_ENT(targetTrace)->GetCollideable()->GetCollisionOrigin());
-    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);
+	ray.Init(bombTrace->m_vecOrigin, RAW_ENT(targetTrace)->GetCollideable()->GetCollisionOrigin());
+	{
+		PROF_SECTION(IEVV_TraceRay);
+		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
+	}
     //deboog1 = bombTrace.DistToSqr(trace->endpos);
     if (trace.m_pEnt) {
-        if (((IClientEntity*)(trace.m_pEnt))->entindex() == targetTrace->m_IDX) return true;
+        if ((((IClientEntity*)trace.m_pEnt)) == RAW_ENT(targetTrace)) return true;
 	}
     return false;
 }
