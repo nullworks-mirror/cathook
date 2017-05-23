@@ -581,6 +581,8 @@ static const std::string list_tf2 = R"(
 
 "Miscellaneous" [
     "Miscellaneous Settings"
+	"removecond_master"
+	"removecond_value"
     "removecond_key"
     "removecond_fire"
     "removecond_taunt"
