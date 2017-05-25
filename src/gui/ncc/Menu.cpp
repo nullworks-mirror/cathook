@@ -297,6 +297,7 @@ static const std::string list_tf2 = R"(
         "aimbot_enable_attack_only"
         "aimbot_maxrange"
         "aimbot_interp"
+		"aimbot_engine_pred"
         "aimbot_instant_rezoom_enabled"
         "aimbot_slow"
         "aimbot_slow_smooth"

@@ -99,6 +99,7 @@ static CatVar proj_visibility(CV_SWITCH, "aimbot_proj_vispred", "0", "Projectile
 static CatVar proj_fov(CV_SWITCH, "aimbot_proj_fovpred", "0", "Projectile FOV mode", "If disabled, FOV restrictions apply to current target position");
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
+static CatVar engine_predict(CV_SWITCH, "aimbot_engine_pred", "0", "Engine Prediction", "Improves accuracy by preforming engine prediction\nKnown bugs: Crash on disconnect, breaks bhop");
 //Initialize vars for slow aim
 static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nDoesn't work with Silent or Anti-aim");
 static CatVar slowaim_smoothing(CV_INT, "aimbot_slow_smooth", "10", "Slow Aim Smooth", "How slow the slow aim's aiming should be", 50);
@@ -145,6 +146,7 @@ int ClosestHitbox(CachedEntity* target) {
 static EAimbotLocalState local_state_last;
 
 void CreateMove() {
+	
 	EAimbotLocalState local_state;
 	float target_highest_score, scr, begincharge, charge;
 	CachedEntity* ent;
@@ -158,7 +160,7 @@ void CreateMove() {
 	} else {
 		state = EAimbotState::ENABLED;
 	}
-
+	if (engine_predict) RunEnginePrediction(RAW_ENT(LOCAL_E), g_pUserCmd);
 	local_state = ShouldAim();
 
 	if (aimbot_debug) {
