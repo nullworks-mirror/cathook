@@ -145,6 +145,7 @@ int ClosestHitbox(CachedEntity* target) {
 static EAimbotLocalState local_state_last;
 
 void CreateMove() {
+	
 	EAimbotLocalState local_state;
 	float target_highest_score, scr, begincharge, charge;
 	CachedEntity* ent;
@@ -158,7 +159,7 @@ void CreateMove() {
 	} else {
 		state = EAimbotState::ENABLED;
 	}
-
+	RunEnginePrediction(RAW_ENT(LOCAL_E), g_pUserCmd);
 	local_state = ShouldAim();
 
 	if (aimbot_debug) {

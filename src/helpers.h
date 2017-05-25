@@ -111,6 +111,8 @@ char GetChar(ButtonCode_t button);
 
 bool IsEntityVisiblePenetration(CachedEntity* entity, int hb);
 
+void RunEnginePrediction(IClientEntity* ent, CUserCmd *ucmd);
+
 //void RunEnginePrediction(IClientEntity* ent, CUserCmd *ucmd = NULL);
 //void StartPrediction(CUserCmd* cmd);
 //void EndPrediction();
