@@ -8,25 +8,14 @@ CMake?
 
 ------------====-----------
 
-alias clearcond "host_timescale 300;wait 500;host_timescale 1"
-alias clearcond_taunt "taunt;wait 50;host_timescale 300;wait 500;host_timescale 1"
-bind l clearcond_taunt
 
 TF2C teams
 TF2C merc
 HL2DM teams
 
-Fix Autosticky
-Proj Aimbot
-
 fullbright toggle
 Hunter Rifle
-inspect shit
 TTS
-noise spam
-team name spam (pre round team name spam thing)
-insta taunt (taunts for like .5 ms and then you can do it again lithium has it)
-auto vacc
 namesteal
 autovote
 voice command spam (not like 1 voice command every 1 ms but like just spamming it on the menu)
@@ -42,7 +31,6 @@ FLAG ESP
 no aim sapper
 Improve Projectile Aimbot. A lot.
 Proper AutoHitbox
-Smoothe the smooth aim
 Display on the left
 Flare aim on fire
 Aim Sticky
@@ -72,7 +60,6 @@ Bodyshot if not zoomed
 Proper medic followbot AI
 Bot option for aiming at owner's prey (just for fun)
 Bot pathfinding & navigation files system
-SkinChanger
 Proper entity classes (actually I might just use a lot of helper functions taking IClientEntity* as first arg)
 Priority system optimization and testing
 General optimization and refactoring
