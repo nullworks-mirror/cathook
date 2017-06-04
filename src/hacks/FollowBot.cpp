@@ -233,6 +233,9 @@ CatCommand tool("fb_tool", "Followbot multitool", [](const CCommand& args) {
 
 CatCommand follow("fb_follow", "Follows you (or player with SteamID specified)", [](const CCommand& args) {
 	follow_steamid = strtol(args.Arg(1), nullptr, 10);
+	allow_moving = true;
+	crumbForceMove = true;
+    CrumbStart();
 });
 CatVar bot(CV_SWITCH, "fb_bot", "0", "This player is a bot", "Set to 1 in followbots' configs");
 CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "1", "Mimic selected weapon", "If enabled, this bot will select same weapon slot as the owner");

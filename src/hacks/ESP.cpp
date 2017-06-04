@@ -228,6 +228,26 @@ void Draw3DBox(CachedEntity* ent, int clr, bool healthbar, int health, int healt
 	}
 }
 
+static CatVar esp_bone(CV_SWITCH, "esp_bone", "0", "Bone esp", "Creates lines on the players bone");
+	
+void DrawBones(CachedEntity* ent, int clr) {
+	Vector scnSrt, scnEnd, boneStart, boneEnd;
+	
+	//Place for every bone to be "connected" to
+	int bonesx [17] = { 1, 2, 3, 4, 5, 5, 6, 7, 5, 9,  10, 1,  15, 16, 1,  12, 13 };
+	int bonesy [17] = { 2, 3, 4, 5, 0, 6, 7, 8, 9, 10, 11, 15, 16, 17, 12, 13, 14 };
+	
+	for (int i = 0; i < 17; i++) {
+		
+		GetHitbox(ent, bonesx[i], boneStart);
+		GetHitbox(ent, bonesy[i], boneEnd);
+		draw::WorldToScreen(boneStart, scnSrt);
+		draw::WorldToScreen(boneEnd, scnEnd);
+		draw::DrawLine(scnSrt.x, scnSrt.y, scnEnd.x - scnSrt.x, scnEnd.y - scnSrt.y, clr);	
+	}
+}
+
+
 static CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "Don't draw 2D box");
 static CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
 
@@ -547,7 +567,14 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	fg = ent_data.color;
 
 	if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin, origin_screen)) return;
-
+	
+	if (esp_bone) {
+		if (ent->m_Type == ENTITY_PLAYER) {
+			if (!IsPlayerInvisible(ent)) {
+				DrawBones(ent, fg);
+			}
+		}
+	}
 	if (box_esp) {
 		switch (ent->m_Type) {
 		case ENTITY_PLAYER: {

@@ -379,6 +379,7 @@ static const std::string list_tf2 = R"(
         "esp_enabled"
         "font_esp_family"
         "font_esp_height"
+		"esp_bone"
         "esp_conds"
         "esp_class"
         "esp_name"
