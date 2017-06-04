@@ -736,7 +736,7 @@ void RunEnginePrediction(IClientEntity* ent, CUserCmd *ucmd) {
     g_IGameMovement->FinishTrackPredictionErrors(reinterpret_cast<CBasePlayer*>(ent));
 
     NET_VAR(ent, 4188, CUserCmd*) = nullptr;
-
+	*g_PredictionRandomSeed = -1;
     g_GlobalVars->frametime = frameTime;
     g_GlobalVars->curtime = curTime;
 

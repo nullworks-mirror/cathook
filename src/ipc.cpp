@@ -127,9 +127,9 @@ void StoreClientData() {
 	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
 	strncpy(data.name, g_ISteamFriends->GetPersonaName(), sizeof(data.name));
 }
-
+static CatVar fbPlayUpdate(CV_SWITCH, "fb_auto_playerlist", "1", "Assign State", "Automaticly assign playerstates for bots");
 void UpdatePlayerlist() {
-	if (peer) {
+	if (peer && fbPlayUpdate) {
 		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
 			if (!peer->memory->peer_data[i].free) {
 				playerlist::userdata& info = playerlist::AccessData(peer->memory->peer_user_data[i].friendid);
