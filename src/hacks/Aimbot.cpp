@@ -543,26 +543,6 @@ bool Aim(CachedEntity* entity) {
 	return true;
 }
 
-/*Broken Autoshoot delay code
-//Ripped from AAAA timer
-float autoshoot_timer_start = 0.0f;
-float autoshoot_timer = 0.0f;
-
-void UpdateAutoShootTimer() {
-	const float& curtime = g_GlobalVars->curtime;
-	if (autoshoot_timer_start > curtime) autoshoot_timer_start = 0.0f;
-	if (!autoshoot_timer || !autoshoot_timer_start) {
-		autoshoot_timer = autoshoot_delay;
-		autoshoot_timer_start = curtime;
-	} else {
-		if (curtime - autoshoot_timer_start > autoshoot_timer) {
-			cmd->buttons |= IN_ATTACK;
-			autoshoot_timer_start = curtime;
-			autoshoot_timer = autoshoot_delay;
-		}
-	}
-}*/
-
 bool UpdateAimkey() {
 	static bool aimkey_flip = false;
 	static bool pressed_last_tick = false;

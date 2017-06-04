@@ -575,6 +575,7 @@ static const std::string list_tf2 = R"(
 "Follow Bot" [
     "Follow Bot Settings"
     "fb_bot"
+	"fb_auto_playerlist"
     "fb_mimic_slot"
     "fb_always_medigun"
     "fb_autoclass"
