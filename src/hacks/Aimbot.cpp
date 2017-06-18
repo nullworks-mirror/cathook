@@ -674,7 +674,7 @@ EAimbotLocalState ShouldAim() {
 	}
 	return EAimbotLocalState::GOOD;
 }
-
+static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring", "Draws a ring to represent your current aimbot fov\nDoesnt change according to zoom fov\nWIP");
 void PaintTraverse() {
 	if (!enabled) return;
 	

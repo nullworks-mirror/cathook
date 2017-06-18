@@ -249,7 +249,6 @@ void draw::OutlineRect(int x, int y, int w, int h, int color) {
 	g_ISurface->DrawOutlinedRect(x, y, x + w, y + h);
 }
 
-//Potentially broken circle draw
 void draw::DrawCircle(float x, float y, float r, int num_segments, int color) {
 	if (num_segments < 3 || r == 0 ) return;
 	g_ISurface->DrawSetColor(*reinterpret_cast<Color*>(&color));
