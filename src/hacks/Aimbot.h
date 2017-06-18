@@ -92,6 +92,7 @@ bool VischeckPredictedEntity(CachedEntity* entity);
 void CreateMove();
 void PaintTraverse();
 void Reset();
+void Draw();
 
 extern EAimbotState state;
 extern int target_eid;

@@ -133,6 +133,8 @@ int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene,
 
 float last_bucket = 0;
 
+static CatVar tauntslide_moveable(CV_SWITCH, "tauntslide_moveable", "0", "Taunt Slide", "Allows free movement while taunting with movable taunts\nOnly works in tf2");
+
 void CreateMove() {
 	static bool flswitch = false;
 	static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
@@ -143,7 +145,17 @@ void CreateMove() {
 	static bool changed = false;
 	static ConVar *pNoPush = g_ICvar->FindVar("tf_avoidteammates_pushaway");
 
-
+	//Only work if the catvar enables it
+	if (tauntslide_moveable) {
+		//If the local player is taunting
+		if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
+			//Set actual angles = the third person cameras angle
+			g_pUserCmd->viewangles.y = g_pLocalPlayer->v_OrigViewangles.y;
+			//Use silent since we dont want to prevent the player from looking around
+			g_pLocalPlayer->bUseSilentAngles = true;
+				
+		}
+	}
 	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
 		RemoveCondition<TFCond_Taunting>(LOCAL_E);
 		no_taunt_ticks--;

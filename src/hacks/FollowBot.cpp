@@ -497,6 +497,34 @@ void DoWalking() {
 		}
 	}
 }
+	
+/*static CatVar crumbDraw(CV_SWITCH, "fb_crumb_draw", "1", "Draw Crumbs", "Draws the path made for the followbot");
+	
+void DrawCrumbs() {
+	Vector scnSrt, scnEnd;
+	int tmpCrumb;
+	for (int i = 0; i < crumbArrayLength; i++) {
+		tmpCrumb = crumbBottom + i;
+		if (tmpCrumb >= 55)
+			tmpCrumb - 55;
+		draw::WorldToScreen(breadcrumbs[tmpCrumb], scnSrt);
+		
+		if (tmpCrumb >= 54)
+			draw::WorldToScreen(breadcrumbs[tmpCrumb - 54], scnEnd);
+		else 
+			draw::WorldToScreen(breadcrumbs[tmpCrumb + 1], scnEnd);
+		draw::DrawLine(scnSrt.x, scnSrt.y, scnEnd.x - scnSrt.x, scnEnd.y - scnSrt.y, colors::white);	
+		logging::Info("draw");
+	}
+}
+	
+void Draw() {
+	//if (!bot) return;
+	if (crumbDraw) {
+		if (crumbArrayLength >= 2)
+			void DrawCrumbs();
+	}
+}*/
 
 }}}
 

@@ -249,6 +249,20 @@ void draw::OutlineRect(int x, int y, int w, int h, int color) {
 	g_ISurface->DrawOutlinedRect(x, y, x + w, y + h);
 }
 
+//Potentially broken circle draw
+void draw::DrawCircle(float x, float y, float r, int num_segments, int color) {
+	if (num_segments < 3 || r == 0 ) return;
+	g_ISurface->DrawSetColor(*reinterpret_cast<Color*>(&color));
+	float Step = PI * 2.0 / num_segments;
+    for (float a = 0; a < (PI*2.0); a += Step) {
+        float x1 = r * cos(a) + x;
+        float y1 = r * sin(a) + y;
+        float x2 = r * cos(a + Step) + x;
+        float y2 = r * sin(a + Step) + y;
+		g_ISurface->DrawLine(x1, y1, x2, y2);
+    }
+}
+
 void draw::GetStringLength(unsigned long font, char* string, int& length, int& height) {
 	wchar_t buf[512];
 	memset(buf, 0, sizeof(wchar_t) * 512);

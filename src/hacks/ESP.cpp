@@ -244,6 +244,7 @@ void DrawBones(CachedEntity* ent, int clr) {
 		draw::WorldToScreen(boneStart, scnSrt);
 		draw::WorldToScreen(boneEnd, scnEnd);
 		draw::DrawLine(scnSrt.x, scnSrt.y, scnEnd.x - scnSrt.x, scnEnd.y - scnSrt.y, clr);	
+		
 	}
 }
 

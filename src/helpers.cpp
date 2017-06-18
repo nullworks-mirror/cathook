@@ -705,7 +705,8 @@ bool IsEntityVisiblePenetration(CachedEntity* entity, int hb) {
 
 void RunEnginePrediction(IClientEntity* ent, CUserCmd *ucmd) {
     if (!ent) return;
-
+	//if (CE_BAD( ENTITY(ent->entindex()) )) return;
+    
     typedef void(*SetupMoveFn)(IPrediction*, IClientEntity *, CUserCmd *, class IMoveHelper *, CMoveData *);
     typedef void(*FinishMoveFn)(IPrediction*, IClientEntity *, CUserCmd*, CMoveData*);
 
@@ -727,7 +728,7 @@ void RunEnginePrediction(IClientEntity* ent, CUserCmd *ucmd) {
 
     g_GlobalVars->curtime =  g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
     g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
-
+	
     *g_PredictionRandomSeed = MD5_PseudoRandom(g_pUserCmd->command_number) & 0x7FFFFFFF;
     g_IGameMovement->StartTrackPredictionErrors(reinterpret_cast<CBasePlayer*>(ent));
     oSetupMove(g_IPrediction, ent, ucmd, NULL, pMoveData);

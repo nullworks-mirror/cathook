@@ -105,6 +105,11 @@ static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves y
 static CatVar slowaim_smoothing(CV_INT, "aimbot_slow_smooth", "10", "Slow Aim Smooth", "How slow the slow aim's aiming should be", 50);
 static CatVar slowaim_autoshoot(CV_INT, "aimbot_slow_autoshoot", "10", "Slow Aim Threshhold", "Distance to autoshoot while smooth aiming", 25);
 static CatVar aimbot_debug(CV_SWITCH, "aimbot_debug", "0", "Aimbot Debug", "Print some internal state info for aimbot");
+	
+
+
+
+	
 
 bool slowCanShoot = false;
 /*//Salting vars that need to be saved due to them being time based
@@ -278,6 +283,7 @@ void CreateMove() {
 			minigun_fix_ticks && (local_state == EAimbotLocalState::GOOD)) {
 		Aim(ENTITY(last_target));
 	}
+	
 	if (silent) g_pLocalPlayer->bUseSilentAngles = true;
 	return;
 }
@@ -294,7 +300,7 @@ const Vector& PredictEntity(CachedEntity* entity) {
 	if (cd.predict_tick == tickcount) return result;
 	if ((entity->m_Type == ENTITY_PLAYER)) {
 		if (projectile_mode) {
-			result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
+			result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));			
 		} else {
 			if (lerp)
 				result = SimpleLatencyPrediction(entity, cd.hitbox);
@@ -757,6 +763,28 @@ int BestHitbox(CachedEntity* target) {
 	} break;
 	}
 	return -1;
+}
+	
+void Draw() {
+	//Fov ring to represent when a target will be shot
+	//Not perfect but does a good job of representing where its supposed to be
+	if (fov_draw) {
+		//It cant use fovs greater than 180, so we check for that
+		if ((int)fov < 180 && fov) {
+			//Dont show ring while player is dead
+			if (!LOCAL_E->m_bAlivePlayer) {
+				//Grab the screen resolution and save to some vars
+				int width, height;
+				g_IEngine->GetScreenSize(width, height);
+				//Grab the cvar for fov_desired and attach to another var
+				static ConVar *realFov = g_ICvar->FindVar("fov_desired");
+				//Some math to find radius of the fov circle
+				float radius = tanf(DEG2RAD((float)fov) / 2) / tanf(DEG2RAD((int)realFov)/ 2) * width;
+				//Draw a circle with our newfound circle
+				draw::DrawCircle( width / 2 ,height / 2, radius, 35, GUIColor());
+			}
+		}
+	}	
 }
 
 }}}
