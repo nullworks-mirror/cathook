@@ -625,9 +625,6 @@ static const std::string list_tf2 = R"(
         "log"
     ]
 ]
-"deboog1"
-"deboog2"
-"deboog3"
 )";
 
 List& MainList() {

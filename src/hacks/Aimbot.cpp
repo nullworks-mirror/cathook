@@ -676,8 +676,29 @@ EAimbotLocalState ShouldAim() {
 }
 
 void PaintTraverse() {
-	if (!aimbot_debug) return;
 	if (!enabled) return;
+	
+	//Fov ring to represent when a target will be shot
+	//Not perfect but does a good job of representing where its supposed to be
+	if (fov_draw) {
+		//It cant use fovs greater than 180, so we check for that
+		if ((int)fov < 180 && fov) {
+			//Dont show ring while player is dead
+			if (!LOCAL_E->m_bAlivePlayer) {
+				//Grab the screen resolution and save to some vars
+				int width, height;
+				g_IEngine->GetScreenSize(width, height);
+				//Grab the cvar for fov_desired and attach to another var
+				static ConVar *realFov = g_ICvar->FindVar("fov_desired");
+				//Some math to find radius of the fov circle
+				float radius = tanf(DEG2RAD((float)fov) / 2) / tanf(DEG2RAD((int)realFov)/ 2) * width;
+				//Draw a circle with our newfound circle
+				draw::DrawCircle( width / 2 ,height / 2, radius, 35, GUIColor());
+			}
+		}
+	}	
+	
+	if (!aimbot_debug) return;
 	AddSideString(format("AimbotState: ", static_cast<int>(local_state_last)));
 }
 
@@ -763,28 +784,6 @@ int BestHitbox(CachedEntity* target) {
 	} break;
 	}
 	return -1;
-}
-	
-void Draw() {
-	//Fov ring to represent when a target will be shot
-	//Not perfect but does a good job of representing where its supposed to be
-	if (fov_draw) {
-		//It cant use fovs greater than 180, so we check for that
-		if ((int)fov < 180 && fov) {
-			//Dont show ring while player is dead
-			if (!LOCAL_E->m_bAlivePlayer) {
-				//Grab the screen resolution and save to some vars
-				int width, height;
-				g_IEngine->GetScreenSize(width, height);
-				//Grab the cvar for fov_desired and attach to another var
-				static ConVar *realFov = g_ICvar->FindVar("fov_desired");
-				//Some math to find radius of the fov circle
-				float radius = tanf(DEG2RAD((float)fov) / 2) / tanf(DEG2RAD((int)realFov)/ 2) * width;
-				//Draw a circle with our newfound circle
-				draw::DrawCircle( width / 2 ,height / 2, radius, 35, GUIColor());
-			}
-		}
-	}	
 }
 
 }}}

@@ -198,7 +198,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		}
 		{
 			SAFE_CALL(hacks::shared::aimbot::PaintTraverse());
-			SAFE_CALL(hacks::shared::aimbot::Draw());
 		}
 	}
 
