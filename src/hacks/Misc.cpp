@@ -133,6 +133,9 @@ int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene,
 
 float last_bucket = 0;
 
+static CatVar tauntslide_moveable(CV_SWITCH, "tauntslide_moveable", "0", "Taunt Slide", "Allows free movement while taunting with movable taunts\nOnly works in tf2\nWIP");
+static CatVar tauntslide_debug(CV_SWITCH, "tauntslide_debug", "0", "Debug movement", "Allows free movement while taunting with movable taunts\nOnly works in tf2\nWIP");
+
 void CreateMove() {
 	static bool flswitch = false;
 	static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
@@ -143,7 +146,38 @@ void CreateMove() {
 	static bool changed = false;
 	static ConVar *pNoPush = g_ICvar->FindVar("tf_avoidteammates_pushaway");
 
+	//Tauntslide needs improvement for movement but it mostly works
+	IF_GAME (IsTF2()) {
+		//Only work if the catvar enables it
+		if (tauntslide_moveable) {
+			//Check to prevent crashing
+			if (CE_GOOD(LOCAL_E)) {
+				//If the local player is taunting
+				if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
+					if (tauntslide_debug) {
+						float forward = 0;
+						float side = 0;
 
+						if (g_pUserCmd->buttons & IN_FORWARD) forward -= 450;
+						if (g_pUserCmd->buttons & IN_BACK) forward += 450;
+						if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
+						if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
+
+						g_pUserCmd->forwardmove = forward;
+						g_pUserCmd->sidemove = side;
+					}
+					//Grab Camera angle
+					static QAngle cameraAngle;
+					g_IEngine->GetViewAngles(cameraAngle);
+					
+					//Set userAngle = camera angles
+					g_pUserCmd->viewangles.y = cameraAngle[1];
+					//Use silent since we dont want to prevent the player from looking around
+					g_pLocalPlayer->bUseSilentAngles = true;
+				}
+			}
+		}
+	}
 	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
 		RemoveCondition<TFCond_Taunting>(LOCAL_E);
 		no_taunt_ticks--;
@@ -204,10 +238,6 @@ void CreateMove() {
 					}
 				}*/
 				if (g_pUserCmd->command_number && (last_checked_weapon != weapon || last_checked_command_number < g_pUserCmd->command_number)) {
-					if (!g_PredictionRandomSeed) {
-						uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
-						g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
-					}
 					tries = 0;
 					cmdn = g_pUserCmd->command_number;
 					chc = false;

@@ -585,14 +585,17 @@ static const std::string list_tf2 = R"(
 
 "Miscellaneous" [
     "Miscellaneous Settings"
-	"removecond_master"
-	"removecond_value"
-    "removecond_key"
-    "removecond_fire"
-    "removecond_taunt"
-    "removecond_bleeding"
-    "removecond_stun"
-    "spycrab"
+	"Remove Cond" [
+		"Remove Cond Exploit"
+		"removecond_master"
+		"removecond_value"
+		"removecond_key"
+		"removecond_fire"
+		"removecond_taunt"
+		"removecond_bleeding"
+		"removecond_stun"
+		"spycrab"
+	]
     "Spy Alert" [
         "Spy Alert Settings"
         "spyalert_enabled"

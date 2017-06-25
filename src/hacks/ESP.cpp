@@ -234,8 +234,8 @@ void DrawBones(CachedEntity* ent, int clr) {
 	Vector scnSrt, scnEnd, boneStart, boneEnd;
 	
 	//Place for every bone to be "connected" to
-	int bonesx [17] = { 1, 2, 3, 4, 5, 5, 6, 7, 5, 9,  10, 1,  15, 16, 1,  12, 13 };
-	int bonesy [17] = { 2, 3, 4, 5, 0, 6, 7, 8, 9, 10, 11, 15, 16, 17, 12, 13, 14 };
+	static int bonesx [17] = { 1, 2, 3, 4, 5, 5, 6, 7, 5, 9,  10, 1,  15, 16, 1,  12, 13 };
+	static int bonesy [17] = { 2, 3, 4, 5, 0, 6, 7, 8, 9, 10, 11, 15, 16, 17, 12, 13, 14 };
 	
 	for (int i = 0; i < 17; i++) {
 		
@@ -244,6 +244,7 @@ void DrawBones(CachedEntity* ent, int clr) {
 		draw::WorldToScreen(boneStart, scnSrt);
 		draw::WorldToScreen(boneEnd, scnEnd);
 		draw::DrawLine(scnSrt.x, scnSrt.y, scnEnd.x - scnSrt.x, scnEnd.y - scnSrt.y, clr);	
+		
 	}
 }
 

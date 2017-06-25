@@ -130,8 +130,6 @@ void CreateInterfaces() {
 	g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
 	if (!g_PredictionRandomSeed) {
 		uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
-		logging::Info("Random Seed: 0x%08x", sig + 32);
-		logging::Info("Random Seed: 0x%08x", *(int**)(sig + 32));
 		g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
 	}
 }

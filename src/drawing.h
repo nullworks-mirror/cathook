@@ -100,6 +100,7 @@ void DrawLine(int x, int y, int dx, int dy, int color);
 bool WorldToScreen(Vector &origin, Vector &screen);
 bool EntityCenterToScreen(CachedEntity* entity, Vector& out);
 void OutlineRect(int x, int y, int w, int h, int color);
+void DrawCircle(float cx, float cy, float r, int num_segments, int color);
 void GetStringLength(unsigned long font, char* string, int& length, int& height);
 std::pair<int, int> GetStringLength(unsigned long font, std::string string);
 //void DrawString(unsigned font_handle, int x, int y, Color color, const char* text, ...);
