@@ -134,6 +134,7 @@ int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene,
 float last_bucket = 0;
 
 static CatVar tauntslide_moveable(CV_SWITCH, "tauntslide_moveable", "0", "Taunt Slide", "Allows free movement while taunting with movable taunts\nOnly works in tf2\nWIP");
+static CatVar tauntslide_debug(CV_SWITCH, "tauntslide_debug", "0", "Debug movement", "Allows free movement while taunting with movable taunts\nOnly works in tf2\nWIP");
 
 void CreateMove() {
 	static bool flswitch = false;
@@ -145,22 +146,35 @@ void CreateMove() {
 	static bool changed = false;
 	static ConVar *pNoPush = g_ICvar->FindVar("tf_avoidteammates_pushaway");
 
-	
-	//Only work if the catvar enables it
-	if (tauntslide_moveable) {
-		//Check to prevent crashing
-		if (CE_GOOD(LOCAL_E)) {
-			//If the local player is taunting
-			if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
-				logging::Info("sLIDDING ");
-				//Grab Camera angle
-				static QAngle cameraAngle;
-				g_IEngine->GetViewAngles(cameraAngle);
-				//Set userAngle = camera angles
-				g_pUserCmd->viewangles.y = cameraAngle[1];
-				//Use silent since we dont want to prevent the player from looking around
-				g_pLocalPlayer->bUseSilentAngles = true;
+	//Tauntslide needs improvement for movement but it mostly works
+	IF_GAME (IsTF2()) {
+		//Only work if the catvar enables it
+		if (tauntslide_moveable) {
+			//Check to prevent crashing
+			if (CE_GOOD(LOCAL_E)) {
+				//If the local player is taunting
+				if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
+					if (tauntslide_debug) {
+						float forward = 0;
+						float side = 0;
 
+						if (g_pUserCmd->buttons & IN_FORWARD) forward -= 450;
+						if (g_pUserCmd->buttons & IN_BACK) forward += 450;
+						if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
+						if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
+
+						g_pUserCmd->forwardmove = forward;
+						g_pUserCmd->sidemove = side;
+					}
+					//Grab Camera angle
+					static QAngle cameraAngle;
+					g_IEngine->GetViewAngles(cameraAngle);
+					
+					//Set userAngle = camera angles
+					g_pUserCmd->viewangles.y = cameraAngle[1];
+					//Use silent since we dont want to prevent the player from looking around
+					g_pLocalPlayer->bUseSilentAngles = true;
+				}
 			}
 		}
 	}
