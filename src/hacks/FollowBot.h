@@ -31,7 +31,6 @@ void DoWalking();
 void PrintDebug();
 void AddMessageHandlers(ipc::peer_t* peer);
 void AfterCreateMove();
-//void Draw();
 
 }}}
 

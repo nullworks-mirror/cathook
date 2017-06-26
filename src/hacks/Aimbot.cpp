@@ -84,8 +84,7 @@ static CatVar attack_only(CV_SWITCH, "aimbot_enable_attack_only", "0", "Active w
 static CatVar max_range(CV_INT, "aimbot_maxrange", "0", "Max distance",
 		"Max range for aimbot\n"
 		"900-1100 range is efficient for scout/widowmaker engineer", 4096.0f);
-static CatVar lerp(CV_SWITCH, "aimbot_interp", "1", "Latency interpolation", "Enable basic latency interpolation \(depreciated\)");
-static CatVar engine_predict(CV_SWITCH, "aimbot_engine_pred", "0", "Engine Prediction", "Improves accuracy by preforming engine prediction\nKnown bugs: Crash on disconnect, breaks bhop");
+static CatVar extrapolate(CV_SWITCH, "aimbot_extrapolate", "0", "Latency extrapolation", "(NOT RECOMMENDED) latency extrapolation");
 static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nDoesn't work with Silent or Anti-aim");
 static CatVar slowaim_smoothing(CV_INT, "aimbot_slow_smooth", "10", "Slow Aim Smooth", "How slow the slow aim's aiming should be", 50);
 static CatVar slowaim_autoshoot(CV_INT, "aimbot_slow_autoshoot", "10", "Slow Aim Threshhold", "Distance to autoshoot while smooth aiming", 25);
@@ -102,6 +101,9 @@ static CatVar proj_speed(CV_FLOAT, "aimbot_proj_speed", "0", "Projectile speed",
 static CatVar huntsman_autoshoot(CV_FLOAT, "aimbot_huntsman_charge", "0.5", "Huntsman autoshoot", "Minimum charge for autoshooting with huntsman.\n"
 		"Set it to 0.01 if you want to shoot as soon as you start pulling the arrow", 0.01f, 1.0f);
 static CatVar huntsman_full_auto(CV_SWITCH, "aimbot_full_auto_huntsman", "1", "Auto Huntsman", "Autoshoot will pull huntsman's string");
+// Debug vars
+static CatVar aimbot_debug(CV_SWITCH, "aimbot_debug", "0", "Aimbot Debug", "Display simple debug info for aimbot");
+static CatVar engine_projpred(CV_SWITCH, "debug_aimbot_engine_pp", "0", "Engine ProjPred");
 /* TODO IMPLEMENT
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
@@ -130,10 +132,6 @@ void CreateMove() {
 		cur_proj_speed = (float)proj_speed;
 	if (proj_gravity)
 		cur_proj_grav = (float)proj_gravity;
-	
-	// Preform engine prediction
-	if (engine_predict)
-		RunEnginePrediction(RAW_ENT(LOCAL_E), g_pUserCmd);
 	
 	// Set foundTarget Status
 	foundTarget = false;
@@ -329,11 +327,6 @@ bool ShouldAim() {
 	
 // A second check to determine whether a target is good enough to be aimed at
 bool IsTargetStateGood(CachedEntity* entity) {
-	float bdmg;
-	weaponmode mode;
-	Vector resultAim;
-	int hitbox;
-	int team;
 	
 	// Check for Players
 	if (entity->m_Type == ENTITY_PLAYER) {
@@ -350,7 +343,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		IF_GAME (IsTF()) {
 			// If settings allow waiting for charge, and current charge cant kill target, dont aim
 			if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle) {
-				bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
+				float bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
 				if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f) bdmg = 50.0f;
 				if ((bdmg * 3) < (HasDarwins(entity) ? (entity->m_iHealth * 1.15) : entity->m_iHealth)) {
 					return false;
@@ -363,8 +356,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			// If settings allow, dont target cloaked players
 			if (respect_cloak && IsPlayerInvisible(entity)) return false;
 			// If settings allow, dont target vaccinated players
-			mode = GetWeaponMode();
-			if (mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == CL_CLASS(CTFCompoundBow))
+			if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == CL_CLASS(CTFCompoundBow))
 				if (respect_vaccinator && HasCondition<TFCond_UberBulletResist>(entity)) return false;
 		}
 		// Dont target players marked as friendly
@@ -376,7 +368,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			}
 		}
 		// Preform hitbox prediction
-		hitbox = BestHitbox(entity);
+		int hitbox = BestHitbox(entity);
 		AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
 		cd.hitbox = hitbox;
 		
@@ -393,8 +385,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		// Check if building aimbot is enabled
 		if (!buildings) return false;
 		// Check if enemy building
-		team = CE_INT(entity, netvar.iTeamNum);
-		if (team == g_pLocalPlayer->team) return false;
+		if (!entity->m_bEnemy) return false;
 		// Check if building is within range
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > (int)EffectiveTargetingRange()) return false;
@@ -497,10 +488,14 @@ const Vector& PredictEntity(CachedEntity* entity) {
 	if ((entity->m_Type == ENTITY_PLAYER)) {
 		// If using projectiles, predict a vector
 		if (projectile_mode) {
-			result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));			
+			// Use prediction engine if user settings allow
+			if (engine_projpred)
+				result = ProjectilePrediction_Engine(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, 0);
+			else
+				result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
 		} else {
 			// If using interpolation, then predict a vector
-			if (lerp)
+			if (extrapolate)
 				result = SimpleLatencyPrediction(entity, cd.hitbox);
 			// else just grab strait from the hitbox
 			else
@@ -800,12 +795,13 @@ void Reset() {
 
 // Function called when we need to draw to screen
 static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring", "Draws a ring to represent your current aimbot fov\nDoesnt change according to zoom fov\nWIP");
-void PaintTraverse() {
+void DrawText() {
 	// Dont draw to screen when aimbot is disabled
 	if (!enabled) return;
 	
 	// Fov ring to represent when a target will be shot
 	// Not perfect but does a good job of representing where its supposed to be
+	// Broken from kathook merge, TODO needs to be adapted for imgui
 	if (fov_draw) {
 		// It cant use fovs greater than 180, so we check for that
 		if ((int)fov < 180 && fov) {
@@ -819,14 +815,28 @@ void PaintTraverse() {
 				// Some math to find radius of the fov circle
 				float radius = tanf(DEG2RAD((float)fov) / 2) / tanf(DEG2RAD((int)realFov)/ 2) * width;
 				// Draw a circle with our newfound circle
-				draw::DrawCircle( width / 2 ,height / 2, radius, 35, GUIColor());
+				//draw::DrawCircle( width / 2 ,height / 2, radius, 35, GUIColor());
 			}
 		}
 	}	
+	// Dont fun the following unless debug is enabled
+	if (!aimbot_debug) return;
+	for (int i = 1; i < 32; i++) {
+		CachedEntity* ent = ENTITY(i);
+		if (CE_GOOD(ent)) {
+			Vector screen;
+			Vector oscreen;
+			if (draw::WorldToScreen(calculated_data_array[i].aim_position, screen) && draw::WorldToScreen(ent->m_vecOrigin, oscreen)) {
+				drawgl::FilledRect(screen.x - 2, screen.y - 2, 4, 4);
+				drawgl::Line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y);
+			}
+		}
+	}
 }
 
 
 }}}
  
+
 
 

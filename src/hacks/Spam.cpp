@@ -21,7 +21,6 @@ CatCommand reload("spam_reload", "Reload spam file", Reload);
 bool teamname_swap = false;
 int current_index { 0 };
 float last_spam { 0.0f };
-
 TextFile file {};
 
 const std::string teams[] = { "RED", "BLU" };
@@ -221,7 +220,6 @@ void CreateMove() {
 			current_index++;
 		}
 	}
-
 }
 
 void Reset() {

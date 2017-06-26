@@ -59,5 +59,6 @@
 #include "sdk/ScreenSpaceEffects.h"
 #include "sdk/iinput.h"
 #include "sdk/igamemovement.h"
+#include "sdk/HUD.h"
 
 #endif /* SDK_H_ */

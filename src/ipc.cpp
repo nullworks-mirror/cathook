@@ -127,6 +127,7 @@ void StoreClientData() {
 	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
 	strncpy(data.name, g_ISteamFriends->GetPersonaName(), sizeof(data.name));
 }
+
 static CatVar fbPlayUpdate(CV_SWITCH, "fb_auto_playerlist", "1", "Assign State", "Automaticly assign playerstates for bots");
 void UpdatePlayerlist() {
 	if (peer && fbPlayUpdate) {

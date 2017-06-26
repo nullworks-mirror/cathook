@@ -23,13 +23,14 @@ enum class EAimKeyMode {
 };
 
 struct AimbotCalculatedData_s {
-	unsigned long predict_tick { 0.0f };
+	unsigned long predict_tick { 0 };
 	Vector aim_position { 0 };
 	unsigned long vcheck_tick { 0 };
 	bool visible { false };
 	float fov { 0 };
 	int hitbox { 0 };
 };
+
 	
 extern bool foundTarget;
 
@@ -57,3 +58,4 @@ int ClosestHitbox(CachedEntity* target);
 }}}
 
 #endif /* HAIMBOT_H_ */
+

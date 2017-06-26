@@ -41,8 +41,9 @@ void SetCVarInterface(ICvar* iface);
 
 // TODO split this shit
 
-extern std::vector<ConVar*> g_ConVars;
-extern FILE* hConVarsFile;
+std::vector<ConVar*>& RegisteredVarsList();
+std::vector<ConCommand*>& RegisteredCommandsList();
+
 void BeginConVars();
 void EndConVars();
 
@@ -77,17 +78,22 @@ bool LineIntersectsBox(Vector& bmin, Vector& bmax, Vector& lmin, Vector& lmax);
 
 float DistToSqr(CachedEntity* entity);
 void fClampAngle(Vector& qaAng);
-void VectorAngles(Vector &forward, Vector &angles);
 //const char* MakeInfoString(IClientEntity* player);
 bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity);
 bool IsVectorVisible(Vector a, Vector b);
 bool IsSentryBuster(CachedEntity* ent);
 char* strfmt(const char* fmt, ...);
-void ReplaceString(char* target, char* what, char* with_what);
 // TODO move that to weaponid.h
 bool IsAmbassador(CachedEntity* ent);
 bool HasDarwins(CachedEntity* ent);
 bool AmbassadorCanHeadshot();
+
+inline const char* teamname(int team) {
+	if (team == 2) return "RED";
+	else if (team == 3) return "BLU";
+	return "SPEC";
+}
+void PrintChat(const char* fmt, ...);
 
 void WhatIAmLookingAt(int* result_eindex, Vector* result_pos);
 
@@ -95,9 +101,6 @@ void Patch(void* address, void* patch, size_t length);
 
 void AimAt(Vector origin, Vector target, CUserCmd* cmd);
 void AimAtHitbox(CachedEntity* ent, int hitbox, CUserCmd* cmd);
-
-std::string WordWrap(std::string& in, int max, unsigned long font);
-
 bool IsProjectileCrit(CachedEntity* ent);
 
 QAngle VectorToQAngle(Vector in);
@@ -110,8 +113,6 @@ char GetUpperChar(ButtonCode_t button);
 char GetChar(ButtonCode_t button);
 
 bool IsEntityVisiblePenetration(CachedEntity* entity, int hb);
-
-void RunEnginePrediction(IClientEntity* ent, CUserCmd *ucmd);
 
 //void RunEnginePrediction(IClientEntity* ent, CUserCmd *ucmd = NULL);
 //void StartPrediction(CUserCmd* cmd);

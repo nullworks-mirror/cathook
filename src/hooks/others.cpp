@@ -97,7 +97,7 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 
 int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
 	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
-#if NOGUI != 1
+#if ENABLE_GUI
 	SEGV_BEGIN;
 	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
 		return 0;
@@ -125,6 +125,8 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add
 // TODO replace \\n with \n
 // TODO name \\n = \n
 //static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages", "Use this if you want to use spam/killsay and still be able to chat normally (without having your msgs eaten by valve cooldown)");
+
+static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
 
 bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	static size_t say_idx, say_team_idx;
@@ -154,6 +156,20 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 			//}
 		}
 	}
+	static ConVar* sv_player_usercommand_timeout = g_ICvar->FindVar("sv_player_usercommand_timeout");
+	static float lastcmd = 0.0f;
+	if (lastcmd > g_GlobalVars->curtime) {
+		lastcmd = g_GlobalVars->curtime;
+	}
+	if (airstuck.KeyDown() && !g_Settings.bInvalid) {
+		if (CE_GOOD(LOCAL_E)) {
+			if (lastcmd + sv_player_usercommand_timeout->GetFloat() - 0.05f < g_GlobalVars->curtime) {
+				if (msg.GetType() == clc_Move) return false;
+			} else {
+				lastcmd = g_GlobalVars->curtime;
+			}
+		}
+	}
 	if (log_sent && msg.GetType() != 3 && msg.GetType() != 9) {
 		logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(), msg.ToString());
 		unsigned char buf[4096];
@@ -172,14 +188,12 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 	return false;
 }
 
-CatVar disconnect_reason(CV_STRING, "disconnect_reason", "", "Disconnect reason", "A custom disconnect reason");
-
 void Shutdown_hook(void* _this, const char* reason) {
 	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
 	const Shutdown_t original = (Shutdown_t)hooks::netchannel.GetMethod(offsets::Shutdown());
 	SEGV_BEGIN;
 	if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) && strstr(reason, "user")) {
-		original(_this, disconnect_reason.GetString());
+		original(_this, disconnect_reason_newlined);
 	} else {
 		original(_this, reason);
 	}
@@ -190,13 +204,28 @@ static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	static const GetFriendPersonaName_t original = (GetFriendPersonaName_t)hooks::steamfriends.GetMethod(offsets::GetFriendPersonaName());
-	if ((force_name.convar->m_StringLength > 2) && steamID == g_ISteamUser->GetSteamID()) {
-		return force_name.GetString();
+	if ((force_name.convar->m_StringLength > 3) && steamID == g_ISteamUser->GetSteamID()) {
+		return force_name_newlined;
 	}
 	return original(_this, steamID);
 }
 
 static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1", "Cursor fix");
+
+void FireGameEvent_hook(void* _this, IGameEvent* event) {
+	static const FireGameEvent_t original = (FireGameEvent_t)hooks::clientmode4.GetMethod(offsets::FireGameEvent());
+	const char* name = event->GetName();
+	if (name) {
+		if (event_log) {
+			if (!strcmp(name, "player_connect_client") ||
+				!strcmp(name, "player_disconnect") ||
+				!strcmp(name, "player_team")) {
+				return;
+			}
+		}
+	}
+	original(_this, event);
+}
 
 void FrameStageNotify_hook(void* _this, int stage) {
 	static IClientEntity *ent;
@@ -210,6 +239,10 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	{
 		PROF_SECTION(FSN_skinchanger);
 		hacks::tf2::skinchanger::FrameStageNotify(stage);
+	}
+	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
+		angles::Update();
+		hacks::shared::anticheat::CreateMove();
 	}
 	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		PROF_SECTION(FSN_resolver);
@@ -227,7 +260,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 		}
 	}
 	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
-#if NOGUI != 1
+#if ENABLE_GUI
 		if (cursor_fix_experimental) {
 			if (gui_visible) {
 				g_ISurface->SetCursorAlwaysVisible(true);
@@ -238,9 +271,6 @@ void FrameStageNotify_hook(void* _this, int stage) {
 #endif
 		IF_GAME(IsTF()) {
 			if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition<TFCond_Zoomed>(LOCAL_E);
-		}
-		IF_GAME(IsTF2()) {
-			GlowFrameStageNotify(stage);
 		}
 		if (force_thirdperson && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
@@ -319,6 +349,7 @@ void LevelInit_hook(void* _this, const char* newmap) {
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	hacks::shared::anticheat::ResetEverything();
 	original(_this, newmap);
 }
 
@@ -330,6 +361,7 @@ void LevelShutdown_hook(void* _this) {
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
 	hacks::shared::spam::Reset();
+	hacks::shared::anticheat::ResetEverything();
 	original(_this);
 }
 

@@ -39,10 +39,7 @@
 #define STRINGIFY(x) #x
 #define TO_STRING(x) STRINGIFY(x)
 
-#if NOGUI != 1
-#include "gui/GUI.h"
-#endif
-
+#include "ftrender.hpp"
 #include "hooks/hookedmethods.h"
 
 #include "sdk.h"
@@ -62,17 +59,32 @@ const std::string& hack::GetVersion() {
 	static std::string version("Unknown Version");
 	static bool version_set = false;
 	if (version_set) return version;
-#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
-		version = "Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE;
-#if NOGUI == 1
+	version = "";
+	#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
+	version += " Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE "\n";
+#endif
+#if not defined(IPC_ENABLED)
+	version += " NOIPC";
+#endif
+#if not ENABLE_GUI
 		version += " NOGUI";
-#endif
-#ifdef BUILD_GAME
-		version += " S " TO_STRING(BUILD_GAME);
 #else
-		version += " U";
+	version += " IMGUI";
 #endif
+
+#ifndef DYNAMIC_CLASSES
+
+#ifdef BUILD_GAME
+		version += " GAME " TO_STRING(BUILD_GAME);
+#else
+		version += " UNIVERSAL";
 #endif
+
+#else
+		version += " DYNAMIC";
+#endif
+		
+	version = version.substr(1);
 	version_set = true;
 	return version;
 }
@@ -83,6 +95,37 @@ std::stack<std::string>& hack::command_stack() {
 	return stack;
 }
 
+class AdvancedEventListener : public IGameEventListener {
+public:
+	virtual void FireGameEvent( KeyValues * event) {
+		const char* name = event->GetName();
+		if (!strcmp(name, "player_connect_client")) {
+			PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 joining", 0xa06ba0, event->GetString("name"), 0x914e65, event->GetString("networkid"));
+		} else if (!strcmp(name, "player_activate")) {
+			int uid = event->GetInt("userid");
+			int entity = g_IEngine->GetPlayerForUserID(uid);
+			player_info_s info;
+			if (g_IEngine->GetPlayerInfo(entity, &info)) {
+				PrintChat("\x07%06X%s\x01 connected", 0xa06ba0, info.name);
+			}
+		} else if (!strcmp(name, "player_disconnect")) {
+			CachedEntity* player = ENTITY(g_IEngine->GetPlayerForUserID(event->GetInt("userid")));
+			PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 disconnected", colors::chat::team(player->m_iTeam), event->GetString("name"), 0x914e65, event->GetString("networkid"));
+		} else if (!strcmp(name, "player_team")) {
+			if (event->GetBool("disconnect") != 1) {
+				int oteam = event->GetInt("oldteam");
+				int nteam = event->GetInt("team");
+				const char* oteam_s = teamname(oteam);
+				const char* nteam_s = teamname(nteam);
+				logging::Info("%d -> %d", oteam, nteam);
+				PrintChat("\x07%06X%s\x01 changed team (\x07%06X%s\x01 -> \x07%06X%s\x01)", 0xa06ba0, event->GetString("name"), colors::chat::team(oteam), oteam_s, colors::chat::team(nteam), nteam_s);
+			}
+		}
+	}
+};
+
+AdvancedEventListener adv_event_listener {};
+
 void hack::ExecuteCommand(const std::string command) {
 	std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
 	hack::command_stack().push(command);
@@ -91,19 +134,22 @@ void hack::ExecuteCommand(const std::string command) {
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
-	int white = colors::white, blu = colors::blu, red = colors::red;
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "cathook");
+	g_ICvar->ConsoleColorPrintf(Color(255, 255, 255, 255), "kathook");
+	g_ICvar->ConsoleColorPrintf(Color(  0,   0, 255, 255), " by ");
+	g_ICvar->ConsoleColorPrintf(Color(255,   0,   0, 255), "nullifiedcat\n");
+	/*int white = colors::white, blu = colors::blu, red = colors::red;
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "kathook");
 	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&blu), " by ");
 	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&red), "nullifiedcat\n");
 	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), GetVersion().c_str());
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "\n");
+	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "\n");*/
 }
 
 void hack::Initialize() {
+	logging::Info("Initializing...");
 	srand(time(0));
 	prctl(PR_SET_DUMPABLE,0,42,42,42);
 	sharedobj::LoadAllSharedObjects();
-	g_pszTFPath = tf_path_from_maps();
 	CreateInterfaces();
 	CDumper dumper;
 	dumper.SaveDump();
@@ -132,7 +178,7 @@ void hack::Initialize() {
 	g_Settings.Init();
 	EndConVars();
 	draw::Initialize();
-#if NOGUI != 1
+#if ENABLE_GUI
 	g_pGUI = new CatGUI();
 	g_pGUI->Setup();
 #endif
@@ -159,6 +205,9 @@ void hack::Initialize() {
 	hooks::clientmode.HookMethod((void*)LevelInit_hook, offsets::LevelInit());
 	hooks::clientmode.HookMethod((void*)LevelShutdown_hook, offsets::LevelShutdown());
 	hooks::clientmode.Apply();
+	hooks::clientmode4.Set((void*)(clientMode), 4);
+	hooks::clientmode4.HookMethod((void*)FireGameEvent_hook, offsets::FireGameEvent());
+	hooks::clientmode4.Apply();
 	hooks::client.Set(g_IBaseClient);
 	hooks::client.HookMethod((void*)FrameStageNotify_hook, offsets::FrameStageNotify());
 	hooks::client.HookMethod((void*)DispatchUserMessage_hook, offsets::DispatchUserMessage());
@@ -186,13 +235,13 @@ void hack::Initialize() {
 	//hooks::hkBaseClientState8->Apply();
 
 	// FIXME [MP]
-	IF_GAME (IsTF2()) g_GlowObjectManager = *reinterpret_cast<CGlowObjectManager**>(gSignatures.GetClientSignature("C1 E0 05 03 05") + 5);
 	InitStrings();
 	hacks::shared::killsay::Init();
 	hack::command_stack().push("exec cat_autoexec");
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
 	logging::Info("Hooked!");
+	velocity::Init();
 	playerlist::Load();
 	if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects) {
 		effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
@@ -205,6 +254,15 @@ void hack::Initialize() {
 	//	logging::Info("%s", reg->m_pEffectName);
 	//}
 	logging::Info("SSE enabled..");
+	DoSDLHooking();
+	logging::Info("SDL hooking done");
+	g_IGameEventManager->AddListener(&adv_event_listener, false);
+	hacks::shared::anticheat::Init();
+	
+#if ENABLE_GUI
+	// cat_reloadscheme to load imgui
+	g_IEngine->ClientCmd("cat_reloadscheme");
+#endif
 }
 
 void hack::Think() {
@@ -215,6 +273,7 @@ void hack::Shutdown() {
 	if (hack::shutdown) return;
 	hack::shutdown = true;
 	playerlist::Save();
+	DoSDLUnhooking();
 	logging::Info("Unregistering convars..");
 	ConVar_Unregister();
 	logging::Info("Shutting down killsay...");

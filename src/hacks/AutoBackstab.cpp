@@ -6,45 +6,33 @@
  */
 
 #include "../common.h"
+#include "../copypasted/CSignature.h"
 
 namespace hacks { namespace tf2 { namespace autobackstab {
 
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab", "Does not depend on triggerbot!");
 
-/*float GetAngle(CachedEntity* target) {
-	const Vector& A = target->m_vecOrigin;
-	const Vector& B = LOCAL_E->m_vecOrigin;
-	const float yaw = CE_FLOAT(target, netvar.m_angEyeAngles + 4);
-	const Vector diff = (A - B);
-	float yaw2 = acos(diff.x / diff.Length()) * 180.0f / PI;
-	if (diff.y < 0) yaw2 = -yaw2;
-	float anglediff = yaw - yaw2;
-	if (anglediff > 180) anglediff -= 360;
-	if (anglediff < -180) anglediff += 360;
-	//logging::Info("Angle: %.2f | %.2f | %.2f | %.2f", yaw, yaw2, anglediff, yaw - yaw2);
-	return anglediff;
-}*/
-
 // TODO improve
 void CreateMove() {
-	// lmao thanks valve
 	if (!enabled) return;
 	if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife)) return;
-	if (CE_BYTE(g_pLocalPlayer->weapon(), netvar.m_bReadyToBackstab)) {
-		g_pUserCmd->buttons |= IN_ATTACK;
-		return;
-	}
+	trace_t trace;
+	IClientEntity* weapon = RAW_ENT(LOCAL_W);
 
-	/*if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife)) return;
-	for (int i = 1; i < g_IEntityList->GetHighestEntityIndex() && i < 32; i++) {
-		CachedEntity* ent = ENTITY(i);
-		if (CE_BAD(ent)) continue;
-		if (!ent->m_bEnemy) continue;
-		if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE) continue;
-		if (IsPlayerInvulnerable(ent)) continue;
-		if (ent->m_flDistance > 75) continue;
-		if (fabs(GetAngle(ent)) < 100) g_pUserCmd->buttons |= IN_ATTACK;
-	}*/
+	typedef bool(*IsBehindAndFacingTarget_t)(IClientEntity*, IClientEntity*);
+	static auto IsBehindAndFacingTarget_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 5C 8B 45 08 8B 75 0C 89 04 24 E8 E9 0F FD FF 85 C0 89 C3 74 0F 8B 00 89 1C 24 FF 90 E0 02 00 00 84 C0 75 14");
+	static auto IsBehindAndFacingTarget = reinterpret_cast<IsBehindAndFacingTarget_t>(IsBehindAndFacingTarget_addr);
+
+	// 515 = DoSwingTrace
+	// FIXME offset
+	if (vfunc<bool(*)(IClientEntity*, trace_t*)>(weapon, 515)(weapon, &trace)) {
+		if (trace.m_pEnt && reinterpret_cast<IClientEntity*>(trace.m_pEnt)->GetClientClass()->m_ClassID == RCC_PLAYER) {
+			if (NET_INT(trace.m_pEnt, netvar.iTeamNum) != g_pLocalPlayer->team) {
+				if (IsBehindAndFacingTarget(weapon, reinterpret_cast<IClientEntity*>(trace.m_pEnt)))
+					g_pUserCmd->buttons |= IN_ATTACK;
+			}
+		}
+	}
 }
 
 }}}

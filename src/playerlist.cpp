@@ -16,7 +16,14 @@ namespace playerlist {
 
 std::unordered_map<unsigned, userdata> data {};
 
-constexpr userdata null_data {};
+const userdata null_data {};
+
+rgba_t k_Colors[] = {
+	colors::empty,
+	colors::FromRGBA8(99, 226, 161, 255),
+	colors::FromRGBA8(226, 204, 99, 255),
+	colors::FromRGBA8(232, 134, 6, 255),
+	colors::empty };
 
 bool ShouldSave(const userdata& data) {
 	return data.color || (data.state != k_EState::DEFAULT);
@@ -95,24 +102,19 @@ void Load() {
 	}
 }
 
-void DoNotKillMe() {
-	constexpr unsigned developer_alts[] = { 306902159, 347272825, 401679596, 416491033, 289921064, 175278337 };
-	for (int i = 0; i < sizeof(developer_alts) / sizeof(int); i++) AccessData(developer_alts[i]).state = k_EState::DEVELOPER;
-}
-
-int Color(unsigned steamid) {
+rgba_t Color(unsigned steamid) {
 	if (AccessData(steamid).state == k_EState::DEVELOPER) return colors::RainbowCurrent();
-	if (AccessData(steamid).color) {
+	if (AccessData(steamid).color.a) {
 		return AccessData(steamid).color;
 	} else {
 		return k_Colors[static_cast<int>(AccessData(steamid).state)];
 	}
 }
 
-int Color(CachedEntity* player) {
+rgba_t Color(CachedEntity* player) {
 	if (CE_GOOD(player))
 		return Color(player->player_info.friendsID);
-	return 0;
+	return colors::empty;
 }
 
 userdata& AccessData(unsigned steamid) {
@@ -133,7 +135,7 @@ userdata& AccessData(CachedEntity* player) {
 
 bool IsDefault(unsigned steamid) {
 	const userdata& data = AccessData(steamid);
-	return data.state == k_EState::DEFAULT && !data.color;
+	return data.state == k_EState::DEFAULT && !data.color.a;
 }
 
 bool IsDefault(CachedEntity* entity) {
@@ -166,9 +168,9 @@ CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b", [](const 
 	int r = strtol(args.Arg(2), nullptr, 10);
 	int g = strtol(args.Arg(3), nullptr, 10);
 	int b = strtol(args.Arg(4), nullptr, 10);
-	int color = colors::Create(r, g, b, 255);
+	rgba_t color = colors::FromRGBA8(r, g, b, 255);
 	AccessData(steamid).color = color;
-	logging::Info("Set %d's color to 0x%08x", steamid, (unsigned int)color);
+	logging::Info("Changed %d's color", steamid);
 });
 
 CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand& args) {
@@ -179,10 +181,10 @@ CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand& args) {
 	unsigned steamid = strtoul(args.Arg(1), nullptr, 10);
 	logging::Info("Data for %i: ", steamid);
 	logging::Info("   State: %i", AccessData(steamid).state);
-	int clr = AccessData(steamid).color;
+	/*int clr = AccessData(steamid).color;
 	if (clr) {
 		ConColorMsg(*reinterpret_cast<::Color*>(&clr), "[CUSTOM COLOR]\n");
-	}
+	}*/
 });
 
 }

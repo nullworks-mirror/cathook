@@ -8,6 +8,9 @@
 #include "SkinChanger.hpp"
 #include "../copypasted/CSignature.h"
 
+#include <sys/dir.h>
+#include <sys/stat.h>
+
 namespace hacks { namespace tf2 { namespace skinchanger {
 
 // Because fuck you, that's why.
@@ -182,9 +185,9 @@ void FrameStageNotify(int stage) {
 	last_weapon_out = my_weapon_ptr;
 }
 
-static CatVar show_debug_info(CV_SWITCH, "skinchanger_debug", "1", "Debug Skinchanger");
+static CatVar show_debug_info(CV_SWITCH, "skinchanger_debug", "0", "Debug Skinchanger");
 
-void PaintTraverse() {
+void DrawText() {
 	CAttributeList *list;
 
 	if (!enabled) return;

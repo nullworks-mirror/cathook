@@ -489,6 +489,35 @@ namespace client_classes {
 		int CFootstepControl { 0 };
 		int CCSGameRulesProxy { 0 };
 		int CBaseCSGrenadeProjectile { 0 };
+		int CSDKTeam_Deathmatch { 0 };
+		int CSDKTeam_Red { 0 };
+		int CSDKTeam_Blue { 0 };
+		int CSDKTeam_Unassigned { 0 };
+		int CSDKTeam { 0 };
+		int CSDKPlayerResource { 0 };
+		int CSDKRagdoll { 0 };
+		int CSDKPlayer { 0 };
+		int CSparkler { 0 };
+		int CRatRaceWaypoint { 0 };
+		int CBriefcaseCaptureZone { 0 };
+		int CBriefcase { 0 };
+		int CWeaponSDKBase { 0 };
+		int CWeaponMP5K { 0 };
+		int CWeaponMossberg { 0 };
+		int CWeaponM1911 { 0 };
+		int CWeaponM16 { 0 };
+		int CWeaponGrenade { 0 };
+		int CWeaponFAL { 0 };
+		int CWeaponBrawl { 0 };
+		int CWeaponBeretta { 0 };
+		int CBaseSDKGrenade { 0 };
+		int CAkimboM1911 { 0 };
+		int CAkimboBeretta { 0 };
+		int CAkimboBase { 0 };
+		int CWeaponSDKMelee { 0 };
+		int CSDKGameRulesProxy { 0 };
+		int CBaseGrenadeProjectile { 0 };
+		int CDAViewModel { 0 };
 
 	};
 	

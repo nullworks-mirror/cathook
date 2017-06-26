@@ -10,6 +10,8 @@
 #include "common.h"
 #include "sdk.h"
 
+int CatVar::last_id { 0 };
+
 // Prevent initialization errors.
 std::vector<CatVar*>& registrationArray() {
 	static std::vector<CatVar*> vector;
@@ -22,13 +24,13 @@ std::vector<CatCommand*>& commandRegistrationArray() {
 }
 
 
-CatCommand::CatCommand(std::string name, std::string help, FnCommandCallback_t callback)
-	: name(name), help(help), callback(callback) {
+CatCommand::CatCommand(std::string _name, std::string _help, FnCommandCallback_t _callback)
+	: name(_name), help(_help), callback(_callback) {
 	commandRegistrationArray().push_back(this);
 }
 
-CatCommand::CatCommand(std::string name, std::string help, FnCommandCallbackVoid_t callback)
-	: name(name), help(help), callback_void(callback) {
+CatCommand::CatCommand(std::string _name, std::string _help, FnCommandCallbackVoid_t _callback)
+	: name(_name), help(_help), callback_void(_callback) {
 	commandRegistrationArray().push_back(this);
 }
 
@@ -45,6 +47,7 @@ void CatCommand::Register() {
 	else if (callback_void) cmd = new ConCommand(name_c, callback_void, help_c);
 	else throw std::logic_error("no callback in CatCommand");
 	g_ICvar->RegisterConCommand(cmd);
+	RegisteredCommandsList().push_back(cmd);
 	// name_c and help_c are not freed because ConCommandBase doesn't copy them
 }
 
@@ -56,31 +59,28 @@ void RegisterCatCommands() {
 	}
 }
 
-CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long)
-	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(false), callbacks{} {
-	min = 0.0f;
-	max = 0.0f;
+CatVar::CatVar(CatVar_t _type, std::string _name, std::string _defaults, std::string _desc_short, std::string _desc_long)
+	: type(_type), name(_name), defaults(_defaults), desc_short(_desc_short), desc_long(_desc_long) {
 	registrationArray().push_back(this);
 }
 
-CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float max_val)
-	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(true), callbacks{} {
-	min = 0.0f;
+CatVar::CatVar(CatVar_t _type, std::string _name, std::string _defaults, std::string _desc_short, std::string _desc_long, float max_val)
+	: type(_type), name(_name), defaults(_defaults), desc_short(_desc_short), desc_long(_desc_long), restricted(true) {
 	max = max_val;
 	registrationArray().push_back(this);
 }
 
-CatVar::CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float min_val, float max_val)
-	: type(type), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(nullptr), restricted(true), callbacks{} {
+CatVar::CatVar(CatVar_t _type, std::string _name, std::string _defaults, std::string _desc_short, std::string _desc_long, float min_val, float max_val)
+	: type(_type), name(_name), defaults(_defaults), desc_short(_desc_short), desc_long(_desc_long), restricted(true) {
 	min = min_val;
 	max = max_val;
 	registrationArray().push_back(this);
 }
 
-CatVar::CatVar(CatEnum& cat_enum, std::string name, std::string defaults, std::string desc_short, std::string desc_long)
-	: type(CV_ENUM), name(name), defaults(defaults), desc_short(desc_short), desc_long(desc_long), enum_type(&cat_enum), restricted(true), callbacks{} {
-	min = cat_enum.Minimum();
-	max = cat_enum.Maximum();
+CatVar::CatVar(CatEnum& cat_enum, std::string _name, std::string _defaults, std::string _desc_short, std::string _desc_long)
+	: type(CV_ENUM), name(_name), defaults(_defaults), desc_short(_desc_short), desc_long(_desc_long), enum_type(&cat_enum), restricted(true) {
+	min = cat_enum.min_value;
+	max = cat_enum.max_value;
 	registrationArray().push_back(this);
 }
 
@@ -91,6 +91,7 @@ void CatVar::OnRegister(CatVar::RegisterCallbackFn fn) {
 
 void CatVar::Register() {
 	CatVarList().push_back(this);
+	id = last_id++;
 	convar = CreateConVar(CON_PREFIX + name, defaults, desc_short);
 	convar_parent = convar->m_pParent;
 	while (!callbacks.empty()) {
@@ -114,25 +115,17 @@ void RegisterCatVars() {
 	}
 }
 
-CatEnum::CatEnum(std::vector<std::string> values, int min) : m_values(values) {
-	m_iMin = min;
-	m_iMax = min + values.size() - 1;
-	m_iLength = values.size();
+CatEnum::CatEnum(std::vector<std::string> values, int min) : value_names(values) {
+	min_value = min;
+	max_value = min + int(values.size()) - 1;
+	size = int(values.size());
 }
 
 std::string CatEnum::Name(int value) {
-	if (value - m_iMin >= 0 && value - m_iMin <= m_iMax) {
-		return m_values.at(value - Minimum());
+	if (value >= min_value && value < max_value) {
+		return value_names.at(unsigned(value) - unsigned(min_value));
 	}
 	return "unknown";
-}
-
-int CatEnum::Maximum() const {
-	return m_iMax;
-}
-
-int CatEnum::Minimum() const {
-	return m_iMin;
 }
 
 std::vector<CatVar*>& CatVarList() {

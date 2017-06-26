@@ -20,7 +20,7 @@ trace::FilterDefault::FilterDefault() {
 	m_pSelf = nullptr;
 }
 
-trace::FilterDefault::~FilterDefault() {};
+trace::FilterDefault::~FilterDefault() {}
 
 void trace::FilterDefault::SetSelf(IClientEntity* self) {
 	if (self == nullptr) {

@@ -19,6 +19,7 @@ int iTicksLastJump { 0 };
 
 void CreateMove() {
 	if (!enabled) return;
+	if (!g_pUserCmd->command_number) return;
 	//if (HasCondition(g_pLocalPlayer->entity, TFCond_GrapplingHook)) return;
 	int flags = CE_INT(g_pLocalPlayer->entity, netvar.iFlags);
 

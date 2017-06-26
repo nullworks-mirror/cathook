@@ -30,6 +30,6 @@ void Reset();
 extern std::stack<msg_t> stack;
 extern float last_say;
 
-};
+}
 
 #endif /* CHATSTACK_H_ */

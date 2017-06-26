@@ -123,7 +123,7 @@ void Load(std::string filename, bool merge = false);
 
 void InvalidateCookie();
 void FrameStageNotify(int stage);
-void PaintTraverse();
+void DrawText();
 
 }}}
 

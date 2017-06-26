@@ -48,9 +48,11 @@ IVRenderView* g_IVRenderView = nullptr;
 IMaterialSystem* g_IMaterialSystemHL = nullptr;
 IMoveHelperServer* g_IMoveHelperServer = nullptr;
 CBaseClientState* g_IBaseClientState = nullptr;
+IGameEventManager* g_IGameEventManager = nullptr;
+CHud* g_CHUD = nullptr;
 
 template<typename T>
-T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start) {
+T* BruteforceInterface(std::string name, sharedobj::SharedObject& object, int start = 0) {
 	T* result = nullptr;
 	std::stringstream stream;
 	for (int i = start; i < 100; i++) {
@@ -61,7 +63,7 @@ T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int st
 		else if (i < 100) zeros = 1;
 		for (int j = 0; j < zeros; j++) stream << '0';
 		stream << i;
-		result = reinterpret_cast<T*>(object->CreateInterface(stream.str()));
+		result = reinterpret_cast<T*>(object.CreateInterface(stream.str()));
 		if (result) return result;
 	}
 	logging::Info("RIP Software: can't create interface %s!", name.c_str());
@@ -70,23 +72,24 @@ T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int st
 }
 
 void CreateInterfaces() {
-	g_ICvar = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib);
-	g_IEngine = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine);
+	g_ICvar = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
+	g_IEngine = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
 	g_AppID = g_IEngine->GetAppID();
-	g_IEntityList = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client);
-	g_IPanel = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2);
-	g_ISteamClient = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient, 17);
-	g_ISurface = BruteforceInterface<vgui::ISurface>("VGUI_Surface", sharedobj::vguimatsurface);
-	g_IEventManager2 = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine, 2);
-	g_IBaseClient = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client);
-	g_ITrace = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine);
-	g_IModelInfo = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine);
-	g_IInputSystem = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem);
-	g_IStudioRender = BruteforceInterface<IStudioRender>("VStudioRender", sharedobj::studiorender);
-	g_IVDebugOverlay = BruteforceInterface<IVDebugOverlay>("VDebugOverlay", sharedobj::engine);
+	g_IEntityList = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
+	g_IPanel = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2());
+	g_ISteamClient = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);
+	g_ISurface = BruteforceInterface<vgui::ISurface>("VGUI_Surface", sharedobj::vguimatsurface());
+	g_IEventManager2 = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine(), 2);
+	g_IGameEventManager = BruteforceInterface<IGameEventManager>("GAMEEVENTSMANAGER", sharedobj::engine(), 1);
+	g_IBaseClient = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
+	g_ITrace = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine());
+	g_IModelInfo = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine());
+	g_IInputSystem = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem());
+	g_IStudioRender = BruteforceInterface<IStudioRender>("VStudioRender", sharedobj::studiorender());
+	g_IVDebugOverlay = BruteforceInterface<IVDebugOverlay>("VDebugOverlay", sharedobj::engine());
 	HSteamPipe sp = g_ISteamClient->CreateSteamPipe();
 	HSteamUser su = g_ISteamClient->ConnectToGlobalUser(sp);
-	g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine, 16);
+	g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine(), 16);
 	IF_GAME (IsTF2()) {
 		uintptr_t sig_steamapi = gSignatures.GetEngineSignature("55 0F 57 C0 89 E5 83 EC 18 F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F 10 05 ? ? ? ? C7 04 24 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? C7 44 24 08 ? ? ? ? C7 44 24 04 ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3");
 		logging::Info("SteamAPI: 0x%08x", sig_steamapi);
@@ -97,10 +100,10 @@ void CreateInterfaces() {
 		g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
 	}
 	g_GlobalVars = **(reinterpret_cast<CGlobalVarsBase***>((uintptr_t)11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
-	g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client);
-	g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client);
-	g_IVRenderView = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine);
-	g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem);
+	g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client());
+	g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
+	g_IVRenderView = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine());
+	g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());
 	g_IMaterialSystemHL = (IMaterialSystem*)g_IMaterialSystem;
 	IF_GAME (IsTF2()) {
 		g_pScreenSpaceEffects = **(IScreenSpaceEffectManager***)(gSignatures.GetClientSignature("F3 0F 10 83 40 05 00 00 C7 44 24 04 ? ? ? ? 89 34 24 F3 0F 11 44 24 08 E8 ? ? ? ? A1 ? ? ? ? 8B 10 89 04 24 89 74 24 08 C7 44 24 04 ? ? ? ? FF 52 0C A1 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 14") + 31);
@@ -128,8 +131,15 @@ void CreateInterfaces() {
 	logging::Info("BaseClientState: 0x%08x", g_IBaseClientState);
 	g_IAchievementMgr = g_IEngine->GetAchievementMgr();
 	g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
-	if (!g_PredictionRandomSeed) {
+	IF_GAME (IsTF2()) {
 		uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
 		g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
 	}
+	logging::Info("Finding HUD");
+	{
+		uintptr_t hud_sig = gSignatures.GetClientSignature("FF 50 08 D9 9D 24 FE FF FF 89 3C 24 E8 ? ? ? ? C7 44 24 04 ? ? ? ? C7 04 24 ? ? ? ? D9 9D 20 FE FF FF E8 ? ? ? ? 85 C0 74 3B 66 0F 6E C3 C7 44 24 10 00 00 00 00 F3 0F 5C 85 20 FE FF FF") + 28;
+		g_CHUD = *reinterpret_cast<CHud**>(hud_sig);
+		logging::Info("HUD 0x%08x 0x%08x", hud_sig, g_CHUD);
+	}
+
 }

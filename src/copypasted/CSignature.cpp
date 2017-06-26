@@ -26,7 +26,7 @@ Elf32_Shdr *getSectionHeader(void *module, const char *sectionName)
 	// we need to get the modules actual address from the handle
 	
 	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)module;
-	Elf32_Shdr *shdr = (Elf32_Shdr *)(module + ehdr->e_shoff);
+	Elf32_Shdr *shdr = (Elf32_Shdr *)((unsigned)module + ehdr->e_shoff);
 	int shNum = ehdr->e_shnum;
 
 	Elf32_Shdr *strhdr = &shdr[ehdr->e_shstrndx];
@@ -35,7 +35,7 @@ Elf32_Shdr *getSectionHeader(void *module, const char *sectionName)
 	int strtabSize = 0;
 	if(strhdr != NULL && strhdr->sh_type == 3)
 	{
-		strtab = (char *)(module + strhdr->sh_offset);
+		strtab = (char *)((unsigned)module + strhdr->sh_offset);
 
 		if(strtab == NULL)
 			//Log::Fatal("String table was NULL!");
@@ -99,9 +99,9 @@ uintptr_t CSignature::GetClientSignature(char* chPattern)
 {
 	// we need to do this becuase (i assume that) under the hood, dlopen only loads up the sections that it needs
 	// into memory, meaning that we cannot get the string table from the module.
-	static int fd = open(sharedobj::client->path, O_RDONLY);
+	static int fd = open(sharedobj::client().path.c_str(), O_RDONLY);
 	static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
-	static link_map *moduleMap = sharedobj::client->lmap;
+	static link_map *moduleMap = sharedobj::client().lmap;
 
 	//static void *module = (void *)moduleMap->l_addr;
 	
@@ -120,9 +120,9 @@ uintptr_t CSignature::GetEngineSignature(char* chPattern)
 {
 	// we need to do this becuase (i assume that) under the hood, dlopen only loads up the sections that it needs
 	// into memory, meaning that we cannot get the string table from the module.
-	static int fd = open(sharedobj::engine->path, O_RDONLY);
+	static int fd = open(sharedobj::engine().path.c_str(), O_RDONLY);
 	static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
-	static link_map *moduleMap = sharedobj::engine->lmap;
+	static link_map *moduleMap = sharedobj::engine().lmap;
 
 	//static void *module = (void *)moduleMap->l_addr;
 	

@@ -24,7 +24,7 @@ public:
 	inline virtual void Enable( bool bEnable ) { enabled = bEnable; };
 	inline virtual bool IsEnabled( ) { return enabled; };
 
-	int ChamsColor(IClientEntity* entity);
+	rgba_t ChamsColor(IClientEntity* entity);
 	bool ShouldRenderChams(IClientEntity* entity);
 	void RenderChams(int idx);
 	void BeginRenderChams();

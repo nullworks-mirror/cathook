@@ -27,6 +27,7 @@ void NetVars::Init() {
 		res_iTeam = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
 		this->res_iMaxBuffedHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");
 		m_angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata", "m_angEyeAngles[0]");
+		m_angEyeAnglesLocal = gNetvars.get_offset("DT_TFPlayer", "tflocaldata", "m_angEyeAngles[0]");
 		this->bGlowEnabled = gNetvars.get_offset("DT_TFPlayer", "m_bGlowEnabled");
 		//this->iDecapitations = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iDecapitations");
 		//this->flReloadPriorNextFire = gNetvars.get_offset("DT_TFWeaponBase", "LocalActiveTFWeaponData", "m_flReloadPriorNextFire");

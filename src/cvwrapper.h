@@ -19,13 +19,6 @@ class ConVar;
 #include <functional>
 #include "aftercheaders.h"
 
-
-//#define CREATE_CV(type, name, defaults, description) \
-//	new CatVar(CreateConVar(CON_PREFIX name, defaults, description), type);
-
-//#define CREATE_CV_DESC(type, name, defaults, description, detailed) \
-//	new CatVar(CreateConVar(CON_PREFIX name, defaults, description), type, detailed);
-
 enum CatVar_t {
 	CV_SWITCH,
 	CV_INT,
@@ -39,12 +32,11 @@ class CatEnum {
 public:
 	CatEnum(std::vector<std::string> values, int min = 0);
 	std::string Name(int value);
-	int Maximum() const ;
-	int Minimum() const ;
-	const std::vector<std::string> m_values;
-	int m_iMin;
-	int m_iMax;
-	int m_iLength;
+public:
+	const std::vector<std::string> value_names;
+	int min_value;
+	int max_value;
+	int size;
 };
 
 class CatCommand {
@@ -53,14 +45,14 @@ public:
 	CatCommand(std::string name, std::string help, FnCommandCallbackVoid_t callback);
 
 	void Register();
-
+public:
 	const std::string name;
-	const std::string help;
-
-	ConCommand* cmd { nullptr };
+	const std::string help { "" };
 
 	FnCommandCallback_t callback { nullptr };
 	FnCommandCallbackVoid_t callback_void { nullptr };
+
+	ConCommand* cmd { nullptr };
 };
 
 void RegisterCatCommands();
@@ -82,7 +74,6 @@ public:
 
 	void Register();
 	typedef std::function<void(CatVar*)> RegisterCallbackFn;
-	std::vector<RegisterCallbackFn> callbacks {};
 	void OnRegister(RegisterCallbackFn fn);
 	void InstallChangeCallback(FnChangeCallback_t callback);
 
@@ -100,23 +91,33 @@ public:
 	inline void SetValue(int value) { this->operator =(value); }
 
 	inline bool KeyDown() {
-		return g_IInputSystem->IsButtonDown((ButtonCode_t)((int)*this));
+		return g_IInputSystem->IsButtonDown(static_cast<ButtonCode_t>(static_cast<int>(*this)));
 	}
 
-	bool restricted;
-	float max;
-	float min;
-	bool registered {false};
-
+public:
 	const CatVar_t type;
 	const std::string name;
-	const std::string defaults;
-	const std::string desc_short;
-	const std::string desc_long;
-	CatEnum* enum_type;
-	ConVar* convar;
-	ConVar* convar_parent;
+	const std::string defaults { "0" };
+	const std::string desc_short { "" };
+	const std::string desc_long { "" };
+	const CatEnum* const enum_type { nullptr };
+
+	bool restricted { false };
+	float min { 0.0f };
+	float max { 0.0f };
+
+	std::vector<RegisterCallbackFn> callbacks {};
+	bool registered { false };
+
+	ConVar* convar { nullptr };
+	ConVar* convar_parent { nullptr };
+
+	int id { 0 };
+	static int last_id;
 };
+
+std::vector<CatVar*>& registrationArray();
+std::vector<CatCommand*>& commandRegistrationArray();
 
 std::vector<CatVar*>& CatVarList();
 void RegisterCatVars();
