@@ -298,7 +298,6 @@ static const std::string list_tf2 = R"(
         "aimbot_maxrange"
         "aimbot_interp"
 		"aimbot_engine_pred"
-        "aimbot_instant_rezoom_enabled"
         "aimbot_slow"
         "aimbot_slow_smooth"
         "aimbot_slow_autoshoot"
@@ -594,6 +593,8 @@ static const std::string list_tf2 = R"(
 		"removecond_taunt"
 		"removecond_bleeding"
 		"removecond_stun"
+		"instant_uncloak"
+		"instant_rezoom"
 		"spycrab"
 	]
     "Spy Alert" [
@@ -618,6 +619,7 @@ static const std::string list_tf2 = R"(
     "fast_vischeck"
     "anti_afk"
     "rollspeedhack"
+	"tauntslide_tf2"
     "info"
     "Debug" [
         "Debug Menu"

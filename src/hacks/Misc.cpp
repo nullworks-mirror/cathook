@@ -133,7 +133,7 @@ int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene,
 
 float last_bucket = 0;
 
-static CatVar tauntslide_debug(CV_SWITCH, "tauntslide_debug", "0", "Debug movement", "Allows free movement while taunting with movable taunts\nOnly works in tf2\nWIP");
+static CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide", "Allows free movement while taunting with movable taunts\nOnly works in tf2\nWIP");
 
 void CreateMove() {
 	static bool flswitch = false;
@@ -148,23 +148,24 @@ void CreateMove() {
 	//Tauntslide needs improvement for movement but it mostly works
 	IF_GAME (IsTF2()) {
 		//Only work if the catvar enables it
-		if (tauntslide) {
+		if (tauntslide_tf2) {
 			//Check to prevent crashing
 			if (CE_GOOD(LOCAL_E)) {
 				//If the local player is taunting
 				if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
-					if (tauntslide_debug) {
-						float forward = 0;
-						float side = 0;
-
-						if (g_pUserCmd->buttons & IN_FORWARD) forward -= 450;
-						if (g_pUserCmd->buttons & IN_BACK) forward += 450;
-						if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
-						if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
-
-						g_pUserCmd->forwardmove = forward;
-						g_pUserCmd->sidemove = side;
-					}
+					float forward = 0;
+					float side = 0;
+					
+					//get directions
+					if (g_pUserCmd->buttons & IN_FORWARD) forward += 450;
+					if (g_pUserCmd->buttons & IN_BACK) forward -= 450;
+					if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
+					if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
+					
+					//Push them to userCmd
+					g_pUserCmd->forwardmove = forward;
+					g_pUserCmd->sidemove = side;
+					
 					//Grab Camera angle
 					static QAngle cameraAngle;
 					g_IEngine->GetViewAngles(cameraAngle);
