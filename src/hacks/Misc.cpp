@@ -157,8 +157,8 @@ void CreateMove() {
 					float side = 0;
 					
 					//get directions
-					if (g_pUserCmd->buttons & IN_FORWARD) forward -= 450;
-					if (g_pUserCmd->buttons & IN_BACK) forward += 450;
+					if (g_pUserCmd->buttons & IN_FORWARD) forward += 450;
+					if (g_pUserCmd->buttons & IN_BACK) forward -= 450;
 					if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
 					if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
 					

@@ -40,15 +40,15 @@ namespace hacks { namespace shared { namespace aimbot {
 
 int target_eid { 0 };
 CachedEntity* target_highest = 0;
-int minigun_fix_ticks { 0 };
 bool projectile_mode { false };
 float cur_proj_speed { 0.0f };
 float cur_proj_grav { 0.0f };
 bool headonly { false };
 int last_target { -1 };
-bool silent_huntsman { false };
 bool foundTarget = false;
 bool slowCanShoot = false;
+bool silent_huntsman { false };
+
 // This array will store calculated projectile/hitscan predictions
 // for current frame, to avoid performing them again
 AimbotCalculatedData_s calculated_data_array[2048] {};
@@ -138,7 +138,7 @@ void CreateMove() {
 	// Set foundTarget Status
 	foundTarget = false;
 	
-	// Find a good target
+	// System to find a suitable target
 	target_highest_score = -256;
 	{
 		// Loop that checks all ents whether it is a good target or not
@@ -198,6 +198,14 @@ void CreateMove() {
 			}
 		}
 	}
+	
+	// Attemt to reduce huntsman_ticks by 1 untill it reaches 0
+	if (huntsman_ticks) {
+		// Disable attack
+		g_pUserCmd->buttons |= IN_ATTACK;
+		// Returns 0 - Something higher than 0
+		huntsman_ticks = max(0, huntsman_ticks - 1);
+	}
 
 	// Check target for dormancy and if there even is a target at all
 	if (CE_GOOD(target_highest) && foundTarget) {
@@ -207,22 +215,50 @@ void CreateMove() {
 		
 		// Only allow aimbot to work with aimkey
 		if (UpdateAimkey()) {
-			// If settings allow, limit aiming to only when can shoot
-			if (only_can_shoot) {
-				// Miniguns should shoot and aim continiously. TODO smg
-				//if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFMinigun)) {
-					// Melees are weird, they should aim continiously like miniguns too.
-					//if (GetWeaponMode() != weaponmode::weapon_melee) {
-						// Finally, CanShoot() check.
-						if (CanShoot()) Aim(target_highest);
-					//}
-				//}
+			
+			// Check if player isnt using a huntsman
+			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
+
+				// If settings allow, limit aiming to only when can shoot
+				if (only_can_shoot) {
+					if (CanShoot()) Aim(target_highest);
+				} else {
+					// If settings dont allow canShoot check, then just aim
+					Aim(target_highest);
+				}
+				// Attemt to auto-shoot
+				if (CanAutoShoot()) g_pUserCmd->buttons |= IN_ATTACK;
+
+			// If player is using huntsman, we use a different system for autoshooting 
 			} else {
-				// If settings dont allow canShoot check, then just aim
-				Aim(target_highest);
+				// Grab time when charge began
+				begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
+				// Reset current charge count
+				charge = 0;
+				// If bow is not charged, reset the charge time keeper
+				if (begincharge != 0) {
+					charge = g_GlobalVars->curtime - begincharge;
+					// Keep the charge time keeper kept at 1 second
+					if (charge > 1.0f) charge = 1.0f;
+					silent_huntsman = true;
+				}
+				// If current charge is equal to or more than the user limit allows, then release the huntsman
+				if (charge >= (float)huntsman_autoshoot) {
+					// Stop user attacking
+					g_pUserCmd->buttons &= ~IN_ATTACK;
+					// temporarily stop the anti-aim to allow the projectile to pass due to attack not being used
+					hacks::shared::antiaim::SetSafeSpace(3);
+				// If user shouldnt release hunstman, attack for user here
+				} else if (autoshoot && huntsman_full_auto) {
+					huntsman_ticks = 3;
+					g_pUserCmd->buttons |= IN_ATTACK;
+				}
+				// If player released the huntsman, aim here
+				if (!(g_pUserCmd->buttons & IN_ATTACK) && silent_huntsman) {
+					Aim(target_highest);
+					silent_huntsman = false;
+				}
 			}
-			// Attemt to auto-shoot
-			if (CanAutoShoot()) g_pUserCmd->buttons |= IN_ATTACK;
 		}
 	}
 	
@@ -494,7 +530,6 @@ int BestHitbox(CachedEntity* target) {
 	preferred = hitbox;
 	switch ((int)hitbox_mode) {
 	case 0: { // AUTO-HEAD priority
-		logging::Info("hitbox 0");
 		// Save the local players current weapon to a var
 		ci = g_pLocalPlayer->weapon()->m_iClassID;
 		IF_GAME (IsTF()) {
@@ -568,7 +603,6 @@ int BestHitbox(CachedEntity* target) {
 		}
 		// If headonly is true, return the var here
 		if (headonly) {
-			logging::Info("head");
 			IF_GAME (IsTF())
 				return hitbox_t::head;
 			IF_GAME (IsCSS())
@@ -582,17 +616,14 @@ int BestHitbox(CachedEntity* target) {
 		}
 	} break;	
 	case 1: { // AUTO-CLOSEST priority
-		logging::Info("hitbox 1");
 		// Return closest hitbox to crosshair
 		return ClosestHitbox(target);
 	} break;
 	case 2: { // STATIC priority
-		logging::Info("hitbox 2");
 		// Return a user chosen hitbox
 		return (int)hitbox;
 	} break;
 	}
-	logging::Info("Bad hitbox");
 	// without a good hitbox, just return -1 in its place
 	return -1;
 }
