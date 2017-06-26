@@ -593,7 +593,6 @@ static const std::string list_tf2 = R"(
 		"removecond_taunt"
 		"removecond_bleeding"
 		"removecond_stun"
-		"instant_uncloak"
 		"instant_rezoom"
 		"spycrab"
 	]
