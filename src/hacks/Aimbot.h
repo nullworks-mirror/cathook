@@ -38,7 +38,7 @@ const Vector& PredictEntity(CachedEntity* entity);
 bool VischeckPredictedEntity(CachedEntity* entity);
 
 void CreateMove();
-void PaintTraverse();
+void DrawText();
 void Reset();
 
 extern int target_eid;

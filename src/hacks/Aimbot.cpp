@@ -72,7 +72,7 @@ static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovie
 static CatVar respect_cloak(CV_SWITCH, "aimbot_respect_cloak", "1", "Respect cloak", "Don't aim at invisible enemies");
 static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim Sentry", "Should aimbot aim at sentryguns?");
 static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
-static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "1", "Aim Sticky", "Should aimbot aim at stickys");
+static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
 static CatVar teammates(CV_SWITCH, "aimbot_teammates", "0", "Aim at teammates", "Aim at your own team. Useful for HL2DM");
 static CatVar silent(CV_SWITCH, "aimbot_silent", "1", "Silent", "Your screen doesn't get snapped to the point where aimbot aims at");
 static CatEnum hitbox_enum({
