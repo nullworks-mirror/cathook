@@ -237,6 +237,10 @@ void hack::Initialize() {
 	// FIXME [MP]
 	InitStrings();
 	hacks::shared::killsay::Init();
+#if ENABLE_GUI
+	// cat_reloadscheme to load imgui
+	hack::command_stack().push("cat_reloadscheme");
+#endif
 	hack::command_stack().push("exec cat_autoexec");
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
@@ -258,11 +262,7 @@ void hack::Initialize() {
 	logging::Info("SDL hooking done");
 	g_IGameEventManager->AddListener(&adv_event_listener, false);
 	hacks::shared::anticheat::Init();
-	
-#if ENABLE_GUI
-	// cat_reloadscheme to load imgui
-	g_IEngine->ClientCmd("cat_reloadscheme");
-#endif
+
 }
 
 void hack::Think() {

@@ -143,6 +143,7 @@ static CatCommand test_chat_print("debug_print_chat", "machine broke", [](const 
 	}
 });
 
+float afkTimeIdle = 0;
 static CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide", "Allows free movement while taunting with movable taunts\nOnly works in tf2\nWIP");
 	
 void CreateMove() {
@@ -319,10 +320,22 @@ void CreateMove() {
 		if (flswitch && !g_pUserCmd->impulse) g_pUserCmd->impulse = 100;
 		flswitch = !flswitch;
 	}
+	
+	// Check if user settings allow anti-afk
 	if (anti_afk) {
-		g_pUserCmd->sidemove = RandFloatRange(-450.0, 450.0);
-		g_pUserCmd->forwardmove  = RandFloatRange(-450.0, 450.0);
-		g_pUserCmd->buttons = rand();
+		// If the timer exceeds 2 minutes, jump and reset the timer
+		if ( g_GlobalVars->curtime - afkTimeIdle > 120 ) {
+			
+			// If player didnt jump, then we dont reset the timer
+			if (CE_INT(g_pLocalPlayer->entity, netvar.movetype) == MOVETYPE_FLY)
+				afkTimeIdle = g_GlobalVars->curtime;
+			
+			// Attemt to jump
+			g_pUserCmd->buttons = g_pUserCmd->buttons &~ IN_JUMP;
+		}
+		// If the player uses a button, reset the timer
+		if ( g_pUserCmd->buttons & IN_FORWARD || g_pUserCmd->buttons & IN_BACK || g_pUserCmd->buttons & IN_MOVELEFT || g_pUserCmd->buttons & IN_MOVERIGHT || g_pUserCmd->buttons & IN_JUMP || !LOCAL_E->m_bAlivePlayer )
+			afkTimeIdle = g_GlobalVars->curtime;
 	}
 	
     IF_GAME (IsTF2()) {

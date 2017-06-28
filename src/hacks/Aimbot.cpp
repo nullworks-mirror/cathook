@@ -70,7 +70,9 @@ static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper 
 static CatVar respect_vaccinator(CV_SWITCH, "aimbot_respect_vaccinator", "1", "Respect Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar respect_cloak(CV_SWITCH, "aimbot_respect_cloak", "1", "Respect cloak", "Don't aim at invisible enemies");
-static CatVar buildings(CV_SWITCH, "aimbot_buildings", "1", "Aim at buildings", "Should aimbot aim at buildings?");
+static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim Sentry", "Should aimbot aim at sentryguns?");
+static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
+static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "1", "Aim Sticky", "Should aimbot aim at stickys");
 static CatVar teammates(CV_SWITCH, "aimbot_teammates", "0", "Aim at teammates", "Aim at your own team. Useful for HL2DM");
 static CatVar silent(CV_SWITCH, "aimbot_silent", "1", "Silent", "Your screen doesn't get snapped to the point where aimbot aims at");
 static CatEnum hitbox_enum({
@@ -85,7 +87,7 @@ static CatVar max_range(CV_INT, "aimbot_maxrange", "0", "Max distance",
 		"Max range for aimbot\n"
 		"900-1100 range is efficient for scout/widowmaker engineer", 4096.0f);
 static CatVar extrapolate(CV_SWITCH, "aimbot_extrapolate", "0", "Latency extrapolation", "(NOT RECOMMENDED) latency extrapolation");
-static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the targets face\nDoesn't work with Silent or Anti-aim");
+static CatVar slowaim(CV_SWITCH, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the target for more legit play\nDisables silent aimbot");
 static CatVar slowaim_smoothing(CV_INT, "aimbot_slow_smooth", "10", "Slow Aim Smooth", "How slow the slow aim's aiming should be", 50);
 static CatVar slowaim_autoshoot(CV_INT, "aimbot_slow_autoshoot", "10", "Slow Aim Threshhold", "Distance to autoshoot while smooth aiming", 25);
 static CatVar projectile_aimbot(CV_SWITCH, "aimbot_projectile", "1", "Projectile aimbot", "If you turn it off, aimbot won't try to aim with projectile weapons");
@@ -117,10 +119,10 @@ void CreateMove() {
 	int huntsman_ticks = 0;
 	target_highest = 0;
 	
-	//Check if aimbot is enabled
+	// Check if aimbot is enabled
 	if (!enabled) return;
 	
-	//Check if player can aim
+	// Check if player can aim
 	if (!ShouldAim()) return;
 	
 	// Reset a var for BestHitbox detection
@@ -219,6 +221,7 @@ void CreateMove() {
 
 				// If settings allow, limit aiming to only when can shoot
 				if (only_can_shoot) {
+					// check the flNextPrimaryAttack netvar to tell when to aim
 					if (CanShoot()) Aim(target_highest);
 				} else {
 					// If settings dont allow canShoot check, then just aim
@@ -260,14 +263,13 @@ void CreateMove() {
 		}
 	}
 	
-	// If settings alow, Use silent angles
-	if (silent) g_pLocalPlayer->bUseSilentAngles = true;
+	// If settings allow and slowaim is disabled, Use silent angles
+	if (silent && !slowaim) g_pLocalPlayer->bUseSilentAngles = true;
 	return;
 }
 	
 // The first check to see if the player should aim in the first place
 bool ShouldAim() {
-	
 	// Checks should be in order: cheap -> expensive
 	
 	// Check for +attack if settings allow it
@@ -381,17 +383,30 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		// Target passed the tests so return true
 		return true;
 		
+	// Check for buildings
 	} else if (entity->m_Type == ENTITY_BUILDING) {
 		// Check if building aimbot is enabled
-		if (!buildings) return false;
+		if ( !(buildings_other || buildings_sentry) ) return false;
 		// Check if enemy building
 		if (!entity->m_bEnemy) return false;
 		// Check if building is within range
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > (int)EffectiveTargetingRange()) return false;
 		}
+		
+		// If needed, Check if building type is allowed
+		if ( !(buildings_other && buildings_sentry) ) {
+			// Check if target is a sentrygun
+			if ( entity->m_iClassID == CL_CLASS(CObjectSentrygun) ) {
+				// If sentrys are not allowed, dont target
+				if (!buildings_sentry) return false;
+			} else {
+				// If target is not a sentry, check if other buildings are allowed
+				if (!buildings_other) return false;
+			}			
+		}
 	
-		// Preform hitbox prediction
+		// Grab the prediction var
 		AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
 				
 		// If VisCheck fails, dont target building
@@ -402,12 +417,41 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		
 		// Target passed the tests so return true
 		return true;
+	
+	// Check for stickybombs
+	} else if (entity->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile)) {
+		// Check if sticky aimbot is enabled
+		if (!stickybot) return false;
+		
+		// Check if target is within range
+		if (EffectiveTargetingRange()) {
+			if (entity->m_flDistance > (int)EffectiveTargetingRange()) return false;
+		}
+		
+		// Check if target is a pipe bomb
+		if (CE_INT(entity, netvar.iPipeType) != 1) return false;
+		
+		// Check if thrower is a teammate
+		int stickyOwnerIdx = (CE_INT(entity, netvar.hThrower) & 0xFFF);
+		if (!ENTITY(stickyOwnerIdx)->m_bEnemy) return false;
+		
+		// Grab the prediction var
+		AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
+				
+		// If VisCheck fails, dont target building
+		if (!VischeckPredictedEntity(entity)) return false;
+		
+		// Check if building is within fov
+		if ((float)fov > 0.0f && cd.fov > (float)fov) return false;
+			
+		// Target passed the tests so return true
+		return true;
 		
 	} else {
 		// If target is not player or building, return false
 		return false;
 	}
-	// An imbossible error so just return false
+	// An impossible error so just return false
 	return false;
 }
 	
@@ -425,7 +469,7 @@ void Aim(CachedEntity* entity) {
 	VectorAngles(tr, angles);
     
     // Slow the aiming to the aim vector if true
-	if (slowaim && !silent) slowAim(angles, g_pUserCmd->viewangles);
+	if (slowaim) slowAim(angles, g_pUserCmd->viewangles);
     
 	// Clamp and set angles
     fClampAngle(angles);
@@ -453,9 +497,13 @@ bool CanAutoShoot() {
 			}
 		}
 		
-		// Check if ambasador can headshot
+		
 		IF_GAME (IsTF2()) {
-			if (!AmbassadorCanHeadshot()) return false;
+			// Check if players current weapon is an ambasador
+			if (IsAmbassador(g_pLocalPlayer->weapon())) {
+				// Check if ambasador can headshot
+				if (!AmbassadorCanHeadshot()) return false;	
+			}
 		}
 
 		// Don't autoshoot with the knife or bow!
@@ -494,7 +542,7 @@ const Vector& PredictEntity(CachedEntity* entity) {
 			else
 				result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
 		} else {
-			// If using interpolation, then predict a vector
+			// If using extrapolation, then predict a vector
 			if (extrapolate)
 				result = SimpleLatencyPrediction(entity, cd.hitbox);
 			// else just grab strait from the hitbox
