@@ -31,29 +31,33 @@ struct AimbotCalculatedData_s {
 	int hitbox { 0 };
 };
 
-	
+// Variable used to tell when the aimbot has found a target
 extern bool foundTarget;
 
 const Vector& PredictEntity(CachedEntity* entity);
 bool VischeckPredictedEntity(CachedEntity* entity);
 
+// Functions called by other functions for when certian game calls are run
 void CreateMove();
 void DrawText();
 void Reset();
 
+// Used by esp to set their colour
 extern int target_eid;
 
 float EffectiveTargetingRange();
 
-bool UpdateAimkey();
+
 CachedEntity* CurrentTarget();
+bool ShouldAim();
 bool IsTargetStateGood(CachedEntity* entity);
 void Aim(CachedEntity* entity);
-bool ShouldAim();
 bool CanAutoShoot();
-void slowAim(Vector &inputAngle, Vector userAngle);
 int BestHitbox(CachedEntity* target);
 int ClosestHitbox(CachedEntity* target);
+void slowAim(Vector &inputAngle, Vector userAngle);
+bool UpdateAimkey();
+bool ShouldAimLeg();
 
 }}}
 

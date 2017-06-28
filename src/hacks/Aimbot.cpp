@@ -82,6 +82,7 @@ static CatEnum hitbox_enum({
 static CatVar hitbox(hitbox_enum, "aimbot_hitbox", "0", "Hitbox", "Hitbox to aim at. Ignored if AutoHitbox is on");
 static CatVar zoomed_only(CV_SWITCH, "aimbot_zoomed", "1", "Zoomed only", "Don't autoshoot with unzoomed rifles");
 static CatVar only_can_shoot(CV_SWITCH, "aimbot_only_when_can_shoot", "1", "Active when can shoot", "Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators");
+static CatVar only_can_shoot_wip(CV_SWITCH, "aimbot_only_when_can_shoot_wip", "0", "When can shoot", "Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators\nNew version that fixes some bugs, but introduces others\nEnable with other option to enable");
 static CatVar attack_only(CV_SWITCH, "aimbot_enable_attack_only", "0", "Active when attacking", "Basically makes Mouse1 an AimKey, isn't compatible with AutoShoot");
 static CatVar max_range(CV_INT, "aimbot_maxrange", "0", "Max distance",
 		"Max range for aimbot\n"
@@ -214,13 +215,15 @@ void CreateMove() {
 		last_target = target_highest->m_IDX;
 		
 		// Only allow aimbot to work with aimkey
-		if (UpdateAimkey()) {
+		// We also preform a CanShoot check here per the old canshoot method
+		if (UpdateAimkey() && ShouldAimLeg()) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
 
 				// If settings allow, limit aiming to only when can shoot
-				if (only_can_shoot) {
+				// We do this here only if wip is true as we do the check elsewhere for legacy
+				if (only_can_shoot && only_can_shoot_wip) {
 					// Check the flNextPrimaryAttack netvar to tell when to aim
 					if (CanShoot()) Aim(target_highest);
 				} else {
@@ -296,6 +299,7 @@ bool ShouldAim() {
 		// Disable aimbot with stickbomb launcher
 		if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPipebombLauncher)) return false;
 	}
+	
 	IF_GAME (IsTF2()) {
 		switch (GetWeaponMode()) {
 		case weapon_hitscan:
@@ -815,6 +819,22 @@ bool UpdateAimkey() {
 	}
 	// Return whether the aimkey allows aiming
 	return allowAimkey;
+}
+	
+// Function of previous CanShoot check
+bool ShouldAimLeg() {
+	// If user settings allow, we preform out canshoot here
+	if (only_can_shoot && !only_can_shoot_wip) {
+		// Miniguns should shoot and aim continiously. TODO smg
+		if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFMinigun)) {
+			// Melees are weird, they should aim continiously like miniguns too.
+			if (GetWeaponMode() != weaponmode::weapon_melee) {
+				// Finally, CanShoot() check.
+				if (!CanShoot()) return false;
+			}
+		}
+	}	
+	return true;
 }
 
 // Func to find value of how far to target ents
