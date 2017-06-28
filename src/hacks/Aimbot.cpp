@@ -221,7 +221,7 @@ void CreateMove() {
 
 				// If settings allow, limit aiming to only when can shoot
 				if (only_can_shoot) {
-					// check the flNextPrimaryAttack netvar to tell when to aim
+					// Check the flNextPrimaryAttack netvar to tell when to aim
 					if (CanShoot()) Aim(target_highest);
 				} else {
 					// If settings dont allow canShoot check, then just aim
@@ -432,8 +432,9 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		if (CE_INT(entity, netvar.iPipeType) != 1) return false;
 		
 		// Check if thrower is a teammate
-		int stickyOwnerIdx = (CE_INT(entity, netvar.hThrower) & 0xFFF);
-		if (!ENTITY(stickyOwnerIdx)->m_bEnemy) return false;
+		//int stickyOwnerIdx = (CE_INT(entity, netvar.hThrower) & 0xFFF);
+		//if (!ENTITY(stickyOwnerIdx)->m_bEnemy) return false;
+		if (!entity->m_bEnemy) return false;
 		
 		// Grab the prediction var
 		AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
