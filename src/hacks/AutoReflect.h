@@ -19,6 +19,7 @@ extern CatVar max_distance;
 
 void CreateMove();
 bool ShouldReflect(CachedEntity* ent);
+bool IsEntStickyBomb(CachedEntity* ent);
 
 }}}
 

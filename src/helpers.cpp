@@ -316,6 +316,7 @@ bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos) {
 	return (trace_object.fraction >= 0.99f || (((IClientEntity*)trace_object.m_pEnt)) == RAW_ENT(entity));
 }
 
+// For when you need to vis check something that isnt the local player
 bool VisCheckEntFromEnt(CachedEntity* startEnt, CachedEntity* endEnt) {
 	// We setSelf as the starting ent as we dont want to hit it, we want the other ent
     trace_t trace;
@@ -324,6 +325,27 @@ bool VisCheckEntFromEnt(CachedEntity* startEnt, CachedEntity* endEnt) {
 	// Setup the trace starting with the origin of the starting ent attemting to hit the origin of the end ent
     Ray_t ray;
 	ray.Init(startEnt->m_vecOrigin, endEnt->m_vecOrigin);
+	{
+		PROF_SECTION(IEVV_TraceRay);
+		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
+	}
+	// Is the entity that we hit our target ent? if so, the vis check passes
+    if (trace.m_pEnt) {
+        if ((((IClientEntity*)trace.m_pEnt)) == RAW_ENT(endEnt)) return true;
+	}
+	// Since we didnt hit our target ent, the vis check failed so return false
+    return false;
+}
+
+// Use when you need to vis check something but its not the ent origin that you use, so we check from the vector to the ent, ignoring the first just in case
+bool VisCheckEntFromEntVector(Vector startVector, CachedEntity* startEnt, CachedEntity* endEnt) {
+	// We setSelf as the starting ent as we dont want to hit it, we want the other ent
+    trace_t trace;
+    trace::filter_default.SetSelf(RAW_ENT(startEnt));
+	
+	// Setup the trace starting with the origin of the starting ent attemting to hit the origin of the end ent
+    Ray_t ray;
+	ray.Init(startVector, endEnt->m_vecOrigin);
 	{
 		PROF_SECTION(IEVV_TraceRay);
 		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
@@ -687,98 +709,6 @@ bool IsEntityVisiblePenetration(CachedEntity* entity, int hb) {
 	}
 	return false;
 }
-
-
-class CMoveData;
-
-/*void RunEnginePrediction(IClientEntity* ent, CUserCmd *ucmd) {
-	// we are going to require some helper functions for this to work
-	// notably SetupMove, FinishMove and ProcessMovement
-
-
-	// setup the types of the functions
-	typedef void(*SetupMoveFn)(IClientEntity *, CUserCmd *, class IMoveHelper *, CMoveData *);
-	typedef void(*FinishMoveFn)(IClientEntity *, CUserCmd*, CMoveData*);
-	typedef void(*ProcessMovementFn)(IClientEntity *, CMoveData *);
-	typedef void(*StartTrackPredictionErrorsFn)(IClientEntity *);
-	typedef void(*FinishTrackPredictionErrorsFn)(IClientEntity *);
-
-	// get the vtable
-	void **predictionVtable = *(void ***)prediction;
-	logging::Info("predictionVtable 0x%08x", predictionVtable);
-	// get the functions
-	SetupMoveFn oSetupMove = (SetupMoveFn) predictionVtable[19];
-	FinishMoveFn oFinishMove = (FinishMoveFn) predictionVtable[20];
-
-	// get the vtable
-	void **gameMovementVtable = *(void ***)gamemovement;
-	logging::Info("gameMovementVtable 0x%08x", gameMovementVtable);
-	// get the functions
-	ProcessMovementFn oProcessMovement = (ProcessMovementFn) gameMovementVtable[2];
-	StartTrackPredictionErrorsFn oStartTrackPredictionErrors = (StartTrackPredictionErrorsFn) gameMovementVtable[3];
-	FinishTrackPredictionErrorsFn oFinishTrackPredictionErrors = (FinishTrackPredictionErrorsFn) gameMovementVtable[4];
-
-	// use this as movedata (should be big enough - otherwise the stack will die!)
-	unsigned char moveData[2048];
-	CMoveData *pMoveData = (CMoveData *)&(moveData[0]);
-	logging::Info("pMoveData 0x%08x", pMoveData);
-
-	// back up globals
-	float frameTime = gvars->frametime;
-	float curTime = gvars->curtime;
-
-	CUserCmd defaultCmd;
-	if(ucmd == NULL)
-	{
-		ucmd = &defaultCmd;
-	}
-
-	// set the current command
-	NET_VAR(ent, 0x105C, void*) = ucmd;
-
-	// set up the globals
-	gvars->curtime =  gvars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
-	gvars->frametime = gvars->interval_per_tick;
-
-	oStartTrackPredictionErrors(ent);
-
-	logging::Info("StartTrackPredictionErrors(ent)");
-	oSetupMove(ent, ucmd, NULL, pMoveData);
-	logging::Info("oSetupMove");
-	oProcessMovement(ent, pMoveData);
-	logging::Info("oProcessMovement");
-	oFinishMove(ent, ucmd, pMoveData);
-	logging::Info("oFinishMove");
-
-	oFinishTrackPredictionErrors(ent);
-	logging::Info("oFinishTrackPredictionErrors");
-	// reset the current command
-	NET_VAR(ent, 0x105C, void *) = 0;
-
-	// restore globals
-	gvars->frametime = frameTime;
-	gvars->curtime = curTime;
-
-	return;
-}
-
-float oldCurtime;
-float oldFrametime;
-
-void StartPrediction(CUserCmd* cmd) {
-	oldCurtime = gvars->curtime;
-	oldFrametime = gvars->frametime;
-	gvars->curtime = NET_INT(g_pLocalPlayer->entity, netvar.nTickBase) * gvars->interval_per_tick;
-	gvars->frametime = gvars->interval_per_tick;
-	//gamemovement->
-}
-
-void EndPrediction() {
-	gvars->curtime = oldCurtime;
-	gvars->frametime = oldFrametime;
-}*/
-
-
 
 void PrintChat(const char* fmt, ...) {
 	CHudBaseChat* chat = (CHudBaseChat*)g_CHUD->FindElement("CHudChat");

@@ -100,9 +100,8 @@
 				"name": "Auto Sticky",
 				"list": [
 					"sticky_enabled",
-					"sticky_distance",
 					"sticky_buildings",
-					"sticky_visable"
+					"sticky_legit"
 				]
 			},
 			{
