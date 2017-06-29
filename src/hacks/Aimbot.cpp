@@ -432,13 +432,11 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			if (entity->m_flDistance > (int)EffectiveTargetingRange()) return false;
 		}
 		
+		// Check if thrower is a teammate
+		if (!entity->m_bEnemy) return false;
+		
 		// Check if target is a pipe bomb
 		if (CE_INT(entity, netvar.iPipeType) != 1) return false;
-		
-		// Check if thrower is a teammate
-		//int stickyOwnerIdx = (CE_INT(entity, netvar.hThrower) & 0xFFF);
-		//if (!ENTITY(stickyOwnerIdx)->m_bEnemy) return false;
-		if (!entity->m_bEnemy) return false;
 		
 		// Grab the prediction var
 		AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
