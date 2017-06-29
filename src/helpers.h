@@ -73,6 +73,7 @@ void VectorAngles(Vector &forward, Vector &angles);
 
 bool IsEntityVisible(CachedEntity* entity, int hb);
 bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos);
+bool VisCheckEntFromEnt(CachedEntity* startEnt, CachedEntity* endEnt);
 
 bool LineIntersectsBox(Vector& bmin, Vector& bmax, Vector& lmin, Vector& lmax);
 
@@ -84,6 +85,7 @@ bool IsVectorVisible(Vector a, Vector b);
 bool IsSentryBuster(CachedEntity* ent);
 char* strfmt(const char* fmt, ...);
 // TODO move that to weaponid.h
+bool HasWeapon(CachedEntity* ent, int wantedId);
 bool IsAmbassador(CachedEntity* ent);
 bool HasDarwins(CachedEntity* ent);
 bool AmbassadorCanHeadshot();

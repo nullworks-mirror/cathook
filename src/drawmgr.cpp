@@ -45,7 +45,12 @@ void DrawCheatVisuals() {
 			std::string name_s, reason_s;
 			PROF_SECTION(PT_info_text);
 			AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
-			AddSideString(hack::GetVersion(), GUIColor());
+			AddSideString(hack::GetVersion(), GUIColor()); // github commit and date
+			AddSideString(hack::GetType(), GUIColor()); //  Compile type
+#if ENABLE_GUI
+			AddSideString("Press 'INSERT' or 'F11' key to open/close cheat menu.", GUIColor());
+			AddSideString("Use mouse to navigate in menu.", GUIColor());
+#endif
 			if (!g_IEngine->IsInGame()
 #if ENABLE_GUI
 				|| g_pGUI->Visible()

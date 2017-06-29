@@ -120,14 +120,29 @@ powerup_type GetPowerupOnPlayer(CachedEntity* player) {
 	return powerup_type::not_powerup;
 }
 
-bool HasDarwins(CachedEntity* ent) {
+// A function to tell if a player is using a specific weapon
+bool HasWeapon(CachedEntity* ent, int wantedId) {
+	// Create a var to store the handle
 	int *hWeapons;
-	if (CE_INT(ent, netvar.iClass) != tf_sniper) return false;
+	// Grab the handle and store it into the var
 	hWeapons = (int*)((unsigned)(RAW_ENT(ent) + netvar.hMyWeapons));
-	for (int i = 0; i < 4; i++) {
+	// Go through the handle array and search for the item
+	for (int i = 0; hWeapons[i]; i++) {
+		// Get the weapon id from the handle array
 		IClientEntity* weapon = g_IEntityList->GetClientEntityFromHandle(hWeapons[i]);
-		if (weapon && NET_INT(weapon, netvar.iItemDefinitionIndex) == 231) return true;
+		// if weapon is what we are looking for, return true
+		if (weapon && NET_INT(weapon, netvar.iItemDefinitionIndex) == wantedId) return true;
 	}
+	// We didnt find the weapon we needed, return false
+	return false;
+}
+
+bool HasDarwins(CachedEntity* ent) {
+	// Check if player is sniper
+	if (CE_INT(ent, netvar.iClass) != tf_sniper) return false;
+	// Check if player is using darwins, 231 is the id for darwins danger sheild
+	if (HasWeapon(ent, 231)) return true;
+	// Else return false
 	return false;
 }
 
@@ -299,6 +314,26 @@ bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos) {
 		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace_object);
 	}
 	return (trace_object.fraction >= 0.99f || (((IClientEntity*)trace_object.m_pEnt)) == RAW_ENT(entity));
+}
+
+bool VisCheckEntFromEnt(CachedEntity* startEnt, CachedEntity* endEnt) {
+	// We setSelf as the starting ent as we dont want to hit it, we want the other ent
+    trace_t trace;
+    trace::filter_default.SetSelf(RAW_ENT(startEnt));
+	
+	// Setup the trace starting with the origin of the starting ent attemting to hit the origin of the end ent
+    Ray_t ray;
+	ray.Init(startEnt->m_vecOrigin, endEnt->m_vecOrigin);
+	{
+		PROF_SECTION(IEVV_TraceRay);
+		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
+	}
+	// Is the entity that we hit our target ent? if so, the vis check passes
+    if (trace.m_pEnt) {
+        if ((((IClientEntity*)trace.m_pEnt)) == RAW_ENT(endEnt)) return true;
+	}
+	// Since we didnt hit our target ent, the vis check failed so return false
+    return false;
 }
 
 Vector GetBuildingPosition(CachedEntity* ent) {

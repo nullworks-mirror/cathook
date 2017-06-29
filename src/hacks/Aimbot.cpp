@@ -357,7 +357,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			}
 			// If settings allow, ignore taunting players
 			if (ignore_taunting && HasCondition<TFCond_Taunting>(entity)) return false;
-			// Dont target invulnerable players, ex: uder, bonk
+			// Dont target invulnerable players, ex: uber, bonk
 			if (IsPlayerInvulnerable(entity)) return false;
 			// If settings allow, dont target cloaked players
 			if (respect_cloak && IsPlayerInvisible(entity)) return false;

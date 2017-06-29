@@ -59,10 +59,18 @@ const std::string& hack::GetVersion() {
 	static std::string version("Unknown Version");
 	static bool version_set = false;
 	if (version_set) return version;
-	version = "";
-	#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
-	version += " Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE "\n";
+#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
+		version = "Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE;
 #endif
+	version_set = true;
+	return version;
+}
+
+const std::string& hack::GetType() {
+	static std::string version("Unknown Type");
+	static bool version_set = false;
+	if (version_set) return version;
+	version = "";
 #if not defined(IPC_ENABLED)
 	version += " NOIPC";
 #endif
