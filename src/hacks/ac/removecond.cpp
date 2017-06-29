@@ -11,7 +11,7 @@
 namespace ac { namespace removecond {
 
 static CatVar removecond_detect(CV_SWITCH, "ac_removecond", "0", "Detect RemoveCond");
-static CatVar removecond_timer(CV_FLOAT, "ac_removecond_timer", "0.95", "RemoveCond timer");
+static CatVar removecond_timer(CV_FLOAT, "ac_removecond_timer", "1.1", "RemoveCond timer");
 
 ac_data data_table[32] {};
 
@@ -36,7 +36,7 @@ void Update(CachedEntity* player) {
 			if (d.stime && (simtime - d.stime > float(removecond_timer))) {
 				d.detections++;
 				if (tickcount - d.last_accusation > 60 * 30 || !d.last_accusation) {
-					hacks::shared::anticheat::Accuse(player->m_IDX, "RemoveCond", format("Detections: ", d.detections, " dt: ", simtime - d.stime));
+					hacks::shared::anticheat::Accuse(player->m_IDX, "Crithack/Removecond", format("Detections: ", d.detections, " dt: ", simtime - d.stime));
 					d.last_accusation = tickcount;
 				}
 			}

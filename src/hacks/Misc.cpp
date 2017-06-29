@@ -323,8 +323,8 @@ void CreateMove() {
 	
 	// Check if user settings allow anti-afk
 	if (anti_afk) {
-		// If the timer exceeds 2 minutes, jump and reset the timer
-		if ( g_GlobalVars->curtime - afkTimeIdle > 120 ) {
+		// If the timer exceeds 1 minute, jump and reset the timer
+		if ( g_GlobalVars->curtime - afkTimeIdle > 60 ) {
 			
 			// If player didnt jump, then we dont reset the timer
 			if (CE_INT(g_pLocalPlayer->entity, netvar.movetype) == MOVETYPE_FLY)

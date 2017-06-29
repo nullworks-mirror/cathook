@@ -96,6 +96,14 @@ inline const char* teamname(int team) {
 	else if (team == 3) return "BLU";
 	return "SPEC";
 }
+extern const std::string classes[10];
+inline const char* classname(int clazz) {
+	if (clazz > 0 && clazz < 10) {
+		return classes[clazz - 1].c_str();
+	}
+	return "Unknown";
+}
+
 void PrintChat(const char* fmt, ...);
 
 void WhatIAmLookingAt(int* result_eindex, Vector* result_pos);

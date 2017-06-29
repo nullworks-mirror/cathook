@@ -50,7 +50,7 @@ void Update(CachedEntity* player) {
 							if (wname) wp_name = wname;
 						}*/
 					}
-					hacks::shared::anticheat::Accuse(player->m_IDX, "Aimbot", format("Weapon: ", wp_name, " | Angle deviation: ", deviation, " | detection #", data.detections));
+					hacks::shared::anticheat::Accuse(player->m_IDX, "Aimbot", format("Weapon: ", wp_name, " | Deviation: ", deviation, "° | ", data.detections));
 				}
 			}
 		}
