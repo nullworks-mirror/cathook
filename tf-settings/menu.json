@@ -19,7 +19,9 @@
 					"ignore_taunting",
 					"aimbot_ignore_hoovy",
 					"aimbot_respect_cloak",
-					"aimbot_buildings",
+					"aimbot_buildings_sentry",
+					"aimbot_buildings_other",
+					"aimbot_stickys",
 					"aimbot_teammates"
 				]
 			},
@@ -335,6 +337,7 @@
 			"spam",
 			"spam_random",
 			"spam_file",
+			"spam_teamname",
 			"uberspam",
 			"uberspam_build",
 			"uberspam_ready",
@@ -392,7 +395,8 @@
 					"removecond_taunt",
 					"removecond_bleeding",
 					"removecond_stun",
-					"instant_decloak"
+					"instant_decloak",
+					"instant_rezoom"
 				]
 			},
 			{
@@ -438,6 +442,7 @@
 					"debug_ve_averaging",
 					"no_visuals",
 					"aimbot_debug",
+					"aimbot_only_when_can_shoot_wip",
 					"debug_info",
 					"log",
 					"setupbones_time",
