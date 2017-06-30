@@ -33,6 +33,10 @@ Run the `update` script in cathook folder.
 
 `sudo ./attach-backtrace` to attach and print backtrace if tf2 crashes. Some users reported that this method makes you get less FPS ingame.
 
+## Menu
+Then menu files need to be placed into the Team fortress 2 folder if you wish to use a menu. To install then just copy the tf-settings folder into your Team fortress 2 folder and rename it to "cathook"
+The update-menu script automaticly does this for you.
+
 ## Followbots
 
 Followbot installation is quite complex and I won't cover it fully here.
