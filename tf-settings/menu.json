@@ -15,10 +15,10 @@
 				"type": "list",
 				"name": "Ignore",
 				"list": [
-					"aimbot_respect_vaccinator",
+					"aimbot_ignore_vaccinator",
 					"ignore_taunting",
 					"aimbot_ignore_hoovy",
-					"aimbot_respect_cloak",
+					"aimbot_ignore_cloak",
 					"aimbot_buildings_sentry",
 					"aimbot_buildings_other",
 					"aimbot_stickys",
@@ -119,22 +119,24 @@
 				"type": "list",
 				"name": "Triggerbot Ignores",
 				"list": [
-					"trigger_respect_vaccinator",
-					"trigger_respect_cloak",
-					"trigger_buildings"
+					"trigger_ignore_vaccinator",
+					"trigger_ignore_cloak",
+					"trigger_stickys",
+					"trigger_teammates",
+					"trigger_buildings_sentry",
+					"trigger_buildings_other"
 				]
 			},
 			{
 				"type": "list",
 				"name": "Triggerbot Preferences",
 				"list": [
-					"trigger_accuracy",
-					"trigger_ambassador",
-					"trigger_range",
-					"trigger_finish",
-					"trigger_bodyshot",
-					"trigger_hitbox",
-					"trigger_zoomed"
+					"trigger_key",
+					"trigger_key_mode",
+					"trigger_hitboxmode",
+					"trigger_charge",
+					"trigger_zoomed",
+					"trigger_maxrange"
 				]
 			}
 		]
