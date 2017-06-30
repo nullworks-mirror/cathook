@@ -8,9 +8,6 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include <pwd.h>
-
-
 #if defined(LINUX) and not defined(NO_IPC)
 #define IPC_ENABLED 1
 #else

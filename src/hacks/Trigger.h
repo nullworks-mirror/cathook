@@ -8,7 +8,7 @@
 #ifndef HTRIGGER_H_
 #define HTRIGGER_H_
 
-#include "IHack.h"
+#include "../common.h"
 
 class CatVar;
 

@@ -8,7 +8,7 @@
 #ifndef HACKS_ANTIDISGUISE_H_
 #define HACKS_ANTIDISGUISE_H_
 
-#include "IHack.h"
+#include "../common.h"
 
 namespace hacks { namespace tf2 { namespace antidisguise {
 

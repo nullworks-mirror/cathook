@@ -13,13 +13,10 @@
 #include <fstream>
 #include "aftercheaders.h"
 
-#include <pwd.h>
 #include <stdio.h>
 
 TextFile::TextFile()
-	: lines {} {
-
-}
+	: lines {} {}
 
 void TextFile::Load(std::string name) {
 	std::string filename = format("cathook/", name);

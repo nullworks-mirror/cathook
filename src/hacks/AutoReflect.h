@@ -8,7 +8,7 @@
 #ifndef HACKS_AUTOREFLECT_H_
 #define HACKS_AUTOREFLECT_H_
 
-#include "IHack.h"
+#include "../common.h"
 
 namespace hacks { namespace tf { namespace autoreflect {
 

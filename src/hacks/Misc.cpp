@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <pwd.h>
 #include <fcntl.h>
 
 #include "../beforecheaders.h"
@@ -428,6 +427,8 @@ void DrawText() {
 }
 
 void Schema_Reload() {
+	logging::Info("Custom schema loading is not supported right now.");
+	/*
 	static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 4C 0F B6 7D 14 C7 04 ? ? ? ? 01 8B 5D 18 8B 75 0C 89 5C 24 04 E8 ? ? ? ? 89 F8 C7 45 C8 00 00 00 00 8D 7D C8 84 C0 8B 45 10 C7 45 CC");
 	typedef void(*InitSchema_t)(void*, void*, CUtlBuffer& buffer, bool byte, unsigned version);
 	static InitSchema_t InitSchema = (InitSchema_t)InitSchema_s;
@@ -453,6 +454,7 @@ void Schema_Reload() {
 	CUtlBuffer buf(&buffer, 4 * 1000 * 1000, 9);
 	logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
 	InitSchema(0, itemschema, buf, false, 0xDEADCA7);
+	*/
 }
 
 CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info", "Shows some debug info in-game");

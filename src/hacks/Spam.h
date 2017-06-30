@@ -8,9 +8,7 @@
 #ifndef HACKS_SPAM_H_
 #define HACKS_SPAM_H_
 
-#include "IHack.h"
-
-#include "../textfile.h"
+#include "../common.h"
 
 class CatCommand;
 

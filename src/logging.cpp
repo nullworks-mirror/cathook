@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 #include <string.h>
+
 #include <pwd.h>
 
 #include "common.h"
@@ -15,9 +16,9 @@
 FILE* logging::handle = 0;
 
 void logging::Initialize() {
-	//passwd* pwd = getpwuid(getuid());
-	//char* user = pwd->pw_name;
-	logging::handle = fopen(strfmt("/tmp/cathook.log"), "w");
+	// FIXME other method of naming the file?
+	passwd* pwd = getpwuid(getuid());
+	logging::handle = fopen(strfmt("/tmp/cathook-%s.log", pwd->pw_name), "w");
 }
 
 void logging::Info(const char* fmt, ...) {

@@ -8,8 +8,6 @@
 #ifndef HACKS_ACHIEVEMENT_H_
 #define HACKS_ACHIEVEMENT_H_
 
-#include "IHack.h"
-
 namespace hacks { namespace tf2 { namespace achievement {
 
 void Lock();
