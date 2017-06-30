@@ -63,7 +63,7 @@ int draw::height = 0;
 namespace fonts {
 
 ftgl::texture_font_t* ftgl_ESP = nullptr;
-CatVar esp_ftgl_font(CV_STRING, "font_ftgl_esp", "tahoma-bold", "FTGL Font");
+CatVar esp_ftgl_font(CV_STRING, "font_ftgl_esp", "opensans-bold", "FTGL Font");
 
 }
 
