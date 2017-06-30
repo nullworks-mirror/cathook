@@ -205,20 +205,13 @@ void DrawText() {
 #define BINARY_FILE_READ(handle, data) handle.read(reinterpret_cast<char*>(&data), sizeof(data))
 
 void Save(std::string filename) {
-	uid_t uid = geteuid();
-	passwd* pw = getpwuid(uid);
-	if (!pw) {
-		logging::Info("Couldn't get username!");
-		return;
-	}
-	std::string name(pw->pw_name);
-	DIR* cathook_directory = opendir(strfmt("/home/%s/.cathook", pw->pw_name));
+	DIR* cathook_directory = opendir("cathook/skinchanger");
 	if (!cathook_directory) {
-		logging::Info(".cathook directory doesn't exist, creating one!");
-		mkdir(strfmt("/home/%s/.cathook", pw->pw_name), S_IRWXU | S_IRWXG);
+		logging::Info("Skinchanger directory doesn't exist, creating one!");
+		mkdir(strfmt("cathook/skinchanger"), S_IRWXU | S_IRWXG);
 	} else closedir(cathook_directory);
 	try {
-		std::ofstream file("/home/" + name + "/.cathook/" + filename, std::ios::out | std::ios::binary);
+		std::ofstream file("cathook/skinchanger/" + filename, std::ios::out | std::ios::binary);
 		BINARY_FILE_WRITE(file, SERIALIZE_VERSION);
 		size_t size = modifier_map.size();
 		BINARY_FILE_WRITE(file, size);
@@ -242,20 +235,13 @@ void Save(std::string filename) {
 }
 
 void Load(std::string filename, bool merge) {
-	uid_t uid = geteuid();
-	passwd* pw = getpwuid(uid);
-	if (!pw) {
-		logging::Info("Couldn't get username!");
-		return;
-	}
-	std::string name(pw->pw_name);
-	DIR* cathook_directory = opendir(strfmt("/home/%s/.cathook", pw->pw_name));
+	DIR* cathook_directory = opendir("cathook/skinchanger");
 	if (!cathook_directory) {
-		logging::Info(".cathook directory doesn't exist, creating one!");
-		mkdir(strfmt("/home/%s/.cathook", pw->pw_name), S_IRWXU | S_IRWXG);
+		logging::Info("Skinchanger directory doesn't exist, creating one!");
+		mkdir(strfmt("cathook/skinchanger"), S_IRWXU | S_IRWXG);
 	} else closedir(cathook_directory);
 	try {
-		std::ifstream file("/home/" + name + "/.cathook/" + filename, std::ios::in | std::ios::binary);
+		std::ifstream file("cathook/skinchanger/" + filename, std::ios::in | std::ios::binary);
 		unsigned file_serialize = 0;
 		BINARY_FILE_READ(file, file_serialize);
 		if (file_serialize != SERIALIZE_VERSION) {

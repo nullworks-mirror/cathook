@@ -10,7 +10,6 @@
 #include "sdk.h"
 #include "profiler.h"
 
-#include <pwd.h>
 #include <sys/mman.h>
 
 std::vector<ConVar*>& RegisteredVarsList() {

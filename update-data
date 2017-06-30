@@ -7,7 +7,10 @@ find / -type d -name "Team Fortress 2" 2>/dev/null | while read path; do
 		if grep -q 440 "$path/tf/gameinfo.txt"; then
 			echo "Found Team Fortress 2 installation at $path"
 			mkdir -p "$path/cathook"
+			ln -s "$path/cathook" "Data Folder"
 			rsync -avh --progress tf-settings/ "$path/cathook"
+			echo "Symbolic link created (Data Folder)"
+			read -p "Press ENTER to continue"
 		fi
 	fi
 done

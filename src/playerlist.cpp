@@ -30,20 +30,13 @@ bool ShouldSave(const userdata& data) {
 }
 
 void Save() {
-	uid_t uid = geteuid();
-	passwd* pw = getpwuid(uid);
-	if (!pw) {
-		logging::Info("Couldn't get username!");
-		return;
-	}
-	std::string name(pw->pw_name);
-	DIR* cathook_directory = opendir(strfmt("/home/%s/.cathook", pw->pw_name));
+	DIR* cathook_directory = opendir("cathook");
 	if (!cathook_directory) {
-		logging::Info(".cathook directory doesn't exist, creating one!");
-		mkdir(strfmt("/home/%s/.cathook", pw->pw_name), S_IRWXU | S_IRWXG);
+		logging::Info("[WARNING] cathook data directory doesn't exist! How did the cheat even get injected?");
+		mkdir("cathook", S_IRWXU | S_IRWXG);
 	} else closedir(cathook_directory);
 	try {
-		std::ofstream file("/home/" + name + "/.cathook/plist", std::ios::out | std::ios::binary);
+		std::ofstream file("cathook/plist", std::ios::out | std::ios::binary);
 		file.write(reinterpret_cast<const char*>(&SERIALIZE_VERSION), sizeof(SERIALIZE_VERSION));
 		int size = 0;
 		for (const auto& item : data) {
@@ -64,20 +57,13 @@ void Save() {
 
 void Load() {
 	data.clear();
-	uid_t uid = geteuid();
-	passwd* pw = getpwuid(uid);
-	if (!pw) {
-		logging::Info("Couldn't get username!");
-		return;
-	}
-	std::string name(pw->pw_name);
-	DIR* cathook_directory = opendir(strfmt("/home/%s/.cathook", pw->pw_name));
+	DIR* cathook_directory = opendir("cathook");
 	if (!cathook_directory) {
-		logging::Info(".cathook directory doesn't exist, creating one!");
-		mkdir(strfmt("/home/%s/.cathook", pw->pw_name), S_IRWXU | S_IRWXG);
+		logging::Info("[WARNING] cathook data directory doesn't exist! How did the cheat even get injected?");
+		mkdir("cathook", S_IRWXU | S_IRWXG);
 	} else closedir(cathook_directory);
 	try {
-		std::ifstream file("/home/" + name + "/.cathook/plist", std::ios::in | std::ios::binary);
+		std::ifstream file("cathook/plist", std::ios::in | std::ios::binary);
 		int file_serialize = 0;
 		file.read(reinterpret_cast<char*>(&file_serialize), sizeof(file_serialize));
 		if (file_serialize != SERIALIZE_VERSION) {

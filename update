@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-git pull origin master && \
-git submodule update --remote --recursive && \
-make clean && \
+git pull origin master
+git submodule update --remote --recursive
+make clean
 make -j4
+
 
 ## Ask user if they would like to update the menu
 #read -r -p "Update menu? (Y/n) " key
