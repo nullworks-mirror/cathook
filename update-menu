@@ -7,49 +7,56 @@ TFLOCATION=""
 FIRSTTIME=false
 
 ## If our config file is found, we run it to get our var
-if [ -f TFLOC ]; then
-	bash TFLOC
+if [ -f TFLOC.sh ]; then
+	bash TFLOC.sh
 fi
 	
 ## Check if var is empty, or if Team Fortress isnt in the name, or if the location doesnt exist, then we need to find where the tf2 folder is
-if [ -z "$TFLOCATION" ] || [ "$TFLOCATION" != *"Team Fortress 2/" ] || [ -f "$TFLOCATION" ]; then
+if [ -z "$TFLOCATION" ] || [ -f "$TFLOCATION" ]; then
 	FIRSTTIME=true
 	echo "cfg file not found, checking for install
 	## Check common locations for the install and save to var
-	if [ -f "~/.local/share/Steam/steamapps/common/Team Fortress 2/" ]; then
-		TFLOCATION="~/.local/share/Steam/steamapps/common/Team Fortress 2/"
-	elif [ -f "/var/log/messages" ]; then
-		TFLOCATION="~/.local/share/Steam/steamapps/common/Team Fortress 2/"
+	if [ -f "~/.local/share/Steam/steamapps/common/Team Fortress 2" ]; then
+		TFLOCATION="~/.local/share/Steam/steamapps/common/Team Fortress 2"
+	
+	## TODO find more common locations
+	##elif [ -f "/var/log/messages" ]; then
+	##	TFLOCATION="~/.local/share/Steam/steamapps/common/Team Fortress 2/"
 			
 	## We cant find it in the common locations, so we ask the user for input
 	else 
-		## We want to keep asking the user untill the path passes
-		while [ -z TFLOCATION ]; do
-			## Tell the user about the situation and ask them for input
-			echo "Your team fortress install was not found."
-			echo "Please input the path to your team fortress 2 folder"
-			echo "Example: ~/Steam/steamapps/common/Team Fortress 2/"
+		## Use find command to search for valid tf2 installs
+		INSTALLARRAY=($(find / -type d -name "Team Fortress 2" 2>/dev/null))
+		
+		## Loop throught the installs untill the correct one is found 
+		for i in "${INSTALLARRAY[@]}"
+		
+			## Check for gameinfo.txt to verify the directory
+			if [ -f "$i/tf/gameinfo.txt" ]; then
 			
-			## We retrieve our userinput here and place it into the TFLOCATIONTMP var
-			read -r -p "Path: " TFLOCATIONTMP
-			
-			## Check user input if it has the tf folder in end of the name
-			if [ $TFLOCATIONTMP == *"Team Fortress 2/" ]; then
-				## Check if the folder actually exists
-				if [ -f "$TFLOCATIONTMP" ]; then
-					echo "Passed Checks!"
-					## The check passed so we move the var from the placeholder
-					TFLOCATION=$TFLOCATIONTMP
+				## Looks like the dir is good, ask the user if its the correct one
+				echo "Is \"$i\" Your tf2 directory"
+				
+				## Ask user if they would like to update the menu
+				read -r -p "(Y/n) " key
+				
+				## If the user chose yes, then we save the info and break
+				if [ $key == "y"* ] || [ $key == "Y"* ]; then
+					TFLOCATION="$i"
+					break
 				fi
-			fi
 		done
+		
+		## if the var is still empty, then exit
+		if [ -z "$TFLOCATION" ]; then; exit
+		
 	fi
 	
 	## It should be impossible to reach this point without a path set, so it is expected that we have the tf2 dir
 	## We save the var here for future use
-	echo '$TFLOCATION='$TFLOCATION> TFLOC
+	echo '$TFLOCATION='$TFLOCATION> TFLOC.sh
 	## We want this mini script to export the var for use in this script
-	echo "export TFLOCATION">> TFLOC
+	echo "export TFLOCATION">> TFLOC.sh
 	
 fi
 

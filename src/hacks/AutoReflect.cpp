@@ -20,9 +20,9 @@ CatVar dodgeball(CV_SWITCH, "reflect_dodgeball", "0", "Dodgeball Mode", "Allows 
 	
 CatVar stickies(CV_SWITCH, "reflect_stickybombs", "0", "Reflect stickies", "Reflect Stickybombs");
 // TODO setup proj sorting
-// TODO CatVar bigProj(CV_SWITCH, "reflect_big_projectile", "0", "Reflect big projectiles", "Reflect Rockets");
-// TODO CatVar smallProj(CV_SWITCH, "reflect_small_projectile", "0", "Reflect small projectiles", "Reflect Huntsman arrows, Crusaders bolts");
-// TODO CatVar miscProj(CV_SWITCH, "reflect_misc_projectile", "0", "Reflect other", "Reflect jarate, milk");
+// TODO CatVar big_proj(CV_SWITCH, "reflect_big_projectile", "0", "Reflect big projectiles", "Reflect Rockets");
+// TODO CatVar small_proj(CV_SWITCH, "reflect_small_projectile", "0", "Reflect small projectiles", "Reflect Huntsman arrows, Crusaders bolts");
+// TODO CatVar misc_proj(CV_SWITCH, "reflect_misc_projectile", "0", "Reflect other", "Reflect jarate, milk");
 
 	
 // Function called by game for movement
@@ -50,6 +50,7 @@ void CreateMove() {
 		// Check if ent should be reflected
 		if (!ShouldReflect(ent)) continue;
 
+		// Some extrapolating due to reflect timing being latency based
 		// Grab latency
 		float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING) + g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
 		// Create a vector variable to store our velocity
@@ -57,12 +58,12 @@ void CreateMove() {
 		// Grab Velocity of projectile
 		velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
 		// Predict a vector for where the projectile will be
-		Vector predictedProj = ent->m_vecOrigin + (velocity * latency);;
+		Vector predicted_proj = ent->m_vecOrigin + (velocity * latency);;
 		
 		// Dont vischeck if ent is stickybomb or if dodgeball mode is enabled 
 		if (!IsEntStickyBomb(ent) && !dodgeball) {
 			// Vis check the predicted vector
-			if (!IsVectorVisible(g_pLocalPlayer->v_Origin, predictedProj)) continue;
+			if (!IsVectorVisible(g_pLocalPlayer->v_Origin, predicted_proj)) continue;
 		} /*else {
 			// Stickys are weird, we use a different way to vis check them
 			// Vis checking stickys are wonky, I quit, just ignore the check >_>
@@ -70,17 +71,17 @@ void CreateMove() {
  		}*/
 
 		// Calculate distance
-		float dist = predictedProj.DistToSqr(g_pLocalPlayer->v_Origin);
+		float dist = predicted_proj.DistToSqr(g_pLocalPlayer->v_Origin);
 			
 		// If legit mode is on, we check to see if reflecting will work if we dont aim at the projectile
 		if (legit) {
-			if ( GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, predictedProj) > 85.0f )  continue;
+			if (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, predicted_proj) > 85.0f)  continue;
 		}
 		
 		// Compare our info to the others and determine if its the best, if we dont have a projectile already, then we save it here
 		if (dist < closest_dist || closest_dist == 0.0f) {
 			closest_dist = dist;
-			closest_vec = predictedProj;
+			closest_vec = predicted_proj;
 		}
 	}
 
@@ -106,19 +107,16 @@ void CreateMove() {
 bool ShouldReflect(CachedEntity* ent) {
 	// Check if the entity is a projectile
 	if (ent->m_Type != ENTITY_PROJECTILE) return false;
-	logging::Info("Is projectile");
 	
 	// We dont want to do these checks in dodgeball, it breakes if we do
 	if (!dodgeball) {
 		// Check if the projectile is your own teams
 		if (!ent->m_bEnemy) return false;
-		logging::Info("isnt team");
 
 		// If projectile is already deflected, don't deflect it again.
 		if (CE_INT(ent, (ent->m_bGrenadeProjectile ?
 				/* NetVar for grenades */ netvar.Grenade_iDeflected :
 				/* For rockets */ netvar.Rocket_iDeflected))) return false;
-		logging::Info("pass already reflect");
 	}
 	
 	// Check if the projectile is a sticky bomb and if the user settings allow it to be reflected
