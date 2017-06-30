@@ -39,7 +39,7 @@ if [ -z "$TFLOCATION" ] || [ -f "$TFLOCATION" ]; then
 				echo "Is \"$i\" Your tf2 directory"
 				
 				## Ask user if they would like to update the menu
-				read -r -p "\(Y/n\) " key
+				read -r -p "(Y/n)" key
 				
 				## If the user chose yes, then we save the info and break
 				if [ $key == "y"* ] || [ $key == "Y"* ]; then
