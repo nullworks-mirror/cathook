@@ -67,9 +67,9 @@ static CatVar priority_mode(priority_mode_enum, "aimbot_prioritymode", "0", "Pri
 		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
 		"FOV, DISTANCE, HEALTH are self-explainable. HEALTH picks the weakest enemy");
 static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits until it has enough charge to kill");
-static CatVar respect_vaccinator(CV_SWITCH, "aimbot_respect_vaccinator", "1", "Respect Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
+static CatVar ignore_vaccinator(CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
-static CatVar respect_cloak(CV_SWITCH, "aimbot_respect_cloak", "1", "Respect cloak", "Don't aim at invisible enemies");
+static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1", "Ignore cloaked", "Don't aim at invisible enemies");
 static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim Sentry", "Should aimbot aim at sentryguns?");
 static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
 static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
@@ -115,11 +115,6 @@ static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automa
 // The main "loop" of the aimbot. 
 void CreateMove() {
 	
-	float target_highest_score, scr, begincharge, charge;
-	CachedEntity* ent;
-	int huntsman_ticks = 0;
-	target_highest = 0;
-	
 	// Check if aimbot is enabled
 	if (!enabled) return;
 	
@@ -130,6 +125,7 @@ void CreateMove() {
 	headonly = false;
 	
 	// Grab projectile info
+	int huntsman_ticks = 0;
 	projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
 	if (proj_speed)
 		cur_proj_speed = (float)proj_speed;
@@ -139,8 +135,13 @@ void CreateMove() {
 	// Set foundTarget Status
 	foundTarget = false;
 	
-	// System to find a suitable target
+	// Book keeping vars
+	float target_highest_score, scr;
+	CachedEntity* ent;
+	target_highest = 0;
 	target_highest_score = -256;
+	
+	// System to find a suitable target
 	{
 		// Loop that checks all ents whether it is a good target or not
 		for (int i = 0; i < HIGHEST_ENTITY; i++) {
@@ -199,7 +200,7 @@ void CreateMove() {
 			}
 		}
 	}
-	
+
 	// Attemt to reduce huntsman_ticks by 1 untill it reaches 0
 	if (huntsman_ticks) {
 		// Disable attack
@@ -235,6 +236,8 @@ void CreateMove() {
 
 			// If player is using huntsman, we use a different system for autoshooting 
 			} else {
+				// Create book keeping vars
+				float begincharge, charge;
 				// Grab time when charge began
 				begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
 				// Reset current charge count
@@ -360,10 +363,10 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			// Dont target invulnerable players, ex: uber, bonk
 			if (IsPlayerInvulnerable(entity)) return false;
 			// If settings allow, dont target cloaked players
-			if (respect_cloak && IsPlayerInvisible(entity)) return false;
+			if (ignore_cloak && IsPlayerInvisible(entity)) return false;
 			// If settings allow, dont target vaccinated players
 			if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == CL_CLASS(CTFCompoundBow))
-				if (respect_vaccinator && HasCondition<TFCond_UberBulletResist>(entity)) return false;
+				if (ignore_vaccinator && HasCondition<TFCond_UberBulletResist>(entity)) return false;
 		}
 		// Dont target players marked as friendly
 		if (playerlist::IsFriendly(playerlist::AccessData(entity).state)) return false;
@@ -458,7 +461,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 	return false;
 }
 	
-// A finction to aim at a specific entitiy
+// A function to aim at a specific entitiy
 void Aim(CachedEntity* entity) {
 	// Dont aim at a bad entity
 	if (CE_BAD(entity)) return;
@@ -470,12 +473,13 @@ void Aim(CachedEntity* entity) {
 	// Grab the targets vector, and vector it for the eye angles 
 	tr = (PredictEntity(entity) - g_pLocalPlayer->v_Eye);
 	VectorAngles(tr, angles);
+	// Clamp angles
+	fClampAngle(angles);
     
     // Slow the aiming to the aim vector if true
 	if (slowaim) slowAim(angles, g_pUserCmd->viewangles);
     
-	// Clamp and set angles
-    fClampAngle(angles);
+	// Set angles
     g_pUserCmd->viewangles = angles;
 	
 	// Finish function
@@ -609,6 +613,7 @@ int BestHitbox(CachedEntity* target) {
 					}
 				}
 			}
+			// Bodyshot handling
 			if (g_pLocalPlayer->holding_sniper_rifle) {
 				// Grab netvar for current charge damage
 				cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
@@ -638,8 +643,8 @@ int BestHitbox(CachedEntity* target) {
 				}
 				// If can headshot and if bodyshot kill from charge damage, or if crit boosted and they have 150 health, or if player isnt zoomed, or if the enemy has less than 40, due to darwins, and only if they have less than 150 health will it try to bodyshot
 				if (CanHeadshot() && (cdmg >= target->m_iHealth || IsPlayerCritBoosted(g_pLocalPlayer->entity) || !g_pLocalPlayer->bZoomed || target->m_iHealth <= bdmg)  && target->m_iHealth <= 150) {
-					preferred = ClosestHitbox(target);
 					// We dont need to hit the head as a bodyshot will kill
+					preferred = hitbox_t::spine_1;
 					headonly = false;
 				}
 			}
@@ -680,10 +685,6 @@ int ClosestHitbox(CachedEntity* target) {
 	int closest;
 	float closest_fov, fov;
 
-	//If you can see the spine, no need to check for another hitbox only if using auto-head
-    if ((int)hitbox_mode == 0) {
-        if (target->hitboxes.VisibilityCheck(hitbox_t::spine_1)) return hitbox_t::spine_1;
-    }
 	closest = -1;
 	closest_fov = 256;
 	for (int i = 0; i < target->hitboxes.GetNumHitboxes(); i++) {
@@ -717,10 +718,6 @@ void slowAim(Vector &inputAngle, Vector userAngle) {
     int slowdir;
     float changey;
     float changex;
-    
-    // Angle clamping for when the aimbot chooses a too high of value
-    if (inputAngle.y > 180) inputAngle.y = inputAngle.y - 360;
-    if (inputAngle.y < -180) inputAngle.y = inputAngle.y + 360;
         
     // Determine whether to move the mouse at all for the yaw
     if (userAngle.y != inputAngle.y) {
@@ -764,9 +761,6 @@ void slowAim(Vector &inputAngle, Vector userAngle) {
         if (slowdir == 1) inputAngle.y = userAngle.y - changey;
         if (slowdir == 2) inputAngle.y = userAngle.y + changey;
     }
-    
-    // Angle clamping for when the aimbot chooses a too high of value, fixes for when players are above your player
-    if (inputAngle.x > 89) inputAngle.x = inputAngle.x - 360;
     
     // Determine whether to move the mouse at all for the pitch
     if (userAngle.x != inputAngle.x) {
@@ -841,7 +835,7 @@ float EffectiveTargetingRange() {
 	if (GetWeaponMode() == weapon_melee) {
 		return 100.0f;
 	// Pyros only have so much untill their flames hit
-	} else if ( g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower) ) {
+	} else if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower)) {
 		return 185.0f;
 	}
 	// Else return user settings

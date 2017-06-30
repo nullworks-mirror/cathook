@@ -86,7 +86,7 @@ void CreateMove() {
 	}
 
 	// Determine whether the closest projectile is whithin our parameters, preferably 185 units should be our limit, sqr is around the number below
-	if (closest_dist == 0 || closest_dist > 34650) return;
+	if (closest_dist == 0 || closest_dist > 34400) return;
 	
 	// We dont want to aim if legit is true
 	if (!legit) {
