@@ -8,11 +8,7 @@
 #ifndef HACKS_MISC_H_
 #define HACKS_MISC_H_
 
-#include "IHack.h"
-
-class ConVar;
-class CatCommand;
-class IClientEntity;
+#include "../common.h"
 
 namespace hacks { namespace shared { namespace misc {
 
