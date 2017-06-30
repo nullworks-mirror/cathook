@@ -40,6 +40,7 @@ static CatVar max_range(CV_INT, "trigger_maxrange", "0", "Max distance",
 		"Max range for aimbot\n"
 		"900-1100 range is efficient for scout/widowmaker engineer", 4096.0f);
 	
+int last_hb_traced = 0;
 
 // The main "loop" of the aimbot. 
 void CreateMove() {	
@@ -50,11 +51,17 @@ void CreateMove() {
 	// Check if player can aim
 	if (!ShouldShoot()) return;
 	
+	// Reset our last hitbox traced
+	last_hb_traced = -1;
+	
 	// Get and ent in front of the player
 	CachedEntity* ent = FindEntInSight(EffectiveTargetingRange());
 	
+	// Check if dormant or null to prevent crashes
+	if (CE_BAD(ent)) return;
+	
 	// Determine whether the triggerbot should shoot, then act accordingly
-	if (!IsTargetStateGood(ent)) g_pUserCmd->buttons |= IN_ATTACK;
+	if (IsTargetStateGood(ent)) g_pUserCmd->buttons |= IN_ATTACK;
 		
 	return;
 }
@@ -159,16 +166,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 
 		// Head hitbox detection
 		if (HeadPreferable(entity)) {
-			// Get fov values for head and spine3, which is right below the head
-			Vector head_vec;
-			Vector spine3_vec;
-			GetHitbox(entity, hitbox_t::head, head_vec);
-			GetHitbox(entity, hitbox_t::spine_3, spine3_vec);
-			float fov_head = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, head_vec);
-			float fov_body = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, spine3_vec);
-			
-			// Compare them and if the crosshair isnt closer to the head, then return false
-			if (fov_head >= fov_body) return false;
+			if (last_hb_traced != hitbox_t::head) return false;
 		}	
 		
 		// Target passed the tests so return true
@@ -241,12 +239,13 @@ CachedEntity* FindEntInSight(float range) {
 	// Setup the trace starting with the origin of the local players eyes attemting to hit the end vector we determined
     Ray_t ray;
 	ray.Init(g_pLocalPlayer->v_Eye, forward);
-	{
-		PROF_SECTION(IEVV_TraceRay);
-		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
-	}
+	
+	// Ray trace
+	g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);
+
 	// Return an ent if that is what we hit
     if (trace.m_pEnt) {
+		last_hb_traced = trace.hitbox;
         return ENTITY(((IClientEntity*)trace.m_pEnt)->entindex());
 	}
 	
