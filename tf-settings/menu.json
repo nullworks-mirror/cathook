@@ -109,9 +109,10 @@
 				"name": "Auto Reflect",
 				"list": [
 					"reflect_enabled",
-					"reflect_distance",
+					"reflect_legit",
+					"reflect_only_idle",
 					"reflect_stickybombs",
-					"reflect_only_idle"
+					"reflect_dodgeball"					
 				]
 			},
 			{
