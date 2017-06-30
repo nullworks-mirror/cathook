@@ -58,27 +58,28 @@ extern CatVar item_adrenaline;
 class ESPString {
 public:
 	std::string data { "" };
-	int color { 0 };
+	rgba_t color { colors::empty };
 };
 
 class ESPData {
 public:
-	int color { 0 };
+	rgba_t color { colors::empty };
 	int string_count { 0 };
 	std::array<ESPString, 16> strings {};
 	Vector esp_origin { 0, 0, 0 };
+	Vector last_origin { 0, 0, 0 };
 	bool needs_paint { false };
 };
 
 extern std::array<ESPData, 2048> data;
 void ResetEntityStrings();
-void AddEntityString(CachedEntity* entity, const std::string& string, int color = 0x0);
-void SetEntityColor(CachedEntity* entity, int color);
+void AddEntityString(CachedEntity* entity, const std::string& string, const rgba_t& color = colors::empty);
+void SetEntityColor(CachedEntity* entity, const rgba_t& color);
 
 void CreateMove();
 void Draw();
 
-void __attribute__((fastcall)) DrawBox(CachedEntity* ent, int clr, float widthFactor, float addHeight, bool healthbar, int health, int healthmax);
+void __attribute__((fastcall)) DrawBox(CachedEntity* ent, const rgba_t& clr, bool healthbar, int health, int healthmax);
 void __attribute__((fastcall)) ProcessEntity(CachedEntity* ent);
 void __attribute__((fastcall)) ProcessEntityPT(CachedEntity* ent);
 

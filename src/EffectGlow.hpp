@@ -31,7 +31,7 @@ public:
 	void DrawEntity(IClientEntity* entity);
 	void DrawToStencil(IClientEntity* entity);
 	void DrawToBuffer(IClientEntity* entity);
-	int GlowColor(IClientEntity* entity);
+	rgba_t GlowColor(IClientEntity* entity);
 	bool ShouldRenderGlow(IClientEntity* entity);
 	void RenderGlow(IClientEntity* entity);
 	void BeginRenderGlow();

@@ -14,14 +14,9 @@
 #include "../profiler.h"
 #include "../netmessage.h"
 
-#if NOGUI != 1
-#include "../gui/GUI.h"
-#endif
-
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1", "Clean screenshots", "Don't draw visuals while taking a screenshot");
 CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Completely hides cathook");
 CatVar no_zoom(CV_SWITCH, "no_zoom", "0", "Disable scope", "Disables black scope overlay");
-CatVar info_text(CV_SWITCH, "info", "1", "Show info", "Show cathook version in top left corner");
 CatVar pure_bypass(CV_SWITCH, "pure_bypass", "0", "Pure Bypass", "Bypass sv_pure");
 void* pure_orig = nullptr;
 void** pure_addr = nullptr;
@@ -73,7 +68,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		case 2:
 			if (software_cursor->GetBool()) software_cursor->SetValue(0);
 			break;
-#if NOGUI != 1
+#if ENABLE_GUI
 		case 3:
 			if (cur != g_pGUI->Visible()) {
 				software_cursor->SetValue(g_pGUI->Visible());
@@ -122,8 +117,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		g_Settings.bInvalid = true;
 	}
 
-	ResetStrings();
-
 	if (vp != panel_focus) return;
 	g_IPanel->SetTopmostPopup(panel_focus, true);
 	if (!draw_flag) return;
@@ -145,71 +138,17 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	PROF_SECTION(PT_active);
 
-	if (info_text) {
-		PROF_SECTION(PT_info_text);
-		AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
-		AddSideString(hack::GetVersion(), GUIColor());
-#if NOGUI != 1
-		AddSideString("Press 'INSERT' or 'F11' key to open/close cheat menu.", GUIColor());
-		AddSideString("Use mouse to navigate in menu.", GUIColor());
-#endif
-		if (!g_IEngine->IsInGame()
-#if NOGUI != 1
-			|| g_pGUI->Visible()
-#endif
-		) {
-			name_s = force_name.GetString();
-			if (name_s.length() < 3) name = "*Not Set*";
-			AddSideString(""); // foolish
-			name_stripped = name_s	;
-			ReplaceString(name_stripped, "\n", "\\n");
-			reason_stripped = disconnect_reason.GetString();
-			ReplaceString(reason_stripped, "\n", "\\n");
-			AddSideString(format("Custom Name: ", name_stripped), GUIColor());
-			AddSideString(format("Custom Disconnect Reason: ", (reason_stripped.length() > 3 ? reason_stripped : "*Not Set*")), GUIColor());
-		}
-	}
-
-	if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
-		PROF_SECTION(PT_total_hacks);
-		IF_GAME(IsTF()) {
-			PROF_SECTION(PT_antidisguise);
-			SAFE_CALL(hacks::tf2::antidisguise::Draw());
-		}
-		{
-			PROF_SECTION(PT_misc);
-			SAFE_CALL(hacks::shared::misc::Draw());
-		}
-		{
-			PROF_SECTION(PT_esp);
-			SAFE_CALL(hacks::shared::esp::Draw());
-		}
-		IF_GAME(IsTF()) {
-			PROF_SECTION(PT_spyalert);
-			SAFE_CALL(hacks::tf::spyalert::Draw());
-		}
-		IF_GAME(IsTF()) {
-			PROF_SECTION(PT_radar);
-			SAFE_CALL(hacks::tf::radar::Draw());
-		}
-		IF_GAME(IsTF2()) {
-			PROF_SECTION(PT_skinchanger);
-			SAFE_CALL(hacks::tf2::skinchanger::PaintTraverse());
-		}
-		{
-			SAFE_CALL(hacks::shared::aimbot::PaintTraverse());
-		}
-	}
+	draw::UpdateWTS();
+	BeginCheatVisuals();
+	DrawCheatVisuals();
 
 
-#if NOGUI != 1
+#if ENABLE_GUI
 		g_pGUI->Update();
 #endif
 
-	{
-		PROF_SECTION(PT_draw_strings);
-		DrawStrings();
-	}
+
+	EndCheatVisuals();
 	SEGV_END;
 }
 

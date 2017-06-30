@@ -25,6 +25,7 @@ extern x* g_ph##x;
 #define DEFINE_HACK_SINGLETON(x) \
 x* g_ph##x = 0;
 
+__attribute__((deprecated))
 class IHack {
 public:
 	inline virtual ~IHack() {};

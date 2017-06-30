@@ -48,6 +48,7 @@ public:
 
 extern VMTHook panel;
 extern VMTHook clientmode;
+extern VMTHook clientmode4;
 extern VMTHook client;
 extern VMTHook netchannel;
 extern VMTHook clientdll;

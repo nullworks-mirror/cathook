@@ -25,7 +25,6 @@ bool DispatchUserMessage_hook(void*, int, bf_read&);
 void FrameStageNotify_hook(void*, int);
 void LevelInit_hook(void*, const char*);
 void LevelShutdown_hook(void*);
-void SwapWindow_hook(SDL_Window* window);
 
 //extern unsigned int* swapwindow_ptr;
 //extern unsigned int  swapwindow_orig;

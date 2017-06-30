@@ -17,7 +17,7 @@ class IClientEntity;
 namespace hacks { namespace shared { namespace misc {
 
 void CreateMove();
-void Draw();
+void DrawText();
 
 extern IClientEntity* found_crit_weapon;
 extern int found_crit_number;

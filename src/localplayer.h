@@ -24,6 +24,7 @@ public:
 	bool bZoomed;
 	float flZoomBegin;
 	bool holding_sniper_rifle;
+	weaponmode weapon_mode;
 	bool using_action_slot_item { false };
 
 	Vector v_ViewOffset;

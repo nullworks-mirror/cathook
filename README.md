@@ -1,12 +1,20 @@
+# Cathook Multihack
+![banner](http://i.imgur.com/GkBmJFT.png)
+
 # Discord Server
-[Official Discord Server (updated link)](https://discord.gg/kvNVNSX)
+[Official Discord Server](https://discord.gg/kvNVNSX)
 
 # INSTALLATION
 
 Ubuntu (and probably Debian) users can run this script:
 
+```bash
+sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot -y && sudo apt update && sudo apt install git libc6-dev gcc-6 g++-6 libc6-dev:i386 g++-6-multilib gdb libsdl2-dev libglew-dev libfreetype6-dev libfreetype6-dev:i386 -y && git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4
 ```
-sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot -y && sudo apt update && sudo apt install git libc6-dev gcc-6 g++-6 libc6-dev:i386 g++-6-multilib gdb -y && git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4
+
+Arch install script (requires you find gcc6 on your own):
+```bash
+sudo pacman -Syu && sudo pacman -S base-devel gcc-multilib gdb gdb-common glew1.10 lib32-glew1.10 && git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4 && bash update-menu
 ```
 
 **Errors while installing?**
@@ -24,6 +32,10 @@ Run the `update` script in cathook folder.
 `sudo ./attach` to attach to tf2 process (can take argument number 0-N - # of tf2 instance to attach to (for bots))
 
 `sudo ./attach-backtrace` to attach and print backtrace if tf2 crashes. Some users reported that this method makes you get less FPS ingame.
+
+## Menu
+Then menu files need to be placed into the Team fortress 2 folder if you wish to use a menu. To install then just copy the tf-settings folder into your Team fortress 2 folder and rename it to "cathook"
+The update-menu script automaticly does this for you.
 
 ## Followbots
 

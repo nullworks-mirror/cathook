@@ -8,7 +8,7 @@
 #ifndef CRITINDICATOR_HPP_
 #define CRITINDICATOR_HPP_
 
-#include "Menu.hpp"
+/*#include "Menu.hpp"
 
 extern unsigned char _binary_crit_1_start;
 extern unsigned char _binary_crit_2_start;
@@ -37,6 +37,6 @@ public:
 	Texture crit_disabled;
 };
 
-}}
+}}*/
 
 #endif /* CRITINDICATOR_HPP_ */

@@ -233,9 +233,6 @@ CatCommand tool("fb_tool", "Followbot multitool", [](const CCommand& args) {
 
 CatCommand follow("fb_follow", "Follows you (or player with SteamID specified)", [](const CCommand& args) {
 	follow_steamid = strtol(args.Arg(1), nullptr, 10);
-	allow_moving = true;
-	crumbForceMove = true;
-    CrumbStart();
 });
 CatVar bot(CV_SWITCH, "fb_bot", "0", "This player is a bot", "Set to 1 in followbots' configs");
 CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "1", "Mimic selected weapon", "If enabled, this bot will select same weapon slot as the owner");
@@ -497,34 +494,6 @@ void DoWalking() {
 		}
 	}
 }
-	
-/*static CatVar crumbDraw(CV_SWITCH, "fb_crumb_draw", "1", "Draw Crumbs", "Draws the path made for the followbot");
-	
-void DrawCrumbs() {
-	Vector scnSrt, scnEnd;
-	int tmpCrumb;
-	for (int i = 0; i < crumbArrayLength; i++) {
-		tmpCrumb = crumbBottom + i;
-		if (tmpCrumb >= 55)
-			tmpCrumb - 55;
-		draw::WorldToScreen(breadcrumbs[tmpCrumb], scnSrt);
-		
-		if (tmpCrumb >= 54)
-			draw::WorldToScreen(breadcrumbs[tmpCrumb - 54], scnEnd);
-		else 
-			draw::WorldToScreen(breadcrumbs[tmpCrumb + 1], scnEnd);
-		draw::DrawLine(scnSrt.x, scnSrt.y, scnEnd.x - scnSrt.x, scnEnd.y - scnSrt.y, colors::white);	
-		logging::Info("draw");
-	}
-}
-	
-void Draw() {
-	//if (!bot) return;
-	if (crumbDraw) {
-		if (crumbArrayLength >= 2)
-			void DrawCrumbs();
-	}
-}*/
 
 }}}
 

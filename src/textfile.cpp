@@ -16,20 +16,16 @@
 #include <pwd.h>
 #include <stdio.h>
 
-TextFile::TextFile() : lines {} {};
+TextFile::TextFile()
+	: lines {} {
+
+}
 
 void TextFile::Load(std::string name) {
-	uid_t uid = geteuid();
-	passwd* pw = getpwuid(uid);
-	if (!pw) {
-		logging::Info("can't get the username!");
-		return;
-	}
-	std::string test_format = format(123);
-	std::string filename = format("/home/", pw->pw_name, "/.cathook/", name);
+	std::string filename = format("cathook/", name);
 	std::ifstream file(filename, std::ios::in);
 	if (file.bad()) {
-		logging::Info("Could not open the file: %s", filename);
+		logging::Info("Could not open the file: %s", filename.c_str());
 		return;
 	}
 	lines.clear();

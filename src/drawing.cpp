@@ -7,13 +7,17 @@
 
 #include "common.h"
 #include "sdk.h"
+#include "ftrender.hpp"
+
+#include <GL/gl.h>
 
 std::array<std::string, 32> side_strings;
 std::array<std::string, 32> center_strings;
-std::array<int, 32> side_strings_colors { 0 };
-std::array<int, 32> center_strings_colors { 0 };
-int side_strings_count { 0 };
-int center_strings_count { 0 };
+std::array<rgba_t, 32> side_strings_colors { colors::empty };
+std::array<rgba_t, 32> center_strings_colors { colors::empty };
+size_t side_strings_count { 0 };
+size_t center_strings_count { 0 };
+
 
 void InitStrings() {
 	ResetStrings();
@@ -24,30 +28,31 @@ void ResetStrings() {
 	center_strings_count = 0;
 }
 
-void AddSideString(const std::string& string, int color) {
+void AddSideString(const std::string& string, const rgba_t& color) {
 	side_strings[side_strings_count] = string;
 	side_strings_colors[side_strings_count] = color;
-	side_strings_count++;
+	++side_strings_count;
 }
 
 void DrawStrings() {
 	int y { 8 };
-	for (int i = 0; i < side_strings_count; i++) {
-		draw::String(fonts::ESP, 8, y, side_strings_colors[i], 2, side_strings[i]);
-		y += 14;
+	for (size_t i = 0; i < side_strings_count; ++i) {
+		FTGL_Draw(side_strings[i], 8, y, fonts::ftgl_ESP, side_strings_colors[i]);
+		y += fonts::ftgl_ESP->height + 1;
 	}
 	y = draw::height / 2;
-	for (int i = 0; i < center_strings_count; i++) {
-		draw::String(fonts::ESP, draw::width / 2, y, center_strings_colors[i], 2, center_strings[i]);
-		y += 14;
+	for (size_t i = 0; i < center_strings_count; ++i) {
+		int sx;
+		FTGL_StringLength(center_strings[i], fonts::ftgl_ESP, &sx, nullptr);
+		FTGL_Draw(center_strings[i], (draw::width - sx) / 2, y, fonts::ftgl_ESP, center_strings_colors[i]);
+		y += fonts::ftgl_ESP->height + 1;
 	}
-	//logging::Info("Drawing strings done: %d %ul", y, fonts::ESP);
 }
 
-void AddCenterString(const std::string& string, int color) {
+void AddCenterString(const std::string& string, const rgba_t& color) {
 	center_strings[center_strings_count] = string;
 	center_strings_colors[center_strings_count] = color;
-	center_strings_count++;
+	++center_strings_count;
 }
 
 
@@ -55,166 +60,24 @@ void AddCenterString(const std::string& string, int color) {
 int draw::width = 0;
 int draw::height = 0;
 
-int colors::EntityF(CachedEntity* ent) {
-	int result, skin, plclr;
-	k_EItemType type;
-
-	using namespace colors;
-	result = white;
-	type = ent->m_ItemType;
-	if (type) {
-		if (type >= ITEM_HEALTH_SMALL && type <= ITEM_HEALTH_LARGE || type == ITEM_TF2C_PILL) result = green;
-		else if (type >= ITEM_POWERUP_FIRST && type <= ITEM_POWERUP_LAST) {
-			skin = RAW_ENT(ent)->GetSkin();
-			if (skin == 1) result = red;
-			else if (skin == 2) result = blu;
-			else result = yellow;
-		}
-		else if (type >= ITEM_TF2C_W_FIRST && type <= ITEM_TF2C_W_LAST) {
-			if (CE_BYTE(ent, netvar.bRespawning)) {
-				result = red;
-			} else {
-				result = yellow;
-			}
-		}
-		else if (type == ITEM_HL_BATTERY) {
-			result = yellow;
-		}
-	}
-
-	if (ent->m_iClassID == CL_CLASS(CCurrencyPack)) {
-		if (CE_BYTE(ent, netvar.bDistributed))
-			result = red;
-		else
-			result = green;
-	}
-
-	if (ent->m_Type == ENTITY_PROJECTILE) {
-		if (ent->m_iTeam == TEAM_BLU) result = blu;
-		else if (ent->m_iTeam == TEAM_RED) result = red;
-		if (ent->m_bCritProjectile) {
-			if (ent->m_iTeam == TEAM_BLU) result = blu_u;
-			else if (ent->m_iTeam == TEAM_RED) result = red_u;
-		}
-	}
-
-	if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
-		if (ent->m_iTeam == TEAM_BLU) result = blu;
-		else if (ent->m_iTeam == TEAM_RED) result = red;
-		if (ent->m_Type == ENTITY_PLAYER) {
-			if (IsPlayerInvulnerable(ent)) {
-				if (ent->m_iTeam == TEAM_BLU) result = blu_u;
-				else if (ent->m_iTeam == TEAM_RED) result = red_u;
-			}
-			if (HasCondition<TFCond_UberBulletResist>(ent)) {
-				if (ent->m_iTeam == TEAM_BLU) result = blu_v;
-				else if (ent->m_iTeam == TEAM_RED) result = red_v;
-			}
-			plclr = playerlist::Color(ent);
-			if (plclr) result = plclr;
-		}
-	}
-
-	return result;
-}
-
-int colors::RainbowCurrent() {
-	return colors::FromHSL(fabs(sin(g_GlobalVars->curtime / 2.0f)) * 360.0f, 0.85f, 0.9f);
-}
-
-int colors::FromHSL(float h, float s, float v) {
-	double hh, p, q, t, ff;
-	long i;
-
-	if(s <= 0.0) {       // < is bogus, just shuts up warnings
-		return colors::Create(v * 255, v * 255, v * 255, 255);
-	}
-	hh = h;
-	if(hh >= 360.0) hh = 0.0;
-	hh /= 60.0;
-	i = (long)hh;
-	ff = hh - i;
-	p = v * (1.0 - s);
-	q = v * (1.0 - (s * ff));
-	t = v * (1.0 - (s * (1.0 - ff)));
-
-	switch(i) {
-	case 0:
-		return colors::Create(v * 255, t * 255, p * 255, 255);
-	case 1:
-		return colors::Create(q * 255, v * 255, p * 255, 255);
-	case 2:
-		return colors::Create(p * 255, v * 255, t * 255, 255);
-	case 3:
-		return colors::Create(p * 255, q * 255, v * 255, 255);
-		break;
-	case 4:
-		return colors::Create(t * 255, p * 255, v * 255, 255);
-	case 5:
-	default:
-		return colors::Create(v * 255, p * 255, q * 255, 255);
-	}
-}
-
-int colors::Health(int health, int max) {
-	float hf;
-	hf = (float)health / (float)max;
-	if (hf > 1) {
-		return colors::Create(64, 128, 255, 255);
-	}
-	return colors::Create((hf <= 0.5 ? 1.0 : 1.0 - 2 * (hf - 0.5)) * 255, (hf <= 0.5 ? (2 * hf) : 1) * 255, 0, 255);
-}
-
-void draw::DrawRect(int x, int y, int w, int h, int color) {
-	g_ISurface->DrawSetColor(*reinterpret_cast<Color*>(&color));
-	g_ISurface->DrawFilledRect(x, y, x + w, y + h);
-}
-
 namespace fonts {
 
-unsigned long ESP = 0;
-unsigned long MENU = 0;
-unsigned long MENU_BIG = 0;
-
-const std::vector<std::string> fonts = {"Tahoma Bold", "Tahoma", "TF2 Build", "Verdana", "Verdana Bold", "Arial", "Courier New", "Ubuntu Mono Bold"};
-CatEnum family_enum(fonts);
-CatVar esp_family(family_enum, "font_esp_family", "2", "ESP font", "ESP font family");
-CatVar esp_height(CV_INT, "font_esp_height", "14", "ESP height", "ESP font height");
-
-void Update() {
-	fonts::ESP = g_ISurface->CreateFont();
-	g_ISurface->SetFontGlyphSet(fonts::ESP, fonts::fonts[_clamp(0, 7, (int)fonts::esp_family)].c_str(), (int)fonts::esp_height, 0, 0, 0, 0); // or Ubuntu Mono Bold
-	//g_ISurface->ResetFontCaches();
-}
+ftgl::texture_font_t* ftgl_ESP = nullptr;
+CatVar esp_ftgl_font(CV_STRING, "font_ftgl_esp", "opensans-bold", "FTGL Font");
 
 }
 
 void draw::Initialize() {
-	fonts::ESP = g_ISurface->CreateFont();
-	fonts::MENU = g_ISurface->CreateFont();
-	fonts::MENU_BIG = g_ISurface->CreateFont();
 	if (!draw::width || !draw::height) {
 		g_IEngine->GetScreenSize(draw::width, draw::height);
 	}
 
-	const auto install_callback_fn = [](CatVar* var) {
-		var->convar_parent->InstallChangeCallback([](IConVar* var, const char* pOldValue, float flOldValue) {
-			fonts::Update();
-		});
-	};
+	FTGL_PreInit();
 
-	fonts::esp_family.OnRegister(install_callback_fn);
-	fonts::esp_height.OnRegister(install_callback_fn);
-
-	fonts::Update();
-	g_ISurface->SetFontGlyphSet(fonts::ESP, fonts::fonts[_clamp(0, 5, (int)fonts::esp_family)].c_str(), (int)fonts::esp_height, 0, 0, 0, 0);
-	g_ISurface->SetFontGlyphSet(fonts::MENU, "Verdana", 12, 0, 0, 0, 0);
-	g_ISurface->SetFontGlyphSet(fonts::MENU_BIG, "Verdana Bold", 30, 0, 0, 0, 0x0);
-}
-
-void draw::DrawLine(int x, int y, int dx, int dy, int color) {
-	g_ISurface->DrawSetColor(*reinterpret_cast<Color*>(&color));
-	g_ISurface->DrawLine(x, y, x + dx, y + dy);
+	fonts::esp_ftgl_font.InstallChangeCallback([](IConVar* var, const char* pOldValue, float flOldValue) {
+		FTGL_ChangeFont(&fonts::ftgl_ESP, fonts::esp_ftgl_font.GetString());
+		(void)flOldValue;
+	});
 }
 
 bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
@@ -229,10 +92,14 @@ bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
 	return succ;
 }
 
-bool draw::WorldToScreen(Vector& origin, Vector& screen) {
-	float w, odw;
+VMatrix wts {};
 
-	const VMatrix& wts = g_IEngine->WorldToScreenMatrix();
+void draw::UpdateWTS() {
+	memcpy(&wts, &g_IEngine->WorldToScreenMatrix(), sizeof(VMatrix));
+}
+
+bool draw::WorldToScreen(const Vector& origin, Vector& screen) {
+	float w, odw;
 	screen.z = 0;
 	w = wts[3][0] * origin[0] + wts[3][1] * origin[1] + wts[3][2] * origin[2] + wts[3][3];
 	if (w > 0.001) {
@@ -242,111 +109,5 @@ bool draw::WorldToScreen(Vector& origin, Vector& screen) {
 		return true;
 	}
 	return false;
-}
-
-void draw::OutlineRect(int x, int y, int w, int h, int color) {
-	g_ISurface->DrawSetColor(*reinterpret_cast<Color*>(&color));
-	g_ISurface->DrawOutlinedRect(x, y, x + w, y + h);
-}
-
-void draw::DrawCircle(float x, float y, float r, int num_segments, int color) {
-	if (num_segments < 3 || r == 0 ) return;
-	g_ISurface->DrawSetColor(*reinterpret_cast<Color*>(&color));
-	float Step = PI * 2.0 / num_segments;
-    for (float a = 0; a < (PI*2.0); a += Step) {
-        float x1 = r * cos(a) + x;
-        float y1 = r * sin(a) + y;
-        float x2 = r * cos(a + Step) + x;
-        float y2 = r * sin(a + Step) + y;
-		g_ISurface->DrawLine(x1, y1, x2, y2);
-    }
-}
-
-void draw::GetStringLength(unsigned long font, char* string, int& length, int& height) {
-	wchar_t buf[512];
-	memset(buf, 0, sizeof(wchar_t) * 512);
-	mbstowcs(buf, string, strlen(string));
-	g_ISurface->GetTextSize(font, buf, length, height);
-}
-
-void draw::String (unsigned long font, int x, int y, int color, int shadow, const char* text) {
-	bool newlined;
-	int w, h, s, n;
-	char ch[512];
-	wchar_t string[512];
-	size_t len;
-
-	newlined = false;
-	len = strlen(text);
-	for (int i = 0; i < len; i++) {
-		if (text[i] == '\n') {
-			newlined = true; break;
-		}
-	}
-	if (newlined) {
-		memset(ch, 0, sizeof(char) * 512);
-		GetStringLength(font, "W", w, h);
-		strncpy(ch, text, 511);
-		s = 0;
-		n = 0;
-		for (int i = 0; i < len; i++) {
-			if (ch[i] == '\n') {
-				ch[i] = 0;
-				draw::String(font, x, y + n * (h), color, shadow, &ch[0] + s);
-				n++;
-				s = i + 1;
-			}
-		}
-		draw::String(font, x, y + n * (h), color, shadow, &ch[0] + s);
-	} else {
-		memset(string, 0, sizeof(wchar_t) * 512);
-		mbstowcs(string, text, 511);
-		draw::WString(font, x, y, color, shadow, string);
-	}
-}
-
-void draw::String(unsigned long font, int x, int y, int color, int shadow, std::string text) {
-	draw::String(font, x, y, color, shadow, text.c_str());
-}
-CatVar fast_outline(CV_SWITCH, "fast_outline", "0", "Fast font outline", "Use only single repaint to increase performance");
-void draw::WString(unsigned long font, int x, int y, int color, int shadow, const wchar_t* text) {
-	unsigned char alpha;
-	int black_t;
-
-	if (shadow) {
-		alpha = (color >> 24);
-		black_t = ((alpha == 255) ? colors::black : colors::Create(0, 0, 0, alpha / shadow));
-		if (shadow > 0) {
-			draw::WString(font, x + 1, y + 1, black_t, false, text);
-		}
-		if (shadow > 1 && !fast_outline) {
-			draw::WString(font, x - 1, y + 1, black_t, false, text);
-			draw::WString(font, x - 1, y - 1, black_t, false, text);
-			draw::WString(font, x + 1, y - 1, black_t, false, text);
-			draw::WString(font, x + 1, y, black_t, false, text);
-			draw::WString(font, x, y + 1, black_t, false, text);
-			draw::WString(font, x, y - 1, black_t, false, text);
-			draw::WString(font, x - 1, y, black_t, false, text);
-		}
-	}
-	g_ISurface->DrawSetTextPos(x, y);
-	g_ISurface->DrawSetTextColor(*reinterpret_cast<Color*>(&color));
-	g_ISurface->DrawSetTextFont(font);
-	g_ISurface->DrawUnicodeString(text);
-}
-
-void draw::FString(unsigned long font, int x, int y, int color, int shadow, const char* text, ...) {
-	va_list list;
-	char buffer[2048] = { '\0' };
-	va_start(list, text);
-	vsprintf(buffer, text, list);
-	va_end(list);
-	draw::String(font, x, y, color, shadow, buffer);
-}
-
-std::pair<int, int> draw::GetStringLength(unsigned long font, std::string string) {
-	int l, h;
-	draw::GetStringLength(font, (char*)string.c_str(), l, h);
-	return std::make_pair(l, h);
 }
 

@@ -13,7 +13,7 @@
 class IClientEntity;
 
 #define NET_VAR(entity, offset, type) \
-	(*(reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(entity) + offset)))
+	(*(reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(entity) + (offset))))
 
 #define NET_INT(entity, offset) \
 	NET_VAR(entity, offset, int)
@@ -133,6 +133,7 @@ public:
 
 	offset_t m_iTauntConcept;
 	offset_t m_iTauntIndex;
+	offset_t m_angEyeAnglesLocal;
 	offset_t m_nSequence;
 	offset_t m_flSimulationTime;
 };

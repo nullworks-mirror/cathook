@@ -155,7 +155,7 @@ void CreateMove() {
 		return;
 	}
 
-	CachedHitbox* hb = entity->hitboxes.GetHitbox(trace_object.hitbox);
+	hitbox_cache::CachedHitbox* hb = entity->hitboxes.GetHitbox(trace_object.hitbox);
 
 	if ((int)hitbox >= 0 && !do_bodyshot) {
 		if (trace_object.hitbox != (int)hitbox) return;

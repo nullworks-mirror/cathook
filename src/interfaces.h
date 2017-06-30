@@ -49,7 +49,10 @@ class IMaterialSystemFixed;
 class IMaterialSystem;
 class IMoveHelperServer;
 class CBaseClientState;
+class CHud;
+class IGameEventManager;
 
+extern CHud* g_CHUD;
 extern ISteamClient* g_ISteamClient;
 extern ISteamFriends* g_ISteamFriends;
 extern IVEngineClient013* g_IEngine;
@@ -77,9 +80,7 @@ extern IVModelRender* g_IVModelRender;
 extern IVRenderView* g_IVRenderView;
 extern IMoveHelperServer* g_IMoveHelperServer;
 extern CBaseClientState* g_IBaseClientState;
-
-template<typename T>
-T* BruteforceInterface(std::string name, sharedobj::SharedObject* object, int start = 0);
+extern IGameEventManager* g_IGameEventManager;
 
 void CreateInterfaces();
 

@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+#Script to update the menu in the tf2 folder with the one in the github folder
+
+## Int these var here just cuz
+TFLOCATION=""
+FIRSTTIME=false
+
+## If our config file is found, we run it to get our var
+if [ -f TFLOC.sh ]; then
+	TFLOCATION=($(TFLOC.sh))
+fi
+	
+## Check if var is empty, or if Team Fortress isnt in the name, or if the location doesnt exist, then we need to find where the tf2 folder is
+if [ -z "$TFLOCATION" ] || [ -f "$TFLOCATION" ]; then
+	FIRSTTIME=true
+	echo "cfg file not found, checking for install"
+	## Check common locations for the install and save to var
+	if [ -f "~/.local/share/Steam/steamapps/common/Team Fortress 2" ]; then
+		TFLOCATION="~/.local/share/Steam/steamapps/common/Team Fortress 2"
+	
+	## TODO find more common locations
+	elif [ -f "~/.steam/steam/steamapps/common/Team Fortress 2/" ]; then
+		TFLOCATION="~/.steam/steam/steamapps/common/Team Fortress 2/"
+			
+	## We cant find it in the common locations, so we ask the user for input
+	else 
+		echo "Not found in common locations, searching"
+		## Use find command to search for valid tf2 installs
+		INSTALLARRAY=($(find / -type d -name "Team Fortress 2" 2>/dev/null))
+		
+		## Loop throught the installs untill the correct one is found 
+		for i in "${INSTALLARRAY[@]}"; do
+		
+			## Check for gameinfo.txt to verify the directory
+			if [ -f $i"/tf/gameinfo.txt" ]; then
+			
+				## Looks like the dir is good, ask the user if its the correct one
+				echo "Is \"$i\" Your tf2 directory"
+				
+				## Ask user if they would like to update the menu
+				read -r -p "(Y/n)" key
+				
+				## If the user chose yes, then we save the info and break
+				if [ $key == "y"* ] || [ $key == "Y"* ]; then
+					TFLOCATION="$i"
+					break
+				fi
+			fi
+		done
+		
+		## if the var is still empty, then exit
+		if [ -z "$TFLOCATION" ]; then
+			exit
+		fi
+		
+	fi
+	
+	## It should be impossible to reach this point without a path set, so it is expected that we have the tf2 dir
+	## We save the var here for future use
+	echo "echo \"$TFLOCATION\""> TFLOC.sh
+	
+fi
+
+## If var wasnt in the cfg when this was run, we give the user a notice
+if ![ $FIRSTTIME ]; then
+	## Wall o' text
+	echo "This script copys and updates menu and font files inside the tf2 dir"
+	echo "They are needed for cathook to run, you may manually install them"
+	echo "by copying the tf-settings dir inside cathooks github folder into"
+	echo "the Team Fortress 2 folder and renaming it to cathook"
+	echo " "
+	echo "These files can not and will not result in vac and are completely safe"
+	## pause and wait for a keypress
+	read -n1 -r -p "Press any key to automate this process..." key
+fi
+
+## We should have our path to the tf dir now, so do a final check for tf-settings folder
+if [ -f tf-settings/ ]; then
+	## now we update the menu files
+	cp -f -r -u -t tf-settings/ "$TFLOCATION/cathook"
+	echo "Menu updated"
+else
+	echo "tf-settings folder not found"
+fi
+exit

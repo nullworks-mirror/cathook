@@ -7,11 +7,11 @@
 
 #include "common.h"
 
-EntityHitboxCache::EntityHitboxCache(CachedEntity* parent) {
-	InvalidateCache();
-	parent_ref = parent;
-	m_bModelSet = false;
-	m_nNumHitboxes = 0;
+namespace hitbox_cache {
+
+EntityHitboxCache::EntityHitboxCache() :
+	parent_ref(&entity_cache::Get(((unsigned)this - (unsigned)&hitbox_cache::array) / sizeof(EntityHitboxCache))) {
+	Reset();
 }
 
 int EntityHitboxCache::GetNumHitboxes() {
@@ -23,6 +23,7 @@ int EntityHitboxCache::GetNumHitboxes() {
 EntityHitboxCache::~EntityHitboxCache() {}
 
 void EntityHitboxCache::InvalidateCache() {
+	bones_setup = false;
 	for (int i = 0; i < CACHE_MAX_HITBOXES; i++) {
 		m_CacheValidationFlags[i] = false;
 		m_VisCheckValidationFlags[i] = false;
@@ -78,17 +79,42 @@ bool EntityHitboxCache::VisibilityCheck(int id) {
 	return m_VisCheck[id];
 }
 
+static CatEnum setupbones_time_enum({ "ZERO",  "CURTIME", "LP SERVERTIME", "SIMTIME" });
+static CatVar setupbones_time(setupbones_time_enum, "setupbones_time", "1", "Setupbones", "Defines setupbones 4th argument, change it if your aimbot misses, idk!!");
+
+matrix3x4_t* EntityHitboxCache::GetBones() {
+	static float bones_setup_time = 0.0f;
+	switch ((int)setupbones_time) {
+	case 1:
+		bones_setup_time = g_GlobalVars->curtime;
+		break;
+	case 2:
+		if (CE_GOOD(LOCAL_E))
+			bones_setup_time = g_GlobalVars->interval_per_tick * CE_INT(LOCAL_E, netvar.nTickBase);
+		break;
+	case 3:
+		if (CE_GOOD(parent_ref))
+			bones_setup_time = CE_FLOAT(parent_ref, netvar.m_flSimulationTime);
+	}
+	if (!bones_setup) {
+		bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x100, bones_setup_time);
+	}
+	return bones;
+}
+
 void EntityHitboxCache::Reset() {
 	memset(m_VisCheck, 0, sizeof(bool) * CACHE_MAX_HITBOXES);
 	memset(m_VisCheckValidationFlags, 0, sizeof(bool) * CACHE_MAX_HITBOXES);
 	memset(m_CacheValidationFlags, 0, sizeof(bool) * CACHE_MAX_HITBOXES);
 	memset(m_CacheInternal, 0, sizeof(CachedHitbox) * CACHE_MAX_HITBOXES);
+	memset(&bones, 0, sizeof(matrix3x4_t) * 128);
 	m_nNumHitboxes = 0;
 	m_bInit = false;
 	m_bModelSet = false;
 	m_bSuccess = false;
 	m_pHitboxSet = nullptr;
 	m_pLastModel = nullptr;
+	bones_setup = false;
 }
 
 CachedHitbox* EntityHitboxCache::GetHitbox(int id) {
@@ -101,11 +127,23 @@ CachedHitbox* EntityHitboxCache::GetHitbox(int id) {
 		box = m_pHitboxSet->pHitbox(id);
 		if (!box) return 0;
 		if (box->bone < 0 || box->bone >= MAXSTUDIOBONES) return 0;
-		VectorTransform(box->bbmin, parent_ref->GetBones()[box->bone], m_CacheInternal[id].min);
-		VectorTransform(box->bbmax, parent_ref->GetBones()[box->bone], m_CacheInternal[id].max);
+		VectorTransform(box->bbmin, GetBones()[box->bone], m_CacheInternal[id].min);
+		VectorTransform(box->bbmax, GetBones()[box->bone], m_CacheInternal[id].max);
 		m_CacheInternal[id].bbox = box;
 		m_CacheInternal[id].center = (m_CacheInternal[id].min + m_CacheInternal[id].max) / 2;
 		m_CacheValidationFlags[id] = true;
 	}
 	return &m_CacheInternal[id];
+}
+
+EntityHitboxCache array[MAX_ENTITIES] {};
+
+void Update() {
+
+}
+
+void Invalidate() {
+
+}
+
 }

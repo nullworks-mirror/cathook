@@ -51,7 +51,7 @@ CatCommand unlock_single("achievement_unlock_single", "Unlocks single achievemen
 		logging::Info("NaN achievement ID!");
 		return;
 	}
-	IAchievement* ach = (IAchievement*)g_IAchievementMgr->GetAchievementByID(id);
+	IAchievement* ach = reinterpret_cast<IAchievement*>(g_IAchievementMgr->GetAchievementByID(id));
 	if (ach) {
 		g_IAchievementMgr->AwardAchievement(id);
 	}

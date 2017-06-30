@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "Menu.hpp"
+/*#include "Menu.hpp"
 
 namespace menu { namespace ncc {
 
@@ -150,4 +150,4 @@ void Background::Particle::Update(float dt) {
 	if (y > (int)particle_safe + 255) dead = true;
 }
 
-}}
+}}*/

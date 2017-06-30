@@ -12,12 +12,10 @@ class Vector;
 class ConVar;
 class CatVar;
 
-typedef void(EstimateAbsVelocity_t)(IClientEntity*, Vector&);
-extern EstimateAbsVelocity_t* EstimateAbsVelocity;
-
 extern int g_AppID;
 extern unsigned long tickcount;
 
+extern CatVar event_log;
 extern CatVar cathook; // Master switch
 extern CatVar ignore_taunting;
 extern bool* bSendPackets;
@@ -27,8 +25,12 @@ extern CatVar console_logging;
 extern CatVar fast_outline;
 extern CatVar roll_speedhack;
 extern CatVar force_name;
+extern char* force_name_newlined;
 extern bool need_name_change;
 extern int last_cmd_number;
+
+extern char* disconnect_reason_newlined;
+extern CatVar disconnect_reason;
 
 class GlobalSettings {
 public:
@@ -39,7 +41,6 @@ public:
 
 class CUserCmd;
 extern CUserCmd* g_pUserCmd;
-extern const char* g_pszTFPath;
 
 extern GlobalSettings g_Settings;
 
