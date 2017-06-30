@@ -35,7 +35,7 @@ Run the `update` script in cathook folder.
 
 ## Config and shader files
 Then shader folder needs to be placed into the Team fortress 2 folder otherwise cathook will crash. To install them just copy the tf-settings folder into your Team fortress 2 folder and rename it to "cathook"
-The update-data script automaticly does this for you.
+The update-data script does this automaticly and you will want to update those files if you wish to have an updated menu.
 
 ## Followbots
 
