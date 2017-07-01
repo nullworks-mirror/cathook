@@ -36,6 +36,7 @@ namespace draw {
 
 extern int width;
 extern int height;
+extern float fov;
 
 void Initialize();
 

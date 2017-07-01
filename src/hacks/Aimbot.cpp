@@ -868,18 +868,36 @@ void DrawText() {
 	// Broken from kathook merge, TODO needs to be adapted for imgui
 	if (fov_draw) {
 		// It cant use fovs greater than 180, so we check for that
-		if ((int)fov < 180 && fov) {
+		if (fov && float(fov) < 180) {
 			// Dont show ring while player is dead
-			if (!LOCAL_E->m_bAlivePlayer) {
+			if (LOCAL_E->m_bAlivePlayer) {
 				// Grab the screen resolution and save to some vars
 				int width, height;
 				g_IEngine->GetScreenSize(width, height);
-				// Grab the cvar for fov_desired and attach to another var
-				static ConVar *realFov = g_ICvar->FindVar("fov_desired");
 				// Some math to find radius of the fov circle
-				float radius = tanf(DEG2RAD((float)fov) / 2) / tanf(DEG2RAD((int)realFov)/ 2) * width;
+				// float radius = tanf(DEG2RAD((float)fov) / 2) / tanf(DEG2RAD(draw::fov) / 2) * width;
+
+				float mon_fov = (float(width) / float(height) / (4.0f / 3.0f));
+				float fov_real = RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
+
+				float radius = tan(DEG2RAD(float(fov)) / 2) / tan(DEG2RAD(fov_real) / 2) * (width);
 				// Draw a circle with our newfound circle
-				//draw::DrawCircle( width / 2 ,height / 2, radius, 35, GUIColor());
+				float px = 0;
+				float py = 0;
+				constexpr float steps = 120;
+				for (int i = 0; i < steps; i++) {
+					float ang = 2 * PI * (float(i) / steps);
+					float x = width / 2 + radius * cos(ang);
+					float y = height / 2 + radius * sin(ang);
+					if (!i) {
+						ang = 2 * PI * (float(steps - 1) / steps);
+						px = width / 2 + radius * cos(ang);
+						py = height / 2 + radius * sin(ang);
+					}
+					drawgl::Line(px, py, x - px, y - py, GUIColor());
+					px = x;
+					py = y;
+				}
 			}
 		}
 	}	
