@@ -41,12 +41,12 @@
 				"name": "Preferences",
 				"list": [
 					"aimbot_silent",
+					"aimbot_target_lock",
 					"aimbot_hitbox",
 					"aimbot_zoomed",
 					"aimbot_only_when_can_shoot",
 					"aimbot_enable_attack_only",
 					"aimbot_maxrange",
-					"aimbot_instant_rezoom_enabled",
 					"aimbot_slow",
 					"aimbot_slow_smooth",
 					"aimbot_slow_autoshoot",
