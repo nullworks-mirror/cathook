@@ -8,6 +8,7 @@
 #include "../common.h"
 #include "../netmessage.h"
 #include "../hack.h"
+#include "../xb64.hpp"
 #include "hookedmethods.h"
 
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility", "Useful with chams!");
@@ -127,6 +128,7 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add
 //static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages", "Use this if you want to use spam/killsay and still be able to chat normally (without having your msgs eaten by valve cooldown)");
 
 static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
+static CatVar crypt_chat(CV_SWITCH, "chat_crypto", "0", "Crypto chat", "Start message with !! and it will be only visible to cathook users");
 
 bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	static size_t say_idx, say_team_idx;
@@ -138,13 +140,23 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 	const SendNetMsg_t original = (SendNetMsg_t)hooks::netchannel.GetMethod(offsets::SendNetMsg());
 	SEGV_BEGIN;
 	// net_StringCmd
-	if (msg.GetType() == 4 && (newlines_msg)) {
+	if (msg.GetType() == 4 && (newlines_msg || crypt_chat)) {
 		std::string str(msg.ToString());
 		say_idx = str.find("net_StringCmd: \"say \"");
 		say_team_idx = str.find("net_StringCmd: \"say_team \"");
 		if (!say_idx || !say_team_idx) {
 			offset = say_idx ? 26 : 21;
-			if (newlines_msg) {
+			bool crpt = false;
+			if (crypt_chat) {
+				std::string msg(str.substr(offset));
+				msg = msg.substr(0, msg.length() - 2);
+				if (msg.find("!!") == 0) {
+					msg = "!!" + xb64::encrypt(msg.substr(2));
+					str = str.substr(0, offset) + msg + "\"\"";
+					crpt = true;
+				}
+			}
+			if (!crpt && newlines_msg) {
 				// TODO move out? update in a value change callback?
 				newlines = std::string((int)newlines_msg, '\n');
 				str.insert(offset, newlines);
@@ -315,7 +327,7 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 
 	static const DispatchUserMessage_t original = (DispatchUserMessage_t)hooks::client.GetMethod(offsets::DispatchUserMessage());
 	SEGV_BEGIN;
-	if (clean_chat) {
+	if (clean_chat || crypt_chat) {
 		if (type == 4) {
 			loop_index = 0;
 			s = buf.GetNumBytesLeft();
@@ -324,10 +336,22 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 				for (i = 0; i < s; i++)
 					data[i] = buf.ReadByte();
 				j = 0;
+				std::string name;
+				std::string message;
 				for (i = 0; i < 3; i++) {
 					while ((c = data[j++]) && (loop_index < 128)) {
 						loop_index++;
-						if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+						if (clean_chat)
+							if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+						if (i == 1) name.push_back(c);
+						if (i == 2) message.push_back(c);
+					}
+				}
+				if (crypt_chat) {
+					if (message.find("!!") == 0) {
+						if (xb64::validate(message.substr(2))) {
+							PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), xb64::decrypt(message.substr(2)).c_str());
+						}
 					}
 				}
 				buf = bf_read(data, s);
