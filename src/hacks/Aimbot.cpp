@@ -322,8 +322,8 @@ CachedEntity* RetrieveBestTarget() {
 			}
 		}
 	}
-	// If user settings allow target lock, save the ent for future use
-	if (target_lock) target_locked = target_highest_ent;
+	// Save the ent for future use with target lock
+	target_locked = target_highest_ent;
 	// When our for loop finishes, return our ent
 	return target_highest_ent;
 }
@@ -608,14 +608,14 @@ int BestHitbox(CachedEntity* target) {
 					}
 				}
 			}
+			
 			// Bodyshot handling
 			if (g_pLocalPlayer->holding_sniper_rifle) {
-				// Keeper var
-				float cdmg, bdmg;
+				
 				// Grab netvar for current charge damage
-				cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
+				float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
 				// Set our baseline bodyshot damage
-				bdmg = 50;
+				float bdmg = 50;
 				// Darwins damage correction
 				if (HasDarwins(target)) {
 					// Darwins protects against 15% of damage
