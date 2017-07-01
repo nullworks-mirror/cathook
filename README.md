@@ -28,14 +28,13 @@ If you are using other distro, make sure to have g++-6, gdb, libc6 and build ess
 ## Updating cathook
 Run the `update` script in cathook folder.
 
+The shader folder needs to be placed into the Team fortress 2 folder otherwise cathook will crash. To install them just copy the tf-settings folder into your Team fortress 2 folder and rename it to "cathook"
+The `update-data` script does this automaticly and you will want to update those files if you wish to have an updated menu.
+
 ## Injection
 `sudo ./attach` to attach to tf2 process (can take argument number 0-N - # of tf2 instance to attach to (for bots))
 
 `sudo ./attach-backtrace` to attach and print backtrace if tf2 crashes. Some users reported that this method makes you get less FPS ingame.
-
-## Config and shader files
-The shader folder needs to be placed into the Team fortress 2 folder otherwise cathook will crash. To install them just copy the tf-settings folder into your Team fortress 2 folder and rename it to "cathook"
-The update-data script does this automaticly and you will want to update those files if you wish to have an updated menu.
 
 ## Followbots
 
