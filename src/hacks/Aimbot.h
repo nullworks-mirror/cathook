@@ -42,7 +42,7 @@ void CreateMove();
 void DrawText();
 void Reset();
 
-// Used by esp to set their colour
+// Used by esp to set their color
 extern int target_eid;
 
 float EffectiveTargetingRange();
@@ -50,6 +50,7 @@ float EffectiveTargetingRange();
 
 CachedEntity* CurrentTarget();
 bool ShouldAim();
+CachedEntity* RetrieveBestTarget();
 bool IsTargetStateGood(CachedEntity* entity);
 void Aim(CachedEntity* entity);
 bool CanAutoShoot();
