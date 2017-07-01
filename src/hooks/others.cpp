@@ -302,6 +302,7 @@ void OverrideView_hook(void* _this, CViewSetup* setup) {
 			setup->fov = override_fov;
 		}
 	}
+	draw::fov = setup->fov;
 	SEGV_END;
 }
 

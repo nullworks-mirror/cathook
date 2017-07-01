@@ -24,21 +24,10 @@ CatVar info_text(CV_SWITCH, "info", "1", "Show info", "Show cathook version in t
 void DrawCheatVisuals() {
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
 	if (drawgl::ready_state) {
-		{
-			PROF_SECTION(DRAW_aimbot);
-			hacks::shared::aimbot::DrawText();
-		}
+
 		{
 			PROF_SECTION(DRAW_misc);
 			SAFE_CALL(hacks::shared::misc::DrawText());
-		}
-		IF_GAME(IsTF2()) {
-			PROF_SECTION(DRAW_skinchanger);
-			SAFE_CALL(hacks::tf2::skinchanger::DrawText());
-		}
-		IF_GAME(IsTF()) {
-			PROF_SECTION(DRAW_radar);
-			SAFE_CALL(hacks::tf::radar::Draw());
 		}
 		if (info_text) {
 			PROF_SECTION(DRAW_info);
@@ -67,6 +56,18 @@ void DrawCheatVisuals() {
 		}
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
 			PROF_SECTION(PT_total_hacks);
+			{
+				PROF_SECTION(DRAW_aimbot);
+				hacks::shared::aimbot::DrawText();
+			}
+			IF_GAME(IsTF2()) {
+				PROF_SECTION(DRAW_skinchanger);
+				SAFE_CALL(hacks::tf2::skinchanger::DrawText());
+			}
+			IF_GAME(IsTF()) {
+				PROF_SECTION(DRAW_radar);
+				SAFE_CALL(hacks::tf::radar::Draw());
+			}
 			IF_GAME(IsTF2()) {
 				PROF_SECTION(DRAW_healarrows);
 				hacks::tf2::healarrow::Draw();
