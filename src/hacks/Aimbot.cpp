@@ -37,21 +37,6 @@
 #include "FollowBot.h"
 
 namespace hacks { namespace shared { namespace aimbot {
-
-int target_eid { 0 };
-CachedEntity* target_highest = 0;
-bool projectile_mode { false };
-float cur_proj_speed { 0.0f };
-float cur_proj_grav { 0.0f };
-bool headonly { false };
-int last_target { -1 };
-bool foundTarget = false;
-bool slowCanShoot = false;
-bool silent_huntsman { false };
-
-// This array will store calculated projectile/hitscan predictions
-// for current frame, to avoid performing them again
-AimbotCalculatedData_s calculated_data_array[2048] {};
 	
 // User settings are stored and used by these vars
 static CatVar enabled(CV_SWITCH, "aimbot_enabled", "0", "Enable Aimbot", "Main aimbot switch");
@@ -75,6 +60,7 @@ static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Oth
 static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
 static CatVar teammates(CV_SWITCH, "aimbot_teammates", "0", "Aim at teammates", "Aim at your own team. Useful for HL2DM");
 static CatVar silent(CV_SWITCH, "aimbot_silent", "1", "Silent", "Your screen doesn't get snapped to the point where aimbot aims at");
+static CatVar target_lock(CV_SWITCH, "aimbot_target_lock", "0", "Target Lock", "Keeps your previously chosen target untill target check fails");
 static CatEnum hitbox_enum({
 		"HEAD", "PELVIS", "SPINE 0", "SPINE 1", "SPINE 2", "SPINE 3", "UPPER ARM L", "LOWER ARM L",
 		"HAND L", "UPPER ARM R", "LOWER ARM R", "HAND R", "HIP L", "KNEE L", "FOOT L", "HIP R",
@@ -112,6 +98,24 @@ static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Sp
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
 */
 
+// Current Entity
+int target_eid { 0 };
+CachedEntity* target = 0;
+CachedEntity* target_locked = 0;
+int last_target { -1 };
+bool foundTarget = false;
+// Projectile info
+bool projectile_mode { false };
+float cur_proj_speed { 0.0f };
+float cur_proj_grav { 0.0f };
+// If slow aimbot allows autoshoot
+bool slowCanShoot = false;
+bool silent_huntsman { false };
+
+// This array will store calculated projectile/hitscan predictions
+// for current frame, to avoid performing them again
+AimbotCalculatedData_s calculated_data_array[2048] {};
+
 // The main "loop" of the aimbot. 
 void CreateMove() {
 	
@@ -121,10 +125,7 @@ void CreateMove() {
 	// Check if player can aim
 	if (!ShouldAim()) return;
 	
-	// Reset a var for BestHitbox detection
-	headonly = false;
-	
-	// Grab projectile info
+	// Refresh projectile info
 	int huntsman_ticks = 0;
 	projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
 	if (proj_speed)
@@ -132,75 +133,6 @@ void CreateMove() {
 	if (proj_gravity)
 		cur_proj_grav = (float)proj_gravity;
 	
-	// Set foundTarget Status
-	foundTarget = false;
-	
-	// Book keeping vars
-	float target_highest_score, scr;
-	CachedEntity* ent;
-	target_highest = 0;
-	target_highest_score = -256;
-	
-	// System to find a suitable target
-	{
-		// Loop that checks all ents whether it is a good target or not
-		for (int i = 0; i < HIGHEST_ENTITY; i++) {
-			ent = ENTITY(i);
-			if (CE_BAD(ent)) continue;
-			// Check whether the current ent is good enough to target
-			if (IsTargetStateGood(ent)) {
-				// Distance Priority 
-				// USes this is melee is used
-				if (GetWeaponMode() == weaponmode::weapon_melee || (int)priority_mode == 2) {
-					scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
-					if (scr > target_highest_score) {
-						// Set foundTarget status to true
-						foundTarget = true;
-						// Save found target info to vars
-						target_highest_score = scr;
-						target_highest = ent;
-					}
-				} else {
-					switch ((int)priority_mode) {
-						// Smart Priority
-						case 0: {
-							scr = GetScoreForEntity(ent);
-							if (scr > target_highest_score) {
-								// Set foundTarget status to true
-								foundTarget = true;
-								// Save found target info to vars
-								target_highest_score = scr;
-								target_highest = ent;
-							}
-						} break;
-						// Fov Priority
-						case 1: {
-							scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
-							if (scr > target_highest_score) {
-								// Set foundTarget status to true
-								foundTarget = true;
-								// Save found target info to vars
-								target_highest_score = scr;
-								target_highest = ent;
-							}
-						} break;
-						// Health Priority
-						case 3: {
-							scr = 450.0f - ent->m_iHealth;
-							if (scr > target_highest_score) {
-								// Set foundTarget status to true
-								foundTarget = true;
-								// Save found target info to vars
-								target_highest_score = scr;
-								target_highest = ent;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
 	// Attemt to reduce huntsman_ticks by 1 untill it reaches 0
 	if (huntsman_ticks) {
 		// Disable attack
@@ -208,12 +140,15 @@ void CreateMove() {
 		// Returns 0 - Something higher than 0
 		huntsman_ticks = max(0, huntsman_ticks - 1);
 	}
-
+	
+	// Refresh our best target
+	CachedEntity* target = RetrieveBestTarget();
+	
 	// Check target for dormancy and if there even is a target at all
-	if (CE_GOOD(target_highest) && foundTarget) {
+	if (CE_GOOD(target) && foundTarget) {
 		// Set target esp color to pink
-		hacks::shared::esp::SetEntityColor(target_highest, colors::pink);
-		last_target = target_highest->m_IDX;
+		hacks::shared::esp::SetEntityColor(target, colors::pink);
+		last_target = target->m_IDX;
 		
 		// Only allow aimbot to work with aimkey
 		// We also preform a CanShoot check here per the old canshoot method
@@ -226,22 +161,21 @@ void CreateMove() {
 				// We do this here only if wip is true as we do the check elsewhere for legacy
 				if (only_can_shoot && only_can_shoot_wip) {
 					// Check the flNextPrimaryAttack netvar to tell when to aim
-					if (CanShoot()) Aim(target_highest);
+					if (CanShoot()) Aim(target);
 				} else {
 					// If settings dont allow canShoot check, then just aim
-					Aim(target_highest);
+					Aim(target);
 				}
 				// Attemt to auto-shoot
 				if (CanAutoShoot()) g_pUserCmd->buttons |= IN_ATTACK;
 
 			// If player is using huntsman, we use a different system for autoshooting 
 			} else {
-				// Create book keeping vars
-				float begincharge, charge;
+				
 				// Grab time when charge began
-				begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
+				float begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
 				// Reset current charge count
-				charge = 0;
+				float charge = 0;
 				// If bow is not charged, reset the charge time keeper
 				if (begincharge != 0) {
 					charge = g_GlobalVars->curtime - begincharge;
@@ -262,7 +196,7 @@ void CreateMove() {
 				}
 				// If player released the huntsman, aim here
 				if (!(g_pUserCmd->buttons & IN_ATTACK) && silent_huntsman) {
-					Aim(target_highest);
+					Aim(target);
 					silent_huntsman = false;
 				}
 			}
@@ -332,6 +266,66 @@ bool ShouldAim() {
 			return false;
 	}
 	return true;
+}
+	
+// Function to find a suitable target
+CachedEntity* RetrieveBestTarget() {
+	
+	// If we have a previously chosen target, target lock is on, and the aimkey is allowed, then attemt to keep the previous target
+	if (target_lock && foundTarget && UpdateAimkey()) {
+		// Check if previous target is still good
+		if (IsTargetStateGood(target_locked)) {
+			// If it is then return it again
+			return target_locked;
+		}
+	}
+
+	// We dont have a target currently so we must find one
+	foundTarget = false;
+
+	// Book keeping vars
+	float target_highest_score, scr;
+	CachedEntity* ent;
+	CachedEntity* target_highest_ent = 0;
+	target_highest_score = -256;
+	// Loop that checks all ents whether it is a good target or not
+	for (int i = 0; i < HIGHEST_ENTITY; i++) {
+		ent = ENTITY(i);
+		// Check for null and dormant
+		if (CE_BAD(ent)) continue;
+		// Check whether the current ent is good enough to target
+		if (IsTargetStateGood(ent)) {
+			// Get a score for the entity
+			// Distance Priority, Uses this is melee is used
+			if (GetWeaponMode() == weaponmode::weapon_melee || (int)priority_mode == 2) {
+				scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
+			} else {
+				switch ((int)priority_mode) {
+					case 0: // Smart Priority
+						scr = GetScoreForEntity(ent);
+						break;
+					case 1: // Fov Priority
+						scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
+						break;
+					case 3: // Health Priority
+						scr = 450.0f - ent->m_iHealth;
+						break;
+				}
+			}
+			// Compare the top score to our current ents score
+			if (scr > target_highest_score) {
+				// Set foundTarget status to true
+				foundTarget = true;
+				// Save found target info to vars
+				target_highest_score = scr;
+				target_highest_ent = ent;
+			}
+		}
+	}
+	// Save the ent for future use with target lock
+	target_locked = target_highest_ent;
+	// When our for loop finishes, return our ent
+	return target_highest_ent;
 }
 	
 // A second check to determine whether a target is good enough to be aimed at
@@ -574,14 +568,15 @@ const Vector& PredictEntity(CachedEntity* entity) {
 // A function to find the best hitbox for a target
 int BestHitbox(CachedEntity* target) {
 
-	int preferred, ci, flags;
-	float cdmg, bdmg;
-	bool ground;
-	preferred = hitbox;
+	// Switch based apon the hitbox mode set by the user
 	switch ((int)hitbox_mode) {
 	case 0: { // AUTO-HEAD priority
+		// The best hitbox var
+		int preferred = hitbox;
+		// Var to keep if we can bodyshot
+		bool headonly = false;
 		// Save the local players current weapon to a var
-		ci = g_pLocalPlayer->weapon()->m_iClassID;
+		int ci = g_pLocalPlayer->weapon()->m_iClassID;
 		IF_GAME (IsTF()) {
 			// Set our default hitbox for pelvis 
 			preferred = hitbox_t::pelvis;
@@ -604,21 +599,23 @@ int BestHitbox(CachedEntity* target) {
 			// If target is off the ground and local player is using projectile weapons other than the bow, use the higher hitbox, spine_3
 			if (GetWeaponMode() == weaponmode::weapon_projectile) {
 				// Grab netvar for flags and save to a var
-				flags = CE_INT(target, netvar.iFlags);
+				int flags = CE_INT(target, netvar.iFlags);
 				// Extract ground var from flags
-				ground = (flags & (1 << 0));
+				bool ground = (flags & (1 << 0));
 				if (!ground) {
 					if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
 						preferred = hitbox_t::spine_3;
 					}
 				}
 			}
+			
 			// Bodyshot handling
 			if (g_pLocalPlayer->holding_sniper_rifle) {
+				
 				// Grab netvar for current charge damage
-				cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
+				float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
 				// Set our baseline bodyshot damage
-				bdmg = 50;
+				float bdmg = 50;
 				// Darwins damage correction
 				if (HasDarwins(target)) {
 					// Darwins protects against 15% of damage
@@ -901,7 +898,7 @@ void DrawText() {
 			}
 		}
 	}	
-	// Dont fun the following unless debug is enabled
+	// Dont run the following unless debug is enabled
 	if (!aimbot_debug) return;
 	for (int i = 1; i < 32; i++) {
 		CachedEntity* ent = ENTITY(i);
