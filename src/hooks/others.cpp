@@ -8,7 +8,7 @@
 #include "../common.h"
 #include "../netmessage.h"
 #include "../hack.h"
-#include "../xb64.hpp"
+#include "../utfccp.hpp"
 #include "hookedmethods.h"
 
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility", "Useful with chams!");
@@ -151,7 +151,7 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 				std::string msg(str.substr(offset));
 				msg = msg.substr(0, msg.length() - 2);
 				if (msg.find("!!") == 0) {
-					msg = "!!" + xb64::encrypt(msg.substr(2));
+					msg = utfccp::encrypt(msg.substr(2));
 					str = str.substr(0, offset) + msg + "\"\"";
 					crpt = true;
 				}
@@ -349,8 +349,8 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 				}
 				if (crypt_chat) {
 					if (message.find("!!") == 0) {
-						if (xb64::validate(message.substr(2))) {
-							PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), xb64::decrypt(message.substr(2)).c_str());
+						if (utfccp::validate(message)) {
+							PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), utfccp::decrypt(message).c_str());
 						}
 					}
 				}

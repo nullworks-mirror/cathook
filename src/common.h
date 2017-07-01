@@ -50,6 +50,7 @@ extern "C" {
 #include "hoovy.hpp"
 #include "enums.h"
 #include "projlogging.hpp"
+#include "utfccp_commands.hpp"
 #include "velocity.hpp"
 #include "angles.hpp"
 #include "entityhitboxcache.hpp"
