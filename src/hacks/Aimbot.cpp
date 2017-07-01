@@ -68,7 +68,6 @@ static CatEnum hitbox_enum({
 static CatVar hitbox(hitbox_enum, "aimbot_hitbox", "0", "Hitbox", "Hitbox to aim at. Ignored if AutoHitbox is on");
 static CatVar zoomed_only(CV_SWITCH, "aimbot_zoomed", "1", "Zoomed only", "Don't autoshoot with unzoomed rifles");
 static CatVar only_can_shoot(CV_SWITCH, "aimbot_only_when_can_shoot", "1", "Active when can shoot", "Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators");
-static CatVar only_can_shoot_wip(CV_SWITCH, "aimbot_only_when_can_shoot_wip", "0", "When can shoot", "Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators\nNew version that fixes some bugs, but introduces others\nEnable with other option to enable");
 static CatVar attack_only(CV_SWITCH, "aimbot_enable_attack_only", "0", "Active when attacking", "Basically makes Mouse1 an AimKey, isn't compatible with AutoShoot");
 static CatVar max_range(CV_INT, "aimbot_maxrange", "0", "Max distance",
 		"Max range for aimbot\n"
@@ -152,14 +151,14 @@ void CreateMove() {
 		
 		// Only allow aimbot to work with aimkey
 		// We also preform a CanShoot check here per the old canshoot method
-		if (UpdateAimkey() && ShouldAimLeg()) {
+		if (UpdateAimkey() && GetCanAim(1)) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
 
 				// If settings allow, limit aiming to only when can shoot
 				// We do this here only if wip is true as we do the check elsewhere for legacy
-				if (only_can_shoot && only_can_shoot_wip) {
+				if (GetCanAim(2)) {
 					// Check the flNextPrimaryAttack netvar to tell when to aim
 					if (CanShoot()) Aim(target);
 				} else {
@@ -809,20 +808,55 @@ bool UpdateAimkey() {
 	// Return whether the aimkey allows aiming
 	return allowAimkey;
 }
+
+// A function called at 2 points in the create move function
+// First time is when the aimbot Determines if it should aim and autoshoot
+// Second time is for when the aimbot determines only when it should aim and always autoshoots
+// Using either mode has problems with some weapons so we compramise by using a combo of the 2
+bool GetCanAim(int mode) {
 	
-// Function of previous CanShoot check
-bool ShouldAimLeg() {
-	// If user settings allow, we preform out canshoot here
-	if (only_can_shoot && !only_can_shoot_wip) {
-		// Miniguns should shoot and aim continiously. TODO smg
-		if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFMinigun)) {
-			// Melees are weird, they should aim continiously like miniguns too.
-			if (GetWeaponMode() != weaponmode::weapon_melee) {
-				// Finally, CanShoot() check.
-				if (!CanShoot()) return false;
-			}
-		}
-	}	
+	// User setting check
+	switch (mode) {
+	case 1: // The first check when the aimbot checks if it can aim or shoot
+			
+		// If user settings dont allow, Always aim at the point this is called
+		if (!only_can_shoot) return true;
+		// Always aim with melee weapons
+		if (GetWeaponMode() == weaponmode::weapon_melee) return true;
+		break;
+			
+	case 2: // Second check when the aimbot checks if it can aim, and will shoot regardless of the output here
+		
+		// dont check if should aim with melee weapons
+		if (GetWeaponMode() == weaponmode::weapon_melee) return false;
+			
+		// At the point this is called, we dont want to check for can shoot if user settings dont allow
+		if (!only_can_shoot) return false; 
+	}
+	
+	// Weapons that should attack continuously
+	bool using_wep_on_list = 
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPistol_Scout) || 
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSyringeGun) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSMG) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFRevolver) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower);
+	
+	switch (mode) {
+	case 1: // The first check when the aimbot checks if it can aim or shoot
+
+		// If the player isnt using these weaps, then check for can shoot. If the weapon isnt on the list, then we need to check if the player should aim here and return the result
+		if (!using_wep_on_list) return CanShoot();
+		break;
+			
+	case 2: // Second check when the aimbot checks if it can aim, and will shoot regardless of the output here
+			
+		// Return whether we are using one of the weapons on the list because we want to tell the aimbot that we should check for canshoot
+		return using_wep_on_list;
+	}
+
+	// Mode wasnt input correctly, just return true and hope for the best
 	return true;
 }
 

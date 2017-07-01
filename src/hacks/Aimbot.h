@@ -58,7 +58,7 @@ int BestHitbox(CachedEntity* target);
 int ClosestHitbox(CachedEntity* target);
 void slowAim(Vector &inputAngle, Vector userAngle);
 bool UpdateAimkey();
-bool ShouldAimLeg();
+bool GetCanAim(int mode);
 
 }}}
 
