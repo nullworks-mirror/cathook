@@ -100,8 +100,7 @@ static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automa
 // Current Entity
 int target_eid { 0 };
 CachedEntity* target = 0;
-CachedEntity* target_locked = 0;
-int last_target { -1 };
+CachedEntity* target_last = 0;
 bool foundTarget = false;
 // Projectile info
 bool projectile_mode { false };
@@ -144,7 +143,6 @@ void CreateMove() {
 	if (CE_GOOD(target) && foundTarget) {
 		// Set target esp color to pink
 		hacks::shared::esp::SetEntityColor(target, colors::pink);
-		last_target = target->m_IDX;
 		
 		// Check if player can aim
 		// We also preform a CanShoot check here per the old canshoot method
@@ -271,15 +269,18 @@ CachedEntity* RetrieveBestTarget() {
 	
 	// If we have a previously chosen target, target lock is on, and the aimkey is allowed, then attemt to keep the previous target
 	if (target_lock && foundTarget && UpdateAimkey()) {
-		// Check if previous target is still good
-		if (IsTargetStateGood(target_locked)) {
-			// If it is then return it again
-			return target_locked;
+		if (CE_GOOD(target_last)) {
+			// Check if previous target is still good
+			if (IsTargetStateGood(target_last)) {
+				// If it is then return it again
+				return target_locked;
+			}
 		}
 	}
 
-	// We dont have a target currently so we must find one
+	// We dont have a target currently so we must find one, reset statuses
 	foundTarget = false;
+	target_last = -1;
 
 	// Book keeping vars
 	float target_highest_score, scr;
@@ -321,7 +322,7 @@ CachedEntity* RetrieveBestTarget() {
 		}
 	}
 	// Save the ent for future use with target lock
-	target_locked = target_highest_ent;
+	target_last = target_highest_ent;
 	// When our for loop finishes, return our ent
 	return target_highest_ent;
 }
@@ -883,7 +884,7 @@ CachedEntity* CurrentTarget() {
 	
 // Used for when you join and leave maps to reset aimbot vars
 void Reset() {
-	last_target = -1;
+	target_last = -1;
 	projectile_mode = false;
 }
 
