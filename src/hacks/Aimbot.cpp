@@ -121,9 +121,6 @@ void CreateMove() {
 	// Check if aimbot is enabled
 	if (!enabled) return;
 	
-	// Check if player can aim
-	if (!ShouldAim()) return;
-	
 	// Refresh projectile info
 	int huntsman_ticks = 0;
 	projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
@@ -149,9 +146,9 @@ void CreateMove() {
 		hacks::shared::esp::SetEntityColor(target, colors::pink);
 		last_target = target->m_IDX;
 		
-		// Only allow aimbot to work with aimkey
+		// Check if player can aim
 		// We also preform a CanShoot check here per the old canshoot method
-		if (UpdateAimkey() && GetCanAim(1)) {
+		if (ShouldAim() && GetCanAim(1)) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
@@ -215,6 +212,8 @@ bool ShouldAim() {
 	if (attack_only && !(g_pUserCmd->buttons & IN_ATTACK)) {
 		return false;
 	}
+	// Check if aimkey allows aiming
+	if (!UpdateAimkey()) return false;
 	// Check for +use
 	if (g_pUserCmd->buttons & IN_USE) return false;
 	// Check if using action slot item 
