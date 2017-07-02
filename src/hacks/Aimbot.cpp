@@ -123,7 +123,7 @@ void CreateMove() {
 	if (!enabled) return;
 	
 	// Check if player can aim
-	if (!ShouldAim()) return;
+	bool shouldAim = ShouldAim();
 	
 	// Refresh projectile info
 	int huntsman_ticks = 0;
@@ -152,7 +152,7 @@ void CreateMove() {
 		
 		// Only allow aimbot to work with aimkey
 		// We also preform a CanShoot check here per the old canshoot method
-		if (UpdateAimkey() && ShouldAimLeg()) {
+		if (shouldAim && UpdateAimkey() && ShouldAimLeg()) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
