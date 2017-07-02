@@ -150,7 +150,7 @@ void CreateMove() {
 		
 		// Check if player can aim and if aimkey allows aiming
 		// We also preform a CanShoot check here per the old canshoot method
-		if (shouldAim && UpdateAimkey() && GetCanAim(1)) {
+		if (shouldAim && aimkeyStatus && GetCanAim(1)) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
@@ -267,10 +267,10 @@ bool ShouldAim() {
 }
 	
 // Function to find a suitable target
-CachedEntity* RetrieveBestTarget(bool aimkey) {
+CachedEntity* RetrieveBestTarget(bool aimkey_state) {
 	
 	// If we have a previously chosen target, target lock is on, and the aimkey is allowed, then attemt to keep the previous target
-	if (target_lock && foundTarget && aimkey) {
+	if (target_lock && foundTarget && aimkey_state) {
 		if (CE_GOOD(target_last)) {
 			// Check if previous target is still good
 			if (IsTargetStateGood(target_last)) {

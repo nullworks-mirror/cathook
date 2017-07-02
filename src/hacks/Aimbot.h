@@ -50,7 +50,7 @@ float EffectiveTargetingRange();
 
 CachedEntity* CurrentTarget();
 bool ShouldAim();
-CachedEntity* RetrieveBestTarget();
+CachedEntity* RetrieveBestTarget(bool aimkey_state);
 bool IsTargetStateGood(CachedEntity* entity);
 void Aim(CachedEntity* entity);
 bool CanAutoShoot();
