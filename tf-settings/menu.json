@@ -47,6 +47,7 @@
 					"aimbot_only_when_can_shoot",
 					"aimbot_enable_attack_only",
 					"aimbot_maxrange",
+					"aimbot_fov_draw",
 					"aimbot_slow",
 					"aimbot_slow_smooth",
 					"aimbot_slow_autoshoot",
@@ -334,6 +335,7 @@
 		"list": [
 			"chat_newlines",
 			"clean_chat",
+			"chat_crypto",
 			"killsay",
 			"killsay_file",
 			"spam",
@@ -444,7 +446,6 @@
 					"debug_ve_averaging",
 					"no_visuals",
 					"aimbot_debug",
-					"aimbot_only_when_can_shoot_wip",
 					"debug_info",
 					"log",
 					"setupbones_time",

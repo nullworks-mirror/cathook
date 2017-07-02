@@ -68,7 +68,6 @@ static CatEnum hitbox_enum({
 static CatVar hitbox(hitbox_enum, "aimbot_hitbox", "0", "Hitbox", "Hitbox to aim at. Ignored if AutoHitbox is on");
 static CatVar zoomed_only(CV_SWITCH, "aimbot_zoomed", "1", "Zoomed only", "Don't autoshoot with unzoomed rifles");
 static CatVar only_can_shoot(CV_SWITCH, "aimbot_only_when_can_shoot", "1", "Active when can shoot", "Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators");
-static CatVar only_can_shoot_wip(CV_SWITCH, "aimbot_only_when_can_shoot_wip", "0", "When can shoot", "Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators\nNew version that fixes some bugs, but introduces others\nEnable with other option to enable");
 static CatVar attack_only(CV_SWITCH, "aimbot_enable_attack_only", "0", "Active when attacking", "Basically makes Mouse1 an AimKey, isn't compatible with AutoShoot");
 static CatVar max_range(CV_INT, "aimbot_maxrange", "0", "Max distance",
 		"Max range for aimbot\n"
@@ -101,8 +100,7 @@ static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automa
 // Current Entity
 int target_eid { 0 };
 CachedEntity* target = 0;
-CachedEntity* target_locked = 0;
-int last_target { -1 };
+CachedEntity* target_last = 0;
 bool foundTarget = false;
 // Projectile info
 bool projectile_mode { false };
@@ -122,8 +120,9 @@ void CreateMove() {
 	// Check if aimbot is enabled
 	if (!enabled) return;
 	
-	// Check if player can aim
+	// Save should aim info
 	bool shouldAim = ShouldAim();
+	bool aimkeyStatus = UpdateAimkey();
 	
 	// Refresh projectile info
 	int huntsman_ticks = 0;
@@ -142,24 +141,23 @@ void CreateMove() {
 	}
 	
 	// Refresh our best target
-	CachedEntity* target = RetrieveBestTarget();
+	CachedEntity* target = RetrieveBestTarget(aimkeyStatus);
 	
 	// Check target for dormancy and if there even is a target at all
 	if (CE_GOOD(target) && foundTarget) {
 		// Set target esp color to pink
 		hacks::shared::esp::SetEntityColor(target, colors::pink);
-		last_target = target->m_IDX;
 		
-		// Only allow aimbot to work with aimkey
+		// Check if player can aim and if aimkey allows aiming
 		// We also preform a CanShoot check here per the old canshoot method
-		if (shouldAim && UpdateAimkey() && ShouldAimLeg()) {
+		if (shouldAim && aimkeyStatus && GetCanAim(1)) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
 
 				// If settings allow, limit aiming to only when can shoot
 				// We do this here only if wip is true as we do the check elsewhere for legacy
-				if (only_can_shoot && only_can_shoot_wip) {
+				if (GetCanAim(2)) {
 					// Check the flNextPrimaryAttack netvar to tell when to aim
 					if (CanShoot()) Aim(target);
 				} else {
@@ -269,19 +267,22 @@ bool ShouldAim() {
 }
 	
 // Function to find a suitable target
-CachedEntity* RetrieveBestTarget() {
+CachedEntity* RetrieveBestTarget(bool aimkey_state) {
 	
 	// If we have a previously chosen target, target lock is on, and the aimkey is allowed, then attemt to keep the previous target
-	if (target_lock && foundTarget && UpdateAimkey()) {
-		// Check if previous target is still good
-		if (IsTargetStateGood(target_locked)) {
-			// If it is then return it again
-			return target_locked;
+	if (target_lock && foundTarget && aimkey_state) {
+		if (CE_GOOD(target_last)) {
+			// Check if previous target is still good
+			if (IsTargetStateGood(target_last)) {
+				// If it is then return it again
+				return target_last;
+			}
 		}
 	}
 
-	// We dont have a target currently so we must find one
+	// We dont have a target currently so we must find one, reset statuses
 	foundTarget = false;
+	target_last = -1;
 
 	// Book keeping vars
 	float target_highest_score, scr;
@@ -323,7 +324,7 @@ CachedEntity* RetrieveBestTarget() {
 		}
 	}
 	// Save the ent for future use with target lock
-	target_locked = target_highest_ent;
+	target_last = target_highest_ent;
 	// When our for loop finishes, return our ent
 	return target_highest_ent;
 }
@@ -809,20 +810,56 @@ bool UpdateAimkey() {
 	// Return whether the aimkey allows aiming
 	return allowAimkey;
 }
+
+// A function called at 2 points in the create move function
+// First time is when the aimbot Determines if it should aim and autoshoot
+// Second time is for when the aimbot determines only when it should aim and always autoshoots
+// Using either mode has problems with some weapons so we compramise by using a combo of the 2
+// The point of using this function for 2 uses is to not make duplicate funcs for essentialy the same thing
+bool GetCanAim(int mode) {
 	
-// Function of previous CanShoot check
-bool ShouldAimLeg() {
-	// If user settings allow, we preform out canshoot here
-	if (only_can_shoot && !only_can_shoot_wip) {
-		// Miniguns should shoot and aim continiously. TODO smg
-		if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFMinigun)) {
-			// Melees are weird, they should aim continiously like miniguns too.
-			if (GetWeaponMode() != weaponmode::weapon_melee) {
-				// Finally, CanShoot() check.
-				if (!CanShoot()) return false;
-			}
-		}
-	}	
+	// User setting check
+	switch (mode) {
+	case 1: // The first check when the aimbot checks if it can aim or shoot
+			
+		// If user settings dont allow, Always aim at the point this is called
+		if (!only_can_shoot) return true;
+		// Always aim with melee weapons
+		if (GetWeaponMode() == weaponmode::weapon_melee) return true;
+		break;
+			
+	case 2: // Second check when the aimbot checks if it can aim, and will shoot regardless of the output here
+		
+		// dont check if should aim with melee weapons
+		if (GetWeaponMode() == weaponmode::weapon_melee) return false;
+			
+		// At the point this is called, we dont want to check for can shoot if user settings dont allow
+		if (!only_can_shoot) return false; 
+	}
+	
+	// Weapons that should attack continuously
+	bool using_wep_on_list = 
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPistol_Scout) || 
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSyringeGun) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSMG) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFRevolver) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower);
+	
+	switch (mode) {
+	case 1: // The first check when the aimbot checks if it can aim or shoot
+
+		// If the player isnt using these weaps, then check for can shoot. If the weapon isnt on the list, then we need to check if the player should aim here and return the result
+		if (!using_wep_on_list) return CanShoot();
+		break;
+			
+	case 2: // Second check when the aimbot checks if it can aim, and will shoot regardless of the output here
+			
+		// Return whether we are using one of the weapons on the list because we want to tell the aimbot that we should check for canshoot
+		return using_wep_on_list;
+	}
+
+	// Mode wasnt input correctly, just return true and hope for the best
 	return true;
 }
 
@@ -850,7 +887,7 @@ CachedEntity* CurrentTarget() {
 	
 // Used for when you join and leave maps to reset aimbot vars
 void Reset() {
-	last_target = -1;
+	target_last = -1;
 	projectile_mode = false;
 }
 
