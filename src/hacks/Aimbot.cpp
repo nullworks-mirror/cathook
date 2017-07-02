@@ -120,6 +120,10 @@ void CreateMove() {
 	// Check if aimbot is enabled
 	if (!enabled) return;
 	
+	// Save should aim info
+	bool shouldAim = ShouldAim();
+	bool aimkeyStatus = UpdateAimkey();
+	
 	// Refresh projectile info
 	int huntsman_ticks = 0;
 	projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
@@ -137,16 +141,16 @@ void CreateMove() {
 	}
 	
 	// Refresh our best target
-	CachedEntity* target = RetrieveBestTarget();
+	CachedEntity* target = RetrieveBestTarget(aimkeyStatus);
 	
 	// Check target for dormancy and if there even is a target at all
 	if (CE_GOOD(target) && foundTarget) {
 		// Set target esp color to pink
 		hacks::shared::esp::SetEntityColor(target, colors::pink);
 		
-		// Check if player can aim
+		// Check if player can aim and if aimkey allows aiming
 		// We also preform a CanShoot check here per the old canshoot method
-		if (ShouldAim() && GetCanAim(1)) {
+		if (shouldAim && UpdateAimkey() && GetCanAim(1)) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
@@ -210,8 +214,6 @@ bool ShouldAim() {
 	if (attack_only && !(g_pUserCmd->buttons & IN_ATTACK)) {
 		return false;
 	}
-	// Check if aimkey allows aiming
-	if (!UpdateAimkey()) return false;
 	// Check for +use
 	if (g_pUserCmd->buttons & IN_USE) return false;
 	// Check if using action slot item 
@@ -265,15 +267,15 @@ bool ShouldAim() {
 }
 	
 // Function to find a suitable target
-CachedEntity* RetrieveBestTarget() {
+CachedEntity* RetrieveBestTarget(bool aimkey) {
 	
 	// If we have a previously chosen target, target lock is on, and the aimkey is allowed, then attemt to keep the previous target
-	if (target_lock && foundTarget && UpdateAimkey()) {
+	if (target_lock && foundTarget && aimkey) {
 		if (CE_GOOD(target_last)) {
 			// Check if previous target is still good
 			if (IsTargetStateGood(target_last)) {
 				// If it is then return it again
-				return target_locked;
+				return target_last;
 			}
 		}
 	}
@@ -813,6 +815,7 @@ bool UpdateAimkey() {
 // First time is when the aimbot Determines if it should aim and autoshoot
 // Second time is for when the aimbot determines only when it should aim and always autoshoots
 // Using either mode has problems with some weapons so we compramise by using a combo of the 2
+// The point of using this function for 2 uses is to not make duplicate funcs for essentialy the same thing
 bool GetCanAim(int mode) {
 	
 	// User setting check
