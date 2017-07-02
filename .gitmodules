@@ -4,3 +4,6 @@
 [submodule "simple-ipc"]
 	path = simple-ipc
 	url = https://github.com/nullifiedcat/simple-ipc
+[submodule "ucccccp"]
+	path = ucccccp
+	url = https://github.com/nullifiedcat/ucccccp

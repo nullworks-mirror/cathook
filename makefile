@@ -10,7 +10,7 @@ CFLAGS=$(COMMON_FLAGS) $(WARNING_FLAGS)
 CXXFLAGS=-std=gnu++1z $(COMMON_FLAGS) $(WARNING_FLAGS)
 SDKFOLDER=$(realpath source-sdk-2013/mp/src)
 SIMPLE_IPC_DIR = $(realpath simple-ipc/src/include)
-INCLUDES=-isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2 -I$(SIMPLE_IPC_DIR) -isystem$(SDKFOLDER)/public -isystem$(SDKFOLDER)/mathlib -isystem$(SDKFOLDER)/common -isystem$(SDKFOLDER)/public/tier1 -isystem$(SDKFOLDER)/public/tier0 -isystem$(SDKFOLDER)
+INCLUDES=-Iucccccp -isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2 -I$(SIMPLE_IPC_DIR) -isystem$(SDKFOLDER)/public -isystem$(SDKFOLDER)/mathlib -isystem$(SDKFOLDER)/common -isystem$(SDKFOLDER)/public/tier1 -isystem$(SDKFOLDER)/public/tier0 -isystem$(SDKFOLDER)
 LIB_DIR=lib
 LDFLAGS=-m32 -fno-gnu-unique -D_GLIBCXX_USE_CXX11_ABI=0 -shared -L$(realpath $(LIB_DIR))
 LDLIBS=-static -lc -lstdc++ -ltier0 -lvstdlib -l:libSDL2-2.0.so.0 -static -lGLEW -lfreetype -lpthread
