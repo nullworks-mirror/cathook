@@ -840,6 +840,7 @@ bool GetCanAim(int mode) {
 	// Weapons that should attack continuously
 	bool using_wep_on_list = 
 		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPistol_Scout) || 
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPistol) || 
 		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun) ||
 		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSyringeGun) ||
 		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSMG) ||
