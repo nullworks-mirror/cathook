@@ -6,15 +6,17 @@
 
 # INSTALLATION
 
-Ubuntu dependancies installation:
+Ubuntu dependencies installation:
 ```bash
 sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot -y && sudo apt update && sudo apt install git libc6-dev gcc-6 g++-6 libc6-dev:i386 g++-6-multilib gdb libsdl2-dev libglew-dev libfreetype6-dev libfreetype6-dev:i386 -y && 
 ```
+
 
 Arch dependencies installation::
 ```bash
 sudo pacman -Syu && sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz && sudo pacman -S base-devel gcc-multilib gdb gdb-common glew1.10 lib32-glew1.10 
 ```
+
 
 Cathook installation script:
 ```bash
