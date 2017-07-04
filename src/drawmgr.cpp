@@ -79,11 +79,11 @@ void DrawCheatVisuals() {
 				PROF_SECTION(PT_spyalert);
 				SAFE_CALL(hacks::tf::spyalert::Draw());
 			}
-			DrawSpinner();
 			{
 				PROF_SECTION(DRAW_esp);
 				hacks::shared::esp::Draw();
 			}
+			DrawSpinner();
 			Prediction_PaintTraverse();
 		}
 		{
