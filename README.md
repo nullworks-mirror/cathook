@@ -14,48 +14,44 @@ sudo apt update && sudo apt install build-essential software-properties-common -
 
 Arch dependencies installation::
 ```bash
-sudo pacman -Syu && sudo pacman -S base-devel gdb gdb-common glew1.10 lib32-glew1.10 && sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
+sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 lib32-glew1.10 --noconfirm && yes | sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
 ```
 
 
 Cathook installation script:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4 && bash update-menu
+git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4 && bash update-data
 ```
 
 **Errors while installing?**
 
-`/usr/include/c++/5/string:38:28: fatal error: bits/c++config.h: No such file or directory` - You don't have g++6 or g++6 multilib installed correctly
+`/usr/include/c++/5/string:38:28: fatal error: bits/c++config.h: No such file or directory`
+You don't have gcc-multilib-6 installed correctly.
 
-`src/<any file>: fatal error: mathlib/vector.h: No such file or directory` - You didn't download Source SDK. **DO NOT DOWNLOAD CATHOOK USING "DOWNLOAD .ZIP" FROM GITHUB. USE git clone --recursive**!
+`src/<any file>: fatal error: mathlib/vector.h: No such file or directory`
+You didn't download Source SDK. **DO NOT DOWNLOAD CATHOOK USING "DOWNLOAD .ZIP" FROM GITHUB. USE git clone --recursive!**
 
-If you are using other distro, make sure to have g++-6, gdb, libc6 and build essentials installed.
+If you are using another distro, make sure to have g++-6, gdb, libc6 and build essentials installed.
 
 ## Updating cathook
 Run the `update` script in cathook folder.
 
-The shader folder needs to be placed into the Team fortress 2 folder otherwise cathook will crash. To install them just copy the tf-settings folder into your Team fortress 2 folder and rename it to "cathook"
-The `update-data` script does this automaticly and you will want to update those files if you wish to have an updated menu.
+Cathook requires the shader folder provided in order to launch properly. To install this, run the `update-data` script. This will create a sym-link for the required folders.  
+If you wish to do this manually, copy the tf-settings folder inside Cathook into your Team Fortress 2 folder and rename it to "cathook".  
+You will want to update these files if you wish to have an updated menu.
 
 ## Injection
-`sudo ./attach` to attach to tf2 process (can take argument number 0-N - # of tf2 instance to attach to (for bots))
+`sudo ./attach` to attach cathook into TF2. Optionally, you can provide an argument number (0-n - #) to provide the TF2 process ID (for bots).
 
-`sudo ./attach-backtrace` to attach and print backtrace if tf2 crashes. Some users reported that this method makes you get less FPS ingame.
+`sudo ./attach-backtrace` to attach and print backtrace incase TF2 crashes. Some users report that this causes FPS drop in-game. This is recommended to grab a log of what went wrong if Cathook is crashing on you.
 
 ## Followbots
+`cathook-ipc-server` allows you to run and control Followbots to do your evil bidding in-game. The installation for Followbots is quite complex, and will not be covered on this page. Obviously, you must have several user accounts ready to run TF2.  
+A guide for Followbots can be found here: [How to setup and use followbots.](https://www.youtube.com/watch?v=kns5-nw7xUg)  
+You may also ask someone in our discord server to help you out.
 
-Followbot installation is quite complex and I won't cover it fully here.
-You have to have several user accounts ready to run tf2 - use google for that.
-You can ask someone in my discord server for help with installation.
-To control followbots, you need to download and install `cathook-ipc-server`.
-
-### Followbot server installation script
+The installation script is as followed:
+```bash
+git clone --recursive https://github.com/nullifiedcat/cathook-ipc-server && cd cathook-ipc-server && make -j4
 ```
-git clone --recursive https://github.com/nullifiedcat/cathook-ipc-server && \
-cd cathook-ipc-server && \
-make -j4
-```
-### Updating script is the same as updating cathook
-
-### Running followbot server
-`./bin/cathook-ipc-server` or `./bin/cathook-ipc-server &>/dev/null &` to run it in background
+To run the Followbot server, run `./bin/cathook-ipc-server`. You can also use `./bin/cathook-ipc-server &>/dev/null &` to run it in background.
