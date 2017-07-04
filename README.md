@@ -20,7 +20,7 @@ sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 lib32-glew1.10 --noco
 
 Cathook installation script:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4 && bash update-menu
+git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4 && bash update-data
 ```
 
 **Errors while installing?**
