@@ -28,17 +28,6 @@ vertex_buffer_t* buffer_triangles_textured;
 GLuint shader_v2fc4f;
 GLuint shader_v2ft2fc4f;
 
-struct vertex_v2c4_t {
-	vec2 xy;
-	vec4 rgba;
-};
-
-struct vertex_v2t2c4_t {
-	vec2 xy;
-	vec2 st;
-	vec4 rgba;
-};
-
 mat4 model, view, projection;
 
 bool ready_state = false;

@@ -270,6 +270,8 @@ void hack::Initialize() {
 	logging::Info("SDL hooking done");
 	g_IGameEventManager->AddListener(&adv_event_listener, false);
 	hacks::shared::anticheat::Init();
+	InitSpinner();
+	logging::Info("Initialized Fidget Spinner");
 
 }
 

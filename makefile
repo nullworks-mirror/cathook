@@ -4,15 +4,33 @@ CC=$(shell sh -c "which gcc-6 || which gcc")
 DEFINES=_GLIBCXX_USE_CXX11_ABI=0 _POSIX=1 FREETYPE_GL_USE_VAO RAD_TELEMETRY_DISABLED LINUX=1 USE_SDL _LINUX=1 POSIX=1 GNUC=1 NO_MALLOC_OVERRIDE
 
 WARNING_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef
-COMMON_FLAGS=-fpermissive -O3 -g3 -ggdb -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native
+COMMON_FLAGS=-fpermissive -O3 -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native
 
-CFLAGS=$(COMMON_FLAGS) $(WARNING_FLAGS)
-CXXFLAGS=-std=gnu++1z $(COMMON_FLAGS) $(WARNING_FLAGS)
+ifdef BUILD_DEBUG
+COMMON_FLAGS+=-g3 -ggdb
+else
+COMMON_FLAGS+=-flto
+endif
+
+CFLAGS=$(COMMON_FLAGS)
+CXXFLAGS=-std=gnu++1z $(COMMON_FLAGS)
+
+ifndef NO_WARNINGS
+CFLAGS+=$(WARNING_FLAGS)
+CXXFLAGS+=$(WARNING_FLAGS)
+else
+CFLAGS+=-w
+CXXFLAGS+=-w
+endif
+
 SDKFOLDER=$(realpath source-sdk-2013/mp/src)
 SIMPLE_IPC_DIR = $(realpath simple-ipc/src/include)
 INCLUDES=-Iucccccp -isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2 -I$(SIMPLE_IPC_DIR) -isystem$(SDKFOLDER)/public -isystem$(SDKFOLDER)/mathlib -isystem$(SDKFOLDER)/common -isystem$(SDKFOLDER)/public/tier1 -isystem$(SDKFOLDER)/public/tier0 -isystem$(SDKFOLDER)
 LIB_DIR=lib
 LDFLAGS=-m32 -fno-gnu-unique -D_GLIBCXX_USE_CXX11_ABI=0 -shared -L$(realpath $(LIB_DIR))
+ifndef BUILD_DEBUG
+LDFLAGS+=-flto
+endif
 LDLIBS=-static -lc -lstdc++ -ltier0 -lvstdlib -l:libSDL2-2.0.so.0 -static -lGLEW -lfreetype -lpthread
 SRC_DIR = src
 RES_DIR = res

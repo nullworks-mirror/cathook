@@ -24,17 +24,36 @@ echo Attaching to "$proc"
 
 #sudo ./detach $inst bin/libcathook.so
 
-if grep -q "$(realpath bin/libcathook.so)" /proc/"$proc"/maps; then
-  echo already loaded
-  exit
-fi
+#if grep -q "$(realpath bin/libcathook.so)" /proc/"$proc"/maps; then
+#  echo already loaded
+#  exit
+#fi
 
-echo loading "$(realpath bin/libcathook.so)" to "$proc"
+# pBypass for crash dumps being sent
+# You may also want to consider using -nobreakpad in your launch options.
+sudo rm -rf /tmp/dumps # Remove if it exists
+sudo mkdir /tmp/dumps # Make it as root
+sudo chmod 000 /tmp/dumps # No permissions
+
+FILENAME="/tmp/.gl$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)"
+
+cp "bin/libcathook.so" "$FILENAME"
+
+echo loading "$FILENAME" to "$proc"
+
+sudo killall -19 steam
+sudo killall -19 steamwebhelper
+
 gdb -n -q -batch \
   -ex "attach $proc" \
   -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
-  -ex "call \$dlopen(\"$(realpath bin/libcathook.so)\", 1)" \
+  -ex "call \$dlopen(\"$FILENAME\", 1)" \
   -ex "call dlerror()" \
   -ex 'print (char *) $2' \
   -ex "detach" \
   -ex "quit"
+  
+rm $FILENAME
+
+sudo killall -18 steamwebhelper
+sudo killall -18 steam

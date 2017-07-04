@@ -588,6 +588,13 @@ std::unordered_map<studiohdr_t*, bonelist_s> bonelist_map {};
  * According to profiler, this function is the most time-consuming (and gets called up to 200K times a second)
  */
 
+CatEnum emoji_esp({ "None", "Joy", "Thinking" });
+CatVar joy_esp(CV_SWITCH, "esp_emoji", "0", "Emoji ESP");
+CatVar joy_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
+CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "0", "Emoji ESP Scaling");
+textures::AtlasTexture joy_texture(64 * 4, textures::atlas_height - 64 * 4, 64, 64);
+textures::AtlasTexture thinking_texture(64 * 5, textures::atlas_height - 64 * 4, 64, 64);
+
 void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	PROF_SECTION(PT_esp_process_entity);
 
@@ -643,6 +650,21 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 			if (vischeck && !ent->IsVisible()) transparent = true;
 			if (!fg) fg = colors::EntityF(ent);
 			if (transparent) fg = colors::Transparent(fg);
+			if (joy_esp) {
+				auto hb = ent->hitboxes.GetHitbox(0);
+				Vector hbm, hbx;
+				if (draw::WorldToScreen(hb->min, hbm) && draw::WorldToScreen(hb->max, hbx)) {
+					Vector head_scr;
+					if (draw::WorldToScreen(hb->center, head_scr)) {
+						float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y) : float(joy_esp_size);
+						textures::AtlasTexture* tx = nullptr;
+						if (int(joy_esp) == 1) tx = &joy_texture;
+						if (int(joy_esp) == 2) tx = &thinking_texture;
+						if (tx)
+							tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2, size, size);
+					}
+				}
+			}
 			DrawBox(ent, fg, static_cast<bool>(box_healthbar), CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
 		break;
 		}
