@@ -47,6 +47,7 @@ extern "C" {
 #include "offsets.hpp"
 #include "drawing.h"
 #include "entitycache.h"
+#include "fidgetspinner.hpp"
 #include "hoovy.hpp"
 #include "enums.h"
 #include "projlogging.hpp"

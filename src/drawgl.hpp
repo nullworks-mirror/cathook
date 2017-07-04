@@ -10,7 +10,28 @@
 
 #include "drawing.h"
 
+extern "C" {
+#include "freetype-gl/vec234.h"
+#include "freetype-gl/vertex-buffer.h"
+}
+
 namespace drawgl {
+
+struct vertex_v2c4_t {
+	ftgl::vec2 xy;
+	ftgl::vec4 rgba;
+};
+
+struct vertex_v2t2c4_t {
+	ftgl::vec2 xy;
+	ftgl::vec2 st;
+	ftgl::vec4 rgba;
+};
+
+
+extern ftgl::vertex_buffer_t* buffer_lines;
+extern ftgl::vertex_buffer_t* buffer_triangles_plain;
+extern ftgl::vertex_buffer_t* buffer_triangles_textured;
 
 extern const float white[4];
 

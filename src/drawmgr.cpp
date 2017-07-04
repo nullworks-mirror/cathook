@@ -24,7 +24,6 @@ CatVar info_text(CV_SWITCH, "info", "1", "Show info", "Show cathook version in t
 void DrawCheatVisuals() {
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
 	if (drawgl::ready_state) {
-
 		{
 			PROF_SECTION(DRAW_misc);
 			SAFE_CALL(hacks::shared::misc::DrawText());
@@ -80,6 +79,7 @@ void DrawCheatVisuals() {
 				PROF_SECTION(PT_spyalert);
 				SAFE_CALL(hacks::tf::spyalert::Draw());
 			}
+			DrawSpinner();
 			{
 				PROF_SECTION(DRAW_esp);
 				hacks::shared::esp::Draw();
