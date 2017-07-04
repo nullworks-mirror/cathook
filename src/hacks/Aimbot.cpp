@@ -59,6 +59,7 @@ static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim S
 static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
 static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
 static CatVar teammates(CV_SWITCH, "aimbot_teammates", "0", "Aim at teammates", "Aim at your own team. Useful for HL2DM");
+static CatVar teammates_helpful(CV_SWITCH, "aimbot_teammates_helpful", "0", "Use helpful weapons on teammates", "Allows weapons like the crusaders and the rescue ranger to be used on friendly objects");
 static CatVar silent(CV_SWITCH, "aimbot_silent", "1", "Silent", "Your screen doesn't get snapped to the point where aimbot aims at");
 static CatVar target_lock(CV_SWITCH, "aimbot_target_lock", "0", "Target Lock", "Keeps your previously chosen target untill target check fails");
 static CatEnum hitbox_enum({
@@ -338,8 +339,11 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		if (entity == LOCAL_E) return false;
 		// Dont aim at dead player
 		if (!entity->m_bAlivePlayer) return false;
-		// Dont aim at teammates
-		if (!entity->m_bEnemy && !teammates) return false;
+		
+		// Dont aim at teammates as well as check if weapon allows teamates
+		if (!entity->m_bEnemy && !teammates && !(LOCAL_W->m_iClassID == CL_CLASS(CTFCrossbow) && teammates_helpful)) {
+			return false;
+		}
 		// Check if player is too far away
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > EffectiveTargetingRange()) return false;
@@ -390,7 +394,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		// Check if building aimbot is enabled
 		if ( !(buildings_other || buildings_sentry) ) return false;
 		// Check if enemy building
-		if (!entity->m_bEnemy) return false;
+		if (!entity->m_bEnemy && !(LOCAL_W->m_iClassID == CL_CLASS(CTFShotgunBuildingRescue) && teammates_helpful)) return false;
 		// Check if building is within range
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > (int)EffectiveTargetingRange()) return false;
@@ -839,13 +843,13 @@ bool GetCanAim(int mode) {
 	
 	// Weapons that should attack continuously
 	bool using_wep_on_list = 
-		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPistol_Scout) || 
-		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPistol) || 
-		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun) ||
-		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSyringeGun) ||
-		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSMG) ||
-		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFRevolver) ||
-		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower);
+		LOCAL_W->m_iClassID == CL_CLASS(CTFPistol_Scout) || 
+		LOCAL_W->m_iClassID == CL_CLASS(CTFPistol) || 
+		LOCAL_W->m_iClassID == CL_CLASS(CTFMinigun) ||
+		LOCAL_W->m_iClassID == CL_CLASS(CTFSyringeGun) ||
+		LOCAL_W->m_iClassID == CL_CLASS(CTFSMG) ||
+		LOCAL_W->m_iClassID == CL_CLASS(CTFRevolver) ||
+		LOCAL_W->m_iClassID == CL_CLASS(CTFFlameThrower);
 	
 	switch (mode) {
 	case 1: // The first check when the aimbot checks if it can aim or shoot
