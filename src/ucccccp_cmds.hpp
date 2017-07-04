@@ -9,5 +9,5 @@
 
 class CatCommand;
 
-extern CatCommand utfccp_encrypt;
-extern CatCommand utfccp_decrypt;
+extern CatCommand ucccccp_encrypt;
+extern CatCommand ucccccp_decrypt;
