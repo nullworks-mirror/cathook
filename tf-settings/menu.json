@@ -9,20 +9,21 @@
 			"aimbot_autoshoot",
 			"aimbot_hitboxmode",
 			"aimbot_fov",
+			"aimbot_fov_draw",
 			"aimbot_prioritymode",
 			"aimbot_charge",
 			{
 				"type": "list",
 				"name": "Ignore",
 				"list": [
-					"aimbot_ignore_vaccinator",
 					"ignore_taunting",
 					"aimbot_ignore_hoovy",
-					"aimbot_ignore_cloak",
 					"aimbot_buildings_sentry",
 					"aimbot_buildings_other",
 					"aimbot_stickys",
-					"aimbot_teammates"
+					"aimbot_teammates",
+					"aimbot_ignore_cloak",
+					"aimbot_ignore_vaccinator"
 				]
 			},
 			{
@@ -47,7 +48,6 @@
 					"aimbot_only_when_can_shoot",
 					"aimbot_enable_attack_only",
 					"aimbot_maxrange",
-					"aimbot_fov_draw",
 					"aimbot_slow",
 					"aimbot_slow_smooth",
 					"aimbot_slow_autoshoot",
@@ -120,24 +120,25 @@
 				"type": "list",
 				"name": "Triggerbot Ignores",
 				"list": [
-					"trigger_ignore_vaccinator",
 					"trigger_ignore_cloak",
-					"trigger_stickys",
-					"trigger_teammates",
+					"trigger_ignore_hoovy",
+					"trigger_ignore_vaccinator",
 					"trigger_buildings_sentry",
-					"trigger_buildings_other"
+					"trigger_buildings_other",
+					"trigger_stickys",
+					"trigger_teammates"
 				]
 			},
 			{
 				"type": "list",
 				"name": "Triggerbot Preferences",
 				"list": [
-					"trigger_key",
-					"trigger_key_mode",
-					"trigger_hitboxmode",
-					"trigger_charge",
 					"trigger_zoomed",
-					"trigger_maxrange"
+					"trigger_maxrange",
+					"trigger_charge",
+					"trigger_hitboxmode",
+					"trigger_key_mode",
+					"trigger_key"
 				]
 			}
 		]
@@ -178,6 +179,16 @@
 					"esp_buildings",
 					"esp_local",
 					"esp_powerups",
+					{
+						"type": "list",
+						"name": "Emoji ESP",
+						"list": [
+							"esp_emoji",
+							"esp_emoji_size",
+							"esp_emoji_scaling",
+							"esp_emoji_min_size"
+						]
+					},
 					{
 						"type": "list",
 						"name": "Item ESP",
@@ -335,7 +346,6 @@
 		"list": [
 			"chat_newlines",
 			"clean_chat",
-			"chat_crypto",
 			"killsay",
 			"killsay_file",
 			"spam",
@@ -368,8 +378,24 @@
 	},
 	{
 		"type": "list",
+		"name": "Anti-Cheat",
+		"list": [
+			"ac_enabled",
+			"ac_ignore_local",
+			"ac_chat",
+			"ac_aimbot_detections",
+			"ac_aimbot_angle",
+			"ac_removecond",
+			"ac_removecond_timer",
+			"ac_bhop_count"
+		]
+	},
+	{
+		"type": "list",
 		"name": "Miscellaneous",
 		"list": [
+			"events",
+			"chat_crypto",
 			"airstuck",
 			"instant_weapon_switch",
 			"name",
@@ -400,7 +426,20 @@
 					"removecond_bleeding",
 					"removecond_stun",
 					"instant_decloak",
-					"instant_rezoom"
+					"instant_rezoom",
+					"lagexploit_mini"
+				]
+			},
+			{
+				"type": "list",
+				"name": "Fidget Spinner",
+				"list": [
+					"fidgetspinner",
+					"fidgetspinner_scale",
+					"fidgetspinner_decay_speed",
+					"fidgetspinner_speed_scale",
+					"fidgetspinner_speed_cap",
+					"fidgetspinner_min_speed"
 				]
 			},
 			{
