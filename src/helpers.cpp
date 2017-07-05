@@ -505,9 +505,11 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 		rgrav = 0.2f;
 		rspeed = 990.0f;
 	} else if (weapon->m_iClassID == CL_CLASS(CTFCrossbow)) {
+		// TODO, get correct gravity
 		rgrav = 0.2f;
 		rspeed = 2400.0f;
 	} else if (weapon->m_iClassID == CL_CLASS(CTFShotgunBuildingRescue)) {
+		// TODO, get correct gravity
 		rgrav = 0.2f;
 		rspeed = 2400.0f;
 	}
