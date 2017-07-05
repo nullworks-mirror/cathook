@@ -10,6 +10,7 @@
 
 namespace ac { namespace aimbot {
 
+static CatVar enabled(CV_SWITCH, "ac_aimbot", "0", "Detect Aimbot", "Is not recommended");
 static CatVar detect_angle(CV_FLOAT, "ac_aimbot_angle", "30", "Aimbot Angle");
 static CatVar detections_warning(CV_INT, "ac_aimbot_detections", "3", "Min detections to warn");
 
@@ -28,6 +29,7 @@ void Init() {
 }
 
 void Update(CachedEntity* player) {
+	if (not enabled) return;
 	auto& data = data_table[player->m_IDX - 1];
 	if (data.check_timer) {
 		data.check_timer--;
@@ -58,6 +60,7 @@ void Update(CachedEntity* player) {
 }
 
 void Event(KeyValues* event) {
+	if (not enabled) return;
 	if (!strcmp(event->GetName(), "player_death") || !strcmp(event->GetName(), "player_hurt")) {
 		int attacker = event->GetInt("attacker");
 		int victim = event->GetInt("userid");

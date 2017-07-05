@@ -383,6 +383,7 @@
 			"ac_enabled",
 			"ac_ignore_local",
 			"ac_chat",
+			"ac_aimbot",
 			"ac_aimbot_detections",
 			"ac_aimbot_angle",
 			"ac_removecond",
