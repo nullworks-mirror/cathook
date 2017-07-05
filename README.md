@@ -1,6 +1,24 @@
 # Cathook Multihack
 ![banner](http://i.imgur.com/GkBmJFT.png)
 
+cathook is a multihack for Team Fortress 2 for Linux. cathook includes some joke features like
+
+* Always/Never spycrab
+* Ignore Hoovy
+* 100% Casual/Comp coin flip hack
+* Encrypted chat
+* Emoji ESP
+* Fidget Spinner crosshair
+
+and a lot of useful features, including
+
+* Anti Backstab with option to say "No" voice command when spy tries to backstab you
+* Heal Arrows hack (overheal an enemy for 12000 health with single huntsman arrow, you can also do it with buildings!)
+* Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
+* Follow Bots
+* Working crit hack
+
+
 # Discord Server
 [Official Discord Server](https://discord.gg/kvNVNSX)
 
