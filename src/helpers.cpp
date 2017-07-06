@@ -445,7 +445,9 @@ weaponmode GetWeaponMode() {
 				weapon->m_iClassID == CL_CLASS(CTFBat_Giftwrap) ||
 				weapon->m_iClassID == CL_CLASS(CTFFlareGun) ||
 				weapon->m_iClassID == CL_CLASS(CTFFlareGun_Revenge) ||
-				weapon->m_iClassID == CL_CLASS(CTFSyringeGun)) {
+				weapon->m_iClassID == CL_CLASS(CTFSyringeGun) ||
+			    weapon->m_iClassID == CL_CLASS(CTFCrossbow) ||
+			    weapon->m_iClassID == CL_CLASS(CTFShotgunBuildingRescue)) {
 		return weaponmode::weapon_projectile;
 	} else if (weapon->m_iClassID == CL_CLASS(CTFJar) ||
 			   weapon->m_iClassID == CL_CLASS(CTFJarMilk)) {
@@ -502,6 +504,14 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 	} else if (weapon->m_iClassID == CL_CLASS(CTFSyringeGun)) {
 		rgrav = 0.2f;
 		rspeed = 990.0f;
+	} else if (weapon->m_iClassID == CL_CLASS(CTFCrossbow)) {
+		// TODO, get correct gravity
+		rgrav = 0.2f;
+		rspeed = 2400.0f;
+	} else if (weapon->m_iClassID == CL_CLASS(CTFShotgunBuildingRescue)) {
+		// TODO, get correct gravity
+		rgrav = 0.2f;
+		rspeed = 2400.0f;
 	}
 	speed = rspeed;
 	gravity = rgrav;
