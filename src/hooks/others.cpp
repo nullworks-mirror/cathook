@@ -92,7 +92,6 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 		ch = (INetChannel*)g_IEngine->GetNetChannelInfo();//*(INetChannel**)((unsigned)g_IBaseClientState + offsets::m_NetChannel());
 		*(int*)((unsigned)ch + offsets::m_nOutSequenceNr()) = def->command_number - 1;
 	}
-	hacks::shared::lagexploit::GetUserCmd(def, sequence_number);
 	return def;
 }
 
