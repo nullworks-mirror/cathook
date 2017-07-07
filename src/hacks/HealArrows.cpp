@@ -10,10 +10,52 @@
 namespace hacks { namespace tf2 { namespace healarrow {
 
 static CatVar healarrow_charge(CV_FLOAT, "healarrow_charge", "0.25", "Healarrow Charge");
-static CatVar healarrow_timeout(CV_FLOAT, "healarrow_timeout", "12.5", "Healarrow Timeout");
+static CatVar healarrow_timeout(CV_FLOAT, "healarrow_timeout", "2", "Healarrow Timeout");
 static CatVar healarrow(CV_SWITCH, "healarrow", "0", "Heal Arrow");
+static CatVar healarrow_callout(CV_SWITCH, "healarrow_callout", "0", "Call Out", "Send a message to chat when you heal someone with an arrow");
+static CatVar healarrow_callout_message(CV_STRING, "healarrow_callout_text", "Hey %%, I've just healed you for $$ HP! Your health is now ##.", "Call Out Text", "Formatting:\n%% - player name\n$$ - healing amount\n## - new health\n@@ - old health");
 
 float healarrow_time = 0.0f;
+
+class HealArrowListener : public IGameEventListener {
+public:
+	virtual void FireGameEvent(KeyValues* event) {
+		if (!healarrow) return;
+		if (!healarrow_callout) return;
+		if (CE_BAD(LOCAL_W)) return;
+		if (LOCAL_W->m_iClassID != CL_CLASS(CTFCompoundBow)) return;
+		std::string name(event->GetName());
+		if (name == "player_hurt") {
+			int attacker = event->GetInt("attacker");
+			int victim = event->GetInt("userid");
+			int eid = g_IEngine->GetPlayerForUserID(attacker);
+			int vid = g_IEngine->GetPlayerForUserID(victim);
+			if (eid == g_IEngine->GetLocalPlayer()) {
+				int damageamount = event->GetInt("damageamount");
+				if (damageamount < 0) {
+					player_info_s pinfo;
+					if (g_IEngine->GetPlayerInfo(vid, &pinfo)) {
+						std::string msg(healarrow_callout_message.GetString());
+						ReplaceString(msg, "$$", std::to_string(-damageamount));
+						auto v_entity = ENTITY(vid);
+						if (CE_GOOD(v_entity)) {
+							ReplaceString(msg, "##", std::to_string(CE_INT(v_entity, netvar.iHealth) - damageamount));
+							ReplaceString(msg, "@@", std::to_string(CE_INT(v_entity, netvar.iHealth)));
+						}
+						ReplaceString(msg, "%%", pinfo.name);
+						chat_stack::Say(msg);
+					}
+				}
+			}
+		}
+	}
+};
+
+HealArrowListener listener;
+
+void Init() {
+	g_IGameEventManager->AddListener(&listener, false);
+}
 
 void CreateMove() {
 	if (CE_BAD(LOCAL_W)) return;

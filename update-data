@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Searching for Team Fortress 2"
+echo "Please wait..."
 
 find / -type d -name "Team Fortress 2" 2>/dev/null | while read path; do
 	if [ -e "$path/tf/gameinfo.txt" ]; then
@@ -10,6 +11,7 @@ find / -type d -name "Team Fortress 2" 2>/dev/null | while read path; do
 			ln -s "$path/cathook" "Data Folder"
 			rsync -avh --progress tf-settings/ "$path/cathook"
 			echo "Symbolic link created (Data Folder)"
+			echo "You can close this window"
 			read -p "Press ENTER to continue"
 		fi
 	fi

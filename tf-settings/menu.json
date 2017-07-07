@@ -449,7 +449,9 @@
 				"list": [
 					"healarrow",
 					"healarrow_charge",
-					"healarrow_timeout"
+					"healarrow_timeout",
+					"healarrow_callout",
+					"healarrow_callout_text"
 				]
 			},
 			{
