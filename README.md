@@ -18,6 +18,7 @@ and a lot of useful features, including
 * Follow Bots
 * Working crit hack
 
+[FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features)
 
 # Discord Server
 [Official Discord Server](https://discord.gg/kvNVNSX)
