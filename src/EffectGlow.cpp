@@ -35,7 +35,7 @@ static CatVar buildings(CV_SWITCH, "glow_buildings", "0", "Buildings", "Render g
 static CatVar stickies(CV_SWITCH, "glow_stickies", "0", "Stickies", "Render glow on stickybombs");
 static CatVar teammate_buildings(CV_SWITCH, "glow_teammate_buildings", "0", "Teammate Buildings", "Render glow on teammates buildings");
 static CatVar powerups(CV_SWITCH, "glow_powerups", "1", "Powerups");
-//static CatVar weapons_white(CV_SWITCH, "glow_weapons_white", "1", "White Weapon Glow", "Weapons will glow white");
+static CatVar weapons_white(CV_SWITCH, "glow_weapons_white", "1", "White Weapon Glow", "Weapons will glow white");
 
 struct ShaderStencilState_t
 {
@@ -332,7 +332,15 @@ void EffectGlow::DrawEntity(IClientEntity* entity) {
 	attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
 	while (attach && passes++ < 32) {
 		if (attach->ShouldDraw()) {
-			attach->DrawModel(1);
+			if (weapons_white && entity->GetClientClass()->m_ClassID == RCC_PLAYER && vfunc<bool(*)(IClientEntity*)>(attach, 190, 0)(attach)) {
+				rgba_t mod_original;
+				g_IVRenderView->GetColorModulation(mod_original.rgba);
+				g_IVRenderView->SetColorModulation(colors::white);
+				attach->DrawModel(1);
+				g_IVRenderView->SetColorModulation(mod_original.rgba);
+			}
+			else
+				attach->DrawModel(1);
 		}
 		attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)attach + netvar.m_Collision - 20) & 0xFFF);
 	}
