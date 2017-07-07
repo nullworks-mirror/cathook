@@ -36,6 +36,8 @@ CatVar gui_color_r(CV_INT, "gui_color_r", "255", "Main GUI color (red)", "Define
 CatVar gui_color_g(CV_INT, "gui_color_g", "105", "Main GUI color (green)", "Defines green component of main gui color", 0, 255);
 CatVar gui_color_b(CV_INT, "gui_color_b", "180", "Main GUI color (blue)", "Defines blue component of main gui color", 0, 255);
 
+CatVar gui_debug(CV_SWITCH, "gui_debug", "0", "Debug GUI");
+
 static CatVar gui_rainbow(CV_SWITCH, "gui_rainbow", "0", "Rainbow GUI", "RGB all the things!!!");
 rgba_t GUIColor() {
 	return gui_rainbow ? colors::RainbowCurrent() : colors::FromRGBA8(int(gui_color_r), int(gui_color_g), int(gui_color_b), 255);
@@ -84,18 +86,19 @@ void CatGUI::Update() {
 			m_bPressedState[i] = down;
 			if (m_bKeysInit) {
 				if (changed) {
-					//logging::Info("Key %d changed, now %d", i, down);
+					if (gui_debug) {
+						logging::Info("Key %d changed, now %d", i, down);
+					}
 					if (i == ButtonCode_t::MOUSE_LEFT) {
 						if (Visible()) {
 							// Mouse is pressed.
 						}
 					} else if (down) {
 						if ((i == ButtonCode_t::KEY_INSERT || i == ButtonCode_t::KEY_F11)) {
-							if (gui_visible) {
-								gui_visible = 0;
-							} else {
-								gui_visible = 1;
+							if (gui_debug) {
+								logging::Info("GUI key pressed");
 							}
+							gui_visible = !gui_visible;
 						}
 					}
 				}
