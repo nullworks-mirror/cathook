@@ -13,7 +13,7 @@ cathook is a multihack for Team Fortress 2 for Linux. cathook includes some joke
 and a lot of useful features, including
 
 * Anti Backstab with option to say "No" voice command when spy tries to backstab you
-* Heal Arrows hack (overheal an enemy for 12000 health with single huntsman arrow, you can also do it with buildings!)
+* Heal Arrows hack (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
 * Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
 * Follow Bots
 * Working crit hack
