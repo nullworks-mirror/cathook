@@ -106,6 +106,7 @@ std::stack<std::string>& hack::command_stack() {
 class AdvancedEventListener : public IGameEventListener {
 public:
 	virtual void FireGameEvent( KeyValues * event) {
+		if (!event_log) return;
 		const char* name = event->GetName();
 		if (!strcmp(name, "player_connect_client")) {
 			PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 joining", 0xa06ba0, event->GetString("name"), 0x914e65, event->GetString("networkid"));
@@ -125,7 +126,6 @@ public:
 				int nteam = event->GetInt("team");
 				const char* oteam_s = teamname(oteam);
 				const char* nteam_s = teamname(nteam);
-				logging::Info("%d -> %d", oteam, nteam);
 				PrintChat("\x07%06X%s\x01 changed team (\x07%06X%s\x01 -> \x07%06X%s\x01)", 0xa06ba0, event->GetString("name"), colors::chat::team(oteam), oteam_s, colors::chat::team(nteam), nteam_s);
 			}
 		}

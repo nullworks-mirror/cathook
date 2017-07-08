@@ -37,11 +37,9 @@ public:
 					if (g_IEngine->GetPlayerInfo(vid, &pinfo)) {
 						std::string msg(healarrow_callout_message.GetString());
 						ReplaceString(msg, "$$", std::to_string(-damageamount));
-						auto v_entity = ENTITY(vid);
-						if (CE_GOOD(v_entity)) {
-							ReplaceString(msg, "##", std::to_string(CE_INT(v_entity, netvar.iHealth) - damageamount));
-							ReplaceString(msg, "@@", std::to_string(CE_INT(v_entity, netvar.iHealth)));
-						}
+						int health = event->GetInt("health");
+						ReplaceString(msg, "##", std::to_string(health));
+						ReplaceString(msg, "@@", std::to_string(health + damageamount));
 						ReplaceString(msg, "%%", pinfo.name);
 						chat_stack::Say(msg);
 					}

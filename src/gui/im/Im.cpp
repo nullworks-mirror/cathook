@@ -29,13 +29,17 @@ void CatVar_Integer(CatVar& var) {
 	ImGui::PushID(var.id);
 
 	int value = var;
-	ImGui::PushItemWidth(75.0f);
-	if (ImGui::SliderInt(label, &value, minval, maxval)) {
+	ImGui::PushItemWidth(120.0f);
+	int step = var.restricted ? (var.max - var.min) / 50 : 1;
+	if (ImGui::InputInt(label, &value, step, step * 20)) {
 		var = value;
 	}
+	/*if (ImGui::SliderInt(label, &value, minval, maxval)) {
+		var = value;
+	}*/
 	if (ImGui::IsItemHovered() && var.desc_long.size()) {
 		ImGui::BeginTooltip();
-			ImGui::Text(var.desc_long.c_str());
+			ImGui::Text("%s", var.desc_long.c_str());
 		ImGui::EndTooltip();
 	}
 
@@ -56,13 +60,17 @@ void CatVar_Float(CatVar& var) {
 	ImGui::PushID(var.id);
 
 	float value = var;
-	ImGui::PushItemWidth(75.0f);
-	if (ImGui::SliderFloat(label, &value, minval, maxval)) {
+	ImGui::PushItemWidth(120.0f);
+	float step = var.restricted ? (var.max - var.min) / 50 : 1;
+	if (ImGui::InputFloat(label, &value, step, step * 20)) {
 		var = value;
 	}
+	/*if (ImGui::SliderFloat(label, &value, minval, maxval)) {
+		var = value;
+	}*/
 	if (ImGui::IsItemHovered() && var.desc_long.size()) {
 		ImGui::BeginTooltip();
-			ImGui::Text(var.desc_long.c_str());
+			ImGui::Text("%s", var.desc_long.c_str());
 		ImGui::EndTooltip();
 	}
 
@@ -106,6 +114,12 @@ void CatVar_String(CatVar& var) {
 		var.SetValue(std::string(buf));
 	}
 
+	if (ImGui::IsItemHovered() && var.desc_long.size()) {
+		ImGui::BeginTooltip();
+			ImGui::Text("%s", var.desc_long.c_str());
+		ImGui::EndTooltip();
+	}
+
 	ImGui::PopID();
 }
 
@@ -114,7 +128,7 @@ void CatVar_Key(CatVar& var) {
 	if (!keys_array) {
 		keys_array = new const char*[ButtonCode_t::BUTTON_CODE_COUNT];
 		for (int i = 0; i < ButtonCode_t::BUTTON_CODE_COUNT; i++) {
-			keys_array[i] = g_IInputSystem->ButtonCodeToString((ButtonCode_t)i);
+			keys_array[i] = g_IInputSystem->ButtonCodeToString(ButtonCode_t(i));
 		}
 	}
 
@@ -130,7 +144,7 @@ void CatVar_Key(CatVar& var) {
 	}
 	if (ImGui::IsItemHovered() && var.desc_long.size()) {
 		ImGui::BeginTooltip();
-			ImGui::Text(var.desc_long.c_str());
+			ImGui::Text("%s", var.desc_long.c_str());
 		ImGui::EndTooltip();
 	}
 
@@ -150,7 +164,7 @@ void CatVar_Switch(CatVar& var) {
 	}
 	if (ImGui::IsItemHovered() && var.desc_long.size()) {
 		ImGui::BeginTooltip();
-			ImGui::Text(var.desc_long.c_str());
+			ImGui::Text("%s", var.desc_long.c_str());
 		ImGui::EndTooltip();
 	}
 
@@ -255,16 +269,25 @@ void Render() {
 		ImGuiStyle * style = &ImGui::GetStyle();
 
 		style->WindowPadding = ImVec2(15, 15);
-		style->WindowRounding = 5.0f;
+		//style->WindowRounding = 5.0f;
+		style->WindowRounding = 1.0f;
+
 		style->FramePadding = ImVec2(5, 5);
-		style->FrameRounding = 4.0f;
+		//style->FrameRounding = 4.0f;
+		style->FrameRounding = 1.0f;
+
 		style->ItemSpacing = ImVec2(12, 8);
-		style->ItemInnerSpacing = ImVec2(8, 6);
+		//style->ItemInnerSpacing = ImVec2(8, 6);
+		style->ItemInnerSpacing = ImVec2(6, 6);
 		style->IndentSpacing = 25.0f;
 		style->ScrollbarSize = 15.0f;
-		style->ScrollbarRounding = 9.0f;
+		//style->ScrollbarRounding = 9.0f;
+		style->ScrollbarRounding = 1.0f;
+
 		style->GrabMinSize = 5.0f;
-		style->GrabRounding = 3.0f;
+		//style->GrabRounding = 3.0f;
+		style->GrabRounding = 1.0f;
+
 
 		style->Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.83f, 1.00f);
 		style->Colors[ImGuiCol_TextDisabled] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
