@@ -10,7 +10,6 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
-README.md
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -241,3 +240,14 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+
+## Ignore .o and .d files (objects and dependencies)
+*.o
+*.d
+
+# Don't ignore binary resource files
+!res/bin/*
+
+## Ignore Data Folder symlink
+Data Folder
