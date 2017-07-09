@@ -144,6 +144,9 @@ enum k_EItemType {
 
 	ITEM_HL_BATTERY,
 
+	ITEM_SPELL,
+	ITEM_SPELL_RARE,
+
 	ITEM_COUNT
 };
 

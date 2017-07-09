@@ -26,6 +26,7 @@ CatVar item_health_packs(CV_SWITCH, "esp_item_health", "1", "Health packs", "Sho
 CatVar item_powerups(CV_SWITCH, "esp_item_powerups", "1", "Powerups", "Show powerups");
 CatVar item_money(CV_SWITCH, "esp_money", "1", "MvM money", "Show MvM money");
 CatVar item_money_red(CV_SWITCH, "esp_money_red", "1", "Red MvM money", "Show red MvM money");
+CatVar item_spellbooks(CV_SWITCH, "esp_spellbooks", "1", "Spellbooks", "Spell Books");
 CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID", "Used with Entity ESP. Shows entityID");
 CatVar tank(CV_SWITCH, "esp_show_tank", "1", "Show tank", "Show tank");
 CatVar box_esp(CV_SWITCH, "esp_box", "1", "Box", "Draw 2D box with healthbar. fancy.");
@@ -367,6 +368,12 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 		} else if (item_weapon_spawners && ent->m_ItemType >= ITEM_TF2C_W_FIRST && ent->m_ItemType <= ITEM_TF2C_W_LAST) {
 			AddEntityString(ent, format(tf2c_weapon_names[ent->m_ItemType - ITEM_TF2C_W_FIRST], " SPAWNER"));
 			if (CE_BYTE(ent, netvar.bRespawning)) AddEntityString(ent, "-- RESPAWNING --");
+		} else if (item_spellbooks && (ent->m_ItemType == ITEM_SPELL || ent->m_ItemType == ITEM_SPELL_RARE)) {
+			if (ent->m_ItemType == ITEM_SPELL) {
+				AddEntityString(ent, "Spell", colors::green);
+			} else {
+				AddEntityString(ent, "Rare Spell", colors::FromRGBA8(139, 31, 221, 255));
+			}
 		}
 	} else if (ent->m_Type == ENTITY_BUILDING && buildings) {
 		if (!ent->m_bEnemy && !teammates) return;
