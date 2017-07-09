@@ -255,7 +255,7 @@ inline void CondBitSet(condition_data_s& data) {
 template<condition cond>
 inline bool HasCondition(CachedEntity* ent) {
 	IF_GAME (!IsTF()) return false;
-	IF_GAME (IsTF2()) {
+	IF_GAME (IsTF2() && cond < condition(96)) {
 		if (CondBitCheck<cond>(CE_VAR(ent, netvar._condition_bits, condition_data_s))) return true;
 	}
 	return CondBitCheck<cond>(CE_VAR(ent, netvar.iCond, condition_data_s));
