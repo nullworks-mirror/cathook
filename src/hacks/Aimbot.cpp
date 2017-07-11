@@ -897,7 +897,7 @@ void Reset() {
 }
 
 // Function called when we need to draw to screen
-static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring", "Draws a ring to represent your current aimbot fov\nDoesnt change according to zoom fov\nWIP");
+static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring", "Draws a ring to represent your current aimbot fov");
 void DrawText() {
 	// Dont draw to screen when aimbot is disabled
 	if (!enabled) return;
@@ -913,13 +913,13 @@ void DrawText() {
 				// Grab the screen resolution and save to some vars
 				int width, height;
 				g_IEngine->GetScreenSize(width, height);
+				
 				// Some math to find radius of the fov circle
-				// float radius = tanf(DEG2RAD((float)fov) / 2) / tanf(DEG2RAD(draw::fov) / 2) * width;
-
 				float mon_fov = (float(width) / float(height) / (4.0f / 3.0f));
 				float fov_real = RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
 
 				float radius = tan(DEG2RAD(float(fov)) / 2) / tan(DEG2RAD(fov_real) / 2) * (width);
+				
 				// Draw a circle with our newfound circle
 				float px = 0;
 				float py = 0;

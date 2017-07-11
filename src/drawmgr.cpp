@@ -79,6 +79,9 @@ void DrawCheatVisuals() {
 				PROF_SECTION(PT_spyalert);
 				SAFE_CALL(hacks::tf::spyalert::Draw());
 			}
+#ifdef IPC_ENABLED
+			IF_GAME(IsTF()) SAFE_CALL(hacks::shared::followbot::Draw());
+#endif
 			{
 				PROF_SECTION(DRAW_esp);
 				hacks::shared::esp::Draw();
