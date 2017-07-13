@@ -52,6 +52,7 @@ static CatVar priority_mode(priority_mode_enum, "aimbot_prioritymode", "0", "Pri
 		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
 		"FOV, DISTANCE, HEALTH are self-explainable. HEALTH picks the weakest enemy");
 static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits until it has enough charge to kill");
+static CatVar wait_for_charge_bypass(CV_SWITCH, "aimbot_charge_if_full", "1", "Sniper rifle will shoot at 100% charge even if the shot will not kill", "Aimbot waits until 100% charge");
 static CatVar ignore_vaccinator(CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1", "Ignore cloaked", "Don't aim at invisible enemies");
@@ -114,6 +115,7 @@ bool silent_huntsman { false };
 // for current frame, to avoid performing them again
 AimbotCalculatedData_s calculated_data_array[2048] {};
 
+// The main "loop" of the aimbot. 
 // The main "loop" of the aimbot. 
 void CreateMove() {
 	
@@ -282,7 +284,7 @@ CachedEntity* RetrieveBestTarget(bool aimkey_state) {
 
 	// We dont have a target currently so we must find one, reset statuses
 	foundTarget = false;
-	target_last = -1;
+	target_last = nullptr;
 
 	// Book keeping vars
 	float target_highest_score, scr;
@@ -350,7 +352,10 @@ bool IsTargetStateGood(CachedEntity* entity) {
 				float bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
 				if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f) bdmg = 50.0f;
 				if ((bdmg * 3) < (HasDarwins(entity) ? (entity->m_iHealth * 1.15) : entity->m_iHealth)) {
-					return false;
+					// If player has charge bypassing fire at 100% charge even if wont kill
+					if (!wait_for_charge_bypass ||  (wait_for_charge_bypass && g_pLocalPlayer->flZoomBegin != 1.0f)) {
+						return false;
+					}
 				}
 			}
 			// If settings allow, ignore taunting players
@@ -887,7 +892,7 @@ CachedEntity* CurrentTarget() {
 	
 // Used for when you join and leave maps to reset aimbot vars
 void Reset() {
-	target_last = -1;
+	target_last = nullptr;
 	projectile_mode = false;
 }
 
@@ -953,6 +958,7 @@ void DrawText() {
 
 }}}
  
+
 
 
 
