@@ -46,7 +46,7 @@ static CatVar aimkey_mode(aimkey_modes_enum, "aimbot_aimkey_mode", "1", "Aimkey 
 static CatVar autoshoot(CV_SWITCH, "aimbot_autoshoot", "1", "Autoshoot", "Shoot automatically when the target is locked, isn't compatible with 'Enable when attacking'");
 static CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "STATIC" });
 static CatVar hitbox_mode(hitbox_mode_enum, "aimbot_hitboxmode", "0", "Hitbox Mode", "Defines hitbox selection mode");
-static CatVar fov(CV_FLOAT, "aimbot_fov", "0", "Aimbot FOV", "FOV range for aimbot to lock targets. \"Smart FOV\" coming eventually.", 360.0f);
+static CatVar fov(CV_FLOAT, "aimbot_fov", "0", "Aimbot FOV", "FOV range for aimbot to lock targets. \"Smart FOV\" coming eventually.", 180.0f);
 static CatEnum priority_mode_enum({ "SMART", "FOV", "DISTANCE", "HEALTH" });
 static CatVar priority_mode(priority_mode_enum, "aimbot_prioritymode", "0", "Priority mode", "Priority mode.\n"
 		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
@@ -60,7 +60,6 @@ static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim S
 static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
 static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
 static CatVar teammates(CV_SWITCH, "aimbot_teammates", "0", "Aim at teammates", "Aim at your own team. Useful for HL2DM");
-static CatVar teammates_helpful(CV_SWITCH, "aimbot_teammates_helpful", "0", "Use helpful weapons on teammates", "Allows weapons like the crusaders and the rescue ranger to be used on friendly objects");
 static CatVar silent(CV_SWITCH, "aimbot_silent", "1", "Silent", "Your screen doesn't get snapped to the point where aimbot aims at");
 static CatVar target_lock(CV_SWITCH, "aimbot_target_lock", "0", "Target Lock", "Keeps your previously chosen target untill target check fails");
 static CatEnum hitbox_enum({
@@ -298,7 +297,7 @@ CachedEntity* RetrieveBestTarget(bool aimkey_state) {
 
 	// We dont have a target currently so we must find one, reset statuses
 	foundTarget = false;
-	target_last = -1;
+	target_last = nullptr;
 
 	// Book keeping vars
 	float target_highest_score, scr;
@@ -354,11 +353,8 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		if (entity == LOCAL_E) return false;
 		// Dont aim at dead player
 		if (!entity->m_bAlivePlayer) return false;
-		
-		// Dont aim at teammates as well as check if weapon allows teamates
-		if (!entity->m_bEnemy && !teammates && !(LOCAL_W->m_iClassID == CL_CLASS(CTFCrossbow) && teammates_helpful)) {
-			return false;
-		}
+		// Dont aim at teammates
+		if (!entity->m_bEnemy && !teammates) return false;
 		// Check if player is too far away
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > EffectiveTargetingRange()) return false;
@@ -419,7 +415,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		// Check if building aimbot is enabled
 		if ( !(buildings_other || buildings_sentry) ) return false;
 		// Check if enemy building
-		if (!entity->m_bEnemy && !(LOCAL_W->m_iClassID == CL_CLASS(CTFShotgunBuildingRescue) && teammates_helpful)) return false;
+		if (!entity->m_bEnemy) return false;
 		// Check if building is within range
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > (int)EffectiveTargetingRange()) return false;
@@ -868,13 +864,12 @@ bool GetCanAim(int mode) {
 	
 	// Weapons that should attack continuously
 	bool using_wep_on_list = 
-		LOCAL_W->m_iClassID == CL_CLASS(CTFPistol_Scout) || 
-		LOCAL_W->m_iClassID == CL_CLASS(CTFPistol) || 
-		LOCAL_W->m_iClassID == CL_CLASS(CTFMinigun) ||
-		LOCAL_W->m_iClassID == CL_CLASS(CTFSyringeGun) ||
-		LOCAL_W->m_iClassID == CL_CLASS(CTFSMG) ||
-		LOCAL_W->m_iClassID == CL_CLASS(CTFRevolver) ||
-		LOCAL_W->m_iClassID == CL_CLASS(CTFFlameThrower);
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFPistol_Scout) || 
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSyringeGun) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFSMG) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFRevolver) ||
+		g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower);
 	
 	switch (mode) {
 	case 1: // The first check when the aimbot checks if it can aim or shoot
@@ -917,7 +912,7 @@ CachedEntity* CurrentTarget() {
 	
 // Used for when you join and leave maps to reset aimbot vars
 void Reset() {
-	target_last = -1;
+	target_last = nullptr;
 	projectile_mode = false;
 }
 

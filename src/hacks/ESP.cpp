@@ -26,6 +26,7 @@ CatVar item_health_packs(CV_SWITCH, "esp_item_health", "1", "Health packs", "Sho
 CatVar item_powerups(CV_SWITCH, "esp_item_powerups", "1", "Powerups", "Show powerups");
 CatVar item_money(CV_SWITCH, "esp_money", "1", "MvM money", "Show MvM money");
 CatVar item_money_red(CV_SWITCH, "esp_money_red", "1", "Red MvM money", "Show red MvM money");
+CatVar item_spellbooks(CV_SWITCH, "esp_spellbooks", "1", "Spellbooks", "Spell Books");
 CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID", "Used with Entity ESP. Shows entityID");
 CatVar tank(CV_SWITCH, "esp_show_tank", "1", "Show tank", "Show tank");
 CatVar box_esp(CV_SWITCH, "esp_box", "1", "Box", "Draw 2D box with healthbar. fancy.");
@@ -367,6 +368,12 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 		} else if (item_weapon_spawners && ent->m_ItemType >= ITEM_TF2C_W_FIRST && ent->m_ItemType <= ITEM_TF2C_W_LAST) {
 			AddEntityString(ent, format(tf2c_weapon_names[ent->m_ItemType - ITEM_TF2C_W_FIRST], " SPAWNER"));
 			if (CE_BYTE(ent, netvar.bRespawning)) AddEntityString(ent, "-- RESPAWNING --");
+		} else if (item_spellbooks && (ent->m_ItemType == ITEM_SPELL || ent->m_ItemType == ITEM_SPELL_RARE)) {
+			if (ent->m_ItemType == ITEM_SPELL) {
+				AddEntityString(ent, "Spell", colors::green);
+			} else {
+				AddEntityString(ent, "Rare Spell", colors::FromRGBA8(139, 31, 221, 255));
+			}
 		}
 	} else if (ent->m_Type == ENTITY_BUILDING && buildings) {
 		if (!ent->m_bEnemy && !teammates) return;
@@ -591,7 +598,8 @@ std::unordered_map<studiohdr_t*, bonelist_s> bonelist_map {};
 CatEnum emoji_esp({ "None", "Joy", "Thinking" });
 CatVar joy_esp(CV_SWITCH, "esp_emoji", "0", "Emoji ESP");
 CatVar joy_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
-CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "0", "Emoji ESP Scaling");
+CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1", "Emoji ESP Scaling");
+CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size", "Minimum size for an emoji when you use auto scaling");
 textures::AtlasTexture joy_texture(64 * 4, textures::atlas_height - 64 * 4, 64, 64);
 textures::AtlasTexture thinking_texture(64 * 5, textures::atlas_height - 64 * 4, 64, 64);
 
@@ -611,6 +619,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 
 	ESPData& ent_data = data[ent->m_IDX];
 	fg = ent_data.color;
+	if (!fg) fg = ent_data.color = colors::EntityF(ent);
 
 	if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin, origin_screen)) return;
 
@@ -641,30 +650,36 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 		}
 	}
 
+	if (ent->m_Type == ENTITY_PLAYER) {
+		if (joy_esp) {
+			auto hb = ent->hitboxes.GetHitbox(0);
+			Vector hbm, hbx;
+			if (draw::WorldToScreen(hb->min, hbm) && draw::WorldToScreen(hb->max, hbx)) {
+				Vector head_scr;
+				if (draw::WorldToScreen(hb->center, head_scr)) {
+					float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y) : float(joy_esp_size);
+					if (emoji_esp_scaling && (size < float(emoji_min_size))) {
+						size = float(emoji_min_size);
+					}
+					textures::AtlasTexture* tx = nullptr;
+					if (int(joy_esp) == 1) tx = &joy_texture;
+					if (int(joy_esp) == 2) tx = &thinking_texture;
+					if (tx)
+						tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2, size, size);
+				}
+			}
+		}
+	}
+
 	if (box_esp) {
 		switch (ent->m_Type) {
 		case ENTITY_PLAYER: {
-			cloak = IsPlayerInvisible(ent);
+			//cloak = IsPlayerInvisible(ent);
 			//if (!ent->m_bEnemy && !teammates && playerlist::IsDefault(ent)) break;
 			//if (!ent->m_bAlivePlayer) break;
 			if (vischeck && !ent->IsVisible()) transparent = true;
 			if (!fg) fg = colors::EntityF(ent);
 			if (transparent) fg = colors::Transparent(fg);
-			if (joy_esp) {
-				auto hb = ent->hitboxes.GetHitbox(0);
-				Vector hbm, hbx;
-				if (draw::WorldToScreen(hb->min, hbm) && draw::WorldToScreen(hb->max, hbx)) {
-					Vector head_scr;
-					if (draw::WorldToScreen(hb->center, head_scr)) {
-						float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y) : float(joy_esp_size);
-						textures::AtlasTexture* tx = nullptr;
-						if (int(joy_esp) == 1) tx = &joy_texture;
-						if (int(joy_esp) == 2) tx = &thinking_texture;
-						if (tx)
-							tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2, size, size);
-					}
-				}
-			}
 			DrawBox(ent, fg, static_cast<bool>(box_healthbar), CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
 		break;
 		}

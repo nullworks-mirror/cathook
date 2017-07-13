@@ -1,5 +1,24 @@
 # Cathook Multihack
-![banner](http://i.imgur.com/GkBmJFT.png)
+![banner](https://raw.githubusercontent.com/nullifiedcat/cathook/master/banner.png)
+
+cathook is a multihack for Team Fortress 2 for Linux. cathook includes some joke features like
+
+* Always/Never spycrab
+* Ignore Hoovy
+* 100% Casual/Comp coin flip hack
+* Encrypted chat
+* Emoji ESP
+* Fidget Spinner crosshair
+
+and a lot of useful features, including
+
+* Anti Backstab with option to say "No" voice command when spy tries to backstab you
+* Heal Arrows hack (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
+* Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
+* Follow Bots
+* Working crit hack
+
+[FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features)
 
 # Discord Server
 [Official Discord Server](https://discord.gg/kvNVNSX)
@@ -14,13 +33,13 @@ sudo apt update && sudo apt install build-essential software-properties-common -
 
 Arch dependencies installation::
 ```bash
-sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 lib32-glew1.10 --noconfirm && yes | sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
+sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 lib32-glew1.10 rsync --noconfirm && yes | sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
 ```
 
 
 Cathook installation script:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && make -j4 && bash update-data
+git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && bash build-tf2 && bash update-data
 ```
 
 **Errors while installing?**

@@ -29,13 +29,17 @@ void CatVar_Integer(CatVar& var) {
 	ImGui::PushID(var.id);
 
 	int value = var;
-	ImGui::PushItemWidth(75.0f);
-	if (ImGui::SliderInt(label, &value, minval, maxval)) {
+	ImGui::PushItemWidth(120.0f);
+	int step = var.restricted ? (var.max - var.min) / 50 : 1;
+	if (ImGui::InputInt(label, &value, step, step * 20)) {
 		var = value;
 	}
+	/*if (ImGui::SliderInt(label, &value, minval, maxval)) {
+		var = value;
+	}*/
 	if (ImGui::IsItemHovered() && var.desc_long.size()) {
 		ImGui::BeginTooltip();
-			ImGui::Text(var.desc_long.c_str());
+			ImGui::Text("%s", var.desc_long.c_str());
 		ImGui::EndTooltip();
 	}
 
@@ -56,13 +60,17 @@ void CatVar_Float(CatVar& var) {
 	ImGui::PushID(var.id);
 
 	float value = var;
-	ImGui::PushItemWidth(75.0f);
-	if (ImGui::SliderFloat(label, &value, minval, maxval)) {
+	ImGui::PushItemWidth(120.0f);
+	float step = var.restricted ? (var.max - var.min) / 50 : 1;
+	if (ImGui::InputFloat(label, &value, step, step * 20)) {
 		var = value;
 	}
+	/*if (ImGui::SliderFloat(label, &value, minval, maxval)) {
+		var = value;
+	}*/
 	if (ImGui::IsItemHovered() && var.desc_long.size()) {
 		ImGui::BeginTooltip();
-			ImGui::Text(var.desc_long.c_str());
+			ImGui::Text("%s", var.desc_long.c_str());
 		ImGui::EndTooltip();
 	}
 
@@ -106,6 +114,12 @@ void CatVar_String(CatVar& var) {
 		var.SetValue(std::string(buf));
 	}
 
+	if (ImGui::IsItemHovered() && var.desc_long.size()) {
+		ImGui::BeginTooltip();
+			ImGui::Text("%s", var.desc_long.c_str());
+		ImGui::EndTooltip();
+	}
+
 	ImGui::PopID();
 }
 
@@ -114,7 +128,7 @@ void CatVar_Key(CatVar& var) {
 	if (!keys_array) {
 		keys_array = new const char*[ButtonCode_t::BUTTON_CODE_COUNT];
 		for (int i = 0; i < ButtonCode_t::BUTTON_CODE_COUNT; i++) {
-			keys_array[i] = g_IInputSystem->ButtonCodeToString((ButtonCode_t)i);
+			keys_array[i] = g_IInputSystem->ButtonCodeToString(ButtonCode_t(i));
 		}
 	}
 
@@ -130,7 +144,7 @@ void CatVar_Key(CatVar& var) {
 	}
 	if (ImGui::IsItemHovered() && var.desc_long.size()) {
 		ImGui::BeginTooltip();
-			ImGui::Text(var.desc_long.c_str());
+			ImGui::Text("%s", var.desc_long.c_str());
 		ImGui::EndTooltip();
 	}
 
@@ -150,7 +164,7 @@ void CatVar_Switch(CatVar& var) {
 	}
 	if (ImGui::IsItemHovered() && var.desc_long.size()) {
 		ImGui::BeginTooltip();
-			ImGui::Text(var.desc_long.c_str());
+			ImGui::Text("%s", var.desc_long.c_str());
 		ImGui::EndTooltip();
 	}
 
@@ -252,6 +266,72 @@ void imgui_easy_theming(ImVec3 color_for_text, ImVec3 color_for_head, ImVec3 col
 void Render() {
 	static bool styles_setup = false;
 	if (!styles_setup) {
+		ImGuiStyle * style = &ImGui::GetStyle();
+
+		style->WindowPadding = ImVec2(15, 15);
+		//style->WindowRounding = 5.0f;
+		style->WindowRounding = 1.0f;
+
+		style->FramePadding = ImVec2(5, 5);
+		//style->FrameRounding = 4.0f;
+		style->FrameRounding = 1.0f;
+
+		style->ItemSpacing = ImVec2(12, 8);
+		//style->ItemInnerSpacing = ImVec2(8, 6);
+		style->ItemInnerSpacing = ImVec2(6, 6);
+		style->IndentSpacing = 25.0f;
+		style->ScrollbarSize = 15.0f;
+		//style->ScrollbarRounding = 9.0f;
+		style->ScrollbarRounding = 1.0f;
+
+		style->GrabMinSize = 5.0f;
+		//style->GrabRounding = 3.0f;
+		style->GrabRounding = 1.0f;
+
+
+		style->Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.83f, 1.00f);
+		style->Colors[ImGuiCol_TextDisabled] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+		style->Colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+		style->Colors[ImGuiCol_ChildWindowBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
+		style->Colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
+		style->Colors[ImGuiCol_Border] = ImVec4(0.80f, 0.80f, 0.83f, 0.88f);
+		style->Colors[ImGuiCol_BorderShadow] = ImVec4(0.92f, 0.91f, 0.88f, 0.00f);
+		style->Colors[ImGuiCol_FrameBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+		style->Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+		style->Colors[ImGuiCol_FrameBgActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+		style->Colors[ImGuiCol_TitleBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+		style->Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(1.00f, 0.98f, 0.95f, 0.75f);
+		style->Colors[ImGuiCol_TitleBgActive] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
+		style->Colors[ImGuiCol_MenuBarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+		style->Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+		style->Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+		style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+		style->Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+		style->Colors[ImGuiCol_ComboBg] = ImVec4(0.19f, 0.18f, 0.21f, 1.00f);
+		style->Colors[ImGuiCol_CheckMark] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+		style->Colors[ImGuiCol_SliderGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+		style->Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+		style->Colors[ImGuiCol_Button] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+		style->Colors[ImGuiCol_ButtonHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+		style->Colors[ImGuiCol_ButtonActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+		style->Colors[ImGuiCol_Header] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+		style->Colors[ImGuiCol_HeaderHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+		style->Colors[ImGuiCol_HeaderActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+		style->Colors[ImGuiCol_Column] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+		style->Colors[ImGuiCol_ColumnHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+		style->Colors[ImGuiCol_ColumnActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+		style->Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+		style->Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+		style->Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+		style->Colors[ImGuiCol_CloseButton] = ImVec4(0.40f, 0.39f, 0.38f, 0.16f);
+		style->Colors[ImGuiCol_CloseButtonHovered] = ImVec4(0.40f, 0.39f, 0.38f, 0.39f);
+		style->Colors[ImGuiCol_CloseButtonActive] = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
+		style->Colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+		style->Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+		style->Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+		style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+		style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
+		style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
 		styles_setup = true;
 	}
 	if (!gui_visible) {
