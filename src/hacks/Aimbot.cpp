@@ -282,7 +282,7 @@ CachedEntity* RetrieveBestTarget(bool aimkey_state) {
 
 	// We dont have a target currently so we must find one, reset statuses
 	foundTarget = false;
-	target_last = -1;
+	target_last = nullptr;
 
 	// Book keeping vars
 	float target_highest_score, scr;
@@ -887,7 +887,7 @@ CachedEntity* CurrentTarget() {
 	
 // Used for when you join and leave maps to reset aimbot vars
 void Reset() {
-	target_last = -1;
+	target_last = nullptr;
 	projectile_mode = false;
 }
 
