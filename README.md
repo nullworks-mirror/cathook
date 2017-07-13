@@ -33,7 +33,7 @@ sudo apt update && sudo apt install build-essential software-properties-common -
 
 Arch dependencies installation::
 ```bash
-sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 lib32-glew1.10 --noconfirm && yes | sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
+sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 lib32-glew1.10 rsync --noconfirm && yes | sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
 ```
 
 

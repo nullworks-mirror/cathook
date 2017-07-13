@@ -356,7 +356,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		static int fakelag_queue = 0;
 		if (fakelag_amount) {
-			if (fakelag_queue == int(fakelag_amount)) {
+			if (fakelag_queue == int(fakelag_amount) || (g_pUserCmd->buttons & IN_ATTACK)) {
 				*bSendPackets = true;
 			} else if (fakelag_queue < int(fakelag_amount)) {
 				*bSendPackets = false;

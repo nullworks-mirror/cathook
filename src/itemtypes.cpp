@@ -61,6 +61,10 @@ ItemManager::ItemManager() : mapper() {
 	RegisterModelMapping("models/items/healthkit.mdl", ITEM_HEALTH_MEDIUM);
 	//RegisterModelMapping("models/pickups/pickup_powerup_reflect.mdl", ITEM_POWERUP_REFLECT);
 
+	// Spellbooks
+	RegisterModelMapping("models/props_halloween/hwn_spellbook_upright.mdl", ITEM_SPELL);
+	RegisterModelMapping("models/props_halloween/hwn_spellbook_upright_major.mdl", ITEM_SPELL_RARE);
+
 	RegisterSpecialMapping([](CachedEntity* ent) -> bool {
 		return ent->m_iClassID == CL_CLASS(CTFAmmoPack);
 	}, ITEM_AMMO_MEDIUM);
