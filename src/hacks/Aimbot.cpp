@@ -349,7 +349,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		IF_GAME (IsTF()) {
 			// If settings allow waiting for charge, and current charge cant kill target, dont aim
 			if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle) {
-				if (!wait_for_charge_bypass || (wait_for_charge_bypass && g_pLocalPlayer->flZoomBegin >= 1.0f)) {
+				if (!wait_for_charge_bypass || (wait_for_charge_bypass && g_pLocalPlayer->flZoomBegin <= 1.0f)) {
 					float bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
 					if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f) bdmg = 50.0f;
 					if ((bdmg * 3) < (HasDarwins(entity) ? (entity->m_iHealth * 1.15) : entity->m_iHealth)) {
