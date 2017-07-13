@@ -429,6 +429,7 @@
 					"removecond_stun",
 					"instant_decloak",
 					"instant_rezoom",
+					"infinite_healthpacks",
 					"lagexploit_mini"
 				]
 			},
