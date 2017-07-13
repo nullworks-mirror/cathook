@@ -81,7 +81,7 @@ void CreateMove() {
 	if (g_pLocalPlayer->clazz != tf_demoman) return;
 	
 	// Check for sticky jumper, which is item 265, if true, return
-	if (HasWeapon(LOCAL_E, 265));
+	if (HasWeapon(LOCAL_E, 265)) return;
 		
 	// Clear the arrays
 	bombs.clear();

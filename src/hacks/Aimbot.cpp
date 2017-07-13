@@ -55,6 +55,7 @@ static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper 
 static CatVar ignore_vaccinator(CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1", "Ignore cloaked", "Don't aim at invisible enemies");
+static CatVar ignore_deadringer(CV_SWITCH, "aimbot_ignore_deadringer", "1", "Ignore deadringer", "Don't aim at deadringed enemies");
 static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim Sentry", "Should aimbot aim at sentryguns?");
 static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
 static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
@@ -361,8 +362,18 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			if (ignore_taunting && HasCondition<TFCond_Taunting>(entity)) return false;
 			// Dont target invulnerable players, ex: uber, bonk
 			if (IsPlayerInvulnerable(entity)) return false;
-			// If settings allow, dont target cloaked players
-			if (ignore_cloak && IsPlayerInvisible(entity)) return false;
+			// Checks for cloaked/deadringed players
+			if (ignore_cloak || ignore_deadringer) {
+				if (IsPlayerInvisible(entity)) {
+					// Determine whether cloaked player is using deadringer and checks user settings accordingly
+					// Item id for deadringer is 59 as of time of creation
+					if (HasWeapon(entity, 59)) {
+						if (ignore_deadringer) return false;
+					} else {
+						if (ignore_cloak) return false;
+					}
+				}
+			}
 			// If settings allow, dont target vaccinated players
 			if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == CL_CLASS(CTFCompoundBow))
 				if (ignore_vaccinator && HasCondition<TFCond_UberBulletResist>(entity)) return false;
