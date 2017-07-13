@@ -94,6 +94,8 @@ static CatVar huntsman_full_auto(CV_SWITCH, "aimbot_full_auto_huntsman", "1", "A
 // Debug vars
 static CatVar aimbot_debug(CV_SWITCH, "aimbot_debug", "0", "Aimbot Debug", "Display simple debug info for aimbot");
 static CatVar engine_projpred(CV_SWITCH, "debug_aimbot_engine_pp", "0", "Engine ProjPred");
+// Followbot vars
+static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 /* TODO IMPLEMENT
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
@@ -122,10 +124,6 @@ void CreateMove() {
 	// Check if aimbot is enabled
 	if (!enabled) return;
 	
-	// Save should aim info
-	bool shouldAim = ShouldAim();
-	bool aimkeyStatus = UpdateAimkey();
-	
 	// Refresh projectile info
 	int huntsman_ticks = 0;
 	projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
@@ -142,23 +140,27 @@ void CreateMove() {
 		huntsman_ticks = max(0, huntsman_ticks - 1);
 	}
 	
+	// Save should aim info
+	// We do this as we need to pass whether the aimkey allows aiming to both the find target and aiming system. If we just call the func than toggle aimkey would break so we save it to a var to use it twice
+	bool aimkey_status = UpdateAimkey();
+	
 	// Refresh our best target
-	CachedEntity* target = RetrieveBestTarget(aimkeyStatus);
+	CachedEntity* target = RetrieveBestTarget(aimkey_status);
 	
 	// Check target for dormancy and if there even is a target at all
 	if (CE_GOOD(target) && foundTarget) {
+		
 		// Set target esp color to pink
 		hacks::shared::esp::SetEntityColor(target, colors::pink);
 		
 		// Check if player can aim and if aimkey allows aiming
 		// We also preform a CanShoot check here per the old canshoot method
-		if (shouldAim && aimkeyStatus && GetCanAim(1)) {
+		if (ShouldAim() && aimkey_status && GetCanAim(1)) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
 
-				// If settings allow, limit aiming to only when can shoot
-				// We do this here only if wip is true as we do the check elsewhere for legacy
+				// We check if we need to do a canshoot check as we might want to shoot but not aim, so do that check here
 				if (GetCanAim(2)) {
 					// Check the flNextPrimaryAttack netvar to tell when to aim
 					if (CanShoot()) Aim(target);
@@ -252,6 +254,7 @@ bool ShouldAim() {
 			return false;
 		};
 	}
+	
 	IF_GAME (IsTF()) {
 		// Check if player is zooming
 		if (g_pLocalPlayer->bZoomed) {
@@ -259,8 +262,19 @@ bool ShouldAim() {
 				if (!CanHeadshot()) return false;
 			}
 		}
-	}
-	IF_GAME (IsTF()) {
+		
+		// Minigun spun up handler
+		if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun)) {
+			int weapon_state = CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
+			// If user setting for autospin isnt true, then we check if minigun is already zoomed 
+			if ((weapon_state == MinigunState_t::AC_STATE_IDLE || weapon_state == MinigunState_t::AC_STATE_STARTFIRING) && !auto_spin_up) {
+				return false;
+			}
+			if (!(g_pUserCmd->buttons & (IN_ATTACK2 | IN_ATTACK))) {
+				return false;
+			}
+		}
+
 		// Check if crithack allows attacking
 		if (!AllowAttacking())
 			return false;
