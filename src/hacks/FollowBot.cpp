@@ -13,6 +13,19 @@
 
 namespace hacks { namespace shared { namespace followbot {
 	
+	
+	
+	
+	
+/* Big Followbot TODO list
+1. Fix crash when setting followbot_idx var and remove the fix var in its place
+2. Test with followbots to ensure that vector followbot and crumb followbot work as intended
+3. Clean the finished code and push to main from fork
+*/
+	
+	
+	
+	
 // User settings
 CatVar bot(CV_SWITCH, "fb_bot", "0", "Master Followbot Switch", "Set to 1 in followbots' configs");
 CatVar follow_distance(CV_FLOAT, "fb_follow_distance", "175", "Followbot Follow Distance", "How close the bots should stay to the target");
@@ -50,7 +63,7 @@ bool   destination_reached { false };
 
 // Vars for breadcrumb followbot
 // An array for storing the breadcrumbs
-Vector breadcrumbs [55];
+static Vector breadcrumbs [55];
 // Array Bookkeeping vars
 int crumbBottom = 0;
 int crumbTop = 0;
@@ -112,8 +125,8 @@ void DoWalking() {
 	// Get our best target, preferably from a steamid
 
 	//following_idx = 0;
-	CachedEntity* best_target = 0;
-	CachedEntity* target_priority = 0;
+	CachedEntity* best_target = nullptr;
+	CachedEntity* target_priority = nullptr;
 
 	// Get ent from steamid
 	for (int i = 1; i < HIGHEST_ENTITY; i++) {
@@ -165,7 +178,7 @@ void DoWalking() {
 			
 			float target_highest_score = -256;
 			CachedEntity* ent;
-			target_last = 0;
+			target_last = nullptr;
 			crumbStopped = true;
 			
 			for (int i = 0; i < HIGHEST_ENTITY; i++) {
@@ -193,6 +206,9 @@ void DoWalking() {
 	}
 
 	CachedEntity* found_entity = best_target;
+	// TODO, setting following_idx causes a crash for an unknown reason, probs to do with autoheal. 
+	// I created a different var to take its place and prevent the crash but i need to fix the crash with the externed var.
+	// For now this works and it will stay like this untill i fix it
 	int following_idx2 = 0;
 	if (CE_GOOD(found_entity)) {
 		following_idx2 = found_entity->m_IDX;
@@ -206,8 +222,10 @@ void DoWalking() {
 		
 			
 	
+	
+	
 	// Slot Changer/Mimicer
-	logging::Info("Slot changer");
+	
 	// Set a static var for last slot check
 	static float last_slot_check = 0.0f;
 			
@@ -252,9 +270,12 @@ void DoWalking() {
 	}
 			
 	
-	logging::Info("Start follow");
+	
+	
+	
 	// Main followbot code
 	if (allow_moving) {
+		
 		// Switch to different types of following mechanisms depending on the type we need to go to
 		switch (current_follow_type) {
 		case EFollowType::VECTOR: // If were using a vector to follow, we just go directly to it
@@ -274,7 +295,7 @@ void DoWalking() {
 		case EFollowType::ENTITY: // If were using a player to follow, we use the breadcrumb followbot
 
 			if (CE_GOOD(found_entity)) {
-				//If the bot is lost but it finds the player again, start the followbot again.
+				// If the bot is lost but it finds the player again, start the followbot again.
 				if (crumbStopped) {
 					crumbForceMove = true;
 					CrumbReset();
@@ -311,7 +332,7 @@ void DoWalking() {
 					// Check 15 times for close crumbs to prune, this allows simple miss steps to be smoothed out as well as make room for new crumbs
 					for (int i = 0; i < 15; i++) {
 
-						//When one is close or too high, just bump the array and reset the stuck timer
+						// When one is close or too high, just bump the array and reset the stuck timer
 						if (g_pLocalPlayer->v_Origin.DistTo(breadcrumbs[crumbBottom]) < 60.0F && crumbArrayLength > 1) {
 							CrumbBottomAdd();
 
@@ -563,7 +584,7 @@ void WalkTo(const Vector& vector) {
 		// Set idle time if we havent already
 		if (!idle_time) idle_time = g_GlobalVars->curtime;
 		// If the vector is too high for the local player to reach, 
-		if (vector.z - LOCAL_E->m_vecOrigin.z > 30.0f) {
+		if (vector.z - LOCAL_E->m_vecOrigin.z > 15.0f) {
 			// If the time idle is over 2 seconds
 			if (g_GlobalVars->curtime - idle_time > 2.0f) {
 				// If the player isnt zoomed, then jump
@@ -603,7 +624,7 @@ std::pair<float, float> ComputeMove(const Vector& a, const Vector& b) {
 	
 // Crumb Followbot Helper functions
 	
-//A function to reset the crumb followbot
+// A function to reset the crumb followbot
 void CrumbReset() {
 	
     //A check to make sure using the fb tool repeatedly doesnt clear the cache of crumbs
@@ -679,7 +700,14 @@ void Draw() {
 	
 // A Function for when we want to draw out the crumbs in the array onto the screen
 void DrawFollowbot() {
-
+	
+	// Usefull debug info to know
+	AddSideString(format("Array Length: ", crumbArrayLength));
+	AddSideString(format("Top Crumb: ", crumbTop));
+	AddSideString(format("Bottom Crumb: ", crumbBottom));
+	
+	// Disabled as the enum was misbeghaving for an unknown reason
+	
 	/*switch (current_follow_type) {
 	case EFollowType::VECTOR: // If our follow type is a vector, then we just draw a rect on the vector
 			
@@ -738,9 +766,7 @@ void DrawFollowbot() {
 		}
 		break;
 	}*/
-	AddSideString(format("Array Length: ", crumbArrayLength));
-	AddSideString(format("Top Crumb: ", crumbTop));
-	AddSideString(format("Bottom Crumb: ", crumbBottom));
+	
 	// Not using switch due to switch not working
 	if (crumbArrayLength < 2) {
 			
