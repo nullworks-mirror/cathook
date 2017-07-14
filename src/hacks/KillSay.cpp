@@ -82,6 +82,9 @@ void Reload() {
 
 void Init() {
 	g_IEventManager2->AddListener(&getListener(), (const char*)"player_death", false);
+	filename.InstallChangeCallback([](IConVar* var, const char* pszOV, float flOV) {
+		file.TryLoad(std::string(filename.GetString()));
+	});
 }
 
 void Shutdown() {

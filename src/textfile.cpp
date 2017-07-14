@@ -18,6 +18,21 @@
 TextFile::TextFile()
 	: lines {} {}
 
+bool TextFile::TryLoad(std::string name) {
+	if (name.length() == 0) return false;
+	std::string filename = format("cathook/", name);
+	std::ifstream file(filename, std::ios::in);
+	if (!file) {
+		return false;
+	}
+	lines.clear();
+	for (std::string line; std::getline(file, line);) {
+		if (*line.rbegin() == '\r') line.erase(line.length() - 1, 1);
+		lines.push_back(line);
+	}
+	return true;
+}
+
 void TextFile::Load(std::string name) {
 	std::string filename = format("cathook/", name);
 	std::ifstream file(filename, std::ios::in);
@@ -27,6 +42,7 @@ void TextFile::Load(std::string name) {
 	}
 	lines.clear();
 	for (std::string line; std::getline(file, line);) {
+		if (*line.rbegin() == '\r') line.erase(line.length() - 1, 1);
 		lines.push_back(line);
 	}
 }
