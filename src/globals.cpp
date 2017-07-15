@@ -14,7 +14,7 @@ int g_AppID = 0;
 
 void ThirdpersonCallback(IConVar* var, const char* pOldValue, float flOldValue) {
 	if (force_thirdperson.convar_parent && !force_thirdperson) {
-		if (g_pLocalPlayer && g_pLocalPlayer->entity)
+		if (g_pLocalPlayer && CE_GOOD(g_pLocalPlayer->entity))
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 0;
 	}
 }
