@@ -526,10 +526,12 @@ bool CanAutoShoot() {
 		
 		
 		IF_GAME (IsTF2()) {
-			// Check if players current weapon is an ambasador
-			if (IsAmbassador(g_pLocalPlayer->weapon())) {
-				// Check if ambasador can headshot
-				if (!AmbassadorCanHeadshot()) return false;	
+			if (wait_for_charge) {
+				// Check if players current weapon is an ambasador
+				if (IsAmbassador(g_pLocalPlayer->weapon())) {
+					// Check if ambasador can headshot
+					if (!AmbassadorCanHeadshot()) return false;	
+				}
 			}
 		}
 
@@ -551,6 +553,25 @@ bool CanAutoShoot() {
 		// Return false due to setting not allowing autoshoot
 		return false;
 }
+	static CatVar displace(CV_INT, "displace", "4", "Expand 2D Box", "Expand 2D box by N units");	
+Vector SimpleThonkPrediction(CachedEntity* ent, int hb) {
+	if (!ent) return Vector();
+	Vector result;
+	GetHitbox(ent, hb, result);
+	float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
+			g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
+	result -= CE_VECTOR(ent, netvar.vVelocity) * (int)displace;
+	return result;
+}
+
+Vector SimpleDisplacementPrediction(CachedEntity* ent, int hb) {
+	if (!ent) return Vector();
+	Vector result;
+	GetHitbox(ent, hb, result);
+	Vector displacement = RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin;
+	result += displacement;
+	return result;
+}
 	
 // Grab a vector for a specific ent
 const Vector& PredictEntity(CachedEntity* entity) {
@@ -571,7 +592,7 @@ const Vector& PredictEntity(CachedEntity* entity) {
 		} else {
 			// If using extrapolation, then predict a vector
 			if (extrapolate)
-				result = SimpleLatencyPrediction(entity, cd.hitbox);
+				result = SimpleThonkPrediction(entity, cd.hitbox);
 			// else just grab strait from the hitbox
 			else
 				GetHitbox(entity, cd.hitbox, result);
