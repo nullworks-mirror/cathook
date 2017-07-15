@@ -17,7 +17,7 @@ CatVar enabled(CV_SWITCH, "reflect_enabled", "0", "Auto Reflect", "Master AutoRe
 CatVar idle_only(CV_SWITCH, "reflect_only_idle", "0", "Only when not shooting", "Don't AutoReflect if you're holding M1");
 CatVar legit(CV_SWITCH, "reflect_legit", "0", "Legit Reflect", "Only Auto-airblasts projectiles that you can see, doesnt move your crosshair");
 CatVar dodgeball(CV_SWITCH, "reflect_dodgeball", "0", "Dodgeball Mode", "Allows auto-reflect to work in dodgeball servers");
-	
+CatVar blastkey(CV_KEY, "reflect_key", "0", "Reflect Key", "Hold this key to activate auto-airblast");
 CatVar stickies(CV_SWITCH, "reflect_stickybombs", "0", "Reflect stickies", "Reflect Stickybombs");
 // TODO setup proj sorting
 // TODO CatVar big_proj(CV_SWITCH, "reflect_big_projectile", "0", "Reflect big projectiles", "Reflect Rockets");
@@ -29,6 +29,7 @@ CatVar stickies(CV_SWITCH, "reflect_stickybombs", "0", "Reflect stickies", "Refl
 void CreateMove() {
 	// Check if user settings allow Auto Reflect
 	if (!enabled) return;
+	if (blastkey && !blastkey.KeyDown()) return;
 
 	// Check if player is using a flame thrower
 	if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFFlameThrower)) return;

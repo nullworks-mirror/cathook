@@ -13,31 +13,14 @@
 #include "hookedmethods.h"
 #include <link.h>
 
-// FIXME remove this temporary code already!
-float AngleDiff( float destAngle, float srcAngle )
-{
-	float delta;
-
-	delta = fmodf(destAngle - srcAngle, 360.0f);
-	if ( destAngle > srcAngle )
-	{
-		if ( delta >= 180 )
-			delta -= 360;
-	}
-	else
-	{
-		if ( delta <= -180 )
-			delta += 360;
-	}
-	return delta;
-}
-
 #include "../profiler.h"
 
 static CatVar minigun_jump(CV_SWITCH, "minigun_jump", "0", "TF2C minigun jump", "Allows jumping while shooting with minigun");
 
 CatVar jointeam(CV_SWITCH, "fb_autoteam", "1", "Joins player team automatically (NYI)");
 CatVar joinclass(CV_STRING, "fb_autoclass", "spy", "Class that will be picked after joining a team (NYI)");
+
+CatVar nolerp(CV_SWITCH, "nolerp", "0", "NoLerp mode (experimental)");
 
 class CMoveData;
 namespace engine_prediction {
@@ -180,6 +163,17 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	time_replaced = false;
 	curtime_old = g_GlobalVars->curtime;
 
+	static ConVar* sv_client_min_interp_ratio = g_ICvar->FindVar("sv_client_min_interp_ratio");
+	static ConVar* cl_interp = g_ICvar->FindVar("cl_interp");
+	static ConVar* cl_interp_ratio = g_ICvar->FindVar("cl_interp_ratio");
+
+	if (nolerp) {
+		g_pUserCmd->tick_count += 1;
+		if (sv_client_min_interp_ratio->GetInt() != -1)	sv_client_min_interp_ratio->SetValue(-1);
+		if (cl_interp->GetInt() != 0) cl_interp->SetValue(0);
+		if (cl_interp_ratio->GetInt() != 0) cl_interp_ratio->SetValue(0);
+	}
+
 	if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity)) {
 		servertime = (float)CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
 		g_GlobalVars->curtime = servertime;
@@ -188,6 +182,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	if (g_Settings.bInvalid) {
 		entity_cache::Invalidate();
 	}
+
+	// Disabled because this causes EXTREME aimbot inaccuracy
+	//if (!cmd->command_number) return ret;
 //	PROF_BEGIN();
 	{
 		PROF_SECTION(EntityCache);
@@ -203,8 +200,6 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		SAFE_CALL(g_pLocalPlayer->Update());
 	}
 	g_Settings.bInvalid = false;
-	// Disabled because this causes EXTREME aimbot inaccuracy
-	//if (!cmd->command_number) return ret;
 #ifdef IPC_ENABLED
 	static int team_joining_state = 0;
 	static float last_jointeam_try = 0;

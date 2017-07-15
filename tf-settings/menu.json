@@ -113,7 +113,8 @@
 					"reflect_legit",
 					"reflect_only_idle",
 					"reflect_stickybombs",
-					"reflect_dodgeball"					
+					"reflect_dodgeball",
+					"reflect_key"					
 				]
 			},
 			{
