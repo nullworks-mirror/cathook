@@ -36,8 +36,7 @@ void EntityHitboxCache::Update() {
 	SAFE_CALL(InvalidateCache());
 	if (CE_BAD(parent_ref)) return;
 }
-static CatVar add_tick(CV_SWITCH, "add_tick", "1", "Expand 2D Box", "Expand 2D box by N units");	
-static CatVar add_ticks(CV_INT, "add_ticks", "2", "Expand 2D Box", "Expand 2D box by N units");	
+
 void EntityHitboxCache::Init() {
 	model_t *model;
 	studiohdr_t *shdr;
@@ -46,9 +45,6 @@ void EntityHitboxCache::Init() {
 	m_bInit = true;
 	model = 0;
 	if (CE_BAD(parent_ref)) return;
-	
-	tickcount += 1;
-	
 	SAFE_CALL(model = (model_t*)RAW_ENT(parent_ref)->GetModel());
 	if (!model) return;
 	if (!m_bModelSet || model != m_pLastModel) {
@@ -84,7 +80,7 @@ bool EntityHitboxCache::VisibilityCheck(int id) {
 }
 
 static CatEnum setupbones_time_enum({ "ZERO",  "CURTIME", "LP SERVERTIME", "SIMTIME" });
-static CatVar setupbones_time(setupbones_time_enum, "setupbones_time", "3", "Setupbones", "Defines setupbones 4th argument, change it if your aimbot misses, idk!!");
+static CatVar setupbones_time(setupbones_time_enum, "setupbones_time", "1", "Setupbones", "Defines setupbones 4th argument, change it if your aimbot misses, idk!!");
 
 matrix3x4_t* EntityHitboxCache::GetBones() {
 	static float bones_setup_time = 0.0f;
