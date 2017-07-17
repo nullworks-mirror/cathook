@@ -59,7 +59,8 @@ static CatVar ignore_deadringer(CV_SWITCH, "aimbot_ignore_deadringer", "1", "Ign
 static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim Sentry", "Should aimbot aim at sentryguns?");
 static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
 static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
-static CatVar teammates(CV_SWITCH, "aimbot_teammates", "0", "Aim at teammates", "Aim at your own team. Useful for HL2DM");
+static CatEnum teammates_enum({ "ENEMY ONLY", "TEAMMATE ONLY", "BOTH" });
+static CatVar teammates(teammates_enum, "aimbot_teammates", "0", "Aim at teammates", "Use to choose which team/s to target");
 static CatVar silent(CV_SWITCH, "aimbot_silent", "1", "Silent", "Your screen doesn't get snapped to the point where aimbot aims at");
 static CatVar target_lock(CV_SWITCH, "aimbot_target_lock", "0", "Target Lock", "Keeps your previously chosen target untill target check fails");
 static CatEnum hitbox_enum({
@@ -96,7 +97,6 @@ static CatVar engine_projpred(CV_SWITCH, "debug_aimbot_engine_pp", "0", "Engine 
 // Followbot vars
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 /* TODO IMPLEMENT
-static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
 */
 
@@ -354,7 +354,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		// Dont aim at dead player
 		if (!entity->m_bAlivePlayer) return false;
 		// Dont aim at teammates
-		if (!entity->m_bEnemy && !teammates) return false;
+		if ((int)teammates != 2 && ((!entity->m_bEnemy && !teammates) || (entity->m_bEnemy && teammates))) return false;
 		// Check if player is too far away
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > EffectiveTargetingRange()) return false;

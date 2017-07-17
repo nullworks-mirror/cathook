@@ -168,7 +168,7 @@ void DoWalking() {
 		}
 		
 		// Without good target we must find a new one 
-		if (CE_BAD(best_target)) {	
+		if (CE_BAD(best_target) || g_GlobalVars->curtime - 2.5F > crumb_prune_timeout) {	
 			
 			float target_highest_score = -256;
 			CachedEntity* ent;
