@@ -16,14 +16,16 @@
 				"type": "list",
 				"name": "Ignore",
 				"list": [
+					"aimbot_ignore_cloak",
+					"aimbot_ignore_deadringer",
+					"aimbot_ignore_vaccinator",
 					"ignore_taunting",
 					"aimbot_ignore_hoovy",
+					"aimbot_teammates",
 					"aimbot_buildings_sentry",
 					"aimbot_buildings_other",
-					"aimbot_stickys",
-					"aimbot_teammates",
-					"aimbot_ignore_cloak",
-					"aimbot_ignore_vaccinator"
+					"aimbot_stickys"
+					
 				]
 			},
 			{
@@ -110,11 +112,11 @@
 				"name": "Auto Reflect",
 				"list": [
 					"reflect_enabled",
+					"reflect_key",
 					"reflect_legit",
 					"reflect_only_idle",
 					"reflect_stickybombs",
-					"reflect_dodgeball",
-					"reflect_key"					
+					"reflect_dodgeball"					
 				]
 			},
 			{
@@ -138,6 +140,7 @@
 					"trigger_maxrange",
 					"trigger_charge",
 					"trigger_hitboxmode",
+					"trigger_accuracy",
 					"trigger_key_mode",
 					"trigger_key"
 				]
@@ -345,36 +348,23 @@
 		"type": "list",
 		"name": "Chat Settings",
 		"list": [
+			"spam",
+			"killsay",
+			"uberspam",
+			"spam_file",
+			"killsay_file",
+			"spam_random",
 			"chat_newlines",
 			"clean_chat",
-			"killsay",
-			"killsay_file",
-			"spam",
-			"spam_random",
-			"spam_file",
-			"spam_teamname",
-			"uberspam",
-			"uberspam_build",
+			"chat_crypto",
 			"uberspam_ready",
 			"uberspam_used",
 			"uberspam_ended",
 			"uberspam_team",
-			"uberspam_file"
-		]
-	},
-	{
-		"type": "list",
-		"name": "Follow Bot Settings",
-		"data": "ipc",
-		"list": [
-			"fb_bot",
-			"fb_auto_playerlist",
-			"fb_mimic_slot",
-			"fb_always_medigun",
-			"fb_autoclass",
-			"fb_follow_distance",
-			"ipc_server",
-			"fb_autoteam"
+			"uberspam_build",
+			"uberspam_file",
+			"spam_voicecommand",
+			"spam_teamname"
 		]
 	},
 	{
@@ -390,6 +380,20 @@
 			"ac_removecond",
 			"ac_removecond_timer",
 			"ac_bhop_count"
+		]
+	},
+	{
+		"type": "list",
+		"name": "Followbot",
+		"list": [
+			"fb_bot",
+			"fb_distance",
+			"fb_activation",
+			"fb_roaming",
+			"fb_mimic_slot",
+			"fb_always_medigun",
+			"fb_sync_taunt",
+			"fb_crumb_draw"
 		]
 	},
 	{
@@ -492,6 +496,7 @@
 					"debug_info",
 					"log",
 					"setupbones_time",
+					"nolerp",
 					"skinchanger_debug",
 					"software_cursor_mode",
 					"experimental_cursor_fix",

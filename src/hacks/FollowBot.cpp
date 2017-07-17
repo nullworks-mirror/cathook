@@ -28,8 +28,8 @@ namespace hacks { namespace shared { namespace followbot {
 	
 // User settings
 CatVar bot(CV_SWITCH, "fb_bot", "0", "Master Followbot Switch", "Set to 1 in followbots' configs");
-CatVar follow_distance(CV_FLOAT, "fb_distance", "175", "Followbot Follow Distance", "How close the bots should stay to the target");
-CatVar follow_activation(CV_FLOAT, "fb_activation", "175", "Followbot Activation Distance", "How close a player should be until the followbot will pick a target");
+CatVar follow_distance(CV_FLOAT, "fb_distance", "175", "Follow Distance", "How close the bots should stay to the target");
+CatVar follow_activation(CV_FLOAT, "fb_activation", "175", "Activation Distance", "How close a player should be until the followbot will pick them as a target");
 CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "0", "Mimic selected weapon", "If enabled, this bot will select same weapon slot as the owner");
 CatVar always_medigun(CV_SWITCH, "fb_always_medigun", "0", "Always use Medigun", "Medics will always use Medigun");
 CatVar crumb_draw(CV_SWITCH, "fb_crumb_draw", "1", "Draw Crumbs", "Draws the path made for the followbot");
