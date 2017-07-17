@@ -28,8 +28,8 @@ namespace hacks { namespace shared { namespace followbot {
 	
 // User settings
 CatVar bot(CV_SWITCH, "fb_bot", "0", "Master Followbot Switch", "Set to 1 in followbots' configs");
-CatVar follow_distance(CV_FLOAT, "fb_follow_distance", "175", "Followbot Follow Distance", "How close the bots should stay to the target");
-CatVar follow_activation(CV_FLOAT, "fb_follow_activation", "450", "Followbot Activation Distance", "How close a player should be until the followbot will pick a target");
+CatVar follow_distance(CV_FLOAT, "fb_distance", "175", "Followbot Follow Distance", "How close the bots should stay to the target");
+CatVar follow_activation(CV_FLOAT, "fb_activation", "175", "Followbot Activation Distance", "How close a player should be until the followbot will pick a target");
 CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "0", "Mimic selected weapon", "If enabled, this bot will select same weapon slot as the owner");
 CatVar always_medigun(CV_SWITCH, "fb_always_medigun", "0", "Always use Medigun", "Medics will always use Medigun");
 CatVar crumb_draw(CV_SWITCH, "fb_crumb_draw", "1", "Draw Crumbs", "Draws the path made for the followbot");
@@ -38,19 +38,12 @@ CatVar sync_taunt(CV_SWITCH, "fb_sync_taunt", "0", "Mimic taunts", "Bots will ta
 
 // Var to store the current steamid to follow
 unsigned follow_steamid { 1 };
-	
-// Vars that control jumping and the followbot
-float idle_time = 0;
 
-// Var that decides how the followbot will act and move
+// Vars that decides how the followbot will act and move
 EFollowType current_follow_type = EFollowType::ENTITY;
 CachedEntity* target_last = 0;
-//int target_last_idx = 0;
-
-// Var that controls whether the followbot is allowed to move
-bool allow_moving = true; 
-//bool find_new_ent = true;
 int following_idx = 0;	
+bool allow_moving = true; 
 
 // Arrays to store selected ents
 std::set<int> selection {};
@@ -59,18 +52,20 @@ std::set<int> selection_secondary {};
 // Vars for vector followbot
 float  destination_point_time { 0.0f };
 Vector destination_point {};
-bool   destination_reached { false };
-
+	
+// Var that control jumping and the followbot
+float idle_time = 0;
+	
 // Vars for breadcrumb followbot
+	
 // An array for storing the breadcrumbs
 static Vector breadcrumbs [55];
 // Array Bookkeeping vars
 int crumbBottom = 0;
 int crumbTop = 0;
 int crumbArrayLength = 0;
-// Timeout vars
-float crumb_prune_timeout = 0;
 // Used for states for the followbot
+float crumb_prune_timeout = 0;
 bool crumbStopped = true;
 bool crumbFindNew = false;
 bool crumbForceMove = false;
@@ -113,8 +108,7 @@ void AfterCreateMove() {
 	// Processing Selection is done, attemt to walk
 	DoWalking();
 }
-CatVar deboog1(CV_INT, "fb_deboog", "0", "Mimic taunts", "Bots will taunt if target is taunting");
-//if ((int)deboog1 <= 1) return;
+
 // Function for followbots to use for following, weapon selection, etc...
 void DoWalking() {
 	
@@ -208,14 +202,13 @@ void DoWalking() {
 	CachedEntity* found_entity = best_target;
 	// TODO, setting following_idx causes a crash for an unknown reason, probs to do with autoheal. 
 	// I created a different var to take its place and prevent the crash but i need to fix the crash with the externed var.
-	// For now this works and it will stay like this untill i fix it
+	// For now this works and it will stay like this untill I find a way to fix it
 	int following_idx2 = 0;
 	if (CE_GOOD(found_entity)) {
 		following_idx2 = found_entity->m_IDX;
 		hacks::shared::esp::AddEntityString(found_entity, "[FOLLOWING]", colors::green);
 		hacks::shared::esp::SetEntityColor(found_entity, colors::green);
 	} else {
-		logging::Info("Found ent is bad");
 		crumbStopped = true;
 		return;
 	}
@@ -268,103 +261,110 @@ void DoWalking() {
 			}
 		}
 	}
-			
+	
 	
 	
 	
 	
 	// Main followbot code
-	if (allow_moving) {
-		
-		// Switch to different types of following mechanisms depending on the type we need to go to
-		switch (current_follow_type) {
-		case EFollowType::VECTOR: // If were using a vector to follow, we just go directly to it
+	
 
-			// If destination_point_time is more than curtime than we reset it to zero
-			if (destination_point_time > g_GlobalVars->curtime) destination_point_time = 0.0f;
-			// If we havent reached our destination and the destination point timeout isnt more than 5 seconds, then we continue to walk to the destination point 
-			if (!destination_reached && (g_GlobalVars->curtime - destination_point_time < 5.0f)) {
-				// Walk to the point
-				WalkTo(destination_point);
-				// If we have reached the destination point then we set the var to true
-				if (g_pLocalPlayer->v_Origin.DistTo(destination_point) < 50.0f) destination_reached = true;
+	// Switch to different types of following mechanisms depending on the type we need to go to
+	switch (current_follow_type) {
+	case EFollowType::VECTOR: // If were using a vector to follow, we just go directly to it
+
+		// If destination_point_time is more than curtime than we reset it to zero
+		if (destination_point_time > g_GlobalVars->curtime) destination_point_time = 0.0f;
+			
+		// If we havent reached our destination and the destination point timeout isnt more than 5 seconds, then we continue to walk to the destination point 
+		if (g_GlobalVars->curtime - destination_point_time < 5.0f) {
+			
+			// Walk to the point
+			WalkTo(destination_point);
+			
+			// If we have reached the destination point then we want to disable the vector followbot
+			if (g_pLocalPlayer->v_Origin.DistTo(destination_point) < 50.0f) {
+				current_follow_type = EFollowType::ENTITY;
 			}
-			// Break from the switch
-			break;
+		}
+		// Break from the switch
+		break;
 
-		case EFollowType::ENTITY: // If were using a player to follow, we use the breadcrumb followbot
+	case EFollowType::ENTITY: // If were using a player to follow, we use the breadcrumb followbot
 
-			if (CE_GOOD(found_entity)) {
-				// If the bot is lost but it finds the player again, start the followbot again.
-				if (crumbStopped) {
-					crumbForceMove = true;
-					CrumbReset();
-				}
-			} else {
-			// If the entity we have isnt good, we stop the crumb followbot
-				crumbStopped = true;
-			} 
+		if (CE_GOOD(found_entity)) {
+			// If the bot is lost but it finds the player again, start the followbot again.
+			if (crumbStopped) {
+				crumbForceMove = true;
+				CrumbReset();
+			}
+		} else {
+		// If the entity we have isnt good, we stop the crumb followbot
+			crumbStopped = true;
+		} 
 			
-			
-			// Breadcrumb followbot
-			if (!crumbStopped) {
-				// Generate new breadcrumbs made by the player only if they are close to the ground. If the bot is told to generate a starting point, it does that as well.
-				if ((found_entity->m_vecOrigin.DistTo(breadcrumbs[crumbTop]) > 40.0F || crumbFindNew) && DistanceToGround(found_entity) < 25) {
-					// Add to the crumb.
-					CrumbTopAdd(found_entity->m_vecOrigin);
-
-					// If the bot was forced to select a point, add a buffer crumb and bump to the newly selected point and use it
-					if (crumbFindNew) {
-						crumbFindNew = false;
-						CrumbTopAdd(found_entity->m_vecOrigin);
-						CrumbBottomAdd();
-					}
-				}
-
-				// Prune used crumbs from the stack to make way for new ones when you get close to them.
-				if (g_pLocalPlayer->v_Origin.DistTo(breadcrumbs[crumbBottom]) < 40.0F ) {
-					// Debug Logging
-					logging::Info("Pruning");
-
-					// When the bot is forced to move to the player, since they have reached their destination we reset the var
-					crumbForceMove = false;
-
-					// Check 15 times for close crumbs to prune, this allows simple miss steps to be smoothed out as well as make room for new crumbs
-					for (int i = 0; i < 15; i++) {
-
-						// When one is close or too high, just bump the array and reset the stuck timer
-						if (g_pLocalPlayer->v_Origin.DistTo(breadcrumbs[crumbBottom]) < 60.0F && crumbArrayLength > 1) {
-							CrumbBottomAdd();
-
-						// When pruning is finished. Break the loop
-						} else {
-							crumb_prune_timeout = g_GlobalVars->curtime;
-							logging::Info("Finish Prune");
-							break;
-						}
-					}
-					// Reset stuck timer
-					crumb_prune_timeout = g_GlobalVars->curtime;
-				}
-
-				// When player to follow is too far away. the bot cant see the player or the bot is forced to the player, then follow breadcrumbs
-				if ((g_pLocalPlayer->v_Origin.DistTo(found_entity->m_vecOrigin) > (float)follow_distance || crumbForceMove) && crumbArrayLength >= 1 ) {
-					WalkTo(breadcrumbs[crumbBottom]);
-
-					// If a crumb hasnt been pruned in a while, it probably cant travel to it so reset and wait for the player to collect it.
-					if (g_GlobalVars->curtime - 2.5F > crumb_prune_timeout) {
-						crumbStopped = true;
-						logging::Info("Cannot goto next crumb!\nCrumb Lost!");
-					}
+		// Breadcrumb followbot
+		if (!crumbStopped) {
 				
-				// If the bot is next to the player then we clear our crumbs as theres no need to follow previously generated ones.
-				} else if (g_pLocalPlayer->v_Origin.DistTo(found_entity->m_vecOrigin) < 100.0F && found_entity->IsVisible()) {
-					CrumbReset();
-					crumbForceMove = false;
+			// Generate new breadcrumbs made by the player only if they are close to the ground. If the bot is told to generate a starting point, it does that as well.
+			if ((found_entity->m_vecOrigin.DistTo(breadcrumbs[crumbTop]) > 40.0F || crumbFindNew) && DistanceToGround(found_entity) < 40) {
+					
+				// Add to the crumb.
+				CrumbTopAdd(found_entity->m_vecOrigin);
+
+				// If the bot was forced to select a point, we tell it that we no longer need a new one and clear the bottom crumb to use the newest one
+				if (crumbFindNew) {
+					crumbFindNew = false;
+					CrumbBottomAdd();
 				}
+
+			}
+
+			// Prune used crumbs from the stack to make way for new ones when you get close to them.
+			if (g_pLocalPlayer->v_Origin.DistTo(breadcrumbs[crumbBottom]) < 40.0F ) {
+				
+				// Debug Logging
+				logging::Info("Pruning");
+
+				// When the bot is forced to move to the player, since they have reached their destination we reset the var
+				crumbForceMove = false;
+
+				// Check 15 times for close crumbs to prune, this allows simple miss steps to be smoothed out as well as make room for new crumbs
+				for (int i = 0; i < 15; i++) {
+
+					// When one is close or too high, just bump the array and reset the stuck timer
+					if (g_pLocalPlayer->v_Origin.DistTo(breadcrumbs[crumbBottom]) < 60.0F && crumbArrayLength > 1) {
+						CrumbBottomAdd();
+
+					// When pruning is finished. Break the loop
+					} else {
+						crumb_prune_timeout = g_GlobalVars->curtime;
+						logging::Info("Finish Prune");
+						break;
+					}
+				}
+				// Reset stuck timer
+				crumb_prune_timeout = g_GlobalVars->curtime;
+			}
+
+			// When player to follow is too far away. the bot cant see the player or the bot is forced to the player, then follow breadcrumbs if movement is allowed
+			if ((g_pLocalPlayer->v_Origin.DistTo(found_entity->m_vecOrigin) > (float)follow_distance || crumbForceMove) && crumbArrayLength >= 1 && allow_moving) {
+				WalkTo(breadcrumbs[crumbBottom]);
+
+				// If a crumb hasnt been pruned in a while, it probably cant travel to it so reset and wait for the player to collect it.
+				if (g_GlobalVars->curtime - 2.5F > crumb_prune_timeout) {
+					crumbStopped = true;
+					logging::Info("Cannot goto next crumb!\nCrumb Lost!");
+				}
+
+			// If the bot is next to the player then we clear our crumbs as theres no need to follow previously generated ones.
+			} else if (g_pLocalPlayer->v_Origin.DistTo(found_entity->m_vecOrigin) < 100.0F && found_entity->IsVisible()) {
+				CrumbReset();
+				crumbForceMove = false;
 			}
 		}
 	}
+
     
 			
 			
@@ -379,6 +379,7 @@ void DoWalking() {
 		
 		// If found target is heavy and the local player is too,
 		if (CE_INT(found_entity, netvar.iClass) == tf_heavy && g_pLocalPlayer->clazz == tf_heavy) {
+			
 			// If found target is spun up, then spin up too
 			if (HasCondition<TFCond_Slowed>(found_entity)) {
 				g_pUserCmd->buttons |= IN_ATTACK2;
@@ -387,6 +388,7 @@ void DoWalking() {
 		
 		// If found target is zoomed
 		if (HasCondition<TFCond_Zoomed>(found_entity)) {
+			
 			// If the local player isnt zoomed and its class is sniper, then zoom in to mimic the followed target
 			if (!g_pLocalPlayer->bZoomed && g_pLocalPlayer->clazz == tf_sniper) {
 				g_pUserCmd->buttons |= IN_ATTACK2;
@@ -395,8 +397,10 @@ void DoWalking() {
 	
 		// If user settings allow, we attemt to mimic taunting player
 		if (sync_taunt) {
+			
 			// Check if target is taunting
 			if (HasCondition<TFCond_Taunting>(found_entity)) {
+				
 				// Check if local player isnt taunting
 				if (!HasCondition<TFCond_Taunting>(LOCAL_E)) {
 					g_IEngine->ExecuteClientCmd("taunt");
@@ -560,7 +564,6 @@ void AddMessageHandlers(ipc::peer_t* peer) {
 		// Set our dest info with the payload data
 		destination_point = Vector(data[0], data[1], data[2]);
 		destination_point_time = g_GlobalVars->curtime;
-		destination_reached = false;
 		// Notify the followbot to follow vectors
 		current_follow_type = EFollowType::VECTOR;
 	});
@@ -583,14 +586,13 @@ void WalkTo(const Vector& vector) {
 	if (CE_VECTOR(LOCAL_E, netvar.vVelocity).IsZero(1.0f)) {
 		// Set idle time if we havent already
 		if (!idle_time) idle_time = g_GlobalVars->curtime;
-		// If the vector is too high for the local player to reach, 
-		if (vector.z - LOCAL_E->m_vecOrigin.z > 15.0f) {
-			// If the time idle is over 2 seconds
-			if (g_GlobalVars->curtime - idle_time > 2.0f) {
-				// If the player isnt zoomed, then jump
-				if (!g_pLocalPlayer->bZoomed)
-					g_pUserCmd->buttons |= IN_JUMP;
-			}
+
+		// If the time idle is over 2 seconds
+		if (g_GlobalVars->curtime - idle_time > 2.0f) {
+			// If the player isnt zoomed, then jump
+			if (!g_pLocalPlayer->bZoomed)
+				g_pUserCmd->buttons |= IN_JUMP;
+			
 		// Since the vector is close enough we reset our idle timer
 		} else {
 			idle_time = 0;
@@ -627,31 +629,30 @@ std::pair<float, float> ComputeMove(const Vector& a, const Vector& b) {
 // A function to reset the crumb followbot
 void CrumbReset() {
 	
-    //A check to make sure using the fb tool repeatedly doesnt clear the cache of crumbs
-    //if (crumbStopped) {
-        crumbTop = 0;
-        crumbBottom = 0;
-        crumbArrayLength = 0;
-        crumb_prune_timeout = g_GlobalVars->curtime;
-        crumbFindNew = true;
-        crumbStopped = false;
-        logging::Info("Crumb Reset");
-    //}
+	// We just reset the bookkeeping vars for the array, no need to clear the array as everything will be re-written anyways
+    crumbTop = 0;
+    crumbBottom = 0;
+   	crumbArrayLength = 0;
+    crumb_prune_timeout = g_GlobalVars->curtime;
+    crumbFindNew = true;
+    crumbStopped = false;
+    logging::Info("Crumb Reset");
+
 }
 
 // A function to place a crumb into the array 
 void CrumbTopAdd(Vector crumbToAdd) {
 	
     // Once the crumbs have hit the limit of the array, loop around and over write unused spots
-    if (crumbTop >= 55) {
+    if (crumbTop == 55) {
         crumbTop = 0;
     } else { 
         // Else, bump the top number market of the array
-        crumbTop = crumbTop + 1;
+        crumbTop++;
     }
     
     // Put the newly determined crumb into the array and add to the length
-    crumbArrayLength = crumbArrayLength + 1;
+    crumbArrayLength++;
     breadcrumbs[crumbTop] = crumbToAdd; 
     logging::Info("Crumb Top add");
     
@@ -667,15 +668,15 @@ void CrumbTopAdd(Vector crumbToAdd) {
 void CrumbBottomAdd() {
 	
     // Once the crumbs have hit the limit of the array, loop around and over write unused spots
-    if (crumbBottom >= 55) {
+    if (crumbBottom == 55) {
         crumbBottom = 0;
     } else {
         // Else, bump the top number market of the array
-        crumbBottom = crumbBottom + 1;
+        crumbBottom++;
     }
     
     // Subtract from the length to make room for more crumbs 
-    crumbArrayLength = crumbArrayLength - 1;
+    crumbArrayLength--;
     logging::Info("Crumb Bottom add");
     
     // A check to detect if too many crumbs have been removed. Without crumbs the bot will just use random variables in the array.
@@ -705,8 +706,12 @@ void DrawFollowbot() {
 	AddSideString(format("Array Length: ", crumbArrayLength));
 	AddSideString(format("Top Crumb: ", crumbTop));
 	AddSideString(format("Bottom Crumb: ", crumbBottom));
+	AddSideString(format("Crumb Stopped: ", crumbStopped));
+	AddSideString(format("Curtime: ", g_GlobalVars->curtime));
+	AddSideString(format("Timeout: ", crumb_prune_timeout));
 	
-	// Disabled as the enum was misbeghaving for an unknown reason
+	
+	// Disabled as the enum was misbehaving for an unknown reason
 	
 	/*switch (current_follow_type) {
 	case EFollowType::VECTOR: // If our follow type is a vector, then we just draw a rect on the vector
@@ -767,7 +772,8 @@ void DrawFollowbot() {
 		break;
 	}*/
 	
-	// Not using switch due to switch not working
+	
+	// Not using switch due to switch not working correctly
 	if (crumbArrayLength < 2) {
 			
 		// If not, we check if we have 1 point and draw on it
@@ -798,7 +804,7 @@ void DrawFollowbot() {
 		if (tmpCrumb1 >= 55)
 			tmpCrumb1 - 55;
 		if (tmpCrumb2 >= 55)
-			tmpCrumb1 - 55;
+			tmpCrumb2 - 55;
 
 		// Take our 2 crumbs and get a position on the screen
 		draw::WorldToScreen(breadcrumbs[tmpCrumb1], scnSrt);
