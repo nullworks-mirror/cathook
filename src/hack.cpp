@@ -272,6 +272,7 @@ void hack::Initialize() {
 	hacks::shared::anticheat::Init();
 	hacks::tf2::healarrow::Init();
 	InitSpinner();
+	hacks::shared::spam::Init();
 	logging::Info("Initialized Fidget Spinner");
 
 }

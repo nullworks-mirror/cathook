@@ -144,6 +144,12 @@ int QueryPlayer(Query query) {
 	return index_result;
 }
 
+void Init() {
+	filename.InstallChangeCallback([](IConVar* var, const char* pszOV, float flOV) {
+		file.TryLoad(std::string(filename.GetString()));
+	});
+}
+
 bool SubstituteQueries(std::string& input) {
 	size_t index = input.find("%query:");
 	while (index != std::string::npos) {
