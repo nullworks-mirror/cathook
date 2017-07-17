@@ -14,8 +14,13 @@ static CatEnum spam_enum({"DISABLED", "CUSTOM", "DEFAULT", "LENNYFACES", "BLANKS
 CatVar spam_source(spam_enum, "spam", "0", "Chat Spam", "Defines source of spam lines. CUSTOM spam file must be set in cat_spam_file and loaded with cat_spam_reload (Use console!)");
 CatVar random_order(CV_SWITCH, "spam_random", "0", "Random Order");
 CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file", "Spam file name. Each line should be no longer than 100 characters, file must be located in cathook data folder");
-CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam", "Spam changes the tournament name");
 CatCommand reload("spam_reload", "Reload spam file", Reload);
+	
+static CatEnum voicecommand_enum({"DISABLED", "RANDOM", "MEDIC", "THANKS", "NICE SHOT", "CHEERS", "JEERS"});
+CatVar voicecommand_spam(voicecommand_enum, "spam_voicecommand", "0", "Voice Command Spam", "Spams tf voice commands");
+	
+CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam", "Spam changes the tournament name");
+
 
 bool teamname_swap = false;
 int current_index { 0 };
@@ -24,6 +29,8 @@ TextFile file {};
 
 const std::string teams[] = { "RED", "BLU" };
 
+
+	
 // FUCK enum class.
 // It doesn't have bitwise operators by default!! WTF!! static_cast<int>(REEE)!
 
@@ -172,15 +179,46 @@ bool FormatSpamMessage(std::string& message) {
 }
 
 void CreateMove() {
-	if (teamname_spam) {
-		if (teamname_swap) {
-			teamname_swap = false;
-			g_IEngine->ServerCmd("tournament_teamname Cat");	
-		} else {
-			teamname_swap = true;
-			g_IEngine->ServerCmd("tournament_teamname Hook");	
-		}		
+	
+	IF_GAME (IsTF2()) {
+		// Spam changes the tournament name in casual and compeditive gamemodes
+		if (teamname_spam) {
+			if (teamname_swap) {
+				teamname_swap = false;
+				g_IEngine->ServerCmd("tournament_teamname Cat");	
+			} else {
+				teamname_swap = true;
+				g_IEngine->ServerCmd("tournament_teamname Hook");	
+			}		
+		}
+		
+		if (voicecommand_spam) {
+			static float last_voice_spam = 0.0f;
+			if (g_GlobalVars->curtime - 4.0F > last_voice_spam) { 
+				switch ((int)voicecommand_spam) {
+				case 1: // RANDOM
+					g_IEngine->ServerCmd(format("voicemenu ", floor(RandFloatRange(0, 2.9)), " ", floor(RandFloatRange(0, 8.9))).c_str());	
+					break;
+				case 2: // MEDIC
+					g_IEngine->ServerCmd("voicemenu 0 0");	
+					break;
+				case 3: // THANKS
+					g_IEngine->ServerCmd("voicemenu 0 1");	
+					break;
+				case 4: // NICE SHOT
+					g_IEngine->ServerCmd("voicemenu 2 6");	
+					break;
+				case 5: // CHEERS
+					g_IEngine->ServerCmd("voicemenu 2 2");		
+					break;
+				case 6: // JEERS
+					g_IEngine->ServerCmd("voicemenu 2 3");	
+				}
+				last_voice_spam = g_GlobalVars->curtime;
+			}
+		}
 	}
+	
 	if (!spam_source) return;
 	static int safety_ticks = 0;
 	static int last_spam = 0;

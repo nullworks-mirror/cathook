@@ -26,6 +26,8 @@ static CatVar trigger_key_mode(trigger_key_modes_enum, "trigger_key_mode", "1", 
 	
 static CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "Head only" });
 static CatVar hitbox_mode(hitbox_mode_enum, "trigger_hitboxmode", "0", "Hitbox Mode", "Defines hitbox selection mode");
+	
+static CatVar accuracy(CV_INT, "trigger_accuracy", "0", "Improve accuracy", "Improves triggerbot accuracy when aiming for specific hitbox");
 
 static CatVar ignore_vaccinator(CV_SWITCH, "trigger_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "trigger_ignore_hoovy", "1", "Ignore Hoovies", "Triggerbot won't attack hoovies");
@@ -42,6 +44,7 @@ static CatVar max_range(CV_INT, "trigger_maxrange", "0", "Max distance",
 		"900-1100 range is efficient for scout/widowmaker engineer", 4096.0f);
 	
 int last_hb_traced = 0;
+Vector forward;
 
 // The main "loop" of the triggerbot
 void CreateMove() {	
@@ -170,6 +173,35 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			if (last_hb_traced != hitbox_t::head) return false;
 		}	
 		
+		// If usersettings tell us to use accuracy improvements and the cached hitbox isnt null, then we check if it hits here
+		if (accuracy) {
+			
+			// Get a cached hitbox for the one traced
+			hitbox_cache::CachedHitbox* hb = entity->hitboxes.GetHitbox(last_hb_traced);
+			
+			// Check for null
+			if (hb) {
+				
+				// Get the min and max for the hitbox
+				Vector minz(min(hb->min.x, hb->max.x), min(hb->min.y, hb->max.y), min(hb->min.z, hb->max.z));
+				Vector maxz(max(hb->min.x, hb->max.x), max(hb->min.y, hb->max.y), max(hb->min.z, hb->max.z));
+
+				// Shrink the hitbox here
+				Vector size = maxz - minz;
+				Vector smod = size * 0.05f * (int)accuracy;
+
+				// Save the changes to the vectors
+				minz += smod;
+				maxz -= smod;
+
+				// Trace and test if it hits the smaller hitbox, if it fails we return false
+				Vector hit;
+				if (!CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit)) {
+					return false;
+				}
+			}
+		}
+		
 		// Target passed the tests so return true
 		return true;
 		
@@ -219,6 +251,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		
 // A function to return a potential entity in front of the player
 CachedEntity* FindEntInSight(float range) {
+	
 	// We dont want to hit ourself so we set an ignore
     trace_t trace;
     trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
@@ -226,7 +259,6 @@ CachedEntity* FindEntInSight(float range) {
 	// Use math to get a vector in front of the player
 	float sp, sy, cp, cy;
 	QAngle angle;
-	Vector forward;
 	g_IEngine->GetViewAngles(angle);
 	sy = sinf(DEG2RAD(angle[1]));
 	cy = cosf(DEG2RAD(angle[1]));
@@ -246,6 +278,7 @@ CachedEntity* FindEntInSight(float range) {
 
 	// Return an ent if that is what we hit
     if (trace.m_pEnt) {
+		
 		last_hb_traced = trace.hitbox;
         return ENTITY(((IClientEntity*)trace.m_pEnt)->entindex());
 	}
@@ -382,6 +415,49 @@ float EffectiveTargetingRange() {
 	} else {
 		return 8012.0f;
 	}
+}
+
+// Helper functions to trace for hitboxes
+
+// TEMPORARY CODE.
+// TODO
+bool GetIntersection(float fDst1, float fDst2, Vector P1, Vector P2, Vector& Hit) {
+    if ((fDst1 * fDst2) >= 0.0f) return false;
+    if (fDst1 == fDst2) return false;
+    Hit = P1 + (P2 - P1) * (-fDst1 / (fDst2 - fDst1));
+    return true;
+}
+
+bool InBox(Vector Hit, Vector B1, Vector B2, int Axis) {
+    if (Axis == 1 && Hit.z > B1.z && Hit.z < B2.z && Hit.y > B1.y && Hit.y < B2.y) return true;
+    if (Axis == 2 && Hit.z > B1.z && Hit.z < B2.z && Hit.x > B1.x && Hit.x < B2.x) return true;
+    if (Axis == 3 && Hit.x > B1.x && Hit.x < B2.x && Hit.y > B1.y && Hit.y < B2.y) return true;
+    return false;
+}
+
+bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector& Hit) {
+    if (L2.x < B1.x && L1.x < B1.x) return false;
+    if (L2.x > B2.x && L1.x > B2.x) return false;
+    if (L2.y < B1.y && L1.y < B1.y) return false;
+    if (L2.y > B2.y && L1.y > B2.y) return false;
+    if (L2.z < B1.z && L1.z < B1.z) return false;
+    if (L2.z > B2.z && L1.z > B2.z) return false;
+    if (L1.x > B1.x && L1.x < B2.x &&
+        L1.y > B1.y && L1.y < B2.y &&
+        L1.z > B1.z && L1.z < B2.z)
+    {
+        Hit = L1;
+        return true;
+    }
+    if ((GetIntersection(L1.x - B1.x, L2.x - B1.x, L1, L2, Hit) && InBox(Hit, B1, B2, 1))
+      || (GetIntersection(L1.y - B1.y, L2.y - B1.y, L1, L2, Hit) && InBox(Hit, B1, B2, 2))
+      || (GetIntersection(L1.z - B1.z, L2.z - B1.z, L1, L2, Hit) && InBox(Hit, B1, B2, 3))
+      || (GetIntersection(L1.x - B2.x, L2.x - B2.x, L1, L2, Hit) && InBox(Hit, B1, B2, 1))
+      || (GetIntersection(L1.y - B2.y, L2.y - B2.y, L1, L2, Hit) && InBox(Hit, B1, B2, 2))
+      || (GetIntersection(L1.z - B2.z, L2.z - B2.z, L1, L2, Hit) && InBox(Hit, B1, B2, 3)))
+        return true;
+
+    return false;
 }
 
 void Draw() {

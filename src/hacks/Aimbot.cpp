@@ -55,6 +55,7 @@ static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper 
 static CatVar ignore_vaccinator(CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1", "Ignore cloaked", "Don't aim at invisible enemies");
+static CatVar ignore_deadringer(CV_SWITCH, "aimbot_ignore_deadringer", "1", "Ignore deadringer", "Don't aim at deadringed enemies");
 static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim Sentry", "Should aimbot aim at sentryguns?");
 static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
 static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
@@ -92,6 +93,8 @@ static CatVar huntsman_full_auto(CV_SWITCH, "aimbot_full_auto_huntsman", "1", "A
 // Debug vars
 static CatVar aimbot_debug(CV_SWITCH, "aimbot_debug", "0", "Aimbot Debug", "Display simple debug info for aimbot");
 static CatVar engine_projpred(CV_SWITCH, "debug_aimbot_engine_pp", "0", "Engine ProjPred");
+// Followbot vars
+static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 /* TODO IMPLEMENT
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
@@ -120,10 +123,6 @@ void CreateMove() {
 	// Check if aimbot is enabled
 	if (!enabled) return;
 	
-	// Save should aim info
-	bool shouldAim = ShouldAim();
-	bool aimkeyStatus = UpdateAimkey();
-	
 	// Refresh projectile info
 	int huntsman_ticks = 0;
 	projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
@@ -140,23 +139,27 @@ void CreateMove() {
 		huntsman_ticks = max(0, huntsman_ticks - 1);
 	}
 	
+	// Save should aim info
+	// We do this as we need to pass whether the aimkey allows aiming to both the find target and aiming system. If we just call the func than toggle aimkey would break so we save it to a var to use it twice
+	bool aimkey_status = UpdateAimkey();
+	
 	// Refresh our best target
-	CachedEntity* target = RetrieveBestTarget(aimkeyStatus);
+	CachedEntity* target = RetrieveBestTarget(aimkey_status);
 	
 	// Check target for dormancy and if there even is a target at all
 	if (CE_GOOD(target) && foundTarget) {
+		
 		// Set target esp color to pink
 		hacks::shared::esp::SetEntityColor(target, colors::pink);
 		
 		// Check if player can aim and if aimkey allows aiming
 		// We also preform a CanShoot check here per the old canshoot method
-		if (shouldAim && aimkeyStatus && GetCanAim(1)) {
+		if (ShouldAim() && aimkey_status && GetCanAim(1)) {
 			
 			// Check if player isnt using a huntsman
 			if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFCompoundBow)) {
 
-				// If settings allow, limit aiming to only when can shoot
-				// We do this here only if wip is true as we do the check elsewhere for legacy
+				// We check if we need to do a canshoot check as we might want to shoot but not aim, so do that check here
 				if (GetCanAim(2)) {
 					// Check the flNextPrimaryAttack netvar to tell when to aim
 					if (CanShoot()) Aim(target);
@@ -250,6 +253,7 @@ bool ShouldAim() {
 			return false;
 		};
 	}
+	
 	IF_GAME (IsTF()) {
 		// Check if player is zooming
 		if (g_pLocalPlayer->bZoomed) {
@@ -257,8 +261,19 @@ bool ShouldAim() {
 				if (!CanHeadshot()) return false;
 			}
 		}
-	}
-	IF_GAME (IsTF()) {
+		
+		// Minigun spun up handler
+		if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun)) {
+			int weapon_state = CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
+			// If user setting for autospin isnt true, then we check if minigun is already zoomed 
+			if ((weapon_state == MinigunState_t::AC_STATE_IDLE || weapon_state == MinigunState_t::AC_STATE_STARTFIRING) && !auto_spin_up) {
+				return false;
+			}
+			if (!(g_pUserCmd->buttons & (IN_ATTACK2 | IN_ATTACK))) {
+				return false;
+			}
+		}
+
 		// Check if crithack allows attacking
 		if (!AllowAttacking())
 			return false;
@@ -357,8 +372,18 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			if (ignore_taunting && HasCondition<TFCond_Taunting>(entity)) return false;
 			// Dont target invulnerable players, ex: uber, bonk
 			if (IsPlayerInvulnerable(entity)) return false;
-			// If settings allow, dont target cloaked players
-			if (ignore_cloak && IsPlayerInvisible(entity)) return false;
+			// Checks for cloaked/deadringed players
+			if (ignore_cloak || ignore_deadringer) {
+				if (IsPlayerInvisible(entity)) {
+					// Determine whether cloaked player is using deadringer and checks user settings accordingly
+					// Item id for deadringer is 59 as of time of creation
+					if (HasWeapon(entity, 59)) {
+						if (ignore_deadringer) return false;
+					} else {
+						if (ignore_cloak) return false;
+					}
+				}
+			}
 			// If settings allow, dont target vaccinated players
 			if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID == CL_CLASS(CTFCompoundBow))
 				if (ignore_vaccinator && HasCondition<TFCond_UberBulletResist>(entity)) return false;
@@ -892,7 +917,7 @@ void Reset() {
 }
 
 // Function called when we need to draw to screen
-static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring", "Draws a ring to represent your current aimbot fov\nDoesnt change according to zoom fov\nWIP");
+static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring", "Draws a ring to represent your current aimbot fov");
 void DrawText() {
 	// Dont draw to screen when aimbot is disabled
 	if (!enabled) return;
@@ -908,13 +933,13 @@ void DrawText() {
 				// Grab the screen resolution and save to some vars
 				int width, height;
 				g_IEngine->GetScreenSize(width, height);
+				
 				// Some math to find radius of the fov circle
-				// float radius = tanf(DEG2RAD((float)fov) / 2) / tanf(DEG2RAD(draw::fov) / 2) * width;
-
 				float mon_fov = (float(width) / float(height) / (4.0f / 3.0f));
 				float fov_real = RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
 
 				float radius = tan(DEG2RAD(float(fov)) / 2) / tan(DEG2RAD(fov_real) / 2) * (width);
+				
 				// Draw a circle with our newfound circle
 				float px = 0;
 				float py = 0;

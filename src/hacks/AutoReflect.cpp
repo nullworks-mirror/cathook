@@ -33,6 +33,10 @@ void CreateMove() {
 
 	// Check if player is using a flame thrower
 	if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFFlameThrower)) return;
+	
+	// Check for phlogistinator, which is item 594
+	if (HasWeapon(LOCAL_E, 594)) return;
+	
 	// If user settings allow, return if local player is in attack
 	if (idle_only && (g_pUserCmd->buttons & IN_ATTACK)) return;
 
