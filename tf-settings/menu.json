@@ -183,6 +183,7 @@
 					"esp_buildings",
 					"esp_local",
 					"esp_powerups",
+					"esp_tracers",
 					{
 						"type": "list",
 						"name": "Emoji ESP",
