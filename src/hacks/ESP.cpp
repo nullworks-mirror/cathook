@@ -399,6 +399,7 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 		// only if bTeammatePowerup or bTeammates is true
 		if (legit && ent->m_iTeam != g_pLocalPlayer->team && playerlist::IsDefault(info.friendsID)) {
 			if (IsPlayerInvisible(ent)) return;
+			if (vischeck && !ent->IsVisible()) return;
 			/*if (ent->m_lLastSeen > (unsigned)v_iLegitSeenTicks->GetInt()) {
 				return;
 			}*/
