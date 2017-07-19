@@ -52,6 +52,7 @@ static CatVar priority_mode(priority_mode_enum, "aimbot_prioritymode", "0", "Pri
 		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
 		"FOV, DISTANCE, HEALTH are self-explainable. HEALTH picks the weakest enemy");
 static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits until it has enough charge to kill");
+static CatVar ambassador_wait(CV_SWITCH, "aimbot_ambassador", "1", "Wait for headshot", "Aimbot waits until it has enough charge to headshot with the ambassador");
 static CatVar ignore_vaccinator(CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1", "Ignore cloaked", "Don't aim at invisible enemies");
@@ -96,9 +97,7 @@ static CatVar aimbot_debug(CV_SWITCH, "aimbot_debug", "0", "Aimbot Debug", "Disp
 static CatVar engine_projpred(CV_SWITCH, "debug_aimbot_engine_pp", "0", "Engine ProjPred");
 // Followbot vars
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
-/* TODO IMPLEMENT
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
-*/
 
 // Current Entity
 int target_eid { 0 };
@@ -362,9 +361,26 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		IF_GAME (IsTF()) {
 			// If settings allow waiting for charge, and current charge cant kill target, dont aim
 			if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle) {
-				float bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
-				if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f) bdmg = 50.0f;
-				if ((bdmg * 3) < (HasDarwins(entity) ? (entity->m_iHealth * 1.15) : entity->m_iHealth)) {
+				
+				// Grab netvar for current charge damage and multiply by 3 for headshot
+				float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 3;
+
+				// Darwins damage correction, Darwins protects against 15% of damage
+				if (HasDarwins(entity)) 
+					cdmg = (cdmg * .85) - 1;
+				// Vaccinator damage correction, Vac charge protects against 75% of damage
+				if (HasCondition<TFCond_UberBulletResist>(entity)) {
+					cdmg = (cdmg * .25) - 1;
+				// Passive bullet resist protects against 10% of damage
+				} else if (HasCondition<TFCond_SmallBulletResist>(entity)) {
+					cdmg = (cdmg * .90) - 1;
+				}
+				// Invis damage correction, Invis spies get protection from 10% of damage
+				if (IsPlayerInvisible(entity)) 
+					cdmg = (cdmg * .80) - 1;
+				
+				// Check if player will die from headshot or if target has more health than normal overheal allows.
+				if ( !(entity->m_iHealth <= 150 || entity->m_iHealth <= cdmg || !g_pLocalPlayer->bZoomed || entity->m_iHealth > entity->m_iMaxHealth + (entity->m_iMaxHealth * 0.5)) ) {
 					return false;
 				}
 			}
@@ -493,6 +509,7 @@ void Aim(CachedEntity* entity) {
 	// Grab the targets vector, and vector it for the eye angles 
 	tr = (PredictEntity(entity) - g_pLocalPlayer->v_Eye);
 	VectorAngles(tr, angles);
+	
 	// Clamp angles
 	fClampAngle(angles);
     
@@ -508,8 +525,10 @@ void Aim(CachedEntity* entity) {
 
 // A function to check whether player can autoshoot
 bool CanAutoShoot() {
+	
 	// First check whether user settings allow autoshoot
 	if (autoshoot) {
+		
 		// A var for weapons not to use with autoshoot
 		static int forbiddenWeapons[] = { CL_CLASS(CTFCompoundBow), CL_CLASS(CTFKnife) };
 		int weapon_class;
@@ -524,10 +543,21 @@ bool CanAutoShoot() {
 			}
 		}
 		
+		// Check if zoomed, and zoom if not, then zoom
+		IF_GAME (IsTF()) {
+			if (g_pLocalPlayer->clazz == tf_class::tf_sniper) {
+				if (g_pLocalPlayer->holding_sniper_rifle) {
+					if (auto_zoom && !HasCondition<TFCond_Zoomed>(LOCAL_E)) {
+						g_pUserCmd->buttons |= IN_ATTACK2;
+						attack = false;
+					}
+				}
+			}
+		}
 		
+		// Check if ambassador can headshot
 		IF_GAME (IsTF2()) {
-			// Check if players current weapon is an ambasador
-			if (IsAmbassador(g_pLocalPlayer->weapon())) {
+			if (ambassador_wait && IsAmbassador(g_pLocalPlayer->weapon())) {
 				// Check if ambasador can headshot
 				if (!AmbassadorCanHeadshot()) return false;	
 			}
@@ -614,7 +644,12 @@ int BestHitbox(CachedEntity* target) {
 				headonly = true;
 			// If player is using an ambassador, set headonly to true
 			} else if (IsAmbassador(g_pLocalPlayer->weapon())) {
-				headonly = true;
+				// We only want to aim for the head if the ambassador can headshot
+				if (AmbassadorCanHeadshot()) {
+					headonly = true;
+					// 18 health is a good number to use as thats the usual minimum damage it can do with a bodyshot, but damage could potentially be higher
+					if (target->m_iHealth <= 18) headonly = false;
+				}
 			// If player is using a rocket based weapon, prefer the hip
 			} else if (ci == CL_CLASS(CTFRocketLauncher) ||
 				ci == CL_CLASS(CTFRocketLauncher_AirStrike) ||
