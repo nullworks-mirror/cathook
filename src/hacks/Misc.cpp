@@ -485,27 +485,6 @@ CatCommand name("name_set", "Immediate name change", [](const CCommand& args) {
 		ch->SendNetMsg(setname, false);
 	}
 });
-CatCommand save_settings("save", "Save settings (optional filename)", [](const CCommand& args) {
-	std::string filename("lastcfg");
-	if (args.ArgC() > 1) {
-		filename = std::string(args.Arg(1));
-	}
-	std::string path = format("tf/cfg/cat_", filename, ".cfg");
-	logging::Info("Saving settings to %s", path.c_str());
-	std::ofstream file(path, std::ios::out);
-	if (file.bad()) {
-		logging::Info("Couldn't open the file!");
-		return;
-	}
-	for (const auto& i : RegisteredVarsList()) {
-		if (i) {
-			if (strcmp(i->GetString(), i->GetDefault())) {
-				file << i->GetName() << " \"" << i->GetString() << "\"\n";
-			}
-		}
-	}
-	file.close();
-});
 CatCommand say_lines("say_lines", "Say with newlines (\\n)", [](const CCommand& args) {
 	std::string message(args.ArgS());
 	ReplaceString(message, "\\n", "\n");
