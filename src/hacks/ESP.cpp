@@ -661,7 +661,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 		// Center values on screen
 		width = width / 2;
 		// Only center height if we are using center mode
-		if ((int)tracers == 2) height = height / 2;
+		if ((int)tracers == 1) height = height / 2;
 		
 		// Get world to screen
 		Vector scn;

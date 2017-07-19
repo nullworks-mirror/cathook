@@ -52,7 +52,6 @@ static CatVar priority_mode(priority_mode_enum, "aimbot_prioritymode", "0", "Pri
 		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
 		"FOV, DISTANCE, HEALTH are self-explainable. HEALTH picks the weakest enemy");
 static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits until it has enough charge to kill");
-static CatVar ambassador_wait(CV_SWITCH, "aimbot_ambassador", "1", "Wait for headshot", "Aimbot waits until it has enough charge to headshot with the ambassador");
 static CatVar ignore_vaccinator(CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1", "Ignore cloaked", "Don't aim at invisible enemies");
@@ -557,7 +556,7 @@ bool CanAutoShoot() {
 		
 		// Check if ambassador can headshot
 		IF_GAME (IsTF2()) {
-			if (ambassador_wait && IsAmbassador(g_pLocalPlayer->weapon())) {
+			if (IsAmbassador(g_pLocalPlayer->weapon())) {
 				// Check if ambasador can headshot
 				if (!AmbassadorCanHeadshot()) return false;	
 			}
@@ -645,11 +644,9 @@ int BestHitbox(CachedEntity* target) {
 			// If player is using an ambassador, set headonly to true
 			} else if (IsAmbassador(g_pLocalPlayer->weapon())) {
 				// We only want to aim for the head if the ambassador can headshot
-				if (AmbassadorCanHeadshot()) {
-					headonly = true;
-					// 18 health is a good number to use as thats the usual minimum damage it can do with a bodyshot, but damage could potentially be higher
-					if (target->m_iHealth <= 18) headonly = false;
-				}
+				headonly = AmbassadorCanHeadshot();
+				// 18 health is a good number to use as thats the usual minimum damage it can do with a bodyshot, but damage could potentially be higher
+				if (target->m_iHealth <= 18) headonly = false;
 			// If player is using a rocket based weapon, prefer the hip
 			} else if (ci == CL_CLASS(CTFRocketLauncher) ||
 				ci == CL_CLASS(CTFRocketLauncher_AirStrike) ||
