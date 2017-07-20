@@ -135,7 +135,6 @@
 				"type": "list",
 				"name": "Triggerbot Preferences",
 				"list": [
-					"trigger_accuracy",
 					"trigger_zoomed",
 					"trigger_maxrange",
 					"trigger_charge",
@@ -183,6 +182,7 @@
 					"esp_buildings",
 					"esp_local",
 					"esp_powerups",
+					"esp_tracers",
 					{
 						"type": "list",
 						"name": "Emoji ESP",
@@ -407,6 +407,7 @@
 			"name",
 			"fakelag",
 			"disconnect_reason",
+			"name_stealer",
 			"minigun_jump",
 			"spycrab",
 			"skinchanger",

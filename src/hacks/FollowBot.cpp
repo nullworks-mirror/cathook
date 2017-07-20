@@ -14,17 +14,10 @@
 namespace hacks { namespace shared { namespace followbot {
 	
 	
-	
-	
-	
 /* Big Followbot TODO list
 1. Fix crash when setting followbot_idx var and remove the fix var in its place
-2. Test with followbots to ensure that vector followbot and crumb followbot work as intended
-3. Clean the finished code and push to main from fork
 */
-	
-	
-	
+
 	
 // User settings
 CatVar bot(CV_SWITCH, "fb_bot", "0", "Master Followbot Switch", "Set to 1 in followbots' configs");
