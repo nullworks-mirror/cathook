@@ -214,7 +214,7 @@ void Shutdown_hook(void* _this, const char* reason) {
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
 CatEnum namesteal_enum({ "OFF", "PASSIVE", "ACTIVE" });
-CatVar namesteal(CV_SWITCH, "name_stealer", "0", "Name Stealer", "Attemt to steal your teammates names. Usefull for avoiding kicks\nPassive only changes when the name stolen is no longer the best name to use\nActive Attemps to change the name whenever possible");
+CatVar namesteal(namesteal_enum, "name_stealer", "0", "Name Stealer", "Attemt to steal your teammates names. Usefull for avoiding kicks\nPassive only changes when the name stolen is no longer the best name to use\nActive Attemps to change the name whenever possible");
 
 static std::string stolen_name;
 
