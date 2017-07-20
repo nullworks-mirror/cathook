@@ -472,6 +472,9 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		// Check if sticky aimbot is enabled
 		if (!stickybot) return false;
 		
+		// Only hitscan weapons can break stickys so check for them.
+		if (!(GetWeaponMode() == weapon_hitscan || GetWeaponMode() == weapon_melee)) return false;
+
 		// Check if target is within range
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > (int)EffectiveTargetingRange()) return false;
