@@ -407,6 +407,7 @@
 			"name",
 			"fakelag",
 			"disconnect_reason",
+			"name_stealer",
 			"minigun_jump",
 			"spycrab",
 			"skinchanger",
