@@ -100,6 +100,7 @@ static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Sp
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
 */
 
+static CatVar fovcircle_opacity(CV_FLOAT, "aimbot_fov_draw_opacity", "0.7", "FOV Circle Opacity", "Defines opacity of FOV circle", 0.0f, 1.0f);
 static CatVar rageonly(CV_SWITCH, "aimbot_rage_only", "0", "Ignore non-rage targets", "Use playerlist to set up rage targets");
 
 // Current Entity
@@ -937,6 +938,9 @@ void DrawText() {
 		if (fov && float(fov) < 180) {
 			// Dont show ring while player is dead
 			if (LOCAL_E->m_bAlivePlayer) {
+				rgba_t color = GUIColor();
+				color.a = float(fovcircle_opacity);
+
 				// Grab the screen resolution and save to some vars
 				int width, height;
 				g_IEngine->GetScreenSize(width, height);
@@ -960,7 +964,7 @@ void DrawText() {
 						px = width / 2 + radius * cos(ang);
 						py = height / 2 + radius * sin(ang);
 					}
-					drawgl::Line(px, py, x - px, y - py, GUIColor());
+					drawgl::Line(px, py, x - px, y - py, color);
 					px = x;
 					py = y;
 				}
