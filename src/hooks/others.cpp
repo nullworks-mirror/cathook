@@ -254,17 +254,19 @@ bool StolenName(){
 		// Save the ent to our array
 		potential_targets[potential_targets_length] = i;
 		potential_targets_length++;
+		
+		// With our maximum amount of players reached, dont search for anymore
 		if (potential_targets_length >= 32) break;
 	}
+	
+	// Checks to prevent crashes
+	if (potential_targets_length == 0) return false;
 	
 	// Get random number that we can use with our array
 	int target_random_num = floor(RandFloatRange(0, potential_targets_length - 0.1F));
 	
 	// Get a idx from our random array position
 	int new_target = potential_targets[target_random_num];
-	
-	// Checks to prevent crashes
-	if (!ENTITY(new_target) || potential_targets_length == 0) return false;
 	
 	// Grab username of user
 	player_info_s info;
