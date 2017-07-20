@@ -213,7 +213,8 @@ void Shutdown_hook(void* _this, const char* reason) {
 
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
-CatVar namesteal(CV_SWITCH, "name_stealer", "0", "Name Stealer", "Attemt to steal your teammates names. Usefull for avoiding kicks");
+CatEnum namesteal_enum({ "OFF", "PASSIVE", "ACTIVE" });
+CatVar namesteal(CV_SWITCH, "name_stealer", "0", "Name Stealer", "Attemt to steal your teammates names. Usefull for avoiding kicks\nPassive only changes when the name stolen is no longer the best name to use\nActive Attemps to change the name whenever possible");
 
 static std::string stolen_name;
 
@@ -239,7 +240,13 @@ bool StolenName(){
 		if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info)) {
 					
 			// If our name is the same as current, than change it
-			if (std::string(info.name) == stolen_name) continue;
+			if (std::string(info.name) == stolen_name) {
+				// Since we found the ent we stole our name from and it is still good, if user settings are passive, then we return true and dont alter our name
+				if ((int)namesteal == 1) {
+					return true;
+				// Otherwise we continue to change our name to something else
+				} else continue;
+			}
 			
 		// a ent without a name is no ent we need, contine for a different one
 		} else continue;
