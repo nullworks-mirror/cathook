@@ -27,7 +27,7 @@ static CatVar trigger_key_mode(trigger_key_modes_enum, "trigger_key_mode", "1", 
 static CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "Head only" });
 static CatVar hitbox_mode(hitbox_mode_enum, "trigger_hitboxmode", "0", "Hitbox Mode", "Defines hitbox selection mode");
 	
-static CatVar accuracy(CV_INT, "trigger_accuracy", "0", "Improve accuracy", "Improves triggerbot accuracy when aiming for specific hitbox");
+static CatVar accuracy(CV_INT, "trigger_accuracy", "0", "Improve accuracy", "Improves triggerbot accuracy when aiming for specific hitbox. Recommended to use with sniper rifle/ambassador");
 
 static CatVar ignore_vaccinator(CV_SWITCH, "trigger_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "trigger_ignore_hoovy", "1", "Ignore Hoovies", "Triggerbot won't attack hoovies");

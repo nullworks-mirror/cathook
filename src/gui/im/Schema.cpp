@@ -7,6 +7,8 @@
 
 #include "Schema.hpp"
 
+
+#include "../../helpers.h"
 #include "../../cvwrapper.h"
 #include "../../logging.h"
 
@@ -23,13 +25,12 @@ CatVar* FindCatVar(const std::string name) {
 ListEntry_Dummy* FromJson(nlohmann::json json) {
 	if (json.is_string()) {
 		const std::string var_name = json;
-		logging::Info("[Debug] Variable: %s", var_name.c_str());
 		ListEntry_Dummy* cv;
 		try {
 			cv = (ListEntry_Dummy*)(new ListEntry_Variable(*FindCatVar(var_name)));
 		} catch (std::runtime_error& er) {
 			logging::Info("[Error] %s", er.what());
-			cv = (ListEntry_Dummy*)(new ListEntry_Label("malformed object"));
+			cv = (ListEntry_Dummy*)(new ListEntry_Label(format("[", var_name, "]")));
 		}
 		return cv;
 	} else if (json.is_object()) {
@@ -129,7 +130,7 @@ CatCommand reloadscheme("reloadscheme", "Reload Scheme", []() {
 		}
 		for (const auto& v : CatVarList()) {
 			if (map_present.find(v) == map_present.end()) {
-				logging::Info("%s is not in any list!", v->name.c_str());
+				logging::Info("%s is not present in the GUI!", v->name.c_str());
 			}
 		}
 		//TraverseList(&main_list);

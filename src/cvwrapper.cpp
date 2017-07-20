@@ -12,6 +12,74 @@
 
 int CatVar::last_id { 0 };
 
+int rebased_count { 0 };
+
+int GetRebasedCatVarCount() {
+	return rebased_count;
+}
+
+static CatCommand cfg_rebase("cfg_setbase", "Rebase config", []() {
+	for (auto& cv : CatVarList()) {
+		std::string value(cv->GetString());
+		if (value != cv->defaults) {
+			cv->current_base = value;
+			rebased_count++;
+		}
+	}
+	logging::Info("Successfully rebased %d variables", rebased_count);
+});
+
+static CatCommand cfg_resetbase("cfg_resetbase", "Reset config base", []() {
+	for (auto& cv : CatVarList()) {
+		cv->current_base = cv->defaults;
+	}
+	rebased_count = 0;
+});
+
+static CatCommand save_settings("save", "Save settings (optional filename)", [](const CCommand& args) {
+	std::string filename("lastcfg");
+	if (args.ArgC() > 1) {
+		filename = std::string(args.Arg(1));
+	}
+	std::string path = format("tf/cfg/cat_", filename, ".cfg");
+	logging::Info("Saving settings to %s", path.c_str());
+	if (GetRebasedCatVarCount()) {
+		logging::Info("[Warning] %d CatVars are rebased!", GetRebasedCatVarCount());
+	}
+	std::ofstream file(path, std::ios::out);
+	if (file.bad()) {
+		logging::Info("Couldn't open the file!");
+		return;
+	}
+	for (const auto& i : CatVarList()) {
+		if (i->GetBase() != std::string(i->GetString())) {
+			file << CON_PREFIX << i->name << " \"" << i->GetString() << "\"\n";
+		}
+	}
+	file.close();
+});
+
+static CatCommand save_settings_complete("save_complete", "Save all settings (optional filename)", [](const CCommand& args) {
+	std::string filename("lastcfg");
+	if (args.ArgC() > 1) {
+		filename = std::string(args.Arg(1));
+	}
+	std::string path = format("tf/cfg/cat_", filename, ".cfg");
+	logging::Info("Saving settings to %s", path.c_str());
+	if (GetRebasedCatVarCount()) {
+		logging::Info("[Warning] %d CatVars are rebased!", GetRebasedCatVarCount());
+	}
+	std::ofstream file(path, std::ios::out);
+	if (file.bad()) {
+		logging::Info("Couldn't open the file!");
+		return;
+	}
+	for (const auto& i : CatVarList()) {
+		file << CON_PREFIX << i->name << " \"" << i->GetString() << "\"\n";
+	}
+	file.close();
+});
+
 // Prevent initialization errors.
 std::vector<CatVar*>& registrationArray() {
 	static std::vector<CatVar*> vector;
@@ -94,6 +162,7 @@ void CatVar::Register() {
 	id = last_id++;
 	convar = CreateConVar(CON_PREFIX + name, defaults, desc_short);
 	convar_parent = convar->m_pParent;
+	current_base = defaults;
 	while (!callbacks.empty()) {
 		callbacks.back()(this);
 		callbacks.pop_back();

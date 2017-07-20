@@ -98,6 +98,8 @@ static CatVar engine_projpred(CV_SWITCH, "debug_aimbot_engine_pp", "0", "Engine 
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
 
+static CatVar rageonly(CV_SWITCH, "aimbot_rage_only", "0", "Ignore non-rage targets", "Use playerlist to set up rage targets");
+
 // Current Entity
 int target_eid { 0 };
 CachedEntity* target = 0;
@@ -356,6 +358,11 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		// Check if player is too far away
 		if (EffectiveTargetingRange()) {
 			if (entity->m_flDistance > EffectiveTargetingRange()) return false;
+		}
+		if (rageonly) {
+			if (playerlist::AccessData(entity).state != playerlist::k_EState::RAGE) {
+				return false;
+			}
 		}
 		IF_GAME (IsTF()) {
 			// If settings allow waiting for charge, and current charge cant kill target, dont aim

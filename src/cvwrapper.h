@@ -94,6 +94,10 @@ public:
 		return g_IInputSystem->IsButtonDown(static_cast<ButtonCode_t>(static_cast<int>(*this)));
 	}
 
+	inline const std::string& GetBase() const {
+		return current_base;
+	}
+
 public:
 	const CatVar_t type;
 	const std::string name;
@@ -101,6 +105,8 @@ public:
 	const std::string desc_short { "" };
 	const std::string desc_long { "" };
 	const CatEnum* const enum_type { nullptr };
+
+	std::string current_base { "0" };
 
 	bool restricted { false };
 	float min { 0.0f };
@@ -121,5 +127,6 @@ std::vector<CatCommand*>& commandRegistrationArray();
 
 std::vector<CatVar*>& CatVarList();
 void RegisterCatVars();
+int GetRebasedCatVarCount();
 
 #endif /* CVWRAPPER_H_ */

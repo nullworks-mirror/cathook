@@ -281,7 +281,7 @@ bool StolenName(){
 
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	static const GetFriendPersonaName_t original = (GetFriendPersonaName_t)hooks::steamfriends.GetMethod(offsets::GetFriendPersonaName());
-	
+  
 	// Check User settings if namesteal is allowed
 	if (namesteal && steamID == g_ISteamUser->GetSteamID()) {
 		
@@ -297,7 +297,8 @@ const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 		}
 	}
 	
-	if ((force_name.convar->m_StringLength > 3) && steamID == g_ISteamUser->GetSteamID()) {
+	if ((strlen(force_name.GetString()) > 1) && steamID == g_ISteamUser->GetSteamID()) {
+
 		return force_name_newlined;
 	}
 	return original(_this, steamID);
