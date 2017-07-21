@@ -5,7 +5,7 @@ try {
 	full_class_table = JSON.parse(fs.readFileSync("full-class-table.json").toString());
 } catch (e) {}
 
-console.log('Generating dummy class header');
+console.log("Generating dummy class header");
 
 var header = `/*
 	AUTO-GENERATED HEADER - DO NOT MODIFY
