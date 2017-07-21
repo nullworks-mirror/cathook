@@ -970,7 +970,7 @@ void DrawText() {
 	// Broken from kathook merge, TODO needs to be adapted for imgui
 	if (fov_draw) {
 		// It cant use fovs greater than 180, so we check for that
-		if (fov && float(fov) < 180) {
+		if (float(fov) > 0.0f && float(fov) < 180) {
 			// Dont show ring while player is dead
 			if (LOCAL_E->m_bAlivePlayer) {
 				rgba_t color = GUIColor();
