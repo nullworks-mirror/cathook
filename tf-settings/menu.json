@@ -12,6 +12,7 @@
 			"aimbot_fov_draw",
 			"aimbot_prioritymode",
 			"aimbot_charge",
+			"aimbot_charge_if_full",
 			{
 				"type": "list",
 				"name": "Ignore",
@@ -438,6 +439,7 @@
 					"removecond_stun",
 					"instant_decloak",
 					"instant_rezoom",
+					"infinite_packs",
 					"lagexploit_mini"
 				]
 			},
