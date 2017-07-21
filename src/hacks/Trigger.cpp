@@ -27,7 +27,7 @@ static CatVar trigger_key_mode(trigger_key_modes_enum, "trigger_key_mode", "1", 
 static CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "Head only" });
 static CatVar hitbox_mode(hitbox_mode_enum, "trigger_hitboxmode", "0", "Hitbox Mode", "Defines hitbox selection mode");
 	
-static CatVar accuracy(CV_INT, "trigger_accuracy", "0", "Improve accuracy", "Improves triggerbot accuracy when aiming for specific hitbox. Recommended to use with sniper rifle/ambassador");
+static CatVar accuracy(CV_INT, "trigger_accuracy", "1", "Improve accuracy", "Improves triggerbot accuracy when aiming for specific hitbox. Recommended to use with sniper rifle/ambassador");
 
 static CatVar ignore_vaccinator(CV_SWITCH, "trigger_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "trigger_ignore_hoovy", "1", "Ignore Hoovies", "Triggerbot won't attack hoovies");
@@ -42,13 +42,20 @@ static CatVar zoomed_only(CV_SWITCH, "trigger_zoomed", "1", "Zoomed only", "Don'
 static CatVar max_range(CV_INT, "trigger_maxrange", "0", "Max distance",
 		"Max range for triggerbot\n"
 		"900-1100 range is efficient for scout/widowmaker engineer", 4096.0f);
-	
+
+static CatVar delay(CV_FLOAT, "trigger_delay", "0", "Delay", "Triggerbot delay in seconds", 0.0f, 1.0f);
+
+float target_time = 0.0f;
+
 int last_hb_traced = 0;
 Vector forward;
 
 // The main "loop" of the triggerbot
 void CreateMove() {	
 	
+	float backup_time = target_time;
+	target_time = 0;
+
 	// Check if aimbot is enabled
 	if (!enabled) return;
 	
@@ -65,7 +72,23 @@ void CreateMove() {
 	if (CE_BAD(ent)) return;
 	
 	// Determine whether the triggerbot should shoot, then act accordingly
-	if (IsTargetStateGood(ent)) g_pUserCmd->buttons |= IN_ATTACK;
+	if (IsTargetStateGood(ent)) {
+		target_time = backup_time;
+		if (delay) {
+			if (target_time > g_GlobalVars->curtime) {
+				target_time = 0.0f;
+			}
+			if (!target_time) {
+				target_time = g_GlobalVars->curtime;
+			} else {
+				if (g_GlobalVars->curtime - float(delay) >= target_time) {
+					g_pUserCmd->buttons |= IN_ATTACK;
+				}
+			}
+		} else {
+			g_pUserCmd->buttons |= IN_ATTACK;
+		}
+	}
 		
 	return;
 }
@@ -95,6 +118,11 @@ bool ShouldShoot() {
 		if (HasCondition<TFCond_Taunting>(g_pLocalPlayer->entity)) return false;
 		// Check if player is cloaked
 		if (IsPlayerInvisible(g_pLocalPlayer->entity)) return false;
+
+		if (IsAmbassador(g_pLocalPlayer->weapon())) {
+			// Check if ambasador can headshot
+			if (!AmbassadorCanHeadshot()) return false;
+		}
 	}
 	
 	IF_GAME (IsTF2()) {

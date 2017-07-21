@@ -35,7 +35,7 @@ void Draw() {
 	closest_spy_distance = 0.0f;
 	spy_count = 0;
 	if (last_say > g_GlobalVars->curtime) last_say = 0;
-	for (int i = 0; i < HIGHEST_ENTITY && i < 64; i++) {
+	for (int i = 0; i < HIGHEST_ENTITY && i < 32; i++) {
 		ent = ENTITY(i);
 		if (CE_BAD(ent)) continue;
 		if (CE_BYTE(ent, netvar.iLifeState)) continue;
