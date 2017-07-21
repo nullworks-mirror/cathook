@@ -15,6 +15,11 @@ class CatVar;
 extern int g_AppID;
 extern unsigned long tickcount;
 
+extern ConVar* sv_client_min_interp_ratio;
+extern ConVar* cl_interp_ratio;
+extern ConVar* cl_interp;
+extern ConVar* cl_interpolate;
+
 extern CatVar event_log;
 extern CatVar cathook; // Master switch
 extern CatVar ignore_taunting;

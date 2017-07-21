@@ -163,15 +163,19 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	time_replaced = false;
 	curtime_old = g_GlobalVars->curtime;
 
-	static ConVar* sv_client_min_interp_ratio = g_ICvar->FindVar("sv_client_min_interp_ratio");
-	static ConVar* cl_interp = g_ICvar->FindVar("cl_interp");
-	static ConVar* cl_interp_ratio = g_ICvar->FindVar("cl_interp_ratio");
-
 	if (nolerp) {
 		g_pUserCmd->tick_count += 1;
-		if (sv_client_min_interp_ratio->GetInt() != -1)	sv_client_min_interp_ratio->SetValue(-1);
-		if (cl_interp->GetInt() != 0) cl_interp->SetValue(0);
+		if (sv_client_min_interp_ratio->GetInt() != -1) {
+			//sv_client_min_interp_ratio->m_nFlags = 0;
+			sv_client_min_interp_ratio->SetValue(-1);
+		}
+		if (cl_interp->m_fValue != 0) {
+			cl_interp->SetValue(0);
+			cl_interp->m_fValue = 0.0f;
+			cl_interp->m_nValue = 0;
+		}
 		if (cl_interp_ratio->GetInt() != 0) cl_interp_ratio->SetValue(0);
+		if (cl_interpolate->GetInt() != 0) cl_interpolate->SetValue(0);
 	}
 
 	if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity)) {

@@ -19,6 +19,11 @@ void ThirdpersonCallback(IConVar* var, const char* pOldValue, float flOldValue) 
 	}
 }
 
+ConVar* sv_client_min_interp_ratio;
+ConVar* cl_interp_ratio;
+ConVar* cl_interp;
+ConVar* cl_interpolate;
+
 unsigned long tickcount = 0;
 char* force_name_newlined = new char[32] { 0 };
 bool need_name_change = true;
@@ -38,6 +43,11 @@ CatVar disconnect_reason(CV_STRING, "disconnect_reason", "", "Disconnect reason"
 
 CatVar event_log(CV_SWITCH, "events", "1", "Advanced Events");
 void GlobalSettings::Init() {
+	sv_client_min_interp_ratio = g_ICvar->FindVar("sv_client_min_interp_ratio");
+	cl_interp_ratio = g_ICvar->FindVar("cl_interp_ratio");
+	cl_interp = g_ICvar->FindVar("cl_interp");
+	cl_interpolate = g_ICvar->FindVar("cl_interpolate");
+
 	bSendPackets = new bool;
 	*bSendPackets = true;
 	force_thirdperson.OnRegister([](CatVar* var) {
