@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d208d05091854caaa51d2757d2097b2c)](https://www.codacy.com/app/SylveonBottle/cathook?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SylveonBottle/cathook&amp;utm_campaign=Badge_Grade)
 # Cathook Multihack
 ![banner](https://raw.githubusercontent.com/nullifiedcat/cathook/master/banner.png)
 
