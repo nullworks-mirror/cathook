@@ -101,6 +101,8 @@ static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automa
 static CatVar fovcircle_opacity(CV_FLOAT, "aimbot_fov_draw_opacity", "0.7", "FOV Circle Opacity", "Defines opacity of FOV circle", 0.0f, 1.0f);
 static CatVar rageonly(CV_SWITCH, "aimbot_rage_only", "0", "Ignore non-rage targets", "Use playerlist to set up rage targets");
 
+static CatVar miss_chance(CV_FLOAT, "aimbot_miss_chance", "0", "Miss chance", "From 0 to 1. Aimbot will NOT aim in these % cases", 0.0f, 1.0f);
+
 // Current Entity
 int target_eid { 0 };
 CachedEntity* target = 0;
@@ -222,6 +224,7 @@ bool ShouldAim() {
 	if (g_pUserCmd->buttons & IN_USE) return false;
 	// Check if using action slot item 
 	if (g_pLocalPlayer->using_action_slot_item) return false;
+
 	IF_GAME (IsTF2()) {
 		// Check if Carrying A building
 		if (CE_BYTE(g_pLocalPlayer->entity, netvar.m_bCarryingObject)) return false;
@@ -509,6 +512,12 @@ bool IsTargetStateGood(CachedEntity* entity) {
 	
 // A function to aim at a specific entitiy
 void Aim(CachedEntity* entity) {
+	if (float(miss_chance) > 0.0f) {
+		if ((rand() % 100) < float(miss_chance) * 100.0f) {
+			return;
+		}
+	}
+
 	// Dont aim at a bad entity
 	if (CE_BAD(entity)) return;
 
