@@ -390,7 +390,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 				  cdmg = (cdmg * .80) - 1;
 				
 				// Check if player will die from headshot or if target has more than 450 health and sniper has max chage
-				if ( !(entity->m_iHealth <= 150.0F || entity->m_iHealth <= cdmg || !g_pLocalPlayer->bZoomed || maxCharge && entity->m_iHealth > 450.0F) ) {
+				if ( !(entity->m_iHealth <= 150.0F || entity->m_iHealth <= cdmg || !g_pLocalPlayer->bZoomed || (maxCharge && entity->m_iHealth > 450.0F)) ) {
 				  return false;
 				}
 			}
