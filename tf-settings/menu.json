@@ -245,13 +245,16 @@
 				"name": "Chams",
 				"list": [
 					"chams_enable",
+					"chams_legit",
+					"chams_singlepass",
 					"chams_health",
 					"chams_players",
 					"chams_teammates",
 					"chams_buildings",
 					"chams_teammate_buildings",
 					"chams_flat",
-					"chams_weapons",
+					"chams_recursive",
+					"chams_weapons_white",
 					"chams_medkits",
 					"chams_ammo",
 					"chams_stickies"

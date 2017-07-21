@@ -29,6 +29,7 @@ public:
 	void RenderChams(int idx);
 	void BeginRenderChams();
 	void EndRenderChams();
+	void RenderChamsRecursive(IClientEntity* entity);
 public:
 	bool init { false };
 	bool drawing { false };
