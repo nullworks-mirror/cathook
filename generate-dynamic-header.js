@@ -1,11 +1,11 @@
-const fs = require('fs');
+const fs = require("fs");
 
 var full_class_table = {};
 try {
-	full_class_table = JSON.parse(fs.readFileSync('full-class-table.json').toString());
+	full_class_table = JSON.parse(fs.readFileSync("full-class-table.json").toString());
 } catch (e) {}
 
-console.log('Generating dummy class header');
+console.log("Generating dummy class header");
 
 var header = `/*
 	AUTO-GENERATED HEADER - DO NOT MODIFY
@@ -24,7 +24,7 @@ namespace client_classes {
 `;
 
 for (var clz in full_class_table) {
-	header += '\t\tint ' + clz + ' { 0 };\n';
+	header += "\t\tint " + clz + " { 0 };\n";
 }
 
 header += `
@@ -35,7 +35,7 @@ header += `
 
 #endif /* DYNAMIC_AUTOGEN_HPP */`;
 
-var POPULATED_MAP = '';
+var POPULATED_MAP = "";
 
 for (var clz in full_class_table) {
 	POPULATED_MAP += `\t\tclassid_mapping["${clz}"] = &${clz};\n`;
@@ -69,5 +69,5 @@ dynamic dynamic_list;
 }`;
 
 
-fs.writeFileSync('src/classinfo/dynamic.gen.hpp', header);
-fs.writeFileSync('src/classinfo/dynamic.gen.cpp', source);
+fs.writeFileSync("src/classinfo/dynamic.gen.hpp", header);
+fs.writeFileSync("src/classinfo/dynamic.gen.cpp", source);
