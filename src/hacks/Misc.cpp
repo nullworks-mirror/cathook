@@ -322,25 +322,19 @@ void CreateMove() {
 	
 	// Check if user settings allow anti-afk
 	if (anti_afk) {
-		
 		// If the timer exceeds 1 minute, jump and reset the timer
-		if (g_GlobalVars->curtime - 60 > afkTimeIdle) {
-		
-			// Send random commands
-			g_pUserCmd->sidemove = RandFloatRange(-450.0, 450.0);
-			g_pUserCmd->forwardmove  = RandFloatRange(-450.0, 450.0);
-			g_pUserCmd->buttons = rand();
+		if ( g_GlobalVars->curtime - afkTimeIdle > 60 ) {
 			
-			// After 1 second we reset the idletime
-			if (g_GlobalVars->curtime - 61 > afkTimeIdle) {
-				logging::Info("Finish idle");
+			// If player didnt jump, then we dont reset the timer
+			if (CE_INT(g_pLocalPlayer->entity, netvar.movetype) == MOVETYPE_FLY)
 				afkTimeIdle = g_GlobalVars->curtime;
-			}
-		} else {
-			// If the player uses a button, reset the timer
-			if (g_pUserCmd->buttons & IN_FORWARD || g_pUserCmd->buttons & IN_BACK || g_pUserCmd->buttons & IN_MOVELEFT || g_pUserCmd->buttons & IN_MOVERIGHT || g_pUserCmd->buttons & IN_JUMP || !LOCAL_E->m_bAlivePlayer)
-				afkTimeIdle = g_GlobalVars->curtime;
+			
+			// Attemt to jump
+			g_pUserCmd->buttons = g_pUserCmd->buttons &~ IN_JUMP;
 		}
+		// If the player uses a button, reset the timer
+		if ( g_pUserCmd->buttons & IN_FORWARD || g_pUserCmd->buttons & IN_BACK || g_pUserCmd->buttons & IN_MOVELEFT || g_pUserCmd->buttons & IN_MOVERIGHT || g_pUserCmd->buttons & IN_JUMP || !LOCAL_E->m_bAlivePlayer )
+			afkTimeIdle = g_GlobalVars->curtime;
 	}
 	
     IF_GAME (IsTF2()) {

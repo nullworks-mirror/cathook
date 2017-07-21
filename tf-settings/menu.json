@@ -135,11 +135,12 @@
 				"type": "list",
 				"name": "Triggerbot Preferences",
 				"list": [
+					"trigger_delay",
+					"trigger_accuracy",
 					"trigger_zoomed",
 					"trigger_maxrange",
 					"trigger_charge",
 					"trigger_hitboxmode",
-					"trigger_accuracy",
 					"trigger_key_mode",
 					"trigger_key"
 				]
@@ -244,13 +245,16 @@
 				"name": "Chams",
 				"list": [
 					"chams_enable",
+					"chams_legit",
+					"chams_singlepass",
 					"chams_health",
 					"chams_players",
 					"chams_teammates",
 					"chams_buildings",
 					"chams_teammate_buildings",
 					"chams_flat",
-					"chams_weapons",
+					"chams_recursive",
+					"chams_weapons_white",
 					"chams_medkits",
 					"chams_ammo",
 					"chams_stickies"

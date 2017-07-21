@@ -98,7 +98,10 @@ static CatVar engine_projpred(CV_SWITCH, "debug_aimbot_engine_pp", "0", "Engine 
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
 
+static CatVar fovcircle_opacity(CV_FLOAT, "aimbot_fov_draw_opacity", "0.7", "FOV Circle Opacity", "Defines opacity of FOV circle", 0.0f, 1.0f);
 static CatVar rageonly(CV_SWITCH, "aimbot_rage_only", "0", "Ignore non-rage targets", "Use playerlist to set up rage targets");
+
+static CatVar miss_chance(CV_FLOAT, "aimbot_miss_chance", "0", "Miss chance", "From 0 to 1. Aimbot will NOT aim in these % cases", 0.0f, 1.0f);
 
 // Current Entity
 int target_eid { 0 };
@@ -221,6 +224,7 @@ bool ShouldAim() {
 	if (g_pUserCmd->buttons & IN_USE) return false;
 	// Check if using action slot item 
 	if (g_pLocalPlayer->using_action_slot_item) return false;
+
 	IF_GAME (IsTF2()) {
 		// Check if Carrying A building
 		if (CE_BYTE(g_pLocalPlayer->entity, netvar.m_bCarryingObject)) return false;
@@ -508,6 +512,12 @@ bool IsTargetStateGood(CachedEntity* entity) {
 	
 // A function to aim at a specific entitiy
 void Aim(CachedEntity* entity) {
+	if (float(miss_chance) > 0.0f) {
+		if ((rand() % 100) < float(miss_chance) * 100.0f) {
+			return;
+		}
+	}
+
 	// Dont aim at a bad entity
 	if (CE_BAD(entity)) return;
 
@@ -969,9 +979,12 @@ void DrawText() {
 	// Broken from kathook merge, TODO needs to be adapted for imgui
 	if (fov_draw) {
 		// It cant use fovs greater than 180, so we check for that
-		if (fov && float(fov) < 180) {
+		if (float(fov) > 0.0f && float(fov) < 180) {
 			// Dont show ring while player is dead
 			if (LOCAL_E->m_bAlivePlayer) {
+				rgba_t color = GUIColor();
+				color.a = float(fovcircle_opacity);
+
 				// Grab the screen resolution and save to some vars
 				int width, height;
 				g_IEngine->GetScreenSize(width, height);
@@ -995,7 +1008,7 @@ void DrawText() {
 						px = width / 2 + radius * cos(ang);
 						py = height / 2 + radius * sin(ang);
 					}
-					drawgl::Line(px, py, x - px, y - py, GUIColor());
+					drawgl::Line(px, py, x - px, y - py, color);
 					px = x;
 					py = y;
 				}

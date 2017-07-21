@@ -66,7 +66,7 @@ You will want to update these files if you wish to have an updated menu.
 
 ## Followbots
 `cathook-ipc-server` allows you to run and control Followbots to do your evil bidding in-game. The installation for Followbots is quite complex, and will not be covered on this page. Obviously, you must have several user accounts ready to run TF2.  
-A guide for Followbots can be found here: [How to setup followbots.](https://github.com/nullifiedcat/cathook/wiki/Setting-up-Followbots)  [How to use followbots.](https://github.com/nullifiedcat/cathook/wiki/Using-Followbots)  
+A guide for Followbots can be found here: [How to setup and use followbots.](https://www.youtube.com/watch?v=kns5-nw7xUg)  
 You may also ask someone in our discord server to help you out.
 
 The installation script is as followed:
