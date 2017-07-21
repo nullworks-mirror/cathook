@@ -75,5 +75,3 @@ The installation script is as followed:
 git clone --recursive https://github.com/nullifiedcat/cathook-ipc-server && cd cathook-ipc-server && make -j4
 ```
 To run the Followbot server, run `./bin/cathook-ipc-server`. You can also use `./bin/cathook-ipc-server &>/dev/null &` to run it in background.
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d208d05091854caaa51d2757d2097b2c)](https://www.codacy.com/app/SylveonBottle/cathook?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SylveonBottle/cathook&amp;utm_campaign=Badge_Grade)
