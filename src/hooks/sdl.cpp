@@ -38,7 +38,7 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
 	static SDL_GLContext ctx_tf2 = SDL_GL_GetCurrentContext();
 	static SDL_GLContext ctx_imgui = nullptr;
 	static SDL_GLContext ctx_text = nullptr;
-	{
+	if (!disable_visuals) {
 		PROF_SECTION(DRAW_cheat);
 		if (!ctx_imgui) {
 			ctx_imgui = SDL_GL_CreateContext(window);
@@ -55,15 +55,7 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
 			return;
 		}
 
-		SDL_GL_MakeCurrent(window, ctx_imgui);
-		{
-			PROF_SECTION(DRAW_imgui);
-			ImGui_ImplSdl_NewFrame(window);
-			menu::im::Render();
-			ImGui::Render();
-		}
 		SDL_GL_MakeCurrent(window, ctx_text);
-
 		{
 			std::lock_guard<std::mutex> draw_lock(drawing_mutex);
 			drawgl::PreRender();
@@ -78,6 +70,13 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
 			}
 
 			drawgl::PostRender();
+		}
+		SDL_GL_MakeCurrent(window, ctx_imgui);
+		{
+			PROF_SECTION(DRAW_imgui);
+			ImGui_ImplSdl_NewFrame(window);
+			menu::im::Render();
+			ImGui::Render();
 		}
 	}
 	{
