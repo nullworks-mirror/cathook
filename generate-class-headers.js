@@ -52,7 +52,7 @@ namespace client_classes {
 for (var clz in full_class_table) {
 	var value = "0";
 	if (classes[clz]) value = classes[clz];
-	header_constexpr += '\t\tstatic constexpr int ' + clz + ' = ' + value + ';\n';
+	header_constexpr += "\t\tstatic constexpr int " + clz + " = " + value + ";\n";
 	header += "\t\tint " + clz + " { " + value + " };\n";
 }
 
