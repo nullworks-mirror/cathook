@@ -77,11 +77,14 @@ void CreateMove() {
 	// Check user settings if auto-sticky is enabled
 	if (!enabled) return;
 	
+	// Check if game is a tf game
+	//IF_GAME (!IsTF()) return;
+	
 	// Check if player is demoman
 	if (g_pLocalPlayer->clazz != tf_demoman) return;
 	
 	// Check for sticky jumper, which is item 265, if true, return
-	if (HasWeapon(LOCAL_E, 265));
+	if (HasWeapon(LOCAL_E, 265)) return;
 		
 	// Clear the arrays
 	bombs.clear();

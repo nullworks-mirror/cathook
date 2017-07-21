@@ -14,10 +14,15 @@ int g_AppID = 0;
 
 void ThirdpersonCallback(IConVar* var, const char* pOldValue, float flOldValue) {
 	if (force_thirdperson.convar_parent && !force_thirdperson) {
-		if (g_pLocalPlayer && g_pLocalPlayer->entity)
+		if (g_pLocalPlayer && CE_GOOD(g_pLocalPlayer->entity))
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 0;
 	}
 }
+
+ConVar* sv_client_min_interp_ratio;
+ConVar* cl_interp_ratio;
+ConVar* cl_interp;
+ConVar* cl_interpolate;
 
 unsigned long tickcount = 0;
 char* force_name_newlined = new char[32] { 0 };
@@ -38,6 +43,11 @@ CatVar disconnect_reason(CV_STRING, "disconnect_reason", "", "Disconnect reason"
 
 CatVar event_log(CV_SWITCH, "events", "1", "Advanced Events");
 void GlobalSettings::Init() {
+	sv_client_min_interp_ratio = g_ICvar->FindVar("sv_client_min_interp_ratio");
+	cl_interp_ratio = g_ICvar->FindVar("cl_interp_ratio");
+	cl_interp = g_ICvar->FindVar("cl_interp");
+	cl_interpolate = g_ICvar->FindVar("cl_interpolate");
+
 	bSendPackets = new bool;
 	*bSendPackets = true;
 	force_thirdperson.OnRegister([](CatVar* var) {

@@ -31,6 +31,7 @@ void CatVar_Integer(CatVar& var) {
 	int value = var;
 	ImGui::PushItemWidth(120.0f);
 	int step = var.restricted ? (var.max - var.min) / 50 : 1;
+	if (step == 0) step = 1;
 	if (ImGui::InputInt(label, &value, step, step * 20)) {
 		var = value;
 	}

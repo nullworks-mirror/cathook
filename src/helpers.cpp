@@ -505,11 +505,9 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 		rgrav = 0.2f;
 		rspeed = 990.0f;
 	} else if (weapon->m_iClassID == CL_CLASS(CTFCrossbow)) {
-		// TODO, get correct gravity
 		rgrav = 0.2f;
 		rspeed = 2400.0f;
 	} else if (weapon->m_iClassID == CL_CLASS(CTFShotgunBuildingRescue)) {
-		// TODO, get correct gravity
 		rgrav = 0.2f;
 		rspeed = 2400.0f;
 	}
@@ -518,7 +516,7 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 	return (rspeed || rgrav);
 }
 
-constexpr unsigned developer_list[] = { 306902159, 347272825, 401679596 };
+constexpr unsigned developer_list[] = { 306902159, 347272825, 401679596, 416491033, 175278337 };
 
 bool Developer(CachedEntity* ent) {
 	for (int i = 0; i < sizeof(developer_list) / sizeof(unsigned); i++) {
@@ -728,7 +726,10 @@ void PrintChat(const char* fmt, ...) {
 		vsprintf(buf, fmt, list);
 		va_end(list);
 		std::unique_ptr<char> str(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s", 0x5e3252, 0xba3d9a, 0x5e3252, buf));
+		// FIXME DEBUG LOG
+		logging::Info("%s", str.get());
 		chat->Printf(str.get());
+	} else {
 	}
 }
 

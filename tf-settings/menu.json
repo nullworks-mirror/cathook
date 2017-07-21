@@ -17,14 +17,15 @@
 				"type": "list",
 				"name": "Ignore",
 				"list": [
+					"aimbot_ignore_cloak",
+					"aimbot_ignore_deadringer",
+					"aimbot_ignore_vaccinator",
 					"ignore_taunting",
 					"aimbot_ignore_hoovy",
+					"aimbot_teammates",
 					"aimbot_buildings_sentry",
 					"aimbot_buildings_other",
-					"aimbot_stickys",
-					"aimbot_teammates",
-					"aimbot_ignore_cloak",
-					"aimbot_ignore_vaccinator"
+					"aimbot_stickys"
 				]
 			},
 			{
@@ -111,6 +112,7 @@
 				"name": "Auto Reflect",
 				"list": [
 					"reflect_enabled",
+					"reflect_key",
 					"reflect_legit",
 					"reflect_only_idle",
 					"reflect_stickybombs",
@@ -134,6 +136,8 @@
 				"type": "list",
 				"name": "Triggerbot Preferences",
 				"list": [
+					"trigger_delay",
+					"trigger_accuracy",
 					"trigger_zoomed",
 					"trigger_maxrange",
 					"trigger_charge",
@@ -180,6 +184,7 @@
 					"esp_buildings",
 					"esp_local",
 					"esp_powerups",
+					"esp_tracers",
 					{
 						"type": "list",
 						"name": "Emoji ESP",
@@ -241,13 +246,16 @@
 				"name": "Chams",
 				"list": [
 					"chams_enable",
+					"chams_legit",
+					"chams_singlepass",
 					"chams_health",
 					"chams_players",
 					"chams_teammates",
 					"chams_buildings",
 					"chams_teammate_buildings",
 					"chams_flat",
-					"chams_weapons",
+					"chams_recursive",
+					"chams_weapons_white",
 					"chams_medkits",
 					"chams_ammo",
 					"chams_stickies"
@@ -345,36 +353,23 @@
 		"type": "list",
 		"name": "Chat Settings",
 		"list": [
+			"spam",
+			"killsay",
+			"uberspam",
+			"spam_file",
+			"killsay_file",
+			"spam_random",
 			"chat_newlines",
 			"clean_chat",
-			"killsay",
-			"killsay_file",
-			"spam",
-			"spam_random",
-			"spam_file",
-			"spam_teamname",
-			"uberspam",
-			"uberspam_build",
+			"chat_crypto",
 			"uberspam_ready",
 			"uberspam_used",
 			"uberspam_ended",
 			"uberspam_team",
-			"uberspam_file"
-		]
-	},
-	{
-		"type": "list",
-		"name": "Follow Bot Settings",
-		"data": "ipc",
-		"list": [
-			"fb_bot",
-			"fb_auto_playerlist",
-			"fb_mimic_slot",
-			"fb_always_medigun",
-			"fb_autoclass",
-			"fb_follow_distance",
-			"ipc_server",
-			"fb_autoteam"
+			"uberspam_build",
+			"uberspam_file",
+			"spam_voicecommand",
+			"spam_teamname"
 		]
 	},
 	{
@@ -394,6 +389,20 @@
 	},
 	{
 		"type": "list",
+		"name": "Followbot",
+		"list": [
+			"fb_bot",
+			"fb_distance",
+			"fb_activation",
+			"fb_roaming",
+			"fb_mimic_slot",
+			"fb_always_medigun",
+			"fb_sync_taunt",
+			"fb_crumb_draw"
+		]
+	},
+	{
+		"type": "list",
 		"name": "Miscellaneous",
 		"list": [
 			"events",
@@ -403,6 +412,7 @@
 			"name",
 			"fakelag",
 			"disconnect_reason",
+			"name_stealer",
 			"minigun_jump",
 			"spycrab",
 			"skinchanger",
@@ -493,6 +503,7 @@
 					"debug_info",
 					"log",
 					"setupbones_time",
+					"nolerp",
 					"skinchanger_debug",
 					"software_cursor_mode",
 					"experimental_cursor_fix",

@@ -1,19 +1,32 @@
+ifndef CLANG
 CXX=$(shell sh -c "which g++-6 || which g++")
 CC=$(shell sh -c "which gcc-6 || which gcc")
+LD=$(CXX)
+else
+CXX=clang++
+CC=clang
+LD=ld.lld
+endif
 
 DEFINES=_GLIBCXX_USE_CXX11_ABI=0 _POSIX=1 FREETYPE_GL_USE_VAO RAD_TELEMETRY_DISABLED LINUX=1 USE_SDL _LINUX=1 POSIX=1 GNUC=1 NO_MALLOC_OVERRIDE
 
 WARNING_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef
-COMMON_FLAGS=-fpermissive -O3 -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native
+COMMON_FLAGS=-fpermissive -O3 -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native -mtune=native
+
+ifdef CLANG
+COMMON_FLAGS+=-Wno-c++11-narrowing
+endif
 
 ifdef BUILD_DEBUG
 COMMON_FLAGS+=-g3 -ggdb
 else
+ifndef CLANG
 COMMON_FLAGS+=-flto
+endif
 endif
 
 CFLAGS=$(COMMON_FLAGS)
-CXXFLAGS=-std=gnu++1z $(COMMON_FLAGS)
+CXXFLAGS=-std=gnu++14 $(COMMON_FLAGS)
 
 ifndef NO_WARNINGS
 CFLAGS+=$(WARNING_FLAGS)
@@ -27,11 +40,19 @@ SDKFOLDER=$(realpath source-sdk-2013/mp/src)
 SIMPLE_IPC_DIR = $(realpath simple-ipc/src/include)
 INCLUDES=-Iucccccp -isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2 -I$(SIMPLE_IPC_DIR) -isystem$(SDKFOLDER)/public -isystem$(SDKFOLDER)/mathlib -isystem$(SDKFOLDER)/common -isystem$(SDKFOLDER)/public/tier1 -isystem$(SDKFOLDER)/public/tier0 -isystem$(SDKFOLDER)
 LIB_DIR=lib
-LDFLAGS=-m32 -fno-gnu-unique -D_GLIBCXX_USE_CXX11_ABI=0 -shared -L$(realpath $(LIB_DIR))
+LDFLAGS=-shared -L$(realpath $(LIB_DIR))
+ifdef CLANG
+LDFLAGS+=-melf_i386
+else
+LDFLAGS+=-m32 -fno-gnu-unique
+endif
+
 ifndef BUILD_DEBUG
+ifndef CLANG
 LDFLAGS+=-flto
 endif
-LDLIBS=-static -lc -lstdc++ -ltier0 -lvstdlib -l:libSDL2-2.0.so.0 -static -lGLEW -lfreetype -lpthread
+endif
+LDLIBS=-l:libSDL2-2.0.so.0 -static -l:libc.so.6 -static -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so -static -l:libGLEW.so -l:libfreetype.so
 SRC_DIR = src
 RES_DIR = res
 OUT_NAME = libcathook.so
@@ -126,7 +147,7 @@ src/sdk/utlbuffer.o : CFLAGS+=-w
 
 $(TARGET): $(OBJECTS)
 	@echo Building cathook
-	@$(CXX) $(LDFLAGS) $(OBJECTS) $(LDLIBS) -o $(TARGET)
+	$(LD) -o $(TARGET) $(LDFLAGS) $(OBJECTS) $(LDLIBS)
 
 clean:
 	find src -type f -name '*.o' -delete

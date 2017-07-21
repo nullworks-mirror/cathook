@@ -27,7 +27,7 @@ and a lot of useful features, including
 
 Ubuntu dependencies installation:
 ```bash
-sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot -y && sudo apt update && sudo apt install git libc6-dev gcc-6 g++-6 libc6-dev:i386 g++-6-multilib gdb libsdl2-dev libglew-dev libfreetype6-dev libfreetype6-dev:i386 -y && 
+sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot -y && sudo apt update && sudo apt install git libc6-dev gcc-6 g++-6 libc6-dev:i386 g++-6-multilib gdb libsdl2-dev libglew-dev libfreetype6-dev libfreetype6-dev:i386 -y 
 ```
 
 

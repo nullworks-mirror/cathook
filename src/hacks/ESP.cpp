@@ -13,6 +13,8 @@
 namespace hacks { namespace shared { namespace esp {
 
 CatVar show_weapon(CV_SWITCH, "esp_weapon", "1", "Show weapon name", "Show which weapon does the enemy use");
+CatEnum tracers_enum({ "OFF", "CENTER", "BOTTOM" });
+CatVar tracers(tracers_enum, "esp_tracers", "0", "Tracers", "SDraws a line from the player to a position on your screen");
 CatVar local_esp(CV_SWITCH, "esp_local", "1", "ESP Local Player", "Shows local player ESP in thirdperson");
 CatVar buildings(CV_SWITCH, "esp_buildings", "1", "Building ESP", "Show buildings");
 CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP", "Master ESP switch");
@@ -399,6 +401,7 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 		// only if bTeammatePowerup or bTeammates is true
 		if (legit && ent->m_iTeam != g_pLocalPlayer->team && playerlist::IsDefault(info.friendsID)) {
 			if (IsPlayerInvisible(ent)) return;
+			if (vischeck && !ent->IsVisible()) return;
 			/*if (ent->m_lLastSeen > (unsigned)v_iLegitSeenTicks->GetInt()) {
 				return;
 			}*/
@@ -650,6 +653,25 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 		}
 	}
 
+	if (tracers && ent->m_Type == ENTITY_PLAYER) {
+		
+		// Grab the screen resolution and save to some vars
+		int width, height;
+		g_IEngine->GetScreenSize(width, height);
+		
+		// Center values on screen
+		width = width / 2;
+		// Only center height if we are using center mode
+		if ((int)tracers == 1) height = height / 2;
+		
+		// Get world to screen
+		Vector scn;
+		draw::WorldToScreen(ent->m_vecOrigin, scn);
+		
+		// Draw a line
+		drawgl::Line(scn.x, scn.y, width - scn.x, height - scn.y, fg);
+	}
+	
 	if (ent->m_Type == ENTITY_PLAYER) {
 		if (joy_esp) {
 			auto hb = ent->hitboxes.GetHitbox(0);
