@@ -1,8 +1,8 @@
-const fs = require('fs');
+const fs = require("fs");
 
 var full_class_table = {};
 try {
-	full_class_table = JSON.parse(fs.readFileSync('full-class-table.json').toString());
+	full_class_table = JSON.parse(fs.readFileSync("full-class-table.json").toString());
 } catch (e) {}
 
 console.log('Generating dummy class header');
@@ -22,7 +22,7 @@ namespace client_classes {
 `;
 
 for (var clz in full_class_table) {
-	header += '\t\tint ' + clz + ' { 0 };\n';
+	header += "\t\tint " + clz + " { 0 };\n";
 }
 
 header += `
@@ -33,4 +33,4 @@ header += `
 
 #endif /* DUMMY_AUTOGEN_HPP */`;
 
-fs.writeFileSync('src/classinfo/dummy.gen.hpp', header);
+fs.writeFileSync("src/classinfo/dummy.gen.hpp", header);
