@@ -1,4 +1,7 @@
 # Cathook Multihack
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d208d05091854caaa51d2757d2097b2c)](https://www.codacy.com/app/SylveonBottle/cathook?utm_source=github.com&utm_medium=referral&utm_content=SylveonBottle/cathook&utm_campaign=badger)
+
 ![banner](https://raw.githubusercontent.com/nullifiedcat/cathook/master/banner.png)
 
 cathook is a multihack for Team Fortress 2 for Linux. cathook includes some joke features like
