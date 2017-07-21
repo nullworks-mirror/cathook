@@ -52,7 +52,7 @@ float idle_time = 0;
 // Vars for breadcrumb followbot
 	
 // An array for storing the breadcrumbs
-static Vector breadcrumbs [55];
+static Vector breadcrumbs [64];
 // Array Bookkeeping vars
 int crumbBottom = 0;
 int crumbTop = 0;
@@ -400,6 +400,16 @@ void DoWalking() {
 				}
 			}
 		}
+		
+		/*	
+		//Check if target is crouching
+		if () {
+				
+			// Check if local player isnt taunting
+			if (!g_pUserCmd->buttons & IN_DUCK) {
+				g_pUserCmd->buttons |= IN_DUCK;
+			}
+		}*/
 	}
 }
 
@@ -637,7 +647,7 @@ void CrumbReset() {
 void CrumbTopAdd(Vector crumbToAdd) {
 	
     // Once the crumbs have hit the limit of the array, loop around and over write unused spots
-    if (crumbTop == 55) {
+    if (crumbTop == 64) {
         crumbTop = 0;
     } else { 
         // Else, bump the top number market of the array
@@ -650,7 +660,7 @@ void CrumbTopAdd(Vector crumbToAdd) {
     logging::Info("Crumb Top add");
     
     // The array can only hold so many crumbs, once it goes over its cap, stop the bot to prevent un-needed movement
-    if (crumbArrayLength > 55) {
+    if (crumbArrayLength > 64) {
 		CrumbReset();
         crumbStopped = true;
         logging::Info("Crumb Overload!\nDumping array");
@@ -661,7 +671,7 @@ void CrumbTopAdd(Vector crumbToAdd) {
 void CrumbBottomAdd() {
 	
     // Once the crumbs have hit the limit of the array, loop around and over write unused spots
-    if (crumbBottom == 55) {
+    if (crumbBottom == 64) {
         crumbBottom = 0;
     } else {
         // Else, bump the top number market of the array
@@ -746,10 +756,10 @@ void DrawFollowbot() {
 			tmpCrumb2 = crumbBottom + i + 1;
 
 			// Correction for array numbers when one goes over our limit
-			if (tmpCrumb1 >= 55)
-				tmpCrumb1 - 55;
-			if (tmpCrumb2 >= 55)
-				tmpCrumb1 - 55;
+			if (tmpCrumb1 >= 64)
+				tmpCrumb1 - 64;
+			if (tmpCrumb2 >= 64)
+				tmpCrumb1 - 64;
 
 			// Take our 2 crumbs and get a position on the screen
 			draw::WorldToScreen(breadcrumbs[tmpCrumb1], scnSrt);
@@ -794,10 +804,10 @@ void DrawFollowbot() {
 		tmpCrumb2 = crumbBottom + i + 1;
 
 		// Correction for array numbers when one goes over our limit
-		if (tmpCrumb1 >= 55)
-			tmpCrumb1 - 55;
-		if (tmpCrumb2 >= 55)
-			tmpCrumb2 - 55;
+		if (tmpCrumb1 >= 64)
+			tmpCrumb1 - 64;
+		if (tmpCrumb2 >= 64)
+			tmpCrumb2 - 64;
 
 		// Take our 2 crumbs and get a position on the screen
 		draw::WorldToScreen(breadcrumbs[tmpCrumb1], scnSrt);

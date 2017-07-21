@@ -12,7 +12,6 @@
 			"aimbot_fov_draw",
 			"aimbot_prioritymode",
 			"aimbot_charge",
-			"aimbot_charge_if_full",
 			{
 				"type": "list",
 				"name": "Ignore",

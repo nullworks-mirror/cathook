@@ -52,7 +52,6 @@ static CatVar priority_mode(priority_mode_enum, "aimbot_prioritymode", "0", "Pri
 		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
 		"FOV, DISTANCE, HEALTH are self-explainable. HEALTH picks the weakest enemy");
 static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits until it has enough charge to kill");
-static CatVar wait_for_charge_bypass(CV_SWITCH, "aimbot_charge_if_full", "1", "Sniper rifle will shoot at 100% charge even if the shot will not kill", "Aimbot waits until 100% charge");
 static CatVar ignore_vaccinator(CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
 static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0", "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1", "Ignore cloaked", "Don't aim at invisible enemies");
@@ -121,7 +120,6 @@ bool silent_huntsman { false };
 // for current frame, to avoid performing them again
 AimbotCalculatedData_s calculated_data_array[2048] {};
 
-// The main "loop" of the aimbot. 
 // The main "loop" of the aimbot.
 void CreateMove() {
 	
@@ -375,28 +373,28 @@ bool IsTargetStateGood(CachedEntity* entity) {
 			if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle) {
 				// Grab netvar for current charge damage and multiply by 3 for headshot
 				float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 3;
+				bool maxCharge = cdmg >= 450.0F;
 
-				if (!(cdmg == 450.0f && wait_for_charge_bypass)) {
-					 // Darwins damage correction, Darwins protects against 15% of damage
-					if (HasDarwins(entity))
-					  cdmg = (cdmg * .85) - 1;
-					// Vaccinator damage correction, Vac charge protects against 75% of damage
-					if (HasCondition<TFCond_UberBulletResist>(entity)) {
-					  cdmg = (cdmg * .25) - 1;
-					// Passive bullet resist protects against 10% of damage
-					} else if (HasCondition<TFCond_SmallBulletResist>(entity)) {
-					  cdmg = (cdmg * .90) - 1;
-					}
-					// Invis damage correction, Invis spies get protection from 10% of damage
-					if (IsPlayerInvisible(entity))
-					  cdmg = (cdmg * .80) - 1;
-
-					// Check if player will die from headshot or if target has more health than normal overheal allows.
-					if ( !(entity->m_iHealth <= 150 || entity->m_iHealth <= cdmg || !g_pLocalPlayer->bZoomed || entity->m_iHealth > entity->m_iMaxHealth + (entity->m_iMaxHealth * 0.5)) ) {
-					  return false;
-					}
+				// Darwins damage correction, Darwins protects against 15% of damage
+				if (HasDarwins(entity))
+				  cdmg = (cdmg * .85) - 1;
+				// Vaccinator damage correction, Vac charge protects against 75% of damage
+				if (HasCondition<TFCond_UberBulletResist>(entity)) {
+				  cdmg = (cdmg * .25) - 1;
+				// Passive bullet resist protects against 10% of damage
+				} else if (HasCondition<TFCond_SmallBulletResist>(entity)) {
+				  cdmg = (cdmg * .90) - 1;
+				}
+				// Invis damage correction, Invis spies get protection from 10% of damage
+				if (IsPlayerInvisible(entity))
+				  cdmg = (cdmg * .80) - 1;
+				
+				// Check if player will die from headshot or if target has more than 450 health and sniper has max chage
+				if ( !(entity->m_iHealth <= 150.0F || entity->m_iHealth <= cdmg || !g_pLocalPlayer->bZoomed || (maxCharge && entity->m_iHealth > 450.0F)) ) {
+				  return false;
 				}
 			}
+			
 			// If settings allow, ignore taunting players
 			if (ignore_taunting && HasCondition<TFCond_Taunting>(entity)) return false;
 			// Dont target invulnerable players, ex: uber, bonk
