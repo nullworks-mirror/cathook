@@ -4,17 +4,25 @@
  *  Created on: Jul 7, 2017
  *      Author: nullifiedcat
  */
-
-#pragma once
-
+/*
 #include "../../common.h"
+#include "../../sdk.h"
 
 namespace menu { namespace im {
-
-struct infopanel_data {
-	// std::vector<CatVar*> variable_watchlist {};
+	
+// used to determine what var we need to display
+enum class EInfo {
+	AIMBOT,
+	AIMKEY  
 };
 
-void Render(bool ingame);
+void RenderInfoPanel();
+void AddInfoItem(EInfo info_type, int id);
+	
 
-}}
+std::string GetBoolString(CatVar* value);
+CatVar* GetCatVar(const std::string name);
+	
+
+
+}}*/
