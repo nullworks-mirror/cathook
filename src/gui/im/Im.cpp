@@ -8,6 +8,7 @@
 #include "Im.hpp"
 #include "Schema.hpp"
 #include "Playerlist.hpp"
+#include "InfoPanel.hpp"
 
 #include "../../common.h"
 
@@ -335,6 +336,10 @@ void Render() {
 		style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
 		styles_setup = true;
 	}
+	
+	// Info panel should be rendered even with main gui disabled
+	//RenderInfoPanel();
+	
 	if (!gui_visible) {
 		ImGui::GetIO().MouseDrawCursor = false;
 		return;
@@ -342,8 +347,7 @@ void Render() {
 		ImGui::GetIO().MouseDrawCursor = true;
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 	}
-
-
+	
 	//ImGui::ShowTestWindow();
 	RenderPlayerlist();
 	/*ImGui::Begin("Colors");
