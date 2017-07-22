@@ -54,7 +54,7 @@ void AddInfoItem(EInfo info_type, int id) {
 		ImGui::Text(format("Aimbot: ", GetCatVar("aimbot_enabled") ? "enabled" : "disabled").c_str());
 		break;
 	case EInfo::AIMKEY:
-		ImGui::Text(format("Fak off nagger").c_str());	
+		ImGui::Text(format("Todo, get toggle mode from aimkey").c_str());	
 		break;
 	};
 	
