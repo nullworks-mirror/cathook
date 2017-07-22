@@ -21,11 +21,11 @@ void RenderPlayer(int eid) {
 		//ImGui::PushItemWidth(50);
 			ImGui::Text("%d", info.userID);
 		//ImGui::PopItemWidth();
-		ImGui::SameLine(50);
+		ImGui::SameLine(48);
 		//ImGui::PushItemWidth(100);
 			ImGui::Text("%u", info.friendsID);
 		//ImGui::PopItemWidth();
-		ImGui::SameLine(150);
+		ImGui::SameLine(140);
 
 		char safename[32];
 		for (int i = 0, j = 0; i < 32; i++) {
@@ -39,7 +39,7 @@ void RenderPlayer(int eid) {
 		//ImGui::PushItemWidth(250);
 			ImGui::Text("%s", safename);
 		//ImGui::PopItemWidth();
-		ImGui::SameLine(325);
+		ImGui::SameLine(320);
 
 		int iclazz = 0;
 		rgba_t bgcolor = colors::empty;
@@ -66,7 +66,7 @@ void RenderPlayer(int eid) {
 		//ImGui::PushItemWidth(150);
 			ImGui::Text("%s", text);
 		//ImGui::PopItemWidth();
-		ImGui::SameLine(400);
+		ImGui::SameLine(420);
 
 		if (bgcolor.a) {
 			ImGui::PopStyleColor();
@@ -86,7 +86,11 @@ void RenderPlayer(int eid) {
 		ImGui::SameLine();
 		ImGui::PushItemWidth(200.0f);
 		if (ImGui::ColorEdit3("", data.color)) {
-			if (!data.color.r && !data.color.b && !data.color.g) data.color = colors::empty;
+			if (!data.color.r && !data.color.b && !data.color.g) {
+				data.color = colors::empty;
+			} else {
+				data.color.a = 255.0f;
+			}
 		}
 		ImGui::PopItemWidth();
 	}
@@ -98,7 +102,15 @@ void RenderPlayerlist() {
 	if (ImGui::Begin("Player List")) {
 		ImGui::SetWindowSize(ImVec2(0, 0));
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 1));
+		std::vector<int> teammates {};
 		for (int i = 1; i < 32; i++) {
+			if (g_pPlayerResource->GetTeam(i) == LOCAL_E->m_iTeam) {
+				teammates.push_back(i);
+				continue;
+			}
+			RenderPlayer(i);
+		}
+		for (auto i : teammates) {
 			RenderPlayer(i);
 		}
 		ImGui::PopStyleVar();

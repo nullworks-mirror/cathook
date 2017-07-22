@@ -175,7 +175,7 @@ void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr, bool healthbar, int
 	Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
 	Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
 
-	cloak = ent->m_iClassID == RCC_PLAYER && IsPlayerInvisible(ent);
+	cloak = (ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent);
 
 	//if (!a) return;
 	//logging::Info("%f %f", so.x, so.y);
@@ -239,15 +239,15 @@ void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr, bool healthbar, int
 		data.at(ent->m_IDX).esp_origin = Vector(max_x + 2, min_y, 0);
 	} break;
 	case 1: { // BOTTOM RIGHT
-		data.at(ent->m_IDX).esp_origin = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height - 1), 0);
+		data.at(ent->m_IDX).esp_origin = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
 	} break;
 	case 2: { // CENTER
 	} break;
 	case 3: { // ABOVE
-		data.at(ent->m_IDX).esp_origin = Vector(min_x + 2, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height - 1), 0);
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
 	} break;
 	case 4: { // BELOW
-		data.at(ent->m_IDX).esp_origin = Vector(min_x + 2, max_y, 0);
+		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
 	}
 	}
 	border = cloak ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black, clr.a);
@@ -622,7 +622,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 
 	ESPData& ent_data = data[ent->m_IDX];
 	fg = ent_data.color;
-	if (!fg) fg = ent_data.color = colors::EntityF(ent);
+	if (!fg || fg.a == 0.0f) fg = ent_data.color = colors::EntityF(ent);
 
 	if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin, origin_screen)) return;
 
