@@ -3,6 +3,7 @@
 
 cathook is a multihack for Team Fortress 2 for Linux. cathook includes some joke features like
 
+* Backpack.TF API integration with playerlist GUI, allowing you to see players' inventory values
 * Always/Never spycrab
 * Ignore Hoovy
 * 100% Casual/Comp coin flip hack
