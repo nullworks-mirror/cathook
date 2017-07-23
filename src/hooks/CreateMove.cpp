@@ -267,6 +267,10 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			SAFE_CALL(hacks::shared::esp::CreateMove());
 		}
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
+			{
+				PROF_SECTION(CM_walkbot);
+				SAFE_CALL(hacks::shared::walkbot::Move());
+			}
 			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_uberspam);
 				SAFE_CALL(hacks::tf::uberspam::CreateMove());
