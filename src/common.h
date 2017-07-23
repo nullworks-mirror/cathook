@@ -83,6 +83,7 @@ extern "C" {
 #include "hooks/hookedmethods.h"
 #include "classinfo/classinfo.hpp"
 #include "crits.h"
+#include "backpacktf.hpp"
 
 #if ENABLE_GUI
 #include "gui/GUI.h"

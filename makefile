@@ -52,7 +52,7 @@ ifndef CLANG
 LDFLAGS+=-flto
 endif
 endif
-LDLIBS=-l:libSDL2-2.0.so.0 -static -l:libc.so.6 -static -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so -static -l:libGLEW.so -l:libfreetype.so
+LDLIBS=-lssl -l:libSDL2-2.0.so.0 -static -l:libc.so.6 -static -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so -static -l:libGLEW.so -l:libfreetype.so
 SRC_DIR = src
 RES_DIR = res
 OUT_NAME = libcathook.so
