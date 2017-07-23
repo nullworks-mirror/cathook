@@ -222,10 +222,17 @@ Vector ProjectilePrediction_Engine(CachedEntity* ent, int hb, float speed, float
 	return result;
 }
 
+CatVar debug_pp_extrapolate(CV_SWITCH, "debug_pp_extrapolate", "0", "Extrapolate entity position when predicting projectiles");
+CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping", "0", "Compensate for ping in pp");
+
 Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravitymod, float entgmod) {
 	if (!ent) return Vector();
 	Vector result;
-	GetHitbox(ent, hb, result);
+	if (not debug_pp_extrapolate) {
+		GetHitbox(ent, hb, result);
+	} else {
+		result = SimpleLatencyPrediction(ent, hb);
+	}
 	if (speed == 0.0f) return Vector();
 	float dtg = DistanceToGround(ent);
 	Vector vel;
@@ -250,6 +257,7 @@ Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravit
 			if (curpos.z < result.z - dtg) curpos.z = result.z - dtg;
 		}
 		float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
+		if (debug_pp_rockettimeping) rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
 		if (fabs(rockettime - currenttime) < mindelta) {
 			besttime = currenttime;
 			bestpos = curpos;
