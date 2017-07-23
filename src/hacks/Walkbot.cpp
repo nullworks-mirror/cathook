@@ -9,19 +9,27 @@
 
 namespace hacks { namespace shared { namespace walkbot {
 
+constexpr unsigned INVALID_NODE = unsigned(-1);
+
 enum ENodeFlags {
 	NF_GOOD = (1 << 0),
 	NF_DUCK = (1 << 1),
 	NF_JUMP = (1 << 2)
 };
 
+struct walkbot_header_s {
+	unsigned version { 1 };
+	unsigned node_count { 0 };
+	unsigned first_node { 0 };
+};
+
 struct walkbot_node_s {
 	float x { 0.0f }; // 4
 	float y { 0.0f }; // 8
 	float z { 0.0f }; // 12
-	int flags { 0 }; // 16
-	int prev { 0 }; // 20
-	int next { 0 }; // 24
+	unsigned flags { 0 }; // 16
+	unsigned prev { 0 }; // 20
+	unsigned next { 0 }; // 24
 }; // 24
 
 enum EWalkbotState {
@@ -44,11 +52,17 @@ void Draw() {
 	if (state == WB_DISABLED) return;
 	switch (state) {
 	case WB_RECORDING: {
+		AddSideString("Walkbot: Recording");
 
-	}
+	} break;
+	case WB_EDITING: {
+		AddSideString("Walkbot: Editing");
+
+	} break;
 	case WB_REPLAYING: {
+		AddSideString("Walkbot: Replaying");
 
-	}
+	} break;
 	}
 }
 
