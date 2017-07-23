@@ -18,14 +18,15 @@ void RenderPlayer(int eid) {
 	player_info_s info;
 	bool success = g_IEngine->GetPlayerInfo(eid, &info);
 	if (success) {
-		//ImGui::PushItemWidth(50);
-			ImGui::Text("%d", info.userID);
-		//ImGui::PopItemWidth();
-		ImGui::SameLine(48);
-		//ImGui::PushItemWidth(100);
-			ImGui::Text("%u", info.friendsID);
-		//ImGui::PopItemWidth();
-		ImGui::SameLine(140);
+		int x = 0;
+		// UserID
+		ImGui::Text("%d", info.userID);
+		x += 48;
+		ImGui::SameLine(x);
+		// SteamID
+		ImGui::Text("%u", info.friendsID);
+		x += 80;
+		ImGui::SameLine(x);
 
 		char safename[32];
 		for (int i = 0, j = 0; i < 32; i++) {
@@ -36,10 +37,10 @@ void RenderPlayer(int eid) {
 			if (info.name[i] == '\n') continue;
 			safename[j++] = info.name[i];
 		}
-		//ImGui::PushItemWidth(250);
-			ImGui::Text("%s", safename);
-		//ImGui::PopItemWidth();
-		ImGui::SameLine(320);
+
+		ImGui::Text("%s", safename);
+		x += 8 * 32;
+		ImGui::SameLine(x);
 
 		int iclazz = 0;
 		rgba_t bgcolor = colors::empty;
@@ -63,14 +64,14 @@ void RenderPlayer(int eid) {
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a));
 		}
 
-		//ImGui::PushItemWidth(150);
-			ImGui::Text("%s", text);
-		//ImGui::PopItemWidth();
-		ImGui::SameLine(420);
+		ImGui::Text("%s", text);
+		x += 80;
+		ImGui::SameLine(x);
 
 		if (bgcolor.a) {
 			ImGui::PopStyleColor();
 		}
+
 		playerlist::userdata& data = playerlist::AccessData(info.friendsID);
 		int& state = *reinterpret_cast<int*>(&data.state);
 		bgcolor = playerlist::Color(info.friendsID);
@@ -80,11 +81,15 @@ void RenderPlayer(int eid) {
 		ImGui::PushItemWidth(120);
 		ImGui::Combo("", &state, playerlist::k_pszNames, 5);
 		ImGui::PopItemWidth();
+
+		x += 124;
+
 		if (bgcolor.a) {
 			ImGui::PopStyleColor();
 		}
+
 		if (backpacktf::enabled()) {
-			ImGui::SameLine();
+			ImGui::SameLine(x);
 			if (info.fakeplayer) {
 				ImGui::Text("[BOT]");
 			} else if (!info.friendsID) {
@@ -96,7 +101,7 @@ void RenderPlayer(int eid) {
 					ImGui::Text("Error");
 				} else if (d.pending) {
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
-					ImGui::Text("Fetching");
+					ImGui::Text("Loading");
 				} else if (d.no_value) {
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
 					ImGui::Text("Private?");
@@ -109,8 +114,9 @@ void RenderPlayer(int eid) {
 				}
 				ImGui::PopStyleColor();
 			}
+			x += 80;
 		}
-		ImGui::SameLine(610);
+		ImGui::SameLine(x);
 		ImGui::PushItemWidth(200.0f);
 		if (ImGui::ColorEdit3("", data.color)) {
 			if (!data.color.r && !data.color.b && !data.color.g) {
@@ -119,6 +125,7 @@ void RenderPlayer(int eid) {
 				data.color.a = 255.0f;
 			}
 		}
+		x += 200;
 		ImGui::PopItemWidth();
 	}
 	ImGui::PopID();

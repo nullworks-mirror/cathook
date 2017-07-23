@@ -93,6 +93,7 @@ void processing_thread() {
 									logging::Info("Parsing data for user %u (%s)", userid, name.c_str());
 									if (v.find("inventory") == v.end()) {
 										store_data(userid, 0, true, false);
+										continue;
 									}
 									const auto& inv = v.at("inventory").at("440");
 									if (inv.find("value") == inv.end()) {
