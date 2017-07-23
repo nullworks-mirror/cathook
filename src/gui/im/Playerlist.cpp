@@ -83,7 +83,31 @@ void RenderPlayer(int eid) {
 		if (bgcolor.a) {
 			ImGui::PopStyleColor();
 		}
-		ImGui::SameLine();
+		if (backpacktf::enabled()) {
+			ImGui::SameLine();
+			if (!info.friendsID) {
+				ImGui::Text("[BOT]");
+			}
+			const auto& d = backpacktf::get_data(info.friendsID);
+			if (d.bad && not d.pending) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+				ImGui::Text("Error");
+			} else if (d.pending) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+				ImGui::Text("Fetching");
+			} else if (d.no_value) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
+				ImGui::Text("No value");
+			} else if (d.outdated_value) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+				ImGui::Text("$%u", d.value);
+			} else {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
+				ImGui::Text("$%u", d.value);
+			}
+			ImGui::PopStyleColor();
+		}
+		ImGui::SameLine(610);
 		ImGui::PushItemWidth(200.0f);
 		if (ImGui::ColorEdit3("", data.color)) {
 			if (!data.color.r && !data.color.b && !data.color.g) {
@@ -104,7 +128,7 @@ void RenderPlayerlist() {
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 1));
 		std::vector<int> teammates {};
 		for (int i = 1; i < 32; i++) {
-			if (g_pPlayerResource->GetTeam(i) == LOCAL_E->m_iTeam) {
+			if (!g_Settings.bInvalid && (g_pPlayerResource->GetTeam(i) == LOCAL_E->m_iTeam)) {
 				teammates.push_back(i);
 				continue;
 			}

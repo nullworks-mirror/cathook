@@ -1,11 +1,14 @@
-# Cathook Multihack
+# Cathook Training Software
 ![banner](https://raw.githubusercontent.com/nullifiedcat/cathook/master/banner.png)
 
-cathook is a multihack for Team Fortress 2 for Linux. cathook includes some joke features like
+## Discord Server
+[Official Discord Server](https://discord.gg/kvNVNSX)
+
+cathook is a training software designed for Team Fortress 2 for Linux. cathook includes some joke features like
 
 * Always/Never spycrab
 * Ignore Hoovy
-* 100% Casual/Comp coin flip hack
+* 100% Casual/Comp coin flip
 * Encrypted chat
 * Emoji ESP
 * Fidget Spinner crosshair
@@ -13,28 +16,49 @@ cathook is a multihack for Team Fortress 2 for Linux. cathook includes some joke
 and a lot of useful features, including
 
 * Anti Backstab with option to say "No" voice command when spy tries to backstab you
-* Heal Arrows hack (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
+* Heal Arrows exploit (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
 * Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
 * Follow Bots
 * Working crit hack
 
 [FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features)
 
-# Discord Server
-[Official Discord Server](https://discord.gg/kvNVNSX)
-
 # INSTALLATION
 
-Ubuntu dependencies installation:
+You **have** to use gcc6, not 7 or 5!
+
+You also have to have g++-6-multilib package.
+
+Ubuntu gcc6 installation: (check if you have gcc-6 installed already by typing `gcc-6 -v`
 ```bash
-sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot -y && sudo apt update && sudo apt install git libc6-dev gcc-6 g++-6 libc6-dev:i386 g++-6-multilib gdb libsdl2-dev libglew-dev libfreetype6-dev libfreetype6-dev:i386 -y 
+sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot g++-6-multilib gcc-6 g++-6 -y
+```
+
+Ubuntu other dependencies installation:
+
+```bash
+sudo apt update && sudo apt install git libssl-dev:i386 libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libfreetype6-dev:i386 -y 
 ```
 
 
-Arch dependencies installation::
+Arch gcc6 & dependencies installation:
 ```bash
 sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 lib32-glew1.10 rsync --noconfirm && yes | sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
 ```
+
+If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the list of what cathook requires:
+
+* `gcc-6`
+* `g++-6`
+* `gcc-6-multilib`
+* `g++-6-multilib`
+* `gdb` (for the injection script, you can use different injector if you want)
+* `libssl-dev:i386`
+* `libc6-dev:i386`
+* `libsdl2-dev`
+* `libglew-dev:i386`
+* `libfreetype6-dev:i386`
+* `rsync` (only for copying shaders/fonts to tf2 data directory, `update-data` script)
 
 
 Cathook installation script:

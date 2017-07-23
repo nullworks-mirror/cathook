@@ -272,8 +272,10 @@ void hack::Initialize() {
 	hacks::shared::anticheat::Init();
 	hacks::tf2::healarrow::Init();
 	InitSpinner();
-	hacks::shared::spam::Init();
 	logging::Info("Initialized Fidget Spinner");
+	hacks::shared::spam::Init();
+	backpacktf::init();
+	logging::Info("Initialized Backpack.TF integration");
 
 }
 
