@@ -1,5 +1,5 @@
 # Cathook Training Software
-![banner](https://raw.githubusercontent.com/nullifiedcat/cathook/master/banner.png)
+![banner](http://i.imgur.com/w96wdtE.png)
 
 ## Discord Server
 [Official Discord Server](https://discord.gg/kvNVNSX)
