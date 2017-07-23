@@ -85,27 +85,30 @@ void RenderPlayer(int eid) {
 		}
 		if (backpacktf::enabled()) {
 			ImGui::SameLine();
-			if (!info.friendsID) {
+			if (info.fakeplayer) {
 				ImGui::Text("[BOT]");
-			}
-			const auto& d = backpacktf::get_data(info.friendsID);
-			if (d.bad && not d.pending) {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-				ImGui::Text("Error");
-			} else if (d.pending) {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
-				ImGui::Text("Fetching");
-			} else if (d.no_value) {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
-				ImGui::Text("No value");
-			} else if (d.outdated_value) {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
-				ImGui::Text("$%u", d.value);
+			} else if (!info.friendsID) {
+				ImGui::Text("Unknown");
 			} else {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
-				ImGui::Text("$%u", d.value);
+				const auto& d = backpacktf::get_data(info.friendsID);
+				if (d.bad && not d.pending) {
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+					ImGui::Text("Error");
+				} else if (d.pending) {
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+					ImGui::Text("Fetching");
+				} else if (d.no_value) {
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
+					ImGui::Text("Private?");
+				} else if (d.outdated_value) {
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));
+					ImGui::Text("$%.2f", d.value);
+				} else {
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
+					ImGui::Text("$%.2f", d.value);
+				}
+				ImGui::PopStyleColor();
 			}
-			ImGui::PopStyleColor();
 		}
 		ImGui::SameLine(610);
 		ImGui::PushItemWidth(200.0f);

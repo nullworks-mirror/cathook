@@ -51,7 +51,6 @@ RAII_HTTPS_Socket::RAII_HTTPS_Socket(const std::string& host) : hostname_(host) 
 }
 
 RAII_HTTPS_Socket::~RAII_HTTPS_Socket() {
-	logging::Info("Cleaning up HTTPS socket");
 	ssl_die();
 	if (sock_ >= 0)
 		close(sock_);
@@ -60,8 +59,9 @@ RAII_HTTPS_Socket::~RAII_HTTPS_Socket() {
 bool RAII_HTTPS_Socket::ssl_connect() {
 	connection_ = SSL_new(ssl_context);
 	SSL_set_fd(connection_, sock_);
-	if (SSL_connect(connection_) != 1) {
-		printf("SSL connection error\n");
+	int ret = SSL_connect(connection_);
+	if (ret != 1) {
+		logging::Info("SSL connection error: %d, %d, %x\n", ret, SSL_get_error(connection_, ret), ERR_get_error());
 		return false;
 	}
 	return true;
@@ -86,10 +86,8 @@ std::string RAII_HTTPS_Socket::get(const std::string& path) {
 	int rq_length = snprintf(buffer_rq.get(), rq_size, "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n", path.c_str(), hostname_.c_str());
 	int sent = 0;
 	int chunk = 0;
-	logging::Info("Writing %d bytes to socket %d", rq_length, sock_);
 	do {
 		chunk = SSL_write(connection_, buffer_rq.get() + sent, rq_length - sent);
-		logging::Info("Written %d bytes", chunk);
 		if (chunk < 0) {
 			throw std::runtime_error("Error writing to Secure Socket: " + std::to_string(ERR_get_error()));
 		} else if (chunk == 0) {

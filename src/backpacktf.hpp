@@ -24,7 +24,7 @@ struct backpack_data_s {
 	bool no_value { false }; // No recorded value
 	bool outdated_value { false }; // Outdated value. Private inventory?
 	unsigned last_request { 0 };
-	unsigned value { 0 };
+	float value { 0 };
 	unsigned id { 0 };
 };
 
