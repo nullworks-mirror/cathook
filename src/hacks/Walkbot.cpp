@@ -86,6 +86,30 @@ CatVar draw_indices(CV_SWITCH, "wb_indices", "1", "Node indices");
 void Initialize() {
 }
 
+void UpdateClosestNode() {
+	float n_fov = 360.0f;
+	index_t n_idx = INVALID_NODE;
+
+	for (index_t i = 0; i < state::nodes.size(); i++) {
+		const auto& node = state::nodes[i];
+
+		if (not node.flags & NF_GOOD)
+			continue;
+
+		float fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, node.xyz);
+		if (fov < n_fov) {
+			n_fov = fov;
+			n_idx = i;
+		}
+	}
+
+	// Don't select a node if you don't even look at it
+	if (n_fov < 10)
+		state::closest_node = n_idx;
+	else
+		state::closest_node = INVALID_NODE;
+}
+
 // Draws a single colored connection between 2 nodes
 void DrawConnection(index_t a, index_t b) {
 	if (not (state::node_good(a) and state::node_good(b)))
@@ -131,7 +155,13 @@ void DrawNode(index_t node, bool draw_back) {
 		if (not draw::WorldToScreen(n.xyz, wts))
 			return;
 
-		drawgl::Rect(wts.x - 2, wts.y - 2, 4, 4, color->rgba);
+		size_t node_size = 2;
+		if (node == state::closest_node)
+			node_size = 4;
+		if (node == state::active_node)
+			color = &colors::red;
+
+		drawgl::Rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, color->rgba);
 	}
 
 	if (draw_indices) {
