@@ -139,22 +139,97 @@ CatCommand c_create_node("wb_create", "Create node", []() {
 	if (g_pUserCmd->buttons & IN_DUCK)
 		n.flags |= NF_DUCK;
 	if (state::node_good(state::closest_node)) {
+		auto& c = state::nodes[state::closest_node];
 		n.link(state::closest_node);
-		state::nodes[state::closest_node].link(node);
+		c.link(node);
+		logging::Info("[wb] Node %u linked to node %u at (%.2f %.2f %.2f)", node, state::closest_node, c.x, c.y, c.z);
 	}
 });
 // Connects selected node to closest one
 CatCommand c_connect_node("wb_connect", "Connect node", []() {
+	if (not (state::node_good(state::active_node) and state::node_good(state::closest_node)))
+		return;
+	// Don't link a node to itself, idiot
+	if (state::active_node == state::closest_node)
+		return;
 
+	auto& a = state::nodes[state::active_node];
+	auto& b = state::nodes[state::closest_node];
+
+	a.link(state::closest_node);
+	b.link(state::active_node);
 });
-// Updates flags on region of nodes (selected to closest)
+// Updates duck flag on region of nodes (selected to closest)
 // Updates a single closest node if no node is selected
-CatCommand c_update_flags("wb_flags", "Update flags", []() {
+CatCommand c_update_duck("wb_duck", "Update duck flags", []() {
+	index_t a = state::active_node;
+	index_t b = state::closest_node;
 
+	if (not (state::node_good(a) and state::node_good(b)))
+		return;
+
+	index_t current = state::closest_node;
+
+	do {
+		auto& n = state::nodes[current];
+		if (g_pUserCmd->buttons & IN_DUCK)
+			n.flags |= NF_DUCK;
+		else
+			n.flags &= ~NF_DUCK;
+		if (n.connection_count > 2) {
+			logging::Info("[wb] More than 2 connections on a node - instructions unclear, got my duck stuck in 'if' block");
+			return;
+		}
+		bool found_next = false;
+		for (size_t i = 0; i < 2; i++) {
+			if (n.connections[i] != current) {
+				current = n.connections[i];
+				found_next = true;
+				break;
+			}
+		}
+		if (not found_next) {
+			logging::Info("[wb] Dead end? Can't find next node after %u", current);
+			break;
+		}
+	} while (state::node_good(current) and (current != a));
 });
-// Sets the closest node as preferred path for the selected node
-CatCommand c_set_preferred("wb_prefer", "Set preferred node", []() {
+// Toggles jump flag on closest node
+CatCommand c_update_jump("wb_jump", "Toggle jump flag", []() {
+	if (not state::node_good(state::closest_node))
+		return;
 
+	auto& n = state::nodes[state::closest_node];
+
+	if (n.flags & NF_JUMP)
+		n.flags &= ~NF_JUMP;
+	else
+		n.flags |= NF_JUMP;
+});
+// Sets the closest node as preferred path for the selected node (or disable it)
+CatCommand c_set_preferred("wb_prefer", "Set preferred node", []() {
+	index_t a = state::active_node;
+	index_t b = state::closest_node;
+
+	if (not (state::node_good(a) and state::node_good(b)))
+		return;
+
+	auto& n = state::nodes[a];
+	if (n.preferred == b) {
+		n.preferred = INVALID_NODE;
+		return;
+	}
+
+	bool found = false;
+	for (size_t i = 0; i < n.connection_count; i++) {
+		if (n.connections[i] == b) {
+			if (found) {
+				logging::Info("[wb] WARNING!!! Duplicate connection to %u on node %u!!!", a, b);
+			}
+			found = true;
+		}
+	}
+	n.preferred = b;
 });
 
 void Initialize() {
@@ -199,6 +274,9 @@ void DrawConnection(index_t a, index_t b) {
 	rgba_t* color = &colors::white;
 	if 		((a_.flags & b_.flags) & NF_JUMP) color = &colors::yellow;
 	else if ((a_.flags & b_.flags) & NF_DUCK) color = &colors::green;
+
+	if (a_.preferred == b or b_.preferred == a)
+		color = &colors::pink;
 
 	drawgl::Line(wts_a.x, wts_a.y, wts_b.x - wts_a.x, wts_b.y - wts_a.y, color->rgba);
 }
