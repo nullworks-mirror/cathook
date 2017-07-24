@@ -276,7 +276,7 @@ void hack::Initialize() {
 	hacks::shared::spam::Init();
 	backpacktf::init();
 	logging::Info("Initialized Backpack.TF integration");
-
+	hacks::shared::walkbot::Initialize();
 }
 
 void hack::Think() {

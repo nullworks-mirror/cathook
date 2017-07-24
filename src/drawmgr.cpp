@@ -71,6 +71,10 @@ void DrawCheatVisuals() {
 				PROF_SECTION(DRAW_healarrows);
 				hacks::tf2::healarrow::Draw();
 			}
+			{
+				PROF_SECTION(DRAW_walkbot);
+				hacks::shared::walkbot::Draw();
+			}
 			IF_GAME(IsTF()) {
 				PROF_SECTION(PT_antidisguise);
 				SAFE_CALL(hacks::tf2::antidisguise::Draw());
