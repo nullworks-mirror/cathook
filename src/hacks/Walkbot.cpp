@@ -570,13 +570,15 @@ void UpdateClosestNode() {
 
 // Finds nearest node by position, not FOV
 // Not to be confused with FindClosestNode
-index_t FindNearestNode() {
+index_t FindNearestNode(bool traceray) {
 	index_t r_node { BAD_NODE };
 	float r_dist { 65536.0f };
 
 	for (index_t i = 0; i < state::nodes.size(); i++) {
 		if (state::node_good(i)) {
 			auto& n = state::nodes[i];
+			if (traceray and not IsVectorVisible(g_pLocalPlayer->v_Eye, n.xyz()))
+				continue;
 			float dist = distance_2d(n.xyz());
 			if (dist < r_dist) {
 				r_dist = dist;
@@ -590,7 +592,7 @@ index_t FindNearestNode() {
 
 index_t SelectNextNode() {
 	if (not state::node_good(state::active_node)) {
-		return FindNearestNode();
+		return FindNearestNode(true);
 	}
 	auto& n = state::nodes[state::active_node];
 	// TODO medkit connections and shit
@@ -608,9 +610,13 @@ index_t SelectNextNode() {
 	return BAD_NODE;
 }
 
+bool free_move_used = false;
+
 void UpdateWalker() {
+	free_move_used = false;
 	if (free_move) {
 		if (g_pUserCmd->forwardmove != 0.0f or g_pUserCmd->sidemove != 0.0f) {
+			free_move_used = true;
 			return;
 		}
 	}
@@ -622,7 +628,7 @@ void UpdateWalker() {
 	}
 	bool timeout = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - state::time).count() > 1;
 	if (not state::node_good(state::active_node) or timeout) {
-		state::active_node = FindNearestNode();
+		state::active_node = FindNearestNode(true);
 		state::recovery = true;
 	}
 	auto& n = state::nodes[state::active_node];
@@ -634,7 +640,7 @@ void UpdateWalker() {
 	}
 	float dist = distance_2d(n.xyz());
 	if (dist > float(max_distance)) {
-		 state::active_node = FindNearestNode();
+		 state::active_node = FindNearestNode(true);
 		 state::recovery = true;
 	}
 	if (dist < float(reach_distance)) {
@@ -781,6 +787,9 @@ void Draw() {
 	} break;
 	case WB_REPLAYING: {
 		AddSideString("Walkbot: Replaying");
+		if (free_move and free_move_used) {
+			AddSideString("Walkbot: FREE MOVEMENT (User override)", colors::green);
+		}
 	} break;
 	}
 	if (draw_info) {

@@ -102,6 +102,7 @@ static CatVar fovcircle_opacity(CV_FLOAT, "aimbot_fov_draw_opacity", "0.7", "FOV
 static CatVar rageonly(CV_SWITCH, "aimbot_rage_only", "0", "Ignore non-rage targets", "Use playerlist to set up rage targets");
 
 static CatVar miss_chance(CV_FLOAT, "aimbot_miss_chance", "0", "Miss chance", "From 0 to 1. Aimbot will NOT aim in these % cases", 0.0f, 1.0f);
+static CatVar auto_unzoom(CV_SWITCH, "aimbot_auto_unzoom", "0", "Auto Un-zoom", "Automatically unzoom");
 
 // Current Entity
 int target_eid { 0 };
@@ -126,6 +127,15 @@ void CreateMove() {
 	// Check if aimbot is enabled
 	if (!enabled) return;
 	
+	if (auto_unzoom) {
+		if (g_pLocalPlayer->holding_sniper_rifle) {
+			if (g_pLocalPlayer->bZoomed) {
+				if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin > 5.0f)
+					g_pUserCmd->buttons |= IN_ATTACK2;
+			}
+		}
+	}
+
 	// Refresh projectile info
 	int huntsman_ticks = 0;
 	projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
@@ -152,6 +162,16 @@ void CreateMove() {
 	// Check target for dormancy and if there even is a target at all
 	if (CE_GOOD(target) && foundTarget) {
 		
+		IF_GAME (IsTF()) {
+			if (auto_zoom) {
+				if (g_pLocalPlayer->holding_sniper_rifle) {
+					if (not g_pLocalPlayer->bZoomed) {
+						g_pUserCmd->buttons |= IN_ATTACK2;
+					}
+				}
+			}
+		}
+
 		// Set target esp color to pink
 		hacks::shared::esp::SetEntityColor(target, colors::pink);
 		
@@ -564,7 +584,7 @@ bool CanAutoShoot() {
 		}
 		
 		// Check if zoomed, and zoom if not, then zoom
-		IF_GAME (IsTF()) {
+		/*IF_GAME (IsTF()) {
 			if (g_pLocalPlayer->clazz == tf_class::tf_sniper) {
 				if (g_pLocalPlayer->holding_sniper_rifle) {
 					if (auto_zoom && !HasCondition<TFCond_Zoomed>(LOCAL_E)) {
@@ -573,7 +593,7 @@ bool CanAutoShoot() {
 					}
 				}
 			}
-		}
+		}*/
 		
 		// Check if ambassador can headshot
 		IF_GAME (IsTF2()) {
