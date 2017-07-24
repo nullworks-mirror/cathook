@@ -62,8 +62,8 @@ struct walkbot_node_s {
 	void unlink(index_t node) {
 		for (size_t i = 0; i < connection_count; i++) {
 			if (connections[i] == node) {
-				connections[i] = connections[connection_count];
-				connections[connection_count--] = INVALID_NODE;
+				connections[i] = connections[connection_count - 1];
+				connections[--connection_count] = 0;
 			}
 		}
 	}
@@ -277,7 +277,7 @@ CatCommand c_create_node("wb_create", "Create node", []() {
 	}
 });
 // Connects selected node to closest one
-CatCommand c_connect_node("wb_connect", "Connect node", []() {
+CatCommand c_connect_node("wb_connect", "Connect nodes", []() {
 	if (not (state::node_good(state::active_node) and state::node_good(state::closest_node)))
 		return;
 	// Don't link a node to itself, idiot
@@ -290,10 +290,49 @@ CatCommand c_connect_node("wb_connect", "Connect node", []() {
 	a.link(state::closest_node);
 	b.link(state::active_node);
 });
+// Makes a one-way connection
+CatCommand c_connect_single_node("wb_connect_single", "Connect nodes (one-way)", []() {
+	if (not (state::node_good(state::active_node) and state::node_good(state::closest_node)))
+		return;
+	// Don't link a node to itself, idiot
+	if (state::active_node == state::closest_node)
+		return;
+
+	auto& a = state::nodes[state::active_node];
+
+	a.link(state::closest_node);
+});
+// Connects selected node to closest one
+CatCommand c_disconnect_node("wb_disconnect", "Disconnect nodes", []() {
+	if (not (state::node_good(state::active_node) and state::node_good(state::closest_node)))
+		return;
+	// Don't link a node to itself, idiot
+	if (state::active_node == state::closest_node)
+		return;
+
+	auto& a = state::nodes[state::active_node];
+	auto& b = state::nodes[state::closest_node];
+
+	a.unlink(state::closest_node);
+	b.unlink(state::active_node);
+});
+// Makes a one-way connection
+CatCommand c_disconnect_single_node("wb_disconnect_single", "Connect nodes (one-way)", []() {
+	if (not (state::node_good(state::active_node) and state::node_good(state::closest_node)))
+		return;
+	// Don't link a node to itself, idiot
+	if (state::active_node == state::closest_node)
+		return;
+
+	auto& a = state::nodes[state::active_node];
+
+	a.unlink(state::closest_node);
+});
 // Updates duck flag on region of nodes (selected to closest)
 // Updates a single closest node if no node is selected
 CatCommand c_update_duck("wb_duck", "Update duck flags", []() {
-	index_t a = state::active_node;
+	logging::Info("< DISABLED >");
+	/*index_t a = state::active_node;
 	index_t b = state::closest_node;
 
 	if (not (state::node_good(a) and state::node_good(b)))
@@ -312,7 +351,7 @@ CatCommand c_update_duck("wb_duck", "Update duck flags", []() {
 			return;
 		}
 		bool found_next = false;
-		for (size_t i = 0; i < 2; i++) {
+		for (size_t i = 0; i < n.connection_count; i++) {
 			if (n.connections[i] != current) {
 				current = n.connections[i];
 				found_next = true;
@@ -323,7 +362,7 @@ CatCommand c_update_duck("wb_duck", "Update duck flags", []() {
 			logging::Info("[wb] Dead end? Can't find next node after %u", current);
 			break;
 		}
-	} while (state::node_good(current) and (current != a));
+	} while (state::node_good(current) and (current != a));*/
 });
 // Toggles jump flag on closest node
 CatCommand c_update_jump("wb_jump", "Toggle jump flag", []() {
@@ -393,7 +432,8 @@ CatCommand c_info("wb_dump", "Show info", []() {
 // Deletes a whole region of nodes
 // Deletes a single closest node if no node is selected
 CatCommand c_delete_region("wb_delete_region", "Delete region of nodes", []() {
-	index_t a = state::active_node;
+	logging::Info("< DISABLED >");
+	/*index_t a = state::active_node;
 	index_t b = state::closest_node;
 
 	if (not (state::node_good(a) and state::node_good(b)))
@@ -422,7 +462,7 @@ CatCommand c_delete_region("wb_delete_region", "Delete region of nodes", []() {
 			logging::Info("[wb] Dead end? Can't find next node after %u", current);
 			break;
 		}
-	} while (state::node_good(current) and (current != a));
+	} while (state::node_good(current) and (current != a));*/
 });
 // Clears the state
 CatCommand c_clear("wb_clear", "Removes all nodes", []() {
