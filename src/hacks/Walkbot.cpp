@@ -39,12 +39,30 @@ struct walkbot_node_s {
 			float y { 0.0f }; // 8
 			float z { 0.0f }; // 12
 		};
-		Vector xyz { 0, 0, 0 };
+		Vector xyz { 0, 0, 0 }; // 12
 	};
 	unsigned flags { 0 }; // 16
 	size_t connection_count { 0 }; // 20
 	index_t connections[MAX_CONNECTIONS]; // 36
-}; // 36
+	index_t preferred { INVALID_NODE }; // 40
+
+	void link(index_t node) {
+		if (connection_count == MAX_CONNECTIONS) {
+			logging::Info("[wb] Too many connections! Node at (%.2f %.2f %.2f)", x, y, z);
+			return;
+		}
+		connections[connection_count++] = node;
+	}
+
+	void unlink(index_t node) {
+		for (size_t i = 0; i < connection_count; i++) {
+			if (connections[i] == node) {
+				connections[i] = connections[connection_count];
+				connections[connection_count--] = INVALID_NODE;
+			}
+		}
+	}
+}; // 40
 
 namespace state {
 
@@ -60,6 +78,9 @@ index_t closest_node { INVALID_NODE };
 // Global state
 EWalkbotState state { WB_DISABLED };
 
+// g_pUserCmd->buttons state when last node was recorded
+int last_node_buttons { 0 };
+
 // A little bit too expensive function, finds next free node or creates one if no free slots exist
 index_t free_node() {
 	for (index_t i = 0; i < nodes.size(); i++) {
@@ -72,7 +93,7 @@ index_t free_node() {
 }
 
 bool node_good(index_t node) {
-	return node < nodes.size() && (nodes[node].flags & NF_GOOD);
+	return node != INVALID_NODE && node < nodes.size() && (nodes[node].flags & NF_GOOD);
 }
 
 }
@@ -82,6 +103,59 @@ CatVar draw_info(CV_SWITCH, "wb_info", "1", "Walkbot info");
 CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
 CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
 CatVar draw_indices(CV_SWITCH, "wb_indices", "1", "Node indices");
+
+// Selects closest node, clears selection if node is selected
+CatCommand c_select_node("wb_select", "Select node", []() {
+	if (state::active_node == state::closest_node) {
+		state::active_node = INVALID_NODE;
+	} else {
+		state::active_node = state::closest_node;
+	}
+});
+// Deletes closest node and its connections
+CatCommand c_delete_node("wb_delete", "Delete node", []() {
+	if (not state::node_good(state::closest_node))
+		return;
+	logging::Info("[wb] Deleting node %u", state::closest_node);
+	auto& n = state::nodes[state::closest_node];
+	for (size_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
+		if (state::node_good(n.connections[i])) {
+			logging::Info("[wb] Unlinking %u from %u", state::closest_node, n.connections[i]);
+			state::nodes[n.connections[i]].unlink(state::closest_node);
+		}
+	}
+	memset(&n, 0, sizeof(walkbot_node_s));
+});
+// Creates a new node under your feet and connects it to closest node to your crosshair
+CatCommand c_create_node("wb_create", "Create node", []() {
+	const Vector& origin = LOCAL_E->m_vecOrigin;
+	index_t node = state::free_node();
+	logging::Info("[wb] Creating node %u at (%.2f %.2f %.2f)", node, origin.x, origin.y, origin.z);
+	auto& n = state::nodes[node];
+	n.xyz = origin;
+	n.preferred = INVALID_NODE;
+	n.connection_count = 0;
+	n.flags |= NF_GOOD;
+	if (g_pUserCmd->buttons & IN_DUCK)
+		n.flags |= NF_DUCK;
+	if (state::node_good(state::closest_node)) {
+		n.link(state::closest_node);
+		state::nodes[state::closest_node].link(node);
+	}
+});
+// Connects selected node to closest one
+CatCommand c_connect_node("wb_connect", "Connect node", []() {
+
+});
+// Updates flags on region of nodes (selected to closest)
+// Updates a single closest node if no node is selected
+CatCommand c_update_flags("wb_flags", "Update flags", []() {
+
+});
+// Sets the closest node as preferred path for the selected node
+CatCommand c_set_preferred("wb_prefer", "Set preferred node", []() {
+
+});
 
 void Initialize() {
 }
@@ -202,8 +276,18 @@ void Draw() {
 }
 
 void Move() {
-	if (state == WB_DISABLED) return;
+	if (state::state == WB_DISABLED) return;
+	switch (state::state) {
+	case WB_RECORDING: {
 
+	} break;
+	case WB_EDITING: {
+		UpdateClosestNode();
+	} break;
+	case WB_REPLAYING: {
+
+	} break;
+	}
 }
 
 }}}
