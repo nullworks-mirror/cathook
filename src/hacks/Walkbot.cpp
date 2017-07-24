@@ -98,6 +98,9 @@ int last_node_buttons { 0 };
 // Set to true when bot is moving to nearest node after dying/losing its active node
 bool recovery { true };
 
+// Time when bot started to move towards next point
+std::chrono::system_clock::time_point time {};
+
 // A little bit too expensive function, finds next free node or creates one if no free slots exist
 index_t free_node() {
 	for (index_t i = 0; i < nodes.size(); i++) {
@@ -139,17 +142,21 @@ void Save(std::string filename) {
 			mkdir("cathook/walkbot", S_IRWXU | S_IRWXG);
 		} else closedir(walkbot_dir);
 	}
-	std::string path = format("cathook/walkbot/", g_IEngine->GetLevelName());
+	std::string path = format("cathook/walkbot/", GetLevelName());
 	{
 		DIR* level_dir = opendir(path.c_str());
 		if (!level_dir) {
-			logging::Info("Walkbot directory for %s doesn't exist, creating one!", g_IEngine->GetLevelName());
+			logging::Info("Walkbot directory for %s doesn't exist, creating one!", GetLevelName().c_str());
 			mkdir(path.c_str(), S_IRWXU | S_IRWXG);
 		} else closedir(level_dir);
 	}
-
+	logging::Info("Saving in %s", format(path, "/", filename).c_str());
 	try {
 		std::ofstream file(format(path, "/", filename), std::ios::out | std::ios::binary);
+		if (not file) {
+			logging::Info("Could not open file!");
+			return;
+		}
 		walkbot_header_s header;
 		header.node_count = state::nodes.size();
 		BINARY_FILE_WRITE(file, header);
@@ -169,11 +176,11 @@ void Load(std::string filename) {
 			mkdir("cathook/walkbot", S_IRWXU | S_IRWXG);
 		} else closedir(walkbot_dir);
 	}
-	std::string path = format("cathook/walkbot/", g_IEngine->GetLevelName());
+	std::string path = format("cathook/walkbot/", GetLevelName());
 	{
 		DIR* level_dir = opendir(path.c_str());
 		if (!level_dir) {
-			logging::Info("Walkbot directory for %s doesn't exist, creating one!", g_IEngine->GetLevelName());
+			logging::Info("Walkbot directory for %s doesn't exist, creating one!", GetLevelName());
 			mkdir(path.c_str(), S_IRWXU | S_IRWXG);
 		} else closedir(level_dir);
 	}
@@ -199,6 +206,7 @@ void Load(std::string filename) {
 }
 
 static CatCommand save("wb_save", "Save", [](const CCommand& args) {
+	logging::Info("Saving");
 	std::string filename = "default";
 	if (args.ArgC() > 1) {
 		filename = args.Arg(1);
@@ -206,6 +214,7 @@ static CatCommand save("wb_save", "Save", [](const CCommand& args) {
 	Save(filename);
 });
 static CatCommand load("wb_load", "Load", [](const CCommand& args) {
+	logging::Info("Loading");
 	std::string filename = "default";
 	if (args.ArgC() > 1) {
 		filename = args.Arg(1);
@@ -377,7 +386,7 @@ CatCommand c_info("wb_dump", "Show info", []() {
 			}
 		}
 		if (not found) {
-			logging::Info("[wb] CONNECTION IS SINGLE-DIRECTIONAL (BROKEN)! (%u)", i);
+			logging::Info("[wb] One-directional connection! (%u)", i);
 		}
 	}
 });
@@ -428,7 +437,7 @@ void UpdateClosestNode() {
 	index_t n_idx = INVALID_NODE;
 
 	for (index_t i = 0; i < state::nodes.size(); i++) {
-		const auto& node = state::nodes[i];
+		auto& node = state::nodes[i];
 
 		if (not node.flags & NF_GOOD)
 			continue;
@@ -472,7 +481,7 @@ index_t SelectNextNode() {
 		 return FindNearestNode();
 	 }
 	 auto& n = state::nodes[state::active_node];
-	 if (n.connection_count > 2) {
+	 if (n.connection_count) {
 		 if (state::node_good(n.preferred)) {
 			 return n.preferred;
 		 } else {
@@ -489,11 +498,6 @@ index_t SelectNextNode() {
 			 }
 		 }
 	 }
-	 for (index_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
-		 if (n.connections[i] != state::active_node && n.connections[i] != state::last_node && state::node_good(n.connections[i])) {
-			 return n.connections[i];
-		 }
-	 }
 	 return INVALID_NODE;
 }
 
@@ -503,7 +507,8 @@ void UpdateWalker() {
 		g_pUserCmd->buttons |= IN_JUMP;
 		jump_ticks--;
 	}
-	if (not state::node_good(state::active_node)) {
+	bool timeout = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - state::time).count() > 2;
+	if (not state::node_good(state::active_node) or timeout) {
 		state::active_node = FindNearestNode();
 		state::recovery = true;
 	}
@@ -524,6 +529,7 @@ void UpdateWalker() {
 		index_t last = state::active_node;
 		state::active_node = SelectNextNode();
 		state::last_node = last;
+		state::time = std::chrono::system_clock::now();
 		logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
 		if (state::node_good(state::active_node)) {
 			if (state::nodes[state::active_node].flags & NF_JUMP) {
@@ -544,21 +550,23 @@ void DrawConnection(index_t a, index_t b) {
 	if (not (state::node_good(a) and state::node_good(b)))
 		return;
 
-	const auto& a_ = state::nodes[a];
-	const auto& b_ = state::nodes[b];
+	auto& a_ = state::nodes[a];
+	auto& b_ = state::nodes[b];
 
-	Vector wts_a, wts_b;
-	if (not (draw::WorldToScreen(a_.xyz(), wts_a) and draw::WorldToScreen(b_.xyz(), wts_b)))
+	Vector center = (a_.xyz() + b_.xyz()) / 2;
+
+	Vector wts_a, wts_c;
+	if (not (draw::WorldToScreen(a_.xyz(), wts_a) and draw::WorldToScreen(center, wts_c)))
 		return;
 
 	rgba_t* color = &colors::white;
 	if 		((a_.flags & b_.flags) & NF_JUMP) color = &colors::yellow;
 	else if ((a_.flags & b_.flags) & NF_DUCK) color = &colors::green;
 
-	if (a_.preferred == b or b_.preferred == a)
+	if (a_.preferred == b)
 		color = &colors::pink;
 
-	drawgl::Line(wts_a.x, wts_a.y, wts_b.x - wts_a.x, wts_b.y - wts_a.y, color->rgba);
+	drawgl::Line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, color->rgba);
 }
 
 // Draws a node and its connections
@@ -566,7 +574,7 @@ void DrawNode(index_t node, bool draw_back) {
 	if (not state::node_good(node))
 		return;
 
-	const auto& n = state::nodes[node];
+	auto& n = state::nodes[node];
 
 	for (size_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
 		index_t connection = n.connections[i];
@@ -650,7 +658,7 @@ void RecordNode() {
 
 void DrawPath() {
 	for (index_t i = 0; i < state::nodes.size(); i++) {
-		DrawNode(i, false);
+		DrawNode(i, true);
 	}
 }
 

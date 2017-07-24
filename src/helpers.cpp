@@ -82,6 +82,16 @@ void WalkTo(const Vector& vector) {
 	g_pUserCmd->sidemove = result.second;
 }
 
+
+std::string GetLevelName() {
+
+	std::string name(g_IEngine->GetLevelName());
+	size_t slash = name.find('/');
+	if (slash == std::string::npos) slash = 0;
+	else slash++;
+	return name.substr(slash, name.length() - 4);
+}
+
 std::pair<float, float> ComputeMove(const Vector& a, const Vector& b) {
 	Vector diff = (b - a);
 	if (diff.Length() == 0) return { 0, 0 };
