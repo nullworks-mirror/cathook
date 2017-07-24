@@ -73,6 +73,9 @@ std::vector<walkbot_node_s> nodes {};
 // Target node when replaying, selected node when editing, last node when recording
 index_t active_node { INVALID_NODE };
 
+// Last reached node when replaying
+index_t last_node { INVALID_NODE };
+
 // Node closest to your crosshair when editing
 index_t closest_node { INVALID_NODE };
 
@@ -81,6 +84,9 @@ EWalkbotState state { WB_DISABLED };
 
 // g_pUserCmd->buttons state when last node was recorded
 int last_node_buttons { 0 };
+
+// Set to true when bot is moving to nearest node after dying/losing its active node
+bool recovery { true };
 
 // A little bit too expensive function, finds next free node or creates one if no free slots exist
 index_t free_node() {
@@ -97,6 +103,19 @@ bool node_good(index_t node) {
 	return node != INVALID_NODE && node < nodes.size() && (nodes[node].flags & NF_GOOD);
 }
 
+}
+
+void DeleteNode(index_t node) {
+	if (not state::node_good(node))
+		return;
+	logging::Info("[wb] Deleting node %u", node);
+	auto& n = state::nodes[node];
+	for (size_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
+		if (state::node_good(n.connections[i])) {
+			state::nodes[n.connections[i]].unlink(state::closest_node);
+		}
+	}
+	memset(&n, 0, sizeof(walkbot_node_s));
 }
 
 index_t CreateNode(const Vector& xyz) {
@@ -116,6 +135,8 @@ CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
 CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
 CatVar draw_indices(CV_SWITCH, "wb_indices", "1", "Node indices");
 CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "32", "Node spawn distance");
+CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "80", "Max distance to node when replaying");
+CatVar reach_distance(CV_FLOAT, "wb_replay_reach_distance", "16", "Distance where bot can be considered 'stepping' on the node");
 
 CatCommand c_start_recording("wb_record", "Start recording", []() { state::state = WB_RECORDING; });
 CatCommand c_start_editing("wb_edit", "Start editing", []() { state::state = WB_EDITING; });
@@ -132,17 +153,7 @@ CatCommand c_select_node("wb_select", "Select node", []() {
 });
 // Deletes closest node and its connections
 CatCommand c_delete_node("wb_delete", "Delete node", []() {
-	if (not state::node_good(state::closest_node))
-		return;
-	logging::Info("[wb] Deleting node %u", state::closest_node);
-	auto& n = state::nodes[state::closest_node];
-	for (size_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
-		if (state::node_good(n.connections[i])) {
-			logging::Info("[wb] Unlinking %u from %u", state::closest_node, n.connections[i]);
-			state::nodes[n.connections[i]].unlink(state::closest_node);
-		}
-	}
-	memset(&n, 0, sizeof(walkbot_node_s));
+	DeleteNode(state::closest_node);
 });
 // Creates a new node under your feet and connects it to closest node to your crosshair
 CatCommand c_create_node("wb_create", "Create node", []() {
@@ -243,6 +254,68 @@ CatCommand c_set_preferred("wb_prefer", "Set preferred node", []() {
 	}
 	n.preferred = b;
 });
+// Displays all info about closest node
+CatCommand c_info("wb_info", "Show info", []() {
+	if (not state::node_good(state::closest_node))
+		return;
+
+	auto& n = state::nodes[state::closest_node];
+
+	logging::Info("[wb] Info about node %u", state::closest_node);
+	logging::Info("[wb] FLAGS: Duck: %d, Jump: %d, Raw: %u", n.flags & NF_DUCK, n.flags & NF_JUMP, n.flags);
+	logging::Info("[wb] X: %.2f | Y: %.2f | Z: %.2f", n.x, n.y, n.z);
+	logging::Info("[wb] CONNECTIONS: %d/%d", n.connection_count, MAX_CONNECTIONS);
+	for (size_t i = 0; i < n.connection_count; i++) {
+		logging::Info("[wb] %u <-> %u", state::closest_node, n.connections[i]);
+		auto& c = state::nodes[n.connections[i]];
+		bool found = false;
+		for (size_t j = 0; j < c.connection_count; j++) {
+			if (c.connections[j] == state::closest_node) {
+				if (found) {
+					logging::Info("[wb] DUPLICATE CONNECTION: %u <-> %u", i, state::closest_node);
+				}
+				found = true;
+			}
+		}
+		if (not found) {
+			logging::Info("[wb] CONNECTION IS SINGLE-DIRECTIONAL (BROKEN)! (%u)", i);
+		}
+	}
+});
+// Deletes a whole region of nodes
+// Deletes a single closest node if no node is selected
+CatCommand c_delete_region("wb_delete_region", "Delete region of nodes", []() {
+	index_t a = state::active_node;
+	index_t b = state::closest_node;
+
+	if (not (state::node_good(a) and state::node_good(b)))
+		return;
+
+	index_t current = state::closest_node;
+	index_t next = INVALID_NODE;
+
+	do {
+		auto& n = state::nodes[current];
+
+		if (n.connection_count > 2) {
+			logging::Info("[wb] More than 2 connections on a node! Quitting.");
+			return;
+		}
+		bool found_next = false;
+		for (size_t i = 0; i < 2; i++) {
+			if (n.connections[i] != current) {
+				next = n.connections[i];
+				found_next = true;
+			}
+		}
+		DeleteNode(current);
+		current = next;
+		if (not found_next) {
+			logging::Info("[wb] Dead end? Can't find next node after %u", current);
+			break;
+		}
+	} while (state::node_good(current) and (current != a));
+});
 
 void Initialize() {
 }
@@ -269,6 +342,79 @@ void UpdateClosestNode() {
 		state::closest_node = n_idx;
 	else
 		state::closest_node = INVALID_NODE;
+}
+
+// Finds nearest node by position, not FOV
+// Not to be confused with FindClosestNode
+index_t FindNearestNode() {
+	index_t r_node { INVALID_NODE };
+	float r_dist { 65536.0f };
+
+	for (index_t i = 0; i < state::nodes.size(); i++) {
+		if (state::node_good(i)) {
+			auto& n = state::nodes[i];
+			float dist = g_pLocalPlayer->v_Origin.DistTo(n.xyz());
+			if (dist < r_dist) {
+				r_dist = dist;
+				r_node = i;
+			}
+		}
+	}
+
+	return r_node;
+}
+
+index_t SelectNextNode() {
+	 if (not state::node_good(state::active_node)) {
+		 return FindNearestNode();
+	 }
+	 auto& n = state::nodes[state::active_node];
+	 if (n.connection_count > 2) {
+		 if (state::node_good(n.preferred)) {
+			 return n.preferred;
+		 } else {
+			 std::vector<index_t> chance {};
+			 for (index_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
+				 if (n.connections[i] != state::active_node && state::node_good(n.connections[i])) {
+					 chance.push_back(n.connections[i]);
+				 }
+			 }
+			 if (not chance.empty()) {
+				 return chance.at(rand() % chance.size());
+			 } else {
+				 return INVALID_NODE;
+			 }
+		 }
+	 }
+	 for (index_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
+		 if (n.connections[i] != state::active_node && state::node_good(n.connections[i])) {
+			 return n.connections[i];
+		 }
+	 }
+	 return INVALID_NODE;
+}
+
+void UpdateWalker() {
+	 if (not state::node_good(state::active_node)) {
+		 state::active_node = FindNearestNode();
+		 state::recovery = true;
+	 }
+	 auto& n = state::nodes[state::active_node];
+	 WalkTo(n.xyz());
+	 float dist = n.xyz().DistTo(g_pLocalPlayer->v_Origin);
+	 if (dist > float(max_distance)) {
+		 state::recovery = true;
+	 }
+	 if (dist < float(reach_distance)) {
+		 state::recovery = false;
+		 state::last_node = state::active_node;
+		 state::active_node = SelectNextNode();
+		 logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
+		 if (not state::node_good(state::active_node) and not state::recovery) {
+			 logging::Info("[wb] FATAL: Next node is bad");
+			 state::recovery = true;
+		 }
+	 }
 }
 
 // Draws a single colored connection between 2 nodes
@@ -321,11 +467,11 @@ void DrawNode(index_t node, bool draw_back) {
 
 		size_t node_size = 2;
 		if (node == state::closest_node)
-			node_size = 4;
+			node_size = 6;
 		if (node == state::active_node)
 			color = &colors::red;
 
-		drawgl::Rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, color->rgba);
+		drawgl::FilledRect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, color->rgba);
 	}
 
 	if (draw_indices) {
@@ -368,6 +514,8 @@ void RecordNode() {
 	auto& n = state::nodes[node];
 	if (g_pUserCmd->buttons & IN_DUCK)
 		n.flags |= NF_DUCK;
+	if (g_pUserCmd->buttons & IN_JUMP)
+		n.flags |= NF_JUMP;
 	if (state::node_good(state::active_node)) {
 		auto& c = state::nodes[state::active_node];
 		n.link(state::active_node);
@@ -413,7 +561,7 @@ void Move() {
 		UpdateClosestNode();
 	} break;
 	case WB_REPLAYING: {
-
+		UpdateWalker();
 	} break;
 	}
 }
