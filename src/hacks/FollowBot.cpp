@@ -272,7 +272,7 @@ void DoWalking() {
 		if (g_GlobalVars->curtime - destination_point_time < 5.0f) {
 			
 			// Walk to the point
-			WalkTo(destination_point);
+			followbot::WalkTo(destination_point);
 			
 			// If we have reached the destination point then we want to disable the vector followbot
 			if (g_pLocalPlayer->v_Origin.DistTo(destination_point) < 50.0f) {
@@ -341,7 +341,7 @@ void DoWalking() {
 
 			// When player to follow is too far away. the bot cant see the player or the bot is forced to the player, then follow breadcrumbs if movement is allowed
 			if ((g_pLocalPlayer->v_Origin.DistTo(found_entity->m_vecOrigin) > (float)follow_distance || crumbForceMove) && crumbArrayLength >= 1 && allow_moving) {
-				WalkTo(breadcrumbs[crumbBottom]);
+				followbot::WalkTo(breadcrumbs[crumbBottom]);
 
 				// If a crumb hasnt been pruned in a while, it probably cant travel to it so reset and wait for the player to collect it.
 				if (g_GlobalVars->curtime - 2.5F > crumb_prune_timeout) {
@@ -602,7 +602,7 @@ void WalkTo(const Vector& vector) {
 	}
 	
 	// Calculate how to get to a vector
-	auto result = ComputeMove(LOCAL_E->m_vecOrigin, vector);
+	auto result = ::ComputeMove(LOCAL_E->m_vecOrigin, vector);
 	// Push our move to usercmd
 	g_pUserCmd->forwardmove = result.first;
 	g_pUserCmd->sidemove = result.second;
