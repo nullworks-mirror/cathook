@@ -26,6 +26,7 @@
 #include "aftercheaders.h"
 
 #include <steam/isteamuser.h>
+#include <dbg.h>
 // All Hacks
 #include "hacks/hacklist.h"
 
@@ -154,6 +155,22 @@ void hack::CC_Cat(const CCommand& args) {
 }
 
 void hack::Initialize() {
+	// Essential files must always exist
+	{
+		std::vector<std::string> essential = {
+			"shaders/v2f-c4f.frag", "shaders/v2f-c4f.vert",
+			"shaders/v2f-t2f-c4f.frag", "shaders/v2f-t2f-c4f.vert",
+			"shaders/v3f-t2f-c4f.frag", "shaders/v3f-t2f-c4f.vert",
+			"menu.json", "fonts/opensans-bold.ttf"
+		};
+		for (const auto& s : essential) {
+			std::ifstream exists("cathook/" + s, std::ios::in);
+			if (not exists) {
+				Error("Missing essential file: cathook/%s\nYou MUST run update-data script to finish installation", s.c_str());
+			}
+		}
+	}
+
 	logging::Info("Initializing...");
 	srand(time(0));
 	prctl(PR_SET_DUMPABLE,0,42,42,42);
