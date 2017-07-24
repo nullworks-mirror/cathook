@@ -14,9 +14,18 @@
 namespace hacks { namespace shared { namespace walkbot {
 
 using index_t = unsigned;
+using connection = uint8_t;
 
-constexpr index_t INVALID_NODE = unsigned(-1);
-constexpr size_t MAX_CONNECTIONS = 4;
+constexpr unsigned VERSION = 2;
+constexpr index_t BAD_NODE = unsigned(-1);
+constexpr connection MAX_CONNECTIONS = 6;
+constexpr connection BAD_CONNECTION = uint8_t(-1);
+
+index_t CreateNode(const Vector& xyz);
+void DeleteNode(index_t node);
+float distance_2d(Vector& xyz);
+void Save(std::string filename);
+void Load(std::string filename);
 
 enum ENodeFlags {
 	NF_GOOD = (1 << 0),
@@ -32,38 +41,70 @@ enum EWalkbotState {
 };
 
 struct walkbot_header_s {
-	unsigned version { 1 };
-	unsigned node_count { 0 };
+	unsigned version { VERSION };
+	size_t node_count { 0 };
+	size_t map_length { 0 };
+	size_t author_length { 0 };
+};
+
+enum EConnectionFlags {
+	CF_GOOD = (1 << 0),
+	CF_LOW_HEALTH = (1 << 1),
+	CF_LOW_AMMO = (1 << 2)
+};
+
+struct connection_s {
+	index_t node { BAD_NODE };
+	unsigned flags { 0 };
+
+	void link(index_t a) {
+		flags |= CF_GOOD;
+		node = a;
+	}
+	void unlink() {
+		flags = 0;
+		node = BAD_NODE;
+	}
+	bool good() const {
+		return (flags & CF_GOOD);
+	}
+	bool free() const {
+		return not good();
+	}
 };
 
 struct walkbot_node_s {
-	struct {
-		float x { 0 }; // 4
-		float y { 0 }; // 8
-		float z { 0 }; // 12
-	};
-	unsigned flags { 0 }; // 16
-	size_t connection_count { 0 }; // 20
-	index_t connections[MAX_CONNECTIONS]; // 36
-	index_t preferred { INVALID_NODE }; // 40
+	float x { 0 };
+	float y { 0 };
+	float z { 0 };
+	unsigned flags { 0 };
+	connection_s connections[MAX_CONNECTIONS];
 
 	Vector& xyz() {
 		return *reinterpret_cast<Vector*>(&x);
 	}
 
+	connection free_connection() const {
+		for (connection i = 0; i < MAX_CONNECTIONS; i++) {
+			if (connections[i].free())
+				return i;
+		}
+		return BAD_CONNECTION;
+	}
+
 	void link(index_t node) {
-		if (connection_count == MAX_CONNECTIONS) {
+		connection free = free_connection();
+		if (free == BAD_CONNECTION) {
 			logging::Info("[wb] Too many connections! Node at (%.2f %.2f %.2f)", x, y, z);
 			return;
 		}
-		connections[connection_count++] = node;
+		connections[free].link(node);
 	}
 
 	void unlink(index_t node) {
-		for (size_t i = 0; i < connection_count; i++) {
-			if (connections[i] == node) {
-				connections[i] = connections[connection_count - 1];
-				connections[--connection_count] = 0;
+		for (connection i = 0; i < MAX_CONNECTIONS; i++) {
+			if (connections[i].good() and connections[i].node == node) {
+				connections[i].unlink();
 			}
 		}
 	}
@@ -77,17 +118,38 @@ float distance_2d(Vector& xyz) {
 
 namespace state {
 
+index_t free_node();
+
 // A vector containing all loaded nodes, used in both recording and replaying
 std::vector<walkbot_node_s> nodes {};
 
+bool node_good(index_t node) {
+	return node != BAD_NODE && node < nodes.size() && (nodes[node].flags & NF_GOOD);
+}
+
 // Target node when replaying, selected node when editing, last node when recording
-index_t active_node { INVALID_NODE };
+index_t active_node { BAD_NODE };
+walkbot_node_s *active() {
+	if (node_good(active_node))
+		return active_node;
+	return BAD_NODE;
+}
 
 // Last reached node when replaying
-index_t last_node { INVALID_NODE };
+index_t last_node { BAD_NODE };
+walkbot_node_s *last() {
+	if (node_good(last_node))
+		return last_node;
+	return BAD_NODE;
+}
 
 // Node closest to your crosshair when editing
-index_t closest_node { INVALID_NODE };
+index_t closest_node { BAD_NODE };
+walkbot_node_s *closest() {
+	if (node_good(closest_node))
+		return closest_node;
+	return BAD_NODE;
+}
 
 // Global state
 EWalkbotState state { WB_DISABLED };
@@ -112,20 +174,19 @@ index_t free_node() {
 	return nodes.size() - 1;
 }
 
-bool node_good(index_t node) {
-	return node != INVALID_NODE && node < nodes.size() && (nodes[node].flags & NF_GOOD);
 }
 
-}
+using state::nodes;
+using state::node_good;
 
 void DeleteNode(index_t node) {
-	if (not state::node_good(node))
+	if (not node_good(node))
 		return;
 	logging::Info("[wb] Deleting node %u", node);
-	auto& n = state::nodes[node];
-	for (size_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
-		if (state::node_good(n.connections[i])) {
-			state::nodes[n.connections[i]].unlink(state::closest_node);
+	auto& n = nodes[node];
+	for (size_t i = 0; i < MAX_CONNECTIONS; i++) {
+		if (n.connections[i].good() and node_good(n.connections[i].node)) {
+			nodes[n.connections[i].node].unlink(node);
 		}
 	}
 	memset(&n, 0, sizeof(walkbot_node_s));
@@ -135,6 +196,10 @@ void DeleteNode(index_t node) {
 #define BINARY_FILE_READ(handle, data) handle.read(reinterpret_cast<char*>(&data), sizeof(data))
 
 void Save(std::string filename) {
+	if (g_Settings.bInvalid) {
+		logging::Info("Not in-game, cannot save!");
+		return;
+	}
 	{
 		DIR* walkbot_dir = opendir("cathook/walkbot");
 		if (!walkbot_dir) {
@@ -159,7 +224,15 @@ void Save(std::string filename) {
 		}
 		walkbot_header_s header;
 		header.node_count = state::nodes.size();
+		const char* name = g_ISteamFriends->GetPersonaName();
+		const char* map  = g_IEngine->GetLevelName();
+		size_t name_s = strlen(name);
+		size_t map_s  = strlen(map);
+		header.author_length = name_s;
+		header.map_length = map_s;
 		BINARY_FILE_WRITE(file, header);
+		file.write(map, map_s);
+		file.write(name, name_s);
 		file.write(reinterpret_cast<const char*>(state::nodes.data()), sizeof(walkbot_node_s) * header.node_count);
 		file.close();
 		logging::Info("Writing successful");
@@ -189,13 +262,28 @@ void Load(std::string filename) {
 		walkbot_header_s header;
 		BINARY_FILE_READ(file, header);
 		// FIXME magic number: 1
-		if (header.version != 1) {
+		if (header.version != VERSION) {
 			logging::Info("Outdated/corrupted walkbot file! Cannot load this.");
 			file.close();
 			return;
 		}
+		if (header.author_length > 64 or header.map_length > 512 or (not header.author_length or not header.map_length)) {
+			logging::Info("Corrupted author/level data");
+		} else {
+			char name_buffer[header.author_length + 1];
+			char map_buffer[header.map_length + 1];
+			file.read(map_buffer, header.map_length);
+			file.read(name_buffer, header.author_length);
+			name_buffer[header.author_length] = 0;
+			map_buffer[header.map_length] = 0;
+			logging::Info("Walkbot navigation map for %s\nAuthor: %s", map_buffer, name_buffer);
+		}
 		state::nodes.clear();
 		logging::Info("Reading %i entries...", header.node_count);
+		if (header.node_count > 32768) {
+			logging::Info("Read %d nodes, max is %d. Aborting.", header.node_count, 32768);
+			return;
+		}
 		state::nodes.resize(header.node_count);
 		file.read(reinterpret_cast<char*>(state::nodes.data()), sizeof(walkbot_node_s) * header.node_count);
 		file.close();
@@ -226,9 +314,8 @@ index_t CreateNode(const Vector& xyz) {
 	index_t node = state::free_node();
 	logging::Info("[wb] Creating node %u at (%.2f %.2f %.2f)", node, xyz.x, xyz.y, xyz.z);
 	auto& n = state::nodes[node];
+	memset(&n, 0, sizeof(n));
 	n.xyz() = xyz;
-	n.preferred = INVALID_NODE;
-	n.connection_count = 0;
 	n.flags |= NF_GOOD;
 	return node;
 }
@@ -255,7 +342,7 @@ CatCommand c_exit("wb_exit", "Exit", []() { state::state = WB_DISABLED; });
 // Selects closest node, clears selection if node is selected
 CatCommand c_select_node("wb_select", "Select node", []() {
 	if (state::active_node == state::closest_node) {
-		state::active_node = INVALID_NODE;
+		state::active_node = BAD_NODE;
 	} else {
 		state::active_node = state::closest_node;
 	}
@@ -377,56 +464,40 @@ CatCommand c_update_jump("wb_jump", "Toggle jump flag", []() {
 	else
 		n.flags |= NF_JUMP;
 });
-// Sets the closest node as preferred path for the selected node (or disable it)
-CatCommand c_set_preferred("wb_prefer", "Set preferred node", []() {
-	index_t a = state::active_node;
-	index_t b = state::closest_node;
-
-	if (not (state::node_good(a) and state::node_good(b)))
-		return;
-
-	auto& n = state::nodes[a];
-	if (n.preferred == b) {
-		n.preferred = INVALID_NODE;
-		return;
-	}
-
-	bool found = false;
-	for (size_t i = 0; i < n.connection_count; i++) {
-		if (n.connections[i] == b) {
-			if (found) {
-				logging::Info("[wb] WARNING!!! Duplicate connection to %u on node %u!!!", a, b);
-			}
-			found = true;
-		}
-	}
-	n.preferred = b;
-});
 // Displays all info about closest node
 CatCommand c_info("wb_dump", "Show info", []() {
-	if (not state::node_good(state::closest_node))
+	index_t node = state::closest_node;
+	if (not node_good(node))
 		return;
 
-	auto& n = state::nodes[state::closest_node];
+	auto& n = nodes[node];
 
-	logging::Info("[wb] Info about node %u", state::closest_node);
-	logging::Info("[wb] FLAGS: Duck: %d, Jump: %d, Raw: %u", n.flags & NF_DUCK, n.flags & NF_JUMP, n.flags);
+	logging::Info("[wb] Info about node %u", node);
+	logging::Info("[wb] Flags: Duck=%d, Jump=%d, Raw=%u", n.flags & NF_DUCK, n.flags & NF_JUMP, n.flags);
 	logging::Info("[wb] X: %.2f | Y: %.2f | Z: %.2f", n.x, n.y, n.z);
-	logging::Info("[wb] CONNECTIONS: %d/%d", n.connection_count, MAX_CONNECTIONS);
-	for (size_t i = 0; i < n.connection_count; i++) {
-		logging::Info("[wb] %u <-> %u", state::closest_node, n.connections[i]);
-		auto& c = state::nodes[n.connections[i]];
+	logging::Info("[wb] Connections:");
+	for (size_t i = 0; i < MAX_CONNECTIONS; i++) {
+		if (n.connections[i].free())
+			continue;
+
+		if (not node_good(n.connections[i].node)) {
+			logging::Info("[wb] %u -x> X (%u)", node, n.connections[i].node);
+			continue;
+		}
+		auto& c = state::nodes[n.connections[i].node];
 		bool found = false;
-		for (size_t j = 0; j < c.connection_count; j++) {
-			if (c.connections[j] == state::closest_node) {
+		for (size_t j = 0; j < MAX_CONNECTIONS; j++) {
+			if (c.connections[j].good() and c.connections[j].node == node) {
 				if (found) {
-					logging::Info("[wb] DUPLICATE CONNECTION: %u <-> %u", i, state::closest_node);
+					logging::Info("[wb] %u <-> %u", i, state::closest_node);
 				}
 				found = true;
 			}
 		}
 		if (not found) {
-			logging::Info("[wb] One-directional connection! (%u)", i);
+			logging::Info("[wb] %u --> %u", node, n.connections[i].node);
+		} else {
+			logging::Info("[wb] %u <-> %u", node, n.connections[i].node);
 		}
 	}
 });
@@ -475,7 +546,7 @@ void Initialize() {
 
 void UpdateClosestNode() {
 	float n_fov = 360.0f;
-	index_t n_idx = INVALID_NODE;
+	index_t n_idx = BAD_NODE;
 
 	for (index_t i = 0; i < state::nodes.size(); i++) {
 		auto& node = state::nodes[i];
@@ -494,13 +565,13 @@ void UpdateClosestNode() {
 	if (n_fov < 10)
 		state::closest_node = n_idx;
 	else
-		state::closest_node = INVALID_NODE;
+		state::closest_node = BAD_NODE;
 }
 
 // Finds nearest node by position, not FOV
 // Not to be confused with FindClosestNode
 index_t FindNearestNode() {
-	index_t r_node { INVALID_NODE };
+	index_t r_node { BAD_NODE };
 	float r_dist { 65536.0f };
 
 	for (index_t i = 0; i < state::nodes.size(); i++) {
@@ -518,28 +589,23 @@ index_t FindNearestNode() {
 }
 
 index_t SelectNextNode() {
-	 if (not state::node_good(state::active_node)) {
-		 return FindNearestNode();
-	 }
-	 auto& n = state::nodes[state::active_node];
-	 if (n.connection_count) {
-		 if (state::node_good(n.preferred)) {
-			 return n.preferred;
-		 } else {
-			 std::vector<index_t> chance {};
-			 for (index_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
-				 if (n.connections[i] != state::active_node && n.connections[i] != state::last_node && state::node_good(n.connections[i])) {
-					 chance.push_back(n.connections[i]);
-				 }
-			 }
-			 if (not chance.empty()) {
-				 return chance.at(rand() % chance.size());
-			 } else {
-				 return INVALID_NODE;
-			 }
-		 }
-	 }
-	 return INVALID_NODE;
+	if (not state::node_good(state::active_node)) {
+		return FindNearestNode();
+	}
+	auto& n = state::nodes[state::active_node];
+	// TODO medkit connections and shit
+	std::vector<index_t> chance {};
+	for (index_t i = 0; i < MAX_CONNECTIONS; i++) {
+		if (n.connections[i].good() and n.connections[i].node != state::last_node and node_good(n.connections[i].node)) {
+			chance.push_back(n.connections[i].node);
+		}
+	}
+	if (not chance.empty()) {
+		return chance.at(unsigned(rand()) % chance.size());
+	} else {
+		return BAD_NODE;
+	}
+	return BAD_NODE;
 }
 
 void UpdateWalker() {
@@ -593,12 +659,14 @@ void UpdateWalker() {
 }
 
 // Draws a single colored connection between 2 nodes
-void DrawConnection(index_t a, index_t b) {
-	if (not (state::node_good(a) and state::node_good(b)))
+void DrawConnection(index_t a, connection_s& b) {
+	if (b.free())
+		return;
+	if (not (node_good(a) and node_good(b.node)))
 		return;
 
 	auto& a_ = state::nodes[a];
-	auto& b_ = state::nodes[b];
+	auto& b_ = state::nodes[b.node];
 
 	Vector center = (a_.xyz() + b_.xyz()) / 2;
 
@@ -610,9 +678,6 @@ void DrawConnection(index_t a, index_t b) {
 	if 		((a_.flags & b_.flags) & NF_JUMP) color = &colors::yellow;
 	else if ((a_.flags & b_.flags) & NF_DUCK) color = &colors::green;
 
-	if (a_.preferred == b)
-		color = &colors::pink;
-
 	drawgl::Line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, color->rgba);
 }
 
@@ -623,14 +688,8 @@ void DrawNode(index_t node, bool draw_back) {
 
 	auto& n = state::nodes[node];
 
-	for (size_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
-		index_t connection = n.connections[i];
-		// To prevent drawing connections twice in a for loop, we only draw connections to nodes with higher index
-		if (not draw_back) {
-			if (connection < node)
-				continue;
-		}
-		DrawConnection(node, connection);
+	for (size_t i = 0; i < MAX_CONNECTIONS; i++) {
+		DrawConnection(node, n.connections[i]);
 	}
 
 	if (draw_nodes) {

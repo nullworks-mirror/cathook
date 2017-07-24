@@ -89,7 +89,9 @@ std::string GetLevelName() {
 	size_t slash = name.find('/');
 	if (slash == std::string::npos) slash = 0;
 	else slash++;
-	return name.substr(slash, name.length() - 4);
+	size_t bsp = name.find(".bsp");
+	size_t length = (bsp == std::string::npos ? name.length() - slash : bsp - slash);
+	return name.substr(slash, length);
 }
 
 std::pair<float, float> ComputeMove(const Vector& a, const Vector& b) {
