@@ -60,6 +60,17 @@ index_t closest_node { INVALID_NODE };
 // Global state
 EWalkbotState state { WB_DISABLED };
 
+// A little bit too expensive function, finds next free node or creates one if no free slots exist
+index_t free_node() {
+	for (index_t i = 0; i < nodes.size(); i++) {
+		if (not (nodes[i].flags & NF_GOOD))
+			return i;
+	}
+
+	nodes.emplace_back();
+	return nodes.size() - 1;
+}
+
 bool node_good(index_t node) {
 	return node < nodes.size() && (nodes[node].flags & NF_GOOD);
 }
@@ -138,7 +149,7 @@ void DrawNode(index_t node, bool draw_back) {
 
 void DrawPath() {
 	for (index_t i = 0; i < state::nodes.size(); i++) {
-
+		DrawNode(i, false);
 	}
 }
 
