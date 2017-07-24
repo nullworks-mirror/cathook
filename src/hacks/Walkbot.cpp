@@ -65,6 +65,12 @@ struct walkbot_node_s {
 	}
 }; // 40
 
+float distance_2d(Vector& xyz) {
+	float dx = xyz.x - g_pLocalPlayer->v_Origin.x;
+	float dy = xyz.y - g_pLocalPlayer->v_Origin.y;
+	return sqrt(dx * dx + dy * dy);
+}
+
 namespace state {
 
 // A vector containing all loaded nodes, used in both recording and replaying
@@ -140,7 +146,11 @@ CatVar reach_distance(CV_FLOAT, "wb_replay_reach_distance", "16", "Distance wher
 
 CatCommand c_start_recording("wb_record", "Start recording", []() { state::state = WB_RECORDING; });
 CatCommand c_start_editing("wb_edit", "Start editing", []() { state::state = WB_EDITING; });
-CatCommand c_start_replaying("wb_replay", "Start replaying", []() { state::state = WB_REPLAYING; });
+CatCommand c_start_replaying("wb_replay", "Start replaying", []() {
+	state::last_node = state::active_node;
+	state::active_node = state::closest_node;
+	state::state = WB_REPLAYING;
+});
 CatCommand c_exit("wb_exit", "Exit", []() { state::state = WB_DISABLED; });
 
 // Selects closest node, clears selection if node is selected
@@ -255,7 +265,7 @@ CatCommand c_set_preferred("wb_prefer", "Set preferred node", []() {
 	n.preferred = b;
 });
 // Displays all info about closest node
-CatCommand c_info("wb_info", "Show info", []() {
+CatCommand c_info("wb_dump", "Show info", []() {
 	if (not state::node_good(state::closest_node))
 		return;
 
@@ -316,6 +326,10 @@ CatCommand c_delete_region("wb_delete_region", "Delete region of nodes", []() {
 		}
 	} while (state::node_good(current) and (current != a));
 });
+// Clears the state
+CatCommand c_clear("wb_clear", "Removes all nodes", []() {
+	state::nodes.clear();
+});
 
 void Initialize() {
 }
@@ -353,7 +367,7 @@ index_t FindNearestNode() {
 	for (index_t i = 0; i < state::nodes.size(); i++) {
 		if (state::node_good(i)) {
 			auto& n = state::nodes[i];
-			float dist = g_pLocalPlayer->v_Origin.DistTo(n.xyz());
+			float dist = distance_2d(n.xyz());
 			if (dist < r_dist) {
 				r_dist = dist;
 				r_node = i;
@@ -375,7 +389,7 @@ index_t SelectNextNode() {
 		 } else {
 			 std::vector<index_t> chance {};
 			 for (index_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
-				 if (n.connections[i] != state::active_node && state::node_good(n.connections[i])) {
+				 if (n.connections[i] != state::active_node && n.connections[i] != state::last_node && state::node_good(n.connections[i])) {
 					 chance.push_back(n.connections[i]);
 				 }
 			 }
@@ -387,7 +401,7 @@ index_t SelectNextNode() {
 		 }
 	 }
 	 for (index_t i = 0; i < n.connection_count && i < MAX_CONNECTIONS; i++) {
-		 if (n.connections[i] != state::active_node && state::node_good(n.connections[i])) {
+		 if (n.connections[i] != state::active_node && n.connections[i] != state::last_node && state::node_good(n.connections[i])) {
 			 return n.connections[i];
 		 }
 	 }
@@ -395,26 +409,44 @@ index_t SelectNextNode() {
 }
 
 void UpdateWalker() {
-	 if (not state::node_good(state::active_node)) {
-		 state::active_node = FindNearestNode();
-		 state::recovery = true;
-	 }
-	 auto& n = state::nodes[state::active_node];
-	 WalkTo(n.xyz());
-	 float dist = n.xyz().DistTo(g_pLocalPlayer->v_Origin);
-	 if (dist > float(max_distance)) {
-		 state::recovery = true;
-	 }
-	 if (dist < float(reach_distance)) {
-		 state::recovery = false;
-		 state::last_node = state::active_node;
-		 state::active_node = SelectNextNode();
-		 logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
-		 if (not state::node_good(state::active_node) and not state::recovery) {
+	static int jump_ticks = 0;
+	if (jump_ticks > 0) {
+		g_pUserCmd->buttons |= IN_JUMP;
+		jump_ticks--;
+	}
+	if (not state::node_good(state::active_node)) {
+	 state::active_node = FindNearestNode();
+	 state::recovery = true;
+	}
+	auto& n = state::nodes[state::active_node];
+	WalkTo(n.xyz());
+	if (state::node_good(state::last_node)) {
+	 auto& l = state::nodes[state::last_node];
+	 if (l.flags & NF_DUCK)
+		 g_pUserCmd->buttons |= IN_DUCK;
+	}
+	float dist = distance_2d(n.xyz());
+	if (dist > float(max_distance)) {
+	 state::recovery = true;
+	}
+	if (dist < float(reach_distance)) {
+	 state::recovery = false;
+	 index_t last = state::active_node;
+	 state::active_node = SelectNextNode();
+	 state::last_node = last;
+	 logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
+	 if (state::node_good(state::active_node)) {
+		 if (state::nodes[state::active_node].flags & NF_JUMP) {
+			 g_pUserCmd->buttons |= IN_JUMP;
+			 jump_ticks = 6;
+		 }
+	 } else {
+		 if (not state::recovery) {
 			 logging::Info("[wb] FATAL: Next node is bad");
 			 state::recovery = true;
 		 }
 	 }
+	}
 }
 
 // Draws a single colored connection between 2 nodes
@@ -502,7 +534,7 @@ bool ShouldSpawnNode() {
 
 	auto& node = state::nodes[state::active_node];
 
-	if (node.xyz().DistTo(g_pLocalPlayer->v_Origin) > float(spawn_distance)) {
+	if (distance_2d(node.xyz()) > float(spawn_distance)) {
 		return true;
 	}
 
