@@ -7,6 +7,10 @@
 
 #include "../common.h"
 
+
+#include <sys/dir.h>
+#include <sys/stat.h>
+
 namespace hacks { namespace shared { namespace walkbot {
 
 using index_t = unsigned;
@@ -124,6 +128,91 @@ void DeleteNode(index_t node) {
 	memset(&n, 0, sizeof(walkbot_node_s));
 }
 
+#define BINARY_FILE_WRITE(handle, data) handle.write(reinterpret_cast<const char*>(&data), sizeof(data))
+#define BINARY_FILE_READ(handle, data) handle.read(reinterpret_cast<char*>(&data), sizeof(data))
+
+void Save(std::string filename) {
+	{
+		DIR* walkbot_dir = opendir("cathook/walkbot");
+		if (!walkbot_dir) {
+			logging::Info("Walkbot directory doesn't exist, creating one!");
+			mkdir("cathook/walkbot", S_IRWXU | S_IRWXG);
+		} else closedir(walkbot_dir);
+	}
+	std::string path = format("cathook/walkbot/", g_IEngine->GetLevelName());
+	{
+		DIR* level_dir = opendir(path.c_str());
+		if (!level_dir) {
+			logging::Info("Walkbot directory for %s doesn't exist, creating one!", g_IEngine->GetLevelName());
+			mkdir(path.c_str(), S_IRWXU | S_IRWXG);
+		} else closedir(level_dir);
+	}
+
+	try {
+		std::ofstream file(format(path, "/", filename), std::ios::out | std::ios::binary);
+		walkbot_header_s header;
+		header.node_count = state::nodes.size();
+		BINARY_FILE_WRITE(file, header);
+		file.write(reinterpret_cast<const char*>(state::nodes.data()), sizeof(walkbot_node_s) * header.node_count);
+		file.close();
+		logging::Info("Writing successful");
+	} catch (std::exception& e) {
+		logging::Info("Writing unsuccessful: %s", e.what());
+	}
+}
+
+void Load(std::string filename) {
+	{
+		DIR* walkbot_dir = opendir("cathook/walkbot");
+		if (!walkbot_dir) {
+			logging::Info("Walkbot directory doesn't exist, creating one!");
+			mkdir("cathook/walkbot", S_IRWXU | S_IRWXG);
+		} else closedir(walkbot_dir);
+	}
+	std::string path = format("cathook/walkbot/", g_IEngine->GetLevelName());
+	{
+		DIR* level_dir = opendir(path.c_str());
+		if (!level_dir) {
+			logging::Info("Walkbot directory for %s doesn't exist, creating one!", g_IEngine->GetLevelName());
+			mkdir(path.c_str(), S_IRWXU | S_IRWXG);
+		} else closedir(level_dir);
+	}
+	try {
+		std::ifstream file(format(path, "/", filename), std::ios::in | std::ios::binary);
+		walkbot_header_s header;
+		BINARY_FILE_READ(file, header);
+		// FIXME magic number: 1
+		if (header.version != 1) {
+			logging::Info("Outdated/corrupted walkbot file! Cannot load this.");
+			file.close();
+			return;
+		}
+		state::nodes.clear();
+		logging::Info("Reading %i entries...", header.node_count);
+		state::nodes.resize(header.node_count);
+		file.read(reinterpret_cast<char*>(state::nodes.data()), sizeof(walkbot_node_s) * header.node_count);
+		file.close();
+		logging::Info("Reading successful! Result: %i entries.", state::nodes.size());
+	} catch (std::exception& e) {
+		logging::Info("Reading unsuccessful: %s", e.what());
+	}
+}
+
+static CatCommand save("wb_save", "Save", [](const CCommand& args) {
+	std::string filename = "default";
+	if (args.ArgC() > 1) {
+		filename = args.Arg(1);
+	}
+	Save(filename);
+});
+static CatCommand load("wb_load", "Load", [](const CCommand& args) {
+	std::string filename = "default";
+	if (args.ArgC() > 1) {
+		filename = args.Arg(1);
+	}
+	Load(filename);
+});
+
 index_t CreateNode(const Vector& xyz) {
 	index_t node = state::free_node();
 	logging::Info("[wb] Creating node %u at (%.2f %.2f %.2f)", node, xyz.x, xyz.y, xyz.z);
@@ -140,8 +229,8 @@ CatVar draw_info(CV_SWITCH, "wb_info", "1", "Walkbot info");
 CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
 CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
 CatVar draw_indices(CV_SWITCH, "wb_indices", "1", "Node indices");
-CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "32", "Node spawn distance");
-CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "80", "Max distance to node when replaying");
+CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "48", "Node spawn distance");
+CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "100", "Max distance to node when replaying");
 CatVar reach_distance(CV_FLOAT, "wb_replay_reach_distance", "16", "Distance where bot can be considered 'stepping' on the node");
 
 CatCommand c_start_recording("wb_record", "Start recording", []() { state::state = WB_RECORDING; });
@@ -343,7 +432,7 @@ void UpdateClosestNode() {
 
 		if (not node.flags & NF_GOOD)
 			continue;
-
+		// Eclipse shits itself when it sees Vector& beung used as Vector in GetFov
 		float fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, node.xyz());
 		if (fov < n_fov) {
 			n_fov = fov;
@@ -415,37 +504,38 @@ void UpdateWalker() {
 		jump_ticks--;
 	}
 	if (not state::node_good(state::active_node)) {
-	 state::active_node = FindNearestNode();
-	 state::recovery = true;
+		state::active_node = FindNearestNode();
+		state::recovery = true;
 	}
 	auto& n = state::nodes[state::active_node];
 	WalkTo(n.xyz());
 	if (state::node_good(state::last_node)) {
-	 auto& l = state::nodes[state::last_node];
-	 if (l.flags & NF_DUCK)
-		 g_pUserCmd->buttons |= IN_DUCK;
+		auto& l = state::nodes[state::last_node];
+		if (l.flags & NF_DUCK)
+			g_pUserCmd->buttons |= IN_DUCK;
 	}
 	float dist = distance_2d(n.xyz());
 	if (dist > float(max_distance)) {
-	 state::recovery = true;
+		 state::active_node = FindNearestNode();
+		 state::recovery = true;
 	}
 	if (dist < float(reach_distance)) {
-	 state::recovery = false;
-	 index_t last = state::active_node;
-	 state::active_node = SelectNextNode();
-	 state::last_node = last;
-	 logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
-	 if (state::node_good(state::active_node)) {
-		 if (state::nodes[state::active_node].flags & NF_JUMP) {
-			 g_pUserCmd->buttons |= IN_JUMP;
-			 jump_ticks = 6;
-		 }
-	 } else {
-		 if (not state::recovery) {
-			 logging::Info("[wb] FATAL: Next node is bad");
-			 state::recovery = true;
-		 }
-	 }
+		state::recovery = false;
+		index_t last = state::active_node;
+		state::active_node = SelectNextNode();
+		state::last_node = last;
+		logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
+		if (state::node_good(state::active_node)) {
+			if (state::nodes[state::active_node].flags & NF_JUMP) {
+				g_pUserCmd->buttons |= IN_JUMP;
+				jump_ticks = 6;
+			}
+		} else {
+			if (not state::recovery) {
+			logging::Info("[wb] FATAL: Next node is bad");
+			state::recovery = true;
+			}
+		}
 	}
 }
 
