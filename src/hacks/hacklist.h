@@ -18,6 +18,7 @@
 #include "Bunnyhop.h"
 #include "ESP.h"
 #include "LagExploit.hpp"
+#include "Walkbot.hpp"
 #include "AntiBackstab.hpp"
 #include "AutoBackstab.hpp"
 #include "FollowBot.h"

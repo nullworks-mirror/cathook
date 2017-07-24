@@ -33,18 +33,19 @@ struct walkbot_header_s {
 };
 
 struct walkbot_node_s {
-	union {
-		struct {
-			float x { 0.0f }; // 4
-			float y { 0.0f }; // 8
-			float z { 0.0f }; // 12
-		};
-		Vector xyz { 0, 0, 0 }; // 12
+	struct {
+		float x { 0 }; // 4
+		float y { 0 }; // 8
+		float z { 0 }; // 12
 	};
 	unsigned flags { 0 }; // 16
 	size_t connection_count { 0 }; // 20
 	index_t connections[MAX_CONNECTIONS]; // 36
 	index_t preferred { INVALID_NODE }; // 40
+
+	Vector& xyz() {
+		return *reinterpret_cast<Vector*>(&x);
+	}
 
 	void link(index_t node) {
 		if (connection_count == MAX_CONNECTIONS) {
@@ -98,11 +99,28 @@ bool node_good(index_t node) {
 
 }
 
-CatVar pause_recording(CV_SWITCH, "wb_recording_paused", "0", "Pause recording", "Use BindToggle with this");
+index_t CreateNode(const Vector& xyz) {
+	index_t node = state::free_node();
+	logging::Info("[wb] Creating node %u at (%.2f %.2f %.2f)", node, xyz.x, xyz.y, xyz.z);
+	auto& n = state::nodes[node];
+	n.xyz() = xyz;
+	n.preferred = INVALID_NODE;
+	n.connection_count = 0;
+	n.flags |= NF_GOOD;
+	return node;
+}
+
+CatVar active_recording(CV_SWITCH, "wb_recording", "0", "Do recording", "Use BindToggle with this");
 CatVar draw_info(CV_SWITCH, "wb_info", "1", "Walkbot info");
 CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
 CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
 CatVar draw_indices(CV_SWITCH, "wb_indices", "1", "Node indices");
+CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "32", "Node spawn distance");
+
+CatCommand c_start_recording("wb_record", "Start recording", []() { state::state = WB_RECORDING; });
+CatCommand c_start_editing("wb_edit", "Start editing", []() { state::state = WB_EDITING; });
+CatCommand c_start_replaying("wb_replay", "Start replaying", []() { state::state = WB_REPLAYING; });
+CatCommand c_exit("wb_exit", "Exit", []() { state::state = WB_DISABLED; });
 
 // Selects closest node, clears selection if node is selected
 CatCommand c_select_node("wb_select", "Select node", []() {
@@ -128,14 +146,8 @@ CatCommand c_delete_node("wb_delete", "Delete node", []() {
 });
 // Creates a new node under your feet and connects it to closest node to your crosshair
 CatCommand c_create_node("wb_create", "Create node", []() {
-	const Vector& origin = LOCAL_E->m_vecOrigin;
-	index_t node = state::free_node();
-	logging::Info("[wb] Creating node %u at (%.2f %.2f %.2f)", node, origin.x, origin.y, origin.z);
+	index_t node = CreateNode(g_pLocalPlayer->v_Origin);
 	auto& n = state::nodes[node];
-	n.xyz = origin;
-	n.preferred = INVALID_NODE;
-	n.connection_count = 0;
-	n.flags |= NF_GOOD;
 	if (g_pUserCmd->buttons & IN_DUCK)
 		n.flags |= NF_DUCK;
 	if (state::node_good(state::closest_node)) {
@@ -245,7 +257,7 @@ void UpdateClosestNode() {
 		if (not node.flags & NF_GOOD)
 			continue;
 
-		float fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, node.xyz);
+		float fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, node.xyz());
 		if (fov < n_fov) {
 			n_fov = fov;
 			n_idx = i;
@@ -268,7 +280,7 @@ void DrawConnection(index_t a, index_t b) {
 	const auto& b_ = state::nodes[b];
 
 	Vector wts_a, wts_b;
-	if (not (draw::WorldToScreen(a_.xyz, wts_a) and draw::WorldToScreen(b_.xyz, wts_b)))
+	if (not (draw::WorldToScreen(a_.xyz(), wts_a) and draw::WorldToScreen(b_.xyz(), wts_b)))
 		return;
 
 	rgba_t* color = &colors::white;
@@ -304,7 +316,7 @@ void DrawNode(index_t node, bool draw_back) {
 		else if (n.flags & NF_DUCK) color = &colors::green;
 
 		Vector wts;
-		if (not draw::WorldToScreen(n.xyz, wts))
+		if (not draw::WorldToScreen(n.xyz(), wts))
 			return;
 
 		size_t node_size = 2;
@@ -322,11 +334,48 @@ void DrawNode(index_t node, bool draw_back) {
 		else if (n.flags & NF_DUCK) color = &colors::green;
 
 		Vector wts;
-		if (not draw::WorldToScreen(n.xyz, wts))
+		if (not draw::WorldToScreen(n.xyz(), wts))
 			return;
 
 		FTGL_Draw(std::to_string(node), wts.x, wts.y, fonts::ftgl_ESP, *color);
 	}
+}
+
+bool ShouldSpawnNode() {
+	if (not state::node_good(state::active_node))
+		return true;
+
+	bool was_jumping = state::last_node_buttons & IN_JUMP;
+	bool is_jumping = g_pUserCmd->buttons & IN_JUMP;
+
+	if (was_jumping != is_jumping and is_jumping)
+		return true;
+
+	if ((state::last_node_buttons & IN_DUCK) != (g_pUserCmd->buttons & IN_DUCK))
+		return true;
+
+	auto& node = state::nodes[state::active_node];
+
+	if (node.xyz().DistTo(g_pLocalPlayer->v_Origin) > float(spawn_distance)) {
+		return true;
+	}
+
+	return false;
+}
+
+void RecordNode() {
+	index_t node = CreateNode(g_pLocalPlayer->v_Origin);
+	auto& n = state::nodes[node];
+	if (g_pUserCmd->buttons & IN_DUCK)
+		n.flags |= NF_DUCK;
+	if (state::node_good(state::active_node)) {
+		auto& c = state::nodes[state::active_node];
+		n.link(state::active_node);
+		c.link(node);
+		logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)", node, state::active_node, c.x, c.y, c.z);
+	}
+	state::last_node_buttons = g_pUserCmd->buttons;
+	state::active_node = node;
 }
 
 void DrawPath() {
@@ -340,24 +389,25 @@ void Draw() {
 	switch (state::state) {
 	case WB_RECORDING: {
 		AddSideString("Walkbot: Recording");
-
 	} break;
 	case WB_EDITING: {
 		AddSideString("Walkbot: Editing");
-
 	} break;
 	case WB_REPLAYING: {
 		AddSideString("Walkbot: Replaying");
-
 	} break;
 	}
+	if (draw_path)
+		DrawPath();
 }
 
 void Move() {
 	if (state::state == WB_DISABLED) return;
 	switch (state::state) {
 	case WB_RECORDING: {
-
+		if (active_recording and ShouldSpawnNode()) {
+			RecordNode();
+		}
 	} break;
 	case WB_EDITING: {
 		UpdateClosestNode();
