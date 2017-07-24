@@ -238,6 +238,7 @@ CatVar draw_info(CV_SWITCH, "wb_info", "1", "Walkbot info");
 CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
 CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
 CatVar draw_indices(CV_SWITCH, "wb_indices", "1", "Node indices");
+CatVar free_move(CV_SWITCH, "wb_freemove", "1", "Allow free movement", "Allow free movement while pressing movement keys");
 CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "48", "Node spawn distance");
 CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "100", "Max distance to node when replaying");
 CatVar reach_distance(CV_FLOAT, "wb_replay_reach_distance", "16", "Distance where bot can be considered 'stepping' on the node");
@@ -542,12 +543,18 @@ index_t SelectNextNode() {
 }
 
 void UpdateWalker() {
+	if (free_move) {
+		if (g_pUserCmd->forwardmove != 0.0f or g_pUserCmd->sidemove != 0.0f) {
+			return;
+		}
+	}
+
 	static int jump_ticks = 0;
 	if (jump_ticks > 0) {
 		g_pUserCmd->buttons |= IN_JUMP;
 		jump_ticks--;
 	}
-	bool timeout = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - state::time).count() > 2;
+	bool timeout = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - state::time).count() > 1;
 	if (not state::node_good(state::active_node) or timeout) {
 		state::active_node = FindNearestNode();
 		state::recovery = true;
@@ -636,8 +643,10 @@ void DrawNode(index_t node, bool draw_back) {
 			return;
 
 		size_t node_size = 2;
-		if (node == state::closest_node)
-			node_size = 6;
+		if (state::state != WB_REPLAYING) {
+			if (node == state::closest_node)
+				node_size = 6;
+		}
 		if (node == state::active_node)
 			color = &colors::red;
 
@@ -715,6 +724,15 @@ void Draw() {
 		AddSideString("Walkbot: Replaying");
 	} break;
 	}
+	if (draw_info) {
+		AddSideString(format("Active node: ", state::active_node));
+		AddSideString(format("Highlighted node: ", state::closest_node));
+		AddSideString(format("Last node: ", state::last_node));
+		AddSideString(format("Node count: ", state::nodes.size()));
+		if (state::recovery) {
+			AddSideString(format("(Recovery mode)"));
+		}
+	}
 	if (draw_path)
 		DrawPath();
 }
@@ -723,6 +741,7 @@ void Move() {
 	if (state::state == WB_DISABLED) return;
 	switch (state::state) {
 	case WB_RECORDING: {
+		UpdateClosestNode();
 		if (active_recording and ShouldSpawnNode()) {
 			RecordNode();
 		}
