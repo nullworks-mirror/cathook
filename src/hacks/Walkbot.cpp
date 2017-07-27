@@ -131,24 +131,24 @@ bool node_good(index_t node) {
 index_t active_node { BAD_NODE };
 walkbot_node_s *active() {
 	if (node_good(active_node))
-		return active_node;
-	return BAD_NODE;
+		return &nodes[active_node];
+	return nullptr;
 }
 
 // Last reached node when replaying
 index_t last_node { BAD_NODE };
 walkbot_node_s *last() {
 	if (node_good(last_node))
-		return last_node;
-	return BAD_NODE;
+		return &nodes[last_node];
+	return nullptr;
 }
 
 // Node closest to your crosshair when editing
 index_t closest_node { BAD_NODE };
 walkbot_node_s *closest() {
 	if (node_good(closest_node))
-		return closest_node;
-	return BAD_NODE;
+		return &nodes[closest_node];
+	return nullptr;
 }
 
 // Global state
@@ -178,6 +178,15 @@ index_t free_node() {
 
 using state::nodes;
 using state::node_good;
+
+bool HasLowAmmo() {
+	// Yes, I know m_iAmmo is a table, not an int.
+	return CE_INT(LOCAL_E, netvar.m_iAmmo);
+}
+
+bool HasLowHealth() {
+	return float(LOCAL_E->m_iHealth) / float(LOCAL_E->m_iMaxHealth) < 0.45;
+}
 
 void DeleteNode(index_t node) {
 	if (not node_good(node))
@@ -324,11 +333,12 @@ CatVar active_recording(CV_SWITCH, "wb_recording", "0", "Do recording", "Use Bin
 CatVar draw_info(CV_SWITCH, "wb_info", "1", "Walkbot info");
 CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
 CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
-CatVar draw_indices(CV_SWITCH, "wb_indices", "1", "Node indices");
+CatVar draw_indices(CV_SWITCH, "wb_indices", "0", "Node indices");
 CatVar free_move(CV_SWITCH, "wb_freemove", "1", "Allow free movement", "Allow free movement while pressing movement keys");
 CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "48", "Node spawn distance");
 CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "100", "Max distance to node when replaying");
 CatVar reach_distance(CV_FLOAT, "wb_replay_reach_distance", "16", "Distance where bot can be considered 'stepping' on the node");
+CatVar draw_connection_flags(CV_SWITCH, "wb_connection_flags", "1", "Connection flags");
 
 CatCommand c_start_recording("wb_record", "Start recording", []() { state::state = WB_RECORDING; });
 CatCommand c_start_editing("wb_edit", "Start editing", []() { state::state = WB_EDITING; });
@@ -464,7 +474,65 @@ CatCommand c_update_jump("wb_jump", "Toggle jump flag", []() {
 	else
 		n.flags |= NF_JUMP;
 });
-// Displays all info about closest node
+// Assuming node is good and conn is in range [0; MAX_CONNECTIONS)
+std::string DescribeConnection(index_t node, connection conn) {
+	const connection_s& c = nodes[node].connections[conn];
+	std::string extra;
+	bool broken = not node_good(c.node);
+	bool oneway = true;
+	if (not broken) {
+		auto& n = state::nodes[c.node];
+		for (size_t j = 0; j < MAX_CONNECTIONS; j++) {
+			if (n.connections[j].good() and n.connections[j].node == node) {
+				oneway = false;
+				break;
+			}
+		}
+		if (c.flags & CF_LOW_AMMO) {
+			extra += "A";
+		}
+		if (c.flags & CF_LOW_HEALTH) {
+			extra += "H";
+		}
+	}
+	std::string result = format(node, ' ', (broken ? "-x>" : (oneway ? "-->" : "<->")), ' ', c.node, ' ', extra);
+	return result;
+}
+CatCommand c_toggle_cf_ammo("wb_conn_ammo", "Toggle 'ammo' flag on connection from ACTIVE to CLOSEST node", []() {
+	auto a = state::active();
+	auto b = state::closest();
+	if (not (a and b)) return;
+	for (connection i = 0; i < MAX_CONNECTIONS; i++) {
+		auto& c = a->connections[i];
+		if (c.free())
+			continue;
+		if (c.node != state::closest_node)
+			continue;
+		// Actually flip the flag
+		if (c.flags & CF_LOW_AMMO)
+			c.flags &= ~CF_LOW_AMMO;
+		else
+			c.flags |= CF_LOW_AMMO;
+	}
+});
+CatCommand c_toggle_cf_health("wb_conn_health", "Toggle 'health' flag on connection from ACTIVE to CLOSEST node", []() {
+	auto a = state::active();
+	auto b = state::closest();
+	if (not (a and b)) return;
+	for (connection i = 0; i < MAX_CONNECTIONS; i++) {
+		auto& c = a->connections[i];
+		if (c.free())
+			continue;
+		if (c.node != state::closest_node)
+			continue;
+		// Actually flip the flag
+		if (c.flags & CF_LOW_HEALTH)
+			c.flags &= ~CF_LOW_HEALTH;
+		else
+			c.flags |= CF_LOW_HEALTH;
+	}
+});
+// Displays all info about closest node and its connections
 CatCommand c_info("wb_dump", "Show info", []() {
 	index_t node = state::closest_node;
 	if (not node_good(node))
@@ -479,26 +547,7 @@ CatCommand c_info("wb_dump", "Show info", []() {
 	for (size_t i = 0; i < MAX_CONNECTIONS; i++) {
 		if (n.connections[i].free())
 			continue;
-
-		if (not node_good(n.connections[i].node)) {
-			logging::Info("[wb] %u -x> X (%u)", node, n.connections[i].node);
-			continue;
-		}
-		auto& c = state::nodes[n.connections[i].node];
-		bool found = false;
-		for (size_t j = 0; j < MAX_CONNECTIONS; j++) {
-			if (c.connections[j].good() and c.connections[j].node == node) {
-				if (found) {
-					logging::Info("[wb] %u <-> %u", i, state::closest_node);
-				}
-				found = true;
-			}
-		}
-		if (not found) {
-			logging::Info("[wb] %u --> %u", node, n.connections[i].node);
-		} else {
-			logging::Info("[wb] %u <-> %u", node, n.connections[i].node);
-		}
+		logging::Info("[wb] %s", DescribeConnection(node, i).c_str());
 	}
 });
 // Deletes a whole region of nodes
@@ -599,7 +648,14 @@ index_t SelectNextNode() {
 	std::vector<index_t> chance {};
 	for (index_t i = 0; i < MAX_CONNECTIONS; i++) {
 		if (n.connections[i].good() and n.connections[i].node != state::last_node and node_good(n.connections[i].node)) {
-			chance.push_back(n.connections[i].node);
+			if (HasLowAmmo() && (n.connections[i].flags & CF_LOW_AMMO)) {
+				return n.connections[i].node;
+			}
+			if (HasLowHealth() && (n.connections[i].flags & CF_LOW_HEALTH)) {
+				return n.connections[i].node;
+			}
+			if (not (n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)))
+				chance.push_back(n.connections[i].node);
 		}
 	}
 	if (not chance.empty()) {
@@ -657,8 +713,8 @@ void UpdateWalker() {
 			}
 		} else {
 			if (not state::recovery) {
-			logging::Info("[wb] FATAL: Next node is bad");
-			state::recovery = true;
+				logging::Info("[wb] FATAL: Next node is bad");
+				state::recovery = true;
 			}
 		}
 	}
@@ -675,9 +731,10 @@ void DrawConnection(index_t a, connection_s& b) {
 	auto& b_ = state::nodes[b.node];
 
 	Vector center = (a_.xyz() + b_.xyz()) / 2;
+	Vector center_connection = (a_.xyz() + center) / 2;
 
-	Vector wts_a, wts_c;
-	if (not (draw::WorldToScreen(a_.xyz(), wts_a) and draw::WorldToScreen(center, wts_c)))
+	Vector wts_a, wts_c, wts_cc;
+	if (not (draw::WorldToScreen(a_.xyz(), wts_a) and draw::WorldToScreen(center, wts_c) and draw::WorldToScreen(center_connection, wts_cc)))
 		return;
 
 	rgba_t* color = &colors::white;
@@ -685,6 +742,15 @@ void DrawConnection(index_t a, connection_s& b) {
 	else if ((a_.flags & b_.flags) & NF_DUCK) color = &colors::green;
 
 	drawgl::Line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, color->rgba);
+
+	if (draw_connection_flags && b.flags != CF_GOOD) {
+		std::string flags;
+		if (b.flags & CF_LOW_AMMO) flags += "A";
+		if (b.flags & CF_LOW_HEALTH) flags += "H";
+		int size_x = 0, size_y = 0;
+		FTGL_StringLength(flags, fonts::ftgl_ESP, &size_x, &size_y);
+		FTGL_Draw(flags, wts_cc.x - size_x / 2, wts_cc.y - size_y - 4, fonts::ftgl_ESP);
+	}
 }
 
 // Draws a node and its connections
@@ -789,6 +855,12 @@ void Draw() {
 		AddSideString("Walkbot: Replaying");
 		if (free_move and free_move_used) {
 			AddSideString("Walkbot: FREE MOVEMENT (User override)", colors::green);
+		}
+		if (HasLowAmmo()) {
+			AddSideString("Walkbot: LOW AMMO", colors::yellow);
+		}
+		if (HasLowHealth()) {
+			AddSideString("Walkbot: LOW HEALTH", colors::red);
 		}
 	} break;
 	}

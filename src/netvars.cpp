@@ -21,6 +21,7 @@ void NetVars::Init() {
 	this->iHitboxSet = gNetvars.get_offset("DT_BaseAnimating", "m_nHitboxSet");
 	this->vVelocity = gNetvars.get_offset("DT_BasePlayer", "localdata", "m_vecVelocity[0]");
 	this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
+	this->m_iAmmo = gNetvars.get_offset("DT_BasePlayer", "localdata", "m_iAmmo");
 	this->m_Collision = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
 	m_flSimulationTime = gNetvars.get_offset("DT_BaseEntity", "m_flSimulationTime");
 	IF_GAME (IsTF2()) {
