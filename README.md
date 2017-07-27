@@ -26,9 +26,7 @@ and a lot of useful features, including
 
 # INSTALLATION
 
-You **have** to use gcc6, not 7 or 5!
-
-You also have to have g++-6-multilib package.
+You can use gcc-7 for compiling cathook if you add `-e CC=gcc-7 CXX=g++-7` to make command line
 
 Ubuntu gcc6 installation: (check if you have gcc-6 installed already by typing `gcc-6 -v`
 ```bash

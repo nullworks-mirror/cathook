@@ -152,6 +152,8 @@ $(TARGET): $(OBJECTS)
 clean:
 	find src -type f -name '*.o' -delete
 	find src -type f -name '*.d' -delete
+	find simple-ipc -type f -name '*.o' -delete
+	find simple-ipc -type f -name '*.d' -delete
 	rm -rf ./bin
 
 ifneq ($(MAKECMDGOALS), clean)
