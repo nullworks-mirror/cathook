@@ -75,6 +75,7 @@ ConVar* CreateConVar(std::string name, std::string value, std::string help) {
 
 // Function for when you want to goto a vector
 void WalkTo(const Vector& vector) {
+	if (CE_BAD(LOCAL_E)) return;
 	// Calculate how to get to a vector
 	auto result = ComputeMove(LOCAL_E->m_vecOrigin, vector);
 	// Push our move to usercmd

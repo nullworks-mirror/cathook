@@ -180,8 +180,23 @@ using state::nodes;
 using state::node_good;
 
 bool HasLowAmmo() {
-	// Yes, I know m_iAmmo is a table, not an int.
-	return CE_INT(LOCAL_E, netvar.m_iAmmo);
+	// 0x13D = CBaseCombatWeapon::HasPrimaryAmmo()
+	// 190 = IsBaseCombatWeapon
+	// 1C1 = C_TFWeaponBase::UsesPrimaryAmmo()
+	int *weapon_list = (int*)((unsigned)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
+	for (int i = 0; weapon_list[i]; i++) {
+		int handle = weapon_list[i];
+		int eid = handle & 0xFFF;
+		if (eid >= 32 && eid <= HIGHEST_ENTITY) {
+			IClientEntity* weapon = g_IEntityList->GetClientEntity(eid);
+			if (weapon and vfunc<bool(*)(IClientEntity*)>(weapon, 190, 0)(weapon) and
+					   vfunc<bool(*)(IClientEntity*)>(weapon, 0x1C1, 0)(weapon) and
+				   not vfunc<bool(*)(IClientEntity*)>(weapon, 0x13D, 0)(weapon)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 bool HasLowHealth() {
