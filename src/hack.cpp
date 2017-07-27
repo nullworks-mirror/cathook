@@ -42,6 +42,7 @@
 
 #include "ftrender.hpp"
 #include "hooks/hookedmethods.h"
+#include "init.hpp"
 
 #include "sdk.h"
 #include "vfunc.h"
@@ -140,18 +141,13 @@ void hack::ExecuteCommand(const std::string command) {
 	hack::command_stack().push(command);
 }
 
+
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
-	g_ICvar->ConsoleColorPrintf(Color(255, 255, 255, 255), "kathook");
+	g_ICvar->ConsoleColorPrintf(Color(255, 255, 255, 255), "cathook");
 	g_ICvar->ConsoleColorPrintf(Color(  0,   0, 255, 255), " by ");
 	g_ICvar->ConsoleColorPrintf(Color(255,   0,   0, 255), "nullifiedcat\n");
-	/*int white = colors::white, blu = colors::blu, red = colors::red;
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "kathook");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&blu), " by ");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&red), "nullifiedcat\n");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), GetVersion().c_str());
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "\n");*/
 }
 
 void hack::Initialize() {
@@ -294,6 +290,13 @@ void hack::Initialize() {
 	backpacktf::init();
 	logging::Info("Initialized Backpack.TF integration");
 	hacks::shared::walkbot::Initialize();
+
+	logging::Info("Clearing initializer stack");
+	while (!init_stack().empty()) {
+		init_stack().top()();
+		init_stack().pop();
+	}
+	logging::Info("Initializer stack done");
 }
 
 void hack::Think() {

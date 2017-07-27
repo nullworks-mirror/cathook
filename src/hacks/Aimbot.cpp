@@ -812,8 +812,8 @@ void slowAim(Vector &inputAngle, Vector userAngle) {
     // Initialize vars for slow aim
     int slowfliptype;
     int slowdir;
-    float changey;
-    float changex;
+    float changey = 0;
+    float changex = 0;
         
     // Determine whether to move the mouse at all for the yaw
     if (userAngle.y != inputAngle.y) {
