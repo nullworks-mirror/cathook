@@ -350,9 +350,9 @@ CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
 CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
 CatVar draw_indices(CV_SWITCH, "wb_indices", "0", "Node indices");
 CatVar free_move(CV_SWITCH, "wb_freemove", "1", "Allow free movement", "Allow free movement while pressing movement keys");
-CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "48", "Node spawn distance");
+CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "54", "Node spawn distance");
 CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "100", "Max distance to node when replaying");
-CatVar reach_distance(CV_FLOAT, "wb_replay_reach_distance", "16", "Distance where bot can be considered 'stepping' on the node");
+CatVar reach_distance(CV_FLOAT, "wb_replay_reach_distance", "32", "Distance where bot can be considered 'stepping' on the node");
 CatVar draw_connection_flags(CV_SWITCH, "wb_connection_flags", "1", "Connection flags");
 
 CatCommand c_start_recording("wb_record", "Start recording", []() { state::state = WB_RECORDING; });
