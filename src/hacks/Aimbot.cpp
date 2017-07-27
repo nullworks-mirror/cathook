@@ -293,6 +293,9 @@ bool ShouldAim() {
 			if ((weapon_state == MinigunState_t::AC_STATE_IDLE || weapon_state == MinigunState_t::AC_STATE_STARTFIRING) && !auto_spin_up) {
 				return false;
 			}
+			if (auto_spin_up) {
+				g_pUserCmd->buttons |= IN_ATTACK2;
+			}
 			if (!(g_pUserCmd->buttons & (IN_ATTACK2 | IN_ATTACK))) {
 				return false;
 			}
