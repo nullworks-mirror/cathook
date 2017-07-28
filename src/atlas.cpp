@@ -5,6 +5,8 @@
  *      Author: nullifiedcat
  */
 
+#ifndef TEXTMODE
+
 #include "atlas.hpp"
 
 #include "drawing.h"
@@ -36,3 +38,5 @@ void Init() {
 }
 
 }
+
+#endif

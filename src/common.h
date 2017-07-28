@@ -37,17 +37,29 @@
 #include "averager.hpp"
 
 #include "aftercheaders.h"
+
+#ifndef TEXTMODE
+
 extern "C" {
 #include <vec234.h>
 }
+
+#include "ftrender.hpp"
+#include "drawing.h"
+#include "fidgetspinner.hpp"
+#include "drawgl.hpp"
+#include "EffectGlow.hpp"
+#include "atlas.hpp"
+#include "EffectChams.hpp"
+#include "drawmgr.hpp"
+
+#endif
+
 #include "macros.hpp"
 #include "colors.hpp"
 #include "profiler.h"
-#include "ftrender.hpp"
 #include "offsets.hpp"
-#include "drawing.h"
 #include "entitycache.h"
-#include "fidgetspinner.hpp"
 #include "hoovy.hpp"
 #include "enums.h"
 #include "projlogging.hpp"
@@ -57,14 +69,12 @@ extern "C" {
 #include "entityhitboxcache.hpp"
 #include "globals.h"
 #include "helpers.h"
-#include "drawgl.hpp"
 #include "playerlist.hpp"
 #include "interfaces.h"
-#include "EffectGlow.hpp"
-#include "drawmgr.hpp"
 #include "localplayer.h"
 #include "conditions.h"
 #include "logging.h"
+#include "targethelper.h"
 #include "playerresource.h"
 #include "usercmd.h"
 #include "trace.h"
@@ -72,13 +82,11 @@ extern "C" {
 #include "netvars.h"
 #include "vfunc.h"
 #include "hooks.h"
-#include "atlas.hpp"
 #include "prediction.h"
 #include "conditions.h"
 #include "itemtypes.h"
 #include "chatstack.h"
 #include "textfile.h"
-#include "EffectChams.hpp"
 #include "ipc.h"
 #include "hooks/hookedmethods.h"
 #include "classinfo/classinfo.hpp"

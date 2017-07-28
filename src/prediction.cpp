@@ -81,7 +81,7 @@ void Prediction_CreateMove() {
 		}
 	}
 }
-
+#ifndef TEXTMODE
 void Prediction_PaintTraverse() {
 	if (!debug_enginepred) return;
 	for (int i = 1; i < predicted_player_count; i++) {
@@ -104,7 +104,7 @@ void Prediction_PaintTraverse() {
 		}
 	}
 }
-
+#endif
 Vector EnginePrediction(CachedEntity* entity, float time) {
 	Vector result = entity->m_vecOrigin;
 	IClientEntity* ent = RAW_ENT(entity);

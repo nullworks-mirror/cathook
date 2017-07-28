@@ -757,6 +757,47 @@ void UpdateWalker() {
 	}
 }
 
+bool ShouldSpawnNode() {
+	if (not state::node_good(state::active_node))
+		return true;
+
+	bool was_jumping = state::last_node_buttons & IN_JUMP;
+	bool is_jumping = g_pUserCmd->buttons & IN_JUMP;
+
+	if (was_jumping != is_jumping and is_jumping)
+		return true;
+
+	if ((state::last_node_buttons & IN_DUCK) != (g_pUserCmd->buttons & IN_DUCK))
+		return true;
+
+	auto& node = state::nodes[state::active_node];
+
+	if (distance_2d(node.xyz()) > float(spawn_distance)) {
+		return true;
+	}
+
+	return false;
+}
+
+void RecordNode() {
+	index_t node = CreateNode(g_pLocalPlayer->v_Origin);
+	auto& n = state::nodes[node];
+	if (g_pUserCmd->buttons & IN_DUCK)
+		n.flags |= NF_DUCK;
+	if (g_pUserCmd->buttons & IN_JUMP)
+		n.flags |= NF_JUMP;
+	if (state::node_good(state::active_node)) {
+		auto& c = state::nodes[state::active_node];
+		n.link(state::active_node);
+		c.link(node);
+		logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)", node, state::active_node, c.x, c.y, c.z);
+	}
+	state::last_node_buttons = g_pUserCmd->buttons;
+	state::active_node = node;
+}
+
+#ifndef TEXTMODE
+
 // Draws a single colored connection between 2 nodes
 void DrawConnection(index_t a, connection_s& b) {
 	if (b.free())
@@ -834,45 +875,6 @@ void DrawNode(index_t node, bool draw_back) {
 	}
 }
 
-bool ShouldSpawnNode() {
-	if (not state::node_good(state::active_node))
-		return true;
-
-	bool was_jumping = state::last_node_buttons & IN_JUMP;
-	bool is_jumping = g_pUserCmd->buttons & IN_JUMP;
-
-	if (was_jumping != is_jumping and is_jumping)
-		return true;
-
-	if ((state::last_node_buttons & IN_DUCK) != (g_pUserCmd->buttons & IN_DUCK))
-		return true;
-
-	auto& node = state::nodes[state::active_node];
-
-	if (distance_2d(node.xyz()) > float(spawn_distance)) {
-		return true;
-	}
-
-	return false;
-}
-
-void RecordNode() {
-	index_t node = CreateNode(g_pLocalPlayer->v_Origin);
-	auto& n = state::nodes[node];
-	if (g_pUserCmd->buttons & IN_DUCK)
-		n.flags |= NF_DUCK;
-	if (g_pUserCmd->buttons & IN_JUMP)
-		n.flags |= NF_JUMP;
-	if (state::node_good(state::active_node)) {
-		auto& c = state::nodes[state::active_node];
-		n.link(state::active_node);
-		c.link(node);
-		logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)", node, state::active_node, c.x, c.y, c.z);
-	}
-	state::last_node_buttons = g_pUserCmd->buttons;
-	state::active_node = node;
-}
-
 void DrawPath() {
 	for (index_t i = 0; i < state::nodes.size(); i++) {
 		DrawNode(i, true);
@@ -913,6 +915,8 @@ void Draw() {
 	if (draw_path)
 		DrawPath();
 }
+
+#endif
 
 void OnLevelInit() {
 	if (leave_if_empty && state::state == WB_REPLAYING) {

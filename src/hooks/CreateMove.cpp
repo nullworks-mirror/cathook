@@ -264,11 +264,13 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		IF_GAME (IsTF2()) {
 			SAFE_CALL(UpdateHoovyList());
 		}
-			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
+		g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
+#ifndef TEXTMODE
 		{
 			PROF_SECTION(CM_esp);
 			SAFE_CALL(hacks::shared::esp::CreateMove());
 		}
+#endif
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
 			{
 				PROF_SECTION(CM_walkbot);

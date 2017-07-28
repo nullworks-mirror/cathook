@@ -53,9 +53,21 @@ LDFLAGS+=-flto
 endif
 endif
 LDLIBS=-lssl -l:libSDL2-2.0.so.0 -static -l:libc.so.6 -static -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so -static -l:libGLEW.so -l:libfreetype.so
+
+OUT_NAME = libcathook.so
+
+ifdef TEXTMODE
+$(info Compiling for text mode only!)
+N_LDLIBS = -lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -l:libfreetype.so
+LDLIBS := $(filter-out $(N_LDLIBS),$(LDLIBS))
+N_INCLUDES = -isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2
+INCLUDES := $(filter-out $(N_INCLUDES),$(INCLUDES))
+DEFINES += TEXTMODE=1
+#OUT_NAME := libcathook-textmode.so
+endif
+
 SRC_DIR = src
 RES_DIR = res
-OUT_NAME = libcathook.so
 TARGET_DIR = bin
 TARGET = $(TARGET_DIR)/$(OUT_NAME)
 SOURCES = $(shell find $(SRC_DIR) -name "*.c*" -print)
@@ -96,9 +108,25 @@ CXXFLAGS+=$(addprefix -D,$(DEFINES))
 CFLAGS+=$(addprefix -D,$(DEFINES))
 
 CXXFLAGS+=$(INCLUDES)
-CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(INCLUDES)
+
+ifdef TEXTMODE
+
+N_SOURCES := hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp ftrender.cpp hooks/sdl.cpp drawmgr.cpp drawgl.cpp
+N_SOURCES := $(addprefix $(SRC_DIR)/,$(N_SOURCES))
+
+SOURCES := $(filter-out $(shell find $(SRC_DIR)/gui -name "*.cpp" -print),$(SOURCES))
+SOURCES := $(filter-out $(shell find $(SRC_DIR)/freetype-gl -name "*.c*" -print),$(SOURCES))
+SOURCES := $(filter-out $(shell find $(SRC_DIR)/imgui -name "*.c*" -print),$(SOURCES))
+SOURCES := $(filter-out $(N_SOURCES),$(SOURCES))
+
+
+else
+
+CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(shell sdl2-config --cflags)
+
+endif
 
 .PHONY: clean directories echo
 
@@ -136,7 +164,7 @@ src/sdk/utlbuffer.o : CFLAGS+=-w
 
 .cpp.o:
 	@echo Compiling $<
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 .c.o:
 	@echo Compiling $<

@@ -12,6 +12,8 @@
 #include "ucccccp.hpp"
 #include "hookedmethods.h"
 
+#ifndef TEXTMODE
+
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility", "Useful with chams!");
 
 // This hook isn't used yet!
@@ -68,6 +70,41 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 	original(_this, state, info, matrix);
 }
 
+
+int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
+	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
+#if ENABLE_GUI
+	SEGV_BEGIN;
+	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
+		return 0;
+	}
+	SEGV_END;
+#endif
+	return original(_this, eventcode, keynum, pszCurrentBinding);
+}
+
+CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
+CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
+
+void OverrideView_hook(void* _this, CViewSetup* setup) {
+	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
+	static bool zoomed;
+	SEGV_BEGIN;
+	original(_this, setup);
+	if (!cathook) return;
+	if (g_pLocalPlayer->bZoomed && override_fov_zoomed) {
+		setup->fov = override_fov_zoomed;
+	} else {
+		if (override_fov) {
+			setup->fov = override_fov;
+		}
+	}
+	draw::fov = setup->fov;
+	SEGV_END;
+}
+
+#endif
+
 bool CanPacket_hook(void* _this) {
 	const CanPacket_t original = (CanPacket_t)hooks::netchannel.GetMethod(offsets::CanPacket());
 	SEGV_BEGIN;
@@ -94,18 +131,6 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 		*(int*)((unsigned)ch + offsets::m_nOutSequenceNr()) = def->command_number - 1;
 	}
 	return def;
-}
-
-int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
-	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
-#if ENABLE_GUI
-	SEGV_BEGIN;
-	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
-		return 0;
-	}
-	SEGV_END;
-#endif
-	return original(_this, eventcode, keynum, pszCurrentBinding);
 }
 
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent messages");
@@ -332,11 +357,12 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
-	// TODO hack FSN hook
+#ifndef TEXTMODE
 	{
 		PROF_SECTION(FSN_skinchanger);
 		hacks::tf2::skinchanger::FrameStageNotify(stage);
 	}
+#endif
 	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		angles::Update();
 		hacks::shared::anticheat::CreateMove();
@@ -356,6 +382,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
+#ifndef TEXTMODE
 	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 #if ENABLE_GUI
 		if (cursor_fix_experimental) {
@@ -379,27 +406,8 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
+#endif /* TEXTMODE */
 	SAFE_CALL(original(_this, stage));
-	SEGV_END;
-}
-
-CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
-CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
-
-void OverrideView_hook(void* _this, CViewSetup* setup) {
-	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
-	static bool zoomed;
-	SEGV_BEGIN;
-	original(_this, setup);
-	if (!cathook) return;
-	if (g_pLocalPlayer->bZoomed && override_fov_zoomed) {
-		setup->fov = override_fov_zoomed;
-	} else {
-		if (override_fov) {
-			setup->fov = override_fov;
-		}
-	}
-	draw::fov = setup->fov;
 	SEGV_END;
 }
 
