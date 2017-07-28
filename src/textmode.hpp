@@ -7,5 +7,4 @@
 
 #pragma once
 
-bool IsTextMode();
-void PatchVAC();
+void UpdateInput();

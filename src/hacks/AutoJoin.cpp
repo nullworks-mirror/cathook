@@ -24,6 +24,9 @@ const std::string classnames[] = {
 CatCommand debug_startsearch("debug_startsearch", "DEBUG StartSearch", []() {
 	logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(4));
 });
+CatCommand debug_casual("debug_casual", "DEBUG Casual", []() {
+	logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
+});
 
 CatCommand debug_readytosearch("debug_gcstate", "DEBUG GCState", []() {
 	logging::Info("%d", g_TFGCClientSystem->GetState());

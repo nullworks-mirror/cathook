@@ -741,7 +741,6 @@ void UpdateWalker() {
 		state::active_node = SelectNextNode();
 		state::last_node = last;
 		state::time = std::chrono::system_clock::now();
-		logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
 		if (state::node_good(state::active_node)) {
 			if (state::nodes[state::active_node].flags & NF_JUMP) {
 				g_pUserCmd->buttons |= IN_DUCK;
@@ -750,7 +749,6 @@ void UpdateWalker() {
 			}
 		} else {
 			if (not state::recovery) {
-				logging::Info("[wb] FATAL: Next node is bad");
 				state::recovery = true;
 			}
 		}
