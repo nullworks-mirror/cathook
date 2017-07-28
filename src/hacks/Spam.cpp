@@ -15,7 +15,8 @@ CatVar spam_source(spam_enum, "spam", "0", "Chat Spam", "Defines source of spam 
 CatVar random_order(CV_SWITCH, "spam_random", "0", "Random Order");
 CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file", "Spam file name. Each line should be no longer than 100 characters, file must be located in cathook data folder");
 CatCommand reload("spam_reload", "Reload spam file", Reload);
-	
+CatVar spam_delay(CV_FLOAT, "spam_delay", "0.8", "Spam delay", "Delay between spam messages (in seconds)", 0.0f, 8.0f);
+
 static CatEnum voicecommand_enum({"DISABLED", "RANDOM", "MEDIC", "THANKS", "NICE SHOT", "CHEERS", "JEERS"});
 CatVar voicecommand_spam(voicecommand_enum, "spam_voicecommand", "0", "Voice Command Spam", "Spams tf voice commands");
 	
@@ -221,10 +222,11 @@ void CreateMove() {
 	
 	if (!spam_source) return;
 	static int safety_ticks = 0;
-	static int last_spam = 0;
-	if ((int)spam_source != last_spam) {
+	static int last_source = 0;
+	static float last_message = 0;
+	if ((int)spam_source != last_source) {
 		safety_ticks = 300;
-		last_spam = (int)spam_source;
+		last_source = (int)spam_source;
 	}
 	if (safety_ticks > 0) {
 		safety_ticks--;
@@ -253,7 +255,7 @@ void CreateMove() {
 		return;
 	}
 	if (!source || !source->size()) return;
-	if (g_GlobalVars->curtime - last_spam > 0.8f) {
+	if (g_GlobalVars->curtime - last_spam > float(spam_delay)) {
 		if (chat_stack::stack.empty()) {
 			if (current_index >= source->size()) current_index = 0;
 			if (random_order) current_index = rand() % source->size();
