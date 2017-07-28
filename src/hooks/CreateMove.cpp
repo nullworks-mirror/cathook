@@ -204,6 +204,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		SAFE_CALL(g_pLocalPlayer->Update());
 	}
 	g_Settings.bInvalid = false;
+
+	hacks::shared::autojoin::Update();
+
 #ifdef IPC_ENABLED
 	static int team_joining_state = 0;
 	static float last_jointeam_try = 0;
@@ -270,6 +273,10 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			{
 				PROF_SECTION(CM_walkbot);
 				SAFE_CALL(hacks::shared::walkbot::Move());
+			}
+			// Walkbot can leave game.
+			if (!g_IEngine->IsInGame()) {
+				return ret;
 			}
 			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_uberspam);

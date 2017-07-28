@@ -12,6 +12,7 @@ namespace chatlog {
 
 CatVar enabled(CV_SWITCH, "chat_log", "0", "Chat log", "Log chat to file");
 CatVar message_template(CV_STRING, "chat_log_template", "[U:1:%u] %n: %m", "Log template", "%u - SteamID\n%n - name\n%m - message");
+CatVar dont_log_spam(CV_SWITCH, "chat_log_nospam", "1", "No Spam", "Don't log your messages if spam is active");
 
 class RAIILog {
 public:
@@ -41,6 +42,8 @@ void LogMessage(int eid, std::string message) {
 	if (!enabled) {
 		return;
 	}
+	if (dont_log_spam && hacks::shared::spam::spam_source and eid == g_IEngine->GetLocalPlayer())
+		return;
 	player_info_s info;
 	if (not g_IEngine->GetPlayerInfo(eid, &info))
 		return;

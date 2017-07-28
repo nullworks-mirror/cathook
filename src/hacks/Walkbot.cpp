@@ -6,7 +6,7 @@
  */
 
 #include "../common.h"
-
+#include "../hack.h"
 
 #include <sys/dir.h>
 #include <sys/stat.h>
@@ -25,7 +25,7 @@ index_t CreateNode(const Vector& xyz);
 void DeleteNode(index_t node);
 float distance_2d(Vector& xyz);
 void Save(std::string filename);
-void Load(std::string filename);
+bool Load(std::string filename);
 
 enum ENodeFlags {
 	NF_GOOD = (1 << 0),
@@ -265,7 +265,7 @@ void Save(std::string filename) {
 	}
 }
 
-void Load(std::string filename) {
+bool Load(std::string filename) {
 	{
 		DIR* walkbot_dir = opendir("cathook/walkbot");
 		if (!walkbot_dir) {
@@ -277,19 +277,22 @@ void Load(std::string filename) {
 	{
 		DIR* level_dir = opendir(path.c_str());
 		if (!level_dir) {
-			logging::Info("Walkbot directory for %s doesn't exist, creating one!", GetLevelName());
+			logging::Info("Walkbot directory for %s doesn't exist, creating one!", GetLevelName().c_str());
 			mkdir(path.c_str(), S_IRWXU | S_IRWXG);
 		} else closedir(level_dir);
 	}
 	try {
 		std::ifstream file(format(path, "/", filename), std::ios::in | std::ios::binary);
+		if (!file) {
+			return false;
+		}
 		walkbot_header_s header;
 		BINARY_FILE_READ(file, header);
 		// FIXME magic number: 1
 		if (header.version != VERSION) {
 			logging::Info("Outdated/corrupted walkbot file! Cannot load this.");
 			file.close();
-			return;
+			return false;
 		}
 		if (header.author_length > 64 or header.map_length > 512 or (not header.author_length or not header.map_length)) {
 			logging::Info("Corrupted author/level data");
@@ -306,15 +309,17 @@ void Load(std::string filename) {
 		logging::Info("Reading %i entries...", header.node_count);
 		if (header.node_count > 32768) {
 			logging::Info("Read %d nodes, max is %d. Aborting.", header.node_count, 32768);
-			return;
+			return false;
 		}
 		state::nodes.resize(header.node_count);
 		file.read(reinterpret_cast<char*>(state::nodes.data()), sizeof(walkbot_node_s) * header.node_count);
 		file.close();
 		logging::Info("Reading successful! Result: %i entries.", state::nodes.size());
+		return true;
 	} catch (std::exception& e) {
 		logging::Info("Reading unsuccessful: %s", e.what());
 	}
+	return false;
 }
 
 static CatCommand save("wb_save", "Save", [](const CCommand& args) {
@@ -354,6 +359,8 @@ CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "54", "Node spawn dist
 CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "100", "Max distance to node when replaying");
 CatVar reach_distance(CV_FLOAT, "wb_replay_reach_distance", "32", "Distance where bot can be considered 'stepping' on the node");
 CatVar draw_connection_flags(CV_SWITCH, "wb_connection_flags", "1", "Connection flags");
+CatVar force_slot(CV_INT, "wb_force_slot", "1", "Force slot", "Walkbot will always select weapon in this slot");
+CatVar leave_if_empty(CV_SWITCH, "wb_leave_if_empty", "0", "Leave if no walkbot", "Leave game if there is no walkbot map");
 
 CatCommand c_start_recording("wb_record", "Start recording", []() { state::state = WB_RECORDING; });
 CatCommand c_start_editing("wb_edit", "Start editing", []() { state::state = WB_EDITING; });
@@ -681,6 +688,22 @@ index_t SelectNextNode() {
 
 bool free_move_used = false;
 
+void UpdateSlot() {
+	static auto last_check = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_check).count();
+
+	if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state && ms > 1000) {
+		IClientEntity* weapon = RAW_ENT(LOCAL_W);
+		// IsBaseCombatWeapon()
+		if (vfunc<bool(*)(IClientEntity*)>(weapon, 190, 0)(weapon)) {
+			int slot = vfunc<int(*)(IClientEntity*)>(weapon, 395, 0)(weapon);
+			if (slot != int(force_slot) - 1) {
+				hack::ExecuteCommand(format("slot", int(force_slot)));
+			}
+		}
+	}
+}
+
 void UpdateWalker() {
 	free_move_used = false;
 	if (free_move) {
@@ -891,6 +914,12 @@ void Draw() {
 		DrawPath();
 }
 
+void OnLevelInit() {
+	if (leave_if_empty && state::state == WB_REPLAYING) {
+		nodes.clear();
+	}
+}
+
 void Move() {
 	if (state::state == WB_DISABLED) return;
 	switch (state::state) {
@@ -904,6 +933,25 @@ void Move() {
 		UpdateClosestNode();
 	} break;
 	case WB_REPLAYING: {
+		if (leave_if_empty) {
+			if (nodes.size() == 0) {
+				Load("default");
+				if (nodes.size() == 0) {
+					static auto last_abandon = std::chrono::system_clock::from_time_t(0);
+					auto s = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_abandon).count();
+
+					if (s < 3) {
+						return;
+					}
+					logging::Info("No map file, shutting down");
+					g_TFGCClientSystem->SendExitMatchmaking(true);
+					last_abandon = std::chrono::system_clock::now();
+				}
+			}
+		}
+		if (nodes.size() == 0) return;
+		if (force_slot)
+			UpdateSlot();
 		UpdateWalker();
 	} break;
 	}

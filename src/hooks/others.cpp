@@ -459,6 +459,7 @@ void LevelInit_hook(void* _this, const char* newmap) {
 	chat_stack::Reset();
 	hacks::shared::anticheat::ResetEverything();
 	original(_this, newmap);
+	hacks::shared::walkbot::OnLevelInit();
 }
 
 void LevelShutdown_hook(void* _this) {

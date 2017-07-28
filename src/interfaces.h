@@ -51,7 +51,9 @@ class IMoveHelperServer;
 class CBaseClientState;
 class CHud;
 class IGameEventManager;
+class TFGCClientSystem;
 
+extern TFGCClientSystem* g_TFGCClientSystem;
 extern CHud* g_CHUD;
 extern ISteamClient* g_ISteamClient;
 extern ISteamFriends* g_ISteamFriends;

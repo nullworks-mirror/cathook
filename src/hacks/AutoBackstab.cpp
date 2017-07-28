@@ -20,7 +20,7 @@ void CreateMove() {
 	IClientEntity* weapon = RAW_ENT(LOCAL_W);
 
 	typedef bool(*IsBehindAndFacingTarget_t)(IClientEntity*, IClientEntity*);
-	static auto IsBehindAndFacingTarget_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 5C 8B 45 08 8B 75 0C 89 04 24 E8 E9 0F FD FF 85 C0 89 C3 74 0F 8B 00 89 1C 24 FF 90 E0 02 00 00 84 C0 75 14");
+	static auto IsBehindAndFacingTarget_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 5C 8B 45 08 8B 75 0C 89 04 24 E8 ? ? ? ? 85 C0 89 C3 74 0F 8B 00 89 1C 24 FF 90 E0 02 00 00 84 C0");
 	static auto IsBehindAndFacingTarget = reinterpret_cast<IsBehindAndFacingTarget_t>(IsBehindAndFacingTarget_addr);
 
 	// 515 = DoSwingTrace

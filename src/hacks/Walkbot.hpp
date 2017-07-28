@@ -12,5 +12,6 @@ namespace hacks { namespace shared { namespace walkbot {
 void Initialize();
 void Draw();
 void Move();
+void OnLevelInit();
 
 }}}

@@ -87,6 +87,8 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	PROF_SECTION(PT_total);
 
+	hacks::shared::autojoin::UpdateSearch();
+
 	if (vp == panel_top) draw_flag = true;
 	if (!cathook) return;
 

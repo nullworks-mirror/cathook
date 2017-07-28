@@ -49,6 +49,7 @@ IMaterialSystem* g_IMaterialSystemHL = nullptr;
 IMoveHelperServer* g_IMoveHelperServer = nullptr;
 CBaseClientState* g_IBaseClientState = nullptr;
 IGameEventManager* g_IGameEventManager = nullptr;
+TFGCClientSystem* g_TFGCClientSystem = nullptr;
 CHud* g_CHUD = nullptr;
 
 template<typename T>
@@ -140,6 +141,15 @@ void CreateInterfaces() {
 		uintptr_t hud_sig = gSignatures.GetClientSignature("FF 50 08 D9 9D 24 FE FF FF 89 3C 24 E8 ? ? ? ? C7 44 24 04 ? ? ? ? C7 04 24 ? ? ? ? D9 9D 20 FE FF FF E8 ? ? ? ? 85 C0 74 3B 66 0F 6E C3 C7 44 24 10 00 00 00 00 F3 0F 5C 85 20 FE FF FF") + 28;
 		g_CHUD = *reinterpret_cast<CHud**>(hud_sig);
 		logging::Info("HUD 0x%08x 0x%08x", hud_sig, g_CHUD);
+	}
+	IF_GAME (IsTF2()) {
+		uintptr_t gcsystem_sig = gSignatures.GetClientSignature("E8 ? ? ? ? C7 44 24 04 04 00 00 00 89 04 24 E8 ? ? ? ? E9 17 FF FF FF") + 1;
+		typedef TFGCClientSystem*(*func_t)(void);
+		logging::Info("GCSystem = 0x%08x", gcsystem_sig);
+		uintptr_t gcc_p = *(uintptr_t*)(gcsystem_sig);
+		func_t get_gc = (gcc_p + gcsystem_sig + 4);
+		logging::Info("GTFGCClientSystem() = 0x%08x", get_gc);
+		g_TFGCClientSystem = get_gc();
 	}
 
 }
