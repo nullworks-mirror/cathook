@@ -33,10 +33,14 @@ void logging::Info(const char* fmt, ...) {
 	sprintf(result, "[CAT] %s\n", buffer);
 	fprintf(logging::handle, "%s", result);
 	fflush(logging::handle);
+#ifndef TEXTMODE
 	if (g_ICvar) {
 		if (console_logging.convar_parent && console_logging)
 			g_ICvar->ConsolePrintf("%s", result);
 	}
+#else
+	printf("%s", result);
+#endif
 	delete [] buffer;
 	delete [] result;
 }

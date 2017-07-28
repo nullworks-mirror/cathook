@@ -112,7 +112,7 @@ CFLAGS+=$(INCLUDES)
 
 ifdef TEXTMODE
 
-N_SOURCES := hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp ftrender.cpp hooks/sdl.cpp drawmgr.cpp drawgl.cpp
+N_SOURCES := hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp ftrender.cpp hooks/sdl.cpp drawmgr.cpp drawgl.cpp hooks/PaintTraverse.cpp EffectChams.cpp EffectGlow.cpp
 N_SOURCES := $(addprefix $(SRC_DIR)/,$(N_SOURCES))
 
 SOURCES := $(filter-out $(shell find $(SRC_DIR)/gui -name "*.cpp" -print),$(SOURCES))
@@ -164,7 +164,7 @@ src/sdk/utlbuffer.o : CFLAGS+=-w
 
 .cpp.o:
 	@echo Compiling $<
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 .c.o:
 	@echo Compiling $<

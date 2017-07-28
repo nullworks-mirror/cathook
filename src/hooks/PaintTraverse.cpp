@@ -89,7 +89,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	PROF_SECTION(PT_total);
 
-	hacks::shared::autojoin::UpdateSearch();
 
 	if (vp == panel_top) draw_flag = true;
 	if (!cathook) return;
@@ -125,16 +124,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	g_IPanel->SetTopmostPopup(panel_focus, true);
 	if (!draw_flag) return;
 	draw_flag = false;
-
-	if (!hack::command_stack().empty()) {
-		PROF_SECTION(PT_command_stack);
-		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
-		while (!hack::command_stack().empty()) {
-			logging::Info("executing %s", hack::command_stack().top().c_str());
-			g_IEngine->ClientCmd_Unrestricted(hack::command_stack().top().c_str());
-			hack::command_stack().pop();
-		}
-	}
 
 	if (disable_visuals) return;
 

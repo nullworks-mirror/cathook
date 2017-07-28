@@ -382,6 +382,18 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
+	if (stage == FRAME_START) {
+		hacks::shared::autojoin::UpdateSearch();
+		if (!hack::command_stack().empty()) {
+			PROF_SECTION(PT_command_stack);
+			std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
+			while (!hack::command_stack().empty()) {
+				logging::Info("executing %s", hack::command_stack().top().c_str());
+				g_IEngine->ClientCmd_Unrestricted(hack::command_stack().top().c_str());
+				hack::command_stack().pop();
+			}
+		}
+	}
 #ifndef TEXTMODE
 	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 #if ENABLE_GUI

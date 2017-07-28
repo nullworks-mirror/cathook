@@ -234,10 +234,11 @@ void hack::Initialize() {
 	InitNetVars();
 	g_pLocalPlayer = new LocalPlayer();
 	g_pPlayerResource = new TFPlayerResource();
-
+#ifndef TEXTMODE
 	hooks::panel.Set(g_IPanel);
 	hooks::panel.HookMethod((void*)PaintTraverse_hook, offsets::PaintTraverse());
 	hooks::panel.Apply();
+#endif
 	uintptr_t* clientMode = 0;
 	// Bad way to get clientmode.
 	// FIXME [MP]?
