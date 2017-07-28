@@ -457,7 +457,6 @@ void LevelInit_hook(void* _this, const char* newmap) {
 	g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
-	hacks::shared::spam::Reset();
 	hacks::shared::anticheat::ResetEverything();
 	original(_this, newmap);
 }
@@ -469,7 +468,6 @@ void LevelShutdown_hook(void* _this) {
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
-	hacks::shared::spam::Reset();
 	hacks::shared::anticheat::ResetEverything();
 	original(_this);
 }

@@ -27,7 +27,6 @@ extern CatCommand reload;
 
 void Init();
 void CreateMove();
-void Reset();
 void Reload();
 
 }}}
