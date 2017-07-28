@@ -7,6 +7,7 @@
 
 #include "../common.h"
 #include "../netmessage.h"
+#include "../chatlog.hpp"
 #include "../hack.h"
 #include "ucccccp.hpp"
 #include "hookedmethods.h"
@@ -411,36 +412,35 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 
 	static const DispatchUserMessage_t original = (DispatchUserMessage_t)hooks::client.GetMethod(offsets::DispatchUserMessage());
 	SEGV_BEGIN;
-	if (clean_chat || crypt_chat) {
-		if (type == 4) {
-			loop_index = 0;
-			s = buf.GetNumBytesLeft();
-			if (s < 256) {
-				data = (char*)alloca(s);
-				for (i = 0; i < s; i++)
-					data[i] = buf.ReadByte();
-				j = 0;
-				std::string name;
-				std::string message;
-				for (i = 0; i < 3; i++) {
-					while ((c = data[j++]) && (loop_index < 128)) {
-						loop_index++;
-						if (clean_chat)
-							if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
-						if (i == 1) name.push_back(c);
-						if (i == 2) message.push_back(c);
-					}
+	if (type == 4) {
+		loop_index = 0;
+		s = buf.GetNumBytesLeft();
+		if (s < 256) {
+			data = (char*)alloca(s);
+			for (i = 0; i < s; i++)
+				data[i] = buf.ReadByte();
+			j = 0;
+			std::string name;
+			std::string message;
+			for (i = 0; i < 3; i++) {
+				while ((c = data[j++]) && (loop_index < 128)) {
+					loop_index++;
+					if (clean_chat)
+						if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+					if (i == 1) name.push_back(c);
+					if (i == 2) message.push_back(c);
 				}
-				if (crypt_chat) {
-					if (message.find("!!") == 0) {
-						if (ucccccp::validate(message)) {
-							PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), ucccccp::decrypt(message).c_str());
-						}
-					}
-				}
-				buf = bf_read(data, s);
-				buf.Seek(0);
 			}
+			if (crypt_chat) {
+				if (message.find("!!") == 0) {
+					if (ucccccp::validate(message)) {
+						PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), ucccccp::decrypt(message).c_str());
+					}
+				}
+			}
+			chatlog::LogMessage(data[0], message);
+			buf = bf_read(data, s);
+			buf.Seek(0);
 		}
 	}
 	if (dispatch_log) {

@@ -372,6 +372,28 @@ CatCommand c_select_node("wb_select", "Select node", []() {
 		state::active_node = state::closest_node;
 	}
 });
+// Makes a new node in the middle of connection between 2 nodes
+CatCommand c_split_connection("wb_split", "Split connection", []() {
+	if (not (state::node_good(state::active_node) and state::node_good(state::closest_node)))
+		return;
+
+	if (state::active_node == state::closest_node)
+		return;
+
+	auto& a = state::nodes[state::active_node];
+	auto& b = state::nodes[state::closest_node];
+
+	a.unlink(state::closest_node);
+	b.unlink(state::active_node);
+
+	index_t node = CreateNode((a.xyz() + b.xyz()) / 2);
+	auto& n = state::nodes[node];
+	a.link(node);
+	n.link(state::active_node);
+	b.link(node);
+	n.link(state::closest_node);
+
+});
 // Deletes closest node and its connections
 CatCommand c_delete_node("wb_delete", "Delete node", []() {
 	DeleteNode(state::closest_node);
@@ -441,41 +463,17 @@ CatCommand c_disconnect_single_node("wb_disconnect_single", "Connect nodes (one-
 
 	a.unlink(state::closest_node);
 });
-// Updates duck flag on region of nodes (selected to closest)
-// Updates a single closest node if no node is selected
-CatCommand c_update_duck("wb_duck", "Update duck flags", []() {
-	logging::Info("< DISABLED >");
-	/*index_t a = state::active_node;
-	index_t b = state::closest_node;
-
-	if (not (state::node_good(a) and state::node_good(b)))
+// Toggles jump flag on closest node
+CatCommand c_update_duck("wb_duck", "Toggle duck flag", []() {
+	if (not state::node_good(state::closest_node))
 		return;
 
-	index_t current = state::closest_node;
+	auto& n = state::nodes[state::closest_node];
 
-	do {
-		auto& n = state::nodes[current];
-		if (g_pUserCmd->buttons & IN_DUCK)
-			n.flags |= NF_DUCK;
-		else
-			n.flags &= ~NF_DUCK;
-		if (n.connection_count > 2) {
-			logging::Info("[wb] More than 2 connections on a node - instructions unclear, got my duck stuck in 'if' block");
-			return;
-		}
-		bool found_next = false;
-		for (size_t i = 0; i < n.connection_count; i++) {
-			if (n.connections[i] != current) {
-				current = n.connections[i];
-				found_next = true;
-				break;
-			}
-		}
-		if (not found_next) {
-			logging::Info("[wb] Dead end? Can't find next node after %u", current);
-			break;
-		}
-	} while (state::node_good(current) and (current != a));*/
+	if (n.flags & NF_DUCK)
+		n.flags &= ~NF_DUCK;
+	else
+		n.flags |= NF_DUCK;
 });
 // Toggles jump flag on closest node
 CatCommand c_update_jump("wb_jump", "Toggle jump flag", []() {
@@ -723,6 +721,7 @@ void UpdateWalker() {
 		logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
 		if (state::node_good(state::active_node)) {
 			if (state::nodes[state::active_node].flags & NF_JUMP) {
+				g_pUserCmd->buttons |= IN_DUCK;
 				g_pUserCmd->buttons |= IN_JUMP;
 				jump_ticks = 6;
 			}
