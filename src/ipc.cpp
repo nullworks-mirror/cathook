@@ -121,6 +121,20 @@ CatVar server_name(CV_STRING, "ipc_server", "cathook_followbot_server", "IPC ser
 
 peer_t* peer { nullptr };
 
+
+void UpdateServerAddress(bool shutdown) {
+
+	const char* s_addr = "0.0.0.0";
+	if (not shutdown and g_IEngine->GetNetChannelInfo()) {
+		s_addr = g_IEngine->GetNetChannelInfo()->GetAddress();
+	}
+
+	peer_t::MutexLock lock(peer);
+	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
+	strncpy(data.server, s_addr, sizeof(data.server));
+}
+
 void StoreClientData() {
 	peer_t::MutexLock lock(peer);
 	user_data_s& data = peer->memory->peer_user_data[peer->client_id];

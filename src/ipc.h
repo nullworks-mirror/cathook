@@ -47,6 +47,7 @@ struct server_data_s {
 
 struct user_data_s {
 	char name[32];
+	char server[22];
 	unsigned friendid;
 };
 
@@ -54,6 +55,7 @@ using peer_t = cat_ipc::Peer<server_data_s, user_data_s>;
 
 extern peer_t* peer;
 
+void UpdateServerAddress(bool shutdown = false);
 void StoreClientData();
 void UpdatePlayerlist();
 
