@@ -702,6 +702,8 @@ void UpdateSlot() {
 			}
 		}
 	}
+
+	last_check = std::chrono::system_clock::now();
 }
 
 void UpdateWalker() {
@@ -920,6 +922,10 @@ void OnLevelInit() {
 	if (leave_if_empty && state::state == WB_REPLAYING) {
 		nodes.clear();
 	}
+}
+
+bool TooManyBots() {
+	return false;
 }
 
 void Move() {
