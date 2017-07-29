@@ -386,6 +386,13 @@ void FrameStageNotify_hook(void* _this, int stage) {
 		}
 	}
 	if (stage == FRAME_START) {
+#if IPC_ENABLED
+		static Timer ipc_timer {};
+		if (ipc_timer.test_and_set(1000)) {
+			if (ipc::peer)
+				ipc::UpdateTemporaryData();
+		}
+#endif
 		hacks::shared::autojoin::UpdateSearch();
 		if (!hack::command_stack().empty()) {
 			PROF_SECTION(PT_command_stack);
