@@ -29,8 +29,14 @@ void logging::Info(const char* fmt, ...) {
 	vsprintf(buffer, fmt, list);
 	va_end(list);
 	size_t length = strlen(buffer);
-	char* result = new char[length + 9];
-	sprintf(result, "[CAT] %s\n", buffer);
+	char* result = new char[length + 24];
+	time_t current_time;
+	struct tm * time_info = nullptr;
+	char timeString[10];
+	time(&current_time);
+	time_info = localtime(&current_time);
+	strftime(timeString, sizeof(timeString), "%H:%M:%S", time_info);
+	sprintf(result, "%% [%s] %s\n", timeString, buffer);
 	fprintf(logging::handle, "%s", result);
 	fflush(logging::handle);
 #ifndef TEXTMODE

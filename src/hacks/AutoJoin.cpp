@@ -29,8 +29,9 @@ CatCommand debug_startsearch("debug_startsearch", "DEBUG StartSearch", []() {
 	logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(4));
 });
 CatCommand debug_casual("debug_casual", "DEBUG Casual", []() {
-	logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
+	g_IEngine->ExecuteClientCmd("OpenMatchmakingLobby casual");
 	g_TFGCClientSystem->LoadSearchCriteria();
+	//logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
 });
 
 CatCommand debug_readytosearch("debug_gcstate", "DEBUG GCState", []() {
@@ -60,7 +61,7 @@ void UpdateSearch() {
 	} else if (g_TFGCClientSystem->GetState() == 5) {
 		g_IEngine->ExecuteClientCmd("OpenMatchmakingLobby casual");
 		g_TFGCClientSystem->LoadSearchCriteria();
-		logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
+		//logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
 	}
 
 	last_check = std::chrono::system_clock::now();
