@@ -148,6 +148,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		hooks::netchannel.HookMethod((void*)SendNetMsg_hook, offsets::SendNetMsg());
 		hooks::netchannel.HookMethod((void*)Shutdown_hook, offsets::Shutdown());
 		hooks::netchannel.Apply();
+#if IPC_ENABLED
+		ipc::UpdateServerAddress();
+#endif
 	}
 
 	/**bSendPackets = true;

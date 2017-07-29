@@ -228,6 +228,9 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 void Shutdown_hook(void* _this, const char* reason) {
 	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
 	const Shutdown_t original = (Shutdown_t)hooks::netchannel.GetMethod(offsets::Shutdown());
+#if IPC_ENABLED
+	ipc::UpdateServerAddress(true);
+#endif
 	SEGV_BEGIN;
 	if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) && strstr(reason, "user")) {
 		original(_this, disconnect_reason_newlined);
