@@ -34,6 +34,7 @@
 #include <unordered_map>
 #include <algorithm>
 
+#include "timer.hpp"
 #include "averager.hpp"
 
 #include "aftercheaders.h"
