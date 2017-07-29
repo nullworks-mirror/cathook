@@ -38,6 +38,9 @@
 
 #include "aftercheaders.h"
 
+#include "macros.hpp"
+#include "colors.hpp"
+
 #ifndef TEXTMODE
 
 extern "C" {
@@ -55,8 +58,6 @@ extern "C" {
 
 #endif
 
-#include "macros.hpp"
-#include "colors.hpp"
 #include "profiler.h"
 #include "offsets.hpp"
 #include "entitycache.h"

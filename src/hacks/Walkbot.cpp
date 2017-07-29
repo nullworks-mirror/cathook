@@ -940,7 +940,7 @@ void Move() {
 				Load("default");
 				if (nodes.size() == 0) {
 					static auto last_abandon = std::chrono::system_clock::from_time_t(0);
-					auto s = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_abandon).count();
+					auto s = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - last_abandon).count();
 
 					if (s < 3) {
 						return;

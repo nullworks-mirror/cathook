@@ -11,6 +11,10 @@
 
 namespace hacks { namespace shared { namespace autojoin {
 
+/*
+ * Credits to Blackfire for helping me with auto-requeue!
+ */
+
 CatEnum classes_enum({ "DISABLED", "SCOUT", "SNIPER", "SOLDIER", "DEMOMAN", "MEDIC", "HEAVY", "PYRO", "SPY", "ENGINEER" });
 CatVar autojoin_team(CV_SWITCH, "autojoin_team", "0", "AutoJoin", "Automatically joins a team");
 CatVar preferred_class(classes_enum, "autojoin_class", "0", "AutoJoin class", "You will pick a class automatically");
@@ -26,6 +30,7 @@ CatCommand debug_startsearch("debug_startsearch", "DEBUG StartSearch", []() {
 });
 CatCommand debug_casual("debug_casual", "DEBUG Casual", []() {
 	logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
+	g_TFGCClientSystem->LoadSearchCriteria();
 });
 
 CatCommand debug_readytosearch("debug_gcstate", "DEBUG GCState", []() {
@@ -52,6 +57,10 @@ void UpdateSearch() {
 	if (g_TFGCClientSystem->GetState() == 6) {
 		logging::Info("Sending MM request");
 		g_TFGCClientSystem->RequestSelectWizardStep(4);
+	} else if (g_TFGCClientSystem->GetState() == 5) {
+		g_IEngine->ExecuteClientCmd("OpenMatchmakingLobby casual");
+		g_TFGCClientSystem->LoadSearchCriteria();
+		logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
 	}
 
 	last_check = std::chrono::system_clock::now();
@@ -71,6 +80,8 @@ void Update() {
 		if (int(preferred_class) < 10)
 		g_IEngine->ExecuteClientCmd(format("join_class ", classnames[int(preferred_class) - 1]).c_str());
 	}
+
+	last_check = std::chrono::system_clock::now();
 }
 
 }}}

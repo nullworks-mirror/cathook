@@ -136,6 +136,7 @@ void UpdateServerAddress(bool shutdown) {
 }
 
 void StoreClientData() {
+	UpdateServerAddress();
 	peer_t::MutexLock lock(peer);
 	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
 	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
