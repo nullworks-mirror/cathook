@@ -63,10 +63,10 @@ void LogMessage(int eid, std::string message) {
 		return;
 	std::string name(info.name);
 	for (auto& x : name) {
-		if (x < 32) x = '*';
+		if (x == '\n' || x == '\r') x = '*';
 	}
 	for (auto& x : message) {
-		if (x < 32) x = '*';
+		if (x == '\n' || x == '\r') x = '*';
 	}
 	time_t current_time;
 	struct tm * time_info;
