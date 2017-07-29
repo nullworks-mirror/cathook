@@ -358,13 +358,16 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 	// TODO Auto Steam Friend
 
-	if (g_GlobalVars->framecount % 1000 == 0) {
+#if IPC_ENABLED
+	{
 		PROF_SECTION(CM_playerlist);
-//		playerlist::DoNotKillMe();
-#ifdef IPC_ENABLED
-		ipc::UpdatePlayerlist();
-#endif
+		static Timer ipc_update_timer {};
+	//	playerlist::DoNotKillMe();
+		if (ipc_update_timer.test_and_set(1000 * 10)) {
+			ipc::UpdatePlayerlist();
+		}
 	}
+#endif
 
 	*bSendPackets = true;
 

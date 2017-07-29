@@ -170,13 +170,13 @@ void StoreClientData() {
 	strncpy(data.name, g_ISteamFriends->GetPersonaName(), sizeof(data.name));
 }
 
-static CatVar fbPlayUpdate(CV_SWITCH, "fb_auto_playerlist", "1", "Assign State", "Automaticly assign playerstates for bots");
+static CatVar ipc_update_list(CV_SWITCH, "ipc_update_list", "1", "IPC Auto-Ignore", "Automaticly assign playerstates for bots");
 void UpdatePlayerlist() {
-	if (peer && fbPlayUpdate) {
+	if (peer && ipc_update_list) {
 		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
 			if (!peer->memory->peer_data[i].free) {
 				playerlist::userdata& info = playerlist::AccessData(peer->memory->peer_user_data[i].friendid);
-				if (info.state != playerlist::k_EState::DEFAULT)
+				if (info.state == playerlist::k_EState::DEFAULT)
 					info.state = playerlist::k_EState::IPC;
 			}
 		}
