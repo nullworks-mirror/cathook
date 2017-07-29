@@ -135,6 +135,33 @@ void UpdateServerAddress(bool shutdown) {
 	strncpy(data.server, s_addr, sizeof(data.server));
 }
 
+void UpdateTemporaryData() {
+	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+	data.connected = g_IEngine->IsInGame();
+	if (data.connected) {
+		IClientEntity* player = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+		if (player) {
+			data.good = true;
+			data.health = NET_INT(player, netvar.iHealth);
+			data.health_max = g_pPlayerResource->GetMaxHealth(LOCAL_E);
+			data.clazz = g_pPlayerResource->GetClass(LOCAL_E);
+			data.life_state = NET_BYTE(player, netvar.iLifeState);
+			data.score = g_pPlayerResource->GetScore(g_IEngine->GetLocalPlayer());
+			if (data.last_score != data.score) {
+				if (data.last_score > data.score) {
+					data.total_score += data.score;
+				} else {
+					data.total_score += (data.score - data.last_score);
+				}
+				data.last_score = data.score;
+			}
+			data.team = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
+		} else {
+			data.good = false;
+		}
+	}
+}
+
 void StoreClientData() {
 	UpdateServerAddress();
 	peer_t::MutexLock lock(peer);
