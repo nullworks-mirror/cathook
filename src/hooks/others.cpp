@@ -311,9 +311,22 @@ bool StolenName(){
 	return false;											
 }
 
+static CatVar ipc_name(CV_STRING, "name_ipc", "", "IPC Name");
+
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	static const GetFriendPersonaName_t original = (GetFriendPersonaName_t)hooks::steamfriends.GetMethod(offsets::GetFriendPersonaName());
   
+#if IPC_ENABLED
+	if (ipc::peer) {
+		static std::string namestr(ipc_name.GetString());
+		namestr.assign(ipc_name.GetString());
+		if (namestr.length() > 3) {
+			ReplaceString(namestr, "%%", std::to_string(ipc::peer->client_id));
+			return namestr.c_str();
+		}
+	}
+#endif
+
 	// Check User settings if namesteal is allowed
 	if (namesteal && steamID == g_ISteamUser->GetSteamID()) {
 		
@@ -390,8 +403,10 @@ void FrameStageNotify_hook(void* _this, int stage) {
 #if IPC_ENABLED
 		static Timer ipc_timer {};
 		if (ipc_timer.test_and_set(1000)) {
-			if (ipc::peer)
+			if (ipc::peer) {
+				ipc::Heartbeat();
 				ipc::UpdateTemporaryData();
+			}
 		}
 #endif
 		hacks::shared::autojoin::UpdateSearch();

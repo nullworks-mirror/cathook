@@ -13,6 +13,7 @@
 #include "beforecheaders.h"
 #include "ipcb.hpp"
 #include "pthread.h"
+#include <time.h>
 #include "aftercheaders.h"
 
 class CatCommand;
@@ -59,12 +60,14 @@ struct user_data_s {
 	int score;
 	int last_score;
 	int total_score;
+	time_t heartbeat;
 };
 
 using peer_t = cat_ipc::Peer<server_data_s, user_data_s>;
 
 extern peer_t* peer;
 
+void Heartbeat();
 void UpdateTemporaryData();
 void UpdateServerAddress(bool shutdown = false);
 void StoreClientData();

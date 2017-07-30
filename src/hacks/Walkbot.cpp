@@ -939,21 +939,25 @@ void CheckLivingSpace() {
 		}
 		int count = 0;
 		unsigned highest = 0;
+		std::vector<unsigned> botlist {};
 		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
 			if (!ipc::peer->memory->peer_data[i].free) {
 				for (auto& k : players) {
 					if (ipc::peer->memory->peer_user_data[i].friendid && k == ipc::peer->memory->peer_user_data[i].friendid) {
+						botlist.push_back(i);
 						count++;
 						highest = i;
 					}
 				}
 			}
 		}
-		if (ipc::peer->client_id != highest) return;
-		if (count > int(wb_abandon_too_many_bots)) {
+		if (ipc::peer->client_id == highest && count > int(wb_abandon_too_many_bots)) {
 			static Timer timer {};
 			if (timer.test_and_set(1000 * 5)) {
-				logging::Info("Found %d other bots in-game, abandoning.", count);
+				logging::Info("Found %d other bots in-game, abandoning (%u)", count, ipc::peer->client_id);
+				for (auto i : botlist) {
+					logging::Info("-> Bot %d with ID %u", i, ipc::peer->memory->peer_user_data[i].friendid);
+				}
 				g_TFGCClientSystem->SendExitMatchmaking(true);
 			}
 		}

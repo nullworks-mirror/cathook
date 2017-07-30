@@ -37,7 +37,7 @@ public:
 		stream.open("cathook/chat-" + uname + ".log", std::ios::out | std::ios::app);
 	}
 	void log(const std::string& msg) {
-		if (stream.bad()) {
+		if (stream.bad() or not stream.is_open()) {
 			logging::Info("[ERROR] RAIILog stream is bad!");
 			open();
 			return;

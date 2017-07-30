@@ -170,6 +170,12 @@ void StoreClientData() {
 	strncpy(data.name, g_ISteamFriends->GetPersonaName(), sizeof(data.name));
 }
 
+
+void Heartbeat() {
+	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+	data.heartbeat = time(nullptr);
+}
+
 static CatVar ipc_update_list(CV_SWITCH, "ipc_update_list", "1", "IPC Auto-Ignore", "Automaticly assign playerstates for bots");
 void UpdatePlayerlist() {
 	if (peer && ipc_update_list) {
