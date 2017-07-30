@@ -228,6 +228,7 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 void Shutdown_hook(void* _this, const char* reason) {
 	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
 	const Shutdown_t original = (Shutdown_t)hooks::netchannel.GetMethod(offsets::Shutdown());
+	logging::Info("Disconnect: %s", reason);
 #if IPC_ENABLED
 	ipc::UpdateServerAddress(true);
 #endif

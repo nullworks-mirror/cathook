@@ -924,8 +924,41 @@ void OnLevelInit() {
 	}
 }
 
-bool TooManyBots() {
-	return false;
+
+static CatVar wb_abandon_too_many_bots(CV_INT, "wb_population_control", "0", "Abandon if bots >");
+void CheckLivingSpace() {
+#if IPC_ENABLED
+	if (ipc::peer && wb_abandon_too_many_bots) {
+		std::vector<unsigned> players {};
+		for (int j = 1; j < 32; j++) {
+			player_info_s info;
+			if (g_IEngine->GetPlayerInfo(j, &info)) {
+				if (info.friendsID)
+					players.push_back(info.friendsID);
+			}
+		}
+		int count = 0;
+		unsigned highest = 0;
+		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+			if (!ipc::peer->memory->peer_data[i].free) {
+				for (auto& k : players) {
+					if (ipc::peer->memory->peer_user_data[i].friendid && k == ipc::peer->memory->peer_user_data[i].friendid) {
+						count++;
+						highest = i;
+					}
+				}
+			}
+		}
+		if (ipc::peer->client_id != highest) return;
+		if (count > int(wb_abandon_too_many_bots)) {
+			static Timer timer {};
+			if (timer.test_and_set(1000 * 5)) {
+				logging::Info("Found %d other bots in-game, abandoning.", count);
+				g_TFGCClientSystem->SendExitMatchmaking(true);
+			}
+		}
+	}
+#endif
 }
 
 void Move() {
@@ -956,6 +989,10 @@ void Move() {
 					last_abandon = std::chrono::system_clock::now();
 				}
 			}
+		}
+		static Timer livingspace_timer {};
+		if (livingspace_timer.test_and_set(1000 * 8)) {
+			CheckLivingSpace();
 		}
 		if (nodes.size() == 0) return;
 		if (force_slot)

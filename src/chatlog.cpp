@@ -16,6 +16,7 @@ namespace chatlog {
 CatVar enabled(CV_SWITCH, "chat_log", "0", "Chat log", "Log chat to file");
 CatVar message_template(CV_STRING, "chat_log_template", "[%t] [U:1:%u] %n: %m", "Log template", "%u - SteamID\n%n - name\n%m - message\n%t - time");
 CatVar dont_log_spam(CV_SWITCH, "chat_log_nospam", "1", "No Spam", "Don't log your messages if spam is active");
+CatVar dont_log_ipc(CV_SWITCH, "chat_log_noipc", "1", "No IPC", "Don't log messages sent by bots");
 
 class RAIILog {
 public:
@@ -60,6 +61,8 @@ void LogMessage(int eid, std::string message) {
 		return;
 	player_info_s info;
 	if (not g_IEngine->GetPlayerInfo(eid, &info))
+		return;
+	if (dont_log_ipc && playerlist::AccessData(info.friendsID).state == playerlist::k_EState::IPC)
 		return;
 	std::string name(info.name);
 	for (auto& x : name) {
