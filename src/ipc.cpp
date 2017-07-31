@@ -123,7 +123,8 @@ peer_t* peer { nullptr };
 
 
 void UpdateServerAddress(bool shutdown) {
-
+	if (not peer)
+		return;
 	const char* s_addr = "0.0.0.0";
 	if (not shutdown and g_IEngine->GetNetChannelInfo()) {
 		s_addr = g_IEngine->GetNetChannelInfo()->GetAddress();
