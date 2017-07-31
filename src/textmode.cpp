@@ -34,11 +34,13 @@ CatCommand fixvac("fixvac", "Lemme in to secure servers", []() {
 
 #ifdef TEXTMODE
 InitRoutine init([]() {
+#ifdef TEXTMODE_STDIN
 	logging::Info("[TEXTMODE] Setting up input handling");
 	int flags = fcntl(0, F_GETFL, 0);
 	flags |= O_NONBLOCK;
 	fcntl(0, F_SETFL, flags);
 	logging::Info("[TEXTMODE] stdin is now non-blocking");
+#endif
 	EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG();
 });
 #endif

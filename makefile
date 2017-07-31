@@ -13,6 +13,7 @@ DEFINES=_GLIBCXX_USE_CXX11_ABI=0 _POSIX=1 FREETYPE_GL_USE_VAO RAD_TELEMETRY_DISA
 WARNING_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef
 COMMON_FLAGS=-fpermissive -O3 -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native -mtune=native
 
+
 ifdef CLANG
 COMMON_FLAGS+=-Wno-c++11-narrowing
 endif
@@ -64,6 +65,10 @@ N_INCLUDES = -isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/includ
 INCLUDES := $(filter-out $(N_INCLUDES),$(INCLUDES))
 DEFINES += TEXTMODE=1
 #OUT_NAME := libcathook-textmode.so
+endif
+
+ifdef TEXTMODE_STDIN
+DEFINES+=-DTEXTMODE_STDIN
 endif
 
 SRC_DIR = src

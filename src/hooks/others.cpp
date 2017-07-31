@@ -401,6 +401,12 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	}
 	if (stage == FRAME_START) {
 #if IPC_ENABLED
+		static Timer nametimer {};
+		if (nametimer.test_and_set(1000 * 10)) {
+			if (ipc::peer) {
+				ipc::StoreClientData();
+			}
+		}
 		static Timer ipc_timer {};
 		if (ipc_timer.test_and_set(1000)) {
 			if (ipc::peer) {
@@ -419,12 +425,14 @@ void FrameStageNotify_hook(void* _this, int stage) {
 				hack::command_stack().pop();
 			}
 		}
+#if defined(TEXTMODE) and defined(TEXTMODE_STDIN)
 		static auto last_stdin = std::chrono::system_clock::from_time_t(0);
 		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_stdin).count();
 		if (ms > 500) {
 			UpdateInput();
 			last_stdin = std::chrono::system_clock::now();
 		}
+#endif
 	}
 #ifndef TEXTMODE
 	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
