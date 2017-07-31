@@ -121,6 +121,32 @@ CatVar server_name(CV_STRING, "ipc_server", "cathook_followbot_server", "IPC ser
 
 peer_t* peer { nullptr };
 
+CatCommand debug_get_ingame_ipc("ipc_debug_dump_server", "Show other bots on server", []() {
+	std::vector<unsigned> players {};
+	for (int j = 1; j < 32; j++) {
+		player_info_s info;
+		if (g_IEngine->GetPlayerInfo(j, &info)) {
+			if (info.friendsID)
+				players.push_back(info.friendsID);
+		}
+	}
+	int count = 0;
+	unsigned highest = 0;
+	std::vector<unsigned> botlist {};
+	for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+		if (!ipc::peer->memory->peer_data[i].free) {
+			for (auto& k : players) {
+				if (ipc::peer->memory->peer_user_data[i].friendid && k == ipc::peer->memory->peer_user_data[i].friendid) {
+					botlist.push_back(i);
+					logging::Info("-> %u (%u)", i, ipc::peer->memory->peer_user_data[i].friendid);
+					count++;
+					highest = i;
+				}
+			}
+		}
+	}
+	logging::Info("%d other IPC players on server", count);
+});
 
 void UpdateServerAddress(bool shutdown) {
 	if (not peer)

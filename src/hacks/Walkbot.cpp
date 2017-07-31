@@ -924,7 +924,6 @@ void OnLevelInit() {
 	}
 }
 
-
 static CatVar wb_abandon_too_many_bots(CV_INT, "wb_population_control", "0", "Abandon if bots >");
 void CheckLivingSpace() {
 #if IPC_ENABLED

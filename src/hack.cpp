@@ -289,6 +289,9 @@ void hack::Initialize() {
 	// FIXME [MP]
 	hacks::shared::killsay::Init();
 	hack::command_stack().push("exec cat_autoexec");
+#ifdef TEXTMODE
+	hack::command_stack().push("exec cat_autoexec_textmode");
+#endif
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
 	logging::Info("Hooked!");
