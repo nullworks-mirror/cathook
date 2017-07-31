@@ -247,13 +247,13 @@ void DoWalking() {
 				// If the local player is a medic and user settings allow, then keep the medigun out
 				if (g_pLocalPlayer->clazz == tf_medic && always_medigun) {
 					if (my_slot != 1) {
-						g_pUserCmd->weaponselect = 1;
+						g_IEngine->ExecuteClientCmd("slot2");
 					}
 					
 				// Else we attemt to keep our weapon mimiced with our follow target
 				} else {
 					if (my_slot != owner_slot) {
-						g_pUserCmd->weaponselect = owner_slot;
+						g_IEngine->ExecuteClientCmd(format("slot", owner_slot + 1).c_str());
 					}
 				}
 			}

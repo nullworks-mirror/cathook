@@ -698,7 +698,7 @@ void UpdateSlot() {
 		if (vfunc<bool(*)(IClientEntity*)>(weapon, 190, 0)(weapon)) {
 			int slot = vfunc<int(*)(IClientEntity*)>(weapon, 395, 0)(weapon);
 			if (slot != int(force_slot) - 1) {
-				g_pUserCmd->weaponselect = int(force_slot) - 1;
+				hack::ExecuteCommand(format("slot", int(force_slot)));
 			}
 		}
 	}
