@@ -41,10 +41,12 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		if (!segvcatch::handler_segv) segvcatch::init_fpe();
 	}
 #endif
+#ifndef TEXTMODE
 	if (!textures_loaded) {
 		textures_loaded = true;
 		hacks::tf::radar::Init();
 	}
+#endif
 	if (pure_bypass) {
 		if (!pure_addr) {
 			pure_addr = *reinterpret_cast<void***>(gSignatures.GetEngineSignature("55 89 E5 83 EC 18 A1 ? ? ? ? 89 04 24 E8 0D FF FF FF A1 ? ? ? ? 85 C0 74 08 89 04 24 E8 ? ? ? ? C9 C3") + 7);
@@ -87,7 +89,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	PROF_SECTION(PT_total);
 
-	hacks::shared::autojoin::UpdateSearch();
 
 	if (vp == panel_top) draw_flag = true;
 	if (!cathook) return;
@@ -124,22 +125,12 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	if (!draw_flag) return;
 	draw_flag = false;
 
-	if (!hack::command_stack().empty()) {
-		PROF_SECTION(PT_command_stack);
-		std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
-		while (!hack::command_stack().empty()) {
-			logging::Info("executing %s", hack::command_stack().top().c_str());
-			g_IEngine->ClientCmd_Unrestricted(hack::command_stack().top().c_str());
-			hack::command_stack().pop();
-		}
-	}
-
 	if (disable_visuals) return;
 
 	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
 
 	PROF_SECTION(PT_active);
-
+#ifndef TEXTMODE
 	draw::UpdateWTS();
 	BeginCheatVisuals();
 	DrawCheatVisuals();
@@ -151,6 +142,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 
 	EndCheatVisuals();
+#endif
 	SEGV_END;
 }
 

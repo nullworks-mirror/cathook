@@ -5,36 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "Aimbot.h"
-
-#include <globalvars_base.h>
-#include <icliententity.h>
-#include <inputsystem/ButtonCode.h>
-#include <inputsystem/iinputsystem.h>
-#include <mathlib/vector.h>
-#include <cmath>
-
-#include "../aftercheaders.h"
 #include "../common.h"
-#include "../conditions.h"
-#include "../crits.h"
-#include "../cvwrapper.h"
-#include "../drawing.h"
-#include "../entitycache.h"
-#include "../globals.h"
-#include "../helpers.h"
-#include "../hoovy.hpp"
-#include "../interfaces.h"
-#include "../localplayer.h"
-#include "../netvars.h"
-#include "../playerlist.hpp"
-#include "../prediction.h"
-#include "../sdk/in_buttons.h"
-#include "../targethelper.h"
-#include "../usercmd.h"
-#include "AntiAim.h"
-#include "ESP.h"
-#include "FollowBot.h"
 
 namespace hacks { namespace shared { namespace aimbot {
 	
@@ -172,8 +143,10 @@ void CreateMove() {
 			}
 		}
 
+#ifndef TEXTMODE
 		// Set target esp color to pink
 		hacks::shared::esp::SetEntityColor(target, colors::pink);
+#endif
 		
 		// Check if player can aim and if aimkey allows aiming
 		// We also preform a CanShoot check here per the old canshoot method
@@ -992,6 +965,8 @@ void Reset() {
 	projectile_mode = false;
 }
 
+#ifndef TEXTMODE
+
 // Function called when we need to draw to screen
 static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring", "Draws a ring to represent your current aimbot fov");
 void DrawText() {
@@ -1054,5 +1029,6 @@ void DrawText() {
 	}
 }
 
+#endif
 
 }}}

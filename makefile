@@ -13,6 +13,7 @@ DEFINES=_GLIBCXX_USE_CXX11_ABI=0 _POSIX=1 FREETYPE_GL_USE_VAO RAD_TELEMETRY_DISA
 WARNING_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef
 COMMON_FLAGS=-fpermissive -O3 -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native -mtune=native
 
+
 ifdef CLANG
 COMMON_FLAGS+=-Wno-c++11-narrowing
 endif
@@ -53,9 +54,25 @@ LDFLAGS+=-flto
 endif
 endif
 LDLIBS=-lssl -l:libSDL2-2.0.so.0 -static -l:libc.so.6 -static -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so -static -l:libGLEW.so -l:libfreetype.so
+
+OUT_NAME = libcathook.so
+
+ifdef TEXTMODE
+$(info Compiling for text mode only!)
+N_LDLIBS = -lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -l:libfreetype.so
+LDLIBS := $(filter-out $(N_LDLIBS),$(LDLIBS))
+N_INCLUDES = -isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2
+INCLUDES := $(filter-out $(N_INCLUDES),$(INCLUDES))
+DEFINES += TEXTMODE=1
+#OUT_NAME := libcathook-textmode.so
+endif
+
+ifdef TEXTMODE_STDIN
+DEFINES+=-DTEXTMODE_STDIN
+endif
+
 SRC_DIR = src
 RES_DIR = res
-OUT_NAME = libcathook.so
 TARGET_DIR = bin
 TARGET = $(TARGET_DIR)/$(OUT_NAME)
 SOURCES = $(shell find $(SRC_DIR) -name "*.c*" -print)
@@ -96,9 +113,25 @@ CXXFLAGS+=$(addprefix -D,$(DEFINES))
 CFLAGS+=$(addprefix -D,$(DEFINES))
 
 CXXFLAGS+=$(INCLUDES)
-CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(INCLUDES)
+
+ifdef TEXTMODE
+
+N_SOURCES := hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp ftrender.cpp hooks/sdl.cpp drawmgr.cpp drawgl.cpp hooks/PaintTraverse.cpp EffectChams.cpp EffectGlow.cpp
+N_SOURCES := $(addprefix $(SRC_DIR)/,$(N_SOURCES))
+
+SOURCES := $(filter-out $(shell find $(SRC_DIR)/gui -name "*.cpp" -print),$(SOURCES))
+SOURCES := $(filter-out $(shell find $(SRC_DIR)/freetype-gl -name "*.c*" -print),$(SOURCES))
+SOURCES := $(filter-out $(shell find $(SRC_DIR)/imgui -name "*.c*" -print),$(SOURCES))
+SOURCES := $(filter-out $(N_SOURCES),$(SOURCES))
+
+
+else
+
+CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(shell sdl2-config --cflags)
+
+endif
 
 .PHONY: clean directories echo
 

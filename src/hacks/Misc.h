@@ -13,7 +13,9 @@
 namespace hacks { namespace shared { namespace misc {
 
 void CreateMove();
+#ifndef TEXTMODE
 void DrawText();
+#endif
 
 extern IClientEntity* found_crit_weapon;
 extern int found_crit_number;

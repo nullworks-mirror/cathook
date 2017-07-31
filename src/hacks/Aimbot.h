@@ -39,7 +39,9 @@ extern int target_eid;
 	
 // Functions called by other functions for when certian game calls are run
 void CreateMove();
+#ifndef TEXTMODE
 void DrawText();
+#endif
 void Reset();
 
 // Stuff to make storing functions easy

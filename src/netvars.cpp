@@ -48,6 +48,7 @@ void NetVars::Init() {
 		m_iTauntIndex = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntIndex");
 		m_iTauntConcept = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntConcept");
 	}
+	this->res_iScore = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iScore");
 	IF_GAME (IsTF()) {
 		this->res_iMaxHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");
 		this->res_iPlayerClass = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerClass");

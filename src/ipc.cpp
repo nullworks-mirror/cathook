@@ -121,20 +121,68 @@ CatVar server_name(CV_STRING, "ipc_server", "cathook_followbot_server", "IPC ser
 
 peer_t* peer { nullptr };
 
-void StoreClientData() {
+
+void UpdateServerAddress(bool shutdown) {
+	if (not peer)
+		return;
+	const char* s_addr = "0.0.0.0";
+	if (not shutdown and g_IEngine->GetNetChannelInfo()) {
+		s_addr = g_IEngine->GetNetChannelInfo()->GetAddress();
+	}
+
 	peer_t::MutexLock lock(peer);
+	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
+	strncpy(data.server, s_addr, sizeof(data.server));
+}
+
+void UpdateTemporaryData() {
+	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+	data.connected = g_IEngine->IsInGame();
+	if (data.connected) {
+		IClientEntity* player = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+		if (player) {
+			data.good = true;
+			data.health = NET_INT(player, netvar.iHealth);
+			data.health_max = g_pPlayerResource->GetMaxHealth(LOCAL_E);
+			data.clazz = g_pPlayerResource->GetClass(LOCAL_E);
+			data.life_state = NET_BYTE(player, netvar.iLifeState);
+			data.score = g_pPlayerResource->GetScore(g_IEngine->GetLocalPlayer());
+			if (data.last_score != data.score) {
+				if (data.last_score > data.score) {
+					data.total_score += data.score;
+				} else {
+					data.total_score += (data.score - data.last_score);
+				}
+				data.last_score = data.score;
+			}
+			data.team = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
+		} else {
+			data.good = false;
+		}
+	}
+}
+
+void StoreClientData() {
+	UpdateServerAddress();
 	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
 	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
 	strncpy(data.name, g_ISteamFriends->GetPersonaName(), sizeof(data.name));
 }
 
-static CatVar fbPlayUpdate(CV_SWITCH, "fb_auto_playerlist", "1", "Assign State", "Automaticly assign playerstates for bots");
+
+void Heartbeat() {
+	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+	data.heartbeat = time(nullptr);
+}
+
+static CatVar ipc_update_list(CV_SWITCH, "ipc_update_list", "1", "IPC Auto-Ignore", "Automaticly assign playerstates for bots");
 void UpdatePlayerlist() {
-	if (peer && fbPlayUpdate) {
+	if (peer && ipc_update_list) {
 		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
 			if (!peer->memory->peer_data[i].free) {
 				playerlist::userdata& info = playerlist::AccessData(peer->memory->peer_user_data[i].friendid);
-				if (info.state != playerlist::k_EState::DEFAULT)
+				if (info.state == playerlist::k_EState::DEFAULT)
 					info.state = playerlist::k_EState::IPC;
 			}
 		}

@@ -702,6 +702,8 @@ void UpdateSlot() {
 			}
 		}
 	}
+
+	last_check = std::chrono::system_clock::now();
 }
 
 void UpdateWalker() {
@@ -741,7 +743,6 @@ void UpdateWalker() {
 		state::active_node = SelectNextNode();
 		state::last_node = last;
 		state::time = std::chrono::system_clock::now();
-		logging::Info("[wb] Reached node %u, moving to %u", state::last_node, state::active_node);
 		if (state::node_good(state::active_node)) {
 			if (state::nodes[state::active_node].flags & NF_JUMP) {
 				g_pUserCmd->buttons |= IN_DUCK;
@@ -750,12 +751,52 @@ void UpdateWalker() {
 			}
 		} else {
 			if (not state::recovery) {
-				logging::Info("[wb] FATAL: Next node is bad");
 				state::recovery = true;
 			}
 		}
 	}
 }
+
+bool ShouldSpawnNode() {
+	if (not state::node_good(state::active_node))
+		return true;
+
+	bool was_jumping = state::last_node_buttons & IN_JUMP;
+	bool is_jumping = g_pUserCmd->buttons & IN_JUMP;
+
+	if (was_jumping != is_jumping and is_jumping)
+		return true;
+
+	if ((state::last_node_buttons & IN_DUCK) != (g_pUserCmd->buttons & IN_DUCK))
+		return true;
+
+	auto& node = state::nodes[state::active_node];
+
+	if (distance_2d(node.xyz()) > float(spawn_distance)) {
+		return true;
+	}
+
+	return false;
+}
+
+void RecordNode() {
+	index_t node = CreateNode(g_pLocalPlayer->v_Origin);
+	auto& n = state::nodes[node];
+	if (g_pUserCmd->buttons & IN_DUCK)
+		n.flags |= NF_DUCK;
+	if (g_pUserCmd->buttons & IN_JUMP)
+		n.flags |= NF_JUMP;
+	if (state::node_good(state::active_node)) {
+		auto& c = state::nodes[state::active_node];
+		n.link(state::active_node);
+		c.link(node);
+		logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)", node, state::active_node, c.x, c.y, c.z);
+	}
+	state::last_node_buttons = g_pUserCmd->buttons;
+	state::active_node = node;
+}
+
+#ifndef TEXTMODE
 
 // Draws a single colored connection between 2 nodes
 void DrawConnection(index_t a, connection_s& b) {
@@ -834,45 +875,6 @@ void DrawNode(index_t node, bool draw_back) {
 	}
 }
 
-bool ShouldSpawnNode() {
-	if (not state::node_good(state::active_node))
-		return true;
-
-	bool was_jumping = state::last_node_buttons & IN_JUMP;
-	bool is_jumping = g_pUserCmd->buttons & IN_JUMP;
-
-	if (was_jumping != is_jumping and is_jumping)
-		return true;
-
-	if ((state::last_node_buttons & IN_DUCK) != (g_pUserCmd->buttons & IN_DUCK))
-		return true;
-
-	auto& node = state::nodes[state::active_node];
-
-	if (distance_2d(node.xyz()) > float(spawn_distance)) {
-		return true;
-	}
-
-	return false;
-}
-
-void RecordNode() {
-	index_t node = CreateNode(g_pLocalPlayer->v_Origin);
-	auto& n = state::nodes[node];
-	if (g_pUserCmd->buttons & IN_DUCK)
-		n.flags |= NF_DUCK;
-	if (g_pUserCmd->buttons & IN_JUMP)
-		n.flags |= NF_JUMP;
-	if (state::node_good(state::active_node)) {
-		auto& c = state::nodes[state::active_node];
-		n.link(state::active_node);
-		c.link(node);
-		logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)", node, state::active_node, c.x, c.y, c.z);
-	}
-	state::last_node_buttons = g_pUserCmd->buttons;
-	state::active_node = node;
-}
-
 void DrawPath() {
 	for (index_t i = 0; i < state::nodes.size(); i++) {
 		DrawNode(i, true);
@@ -914,10 +916,53 @@ void Draw() {
 		DrawPath();
 }
 
+#endif
+
 void OnLevelInit() {
 	if (leave_if_empty && state::state == WB_REPLAYING) {
 		nodes.clear();
 	}
+}
+
+
+static CatVar wb_abandon_too_many_bots(CV_INT, "wb_population_control", "0", "Abandon if bots >");
+void CheckLivingSpace() {
+#if IPC_ENABLED
+	if (ipc::peer && wb_abandon_too_many_bots) {
+		std::vector<unsigned> players {};
+		for (int j = 1; j < 32; j++) {
+			player_info_s info;
+			if (g_IEngine->GetPlayerInfo(j, &info)) {
+				if (info.friendsID)
+					players.push_back(info.friendsID);
+			}
+		}
+		int count = 0;
+		unsigned highest = 0;
+		std::vector<unsigned> botlist {};
+		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+			if (!ipc::peer->memory->peer_data[i].free) {
+				for (auto& k : players) {
+					if (ipc::peer->memory->peer_user_data[i].friendid && k == ipc::peer->memory->peer_user_data[i].friendid) {
+						botlist.push_back(i);
+						count++;
+						highest = i;
+					}
+				}
+			}
+		}
+		if (ipc::peer->client_id == highest && count > int(wb_abandon_too_many_bots)) {
+			static Timer timer {};
+			if (timer.test_and_set(1000 * 5)) {
+				logging::Info("Found %d other bots in-game, abandoning (%u)", count, ipc::peer->client_id);
+				for (auto i : botlist) {
+					logging::Info("-> Bot %d with ID %u", i, ipc::peer->memory->peer_user_data[i].friendid);
+				}
+				g_TFGCClientSystem->SendExitMatchmaking(true);
+			}
+		}
+	}
+#endif
 }
 
 void Move() {
@@ -938,7 +983,7 @@ void Move() {
 				Load("default");
 				if (nodes.size() == 0) {
 					static auto last_abandon = std::chrono::system_clock::from_time_t(0);
-					auto s = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_abandon).count();
+					auto s = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - last_abandon).count();
 
 					if (s < 3) {
 						return;
@@ -948,6 +993,10 @@ void Move() {
 					last_abandon = std::chrono::system_clock::now();
 				}
 			}
+		}
+		static Timer livingspace_timer {};
+		if (livingspace_timer.test_and_set(1000 * 8)) {
+			CheckLivingSpace();
 		}
 		if (nodes.size() == 0) return;
 		if (force_slot)

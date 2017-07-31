@@ -349,6 +349,8 @@ void CreateMove() {
     }
 }
 
+#ifndef TEXTMODE
+
 void DrawText() {
 	if (crit_info && CE_GOOD(LOCAL_W)) {
 		if (CritKeyDown() || experimental_crit_hack.KeyDown()) {
@@ -432,6 +434,8 @@ void DrawText() {
 			//AddCenterString(draw::font_handle, input->GetAnalogValue(AnalogCode_t::MOUSE_X), input->GetAnalogValue(AnalogCode_t::MOUSE_Y), draw::white, L"S\u0FD5");*/
 		}
 }
+
+#endif
 
 void Schema_Reload() {
 	logging::Info("Custom schema loading is not supported right now.");

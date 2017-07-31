@@ -69,6 +69,7 @@ void SetEntityColor(CachedEntity* entity, const rgba_t& color) {
 
 void AddEntityString(CachedEntity* entity, const std::string& string, const rgba_t& color) {
 	ESPData& entity_data = data[entity->m_IDX];
+	if (entity_data.string_count >= 15) return;
 	entity_data.strings[entity_data.string_count].data = string;
 	entity_data.strings[entity_data.string_count].color = color;
 	entity_data.string_count++;

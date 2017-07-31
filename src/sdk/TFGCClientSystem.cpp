@@ -29,3 +29,11 @@ int TFGCClientSystem::SendExitMatchmaking(bool abandon) {
 	logging::Info("Calling 0x%08x", SendExitMatchmaking_fn);
 	return SendExitMatchmaking_fn(this, abandon);
 }
+
+int TFGCClientSystem::LoadSearchCriteria() {
+	static uintptr_t LoadSearchCriteria_loc = gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 5D A8 81 EC DC 00 00 00 C7 44 24 0C 00 00 00 00 C7 44 24 08 00 00 00 00 C7 44 24 04 00 00 00 00 89 1C 24 E8 ? ? ? ? C7 44 24 08 01 00 00 00 C7 44 24 04 01 00 00 00 89 1C 24 E8 ? ? ? ? A1 ? ? ? ? 8D 50 04");
+	typedef int(*LoadSearchCriteria_t)(TFGCClientSystem*);
+	static LoadSearchCriteria_t LoadSearchCriteria_fn = (LoadSearchCriteria_t)LoadSearchCriteria_loc;
+	logging::Info("Calling 0x%08x", LoadSearchCriteria_fn);
+	return LoadSearchCriteria_fn(this);
+}
