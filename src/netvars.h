@@ -63,6 +63,7 @@ public:
 	offset_t iPipeType;
 	offset_t iBuildingHealth;
 	offset_t iBuildingMaxHealth;
+	offset_t m_iAmmo;
 	offset_t iHitboxSet;
 	offset_t vVelocity;
 	offset_t bGlowEnabled;
@@ -124,6 +125,7 @@ public:
 	offset_t m_bReadyToBackstab;
 	offset_t m_Collision;
 	offset_t res_iTeam;
+	offset_t res_iScore;
 	offset_t m_nChargeResistType;
 	offset_t m_flChargeLevel;
 

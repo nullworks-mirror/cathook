@@ -16,6 +16,7 @@ class CatVar;
 extern CatVar gui_color_r;
 extern CatVar gui_color_g;
 extern CatVar gui_color_b;
+extern CatVar gui_debug;
 rgba_t GUIColor();
 
 extern CatVar gui_visible;

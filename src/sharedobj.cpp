@@ -76,14 +76,16 @@ void LoadAllSharedObjects() {
 		steamclient().Load();
 		client().Load();
 		engine().Load();
-		vguimatsurface().Load();
-		vgui2().Load();
 		vstdlib().Load();
 		tier0().Load();
 		inputsystem().Load();
+#ifndef TEXTMODE
+		vguimatsurface().Load();
+		vgui2().Load();
 		studiorender().Load();
 		materialsystem().Load();
 		libsdl().Load();
+#endif
 	} catch (std::exception& ex) {
 		logging::Info("Exception: %s", ex.what());
 	}
@@ -101,14 +103,6 @@ SharedObject& engine() {
 	static SharedObject obj("engine.so", true);
 	return obj;
 }
-SharedObject& vguimatsurface() {
-	static SharedObject obj("vguimatsurface.so", true);
-	return obj;
-}
-SharedObject& vgui2() {
-	static SharedObject obj("vgui2.so", true);
-	return obj;
-}
 SharedObject& vstdlib() {
 	static SharedObject obj("libvstdlib.so", true);
 	return obj;
@@ -119,6 +113,15 @@ SharedObject& tier0() {
 }
 SharedObject& inputsystem() {
 	static SharedObject obj("inputsystem.so", true);
+	return obj;
+}
+#ifndef TEXTMODE
+SharedObject& vguimatsurface() {
+	static SharedObject obj("vguimatsurface.so", true);
+	return obj;
+}
+SharedObject& vgui2() {
+	static SharedObject obj("vgui2.so", true);
 	return obj;
 }
 SharedObject& studiorender() {
@@ -133,5 +136,6 @@ SharedObject& libsdl() {
 	static SharedObject obj("libSDL2-2.0.so.0", false);
 	return obj;
 }
+#endif
 
 }

@@ -8,7 +8,7 @@
 #ifndef MACROS_HPP_
 #define MACROS_HPP_
 
-#if defined(NOGUI) and NOGUI == 1
+#if defined(NOGUI) and NOGUI == 1 or defined(TEXTMODE)
 #define ENABLE_GUI false
 #else
 #define ENABLE_GUI true

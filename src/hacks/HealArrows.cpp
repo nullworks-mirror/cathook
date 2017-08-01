@@ -77,6 +77,7 @@ void CreateMove() {
 }
 
 void Draw() {
+#ifndef TEXTMODE
 	if (healarrow) {
 		if ((g_GlobalVars->curtime - healarrow_time) < float(healarrow_timeout)) {
 			AddCenterString(format("Heal arrow charge: ", int(min(100.0f, (g_GlobalVars->curtime - healarrow_time) / float(healarrow_timeout)) * 100.0f), '%'), colors::yellow);
@@ -85,6 +86,9 @@ void Draw() {
 			AddCenterString("Heal arrow ready", colors::green);
 		}
 	}
+#else
+	logging::Info("[WTF] THIS SHOULD NEVER BE CALLED!!! CALL THE POLICE!!!");
+#endif
 }
 
 }}}

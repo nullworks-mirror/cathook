@@ -21,13 +21,12 @@ extern const std::vector<std::string> builtin_nonecore;
 extern const std::vector<std::string> builtin_lmaobox;
 extern const std::vector<std::string> builtin_lithium;
 
-extern CatVar enabled;
+extern CatVar spam_source;
 extern CatVar filename;
 extern CatCommand reload;
 
 void Init();
 void CreateMove();
-void Reset();
 void Reload();
 
 }}}

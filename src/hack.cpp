@@ -26,6 +26,7 @@
 #include "aftercheaders.h"
 
 #include <steam/isteamuser.h>
+#include <dbg.h>
 // All Hacks
 #include "hacks/hacklist.h"
 
@@ -39,8 +40,12 @@
 #define STRINGIFY(x) #x
 #define TO_STRING(x) STRINGIFY(x)
 
+#ifndef TEXTMODE
 #include "ftrender.hpp"
+#endif
+
 #include "hooks/hookedmethods.h"
+#include "init.hpp"
 
 #include "sdk.h"
 #include "vfunc.h"
@@ -92,6 +97,10 @@ const std::string& hack::GetType() {
 		version += " DYNAMIC";
 #endif
 		
+#ifdef TEXTMODE
+		version += " TEXTMODE";
+#endif
+
 	version = version.substr(1);
 	version_set = true;
 	return version;
@@ -102,6 +111,8 @@ std::stack<std::string>& hack::command_stack() {
 	static std::stack<std::string> stack;
 	return stack;
 }
+
+#ifndef TEXTMODE /* Why would we need colored chat stuff in textmode? */
 
 class AdvancedEventListener : public IGameEventListener {
 public:
@@ -134,26 +145,43 @@ public:
 
 AdvancedEventListener adv_event_listener {};
 
+#endif /* TEXTMODE */
+
 void hack::ExecuteCommand(const std::string command) {
 	std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
 	hack::command_stack().push(command);
 }
 
+
 ConCommand* hack::c_Cat = 0;
 
 void hack::CC_Cat(const CCommand& args) {
-	g_ICvar->ConsoleColorPrintf(Color(255, 255, 255, 255), "kathook");
+	g_ICvar->ConsoleColorPrintf(Color(255, 255, 255, 255), "cathook");
 	g_ICvar->ConsoleColorPrintf(Color(  0,   0, 255, 255), " by ");
 	g_ICvar->ConsoleColorPrintf(Color(255,   0,   0, 255), "nullifiedcat\n");
-	/*int white = colors::white, blu = colors::blu, red = colors::red;
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "kathook");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&blu), " by ");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&red), "nullifiedcat\n");
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), GetVersion().c_str());
-	g_ICvar->ConsoleColorPrintf(*reinterpret_cast<Color*>(&white), "\n");*/
 }
 
 void hack::Initialize() {
+	// Essential files must always exist, except when the game is running in text mode.
+#ifndef TEXTMODE
+
+	{
+		std::vector<std::string> essential = {
+			"shaders/v2f-c4f.frag", "shaders/v2f-c4f.vert",
+			"shaders/v2f-t2f-c4f.frag", "shaders/v2f-t2f-c4f.vert",
+			"shaders/v3f-t2f-c4f.frag", "shaders/v3f-t2f-c4f.vert",
+			"menu.json", "fonts/opensans-bold.ttf"
+		};
+		for (const auto& s : essential) {
+			std::ifstream exists("cathook/" + s, std::ios::in);
+			if (not exists) {
+				Error("Missing essential file: cathook/%s\nYou MUST run update-data script to finish installation", s.c_str());
+			}
+		}
+	}
+
+#endif /* TEXTMODE */
+
 	logging::Info("Initializing...");
 	srand(time(0));
 	prctl(PR_SET_DUMPABLE,0,42,42,42);
@@ -167,6 +195,9 @@ void hack::Initialize() {
 	logging::Info("Is CSS? %d", IsCSS());
 	logging::Info("Is TF? %d", IsTF());
 	InitClassTable();
+
+#ifndef TEXTMODE /* We don't need medal to flip 100% when running textmode */
+
 	IF_GAME (IsTF2()) {
 		uintptr_t mmmf = (gSignatures.GetClientSignature("C7 44 24 04 09 00 00 00 BB ? ? ? ? C7 04 24 00 00 00 00 E8 ? ? ? ? BA ? ? ? ? 85 C0 B8 ? ? ? ? 0F 44 DA") + 37);
 		if (mmmf) {
@@ -181,26 +212,33 @@ void hack::Initialize() {
 			Patch((void*)canInspectSig, (void*)patch, 3);
 		}*/
 	}
+
+#endif /* TEXTMODE */
+
 	BeginConVars();
 	hack::c_Cat = CreateConCommand(CON_NAME, &hack::CC_Cat, "Info");
 	g_Settings.Init();
 	EndConVars();
+
+#ifndef TEXTMODE
+
 	draw::Initialize();
 #if ENABLE_GUI
 	g_pGUI = new CatGUI();
 	g_pGUI->Setup();
 #endif
+
+#endif /* TEXTMODE */
+
 	gNetvars.init();
 	InitNetVars();
 	g_pLocalPlayer = new LocalPlayer();
 	g_pPlayerResource = new TFPlayerResource();
-
-	/*
-	 * TIME FOR HOOKING! wow
-	 */
+#ifndef TEXTMODE
 	hooks::panel.Set(g_IPanel);
 	hooks::panel.HookMethod((void*)PaintTraverse_hook, offsets::PaintTraverse());
 	hooks::panel.Apply();
+#endif
 	uintptr_t* clientMode = 0;
 	// Bad way to get clientmode.
 	// FIXME [MP]?
@@ -209,7 +247,9 @@ void hack::Initialize() {
 	}
 	hooks::clientmode.Set((void*)clientMode);
 	hooks::clientmode.HookMethod((void*)CreateMove_hook, offsets::CreateMove());
+#ifndef TEXTMODE
 	hooks::clientmode.HookMethod((void*)OverrideView_hook, offsets::OverrideView());
+#endif /* TEXTMODE */
 	hooks::clientmode.HookMethod((void*)LevelInit_hook, offsets::LevelInit());
 	hooks::clientmode.HookMethod((void*)LevelShutdown_hook, offsets::LevelShutdown());
 	hooks::clientmode.Apply();
@@ -219,14 +259,18 @@ void hack::Initialize() {
 	hooks::client.Set(g_IBaseClient);
 	hooks::client.HookMethod((void*)FrameStageNotify_hook, offsets::FrameStageNotify());
 	hooks::client.HookMethod((void*)DispatchUserMessage_hook, offsets::DispatchUserMessage());
+#ifndef TEXTMODE
 	hooks::client.HookMethod((void*)IN_KeyEvent_hook, offsets::IN_KeyEvent());
+#endif /* TEXTMODE */
 	hooks::client.Apply();
 	hooks::input.Set(g_IInput);
 	hooks::input.HookMethod((void*)GetUserCmd_hook, offsets::GetUserCmd());
 	hooks::input.Apply();
+#ifndef TEXTMODE
 	hooks::modelrender.Set(g_IVModelRender);
 	hooks::modelrender.HookMethod((void*)DrawModelExecute_hook, offsets::DrawModelExecute());
 	hooks::modelrender.Apply();
+#endif /* TEXTMODE */
 	hooks::steamfriends.Set(g_ISteamFriends);
 	hooks::steamfriends.HookMethod((void*)GetFriendPersonaName_hook, offsets::GetFriendPersonaName());
 	hooks::steamfriends.Apply();
@@ -243,18 +287,24 @@ void hack::Initialize() {
 	//hooks::hkBaseClientState8->Apply();
 
 	// FIXME [MP]
-	InitStrings();
 	hacks::shared::killsay::Init();
-#if ENABLE_GUI
-	// cat_reloadscheme to load imgui
-	hack::command_stack().push("cat_reloadscheme");
-#endif
 	hack::command_stack().push("exec cat_autoexec");
+#ifdef TEXTMODE
+	hack::command_stack().push("exec cat_autoexec_textmode");
+#endif
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
 	logging::Info("Hooked!");
 	velocity::Init();
 	playerlist::Load();
+
+#ifndef TEXTMODE
+
+	InitStrings();
+#if ENABLE_GUI
+	// cat_reloadscheme to load imgui
+	hack::command_stack().push("cat_reloadscheme");
+#endif
 	if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects) {
 		effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
 		g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
@@ -262,19 +312,32 @@ void hack::Initialize() {
 		effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
 		g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
 	}
-	//for (CScreenSpaceEffectRegistration* reg = *g_ppScreenSpaceRegistrationHead; reg; reg = reg->m_pNext) {
-	//	logging::Info("%s", reg->m_pEffectName);
-	//}
 	logging::Info("SSE enabled..");
 	DoSDLHooking();
 	logging::Info("SDL hooking done");
 	g_IGameEventManager->AddListener(&adv_event_listener, false);
+
+#endif /* TEXTMODE */
+
 	hacks::shared::anticheat::Init();
 	hacks::tf2::healarrow::Init();
-	InitSpinner();
-	hacks::shared::spam::Init();
-	logging::Info("Initialized Fidget Spinner");
 
+#ifndef TEXTMODE
+	InitSpinner();
+	logging::Info("Initialized Fidget Spinner");
+	hacks::shared::spam::Init();
+	backpacktf::init();
+	logging::Info("Initialized Backpack.TF integration");
+#endif
+
+	hacks::shared::walkbot::Initialize();
+
+	logging::Info("Clearing initializer stack");
+	while (!init_stack().empty()) {
+		init_stack().top()();
+		init_stack().pop();
+	}
+	logging::Info("Initializer stack done");
 }
 
 void hack::Think() {

@@ -139,6 +139,11 @@ float GetFov(Vector ang, Vector src, Vector dst);
 
 void ReplaceString(std::string& input, const std::string& what, const std::string& with_what);
 
+std::pair<float, float> ComputeMove(const Vector& a, const Vector& b);
+void WalkTo(const Vector& vector);
+
+std::string GetLevelName();
+
 void format_internal(std::stringstream& stream);
 template<typename T, typename... Targs>
 void format_internal(std::stringstream& stream, T value, Targs... args) {
