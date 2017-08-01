@@ -42,11 +42,11 @@ SharedObject& engine();
 SharedObject& vstdlib();
 SharedObject& tier0();
 SharedObject& inputsystem();
+SharedObject& materialsystem();
 #ifndef TEXTMODE
 SharedObject& vguimatsurface();
 SharedObject& vgui2();
 SharedObject& studiorender();
-SharedObject& materialsystem();
 SharedObject& libsdl();
 #endif
 

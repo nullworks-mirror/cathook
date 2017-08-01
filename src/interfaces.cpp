@@ -127,13 +127,13 @@ void CreateInterfaces() {
 		logging::Info("GTFGCClientSystem() = 0x%08x", get_gc);
 		g_TFGCClientSystem = get_gc();
 	}
+	g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());
 
 #ifndef TEXTMODE
 	g_IVDebugOverlay = BruteforceInterface<IVDebugOverlay>("VDebugOverlay", sharedobj::engine());
 	g_IPanel = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2());
 	g_ISurface = BruteforceInterface<vgui::ISurface>("VGUI_Surface", sharedobj::vguimatsurface());
 	g_IStudioRender = BruteforceInterface<IStudioRender>("VStudioRender", sharedobj::studiorender());
-	g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());
 	g_IVRenderView = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine());
 	g_IMaterialSystemHL = (IMaterialSystem*)g_IMaterialSystem;
 	IF_GAME (IsTF2()) {

@@ -753,6 +753,9 @@ bool IsEntityVisiblePenetration(CachedEntity* entity, int hb) {
 }
 
 void PrintChat(const char* fmt, ...) {
+#if TEXTMODE
+	return;
+#endif
 	CHudBaseChat* chat = (CHudBaseChat*)g_CHUD->FindElement("CHudChat");
 	if (chat) {
 		char* buf = new char[1024];

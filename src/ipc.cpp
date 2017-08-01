@@ -193,7 +193,7 @@ void StoreClientData() {
 	UpdateServerAddress();
 	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
 	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
-	strncpy(data.name, g_ISteamFriends->GetPersonaName(), sizeof(data.name));
+	strncpy(data.name, GetFriendPersonaName_hook(g_ISteamFriends, g_ISteamUser->GetSteamID()), sizeof(data.name));
 }
 
 
