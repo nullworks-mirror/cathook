@@ -21,6 +21,7 @@ int iTicksLastJump = 0;
 void CreateMove() {
 	// Check user settings if bhop is enabled
 	if (!enabled) return;
+	if (!g_pUserCmd) return;
 	
 	// Check if there is usercommands
 	if (!g_pUserCmd->command_number) return;

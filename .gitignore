@@ -251,3 +251,4 @@ ModelManifest.xml
 
 ## Ignore Data Folder symlink
 Data Folder
+/core

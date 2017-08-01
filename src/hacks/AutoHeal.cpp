@@ -305,9 +305,15 @@ void CreateMove() {
 	CachedEntity* target = ENTITY(m_iCurrentHealingTarget);
 	Vector out;
 	GetHitbox(target, 7, out);
+
 	AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
 	if (silent) g_pLocalPlayer->bUseSilentAngles = true;
 	if (!m_iNewTarget && (g_GlobalVars->tickcount % 300)) g_pUserCmd->buttons |= IN_ATTACK;
+	/*if (m_iNewTarget || !(g_GlobalVars->tickcount % 300)) {
+		if (silent) g_pLocalPlayer->bUseSilentAngles = true;
+		AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
+		g_pUserCmd->buttons |= IN_ATTACK;
+	}*/
 	if (IsVaccinator() && CE_GOOD(target) && auto_vacc) {
 		int opt = OptimalResistance(target, &pop);
 		if (!pop && opt != -1) SetResistance(opt);

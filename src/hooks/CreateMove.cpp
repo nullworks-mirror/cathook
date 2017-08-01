@@ -148,6 +148,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		hooks::netchannel.HookMethod((void*)SendNetMsg_hook, offsets::SendNetMsg());
 		hooks::netchannel.HookMethod((void*)Shutdown_hook, offsets::Shutdown());
 		hooks::netchannel.Apply();
+#if IPC_ENABLED
+		ipc::UpdateServerAddress();
+#endif
 	}
 
 	/**bSendPackets = true;
@@ -204,6 +207,9 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		SAFE_CALL(g_pLocalPlayer->Update());
 	}
 	g_Settings.bInvalid = false;
+
+	hacks::shared::autojoin::Update();
+
 #ifdef IPC_ENABLED
 	static int team_joining_state = 0;
 	static float last_jointeam_try = 0;
@@ -261,12 +267,22 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		IF_GAME (IsTF2()) {
 			SAFE_CALL(UpdateHoovyList());
 		}
-			g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
+		g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
+#ifndef TEXTMODE
 		{
 			PROF_SECTION(CM_esp);
 			SAFE_CALL(hacks::shared::esp::CreateMove());
 		}
+#endif
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
+			{
+				PROF_SECTION(CM_walkbot);
+				SAFE_CALL(hacks::shared::walkbot::Move());
+			}
+			// Walkbot can leave game.
+			if (!g_IEngine->IsInGame()) {
+				return ret;
+			}
 			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_uberspam);
 				SAFE_CALL(hacks::tf::uberspam::CreateMove());
@@ -342,13 +358,16 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 	// TODO Auto Steam Friend
 
-	if (g_GlobalVars->framecount % 1000 == 0) {
+#if IPC_ENABLED
+	{
 		PROF_SECTION(CM_playerlist);
-//		playerlist::DoNotKillMe();
-#ifdef IPC_ENABLED
-		ipc::UpdatePlayerlist();
-#endif
+		static Timer ipc_update_timer {};
+	//	playerlist::DoNotKillMe();
+		if (ipc_update_timer.test_and_set(1000 * 10)) {
+			ipc::UpdatePlayerlist();
+		}
 	}
+#endif
 
 	*bSendPackets = true;
 

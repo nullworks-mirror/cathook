@@ -24,7 +24,9 @@ float PlayerGravityMod(CachedEntity* player);
 
 Vector EnginePrediction(CachedEntity* player, float time);
 void Prediction_CreateMove();
+#ifndef TEXTMODE
 void Prediction_PaintTraverse();
+#endif
 
 float DistanceToGround(CachedEntity* ent);
 float DistanceToGround(Vector origin);

@@ -348,7 +348,8 @@ void Render() {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 	}
 	
-	//ImGui::ShowTestWindow();
+	if (gui_debug)
+		ImGui::ShowTestWindow();
 	RenderPlayerlist();
 	/*ImGui::Begin("Colors");
 		static ImVec3 color_for_text = IM3_RGB(246, 236, 255);

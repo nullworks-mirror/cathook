@@ -39,14 +39,16 @@ public:
 SharedObject& steamclient();
 SharedObject& client();
 SharedObject& engine();
-SharedObject& vguimatsurface();
-SharedObject& vgui2();
 SharedObject& vstdlib();
 SharedObject& tier0();
 SharedObject& inputsystem();
+#ifndef TEXTMODE
+SharedObject& vguimatsurface();
+SharedObject& vgui2();
 SharedObject& studiorender();
 SharedObject& materialsystem();
 SharedObject& libsdl();
+#endif
 
 void LoadAllSharedObjects();
 

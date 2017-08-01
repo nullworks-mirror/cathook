@@ -15,16 +15,18 @@ CatVar spam_source(spam_enum, "spam", "0", "Chat Spam", "Defines source of spam 
 CatVar random_order(CV_SWITCH, "spam_random", "0", "Random Order");
 CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file", "Spam file name. Each line should be no longer than 100 characters, file must be located in cathook data folder");
 CatCommand reload("spam_reload", "Reload spam file", Reload);
-	
+CatVar spam_delay(CV_INT, "spam_delay", "800", "Spam delay", "Delay between spam messages (in ms)", 0.0f, 8000.0f);
+
 static CatEnum voicecommand_enum({"DISABLED", "RANDOM", "MEDIC", "THANKS", "NICE SHOT", "CHEERS", "JEERS"});
 CatVar voicecommand_spam(voicecommand_enum, "spam_voicecommand", "0", "Voice Command Spam", "Spams tf voice commands");
 	
 CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam", "Spam changes the tournament name");
 
 
+std::chrono::time_point<std::chrono::system_clock> last_spam_point {};
+
 bool teamname_swap = false;
 int current_index { 0 };
-float last_spam { 0.0f };
 TextFile file {};
 
 const std::string teams[] = { "RED", "BLU" };
@@ -221,10 +223,11 @@ void CreateMove() {
 	
 	if (!spam_source) return;
 	static int safety_ticks = 0;
-	static int last_spam = 0;
-	if ((int)spam_source != last_spam) {
+	static int last_source = 0;
+	static float last_message = 0;
+	if ((int)spam_source != last_source) {
 		safety_ticks = 300;
-		last_spam = (int)spam_source;
+		last_source = (int)spam_source;
 	}
 	if (safety_ticks > 0) {
 		safety_ticks--;
@@ -232,7 +235,7 @@ void CreateMove() {
 	} else {
 		safety_ticks = 0;
 	}
-	if (last_spam > g_GlobalVars->curtime) last_spam = 0.0f;
+
 	const std::vector<std::string>* source = nullptr;
 	switch ((int)spam_source) {
 	case 1:
@@ -253,7 +256,7 @@ void CreateMove() {
 		return;
 	}
 	if (!source || !source->size()) return;
-	if (g_GlobalVars->curtime - last_spam > 0.8f) {
+	if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_spam_point).count() > int(spam_delay)) {
 		if (chat_stack::stack.empty()) {
 			if (current_index >= source->size()) current_index = 0;
 			if (random_order) current_index = rand() % source->size();
@@ -262,11 +265,8 @@ void CreateMove() {
 				chat_stack::Say(spamString);
 			current_index++;
 		}
+		last_spam_point = std::chrono::system_clock::now();
 	}
-}
-
-void Reset() {
-	last_spam = 0.0f;
 }
 
 void Reload() {

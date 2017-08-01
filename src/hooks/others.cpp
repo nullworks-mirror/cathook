@@ -7,9 +7,12 @@
 
 #include "../common.h"
 #include "../netmessage.h"
+#include "../chatlog.hpp"
 #include "../hack.h"
 #include "ucccccp.hpp"
 #include "hookedmethods.h"
+
+#ifndef TEXTMODE
 
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility", "Useful with chams!");
 
@@ -67,6 +70,41 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 	original(_this, state, info, matrix);
 }
 
+
+int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
+	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
+#if ENABLE_GUI
+	SEGV_BEGIN;
+	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
+		return 0;
+	}
+	SEGV_END;
+#endif
+	return original(_this, eventcode, keynum, pszCurrentBinding);
+}
+
+CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
+CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
+
+void OverrideView_hook(void* _this, CViewSetup* setup) {
+	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
+	static bool zoomed;
+	SEGV_BEGIN;
+	original(_this, setup);
+	if (!cathook) return;
+	if (g_pLocalPlayer->bZoomed && override_fov_zoomed) {
+		setup->fov = override_fov_zoomed;
+	} else {
+		if (override_fov) {
+			setup->fov = override_fov;
+		}
+	}
+	draw::fov = setup->fov;
+	SEGV_END;
+}
+
+#endif
+
 bool CanPacket_hook(void* _this) {
 	const CanPacket_t original = (CanPacket_t)hooks::netchannel.GetMethod(offsets::CanPacket());
 	SEGV_BEGIN;
@@ -93,18 +131,6 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 		*(int*)((unsigned)ch + offsets::m_nOutSequenceNr()) = def->command_number - 1;
 	}
 	return def;
-}
-
-int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
-	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
-#if ENABLE_GUI
-	SEGV_BEGIN;
-	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
-		return 0;
-	}
-	SEGV_END;
-#endif
-	return original(_this, eventcode, keynum, pszCurrentBinding);
 }
 
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent messages");
@@ -202,6 +228,10 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 void Shutdown_hook(void* _this, const char* reason) {
 	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
 	const Shutdown_t original = (Shutdown_t)hooks::netchannel.GetMethod(offsets::Shutdown());
+	logging::Info("Disconnect: %s", reason);
+#if IPC_ENABLED
+	ipc::UpdateServerAddress(true);
+#endif
 	SEGV_BEGIN;
 	if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) && strstr(reason, "user")) {
 		original(_this, disconnect_reason_newlined);
@@ -281,9 +311,22 @@ bool StolenName(){
 	return false;											
 }
 
+static CatVar ipc_name(CV_STRING, "name_ipc", "", "IPC Name");
+
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	static const GetFriendPersonaName_t original = (GetFriendPersonaName_t)hooks::steamfriends.GetMethod(offsets::GetFriendPersonaName());
   
+#if IPC_ENABLED
+	if (ipc::peer) {
+		static std::string namestr(ipc_name.GetString());
+		namestr.assign(ipc_name.GetString());
+		if (namestr.length() > 3) {
+			ReplaceString(namestr, "%%", std::to_string(ipc::peer->client_id));
+			return namestr.c_str();
+		}
+	}
+#endif
+
 	// Check User settings if namesteal is allowed
 	if (namesteal && steamID == g_ISteamUser->GetSteamID()) {
 		
@@ -331,11 +374,12 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
-	// TODO hack FSN hook
+#ifndef TEXTMODE
 	{
 		PROF_SECTION(FSN_skinchanger);
 		hacks::tf2::skinchanger::FrameStageNotify(stage);
 	}
+#endif
 	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		angles::Update();
 		hacks::shared::anticheat::CreateMove();
@@ -355,6 +399,42 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
+	if (stage == FRAME_START) {
+#if IPC_ENABLED
+		static Timer nametimer {};
+		if (nametimer.test_and_set(1000 * 10)) {
+			if (ipc::peer) {
+				ipc::StoreClientData();
+			}
+		}
+		static Timer ipc_timer {};
+		if (ipc_timer.test_and_set(1000)) {
+			if (ipc::peer) {
+				ipc::Heartbeat();
+				ipc::UpdateTemporaryData();
+			}
+		}
+#endif
+		hacks::shared::autojoin::UpdateSearch();
+		if (!hack::command_stack().empty()) {
+			PROF_SECTION(PT_command_stack);
+			std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
+			while (!hack::command_stack().empty()) {
+				logging::Info("executing %s", hack::command_stack().top().c_str());
+				g_IEngine->ClientCmd_Unrestricted(hack::command_stack().top().c_str());
+				hack::command_stack().pop();
+			}
+		}
+#if defined(TEXTMODE) and defined(TEXTMODE_STDIN)
+		static auto last_stdin = std::chrono::system_clock::from_time_t(0);
+		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_stdin).count();
+		if (ms > 500) {
+			UpdateInput();
+			last_stdin = std::chrono::system_clock::now();
+		}
+#endif
+	}
+#ifndef TEXTMODE
 	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 #if ENABLE_GUI
 		if (cursor_fix_experimental) {
@@ -378,27 +458,8 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
+#endif /* TEXTMODE */
 	SAFE_CALL(original(_this, stage));
-	SEGV_END;
-}
-
-CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
-CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
-
-void OverrideView_hook(void* _this, CViewSetup* setup) {
-	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
-	static bool zoomed;
-	SEGV_BEGIN;
-	original(_this, setup);
-	if (!cathook) return;
-	if (g_pLocalPlayer->bZoomed && override_fov_zoomed) {
-		setup->fov = override_fov_zoomed;
-	} else {
-		if (override_fov) {
-			setup->fov = override_fov;
-		}
-	}
-	draw::fov = setup->fov;
 	SEGV_END;
 }
 
@@ -411,36 +472,35 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 
 	static const DispatchUserMessage_t original = (DispatchUserMessage_t)hooks::client.GetMethod(offsets::DispatchUserMessage());
 	SEGV_BEGIN;
-	if (clean_chat || crypt_chat) {
-		if (type == 4) {
-			loop_index = 0;
-			s = buf.GetNumBytesLeft();
-			if (s < 256) {
-				data = (char*)alloca(s);
-				for (i = 0; i < s; i++)
-					data[i] = buf.ReadByte();
-				j = 0;
-				std::string name;
-				std::string message;
-				for (i = 0; i < 3; i++) {
-					while ((c = data[j++]) && (loop_index < 128)) {
-						loop_index++;
-						if (clean_chat)
-							if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
-						if (i == 1) name.push_back(c);
-						if (i == 2) message.push_back(c);
-					}
+	if (type == 4) {
+		loop_index = 0;
+		s = buf.GetNumBytesLeft();
+		if (s < 256) {
+			data = (char*)alloca(s);
+			for (i = 0; i < s; i++)
+				data[i] = buf.ReadByte();
+			j = 0;
+			std::string name;
+			std::string message;
+			for (i = 0; i < 3; i++) {
+				while ((c = data[j++]) && (loop_index < 128)) {
+					loop_index++;
+					if (clean_chat)
+						if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+					if (i == 1) name.push_back(c);
+					if (i == 2) message.push_back(c);
 				}
-				if (crypt_chat) {
-					if (message.find("!!") == 0) {
-						if (ucccccp::validate(message)) {
-							PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), ucccccp::decrypt(message).c_str());
-						}
-					}
-				}
-				buf = bf_read(data, s);
-				buf.Seek(0);
 			}
+			if (crypt_chat) {
+				if (message.find("!!") == 0) {
+					if (ucccccp::validate(message)) {
+						PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), ucccccp::decrypt(message).c_str());
+					}
+				}
+			}
+			chatlog::LogMessage(data[0], message);
+			buf = bf_read(data, s);
+			buf.Seek(0);
 		}
 	}
 	if (dispatch_log) {
@@ -457,9 +517,9 @@ void LevelInit_hook(void* _this, const char* newmap) {
 	g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
-	hacks::shared::spam::Reset();
 	hacks::shared::anticheat::ResetEverything();
 	original(_this, newmap);
+	hacks::shared::walkbot::OnLevelInit();
 }
 
 void LevelShutdown_hook(void* _this) {
@@ -469,7 +529,6 @@ void LevelShutdown_hook(void* _this) {
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
-	hacks::shared::spam::Reset();
 	hacks::shared::anticheat::ResetEverything();
 	original(_this);
 }

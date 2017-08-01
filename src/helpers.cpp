@@ -73,6 +73,41 @@ ConVar* CreateConVar(std::string name, std::string value, std::string help) {
 	return ret;
 }
 
+// Function for when you want to goto a vector
+void WalkTo(const Vector& vector) {
+	if (CE_BAD(LOCAL_E)) return;
+	// Calculate how to get to a vector
+	auto result = ComputeMove(LOCAL_E->m_vecOrigin, vector);
+	// Push our move to usercmd
+	g_pUserCmd->forwardmove = result.first;
+	g_pUserCmd->sidemove = result.second;
+}
+
+
+std::string GetLevelName() {
+
+	std::string name(g_IEngine->GetLevelName());
+	size_t slash = name.find('/');
+	if (slash == std::string::npos) slash = 0;
+	else slash++;
+	size_t bsp = name.find(".bsp");
+	size_t length = (bsp == std::string::npos ? name.length() - slash : bsp - slash);
+	return name.substr(slash, length);
+}
+
+std::pair<float, float> ComputeMove(const Vector& a, const Vector& b) {
+	Vector diff = (b - a);
+	if (diff.Length() == 0) return { 0, 0 };
+	const float x = diff.x;
+	const float y = diff.y;
+	Vector vsilent(x, y, 0);
+	float speed = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
+	Vector ang;
+	VectorAngles(vsilent, ang);
+	float yaw = DEG2RAD(ang.y - g_pUserCmd->viewangles.y);
+	return { cos(yaw) * 450, -sin(yaw) * 450 };
+}
+
 ConCommand* CreateConCommand(const char* name, FnCommandCallback_t callback, const char* help) {
 	ConCommand* ret = new ConCommand(name, callback, help);
 	g_ICvar->RegisterConCommand(ret);

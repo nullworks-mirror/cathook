@@ -53,6 +53,15 @@ int TFPlayerResource::GetTeam(int idx) {
 	return *(int*)((unsigned)ent + netvar.res_iTeam + 4 * idx);
 }
 
+int TFPlayerResource::GetScore(int idx) {
+	IClientEntity *ent;
+
+	if (idx >= 32 || idx < 1) return 0;
+	ent = g_IEntityList->GetClientEntity(entity);
+	if (!ent || ent->GetClientClass()->m_ClassID != RCC_PLAYERRESOURCE) return 0;
+	return *(int*)((unsigned)ent + netvar.res_iScore + 4 * idx);
+}
+
 int TFPlayerResource::GetClass(CachedEntity* player) {
 	IClientEntity *ent;
 	int idx;
