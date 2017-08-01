@@ -7,7 +7,7 @@
 
 #include "../common.h"
 
-// 81
+/*// 81
 ITexture *FindTexture_null_hook(void* this_, char const* pTextureName, const char *pTextureGroupName, bool complain, int nAdditionalCreationFlags) {
 	static ITexture *st = ((FindTexture_t)hooks::materialsystem.GetMethod(81))(this_, pTextureName, pTextureGroupName, complain, nAdditionalCreationFlags);
 	return st;
@@ -28,3 +28,4 @@ IMaterial *FindMaterial_null_hook(void* this_, char const* pMaterialName, const 
 void ReloadTextures_null_hook(void* this_) {}
 void ReloadMaterials_null_hook(void* this_, const char *pSubString) {}
 void ReloadFilesInList_null_hook(void* this_, IFileList *pFilesToReload) {}
+*/
