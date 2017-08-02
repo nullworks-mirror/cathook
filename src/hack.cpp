@@ -259,6 +259,24 @@ void hack::Initialize() {
 	hooks::client.Set(g_IBaseClient);
 	hooks::client.HookMethod((void*)FrameStageNotify_hook, offsets::FrameStageNotify());
 	hooks::client.HookMethod((void*)DispatchUserMessage_hook, offsets::DispatchUserMessage());
+
+#if TEXTMODE
+	//g_IMaterialSystem->SetInStubMode(true);
+	/*IF_GAME(IsTF2()) {
+		logging::Info("Graphics Nullified");
+		// TODO offsets::()?
+		hooks::materialsystem.Set((void*)g_IMaterialSystem);
+		uintptr_t base = *(uintptr_t*)(g_IMaterialSystem);
+		hooks::materialsystem.HookMethod((void*)ReloadTextures_null_hook, 70);
+		hooks::materialsystem.HookMethod((void*)ReloadMaterials_null_hook, 71);
+		hooks::materialsystem.HookMethod((void*)FindMaterial_null_hook, 73);
+		hooks::materialsystem.HookMethod((void*)FindTexture_null_hook, 81);
+		hooks::materialsystem.HookMethod((void*)ReloadFilesInList_null_hook, 121);
+		hooks::materialsystem.HookMethod((void*)FindMaterialEx_null_hook, 123);
+		hooks::materialsystem.Apply();
+		//hooks::materialsystem.HookMethod();
+	}*/
+#endif
 #ifndef TEXTMODE
 	hooks::client.HookMethod((void*)IN_KeyEvent_hook, offsets::IN_KeyEvent());
 #endif /* TEXTMODE */
@@ -288,12 +306,6 @@ void hack::Initialize() {
 
 	// FIXME [MP]
 	hacks::shared::killsay::Init();
-	hack::command_stack().push("exec cat_autoexec");
-#ifdef TEXTMODE
-	hack::command_stack().push("exec cat_autoexec_textmode");
-#endif
-	hack::command_stack().push("cat_killsay_reload");
-	hack::command_stack().push("cat_spam_reload");
 	logging::Info("Hooked!");
 	velocity::Init();
 	playerlist::Load();
@@ -338,6 +350,13 @@ void hack::Initialize() {
 		init_stack().pop();
 	}
 	logging::Info("Initializer stack done");
+
+#ifdef TEXTMODE
+	hack::command_stack().push("exec cat_autoexec_textmode");
+#endif
+	hack::command_stack().push("exec cat_autoexec");
+	hack::command_stack().push("cat_killsay_reload");
+	hack::command_stack().push("cat_spam_reload");
 }
 
 void hack::Think() {
