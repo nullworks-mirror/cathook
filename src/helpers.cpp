@@ -752,6 +752,24 @@ bool IsEntityVisiblePenetration(CachedEntity* entity, int hb) {
 	return false;
 }
 
+CatCommand print_classnames("debug_print_classnames", "Lists classnames currently available in console", []() {
+	
+	CachedEntity* ent;
+	
+	// Go through all the entities
+	for (int i = 0; i < HIGHEST_ENTITY; i++) {
+		
+		// Get an entity
+		ent = ENTITY(i);
+		// Check for null/dormant
+		if (CE_BAD(ent)) continue;
+		
+		// Print in console, the class name of the ent
+		logging::Info(format(RAW_ENT(ent)->GetClientClass()->m_pNetworkName).c_str());
+	}
+
+});
+
 void PrintChat(const char* fmt, ...) {
 	CHudBaseChat* chat = (CHudBaseChat*)g_CHUD->FindElement("CHudChat");
 	if (chat) {

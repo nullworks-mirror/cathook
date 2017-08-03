@@ -25,7 +25,6 @@ CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam", "Spam cha
 
 std::chrono::time_point<std::chrono::system_clock> last_spam_point {};
 
-bool teamname_swap = false;
 int current_index { 0 };
 TextFile file {};
 
@@ -185,6 +184,7 @@ void CreateMove() {
 	IF_GAME (IsTF2()) {
 		// Spam changes the tournament name in casual and compeditive gamemodes
 		if (teamname_spam) {
+			static bool teamname_swap = false;
 			if (teamname_swap) {
 				teamname_swap = false;
 				g_IEngine->ServerCmd("tournament_teamname Cat");	
