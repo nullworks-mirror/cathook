@@ -663,7 +663,7 @@ int BestHitbox(CachedEntity* target) {
 				// We only want to aim for the head if the ambassador can headshot
 				headonly = AmbassadorCanHeadshot();
 				// 18 health is a good number to use as thats the usual minimum damage it can do with a bodyshot, but damage could potentially be higher
-				if (target->m_iHealth <= 18) headonly = false;
+				if (target->m_iHealth <= 18 || IsPlayerCritBoosted(g_pLocalPlayer->entity)) headonly = false;
 			// If player is using a rocket based weapon, prefer the hip
 			} else if (ci == CL_CLASS(CTFRocketLauncher) ||
 				ci == CL_CLASS(CTFRocketLauncher_AirStrike) ||
