@@ -79,11 +79,11 @@ void LoadAllSharedObjects() {
 		vstdlib().Load();
 		tier0().Load();
 		inputsystem().Load();
+		materialsystem().Load();
 #ifndef TEXTMODE
 		vguimatsurface().Load();
 		vgui2().Load();
 		studiorender().Load();
-		materialsystem().Load();
 		libsdl().Load();
 #endif
 	} catch (std::exception& ex) {
@@ -115,6 +115,10 @@ SharedObject& inputsystem() {
 	static SharedObject obj("inputsystem.so", true);
 	return obj;
 }
+SharedObject& materialsystem() {
+	static SharedObject obj("materialsystem.so", true);
+	return obj;
+}
 #ifndef TEXTMODE
 SharedObject& vguimatsurface() {
 	static SharedObject obj("vguimatsurface.so", true);
@@ -126,10 +130,6 @@ SharedObject& vgui2() {
 }
 SharedObject& studiorender() {
 	static SharedObject obj("studiorender.so", true);
-	return obj;
-}
-SharedObject& materialsystem() {
-	static SharedObject obj("materialsystem.so", true);
 	return obj;
 }
 SharedObject& libsdl() {

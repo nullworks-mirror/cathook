@@ -771,6 +771,9 @@ CatCommand print_classnames("debug_print_classnames", "Lists classnames currentl
 });
 
 void PrintChat(const char* fmt, ...) {
+#if TEXTMODE
+	return;
+#endif
 	CHudBaseChat* chat = (CHudBaseChat*)g_CHUD->FindElement("CHudChat");
 	if (chat) {
 		char* buf = new char[1024];

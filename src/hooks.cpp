@@ -87,5 +87,6 @@ VMTHook matsurface {};
 VMTHook studiorender {};
 VMTHook modelrender {};
 VMTHook clientmode4 {};
+VMTHook materialsystem {};
 
 }
