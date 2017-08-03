@@ -290,3 +290,94 @@ float DistanceToGround(Vector origin) {
 	g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &ground_trace);
 	return 8192.0f * ground_trace.fraction;
 }
+
+/*
+// Set of to be fuctions for preciting players, similear to ncc prediction.
+
+// The way air prediction works is that we use getabsvel to get a baseline position of where the player could be
+// next tick. Then we save that into the array for our math next tick.
+// After the first tick passed, we check to see how the GetAbsVel function actually performed and we can correct for its 
+// mistakes by comparing the result from GetAbsVel last tick and where the player currently is this tick and applying an 
+// offset for predictions. 
+// With the new offset, you can use GetAbsVel and apply the offset to get 1 tick but for every other time you would need 
+// to apply the offset due to the way airstrafing works.
+// GetAbsVel only works in a strait fassion of what the players current velocity and doesnt factor in what the players 
+// next velocity could be due to the player having the ability to airstrafe and change that by quite a bit. 
+
+// Ground prediction works in the way of it using GetAbsVel to get a baseline direction of where the player is going and
+// attempting to predict the players movement from that. The prediction should check its surroundings for corners, walls, 
+// and the like to determine a path of where the player could potentially go. We would also want to check if players 
+// collision box would intercept a wall or floor and interpolate even more with that in mind. 
+// If a player is moving too steeply onto a wall, the prediction should stop there and count that as a place for where the 
+// player would be for any time after it.
+
+// we can change between the two prediction types based on the ground flag netvar. 
+
+// For using the predictions to work as projectile aimbot, we can determine the distance from the player kind of like how 
+// the current projectile aimbot currently does but we will follow the predicted path instead of just placing a vector in
+// a really simple fassion.
+
+// This is based on the estimation that GetAbsVelocity predicts players next position for the next createmove tick
+
+// A set of vectors for every potential player
+static Vector last_predicted_vector[32];
+// An array to store predictions
+static Vector last_predictions[32];
+// Vectors to determine whether the player was in the air last tick
+static bool last_predicted_inair[32];
+
+// Should be run every createmove to predict playermovement
+void RunPredictPlayers() {
+	
+	// Create a cached ent for use in the for loop
+	CachedEntity* ent;
+	
+	// Loop through players
+	for (int i = 0; i < 32; i++) {
+		
+		// Get an ent from current loop and check for dormancy/null
+		ent = ENTITY(i);
+		if (CE_BAD(ent)) continue;
+		
+		// Grab netvar for ground to control type of prediction
+		int flags = CE_INT(g_pLocalPlayer->entity, netvar.iFlags);
+		bool ground = (flags & (1 << 0));
+		
+		// For ground prediction, we would just use the old method for now
+		if (ground) {
+			
+			// Set our last "in air" state to false
+			last_predicted_vector_inair[i] = false;
+			
+			
+		// For air prediction, attempts to exerpolate strafing speed
+		} else {
+			
+			// If we were not in the air last tick, we need to create our first prediction 
+			if (!last_predicted_inair[i]) {
+				
+				// Set "in air" to true to allow air prediction to work next tick
+				last_predicted_inair[i] = true;
+				// Get our abs velocity and set it into the array
+				velocity::EstimateAbsVelocity(RAW_ENT(ent), last_predicted_vector[i]);
+
+				
+			// Since we have been in the air last tick, we can create an offset off of prediction errors
+			} else {
+				
+				// Create a storage vector and get abs velocity of 
+				Vector current_prediction;
+				velocity::EstimateAbsVelocity(RAW_ENT(ent), current_prediction);
+				last_predictions[32];
+			}
+		}
+	}
+}
+
+
+
+// Draws our predicted player pathing for debug or visual use
+void DrawPredictPlayers() {
+	// TODO	
+}
+*/
