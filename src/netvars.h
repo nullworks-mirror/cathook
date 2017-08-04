@@ -13,7 +13,7 @@
 class IClientEntity;
 
 #define NET_VAR(entity, offset, type) \
-	(*(reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(entity) + offset)))
+	(*(reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(entity) + (offset))))
 
 #define NET_INT(entity, offset) \
 	NET_VAR(entity, offset, int)
@@ -63,6 +63,7 @@ public:
 	offset_t iPipeType;
 	offset_t iBuildingHealth;
 	offset_t iBuildingMaxHealth;
+	offset_t m_iAmmo;
 	offset_t iHitboxSet;
 	offset_t vVelocity;
 	offset_t bGlowEnabled;
@@ -124,6 +125,7 @@ public:
 	offset_t m_bReadyToBackstab;
 	offset_t m_Collision;
 	offset_t res_iTeam;
+	offset_t res_iScore;
 	offset_t m_nChargeResistType;
 	offset_t m_flChargeLevel;
 
@@ -133,6 +135,7 @@ public:
 
 	offset_t m_iTauntConcept;
 	offset_t m_iTauntIndex;
+	offset_t m_angEyeAnglesLocal;
 	offset_t m_nSequence;
 	offset_t m_flSimulationTime;
 };

@@ -7,8 +7,12 @@
 
 #include "../common.h"
 #include "../netmessage.h"
+#include "../chatlog.hpp"
 #include "../hack.h"
+#include "ucccccp.hpp"
 #include "hookedmethods.h"
+
+#ifndef TEXTMODE
 
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility", "Useful with chams!");
 
@@ -66,6 +70,41 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 	original(_this, state, info, matrix);
 }
 
+
+int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
+	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
+#if ENABLE_GUI
+	SEGV_BEGIN;
+	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
+		return 0;
+	}
+	SEGV_END;
+#endif
+	return original(_this, eventcode, keynum, pszCurrentBinding);
+}
+
+CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
+CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
+
+void OverrideView_hook(void* _this, CViewSetup* setup) {
+	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
+	static bool zoomed;
+	SEGV_BEGIN;
+	original(_this, setup);
+	if (!cathook) return;
+	if (g_pLocalPlayer->bZoomed && override_fov_zoomed) {
+		setup->fov = override_fov_zoomed;
+	} else {
+		if (override_fov) {
+			setup->fov = override_fov;
+		}
+	}
+	draw::fov = setup->fov;
+	SEGV_END;
+}
+
+#endif
+
 bool CanPacket_hook(void* _this) {
 	const CanPacket_t original = (CanPacket_t)hooks::netchannel.GetMethod(offsets::CanPacket());
 	SEGV_BEGIN;
@@ -91,20 +130,7 @@ CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
 		ch = (INetChannel*)g_IEngine->GetNetChannelInfo();//*(INetChannel**)((unsigned)g_IBaseClientState + offsets::m_NetChannel());
 		*(int*)((unsigned)ch + offsets::m_nOutSequenceNr()) = def->command_number - 1;
 	}
-	hacks::shared::lagexploit::GetUserCmd(def, sequence_number);
 	return def;
-}
-
-int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
-	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
-#if NOGUI != 1
-	SEGV_BEGIN;
-	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
-		return 0;
-	}
-	SEGV_END;
-#endif
-	return original(_this, eventcode, keynum, pszCurrentBinding);
 }
 
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0", "Log sent messages");
@@ -126,6 +152,9 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines", "Add
 // TODO name \\n = \n
 //static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages", "Use this if you want to use spam/killsay and still be able to chat normally (without having your msgs eaten by valve cooldown)");
 
+static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
+static CatVar crypt_chat(CV_SWITCH, "chat_crypto", "0", "Crypto chat", "Start message with !! and it will be only visible to cathook users");
+
 bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false, bool bVoice = false) {
 	static size_t say_idx, say_team_idx;
 	static int offset;
@@ -136,13 +165,23 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 	const SendNetMsg_t original = (SendNetMsg_t)hooks::netchannel.GetMethod(offsets::SendNetMsg());
 	SEGV_BEGIN;
 	// net_StringCmd
-	if (msg.GetType() == 4 && (newlines_msg)) {
+	if (msg.GetType() == 4 && (newlines_msg || crypt_chat)) {
 		std::string str(msg.ToString());
 		say_idx = str.find("net_StringCmd: \"say \"");
 		say_team_idx = str.find("net_StringCmd: \"say_team \"");
 		if (!say_idx || !say_team_idx) {
 			offset = say_idx ? 26 : 21;
-			if (newlines_msg) {
+			bool crpt = false;
+			if (crypt_chat) {
+				std::string msg(str.substr(offset));
+				msg = msg.substr(0, msg.length() - 2);
+				if (msg.find("!!") == 0) {
+					msg = ucccccp::encrypt(msg.substr(2));
+					str = str.substr(0, offset) + msg + "\"\"";
+					crpt = true;
+				}
+			}
+			if (!crpt && newlines_msg) {
 				// TODO move out? update in a value change callback?
 				newlines = std::string((int)newlines_msg, '\n');
 				str.insert(offset, newlines);
@@ -152,6 +191,20 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 				stringcmd.m_szCommand = str.c_str();
 				return original(_this, stringcmd, bForceReliable, bVoice);
 			//}
+		}
+	}
+	static ConVar* sv_player_usercommand_timeout = g_ICvar->FindVar("sv_player_usercommand_timeout");
+	static float lastcmd = 0.0f;
+	if (lastcmd > g_GlobalVars->absoluteframetime) {
+		lastcmd = g_GlobalVars->absoluteframetime;
+	}
+	if (airstuck.KeyDown() && !g_Settings.bInvalid) {
+		if (CE_GOOD(LOCAL_E)) {
+			if (lastcmd + sv_player_usercommand_timeout->GetFloat() - 0.1f < g_GlobalVars->curtime) {
+				if (msg.GetType() == clc_Move) return false;
+			} else {
+				lastcmd = g_GlobalVars->absoluteframetime;
+			}
 		}
 	}
 	if (log_sent && msg.GetType() != 3 && msg.GetType() != 9) {
@@ -172,14 +225,16 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 	return false;
 }
 
-CatVar disconnect_reason(CV_STRING, "disconnect_reason", "", "Disconnect reason", "A custom disconnect reason");
-
 void Shutdown_hook(void* _this, const char* reason) {
 	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
 	const Shutdown_t original = (Shutdown_t)hooks::netchannel.GetMethod(offsets::Shutdown());
+	logging::Info("Disconnect: %s", reason);
+#if IPC_ENABLED
+	ipc::UpdateServerAddress(true);
+#endif
 	SEGV_BEGIN;
 	if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) && strstr(reason, "user")) {
-		original(_this, disconnect_reason.GetString());
+		original(_this, disconnect_reason_newlined);
 	} else {
 		original(_this, reason);
 	}
@@ -188,15 +243,128 @@ void Shutdown_hook(void* _this, const char* reason) {
 
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
+CatEnum namesteal_enum({ "OFF", "PASSIVE", "ACTIVE" });
+CatVar namesteal(namesteal_enum, "name_stealer", "0", "Name Stealer", "Attemt to steal your teammates names. Usefull for avoiding kicks\nPassive only changes when the name stolen is no longer the best name to use\nActive Attemps to change the name whenever possible");
+
+static std::string stolen_name;
+
+// Func to get a new entity to steal name from
+bool StolenName(){
+
+	// Array to store potential namestealer targets with a bookkeeper to tell how full it is
+	int potential_targets[32];
+	int potential_targets_length = 0;
+	
+	// Go through entities looking for potential targets
+	for (int i = 1; i < HIGHEST_ENTITY; i++) {
+		CachedEntity* ent = ENTITY(i);
+		
+		// Check if ent is a good target
+		if (!ent) continue;
+		if (ent == LOCAL_E) continue;
+		if (!ent->m_Type == ENTITY_PLAYER) continue;
+		if (ent->m_bEnemy) continue;
+		
+		// Check if name is current one
+		player_info_s info;
+		if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info)) {
+					
+			// If our name is the same as current, than change it
+			if (std::string(info.name) == stolen_name) {
+				// Since we found the ent we stole our name from and it is still good, if user settings are passive, then we return true and dont alter our name
+				if ((int)namesteal == 1) {
+					return true;
+				// Otherwise we continue to change our name to something else
+				} else continue;
+			}
+			
+		// a ent without a name is no ent we need, contine for a different one
+		} else continue;
+				
+		// Save the ent to our array
+		potential_targets[potential_targets_length] = i;
+		potential_targets_length++;
+		
+		// With our maximum amount of players reached, dont search for anymore
+		if (potential_targets_length >= 32) break;
+	}
+	
+	// Checks to prevent crashes
+	if (potential_targets_length == 0) return false;
+	
+	// Get random number that we can use with our array
+	int target_random_num = floor(RandFloatRange(0, potential_targets_length - 0.1F));
+	
+	// Get a idx from our random array position
+	int new_target = potential_targets[target_random_num];
+	
+	// Grab username of user
+	player_info_s info;
+	if (g_IEngine->GetPlayerInfo(new_target, &info)) {
+				
+		// If our name is the same as current, than change it and return true
+		stolen_name = std::string(info.name);
+		return true;
+	}
+	
+	// Didnt get playerinfo
+	return false;											
+}
+
+static CatVar ipc_name(CV_STRING, "name_ipc", "", "IPC Name");
+
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	static const GetFriendPersonaName_t original = (GetFriendPersonaName_t)hooks::steamfriends.GetMethod(offsets::GetFriendPersonaName());
-	if ((force_name.convar->m_StringLength > 2) && steamID == g_ISteamUser->GetSteamID()) {
-		return force_name.GetString();
+  
+#if IPC_ENABLED
+	if (ipc::peer) {
+		static std::string namestr(ipc_name.GetString());
+		namestr.assign(ipc_name.GetString());
+		if (namestr.length() > 3) {
+			ReplaceString(namestr, "%%", std::to_string(ipc::peer->client_id));
+			return namestr.c_str();
+		}
+	}
+#endif
+
+	// Check User settings if namesteal is allowed
+	if (namesteal && steamID == g_ISteamUser->GetSteamID()) {
+		
+		// We dont want to steal names while not in-game as there are no targets to steal from
+		if (g_IEngine->IsInGame()) {
+
+			// Check if we have a username to steal, func automaticly steals a name in it. 
+			if (StolenName()) {
+				
+				// Return the name that has changed from the func above
+				return format(stolen_name, "\x0F").c_str();
+			}
+		}
+	}
+	
+	if ((strlen(force_name.GetString()) > 1) && steamID == g_ISteamUser->GetSteamID()) {
+
+		return force_name_newlined;
 	}
 	return original(_this, steamID);
 }
 
 static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1", "Cursor fix");
+
+void FireGameEvent_hook(void* _this, IGameEvent* event) {
+	static const FireGameEvent_t original = (FireGameEvent_t)hooks::clientmode4.GetMethod(offsets::FireGameEvent());
+	const char* name = event->GetName();
+	if (name) {
+		if (event_log) {
+			if (!strcmp(name, "player_connect_client") ||
+				!strcmp(name, "player_disconnect") ||
+				!strcmp(name, "player_team")) {
+				return;
+			}
+		}
+	}
+	original(_this, event);
+}
 
 void FrameStageNotify_hook(void* _this, int stage) {
 	static IClientEntity *ent;
@@ -206,10 +374,15 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
-	// TODO hack FSN hook
+#ifndef TEXTMODE
 	{
 		PROF_SECTION(FSN_skinchanger);
 		hacks::tf2::skinchanger::FrameStageNotify(stage);
+	}
+#endif
+	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
+		angles::Update();
+		hacks::shared::anticheat::CreateMove();
 	}
 	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		PROF_SECTION(FSN_resolver);
@@ -226,8 +399,44 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
+	if (stage == FRAME_START) {
+#if IPC_ENABLED
+		static Timer nametimer {};
+		if (nametimer.test_and_set(1000 * 10)) {
+			if (ipc::peer) {
+				ipc::StoreClientData();
+			}
+		}
+		static Timer ipc_timer {};
+		if (ipc_timer.test_and_set(1000)) {
+			if (ipc::peer) {
+				ipc::Heartbeat();
+				ipc::UpdateTemporaryData();
+			}
+		}
+#endif
+		hacks::shared::autojoin::UpdateSearch();
+		if (!hack::command_stack().empty()) {
+			PROF_SECTION(PT_command_stack);
+			std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
+			while (!hack::command_stack().empty()) {
+				logging::Info("executing %s", hack::command_stack().top().c_str());
+				g_IEngine->ClientCmd_Unrestricted(hack::command_stack().top().c_str());
+				hack::command_stack().pop();
+			}
+		}
+#if defined(TEXTMODE) and defined(TEXTMODE_STDIN)
+		static auto last_stdin = std::chrono::system_clock::from_time_t(0);
+		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_stdin).count();
+		if (ms > 500) {
+			UpdateInput();
+			last_stdin = std::chrono::system_clock::now();
+		}
+#endif
+	}
+#ifndef TEXTMODE
 	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
-#if NOGUI != 1
+#if ENABLE_GUI
 		if (cursor_fix_experimental) {
 			if (gui_visible) {
 				g_ISurface->SetCursorAlwaysVisible(true);
@@ -239,9 +448,6 @@ void FrameStageNotify_hook(void* _this, int stage) {
 		IF_GAME(IsTF()) {
 			if (CE_GOOD(LOCAL_E) && no_zoom) RemoveCondition<TFCond_Zoomed>(LOCAL_E);
 		}
-		IF_GAME(IsTF2()) {
-			GlowFrameStageNotify(stage);
-		}
 		if (force_thirdperson && !g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->entity)) {
 			CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
 		}
@@ -252,26 +458,8 @@ void FrameStageNotify_hook(void* _this, int stage) {
 			}
 		}
 	}
+#endif /* TEXTMODE */
 	SAFE_CALL(original(_this, stage));
-	SEGV_END;
-}
-
-CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
-CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
-
-void OverrideView_hook(void* _this, CViewSetup* setup) {
-	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
-	static bool zoomed;
-	SEGV_BEGIN;
-	original(_this, setup);
-	if (!cathook) return;
-	if (g_pLocalPlayer->bZoomed && override_fov_zoomed) {
-		setup->fov = override_fov_zoomed;
-	} else {
-		if (override_fov) {
-			setup->fov = override_fov;
-		}
-	}
 	SEGV_END;
 }
 
@@ -284,24 +472,35 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 
 	static const DispatchUserMessage_t original = (DispatchUserMessage_t)hooks::client.GetMethod(offsets::DispatchUserMessage());
 	SEGV_BEGIN;
-	if (clean_chat) {
-		if (type == 4) {
-			loop_index = 0;
-			s = buf.GetNumBytesLeft();
-			if (s < 256) {
-				data = (char*)alloca(s);
-				for (i = 0; i < s; i++)
-					data[i] = buf.ReadByte();
-				j = 0;
-				for (i = 0; i < 3; i++) {
-					while ((c = data[j++]) && (loop_index < 128)) {
-						loop_index++;
+	if (type == 4) {
+		loop_index = 0;
+		s = buf.GetNumBytesLeft();
+		if (s < 256) {
+			data = (char*)alloca(s);
+			for (i = 0; i < s; i++)
+				data[i] = buf.ReadByte();
+			j = 0;
+			std::string name;
+			std::string message;
+			for (i = 0; i < 3; i++) {
+				while ((c = data[j++]) && (loop_index < 128)) {
+					loop_index++;
+					if (clean_chat)
 						if ((c == '\n' || c == '\r') && (i == 1 || i == 2)) data[j - 1] = '*';
+					if (i == 1) name.push_back(c);
+					if (i == 2) message.push_back(c);
+				}
+			}
+			if (crypt_chat) {
+				if (message.find("!!") == 0) {
+					if (ucccccp::validate(message)) {
+						PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), ucccccp::decrypt(message).c_str());
 					}
 				}
-				buf = bf_read(data, s);
-				buf.Seek(0);
 			}
+			chatlog::LogMessage(data[0], message);
+			buf = bf_read(data, s);
+			buf.Seek(0);
 		}
 	}
 	if (dispatch_log) {
@@ -318,8 +517,9 @@ void LevelInit_hook(void* _this, const char* newmap) {
 	g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
-	hacks::shared::spam::Reset();
+	hacks::shared::anticheat::ResetEverything();
 	original(_this, newmap);
+	hacks::shared::walkbot::OnLevelInit();
 }
 
 void LevelShutdown_hook(void* _this) {
@@ -329,7 +529,7 @@ void LevelShutdown_hook(void* _this) {
 	g_Settings.bInvalid = true;
 	hacks::shared::aimbot::Reset();
 	chat_stack::Reset();
-	hacks::shared::spam::Reset();
+	hacks::shared::anticheat::ResetEverything();
 	original(_this);
 }
 

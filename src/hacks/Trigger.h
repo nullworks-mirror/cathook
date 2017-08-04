@@ -8,26 +8,21 @@
 #ifndef HTRIGGER_H_
 #define HTRIGGER_H_
 
-#include "IHack.h"
+#include "../common.h"
 
 class CatVar;
 
 namespace hacks { namespace shared { namespace triggerbot {
 
-extern CatVar enabled;
-extern CatVar respect_cloak; // TODO move to Targeting
-extern CatVar zoomed_only;
-extern CatVar hitbox;
-extern CatVar allow_bodyshot;
-extern CatVar finishing_hit;
-extern CatVar max_range;
-extern CatVar buildings;
-extern CatVar ignore_vaccinator;
-extern CatVar ambassador;
-extern CatVar accuracy;
-
 void CreateMove();
+bool ShouldShoot();
+bool IsTargetStateGood(CachedEntity* entity);
+CachedEntity* FindEntInSight(float range);
+bool HeadPreferable(CachedEntity* target);
+bool UpdateAimkey();
+float EffectiveTargetingRange();
 void Draw();
+bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector& Hit);
 
 }}}
 

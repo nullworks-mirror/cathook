@@ -13,27 +13,36 @@
 #include <fstream>
 #include "aftercheaders.h"
 
-#include <pwd.h>
 #include <stdio.h>
 
-TextFile::TextFile() : lines {} {};
+TextFile::TextFile()
+	: lines {} {}
+
+bool TextFile::TryLoad(std::string name) {
+	if (name.length() == 0) return false;
+	std::string filename = format("cathook/", name);
+	std::ifstream file(filename, std::ios::in);
+	if (!file) {
+		return false;
+	}
+	lines.clear();
+	for (std::string line; std::getline(file, line);) {
+		if (*line.rbegin() == '\r') line.erase(line.length() - 1, 1);
+		lines.push_back(line);
+	}
+	return true;
+}
 
 void TextFile::Load(std::string name) {
-	uid_t uid = geteuid();
-	passwd* pw = getpwuid(uid);
-	if (!pw) {
-		logging::Info("can't get the username!");
-		return;
-	}
-	std::string test_format = format(123);
-	std::string filename = format("/home/", pw->pw_name, "/.cathook/", name);
+	std::string filename = format("cathook/", name);
 	std::ifstream file(filename, std::ios::in);
 	if (file.bad()) {
-		logging::Info("Could not open the file: %s", filename);
+		logging::Info("Could not open the file: %s", filename.c_str());
 		return;
 	}
 	lines.clear();
 	for (std::string line; std::getline(file, line);) {
+		if (*line.rbegin() == '\r') line.erase(line.length() - 1, 1);
 		lines.push_back(line);
 	}
 }

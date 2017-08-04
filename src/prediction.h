@@ -18,8 +18,15 @@ Vector SimpleLatencyPrediction(CachedEntity* ent, int hb);
 bool PerformProjectilePrediction(CachedEntity* target, int hitbox);
 
 Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravitymod, float entgmod);
+Vector ProjectilePrediction_Engine(CachedEntity* ent, int hb, float speed, float gravitymod, float entgmod /* ignored */);
 
 float PlayerGravityMod(CachedEntity* player);
+
+Vector EnginePrediction(CachedEntity* player, float time);
+void Prediction_CreateMove();
+#ifndef TEXTMODE
+void Prediction_PaintTraverse();
+#endif
 
 float DistanceToGround(CachedEntity* ent);
 float DistanceToGround(Vector origin);

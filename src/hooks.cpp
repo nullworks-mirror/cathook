@@ -41,6 +41,7 @@ void VMTHook::Set(ptr_t inst, uint32_t offset) {
 	vtable_ptr = &GetVMT(inst, offset);
 	vtable_original = *vtable_ptr;
 	int mc = CountMethods(vtable_original);
+	logging::Info("Hooking vtable 0x%08x with %d methods", vtable_original ,mc);
 	vtable_hooked = static_cast<method_table_t>(calloc(mc + 3, sizeof(ptr_t)));
 	memcpy(&vtable_hooked[2], vtable_original, sizeof(ptr_t) * mc);
 	vtable_hooked[0] = this;
@@ -65,6 +66,7 @@ void* VMTHook::GetMethod(uint32_t idx) const {
 }
 
 void VMTHook::HookMethod(ptr_t func, uint32_t idx) {
+	logging::Info("Hooking method %d of vtable 0x%08x, replacing 0x%08x", idx, vtable_original, GetMethod(idx));
 	vtable_hooked[2 + idx] = func;
 }
 
@@ -84,5 +86,7 @@ VMTHook clientdll {};
 VMTHook matsurface {};
 VMTHook studiorender {};
 VMTHook modelrender {};
+VMTHook clientmode4 {};
+VMTHook materialsystem {};
 
 }

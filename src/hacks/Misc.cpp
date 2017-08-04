@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <pwd.h>
 #include <fcntl.h>
 
 #include "../beforecheaders.h"
@@ -133,6 +132,19 @@ int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene,
 
 float last_bucket = 0;
 
+static CatCommand test_chat_print("debug_print_chat", "machine broke", [](const CCommand& args) {
+	CHudBaseChat* chat = (CHudBaseChat*)g_CHUD->FindElement("CHudChat");
+	if (chat) {
+		std::unique_ptr<char> str(strfmt("\x07%06X[CAT]\x01 %s", 0x4D7942, args.ArgS()));
+		chat->Printf(str.get());
+	} else {
+		logging::Info("Chat is null!");
+	}
+});
+
+
+static CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide", "Allows free movement while taunting with movable taunts\nOnly works in tf2\nWIP");
+	
 void CreateMove() {
 	static bool flswitch = false;
 	static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
@@ -143,6 +155,41 @@ void CreateMove() {
 	static bool changed = false;
 	static ConVar *pNoPush = g_ICvar->FindVar("tf_avoidteammates_pushaway");
 
+	//Tauntslide needs improvement for movement but it mostly works
+	IF_GAME (IsTF2()) {
+		//Only work if the catvar enables it
+		if (tauntslide_tf2) {
+			//Check to prevent crashing
+			if (CE_GOOD(LOCAL_E)) {
+				//If the local player is taunting
+				if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
+					float forward = 0;
+					float side = 0;
+					
+					//get directions
+					if (g_pUserCmd->buttons & IN_FORWARD) forward += 450;
+					if (g_pUserCmd->buttons & IN_BACK) forward -= 450;
+					if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
+					if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
+					
+					//Push them to userCmd
+					g_pUserCmd->forwardmove = forward;
+					g_pUserCmd->sidemove = side;
+					
+					//Grab Camera angle
+					static QAngle cameraAngle;
+					g_IEngine->GetViewAngles(cameraAngle);
+					
+					//Set userAngle = camera angles
+					g_pUserCmd->viewangles.y = cameraAngle[1];
+					g_pLocalPlayer->v_OrigViewangles.y = cameraAngle[1];
+					
+					//Use silent since we dont want to prevent the player from looking around
+					g_pLocalPlayer->bUseSilentAngles = true;
+				}
+			}
+		}
+	}
 
 	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
 		RemoveCondition<TFCond_Taunting>(LOCAL_E);
@@ -187,7 +234,7 @@ void CreateMove() {
 	static IClientEntity* last_checked_weapon = nullptr;
 
 	IF_GAME (IsTF2()) {
-		if (crit_hack_next && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
+		if (crit_hack_next && CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
 			PROF_SECTION(CM_misc_crit_hack_prediction);
 			weapon = RAW_ENT(LOCAL_W);
 			// IsBaseCombatWeapon
@@ -204,10 +251,6 @@ void CreateMove() {
 					}
 				}*/
 				if (g_pUserCmd->command_number && (last_checked_weapon != weapon || last_checked_command_number < g_pUserCmd->command_number)) {
-					if (!g_PredictionRandomSeed) {
-						uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
-						g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
-					}
 					tries = 0;
 					cmdn = g_pUserCmd->command_number;
 					chc = false;
@@ -276,10 +319,29 @@ void CreateMove() {
 		if (flswitch && !g_pUserCmd->impulse) g_pUserCmd->impulse = 100;
 		flswitch = !flswitch;
 	}
+	
+	static float afkTimeIdle = 0;
+	// Check if user settings allow anti-afk
 	if (anti_afk) {
-		g_pUserCmd->sidemove = RandFloatRange(-450.0, 450.0);
-		g_pUserCmd->forwardmove  = RandFloatRange(-450.0, 450.0);
-		g_pUserCmd->buttons = rand();
+		
+		// If the timer exceeds 1 minute, jump and reset the timer
+		if (g_GlobalVars->curtime - 60 > afkTimeIdle) {
+		
+			// Send random commands
+			g_pUserCmd->sidemove = RandFloatRange(-450.0, 450.0);
+			g_pUserCmd->forwardmove  = RandFloatRange(-450.0, 450.0);
+			g_pUserCmd->buttons = rand();
+			
+			// After 1 second we reset the idletime
+			if (g_GlobalVars->curtime - 61 > afkTimeIdle) {
+				logging::Info("Finish anti-idle");
+				afkTimeIdle = g_GlobalVars->curtime;
+			}
+		} else {
+			// If the player uses a button, reset the timer
+			if (g_pUserCmd->buttons & IN_FORWARD || g_pUserCmd->buttons & IN_BACK || g_pUserCmd->buttons & IN_MOVELEFT || g_pUserCmd->buttons & IN_MOVERIGHT || g_pUserCmd->buttons & IN_JUMP || !LOCAL_E->m_bAlivePlayer)
+				afkTimeIdle = g_GlobalVars->curtime;
+		}
 	}
 	
     IF_GAME (IsTF2()) {
@@ -287,7 +349,9 @@ void CreateMove() {
     }
 }
 
-void Draw() {
+#ifndef TEXTMODE
+
+void DrawText() {
 	if (crit_info && CE_GOOD(LOCAL_W)) {
 		if (CritKeyDown() || experimental_crit_hack.KeyDown()) {
 			AddCenterString("FORCED CRITS!", colors::red);
@@ -316,6 +380,15 @@ void Draw() {
 			AddSideString(format("Taunt Concept: ", CE_INT(LOCAL_E, netvar.m_iTauntConcept)));
 			AddSideString(format("Taunt Index: ", CE_INT(LOCAL_E, netvar.m_iTauntIndex)));
 			AddSideString(format("Sequence: ", CE_INT(LOCAL_E, netvar.m_nSequence)));
+			AddSideString(format("Velocity: ", LOCAL_E->m_vecVelocity.x, ' ', LOCAL_E->m_vecVelocity.y, ' ', LOCAL_E->m_vecVelocity.z));
+			AddSideString(format("Velocity3: ", LOCAL_E->m_vecVelocity.Length()));
+			AddSideString(format("Velocity2: ", LOCAL_E->m_vecVelocity.Length2D()));
+			AddSideString("NetVar Velocity");
+			Vector vel = CE_VECTOR(LOCAL_E, netvar.vVelocity);
+			AddSideString(format("Velocity: ", vel.x, ' ', vel.y, ' ', vel.z));
+			AddSideString(format("Velocity3: ", vel.Length()));
+			AddSideString(format("Velocity2: ", vel.Length2D()));
+			AddSideString(format("flSimTime: ", LOCAL_E->var<float>(netvar.m_flSimulationTime)));
 			if (g_pUserCmd) AddSideString(format("command_number: ", last_cmd_number));
 			/*AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
 			//AddSideString(colors::white, "flNextPrimaryAttack: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));
@@ -362,7 +435,11 @@ void Draw() {
 		}
 }
 
+#endif
+
 void Schema_Reload() {
+	logging::Info("Custom schema loading is not supported right now.");
+	/*
 	static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 4C 0F B6 7D 14 C7 04 ? ? ? ? 01 8B 5D 18 8B 75 0C 89 5C 24 04 E8 ? ? ? ? 89 F8 C7 45 C8 00 00 00 00 8D 7D C8 84 C0 8B 45 10 C7 45 CC");
 	typedef void(*InitSchema_t)(void*, void*, CUtlBuffer& buffer, bool byte, unsigned version);
 	static InitSchema_t InitSchema = (InitSchema_t)InitSchema_s;
@@ -371,7 +448,7 @@ void Schema_Reload() {
 	static GetItemSchema_t GetItemSchema = (GetItemSchema_t)GetItemSchema_s;//(*(uintptr_t*)GetItemSchema_s + GetItemSchema_s + 4);
 
 	logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-	void* itemschema = (GetItemSchema() + 4);
+	void* itemschema = (void*)((unsigned)GetItemSchema() + 4);
 	void* data;
 	passwd* pwd = getpwuid(getuid());
 	char* user = pwd->pw_name;
@@ -388,6 +465,7 @@ void Schema_Reload() {
 	CUtlBuffer buf(&buffer, 4 * 1000 * 1000, 9);
 	logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
 	InitSchema(0, itemschema, buf, false, 0xDEADCA7);
+	*/
 }
 
 CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info", "Shows some debug info in-game");
@@ -417,27 +495,6 @@ CatCommand name("name_set", "Immediate name change", [](const CCommand& args) {
 		setname.SetReliable(false);
 		ch->SendNetMsg(setname, false);
 	}
-});
-CatCommand save_settings("save", "Save settings (optional filename)", [](const CCommand& args) {
-	std::string filename("lastcfg");
-	if (args.ArgC() > 1) {
-		filename = std::string(args.Arg(1));
-	}
-	std::string path = format(g_pszTFPath, "cfg/cat_", filename, ".cfg");
-	logging::Info("Saving settings to %s", path.c_str());
-	std::ofstream file(path, std::ios::out);
-	if (file.bad()) {
-		logging::Info("Couldn't open the file!");
-		return;
-	}
-	for (auto i : g_ConVars) {
-		if (i) {
-			if (strcmp(i->GetString(), i->GetDefault())) {
-				file << i->GetName() << " \"" << i->GetString() << "\"\n";
-			}
-		}
-	}
-	file.close();
 });
 CatCommand say_lines("say_lines", "Say with newlines (\\n)", [](const CCommand& args) {
 	std::string message(args.ArgS());

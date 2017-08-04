@@ -10,9 +10,18 @@
 
 #include "enums.h"
 #include "itemtypes.h"
+#include "interfaces.h"
+#include "entityhitboxcache.hpp"
 #include "fixsdk.h"
+
+#include "beforecheaders.h"
+#include "averager.hpp"
+#include "aftercheaders.h"
+
 #include <mathlib/vector.h>
 #include <mathlib/mathlib.h>
+#include <icliententity.h>
+#include <icliententitylist.h>
 #include <cdll_int.h>
 
 struct matrix3x4_t;
@@ -29,7 +38,7 @@ struct mstudiobbox_t;
 #define PROXY_ENTITY true
 
 #if PROXY_ENTITY == true
-#define RAW_ENT(ce) ((ce) ? (ce)->InternalEntity() : nullptr)
+#define RAW_ENT(ce) ce->InternalEntity()
 #else
 #define RAW_ENT(ce) ce->m_pEntity
 #endif
@@ -42,7 +51,7 @@ struct mstudiobbox_t;
 #define CE_BYTE(entity, offset) CE_VAR(entity, offset, unsigned char)
 #define CE_VECTOR(entity, offset) CE_VAR(entity, offset, Vector)
 
-#define CE_GOOD(entity) (!g_Settings.bInvalid && dynamic_cast<CachedEntity*>(entity) && entity->m_iClassID && RAW_ENT(entity) && !RAW_ENT(entity)->IsDormant())
+#define CE_GOOD(entity) (entity && !g_Settings.bInvalid && entity->Good())
 #define CE_BAD(entity) (!CE_GOOD(entity))
 
 #define IDX_GOOD(idx) (idx >= 0 && idx <= HIGHEST_ENTITY && idx < MAX_ENTITIES)
@@ -51,58 +60,41 @@ struct mstudiobbox_t;
 #define HIGHEST_ENTITY (entity_cache::max)
 #define ENTITY(idx) (&entity_cache::Get(idx))
 
-struct CachedHitbox {
-	Vector min;
-	Vector max;
-	Vector center;
-	mstudiobbox_t* bbox;
-};
-
-#define CACHE_MAX_HITBOXES 64
-
-class EntityHitboxCache {
-public:
-	EntityHitboxCache(CachedEntity* parent);
-	~EntityHitboxCache();
-
-	CachedHitbox* GetHitbox(int id);
-	void Update();
-	void InvalidateCache();
-	bool VisibilityCheck(int id);
-	void Init();
-	int GetNumHitboxes();
-	void Reset();
-
-	bool m_VisCheckValidationFlags[CACHE_MAX_HITBOXES] { false };
-	bool m_VisCheck[CACHE_MAX_HITBOXES] { false };
-	bool m_CacheValidationFlags[CACHE_MAX_HITBOXES] { false };
-	CachedHitbox m_CacheInternal[CACHE_MAX_HITBOXES] {};
-
-	int m_nNumHitboxes;
-	bool m_bModelSet;
-	bool m_bInit;
-	bool m_bSuccess;
-
-	mstudiohitboxset_t* m_pHitboxSet;
-	model_t* m_pLastModel;
-	CachedEntity* parent_ref; // TODO FIXME turn this into an actual reference
-};
-
 class CachedEntity {
 public:
 	CachedEntity();
 	~CachedEntity();
 
-	void Update();
+	__attribute__((hot)) void Update();
 	bool IsVisible();
-	matrix3x4_t* GetBones();
-	IClientEntity* InternalEntity();
 	void Reset();
+	__attribute__((always_inline, hot, const)) IClientEntity* InternalEntity() const {
+		return g_IEntityList->GetClientEntity(m_IDX);
+	}
+	__attribute__((always_inline, hot, const)) inline bool Good() const {
+		if (!m_iClassID) return false;
+		IClientEntity* const entity = InternalEntity();
+		return entity && !entity->IsDormant();
+	}
+	template<typename T>
+	__attribute__((always_inline, hot, const)) inline T& var(uintptr_t offset) const {
+		return *reinterpret_cast<T*>(uintptr_t(RAW_ENT(this)) + offset);
+	}
+
+	const int m_IDX;
+
+	int m_iClassID { 0 };
+
+	Vector m_vecOrigin { 0 };
+	int  m_iTeam { 0 };
+	bool m_bAlivePlayer { false };
+	bool m_bEnemy { false };
+	int m_iMaxHealth { 0 };
+	int m_iHealth { 0 };
 
 	// Entity fields start here
 	EntityType m_Type { ENTITY_GENERIC };
 
-	int m_iClassID { 0 };
 	float m_flDistance { 0.0f };
 
 	bool m_bCritProjectile { false };
@@ -111,33 +103,19 @@ public:
 	bool m_bAnyHitboxVisible { false };
 	bool m_bVisCheckComplete { false };
 
-	Vector m_vecOrigin { 0 };
-
 	k_EItemType m_ItemType { ITEM_NONE };
-	int  m_iTeam { 0 };
-	bool m_bAlivePlayer { false };
-	bool m_bEnemy { false };
-	int m_iMaxHealth { 0 };
-	int m_iHealth { 0 };
 
 	unsigned long m_lSeenTicks { 0 };
 	unsigned long m_lLastSeen { 0 };
-
-	player_info_s player_info {};
-	matrix3x4_t m_Bones[128]; // MAXSTUDIOBONES
-	bool m_bBonesSetup { false };
-
-	// Players, Buildings, Stickies
-
-
-	// Entity fields end here.
-
-	const int m_IDX;
 	Vector m_vecVOrigin { 0 };
 	Vector m_vecVelocity { 0 };
 	Vector m_vecAcceleration { 0 };
 	float m_fLastUpdate { 0.0f };
-	EntityHitboxCache hitboxes;
+	hitbox_cache::EntityHitboxCache& hitboxes;
+	player_info_s player_info {};
+	Averager<float> velocity_averager { 8 };
+	bool was_dormant { true };
+	bool velocity_is_valid { false };
 #if PROXY_ENTITY != true
 	IClientEntity* m_pEntity { nullptr };
 #endif

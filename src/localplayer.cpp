@@ -20,6 +20,7 @@ void LocalPlayer::Update() {
 	holding_sniper_rifle = false;
 	wep = weapon();
 	if (CE_GOOD(wep)) {
+		weapon_mode = GetWeaponMode();
 		if (wep->m_iClassID == CL_CLASS(CTFSniperRifle) || wep->m_iClassID == CL_CLASS(CTFSniperRifleDecap)) holding_sniper_rifle = true;
 	}
 	team = CE_INT(entity, netvar.iTeamNum);

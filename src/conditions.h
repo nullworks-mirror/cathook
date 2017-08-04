@@ -22,7 +22,7 @@ struct condition_data_s {
 	uint32_t cond_3;
 };
 
-enum condition {
+enum condition : unsigned {
 	TFCond_Slowed = 0,
 	TFCond_Zoomed,
 	TFCond_Disguising,
@@ -157,16 +157,16 @@ constexpr condition_data_s CreateConditionMask(ConditionList... conds) {
 			c3 = 0;
 	for (const auto& cond : { conds... }) {
 		if (cond >= 32 * 3) {
-			c3 |= (1 << (cond % 32));
+			c3 |= (1u << (cond % 32));
 		}
 		if (cond >= 32 * 2) {
-			c2 |= (1 << (cond % 32));
+			c2 |= (1u << (cond % 32));
 		}
 		if (cond >= 32 * 1) {
-			c1 |= (1 << (cond % 32));
+			c1 |= (1u << (cond % 32));
 		}
 		else {
-			c0 |= (1 << (cond));
+			c0 |= (1u << (cond));
 		}
 	}
 	return condition_data_s { c0, c1, c2, c3 };
@@ -194,15 +194,18 @@ constexpr condition_data_s KCritBoostMask = CreateConditionMask(
 template<condition cond>
 inline bool CondBitCheck(condition_data_s& data) {
 	if (cond >= 32 * 3) {
-		return data.cond_3 & (1 << (cond % 32));
+		return data.cond_3 & (1u << (cond % 32));
 	}
 	if (cond >= 32 * 2) {
-		return data.cond_2 & (1 << (cond % 32));
+		return data.cond_2 & (1u << (cond % 32));
 	}
 	if (cond >= 32 * 1) {
-		return data.cond_1 & (1 << (cond % 32));
+		return data.cond_1 & (1u << (cond % 32));
 	}
-	return data.cond_0 & (1 << (cond));
+	if (cond < 32) {
+		return data.cond_0 & (1u << (cond));
+	}
+	return false;
 }
 
 // I haven't figured out how to pass a struct as a parameter, sorry.
@@ -238,13 +241,13 @@ inline void CondBitSet(condition_data_s& data) {
 		}
 	} else {
 		if (cond > 32 * 3) {
-			data.cond_3 &= ~(1 << (cond % 32));
+			data.cond_3 &= ~(1u << (cond % 32));
 		} else	if (cond > 32 * 2) {
-			data.cond_2 &= ~(1 << (cond % 32));
+			data.cond_2 &= ~(1u << (cond % 32));
 		} else if (cond > 32 * 1) {
-			data.cond_1 &= ~(1 << (cond % 32));
+			data.cond_1 &= ~(1u << (cond % 32));
 		} else {
-			data.cond_0 &= ~(1 << (cond));
+			data.cond_0 &= ~(1u << (cond));
 		}
 	}
 }
@@ -252,7 +255,7 @@ inline void CondBitSet(condition_data_s& data) {
 template<condition cond>
 inline bool HasCondition(CachedEntity* ent) {
 	IF_GAME (!IsTF()) return false;
-	IF_GAME (IsTF2()) {
+	IF_GAME (IsTF2() && cond < condition(96)) {
 		if (CondBitCheck<cond>(CE_VAR(ent, netvar._condition_bits, condition_data_s))) return true;
 	}
 	return CondBitCheck<cond>(CE_VAR(ent, netvar.iCond, condition_data_s));

@@ -8,24 +8,30 @@
 #include "Spam.h"
 #include "../common.h"
 #include "../sdk.h"
-#include <pwd.h>
 
 namespace hacks { namespace shared { namespace spam {
 static CatEnum spam_enum({"DISABLED", "CUSTOM", "DEFAULT", "LENNYFACES", "BLANKS", "NULLCORE", "LMAOBOX", "LITHIUM"});
 CatVar spam_source(spam_enum, "spam", "0", "Chat Spam", "Defines source of spam lines. CUSTOM spam file must be set in cat_spam_file and loaded with cat_spam_reload (Use console!)");
 CatVar random_order(CV_SWITCH, "spam_random", "0", "Random Order");
-CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file (~/.cathook/...)", "Spam file name. Each line should be no longer than 100 characters, file must be located in ~/.cathook folder");
-CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam", "Spam changes the tournament name");
+CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file", "Spam file name. Each line should be no longer than 100 characters, file must be located in cathook data folder");
 CatCommand reload("spam_reload", "Reload spam file", Reload);
+CatVar spam_delay(CV_INT, "spam_delay", "800", "Spam delay", "Delay between spam messages (in ms)", 0.0f, 8000.0f);
 
-bool teamname_swap = false;
+static CatEnum voicecommand_enum({"DISABLED", "RANDOM", "MEDIC", "THANKS", "NICE SHOT", "CHEERS", "JEERS"});
+CatVar voicecommand_spam(voicecommand_enum, "spam_voicecommand", "0", "Voice Command Spam", "Spams tf voice commands");
+	
+CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam", "Spam changes the tournament name");
+
+
+std::chrono::time_point<std::chrono::system_clock> last_spam_point {};
+
 int current_index { 0 };
-float last_spam { 0.0f };
-
 TextFile file {};
 
 const std::string teams[] = { "RED", "BLU" };
 
+
+	
 // FUCK enum class.
 // It doesn't have bitwise operators by default!! WTF!! static_cast<int>(REEE)!
 
@@ -139,6 +145,12 @@ int QueryPlayer(Query query) {
 	return index_result;
 }
 
+void Init() {
+	filename.InstallChangeCallback([](IConVar* var, const char* pszOV, float flOV) {
+		file.TryLoad(std::string(filename.GetString()));
+	});
+}
+
 bool SubstituteQueries(std::string& input) {
 	size_t index = input.find("%query:");
 	while (index != std::string::npos) {
@@ -168,21 +180,54 @@ bool FormatSpamMessage(std::string& message) {
 }
 
 void CreateMove() {
-	if (teamname_spam) {
-		if (teamname_swap) {
-			teamname_swap = false;
-			g_IEngine->ServerCmd("tournament_teamname Cat");	
-		} else {
-			teamname_swap = true;
-			g_IEngine->ServerCmd("tournament_teamname Hook");	
-		}		
+	
+	IF_GAME (IsTF2()) {
+		// Spam changes the tournament name in casual and compeditive gamemodes
+		if (teamname_spam) {
+			static bool teamname_swap = false;
+			if (teamname_swap) {
+				teamname_swap = false;
+				g_IEngine->ServerCmd("tournament_teamname Cat");	
+			} else {
+				teamname_swap = true;
+				g_IEngine->ServerCmd("tournament_teamname Hook");	
+			}		
+		}
+		
+		if (voicecommand_spam) {
+			static float last_voice_spam = 0.0f;
+			if (g_GlobalVars->curtime - 4.0F > last_voice_spam) { 
+				switch ((int)voicecommand_spam) {
+				case 1: // RANDOM
+					g_IEngine->ServerCmd(format("voicemenu ", floor(RandFloatRange(0, 2.9)), " ", floor(RandFloatRange(0, 8.9))).c_str());	
+					break;
+				case 2: // MEDIC
+					g_IEngine->ServerCmd("voicemenu 0 0");	
+					break;
+				case 3: // THANKS
+					g_IEngine->ServerCmd("voicemenu 0 1");	
+					break;
+				case 4: // NICE SHOT
+					g_IEngine->ServerCmd("voicemenu 2 6");	
+					break;
+				case 5: // CHEERS
+					g_IEngine->ServerCmd("voicemenu 2 2");		
+					break;
+				case 6: // JEERS
+					g_IEngine->ServerCmd("voicemenu 2 3");	
+				}
+				last_voice_spam = g_GlobalVars->curtime;
+			}
+		}
 	}
+	
 	if (!spam_source) return;
 	static int safety_ticks = 0;
-	static int last_spam = 0;
-	if ((int)spam_source != last_spam) {
+	static int last_source = 0;
+	static float last_message = 0;
+	if ((int)spam_source != last_source) {
 		safety_ticks = 300;
-		last_spam = (int)spam_source;
+		last_source = (int)spam_source;
 	}
 	if (safety_ticks > 0) {
 		safety_ticks--;
@@ -190,7 +235,7 @@ void CreateMove() {
 	} else {
 		safety_ticks = 0;
 	}
-	if (last_spam > g_GlobalVars->curtime) last_spam = 0.0f;
+
 	const std::vector<std::string>* source = nullptr;
 	switch ((int)spam_source) {
 	case 1:
@@ -211,7 +256,7 @@ void CreateMove() {
 		return;
 	}
 	if (!source || !source->size()) return;
-	if (g_GlobalVars->curtime - last_spam > 0.8f) {
+	if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_spam_point).count() > int(spam_delay)) {
 		if (chat_stack::stack.empty()) {
 			if (current_index >= source->size()) current_index = 0;
 			if (random_order) current_index = rand() % source->size();
@@ -220,12 +265,8 @@ void CreateMove() {
 				chat_stack::Say(spamString);
 			current_index++;
 		}
+		last_spam_point = std::chrono::system_clock::now();
 	}
-
-}
-
-void Reset() {
-	last_spam = 0.0f;
 }
 
 void Reload() {

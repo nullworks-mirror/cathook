@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "CritIndicator.hpp"
+/*#include "CritIndicator.hpp"
 #include "../../common.h"
 
 namespace menu { namespace ncc {
@@ -72,5 +72,5 @@ void CritIndicator::Update() {
 	}
 }
 
-}}
+}}*/
 

@@ -8,7 +8,7 @@
 #ifndef BACKGROUND_HPP_
 #define BACKGROUND_HPP_
 
-#include "Menu.hpp"
+/*#include "Menu.hpp"
 
 extern unsigned char _binary_snowflake_start;
 extern unsigned char _binary_flame_start;
@@ -52,6 +52,6 @@ public:
 	Particle* list_tail { nullptr };
 };
 
-}}
+}}*/
 
 #endif /* BACKGROUND_HPP_ */

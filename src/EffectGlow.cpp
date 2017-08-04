@@ -34,7 +34,8 @@ static CatVar ammobox(CV_SWITCH, "glow_ammo", "0", "Ammoboxes", "Render glow on 
 static CatVar buildings(CV_SWITCH, "glow_buildings", "0", "Buildings", "Render glow on buildings");
 static CatVar stickies(CV_SWITCH, "glow_stickies", "0", "Stickies", "Render glow on stickybombs");
 static CatVar teammate_buildings(CV_SWITCH, "glow_teammate_buildings", "0", "Teammate Buildings", "Render glow on teammates buildings");
-//static CatVar weapons_white(CV_SWITCH, "glow_weapons_white", "1", "White Weapon Glow", "Weapons will glow white");
+static CatVar powerups(CV_SWITCH, "glow_powerups", "1", "Powerups");
+static CatVar weapons_white(CV_SWITCH, "glow_weapons_white", "1", "White Weapon Glow", "Weapons will glow white");
 
 struct ShaderStencilState_t
 {
@@ -182,7 +183,7 @@ void EffectGlow::Init() {
 	init = true;
 }
 
-int  EffectGlow::GlowColor(IClientEntity* entity) {
+rgba_t EffectGlow::GlowColor(IClientEntity* entity) {
 	static CachedEntity *ent;
 	static IClientEntity *owner;
 
@@ -241,15 +242,13 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity* entity) {
 		}
 		break;
 	case ENTITY_GENERIC:
-		switch (ent->m_ItemType) {
-		case ITEM_HEALTH_LARGE:
-		case ITEM_HEALTH_MEDIUM:
-		case ITEM_HEALTH_SMALL:
+		const auto& type = ent->m_ItemType;
+		if (type >= ITEM_HEALTH_SMALL && type <= ITEM_HEALTH_LARGE) {
 			return medkits;
-		case ITEM_AMMO_LARGE:
-		case ITEM_AMMO_MEDIUM:
-		case ITEM_AMMO_SMALL:
+		} else if (type >= ITEM_AMMO_SMALL && type <= ITEM_AMMO_SMALL) {
 			return ammobox;
+		} else if (type >= ITEM_POWERUP_FIRST && type <= ITEM_POWERUP_LAST) {
+			return powerups;
 		}
 		break;
 	}
@@ -333,26 +332,23 @@ void EffectGlow::DrawEntity(IClientEntity* entity) {
 	attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
 	while (attach && passes++ < 32) {
 		if (attach->ShouldDraw()) {
-			attach->DrawModel(1);
+			if (weapons_white && entity->GetClientClass()->m_ClassID == RCC_PLAYER && vfunc<bool(*)(IClientEntity*)>(attach, 190, 0)(attach)) {
+				rgba_t mod_original;
+				g_IVRenderView->GetColorModulation(mod_original.rgba);
+				g_IVRenderView->SetColorModulation(colors::white);
+				attach->DrawModel(1);
+				g_IVRenderView->SetColorModulation(mod_original.rgba);
+			}
+			else
+				attach->DrawModel(1);
 		}
 		attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)attach + netvar.m_Collision - 20) & 0xFFF);
 	}
 }
 
 void EffectGlow::RenderGlow(IClientEntity* entity) {
-	static unsigned char _r, _g, _b;
-	static int color;
-	static float color_1[3];
-
 	CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-	color = GlowColor(entity);
-	_b = (color >> 16) & 0xFF;
-	_g = (color >> 8)  & 0xFF;
-	_r = (color) & 0xFF;
-	color_1[0] = (float)_r / 255.0f;
-	color_1[1] = (float)_g / 255.0f;
-	color_1[2] = (float)_b / 255.0f;
-	g_IVRenderView->SetColorModulation(color_1);
+	g_IVRenderView->SetColorModulation(GlowColor(entity));
 	g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
 	DrawEntity(entity);
 }

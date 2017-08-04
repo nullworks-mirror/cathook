@@ -10,36 +10,45 @@
 
 #include "beforecheaders.h"
 #include <string>
+#include <vector>
 #include "aftercheaders.h"
 
 struct link_map;
 typedef void *(*fn_CreateInterface_t)(const char*, int*);
 
-const char* path_from_proc_maps(const std::string& path);
-const char* tf_path_from_maps();
-
 namespace sharedobj {
+
+bool LocateSharedObject(std::string& name, std::string& out_full_path);
 
 class SharedObject {
 public:
-	SharedObject(const std::string& name, bool factory);
-	int* Pointer(int offset);
-	void* CreateInterface(const std::string& name);
-	fn_CreateInterface_t fptr;
-	const char* path;
-	link_map* lmap;
+	SharedObject(const char* _file, bool _factory);
+	void Load();
+	char* Pointer(uintptr_t offset) const;
+	void* CreateInterface(const std::string& interface);
+public:
+	std::string file;
+	std::string path;
+	bool factory { false };
+	bool constructed { false };
+
+	fn_CreateInterface_t fptr { nullptr };
+	link_map* lmap { nullptr };
 };
 
-extern SharedObject* steamclient;
-extern SharedObject* client;
-extern SharedObject* engine;
-extern SharedObject* vguimatsurface;
-extern SharedObject* vgui2;
-extern SharedObject* vstdlib;
-extern SharedObject* tier0;
-extern SharedObject* inputsystem;
-extern SharedObject* studiorender;
-extern SharedObject* materialsystem;
+SharedObject& steamclient();
+SharedObject& client();
+SharedObject& engine();
+SharedObject& vstdlib();
+SharedObject& tier0();
+SharedObject& inputsystem();
+SharedObject& materialsystem();
+#ifndef TEXTMODE
+SharedObject& vguimatsurface();
+SharedObject& vgui2();
+SharedObject& studiorender();
+SharedObject& libsdl();
+#endif
 
 void LoadAllSharedObjects();
 

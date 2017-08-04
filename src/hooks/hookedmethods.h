@@ -36,8 +36,24 @@ bool ProcessGetCvarValue_hook(CBaseClientState* _this, SVC_GetCvarValue* msg);
 typedef const char*(*GetFriendPersonaName_t)(ISteamFriends*, CSteamID);
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID);
 
+typedef void(*FireGameEvent_t)(void* _this, IGameEvent* event);
+void FireGameEvent_hook(void* _this, IGameEvent* event);
+
 CUserCmd* GetUserCmd_hook(IInput*, int);
 void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix);
+
+/* SDL HOOKS */
+union SDL_Event;
+class SDL_Window;
+
+typedef int(*SDL_PollEvent_t)(SDL_Event* event);
+typedef void(*SDL_GL_SwapWindow_t)(SDL_Window* window);
+
+int SDL_PollEvent_hook(SDL_Event* event);
+void SDL_GL_SwapWindow_hook(SDL_Window* window);
+
+void DoSDLHooking();
+void DoSDLUnhooking();
 
 #include "CreateMove.h"
 #include "PaintTraverse.h"

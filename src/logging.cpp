@@ -7,6 +7,7 @@
 
 #include <stdarg.h>
 #include <string.h>
+
 #include <pwd.h>
 
 #include "common.h"
@@ -15,9 +16,9 @@
 FILE* logging::handle = 0;
 
 void logging::Initialize() {
+	// FIXME other method of naming the file?
 	passwd* pwd = getpwuid(getuid());
-	char* user = pwd->pw_name;
-	logging::handle = fopen(strfmt("/tmp/cathook-%s.log", user), "w");
+	logging::handle = fopen(strfmt("/tmp/cathook-%s.log", pwd->pw_name), "w");
 }
 
 void logging::Info(const char* fmt, ...) {
@@ -28,14 +29,24 @@ void logging::Info(const char* fmt, ...) {
 	vsprintf(buffer, fmt, list);
 	va_end(list);
 	size_t length = strlen(buffer);
-	char* result = new char[length + 9];
-	sprintf(result, "[CAT] %s\n", buffer);
+	char* result = new char[length + 24];
+	time_t current_time;
+	struct tm * time_info = nullptr;
+	char timeString[10];
+	time(&current_time);
+	time_info = localtime(&current_time);
+	strftime(timeString, sizeof(timeString), "%H:%M:%S", time_info);
+	sprintf(result, "%% [%s] %s\n", timeString, buffer);
 	fprintf(logging::handle, "%s", result);
 	fflush(logging::handle);
+#ifndef TEXTMODE
 	if (g_ICvar) {
 		if (console_logging.convar_parent && console_logging)
 			g_ICvar->ConsolePrintf("%s", result);
 	}
+#else
+	printf("%s", result);
+#endif
 	delete [] buffer;
 	delete [] result;
 }

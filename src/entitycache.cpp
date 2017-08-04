@@ -13,8 +13,8 @@
 
 // This method of const'ing the index is weird.
 CachedEntity::CachedEntity() :
-	m_IDX(((unsigned)this - (unsigned)&entity_cache::array) / sizeof(CachedEntity)),
-	hitboxes(this) {
+	m_IDX(int(((unsigned)this - (unsigned)&entity_cache::array) / sizeof(CachedEntity))),
+	hitboxes(hitbox_cache::Get(unsigned(m_IDX))) {
 #if PROXY_ENTITY != true
 	m_pEntity = nullptr;
 #endif
@@ -39,59 +39,85 @@ void CachedEntity::Reset() {
 	m_lLastSeen = 0;
 	m_lSeenTicks = 0;
 	memset(&player_info, 0, sizeof(player_info_s));
-	memset(&m_Bones, 0, sizeof(matrix3x4_t) * 128);
-	m_bBonesSetup = false;
 	m_vecAcceleration.Zero();
 	m_vecVOrigin.Zero();
 	m_vecVelocity.Zero();
 	m_fLastUpdate = 0;
-	hitboxes.Reset();
 }
 
 CachedEntity::~CachedEntity() {}
 
-IClientEntity* CachedEntity::InternalEntity() {
-	return g_IEntityList->GetClientEntity(m_IDX);
-}
+static CatVar ve_window(CV_FLOAT, "debug_ve_window", "0", "VE Window");
+static CatVar ve_smooth(CV_SWITCH, "debug_ve_smooth", "1", "VE Smoothing");
+static CatVar ve_averager_size(CV_INT, "debug_ve_averaging", "8", "VE Averaging");
 
 void CachedEntity::Update() {
 	SEGV_BEGIN
-	if (!RAW_ENT(this)) return;
+
+	auto raw = RAW_ENT(this);
+
+	if (!raw) return;
 #if PROXY_ENTITY != true
 	m_pEntity = g_IEntityList->GetClientEntity(idx);
 	if (!m_pEntity) {
 		return;
 	}
 #endif
-	m_iClassID = RAW_ENT(this)->GetClientClass()->m_ClassID;
-	//if (TF2 && EstimateAbsVelocity) EstimateAbsVelocity(m_pEntity, m_vecVelocity);
-	/*if ((gvars->realtime - m_fLastUpdate) >= 0.05f) {
-		//if (gvars->tickcount - m_nLastTick > 1) {
-			//logging::Info("Running %i ticks behind!", gvars->tickcount - m_nLastTick);
-		//}
-		//Vector velnew = (origin - m_vecVOrigin) * (0.05f / (m_fLastUpdate - gvars->realtime)) * 20;
-		Vector velnew;
-		if (EstimateAbsVelocity)
-			EstimateAbsVelocity(m_pEntity, velnew);
-		m_vecAcceleration = (velnew - m_vecVelocity);
-		m_vecVelocity = (m_vecVelocity + velnew) / 2;
-		//logging::Info("Multiplier for %i: %f", m_IDX, (0.1f / (m_fLastUpdate - gvars->realtime)));
+	bool dormant = raw->IsDormant();
+	bool dormant_state_changed = dormant != was_dormant;
+	was_dormant = dormant;
+	m_iClassID = raw->GetClientClass()->m_ClassID;
+	m_vecOrigin = raw->GetAbsOrigin();
+	/*float simtime = CE_FLOAT(this, netvar.m_flSimulationTime);
+	float deltat = (simtime - m_fLastUpdate);
+	if (ve_smooth) {
+		//
+		if (dormant_state_changed) {
+			velocity_averager.reset(0);
+			velocity_is_valid = false;
+		}
+		if (size_t(int(ve_averager_size)) != velocity_averager.size()) {
+			velocity_averager.resize(size_t(int(ve_averager_size)));
+			velocity_averager.reset(0);
+		}
+	}
+	if (!dormant && deltat > (float)ve_window) {
+		ICollideable* ca = RAW_ENT(this)->GetCollideable();
+		Vector origin = m_vecOrigin;
+		if (ca) {
+			origin = ca->GetCollisionOrigin();
+		}
+		Vector delta = origin - m_vecVOrigin;
+		Vector velnew = delta / deltat;
+		m_vecAcceleration = velnew - m_vecVelocity;
+		if (ve_smooth) {
+			if (velocity_is_valid) {
+				static Vector zero {0.0f, 0.0f, 0.0f};
+				float length = velnew.Length();
+				velocity_averager.push(length);
+				Vector normalized = (length ? (velnew / length) : zero);
+				m_vecVelocity = normalized * velocity_averager.average();
+				//m_vecVelocity = velocity_averager.average();
+			} else {
+				EstimateAbsVelocity(RAW_ENT(this), m_vecVelocity);
+				//velocity_averager.push(m_vecVelocity);
+				velocity_is_valid = true;
+			}
+		} else
+			m_vecVelocity = velnew;
 		m_vecVOrigin = origin;
-		m_fLastUpdate = gvars->realtime;
+		m_fLastUpdate = simtime;
 	}*/
-	m_vecOrigin = RAW_ENT(this)->GetAbsOrigin();
 
 	m_ItemType = ITEM_NONE;
 
 	m_lSeenTicks = 0;
 	m_lLastSeen = 0;
 
+	hitboxes.Update();
+
 	m_bGrenadeProjectile = false;
-	m_bBonesSetup = false;
-
 	m_bVisCheckComplete = false;
-
-	SAFE_CALL(hitboxes.Update());
 
 	if (m_iClassID == RCC_PLAYER) {
 		m_Type = EntityType::ENTITY_PLAYER;
@@ -139,23 +165,23 @@ void CachedEntity::Update() {
 
 	if (m_Type == EntityType::ENTITY_PROJECTILE) {
 		m_bCritProjectile = IsProjectileCrit(this);
-		m_iTeam = CE_INT(this, netvar.iTeamNum);
+		m_iTeam = NET_INT(raw, netvar.iTeamNum);
 		m_bEnemy = (m_iTeam != g_pLocalPlayer->team);
 	}
 
 	if (m_Type == EntityType::ENTITY_PLAYER) {
-		m_bAlivePlayer = !(NET_BYTE(RAW_ENT(this), netvar.iLifeState));
+		m_bAlivePlayer = !(NET_BYTE(raw, netvar.iLifeState));
 		g_IEngine->GetPlayerInfo(m_IDX, &player_info);
-		m_iTeam = CE_INT(this, netvar.iTeamNum); // TODO
+		m_iTeam = NET_INT(raw, netvar.iTeamNum); // TODO
 		m_bEnemy = (m_iTeam != g_pLocalPlayer->team);
-		m_iHealth = CE_INT(this, netvar.iHealth);
+		m_iHealth = NET_INT(raw, netvar.iHealth);
 		m_iMaxHealth = g_pPlayerResource->GetMaxHealth(this);
 	}
 	if (m_Type == EntityType::ENTITY_BUILDING) {
-		m_iTeam = CE_INT(this, netvar.iTeamNum); // TODO
+		m_iTeam = NET_INT(raw, netvar.iTeamNum); // TODO
 		m_bEnemy = (m_iTeam != g_pLocalPlayer->team);
-		m_iHealth = CE_INT(this, netvar.iBuildingHealth);
-		m_iMaxHealth = CE_INT(this, netvar.iBuildingMaxHealth);
+		m_iHealth = NET_INT(raw, netvar.iBuildingHealth);
+		m_iMaxHealth = NET_INT(raw, netvar.iBuildingMaxHealth);
 	}
 	SEGV_END_INFO("Updating entity");
 }
@@ -204,29 +230,6 @@ bool CachedEntity::IsVisible() {
 	m_bVisCheckComplete = true;
 
 	return false;
-}
-
-static CatEnum setupbones_time_enum({ "ZERO",  "CURTIME", "LP SERVERTIME", "SIMTIME" });
-static CatVar setupbones_time(setupbones_time_enum, "setupbones_time", "3", "Setupbones", "Defines setupbones 4th argument, change it if your aimbot misses, idk!!");
-
-matrix3x4_t* CachedEntity::GetBones() {
-	static float bones_setup_time = 0.0f;
-	switch ((int)setupbones_time) {
-	case 1:
-		bones_setup_time = g_GlobalVars->curtime;
-		break;
-	case 2:
-		if (CE_GOOD(LOCAL_E))
-			bones_setup_time = g_GlobalVars->interval_per_tick * CE_INT(LOCAL_E, netvar.nTickBase);
-		break;
-	case 3:
-		if (CE_GOOD(this))
-			bones_setup_time = CE_FLOAT(this, netvar.m_flSimulationTime);
-	}
-	if (!m_bBonesSetup) {
-		m_bBonesSetup = RAW_ENT(this)->SetupBones(m_Bones, MAXSTUDIOBONES, 0x100, bones_setup_time); // gvars->curtime
-	}
-	return m_Bones;
 }
 
 namespace entity_cache {

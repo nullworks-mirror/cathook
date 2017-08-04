@@ -8,9 +8,7 @@
 #ifndef HBUNNYHOP_H_
 #define HBUNNYHOP_H_
 
-#include "IHack.h"
-
-class ConVar;
+#include "../common.h"
 
 namespace hacks { namespace shared { namespace bunnyhop {
 

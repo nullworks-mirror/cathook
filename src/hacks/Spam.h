@@ -8,9 +8,7 @@
 #ifndef HACKS_SPAM_H_
 #define HACKS_SPAM_H_
 
-#include "IHack.h"
-
-#include "../textfile.h"
+#include "../common.h"
 
 class CatCommand;
 
@@ -23,12 +21,12 @@ extern const std::vector<std::string> builtin_nonecore;
 extern const std::vector<std::string> builtin_lmaobox;
 extern const std::vector<std::string> builtin_lithium;
 
-extern CatVar enabled;
+extern CatVar spam_source;
 extern CatVar filename;
 extern CatCommand reload;
 
+void Init();
 void CreateMove();
-void Reset();
 void Reload();
 
 }}}

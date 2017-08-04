@@ -49,8 +49,9 @@ bool weapon_can_crit_last = false;
 
 bool WeaponCanCrit() {
 	IF_GAME (!IsTF()) return false;
+	if (CE_BAD(LOCAL_W)) return false;
 	IClientEntity* weapon = RAW_ENT(LOCAL_W);
-	weapon_can_crit_last = CE_GOOD(LOCAL_W) && vfunc<bool(*)(IClientEntity*)>(weapon, 190, 0)(weapon) && vfunc<bool(*)(IClientEntity*)>(weapon, 465 + 21, 0)(weapon);
+	weapon_can_crit_last = vfunc<bool(*)(IClientEntity*)>(weapon, 190, 0)(weapon) && vfunc<bool(*)(IClientEntity*)>(weapon, 465 + 21, 0)(weapon);
 	return weapon_can_crit_last;
 }
 
@@ -114,12 +115,6 @@ bool IsAttackACrit(CUserCmd* cmd) {
 			}
 		} else if (TF2) */
 		{
-			if (!g_PredictionRandomSeed) {
-				uintptr_t sig = gSignatures.GetClientSignature("89 1C 24 D9 5D D4 FF 90 3C 01 00 00 89 C7 8B 06 89 34 24 C1 E7 08 FF 90 3C 01 00 00 09 C7 33 3D ? ? ? ? 39 BB 34 0B 00 00 74 0E 89 BB 34 0B 00 00 89 3C 24 E8 ? ? ? ? C7 44 24 04 0F 27 00 00");
-				logging::Info("Random Seed: 0x%08x", sig + 32);
-				logging::Info("Random Seed: 0x%08x", *(int**)(sig + 32));
-				g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)32);
-			}
 			if (vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
 				static uintptr_t CalcIsAttackCritical_s = gSignatures.GetClientSignature("55 89 E5 83 EC 28 89 5D F4 8B 5D 08 89 75 F8 89 7D FC 89 1C 24 E8 ? ? ? ? 85 C0 89 C6 74 60 8B 00 89 34 24 FF 90 E0 02 00 00 84 C0 74 51 A1 ? ? ? ? 8B 40 04");
 				typedef void(*CalcIsAttackCritical_t)(IClientEntity*);

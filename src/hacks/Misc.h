@@ -8,16 +8,14 @@
 #ifndef HACKS_MISC_H_
 #define HACKS_MISC_H_
 
-#include "IHack.h"
-
-class ConVar;
-class CatCommand;
-class IClientEntity;
+#include "../common.h"
 
 namespace hacks { namespace shared { namespace misc {
 
 void CreateMove();
-void Draw();
+#ifndef TEXTMODE
+void DrawText();
+#endif
 
 extern IClientEntity* found_crit_weapon;
 extern int found_crit_number;

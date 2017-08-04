@@ -8,7 +8,7 @@
 #ifndef HACKS_SPYALERT_H_
 #define HACKS_SPYALERT_H_
 
-#include "IHack.h"
+#include "../common.h"
 
 namespace hacks { namespace tf { namespace spyalert {
 

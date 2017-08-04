@@ -1,14 +1,14 @@
-const fs = require('fs');
+const fs = require("fs");
 
 var full_class_table = {};
 try {
-	full_class_table = JSON.parse(fs.readFileSync('full-class-table.json').toString());
+	full_class_table = JSON.parse(fs.readFileSync("full-class-table.json").toString());
 } catch (e) {}
 
-const file = fs.readFileSync(process.argv[2]).toString().split('\n');
+const file = fs.readFileSync(process.argv[2]).toString().split("\n");
 const modname = process.argv[3];
 
-console.log('Generating info for', modname, 'from', process.argv[2]);
+console.log("Generating info for", modname, "from", process.argv[2]);
 
 var classes = {};
 for (var i in file) {
@@ -19,7 +19,7 @@ for (var i in file) {
 	}
 }
 
-fs.writeFileSync('full-class-table.json', JSON.stringify(full_class_table));
+fs.writeFileSync("full-class-table.json", JSON.stringify(full_class_table));
 
 var header_constexpr = `/*
 	AUTO-GENERATED HEADER - DO NOT MODIFY
@@ -50,10 +50,10 @@ namespace client_classes {
 `;
 
 for (var clz in full_class_table) {
-	var value = '0';
+	var value = "0";
 	if (classes[clz]) value = classes[clz];
-	header_constexpr += '\t\tstatic constexpr int ' + clz + ' = ' + value + ';\n';
-	header += '\t\tint ' + clz + ' { ' + value + ' };\n';
+	header_constexpr += "\t\tstatic constexpr int " + clz + " = " + value + ";\n";
+	header += "\t\tint " + clz + " { " + value + " };\n";
 }
 
 header += `
@@ -70,8 +70,8 @@ header_constexpr += `
 
 #endif /* $mod_CONSTEXPR_AUTOGEN_HPP */`;
 
-fs.writeFileSync('src/classinfo/' + modname + '.gen.hpp', header.replace(/\$mod/g, modname));
-fs.writeFileSync('src/classinfo/' + modname + '_constexpr.gen.hpp', header_constexpr.replace(/\$mod/g, modname));
+fs.writeFileSync("src/classinfo/" + modname + ".gen.hpp", header.replace(/\$mod/g, modname));
+fs.writeFileSync("src/classinfo/" + modname + "_constexpr.gen.hpp", header_constexpr.replace(/\$mod/g, modname));
 
 
 console.log(classes);

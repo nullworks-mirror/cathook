@@ -22,7 +22,10 @@ static CatVar ammobox(CV_SWITCH, "chams_ammo", "0", "Ammoboxes", "Render chams o
 static CatVar buildings(CV_SWITCH, "chams_buildings", "0", "Buildings", "Render chams on buildings");
 static CatVar stickies(CV_SWITCH, "chams_stickies", "0", "Stickies", "Render chams on stickybombs");
 static CatVar teammate_buildings(CV_SWITCH, "chams_teammate_buildings", "0", "Teammate Buildings", "Render chams on teammates buildings");
-static CatVar weapons(CV_SWITCH, "chams_weapons", "1", "Weapons", "Render chams on players weapons");
+static CatVar recursive(CV_SWITCH, "chams_recursive", "1", "Recursive", "Render chams on weapons and cosmetics");
+static CatVar weapons_white(CV_SWITCH, "chams_weapons_white", "1", "White Weapons", "Should chams on weapons be white");
+static CatVar legit(CV_SWITCH, "chams_legit", "0", "Legit chams", "Don't show chams through walls");
+static CatVar singlepass(CV_SWITCH, "chams_singlepass", "0", "Single-pass", "Render chams only once (this disables 'darker' chams on invisible parts of player");
 
 void EffectChams::Init() {
 	logging::Info("Init EffectChams...");
@@ -68,7 +71,7 @@ void EffectChams::EndRenderChams() {
 	g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
 
-int  EffectChams::ChamsColor(IClientEntity* entity) {
+rgba_t EffectChams::ChamsColor(IClientEntity* entity) {
 	CachedEntity* ent = ENTITY(entity->entindex());
 	if (CE_BAD(ent)) return colors::white;
 	if (vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
@@ -80,15 +83,15 @@ int  EffectChams::ChamsColor(IClientEntity* entity) {
 	switch (ent->m_Type) {
 	case ENTITY_BUILDING:
 		if (!ent->m_bEnemy && !(teammates || teammate_buildings)) {
-			return 0;
+			return colors::empty;
 		}
 		if (health) {
 			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 		}
 		break;
 	case ENTITY_PLAYER:
-		if (!players) return 0;
-		if (!ent->m_bEnemy && !teammates) return 0;
+		if (!players) return colors::empty;
+		if (!ent->m_bEnemy && !teammates) return colors::empty;
 		if (health) {
 			return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 		}
@@ -102,12 +105,6 @@ bool EffectChams::ShouldRenderChams(IClientEntity* entity) {
 	if (entity->entindex() < 0) return false;
 	CachedEntity* ent = ENTITY(entity->entindex());
 	if (CE_BAD(ent)) return false;
-	if (weapons && vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
-		IClientEntity* owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
-		if (owner) {
-			return ShouldRenderChams(owner);
-		}
-	}
 	switch (ent->m_Type) {
 	case ENTITY_BUILDING:
 		if (!buildings) return false;
@@ -141,28 +138,58 @@ bool EffectChams::ShouldRenderChams(IClientEntity* entity) {
 	return false;
 }
 
+void EffectChams::RenderChamsRecursive(IClientEntity* entity) {
+	entity->DrawModel(1);
+
+	if (!recursive) return;
+
+	IClientEntity *attach;
+	int passes = 0;
+
+	attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
+	while (attach && passes++ < 32) {
+		if (attach->ShouldDraw()) {
+			if (entity->GetClientClass()->m_ClassID == RCC_PLAYER && vfunc<bool(*)(IClientEntity*)>(attach, 190, 0)(attach)) {
+				if (weapons_white) {
+					rgba_t mod_original;
+					g_IVRenderView->GetColorModulation(mod_original.rgba);
+					g_IVRenderView->SetColorModulation(colors::white);
+					attach->DrawModel(1);
+					g_IVRenderView->SetColorModulation(mod_original.rgba);
+				} else {
+					attach->DrawModel(1);
+				}
+			}
+			else
+				attach->DrawModel(1);
+		}
+		attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)attach + netvar.m_Collision - 20) & 0xFFF);
+	}
+}
+
 void EffectChams::RenderChams(int idx) {
 	CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
 	IClientEntity* entity = g_IEntityList->GetClientEntity(idx);
 	if (entity && !entity->IsDormant()) {
 		if (ShouldRenderChams(entity)) {
-			int color = ChamsColor(entity);
-			unsigned char _b = (color >> 16) & 0xFF;
-			unsigned char _g = (color >> 8)  & 0xFF;
-			unsigned char _r = (color) & 0xFF;
-			float color_1[] = { (float)_r / 255.0f, (float)_g / 255.0f, (float)_b / 255.0f };
-			float color_2[] = { color_1[0] * 0.6f, color_1[1] * 0.6f, color_1[2] * 0.6f };
-			mat_unlit_z->AlphaModulate(1.0f);
-			ptr->DepthRange(0.0f, 0.01f);
-			g_IVRenderView->SetColorModulation(color_1);
-			g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit_z : mat_lit_z);
-			entity->DrawModel(1);
-			//((DrawModelExecute_t)(hooks::hkIVModelRender->GetMethod(hooks::offDrawModelExecute)))(_this, state, info, matrix);
-			mat_unlit->AlphaModulate(1.0f);
-			g_IVRenderView->SetColorModulation(color_2);
-			ptr->DepthRange(0.0f, 1.0f);
-			g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit : mat_lit);
-			entity->DrawModel(1);
+			rgba_t color = ChamsColor(entity);
+			rgba_t color_2 = color * 0.6f;
+			if (!legit) {
+				mat_unlit_z->AlphaModulate(1.0f);
+				ptr->DepthRange(0.0f, 0.01f);
+				g_IVRenderView->SetColorModulation(color_2);
+				g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit_z : mat_lit_z);
+
+				RenderChamsRecursive(entity);
+			}
+
+			if (legit || !singlepass) {
+				mat_unlit->AlphaModulate(1.0f);
+				g_IVRenderView->SetColorModulation(color);
+				ptr->DepthRange(0.0f, 1.0f);
+				g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit : mat_lit);
+				RenderChamsRecursive(entity);
+			}
 		}
 	}
 }

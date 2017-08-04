@@ -8,10 +8,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include <pwd.h>
-
-
-#ifdef LINUX
+#if defined(LINUX) and not defined(NO_IPC)
 #define IPC_ENABLED 1
 #else
 #undef IPC_ENABLED
@@ -29,28 +26,57 @@
 #include <mutex>
 #include <atomic>
 #include <cmath>
+#include <memory>
 #include <iomanip>
 #include <list>
 #include <fstream>
 #include <set>
 #include <unordered_map>
 #include <algorithm>
+
+#include "timer.hpp"
+#include "averager.hpp"
+
 #include "aftercheaders.h"
+
+#include "macros.hpp"
+#include "colors.hpp"
+
+#ifndef TEXTMODE
+
+extern "C" {
+#include <vec234.h>
+}
+
+#include "ftrender.hpp"
+#include "drawing.h"
+#include "fidgetspinner.hpp"
+#include "drawgl.hpp"
+#include "EffectGlow.hpp"
+#include "atlas.hpp"
+#include "EffectChams.hpp"
+#include "drawmgr.hpp"
+
+#endif
+
 #include "profiler.h"
 #include "offsets.hpp"
-#include "drawing.h"
-#include "resource.hpp"
 #include "entitycache.h"
 #include "hoovy.hpp"
 #include "enums.h"
+#include "projlogging.hpp"
+#include "ucccccp_cmds.hpp"
+#include "velocity.hpp"
+#include "angles.hpp"
+#include "entityhitboxcache.hpp"
 #include "globals.h"
 #include "helpers.h"
 #include "playerlist.hpp"
 #include "interfaces.h"
-#include "EffectGlow.hpp"
 #include "localplayer.h"
 #include "conditions.h"
 #include "logging.h"
+#include "targethelper.h"
 #include "playerresource.h"
 #include "usercmd.h"
 #include "trace.h"
@@ -63,18 +89,18 @@
 #include "itemtypes.h"
 #include "chatstack.h"
 #include "textfile.h"
-#include "EffectChams.hpp"
 #include "ipc.h"
 #include "hooks/hookedmethods.h"
 #include "classinfo/classinfo.hpp"
 #include "crits.h"
+#include "textmode.hpp"
+#include "backpacktf.hpp"
 
-#if NOGUI != 1
+#if ENABLE_GUI
 #include "gui/GUI.h"
 #endif
 
 #include "hacks/hacklist.h"
-#include "glowobjects.h"
 
 #include "sdk.h"
 
@@ -88,7 +114,7 @@ constexpr T _clamp(T _min, T _max, T _val) {
 
 #include "gameinfo.hpp"
 
-#define SQR(x) x * x
+#define SQR(x) (x) * (x)
 
 #ifndef CATHOOK_BUILD_NUMBER
 #define CATHOOK_BUILD_NUMBER "LATEST"
@@ -109,11 +135,7 @@ constexpr T _clamp(T _min, T _max, T _val) {
 #define DEG2RAD(x) (float)(x) * (PI / 180.0f)
 #endif
 
-#if _DEVELOPER == true || __DRM_ENABLED == false
 #define DEBUG_SEGV false
-#else
-#define DEBUG_SEGV false
-#endif
 #define STR(c) #c
 
 #if DEBUG_SEGV == true

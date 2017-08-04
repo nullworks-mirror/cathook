@@ -8,8 +8,6 @@
 #ifndef HACKS_AUTOHEAL_H_
 #define HACKS_AUTOHEAL_H_
 
-#include "IHack.h"
-
 #include "../common.h"
 
 namespace hacks { namespace tf { namespace autoheal {
