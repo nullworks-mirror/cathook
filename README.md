@@ -13,6 +13,7 @@ cathook is a training software designed for Team Fortress 2 for Linux. cathook i
 * Encrypted chat
 * Emoji ESP
 * Fidget Spinner crosshair
+* Chance to get manually VAC banned by Valve
 
 and a lot of useful features, including
 
