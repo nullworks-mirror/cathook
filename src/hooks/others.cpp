@@ -225,10 +225,21 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 	return false;
 }
 
+static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
+
 void Shutdown_hook(void* _this, const char* reason) {
 	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
 	const Shutdown_t original = (Shutdown_t)hooks::netchannel.GetMethod(offsets::Shutdown());
 	logging::Info("Disconnect: %s", reason);
+	if (strstr(reason, "VAC banned")) {
+		if (die_if_vac) {
+			logging::Info("VAC banned");
+			*(int*)0 = 0;
+			exit(1);
+		}
+	} else if (strstr(reason, "VAC")) {
+		logging::Info("VAC error?");
+	}
 #if IPC_ENABLED
 	ipc::UpdateServerAddress(true);
 #endif

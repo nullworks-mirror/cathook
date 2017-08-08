@@ -156,6 +156,7 @@ powerup_type GetPowerupOnPlayer(CachedEntity* player) {
 
 // A function to tell if a player is using a specific weapon
 bool HasWeapon(CachedEntity* ent, int wantedId) {
+	if (CE_BAD(ent)) return false;
 	// Create a var to store the handle
 	int *hWeapons;
 	// Grab the handle and store it into the var
@@ -172,6 +173,7 @@ bool HasWeapon(CachedEntity* ent, int wantedId) {
 }
 
 bool HasDarwins(CachedEntity* ent) {
+	if (CE_BAD(ent)) return false;
 	// Check if player is sniper
 	if (CE_INT(ent, netvar.iClass) != tf_sniper) return false;
 	// Check if player is using darwins, 231 is the id for darwins danger sheild
