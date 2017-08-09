@@ -177,7 +177,8 @@ void DoWalking() {
 				if (CE_BAD(ent)) continue;
 				if (ent == LOCAL_E) continue;
 				if (!ent->m_bAlivePlayer) continue;
-
+				if (IsBot(ent)) continue;
+				
 				if (ent->m_bEnemy) continue;
 				if (g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin) > 3400.0F) continue;
 				// Check activation distance
@@ -406,15 +407,14 @@ void DoWalking() {
 			}
 		}
 		
-		/*	
 		//Check if target is crouching
-		if () {
+		if (CE_INT(found_entity, netvar.iFlags) & FL_DUCKING) {
 				
 			// Check if local player isnt taunting
 			if (!g_pUserCmd->buttons & IN_DUCK) {
 				g_pUserCmd->buttons |= IN_DUCK;
 			}
-		}*/
+		}
 	}
 }
 
