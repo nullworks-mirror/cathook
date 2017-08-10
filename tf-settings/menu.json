@@ -405,7 +405,6 @@
 		"name": "Miscellaneous",
 		"list": [
 			"events",
-			"chat_crypto",
 			"airstuck",
 			"instant_weapon_switch",
 			"name",
