@@ -42,7 +42,7 @@ sudo apt update && sudo apt install git libssl-dev:i386 libc6-dev:i386 gdb libsd
 
 Arch gcc6 & dependencies installation:
 ```bash
-sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 lib32-glew1.10 rsync --noconfirm && yes | sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
+sudo pacman -Syu && sudo pacman -S gdb gdb-common glew1.10 glew lib32-glew1.10 rsync --noconfirm && yes | sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz
 ```
 
 If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the list of what cathook requires:
