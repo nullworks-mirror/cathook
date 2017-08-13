@@ -173,9 +173,9 @@ void hack::Initialize() {
 			"menu.json", "fonts/opensans-bold.ttf"
 		};
 		for (const auto& s : essential) {
-			std::ifstream exists("cathook/" + s, std::ios::in);
+			std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
 			if (not exists) {
-				Error("Missing essential file: cathook/%s\nYou MUST run update-data script to finish installation", s.c_str());
+				Error("Missing essential file: " DATA_PATH "/%s\nYou MUST run update-data script to finish installation", s.c_str());
 			}
 		}
 	}

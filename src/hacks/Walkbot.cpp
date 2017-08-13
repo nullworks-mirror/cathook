@@ -225,13 +225,13 @@ void Save(std::string filename) {
 		return;
 	}
 	{
-		DIR* walkbot_dir = opendir("cathook/walkbot");
+		DIR* walkbot_dir = opendir(DATA_PATH "/walkbot");
 		if (!walkbot_dir) {
 			logging::Info("Walkbot directory doesn't exist, creating one!");
-			mkdir("cathook/walkbot", S_IRWXU | S_IRWXG);
+			mkdir(DATA_PATH "/walkbot", S_IRWXU | S_IRWXG);
 		} else closedir(walkbot_dir);
 	}
-	std::string path = format("cathook/walkbot/", GetLevelName());
+	std::string path = format(DATA_PATH "/walkbot/", GetLevelName());
 	{
 		DIR* level_dir = opendir(path.c_str());
 		if (!level_dir) {
@@ -267,13 +267,13 @@ void Save(std::string filename) {
 
 bool Load(std::string filename) {
 	{
-		DIR* walkbot_dir = opendir("cathook/walkbot");
+		DIR* walkbot_dir = opendir(DATA_PATH "/walkbot");
 		if (!walkbot_dir) {
 			logging::Info("Walkbot directory doesn't exist, creating one!");
-			mkdir("cathook/walkbot", S_IRWXU | S_IRWXG);
+			mkdir(DATA_PATH "/walkbot", S_IRWXU | S_IRWXG);
 		} else closedir(walkbot_dir);
 	}
-	std::string path = format("cathook/walkbot/", GetLevelName());
+	std::string path = format(DATA_PATH "/walkbot/", GetLevelName());
 	{
 		DIR* level_dir = opendir(path.c_str());
 		if (!level_dir) {

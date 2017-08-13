@@ -39,7 +39,7 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		logging::Info("Already connected!");
 		return;
 	}
-	peer = new peer_t("cathook_followbot_server", false, false);
+	peer = new peer_t(std::string(server_name.GetString()), false, false);
 	try {
 		peer->Connect();
 		logging::Info("peer count: %i", peer->memory->peer_count);
