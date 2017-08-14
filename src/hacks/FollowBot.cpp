@@ -523,7 +523,7 @@ bool IsBot(CachedEntity* entity) {
 	if (!ipc::peer) return false;
 	if (entity->m_Type == ENTITY_PLAYER) {
 		if (ipc::peer) {
-			for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+			for (unsigned i = 0; i < cat_ipc::max_peers; i++) {
 				if (!ipc::peer->memory->peer_data[i].free && ipc::peer->memory->peer_user_data[i].friendid == entity->player_info.friendsID) {
 					return true;
 				}
@@ -541,7 +541,7 @@ unsigned MakeMask() {
 	for (const auto& idx : selection) {
 		CachedEntity* ent = ENTITY(idx);
 		if (CE_BAD(ent)) continue;
-		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+		for (unsigned i = 0; i < cat_ipc::max_peers; i++) {
 			if (!ipc::peer->memory->peer_data[i].free && ipc::peer->memory->peer_user_data[i].friendid == ent->player_info.friendsID) {
 				result |= (1 << i);
 			}

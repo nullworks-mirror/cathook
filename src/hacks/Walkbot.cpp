@@ -939,7 +939,7 @@ void CheckLivingSpace() {
 		int count = 0;
 		unsigned highest = 0;
 		std::vector<unsigned> botlist {};
-		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+		for (unsigned i = 0; i < cat_ipc::max_peers; i++) {
 			if (!ipc::peer->memory->peer_data[i].free) {
 				for (auto& k : players) {
 					if (ipc::peer->memory->peer_user_data[i].friendid && k == ipc::peer->memory->peer_user_data[i].friendid) {

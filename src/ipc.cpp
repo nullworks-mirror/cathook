@@ -133,7 +133,7 @@ CatCommand debug_get_ingame_ipc("ipc_debug_dump_server", "Show other bots on ser
 	int count = 0;
 	unsigned highest = 0;
 	std::vector<unsigned> botlist {};
-	for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+	for (unsigned i = 1; 0 < cat_ipc::max_peers; i++) {
 		if (!ipc::peer->memory->peer_data[i].free) {
 			for (auto& k : players) {
 				if (ipc::peer->memory->peer_user_data[i].friendid && k == ipc::peer->memory->peer_user_data[i].friendid) {
@@ -205,7 +205,7 @@ void Heartbeat() {
 static CatVar ipc_update_list(CV_SWITCH, "ipc_update_list", "1", "IPC Auto-Ignore", "Automaticly assign playerstates for bots");
 void UpdatePlayerlist() {
 	if (peer && ipc_update_list) {
-		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+		for (unsigned i = 0; i < cat_ipc::max_peers; i++) {
 			if (!peer->memory->peer_data[i].free) {
 				playerlist::userdata& info = playerlist::AccessData(peer->memory->peer_user_data[i].friendid);
 				if (info.state == playerlist::k_EState::DEFAULT)

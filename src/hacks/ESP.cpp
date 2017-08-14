@@ -421,7 +421,7 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 			}
 #ifdef IPC_ENABLED
 			if (show_bot_id && ipc::peer && ent != LOCAL_E) {
-				for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+				for (unsigned i = 0; i < cat_ipc::max_peers; i++) {
 					if (!ipc::peer->memory->peer_data[i].free && ipc::peer->memory->peer_user_data[i].friendid == info.friendsID) {
 						AddEntityString(ent, format("BOT #", i));
 						break;
