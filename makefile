@@ -98,7 +98,7 @@ CXXFLAGS+=$(WARNING_FLAGS)
 endif
 
 ifeq ($(ENABLE_VISUALS),1)
-INCLUDES+=-isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2 -I$(SIPC_DIR)
+INCLUDES+=-isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2
 LDLIBS+=-lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -l:libfreetype.so
 CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(shell sdl2-config --cflags)
@@ -123,7 +123,8 @@ GIT_COMMIT_DATE=$(shell git log -1 --pretty="%ai")
 DEFINES+=GIT_COMMIT_HASH="\"$(GIT_COMMIT_HASH)\"" GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
 
 ifeq ($(ENABLE_IPC),1)
-SOURCES += $(shell find $(SIPC_DIR) -name "*.cpp" -print)
+SOURCES+=$(shell find $(SIPC_DIR) -name "*.cpp" -print)
+INCLUDES+=-I$(SIPC_DIR)
 endif
 
 CXXFLAGS+=$(addprefix -D,$(DEFINES))

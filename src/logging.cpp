@@ -44,8 +44,6 @@ void logging::Info(const char* fmt, ...) {
 		if (console_logging.convar_parent && console_logging)
 			g_ICvar->ConsolePrintf("%s", result);
 	}
-#else
-	printf("%s", result);
 #endif
 	delete [] buffer;
 	delete [] result;
