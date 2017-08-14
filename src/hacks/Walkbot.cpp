@@ -796,7 +796,7 @@ void RecordNode() {
 	state::active_node = node;
 }
 
-#ifndef TEXTMODE
+#if ENABLE_VISUALS == 1
 
 // Draws a single colored connection between 2 nodes
 void DrawConnection(index_t a, connection_s& b) {

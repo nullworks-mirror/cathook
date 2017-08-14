@@ -76,7 +76,7 @@ void AfterCreateMove() {
 		if (CE_BAD(entity)) {
 			selection.erase(it++);
 		} else {
-#ifndef TEXTMODE
+#if ENABLE_VISUALS == 1
 			hacks::shared::esp::AddEntityString(entity, "[SELECTED]", colors::orange);
 			if (fmod(g_GlobalVars->curtime, 2.0f) < 1.0f) {
 				hacks::shared::esp::SetEntityColor(entity, colors::yellow);
@@ -94,7 +94,7 @@ void AfterCreateMove() {
 		if (CE_BAD(entity)) {
 			selection_secondary.erase(it++);
 		} else {
-#ifndef TEXTMODE
+#if ENABLE_VISUALS == 1
 			hacks::shared::esp::AddEntityString(entity, "[SELECTED (SECONDARY)]", colors::orange);
 			if (fmod(g_GlobalVars->curtime, 2.0f) < 1.0f) {
 				hacks::shared::esp::SetEntityColor(entity, colors::yellow);
@@ -203,7 +203,7 @@ void DoWalking() {
 	int following_idx2 = 0;
 	if (CE_GOOD(found_entity)) {
 		following_idx2 = found_entity->m_IDX;
-#ifndef TEXTMODE
+#if ENABLE_VISUALS == 1
 		hacks::shared::esp::AddEntityString(found_entity, "[FOLLOWING]", colors::green);
 		hacks::shared::esp::SetEntityColor(found_entity, colors::green);
 #endif
@@ -695,7 +695,7 @@ void CrumbBottomAdd() {
         logging::Info("Crumb Over-Prune!\nDumping array");
     }
 }
-#ifndef TEXTMODE
+#if ENABLE_VISUALS == 1
 // Function called when we need to draw onto the screen
 void Draw() {
 	
