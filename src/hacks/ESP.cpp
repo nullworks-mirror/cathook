@@ -693,14 +693,18 @@ std::unordered_map<studiohdr_t*, bonelist_s> bonelist_map {};
  * According to profiler, this function is the most time-consuming (and gets called up to 200K times a second)
  */
 
-CatEnum emoji_esp({ "None", "Joy", "Thinking" });
-CatVar joy_esp(CV_SWITCH, "esp_emoji", "0", "Emoji ESP");
-CatVar joy_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
+CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
+CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP", "Draw emoji on peopels head");
+CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
 CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1", "Emoji ESP Scaling");
 CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size", "Minimum size for an emoji when you use auto scaling");
 textures::AtlasTexture joy_texture(64 * 4, textures::atlas_height - 64 * 4, 64, 64);
 textures::AtlasTexture thinking_texture(64 * 5, textures::atlas_height - 64 * 4, 64, 64);
+	
+	
+//CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
 
+	
 // Used when processing entitys with cached data from createmove
 void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	PROF_SECTION(PT_esp_process_entity);
@@ -758,25 +762,70 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	
 	// Emoji esp
 	if (ent->m_Type == ENTITY_PLAYER) {
-		if (joy_esp) {
+		if (emoji_esp) {
 			auto hb = ent->hitboxes.GetHitbox(0);
 			Vector hbm, hbx;
 			if (draw::WorldToScreen(hb->min, hbm) && draw::WorldToScreen(hb->max, hbx)) {
 				Vector head_scr;
 				if (draw::WorldToScreen(hb->center, head_scr)) {
-					float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y) : float(joy_esp_size);
+					float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y) : float(emoji_esp_size);
 					if (emoji_esp_scaling && (size < float(emoji_min_size))) {
 						size = float(emoji_min_size);
 					}
 					textures::AtlasTexture* tx = nullptr;
-					if (int(joy_esp) == 1) tx = &joy_texture;
-					if (int(joy_esp) == 2) tx = &thinking_texture;
+					if (int(emoji_esp) == 1) tx = &joy_texture;
+					if (int(emoji_esp) == 2) tx = &thinking_texture;
 					if (tx)
 						tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2, size, size);
 				}
 			}
 		}
 	}
+	
+	// TODO Add Rotation matix
+	// TODO Currently crashes, needs null check somewhere
+	// Draw Hitboxes
+	/*if (draw_hitbox && ent->m_Type == ENTITY_PLAYER) {
+		
+		// Loop through hitboxes
+		for (int i = 0; i <= 17; i++) { // I should probs get how many hitboxes instead of using a fixed number...
+			
+			// Get a hitbox from the entity
+			hitbox_cache::CachedHitbox* hb = ent->hitboxes.GetHitbox(i);
+			
+			// Create more points from min + max
+			Vector box_points[8];
+			Vector vec_tmp;
+			for (int ii = 0; ii <= 8; ii++) { // 8 points to the box
+				
+				// logic le paste from sdk
+				vec_tmp[0] = ( ii & 0x1 ) ? hb->max[0] : hb->min[0];
+				vec_tmp[1] = ( ii & 0x2 ) ? hb->max[1] : hb->min[1];
+				vec_tmp[2] = ( ii & 0x4 ) ? hb->max[2] : hb->min[2];
+				
+				// save to points array
+				box_points[ii] = vec_tmp;
+			}
+			
+			// Draw box from points
+			// Draws a point to every other point. Ineffient, use now fix later...
+			Vector scn1, scn2; // to screen
+			for (int ii = 0; ii < 8; ii++) { 
+				
+				// Get first point
+				if (!draw::WorldToScreen(box_points[ii], scn1)) continue;
+				
+				for (int iii = 0; iii < 8; iii++) {
+					
+					// Get second point
+					if (!draw::WorldToScreen(box_points[iii], scn2)) continue;
+					
+					// Draw between points
+					drawgl::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg);
+				}
+			}
+		}
+	}*/
 
 	// Box esp
 	if (box_esp) {
@@ -796,7 +845,9 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 			break;
 		}
 	}
+	
 	// Draw strings ???
+	// TODO reverse this
 	bool origin_is_zero = !box_esp || ent_data.esp_origin.IsZero(1.0f);
 	if (origin_is_zero) ent_data.esp_origin = screen;
 	if (ent_data.string_count) {
