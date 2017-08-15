@@ -557,13 +557,14 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 	return (rspeed || rgrav);
 }
 
-// All devs were banned, did you expect to see any here?
-constexpr unsigned developer_list[] = { 0 };
+constexpr unsigned developer_list[] = { 306902159 };
 
 bool Developer(CachedEntity* ent) {
+	/*
 	for (int i = 0; i < sizeof(developer_list) / sizeof(unsigned); i++) {
 		if (developer_list[i] == ent->player_info.friendsID) return true;
 	}
+	*/
 	return false;
 }
 
