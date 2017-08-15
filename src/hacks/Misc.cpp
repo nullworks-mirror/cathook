@@ -144,7 +144,7 @@ static CatCommand test_chat_print("debug_print_chat", "machine broke", [](const 
 
 
 CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide", "Allows free movement while taunting with movable taunts\nOnly works in tf2");
-CatVar auto_balance_spam(CV_SWITCH, "equest_balance_spam", "0", "Inf Auto Balance Spam", "Use to send a autobalance request to the server that doesnt prevent you from using it again\nCredits to Blackfire");
+CatVar auto_balance_spam(CV_SWITCH, "request_balance_spam", "0", "Inf Auto Balance Spam", "Use to send a autobalance request to the server that doesnt prevent you from using it again\nCredits to Blackfire");
 	
 // Use to send a autobalance request to the server that doesnt prevent you from using it again
 // Allowing infinite use of it.
