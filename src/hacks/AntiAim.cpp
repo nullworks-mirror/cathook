@@ -161,15 +161,9 @@ void SetSafeSpace(int safespace) {
 bool ShouldAA(CUserCmd* cmd) {
 	if (!enabled) return false;
 	if (cmd->buttons & IN_USE) return false;
-	if (cmd->buttons & IN_ATTACK) {
-		IF_GAME (IsTF2()) {
-			if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow)) {
-				goto i_dont_know_how_to_break_if;
-			}
-		}
-		if (CanShoot()) return false;
+	if ((cmd->buttons & IN_ATTACK) && !(IsTF2() && g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow)) && CanShoot()) {
+		return false;
 	}
-	i_dont_know_how_to_break_if:
 	if ((cmd->buttons & IN_ATTACK2) && g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFLunchBox)) return false;
 	switch (GetWeaponMode()) {
 	case weapon_projectile:
