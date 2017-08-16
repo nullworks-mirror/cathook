@@ -150,7 +150,10 @@ void CreateInterfaces() {
 		g_ppScreenSpaceRegistrationHead = *(CScreenSpaceEffectRegistration***)(gSignatures.GetClientSignature("E8 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 28 85 C0 75 4B 8B 35 ? ? ? ? 85 F6 74 31 90 8B 5E 04 85 DB 74 22 8B 03 89 1C 24") + 27);
 	}
 	logging::Info("Finding HUD");
-	{
+	IF_GAME (IsCSS()) {
+		logging::Info("FATAL: Signatures not defined for CSS - HUD");
+		g_CHUD = nullptr;
+	} else {
 		uintptr_t hud_sig = gSignatures.GetClientSignature("FF 50 08 D9 9D 24 FE FF FF 89 3C 24 E8 ? ? ? ? C7 44 24 04 ? ? ? ? C7 04 24 ? ? ? ? D9 9D 20 FE FF FF E8 ? ? ? ? 85 C0 74 3B 66 0F 6E C3 C7 44 24 10 00 00 00 00 F3 0F 5C 85 20 FE FF FF") + 28;
 		g_CHUD = *reinterpret_cast<CHud**>(hud_sig);
 		logging::Info("HUD 0x%08x 0x%08x", hud_sig, g_CHUD);
