@@ -269,8 +269,8 @@ bool Load(std::string filename) {
 	{
 		DIR* walkbot_dir = opendir(DATA_PATH "/walkbot");
 		if (!walkbot_dir) {
-			logging::Info("Walkbot directory doesn't exist, creating one!");
-			mkdir(DATA_PATH "/walkbot", S_IRWXU | S_IRWXG);
+			logging::Info("Walkbot directory doesn't exist!");
+			return false;
 		} else closedir(walkbot_dir);
 	}
 	std::string path = format(DATA_PATH "/walkbot/", GetLevelName());

@@ -67,6 +67,9 @@ struct user_data_s {
 	time_t ts_injected;
 	time_t ts_connected;
 	time_t ts_disconnected;
+	int shots;
+	int hits;
+	int headshots;
 };
 
 using peer_t = cat_ipc::Peer<server_data_s, user_data_s>;
