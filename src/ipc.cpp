@@ -39,7 +39,7 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		logging::Info("Already connected!");
 		return;
 	}
-	peer = new peer_t("cathook_followbot_server", false, false);
+	peer = new peer_t(std::string(server_name.GetString()), false, false);
 	try {
 		peer->Connect();
 		logging::Info("peer count: %i", peer->memory->peer_count);
@@ -52,7 +52,13 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 			hack::command_stack().push(std::string((const char*)payload));
 		});
 		hacks::shared::followbot::AddMessageHandlers(peer);
+		user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+		// Preserve total score
+		int o_total_score = data.total_score;
+		memset(&data, 0, sizeof(data));
+		data.total_score = o_total_score;
 		StoreClientData();
+		Heartbeat();
 		thread_running = true;
 		pthread_create(&listener_thread, nullptr, listen, nullptr);
 	} catch (std::exception& error) {
@@ -133,7 +139,7 @@ CatCommand debug_get_ingame_ipc("ipc_debug_dump_server", "Show other bots on ser
 	int count = 0;
 	unsigned highest = 0;
 	std::vector<unsigned> botlist {};
-	for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+	for (unsigned i = 1; 0 < cat_ipc::max_peers; i++) {
 		if (!ipc::peer->memory->peer_data[i].free) {
 			for (auto& k : players) {
 				if (ipc::peer->memory->peer_user_data[i].friendid && k == ipc::peer->memory->peer_user_data[i].friendid) {
@@ -183,6 +189,9 @@ void UpdateTemporaryData() {
 				data.last_score = data.score;
 			}
 			data.team = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
+			data.x = g_pLocalPlayer->v_Origin.x;
+			data.y = g_pLocalPlayer->v_Origin.y;
+			data.z = g_pLocalPlayer->v_Origin.z;
 		} else {
 			data.good = false;
 		}
@@ -193,6 +202,7 @@ void StoreClientData() {
 	UpdateServerAddress();
 	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
 	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
+	data.ts_injected = time_injected;
 	strncpy(data.name, GetFriendPersonaName_hook(g_ISteamFriends, g_ISteamUser->GetSteamID()), sizeof(data.name));
 }
 
@@ -205,7 +215,7 @@ void Heartbeat() {
 static CatVar ipc_update_list(CV_SWITCH, "ipc_update_list", "1", "IPC Auto-Ignore", "Automaticly assign playerstates for bots");
 void UpdatePlayerlist() {
 	if (peer && ipc_update_list) {
-		for (unsigned i = 1; i < cat_ipc::max_peers; i++) {
+		for (unsigned i = 0; i < cat_ipc::max_peers; i++) {
 			if (!peer->memory->peer_data[i].free) {
 				playerlist::userdata& info = playerlist::AccessData(peer->memory->peer_user_data[i].friendid);
 				if (info.state == playerlist::k_EState::DEFAULT)
