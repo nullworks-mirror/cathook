@@ -162,6 +162,7 @@ void hack::CC_Cat(const CCommand& args) {
 }
 
 void hack::Initialize() {
+	time_injected = time(nullptr);
 	// Essential files must always exist, except when the game is running in text mode.
 #if ENABLE_VISUALS == 1
 

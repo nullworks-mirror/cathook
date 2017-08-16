@@ -531,6 +531,11 @@ void LevelInit_hook(void* _this, const char* newmap) {
 	hacks::shared::anticheat::ResetEverything();
 	original(_this, newmap);
 	hacks::shared::walkbot::OnLevelInit();
+#if IPC_ENABLED
+	if (ipc::peer) {
+		ipc::peer->memory->peer_user_data[ipc::peer->client_id].ts_connected = time(nullptr);
+	}
+#endif
 }
 
 void LevelShutdown_hook(void* _this) {
@@ -542,5 +547,10 @@ void LevelShutdown_hook(void* _this) {
 	chat_stack::Reset();
 	hacks::shared::anticheat::ResetEverything();
 	original(_this);
+#if IPC_ENABLED
+	if (ipc::peer) {
+		ipc::peer->memory->peer_user_data[ipc::peer->client_id].ts_disconnected = time(nullptr);
+	}
+#endif
 }
 

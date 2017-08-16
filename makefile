@@ -22,7 +22,7 @@ ENABLE_IPC=1
 ENABLE_NULL_GRAPHICS=0
 TEXTMODE_STDIN=0
 TEXTMODE_VAC=0
-DATA_PATH="/opt/cathook-data"
+DATA_PATH="/opt/cathook/data"
 NO_LTO=0
 ifdef CLANG
 override NO_LTO=1
@@ -137,14 +137,18 @@ OBJECTS = $(patsubst %.c,%.o, $(patsubst %.cpp,%.o, $(SOURCES)))
 OBJECTS += $(shell find $(RES_DIR) -name "*.o" -print)
 DEPENDS = $(patsubst %.c,%.d, $(patsubst %.cpp,%.d, $(SOURCES)))
 
-.PHONY: clean directories echo
+.PHONY: clean directories echo data
 
 all:
 	mkdir -p $(OUT_DIR)
+	$(MAKE) data
 	$(MAKE) $(TARGET)
 	
 echo:
 	echo $(OBJECTS)
+	
+data:
+	./check-data "$(DATA_PATH)"
 
 # 3rd party source files, we don't need warnings there
 

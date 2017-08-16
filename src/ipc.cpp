@@ -52,7 +52,10 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 			hack::command_stack().push(std::string((const char*)payload));
 		});
 		hacks::shared::followbot::AddMessageHandlers(peer);
+		user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+		memset(&data, 0, sizeof(data));
 		StoreClientData();
+		Heartbeat();
 		thread_running = true;
 		pthread_create(&listener_thread, nullptr, listen, nullptr);
 	} catch (std::exception& error) {
@@ -183,6 +186,9 @@ void UpdateTemporaryData() {
 				data.last_score = data.score;
 			}
 			data.team = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
+			data.x = g_pLocalPlayer->v_Origin.x;
+			data.y = g_pLocalPlayer->v_Origin.y;
+			data.z = g_pLocalPlayer->v_Origin.z;
 		} else {
 			data.good = false;
 		}
@@ -193,6 +199,7 @@ void StoreClientData() {
 	UpdateServerAddress();
 	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
 	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
+	data.ts_injected = time_injected;
 	strncpy(data.name, GetFriendPersonaName_hook(g_ISteamFriends, g_ISteamUser->GetSteamID()), sizeof(data.name));
 }
 
