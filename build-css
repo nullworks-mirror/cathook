@@ -1,2 +1,1 @@
-make -j4 -e GAME=css NO_WARNINGS=1
-strip --strip-all bin/libcathook.so
+make -j4 GAME=css NO_WARNINGS=1
