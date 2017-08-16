@@ -53,7 +53,10 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		});
 		hacks::shared::followbot::AddMessageHandlers(peer);
 		user_data_s& data = peer->memory->peer_user_data[peer->client_id];
+		// Preserve total score
+		int o_total_score = data.total_score;
 		memset(&data, 0, sizeof(data));
+		data.total_score = o_total_score;
 		StoreClientData();
 		Heartbeat();
 		thread_running = true;
