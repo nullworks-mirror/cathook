@@ -341,8 +341,8 @@ const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	// Check User settings if namesteal is allowed
 	if (namesteal && steamID == g_ISteamUser->GetSteamID()) {
 		
-		// We dont want to steal names while not in-game as there are no targets to steal from
-		if (g_IEngine->IsInGame()) {
+		// We dont want to steal names while not in-game as there are no targets to steal from. We want to be on a team as well to get teammates names
+		if (g_IEngine->IsInGame() && g_pLocalPlayer->team) {
 
 			// Check if we have a username to steal, func automaticly steals a name in it. 
 			if (StolenName()) {
