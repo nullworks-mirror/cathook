@@ -63,12 +63,13 @@ public:
 
 class ESPData {
 public:
-	rgba_t color { colors::empty };
 	int string_count { 0 };
 	std::array<ESPString, 16> strings {};
-	Vector esp_origin { 0, 0, 0 };
-	Vector last_origin { 0, 0, 0 };
+	rgba_t color { colors::empty };
 	bool needs_paint { false };
+	bool has_collide { false };
+	Vector collide_max { 0, 0, 0 };
+	Vector collide_min { 0, 0, 0 };
 };
 
 extern std::array<ESPData, 2048> data;

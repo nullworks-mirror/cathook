@@ -50,15 +50,15 @@ CatVar proj_esp(CV_SWITCH, "esp_proj", "1", "Projectile ESP", "Projectile ESP");
 CatVar entity_model(CV_SWITCH, "esp_model_name", "0", "Model name ESP", "Model name esp (DEBUG ONLY)");
 CatVar item_weapon_spawners(CV_SWITCH, "esp_weapon_spawners", "1", "Show weapon spawners", "TF2C deathmatch weapon spawners");
 CatVar item_adrenaline(CV_SWITCH, "esp_item_adrenaline", "0", "Show Adrenaline", "TF2C adrenaline pills");
-static CatVar box_healthbar(CV_SWITCH, "esp_box_healthbar", "1", "Box Healthbar");
-static CatVar draw_bones(CV_SWITCH, "esp_bones", "0", "Draw Bone ID's");
-static CatVar box_corner_size(CV_INT, "esp_box_corner_size", "10", "Corner Size");
-static CatEnum esp_box_text_position_enum({"TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE", "BELOW" });
-static CatVar esp_box_text_position(esp_box_text_position_enum, "esp_box_text_position", "0", "Text position", "Defines text position");
-static CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "Don't draw 2D box");
-static CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
-static CatVar box_corners(CV_SWITCH, "esp_box_corners", "1", "Box Corners");
-static CatVar powerup_esp(CV_SWITCH, "esp_powerups", "1", "Powerup ESP");
+CatVar box_healthbar(CV_SWITCH, "esp_box_healthbar", "1", "Box Healthbar");
+CatVar draw_bones(CV_SWITCH, "esp_bones", "0", "Draw Bone ID's");
+CatVar box_corner_size(CV_INT, "esp_box_corner_size", "10", "Corner Size");
+CatEnum esp_box_text_position_enum({"TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE", "BELOW" });
+CatVar esp_box_text_position(esp_box_text_position_enum, "esp_box_text_position", "0", "Text position", "Defines text position");
+CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "Don't draw 2D box");
+CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
+CatVar box_corners(CV_SWITCH, "esp_box_corners", "1", "Box Corners");
+CatVar powerup_esp(CV_SWITCH, "esp_powerups", "1", "Powerup ESP");
 
 // Storage arrays for keeping strings and other data
 std::mutex threadsafe_mutex;
@@ -77,6 +77,85 @@ void ResetEntityStrings() {
 	}
 }
 
+// Used for caching collidable bounds
+bool GetCollide(CachedEntity* ent) {
+	
+	// Null + Dormant check to prevent crashing
+	if (CE_BAD(ent)) return false;
+	
+	// Grab esp data
+	ESPData& ent_data = data[ent->m_IDX];
+	
+	// If entity has cached collides, return it. Otherwise generate new bounds
+	if (!ent_data.has_collide) {
+	
+		// Get collision center, max, and mins
+		const Vector& origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
+		Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
+		Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
+
+		// Create a array for storing box points
+		Vector points_r[8]; // World vectors
+		Vector points[8]; // Screen vectors
+
+		// If user setting for box expnad is true, spread the max and mins
+		if (box_expand) {
+			const float& exp = (float)box_expand;
+			maxs.x += exp;
+			maxs.y += exp;
+			maxs.z += exp;
+			mins.x -= exp;
+			mins.y -= exp;
+			mins.z -= exp;
+		}
+
+		// Create points for the box based on max and mins
+		float x = maxs.x - mins.x;
+		float y = maxs.y - mins.y;
+		float z = maxs.z - mins.z;
+		points_r[0] = mins;
+		points_r[1] = mins + Vector(x, 0, 0);
+		points_r[2] = mins + Vector(x, y, 0);
+		points_r[3] = mins + Vector(0, y, 0);
+		points_r[4] = mins + Vector(0, 0, z);
+		points_r[5] = mins + Vector(x, 0, z);
+		points_r[6] = mins + Vector(x, y, z);
+		points_r[7] = mins + Vector(0, y, z);
+
+		// Check if any point of the box isnt on the screen
+		bool success = true;
+		for (int i = 0; i < 8; i++) {
+			if (!draw::WorldToScreen(points_r[i], points[i])) success = false;
+		}
+		// If a point isnt on the screen, return here
+		if (!success) return false;
+
+		// Get max and min of the box using the newly created screen vector
+		int max_x = -1;
+		int max_y = -1;
+		int min_x = 65536;
+		int min_y = 65536;
+		for (int i = 0; i < 8; i++) {
+			if (points[i].x > max_x) max_x = points[i].x;
+			if (points[i].y > max_y) max_y = points[i].y;
+			if (points[i].x < min_x) min_x = points[i].x;
+			if (points[i].y < min_y) min_y = points[i].y;
+		}
+		
+		// Save the info to the esp data and notify cached that we cached info.
+		ent_data.collide_max = Vector(max_x, max_y, 0);
+		ent_data.collide_min = Vector(min_x, min_y, 0);
+		ent_data.has_collide = true;
+		
+		return true;
+	} else {
+		// We already have collidable so return true. 
+		return true;
+	}	
+	// Impossible error, return false
+	return false;
+}
+	
 // Sets an entitys esp color
 void SetEntityColor(CachedEntity* entity, const rgba_t& color) {
 	data[entity->m_IDX].color = color;
@@ -97,6 +176,7 @@ void AddEntityString(CachedEntity* entity, const std::string& string, const rgba
 void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t& color, bool transparent) {
 	const rgba_t& black = transparent ? colors::Transparent(colors::black) : colors::black;
 	const int size = box_corner_size;
+	
 	// Black corners
 	// Top Left
 	drawgl::FilledRect(minx, miny, size, 3, black);
@@ -182,117 +262,34 @@ void Draw() {
 	}
 }
 
-
-// TODO, Unknown, find what this does
-const Vector dims_player[] = { { -16, -16, -4 }, { 16, 16, 72 } };
-
 // Draw a box around a player
-void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr, bool healthbar, int health, int healthmax) {
+void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr) {
 	PROF_SECTION(PT_esp_drawbox); // Unknown
-	
-	// Potentially un-used vars
-	//Vector so, omin, omax, smin, smax;
-	//float height, width;
 	
 	// Check if ent is bad to prevent crashes
 	if (CE_BAD(ent)) return;
 	
-	// Get collision center, max, and mins
-	const Vector& origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
-	Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
-	Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
-
-	// Unknown
-	data.at(ent->m_IDX).esp_origin.Zero();
-
-	// Create a array for storing box points
-	Vector points_r[8]; // World vectors
-	Vector points[8]; // Screen vectors
-
-	// If user setting for box expnad is true, spread the max and mins
-	if (box_expand) {
-		const float& exp = (float)box_expand;
-		maxs.x += exp;
-		maxs.y += exp;
-		maxs.z += exp;
-		mins.x -= exp;
-		mins.y -= exp;
-		mins.z -= exp;
-	}
-
-	// Create points for the box based on max and mins
-	float x = maxs.x - mins.x;
-	float y = maxs.y - mins.y;
-	float z = maxs.z - mins.z;
-	points_r[0] = mins;
-	points_r[1] = mins + Vector(x, 0, 0);
-	points_r[2] = mins + Vector(x, y, 0);
-	points_r[3] = mins + Vector(0, y, 0);
-	points_r[4] = mins + Vector(0, 0, z);
-	points_r[5] = mins + Vector(x, 0, z);
-	points_r[6] = mins + Vector(x, y, z);
-	points_r[7] = mins + Vector(0, y, z);
+	// Get our collidable bounds
+	if (!GetCollide(ent)) return;
 	
-	// Check if any point of the box isnt on the screen
-	bool success = true;
-	for (int i = 0; i < 8; i++) {
-		if (!draw::WorldToScreen(points_r[i], points[i])) success = false;
-	}
-	// If a point isnt on the screen, return here
-	if (!success) return;
-	
-	// Get max and min of the box using the newly created screen vector
-	int max_x = -1;
-	int max_y = -1;
-	int min_x = 65536;
-	int min_y = 65536;
-	for (int i = 0; i < 8; i++) {
-		if (points[i].x > max_x) max_x = points[i].x;
-		if (points[i].y > max_y) max_y = points[i].y;
-		if (points[i].x < min_x) min_x = points[i].x;
-		if (points[i].y < min_y) min_y = points[i].y;
-	}
-
-	// Put Text on the position	with a switch
-	switch ((int)esp_box_text_position) {
-	case 0: { // TOP RIGHT
-		data.at(ent->m_IDX).esp_origin = Vector(max_x + 2, min_y, 0);
-	} break;
-	case 1: { // BOTTOM RIGHT
-		data.at(ent->m_IDX).esp_origin = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
-	} break;
-	case 2: { // CENTER
-	} break;
-	case 3: { // ABOVE
-		data.at(ent->m_IDX).esp_origin = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
-	} break;
-	case 4: { // BELOW
-		data.at(ent->m_IDX).esp_origin = Vector(min_x, max_y, 0);
-	}
-	}
+	// Pull the cached collide info
+	ESPData& ent_data = data[ent->m_IDX];
+	int max_x = ent_data.collide_max.x;
+	int max_y = ent_data.collide_max.y;
+	int min_x = ent_data.collide_min.x;
+	int min_y = ent_data.collide_min.y;
 	
 	// Depending on whether the player is cloaked, we change the color acordingly
-	rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black, clr.a);
+	rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black , clr.a);
 	
-	// If box nodraw isnt true, we can draw our box
-	if (!box_nodraw) {
-		// With box corners, we draw differently
-		if (box_corners)
-			BoxCorners(min_x, min_y, max_x, max_y, clr, (clr.a != 1.0f));
-		// Otherwise, we just do simple draw funcs
-		else {
-			drawgl::Rect(min_x, min_y, max_x - min_x, max_y - min_y, border);
-			drawgl::Rect(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr);
-			drawgl::Rect(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border);
-		}
-	}
-
-	// If healthbar is enabled, create one here
-	if (healthbar) {
-		rgba_t hp = colors::Transparent(colors::Health(health, healthmax), clr.a);
-		int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
-		drawgl::Rect(min_x - 7, min_y, 7, max_y - min_y, border);
-		drawgl::FilledRect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
+	// With box corners, we draw differently
+	if (box_corners)
+		BoxCorners(min_x, min_y, max_x, max_y, clr, (clr.a != 1.0f));
+	// Otherwise, we just do simple draw funcs
+	else {
+		drawgl::Rect(min_x, min_y, max_x - min_x, max_y - min_y, border);
+		drawgl::Rect(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr);
+		drawgl::Rect(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border);
 	}
 }
 	
@@ -701,7 +698,6 @@ CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size", 
 textures::AtlasTexture joy_texture(64 * 4, textures::atlas_height - 64 * 4, 64, 64);
 textures::AtlasTexture thinking_texture(64 * 5, textures::atlas_height - 64 * 4, 64, 64);
 	
-	
 //CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
 
 	
@@ -724,8 +720,8 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	Vector screen, origin_screen;
 	if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin, origin_screen)) return;
 
-	// Unknown
-	ent_data.esp_origin.Zero();
+	// Reset the collide cache
+	ent_data.has_collide = false;
 
 	// Get if ent should be transparent
 	bool transparent = false;
@@ -781,6 +777,134 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 			}
 		}
 	}
+
+	// Box esp
+	if (box_esp) {
+		switch (ent->m_Type) {
+		case ENTITY_PLAYER: 
+			if (vischeck && !ent->IsVisible()) transparent = true;
+			if (!fg) fg = colors::EntityF(ent);
+			if (transparent) fg = colors::Transparent(fg);
+			DrawBox(ent, fg);
+			break;
+		case ENTITY_BUILDING: 
+			if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
+			if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
+			if (!fg) fg = colors::EntityF(ent);
+			if (transparent) fg = colors::Transparent(fg);
+			DrawBox(ent, fg);
+			break;
+		}	
+	}
+
+	// Healthbar
+	if (box_healthbar) {
+		
+		// We only want health bars on players and buildings
+		if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
+			
+			// Get collidable from the cache
+			if (GetCollide(ent)) {
+				
+				// Pull the cached collide info
+				int max_x = ent_data.collide_max.x;
+				int max_y = ent_data.collide_max.y;
+				int min_x = ent_data.collide_min.x;
+				int min_y = ent_data.collide_min.y;
+
+				// Get health values
+				int health = 0;
+				int healthmax = 0;
+				switch (ent->m_Type) {
+				case ENTITY_PLAYER: 
+					health = CE_INT(ent, netvar.iHealth);
+					healthmax = ent->m_iMaxHealth;
+					break;
+				case ENTITY_BUILDING:
+					health = CE_INT(ent, netvar.iBuildingHealth);
+					healthmax = CE_INT(ent, netvar.iBuildingMaxHealth);
+					break;
+				}
+
+				// Get Colors
+				rgba_t hp = colors::Transparent(colors::Health(health, healthmax), fg.a);
+				rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f) : colors::Transparent(colors::black, fg.a);
+				// Get bar height
+				int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
+
+				// Draw
+				drawgl::Rect(min_x - 7, min_y, 7, max_y - min_y, border);
+				drawgl::FilledRect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
+			}
+		}
+	}
+	
+	// Check if entity has strings to draw
+	if (ent_data.string_count) {
+		PROF_SECTION(PT_esp_drawstrings); // WHY IS PROF SECTION NEEDED HERE... WHYYYY
+		
+		// Create our initial point at the center of the entity
+		Vector draw_point = screen;
+		bool origin_is_zero = true;
+		
+		// Get collidable from the cache
+		if (GetCollide(ent)) {
+			
+			// Origin could change so we set to false
+			origin_is_zero = false;
+				
+			// Pull the cached collide info
+			int max_x = ent_data.collide_max.x;
+			int max_y = ent_data.collide_max.y;
+			int min_x = ent_data.collide_min.x;
+			int min_y = ent_data.collide_min.y;
+			
+			// Change the position of the draw point depending on the user settings
+			switch ((int)esp_box_text_position) {
+			case 0: { // TOP RIGHT
+				draw_point = Vector(max_x + 2, min_y, 0);
+			} break;
+			case 1: { // BOTTOM RIGHT
+				draw_point = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
+			} break;
+			case 2: { // CENTER
+				origin_is_zero = true; // origin is still zero so we set to true
+			} break;
+			case 3: { // ABOVE
+				draw_point = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
+			} break;
+			case 4: { // BELOW
+				draw_point = Vector(min_x, max_y, 0);
+			}
+			}
+		}
+		
+		// if user setting allows vis check and ent isnt visable, make transparent
+		if (vischeck && !ent->IsVisible()) transparent = true;
+		
+		// Loop through strings
+		for (int j = 0; j < ent_data.string_count; j++) {
+			
+			// Pull string from the entity's cached string array 
+			const ESPString& string = ent_data.strings[j];
+			
+			// If string has a color assined to it, apply that otherwise use entities color
+			rgba_t color = string.color ? string.color : ent_data.color;
+			if (transparent) color = colors::Transparent(color); // Apply transparency if needed 
+			
+			// If the origin is centered, we use one method. if not, the other
+			if (!origin_is_zero) {
+				FTGL_Draw(string.data, draw_point.x, draw_point.y, fonts::ftgl_ESP, color);
+			} else {
+				int size_x;
+				FTGL_StringLength(string.data, fonts::ftgl_ESP, &size_x);
+				FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y, fonts::ftgl_ESP, color);
+			}
+			
+			// Add to the y due to their being text in that spot
+			draw_point.y += (int)fonts::ftgl_ESP->height - 1;
+		}
+	}
 	
 	// TODO Add Rotation matix
 	// TODO Currently crashes, needs null check somewhere
@@ -826,49 +950,6 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 			}
 		}
 	}*/
-
-	// Box esp
-	if (box_esp) {
-		switch (ent->m_Type) {
-		case ENTITY_PLAYER: 
-			if (vischeck && !ent->IsVisible()) transparent = true;
-			if (!fg) fg = colors::EntityF(ent);
-			if (transparent) fg = colors::Transparent(fg);
-			DrawBox(ent, fg, static_cast<bool>(box_healthbar), CE_INT(ent, netvar.iHealth), ent->m_iMaxHealth);
-			break;
-		case ENTITY_BUILDING: 
-			if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
-			if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
-			if (!fg) fg = colors::EntityF(ent);
-			if (transparent) fg = colors::Transparent(fg);
-			DrawBox(ent, fg, static_cast<bool>(box_healthbar), CE_INT(ent, netvar.iBuildingHealth), CE_INT(ent, netvar.iBuildingMaxHealth));
-			break;
-		}
-	}
-	
-	// Draw strings ???
-	// TODO reverse this
-	bool origin_is_zero = !box_esp || ent_data.esp_origin.IsZero(1.0f);
-	if (origin_is_zero) ent_data.esp_origin = screen;
-	if (ent_data.string_count) {
-		PROF_SECTION(PT_esp_drawstrings);
-		if (vischeck && !ent->IsVisible()) transparent = true;
-		Vector draw_point = origin_is_zero ? screen : ent_data.esp_origin;
-		for (int j = 0; j < ent_data.string_count; j++) {
-			const ESPString& string = ent_data.strings[j];
-			rgba_t color = string.color ? string.color : ent_data.color;
-			if (transparent) color = colors::Transparent(color);
-			if (!origin_is_zero) {
-				FTGL_Draw(string.data, draw_point.x, draw_point.y, fonts::ftgl_ESP, color);
-				draw_point.y += (int)fonts::ftgl_ESP->height - 1;
-			} else {
-				int size_x;
-				FTGL_StringLength(string.data, fonts::ftgl_ESP, &size_x);
-				FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y, fonts::ftgl_ESP, color);
-				draw_point.y += (int)fonts::ftgl_ESP->height - 1;
-			}
-		}
-	}
 }
 
 }}}

@@ -30,8 +30,6 @@
 
 namespace hacks { namespace shared { namespace misc {
 
-//static CatVar remove_conditions(CV_SWITCH, "remove_conditions", "0", "Remove conditions");
-
 static CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0", "Render model when zoomed-in", "Renders player model while being zoomed in as Sniper");
 
 void* C_TFPlayer__ShouldDraw_original = nullptr;

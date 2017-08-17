@@ -259,7 +259,7 @@ CatVar namesteal(namesteal_enum, "name_stealer", "0", "Name Stealer", "Attemt to
 
 static std::string stolen_name;
 
-// Func to get a new entity to steal name from
+// Func to get a new entity to steal name from and returns true if a target has been found
 bool StolenName(){
 
 	// Array to store potential namestealer targets with a bookkeeper to tell how full it is
