@@ -31,6 +31,8 @@ CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size", 
 CatEnum show_health_enum({ "None", "Text", "Healthbar", "Both" });
 CatVar show_health(show_health_enum, "esp_health", "3", "Health ESP", "Show enemy health");
 CatVar draw_bones(CV_SWITCH, "esp_bones", "0", "Draw Bones");
+CatEnum sightlines_enum({ "None", "Sniper Only", "All" }); // I ripped of lbox's choices cuz its nice
+CatVar sightlines(sightlines_enum, "esp_sightlines", "0", "Show sightlines", "Displays a line of where players are looking");
 CatEnum esp_text_position_enum({"TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE", "BELOW" });
 CatVar esp_text_position(esp_text_position_enum, "esp_text_position", "0", "Text position", "Defines text position");
 CatVar esp_expand(CV_INT, "esp_expand", "0", "Expand Esp", "Spreads out Box, health bar, and text from center"); // Note, check if this should be int, it is being used by casting as float
@@ -299,6 +301,37 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 		
 		// Draw a line
 		drawgl::Line(scn.x, scn.y, width - scn.x, height - scn.y, fg);
+	}
+	
+	// Sightline esp
+	if (sightlines && ent->m_Type == ENTITY_PLAYER) {
+		
+		// Logic for using the enum to sort out snipers
+		if ((int)sightlines == 2 || ((int)sightlines == 1 && CE_INT(ent, netvar.iClass) == tf_sniper)) {
+			
+			// Get players angle and head position
+			Vector& eye_angles = NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);	
+			Vector eye_position;
+			GetHitbox(ent, 0, eye_position);
+
+			// Main ray tracing area
+			float sy = sinf(DEG2RAD(eye_angles.y)); // yaw
+			float cy = cosf(DEG2RAD(eye_angles.y));
+			float sp = sinf(DEG2RAD(eye_angles.x)); // pitch
+			float cp = cosf(DEG2RAD(eye_angles.x));
+			Vector forward = Vector(cp * cy, cp * sy, -sp);
+			// We dont want the sightlines endpoint to go behind us because the world to screen check will fail, but keep it at most 4096
+			forward = forward * min(ent->m_flDistance - 1, 4096) + eye_position;
+			Ray_t ray;
+			ray.Init(eye_position, forward);
+			trace_t trace;
+			g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player, &trace);
+
+			Vector scn1, scn2;
+			if (draw::WorldToScreen(eye_position, scn1) && draw::WorldToScreen(trace.endpos, scn2)) {
+				drawgl::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg);
+			}	
+		}
 	}
 	
 	// Emoji esp

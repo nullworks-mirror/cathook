@@ -178,6 +178,7 @@
 					"esp_weapon_spawners",
 					"esp_followbot_id",
 					"esp_local",
+					"esp_sightlines",
 					"esp_entity",
 					"esp_model_name",
 					"esp_entity_id",
