@@ -12,7 +12,7 @@
 #include "hack.h"
 #include "hitrate.hpp"
 
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 
 namespace ipc {
 

@@ -935,7 +935,7 @@ void OnLevelInit() {
 
 static CatVar wb_abandon_too_many_bots(CV_INT, "wb_population_control", "0", "Abandon if bots >");
 void CheckLivingSpace() {
-#if IPC_ENABLED
+#if ENABLE_IPC
 	if (ipc::peer && wb_abandon_too_many_bots) {
 		std::vector<unsigned> players {};
 		for (int j = 1; j < 32; j++) {

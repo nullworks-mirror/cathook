@@ -100,6 +100,7 @@ void OverrideView_hook(void* _this, CViewSetup* setup) {
 			setup->fov = override_fov;
 		}
 	}
+	setup->origin -= Vector(0, 0, 96);
 	draw::fov = setup->fov;
 	SEGV_END;
 }
@@ -241,7 +242,7 @@ void Shutdown_hook(void* _this, const char* reason) {
 	} else if (strstr(reason, "VAC")) {
 		logging::Info("VAC error?");
 	}
-#if IPC_ENABLED
+#if ENABLE_IPC
 	ipc::UpdateServerAddress(true);
 #endif
 	SEGV_BEGIN;
@@ -328,7 +329,7 @@ static CatVar ipc_name(CV_STRING, "name_ipc", "", "IPC Name");
 const char* GetFriendPersonaName_hook(ISteamFriends* _this, CSteamID steamID) {
 	static const GetFriendPersonaName_t original = (GetFriendPersonaName_t)hooks::steamfriends.GetMethod(offsets::GetFriendPersonaName());
   
-#if IPC_ENABLED
+#if ENABLE_IPC
 	if (ipc::peer) {
 		static std::string namestr(ipc_name.GetString());
 		namestr.assign(ipc_name.GetString());
@@ -417,7 +418,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 		}
 	}
 	if (stage == FRAME_START) {
-#if IPC_ENABLED
+#if ENABLE_IPC
 		static Timer nametimer {};
 		if (nametimer.test_and_set(1000 * 10)) {
 			if (ipc::peer) {
@@ -540,7 +541,7 @@ void LevelInit_hook(void* _this, const char* newmap) {
 	hacks::shared::anticheat::ResetEverything();
 	original(_this, newmap);
 	hacks::shared::walkbot::OnLevelInit();
-#if IPC_ENABLED
+#if ENABLE_IPC
 	if (ipc::peer) {
 		ipc::peer->memory->peer_user_data[ipc::peer->client_id].ts_connected = time(nullptr);
 	}
@@ -556,7 +557,7 @@ void LevelShutdown_hook(void* _this) {
 	chat_stack::Reset();
 	hacks::shared::anticheat::ResetEverything();
 	original(_this);
-#if IPC_ENABLED
+#if ENABLE_IPC
 	if (ipc::peer) {
 		ipc::peer->memory->peer_user_data[ipc::peer->client_id].ts_disconnected = time(nullptr);
 	}

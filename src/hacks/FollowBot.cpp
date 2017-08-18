@@ -9,7 +9,7 @@
 
 #include "../common.h"
 
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 
 namespace hacks { namespace shared { namespace followbot {
 	

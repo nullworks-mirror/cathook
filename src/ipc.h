@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 
 #ifndef IPC_H_
 #define IPC_H_

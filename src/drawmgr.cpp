@@ -83,7 +83,7 @@ void DrawCheatVisuals() {
 				PROF_SECTION(PT_spyalert);
 				SAFE_CALL(hacks::tf::spyalert::Draw());
 			}
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 			IF_GAME(IsTF()) SAFE_CALL(hacks::shared::followbot::Draw());
 #endif
 			{
