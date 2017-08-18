@@ -11,57 +11,72 @@
 #include "../sdk.h"
 
 namespace hacks { namespace shared { namespace esp {
-
-CatVar show_weapon(CV_SWITCH, "esp_weapon", "1", "Show weapon name", "Show which weapon does the enemy use");
+	
+// Main Switch
+CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP", "Master ESP switch");
+// Box esp + Options
+CatEnum box_esp_enum({ "None", "Normal", "Corners" });
+CatVar box_esp(box_esp_enum, "esp_box", "2", "Box", "Draw a 2D box");
+CatVar box_corner_size(CV_INT, "esp_box_corner_size", "10", "Corner Size");
+// Tracers
 CatEnum tracers_enum({ "OFF", "CENTER", "BOTTOM" });
 CatVar tracers(tracers_enum, "esp_tracers", "0", "Tracers", "SDraws a line from the player to a position on your screen");
+// Emoji Esp
+CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
+CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP", "Draw emoji on peopels head");
+CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
+CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1", "Emoji ESP Scaling");
+CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size", "Minimum size for an emoji when you use auto scaling");
+// Other esp options
+CatEnum show_health_enum({ "None", "Text", "Healthbar", "Both" });
+CatVar show_health(show_health_enum, "esp_health", "3", "Health ESP", "Show enemy health");
+CatVar draw_bones(CV_SWITCH, "esp_bones", "0", "Draw Bones");
+CatEnum esp_text_position_enum({"TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE", "BELOW" });
+CatVar esp_text_position(esp_text_position_enum, "esp_text_position", "0", "Text position", "Defines text position");
+CatVar esp_expand(CV_INT, "esp_expand", "0", "Expand Esp", "Spreads out Box, health bar, and text from center"); // Note, check if this should be int, it is being used by casting as float
+CatVar vischeck(CV_SWITCH, "esp_vischeck", "1", "VisCheck", "ESP visibility check - makes enemy info behind walls darker, disable this if you get FPS drops");
+CatVar legit(CV_SWITCH, "esp_legit", "0", "Legit Mode", "Don't show invisible enemies\nHides invisable enemies with visibility enabled");
+// Selective esp options
 CatVar local_esp(CV_SWITCH, "esp_local", "1", "ESP Local Player", "Shows local player ESP in thirdperson");
 CatVar buildings(CV_SWITCH, "esp_buildings", "1", "Building ESP", "Show buildings");
-CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP", "Master ESP switch");
-CatVar entity_info(CV_SWITCH, "esp_entity", "0", "Entity ESP", "Show entity info (debug)");
 CatVar teammates(CV_SWITCH, "esp_teammates", "0", "ESP Teammates", "Teammate ESP");
-CatVar item_esp(CV_SWITCH, "esp_item", "1", "Item ESP", "Master Item ESP switch (health packs, etc.)");
-CatVar show_bot_id(CV_SWITCH, "esp_followbot_id", "1", "Followbot ESP", "Show followbot ID");
-CatVar item_dropped_weapons(CV_SWITCH, "esp_item_weapons", "0", "Dropped weapons", "Show dropped weapons");
-CatVar item_ammo_packs(CV_SWITCH, "esp_item_ammo", "0", "Ammo packs", "Show ammo packs");
-CatVar item_health_packs(CV_SWITCH, "esp_item_health", "1", "Health packs", "Show health packs");
-CatVar item_powerups(CV_SWITCH, "esp_item_powerups", "1", "Powerups", "Show powerups");
-CatVar item_money(CV_SWITCH, "esp_money", "1", "MvM money", "Show MvM money");
-CatVar item_money_red(CV_SWITCH, "esp_money_red", "1", "Red MvM money", "Show red MvM money");
-CatVar item_spellbooks(CV_SWITCH, "esp_spellbooks", "1", "Spellbooks", "Spell Books");
-CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID", "Used with Entity ESP. Shows entityID");
-CatVar tank(CV_SWITCH, "esp_show_tank", "1", "Show tank", "Show tank");
-CatVar box_esp(CV_SWITCH, "esp_box", "1", "Box", "Draw 2D box with healthbar. fancy.");
+CatVar tank(CV_SWITCH, "esp_show_tank", "1", "Show tank", "Show tanks in mvm");
+// Text Esps
+CatVar show_weapon(CV_SWITCH, "esp_weapon", "1", "Show weapon name", "Show which weapon the enemy is using");
 CatVar show_distance(CV_SWITCH, "esp_distance", "1", "Distance ESP", "Show distance to target");
 CatVar show_name(CV_SWITCH, "esp_name", "1", "Name ESP", "Show name");
 CatVar show_class(CV_SWITCH, "esp_class", "1", "Class ESP", "Show class");
 CatVar show_conditions(CV_SWITCH, "esp_conds", "1", "Conditions ESP", "Show conditions");
 CatVar show_ubercharge(CV_SWITCH, "esp_ubercharge", "1", "Ubercharge ESP", "Show ubercharge percentage while players medigun is out");
-CatVar vischeck(CV_SWITCH, "esp_vischeck", "1", "VisCheck", "ESP visibility check - makes enemy info behind walls darker, disable this if you get FPS drops");
-CatVar legit(CV_SWITCH, "esp_legit", "0", "Legit Mode", "Don't show invisible enemies");
-CatVar show_health(CV_SWITCH, "esp_health_num", "1", "Health numbers", "Show health in numbers");
+CatVar show_bot_id(CV_SWITCH, "esp_followbot_id", "1", "Followbot ESP", "Show followbot ID");
+CatVar powerup_esp(CV_SWITCH, "esp_powerups", "1", "Powerup ESP", "Shows powerups a player is using");
+// Item esp
+CatVar item_esp(CV_SWITCH, "esp_item", "1", "Item ESP", "Master Item ESP switch (health packs, etc.)");
+CatVar item_dropped_weapons(CV_SWITCH, "esp_item_weapons", "0", "Dropped weapons", "Show dropped weapons");
+CatVar item_ammo_packs(CV_SWITCH, "esp_item_ammo", "0", "Ammo packs", "Show ammo packs");
+CatVar item_health_packs(CV_SWITCH, "esp_item_health", "1", "Health packs", "Show health packs");
+CatVar item_powerups(CV_SWITCH, "esp_item_powerups", "1", "Powerups", "Shows powerups in the world");
+CatVar item_money(CV_SWITCH, "esp_money", "1", "MvM money", "Show MvM money");
+CatVar item_money_red(CV_SWITCH, "esp_money_red", "1", "Red MvM money", "Show red MvM money");
+CatVar item_spellbooks(CV_SWITCH, "esp_spellbooks", "1", "Spellbooks", "Spell Books");
+CatVar item_weapon_spawners(CV_SWITCH, "esp_weapon_spawners", "1", "Show weapon spawners", "TF2C deathmatch weapon spawners");
+CatVar item_adrenaline(CV_SWITCH, "esp_item_adrenaline", "0", "Show Adrenaline", "TF2C adrenaline pills");
+// Projectile esp
+CatVar proj_esp(CV_SWITCH, "esp_proj", "1", "Projectile ESP", "Projectile ESP");
 CatEnum proj_esp_enum({ "OFF", "ALL", "CRIT" });
 CatVar proj_rockets(proj_esp_enum, "esp_proj_rockets", "1", "Rockets", "Rockets");
 CatVar proj_arrows(proj_esp_enum, "esp_proj_arrows", "1", "Arrows", "Arrows");
 CatVar proj_pipes(proj_esp_enum, "esp_proj_pipes", "1", "Pipes", "Pipebombs");
 CatVar proj_stickies(proj_esp_enum, "esp_proj_stickies", "1", "Stickies", "Stickybombs");
 CatVar proj_enemy(CV_SWITCH, "esp_proj_enemy", "1", "Only enemy projectiles", "Don't show friendly projectiles");
-CatVar proj_esp(CV_SWITCH, "esp_proj", "1", "Projectile ESP", "Projectile ESP");
+// Debug
+CatVar entity_info(CV_SWITCH, "esp_entity", "0", "Entity ESP", "Show entity info (debug)");
 CatVar entity_model(CV_SWITCH, "esp_model_name", "0", "Model name ESP", "Model name esp (DEBUG ONLY)");
-CatVar item_weapon_spawners(CV_SWITCH, "esp_weapon_spawners", "1", "Show weapon spawners", "TF2C deathmatch weapon spawners");
-CatVar item_adrenaline(CV_SWITCH, "esp_item_adrenaline", "0", "Show Adrenaline", "TF2C adrenaline pills");
-CatVar box_healthbar(CV_SWITCH, "esp_box_healthbar", "1", "Box Healthbar");
-CatVar draw_bones(CV_SWITCH, "esp_bones", "0", "Draw Bone ID's");
-CatVar box_corner_size(CV_INT, "esp_box_corner_size", "10", "Corner Size");
-CatEnum esp_box_text_position_enum({"TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE", "BELOW" });
-CatVar esp_box_text_position(esp_box_text_position_enum, "esp_box_text_position", "0", "Text position", "Defines text position");
-CatVar box_nodraw(CV_SWITCH, "esp_box_nodraw", "0", "Invisible 2D Box", "Don't draw 2D box");
-CatVar box_expand(CV_INT, "esp_box_expand", "0", "Expand 2D Box", "Expand 2D box by N units");
-CatVar box_corners(CV_SWITCH, "esp_box_corners", "1", "Box Corners");
-CatVar powerup_esp(CV_SWITCH, "esp_powerups", "1", "Powerup ESP");
+CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID", "Used with Entity ESP. Shows entityID");
 
-// Storage arrays for keeping strings and other data
+// Unknown
 std::mutex threadsafe_mutex;
+// Storage array for keeping strings and other data
 std::array<ESPData, 2048> data;
 	
 // Storage vars for entities that need to be re-drawn
@@ -99,8 +114,8 @@ bool GetCollide(CachedEntity* ent) {
 		Vector points[8]; // Screen vectors
 
 		// If user setting for box expnad is true, spread the max and mins
-		if (box_expand) {
-			const float& exp = (float)box_expand;
+		if (esp_expand) {
+			const float& exp = (float)esp_expand;
 			maxs.x += exp;
 			maxs.y += exp;
 			maxs.z += exp;
@@ -280,10 +295,10 @@ void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr) {
 	int min_y = ent_data.collide_min.y;
 	
 	// Depending on whether the player is cloaked, we change the color acordingly
-	rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black , clr.a);
+	rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black, clr.a);
 	
 	// With box corners, we draw differently
-	if (box_corners)
+	if ((int)box_esp == 2)
 		BoxCorners(min_x, min_y, max_x, max_y, clr, (clr.a != 1.0f));
 	// Otherwise, we just do simple draw funcs
 	else {
@@ -445,8 +460,8 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 			int level = CE_INT(ent, netvar.iUpgradeLevel);
 			AddEntityString(ent, format("LV ", level, ' ', name));
 		}
-		// If show health is true, then add a string with the health
-		if (show_health) {
+		// If text health is true, then add a string with the health
+		if ((int)show_health == 1 || (int)show_health == 3) {
 			AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 		}
 		// Set the entity to repaint
@@ -508,7 +523,7 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 			}
 #endif
 			// Health esp
-			if (show_health) {
+			if ((int)show_health == 1 || (int)show_health == 3) {
 				AddEntityString(ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"), colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
 			}
 			IF_GAME (IsTF()) {
@@ -686,17 +701,7 @@ struct bonelist_s {
 
 std::unordered_map<studiohdr_t*, bonelist_s> bonelist_map {};
 
-/*
- * According to profiler, this function is the most time-consuming (and gets called up to 200K times a second)
- */
 
-CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
-CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP", "Draw emoji on peopels head");
-CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
-CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1", "Emoji ESP Scaling");
-CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size", "Minimum size for an emoji when you use auto scaling");
-textures::AtlasTexture joy_texture(64 * 4, textures::atlas_height - 64 * 4, 64, 64);
-textures::AtlasTexture thinking_texture(64 * 5, textures::atlas_height - 64 * 4, 64, 64);
 	
 //CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
 
@@ -757,8 +762,12 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	}
 	
 	// Emoji esp
-	if (ent->m_Type == ENTITY_PLAYER) {
-		if (emoji_esp) {
+	if (emoji_esp) {
+		if (ent->m_Type == ENTITY_PLAYER) {
+			// Positions in the atlas for the textures
+			static textures::AtlasTexture joy_texture(64 * 4, textures::atlas_height - 64 * 4, 64, 64);
+			static textures::AtlasTexture thinking_texture(64 * 5, textures::atlas_height - 64 * 4, 64, 64);	
+			
 			auto hb = ent->hitboxes.GetHitbox(0);
 			Vector hbm, hbx;
 			if (draw::WorldToScreen(hb->min, hbm) && draw::WorldToScreen(hb->max, hbx)) {
@@ -798,7 +807,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	}
 
 	// Healthbar
-	if (box_healthbar) {
+	if ((int)show_health >= 2) {
 		
 		// We only want health bars on players and buildings
 		if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
@@ -847,35 +856,39 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 		Vector draw_point = screen;
 		bool origin_is_zero = true;
 		
-		// Get collidable from the cache
-		if (GetCollide(ent)) {
+		// Only get collidable for players and buildings
+		if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
 			
-			// Origin could change so we set to false
-			origin_is_zero = false;
-				
-			// Pull the cached collide info
-			int max_x = ent_data.collide_max.x;
-			int max_y = ent_data.collide_max.y;
-			int min_x = ent_data.collide_min.x;
-			int min_y = ent_data.collide_min.y;
-			
-			// Change the position of the draw point depending on the user settings
-			switch ((int)esp_box_text_position) {
-			case 0: { // TOP RIGHT
-				draw_point = Vector(max_x + 2, min_y, 0);
-			} break;
-			case 1: { // BOTTOM RIGHT
-				draw_point = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
-			} break;
-			case 2: { // CENTER
-				origin_is_zero = true; // origin is still zero so we set to true
-			} break;
-			case 3: { // ABOVE
-				draw_point = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
-			} break;
-			case 4: { // BELOW
-				draw_point = Vector(min_x, max_y, 0);
-			}
+			// Get collidable from the cache
+			if (GetCollide(ent)) {
+
+				// Origin could change so we set to false
+				origin_is_zero = false;
+
+				// Pull the cached collide info
+				int max_x = ent_data.collide_max.x;
+				int max_y = ent_data.collide_max.y;
+				int min_x = ent_data.collide_min.x;
+				int min_y = ent_data.collide_min.y;
+
+				// Change the position of the draw point depending on the user settings
+				switch ((int)esp_text_position) {
+				case 0: { // TOP RIGHT
+					draw_point = Vector(max_x + 2, min_y, 0);
+				} break;
+				case 1: { // BOTTOM RIGHT
+					draw_point = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
+				} break;
+				case 2: { // CENTER
+					origin_is_zero = true; // origin is still zero so we set to true
+				} break;
+				case 3: { // ABOVE
+					draw_point = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
+				} break;
+				case 4: { // BELOW
+					draw_point = Vector(min_x, max_y, 0);
+				}
+				}
 			}
 		}
 		
