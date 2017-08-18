@@ -7,6 +7,14 @@
 
 #include "common.h"
 
+CatVar user_red_blue(CV_INT, "esp_color_red_blue", "0", "Red: Blue", "Blue color for red team", 255);
+CatVar user_red_green(CV_INT, "esp_color_red_green", "0", "Red: Green", "Green color for red team", 255);
+CatVar user_red_red(CV_INT, "esp_color_red_red", "0", "Red: Red", "Red color for red team", 255);
+
+CatVar user_blue_blue(CV_INT, "esp_color_blue_blue", "0", "Blue: Blue", "Blue color for blue team", 255);
+CatVar user_blue_green(CV_INT, "esp_color_blue_green", "0", "Blue: Green", "Green color for blue team", 255);
+CatVar user_blue_red(CV_INT, "esp_color_blue_red", "0", "Blue: Red", "Red color for blue team", 255);
+
 rgba_t colors::EntityF(CachedEntity* ent) {
 	rgba_t result, plclr;
 	int skin;
@@ -54,6 +62,21 @@ rgba_t colors::EntityF(CachedEntity* ent) {
 	if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
 		if (ent->m_iTeam == TEAM_BLU) result = blu;
 		else if (ent->m_iTeam == TEAM_RED) result = red;
+		// If user has custom color, check if we should change, and do so here
+		if (user_red_blue || user_red_green || user_red_red || user_blue_blue || user_blue_green || user_blue_red) {
+			switch(ent->m_iTeam) {
+			case TEAM_BLU:	
+				if (user_blue_blue || user_blue_green || user_blue_red) {
+					result = FromRGBA8(user_blue_red, user_blue_green, user_blue_blue, 255);
+				}
+				break;
+			case TEAM_RED:
+				if (user_red_blue || user_red_green || user_red_red) {
+					result = FromRGBA8(user_red_red, user_red_green, user_red_blue, 255);
+				}
+				break;
+			}			
+		}
 		if (ent->m_Type == ENTITY_PLAYER) {
 			if (IsPlayerInvulnerable(ent)) {
 				if (ent->m_iTeam == TEAM_BLU) result = blu_u;

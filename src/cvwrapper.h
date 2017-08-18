@@ -19,6 +19,7 @@ class ConVar;
 #include <functional>
 #include "aftercheaders.h"
 
+// Catvar types
 enum CatVar_t {
 	CV_SWITCH,
 	CV_INT,
@@ -28,6 +29,8 @@ enum CatVar_t {
 	CV_KEY
 };
 
+// TODO reverse
+// Enum Something
 class CatEnum {
 public:
 	CatEnum(std::vector<std::string> values, int min = 0);
@@ -39,6 +42,7 @@ public:
 	int size;
 };
 
+// TODO reverse, no idea how catcommands are handled
 class CatCommand {
 public:
 	CatCommand(std::string name, std::string help, FnCommandCallback_t callback);
@@ -55,10 +59,10 @@ public:
 	ConCommand* cmd { nullptr };
 };
 
-void RegisterCatCommands();
+
 
 class CatVar {
-public:
+public: // TODo, unknown reverse
 	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long = "no description");
 	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float max_val);
 	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float min_val, float max_val);
@@ -98,6 +102,7 @@ public:
 		return current_base;
 	}
 
+// Storage for the catvar
 public:
 	const CatVar_t type;
 	const std::string name;
@@ -122,10 +127,16 @@ public:
 	static int last_id;
 };
 
+// TODO, find out what this formatting does "std::vector<ClassName*?>& ArrayName()?"
+
+// needed for registration
 std::vector<CatVar*>& registrationArray();
 std::vector<CatCommand*>& commandRegistrationArray();
-
+// List to store catvars
 std::vector<CatVar*>& CatVarList();
+
+// Setup commands probs needed at int
+void RegisterCatCommands();
 void RegisterCatVars();
 int GetRebasedCatVarCount();
 

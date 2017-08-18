@@ -184,6 +184,18 @@
 					"esp_entity_id",
 					{
 						"type": "list",
+						"name": "Colors",
+						"list": [
+							"esp_color_red_red",
+							"esp_color_red_green",
+							"esp_color_red_blue",
+							"esp_color_blue_red",
+							"esp_color_blue_green",
+							"esp_color_blue_blue"
+						]
+					},
+					{
+						"type": "list",
 						"name": "Emoji ESP",
 						"list": [
 							"esp_emoji",
@@ -510,3 +522,5 @@
 		]
 	}
 ]
+
+

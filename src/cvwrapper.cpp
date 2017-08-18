@@ -170,12 +170,14 @@ void CatVar::Register() {
 	registered = true;
 }
 
+// TODO, reverse
 void CatVar::InstallChangeCallback(FnChangeCallback_t callback) {
 	OnRegister([callback](CatVar* var) {
 		var->convar_parent->InstallChangeCallback(callback);
 	});
 }
 
+// Used during int to setup catvars
 void RegisterCatVars() {
 	while (registrationArray().size()) {
 		CatVar* var = registrationArray().back();
@@ -184,12 +186,14 @@ void RegisterCatVars() {
 	}
 }
 
+// Use when creating a CatEnum for use in a CatVar
 CatEnum::CatEnum(std::vector<std::string> values, int min) : value_names(values) {
 	min_value = min;
 	max_value = min + int(values.size()) - 1;
 	size = int(values.size());
 }
 
+// use to get a name from a CatEnum
 std::string CatEnum::Name(int value) {
 	if (value >= min_value && value < max_value) {
 		return value_names.at(unsigned(value) - unsigned(min_value));
