@@ -39,7 +39,7 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 	static IClientUnknown *unk;
 	static IClientEntity *ent;
 
-	if (!cathook || !(no_arms || no_hats || (clean_screenshots && g_IEngine->IsTakingScreenshot()))) {
+	if (!cathook || !(spectator_target || no_arms || no_hats || (clean_screenshots && g_IEngine->IsTakingScreenshot()))) {
 		original(_this, state, info, matrix);
 		return;
 	}
@@ -63,6 +63,11 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 	unk = info.pRenderable->GetIClientUnknown();
 	if (unk) {
 		ent = unk->GetIClientEntity();
+		if (ent) {
+			if (ent->entindex() == spectator_target) {
+				return;
+			}
+		}
 		if (ent && !effect_chams::g_EffectChams.drawing && effect_chams::g_EffectChams.ShouldRenderChams(ent)) {
 			return;
 		}
@@ -87,6 +92,21 @@ int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurr
 CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)", "Overrides FOV with this value when zoomed in (default FOV when zoomed is 20)");
 CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override", "Overrides FOV with this value");
 
+CatVar freecam(CV_KEY, "debug_freecam", "0", "Freecam");
+int spectator_target { 0 };
+
+CatCommand spectate("debug_spectate", "Spectate", [](const CCommand& args) {
+	if (args.ArgC() < 1) {
+		spectator_target = 0;
+		return;
+	}
+	int id = atoi(args.Arg(1));
+	if (!id) spectator_target = 0;
+	else {
+		spectator_target = g_IEngine->GetPlayerForUserID(id);
+	}
+});
+
 void OverrideView_hook(void* _this, CViewSetup* setup) {
 	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
 	static bool zoomed;
@@ -100,6 +120,45 @@ void OverrideView_hook(void* _this, CViewSetup* setup) {
 			setup->fov = override_fov;
 		}
 	}
+
+	if (spectator_target) {
+		CachedEntity* spec = ENTITY(spectator_target);
+		if (CE_GOOD(spec) && !CE_BYTE(spec, netvar.iLifeState)) {
+			setup->origin = spec->m_vecOrigin + CE_VECTOR(spec, netvar.vViewOffset);
+			// why not spectate yourself
+			if (spec == LOCAL_E) {
+				setup->angles = CE_VAR(spec, netvar.m_angEyeAnglesLocal, QAngle);
+			} else {
+				setup->angles = CE_VAR(spec, netvar.m_angEyeAngles, QAngle);
+			}
+		}
+	}
+
+	if (freecam) {
+		static Vector freecam_origin { 0 };
+		static bool freecam_last { false };
+		if (freecam.KeyDown()) {
+			if (not freecam_last) {
+				freecam_origin = setup->origin;
+			}
+			float sp, sy, cp, cy;
+			QAngle angle;
+			Vector forward;
+			g_IEngine->GetViewAngles(angle);
+			sy = sinf(DEG2RAD(angle[1]));
+			cy = cosf(DEG2RAD(angle[1]));
+			sp = sinf(DEG2RAD(angle[0]));
+			cp = cosf(DEG2RAD(angle[0]));
+			forward.x = cp * cy;
+			forward.y = cp * sy;
+			forward.z = -sp;
+			forward *= 4;
+			freecam_origin += forward;
+			setup->origin = freecam_origin;
+		}
+		freecam_last = freecam.KeyDown();
+	}
+
 	draw::fov = setup->fov;
 	SEGV_END;
 }
