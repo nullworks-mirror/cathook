@@ -100,7 +100,6 @@ void OverrideView_hook(void* _this, CViewSetup* setup) {
 			setup->fov = override_fov;
 		}
 	}
-	setup->origin -= Vector(0, 0, 96);
 	draw::fov = setup->fov;
 	SEGV_END;
 }
