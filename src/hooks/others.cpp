@@ -427,6 +427,9 @@ void FrameStageNotify_hook(void* _this, int stage) {
 		static Timer ipc_timer {};
 		if (ipc_timer.test_and_set(1000)) {
 			if (ipc::peer) {
+				if (ipc::peer->HasCommands()) {
+					ipc::peer->ProcessCommands();
+				}
 				ipc::Heartbeat();
 				ipc::UpdateTemporaryData();
 			}
