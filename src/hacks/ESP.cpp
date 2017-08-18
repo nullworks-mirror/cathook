@@ -73,6 +73,8 @@ CatVar proj_enemy(CV_SWITCH, "esp_proj_enemy", "1", "Only enemy projectiles", "D
 CatVar entity_info(CV_SWITCH, "esp_entity", "0", "Entity ESP", "Show entity info (debug)");
 CatVar entity_model(CV_SWITCH, "esp_model_name", "0", "Model name ESP", "Model name esp (DEBUG ONLY)");
 CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID", "Used with Entity ESP. Shows entityID");
+	
+//CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
 
 // Unknown
 std::mutex threadsafe_mutex;
@@ -83,142 +85,118 @@ std::array<ESPData, 2048> data;
 std::vector<int> entities_need_repaint {};
 std::mutex entities_need_repaint_mutex {};
 
-// Function to reset entitys strings
-void ResetEntityStrings() {
-	for (auto& i : data) {
-		i.string_count = 0;
-		i.color = colors::empty;
-		i.needs_paint = false;
+// :b:one stuff needs to be up here as puting it in the header for sorting would be a pain. 
+
+// Vars to store what bones connect to what
+const std::string bonenames_leg_r[] = { "bip_foot_R", "bip_knee_R", "bip_hip_R" };
+const std::string bonenames_leg_l[] = { "bip_foot_L", "bip_knee_L", "bip_hip_L" };
+const std::string bonenames_bottom[] = { "bip_hip_R", "bip_pelvis", "bip_hip_L" };
+const std::string bonenames_spine[] = { "bip_pelvis", "bip_spine_0", "bip_spine_1", "bip_spine_2", "bip_spine_3", "bip_neck", "bip_head" };
+const std::string bonenames_arm_r[] = { "bip_upperArm_R", "bip_lowerArm_R", "bip_hand_R" };
+const std::string bonenames_arm_l[] = { "bip_upperArm_L", "bip_lowerArm_L", "bip_hand_L" };
+const std::string bonenames_up[] = { "bip_upperArm_R", "bip_spine_3", "bip_upperArm_L" };
+
+// Dont fully understand struct but a guess is a group of something.
+// I will return once I have enough knowlage to reverse this.
+// NOTE: No idea on why we cant just use gethitbox and use the displacement on that insted of having all this extra code. Shouldnt gethitbox use cached hitboxes, if so it should be nicer on performance
+struct bonelist_s {
+	bool setup { false };
+	bool success { false };
+	int leg_r[3] { 0 };
+	int leg_l[3] { 0 };
+	int bottom[3] { 0 };
+	int spine[7] { 0 };
+	int arm_r[3] { 0 };
+	int arm_l[3] { 0 };
+	int up[3] { 0 };
+
+	void Setup(const studiohdr_t* hdr) {
+		if (!hdr) {
+			setup = true;
+			return;
+		}
+		std::unordered_map<std::string, int> bones {};
+		for (int i = 0; i < hdr->numbones; i++) {
+			bones[std::string(hdr->pBone(i)->pszName())] = i;
+		}
+		try {
+			for (int i = 0; i < 3; i++) leg_r[i] = bones.at(bonenames_leg_r[i]);
+			for (int i = 0; i < 3; i++) leg_l[i] = bones.at(bonenames_leg_l[i]);
+			for (int i = 0; i < 3; i++) bottom[i] = bones.at(bonenames_bottom[i]);
+			for (int i = 0; i < 7; i++) spine[i] = bones.at(bonenames_spine[i]);
+			for (int i = 0; i < 3; i++) arm_r[i] = bones.at(bonenames_arm_r[i]);
+			for (int i = 0; i < 3; i++) arm_l[i] = bones.at(bonenames_arm_l[i]);
+			for (int i = 0; i < 3; i++) up[i] = bones.at(bonenames_up[i]);
+			success = true;
+		} catch (std::exception& ex) {
+			logging::Info("Bone list exception: %s", ex.what());
+		}
+		setup = true;
 	}
-}
 
-// Used for caching collidable bounds
-bool GetCollide(CachedEntity* ent) {
-	
-	// Null + Dormant check to prevent crashing
-	if (CE_BAD(ent)) return false;
-	
-	// Grab esp data
-	ESPData& ent_data = data[ent->m_IDX];
-	
-	// If entity has cached collides, return it. Otherwise generate new bounds
-	if (!ent_data.has_collide) {
-	
-		// Get collision center, max, and mins
-		const Vector& origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
-		Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
-		Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
+	void DrawBoneList(const matrix3x4_t* bones, int* in, int size, const rgba_t& color, const Vector& displacement) {
+		Vector last_screen;
+		Vector current_screen;
+		for (int i = 0; i < size; i++) {
+			Vector position(bones[in[i]][0][3], bones[in[i]][1][3], bones[in[i]][2][3]);
+			position += displacement;
+			if (!draw::WorldToScreen(position, current_screen)) {
+				return;
+			}
+			if (i > 0) {
+				drawgl::Line(last_screen.x, last_screen.y, current_screen.x - last_screen.x, current_screen.y - last_screen.y, color);
+			}
+			last_screen = current_screen;
+		}
+	}
 
-		// Create a array for storing box points
-		Vector points_r[8]; // World vectors
-		Vector points[8]; // Screen vectors
-
-		// If user setting for box expnad is true, spread the max and mins
-		if (esp_expand) {
-			const float& exp = (float)esp_expand;
-			maxs.x += exp;
-			maxs.y += exp;
-			maxs.z += exp;
-			mins.x -= exp;
-			mins.y -= exp;
-			mins.z -= exp;
+	void Draw(CachedEntity* ent, const rgba_t& color) {
+		const model_t* model = RAW_ENT(ent)->GetModel();
+		if (not model) {
+			return;
 		}
 
-		// Create points for the box based on max and mins
-		float x = maxs.x - mins.x;
-		float y = maxs.y - mins.y;
-		float z = maxs.z - mins.z;
-		points_r[0] = mins;
-		points_r[1] = mins + Vector(x, 0, 0);
-		points_r[2] = mins + Vector(x, y, 0);
-		points_r[3] = mins + Vector(0, y, 0);
-		points_r[4] = mins + Vector(0, 0, z);
-		points_r[5] = mins + Vector(x, 0, z);
-		points_r[6] = mins + Vector(x, y, z);
-		points_r[7] = mins + Vector(0, y, z);
+		studiohdr_t* hdr =  g_IModelInfo->GetStudiomodel(model);
 
-		// Check if any point of the box isnt on the screen
-		bool success = true;
-		for (int i = 0; i < 8; i++) {
-			if (!draw::WorldToScreen(points_r[i], points[i])) success = false;
+		if (!setup) {
+			Setup(hdr);
 		}
-		// If a point isnt on the screen, return here
-		if (!success) return false;
+		if (!success) return;
 
-		// Get max and min of the box using the newly created screen vector
-		int max_x = -1;
-		int max_y = -1;
-		int min_x = 65536;
-		int min_y = 65536;
-		for (int i = 0; i < 8; i++) {
-			if (points[i].x > max_x) max_x = points[i].x;
-			if (points[i].y > max_y) max_y = points[i].y;
-			if (points[i].x < min_x) min_x = points[i].x;
-			if (points[i].y < min_y) min_y = points[i].y;
-		}
-		
-		// Save the info to the esp data and notify cached that we cached info.
-		ent_data.collide_max = Vector(max_x, max_y, 0);
-		ent_data.collide_min = Vector(min_x, min_y, 0);
-		ent_data.has_collide = true;
-		
-		return true;
-	} else {
-		// We already have collidable so return true. 
-		return true;
-	}	
-	// Impossible error, return false
-	return false;
-}
-	
-// Sets an entitys esp color
-void SetEntityColor(CachedEntity* entity, const rgba_t& color) {
-	data[entity->m_IDX].color = color;
-}
+		//ent->m_bBonesSetup = false;
+		Vector displacement = RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin;
+		const auto& bones = ent->hitboxes.GetBones();
+		DrawBoneList(bones, leg_r, 3, color, displacement);
+		DrawBoneList(bones, leg_l, 3, color, displacement);
+		DrawBoneList(bones, bottom, 3, color, displacement);
+		DrawBoneList(bones, spine, 7, color, displacement);
+		DrawBoneList(bones, arm_r, 3, color, displacement);
+		DrawBoneList(bones, arm_l, 3, color, displacement);
+		DrawBoneList(bones, up, 3, color, displacement);
+		/*for (int i = 0; i < hdr->numbones; i++) {
+			const auto& bone = ent->GetBones()[i];
+			Vector pos(bone[0][3], bone[1][3], bone[2][3]);
+			//pos += orig;
+			Vector screen;
+			if (draw::WorldToScreen(pos, screen)) {
+				if (hdr->pBone(i)->pszName()) {
+					draw::FString(fonts::ESP, screen.x, screen.y, fg, 2, "%s [%d]", hdr->pBone(i)->pszName(), i);
+				} else
+					draw::FString(fonts::ESP, screen.x, screen.y, fg, 2, "%d", i);
+			}
+		}*/
+	}
+};
 
-// Use to add a esp string to an entity
-void AddEntityString(CachedEntity* entity, const std::string& string, const rgba_t& color) {
-	ESPData& entity_data = data[entity->m_IDX];
-	if (entity_data.string_count >= 15) return;
-	entity_data.strings[entity_data.string_count].data = string;
-	entity_data.strings[entity_data.string_count].color = color;
-	entity_data.string_count++;
-	entity_data.needs_paint = true;
-}
+std::unordered_map<studiohdr_t*, bonelist_s> bonelist_map {};
 
-
-// Function to draw box corners
-void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t& color, bool transparent) {
-	const rgba_t& black = transparent ? colors::Transparent(colors::black) : colors::black;
-	const int size = box_corner_size;
-	
-	// Black corners
-	// Top Left
-	drawgl::FilledRect(minx, miny, size, 3, black);
-	drawgl::FilledRect(minx, miny + 3, 3, size - 3, black);
-	// Top Right
-	drawgl::FilledRect(maxx - size + 1, miny, size, 3, black);
-	drawgl::FilledRect(maxx - 3 + 1, miny + 3, 3, size - 3, black);
-	// Bottom Left
-	drawgl::FilledRect(minx, maxy - 3, size, 3, black);
-	drawgl::FilledRect(minx, maxy - size, 3, size - 3, black);
-	// Bottom Right
-	drawgl::FilledRect(maxx - size + 1, maxy - 3, size, 3, black);
-	drawgl::FilledRect(maxx - 2, maxy - size, 3, size - 3, black);
-
-	// Colored corners
-	// Top Left
-	drawgl::Line(minx + 1, miny + 1, size - 2, 0, color);
-	drawgl::Line(minx + 1, miny + 1, 0, size - 2, color);
-	// Top Right
-	drawgl::Line(maxx - 1, miny + 1, -(size - 2), 0, color);
-	drawgl::Line(maxx - 1, miny + 1, 0, size - 2, color);
-	// Bottom Left
-	drawgl::Line(minx + 1, maxy - 2, size - 2, 0, color);
-	drawgl::Line(minx + 1, maxy - 2, 0, -(size - 2), color);
-	// Bottom Right
-	drawgl::Line(maxx - 1, maxy - 2, -(size - 2), 0, color);
-	drawgl::Line(maxx - 1, maxy - 2, 0, -(size - 2), color);
+// Function called on draw
+void Draw() {
+	std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
+	if (!enabled) return;
+	for (auto& i : entities_need_repaint) {
+		ProcessEntityPT(ENTITY(i));
+	}
 }
 
 // Function called on create move
@@ -267,47 +245,266 @@ void CreateMove() {
 		}
 	}
 }
-
-// Function called on draw
-void Draw() {
-	std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
-	if (!enabled) return;
-	for (auto& i : entities_need_repaint) {
-		ProcessEntityPT(ENTITY(i));
-	}
-}
-
-// Draw a box around a player
-void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr) {
-	PROF_SECTION(PT_esp_drawbox); // Unknown
 	
-	// Check if ent is bad to prevent crashes
+// Used when processing entitys with cached data from createmove in draw
+void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
+	PROF_SECTION(PT_esp_process_entity);
+
+	// Check to prevent crashes
 	if (CE_BAD(ent)) return;
 	
-	// Get our collidable bounds
-	if (!GetCollide(ent)) return;
-	
-	// Pull the cached collide info
+	// Grab esp data
 	ESPData& ent_data = data[ent->m_IDX];
-	int max_x = ent_data.collide_max.x;
-	int max_y = ent_data.collide_max.y;
-	int min_x = ent_data.collide_min.x;
-	int min_y = ent_data.collide_min.y;
+
+	// Get color of entity
+	// TODO, check if we can move this after world to screen check
+	rgba_t fg = ent_data.color;
+	if (!fg || fg.a == 0.0f) fg = ent_data.color = colors::EntityF(ent);
 	
-	// Depending on whether the player is cloaked, we change the color acordingly
-	rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black, clr.a);
-	
-	// With box corners, we draw differently
-	if ((int)box_esp == 2)
-		BoxCorners(min_x, min_y, max_x, max_y, clr, (clr.a != 1.0f));
-	// Otherwise, we just do simple draw funcs
-	else {
-		drawgl::Rect(min_x, min_y, max_x - min_x, max_y - min_y, border);
-		drawgl::Rect(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr);
-		drawgl::Rect(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border);
+	// Check if entity is on screen, then save screen position if true
+	Vector screen, origin_screen;
+	if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin, origin_screen)) return;
+
+	// Reset the collide cache
+	ent_data.has_collide = false;
+
+	// Get if ent should be transparent
+	bool transparent = false;
+	if (vischeck && !ent->IsVisible()) transparent = true;
+
+	// Bone esp
+	if (draw_bones && ent->m_Type == ENTITY_PLAYER) {
+		const model_t* model = RAW_ENT(ent)->GetModel();
+		if (model) {
+			auto hdr = g_IModelInfo->GetStudiomodel(model);
+			bonelist_map[hdr].Draw(ent, fg);
+		}
 	}
-}
+
+	// Tracers
+	if (tracers && ent->m_Type == ENTITY_PLAYER) {
+		
+		// Grab the screen resolution and save to some vars
+		int width, height;
+		g_IEngine->GetScreenSize(width, height);
+		
+		// Center values on screen
+		width = width / 2;
+		// Only center height if we are using center mode
+		if ((int)tracers == 1) height = height / 2;
+		
+		// Get world to screen
+		Vector scn;
+		draw::WorldToScreen(ent->m_vecOrigin, scn);
+		
+		// Draw a line
+		drawgl::Line(scn.x, scn.y, width - scn.x, height - scn.y, fg);
+	}
 	
+	// Emoji esp
+	if (emoji_esp) {
+		if (ent->m_Type == ENTITY_PLAYER) {
+			// Positions in the atlas for the textures
+			static textures::AtlasTexture joy_texture(64 * 4, textures::atlas_height - 64 * 4, 64, 64);
+			static textures::AtlasTexture thinking_texture(64 * 5, textures::atlas_height - 64 * 4, 64, 64);	
+			
+			auto hb = ent->hitboxes.GetHitbox(0);
+			Vector hbm, hbx;
+			if (draw::WorldToScreen(hb->min, hbm) && draw::WorldToScreen(hb->max, hbx)) {
+				Vector head_scr;
+				if (draw::WorldToScreen(hb->center, head_scr)) {
+					float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y) : float(emoji_esp_size);
+					if (emoji_esp_scaling && (size < float(emoji_min_size))) {
+						size = float(emoji_min_size);
+					}
+					textures::AtlasTexture* tx = nullptr;
+					if (int(emoji_esp) == 1) tx = &joy_texture;
+					if (int(emoji_esp) == 2) tx = &thinking_texture;
+					if (tx)
+						tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2, size, size);
+				}
+			}
+		}
+	}
+
+	// Box esp
+	if (box_esp) {
+		switch (ent->m_Type) {
+		case ENTITY_PLAYER: 
+			if (vischeck && !ent->IsVisible()) transparent = true;
+			if (!fg) fg = colors::EntityF(ent);
+			if (transparent) fg = colors::Transparent(fg);
+			DrawBox(ent, fg);
+			break;
+		case ENTITY_BUILDING: 
+			if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
+			if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
+			if (!fg) fg = colors::EntityF(ent);
+			if (transparent) fg = colors::Transparent(fg);
+			DrawBox(ent, fg);
+			break;
+		}	
+	}
+
+	// Healthbar
+	if ((int)show_health >= 2) {
+		
+		// We only want health bars on players and buildings
+		if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
+			
+			// Get collidable from the cache
+			if (GetCollide(ent)) {
+				
+				// Pull the cached collide info
+				int max_x = ent_data.collide_max.x;
+				int max_y = ent_data.collide_max.y;
+				int min_x = ent_data.collide_min.x;
+				int min_y = ent_data.collide_min.y;
+
+				// Get health values
+				int health = 0;
+				int healthmax = 0;
+				switch (ent->m_Type) {
+				case ENTITY_PLAYER: 
+					health = CE_INT(ent, netvar.iHealth);
+					healthmax = ent->m_iMaxHealth;
+					break;
+				case ENTITY_BUILDING:
+					health = CE_INT(ent, netvar.iBuildingHealth);
+					healthmax = CE_INT(ent, netvar.iBuildingMaxHealth);
+					break;
+				}
+
+				// Get Colors
+				rgba_t hp = colors::Transparent(colors::Health(health, healthmax), fg.a);
+				rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f) : colors::Transparent(colors::black, fg.a);
+				// Get bar height
+				int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
+
+				// Draw
+				drawgl::Rect(min_x - 7, min_y, 7, max_y - min_y, border);
+				drawgl::FilledRect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
+			}
+		}
+	}
+	
+	// Check if entity has strings to draw
+	if (ent_data.string_count) {
+		PROF_SECTION(PT_esp_drawstrings); // WHY IS PROF SECTION NEEDED HERE... WHYYYY
+		
+		// Create our initial point at the center of the entity
+		Vector draw_point = screen;
+		bool origin_is_zero = true;
+		
+		// Only get collidable for players and buildings
+		if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
+			
+			// Get collidable from the cache
+			if (GetCollide(ent)) {
+
+				// Origin could change so we set to false
+				origin_is_zero = false;
+
+				// Pull the cached collide info
+				int max_x = ent_data.collide_max.x;
+				int max_y = ent_data.collide_max.y;
+				int min_x = ent_data.collide_min.x;
+				int min_y = ent_data.collide_min.y;
+
+				// Change the position of the draw point depending on the user settings
+				switch ((int)esp_text_position) {
+				case 0: { // TOP RIGHT
+					draw_point = Vector(max_x + 2, min_y, 0);
+				} break;
+				case 1: { // BOTTOM RIGHT
+					draw_point = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
+				} break;
+				case 2: { // CENTER
+					origin_is_zero = true; // origin is still zero so we set to true
+				} break;
+				case 3: { // ABOVE
+					draw_point = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
+				} break;
+				case 4: { // BELOW
+					draw_point = Vector(min_x, max_y, 0);
+				}
+				}
+			}
+		}
+		
+		// if user setting allows vis check and ent isnt visable, make transparent
+		if (vischeck && !ent->IsVisible()) transparent = true;
+		
+		// Loop through strings
+		for (int j = 0; j < ent_data.string_count; j++) {
+			
+			// Pull string from the entity's cached string array 
+			const ESPString& string = ent_data.strings[j];
+			
+			// If string has a color assined to it, apply that otherwise use entities color
+			rgba_t color = string.color ? string.color : ent_data.color;
+			if (transparent) color = colors::Transparent(color); // Apply transparency if needed 
+			
+			// If the origin is centered, we use one method. if not, the other
+			if (!origin_is_zero) {
+				FTGL_Draw(string.data, draw_point.x, draw_point.y, fonts::ftgl_ESP, color);
+			} else {
+				int size_x;
+				FTGL_StringLength(string.data, fonts::ftgl_ESP, &size_x);
+				FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y, fonts::ftgl_ESP, color);
+			}
+			
+			// Add to the y due to their being text in that spot
+			draw_point.y += (int)fonts::ftgl_ESP->height - 1;
+		}
+	}
+	
+	// TODO Add Rotation matix
+	// TODO Currently crashes, needs null check somewhere
+	// Draw Hitboxes
+	/*if (draw_hitbox && ent->m_Type == ENTITY_PLAYER) {
+		
+		// Loop through hitboxes
+		for (int i = 0; i <= 17; i++) { // I should probs get how many hitboxes instead of using a fixed number...
+			
+			// Get a hitbox from the entity
+			hitbox_cache::CachedHitbox* hb = ent->hitboxes.GetHitbox(i);
+			
+			// Create more points from min + max
+			Vector box_points[8];
+			Vector vec_tmp;
+			for (int ii = 0; ii <= 8; ii++) { // 8 points to the box
+				
+				// logic le paste from sdk
+				vec_tmp[0] = ( ii & 0x1 ) ? hb->max[0] : hb->min[0];
+				vec_tmp[1] = ( ii & 0x2 ) ? hb->max[1] : hb->min[1];
+				vec_tmp[2] = ( ii & 0x4 ) ? hb->max[2] : hb->min[2];
+				
+				// save to points array
+				box_points[ii] = vec_tmp;
+			}
+			
+			// Draw box from points
+			// Draws a point to every other point. Ineffient, use now fix later...
+			Vector scn1, scn2; // to screen
+			for (int ii = 0; ii < 8; ii++) { 
+				
+				// Get first point
+				if (!draw::WorldToScreen(box_points[ii], scn1)) continue;
+				
+				for (int iii = 0; iii < 8; iii++) {
+					
+					// Get second point
+					if (!draw::WorldToScreen(box_points[iii], scn2)) continue;
+					
+					// Draw between points
+					drawgl::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg);
+				}
+			}
+		}
+	}*/
+}
+
 // Used to process entities from CreateMove
 void _FASTCALL ProcessEntity(CachedEntity* ent) {
 	if (!enabled) return; // Esp enable check
@@ -598,371 +795,172 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 	}
 }
 
-// Vars to store what bones connect to what
-const std::string bonenames_leg_r[] = { "bip_foot_R", "bip_knee_R", "bip_hip_R" };
-const std::string bonenames_leg_l[] = { "bip_foot_L", "bip_knee_L", "bip_hip_L" };
-const std::string bonenames_bottom[] = { "bip_hip_R", "bip_pelvis", "bip_hip_L" };
-const std::string bonenames_spine[] = { "bip_pelvis", "bip_spine_0", "bip_spine_1", "bip_spine_2", "bip_spine_3", "bip_neck", "bip_head" };
-const std::string bonenames_arm_r[] = { "bip_upperArm_R", "bip_lowerArm_R", "bip_hand_R" };
-const std::string bonenames_arm_l[] = { "bip_upperArm_L", "bip_lowerArm_L", "bip_hand_L" };
-const std::string bonenames_up[] = { "bip_upperArm_R", "bip_spine_3", "bip_upperArm_L" };
-
-// Dont fully understand struct but a guess is a group of something.
-// I will return once I have enough knowlage to reverse this.
-// NOTE: No idea on why we cant just use gethitbox and use the displacement on that insted of having all this extra code. Shouldnt gethitbox use cached hitboxes, if so it should be nicer on performance
-struct bonelist_s {
-	bool setup { false };
-	bool success { false };
-	int leg_r[3] { 0 };
-	int leg_l[3] { 0 };
-	int bottom[3] { 0 };
-	int spine[7] { 0 };
-	int arm_r[3] { 0 };
-	int arm_l[3] { 0 };
-	int up[3] { 0 };
-
-	void Setup(const studiohdr_t* hdr) {
-		if (!hdr) {
-			setup = true;
-			return;
-		}
-		std::unordered_map<std::string, int> bones {};
-		for (int i = 0; i < hdr->numbones; i++) {
-			bones[std::string(hdr->pBone(i)->pszName())] = i;
-		}
-		try {
-			for (int i = 0; i < 3; i++) leg_r[i] = bones.at(bonenames_leg_r[i]);
-			for (int i = 0; i < 3; i++) leg_l[i] = bones.at(bonenames_leg_l[i]);
-			for (int i = 0; i < 3; i++) bottom[i] = bones.at(bonenames_bottom[i]);
-			for (int i = 0; i < 7; i++) spine[i] = bones.at(bonenames_spine[i]);
-			for (int i = 0; i < 3; i++) arm_r[i] = bones.at(bonenames_arm_r[i]);
-			for (int i = 0; i < 3; i++) arm_l[i] = bones.at(bonenames_arm_l[i]);
-			for (int i = 0; i < 3; i++) up[i] = bones.at(bonenames_up[i]);
-			success = true;
-		} catch (std::exception& ex) {
-			logging::Info("Bone list exception: %s", ex.what());
-		}
-		setup = true;
-	}
-
-	void DrawBoneList(const matrix3x4_t* bones, int* in, int size, const rgba_t& color, const Vector& displacement) {
-		Vector last_screen;
-		Vector current_screen;
-		for (int i = 0; i < size; i++) {
-			Vector position(bones[in[i]][0][3], bones[in[i]][1][3], bones[in[i]][2][3]);
-			position += displacement;
-			if (!draw::WorldToScreen(position, current_screen)) {
-				return;
-			}
-			if (i > 0) {
-				drawgl::Line(last_screen.x, last_screen.y, current_screen.x - last_screen.x, current_screen.y - last_screen.y, color);
-			}
-			last_screen = current_screen;
-		}
-	}
-
-	void Draw(CachedEntity* ent, const rgba_t& color) {
-		const model_t* model = RAW_ENT(ent)->GetModel();
-		if (not model) {
-			return;
-		}
-
-		studiohdr_t* hdr =  g_IModelInfo->GetStudiomodel(model);
-
-		if (!setup) {
-			Setup(hdr);
-		}
-		if (!success) return;
-
-		//ent->m_bBonesSetup = false;
-		Vector displacement = RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin;
-		const auto& bones = ent->hitboxes.GetBones();
-		DrawBoneList(bones, leg_r, 3, color, displacement);
-		DrawBoneList(bones, leg_l, 3, color, displacement);
-		DrawBoneList(bones, bottom, 3, color, displacement);
-		DrawBoneList(bones, spine, 7, color, displacement);
-		DrawBoneList(bones, arm_r, 3, color, displacement);
-		DrawBoneList(bones, arm_l, 3, color, displacement);
-		DrawBoneList(bones, up, 3, color, displacement);
-		/*for (int i = 0; i < hdr->numbones; i++) {
-			const auto& bone = ent->GetBones()[i];
-			Vector pos(bone[0][3], bone[1][3], bone[2][3]);
-			//pos += orig;
-			Vector screen;
-			if (draw::WorldToScreen(pos, screen)) {
-				if (hdr->pBone(i)->pszName()) {
-					draw::FString(fonts::ESP, screen.x, screen.y, fg, 2, "%s [%d]", hdr->pBone(i)->pszName(), i);
-				} else
-					draw::FString(fonts::ESP, screen.x, screen.y, fg, 2, "%d", i);
-			}
-		}*/
-	}
-};
-
-std::unordered_map<studiohdr_t*, bonelist_s> bonelist_map {};
-
-
+// Draw a box around a player
+void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr) {
+	PROF_SECTION(PT_esp_drawbox); // Unknown
 	
-//CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
-
-	
-// Used when processing entitys with cached data from createmove
-void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
-	PROF_SECTION(PT_esp_process_entity);
-
-	// Check to prevent crashes
+	// Check if ent is bad to prevent crashes
 	if (CE_BAD(ent)) return;
+	
+	// Get our collidable bounds
+	if (!GetCollide(ent)) return;
+	
+	// Pull the cached collide info
+	ESPData& ent_data = data[ent->m_IDX];
+	int max_x = ent_data.collide_max.x;
+	int max_y = ent_data.collide_max.y;
+	int min_x = ent_data.collide_min.x;
+	int min_y = ent_data.collide_min.y;
+	
+	// Depending on whether the player is cloaked, we change the color acordingly
+	rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black, clr.a);
+	
+	// With box corners, we draw differently
+	if ((int)box_esp == 2)
+		BoxCorners(min_x, min_y, max_x, max_y, clr, (clr.a != 1.0f));
+	// Otherwise, we just do simple draw funcs
+	else {
+		drawgl::Rect(min_x, min_y, max_x - min_x, max_y - min_y, border);
+		drawgl::Rect(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr);
+		drawgl::Rect(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border);
+	}
+}
+	
+// Function to draw box corners, Used by DrawBox
+void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t& color, bool transparent) {
+	const rgba_t& black = transparent ? colors::Transparent(colors::black) : colors::black;
+	const int size = box_corner_size;
+	
+	// Black corners
+	// Top Left
+	drawgl::FilledRect(minx, miny, size, 3, black);
+	drawgl::FilledRect(minx, miny + 3, 3, size - 3, black);
+	// Top Right
+	drawgl::FilledRect(maxx - size + 1, miny, size, 3, black);
+	drawgl::FilledRect(maxx - 3 + 1, miny + 3, 3, size - 3, black);
+	// Bottom Left
+	drawgl::FilledRect(minx, maxy - 3, size, 3, black);
+	drawgl::FilledRect(minx, maxy - size, 3, size - 3, black);
+	// Bottom Right
+	drawgl::FilledRect(maxx - size + 1, maxy - 3, size, 3, black);
+	drawgl::FilledRect(maxx - 2, maxy - size, 3, size - 3, black);
+
+	// Colored corners
+	// Top Left
+	drawgl::Line(minx + 1, miny + 1, size - 2, 0, color);
+	drawgl::Line(minx + 1, miny + 1, 0, size - 2, color);
+	// Top Right
+	drawgl::Line(maxx - 1, miny + 1, -(size - 2), 0, color);
+	drawgl::Line(maxx - 1, miny + 1, 0, size - 2, color);
+	// Bottom Left
+	drawgl::Line(minx + 1, maxy - 2, size - 2, 0, color);
+	drawgl::Line(minx + 1, maxy - 2, 0, -(size - 2), color);
+	// Bottom Right
+	drawgl::Line(maxx - 1, maxy - 2, -(size - 2), 0, color);
+	drawgl::Line(maxx - 1, maxy - 2, 0, -(size - 2), color);
+}
+
+// Used for caching collidable bounds
+bool GetCollide(CachedEntity* ent) {
+	
+	// Null + Dormant check to prevent crashing
+	if (CE_BAD(ent)) return false;
 	
 	// Grab esp data
 	ESPData& ent_data = data[ent->m_IDX];
-
-	// Get color of entity
-	// TODO, check if we can move this after world to screen check
-	rgba_t fg = ent_data.color;
-	if (!fg || fg.a == 0.0f) fg = ent_data.color = colors::EntityF(ent);
 	
-	// Check if entity is on screen, then save screen position if true
-	Vector screen, origin_screen;
-	if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin, origin_screen)) return;
-
-	// Reset the collide cache
-	ent_data.has_collide = false;
-
-	// Get if ent should be transparent
-	bool transparent = false;
-	if (vischeck && !ent->IsVisible()) transparent = true;
-
-	// Bone esp
-	if (draw_bones && ent->m_Type == ENTITY_PLAYER) {
-		const model_t* model = RAW_ENT(ent)->GetModel();
-		if (model) {
-			auto hdr = g_IModelInfo->GetStudiomodel(model);
-			bonelist_map[hdr].Draw(ent, fg);
-		}
-	}
-
-	// Tracers
-	if (tracers && ent->m_Type == ENTITY_PLAYER) {
-		
-		// Grab the screen resolution and save to some vars
-		int width, height;
-		g_IEngine->GetScreenSize(width, height);
-		
-		// Center values on screen
-		width = width / 2;
-		// Only center height if we are using center mode
-		if ((int)tracers == 1) height = height / 2;
-		
-		// Get world to screen
-		Vector scn;
-		draw::WorldToScreen(ent->m_vecOrigin, scn);
-		
-		// Draw a line
-		drawgl::Line(scn.x, scn.y, width - scn.x, height - scn.y, fg);
-	}
+	// If entity has cached collides, return it. Otherwise generate new bounds
+	if (!ent_data.has_collide) {
 	
-	// Emoji esp
-	if (emoji_esp) {
-		if (ent->m_Type == ENTITY_PLAYER) {
-			// Positions in the atlas for the textures
-			static textures::AtlasTexture joy_texture(64 * 4, textures::atlas_height - 64 * 4, 64, 64);
-			static textures::AtlasTexture thinking_texture(64 * 5, textures::atlas_height - 64 * 4, 64, 64);	
-			
-			auto hb = ent->hitboxes.GetHitbox(0);
-			Vector hbm, hbx;
-			if (draw::WorldToScreen(hb->min, hbm) && draw::WorldToScreen(hb->max, hbx)) {
-				Vector head_scr;
-				if (draw::WorldToScreen(hb->center, head_scr)) {
-					float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y) : float(emoji_esp_size);
-					if (emoji_esp_scaling && (size < float(emoji_min_size))) {
-						size = float(emoji_min_size);
-					}
-					textures::AtlasTexture* tx = nullptr;
-					if (int(emoji_esp) == 1) tx = &joy_texture;
-					if (int(emoji_esp) == 2) tx = &thinking_texture;
-					if (tx)
-						tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2, size, size);
-				}
-			}
+		// Get collision center, max, and mins
+		const Vector& origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
+		Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
+		Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
+
+		// Create a array for storing box points
+		Vector points_r[8]; // World vectors
+		Vector points[8]; // Screen vectors
+
+		// If user setting for box expnad is true, spread the max and mins
+		if (esp_expand) {
+			const float& exp = (float)esp_expand;
+			maxs.x += exp;
+			maxs.y += exp;
+			maxs.z += exp;
+			mins.x -= exp;
+			mins.y -= exp;
+			mins.z -= exp;
 		}
-	}
 
-	// Box esp
-	if (box_esp) {
-		switch (ent->m_Type) {
-		case ENTITY_PLAYER: 
-			if (vischeck && !ent->IsVisible()) transparent = true;
-			if (!fg) fg = colors::EntityF(ent);
-			if (transparent) fg = colors::Transparent(fg);
-			DrawBox(ent, fg);
-			break;
-		case ENTITY_BUILDING: 
-			if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates) break;
-			if (!transparent && vischeck && !ent->IsVisible()) transparent = true;
-			if (!fg) fg = colors::EntityF(ent);
-			if (transparent) fg = colors::Transparent(fg);
-			DrawBox(ent, fg);
-			break;
-		}	
-	}
+		// Create points for the box based on max and mins
+		float x = maxs.x - mins.x;
+		float y = maxs.y - mins.y;
+		float z = maxs.z - mins.z;
+		points_r[0] = mins;
+		points_r[1] = mins + Vector(x, 0, 0);
+		points_r[2] = mins + Vector(x, y, 0);
+		points_r[3] = mins + Vector(0, y, 0);
+		points_r[4] = mins + Vector(0, 0, z);
+		points_r[5] = mins + Vector(x, 0, z);
+		points_r[6] = mins + Vector(x, y, z);
+		points_r[7] = mins + Vector(0, y, z);
 
-	// Healthbar
-	if ((int)show_health >= 2) {
+		// Check if any point of the box isnt on the screen
+		bool success = true;
+		for (int i = 0; i < 8; i++) {
+			if (!draw::WorldToScreen(points_r[i], points[i])) success = false;
+		}
+		// If a point isnt on the screen, return here
+		if (!success) return false;
+
+		// Get max and min of the box using the newly created screen vector
+		int max_x = -1;
+		int max_y = -1;
+		int min_x = 65536;
+		int min_y = 65536;
+		for (int i = 0; i < 8; i++) {
+			if (points[i].x > max_x) max_x = points[i].x;
+			if (points[i].y > max_y) max_y = points[i].y;
+			if (points[i].x < min_x) min_x = points[i].x;
+			if (points[i].y < min_y) min_y = points[i].y;
+		}
 		
-		// We only want health bars on players and buildings
-		if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
-			
-			// Get collidable from the cache
-			if (GetCollide(ent)) {
-				
-				// Pull the cached collide info
-				int max_x = ent_data.collide_max.x;
-				int max_y = ent_data.collide_max.y;
-				int min_x = ent_data.collide_min.x;
-				int min_y = ent_data.collide_min.y;
+		// Save the info to the esp data and notify cached that we cached info.
+		ent_data.collide_max = Vector(max_x, max_y, 0);
+		ent_data.collide_min = Vector(min_x, min_y, 0);
+		ent_data.has_collide = true;
+		
+		return true;
+	} else {
+		// We already have collidable so return true. 
+		return true;
+	}	
+	// Impossible error, return false
+	return false;
+}
 
-				// Get health values
-				int health = 0;
-				int healthmax = 0;
-				switch (ent->m_Type) {
-				case ENTITY_PLAYER: 
-					health = CE_INT(ent, netvar.iHealth);
-					healthmax = ent->m_iMaxHealth;
-					break;
-				case ENTITY_BUILDING:
-					health = CE_INT(ent, netvar.iBuildingHealth);
-					healthmax = CE_INT(ent, netvar.iBuildingMaxHealth);
-					break;
-				}
-
-				// Get Colors
-				rgba_t hp = colors::Transparent(colors::Health(health, healthmax), fg.a);
-				rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f) : colors::Transparent(colors::black, fg.a);
-				// Get bar height
-				int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
-
-				// Draw
-				drawgl::Rect(min_x - 7, min_y, 7, max_y - min_y, border);
-				drawgl::FilledRect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
-			}
-		}
-	}
+// Use to add a esp string to an entity
+void AddEntityString(CachedEntity* entity, const std::string& string, const rgba_t& color) {
+	ESPData& entity_data = data[entity->m_IDX];
+	if (entity_data.string_count >= 15) return;
+	entity_data.strings[entity_data.string_count].data = string;
+	entity_data.strings[entity_data.string_count].color = color;
+	entity_data.string_count++;
+	entity_data.needs_paint = true;
+}
 	
-	// Check if entity has strings to draw
-	if (ent_data.string_count) {
-		PROF_SECTION(PT_esp_drawstrings); // WHY IS PROF SECTION NEEDED HERE... WHYYYY
-		
-		// Create our initial point at the center of the entity
-		Vector draw_point = screen;
-		bool origin_is_zero = true;
-		
-		// Only get collidable for players and buildings
-		if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING) {
-			
-			// Get collidable from the cache
-			if (GetCollide(ent)) {
-
-				// Origin could change so we set to false
-				origin_is_zero = false;
-
-				// Pull the cached collide info
-				int max_x = ent_data.collide_max.x;
-				int max_y = ent_data.collide_max.y;
-				int min_x = ent_data.collide_min.x;
-				int min_y = ent_data.collide_min.y;
-
-				// Change the position of the draw point depending on the user settings
-				switch ((int)esp_text_position) {
-				case 0: { // TOP RIGHT
-					draw_point = Vector(max_x + 2, min_y, 0);
-				} break;
-				case 1: { // BOTTOM RIGHT
-					draw_point = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
-				} break;
-				case 2: { // CENTER
-					origin_is_zero = true; // origin is still zero so we set to true
-				} break;
-				case 3: { // ABOVE
-					draw_point = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::ftgl_ESP->height), 0);
-				} break;
-				case 4: { // BELOW
-					draw_point = Vector(min_x, max_y, 0);
-				}
-				}
-			}
-		}
-		
-		// if user setting allows vis check and ent isnt visable, make transparent
-		if (vischeck && !ent->IsVisible()) transparent = true;
-		
-		// Loop through strings
-		for (int j = 0; j < ent_data.string_count; j++) {
-			
-			// Pull string from the entity's cached string array 
-			const ESPString& string = ent_data.strings[j];
-			
-			// If string has a color assined to it, apply that otherwise use entities color
-			rgba_t color = string.color ? string.color : ent_data.color;
-			if (transparent) color = colors::Transparent(color); // Apply transparency if needed 
-			
-			// If the origin is centered, we use one method. if not, the other
-			if (!origin_is_zero) {
-				FTGL_Draw(string.data, draw_point.x, draw_point.y, fonts::ftgl_ESP, color);
-			} else {
-				int size_x;
-				FTGL_StringLength(string.data, fonts::ftgl_ESP, &size_x);
-				FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y, fonts::ftgl_ESP, color);
-			}
-			
-			// Add to the y due to their being text in that spot
-			draw_point.y += (int)fonts::ftgl_ESP->height - 1;
-		}
+// Function to reset entitys strings
+void ResetEntityStrings() {
+	for (auto& i : data) {
+		i.string_count = 0;
+		i.color = colors::empty;
+		i.needs_paint = false;
 	}
-	
-	// TODO Add Rotation matix
-	// TODO Currently crashes, needs null check somewhere
-	// Draw Hitboxes
-	/*if (draw_hitbox && ent->m_Type == ENTITY_PLAYER) {
-		
-		// Loop through hitboxes
-		for (int i = 0; i <= 17; i++) { // I should probs get how many hitboxes instead of using a fixed number...
-			
-			// Get a hitbox from the entity
-			hitbox_cache::CachedHitbox* hb = ent->hitboxes.GetHitbox(i);
-			
-			// Create more points from min + max
-			Vector box_points[8];
-			Vector vec_tmp;
-			for (int ii = 0; ii <= 8; ii++) { // 8 points to the box
-				
-				// logic le paste from sdk
-				vec_tmp[0] = ( ii & 0x1 ) ? hb->max[0] : hb->min[0];
-				vec_tmp[1] = ( ii & 0x2 ) ? hb->max[1] : hb->min[1];
-				vec_tmp[2] = ( ii & 0x4 ) ? hb->max[2] : hb->min[2];
-				
-				// save to points array
-				box_points[ii] = vec_tmp;
-			}
-			
-			// Draw box from points
-			// Draws a point to every other point. Ineffient, use now fix later...
-			Vector scn1, scn2; // to screen
-			for (int ii = 0; ii < 8; ii++) { 
-				
-				// Get first point
-				if (!draw::WorldToScreen(box_points[ii], scn1)) continue;
-				
-				for (int iii = 0; iii < 8; iii++) {
-					
-					// Get second point
-					if (!draw::WorldToScreen(box_points[iii], scn2)) continue;
-					
-					// Draw between points
-					drawgl::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg);
-				}
-			}
-		}
-	}*/
+}
+
+// Sets an entitys esp color
+void SetEntityColor(CachedEntity* entity, const rgba_t& color) {
+	data[entity->m_IDX].color = color;
 }
 
 }}}
