@@ -319,18 +319,68 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 			float cy = cosf(DEG2RAD(eye_angles.y));
 			float sp = sinf(DEG2RAD(eye_angles.x)); // pitch
 			float cp = cosf(DEG2RAD(eye_angles.x));
-			Vector forward = Vector(cp * cy, cp * sy, -sp);
+			Vector forward_t = Vector(cp * cy, cp * sy, -sp);
 			// We dont want the sightlines endpoint to go behind us because the world to screen check will fail, but keep it at most 4096
-			forward = forward * min(ent->m_flDistance - 1, 4096) + eye_position;
+			Vector forward = forward_t * 4096.0F + eye_position;
 			Ray_t ray;
 			ray.Init(eye_position, forward);
 			trace_t trace;
 			g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player, &trace);
 
+			// Screen vectors
 			Vector scn1, scn2;
-			if (draw::WorldToScreen(eye_position, scn1) && draw::WorldToScreen(trace.endpos, scn2)) {
-				drawgl::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg);
-			}	
+			
+			// Status vars
+			bool found_scn2 = true; 
+			
+			// Get end point on screen
+			if (!draw::WorldToScreen(trace.endpos, scn2)) {
+				// Set status
+				found_scn2 = false;
+				// Get the end distance from the trace
+				float end_distance = trace.endpos.DistTo(eye_position);
+				
+				// Loop and look back untill we have a vector on screen 
+				for (int i = 1; i > 30; i++) {
+					// Subtract 40 multiplyed by the tick from the end distance and use that as our length to check 
+					Vector end_vector = forward_t * (end_distance - (40 * i)) + eye_position;
+					if (end_vector.DistTo(eye_position) < 40) break;
+					if (draw::WorldToScreen(end_vector, scn2)) {
+						found_scn2 = true;
+						break;
+					}
+				}
+			}
+			
+			if (found_scn2) {
+				// Set status
+				bool found_scn1 = true; 
+				
+				// If we dont have a vector on screen, attempt to find one
+				if (!draw::WorldToScreen(eye_position, scn1)) {
+					// Set status
+					found_scn1 = false;
+					// Get the end distance from the trace
+					float start_distance = trace.endpos.DistTo(eye_position);
+
+					// Loop and look back untill we have a vector on screen 
+					for (int i = 1; i > 30; i++) {
+						// Multiply starting distance by 40, multiplyed by the loop tick
+						Vector start_vector = forward_t * (40 * i) + eye_position;
+						// We dont want it to go too far
+						if (start_vector.DistTo(trace.endpos) < 40) break;
+						// Check if we have a vector on screen, if we do then we set our status
+						if (draw::WorldToScreen(start_vector, scn1)) {
+							found_scn1 = true;
+							break;
+						}
+					}
+				}
+				// We have both vectors, draw
+				if (found_scn1) {
+					drawgl::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg);
+				}
+			}
 		}
 	}
 	
