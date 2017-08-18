@@ -50,7 +50,16 @@ struct walkbot_header_s {
 enum EConnectionFlags {
 	CF_GOOD = (1 << 0),
 	CF_LOW_HEALTH = (1 << 1),
-	CF_LOW_AMMO = (1 << 2)
+	CF_LOW_AMMO = (1 << 2),
+
+	CF_RED = (1 << 3),
+	CF_BLU = (1 << 4),
+
+	CF_CAPPED_1 = (1 << 5),
+	CF_CAPPED_2 = (1 << 6),
+	CF_CAPPED_3 = (1 << 7),
+	CF_CAPPED_4 = (1 << 8),
+	CF_CAPPED_5 = (1 << 9)
 };
 
 struct connection_s {
@@ -269,8 +278,8 @@ bool Load(std::string filename) {
 	{
 		DIR* walkbot_dir = opendir(DATA_PATH "/walkbot");
 		if (!walkbot_dir) {
-			logging::Info("Walkbot directory doesn't exist, creating one!");
-			mkdir(DATA_PATH "/walkbot", S_IRWXU | S_IRWXG);
+			logging::Info("Walkbot directory doesn't exist!");
+			return false;
 		} else closedir(walkbot_dir);
 	}
 	std::string path = format(DATA_PATH "/walkbot/", GetLevelName());

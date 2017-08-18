@@ -10,6 +10,7 @@
 #include "../chatlog.hpp"
 #include "../hack.h"
 #include "ucccccp.hpp"
+#include "../hitrate.hpp"
 #include "hookedmethods.h"
 
 #if ENABLE_VISUALS == 1
@@ -377,6 +378,8 @@ void FireGameEvent_hook(void* _this, IGameEvent* event) {
 	original(_this, event);
 }
 
+static CatVar hitrate_check(CV_SWITCH, "hitrate", "0", "Monitor hitrate");
+
 void FrameStageNotify_hook(void* _this, int stage) {
 	static IClientEntity *ent;
 
@@ -394,6 +397,9 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		angles::Update();
 		hacks::shared::anticheat::CreateMove();
+		if (hitrate_check) {
+			hitrate::Update();
+		}
 	}
 	if (resolver && cathook && !g_Settings.bInvalid && stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START) {
 		PROF_SECTION(FSN_resolver);

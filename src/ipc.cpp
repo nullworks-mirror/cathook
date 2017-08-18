@@ -10,6 +10,7 @@
 
 #include "common.h"
 #include "hack.h"
+#include "hitrate.hpp"
 
 #ifdef IPC_ENABLED
 
@@ -171,6 +172,9 @@ void UpdateServerAddress(bool shutdown) {
 void UpdateTemporaryData() {
 	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
 	data.connected = g_IEngine->IsInGame();
+	data.shots = hitrate::count_shots;
+	data.hits = hitrate::count_hits;
+	data.headshots = hitrate::count_hits_head;
 	if (data.connected) {
 		IClientEntity* player = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
 		if (player) {
