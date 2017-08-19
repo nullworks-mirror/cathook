@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 
 #ifndef HACKS_FOLLOWBOT_H_
 #define HACKS_FOLLOWBOT_H_
@@ -13,6 +13,7 @@
 class CatCommand;
 class CatVar;
 class CachedEntity;
+class Vector;
 
 #include "../ipc.h"
 

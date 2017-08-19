@@ -15,6 +15,7 @@ class SDL_Window;
 class CatVar;
 
 extern CatVar disconnect_reason;
+extern int spectator_target;
 
 bool CanPacket_hook(void*);
 int IN_KeyEvent_hook(void*, int, int, const char*);

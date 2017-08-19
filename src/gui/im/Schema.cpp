@@ -34,7 +34,7 @@ ListEntry_Dummy* FromJson(nlohmann::json json) {
 		}
 		return cv;
 	} else if (json.is_object()) {
-#ifndef IPC_ENABLED
+#ifndef ENABLE_IPC
 		if (json.find("data") != json.end()) {
 			if (json["data"] == "ipc") {
 				return nullptr;

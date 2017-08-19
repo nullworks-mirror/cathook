@@ -835,8 +835,8 @@ void DrawConnection(index_t a, connection_s& b) {
 		if (b.flags & CF_LOW_AMMO) flags += "A";
 		if (b.flags & CF_LOW_HEALTH) flags += "H";
 		int size_x = 0, size_y = 0;
-		FTGL_StringLength(flags, fonts::ftgl_ESP, &size_x, &size_y);
-		FTGL_Draw(flags, wts_cc.x - size_x / 2, wts_cc.y - size_y - 4, fonts::ftgl_ESP);
+		FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
+		FTGL_Draw(flags, wts_cc.x - size_x / 2, wts_cc.y - size_y - 4, fonts::font_main);
 	}
 }
 
@@ -880,7 +880,7 @@ void DrawNode(index_t node, bool draw_back) {
 		if (not draw::WorldToScreen(n.xyz(), wts))
 			return;
 
-		FTGL_Draw(std::to_string(node), wts.x, wts.y, fonts::ftgl_ESP, *color);
+		FTGL_Draw(std::to_string(node), wts.x, wts.y, fonts::font_main, *color);
 	}
 }
 
@@ -935,7 +935,7 @@ void OnLevelInit() {
 
 static CatVar wb_abandon_too_many_bots(CV_INT, "wb_population_control", "0", "Abandon if bots >");
 void CheckLivingSpace() {
-#if IPC_ENABLED
+#if ENABLE_IPC
 	if (ipc::peer && wb_abandon_too_many_bots) {
 		std::vector<unsigned> players {};
 		for (int j = 1; j < 32; j++) {

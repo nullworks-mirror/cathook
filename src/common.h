@@ -9,9 +9,9 @@
 #define COMMON_H_
 
 #if defined(LINUX) and not defined(NO_IPC)
-#define IPC_ENABLED 1
+#define ENABLE_IPC 1
 #else
-#undef IPC_ENABLED
+#undef ENABLE_IPC
 #endif
 
 

@@ -148,7 +148,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		hooks::netchannel.HookMethod((void*)SendNetMsg_hook, offsets::SendNetMsg());
 		hooks::netchannel.HookMethod((void*)Shutdown_hook, offsets::Shutdown());
 		hooks::netchannel.Apply();
-#if IPC_ENABLED
+#if ENABLE_IPC
 		ipc::UpdateServerAddress();
 #endif
 	}
@@ -210,7 +210,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 	hacks::shared::autojoin::Update();
 
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 	static int team_joining_state = 0;
 	static float last_jointeam_try = 0;
 	CachedEntity *found_entity, *ent;
@@ -358,7 +358,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 	// TODO Auto Steam Friend
 
-#if IPC_ENABLED
+#if ENABLE_IPC
 	{
 		PROF_SECTION(CM_playerlist);
 		static Timer ipc_update_timer {};
@@ -412,7 +412,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 
 			ret = false;
 		}
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state) {
 			PROF_SECTION(CM_followbot);
 			SAFE_CALL(hacks::shared::followbot::AfterCreateMove());

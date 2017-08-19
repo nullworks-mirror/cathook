@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 
 #ifndef IPC_H_
 #define IPC_H_
@@ -39,7 +39,6 @@ extern CatCommand exec_all;
 extern CatCommand lobby;
 extern CatVar server_name;
 
-extern pthread_t listener_thread;
 constexpr unsigned cathook_magic_number = 0x0DEADCA7;
 
 struct server_data_s {

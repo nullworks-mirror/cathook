@@ -76,7 +76,7 @@ const std::string& hack::GetType() {
 	static bool version_set = false;
 	if (version_set) return version;
 	version = "";
-#if not defined(IPC_ENABLED)
+#if not defined(ENABLE_IPC)
 	version += " NOIPC";
 #endif
 #if not ENABLE_GUI

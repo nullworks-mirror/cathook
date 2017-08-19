@@ -12,22 +12,9 @@
 #include "hack.h"
 #include "hitrate.hpp"
 
-#ifdef IPC_ENABLED
+#if ENABLE_IPC == 1
 
 namespace ipc {
-
-std::atomic<bool> thread_running(false);
-pthread_t listener_thread { 0 };
-
-void* listen(void*) {
-	while (thread_running) {
-		if (peer->HasCommands()) {
-			peer->ProcessCommands();
-		}
-		usleep(10000);
-	}
-	return 0;
-}
 
 CatCommand fix_deadlock("ipc_fix_deadlock", "Fix deadlock", []() {
 	if (peer) {
@@ -36,7 +23,7 @@ CatCommand fix_deadlock("ipc_fix_deadlock", "Fix deadlock", []() {
 });
 
 CatCommand connect("ipc_connect", "Connect to IPC server", []() {
-	if (peer || thread_running) {
+	if (peer) {
 		logging::Info("Already connected!");
 		return;
 	}
@@ -60,8 +47,6 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 		data.total_score = o_total_score;
 		StoreClientData();
 		Heartbeat();
-		thread_running = true;
-		pthread_create(&listener_thread, nullptr, listen, nullptr);
 	} catch (std::exception& error) {
 		logging::Info("Runtime error: %s", error.what());
 		delete peer;
@@ -83,10 +68,7 @@ CatCommand lobby("ipc_lobby", "Join a lobby", [](const CCommand& args) {
 	peer->SendMessage(format("connect_lobby ", lobby64).c_str(), 0, ipc::commands::execute_client_cmd, 0, 0);
 });
 CatCommand disconnect("ipc_disconnect", "Disconnect from IPC server", []() {
-	thread_running = false;
-	pthread_join(listener_thread, nullptr);
 	if (peer) delete peer;
-	listener_thread = 0;
 	peer = nullptr;
 });
 CatCommand exec("ipc_exec", "Execute command (first argument = bot ID)", [](const CCommand& args) {
@@ -163,7 +145,6 @@ void UpdateServerAddress(bool shutdown) {
 		s_addr = g_IEngine->GetNetChannelInfo()->GetAddress();
 	}
 
-	peer_t::MutexLock lock(peer);
 	user_data_s& data = peer->memory->peer_user_data[peer->client_id];
 	data.friendid = g_ISteamUser->GetSteamID().GetAccountID();
 	strncpy(data.server, s_addr, sizeof(data.server));
