@@ -186,12 +186,12 @@
 						"type": "list",
 						"name": "Colors",
 						"list": [
-							"esp_color_red_red",
-							"esp_color_red_green",
-							"esp_color_red_blue",
-							"esp_color_blue_red",
-							"esp_color_blue_green",
-							"esp_color_blue_blue"
+							"esp_color_red_r",
+							"esp_color_red_g",
+							"esp_color_red_b",
+							"esp_color_blue_r",
+							"esp_color_blue_g",
+							"esp_color_blue_b"
 						]
 					},
 					{
@@ -295,6 +295,20 @@
 					"gui_color_b",
 					"gui_color_g",
 					"gui_color_r",
+					"imgui_color_head_r",
+					"imgui_color_head_g",
+					"imgui_color_head_b",
+					"imgui_color_area_r",
+					"imgui_color_area_g",
+					"imgui_color_area_b",
+					"imgui_color_body_r",
+					"imgui_color_body_g",
+					"imgui_color_body_b",
+					"imgui_color_pops_r",
+					"imgui_color_pops_g",
+					"imgui_color_pops_b",
+					"imgui_color_text",
+					"imgui_custom",
 					"gui_rainbow"
 				]
 			},
