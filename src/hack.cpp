@@ -172,7 +172,7 @@ void hack::Initialize() {
 			"shaders/v2f-c4f.frag", "shaders/v2f-c4f.vert",
 			"shaders/v2f-t2f-c4f.frag", "shaders/v2f-t2f-c4f.vert",
 			"shaders/v3f-t2f-c4f.frag", "shaders/v3f-t2f-c4f.vert",
-			"menu.json", "fonts/opensans-bold.ttf"
+			"menu.json", "fonts/tf2build.ttf"
 		};
 		for (const auto& s : essential) {
 			std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
