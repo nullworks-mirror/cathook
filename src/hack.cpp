@@ -177,7 +177,7 @@ void hack::Initialize() {
 		for (const auto& s : essential) {
 			std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
 			if (not exists) {
-				Error("Missing essential file: " DATA_PATH "/%s\nYou MUST run update-data script to finish installation", s.c_str());
+				Error("Missing essential file: " DATA_PATH "/%s\nYou MUST run check-data script to finish installation", s.c_str());
 			}
 		}
 	}

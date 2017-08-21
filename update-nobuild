@@ -4,7 +4,7 @@ git pull origin master
 git submodule update --remote --recursive
 make clean
 
-./update-data
+./check-data /opt/cathook/data
 
 
 ## Ask user if they would like to update the menu
