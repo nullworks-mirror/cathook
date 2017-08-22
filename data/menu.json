@@ -10,8 +10,12 @@
 			"aimbot_hitboxmode",
 			"aimbot_fov",
 			"aimbot_fov_draw",
+			"aimbot_fov_draw_opacity",
 			"aimbot_prioritymode",
 			"aimbot_charge",
+			"aimbot_auto_unzoom",
+			"aimbot_auto_zoom",
+			"aimbot_rage_only",
 			{
 				"type": "list",
 				"name": "Ignore",
@@ -42,6 +46,7 @@
 				"type": "list",
 				"name": "Preferences",
 				"list": [
+					"aimbot_miss_chance",
 					"aimbot_silent",
 					"aimbot_target_lock",
 					"aimbot_hitbox",
@@ -182,6 +187,7 @@
 					"esp_entity",
 					"esp_model_name",
 					"esp_entity_id",
+					"esp_spellbooks",
 					{
 						"type": "list",
 						"name": "Colors",
@@ -285,7 +291,8 @@
 					"glow_medkits",
 					"glow_ammo",
 					"glow_stickies",
-					"glow_powerups"
+					"glow_powerups",
+					"glow_weapons_white"
 				]
 			},
 			{
@@ -392,7 +399,11 @@
 			"uberspam_build",
 			"uberspam_file",
 			"spam_voicecommand",
-			"spam_teamname"
+			"spam_teamname",
+			"chat_log",
+			"chat_log_noipc",
+			"chat_log_nospam",
+			"chat_log_template"
 		]
 	},
 	{
@@ -428,6 +439,11 @@
 		"type": "list",
 		"name": "Miscellaneous",
 		"list": [
+			"autotaunt",
+			"autotaunt_chance",
+			"autojoin_team",
+			"autojoin_class",
+			"autoqueue",
 			"events",
 			"airstuck",
 			"instant_weapon_switch",

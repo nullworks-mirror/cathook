@@ -44,7 +44,7 @@ CatVar buildings(CV_SWITCH, "esp_buildings", "1", "Building ESP", "Show building
 CatVar teammates(CV_SWITCH, "esp_teammates", "0", "ESP Teammates", "Teammate ESP");
 CatVar tank(CV_SWITCH, "esp_show_tank", "1", "Show tank", "Show tanks in mvm");
 // Text Esps
-CatVar show_weapon(CV_SWITCH, "esp_weapon", "1", "Show weapon name", "Show which weapon the enemy is using");
+CatVar show_weapon(CV_SWITCH, "esp_weapon", "0", "Show weapon name", "Show which weapon the enemy is using");
 CatVar show_distance(CV_SWITCH, "esp_distance", "1", "Distance ESP", "Show distance to target");
 CatVar show_name(CV_SWITCH, "esp_name", "1", "Name ESP", "Show name");
 CatVar show_class(CV_SWITCH, "esp_class", "1", "Class ESP", "Show class");
