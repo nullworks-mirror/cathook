@@ -342,10 +342,10 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 				float end_distance = trace.endpos.DistTo(eye_position);
 				
 				// Loop and look back untill we have a vector on screen 
-				for (int i = 1; i > 45; i++) {
+				for (int i = 1; i > 400; i++) {
 					// Subtract 40 multiplyed by the tick from the end distance and use that as our length to check 
-					Vector end_vector = forward_t * (end_distance - (20 * i)) + eye_position;
-					if (end_vector.DistTo(eye_position) <= 5) break;
+					Vector end_vector = forward_t * (end_distance - (10 * i)) + eye_position;
+					if (end_vector.DistTo(eye_position) < 1) break;
 					if (draw::WorldToScreen(end_vector, scn2)) {
 						found_scn2 = true;
 						break;
@@ -365,11 +365,11 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 					float start_distance = trace.endpos.DistTo(eye_position);
 
 					// Loop and look back untill we have a vector on screen 
-					for (int i = 1; i > 45; i++) {
+					for (int i = 1; i > 400; i++) {
 						// Multiply starting distance by 40, multiplyed by the loop tick
-						Vector start_vector = forward_t * (20 * i) + eye_position;
+						Vector start_vector = forward_t * (10 * i) + eye_position;
 						// We dont want it to go too far
-						if (start_vector.DistTo(trace.endpos) <= 5) break;
+						if (start_vector.DistTo(trace.endpos) < 1) break;
 						// Check if we have a vector on screen, if we do then we set our status
 						if (draw::WorldToScreen(start_vector, scn1)) {
 							found_scn1 = true;
