@@ -208,6 +208,7 @@ rgba_t EffectGlow::GlowColor(IClientEntity* entity) {
 		}
 		break;
 	}
+	
 	return colors::EntityF(ent);
 }
 
