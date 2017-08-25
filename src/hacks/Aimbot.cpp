@@ -18,6 +18,8 @@ static CatVar autoshoot(CV_SWITCH, "aimbot_autoshoot", "1", "Autoshoot", "Shoot 
 static CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "STATIC" });
 static CatVar hitbox_mode(hitbox_mode_enum, "aimbot_hitboxmode", "0", "Hitbox Mode", "Defines hitbox selection mode");
 static CatVar fov(CV_FLOAT, "aimbot_fov", "0", "Aimbot FOV", "FOV range for aimbot to lock targets. \"Smart FOV\" coming eventually.", 180.0f);
+static CatVar fovcircle_opacity(CV_FLOAT, "aimbot_fov_draw_opacity", "0.7", "FOV Circle Opacity", "Defines opacity of FOV circle", 0.0f, 1.0f);
+
 static CatEnum priority_mode_enum({ "SMART", "FOV", "DISTANCE", "HEALTH" });
 static CatVar priority_mode(priority_mode_enum, "aimbot_prioritymode", "0", "Priority mode", "Priority mode.\n"
 		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
@@ -30,6 +32,7 @@ static CatVar ignore_deadringer(CV_SWITCH, "aimbot_ignore_deadringer", "1", "Ign
 static CatVar buildings_sentry(CV_SWITCH, "aimbot_buildings_sentry", "1", "Aim Sentry", "Should aimbot aim at sentryguns?");
 static CatVar buildings_other(CV_SWITCH, "aimbot_buildings_other", "1", "Aim Other building", "Should aimbot aim at other buildings");
 static CatVar stickybot(CV_SWITCH, "aimbot_stickys", "0", "Aim Sticky", "Should aimbot aim at stickys");
+static CatVar rageonly(CV_SWITCH, "aimbot_rage_only", "0", "Ignore non-rage targets", "Use playerlist to set up rage targets");
 static CatEnum teammates_enum({ "ENEMY ONLY", "TEAMMATE ONLY", "BOTH" });
 static CatVar teammates(teammates_enum, "aimbot_teammates", "0", "Aim at teammates", "Use to choose which team/s to target");
 static CatVar silent(CV_SWITCH, "aimbot_silent", "1", "Silent", "Your screen doesn't get snapped to the point where aimbot aims at");
@@ -62,18 +65,16 @@ static CatVar proj_speed(CV_FLOAT, "aimbot_proj_speed", "0", "Projectile speed",
 static CatVar huntsman_autoshoot(CV_FLOAT, "aimbot_huntsman_charge", "0.5", "Huntsman autoshoot", "Minimum charge for autoshooting with huntsman.\n"
 		"Set it to 0.01 if you want to shoot as soon as you start pulling the arrow", 0.01f, 1.0f);
 static CatVar huntsman_full_auto(CV_SWITCH, "aimbot_full_auto_huntsman", "1", "Auto Huntsman", "Autoshoot will pull huntsman's string");
+static CatVar miss_chance(CV_FLOAT, "aimbot_miss_chance", "0", "Miss chance", "From 0 to 1. Aimbot will NOT aim in these % cases", 0.0f, 1.0f);
 // Debug vars
 static CatVar aimbot_debug(CV_SWITCH, "aimbot_debug", "0", "Aimbot Debug", "Display simple debug info for aimbot");
 static CatVar engine_projpred(CV_SWITCH, "debug_aimbot_engine_pp", "0", "Engine ProjPred");
+	
 // Followbot vars
 static CatVar auto_spin_up(CV_SWITCH, "aimbot_spin_up", "0", "Auto Spin Up", "Spin up minigun if you can see target, useful for followbots");
 static CatVar auto_zoom(CV_SWITCH, "aimbot_auto_zoom", "0", "Auto Zoom", "Automatically zoom in if you can see target, useful for followbots");
-
-static CatVar fovcircle_opacity(CV_FLOAT, "aimbot_fov_draw_opacity", "0.7", "FOV Circle Opacity", "Defines opacity of FOV circle", 0.0f, 1.0f);
-static CatVar rageonly(CV_SWITCH, "aimbot_rage_only", "0", "Ignore non-rage targets", "Use playerlist to set up rage targets");
-
-static CatVar miss_chance(CV_FLOAT, "aimbot_miss_chance", "0", "Miss chance", "From 0 to 1. Aimbot will NOT aim in these % cases", 0.0f, 1.0f);
 static CatVar auto_unzoom(CV_SWITCH, "aimbot_auto_unzoom", "0", "Auto Un-zoom", "Automatically unzoom");
+
 
 // Current Entity
 int target_eid { 0 };
@@ -623,6 +624,7 @@ const Vector& PredictEntity(CachedEntity* entity) {
 	} else {
 		result = entity->m_vecOrigin;
 	}
+	
 	// Reset the predicted tickcount for the ent
 	cd.predict_tick = tickcount;
 	// Pre-Calculate fov and store to array

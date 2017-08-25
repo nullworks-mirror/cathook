@@ -37,7 +37,7 @@ CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK", "Sends random commands t
 CatVar auto_strafe(CV_SWITCH, "auto_strafe", "0", "Auto-Strafe", "Automaticly airstrafes for you.");
 CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0", "Render model when zoomed-in", "Renders player model while being zoomed in as Sniper");
 CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push", "Prevents other players from pushing you around.");
-CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "Disable if not gay");
+//CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
 // Taunting stuff
 CatEnum spycrab_mode_enum({"DISABLED", "FORCE CRAB", "FORCE NON-CRAB"});
 CatVar spycrab_mode(spycrab_mode_enum, "spycrab", "0", "Spycrab", "Defines spycrab taunting mode");
@@ -105,9 +105,6 @@ static CatCommand test_chat_print("debug_print_chat", "machine broke", [](const 
 	}
 });
 
-
-
-	
 // Use to send a autobalance request to the server that doesnt prevent you from using it again, Allowing infinite use of it.
 void SendAutoBalanceRequest() { // Credits to blackfire 
 	if (!g_IEngine->IsInGame()) return;
@@ -385,7 +382,7 @@ void DrawText() {
 		}
 	}
 
-	if (!no_homo) {
+	/*if (!no_homo) {
 		int width, height;
 		g_IEngine->GetScreenSize(width, height);
 		
@@ -405,7 +402,7 @@ void DrawText() {
 		//FTGL_StringLength(string.data, fonts::font_main, &size_x);
 		//FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y, fonts::font_main, color);
 		
-	}
+	}*/
 	
 	if (!debug_info) return;
 		if (CE_GOOD(g_pLocalPlayer->weapon())) {

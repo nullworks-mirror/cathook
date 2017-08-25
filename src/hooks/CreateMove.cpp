@@ -178,7 +178,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			cl_interp->m_nValue = 0;
 		}
 		if (cl_interp_ratio->GetInt() != 0) cl_interp_ratio->SetValue(0);
-		if (cl_interpolate->GetInt() != 0) cl_interpolate->SetValue(0);
+		//if (cl_interpolate->GetInt() != 0) cl_interpolate->SetValue(0);
 	}
 
 	if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity)) {
