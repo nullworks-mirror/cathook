@@ -94,6 +94,7 @@ AimbotCalculatedData_s calculated_data_array[2048] {};
 
 // The main "loop" of the aimbot.
 void CreateMove() {
+	PROF_SECTION(PT_aimbot_cm);
 	
 	// Check if aimbot is enabled
 	if (!enabled) return;
@@ -346,6 +347,7 @@ CachedEntity* RetrieveBestTarget(bool aimkey_state) {
 	
 // A second check to determine whether a target is good enough to be aimed at
 bool IsTargetStateGood(CachedEntity* entity) {
+	PROF_SECTION(PT_aimbot_targetstatecheck);
 	
 	// Check for Players
 	if (entity->m_Type == ENTITY_PLAYER) {
@@ -470,6 +472,7 @@ bool IsTargetStateGood(CachedEntity* entity) {
 	
 	// Check for stickybombs
 	} else if (entity->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile)) {
+		
 		// Check if sticky aimbot is enabled
 		if (!stickybot) return false;
 		
@@ -486,6 +489,9 @@ bool IsTargetStateGood(CachedEntity* entity) {
 		
 		// Check if target is a pipe bomb
 		if (CE_INT(entity, netvar.iPipeType) != 1) return false;
+		
+		// Check if target is still
+		if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(1.0f)) return false;
 		
 		// Grab the prediction var
 		AimbotCalculatedData_s& cd = calculated_data_array[entity->m_IDX];
@@ -558,18 +564,6 @@ bool CanAutoShoot() {
 				}
 			}
 		}
-		
-		// Check if zoomed, and zoom if not, then zoom
-		/*IF_GAME (IsTF()) {
-			if (g_pLocalPlayer->clazz == tf_class::tf_sniper) {
-				if (g_pLocalPlayer->holding_sniper_rifle) {
-					if (auto_zoom && !HasCondition<TFCond_Zoomed>(LOCAL_E)) {
-						g_pUserCmd->buttons |= IN_ATTACK2;
-						attack = false;
-					}
-				}
-			}
-		}*/
 		
 		// Check if ambassador can headshot
 		IF_GAME (IsTF2()) {
@@ -1032,3 +1026,4 @@ void DrawText() {
 #endif
 
 }}}
+

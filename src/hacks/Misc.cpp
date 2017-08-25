@@ -30,7 +30,25 @@
 
 namespace hacks { namespace shared { namespace misc {
 
-static CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0", "Render model when zoomed-in", "Renders player model while being zoomed in as Sniper");
+CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info", "Shows some debug info in-game");
+CatVar flashlight_spam(CV_SWITCH, "flashlight", "0", "Flashlight spam", "HL2DM flashlight spam");
+CatVar auto_balance_spam(CV_SWITCH, "request_balance_spam", "0", "Inf Auto Balance Spam", "Use to send a autobalance request to the server that doesnt prevent you from using it again\nCredits to Blackfire");
+CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK", "Sends random commands to prevent being kicked from server");
+CatVar auto_strafe(CV_SWITCH, "auto_strafe", "0", "Auto-Strafe", "Automaticly airstrafes for you.");
+CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0", "Render model when zoomed-in", "Renders player model while being zoomed in as Sniper");
+CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push", "Prevents other players from pushing you around.");
+CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "Disable if not gay");
+// Taunting stuff
+CatEnum spycrab_mode_enum({"DISABLED", "FORCE CRAB", "FORCE NON-CRAB"});
+CatVar spycrab_mode(spycrab_mode_enum, "spycrab", "0", "Spycrab", "Defines spycrab taunting mode");
+CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide", "Allows moving and shooting while taunting");
+CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide", "Allows free movement while taunting with movable taunts\nOnly works in tf2");	
+// Crithack
+CatVar crit_hack_next(CV_SWITCH, "crit_hack_next", "0", "Next crit info");	
+CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info"); // TODO separate
+CatVar crit_hack(CV_KEY, "crit_hack", "0", "Crit Key");
+CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
+CatVar crit_suppress(CV_SWITCH, "crit_suppress", "0", "Disable random crits", "Can help saving crit bucket for forced crits");
 
 void* C_TFPlayer__ShouldDraw_original = nullptr;
 
@@ -45,65 +63,12 @@ bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
 	}
 }
 
-CatVar crit_hack_next(CV_SWITCH, "crit_hack_next", "0", "Next crit info");
-
-void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char* ft, unsigned acc_offset) {
-	bool forcetable = ft && strlen(ft);
-	if (!forcetable || !strcmp(ft, table->GetName()))
-		logging::Info("==== TABLE: %s", table->GetName());
-	for (int i = 0; i < table->GetNumProps(); i++) {
-		RecvProp* prop = table->GetProp(i);
-		if (!prop) continue;
-		if (prop->GetDataTable()) {
-			DumpRecvTable(ent, prop->GetDataTable(), depth + 1, ft, acc_offset + prop->GetOffset());
-		}
-		if (forcetable && strcmp(ft, table->GetName())) continue;
-		switch (prop->GetType()) {
-		case SendPropType::DPT_Float:
-			logging::Info("%s [0x%04x] = %f", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()));
-		break;
-		case SendPropType::DPT_Int:
-			logging::Info("%s [0x%04x] = %i | %u | %hd | %hu", prop->GetName(), prop->GetOffset(), CE_INT(ent, acc_offset + prop->GetOffset()), CE_VAR(ent, acc_offset +  prop->GetOffset(), unsigned int), CE_VAR(ent, acc_offset + prop->GetOffset(), short), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned short));
-		break;
-		case SendPropType::DPT_String:
-			logging::Info("%s [0x%04x] = %s", prop->GetName(), prop->GetOffset(), CE_VAR(ent, prop->GetOffset(), char*));
-		break;
-		case SendPropType::DPT_Vector:
-			logging::Info("%s [0x%04x] = (%f, %f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 8));
-		break;
-		case SendPropType::DPT_VectorXY:
-			logging::Info("%s [0x%04x] = (%f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent,acc_offset +  prop->GetOffset() + 4));
-		break;
-		}
-
-	}
-	if (!ft || !strcmp(ft, table->GetName()))
-		logging::Info("==== END OF TABLE: %s", table->GetName());
-}
-
-static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](const CCommand& args) {
-	if (args.ArgC() < 1) return;
-	if (!atoi(args[1])) return;
-	int idx = atoi(args[1]);
-	CachedEntity* ent = ENTITY(idx);
-	if (CE_BAD(ent)) return;
-	ClientClass* clz = RAW_ENT(ent)->GetClientClass();
-	logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
-	const char* ft = (args.ArgC() > 1 ? args[2] : 0);
-	DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
-});
-
-CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push", "Prevents other players from pushing you around.");
-
 IClientEntity* found_crit_weapon = nullptr;
 int found_crit_number = 0;
 int last_number = 0;
 
 // SUPER SECRET CODE DONOT STEEL
-
-static CatEnum spycrab_mode_enum({"DISABLED", "FORCE CRAB", "FORCE NON-CRAB"});
-static CatVar spycrab_mode(spycrab_mode_enum, "spycrab", "0", "Spycrab", "Defines spycrab taunting mode");
-
+	
 int no_taunt_ticks = 0;
 
 typedef int(*StartSceneEvent_t)(IClientEntity* _this, int, int, void*, void*, IClientEntity*);
@@ -141,13 +106,10 @@ static CatCommand test_chat_print("debug_print_chat", "machine broke", [](const 
 });
 
 
-CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide", "Allows free movement while taunting with movable taunts\nOnly works in tf2");
-CatVar auto_balance_spam(CV_SWITCH, "request_balance_spam", "0", "Inf Auto Balance Spam", "Use to send a autobalance request to the server that doesnt prevent you from using it again\nCredits to Blackfire");
+
 	
-// Use to send a autobalance request to the server that doesnt prevent you from using it again
-// Allowing infinite use of it.
-// Credits to blackfire 
-void SendAutoBalanceRequest() {
+// Use to send a autobalance request to the server that doesnt prevent you from using it again, Allowing infinite use of it.
+void SendAutoBalanceRequest() { // Credits to blackfire 
 	if (!g_IEngine->IsInGame()) return;
 	KeyValues* kv = new KeyValues("AutoBalanceVolunteerReply");
 	kv->SetInt("response", 1);
@@ -159,87 +121,14 @@ CatCommand SendAutoBlRqCatCom("request_balance", "Request Infinite Auto-Balance"
 });
 	
 void CreateMove() {
-	static bool flswitch = false;
+	
+	// Crithack
 	static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
-	static int critWarmup = 0;
 	static int tries, cmdn, md5seed, rseed, c, b;
 	static crithack_saved_state state;
 	static bool chc;
 	static bool changed = false;
-	static ConVar *pNoPush = g_ICvar->FindVar("tf_avoidteammates_pushaway");
-
-	//Tauntslide needs improvement for movement but it mostly works
-	IF_GAME (IsTF2()) {
-		//Only work if the catvar enables it
-		if (tauntslide_tf2) {
-			//Check to prevent crashing
-			if (CE_GOOD(LOCAL_E)) {
-				//If the local player is taunting
-				if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
-					float forward = 0;
-					float side = 0;
-					
-					//get directions
-					if (g_pUserCmd->buttons & IN_FORWARD) forward += 450;
-					if (g_pUserCmd->buttons & IN_BACK) forward -= 450;
-					if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
-					if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
-					
-					//Push them to userCmd
-					g_pUserCmd->forwardmove = forward;
-					g_pUserCmd->sidemove = side;
-					
-					//Grab Camera angle
-					static QAngle cameraAngle;
-					g_IEngine->GetViewAngles(cameraAngle);
-					
-					//Set userAngle = camera angles
-					g_pUserCmd->viewangles.y = cameraAngle[1];
-					g_pLocalPlayer->v_OrigViewangles.y = cameraAngle[1];
-					
-					//Use silent since we dont want to prevent the player from looking around
-					g_pLocalPlayer->bUseSilentAngles = true;
-				}
-			}
-		}
-	}
-
-	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
-		RemoveCondition<TFCond_Taunting>(LOCAL_E);
-		no_taunt_ticks--;
-	}
-	// TODO FIXME this should be moved out of here
-	IF_GAME (IsTF2()) {
-		PROF_SECTION(CM_misc_hook_checks);
-		localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
-		if (localplayer && spycrab_mode) {
-			void** vtable = *(void***)(localplayer);
-			if (vtable[0x111] != StartSceneEvent_hooked) {
-				StartSceneEvent_original = (StartSceneEvent_t)vtable[0x111];
-				void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
-				mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-				vtable[0x111] = (void*)StartSceneEvent_hooked;
-				mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
-			}
-		}
-		if (render_zoomed && localplayer) {
-			// Patchking local player
-			void** vtable = *(void***)(localplayer);
-			if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook) {
-				C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];
-				void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
-				mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-				vtable[offsets::ShouldDraw()] = (void*)C_TFPlayer__ShouldDraw_hook;
-				mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
-			}
-		}
-	}
-
-	IF_GAME (IsTF2C()) {
-		if (tauntslide) RemoveCondition<TFCond_Taunting>(LOCAL_E);
-	}
-
-
+	
 	if (g_pUserCmd->command_number && found_crit_number > g_pUserCmd->command_number + 66 * 20) found_crit_number = 0;
 	if (g_pUserCmd->command_number) last_number = g_pUserCmd->command_number;
 
@@ -327,12 +216,39 @@ void CreateMove() {
 		last_weapon = weapon;
 		last_bucket = bucket;
 	}
-
-	if (flashlight_spam) {
-		if (flswitch && !g_pUserCmd->impulse) g_pUserCmd->impulse = 100;
-		flswitch = !flswitch;
-	}
 	
+	// Spycrab stuff
+	// TODO FIXME this should be moved out of here
+	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
+		RemoveCondition<TFCond_Taunting>(LOCAL_E);
+		no_taunt_ticks--;
+	}
+	IF_GAME (IsTF2()) {
+		PROF_SECTION(CM_misc_hook_checks);
+		static IClientEntity *localplayer = nullptr;
+		localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+		if (localplayer && spycrab_mode) {
+			void** vtable = *(void***)(localplayer);
+			if (vtable[0x111] != StartSceneEvent_hooked) {
+				StartSceneEvent_original = (StartSceneEvent_t)vtable[0x111];
+				void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
+				mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
+				vtable[0x111] = (void*)StartSceneEvent_hooked;
+				mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
+			}
+		}
+		if (render_zoomed && localplayer) {
+			// Patchking local player
+			void** vtable = *(void***)(localplayer);
+			if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook) {
+				C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];
+				void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
+				mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
+				vtable[offsets::ShouldDraw()] = (void*)C_TFPlayer__ShouldDraw_hook;
+				mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
+			}
+		}
+	}
 	
 	// AntiAfk That after a certian time without movement keys depressed, causes random keys to be spammed for 1 second
 	if (anti_afk) {
@@ -362,7 +278,64 @@ void CreateMove() {
 		}
 	}
 	
+	// Automaticly airstrafes in the air
+	if (auto_strafe) {
+		bool ground = CE_INT(g_pLocalPlayer->entity, netvar.iFlags) & (1 << 0);
+		if (!ground) {
+			if (g_pUserCmd->mousedx > 1 || g_pUserCmd->mousedx < -1) {
+				g_pUserCmd->sidemove = g_pUserCmd->mousedx > 1 ? 450.f : -450.f;
+			}
+		}
+	}
+	
+	// TF2c Tauntslide
+	IF_GAME (IsTF2C()) {
+		if (tauntslide) RemoveCondition<TFCond_Taunting>(LOCAL_E);
+	}
+
+	// HL2DM flashlight spam
+	IF_GAME (IsHL2DM()) {
+		if (flashlight_spam) {
+			static bool flswitch = false;
+			if (flswitch && !g_pUserCmd->impulse) g_pUserCmd->impulse = 100;
+			flswitch = !flswitch;
+		}
+	}
+	
 	IF_GAME (IsTF2()) {
+		
+		// Tauntslide needs improvement for movement but it mostly works
+		if (tauntslide_tf2) {
+			// Check to prevent crashing
+			if (CE_GOOD(LOCAL_E)) {
+				// If the local player is taunting
+				if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
+					float forward = 0;
+					float side = 0;
+					
+					// get directions
+					if (g_pUserCmd->buttons & IN_FORWARD) forward += 450;
+					if (g_pUserCmd->buttons & IN_BACK) forward -= 450;
+					if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
+					if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
+					
+					// Push them to userCmd
+					g_pUserCmd->forwardmove = forward;
+					g_pUserCmd->sidemove = side;
+					
+					// Grab Camera angle
+					static QAngle cameraAngle;
+					g_IEngine->GetViewAngles(cameraAngle);
+					
+					// Set userAngle = camera angles
+					g_pUserCmd->viewangles.y = cameraAngle[1];
+					g_pLocalPlayer->v_OrigViewangles.y = cameraAngle[1];
+					
+					// Use silent since we dont want to prevent the player from looking around
+					g_pLocalPlayer->bUseSilentAngles = true;
+				}
+			}
+		}
 		
 		// Spams infinite autobalance spam function 
 		if (auto_balance_spam) {
@@ -382,6 +355,7 @@ void CreateMove() {
 		}
 		
 		// Simple No-Push through cvars
+		static ConVar *pNoPush = g_ICvar->FindVar("tf_avoidteammates_pushaway");
     	if (nopush_enabled == pNoPush-> GetBool()) pNoPush->SetValue (!nopush_enabled);
     }
 }
@@ -389,6 +363,7 @@ void CreateMove() {
 #if ENABLE_VISUALS == 1
 
 void DrawText() {
+	// Crithack info
 	if (crit_info && CE_GOOD(LOCAL_W)) {
 		if (CritKeyDown() || experimental_crit_hack.KeyDown()) {
 			AddCenterString("FORCED CRITS!", colors::red);
@@ -410,7 +385,28 @@ void DrawText() {
 		}
 	}
 
-
+	if (!no_homo) {
+		int width, height;
+		g_IEngine->GetScreenSize(width, height);
+		
+		// Create steps from screen size
+		int step = (height / 7);
+		
+		// Go through steps creating a rainbow screen
+		for (int i = 1; i < 7; i++) {
+			// Get Color and set opacity to %50
+			rgba_t gaybow = colors::FromHSL(fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 2))) * 360.0f, 0.85f, 0.9f);
+			gaybow.a = .5;
+			// Draw next step
+			drawgl::FilledRect(0, step * (i - 1), width, (step * i) - (step * (i - 1)), gaybow);
+		}
+											
+		//int size_x;
+		//FTGL_StringLength(string.data, fonts::font_main, &size_x);
+		//FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y, fonts::font_main, color);
+		
+	}
+	
 	if (!debug_info) return;
 		if (CE_GOOD(g_pLocalPlayer->weapon())) {
 			AddSideString(format("Slot: ", vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon()))));
@@ -504,15 +500,7 @@ void Schema_Reload() {
 	InitSchema(0, itemschema, buf, false, 0xDEADCA7);
 	*/
 }
-
-CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info", "Shows some debug info in-game");
-CatVar flashlight_spam(CV_SWITCH, "flashlight", "0", "Flashlight spam", "HL2DM flashlight spam");
-CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info"); // TODO separate
-CatVar crit_hack(CV_KEY, "crit_hack", "0", "Crit Key");
-CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
-CatVar crit_suppress(CV_SWITCH, "crit_suppress", "0", "Disable random crits", "Can help saving crit bucket for forced crits");
-CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK", "Sends random commands to prevent being kicked from server");
-CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide", "Allows moving and shooting while taunting");
+CatCommand schema("schema", "Load custom schema", Schema_Reload);
 
 CatCommand name("name_set", "Immediate name change", [](const CCommand& args) {
 	if (args.ArgC() < 2) {
@@ -533,6 +521,15 @@ CatCommand name("name_set", "Immediate name change", [](const CCommand& args) {
 		ch->SendNetMsg(setname, false);
 	}
 });
+CatCommand set_value("set", "Set value", [](const CCommand& args) {
+	if (args.ArgC() < 2) return;
+	ConVar* var = g_ICvar->FindVar(args.Arg(1));
+	if (!var) return;
+	std::string value(args.Arg(2));
+	ReplaceString(value, "\\n", "\n");
+	var->SetValue(value.c_str());
+	logging::Info("Set '%s' to '%s'", args.Arg(1), value.c_str());
+});
 CatCommand say_lines("say_lines", "Say with newlines (\\n)", [](const CCommand& args) {
 	std::string message(args.ArgS());
 	ReplaceString(message, "\\n", "\n");
@@ -544,20 +541,61 @@ CatCommand disconnect("disconnect", "Disconnect with custom reason", [](const CC
 	if (!ch) return;
 	ch->Shutdown(args.ArgS());
 });
-CatCommand schema("schema", "Load custom schema", Schema_Reload);
+
 CatCommand disconnect_vac("disconnect_vac", "Disconnect (fake VAC)", []() {
 	INetChannel* ch = (INetChannel*)g_IEngine->GetNetChannelInfo();
 	if (!ch) return;
 	ch->Shutdown("VAC banned from secure server\n");
 });
-CatCommand set_value("set", "Set value", [](const CCommand& args) {
-	if (args.ArgC() < 2) return;
-	ConVar* var = g_ICvar->FindVar(args.Arg(1));
-	if (!var) return;
-	std::string value(args.Arg(2));
-	ReplaceString(value, "\\n", "\n");
-	var->SetValue(value.c_str());
-	logging::Info("Set '%s' to '%s'", args.Arg(1), value.c_str());
+
+
+	
+// Netvars stuff
+void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char* ft, unsigned acc_offset) {
+	bool forcetable = ft && strlen(ft);
+	if (!forcetable || !strcmp(ft, table->GetName()))
+		logging::Info("==== TABLE: %s", table->GetName());
+	for (int i = 0; i < table->GetNumProps(); i++) {
+		RecvProp* prop = table->GetProp(i);
+		if (!prop) continue;
+		if (prop->GetDataTable()) {
+			DumpRecvTable(ent, prop->GetDataTable(), depth + 1, ft, acc_offset + prop->GetOffset());
+		}
+		if (forcetable && strcmp(ft, table->GetName())) continue;
+		switch (prop->GetType()) {
+		case SendPropType::DPT_Float:
+			logging::Info("%s [0x%04x] = %f", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()));
+		break;
+		case SendPropType::DPT_Int:
+			logging::Info("%s [0x%04x] = %i | %u | %hd | %hu", prop->GetName(), prop->GetOffset(), CE_INT(ent, acc_offset + prop->GetOffset()), CE_VAR(ent, acc_offset +  prop->GetOffset(), unsigned int), CE_VAR(ent, acc_offset + prop->GetOffset(), short), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned short));
+		break;
+		case SendPropType::DPT_String:
+			logging::Info("%s [0x%04x] = %s", prop->GetName(), prop->GetOffset(), CE_VAR(ent, prop->GetOffset(), char*));
+		break;
+		case SendPropType::DPT_Vector:
+			logging::Info("%s [0x%04x] = (%f, %f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 8));
+		break;
+		case SendPropType::DPT_VectorXY:
+			logging::Info("%s [0x%04x] = (%f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent,acc_offset +  prop->GetOffset() + 4));
+		break;
+		}
+
+	}
+	if (!ft || !strcmp(ft, table->GetName()))
+		logging::Info("==== END OF TABLE: %s", table->GetName());
+}
+
+// CatCommand to dumb netvar info
+static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](const CCommand& args) {
+	if (args.ArgC() < 1) return;
+	if (!atoi(args[1])) return;
+	int idx = atoi(args[1]);
+	CachedEntity* ent = ENTITY(idx);
+	if (CE_BAD(ent)) return;
+	ClientClass* clz = RAW_ENT(ent)->GetClientClass();
+	logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
+	const char* ft = (args.ArgC() > 1 ? args[2] : 0);
+	DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
 });
 
 }}}

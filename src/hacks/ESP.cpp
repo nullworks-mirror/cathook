@@ -308,6 +308,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 		
 		// Logic for using the enum to sort out snipers
 		if ((int)sightlines == 2 || ((int)sightlines == 1 && CE_INT(ent, netvar.iClass) == tf_sniper)) {
+			PROF_SECTION(PT_esp_sightlines);
 			
 			// Get players angle and head position
 			Vector& eye_angles = NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);	
@@ -341,9 +342,9 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 				float end_distance = trace.endpos.DistTo(eye_position);
 				
 				// Loop and look back untill we have a vector on screen 
-				for (int i = 1; i > 30; i++) {
+				for (int i = 1; i > 45; i++) {
 					// Subtract 40 multiplyed by the tick from the end distance and use that as our length to check 
-					Vector end_vector = forward_t * (end_distance - (40 * i)) + eye_position;
+					Vector end_vector = forward_t * (end_distance - (20 * i)) + eye_position;
 					if (end_vector.DistTo(eye_position) <= 5) break;
 					if (draw::WorldToScreen(end_vector, scn2)) {
 						found_scn2 = true;
@@ -364,9 +365,9 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 					float start_distance = trace.endpos.DistTo(eye_position);
 
 					// Loop and look back untill we have a vector on screen 
-					for (int i = 1; i > 30; i++) {
+					for (int i = 1; i > 45; i++) {
 						// Multiply starting distance by 40, multiplyed by the loop tick
-						Vector start_vector = forward_t * (40 * i) + eye_position;
+						Vector start_vector = forward_t * (20 * i) + eye_position;
 						// We dont want it to go too far
 						if (start_vector.DistTo(trace.endpos) <= 5) break;
 						// Check if we have a vector on screen, if we do then we set our status
@@ -473,7 +474,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	
 	// Check if entity has strings to draw
 	if (ent_data.string_count) {
-		PROF_SECTION(PT_esp_drawstrings); // WHY IS PROF SECTION NEEDED HERE... WHYYYY
+		PROF_SECTION(PT_esp_drawstrings);
 		
 		// Create our initial point at the center of the entity
 		Vector draw_point = screen;
@@ -546,6 +547,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 	// TODO Currently crashes, needs null check somewhere
 	// Draw Hitboxes
 	/*if (draw_hitbox && ent->m_Type == ENTITY_PLAYER) {
+		PROF_SECTION(PT_esp_drawhitbboxes);
 		
 		// Loop through hitboxes
 		for (int i = 0; i <= 17; i++) { // I should probs get how many hitboxes instead of using a fixed number...
@@ -880,7 +882,7 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 
 // Draw a box around a player
 void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr) {
-	PROF_SECTION(PT_esp_drawbox); // Unknown
+	PROF_SECTION(PT_esp_drawbox);
 	
 	// Check if ent is bad to prevent crashes
 	if (CE_BAD(ent)) return;
@@ -945,6 +947,7 @@ void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t& color, boo
 
 // Used for caching collidable bounds
 bool GetCollide(CachedEntity* ent) {
+	PROF_SECTION(PT_esp_getcollide);
 	
 	// Null + Dormant check to prevent crashing
 	if (CE_BAD(ent)) return false;
