@@ -13,6 +13,7 @@ cathook is a training software designed for Team Fortress 2 for Linux. cathook i
 * Encrypted chat
 * Emoji ESP
 * Fidget Spinner crosshair
+* Chance to get manually VAC banned by Valve
 
 and a lot of useful features, including
 
@@ -58,12 +59,12 @@ If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the li
 * `libsdl2-dev`
 * `libglew-dev:i386`
 * `libfreetype6-dev:i386`
-* `rsync` (used for copying shaders/fonts to tf2 data directory, `update-data` script)
+* `rsync` (used for copying shaders/fonts to tf2 data directory, `check-data` script)
 
 
 Cathook installation script:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && bash build-tf2 && bash update-data
+git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && bash build-tf2 && bash check-data /opt/cathook/data
 ```
 
 **Errors while installing?**
