@@ -325,7 +325,7 @@ void CreateMove() {
 					g_IEngine->GetViewAngles(cameraAngle);
 					
 					// Set userAngle = camera angles
-					g_pUserCmd->viewangles.y = cameraAngle[1];
+					//g_pUserCmd->viewangles.y = cameraAngle[1];
 					g_pLocalPlayer->v_OrigViewangles.y = cameraAngle[1];
 					
 					// Use silent since we dont want to prevent the player from looking around
@@ -420,6 +420,7 @@ void DrawText() {
 			AddSideString(format("Velocity2: ", vel.Length2D()));
 			AddSideString(format("flSimTime: ", LOCAL_E->var<float>(netvar.m_flSimulationTime)));
 			if (g_pUserCmd) AddSideString(format("command_number: ", last_cmd_number));
+			AddSideString(format("clip: ", CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1)));
 			/*AddSideString(colors::white, "Weapon: %s [%i]", RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(), g_pLocalPlayer->weapon()->m_iClassID);
 			//AddSideString(colors::white, "flNextPrimaryAttack: %f", CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));
 			//AddSideString(colors::white, "nTickBase: %f", (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * gvars->interval_per_tick);
