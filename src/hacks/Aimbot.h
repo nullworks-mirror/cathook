@@ -50,12 +50,11 @@ bool ShouldAim();
 CachedEntity* RetrieveBestTarget(bool aimkey_state);
 bool IsTargetStateGood(CachedEntity* entity);
 void Aim(CachedEntity* entity);
-bool CanAutoShoot();
+void DoAutoshoot();
 int BestHitbox(CachedEntity* target);
 int ClosestHitbox(CachedEntity* target);
-void slowAim(Vector &inputAngle, Vector userAngle);
+void DoSlowAim(Vector &inputAngle);
 bool UpdateAimkey();
-bool GetCanAim(int mode);
 float EffectiveTargetingRange();
 
 }}}

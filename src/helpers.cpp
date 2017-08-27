@@ -695,6 +695,7 @@ bool CanHeadshot() {
 }
 
 bool CanShoot() {
+	
 	float servertime, nextattack;
 
 	servertime = (float)(CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * g_GlobalVars->interval_per_tick;
