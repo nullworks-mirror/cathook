@@ -64,7 +64,7 @@ If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the li
 
 Cathook installation script:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && bash build-tf2 && bash check-data /opt/cathook/data
+git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && bash build-tf2
 ```
 
 **Errors while installing?**
