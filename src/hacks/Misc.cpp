@@ -305,28 +305,24 @@ void CreateMove() {
 		if (tauntslide_tf2) {
 			// Check to prevent crashing
 			if (CE_GOOD(LOCAL_E)) {
-				// If the local player is taunting
 				if (HasCondition<TFCond_Taunting>(LOCAL_E)) {
+					// get directions
 					float forward = 0;
 					float side = 0;
-					
-					// get directions
 					if (g_pUserCmd->buttons & IN_FORWARD) forward += 450;
 					if (g_pUserCmd->buttons & IN_BACK) forward -= 450;
 					if (g_pUserCmd->buttons & IN_MOVELEFT) side -= 450;
 					if (g_pUserCmd->buttons & IN_MOVERIGHT) side += 450;
-					
-					// Push them to userCmd
 					g_pUserCmd->forwardmove = forward;
 					g_pUserCmd->sidemove = side;
 					
-					// Grab Camera angle
-					static QAngle cameraAngle;
-					g_IEngine->GetViewAngles(cameraAngle);
+					static QAngle camera_angle;
+					g_IEngine->GetViewAngles(camera_angle);
 					
-					// Set userAngle = camera angles
-					//g_pUserCmd->viewangles.y = cameraAngle[1];
-					g_pLocalPlayer->v_OrigViewangles.y = cameraAngle[1];
+					// Doesnt work with anti-aim as well as I hoped... I guess this is as far as I can go with such a simple tauntslide
+					if (!(hacks::shared::antiaim::enabled && hacks::shared::antiaim::yaw_mode && !(side || forward))) 
+						g_pUserCmd->viewangles.y = camera_angle[1]; 
+					g_pLocalPlayer->v_OrigViewangles.y = camera_angle[1];
 					
 					// Use silent since we dont want to prevent the player from looking around
 					g_pLocalPlayer->bUseSilentAngles = true;
@@ -337,16 +333,11 @@ void CreateMove() {
 		// Spams infinite autobalance spam function 
 		if (auto_balance_spam) {
 
-			// Time Last used
 			static float auto_balance_time = 0;
-
-			// If the timer exceeds 1 minute, jump and reset the timer
 			if (g_GlobalVars->curtime - 0.15 > auto_balance_time) {
 				
-				// Use the Inf Request func
 				SendAutoBalanceRequest();
-				
-				// Reset timer
+				// Reset
 				auto_balance_time = g_GlobalVars->curtime;
 			}
 		}

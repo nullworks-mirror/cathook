@@ -22,7 +22,7 @@ static CatVar fovcircle_opacity(CV_FLOAT, "aimbot_fov_draw_opacity", "0.7", "FOV
 // Selective and related
 static CatEnum priority_mode_enum({ "SMART", "FOV", "DISTANCE", "HEALTH" });
 static CatVar priority_mode(priority_mode_enum, "aimbot_prioritymode", "0", "Priority mode", "Priority mode.\n"
-		"SMART: Basically Auto-Threat. Will be tweakable eventually. "
+		"SMART: Basically Auto-Threat. "
 		"FOV, DISTANCE, HEALTH are self-explainable. HEALTH picks the weakest enemy");
 static CatVar wait_for_charge(CV_SWITCH, "aimbot_charge", "0", "Wait for sniper rifle charge", "Aimbot waits until it has enough charge to kill");
 static CatVar ignore_vaccinator(CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator", "Hitscan weapons won't fire if enemy is vaccinated against bullets");
@@ -43,14 +43,13 @@ static CatEnum hitbox_enum({
 		"HAND L", "UPPER ARM R", "LOWER ARM R", "HAND R", "HIP L", "KNEE L", "FOOT L", "HIP R",
 		"KNEE R", "FOOT R" });
 static CatVar hitbox(hitbox_enum, "aimbot_hitbox", "0", "Hitbox", "Hitbox to aim at. Ignored if AutoHitbox is on");
-static CatVar zoomed_only(CV_SWITCH, "aimbot_zoomed", "1", "Zoomed only", "Don't autoshoot with unzoomed rifles");
+static CatVar zoomed_only(CV_SWITCH, "aimbot_zoomed", "0", "Zoomed only", "Don't autoshoot with unzoomed rifles");
 static CatVar only_can_shoot(CV_SWITCH, "aimbot_only_when_can_shoot", "1", "Active when can shoot", "Aimbot only activates when you can instantly shoot, sometimes making the autoshoot invisible for spectators");
-static CatVar attack_only(CV_SWITCH, "aimbot_enable_attack_only", "0", "Active when attacking", "Basically makes Mouse1 an AimKey, isn't compatible with AutoShoot");
 static CatVar max_range(CV_INT, "aimbot_maxrange", "0", "Max distance",
 		"Max range for aimbot\n"
 		"900-1100 range is efficient for scout/widowmaker engineer", 4096.0f);
 static CatVar extrapolate(CV_SWITCH, "aimbot_extrapolate", "0", "Latency extrapolation", "(NOT RECOMMENDED) latency extrapolation");
-static CatVar slow_aim(CV_INT, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the target for more legit play\nDisables silent aimbot", 1, 50);
+static CatVar slow_aim(CV_INT, "aimbot_slow", "0", "Slow Aim", "Slowly moves your crosshair onto the target for more legit play\nDisables silent aimbot", 0, 50);
 static CatVar projectile_aimbot(CV_SWITCH, "aimbot_projectile", "1", "Projectile aimbot", "If you turn it off, aimbot won't try to aim with projectile weapons");
 static CatVar proj_gravity(CV_FLOAT, "aimbot_proj_gravity", "0", "Projectile gravity",
 		"Force override projectile gravity. Useful for debugging.", 1.0f);
@@ -155,7 +154,7 @@ void CreateMove() {
 			} else return;
 			
 		// Not release type weapon
-		} else if (CanShoot() && (g_pUserCmd->buttons & IN_ATTACK)) Aim(target);
+		} else if (CanShoot() && (g_pUserCmd->buttons & IN_ATTACK) && CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0) Aim(target);
 	} else
 		Aim(target);
 
@@ -166,10 +165,6 @@ void CreateMove() {
 bool ShouldAim() {
 	// Checks should be in order: cheap -> expensive
 	
-	// Check for +attack if settings allow it
-	if (attack_only && !(g_pUserCmd->buttons & IN_ATTACK)) {
-		return false;
-	}
 	// Check for +use
 	if (g_pUserCmd->buttons & IN_USE) return false;
 	// Check if using action slot item 
