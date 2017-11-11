@@ -132,7 +132,7 @@ void CreateMove() {
 	static int last_checked_command_number = 0;
 	static IClientEntity* last_checked_weapon = nullptr;
 
-	IF_GAME (IsTF2()) {
+	/*IF_GAME (IsTF2()) {
 		if (crit_hack_next && CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
 			PROF_SECTION(CM_misc_crit_hack_prediction);
 			weapon = RAW_ENT(LOCAL_W);
@@ -148,7 +148,7 @@ void CreateMove() {
 						}
 						g_pUserCmd->buttons &= ~(IN_ATTACK);
 					}
-				}*/
+				}*//*
 				if (g_pUserCmd->command_number && (last_checked_weapon != weapon || last_checked_command_number < g_pUserCmd->command_number)) {
 					tries = 0;
 					cmdn = g_pUserCmd->command_number;
@@ -188,13 +188,13 @@ void CreateMove() {
 				}
 			}
 		}
-	}
-
+	}*/
+	/*
 	{
 		PROF_SECTION(CM_misc_crit_hack_apply);
 		if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
-	}
-
+	}*/
+	/*
 	if (WeaponCanCrit()) {
 		PROF_SECTION(CM_misc_crit_hack_bucket_fixing);
 		weapon = RAW_ENT(LOCAL_W);
@@ -213,7 +213,7 @@ void CreateMove() {
 		last_weapon = weapon;
 		last_bucket = bucket;
 	}
-	
+	*/
 	// Spycrab stuff
 	// TODO FIXME this should be moved out of here
 	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
@@ -352,7 +352,9 @@ void CreateMove() {
 
 void DrawText() {
 	// Crithack info
-	if (crit_info && CE_GOOD(LOCAL_W)) {
+	// CRITHACK IS DISABLED (temporarily)
+        /*
+        if (crit_info && CE_GOOD(LOCAL_W)) {
 		if (CritKeyDown() || experimental_crit_hack.KeyDown()) {
 			AddCenterString("FORCED CRITS!", colors::red);
 		}
@@ -371,7 +373,7 @@ void DrawText() {
 			}
 			//AddCenterString(format("Time: ", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2872u)));
 		}
-	}
+	}*/
 
 	/*if (!no_homo) {
 		int width, height;

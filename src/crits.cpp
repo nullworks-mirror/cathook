@@ -23,7 +23,9 @@ bool CritKeyDown() {
 }
 
 bool AllowAttacking() {
-	if (!(CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee)) && !hacks::shared::misc::crit_suppress) return true;
+	return true;
+	/*
+        if (!(CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee)) && !hacks::shared::misc::crit_suppress) return true;
 	bool crit = IsAttackACrit(g_pUserCmd);
 	LoadSavedState();
 	if (hacks::shared::misc::crit_suppress && !(CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee))) {
@@ -33,7 +35,7 @@ bool AllowAttacking() {
 	} else if ((CritKeyDown() || ((GetWeaponMode() == weapon_melee) && hacks::shared::misc::crit_melee)) && RandomCrits() && WeaponCanCrit() && (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife))) {
 		if (!crit) return false;
 	}
-	return true;
+	return true;*/
 }
 
 void ModifyCommandNumber() {

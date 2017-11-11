@@ -208,7 +208,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	}
 	g_Settings.bInvalid = false;
 
-	hacks::shared::autojoin::Update();
+//	hacks::shared::autojoin::Update();
 
 #if ENABLE_IPC == 1
 	static int team_joining_state = 0;

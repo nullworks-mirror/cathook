@@ -959,6 +959,7 @@ void CheckLivingSpace() {
 				}
 			}
 		}
+		/*
 		if (ipc::peer->client_id == highest && count > int(wb_abandon_too_many_bots)) {
 			static Timer timer {};
 			if (timer.test_and_set(1000 * 5)) {
@@ -969,6 +970,7 @@ void CheckLivingSpace() {
 				g_TFGCClientSystem->SendExitMatchmaking(true);
 			}
 		}
+		*/
 	}
 #endif
 }
@@ -996,8 +998,10 @@ void Move() {
 					if (s < 3) {
 						return;
 					}
-					logging::Info("No map file, shutting down");
+					/*
+				        logging::Info("No map file, shutting down");
 					g_TFGCClientSystem->SendExitMatchmaking(true);
+					*/
 					last_abandon = std::chrono::system_clock::now();
 				}
 			}
