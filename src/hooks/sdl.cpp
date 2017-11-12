@@ -5,8 +5,11 @@
  *      Author: nullifiedcat
  */
 
-#include "hookedmethods.h"
 #include "../common.h"
+
+#ifdef RENDERING_ENGINE_OPENGL
+
+#include "hookedmethods.h"
 #include "../hack.h"
 
 #include <link.h>
@@ -46,7 +49,7 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
 			ctx_opengl = SDL_GL_CreateContext(window);
 			FTGL_Init();
 			textures::Init();
-			draw_api::intialize();
+			draw_api::initialize();
 		}
 
 		if (!cathook) {
@@ -98,3 +101,5 @@ void DoSDLUnhooking() {
 	*SDL_GL_SwapWindow_loc = SDL_GL_SwapWindow_o;
 	*SDL_PollEvent_loc = SDL_PollEvent_o;
 }
+
+#endif

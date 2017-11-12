@@ -59,6 +59,7 @@
  */
 
 bool hack::shutdown = false;
+bool hack::initialized = false;
 
 const std::string& hack::GetVersion() {
 	static std::string version("Unknown Version");
@@ -251,7 +252,7 @@ void hack::Initialize() {
 	hooks::clientmode.HookMethod((void*)CreateMove_hook, offsets::CreateMove());
 #if ENABLE_VISUALS == 1
 	hooks::clientmode.HookMethod((void*)OverrideView_hook, offsets::OverrideView());
-#endif /* TEXTMODE */
+#endif
 	hooks::clientmode.HookMethod((void*)LevelInit_hook, offsets::LevelInit());
 	hooks::clientmode.HookMethod((void*)LevelShutdown_hook, offsets::LevelShutdown());
 	hooks::clientmode.Apply();
@@ -282,7 +283,7 @@ void hack::Initialize() {
 #endif
 #if ENABLE_VISUALS == 1
 	hooks::client.HookMethod((void*)IN_KeyEvent_hook, offsets::IN_KeyEvent());
-#endif /* TEXTMODE */
+#endif
 	hooks::client.Apply();
 	hooks::input.Set(g_IInput);
 	hooks::input.HookMethod((void*)GetUserCmd_hook, offsets::GetUserCmd());
@@ -291,7 +292,7 @@ void hack::Initialize() {
 	hooks::modelrender.Set(g_IVModelRender);
 	hooks::modelrender.HookMethod((void*)DrawModelExecute_hook, offsets::DrawModelExecute());
 	hooks::modelrender.Apply();
-#endif /* TEXTMODE */
+#endif
 	hooks::steamfriends.Set(g_ISteamFriends);
 	hooks::steamfriends.HookMethod((void*)GetFriendPersonaName_hook, offsets::GetFriendPersonaName());
 	hooks::steamfriends.Apply();
@@ -364,6 +365,7 @@ void hack::Initialize() {
 	hack::command_stack().push("exec cat_autoexec");
 	hack::command_stack().push("cat_killsay_reload");
 	hack::command_stack().push("cat_spam_reload");
+	hack::initialized = true;
 }
 
 void hack::Think() {
@@ -374,7 +376,9 @@ void hack::Shutdown() {
 	if (hack::shutdown) return;
 	hack::shutdown = true;
 	playerlist::Save();
+#if RENDERING_ENGINE_OPENGL
 	DoSDLUnhooking();
+#endif
 	logging::Info("Unregistering convars..");
 	ConVar_Unregister();
 	logging::Info("Shutting down killsay...");

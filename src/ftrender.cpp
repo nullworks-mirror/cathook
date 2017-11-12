@@ -5,6 +5,10 @@
  *      Author: nullifiedcat
  */
 
+#include "common.h"
+
+#ifdef RENDERING_ENGINE_OPENGL
+
 #include "ftrender.hpp"
 
 extern "C" {
@@ -170,3 +174,5 @@ void FTGL_StringLength(const std::string& text, ftgl::texture_font_t* font, int 
 	if (size_x) *size_x = pen.x;
 	if (size_y) *size_y = pen.y;
 }
+
+#endif

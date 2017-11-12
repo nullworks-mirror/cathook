@@ -8,9 +8,9 @@
 #ifndef DRAWING_H_
 #define DRAWING_H_
 
-#if RENDERING_ENGINE_OPENGL
+#if defined(RENDERING_ENGINE_OPENGL)
 #define DRAW_API "drawgl.hpp"
-#elif RENDERING_ENGINE_XOVERLAY
+#elif defined(RENDERING_ENGINE_XOVERLAY)
 #define DRAW_API "drawex.hpp"
 #endif
 

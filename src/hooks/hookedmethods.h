@@ -42,6 +42,8 @@ void FireGameEvent_hook(void* _this, IGameEvent* event);
 CUserCmd* GetUserCmd_hook(IInput*, int);
 void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, const ModelRenderInfo_t& info, matrix3x4_t* matrix);
 
+#ifdef RENDERING_ENGINE_OPENGL
+
 /* SDL HOOKS */
 union SDL_Event;
 class SDL_Window;
@@ -54,6 +56,8 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window);
 
 void DoSDLHooking();
 void DoSDLUnhooking();
+
+#endif
 
 #include "CreateMove.h"
 #include "PaintTraverse.h"

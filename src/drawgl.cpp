@@ -32,7 +32,7 @@ mat4 model, view, projection;
 
 bool ready_state = false;
 
-void intialize() {
+void initialize() {
 	buffer_lines = vertex_buffer_new("vertex:2f,color:4f");
 	buffer_triangles_plain = vertex_buffer_new("vertex:2f,color:4f");
 	buffer_triangles_textured = vertex_buffer_new("vertex:2f,tex_coord:2f,color:4f");
@@ -146,10 +146,16 @@ void draw_circle(float x, float y, float radius, const float *rgba, float thickn
     }
 }
 
+void draw_string(float x, float y, const char *string, const float *rgba)
+{
+    FTGL_Draw(std::string(string), x, y, fonts::font_main, rgba_t(rgba[0], rgba[1], rgba[2], rgba[3]), nullptr, nullptr);
+}
+
 void draw_begin() {
 	vertex_buffer_clear(buffer_triangles_plain);
 	vertex_buffer_clear(buffer_triangles_textured);
 	vertex_buffer_clear(buffer_lines);
+        FTGL_NewFrame();
 }
 
 void render_begin() {

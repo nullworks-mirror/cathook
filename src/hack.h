@@ -28,6 +28,7 @@ std::stack<std::string>& command_stack();
 void ExecuteCommand(const std::string command);
 
 extern bool shutdown;
+extern bool initialized;
 
 const std::string& GetVersion();
 const std::string& GetType();

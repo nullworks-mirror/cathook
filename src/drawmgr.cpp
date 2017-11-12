@@ -9,9 +9,10 @@
 #include "hack.h"
 
 void BeginCheatVisuals() {
+#if RENDERING_ENGINE_OPENGL
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
+#endif
 	if (draw_api::ready_state) {
-		FTGL_NewFrame();
 		draw_api::draw_begin();
 		ResetStrings();
 	}
@@ -23,7 +24,9 @@ CatVar info_text(CV_SWITCH, "info", "1", "Show info", "Show cathook version in t
 CatVar info_text_min(CV_SWITCH, "info_min", "0", "Show minimal info", "Only show cathook title in top left corner");
 
 void DrawCheatVisuals() {
+#if RENDERING_ENGINE_OPENGL
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
+#endif
 	if (draw_api::ready_state) {
 		{
 			PROF_SECTION(DRAW_misc);
@@ -69,7 +72,7 @@ void DrawCheatVisuals() {
 				PROF_SECTION(DRAW_skinchanger);
 				SAFE_CALL(hacks::tf2::skinchanger::DrawText());
 			}
-#ifndef FEATURES_RADAR_DISABLED
+#ifndef FEATURE_RADAR_DISABLED
 			IF_GAME(IsTF()) {
 				PROF_SECTION(DRAW_radar);
 				SAFE_CALL(hacks::tf::radar::Draw());
@@ -113,6 +116,6 @@ void DrawCheatVisuals() {
 
 void EndCheatVisuals() {
 	if (draw_api::ready_state) {
-
+	    draw_api::draw_end();
 	}
 }

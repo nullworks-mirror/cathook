@@ -72,7 +72,7 @@ endif
 
 DEFINES=
 
-ifeq ($(EXTERNAL_RENDERING), 1)
+ifeq ($(RENDERING_ENGINE), XOVERLAY)
 ENABLE_GUI=0
 endif
 
@@ -106,9 +106,6 @@ CXXFLAGS+=$(WARNING_FLAGS)
 endif
 
 ifeq ($(ENABLE_VISUALS),1)
-ifeq ($(RENDERING_ENGINE), xoverlay)
-LDLIBS+=-loverlay
-endif
 INCLUDES+=-isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2
 LDLIBS+=-lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -l:libfreetype.so
 CXXFLAGS+=$(shell sdl2-config --cflags)

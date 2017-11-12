@@ -36,13 +36,14 @@ extern ftgl::vertex_buffer_t* buffer_triangles_textured;
 
 extern const float white[4];
 
-void intialize();
+void initialize();
 
 void draw_rect(float x, float y, float w, float h, const float* rgba);
 void draw_rect_outlined(float x, float y, float w, float h, const float* rgba, float thickness);
 void draw_line(float x, float y, float dx, float dy, const float* rgba, float thickness);
 void draw_rect_textured(float x, float y, float w, float h, const float* rgba, float u, float v, float s, float t);
 void draw_circle(float x, float y, float radius, const float *rgba, float thickness, int steps);
+void draw_string(float x, float y, const char *string, const float *rgba);
 
 void draw_begin();
 void draw_end();

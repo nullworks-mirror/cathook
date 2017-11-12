@@ -39,15 +39,15 @@ void AddSideString(const std::string& string, const rgba_t& color) {
 void DrawStrings() {
 	int y { 8 };
 	for (size_t i = 0; i < side_strings_count; ++i) {
-		FTGL_Draw(side_strings[i], 8, y, fonts::font_main, side_strings_colors[i]);
-		y += fonts::font_main->height + 1;
+	        draw_api::draw_string(8, y, side_strings[i].c_str(), side_strings_colors[i]);
+		y += /*((int)fonts::font_main->height)*/ 14 + 1;
 	}
 	y = draw::height / 2;
 	for (size_t i = 0; i < center_strings_count; ++i) {
 		int sx;
-		FTGL_StringLength(center_strings[i], fonts::font_main, &sx, nullptr);
-		FTGL_Draw(center_strings[i], (draw::width - sx) / 2, y, fonts::font_main, center_strings_colors[i]);
-		y += fonts::font_main->height + 1;
+		//FTGL_StringLength(center_strings[i], fonts::font_main, &sx, nullptr);
+		draw_api::draw_string((draw::width) / 2, y, center_strings[i].c_str(), center_strings_colors[i]);
+		y += /*((int)fonts::font_main->height)*/ 14 + 1;
 	}
 }
 
@@ -74,8 +74,8 @@ void draw::Initialize() {
 	if (!draw::width || !draw::height) {
 		g_IEngine->GetScreenSize(draw::width, draw::height);
 	}
-	draw_api::intialize();
-#ifdef RENDERING_ENGINE_OPENGL
+	draw_api::initialize();
+#if RENDERING_ENGINE_OPENGL
 	FTGL_PreInit();
 
 	fonts::font_ftgl.InstallChangeCallback([](IConVar* var, const char* pOldValue, float flOldValue) {
@@ -100,7 +100,7 @@ bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
 VMatrix draw::wts {};
 
 void draw::UpdateWTS() {
-	memcpy(&wts, &g_IEngine->WorldToScreenMatrix(), sizeof(VMatrix));
+	memcpy(&draw::wts, &g_IEngine->WorldToScreenMatrix(), sizeof(VMatrix));
 }
 
 bool draw::WorldToScreen(const Vector& origin, Vector& screen) {

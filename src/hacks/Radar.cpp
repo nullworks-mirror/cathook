@@ -30,6 +30,7 @@ CatVar show_healthpacks(CV_SWITCH, "radar_healthpacks", "1", "Show Healthpacks")
 CatVar show_ammopacks(CV_SWITCH, "radar_ammopacks", "1", "Show Ammopacks");
 
 void Init() {
+#if RENDERING_ENGINE_OPENGL
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 9; j++) {
 			tx_classes[i][j].reset(new textures::AtlasTexture(64 * j, textures::atlas_height - 64 * (i + 1), 64, 64));
@@ -40,6 +41,7 @@ void Init() {
 
 	tx_items[0].reset(new textures::AtlasTexture(10 * 64, textures::atlas_height - 64, 64, 64));
 	tx_items[1].reset(new textures::AtlasTexture(10 * 64, textures::atlas_height - 128, 64, 64));
+#endif
 }
 
 std::pair<int, int> WorldToRadar(int x, int y) {

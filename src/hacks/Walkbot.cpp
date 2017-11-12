@@ -834,9 +834,9 @@ void DrawConnection(index_t a, connection_s& b) {
 		std::string flags;
 		if (b.flags & CF_LOW_AMMO) flags += "A";
 		if (b.flags & CF_LOW_HEALTH) flags += "H";
-		int size_x = 0, size_y = 0;
-		FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-		FTGL_Draw(flags, wts_cc.x - size_x / 2, wts_cc.y - size_y - 4, fonts::font_main);
+		//int size_x = 0, size_y = 0;
+		//FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
+		draw_api::draw_string(wts_cc.x, wts_cc.y - 4, flags.c_str(), colors::white);
 	}
 }
 
@@ -880,7 +880,7 @@ void DrawNode(index_t node, bool draw_back) {
 		if (not draw::WorldToScreen(n.xyz(), wts))
 			return;
 
-		FTGL_Draw(std::to_string(node), wts.x, wts.y, fonts::font_main, *color);
+		draw_api::draw_string(wts.x, wts.y, std::to_string(node).c_str(), *color);
 	}
 }
 

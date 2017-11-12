@@ -22,7 +22,7 @@ CatVar box_corner_size(CV_INT, "esp_box_corner_size", "10", "Corner Size");
 CatEnum tracers_enum({ "OFF", "CENTER", "BOTTOM" });
 CatVar tracers(tracers_enum, "esp_tracers", "0", "Tracers", "SDraws a line from the player to a position on your screen");
 // Emoji Esp
-#ifndef FEATURES_EMOJI_ESP_DISABLED
+#ifndef FEATURE_EMOJI_ESP_DISABLED
 CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
 CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP", "Draw emoji on peopels head");
 CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
@@ -503,13 +503,13 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 					draw_point = Vector(max_x + 2, min_y, 0);
 				} break;
 				case 1: { // BOTTOM RIGHT
-					draw_point = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * ((int)fonts::font_main->height), 0);
+					draw_point = Vector(max_x + 2, max_y - data.at(ent->m_IDX).string_count * /*((int)fonts::font_main->height)*/ 14, 0);
 				} break;
 				case 2: { // CENTER
 					origin_is_zero = true; // origin is still zero so we set to true
 				} break;
 				case 3: { // ABOVE
-					draw_point = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * ((int)fonts::font_main->height), 0);
+					draw_point = Vector(min_x, min_y - data.at(ent->m_IDX).string_count * /*((int)fonts::font_main->height)*/ 14, 0);
 				} break;
 				case 4: { // BELOW
 					draw_point = Vector(min_x, max_y, 0);
@@ -532,16 +532,16 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 			if (transparent) color = colors::Transparent(color); // Apply transparency if needed 
 			
 			// If the origin is centered, we use one method. if not, the other
-			if (!origin_is_zero) {
-				FTGL_Draw(string.data, draw_point.x, draw_point.y, fonts::font_main, color);
-			} else {
+			if (!origin_is_zero || true) {
+				draw_api::draw_string(draw_point.x, draw_point.y, string.data.c_str(), color);
+			} else {/*
 				int size_x;
 				FTGL_StringLength(string.data, fonts::font_main, &size_x);
 				FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y, fonts::font_main, color);
-			}
+			*/}
 			
 			// Add to the y due to their being text in that spot
-			draw_point.y += (int)fonts::font_main->height - 1;
+			draw_point.y += /*((int)fonts::font_main->height)*/ 14 - 1;
 		}
 	}
 	

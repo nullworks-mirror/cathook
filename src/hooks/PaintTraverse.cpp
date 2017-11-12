@@ -5,8 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#include "PaintTraverse.h"
 #include "../common.h"
+#include "PaintTraverse.h"
 #include "../hack.h"
 #include "hookedmethods.h"
 #include "../segvcatch/segvcatch.h"
@@ -25,7 +25,7 @@ CatEnum software_cursor_enum({"KEEP", "ALWAYS", "NEVER", "MENU ON", "MENU OFF"})
 CatVar software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0", "Software cursor", "Try to change this and see what works best for you");
 
 void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
-	static const PaintTraverse_t original = (PaintTraverse_t)hooks::panel.GetMethod(offsets::PaintTraverse());
+        static const PaintTraverse_t original = (PaintTraverse_t)hooks::panel.GetMethod(offsets::PaintTraverse());
 	static bool textures_loaded = false;
 	static unsigned long panel_focus = 0;
 	static unsigned long panel_scope = 0;
@@ -44,7 +44,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 #if ENABLE_VISUALS == 1
 	if (!textures_loaded) {
 		textures_loaded = true;
-#ifndef FEATURES_RADAR_DISABLED
+#ifndef FEATURE_RADAR_DISABLED
 		hacks::tf::radar::Init();
 #endif
 	}
@@ -91,7 +91,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	PROF_SECTION(PT_total);
 
-
 	if (vp == panel_top) draw_flag = true;
 	if (!cathook) return;
 
@@ -132,6 +131,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
 
 	PROF_SECTION(PT_active);
+#if RENDERING_ENGINE_OPENGL
 #if ENABLE_VISUALS == 1
 	draw::UpdateWTS();
 	BeginCheatVisuals();
@@ -142,8 +142,8 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		g_pGUI->Update();
 #endif
 
-
 	EndCheatVisuals();
+#endif
 #endif
 	SEGV_END;
 }
