@@ -828,7 +828,7 @@ void DrawConnection(index_t a, connection_s& b) {
 	if 		((a_.flags & b_.flags) & NF_JUMP) color = &colors::yellow;
 	else if ((a_.flags & b_.flags) & NF_DUCK) color = &colors::green;
 
-	drawgl::draw_line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, color->rgba);
+	draw_api::draw_line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, color->rgba, 0.5f);
 
 	if (draw_connection_flags && b.flags != CF_GOOD) {
 		std::string flags;
@@ -868,7 +868,7 @@ void DrawNode(index_t node, bool draw_back) {
 		if (node == state::active_node)
 			color = &colors::red;
 
-		drawgl::draw_rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, color->rgba);
+		draw_api::draw_rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, color->rgba);
 	}
 
 	if (draw_indices) {

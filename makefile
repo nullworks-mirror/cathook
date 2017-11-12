@@ -12,7 +12,7 @@
 #	NO_TF2_RENDERING - disable in-game rendering (does not work yet)
 #	TEXTMODE_STDIN - allows using console with textmode tf2
 #	TEXTMODE_VAC - allows joining VAC-secured servers in textmode
-#	EXTERNAL_RENDERING - enabled Xoverlay rendering, disables ImGui
+#	RENDERING_ENGINE - (OPENGL, XOVERLAY)
 #
 
 GAME=tf2
@@ -23,7 +23,7 @@ ENABLE_IPC=1
 ENABLE_NULL_GRAPHICS=0
 TEXTMODE_STDIN=0
 TEXTMODE_VAC=0
-EXTERNAL_RENDERING=0
+RENDERING_ENGINE=XOVERLAY
 DATA_PATH="/opt/cathook/data"
 NO_LTO=0
 ifdef CLANG
@@ -77,7 +77,7 @@ ENABLE_GUI=0
 endif
 
 DEFINES+=_GLIBCXX_USE_CXX11_ABI=0 _POSIX=1 FREETYPE_GL_USE_VAO=1 RAD_TELEMETRY_DISABLED=1 LINUX=1 USE_SDL=1 _LINUX=1 POSIX=1 GNUC=1 NO_MALLOC_OVERRIDE=1
-DEFINES+=XOVERLAY=$(EXTERNAL_RENDERING) ENABLE_VISUALS=$(ENABLE_VISUALS) ENABLE_GUI=$(ENABLE_GUI) ENABLE_IPC=$(ENABLE_IPC) BUILD_GAME=$(GAME) ENABLE_NULL_GRAPHICS=$(ENABLE_NULL_GRAPHICS) TEXTMODE_STDIN=$(TEXTMODE_STDIN) TEXTMODE_VAC=$(TEXTMODE_VAC) DATA_PATH="\"$(DATA_PATH)\""
+DEFINES+=RENDERING_ENGINE_$(RENDERING_ENGINE)=1 ENABLE_VISUALS=$(ENABLE_VISUALS) ENABLE_GUI=$(ENABLE_GUI) ENABLE_IPC=$(ENABLE_IPC) BUILD_GAME=$(GAME) ENABLE_NULL_GRAPHICS=$(ENABLE_NULL_GRAPHICS) TEXTMODE_STDIN=$(TEXTMODE_STDIN) TEXTMODE_VAC=$(TEXTMODE_VAC) DATA_PATH="\"$(DATA_PATH)\""
 
 WARNING_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef
 COMMON_FLAGS=-fpermissive -O3 -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native -mtune=native
@@ -106,7 +106,7 @@ CXXFLAGS+=$(WARNING_FLAGS)
 endif
 
 ifeq ($(ENABLE_VISUALS),1)
-ifeq ($(EXTERNAL_RENDERING), 1)
+ifeq ($(RENDERING_ENGINE), xoverlay)
 LDLIBS+=-loverlay
 endif
 INCLUDES+=-isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2
@@ -114,7 +114,7 @@ LDLIBS+=-lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -l:libfreetype.so
 CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(shell sdl2-config --cflags)
 else
-EXCL_SOURCES:=xoverlay.cpp catpclient.c pipepacket.c hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp ftrender.cpp hooks/sdl.cpp drawing.cpp drawmgr.cpp drawgl.cpp hooks/PaintTraverse.cpp EffectChams.cpp EffectGlow.cpp atlas.cpp
+EXCL_SOURCES:=drawex.cpp catpclient.c pipepacket.c hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp ftrender.cpp hooks/sdl.cpp drawing.cpp drawmgr.cpp drawgl.cpp hooks/PaintTraverse.cpp EffectChams.cpp EffectGlow.cpp atlas.cpp
 EXCL_SOURCES:=$(addprefix $(SRC_DIR)/,$(EXCL_SOURCES))
 
 SOURCES:=$(filter-out $(shell find $(SRC_DIR)/gui -name "*.cpp" -print),$(SOURCES))
@@ -194,11 +194,11 @@ src/freetype-gl/vertex-buffer.o : CFLAGS+=-w
 
 .cpp.o:
 	@echo Compiling $<
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 .c.o:
 	@echo Compiling $<
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 %.d: %.cpp
 	@$(CXX) -M $(CXXFLAGS) $< > $@

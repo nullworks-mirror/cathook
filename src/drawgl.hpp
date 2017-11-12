@@ -10,7 +10,7 @@
 
 #include "drawing.h"
 
-#define draw_api drawgl::api
+#define draw_api drawgl
 
 extern "C" {
 #include "freetype-gl/vec234.h"
@@ -38,10 +38,11 @@ extern const float white[4];
 
 void intialize();
 
-void draw_rect(float x, float y, float w, float h, const float* rgba = white);
-void draw_line(float x, float y, float dx, float dy, const float* rgba = white);
-void draw_rect_outlined(float x, float y, float w, float h, const float* rgba = white);
-void draw_rect_textured(float x, float y, float w, float h, float u, float v, float u2, float v2, const float* rgba = white);
+void draw_rect(float x, float y, float w, float h, const float* rgba);
+void draw_rect_outlined(float x, float y, float w, float h, const float* rgba, float thickness);
+void draw_line(float x, float y, float dx, float dy, const float* rgba, float thickness);
+void draw_rect_textured(float x, float y, float w, float h, const float* rgba, float u, float v, float s, float t);
+void draw_circle(float x, float y, float radius, const float *rgba, float thickness, int steps);
 
 void draw_begin();
 void draw_end();

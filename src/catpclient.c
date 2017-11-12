@@ -10,7 +10,7 @@
 #include "pipepacket.h"
 
 void
-cat_send_render_packet_begin(int fd, float *world_to_screen)
+cat_send_render_packet_begin(int fd, const float *world_to_screen)
 {
     struct catp_draw_begin_t packet;
     memcpy(packet.world_to_screen, world_to_screen, sizeof(float) * 16);
@@ -24,7 +24,7 @@ cat_send_render_packet_end(int fd)
 }
 
 void
-cat_send_render_packet_rect(int fd, float x, float y, float w, float h, float *rgba)
+cat_send_render_packet_rect(int fd, float x, float y, float w, float h, const float *rgba)
 {
     struct catp_draw_rect_t packet;
     packet.x = x;
@@ -36,7 +36,7 @@ cat_send_render_packet_rect(int fd, float x, float y, float w, float h, float *r
 }
 
 void
-cat_send_render_packet_rect_outline(int fd, float x, float y, float w, float h, float *rgba, float thickness)
+cat_send_render_packet_rect_outline(int fd, float x, float y, float w, float h, const float *rgba, float thickness)
 {
     struct catp_draw_rect_outline_t packet;
     packet.x = x;
@@ -49,7 +49,7 @@ cat_send_render_packet_rect_outline(int fd, float x, float y, float w, float h, 
 }
 
 void
-cat_send_render_packet_line(int fd, float x, float y, float dx, float dy, float *rgba, float thickness)
+cat_send_render_packet_line(int fd, float x, float y, float dx, float dy, const float *rgba, float thickness)
 {
     struct catp_draw_line_t packet;
     packet.x = x;
@@ -62,7 +62,7 @@ cat_send_render_packet_line(int fd, float x, float y, float dx, float dy, float 
 }
 
 void
-cat_send_render_packet_string(int fd, float x, float y, const char *string, float *rgba)
+cat_send_render_packet_string(int fd, float x, float y, const char *string, const float *rgba)
 {
     struct catp_draw_string_t packet;
     packet.x = x;
@@ -74,7 +74,7 @@ cat_send_render_packet_string(int fd, float x, float y, const char *string, floa
 }
 
 void
-cat_send_render_packet_circle(int fd, float x, float y, float radius, float *rgba, float thickness, int steps)
+cat_send_render_packet_circle(int fd, float x, float y, float radius, const float *rgba, float thickness, int steps)
 {
     struct catp_draw_circle_t packet;
     packet.x = x;

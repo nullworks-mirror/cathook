@@ -74,13 +74,15 @@ void draw::Initialize() {
 	if (!draw::width || !draw::height) {
 		g_IEngine->GetScreenSize(draw::width, draw::height);
 	}
-
+	draw_api::intialize();
+#ifdef RENDERING_ENGINE_OPENGL
 	FTGL_PreInit();
 
 	fonts::font_ftgl.InstallChangeCallback([](IConVar* var, const char* pOldValue, float flOldValue) {
 		FTGL_ChangeFont(&fonts::font_main, fonts::font_ftgl.GetString());
 		(void)flOldValue;
 	});
+#endif
 }
 
 bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
@@ -95,7 +97,7 @@ bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
 	return succ;
 }
 
-VMatrix wts {};
+VMatrix draw::wts {};
 
 void draw::UpdateWTS() {
 	memcpy(&wts, &g_IEngine->WorldToScreenMatrix(), sizeof(VMatrix));

@@ -328,8 +328,10 @@ void hack::Initialize() {
 		g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
 	}
 	logging::Info("SSE enabled..");
+#if RENDERING_ENGINE_OPENGL
 	DoSDLHooking();
 	logging::Info("SDL hooking done");
+#endif
 	g_IGameEventManager->AddListener(&adv_event_listener, false);
 
 #endif /* TEXTMODE */
@@ -338,8 +340,10 @@ void hack::Initialize() {
 	hacks::tf2::healarrow::Init();
 
 #if ENABLE_VISUALS == 1
+#ifndef FEATURE_FIDGET_SPINNER_DISABLED
 	InitSpinner();
 	logging::Info("Initialized Fidget Spinner");
+#endif
 	hacks::shared::spam::Init();
 	backpacktf::init();
 	logging::Info("Initialized Backpack.TF integration");

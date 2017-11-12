@@ -10,9 +10,9 @@
 
 void BeginCheatVisuals() {
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-	if (drawgl::ready_state) {
+	if (draw_api::ready_state) {
 		FTGL_NewFrame();
-		drawgl::draw_begin();
+		draw_api::draw_begin();
 		ResetStrings();
 	}
 }
@@ -24,7 +24,7 @@ CatVar info_text_min(CV_SWITCH, "info_min", "0", "Show minimal info", "Only show
 
 void DrawCheatVisuals() {
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-	if (drawgl::ready_state) {
+	if (draw_api::ready_state) {
 		{
 			PROF_SECTION(DRAW_misc);
 			SAFE_CALL(hacks::shared::misc::DrawText());
@@ -69,10 +69,12 @@ void DrawCheatVisuals() {
 				PROF_SECTION(DRAW_skinchanger);
 				SAFE_CALL(hacks::tf2::skinchanger::DrawText());
 			}
+#ifndef FEATURES_RADAR_DISABLED
 			IF_GAME(IsTF()) {
 				PROF_SECTION(DRAW_radar);
 				SAFE_CALL(hacks::tf::radar::Draw());
 			}
+#endif
 			IF_GAME(IsTF2()) {
 				PROF_SECTION(DRAW_healarrows);
 				hacks::tf2::healarrow::Draw();
@@ -96,7 +98,9 @@ void DrawCheatVisuals() {
 				PROF_SECTION(DRAW_esp);
 				hacks::shared::esp::Draw();
 			}
+#ifndef FEATURE_FIDGET_SPINNER_DISABLED
 			DrawSpinner();
+#endif
 			Prediction_PaintTraverse();
 		}
 		{
@@ -108,7 +112,7 @@ void DrawCheatVisuals() {
 }
 
 void EndCheatVisuals() {
-	if (drawgl::ready_state) {
+	if (draw_api::ready_state) {
 
 	}
 }

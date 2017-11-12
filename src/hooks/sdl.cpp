@@ -37,16 +37,16 @@ int SDL_PollEvent_hook(SDL_Event* event) {
 void SDL_GL_SwapWindow_hook(SDL_Window* window) {
 	static SDL_GLContext ctx_tf2 = SDL_GL_GetCurrentContext();
 	static SDL_GLContext ctx_imgui = nullptr;
-	static SDL_GLContext ctx_text = nullptr;
+	static SDL_GLContext ctx_opengl = nullptr;
 	if (!disable_visuals) {
 		PROF_SECTION(DRAW_cheat);
 		if (!ctx_imgui) {
 			ctx_imgui = SDL_GL_CreateContext(window);
 			ImGui_ImplSdl_Init(window);
-			ctx_text = SDL_GL_CreateContext(window);
+			ctx_opengl = SDL_GL_CreateContext(window);
 			FTGL_Init();
 			textures::Init();
-			drawgl::intialize();
+			draw_api::intialize();
 		}
 
 		if (!cathook) {
@@ -55,10 +55,10 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
 			return;
 		}
 
-		SDL_GL_MakeCurrent(window, ctx_text);
+		SDL_GL_MakeCurrent(window, ctx_opengl);
 		{
 			std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-                        drawgl::render();
+                        draw_api::render();
 		}
 		SDL_GL_MakeCurrent(window, ctx_imgui);
 		{

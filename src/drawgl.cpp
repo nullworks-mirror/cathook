@@ -65,9 +65,9 @@ void intialize() {
 	textures::Init();
 
 	// Do not fucking ask. Without this, it crashes.
-	drawgl::draw_rect_outlined(0, 0, 0, 0);
-	drawgl::draw_rect(0, 0, 0, 0);
-	drawgl::draw_rect_textured(0, 0, 0, 0, 0, 0, 0, 0);
+	draw_api::draw_rect_outlined(0, 0, 0, 0, colors::white, 0.0f);
+	draw_api::draw_rect(0, 0, 0, 0, colors::white);
+	draw_api::draw_rect_textured(0, 0, 0, 0, colors::white, 0, 0, 0, 0);
 	ready_state = true;
 	draw_end();
 }
@@ -90,7 +90,7 @@ void draw_rect(float x, float y, float w, float h, const float* rgba) {
 	vertex_buffer_push_back_vertices(buffer_triangles_plain, vertices, 4);
 }
 
-void draw_line(float x, float y, float dx, float dy, const float* rgba) {
+void draw_line(float x, float y, float dx, float dy, const float* rgba, float thickness) {
 	GLuint idx = buffer_lines->vertices->size;
 	GLuint indices[] = { idx, idx + 1 };
 	vertex_v2c4_t vertices[] = {
@@ -101,7 +101,7 @@ void draw_line(float x, float y, float dx, float dy, const float* rgba) {
 	vertex_buffer_push_back_vertices(buffer_lines, vertices, 2);
 }
 
-void draw_rect_outlined(float x, float y, float w, float h, const float* rgba) {
+void draw_rect_outlined(float x, float y, float w, float h, const float* rgba, float thickness) {
 	GLuint idx = buffer_lines->vertices->size;
 	GLuint indices[] = { idx, idx + 1, idx + 1, idx + 2, idx + 2, idx + 3, idx + 3, idx };
 	vertex_v2c4_t vertices[] = {
@@ -114,7 +114,7 @@ void draw_rect_outlined(float x, float y, float w, float h, const float* rgba) {
 	vertex_buffer_push_back_vertices(buffer_lines, vertices, 4);
 }
 
-void draw_rect_textured(float x, float y, float w, float h, float u, float v, float u2, float v2, const float* rgba) {
+void draw_rect_textured(float x, float y, float w, float h, const float* rgba, float u, float v, float u2, float v2) {
 	GLuint idx = buffer_triangles_textured->vertices->size;
 	GLuint indices[] = { idx, idx + 1, idx + 2, idx, idx + 2, idx + 3 };
 	vertex_v2t2c4_t vertices[] = {
@@ -125,6 +125,25 @@ void draw_rect_textured(float x, float y, float w, float h, float u, float v, fl
 	};
 	vertex_buffer_push_back_indices(buffer_triangles_textured, indices, 6);
 	vertex_buffer_push_back_vertices(buffer_triangles_textured, vertices, 4);
+}
+
+void draw_circle(float x, float y, float radius, const float *rgba, float thickness, int steps)
+{
+    float px = 0;
+    float py = 0;
+    for (int i = 0; i < steps; i++) {
+        float ang = 2 * PI * (float(i) / steps);
+        float zx = x + radius * cos(ang);
+        float zy = y + radius * sin(ang);
+        if (!i) {
+                ang = 2 * PI * (float(steps - 1) / steps);
+                px = x + radius * cos(ang);
+                py = y + radius * sin(ang);
+        }
+        draw_api::draw_line(px, py, zx - px, zy - py, rgba, thickness);
+        px = x;
+        py = y;
+    }
 }
 
 void draw_begin() {

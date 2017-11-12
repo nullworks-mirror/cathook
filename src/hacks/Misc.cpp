@@ -388,7 +388,7 @@ void DrawText() {
 			rgba_t gaybow = colors::FromHSL(fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 2))) * 360.0f, 0.85f, 0.9f);
 			gaybow.a = .5;
 			// Draw next step
-			drawgl::FilledRect(0, step * (i - 1), width, (step * i) - (step * (i - 1)), gaybow);
+			draw_api::FilledRect(0, step * (i - 1), width, (step * i) - (step * (i - 1)), gaybow);
 		}
 											
 		//int size_x;

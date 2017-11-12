@@ -10,7 +10,6 @@
 #include "atlas.hpp"
 
 #include "drawing.h"
-#include "drawgl.hpp"
 #include "logging.h"
 
 namespace textures {
@@ -20,8 +19,8 @@ AtlasTexture::AtlasTexture(float x, float y, float sx, float sy) {
 	tex_coords[1] = ftgl::vec2{ (x - 0.5f + sx) / atlas_width, (y + 0.5f) / atlas_height };
 }
 
-void AtlasTexture::Draw(float x, float y, float sx, float sy) {
-	drawgl::draw_rect_textured(x, y, sx, sy, tex_coords[0].x, tex_coords[0].y, tex_coords[1].x, tex_coords[1].y);
+void AtlasTexture::Draw(float x, float y, const float *color, float sx, float sy) {
+	draw_api::draw_rect_textured(x, y, sx, sy, color, tex_coords[0].x, tex_coords[0].y, tex_coords[1].x, tex_coords[1].y);
 }
 
 GLuint texture;

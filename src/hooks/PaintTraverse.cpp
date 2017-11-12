@@ -44,7 +44,9 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 #if ENABLE_VISUALS == 1
 	if (!textures_loaded) {
 		textures_loaded = true;
+#ifndef FEATURES_RADAR_DISABLED
 		hacks::tf::radar::Init();
+#endif
 	}
 #endif
 	if (pure_bypass) {

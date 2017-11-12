@@ -51,7 +51,7 @@ extern "C" {
 #include "ftrender.hpp"
 #include "drawing.h"
 #include "fidgetspinner.hpp"
-#include "drawgl.hpp"
+#include DRAW_API
 #include "EffectGlow.hpp"
 #include "atlas.hpp"
 #include "EffectChams.hpp"

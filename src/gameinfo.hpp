@@ -10,21 +10,8 @@
 
 #include "common.h"
 
-#define STRINGIFY(x) #x
-#define TO_STRING(x) STRINGIFY(x)
-
-/*
- * make -j4 -e GAME=tf2
- */
-
-// http://stackoverflow.com/questions/2335888/how-to-compare-string-in-c-conditional-preprocessor-directives
-constexpr int c_strcmp( char const* lhs, char const* rhs ) {
-    return (('\0' == lhs[0]) && ('\0' == rhs[0])) ? 0
-        :  (lhs[0] != rhs[0]) ? (lhs[0] - rhs[0])
-        : c_strcmp( lhs+1, rhs+1 );
-}
-
 #ifdef BUILD_GAME
+
 constexpr bool IsTF2() { return !c_strcmp(TO_STRING(BUILD_GAME), "tf2"); }
 constexpr bool IsTF2C() { return !c_strcmp(TO_STRING(BUILD_GAME), "tf2c"); }
 constexpr bool IsHL2DM() { return !c_strcmp(TO_STRING(BUILD_GAME), "hl2dm"); }

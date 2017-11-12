@@ -25,7 +25,7 @@ constexpr float atlas_height = 512.0f;
 class AtlasTexture {
 public:
 	AtlasTexture(float x, float y, float sx, float sy);
-	void Draw(float x, float y, float sx, float sy);
+	void Draw(float x, float y, const float *color, float sx, float sy);
 public:
 	ftgl::vec2 tex_coords[2];
 };

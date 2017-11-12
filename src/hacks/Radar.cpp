@@ -8,6 +8,8 @@
 #include "Radar.hpp"
 #include "../common.h"
 
+#ifndef FEATURE_RADAR_DISABLED
+
 namespace hacks { namespace tf { namespace radar {
 
 std::unique_ptr<textures::AtlasTexture> tx_classes[3][9];
@@ -86,19 +88,19 @@ void DrawEntity(int x, int y, CachedEntity* ent) {
 			const auto& wtr = WorldToRadar(ent->m_vecOrigin.x, ent->m_vecOrigin.y);
 
 			if (use_icons) {
-				tx_teams[idx].get()->Draw(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size);
-				tx_classes[2][clazz - 1].get()->Draw(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size);
+				tx_teams[idx].get()->Draw(x + wtr.first, y + wtr.second, colors::white, (int)icon_size, (int)icon_size);
+				tx_classes[2][clazz - 1].get()->Draw(x + wtr.first, y + wtr.second, colors::white, (int)icon_size, (int)icon_size);
 			} else {
-				tx_classes[idx][clazz - 1].get()->Draw(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size);
-				drawgl::draw_rect_outlined(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size, idx ? colors::blu_v : colors::red_v);
+				tx_classes[idx][clazz - 1].get()->Draw(x + wtr.first, y + wtr.second, colors::white, (int)icon_size, (int)icon_size);
+				draw_api::draw_rect_outlined(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size, idx ? colors::blu_v : colors::red_v, 0.5f);
 			}
 
 			if (ent->m_iMaxHealth && healthbar) {
 				healthp = (float)ent->m_iHealth / (float)ent->m_iMaxHealth;
 				clr = colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 				if (healthp > 1.0f) healthp = 1.0f;
-				drawgl::draw_rect_outlined(x + wtr.first, y + wtr.second + (int)icon_size, (int)icon_size, 4, colors::black);
-				drawgl::draw_rect(x + wtr.first + 1, y + wtr.second + (int)icon_size + 1, ((float)icon_size - 2.0f) * healthp, 2, clr);
+				draw_api::draw_rect_outlined(x + wtr.first, y + wtr.second + (int)icon_size, (int)icon_size, 4, colors::black, 0.5f);
+				draw_api::draw_rect(x + wtr.first + 1, y + wtr.second + (int)icon_size + 1, ((float)icon_size - 2.0f) * healthp, 2, clr);
 			}
 		} else if (ent->m_Type == ENTITY_BUILDING) {
 			/*if (ent->m_iClassID == CL_CLASS(CObjectDispenser)) {
@@ -121,12 +123,12 @@ void DrawEntity(int x, int y, CachedEntity* ent) {
 				const auto& wtr = WorldToRadar(ent->m_vecOrigin.x, ent->m_vecOrigin.y);
 				float sz = float(icon_size) * 0.15f * 0.5f;
 				float sz2 = float(icon_size) * 0.85;
-				tx_items[1].get()->Draw(x + wtr.first + sz, y + wtr.second + sz, sz2, sz2);
+				tx_items[1].get()->Draw(x + wtr.first + sz, y + wtr.second + sz, colors::white, sz2, sz2);
 			} else if (show_ammopacks && (ent->m_ItemType == ITEM_AMMO_LARGE || ent->m_ItemType == ITEM_AMMO_MEDIUM || ent->m_ItemType == ITEM_AMMO_SMALL)) {
 				const auto& wtr = WorldToRadar(ent->m_vecOrigin.x, ent->m_vecOrigin.y);
 				float sz = float(icon_size) * 0.15f * 0.5f;
 				float sz2 = float(icon_size) * 0.85;
-				tx_items[0].get()->Draw(x + wtr.first + sz, y + wtr.second + sz, sz2, sz2);
+				tx_items[0].get()->Draw(x + wtr.first + sz, y + wtr.second + sz, colors::white, sz2, sz2);
 			}
 		}
 	}
@@ -147,8 +149,8 @@ void Draw() {
 
 	outlineclr = (hacks::shared::aimbot::foundTarget ? colors::pink : GUIColor());
 
-	drawgl::draw_rect(x, y, radar_size, radar_size, colors::Transparent(colors::black, 0.4f));
-	drawgl::draw_rect_outlined(x, y, radar_size, radar_size, outlineclr);
+	draw_api::draw_rect(x, y, radar_size, radar_size, colors::Transparent(colors::black, 0.4f));
+	draw_api::draw_rect_outlined(x, y, radar_size, radar_size, outlineclr, 0.5f);
 
 	if (enemies_over_teammates) enemies.clear();
 	for (int i = 1; i < HIGHEST_ENTITY; i++) {
@@ -173,11 +175,13 @@ void Draw() {
 		DrawEntity(x, y, LOCAL_E);
 		const auto& wtr = WorldToRadar(g_pLocalPlayer->v_Origin.x, g_pLocalPlayer->v_Origin.y);
 		if (!use_icons)
-			drawgl::draw_rect_outlined(x + wtr.first, y + wtr.second, int(icon_size), int(icon_size), GUIColor());
+			draw_api::draw_rect_outlined(x + wtr.first, y + wtr.second, int(icon_size), int(icon_size), GUIColor(), 0.5f);
 	}
 
-	drawgl::draw_line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f));
-	drawgl::draw_line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f));
+	draw_api::draw_line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f), 0.5f);
+	draw_api::draw_line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f), 0.5f);
 }
 
 }}}
+
+#endif

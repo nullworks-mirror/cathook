@@ -8,7 +8,7 @@
 #pragma once
 
 void
-cat_send_render_packet_begin(int fd, float *world_to_screen);
+cat_send_render_packet_begin(int fd, const float *world_to_screen);
 
 void
 cat_send_render_packet_end(int fd);

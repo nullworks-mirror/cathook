@@ -825,23 +825,7 @@ void DrawText() {
 				float fov_real = RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
 				float radius = tan(DEG2RAD(float(fov)) / 2) / tan(DEG2RAD(fov_real) / 2) * (width);
 				
-				// Draw a circle
-				float px = 0;
-				float py = 0;
-				constexpr float steps = 120;
-				for (int i = 0; i < steps; i++) {
-					float ang = 2 * PI * (float(i) / steps);
-					float x = width / 2 + radius * cos(ang);
-					float y = height / 2 + radius * sin(ang);
-					if (!i) {
-						ang = 2 * PI * (float(steps - 1) / steps);
-						px = width / 2 + radius * cos(ang);
-						py = height / 2 + radius * sin(ang);
-					}
-					drawgl::draw_line(px, py, x - px, y - py, color);
-					px = x;
-					py = y;
-				}
+				draw_api::draw_circle(width / 2, height / 2, radius, color, 1, 100);
 			}
 		}
 	}	
@@ -853,8 +837,8 @@ void DrawText() {
 			Vector screen;
 			Vector oscreen;
 			if (draw::WorldToScreen(calculated_data_array[i].aim_position, screen) && draw::WorldToScreen(ent->m_vecOrigin, oscreen)) {
-				drawgl::draw_rect(screen.x - 2, screen.y - 2, 4, 4);
-				drawgl::draw_line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y);
+				draw_api::draw_rect(screen.x - 2, screen.y - 2, 4, 4, colors::white);
+				draw_api::draw_line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y, colors::EntityF(ent), 0.5f);
 			}
 		}
 	}
