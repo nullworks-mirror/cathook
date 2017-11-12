@@ -12,7 +12,7 @@ void BeginCheatVisuals() {
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
 	if (drawgl::ready_state) {
 		FTGL_NewFrame();
-		drawgl::Refresh();
+		drawgl::draw_begin();
 		ResetStrings();
 	}
 }

@@ -790,7 +790,7 @@ void DrawFollowbot() {
 			// Get the entity vector to screen and draw a rect on it
 			Vector scn;	
 			draw::WorldToScreen(breadcrumbs[crumbBottom], scn);
-			drawgl::FilledRect(scn.x - 3, scn.y - 3, 6, 6);	
+			drawgl::draw_rect(scn.x - 3, scn.y - 3, 6, 6);	
 		}
 		
 		// Return as we have nothing else to do
@@ -819,11 +819,11 @@ void DrawFollowbot() {
 		draw::WorldToScreen(breadcrumbs[tmpCrumb2], scnEnd);
 
 		// Draw a line from one crumb to the other
-		drawgl::Line(scnSrt.x, scnSrt.y, scnEnd.x - scnSrt.x, scnEnd.y - scnSrt.y, colors::white);	
+		drawgl::draw_line(scnSrt.x, scnSrt.y, scnEnd.x - scnSrt.x, scnEnd.y - scnSrt.y, colors::white);	
 
 		// If this is our first iteration, draw a box on 1
 		if (i == 0)
-			drawgl::FilledRect(scnSrt.x - 3, scnSrt.y - 3, 6, 6);	
+			drawgl::draw_rect(scnSrt.x - 3, scnSrt.y - 3, 6, 6);	
 	}
 	return;
 }

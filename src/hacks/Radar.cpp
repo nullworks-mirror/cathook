@@ -90,15 +90,15 @@ void DrawEntity(int x, int y, CachedEntity* ent) {
 				tx_classes[2][clazz - 1].get()->Draw(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size);
 			} else {
 				tx_classes[idx][clazz - 1].get()->Draw(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size);
-				drawgl::Rect(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size, idx ? colors::blu_v : colors::red_v);
+				drawgl::draw_rect_outlined(x + wtr.first, y + wtr.second, (int)icon_size, (int)icon_size, idx ? colors::blu_v : colors::red_v);
 			}
 
 			if (ent->m_iMaxHealth && healthbar) {
 				healthp = (float)ent->m_iHealth / (float)ent->m_iMaxHealth;
 				clr = colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
 				if (healthp > 1.0f) healthp = 1.0f;
-				drawgl::Rect(x + wtr.first, y + wtr.second + (int)icon_size, (int)icon_size, 4, colors::black);
-				drawgl::FilledRect(x + wtr.first + 1, y + wtr.second + (int)icon_size + 1, ((float)icon_size - 2.0f) * healthp, 2, clr);
+				drawgl::draw_rect_outlined(x + wtr.first, y + wtr.second + (int)icon_size, (int)icon_size, 4, colors::black);
+				drawgl::draw_rect(x + wtr.first + 1, y + wtr.second + (int)icon_size + 1, ((float)icon_size - 2.0f) * healthp, 2, clr);
 			}
 		} else if (ent->m_Type == ENTITY_BUILDING) {
 			/*if (ent->m_iClassID == CL_CLASS(CObjectDispenser)) {
@@ -147,8 +147,8 @@ void Draw() {
 
 	outlineclr = (hacks::shared::aimbot::foundTarget ? colors::pink : GUIColor());
 
-	drawgl::FilledRect(x, y, radar_size, radar_size, colors::Transparent(colors::black, 0.4f));
-	drawgl::Rect(x, y, radar_size, radar_size, outlineclr);
+	drawgl::draw_rect(x, y, radar_size, radar_size, colors::Transparent(colors::black, 0.4f));
+	drawgl::draw_rect_outlined(x, y, radar_size, radar_size, outlineclr);
 
 	if (enemies_over_teammates) enemies.clear();
 	for (int i = 1; i < HIGHEST_ENTITY; i++) {
@@ -173,11 +173,11 @@ void Draw() {
 		DrawEntity(x, y, LOCAL_E);
 		const auto& wtr = WorldToRadar(g_pLocalPlayer->v_Origin.x, g_pLocalPlayer->v_Origin.y);
 		if (!use_icons)
-			drawgl::Rect(x + wtr.first, y + wtr.second, int(icon_size), int(icon_size), GUIColor());
+			drawgl::draw_rect_outlined(x + wtr.first, y + wtr.second, int(icon_size), int(icon_size), GUIColor());
 	}
 
-	drawgl::Line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f));
-	drawgl::Line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f));
+	drawgl::draw_line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f));
+	drawgl::draw_line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f));
 }
 
 }}}

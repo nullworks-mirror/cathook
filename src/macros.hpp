@@ -8,5 +8,5 @@
 #pragma once
 
 #ifndef DATA_PATH
-#	define DATA_PATH "/opt/cathook-data"
+#	define DATA_PATH "/opt/cathook"
 #endif

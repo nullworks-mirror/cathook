@@ -46,7 +46,7 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
 			ctx_text = SDL_GL_CreateContext(window);
 			FTGL_Init();
 			textures::Init();
-			drawgl::Initialize();
+			drawgl::intialize();
 		}
 
 		if (!cathook) {
@@ -58,18 +58,7 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
 		SDL_GL_MakeCurrent(window, ctx_text);
 		{
 			std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-			drawgl::PreRender();
-			{
-				PROF_SECTION(DRAW_gl);
-				drawgl::Render();
-			}
-
-			{
-				PROF_SECTION(DRAW_freetype);
-				FTGL_Render();
-			}
-
-			drawgl::PostRender();
+                        drawgl::render();
 		}
 		SDL_GL_MakeCurrent(window, ctx_imgui);
 		{

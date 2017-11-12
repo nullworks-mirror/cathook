@@ -146,7 +146,7 @@ struct bonelist_s {
 				return;
 			}
 			if (i > 0) {
-				drawgl::Line(last_screen.x, last_screen.y, current_screen.x - last_screen.x, current_screen.y - last_screen.y, color);
+				drawgl::draw_line(last_screen.x, last_screen.y, current_screen.x - last_screen.x, current_screen.y - last_screen.y, color);
 			}
 			last_screen = current_screen;
 		}
@@ -300,7 +300,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 		draw::WorldToScreen(ent->m_vecOrigin, scn);
 		
 		// Draw a line
-		drawgl::Line(scn.x, scn.y, width - scn.x, height - scn.y, fg);
+		drawgl::draw_line(scn.x, scn.y, width - scn.x, height - scn.y, fg);
 	}
 	
 	// Sightline esp
@@ -379,7 +379,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 				}
 				// We have both vectors, draw
 				if (found_scn1) {
-					drawgl::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg);
+					drawgl::draw_line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg);
 				}
 			}
 		}
@@ -466,8 +466,8 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 				int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
 
 				// Draw
-				drawgl::Rect(min_x - 7, min_y, 7, max_y - min_y, border);
-				drawgl::FilledRect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
+				drawgl::draw_rect_outlined(min_x - 7, min_y, 7, max_y - min_y, border);
+				drawgl::draw_rect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
 			}
 		}
 	}
@@ -905,9 +905,9 @@ void _FASTCALL DrawBox(CachedEntity* ent, const rgba_t& clr) {
 		BoxCorners(min_x, min_y, max_x, max_y, clr, (clr.a != 1.0f));
 	// Otherwise, we just do simple draw funcs
 	else {
-		drawgl::Rect(min_x, min_y, max_x - min_x, max_y - min_y, border);
-		drawgl::Rect(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr);
-		drawgl::Rect(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border);
+		drawgl::draw_rect_outlined(min_x, min_y, max_x - min_x, max_y - min_y, border);
+		drawgl::draw_rect_outlined(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr);
+		drawgl::draw_rect_outlined(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border);
 	}
 }
 	
@@ -918,31 +918,31 @@ void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t& color, boo
 	
 	// Black corners
 	// Top Left
-	drawgl::FilledRect(minx, miny, size, 3, black);
-	drawgl::FilledRect(minx, miny + 3, 3, size - 3, black);
+	drawgl::draw_rect(minx, miny, size, 3, black);
+	drawgl::draw_rect(minx, miny + 3, 3, size - 3, black);
 	// Top Right
-	drawgl::FilledRect(maxx - size + 1, miny, size, 3, black);
-	drawgl::FilledRect(maxx - 3 + 1, miny + 3, 3, size - 3, black);
+	drawgl::draw_rect(maxx - size + 1, miny, size, 3, black);
+	drawgl::draw_rect(maxx - 3 + 1, miny + 3, 3, size - 3, black);
 	// Bottom Left
-	drawgl::FilledRect(minx, maxy - 3, size, 3, black);
-	drawgl::FilledRect(minx, maxy - size, 3, size - 3, black);
+	drawgl::draw_rect(minx, maxy - 3, size, 3, black);
+	drawgl::draw_rect(minx, maxy - size, 3, size - 3, black);
 	// Bottom Right
-	drawgl::FilledRect(maxx - size + 1, maxy - 3, size, 3, black);
-	drawgl::FilledRect(maxx - 2, maxy - size, 3, size - 3, black);
+	drawgl::draw_rect(maxx - size + 1, maxy - 3, size, 3, black);
+	drawgl::draw_rect(maxx - 2, maxy - size, 3, size - 3, black);
 
 	// Colored corners
 	// Top Left
-	drawgl::Line(minx + 1, miny + 1, size - 2, 0, color);
-	drawgl::Line(minx + 1, miny + 1, 0, size - 2, color);
+	drawgl::draw_line(minx + 1, miny + 1, size - 2, 0, color);
+	drawgl::draw_line(minx + 1, miny + 1, 0, size - 2, color);
 	// Top Right
-	drawgl::Line(maxx - 1, miny + 1, -(size - 2), 0, color);
-	drawgl::Line(maxx - 1, miny + 1, 0, size - 2, color);
+	drawgl::draw_line(maxx - 1, miny + 1, -(size - 2), 0, color);
+	drawgl::draw_line(maxx - 1, miny + 1, 0, size - 2, color);
 	// Bottom Left
-	drawgl::Line(minx + 1, maxy - 2, size - 2, 0, color);
-	drawgl::Line(minx + 1, maxy - 2, 0, -(size - 2), color);
+	drawgl::draw_line(minx + 1, maxy - 2, size - 2, 0, color);
+	drawgl::draw_line(minx + 1, maxy - 2, 0, -(size - 2), color);
 	// Bottom Right
-	drawgl::Line(maxx - 1, maxy - 2, -(size - 2), 0, color);
-	drawgl::Line(maxx - 1, maxy - 2, 0, -(size - 2), color);
+	drawgl::draw_line(maxx - 1, maxy - 2, -(size - 2), 0, color);
+	drawgl::draw_line(maxx - 1, maxy - 2, 0, -(size - 2), color);
 }
 
 // Used for caching collidable bounds

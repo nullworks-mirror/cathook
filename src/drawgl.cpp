@@ -32,7 +32,7 @@ mat4 model, view, projection;
 
 bool ready_state = false;
 
-void Initialize() {
+void intialize() {
 	buffer_lines = vertex_buffer_new("vertex:2f,color:4f");
 	buffer_triangles_plain = vertex_buffer_new("vertex:2f,color:4f");
 	buffer_triangles_textured = vertex_buffer_new("vertex:2f,tex_coord:2f,color:4f");
@@ -65,14 +65,14 @@ void Initialize() {
 	textures::Init();
 
 	// Do not fucking ask. Without this, it crashes.
-	drawgl::Rect(0, 0, 0, 0);
-	drawgl::FilledRect(0, 0, 0, 0);
-	drawgl::TexturedRect(0, 0, 0, 0, 0, 0, 0, 0);
+	drawgl::draw_rect_outlined(0, 0, 0, 0);
+	drawgl::draw_rect(0, 0, 0, 0);
+	drawgl::draw_rect_textured(0, 0, 0, 0, 0, 0, 0, 0);
 	ready_state = true;
-	Render();
+	draw_end();
 }
 
-void FilledRect(float x, float y, float w, float h, const float* rgba) {
+void draw_rect(float x, float y, float w, float h, const float* rgba) {
 	GLuint idx = buffer_triangles_plain->vertices->size;
 	//
 	// 3 - 2
@@ -90,7 +90,7 @@ void FilledRect(float x, float y, float w, float h, const float* rgba) {
 	vertex_buffer_push_back_vertices(buffer_triangles_plain, vertices, 4);
 }
 
-void Line(float x, float y, float dx, float dy, const float* rgba) {
+void draw_line(float x, float y, float dx, float dy, const float* rgba) {
 	GLuint idx = buffer_lines->vertices->size;
 	GLuint indices[] = { idx, idx + 1 };
 	vertex_v2c4_t vertices[] = {
@@ -101,7 +101,7 @@ void Line(float x, float y, float dx, float dy, const float* rgba) {
 	vertex_buffer_push_back_vertices(buffer_lines, vertices, 2);
 }
 
-void Rect(float x, float y, float w, float h, const float* rgba) {
+void draw_rect_outlined(float x, float y, float w, float h, const float* rgba) {
 	GLuint idx = buffer_lines->vertices->size;
 	GLuint indices[] = { idx, idx + 1, idx + 1, idx + 2, idx + 2, idx + 3, idx + 3, idx };
 	vertex_v2c4_t vertices[] = {
@@ -114,7 +114,7 @@ void Rect(float x, float y, float w, float h, const float* rgba) {
 	vertex_buffer_push_back_vertices(buffer_lines, vertices, 4);
 }
 
-void TexturedRect(float x, float y, float w, float h, float u, float v, float u2, float v2, const float* rgba) {
+void draw_rect_textured(float x, float y, float w, float h, float u, float v, float u2, float v2, const float* rgba) {
 	GLuint idx = buffer_triangles_textured->vertices->size;
 	GLuint indices[] = { idx, idx + 1, idx + 2, idx, idx + 2, idx + 3 };
 	vertex_v2t2c4_t vertices[] = {
@@ -127,13 +127,13 @@ void TexturedRect(float x, float y, float w, float h, float u, float v, float u2
 	vertex_buffer_push_back_vertices(buffer_triangles_textured, vertices, 4);
 }
 
-void Refresh() {
+void draw_begin() {
 	vertex_buffer_clear(buffer_triangles_plain);
 	vertex_buffer_clear(buffer_triangles_textured);
 	vertex_buffer_clear(buffer_lines);
 }
 
-void PreRender() {
+void render_begin() {
 	glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_TEXTURE_BIT | GL_COLOR_BUFFER_BIT);
 
 	glEnable(GL_BLEND);
@@ -158,20 +158,21 @@ void PreRender() {
 	glEnableClientState(GL_INDEX_ARRAY);
 }
 
-void PostRender() {
-	glUseProgram(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glPopClientAttrib();
-	glPopAttrib();
-}
+void render() {
+    PROF_SECTION(DRAW_rendering_gl);
 
-void Render() {
-	glUseProgram(shader_v2fc4f);
-	vertex_buffer_render(buffer_triangles_plain, GL_TRIANGLES);
-	vertex_buffer_render(buffer_lines, GL_LINES);
-	glUseProgram(shader_v2ft2fc4f);
-	glBindTexture(GL_TEXTURE_2D, textures::texture);
-	vertex_buffer_render(buffer_triangles_textured, GL_TRIANGLES);
-}
+    glUseProgram(shader_v2fc4f);
+    vertex_buffer_render(buffer_triangles_plain, GL_TRIANGLES);
+    vertex_buffer_render(buffer_lines, GL_LINES);
+    glUseProgram(shader_v2ft2fc4f);
+    glBindTexture(GL_TEXTURE_2D, textures::texture);
+    vertex_buffer_render(buffer_triangles_textured, GL_TRIANGLES);
+    FTGL_Render();
 
+    glUseProgram(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glPopClientAttrib();
+    glPopAttrib();
+
+}
 }

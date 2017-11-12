@@ -93,7 +93,7 @@ void Prediction_PaintTraverse() {
 			for (int j = 0; j < predicted_players[i].size(); j++) {
 				Vector screen;
 				if (draw::WorldToScreen(predicted_players[i][j], screen)) {
-					drawgl::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color);
+					drawgl::draw_line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color);
 					previous_screen = screen;
 				} else {
 					break;

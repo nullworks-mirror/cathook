@@ -21,7 +21,7 @@ AtlasTexture::AtlasTexture(float x, float y, float sx, float sy) {
 }
 
 void AtlasTexture::Draw(float x, float y, float sx, float sy) {
-	drawgl::TexturedRect(x, y, sx, sy, tex_coords[0].x, tex_coords[0].y, tex_coords[1].x, tex_coords[1].y);
+	drawgl::draw_rect_textured(x, y, sx, sy, tex_coords[0].x, tex_coords[0].y, tex_coords[1].x, tex_coords[1].y);
 }
 
 GLuint texture;

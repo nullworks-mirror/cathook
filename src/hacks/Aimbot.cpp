@@ -838,7 +838,7 @@ void DrawText() {
 						px = width / 2 + radius * cos(ang);
 						py = height / 2 + radius * sin(ang);
 					}
-					drawgl::Line(px, py, x - px, y - py, color);
+					drawgl::draw_line(px, py, x - px, y - py, color);
 					px = x;
 					py = y;
 				}
@@ -853,8 +853,8 @@ void DrawText() {
 			Vector screen;
 			Vector oscreen;
 			if (draw::WorldToScreen(calculated_data_array[i].aim_position, screen) && draw::WorldToScreen(ent->m_vecOrigin, oscreen)) {
-				drawgl::FilledRect(screen.x - 2, screen.y - 2, 4, 4);
-				drawgl::Line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y);
+				drawgl::draw_rect(screen.x - 2, screen.y - 2, 4, 4);
+				drawgl::draw_line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y);
 			}
 		}
 	}

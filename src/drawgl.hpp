@@ -10,6 +10,8 @@
 
 #include "drawing.h"
 
+#define draw_api drawgl::api
+
 extern "C" {
 #include "freetype-gl/vec234.h"
 #include "freetype-gl/vertex-buffer.h"
@@ -28,25 +30,23 @@ struct vertex_v2t2c4_t {
 	ftgl::vec4 rgba;
 };
 
-
 extern ftgl::vertex_buffer_t* buffer_lines;
 extern ftgl::vertex_buffer_t* buffer_triangles_plain;
 extern ftgl::vertex_buffer_t* buffer_triangles_textured;
 
 extern const float white[4];
 
-void Initialize();
+void intialize();
 
-void FilledRect(float x, float y, float w, float h, const float* rgba = white);
-void Line(float x, float y, float dx, float dy, const float* rgba = white);
-void Rect(float x, float y, float w, float h, const float* rgba = white);
-void TexturedRect(float x, float y, float w, float h, float u, float v, float u2, float v2, const float* rgba = white);
+void draw_rect(float x, float y, float w, float h, const float* rgba = white);
+void draw_line(float x, float y, float dx, float dy, const float* rgba = white);
+void draw_rect_outlined(float x, float y, float w, float h, const float* rgba = white);
+void draw_rect_textured(float x, float y, float w, float h, float u, float v, float u2, float v2, const float* rgba = white);
 
-void Refresh();
-void Render();
+void draw_begin();
+void draw_end();
 
-void PreRender();
-void PostRender();
+void render();
 
 extern bool ready_state;
 

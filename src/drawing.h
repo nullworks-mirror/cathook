@@ -34,6 +34,8 @@ void DrawStrings();
 
 namespace draw {
 
+extern VMatrix wts;
+
 extern int width;
 extern int height;
 extern float fov;
