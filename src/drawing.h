@@ -41,6 +41,7 @@ void DrawStrings();
 
 namespace draw {
 
+extern std::mutex draw_mutex;
 extern VMatrix wts;
 
 extern int width;

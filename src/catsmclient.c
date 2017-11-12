@@ -32,8 +32,8 @@ cat_shm_render_begin(cat_shm_render_context_t *ctx, const float *world_to_screen
 void
 cat_shm_render_end(cat_shm_render_context_t *ctx)
 {
-    xpcmutex_unlock(ctx->mutex);
     cat_shm_packet_send(ctx, CATP_DRAW_END, 0, 0);
+    xpcmutex_unlock(ctx->mutex);
 }
 
 void

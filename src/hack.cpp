@@ -288,10 +288,12 @@ void hack::Initialize() {
 	hooks::input.Set(g_IInput);
 	hooks::input.HookMethod((void*)GetUserCmd_hook, offsets::GetUserCmd());
 	hooks::input.Apply();
+#ifndef HOOK_DME_DISABLED
 #if ENABLE_VISUALS == 1
 	hooks::modelrender.Set(g_IVModelRender);
 	hooks::modelrender.HookMethod((void*)DrawModelExecute_hook, offsets::DrawModelExecute());
 	hooks::modelrender.Apply();
+#endif
 #endif
 	hooks::steamfriends.Set(g_ISteamFriends);
 	hooks::steamfriends.HookMethod((void*)GetFriendPersonaName_hook, offsets::GetFriendPersonaName());
@@ -321,6 +323,7 @@ void hack::Initialize() {
 	// cat_reloadscheme to load imgui
 	hack::command_stack().push("cat_reloadscheme");
 #endif
+#ifndef FEATURE_EFFECTS_DISABLED
 	if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects) {
 		effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
 		g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
@@ -328,7 +331,8 @@ void hack::Initialize() {
 		effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
 		g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
 	}
-	logging::Info("SSE enabled..");
+        logging::Info("SSE enabled..");
+#endif
 #if RENDERING_ENGINE_OPENGL
 	DoSDLHooking();
 	logging::Info("SDL hooking done");

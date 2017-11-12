@@ -62,6 +62,7 @@ void AddCenterString(const std::string& string, const rgba_t& color) {
 int draw::width = 0;
 int draw::height = 0;
 float draw::fov = 90.0f;
+std::mutex draw::draw_mutex;
 
 namespace fonts {
 

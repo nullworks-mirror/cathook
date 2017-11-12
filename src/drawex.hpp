@@ -9,12 +9,17 @@
 
 #include <thread>
 
+extern "C"
+{
+#include "catsmclient.h"
+}
+
 #define draw_api drawex::api
 
 namespace drawex
 {
 
-extern int pipe_fd;
+extern cat_shm_render_context_t ctx;
 extern std::thread rendering_thread;
 
 void rendering_routine();

@@ -131,9 +131,9 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 	if (clean_screenshots && g_IEngine->IsTakingScreenshot()) return;
 
 	PROF_SECTION(PT_active);
+        draw::UpdateWTS();
 #if RENDERING_ENGINE_OPENGL
 #if ENABLE_VISUALS == 1
-	draw::UpdateWTS();
 	BeginCheatVisuals();
 	DrawCheatVisuals();
 
