@@ -12,10 +12,8 @@ void BeginCheatVisuals() {
 #if RENDERING_ENGINE_OPENGL
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
 #endif
-	if (draw_api::ready_state) {
-		draw_api::draw_begin();
-		ResetStrings();
-	}
+    draw_api::draw_begin();
+    ResetStrings();
 }
 
 std::mutex drawing_mutex;
@@ -27,95 +25,91 @@ void DrawCheatVisuals() {
 #if RENDERING_ENGINE_OPENGL
 	std::lock_guard<std::mutex> draw_lock(drawing_mutex);
 #endif
-	if (draw_api::ready_state) {
-		{
-			PROF_SECTION(DRAW_misc);
-			SAFE_CALL(hacks::shared::misc::DrawText());
-		}
-		if (info_text) {
-			PROF_SECTION(DRAW_info);
-			std::string name_s, reason_s;
-			PROF_SECTION(PT_info_text);
-			AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
-			if (!info_text_min) {
-				AddSideString(hack::GetVersion(), GUIColor()); // github commit and date
-				AddSideString(hack::GetType(), GUIColor()); //  Compile type
+    {
+        PROF_SECTION(DRAW_misc);
+        SAFE_CALL(hacks::shared::misc::DrawText());
+    }
+    if (info_text) {
+            PROF_SECTION(DRAW_info);
+            std::string name_s, reason_s;
+            PROF_SECTION(PT_info_text);
+            AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
+            if (!info_text_min) {
+                    AddSideString(hack::GetVersion(), GUIColor()); // github commit and date
+                    AddSideString(hack::GetType(), GUIColor()); //  Compile type
 #if ENABLE_GUI
-				AddSideString("Press 'INSERT' or 'F11' key to open/close cheat menu.", GUIColor());
-				AddSideString("Use mouse to navigate in menu.", GUIColor());
+                    AddSideString("Press 'INSERT' or 'F11' key to open/close cheat menu.", GUIColor());
+                    AddSideString("Use mouse to navigate in menu.", GUIColor());
 #endif
-				if (!g_IEngine->IsInGame()
+                    if (!g_IEngine->IsInGame()
 #if ENABLE_GUI
-					|| g_pGUI->Visible()
+                            || g_pGUI->Visible()
 #endif
-				) {
-					name_s = force_name.GetString();
-					if (name_s.length() < 3) name_s = "*Not Set*";
-					reason_s = disconnect_reason.GetString();
-					if (reason_s.length() < 3) reason_s = "*Not Set*";
-					AddSideString(""); // foolish
-					AddSideString(format("Custom Name: ", name_s), GUIColor());
-					AddSideString(format("Custom Disconnect Reason: ", reason_s), GUIColor());
-				}
-			}
-		}
-		if (spectator_target) {
-			AddCenterString("Press SPACE to stop spectating");
-		}
-		if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
-			PROF_SECTION(PT_total_hacks);
-			{
-				PROF_SECTION(DRAW_aimbot);
-				hacks::shared::aimbot::DrawText();
-			}
-			IF_GAME(IsTF2()) {
-				PROF_SECTION(DRAW_skinchanger);
-				SAFE_CALL(hacks::tf2::skinchanger::DrawText());
-			}
+                    ) {
+                            name_s = force_name.GetString();
+                            if (name_s.length() < 3) name_s = "*Not Set*";
+                            reason_s = disconnect_reason.GetString();
+                            if (reason_s.length() < 3) reason_s = "*Not Set*";
+                            AddSideString(""); // foolish
+                            AddSideString(format("Custom Name: ", name_s), GUIColor());
+                            AddSideString(format("Custom Disconnect Reason: ", reason_s), GUIColor());
+                    }
+            }
+    }
+    if (spectator_target) {
+            AddCenterString("Press SPACE to stop spectating");
+    }
+    if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid) {
+            PROF_SECTION(PT_total_hacks);
+            {
+                    PROF_SECTION(DRAW_aimbot);
+                    hacks::shared::aimbot::DrawText();
+            }
+            IF_GAME(IsTF2()) {
+                    PROF_SECTION(DRAW_skinchanger);
+                    SAFE_CALL(hacks::tf2::skinchanger::DrawText());
+            }
 #ifndef FEATURE_RADAR_DISABLED
-			IF_GAME(IsTF()) {
-				PROF_SECTION(DRAW_radar);
-				SAFE_CALL(hacks::tf::radar::Draw());
-			}
+            IF_GAME(IsTF()) {
+                    PROF_SECTION(DRAW_radar);
+                    SAFE_CALL(hacks::tf::radar::Draw());
+            }
 #endif
-			IF_GAME(IsTF2()) {
-				PROF_SECTION(DRAW_healarrows);
-				hacks::tf2::healarrow::Draw();
-			}
-			{
-				PROF_SECTION(DRAW_walkbot);
-				hacks::shared::walkbot::Draw();
-			}
-			IF_GAME(IsTF()) {
-				PROF_SECTION(PT_antidisguise);
-				SAFE_CALL(hacks::tf2::antidisguise::Draw());
-			}
-			IF_GAME(IsTF()) {
-				PROF_SECTION(PT_spyalert);
-				SAFE_CALL(hacks::tf::spyalert::Draw());
-			}
+            IF_GAME(IsTF2()) {
+                    PROF_SECTION(DRAW_healarrows);
+                    hacks::tf2::healarrow::Draw();
+            }
+            {
+                    PROF_SECTION(DRAW_walkbot);
+                    hacks::shared::walkbot::Draw();
+            }
+            IF_GAME(IsTF()) {
+                    PROF_SECTION(PT_antidisguise);
+                    SAFE_CALL(hacks::tf2::antidisguise::Draw());
+            }
+            IF_GAME(IsTF()) {
+                    PROF_SECTION(PT_spyalert);
+                    SAFE_CALL(hacks::tf::spyalert::Draw());
+            }
 #if ENABLE_IPC == 1
-			IF_GAME(IsTF()) SAFE_CALL(hacks::shared::followbot::Draw());
+            IF_GAME(IsTF()) SAFE_CALL(hacks::shared::followbot::Draw());
 #endif
-			{
-				PROF_SECTION(DRAW_esp);
-				hacks::shared::esp::Draw();
-			}
+            {
+                    PROF_SECTION(DRAW_esp);
+                    hacks::shared::esp::Draw();
+            }
 #ifndef FEATURE_FIDGET_SPINNER_DISABLED
-			DrawSpinner();
+            DrawSpinner();
 #endif
-			Prediction_PaintTraverse();
-		}
-		{
-			PROF_SECTION(DRAW_strings);
-			DrawStrings();
-		}
-	}
+            Prediction_PaintTraverse();
+    }
+    {
+            PROF_SECTION(DRAW_strings);
+            DrawStrings();
+    }
 
 }
 
 void EndCheatVisuals() {
-	if (draw_api::ready_state) {
-	    draw_api::draw_end();
-	}
+    draw_api::draw_end();
 }

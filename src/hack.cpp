@@ -299,10 +299,8 @@ void hack::Initialize() {
 	}
         logging::Info("SSE enabled..");
 #endif
-#if RENDERING_ENGINE_OPENGL
 	DoSDLHooking();
 	logging::Info("SDL hooking done");
-#endif
 	g_IGameEventManager->AddListener(&adv_event_listener, false);
 
 #endif /* TEXTMODE */
@@ -346,9 +344,7 @@ void hack::Shutdown() {
 	if (hack::shutdown) return;
 	hack::shutdown = true;
 	playerlist::Save();
-#if RENDERING_ENGINE_OPENGL
 	DoSDLUnhooking();
-#endif
 	logging::Info("Unregistering convars..");
 	ConVar_Unregister();
 	logging::Info("Shutting down killsay...");

@@ -110,6 +110,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1494960833" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
 								<option id="gnu.both.asm.option.include.paths.536294380" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cathook/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cathook/xoverlay}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.517639342" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>

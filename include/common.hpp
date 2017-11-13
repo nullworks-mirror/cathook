@@ -43,6 +43,11 @@
 #include <elf.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <stdio.h>=
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+#include <assert.h>
 
 #include "timer.hpp"
 #include "averager.hpp"
@@ -62,7 +67,8 @@ extern "C" {
 #include <visual/ftrender.hpp>
 #include <visual/drawing.hpp>
 #include "fidgetspinner.hpp"
-#include<visual/drawex.hpp>#include <visual/EffectGlow.hpp>
+#include <visual/drawex.hpp>
+#include <visual/EffectGlow.hpp>
 #include <visual/atlas.hpp>
 #include <visual/EffectChams.hpp>
 #include <visual/drawmgr.hpp>
