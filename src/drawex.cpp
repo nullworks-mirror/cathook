@@ -64,12 +64,15 @@ namespace api
 {
 
 bool ready_state = false;
+bool init = false;
 
 void initialize()
 {
-    rendering_thread = std::thread(rendering_routine);
+    if (!init)
+        rendering_thread = std::thread(rendering_routine);
     ctx = cat_shm_connect("cathook-rendering");
     ready_state = true;
+    init = true;
 }
 
 void draw_rect(float x, float y, float w, float h, const float* rgba)

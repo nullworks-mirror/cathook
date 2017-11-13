@@ -276,6 +276,7 @@ void hack::Initialize() {
 
 	// FIXME [MP]
 	hacks::shared::killsay::Init();
+	hacks::shared::announcer::init();
 	logging::Info("Hooked!");
 	velocity::Init();
 	playerlist::Load();
@@ -351,5 +352,6 @@ void hack::Shutdown() {
 	ConVar_Unregister();
 	logging::Info("Shutting down killsay...");
 	hacks::shared::killsay::Shutdown();
+        hacks::shared::announcer::shutdown();
 	logging::Info("Success..");
 }

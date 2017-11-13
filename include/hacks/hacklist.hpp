@@ -40,5 +40,6 @@
 #include "Spam.hpp"
 #include "Noisemaker.hpp"
 #include "FollowBot.hpp"
+#include "Announcer.hpp"
 
 #endif /* HACKS_HACKLIST_HPP_ */
