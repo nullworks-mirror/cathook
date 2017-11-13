@@ -36,7 +36,7 @@ void rendering_routine()
     while (true)
     {
         xpcmutex_lock(server_throttle_mutex);
-        PROF_SECTION(DRAWEX_rendering_routine)
+        PROF_SECTION(DRAWEX_rendering_routine);
         if (hack::initialized && api::ready_state)
         {
             BeginCheatVisuals();
@@ -49,7 +49,7 @@ void rendering_routine()
             EndCheatVisuals();
         }
         xpcmutex_unlock(server_throttle_mutex);
-        usleep(1000000 / 100);
+        usleep(1000000 / 45);
         //std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }

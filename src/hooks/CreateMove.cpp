@@ -104,6 +104,7 @@ static CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0", "Debug Proj
 static CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
 
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
+        g_Settings.is_create_move = true;
 	static CreateMove_t original_method = (CreateMove_t)hooks::clientmode.GetMethod(offsets::CreateMove());
 	bool time_replaced, ret, speedapplied;
 	float curtime_old, servertime, speed, yaw;
@@ -125,15 +126,18 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	PROF_SECTION(CreateMove);
 
 	if (!cmd) {
+	        g_Settings.is_create_move = false;
 		return ret;
 	}
 
 	if (!cathook) {
+                g_Settings.is_create_move = false;
 		return ret;
 	}
 
 	if (!g_IEngine->IsInGame()) {
 		g_Settings.bInvalid = true;
+                g_Settings.is_create_move = false;
 		return true;
 	}
 
@@ -281,6 +285,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			}
 			// Walkbot can leave game.
 			if (!g_IEngine->IsInGame()) {
+		                g_Settings.is_create_move = false;
 				return ret;
 			}
 			IF_GAME (IsTF()) {
@@ -427,6 +432,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		//LoadSavedState();
 	}
 	g_pLocalPlayer->bAttackLastTick = (cmd->buttons & IN_ATTACK);
+        g_Settings.is_create_move = false;
 	return ret;
 
 	SEGV_END;

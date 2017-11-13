@@ -67,6 +67,7 @@
 									<listOptionValue builtIn="false" value="GNUC=1"/>
 									<listOptionValue builtIn="false" value="NO_MALLOC_OVERRIDE"/>
 									<listOptionValue builtIn="false" value="ENABLE_VISUALS=1"/>
+									<listOptionValue builtIn="false" value="RENDERING_ENGINE_XOVERLAY=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.debugging.other.1695695237" name="Other debugging flags" superClass="gnu.cpp.compiler.option.debugging.other" useByScannerDiscovery="false" value="-ggdb" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.dialect.flags.1534861554" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" useByScannerDiscovery="true" value="-std=gnu++11" valueType="string"/>

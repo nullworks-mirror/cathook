@@ -45,6 +45,7 @@ class GlobalSettings {
 public:
 	void Init();
 	bool bInvalid { true };
+	bool is_create_move { false };
 	Vector last_angles;
 };
 
