@@ -60,6 +60,8 @@ struct offsets {
 	static constexpr uint32_t LevelShutdown() { 	return PlatformOffset(24, -1, -1); }
 	static constexpr uint32_t BeginFrame() { 		return PlatformOffset(5, -1, -1); }
 	static constexpr uint32_t FireGameEvent() {		return PlatformOffset(2, -1, -1); }
+        static constexpr uint32_t FireEvent() {         return PlatformOffset(8, 0, 0); }
+	static constexpr uint32_t FireEventClientSide() {       return PlatformOffset(9, 0, 0); }
 
 	static constexpr uint32_t lastoutgoingcommand() { return PlatformOffset(19228, -1, -1); }
 	static constexpr uint32_t m_nOutSequenceNr() { return PlatformOffset(8, -1, -1); }

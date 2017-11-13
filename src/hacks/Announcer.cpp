@@ -63,7 +63,12 @@ const announcer_entry_s *find_entry(const std::vector<announcer_entry_s>& vector
 
 void playsound(const std::string& sound)
 {
-    g_ISurface->PlaySound(std::string("announcer/" + sound).c_str());
+    // yes
+    char command[128];
+    snprintf(command, 128, "aplay %s/sound/%s &", DATA_PATH, sound.c_str());
+    logging::Info("system(%s)", command);
+    system(command);
+    // g_ISurface->PlaySound(std::string("announcer/" + sound).c_str());
 }
 
 void reset()
@@ -136,11 +141,25 @@ void on_kill(IGameEvent *event)
     }
 }
 
+void on_spawn(IGameEvent *event)
+{
+    int userid = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+
+    if (userid == g_IEngine->GetLocalPlayer())
+    {
+        reset();
+    }
+}
+
 class AnnouncerEventListener : public IGameEventListener2 {
     virtual void FireGameEvent(IGameEvent *event)
     {
-        if (enabled)
+        if (!enabled)
+            return;
+        if (0 == strcmp(event->GetName(), "player_death"))
             on_kill(event);
+        else if (0 == strcmp(event->GetName(), "player_spawn"))
+            on_spawn(event);
     }
 };
 
@@ -153,6 +172,7 @@ AnnouncerEventListener& listener()
 void init()
 {
     g_IEventManager2->AddListener(&listener(), "player_death", false);
+    g_IEventManager2->AddListener(&listener(), "player_spawn", false);
 }
 
 void shutdown()

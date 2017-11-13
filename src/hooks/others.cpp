@@ -435,6 +435,7 @@ void FireGameEvent_hook(void* _this, IGameEvent* event) {
 				return;
 			}
 		}
+//		hacks::tf2::killstreak::fire_event(event);
 	}
 	original(_this, event);
 }
@@ -445,6 +446,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	static IClientEntity *ent;
 
 	PROF_SECTION(FrameStageNotify_TOTAL);
+        hacks::tf2::killstreak::apply_killstreaks();
 
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
 	SEGV_BEGIN;

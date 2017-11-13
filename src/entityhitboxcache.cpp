@@ -99,8 +99,9 @@ matrix3x4_t* EntityHitboxCache::GetBones() {
 			bones_setup_time = CE_FLOAT(parent_ref, netvar.m_flSimulationTime);
 	}
 	if (!bones_setup) {
-	        std::lock_guard<std::mutex> lock(setupbones_mutex);
-		bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x100, bones_setup_time);
+	        //std::lock_guard<std::mutex> lock(setupbones_mutex);
+		if (g_Settings.is_create_move)
+	            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x100, bones_setup_time);
 	}
 	return bones;
 }

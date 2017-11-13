@@ -332,6 +332,8 @@ bool IsEntityVisible(CachedEntity* entity, int hb) {
 
 }
 
+CatVar tcm(CV_SWITCH, "debug_tcm", "1", "TCM");
+
 std::mutex trace_lock;
 bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos) {
 	trace_t trace_object;
@@ -346,7 +348,8 @@ bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos) {
 	{
 		PROF_SECTION(IEVV_TraceRay);
 		std::lock_guard<std::mutex> lock(trace_lock);
-		g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace_object);
+		if (!tcm || g_Settings.is_create_move)
+		    g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace_object);
 	}
 	return (trace_object.fraction >= 0.99f || (((IClientEntity*)trace_object.m_pEnt)) == RAW_ENT(entity));
 }

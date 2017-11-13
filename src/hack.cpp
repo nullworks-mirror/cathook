@@ -277,6 +277,7 @@ void hack::Initialize() {
 	// FIXME [MP]
 	hacks::shared::killsay::Init();
 	hacks::shared::announcer::init();
+	hacks::tf2::killstreak::init();
 	logging::Info("Hooked!");
 	velocity::Init();
 	playerlist::Load();

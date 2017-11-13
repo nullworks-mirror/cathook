@@ -41,5 +41,6 @@
 #include "Noisemaker.hpp"
 #include "FollowBot.hpp"
 #include "Announcer.hpp"
+#include "Killstreak.hpp"
 
 #endif /* HACKS_HACKLIST_HPP_ */
