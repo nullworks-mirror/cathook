@@ -5,28 +5,17 @@
  *      Author: nullifiedcat
  */
 
-#include "Misc.h"
-
 #include <unistd.h>
-
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#include "../beforecheaders.h"
-#include <fstream>
-#include "../aftercheaders.h"
-
 #include <link.h>
-#include "../sharedobj.h"
 
-#include "../hack.h"
-#include "../common.h"
-#include "../sdk.h"
-#include "../hooks/hookedmethods.h"
-#include "../netmessage.h"
-#include "../copypasted/CSignature.h"
+#include "sharedobj.hpp"
+
+#include "hack.hpp"
+#include "common.hpp"
 
 namespace hacks { namespace shared { namespace misc {
 

@@ -7,7 +7,7 @@
 
 #include "GUI.h"
 
-#include "../common.h"
+#include "common.hpp"
 #include "../sdk.h"
 
 void GUIVisibleCallback(IConVar* var, const char* pOldValue, float flOldValue) {

@@ -5,17 +5,15 @@
  *      Author: nullifiedcat
  */
 
-#include "common.h"
-#include "sharedobj.h"
-#include "copypasted/CSignature.h"
-#include "sdk.h"
+#include "common.hpp"
+#include "sharedobj.hpp"
 
 #include <unistd.h>
 
-#include "beforecheaders.h"
+#include "beforecheaders.hpp"
 #include <string>
 #include <sstream>
-#include "aftercheaders.h"
+#include "aftercheaders.hpp"
 
 #include <steam/isteamclient.h>
 

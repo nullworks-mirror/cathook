@@ -6,7 +6,7 @@ a * entity.cpp
  */
 
 #include "copypasted/Netvar.h"
-#include "common.h"
+#include "common.hpp"
 
 NetVars netvar;
 

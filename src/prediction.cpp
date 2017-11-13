@@ -5,24 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "prediction.h"
-
-#include <bspflags.h>
-#include <cdll_int.h>
-#include <cmodel.h>
-#include <engine/IEngineTrace.h>
-#include <icliententity.h>
-#include <inetchannelinfo.h>
-#include <mathlib/ssemath.h>
-#include <mathlib/vector.h>
-
-#include "conditions.h"
-#include "entitycache.h"
-#include "helpers.h"
-#include "interfaces.h"
-#include "localplayer.h"
-#include "netvars.h"
-#include "trace.h"
+#include "common.hpp"
 
 // TODO there is a Vector() object created each call.
 

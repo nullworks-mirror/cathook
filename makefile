@@ -53,7 +53,7 @@ RES_DIR=res
 OUT_DIR=bin
 TARGET = $(OUT_DIR)/$(OUT_NAME)
 
-INCLUDES=-Iucccccp -isystem/usr/include/c++/6.3.1 -isystem$(SSDK_DIR)/public -isystem$(SSDK_DIR)/mathlib -isystem$(SSDK_DIR)/common -isystem$(SSDK_DIR)/public/tier1 -isystem$(SSDK_DIR)/public/tier0 -isystem$(SSDK_DIR)
+INCLUDES=-I. -Iinclude -Iucccccp -isystem/usr/include/c++/6.3.1 -isystem$(SSDK_DIR)/public -isystem$(SSDK_DIR)/mathlib -isystem$(SSDK_DIR)/common -isystem$(SSDK_DIR)/public/tier1 -isystem$(SSDK_DIR)/public/tier0 -isystem$(SSDK_DIR)
 LDLIBS=-static -l:libc.so.6 -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so
 LDFLAGS=-shared -L$(realpath $(LIB_DIR))
 SOURCES=$(shell find $(SRC_DIR) -name "*.c*" -print)
@@ -106,7 +106,7 @@ CXXFLAGS+=$(WARNING_FLAGS)
 endif
 
 ifeq ($(ENABLE_VISUALS),1)
-INCLUDES+=-isystemsrc/freetype-gl -isystemsrc/imgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2
+INCLUDES+=-isystemfreetype-gl -isystemimgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2
 LDLIBS+=-lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -l:libfreetype.so
 CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(shell sdl2-config --cflags)
@@ -115,8 +115,8 @@ EXCL_SOURCES:=drawex.cpp catpclient.c pipepacket.c hacks/ESP.cpp hacks/SkinChang
 EXCL_SOURCES:=$(addprefix $(SRC_DIR)/,$(EXCL_SOURCES))
 
 SOURCES:=$(filter-out $(shell find $(SRC_DIR)/gui -name "*.cpp" -print),$(SOURCES))
-SOURCES:=$(filter-out $(shell find $(SRC_DIR)/freetype-gl -name "*.c*" -print),$(SOURCES))
-SOURCES:=$(filter-out $(shell find $(SRC_DIR)/imgui -name "*.c*" -print),$(SOURCES))
+SOURCES:=$(filter-out $(shell find freetype-gl -name "*.c*" -print),$(SOURCES))
+SOURCES:=$(filter-out $(shell find imgui -name "*.c*" -print),$(SOURCES))
 SOURCES:=$(filter-out $(EXCL_SOURCES),$(SOURCES))
 endif
 

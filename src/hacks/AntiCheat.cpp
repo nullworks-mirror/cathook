@@ -5,15 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#include "AntiCheat.hpp"
-#include "../common.h"
-
-#include "../hack.h"
-
-#include "ac/aimbot.hpp"
-#include "ac/antiaim.hpp"
-#include "ac/removecond.hpp"
-#include "ac/bhop.hpp"
+#include "common.hpp"
+#include "hack.hpp"
 
 namespace hacks { namespace shared { namespace anticheat {
 

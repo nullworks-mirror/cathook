@@ -7,10 +7,7 @@
 
 #if ENABLE_VISUALS == 1
 
-#include "atlas.hpp"
-
-#include "drawing.h"
-#include "logging.h"
+#include "common.hpp"
 
 namespace textures {
 

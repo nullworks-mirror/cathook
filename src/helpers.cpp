@@ -5,10 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "common.h"
-#include "hooks.h"
-#include "sdk.h"
-#include "profiler.h"
+#include "common.hpp"
 
 #include <sys/mman.h>
 

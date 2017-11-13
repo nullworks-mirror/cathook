@@ -5,8 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#include "common.h"
-#include "hack.h"
+#include "common.hpp"
+#include "hack.hpp"
 
 void BeginCheatVisuals() {
 #if RENDERING_ENGINE_OPENGL

@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "common.h"
+#include "common.hpp"
 #include "EffectChams.hpp"
 
 //static CatVar chams_experimental(CV_SWITCH, "chams_effect", "0", "Experimental Chams");

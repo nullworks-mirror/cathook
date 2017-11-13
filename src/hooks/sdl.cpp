@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "../common.h"
+#include "common.hpp"
 
 #ifdef RENDERING_ENGINE_OPENGL
 

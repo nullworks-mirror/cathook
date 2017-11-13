@@ -5,12 +5,12 @@
  *      Author: nullifiedcat
  */
 
+#include <logging.hpp>
 #include "Schema.hpp"
 
 
 #include "../../helpers.h"
 #include "../../cvwrapper.h"
-#include "../../logging.h"
 
 namespace menu { namespace im {
 

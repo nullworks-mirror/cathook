@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "common.h"
+#include "common.hpp"
 #include "EffectGlow.hpp"
 
 IMaterialSystem* materials = nullptr;

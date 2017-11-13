@@ -5,13 +5,12 @@
  *      Author: nullifiedcat
  */
 
-#include "../common.h"
-#include "../netmessage.h"
-#include "../chatlog.hpp"
-#include "../hack.h"
-#include "ucccccp.hpp"
-#include "../hitrate.hpp"
-#include "hookedmethods.h"
+#include "common.hpp"
+#include "ucccccp/ucccccp.hpp"
+#include "hack.hpp"
+#include "hitrate.hpp"
+#include "chatlog.hpp"
+#include "netmessage.hpp"
 
 #if ENABLE_VISUALS == 1
 

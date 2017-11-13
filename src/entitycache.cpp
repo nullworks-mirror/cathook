@@ -5,11 +5,9 @@
  *      Author: nullifiedcat
  */
 
-#include "common.h"
-#include "sdk.h"
+#include "common.hpp"
 
 #include <time.h>
-#include "profiler.h"
 
 // This method of const'ing the index is weird.
 CachedEntity::CachedEntity() :

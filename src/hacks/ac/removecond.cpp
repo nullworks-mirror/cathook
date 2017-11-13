@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "removecond.hpp"
-#include "../../common.h"
+#include "common.hpp"
 
 namespace ac { namespace removecond {
 

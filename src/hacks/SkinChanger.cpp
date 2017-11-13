@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "SkinChanger.hpp"
-#include "../copypasted/CSignature.h"
+#include "common.hpp"
 
 #include <sys/dir.h>
 #include <sys/stat.h>

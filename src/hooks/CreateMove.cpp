@@ -5,15 +5,10 @@
  *      Author: nullifiedcat
  */
 
-#include "CreateMove.h"
+#include "common.hpp"
+#include "hack.hpp"
 
-#include "../hooks.h"
-#include "../hack.h"
-#include "../common.h"
-#include "hookedmethods.h"
 #include <link.h>
-
-#include "../profiler.h"
 
 static CatVar minigun_jump(CV_SWITCH, "minigun_jump", "0", "TF2C minigun jump", "Allows jumping while shooting with minigun");
 

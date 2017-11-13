@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "../common.h"
-#include "../copypasted/CSignature.h"
+#include "common.hpp"
 
 namespace hacks { namespace tf2 { namespace autobackstab {
 

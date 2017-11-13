@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "Radar.hpp"
-#include "../common.h"
+#include "common.hpp"
 
 #ifndef FEATURE_RADAR_DISABLED
 

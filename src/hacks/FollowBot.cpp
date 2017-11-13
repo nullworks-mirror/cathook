@@ -5,9 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "FollowBot.h"
-
-#include "../common.h"
+#include "common.hpp"
 
 #if ENABLE_IPC == 1
 

@@ -5,10 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "ESP.h"
-
-#include "../common.h"
-#include "../sdk.h"
+#include "common.hpp"
 
 namespace hacks { namespace shared { namespace esp {
 	
@@ -222,7 +219,7 @@ void CreateMove() {
 	
 	// If not using any other special esp, we lower the min to the max clients
 	if (!buildings && !proj_esp && !item_esp)
-		limit = min(max_clients, HIGHEST_ENTITY);
+		limit = std::min(max_clients, HIGHEST_ENTITY);
 	
 	{ // I still dont understand the purpose of prof_section and surrounding in brackets
 		PROF_SECTION(CM_ESP_EntityLoop);
@@ -465,7 +462,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 				rgba_t hp = colors::Transparent(colors::Health(health, healthmax), fg.a);
 				rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f) : colors::Transparent(colors::black, fg.a);
 				// Get bar height
-				int hbh = (max_y - min_y - 2) * min((float)health / (float)healthmax, 1.0f);
+				int hbh = (max_y - min_y - 2) * std::min((float)health / (float)healthmax, 1.0f);
 
 				// Draw
 				draw_api::draw_rect_outlined(min_x - 7, min_y, 7, max_y - min_y, border, 0.5f);

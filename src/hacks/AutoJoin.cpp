@@ -5,9 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#include "../common.h"
-#include "../hack.h"
-#include "../copypasted/CSignature.h"
+#include "common.hpp"
+#include "hack.hpp"
 
 namespace hacks { namespace shared { namespace autojoin {
 

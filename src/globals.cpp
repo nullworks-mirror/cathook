@@ -5,9 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "common.h"
-#include "sdk.h"
-#include "copypasted/CSignature.h"
+#include "common.hpp"
 
 time_t time_injected { 0 };
 

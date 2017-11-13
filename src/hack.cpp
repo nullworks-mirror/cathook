@@ -5,37 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#include "hack.h"
-
-#include "beforecheaders.h"
-#include <vector>
-#include <map>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <sys/prctl.h>
-//#include <cstring>
-#include <unistd.h>
-#include <link.h>
-#include <unordered_map>
-#include <cstring>
-#include <memory>
-#include "segvcatch/segvcatch.h"
-#include <csignal>
-#include <sys/sysinfo.h>
-#include "aftercheaders.h"
-
-#include <steam/isteamuser.h>
-#include <dbg.h>
-// All Hacks
-#include "hacks/hacklist.h"
-
-#include "common.h"
-#include "sharedobj.h"
-#include "hooks.h"
-#include "netmessage.h"
-#include "profiler.h"
-#include "cvwrapper.h"
+#include "hack.hpp"
+#include "common.hpp"
 
 #define STRINGIFY(x) #x
 #define TO_STRING(x) STRINGIFY(x)
@@ -44,15 +15,8 @@
 #include "ftrender.hpp"
 #endif
 
-#include "hooks/hookedmethods.h"
-#include "init.hpp"
 
-#include "sdk.h"
-#include "vfunc.h"
-#include "copypasted/CSignature.h"
-#include "copypasted/Netvar.h"
-#include "CDumper.h"
-#include <KeyValues.h>
+#include "CDumper.hpp"
 
 /*
  *  Credits to josh33901 aka F1ssi0N for butifel F1Public and Darkstorm 2015 Linux

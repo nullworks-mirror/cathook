@@ -5,12 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#include "crits.h"
-#include "common.h"
-#include "sharedobj.h"
-#include "copypasted/CSignature.h"
+#include "common.hpp"
 #include <link.h>
-
 
 CatVar experimental_crit_hack(CV_KEY, "crit_hack_experimental", "0", "Unstable Crit Hack", "Experimental crit hack, use this **OR** old crit hack, do not use both!\nNEEDS NEXT CRIT INFO TO BE ACTIVE!");
 

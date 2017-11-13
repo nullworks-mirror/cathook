@@ -5,10 +5,9 @@
  *      Author: nullifiedcat
  */
 
-#include "drawing.h"
-#include "colors.hpp"
-#include "drawex.hpp"
-#include "hack.h"
+#include "common.hpp"
+#include "hack.hpp"
+
 extern "C"
 {
 #include "catsmclient.h"

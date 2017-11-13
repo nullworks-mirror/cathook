@@ -7,9 +7,7 @@
 
 #if ENABLE_VISUALS == 1
 
-#include "common.h"
-#include "sdk.h"
-#include "ftrender.hpp"
+#include "common.hpp"
 
 #include <GL/gl.h>
 

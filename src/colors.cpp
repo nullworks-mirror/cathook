@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "common.h"
+#include "common.hpp"
 
 CatVar user_red_blue(CV_INT, "esp_color_red_b", "0", "Red Team: Blue", "Blue color for red team", 255);
 CatVar user_red_green(CV_INT, "esp_color_red_g", "0", "Red Team: Green", "Green color for red team", 255);

@@ -6,7 +6,7 @@
  */
 
 #include "drawgl.hpp"
-#include "common.h"
+#include "common.hpp"
 #include "atlas.hpp"
 
 extern "C" {

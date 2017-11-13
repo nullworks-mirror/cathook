@@ -5,14 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#include "../common.h"
-#include "PaintTraverse.h"
-#include "../hack.h"
-#include "hookedmethods.h"
-#include "../segvcatch/segvcatch.h"
-#include "../copypasted/CSignature.h"
-#include "../profiler.h"
-#include "../netmessage.h"
+#include "common.hpp"
+#include "hack.hpp"
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1", "Clean screenshots", "Don't draw visuals while taking a screenshot");
 CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing", "Completely hides cathook");
