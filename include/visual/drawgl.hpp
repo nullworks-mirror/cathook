@@ -8,14 +8,12 @@
 #ifndef DRAWGL_HPP_
 #define DRAWGL_HPP_
 
-#include <drawing.hpp>
+#include <visual/drawing.hpp>
+
+#include <freetype-gl/freetype-gl.h>
+#include <freetype-gl/vertex-buffer.h>
 
 #define draw_api drawgl
-
-extern "C" {
-#include "freetype-gl/vec234.h"
-#include "freetype-gl/vertex-buffer.h"
-}
 
 namespace drawgl {
 

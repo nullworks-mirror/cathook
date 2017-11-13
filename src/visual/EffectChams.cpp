@@ -5,8 +5,8 @@
  *      Author: nullifiedcat
  */
 
+#include <visual/EffectChams.hpp>
 #include "common.hpp"
-#include "EffectChams.hpp"
 
 //static CatVar chams_experimental(CV_SWITCH, "chams_effect", "0", "Experimental Chams");
 

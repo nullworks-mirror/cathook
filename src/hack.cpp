@@ -12,7 +12,7 @@
 #define TO_STRING(x) STRINGIFY(x)
 
 #if ENABLE_VISUALS == 1
-#include "ftrender.hpp"
+#include <visual/ftrender.hpp>
 #endif
 
 

@@ -7,8 +7,8 @@
 
 #pragma once
 
+#include <visual/atlas.hpp>
 #include "common.hpp"
-#include "atlas.hpp"
 
 class CatVar;
 

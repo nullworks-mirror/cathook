@@ -51,7 +51,7 @@
 #include <aftercheaders.hpp>
 
 #include "macros.hpp"
-#include "colors.hpp"
+#include <visual/colors.hpp>
 
 #if ENABLE_VISUALS == 1
 
@@ -59,14 +59,13 @@ extern "C" {
 #include <vec234.h>
 }
 
-#include "ftrender.hpp"
-#include "drawing.hpp"
+#include <visual/ftrender.hpp>
+#include <visual/drawing.hpp>
 #include "fidgetspinner.hpp"
-#include DRAW_API
-#include "EffectGlow.hpp"
-#include "atlas.hpp"
-#include "EffectChams.hpp"
-#include "drawmgr.hpp"
+#include<visual/drawex.hpp>#include <visual/EffectGlow.hpp>
+#include <visual/atlas.hpp>
+#include <visual/EffectChams.hpp>
+#include <visual/drawmgr.hpp>
 
 #endif
 

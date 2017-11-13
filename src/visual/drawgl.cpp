@@ -5,9 +5,9 @@
  *      Author: nullifiedcat
  */
 
-#include "drawgl.hpp"
+#include <visual/atlas.hpp>
+#include <visual/drawgl.hpp>
 #include "common.hpp"
-#include "atlas.hpp"
 
 extern "C" {
 #include <mat4.h>
