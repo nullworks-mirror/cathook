@@ -79,11 +79,11 @@ void DrawModelExecute_hook(IVModelRender* _this, const DrawModelState_t& state, 
 int IN_KeyEvent_hook(void* _this, int eventcode, int keynum, const char* pszCurrentBinding) {
 	static const IN_KeyEvent_t original = (IN_KeyEvent_t)hooks::client.GetMethod(offsets::IN_KeyEvent());
 #if ENABLE_GUI
-	SEGV_BEGIN;
+	/*
 	if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
 		return 0;
 	}
-	SEGV_END;
+	*/
 #endif
 	return original(_this, eventcode, keynum, pszCurrentBinding);
 }
@@ -521,11 +521,11 @@ void FrameStageNotify_hook(void* _this, int stage) {
 	if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START) {
 #if ENABLE_GUI
 		if (cursor_fix_experimental) {
-			if (gui_visible) {
+/*			if (gui_visible) {
 				g_ISurface->SetCursorAlwaysVisible(true);
 			} else {
 				g_ISurface->SetCursorAlwaysVisible(false);
-			}
+			}*/
 		}
 #endif
 		IF_GAME(IsTF()) {

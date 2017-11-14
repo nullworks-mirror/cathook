@@ -9,6 +9,7 @@
 
 typedef unsigned int xoverlay_font_handle_t;
 #define XOVERLAY_FONT_COUNT 64
+#define XOVERLAY_FONT_INVALID_HANDLE (xoverlay_font_handle_t)(-1)
 
 xoverlay_font_handle_t
 xoverlay_font_load(const char *path, float size);

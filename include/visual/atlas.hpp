@@ -8,31 +8,45 @@
 #ifndef ATLAS_HPP_
 #define ATLAS_HPP_
 
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include "common.hpp"
+#include "visual/drawex.hpp"
 
-extern "C" {
-#include <vec234.h>
-}
+namespace textures
+{
 
-extern char _binary_atlas_start;
+class texture_atlas;
+class sprite;
 
-namespace textures {
-
-constexpr float atlas_width = 1024.0f;
-constexpr float atlas_height = 512.0f;
-
-class AtlasTexture {
+class sprite
+{
 public:
-	AtlasTexture(float x, float y, float sx, float sy);
-	void Draw(float x, float y, const float *color, float sx, float sy);
+    sprite(float x, float y, float w, float h, const texture_atlas &atlas);
 public:
-	ftgl::vec2 tex_coords[2];
+    void draw(float scrx, float scry, float scrw, float scrh, const rgba_t& rgba) const;
+public:
+    const float nx;
+    const float ny;
+    const float nw;
+    const float nh;
+
+    const texture_atlas &atlas;
 };
 
-extern GLuint texture;
+class texture_atlas
+{
+public:
+    texture_atlas(std::string filename, float width, float height);
+public:
+    sprite create_sprite(float x, float y, float sx, float sy) const;
+public:
+    const float width;
+    const float height;
 
-void Init();
+    draw_api::texture_handle_t texture;
+};
+
+texture_atlas& atlas();
+
 }
 
 #endif /* ATLAS_HPP_ */

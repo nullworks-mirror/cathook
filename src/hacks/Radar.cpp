@@ -11,9 +11,9 @@
 
 namespace hacks { namespace tf { namespace radar {
 
-std::unique_ptr<textures::AtlasTexture> tx_classes[3][9];
-std::unique_ptr<textures::AtlasTexture> tx_teams[2];
-std::unique_ptr<textures::AtlasTexture> tx_items[2];
+std::array<std::array<textures::sprite, 9>, 3> tx_class;
+std::array<textures::sprite, 2> tx_teams;
+std::array<textures::sprite, 2> tx_items;
 
 CatVar size(CV_INT, "radar_size", "300", "Radar size", "Defines radar size in pixels");
 CatVar zoom(CV_FLOAT, "radar_zoom", "20", "Radar zoom", "Defines radar zoom (1px = Xhu)");
@@ -29,7 +29,6 @@ CatVar show_healthpacks(CV_SWITCH, "radar_healthpacks", "1", "Show Healthpacks")
 CatVar show_ammopacks(CV_SWITCH, "radar_ammopacks", "1", "Show Ammopacks");
 
 void Init() {
-#if RENDERING_ENGINE_OPENGL
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 9; j++) {
 			tx_classes[i][j].reset(new textures::AtlasTexture(64 * j, textures::atlas_height - 64 * (i + 1), 64, 64));
@@ -40,7 +39,6 @@ void Init() {
 
 	tx_items[0].reset(new textures::AtlasTexture(10 * 64, textures::atlas_height - 64, 64, 64));
 	tx_items[1].reset(new textures::AtlasTexture(10 * 64, textures::atlas_height - 128, 64, 64));
-#endif
 }
 
 std::pair<int, int> WorldToRadar(int x, int y) {

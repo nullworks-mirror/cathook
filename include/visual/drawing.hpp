@@ -8,17 +8,7 @@
 #ifndef DRAWING_HPP_
 #define DRAWING_HPP_
 
-#if defined(RENDERING_ENGINE_OPENGL)
-#define DRAW_API "drawgl.hpp"
-#elif defined(RENDERING_ENGINE_XOVERLAY)
-#define DRAW_API "drawex.hpp"
-#endif
-
 #include "common.hpp"
-
-extern "C" {
-#include <texture-font.h>
-}
 
 class CachedEntity;
 class Vector;
@@ -29,8 +19,12 @@ class VMatrix;
 
 namespace fonts {
 
-extern ftgl::texture_font_t* font_main;
+extern draw_api::font_handle_t main_font;
 
+}
+
+constexpr rgba_t GUIColor() {
+        return colors::white;
 }
 
 void InitStrings();
@@ -55,11 +49,5 @@ bool WorldToScreen(const Vector &origin, Vector &screen);
 bool EntityCenterToScreen(CachedEntity* entity, Vector& out);
 
 }
-
-#if not ENABLE_GUI
-constexpr rgba_t GUIColor() {
-	return colors::white;
-}
-#endif
 
 #endif /* DRAWING_HPP_ */

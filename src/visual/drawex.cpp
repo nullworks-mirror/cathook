@@ -22,55 +22,87 @@ namespace api
 bool ready_state = false;
 bool init = false;
 
+font_handle_t    create_font(const char *path, float size)
+{
+    logging::Info("Creating font '%s':%f", path, size);
+    font_handle_t result;
+    result.handle = xoverlay_font_load(path, size);
+    logging::Info("Font handle: %d", result.handle);
+    return result;
+}
+
+texture_handle_t create_texture(const char *path)
+{
+    return texture_handle_t { xoverlay_texture_load_png_rgba(path) };
+}
+
+void destroy_font(font_handle_t font)
+{
+    xoverlay_font_unload(font.handle);
+}
+
+void destroy_texture(texture_handle_t texture)
+{
+    xoverlay_texture_unload(texture.handle);
+}
+
+bool ready()
+{
+    return ready_state && init;
+}
+
 void initialize()
 {
     int status = xoverlay_init();
     if (status < 0)
     {
-        logging::Info("ERROR: could not initialize Xoverlay");
+        logging::Info("ERROR: could not initialize Xoverlay: %d", status);
     }
+    else
+    {
+        logging::Info("Xoverlay initialized");
+    }
+    xoverlay_show();
 }
 
-void draw_rect(float x, float y, float w, float h, const float* rgba)
+void draw_rect(float x, float y, float w, float h, const rgba_t& rgba)
 {
-    PROF_SECTION(DRAWEX_draw_rect);
-    xoverlay_draw_rect(x, y, w, h, *reinterpret_cast<xoverlay_rgba_t *>(rgba));
+    xoverlay_draw_rect(x, y, w, h, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba));
 }
 
-void draw_rect_outlined(float x, float y, float w, float h, const float* rgba, float thickness)
+void draw_rect_outlined(float x, float y, float w, float h, const rgba_t& rgba, float thickness)
 {
-    PROF_SECTION(DRAWEX_draw_rect_outline);
-    xoverlay_draw_rect_outline(x, y, w, h, *reinterpret_cast<xoverlay_rgba_t *>(rgba), thickness);
+    xoverlay_draw_rect_outline(x, y, w, h, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), thickness);
 }
 
-void draw_line(float x, float y, float dx, float dy, const float* rgba, float thickness)
+void draw_line(float x, float y, float dx, float dy, const rgba_t& rgba, float thickness)
 {
-    PROF_SECTION(DRAWEX_draw_line);
-    xoverlay_draw_line(x, y, dx, dy, *reinterpret_cast<xoverlay_rgba_t *>(rgba), thickness);
+    xoverlay_draw_line(x, y, dx, dy, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), thickness);
 }
 
-void draw_rect_textured(float x, float y, float w, float h, const float* rgba, texture_handle_t texture, float u, float v, float s, float t)
+void draw_rect_textured(float x, float y, float w, float h, const rgba_t& rgba, texture_handle_t texture, float u, float v, float s, float t)
 {
-    PROF_SECTION(DRAWEX_draw_rect_textured);
-    xoverlay_draw_rect_textured(x, y, w, h, *reinterpret_cast<xoverlay_rgba_t *>(rgba), texture.handle, u, v, s, t);
+    xoverlay_draw_rect_textured(x, y, w, h, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), texture.handle, u, v, s, t);
 }
 
-void draw_circle(float x, float y, float radius, const float *rgba, float thickness, int steps)
+void draw_circle(float x, float y, float radius, const rgba_t& rgba, float thickness, int steps)
 {
-    PROF_SECTION(DRAWEX_draw_circle);
-    xoverlay_draw_circle(x, y, radius, *reinterpret_cast<xoverlay_rgba_t *>(rgba), thickness, steps);
+    xoverlay_draw_circle(x, y, radius, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), thickness, steps);
 }
 
-void draw_string(float x, float y, const char *string, font_handle_t font, const float *rgba)
+void draw_string(float x, float y, const char *string, font_handle_t font, const rgba_t& rgba)
 {
-    PROF_SECTION(DRAWEX_draw_string);
-    xoverlay_draw_string(x, y, string, font.handle, *reinterpret_cast<xoverlay_rgba_t *>(rgba), nullptr, nullptr);
+    xoverlay_draw_string(x, y, string, font.handle, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), nullptr, nullptr);
 }
 
-void draw_string_with_outline(float x, float y, const char *string, font_handle_t font, const float *rgba, const float *rgba_outline, float thickness)
+void draw_string_with_outline(float x, float y, const char *string, font_handle_t font, const rgba_t& rgba, const rgba_t& rgba_outline, float thickness)
 {
-    PROF_SECTION(DRAWEX_draw_string_with_outline);
-    xoverlay_draw_string_with_outline(x, y, string, font.handle, *reinterpret_cast<xoverlay_rgba_t *>(rgba), *reinterpret_cast<xoverlay_rgba_t *>(rgba_outline), thickness, 1, nullptr, nullptr);
+    xoverlay_draw_string_with_outline(x, y, string, font.handle, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), *reinterpret_cast<const xoverlay_rgba_t *>(&rgba_outline), thickness, 1, nullptr, nullptr);
+}
+
+void get_string_size(const char *string, font_handle_t font, float *x, float *y)
+{
+    xoverlay_get_string_size(string, font.handle, x, y);
 }
 
 void draw_begin()

@@ -6,7 +6,20 @@
  */
 
 #include "common.hpp"
+#include "visual/drawing.hpp"
 #include "hack.hpp"
+
+void render_cheat_visuals()
+{
+    BeginCheatVisuals();
+    xoverlay_draw_rect(300, 300, 100, 100, xoverlay_rgba(200, 100, 100, 255));
+    //draw_api::draw_string(100, 100, "Testing", fonts::main_font, colors::white);
+    static draw_api::font_handle_t fh = draw_api::create_font(DATA_PATH "/fonts/tf2build.ttf", 14);
+    xoverlay_draw_string(100, 100, "TestingSTR", fh.handle, *reinterpret_cast<const xoverlay_rgba_t *>(&colors::white), 0, 0);
+    //xoverlay_draw_string_with_outline(100, 20, "Testing2", )
+    DrawCheatVisuals();
+    EndCheatVisuals();
+}
 
 void BeginCheatVisuals() {
 #if RENDERING_ENGINE_OPENGL
@@ -43,7 +56,9 @@ void DrawCheatVisuals() {
 #endif
                     if (!g_IEngine->IsInGame()
 #if ENABLE_GUI
+                            /*
                             || g_pGUI->Visible()
+                            */
 #endif
                     ) {
                             name_s = force_name.GetString();

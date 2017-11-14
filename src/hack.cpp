@@ -11,11 +11,6 @@
 #define STRINGIFY(x) #x
 #define TO_STRING(x) STRINGIFY(x)
 
-#if ENABLE_VISUALS == 1
-#include <visual/ftrender.hpp>
-#endif
-
-
 #include "CDumper.hpp"
 
 /*
@@ -191,8 +186,10 @@ void hack::Initialize() {
 
 	draw::Initialize();
 #if ENABLE_GUI
+	/*
 	g_pGUI = new CatGUI();
 	g_pGUI->Setup();
+	*/
 #endif
 
 #endif /* TEXTMODE */

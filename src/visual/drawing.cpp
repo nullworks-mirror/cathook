@@ -37,14 +37,14 @@ void AddSideString(const std::string& string, const rgba_t& color) {
 void DrawStrings() {
 	int y { 8 };
 	for (size_t i = 0; i < side_strings_count; ++i) {
-	        draw_api::draw_string(8, y, side_strings[i].c_str(), side_strings_colors[i]);
+	        draw_api::draw_string_with_outline(8, y, side_strings[i].c_str(), fonts::main_font, side_strings_colors[i], colors::black, 1.0f);
 		y += /*((int)fonts::font_main->height)*/ 14 + 1;
 	}
 	y = draw::height / 2;
 	for (size_t i = 0; i < center_strings_count; ++i) {
-		int sx;
-		//FTGL_StringLength(center_strings[i], fonts::font_main, &sx, nullptr);
-		draw_api::draw_string((draw::width) / 2, y, center_strings[i].c_str(), center_strings_colors[i]);
+		float sx, sy;
+		draw_api::get_string_size(center_strings[i].c_str(), fonts::main_font, &sx, &sy);
+		draw_api::draw_string_with_outline((draw::width - sx) / 2, y, center_strings[i].c_str(), fonts::main_font, center_strings_colors[i], colors::black, 1.0f);
 		y += /*((int)fonts::font_main->height)*/ 14 + 1;
 	}
 }
@@ -64,8 +64,7 @@ std::mutex draw::draw_mutex;
 
 namespace fonts {
 
-ftgl::texture_font_t* font_main = nullptr;
-CatVar font_ftgl(CV_STRING, "font_ftgl", "tf2build", "FTGL Font");
+draw_api::font_handle_t main_font;
 
 }
 
@@ -73,15 +72,9 @@ void draw::Initialize() {
 	if (!draw::width || !draw::height) {
 		g_IEngine->GetScreenSize(draw::width, draw::height);
 	}
-	draw_api::initialize();
-#if RENDERING_ENGINE_OPENGL
-	FTGL_PreInit();
-
-	fonts::font_ftgl.InstallChangeCallback([](IConVar* var, const char* pOldValue, float flOldValue) {
-		FTGL_ChangeFont(&fonts::font_main, fonts::font_ftgl.GetString());
-		(void)flOldValue;
-	});
-#endif
+	xoverlay_preinit();
+	fonts::main_font = draw_api::create_font(DATA_PATH "/fonts/tahoma.ttf", 14);
+        fonts::main_font = draw_api::create_font(DATA_PATH "/fonts/tahoma.ttf", 14);
 }
 
 bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {

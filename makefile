@@ -12,18 +12,16 @@
 #	NO_TF2_RENDERING - disable in-game rendering (does not work yet)
 #	TEXTMODE_STDIN - allows using console with textmode tf2
 #	TEXTMODE_VAC - allows joining VAC-secured servers in textmode
-#	RENDERING_ENGINE - (OPENGL, XOVERLAY)
 #
 
 GAME=tf2
 
 ENABLE_VISUALS=1
-ENABLE_GUI=1
+ENABLE_GUI:=1
 ENABLE_IPC=1
 ENABLE_NULL_GRAPHICS=0
 TEXTMODE_STDIN=0
 TEXTMODE_VAC=0
-RENDERING_ENGINE=XOVERLAY
 DATA_PATH="/opt/cathook/data"
 NO_LTO=0
 ifdef CLANG
@@ -70,19 +68,11 @@ LD=ld.lld
 LDFLAGS+=-melf_i386
 endif
 
-DEFINES=
-
-ifeq ($(RENDERING_ENGINE), XOVERLAY)
-ENABLE_GUI=0
-INCLUDES+= -Ixoverlay
-LDLIBS+=-loverlay
-endif
-
 DEFINES+=_GLIBCXX_USE_CXX11_ABI=0 _POSIX=1 FREETYPE_GL_USE_VAO=1 RAD_TELEMETRY_DISABLED=1 LINUX=1 USE_SDL=1 _LINUX=1 POSIX=1 GNUC=1 NO_MALLOC_OVERRIDE=1
-DEFINES+=RENDERING_ENGINE_$(RENDERING_ENGINE)=1 ENABLE_VISUALS=$(ENABLE_VISUALS) ENABLE_GUI=$(ENABLE_GUI) ENABLE_IPC=$(ENABLE_IPC) BUILD_GAME=$(GAME) ENABLE_NULL_GRAPHICS=$(ENABLE_NULL_GRAPHICS) TEXTMODE_STDIN=$(TEXTMODE_STDIN) TEXTMODE_VAC=$(TEXTMODE_VAC) DATA_PATH="\"$(DATA_PATH)\""
+DEFINES+=ENABLE_VISUALS=$(ENABLE_VISUALS) ENABLE_GUI=$(ENABLE_GUI) ENABLE_IPC=$(ENABLE_IPC) BUILD_GAME=$(GAME) ENABLE_NULL_GRAPHICS=$(ENABLE_NULL_GRAPHICS) TEXTMODE_STDIN=$(TEXTMODE_STDIN) TEXTMODE_VAC=$(TEXTMODE_VAC) DATA_PATH="\"$(DATA_PATH)\""
 
 WARNING_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef
-COMMON_FLAGS=-fpermissive -O3 -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native -mtune=native
+COMMON_FLAGS=-O3 -shared -Wno-unknown-pragmas -fmessage-length=0 -m32 -fvisibility=hidden -fPIC -march=native -mtune=native
 
 ifdef CLANG
 COMMON_FLAGS+=-Wno-c++11-narrowing
@@ -108,17 +98,15 @@ CXXFLAGS+=$(WARNING_FLAGS)
 endif
 
 ifeq ($(ENABLE_VISUALS),1)
-INCLUDES+=-isystemfreetype-gl -isystemimgui -isystem/usr/local/include/freetype2 -isystem/usr/include/freetype2
-LDLIBS+=-lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -l:libfreetype.so
+INCLUDES+=-Ixoverlay
+LDLIBS+=-lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -loverlay
 CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(shell sdl2-config --cflags)
 else
-EXCL_SOURCES:=drawex.cpp catpclient.c pipepacket.c hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp ftrender.cpp hooks/sdl.cpp drawing.cpp drawmgr.cpp drawgl.cpp hooks/PaintTraverse.cpp EffectChams.cpp EffectGlow.cpp atlas.cpp
+EXCL_SOURCES:=drawex.cpp hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp  hooks/sdl.cpp drawing.cpp drawmgr.cpp drawgl.cpp hooks/PaintTraverse.cpp EffectChams.cpp EffectGlow.cpp atlas.cpp
 EXCL_SOURCES:=$(addprefix $(SRC_DIR)/,$(EXCL_SOURCES))
 
 SOURCES:=$(filter-out $(shell find $(SRC_DIR)/gui -name "*.cpp" -print),$(SOURCES))
-SOURCES:=$(filter-out $(shell find freetype-gl -name "*.c*" -print),$(SOURCES))
-SOURCES:=$(filter-out $(shell find imgui -name "*.c*" -print),$(SOURCES))
 SOURCES:=$(filter-out $(EXCL_SOURCES),$(SOURCES))
 endif
 
@@ -163,31 +151,12 @@ data:
 # 3rd party source files, we don't need warnings there
 
 # c++
-src/imgui/imgui_demo.o : CXXFLAGS+=-w
-src/imgui/imgui_draw.o : CXXFLAGS+=-w
-src/imgui/imgui_impl_sdl.o : CXXFLAGS+=-w
-src/imgui/imgui.o : CXXFLAGS+=-w
 src/sdk/checksum_md5.o : CXXFLAGS+=-w
 src/sdk/convar.o : CXXFLAGS+=-w
 src/sdk/KeyValues.o : CXXFLAGS+=-w
 src/sdk/MaterialSystemUtil.o : CXXFLAGS+=-w
 src/sdk/tier1.o : CXXFLAGS+=-w
 src/sdk/utlbuffer.o : CXXFLAGS+=-w
-
-# c
-src/freetype-gl/distance-field.o : CFLAGS+=-w
-src/freetype-gl/edtaa3func.o : CFLAGS+=-w
-src/freetype-gl/font-manager.o : CFLAGS+=-w
-src/freetype-gl/mat4.o : CFLAGS+=-w
-src/freetype-gl/platform.o : CFLAGS+=-w
-src/freetype-gl/shader.o : CFLAGS+=-w
-src/freetype-gl/text-buffer.o : CFLAGS+=-w
-src/freetype-gl/texture-atlas.o : CFLAGS+=-w
-src/freetype-gl/utf8-utils.o : CFLAGS+=-w
-src/freetype-gl/texture-font.o : CFLAGS+=-w
-src/freetype-gl/vector.o : CFLAGS+=-w
-src/freetype-gl/vertex-attribute.o : CFLAGS+=-w
-src/freetype-gl/vertex-buffer.o : CFLAGS+=-w
 
 # end of 3rd party sources
 

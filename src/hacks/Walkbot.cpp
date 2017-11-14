@@ -824,11 +824,11 @@ void DrawConnection(index_t a, connection_s& b) {
 	if (not (draw::WorldToScreen(a_.xyz(), wts_a) and draw::WorldToScreen(center, wts_c) and draw::WorldToScreen(center_connection, wts_cc)))
 		return;
 
-	rgba_t* color = &colors::white;
+	const rgba_t* color = &colors::white;
 	if 		((a_.flags & b_.flags) & NF_JUMP) color = &colors::yellow;
 	else if ((a_.flags & b_.flags) & NF_DUCK) color = &colors::green;
 
-	draw_api::draw_line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, color->rgba, 0.5f);
+	draw_api::draw_line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, *color, 0.5f);
 
 	if (draw_connection_flags && b.flags != CF_GOOD) {
 		std::string flags;
@@ -836,7 +836,7 @@ void DrawConnection(index_t a, connection_s& b) {
 		if (b.flags & CF_LOW_HEALTH) flags += "H";
 		//int size_x = 0, size_y = 0;
 		//FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-		draw_api::draw_string(wts_cc.x, wts_cc.y - 4, flags.c_str(), colors::white);
+		draw_api::draw_string(wts_cc.x, wts_cc.y - 4, flags.c_str(), fonts::main_font, colors::white);
 	}
 }
 
@@ -852,7 +852,7 @@ void DrawNode(index_t node, bool draw_back) {
 	}
 
 	if (draw_nodes) {
-		rgba_t* color = &colors::white;
+		const rgba_t* color = &colors::white;
 		if 		(n.flags & NF_JUMP) color = &colors::yellow;
 		else if (n.flags & NF_DUCK) color = &colors::green;
 
@@ -868,11 +868,11 @@ void DrawNode(index_t node, bool draw_back) {
 		if (node == state::active_node)
 			color = &colors::red;
 
-		draw_api::draw_rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, color->rgba);
+		draw_api::draw_rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, *color);
 	}
 
 	if (draw_indices) {
-		rgba_t* color = &colors::white;
+		const rgba_t* color = &colors::white;
 		if 		(n.flags & NF_JUMP) color = &colors::yellow;
 		else if (n.flags & NF_DUCK) color = &colors::green;
 
@@ -880,7 +880,7 @@ void DrawNode(index_t node, bool draw_back) {
 		if (not draw::WorldToScreen(n.xyz(), wts))
 			return;
 
-		draw_api::draw_string(wts.x, wts.y, std::to_string(node).c_str(), *color);
+		draw_api::draw_string_with_outline(wts.x, wts.y, std::to_string(node).c_str(), fonts::main_font, *color, colors::black, 1.0f);
 	}
 }
 

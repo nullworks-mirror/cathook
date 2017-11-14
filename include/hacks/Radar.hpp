@@ -8,13 +8,10 @@
 #ifndef HACKS_RADAR_HPP_
 #define HACKS_RADAR_HPP_
 
+#include "visual/atlas.hpp"
 #include "common.hpp"
 
 namespace hacks { namespace tf { namespace radar {
-
-extern std::unique_ptr<textures::AtlasTexture> tx_classes[3][9];
-extern std::unique_ptr<textures::AtlasTexture> tx_teams[2];
-extern std::unique_ptr<textures::AtlasTexture> tx_items[2];
 
 extern CatVar size;
 extern CatVar zoom;

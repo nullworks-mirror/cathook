@@ -67,6 +67,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 			if (software_cursor->GetBool()) software_cursor->SetValue(0);
 			break;
 #if ENABLE_GUI
+/*
 		case 3:
 			if (cur != g_pGUI->Visible()) {
 				software_cursor->SetValue(g_pGUI->Visible());
@@ -76,6 +77,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 			if (cur == g_pGUI->Visible()) {
 				software_cursor->SetValue(!g_pGUI->Visible());
 			}
+*/
 #endif
 		}
 	}
@@ -126,19 +128,6 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	PROF_SECTION(PT_active);
         draw::UpdateWTS();
-#if RENDERING_ENGINE_OPENGL
-#if ENABLE_VISUALS == 1
-	BeginCheatVisuals();
-	DrawCheatVisuals();
-
-
-#if ENABLE_GUI
-		g_pGUI->Update();
-#endif
-
-	EndCheatVisuals();
-#endif
-#endif
 	SEGV_END;
 }
 

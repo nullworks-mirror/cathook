@@ -12,8 +12,9 @@
 
 class CatVar;
 
+extern std::array<textures::sprite, 4> spinner_states;
+
 extern CatVar enable_spinner;
-extern std::vector<textures::AtlasTexture> spinner_states;
 
 void InitSpinner();
 void DrawSpinner();

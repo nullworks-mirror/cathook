@@ -43,7 +43,7 @@
 #include <elf.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <stdio.h>=
+#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
@@ -60,14 +60,9 @@
 
 #if ENABLE_VISUALS == 1
 
-extern "C" {
-#include <vec234.h>
-}
-
-#include <visual/ftrender.hpp>
+#include <visual/drawex.hpp>
 #include <visual/drawing.hpp>
 #include "fidgetspinner.hpp"
-#include <visual/drawex.hpp>
 #include <visual/EffectGlow.hpp>
 #include <visual/atlas.hpp>
 #include <visual/EffectChams.hpp>

@@ -25,12 +25,6 @@ constexpr int c_strcmp( char const* lhs, char const* rhs ) {
 #	define DATA_PATH "/opt/cathook"
 #endif
 
-#if RENDERING_ENGINE_XOVERLAY
-
 #define FEATURE_EMOJI_ESP_DISABLED
 #define FEATURE_RADAR_DISABLED
 #define FEATURE_FIDGET_SPINNER_DISABLED
-#define FEATURE_EFFECTS_DISABLED
-#define HOOK_DME_DISABLED
-
-#endif

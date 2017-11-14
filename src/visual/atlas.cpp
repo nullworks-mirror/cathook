@@ -11,26 +11,36 @@
 
 namespace textures {
 
-AtlasTexture::AtlasTexture(float x, float y, float sx, float sy) {
-	tex_coords[0] = ftgl::vec2{ (x + 0.5f) / atlas_width, (y + sy - 0.5f) / atlas_height };
-	tex_coords[1] = ftgl::vec2{ (x - 0.5f + sx) / atlas_width, (y + 0.5f) / atlas_height };
+sprite::sprite(float x, float y, float w, float h, const texture_atlas &atlas):
+        nx(x / atlas.width),
+        ny(y / atlas.height),
+        nw(w / atlas.width),
+        nh(h / atlas.height),
+        atlas(atlas)
+{
 }
 
-void AtlasTexture::Draw(float x, float y, const float *color, float sx, float sy) {
-	draw_api::draw_rect_textured(x, y, sx, sy, color, tex_coords[0].x, tex_coords[0].y, tex_coords[1].x, tex_coords[1].y);
+void sprite::draw(float scrx, float scry, float scrw, float scrh, const rgba_t& rgba) const
+{
+    draw_api::draw_rect_textured(scrx, scry, scrw, scrh, rgba, atlas.texture, nx, ny, nw, nh);
 }
 
-GLuint texture;
+texture_atlas::texture_atlas(std::string filename, float width, float height):
+        width(width),
+        height(height)
+{
+    texture = draw_api::create_texture(filename.c_str());
+}
 
-void Init() {
-	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlas_width, atlas_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &_binary_atlas_start);
+sprite texture_atlas::create_sprite(float x, float y, float sx, float sy) const
+{
+    return sprite(x, y, sx, sy, *this);
+}
+
+texture_atlas& atlas()
+{
+    static texture_atlas object { DATA_PATH "/atlas.png", 1024, 512 };
+    return object;
 }
 
 }

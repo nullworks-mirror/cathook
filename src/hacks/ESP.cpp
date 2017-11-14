@@ -530,7 +530,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity* ent) {
 			
 			// If the origin is centered, we use one method. if not, the other
 			if (!origin_is_zero || true) {
-				draw_api::draw_string(draw_point.x, draw_point.y, string.data.c_str(), color);
+				draw_api::draw_string_with_outline(draw_point.x, draw_point.y, string.data.c_str(), fonts::main_font, color, colors::black, 1.0f);
 			} else {/*
 				int size_x;
 				FTGL_StringLength(string.data, fonts::font_main, &size_x);

@@ -47,7 +47,7 @@ struct xoverlay_library
     char mapped;
 };
 
-struct xoverlay_library xoverlay_library;
+extern struct xoverlay_library xoverlay_library;
 
 typedef struct xoverlay_vec4_t
 {
@@ -71,6 +71,7 @@ typedef struct xoverlay_vec4_t
     };
 } xoverlay_vec4_t, xoverlay_rgba_t;
 
+void xoverlay_preinit();
 int  xoverlay_init();
 void xoverlay_destroy();
 
@@ -109,6 +110,14 @@ xoverlay_draw_string_with_outline(float x, float y, const char *string, xoverlay
 void
 xoverlay_draw_circle(float x, float y, float radius, xoverlay_rgba_t color, float thickness, int steps);
 
-void xoverlay_poll_events();
-void xoverlay_draw_begin();
-void xoverlay_draw_end();
+void
+xoverlay_get_string_size(const char *string, xoverlay_font_handle_t font, float *out_x, float *out_y);
+
+void
+xoverlay_poll_events();
+
+void
+xoverlay_draw_begin();
+
+void
+xoverlay_draw_end();
