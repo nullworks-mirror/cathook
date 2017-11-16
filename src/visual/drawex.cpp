@@ -26,8 +26,9 @@ font_handle_t    create_font(const char *path, float size)
 {
     logging::Info("Creating font '%s':%f", path, size);
     font_handle_t result;
-    result.handle = xoverlay_font_load(path, size);
-    logging::Info("Font handle: %d", result.handle);
+    result.filename = std::string(path);
+    result.size = size;
+    result.handle = 0;
     return result;
 }
 
@@ -90,18 +91,25 @@ void draw_circle(float x, float y, float radius, const rgba_t& rgba, float thick
     xoverlay_draw_circle(x, y, radius, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), thickness, steps);
 }
 
-void draw_string(float x, float y, const char *string, font_handle_t font, const rgba_t& rgba)
+void draw_string(float x, float y, const char *string, font_handle_t& font, const rgba_t& rgba)
 {
+    if (!font.handle)
+        font.handle = xoverlay_font_load(font.filename.c_str(), font.size);
     xoverlay_draw_string(x, y, string, font.handle, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), nullptr, nullptr);
 }
 
-void draw_string_with_outline(float x, float y, const char *string, font_handle_t font, const rgba_t& rgba, const rgba_t& rgba_outline, float thickness)
+void draw_string_with_outline(float x, float y, const char *string, font_handle_t& font, const rgba_t& rgba, const rgba_t& rgba_outline, float thickness)
 {
+    if (!font.handle)
+        font.handle = xoverlay_font_load(font.filename.c_str(), font.size);
     xoverlay_draw_string_with_outline(x, y, string, font.handle, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), *reinterpret_cast<const xoverlay_rgba_t *>(&rgba_outline), thickness, 1, nullptr, nullptr);
+    //xoverlay_draw_string(x, y, string, font.handle, *reinterpret_cast<const xoverlay_rgba_t *>(&rgba), nullptr, nullptr);
 }
 
-void get_string_size(const char *string, font_handle_t font, float *x, float *y)
+void get_string_size(const char *string, font_handle_t& font, float *x, float *y)
 {
+    if (!font.handle)
+        font.handle = xoverlay_font_load(font.filename.c_str(), font.size);
     xoverlay_get_string_size(string, font.handle, x, y);
 }
 

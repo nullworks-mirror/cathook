@@ -25,6 +25,8 @@ namespace api
 struct font_handle_t
 {
     xoverlay_font_handle_t handle;
+    std::string filename;
+    float size;
 };
 
 struct texture_handle_t
@@ -47,9 +49,9 @@ void draw_rect_outlined(float x, float y, float w, float h, const rgba_t& rgba, 
 void draw_line(float x, float y, float dx, float dy, const rgba_t& rgba, float thickness);
 void draw_rect_textured(float x, float y, float w, float h, const rgba_t& rgba, texture_handle_t texture, float u, float v, float s, float t);
 void draw_circle(float x, float y, float radius, const rgba_t& rgba, float thickness, int steps);
-void draw_string(float x, float y, const char *string, font_handle_t font, const rgba_t& rgba);
-void draw_string_with_outline(float x, float y, const char *string, font_handle_t font, const rgba_t& rgba, const rgba_t& rgba_outline, float thickness);
-void get_string_size(const char *string, font_handle_t font, float *x, float *y);
+void draw_string(float x, float y, const char *string, font_handle_t& font, const rgba_t& rgba);
+void draw_string_with_outline(float x, float y, const char *string, font_handle_t& font, const rgba_t& rgba, const rgba_t& rgba_outline, float thickness);
+void get_string_size(const char *string, font_handle_t& font, float *x, float *y);
 
 void draw_begin();
 void draw_end();
