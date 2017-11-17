@@ -37,14 +37,14 @@ void AddSideString(const std::string& string, const rgba_t& color) {
 void DrawStrings() {
 	int y { 8 };
 	for (size_t i = 0; i < side_strings_count; ++i) {
-	        draw_api::draw_string_with_outline(8, y, side_strings[i].c_str(), fonts::main_font, side_strings_colors[i], colors::black, 1.0f);
+	        draw_api::draw_string_with_outline(8, y, side_strings[i].c_str(), fonts::main_font, side_strings_colors[i], colors::black, 1.5f);
 		y += /*((int)fonts::font_main->height)*/ 14 + 1;
 	}
 	y = draw::height / 2;
 	for (size_t i = 0; i < center_strings_count; ++i) {
 		float sx, sy;
 		draw_api::get_string_size(center_strings[i].c_str(), fonts::main_font, &sx, &sy);
-		draw_api::draw_string_with_outline((draw::width - sx) / 2, y, center_strings[i].c_str(), fonts::main_font, center_strings_colors[i], colors::black, 1.0f);
+		draw_api::draw_string_with_outline((draw::width - sx) / 2, y, center_strings[i].c_str(), fonts::main_font, center_strings_colors[i], colors::black, 1.5f);
 		y += /*((int)fonts::font_main->height)*/ 14 + 1;
 	}
 }

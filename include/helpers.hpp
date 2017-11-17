@@ -33,6 +33,7 @@ void SetCVarInterface(ICvar* iface);
 #include <string>
 #include <sstream>
 #include <vector>
+#include <mutex>
 #include <aftercheaders.hpp>
 
 #include <sdk.hpp>
@@ -70,7 +71,7 @@ weaponmode GetWeaponMode();
 
 void FixMovement(CUserCmd& cmd, Vector& viewangles);
 void VectorAngles(Vector &forward, Vector &angles);
-
+extern std::mutex trace_lock;
 bool IsEntityVisible(CachedEntity* entity, int hb);
 bool IsEntityVectorVisible(CachedEntity* entity, Vector endpos);
 bool VisCheckEntFromEnt(CachedEntity* startEnt, CachedEntity* endEnt);

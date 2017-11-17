@@ -66,7 +66,6 @@
 									<listOptionValue builtIn="false" value="GNUC=1"/>
 									<listOptionValue builtIn="false" value="NO_MALLOC_OVERRIDE"/>
 									<listOptionValue builtIn="false" value="ENABLE_VISUALS=1"/>
-									<listOptionValue builtIn="false" value="RENDERING_ENGINE_XOVERLAY=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.debugging.other.1695695237" name="Other debugging flags" superClass="gnu.cpp.compiler.option.debugging.other" useByScannerDiscovery="false" value="-ggdb" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.dialect.flags.1534861554" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" useByScannerDiscovery="true" value="-std=gnu++11" valueType="string"/>
@@ -117,11 +116,12 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="autogen|segvcatch|xoverlay|include|classinfo|vtables|ipc|ncc|memory|hooks|sdk|imgui|src|freetype-gl|copypasted|source-sdk-2013|targeting|gui|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="cmdui|autogen|segvcatch|xoverlay|include|classinfo|vtables|ipc|ncc|memory|hooks|sdk|imgui|src|freetype-gl|copypasted|source-sdk-2013|targeting|gui|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="hacks|copypasted|visual|gui|classinfo|hooks|sdk" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/classinfo"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/copypasted"/>
-						<entry excluding="im|ncc" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/gui"/>
+						<entry excluding="cmdui|im|ncc" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/gui"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/gui/cmdui"/>
 						<entry excluding="ac" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/hacks"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/hacks/ac"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/hooks"/>
@@ -130,7 +130,8 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="segvcatch"/>
 						<entry excluding="autogen|segvcatch|targeting|visual|classinfo|vtables|gui|ipc|mem|memory|imgui|hacks/ac" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/classinfo"/>
-						<entry excluding="im|depr|ncc" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry excluding="cmdui|im|depr|ncc" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/gui/cmdui"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/hacks/ac"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/visual"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="xoverlay"/>

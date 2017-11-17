@@ -1,20 +1,16 @@
 /*
- * GUI.hpp
+ * cmdui.hpp
  *
- *  Created on: Nov 14, 2017
+ *  Created on: Nov 17, 2017
  *      Author: nullifiedcat
  */
 
 #pragma once
 
-#include "cmdui/cmdui.hpp"
-
-namespace gui
-{
+namespace gui { namespace cmdui {
 
 void init();
 void update();
 void draw();
 
-}
-
+}}

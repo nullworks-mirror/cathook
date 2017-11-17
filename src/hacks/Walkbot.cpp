@@ -880,7 +880,7 @@ void DrawNode(index_t node, bool draw_back) {
 		if (not draw::WorldToScreen(n.xyz(), wts))
 			return;
 
-		draw_api::draw_string_with_outline(wts.x, wts.y, std::to_string(node).c_str(), fonts::main_font, *color, colors::black, 1.0f);
+		draw_api::draw_string_with_outline(wts.x, wts.y, std::to_string(node).c_str(), fonts::main_font, *color, colors::black, 1.5f);
 	}
 }
 

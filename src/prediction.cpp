@@ -9,6 +9,31 @@
 
 // TODO there is a Vector() object created each call.
 
+struct pp_data_player
+{
+    Vector velocity {};
+    float distance_to_ground { 0.0f };
+
+    long tick { 0 };
+};
+
+pp_data_player& pp_data(CachedEntity *ent)
+{
+    static pp_data_player data[32] {};
+
+    auto& d = data[ent->m_IDX - 1];
+    if (d.tick != tickcount)
+    {
+        d.distance_to_ground = DistanceToGround(ent);
+        if (velocity::EstimateAbsVelocity)
+            velocity::EstimateAbsVelocity(RAW_ENT(ent), d.velocity);
+        else
+            d.velocity = CE_VECTOR(ent, netvar.vVelocity);
+        d.tick = tickcount;
+    }
+    return d;
+}
+
 Vector SimpleLatencyPrediction(CachedEntity* ent, int hb) {
 	if (!ent) return Vector();
 	Vector result;
@@ -37,14 +62,146 @@ bool PerformProjectilePrediction(CachedEntity* target, int hitbox) {
 std::vector<std::vector<Vector>> predicted_players {};
 
 int predicted_player_count = 0;
+Timer record_timer {};
+int recording = 0;
+void pp_record_start();
 
 static CatVar debug_enginepred(CV_SWITCH, "debug_engine_pred_others", "0", "DO NOT USE - MOVEMENT");
+static CatVar debug_projpred(CV_SWITCH, "debug_pp", "0", "Debug projectile prediction");
+static CatVar debug_pp_record_ms(CV_INT, "debug_pp_record_ms", "1000", "Milliseconds");
+static CatCommand debug_projpred_record("debug_pp_record", "", []() {
+    recording = 1;
+});
+static CatCommand debug_pp_record_reset("debug_pp_record_reset", "", []() {
+    recording = 0;
+});
+
+struct record_data
+{
+    std::vector<Vector> predicted {};
+    std::vector<Vector> real {};
+};
+
+std::vector<record_data> debug_data_records {};
+
+CatVar debug_pp_extrapolate(CV_SWITCH, "debug_pp_extrapolate", "0", "Extrapolate entity position when predicting projectiles");
+CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping", "0", "Compensate for ping in pp");
+
+namespace predict_move
+{
+
+struct move_prediction_data
+{
+    CachedEntity *entity;
+    float dt;
+    float groundt;
+    Vector current;
+    Vector velocity;
+};
+
+move_prediction_data begin(CachedEntity *entity)
+{
+    return move_prediction_data { entity, 0, 0, entity->m_vecOrigin, pp_data(entity).velocity };
+}
+
+void step(move_prediction_data& data, float dt)
+{
+    data.dt += dt;
+    if (debug_pp_extrapolate)
+    {
+        float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
+                        g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
+        data.current += data.velocity * latency * dt;
+    }
+    data.current += data.velocity * dt;
+    float dtg = DistanceToGround(data.current);
+    bool correction = false;
+    while (dtg >= 4000) // precision
+    {
+        data.current.z += 200.0f;
+        dtg = DistanceToGround(data.current);
+        correction = true;
+    }
+    if (correction)
+    {
+        data.current.z -= dtg;
+        data.velocity.z = 0;
+    }
+    else
+    {
+        if (dtg)
+        {
+            data.velocity.z -= dt * 800.0f * PlayerGravityMod(data.entity);
+            //float s = data.current.z;
+            //data.current.z -= (data.dt - data.groundt) * (data.dt - data.groundt) * 400.0f * PlayerGravityMod(data.entity);
+            //if (data.current.z < s - dtg) data.current.z = s - dtg;
+        }
+        else
+        {
+            data.velocity.z = 0;
+            data.groundt = 0;
+        }
+    }
+}
+
+}
+
+void pp_record_start()
+{
+    record_timer.update();
+    if (debug_data_records.size() != 1 + g_GlobalVars->maxClients)
+        debug_data_records.resize(1 + g_GlobalVars->maxClients);
+    for (int i = 1; i < g_GlobalVars->maxClients; ++i)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+
+        auto& data = debug_data_records[i];
+
+        data.predicted.clear();
+        data.real.clear();
+        data.predicted.push_back(ent->m_vecOrigin);
+        data.real.push_back(ent->m_vecOrigin);
+
+        auto mp = predict_move::begin(ent);
+        trace::filter_no_player.SetSelf(RAW_ENT(ent));
+        for (int i = 1; i < 50; ++i)
+        {
+            predict_move::step(mp, ((float)debug_pp_record_ms / 1000.0f) / 50.0f);
+            data.predicted.push_back(mp.current);
+        }
+    }
+    recording = 2;
+}
 
 void Prediction_CreateMove() {
 	static bool setup = false;
 	if (!setup) {
 		setup = true;
 		predicted_players.resize(32);
+	}
+	if (recording == 1)
+	{
+            std::lock_guard<std::mutex> mtx(trace_lock);
+            pp_record_start();
+	}
+	if (recording == 2)
+	{
+	    for (int i = 1; i < g_GlobalVars->maxClients; ++i)
+            {
+                CachedEntity *ent = ENTITY(i);
+                if (CE_BAD(ent))
+                    continue;
+
+                auto& data = debug_data_records[i];
+
+                data.real.push_back(ent->m_vecOrigin);
+            }
+	    if (record_timer.test_and_set((int)debug_pp_record_ms))
+	    {
+	        recording = 3;
+	    }
 	}
 	if (!debug_enginepred) return;
 	for (int i = 1; i < g_GlobalVars->maxClients; i++) {
@@ -66,6 +223,52 @@ void Prediction_CreateMove() {
 }
 #if ENABLE_VISUALS == 1
 void Prediction_PaintTraverse() {
+    if (recording)
+    {
+        Vector pscreen;
+        for (int i = 1; i < g_GlobalVars->maxClients; i++) {
+            CachedEntity* ent = ENTITY(i);
+            if (CE_GOOD(ent)) {
+                {
+                    rgba_t color_real = colors::FromRGBA8(0, 255, 0, 255);
+                    rgba_t color_pred = colors::FromRGBA8(255, 0, 0, 255);
+                    auto& data = debug_data_records[i];
+                    if (data.real.size() == 0 || data.predicted.size() == 0)
+                        continue;
+                    Vector orgn;
+                    if (draw::WorldToScreen(ent->m_vecOrigin, orgn))
+                    {
+                        char *str = strfmt("DTG: %.2f", DistanceToGround(ent));
+                        draw_api::draw_string(orgn.x, orgn.y, str, fonts::main_font, colors::EntityF(ent));
+                        free(str);
+                    }
+                    if (!draw::WorldToScreen(data.real[0], pscreen)) continue;
+                    for (int j = 0; j < data.real.size(); j++) {
+                        Vector screen;
+                        if (draw::WorldToScreen(data.real[j], screen)) {
+                            draw_api::draw_line(screen.x, screen.y, pscreen.x - screen.x, pscreen.y - screen.y, color_real, 0.5f);
+                            pscreen = screen;
+                        } else {
+                                break;
+                        }
+                        color_real.b -= 1.0f / 200.0f;
+                    }
+                    if (!draw::WorldToScreen(data.predicted[0], pscreen)) continue;
+                    for (int j = 0; j < data.predicted.size(); j++) {
+                        Vector screen;
+                        if (draw::WorldToScreen(data.predicted[j], screen)) {
+                            draw_api::draw_line(screen.x, screen.y, pscreen.x - screen.x, pscreen.y - screen.y, color_pred, 0.5f);
+                            pscreen = screen;
+                        } else {
+                                break;
+                        }
+                        color_pred.r -= 1.0f / 200.0f;
+                    }
+                }
+
+            }
+        }
+    }
 	if (!debug_enginepred) return;
 	for (int i = 1; i < predicted_player_count; i++) {
 		CachedEntity* ent = ENTITY(i);
@@ -205,24 +408,11 @@ Vector ProjectilePrediction_Engine(CachedEntity* ent, int hb, float speed, float
 	return result;
 }
 
-CatVar debug_pp_extrapolate(CV_SWITCH, "debug_pp_extrapolate", "0", "Extrapolate entity position when predicting projectiles");
-CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping", "0", "Compensate for ping in pp");
-
 Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravitymod, float entgmod) {
 	if (!ent) return Vector();
 	Vector result;
-	if (not debug_pp_extrapolate) {
-		GetHitbox(ent, hb, result);
-	} else {
-		result = SimpleLatencyPrediction(ent, hb);
-	}
+        GetHitbox(ent, hb, result);
 	if (speed == 0.0f) return Vector();
-	float dtg = DistanceToGround(ent);
-	Vector vel;
-	if (velocity::EstimateAbsVelocity)
-		velocity::EstimateAbsVelocity(RAW_ENT(ent), vel);
-	else
-		vel = CE_VECTOR(ent, netvar.vVelocity);
 	// TODO ProjAim
 	float medianTime = g_pLocalPlayer->v_Eye.DistTo(result) / speed;
 	float range = 1.5f;
@@ -231,19 +421,17 @@ Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravit
 	float besttime = currenttime;
 	float mindelta = 65536.0f;
 	Vector bestpos = result;
-	int maxsteps = 300;
+	int maxsteps = 100;
+	auto mp = predict_move::begin(ent);
+        trace::filter_no_player.SetSelf(RAW_ENT(ent));
+        std::lock_guard<std::mutex> mtx(trace_lock);
 	for (int steps = 0; steps < maxsteps; steps++, currenttime += ((float)(2 * range) / (float)maxsteps)) {
-		Vector curpos = result;
-		curpos += vel * currenttime;
-		if (dtg > 0.0f) {
-			curpos.z -= currenttime * currenttime * 400 * entgmod;
-			if (curpos.z < result.z - dtg) curpos.z = result.z - dtg;
-		}
-		float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
+		predict_move::step(mp, ((float)(2 * range) / (float)maxsteps));
+		float rockettime = g_pLocalPlayer->v_Eye.DistTo(mp.current) / speed;
 		if (debug_pp_rockettimeping) rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
 		if (fabs(rockettime - currenttime) < mindelta) {
 			besttime = currenttime;
-			bestpos = curpos;
+			bestpos = mp.current;
 			mindelta = fabs(rockettime - currenttime);
 		}
 	}
@@ -257,21 +445,26 @@ float DistanceToGround(CachedEntity* ent) {
 		if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND) return 0;
 	}
 	Vector& origin = ent->m_vecOrigin;
+	trace::filter_no_player.SetSelf(RAW_ENT(ent));
 	float v1 = DistanceToGround(origin + Vector(10.0f, 10.0f, 0.0f));
-	float v2 = DistanceToGround(origin + Vector(-10.0f, 10.0f, 0.0f));
-	float v3 = DistanceToGround(origin + Vector(10.0f, -10.0f, 0.0f));
-	float v4 = DistanceToGround(origin + Vector(-10.0f, -10.0f, 0.0f));
-	return MIN(v1, MIN(v2, MIN(v3, v4)));
+        float v2 = DistanceToGround(origin + Vector(-10.0f, -10.0f, 0.0f));
+
+	//float v1 = DistanceToGround(origin + Vector(10.0f, 10.0f, 0.0f));
+	//float v2 = DistanceToGround(origin + Vector(-10.0f, 10.0f, 0.0f));
+	//float v3 = DistanceToGround(origin + Vector(10.0f, -10.0f, 0.0f));
+	//float v4 = DistanceToGround(origin + Vector(-10.0f, -10.0f, 0.0f));
+	//return MIN(v1, MIN(v2, MIN(v3, v4)));
+	return MIN(v1, v2);
 }
 
 float DistanceToGround(Vector origin) {
 	trace_t ground_trace;
 	Ray_t ray;
 	Vector endpos = origin;
-	endpos.z -= 8192;
+	endpos.z -= 4096;
 	ray.Init(origin, endpos);
 	g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &ground_trace);
-	return 8192.0f * ground_trace.fraction;
+	return 4096.0f * ground_trace.fraction;
 }
 
 /*
