@@ -16,6 +16,8 @@ struct pp_data_player
 
     long tick { 0 };
 };
+CatVar debug_pp_extrapolate(CV_SWITCH, "debug_pp_extrapolate", "0", "Extrapolate entity position when predicting projectiles");
+CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping", "0", "Compensate for ping in pp");
 
 pp_data_player& pp_data(CachedEntity *ent)
 {
@@ -29,6 +31,12 @@ pp_data_player& pp_data(CachedEntity *ent)
             velocity::EstimateAbsVelocity(RAW_ENT(ent), d.velocity);
         else
             d.velocity = CE_VECTOR(ent, netvar.vVelocity);
+        if (debug_pp_extrapolate)
+        {
+            float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
+                            g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
+            d.velocity += latency;
+        }
         d.tick = tickcount;
     }
     return d;
@@ -84,8 +92,7 @@ struct record_data
 
 std::vector<record_data> debug_data_records {};
 
-CatVar debug_pp_extrapolate(CV_SWITCH, "debug_pp_extrapolate", "0", "Extrapolate entity position when predicting projectiles");
-CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping", "0", "Compensate for ping in pp");
+float FindWall(Vector origin, Vector velocity, Vector& wall);
 
 namespace predict_move
 {
@@ -95,33 +102,114 @@ struct move_prediction_data
     CachedEntity *entity;
     float dt;
     float groundt;
+    bool stopped;
     Vector current;
     Vector velocity;
 };
 
 move_prediction_data begin(CachedEntity *entity)
 {
-    return move_prediction_data { entity, 0, 0, entity->m_vecOrigin, pp_data(entity).velocity };
+    return move_prediction_data { entity, 0, 0, false, entity->m_vecOrigin, pp_data(entity).velocity };
 }
 
 void step(move_prediction_data& data, float dt)
 {
     data.dt += dt;
-    if (debug_pp_extrapolate)
+    if (data.stopped)
+        return;
+    Vector next = data.current + data.velocity * dt;
+
+    float current_dtg = DistanceToGround(data.current);
+
+    if (next.z < data.current.z - current_dtg)
     {
-        float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
-                        g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
-        data.current += data.velocity * latency * dt;
+        next.z = data.current.z - current_dtg;
     }
-    data.current += data.velocity * dt;
-    float dtg = DistanceToGround(data.current);
-    bool correction = false;
-    while (dtg >= 4000) // precision
+
+    // Check if next point is under the world
+    /*if (g_ITrace->PointOutsideWorld(next))
     {
-        data.current.z += 200.0f;
-        dtg = DistanceToGround(data.current);
+        // Reset Z and Z velocity
+        next.z = data.current.z - current_dtg;
+        data.velocity.z = 0;
+    }*/
+
+
+    //float next_dtg = DistanceToGround(next);
+
+    // Going down
+    /*if (current_dtg == 0 && next_dtg != 0)
+    {
+        if (next_dtg / (data.velocity * dt).Length2D() <= 2)
+        {
+            // Correct going down stairs
+            next.z -= next_dtg;
+            next_dtg = 0;
+        }
+    }
+    else */if (current_dtg > 0)
+    {
+        // Simulate gravity
+        data.velocity.z -= dt * 800.0f * PlayerGravityMod(data.entity);
+    }
+
+    /*// Check if we are running into a wall
+    Vector wallA, wallB;
+    float  wA = FindWall(data.current, data.velocity, wallA);
+    float  wB = FindWall(data.current + Vector{0, 0, 70.0f}, data.velocity, wallB);
+
+    if (wA >= 0 && wB >= 0)
+    {
+        float tg = (wB - wA) / (70.0f);
+        if (wA <= data.velocity.Length2D() * dt)
+        {
+            if (tg < 1)
+            {
+                data.stopped = true;
+            }
+            else
+            {
+                next.z += (wallB.z - wallA.z) * dt;
+            }
+        }
+    }*/
+
+    /*bool correction = false;
+    Vector wall;
+    float d1 = FindWall(data.current, vdt, wall);
+    if (d1 >= 0)
+    {
+        float d2 = FindWall(data.current + Vector{0, 0, 30 * dt}, vdt, wall);
+        if (d2 >= 0)
+        {
+            float tg = d2 / 30 * dt;
+            if (tg < 1)
+            {
+                // TEMPORARY
+                data.stopped = true;
+                return;
+            }
+            else
+            {
+                data.current.z += 30 * dt;
+                if (vdt.z < 0) vdt.z = 0;
+                if (data.velocity.z < 0) data.velocity.z = 0;
+            }
+        }
+    }
+    data.current += vdt;
+
+    if (g_ITrace->PointOutsideWorld(data.current)) // precision
+    {
+        data.current.z += dt * 100.0f;
+        if (g_ITrace->PointOutsideWorld(data.current))
+        {
+            data.stopped = true;
+            return;
+        }
         correction = true;
     }
+    float dtg = DistanceToGround(data.current);
     if (correction)
     {
         data.current.z -= dtg;
@@ -131,17 +219,15 @@ void step(move_prediction_data& data, float dt)
     {
         if (dtg)
         {
-            data.velocity.z -= dt * 800.0f * PlayerGravityMod(data.entity);
-            //float s = data.current.z;
-            //data.current.z -= (data.dt - data.groundt) * (data.dt - data.groundt) * 400.0f * PlayerGravityMod(data.entity);
-            //if (data.current.z < s - dtg) data.current.z = s - dtg;
+
         }
         else
         {
             data.velocity.z = 0;
             data.groundt = 0;
         }
-    }
+    }*/
+    data.current = next;
 }
 
 }
@@ -183,7 +269,6 @@ void Prediction_CreateMove() {
 	}
 	if (recording == 1)
 	{
-            std::lock_guard<std::mutex> mtx(trace_lock);
             pp_record_start();
 	}
 	if (recording == 2)
@@ -424,8 +509,7 @@ Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravit
 	int maxsteps = 100;
 	auto mp = predict_move::begin(ent);
         trace::filter_no_player.SetSelf(RAW_ENT(ent));
-        std::lock_guard<std::mutex> mtx(trace_lock);
-	for (int steps = 0; steps < maxsteps; steps++, currenttime += ((float)(2 * range) / (float)maxsteps)) {
+        for (int steps = 0; steps < maxsteps; steps++, currenttime += ((float)(2 * range) / (float)maxsteps)) {
 		predict_move::step(mp, ((float)(2 * range) / (float)maxsteps));
 		float rockettime = g_pLocalPlayer->v_Eye.DistTo(mp.current) / speed;
 		if (debug_pp_rockettimeping) rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
@@ -455,6 +539,20 @@ float DistanceToGround(CachedEntity* ent) {
 	//float v4 = DistanceToGround(origin + Vector(-10.0f, -10.0f, 0.0f));
 	//return MIN(v1, MIN(v2, MIN(v3, v4)));
 	return MIN(v1, v2);
+}
+
+float FindWall(Vector origin, Vector velocity, Vector& wall)
+{
+    trace_t wall_trace;
+    Ray_t ray;
+    Vector endpos = origin + velocity;
+    endpos.z = origin.z;
+    ray.Init(origin, endpos);
+    g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &wall_trace);
+    wall = wall_trace.endpos;
+    if (wall_trace.fraction == 1.0f)
+        return -1;
+    return wall_trace.endpos.DistTo(wall_trace.startpos);
 }
 
 float DistanceToGround(Vector origin) {
