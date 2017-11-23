@@ -12,6 +12,7 @@
 namespace re
 {
 
+#include "C_BaseEntity.hpp"
 #include "C_BaseCombatWeapon.hpp"
 #include "C_TFWeaponBase.hpp"
 #include "C_TFWeaponBaseMelee.hpp"

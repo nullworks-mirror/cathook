@@ -26,6 +26,20 @@ struct crithack_saved_state {
 
 extern bool weapon_can_crit_last;
 
+extern CatVar crit_hack_next;
+extern CatVar crit_info;
+extern CatVar crit_hack;
+extern CatVar crit_melee;
+extern CatVar crit_suppress;
+
+namespace criticals
+{
+
+void unfuck_bucket();
+bool force_crit();
+
+}
+
 bool CritKeyDown();
 bool AllowAttacking();
 bool RandomCrits();

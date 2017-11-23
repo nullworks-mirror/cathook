@@ -7,7 +7,7 @@
 
 #pragma once
 
-class C_TFWeaponBaseGun : public C_TFWeaponBase
+class C_TFWeaponBaseGun: public C_TFWeaponBase
 {
 public:
     inline static float GetProjectileSpeed(IClientEntity *self)

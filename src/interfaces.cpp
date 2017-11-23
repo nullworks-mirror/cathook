@@ -49,6 +49,7 @@ CBaseClientState* g_IBaseClientState = nullptr;
 IGameEventManager* g_IGameEventManager = nullptr;
 TFGCClientSystem* g_TFGCClientSystem = nullptr;
 CHud* g_CHUD = nullptr;
+CGameRules *g_pGameRules = nullptr;
 
 template<typename T>
 T* BruteforceInterface(std::string name, sharedobj::SharedObject& object, int start = 0) {
@@ -117,6 +118,9 @@ void CreateInterfaces() {
 	IF_GAME (IsTF2()) {
 		uintptr_t sig = gSignatures.GetClientSignature("A3 ? ? ? ? C3 8D 74 26 00 B8 FF FF FF FF 5D A3 ? ? ? ? C3");
 		g_PredictionRandomSeed = *reinterpret_cast<int**>(sig + (uintptr_t)1);
+
+		uintptr_t g_pGameRules_sig = gSignatures.GetClientSignature("C7 03 ? ? ? ? 89 1D ? ? ? ? 83 C4 14 5B 5D C3");
+		g_pGameRules = *reinterpret_cast<CGameRules **>(g_pGameRules_sig + 8);
 	}
 	IF_GAME (IsTF2()) {
 		/*

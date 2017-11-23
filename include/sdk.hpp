@@ -64,5 +64,6 @@
 #include "sdk/iinput.h"
 #include "sdk/igamemovement.h"
 #include "sdk/HUD.h"
+#include "sdk/CGameRules.h"
 
 #endif /* SDK_HPP_ */

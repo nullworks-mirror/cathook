@@ -8,11 +8,79 @@
 #include "common.hpp"
 #include <link.h>
 
+CatVar crit_hack_next(CV_SWITCH, "crit_hack_next", "0", "Next crit info");
+CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info"); // TODO separate
+CatVar crit_hack(CV_KEY, "crit_hack", "0", "Crit Key");
+CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
+CatVar crit_suppress(CV_SWITCH, "crit_suppress", "0", "Disable random crits", "Can help saving crit bucket for forced crits");
 CatVar experimental_crit_hack(CV_KEY, "crit_hack_experimental", "0", "Unstable Crit Hack", "Experimental crit hack, use this **OR** old crit hack, do not use both!\nNEEDS NEXT CRIT INFO TO BE ACTIVE!");
 
 std::unordered_map<int, int> command_number_mod {};
 
 int* g_PredictionRandomSeed = nullptr;
+
+namespace criticals
+{
+
+int find_next_random_crit_for_weapon(IClientEntity *weapon)
+{
+    int tries = 0,
+        number = g_pUserCmd->command_number,
+        found = 0,
+        seed,
+        seed_md5;
+
+    crithack_saved_state state;
+    state.Save(weapon);
+
+    while (!found && tries < 4096)
+    {
+        seed_md5 = MD5_PseudoRandom(number) & 0x7FFFFFFF;
+        *g_PredictionRandomSeed = seed_md5;
+        seed = seed_md5 ^ (LOCAL_E->m_IDX | (LOCAL_W->m_IDX << 8));
+        found = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
+        if (found)
+            break;
+        ++tries;
+        ++number;
+    }
+
+    state.Load(weapon);
+    if (found)
+        return number;
+    return 0;
+}
+
+void unfuck_bucket(IClientEntity *weapon)
+{
+    static bool changed;
+    static float last_bucket;
+    static int last_weapon;
+
+    if (g_pUserCmd->command_number)
+        changed = false;
+
+    float& bucket = re::C_TFWeaponBase::crit_bucket_(weapon);
+
+    if (bucket != last_bucket)
+    {
+        if (changed && weapon->entindex() == last_weapon)
+        {
+            bucket = last_bucket;
+        }
+        changed = true;
+    }
+    last_weapon = weapon->entindex();
+    last_bucket = bucket;
+}
+
+bool force_crit()
+{
+
+    return false;
+}
+
+}
 
 bool CritKeyDown() {
 	return g_IInputSystem->IsButtonDown(static_cast<ButtonCode_t>((int)hacks::shared::misc::crit_hack));// || g_IInputSystem->IsButtonDown(static_cast<ButtonCode_t>((int)experimental_crit_hack));

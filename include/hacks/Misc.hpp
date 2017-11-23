@@ -17,17 +17,9 @@ void CreateMove();
 void DrawText();
 #endif
 
-extern IClientEntity* found_crit_weapon;
-extern int found_crit_number;
 extern int last_number;
-
-extern CatVar crit_hack_next;
 extern CatVar debug_info;
 extern CatVar flashlight_spam;
-extern CatVar crit_info; // TODO separate
-extern CatVar crit_hack;
-extern CatVar crit_melee;
-extern CatVar crit_suppress;
 extern CatVar anti_afk;
 extern CatVar tauntslide;
 extern CatCommand name;

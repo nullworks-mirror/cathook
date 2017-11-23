@@ -33,12 +33,6 @@ CatEnum spycrab_mode_enum({"DISABLED", "FORCE CRAB", "FORCE NON-CRAB"});
 CatVar spycrab_mode(spycrab_mode_enum, "spycrab", "0", "Spycrab", "Defines spycrab taunting mode");
 CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide", "Allows moving and shooting while taunting");
 CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide", "Allows free movement while taunting with movable taunts\nOnly works in tf2");	
-// Crithack
-CatVar crit_hack_next(CV_SWITCH, "crit_hack_next", "0", "Next crit info");	
-CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info"); // TODO separate
-CatVar crit_hack(CV_KEY, "crit_hack", "0", "Crit Key");
-CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
-CatVar crit_suppress(CV_SWITCH, "crit_suppress", "0", "Disable random crits", "Can help saving crit bucket for forced crits");
 
 void* C_TFPlayer__ShouldDraw_original = nullptr;
 
@@ -53,8 +47,6 @@ bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
 	}
 }
 
-IClientEntity* found_crit_weapon = nullptr;
-int found_crit_number = 0;
 int last_number = 0;
 
 // SUPER SECRET CODE DONOT STEEL
@@ -184,26 +176,6 @@ void CreateMove() {
 		PROF_SECTION(CM_misc_crit_hack_apply);
 		if (!AllowAttacking()) g_pUserCmd->buttons &= ~IN_ATTACK;
 	}*/
-	/*
-	if (WeaponCanCrit()) {
-		PROF_SECTION(CM_misc_crit_hack_bucket_fixing);
-		weapon = RAW_ENT(LOCAL_W);
-		float& bucket = *(float*)((uintptr_t)(weapon) + 2612);
-		if (g_pUserCmd->command_number) {
-			changed = false;
-		}
-		if (bucket != last_bucket) {
-			if (changed && weapon == last_weapon) {
-				bucket = last_bucket;
-			} else {
-				//logging::Info("db: %.2f", g_pUserCmd->command_number, bucket - last_bucket);
-			}
-			changed = true;
-		}
-		last_weapon = weapon;
-		last_bucket = bucket;
-	}
-	*/
 	// Spycrab stuff
 	// TODO FIXME this should be moved out of here
 	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {

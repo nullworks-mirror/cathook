@@ -7,7 +7,7 @@
 
 #pragma once
 
-class C_BaseCombatWeapon
+class C_BaseCombatWeapon: public C_BaseEntity
 {
 public:
     inline static bool IsBaseCombatWeapon(IClientEntity *self)
