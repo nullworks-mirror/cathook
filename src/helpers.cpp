@@ -553,6 +553,10 @@ bool GetProjectileData(CachedEntity* weapon, float& speed, float& gravity) {
 		rspeed = 2400.0f;
 	} else if (weapon->m_iClassID == CL_CLASS(CTFDRGPomson)) {
 		rspeed = 1200.0f;
+	} else if (weapon->m_iClassID == CL_CLASS(CTFWeaponFlameBall))
+	{
+	    // ??
+	    rspeed = 2500.0f;
 	}
 	speed = rspeed;
 	gravity = rgrav;

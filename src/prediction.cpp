@@ -211,11 +211,15 @@ CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping", "0", "Com
 Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravitymod, float entgmod) {
         if (!ent) return Vector();
         Vector result;
-        if (not debug_pp_extrapolate) {
+        //if (not debug_pp_extrapolate) {
                 GetHitbox(ent, hb, result);
-        } else {
-                result = SimpleLatencyPrediction(ent, hb);
-        }
+        //} else {
+        //        result = SimpleLatencyPrediction(ent, hb);
+        //
+        //}
+        float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
+                        g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
+
         if (speed == 0.0f) return Vector();
         trace::filter_no_player.SetSelf(RAW_ENT(ent));
         float dtg = DistanceToGround(ent);
@@ -236,9 +240,14 @@ Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravit
         for (int steps = 0; steps < maxsteps; steps++, currenttime += ((float)(2 * range) / (float)maxsteps)) {
                 Vector curpos = result;
                 curpos += vel * currenttime;
-                if (dtg > 0.0f) {
-                        curpos.z -= currenttime * currenttime * 400 * entgmod;
-                        if (curpos.z < result.z - dtg) curpos.z = result.z - dtg;
+                if (debug_pp_extrapolate)
+                {
+                    curpos += vel * currenttime * latency;
+                }
+                if (dtg > 0.0f)
+                {
+                    curpos.z -= currenttime * currenttime * 400.0f * entgmod;
+                    if (curpos.z < result.z - dtg) curpos.z = result.z - dtg;
                 }
                 float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
                 if (debug_pp_rockettimeping) rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
@@ -248,6 +257,8 @@ Vector ProjectilePrediction(CachedEntity* ent, int hb, float speed, float gravit
                         mindelta = fabs(rockettime - currenttime);
                 }
         }
+        if (debug_pp_rockettimeping)
+            besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
         bestpos.z += (400 * besttime * besttime * gravitymod);
         // S = at^2/2 ; t = sqrt(2S/a)*/
         return bestpos;

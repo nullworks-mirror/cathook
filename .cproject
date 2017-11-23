@@ -117,7 +117,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="cmdui|autogen|segvcatch|xoverlay|include|classinfo|vtables|ipc|ncc|memory|hooks|sdk|imgui|src|freetype-gl|copypasted|source-sdk-2013|targeting|gui|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="hacks|copypasted|visual|gui|classinfo|hooks|sdk" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include"/>
+						<entry excluding="reclasses|hacks|copypasted|visual|gui|classinfo|hooks|sdk" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/classinfo"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/copypasted"/>
 						<entry excluding="cmdui|im|ncc" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/gui"/>
@@ -125,6 +125,7 @@
 						<entry excluding="ac" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/hacks"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/hacks/ac"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/hooks"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/reclasses"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/sdk"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/visual"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="segvcatch"/>

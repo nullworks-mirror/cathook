@@ -22,9 +22,7 @@ void CreateMove() {
 	static auto IsBehindAndFacingTarget_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 2C 8B 45 08 8B 5D 08 C1 E0 0C");
 	static auto IsBehindAndFacingTarget = reinterpret_cast<IsBehindAndFacingTarget_t>(IsBehindAndFacingTarget_addr);
 
-	// 522 = DoSwingTrace
-	// FIXME offset
-	if (vfunc<bool(*)(IClientEntity*, trace_t*)>(weapon, 522)(weapon, &trace)) {
+	if (vfunc<bool(*)(IClientEntity*, trace_t*)>(weapon, offsets::DoSwingTrace())(weapon, &trace)) {
 		if (trace.m_pEnt && reinterpret_cast<IClientEntity*>(trace.m_pEnt)->GetClientClass()->m_ClassID == RCC_PLAYER) {
 			if (NET_INT(trace.m_pEnt, netvar.iTeamNum) != g_pLocalPlayer->team) {
 				if (IsBehindAndFacingTarget(weapon, reinterpret_cast<IClientEntity*>(trace.m_pEnt)))

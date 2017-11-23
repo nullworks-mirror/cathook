@@ -26,6 +26,7 @@ CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK", "Sends random commands t
 CatVar auto_strafe(CV_SWITCH, "auto_strafe", "0", "Auto-Strafe", "Automaticly airstrafes for you.");
 CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0", "Render model when zoomed-in", "Renders player model while being zoomed in as Sniper");
 CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push", "Prevents other players from pushing you around.");
+
 //CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
 // Taunting stuff
 CatEnum spycrab_mode_enum({"DISABLED", "FORCE CRAB", "FORCE NON-CRAB"});
@@ -114,7 +115,7 @@ void CreateMove() {
 	static crithack_saved_state state;
 	static bool chc;
 	static bool changed = false;
-	
+
 	if (g_pUserCmd->command_number && found_crit_number > g_pUserCmd->command_number + 66 * 20) found_crit_number = 0;
 	if (g_pUserCmd->command_number) last_number = g_pUserCmd->command_number;
 

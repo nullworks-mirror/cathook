@@ -519,6 +519,9 @@ namespace client_classes {
 		int CBaseGrenadeProjectile { 0 };
 		int CDAViewModel { 0 };
 
+		int CTFWeaponFlameBall { 0 };
+		int CTFProjectile_BallOfFire { 0 };
+
 	};
 	
 	extern dummy dummy_list;

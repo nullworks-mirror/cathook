@@ -136,6 +136,7 @@ void CachedEntity::Update() {
 			   m_iClassID == CL_CLASS(CTFProjectile_HealingBolt) ||
 			   m_iClassID == CL_CLASS(CTFProjectile_Rocket) ||
 			   m_iClassID == CL_CLASS(CTFProjectile_SentryRocket) ||
+			   m_iClassID == CL_CLASS(CTFProjectile_BallOfFire) ||
 			   m_iClassID == CL_CLASS(CTFProjectile_Flare)) {
 		m_Type = EntityType::ENTITY_PROJECTILE;
 	} else {

@@ -25,6 +25,7 @@ constexpr platform PLATFORM = platform::PLATFORM_UNSUPPORTED;
 #endif
 
 struct offsets {
+
 	static constexpr uint32_t PlatformOffset(uint32_t offset_linux, uint32_t offset_windows, uint32_t offset_osx) {
 		uint32_t result = -1;
 		switch (PLATFORM) {
@@ -62,6 +63,12 @@ struct offsets {
 	static constexpr uint32_t FireGameEvent() {		return PlatformOffset(2, -1, -1); }
         static constexpr uint32_t FireEvent() {         return PlatformOffset(8, 0, 0); }
 	static constexpr uint32_t FireEventClientSide() {       return PlatformOffset(9, 0, 0); }
+
+	static constexpr uint32_t GetSlot() {   return PlatformOffset(395, 0, 395); }
+	static constexpr uint32_t GetProjectileSpeed() {        return PlatformOffset(534, 0, 534); }
+        static constexpr uint32_t GetProjectileGravity() {        return PlatformOffset(534, 0, 534); }
+	static constexpr uint32_t DoSwingTrace() {      return PlatformOffset(522, 0, 522); }
+	static constexpr uint32_t AreRandomCritsEnabled() {     return PlatformOffset(466, 0, 466); }
 
 	static constexpr uint32_t lastoutgoingcommand() { return PlatformOffset(19228, -1, -1); }
 	static constexpr uint32_t m_nOutSequenceNr() { return PlatformOffset(8, -1, -1); }

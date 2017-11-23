@@ -97,6 +97,7 @@ static CatVar engine_pred(CV_SWITCH, "engine_prediction", "0", "Engine Predictio
 static CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0", "Debug Projectiles");
 
 static CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
+CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
 
 bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
         g_Settings.is_create_move = true;
@@ -304,6 +305,21 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 				PROF_SECTION(CM_aimbot);
 				SAFE_CALL(hacks::shared::aimbot::CreateMove());
 			}
+			static int attackticks = 0;
+			if (g_pUserCmd->buttons & IN_ATTACK)
+			    ++attackticks;
+			else
+			    attackticks = 0;
+                        if (semiauto)
+                        {
+                            if (g_pUserCmd->buttons & IN_ATTACK)
+                            {
+                                if (attackticks % int(semiauto) < int(semiauto) - 1)
+                                {
+                                    g_pUserCmd->buttons &= ~IN_ATTACK;
+                                }
+                            }
+                        }
 			{
 				PROF_SECTION(CM_antiaim);
 				SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));

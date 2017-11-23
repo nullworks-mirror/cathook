@@ -80,7 +80,7 @@ bool draw::EntityCenterToScreen(CachedEntity* entity, Vector& out) {
 	Vector world, min, max;
 	bool succ;
 
-	if (!entity || !RAW_ENT(entity)) return false;
+	if (CE_BAD(entity)) return false;
 	RAW_ENT(entity)->GetRenderBounds(min, max);
 	world = RAW_ENT(entity)->GetAbsOrigin();
 	world.z += (min.z + max.z) / 2;
