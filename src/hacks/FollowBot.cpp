@@ -236,12 +236,12 @@ void DoWalking() {
 		if (owner_weapon && CE_GOOD(g_pLocalPlayer->weapon())) {
 			
 			// IsBaseCombatWeapon()
-			if (vfunc<bool(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 190, 0)(RAW_ENT(g_pLocalPlayer->weapon())) &&
-			    vfunc<bool(*)(IClientEntity*)>(owner_weapon, 190, 0)(owner_weapon)) {
+			if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(RAW_ENT(g_pLocalPlayer->weapon())) &&
+			    re::C_BaseCombatWeapon::IsBaseCombatWeapon(owner_weapon)) {
 				
 				// Get the players slot numbers and store in some vars
-				int my_slot = vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon()));
-				int owner_slot = vfunc<int(*)(IClientEntity*)>(owner_weapon, 395, 0)(owner_weapon);
+				int my_slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(g_pLocalPlayer->weapon()));
+				int owner_slot = re::C_BaseCombatWeapon::GetSlot(owner_weapon);
 				
 				// If the local player is a medic and user settings allow, then keep the medigun out
 				if (g_pLocalPlayer->clazz == tf_medic && always_medigun) {

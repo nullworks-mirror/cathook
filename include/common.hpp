@@ -108,6 +108,7 @@
 #include "backpacktf.hpp"
 #include "sharedobj.hpp"
 #include "init.hpp"
+#include "reclasses/reclasses.hpp"
 
 #include "copypasted/Netvar.h"
 #include "copypasted/CSignature.h"

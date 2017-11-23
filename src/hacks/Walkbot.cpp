@@ -189,18 +189,15 @@ using state::nodes;
 using state::node_good;
 
 bool HasLowAmmo() {
-	// 0x13D = CBaseCombatWeapon::HasPrimaryAmmo()
-	// 190 = IsBaseCombatWeapon
-	// 1C1 = C_TFWeaponBase::UsesPrimaryAmmo()
 	int *weapon_list = (int*)((unsigned)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
 	for (int i = 0; weapon_list[i]; i++) {
 		int handle = weapon_list[i];
 		int eid = handle & 0xFFF;
 		if (eid >= 32 && eid <= HIGHEST_ENTITY) {
 			IClientEntity* weapon = g_IEntityList->GetClientEntity(eid);
-			if (weapon and vfunc<bool(*)(IClientEntity*)>(weapon, 190, 0)(weapon) and
-					   vfunc<bool(*)(IClientEntity*)>(weapon, 0x1C1, 0)(weapon) and
-				   not vfunc<bool(*)(IClientEntity*)>(weapon, 0x13D, 0)(weapon)) {
+			if (weapon and re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) and
+			               re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) and
+				   not re::C_TFWeaponBase::HasPrimaryAmmo(weapon)) {
 				return true;
 			}
 		}
@@ -704,8 +701,8 @@ void UpdateSlot() {
 	if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state && ms > 1000) {
 		IClientEntity* weapon = RAW_ENT(LOCAL_W);
 		// IsBaseCombatWeapon()
-		if (vfunc<bool(*)(IClientEntity*)>(weapon, 190, 0)(weapon)) {
-			int slot = vfunc<int(*)(IClientEntity*)>(weapon, 395, 0)(weapon);
+		if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon)) {
+			int slot = re::C_BaseCombatWeapon::GetSlot(weapon);
 			if (slot != int(force_slot) - 1) {
 				hack::ExecuteCommand(format("slot", int(force_slot)));
 			}

@@ -7,13 +7,23 @@
 
 #pragma once
 
-class C_BaseCombatWeapon : public IClientEntity
+class C_BaseCombatWeapon
 {
 public:
-    inline int GetSlot()
+    inline static bool IsBaseCombatWeapon(IClientEntity *self)
     {
-        typedef int(*fn_t)(C_BaseCombatWeapon *);
-        return vfunc<fn_t>(this, 395, 0)(this);
+        typedef bool(*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(190, offsets::undefined, 190), 0)(self);
+    }
+    inline static int GetSlot(IClientEntity *self)
+    {
+        typedef int(*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(395, offsets::undefined, 395), 0)(self);
+    }
+    inline static const char *GetPrintName(IClientEntity *self)
+    {
+        typedef const char *(*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(398, offsets::undefined, 398), 0)(self);
     }
 };
 

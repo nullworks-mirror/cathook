@@ -866,7 +866,7 @@ void _FASTCALL ProcessEntity(CachedEntity* ent) {
 				CachedEntity* weapon = ENTITY(widx);
 				if (CE_GOOD(weapon)) {
 					if (show_weapon) {
-						const char* weapon_name = vfunc<const char*(*)(IClientEntity*)>(RAW_ENT(weapon), 398, 0)(RAW_ENT(weapon));
+						const char* weapon_name = re::C_BaseCombatWeapon::GetPrintName(RAW_ENT(weapon));
 						if (weapon_name) AddEntityString(ent, std::string(weapon_name));
 					}
 				}

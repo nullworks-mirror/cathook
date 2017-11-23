@@ -389,7 +389,7 @@ void DrawText() {
 	
 	if (!debug_info) return;
 		if (CE_GOOD(g_pLocalPlayer->weapon())) {
-			AddSideString(format("Slot: ", vfunc<int(*)(IClientEntity*)>(RAW_ENT(g_pLocalPlayer->weapon()), 395, 0)(RAW_ENT(g_pLocalPlayer->weapon()))));
+			AddSideString(format("Slot: ", re::C_BaseCombatWeapon::GetSlot(RAW_ENT(g_pLocalPlayer->weapon()))));
 			AddSideString(format("Taunt Concept: ", CE_INT(LOCAL_E, netvar.m_iTauntConcept)));
 			AddSideString(format("Taunt Index: ", CE_INT(LOCAL_E, netvar.m_iTauntIndex)));
 			AddSideString(format("Sequence: ", CE_INT(LOCAL_E, netvar.m_nSequence)));

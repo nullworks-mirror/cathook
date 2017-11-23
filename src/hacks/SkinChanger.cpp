@@ -164,7 +164,7 @@ void FrameStageNotify(int stage) {
 	my_weapon = CE_INT(g_pLocalPlayer->entity, netvar.hActiveWeapon);
 	my_weapon_ptr = g_IEntityList->GetClientEntity(my_weapon & 0xFFF);
 	if (!my_weapon_ptr) return;
-	if (!vfunc<bool(*)(IClientEntity*)>(my_weapon_ptr, 190, 0)(my_weapon_ptr)) return;
+	if (!re::C_BaseCombatWeapon::IsBaseCombatWeapon(my_weapon_ptr)) return;
 	for (int i = 0; i < 4; i++) {
 		handle = weapon_list[i];
 		eid = handle & 0xFFF;
@@ -174,7 +174,7 @@ void FrameStageNotify(int stage) {
 		if (!entity) continue;
 		// TODO IsBaseCombatWeapon
 		// or TODO PlatformOffset
-		if (!vfunc<bool(*)(IClientEntity*)>(entity, 190, 0)(entity)) continue;
+		if (!re::C_BaseCombatWeapon::IsBaseCombatWeapon(entity)) continue;
 		if ((my_weapon_ptr != last_weapon_out) || !cookie.Check()) {
 			GetModifier(NET_INT(entity, netvar.iItemDefinitionIndex)).Apply(eid);
 		}
@@ -349,7 +349,7 @@ void def_attribute_modifier::Apply(int entity) {
 
 	ent = g_IEntityList->GetClientEntity(entity);
 	if (!ent) return;
-	if (!vfunc<bool(*)(IClientEntity*)>(ent, 190, 0)(ent)) return;
+	if (!re::C_BaseCombatWeapon::IsBaseCombatWeapon(ent)) return;
 	if (defidx_redirect && NET_INT(ent, netvar.iItemDefinitionIndex) != defidx_redirect) {
 		NET_INT(ent, netvar.iItemDefinitionIndex) = defidx_redirect;
 		if (show_debug_info)

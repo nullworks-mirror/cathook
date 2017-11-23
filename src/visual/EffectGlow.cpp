@@ -190,8 +190,8 @@ rgba_t EffectGlow::GlowColor(IClientEntity* entity) {
 	ent = ENTITY(entity->entindex());
 	if (CE_BAD(ent)) return colors::white;
 	if (ent == hacks::shared::aimbot::CurrentTarget()) return colors::pink;
-	if (vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
-		owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
+	if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(entity)) {
+		owner = re::C_TFWeaponBase::GetOwnerViaInterface(entity);
 		if (owner) {
 			return GlowColor(owner);
 		}
@@ -219,12 +219,6 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity* entity) {
 	if (entity->entindex() < 0) return false;
 	ent = ENTITY(entity->entindex());
 	if (CE_BAD(ent)) return false;
-	/*if (weapons && vfunc<bool(*)(IClientEntity*)>(entity, 0xBE, 0)(entity)) {
-		IClientEntity* owner = vfunc<IClientEntity*(*)(IClientEntity*)>(entity, 0x1C3, 0)(entity);
-		if (owner) {
-			return ShouldRenderChams(owner);
-		}
-	}*/
 	switch (ent->m_Type) {
 	case ENTITY_BUILDING:
 		if (!buildings) return false;
@@ -333,7 +327,7 @@ void EffectGlow::DrawEntity(IClientEntity* entity) {
 	attach = g_IEntityList->GetClientEntity(*(int*)((uintptr_t)entity + netvar.m_Collision - 24) & 0xFFF);
 	while (attach && passes++ < 32) {
 		if (attach->ShouldDraw()) {
-			if (weapons_white && entity->GetClientClass()->m_ClassID == RCC_PLAYER && vfunc<bool(*)(IClientEntity*)>(attach, 190, 0)(attach)) {
+			if (weapons_white && entity->GetClientClass()->m_ClassID == RCC_PLAYER && re::C_BaseCombatWeapon::IsBaseCombatWeapon(attach)) {
 				rgba_t mod_original;
 				g_IVRenderView->GetColorModulation(mod_original.rgba);
 				g_IVRenderView->SetColorModulation(colors::white);
