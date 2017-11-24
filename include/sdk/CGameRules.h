@@ -11,7 +11,7 @@ class CGameRules
 {
 public:
     int unknown_pad_0[12];
-    int critmode;
+    int roundmode;
     int unknown_pad_1[1];
     int winning_team;
 };

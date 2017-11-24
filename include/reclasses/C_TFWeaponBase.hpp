@@ -55,7 +55,7 @@ public:
                     // *(int *)(self + 2872) = g_GlobalVars->framecount;
                     // *(char *)(self + 2839) = 0;
 
-                    if (g_pGameRules->critmode == 5 ||
+                    if (g_pGameRules->roundmode == 5 &&
                         g_pGameRules->winning_team == NET_INT(owner, netvar.iTeamNum))
                     {
                         // *(char *)(self + 2838) = 1;

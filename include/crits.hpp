@@ -11,6 +11,7 @@
 class CUserCmd;
 class IClientEntity;
 
+// BUGBUG TODO this struct is outdated
 struct crithack_saved_state {
 	float bucket; // 2612
 	bool unknown2831;
@@ -24,41 +25,23 @@ struct crithack_saved_state {
 	void Load(IClientEntity* entity);
 };
 
-extern bool weapon_can_crit_last;
-
-extern CatVar crit_hack_next;
 extern CatVar crit_info;
-extern CatVar crit_hack;
+extern CatVar crit_key;
 extern CatVar crit_melee;
-extern CatVar crit_suppress;
 
 namespace criticals
 {
 
-void unfuck_bucket();
-bool force_crit();
+void create_move();
+bool random_crits_enabled();
 
 }
-
-bool CritKeyDown();
-bool AllowAttacking();
-bool RandomCrits();
-bool WeaponCanCrit();
-bool IsAttackACrit(CUserCmd* cmd);
-void ResetCritHack();
-void LoadSavedState();
-void ModifyCommandNumber();
 
 #include <beforecheaders.hpp>
 #include <unordered_map>
 #include <aftercheaders.hpp>
-class CatVar;
-extern CatVar experimental_crit_hack;
 
 extern int* g_PredictionRandomSeed;
 extern std::unordered_map<int, int> command_number_mod;
-
-//bool CalcIsAttackCritical(IClientEntity* weapon);
-
 
 #endif /* CRITS_HPP_ */
