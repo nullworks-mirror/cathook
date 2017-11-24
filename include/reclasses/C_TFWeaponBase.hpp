@@ -79,6 +79,28 @@ public:
         if (CTFPlayerShared::IsCritBoosted(shared))
             return true;
             
+        int unk1 = *(int *)(unsigned(self) + 2832u);
+        int unk2 = *(int *)(unsigned(self) + 2820u);
+        unk2 <<= 6;
+        
+        int unk3 = unk1 + unk2 + 1784;
+        char unk4 = *(char *)(unk1 + unk2 + 1844);
+        if (unk4 && *(float *)(unsigned(self) + 2864u) > g_GlobalVars->curtime)
+            return true;
+        
+        int unk5 = *(int *)(unk1 + unk2 + 1788);
+        int bullet_count = 0;
+        if (unk5 > 0)
+        {
+            // mult_bullets_per_shot
+        }
+        else
+        {
+            bullet_count = 1;
+        }
+        
+        float mult2 = *(float *)(unk3);
+        
         
         float multiplier = 0.5f;
         int seed = C_BaseEntity::m_nPredictionRandomSeed() ^ (owner->entindex() | self->entindex());
