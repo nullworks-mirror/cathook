@@ -40,6 +40,59 @@ public:
         typedef bool(*fn_t)(IClientEntity *);
         return vfunc<fn_t>(self, offsets::PlatformOffset(461, offsets::undefined, 461), 0)(self);
     }
+    inline static bool CanFireCriticalShot(IClientEntity *self, bool unknown1, IClientEntity *unknown2)
+    {    
+        typedef bool(*fn_t)(IClientEntity *, bool, IClientEntity *);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(489, offsets::undefined, 489), 0)(self, unknown1, unknown2);
+    }
+    inline static void AddToCritBucket(IClientEntity *self, float value)
+    {
+        constexpr float max_bucket_capacity = 1000.0f;
+        bucket = fminf(bucket_() + value, max_bucket_capacity);
+    }
+    inline static bool IsAllowedToWithdrawFromCritBucket(IClientEntity *self, float value)
+    {
+        uint16_t weapon_info_handle = weapon_info_handle_(self);
+        void *weapon_info = nullptr; // GetFileWeaponInfoFromHandle(weapon_info_handle);
+        /*
+        if (!weapon_info->unk_1736)
+        {
+            
+        }
+        */
+    }
+    inline static bool CalcIsAttackCriticalHelper_re(IClientEntity *self)
+    {
+        IClientEntity *owner = GetOwnerViaInterface(self);
+        
+        if (owner == nullptr)
+            return false;
+        
+        if (!C_BaseEntity::IsPlayer(owner))
+            return false;
+        
+        CTFPlayerShared *shared = C_BasePlayer::shared_(owner);
+        float critmult = CTFPlayerShared::GetCritMult(shared);
+        if (!CanFireCriticalShot(self, 0, nullptr))
+            return false;
+        
+        if (CTFPlayerShared::IsCritBoosted(shared))
+            return true;
+            
+        
+        float multiplier = 0.5f;
+        int seed = C_BaseEntity::m_nPredictionRandomSeed() ^ (owner->entindex() | self->entindex());
+        RandomSeed(seed);
+        
+        bool result = true;
+        if (multiplier * 10000.0f <= RandomInt(0, 9999))
+        {
+            result = false;
+            multiplier = 0.0f;
+        }
+        
+        return false;
+    }
     inline static int CalcIsAttackCritical(IClientEntity *self)
     {
         IClientEntity *owner = GetOwnerViaInterface(self);
@@ -77,6 +130,10 @@ public:
         }
 
         return 0;
+    }
+    inline static uint16_t& weapon_info_handle_(IClientEntity *self)
+    {
+        return *(uint16_t *)(unsigned(self) + 2750u);
     }
     inline static float& crit_bucket_(IClientEntity *self)
     {
