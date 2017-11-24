@@ -270,30 +270,6 @@ void CreateMove() {
 #if ENABLE_VISUALS == 1
 
 void DrawText() {
-	// Crithack info
-	// CRITHACK IS DISABLED (temporarily)
-        /*
-        if (crit_info && CE_GOOD(LOCAL_W)) {
-		if (CritKeyDown() || experimental_crit_hack.KeyDown()) {
-			AddCenterString("FORCED CRITS!", colors::red);
-		}
-		IF_GAME (IsTF2()) {
-			if (!vfunc<bool(*)(IClientEntity*)>(RAW_ENT(LOCAL_W), 465, 0)(RAW_ENT(LOCAL_W)))
-				AddCenterString("Random crits are disabled", colors::yellow);
-			else {
-				if (!WeaponCanCrit())
-					AddCenterString("Weapon can't randomly crit", colors::yellow);
-				else
-					AddCenterString("Weapon can randomly crit");
-			}
-			AddCenterString(format("Bucket: ", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2612u)));
-			if (crit_hack_next && found_crit_number > last_number && found_crit_weapon == RAW_ENT(LOCAL_W)) {
-				AddCenterString(format("Next crit in: ", roundf(((found_crit_number - last_number) / 66.0f) * 10.0f) / 10.0f, 's'));
-			}
-			//AddCenterString(format("Time: ", *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2872u)));
-		}
-	}*/
-
 	/*if (!no_homo) {
 		int width, height;
 		g_IEngine->GetScreenSize(width, height);

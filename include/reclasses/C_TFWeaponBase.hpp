@@ -7,7 +7,7 @@
 
 #pragma once
 
-class C_TFWeaponBase : public C_BaseCombatWeapon
+class C_TFWeaponBase : public re::C_BaseCombatWeapon
 {
 public:
     inline static IClientEntity *GetOwnerViaInterface(IClientEntity *self)
@@ -48,7 +48,7 @@ public:
     inline static void AddToCritBucket(IClientEntity *self, float value)
     {
         constexpr float max_bucket_capacity = 1000.0f;
-        bucket = fminf(bucket_() + value, max_bucket_capacity);
+        crit_bucket_(self) = fminf(crit_bucket_(self) + value, max_bucket_capacity);
     }
     inline static bool IsAllowedToWithdrawFromCritBucket(IClientEntity *self, float value)
     {
@@ -71,7 +71,7 @@ public:
         if (!C_BaseEntity::IsPlayer(owner))
             return false;
         
-        CTFPlayerShared *shared = C_BasePlayer::shared_(owner);
+        CTFPlayerShared *shared = &C_BasePlayer::shared_(owner);
         float critmult = CTFPlayerShared::GetCritMult(shared);
         if (!CanFireCriticalShot(self, 0, nullptr))
             return false;
@@ -120,7 +120,7 @@ public:
         IClientEntity *owner = GetOwnerViaInterface(self);
         if (owner)
         {
-            if (IsPlayer(owner))
+            if (C_BaseEntity::IsPlayer(owner))
             {
                 // Always run calculations
                 // Never write anything into entity, at least from here.

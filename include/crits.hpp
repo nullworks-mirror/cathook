@@ -13,14 +13,14 @@ class IClientEntity;
 
 // BUGBUG TODO this struct is outdated
 struct crithack_saved_state {
-	float bucket; // 2612
-	bool unknown2831;
-	int seed; // 2868
-	float time; // 2872
-	int unknown2616;
-	int unknown2620;
-	float unknown2856;
-	float unknown2860;
+	float unknown2868;
+	float unknown2864;
+	int   unknown2620;
+	float unknown2880;
+	char  unknown2839;
+	float bucket2616;
+	int   seed2876;
+
 	void Save(IClientEntity* entity);
 	void Load(IClientEntity* entity);
 };
@@ -33,6 +33,7 @@ namespace criticals
 {
 
 void create_move();
+void draw();
 bool random_crits_enabled();
 
 }

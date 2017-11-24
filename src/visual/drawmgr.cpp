@@ -113,6 +113,10 @@ void DrawCheatVisuals() {
                     PROF_SECTION(DRAW_esp);
                     hacks::shared::esp::Draw();
             }
+            IF_GAME(IsTF2())
+            {
+                criticals::draw();
+            }
 #ifndef FEATURE_FIDGET_SPINNER_DISABLED
             DrawSpinner();
 #endif

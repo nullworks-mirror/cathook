@@ -263,7 +263,6 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	}
 #endif
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
-		ResetCritHack();
 		IF_GAME (IsTF2()) {
 			SAFE_CALL(UpdateHoovyList());
 		}
@@ -351,6 +350,10 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		{
 			PROF_SECTION(CM_misc);
 			SAFE_CALL(hacks::shared::misc::CreateMove());
+		}
+		{
+		    PROF_SECTION(CM_crits);
+		    criticals::create_move();
 		}
 		{
 			PROF_SECTION(CM_spam);

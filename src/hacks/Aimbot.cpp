@@ -225,10 +225,6 @@ bool ShouldAim() {
 				return false;
 			}
 		}
-
-		// Check if crithack allows attacking
-		if (!AllowAttacking())
-			return false;
 	}
 	return true;
 }

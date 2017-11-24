@@ -141,11 +141,6 @@ bool ShouldShoot() {
 			}
 		}
 	}
-	IF_GAME (IsTF()) {
-		// Check if crithack allows attacking
-		if (!AllowAttacking())
-			return false;
-	}
 	return true;
 }
 	
