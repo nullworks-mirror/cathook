@@ -39,7 +39,6 @@ void CreateMove() {
 				ac::bhop::Update(ent);
 			}
 		}
-		ac::removecond::Update(ent);
 	}
 }
 
@@ -47,14 +46,12 @@ void ResetPlayer(int index) {
 	ac::aimbot::ResetPlayer(index);
 	ac::antiaim::ResetPlayer(index);
 	ac::bhop::ResetPlayer(index);
-	ac::removecond::ResetPlayer(index);
 }
 
 void ResetEverything() {
 	ac::aimbot::ResetEverything();
 	ac::antiaim::ResetEverything();
 	ac::bhop::ResetEverything();
-	ac::removecond::ResetEverything();
 }
 
 class ACListener : public IGameEventListener {

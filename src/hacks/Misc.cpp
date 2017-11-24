@@ -29,8 +29,6 @@ CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push", "Prevents oth
 
 //CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
 // Taunting stuff
-CatEnum spycrab_mode_enum({"DISABLED", "FORCE CRAB", "FORCE NON-CRAB"});
-CatVar spycrab_mode(spycrab_mode_enum, "spycrab", "0", "Spycrab", "Defines spycrab taunting mode");
 CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide", "Allows moving and shooting while taunting");
 CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide", "Allows free movement while taunting with movable taunts\nOnly works in tf2");	
 
@@ -48,32 +46,6 @@ bool C_TFPlayer__ShouldDraw_hook(IClientEntity* thisptr) {
 }
 
 int last_number = 0;
-
-// SUPER SECRET CODE DONOT STEEL
-	
-int no_taunt_ticks = 0;
-
-typedef int(*StartSceneEvent_t)(IClientEntity* _this, int, int, void*, void*, IClientEntity*);
-StartSceneEvent_t StartSceneEvent_original = nullptr;
-int StartSceneEvent_hooked(IClientEntity* _this, int sceneInfo, int choreoScene, void* choreoEvent, void* choreoActor, IClientEntity* unknown) {
-	const char* str = (const char*)((unsigned)choreoScene + 396);
-	if (_this == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && spycrab_mode && CE_GOOD(LOCAL_W) && LOCAL_W->m_iClassID == CL_CLASS(CTFWeaponPDA_Spy)) {
-		if (!strcmp(str, "scenes/player/spy/low/taunt05.vcd")) {
-			if ((int)spycrab_mode == 2) {
-				RemoveCondition<TFCond_Taunting>(LOCAL_E);
-				no_taunt_ticks = 6;
-				hacks::shared::lagexploit::AddExploitTicks(15);
-			}
-		} else if (strstr(str, "scenes/player/spy/low/taunt")) {
-			if ((int)spycrab_mode == 1) {
-				RemoveCondition<TFCond_Taunting>(LOCAL_E);
-				no_taunt_ticks = 6;
-				hacks::shared::lagexploit::AddExploitTicks(15);
-			}
-		}
-	}
-	return StartSceneEvent_original(_this, sceneInfo, choreoScene, choreoEvent, choreoActor, unknown);
-}
 
 float last_bucket = 0;
 
@@ -108,7 +80,6 @@ void CreateMove() {
 	static bool chc;
 	static bool changed = false;
 
-	if (g_pUserCmd->command_number && found_crit_number > g_pUserCmd->command_number + 66 * 20) found_crit_number = 0;
 	if (g_pUserCmd->command_number) last_number = g_pUserCmd->command_number;
 
 	static int last_checked_command_number = 0;
@@ -178,24 +149,10 @@ void CreateMove() {
 	}*/
 	// Spycrab stuff
 	// TODO FIXME this should be moved out of here
-	if (no_taunt_ticks && CE_GOOD(LOCAL_E)) {
-		RemoveCondition<TFCond_Taunting>(LOCAL_E);
-		no_taunt_ticks--;
-	}
 	IF_GAME (IsTF2()) {
 		PROF_SECTION(CM_misc_hook_checks);
 		static IClientEntity *localplayer = nullptr;
 		localplayer = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
-		if (localplayer && spycrab_mode) {
-			void** vtable = *(void***)(localplayer);
-			if (vtable[0x111] != StartSceneEvent_hooked) {
-				StartSceneEvent_original = (StartSceneEvent_t)vtable[0x111];
-				void* page = (void*)((uintptr_t)vtable &~ 0xFFF);
-				mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-				vtable[0x111] = (void*)StartSceneEvent_hooked;
-				mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
-			}
-		}
 		if (render_zoomed && localplayer) {
 			// Patchking local player
 			void** vtable = *(void***)(localplayer);
