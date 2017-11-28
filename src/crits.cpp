@@ -24,10 +24,13 @@ int find_next_random_crit_for_weapon(IClientEntity *weapon)
         number = g_pUserCmd->command_number,
         found = 0,
         seed,
-        seed_md5;
+        seed_md5,
+        seed_backup;
 
     crithack_saved_state state;
     state.Save(weapon);
+
+    seed_backup = *g_PredictionRandomSeed;
 
     while (!found && tries < 4096)
     {
@@ -41,6 +44,7 @@ int find_next_random_crit_for_weapon(IClientEntity *weapon)
         ++number;
     }
 
+    *g_PredictionRandomSeed = seed_backup;
     state.Load(weapon);
     if (found)
         return number;
@@ -83,7 +87,7 @@ bool force_crit(IClientEntity *weapon)
 {
     if (cached_calculation.init_command > g_pUserCmd->command_number ||
         g_pUserCmd->command_number - cached_calculation.init_command > 4096 ||
-        cached_calculation.command_number < g_pUserCmd->command_number)
+        (g_pUserCmd->command_number && (cached_calculation.command_number < g_pUserCmd->command_number)))
         cached_calculation.weapon_entity = 0;
     if (cached_calculation.weapon_entity == weapon->entindex())
         return bool(cached_calculation.command_number);
