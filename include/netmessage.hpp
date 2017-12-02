@@ -141,7 +141,7 @@ class CNetMessage : public INetMessage
 #define svc_BSPDecal 21 // add a static decal to the worl BSP
 // NOTE: This is now unused!
 //#define	svc_TerrainMod		22		// modification to the
-//terrain/displacement
+// terrain/displacement
 
 // Message from server side to client side entity
 #define svc_UserMessage 23   // a game specific message

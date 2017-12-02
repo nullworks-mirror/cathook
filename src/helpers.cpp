@@ -180,7 +180,7 @@ powerup_type GetPowerupOnPlayer(CachedEntity *player)
     if (CE_BAD(player))
         return powerup_type::not_powerup;
     //	if (!HasCondition<TFCond_HasRune>(player)) return
-    //powerup_type::not_powerup;
+    // powerup_type::not_powerup;
     if (HasCondition<TFCond_RuneStrength>(player))
         return powerup_type::strength;
     if (HasCondition<TFCond_RuneHaste>(player))

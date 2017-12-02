@@ -132,7 +132,7 @@ void Draw()
                        '%'),
                 colors::yellow);
             //			AddCenterString(format("Heal arrow time: ",
-            //healarrow_time));
+            // healarrow_time));
         }
         else
         {

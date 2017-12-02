@@ -239,7 +239,7 @@ void CTextureReference::InitRenderTarget(int w, int h,
     // m_pTexture = vfunc<ITexture*(*)(IMaterialSystem*, char
     // const*,int,int,RenderTargetSizeMode_t,ImageFormat,MaterialRenderTargetDepth_t,uint,uint)>(materials,
     // 87, 0)(materials, pStrOptionalName, w, h, sizeMode, fmt, 		depth,
-    //textureFlags, renderTargetFlags);
+    // textureFlags, renderTargetFlags);
     IF_GAME(IsTF2())
     {
         m_pTexture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx(

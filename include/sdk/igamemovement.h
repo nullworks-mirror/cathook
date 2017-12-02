@@ -62,7 +62,7 @@ class CMoveData
     // These are copied in here before calling and copied out after calling.
     Vector m_vecVelocity; // edict::velocity		// Current movement
                           // direction.
-    QAngle m_vecAngles; // edict::angles
+    QAngle m_vecAngles;   // edict::angles
     QAngle m_vecOldAngles;
 
     // Output only

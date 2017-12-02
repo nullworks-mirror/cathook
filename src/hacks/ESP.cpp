@@ -1079,7 +1079,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             if (vischeck && !ent->IsVisible())
                 return; // Vis check
                         // TODO, maybe...
-                        // if (ent->m_lLastSeen > (unsigned)v_iLegitSeenTicks->GetInt())
+                        // if (ent->m_lLastSeen >
+                        // (unsigned)v_iLegitSeenTicks->GetInt())
             // return;
         }
 
