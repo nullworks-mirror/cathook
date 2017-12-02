@@ -53,7 +53,7 @@ static char s_pTokenBuf[KEYVALUES_TOKEN_SIZE];
 const int MAX_ERROR_STACK = 64;
 class CKeyValuesErrorStack
 {
-    public:
+public:
     CKeyValuesErrorStack()
         : m_pFilename("NULL"), m_errorIndex(0), m_maxErrorIndex(0)
     {
@@ -124,7 +124,7 @@ class CKeyValuesErrorStack
             Warning("\n");
     }
 
-    private:
+private:
     int m_errorStack[MAX_ERROR_STACK];
     const char *m_pFilename;
     int m_errorIndex;
@@ -134,7 +134,7 @@ class CKeyValuesErrorStack
 // a simple helper that creates stack entries as it goes in & out of scope
 class CKeyErrorContext
 {
-    public:
+public:
     CKeyErrorContext(KeyValues *pKv)
     {
         Init(pKv->GetNameSymbol());
@@ -157,7 +157,7 @@ class CKeyErrorContext
         return m_stackLevel;
     }
 
-    private:
+private:
     void Init(int symName)
     {
         m_stackLevel = g_KeyValuesErrorStack.Push(symName);
@@ -173,7 +173,7 @@ class CKeyErrorContext
 
 class CLeakTrack
 {
-    public:
+public:
     CLeakTrack()
     {
     }
@@ -234,7 +234,7 @@ static CLeakTrack track;
 //-----------------------------------------------------------------------------
 class CKeyValuesGrowableStringTable
 {
-    public:
+public:
     // Constructor
     CKeyValuesGrowableStringTable()
         :
@@ -287,12 +287,12 @@ class CKeyValuesGrowableStringTable
         return (const char *) m_vecStrings.Base() + symbol;
     }
 
-    private:
+private:
     // A class plugged into CUtlHash that allows us to change the behavior of
     // the table and store only the index in the table.
     class CLookupFunctor
     {
-        public:
+    public:
         CLookupFunctor() : m_pchCurString(NULL), m_pchCurBase(NULL)
         {
         }
@@ -324,7 +324,7 @@ class CKeyValuesGrowableStringTable
             return HashStringCaseless(m_pchCurString);
         }
 
-        private:
+    private:
         const char *m_pchCurString;
         const char *m_pchCurBase;
     };
@@ -1222,7 +1222,7 @@ void KeyValues::AddSubkeyUsingKnownLastChild(KeyValues *pSubkey,
         Assert(pLastChild->m_pPeer == NULL);
 
         //		// In debug, make sure that they really do know which child is
-        //the  last one 		#ifdef _DEBUG 			KeyValues *pTempDat =
+        // the  last one 		#ifdef _DEBUG 			KeyValues *pTempDat =
         // m_pSub; 			while ( pTempDat->GetNextKey() != NULL )
         //			{
         //				pTempDat = pTempDat->GetNextKey();

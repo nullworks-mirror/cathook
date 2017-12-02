@@ -33,7 +33,7 @@ float healarrow_time = 0.0f;
 
 class HealArrowListener : public IGameEventListener
 {
-    public:
+public:
     virtual void FireGameEvent(KeyValues *event)
     {
         if (!healarrow)

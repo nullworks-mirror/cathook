@@ -15,7 +15,7 @@ class CachedEntity;
 
 class LocalPlayer
 {
-    public:
+public:
     void Update();
     int team;
     int health;

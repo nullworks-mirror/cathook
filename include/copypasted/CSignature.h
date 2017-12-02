@@ -7,7 +7,7 @@
 
 class CSignature
 {
-    public:
+public:
     uintptr_t dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
                             const char *szPattern);
     void *GetModuleHandleSafe(const char *pszModuleName);

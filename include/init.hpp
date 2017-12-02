@@ -15,6 +15,6 @@ std::stack<void (*)()> &init_stack();
 
 class InitRoutine
 {
-    public:
+public:
     InitRoutine(void (*func)());
 };

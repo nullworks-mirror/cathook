@@ -21,7 +21,7 @@
 
 template <typename T> class Averager
 {
-    public:
+public:
     /*
      * Initialize Averager with a given size
      */
@@ -102,7 +102,7 @@ template <typename T> class Averager
         return value_count_;
     }
 
-    private:
+private:
     std::vector<T> values_;
     size_t size_{ 0 };
     size_t value_count_{ 0 };

@@ -16,7 +16,7 @@
 #include <inetmsghandler.h>
 
 #define DECLARE_BASE_MESSAGE(msgtype)                                          \
-    public:                                                                    \
+public:                                                                        \
     bool ReadFromBuffer(bf_read &buffer);                                      \
     bool WriteToBuffer(bf_write &buffer);                                      \
     const char *ToString() const;                                              \
@@ -63,7 +63,7 @@
 
 class CNetMessage : public INetMessage
 {
-    public:
+public:
     CNetMessage()
     {
         m_bReliable  = true;
@@ -98,7 +98,7 @@ class CNetMessage : public INetMessage
         return false;
     }; // no handler set
 
-    protected:
+protected:
     bool m_bReliable;          // true if message should be send reliable
     INetChannel *m_NetChannel; // netchannel this message is from/for
 };
@@ -195,7 +195,7 @@ typedef enum {
 
 class CLC_RespondCvarValue : public CNetMessage
 {
-    public:
+public:
     DECLARE_CLC_MESSAGE(RespondCvarValue);
 
     QueryCvarCookie_t m_iCookie;
@@ -207,7 +207,7 @@ class CLC_RespondCvarValue : public CNetMessage
 
     EQueryCvarValueStatus m_eStatusCode;
 
-    private:
+private:
     char m_szCvarNameBuffer[256];
     char m_szCvarValueBuffer[256];
 };
@@ -239,21 +239,21 @@ class NET_SignonState : public CNetMessage
         m_nSpawnCount  = spawncount;
     };
 
-    public:
+public:
     int m_nSignonState; // See SIGNONSTATE_ defines
     int m_nSpawnCount;  // server spawn count (session number)
 };
 
 class SVC_GetCvarValue : public CNetMessage
 {
-    public:
+public:
     DECLARE_SVC_MESSAGE(GetCvarValue);
 
     QueryCvarCookie_t m_iCookie;
     const char *m_szCvarName; // The sender sets this, and it automatically
                               // points it at m_szCvarNameBuffer when receiving.
 
-    private:
+private:
     char m_szCvarNameBuffer[256];
 };
 
@@ -277,7 +277,7 @@ class NET_SetConVar : public CNetMessage
         convar = cvar;
     }
 
-    public:
+public:
     typedef struct cvar_s
     {
         char name[MAX_OSPATH];
@@ -305,10 +305,10 @@ class NET_StringCmd : public CNetMessage
         m_szCommand = cmd;
     };
 
-    public:
+public:
     const char *m_szCommand; // execute this command
 
-    private:
+private:
     char m_szCommandBuffer[1024]; // buffer for received messages
 };
 

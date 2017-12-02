@@ -86,7 +86,7 @@ void Update()
 
 class HurtListener : public IGameEventListener
 {
-    public:
+public:
     virtual void FireGameEvent(KeyValues *event)
     {
         if (strcmp("player_hurt", event->GetName()))

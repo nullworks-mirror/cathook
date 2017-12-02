@@ -33,7 +33,7 @@ constexpr uint32_t GUARD = 0xD34DC477;
 
 class VMTHook
 {
-    public:
+public:
     VMTHook();
     ~VMTHook();
     void Set(ptr_t inst, uint32_t offset = 0);
@@ -42,7 +42,7 @@ class VMTHook
     void *GetMethod(uint32_t idx) const;
     void Apply();
 
-    public:
+public:
     ptr_t object{ nullptr };
     table_ptr_t vtable_ptr{ nullptr };
     method_table_t vtable_original{ nullptr };

@@ -25,14 +25,14 @@
 //-----------------------------------------------------------------------------
 class CUtlCStringConversion : public CUtlCharConversion
 {
-    public:
+public:
     CUtlCStringConversion(char nEscapeChar, const char *pDelimiter, int nCount,
                           ConversionArray_t *pArray);
 
     // Finds a conversion for the passed-in string, returns length
     virtual char FindConversion(const char *pString, int *pLength);
 
-    private:
+private:
     char m_pConversion[256];
 };
 
@@ -41,7 +41,7 @@ class CUtlCStringConversion : public CUtlCharConversion
 //-----------------------------------------------------------------------------
 class CUtlNoEscConversion : public CUtlCharConversion
 {
-    public:
+public:
     CUtlNoEscConversion(char nEscapeChar, const char *pDelimiter, int nCount,
                         ConversionArray_t *pArray)
         : CUtlCharConversion(nEscapeChar, pDelimiter, nCount, pArray)

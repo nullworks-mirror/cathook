@@ -11,7 +11,7 @@ namespace client_classes
 
 class tf2
 {
-    public:
+public:
     int CTETFParticleEffect{ 178 };
     int CTETFExplosion{ 177 };
     int CTETFBlood{ 176 };

@@ -9,7 +9,7 @@
 
 class CGameRules
 {
-    public:
+public:
     int unknown_pad_0[12];
     int roundmode;
     int unknown_pad_1[1];

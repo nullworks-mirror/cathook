@@ -9,7 +9,7 @@
 
 class C_BaseEntity
 {
-    public:
+public:
     inline static bool IsPlayer(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);

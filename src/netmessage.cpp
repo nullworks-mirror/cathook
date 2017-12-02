@@ -38,7 +38,7 @@ inline int BitForBitnum(int bitnum)
 
 class CBitWriteMasksInit
 {
-    public:
+public:
     CBitWriteMasksInit()
     {
         for (unsigned int startbit = 0; startbit < 32; startbit++)

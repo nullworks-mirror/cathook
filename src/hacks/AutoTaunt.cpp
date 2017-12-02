@@ -23,7 +23,7 @@ CatVar chance(CV_FLOAT, "autotaunt_chance", "8", "AutoTaunt chance",
 
 class AutoTauntListener : public IGameEventListener2
 {
-    public:
+public:
     virtual void FireGameEvent(IGameEvent *event)
     {
         if (!enabled)

@@ -43,7 +43,7 @@ extern time_t time_injected;
 
 class GlobalSettings
 {
-    public:
+public:
     void Init();
     bool bInvalid{ true };
     bool is_create_move{ false };

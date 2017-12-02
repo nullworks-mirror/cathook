@@ -29,7 +29,7 @@ struct CachedHitbox
 
 class EntityHitboxCache
 {
-    public:
+public:
     EntityHitboxCache();
     ~EntityHitboxCache();
 

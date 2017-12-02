@@ -11,7 +11,7 @@ namespace client_classes
 
 class hl2dm
 {
-    public:
+public:
     int CTETFParticleEffect{ 0 };
     int CTETFExplosion{ 0 };
     int CTETFBlood{ 0 };

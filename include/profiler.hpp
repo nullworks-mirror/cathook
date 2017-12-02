@@ -17,7 +17,7 @@ class ProfilerNode;
 
 class ProfilerSection
 {
-    public:
+public:
     ProfilerSection(std::string name, ProfilerSection *parent = nullptr);
 
     void OnNodeDeath(ProfilerNode &node);
@@ -34,7 +34,7 @@ class ProfilerSection
 
 class ProfilerNode
 {
-    public:
+public:
     ProfilerNode(ProfilerSection &section);
     ~ProfilerNode();
 

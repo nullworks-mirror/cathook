@@ -15,14 +15,14 @@
 
 class TextFile
 {
-    public:
+public:
     TextFile();
     void Load(std::string filename);
     bool TryLoad(std::string filename);
     size_t LineCount() const;
     const std::string &Line(size_t id) const;
 
-    public:
+public:
     std::vector<std::string> lines;
 };
 

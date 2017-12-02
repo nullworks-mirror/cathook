@@ -21,7 +21,7 @@ extern SSL_CTX *ssl_context;
 
 class RAII_HTTPS_Socket
 {
-    public:
+public:
     RAII_HTTPS_Socket(const std::string &host);
     ~RAII_HTTPS_Socket();
 

@@ -34,11 +34,11 @@ enum CatVar_t
 // Enum Something
 class CatEnum
 {
-    public:
+public:
     CatEnum(std::vector<std::string> values, int min = 0);
     std::string Name(int value);
 
-    public:
+public:
     const std::vector<std::string> value_names;
     int min_value;
     int max_value;
@@ -48,7 +48,7 @@ class CatEnum
 // TODO reverse, no idea how catcommands are handled
 class CatCommand
 {
-    public:
+public:
     CatCommand(std::string name, std::string help,
                FnCommandCallback_t callback);
     CatCommand(std::string name, std::string help,
@@ -56,7 +56,7 @@ class CatCommand
 
     void Register();
 
-    public:
+public:
     const std::string name;
     const std::string help{ "" };
 
@@ -68,7 +68,7 @@ class CatCommand
 
 class CatVar
 {
-    public: // TODo, unknown reverse
+public: // TODo, unknown reverse
     CatVar(CatVar_t type, std::string name, std::string defaults,
            std::string desc_short, std::string desc_long = "no description");
     CatVar(CatVar_t type, std::string name, std::string defaults,
@@ -154,7 +154,7 @@ class CatVar
     }
 
     // Storage for the catvar
-    public:
+public:
     const CatVar_t type;
     const std::string name;
     const std::string defaults{ "0" };

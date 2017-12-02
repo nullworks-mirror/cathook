@@ -12,7 +12,7 @@ class CachedEntity;
 
 class TFPlayerResource
 {
-    public:
+public:
     void Update();
     int GetMaxHealth(CachedEntity *player);
     int GetMaxBuffedHealth(CachedEntity *player);

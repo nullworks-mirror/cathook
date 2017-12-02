@@ -83,7 +83,7 @@ std::stack<std::string> &hack::command_stack()
 
 class AdvancedEventListener : public IGameEventListener
 {
-    public:
+public:
     virtual void FireGameEvent(KeyValues *event)
     {
         if (!event_log)

@@ -16,7 +16,7 @@ namespace effect_glow
 
 class EffectGlow : public IScreenSpaceEffect
 {
-    public:
+public:
     virtual void Init();
     inline virtual void Shutdown(){};
 
@@ -44,7 +44,7 @@ class EffectGlow : public IScreenSpaceEffect
     void BeginRenderGlow();
     void EndRenderGlow();
 
-    public:
+public:
     bool init{ false };
     bool drawing{ false };
     bool enabled;

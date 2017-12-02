@@ -25,7 +25,7 @@ CatVar dont_log_ipc(CV_SWITCH, "chat_log_noipc", "1", "No IPC",
 
 class RAIILog
 {
-    public:
+public:
     RAIILog()
     {
         open();

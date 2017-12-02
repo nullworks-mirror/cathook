@@ -19,7 +19,7 @@
 
 class CDumper
 {
-    public:
+public:
     CDumper()
     {
         m_file.open("/tmp/netdump.txt", std::ios::out | std::ios::trunc);
@@ -115,7 +115,7 @@ class CDumper
             m_file << std::endl;
     }
 
-    private:
+private:
     std::fstream m_file;
 };
 

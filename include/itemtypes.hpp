@@ -209,7 +209,7 @@ typedef k_EItemType (*ItemSpecialMapperFn)(CachedEntity *);
 
 class ItemModelMapper
 {
-    public:
+public:
     void RegisterItem(std::string modelpath, k_EItemType type);
     k_EItemType GetItemType(CachedEntity *entity);
 
@@ -219,7 +219,7 @@ class ItemModelMapper
 
 class ItemManager
 {
-    public:
+public:
     ItemManager();
     void RegisterModelMapping(std::string path, k_EItemType type);
     void RegisterSpecialMapping(ItemCheckerFn fn, k_EItemType type);

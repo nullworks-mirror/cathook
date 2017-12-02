@@ -1,6 +1,6 @@
 class CTFPlayerShared
 {
-    public:
+public:
     inline static float GetCritMult(CTFPlayerShared *self)
     {
         return ((fminf(fmaxf(*(float *) (unsigned(self) + 672) * 0.0039215689f,

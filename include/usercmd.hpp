@@ -15,7 +15,7 @@
 
 class CUserCmd
 {
-    public:
+public:
     virtual ~CUserCmd(){};
     int command_number;
     int tick_count;

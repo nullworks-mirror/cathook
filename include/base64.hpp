@@ -36,7 +36,7 @@ const char kBase64Alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 class Base64
 {
-    public:
+public:
     static bool Encode(const std::string &in, std::string *out)
     {
         int i = 0, j = 0;
@@ -304,7 +304,7 @@ class Base64
             in->resize(in->size() - 1);
     }
 
-    private:
+private:
     static inline void a3_to_a4(unsigned char *a4, unsigned char *a3)
     {
         a4[0] = (a3[0] & 0xfc) >> 2;

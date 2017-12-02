@@ -59,7 +59,7 @@ struct mstudiobbox_t;
 
 class CachedEntity
 {
-    public:
+public:
     CachedEntity();
     ~CachedEntity();
 

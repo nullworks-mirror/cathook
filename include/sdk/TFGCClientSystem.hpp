@@ -9,7 +9,7 @@
 
 class TFGCClientSystem
 {
-    public:
+public:
     int RequestSelectWizardStep(int type);
     int GetState();
     /* 55 89 E5 57 56 8D 75 C8 53 81 EC 8C 00 00 00 8B 45 0C C7 04 24 ? ? ? ? 8B

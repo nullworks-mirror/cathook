@@ -55,7 +55,7 @@ class IFileList;
 
 abstract_class IMaterialSystemFixed : public IAppSystem
 {
-    public:
+public:
     // Placeholder for API revision
     virtual bool Connect(CreateInterfaceFn factory)          = 0;
     virtual void Disconnect()                                = 0;

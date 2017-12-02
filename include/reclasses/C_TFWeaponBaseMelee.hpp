@@ -9,7 +9,7 @@
 
 class C_TFWeaponBaseMelee : public C_TFWeaponBase
 {
-    public:
+public:
     inline static bool DoSwingTrace(IClientEntity *self, trace_t *trace)
     {
         typedef bool (*fn_t)(IClientEntity *, trace_t *);

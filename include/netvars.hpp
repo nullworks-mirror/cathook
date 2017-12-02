@@ -43,7 +43,7 @@ void InitNetVars();
 
 class NetVars
 {
-    public:
+public:
     void Init();
     offset_t iTeamNum;
     offset_t iFlags;

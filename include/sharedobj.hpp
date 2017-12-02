@@ -23,13 +23,13 @@ bool LocateSharedObject(std::string &name, std::string &out_full_path);
 
 class SharedObject
 {
-    public:
+public:
     SharedObject(const char *_file, bool _factory);
     void Load();
     char *Pointer(uintptr_t offset) const;
     void *CreateInterface(const std::string &interface);
 
-    public:
+public:
     std::string file;
     std::string path;
     bool factory{ false };

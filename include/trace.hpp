@@ -20,10 +20,10 @@ namespace trace
 
 class FilterDefault : public ITraceFilter
 {
-    public:
+public:
     IClientEntity *m_pSelf;
 
-    public:
+public:
     virtual ~FilterDefault();
     FilterDefault();
     virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);
@@ -33,10 +33,10 @@ class FilterDefault : public ITraceFilter
 
 class FilterNoPlayer : public ITraceFilter
 {
-    public:
+public:
     IClientEntity *m_pSelf;
 
-    public:
+public:
     virtual ~FilterNoPlayer();
     FilterNoPlayer();
     virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);
@@ -46,11 +46,11 @@ class FilterNoPlayer : public ITraceFilter
 
 class FilterPenetration : public ITraceFilter
 {
-    public:
+public:
     IClientEntity *m_pSelf;
     IClientEntity *m_pIgnoreFirst;
 
-    public:
+public:
     virtual ~FilterPenetration();
     FilterPenetration();
     virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);

@@ -13,7 +13,7 @@ class RecvProp;
 
 class equal_char
 {
-    public:
+public:
     bool operator()(const char *const &v1, const char *const &v2) const
     {
         return !strcmp(v1, v2);
@@ -22,7 +22,7 @@ class equal_char
 
 struct hash_char
 {
-    public:
+public:
     size_t operator()(const char *obj) const
     {
         size_t res         = 0;
@@ -54,12 +54,12 @@ class netvar_tree
 
     map_type nodes;
 
-    public:
+public:
     // netvar_tree ( );
 
     void init();
 
-    private:
+private:
     void populate_nodes(class RecvTable *recv_table, map_type *map);
 
     /**
@@ -117,7 +117,7 @@ class netvar_tree
         return get_prop_recursive(node->nodes, args...);
     }
 
-    public:
+public:
     /**
      * get_offset - Get the offset of a netvar given a list of branch names
      * @name:	Top level datatable name

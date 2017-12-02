@@ -9,7 +9,7 @@
 
 class C_BaseCombatWeapon : public C_BaseEntity
 {
-    public:
+public:
     inline static bool IsBaseCombatWeapon(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);

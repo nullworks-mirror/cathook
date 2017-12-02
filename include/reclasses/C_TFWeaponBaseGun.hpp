@@ -9,7 +9,7 @@
 
 class C_TFWeaponBaseGun : public C_TFWeaponBase
 {
-    public:
+public:
     inline static float GetProjectileSpeed(IClientEntity *self)
     {
         typedef float (*fn_t)(IClientEntity *);

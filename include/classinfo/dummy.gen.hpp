@@ -11,7 +11,7 @@ namespace client_classes
 
 class dummy
 {
-    public:
+public:
     int CTETFParticleEffect{ 0 };
     int CTETFExplosion{ 0 };
     int CTETFBlood{ 0 };

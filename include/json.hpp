@@ -396,12 +396,12 @@ contains a `mapped_type`, whereas `std::vector` fails the test.
 #define NLOHMANN_JSON_HAS_HELPER(type)                                         \
     template <typename T> struct has_##type                                    \
     {                                                                          \
-        private:                                                               \
+    private:                                                                   \
         template <typename U, typename = typename U::type>                     \
         static int detect(U &&);                                               \
         static void detect(...);                                               \
                                                                                \
-        public:                                                                \
+    public:                                                                    \
         static constexpr bool value =                                          \
             std::is_integral<decltype(detect(std::declval<T>()))>::value;      \
     }
@@ -497,7 +497,7 @@ struct is_compatible_integer_type
 // trait checking if JSONSerializer<T>::from_json(json const&, udt&) exists
 template <typename BasicJsonType, typename T> struct has_from_json
 {
-    private:
+private:
     // also check the return type of from_json
     template <typename U, typename = enable_if_t<std::is_same<
                               void, decltype(uncvref_t<U>::from_json(
@@ -506,7 +506,7 @@ template <typename BasicJsonType, typename T> struct has_from_json
     static int detect(U &&);
     static void detect(...);
 
-    public:
+public:
     static constexpr bool value = std::is_integral<decltype(
         detect(std::declval<typename BasicJsonType::template json_serializer<
                    T, void>>()))>::value;
@@ -516,14 +516,14 @@ template <typename BasicJsonType, typename T> struct has_from_json
 // this overload is used for non-default-constructible user-defined-types
 template <typename BasicJsonType, typename T> struct has_non_default_from_json
 {
-    private:
+private:
     template <typename U, typename = enable_if_t<std::is_same<
                               T, decltype(uncvref_t<U>::from_json(
                                      std::declval<BasicJsonType>()))>::value>>
     static int detect(U &&);
     static void detect(...);
 
-    public:
+public:
     static constexpr bool value = std::is_integral<decltype(
         detect(std::declval<typename BasicJsonType::template json_serializer<
                    T, void>>()))>::value;
@@ -532,14 +532,14 @@ template <typename BasicJsonType, typename T> struct has_non_default_from_json
 // This trait checks if BasicJsonType::json_serializer<T>::to_json exists
 template <typename BasicJsonType, typename T> struct has_to_json
 {
-    private:
+private:
     template <typename U,
               typename = decltype(uncvref_t<U>::to_json(
                   std::declval<BasicJsonType &>(), std::declval<T>()))>
     static int detect(U &&);
     static void detect(...);
 
-    public:
+public:
     static constexpr bool value = std::is_integral<decltype(
         detect(std::declval<typename BasicJsonType::template json_serializer<
                    T, void>>()))>::value;
@@ -898,7 +898,7 @@ void from_json(const BasicJsonType &j, ArithmeticType &val)
 
 struct to_json_fn
 {
-    private:
+private:
     template <typename BasicJsonType, typename T>
     auto call(BasicJsonType &j, T &&val, priority_tag<1>) const
         noexcept(noexcept(to_json(j, std::forward<T>(val))))
@@ -914,7 +914,7 @@ struct to_json_fn
                       "could not find to_json() method in T's namespace");
     }
 
-    public:
+public:
     template <typename BasicJsonType, typename T>
     void operator()(BasicJsonType &j, T &&val) const
         noexcept(noexcept(std::declval<to_json_fn>().call(j,
@@ -927,7 +927,7 @@ struct to_json_fn
 
 struct from_json_fn
 {
-    private:
+private:
     template <typename BasicJsonType, typename T>
     auto call(const BasicJsonType &j, T &val, priority_tag<1>) const
         noexcept(noexcept(from_json(j, val)))
@@ -943,7 +943,7 @@ struct from_json_fn
                       "could not find from_json() method in T's namespace");
     }
 
-    public:
+public:
     template <typename BasicJsonType, typename T>
     void operator()(const BasicJsonType &j, T &val) const
         noexcept(noexcept(std::declval<from_json_fn>().call(j, val,
@@ -1113,7 +1113,7 @@ template <template <typename U, typename V, typename... Args> class ObjectType =
               adl_serializer>
 class basic_json
 {
-    private:
+private:
     template <detail::value_t> friend struct detail::external_constructor;
     /// workaround type for MSVC
     using basic_json_t =
@@ -1121,7 +1121,7 @@ class basic_json
                    NumberIntegerType, NumberUnsignedType, NumberFloatType,
                    AllocatorType, JSONSerializer>;
 
-    public:
+public:
     using value_t = detail::value_t;
     // forward declarations
     template <typename U> class iter_impl;
@@ -1705,7 +1705,7 @@ class basic_json
 
     /// @}
 
-    private:
+private:
     /// helper for exception-safe object creation
     template <typename T, typename... Args> static T *create(Args &&... args)
     {
@@ -1880,7 +1880,7 @@ class basic_json
         assert(m_type != value_t::string or m_value.string != nullptr);
     }
 
-    public:
+public:
     //////////////////////////
     // JSON parser callback //
     //////////////////////////
@@ -2714,7 +2714,7 @@ class basic_json
 
     /// @}
 
-    public:
+public:
     ///////////////////////
     // object inspection //
     ///////////////////////
@@ -3120,7 +3120,7 @@ class basic_json
 
     /// @}
 
-    private:
+private:
     //////////////////
     // value access //
     //////////////////
@@ -3258,7 +3258,7 @@ class basic_json
             obj.type_name()));
     }
 
-    public:
+public:
     /// @name value access
     /// Direct access to the stored value of a JSON value.
     /// @{
@@ -5083,11 +5083,11 @@ class basic_json
         return const_reverse_iterator(cbegin());
     }
 
-    private:
+private:
     // forward declaration
     template <typename IteratorType> class iteration_proxy;
 
-    public:
+public:
     /*!
     @brief wrapper to access iterator member functions in range-based for
 
@@ -6031,7 +6031,7 @@ class basic_json
 
     /// @}
 
-    public:
+public:
     //////////////////////////////////////////
     // lexicographical comparison operators //
     //////////////////////////////////////////
@@ -6757,7 +6757,7 @@ class basic_json
     /// @name binary serialization/deserialization support
     /// @{
 
-    private:
+private:
     /*!
     @note Some code in the switch cases has been copied, because otherwise
           copilers would complain about implicit fallthrough and there is no
@@ -8220,7 +8220,7 @@ class basic_json
         }
     }
 
-    public:
+public:
     /*!
     @brief create a MessagePack serialization of a given JSON value
 
@@ -8390,7 +8390,7 @@ class basic_json
         }
     }
 
-    private:
+private:
     /*!
     @brief calculates the extra space to escape a JSON string
 
@@ -8555,7 +8555,7 @@ class basic_json
     */
     struct numtostr
     {
-        public:
+    public:
         template <typename NumberType> numtostr(NumberType value)
         {
             x_write(value, std::is_integral<NumberType>());
@@ -8566,7 +8566,7 @@ class basic_json
             return m_buf.data();
         }
 
-        private:
+    private:
         /// a (hopefully) large enough character buffer
         std::array<char, 64> m_buf{ {} };
 
@@ -8848,7 +8848,7 @@ class basic_json
         }
     }
 
-    private:
+private:
     //////////////////////
     // member variables //
     //////////////////////
@@ -8859,7 +8859,7 @@ class basic_json
     /// the value of the current element
     json_value m_value = {};
 
-    private:
+private:
     ///////////////
     // iterators //
     ///////////////
@@ -8875,7 +8875,7 @@ class basic_json
     */
     class primitive_iterator_t
     {
-        public:
+    public:
         difference_type get_value() const noexcept
         {
             return m_it;
@@ -8997,7 +8997,7 @@ class basic_json
             return *this;
         }
 
-        private:
+    private:
         static constexpr difference_type begin_value = 0;
         static constexpr difference_type end_value   = begin_value + 1;
 
@@ -9032,17 +9032,17 @@ class basic_json
     /// proxy class for the iterator_wrapper functions
     template <typename IteratorType> class iteration_proxy
     {
-        private:
+    private:
         /// helper class for iteration
         class iteration_proxy_internal
         {
-            private:
+        private:
             /// the iterator
             IteratorType anchor;
             /// an index for arrays (used to create key names)
             size_t array_index = 0;
 
-            public:
+        public:
             explicit iteration_proxy_internal(IteratorType it) noexcept
                 : anchor(it)
             {
@@ -9106,7 +9106,7 @@ class basic_json
         /// the container to iterate
         typename IteratorType::reference container;
 
-        public:
+    public:
         /// construct iteration proxy from a container
         explicit iteration_proxy(typename IteratorType::reference cont)
             : container(cont)
@@ -9126,7 +9126,7 @@ class basic_json
         }
     };
 
-    public:
+public:
     /*!
     @brief a template for a random access iterator for the @ref basic_json class
 
@@ -9158,7 +9158,7 @@ class basic_json
                           std::is_same<U, const basic_json>::value,
                       "iter_impl only accepts (const) basic_json");
 
-        public:
+    public:
         /// the type of the values when the iterator is dereferenced
         using value_type = typename basic_json::value_type;
         /// a type to represent differences between iterators
@@ -9259,7 +9259,7 @@ class basic_json
             return *this;
         }
 
-        private:
+    private:
         /*!
         @brief set the iterator to the first value
         @pre The iterator is initialized; i.e. `m_object != nullptr`.
@@ -9327,7 +9327,7 @@ class basic_json
             }
         }
 
-        public:
+    public:
         /*!
         @brief return a reference to the value pointed to by the iterator
         @pre The iterator is initialized; i.e. `m_object != nullptr`.
@@ -9749,7 +9749,7 @@ class basic_json
             return operator*();
         }
 
-        private:
+    private:
         /// associated JSON instance
         pointer m_object = nullptr;
         /// the actual iterator of the associated instance
@@ -9777,7 +9777,7 @@ class basic_json
     template <typename Base>
     class json_reverse_iterator : public std::reverse_iterator<Base>
     {
-        public:
+    public:
         /// shortcut to the reverse iterator adaptor
         using base_iterator = std::reverse_iterator<Base>;
         /// the reference type for the pointed-to element
@@ -9872,7 +9872,7 @@ class basic_json
         }
     };
 
-    private:
+private:
     //////////////////////
     // lexer and parser //
     //////////////////////
@@ -9886,7 +9886,7 @@ class basic_json
     */
     class lexer
     {
-        public:
+    public:
         /// token types for the parser
         enum class token_type
         {
@@ -11451,7 +11451,7 @@ class basic_json
         */
         struct strtonum
         {
-            public:
+        public:
             strtonum(const char *start, const char *end)
                 : m_start(start), m_end(end)
             {
@@ -11470,7 +11470,7 @@ class basic_json
                 return parse(val, std::is_integral<T>());
             }
 
-            private:
+        private:
             const char *const m_start = nullptr;
             const char *const m_end   = nullptr;
 
@@ -11686,7 +11686,7 @@ class basic_json
             return false;
         }
 
-        private:
+    private:
         /// optional input stream
         std::istream *m_stream = nullptr;
         /// line buffer buffer for m_stream
@@ -11714,7 +11714,7 @@ class basic_json
     */
     class parser
     {
-        public:
+    public:
         /// a parser reading from a string literal
         parser(const char *buff, const parser_callback_t cb = nullptr)
             : callback(cb),
@@ -11762,7 +11762,7 @@ class basic_json
             return result.is_discarded() ? basic_json() : std::move(result);
         }
 
-        private:
+    private:
         /// the actual parser
         basic_json parse_internal(bool keep)
         {
@@ -11999,7 +11999,7 @@ class basic_json
             }
         }
 
-        private:
+    private:
         /// current level of recursion
         int depth = 0;
         /// callback function
@@ -12011,7 +12011,7 @@ class basic_json
         lexer m_lexer;
     };
 
-    public:
+public:
     /*!
     @brief JSON Pointer
 
@@ -12028,7 +12028,7 @@ class basic_json
         /// allow basic_json to access private members
         friend class basic_json;
 
-        public:
+    public:
         /*!
         @brief create JSON pointer
 
@@ -12086,7 +12086,7 @@ class basic_json
             return to_string();
         }
 
-        private:
+    private:
         /// remove and return last reference pointer
         std::string pop_back()
         {
@@ -12492,7 +12492,7 @@ class basic_json
             return result;
         }
 
-        private:
+    private:
         /*!
         @brief replace all occurrences of a substring by another string
 
@@ -12631,7 +12631,7 @@ class basic_json
             return result;
         }
 
-        private:
+    private:
         friend bool operator==(json_pointer const &lhs,
                                json_pointer const &rhs) noexcept
         {

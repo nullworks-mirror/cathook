@@ -80,7 +80,7 @@ void ResetEverything()
 
 class ACListener : public IGameEventListener
 {
-    public:
+public:
     virtual void FireGameEvent(KeyValues *event)
     {
         if (!enabled)

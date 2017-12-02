@@ -11,7 +11,7 @@ namespace client_classes_constexpr
 
 class tf2c
 {
-    public:
+public:
     static constexpr int CTETFParticleEffect                   = 155;
     static constexpr int CTETFExplosion                        = 154;
     static constexpr int CTETFBlood                            = 153;

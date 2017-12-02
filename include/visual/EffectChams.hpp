@@ -17,7 +17,7 @@ namespace effect_chams
 
 class EffectChams : public IScreenSpaceEffect
 {
-    public:
+public:
     virtual void Init();
     inline virtual void Shutdown(){};
 
@@ -41,7 +41,7 @@ class EffectChams : public IScreenSpaceEffect
     void EndRenderChams();
     void RenderChamsRecursive(IClientEntity *entity);
 
-    public:
+public:
     bool init{ false };
     bool drawing{ false };
     bool enabled;

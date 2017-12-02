@@ -11,7 +11,7 @@ namespace client_classes_constexpr
 
 class hl2dm
 {
-    public:
+public:
     static constexpr int CTETFParticleEffect                   = 0;
     static constexpr int CTETFExplosion                        = 0;
     static constexpr int CTETFBlood                            = 0;

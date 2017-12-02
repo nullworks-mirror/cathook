@@ -20,7 +20,7 @@ namespace esp
 // Strings
 class ESPString
 {
-    public:
+public:
     std::string data{ "" };
     rgba_t color{ colors::empty };
 };
@@ -28,7 +28,7 @@ class ESPString
 // Cached data
 class ESPData
 {
-    public:
+public:
     int string_count{ 0 };
     std::array<ESPString, 16> strings{};
     rgba_t color{ colors::empty };

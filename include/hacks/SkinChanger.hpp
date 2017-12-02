@@ -51,10 +51,10 @@ struct attribute_s
 
 class CAttribute
 {
-    public:
+public:
     CAttribute(uint16_t iAttributeDefinitionIndex, float flValue);
 
-    public:
+public:
     void *vtable;
     uint16_t defidx;
     float value;
@@ -63,13 +63,13 @@ class CAttribute
 
 class CAttributeList
 {
-    public:
+public:
     CAttributeList();
     float GetAttribute(int defindex);
     void SetAttribute(int index, float value);
     void RemoveAttribute(int index);
 
-    public:
+public:
     uint32_t unknown;
     CUtlVector<CAttribute, CUtlMemory<CAttribute>> m_Attributes;
 };
@@ -109,7 +109,7 @@ struct patched_weapon_cookie
     void Update(int entity);
     bool Check();
 
-    public:
+public:
     int eidx{ 0 };
     int defidx{ 0 };
     int eclass{ 0 };

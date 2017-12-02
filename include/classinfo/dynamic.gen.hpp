@@ -11,7 +11,7 @@ namespace client_classes
 
 class dynamic
 {
-    public:
+public:
     dynamic();
     void Populate();
     int CTETFParticleEffect{ 0 };

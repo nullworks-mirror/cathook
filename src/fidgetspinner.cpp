@@ -23,7 +23,7 @@ float angle          = 0;
 
 class SpinnerListener : public IGameEventListener
 {
-    public:
+public:
     virtual void FireGameEvent(KeyValues *event)
     {
         std::string name(event->GetName());

@@ -13,7 +13,7 @@
 
 class CHudBaseChat
 {
-    public:
+public:
     void *vtable;
     inline void Printf(const char *string)
     {
@@ -25,13 +25,13 @@ class CHudBaseChat
 
 class CHudElement
 {
-    public:
+public:
     void *vtable;
 };
 
 class CHud
 {
-    public:
+public:
     void *vtable;
 
     CHudElement *FindElement(const char *name);

@@ -9,7 +9,7 @@
 
 class C_TFWeaponBase : public re::C_BaseCombatWeapon
 {
-    public:
+public:
     inline static IClientEntity *GetOwnerViaInterface(IClientEntity *self)
     {
         typedef IClientEntity *(*fn_t)(IClientEntity *);
