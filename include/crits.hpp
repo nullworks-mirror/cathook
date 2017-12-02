@@ -12,17 +12,18 @@ class CUserCmd;
 class IClientEntity;
 
 // BUGBUG TODO this struct is outdated
-struct crithack_saved_state {
-	float unknown2868;
-	float unknown2864;
-	int   unknown2620;
-	float unknown2880;
-	char  unknown2839;
-	float bucket2616;
-	int   seed2876;
+struct crithack_saved_state
+{
+    float unknown2868;
+    float unknown2864;
+    int unknown2620;
+    float unknown2880;
+    char unknown2839;
+    float bucket2616;
+    int seed2876;
 
-	void Save(IClientEntity* entity);
-	void Load(IClientEntity* entity);
+    void Save(IClientEntity *entity);
+    void Load(IClientEntity *entity);
 };
 
 extern CatVar crit_info;
@@ -35,14 +36,13 @@ namespace criticals
 void create_move();
 void draw();
 bool random_crits_enabled();
-
 }
 
+#include <aftercheaders.hpp>
 #include <beforecheaders.hpp>
 #include <unordered_map>
-#include <aftercheaders.hpp>
 
-extern int* g_PredictionRandomSeed;
+extern int *g_PredictionRandomSeed;
 extern std::unordered_map<int, int> command_number_mod;
 
 #endif /* CRITS_HPP_ */

@@ -12,7 +12,12 @@
 
 class CatCommand;
 
-namespace hacks { namespace shared { namespace spam {
+namespace hacks
+{
+namespace shared
+{
+namespace spam
+{
 
 extern const std::vector<std::string> builtin_default;
 extern const std::vector<std::string> builtin_lennyfaces;
@@ -28,7 +33,8 @@ extern CatCommand reload;
 void Init();
 void CreateMove();
 void Reload();
-
-}}}
+}
+}
+}
 
 #endif /* HACKS_SPAM_HPP_ */

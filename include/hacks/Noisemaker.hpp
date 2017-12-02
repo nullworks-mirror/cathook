@@ -10,12 +10,18 @@
 
 #include "common.hpp"
 
-namespace hacks { namespace tf2 { namespace noisemaker {
+namespace hacks
+{
+namespace tf2
+{
+namespace noisemaker
+{
 
 extern CatVar enabled;
 
 void CreateMove();
-
-}}}
+}
+}
+}
 
 #endif /* HACKS_NOISEMAKER_HPP_ */

@@ -10,7 +10,12 @@
 
 #include "common.hpp"
 
-namespace hacks { namespace shared { namespace misc {
+namespace hacks
+{
+namespace shared
+{
+namespace misc
+{
 
 void CreateMove();
 #if ENABLE_VISUALS == 1
@@ -31,49 +36,50 @@ extern CatCommand disconnect_vac;
 extern CatCommand set_value;
 
 extern float last_bucket;
-
-}}}
+}
+}
+}
 
 /*class Misc : public IHack {
 public:
-	Misc();
+    Misc();
 
-	virtual void ProcessUserCmd(CUserCmd*) override;
-	virtual void Draw() override;
+    virtual void ProcessUserCmd(CUserCmd*) override;
+    virtual void Draw() override;
 
-	CatVar* v_bDebugInfo;
-	ConCommand* c_Name;
-	ConVar* v_bInfoSpam;
-	ConVar* v_bFastCrouch;
-	CatVar* v_bFlashlightSpam;
-	CatVar* v_bMinigunJump; // TF2C
-	CatVar* v_bDebugCrits; // TF2C
-	CatVar* v_bAntiAFK;
-	CatVar* v_bHookInspect;
-	CatVar* v_iFakeLag;
-	CatVar* v_bCritHack;
-	CatVar* v_bTauntSlide;
-	CatVar* v_bSuppressCrits;
-	//ConVar* v_bDumpEventInfo;
-	ConCommand* c_SaveSettings;
-	ConCommand* c_Unrestricted;
-	ConCommand* c_DumpItemAttributes;
-	ConCommand* c_SayLine;
-	ConCommand* c_Shutdown;
-	ConCommand* c_AddFriend;
-	ConCommand* c_AddRage;
-	ConCommand* c_DumpVars;
-	ConCommand* c_DumpPlayers;
-	ConCommand* c_Teamname;
-	ConCommand* c_Lockee;
-	ConCommand* c_Info;
-	ConCommand* c_DumpConds;
-	ConCommand* c_Reset;
-	ConCommand* c_Disconnect;
-	ConCommand* c_Schema;
-	ConCommand* c_DisconnectVAC;
+    CatVar* v_bDebugInfo;
+    ConCommand* c_Name;
+    ConVar* v_bInfoSpam;
+    ConVar* v_bFastCrouch;
+    CatVar* v_bFlashlightSpam;
+    CatVar* v_bMinigunJump; // TF2C
+    CatVar* v_bDebugCrits; // TF2C
+    CatVar* v_bAntiAFK;
+    CatVar* v_bHookInspect;
+    CatVar* v_iFakeLag;
+    CatVar* v_bCritHack;
+    CatVar* v_bTauntSlide;
+    CatVar* v_bSuppressCrits;
+    //ConVar* v_bDumpEventInfo;
+    ConCommand* c_SaveSettings;
+    ConCommand* c_Unrestricted;
+    ConCommand* c_DumpItemAttributes;
+    ConCommand* c_SayLine;
+    ConCommand* c_Shutdown;
+    ConCommand* c_AddFriend;
+    ConCommand* c_AddRage;
+    ConCommand* c_DumpVars;
+    ConCommand* c_DumpPlayers;
+    ConCommand* c_Teamname;
+    ConCommand* c_Lockee;
+    ConCommand* c_Info;
+    ConCommand* c_DumpConds;
+    ConCommand* c_Reset;
+    ConCommand* c_Disconnect;
+    ConCommand* c_Schema;
+    ConCommand* c_DisconnectVAC;
 
-	CatVar* v_bCleanChat;
+    CatVar* v_bCleanChat;
 };
 
 void Schema_Reload();

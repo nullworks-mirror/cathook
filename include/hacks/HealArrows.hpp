@@ -7,10 +7,16 @@
 
 #pragma once
 
-namespace hacks { namespace tf2 { namespace healarrow {
+namespace hacks
+{
+namespace tf2
+{
+namespace healarrow
+{
 
 void CreateMove();
 void Draw();
 void Init();
-
-}}}
+}
+}
+}

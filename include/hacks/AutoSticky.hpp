@@ -10,15 +10,21 @@
 
 #include "common.hpp"
 
-namespace hacks { namespace tf { namespace autosticky {
+namespace hacks
+{
+namespace tf
+{
+namespace autosticky
+{
 
 extern CatVar enabled;
 extern CatVar buildings;
 extern CatVar distance;
 
-bool ShouldDetonate(CachedEntity* bomb);
+bool ShouldDetonate(CachedEntity *bomb);
 void CreateMove();
-
-}}}
+}
+}
+}
 
 #endif /* HACKS_AUTOSTICKY_HPP_ */

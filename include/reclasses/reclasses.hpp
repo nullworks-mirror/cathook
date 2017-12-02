@@ -12,13 +12,11 @@
 namespace re
 {
 
-#include "C_BaseEntity.hpp"
 #include "CTFPlayerShared.hpp"
-#include "C_BasePlayer.hpp"
 #include "C_BaseCombatWeapon.hpp"
+#include "C_BaseEntity.hpp"
+#include "C_BasePlayer.hpp"
 #include "C_TFWeaponBase.hpp"
-#include "C_TFWeaponBaseMelee.hpp"
 #include "C_TFWeaponBaseGun.hpp"
-
-
+#include "C_TFWeaponBaseMelee.hpp"
 }

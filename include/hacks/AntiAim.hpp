@@ -11,7 +11,12 @@
 class CatVar;
 class CUserCmd;
 
-namespace hacks { namespace shared { namespace antiaim {
+namespace hacks
+{
+namespace shared
+{
+namespace antiaim
+{
 
 // TODO paste AA from AimTux
 
@@ -28,9 +33,10 @@ extern CatVar lisp;
 extern int safe_space;
 
 void SetSafeSpace(int safespace);
-bool ShouldAA(CUserCmd* cmd);
-void ProcessUserCmd(CUserCmd* cmd);
-
-}}}
+bool ShouldAA(CUserCmd *cmd);
+void ProcessUserCmd(CUserCmd *cmd);
+}
+}
+}
 
 #endif /* ANTIAIM_H_ */

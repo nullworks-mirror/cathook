@@ -10,18 +10,19 @@
 
 class CachedEntity;
 
-class TFPlayerResource {
-public:
-	void Update();
-	int GetMaxHealth(CachedEntity* player);
-	int GetMaxBuffedHealth(CachedEntity* player);
-	int GetClass(CachedEntity* player);
-	int GetTeam(int idx);
-	int GetScore(int idx);
+class TFPlayerResource
+{
+    public:
+    void Update();
+    int GetMaxHealth(CachedEntity *player);
+    int GetMaxBuffedHealth(CachedEntity *player);
+    int GetClass(CachedEntity *player);
+    int GetTeam(int idx);
+    int GetScore(int idx);
 
-	int entity;
+    int entity;
 };
 
-extern TFPlayerResource* g_pPlayerResource;
+extern TFPlayerResource *g_pPlayerResource;
 
 #endif /* PLAYERRESOURCE_H_ */

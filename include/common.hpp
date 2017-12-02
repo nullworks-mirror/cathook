@@ -14,43 +14,42 @@
 #undef ENABLE_IPC
 #endif
 
-
-#include <beforecheaders.hpp>
-#include <emmintrin.h>
-#include <vector>
-#include <bitset>
-#include <string>
+#include <algorithm>
 #include <array>
-#include <cassert>
-#include <functional>
-#include <mutex>
 #include <atomic>
+#include <beforecheaders.hpp>
+#include <bitset>
+#include <cassert>
 #include <cmath>
-#include <memory>
+#include <csignal>
+#include <emmintrin.h>
+#include <fstream>
+#include <functional>
 #include <iomanip>
 #include <list>
-#include <fstream>
+#include <memory>
+#include <mutex>
 #include <set>
+#include <string>
 #include <unordered_map>
-#include <algorithm>
-#include <csignal>
+#include <vector>
 
-#include <sys/prctl.h>
-#include <unistd.h>
-#include <link.h>
-#include <sys/sysinfo.h>
+#include <assert.h>
 #include <dlfcn.h>
 #include <elf.h>
-#include <sys/mman.h>
 #include <fcntl.h>
+#include <link.h>
 #include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <string.h>
-#include <assert.h>
+#include <sys/mman.h>
+#include <sys/prctl.h>
+#include <sys/stat.h>
+#include <sys/sysinfo.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "timer.hpp"
 #include "averager.hpp"
+#include "timer.hpp"
 
 #include <aftercheaders.hpp>
 
@@ -59,58 +58,57 @@
 
 #if ENABLE_VISUALS == 1
 
-#include <visual/drawex.hpp>
-#include <visual/drawing.hpp>
 #include "fidgetspinner.hpp"
+#include <visual/EffectChams.hpp>
 #include <visual/EffectGlow.hpp>
 #include <visual/atlas.hpp>
-#include <visual/EffectChams.hpp>
+#include <visual/drawex.hpp>
+#include <visual/drawing.hpp>
 #include <visual/drawmgr.hpp>
 
 #endif
 
-#include "profiler.hpp"
-#include "offsets.hpp"
-#include <entitycache.hpp>
-#include "hoovy.hpp"
-#include <enums.hpp>
-#include "projlogging.hpp"
-#include "ucccccp_cmds.hpp"
-#include "velocity.hpp"
 #include "angles.hpp"
-#include "entityhitboxcache.hpp"
-#include "globals.h"
-#include <helpers.hpp>
-#include "playerlist.hpp"
-#include <interfaces.hpp>
-#include <localplayer.hpp>
-#include <conditions.hpp>
-#include <logging.hpp>
-#include <targethelper.hpp>
-#include "playerresource.h"
-#include "usercmd.hpp"
-#include "trace.hpp"
-#include <cvwrapper.hpp>
-#include "netvars.hpp"
-#include "vfunc.hpp"
-#include "hooks.hpp"
-#include <prediction.hpp>
-#include <conditions.hpp>
-#include <itemtypes.hpp>
-#include <chatstack.hpp>
-#include "textfile.hpp"
-#include "ipc.hpp"
-#include "hooks/hookedmethods.hpp"
+#include "backpacktf.hpp"
 #include "classinfo/classinfo.hpp"
 #include "crits.hpp"
-#include "textmode.hpp"
-#include "backpacktf.hpp"
-#include "sharedobj.hpp"
+#include "entityhitboxcache.hpp"
+#include "globals.h"
+#include "hooks.hpp"
+#include "hooks/hookedmethods.hpp"
+#include "hoovy.hpp"
 #include "init.hpp"
+#include "ipc.hpp"
+#include "netvars.hpp"
+#include "offsets.hpp"
+#include "playerlist.hpp"
+#include "playerresource.h"
+#include "profiler.hpp"
+#include "projlogging.hpp"
 #include "reclasses/reclasses.hpp"
+#include "sharedobj.hpp"
+#include "textfile.hpp"
+#include "textmode.hpp"
+#include "trace.hpp"
+#include "ucccccp_cmds.hpp"
+#include "usercmd.hpp"
+#include "velocity.hpp"
+#include "vfunc.hpp"
+#include <chatstack.hpp>
+#include <conditions.hpp>
+#include <cvwrapper.hpp>
+#include <entitycache.hpp>
+#include <enums.hpp>
+#include <helpers.hpp>
+#include <interfaces.hpp>
+#include <itemtypes.hpp>
+#include <localplayer.hpp>
+#include <logging.hpp>
+#include <prediction.hpp>
+#include <targethelper.hpp>
 
-#include "copypasted/Netvar.h"
 #include "copypasted/CSignature.h"
+#include "copypasted/Netvar.h"
 
 #if ENABLE_GUI
 #include "gui/GUI.hpp"
@@ -120,9 +118,9 @@
 
 #include <sdk.hpp>
 
-template<typename T>
-constexpr T _clamp(T _min, T _max, T _val) {
-	return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
+template <typename T> constexpr T _clamp(T _min, T _max, T _val)
+{
+    return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
 }
 
 #define _FASTCALL __attribute__((fastcall))
@@ -143,11 +141,13 @@ constexpr T _clamp(T _min, T _max, T _val) {
 #endif
 
 #ifndef DEG2RAD
-#define DEG2RAD(x) (float)(x) * (PI / 180.0f)
+#define DEG2RAD(x) (float) (x) * (PI / 180.0f)
 #endif
 
 #define STR(c) #c
 
-#define GET_RENDER_CONTEXT (IsTF2() ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
+#define GET_RENDER_CONTEXT                                                     \
+    (IsTF2() ? g_IMaterialSystem->GetRenderContext()                           \
+             : g_IMaterialSystemHL->GetRenderContext())
 
 #endif /* COMMON_H_ */

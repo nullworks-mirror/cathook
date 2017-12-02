@@ -15,16 +15,18 @@
  * I won't make NETWORK HOOKS to deal with this SHIT
  */
 
-namespace sconvar {
+namespace sconvar
+{
 
-class SpoofedConVar {
-public:
-	SpoofedConVar(ConVar* var);
-public:
-	ConVar* original;
-	ConVar* spoof;
+class SpoofedConVar
+{
+    public:
+    SpoofedConVar(ConVar *var);
+
+    public:
+    ConVar *original;
+    ConVar *spoof;
 };
-
 }
 
 #endif /* SCONVARS_HPP_ */

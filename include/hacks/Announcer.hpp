@@ -9,9 +9,15 @@
 
 #include "common.hpp"
 
-namespace hacks { namespace shared { namespace announcer {
+namespace hacks
+{
+namespace shared
+{
+namespace announcer
+{
 
 void init();
 void shutdown();
-
-}}}
+}
+}
+}

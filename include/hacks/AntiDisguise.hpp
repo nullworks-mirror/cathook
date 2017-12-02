@@ -10,12 +10,18 @@
 
 #include "common.hpp"
 
-namespace hacks { namespace tf2 { namespace antidisguise {
+namespace hacks
+{
+namespace tf2
+{
+namespace antidisguise
+{
 
 extern CatVar enabled;
 
 void Draw();
-
-}}}
+}
+}
+}
 
 #endif /* HACKS_ANTIDISGUISE_HPP_ */

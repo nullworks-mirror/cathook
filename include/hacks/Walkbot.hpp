@@ -7,7 +7,12 @@
 
 #pragma once
 
-namespace hacks { namespace shared { namespace walkbot {
+namespace hacks
+{
+namespace shared
+{
+namespace walkbot
+{
 
 void Initialize();
 #if ENABLE_VISUALS == 1
@@ -15,5 +20,6 @@ void Draw();
 #endif
 void Move();
 void OnLevelInit();
-
-}}}
+}
+}
+}
