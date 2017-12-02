@@ -13,7 +13,8 @@
 #include <sharedobj.hpp>
 #include <string>
 
-namespace vgui {
+namespace vgui
+{
 class ISurface;
 class IPanel;
 }
@@ -53,36 +54,36 @@ class IGameEventManager;
 class TFGCClientSystem;
 class CGameRules;
 
-extern TFGCClientSystem* g_TFGCClientSystem;
-extern CHud* g_CHUD;
-extern ISteamClient* g_ISteamClient;
-extern ISteamFriends* g_ISteamFriends;
-extern IVEngineClient013* g_IEngine;
-extern vgui::ISurface* g_ISurface;
-extern vgui::IPanel* g_IPanel;
-extern IClientEntityList* g_IEntityList;
-extern ICvar* g_ICvar;
-extern IGameEventManager2* g_IEventManager2;
-extern IBaseClientDLL* g_IBaseClient;
-extern IEngineTrace* g_ITrace;
-extern IVModelInfoClient* g_IModelInfo;
-extern IInputSystem* g_IInputSystem;
-extern CGlobalVarsBase* g_GlobalVars;
-extern IPrediction* g_IPrediction;
-extern IGameMovement* g_IGameMovement;
-extern IInput* g_IInput;
-extern ISteamUser* g_ISteamUser;
-extern IAchievementMgr* g_IAchievementMgr;
-extern ISteamUserStats* g_ISteamUserStats;
-extern IStudioRender* g_IStudioRender;
-extern IVDebugOverlay* g_IVDebugOverlay;
-extern IMaterialSystemFixed* g_IMaterialSystem;
-extern IMaterialSystem* g_IMaterialSystemHL;
-extern IVModelRender* g_IVModelRender;
-extern IVRenderView* g_IVRenderView;
-extern IMoveHelperServer* g_IMoveHelperServer;
-extern CBaseClientState* g_IBaseClientState;
-extern IGameEventManager* g_IGameEventManager;
+extern TFGCClientSystem *g_TFGCClientSystem;
+extern CHud *g_CHUD;
+extern ISteamClient *g_ISteamClient;
+extern ISteamFriends *g_ISteamFriends;
+extern IVEngineClient013 *g_IEngine;
+extern vgui::ISurface *g_ISurface;
+extern vgui::IPanel *g_IPanel;
+extern IClientEntityList *g_IEntityList;
+extern ICvar *g_ICvar;
+extern IGameEventManager2 *g_IEventManager2;
+extern IBaseClientDLL *g_IBaseClient;
+extern IEngineTrace *g_ITrace;
+extern IVModelInfoClient *g_IModelInfo;
+extern IInputSystem *g_IInputSystem;
+extern CGlobalVarsBase *g_GlobalVars;
+extern IPrediction *g_IPrediction;
+extern IGameMovement *g_IGameMovement;
+extern IInput *g_IInput;
+extern ISteamUser *g_ISteamUser;
+extern IAchievementMgr *g_IAchievementMgr;
+extern ISteamUserStats *g_ISteamUserStats;
+extern IStudioRender *g_IStudioRender;
+extern IVDebugOverlay *g_IVDebugOverlay;
+extern IMaterialSystemFixed *g_IMaterialSystem;
+extern IMaterialSystem *g_IMaterialSystemHL;
+extern IVModelRender *g_IVModelRender;
+extern IVRenderView *g_IVRenderView;
+extern IMoveHelperServer *g_IMoveHelperServer;
+extern CBaseClientState *g_IBaseClientState;
+extern IGameEventManager *g_IGameEventManager;
 extern CGameRules *g_pGameRules;
 
 void CreateInterfaces();

@@ -14,44 +14,46 @@
 #include <aftercheaders.hpp>
 
 struct link_map;
-typedef void *(*fn_CreateInterface_t)(const char*, int*);
+typedef void *(*fn_CreateInterface_t)(const char *, int *);
 
-namespace sharedobj {
+namespace sharedobj
+{
 
-bool LocateSharedObject(std::string& name, std::string& out_full_path);
+bool LocateSharedObject(std::string &name, std::string &out_full_path);
 
-class SharedObject {
-public:
-	SharedObject(const char* _file, bool _factory);
-	void Load();
-	char* Pointer(uintptr_t offset) const;
-	void* CreateInterface(const std::string& interface);
-public:
-	std::string file;
-	std::string path;
-	bool factory { false };
-	bool constructed { false };
+class SharedObject
+{
+    public:
+    SharedObject(const char *_file, bool _factory);
+    void Load();
+    char *Pointer(uintptr_t offset) const;
+    void *CreateInterface(const std::string &interface);
 
-	fn_CreateInterface_t fptr { nullptr };
-	link_map* lmap { nullptr };
+    public:
+    std::string file;
+    std::string path;
+    bool factory{ false };
+    bool constructed{ false };
+
+    fn_CreateInterface_t fptr{ nullptr };
+    link_map *lmap{ nullptr };
 };
 
-SharedObject& steamclient();
-SharedObject& client();
-SharedObject& engine();
-SharedObject& vstdlib();
-SharedObject& tier0();
-SharedObject& inputsystem();
-SharedObject& materialsystem();
+SharedObject &steamclient();
+SharedObject &client();
+SharedObject &engine();
+SharedObject &vstdlib();
+SharedObject &tier0();
+SharedObject &inputsystem();
+SharedObject &materialsystem();
 #if ENABLE_VISUALS == 1
-SharedObject& vguimatsurface();
-SharedObject& vgui2();
-SharedObject& studiorender();
-SharedObject& libsdl();
+SharedObject &vguimatsurface();
+SharedObject &vgui2();
+SharedObject &studiorender();
+SharedObject &libsdl();
 #endif
 
 void LoadAllSharedObjects();
-
 }
 
 #endif /* SHAREDOBJ_HPP_ */

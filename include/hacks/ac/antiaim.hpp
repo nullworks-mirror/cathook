@@ -10,16 +10,16 @@
 class KeyValues;
 class CachedEntity;
 
-namespace ac { namespace antiaim {
+namespace ac
+{
+namespace antiaim
+{
 
 void ResetEverything();
 void ResetPlayer(int idx);
 
 void Init();
-void Update(CachedEntity* player);
-void Event(KeyValues* event);
-
-}}
-
-
-
+void Update(CachedEntity *player);
+void Event(KeyValues *event);
+}
+}

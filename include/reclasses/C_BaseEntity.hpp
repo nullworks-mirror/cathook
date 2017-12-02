@@ -9,17 +9,17 @@
 
 class C_BaseEntity
 {
-public:
+    public:
     inline static bool IsPlayer(IClientEntity *self)
     {
-        typedef bool(*fn_t)(IClientEntity *);
-        return vfunc<fn_t>(self, offsets::PlatformOffset(184, offsets::undefined, 184), 0)(self);
+        typedef bool (*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(
+            self, offsets::PlatformOffset(184, offsets::undefined, 184),
+            0)(self);
     }
-    inline static int& m_nPredictionRandomSeed()
+    inline static int &m_nPredictionRandomSeed()
     {
         static int placeholder = 0;
         return placeholder;
     }
 };
-
-

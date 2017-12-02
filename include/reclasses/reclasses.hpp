@@ -19,6 +19,4 @@ namespace re
 #include "C_TFWeaponBase.hpp"
 #include "C_TFWeaponBaseMelee.hpp"
 #include "C_TFWeaponBaseGun.hpp"
-
-
 }

@@ -14,31 +14,29 @@
 
 #include <string>
 
-
-namespace https {
+namespace https
+{
 
 extern SSL_CTX *ssl_context;
 
-class RAII_HTTPS_Socket {
-public:
-	RAII_HTTPS_Socket(const std::string& host);
-	~RAII_HTTPS_Socket();
+class RAII_HTTPS_Socket
+{
+    public:
+    RAII_HTTPS_Socket(const std::string &host);
+    ~RAII_HTTPS_Socket();
 
-	bool ssl_connect();
-	void ssl_die();
+    bool ssl_connect();
+    void ssl_die();
 
-	std::string get(const std::string& path);
+    std::string get(const std::string &path);
 
-	const std::string hostname_;
+    const std::string hostname_;
 
-	hostent *host_ { nullptr };
-	sockaddr_in addr_ {};
-	int sock_ { -1 };
-	SSL *connection_ { nullptr };
+    hostent *host_{ nullptr };
+    sockaddr_in addr_{};
+    int sock_{ -1 };
+    SSL *connection_{ nullptr };
 };
 
 void initialize();
-
 }
-
-

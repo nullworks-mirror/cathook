@@ -19,11 +19,14 @@ class sprite;
 
 class sprite
 {
-public:
+    public:
     sprite(float x, float y, float w, float h, const texture_atlas &atlas);
-public:
-    void draw(float scrx, float scry, float scrw, float scrh, const rgba_t& rgba) const;
-public:
+
+    public:
+    void draw(float scrx, float scry, float scrw, float scrh,
+              const rgba_t &rgba) const;
+
+    public:
     const float nx;
     const float ny;
     const float nw;
@@ -34,19 +37,20 @@ public:
 
 class texture_atlas
 {
-public:
+    public:
     texture_atlas(std::string filename, float width, float height);
-public:
+
+    public:
     sprite create_sprite(float x, float y, float sx, float sy) const;
-public:
+
+    public:
     const float width;
     const float height;
 
     draw_api::texture_handle_t texture;
 };
 
-texture_atlas& atlas();
-
+texture_atlas &atlas();
 }
 
 #endif /* ATLAS_HPP_ */

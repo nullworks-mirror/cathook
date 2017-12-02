@@ -7,9 +7,15 @@
 
 #pragma once
 
-namespace hacks { namespace shared { namespace autojoin {
+namespace hacks
+{
+namespace shared
+{
+namespace autojoin
+{
 
 void Update();
 void UpdateSearch();
-
-}}}
+}
+}
+}

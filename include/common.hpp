@@ -14,7 +14,6 @@
 #undef ENABLE_IPC
 #endif
 
-
 #include <beforecheaders.hpp>
 #include <emmintrin.h>
 #include <vector>
@@ -120,9 +119,9 @@
 
 #include <sdk.hpp>
 
-template<typename T>
-constexpr T _clamp(T _min, T _max, T _val) {
-	return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
+template <typename T> constexpr T _clamp(T _min, T _max, T _val)
+{
+    return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
 }
 
 #define _FASTCALL __attribute__((fastcall))
@@ -143,11 +142,13 @@ constexpr T _clamp(T _min, T _max, T _val) {
 #endif
 
 #ifndef DEG2RAD
-#define DEG2RAD(x) (float)(x) * (PI / 180.0f)
+#define DEG2RAD(x) (float) (x) * (PI / 180.0f)
 #endif
 
 #define STR(c) #c
 
-#define GET_RENDER_CONTEXT (IsTF2() ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
+#define GET_RENDER_CONTEXT                                                     \
+    (IsTF2() ? g_IMaterialSystem->GetRenderContext()                           \
+             : g_IMaterialSystemHL->GetRenderContext())
 
 #endif /* COMMON_H_ */
