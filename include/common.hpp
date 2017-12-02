@@ -51,7 +51,6 @@
 
 #include "timer.hpp"
 #include "averager.hpp"
-#include "segvcatch/segvcatch.h"
 
 #include <aftercheaders.hpp>
 
@@ -133,11 +132,6 @@ constexpr T _clamp(T _min, T _max, T _val) {
 
 #define SQR(x) (x) * (x)
 
-#ifndef CATHOOK_BUILD_NUMBER
-#define CATHOOK_BUILD_NUMBER "LATEST"
-#endif
-#define CATHOOK_BUILD_NAME "Cat's Eye"
-
 #define CON_NAME "cat"
 #define CON_PREFIX CON_NAME "_"
 
@@ -152,37 +146,7 @@ constexpr T _clamp(T _min, T _max, T _val) {
 #define DEG2RAD(x) (float)(x) * (PI / 180.0f)
 #endif
 
-#define DEBUG_SEGV false
 #define STR(c) #c
-
-#if DEBUG_SEGV == true
-
-#define SEGV_BEGIN \
-	try {
-
-#define SEGV_END \
-	} catch (...) { \
-		logging::Info("SEGV/FPE occured! %s in %s:%d", __func__, __FILE__, __LINE__); \
-	}
-
-#define SEGV_END_INFO(x) \
-	} catch (...) { \
-		logging::Info("SEGV/FPE occured! (%s)", x); \
-	}
-
-#define SAFE_CALL(x) \
-	SEGV_BEGIN \
-	x; \
-	SEGV_END_INFO(#x)
-
-#else
-
-#define SEGV_BEGIN
-#define SEGV_END
-#define SEGV_END_INFO(x)
-#define SAFE_CALL(x) x
-
-#endif
 
 #define GET_RENDER_CONTEXT (IsTF2() ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
 

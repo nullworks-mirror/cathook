@@ -82,7 +82,7 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 		}
 	}
 
-	if (call_default) SAFE_CALL(original(_this, vp, fr, ar));
+	if (call_default) original(_this, vp, fr, ar);
 	// To avoid threading problems.
 
 	PROF_SECTION(PT_total);
@@ -128,6 +128,5 @@ void PaintTraverse_hook(void* _this, unsigned int vp, bool fr, bool ar) {
 
 	PROF_SECTION(PT_active);
         draw::UpdateWTS();
-	SEGV_END;
 }
 

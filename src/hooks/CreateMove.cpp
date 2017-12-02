@@ -107,7 +107,6 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	Vector vsilent, ang;
 	INetChannel* ch;
 
-	SEGV_BEGIN;
 	tickcount++;
 	g_pUserCmd = cmd;
 
@@ -195,16 +194,16 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 //	PROF_BEGIN();
 	{
 		PROF_SECTION(EntityCache);
-		SAFE_CALL(entity_cache::Update());
+		entity_cache::Update();
 	}
 //	PROF_END("Entity Cache updating");
 	{
 		PROF_SECTION(CM_PlayerResource);
-		SAFE_CALL(g_pPlayerResource->Update());
+		g_pPlayerResource->Update();
 	}
 	{
 		PROF_SECTION(CM_LocalPlayer);
-		SAFE_CALL(g_pLocalPlayer->Update());
+		g_pLocalPlayer->Update();
 	}
 	g_Settings.bInvalid = false;
 
@@ -264,19 +263,19 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 #endif
 	if (CE_GOOD(g_pLocalPlayer->entity)) {
 		IF_GAME (IsTF2()) {
-			SAFE_CALL(UpdateHoovyList());
+			UpdateHoovyList();
 		}
 		g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
 #if ENABLE_VISUALS == 1
 		{
 			PROF_SECTION(CM_esp);
-			SAFE_CALL(hacks::shared::esp::CreateMove());
+			hacks::shared::esp::CreateMove();
 		}
 #endif
 		if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon())) {
 			{
 				PROF_SECTION(CM_walkbot);
-				SAFE_CALL(hacks::shared::walkbot::Move());
+				hacks::shared::walkbot::Move();
 			}
 			// Walkbot can leave game.
 			if (!g_IEngine->IsInGame()) {
@@ -285,24 +284,24 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 			}
 			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_uberspam);
-				SAFE_CALL(hacks::tf::uberspam::CreateMove());
+				hacks::tf::uberspam::CreateMove();
 			}
 			IF_GAME (IsTF2()) {
 				PROF_SECTION(CM_antibackstab);
-				SAFE_CALL(hacks::tf2::antibackstab::CreateMove());
+				hacks::tf2::antibackstab::CreateMove();
 			}
 			IF_GAME (IsTF2()) {
 				PROF_SECTION(CM_noisemaker);
-				SAFE_CALL(hacks::tf2::noisemaker::CreateMove());
+				hacks::tf2::noisemaker::CreateMove();
 			}
 			{
 				PROF_SECTION(CM_bunnyhop);
-				SAFE_CALL(hacks::shared::bunnyhop::CreateMove());
+				hacks::shared::bunnyhop::CreateMove();
 			}
 			if (engine_pred) engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), g_pUserCmd);
 			{
 				PROF_SECTION(CM_aimbot);
-				SAFE_CALL(hacks::shared::aimbot::CreateMove());
+				hacks::shared::aimbot::CreateMove();
 			}
 			static int attackticks = 0;
 			if (g_pUserCmd->buttons & IN_ATTACK)
@@ -321,27 +320,27 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
                         }
 			{
 				PROF_SECTION(CM_antiaim);
-				SAFE_CALL(hacks::shared::antiaim::ProcessUserCmd(cmd));
+				hacks::shared::antiaim::ProcessUserCmd(cmd);
 			}
 			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_autosticky);
-				SAFE_CALL(hacks::tf::autosticky::CreateMove());
+				hacks::tf::autosticky::CreateMove();
 			}
 			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_autoreflect);
-				SAFE_CALL(hacks::tf::autoreflect::CreateMove());
+				hacks::tf::autoreflect::CreateMove();
 			}
 			{
 				PROF_SECTION(CM_triggerbot);
-				SAFE_CALL(hacks::shared::triggerbot::CreateMove());
+				hacks::shared::triggerbot::CreateMove();
 			}
 			IF_GAME (IsTF()) {
 				PROF_SECTION(CM_autoheal);
-				SAFE_CALL(hacks::tf::autoheal::CreateMove());
+				hacks::tf::autoheal::CreateMove();
 			}
 			IF_GAME (IsTF2()) {
 				PROF_SECTION(CM_autobackstab);
-				SAFE_CALL(hacks::tf2::autobackstab::CreateMove());
+				hacks::tf2::autobackstab::CreateMove();
 			}
 			if (debug_projectiles)
 				projectile_logging::Update();
@@ -349,7 +348,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 		{
 			PROF_SECTION(CM_misc);
-			SAFE_CALL(hacks::shared::misc::CreateMove());
+			hacks::shared::misc::CreateMove();
 		}
 		{
 		    PROF_SECTION(CM_crits);
@@ -357,7 +356,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 		}
 		{
 			PROF_SECTION(CM_spam);
-			SAFE_CALL(hacks::shared::spam::CreateMove());
+			hacks::shared::spam::CreateMove();
 		}
 	}
 	if (time_replaced) g_GlobalVars->curtime = curtime_old;
@@ -434,7 +433,7 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 #if ENABLE_IPC == 1
 		if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state) {
 			PROF_SECTION(CM_followbot);
-			SAFE_CALL(hacks::shared::followbot::AfterCreateMove());
+			hacks::shared::followbot::AfterCreateMove();
 		}
 #endif
 		if (cmd)
@@ -448,7 +447,4 @@ bool CreateMove_hook(void* thisptr, float inputSample, CUserCmd* cmd) {
 	g_pLocalPlayer->bAttackLastTick = (cmd->buttons & IN_ATTACK);
         g_Settings.is_create_move = false;
 	return ret;
-
-	SEGV_END;
-	return true;
 }

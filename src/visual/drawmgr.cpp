@@ -40,7 +40,7 @@ void DrawCheatVisuals() {
 #endif
     {
         PROF_SECTION(DRAW_misc);
-        SAFE_CALL(hacks::shared::misc::DrawText());
+        hacks::shared::misc::DrawText();
     }
     if (info_text) {
             PROF_SECTION(DRAW_info);
@@ -82,12 +82,12 @@ void DrawCheatVisuals() {
             }
             IF_GAME(IsTF2()) {
                     PROF_SECTION(DRAW_skinchanger);
-                    SAFE_CALL(hacks::tf2::skinchanger::DrawText());
+                    hacks::tf2::skinchanger::DrawText();
             }
 #ifndef FEATURE_RADAR_DISABLED
             IF_GAME(IsTF()) {
                     PROF_SECTION(DRAW_radar);
-                    SAFE_CALL(hacks::tf::radar::Draw());
+                    hacks::tf::radar::Draw();
             }
 #endif
             IF_GAME(IsTF2()) {
@@ -100,14 +100,14 @@ void DrawCheatVisuals() {
             }
             IF_GAME(IsTF()) {
                     PROF_SECTION(PT_antidisguise);
-                    SAFE_CALL(hacks::tf2::antidisguise::Draw());
+                    hacks::tf2::antidisguise::Draw();
             }
             IF_GAME(IsTF()) {
                     PROF_SECTION(PT_spyalert);
-                    SAFE_CALL(hacks::tf::spyalert::Draw());
+                    hacks::tf::spyalert::Draw();
             }
 #if ENABLE_IPC == 1
-            IF_GAME(IsTF()) SAFE_CALL(hacks::shared::followbot::Draw());
+            IF_GAME(IsTF()) hacks::shared::followbot::Draw();
 #endif
             {
                     PROF_SECTION(DRAW_esp);

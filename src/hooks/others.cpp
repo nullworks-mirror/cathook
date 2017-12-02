@@ -109,7 +109,6 @@ CatCommand spectate("spectate", "Spectate", [](const CCommand& args) {
 void OverrideView_hook(void* _this, CViewSetup* setup) {
 	static const OverrideView_t original = (OverrideView_t)hooks::clientmode.GetMethod(offsets::OverrideView());
 	static bool zoomed;
-	SEGV_BEGIN;
 	original(_this, setup);
 	if (!cathook) return;
 	if (g_pLocalPlayer->bZoomed && override_fov_zoomed) {
@@ -162,17 +161,13 @@ void OverrideView_hook(void* _this, CViewSetup* setup) {
 	}
 
 	draw::fov = setup->fov;
-	SEGV_END;
 }
 
 #endif
 
 bool CanPacket_hook(void* _this) {
 	const CanPacket_t original = (CanPacket_t)hooks::netchannel.GetMethod(offsets::CanPacket());
-	SEGV_BEGIN;
 	return *bSendPackets && original(_this);
-	SEGV_END;
-	return false;
 }
 
 CUserCmd* GetUserCmd_hook(IInput* _this, int sequence_number) {
@@ -225,7 +220,6 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 
 	// This is a INetChannel hook - it SHOULDN'T be static because netchannel changes.
 	const SendNetMsg_t original = (SendNetMsg_t)hooks::netchannel.GetMethod(offsets::SendNetMsg());
-	SEGV_BEGIN;
 	// net_StringCmd
 	if (msg.GetType() == 4 && (newlines_msg || crypt_chat)) {
 		std::string str(msg.ToString());
@@ -283,8 +277,6 @@ bool SendNetMsg_hook(void* _this, INetMessage& msg, bool bForceReliable = false,
 		logging::Info("%i bytes => %s", buffer.GetNumBytesWritten(), bytes.c_str());
 	}
 	return original(_this, msg, bForceReliable, bVoice);
-	SEGV_END;
-	return false;
 }
 
 static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
@@ -305,13 +297,11 @@ void Shutdown_hook(void* _this, const char* reason) {
 #if ENABLE_IPC
 	ipc::UpdateServerAddress(true);
 #endif
-	SEGV_BEGIN;
 	if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) && strstr(reason, "user")) {
 		original(_this, disconnect_reason_newlined);
 	} else {
 		original(_this, reason);
 	}
-	SEGV_END;
 }
 
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
@@ -449,7 +439,6 @@ void FrameStageNotify_hook(void* _this, int stage) {
         hacks::tf2::killstreak::apply_killstreaks();
 
 	static const FrameStageNotify_t original = (FrameStageNotify_t)hooks::client.GetMethod(offsets::FrameStageNotify());
-	SEGV_BEGIN;
 	if (!g_IEngine->IsInGame()) g_Settings.bInvalid = true;
 #if ENABLE_VISUALS == 1
 	{
@@ -542,8 +531,7 @@ void FrameStageNotify_hook(void* _this, int stage) {
 		}
 	}
 #endif /* TEXTMODE */
-	SAFE_CALL(original(_this, stage));
-	SEGV_END;
+	original(_this, stage);
 }
 
 static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat", "Removes newlines from chat");
@@ -554,7 +542,6 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 	char *data, c;
 
 	static const DispatchUserMessage_t original = (DispatchUserMessage_t)hooks::client.GetMethod(offsets::DispatchUserMessage());
-	SEGV_BEGIN;
 	if (type == 4) {
 		loop_index = 0;
 		s = buf.GetNumBytesLeft();
@@ -590,8 +577,6 @@ bool DispatchUserMessage_hook(void* _this, int type, bf_read& buf) {
 		logging::Info("D> %i", type);
 	}
 	return original(_this, type, buf);
-	SEGV_END;
-	return false;
 }
 
 void LevelInit_hook(void* _this, const char* newmap) {

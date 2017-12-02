@@ -33,7 +33,7 @@ void EntityHitboxCache::InvalidateCache() {
 }
 
 void EntityHitboxCache::Update() {
-	SAFE_CALL(InvalidateCache());
+	InvalidateCache();
 	if (CE_BAD(parent_ref)) return;
 }
 
@@ -43,9 +43,8 @@ void EntityHitboxCache::Init() {
 	mstudiohitboxset_t *set;
 
 	m_bInit = true;
-	model = 0;
-	if (CE_BAD(parent_ref)) return;
-	SAFE_CALL(model = (model_t*)RAW_ENT(parent_ref)->GetModel());
+        if (CE_BAD(parent_ref)) return;
+	model = (model_t*)RAW_ENT(parent_ref)->GetModel();
 	if (!model) return;
 	if (!m_bModelSet || model != m_pLastModel) {
 		shdr = g_IModelInfo->GetStudiomodel(model);
@@ -56,7 +55,7 @@ void EntityHitboxCache::Init() {
 		m_pHitboxSet = set;
 		m_nNumHitboxes = 0;
 		if (set) {
-			SAFE_CALL(m_nNumHitboxes = set->numhitboxes);
+			m_nNumHitboxes = set->numhitboxes;
 		}
 		if (m_nNumHitboxes > CACHE_MAX_HITBOXES) m_nNumHitboxes = CACHE_MAX_HITBOXES;
 		m_bModelSet = true;
@@ -74,7 +73,7 @@ bool EntityHitboxCache::VisibilityCheck(int id) {
 	// TODO corners
 	hitbox = GetHitbox(id);
 	if (!hitbox) return 0;
-	SAFE_CALL(m_VisCheck[id] = (IsEntityVectorVisible(parent_ref, hitbox->center)));
+	m_VisCheck[id] = (IsEntityVectorVisible(parent_ref, hitbox->center));
 	m_VisCheckValidationFlags[id] = true;
 	return m_VisCheck[id];
 }

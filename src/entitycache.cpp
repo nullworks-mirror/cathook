@@ -50,8 +50,6 @@ static CatVar ve_smooth(CV_SWITCH, "debug_ve_smooth", "1", "VE Smoothing");
 static CatVar ve_averager_size(CV_INT, "debug_ve_averaging", "8", "VE Averaging");
 
 void CachedEntity::Update() {
-	SEGV_BEGIN
-
 	auto raw = RAW_ENT(this);
 
 	if (!raw) return;
@@ -182,7 +180,6 @@ void CachedEntity::Update() {
 		m_iHealth = NET_INT(raw, netvar.iBuildingHealth);
 		m_iMaxHealth = NET_INT(raw, netvar.iBuildingMaxHealth);
 	}
-	SEGV_END_INFO("Updating entity");
 }
 
 static CatVar fast_vischeck(CV_SWITCH, "fast_vischeck", "0", "Fast VisCheck", "VisCheck only certain player hitboxes");
@@ -194,8 +191,7 @@ bool CachedEntity::IsVisible() {
 	PROF_SECTION(CE_IsVisible);
 	if (m_bVisCheckComplete) return m_bAnyHitboxVisible;
 
-	vischeck0 = false;
-	SAFE_CALL(vischeck0 = IsEntityVectorVisible(this, m_vecOrigin));
+	vischeck0 = IsEntityVectorVisible(this, m_vecOrigin);
 
 	if (vischeck0) {
 		m_bAnyHitboxVisible = true;
@@ -218,7 +214,7 @@ bool CachedEntity::IsVisible() {
 
 	for (int i = 0; i < hitboxes.m_nNumHitboxes; i++) {
 		vischeck = false;
-		SAFE_CALL(vischeck = hitboxes.VisibilityCheck(i));
+		vischeck = hitboxes.VisibilityCheck(i);
 		if (vischeck) {
 			m_bAnyHitboxVisible = true;
 			m_bVisCheckComplete = true;
