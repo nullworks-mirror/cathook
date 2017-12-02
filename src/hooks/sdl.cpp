@@ -46,14 +46,12 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
     static bool init_wminfo { false };
     if (!init_wminfo)
     {
-        logging::Info("%p", GetWindowWMInfo);
-        logging::Info("%d", GetWindowWMInfo(window, &wminfo));
+        GetWindowWMInfo(window, &wminfo);
         init_wminfo = true;
     }
 
     static bool init { false };
 
-    static GLXContext overlay = nullptr;
     static GLXContext tf2 = glXGetCurrentContext();
 
     if (cathook && !disable_visuals) {
@@ -64,7 +62,7 @@ void SDL_GL_SwapWindow_hook(SDL_Window* window) {
             init = true;
         }
         render_cheat_visuals();
-        xoverlay_poll_events();
+//      xoverlay_poll_events();
     }
     {
         PROF_SECTION(SWAPWINDOW_tf2);
