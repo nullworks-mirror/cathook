@@ -10,6 +10,6 @@
 
 class CachedEntity;
 
-int GetScoreForEntity(CachedEntity *entity);
+int GetScoreForEntity(CachedEntity* entity);
 
 #endif /* TARGETHELPER_HPP_ */

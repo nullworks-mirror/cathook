@@ -17,27 +17,23 @@ class IClientEntity;
 class CatEnum;
 class VMatrix;
 
-namespace fonts
-{
+namespace fonts {
 
 extern draw_api::font_handle_t main_font;
+
 }
 
-constexpr rgba_t GUIColor()
-{
-    return colors::white;
+constexpr rgba_t GUIColor() {
+        return colors::white;
 }
 
 void InitStrings();
 void ResetStrings();
-void AddCenterString(const std::string &string,
-                     const rgba_t &color = colors::white);
-void AddSideString(const std::string &string,
-                   const rgba_t &color = colors::white);
+void AddCenterString(const std::string& string, const rgba_t& color = colors::white);
+void AddSideString(const std::string& string, const rgba_t& color = colors::white);
 void DrawStrings();
 
-namespace draw
-{
+namespace draw {
 
 extern std::mutex draw_mutex;
 extern VMatrix wts;
@@ -50,7 +46,8 @@ void Initialize();
 
 void UpdateWTS();
 bool WorldToScreen(const Vector &origin, Vector &screen);
-bool EntityCenterToScreen(CachedEntity *entity, Vector &out);
+bool EntityCenterToScreen(CachedEntity* entity, Vector& out);
+
 }
 
 #endif /* DRAWING_HPP_ */

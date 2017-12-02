@@ -10,18 +10,12 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace bunnyhop
-{
+namespace hacks { namespace shared { namespace bunnyhop {
 
 extern CatVar enabled;
 
 void CreateMove();
-}
-}
-}
+
+}}}
 
 #endif /* HBUNNYHOP_H_ */

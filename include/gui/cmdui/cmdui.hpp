@@ -7,13 +7,12 @@
 
 #pragma once
 
-namespace gui
-{
-namespace cmdui
-{
+namespace gui { namespace cmdui {
 
 void init();
 void update();
 void draw();
-}
-}
+
+
+
+}}

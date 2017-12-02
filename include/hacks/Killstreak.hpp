@@ -9,18 +9,12 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace killstreak
-{
+namespace hacks { namespace tf2 { namespace killstreak {
 
-int current_streak();
+int  current_streak();
 void init();
 void shutdown();
 void fire_event(IGameEvent *event);
 void apply_killstreaks();
-}
-}
-}
+
+}}}

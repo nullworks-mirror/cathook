@@ -9,6 +9,6 @@
 #define HOOVY_HPP_
 
 void UpdateHoovyList();
-bool IsHoovy(CachedEntity *entity);
+bool IsHoovy(CachedEntity* entity);
 
 #endif /* HOOVY_HPP_ */

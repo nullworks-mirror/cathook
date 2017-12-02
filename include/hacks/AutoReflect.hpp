@@ -10,12 +10,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf
-{
-namespace autoreflect
-{
+namespace hacks { namespace tf { namespace autoreflect {
 
 extern CatVar enabled;
 extern CatVar idle_only;
@@ -23,10 +18,9 @@ extern CatVar stickies;
 extern CatVar max_distance;
 
 void CreateMove();
-bool ShouldReflect(CachedEntity *ent);
-bool IsEntStickyBomb(CachedEntity *ent);
-}
-}
-}
+bool ShouldReflect(CachedEntity* ent);
+bool IsEntStickyBomb(CachedEntity* ent);
+
+}}}
 
 #endif /* HACKS_AUTOREFLECT_HPP_ */

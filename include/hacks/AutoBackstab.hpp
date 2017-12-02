@@ -8,16 +8,10 @@
 #ifndef HACKS_AUTOBACKSTAB_HPP_
 #define HACKS_AUTOBACKSTAB_HPP_
 
-namespace hacks
-{
-namespace tf2
-{
-namespace autobackstab
-{
+namespace hacks { namespace tf2 { namespace autobackstab {
 
 void CreateMove();
-}
-}
-}
+
+}}}
 
 #endif /* HACKS_AUTOBACKSTAB_HPP_ */

@@ -15,16 +15,14 @@
  */
 
 // http://stackoverflow.com/questions/2335888/how-to-compare-string-in-c-conditional-preprocessor-directives
-constexpr int c_strcmp(char const *lhs, char const *rhs)
-{
-    return (('\0' == lhs[0]) && ('\0' == rhs[0]))
-               ? 0
-               : (lhs[0] != rhs[0]) ? (lhs[0] - rhs[0])
-                                    : c_strcmp(lhs + 1, rhs + 1);
+constexpr int c_strcmp( char const* lhs, char const* rhs ) {
+    return (('\0' == lhs[0]) && ('\0' == rhs[0])) ? 0
+        :  (lhs[0] != rhs[0]) ? (lhs[0] - rhs[0])
+        : c_strcmp( lhs+1, rhs+1 );
 }
 
 #ifndef DATA_PATH
-#define DATA_PATH "/opt/cathook"
+#	define DATA_PATH "/opt/cathook"
 #endif
 
 #define FEATURE_EMOJI_ESP_DISABLED

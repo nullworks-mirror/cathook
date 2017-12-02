@@ -11,10 +11,9 @@
 #include <beforecheaders.hpp>
 #include <stack>
 
-std::stack<void (*)()> &init_stack();
+std::stack<void(*)()>& init_stack();
 
-class InitRoutine
-{
-    public:
-    InitRoutine(void (*func)());
+class InitRoutine {
+public:
+	InitRoutine(void(*func)());
 };

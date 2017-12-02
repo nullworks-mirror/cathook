@@ -15,30 +15,30 @@ class bf_read;
 class ConCommand;
 class CCommand;
 
-#include <aftercheaders.hpp>
 #include <beforecheaders.hpp>
-#include <mutex>
 #include <stack>
 #include <string>
+#include <mutex>
+#include <aftercheaders.hpp>
 
-namespace hack
-{
+namespace hack {
 
 extern std::mutex command_stack_mutex;
-std::stack<std::string> &command_stack();
+std::stack<std::string>& command_stack();
 void ExecuteCommand(const std::string command);
 
 extern bool shutdown;
 extern bool initialized;
 
-const std::string &GetVersion();
-const std::string &GetType();
+const std::string& GetVersion();
+const std::string& GetType();
 void Initialize();
 void Think();
 void Shutdown();
 
-void CC_Cat(const CCommand &args);
-extern ConCommand *c_Cat;
+void CC_Cat(const CCommand& args);
+extern ConCommand* c_Cat;
+
 }
 
 #endif /* HACK_H_ */

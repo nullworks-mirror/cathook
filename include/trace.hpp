@@ -15,53 +15,47 @@
 
 class IClientEntity;
 
-namespace trace
-{
+namespace trace {
 
-class FilterDefault : public ITraceFilter
-{
-    public:
-    IClientEntity *m_pSelf;
-
-    public:
-    virtual ~FilterDefault();
-    FilterDefault();
-    virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);
-    void SetSelf(IClientEntity *self);
-    virtual TraceType_t GetTraceType() const;
+class FilterDefault : public ITraceFilter {
+public:
+	IClientEntity* m_pSelf;
+public:
+	virtual ~FilterDefault();
+	FilterDefault();
+	virtual bool ShouldHitEntity(IHandleEntity* entity, int mask);
+	void SetSelf(IClientEntity* self);
+	virtual TraceType_t GetTraceType() const;
 };
 
-class FilterNoPlayer : public ITraceFilter
-{
-    public:
-    IClientEntity *m_pSelf;
-
-    public:
-    virtual ~FilterNoPlayer();
-    FilterNoPlayer();
-    virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);
-    void SetSelf(IClientEntity *self);
-    virtual TraceType_t GetTraceType() const;
+class FilterNoPlayer : public ITraceFilter {
+public:
+	IClientEntity* m_pSelf;
+public:
+	virtual ~FilterNoPlayer();
+	FilterNoPlayer();
+	virtual bool ShouldHitEntity(IHandleEntity* entity, int mask);
+	void SetSelf(IClientEntity* self);
+	virtual TraceType_t GetTraceType() const;
 };
 
-class FilterPenetration : public ITraceFilter
-{
-    public:
-    IClientEntity *m_pSelf;
-    IClientEntity *m_pIgnoreFirst;
-
-    public:
-    virtual ~FilterPenetration();
-    FilterPenetration();
-    virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);
-    void SetSelf(IClientEntity *self);
-    void Reset();
-    virtual TraceType_t GetTraceType() const;
+class FilterPenetration : public ITraceFilter {
+public:
+	IClientEntity* m_pSelf;
+	IClientEntity* m_pIgnoreFirst;
+public:
+	virtual ~FilterPenetration();
+	FilterPenetration();
+	virtual bool ShouldHitEntity(IHandleEntity* entity, int mask);
+	void SetSelf(IClientEntity* self);
+	void Reset();
+	virtual TraceType_t GetTraceType() const;
 };
 
 extern FilterDefault filter_default;
 extern FilterNoPlayer filter_no_player;
 extern FilterPenetration filter_penetration;
+
 }
 
 #endif /* TRACE_HPP_ */

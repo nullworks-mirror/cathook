@@ -8,19 +8,19 @@
 #ifndef ENTITYCACHE_HPP_
 #define ENTITYCACHE_HPP_
 
-#include "averager.hpp"
-#include "entityhitboxcache.hpp"
 #include <aftercheaders.hpp>
 #include <beforecheaders.hpp>
+#include "entityhitboxcache.hpp"
+#include "averager.hpp"
+#include <mathlib/vector.h>
+#include <mathlib/mathlib.h>
+#include <icliententity.h>
+#include <icliententitylist.h>
 #include <cdll_int.h>
 #include <enums.hpp>
 #include <fixsdk.hpp>
-#include <icliententity.h>
-#include <icliententitylist.h>
 #include <interfaces.hpp>
 #include <itemtypes.hpp>
-#include <mathlib/mathlib.h>
-#include <mathlib/vector.h>
 
 struct matrix3x4_t;
 
@@ -41,7 +41,8 @@ struct mstudiobbox_t;
 #define RAW_ENT(ce) ce->m_pEntity
 #endif
 
-#define CE_VAR(entity, offset, type) NET_VAR(RAW_ENT(entity), offset, type)
+#define CE_VAR(entity, offset, type) \
+	NET_VAR(RAW_ENT(entity), offset, type)
 
 #define CE_INT(entity, offset) CE_VAR(entity, offset, int)
 #define CE_FLOAT(entity, offset) CE_VAR(entity, offset, float)
@@ -57,87 +58,78 @@ struct mstudiobbox_t;
 #define HIGHEST_ENTITY (entity_cache::max)
 #define ENTITY(idx) (&entity_cache::Get(idx))
 
-class CachedEntity
-{
-    public:
-    CachedEntity();
-    ~CachedEntity();
+class CachedEntity {
+public:
+	CachedEntity();
+	~CachedEntity();
 
-    __attribute__((hot)) void Update();
-    bool IsVisible();
-    void Reset();
-    __attribute__((always_inline, hot, const)) IClientEntity *
-    InternalEntity() const
-    {
-        return g_IEntityList->GetClientEntity(m_IDX);
-    }
-    __attribute__((always_inline, hot, const)) inline bool Good() const
-    {
-        if (!m_iClassID)
-            return false;
-        IClientEntity *const entity = InternalEntity();
-        return entity && !entity->IsDormant();
-    }
-    template <typename T>
-    __attribute__((always_inline, hot, const)) inline T &
-    var(uintptr_t offset) const
-    {
-        return *reinterpret_cast<T *>(uintptr_t(RAW_ENT(this)) + offset);
-    }
+	__attribute__((hot)) void Update();
+	bool IsVisible();
+	void Reset();
+	__attribute__((always_inline, hot, const)) IClientEntity* InternalEntity() const {
+		return g_IEntityList->GetClientEntity(m_IDX);
+	}
+	__attribute__((always_inline, hot, const)) inline bool Good() const {
+		if (!m_iClassID) return false;
+		IClientEntity* const entity = InternalEntity();
+		return entity && !entity->IsDormant();
+	}
+	template<typename T>
+	__attribute__((always_inline, hot, const)) inline T& var(uintptr_t offset) const {
+		return *reinterpret_cast<T*>(uintptr_t(RAW_ENT(this)) + offset);
+	}
 
-    const int m_IDX;
+	const int m_IDX;
 
-    int m_iClassID{ 0 };
+	int m_iClassID { 0 };
 
-    Vector m_vecOrigin{ 0 };
-    int m_iTeam{ 0 };
-    bool m_bAlivePlayer{ false };
-    bool m_bEnemy{ false };
-    int m_iMaxHealth{ 0 };
-    int m_iHealth{ 0 };
+	Vector m_vecOrigin { 0 };
+	int  m_iTeam { 0 };
+	bool m_bAlivePlayer { false };
+	bool m_bEnemy { false };
+	int m_iMaxHealth { 0 };
+	int m_iHealth { 0 };
 
-    // Entity fields start here
-    EntityType m_Type{ ENTITY_GENERIC };
+	// Entity fields start here
+	EntityType m_Type { ENTITY_GENERIC };
 
-    float m_flDistance{ 0.0f };
+	float m_flDistance { 0.0f };
 
-    bool m_bCritProjectile{ false };
-    bool m_bGrenadeProjectile{ false };
+	bool m_bCritProjectile { false };
+	bool m_bGrenadeProjectile { false };
 
-    bool m_bAnyHitboxVisible{ false };
-    bool m_bVisCheckComplete{ false };
+	bool m_bAnyHitboxVisible { false };
+	bool m_bVisCheckComplete { false };
 
-    k_EItemType m_ItemType{ ITEM_NONE };
+	k_EItemType m_ItemType { ITEM_NONE };
 
-    unsigned long m_lSeenTicks{ 0 };
-    unsigned long m_lLastSeen{ 0 };
-    Vector m_vecVOrigin{ 0 };
-    Vector m_vecVelocity{ 0 };
-    Vector m_vecAcceleration{ 0 };
-    float m_fLastUpdate{ 0.0f };
-    hitbox_cache::EntityHitboxCache &hitboxes;
-    player_info_s player_info{};
-    Averager<float> velocity_averager{ 8 };
-    bool was_dormant{ true };
-    bool velocity_is_valid{ false };
+	unsigned long m_lSeenTicks { 0 };
+	unsigned long m_lLastSeen { 0 };
+	Vector m_vecVOrigin { 0 };
+	Vector m_vecVelocity { 0 };
+	Vector m_vecAcceleration { 0 };
+	float m_fLastUpdate { 0.0f };
+	hitbox_cache::EntityHitboxCache& hitboxes;
+	player_info_s player_info {};
+	Averager<float> velocity_averager { 8 };
+	bool was_dormant { true };
+	bool velocity_is_valid { false };
 #if PROXY_ENTITY != true
-    IClientEntity *m_pEntity{ nullptr };
+	IClientEntity* m_pEntity { nullptr };
 #endif
 };
 
-namespace entity_cache
-{
+namespace entity_cache {
 
 extern CachedEntity array[MAX_ENTITIES]; // b1g fat array in
-inline CachedEntity &Get(int idx)
-{
-    if (idx < 0 || idx >= 2048)
-        throw std::out_of_range("Entity index out of range!");
-    return array[idx];
+inline CachedEntity& Get(int idx) {
+	if (idx < 0 || idx >= 2048) throw std::out_of_range("Entity index out of range!");
+	return array[idx];
 }
 void Update();
 void Invalidate();
 extern int max;
+
 }
 
 #endif /* ENTITYCACHE_HPP_ */

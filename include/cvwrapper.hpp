@@ -10,182 +10,130 @@
 
 class ConVar;
 
-#include <interfaces.hpp>
 #include <sdk.hpp>
+#include <interfaces.hpp>
 
-#include <aftercheaders.hpp>
 #include <beforecheaders.hpp>
-#include <functional>
 #include <string>
 #include <vector>
+#include <functional>
+#include <aftercheaders.hpp>
 
 // Catvar types
-enum CatVar_t
-{
-    CV_SWITCH,
-    CV_INT,
-    CV_FLOAT,
-    CV_STRING,
-    CV_ENUM,
-    CV_KEY
+enum CatVar_t {
+	CV_SWITCH,
+	CV_INT,
+	CV_FLOAT,
+	CV_STRING,
+	CV_ENUM,
+	CV_KEY
 };
 
 // TODO reverse
 // Enum Something
-class CatEnum
-{
-    public:
-    CatEnum(std::vector<std::string> values, int min = 0);
-    std::string Name(int value);
-
-    public:
-    const std::vector<std::string> value_names;
-    int min_value;
-    int max_value;
-    int size;
+class CatEnum {
+public:
+	CatEnum(std::vector<std::string> values, int min = 0);
+	std::string Name(int value);
+public:
+	const std::vector<std::string> value_names;
+	int min_value;
+	int max_value;
+	int size;
 };
 
 // TODO reverse, no idea how catcommands are handled
-class CatCommand
-{
-    public:
-    CatCommand(std::string name, std::string help,
-               FnCommandCallback_t callback);
-    CatCommand(std::string name, std::string help,
-               FnCommandCallbackVoid_t callback);
+class CatCommand {
+public:
+	CatCommand(std::string name, std::string help, FnCommandCallback_t callback);
+	CatCommand(std::string name, std::string help, FnCommandCallbackVoid_t callback);
 
-    void Register();
+	void Register();
+public:
+	const std::string name;
+	const std::string help { "" };
 
-    public:
-    const std::string name;
-    const std::string help{ "" };
+	FnCommandCallback_t callback { nullptr };
+	FnCommandCallbackVoid_t callback_void { nullptr };
 
-    FnCommandCallback_t callback{ nullptr };
-    FnCommandCallbackVoid_t callback_void{ nullptr };
-
-    ConCommand *cmd{ nullptr };
+	ConCommand* cmd { nullptr };
 };
 
-class CatVar
-{
-    public: // TODo, unknown reverse
-    CatVar(CatVar_t type, std::string name, std::string defaults,
-           std::string desc_short, std::string desc_long = "no description");
-    CatVar(CatVar_t type, std::string name, std::string defaults,
-           std::string desc_short, std::string desc_long, float max_val);
-    CatVar(CatVar_t type, std::string name, std::string defaults,
-           std::string desc_short, std::string desc_long, float min_val,
-           float max_val);
-    CatVar(CatEnum &cat_enum, std::string name, std::string defaults,
-           std::string desc_short, std::string desc_long);
 
-    inline operator bool() const
-    {
-        return !!convar_parent->m_nValue;
-    }
-    inline operator int() const
-    {
-        return convar_parent->m_nValue;
-    }
-    inline operator float() const
-    {
-        return convar_parent->m_fValue;
-    }
-    inline void operator=(const int &value)
-    {
-        convar_parent->InternalSetIntValue(value);
-    }
-    inline void operator=(const float &value)
-    {
-        convar_parent->InternalSetFloatValue(value);
-    }
-    inline bool operator==(const int &value) const
-    {
-        return convar_parent->m_nValue == value;
-    }
-    inline bool operator==(const float &value) const
-    {
-        return convar_parent->m_fValue == value;
-    }
 
-    void Register();
-    typedef std::function<void(CatVar *)> RegisterCallbackFn;
-    void OnRegister(RegisterCallbackFn fn);
-    void InstallChangeCallback(FnChangeCallback_t callback);
+class CatVar {
+public: // TODo, unknown reverse
+	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long = "no description");
+	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float max_val);
+	CatVar(CatVar_t type, std::string name, std::string defaults, std::string desc_short, std::string desc_long, float min_val, float max_val);
+	CatVar(CatEnum& cat_enum, std::string name, std::string defaults, std::string desc_short, std::string desc_long);
 
-    [[deprecated]] inline bool GetBool() const
-    {
-        return this->operator bool();
-    }
-    [[deprecated]] inline int GetInt() const
-    {
-        return this->operator int();
-    }
-    [[deprecated]] inline float GetFloat() const
-    {
-        return this->operator float();
-    };
-    inline const char *GetString() const
-    {
-        return convar_parent->GetString();
-    }
-    [[deprecated]] inline void SetValue(float value)
-    {
-        this->operator=(value);
-    }
-    inline void SetValue(std::string value)
-    {
-        convar_parent->SetValue(value.c_str());
-    }
-    [[deprecated]] inline void SetValue(int value)
-    {
-        this->operator=(value);
-    }
+	inline operator bool() const { return !!convar_parent->m_nValue; }
+	inline operator int() const { return convar_parent->m_nValue; }
+	inline operator float() const { return convar_parent->m_fValue; }
+	inline void operator =(const int& value) { convar_parent->InternalSetIntValue(value); }
+	inline void operator =(const float& value) { convar_parent->InternalSetFloatValue(value); }
+	inline bool operator ==(const int& value) const { return convar_parent->m_nValue == value; }
+	inline bool operator ==(const float& value) const { return convar_parent->m_fValue == value; }
 
-    inline bool KeyDown()
-    {
-        return g_IInputSystem->IsButtonDown(
-            static_cast<ButtonCode_t>(static_cast<int>(*this)));
-    }
+	void Register();
+	typedef std::function<void(CatVar*)> RegisterCallbackFn;
+	void OnRegister(RegisterCallbackFn fn);
+	void InstallChangeCallback(FnChangeCallback_t callback);
 
-    inline const std::string &GetBase() const
-    {
-        return current_base;
-    }
+	[[deprecated]]
+	inline bool GetBool() const { return this->operator bool();  }
+	[[deprecated]]
+	inline int GetInt() const { return this->operator int(); }
+	[[deprecated]]
+	inline float GetFloat() const { return this->operator float(); };
+	inline const char* GetString() const { return convar_parent->GetString(); }
+	[[deprecated]]
+	inline void SetValue(float value) { this->operator =(value); }
+	inline void SetValue(std::string value) { convar_parent->SetValue(value.c_str()); }
+	[[deprecated]]
+	inline void SetValue(int value) { this->operator =(value); }
 
-    // Storage for the catvar
-    public:
-    const CatVar_t type;
-    const std::string name;
-    const std::string defaults{ "0" };
-    const std::string desc_short{ "" };
-    const std::string desc_long{ "" };
-    const CatEnum *const enum_type{ nullptr };
+	inline bool KeyDown() {
+		return g_IInputSystem->IsButtonDown(static_cast<ButtonCode_t>(static_cast<int>(*this)));
+	}
 
-    std::string current_base{ "0" };
+	inline const std::string& GetBase() const {
+		return current_base;
+	}
 
-    bool restricted{ false };
-    float min{ 0.0f };
-    float max{ 0.0f };
+// Storage for the catvar
+public:
+	const CatVar_t type;
+	const std::string name;
+	const std::string defaults { "0" };
+	const std::string desc_short { "" };
+	const std::string desc_long { "" };
+	const CatEnum* const enum_type { nullptr };
 
-    std::vector<RegisterCallbackFn> callbacks{};
-    bool registered{ false };
+	std::string current_base { "0" };
 
-    ConVar *convar{ nullptr };
-    ConVar *convar_parent{ nullptr };
+	bool restricted { false };
+	float min { 0.0f };
+	float max { 0.0f };
 
-    int id{ 0 };
-    static int last_id;
+	std::vector<RegisterCallbackFn> callbacks {};
+	bool registered { false };
+
+	ConVar* convar { nullptr };
+	ConVar* convar_parent { nullptr };
+
+	int id { 0 };
+	static int last_id;
 };
 
-// TODO, find out what this formatting does "std::vector<ClassName*?>&
-// ArrayName()?"
+// TODO, find out what this formatting does "std::vector<ClassName*?>& ArrayName()?"
 
 // needed for registration
-std::vector<CatVar *> &registrationArray();
-std::vector<CatCommand *> &commandRegistrationArray();
+std::vector<CatVar*>& registrationArray();
+std::vector<CatCommand*>& commandRegistrationArray();
 // List to store catvars
-std::vector<CatVar *> &CatVarList();
+std::vector<CatVar*>& CatVarList();
 
 // Setup commands probs needed at int
 void RegisterCatCommands();

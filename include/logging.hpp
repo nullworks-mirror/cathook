@@ -10,18 +10,17 @@
 
 #include <stdio.h>
 
-typedef void(fn_Msg_t)(const char *msg, va_list);
+typedef void(fn_Msg_t)(const char* msg, va_list);
 
 #ifdef __cplusplus
-namespace logging
-{
+namespace logging {
 #endif
 
-extern FILE *handle;
+extern FILE* handle;
 
 void Initialize();
 void Shutdown();
-void Info(const char *fmt, ...);
+void Info(const char* fmt, ...);
 
 #ifdef __cplusplus
 }

@@ -7,8 +7,8 @@
 
 #pragma once
 
-namespace chatlog
-{
+namespace chatlog {
 
 void LogMessage(int eid, std::string message);
+
 }
