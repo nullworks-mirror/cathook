@@ -40,15 +40,7 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
     static ConVar *software_cursor = g_ICvar->FindVar("cl_software_cursor");
     static const char *name;
     static std::string name_s, name_stripped, reason_stripped;
-#if DEBUG_SEGV == true
-    if (!segvcatch::handler_fpe || !segvcatch::handler_segv)
-    {
-        if (!segvcatch::handler_fpe)
-            segvcatch::init_segv();
-        if (!segvcatch::handler_segv)
-            segvcatch::init_fpe();
-    }
-#endif
+
 #if ENABLE_VISUALS == 1
     if (!textures_loaded)
     {
