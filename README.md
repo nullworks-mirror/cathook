@@ -1,18 +1,22 @@
 # Cathook Training Software
 ![banner](http://i.imgur.com/w96wdtE.png)
 
-## Discord Server
-Please use the new [Official Telegram Group](https://t.me/nullifiedcat).    
+[cathook announcements channel in telegram](https://t.me/cathook_cheat)
+
+## Community
+You can chat with other cathook users in [my official telegram group](https://t.me/nullifiedcat).
+
+## Important
+
+Right now cathook isn't in its greatest state, a lot of things may not work/crash the game, please open issues on github using [this page](https://github.com/nullifiedcat/cathook/issues).
+
+## Overview
 
 cathook is a training software designed for Team Fortress 2 for Linux. cathook includes some joke features like
 
 * Backpack.TF API integration with playerlist GUI, allowing you to see players' inventory values
-* Always/Never spycrab
 * Ignore Hoovy
-* 100% Casual/Comp coin flip
 * Encrypted chat
-* Emoji ESP
-* Fidget Spinner crosshair
 * Chance to get manually VAC banned by Valve
 
 and a lot of useful features, including
@@ -21,9 +25,11 @@ and a lot of useful features, including
 * Heal Arrows exploit (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
 * Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
 * Follow Bots
-* Working crit hack
+* Working crit hack (does not work right now)
 
-[FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features)
+[FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features) (list might be outdated)
+
+# stuff written below this line is outdated lol
 
 # INSTALLATION
 
