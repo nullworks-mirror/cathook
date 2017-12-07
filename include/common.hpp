@@ -99,6 +99,7 @@
 #include <chatstack.hpp>
 #include "textfile.hpp"
 #include "ipc.hpp"
+#include "tfmm.hpp"
 #include "hooks/hookedmethods.hpp"
 #include "classinfo/classinfo.hpp"
 #include "crits.hpp"

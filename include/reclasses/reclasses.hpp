@@ -19,4 +19,10 @@ namespace re
 #include "C_TFWeaponBase.hpp"
 #include "C_TFWeaponBaseMelee.hpp"
 #include "C_TFWeaponBaseGun.hpp"
+
+#include "CTFGCClientSystem.hpp"
+#include "CTFParty.hpp"
+#include "ITFGroupMatchCriteria.hpp"
+#include "CTFPartyClient.hpp"
+
 }

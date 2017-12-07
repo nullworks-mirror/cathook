@@ -17,7 +17,7 @@ extern "C" {
 #include "xoverlay.h"
 }
 
-#define DRAW_XOVERLAY 1
+#define DRAW_XOVERLAY 0
 
 SDL_GLContext context = nullptr;
 

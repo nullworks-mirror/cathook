@@ -57,7 +57,6 @@
 #include <netmessage.hpp>
 #include <dbg.h>
 
-#include "sdk/TFGCClientSystem.hpp"
 #include "sdk/in_buttons.h"
 #include "sdk/imaterialsystemfixed.h"
 #include "sdk/ScreenSpaceEffects.h"
