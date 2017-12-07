@@ -47,7 +47,7 @@ void glez_resize(int width, int height);
 
 /* Helper functions */
 
-glez_rgba_t glez_rgba(int r, int g, int b, int a);
+glez_rgba_t glez_rgba(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 
 /* Font-related functions */
 
