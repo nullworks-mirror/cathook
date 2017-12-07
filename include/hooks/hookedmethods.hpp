@@ -49,6 +49,8 @@ void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
 union SDL_Event;
 class SDL_Window;
 
+extern SDL_Window *sdl_current_window;
+
 typedef int (*SDL_PollEvent_t)(SDL_Event *event);
 typedef void (*SDL_GL_SwapWindow_t)(SDL_Window *window);
 

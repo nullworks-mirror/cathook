@@ -18,6 +18,7 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
+SDL_Window *sdl_current_window{ nullptr };
 SDL_GL_SwapWindow_t *SDL_GL_SwapWindow_loc{ nullptr };
 SDL_GL_SwapWindow_t SDL_GL_SwapWindow_o{ nullptr };
 
@@ -53,10 +54,13 @@ void SDL_GL_SwapWindow_hook(SDL_Window *window)
         GetWindowWMInfo(window, &wminfo);
         init_wminfo = true;
     }
+    if (!sdl_current_window)
+        sdl_current_window = window;
 
     static bool init{ false };
 
     static GLXContext tf2 = glXGetCurrentContext();
+    static SDL_GLContext tf2_sdl = SDL_GL_GetCurrentContext();
 
     if (cathook && !disable_visuals)
     {
@@ -67,15 +71,15 @@ void SDL_GL_SwapWindow_hook(SDL_Window *window)
             init = true;
         }
         render_cheat_visuals();
-        //      xoverlay_poll_events();
     }
     {
         PROF_SECTION(SWAPWINDOW_tf2);
-        glXMakeContextCurrent(wminfo.info.x11.display, wminfo.info.x11.window,
-                              wminfo.info.x11.window, tf2);
-        glXSwapBuffers(wminfo.info.x11.display, wminfo.info.x11.window);
+        SDL_GL_MakeCurrent(window, tf2_sdl);
+        SDL_GL_SwapWindow_o(window);
+        //glXMakeContextCurrent(wminfo.info.x11.display, wminfo.info.x11.window,
+        //                      wminfo.info.x11.window, tf2);
+        //glXSwapBuffers(wminfo.info.x11.display, wminfo.info.x11.window);
     }
-    // SDL_GL_SwapWindow_o(window);
 }
 
 int SDL_PollEvent_hook(SDL_Event *event)

@@ -84,7 +84,6 @@ void draw::Initialize()
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
-    xoverlay_preinit();
     fonts::main_font = draw_api::create_font(DATA_PATH "/fonts/tahoma.ttf", 14);
 }
 

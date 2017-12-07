@@ -10,7 +10,8 @@
 #include <thread>
 
 extern "C" {
-#include "overlay.h"
+#include "glez.h"
+#include "xoverlay.h"
 }
 
 #define draw_api drawex::api
@@ -23,14 +24,14 @@ namespace api
 
 struct font_handle_t
 {
-    xoverlay_font_handle_t handle;
+    glez_font_t handle;
     std::string filename;
     float size;
 };
 
 struct texture_handle_t
 {
-    xoverlay_texture_handle_t handle;
+    glez_texture_t handle;
 };
 
 font_handle_t create_font(const char *path, float size);

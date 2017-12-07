@@ -47,92 +47,92 @@ struct offsets
             break;
         }
         // pCompileError.
-        // static_assert(result != -1, "No offset defined for this platform!");
+        // static_assert(result != undefined, "No offset defined for this platform!");
         return result;
     }
     static constexpr uint32_t GetUserCmd()
     {
-        return PlatformOffset(8, -1, -1);
+        return PlatformOffset(8, undefined, undefined);
     }
     static constexpr uint32_t ShouldDraw()
     {
-        return PlatformOffset(136, -1, -1);
+        return PlatformOffset(136, undefined, undefined);
     }
     static constexpr uint32_t DrawModelExecute()
     {
-        return PlatformOffset(19, -1, -1);
+        return PlatformOffset(19, undefined, undefined);
     }
     static constexpr uint32_t GetClientName()
     {
-        return PlatformOffset(44, -1, -1);
+        return PlatformOffset(44, undefined, undefined);
     }
     static constexpr uint32_t ProcessSetConVar()
     {
-        return PlatformOffset(4, -1, -1);
+        return PlatformOffset(4, undefined, undefined);
     }
     static constexpr uint32_t ProcessGetCvarValue()
     {
-        return PlatformOffset(29, -1, -1);
+        return PlatformOffset(29, undefined, undefined);
     }
     static constexpr uint32_t GetFriendPersonaName()
     {
-        return PlatformOffset(7, -1, -1);
+        return PlatformOffset(7, undefined, undefined);
     }
     static constexpr uint32_t CreateMove()
     {
-        return PlatformOffset(22, -1, -1);
+        return PlatformOffset(22, undefined, undefined);
     }
     static constexpr uint32_t PaintTraverse()
     {
-        return PlatformOffset(42, -1, -1);
+        return PlatformOffset(42, undefined, undefined);
     }
     static constexpr uint32_t OverrideView()
     {
-        return PlatformOffset(17, -1, -1);
+        return PlatformOffset(17, undefined, undefined);
     }
     static constexpr uint32_t FrameStageNotify()
     {
-        return PlatformOffset(35, -1, -1);
+        return PlatformOffset(35, undefined, undefined);
     }
     static constexpr uint32_t DispatchUserMessage()
     {
-        return PlatformOffset(36, -1, -1);
+        return PlatformOffset(36, undefined, undefined);
     }
     static constexpr uint32_t CanPacket()
     {
-        return PlatformOffset(57, -1, -1);
+        return PlatformOffset(57, undefined, undefined);
     }
     static constexpr uint32_t SendNetMsg()
     {
-        return PlatformOffset(41, -1, -1);
+        return PlatformOffset(41, undefined, undefined);
     }
     static constexpr uint32_t Shutdown()
     {
-        return PlatformOffset(37, -1, -1);
+        return PlatformOffset(37, undefined, undefined);
     }
     static constexpr uint32_t IN_KeyEvent()
     {
-        return PlatformOffset(20, -1, -1);
+        return PlatformOffset(20, undefined, undefined);
     }
     static constexpr uint32_t HandleInputEvent()
     {
-        return PlatformOffset(78, -1, -1);
+        return PlatformOffset(78, undefined, undefined);
     }
     static constexpr uint32_t LevelInit()
     {
-        return PlatformOffset(23, -1, -1);
+        return PlatformOffset(23, undefined, undefined);
     }
     static constexpr uint32_t LevelShutdown()
     {
-        return PlatformOffset(24, -1, -1);
+        return PlatformOffset(24, undefined, undefined);
     }
     static constexpr uint32_t BeginFrame()
     {
-        return PlatformOffset(5, -1, -1);
+        return PlatformOffset(5, undefined, undefined);
     }
     static constexpr uint32_t FireGameEvent()
     {
-        return PlatformOffset(2, -1, -1);
+        return PlatformOffset(2, undefined, undefined);
     }
     static constexpr uint32_t FireEvent()
     {
@@ -150,15 +150,15 @@ struct offsets
 
     static constexpr uint32_t lastoutgoingcommand()
     {
-        return PlatformOffset(19228, -1, -1);
+        return PlatformOffset(19228, undefined, undefined);
     }
     static constexpr uint32_t m_nOutSequenceNr()
     {
-        return PlatformOffset(8, -1, -1);
+        return PlatformOffset(8, undefined, undefined);
     }
     static constexpr uint32_t m_NetChannel()
     {
-        return PlatformOffset(196, -1, -1);
+        return PlatformOffset(196, undefined, undefined);
     }
 };
 
