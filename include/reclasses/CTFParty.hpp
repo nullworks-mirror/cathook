@@ -15,8 +15,6 @@ public:
 
     inline static int state_(CTFParty *party)
     {
-        return *((int *)party + 19);
+        return *((int *) party + 19);
     }
 };
-
-

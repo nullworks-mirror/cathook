@@ -11,7 +11,5 @@
 
 inline void *e8call(void *address)
 {
-    return (void *)uintptr_t(*(uintptr_t *)address + uintptr_t(address) + 4);
+    return (void *) uintptr_t(*(uintptr_t *) address + uintptr_t(address) + 4);
 }
-
-

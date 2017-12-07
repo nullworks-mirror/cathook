@@ -12,7 +12,4 @@ namespace tfmm
 
 void queue_start();
 void abandon();
-
 }
-
-

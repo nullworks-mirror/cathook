@@ -47,7 +47,8 @@ struct offsets
             break;
         }
         // pCompileError.
-        // static_assert(result != undefined, "No offset defined for this platform!");
+        // static_assert(result != undefined, "No offset defined for this
+        // platform!");
         return result;
     }
     static constexpr uint32_t GetUserCmd()

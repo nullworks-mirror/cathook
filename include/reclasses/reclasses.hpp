@@ -24,5 +24,4 @@ namespace re
 #include "CTFParty.hpp"
 #include "ITFGroupMatchCriteria.hpp"
 #include "CTFPartyClient.hpp"
-
 }

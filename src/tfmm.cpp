@@ -7,18 +7,13 @@
 
 #include "common.hpp"
 
-CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue", []()
-{
-    tfmm::queue_start();
-});
+CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue",
+                           []() { tfmm::queue_start(); });
 
-CatCommand cmd_abandon("mm_abandon", "Abandon match", []()
-{
-    tfmm::abandon();
-});
+CatCommand cmd_abandon("mm_abandon", "Abandon match",
+                       []() { tfmm::abandon(); });
 
-CatCommand get_state("mm_state", "Get party state", []()
-{
+CatCommand get_state("mm_state", "Get party state", []() {
     re::CTFParty *party = re::CTFParty::GetParty();
     if (!party)
     {
@@ -36,7 +31,9 @@ void queue_start()
     re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
     if (client)
     {
-        re::ITFGroupMatchCriteria::SetMatchGroup(re::CTFPartyClient::MutLocalGroupCriteria(client), re::ITFGroupMatchCriteria::group::CASUAL);
+        re::ITFGroupMatchCriteria::SetMatchGroup(
+            re::CTFPartyClient::MutLocalGroupCriteria(client),
+            re::ITFGroupMatchCriteria::group::CASUAL);
         re::CTFPartyClient::LoadSavedCasualCriteria(client);
         re::CTFPartyClient::RequestQueueForMatch(client);
     }
@@ -48,5 +45,4 @@ void abandon()
     if (gc != nullptr)
         re::CTFGCClientSystem::AbandonCurrentMatch(gc);
 }
-
 }

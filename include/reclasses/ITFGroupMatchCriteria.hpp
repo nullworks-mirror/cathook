@@ -14,6 +14,7 @@ public:
     {
         CASUAL = 7
     };
+
 public:
     static int SetMatchGroup(ITFGroupMatchCriteria *this_, int group);
 };

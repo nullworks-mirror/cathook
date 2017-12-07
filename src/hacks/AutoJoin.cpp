@@ -45,8 +45,10 @@ bool UnassignedClass()
 
 void UpdateSearch()
 {
-    if (!auto_queue) return;
-    if (g_IEngine->IsInGame()) return;
+    if (!auto_queue)
+        return;
+    if (g_IEngine->IsInGame())
+        return;
     static Timer autoqueue_timer{};
 
     if (autoqueue_timer.test_and_set(5000))
@@ -62,29 +64,22 @@ void UpdateSearch()
 
 void Update()
 {
-    static auto last_check = std::chrono::system_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                  std::chrono::system_clock::now() - last_check)
-                  .count();
+    static Timer timer;
 
-    if (ms < 500)
+    if (timer.test_and_set(500))
     {
-        return;
+        if (autojoin_team and UnassignedTeam())
+        {
+            hack::ExecuteCommand("jointeam auto");
+        }
+        else if (preferred_class and UnassignedClass())
+        {
+            if (int(preferred_class) < 10)
+                g_IEngine->ExecuteClientCmd(
+                    format("join_class ", classnames[int(preferred_class) - 1])
+                        .c_str());
+        }
     }
-
-    if (autojoin_team and UnassignedTeam())
-    {
-        hack::ExecuteCommand("jointeam auto");
-    }
-    else if (preferred_class and UnassignedClass())
-    {
-        if (int(preferred_class) < 10)
-            g_IEngine->ExecuteClientCmd(
-                format("join_class ", classnames[int(preferred_class) - 1])
-                    .c_str());
-    }
-
-    last_check = std::chrono::system_clock::now();
 }
 }
 }

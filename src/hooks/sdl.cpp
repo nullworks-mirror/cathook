@@ -59,7 +59,7 @@ void SDL_GL_SwapWindow_hook(SDL_Window *window)
 
     static bool init{ false };
 
-    static GLXContext tf2 = glXGetCurrentContext();
+    static GLXContext tf2        = glXGetCurrentContext();
     static SDL_GLContext tf2_sdl = SDL_GL_GetCurrentContext();
 
     if (cathook && !disable_visuals)
@@ -76,9 +76,10 @@ void SDL_GL_SwapWindow_hook(SDL_Window *window)
         PROF_SECTION(SWAPWINDOW_tf2);
         SDL_GL_MakeCurrent(window, tf2_sdl);
         SDL_GL_SwapWindow_o(window);
-        //glXMakeContextCurrent(wminfo.info.x11.display, wminfo.info.x11.window,
+        // glXMakeContextCurrent(wminfo.info.x11.display,
+        // wminfo.info.x11.window,
         //                      wminfo.info.x11.window, tf2);
-        //glXSwapBuffers(wminfo.info.x11.display, wminfo.info.x11.window);
+        // glXSwapBuffers(wminfo.info.x11.display, wminfo.info.x11.window);
     }
 }
 
