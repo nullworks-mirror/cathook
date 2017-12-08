@@ -7,3 +7,9 @@
 [submodule "ucccccp"]
 	path = ucccccp
 	url = https://github.com/nullifiedcat/ucccccp
+[submodule "libxoverlay"]
+	path = libxoverlay
+	url = https://github.com/nullifiedcat/libxoverlay
+[submodule "libglez"]
+	path = libglez
+	url = https://github.com/nullifiedcat/libglez
