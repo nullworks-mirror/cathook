@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# TODO 
+# do not depend on graphical libraries if compiling for textmode
+# do not depend on X libraries if Xoverlay is disabled
+
+DEPENDS_LIBRARIES=(ssl m rt GL freetype GLEW png X11 Xext pthread Xfixes);
+DEPENDS_HEADERS=("SDL2/SDL.h" "freetype2/freetype/config/ftheader.h" "openssl/err.h" "GL/gl.h" "GL/glew.h");

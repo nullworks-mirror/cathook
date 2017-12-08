@@ -1,3 +1,0 @@
-The script has detected that you are not using Ubuntu. 
-While cathook can work on most distros, some scripts can break and you may have trouble with compiling cathook on this distro. 
-If you have trouble, you can visit cathook's official telegram channel and ask for help from other users of your distro there.

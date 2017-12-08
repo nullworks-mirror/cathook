@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+# TODO extremely unfinished
+
+. common
+
+if ! grep -qi "Ubuntu" /proc/version ; then
+    $DIALOG --title "WARNING" --msgbox "The script has detected that you are not using Ubuntu.\n\
+While cathook can work on most distros, most helper scripts can work incorrectly or not work at all and you may also have trouble with compiling cathook here.\n\n\
+If you have trouble, you can visit cathook's official telegram channel and ask for help from other users of your distro there." 15 50
+fi
+
+USER=$($DIALOG --title "Main Menu" --menu "What do you want to do?" 20 40 7 \
+    "I" "Inject" \
+    "B" "Build" \
+    "T" "Troubleshoot" \
+    "S" "Suggestion or bug report" \
+    "P" "Support the creator" \
+    "F" "Format sources" \
+    "U" "Update" 3>&1 1>&2 2>&3)
+    
+case "$USER" in
+    "I")
+        ;;
+    "B")
+        ;;
+    "T")
+        . troubleshoot
+        exit
+        ;;
+    "P")
+        . donate
+        exit
+        ;;
+    "F")
+        . format
+        exit
+        ;;
+    "U")
+        . update
+        exit
+        ;;
+esac
