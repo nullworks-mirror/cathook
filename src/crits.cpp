@@ -129,6 +129,7 @@ bool random_crits_enabled()
     return tf_weapon_criticals->GetBool();
 }
 
+#if ENABLE_VISUALS == 1
 void draw()
 {
     if (CE_BAD(LOCAL_W))
@@ -166,6 +167,8 @@ void draw()
         // *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2872u)));
     }
 }
+#endif
+
 }
 
 void crithack_saved_state::Load(IClientEntity *entity)
