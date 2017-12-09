@@ -110,7 +110,7 @@ void CreateInterfaces()
             "C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3");
         logging::Info("SteamAPI: 0x%08x", sig_steamapi);
         void **SteamAPI_engine = *reinterpret_cast<void ***>(sig_steamapi + 36);
-        g_ISteamFriends        = (ISteamFriends *) (SteamAPI_engine[1]); //
+        g_ISteamFriends        = (ISteamFriends *) (SteamAPI_engine[2]); //
     }
     if (g_ISteamFriends == nullptr)
     {
