@@ -60,8 +60,8 @@ LDFLAGS=-shared -L$(realpath $(LIB_DIR))
 SOURCES=$(shell find $(SRC_DIR) -name "*.c*" -print)
 
 ifndef CLANG
-CXX=$(shell sh -c "which g++-6 || which g++")
-CC=$(shell sh -c "which gcc-6 || which gcc")
+CXX=$(shell sh -c "which g++-7 || which g++-6 || which g++")
+CC=$(shell sh -c "which gcc-7 || which g++-6 || which gcc")
 LD=$(CXX)
 LDFLAGS+=-m32 -fno-gnu-unique
 else

@@ -116,7 +116,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="cmdui|autogen|segvcatch|xoverlay|include|classinfo|vtables|ipc|ncc|memory|hooks|sdk|imgui|src|freetype-gl|copypasted|source-sdk-2013|targeting|gui|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="cmdui|autogen|segvcatch|xoverlay|include|classinfo|vtables|ipc|ncc|memory|hooks|sdk|imgui|src|freetype-gl|copypasted|targeting|gui|mem" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="reclasses|hacks|copypasted|visual|gui|classinfo|hooks|sdk" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/classinfo"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include/copypasted"/>

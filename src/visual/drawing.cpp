@@ -84,7 +84,7 @@ void draw::Initialize()
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
-    fonts::main_font = draw_api::create_font(DATA_PATH "/fonts/tahoma.ttf", 14);
+    fonts::main_font = draw_api::create_font(DATA_PATH "/fonts/verasans.ttf", 14);
 }
 
 bool draw::EntityCenterToScreen(CachedEntity *entity, Vector &out)
