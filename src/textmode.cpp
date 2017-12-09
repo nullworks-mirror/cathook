@@ -24,8 +24,7 @@ void EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG()
     static unsigned char patch[] = { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0xB8,
                                      0x01, 0x00, 0x00, 0x00, 0xC9, 0xC3 };
     uintptr_t Host_IsSecureServerAllowed_addr = gSignatures.GetEngineSignature(
-        "55 89 E5 83 EC 18 E8 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 "
-        "2C 85 C0 74 11 C6 05 90 43 88 00 00");
+        "55 89 E5 83 EC 18 E8 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 2C 85 C0 74 11");
     // +0x21 = allowSecureServers
     // logging::Info("1337 VAC bypass: 0x%08x",
     // Host_IsSecureServerAllowed_addr);
