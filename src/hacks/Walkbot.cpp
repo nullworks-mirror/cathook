@@ -848,15 +848,13 @@ index_t SelectNextNode()
 
 bool free_move_used = false;
 
+Timer slot_timer{};
+
 void UpdateSlot()
 {
-    static auto last_check = std::chrono::system_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                  std::chrono::system_clock::now() - last_check)
-                  .count();
-
-    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state &&
-        ms > 1000)
+	if (!slot_timer.test_and_set(1000))
+		return;
+    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
     {
         IClientEntity *weapon = RAW_ENT(LOCAL_W);
         // IsBaseCombatWeapon()
@@ -869,8 +867,6 @@ void UpdateSlot()
             }
         }
     }
-
-    last_check = std::chrono::system_clock::now();
 }
 
 void UpdateWalker()

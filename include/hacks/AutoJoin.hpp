@@ -14,6 +14,8 @@ namespace shared
 namespace autojoin
 {
 
+extern CatVar auto_queue;
+
 void Update();
 void UpdateSearch();
 }

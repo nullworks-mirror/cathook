@@ -406,6 +406,9 @@ void Shutdown_hook(void *_this, const char *reason)
     {
         original(_this, reason);
     }
+
+    if (hacks::shared::autojoin::auto_queue)
+    	tfmm::abandon();
 }
 
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");

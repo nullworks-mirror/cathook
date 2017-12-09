@@ -62,11 +62,11 @@ void UpdateSearch()
     }
 }
 
+Timer timer{};
+
 void Update()
 {
-    static Timer timer;
-
-    if (timer.test_and_set(500))
+	if (timer.test_and_set(500))
     {
         if (autojoin_team and UnassignedTeam())
         {
