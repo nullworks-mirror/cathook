@@ -8,7 +8,6 @@
 #ifndef USERCMD_HPP_
 #define USERCMD_HPP_
 
-#include <fixsdk.hpp>
 #include <stdint.h>
 
 #include <mathlib/vector.h>

@@ -9,7 +9,6 @@
 #define TRACE_HPP_
 
 #include <engine/IEngineTrace.h>
-#include <fixsdk.hpp>
 
 // This file is a mess. I need to fix it. TODO
 

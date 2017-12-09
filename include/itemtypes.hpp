@@ -8,8 +8,6 @@
 #ifndef ITEMTYPES_HPP_
 #define ITEMTYPES_HPP_
 
-#include <aftercheaders.hpp>
-#include <beforecheaders.hpp>
 #include <map>
 #include <string>
 #include <vector>

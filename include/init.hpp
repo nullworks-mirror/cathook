@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <aftercheaders.hpp>
-#include <beforecheaders.hpp>
 #include <stack>
 
 std::stack<void (*)()> &init_stack();

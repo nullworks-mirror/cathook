@@ -8,8 +8,6 @@
 #ifndef SDK_HPP_
 #define SDK_HPP_
 
-#include <fixsdk.hpp>
-
 #define private public
 #define protected public
 

@@ -13,11 +13,9 @@ class ConVar;
 #include <sdk.hpp>
 #include <interfaces.hpp>
 
-#include <beforecheaders.hpp>
 #include <string>
 #include <vector>
 #include <functional>
-#include <aftercheaders.hpp>
 
 // Catvar types
 enum CatVar_t

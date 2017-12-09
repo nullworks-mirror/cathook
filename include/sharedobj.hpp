@@ -8,10 +8,8 @@
 #ifndef SHAREDOBJ_HPP_
 #define SHAREDOBJ_HPP_
 
-#include <beforecheaders.hpp>
 #include <string>
 #include <vector>
-#include <aftercheaders.hpp>
 
 struct link_map;
 typedef void *(*fn_CreateInterface_t)(const char *, int *);

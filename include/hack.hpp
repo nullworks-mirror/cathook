@@ -15,11 +15,9 @@ class bf_read;
 class ConCommand;
 class CCommand;
 
-#include <beforecheaders.hpp>
 #include <stack>
 #include <string>
 #include <mutex>
-#include <aftercheaders.hpp>
 
 namespace hack
 {

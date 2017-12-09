@@ -8,9 +8,7 @@
 #ifndef DRAWMGR_HPP_
 #define DRAWMGR_HPP_
 
-#include "beforecheaders.hpp"
 #include <mutex>
-#include "aftercheaders.hpp"
 
 extern std::mutex drawing_mutex;
 

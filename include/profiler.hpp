@@ -8,8 +8,6 @@
 #ifndef PROFILER_H_
 #define PROFILER_H_
 
-#include <aftercheaders.hpp>
-#include <beforecheaders.hpp>
 #include <chrono>
 #include <string>
 

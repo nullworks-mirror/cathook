@@ -10,11 +10,9 @@
 
 #define CHATSTACK_INTERVAL 0.8f
 
-#include <beforecheaders.hpp>
 #include <string>
 #include <stack>
 #include <functional>
-#include <aftercheaders.hpp>
 
 namespace chat_stack
 {

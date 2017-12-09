@@ -10,10 +10,8 @@
 
 #include <unistd.h>
 
-#include "beforecheaders.hpp"
 #include <string>
 #include <sstream>
-#include "aftercheaders.hpp"
 
 #include <steam/isteamclient.h>
 

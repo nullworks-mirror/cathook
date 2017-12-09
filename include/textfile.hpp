@@ -8,8 +8,6 @@
 #ifndef TEXTFILE_HPP_
 #define TEXTFILE_HPP_
 
-#include <aftercheaders.hpp>
-#include <beforecheaders.hpp>
 #include <string>
 #include <vector>
 

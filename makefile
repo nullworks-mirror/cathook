@@ -107,7 +107,7 @@ LDLIBS+=-lssl -l:libSDL2-2.0.so.0 -l:libGLEW.so -lglez -lxoverlay
 CXXFLAGS+=$(shell sdl2-config --cflags)
 CFLAGS+=$(shell sdl2-config --cflags)
 else
-EXCL_SOURCES:=drawex.cpp hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp  hooks/sdl.cpp drawing.cpp drawmgr.cpp drawgl.cpp hooks/PaintTraverse.cpp EffectChams.cpp EffectGlow.cpp atlas.cpp
+EXCL_SOURCES:=visual/atlas.cpp visual/colors.cpp visual/drawex.cpp visual/drawing.cpp visual/drawmgr.cpp visual/EffectChams.cpp visual/EffectGlow.cpp hacks/ESP.cpp hacks/SkinChanger.cpp hacks/SpyAlert.cpp hacks/Radar.cpp fidgetspinner.cpp  hooks/sdl.cpp drawing.cpp hooks/PaintTraverse.cpp
 EXCL_SOURCES:=$(addprefix $(SRC_DIR)/,$(EXCL_SOURCES))
 
 SOURCES:=$(filter-out $(shell find $(SRC_DIR)/gui -name "*.cpp" -print),$(SOURCES))

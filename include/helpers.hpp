@@ -29,12 +29,10 @@ void SetCVarInterface(ICvar *iface);
 #include <entitycache.hpp>
 #include <logging.hpp>
 
-#include <beforecheaders.hpp>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <mutex>
-#include <aftercheaders.hpp>
 
 #include <sdk.hpp>
 

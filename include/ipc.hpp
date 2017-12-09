@@ -10,11 +10,9 @@
 #ifndef IPC_H_
 #define IPC_H_
 
-#include <beforecheaders.hpp>
 #include "ipcb.hpp"
 #include "pthread.h"
 #include <time.h>
-#include <aftercheaders.hpp>
 
 class CatCommand;
 class CatVar;

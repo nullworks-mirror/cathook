@@ -14,7 +14,6 @@
 #undef ENABLE_IPC
 #endif
 
-#include <beforecheaders.hpp>
 #include <emmintrin.h>
 #include <vector>
 #include <bitset>
@@ -50,8 +49,6 @@
 
 #include "timer.hpp"
 #include "averager.hpp"
-
-#include <aftercheaders.hpp>
 
 #include "macros.hpp"
 #include <visual/colors.hpp>

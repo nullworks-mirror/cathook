@@ -9,7 +9,6 @@
 #define NETMESSAGE_HPP_
 
 #include <bitbuf.h>
-#include <fixsdk.hpp>
 #include <utlvector.h>
 #include <inetchannel.h>
 #include <inetmessage.h>

@@ -38,9 +38,7 @@ void draw();
 bool random_crits_enabled();
 }
 
-#include <beforecheaders.hpp>
 #include <unordered_map>
-#include <aftercheaders.hpp>
 
 extern int *g_PredictionRandomSeed;
 extern std::unordered_map<int, int> command_number_mod;

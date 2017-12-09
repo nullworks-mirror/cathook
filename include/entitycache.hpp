@@ -8,8 +8,6 @@
 #ifndef ENTITYCACHE_HPP_
 #define ENTITYCACHE_HPP_
 
-#include <aftercheaders.hpp>
-#include <beforecheaders.hpp>
 #include "entityhitboxcache.hpp"
 #include "averager.hpp"
 #include <mathlib/vector.h>
@@ -18,7 +16,6 @@
 #include <icliententitylist.h>
 #include <cdll_int.h>
 #include <enums.hpp>
-#include <fixsdk.hpp>
 #include <interfaces.hpp>
 #include <itemtypes.hpp>
 
