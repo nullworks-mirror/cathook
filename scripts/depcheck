@@ -51,15 +51,24 @@ gauge_deps_headers ()
     return 0
 }
 
+BAD=0
+
 check_all_deps ()
 {
     gauge_deps_libraries | whiptail --title "Checking libraries" --gauge "Please wait" 6 78 0
     if ! [ ${PIPESTATUS[0]} == 0 ]; then
-        whiptail --title "Error: missing library" --msgbox "It appears that you don't have library '$(cat $STATUS_MISSING)' installed. Please install it and try again." 8 78
+        $DIALOG --title "Error: missing library" --msgbox "It appears that you don't have library '$(cat $STATUS_MISSING)' installed. Please install it and try again." 8 78
+        BAD=1
     fi
     gauge_deps_headers | whiptail --title "Checking headers" --gauge "Please wait" 6 78 0
     if ! [ ${PIPESTATUS[0]} == 0 ]; then
-        whiptail --title "Error: missing header" --msgbox "It appears that you don't have header '$(cat $STATUS_MISSING)' installed. Please install it and try again." 8 78
+        $DIALOG --title "Error: missing header" --msgbox "It appears that you don't have header '$(cat $STATUS_MISSING)' installed. Please install it and try again." 8 78
+        BAD=1
+    fi
+    if [ BAD == 1 ]; then
+        $DIALOG --title "Failure" --msgbox "It looks like you need to install some additional libraries, you can do that from main menu." 8 78
+    else
+        $DIALOG --title "Success" --msgbox "You have all the libraries you need to build and use cathook!" 7 68
     fi
 }
 

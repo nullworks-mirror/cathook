@@ -10,33 +10,61 @@ While cathook can work on most distros, most helper scripts can work incorrectly
 If you have trouble, you can visit cathook's official telegram channel and ask for help from other users of your distro there." 15 50
 fi
 
-USER=$($DIALOG --title "Main Menu" --menu "What do you want to do?" 20 40 7 \
-    "I" "Inject" \
-    "B" "Build" \
-    "T" "Troubleshoot" \
-    "S" "Suggestion or bug report" \
-    "P" "Support the creator" \
-    "F" "Format sources" \
-    "U" "Update" 3>&1 1>&2 2>&3)
+USER=$($DIALOG --title "Main Menu (WIP)" --menu "What do you want to do?" 20 60 11 \
+    "DEP" "| Check requirements (Ubuntu)" \
+    "INS" "| Install libraries (Ubuntu)" \
+    "BLD" "| Build" \
+    "INJ" "| Inject" \
+    "FIX" "| Troubleshoot (WIP)" \
+    "BUG" "| Suggestion or bug report" \
+    "TGA" "| Join announcements channel in Telegram" \
+    "TGB" "| Join community channel in Telegram" \
+    "PAT" "| Support the creator" \
+    "FMT" "| Format sources" \
+    "UPD" "| Update" 3>&1 1>&2 2>&3)
     
 case "$USER" in
-    "I")
+    "CHK")
+        . depcheck
+        exit
         ;;
-    "B")
+    "INS")
+        . depinstall
+        exit
         ;;
-    "T")
+    "BLD")
+        . build
+        exit
+        ;;
+    "INJ")
+        . inject
+        exit
+        ;;
+    "FIX")
         . troubleshoot
         exit
         ;;
-    "P")
-        . donate
+    "BUG")
+        xdg-open https://github.com/nullifiedcat/cathook/issues >/dev/null 2>&1 &
         exit
         ;;
-    "F")
+    "TGA")
+        xdg-open tg://resolve?domain=cathook_cheat >/dev/null 2>&1 &
+        exit
+        ;;
+    "TGB")
+        xdg-open tg://resolve?domain=nullifiedcat >/dev/null 2>&1 &
+        exit
+        ;;
+    "PAT")
+        xdg-open https://patreon.com/nullifiedcat >/dev/null 2>&1 &
+        exit
+        ;;
+    "FMT")
         . format
         exit
         ;;
-    "U")
+    "UPD")
         . update
         exit
         ;;
