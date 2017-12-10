@@ -246,6 +246,8 @@ ModelManifest.xml
 *.o
 *.d
 
+.settings/*
+
 # Don't ignore binary resource files
 !res/bin/*
 

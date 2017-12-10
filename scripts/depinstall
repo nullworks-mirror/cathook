@@ -31,10 +31,14 @@ gauge_deps_packages ()
     return 0
 }
 
+if ! package_exists "gksu"; then
+    $DIALOG --title "gksu not installed" --msgbox "You should install gksu first. Do that with\nsudo apt install gksu" 9 78
+    exit
+fi
+
 gauge_deps_packages | whiptail --title "Installing packages" --gauge "Please wait" 6 78 0
 
 $DIALOG --title "Success" --msgbox "Installed successfully." 8 78
-
 
 if ! [ ${PIPESTATUS[0]} == 0 ]; then
     $DIALOG --title "Error: error" --msgbox "It appears that you have error. Please fix it." 8 78
