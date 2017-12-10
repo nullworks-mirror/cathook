@@ -9,9 +9,6 @@
 
 #include "common.hpp"
 
-namespace re
-{
-
 #include "C_BaseEntity.hpp"
 #include "CTFPlayerShared.hpp"
 #include "C_BasePlayer.hpp"
@@ -20,8 +17,7 @@ namespace re
 #include "C_TFWeaponBaseMelee.hpp"
 #include "C_TFWeaponBaseGun.hpp"
 
-#include "CTFGCClientSystem.hpp"
 #include "CTFParty.hpp"
+#include "CTFGCClientSystem.hpp"
 #include "ITFGroupMatchCriteria.hpp"
 #include "CTFPartyClient.hpp"
-}

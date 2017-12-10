@@ -57,6 +57,7 @@ LIBXOVERLAY=libxoverlay/bin32/libxoverlay.so
 INCLUDES=-I. -Iinclude -Iucccccp -isystem/usr/include/c++/6.3.1 -isystem$(SSDK_DIR)/public -isystem$(SSDK_DIR)/mathlib -isystem$(SSDK_DIR)/common -isystem$(SSDK_DIR)/public/tier1 -isystem$(SSDK_DIR)/public/tier0 -isystem$(SSDK_DIR)
 LDLIBS=-static -l:libc.so.6 -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so
 LDFLAGS=-shared -L$(realpath $(LIB_DIR))
+#LDFLAGS+=-Wl,--no-undefined
 SOURCES=$(shell find $(SRC_DIR) -name "*.c*" -print)
 
 ifndef CLANG

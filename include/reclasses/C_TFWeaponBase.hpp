@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include <common.hpp>
+
+namespace re
+{
+
 class C_TFWeaponBase : public re::C_BaseCombatWeapon
 {
 public:
@@ -181,3 +186,5 @@ public:
         return *(float *) (unsigned(self) + 2616u);
     }
 };
+
+}

@@ -7,6 +7,9 @@
 
 #pragma once
 
+namespace re
+{
+
 class CTFPartyClient
 {
 public:
@@ -17,4 +20,7 @@ public:
     static ITFGroupMatchCriteria *MutLocalGroupCriteria(CTFPartyClient *client);
     static bool BCanQueueForStandby(CTFPartyClient *this_);
     static void RequestQueueForMatch(CTFPartyClient *client);
+    static bool BInQueue(CTFPartyClient *this_);
 };
+
+}

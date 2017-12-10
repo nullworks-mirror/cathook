@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class CTFParty
 {
 public:
@@ -18,3 +23,5 @@ public:
         return *((int *) party + 19);
     }
 };
+
+}

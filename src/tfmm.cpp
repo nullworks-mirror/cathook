@@ -43,6 +43,6 @@ void abandon()
 {
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
     if (gc != nullptr)
-        re::CTFGCClientSystem::AbandonCurrentMatch(gc);
+        gc->AbandonCurrentMatch();
 }
 }

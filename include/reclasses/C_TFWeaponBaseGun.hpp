@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class C_TFWeaponBaseGun : public C_TFWeaponBase
 {
 public:
@@ -25,3 +30,5 @@ public:
             0)(self);
     }
 };
+
+}

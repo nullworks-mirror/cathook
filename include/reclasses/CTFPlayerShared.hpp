@@ -1,3 +1,8 @@
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class CTFPlayerShared
 {
 public:
@@ -15,3 +20,5 @@ public:
         return false;
     }
 };
+
+}

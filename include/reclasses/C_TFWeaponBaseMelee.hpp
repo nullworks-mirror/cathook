@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class C_TFWeaponBaseMelee : public C_TFWeaponBase
 {
 public:
@@ -18,3 +23,5 @@ public:
             0)(self, trace);
     }
 };
+
+}

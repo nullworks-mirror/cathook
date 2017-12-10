@@ -7,9 +7,23 @@
 
 #pragma once
 
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class CTFGCClientSystem
 {
 public:
+	CTFGCClientSystem() = delete;
     static CTFGCClientSystem *GTFGCClientSystem();
-    static void AbandonCurrentMatch(CTFGCClientSystem *);
+
+public:
+    void AbandonCurrentMatch();
+    bool BConnectedToMatchServer(bool flag);
+    bool BHaveLiveMatch();
+    CTFParty *GetParty();
+    int JoinMMMatch();
 };
+
+}

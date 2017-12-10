@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class C_BaseCombatWeapon : public C_BaseEntity
 {
 public:
@@ -32,3 +37,5 @@ public:
             0)(self);
     }
 };
+
+}

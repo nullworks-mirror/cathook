@@ -43,19 +43,21 @@ bool UnassignedClass()
     return g_pLocalPlayer->clazz != int(preferred_class);
 }
 
+Timer autoqueue_timer{};
+
 void UpdateSearch()
 {
     if (!auto_queue)
         return;
     if (g_IEngine->IsInGame())
         return;
-    static Timer autoqueue_timer{};
 
     if (autoqueue_timer.test_and_set(5000))
     {
-        re::CTFParty *party = re::CTFParty::GetParty();
-        if (!party || re::CTFParty::state_(party) == 0)
-        {
+    	re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
+
+    	if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch())
+    	{
             logging::Info("Starting queue");
             tfmm::queue_start();
         }

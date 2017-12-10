@@ -1,3 +1,10 @@
+#pragma once
+
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class C_BasePlayer : public C_BaseEntity
 {
 public:
@@ -6,3 +13,5 @@ public:
         return *((CTFPlayerShared *) (unsigned(self) + 6092));
     }
 };
+
+}

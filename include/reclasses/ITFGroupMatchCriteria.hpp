@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class ITFGroupMatchCriteria
 {
 public:
@@ -18,3 +23,5 @@ public:
 public:
     static int SetMatchGroup(ITFGroupMatchCriteria *this_, int group);
 };
+
+}

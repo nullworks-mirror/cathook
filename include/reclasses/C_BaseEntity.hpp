@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include "reclasses.hpp"
+
+namespace re
+{
+
 class C_BaseEntity
 {
 public:
@@ -23,3 +28,5 @@ public:
         return placeholder;
     }
 };
+
+}

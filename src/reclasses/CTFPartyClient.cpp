@@ -21,6 +21,11 @@ re::CTFPartyClient *re::CTFPartyClient::GTFPartyClient()
     return GTFPartyClient_fn();
 }
 
+bool re::CTFPartyClient::BInQueue(re::CTFPartyClient *this_)
+{
+	return *(uint8_t *)((uint8_t *)this_ + 69);
+}
+
 int re::CTFPartyClient::SendPartyChat(re::CTFPartyClient *client,
                                       const char *message)
 {
