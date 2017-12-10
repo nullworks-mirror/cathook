@@ -54,10 +54,10 @@ void UpdateSearch()
 
     if (autoqueue_timer.test_and_set(5000))
     {
-    	re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
+        re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
 
-    	if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch())
-    	{
+        if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch())
+        {
             logging::Info("Starting queue");
             tfmm::queue_start();
         }
@@ -68,7 +68,7 @@ Timer timer{};
 
 void Update()
 {
-	if (timer.test_and_set(500))
+    if (timer.test_and_set(500))
     {
         if (autojoin_team and UnassignedTeam())
         {

@@ -23,5 +23,4 @@ public:
         return *((int *) party + 19);
     }
 };
-
 }

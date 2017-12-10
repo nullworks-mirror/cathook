@@ -23,5 +23,4 @@ public:
             0)(self, trace);
     }
 };
-
 }

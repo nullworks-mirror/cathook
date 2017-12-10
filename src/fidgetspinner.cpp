@@ -71,7 +71,7 @@ void DrawSpinner()
         spinning_speed = float(spinner_min_speed);
     if (spinning_speed > 1000)
         spinning_speed = 1000;
-    float real_speed = 0;
+    float real_speed   = 0;
     const float speed_cap(spinner_speed_cap);
     if (spinning_speed < 250)
         real_speed = speed_cap * (spinning_speed / 250.0f);

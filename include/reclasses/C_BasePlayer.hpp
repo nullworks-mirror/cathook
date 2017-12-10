@@ -13,5 +13,4 @@ public:
         return *((CTFPlayerShared *) (unsigned(self) + 6092));
     }
 };
-
 }

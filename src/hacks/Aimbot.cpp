@@ -399,8 +399,9 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
             if (GetWeaponMode() == weaponmode::weapon_melee ||
                 (int) priority_mode == 2)
             {
-                scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(
-                                    g_pLocalPlayer->v_Eye);
+                scr = 4096.0f -
+                      calculated_data_array[i].aim_position.DistTo(
+                          g_pLocalPlayer->v_Eye);
             }
             else
             {

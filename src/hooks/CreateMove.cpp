@@ -242,7 +242,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
     }
     g_Settings.bInvalid = false;
 
-	hacks::shared::autojoin::Update();
+    hacks::shared::autojoin::Update();
 
 #if ENABLE_IPC == 1
     static int team_joining_state  = 0;
@@ -426,7 +426,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
     }
     if (time_replaced)
         g_GlobalVars->curtime = curtime_old;
-    g_Settings.bInvalid = false;
+    g_Settings.bInvalid       = false;
     {
         PROF_SECTION(CM_chat_stack);
         chat_stack::OnCreateMove();

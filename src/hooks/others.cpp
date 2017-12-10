@@ -48,8 +48,9 @@ void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
     static IClientUnknown *unk;
     static IClientEntity *ent;
 
-    if (!cathook || !(spectator_target || no_arms || no_hats ||
-                      (clean_screenshots && g_IEngine->IsTakingScreenshot())))
+    if (!cathook ||
+        !(spectator_target || no_arms || no_hats ||
+          (clean_screenshots && g_IEngine->IsTakingScreenshot())))
     {
         original(_this, state, info, matrix);
         return;
@@ -231,8 +232,9 @@ CUserCmd *GetUserCmd_hook(IInput *_this, int sequence_number)
     static INetChannel *ch;
 
     def = original(_this, sequence_number);
-    if (def && command_number_mod.find(def->command_number) !=
-                   command_number_mod.end())
+    if (def &&
+        command_number_mod.find(def->command_number) !=
+            command_number_mod.end())
     {
         // logging::Info("Replacing command %i with %i", def->command_number,
         // command_number_mod[def->command_number]);
@@ -408,7 +410,7 @@ void Shutdown_hook(void *_this, const char *reason)
     }
 
     if (hacks::shared::autojoin::auto_queue)
-    	tfmm::abandon();
+        tfmm::abandon();
 }
 
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
@@ -628,7 +630,7 @@ void FrameStageNotify_hook(void *_this, int stage)
                     angles.x = -89;
                 if (angles.x <= -90)
                     angles.x = 89;
-                angles.y = fmod(angles.y + 180.0f, 360.0f);
+                angles.y     = fmod(angles.y + 180.0f, 360.0f);
                 if (angles.y < 0)
                     angles.y += 360.0f;
                 angles.y -= 180.0f;
@@ -744,9 +746,9 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
         if (s < 256)
         {
             data = (char *) alloca(s);
-            for (i = 0; i < s; i++)
+            for (i      = 0; i < s; i++)
                 data[i] = buf.ReadByte();
-            j = 0;
+            j           = 0;
             std::string name;
             std::string message;
             for (i = 0; i < 3; i++)

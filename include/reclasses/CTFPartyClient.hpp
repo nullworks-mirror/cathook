@@ -22,5 +22,4 @@ public:
     static void RequestQueueForMatch(CTFPartyClient *client);
     static bool BInQueue(CTFPartyClient *this_);
 };
-
 }

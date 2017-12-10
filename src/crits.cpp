@@ -168,7 +168,6 @@ void draw()
     }
 }
 #endif
-
 }
 
 void crithack_saved_state::Load(IClientEntity *entity)

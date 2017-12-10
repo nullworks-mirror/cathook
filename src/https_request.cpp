@@ -96,8 +96,8 @@ std::string RAII_HTTPS_Socket::get(const std::string &path)
     int rq_length = snprintf(buffer_rq.get(), rq_size,
                              "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n",
                              path.c_str(), hostname_.c_str());
-    int sent      = 0;
-    int chunk     = 0;
+    int sent  = 0;
+    int chunk = 0;
     do
     {
         chunk =

@@ -247,10 +247,9 @@ void StoreClientData()
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];
     data.friendid     = g_ISteamUser->GetSteamID().GetAccountID();
     data.ts_injected  = time_injected;
-    strncpy(
-        data.name,
-        GetFriendPersonaName_hook(g_ISteamFriends, g_ISteamUser->GetSteamID()),
-        sizeof(data.name));
+    strncpy(data.name, GetFriendPersonaName_hook(g_ISteamFriends,
+                                                 g_ISteamUser->GetSteamID()),
+            sizeof(data.name));
 }
 
 void Heartbeat()

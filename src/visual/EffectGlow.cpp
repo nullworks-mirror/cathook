@@ -96,7 +96,7 @@ ITexture *GetBuffer(int i)
     {
         ITexture *fullframe;
         IF_GAME(IsTF2())
-        fullframe      = g_IMaterialSystem->FindTexture("_rt_FullFrameFB",
+        fullframe = g_IMaterialSystem->FindTexture("_rt_FullFrameFB",
                                                    TEXTURE_GROUP_RENDER_TARGET);
         else fullframe = g_IMaterialSystemHL->FindTexture(
             "_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);

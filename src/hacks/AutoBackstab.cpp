@@ -36,9 +36,10 @@ void CreateMove()
 
     if (re::C_TFWeaponBaseMelee::DoSwingTrace(weapon, &trace))
     {
-        if (trace.m_pEnt && reinterpret_cast<IClientEntity *>(trace.m_pEnt)
-                                    ->GetClientClass()
-                                    ->m_ClassID == RCC_PLAYER)
+        if (trace.m_pEnt &&
+            reinterpret_cast<IClientEntity *>(trace.m_pEnt)
+                    ->GetClientClass()
+                    ->m_ClassID == RCC_PLAYER)
         {
             if (NET_INT(trace.m_pEnt, netvar.iTeamNum) != g_pLocalPlayer->team)
             {

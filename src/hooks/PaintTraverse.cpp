@@ -62,7 +62,7 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
         }
         if (*pure_addr)
             pure_orig = *pure_addr;
-        *pure_addr = (void *) 0;
+        *pure_addr    = (void *) 0;
     }
     else if (pure_orig)
     {

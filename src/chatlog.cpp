@@ -79,8 +79,9 @@ void LogMessage(int eid, std::string message)
     player_info_s info;
     if (not g_IEngine->GetPlayerInfo(eid, &info))
         return;
-    if (dont_log_ipc && playerlist::AccessData(info.friendsID).state ==
-                            playerlist::k_EState::IPC)
+    if (dont_log_ipc &&
+        playerlist::AccessData(info.friendsID).state ==
+            playerlist::k_EState::IPC)
         return;
     std::string name(info.name);
     for (auto &x : name)

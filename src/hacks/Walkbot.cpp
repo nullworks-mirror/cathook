@@ -852,8 +852,8 @@ Timer slot_timer{};
 
 void UpdateSlot()
 {
-	if (!slot_timer.test_and_set(1000))
-		return;
+    if (!slot_timer.test_and_set(1000))
+        return;
     if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
     {
         IClientEntity *weapon = RAW_ENT(LOCAL_W);
@@ -1150,6 +1150,9 @@ void OnLevelInit()
 
 static CatVar wb_abandon_too_many_bots(CV_INT, "wb_population_control", "0",
                                        "Abandon if bots >");
+
+Timer abandon_timer{};
+
 void CheckLivingSpace()
 {
 #if ENABLE_IPC
@@ -1184,24 +1187,28 @@ void CheckLivingSpace()
                 }
             }
         }
-        /*
-        if (ipc::peer->client_id == highest && count >
-        int(wb_abandon_too_many_bots)) { static Timer timer {}; if
-        (timer.test_and_set(1000 * 5)) { logging::Info("Found %d other bots
-        in-game, abandoning (%u)", count, ipc::peer->client_id); for (auto i :
-        botlist) { logging::Info("-> Bot %d with ID %u", i,
-        ipc::peer->memory->peer_user_data[i].friendid);
+
+        if (ipc::peer->client_id == highest &&
+            count > int(wb_abandon_too_many_bots))
+        {
+            if (abandon_timer.test_and_set(1000 * 5))
+            {
+                logging::Info("Found %d other bots in-game, abandoning (%u)",
+                              count, ipc::peer->client_id);
+                for (auto i : botlist)
+                {
+                    logging::Info(
+                        "-> Bot %d with ID %u", i,
+                        ipc::peer->memory->peer_user_data[i].friendid);
                 }
-                g_TFGCClientSystem->SendExitMatchmaking(true);
+                tfmm::abandon();
             }
         }
-        */
     }
 #endif
 }
 
 Timer quit_timer{};
-CatVar abandon_if_no_map(CV_SWITCH, "wb_abandon_if_no_map", "0", "Abandon if no map");
 
 void Move()
 {
@@ -1230,7 +1237,8 @@ void Move()
             if (nodes.size() == 0)
             {
                 Load("default");
-                if (abandon_if_no_map && nodes.size() == 0 && quit_timer.test_and_set(5000))
+                if (leave_if_empty && nodes.size() == 0 &&
+                    quit_timer.test_and_set(5000))
                 {
                     logging::Info("No map file, abandon");
                     tfmm::abandon();

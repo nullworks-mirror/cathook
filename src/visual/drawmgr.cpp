@@ -73,12 +73,12 @@ void DrawCheatVisuals()
 || g_pGUI->Visible()
 */
 #endif
-            )
+                    )
             {
                 name_s = force_name.GetString();
                 if (name_s.length() < 3)
                     name_s = "*Not Set*";
-                reason_s = disconnect_reason.GetString();
+                reason_s   = disconnect_reason.GetString();
                 if (reason_s.length() < 3)
                     reason_s = "*Not Set*";
                 AddSideString(""); // foolish

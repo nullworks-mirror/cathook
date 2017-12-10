@@ -23,5 +23,4 @@ public:
 public:
     static int SetMatchGroup(ITFGroupMatchCriteria *this_, int group);
 };
-
 }

@@ -376,7 +376,7 @@ void CreateMove()
             if (current_index >= source->size())
                 current_index = 0;
             if (random_order)
-                current_index = rand() % source->size();
+                current_index      = rand() % source->size();
             std::string spamString = source->at(current_index);
             if (FormatSpamMessage(spamString))
                 chat_stack::Say(spamString, false);

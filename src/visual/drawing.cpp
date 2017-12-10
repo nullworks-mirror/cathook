@@ -84,7 +84,8 @@ void draw::Initialize()
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
-    fonts::main_font = draw_api::create_font(DATA_PATH "/fonts/verasans.ttf", 14);
+    fonts::main_font =
+        draw_api::create_font(DATA_PATH "/fonts/verasans.ttf", 14);
 }
 
 bool draw::EntityCenterToScreen(CachedEntity *entity, Vector &out)
@@ -118,17 +119,15 @@ bool draw::WorldToScreen(const Vector &origin, Vector &screen)
     {
         odw      = 1.0f / w;
         screen.x = (draw::width / 2) +
-                   (0.5 *
-                        ((wts[0][0] * origin[0] + wts[0][1] * origin[1] +
-                          wts[0][2] * origin[2] + wts[0][3]) *
-                         odw) *
+                   (0.5 * ((wts[0][0] * origin[0] + wts[0][1] * origin[1] +
+                            wts[0][2] * origin[2] + wts[0][3]) *
+                           odw) *
                         draw::width +
                     0.5);
         screen.y = (draw::height / 2) -
-                   (0.5 *
-                        ((wts[1][0] * origin[0] + wts[1][1] * origin[1] +
-                          wts[1][2] * origin[2] + wts[1][3]) *
-                         odw) *
+                   (0.5 * ((wts[1][0] * origin[0] + wts[1][1] * origin[1] +
+                            wts[1][2] * origin[2] + wts[1][3]) *
+                           odw) *
                         draw::height +
                     0.5);
         return true;

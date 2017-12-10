@@ -79,7 +79,7 @@ void EntityHitboxCache::Init()
         }
         if (m_nNumHitboxes > CACHE_MAX_HITBOXES)
             m_nNumHitboxes = CACHE_MAX_HITBOXES;
-        m_bModelSet = true;
+        m_bModelSet        = true;
     }
     m_bSuccess = true;
 }

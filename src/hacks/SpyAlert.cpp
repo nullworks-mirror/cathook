@@ -76,8 +76,9 @@ void Draw()
         {
             if (!backstab_triggered)
             {
-                if (sound_alerts && (g_GlobalVars->curtime - last_say) >
-                                        (float) sound_alert_interval)
+                if (sound_alerts &&
+                    (g_GlobalVars->curtime - last_say) >
+                        (float) sound_alert_interval)
                 {
                     g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
                     last_say = g_GlobalVars->curtime;
@@ -94,8 +95,9 @@ void Draw()
             backstab_triggered = false;
             if (!warning_triggered)
             {
-                if (sound_alerts && (g_GlobalVars->curtime - last_say) >
-                                        (float) sound_alert_interval)
+                if (sound_alerts &&
+                    (g_GlobalVars->curtime - last_say) >
+                        (float) sound_alert_interval)
                 {
                     g_ISurface->PlaySound("vo/demoman_cloakedspy01.mp3");
                     last_say = g_GlobalVars->curtime;

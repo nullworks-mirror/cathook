@@ -15,7 +15,7 @@ namespace re
 class CTFGCClientSystem
 {
 public:
-	CTFGCClientSystem() = delete;
+    CTFGCClientSystem() = delete;
     static CTFGCClientSystem *GTFGCClientSystem();
 
 public:
@@ -25,5 +25,4 @@ public:
     CTFParty *GetParty();
     int JoinMMMatch();
 };
-
 }
