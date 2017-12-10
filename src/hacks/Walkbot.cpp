@@ -1200,6 +1200,9 @@ void CheckLivingSpace()
 #endif
 }
 
+Timer quit_timer{};
+CatVar abandon_if_no_map(CV_SWITCH, "wb_abandon_if_no_map", "0", "Abandon if no map");
+
 void Move()
 {
     if (state::state == WB_DISABLED)
@@ -1227,24 +1230,10 @@ void Move()
             if (nodes.size() == 0)
             {
                 Load("default");
-                if (nodes.size() == 0)
+                if (abandon_if_no_map && nodes.size() == 0 && quit_timer.test_and_set(5000))
                 {
-                    static auto last_abandon =
-                        std::chrono::system_clock::from_time_t(0);
-                    auto s =
-                        std::chrono::duration_cast<std::chrono::seconds>(
-                            std::chrono::system_clock::now() - last_abandon)
-                            .count();
-
-                    if (s < 3)
-                    {
-                        return;
-                    }
-                    /*
-                        logging::Info("No map file, shutting down");
-                    g_TFGCClientSystem->SendExitMatchmaking(true);
-                    */
-                    last_abandon = std::chrono::system_clock::now();
+                    logging::Info("No map file, abandon");
+                    tfmm::abandon();
                 }
             }
         }
