@@ -51,9 +51,6 @@ RES_DIR=res
 OUT_DIR=bin
 TARGET = $(OUT_DIR)/$(OUT_NAME)
 
-LIBGLEZ=libglez/bin32/libglez.so
-LIBXOVERLAY=libxoverlay/bin32/libxoverlay.so
-
 INCLUDES=-I. -Iinclude -Iucccccp -isystem/usr/include/c++/6.3.1 -isystem$(SSDK_DIR)/public -isystem$(SSDK_DIR)/mathlib -isystem$(SSDK_DIR)/common -isystem$(SSDK_DIR)/public/tier1 -isystem$(SSDK_DIR)/public/tier0 -isystem$(SSDK_DIR)
 LDLIBS=-static -l:libc.so.6 -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so
 LDFLAGS=-shared -L$(realpath $(LIB_DIR))
@@ -165,12 +162,6 @@ src/sdk/utlbuffer.o : CXXFLAGS+=-w
 
 # end of 3rd party sources
 
-$(LIBGLEZ):
-	$(MAKE) -C libglez -e ARCH=32
-
-$(LIBXOVERLAY):
-	$(MAKE) -C libxoverlay -e ARCH=32
-
 .cpp.o:
 	@echo Compiling $<
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -182,7 +173,7 @@ $(LIBXOVERLAY):
 %.d: %.cpp
 	@$(CXX) -M $(CXXFLAGS) $< > $@
 
-$(TARGET): $(OBJECTS) $(LIBGLEZ) $(LIBXOVERLAY)
+$(TARGET): $(OBJECTS)
 	@echo Building cathook
 	$(LD) -o $@ $(LDFLAGS) $(OBJECTS) $(LDLIBS)
 ifndef BUILD_DEBUG

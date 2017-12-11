@@ -10,8 +10,9 @@ While cathook can work on most distros, most helper scripts can work incorrectly
 If you have trouble, you can visit cathook's official telegram channel and ask for help from other users of your distro there." 15 50
 fi
 
-USER=$($DIALOG --title "Main Menu (WIP)" --menu "What do you want to do?" 20 60 11 \
+USER=$($DIALOG --title "Main Menu (WIP)" --menu "What do you want to do?" 20 60 12 \
     "DEP" "| Check requirements (Ubuntu)" \
+    "CAT" "| Install libglez and libxoverlay" \
     "INS" "| Install libraries (Ubuntu)" \
     "BLD" "| Build" \
     "INJ" "| Inject" \
@@ -24,8 +25,12 @@ USER=$($DIALOG --title "Main Menu (WIP)" --menu "What do you want to do?" 20 60 
     "UPD" "| Update" 3>&1 1>&2 2>&3)
     
 case "$USER" in
-    "CHK")
+    "DEP")
         . depcheck
+        exit
+        ;;
+    "CAT")
+        . catlibs
         exit
         ;;
     "INS")
