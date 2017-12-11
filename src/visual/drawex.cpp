@@ -14,7 +14,7 @@
 #include <GL/gl.h>
 
 extern "C" {
-#include "xoverlay.h"
+#include "visual/xoverlay.h"
 }
 
 #define DRAW_XOVERLAY 0

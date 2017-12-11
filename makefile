@@ -43,7 +43,7 @@ ENABLE_NULL_GRAPHICS:=1
 endif
 
 OUT_NAME = libcathook.so
-SSDK_DIR=$(realpath source-sdk-2013/mp/src)
+SSDK_DIR=$(realpath source-sdk-2013-headers/mp/src)
 SIPC_DIR=$(realpath simple-ipc/src/include)
 LIB_DIR=lib
 SRC_DIR=src
@@ -51,7 +51,7 @@ RES_DIR=res
 OUT_DIR=bin
 TARGET = $(OUT_DIR)/$(OUT_NAME)
 
-INCLUDES=-I. -Iinclude -Iucccccp -isystem/usr/include/c++/6.3.1 -isystem$(SSDK_DIR)/public -isystem$(SSDK_DIR)/mathlib -isystem$(SSDK_DIR)/common -isystem$(SSDK_DIR)/public/tier1 -isystem$(SSDK_DIR)/public/tier0 -isystem$(SSDK_DIR)
+INCLUDES=-Iinclude -I. -Iucccccp -isystem$(SSDK_DIR)/public -isystem$(SSDK_DIR)/mathlib -isystem$(SSDK_DIR)/common -isystem$(SSDK_DIR)/public/tier1 -isystem$(SSDK_DIR)/public/tier0 -isystem$(SSDK_DIR)
 LDLIBS=-static -l:libc.so.6 -l:libstdc++.so.6 -l:libtier0.so -l:libvstdlib.so
 LDFLAGS=-shared -L$(realpath $(LIB_DIR))
 #LDFLAGS+=-Wl,--no-undefined
