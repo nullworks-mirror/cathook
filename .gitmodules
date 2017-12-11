@@ -13,3 +13,6 @@
 [submodule "libglez"]
 	path = libglez
 	url = https://github.com/nullifiedcat/libglez
+[submodule "source-sdk-2013-headers"]
+	path = source-sdk-2013-headers
+	url = https://github.com/nullifiedcat/source-sdk-2013-headers
