@@ -10,8 +10,8 @@
 #include <thread>
 
 extern "C" {
-#include "glez.h"
-#include "xoverlay.h"
+#include "visual/glez.h"
+#include "visual/xoverlay.h"
 }
 
 #define draw_api drawex::api
