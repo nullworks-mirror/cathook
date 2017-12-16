@@ -155,7 +155,14 @@ void hack::Initialize()
 {
     signal(SIGPIPE, SIG_IGN);
     time_injected = time(nullptr);
-// Essential files must always exist, except when the game is running in text
+    passwd *pwd   = getpwuid(getuid());
+    char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name, time_injected);
+    freopen(logname, "w", stdout);
+    free(logname);
+    logname = strfmt("/tmp/cathook-game-stderr-%s-%u.log", pwd->pw_name, time_injected);
+    freopen(logname, "w", stderr);
+    free(logname);
+    // Essential files must always exist, except when the game is running in text
 // mode.
 #if ENABLE_VISUALS == 1
 

@@ -45,6 +45,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
+#include <pwd.h>
 #include <assert.h>
 
 #include "timer.hpp"

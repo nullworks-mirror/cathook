@@ -13,7 +13,7 @@ if ! command -v gksu; then
 fi
 
 pushd ../libxoverlay
-if ! make -e ARCH=32 >/tmp/buildxoverlay.log; then
+if ! make -e ARCH=32 >/tmp/buildxoverlay.log 2>&1; then
     $DIALOG --title "Build failed" --msgbox "Failed to build libxoverlay. See /tmp/buildxoverlay.log for more info." 9 78
     exit
 fi
@@ -21,7 +21,7 @@ $SU make install
 popd
 
 pushd ../libglez
-if ! make -e ARCH=32 >/tmp/buildglez.log; then
+if ! make -e ARCH=32 >/tmp/buildglez.log 2>&1; then
     $DIALOG --title "Build failed" --msgbox "Failed to build libglez. See /tmp/buildglez.log for more info." 9 78
     exit
 fi

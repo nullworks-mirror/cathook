@@ -66,6 +66,8 @@ float GetAAAAPitch()
         return aaaa_stage ? -271 : -89;
     case 1:
         return aaaa_stage ? 271 : 89;
+    default:
+    	break;
     }
     return 0;
 }
@@ -174,6 +176,8 @@ void FuckPitch(float &io_pitch)
     {
     case k_EFuckMode::FM_RANDOMVARS:
         io_pitch = RandFloatRange(min_pitch, max_pitch);
+    default:
+    	break;
     }
 
     if (io_pitch < min_pitch)
@@ -195,6 +199,8 @@ void FuckYaw(float &io_yaw)
     {
     case k_EFuckMode::FM_RANDOMVARS:
         io_yaw = RandFloatRange(min_yaw, max_yaw);
+    default:
+    	break;
     }
 
     if (io_yaw < min_yaw)
@@ -246,6 +252,9 @@ bool ShouldAA(CUserCmd *cmd)
             SetSafeSpace(8);
             return false;
         }
+        break;
+    default:
+    	break;
     }
     if (safe_space)
     {
@@ -414,12 +423,14 @@ void ProcessUserCmd(CUserCmd *cmd)
     case 8:
         FuckYaw(y);
         clamp = false;
+    default:
+    	break;
     }
 
-    switch ((int) pitch_mode)
+    switch (int(pitch_mode))
     {
     case 1:
-        p = (float) pitch;
+        p = float(pitch);
         break;
     case 2:
         if (flip)
@@ -463,7 +474,7 @@ void ProcessUserCmd(CUserCmd *cmd)
     if (clamp)
         fClampAngle(cmd->viewangles);
     if (roll)
-        cmd->viewangles.z = (float) roll;
+        cmd->viewangles.z = float(roll);
     if (aaaa_enabled)
     {
         UpdateAAAAKey();

@@ -240,7 +240,7 @@ CUserCmd *GetUserCmd_hook(IInput *_this, int sequence_number)
         // command_number_mod[def->command_number]);
         oldcmd              = def->command_number;
         def->command_number = command_number_mod[def->command_number];
-        def->random_seed = MD5_PseudoRandom(def->command_number) & 0x7fffffff;
+        def->random_seed = MD5_PseudoRandom(unsigned(def->command_number)) & 0x7fffffff;
         command_number_mod.erase(command_number_mod.find(oldcmd));
         *(int *) ((unsigned) g_IBaseClientState +
                   offsets::lastoutgoingcommand()) = def->command_number - 1;
@@ -811,7 +811,7 @@ void LevelInit_hook(void *_this, const char *newmap)
 void LevelShutdown_hook(void *_this)
 {
     static const LevelShutdown_t original =
-        (LevelShutdown_t) hooks::clientmode.GetMethod(offsets::LevelShutdown());
+        LevelShutdown_t(hooks::clientmode.GetMethod(offsets::LevelShutdown()));
     need_name_change = true;
     playerlist::Save();
     g_Settings.bInvalid = true;

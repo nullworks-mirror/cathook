@@ -59,7 +59,6 @@ void SDL_GL_SwapWindow_hook(SDL_Window *window)
 
     static bool init{ false };
 
-    static GLXContext tf2        = glXGetCurrentContext();
     static SDL_GLContext tf2_sdl = SDL_GL_GetCurrentContext();
 
     if (cathook && !disable_visuals)

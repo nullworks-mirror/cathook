@@ -186,9 +186,9 @@ void CreateMove()
     projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(),
                                          cur_proj_speed, cur_proj_grav));
     if (proj_speed)
-        cur_proj_speed = (float) proj_speed;
+        cur_proj_speed = float(proj_speed);
     if (proj_gravity)
-        cur_proj_grav = (float) proj_gravity;
+        cur_proj_grav = float(proj_gravity);
 
     // We do this as we need to pass whether the aimkey allows aiming to both
     // the find target and aiming system. If we just call the func than toggle
@@ -196,8 +196,8 @@ void CreateMove()
     bool aimkey_status = UpdateAimkey();
 
     // Refresh our best target
-    CachedEntity *target = RetrieveBestTarget(aimkey_status);
-    if (CE_BAD(target) || !foundTarget)
+    CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
+    if (CE_BAD(target_entity) || !foundTarget)
         return;
 
     // Auto-zoom
@@ -216,7 +216,7 @@ void CreateMove()
     }
 
 #if ENABLE_VISUALS == 1
-    hacks::shared::esp::SetEntityColor(target, colors::pink);
+    hacks::shared::esp::SetEntityColor(target_entity, colors::pink);
 #endif
 
     // Local player check + Aimkey
@@ -245,7 +245,7 @@ void CreateMove()
                 currently_charging_huntsman)
             {
                 currently_charging_huntsman = false;
-                Aim(target);
+                Aim(target_entity);
             }
             else
                 return;
@@ -254,10 +254,10 @@ void CreateMove()
         }
         else if (CanShoot() && (g_pUserCmd->buttons & IN_ATTACK) &&
                  CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0)
-            Aim(target);
+            Aim(target_entity);
     }
     else
-        Aim(target);
+        Aim(target_entity);
 
     return;
 }
@@ -416,6 +416,8 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                 case 3: // Health Priority
                     scr = 450.0f - ent->m_iHealth;
                     break;
+                default:
+                	break;
                 }
             }
             // Compare the top score to our current ents score
@@ -962,6 +964,8 @@ int BestHitbox(CachedEntity *target)
         return (int) hitbox;
     }
     break;
+    default:
+    	break;
     }
     // Hitbox machine :b:roke
     return -1;
@@ -1098,6 +1102,9 @@ bool UpdateAimkey()
                 aimkey_flip = !aimkey_flip;
             if (!aimkey_flip)
                 allow_aimkey = false;
+            break;
+        default:
+        	break;
         }
         pressed_last_tick = key_down;
     }
