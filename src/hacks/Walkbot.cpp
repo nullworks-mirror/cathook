@@ -1153,6 +1153,18 @@ static CatVar wb_abandon_too_many_bots(CV_INT, "wb_population_control", "0",
 
 Timer abandon_timer{};
 
+CatVar wb_abandon_players_leq(CV_SWITCH, "wb_abandon_players_leq", "0", "Leave if non-bot player count <=");
+
+void check_player_count()
+{
+#if ENABLE_IPC
+	if (ipc::peer && wb_abandon_players_leq)
+	{
+
+	}
+#endif
+}
+
 void CheckLivingSpace()
 {
 #if ENABLE_IPC

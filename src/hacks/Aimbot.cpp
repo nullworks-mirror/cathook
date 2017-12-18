@@ -478,8 +478,8 @@ bool IsTargetStateGood(CachedEntity *entity)
 
                 // Darwins damage correction, Darwins protects against 15% of
                 // damage
-                if (HasDarwins(entity))
-                    cdmg = (cdmg * .85) - 1;
+//                if (HasDarwins(entity))
+//                    cdmg = (cdmg * .85) - 1;
                 // Vaccinator damage correction, Vac charge protects against 75%
                 // of damage
                 if (HasCondition<TFCond_UberBulletResist>(entity))
@@ -888,11 +888,11 @@ int BestHitbox(CachedEntity *target)
                 float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
                 float bdmg = 50;
                 // Darwins damage correction, protects against 15% of damage
-                if (HasDarwins(target))
-                {
-                    bdmg = (bdmg * .85) - 1;
-                    cdmg = (cdmg * .85) - 1;
-                }
+//                if (HasDarwins(target))
+//                {
+//                    bdmg = (bdmg * .85) - 1;
+//                    cdmg = (cdmg * .85) - 1;
+//                }
                 // Vaccinator damage correction, protects against 75% of damage
                 if (HasCondition<TFCond_UberBulletResist>(target))
                 {
