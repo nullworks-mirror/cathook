@@ -37,6 +37,10 @@ void queue_start()
         re::CTFPartyClient::LoadSavedCasualCriteria(client);
         re::CTFPartyClient::RequestQueueForMatch(client);
     }
+    else
+    {
+    	logging::Info("queue_start: CTFPartyClient == null!");
+    }
 }
 
 void abandon()
@@ -44,5 +48,7 @@ void abandon()
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
     if (gc != nullptr)
         gc->AbandonCurrentMatch();
+    else
+    	logging::Info("abandon: CTFGCClientSystem == null!");
 }
 }

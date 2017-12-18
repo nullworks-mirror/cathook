@@ -585,7 +585,7 @@ void FireGameEvent_hook(void *_this, IGameEvent *event)
     original(_this, event);
 }
 
-static CatVar hitrate_check(CV_SWITCH, "hitrate", "0", "Monitor hitrate");
+static CatVar hitrate_check(CV_SWITCH, "hitrate", "1", "Monitor hitrate");
 
 void FrameStageNotify_hook(void *_this, int stage)
 {

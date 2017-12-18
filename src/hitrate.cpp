@@ -44,7 +44,7 @@ CatCommand debug_hitrate("debug_hitrate", "Debug hitrate", []() {
     }
     if (count_hits)
     {
-        p1 = float(count_hits_head) / float(count_hits) * 100.0f;
+        p2 = float(count_hits_head) / float(count_hits) * 100.0f;
     }
     logging::Info("%d / %d (%d%%)", count_hits, count_shots, p1);
     logging::Info("%d / %d (%d%%)", count_hits_head, count_hits, p2);
