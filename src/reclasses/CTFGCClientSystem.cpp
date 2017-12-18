@@ -25,13 +25,13 @@ CTFGCClientSystem *CTFGCClientSystem::GTFGCClientSystem()
 void CTFGCClientSystem::AbandonCurrentMatch()
 {
     typedef void *(*AbandonCurrentMatch_t)(CTFGCClientSystem *);
-    static uintptr_t addr1 = gSignatures.GetClientSignature(
-        "55 89 E5 57 56 8D 75 C8 53 81 EC 8C 00 00 00 C7 04 24 ? ? ? ? 8B 5D "
-        "08 E8 ? ? ? ? C7 44 24 04 91 18 00 00 89 34 24 E8 ? ? ? ? A1 ? ? ? ? "
-        "C7 45 C8 ? ? ? ?");
+    static uintptr_t addr1 = gSignatures.GetClientSignature("55 89 E5 57 56 8D 75 C8 53 81 EC 8C 00 00 00 C7 04 24");
     static AbandonCurrentMatch_t AbandonCurrentMatch_fn =
         AbandonCurrentMatch_t(addr1);
-
+    if (AbandonCurrentMatch_fn == nullptr)
+    {
+    	logging::Info("calling NULL!");
+    }
     AbandonCurrentMatch_fn(this);
 }
 
