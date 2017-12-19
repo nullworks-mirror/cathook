@@ -606,7 +606,7 @@ void FrameStageNotify_hook(void *_this, int stage)
         hacks::tf2::skinchanger::FrameStageNotify(stage);
     }
 #endif
-    if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
+    if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START && !g_Settings.bInvalid)
     {
         angles::Update();
         hacks::shared::anticheat::CreateMove();
