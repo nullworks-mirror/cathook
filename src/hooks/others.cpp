@@ -378,6 +378,7 @@ static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
 
 void Shutdown_hook(void *_this, const char *reason)
 {
+	g_Settings.bInvalid = true;
     // This is a INetChannel hook - it SHOULDN'T be static because netchannel
     // changes.
     const Shutdown_t original =

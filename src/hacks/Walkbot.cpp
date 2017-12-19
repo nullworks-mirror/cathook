@@ -1258,7 +1258,7 @@ void Move()
             }
         }
         static Timer livingspace_timer{};
-        if (livingspace_timer.test_and_set(1000 * 8))
+        if (livingspace_timer.test_and_set(1000 * 2))
         {
             CheckLivingSpace();
         }
