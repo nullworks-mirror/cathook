@@ -48,33 +48,62 @@ struct server_data_s
 struct user_data_s
 {
     char name[32];
-    char server[22];
     unsigned friendid;
+
     bool connected;
-    bool good;
-    int health;
-    int health_max;
-    char life_state;
-    int team;
-    int clazz;
-    int score;
-    int last_score;
-    int total_score;
+
     time_t heartbeat;
-    float x;
-    float y;
-    float z;
+
     time_t ts_injected;
     time_t ts_connected;
     time_t ts_disconnected;
-    int shots;
-    int hits;
-    int headshots;
+
+    struct accumulated_t
+	{
+    	int kills;		// TODO
+    	int deaths;		// TODO
+    	int score;
+
+    	int shots;
+    	int hits;
+    	int headshots;
+	} accumulated;
+
+    struct
+	{
+	    bool good;
+
+    	int kills;		// TODO
+    	int deaths;		// TODO
+    	int score;
+
+    	int shots;		// TODO
+    	int hits;		// TODO
+    	int headshots;	// TODO
+
+    	int team;
+    	int role; // class
+    	char life_state;
+        int health;
+        int health_max;
+
+        float x;
+        float y;
+        float z;
+
+        int player_count;
+        int bot_count;
+
+        char server[24];
+        char mapname[32];
+	} ingame;
 };
 
 using peer_t = cat_ipc::Peer<server_data_s, user_data_s>;
 
 extern peer_t *peer;
+
+void update_mapname();
 
 void Heartbeat();
 void UpdateTemporaryData();

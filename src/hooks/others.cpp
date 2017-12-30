@@ -384,7 +384,7 @@ void Shutdown_hook(void *_this, const char *reason)
     const Shutdown_t original =
         (Shutdown_t) hooks::netchannel.GetMethod(offsets::Shutdown());
     logging::Info("Disconnect: %s", reason);
-    if (strstr(reason, "VAC banned"))
+    if (strstr(reason, "banned"))
     {
         if (die_if_vac)
         {
@@ -392,10 +392,6 @@ void Shutdown_hook(void *_this, const char *reason)
             *(int *) 0 = 0;
             exit(1);
         }
-    }
-    else if (strstr(reason, "VAC"))
-    {
-        logging::Info("VAC error?");
     }
 #if ENABLE_IPC
     ipc::UpdateServerAddress(true);
@@ -618,6 +614,7 @@ void FrameStageNotify_hook(void *_this, int stage)
     if (resolver && cathook && !g_Settings.bInvalid &&
         stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
     {
+    	hacks::shared::catbot::update();
         PROF_SECTION(FSN_resolver);
         for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
         {

@@ -1148,78 +1148,6 @@ void OnLevelInit()
     }
 }
 
-static CatVar wb_abandon_too_many_bots(CV_INT, "wb_population_control", "0",
-                                       "Abandon if bots >");
-
-Timer abandon_timer{};
-
-CatVar wb_abandon_players_leq(CV_SWITCH, "wb_abandon_players_leq", "0", "Leave if non-bot player count <=");
-
-void check_player_count()
-{
-#if ENABLE_IPC
-	if (ipc::peer && wb_abandon_players_leq)
-	{
-
-	}
-#endif
-}
-
-void CheckLivingSpace()
-{
-#if ENABLE_IPC
-    if (ipc::peer && wb_abandon_too_many_bots)
-    {
-        std::vector<unsigned> players{};
-        for (int j = 1; j < 32; j++)
-        {
-            player_info_s info;
-            if (g_IEngine->GetPlayerInfo(j, &info))
-            {
-                if (info.friendsID)
-                    players.push_back(info.friendsID);
-            }
-        }
-        int count        = 0;
-        unsigned highest = 0;
-        std::vector<unsigned> botlist{};
-        for (unsigned i = 0; i < cat_ipc::max_peers; i++)
-        {
-            if (!ipc::peer->memory->peer_data[i].free)
-            {
-                for (auto &k : players)
-                {
-                    if (ipc::peer->memory->peer_user_data[i].friendid &&
-                        k == ipc::peer->memory->peer_user_data[i].friendid)
-                    {
-                        botlist.push_back(i);
-                        count++;
-                        highest = i;
-                    }
-                }
-            }
-        }
-
-        if (ipc::peer->client_id == highest &&
-            count > int(wb_abandon_too_many_bots))
-        {
-            if (abandon_timer.test_and_set(1000 * 5))
-            {
-                logging::Info("Found %d other bots in-game, abandoning (%u)",
-                              count, ipc::peer->client_id);
-                for (auto i : botlist)
-                {
-                    logging::Info(
-                        "-> Bot %d with ID %u", i,
-                        ipc::peer->memory->peer_user_data[i].friendid);
-                }
-                tfmm::abandon();
-            }
-        }
-    }
-#endif
-}
-
 Timer quit_timer{};
 
 void Move()
@@ -1254,13 +1182,9 @@ void Move()
                 {
                     logging::Info("No map file, abandon");
                     tfmm::abandon();
+                    return;
                 }
             }
-        }
-        static Timer livingspace_timer{};
-        if (livingspace_timer.test_and_set(1000 * 2))
-        {
-            CheckLivingSpace();
         }
         if (nodes.size() == 0)
             return;
