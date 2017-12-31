@@ -103,4 +103,5 @@ VMTHook studiorender{};
 VMTHook modelrender{};
 VMTHook clientmode4{};
 VMTHook materialsystem{};
+VMTHook enginevgui{};
 }

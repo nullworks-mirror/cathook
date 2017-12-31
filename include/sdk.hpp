@@ -54,6 +54,7 @@
 #include <icommandline.h>
 #include <netmessage.hpp>
 #include <dbg.h>
+#include <ienginevgui.h>
 
 #include "sdk/in_buttons.h"
 #include "sdk/imaterialsystemfixed.h"

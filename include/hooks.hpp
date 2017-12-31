@@ -63,6 +63,7 @@ extern VMTHook baseclientstate;
 extern VMTHook baseclientstate8;
 extern VMTHook steamfriends;
 extern VMTHook materialsystem;
+extern VMTHook enginevgui;
 }
 
 #endif /* HOOKS_H_ */

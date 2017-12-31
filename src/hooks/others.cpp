@@ -557,9 +557,6 @@ const char *GetFriendPersonaName_hook(ISteamFriends *_this, CSteamID steamID)
     return original(_this, steamID);
 }
 
-static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1",
-                                      "Cursor fix");
-
 void FireGameEvent_hook(void *_this, IGameEvent *event)
 {
     static const FireGameEvent_t original =
@@ -582,35 +579,22 @@ void FireGameEvent_hook(void *_this, IGameEvent *event)
     original(_this, event);
 }
 
-static CatVar hitrate_check(CV_SWITCH, "hitrate", "1", "Monitor hitrate");
-
+#if ENABLE_VISUALS == 1
 void FrameStageNotify_hook(void *_this, int stage)
 {
     static IClientEntity *ent;
 
     PROF_SECTION(FrameStageNotify_TOTAL);
-    hacks::tf2::killstreak::apply_killstreaks();
 
     static const FrameStageNotify_t original =
         (FrameStageNotify_t) hooks::client.GetMethod(
             offsets::FrameStageNotify());
+
     if (!g_IEngine->IsInGame())
         g_Settings.bInvalid = true;
-#if ENABLE_VISUALS == 1
     {
         PROF_SECTION(FSN_skinchanger);
         hacks::tf2::skinchanger::FrameStageNotify(stage);
-    }
-#endif
-    if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START && !g_Settings.bInvalid)
-    {
-    	hacks::shared::catbot::update();
-        angles::Update();
-        hacks::shared::anticheat::CreateMove();
-        if (hitrate_check)
-        {
-            hitrate::Update();
-        }
     }
     if (resolver && cathook && !g_Settings.bInvalid &&
         stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
@@ -635,70 +619,8 @@ void FrameStageNotify_hook(void *_this, int stage)
             }
         }
     }
-    if (stage == FRAME_START)
-    {
-#if ENABLE_IPC
-        static Timer nametimer{};
-        if (nametimer.test_and_set(1000 * 10))
-        {
-            if (ipc::peer)
-            {
-                ipc::StoreClientData();
-            }
-        }
-        static Timer ipc_timer{};
-        if (ipc_timer.test_and_set(1000))
-        {
-            if (ipc::peer)
-            {
-                if (ipc::peer->HasCommands())
-                {
-                    ipc::peer->ProcessCommands();
-                }
-                ipc::Heartbeat();
-                ipc::UpdateTemporaryData();
-            }
-        }
-#endif
-        hacks::shared::autojoin::UpdateSearch();
-        if (!hack::command_stack().empty())
-        {
-            PROF_SECTION(PT_command_stack);
-            std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
-            while (!hack::command_stack().empty())
-            {
-                //logging::Info("executing %s",
-                //              hack::command_stack().top().c_str());
-                g_IEngine->ClientCmd_Unrestricted(
-                    hack::command_stack().top().c_str());
-                hack::command_stack().pop();
-            }
-        }
-#if TEXTMODE_STDIN == 1
-        static auto last_stdin = std::chrono::system_clock::from_time_t(0);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                      std::chrono::system_clock::now() - last_stdin)
-                      .count();
-        if (ms > 500)
-        {
-            UpdateInput();
-            last_stdin = std::chrono::system_clock::now();
-        }
-#endif
-    }
-#if ENABLE_VISUALS == 1
     if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START)
     {
-#if ENABLE_GUI
-        if (cursor_fix_experimental)
-        {
-            /*			if (gui_visible) {
-                            g_ISurface->SetCursorAlwaysVisible(true);
-                        } else {
-                            g_ISurface->SetCursorAlwaysVisible(false);
-                        }*/
-        }
-#endif
         IF_GAME(IsTF())
         {
             if (CE_GOOD(LOCAL_E) && no_zoom)
@@ -720,9 +642,9 @@ void FrameStageNotify_hook(void *_this, int stage)
             }
         }
     }
-#endif /* TEXTMODE */
     original(_this, stage);
 }
+#endif /* TEXTMODE */
 
 static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
                          "Removes newlines from chat");

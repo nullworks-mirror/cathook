@@ -280,8 +280,11 @@ g_pGUI->Setup();
                                   offsets::FireGameEvent());
     hooks::clientmode4.Apply();
     hooks::client.Set(g_IBaseClient);
+
+#if ENABLE_VISUALS == 1
     hooks::client.HookMethod((void *) FrameStageNotify_hook,
                              offsets::FrameStageNotify());
+#endif
     hooks::client.HookMethod((void *) DispatchUserMessage_hook,
                              offsets::DispatchUserMessage());
 
@@ -322,6 +325,9 @@ g_pGUI->Setup();
     hooks::modelrender.Apply();
 #endif
 #endif
+    hooks::enginevgui.Set(g_IEngineVGui);
+    hooks::enginevgui.HookMethod((void *)Paint_hook, offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
+    hooks::enginevgui.Apply();
     hooks::steamfriends.Set(g_ISteamFriends);
     hooks::steamfriends.HookMethod((void *) GetFriendPersonaName_hook,
                                    offsets::GetFriendPersonaName());

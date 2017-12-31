@@ -51,6 +51,7 @@ class CHud;
 class IGameEventManager;
 class TFGCClientSystem;
 class CGameRules;
+class IEngineVGui;
 
 extern TFGCClientSystem *g_TFGCClientSystem;
 extern CHud *g_CHUD;
@@ -83,6 +84,7 @@ extern IMoveHelperServer *g_IMoveHelperServer;
 extern CBaseClientState *g_IBaseClientState;
 extern IGameEventManager *g_IGameEventManager;
 extern CGameRules *g_pGameRules;
+extern IEngineVGui *g_IEngineVGui;
 
 void CreateInterfaces();
 

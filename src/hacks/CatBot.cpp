@@ -152,6 +152,8 @@ void update_ipc_data(ipc::user_data_s& data)
 	data.ingame.bot_count = count_bots;
 }
 
+Timer level_init_timer{};
+
 void update()
 {
 	if (!enabled)
@@ -167,7 +169,7 @@ void update()
 		do_random_votekick();
 	if (timer_catbot_list.test_and_set(3000))
 		update_catbot_list();
-	if (timer_abandon.test_and_set(2000))
+	if (timer_abandon.test_and_set(2000) && level_init_timer.check(13000))
 	{
 		count_bots = 0;
 		int count_ipc = 0;
@@ -233,6 +235,11 @@ void update()
 void init()
 {
     g_IEventManager2->AddListener(&listener(), "player_death", false);
+}
+
+void level_init()
+{
+	level_init_timer.update();
 }
 
 }

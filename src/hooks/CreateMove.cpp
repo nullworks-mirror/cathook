@@ -423,6 +423,11 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             PROF_SECTION(CM_spam);
             hacks::shared::spam::CreateMove();
         }
+        {
+        	PROF_SECTION(CM_AC);
+            angles::Update();
+            hacks::shared::anticheat::CreateMove();
+        }
     }
     if (time_replaced)
         g_GlobalVars->curtime = curtime_old;

@@ -16,6 +16,7 @@ bool should_ignore_player(CachedEntity *player);
 void update_ipc_data(ipc::user_data_s& data);
 void update();
 void init();
+void level_init();
 
 }
 }

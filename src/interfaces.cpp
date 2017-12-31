@@ -48,6 +48,7 @@ IGameEventManager *g_IGameEventManager  = nullptr;
 TFGCClientSystem *g_TFGCClientSystem    = nullptr;
 CHud *g_CHUD                            = nullptr;
 CGameRules *g_pGameRules                = nullptr;
+IEngineVGui *g_IEngineVGui				= nullptr;
 
 template <typename T>
 T *BruteforceInterface(std::string name, sharedobj::SharedObject &object,
@@ -101,6 +102,7 @@ void CreateInterfaces()
     g_IVModelRender = BruteforceInterface<IVModelRender>(
         "VEngineModel", sharedobj::engine(), 16);
     g_ISteamFriends = nullptr;
+    g_IEngineVGui = BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
     IF_GAME(IsTF2())
     {
         uintptr_t sig_steamapi = gSignatures.GetEngineSignature(
