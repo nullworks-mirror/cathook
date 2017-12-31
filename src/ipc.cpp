@@ -51,10 +51,13 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
                                 });
         hacks::shared::followbot::AddMessageHandlers(peer);
         user_data_s &data = peer->memory->peer_user_data[peer->client_id];
-        // Preserve total score
-        int o_total_score = data.total_score;
+
+        // Preserve accumulated data
+        ipc::user_data_s::accumulated_t accumulated;
+        memcpy(&accumulated, &data.accumulated, sizeof(accumulated));
         memset(&data, 0, sizeof(data));
-        data.total_score = o_total_score;
+        memcpy(&data.accumulated, &accumulated, sizeof(accumulated));
+
         StoreClientData();
         Heartbeat();
     }
@@ -65,21 +68,6 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
         peer = nullptr;
     }
 
-});
-CatCommand lobby("ipc_lobby", "Join a lobby", [](const CCommand &args) {
-    std::string input(args.ArgS());
-    std::size_t lobby_id_start = input.find("[L:1:");
-    if (lobby_id_start == std::string::npos)
-    {
-        logging::Info("couldn't find lobby ID!");
-        return;
-    }
-    input                      = input.substr(lobby_id_start + 5);
-    unsigned long lobby32      = strtoul(input.c_str(), nullptr, 10);
-    unsigned long long lobby64 = ((25559040ull << 32) | lobby32);
-    logging::Info("lobby64 ID: %llu", lobby64);
-    peer->SendMessage(format("connect_lobby ", lobby64).c_str(), 0,
-                      ipc::commands::execute_client_cmd, 0, 0);
 });
 CatCommand disconnect("ipc_disconnect", "Disconnect from IPC server", []() {
     if (peer)
@@ -194,50 +182,75 @@ void UpdateServerAddress(bool shutdown)
 
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];
     data.friendid     = g_ISteamUser->GetSteamID().GetAccountID();
-    strncpy(data.server, s_addr, sizeof(data.server));
+    strncpy(data.ingame.server, s_addr, sizeof(data.ingame.server));
+}
+
+void update_mapname()
+{
+	if (not peer)
+		return;
+
+    user_data_s &data = peer->memory->peer_user_data[peer->client_id];
+    strncpy(data.ingame.mapname, GetLevelName().c_str(), sizeof(data.ingame.mapname));
 }
 
 void UpdateTemporaryData()
 {
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];
+
     data.connected    = g_IEngine->IsInGame();
-    data.shots        = hitrate::count_shots;
-    data.hits         = hitrate::count_hits;
-    data.headshots    = hitrate::count_hits_head;
+    // TODO kills, deaths
+    data.accumulated.shots = hitrate::count_shots;
+    data.accumulated.hits = hitrate::count_hits;
+    data.accumulated.headshots = hitrate::count_hits_head;
+
     if (data.connected)
     {
         IClientEntity *player =
             g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
         if (player)
         {
-            data.good       = true;
-            data.health     = NET_INT(player, netvar.iHealth);
-            data.health_max = g_pPlayerResource->GetMaxHealth(LOCAL_E);
-            data.clazz      = g_pPlayerResource->GetClass(LOCAL_E);
-            data.life_state = NET_BYTE(player, netvar.iLifeState);
-            data.score =
+            data.ingame.good = true;
+            // TODO kills, deaths, shots, hits, headshots
+
+            int score_saved = data.ingame.score;
+
+            data.ingame.score =
                 g_pPlayerResource->GetScore(g_IEngine->GetLocalPlayer());
-            if (data.last_score != data.score)
-            {
-                if (data.last_score > data.score)
-                {
-                    data.total_score += data.score;
-                }
-                else
-                {
-                    data.total_score += (data.score - data.last_score);
-                }
-                data.last_score = data.score;
-            }
-            data.team = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
-            data.x    = g_pLocalPlayer->v_Origin.x;
-            data.y    = g_pLocalPlayer->v_Origin.y;
-            data.z    = g_pLocalPlayer->v_Origin.z;
+            data.ingame.team = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
+            data.ingame.role = g_pPlayerResource->GetClass(LOCAL_E);
+            data.ingame.life_state = NET_BYTE(player, netvar.iLifeState);
+            data.ingame.health = NET_INT(player, netvar.iHealth);
+            data.ingame.health_max = g_pPlayerResource->GetMaxHealth(LOCAL_E);
+
+            if (score_saved > data.ingame.score)
+            	score_saved = 0;
+
+            data.accumulated.score += data.ingame.score - score_saved;
+
+            data.ingame.x = g_pLocalPlayer->v_Origin.x;
+            data.ingame.y = g_pLocalPlayer->v_Origin.y;
+            data.ingame.z = g_pLocalPlayer->v_Origin.z;
+
+            int players = 0;
+
+    		for (int i = 1; i <= g_GlobalVars->maxClients; ++i)
+    		{
+    			if (g_IEntityList->GetClientEntity(i))
+    				++players;
+    			else
+    				continue;
+			}
+
+    		data.ingame.player_count = players;
+    		hacks::shared::catbot::update_ipc_data(data);
         }
         else
         {
-            data.good = false;
+            data.ingame.good = false;
         }
+        if (g_IEngine->GetLevelName())
+        	update_mapname();
     }
 }
 

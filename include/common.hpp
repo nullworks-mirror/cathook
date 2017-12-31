@@ -100,6 +100,7 @@
 #include "tfmm.hpp"
 #include "hooks/hookedmethods.hpp"
 #include "classinfo/classinfo.hpp"
+#include "votelogger.hpp"
 #include "crits.hpp"
 #include "textmode.hpp"
 #include "backpacktf.hpp"

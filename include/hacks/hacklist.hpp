@@ -42,5 +42,6 @@
 #include "FollowBot.hpp"
 #include "Announcer.hpp"
 #include "Killstreak.hpp"
+#include "CatBot.hpp"
 
 #endif /* HACKS_HACKLIST_HPP_ */

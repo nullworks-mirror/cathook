@@ -343,6 +343,7 @@ g_pGUI->Setup();
     hacks::shared::killsay::Init();
     hacks::shared::announcer::init();
     hacks::tf2::killstreak::init();
+    hacks::shared::catbot::init();
     logging::Info("Hooked!");
     velocity::Init();
     playerlist::Load();

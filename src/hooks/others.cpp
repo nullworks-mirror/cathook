@@ -384,7 +384,7 @@ void Shutdown_hook(void *_this, const char *reason)
     const Shutdown_t original =
         (Shutdown_t) hooks::netchannel.GetMethod(offsets::Shutdown());
     logging::Info("Disconnect: %s", reason);
-    if (strstr(reason, "VAC banned"))
+    if (strstr(reason, "banned"))
     {
         if (die_if_vac)
         {
@@ -392,10 +392,6 @@ void Shutdown_hook(void *_this, const char *reason)
             *(int *) 0 = 0;
             exit(1);
         }
-    }
-    else if (strstr(reason, "VAC"))
-    {
-        logging::Info("VAC error?");
     }
 #if ENABLE_IPC
     ipc::UpdateServerAddress(true);
@@ -608,6 +604,7 @@ void FrameStageNotify_hook(void *_this, int stage)
 #endif
     if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START && !g_Settings.bInvalid)
     {
+    	hacks::shared::catbot::update();
         angles::Update();
         hacks::shared::anticheat::CreateMove();
         if (hitrate_check)
@@ -670,8 +667,8 @@ void FrameStageNotify_hook(void *_this, int stage)
             std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
             while (!hack::command_stack().empty())
             {
-                logging::Info("executing %s",
-                              hack::command_stack().top().c_str());
+                //logging::Info("executing %s",
+                //              hack::command_stack().top().c_str());
                 g_IEngine->ClientCmd_Unrestricted(
                     hack::command_stack().top().c_str());
                 hack::command_stack().pop();
@@ -785,7 +782,16 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
     if (dispatch_log)
     {
         logging::Info("D> %i", type);
+		std::ostringstream str{};
+		while (buf.GetNumBytesLeft())
+		{
+			unsigned char byte = buf.ReadByte();
+			str << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << ' ';
+		}
+		logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
+		buf.Seek(0);
     }
+    votelogger::user_message(buf, type);
     return original(_this, type, buf);
 }
 
