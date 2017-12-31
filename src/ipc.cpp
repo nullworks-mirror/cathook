@@ -249,6 +249,8 @@ void UpdateTemporaryData()
         {
             data.ingame.good = false;
         }
+        if (g_IEngine->GetLevelName())
+        	update_mapname();
     }
 }
 

@@ -56,6 +56,7 @@ void on_killed_by(int userid)
 
 	//if (human_detecting_map[steamID].has_bot_name)
 	human_detecting_map[steamID].treacherous_kills++;
+	logging::Info("Treacherous kill #%d: %s [U:1:%u]", human_detecting_map[steamID].treacherous_kills, player->player_info.name, player->player_info.friendsID);
 }
 
 void do_random_votekick()
@@ -79,7 +80,12 @@ void do_random_votekick()
 	if (targets.empty())
 		return;
 
-	hack::ExecuteCommand("callvote kick " + std::to_string(targets[rand() % targets.size()]));
+	int target = targets[rand() % targets.size()];
+	player_info_s info;
+	if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(target), &info))
+		return;
+	logging::Info("Calling vote to kick '%s' [U:1:%u] (%d / %u)", info.name, info.friendsID, target, targets.size());
+	hack::ExecuteCommand("callvote kick " + std::to_string(target) + " cheating");
 }
 
 void update_catbot_list()
@@ -96,6 +102,7 @@ void update_catbot_list()
 		{
 			if (human_detecting_map.find(info.friendsID) == human_detecting_map.end())
 			{
+				logging::Info("Found bot %s [U:1:%u]", info.name, info.friendsID);
 				human_detecting_map.insert(std::make_pair(info.friendsID, catbot_user_state{ 0 }));
 			}
 		}

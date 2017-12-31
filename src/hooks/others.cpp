@@ -604,6 +604,7 @@ void FrameStageNotify_hook(void *_this, int stage)
 #endif
     if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START && !g_Settings.bInvalid)
     {
+    	hacks::shared::catbot::update();
         angles::Update();
         hacks::shared::anticheat::CreateMove();
         if (hitrate_check)
@@ -614,7 +615,6 @@ void FrameStageNotify_hook(void *_this, int stage)
     if (resolver && cathook && !g_Settings.bInvalid &&
         stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
     {
-    	hacks::shared::catbot::update();
         PROF_SECTION(FSN_resolver);
         for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
         {

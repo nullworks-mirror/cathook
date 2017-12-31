@@ -548,6 +548,8 @@ bool IsTargetStateGood(CachedEntity *entity)
                 return false;
             }
         }
+        if (hacks::shared::catbot::should_ignore_player(entity))
+        	return false;
         // Preform hitbox prediction
         int hitbox                 = BestHitbox(entity);
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
