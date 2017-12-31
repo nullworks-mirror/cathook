@@ -84,7 +84,6 @@ void do_random_votekick()
 	player_info_s info;
 	if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(target), &info))
 		return;
-	logging::Info("Calling vote to kick '%s' [U:1:%u] (%d / %u)", info.name, info.friendsID, target, targets.size());
 	hack::ExecuteCommand("callvote kick " + std::to_string(target) + " cheating");
 }
 

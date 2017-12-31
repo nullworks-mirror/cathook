@@ -667,8 +667,8 @@ void FrameStageNotify_hook(void *_this, int stage)
             std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
             while (!hack::command_stack().empty())
             {
-                logging::Info("executing %s",
-                              hack::command_stack().top().c_str());
+                //logging::Info("executing %s",
+                //              hack::command_stack().top().c_str());
                 g_IEngine->ClientCmd_Unrestricted(
                     hack::command_stack().top().c_str());
                 hack::command_stack().pop();
@@ -782,7 +782,16 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
     if (dispatch_log)
     {
         logging::Info("D> %i", type);
+		std::ostringstream str{};
+		while (buf.GetNumBytesLeft())
+		{
+			unsigned char byte = buf.ReadByte();
+			str << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << ' ';
+		}
+		logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
+		buf.Seek(0);
     }
+    votelogger::user_message(buf, type);
     return original(_this, type, buf);
 }
 
