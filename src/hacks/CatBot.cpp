@@ -215,16 +215,16 @@ void update()
 		{
 			if (count_total - count_bots <= int(abandon_if_humans_lte))
 			{
-				logging::Info("Abandoning because there are %d non-bots in game, and abandon_if_humans_lte is %d.", count_total - count_bots, int(abandon_if_ipc_bots_gte));
+				logging::Info("Abandoning because there are %d non-bots in game, and abandon_if_humans_lte is %d.", count_total - count_bots, int(abandon_if_humans_lte));
 				tfmm::abandon();
 				return;
 			}
 		}
 		if (abandon_if_players_lte)
 		{
-			if (count_total <= int(abandon_if_humans_lte))
+			if (count_total <= int(abandon_if_players_lte))
 			{
-				logging::Info("Abandoning because there are %d total players in game, and abandon_if_humans_lte is %d.", count_total, int(abandon_if_humans_lte));
+				logging::Info("Abandoning because there are %d total players in game, and abandon_if_players_lte is %d.", count_total, int(abandon_if_players_lte));
 				tfmm::abandon();
 				return;
 			}
