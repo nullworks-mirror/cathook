@@ -802,7 +802,7 @@ void WalkTo(const Vector &vector)
         }
         else
         {
-            idle_time = 0;
+            idle_time++;
         }
     }
 
