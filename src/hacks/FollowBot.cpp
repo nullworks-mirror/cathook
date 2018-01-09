@@ -785,7 +785,7 @@ void WalkTo(const Vector &vector)
 {
 
     // Check if the local player is not moving
-    if (CE_VECTOR(LOCAL_E, netvar.vVelocity).IsZero(1.0f))
+    if (CE_VECTOR(LOCAL_E, netvar.vVelocity).IsZero(3.5f))
     {
         // Set idle time if we havent already
         if (!idle_time)
