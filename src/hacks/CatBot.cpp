@@ -17,6 +17,9 @@ static CatVar abandon_if_humans_lte(CV_INT, "cbu_abandon_if_humans_lte", "0", "A
 static CatVar abandon_if_players_lte(CV_INT, "cbu_abandon_if_players_lte", "0", "Abandon if players <=");
 static CatVar mark_human_threshold(CV_INT, "cbu_mark_human_threshold", "2", "Mark human after N kills");
 static CatVar random_votekicks(CV_SWITCH, "cbu_random_votekicks", "0", "Randomly initiate votekicks");
+static CatVar micspam(CV_SWITCH, "cbu_micspam", "0", "Micspam helper");
+static CatVar micspam_on(CV_INT, "cbu_micspam_on_interval", "3", "+voicerecord interval");
+static CatVar micspam_off(CV_INT, "cbu_micspam_off_interval", "60", "-voicerecord interval");
 
 struct catbot_user_state
 {
@@ -154,6 +157,9 @@ void update_ipc_data(ipc::user_data_s& data)
 
 Timer level_init_timer{};
 
+Timer micspam_on_timer{};
+Timer micspam_off_timer{};
+
 void update()
 {
 	if (!enabled)
@@ -164,6 +170,14 @@ void update()
 
 	if (CE_BAD(LOCAL_E))
 		return;
+
+	if (micspam)
+	{
+		if (micspam_on && micspam_on_timer.test_and_set(int(micspam_on) * 1000))
+			g_IEngine->ExecuteClientCmd("+voicerecord");
+		if (micspam_off && micspam_off_timer.test_and_set(int(micspam_off) * 1000))
+			g_IEngine->ExecuteClientCmd("-voicerecord");
+	}
 
 	if (random_votekicks && timer_votekicks.test_and_set(5000))
 		do_random_votekick();
