@@ -3,6 +3,10 @@
 
 [cathook announcements channel in telegram](https://t.me/cathook_cheat)
 
+# Detected
+
+The software is most likely detected. Only use it on accounts you won't regret getting VAC banned.
+
 ## Community
 You can chat with other cathook users in [my official telegram group](https://t.me/nullifiedcat).
 
