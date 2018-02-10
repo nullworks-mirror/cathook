@@ -13,18 +13,8 @@ namespace tf2
 {
 namespace autobackstab
 {
-struct AimbotCalculatedData_s
-{
-    unsigned long predict_tick{ 0 };
-    Vector aim_position{ 0 };
-    unsigned long vcheck_tick{ 0 };
-    bool visible{ false };
-    float fov{ 0 };
-    int hitbox{ 0 };
-};
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
-AimbotCalculatedData_s calculated_data_array[2048]{};
 // TODO improve
 void CreateMove()
 {
