@@ -56,9 +56,8 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
         {
             pure_addr = *reinterpret_cast<void ***>(
                 gSignatures.GetEngineSignature(
-                    "55 89 E5 83 EC 18 A1 ? ? ? ? 89 04 24 E8 0D FF FF FF A1 ? "
-                    "? ? ? 85 C0 74 08 89 04 24 E8 ? ? ? ? C9 C3") +
-                7);
+                    "A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") +
+                1);
         }
         if (*pure_addr)
             pure_orig = *pure_addr;
