@@ -13,6 +13,7 @@ namespace tf2
 {
 namespace autobackstab
 {
+	
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
 // TODO improve
