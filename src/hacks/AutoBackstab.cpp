@@ -34,9 +34,9 @@ void CreateMove()
     }
     else if (HasCondition<TFCond_Cloaked>(LOCAL_E))
     {
-    	found = false;
-    	if (!CE_GOOD(LOCAL_E))
-    		return;
+        found = false;
+        if (!CE_GOOD(LOCAL_E))
+            return;
         CachedEntity *ent;
         for (int i; i < 32; i++)
         {
@@ -58,12 +58,12 @@ void CreateMove()
             {
                 scr_best = scr;
                 ent      = pEnt;
-                found = true;
+                found    = true;
             }
         }
         logging::Info("1");
         if (!found)
-        	return;
+            return;
         logging::Info("2");
         if (!CE_GOOD(ent))
             return;
@@ -71,35 +71,39 @@ void CreateMove()
         float min     = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) - 39.0f;
         float min2;
         if (min < 1.0f)
-        	min2 = 360.0f - min;
-        float max     = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) + 39.0f;
+            min2  = 360.0f - min;
+        float max = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) + 39.0f;
         float max2;
         if (max > 360.0f)
-        	max2 = max - 360.0f;
-        logging::Info("%f %f %f", ent_eye, min, max);
-        if (min2 || max2) {
-        	if (min2 && min2 > max) {
-        		if (ent_eye >= max && ent_eye <= min2) {
-        			if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
-        				g_pUserCmd->buttons |= IN_ATTACK;
-        		}
-        	}
-        	else if (min2 && min2 < max) {
-        		if (ent_eye >= min2 && ent_eye <= max)
-        			if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
-        				g_pUserCmd->buttons |= IN_ATTACK;
-        	}
-        	else if (max2 && max2 < min) {
-        		if (ent_eye >= max2 && ent_eye <= min)
-        			if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
-        				g_pUserCmd->buttons |= IN_ATTACK;
-        	}
-        	else if (max && max2 > min) {
-        		if (ent_eye >= min && ent_eye >= min)
-        			if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
-        				g_pUserCmd->buttons |= IN_ATTACK;
-        	}
-
+            max2 = max - 360.0f;
+        if (min2 || max2)
+        {
+            if (min2 && min2 > max)
+            {
+                if (ent_eye >= max && ent_eye <= min2)
+                {
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
+                        g_pUserCmd->buttons |= IN_ATTACK;
+                }
+            }
+            else if (min2 && min2 < max)
+            {
+                if (ent_eye >= min2 && ent_eye <= max)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
+                        g_pUserCmd->buttons |= IN_ATTACK;
+            }
+            else if (max2 && max2 < min)
+            {
+                if (ent_eye >= max2 && ent_eye <= min)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
+                        g_pUserCmd->buttons |= IN_ATTACK;
+            }
+            else if (max && max2 > min)
+            {
+                if (ent_eye >= min && ent_eye >= min)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
+                        g_pUserCmd->buttons |= IN_ATTACK;
+            }
         }
         else if (ent_eye >= min && ent_eye <= max)
         {
