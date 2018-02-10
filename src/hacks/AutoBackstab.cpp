@@ -61,10 +61,8 @@ void CreateMove()
                 found    = true;
             }
         }
-        logging::Info("1");
         if (!found)
             return;
-        logging::Info("2");
         if (!CE_GOOD(ent))
             return;
         float ent_eye = CE_FLOAT(ent, netvar.m_angEyeAngles + 4);
