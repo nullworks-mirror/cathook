@@ -66,11 +66,11 @@ void CreateMove()
         if (!CE_GOOD(ent))
             return;
         float ent_eye = CE_FLOAT(ent, netvar.m_angEyeAngles + 4);
-        float min     = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) - 45.0f;
+        float min     = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) - 50.0f;
         float min2;
         if (min < 1.0f)
             min2  = 360.0f - min;
-        float max = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) + 45.0f;
+        float max = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) + 50.0f;
         float max2;
         if (max > 360.0f)
             max2 = max - 360.0f;
@@ -80,32 +80,32 @@ void CreateMove()
             {
                 if (ent_eye >= max && ent_eye <= min2)
                 {
-                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 80)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 100)
                         g_pUserCmd->buttons |= IN_ATTACK;
                 }
             }
             else if (min2 && min2 < max)
             {
                 if (ent_eye >= min2 && ent_eye <= max)
-                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 80)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 100)
                         g_pUserCmd->buttons |= IN_ATTACK;
             }
             else if (max2 && max2 < min)
             {
                 if (ent_eye >= max2 && ent_eye <= min)
-                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 80)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 100)
                         g_pUserCmd->buttons |= IN_ATTACK;
             }
             else if (max && max2 > min)
             {
                 if (ent_eye >= min && ent_eye >= min)
-                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 80)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 100)
                         g_pUserCmd->buttons |= IN_ATTACK;
             }
         }
         else if (ent_eye >= min && ent_eye <= max)
         {
-            if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 80)
+            if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 100)
                 g_pUserCmd->buttons |= IN_ATTACK;
         }
     }
