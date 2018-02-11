@@ -93,19 +93,19 @@ void CreateMove()
             else if (max2 && max2 < min)
             {
                 if (ent_eye >= max2 && ent_eye <= min)
-                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 80)
                         g_pUserCmd->buttons |= IN_ATTACK;
             }
             else if (max && max2 > min)
             {
                 if (ent_eye >= min && ent_eye >= min)
-                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
+                    if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 80)
                         g_pUserCmd->buttons |= IN_ATTACK;
             }
         }
         else if (ent_eye >= min && ent_eye <= max)
         {
-            if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 67)
+            if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 80)
                 g_pUserCmd->buttons |= IN_ATTACK;
         }
     }
