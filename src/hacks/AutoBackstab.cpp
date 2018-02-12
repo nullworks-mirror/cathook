@@ -54,7 +54,7 @@ void CreateMove()
             if (LOCAL_E->m_iTeam == pEnt->m_iTeam)
                 continue;
             scr = 4096.0f - pEnt->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin);
-            if ((scr > scr_best) && ent->m_flDistance < (int) 100.0f)
+            if ((scr > scr_best) && LOCAL_E->m_vecOrigin.DistTo(pEnt->m_vecOrigin) < (int) 130.0f)
             {
                 scr_best = scr;
                 ent      = pEnt;
