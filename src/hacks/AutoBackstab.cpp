@@ -45,16 +45,16 @@ void CreateMove()
             CachedEntity *pEnt = ENTITY(i);
             if (!CE_GOOD(pEnt))
                 continue;
-            if (!pEnt->m_bAlivePlayer)
+            if (pEnt->m_Type != ENTITY_PLAYER)
                 continue;
-            if (!pEnt->m_Type == ENTITY_PLAYER)
+            if (!pEnt->m_bAlivePlayer)
                 continue;
             if (pEnt == LOCAL_E)
                 continue;
             if (LOCAL_E->m_iTeam == pEnt->m_iTeam)
                 continue;
             scr = 4096.0f - pEnt->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin);
-            if (scr > scr_best)
+            if ((scr > scr_best) && ent->m_flDistance < (int) 100.0f)
             {
                 scr_best = scr;
                 ent      = pEnt;
@@ -65,15 +65,35 @@ void CreateMove()
             return;
         if (!CE_GOOD(ent))
             return;
-        float ent_eye = CE_FLOAT(ent, netvar.m_angEyeAngles + 4);
-        float min     = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) - 50.0f;
-        float max = CE_FLOAT(LOCAL_E, netvar.m_angEyeAngles + 4) + 50.0f;
-        if (ent_eye >= min && ent_eye <= max)
-        {
-            if (LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 100)
-                g_pUserCmd->buttons |= IN_ATTACK;
-        }
+
+        Vector vecVictimForward;
+        vecVictimForward.x = CE_FLOAT(ent, netvar.angEyeAngles);
+        vecVictimForward.y = CE_FLOAT(ent, netvar.angEyeAngles + 4);
+        vecVictimForward.z = 0.0f;
+        vecVictimForward.NormalizeInPlace();
+
+        // Get a vector from my origin to my targets origin
+        Vector vecToTarget;
+
+        vecToTarget   = GetWorldSpaceCenter(ent) - GetWorldSpaceCenter(LOCAL_E);
+        vecToTarget.z = 0.0f;
+        vecToTarget.NormalizeInPlace();
+
+        float flDot = DotProduct(vecVictimForward, vecToTarget);
+
+        if (flDot > -0.1)
+        	g_pUserCmd->buttons |= IN_ATTACK;
     }
+}
+
+// pPaste, thanks to F1ssi0N
+const Vector GetWorldSpaceCenter(CachedEntity *ent)
+{
+    Vector vMin, vMax;
+    RAW_ENT(ent)->GetRenderBounds(vMin, vMax);
+    Vector vWorldSpaceCenter = RAW_ENT(ent)->GetAbsOrigin();
+    vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
+    return vWorldSpaceCenter;
 }
 }
 }
