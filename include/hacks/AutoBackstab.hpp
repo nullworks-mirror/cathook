@@ -17,6 +17,7 @@ namespace autobackstab
 
 void CreateMove();
 }
+const Vector GetWorldSpaceCenter(CachedEntity* ent);
 }
 }
 
