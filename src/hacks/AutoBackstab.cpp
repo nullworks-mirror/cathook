@@ -16,6 +16,7 @@ namespace autobackstab
 
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
+static CatVar value(CV_SWITCH, "autobackstab_range", "110.0f", "Set Detection Distance to this much");
 bool found;
 // TODO improve
 void CreateMove()
@@ -54,7 +55,7 @@ void CreateMove()
             if (LOCAL_E->m_iTeam == pEnt->m_iTeam)
                 continue;
             scr = 4096.0f - pEnt->m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin);
-            if ((scr > scr_best) && LOCAL_E->m_vecOrigin.DistTo(pEnt->m_vecOrigin) < (int) 130.0f)
+            if ((scr > scr_best) && LOCAL_E->m_vecOrigin.DistTo(pEnt->m_vecOrigin) < (int) value)
             {
                 scr_best = scr;
                 ent      = pEnt;
