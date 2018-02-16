@@ -701,6 +701,36 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     player_info_s info;
                     g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
                     std::string name2 = info.name;
+                    std::string claz = {};
+                    switch (g_pLocalPlayer->clazz) {
+                    case tf_scout:
+                    	claz = "scout";
+                    	break;
+                    case tf_soldier:
+                    	claz = "soldier";
+                    	break;
+                    case tf_pyro:
+                    	claz = "pyro";
+                    	break;
+                    case tf_demoman:
+                    	claz = "demo";
+                    	break;
+                    case tf_engineer:
+                    	claz = "engi";
+                    	break;
+                    case tf_heavy:
+                    	claz = "heavy";
+                    	break;
+                    case tf_medic:
+                    	claz = "med";
+                    	break;
+                    case tf_sniper:
+                    	claz = "sniper";
+                    	break;
+                    case tf_spy:
+                    	claz = "spy";
+                    	break;
+                    }
                     for (char i : name2)
                     {
                         if (iii == 3)
@@ -718,7 +748,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     name2                        = tmp;
                     std::vector<std::string> res = { "skid", "script", "cheat", "hak", "hac", "f1", "hax","vac",
                                                      "ban", "lmao", "bot",
-                                                     "cat", "kick", name2 };
+                                                     "cat", "kick", name2, claz };
                     std::string message2 = message;
                     std::transform(message2.begin(), message2.end(),
                                    message2.begin(), ::tolower);
