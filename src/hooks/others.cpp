@@ -37,6 +37,7 @@ static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms",
                       "Removes arms from first person");
 static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats",
                       "Removes non-stock hats");
+float last_say = 0.0f;
 void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
                            const ModelRenderInfo_t &info, matrix3x4_t *matrix)
 {
@@ -715,7 +716,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     }
                     i                            = 0;
                     name2                        = tmp;
-                    std::vector<std::string> res = { "cheat", "hak", "hac", "f1", "hax","vac",
+                    std::vector<std::string> res = { "skid", "script", "cheat", "hak", "hac", "f1", "hax","vac",
                                                      "ban", "lmao", "bot",
                                                      "cat", "kick", name2 };
                     std::string message2 = message;
@@ -820,6 +821,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                             std::string blanks(
                                 ". \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n ");
                             chat_stack::Say(blanks, true);
+                            PrintChat("Cleared Chat");
                         }
                     }
                 }
