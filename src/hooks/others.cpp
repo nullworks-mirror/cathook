@@ -11,6 +11,7 @@
 #include "hitrate.hpp"
 #include "chatlog.hpp"
 #include "netmessage.hpp"
+#include <boost/algorithm/string.hpp>
 
 #if ENABLE_VISUALS == 1
 
@@ -36,7 +37,7 @@ static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms",
                       "Removes arms from first person");
 static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats",
                       "Removes non-stock hats");
-
+float last_say = 0.0f;
 void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
                            const ModelRenderInfo_t &info, matrix3x4_t *matrix)
 {
@@ -240,7 +241,8 @@ CUserCmd *GetUserCmd_hook(IInput *_this, int sequence_number)
         // command_number_mod[def->command_number]);
         oldcmd              = def->command_number;
         def->command_number = command_number_mod[def->command_number];
-        def->random_seed = MD5_PseudoRandom(unsigned(def->command_number)) & 0x7fffffff;
+        def->random_seed =
+            MD5_PseudoRandom(unsigned(def->command_number)) & 0x7fffffff;
         command_number_mod.erase(command_number_mod.find(oldcmd));
         *(int *) ((unsigned) g_IBaseClientState +
                   offsets::lastoutgoingcommand()) = def->command_number - 1;
@@ -283,6 +285,11 @@ static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
 static CatVar crypt_chat(
     CV_SWITCH, "chat_crypto", "0", "Crypto chat",
     "Start message with !! and it will be only visible to cathook users");
+static CatVar chat_filter(CV_STRING, "chat_censor", "",
+                          "Spam Chat with newlines if the chosen words are "
+                          "said, seperate with commas");
+static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
+                                  "enable censor");
 
 bool SendNetMsg_hook(void *_this, INetMessage &msg, bool bForceReliable = false,
                      bool bVoice = false)
@@ -378,7 +385,7 @@ static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
 
 void Shutdown_hook(void *_this, const char *reason)
 {
-	g_Settings.bInvalid = true;
+    g_Settings.bInvalid = true;
     // This is a INetChannel hook - it SHOULDN'T be static because netchannel
     // changes.
     const Shutdown_t original =
@@ -685,6 +692,139 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                         message.push_back(c);
                 }
             }
+            if (chat_filter_enabled)
+            {
+                if (!strcmp(chat_filter.GetString(), ""))
+                {
+                    std::string tmp = {};
+                    int iii         = 0;
+                    player_info_s info;
+                    g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
+                    std::string name2 = info.name;
+                    for (char i : name2)
+                    {
+                        if (iii == 3)
+                        {
+                            iii++;
+                            continue;
+                        }
+                        else if (iii < 2)
+                        {
+                            iii++;
+                            tmp += i;
+                        }
+                    }
+                    i                            = 0;
+                    name2                        = tmp;
+                    std::vector<std::string> res = { "cheat", "hak", "hac", "f1", "hax","vac",
+                                                     "ban", "lmao", "bot",
+                                                     "cat", "kick", name2 };
+                    std::string message2 = message;
+                    std::transform(message2.begin(), message2.end(),
+                                   message2.begin(), ::tolower);
+                    std::string temp;
+                    for (char i : message2)
+                    {
+                        if (i == '4')
+                            temp += "a";
+                        else if (i == '3')
+                            temp += "e";
+                        else if (i == '0')
+                            temp += "o";
+                        else if (i == '6')
+                            temp += "g";
+                        else if (i == '5')
+                            temp += "s";
+                        else if (i == '7')
+                            temp += "t";
+                        else
+                            temp += i;
+                    }
+                    message2 = temp;
+                    temp     = "";
+                    for (auto filter : res)
+                    {
+                        if (boost::contains(message2,filter))
+                        {
+                        	logging::Info("gay");
+                        	std::string blanks(". "
+                                            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                                            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                                            "\n ");
+                            chat_stack::Say(blanks,
+                                            true);
+                        }
+                    }
+                }
+                else
+                {
+                    std::string input = chat_filter.GetString();
+                    std::transform(input.begin(), input.end(), input.begin(),
+                                   ::tolower);
+
+                    std::string message2;
+                    std::vector<std::string> result{};
+                    std::string temp{};
+                    int prevj = 0;
+                    int previ;
+                    boost::split(result, input, boost::is_any_of(","));
+                    for (int ii = 0; ii < result.size() - 1; i++)
+                    {
+                    	std::string i = result[ii];
+                        for (int j = 0; j < i.size() - 1; j++)
+                        {
+                            char c = i[j];
+                            if (prevj < j)
+                            {
+                                prevj++;
+                                result[i[j]] = temp;
+                                temp         = "";
+                            }
+                            if (c == '4')
+                                temp += "a";
+                            else if (c == '3')
+                                temp += "e";
+                            else if (c == '0')
+                                temp += "o";
+                            else if (c == '6')
+                                temp += "g";
+                            else if (c == '5')
+                                temp += "s";
+                            else if (c == '7')
+                                temp += "t";
+                            else
+                                temp += c;
+                        }
+                    }
+                    for (char i : message2)
+                    {
+                        if (i == '4')
+                            temp += "a";
+                        else if (i == '3')
+                            temp += "e";
+                        else if (i == '0')
+                            temp += "o";
+                        else if (i == '6')
+                            temp += "g";
+                        else if (i == '5')
+                            temp += 's';
+                        else if (i == '7')
+                            temp += 't';
+                        else
+                            temp += i;
+                    }
+                    temp = "";
+                    for (auto filter : result)
+                    {
+                        if (boost::contains(message2, filter))
+                        {
+                            std::string blanks(
+                                ". \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n ");
+                            chat_stack::Say(blanks, true);
+                        }
+                    }
+                }
+            }
             if (crypt_chat)
             {
                 if (message.find("!!") == 0)
@@ -704,14 +844,15 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
     if (dispatch_log)
     {
         logging::Info("D> %i", type);
-		std::ostringstream str{};
-		while (buf.GetNumBytesLeft())
-		{
-			unsigned char byte = buf.ReadByte();
-			str << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << ' ';
-		}
-		logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
-		buf.Seek(0);
+        std::ostringstream str{};
+        while (buf.GetNumBytesLeft())
+        {
+            unsigned char byte = buf.ReadByte();
+            str << std::hex << std::setw(2) << std::setfill('0')
+                << static_cast<int>(byte) << ' ';
+        }
+        logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
+        buf.Seek(0);
     }
     votelogger::user_message(buf, type);
     return original(_this, type, buf);
