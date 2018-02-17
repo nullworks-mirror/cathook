@@ -692,7 +692,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                         message.push_back(c);
                 }
             }
-            if (chat_filter_enabled)
+            if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
             {
                 if (!strcmp(chat_filter.GetString(), ""))
                 {
@@ -700,43 +700,49 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     int iii         = 0;
                     player_info_s info;
                     g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
-                    std::string name2 = info.name;
+                    std::string name1 = info.name;
+                    std::vector<std::string> name2{};
                     std::string claz = {};
-                    switch (g_pLocalPlayer->clazz) {
-                    case tf_scout:
-                    	claz = "scout";
-                    	break;
-                    case tf_soldier:
-                    	claz = "soldier";
-                    	break;
-                    case tf_pyro:
-                    	claz = "pyro";
-                    	break;
-                    case tf_demoman:
-                    	claz = "demo";
-                    	break;
-                    case tf_engineer:
-                    	claz = "engi";
-                    	break;
-                    case tf_heavy:
-                    	claz = "heavy";
-                    	break;
-                    case tf_medic:
-                    	claz = "med";
-                    	break;
-                    case tf_sniper:
-                    	claz = "sniper";
-                    	break;
-                    case tf_spy:
-                    	claz = "spy";
-                    	break;
-                    }
-                    for (char i : name2)
+                    switch (g_pLocalPlayer->clazz)
                     {
-                        if (iii == 3)
+                    case tf_scout:
+                        claz = "scout";
+                        break;
+                    case tf_soldier:
+                        claz = "soldier";
+                        break;
+                    case tf_pyro:
+                        claz = "pyro";
+                        break;
+                    case tf_demoman:
+                        claz = "demo";
+                        break;
+                    case tf_engineer:
+                        claz = "engi";
+                        break;
+                    case tf_heavy:
+                        claz = "heavy";
+                        break;
+                    case tf_medic:
+                        claz = "med";
+                        break;
+                    case tf_sniper:
+                        claz = "sniper";
+                        break;
+                    case tf_spy:
+                        claz = "spy";
+                        break;
+                    default:
+                        break;
+                    }
+                    for (char i : name1)
+                    {
+                        if (iii == 2)
                         {
-                            iii++;
-                            continue;
+                            iii = 0;
+                            tmp += i;
+                            name2.push_back(tmp);
+                            tmp = "";
                         }
                         else if (iii < 2)
                         {
@@ -744,114 +750,63 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                             tmp += i;
                         }
                     }
-                    i                            = 0;
-                    name2                        = tmp;
-                    std::vector<std::string> res = { "skid", "script", "cheat", "hak", "hac", "f1", "hax","vac",
-                                                     "ban", "lmao", "bot",
-                                                     "cat", "kick", name2, claz };
-                    std::string message2 = message;
-                    std::transform(message2.begin(), message2.end(),
-                                   message2.begin(), ::tolower);
-                    std::string temp;
-                    for (char i : message2)
+                    if (tmp.size() > 2)
+                        name2.push_back(tmp);
+                    iii                          = 0;
+                    std::vector<std::string> res = { "skid", "script", "cheat",
+                                                     "hak", "hac", "f1", "hax",
+                                                     "vac", "ban", "lmao",
+                                                     "bot", "report"
+                                                            "cat",
+                                                     "kick", claz };
+                    for (auto i : name2)
                     {
-                        if (i == '4')
-                            temp += "a";
-                        else if (i == '3')
-                            temp += "e";
-                        else if (i == '0')
-                            temp += "o";
-                        else if (i == '6')
-                            temp += "g";
-                        else if (i == '5')
-                            temp += "s";
-                        else if (i == '7')
-                            temp += "t";
-                        else
-                            temp += i;
+                    	boost::to_lower(i);
+                        res.push_back(i);
                     }
-                    message2 = temp;
-                    temp     = "";
+                    std::string message2 = message;
+                    boost::to_lower(message2);
+                    boost::replace_all(message2, "4", "a");
+                    boost::replace_all(message2, "3", "e");
+                    boost::replace_all(message2, "0", "o");
+                    boost::replace_all(message2, "6", "g");
+                    boost::replace_all(message2, "5", "s");
+                    boost::replace_all(message2, "7", "t");
+                    logging::Info("message2: %s", message2.c_str());
                     for (auto filter : res)
                     {
-                        if (boost::contains(message2,filter))
+                        logging::Info("res: %s", filter.c_str());
+                        if (boost::contains(message2, filter))
                         {
-                        	logging::Info("gay");
-                        	std::string blanks(". "
+                            logging::Info("k");
+                            chat_stack::Say(". "
                                             "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
                                             "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-                                            "\n ");
-                            chat_stack::Say(blanks,
+                                            "\n ",
                                             true);
                         }
                     }
                 }
-                else
+                else if (data[0] != LOCAL_E->m_IDX)
                 {
                     std::string input = chat_filter.GetString();
-                    std::transform(input.begin(), input.end(), input.begin(),
-                                   ::tolower);
-
-                    std::string message2;
+                    boost::to_lower(input);
+                    std::string message2 = message;
                     std::vector<std::string> result{};
-                    std::string temp{};
-                    int prevj = 0;
-                    int previ;
                     boost::split(result, input, boost::is_any_of(","));
-                    for (int ii = 0; ii < result.size() - 1; i++)
-                    {
-                    	std::string i = result[ii];
-                        for (int j = 0; j < i.size() - 1; j++)
-                        {
-                            char c = i[j];
-                            if (prevj < j)
-                            {
-                                prevj++;
-                                result[i[j]] = temp;
-                                temp         = "";
-                            }
-                            if (c == '4')
-                                temp += "a";
-                            else if (c == '3')
-                                temp += "e";
-                            else if (c == '0')
-                                temp += "o";
-                            else if (c == '6')
-                                temp += "g";
-                            else if (c == '5')
-                                temp += "s";
-                            else if (c == '7')
-                                temp += "t";
-                            else
-                                temp += c;
-                        }
-                    }
-                    for (char i : message2)
-                    {
-                        if (i == '4')
-                            temp += "a";
-                        else if (i == '3')
-                            temp += "e";
-                        else if (i == '0')
-                            temp += "o";
-                        else if (i == '6')
-                            temp += "g";
-                        else if (i == '5')
-                            temp += 's';
-                        else if (i == '7')
-                            temp += 't';
-                        else
-                            temp += i;
-                    }
-                    temp = "";
+                    boost::replace_all(message2, "4", "a");
+                    boost::replace_all(message2, "3", "e");
+                    boost::replace_all(message2, "0", "o");
+                    boost::replace_all(message2, "6", "g");
+                    boost::replace_all(message2, "5", "s");
+                    boost::replace_all(message2, "7", "t");
                     for (auto filter : result)
                     {
                         if (boost::contains(message2, filter))
                         {
-                            std::string blanks(
-                                ". \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n ");
-                            chat_stack::Say(blanks, true);
-                            PrintChat("Cleared Chat");
+                            chat_stack::Say(
+                                ". \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n ",
+                                true);
                         }
                     }
                 }
