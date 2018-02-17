@@ -29,7 +29,7 @@ and a lot of useful features, including
 * Heal Arrows exploit (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
 * Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
 * Follow Bots
-* Working crit hack (does not work right now)
+* Working crit hack (does not work right now (works right now))
 
 [FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features) (list might be outdated)
 
