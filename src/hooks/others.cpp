@@ -697,11 +697,13 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                 if (!strcmp(chat_filter.GetString(), ""))
                 {
                     std::string tmp = {};
+                    std::string tmp2 = {};
                     int iii         = 0;
                     player_info_s info;
                     g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
                     std::string name1 = info.name;
                     std::vector<std::string> name2{};
+                    std::vector<std::string> name3{};
                     std::string claz = {};
                     switch (g_pLocalPlayer->clazz)
                     {
@@ -750,8 +752,26 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                             tmp += i;
                         }
                     }
+                    iii = 0;
+                    for (char i : name1)
+                    {
+                        if (iii == 3)
+                        {
+                            iii = 0;
+                            tmp += i;
+                            name3.push_back(tmp2);
+                            tmp2 = "";
+                        }
+                        else if (iii < 3)
+                        {
+                            iii++;
+                            tmp2 += i;
+                        }
+                    }
                     if (tmp.size() > 2)
                         name2.push_back(tmp);
+                    if (tmp2.size() > 2)
+                        name3.push_back(tmp2);
                     iii                          = 0;
                     std::vector<std::string> res = {
                         "skid", "script", "cheat", "hak",   "hac",  "f1",
@@ -759,6 +779,11 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                         "cat",  "insta",  "revv",  "brass", "kick", claz
                     };
                     for (auto i : name2)
+                    {
+                        boost::to_lower(i);
+                        res.push_back(i);
+                    }
+                    for (auto i : name3)
                     {
                         boost::to_lower(i);
                         res.push_back(i);
