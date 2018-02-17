@@ -69,7 +69,7 @@ If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the li
 * `libsdl2-dev`
 * `libglew-dev:i386`
 * `libfreetype6-dev:i386`
-* `boost`
+* `libboost-all-dev`
 * `rsync` (used for copying shaders/fonts to tf2 data directory, `check-data` script)
 
 
