@@ -19,14 +19,14 @@ public:
     {
         typedef IClientEntity *(*fn_t)(IClientEntity *);
         return vfunc<fn_t>(
-            self, offsets::PlatformOffset(451, offsets::undefined, 451),
+            self, offsets::PlatformOffset(452, offsets::undefined, 452),
             0)(self);
     }
     inline static bool UsesPrimaryAmmo(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
         return vfunc<fn_t>(
-            self, offsets::PlatformOffset(447, offsets::undefined, 447),
+            self, offsets::PlatformOffset(448, offsets::undefined, 448),
             0)(self);
     }
     inline static bool HasPrimaryAmmo(IClientEntity *self)
@@ -40,21 +40,21 @@ public:
     {
         typedef bool (*fn_t)(IClientEntity *);
         return vfunc<fn_t>(
-            self, offsets::PlatformOffset(466, offsets::undefined, 466),
+            self, offsets::PlatformOffset(467, offsets::undefined, 467),
             0)(self);
     }
     inline static bool CalcIsAttackCriticalHelper(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
         return vfunc<fn_t>(
-            self, offsets::PlatformOffset(460, offsets::undefined, 460),
+            self, offsets::PlatformOffset(461, offsets::undefined, 461),
             0)(self);
     }
     inline static bool CalcIsAttackCriticalHelperNoCrits(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
         return vfunc<fn_t>(
-            self, offsets::PlatformOffset(461, offsets::undefined, 461),
+            self, offsets::PlatformOffset(462, offsets::undefined, 462),
             0)(self);
     }
     inline static bool CanFireCriticalShot(IClientEntity *self, bool unknown1,
@@ -62,7 +62,7 @@ public:
     {
         typedef bool (*fn_t)(IClientEntity *, bool, IClientEntity *);
         return vfunc<fn_t>(
-            self, offsets::PlatformOffset(489, offsets::undefined, 489),
+            self, offsets::PlatformOffset(490, offsets::undefined, 490),
             0)(self, unknown1, unknown2);
     }
     inline static void AddToCritBucket(IClientEntity *self, float value)
