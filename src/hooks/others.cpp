@@ -657,7 +657,7 @@ static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
                          "Removes newlines from chat");
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
                            "Log dispatched user messages");
-
+std::string clear = "";
 bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
 {
     int loop_index, s, i, j;
@@ -753,12 +753,11 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     if (tmp.size() > 2)
                         name2.push_back(tmp);
                     iii                          = 0;
-                    std::vector<std::string> res = { "skid", "script", "cheat",
-                                                     "hak", "hac", "f1", "hax",
-                                                     "vac", "ban", "lmao",
-                                                     "bot", "report"
-                                                            "cat",
-                                                     "kick", claz };
+                    std::vector<std::string> res = {
+                        "skid", "script", "cheat", "hak",   "hac",  "f1",
+                        "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
+                        "cat",  "insta",  "revv",  "brass", "kick", claz
+                    };
                     for (auto i : name2)
                     {
                         boost::to_lower(i);
@@ -776,11 +775,13 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     {
                         if (boost::contains(message2, filter))
                         {
-                            chat_stack::Say(". "
-                                            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-                                            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-                                            "\n ",
-                                            true);
+
+                            if (clear == "")
+                            {
+                                for (int i = 0; i < 100; i++)
+                                    clear += "\n";
+                            }
+                            chat_stack::Say(". " + clear, true);
                         }
                     }
                 }
@@ -801,9 +802,13 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     {
                         if (boost::contains(message2, filter))
                         {
-                            chat_stack::Say(
-                                ". \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n ",
-                                true);
+                            if (clear == "")
+                            {
+                                clear = "";
+                                for (int i = 0; i < 100; i++)
+                                    clear += "\n";
+                            }
+                            chat_stack::Say(". " + clear, true);
                         }
                     }
                 }
