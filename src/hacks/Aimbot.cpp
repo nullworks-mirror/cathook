@@ -252,6 +252,9 @@ void CreateMove()
 
             // Not release type weapon
         }
+        else if (GetWeaponMode() == weapon_melee && (g_pUserCmd->buttons & IN_ATTACK)) {
+        	Aim(target_entity);
+        }
         else if (CanShoot() && (g_pUserCmd->buttons & IN_ATTACK) &&
                  CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0)
             Aim(target_entity);
@@ -417,7 +420,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                     scr = 450.0f - ent->m_iHealth;
                     break;
                 default:
-                	break;
+                    break;
                 }
             }
             // Compare the top score to our current ents score
@@ -478,8 +481,8 @@ bool IsTargetStateGood(CachedEntity *entity)
 
                 // Darwins damage correction, Darwins protects against 15% of
                 // damage
-//                if (HasDarwins(entity))
-//                    cdmg = (cdmg * .85) - 1;
+                //                if (HasDarwins(entity))
+                //                    cdmg = (cdmg * .85) - 1;
                 // Vaccinator damage correction, Vac charge protects against 75%
                 // of damage
                 if (HasCondition<TFCond_UberBulletResist>(entity))
@@ -549,7 +552,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             }
         }
         if (hacks::shared::catbot::should_ignore_player(entity))
-        	return false;
+            return false;
         // Preform hitbox prediction
         int hitbox                 = BestHitbox(entity);
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
@@ -890,11 +893,11 @@ int BestHitbox(CachedEntity *target)
                 float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
                 float bdmg = 50;
                 // Darwins damage correction, protects against 15% of damage
-//                if (HasDarwins(target))
-//                {
-//                    bdmg = (bdmg * .85) - 1;
-//                    cdmg = (cdmg * .85) - 1;
-//                }
+                //                if (HasDarwins(target))
+                //                {
+                //                    bdmg = (bdmg * .85) - 1;
+                //                    cdmg = (cdmg * .85) - 1;
+                //                }
                 // Vaccinator damage correction, protects against 75% of damage
                 if (HasCondition<TFCond_UberBulletResist>(target))
                 {
@@ -967,7 +970,7 @@ int BestHitbox(CachedEntity *target)
     }
     break;
     default:
-    	break;
+        break;
     }
     // Hitbox machine :b:roke
     return -1;
@@ -1106,7 +1109,7 @@ bool UpdateAimkey()
                 allow_aimkey = false;
             break;
         default:
-        	break;
+            break;
         }
         pressed_last_tick = key_down;
     }
