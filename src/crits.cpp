@@ -11,6 +11,8 @@
 CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info");
 CatVar crit_key(CV_KEY, "crit_key", "0", "Crit Key");
 CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
+CatVar crit_experimental(CV_SWITCH, "crit_experimental", "0",
+                         "Experimental crithack");
 
 std::unordered_map<int, int> command_number_mod{};
 int *g_PredictionRandomSeed = nullptr;
@@ -93,17 +95,27 @@ bool force_crit(IClientEntity *weapon)
 
     logging::Info("Found critical: %d -> %d", g_pUserCmd->command_number,
                   number);
-    if (number && number != g_pUserCmd->command_number)
-        command_number_mod[g_pUserCmd->command_number] = number;
+    if (crit_experimental)
+    {
+        if (number && number != g_pUserCmd->command_number)
+            command_number_mod[g_pUserCmd->command_number] = number;
 
-    cached_calculation.command_number = number;
-    cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
+        cached_calculation.command_number = number;
+        cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
+    }
+    else
+    {
+        if (g_pUserCmd->command_number != number && number)
+            g_pUserCmd->buttons &= ~IN_ATTACK;
+        else
+            g_pUserCmd->buttons |= IN_ATTACK;
+    }
     return !!number;
 }
 
 void create_move()
 {
-    if (!crit_key)
+    if (!crit_key && !crit_melee)
         return;
     if (!random_crits_enabled())
         return;
@@ -116,7 +128,13 @@ void create_move()
         return;
     unfuck_bucket(weapon);
     if ((g_pUserCmd->buttons & IN_ATTACK) && crit_key.KeyDown() &&
-        g_pUserCmd->command_number)
+        g_pUserCmd->command_number && crit_key)
+    {
+        force_crit(weapon);
+    }
+    else if ((g_pUserCmd->buttons & IN_ATTACK) && g_pUserCmd->command_number &&
+             GetWeaponMode() == weapon_melee && crit_melee &&
+             g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife))
     {
         force_crit(weapon);
     }
