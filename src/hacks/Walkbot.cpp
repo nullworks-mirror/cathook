@@ -31,7 +31,7 @@ void DeleteNode(index_t node);
 float distance_2d(Vector &xyz);
 void Save(std::string filename);
 bool Load(std::string filename);
-
+const char* prevlvlname = "";
 enum ENodeFlags
 {
     NF_GOOD = (1 << 0),
@@ -868,7 +868,6 @@ void UpdateSlot()
         }
     }
 }
-
 void UpdateWalker()
 {
     free_move_used = false;
@@ -1174,8 +1173,9 @@ void Move()
     {
         if (leave_if_empty)
         {
-            if (nodes.size() == 0)
+            if (nodes.size() == 0 || g_IEngine->GetLevelName() != prevlvlname)
             {
+            	prevlvlname = g_IEngine->GetLevelName();
                 Load("default");
                 if (leave_if_empty && nodes.size() == 0 &&
                     quit_timer.test_and_set(5000))
