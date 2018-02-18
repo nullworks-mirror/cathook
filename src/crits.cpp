@@ -58,7 +58,9 @@ void unfuck_bucket(IClientEntity *weapon)
     if (g_pUserCmd->command_number)
         changed = false;
 
-    float &bucket = re::C_TFWeaponBase::crit_bucket_(weapon);
+    float &bucket = re::C_TFWeaponBase::crit_bucket_(weapon);;
+    if (GetWeaponMode() == weapon_melee)
+    	bucket = 1000.0f;
 
     if (bucket != last_bucket)
     {
@@ -178,7 +180,10 @@ void draw()
                 else
                     AddCenterString("Weapon can randomly crit");
             }
-            AddCenterString(format("Bucket: ", re::C_TFWeaponBase::crit_bucket_(
+            if (GetWeaponMode() == weapon_melee)
+            	AddCenterString(format("Bucket: 1000"));
+            else
+            	AddCenterString(format("Bucket: ", re::C_TFWeaponBase::crit_bucket_(
                                                    RAW_ENT(LOCAL_W))));
         }
         // AddCenterString(format("Time: ",
