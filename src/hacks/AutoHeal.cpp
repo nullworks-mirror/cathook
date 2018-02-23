@@ -306,7 +306,7 @@ void DoResistSwitching()
 
 int force_healing_target{ 0 };
 
-static CatVar heal_steamid_perm(CV_SWITCH, "autoheal_steamid_only", 0, "Only heal target with steamid, set steamid to 0 to reset. (this does NOT set the target, it only sets it to never not heal the target.)");
+static CatVar heal_steamid_perm(CV_SWITCH, "autoheal_steamid_only", 0, "Only heal target with steamid, set steamid to 0 to reset. (this does NOT set the target, it only sets it to never not heal the target set in \"autoheal_steam_id\".)");
 static CatCommand heal_steamid(
     "autoheal_heal_steamid",
     "Heals a player with SteamID (ONCE. Use for easy airstuck med setup)",
