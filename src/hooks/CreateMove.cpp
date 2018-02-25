@@ -424,9 +424,13 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             hacks::shared::spam::CreateMove();
         }
         {
-        	PROF_SECTION(CM_AC);
+            PROF_SECTION(CM_AC);
             angles::Update();
             hacks::shared::anticheat::CreateMove();
+        }
+        {
+            PROF_SECTION(CM_EVENTS);
+            hacks::shared::event::CreateMove();
         }
     }
     if (time_replaced)
