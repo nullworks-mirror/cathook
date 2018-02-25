@@ -697,7 +697,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
             static bool retrun = false;
             if (retrun)
                 PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938, lastname,
-                		0xefec1f, lastfilter);
+                          0xefec1f, lastfilter);
             retrun = false;
             if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
             {
@@ -848,7 +848,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                                     clear += "\n";
                             }
                             chat_stack::Say(". " + clear, true);
-                            retrun = true;
+                            retrun     = true;
                             lastfilter = filter.c_str();
                             lastname   = name.c_str();
                         }
