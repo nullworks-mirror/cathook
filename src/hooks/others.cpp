@@ -692,13 +692,18 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                         message.push_back(c);
                 }
             }
+            static const char *lastfilter;
+            static bool retrun = false;
+            if (retrun)
+                PrintChat("%s: %s", name.c_str(), lastfilter);
+            retrun = false;
             if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
             {
                 if (!strcmp(chat_filter.GetString(), ""))
                 {
-                    std::string tmp = {};
+                    std::string tmp  = {};
                     std::string tmp2 = {};
-                    int iii         = 0;
+                    int iii          = 0;
                     player_info_s info;
                     g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
                     std::string name1 = info.name;
@@ -798,6 +803,8 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     boost::replace_all(message2, "7", "t");
                     for (auto filter : res)
                     {
+                        if (retrun)
+                            break;
                         if (boost::contains(message2, filter))
                         {
 
@@ -807,6 +814,10 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                                     clear += "\n";
                             }
                             chat_stack::Say(". " + clear, true);
+                            PrintChat("%s: %s", 0xe05938, name.c_str(),
+                                      filter.c_str());
+                            retrun     = true;
+                            lastfilter = filter.c_str();
                         }
                     }
                 }
@@ -825,6 +836,8 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     boost::replace_all(message2, "7", "t");
                     for (auto filter : result)
                     {
+                        if (retrun)
+                            break;
                         if (boost::contains(message2, filter))
                         {
                             if (clear == "")
@@ -834,6 +847,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                                     clear += "\n";
                             }
                             chat_stack::Say(". " + clear, true);
+                            retrun = true;
                         }
                     }
                 }
@@ -844,7 +858,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                 {
                     if (ucccccp::validate(message))
                     {
-                        PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
+                        PrintChat("\x07%06X%s\x01: %s", name.c_str(),
                                   ucccccp::decrypt(message).c_str());
                     }
                 }
