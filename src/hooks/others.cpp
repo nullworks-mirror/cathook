@@ -696,8 +696,8 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
             static const char *lastname;
             static bool retrun = false;
             if (retrun)
-                PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938, 0xefec1f, lastname,
-                          lastfilter);
+                PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938, lastname,
+                		0xefec1f, lastfilter);
             retrun = false;
             if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
             {
