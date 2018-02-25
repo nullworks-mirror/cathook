@@ -857,7 +857,7 @@ void CrumbTopAdd(Vector crumbToAdd)
     // write unused spots
     if (crumbTop >= MAX_CRUMBS + 15)
     {
-        crumbReset();
+        CrumbReset();
     }
     else
     {
