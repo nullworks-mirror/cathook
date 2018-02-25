@@ -693,9 +693,11 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                 }
             }
             static const char *lastfilter;
+            static const char *lastname;
             static bool retrun = false;
             if (retrun)
-                PrintChat("%s: %s", name.c_str(), lastfilter);
+                PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938, 0xefec1f, lastname,
+                          lastfilter);
             retrun = false;
             if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
             {
@@ -814,10 +816,9 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                                     clear += "\n";
                             }
                             chat_stack::Say(". " + clear, true);
-                            PrintChat("%s: %s", 0xe05938, name.c_str(),
-                                      filter.c_str());
                             retrun     = true;
                             lastfilter = filter.c_str();
+                            lastname   = name.c_str();
                         }
                     }
                 }
@@ -848,6 +849,8 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                             }
                             chat_stack::Say(". " + clear, true);
                             retrun = true;
+                            lastfilter = filter.c_str();
+                            lastname   = name.c_str();
                         }
                     }
                 }
@@ -858,7 +861,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                 {
                     if (ucccccp::validate(message))
                     {
-                        PrintChat("\x07%06X%s\x01: %s", name.c_str(),
+                        PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
                     }
                 }
