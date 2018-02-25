@@ -29,11 +29,20 @@ void CreateMove()
 
         if (data[i] != CE_INT(ent, netvar.iClass))
         {
+        	if (colors::EntityF(ent) == colors::red) {
             PrintChat("\x07%06X%s\x01 changed from \"\x07%06X%s\x01\" to "
                       "\"\x07%06X%s\x01\"",
-                      0xa06ba0, info.name, 0x6b9ca0, inttochar(data[i]),
+					  0xb8383b, info.name, 0x6b9ca0, inttochar(data[i]),
                       0x6ba072, inttochar(CE_INT(ent, netvar.iClass)));
+        	}
+        	else if (colors::EntityF(ent) == colors::blu) {
+                PrintChat("\x07%06X%s\x01 changed from \"\x07%06X%s\x01\" to "
+                          "\"\x07%06X%s\x01\"",
+						  0x5885a2, info.name, 0x6b9ca0, inttochar(data[i]),
+                          0x6ba072, inttochar(CE_INT(ent, netvar.iClass)));
+            	}
             data[i] = CE_INT(ent, netvar.iClass);
+
         }
     }
 }
