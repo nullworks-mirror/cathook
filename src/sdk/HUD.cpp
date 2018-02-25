@@ -20,4 +20,5 @@ CHudElement *CHud::FindElement(const char *name)
         "00 00 00 00 8B 04 98 8B 08 89 04 24 FF 51 24 8B 55 0C 89 04 24");
     typedef CHudElement *(*FindElement)(CHud *, const char *);
     ((FindElement)(findel_sig))(this, name);
+    return ((FindElement)(findel_sig))(this, name);
 }
