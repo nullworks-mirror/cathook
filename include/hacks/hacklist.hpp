@@ -24,6 +24,7 @@
 #include "AutoReflect.hpp"
 #include "AutoSticky.hpp"
 #include "AntiCheat.hpp"
+#include "Events.hpp"
 #include "Bunnyhop.hpp"
 #include "LagExploit.hpp"
 #include "Walkbot.hpp"
