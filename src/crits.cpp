@@ -11,6 +11,9 @@
 CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info");
 CatVar crit_key(CV_KEY, "crit_key", "0", "Crit Key");
 CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
+CatVar crit_legiter(
+    CV_SWITCH, "crit_force_gameplay", "0",
+    "Attempt to crit when possible but do not hinder normal gameplay");
 CatVar crit_experimental(CV_SWITCH, "crit_experimental", "0",
                          "Experimental crithack");
 
@@ -58,9 +61,10 @@ void unfuck_bucket(IClientEntity *weapon)
     if (g_pUserCmd->command_number)
         changed = false;
 
-    float &bucket = re::C_TFWeaponBase::crit_bucket_(weapon);;
+    float &bucket = re::C_TFWeaponBase::crit_bucket_(weapon);
+    ;
     if (GetWeaponMode() == weapon_melee)
-    	bucket = 1000.0f;
+        bucket = 1000.0f;
 
     if (bucket != last_bucket)
     {
@@ -83,34 +87,70 @@ struct cached_calculation_s
 
 cached_calculation_s cached_calculation{};
 
+static int number                = 0;
+static int lastnumber            = 0;
+static int lastusercmd           = 0;
+static const model_t *lastweapon = nullptr;
+
 bool force_crit(IClientEntity *weapon)
 {
-    if (cached_calculation.init_command > g_pUserCmd->command_number ||
-        g_pUserCmd->command_number - cached_calculation.init_command > 4096 ||
-        (g_pUserCmd->command_number &&
-         (cached_calculation.command_number < g_pUserCmd->command_number)))
-        cached_calculation.weapon_entity = 0;
-    if (cached_calculation.weapon_entity == weapon->entindex())
-        return bool(cached_calculation.command_number);
+    if (lastnumber < g_pUserCmd->command_number ||
+        lastweapon != weapon->GetModel())
+    {
+        if (cached_calculation.init_command > g_pUserCmd->command_number ||
+            g_pUserCmd->command_number - cached_calculation.init_command >
+                4096 ||
+            (g_pUserCmd->command_number &&
+             (cached_calculation.command_number < g_pUserCmd->command_number)))
+            cached_calculation.weapon_entity = 0;
+        if (cached_calculation.weapon_entity == weapon->entindex())
+            return bool(cached_calculation.command_number);
 
-    int number = find_next_random_crit_for_weapon(weapon);
-
+        number = find_next_random_crit_for_weapon(weapon);
+    }
+    else
+        number = lastnumber;
     logging::Info("Found critical: %d -> %d", g_pUserCmd->command_number,
                   number);
+    lastweapon = weapon->GetModel();
+    lastnumber = number;
     if (crit_experimental)
     {
-        if (number && number != g_pUserCmd->command_number)
-            command_number_mod[g_pUserCmd->command_number] = number;
+        if (!crit_legiter)
+        {
+            if (number && number != g_pUserCmd->command_number)
+                command_number_mod[g_pUserCmd->command_number] = number;
 
-        cached_calculation.command_number = number;
-        cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
+            cached_calculation.command_number = number;
+            cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
+        }
+        else
+        {
+            if (number && number - 30 < g_pUserCmd->command_number)
+                command_number_mod[g_pUserCmd->command_number] = number;
+
+            cached_calculation.command_number = number;
+            cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
+        }
     }
     else
     {
-        if (g_pUserCmd->command_number != number && number)
-            g_pUserCmd->buttons &= ~IN_ATTACK;
+        if (!crit_legiter)
+        {
+            if (g_pUserCmd->command_number != number && number &&
+                number != g_pUserCmd->command_number)
+                g_pUserCmd->buttons &= ~IN_ATTACK;
+            else
+                g_pUserCmd->buttons |= IN_ATTACK;
+        }
         else
-            g_pUserCmd->buttons |= IN_ATTACK;
+        {
+            if (g_pUserCmd->command_number + 30 > number && number &&
+                number != g_pUserCmd->command_number)
+                g_pUserCmd->buttons &= ~IN_ATTACK;
+            else
+                g_pUserCmd->buttons |= IN_ATTACK;
+        }
     }
     return !!number;
 }
@@ -123,6 +163,8 @@ void create_move()
         return;
     if (CE_BAD(LOCAL_W))
         return;
+    if (g_pUserCmd->command_number)
+        lastusercmd       = g_pUserCmd->command_number;
     IClientEntity *weapon = RAW_ENT(LOCAL_W);
     if (!re::C_TFWeaponBase::IsBaseCombatWeapon(weapon))
         return;
@@ -177,14 +219,30 @@ void draw()
                                                              false, nullptr))
                     AddCenterString("Weapon can't randomly crit",
                                     colors::yellow);
-                else
+                else if (lastusercmd)
+                {
+                    if (number > lastusercmd)
+                    {
+                        float nextcrit =
+                            ((float) number - (float) lastusercmd) / (float) 90;
+                        nextcrit =
+                            ((float) number - (float) lastusercmd) / (float) 90;
+                        if (nextcrit > 0.0f)
+                        {
+                            AddCenterString(
+                                format("Time to next crit: ", nextcrit, "s"),
+                                colors::orange);
+                        }
+                    }
                     AddCenterString("Weapon can randomly crit");
+                }
             }
             if (GetWeaponMode() == weapon_melee)
-            	AddCenterString(format("Bucket: 1000"));
+                AddCenterString(format("Bucket: 1000"));
             else
-            	AddCenterString(format("Bucket: ", re::C_TFWeaponBase::crit_bucket_(
-                                                   RAW_ENT(LOCAL_W))));
+                AddCenterString(
+                    format("Bucket: ",
+                           re::C_TFWeaponBase::crit_bucket_(RAW_ENT(LOCAL_W))));
         }
         // AddCenterString(format("Time: ",
         // *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2872u)));
