@@ -85,6 +85,7 @@ extern CBaseClientState *g_IBaseClientState;
 extern IGameEventManager *g_IGameEventManager;
 extern CGameRules *g_pGameRules;
 extern IEngineVGui *g_IEngineVGui;
+extern IUniformRandomStream *g_pUniformStream;
 
 void CreateInterfaces();
 

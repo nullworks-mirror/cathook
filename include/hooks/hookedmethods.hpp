@@ -31,6 +31,8 @@ typedef bool (*ProcessSetConVar_t)(CBaseClientState *, NET_SetConVar *);
 typedef bool (*ProcessGetCvarValue_t)(CBaseClientState *, SVC_GetCvarValue *);
 typedef void (*Paint_t)(IEngineVGui *, PaintMode_t);
 
+typedef int (*RandomInt_t)(void*, int, int);
+
 const char *GetClientName_hook(CBaseClientState *_this);
 bool ProcessSetConVar_hook(CBaseClientState *_this, NET_SetConVar *msg);
 bool ProcessGetCvarValue_hook(CBaseClientState *_this, SVC_GetCvarValue *msg);

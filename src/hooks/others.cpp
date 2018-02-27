@@ -17,6 +17,7 @@
 
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility",
                               "Useful with chams!");
+static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip", "");
 
 // This hook isn't used yet!
 int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
@@ -928,4 +929,14 @@ void LevelShutdown_hook(void *_this)
             .ts_disconnected = time(nullptr);
     }
 #endif
+}
+
+int RandomInt_hook(void *_this, int iMinVal, int iMaxVal)
+{
+    static const RandomInt_t original = 
+        RandomInt_t(hooks::vstd.GetMethod(offsets::RandomInt()));
+    
+    if (medal_flip && iMinVal == 0 && iMaxVal == 9) return 0;
+
+    return original(_this, iMinVal, iMaxVal);
 }
