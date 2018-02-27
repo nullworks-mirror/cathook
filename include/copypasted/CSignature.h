@@ -13,6 +13,7 @@ public:
     void *GetModuleHandleSafe(const char *pszModuleName);
     uintptr_t GetClientSignature(char *chPattern);
     uintptr_t GetEngineSignature(char *chPattern);
+    uintptr_t GetVstdSignature(char *chPattern);
 };
 
 extern CSignature gSignatures;

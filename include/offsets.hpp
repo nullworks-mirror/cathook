@@ -161,6 +161,10 @@ struct offsets
     {
         return PlatformOffset(196, undefined, undefined);
     }
+    static constexpr uint32_t RandomInt()
+    {
+        return PlatformOffset(2, undefined, undefined);
+    }
 };
 
 #endif /* OFFSETS_HPP_ */
