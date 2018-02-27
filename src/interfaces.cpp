@@ -198,10 +198,7 @@ void CreateInterfaces()
         "VMaterialSystem", sharedobj::materialsystem());
 
 #if ENABLE_VISUALS == 1
-    uintptr_t addy = gSignatures.GetVstdSignature("A3 ? ? ? ? C3 89 F6") + 0x1;
-    logging::Info("g_pUniformStream: 0x%08x", addy);
-    logging::Info("*g_pUniformStream: 0x%08x", *(IUniformRandomStream**)addy);
-    g_pUniformStream = **(IUniformRandomStream***)(addy);    
+    g_pUniformStream = **(IUniformRandomStream***)(gSignatures.GetVstdSignature("A3 ? ? ? ? C3 89 F6") + 0x1);    
     g_IVDebugOverlay = BruteforceInterface<IVDebugOverlay>("VDebugOverlay",
                                                            sharedobj::engine());
     g_IPanel =
