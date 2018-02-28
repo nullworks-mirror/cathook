@@ -34,6 +34,7 @@ CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1",
                          "Emoji ESP Scaling");
 CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size",
                       "Minimum size for an emoji when you use auto scaling");
+hitbox_cache::CachedHitbox *hitboxcache[32][18]{};
 #endif
 // Other esp options
 CatEnum show_health_enum({ "None", "Text", "Healthbar", "Both" });
@@ -288,6 +289,9 @@ void Draw()
     for (auto &i : entities_need_repaint)
     {
         ProcessEntityPT(ENTITY(i));
+#ifndef FEATURE_EMOJI_ESP_DISABLED
+        emoji(ENTITY(i));
+#endif
     }
 }
 
@@ -317,7 +321,6 @@ void CreateMove()
     { // I still dont understand the purpose of prof_section and surrounding in
         // brackets
         PROF_SECTION(CM_ESP_EntityLoop);
-
         // Loop through entities
         for (int i = 0; i < limit; i++)
         {
@@ -325,6 +328,11 @@ void CreateMove()
             CachedEntity *ent = ENTITY(i);
             ProcessEntity(ent);
 
+            if (i <= g_IEngine->GetMaxClients())
+            {
+                for (int j   = 0; j < 18; ++j)
+                    hitboxcache[i][j] = ent->hitboxes.GetHitbox(j);
+            }
             // Dont know what this check is for
             if (data[i].string_count)
             {
@@ -347,6 +355,54 @@ void CreateMove()
     }
 }
 
+void _FASTCALL emoji(CachedEntity *ent)
+{
+    // Check to prevent crashes
+    if (CE_BAD(ent))
+        return;
+    // Emoji esp
+    if (emoji_esp)
+    {
+        if (ent->m_Type == ENTITY_PLAYER)
+        {
+            static glez_texture_t textur =
+                glez_texture_load_png_rgba("/opt/cathook/data/res/atlas.png");
+            auto hit = hitboxcache[ent->m_IDX][0];
+            Vector hbm, hbx;
+            if (draw::WorldToScreen(hit->min, hbm) &&
+                draw::WorldToScreen(hit->max, hbx))
+            {
+                Vector head_scr;
+                if (draw::WorldToScreen(hit->center, head_scr))
+                {
+                    float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
+                                                   : float(emoji_esp_size);
+                    if (emoji_esp_scaling && (size < float(emoji_min_size)))
+                    {
+                        size = float(emoji_min_size);
+                    }
+                    glez_rgba_t white = glez_rgba(255, 255, 255, 255);
+                    if (!textur)
+                        textur = glez_texture_load_png_rgba(
+                            "/opt/cathook/data/res/atlas.png");
+                    if (textur)
+                    {
+                        if (emoji_esp == 1)
+                            glez_rect_textured(head_scr.x - size / 2,
+                                               head_scr.y - size / 2, size,
+                                               size, white, textur, 4 * 64,
+                                               3 * 64, 64, 64);
+                        else if (emoji_esp == 2)
+                            glez_rect_textured(head_scr.x - size / 2,
+                                               head_scr.y - size / 2, size,
+                                               size, white, textur, 5 * 64,
+                                               3 * 64, 64, 64);
+                    }
+                }
+            }
+        }
+    }
+}
 // Used when processing entitys with cached data from createmove in draw
 void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 {
@@ -516,45 +572,6 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             }
         }
     }
-#ifndef FEATURE_EMOJI_ESP_DISABLED
-    // Emoji esp
-    if (emoji_esp)
-    {
-        if (ent->m_Type == ENTITY_PLAYER)
-        {
-            // Positions in the atlas for the textures
-            static textures::AtlasTexture joy_texture(
-                64 * 4, textures::atlas_height - 64 * 4, 64, 64);
-            static textures::AtlasTexture thinking_texture(
-                64 * 5, textures::atlas_height - 64 * 4, 64, 64);
-
-            auto hb = ent->hitboxes.GetHitbox(0);
-            Vector hbm, hbx;
-            if (draw::WorldToScreen(hb->min, hbm) &&
-                draw::WorldToScreen(hb->max, hbx))
-            {
-                Vector head_scr;
-                if (draw::WorldToScreen(hb->center, head_scr))
-                {
-                    float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
-                                                   : float(emoji_esp_size);
-                    if (emoji_esp_scaling && (size < float(emoji_min_size)))
-                    {
-                        size = float(emoji_min_size);
-                    }
-                    textures::AtlasTexture *tx = nullptr;
-                    if (int(emoji_esp) == 1)
-                        tx = &joy_texture;
-                    if (int(emoji_esp) == 2)
-                        tx = &thinking_texture;
-                    if (tx)
-                        tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2,
-                                 colors::white, size, size);
-                }
-            }
-        }
-    }
-#endif
     // Box esp
     if (box_esp)
     {
@@ -689,12 +706,11 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 break;
                 case 3:
                 { // ABOVE
-                    draw_point =
-                        Vector(min_x,
-                               min_y -
+                    draw_point = Vector(
+                        min_x, min_y -
                                    data.at(ent->m_IDX).string_count *
                                        /*((int)fonts::font_main->height)*/ 14,
-                               0);
+                        0);
                 }
                 break;
                 case 4:
