@@ -27,6 +27,5 @@ constexpr int c_strcmp(char const *lhs, char const *rhs)
 #define DATA_PATH "/opt/cathook"
 #endif
 
-#define FEATURE_EMOJI_ESP_DISABLED
 #define FEATURE_RADAR_DISABLED
 #define FEATURE_FIDGET_SPINNER_DISABLED
