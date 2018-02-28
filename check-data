@@ -8,3 +8,12 @@ if ! [ -d "$1" ]; then
 fi
 
 rsync -avh --progress "data/" "$1"
+
+if ! [ -d "$1/res" ]; then
+	echo "Creating cathook data directory at $1/res"
+	sudo mkdir -p "$1/res"
+	sudo chown -R $USER "$1/res"
+	sudo chmod -R 777 "$1/res"
+fi
+
+rsync -avh --progress "res/" "$1/res"
