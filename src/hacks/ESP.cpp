@@ -132,8 +132,8 @@ CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
 std::mutex threadsafe_mutex;
 // Storage array for keeping strings and other data
 std::array<ESPData, 2048> data;
-std::array<const model_t*, 1024> modelcache;
-std::array<studiohdr_t*, 1024> stdiocache;
+std::array<const model_t *, 1024> modelcache;
+std::array<studiohdr_t *, 1024> stdiocache;
 // Storage vars for entities that need to be re-drawn
 std::vector<int> entities_need_repaint{};
 std::mutex entities_need_repaint_mutex{};
@@ -332,14 +332,15 @@ void CreateMove()
 
             if (i <= g_IEngine->GetMaxClients())
             {
-                for (int j   = 0; j < 18; ++j)
+                for (int j            = 0; j < 18; ++j)
                     hitboxcache[i][j] = ent->hitboxes.GetHitbox(j);
                 if (draw_bones && ent->m_Type == ENTITY_PLAYER)
                 {
-                	modelcache[i] = RAW_ENT(ent)->GetModel();
+                    modelcache[i] = RAW_ENT(ent)->GetModel();
                     if (modelcache[i])
                     {
-                    	stdiocache[i] = g_IModelInfo->GetStudiomodel(modelcache[i]);
+                        stdiocache[i] =
+                            g_IModelInfo->GetStudiomodel(modelcache[i]);
                     }
                 }
             }
@@ -493,7 +494,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             Vector &eye_angles =
                 NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
             Vector eye_position;
-            eye_position = hitboxcache[ent->m_IDX][0];
+            eye_position = hitboxcache[ent->m_IDX][0]->center;
 
             // Main ray tracing area
             float sy         = sinf(DEG2RAD(eye_angles.y)); // yaw
