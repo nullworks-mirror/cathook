@@ -29,6 +29,7 @@ CatVar tracers(tracers_enum, "esp_tracers", "0", "Tracers",
 CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
 CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP",
                  "Draw emoji on peopels head");
+CatVar emoji_ok(CV_SWITCH, "esp_okhand", "0", "Draw ok_hand on hands");
 CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
 CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1",
                          "Emoji ESP Scaling");
@@ -131,7 +132,8 @@ CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
 std::mutex threadsafe_mutex;
 // Storage array for keeping strings and other data
 std::array<ESPData, 2048> data;
-
+std::array<const model_t*, 1024> modelcache;
+std::array<studiohdr_t*, 1024> stdiocache;
 // Storage vars for entities that need to be re-drawn
 std::vector<int> entities_need_repaint{};
 std::mutex entities_need_repaint_mutex{};
@@ -332,6 +334,14 @@ void CreateMove()
             {
                 for (int j   = 0; j < 18; ++j)
                     hitboxcache[i][j] = ent->hitboxes.GetHitbox(j);
+                if (draw_bones && ent->m_Type == ENTITY_PLAYER)
+                {
+                	modelcache[i] = RAW_ENT(ent)->GetModel();
+                    if (modelcache[i])
+                    {
+                    	stdiocache[i] = g_IModelInfo->GetStudiomodel(modelcache[i]);
+                    }
+                }
             }
             // Dont know what this check is for
             if (data[i].string_count)
@@ -438,10 +448,10 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     // Bone esp
     if (draw_bones && ent->m_Type == ENTITY_PLAYER)
     {
-        const model_t *model = RAW_ENT(ent)->GetModel();
+        const model_t *model = modelcache[ent->m_IDX];
         if (model)
         {
-            auto hdr = g_IModelInfo->GetStudiomodel(model);
+            auto hdr = stdiocache[ent->m_IDX];
             bonelist_map[hdr].Draw(ent, fg);
         }
     }
@@ -483,7 +493,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             Vector &eye_angles =
                 NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
             Vector eye_position;
-            GetHitbox(ent, 0, eye_position);
+            eye_position = hitboxcache[ent->m_IDX][0];
 
             // Main ray tracing area
             float sy         = sinf(DEG2RAD(eye_angles.y)); // yaw
