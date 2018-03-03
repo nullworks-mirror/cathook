@@ -17,7 +17,8 @@
 
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility",
                               "Useful with chams!");
-static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip", "");
+static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip",
+                         "");
 
 // This hook isn't used yet!
 int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
@@ -284,7 +285,7 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
 
 static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
 static CatVar crypt_chat(
-    CV_SWITCH, "chat_crypto", "0", "Crypto chat",
+    CV_SWITCH, "chat_crypto", "1", "Crypto chat",
     "Start message with !! and it will be only visible to cathook users");
 static CatVar chat_filter(CV_STRING, "chat_censor", "",
                           "Spam Chat with newlines if the chosen words are "
@@ -658,7 +659,8 @@ static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
                          "Removes newlines from chat");
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
                            "Log dispatched user messages");
-std::string clear = "";
+std::string clear     = "";
+static bool firstcall = true;
 bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
 {
     int loop_index, s, i, j;
@@ -693,15 +695,18 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                         message.push_back(c);
                 }
             }
-        	static const char *lastfilter;
-        	static const char *lastname;
-        	static bool retrun = false;
-            if (data[0] != LOCAL_E->m_IDX) {
-            	if (retrun)
-            		PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938, lastname,
-            				0xefec1f, lastfilter);
+            static const char *lastfilter;
+            static const char *lastname;
+            static bool retrun = false;
+            if (data[0] != LOCAL_E->m_IDX)
+            {
+                if (retrun)
+                {
+                    PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938,
+                              lastname, 0xefec1f, lastfilter);
+                    retrun = false;
+                }
             }
-            retrun = false;
             if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
             {
                 if (!strcmp(chat_filter.GetString(), ""))
@@ -860,10 +865,26 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
             }
             if (crypt_chat)
             {
+                if (firstcall)
+                    chat_stack::Say("!!meow", false);
+                firstcall = false;
                 if (message.find("!!") == 0)
                 {
                     if (ucccccp::validate(message))
                     {
+                        CachedEntity *entity = ENTITY(data[0]);
+                        if (CE_GOOD(entity))
+                        {
+                            if (boost::algorithm::contains(
+                                    ucccccp::decrypt(message), "meow"))
+                            {
+                                player_info_s info;
+                                g_IEngine->GetPlayerInfo(data[0], &info);
+                                unsigned steamid = info.friendsID;
+                                playerlist::AccessData(steamid).state =
+                                    playerlist::k_EState::CAT;
+                            }
+                        }
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
                     }
@@ -933,10 +954,11 @@ void LevelShutdown_hook(void *_this)
 
 int RandomInt_hook(void *_this, int iMinVal, int iMaxVal)
 {
-    static const RandomInt_t original = 
+    static const RandomInt_t original =
         RandomInt_t(hooks::vstd.GetMethod(offsets::RandomInt()));
-    
-    if (medal_flip && iMinVal == 0 && iMaxVal == 9) return 0;
+
+    if (medal_flip && iMinVal == 0 && iMaxVal == 9)
+        return 0;
 
     return original(_this, iMinVal, iMaxVal);
 }

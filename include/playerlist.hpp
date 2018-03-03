@@ -22,7 +22,8 @@ enum class k_EState
     RAGE,
     IPC,
     DEVELOPER,
-    STATE_LAST = DEVELOPER
+	CAT,
+    STATE_LAST = CAT
 };
 
 extern rgba_t k_Colors[];
