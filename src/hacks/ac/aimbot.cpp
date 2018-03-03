@@ -12,13 +12,14 @@ namespace ac
 namespace aimbot
 {
 
-static CatVar enabled(CV_SWITCH, "ac_aimbot", "0", "Detect Aimbot",
+static CatVar enabled(CV_SWITCH, "ac_aimbot", "1", "Detect Aimbot",
                       "Is not recommended");
 static CatVar detect_angle(CV_FLOAT, "ac_aimbot_angle", "30", "Aimbot Angle");
 static CatVar detections_warning(CV_INT, "ac_aimbot_detections", "3",
                                  "Min detections to warn");
 
 ac_data data_table[32];
+int amount[32];
 
 void ResetEverything()
 {
@@ -40,6 +41,7 @@ void Update(CachedEntity *player)
     if (not enabled)
         return;
     auto &data = data_table[player->m_IDX - 1];
+    auto &am   = amount[player->m_IDX - 1];
     if (data.check_timer)
     {
         data.check_timer--;
@@ -47,12 +49,23 @@ void Update(CachedEntity *player)
         {
             auto &angles    = angles::data(player);
             float deviation = angles.deviation(2);
-            if (deviation > float(detect_angle))
+            if (deviation > float(detect_angle) &&
+                LOCAL_W->m_iClassID != CL_CLASS(CTFFlameThrower))
             {
+                am++;
                 // logging::Info("[ac] %d deviation %.2f #%d", player->m_IDX,
                 // deviation, data.detections);
+                player_info_t info;
+                g_IEngine->GetPlayerInfo(player->m_IDX, &info);
+                if (am > 5)
+                {
+                    playerlist::AccessData(info.friendsID).state =
+                        playerlist::k_EState::RAGE;
+                    am = 0;
+                }
                 if (++data.detections > int(detections_warning))
                 {
+
                     const char *wp_name = "[unknown]";
                     int widx = CE_INT(player, netvar.hActiveWeapon) & 0xFFF;
                     if (IDX_GOOD(widx))
