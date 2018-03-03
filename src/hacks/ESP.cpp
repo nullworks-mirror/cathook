@@ -378,6 +378,7 @@ void _FASTCALL emoji(CachedEntity *ent)
         {
             static glez_texture_t textur =
                 glez_texture_load_png_rgba("/opt/cathook/data/res/atlas.png");
+            static glez_texture_t idspecific;
             auto hit = hitboxcache[ent->m_IDX][0];
             Vector hbm, hbx;
             if (draw::WorldToScreen(hit->min, hbm) &&
@@ -396,6 +397,59 @@ void _FASTCALL emoji(CachedEntity *ent)
                     if (!textur)
                         textur = glez_texture_load_png_rgba(
                             "/opt/cathook/data/res/atlas.png");
+                    player_info_s info;
+                    unsigned int steamID;
+                    unsigned int steamidarray[32]{};
+                    steamidarray[0] = 263966176;
+                    steamidarray[1] = 479487126;
+                    steamidarray[2] = 840899897;
+                    if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
+                    {
+                        steamID = info.friendsID;
+                    }
+                    if (!idspecific)
+                        idspecific = glez_texture_load_png_rgba(
+                            "/opt/cathook/data/res/idspec.png");
+                    if (idspecific &&
+                        playerlist::AccessData(steamID).state ==
+                            playerlist::k_EState::CAT)
+                        glez_rect_textured(
+                            head_scr.x - size / 2, head_scr.y - size / 2, size,
+                            size, white, idspecific, 2 * 64, 1 * 64, 64, 64);
+                    for (auto i : steamidarray)
+                    {
+                        if (steamID == i &&
+                            playerlist::AccessData(steamID).state ==
+                                playerlist::k_EState::CAT)
+                        {
+                            if (!idspecific)
+                            {
+                                idspecific = glez_texture_load_png_rgba(
+                                    "/opt/cathook/data/res/idspec.png");
+                            }
+                            if (idspecific)
+                            {
+                                if (i == steamidarray[0])
+                                    glez_rect_textured(head_scr.x - size / 2,
+                                                       head_scr.y - size / 2,
+                                                       size, size, white,
+                                                       idspecific, 1 * 64,
+                                                       1 * 64, 64, 64);
+                                else if (i == steamidarray[1])
+                                    glez_rect_textured(
+                                        head_scr.x - size / 2,
+                                        head_scr.y - size / 2, size, size,
+                                        white, idspecific, 0, 1 * 64, 64, 64);
+                                else if (i == steamidarray[2])
+                                    glez_rect_textured(head_scr.x - size / 2,
+                                                       head_scr.y - size / 2,
+                                                       size, size, white,
+                                                       idspecific, 2 * 64,
+                                                       1 * 64, 64, 64);
+                            }
+                            return;
+                        }
+                    }
                     if (textur)
                     {
                         if (emoji_esp == 1)
