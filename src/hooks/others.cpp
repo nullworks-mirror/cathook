@@ -659,6 +659,7 @@ static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
                            "Log dispatched user messages");
 std::string clear = "";
+static bool firstcall = true;
 bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
 {
     int loop_index, s, i, j;
