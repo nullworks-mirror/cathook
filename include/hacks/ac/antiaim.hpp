@@ -1,5 +1,5 @@
 /*
- * aimbot.hpp
+ * antiaim.hpp
  *
  *  Created on: Jun 5, 2017
  *      Author: nullifiedcat
@@ -10,21 +10,12 @@
 class KeyValues;
 class CachedEntity;
 
-#include <stddef.h>
-
 namespace ac
 {
-namespace aimbot
+namespace antiaim
 {
 
-struct ac_data
-{
-    size_t detections;
-    int check_timer;
-    int last_weapon;
-};
 extern int amount[32];
-
 void ResetEverything();
 void ResetPlayer(int idx);
 
