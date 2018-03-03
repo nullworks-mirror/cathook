@@ -1,1482 +1,964 @@
 /*
- * HEsp.cpp
+ * others.cpp
  *
- *  Created on: Oct 6, 2016
+ *  Created on: Jan 8, 2017
  *      Author: nullifiedcat
  */
 
 #include "common.hpp"
+#include "ucccccp/ucccccp.hpp"
+#include "hack.hpp"
+#include "hitrate.hpp"
+#include "chatlog.hpp"
+#include "netmessage.hpp"
+#include <boost/algorithm/string.hpp>
 
-namespace hacks
+#if ENABLE_VISUALS == 1
+
+static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility",
+                              "Useful with chams!");
+static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip",
+                         "");
+
+// This hook isn't used yet!
+int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
 {
-namespace shared
-{
-namespace esp
-{
-
-// Main Switch
-CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP", "Master ESP switch");
-// Box esp + Options
-CatEnum box_esp_enum({ "None", "Normal", "Corners" });
-CatVar box_esp(box_esp_enum, "esp_box", "2", "Box", "Draw a 2D box");
-CatVar box_corner_size(CV_INT, "esp_box_corner_size", "10", "Corner Size");
-// Tracers
-CatEnum tracers_enum({ "OFF", "CENTER", "BOTTOM" });
-CatVar tracers(tracers_enum, "esp_tracers", "0", "Tracers",
-               "SDraws a line from the player to a position on your screen");
-// Emoji Esp
-#ifndef FEATURE_EMOJI_ESP_DISABLED
-CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
-CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP",
-                 "Draw emoji on peopels head");
-CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
-CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1",
-                         "Emoji ESP Scaling");
-CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size",
-                      "Minimum size for an emoji when you use auto scaling");
-#endif
-// Other esp options
-CatEnum show_health_enum({ "None", "Text", "Healthbar", "Both" });
-CatVar show_health(show_health_enum, "esp_health", "3", "Health ESP",
-                   "Show enemy health");
-CatVar draw_bones(CV_SWITCH, "esp_bones", "0", "Draw Bones");
-CatEnum sightlines_enum({ "None", "Sniper Only",
-                          "All" }); // I ripped of lbox's choices cuz its nice
-CatVar sightlines(sightlines_enum, "esp_sightlines", "0", "Show sightlines",
-                  "Displays a line of where players are looking");
-CatEnum esp_text_position_enum({ "TOP RIGHT", "BOTTOM RIGHT", "CENTER", "ABOVE",
-                                 "BELOW" });
-CatVar esp_text_position(esp_text_position_enum, "esp_text_position", "0",
-                         "Text position", "Defines text position");
-CatVar esp_expand(
-    CV_INT, "esp_expand", "0", "Expand Esp",
-    "Spreads out Box, health bar, and text from center"); // Note, check if this
-                                                          // should be int, it
-                                                          // is being used by
-                                                          // casting as float
-CatVar vischeck(CV_SWITCH, "esp_vischeck", "1", "VisCheck",
-                "ESP visibility check - makes enemy info behind walls darker, "
-                "disable this if you get FPS drops");
-CatVar legit(CV_SWITCH, "esp_legit", "0", "Legit Mode",
-             "Don't show invisible enemies\nHides invisable enemies with "
-             "visibility enabled");
-// Selective esp options
-CatVar local_esp(CV_SWITCH, "esp_local", "1", "ESP Local Player",
-                 "Shows local player ESP in thirdperson");
-CatVar buildings(CV_SWITCH, "esp_buildings", "1", "Building ESP",
-                 "Show buildings");
-CatVar teammates(CV_SWITCH, "esp_teammates", "0", "ESP Teammates",
-                 "Teammate ESP");
-CatVar tank(CV_SWITCH, "esp_show_tank", "1", "Show tank", "Show tanks in mvm");
-// Text Esps
-CatVar show_weapon(CV_SWITCH, "esp_weapon", "0", "Show weapon name",
-                   "Show which weapon the enemy is using");
-CatVar show_distance(CV_SWITCH, "esp_distance", "1", "Distance ESP",
-                     "Show distance to target");
-CatVar show_name(CV_SWITCH, "esp_name", "1", "Name ESP", "Show name");
-CatVar show_class(CV_SWITCH, "esp_class", "1", "Class ESP", "Show class");
-CatVar show_conditions(CV_SWITCH, "esp_conds", "1", "Conditions ESP",
-                       "Show conditions");
-CatVar
-    show_ubercharge(CV_SWITCH, "esp_ubercharge", "1", "Ubercharge ESP",
-                    "Show ubercharge percentage while players medigun is out");
-CatVar show_bot_id(CV_SWITCH, "esp_followbot_id", "1", "Followbot ESP",
-                   "Show followbot ID");
-CatVar powerup_esp(CV_SWITCH, "esp_powerups", "1", "Powerup ESP",
-                   "Shows powerups a player is using");
-// Item esp
-CatVar item_esp(CV_SWITCH, "esp_item", "1", "Item ESP",
-                "Master Item ESP switch (health packs, etc.)");
-CatVar item_dropped_weapons(CV_SWITCH, "esp_item_weapons", "0",
-                            "Dropped weapons", "Show dropped weapons");
-CatVar item_ammo_packs(CV_SWITCH, "esp_item_ammo", "0", "Ammo packs",
-                       "Show ammo packs");
-CatVar item_health_packs(CV_SWITCH, "esp_item_health", "1", "Health packs",
-                         "Show health packs");
-CatVar item_powerups(CV_SWITCH, "esp_item_powerups", "1", "Powerups",
-                     "Shows powerups in the world");
-CatVar item_money(CV_SWITCH, "esp_money", "1", "MvM money", "Show MvM money");
-CatVar item_money_red(CV_SWITCH, "esp_money_red", "1", "Red MvM money",
-                      "Show red MvM money");
-CatVar item_spellbooks(CV_SWITCH, "esp_spellbooks", "1", "Spellbooks",
-                       "Spell Books");
-CatVar item_weapon_spawners(CV_SWITCH, "esp_weapon_spawners", "1",
-                            "Show weapon spawners",
-                            "TF2C deathmatch weapon spawners");
-CatVar item_adrenaline(CV_SWITCH, "esp_item_adrenaline", "0", "Show Adrenaline",
-                       "TF2C adrenaline pills");
-// Projectile esp
-CatVar proj_esp(CV_SWITCH, "esp_proj", "1", "Projectile ESP", "Projectile ESP");
-CatEnum proj_esp_enum({ "OFF", "ALL", "CRIT" });
-CatVar proj_rockets(proj_esp_enum, "esp_proj_rockets", "1", "Rockets",
-                    "Rockets");
-CatVar proj_arrows(proj_esp_enum, "esp_proj_arrows", "1", "Arrows", "Arrows");
-CatVar proj_pipes(proj_esp_enum, "esp_proj_pipes", "1", "Pipes", "Pipebombs");
-CatVar proj_stickies(proj_esp_enum, "esp_proj_stickies", "1", "Stickies",
-                     "Stickybombs");
-CatVar proj_enemy(CV_SWITCH, "esp_proj_enemy", "1", "Only enemy projectiles",
-                  "Don't show friendly projectiles");
-// Debug
-CatVar entity_info(CV_SWITCH, "esp_entity", "0", "Entity ESP",
-                   "Show entity info (debug)");
-CatVar entity_model(CV_SWITCH, "esp_model_name", "0", "Model name ESP",
-                    "Model name esp (DEBUG ONLY)");
-CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
-                 "Used with Entity ESP. Shows entityID");
-
-// CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
-
-// Unknown
-std::mutex threadsafe_mutex;
-// Storage array for keeping strings and other data
-std::array<ESPData, 2048> data;
-
-// Storage vars for entities that need to be re-drawn
-std::vector<int> entities_need_repaint{};
-std::mutex entities_need_repaint_mutex{};
-
-// :b:one stuff needs to be up here as puting it in the header for sorting would
-// be a pain.
-
-// Vars to store what bones connect to what
-const std::string bonenames_leg_r[] = { "bip_foot_R", "bip_knee_R",
-                                        "bip_hip_R" };
-const std::string bonenames_leg_l[] = { "bip_foot_L", "bip_knee_L",
-                                        "bip_hip_L" };
-const std::string bonenames_bottom[] = { "bip_hip_R", "bip_pelvis",
-                                         "bip_hip_L" };
-const std::string bonenames_spine[] = { "bip_pelvis",  "bip_spine_0",
-                                        "bip_spine_1", "bip_spine_2",
-                                        "bip_spine_3", "bip_neck",
-                                        "bip_head" };
-const std::string bonenames_arm_r[] = { "bip_upperArm_R", "bip_lowerArm_R",
-                                        "bip_hand_R" };
-const std::string bonenames_arm_l[] = { "bip_upperArm_L", "bip_lowerArm_L",
-                                        "bip_hand_L" };
-const std::string bonenames_up[] = { "bip_upperArm_R", "bip_spine_3",
-                                     "bip_upperArm_L" };
-
-// Dont fully understand struct but a guess is a group of something.
-// I will return once I have enough knowlage to reverse this.
-// NOTE: No idea on why we cant just use gethitbox and use the displacement on
-// that insted of having all this extra code. Shouldnt gethitbox use cached
-// hitboxes, if so it should be nicer on performance
-struct bonelist_s
-{
-    bool setup{ false };
-    bool success{ false };
-    int leg_r[3]{ 0 };
-    int leg_l[3]{ 0 };
-    int bottom[3]{ 0 };
-    int spine[7]{ 0 };
-    int arm_r[3]{ 0 };
-    int arm_l[3]{ 0 };
-    int up[3]{ 0 };
-
-    void Setup(const studiohdr_t *hdr)
+    float old_invis = *(float *) ((uintptr_t) _this + 79u);
+    if (no_invisibility)
     {
-        if (!hdr)
+        if (old_invis < 1.0f)
         {
-            setup = true;
-            return;
+            *(float *) ((uintptr_t) _this + 79u) = 0.5f;
         }
-        std::unordered_map<std::string, int> bones{};
-        for (int i = 0; i < hdr->numbones; i++)
-        {
-            bones[std::string(hdr->pBone(i)->pszName())] = i;
-        }
-        try
-        {
-            for (int i   = 0; i < 3; i++)
-                leg_r[i] = bones.at(bonenames_leg_r[i]);
-            for (int i   = 0; i < 3; i++)
-                leg_l[i] = bones.at(bonenames_leg_l[i]);
-            for (int i    = 0; i < 3; i++)
-                bottom[i] = bones.at(bonenames_bottom[i]);
-            for (int i   = 0; i < 7; i++)
-                spine[i] = bones.at(bonenames_spine[i]);
-            for (int i   = 0; i < 3; i++)
-                arm_r[i] = bones.at(bonenames_arm_r[i]);
-            for (int i   = 0; i < 3; i++)
-                arm_l[i] = bones.at(bonenames_arm_l[i]);
-            for (int i = 0; i < 3; i++)
-                up[i]  = bones.at(bonenames_up[i]);
-            success    = true;
-        }
-        catch (std::exception &ex)
-        {
-            logging::Info("Bone list exception: %s", ex.what());
-        }
-        setup = true;
     }
 
-    void DrawBoneList(const matrix3x4_t *bones, int *in, int size,
-                      const rgba_t &color, const Vector &displacement)
+    *(float *) ((uintptr_t) _this + 79u) = old_invis;
+}
+
+static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms",
+                      "Removes arms from first person");
+static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats",
+                      "Removes non-stock hats");
+float last_say = 0.0f;
+void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
+                           const ModelRenderInfo_t &info, matrix3x4_t *matrix)
+{
+    static const DrawModelExecute_t original =
+        (DrawModelExecute_t) hooks::modelrender.GetMethod(
+            offsets::DrawModelExecute());
+    static const char *name;
+    static std::string sname;
+    static IClientUnknown *unk;
+    static IClientEntity *ent;
+
+    if (!cathook ||
+        !(spectator_target || no_arms || no_hats ||
+          (clean_screenshots && g_IEngine->IsTakingScreenshot())))
     {
-        Vector last_screen;
-        Vector current_screen;
-        for (int i = 0; i < size; i++)
+        original(_this, state, info, matrix);
+        return;
+    }
+
+    PROF_SECTION(DrawModelExecute);
+
+    if (no_arms || no_hats)
+    {
+        if (info.pModel)
         {
-            Vector position(bones[in[i]][0][3], bones[in[i]][1][3],
-                            bones[in[i]][2][3]);
-            position += displacement;
-            if (!draw::WorldToScreen(position, current_screen))
+            name = g_IModelInfo->GetModelName(info.pModel);
+            if (name)
+            {
+                sname = name;
+                if (no_arms && sname.find("arms") != std::string::npos)
+                {
+                    return;
+                }
+                else if (no_hats &&
+                         sname.find("player/items") != std::string::npos)
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    unk = info.pRenderable->GetIClientUnknown();
+    if (unk)
+    {
+        ent = unk->GetIClientEntity();
+        if (ent)
+        {
+            if (ent->entindex() == spectator_target)
             {
                 return;
             }
-            if (i > 0)
-            {
-                draw_api::draw_line(last_screen.x, last_screen.y,
-                                    current_screen.x - last_screen.x,
-                                    current_screen.y - last_screen.y, color,
-                                    0.5f);
-            }
-            last_screen = current_screen;
         }
-    }
-
-    void Draw(CachedEntity *ent, const rgba_t &color)
-    {
-        const model_t *model = RAW_ENT(ent)->GetModel();
-        if (not model)
+        if (ent && !effect_chams::g_EffectChams.drawing &&
+            effect_chams::g_EffectChams.ShouldRenderChams(ent))
         {
             return;
         }
-
-        studiohdr_t *hdr = g_IModelInfo->GetStudiomodel(model);
-
-        if (!setup)
-        {
-            Setup(hdr);
-        }
-        if (!success)
-            return;
-
-        // ent->m_bBonesSetup = false;
-        Vector displacement = RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin;
-        const auto &bones   = ent->hitboxes.GetBones();
-        DrawBoneList(bones, leg_r, 3, color, displacement);
-        DrawBoneList(bones, leg_l, 3, color, displacement);
-        DrawBoneList(bones, bottom, 3, color, displacement);
-        DrawBoneList(bones, spine, 7, color, displacement);
-        DrawBoneList(bones, arm_r, 3, color, displacement);
-        DrawBoneList(bones, arm_l, 3, color, displacement);
-        DrawBoneList(bones, up, 3, color, displacement);
-        /*for (int i = 0; i < hdr->numbones; i++) {
-            const auto& bone = ent->GetBones()[i];
-            Vector pos(bone[0][3], bone[1][3], bone[2][3]);
-            //pos += orig;
-            Vector screen;
-            if (draw::WorldToScreen(pos, screen)) {
-                if (hdr->pBone(i)->pszName()) {
-                    draw::FString(fonts::ESP, screen.x, screen.y, fg, 2, "%s
-        [%d]", hdr->pBone(i)->pszName(), i); } else draw::FString(fonts::ESP,
-        screen.x, screen.y, fg, 2, "%d", i);
-            }
-        }*/
     }
-};
 
-std::unordered_map<studiohdr_t *, bonelist_s> bonelist_map{};
-
-// Function called on draw
-void Draw()
-{
-    std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
-    if (!enabled)
-        return;
-    for (auto &i : entities_need_repaint)
-    {
-        ProcessEntityPT(ENTITY(i));
-    }
+    original(_this, state, info, matrix);
 }
 
-// Function called on create move
-void CreateMove()
+int IN_KeyEvent_hook(void *_this, int eventcode, int keynum,
+                     const char *pszCurrentBinding)
 {
-
-    // Check usersettings if enabled
-    if (!enabled)
-        return;
-
-    // Something
-    std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
-
-    ResetEntityStrings();          // Clear any strings entities have
-    entities_need_repaint.clear(); // Clear data on entities that need redraw
-
-    // TODO, Find the benefit of using max clients with this logic
-    // Get max clients and
-    static int max_clients = g_IEngine->GetMaxClients();
-    int limit              = HIGHEST_ENTITY;
-
-    // If not using any other special esp, we lower the min to the max clients
-    if (!buildings && !proj_esp && !item_esp)
-        limit = std::min(max_clients, HIGHEST_ENTITY);
-
-    { // I still dont understand the purpose of prof_section and surrounding in
-        // brackets
-        PROF_SECTION(CM_ESP_EntityLoop);
-
-        // Loop through entities
-        for (int i = 0; i < limit; i++)
-        {
-            // Get an entity from the loop tick and process it
-            CachedEntity *ent = ENTITY(i);
-            ProcessEntity(ent);
-
-            // Dont know what this check is for
-            if (data[i].string_count)
-            {
-
-                // Set entity color
-                SetEntityColor(ent, colors::EntityF(ent));
-
-                // If snow distance, add string here
-                if (show_distance)
-                {
-                    AddEntityString(ent, format((int) (ENTITY(i)->m_flDistance /
-                                                       64 * 1.22f),
-                                                'm'));
-                }
-            }
-            // No idea, this is confusing
-            if (data[ent->m_IDX].needs_paint)
-                entities_need_repaint.push_back(ent->m_IDX);
-        }
-    }
+    static const IN_KeyEvent_t original =
+        (IN_KeyEvent_t) hooks::client.GetMethod(offsets::IN_KeyEvent());
+#if ENABLE_GUI
+/*
+if (g_pGUI->ConsumesKey((ButtonCode_t)keynum) && g_pGUI->Visible()) {
+    return 0;
 }
-
-// Used when processing entitys with cached data from createmove in draw
-void _FASTCALL ProcessEntityPT(CachedEntity *ent)
-{
-    PROF_SECTION(PT_esp_process_entity);
-
-    // Check to prevent crashes
-    if (CE_BAD(ent))
-        return;
-
-    // Grab esp data
-    ESPData &ent_data = data[ent->m_IDX];
-
-    // Get color of entity
-    // TODO, check if we can move this after world to screen check
-    rgba_t fg = ent_data.color;
-    if (!fg || fg.a == 0.0f)
-        fg = ent_data.color = colors::EntityF(ent);
-
-    // Check if entity is on screen, then save screen position if true
-    Vector screen, origin_screen;
-    if (!draw::EntityCenterToScreen(ent, screen) &&
-        !draw::WorldToScreen(ent->m_vecOrigin, origin_screen))
-        return;
-
-    // Reset the collide cache
-    ent_data.has_collide = false;
-
-    // Get if ent should be transparent
-    bool transparent = false;
-    if (vischeck && !ent->IsVisible())
-        transparent = true;
-
-    // Bone esp
-    if (draw_bones && ent->m_Type == ENTITY_PLAYER)
-    {
-        const model_t *model = RAW_ENT(ent)->GetModel();
-        if (model)
-        {
-            auto hdr = g_IModelInfo->GetStudiomodel(model);
-            bonelist_map[hdr].Draw(ent, fg);
-        }
-    }
-
-    // Tracers
-    if (tracers && ent->m_Type == ENTITY_PLAYER)
-    {
-
-        // Grab the screen resolution and save to some vars
-        int width, height;
-        g_IEngine->GetScreenSize(width, height);
-
-        // Center values on screen
-        width = width / 2;
-        // Only center height if we are using center mode
-        if ((int) tracers == 1)
-            height = height / 2;
-
-        // Get world to screen
-        Vector scn;
-        draw::WorldToScreen(ent->m_vecOrigin, scn);
-
-        // Draw a line
-        draw_api::draw_line(scn.x, scn.y, width - scn.x, height - scn.y, fg,
-                            0.5f);
-    }
-
-    // Sightline esp
-    if (sightlines && ent->m_Type == ENTITY_PLAYER)
-    {
-
-        // Logic for using the enum to sort out snipers
-        if ((int) sightlines == 2 ||
-            ((int) sightlines == 1 && CE_INT(ent, netvar.iClass) == tf_sniper))
-        {
-            PROF_SECTION(PT_esp_sightlines);
-
-            // Get players angle and head position
-            Vector &eye_angles =
-                NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
-            Vector eye_position;
-            GetHitbox(ent, 0, eye_position);
-
-            // Main ray tracing area
-            float sy         = sinf(DEG2RAD(eye_angles.y)); // yaw
-            float cy         = cosf(DEG2RAD(eye_angles.y));
-            float sp         = sinf(DEG2RAD(eye_angles.x)); // pitch
-            float cp         = cosf(DEG2RAD(eye_angles.x));
-            Vector forward_t = Vector(cp * cy, cp * sy, -sp);
-            // We dont want the sightlines endpoint to go behind us because the
-            // world to screen check will fail, but keep it at most 4096
-            Vector forward = forward_t * 4096.0F + eye_position;
-            Ray_t ray;
-            ray.Init(eye_position, forward);
-            trace_t trace;
-            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
-                               &trace);
-
-            // Screen vectors
-            Vector scn1, scn2;
-
-            // Status vars
-            bool found_scn2 = true;
-
-            // Get end point on screen
-            if (!draw::WorldToScreen(trace.endpos, scn2))
-            {
-                // Set status
-                found_scn2 = false;
-                // Get the end distance from the trace
-                float end_distance = trace.endpos.DistTo(eye_position);
-
-                // Loop and look back untill we have a vector on screen
-                for (int i = 1; i > 400; i++)
-                {
-                    // Subtract 40 multiplyed by the tick from the end distance
-                    // and use that as our length to check
-                    Vector end_vector =
-                        forward_t * (end_distance - (10 * i)) + eye_position;
-                    if (end_vector.DistTo(eye_position) < 1)
-                        break;
-                    if (draw::WorldToScreen(end_vector, scn2))
-                    {
-                        found_scn2 = true;
-                        break;
-                    }
-                }
-            }
-
-            if (found_scn2)
-            {
-                // Set status
-                bool found_scn1 = true;
-
-                // If we dont have a vector on screen, attempt to find one
-                if (!draw::WorldToScreen(eye_position, scn1))
-                {
-                    // Set status
-                    found_scn1 = false;
-                    // Get the end distance from the trace
-                    float start_distance = trace.endpos.DistTo(eye_position);
-
-                    // Loop and look back untill we have a vector on screen
-                    for (int i = 1; i > 400; i++)
-                    {
-                        // Multiply starting distance by 40, multiplyed by the
-                        // loop tick
-                        Vector start_vector =
-                            forward_t * (10 * i) + eye_position;
-                        // We dont want it to go too far
-                        if (start_vector.DistTo(trace.endpos) < 1)
-                            break;
-                        // Check if we have a vector on screen, if we do then we
-                        // set our status
-                        if (draw::WorldToScreen(start_vector, scn1))
-                        {
-                            found_scn1 = true;
-                            break;
-                        }
-                    }
-                }
-                // We have both vectors, draw
-                if (found_scn1)
-                {
-                    draw_api::draw_line(scn1.x, scn1.y, scn2.x - scn1.x,
-                                        scn2.y - scn1.y, fg, 0.5f);
-                }
-            }
-        }
-    }
-#ifndef FEATURE_EMOJI_ESP_DISABLED
-    // Emoji esp
-    if (emoji_esp)
-    {
-        if (ent->m_Type == ENTITY_PLAYER)
-        {
-            // Positions in the atlas for the textures
-            static textures::AtlasTexture joy_texture(
-                64 * 4, textures::atlas_height - 64 * 4, 64, 64);
-            static textures::AtlasTexture thinking_texture(
-                64 * 5, textures::atlas_height - 64 * 4, 64, 64);
-
-            auto hb = ent->hitboxes.GetHitbox(0);
-            Vector hbm, hbx;
-            if (draw::WorldToScreen(hb->min, hbm) &&
-                draw::WorldToScreen(hb->max, hbx))
-            {
-                Vector head_scr;
-                if (draw::WorldToScreen(hb->center, head_scr))
-                {
-                    float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
-                                                   : float(emoji_esp_size);
-                    if (emoji_esp_scaling && (size < float(emoji_min_size)))
-                    {
-                        size = float(emoji_min_size);
-                    }
-                    textures::AtlasTexture *tx = nullptr;
-                    if (int(emoji_esp) == 1)
-                        tx = &joy_texture;
-                    if (int(emoji_esp) == 2)
-                        tx = &thinking_texture;
-                    if (tx)
-                        tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2,
-                                 colors::white, size, size);
-                }
-            }
-        }
-    }
+*/
 #endif
-    // Box esp
-    if (box_esp)
+    return original(_this, eventcode, keynum, pszCurrentBinding);
+}
+
+CatVar override_fov_zoomed(CV_FLOAT, "fov_zoomed", "0", "FOV override (zoomed)",
+                           "Overrides FOV with this value when zoomed in "
+                           "(default FOV when zoomed is 20)");
+CatVar override_fov(CV_FLOAT, "fov", "0", "FOV override",
+                    "Overrides FOV with this value");
+
+CatVar freecam(CV_KEY, "debug_freecam", "0", "Freecam");
+int spectator_target{ 0 };
+
+CatCommand spectate("spectate", "Spectate", [](const CCommand &args) {
+    if (args.ArgC() < 1)
     {
-        switch (ent->m_Type)
+        spectator_target = 0;
+        return;
+    }
+    int id = atoi(args.Arg(1));
+    if (!id)
+        spectator_target = 0;
+    else
+    {
+        spectator_target = g_IEngine->GetPlayerForUserID(id);
+    }
+});
+
+void OverrideView_hook(void *_this, CViewSetup *setup)
+{
+    static const OverrideView_t original =
+        (OverrideView_t) hooks::clientmode.GetMethod(offsets::OverrideView());
+    static bool zoomed;
+    original(_this, setup);
+    if (!cathook)
+        return;
+    if (g_pLocalPlayer->bZoomed && override_fov_zoomed)
+    {
+        setup->fov = override_fov_zoomed;
+    }
+    else
+    {
+        if (override_fov)
         {
-        case ENTITY_PLAYER:
-            if (vischeck && !ent->IsVisible())
-                transparent = true;
-            if (!fg)
-                fg = colors::EntityF(ent);
-            if (transparent)
-                fg = colors::Transparent(fg);
-            DrawBox(ent, fg);
-            break;
-        case ENTITY_BUILDING:
-            if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team &&
-                !teammates)
-                break;
-            if (!transparent && vischeck && !ent->IsVisible())
-                transparent = true;
-            if (!fg)
-                fg = colors::EntityF(ent);
-            if (transparent)
-                fg = colors::Transparent(fg);
-            DrawBox(ent, fg);
-            break;
+            setup->fov = override_fov;
         }
     }
 
-    // Healthbar
-    if ((int) show_health >= 2)
+    if (spectator_target)
     {
-
-        // We only want health bars on players and buildings
-        if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING)
+        CachedEntity *spec = ENTITY(spectator_target);
+        if (CE_GOOD(spec) && !CE_BYTE(spec, netvar.iLifeState))
         {
-
-            // Get collidable from the cache
-            if (GetCollide(ent))
+            setup->origin =
+                spec->m_vecOrigin + CE_VECTOR(spec, netvar.vViewOffset);
+            // why not spectate yourself
+            if (spec == LOCAL_E)
             {
-
-                // Pull the cached collide info
-                int max_x = ent_data.collide_max.x;
-                int max_y = ent_data.collide_max.y;
-                int min_x = ent_data.collide_min.x;
-                int min_y = ent_data.collide_min.y;
-
-                // Get health values
-                int health    = 0;
-                int healthmax = 0;
-                switch (ent->m_Type)
-                {
-                case ENTITY_PLAYER:
-                    health    = CE_INT(ent, netvar.iHealth);
-                    healthmax = ent->m_iMaxHealth;
-                    break;
-                case ENTITY_BUILDING:
-                    health    = CE_INT(ent, netvar.iBuildingHealth);
-                    healthmax = CE_INT(ent, netvar.iBuildingMaxHealth);
-                    break;
-                }
-
-                // Get Colors
-                rgba_t hp = colors::Transparent(
-                    colors::Health(health, healthmax), fg.a);
-                rgba_t border =
-                    ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent))
-                        ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f)
-                        : colors::Transparent(colors::black, fg.a);
-                // Get bar height
-                int hbh = (max_y - min_y - 2) *
-                          std::min((float) health / (float) healthmax, 1.0f);
-
-                // Draw
-                draw_api::draw_rect_outlined(min_x - 7, min_y, 7, max_y - min_y,
-                                             border, 0.5f);
-                draw_api::draw_rect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
-            }
-        }
-    }
-
-    // Check if entity has strings to draw
-    if (ent_data.string_count)
-    {
-        PROF_SECTION(PT_esp_drawstrings);
-
-        // Create our initial point at the center of the entity
-        Vector draw_point   = screen;
-        bool origin_is_zero = true;
-
-        // Only get collidable for players and buildings
-        if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING)
-        {
-
-            // Get collidable from the cache
-            if (GetCollide(ent))
-            {
-
-                // Origin could change so we set to false
-                origin_is_zero = false;
-
-                // Pull the cached collide info
-                int max_x = ent_data.collide_max.x;
-                int max_y = ent_data.collide_max.y;
-                int min_x = ent_data.collide_min.x;
-                int min_y = ent_data.collide_min.y;
-
-                // Change the position of the draw point depending on the user
-                // settings
-                switch ((int) esp_text_position)
-                {
-                case 0:
-                { // TOP RIGHT
-                    draw_point = Vector(max_x + 2, min_y, 0);
-                }
-                break;
-                case 1:
-                { // BOTTOM RIGHT
-                    draw_point =
-                        Vector(max_x + 2,
-                               max_y -
-                                   data.at(ent->m_IDX).string_count *
-                                       /*((int)fonts::font_main->height)*/ 14,
-                               0);
-                }
-                break;
-                case 2:
-                { // CENTER
-                    origin_is_zero =
-                        true; // origin is still zero so we set to true
-                }
-                break;
-                case 3:
-                { // ABOVE
-                    draw_point = Vector(
-                        min_x, min_y -
-                                   data.at(ent->m_IDX).string_count *
-                                       /*((int)fonts::font_main->height)*/ 14,
-                        0);
-                }
-                break;
-                case 4:
-                { // BELOW
-                    draw_point = Vector(min_x, max_y, 0);
-                }
-                }
-            }
-        }
-
-        // if user setting allows vis check and ent isnt visable, make
-        // transparent
-        if (vischeck && !ent->IsVisible())
-            transparent = true;
-
-        // Loop through strings
-        for (int j = 0; j < ent_data.string_count; j++)
-        {
-
-            // Pull string from the entity's cached string array
-            const ESPString &string = ent_data.strings[j];
-
-            // If string has a color assined to it, apply that otherwise use
-            // entities color
-            rgba_t color = string.color ? string.color : ent_data.color;
-            if (transparent)
-                color =
-                    colors::Transparent(color); // Apply transparency if needed
-
-            // If the origin is centered, we use one method. if not, the other
-            if (!origin_is_zero || true)
-            {
-                draw_api::draw_string_with_outline(
-                    draw_point.x, draw_point.y, string.data.c_str(),
-                    fonts::main_font, color, colors::black, 1.5f);
+                setup->angles =
+                    CE_VAR(spec, netvar.m_angEyeAnglesLocal, QAngle);
             }
             else
-            { /*
-          int size_x;
-          FTGL_StringLength(string.data, fonts::font_main, &size_x);
-          FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y,
-          fonts::font_main, color);
-      */
+            {
+                setup->angles = CE_VAR(spec, netvar.m_angEyeAngles, QAngle);
             }
-
-            // Add to the y due to their being text in that spot
-            draw_point.y += /*((int)fonts::font_main->height)*/ 15 - 1;
+        }
+        if (g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_SPACE))
+        {
+            spectator_target = 0;
         }
     }
 
-    // TODO Add Rotation matix
-    // TODO Currently crashes, needs null check somewhere
-    // Draw Hitboxes
-    /*if (draw_hitbox && ent->m_Type == ENTITY_PLAYER) {
-        PROF_SECTION(PT_esp_drawhitbboxes);
-
-        // Loop through hitboxes
-        for (int i = 0; i <= 17; i++) { // I should probs get how many hitboxes
-    instead of using a fixed number...
-
-            // Get a hitbox from the entity
-            hitbox_cache::CachedHitbox* hb = ent->hitboxes.GetHitbox(i);
-
-            // Create more points from min + max
-            Vector box_points[8];
-            Vector vec_tmp;
-            for (int ii = 0; ii <= 8; ii++) { // 8 points to the box
-
-                // logic le paste from sdk
-                vec_tmp[0] = ( ii & 0x1 ) ? hb->max[0] : hb->min[0];
-                vec_tmp[1] = ( ii & 0x2 ) ? hb->max[1] : hb->min[1];
-                vec_tmp[2] = ( ii & 0x4 ) ? hb->max[2] : hb->min[2];
-
-                // save to points array
-                box_points[ii] = vec_tmp;
+    if (freecam)
+    {
+        static Vector freecam_origin{ 0 };
+        static bool freecam_last{ false };
+        if (freecam.KeyDown())
+        {
+            if (not freecam_last)
+            {
+                freecam_origin = setup->origin;
             }
-
-            // Draw box from points
-            // Draws a point to every other point. Ineffient, use now fix
-    later... Vector scn1, scn2; // to screen for (int ii = 0; ii < 8; ii++) {
-
-                // Get first point
-                if (!draw::WorldToScreen(box_points[ii], scn1)) continue;
-
-                for (int iii = 0; iii < 8; iii++) {
-
-                    // Get second point
-                    if (!draw::WorldToScreen(box_points[iii], scn2)) continue;
-
-                    // Draw between points
-                    draw_api::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y -
-    scn1.y, fg);
-                }
-            }
+            float sp, sy, cp, cy;
+            QAngle angle;
+            Vector forward;
+            g_IEngine->GetViewAngles(angle);
+            sy        = sinf(DEG2RAD(angle[1]));
+            cy        = cosf(DEG2RAD(angle[1]));
+            sp        = sinf(DEG2RAD(angle[0]));
+            cp        = cosf(DEG2RAD(angle[0]));
+            forward.x = cp * cy;
+            forward.y = cp * sy;
+            forward.z = -sp;
+            forward *= 4;
+            freecam_origin += forward;
+            setup->origin = freecam_origin;
         }
-    }*/
+        freecam_last = freecam.KeyDown();
+    }
+
+    draw::fov = setup->fov;
 }
 
-// Used to process entities from CreateMove
-void _FASTCALL ProcessEntity(CachedEntity *ent)
+#endif
+
+bool CanPacket_hook(void *_this)
 {
-    if (!enabled)
-        return; // Esp enable check
-    if (CE_BAD(ent))
-        return; // CE_BAD check to prevent crashes
+    const CanPacket_t original =
+        (CanPacket_t) hooks::netchannel.GetMethod(offsets::CanPacket());
+    return *bSendPackets && original(_this);
+}
 
-    // Entity esp
-    if (entity_info)
+CUserCmd *GetUserCmd_hook(IInput *_this, int sequence_number)
+{
+    static const GetUserCmd_t original =
+        (GetUserCmd_t) hooks::input.GetMethod(offsets::GetUserCmd());
+    static CUserCmd *def;
+    static int oldcmd;
+    static INetChannel *ch;
+
+    def = original(_this, sequence_number);
+    if (def &&
+        command_number_mod.find(def->command_number) !=
+            command_number_mod.end())
     {
-        AddEntityString(ent,
-                        format(RAW_ENT(ent)->GetClientClass()->m_pNetworkName,
-                               " [", ent->m_iClassID, "]"));
-        if (entity_id)
-        {
-            AddEntityString(ent, std::to_string(ent->m_IDX));
-        }
-        if (entity_model)
-        {
-            const model_t *model = RAW_ENT(ent)->GetModel();
-            if (model)
-                AddEntityString(ent,
-                                std::string(g_IModelInfo->GetModelName(model)));
-        }
+        // logging::Info("Replacing command %i with %i", def->command_number,
+        // command_number_mod[def->command_number]);
+        oldcmd              = def->command_number;
+        def->command_number = command_number_mod[def->command_number];
+        def->random_seed =
+            MD5_PseudoRandom(unsigned(def->command_number)) & 0x7fffffff;
+        command_number_mod.erase(command_number_mod.find(oldcmd));
+        *(int *) ((unsigned) g_IBaseClientState +
+                  offsets::lastoutgoingcommand()) = def->command_number - 1;
+        ch =
+            (INetChannel *) g_IEngine
+                ->GetNetChannelInfo(); //*(INetChannel**)((unsigned)g_IBaseClientState
+                                       //+ offsets::m_NetChannel());
+        *(int *) ((unsigned) ch + offsets::m_nOutSequenceNr()) =
+            def->command_number - 1;
     }
+    return def;
+}
 
-    // Get esp data from current ent
-    ESPData &espdata = data[ent->m_IDX];
+static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0",
+                       "Log sent messages");
 
-    // Projectile esp
-    if (ent->m_Type == ENTITY_PROJECTILE && proj_esp &&
-        (ent->m_bEnemy || (teammates && !proj_enemy)))
+static CatCommand plus_use_action_slot_item_server(
+    "+cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
+        KeyValues *kv = new KeyValues("+use_action_slot_item_server");
+        g_pLocalPlayer->using_action_slot_item = true;
+        g_IEngine->ServerCmdKeyValues(kv);
+    });
+
+static CatCommand minus_use_action_slot_item_server(
+    "-cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
+        KeyValues *kv = new KeyValues("-use_action_slot_item_server");
+        g_pLocalPlayer->using_action_slot_item = false;
+        g_IEngine->ServerCmdKeyValues(kv);
+    });
+
+static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
+                           "Add # newlines before each your message", 0, 24);
+// TODO replace \\n with \n
+// TODO name \\n = \n
+// static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages",
+// "Use this if you want to use spam/killsay and still be able to chat normally
+// (without having your msgs eaten by valve cooldown)");
+
+static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
+static CatVar crypt_chat(
+    CV_SWITCH, "chat_crypto", "1", "Crypto chat",
+    "Start message with !! and it will be only visible to cathook users");
+static CatVar chat_filter(CV_STRING, "chat_censor", "",
+                          "Spam Chat with newlines if the chosen words are "
+                          "said, seperate with commas");
+static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
+                                  "enable censor");
+
+bool SendNetMsg_hook(void *_this, INetMessage &msg, bool bForceReliable = false,
+                     bool bVoice = false)
+{
+    static size_t say_idx, say_team_idx;
+    static int offset;
+    static std::string newlines;
+    static NET_StringCmd stringcmd;
+
+    // This is a INetChannel hook - it SHOULDN'T be static because netchannel
+    // changes.
+    const SendNetMsg_t original =
+        (SendNetMsg_t) hooks::netchannel.GetMethod(offsets::SendNetMsg());
+    // net_StringCmd
+    if (msg.GetType() == 4 && (newlines_msg || crypt_chat))
     {
-
-        // Rockets
-        if (ent->m_iClassID == CL_CLASS(CTFProjectile_Rocket) ||
-            ent->m_iClassID == CL_CLASS(CTFProjectile_SentryRocket))
+        std::string str(msg.ToString());
+        say_idx      = str.find("net_StringCmd: \"say \"");
+        say_team_idx = str.find("net_StringCmd: \"say_team \"");
+        if (!say_idx || !say_team_idx)
         {
-            if (proj_rockets)
+            offset    = say_idx ? 26 : 21;
+            bool crpt = false;
+            if (crypt_chat)
             {
-                if ((int) proj_rockets != 2 || ent->m_bCritProjectile)
+                std::string msg(str.substr(offset));
+                msg = msg.substr(0, msg.length() - 2);
+                if (msg.find("!!") == 0)
                 {
-                    AddEntityString(ent, "[ ==> ]");
+                    msg  = ucccccp::encrypt(msg.substr(2));
+                    str  = str.substr(0, offset) + msg + "\"\"";
+                    crpt = true;
                 }
             }
-
-            // Pills/Stickys
-        }
-        else if (ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile))
-        {
-            // Switch based on pills/stickys
-            switch (CE_INT(ent, netvar.iPipeType))
+            if (!crpt && newlines_msg)
             {
-            case 0: // Pills
-                if (!proj_pipes)
-                    break;
-                if ((int) proj_pipes == 2 && !ent->m_bCritProjectile)
-                    break;
-                AddEntityString(ent, "[ (PP) ]");
-                break;
-            case 1: // Stickys
-                if (!proj_stickies)
-                    break;
-                if ((int) proj_stickies == 2 && !ent->m_bCritProjectile)
-                    break;
-                AddEntityString(ent, "[ {*} ]");
+                // TODO move out? update in a value change callback?
+                newlines = std::string((int) newlines_msg, '\n');
+                str.insert(offset, newlines);
             }
-
-            // Huntsman
+            str = str.substr(16, str.length() - 17);
+            // if (queue_messages && !chat_stack::CanSend()) {
+            stringcmd.m_szCommand = str.c_str();
+            return original(_this, stringcmd, bForceReliable, bVoice);
+            //}
         }
-        else if (ent->m_iClassID == CL_CLASS(CTFProjectile_Arrow))
+    }
+    static ConVar *sv_player_usercommand_timeout =
+        g_ICvar->FindVar("sv_player_usercommand_timeout");
+    static float lastcmd = 0.0f;
+    if (lastcmd > g_GlobalVars->absoluteframetime)
+    {
+        lastcmd = g_GlobalVars->absoluteframetime;
+    }
+    if (airstuck.KeyDown() && !g_Settings.bInvalid)
+    {
+        if (CE_GOOD(LOCAL_E))
         {
-            if ((int) proj_arrows != 2 || ent->m_bCritProjectile)
+            if (lastcmd + sv_player_usercommand_timeout->GetFloat() - 0.1f <
+                g_GlobalVars->curtime)
             {
-                AddEntityString(ent, "[ >>---> ]");
+                if (msg.GetType() == clc_Move)
+                    return false;
+            }
+            else
+            {
+                lastcmd = g_GlobalVars->absoluteframetime;
             }
         }
     }
-
-    // Hl2DM dropped item esp
-    IF_GAME(IsHL2DM())
+    if (log_sent && msg.GetType() != 3 && msg.GetType() != 9)
     {
-        if (item_esp && item_dropped_weapons)
+        logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(),
+                      msg.ToString());
+        unsigned char buf[4096];
+        bf_write buffer("cathook_debug_buffer", buf, 4096);
+        logging::Info("Writing %i", msg.WriteToBuffer(buffer));
+        std::string bytes    = "";
+        constexpr char h2c[] = "0123456789abcdef";
+        for (int i = 0; i < buffer.GetNumBytesWritten(); i++)
         {
-            if (CE_BYTE(ent, netvar.hOwner) == (unsigned char) -1)
+            // bytes += format(h2c[(buf[i] & 0xF0) >> 4], h2c[(buf[i] & 0xF)], '
+            // ');
+            bytes += format((unsigned short) buf[i], ' ');
+        }
+        logging::Info("%i bytes => %s", buffer.GetNumBytesWritten(),
+                      bytes.c_str());
+    }
+    return original(_this, msg, bForceReliable, bVoice);
+}
+
+static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
+
+void Shutdown_hook(void *_this, const char *reason)
+{
+    g_Settings.bInvalid = true;
+    // This is a INetChannel hook - it SHOULDN'T be static because netchannel
+    // changes.
+    const Shutdown_t original =
+        (Shutdown_t) hooks::netchannel.GetMethod(offsets::Shutdown());
+    logging::Info("Disconnect: %s", reason);
+    if (strstr(reason, "banned"))
+    {
+        if (die_if_vac)
+        {
+            logging::Info("VAC banned");
+            *(int *) 0 = 0;
+            exit(1);
+        }
+    }
+#if ENABLE_IPC
+    ipc::UpdateServerAddress(true);
+#endif
+    if (cathook && (disconnect_reason.convar_parent->m_StringLength > 3) &&
+        strstr(reason, "user"))
+    {
+        original(_this, disconnect_reason_newlined);
+    }
+    else
+    {
+        original(_this, reason);
+    }
+
+    if (hacks::shared::autojoin::auto_queue)
+        tfmm::abandon();
+}
+
+static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
+
+CatEnum namesteal_enum({ "OFF", "PASSIVE", "ACTIVE" });
+CatVar namesteal(namesteal_enum, "name_stealer", "0", "Name Stealer",
+                 "Attemt to steal your teammates names. Usefull for avoiding "
+                 "kicks\nPassive only changes when the name stolen is no "
+                 "longer the best name to use\nActive Attemps to change the "
+                 "name whenever possible");
+
+static std::string stolen_name;
+
+// Func to get a new entity to steal name from and returns true if a target has
+// been found
+bool StolenName()
+{
+
+    // Array to store potential namestealer targets with a bookkeeper to tell
+    // how full it is
+    int potential_targets[32];
+    int potential_targets_length = 0;
+
+    // Go through entities looking for potential targets
+    for (int i = 1; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+
+        // Check if ent is a good target
+        if (!ent)
+            continue;
+        if (ent == LOCAL_E)
+            continue;
+        if (!ent->m_Type == ENTITY_PLAYER)
+            continue;
+        if (ent->m_bEnemy)
+            continue;
+
+        // Check if name is current one
+        player_info_s info;
+        if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
+        {
+
+            // If our name is the same as current, than change it
+            if (std::string(info.name) == stolen_name)
             {
-                int string_count_backup = data[ent->m_IDX].string_count;
-                if (ent->m_iClassID == CL_CLASS(CWeapon_SLAM))
-                    AddEntityString(ent, "SLAM");
-                else if (ent->m_iClassID == CL_CLASS(CWeapon357))
-                    AddEntityString(ent, ".357");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponAR2))
-                    AddEntityString(ent, "AR2");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponAlyxGun))
-                    AddEntityString(ent, "Alyx Gun");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponAnnabelle))
-                    AddEntityString(ent, "Annabelle");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponBinoculars))
-                    AddEntityString(ent, "Binoculars");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponBugBait))
-                    AddEntityString(ent, "Bug Bait");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponCrossbow))
-                    AddEntityString(ent, "Crossbow");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponShotgun))
-                    AddEntityString(ent, "Shotgun");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponSMG1))
-                    AddEntityString(ent, "SMG");
-                else if (ent->m_iClassID == CL_CLASS(CWeaponRPG))
-                    AddEntityString(ent, "RPG");
-                if (string_count_backup != data[ent->m_IDX].string_count)
+                // Since we found the ent we stole our name from and it is still
+                // good, if user settings are passive, then we return true and
+                // dont alter our name
+                if ((int) namesteal == 1)
                 {
-                    SetEntityColor(ent, colors::yellow);
+                    return true;
+                    // Otherwise we continue to change our name to something
+                    // else
                 }
+                else
+                    continue;
             }
-        }
-    }
 
-    // Tank esp
-    if (ent->m_iClassID == CL_CLASS(CTFTankBoss) && tank)
-    {
-        AddEntityString(ent, "Tank");
-
-        // Dropped weapon esp
-    }
-    else if (ent->m_iClassID == CL_CLASS(CTFDroppedWeapon) && item_esp &&
-             item_dropped_weapons)
-    {
-        AddEntityString(
-            ent, format("WEAPON ", RAW_ENT(ent)->GetClientClass()->GetName()));
-
-        // MVM Money esp
-    }
-    else if (ent->m_iClassID == CL_CLASS(CCurrencyPack) && item_money)
-    {
-        if (CE_BYTE(ent, netvar.bDistributed))
-        {
-            if (item_money_red)
-            {
-                AddEntityString(ent, "~$~");
-            }
+            // a ent without a name is no ent we need, contine for a different
+            // one
         }
         else
-        {
-            AddEntityString(ent, "$$$");
-        }
+            continue;
 
-        // Other item esp
+        // Save the ent to our array
+        potential_targets[potential_targets_length] = i;
+        potential_targets_length++;
+
+        // With our maximum amount of players reached, dont search for anymore
+        if (potential_targets_length >= 32)
+            break;
     }
-    else if (ent->m_ItemType != ITEM_NONE && item_esp)
-    {
 
-        // Health pack esp
-        if (item_health_packs && (ent->m_ItemType >= ITEM_HEALTH_SMALL &&
-                                      ent->m_ItemType <= ITEM_HEALTH_LARGE ||
-                                  ent->m_ItemType == ITEM_HL_BATTERY))
-        {
-            if (ent->m_ItemType == ITEM_HEALTH_SMALL)
-                AddEntityString(ent, "[+]");
-            if (ent->m_ItemType == ITEM_HEALTH_MEDIUM)
-                AddEntityString(ent, "[++]");
-            if (ent->m_ItemType == ITEM_HEALTH_LARGE)
-                AddEntityString(ent, "[+++]");
-            if (ent->m_ItemType == ITEM_HL_BATTERY)
-                AddEntityString(ent, "[Z]");
-
-            // TF2C Adrenaline esp
-        }
-        else if (item_adrenaline && ent->m_ItemType == ITEM_TF2C_PILL)
-        {
-            AddEntityString(ent, "[a]");
-
-            // Ammo pack esp
-        }
-        else if (item_ammo_packs && ent->m_ItemType >= ITEM_AMMO_SMALL &&
-                 ent->m_ItemType <= ITEM_AMMO_LARGE)
-        {
-            if (ent->m_ItemType == ITEM_AMMO_SMALL)
-                AddEntityString(ent, "{i}");
-            if (ent->m_ItemType == ITEM_AMMO_MEDIUM)
-                AddEntityString(ent, "{ii}");
-            if (ent->m_ItemType == ITEM_AMMO_LARGE)
-                AddEntityString(ent, "{iii}");
-
-            // Powerup esp
-        }
-        else if (item_powerups && ent->m_ItemType >= ITEM_POWERUP_FIRST &&
-                 ent->m_ItemType <= ITEM_POWERUP_LAST)
-        {
-            AddEntityString(
-                ent, format(powerups[ent->m_ItemType - ITEM_POWERUP_FIRST],
-                            " PICKUP"));
-
-            // TF2C weapon spawner esp
-        }
-        else if (item_weapon_spawners && ent->m_ItemType >= ITEM_TF2C_W_FIRST &&
-                 ent->m_ItemType <= ITEM_TF2C_W_LAST)
-        {
-            AddEntityString(
-                ent,
-                format(tf2c_weapon_names[ent->m_ItemType - ITEM_TF2C_W_FIRST],
-                       " SPAWNER"));
-            if (CE_BYTE(ent, netvar.bRespawning))
-                AddEntityString(ent, "-- RESPAWNING --");
-
-            // Halloween spell esp
-        }
-        else if (item_spellbooks && (ent->m_ItemType == ITEM_SPELL ||
-                                     ent->m_ItemType == ITEM_SPELL_RARE))
-        {
-            if (ent->m_ItemType == ITEM_SPELL)
-            {
-                AddEntityString(ent, "Spell", colors::green);
-            }
-            else
-            {
-                AddEntityString(ent, "Rare Spell",
-                                colors::FromRGBA8(139, 31, 221, 255));
-            }
-        }
-
-        // Building esp
-    }
-    else if (ent->m_Type == ENTITY_BUILDING && buildings)
-    {
-
-        // Check if enemy building
-        if (!ent->m_bEnemy && !teammates)
-            return;
-
-        // TODO maybe...
-        /*if (legit && ent->m_iTeam != g_pLocalPlayer->team) {
-            if (ent->m_lLastSeen > v_iLegitSeenTicks->GetInt()) {
-                return;
-            }
-        }*/
-
-        // Make a name for the building based on the building type and level
-        if (show_name || show_class)
-        {
-            const std::string &name =
-                (ent->m_iClassID == CL_CLASS(CObjectTeleporter)
-                     ? "Teleporter"
-                     : (ent->m_iClassID == CL_CLASS(CObjectSentrygun)
-                            ? "Sentry Gun"
-                            : "Dispenser"));
-            int level = CE_INT(ent, netvar.iUpgradeLevel);
-            AddEntityString(ent, format("LV ", level, ' ', name));
-        }
-        // If text health is true, then add a string with the health
-        if ((int) show_health == 1 || (int) show_health == 3)
-        {
-            AddEntityString(
-                ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"),
-                colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
-        }
-        // Set the entity to repaint
-        espdata.needs_paint = true;
-        return;
-
-        // Player esp
-    }
-    else if (ent->m_Type == ENTITY_PLAYER && ent->m_bAlivePlayer)
-    {
-
-        // Local player handling
-        if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
-            ent->m_IDX == g_IEngine->GetLocalPlayer())
-            return;
-
-        // Get player class
-        int pclass = CE_INT(ent, netvar.iClass);
-
-        // Attempt to get player info, and if cant, return
-        player_info_s info;
-        if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
-            return;
-
-        // TODO, check if u can just use "ent->m_bEnemy" instead of m_iTeam
-        // Legit mode handling
-        if (legit && ent->m_iTeam != g_pLocalPlayer->team &&
-            playerlist::IsDefault(info.friendsID))
-        {
-            if (IsPlayerInvisible(ent))
-                return; // Invis check
-            if (vischeck && !ent->IsVisible())
-                return; // Vis check
-                        // TODO, maybe...
-                        // if (ent->m_lLastSeen >
-                        // (unsigned)v_iLegitSeenTicks->GetInt())
-            // return;
-        }
-
-        // Powerup handling
-        if (powerup_esp)
-        {
-            powerup_type power = GetPowerupOnPlayer(ent);
-            if (power != not_powerup)
-                AddEntityString(ent, format("^ ", powerups[power], " ^"));
-        }
-
-        // Dont understand reasoning for this check
-        if (ent->m_bEnemy || teammates ||
-            !playerlist::IsDefault(info.friendsID))
-        {
-
-            // Playername
-            if (show_name)
-                AddEntityString(ent, std::string(info.name));
-
-            // Player class
-            if (show_class)
-            {
-                if (pclass > 0 && pclass < 10)
-                    AddEntityString(ent, classes[pclass - 1]);
-            }
-
-#if ENABLE_IPC == 1
-            // ipc bot esp
-            if (show_bot_id && ipc::peer && ent != LOCAL_E)
-            {
-                for (unsigned i = 0; i < cat_ipc::max_peers; i++)
-                {
-                    if (!ipc::peer->memory->peer_data[i].free &&
-                        ipc::peer->memory->peer_user_data[i].friendid ==
-                            info.friendsID)
-                    {
-                        AddEntityString(ent, format("BOT #", i));
-                        break;
-                    }
-                }
-            }
-#endif
-            // Health esp
-            if ((int) show_health == 1 || (int) show_health == 3)
-            {
-                AddEntityString(
-                    ent, format(ent->m_iHealth, '/', ent->m_iMaxHealth, " HP"),
-                    colors::Health(ent->m_iHealth, ent->m_iMaxHealth));
-            }
-            IF_GAME(IsTF())
-            {
-                // Medigun Ubercharge esp
-                if (show_ubercharge)
-                {
-                    if (CE_INT(ent, netvar.iClass) == tf_medic)
-                    {
-                        int *weapon_list = (int *) ((unsigned) (RAW_ENT(ent)) +
-                                                    netvar.hMyWeapons);
-                        for (int i = 0; weapon_list[i]; i++)
-                        {
-                            int handle = weapon_list[i];
-                            int eid    = handle & 0xFFF;
-                            if (eid >= 32 && eid <= HIGHEST_ENTITY)
-                            {
-                                CachedEntity *weapon = ENTITY(eid);
-                                if (!CE_BAD(weapon) &&
-                                    weapon->m_iClassID ==
-                                        CL_CLASS(CWeaponMedigun) &&
-                                    weapon)
-                                {
-                                    if (CE_INT(weapon,
-                                               netvar.iItemDefinitionIndex) !=
-                                        998)
-                                    {
-                                        AddEntityString(
-                                            ent,
-                                            format(
-                                                floor(
-                                                    CE_FLOAT(
-                                                        weapon,
-                                                        netvar
-                                                            .m_flChargeLevel) *
-                                                    100),
-                                                '%', " Uber"),
-                                            colors::Health(
-                                                (CE_FLOAT(
-                                                     weapon,
-                                                     netvar.m_flChargeLevel) *
-                                                 100),
-                                                100));
-                                    }
-                                    else
-                                        AddEntityString(
-                                            ent,
-                                            format(
-                                                floor(
-                                                    CE_FLOAT(
-                                                        weapon,
-                                                        netvar
-                                                            .m_flChargeLevel) *
-                                                    100),
-                                                '%', " Uber | Charges: ",
-                                                floor(
-                                                    CE_FLOAT(
-                                                        weapon,
-                                                        netvar
-                                                            .m_flChargeLevel) /
-                                                    0.25f)),
-                                            colors::Health(
-                                                (CE_FLOAT(
-                                                     weapon,
-                                                     netvar.m_flChargeLevel) *
-                                                 100),
-                                                100));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                // Conditions esp
-                if (show_conditions)
-                {
-                    const auto &clr = colors::EntityF(ent);
-                    // Invis
-                    if (IsPlayerInvisible(ent))
-                        AddEntityString(
-                            ent, "*CLOAKED*",
-                            colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
-                    // Uber/Bonk
-                    if (IsPlayerInvulnerable(ent))
-                        AddEntityString(ent, "*INVULNERABLE*");
-                    // Vaccinator
-                    if (HasCondition<TFCond_UberBulletResist>(ent))
-                    {
-                        AddEntityString(ent, "*VACCINATOR*");
-                    }
-                    else if (HasCondition<TFCond_SmallBulletResist>(ent))
-                    {
-                        AddEntityString(ent, "*PASSIVE RESIST*");
-                    }
-                    // Crit
-                    if (IsPlayerCritBoosted(ent))
-                        AddEntityString(ent, "*CRITS*", colors::orange);
-                    // Zoomed
-                    if (HasCondition<TFCond_Zoomed>(ent))
-                    {
-                        AddEntityString(
-                            ent, "*ZOOMING*",
-                            colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
-                        // Slowed
-                    }
-                    else if (HasCondition<TFCond_Slowed>(ent))
-                    {
-                        AddEntityString(
-                            ent, "*SLOWED*",
-                            colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
-                    }
-                    // Jarated
-                    if (HasCondition<TFCond_Jarated>(ent))
-                        AddEntityString(ent, "*JARATED*", colors::yellow);
-                }
-            }
-            // Hoovy Esp
-            if (IsHoovy(ent))
-                AddEntityString(ent, "Hoovy");
-
-            // Active weapon esp
-            int widx = CE_INT(ent, netvar.hActiveWeapon) & 0xFFF;
-            if (IDX_GOOD(widx))
-            {
-                CachedEntity *weapon = ENTITY(widx);
-                if (CE_GOOD(weapon))
-                {
-                    if (show_weapon)
-                    {
-                        const char *weapon_name =
-                            re::C_BaseCombatWeapon::GetPrintName(
-                                RAW_ENT(weapon));
-                        if (weapon_name)
-                            AddEntityString(ent, std::string(weapon_name));
-                    }
-                }
-            }
-
-            // Notify esp to repaint
-            espdata.needs_paint = true;
-        }
-        return;
-    }
-}
-
-// Draw a box around a player
-void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
-{
-    PROF_SECTION(PT_esp_drawbox);
-
-    // Check if ent is bad to prevent crashes
-    if (CE_BAD(ent))
-        return;
-
-    // Get our collidable bounds
-    if (!GetCollide(ent))
-        return;
-
-    // Pull the cached collide info
-    ESPData &ent_data = data[ent->m_IDX];
-    int max_x         = ent_data.collide_max.x;
-    int max_y         = ent_data.collide_max.y;
-    int min_x         = ent_data.collide_min.x;
-    int min_y         = ent_data.collide_min.y;
-
-    // Depending on whether the player is cloaked, we change the color
-    // acordingly
-    rgba_t border = ((ent->m_iClassID == RCC_PLAYER) && IsPlayerInvisible(ent))
-                        ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f)
-                        : colors::Transparent(colors::black, clr.a);
-
-    // With box corners, we draw differently
-    if ((int) box_esp == 2)
-        BoxCorners(min_x, min_y, max_x, max_y, clr, (clr.a != 1.0f));
-    // Otherwise, we just do simple draw funcs
-    else
-    {
-        draw_api::draw_rect_outlined(min_x, min_y, max_x - min_x, max_y - min_y,
-                                     border, 0.5f);
-        draw_api::draw_rect_outlined(min_x + 1, min_y + 1, max_x - min_x - 2,
-                                     max_y - min_y - 2, clr, 0.5f);
-        draw_api::draw_rect_outlined(min_x + 2, min_y + 2, max_x - min_x - 4,
-                                     max_y - min_y - 4, border, 0.5f);
-    }
-}
-
-// Function to draw box corners, Used by DrawBox
-void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color,
-                bool transparent)
-{
-    const rgba_t &black =
-        transparent ? colors::Transparent(colors::black) : colors::black;
-    const int size = box_corner_size;
-
-    // Black corners
-    // Top Left
-    draw_api::draw_rect(minx, miny, size, 3, black);
-    draw_api::draw_rect(minx, miny + 3, 3, size - 3, black);
-    // Top Right
-    draw_api::draw_rect(maxx - size + 1, miny, size, 3, black);
-    draw_api::draw_rect(maxx - 3 + 1, miny + 3, 3, size - 3, black);
-    // Bottom Left
-    draw_api::draw_rect(minx, maxy - 3, size, 3, black);
-    draw_api::draw_rect(minx, maxy - size, 3, size - 3, black);
-    // Bottom Right
-    draw_api::draw_rect(maxx - size + 1, maxy - 3, size, 3, black);
-    draw_api::draw_rect(maxx - 2, maxy - size, 3, size - 3, black);
-
-    // Colored corners
-    // Top Left
-    draw_api::draw_line(minx + 1, miny + 1, size - 2, 0, color, 0.5f);
-    draw_api::draw_line(minx + 1, miny + 1, 0, size - 2, color, 0.5f);
-    // Top Right
-    draw_api::draw_line(maxx - 1, miny + 1, -(size - 2), 0, color, 0.5f);
-    draw_api::draw_line(maxx - 1, miny + 1, 0, size - 2, color, 0.5f);
-    // Bottom Left
-    draw_api::draw_line(minx + 1, maxy - 2, size - 2, 0, color, 0.5f);
-    draw_api::draw_line(minx + 1, maxy - 2, 0, -(size - 2), color, 0.5f);
-    // Bottom Right
-    draw_api::draw_line(maxx - 1, maxy - 2, -(size - 2), 0, color, 0.5f);
-    draw_api::draw_line(maxx - 1, maxy - 2, 0, -(size - 2), color, 0.5f);
-}
-
-// Used for caching collidable bounds
-bool GetCollide(CachedEntity *ent)
-{
-    PROF_SECTION(PT_esp_getcollide);
-
-    // Null + Dormant check to prevent crashing
-    if (CE_BAD(ent))
+    // Checks to prevent crashes
+    if (potential_targets_length == 0)
         return false;
 
-    // Grab esp data
-    ESPData &ent_data = data[ent->m_IDX];
+    // Get random number that we can use with our array
+    int target_random_num =
+        floor(RandFloatRange(0, potential_targets_length - 0.1F));
 
-    // If entity has cached collides, return it. Otherwise generate new bounds
-    if (!ent_data.has_collide)
+    // Get a idx from our random array position
+    int new_target = potential_targets[target_random_num];
+
+    // Grab username of user
+    player_info_s info;
+    if (g_IEngine->GetPlayerInfo(new_target, &info))
     {
 
-        // Get collision center, max, and mins
-        const Vector &origin =
-            RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
-        Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
-        Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
-
-        // Create a array for storing box points
-        Vector points_r[8]; // World vectors
-        Vector points[8];   // Screen vectors
-
-        // If user setting for box expnad is true, spread the max and mins
-        if (esp_expand)
-        {
-            const float &exp = (float) esp_expand;
-            maxs.x += exp;
-            maxs.y += exp;
-            maxs.z += exp;
-            mins.x -= exp;
-            mins.y -= exp;
-            mins.z -= exp;
-        }
-
-        // Create points for the box based on max and mins
-        float x     = maxs.x - mins.x;
-        float y     = maxs.y - mins.y;
-        float z     = maxs.z - mins.z;
-        points_r[0] = mins;
-        points_r[1] = mins + Vector(x, 0, 0);
-        points_r[2] = mins + Vector(x, y, 0);
-        points_r[3] = mins + Vector(0, y, 0);
-        points_r[4] = mins + Vector(0, 0, z);
-        points_r[5] = mins + Vector(x, 0, z);
-        points_r[6] = mins + Vector(x, y, z);
-        points_r[7] = mins + Vector(0, y, z);
-
-        // Check if any point of the box isnt on the screen
-        bool success = true;
-        for (int i = 0; i < 8; i++)
-        {
-            if (!draw::WorldToScreen(points_r[i], points[i]))
-                success = false;
-        }
-        // If a point isnt on the screen, return here
-        if (!success)
-            return false;
-
-        // Get max and min of the box using the newly created screen vector
-        int max_x = -1;
-        int max_y = -1;
-        int min_x = 65536;
-        int min_y = 65536;
-        for (int i = 0; i < 8; i++)
-        {
-            if (points[i].x > max_x)
-                max_x = points[i].x;
-            if (points[i].y > max_y)
-                max_y = points[i].y;
-            if (points[i].x < min_x)
-                min_x = points[i].x;
-            if (points[i].y < min_y)
-                min_y = points[i].y;
-        }
-
-        // Save the info to the esp data and notify cached that we cached info.
-        ent_data.collide_max = Vector(max_x, max_y, 0);
-        ent_data.collide_min = Vector(min_x, min_y, 0);
-        ent_data.has_collide = true;
-
+        // If our name is the same as current, than change it and return true
+        stolen_name = std::string(info.name);
         return true;
     }
-    else
-    {
-        // We already have collidable so return true.
-        return true;
-    }
-    // Impossible error, return false
+
+    // Didnt get playerinfo
     return false;
 }
 
-// Use to add a esp string to an entity
-void AddEntityString(CachedEntity *entity, const std::string &string,
-                     const rgba_t &color)
-{
-    ESPData &entity_data = data[entity->m_IDX];
-    if (entity_data.string_count >= 15)
-        return;
-    entity_data.strings[entity_data.string_count].data  = string;
-    entity_data.strings[entity_data.string_count].color = color;
-    entity_data.string_count++;
-    entity_data.needs_paint = true;
-}
+static CatVar ipc_name(CV_STRING, "name_ipc", "", "IPC Name");
 
-// Function to reset entitys strings
-void ResetEntityStrings()
+const char *GetFriendPersonaName_hook(ISteamFriends *_this, CSteamID steamID)
 {
-    for (auto &i : data)
+    static const GetFriendPersonaName_t original =
+        (GetFriendPersonaName_t) hooks::steamfriends.GetMethod(
+            offsets::GetFriendPersonaName());
+
+#if ENABLE_IPC
+    if (ipc::peer)
     {
-        i.string_count = 0;
-        i.color        = colors::empty;
-        i.needs_paint  = false;
+        static std::string namestr(ipc_name.GetString());
+        namestr.assign(ipc_name.GetString());
+        if (namestr.length() > 3)
+        {
+            ReplaceString(namestr, "%%", std::to_string(ipc::peer->client_id));
+            return namestr.c_str();
+        }
     }
+#endif
+
+    // Check User settings if namesteal is allowed
+    if (namesteal && steamID == g_ISteamUser->GetSteamID())
+    {
+
+        // We dont want to steal names while not in-game as there are no targets
+        // to steal from. We want to be on a team as well to get teammates names
+        if (g_IEngine->IsInGame() && g_pLocalPlayer->team)
+        {
+
+            // Check if we have a username to steal, func automaticly steals a
+            // name in it.
+            if (StolenName())
+            {
+
+                // Return the name that has changed from the func above
+                return format(stolen_name, "\x0F").c_str();
+            }
+        }
+    }
+
+    if ((strlen(force_name.GetString()) > 1) &&
+        steamID == g_ISteamUser->GetSteamID())
+    {
+
+        return force_name_newlined;
+    }
+    return original(_this, steamID);
 }
 
-// Sets an entitys esp color
-void SetEntityColor(CachedEntity *entity, const rgba_t &color)
+void FireGameEvent_hook(void *_this, IGameEvent *event)
 {
-    data[entity->m_IDX].color = color;
+    static const FireGameEvent_t original =
+        (FireGameEvent_t) hooks::clientmode4.GetMethod(
+            offsets::FireGameEvent());
+    const char *name = event->GetName();
+    if (name)
+    {
+        if (event_log)
+        {
+            if (!strcmp(name, "player_connect_client") ||
+                !strcmp(name, "player_disconnect") ||
+                !strcmp(name, "player_team"))
+            {
+                return;
+            }
+        }
+        //		hacks::tf2::killstreak::fire_event(event);
+    }
+    original(_this, event);
 }
+
+#if ENABLE_VISUALS == 1
+void FrameStageNotify_hook(void *_this, int stage)
+{
+    static IClientEntity *ent;
+
+    PROF_SECTION(FrameStageNotify_TOTAL);
+
+    static const FrameStageNotify_t original =
+        (FrameStageNotify_t) hooks::client.GetMethod(
+            offsets::FrameStageNotify());
+
+    if (!g_IEngine->IsInGame())
+        g_Settings.bInvalid = true;
+    {
+        PROF_SECTION(FSN_skinchanger);
+        hacks::tf2::skinchanger::FrameStageNotify(stage);
+    }
+    if (resolver && cathook && !g_Settings.bInvalid &&
+        stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
+    {
+        PROF_SECTION(FSN_resolver);
+        for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
+        {
+            if (i == g_IEngine->GetLocalPlayer())
+                continue;
+            ent = g_IEntityList->GetClientEntity(i);
+            if (ent && !ent->IsDormant() && !NET_BYTE(ent, netvar.iLifeState))
+            {
+                Vector &angles = NET_VECTOR(ent, netvar.m_angEyeAngles);
+                if (angles.x >= 90)
+                    angles.x = -89;
+                if (angles.x <= -90)
+                    angles.x = 89;
+                angles.y     = fmod(angles.y + 180.0f, 360.0f);
+                if (angles.y < 0)
+                    angles.y += 360.0f;
+                angles.y -= 180.0f;
+            }
+        }
+    }
+    if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START)
+    {
+        IF_GAME(IsTF())
+        {
+            if (CE_GOOD(LOCAL_E) && no_zoom)
+                RemoveCondition<TFCond_Zoomed>(LOCAL_E);
+        }
+        if (force_thirdperson && !g_pLocalPlayer->life_state &&
+            CE_GOOD(g_pLocalPlayer->entity))
+        {
+            CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
+        }
+        if (stage == 5 && show_antiaim && g_IInput->CAM_IsThirdPerson())
+        {
+            if (CE_GOOD(g_pLocalPlayer->entity))
+            {
+                CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 4) =
+                    g_Settings.last_angles.x;
+                CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 8) =
+                    g_Settings.last_angles.y;
+            }
+        }
+    }
+    original(_this, stage);
 }
+#endif /* TEXTMODE */
+
+static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
+                         "Removes newlines from chat");
+static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
+                           "Log dispatched user messages");
+std::string clear     = "";
+static bool firstcall = true;
+bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
+{
+    int loop_index, s, i, j;
+    char *data, c;
+
+    static const DispatchUserMessage_t original =
+        (DispatchUserMessage_t) hooks::client.GetMethod(
+            offsets::DispatchUserMessage());
+    if (type == 4)
+    {
+        loop_index = 0;
+        s          = buf.GetNumBytesLeft();
+        if (s < 256)
+        {
+            data = (char *) alloca(s);
+            for (i      = 0; i < s; i++)
+                data[i] = buf.ReadByte();
+            j           = 0;
+            std::string name;
+            std::string message;
+            for (i = 0; i < 3; i++)
+            {
+                while ((c = data[j++]) && (loop_index < 128))
+                {
+                    loop_index++;
+                    if (clean_chat)
+                        if ((c == '\n' || c == '\r') && (i == 1 || i == 2))
+                            data[j - 1] = '*';
+                    if (i == 1)
+                        name.push_back(c);
+                    if (i == 2)
+                        message.push_back(c);
+                }
+            }
+            static const char *lastfilter;
+            static const char *lastname;
+            static bool retrun = false;
+            if (data[0] != LOCAL_E->m_IDX)
+            {
+                if (retrun)
+                {
+                    PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938,
+                              lastname, 0xefec1f, lastfilter);
+                    retrun = false;
+                }
+            }
+            if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
+            {
+                if (!strcmp(chat_filter.GetString(), ""))
+                {
+                    std::string tmp  = {};
+                    std::string tmp2 = {};
+                    int iii          = 0;
+                    player_info_s info;
+                    g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
+                    std::string name1 = info.name;
+                    std::vector<std::string> name2{};
+                    std::vector<std::string> name3{};
+                    std::string claz = {};
+                    switch (g_pLocalPlayer->clazz)
+                    {
+                    case tf_scout:
+                        claz = "scout";
+                        break;
+                    case tf_soldier:
+                        claz = "soldier";
+                        break;
+                    case tf_pyro:
+                        claz = "pyro";
+                        break;
+                    case tf_demoman:
+                        claz = "demo";
+                        break;
+                    case tf_engineer:
+                        claz = "engi";
+                        break;
+                    case tf_heavy:
+                        claz = "heavy";
+                        break;
+                    case tf_medic:
+                        claz = "med";
+                        break;
+                    case tf_sniper:
+                        claz = "sniper";
+                        break;
+                    case tf_spy:
+                        claz = "spy";
+                        break;
+                    default:
+                        break;
+                    }
+                    for (char i : name1)
+                    {
+                        if (iii == 2)
+                        {
+                            iii = 0;
+                            tmp += i;
+                            name2.push_back(tmp);
+                            tmp = "";
+                        }
+                        else if (iii < 2)
+                        {
+                            iii++;
+                            tmp += i;
+                        }
+                    }
+                    iii = 0;
+                    for (char i : name1)
+                    {
+                        if (iii == 3)
+                        {
+                            iii = 0;
+                            tmp += i;
+                            name3.push_back(tmp2);
+                            tmp2 = "";
+                        }
+                        else if (iii < 3)
+                        {
+                            iii++;
+                            tmp2 += i;
+                        }
+                    }
+                    if (tmp.size() > 2)
+                        name2.push_back(tmp);
+                    if (tmp2.size() > 2)
+                        name3.push_back(tmp2);
+                    iii                          = 0;
+                    std::vector<std::string> res = {
+                        "skid", "script", "cheat", "hak",   "hac",  "f1",
+                        "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
+                        "cat",  "insta",  "revv",  "brass", "kick", claz
+                    };
+                    for (auto i : name2)
+                    {
+                        boost::to_lower(i);
+                        res.push_back(i);
+                    }
+                    for (auto i : name3)
+                    {
+                        boost::to_lower(i);
+                        res.push_back(i);
+                    }
+                    std::string message2 = message;
+                    boost::to_lower(message2);
+                    boost::replace_all(message2, "4", "a");
+                    boost::replace_all(message2, "3", "e");
+                    boost::replace_all(message2, "0", "o");
+                    boost::replace_all(message2, "6", "g");
+                    boost::replace_all(message2, "5", "s");
+                    boost::replace_all(message2, "7", "t");
+                    for (auto filter : res)
+                    {
+                        if (retrun)
+                            break;
+                        if (boost::contains(message2, filter))
+                        {
+
+                            if (clear == "")
+                            {
+                                for (int i = 0; i < 100; i++)
+                                    clear += "\n";
+                            }
+                            chat_stack::Say(". " + clear, true);
+                            retrun     = true;
+                            lastfilter = filter.c_str();
+                            lastname   = name.c_str();
+                        }
+                    }
+                }
+                else if (data[0] != LOCAL_E->m_IDX)
+                {
+                    std::string input = chat_filter.GetString();
+                    boost::to_lower(input);
+                    std::string message2 = message;
+                    std::vector<std::string> result{};
+                    boost::split(result, input, boost::is_any_of(","));
+                    boost::replace_all(message2, "4", "a");
+                    boost::replace_all(message2, "3", "e");
+                    boost::replace_all(message2, "0", "o");
+                    boost::replace_all(message2, "6", "g");
+                    boost::replace_all(message2, "5", "s");
+                    boost::replace_all(message2, "7", "t");
+                    for (auto filter : result)
+                    {
+                        if (retrun)
+                            break;
+                        if (boost::contains(message2, filter))
+                        {
+                            if (clear == "")
+                            {
+                                clear = "";
+                                for (int i = 0; i < 100; i++)
+                                    clear += "\n";
+                            }
+                            chat_stack::Say(". " + clear, true);
+                            retrun     = true;
+                            lastfilter = filter.c_str();
+                            lastname   = name.c_str();
+                        }
+                    }
+                }
+            }
+            if (crypt_chat)
+            {
+                if (firstcall)
+                    chat_stack::Say("!!meow", false);
+                firstcall = false;
+                if (message.find("!!") == 0)
+                {
+                    if (ucccccp::validate(message))
+                    {
+                        CachedEntity *entity = ENTITY(data[0]);
+                        if (CE_GOOD(entity))
+                        {
+                            if (boost::algorithm::contains(
+                                    ucccccp::decrypt(message), "meow"))
+                            {
+                                player_info_s info;
+                                g_IEngine->GetPlayerInfo(data[0], &info);
+                                unsigned steamid = info.friendsID;
+                                playerlist::AccessData(steamid).state =
+                                    playerlist::k_EState::CAT;
+                            }
+                        }
+                        PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
+                                  ucccccp::decrypt(message).c_str());
+                    }
+                }
+            }
+            chatlog::LogMessage(data[0], message);
+            buf = bf_read(data, s);
+            buf.Seek(0);
+        }
+    }
+    if (dispatch_log)
+    {
+        logging::Info("D> %i", type);
+        std::ostringstream str{};
+        while (buf.GetNumBytesLeft())
+        {
+            unsigned char byte = buf.ReadByte();
+            str << std::hex << std::setw(2) << std::setfill('0')
+                << static_cast<int>(byte) << ' ';
+        }
+        logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
+        buf.Seek(0);
+    }
+    votelogger::user_message(buf, type);
+    return original(_this, type, buf);
 }
+
+void LevelInit_hook(void *_this, const char *newmap)
+{
+    static const LevelInit_t original =
+        (LevelInit_t) hooks::clientmode.GetMethod(offsets::LevelInit());
+    playerlist::Save();
+    g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
+    hacks::shared::aimbot::Reset();
+    chat_stack::Reset();
+    hacks::shared::anticheat::ResetEverything();
+    original(_this, newmap);
+    hacks::shared::walkbot::OnLevelInit();
+#if ENABLE_IPC
+    if (ipc::peer)
+    {
+        ipc::peer->memory->peer_user_data[ipc::peer->client_id].ts_connected =
+            time(nullptr);
+    }
+#endif
+}
+
+void LevelShutdown_hook(void *_this)
+{
+    static const LevelShutdown_t original =
+        LevelShutdown_t(hooks::clientmode.GetMethod(offsets::LevelShutdown()));
+    need_name_change = true;
+    playerlist::Save();
+    g_Settings.bInvalid = true;
+    hacks::shared::aimbot::Reset();
+    chat_stack::Reset();
+    hacks::shared::anticheat::ResetEverything();
+    original(_this);
+#if ENABLE_IPC
+    if (ipc::peer)
+    {
+        ipc::peer->memory->peer_user_data[ipc::peer->client_id]
+            .ts_disconnected = time(nullptr);
+    }
+#endif
+}
+
+int RandomInt_hook(void *_this, int iMinVal, int iMaxVal)
+{
+    static const RandomInt_t original =
+        RandomInt_t(hooks::vstd.GetMethod(offsets::RandomInt()));
+
+    if (medal_flip && iMinVal == 0 && iMaxVal == 9)
+        return 0;
+
+    return original(_this, iMinVal, iMaxVal);
 }
