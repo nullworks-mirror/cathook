@@ -23,6 +23,7 @@ struct ac_data
     int check_timer;
     int last_weapon;
 };
+extern int amount[32];
 
 void ResetEverything();
 void ResetPlayer(int idx);
