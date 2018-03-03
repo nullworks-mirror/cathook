@@ -284,7 +284,7 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
 
 static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
 static CatVar crypt_chat(
-    CV_SWITCH, "chat_crypto", "0", "Crypto chat",
+    CV_SWITCH, "chat_crypto", "1", "Crypto chat",
     "Start message with !! and it will be only visible to cathook users");
 static CatVar chat_filter(CV_STRING, "chat_censor", "",
                           "Spam Chat with newlines if the chosen words are "
