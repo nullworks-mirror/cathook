@@ -696,7 +696,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
         	static const char *lastfilter;
         	static const char *lastname;
         	static bool retrun = false;
-            if (data[0] != LOCAL_E->m_IDX) {
+            if (data[0] == LOCAL_E->m_IDX) {
             	if (retrun)
             		PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938, lastname,
             				0xefec1f, lastfilter);
@@ -860,10 +860,22 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
             }
             if (crypt_chat)
             {
+            	if (firstcall)
+            		chat_stack::Say(ucccccp::encrypt("meow"), false);
+            	firstcall = false;
                 if (message.find("!!") == 0)
                 {
                     if (ucccccp::validate(message))
                     {
+                    	CachedEntity* entity = ENTITY(data[0]);
+                    	if (CE_GOOD(entity)) {
+                    		if (boost::algorithm::contains(ucccccp::decrypt(message), "meow")) {
+                        		player_info_s info;
+                        		g_IEngine->GetPlayerInfo(data[0], &info);
+                        		unsigned steamid = info.friendsID;
+                        		playerlist::AccessData(steamid).state = playerlist::k_EState::CAT;
+                    		}
+                    	}
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
                     }
