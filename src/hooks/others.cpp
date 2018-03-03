@@ -661,6 +661,8 @@ static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
                            "Log dispatched user messages");
 std::string clear     = "";
 static bool firstcall = true;
+Timer sendmsg{};
+
 bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
 {
     int loop_index, s, i, j;
@@ -865,24 +867,30 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
             }
             if (crypt_chat)
             {
-                if (firstcall)
+                if (sendmsg.test_and_set(300000))
                     chat_stack::Say("!!meow", false);
                 firstcall = false;
                 if (message.find("!!") == 0)
                 {
+                    static player_info_s info;
+                    static unsigned steamid;
                     if (ucccccp::validate(message))
                     {
-                        CachedEntity *entity = ENTITY(data[0]);
-                        if (CE_GOOD(entity))
+                        if (g_IEngine->GetPlayerInfo(data[0], &info) &&
+                            playerlist::AccessData(steamid).state !=
+                                playerlist::k_EState::CAT)
                         {
-                            if (boost::algorithm::contains(
-                                    ucccccp::decrypt(message), "meow"))
+                        	steamid = info.friendsID;
+                            CachedEntity *entity = ENTITY(data[0]);
+                            if (CE_GOOD(entity))
                             {
-                                player_info_s info;
-                                g_IEngine->GetPlayerInfo(data[0], &info);
-                                unsigned steamid = info.friendsID;
-                                playerlist::AccessData(steamid).state =
-                                    playerlist::k_EState::CAT;
+                                if (boost::algorithm::contains(
+                                        ucccccp::decrypt(message), "meow"))
+                                {
+                                    playerlist::AccessData(steamid).state =
+                                        playerlist::k_EState::CAT;
+                                    chat_stack::Say("!!meow", false);
+                                }
                             }
                         }
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
