@@ -862,7 +862,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
             if (crypt_chat)
             {
             	if (firstcall)
-            		chat_stack::Say(ucccccp::encrypt("meow"), false);
+            		chat_stack::Say("!!meow"), false);
             	firstcall = false;
                 if (message.find("!!") == 0)
                 {
