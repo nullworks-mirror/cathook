@@ -697,12 +697,13 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
         	static const char *lastfilter;
         	static const char *lastname;
         	static bool retrun = false;
-            if (data[0] == LOCAL_E->m_IDX) {
-            	if (retrun)
+            if (data[0] != LOCAL_E->m_IDX) {
+            	if (retrun) {
             		PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938, lastname,
             				0xefec1f, lastfilter);
+                            retrun = false;
+              }
             }
-            retrun = false;
             if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
             {
                 if (!strcmp(chat_filter.GetString(), ""))
@@ -946,9 +947,9 @@ void LevelShutdown_hook(void *_this)
 
 int RandomInt_hook(void *_this, int iMinVal, int iMaxVal)
 {
-    static const RandomInt_t original = 
+    static const RandomInt_t original =
         RandomInt_t(hooks::vstd.GetMethod(offsets::RandomInt()));
-    
+
     if (medal_flip && iMinVal == 0 && iMaxVal == 9) return 0;
 
     return original(_this, iMinVal, iMaxVal);
