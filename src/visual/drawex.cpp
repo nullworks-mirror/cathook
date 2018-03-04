@@ -106,11 +106,11 @@ void draw_line(float x, float y, float dx, float dy, const rgba_t &rgba,
 
 void draw_rect_textured(float x, float y, float w, float h, const rgba_t &rgba,
                         texture_handle_t texture, float u, float v, float s,
-                        float t)
+                        float t, float a)
 {
     glez_rect_textured(x, y, w, h,
                        *reinterpret_cast<const glez_rgba_t *>(&rgba),
-                       texture.handle, u, v, s, t);
+                       texture.handle, u, v, s, t, a);
 }
 
 void draw_circle(float x, float y, float radius, const rgba_t &rgba,
