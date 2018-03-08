@@ -14,6 +14,8 @@ namespace shared
 namespace antiaim
 {
 
+CatVar communicate(CV_SWITCH, "identify", "1",
+                   "Auto identify for other cathook users");
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
                "Master AntiAim switch");
 CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
@@ -67,7 +69,7 @@ float GetAAAAPitch()
     case 1:
         return aaaa_stage ? 271 : 89;
     default:
-    	break;
+        break;
     }
     return 0;
 }
@@ -177,7 +179,7 @@ void FuckPitch(float &io_pitch)
     case k_EFuckMode::FM_RANDOMVARS:
         io_pitch = RandFloatRange(min_pitch, max_pitch);
     default:
-    	break;
+        break;
     }
 
     if (io_pitch < min_pitch)
@@ -200,7 +202,7 @@ void FuckYaw(float &io_yaw)
     case k_EFuckMode::FM_RANDOMVARS:
         io_yaw = RandFloatRange(min_yaw, max_yaw);
     default:
-    	break;
+        break;
     }
 
     if (io_yaw < min_yaw)
@@ -254,7 +256,7 @@ bool ShouldAA(CUserCmd *cmd)
         }
         break;
     default:
-    	break;
+        break;
     }
     if (safe_space)
     {
@@ -378,8 +380,47 @@ float useEdge(float edgeViewAngle)
     return edgeYaw;
 }
 
+Timer delay{};
+int val = 0;
 void ProcessUserCmd(CUserCmd *cmd)
 {
+    if (communicate && CE_GOOD(LOCAL_E))
+    {
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        {
+            CachedEntity *ent = ENTITY(i);
+            if (CE_GOOD(ent))
+            {
+                if ((int) (CE_FLOAT(ent, netvar.angEyeAngles)) == 53 &&
+                    (int) (CE_FLOAT(ent, netvar.angEyeAngles + 4)) == 33)
+                {
+                    player_info_s info;
+                    if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info) &&
+                        playerlist::AccessData(info.friendsID).state !=
+                            playerlist::k_EState::CAT)
+                    {
+
+                        playerlist::AccessData(info.friendsID).state =
+                            playerlist::k_EState::CAT;
+                        cmd->viewangles.y                = 53;
+                        cmd->viewangles.x                = 33;
+                        g_pLocalPlayer->bUseSilentAngles = true;
+                    }
+                    return;
+                }
+            }
+        }
+        if (delay.test_and_set(180000) || val)
+        {
+            cmd->viewangles.y                = 53;
+            cmd->viewangles.x                = 33;
+            g_pLocalPlayer->bUseSilentAngles = true;
+            val++;
+            if (val == 3)
+                val = 0;
+            return;
+        }
+    }
     if (!ShouldAA(cmd))
         return;
     float &p         = cmd->viewangles.x;
@@ -424,7 +465,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         FuckYaw(y);
         clamp = false;
     default:
-    	break;
+        break;
     }
 
     switch (int(pitch_mode))
