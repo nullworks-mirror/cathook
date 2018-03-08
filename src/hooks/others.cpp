@@ -659,12 +659,20 @@ static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
                          "Removes newlines from chat");
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
                            "Log dispatched user messages");
-std::string clear     = "";
-static bool firstcall = true;
+std::string clear = "";
 Timer sendmsg{};
-
+Timer gitgud{};
+std::string lastfilter{};
+std::string lastname{};
+static bool retrun = false;
 bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
 {
+    if (retrun && gitgud.test_and_set(10000))
+    {
+        PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),
+                  lastfilter.c_str());
+        retrun = false;
+    }
     int loop_index, s, i, j;
     char *data, c;
 
@@ -695,18 +703,6 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                         name.push_back(c);
                     if (i == 2)
                         message.push_back(c);
-                }
-            }
-            static const char *lastfilter;
-            static const char *lastname;
-            static bool retrun = false;
-            if (data[0] != LOCAL_E->m_IDX)
-            {
-                if (retrun)
-                {
-                    PrintChat("\x07%06X%s\x01: \x07%06X%s\x01", 0xe05938,
-                              lastname, 0xefec1f, lastfilter);
-                    retrun = false;
                 }
             }
             if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
@@ -822,13 +818,13 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
 
                             if (clear == "")
                             {
-                                for (int i = 0; i < 100; i++)
+                                for (int i = 0; i < 120; i++)
                                     clear += "\n";
                             }
                             chat_stack::Say(". " + clear, true);
                             retrun     = true;
-                            lastfilter = filter.c_str();
-                            lastname   = name.c_str();
+                            lastfilter = format(filter);
+                            lastname   = format(name);
                         }
                     }
                 }
@@ -854,45 +850,23 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                             if (clear == "")
                             {
                                 clear = "";
-                                for (int i = 0; i < 100; i++)
+                                for (int i = 0; i < 120; i++)
                                     clear += "\n";
                             }
                             chat_stack::Say(". " + clear, true);
                             retrun     = true;
-                            lastfilter = filter.c_str();
-                            lastname   = name.c_str();
+                            lastfilter = format(filter);
+                            lastname   = format(name);
                         }
                     }
                 }
             }
             if (crypt_chat)
             {
-                if (sendmsg.test_and_set(300000))
-                    chat_stack::Say("!!meow", false);
-                firstcall = false;
                 if (message.find("!!") == 0)
                 {
-                    static player_info_s info;
-                    static unsigned steamid;
                     if (ucccccp::validate(message))
                     {
-                        if (g_IEngine->GetPlayerInfo(data[0], &info) &&
-                            playerlist::AccessData(steamid).state !=
-                                playerlist::k_EState::CAT)
-                        {
-                        	steamid = info.friendsID;
-                            CachedEntity *entity = ENTITY(data[0]);
-                            if (CE_GOOD(entity))
-                            {
-                                if (boost::algorithm::contains(
-                                        ucccccp::decrypt(message), "meow"))
-                                {
-                                    playerlist::AccessData(steamid).state =
-                                        playerlist::k_EState::CAT;
-                                    chat_stack::Say("!!meow", false);
-                                }
-                            }
-                        }
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
                     }
