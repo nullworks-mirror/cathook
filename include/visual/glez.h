@@ -93,7 +93,7 @@ void glez_rect_outline(float x, float y, float w, float h, glez_rgba_t color,
 
 void glez_rect_textured(float x, float y, float w, float h, glez_rgba_t color,
                         glez_texture_t texture, float tx, float ty, float tw,
-                        float th);
+                        float th, float angle);
 
 void glez_string(float x, float y, const char *string, glez_font_t font,
                  glez_rgba_t color, float *out_x, float *out_y);
