@@ -4,6 +4,7 @@
 #	GAME - compile for specific game (tf2, hl2dm, dab, tf2c, css, dynamic), tf2 by default, other ones probably won't compile/crash on inject
 #	CLANG - compile with clang instead of g++
 #	BUILD_DEBUG - include debug info in the build
+#       NO_STRIP - Don't Strip library (for use with debug build, can get you vacced)
 #	NO_VISUALS - disable all visuals completely
 #	NO_IPC - disable IPC module completely (also disables followbot lol)
 #	NO_GUI - disable GUI
@@ -174,7 +175,7 @@ src/sdk/utlbuffer.o : CXXFLAGS+=-w
 $(TARGET): $(OBJECTS)
 	@echo Building cathook
 	$(LD) -o $@ $(LDFLAGS) $(OBJECTS) $(LDLIBS)
-ifndef BUILD_DEBUG
+ifndef NOSTRIP
 	strip --strip-all $@
 endif
 
