@@ -175,7 +175,7 @@ src/sdk/utlbuffer.o : CXXFLAGS+=-w
 $(TARGET): $(OBJECTS)
 	@echo Building cathook
 	$(LD) -o $@ $(LDFLAGS) $(OBJECTS) $(LDLIBS)
-ifndef NOSTRIP
+ifndef NO_STRIP
 	strip --strip-all $@
 endif
 
