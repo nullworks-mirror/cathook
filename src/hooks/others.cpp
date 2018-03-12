@@ -933,7 +933,7 @@ void LevelShutdown_hook(void *_this)
     }
 #endif
 }
-
+#if ENABLE_VISUALS == 1
 int RandomInt_hook(void *_this, int iMinVal, int iMaxVal)
 {
     static const RandomInt_t original =
@@ -944,3 +944,4 @@ int RandomInt_hook(void *_this, int iMinVal, int iMaxVal)
 
     return original(_this, iMinVal, iMaxVal);
 }
+#endif
