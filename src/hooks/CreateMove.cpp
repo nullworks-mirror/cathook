@@ -71,8 +71,6 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     g_IGameMovement->FinishTrackPredictionErrors(
         reinterpret_cast<CBasePlayer *>(ent));
 
-    delete[] object;
-
     NET_VAR(ent, 4188, CUserCmd *) = nullptr;
 
     g_GlobalVars->frametime = frameTime;
