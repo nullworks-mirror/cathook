@@ -42,7 +42,7 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
-    char *object         = new char[165];
+    char object[165];
     CMoveData *pMoveData = (CMoveData *) object;
 
     float frameTime = g_GlobalVars->frametime;
