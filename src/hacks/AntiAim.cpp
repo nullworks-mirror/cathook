@@ -457,8 +457,10 @@ void ProcessUserCmd(CUserCmd *cmd)
     }
     if (!ShouldAA(cmd))
         return;
+    static bool angstate = true;
     if (trueang)
-        *bSendPackets = !*bSendPackets;
+        angstate = !angstate;
+    *bSendPackets = angstate;
     float &p          = cmd->viewangles.x;
     float &y          = cmd->viewangles.y;
     static bool flip  = false;
