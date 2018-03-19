@@ -1192,7 +1192,7 @@ void Move()
             }
         }
         if (!prevlvlname)
-        	prevlvlname = g_IEngine->GetLevelName();
+            prevlvlname        = g_IEngine->GetLevelName();
         std::string prvlvlname = format(prevlvlname);
         if (boost::contains(prvlvlname, "pl_"))
         {
@@ -1219,7 +1219,7 @@ void Move()
                             IsVectorVisible(g_pLocalPlayer->v_Eye,
                                             ent->m_vecOrigin))
                         {
-                        	index_t node = CreateNode(ent->m_vecOrigin);
+                            index_t node = CreateNode(ent->m_vecOrigin);
                             auto &n      = state::nodes[node];
                             if (g_pUserCmd->buttons & IN_DUCK)
                                 n.flags |= NF_DUCK;
@@ -1230,18 +1230,20 @@ void Move()
                                 auto &c = state::nodes[state::active_node];
                                 n.link(state::active_node);
                                 c.link(node);
-                                logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)",
-                                              node, state::active_node, c.x, c.y, c.z);
+                                logging::Info("[wb] Node %u auto-linked to "
+                                              "node %u at (%.2f %.2f %.2f)",
+                                              node, state::active_node, c.x,
+                                              c.y, c.z);
                             }
                             state::last_node_buttons = g_pUserCmd->buttons;
                             state::active_node       = node;
-                            ret = true;
+                            ret                      = true;
                         }
                         else if (ent->m_flDistance < 500.0f &&
                                  IsVectorVisible(g_pLocalPlayer->v_Eye,
                                                  ent->m_vecOrigin))
                         {
-                        	index_t node = CreateNode(ent->m_vecOrigin);
+                            index_t node = CreateNode(ent->m_vecOrigin);
                             auto &n      = state::nodes[node];
                             if (g_pUserCmd->buttons & IN_DUCK)
                                 n.flags |= NF_DUCK;
@@ -1252,16 +1254,19 @@ void Move()
                                 auto &c = state::nodes[state::active_node];
                                 n.link(state::active_node);
                                 c.link(node);
-                                logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)",
-                                              node, state::active_node, c.x, c.y, c.z);
+                                logging::Info("[wb] Node %u auto-linked to "
+                                              "node %u at (%.2f %.2f %.2f)",
+                                              node, state::active_node, c.x,
+                                              c.y, c.z);
                             }
                             state::last_node_buttons = g_pUserCmd->buttons;
                             state::active_node       = node;
-                            ret = true;
+                            ret                      = true;
                         }
                     }
                 }
-            if (erasedelay > 6 && nodes.size() > 0) {
+            if (erasedelay > 6 && nodes.size() > 0)
+            {
                 nodes.erase(nodes.begin());
                 erasedelay = 0;
             }

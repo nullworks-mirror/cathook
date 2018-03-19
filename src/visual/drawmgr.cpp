@@ -100,8 +100,8 @@ void DrawCheatVisuals()
             hacks::shared::aimbot::DrawText();
         }
         {
-        	PROF_SECTION(DRAW_lagexploit)
-        	hacks::shared::lagexploit::Draw();
+            PROF_SECTION(DRAW_lagexploit)
+            hacks::shared::lagexploit::Draw();
         }
         IF_GAME(IsTF2())
         {

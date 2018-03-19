@@ -781,11 +781,12 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 break;
                 case 3:
                 { // ABOVE
-                    draw_point = Vector(
-                        min_x, min_y -
+                    draw_point =
+                        Vector(min_x,
+                               min_y -
                                    data.at(ent->m_IDX).string_count *
                                        /*((int)fonts::font_main->height)*/ 14,
-                        0);
+                               0);
                 }
                 break;
                 case 4:

@@ -124,12 +124,18 @@ const std::vector<std::string> builtin_default = {
 };
 
 const std::vector<std::string> builtin_nonecore_offensive = {
-    "%name%, you are noob.", "%name%, do you even lift?",
-    "%name%, you're a faggot.", "%name%, stop cheating.",
+    "%name%, you are noob.",
+    "%name%, do you even lift?",
+    "%name%, you're a faggot.",
+    "%name%, stop cheating.",
     "%name%: Mom, call the police - I've got headshoted again!",
-    "Right into your face, %name%.", "Into your face, pal.",
-    "Keep crying, baby.", "Faggot. Noob.", "You are dead, not big surprise.",
-    "Sit down nerd.", "Fuck you with a rake.",
+    "Right into your face, %name%.",
+    "Into your face, pal.",
+    "Keep crying, baby.",
+    "Faggot. Noob.",
+    "You are dead, not big surprise.",
+    "Sit down nerd.",
+    "Fuck you with a rake.",
     "Eat a man spear, you Jamaican manure salesman.",
     "Wallow in a river of cocks, you pathetic bitch.",
     "I will go to heaven and you will be in prison.",

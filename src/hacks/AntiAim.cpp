@@ -31,9 +31,10 @@ CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
 CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "0", "Yaw mode", "Yaw mode");
 CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "0", "Pitch mode",
                   "Pitch mode");
-CatVar true_yaw_mode(yaw_mode_enum, "aa_yaw_mode_real", "0", "The Real Yaw", "Yaw mode");
-CatVar true_pitch_mode(pitch_mode_enum, "aa_pitch_mode_real", "0", "The Real Pitch",
-                  "Pitch mode");
+CatVar true_yaw_mode(yaw_mode_enum, "aa_yaw_mode_real", "0", "The Real Yaw",
+                     "Yaw mode");
+CatVar true_pitch_mode(pitch_mode_enum, "aa_pitch_mode_real", "0",
+                       "The Real Pitch", "Pitch mode");
 CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll", "Roll angle (viewangles.z)", -180,
             180);
 CatVar no_clamping(CV_SWITCH, "aa_no_clamp", "0", "Don't clamp angles",
@@ -82,7 +83,8 @@ float GetAAAAPitch()
     }
     else
     {
-        if (*bSendPackets == true) {
+        if (*bSendPackets == true)
+        {
             switch ((int) aaaa_mode)
             {
             case 0:
