@@ -26,7 +26,7 @@ bool DispatchUserMessage_hook(void *, int, bf_read &);
 void FrameStageNotify_hook(void *, int);
 void LevelInit_hook(void *, const char *);
 void LevelShutdown_hook(void *);
-int RandomInt_hook(void*, int, int);
+int RandomInt_hook(void *, int, int);
 
 #if ENABLE_NULL_GRAPHICS == 1
 typedef ITexture *(*FindTexture_t)(void *, const char *, const char *, bool,

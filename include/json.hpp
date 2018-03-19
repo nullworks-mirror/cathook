@@ -208,8 +208,9 @@ using uncvref_t =
 
 // taken from http://stackoverflow.com/a/26936864/266378
 template <typename T>
-using is_unscoped_enum = std::integral_constant<
-    bool, std::is_convertible<T, int>::value and std::is_enum<T>::value>;
+using is_unscoped_enum =
+    std::integral_constant<bool, std::is_convertible<T, int>::value and
+                                     std::is_enum<T>::value>;
 
 /*
 Implementation of two C++17 constructs: conjunction, negation. This is needed
@@ -498,11 +499,10 @@ template <typename BasicJsonType, typename T> struct has_from_json
 {
 private:
     // also check the return type of from_json
-    template <typename U,
-              typename = enable_if_t<
-                  std::is_same<void, decltype(uncvref_t<U>::from_json(
-                                         std::declval<BasicJsonType>(),
-                                         std::declval<T &>()))>::value>>
+    template <typename U, typename = enable_if_t<std::is_same<
+                              void, decltype(uncvref_t<U>::from_json(
+                                        std::declval<BasicJsonType>(),
+                                        std::declval<T &>()))>::value>>
     static int detect(U &&);
     static void detect(...);
 
@@ -517,10 +517,9 @@ public:
 template <typename BasicJsonType, typename T> struct has_non_default_from_json
 {
 private:
-    template <typename U,
-              typename = enable_if_t<
-                  std::is_same<T, decltype(uncvref_t<U>::from_json(
-                                      std::declval<BasicJsonType>()))>::value>>
+    template <typename U, typename = enable_if_t<std::is_same<
+                              T, decltype(uncvref_t<U>::from_json(
+                                     std::declval<BasicJsonType>()))>::value>>
     static int detect(U &&);
     static void detect(...);
 
@@ -2607,8 +2606,8 @@ public:
 
     @since version 1.0.0
     */
-    basic_json(basic_json &&other) noexcept
-        : m_type(std::move(other.m_type)), m_value(std::move(other.m_value))
+    basic_json(basic_json &&other) noexcept : m_type(std::move(other.m_type)),
+                                              m_value(std::move(other.m_value))
     {
         // check that passed value is valid
         other.assert_invariant();
@@ -9025,8 +9024,9 @@ private:
         primitive_iterator_t primitive_iterator;
 
         /// create an uninitialized internal_iterator
-        internal_iterator() noexcept
-            : object_iterator(), array_iterator(), primitive_iterator()
+        internal_iterator() noexcept : object_iterator(),
+                                       array_iterator(),
+                                       primitive_iterator()
         {
         }
     };
@@ -9239,8 +9239,8 @@ public:
         @param[in] other  iterator to copy from
         @note It is not checked whether @a other is initialized.
         */
-        iter_impl(const iter_impl &other) noexcept
-            : m_object(other.m_object), m_it(other.m_it)
+        iter_impl(const iter_impl &other) noexcept : m_object(other.m_object),
+                                                     m_it(other.m_it)
         {
         }
 
@@ -11465,9 +11465,8 @@ private:
             @param[in,out] val shall contain parsed value, or undefined value
             if could not parse
             */
-            template <typename T,
-                      typename = typename std::enable_if<
-                          std::is_arithmetic<T>::value>::type>
+            template <typename T, typename = typename std::enable_if<
+                                      std::is_arithmetic<T>::value>::type>
             bool to(T &val) const
             {
                 return parse(val, std::is_integral<T>());

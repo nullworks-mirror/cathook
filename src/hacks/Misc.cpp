@@ -139,44 +139,53 @@ void CreateMove()
 						g_pUserCmd->buttons &= ~(IN_ATTACK);
 					}
 				}*/ /*
-                 if (g_pUserCmd->command_number && (last_checked_weapon !=
-     weapon || last_checked_command_number < g_pUserCmd->command_number)) {
-                     tries = 0;
-                     cmdn = g_pUserCmd->command_number;
-                     chc = false;
-                     state.Save(weapon);
-                     while (!chc && tries < 4096) {
-                         md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
-                         rseed = md5seed;
-                         //float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W)
-     + 2612u); *g_PredictionRandomSeed = md5seed; c = LOCAL_W->m_IDX << 8; b =
-     LOCAL_E->m_IDX; rseed = rseed ^ (b | c);
-                         *(float*)(weapon + 2872ul) = 0.0f;
-                         RandomSeed(rseed);
-                         chc = vfunc<bool(*)(IClientEntity*)>(weapon, 1836 / 4,
-     0)(weapon); if (!chc) { tries++; cmdn++;
+                             if (g_pUserCmd->command_number &&
+                 (last_checked_weapon !=
+                 weapon || last_checked_command_number <
+                 g_pUserCmd->command_number))
+                 {
+                                 tries = 0;
+                                 cmdn = g_pUserCmd->command_number;
+                                 chc = false;
+                                 state.Save(weapon);
+                                 while (!chc && tries < 4096) {
+                                     md5seed = MD5_PseudoRandom(cmdn) &
+                 0x7fffffff;
+                                     rseed = md5seed;
+                                     //float bucket =
+                 *(float*)((uintptr_t)RAW_ENT(LOCAL_W)
+                 + 2612u); *g_PredictionRandomSeed = md5seed; c = LOCAL_W->m_IDX
+                 << 8;
+                 b =
+                 LOCAL_E->m_IDX; rseed = rseed ^ (b | c);
+                                     *(float*)(weapon + 2872ul) = 0.0f;
+                                     RandomSeed(rseed);
+                                     chc =
+                 vfunc<bool(*)(IClientEntity*)>(weapon, 1836
+                 / 4,
+                 0)(weapon); if (!chc) { tries++; cmdn++;
+                                     }
+                                 }
+                                 last_checked_command_number = cmdn;
+                                 last_checked_weapon = weapon;
+                                 state.Load(weapon);
+                                 last_bucket = state.bucket;
+                                 if (chc) {
+                                     found_crit_weapon = weapon;
+                                     found_crit_number = cmdn;
+                                 }
+                             }
+                             if (g_pUserCmd->buttons & (IN_ATTACK)) {
+                                 if (found_crit_weapon == weapon &&
+                 g_pUserCmd->command_number < found_crit_number) { if
+                 (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack)))
+                 { command_number_mod[g_pUserCmd->command_number] = cmdn;
+                                     }
+                                 }
+                             }
                          }
                      }
-                     last_checked_command_number = cmdn;
-                     last_checked_weapon = weapon;
-                     state.Load(weapon);
-                     last_bucket = state.bucket;
-                     if (chc) {
-                         found_crit_weapon = weapon;
-                         found_crit_number = cmdn;
-                     }
-                 }
-                 if (g_pUserCmd->buttons & (IN_ATTACK)) {
-                     if (found_crit_weapon == weapon &&
-     g_pUserCmd->command_number < found_crit_number) { if
-     (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack)))
-     { command_number_mod[g_pUserCmd->command_number] = cmdn;
-                         }
-                     }
-                 }
-             }
-         }
-     }*/
+                 }*/
     /*
     {
         PROF_SECTION(CM_misc_crit_hack_apply);

@@ -113,8 +113,13 @@ static CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0",
 static CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
 
+bool* bSendPackets;
 bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 {
+    uintptr_t **fp;
+    __asm__("mov %%ebp, %0" : "=r" (fp));
+    bSendPackets = reinterpret_cast<bool *>(**fp - 8);
+
     g_Settings.is_create_move = true;
     static CreateMove_t original_method =
         (CreateMove_t) hooks::clientmode.GetMethod(offsets::CreateMove());

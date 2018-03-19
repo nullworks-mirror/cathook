@@ -23,8 +23,11 @@ CatVar dont_log_ipc(CV_SWITCH, "chat_log_noipc", "1", "No IPC",
 class csv_stream
 {
 public:
-	struct end_t {};
-	static constexpr end_t end{};
+    struct end_t
+    {
+    };
+    static constexpr end_t end{};
+
 public:
     csv_stream()
     {
@@ -48,49 +51,49 @@ public:
                     std::ios::out | std::ios::app);
         return stream.good();
     }
+
 public:
     int columns{ 0 };
     std::ofstream stream;
 };
 
-csv_stream& operator<<(csv_stream& log, const std::string& string)
+csv_stream &operator<<(csv_stream &log, const std::string &string)
 {
     if (!log.stream.good())
     {
         logging::Info("[ERROR] csvstream is not open!");
         if (!log.open())
-        	return log;
+            return log;
     }
     if (log.columns)
-    	log.stream << ',';
-	log.stream << '"';
-	for (const auto& i : string)
-	{
-		if (i == '"')
-		{
-			log.stream << '"';
-		}
-		log.stream << i;
-	}
-	log.stream << '"';
-	log.columns++;
-	return log;
+        log.stream << ',';
+    log.stream << '"';
+    for (const auto &i : string)
+    {
+        if (i == '"')
+        {
+            log.stream << '"';
+        }
+        log.stream << i;
+    }
+    log.stream << '"';
+    log.columns++;
+    return log;
 }
 
-csv_stream& operator<<(csv_stream& log, const csv_stream::end_t& end)
+csv_stream &operator<<(csv_stream &log, const csv_stream::end_t &end)
 {
     if (!log.stream.good())
     {
         logging::Info("[ERROR] csvstream is not open!");
         if (!log.open())
-        	return log;
+            return log;
     }
-	log.stream << '\n';
-	log.stream.flush();
-	log.columns = 0;
-	return log;
+    log.stream << '\n';
+    log.stream.flush();
+    log.columns = 0;
+    return log;
 }
-
 
 csv_stream &logger()
 {
@@ -127,11 +130,7 @@ void LogMessage(int eid, std::string message)
             x = '*';
     }
 
-    logger()
-    	 	<< std::to_string(time(nullptr))
-    	 	<< std::to_string(info.friendsID)
-    		<< name
-			<< message
-    		<< csv_stream::end;
+    logger() << std::to_string(time(nullptr)) << std::to_string(info.friendsID)
+             << name << message << csv_stream::end;
 }
 }

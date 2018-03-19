@@ -155,14 +155,16 @@ void hack::Initialize()
 {
     signal(SIGPIPE, SIG_IGN);
     time_injected = time(nullptr);
-    /*passwd *pwd   = getpwuid(getuid());
-    char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name, time_injected);
-    freopen(logname, "w", stdout);
-    free(logname);
-    logname = strfmt("/tmp/cathook-game-stderr-%s-%u.log", pwd->pw_name, time_injected);
-    freopen(logname, "w", stderr);
-    free(logname);*/
-    // Essential files must always exist, except when the game is running in text
+/*passwd *pwd   = getpwuid(getuid());
+char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name,
+time_injected);
+freopen(logname, "w", stdout);
+free(logname);
+logname = strfmt("/tmp/cathook-game-stderr-%s-%u.log", pwd->pw_name,
+time_injected);
+freopen(logname, "w", stderr);
+free(logname);*/
+// Essential files must always exist, except when the game is running in text
 // mode.
 #if ENABLE_VISUALS == 1
 
@@ -264,8 +266,8 @@ g_pGUI->Setup();
                              offsets::DispatchUserMessage());
 
 #if ENABLE_VISUALS == 1
-    hooks::vstd.Set((void *)g_pUniformStream);
-    hooks::vstd.HookMethod((void *)RandomInt_hook, offsets::RandomInt());
+    hooks::vstd.Set((void *) g_pUniformStream);
+    hooks::vstd.HookMethod((void *) RandomInt_hook, offsets::RandomInt());
     hooks::vstd.Apply();
 #endif
 
@@ -307,7 +309,9 @@ g_pGUI->Setup();
 #endif
 #endif
     hooks::enginevgui.Set(g_IEngineVGui);
-    hooks::enginevgui.HookMethod((void *)Paint_hook, offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
+    hooks::enginevgui.HookMethod(
+        (void *) Paint_hook,
+        offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
     hooks::enginevgui.Apply();
     hooks::steamfriends.Set(g_ISteamFriends);
     hooks::steamfriends.HookMethod((void *) GetFriendPersonaName_hook,

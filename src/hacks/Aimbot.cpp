@@ -252,8 +252,10 @@ void CreateMove()
 
             // Not release type weapon
         }
-        else if (GetWeaponMode() == weapon_melee && (g_pUserCmd->buttons & IN_ATTACK)) {
-        	Aim(target_entity);
+        else if (GetWeaponMode() == weapon_melee &&
+                 (g_pUserCmd->buttons & IN_ATTACK))
+        {
+            Aim(target_entity);
         }
         else if (CanShoot() && (g_pUserCmd->buttons & IN_ATTACK) &&
                  CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0)

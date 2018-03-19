@@ -10,6 +10,7 @@
 
 class CUserCmd;
 
+extern bool* bSendPackets;
 bool CreateMove_hook(void *, float, CUserCmd *);
 
 #endif /* CREATEMOVE_H_ */

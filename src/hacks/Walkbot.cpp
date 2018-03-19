@@ -8,6 +8,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <sys/dir.h>
 #include <sys/stat.h>
 
@@ -31,7 +32,7 @@ void DeleteNode(index_t node);
 float distance_2d(Vector &xyz);
 void Save(std::string filename);
 bool Load(std::string filename);
-const char* prevlvlname = "";
+const char *prevlvlname = "";
 enum ENodeFlags
 {
     NF_GOOD = (1 << 0),
@@ -1148,7 +1149,8 @@ void OnLevelInit()
 }
 
 Timer quit_timer{};
-
+Timer map_check{};
+int erasedelay = 0;
 void Move()
 {
     if (state::state == WB_DISABLED)
@@ -1175,16 +1177,95 @@ void Move()
         {
             if (nodes.size() == 0 || g_IEngine->GetLevelName() != prevlvlname)
             {
-            	prevlvlname = g_IEngine->GetLevelName();
-                Load("default");
-                if (leave_if_empty && nodes.size() == 0 &&
-                    quit_timer.test_and_set(5000))
+                prevlvlname = g_IEngine->GetLevelName();
+                if (!boost::contains(prevlvlname, "pl_"))
                 {
-                    logging::Info("No map file, abandon");
-                    tfmm::abandon();
-                    return;
+                    Load("default");
+                    if (leave_if_empty && nodes.size() == 0 &&
+                        quit_timer.test_and_set(5000))
+                    {
+                        logging::Info("No map file, abandon");
+                        tfmm::abandon();
+                        return;
+                    }
                 }
             }
+        }
+        if (!prevlvlname)
+        	prevlvlname = g_IEngine->GetLevelName();
+        std::string prvlvlname = format(prevlvlname);
+        if (boost::contains(prvlvlname, "pl_"))
+        {
+            bool ret = false;
+            if (lagexploit::point || lagexploit::point2 || lagexploit::point3 ||
+                lagexploit::point4 || lagexploit::point5)
+                for (int i = 0; i < MAX_ENTITIES; i++)
+                {
+                    if (!ret)
+                    {
+                        CachedEntity *ent = ENTITY(i);
+                        if (!CE_GOOD(ent))
+                            continue;
+                        if (ent->m_iTeam == LOCAL_E->m_iTeam)
+                            continue;
+                        const model_t *model = RAW_ENT(ent)->GetModel();
+                        if (!model)
+                            continue;
+                        if ((model == lagexploit::point2 ||
+                             model == lagexploit::point3 ||
+                             model == lagexploit::point4 ||
+                             model == lagexploit::point5) &&
+                            ent->m_flDistance < 400.0f &&
+                            IsVectorVisible(g_pLocalPlayer->v_Eye,
+                                            ent->m_vecOrigin))
+                        {
+                        	index_t node = CreateNode(ent->m_vecOrigin);
+                            auto &n      = state::nodes[node];
+                            if (g_pUserCmd->buttons & IN_DUCK)
+                                n.flags |= NF_DUCK;
+                            if (g_pUserCmd->buttons & IN_JUMP)
+                                n.flags |= NF_JUMP;
+                            if (state::node_good(state::active_node))
+                            {
+                                auto &c = state::nodes[state::active_node];
+                                n.link(state::active_node);
+                                c.link(node);
+                                logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)",
+                                              node, state::active_node, c.x, c.y, c.z);
+                            }
+                            state::last_node_buttons = g_pUserCmd->buttons;
+                            state::active_node       = node;
+                            ret = true;
+                        }
+                        else if (ent->m_flDistance < 500.0f &&
+                                 IsVectorVisible(g_pLocalPlayer->v_Eye,
+                                                 ent->m_vecOrigin))
+                        {
+                        	index_t node = CreateNode(ent->m_vecOrigin);
+                            auto &n      = state::nodes[node];
+                            if (g_pUserCmd->buttons & IN_DUCK)
+                                n.flags |= NF_DUCK;
+                            if (g_pUserCmd->buttons & IN_JUMP)
+                                n.flags |= NF_JUMP;
+                            if (state::node_good(state::active_node))
+                            {
+                                auto &c = state::nodes[state::active_node];
+                                n.link(state::active_node);
+                                c.link(node);
+                                logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)",
+                                              node, state::active_node, c.x, c.y, c.z);
+                            }
+                            state::last_node_buttons = g_pUserCmd->buttons;
+                            state::active_node       = node;
+                            ret = true;
+                        }
+                    }
+                }
+            if (erasedelay > 6 && nodes.size() > 0) {
+                nodes.erase(nodes.begin());
+                erasedelay = 0;
+            }
+            erasedelay++;
         }
         if (nodes.size() == 0)
             return;

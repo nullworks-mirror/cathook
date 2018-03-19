@@ -402,7 +402,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                     player_info_s info;
                     unsigned int steamID;
                     unsigned int steamidarray[32]{};
-                    bool hascall = false;
+                    bool hascall    = false;
                     steamidarray[0] = 263966176;
                     steamidarray[1] = 479487126;
                     steamidarray[2] = 840899897;

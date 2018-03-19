@@ -22,7 +22,7 @@ enum class k_EState
     RAGE,
     IPC,
     DEVELOPER,
-	CAT,
+    CAT,
     STATE_LAST = CAT
 };
 

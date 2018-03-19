@@ -99,6 +99,10 @@ void DrawCheatVisuals()
             PROF_SECTION(DRAW_aimbot);
             hacks::shared::aimbot::DrawText();
         }
+        {
+        	PROF_SECTION(DRAW_lagexploit)
+        	hacks::shared::lagexploit::Draw();
+        }
         IF_GAME(IsTF2())
         {
             PROF_SECTION(DRAW_skinchanger);

@@ -31,7 +31,7 @@ typedef bool (*ProcessSetConVar_t)(CBaseClientState *, NET_SetConVar *);
 typedef bool (*ProcessGetCvarValue_t)(CBaseClientState *, SVC_GetCvarValue *);
 typedef void (*Paint_t)(IEngineVGui *, PaintMode_t);
 
-typedef int (*RandomInt_t)(void*, int, int);
+typedef int (*RandomInt_t)(void *, int, int);
 
 const char *GetClientName_hook(CBaseClientState *_this);
 bool ProcessSetConVar_hook(CBaseClientState *_this, NET_SetConVar *msg);
@@ -50,7 +50,6 @@ void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
                            const ModelRenderInfo_t &info, matrix3x4_t *matrix);
 
 void Paint_hook(IEngineVGui *_this, PaintMode_t mode);
-
 
 /* SDL HOOKS */
 union SDL_Event;

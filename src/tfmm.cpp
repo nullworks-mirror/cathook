@@ -39,7 +39,7 @@ void queue_start()
     }
     else
     {
-    	logging::Info("queue_start: CTFPartyClient == null!");
+        logging::Info("queue_start: CTFPartyClient == null!");
     }
 }
 
@@ -49,6 +49,6 @@ void abandon()
     if (gc != nullptr)
         gc->AbandonCurrentMatch();
     else
-    	logging::Info("abandon: CTFGCClientSystem == null!");
+        logging::Info("abandon: CTFGCClientSystem == null!");
 }
 }
