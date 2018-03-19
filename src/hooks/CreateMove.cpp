@@ -329,6 +329,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             hacks::shared::esp::CreateMove();
         }
 #endif
+        *bSendPackets = true;
         if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon()))
         {
             {
@@ -466,7 +467,6 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
     }
 #endif
 
-    *bSendPackets = true;
 
     if (CE_GOOD(g_pLocalPlayer->entity))
     {

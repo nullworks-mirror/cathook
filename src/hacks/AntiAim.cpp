@@ -23,6 +23,9 @@ CatVar trueang(CV_SWITCH, "aa_truefakes", "1",
 CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
 CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch", "Static pitch (up/down)",
              -89.0, 89.0);
+CatVar yaw_real(CV_FLOAT, "aa_yaw_real", "0.0", "Real Yaw", "Static yaw (left/right)", 360.0);
+CatVar pitch_real(CV_FLOAT, "aa_pitch_real", "-89.0", "Real Pitch", "Static pitch (up/down)",
+             -89.0, 89.0);
 CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM",
                         "SPIN", "OFFSETKEEP", "EDGE", "HECK" });
 CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
@@ -464,7 +467,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         switch ((int) true_yaw_mode)
         {
         case 1: // FIXED
-            y = (float) yaw;
+            y = (float) yaw_real;
             break;
         case 2: // JITTER
             if (flip)
@@ -488,7 +491,7 @@ void ProcessUserCmd(CUserCmd *cmd)
             y           = cur_yaw;
             break;
         case 6: // OFFSETKEEP
-            y += (float) yaw;
+            y += (float) yaw_real;
             break;
         case 7: // Edge
             // Attemt to find an edge and if found, edge
@@ -550,7 +553,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         switch (int(true_pitch_mode))
         {
         case 1:
-            p = float(pitch);
+            p = float(pitch_real);
             break;
         case 2:
             if (flip)
