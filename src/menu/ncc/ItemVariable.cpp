@@ -104,7 +104,7 @@ void ItemVariable::Draw(int x, int y) {
 		val = std::to_string((float)catvar);
 	} break;
 	case CV_ENUM: {
-		//val = catvar.enum_type->Name((int)catvar);
+		val = catvar.enum_type->Name((int)catvar);
 	} break;
 	case CV_STRING: {
 		val = std::string(catvar.GetString());

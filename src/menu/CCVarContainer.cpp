@@ -42,7 +42,7 @@ CCVarContainer::CCVarContainer(IWidget* parent, CatVar* var) : CBaseContainer("c
 		}
 		CDropdown* dd = new CDropdown(GetName() + "_control", this);
 		for (int i = var->enum_type->min_value; i <= var->enum_type->max_value; i++) {
-			//dd->AddValue(var->enum_type->Name(i));
+			dd->AddValue(var->enum_type->Name(i));
 		}
 		dd->SetCallback([this](CDropdown*, int value) {
 			m_pVar->SetValue(value);
