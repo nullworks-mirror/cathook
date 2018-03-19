@@ -96,6 +96,6 @@ void CTextLabel::Draw(int x, int y) {
 	if (Props()->GetBool("centered")) {
 		auto size = GetSize();
 		auto ssize = draw::GetStringLength(fonts::MENU, GetText());
-		draw::String(fonts::MENU, x + (size.first - ssize.first) / 2, y + (size.second - ssize.second) / 2, colors2::white, 1, GetText());
-	} else draw::String(fonts::MENU, x, y, colors2::white, 1, GetText());
+		draw::String(fonts::MENU, x + (size.first - ssize.first) / 2, y + (size.second - ssize.second) / 2, colorsint::white, 1, GetText());
+	} else draw::String(fonts::MENU, x, y, colorsint::white, 1, GetText());
 }

@@ -23,7 +23,7 @@ bool Logo::AlwaysVisible() {
 void Logo::Draw(int x, int y) {
 	if (logo) {
 		if (!texture.id) texture.Load();
-		texture.Draw(x, y, 576, 288, GUIColor2());
+		texture.Draw(x, y, 576, 288, NCGUIColor());
 	}
 }
 

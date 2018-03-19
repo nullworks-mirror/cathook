@@ -52,11 +52,11 @@ bool CatGUI::Visible() {
 CatVar gui_color_r(CV_INT, "gui_color_r", "255", "Main GUI color (red)", "Defines red component of main gui color", 0, 255);
 CatVar gui_color_g(CV_INT, "gui_color_g", "105", "Main GUI color (green)", "Defines green component of main gui color", 0, 255);
 CatVar gui_color_b(CV_INT, "gui_color_b", "180", "Main GUI color (blue)", "Defines blue component of main gui color", 0, 255);
-
 static CatVar gui_rainbow(CV_SWITCH, "gui_rainbow", "0", "Rainbow GUI", "RGB all the things!!!");
-//int GUIColor2() {
-//	return gui_rainbow ? colors2::RainbowCurrent() : colors2::Create((int)gui_color_r, (int)gui_color_g, (int)gui_color_b, 255);
-//}
+
+int NCGUIColor() {
+	return gui_rainbow ? colorsint::RainbowCurrent() : colorsint::Create((int)gui_color_r, (int)gui_color_g, (int)gui_color_b, 255);
+}
 
 void CatGUI::Setup() {
 	m_pRootWindow = new RootWindow();
@@ -164,8 +164,8 @@ void CatGUI::Update() {
 		if (!m_bShowTooltip && m_pTooltip->IsVisible()) m_pTooltip->Hide();
 		root->Draw(0, 0);
 		if (Visible()) {
-			draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colors2::Transparent(colors2::white));
-			draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, GUIColor2());
+			draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colorsint::Transparent(colorsint::white));
+			draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, NCGUIColor());
 		}
 		if (gui_draw_bounds) {
 			root->DrawBounds(0, 0);
@@ -176,8 +176,8 @@ void CatGUI::Update() {
 			root->Update();
 			if (!m_bShowTooltip && m_pTooltip->IsVisible()) m_pTooltip->Hide();
 			root->Draw(0, 0);
-			draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colors2::Transparent(colors2::white));
-			draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, GUIColor2());
+			draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, colorsint::Transparent(colorsint::white));
+			draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10, NCGUIColor());
 			if (gui_draw_bounds) {
 				root->DrawBounds(0, 0);
 			}

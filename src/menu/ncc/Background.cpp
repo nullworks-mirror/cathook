@@ -79,9 +79,9 @@ void Background::Draw(int x, int y) {
 	while (current) {
 		Particle* next = current->next;
 		if (!current->show_in) {
-			int color = colors2::white;
+			int color = colorsint::white;
 			if (current->y > (int)particle_safe) {
-				color = colors2::Create(255, 255, 255, ((int)particle_safe + 255) - current->y);
+				color = colorsint::Create(255, 255, 255, ((int)particle_safe + 255) - current->y);
 			}
 			current->texture->Draw((int)current->x, (int)current->y, 16, 16, color);
 		}

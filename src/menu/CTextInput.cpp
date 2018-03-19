@@ -38,10 +38,10 @@ void CTextInput::SetValue(std::string value) {
 void CTextInput::Draw(int x, int y) {
 	auto wsize = draw::GetStringLength(fonts::MENU, "W");
 	auto size = GetSize();
-	int color = colors2::Create(0, 0, 0, 80);
-	if (IsFocused()) color = colors2::Transparent(GUIColor2(), 0.25);
+	int color = colorsint::Create(0, 0, 0, 80);
+	if (IsFocused()) color = colorsint::Transparent(NCGUIColor(), 0.25);
 	draw::DrawRect(x, y, size.first, size.second, color);
-	draw::OutlineRect(x, y, size.first, size.second, GUIColor2());
+	draw::OutlineRect(x, y, size.first, size.second, NCGUIColor());
 	int ml = 0;
 	int md = 0;
 	auto dotssize = draw::GetStringLength(fonts::MENU, "..."); // TODO static?
@@ -52,9 +52,9 @@ void CTextInput::Draw(int x, int y) {
 		if (strsize.first + 8 > size.first) ml = i;
 	}
 	if (ml) {
-		draw::FString(fonts::MENU, x + 2, y + 2, colors2::white, 1, "...%s", value.substr(md).c_str());
+		draw::FString(fonts::MENU, x + 2, y + 2, colorsint::white, 1, "...%s", value.substr(md).c_str());
 	} else {
-		draw::String(fonts::MENU, x + 2, y + 2, colors2::white, 1, value); // TODO recalc on update
+		draw::String(fonts::MENU, x + 2, y + 2, colorsint::white, 1, value); // TODO recalc on update
 	}
 }
 

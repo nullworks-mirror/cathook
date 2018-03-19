@@ -45,7 +45,7 @@ void CBaseWindow::OnFocusLose() {
 void CBaseWindow::Draw(int x, int y) {
 	auto abs = AbsolutePosition();
 	auto size = GetSize();
-	draw::DrawRect(abs.first, abs.second, size.first, size.second, colors2::Transparent(colors2::black, 0.9));
-	draw::OutlineRect(abs.first, abs.second, size.first, size.second, GUIColor2());
+	draw::DrawRect(abs.first, abs.second, size.first, size.second, colorsint::Transparent(colorsint::black, 0.9));
+	draw::OutlineRect(abs.first, abs.second, size.first, size.second, NCGUIColor());
 	CBaseContainer::Draw(x, y);
 }

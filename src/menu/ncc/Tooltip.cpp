@@ -36,10 +36,10 @@ void Tooltip::Draw(int x, int  y) {
 	int originy = y;
 	if (originx + size.first > draw::width) originx -= size.first;
 	if (originx + size.second > draw::height) originy -= size.second;
-	static int bgcolor = colors2::Create(0, 0, 0, 77); //colors2::Create(70, 86, 47, 28);
-	static int fgcolor = colors2::Create(200, 200, 190, 255);
+	static int bgcolor = colorsint::Create(0, 0, 0, 77); //colorsint::Create(70, 86, 47, 28);
+	static int fgcolor = colorsint::Create(200, 200, 190, 255);
 	draw::DrawRect(x, y, size.first, size.second, bgcolor);
-	draw::OutlineRect(x, y, size.first, size.second, GUIColor2());
+	draw::OutlineRect(x, y, size.first, size.second, NCGUIColor());
 	draw::String(font_item, x + Props()->GetInt("padding_x"), y + Props()->GetInt("padding_y"), fgcolor, 2, GetText());
 }
 

@@ -21,13 +21,13 @@ void CBaseButton::SetCallback(ButtonCallbackFn_t callback) {
 }
 
 void CBaseButton::Draw(int x, int y) {
-	int textcolor = GUIColor2();
+	int textcolor = NCGUIColor();
 	auto size = GetSize();
 	if (IsPressed()) {
-		draw::DrawRect(x, y, size.first, size.second, GUIColor2());
-		textcolor = colors2::white;
+		draw::DrawRect(x, y, size.first, size.second, NCGUIColor());
+		textcolor = colorsint::white;
 	}
-	draw::OutlineRect(x, y, size.first, size.second, GUIColor2());
+	draw::OutlineRect(x, y, size.first, size.second, NCGUIColor());
 	draw::String(fonts::MENU, x + Props()->GetInt("padding_x"), y + Props()->GetInt("padding_y"), textcolor, 1, GetText());
 }
 

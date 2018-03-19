@@ -15,7 +15,7 @@ public:
 	Texture(unsigned char* start, unsigned w, unsigned h);
 	~Texture();
 	void Load();
-	void Draw(int x, int y, int w, int h, int color = colors2::Create(255, 255, 255, 255));
+	void Draw(int x, int y, int w, int h, int color = colorsint::Create(255, 255, 255, 255));
 public:
 	int id { 0 };
 	const unsigned char* const start_addr;

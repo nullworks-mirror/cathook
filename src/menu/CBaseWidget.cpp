@@ -10,10 +10,10 @@
 
 void CBaseWidget::DrawBounds(int x, int y) {
 	if (m_KeyValues->IsEmpty("bounds_color")) {
-		m_KeyValues->SetInt("bounds_color", colors2::Create(rand() % 255, rand() % 255, rand() % 255, 255));
+		m_KeyValues->SetInt("bounds_color", colorsint::Create(rand() % 255, rand() % 255, rand() % 255, 255));
 	}
 	auto size = GetSize();
-	draw::DrawRect(x, y, size.first, size.second, colors2::Transparent(m_KeyValues->GetInt("bounds_color"), 0.25f));
+	draw::DrawRect(x, y, size.first, size.second, colorsint::Transparent(m_KeyValues->GetInt("bounds_color"), 0.25f));
 	draw::OutlineRect(x, y, size.first, size.second, m_KeyValues->GetInt("bounds_color"));
 }
 

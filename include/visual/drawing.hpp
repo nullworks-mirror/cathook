@@ -44,10 +44,6 @@ constexpr rgba_t GUIColor()
     return colors::white;
 }
 
-constexpr int GUIColor2() {
-	return colors2::white;
-}
-
 void InitStrings();
 void ResetStrings();
 void AddCenterString(const std::string &string,
@@ -67,18 +63,6 @@ extern int height;
 extern float fov;
 
 void Initialize();
-
-void String (unsigned long font, int x, int y, int color, int shadow, const char* text);
-void String (unsigned long font, int x, int y, int color, int shadow, std::string text);
-void WString(unsigned long font, int x, int y, int color, int shadow, const wchar_t* text);
-void FString(unsigned long font, int x, int y, int color, int shadow, const char* text, ...);
-
-void DrawRect(int x, int y, int w, int h, int color);
-void DrawLine(int x, int y, int dx, int dy, int color);
-void OutlineRect(int x, int y, int w, int h, int color);
-void DrawCircle(float cx, float cy, float r, int num_segments, int color);
-void GetStringLength(unsigned long font, char* string, int& length, int& height);
-std::pair<int, int> GetStringLength(unsigned long font, std::string string);
 
 void UpdateWTS();
 bool WorldToScreen(const Vector &origin, Vector &screen);

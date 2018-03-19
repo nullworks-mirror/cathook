@@ -71,11 +71,11 @@ void CSlider::Update() {
 
 void CSlider::Draw(int x, int y) {
 	auto size = GetSize();
-	draw::DrawRect(x, y, size.first, size.second, colors2::Create(0, 0, 0, 200));
-	draw::DrawRect(x, y, m_nSliderPos, size.second, GUIColor2());
+	draw::DrawRect(x, y, size.first, size.second, colorsint::Create(0, 0, 0, 200));
+	draw::DrawRect(x, y, m_nSliderPos, size.second, NCGUIColor());
 	char* s = strfmt("%.2f", Value());
 	std::string str(s);
 	delete [] s;
 	auto sl = draw::GetStringLength(fonts::MENU, str);
-	draw::String(fonts::MENU, x + (size.first - sl.first) / 2, y + (size.second - sl.second) / 2, colors2::white, 1, str);
+	draw::String(fonts::MENU, x + (size.first - sl.first) / 2, y + (size.second - sl.second) / 2, colorsint::white, 1, str);
 }

@@ -25,10 +25,10 @@ void CKeyInput::SetValue(int value) {
 
 void CKeyInput::Draw(int x, int y) {
 	std::string key = "";
-	int color = colors2::white;
+	int color = colorsint::white;
 	if (Props()->GetBool("capturing")) {
 		key = "< PRESS >";
-		color = GUIColor2();
+		color = NCGUIColor();
 	} else {
 		if (!Value()) {
 			if (!IsFocused()) {

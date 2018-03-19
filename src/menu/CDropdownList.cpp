@@ -40,8 +40,8 @@ void CDropdownList::SetValue(int value) {
 
 void CDropdownList::Draw(int x, int y) {
 	auto size = GetSize();
-	draw::DrawRect(x, y, size.first, size.second, colors2::Transparent(colors2::black, 0.85));
-	draw::OutlineRect(x, y, size.first, size.second, GUIColor2());
+	draw::DrawRect(x, y, size.first, size.second, colorsint::Transparent(colorsint::black, 0.85));
+	draw::OutlineRect(x, y, size.first, size.second, NCGUIColor());
 	CBaseContainer::Draw(x, y);
 }
 

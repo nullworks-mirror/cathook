@@ -48,12 +48,12 @@ void CritIndicator::Draw(int x, int y) {
 	} else {
 		tx = &crit_disabled;
 	}
-	draw::DrawRect(x, y, 64, 72, colors2::Transparent(colors2::black));
+	draw::DrawRect(x, y, 64, 72, colorsint::Transparent(colorsint::black));
 	tx->Draw(x, y, 64, 64);
-	draw::OutlineRect(x, y, 64, 72, critkey ? colors2::pink : GUIColor2());
-	draw::DrawLine(x, y + 64, 64, 0, critkey ? colors2::pink : GUIColor2());
+	draw::OutlineRect(x, y, 64, 72, critkey ? colorsint::pink : NCGUIColor());
+	draw::DrawLine(x, y + 64, 64, 0, critkey ? colorsint::pink : NCGUIColor());
 	if (crits) {
-		draw::DrawRect(x + 1, y + 65,  1 + 61.0f * (hacks::shared::misc::last_bucket / 1000.0f), 6, (!crits) ? colors2::Create(235, 20, 20, 255) : colors2::Create(20, 235, 20, 255));
+		draw::DrawRect(x + 1, y + 65,  1 + 61.0f * (hacks::shared::misc::last_bucket / 1000.0f), 6, (!crits) ? colorsint::Create(235, 20, 20, 255) : colorsint::Create(20, 235, 20, 255));
 	}
 }
 

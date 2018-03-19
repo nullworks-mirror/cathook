@@ -20,7 +20,7 @@ void ItemTitle::Draw(int x, int y) {
 	bool brackets3 = Props()->GetBool("brackets3", false);
 	std::string str = format(brackets3 ? ">>> " : ">> ", title, brackets3 ? " <<<" : " <<");
 	const auto& size = draw::GetStringLength(font_title, str);
-	draw::String(font_title, x + ((Item::size_x - size.first) / 2), y, colors2::white, 2, str);
+	draw::String(font_title, x + ((Item::size_x - size.first) / 2), y, colorsint::white, 2, str);
 }
 
 }}

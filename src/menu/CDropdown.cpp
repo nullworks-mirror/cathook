@@ -43,11 +43,11 @@ std::string CDropdown::ValueName(int idx) {
 void CDropdown::Draw(int x, int y) {
 	auto size = GetSize();
 	auto ssize = draw::GetStringLength(fonts::MENU, ValueName(Value() - Props()->GetInt("offset")));
-	draw::DrawRect(x, y, size.first, size.second, colors2::Transparent(colors2::black));
-	draw::OutlineRect(x, y, size.first, size.second, GUIColor2());
-	draw::String(fonts::MENU, x + (size.first - ssize.first) / 2, y + (size.second - ssize.second) / 2, GUIColor2(), 1, ValueName(Value() - Props()->GetInt("offset")));
+	draw::DrawRect(x, y, size.first, size.second, colorsint::Transparent(colorsint::black));
+	draw::OutlineRect(x, y, size.first, size.second, NCGUIColor());
+	draw::String(fonts::MENU, x + (size.first - ssize.first) / 2, y + (size.second - ssize.second) / 2, NCGUIColor(), 1, ValueName(Value() - Props()->GetInt("offset")));
 	auto asize = draw::GetStringLength(fonts::MENU, ">");
-	draw::String(fonts::MENU, x + size.first - asize.first - 2, y + (size.second - asize.second) / 2, GUIColor2(), 1, ">");
+	draw::String(fonts::MENU, x + size.first - asize.first - 2, y + (size.second - asize.second) / 2, NCGUIColor(), 1, ">");
 }
 
 void CDropdown::OnFocusLose() {

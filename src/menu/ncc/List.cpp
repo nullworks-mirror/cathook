@@ -159,9 +159,9 @@ void List::OnMouseLeave() {
 
 void List::Draw(int x, int y) {
 	//const auto& size = GetSize();
-	draw::OutlineRect(x, y, 2 + Item::size_x, Props()->GetInt("items") * Item::size_y + 2, GUIColor2());
+	draw::OutlineRect(x, y, 2 + Item::size_x, Props()->GetInt("items") * Item::size_y + 2, NCGUIColor());
 	for (int i = 1; i < Props()->GetInt("items"); i++) {
-		draw::DrawLine(x + 1, y + Item::size_y * i, Item::size_x, 0, GUIColor2());
+		draw::DrawLine(x + 1, y + Item::size_y * i, Item::size_x, 0, NCGUIColor());
 	}
 	//CBaseContainer::Draw(x, y);
 	for (int i = 0; i < ChildCount(); i++) {

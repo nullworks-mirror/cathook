@@ -44,9 +44,9 @@ void PlayerListEntry::Update() {
 				clazz->color_bg = 0;
 				if (idx != g_IEngine->GetLocalPlayer()) {
 					if (team == TEAM_RED) {
-						clazz->color_bg = colors2::red;
+						clazz->color_bg = colorsint::red;
 					} else if (team == TEAM_BLU) {
-						clazz->color_bg = colors2::blu;
+						clazz->color_bg = colorsint::blu;
 					}
 				}
 				if (iclazz && iclazz < 10) {
@@ -120,7 +120,7 @@ void SubBase::Draw(int x, int y) {
 		const auto& size = GetSize();
 		draw::DrawRect(x, y, size.first, size.second, color_bg);
 	}
-	draw::String(menu::ncc::font_item, x + 2, y + 2, color_fg ? color_fg : colors2::white, 2, text);
+	draw::String(menu::ncc::font_item, x + 2, y + 2, color_fg ? color_fg : colorsint::white, 2, text);
 }
 
 SubTitle::SubTitle(PlayerListEntry& parent, const std::string& title) : SubBase(parent) {
@@ -128,7 +128,7 @@ SubTitle::SubTitle(PlayerListEntry& parent, const std::string& title) : SubBase(
 }
 
 void SubTitle::Draw(int x, int y) {
-	draw::String(menu::ncc::font_title, x + 2, y + 2, colors2::white, 2, text);
+	draw::String(menu::ncc::font_title, x + 2, y + 2, colorsint::white, 2, text);
 }
 
 SubColorComponent::SubColorComponent(PlayerListEntry& parent, Component component) : SubBase(parent), component(component) {}

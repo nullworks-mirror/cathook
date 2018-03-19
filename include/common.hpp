@@ -63,6 +63,7 @@
 #include <visual/atlas.hpp>
 #include <visual/EffectChams.hpp>
 #include <visual/drawmgr.hpp>
+#include "menu/compatlayer.hpp"
 
 #endif
 

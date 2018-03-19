@@ -124,7 +124,7 @@ void ItemVariable::Draw(int x, int y) {
 		}
 	} break;
 	}
-	draw::String(menu::ncc::font_item, x + 2, y, colors2::white, 2, format(catvar.desc_short, ": ", val));
+	draw::String(menu::ncc::font_item, x + 2, y, colorsint::white, 2, format(catvar.desc_short, ": ", val));
 }
 
 }}

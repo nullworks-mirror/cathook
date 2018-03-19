@@ -22,9 +22,9 @@ void CCheckbox::SetWidth(int width) {
 
 void CCheckbox::Draw(int x, int y) {
 	auto size = GetSize();
-	draw::OutlineRect(x, y, size.first, size.second, GUIColor2());
+	draw::OutlineRect(x, y, size.first, size.second, NCGUIColor());
 	if (Value()) {
-		draw::DrawRect(x + 3, y + 3, size.first - 6, size.second - 6, GUIColor2());
+		draw::DrawRect(x + 3, y + 3, size.first - 6, size.second - 6, NCGUIColor());
 	}
 }
 

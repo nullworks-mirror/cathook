@@ -22,10 +22,10 @@ CTitleBar::CTitleBar(IWidget* parent, std::string title) : CBaseWidget("titlebar
 
 void CTitleBar::Draw(int x, int y) {
 	auto size = GetSize();
-	draw::DrawRect(x, y, size.first, size.second, GUIColor2());
+	draw::DrawRect(x, y, size.first, size.second, NCGUIColor());
 	int l, h;
 	draw::GetStringLength(fonts::MENU, (char*)m_strTitle.c_str(), l, h);
-	draw::String(fonts::MENU, x + (size.first - l) / 2, y + TITLEBAR_PADDING_H, colors2::white, 1, m_strTitle.c_str());
+	draw::String(fonts::MENU, x + (size.first - l) / 2, y + TITLEBAR_PADDING_H, colorsint::white, 1, m_strTitle.c_str());
 }
 
 void CTitleBar::Update() {

@@ -32,6 +32,8 @@ extern CatVar gui_visible;
 extern CatVar gui_draw_bounds;
 constexpr bool gui_nullcore = true;
 
+int NCGUIColor();
+
 class CatGUI {
 public:
 	CatGUI();

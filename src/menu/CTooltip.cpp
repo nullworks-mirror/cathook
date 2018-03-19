@@ -21,7 +21,7 @@ CTooltip::CTooltip(IWidget* parent) : CTextLabel("tooltip", parent) {
 
 void CTooltip::Draw(int x, int y) {
 	auto size = GetSize();
-	draw::DrawRect(x, y, size.first, size.second, colors2::Create(0, 0, 0, 230));
-	draw::OutlineRect(x, y, size.first, size.second, GUIColor2());
-	draw::String(fonts::MENU, x + Props()->GetInt("padding_x"), y + Props()->GetInt("padding_y"), GUIColor2(), 1, GetText());
+	draw::DrawRect(x, y, size.first, size.second, colorsint::Create(0, 0, 0, 230));
+	draw::OutlineRect(x, y, size.first, size.second, NCGUIColor());
+	draw::String(fonts::MENU, x + Props()->GetInt("padding_x"), y + Props()->GetInt("padding_y"), NCGUIColor(), 1, GetText());
 }

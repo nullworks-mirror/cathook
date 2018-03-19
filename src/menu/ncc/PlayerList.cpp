@@ -30,14 +30,14 @@ bool PlayerList::IsVisible() {
 void PlayerList::Draw(int x, int y) {
 	if (g_Settings.bInvalid) return;
 	const auto& size = GetSize();
-	draw::DrawRect(x, y, size.first, size.second, colors2::Create(0, 0, 0, 77));
-	draw::OutlineRect(x, y, size.first, size.second, GUIColor2());
+	draw::DrawRect(x, y, size.first, size.second, colorsint::Create(0, 0, 0, 77));
+	draw::OutlineRect(x, y, size.first, size.second, NCGUIColor());
 	for (int i = 0; i < Props()->GetInt("vischildren"); i++) {
-		draw::DrawLine(x, y + i * (Item::size_y + 2), size_table_width(), 0, GUIColor2());
+		draw::DrawLine(x, y + i * (Item::size_y + 2), size_table_width(), 0, NCGUIColor());
 	}
 	int accum = 0;
 	for (int i = 0; i < sizeof(size_table) / sizeof(int); i++) {
-		draw::DrawLine(x + accum, y, 0, size.second, GUIColor2());
+		draw::DrawLine(x + accum, y, 0, size.second, NCGUIColor());
 		accum += (size_table[i] + 1) * (float)scale;
 	}
 	CBaseContainer::Draw(x, y);

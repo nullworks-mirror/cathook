@@ -45,8 +45,8 @@ void ItemSublist::Draw(int x, int y) {
 	if (!parent) throw std::runtime_error("Sublist parent can't be casted to List!");
 	const auto& size = GetSize();
 	if (parent->open_sublist == list)
-		draw::DrawRect(x, y, size.first, size.second, colors2::Transparent(GUIColor2(), 0.5f));
-	draw::String(font_item, x + 2, y, colors2::white, 2, format((IsHovered() ? "[-] " : "[+] "), title));
+		draw::DrawRect(x, y, size.first, size.second, colorsint::Transparent(NCGUIColor(), 0.5f));
+	draw::String(font_item, x + 2, y, colorsint::white, 2, format((IsHovered() ? "[-] " : "[+] "), title));
 }
 
 void ItemSublist::OnKeyPress(ButtonCode_t code, bool repeated) {
