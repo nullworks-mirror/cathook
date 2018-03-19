@@ -12,7 +12,7 @@
 
 #include "ESP.hpp"
 #include "SkinChanger.hpp"
-#include "menu/ncc/Radar.hpp"
+#include "Radar.hpp"
 #include "SpyAlert.hpp"
 
 #endif
