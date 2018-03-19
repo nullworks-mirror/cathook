@@ -159,7 +159,7 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
 
     if (clean_screenshots && g_IEngine->IsTakingScreenshot())
         return;
-
+    g_pGUI->Update();
     PROF_SECTION(PT_active);
     draw::UpdateWTS();
 }

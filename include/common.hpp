@@ -113,6 +113,7 @@
 
 #if ENABLE_GUI
 #include "gui/GUI.hpp"
+#include "menu/GUI.h"
 #endif
 
 #include <hacks/hacklist.hpp>
