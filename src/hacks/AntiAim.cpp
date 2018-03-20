@@ -460,6 +460,8 @@ void ProcessUserCmd(CUserCmd *cmd)
     static bool angstate = true;
     if (trueang)
         angstate = !angstate;
+    if (!LOCAL_E->m_bAlivePlayer)
+    	angstate = true;
     *bSendPackets = angstate;
     float &p          = cmd->viewangles.x;
     float &y          = cmd->viewangles.y;
