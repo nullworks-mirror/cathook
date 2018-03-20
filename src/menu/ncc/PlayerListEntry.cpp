@@ -154,7 +154,7 @@ void SubColorComponent::OnKeyPress(ButtonCode_t key, bool repeat) {
 	if (!success) return;
 	playerlist::userdata& data = playerlist::AccessData(info.friendsID);
 	int change = 0;
-	if (key == MOUSE_WHEEL_UP) {
+	if (key == 112) {
 		if (g_IInputSystem->IsButtonDown(KEY_LSHIFT)) {
 			change = 50;
 		} else if (g_IInputSystem->IsButtonDown(KEY_LCONTROL)) {
@@ -162,7 +162,7 @@ void SubColorComponent::OnKeyPress(ButtonCode_t key, bool repeat) {
 		} else {
 			change = 1;
 		}
-	} else if (key == MOUSE_WHEEL_DOWN) {
+	} else if (key == 113) {
 		if (g_IInputSystem->IsButtonDown(KEY_LSHIFT)) {
 			change = -50;
 		} else if (g_IInputSystem->IsButtonDown(KEY_LCONTROL)) {
@@ -194,7 +194,7 @@ void SubState::Update() {
 	}
 	const int state = static_cast<int>(data.state);
 	// color_bg = playerlist::Color(info.friendsID);
-	if (state >= 0 && state <= static_cast<int>(playerlist::k_EState::STATE_LAST)) {
+	if (state >= 0 && state <= static_cast<int>(playerlist::k_EState::STATE_LAST) - 1) {
 		text = playerlist::k_Names[state];
 	} else {
 		text = "N/A";
@@ -217,7 +217,7 @@ void SubState::OnKeyPress(ButtonCode_t key, bool repeat) {
 	} else if (key == MOUSE_WHEEL_DOWN) {
 		change = -1;
 	}
-	int result = _clamp(0, static_cast<int>(playerlist::k_EState::STATE_LAST), state + change);
+	int result = _clamp(0, static_cast<int>(playerlist::k_EState::STATE_LAST) - 1, state + change);
 	data.state = static_cast<playerlist::k_EState>(result);
 }
 
