@@ -260,48 +260,279 @@ static const std::string list_hl2dm = R"(
 )";
 
 static const std::string list_tf2 = R"(
-"Cat Hook"
-"Aim Bot" [
-    "Aim Bot Menu"
-    "aimbot_enabled"
-    "aimbot_aimkey"
-    "aimbot_aimkey_mode"
-    "aimbot_autoshoot"
-    "aimbot_hitboxmode"
-    "aimbot_fov"
-    "aimbot_prioritymode"
-    "aimbot_charge"
-    "Ignore" [
-        "Ignore/Respect Menu"
-        "ignore_taunting"
-        "aimbot_ignore_hoovy"
-        "aimbot_teammates"
-    ]
-    "Auto Heal" [
-        "Auto Heal Menu"
-        "autoheal_enabled"
-        "autoheal_uber"
-        "autoheal_uber_health"
-        "autoheal_silent"
-        "autoheal_share_uber"
-    ]
-    "Preferences" [
-        "Aim Bot Preferences"
-        "aimbot_silent"
-        "aimbot_hitbox"
-        "aimbot_zoomed"
-        "aimbot_only_when_can_shoot"
-        "aimbot_maxrange"
-        "aimbot_slow"
-        "Projectile Aimbot" [
-            "Projectile Aimbot Tweaks"
-            "aimbot_projectile"
-            "aimbot_proj_gravity"
-            "aimbot_proj_speed"
-            "aimbot_huntsman_charge"
-        ]
-    ]
-]
+	"Cathook"
+	"Aim Bot" [
+	    "Aim Bot Menu"
+	    "aimbot_enabled"
+	    "aimbot_aimkey"
+	    "aimbot_aimkey_mode"
+	    "aimbot_autoshoot"
+	    "aimbot_hitboxmode"
+	    "aimbot_fov"
+	    "aimbot_prioritymode"
+	    "aimbot_charge"
+	    "Ignore" [
+	        "Ignore/Respect Menu"
+	        "ignore_taunting"
+	        "aimbot_ignore_hoovy"
+	        "aimbot_teammates"
+	    ]
+	    "Auto Heal" [
+	        "Auto Heal Menu"
+	        "autoheal_enabled"
+	        "autoheal_uber"
+	        "autoheal_uber_health"
+	        "autoheal_silent"
+	        "autoheal_share_uber"
+	    ]
+	    "Preferences" [
+	        "Aim Bot Preferences"
+	        "aimbot_silent"
+	        "aimbot_hitbox"
+	        "aimbot_zoomed"
+	        "aimbot_only_when_can_shoot"
+	        "aimbot_maxrange"
+	        "aimbot_slow"
+	        "Projectile Aimbot" [
+	            "Projectile Aimbot Tweaks"
+	            "aimbot_projectile"
+	            "aimbot_proj_gravity"
+	            "aimbot_proj_speed"
+	            "aimbot_huntsman_charge"
+	        ]
+	    ]
+	]
+	"Trigger Bot" [
+	    "Trigger Bot Menu"
+			"trigger_enabled"
+			"trigger_key"
+			"trigger_key_mode"
+			"trigger_hitboxmode"
+			"trigger_accuracy"
+			"trigger_buildings_sentry"
+			"trigger_buildings_other"
+			"trigger_stickys"
+			"trigger_teammates"
+			"trigger_charge"
+			"trigger_zoomed"
+			"trigger_maxrange"
+			"trigger_delay"
+			"Auto Vacc" [
+				"Auto Vacc"
+				"auto_vacc"
+				"auto_vacc_default_resist"
+				"auto_vacc_blast_pop_ubers"
+				"auto_vacc_fire_pop_ubers"
+				"auto_vacc_bullet_pop_ubers"
+				"auto_vacc_reset_timer"
+				"auto_vacc_rocket_range"
+				"auto_vacc_blast"
+				"auto_vacc_blast_pop_crit"
+				"auto_vacc_blast_pop_health"
+				"auto_vacc_pyro_range"
+				"auto_vacc_afterburn"
+				"auto_vacc_fire_pop_pyro"
+				"auto_vacc_fire"
+				"auto_vacc_sniper_pop"
+				"auto_vacc_bullets"
+			]
+			"Ignore" [
+					"trigger_ignore_cloak"
+					"trigger_ignore_hoovy"
+					"trigger_ignore_vaccinator"
+			]
+			"Auto Backstab" [
+			"Auto BackStab"
+			"autobackstab_range"
+			"autobackstab"
+			]
+		"Auto Sticky" [
+			"Auto Sticky"
+			"sticky_enabled"
+			"sticky_legit"
+			"sticky_buildings"
+		]
+	]
+	"Fake Lag" [
+	    "Fake Lag Menu"
+			"fakelag"
+	]
+	"Sequence Freezing" [
+			"Sequence Freezing Menu"
+			"se_master"
+			"se_key"
+			"se_switch"
+			"se_value"90
+			"se_cart"
+			"se_cap"
+			"se_cloak"
+			"se_stickyspam"
+			"se_shoot"
+			"se_toggle"
+	]
+	"Visuals" [
+	    "Visuals Menu"
+			"thirdperson"
+			"thirdperson_angles"
+	    "no_zoom"
+			"fov"
+			"fov_zoomed"
+			"no_invis"
+			"no_hats"
+			"no_arms"
+					"ESP" [
+			    "ESP Menu"
+			    "esp_enabled"
+			    "esp_box"
+			    "esp_local"
+					"esp_tracers"
+					"esp_health"
+					"esp_bones"
+					"esp_vischeck"
+					"esp_box_corner_size"
+					"esp_buildings"
+					"esp_teammates"
+					"esp_weapon"
+					"esp_ubercharge"
+					"esp_conds"
+					"esp_class"
+					"esp_name"
+					"esp_distance"
+					"ESP Color" [
+					"Esp Color"
+					"esp_color_blue_r"
+					"esp_color_blue_g"
+					"esp_color_blue_b"
+					"esp_color_red_r"
+					"esp_color_red_g"
+					"esp_color_red_b"
+					]
+			]
+			"Chams" [
+			"Chams Menu"
+			"chams_enable"
+			"chams_singlepass"
+			"chams_legit"
+			"chams_weapons_white"
+			"chams_recursive"
+			"chams_teammate_buildings"
+			"chams_stickies"
+			"chams_buildings"
+			"chams_ammo"
+			"chams_medkits"
+			"chams_players"
+			"chams_teammates"
+			"chams_health"
+			"chams_flat"
+			]
+			"Glow" [
+			"Glow Menu"
+			"glow_enable"
+			"glow_solid_when"
+			"glow_blur_scale"
+			"glow_weapons_white"
+			"glow_powerups"
+			"glow_teammate_buildings"
+			"glow_stickies"
+			"glow_buildings"
+			"glow_ammo"
+			"glow_medkits"
+			"glow_players"
+			"glow_teammates"
+			"glow_health"
+			]
+
+	]
+	"Bunny Hop" [
+	    "Bunny Hop Menu"
+			"bhop_enabled"
+			"auto_strafe"
+	]
+	"Air Stuck" [
+	    "Air Stuck Menu"
+			"airstuck"
+	]
+	"Anti-/Anti-Aim" [
+	"Anti-Aim Menu"
+	"aa_enabled"
+	"aa_truefakes"
+	"aa_pitch"
+	"aa_pitch_mode"
+	"aa_yaw"
+	"aa_yaw_mode"
+	"aa_spin"
+	"aa_roll"
+	"aa_no_clamp"
+	"resolver"
+	"Anti Anti Aim" [
+			"aa_aaaa_enabled"
+			"aa_aaaa_flip_key"
+			"aa_aaaa_mode"
+			"aa_aaaa_interval_low"
+			"aa_aaaa_interval_high"
+			"aa_aaaa_interval"
+			]
+	]
+	"Crit Hack" [
+			"Crit Hack Menu"
+			"crit_key"
+			"crit_experimental"
+			"crit_force_gameplay"
+			"crit_melee"
+			"crit_info"
+	]
+	"Name Stealer" [
+	    "Name Stealer Menu"
+	    "name_stealer"
+	]
+	"Chat Spam" [
+			"Chat Spam Menu"
+			"spam"
+			"chat_newlines"
+			"killsay"
+	    "spam_teamname"
+	    "spam_voicecommand"
+			"spam_delay"
+			"spam_file"
+			"spam_random"
+	]
+	"Misc" [
+	    "Misc Menu"
+			"pure_bypass"
+			"nolerp"
+			"info" 
+			"noisemaker"
+			"medal_flip"
+			"killstreak"
+			"tauntslide_tf2"
+			"clean_screenshots"
+			"anti_afk"
+			"die_if_vac"
+			"request_balance_spam"
+			"autotaunt"
+			"autotaunt_chance"
+			"gui_rainbow"
+			"gui_color_b"
+			"gui_color_g"
+			"gui_color_r"
+				"HealArrow" [
+					"HealArrow Menu"
+					"healarrow"
+					"healarrow_timeout"
+					"healarrow_charge"
+				]
+				"Anti Backstab" [
+				"Anti Backstab"
+				"antibackstab"
+				"antibackstab_nope"
+				"antibackstab_angle"
+				"antibackstab_silent"
+				"antibackstab_distance"
+				]
+	]
+	"Ignore Settings" [
+	    "Ignore Settings Menu"
+	]
 )";
 
 List& MainList() {
