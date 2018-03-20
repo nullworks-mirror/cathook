@@ -10,9 +10,6 @@
 #include "common.hpp"
 #include "sdk.hpp"
 
-CatVar var0(CV_SWITCH, "var0", "0", "Enable Aimbot",
-                      "Main aimbot switch");
-
 CKeyInput::CKeyInput(std::string name, IWidget* parent) : CBaseWidget(name, parent) {
 	Props()->SetInt("value", 0);
 	Props()->SetBool("capturing", false);
