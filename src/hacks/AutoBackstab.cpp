@@ -16,7 +16,7 @@ namespace autobackstab
 
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
-static CatVar value(CV_SWITCH, "autobackstab_range", "110.0f",
+static CatVar value(CV_INT, "autobackstab_range", "110.0f",
                     "Set Detection Distance to this much");
 bool found;
 // TODO improve
