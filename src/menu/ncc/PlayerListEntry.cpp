@@ -154,7 +154,7 @@ void SubColorComponent::OnKeyPress(ButtonCode_t key, bool repeat) {
 	if (!success) return;
 	playerlist::userdata& data = playerlist::AccessData(info.friendsID);
 	int change = 0;
-	if (key == 112) {
+	if (key == MOUSE_WHEEL_UP) {
 		if (g_IInputSystem->IsButtonDown(KEY_LSHIFT)) {
 			change = 50;
 		} else if (g_IInputSystem->IsButtonDown(KEY_LCONTROL)) {
@@ -162,7 +162,7 @@ void SubColorComponent::OnKeyPress(ButtonCode_t key, bool repeat) {
 		} else {
 			change = 1;
 		}
-	} else if (key == 113) {
+	} else if (key == MOUSE_WHEEL_DOWN) {
 		if (g_IInputSystem->IsButtonDown(KEY_LSHIFT)) {
 			change = -50;
 		} else if (g_IInputSystem->IsButtonDown(KEY_LCONTROL)) {
@@ -172,7 +172,7 @@ void SubColorComponent::OnKeyPress(ButtonCode_t key, bool repeat) {
 		}
 	}
 	int result = _clamp(0, 255, (int)(reinterpret_cast<unsigned char*>(&data.color)[static_cast<int>(component)]) + change);
-	(reinterpret_cast<unsigned char*>(&data.color)[static_cast<int>(component)]) = (unsigned char)result;
+	(reinterpret_cast<unsigned char*>(&data.color)[(int)component]) = result;
 	//if (!(data.color & 0x00FFFFFF)) {
 	//	data.color = 0;
 	//} else {
