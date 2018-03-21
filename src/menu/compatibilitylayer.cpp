@@ -1,10 +1,6 @@
 #include "common.hpp"
 
 namespace fonts {
-template<typename T>
-constexpr T _clamp(T _min, T _max, T _val) {
-	return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
-}
 unsigned long ESP = 0;
 unsigned long MENU = 0;
 unsigned long MENU_BIG = 0;
