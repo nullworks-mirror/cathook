@@ -394,6 +394,11 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             }
             IF_GAME(IsTF())
             {
+                PROF_SECTION(CM_autodetonator);
+                hacks::tf::autodetonator::CreateMove();
+            }
+            IF_GAME(IsTF())
+            {
                 PROF_SECTION(CM_autoreflect);
                 hacks::tf::autoreflect::CreateMove();
             }

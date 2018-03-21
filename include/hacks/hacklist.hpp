@@ -23,6 +23,7 @@
 #include "AutoHeal.hpp"
 #include "AutoReflect.hpp"
 #include "AutoSticky.hpp"
+#include "AutoDetonator.hpp"
 #include "AntiCheat.hpp"
 #include "Events.hpp"
 #include "Bunnyhop.hpp"
