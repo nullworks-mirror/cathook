@@ -16,7 +16,7 @@ namespace autodetonator
 
 // Vars for user settings
 CatVar enabled(CV_SWITCH, "detonator_enabled", "0", "Auto-Detonator-detonator",
-               "Master AutoSticky switch");
+               "Master auto detonator switch");
 CatVar legit(CV_SWITCH, "detonator_legit", "0", "Ignore invis",
              "Ignores invis spies");
 
