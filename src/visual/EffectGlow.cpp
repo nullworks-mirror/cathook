@@ -53,6 +53,7 @@ static CatVar glowself(CV_SWITCH, "glow_self", "0", "Enable glow on self");
 static CatVar rainbow(CV_SWITCH, "glow_self_rainbow", "1",
                       "Enable rainbow glow on self",
                       "Only visible in thirdperson!");
+static CatVar glowteam(CV_SWITCH, "glow_self_team", "0", "Team chams color");
 static CatVar glowR(CV_INT, "glow_self_r", "200", "Self glow red", "", 0, 255);
 static CatVar glowG(CV_INT, "glow_self_g", "200", "Self glow green", "", 0,
                     255);
@@ -249,6 +250,11 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
         }
         break;
     case ENTITY_PLAYER:
+        if (ent->m_IDX == LOCAL_E->m_IDX && glowteam)
+            if (LOCAL_E->m_iTeam == TEAM_BLU)
+                return colors::blu;
+            else
+                return colors::red;
         if (ent->m_IDX == LOCAL_E->m_IDX && glowself && !rainbow)
             return colors::FromRGBA8(glowR, glowG, glowB, 255);
         if (health)
