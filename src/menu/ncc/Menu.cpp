@@ -272,7 +272,10 @@ static const std::string list_tf2 = R"(
 	    "aimbot_prioritymode"
 	    "aimbot_charge"
 	    "Ignore" [
-	        "Ignore/Respect Menu"
+	        "Ignore Menu"
+					"aimbot_ignore_cloak"
+					"aimbot_ignore_deadringer"
+					"aimbot_ignore_vaccinator"
 	        "ignore_taunting"
 	        "aimbot_ignore_hoovy"
 	        "aimbot_teammates"
@@ -286,7 +289,7 @@ static const std::string list_tf2 = R"(
 	        "autoheal_share_uber"
 	    ]
 	    "Preferences" [
-	        "Aim Bot Preferences"
+	        "Aim Bot Preferences Menu"
 	        "aimbot_silent"
 	        "aimbot_hitbox"
 	        "aimbot_zoomed"
@@ -344,8 +347,8 @@ static const std::string list_tf2 = R"(
 			]
 			"Auto Backstab" [
 			"Auto BackStab Menu"
-			"autobackstab_range"
 			"autobackstab"
+			"autobackstab_range"
 			]
 		"Auto Sticky" [
 			"Auto Sticky Menu"
@@ -366,6 +369,10 @@ static const std::string list_tf2 = R"(
 		"reflect_dodgeball"
 		"reflect_only_idle"
 		"reflect_stickybombs"
+		"reflect_teammates"
+		"reflect_fov"
+		"reflect_fov_draw"
+		"reflect_fov_draw_opacity"
 		]
 	]
 	"Fake Lag" [
@@ -390,7 +397,7 @@ static const std::string list_tf2 = R"(
 	    "Visuals Menu"
 			"thirdperson"
 			"thirdperson_angles"
-	    "no_zoom"
+	    	"no_zoom"
 			"fov"
 			"fov_zoomed"
 			"no_invis"
@@ -419,6 +426,7 @@ static const std::string list_tf2 = R"(
 			"Chams" [
 			"Chams Menu"
 			"chams_enable"
+			"chams_self"
 			"chams_singlepass"
 			"chams_legit"
 			"chams_weapons_white"
@@ -444,6 +452,7 @@ static const std::string list_tf2 = R"(
 			"Glow" [
 			"Glow Menu"
 			"glow_enable"
+			"glow_self"
 			"glow_solid_when"
 			"glow_blur_scale"
 			"glow_weapons_white"
@@ -516,9 +525,9 @@ static const std::string list_tf2 = R"(
 	"Crit Hack" [
 			"Crit Hack Menu"
 			"crit_key"
+			"crit_melee"
 			"crit_experimental"
 			"crit_force_gameplay"
-			"crit_melee"
 			"crit_info"
 	]
 	"Name Stealer" [
@@ -560,7 +569,6 @@ static const std::string list_tf2 = R"(
 			"die_if_vac"
 			"request_balance_spam"
 			"nopush_enabled"
-
 				"HealArrow" [
 					"HealArrow Menu"
 					"healarrow"
