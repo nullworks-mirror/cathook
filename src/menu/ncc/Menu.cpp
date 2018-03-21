@@ -337,20 +337,35 @@ static const std::string list_tf2 = R"(
 				"auto_vacc_bullets"
 			]
 			"Ignore" [
+				"Ignore Menu"
 					"trigger_ignore_cloak"
 					"trigger_ignore_hoovy"
 					"trigger_ignore_vaccinator"
 			]
 			"Auto Backstab" [
-			"Auto BackStab"
+			"Auto BackStab Menu"
 			"autobackstab_range"
 			"autobackstab"
 			]
 		"Auto Sticky" [
-			"Auto Sticky"
+			"Auto Sticky Menu"
 			"sticky_enabled"
 			"sticky_legit"
 			"sticky_buildings"
+		]
+		"Auto Detonator" [
+			"Auto Detonator Menu"
+			"detonator_enabled"
+			"detonator_legit"
+		]
+		"Auto Airblast" [
+		"Auto Airblast Menu"
+		"reflect_enabled"
+		"reflect_key"
+		"reflect_legit"
+		"reflect_dodgeball"
+		"reflect_only_idle"
+		"reflect_stickybombs"
 		]
 	]
 	"Fake Lag" [
@@ -361,8 +376,9 @@ static const std::string list_tf2 = R"(
 			"Sequence Freezing Menu"
 			"se_master"
 			"se_key"
+			"se_doom"
 			"se_switch"
-			"se_value"90
+			"se_value"
 			"se_cart"
 			"se_cap"
 			"se_cloak"
@@ -379,6 +395,7 @@ static const std::string list_tf2 = R"(
 			"fov_zoomed"
 			"no_invis"
 			"no_hats"
+			"antidisguise"
 			"no_arms"
 					"ESP" [
 			    "ESP Menu"
@@ -398,15 +415,6 @@ static const std::string list_tf2 = R"(
 					"esp_class"
 					"esp_name"
 					"esp_distance"
-					"ESP Color" [
-					"Esp Color"
-					"esp_color_blue_r"
-					"esp_color_blue_g"
-					"esp_color_blue_b"
-					"esp_color_red_r"
-					"esp_color_red_g"
-					"esp_color_red_b"
-					]
 			]
 			"Chams" [
 			"Chams Menu"
@@ -424,6 +432,14 @@ static const std::string list_tf2 = R"(
 			"chams_teammates"
 			"chams_health"
 			"chams_flat"
+			"Self Chams"[
+			"Self Chams Menu"
+			"chams_self"
+			"chams_self_rainbow"
+			"chams_self_r"
+			"chams_self_g"
+			"chams_self_b"
+			]
 			]
 			"Glow" [
 			"Glow Menu"
@@ -440,8 +456,28 @@ static const std::string list_tf2 = R"(
 			"glow_players"
 			"glow_teammates"
 			"glow_health"
+			"Self Glow"[
+			"Self Glow Menu"
+			"glow_self"
+			"glow_self_rainbow"
+			"glow_self_r"
+			"glow_self_g"
+			"glow_self_b"
 			]
-
+			]
+			"Colors" [
+			"Colors Menu"
+			"gui_rainbow"
+			"gui_color_r"
+			"gui_color_g"
+			"gui_color_b"
+			"esp_color_blue_r"
+			"esp_color_blue_g"
+			"esp_color_blue_b"
+			"esp_color_red_r"
+			"esp_color_red_g"
+			"esp_color_red_b"
+			]
 	]
 	"Bunny Hop" [
 	    "Bunny Hop Menu"
@@ -456,9 +492,13 @@ static const std::string list_tf2 = R"(
 	"Anti-Aim Menu"
 	"aa_enabled"
 	"aa_truefakes"
+	"aa_pitch_real"
+	"aa_yaw_real"
+	"aa_pitch_mode_real"
+	"aa_yaw_mode_real"
 	"aa_pitch"
-	"aa_pitch_mode"
 	"aa_yaw"
+	"aa_pitch_mode"
 	"aa_yaw_mode"
 	"aa_spin"
 	"aa_roll"
@@ -488,19 +528,29 @@ static const std::string list_tf2 = R"(
 	"Chat Spam" [
 			"Chat Spam Menu"
 			"spam"
-			"chat_newlines"
 			"killsay"
-	    "spam_teamname"
-	    "spam_voicecommand"
+			"spam_teamname"
+			"spam_voicecommand"
+			"chat_newlines"
 			"spam_delay"
 			"spam_file"
 			"spam_random"
+			"Uberspam" [
+				"Uberspam Menu"
+					"uberspam"
+					"uberspam_team"
+					"uberspam_build"
+					"uberspam_ended"
+					"uberspam_used"
+					"uberspam_ready"
+			]
 	]
 	"Misc" [
 	    "Misc Menu"
 			"pure_bypass"
 			"nolerp"
-			"info" 
+			"info"
+			"info_min"
 			"noisemaker"
 			"medal_flip"
 			"killstreak"
@@ -509,12 +559,8 @@ static const std::string list_tf2 = R"(
 			"anti_afk"
 			"die_if_vac"
 			"request_balance_spam"
-			"autotaunt"
-			"autotaunt_chance"
-			"gui_rainbow"
-			"gui_color_b"
-			"gui_color_g"
-			"gui_color_r"
+			"nopush_enabled"
+
 				"HealArrow" [
 					"HealArrow Menu"
 					"healarrow"
@@ -522,16 +568,55 @@ static const std::string list_tf2 = R"(
 					"healarrow_charge"
 				]
 				"Anti Backstab" [
-				"Anti Backstab"
+				"Anti Backstab Menu"
 				"antibackstab"
 				"antibackstab_nope"
 				"antibackstab_angle"
 				"antibackstab_silent"
 				"antibackstab_distance"
 				]
-	]
-	"Ignore Settings" [
-	    "Ignore Settings Menu"
+				"Spyalert" [
+				"Spyalert Menu"
+				"spyalert_enabled"
+				"spyalert_backstab"
+				"spyalert_sound"
+				"spyalert_interval"
+				"spyalert_warning"
+				]
+				"Anti Cheat" [
+				"Anti Cheat Menu"
+				"ac_enabled"
+				"ac_aimbot"
+				"ac_aimbot_detections"
+				"ac_aimbot_angle"
+				"ac_bhop_count"
+				]
+				"Automated" [
+				"Automated Menu"
+				"autoqueue"
+				"autojoin_team"
+				"autojoin_class"
+				"autotaunt"
+				"autotaunt_chance"
+				]
+				"Debug" [
+					"Debug Menu"
+						"debug_freecam"
+						"debug_projectiles"
+						"debug_log_sent_messages"
+						"debug_log_usermessages"
+						"debug_tcm"
+						"debug_info"
+						"skinchanger_debug"
+						"debug_aimbot_engine_pp"
+						"aimbot_debug"
+						"debug_ve_averaging"
+						"debug_ve_smooth"
+						"debug_ve_window"
+						"debug_pp_rocket_time_ping"
+						"debug_pp_extrapolate"
+						"debug_engine_pred_others"
+				]
 	]
 )";
 

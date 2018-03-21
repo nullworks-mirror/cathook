@@ -49,6 +49,14 @@ static CatVar teammate_buildings(CV_SWITCH, "glow_teammate_buildings", "0",
 static CatVar powerups(CV_SWITCH, "glow_powerups", "1", "Powerups");
 static CatVar weapons_white(CV_SWITCH, "glow_weapons_white", "1",
                             "White Weapon Glow", "Weapons will glow white");
+static CatVar glowself(CV_SWITCH, "glow_self", "0", "Enable glow on self");
+static CatVar rainbow(CV_SWITCH, "glow_self_rainbow", "1",
+                      "Enable rainbow glow on self",
+                      "Only visible in thirdperson!");
+static CatVar glowR(CV_INT, "glow_self_r", "200", "Self glow red", "", 0, 255);
+static CatVar glowG(CV_INT, "glow_self_g", "200", "Self glow green", "", 0,
+                    255);
+static CatVar glowB(CV_INT, "glow_self_b", "200", "Self glow blue", "", 0, 255);
 
 struct ShaderStencilState_t
 {
@@ -241,6 +249,8 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
         }
         break;
     case ENTITY_PLAYER:
+        if (ent->m_IDX == LOCAL_E->m_IDX && glowself && !rainbow)
+            return colors::FromRGBA8(glowR, glowG, glowB, 255);
         if (health)
         {
             return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
@@ -261,6 +271,8 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
         return false;
     ent = ENTITY(entity->entindex());
     if (CE_BAD(ent))
+        return false;
+    if (ent->m_IDX == LOCAL_E->m_IDX && !glowself)
         return false;
     switch (ent->m_Type)
     {
