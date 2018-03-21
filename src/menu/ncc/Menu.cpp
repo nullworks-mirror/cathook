@@ -12,58 +12,85 @@
 #include "menu/ncc/ItemSublist.hpp"
 #include "menu/ncc/Tooltip.hpp"
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 
 unsigned long font_title = 0;
 unsigned long font_item  = 0;
 
-CatVar scale(CV_FLOAT, "gui_ncc_scale", "1", "NCC GUI Scale", "Defines scale of NCC gui", 0.5f, 4.0f);
-CatVar font_family(fonts::family_enum, "gui_ncc_font_family", "3", "NCC Font Family", "Defines font family for NCC menu");
-CatVar font_title_family(fonts::family_enum, "gui_ncc_font_title_family", "4", "NCC Title Family", "Defines font family for NCC menu titles");
+CatVar scale(CV_FLOAT, "gui_ncc_scale", "1", "NCC GUI Scale",
+             "Defines scale of NCC gui", 0.5f, 4.0f);
+CatVar font_family(fonts::family_enum, "gui_ncc_font_family", "3",
+                   "NCC Font Family", "Defines font family for NCC menu");
+CatVar font_title_family(fonts::family_enum, "gui_ncc_font_title_family", "4",
+                         "NCC Title Family",
+                         "Defines font family for NCC menu titles");
 
-Tooltip* tooltip = nullptr;;
-Root* root = nullptr;
+Tooltip *tooltip = nullptr;
+;
+Root *root = nullptr;
 
-void ShowTooltip(const std::string& text) {
-	tooltip->Show();
-	tooltip->SetText(text);
+void ShowTooltip(const std::string &text)
+{
+    tooltip->Show();
+    tooltip->SetText(text);
 }
 
-std::vector<CatVar*> FindCatVars(const std::string name) {
-	std::vector<CatVar*> result = {};
-	for (auto var : CatVarList()) {
-		if (var->name.find(name) == 0) result.push_back(var);
-	}
-	return result;
+std::vector<CatVar *> FindCatVars(const std::string name)
+{
+    std::vector<CatVar *> result = {};
+    for (auto var : CatVarList())
+    {
+        if (var->name.find(name) == 0)
+            result.push_back(var);
+    }
+    return result;
 }
 
 bool init_done = false;
 
-void ChangeCallback(IConVar* var, const char* pszOldValue, float flOldValue) {
-	if (init_done)
-		RefreshFonts();
+void ChangeCallback(IConVar *var, const char *pszOldValue, float flOldValue)
+{
+    if (init_done)
+        RefreshFonts();
 }
 
-void Init() {
-	root = new Root();
-	root->Setup();
-	scale.InstallChangeCallback([](IConVar* var, const char* pszOldValue, float flOldValue) {
-		if (init_done) RefreshFonts();
-		logging::Info("Scale Changed");
-		root->HandleCustomEvent(KeyValues::AutoDelete("scale_update"));
-	});
-	font_family.InstallChangeCallback(ChangeCallback);
-	font_title_family.InstallChangeCallback(ChangeCallback);
-	init_done = true;
-	RefreshFonts();
+void Init()
+{
+    root = new Root();
+    root->Setup();
+    scale.InstallChangeCallback(
+        [](IConVar *var, const char *pszOldValue, float flOldValue) {
+            if (init_done)
+                RefreshFonts();
+            logging::Info("Scale Changed");
+            root->HandleCustomEvent(KeyValues::AutoDelete("scale_update"));
+        });
+    font_family.InstallChangeCallback(ChangeCallback);
+    font_title_family.InstallChangeCallback(ChangeCallback);
+    init_done = true;
+    RefreshFonts();
 }
 
-void RefreshFonts() {
-	font_title = g_ISurface->CreateFont();
-	font_item  = g_ISurface->CreateFont();
-	g_ISurface->SetFontGlyphSet(font_title, fonts::fonts.at(_clamp(0, (int)(fonts::fonts.size() - 1), (int)font_title_family)).c_str(), psize_font_title * (float)scale, 0, 0, 0, 0x0);
-	g_ISurface->SetFontGlyphSet(font_item, fonts::fonts.at(_clamp(0, (int)(fonts::fonts.size() - 1), (int)font_family)).c_str(), psize_font_item * (float)scale, 0, 0, 0, 0x0);
-	root->HandleCustomEvent(KeyValues::AutoDelete("font_update"));
+void RefreshFonts()
+{
+    font_title = g_ISurface->CreateFont();
+    font_item  = g_ISurface->CreateFont();
+    g_ISurface->SetFontGlyphSet(
+        font_title, fonts::fonts
+                        .at(_clamp(0, (int) (fonts::fonts.size() - 1),
+                                   (int) font_title_family))
+                        .c_str(),
+        psize_font_title * (float) scale, 0, 0, 0, 0x0);
+    g_ISurface->SetFontGlyphSet(
+        font_item,
+        fonts::fonts
+            .at(_clamp(0, (int) (fonts::fonts.size() - 1), (int) font_family))
+            .c_str(),
+        psize_font_item * (float) scale, 0, 0, 0, 0x0);
+    root->HandleCustomEvent(KeyValues::AutoDelete("font_update"));
 }
 
 static const std::string list_hl2dm = R"(
@@ -404,29 +431,31 @@ static const std::string list_tf2 = R"(
 			"no_hats"
 			"antidisguise"
 			"no_arms"
-					"ESP" [
+			"gui_ncc_scale"
+			"gui_ncc_font_family"
+			"gui_ncc_font_title_family"
+			"ESP" [
 			    "ESP Menu"
 			    "esp_enabled"
 			    "esp_box"
 			    "esp_local"
-					"esp_tracers"
-					"esp_health"
-					"esp_bones"
-					"esp_vischeck"
-					"esp_box_corner_size"
-					"esp_buildings"
-					"esp_teammates"
-					"esp_weapon"
-					"esp_ubercharge"
-					"esp_conds"
-					"esp_class"
-					"esp_name"
-					"esp_distance"
-			]
+				"esp_tracers"
+				"esp_health"
+				"esp_bones"
+				"esp_vischeck"
+				"esp_box_corner_size"
+				"esp_buildings"
+				"esp_teammates"
+				"esp_weapon"
+				"esp_ubercharge"
+				"esp_conds"
+				"esp_class"
+				"esp_name"
+				"esp_distance"
+				]
 			"Chams" [
 			"Chams Menu"
 			"chams_enable"
-			"chams_self"
 			"chams_singlepass"
 			"chams_legit"
 			"chams_weapons_white"
@@ -443,6 +472,7 @@ static const std::string list_tf2 = R"(
 			"Self Chams"[
 			"Self Chams Menu"
 			"chams_self"
+			"chams_self_team"
 			"chams_self_rainbow"
 			"chams_self_r"
 			"chams_self_g"
@@ -452,7 +482,6 @@ static const std::string list_tf2 = R"(
 			"Glow" [
 			"Glow Menu"
 			"glow_enable"
-			"glow_self"
 			"glow_solid_when"
 			"glow_blur_scale"
 			"glow_weapons_white"
@@ -468,6 +497,7 @@ static const std::string list_tf2 = R"(
 			"Self Glow"[
 			"Self Glow Menu"
 			"glow_self"
+			"glow_self_team"
 			"glow_self_rainbow"
 			"glow_self_r"
 			"glow_self_g"
@@ -628,9 +658,10 @@ static const std::string list_tf2 = R"(
 	]
 )";
 
-List& MainList() {
-	static List* main = List::FromString(IsTF2() ? list_tf2 : list_hl2dm);
-	return *main;
+List &MainList()
+{
+    static List *main = List::FromString(IsTF2() ? list_tf2 : list_hl2dm);
+    return *main;
 }
-
-}}
+}
+}
