@@ -10,17 +10,22 @@
 
 #include "menu/ncc/Item.hpp"
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 
-class ItemTitle : public Item {
+class ItemTitle : public Item
+{
 public:
-	ItemTitle(std::string title);
+    ItemTitle(std::string title);
 
-	virtual void Draw(int x, int y) override;
+    virtual void Draw(int x, int y) override;
+
 public:
-	const std::string title;
+    const std::string title;
 };
-
-}}
+}
+}
 
 #endif /* ITEMTITLE_HPP_ */

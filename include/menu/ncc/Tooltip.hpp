@@ -12,17 +12,24 @@
 
 #include "common.hpp"
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 
-class Tooltip : public CTextLabel {
+class Tooltip : public CTextLabel
+{
 public:
-	Tooltip();
+    Tooltip();
 
-	virtual void Draw(int x, int  y) override;
-	virtual void HandleCustomEvent(KeyValues* event) override;
-	inline virtual PositionMode GetPositionMode() override { return PositionMode::FLOATING; }
+    virtual void Draw(int x, int y) override;
+    virtual void HandleCustomEvent(KeyValues *event) override;
+    inline virtual PositionMode GetPositionMode() override
+    {
+        return PositionMode::FLOATING;
+    }
 };
-
-}}
+}
+}
 
 #endif /* TOOLTIP_HPP_ */

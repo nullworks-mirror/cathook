@@ -472,7 +472,6 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
     }
 #endif
 
-
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         static int fakelag_queue = 0;

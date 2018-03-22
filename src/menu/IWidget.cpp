@@ -7,4 +7,6 @@
 
 #include "menu/IWidget.h"
 
-IWidget::~IWidget() {}
+IWidget::~IWidget()
+{
+}

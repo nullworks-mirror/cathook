@@ -33,8 +33,6 @@ constexpr unsigned team(int team)
 }
 }
 
-
-
 struct rgba_t
 {
     union {

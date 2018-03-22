@@ -10,32 +10,42 @@
 
 #include "common.hpp"
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 
 int Item::size_x = 0;
 int Item::size_y = 0;
 
-Item::Item(std::string name) : CBaseWidget(name, nullptr) {
-	SetSize(psize_x, psize_y);
-	SetMaxSize(psize_x, psize_y);
+Item::Item(std::string name) : CBaseWidget(name, nullptr)
+{
+    SetSize(psize_x, psize_y);
+    SetMaxSize(psize_x, psize_y);
 }
 
-void Item::Draw(int x, int y) {
-	const auto& size = GetSize();
-	//draw::DrawRect(x, y, size.first, size.second, colorsint::red);
-	draw::DrawRect(x, y, size.first, size.second, colorsint::Create(0, 0, 0, 77));
-	if (IsHovered()) {
-		draw::DrawRect(x, y, size.first, size.second, colorsint::Transparent(NCGUIColor(), 0.32f));
-	}
+void Item::Draw(int x, int y)
+{
+    const auto &size = GetSize();
+    // draw::DrawRect(x, y, size.first, size.second, colorsint::red);
+    draw::DrawRect(x, y, size.first, size.second,
+                   colorsint::Create(0, 0, 0, 77));
+    if (IsHovered())
+    {
+        draw::DrawRect(x, y, size.first, size.second,
+                       colorsint::Transparent(NCGUIColor(), 0.32f));
+    }
 }
 
-void Item::HandleCustomEvent(KeyValues* event) {
-	if (!strcmp(event->GetName(), "scale_update")) {
-		size_x = psize_x * (float)scale;
-		size_y = psize_y * (float)scale;
-		SetSize(size_x, size_y);
-		SetMaxSize(size_x, size_y);
-	}
+void Item::HandleCustomEvent(KeyValues *event)
+{
+    if (!strcmp(event->GetName(), "scale_update"))
+    {
+        size_x = psize_x * (float) scale;
+        size_y = psize_y * (float) scale;
+        SetSize(size_x, size_y);
+        SetMaxSize(size_x, size_y);
+    }
 }
-
-}}
+}
+}

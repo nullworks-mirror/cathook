@@ -14,22 +14,22 @@ class CMenuList;
 class CMenuContainer;
 class CTitleBar;
 
-class CMenuWindow : public CBaseWindow {
+class CMenuWindow : public CBaseWindow
+{
 public:
-	CMenuWindow(std::string name, IWidget* parent);
+    CMenuWindow(std::string name, IWidget *parent);
 
-	void AddElements();
+    void AddElements();
 
-	void SelectTab(std::string tab);
-	void AddTab(std::string tab, std::string name);
-	CMenuContainer* GetTab(std::string tab);
+    void SelectTab(std::string tab);
+    void AddTab(std::string tab, std::string name);
+    CMenuContainer *GetTab(std::string tab);
 
-	virtual void MoveChildren() override;
+    virtual void MoveChildren() override;
 
-	CMenuList* m_pList;
-	CTitleBar* m_pTitle;
-	CMenuContainer* m_pActiveTab;
+    CMenuList *m_pList;
+    CTitleBar *m_pTitle;
+    CMenuContainer *m_pActiveTab;
 };
-
 
 #endif /* CMENUWINDOW_H_ */

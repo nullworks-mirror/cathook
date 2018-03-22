@@ -13,26 +13,31 @@
 
 class CatVar;
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 
 class List; // ????
 
-class ItemSublist : public Item {
+class ItemSublist : public Item
+{
 public:
-	ItemSublist(std::string title, List* list);
+    ItemSublist(std::string title, List *list);
 
-	virtual void SetParent(IWidget*) override;
-	virtual bool IsHovered() override;
-	virtual void Update() override;
-	virtual void Draw(int x, int y) override;
-	virtual void OnKeyPress(ButtonCode_t code, bool repeated) override;
-	virtual void OnMouseEnter();
-	virtual void OnMouseLeave();
+    virtual void SetParent(IWidget *) override;
+    virtual bool IsHovered() override;
+    virtual void Update() override;
+    virtual void Draw(int x, int y) override;
+    virtual void OnKeyPress(ButtonCode_t code, bool repeated) override;
+    virtual void OnMouseEnter();
+    virtual void OnMouseLeave();
+
 public:
-	List* const list;
-	const std::string title;
+    List *const list;
+    const std::string title;
 };
-
-}}
+}
+}
 
 #endif /* ITEMSUBLIST_HPP_ */

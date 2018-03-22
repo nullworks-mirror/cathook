@@ -10,12 +10,16 @@
 
 #include "menu/CTextLabel.h"
 
-class CTooltip : public CTextLabel {
+class CTooltip : public CTextLabel
+{
 public:
-	CTooltip(IWidget* parent = nullptr);
+    CTooltip(IWidget *parent = nullptr);
 
-	virtual void Draw(int x, int y);
-	inline virtual PositionMode GetPositionMode() { return PositionMode::FLOATING; }
+    virtual void Draw(int x, int y);
+    inline virtual PositionMode GetPositionMode()
+    {
+        return PositionMode::FLOATING;
+    }
 };
 
 #endif /* CTOOLTIP_H_ */

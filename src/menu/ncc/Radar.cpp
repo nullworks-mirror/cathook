@@ -8,22 +8,27 @@
 #include "menu/ncc/Radar.hpp"
 #include "common.hpp"
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 /*
 Radar::Radar() : CBaseWidget("ncc_radar") {}
 
 std::pair<int, int> Radar::GetSize() {
-	return { (int)hacks::tf::radar::size, (int)hacks::tf::radar::size };
+    return { (int)hacks::tf::radar::size, (int)hacks::tf::radar::size };
 }
 
 void Radar::Update() {
-	if (!hacks::tf::radar::radar_enabled) Hide();
-	else Show();
-	SetOffset((int)hacks::tf::radar::radar_x, (int)hacks::tf::radar::radar_y);
-	if (IsPressed()) {
-		hacks::tf::radar::radar_x = (int)hacks::tf::radar::radar_x + g_pGUI->mouse_dx;
-		hacks::tf::radar::radar_y = (int)hacks::tf::radar::radar_y + g_pGUI->mouse_dy;
-	}
+    if (!hacks::tf::radar::radar_enabled) Hide();
+    else Show();
+    SetOffset((int)hacks::tf::radar::radar_x, (int)hacks::tf::radar::radar_y);
+    if (IsPressed()) {
+        hacks::tf::radar::radar_x = (int)hacks::tf::radar::radar_x +
+g_pGUI->mouse_dx;
+        hacks::tf::radar::radar_y = (int)hacks::tf::radar::radar_y +
+g_pGUI->mouse_dy;
+    }
 }*/
-
-}}
+}
+}

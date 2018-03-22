@@ -28,7 +28,10 @@
 #include "menu/ncc/CritIndicator.hpp"
 #include "menu/ncc/Logo.hpp"
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 
 class List;
 class Tooltip;
@@ -37,21 +40,21 @@ extern CatVar scale;
 extern CatVar font_family;
 extern CatVar font_title_family;
 
-constexpr int psize_font_item = 12;
+constexpr int psize_font_item  = 12;
 constexpr int psize_font_title = 14;
 
 extern unsigned long font_title; // Verdana Bold 10px?
 extern unsigned long font_item;  // Verdana 	 10px?
 
-extern Tooltip* tooltip;
-extern Root* root;
+extern Tooltip *tooltip;
+extern Root *root;
 
 void RefreshFonts();
-void ShowTooltip(const std::string& text);
+void ShowTooltip(const std::string &text);
 
 void Init();
-List& MainList();
-
-}}
+List &MainList();
+}
+}
 
 #endif /* MENU_HPP_ */

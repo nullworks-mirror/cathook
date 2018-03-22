@@ -12,13 +12,14 @@
 
 class CMenuWindow;
 
-class CMenuContainer : public CBaseContainer {
+class CMenuContainer : public CBaseContainer
+{
 public:
-	CMenuContainer(std::string name, CMenuWindow* parent);
+    CMenuContainer(std::string name, CMenuWindow *parent);
 
-	virtual inline void SortByZIndex() override {};
-	virtual void MoveChildren() override;
-	virtual void Draw(int x, int y) override;
+    virtual inline void SortByZIndex() override{};
+    virtual void MoveChildren() override;
+    virtual void Draw(int x, int y) override;
 };
 
 #endif /* CMENUCONTAINER_H_ */

@@ -12,7 +12,10 @@
 #include "common.hpp"
 #include "menu/ncc/Menu.hpp"
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 /*
 extern unsigned char _binary_snowflake_start;
 extern unsigned char _binary_flame_start;
@@ -22,38 +25,39 @@ extern unsigned char _binary_heart_start;
 
 class Background : public CBaseWidget {
 public:
-	struct Particle {
-		float x, y;
-		float vx, vy;
-		int show_in { 0 };
-		bool dead { false };
-		Texture* texture { nullptr };
-		Particle* next { nullptr };
-		Particle* prev { nullptr };
-		void Update(float dt);
-	};
+    struct Particle {
+        float x, y;
+        float vx, vy;
+        int show_in { 0 };
+        bool dead { false };
+        Texture* texture { nullptr };
+        Particle* next { nullptr };
+        Particle* prev { nullptr };
+        void Update(float dt);
+    };
 public:
-	Background();
-	~Background();
-	virtual bool AlwaysVisible() override;
-	virtual void Draw(int x, int y) override;
-	virtual void Update() override;
-	void LoadTextures();
-	void MakeParticle();
-	void KillParticle(Particle* flake);
+    Background();
+    ~Background();
+    virtual bool AlwaysVisible() override;
+    virtual void Draw(int x, int y) override;
+    virtual void Update() override;
+    void LoadTextures();
+    void MakeParticle();
+    void KillParticle(Particle* flake);
 public:
-	// FIXME array or something
-	bool textures_loaded { false };
-	Texture tx_snowflake;
-	Texture tx_raindrop;
-	Texture tx_raindrop2;
-	Texture tx_flame;
-	Texture tx_heart;
-	std::chrono::time_point<std::chrono::system_clock> last_update;
-	Particle* list { nullptr };
-	Particle* list_tail { nullptr };
+    // FIXME array or something
+    bool textures_loaded { false };
+    Texture tx_snowflake;
+    Texture tx_raindrop;
+    Texture tx_raindrop2;
+    Texture tx_flame;
+    Texture tx_heart;
+    std::chrono::time_point<std::chrono::system_clock> last_update;
+    Particle* list { nullptr };
+    Particle* list_tail { nullptr };
 };
 */
-}}
+}
+}
 
 #endif /* BACKGROUND_HPP_ */

@@ -11,13 +11,14 @@
 
 #include "menu/CBaseWindow.h"
 
-class RootWindow : public CBaseWindow {
+class RootWindow : public CBaseWindow
+{
 public:
-	RootWindow();
+    RootWindow();
 
-	void Setup();
+    void Setup();
 
-	inline virtual void MoveChildren() override {};
+    inline virtual void MoveChildren() override{};
 };
 
 #endif /* ROOTWINDOW_H_ */

@@ -10,16 +10,20 @@
 
 #include "../CBaseWidget.h"
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 
-class Radar : public CBaseWidget {
+class Radar : public CBaseWidget
+{
 public:
-	Radar();
-	virtual void Update() override;
-	virtual std::pair<int, int> GetSize() override;
-	//virtual void Draw() override;
+    Radar();
+    virtual void Update() override;
+    virtual std::pair<int, int> GetSize() override;
+    // virtual void Draw() override;
 };
-
-}}
+}
+}
 
 #endif /* RADAR_HPP_ */

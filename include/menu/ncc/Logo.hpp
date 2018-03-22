@@ -10,19 +10,23 @@
 
 #include "menu/ncc/Menu.hpp"
 
-//extern unsigned char _binary_logo_start;
+// extern unsigned char _binary_logo_start;
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 /*
 class Logo : public CBaseWidget {
 public:
-	Logo();
-	virtual bool AlwaysVisible() override;
-	virtual void Draw(int x, int y) override;
-	virtual void Update() override;
-	Texture texture;
+    Logo();
+    virtual bool AlwaysVisible() override;
+    virtual void Draw(int x, int y) override;
+    virtual void Update() override;
+    Texture texture;
 };
 */
-}}
+}
+}
 
 #endif /* LOGO_HPP_ */

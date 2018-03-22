@@ -23,9 +23,10 @@ CatVar trueang(CV_SWITCH, "aa_truefakes", "1",
 CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
 CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch", "Static pitch (up/down)",
              -89.0, 89.0);
-CatVar yaw_real(CV_FLOAT, "aa_yaw_real", "0.0", "Real Yaw", "Static yaw (left/right)", 360.0);
-CatVar pitch_real(CV_FLOAT, "aa_pitch_real", "-89.0", "Real Pitch", "Static pitch (up/down)",
-             -89.0, 89.0);
+CatVar yaw_real(CV_FLOAT, "aa_yaw_real", "0.0", "Real Yaw",
+                "Static yaw (left/right)", 360.0);
+CatVar pitch_real(CV_FLOAT, "aa_pitch_real", "-89.0", "Real Pitch",
+                  "Static pitch (up/down)", -89.0, 89.0);
 CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM",
                         "SPIN", "OFFSETKEEP", "EDGE", "HECK" });
 CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
@@ -461,12 +462,12 @@ void ProcessUserCmd(CUserCmd *cmd)
     if (trueang)
         angstate = !angstate;
     if (!LOCAL_E->m_bAlivePlayer)
-    	angstate = true;
-    *bSendPackets = angstate;
-    float &p          = cmd->viewangles.x;
-    float &y          = cmd->viewangles.y;
-    static bool flip  = false;
-    bool clamp        = !no_clamping;
+        angstate     = true;
+    *bSendPackets    = angstate;
+    float &p         = cmd->viewangles.x;
+    float &y         = cmd->viewangles.y;
+    static bool flip = false;
+    bool clamp       = !no_clamping;
     if (!*bSendPackets)
         switch ((int) true_yaw_mode)
         {

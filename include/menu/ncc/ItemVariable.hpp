@@ -12,25 +12,30 @@
 
 class CatVar;
 
-namespace menu { namespace ncc {
+namespace menu
+{
+namespace ncc
+{
 
-class ItemVariable : public Item {
+class ItemVariable : public Item
+{
 public:
-	ItemVariable(CatVar& variable);
+    ItemVariable(CatVar &variable);
 
-	void Change(float amount);
+    void Change(float amount);
 
-	virtual void Update() override;
-	virtual bool ConsumesKey(ButtonCode_t key) override;
-	virtual void OnMousePress() override;
-	virtual void OnFocusLose() override;
-	virtual void OnKeyPress(ButtonCode_t key, bool repeat) override;
-	virtual void Draw(int x, int y) override;
+    virtual void Update() override;
+    virtual bool ConsumesKey(ButtonCode_t key) override;
+    virtual void OnMousePress() override;
+    virtual void OnFocusLose() override;
+    virtual void OnKeyPress(ButtonCode_t key, bool repeat) override;
+    virtual void Draw(int x, int y) override;
+
 public:
-	CatVar& catvar;
-	bool capturing { false };
+    CatVar &catvar;
+    bool capturing{ false };
 };
-
-}}
+}
+}
 
 #endif /* ITEMVARIABLE_HPP_ */

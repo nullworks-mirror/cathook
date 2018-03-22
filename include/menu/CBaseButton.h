@@ -19,18 +19,20 @@
 
 class CBaseButton;
 
-typedef std::function<void(CBaseButton*)> ButtonCallbackFn_t;
+typedef std::function<void(CBaseButton *)> ButtonCallbackFn_t;
 
-class CBaseButton : public CTextLabel {
+class CBaseButton : public CTextLabel
+{
 public:
-	CBaseButton(std::string name = "unnamed", IWidget* parent = nullptr, std::string text = "", ButtonCallbackFn_t callback = nullptr);
+    CBaseButton(std::string name = "unnamed", IWidget *parent = nullptr,
+                std::string text = "", ButtonCallbackFn_t callback = nullptr);
 
-	virtual void Draw(int x, int y);
-	virtual void OnMousePress() override;
+    virtual void Draw(int x, int y);
+    virtual void OnMousePress() override;
 
-	void SetCallback(ButtonCallbackFn_t callback);
+    void SetCallback(ButtonCallbackFn_t callback);
 
-	ButtonCallbackFn_t m_pCallback;
+    ButtonCallbackFn_t m_pCallback;
 };
 
 #endif /* CBASEBUTTON_H_ */

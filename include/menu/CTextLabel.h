@@ -10,20 +10,21 @@
 
 #include "menu/CBaseWidget.h"
 
-
 #include "Color.h"
 
-class CTextLabel : public CBaseWidget {
+class CTextLabel : public CBaseWidget
+{
 public:
-	CTextLabel(std::string name = "unnamed", IWidget* parent = nullptr, std::string text = "", bool centered = false);
+    CTextLabel(std::string name = "unnamed", IWidget *parent = nullptr,
+               std::string text = "", bool centered = false);
 
-	void SetText(std::string text);
-	std::string GetText();
-	void SetPadding(int x, int y);
-	void SetAutoSize(bool autosize);
-	void SetCentered(bool centered);
+    void SetText(std::string text);
+    std::string GetText();
+    void SetPadding(int x, int y);
+    void SetAutoSize(bool autosize);
+    void SetCentered(bool centered);
 
-	virtual void Draw(int x, int y);
+    virtual void Draw(int x, int y);
 };
 
 #endif /* CTEXTLABEL_H_ */

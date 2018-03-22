@@ -10,17 +10,20 @@
 
 #include "common.hpp"
 
-class Texture {
+class Texture
+{
 public:
-	Texture(unsigned char* start, unsigned w, unsigned h);
-	~Texture();
-	void Load();
-	void Draw(int x, int y, int w, int h, int color = colorsint::Create(255, 255, 255, 255));
+    Texture(unsigned char *start, unsigned w, unsigned h);
+    ~Texture();
+    void Load();
+    void Draw(int x, int y, int w, int h,
+              int color = colorsint::Create(255, 255, 255, 255));
+
 public:
-	int id { 0 };
-	const unsigned char* const start_addr;
-	const unsigned w;
-	const unsigned h;
+    int id{ 0 };
+    const unsigned char *const start_addr;
+    const unsigned w;
+    const unsigned h;
 };
 
 #endif /* RESOURCE_HPP_ */

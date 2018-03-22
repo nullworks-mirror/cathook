@@ -12,28 +12,27 @@
 
 class CSlider;
 
-typedef std::function<void(CSlider*, float, float)> SliderCallbackFn_t;
+typedef std::function<void(CSlider *, float, float)> SliderCallbackFn_t;
 
-class CSlider : public CBaseWidget {
+class CSlider : public CBaseWidget
+{
 public:
-	CSlider(std::string name = "", IWidget* parent = nullptr);
+    CSlider(std::string name = "", IWidget *parent = nullptr);
 
-	void Setup(float min, float max);
-	void SetStep(float step);
-	float Value();
-	void SetValue(float value);
-	void SetCallback(SliderCallbackFn_t callback);
+    void Setup(float min, float max);
+    void SetStep(float step);
+    float Value();
+    void SetValue(float value);
+    void SetCallback(SliderCallbackFn_t callback);
 
-	virtual void Update();
-	virtual void Draw(int x, int y);
+    virtual void Update();
+    virtual void Draw(int x, int y);
 
-	SliderCallbackFn_t m_pCallback;
+    SliderCallbackFn_t m_pCallback;
 
-	int m_nLastX;
-	bool m_bDragInit;
-	int m_nSliderPos;
-
+    int m_nLastX;
+    bool m_bDragInit;
+    int m_nSliderPos;
 };
-
 
 #endif /* CSLIDER_H_ */
