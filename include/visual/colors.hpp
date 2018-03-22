@@ -12,7 +12,6 @@ class CachedEntity;
 
 namespace colors
 {
-
 namespace chat
 {
 
@@ -33,6 +32,8 @@ constexpr unsigned team(int team)
     return white;
 }
 }
+
+
 
 struct rgba_t
 {

@@ -23,6 +23,22 @@ namespace fonts
 extern draw_api::font_handle_t main_font;
 }
 
+namespace fonts {
+
+// FIXME add menu fonts
+extern unsigned long ESP;
+extern unsigned long MENU;
+extern unsigned long MENU_BIG;
+
+void Update();
+
+extern const std::vector<std::string> fonts;
+extern CatEnum family_enum;
+extern CatVar esp_family;
+extern CatVar esp_height;
+
+}
+
 constexpr rgba_t GUIColor()
 {
     return colors::white;

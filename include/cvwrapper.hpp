@@ -158,7 +158,7 @@ public:
     const std::string defaults{ "0" };
     const std::string desc_short{ "" };
     const std::string desc_long{ "" };
-    const CatEnum *const enum_type{ nullptr };
+    CatEnum *enum_type{ nullptr };
 
     std::string current_base{ "0" };
 

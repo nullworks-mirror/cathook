@@ -44,7 +44,17 @@ static CatVar legit(CV_SWITCH, "chams_legit", "0", "Legit chams",
 static CatVar singlepass(CV_SWITCH, "chams_singlepass", "0", "Single-pass",
                          "Render chams only once (this disables 'darker' chams "
                          "on invisible parts of player");
-
+static CatVar chamsself(CV_SWITCH, "chams_self", "0", "Enable chams on self",
+                        "");
+static CatVar rainbow(CV_SWITCH, "chams_self_rainbow", "1",
+                      "Enable rainbow chams on self",
+                      "Only visible in thirdperson!");
+static CatVar chamsteam(CV_SWITCH, "chams_self_team", "0", "Team chams color");
+static CatVar chamsR(CV_INT, "chams_self_r", "0", "Self chams red", "", 0, 255);
+static CatVar chamsG(CV_INT, "chams_self_g", "0", "Self chams green", "", 0,
+                     255);
+static CatVar chamsB(CV_INT, "chams_self_b", "0", "Self chams blue", "", 0,
+                     255);
 void EffectChams::Init()
 {
     logging::Info("Init EffectChams...");
@@ -120,8 +130,13 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     case ENTITY_PLAYER:
         if (!players)
             return colors::empty;
-        if (!ent->m_bEnemy && !teammates)
-            return colors::empty;
+        if (ent->m_IDX == LOCAL_E->m_IDX && chamsteam)
+            if (LOCAL_E->m_iTeam == TEAM_BLU)
+                return colors::blu;
+            else
+                return colors::red;
+        if (ent->m_IDX == LOCAL_E->m_IDX && !rainbow)
+            return colors::FromRGBA8(chamsR, chamsG, chamsB, 255);
         if (health)
         {
             return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
@@ -139,6 +154,8 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
         return false;
     CachedEntity *ent = ENTITY(entity->entindex());
     if (CE_BAD(ent))
+        return false;
+    if (ent->m_IDX == LOCAL_E->m_IDX && !chamsself)
         return false;
     switch (ent->m_Type)
     {

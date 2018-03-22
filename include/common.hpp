@@ -63,6 +63,7 @@
 #include <visual/atlas.hpp>
 #include <visual/EffectChams.hpp>
 #include <visual/drawmgr.hpp>
+#include "menu/compatlayer.hpp"
 
 #endif
 
@@ -113,6 +114,7 @@
 
 #if ENABLE_GUI
 #include "gui/GUI.hpp"
+#include "menu/GUI.h"
 #endif
 
 #include <hacks/hacklist.hpp>
