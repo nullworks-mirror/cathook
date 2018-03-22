@@ -8,7 +8,6 @@
 #ifndef BACKGROUND_HPP_
 #define BACKGROUND_HPP_
 
-#include "resource.hpp"
 #include "common.hpp"
 #include "menu/ncc/Menu.hpp"
 
