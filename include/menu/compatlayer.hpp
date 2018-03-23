@@ -49,7 +49,6 @@ void FString(unsigned long font, int x, int y, int color, int shadow,
 void DrawRect(int x, int y, int w, int h, int color);
 void DrawLine(int x, int y, int dx, int dy, int color);
 void OutlineRect(int x, int y, int w, int h, int color);
-void DrawCircle(float cx, float cy, float r, int num_segments, int color);
 void GetStringLength(unsigned long font, char *string, int &length,
                      int &height);
 std::pair<int, int> GetStringLength(unsigned long font, std::string string);

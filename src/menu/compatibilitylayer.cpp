@@ -2,7 +2,6 @@
 
 namespace fonts
 {
-unsigned long ESP                    = 0;
 unsigned long MENU                   = 0;
 unsigned long MENU_BIG               = 0;
 const std::vector<std::string> fonts = { "Tahoma Bold",  "Tahoma",
@@ -10,19 +9,6 @@ const std::vector<std::string> fonts = { "Tahoma Bold",  "Tahoma",
                                          "Verdana Bold", "Arial",
                                          "Courier New",  "Ubuntu Mono Bold" };
 CatEnum family_enum(fonts);
-CatVar esp_family(family_enum, "font_esp_family", "2", "ESP font",
-                  "ESP font family");
-CatVar esp_height(CV_INT, "font_esp_height", "14", "ESP height",
-                  "ESP font height");
-
-void Update()
-{
-    fonts::ESP = g_ISurface->CreateFont();
-    g_ISurface->SetFontGlyphSet(
-        fonts::ESP, fonts::fonts[_clamp(0, 7, (int) fonts::esp_family)].c_str(),
-        (int) fonts::esp_height, 0, 0, 0, 0); // or Ubuntu Mono Bold
-                                              // g_ISurface->ResetFontCaches();
-}
 }
 
 int colorsint::FromHSL(float h, float s, float v)
@@ -85,22 +71,6 @@ void draw::OutlineRect(int x, int y, int w, int h, int color)
 {
     g_ISurface->DrawSetColor(*reinterpret_cast<Color *>(&color));
     g_ISurface->DrawOutlinedRect(x, y, x + w, y + h);
-}
-
-void draw::DrawCircle(float x, float y, float r, int num_segments, int color)
-{
-    if (num_segments < 3 || r == 0)
-        return;
-    g_ISurface->DrawSetColor(*reinterpret_cast<Color *>(&color));
-    float Step = PI * 2.0 / num_segments;
-    for (float a = 0; a < (PI * 2.0); a += Step)
-    {
-        float x1 = r * cos(a) + x;
-        float y1 = r * sin(a) + y;
-        float x2 = r * cos(a + Step) + x;
-        float y2 = r * sin(a + Step) + y;
-        g_ISurface->DrawLine(x1, y1, x2, y2);
-    }
 }
 
 void draw::GetStringLength(unsigned long font, char *string, int &length,

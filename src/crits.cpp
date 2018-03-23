@@ -12,7 +12,7 @@ CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info");
 CatVar crit_key(CV_KEY, "crit_key", "0", "Crit Key");
 CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
 CatVar crit_legiter(
-    CV_SWITCH, "crit_force_gameplay", "0",
+    CV_SWITCH, "crit_force_gameplay", "0", "Don't hinder gameplay",
     "Attempt to crit when possible but do not hinder normal gameplay");
 CatVar crit_experimental(CV_SWITCH, "crit_experimental", "0",
                          "Experimental crithack");
