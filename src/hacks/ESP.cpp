@@ -391,7 +391,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                 {
                     float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
                                                    : float(emoji_esp_size);
-                    if (!size || !float(emoji_min_size)
+                    if (!size || !float(emoji_min_size))
                         return;
                     if (emoji_esp_scaling && (size < float(emoji_min_size)))
                     {
