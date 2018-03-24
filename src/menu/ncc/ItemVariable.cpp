@@ -67,7 +67,6 @@ bool ItemVariable::ConsumesKey(ButtonCode_t key)
         return true;
     if (key == ButtonCode_t::MOUSE_WHEEL_DOWN ||
         key == ButtonCode_t::MOUSE_WHEEL_UP ||
-        key == ButtonCode_t::KEY_LSHIFT || key == ButtonCode_t::KEY_LCONTROL ||
         key >= ButtonCode_t::KEY_FIRST && key <= ButtonCode_t::KEY_BACKSPACE)
         return true;
     return false;
