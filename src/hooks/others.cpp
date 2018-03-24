@@ -288,10 +288,11 @@ static CatVar crypt_chat(
     CV_SWITCH, "chat_crypto", "1", "Crypto chat",
     "Start message with !! and it will be only visible to cathook users");
 static CatVar chat_filter(CV_STRING, "chat_censor", "",
+                          "Censor words"
                           "Spam Chat with newlines if the chosen words are "
                           "said, seperate with commas");
 static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
-                                  "enable censor");
+                                  "Enable censor");
 
 bool SendNetMsg_hook(void *_this, INetMessage &msg, bool bForceReliable = false,
                      bool bVoice = false)
