@@ -23,6 +23,7 @@ public:
     ItemVariable(CatVar &variable);
 
     void Change(float amount);
+    void PutChar(char ch);
 
     virtual void Update() override;
     virtual bool ConsumesKey(ButtonCode_t key) override;

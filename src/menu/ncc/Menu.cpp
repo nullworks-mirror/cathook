@@ -627,6 +627,7 @@ static const std::string list_tf2 = R"(
 			"Chat Settings Menu"
 			"spam"
 			"killsay"
+			"killsay_file"
 			"spam_teamname"
 			"spam_voicecommand"
 			"chat_newlines"
@@ -643,6 +644,7 @@ static const std::string list_tf2 = R"(
 			"Uberspam" [
 				"Uberspam Menu"
 					"uberspam"
+					"uberspam_file"
 					"uberspam_team"
 					"uberspam_build"
 					"uberspam_ended"
@@ -652,6 +654,8 @@ static const std::string list_tf2 = R"(
 	]
 	"Misc" [
 	    "Misc Menu"
+			"name"
+			"disconnect_reason"
 			"pure_bypass"
 			"nolerp"
 			"info"
