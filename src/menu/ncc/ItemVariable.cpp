@@ -101,7 +101,7 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
         return;
     }
 
-    float change = 0.0f;
+    float change = 1.0f;
 
     switch (catvar.type)
     {
@@ -133,6 +133,7 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
                 PutChar(ch);
         }
     }
+    break;
     case CV_INT:
     case CV_FLOAT:
     {
@@ -141,9 +142,6 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
         else
             change = 1.0f;
     }
-    }
-    if (catvar.type == CV_STRING)
-    {
     }
 
     if (change < 1.0f && catvar.type == CV_INT)
