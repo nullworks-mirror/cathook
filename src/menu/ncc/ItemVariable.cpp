@@ -24,7 +24,7 @@ void ItemVariable::Update()
     Item::Update();
     if (!catvar.desc_long.empty())
         if (catvar.desc_long.length() && IsHovered() &&
-                catvar.desc_long != "no description")
+            catvar.desc_long != "no description")
             ShowTooltip(catvar.desc_long);
 }
 
@@ -66,7 +66,9 @@ bool ItemVariable::ConsumesKey(ButtonCode_t key)
     if (capturing)
         return true;
     if (key == ButtonCode_t::MOUSE_WHEEL_DOWN ||
-        key == ButtonCode_t::MOUSE_WHEEL_UP || key == ButtonCode_t::MOUSE_FIRST)
+        key == ButtonCode_t::MOUSE_WHEEL_UP ||
+        key == ButtonCode_t::KEY_LSHIFT || key == ButtonCode_t::KEY_LCONTROL ||
+        key >= ButtonCode_t::KEY_FIRST && key <= ButtonCode_t::KEY_BACKSPACE)
         return true;
     return false;
 }
@@ -84,11 +86,16 @@ void ItemVariable::OnFocusLose()
     capturing = false;
 }
 
+void ItemVariable::PutChar(char ch)
+{
+    catvar.SetValue(catvar.GetString() + std::string(1, ch));
+}
+
 void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
 {
     if (capturing)
     {
-        if (key == 70)
+        if (key == ButtonCode_t::KEY_ESCAPE)
             key   = (ButtonCode_t) 0;
         catvar    = (int) key;
         capturing = false;
@@ -101,33 +108,69 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
     {
     case CV_ENUM:
     case CV_SWITCH:
-        change = 1.0f;
-        break;
+    case CV_STRING:
+    {
+        if (key == ButtonCode_t::KEY_BACKSPACE)
+        {
+            std::string val = catvar.GetString();
+            if (val.length() > 0)
+                catvar.SetValue(val.substr(0, val.length() - 1));
+            return;
+        }
+        else if (key == ButtonCode_t::KEY_SPACE)
+        {
+            PutChar(' ');
+            return;
+        }
+        else
+        {
+            char ch = 0;
+            if (g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_LSHIFT) ||
+                g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_RSHIFT))
+                ch = GetUpperChar(key);
+            else
+                ch = GetChar(key);
+            if (ch)
+                PutChar(ch);
+        }
+    }
     case CV_INT:
     case CV_FLOAT:
     {
         if (catvar.restricted)
-        {
             change = float(catvar.max - catvar.min) / 50.0f;
-        }
         else
-        {
             change = 1.0f;
-        }
     }
+    }
+    if (catvar.type == CV_STRING)
+    {
     }
 
     if (change < 1.0f && catvar.type == CV_INT)
         change = 1.0f;
 
-    if ((catvar.type == CV_SWITCH && key == ButtonCode_t::MOUSE_FIRST) ||
-        key == ButtonCode_t::MOUSE_WHEEL_UP)
+    if (key == ButtonCode_t::MOUSE_WHEEL_UP)
     {
-        Change(change);
+        if (catvar.type == CV_FLOAT &&
+            g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_LSHIFT))
+            Change(change * 2);
+        else if (catvar.type == CV_FLOAT &&
+                 g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_LCONTROL))
+            Change(change / 4);
+        else
+            Change(change);
     }
     else if (key == ButtonCode_t::MOUSE_WHEEL_DOWN)
     {
-        Change(-change);
+        if (catvar.type == CV_FLOAT &&
+            g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_LSHIFT))
+            Change(-change * 2);
+        else if (catvar.type == CV_FLOAT &&
+                 g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_LCONTROL))
+            Change(-change / 4);
+        else
+            Change(-change);
     }
 }
 
