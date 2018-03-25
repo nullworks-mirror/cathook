@@ -586,7 +586,7 @@ static const std::string list_tf2 = R"(
 	"Anti-/Anti-Aim" [
 	"Anti-Aim Menu"
 	"aa_enabled"
-	"aa_truefakes"
+	"aa_realfakes"
 	"aa_pitch_real"
 	"aa_yaw_real"
 	"aa_pitch_mode_real"

@@ -14,12 +14,12 @@ namespace shared
 namespace antiaim
 {
 
-CatVar communicate(CV_SWITCH, "identify", "1",
+CatVar communicate(CV_SWITCH, "identify", "1", "identify",
                    "Auto identify for other cathook users");
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
                "Master AntiAim switch");
-CatVar trueang(CV_SWITCH, "aa_truefakes", "1",
-               "Do true fakeangles (Unresolveable)");
+CatVar trueang(CV_SWITCH, "aa_realfakes", "1", "Real fakes",
+               "Do real fakeangles (Unresolveable)");
 CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
 CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch", "Static pitch (up/down)",
              -89.0, 89.0);
@@ -28,10 +28,10 @@ CatVar yaw_real(CV_FLOAT, "aa_yaw_real", "0.0", "Real Yaw",
 CatVar pitch_real(CV_FLOAT, "aa_pitch_real", "-89.0", "Real Pitch",
                   "Static pitch (up/down)", -89.0, 89.0);
 CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM",
-                        "SPIN", "OFFSETKEEP", "EDGE", "HECK" });
+                        "SPIN", "OFFSETKEEP", "EDGE", "HECK", "FAKESIDEWAYS" });
 CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
                           "FAKEFLIP", "FAKEUP", "FAKEDOWN", "FAKECENTER", "UP",
-                          "DOWN", "HECK", "FAKESIDEWAYS" });
+                          "DOWN", "HECK" });
 CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "0", "Yaw mode", "Yaw mode");
 CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "0", "Pitch mode",
                   "Pitch mode");
