@@ -77,7 +77,15 @@ bool ItemVariable::ConsumesKey(ButtonCode_t key)
 void ItemVariable::OnMousePress()
 {
     if (catvar.type == CV_KEY)
-        capturing = true;
+    {
+        if (capturing)
+        {
+            catvar    = ButtonCode_t::MOUSE_LEFT;
+            capturing = false;
+        }
+        else
+            capturing = true;
+    }
     if (catvar.type == CV_SWITCH)
         catvar = !catvar;
 }
@@ -107,8 +115,6 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
 
     switch (catvar.type)
     {
-    case CV_ENUM:
-    case CV_SWITCH:
     case CV_STRING:
     {
         if (key == ButtonCode_t::KEY_BACKSPACE)
@@ -136,7 +142,6 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
         }
     }
     break;
-    case CV_INT:
     case CV_FLOAT:
     {
         if (catvar.restricted)
@@ -144,6 +149,7 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
         else
             change = 1.0f;
     }
+    break;
     }
 
     if (change < 1.0f && catvar.type == CV_INT)
