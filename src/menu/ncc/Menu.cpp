@@ -506,7 +506,9 @@ static const std::string list_tf2 = R"(
 					"Emoji ESP Menu"
 					"esp_emoji"
 					"esp_okhand"
+					"esp_emoji_scaling"
 					"esp_emoji_size"
+					"esp_emoji_min_size"
 				]
 				]
 			"Chams" [
