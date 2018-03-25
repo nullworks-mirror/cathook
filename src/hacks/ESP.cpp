@@ -29,10 +29,12 @@ CatVar tracers(tracers_enum, "esp_tracers", "0", "Tracers",
 CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
 CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP",
                  "Draw emoji on peopels head");
-CatVar emoji_ok(CV_SWITCH, "esp_okhand", "0", "Draw ok_hand on hands");
-CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
+CatVar emoji_ok(CV_SWITCH, "esp_okhand", "0", "ok_hand",
+                "Draw ok_hand on hands");
+CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size",
+                      "Emoji size");
 CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1",
-                         "Emoji ESP Scaling");
+                         "Emoji ESP Scaling", "Emoji ESP Scaling");
 CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size",
                       "Minimum size for an emoji when you use auto scaling");
 hitbox_cache::CachedHitbox *hitboxcache[32][18]{};

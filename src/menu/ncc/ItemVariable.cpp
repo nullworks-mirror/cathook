@@ -7,6 +7,7 @@
 
 #include "menu/ncc/ItemVariable.hpp"
 #include "menu/ncc/Item.hpp"
+#include "menu/ncc/Menu.hpp"
 #include "common.hpp"
 
 namespace menu
@@ -22,10 +23,11 @@ ItemVariable::ItemVariable(CatVar &variable)
 void ItemVariable::Update()
 {
     Item::Update();
-    if (!catvar.desc_long.empty())
-        if (catvar.desc_long.length() && IsHovered() &&
-            catvar.desc_long != "no description")
-            ShowTooltip(catvar.desc_long);
+    if (catvar.registered == true)
+        if (!catvar.desc_long.empty())
+            if (catvar.desc_long.length() && IsHovered() &&
+                catvar.desc_long != "no description")
+                ShowTooltip(catvar.desc_long);
 }
 
 void ItemVariable::Change(float amount)

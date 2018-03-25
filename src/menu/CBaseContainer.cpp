@@ -6,7 +6,7 @@
  */
 
 #include "menu/CBaseContainer.h"
-
+#include "menu/GUI.h"
 #include "common.hpp"
 #include "sdk.hpp"
 

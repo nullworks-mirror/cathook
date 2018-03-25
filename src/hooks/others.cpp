@@ -283,16 +283,15 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
 // "Use this if you want to use spam/killsay and still be able to chat normally
 // (without having your msgs eaten by valve cooldown)");
 
-static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
+static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck", "");
 static CatVar crypt_chat(
     CV_SWITCH, "chat_crypto", "1", "Crypto chat",
     "Start message with !! and it will be only visible to cathook users");
-static CatVar chat_filter(CV_STRING, "chat_censor", "",
-                          "Censor words",
+static CatVar chat_filter(CV_STRING, "chat_censor", "", "Censor words",
                           "Spam Chat with newlines if the chosen words are "
                           "said, seperate with commas");
 static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
-                                  "Enable censor");
+                                  "Enable censor", "Censor Words in chat");
 
 bool SendNetMsg_hook(void *_this, INetMessage &msg, bool bForceReliable = false,
                      bool bVoice = false)
@@ -822,6 +821,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                                 for (int i = 0; i < 120; i++)
                                     clear += "\n";
                             }
+                            *bSendPackets = true;
                             chat_stack::Say(". " + clear, true);
                             retrun     = true;
                             lastfilter = format(filter);
@@ -854,6 +854,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                                 for (int i = 0; i < 120; i++)
                                     clear += "\n";
                             }
+                            *bSendPackets = true;
                             chat_stack::Say(". " + clear, true);
                             retrun     = true;
                             lastfilter = format(filter);
