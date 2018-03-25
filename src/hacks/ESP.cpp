@@ -25,7 +25,6 @@ CatEnum tracers_enum({ "OFF", "CENTER", "BOTTOM" });
 CatVar tracers(tracers_enum, "esp_tracers", "0", "Tracers",
                "SDraws a line from the player to a position on your screen");
 // Emoji Esp
-#ifndef FEATURE_EMOJI_ESP_DISABLED
 CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
 CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP",
                  "Draw emoji on peopels head");
@@ -37,8 +36,8 @@ CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1",
                          "Emoji ESP Scaling", "Emoji ESP Scaling");
 CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size",
                       "Minimum size for an emoji when you use auto scaling");
+
 hitbox_cache::CachedHitbox *hitboxcache[32][18]{};
-#endif
 // Other esp options
 CatEnum show_health_enum({ "None", "Text", "Healthbar", "Both" });
 CatVar show_health(show_health_enum, "esp_health", "3", "Health ESP",
