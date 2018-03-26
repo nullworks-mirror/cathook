@@ -18,7 +18,7 @@ CatVar communicate(CV_SWITCH, "identify", "1", "identify",
                    "Auto identify for other cathook users");
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
                "Master AntiAim switch");
-CatVar trueang(CV_SWITCH, "aa_realfakes", "1", "Real fakes",
+CatVar trueang(CV_SWITCH, "aa_realfakes", "0", "Real fakes",
                "Do real fakeangles (Unresolveable)");
 CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
 CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch", "Static pitch (up/down)",

@@ -167,7 +167,8 @@ void CreateMove()
 
                         // Return as its a waste to check anymore, we detonated
                         // and all the rest of the stickys are gone
-                        return;
+                        if (!HasWeapon(LOCAL_E, 130))
+                        	return;
 
                         // Since legit mode is on, check if the sticky can see
                         // the local player
