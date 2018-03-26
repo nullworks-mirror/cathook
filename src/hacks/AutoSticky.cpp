@@ -93,7 +93,6 @@ bool IsTarget(CachedEntity *ent)
     // Target isnt a good type
     return false;
 }
-
 // Function called by game for movement
 void CreateMove()
 {
@@ -111,10 +110,10 @@ void CreateMove()
     // Check for sticky jumper, which is item 265, if true, return
     if (HasWeapon(LOCAL_E, 265))
         return;
-
     // Clear the arrays
     bombs.clear();
     targets.clear();
+
 
     // Cycle through the ents and search for valid ents
     for (int i = 0; i < HIGHEST_ENTITY; i++)
@@ -152,38 +151,30 @@ void CreateMove()
                     // is off then detonate
                     if (!legit)
                     {
-                        // Check for scottish, id 130, if true then aim at bomb
-                        if (HasWeapon(LOCAL_E, 130))
-                        {
-                            // Aim at bomb
-                            AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin,
-                                  g_pUserCmd);
-                            // Use silent
-                            g_pLocalPlayer->bUseSilentAngles = true;
-                        }
+                        // Aim at bomb
+                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin,
+                              g_pUserCmd);
+                        // Use silent
+                        g_pLocalPlayer->bUseSilentAngles = true;
 
                         // Detonate
                         g_pUserCmd->buttons |= IN_ATTACK2;
 
                         // Return as its a waste to check anymore, we detonated
                         // and all the rest of the stickys are gone
-                        if (!HasWeapon(LOCAL_E, 130))
-                        	return;
+                        return;
 
                         // Since legit mode is on, check if the sticky can see
                         // the local player
                     }
                     else if (VisCheckEntFromEnt(bomb, LOCAL_E))
                     {
-                        // Check for scottish, id 130, if true then aim at bomb
-                        if (HasWeapon(LOCAL_E, 130))
-                        {
-                            // Aim at bomb
-                            AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin,
-                                  g_pUserCmd);
-                            // Use silent
-                            g_pLocalPlayer->bUseSilentAngles = true;
-                        }
+                        // Aim at bomb
+                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin,
+                              g_pUserCmd);
+                        // Use silent
+                        g_pLocalPlayer->bUseSilentAngles = true;
+
 
                         // Detonate
                         g_pUserCmd->buttons |= IN_ATTACK2;
