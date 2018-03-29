@@ -34,4 +34,4 @@ header += `
 #endif /* DUMMY_AUTOGEN_HPP */`;
 
 console.log(header);
-fs.writeFileSync("src/classinfo/dummy.gen.hpp", header);
+fs.writeFileSync("include/classinfo/dummy.gen.hpp", header);
