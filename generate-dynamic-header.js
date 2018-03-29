@@ -43,7 +43,7 @@ for (var clz in full_class_table) {
 
 var source = `
 
-#include "dynamic.gen.hpp"
+#include "classinfo/dynamic.gen.hpp"
 #include "common.hpp"
 
 namespace client_classes {

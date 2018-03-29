@@ -1,6 +1,6 @@
 
 
-#include "dynamic.gen.hpp"
+#include "classinfo/dynamic.gen.hpp"
 #include "common.hpp"
 
 namespace client_classes {
