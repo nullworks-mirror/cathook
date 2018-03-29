@@ -7,7 +7,7 @@
 #define DUMMY_AUTOGEN_HPP
 
 namespace client_classes {
-
+	
 	class dummy {
 	public:
 		int CTETFParticleEffect { 0 };
@@ -533,7 +533,7 @@ namespace client_classes {
 		int CTFFlameManager { 0 };
 
 	};
-
+	
 	extern dummy dummy_list;
 }
 

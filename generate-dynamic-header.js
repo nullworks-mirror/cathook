@@ -70,5 +70,5 @@ dynamic dynamic_list;
 
 console.log(header)
 console.log(source)
-fs.writeFileSync("src/classinfo/dynamic.gen.hpp", header);
+fs.writeFileSync("include/classinfo/dynamic.gen.hpp", header);
 fs.writeFileSync("src/classinfo/dynamic.gen.cpp", source);

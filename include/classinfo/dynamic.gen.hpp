@@ -540,4 +540,3 @@ namespace client_classes {
 }
 
 #endif /* DYNAMIC_AUTOGEN_HPP */
-
