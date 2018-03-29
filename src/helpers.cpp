@@ -682,7 +682,7 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
             rspeed = re::C_TFWeaponBaseGun::GetProjectileSpeed(
                 RAW_ENT(g_pLocalPlayer->weapon()));
             // TODO Wrong grenade launcher gravity
-            rgrav = 0.5f;
+            rgrav = re::C_TFWeaponBaseGun::GetProjectileGravity(RAW_ENT(g_pLocalPlayer->weapon()));
         }
         else IF_GAME(IsTF2C())
         {

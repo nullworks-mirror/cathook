@@ -6,7 +6,7 @@ try {
 } catch (e) {}
 
 console.log("Generating dummy class header");
-
+console.log(full_class_table.Stringify);
 var header = `/*
 	AUTO-GENERATED HEADER - DO NOT MODIFY
 	NON-CONSTEXPR HEADER FOR $mod
@@ -33,4 +33,5 @@ header += `
 
 #endif /* DUMMY_AUTOGEN_HPP */`;
 
+console.log(header);
 fs.writeFileSync("src/classinfo/dummy.gen.hpp", header);

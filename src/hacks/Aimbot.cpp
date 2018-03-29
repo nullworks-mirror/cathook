@@ -790,7 +790,7 @@ const Vector &PredictEntity(CachedEntity *entity)
     if ((entity->m_Type == ENTITY_PLAYER))
     {
         // If using projectiles, predict a vector
-        if (projectile_mode)
+        if (projectile_mode && (g_pLocalPlayer->weapon_mode == weapon_projectile || g_pLocalPlayer->weapon_mode == weapon_throwable) )
         {
             // Use prediction engine if user settings allow
             if (engine_projpred)
