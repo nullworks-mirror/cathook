@@ -115,6 +115,11 @@ void DrawCheatVisuals()
             hacks::tf::radar::Draw();
         }
 #endif
+        IF_GAME(IsTF())
+        {
+            PROF_SECTION(DRAW_autoreflect);
+            hacks::tf::autoreflect::Draw();
+        }
         IF_GAME(IsTF2())
         {
             PROF_SECTION(DRAW_healarrows);

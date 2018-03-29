@@ -202,6 +202,7 @@ bool IsEntStickyBomb(CachedEntity *ent)
 }
 void Draw()
 {
+#if ENABLE_VISUALS == 1
     // Dont draw to screen when reflect is disabled
     if (!enabled)
         return;
@@ -236,6 +237,7 @@ void Draw()
             }
         }
     }
+#endif
 }
 }
 }
