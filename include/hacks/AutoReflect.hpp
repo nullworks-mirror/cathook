@@ -22,6 +22,7 @@ extern CatVar idle_only;
 extern CatVar stickies;
 extern CatVar max_distance;
 
+void Draw();
 void CreateMove();
 bool ShouldReflect(CachedEntity *ent);
 bool IsEntStickyBomb(CachedEntity *ent);
