@@ -8,7 +8,6 @@
 #include "menu/ncc/Root.hpp"
 #include "menu/ncc/Menu.hpp"
 #include "menu/ncc/Tooltip.hpp"
-#include "menu/ncc/Radar.hpp"
 #include "common.hpp"
 
 namespace menu
@@ -41,20 +40,14 @@ void Root::Draw(int x, int y)
 void Root::Setup()
 {
     tooltip = new Tooltip();
-    // Logo* logo = new Logo();
-    // logo->SetOffset(draw::width / 2 - 288, 25);
-    // AddChild(new Background());
-    // AddChild(logo);
     AddChild(tooltip);
     AddChild(&menu::ncc::MainList());
     menu::ncc::MainList().ChildByIndex(0)->Props()->SetBool("brackets3", true);
-    // AddChild(new Radar());
     menu::ncc::MainList().Show();
     menu::ncc::MainList().SetOffset(draw::width / 2, draw::height / 2);
     PlayerList *pl = new PlayerList();
     pl->SetOffset(200, 200);
     AddChild(pl);
-    // AddChild(new CritIndicator());
 }
 
 void Root::OnKeyPress(ButtonCode_t key, bool repeat)

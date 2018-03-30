@@ -51,10 +51,6 @@ CBaseWidget::CBaseWidget(std::string name, IWidget *parent)
 
 void CBaseWidget::Update()
 {
-    if (IsHovered() && IsVisible() && Props()->FindKey("tooltip"))
-    {
-        g_pGUI->ShowTooltip(Props()->GetString("tooltip"));
-    }
 }
 
 std::pair<int, int> CBaseWidget::AbsolutePosition()

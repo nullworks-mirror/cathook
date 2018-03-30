@@ -18,16 +18,15 @@ class CatVar;
 #include "menu/ncc/Root.hpp"
 #include "menu/ncc/Menu.hpp"
 
-class CTooltip;
 class RootWindow;
 
 extern CatVar gui_color_r;
 extern CatVar gui_color_g;
 extern CatVar gui_color_b;
+extern CatVar gui_color_a;
 
 extern CatVar gui_visible;
 extern CatVar gui_draw_bounds;
-constexpr bool gui_nullcore = true;
 
 int NCGUIColor();
 
@@ -40,19 +39,12 @@ public:
     bool Visible();
     void Update();
     void Setup();
-    RootWindow *GetRootWindow();
     bool ConsumesKey(ButtonCode_t key);
-
-    void ShowTooltip(std::string text);
-
-    CTooltip *m_pTooltip;
-    RootWindow *m_pRootWindow;
 
     // TODO NullCore tooltip
     menu::ncc::Root *root_nullcore;
 
     int last_scroll_value;
-    bool m_bShowTooltip;
     bool m_bConsumeKeys;
     bool m_bKeysInit;
     bool m_bPressedState[ButtonCode_t::BUTTON_CODE_COUNT];

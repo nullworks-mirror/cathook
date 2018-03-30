@@ -8,11 +8,9 @@
 #ifndef IWIDGET_H_
 #define IWIDGET_H_
 
-// #include "../beforecheaders.h"
 #include <utility>
 #include <cstring>
 #include <functional>
-// #include "../aftercheaders.h"
 
 #include "../inputsystem/ButtonCode.h"
 
