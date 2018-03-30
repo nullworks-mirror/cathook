@@ -29,8 +29,7 @@ CatVar font_title_family(fonts::family_enum, "gui_ncc_font_title_family", "4",
                          "Defines font family for NCC menu titles");
 
 Tooltip *tooltip = nullptr;
-;
-Root *root = nullptr;
+Root *root       = nullptr;
 
 void ShowTooltip(const std::string &text)
 {
@@ -79,11 +78,10 @@ void RefreshFonts()
     font_title = g_ISurface->CreateFont();
     font_item  = g_ISurface->CreateFont();
     g_ISurface->SetFontGlyphSet(
-        font_title,
-        fonts::fonts
-            .at(_clamp(0, (int) (fonts::fonts.size() - 1),
-                       (int) font_title_family))
-            .c_str(),
+        font_title, fonts::fonts
+                        .at(_clamp(0, (int) (fonts::fonts.size() - 1),
+                                   (int) font_title_family))
+                        .c_str(),
         psize_font_title * (float) scale, 0, 0, 0, 0x0);
     g_ISurface->SetFontGlyphSet(
         font_item,
@@ -566,6 +564,7 @@ static const std::string list_tf2 = R"(
 			"gui_color_r"
 			"gui_color_g"
 			"gui_color_b"
+			"gui_color_a"
 			"esp_color_blue_r"
 			"esp_color_blue_g"
 			"esp_color_blue_b"

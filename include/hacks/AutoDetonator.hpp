@@ -16,9 +16,6 @@ namespace tf
 {
 namespace autodetonator
 {
-
-extern CatVar enabled;
-
 void CreateMove();
 }
 }

@@ -29,7 +29,7 @@ void Item::Draw(int x, int y)
     const auto &size = GetSize();
     // draw::DrawRect(x, y, size.first, size.second, colorsint::red);
     draw::DrawRect(x, y, size.first, size.second,
-                   colorsint::Create(0, 0, 0, 77));
+                   colorsint::Create(0, 0, 0, gui_color_a));
     if (IsHovered())
     {
         draw::DrawRect(x, y, size.first, size.second,

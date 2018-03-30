@@ -21,12 +21,8 @@
 #include "menu/ncc/List.hpp"
 #include "menu/ncc/PlayerList.hpp"
 #include "menu/ncc/PlayerListEntry.hpp"
-#include "menu/ncc/Radar.hpp"
 #include "menu/ncc/Root.hpp"
 #include "menu/ncc/Tooltip.hpp"
-#include "menu/ncc/Background.hpp"
-#include "menu/ncc/CritIndicator.hpp"
-#include "menu/ncc/Logo.hpp"
 
 namespace menu
 {

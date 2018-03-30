@@ -7,8 +7,6 @@
 
 #include "menu/GUI.h"
 #include "menu/IWidget.h"
-#include "menu/RootWindow.h"
-#include "menu/CTooltip.h"
 
 #include "common.hpp"
 #include "sdk.hpp"
@@ -44,13 +42,11 @@ CatVar gui_draw_bounds(CV_SWITCH, "gui_bounds", "0", "Draw Bounds",
 CatGUI::CatGUI()
 {
     root_nullcore = nullptr;
-    m_pRootWindow = 0;
 }
 
 CatGUI::~CatGUI()
 {
     delete root_nullcore;
-    delete m_pRootWindow;
 }
 
 bool CatGUI::Visible()
@@ -59,11 +55,13 @@ bool CatGUI::Visible()
 }
 
 CatVar gui_color_r(CV_INT, "gui_color_r", "15", "Main GUI color (red)",
-                   "Defines red component of main gui color", 0, 255);
+                   "Defines red component of main gui color");
 CatVar gui_color_g(CV_INT, "gui_color_g", "150", "Main GUI color (green)",
-                   "Defines green component of main gui color", 0, 255);
+                   "Defines green component of main gui color");
 CatVar gui_color_b(CV_INT, "gui_color_b", "150", "Main GUI color (blue)",
-                   "Defines blue component of main gui color", 0, 255);
+                   "Defines blue component of main gui color");
+CatVar gui_color_a(CV_INT, "gui_color_a", "130", "GUI Background Opacity",
+                   "Defines the opacity of the GUI background (no shit?)");
 static CatVar gui_rainbow(CV_SWITCH, "gui_rainbow", "0", "Rainbow GUI",
                           "RGB all the things!!!");
 
@@ -76,8 +74,6 @@ int NCGUIColor()
 
 void CatGUI::Setup()
 {
-    m_pRootWindow = new RootWindow();
-    m_pRootWindow->Setup();
     menu::ncc::Init();
     root_nullcore = menu::ncc::root;
     gui_visible.OnRegister([](CatVar *var) {
@@ -85,26 +81,11 @@ void CatGUI::Setup()
     });
 }
 
-void CatGUI::ShowTooltip(std::string text)
-{
-    m_pTooltip->SetText(text);
-    m_pTooltip->SetOffset(m_iMouseX + 5, m_iMouseY + 5);
-    m_pTooltip->Show();
-    m_bShowTooltip = true;
-}
-
 void CatGUI::Update()
 {
     try
     {
-        CBaseWindow *root = gui_nullcore
-                                ? dynamic_cast<CBaseWindow *>(root_nullcore)
-                                : dynamic_cast<CBaseWindow *>(m_pRootWindow);
-        if (gui_nullcore)
-            m_pRootWindow->Hide();
-        else
-            root_nullcore->Hide();
-        m_bShowTooltip = false;
+        CBaseWindow *root = dynamic_cast<CBaseWindow *>(root_nullcore);
         int new_scroll =
             g_IInputSystem->GetAnalogValue(AnalogCode_t::MOUSE_WHEEL);
         // logging::Info("scroll: %i", new_scroll);
@@ -225,8 +206,6 @@ void CatGUI::Update()
         if (!root->IsVisible())
             root->Show();
         root->Update();
-        if (!m_bShowTooltip && m_pTooltip->IsVisible())
-            m_pTooltip->Hide();
         root->Draw(0, 0);
         if (Visible())
         {
@@ -239,23 +218,6 @@ void CatGUI::Update()
         {
             root->DrawBounds(0, 0);
         }
-        /*if (gui_visible) {
-            if (!root->IsVisible())
-                root->Show();
-            root->Update();
-            if (!m_bShowTooltip && m_pTooltip->IsVisible()) m_pTooltip->Hide();
-            root->Draw(0, 0);
-            draw::DrawRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10,
-        colorsint::Transparent(colorsint::white));
-            draw::OutlineRect(m_iMouseX - 5, m_iMouseY - 5, 10, 10,
-        NCGUIColor());
-            if (gui_draw_bounds) {
-                root->DrawBounds(0, 0);
-            }
-        } else {
-            if (root->IsVisible())
-                root->Hide();
-        }*/
     }
     catch (std::exception &ex)
     {
@@ -265,18 +227,11 @@ void CatGUI::Update()
 
 bool CatGUI::ConsumesKey(ButtonCode_t key)
 {
-    CBaseWindow *root = gui_nullcore
-                            ? dynamic_cast<CBaseWindow *>(root_nullcore)
-                            : dynamic_cast<CBaseWindow *>(m_pRootWindow);
+    CBaseWindow *root = dynamic_cast<CBaseWindow *>(root_nullcore);
     if (root->IsVisible())
         return root->ConsumesKey(key);
     else
         return false;
-}
-
-RootWindow *CatGUI::GetRootWindow()
-{
-    return m_pRootWindow;
 }
 
 CatGUI *g_pGUI = 0;
