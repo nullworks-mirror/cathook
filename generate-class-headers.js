@@ -70,8 +70,8 @@ header_constexpr += `
 
 #endif /* $mod_CONSTEXPR_AUTOGEN_HPP */`;
 
-fs.writeFileSync("src/classinfo/" + modname + ".gen.hpp", header.replace(/\$mod/g, modname));
-fs.writeFileSync("src/classinfo/" + modname + "_constexpr.gen.hpp", header_constexpr.replace(/\$mod/g, modname));
+fs.writeFileSync("include/classinfo/" + modname + ".gen.hpp", header.replace(/\$mod/g, modname));
+fs.writeFileSync("include/classinfo/" + modname + "_constexpr.gen.hpp", header_constexpr.replace(/\$mod/g, modname));
 
 
 console.log(classes);
