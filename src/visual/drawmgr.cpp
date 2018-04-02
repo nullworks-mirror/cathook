@@ -150,7 +150,7 @@ void DrawCheatVisuals()
         {
             criticals::draw();
         }
-#ifndef FEATURE_FIDGET_SPINNER_DISABLED
+#ifndef FEATURE_FIDGET_SPINNER_ENABLED
         DrawSpinner();
 #endif
         Prediction_PaintTraverse();

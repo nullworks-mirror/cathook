@@ -369,7 +369,7 @@ free(logname);*/
     hacks::tf2::healarrow::Init();
 
 #if ENABLE_VISUALS == 1
-#ifndef FEATURE_FIDGET_SPINNER_DISABLED
+#ifndef FEATURE_FIDGET_SPINNER_ENABLED
     InitSpinner();
     logging::Info("Initialized Fidget Spinner");
 #endif

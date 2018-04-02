@@ -51,7 +51,7 @@ void draw_line(float x, float y, float dx, float dy, const rgba_t &rgba,
                float thickness);
 void draw_rect_textured(float x, float y, float w, float h, const rgba_t &rgba,
                         texture_handle_t texture, float u, float v, float s,
-                        float t);
+                        float t, float a);
 void draw_circle(float x, float y, float radius, const rgba_t &rgba,
                  float thickness, int steps);
 void draw_string(float x, float y, const char *string, font_handle_t &font,
