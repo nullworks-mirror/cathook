@@ -463,6 +463,8 @@ void ProcessUserCmd(CUserCmd *cmd)
         angstate = !angstate;
     if (!LOCAL_E->m_bAlivePlayer)
         angstate     = true;
+    if (g_pUserCmd->buttons & IN_ATTACK || g_pUserCmd->buttons & IN_ATTACK2)
+    	angstate 	 = true;
     *bSendPackets    = angstate;
     float &p         = cmd->viewangles.x;
     float &y         = cmd->viewangles.y;
@@ -510,7 +512,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         default:
             break;
         }
-    if (!*bSendPackets)
+    if (*bSendPackets)
         switch ((int) yaw_mode)
         {
         case 1: // FIXED
@@ -598,7 +600,7 @@ void ProcessUserCmd(CUserCmd *cmd)
             FuckPitch(p);
             clamp = false;
         }
-    if (!*bSendPackets)
+    if (*bSendPackets)
         switch (int(pitch_mode))
         {
         case 1:
