@@ -9,7 +9,7 @@
 #include "menu/ncc/Menu.hpp"
 #include "menu/ncc/Tooltip.hpp"
 #include "common.hpp"
-
+#if TEXTMODE_VAC != 1
 namespace menu
 {
 namespace ncc
@@ -57,3 +57,4 @@ void Root::OnKeyPress(ButtonCode_t key, bool repeat)
 }
 }
 }
+#endif

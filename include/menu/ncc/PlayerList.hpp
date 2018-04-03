@@ -7,10 +7,9 @@
 
 #ifndef GUI_NCC_PLAYERLIST_HPP_
 #define GUI_NCC_PLAYERLIST_HPP_
-
+#if TEXTMODE_VAC != 1
 #include "../CBaseContainer.h"
 #include "menu/ncc/Menu.hpp"
-
 namespace menu
 {
 namespace ncc
@@ -33,5 +32,5 @@ public:
 };
 }
 }
-
+#endif
 #endif /* GUI_NCC_PLAYERLIST_HPP_ */

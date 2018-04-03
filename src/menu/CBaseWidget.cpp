@@ -7,7 +7,7 @@
 
 #include "menu/CBaseWidget.h"
 #include "common.hpp"
-
+#if TEXTMODE_VAC != 1
 void CBaseWidget::DrawBounds(int x, int y)
 {
     if (m_KeyValues->IsEmpty("bounds_color"))
@@ -66,3 +66,4 @@ std::pair<int, int> CBaseWidget::AbsolutePosition()
     }
     return result;
 }
+#endif

@@ -7,7 +7,7 @@
 
 #ifndef CBASEWINDOW_H_
 #define CBASEWINDOW_H_
-
+#if TEXTMODE_VAC != 1
 #include "menu/CBaseContainer.h"
 
 class CBaseWindow : public CBaseContainer
@@ -24,5 +24,5 @@ public:
     virtual void Draw(int x, int y) override;
     virtual void MoveChildren() override;
 };
-
+#endif
 #endif /* CBASEWINDOW_H_ */

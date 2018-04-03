@@ -7,7 +7,7 @@
 
 #ifndef ROOT_HPP_
 #define ROOT_HPP_
-
+#if TEXTMODE_VAC != 1
 #include "../CBaseWindow.h"
 
 namespace menu
@@ -27,5 +27,5 @@ public:
 };
 }
 }
-
+#endif
 #endif /* ROOT_HPP_ */

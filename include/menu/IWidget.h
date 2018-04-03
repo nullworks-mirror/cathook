@@ -7,7 +7,7 @@
 
 #ifndef IWIDGET_H_
 #define IWIDGET_H_
-
+#if TEXTMODE_VAC != 1
 #include <utility>
 #include <cstring>
 #include <functional>
@@ -77,5 +77,5 @@ public:
     virtual void SetParent(IWidget *) = 0;
     virtual std::string GetName()     = 0;
 };
-
+#endif
 #endif /* IWIDGET_H_ */

@@ -11,6 +11,7 @@
 #include "common.hpp"
 #include "sdk.hpp"
 
+#if TEXTMODE_VAC != 1
 #undef RootWindow
 
 void GUIVisibleCallback(IConVar *var, const char *pOldValue, float flOldValue)
@@ -235,3 +236,4 @@ bool CatGUI::ConsumesKey(ButtonCode_t key)
 }
 
 CatGUI *g_pGUI = 0;
+#endif

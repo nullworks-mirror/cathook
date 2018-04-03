@@ -1,5 +1,6 @@
 #include "common.hpp"
 
+#if TEXTMODE_VAC != 1
 namespace fonts
 {
 unsigned long MENU                   = 0;
@@ -185,3 +186,4 @@ std::pair<int, int> draw::GetStringLength(unsigned long font,
     draw::GetStringLength(font, (char *) string.c_str(), l, h);
     return std::make_pair(l, h);
 }
+#endif

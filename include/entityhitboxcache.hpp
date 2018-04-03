@@ -13,6 +13,7 @@
 #include <cdll_int.h>
 #include <entitycache.hpp>
 #include <studio.h>
+#include <stdexcept>
 
 #define CACHE_MAX_HITBOXES 64
 

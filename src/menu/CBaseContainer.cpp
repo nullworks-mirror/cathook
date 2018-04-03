@@ -10,6 +10,7 @@
 #include "common.hpp"
 #include "sdk.hpp"
 
+#if TEXTMODE_VAC != 1
 class IMemAlloc;
 IMemAlloc *g_pMemAlloc = 0;
 
@@ -255,3 +256,4 @@ void CBaseContainer::Update()
     }
     CBaseWidget::Update();
 }
+#endif

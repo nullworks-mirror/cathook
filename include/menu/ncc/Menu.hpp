@@ -7,7 +7,7 @@
 
 #ifndef MENU_HPP_
 #define MENU_HPP_
-
+#if TEXTMODE_VAC != 1
 #include "visual/drawing.hpp"
 #include "visual/colors.hpp"
 
@@ -52,5 +52,5 @@ void Init();
 List &MainList();
 }
 }
-
+#endif
 #endif /* MENU_HPP_ */

@@ -6,7 +6,7 @@
  */
 
 #include "menu/ncc/Menu.hpp"
-
+#if TEXTMODE_VAC != 1
 namespace menu
 {
 namespace ncc
@@ -91,3 +91,4 @@ void PlayerList::MoveChildren()
 }
 }
 }
+#endif

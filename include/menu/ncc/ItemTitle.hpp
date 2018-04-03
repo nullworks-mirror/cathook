@@ -7,7 +7,7 @@
 
 #ifndef ITEMTITLE_HPP_
 #define ITEMTITLE_HPP_
-
+#if TEXTMODE_VAC != 1
 #include "menu/ncc/Item.hpp"
 
 namespace menu
@@ -27,5 +27,5 @@ public:
 };
 }
 }
-
+#endif
 #endif /* ITEMTITLE_HPP_ */

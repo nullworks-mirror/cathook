@@ -7,7 +7,7 @@
 
 #ifndef CTEXTLABEL_H_
 #define CTEXTLABEL_H_
-
+#if TEXTMODE_VAC != 1
 #include "menu/CBaseWidget.h"
 
 #include "Color.h"
@@ -26,5 +26,5 @@ public:
 
     virtual void Draw(int x, int y);
 };
-
+#endif
 #endif /* CTEXTLABEL_H_ */

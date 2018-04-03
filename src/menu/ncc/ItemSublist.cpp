@@ -9,7 +9,7 @@
 #include "menu/ncc/Menu.hpp"
 
 #include "common.hpp"
-
+#if TEXTMODE_VAC != 1
 namespace menu
 {
 namespace ncc
@@ -97,3 +97,4 @@ void ItemSublist::OnMouseLeave()
 }
 }
 }
+#endif

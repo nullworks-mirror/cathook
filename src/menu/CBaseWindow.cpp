@@ -9,6 +9,7 @@
 
 #include "common.hpp"
 #include "menu/GUI.h"
+#if TEXTMODE_VAC != 1
 
 void CBaseWindow::MoveChildren()
 {
@@ -62,3 +63,4 @@ void CBaseWindow::Draw(int x, int y)
                       NCGUIColor());
     CBaseContainer::Draw(x, y);
 }
+#endif

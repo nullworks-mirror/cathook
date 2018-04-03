@@ -13,7 +13,7 @@
 #include "menu/ncc/ItemSublist.hpp"
 
 #include "common.hpp"
-
+#if TEXTMODE_VAC != 1
 namespace menu
 {
 namespace ncc
@@ -302,3 +302,4 @@ void List::MoveChildren()
 }
 }
 }
+#endif

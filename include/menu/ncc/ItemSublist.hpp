@@ -7,6 +7,7 @@
 
 #ifndef ITEMSUBLIST_HPP_
 #define ITEMSUBLIST_HPP_
+#if TEXTMODE_VAC != 1
 
 #include "menu/ncc/Item.hpp"
 #include "menu/ncc/List.hpp"
@@ -39,5 +40,5 @@ public:
 };
 }
 }
-
+#endif
 #endif /* ITEMSUBLIST_HPP_ */

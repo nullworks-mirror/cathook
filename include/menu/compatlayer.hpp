@@ -1,3 +1,4 @@
+#if TEXTMODE_VAC != 1
 namespace colorsint
 {
 constexpr int Create(int r, int g, int b, int a)
@@ -53,3 +54,4 @@ void GetStringLength(unsigned long font, char *string, int &length,
                      int &height);
 std::pair<int, int> GetStringLength(unsigned long font, std::string string);
 }
+#endif

@@ -7,7 +7,7 @@
 
 #ifndef ITEMVARIABLE_HPP_
 #define ITEMVARIABLE_HPP_
-
+#if TEXTMODE_VAC != 1
 #include "menu/ncc/Item.hpp"
 
 class CatVar;
@@ -38,5 +38,5 @@ public:
 };
 }
 }
-
+#endif
 #endif /* ITEMVARIABLE_HPP_ */
