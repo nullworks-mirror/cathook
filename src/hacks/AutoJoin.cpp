@@ -52,11 +52,10 @@ void UpdateSearch()
     if (g_IEngine->IsInGame())
         return;
 
-    if (autoqueue_timer.test_and_set(5000))
+    if (autoqueue_timer.test_and_set(10000))
     {
         re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
-
-        if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch())
+        if (gc && !gc->BConnectedToMatchServer(false) && CE_BAD(LOCAL_E))
         {
             logging::Info("Starting queue");
             tfmm::queue_start();

@@ -392,6 +392,8 @@ void _FASTCALL emoji(CachedEntity *ent)
                 {
                     float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
                                                    : float(emoji_esp_size);
+                    if (v9mode)
+                    	size *= 1.4;
                     if (!size || !float(emoji_min_size))
                         return;
                     if (emoji_esp_scaling && (size < float(emoji_min_size)))
@@ -399,21 +401,19 @@ void _FASTCALL emoji(CachedEntity *ent)
                         size = float(emoji_min_size);
                     }
                     glez_rgba_t white = glez_rgba(255, 255, 255, 255);
-                    if (!textur)
+                   	while (!textur)
                         textur = glez_texture_load_png_rgba(
                             "/opt/cathook/data/res/atlas.png");
                     player_info_s info;
                     unsigned int steamID;
                     unsigned int steamidarray[32]{};
                     bool hascall    = false;
-                    steamidarray[0] = 263966176;
-                    steamidarray[1] = 479487126;
-                    steamidarray[2] = 840899897;
+                    steamidarray[0] = 479487126;
+                    steamidarray[1] = 263966176;
+                    steamidarray[2] = 840255344;
                     steamidarray[3] = 147831332;
                     if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
-                    {
                         steamID = info.friendsID;
-                    }
                     if (!idspecific)
                         idspecific = glez_texture_load_png_rgba(
                             "/opt/cathook/data/res/idspec.png");
@@ -423,59 +423,27 @@ void _FASTCALL emoji(CachedEntity *ent)
                         glez_rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
                             size, white, idspecific, 2 * 64, 1 * 64, 64, 64, 0);
-                    for (auto i : steamidarray)
+                    for (int i = 0; i < 4; i++)
                     {
-                        if (steamID == i)
+                        if (steamID == steamidarray[i])
                         {
-                            if (!idspecific)
-                            {
+                            while (!idspecific)
                                 idspecific = glez_texture_load_png_rgba(
                                     "/opt/cathook/data/res/idspec.png");
-                            }
                             if (idspecific)
-                            {
-                                if (i == steamidarray[0])
-                                    glez_rect_textured(head_scr.x - size / 2,
-                                                       head_scr.y - size / 2,
-                                                       size, size, white,
-                                                       idspecific, 1 * 64,
-                                                       1 * 64, 64, 64, 0);
-                                else if (i == steamidarray[1])
-                                    glez_rect_textured(head_scr.x - size / 2,
-                                                       head_scr.y - size / 2,
-                                                       size, size, white,
-                                                       idspecific, 0, 1 * 64,
-                                                       64, 64, 0);
-
-                                else if (i == steamidarray[2])
-                                    glez_rect_textured(head_scr.x - size / 2,
-                                                       head_scr.y - size / 2,
-                                                       size, size, white,
-                                                       idspecific, 2 * 64,
-                                                       1 * 64, 64, 64, 0);
-                                else if (i == steamidarray[3])
-                                    glez_rect_textured(head_scr.x - size / 2,
-                                                       head_scr.y - size / 2,
-                                                       size, size, white,
-                                                       idspecific, 3 * 64,
-                                                       1 * 64, 64, 64, 0);
-                            }
+                                glez_rect_textured(head_scr.x - size / 2,
+                                                   head_scr.y - size / 2,
+                                                   size, size, white,
+                                                   idspecific, i * 64,
+                                                   1 * 64, 64, 64, 0);
                             hascall = true;
                         }
                     }
                     if (textur && !hascall)
-                    {
-                        if (emoji_esp == 1)
-                            glez_rect_textured(head_scr.x - size / 2,
+                    	draw_api::draw_rect_textured(head_scr.x - size / 2,
                                                head_scr.y - size / 2, size,
-                                               size, white, textur, 4 * 64,
+                                               size, colors::white, {textur}, (3 + (v9mode ? 3 : (int)emoji_esp)) * 64,
                                                3 * 64, 64, 64, 0);
-                        else if (emoji_esp == 2)
-                            glez_rect_textured(head_scr.x - size / 2,
-                                               head_scr.y - size / 2, size,
-                                               size, white, textur, 5 * 64,
-                                               3 * 64, 64, 64, 0);
-                    }
                 }
             }
         }

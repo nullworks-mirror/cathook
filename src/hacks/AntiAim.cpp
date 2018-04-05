@@ -462,9 +462,10 @@ void ProcessUserCmd(CUserCmd *cmd)
     if (trueang)
         angstate = !angstate;
     if (!LOCAL_E->m_bAlivePlayer)
+        angstate = true;
+    if (lagexploit::ExploitActive() || g_pUserCmd->buttons & IN_ATTACK ||
+        g_pUserCmd->buttons & IN_ATTACK2)
         angstate     = true;
-    if (lagexploit::ExploitActive() || g_pUserCmd->buttons & IN_ATTACK || g_pUserCmd->buttons & IN_ATTACK2)
-    	angstate 	 = true;
     *bSendPackets    = angstate;
     float &p         = cmd->viewangles.x;
     float &y         = cmd->viewangles.y;

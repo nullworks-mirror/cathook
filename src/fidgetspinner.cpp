@@ -14,6 +14,7 @@
 
 CatVar enable_spinner(CV_SWITCH, "fidgetspinner", "0", "Fidget Spinner",
                       "Part of Cathook Autism Awareness program");
+CatVar v9mode(CV_SWITCH, "nullcore_mode", "0", "Nullcore mode", "Part of Cathook Autism Awareness program");
 
 float spinning_speed = 0.0f;
 float angle          = 0;
@@ -90,11 +91,12 @@ void DrawSpinner()
 
     const glez_rgba_t color = glez_rgba(255, 255, 255, 255);
 
-
-    static glez_texture_t tex = glez_texture_load_png_rgba("/opt/cathook/data/res/atlas.png");
+    static glez_texture_t tex =
+        glez_texture_load_png_rgba("/opt/cathook/data/res/atlas.png");
     while (!tex)
-    	tex = glez_texture_load_png_rgba("/opt/cathook/data/res/atlas.png");
-    glez_rect_textured(draw::width / 2, draw::height / 2, size, size, color, tex, 0 + 64 * state, 3 * 64, 64, 64, angle);
+        tex = glez_texture_load_png_rgba("/opt/cathook/data/res/atlas.png");
+    glez_rect_textured(draw::width / 2, draw::height / 2, size, size, color,
+                       tex, 0 + 64 * state, (3 + (v9mode ? 1 : 0)) * 64, 64, 64, angle);
     if (angle > PI * 4)
         angle -= PI * 4;
 }

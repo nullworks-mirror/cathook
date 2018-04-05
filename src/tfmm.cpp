@@ -26,16 +26,14 @@ CatCommand get_state("mm_state", "Get party state", []() {
 namespace tfmm
 {
 
-void queue_start()
-{
+void queue_start() {
     re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
     if (client)
     {
-        re::ITFGroupMatchCriteria::SetMatchGroup(
-            re::CTFPartyClient::MutLocalGroupCriteria(client),
-            re::ITFGroupMatchCriteria::group::CASUAL);
-        re::CTFPartyClient::LoadSavedCasualCriteria(client);
-        re::CTFPartyClient::RequestQueueForMatch(client);
+    	logging::Info("test1");
+    	client->LoadSavedCasualCriteria();
+    	logging::Info("test2");
+        client->RequestQueueForMatch(re::ITFGroupMatchCriteria::CasualMatch12v12);
     }
     else
     {

@@ -79,10 +79,11 @@ void RefreshFonts()
     font_title = g_ISurface->CreateFont();
     font_item  = g_ISurface->CreateFont();
     g_ISurface->SetFontGlyphSet(
-        font_title, fonts::fonts
-                        .at(_clamp(0, (int) (fonts::fonts.size() - 1),
-                                   (int) font_title_family))
-                        .c_str(),
+        font_title,
+        fonts::fonts
+            .at(_clamp(0, (int) (fonts::fonts.size() - 1),
+                       (int) font_title_family))
+            .c_str(),
         psize_font_title * (float) scale, 0, 0, 0, 0x0);
     g_ISurface->SetFontGlyphSet(
         font_item,

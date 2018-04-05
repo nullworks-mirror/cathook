@@ -16,10 +16,10 @@ public:
     static CTFPartyClient *GTFPartyClient();
 
     static int SendPartyChat(CTFPartyClient *client, const char *message);
-    static int LoadSavedCasualCriteria(CTFPartyClient *client);
+    int LoadSavedCasualCriteria();
     static ITFGroupMatchCriteria *MutLocalGroupCriteria(CTFPartyClient *client);
     static bool BCanQueueForStandby(CTFPartyClient *this_);
-    static void RequestQueueForMatch(CTFPartyClient *client);
+    char RequestQueueForMatch(int type);
     static bool BInQueue(CTFPartyClient *this_);
 };
 }

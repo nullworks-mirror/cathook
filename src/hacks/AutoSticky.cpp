@@ -114,7 +114,6 @@ void CreateMove()
     bombs.clear();
     targets.clear();
 
-
     // Cycle through the ents and search for valid ents
     for (int i = 0; i < HIGHEST_ENTITY; i++)
     {
@@ -174,7 +173,6 @@ void CreateMove()
                               g_pUserCmd);
                         // Use silent
                         g_pLocalPlayer->bUseSilentAngles = true;
-
 
                         // Detonate
                         g_pUserCmd->buttons |= IN_ATTACK2;
