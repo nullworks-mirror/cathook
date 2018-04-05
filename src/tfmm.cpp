@@ -12,6 +12,8 @@ CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue",
 
 CatCommand cmd_abandon("mm_abandon", "Abandon match",
                        []() { tfmm::abandon(); });
+static CatEnum queue_mode({ "MvmPractice", "MvmMannup", "LadderMatch6v6", "LadderMatch9v9", "LadderMatch12v12", "CasualMatch6v6", "CasualMatch9v9", "CasualMatch12v12", "CompetitiveEventMatch12v12"});
+static CatVar queue(queue_mode, "autoqueue_mode", "7", "Autoqueue for this mode", "");
 
 CatCommand get_state("mm_state", "Get party state", []() {
     re::CTFParty *party = re::CTFParty::GetParty();
@@ -30,15 +32,18 @@ void queue_start() {
     re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
     if (client)
     {
-    	logging::Info("test1");
     	client->LoadSavedCasualCriteria();
-    	logging::Info("test2");
-        client->RequestQueueForMatch(re::ITFGroupMatchCriteria::CasualMatch12v12);
+        client->RequestQueueForMatch((int)queue);
     }
     else
-    {
         logging::Info("queue_start: CTFPartyClient == null!");
-    }
+}
+void queue_leave() {
+    re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
+    if (client)
+        client->RequestLeaveForMatch((int)queue);
+    else
+        logging::Info("queue_start: CTFPartyClient == null!");
 }
 
 void abandon()

@@ -20,6 +20,7 @@ public:
     static ITFGroupMatchCriteria *MutLocalGroupCriteria(CTFPartyClient *client);
     static bool BCanQueueForStandby(CTFPartyClient *this_);
     char RequestQueueForMatch(int type);
+    char RequestLeaveForMatch(int type);
     static bool BInQueue(CTFPartyClient *this_);
 };
 }

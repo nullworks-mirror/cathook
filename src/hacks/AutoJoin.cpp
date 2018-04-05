@@ -52,7 +52,9 @@ void UpdateSearch()
     if (g_IEngine->IsInGame())
         return;
 
-    if (autoqueue_timer.test_and_set(10000))
+    if (g_pUserCmd)
+    	tfmm::queue_leave();
+    if (autoqueue_timer.test_and_set(30000))
     {
         re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
         if (gc && !gc->BConnectedToMatchServer(false) && CE_BAD(LOCAL_E))

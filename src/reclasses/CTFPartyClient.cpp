@@ -76,3 +76,13 @@ char re::CTFPartyClient::RequestQueueForMatch(int type)
 
     return RequestQueueForMatch_fn(this, type);
 }
+char re::CTFPartyClient::RequestLeaveForMatch(int type)
+{
+    typedef char (*RequestLeaveForMatch_t)(re::CTFPartyClient *, int);
+    uintptr_t addr = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 83 EC ? 8B 45 ? 89 44 24 ? 8B 45 ? 89 04 24 E8 ? ? ? ? 84 C0 89 C6 75 ?");
+    RequestLeaveForMatch_t RequestLeaveForMatch_fn =
+        RequestLeaveForMatch_t(addr);
+
+    return RequestLeaveForMatch_fn(this, type);
+}
