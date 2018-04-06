@@ -21,6 +21,7 @@ typedef bool (*DispatchUserMessage_t)(void *, int, bf_read &);
 typedef void (*FrameStageNotify_t)(void *, int);
 typedef void (*LevelInit_t)(void *, const char *);
 typedef void (*LevelShutdown_t)(void *);
+
 typedef void (*BeginFrame_t)(IStudioRender *);
 typedef bool (*CanInspect_t)(IClientEntity *);
 typedef void (*DrawModelExecute_t)(IVModelRender *, const DrawModelState_t &,

@@ -393,7 +393,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                     float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
                                                    : float(emoji_esp_size);
                     if (v9mode)
-                    	size *= 1.4;
+                        size *= 1.4;
                     if (!size || !float(emoji_min_size))
                         return;
                     if (emoji_esp_scaling && (size < float(emoji_min_size)))
@@ -401,7 +401,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                         size = float(emoji_min_size);
                     }
                     glez_rgba_t white = glez_rgba(255, 255, 255, 255);
-                   	while (!textur)
+                    while (!textur)
                         textur = glez_texture_load_png_rgba(
                             "/opt/cathook/data/res/atlas.png");
                     player_info_s info;
@@ -432,18 +432,18 @@ void _FASTCALL emoji(CachedEntity *ent)
                                     "/opt/cathook/data/res/idspec.png");
                             if (idspecific)
                                 glez_rect_textured(head_scr.x - size / 2,
-                                                   head_scr.y - size / 2,
-                                                   size, size, white,
-                                                   idspecific, i * 64,
-                                                   1 * 64, 64, 64, 0);
+                                                   head_scr.y - size / 2, size,
+                                                   size, white, idspecific,
+                                                   i * 64, 1 * 64, 64, 64, 0);
                             hascall = true;
                         }
                     }
                     if (textur && !hascall)
-                    	draw_api::draw_rect_textured(head_scr.x - size / 2,
-                                               head_scr.y - size / 2, size,
-                                               size, colors::white, {textur}, (3 + (v9mode ? 3 : (int)emoji_esp)) * 64,
-                                               3 * 64, 64, 64, 0);
+                        draw_api::draw_rect_textured(
+                            head_scr.x - size / 2, head_scr.y - size / 2, size,
+                            size, colors::white, { textur },
+                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, 3 * 64,
+                            64, 64, 0);
                 }
             }
         }

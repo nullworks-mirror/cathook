@@ -653,6 +653,7 @@ static const std::string list_tf2 = R"(
 	]
 	"Misc" [
 	    "Misc Menu"
+			"skybox_changer"
 			"name"
 			"disconnect_reason"
 			"pure_bypass"
@@ -725,6 +726,7 @@ static const std::string list_tf2 = R"(
 				"Automated" [
 				"Automated Menu"
 				"autoqueue"
+				"autoqueue_mode"
 				"autojoin_team"
 				"autojoin_class"
 				"autotaunt"

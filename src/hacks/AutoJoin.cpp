@@ -28,6 +28,8 @@ CatVar preferred_class(classes_enum, "autojoin_class", "0", "AutoJoin class",
 
 CatVar auto_queue(CV_SWITCH, "autoqueue", "0", "AutoQueue",
                   "Automatically queue in casual matches");
+CatVar party_bypass(CV_SWITCH, "party_bypass", "1", "Party bypass",
+                    "Bypass Join block when not friended");
 
 const std::string classnames[] = { "scout",   "sniper", "soldier",
                                    "demoman", "medic",  "heavyweapons",
@@ -53,7 +55,7 @@ void UpdateSearch()
         return;
 
     if (g_pUserCmd)
-    	tfmm::queue_leave();
+        tfmm::queue_leave();
     if (autoqueue_timer.test_and_set(30000))
     {
         re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
@@ -66,7 +68,6 @@ void UpdateSearch()
 }
 
 Timer timer{};
-
 void Update()
 {
     if (timer.test_and_set(500))

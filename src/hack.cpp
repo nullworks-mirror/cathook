@@ -211,7 +211,6 @@ free(logname);*/
     EndConVars();
 
 #if ENABLE_VISUALS == 1
-
     draw::Initialize();
 #if ENABLE_GUI
 

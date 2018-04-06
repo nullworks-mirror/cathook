@@ -895,12 +895,83 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
     votelogger::user_message(buf, type);
     return original(_this, type, buf);
 }
-
+const char *skynum[] = { "sky_tf2_04",
+                         "sky_upward",
+                         "sky_dustbowl_01",
+                         "sky_goldrush_01",
+                         "sky_granary_01",
+                         "sky_well_01",
+                         "sky_gravel_01",
+                         "sky_badlands_01",
+                         "sky_hydro_01",
+                         "sky_night_01",
+                         "sky_nightfall_01",
+                         "sky_trainyard_01",
+                         "sky_stormfront_01",
+                         "sky_morningsnow_01",
+                         "sky_alpinestorm_01",
+                         "sky_harvest_01",
+                         "sky_harvest_night_01",
+                         "sky_halloween",
+                         "sky_halloween_night_01",
+                         "sky_halloween_night2014_01",
+                         "sky_island_01",
+                         "sky_jungle_01",
+                         "sky_invasion2fort_01",
+                         "sky_well_02",
+                         "sky_outpost_01",
+                         "sky_coastal_01",
+                         "sky_rainbow_01",
+                         "sky_badlands_pyroland_01",
+                         "sky_pyroland_01",
+                         "sky_pyroland_02",
+                         "sky_pyroland_03" };
+CatEnum skys({ "sky_tf2_04",
+               "sky_upward",
+               "sky_dustbowl_01",
+               "sky_goldrush_01",
+               "sky_granary_01",
+               "sky_well_01",
+               "sky_gravel_01",
+               "sky_badlands_01",
+               "sky_hydro_01",
+               "sky_night_01",
+               "sky_nightfall_01",
+               "sky_trainyard_01",
+               "sky_stormfront_01",
+               "sky_morningsnow_01",
+               "sky_alpinestorm_01",
+               "sky_harvest_01",
+               "sky_harvest_night_01",
+               "sky_halloween",
+               "sky_halloween_night_01",
+               "sky_halloween_night2014_01",
+               "sky_island_01",
+               "sky_jungle_01",
+               "sky_invasion2fort_01",
+               "sky_well_02",
+               "sky_outpost_01",
+               "sky_coastal_01",
+               "sky_rainbow_01",
+               "sky_badlands_pyroland_01",
+               "sky_pyroland_01",
+               "sky_pyroland_02",
+               "sky_pyroland_03" });
+static CatVar skybox_changer(skys, "skybox_changer", "0", "Change Skybox to this skybox",
+                      "Change Skybox to this skybox, only changes on map load");
 void LevelInit_hook(void *_this, const char *newmap)
 {
     static const LevelInit_t original =
         (LevelInit_t) hooks::clientmode.GetMethod(offsets::LevelInit());
     playerlist::Save();
+    typedef bool *(*LoadNamedSkys_Fn)(const char *);
+    uintptr_t addr =
+        gSignatures.GetEngineSignature("55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 "
+                                       "81 EC ? ? ? ? C7 85 ? ? ? ? ? ? ? ?");
+    static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
+    bool load_success = LoadNamedSkys(skynum[(int)skybox_changer]);
+    logging::Info("Skybox Loading successful: %s",
+                  load_success ? "true" : "false");
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
     hacks::shared::aimbot::Reset();
     chat_stack::Reset();

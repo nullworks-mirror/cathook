@@ -14,7 +14,8 @@ CTFGCClientSystem *CTFGCClientSystem::GTFGCClientSystem()
 {
     typedef CTFGCClientSystem *(*GTFGCClientSystem_t)();
     static uintptr_t addr1 = gSignatures.GetClientSignature(
-        "55 B8 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 55 A1 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 A1 ? ? ? ?");
+        "55 B8 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 55 A1 ? ? ? ? 89 E5 5D C3 "
+        "8D B6 00 00 00 00 A1 ? ? ? ?");
     static GTFGCClientSystem_t GTFGCClientSystem_fn =
         GTFGCClientSystem_t(addr1);
 
@@ -38,8 +39,8 @@ void CTFGCClientSystem::AbandonCurrentMatch()
 bool CTFGCClientSystem::BConnectedToMatchServer(bool flag)
 {
     typedef bool (*BConnectedToMatchServer_t)(CTFGCClientSystem *, bool);
-    static uintptr_t addr = gSignatures.GetClientSignature(
-        "55 89 E5 53 80 7D ? ? 8B 55 ? 75 ?");
+    static uintptr_t addr =
+        gSignatures.GetClientSignature("55 89 E5 53 80 7D ? ? 8B 55 ? 75 ?");
     static BConnectedToMatchServer_t BConnectedToMatchServer_fn =
         BConnectedToMatchServer_t(addr);
 
@@ -49,7 +50,8 @@ bool CTFGCClientSystem::BConnectedToMatchServer(bool flag)
 bool CTFGCClientSystem::BHaveLiveMatch()
 {
     typedef int (*BHaveLiveMatch_t)(CTFGCClientSystem *);
-    static uintptr_t addr = gSignatures.GetClientSignature("55 31 C0 89 E5 53 8B 4D ? 0F B6 91 ? ? ? ?");
+    static uintptr_t addr = gSignatures.GetClientSignature(
+        "55 31 C0 89 E5 53 8B 4D ? 0F B6 91 ? ? ? ?");
     static BHaveLiveMatch_t BHaveLiveMatch_fn = BHaveLiveMatch_t(addr);
     if (BHaveLiveMatch_fn == nullptr)
     {
