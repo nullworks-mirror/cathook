@@ -59,7 +59,7 @@ void UpdateSearch()
     if (autoqueue_timer.test_and_set(30000))
     {
         re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
-        if (gc && !gc->BConnectedToMatchServer(false) && CE_BAD(LOCAL_E))
+        if (gc && !gc->BConnectedToMatchServer(false) && !g_pUserCmd)
         {
             logging::Info("Starting queue");
             tfmm::queue_start();
