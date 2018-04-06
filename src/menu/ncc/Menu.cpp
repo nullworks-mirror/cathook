@@ -702,7 +702,6 @@ static const std::string list_tf2 = R"(
 				"antibackstab"
 				"antibackstab_nope"
 				"antibackstab_angle"
-				"antibackstab_silent"
 				"antibackstab_distance"
 				]
 				"Spyalert" [
