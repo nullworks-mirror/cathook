@@ -587,10 +587,50 @@ void FireGameEvent_hook(void *_this, IGameEvent *event)
     }
     original(_this, event);
 }
-
+CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
 #if ENABLE_VISUALS == 1
 void FrameStageNotify_hook(void *_this, int stage)
 {
+    if (nightmode)
+    {
+        static bool OldNightmode;
+        if (OldNightmode != (int) nightmode)
+        {
+
+            static ConVar *r_DrawSpecificStaticProp =
+                g_ICvar->FindVar("r_DrawSpecificStaticProp");
+            if (!r_DrawSpecificStaticProp)
+            {
+                r_DrawSpecificStaticProp =
+                    g_ICvar->FindVar("r_DrawSpecificStaticProp");
+                return;
+            }
+            r_DrawSpecificStaticProp->SetValue(0);
+
+            for (MaterialHandle_t i = g_IMaterialSystem->FirstMaterial();
+                 i != g_IMaterialSystem->InvalidMaterial();
+                 i = g_IMaterialSystem->NextMaterial(i))
+            {
+                IMaterial *pMaterial = g_IMaterialSystem->GetMaterial(i);
+
+                if (!pMaterial)
+                    continue;
+                if (strstr(pMaterial->GetTextureGroupName(), "World") ||
+                    strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
+                {
+                    if (nightmode)
+                        if (strstr(pMaterial->GetTextureGroupName(),
+                                   "StaticProp"))
+                            pMaterial->ColorModulate(0.3f, 0.3f, 0.3f);
+                        else
+                            pMaterial->ColorModulate(0.05f, 0.05f, 0.05f);
+                    else
+                        pMaterial->ColorModulate(1.0f, 1.0f, 1.0f);
+                }
+            }
+            OldNightmode = nightmode;
+        }
+    }
     static IClientEntity *ent;
 
     PROF_SECTION(FrameStageNotify_TOTAL);
@@ -957,8 +997,9 @@ CatEnum skys({ "sky_tf2_04",
                "sky_pyroland_01",
                "sky_pyroland_02",
                "sky_pyroland_03" });
-static CatVar skybox_changer(skys, "skybox_changer", "0", "Change Skybox to this skybox",
-                      "Change Skybox to this skybox, only changes on map load");
+static CatVar
+    skybox_changer(skys, "skybox_changer", "0", "Change Skybox to this skybox",
+                   "Change Skybox to this skybox, only changes on map load");
 void LevelInit_hook(void *_this, const char *newmap)
 {
     static const LevelInit_t original =
@@ -969,7 +1010,7 @@ void LevelInit_hook(void *_this, const char *newmap)
         gSignatures.GetEngineSignature("55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 "
                                        "81 EC ? ? ? ? C7 85 ? ? ? ? ? ? ? ?");
     static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
-    bool load_success = LoadNamedSkys(skynum[(int)skybox_changer]);
+    bool load_success = LoadNamedSkys(skynum[(int) skybox_changer]);
     logging::Info("Skybox Loading successful: %s",
                   load_success ? "true" : "false");
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");

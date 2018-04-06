@@ -435,6 +435,8 @@ static const std::string list_tf2 = R"(
 	]
 	"Visuals" [
 	    "Visuals Menu"
+			"skybox_changer"
+			"nightmode"
 			"thirdperson"
 			"thirdperson_angles"
 	    	"no_zoom"
@@ -653,7 +655,6 @@ static const std::string list_tf2 = R"(
 	]
 	"Misc" [
 	    "Misc Menu"
-			"skybox_changer"
 			"name"
 			"disconnect_reason"
 			"pure_bypass"
