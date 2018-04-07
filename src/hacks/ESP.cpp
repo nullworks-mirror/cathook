@@ -403,7 +403,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                     glez_rgba_t white = glez_rgba(255, 255, 255, 255);
                     while (!textur)
                         textur = glez_texture_load_png_rgba(
-                            "/opt/cathook/data/res/atlas.png");
+                        		DATA_PATH"res/atlas.png");
                     player_info_s info;
                     unsigned int steamID;
                     unsigned int steamidarray[32]{};
@@ -416,7 +416,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                         steamID = info.friendsID;
                     if (!idspecific)
                         idspecific = glez_texture_load_png_rgba(
-                            "/opt/cathook/data/res/idspec.png");
+                        		DATA_PATH"res/idspec.png");
                     if (idspecific &&
                         playerlist::AccessData(steamID).state ==
                             playerlist::k_EState::CAT)
@@ -429,7 +429,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                         {
                             while (!idspecific)
                                 idspecific = glez_texture_load_png_rgba(
-                                    "/opt/cathook/data/res/idspec.png");
+                                		DATA_PATH"res/idspec.png");
                             if (idspecific)
                                 glez_rect_textured(head_scr.x - size / 2,
                                                    head_scr.y - size / 2, size,

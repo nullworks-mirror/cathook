@@ -152,12 +152,16 @@ public:
         else if (!strcmp(name, "player_changeclass")) {
         	int id = event->GetInt("userid");
         	player_info_s info;
+        	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
         	PrintChat("\x07%06X%s\x01 changed to \x07%06X%s\x01", 0xa06ba0, info.name, 0xa06ba0, classname(event->GetInt("class")));
         }
         else if (!strcmp(name, "player_builtobject")) {
         	int obj = event->GetInt("object");
-
-        	logging::Info("%d, %d, %d", obj == ENTITY_BUILDING, obj == CL_CLASS(CObjectSentrygun), obj);
+        	int idx = event->GetInt("index");
+        	CachedEntity* building = ENTITY(idx);
+        	if (CE_GOOD(building))
+        		logging::Info("%d, %d",building->m_iClassID, CL_CLASS(CObjectSentrygun));
+        	logging::Info("%d, %d, %d", obj, ENTITY_BUILDING, CL_CLASS(CObjectSentrygun));
         }
     }
 };
