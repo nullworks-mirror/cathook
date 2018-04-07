@@ -401,7 +401,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                         size = float(emoji_min_size);
                     }
                     glez_rgba_t white = glez_rgba(255, 255, 255, 255);
-                    while (!textur)
+                    while (!textur || textur == 4294967295)
                         textur = glez_texture_load_png_rgba(
                         		DATA_PATH"res/atlas.png");
                     player_info_s info;

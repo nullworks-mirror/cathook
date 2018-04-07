@@ -93,7 +93,7 @@ void DrawSpinner()
     const glez_rgba_t color = glez_rgba(255, 255, 255, 255);
 
     draw_api::texture_handle_t text = draw_api::create_texture(DATA_PATH"/res/atlas.png");
-    while (!text.handle)
+    while (!text.handle || text.handle == 4294967295)
         text = draw_api::create_texture(DATA_PATH"res/atlas.png");
     draw_api::draw_rect_textured(draw::width / 2, draw::height / 2, size, size, colors::white,
             text, 0 + 64 * state, (3 + (v9mode ? 1 : 0)) * 64, 64, 64,
