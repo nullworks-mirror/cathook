@@ -98,14 +98,11 @@ void CreateMove()
     if (!enabled)
         return;
     spy = ClosestSpy();
-    static float backup;
     if (spy && CE_GOOD(spy))
     {
         ConVar *var = g_ICvar->FindVar("cl_pitchdown");
         if (!var)
             return;
-        if (!backup)
-            backup = var->GetFloat();
         var->SetValue(140.0f);
         g_pUserCmd->viewangles.x         = 140.0f;
         g_pLocalPlayer->bUseSilentAngles = true;
@@ -115,7 +112,7 @@ void CreateMove()
     else if (!spy || CE_BAD(spy))
     {
         ConVar *var = g_ICvar->FindVar("cl_pitchdown");
-        var->SetValue(backup);
+        var->SetValue(89);
     }
 }
 }
