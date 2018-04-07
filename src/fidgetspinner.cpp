@@ -96,9 +96,9 @@ void DrawSpinner()
         glez_texture_load_png_rgba("/opt/cathook/data/res/atlas.png");
     while (!tex)
         tex = glez_texture_load_png_rgba("/opt/cathook/data/res/atlas.png");
-    glez_rect_textured(draw::width / 2, draw::height / 2, size, size, color,
-                       tex, 0 + 64 * state, (3 + (v9mode ? 1 : 0)) * 64, 64, 64,
-                       angle);
+    draw_api::draw_rect_textured(draw::width / 2, draw::height / 2, size, size, colors::white,
+            {tex}, 0 + 64 * state, (3 + (v9mode ? 1 : 0)) * 64, 64, 64,
+            angle);
     if (angle > PI * 4)
         angle -= PI * 4;
 }

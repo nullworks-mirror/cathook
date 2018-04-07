@@ -54,11 +54,11 @@ void UpdateSearch()
     if (g_IEngine->IsInGame())
         return;
 
-    if (g_pUserCmd)
+    re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
+    if (g_pUserCmd && gc && gc->BConnectedToMatchServer(false))
         tfmm::queue_leave();
-    if (autoqueue_timer.test_and_set(30000))
+    if (autoqueue_timer.test_and_set(60000))
     {
-        re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
         if (gc && !gc->BConnectedToMatchServer(false) && !g_pUserCmd)
         {
             logging::Info("Starting queue");

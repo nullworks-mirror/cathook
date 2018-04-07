@@ -80,7 +80,8 @@ std::stack<std::string> &hack::command_stack()
 
 #if ENABLE_VISUALS == 1 /* Why would we need colored chat stuff in textmode?   \
                          */
-
+#define red 184, 56, 59, 255
+#define blu 88, 133, 162, 255
 class AdvancedEventListener : public IGameEventListener
 {
 public:
@@ -88,31 +89,29 @@ public:
     {
         if (!event_log)
             return;
+        static ConVar *var = g_ICvar->FindVar("developer");
+        static ConVar *filter = g_ICvar->FindVar("con_filter_text");
+        static ConVar *enable = g_ICvar->FindVar("con_filter_enable");
+        filter->SetValue("[CAT]");
+        var->SetValue(1);
+        enable->SetValue(1);
         const char *name = event->GetName();
         if (!strcmp(name, "player_connect_client"))
-        {
-            PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 joining", 0xa06ba0,
-                      event->GetString("name"), 0x914e65,
-                      event->GetString("networkid"));
-        }
+            PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 joining", 0xa06ba0,event->GetString("name"), 0x914e65,event->GetString("networkid"));
         else if (!strcmp(name, "player_activate"))
         {
             int uid    = event->GetInt("userid");
             int entity = g_IEngine->GetPlayerForUserID(uid);
             player_info_s info;
             if (g_IEngine->GetPlayerInfo(entity, &info))
-            {
-                PrintChat("\x07%06X%s\x01 connected", 0xa06ba0, info.name);
-            }
+            	PrintChat("\x07%06X%s\x01 connected", 0xa06ba0, info.name);
+
         }
         else if (!strcmp(name, "player_disconnect"))
         {
             CachedEntity *player =
                 ENTITY(g_IEngine->GetPlayerForUserID(event->GetInt("userid")));
-            PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 disconnected",
-                      colors::chat::team(player->m_iTeam),
-                      event->GetString("name"), 0x914e65,
-                      event->GetString("networkid"));
+            PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 disconnected",colors::chat::team(player->m_iTeam),event->GetString("name"), 0x914e65,event->GetString("networkid"));
         }
         else if (!strcmp(name, "player_team"))
         {
@@ -122,12 +121,43 @@ public:
                 int nteam           = event->GetInt("team");
                 const char *oteam_s = teamname(oteam);
                 const char *nteam_s = teamname(nteam);
-                PrintChat("\x07%06X%s\x01 changed team (\x07%06X%s\x01 -> "
-                          "\x07%06X%s\x01)",
-                          0xa06ba0, event->GetString("name"),
-                          colors::chat::team(oteam), oteam_s,
-                          colors::chat::team(nteam), nteam_s);
+                PrintChat("\x07%06X%s\x01 changed team (\x07%06X%s\x01 -> ""\x07%06X%s\x01)",0xa06ba0, event->GetString("name"),colors::chat::team(oteam), oteam_s,colors::chat::team(nteam), nteam_s);
             }
+        }
+        else if (!strcmp(name, "player_hurt")) {
+        	int victim = event->GetInt("userid");
+        	int attacker = event->GetInt("attacker");
+        	int health = event->GetInt("health");
+        	player_info_s kinfo;
+        	player_info_s vinfo;
+        	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim), &vinfo);
+        	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker), &kinfo);
+        	PrintChat("\x07%06X%s\x01 hurt \x07%06X%s\x01 down to \x07%06X%d\x01hp", 0x4286f4, kinfo.name, 0xc11739, vinfo.name, 0x2aaf18, health);
+        }
+        else if (!strcmp(name, "player_death")) {
+        	int victim = event->GetInt("userid");
+        	int attacker = event->GetInt("attacker");
+        	player_info_s kinfo;
+        	player_info_s vinfo;
+        	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim), &vinfo);
+        	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker), &kinfo);
+        	PrintChat("\x07%06X%s\x01 killed \x07%06X%s\x01", 0x4286f4, kinfo.name, 0xc11739, vinfo.name);
+        }
+        else if (!strcmp(name, "player_spawn")) {
+        	int id = event->GetInt("userid");
+        	player_info_s info;
+        	g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
+        	PrintChat("\x07%06X%s\x01 (re)spawned", 0xa06ba0, info.name);
+        }
+        else if (!strcmp(name, "player_changeclass")) {
+        	int id = event->GetInt("userid");
+        	player_info_s info;
+        	PrintChat("\x07%06X%s\x01 changed to \x07%06X%s\x01", 0xa06ba0, info.name, 0xa06ba0, classname(event->GetInt("class")));
+        }
+        else if (!strcmp(name, "player_builtobject")) {
+        	int obj = event->GetInt("object");
+
+        	logging::Info("%d, %d, %d", obj == ENTITY_BUILDING, obj == CL_CLASS(CObjectSentrygun), obj);
         }
     }
 };
