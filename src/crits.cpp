@@ -95,7 +95,7 @@ static const model_t *lastweapon = nullptr;
 bool force_crit(IClientEntity *weapon)
 {
     if (lastnumber < g_pUserCmd->command_number ||
-        lastweapon != weapon->GetModel() || lastnumber - g_pUserCmd > 1000)
+        lastweapon != weapon->GetModel() || lastnumber - g_pUserCmd->command_number > 1000)
     {
         if (cached_calculation.init_command > g_pUserCmd->command_number ||
             g_pUserCmd->command_number - cached_calculation.init_command >
