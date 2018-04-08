@@ -11,9 +11,11 @@ namespace votelogger
 {
 
 static CatVar enabled(CV_SWITCH, "votelog", "0", "Log votes");
+static CatVar requeue(CV_SWITCH, "votelog_requeue", "1", "Auto requeue on vote kick", "Auto requeue on vote kick");
 
 void user_message(bf_read &buffer, int type)
 {
+	bool islocalplayer = false;
     if (!enabled)
         return;
 
@@ -24,6 +26,7 @@ void user_message(bf_read &buffer, int type)
         break;
     case 46:
     {
+    	islocalplayer = false;
         unsigned char caller = buffer.ReadByte();
         // unknown
         buffer.ReadByte();
@@ -41,6 +44,8 @@ void user_message(bf_read &buffer, int type)
         {
             steamID = info.friendsID;
         }
+        if (eid == LOCAL_E->m_IDX)
+        	islocalplayer = true;
 
         logging::Info("Vote called to kick %s [U:1:%u] for %s", name, steamID,
                       reason);
@@ -48,6 +53,8 @@ void user_message(bf_read &buffer, int type)
     }
     case 47:
         logging::Info("Vote passed");
+        if (islocalplayer && requeue)
+        	tfmm::queue_start();
         break;
     case 48:
         logging::Info("Vote failed");
