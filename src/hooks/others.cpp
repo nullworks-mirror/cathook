@@ -15,13 +15,12 @@
 
 #if ENABLE_VISUALS == 1
 
-static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility",
-                              "Useful with chams!");
+
 static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip",
                          "");
 
 // This hook isn't used yet!
-int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
+/*int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
 {
     float old_invis = *(float *) ((uintptr_t) _this + 79u);
     if (no_invisibility)
@@ -33,7 +32,7 @@ int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
     }
 
     *(float *) ((uintptr_t) _this + 79u) = old_invis;
-}
+}*/
 
 static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms",
                       "Removes arms from first person");
