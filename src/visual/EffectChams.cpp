@@ -108,8 +108,10 @@ void EffectChams::SetEntityColor (CachedEntity* ent, rgba_t color) {
 rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
     CachedEntity *ent = ENTITY(entity->entindex());
-    if (data[entity->entindex()])
+    if (data[entity->entindex()]) {
+    	data[entity->entindex()] = false;
     	return colors::pink;
+    }
     if (CE_BAD(ent))
         return colors::white;
     if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(entity))
