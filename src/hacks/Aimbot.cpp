@@ -216,7 +216,9 @@ void CreateMove()
     }
 
 #if ENABLE_VISUALS == 1
+    static effect_chams::EffectChams Effectchams;
     hacks::shared::esp::SetEntityColor(target_entity, colors::pink);
+    Effectchams.SetEntityColor(target_entity, colors::pink);
 #endif
 
     // Local player check + Aimkey

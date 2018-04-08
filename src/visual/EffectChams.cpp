@@ -101,10 +101,15 @@ void EffectChams::EndRenderChams()
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
-
+bool data[32] = {};
+void EffectChams::SetEntityColor (CachedEntity* ent, rgba_t color) {
+	data[ent->m_IDX] = color;
+}
 rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
     CachedEntity *ent = ENTITY(entity->entindex());
+    if (data[entity->entindex()])
+    	return colors::pink;
     if (CE_BAD(ent))
         return colors::white;
     if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(entity))

@@ -34,6 +34,7 @@ public:
         return enabled;
     };
 
+    void SetEntityColor(CachedEntity* ent, rgba_t color);
     rgba_t ChamsColor(IClientEntity *entity);
     bool ShouldRenderChams(IClientEntity *entity);
     void RenderChams(int idx);
