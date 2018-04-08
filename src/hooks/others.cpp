@@ -912,7 +912,7 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     {
                     	if (ucccccp::decrypt(message) == "meow" && hacks::shared::antiaim::communicate && data[0] != LOCAL_E->m_IDX && playerlist::AccessData(ENTITY(data[0])).state != playerlist::k_EState::CAT;) {
                     		playerlist::AccessData(ENTITY(data[0])).state = playerlist::k_EState::CAT;
-                    		chat_stack::Say("meow");
+                    		chat_stack::Say("!!meow");
                     	}
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
