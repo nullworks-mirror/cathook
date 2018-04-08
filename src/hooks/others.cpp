@@ -593,8 +593,8 @@ void FrameStageNotify_hook(void *_this, int stage)
 {
     if (nightmode)
     {
-        static bool OldNightmode;
-        if (OldNightmode != (int) nightmode)
+        static int OldNightmode = 0;
+        if (OldNightmode != (int)nightmode)
         {
 
             static ConVar *r_DrawSpecificStaticProp =
