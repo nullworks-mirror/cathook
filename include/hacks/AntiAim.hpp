@@ -29,6 +29,7 @@ extern CatVar roll;
 extern CatVar no_clamping;
 extern CatVar spin;
 extern CatVar lisp;
+extern CatVar communicate;
 
 extern int safe_space;
 
