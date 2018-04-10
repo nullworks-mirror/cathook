@@ -15,7 +15,6 @@
 
 #if ENABLE_VISUALS == 1
 
-
 static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip",
                          "");
 
@@ -593,7 +592,7 @@ void FrameStageNotify_hook(void *_this, int stage)
     if (nightmode)
     {
         static int OldNightmode = 0;
-        if (OldNightmode != (int)nightmode)
+        if (OldNightmode != (int) nightmode)
         {
 
             static ConVar *r_DrawSpecificStaticProp =
@@ -902,18 +901,25 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                     }
                 }
             }
-            if (sendmsg.test_and_set(300000) && hacks::shared::antiaim::communicate)
-            	chat_stack::Say("!!meow");
+            if (sendmsg.test_and_set(300000) &&
+                hacks::shared::antiaim::communicate)
+                chat_stack::Say("!!meow");
             if (crypt_chat)
             {
                 if (message.find("!!") == 0)
                 {
                     if (ucccccp::validate(message))
                     {
-                    	if (ucccccp::decrypt(message) == "meow" && hacks::shared::antiaim::communicate && data[0] != LOCAL_E->m_IDX && playerlist::AccessData(ENTITY(data[0])).state != playerlist::k_EState::CAT) {
-                    		playerlist::AccessData(ENTITY(data[0])).state = playerlist::k_EState::CAT;
-                    		chat_stack::Say("!!meow");
-                    	}
+                        if (ucccccp::decrypt(message) == "meow" &&
+                            hacks::shared::antiaim::communicate &&
+                            data[0] != LOCAL_E->m_IDX &&
+                            playerlist::AccessData(ENTITY(data[0])).state !=
+                                playerlist::k_EState::CAT)
+                        {
+                            playerlist::AccessData(ENTITY(data[0])).state =
+                                playerlist::k_EState::CAT;
+                            chat_stack::Say("!!meow");
+                        }
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
                     }

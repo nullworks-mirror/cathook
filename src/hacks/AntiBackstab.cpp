@@ -19,7 +19,7 @@ static CatVar enabled(CV_SWITCH, "antibackstab", "0", "Enable",
                       "Main anti-backstab switch");
 static CatVar distance(CV_FLOAT, "antibackstab_distance", "200", "Distance",
                        "Distance Until anti-backstab reacts");
-static CatVar angle(CV_FLOAT, "antibackstab_angle", "150", "Detection Angle");
+static CatVar angle(CV_FLOAT, "antibackstab_angle", "90", "Detection Angle");
 static CatVar sayno(CV_SWITCH, "antibackstab_nope", "0", "Nope!", "Memes");
 
 void SayNope()
@@ -87,8 +87,6 @@ CachedEntity *ClosestSpy()
     }
     return closest;
 }
-static CatVar test(CV_FLOAT, "a_t", "180", "");
-static CatVar test2(CV_SWITCH, "a_t2", "0", "");
 void CreateMove()
 {
     CachedEntity *spy;
@@ -103,8 +101,10 @@ void CreateMove()
         ConVar *var = g_ICvar->FindVar("cl_pitchdown");
         if (!var)
             return;
-        var->SetValue(140.0f);
-        g_pUserCmd->viewangles.x         = 140.0f;
+        Vector angles = CE_VECTOR(spy, netvar.angEyeAngles);
+
+        var->SetValue(360.0f);
+        g_pUserCmd->viewangles.x         = angles.x + 180.0f;
         g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)
             SayNope();
