@@ -214,7 +214,6 @@ void CreateMove()
             }
         }
     }
-
     // AntiAfk That after a certian time without movement keys depressed, causes
     // random keys to be spammed for 1 second
     if (anti_afk)
