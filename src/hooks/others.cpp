@@ -1025,14 +1025,12 @@ void LevelInit_hook(void *_this, const char *newmap)
     bool load_success = LoadNamedSkys(skynum[(int) skybox_changer]);
     logging::Info("Skybox Loading successful: %s",
                   load_success ? "true" : "false");
-    if (halloween_mode) {
-    	ConVar* holiday = g_ICvar->FindVar("tf_forced_holiday");
+    ConVar* holiday = g_ICvar->FindVar("tf_forced_holiday");
+    if (halloween_mode)
     	holiday->SetValue(2);
-    }
-    else if (ConVar(g_ICvar->FindVar("tf_forced_holiday")).m_nValue == 2) {
-    	ConVar* holiday = g_ICvar->FindVar("tf_forced_holiday");
+    else if (holiday->m_nValue == 2)
     	holiday->SetValue(2);
-    }
+
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
     hacks::shared::aimbot::Reset();
     chat_stack::Reset();
