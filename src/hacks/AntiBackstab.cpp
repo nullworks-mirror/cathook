@@ -14,12 +14,14 @@ namespace tf2
 {
 namespace antibackstab
 {
-
+bool noaa = false;
 static CatVar enabled(CV_SWITCH, "antibackstab", "0", "Enable",
                       "Main anti-backstab switch");
 static CatVar distance(CV_FLOAT, "antibackstab_distance", "200", "Distance",
                        "Distance Until anti-backstab reacts");
-static CatVar angle(CV_FLOAT, "antibackstab_angle", "90", "Detection Angle");
+static CatVar silent(CV_SWITCH, "antibackstab_silent", "1", "Silent",
+                     "Works silently without moving your view");
+static CatVar angle(CV_FLOAT, "antibackstab_angle", "150", "Detection Angle");
 static CatVar sayno(CV_SWITCH, "antibackstab_nope", "0", "Nope!", "Memes");
 
 void SayNope()
@@ -32,6 +34,7 @@ void SayNope()
     hack::ExecuteCommand("voicemenu 0 7");
     last_say = g_GlobalVars->curtime;
 }
+
 float GetAngle(CachedEntity *spy)
 {
     float yaw, yaw2, anglediff;
@@ -52,6 +55,7 @@ float GetAngle(CachedEntity *spy)
     // yaw - yaw2);
     return anglediff;
 }
+
 CachedEntity *ClosestSpy()
 {
     CachedEntity *closest, *ent;
@@ -87,6 +91,7 @@ CachedEntity *ClosestSpy()
     }
     return closest;
 }
+
 void CreateMove()
 {
     CachedEntity *spy;
@@ -96,24 +101,56 @@ void CreateMove()
     if (!enabled)
         return;
     spy = ClosestSpy();
-    if (spy && CE_GOOD(spy))
+    if (spy)
     {
-        ConVar *var = g_ICvar->FindVar("cl_pitchdown");
-        if (!var)
-            return;
-        Vector angles = CE_VECTOR(spy, netvar.angEyeAngles);
-
-        var->SetValue(360.0f);
-        g_pUserCmd->viewangles.x         = angles.x + 180.0f;
-        g_pLocalPlayer->bUseSilentAngles = true;
+    	noaa = true;
+        const Vector &A = LOCAL_E->m_vecOrigin;
+        const Vector &B = spy->m_vecOrigin;
+        diff            = (A - B);
+        yaw2            = acos(diff.x / diff.Length()) * 180.0f / PI;
+        if (diff.y < 0)
+            yaw2 = -yaw2;
+        if (yaw2 < -180)
+            yaw2 += 360;
+        if (yaw2 > 180)
+            yaw2 -= 360;
+        resultangle = -180 + yaw2;
+        if (resultangle < -180)
+            resultangle += 360;
+        g_pUserCmd->viewangles.y = resultangle;
+        if (silent)
+        {
+            // This isn't a spy aimbot.
+            if (!(g_pUserCmd->buttons & IN_ATTACK))
+                g_pLocalPlayer->bUseSilentAngles = true;
+        }
         if (sayno)
             SayNope();
     }
-    else if (!spy || CE_BAD(spy))
-    {
-        ConVar *var = g_ICvar->FindVar("cl_pitchdown");
-        var->SetValue(89);
-    }
+    else
+    	noaa = false;
+}
+
+void PaintTraverse()
+{
+    if (!enabled)
+        return;
+    /*CachedEntity* spy = ClosestSpy();
+    if (!spy) return;
+    const Vector& A = LOCAL_E->m_vecOrigin;
+    const Vector& B = spy->m_vecOrigin;
+    const float yaw = g_pLocalPlayer->v_OrigViewangles.y;
+    const Vector diff = (A - B);
+    float yaw2 = acos(diff.x / diff.Length()) * 180.0f / PI;
+    if (diff.y < 0) yaw2 = -yaw2;
+    float anglediff = yaw - yaw2;
+    if (anglediff > 180) anglediff -= 360;
+    if (anglediff < -180) anglediff += 360;
+    AddSideString(format("closest: ", B.x, ' ', B.y, ' ', B.z));
+    AddSideString(format("yaw: ", yaw));
+    AddSideString(format("diff: ", diff.x, ' ', diff.y, ' ', diff.z));
+    AddSideString(format("yaw2: ", yaw2));
+    AddSideString(format("anglediff: ", anglediff));*/
 }
 }
 }

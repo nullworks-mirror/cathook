@@ -14,7 +14,7 @@ namespace tf2
 {
 namespace antibackstab
 {
-
+extern bool noaa;
 void CreateMove();
 void PaintTraverse();
 }

@@ -580,10 +580,9 @@ bool UpdateAimkey()
 // Func to find value of how far to target ents
 float EffectiveTargetingRange()
 {
-    // Melees use a close range, TODO add dynamic range for demoknight swords
     if (GetWeaponMode() == weapon_melee)
     {
-        return 100.0f;
+        return re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
         // Pyros only have so much untill their flames hit
     }
     else if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower))

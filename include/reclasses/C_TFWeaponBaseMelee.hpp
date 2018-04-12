@@ -22,5 +22,9 @@ public:
             self, offsets::PlatformOffset(522, offsets::undefined, 522),
             0)(self, trace);
     }
+    inline static int GetSwingRange(IClientEntity* self) {
+    	typedef int (*fn_t)(IClientEntity*);
+    	return vfunc<fn_t>(self, offsets::PlatformOffset(520, offsets::undefined, 520), 0)(self);
+    }
 };
 }

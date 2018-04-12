@@ -1127,8 +1127,7 @@ bool UpdateAimkey()
 float EffectiveTargetingRange()
 {
     if (GetWeaponMode() == weapon_melee)
-        return 100.0f; // Melees use a close range, TODO add dynamic range for
-                       // demoknight swords
+        return (float) re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower))
         return 185.0f; // Pyros only have so much untill their flames hit
 
