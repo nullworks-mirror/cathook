@@ -1,10 +1,7 @@
 // TODO - MUST do before merging into master (unless removed).
 
-1. Bring back some sort of GUI (at least ImGUI)
-2. Proper `scripts/menu`
-3. Re-add radar and emoji esp
-4. Locate most of the crashes
-5. Make it catbot compatible
+1. Re-add radar and emoji esp
+2. Locate most of the crashes
 
 //==================================================================================================//
 //Big TODO list for cathook																			//	
@@ -125,11 +122,8 @@ Proper entity classes (actually I might just use a lot of helper functions takin
 //----------------------------------------------------------------------------------------------------------------------//
 //Misc			 																										//
 //------------------------------------------------------------------------------------------------------------------//  //
+																													//	//																									//	//
 																													//	//
-Proper Fake Lag																										//	//
-Add auto-strafe																										//	//
-																													//	//
-Fix achievement hack getting blocked with sv_cheats																	//	//
 																													//	//
 Spy alert uses angles																								//	//
 																													//	//
