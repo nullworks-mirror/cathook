@@ -1026,11 +1026,11 @@ void LevelInit_hook(void *_this, const char *newmap)
     logging::Info("Skybox Loading successful: %s",
                   load_success ? "true" : "false");
     if (halloween_mode) {
-    	ConVar* holiday = g_ICvar->FindCommand("tf_forced_holiday");
+    	ConVar* holiday = g_ICvar->FindVar("tf_forced_holiday");
     	holiday->SetValue(2);
     }
-    else if (ConVar(g_ICvar->FindCommand("tf_forced_holiday")).m_nValue == 2) {
-    	ConVar* holiday = g_ICvar->FindCommand("tf_forced_holiday");
+    else if (ConVar(g_ICvar->FindVar("tf_forced_holiday")).m_nValue == 2) {
+    	ConVar* holiday = g_ICvar->FindVar("tf_forced_holiday");
     	holiday->SetValue(2);
     }
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
