@@ -50,7 +50,7 @@ void Update(CachedEntity *player)
             auto &angles    = angles::data(player);
             float deviation = angles.deviation(2);
             if (deviation > float(detect_angle) &&
-                LOCAL_W->m_iClassID != CL_CLASS(CTFFlameThrower))
+                player->m_iClassID != CL_CLASS(CTFFlameThrower))
             {
                 am++;
                 // logging::Info("[ac] %d deviation %.2f #%d", player->m_IDX,
