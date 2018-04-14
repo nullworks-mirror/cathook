@@ -19,10 +19,9 @@ C_MannVsMachineStats *C_MannVsMachineStats::G_MannVsMachineStats()
 
     return G_MannVsMachineStats_fn();
 }
-int* C_MannVsMachineStats::AddLocalPlayerUpgrade(int id, int &a3)
+int *C_MannVsMachineStats::AddLocalPlayerUpgrade(int id, int &a3)
 {
-    typedef int *(*AddLocalPlayerUpgrade_t)(C_MannVsMachineStats *, int,
-                                            int);
+    typedef int *(*AddLocalPlayerUpgrade_t)(C_MannVsMachineStats *, int, int);
     static uintptr_t addr = gSignatures.GetClientSignature(
         "55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 75 ? 8B 7D ? 8B 43 ? 8B 53 ? 83 "
         "C0 ? 39 D0 7E ? 29 D0 89 1C 24 89 44 24 ? E8 ? ? ? ? 8B 43 ? 83 C0 ? "

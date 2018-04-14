@@ -253,7 +253,7 @@ bool ShouldAA(CUserCmd *cmd)
     if (!enabled)
         return false;
     if (hacks::tf2::antibackstab::noaa)
-    	return false;
+        return false;
     if (cmd->buttons & IN_USE)
         return false;
     if ((cmd->buttons & IN_ATTACK) &&

@@ -49,8 +49,12 @@ void Update(CachedEntity *player)
         {
             auto &angles    = angles::data(player);
             float deviation = angles.deviation(2);
+            int widx = CE_INT(player, netvar.hActiveWeapon) & 0xFFF;
+            CachedEntity* wep = ENTITY(widx);
+            if (!CE_GOOD(wep))
+            	return;
             if (deviation > float(detect_angle) &&
-                player->m_iClassID != CL_CLASS(CTFFlameThrower))
+                wep->m_iClassID != CL_CLASS(CTFFlameThrower))
             {
                 am++;
                 // logging::Info("[ac] %d deviation %.2f #%d", player->m_IDX,

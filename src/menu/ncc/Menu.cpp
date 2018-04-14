@@ -655,6 +655,7 @@ static const std::string list_tf2 = R"(
 	]
 	"Misc" [
 	    "Misc Menu"
+			"deadringer_auto"
 			"halloween_mode"
 			"name"
 			"disconnect_reason"

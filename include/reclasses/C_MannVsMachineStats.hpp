@@ -18,6 +18,6 @@ public:
     static C_MannVsMachineStats *G_MannVsMachineStats();
 
 public:
-    int* AddLocalPlayerUpgrade(int id, int &a3);
+    int *AddLocalPlayerUpgrade(int id, int &a3);
 };
 }

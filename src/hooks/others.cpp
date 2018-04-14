@@ -1011,7 +1011,9 @@ CatEnum skys({ "sky_tf2_04",
 static CatVar
     skybox_changer(skys, "skybox_changer", "0", "Change Skybox to this skybox",
                    "Change Skybox to this skybox, only changes on map load");
-static CatVar halloween_mode(CV_SWITCH, "halloween_mode", "Forced Halloween mode", "forced tf_forced_holiday 2");
+static CatVar halloween_mode(CV_SWITCH, "halloween_mode", "0",
+                             "Forced Halloween mode",
+                             "forced tf_forced_holiday 2");
 void LevelInit_hook(void *_this, const char *newmap)
 {
     static const LevelInit_t original =
@@ -1025,12 +1027,11 @@ void LevelInit_hook(void *_this, const char *newmap)
     bool load_success = LoadNamedSkys(skynum[(int) skybox_changer]);
     logging::Info("Skybox Loading successful: %s",
                   load_success ? "true" : "false");
-    ConVar* holiday = g_ICvar->FindVar("tf_forced_holiday");
+    ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
     if (halloween_mode)
-    	holiday->SetValue(2);
+        holiday->SetValue(2);
     else if (holiday->m_nValue == 2)
-    	holiday->SetValue(2);
-
+        holiday->SetValue(2);
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
     hacks::shared::aimbot::Reset();
     chat_stack::Reset();

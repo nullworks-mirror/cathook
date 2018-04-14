@@ -28,8 +28,14 @@ void NetVars::Init()
     this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
     this->m_iAmmo =
         gNetvars.get_offset("DT_BasePlayer", "localdata", "m_iAmmo");
+    this->m_iPrimaryAmmoType =
+        gNetvars.get_offset("DT_LocalWeaponData", "localdata", "m_iPrimaryAmmoType");
+    this->m_iSecondaryAmmoType =
+        gNetvars.get_offset("DT_LocalWeaponData", "localdata", "m_iSecondaryAmmoType");
     this->m_iClip1 = gNetvars.get_offset("DT_BaseCombatWeapon",
                                          "LocalWeaponData", "m_iClip1");
+    this->m_iClip2 = gNetvars.get_offset("DT_BaseCombatWeapon",
+                                         "LocalWeaponData", "m_iClip2");
     this->m_Collision = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
     m_flSimulationTime =
         gNetvars.get_offset("DT_BaseEntity", "m_flSimulationTime");
@@ -156,6 +162,9 @@ void NetVars::Init()
     this->flNextPrimaryAttack =
         gNetvars.get_offset("DT_BaseCombatWeapon", "LocalActiveWeaponData",
                             "m_flNextPrimaryAttack");
+    this->flNextSecondaryAttack =
+        gNetvars.get_offset("DT_BaseCombatWeapon", "LocalActiveWeaponData",
+                            "m_flNextSecondaryAttack");
     this->iNextThinkTick = gNetvars.get_offset(
         "DT_BaseCombatWeapon", "LocalActiveWeaponData", "m_nNextThinkTick");
     this->nTickBase =

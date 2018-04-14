@@ -25,6 +25,7 @@
 #include "AutoSticky.hpp"
 #include "AutoDetonator.hpp"
 #include "AntiCheat.hpp"
+#include "AutoDeadringer.hpp"
 #include "Bunnyhop.hpp"
 #include "LagExploit.hpp"
 #include "Walkbot.hpp"

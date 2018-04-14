@@ -103,7 +103,7 @@ void CreateMove()
     spy = ClosestSpy();
     if (spy)
     {
-    	noaa = true;
+        noaa            = true;
         const Vector &A = LOCAL_E->m_vecOrigin;
         const Vector &B = spy->m_vecOrigin;
         diff            = (A - B);
@@ -128,7 +128,7 @@ void CreateMove()
             SayNope();
     }
     else
-    	noaa = false;
+        noaa = false;
 }
 
 void PaintTraverse()

@@ -487,39 +487,36 @@ void DrawText()
 void Schema_Reload()
 {
     logging::Info("Custom schema loading is not supported right now.");
-    /*
-    static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57
-    56 53 83 EC 4C 0F B6 7D 14 C7 04 ? ? ? ? 01 8B 5D 18 8B 75 0C 89 5C 24 04 E8
-    ? ? ? ? 89 F8 C7 45 C8 00 00 00 00 8D 7D C8 84 C0 8B 45 10 C7 45 CC");
-    typedef void(*InitSchema_t)(void*, void*, CUtlBuffer& buffer, bool byte,
-    unsigned version); static InitSchema_t InitSchema =
+
+    static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 7D ? 8B 03 89 1C 24 FF 50 ? C7 04 24 ? ? ? ?");
+    typedef bool(*InitSchema_t)(void*, CUtlBuffer &, int);
+    static InitSchema_t InitSchema =
     (InitSchema_t)InitSchema_s; static uintptr_t GetItemSchema_s =
-    gSignatures.GetClientSignature("55 89 E5 83 EC 18 89 5D F8 8B 1D ? ? ? ? 89
-    7D FC 85 DB 74 12 89 D8 8B 7D FC 8B 5D F8 89 EC 5D C3 8D B6 00 00 00 00 C7
-    04 24 A8 06 00 00 E8 ? ? ? ? B9 AA 01 00 00 89 C3 31 C0 89 DF"); typedef
-    void*(*GetItemSchema_t)(void); static GetItemSchema_t GetItemSchema =
-    (GetItemSchema_t)GetItemSchema_s;//(*(uintptr_t*)GetItemSchema_s +
-    GetItemSchema_s + 4);
+    gSignatures.GetClientSignature("55 89 E5 83 EC ? E8 ? ? ? ? C9 83 C0 ? C3 55 89 E5 8B 45 ?");
+    typedef void*(*GetItemSchema_t)(void);
+    static GetItemSchema_t GetItemSchema = (GetItemSchema_t)GetItemSchema_s; //(*(uintptr_t*)GetItemSchema_s +GetItemSchema_s + 4);
 
     logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
     void* itemschema = (void*)((unsigned)GetItemSchema() + 4);
     void* data;
-    passwd* pwd = getpwuid(getuid());
-    char* user = pwd->pw_name;
-    char* path = strfmt("/home/%s/.cathook/items_game.txt", user);
+    char* path = strfmt("/opt/cathook/data/items_game.txt");
     FILE* file = fopen(path, "r");
     delete [] path;
     fseek(file, 0L, SEEK_END);
-    char buffer[4 * 1000 * 1000];
+    char buffer[5 * 1000 * 1000];
     size_t len = ftell(file);
     rewind(file);
     buffer[len + 1] = 0;
     fread(&buffer, sizeof(char), len, file);
     fclose(file);
-    CUtlBuffer buf(&buffer, 4 * 1000 * 1000, 9);
+    CUtlBuffer buf(&buffer, 5 * 1000 * 1000, 9);
+    if (ferror(file) != 0) {
+        logging::Info("Error loading file");
+        return;
+    }
     logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-    InitSchema(0, itemschema, buf, false, 0xDEADCA7);
-    */
+    bool ret = InitSchema(GetItemSchema(), buf, 133769);
+    logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
 }
 CatCommand schema("schema", "Load custom schema", Schema_Reload);
 

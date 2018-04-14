@@ -37,8 +37,8 @@ void queue_start()
     re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
     if (client)
     {
-    	if (queue == 7)
-    		client->LoadSavedCasualCriteria();
+        if (queue == 7)
+            client->LoadSavedCasualCriteria();
         client->RequestQueueForMatch((int) queue);
     }
     else
