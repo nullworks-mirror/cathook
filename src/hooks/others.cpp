@@ -1024,9 +1024,8 @@ void LevelInit_hook(void *_this, const char *newmap)
         gSignatures.GetEngineSignature("55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 "
                                        "81 EC ? ? ? ? C7 85 ? ? ? ? ? ? ? ?");
     static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
-    bool load_success = LoadNamedSkys(skynum[(int) skybox_changer]);
-    logging::Info("Skybox Loading successful: %s",
-                  load_success ? "true" : "false");
+    LoadNamedSkys(skynum[(int) skybox_changer]);
+    logging::Info("Loading Skybox...");
     ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
     if (halloween_mode)
         holiday->SetValue(2);
