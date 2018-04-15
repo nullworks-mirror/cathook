@@ -1026,7 +1026,7 @@ void LevelInit_hook(void *_this, const char *newmap)
     static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
     bool succ;
 #ifdef __clang__
-    asm ("movl %1, %%edi; push skynum[(int) skybox_changer]; call %%edi; mov %%eax, %0; add %%esp, 10h" :"=r"(succ) :"r"(LoadNamedSkys));
+    asm ("movl %1, %%edi; push skynum[(int) skybox_changer]; call %%edi; mov %%eax, %0; add %%esp, 4h" :"=r"(succ) :"r"(LoadNamedSkys));
 #else
     succ = LoadNamedSkys(skynum[(int) skybox_changer]);
 #endif
