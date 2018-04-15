@@ -1030,7 +1030,7 @@ void LevelInit_hook(void *_this, const char *newmap)
 #else
     succ = LoadNamedSkys(skynum[(int) skybox_changer]);
 #endif
-    logging::Info("Loaded Skybox: %s" succ ? "true" : "false");
+    logging::Info("Loaded Skybox: %s", succ ? "true" : "false");
     ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
     if (halloween_mode)
         holiday->SetValue(2);
