@@ -1210,35 +1210,36 @@ void Move()
                         if (ent->m_iTeam == LOCAL_E->m_iTeam)
                             continue;
                         const model_t *model = RAW_ENT(ent)->GetModel();
-                        if (model) {
-                        if ((model == lagexploit::point2 ||
-                             model == lagexploit::point3 ||
-                             model == lagexploit::point4 ||
-                             model == lagexploit::point5) &&
-                            ent->m_flDistance < 400.0f &&
-                            IsVectorVisible(g_pLocalPlayer->v_Eye,
-                                            ent->m_vecOrigin))
+                        if (model)
                         {
-                            index_t node = CreateNode(ent->m_vecOrigin);
-                            auto &n      = state::nodes[node];
-                            if (g_pUserCmd->buttons & IN_DUCK)
-                                n.flags |= NF_DUCK;
-                            if (g_pUserCmd->buttons & IN_JUMP)
-                                n.flags |= NF_JUMP;
-                            if (state::node_good(state::active_node))
+                            if ((model == lagexploit::point2 ||
+                                 model == lagexploit::point3 ||
+                                 model == lagexploit::point4 ||
+                                 model == lagexploit::point5) &&
+                                ent->m_flDistance < 400.0f &&
+                                IsVectorVisible(g_pLocalPlayer->v_Eye,
+                                                ent->m_vecOrigin))
                             {
-                                auto &c = state::nodes[state::active_node];
-                                n.link(state::active_node);
-                                c.link(node);
-                                logging::Info("[wb] Node %u auto-linked to "
-                                              "node %u at (%.2f %.2f %.2f)",
-                                              node, state::active_node, c.x,
-                                              c.y, c.z);
+                                index_t node = CreateNode(ent->m_vecOrigin);
+                                auto &n      = state::nodes[node];
+                                if (g_pUserCmd->buttons & IN_DUCK)
+                                    n.flags |= NF_DUCK;
+                                if (g_pUserCmd->buttons & IN_JUMP)
+                                    n.flags |= NF_JUMP;
+                                if (state::node_good(state::active_node))
+                                {
+                                    auto &c = state::nodes[state::active_node];
+                                    n.link(state::active_node);
+                                    c.link(node);
+                                    logging::Info("[wb] Node %u auto-linked to "
+                                                  "node %u at (%.2f %.2f %.2f)",
+                                                  node, state::active_node, c.x,
+                                                  c.y, c.z);
+                                }
+                                state::last_node_buttons = g_pUserCmd->buttons;
+                                state::active_node       = node;
+                                ret                      = true;
                             }
-                            state::last_node_buttons = g_pUserCmd->buttons;
-                            state::active_node       = node;
-                            ret                      = true;
-                        }
                         }
                         else if (ent->m_flDistance < 500.0f &&
                                  IsVectorVisible(g_pLocalPlayer->v_Eye,

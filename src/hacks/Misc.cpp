@@ -488,20 +488,23 @@ void Schema_Reload()
 {
     logging::Info("Custom schema loading is not supported right now.");
 
-    static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 7D ? 8B 03 89 1C 24 FF 50 ? C7 04 24 ? ? ? ?");
-    typedef bool(*InitSchema_t)(void*, CUtlBuffer &, int);
-    static InitSchema_t InitSchema =
-    (InitSchema_t)InitSchema_s; static uintptr_t GetItemSchema_s =
-    gSignatures.GetClientSignature("55 89 E5 83 EC ? E8 ? ? ? ? C9 83 C0 ? C3 55 89 E5 8B 45 ?");
-    typedef void*(*GetItemSchema_t)(void);
-    static GetItemSchema_t GetItemSchema = (GetItemSchema_t)GetItemSchema_s; //(*(uintptr_t*)GetItemSchema_s +GetItemSchema_s + 4);
+    static uintptr_t InitSchema_s = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 7D ? 8B 03 89 1C 24 FF 50 ? C7 "
+        "04 24 ? ? ? ?");
+    typedef bool (*InitSchema_t)(void *, CUtlBuffer &, int);
+    static InitSchema_t InitSchema   = (InitSchema_t) InitSchema_s;
+    static uintptr_t GetItemSchema_s = gSignatures.GetClientSignature(
+        "55 89 E5 83 EC ? E8 ? ? ? ? C9 83 C0 ? C3 55 89 E5 8B 45 ?");
+    typedef void *(*GetItemSchema_t)(void);
+    static GetItemSchema_t GetItemSchema = (GetItemSchema_t)
+        GetItemSchema_s; //(*(uintptr_t*)GetItemSchema_s +GetItemSchema_s + 4);
 
     logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-    void* itemschema = (void*)((unsigned)GetItemSchema() + 4);
-    void* data;
-    char* path = strfmt("/opt/cathook/data/items_game.txt");
-    FILE* file = fopen(path, "r");
-    delete [] path;
+    void *itemschema = (void *) ((unsigned) GetItemSchema() + 4);
+    void *data;
+    char *path = strfmt("/opt/cathook/data/items_game.txt");
+    FILE *file = fopen(path, "r");
+    delete[] path;
     fseek(file, 0L, SEEK_END);
     char buffer[5 * 1000 * 1000];
     size_t len = ftell(file);
@@ -510,7 +513,8 @@ void Schema_Reload()
     fread(&buffer, sizeof(char), len, file);
     fclose(file);
     CUtlBuffer buf(&buffer, 5 * 1000 * 1000, 9);
-    if (ferror(file) != 0) {
+    if (ferror(file) != 0)
+    {
         logging::Info("Error loading file");
         return;
     }

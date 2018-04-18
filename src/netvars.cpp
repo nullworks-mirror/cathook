@@ -28,10 +28,10 @@ void NetVars::Init()
     this->movetype = gNetvars.get_offset("DT_BaseEntity", "movetype");
     this->m_iAmmo =
         gNetvars.get_offset("DT_BasePlayer", "localdata", "m_iAmmo");
-    this->m_iPrimaryAmmoType =
-        gNetvars.get_offset("DT_LocalWeaponData", "localdata", "m_iPrimaryAmmoType");
-    this->m_iSecondaryAmmoType =
-        gNetvars.get_offset("DT_LocalWeaponData", "localdata", "m_iSecondaryAmmoType");
+    this->m_iPrimaryAmmoType = gNetvars.get_offset(
+        "DT_LocalWeaponData", "localdata", "m_iPrimaryAmmoType");
+    this->m_iSecondaryAmmoType = gNetvars.get_offset(
+        "DT_LocalWeaponData", "localdata", "m_iSecondaryAmmoType");
     this->m_iClip1 = gNetvars.get_offset("DT_BaseCombatWeapon",
                                          "LocalWeaponData", "m_iClip1");
     this->m_iClip2 = gNetvars.get_offset("DT_BaseCombatWeapon",

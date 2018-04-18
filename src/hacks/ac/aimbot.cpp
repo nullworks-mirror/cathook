@@ -47,12 +47,12 @@ void Update(CachedEntity *player)
         data.check_timer--;
         if (!data.check_timer)
         {
-            auto &angles    = angles::data(player);
-            float deviation = angles.deviation(2);
-            int widx = CE_INT(player, netvar.hActiveWeapon) & 0xFFF;
-            CachedEntity* wep = ENTITY(widx);
+            auto &angles      = angles::data(player);
+            float deviation   = angles.deviation(2);
+            int widx          = CE_INT(player, netvar.hActiveWeapon) & 0xFFF;
+            CachedEntity *wep = ENTITY(widx);
             if (!CE_GOOD(wep))
-            	return;
+                return;
             if (deviation > float(detect_angle) &&
                 wep->m_iClassID != CL_CLASS(CTFFlameThrower))
             {

@@ -358,7 +358,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
                 hacks::tf2::noisemaker::CreateMove();
             }
             {
-            	PROF_SECTION(CM_deadringer);
+                PROF_SECTION(CM_deadringer);
                 hacks::shared::deadringer::CreateMove();
             }
             {

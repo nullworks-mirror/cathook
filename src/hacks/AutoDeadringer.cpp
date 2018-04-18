@@ -28,12 +28,13 @@ bool IsProjectile(CachedEntity *ent)
 }
 void CreateMove()
 {
-	if (CE_BAD(LOCAL_E))
-		return;
-	if (!HasWeapon(LOCAL_E, 59) || CE_INT(LOCAL_E, netvar.m_bFeignDeathReady) == 1)
-		return;
-	if (CE_INT(LOCAL_E, netvar.iHealth) < 30)
-		g_pUserCmd->buttons |= IN_ATTACK2;
+    if (CE_BAD(LOCAL_E))
+        return;
+    if (!HasWeapon(LOCAL_E, 59) ||
+        CE_INT(LOCAL_E, netvar.m_bFeignDeathReady) == 1)
+        return;
+    if (CE_INT(LOCAL_E, netvar.iHealth) < 30)
+        g_pUserCmd->buttons |= IN_ATTACK2;
     for (int i = 0; i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
