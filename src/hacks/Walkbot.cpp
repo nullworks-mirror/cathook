@@ -1210,8 +1210,7 @@ void Move()
                         if (ent->m_iTeam == LOCAL_E->m_iTeam)
                             continue;
                         const model_t *model = RAW_ENT(ent)->GetModel();
-                        if (!model)
-                            continue;
+                        if (model) {
                         if ((model == lagexploit::point2 ||
                              model == lagexploit::point3 ||
                              model == lagexploit::point4 ||
@@ -1239,6 +1238,7 @@ void Move()
                             state::last_node_buttons = g_pUserCmd->buttons;
                             state::active_node       = node;
                             ret                      = true;
+                        }
                         }
                         else if (ent->m_flDistance < 500.0f &&
                                  IsVectorVisible(g_pLocalPlayer->v_Eye,
