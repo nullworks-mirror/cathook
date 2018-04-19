@@ -37,8 +37,10 @@ CatVar gui_visible(CV_SWITCH, "gui_visible", "0", "GUI Active",
                    "GUI switch (bind it to a key!)");
 CatVar gui_draw_bounds(CV_SWITCH, "gui_bounds", "0", "Draw Bounds",
                        "Draw GUI elements' bounding boxes");
-// CatVar gui_nullcore(CV_SWITCH, "gui_nullcore", "1", "NullCore GUI", "Use
-// NullCoreCheat GUI");
+CatCommand debug_invalid("debug_invalid", "Display all invalid CatVars",
+                           []() { menu::ncc::List::ShowInvalidCatVars(); });
+CatCommand debug_missing("debug_missing", "Display all missing CatVars",
+                           []() { menu::ncc::List::ShowMissingCatVars(); });
 
 CatGUI::CatGUI()
 {
@@ -76,6 +78,7 @@ int NCGUIColor()
 void CatGUI::Setup()
 {
     menu::ncc::Init();
+    menu::ncc::List::ShowInvalidCatVars();
     root_nullcore = menu::ncc::root;
     gui_visible.OnRegister([](CatVar *var) {
         var->convar->InstallChangeCallback(GUIVisibleCallback);

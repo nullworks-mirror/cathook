@@ -18,6 +18,7 @@ namespace menu
 {
 namespace ncc
 {
+std::vector<std::string> invalidvars, missingvars, menu_vars;
 
 List::List(std::string title)
     : open_sublist(nullptr), title(title), got_mouse(false),
@@ -100,8 +101,51 @@ CatVar *FindCatVar(const std::string name)
         if (var->name == name)
             return var;
     }
-    logging::Info("can't find %s", name.c_str());
-    throw std::runtime_error("can't find catvar " + name);
+    invalidvars.push_back(name);
+    DecoyCatVar *unknownvar =
+        new DecoyCatVar(format("Error, can't find ", name));
+    logging::Info("Can't find %s", name.c_str());
+    return (CatVar *) unknownvar;
+}
+
+void FindMissingCatVars()
+{
+    for (auto var : CatVarList())
+    {
+        if (std::find(menu_vars.begin(), menu_vars.end(), var->name) ==
+            menu_vars.end())
+            missingvars.push_back(var->name);
+    }
+}
+
+void List::ShowInvalidCatVars()
+{
+    if (invalidvars.size())
+    {
+        g_ICvar->ConsolePrintf("The following CatVars are invalid\n");
+        for (int i = 0; i < invalidvars.size(); i++)
+            g_ICvar->ConsolePrintf("%s\n", invalidvars[i].c_str());
+    }
+    else
+        g_ICvar->ConsolePrintf("No CatVars are invalid\n");
+    static bool init = false;
+    if (!init)
+    {
+        FindMissingCatVars();
+        init = true;
+    }
+}
+
+void List::ShowMissingCatVars()
+{
+    if (missingvars.size())
+    {
+        g_ICvar->ConsolePrintf("The following CatVars are missing\n");
+        for (int i = 0; i < missingvars.size(); i++)
+            g_ICvar->ConsolePrintf("%s\n", missingvars[i].c_str());
+    }
+    else
+        g_ICvar->ConsolePrintf("No CatVars are missing\n");
 }
 // abc def, ghj, [, fdg sgf saqw rter, ], gs
 void FillFromTokens(List *list, const std::vector<std::string> &tokens)
@@ -114,6 +158,7 @@ void FillFromTokens(List *list, const std::vector<std::string> &tokens)
         if (i == tokens.size() - 1 || tokens[i + 1] != "[")
         {
             list->AddChild(new ItemVariable(*FindCatVar(str)));
+            menu_vars.push_back(str);
         }
         else
         {
