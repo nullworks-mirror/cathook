@@ -451,6 +451,7 @@ static const std::string list_tf2 = R"(
 			"gui_ncc_font_family"
 			"gui_ncc_font_title_family"
 			"fast_outline"
+			"show_spectators"
 			"ESP" [
 			    "ESP Menu"
 			    "esp_enabled"
@@ -586,7 +587,7 @@ static const std::string list_tf2 = R"(
 	    "Air Stuck Menu"
 			"airstuck"
 	]
-	"Anti-/Anti-Aim" [
+	"Anti-Aim" [
 	"Anti-Aim Menu"
 	"aa_enabled"
 	"aa_realfakes"
@@ -603,7 +604,8 @@ static const std::string list_tf2 = R"(
 	"aa_no_clamp"
 	"resolver"
 	"identify"
-	"Anti Anti Aim" [
+	"Anti-/Anti-Aim" [
+			"Anti-/Anti-Aim"
 			"aa_aaaa_enabled"
 			"aa_aaaa_flip_key"
 			"aa_aaaa_mode"

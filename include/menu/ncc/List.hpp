@@ -28,6 +28,8 @@ public:
     void FillWithCatVars(std::vector<CatVar *> vec);
     void OpenSublist(List *sublist, int dy);
     bool ShouldClose();
+    static void ShowInvalidCatVars();
+    static void ShowMissingCatVars();
 
     static List *FromString(const std::string &string);
 
@@ -47,6 +49,20 @@ public:
     bool got_mouse{ false };
     List *open_sublist{ nullptr };
     std::string title;
+};
+class DecoyCatVar
+{
+    CatVar_t type{ CV_SWITCH };
+    const std::string name;
+    int defaults{ 0 };
+    const std::string desc_short{ "" };
+    const std::string desc_long{ "INVALID COMMAND" };
+    bool registered{ false };
+
+public:
+    DecoyCatVar(const std::string value) : desc_short(value)
+    {
+    }
 };
 }
 }

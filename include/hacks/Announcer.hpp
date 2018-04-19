@@ -16,6 +16,7 @@ namespace shared
 namespace announcer
 {
 
+void playsound(const std::string&);
 void init();
 void shutdown();
 }

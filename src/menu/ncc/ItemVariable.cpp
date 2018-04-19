@@ -40,7 +40,8 @@ void ItemVariable::Change(float amount)
     {
     case CV_SWITCH:
     {
-        catvar = !catvar;
+        if (catvar.desc_long != "INVALID COMMAND")
+            catvar = !catvar;
     }
     break;
     case CV_ENUM:
@@ -89,7 +90,8 @@ void ItemVariable::OnMousePress()
             capturing = true;
     }
     if (catvar.type == CV_SWITCH)
-        catvar = !catvar;
+        if (catvar.desc_long != "INVALID COMMAND")
+            catvar = !catvar;
 }
 
 void ItemVariable::OnFocusLose()
@@ -107,7 +109,7 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
     if (capturing)
     {
         if (key == ButtonCode_t::KEY_ESCAPE)
-            key   = (ButtonCode_t) 0;
+            key = (ButtonCode_t) 0;
         catvar    = (int) key;
         capturing = false;
         return;
@@ -159,10 +161,10 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
 
     if (key == ButtonCode_t::MOUSE_WHEEL_UP)
     {
-        if (catvar.type == CV_FLOAT &&
+        if ((catvar.type == CV_FLOAT || catvar.type == CV_INT) &&
             g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_LSHIFT))
             Change(change * 2);
-        else if (catvar.type == CV_FLOAT &&
+        else if ((catvar.type == CV_FLOAT || catvar.type == CV_INT) &&
                  g_IInputSystem->IsButtonDown(ButtonCode_t::KEY_LCONTROL))
             Change(change / 4);
         else
@@ -189,7 +191,8 @@ void ItemVariable::Draw(int x, int y)
     {
     case CV_SWITCH:
     {
-        val = catvar ? "ON" : "OFF";
+        if (catvar.desc_long != "INVALID COMMAND")
+            val = catvar ? "ON" : "OFF";
     }
     break;
     case CV_INT:
