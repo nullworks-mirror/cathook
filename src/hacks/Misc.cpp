@@ -283,7 +283,7 @@ void CreateMove()
             static bool flswitch = false;
             if (flswitch && !g_pUserCmd->impulse)
                 g_pUserCmd->impulse = 100;
-            flswitch = !flswitch;
+            flswitch                = !flswitch;
         }
     }
 
@@ -320,7 +320,7 @@ void CreateMove()
                     if (!(hacks::shared::antiaim::enabled &&
                           hacks::shared::antiaim::yaw_mode &&
                           !(side || forward)))
-                        g_pUserCmd->viewangles.y = camera_angle[1];
+                        g_pUserCmd->viewangles.y       = camera_angle[1];
                     g_pLocalPlayer->v_OrigViewangles.y = camera_angle[1];
 
                     // Use silent since we dont want to prevent the player from

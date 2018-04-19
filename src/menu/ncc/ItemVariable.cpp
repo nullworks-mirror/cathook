@@ -109,7 +109,7 @@ void ItemVariable::OnKeyPress(ButtonCode_t key, bool repeat)
     if (capturing)
     {
         if (key == ButtonCode_t::KEY_ESCAPE)
-            key = (ButtonCode_t) 0;
+            key   = (ButtonCode_t) 0;
         catvar    = (int) key;
         capturing = false;
         return;

@@ -38,9 +38,9 @@ CatVar gui_visible(CV_SWITCH, "gui_visible", "0", "GUI Active",
 CatVar gui_draw_bounds(CV_SWITCH, "gui_bounds", "0", "Draw Bounds",
                        "Draw GUI elements' bounding boxes");
 CatCommand debug_invalid("debug_invalid", "Display all invalid CatVars",
-                           []() { menu::ncc::List::ShowInvalidCatVars(); });
+                         []() { menu::ncc::List::ShowInvalidCatVars(); });
 CatCommand debug_missing("debug_missing", "Display all missing CatVars",
-                           []() { menu::ncc::List::ShowMissingCatVars(); });
+                         []() { menu::ncc::List::ShowMissingCatVars(); });
 
 CatGUI::CatGUI()
 {
