@@ -50,6 +50,9 @@ CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide",
 CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide",
                       "Allows free movement while taunting with movable "
                       "taunts\nOnly works in tf2");
+CatVar
+    show_spectators(CV_SWITCH, "show_spectators", "0", "Show spectators",
+                    "Show who's spectating you\nonly works in valve servers");
 
 void *C_TFPlayer__ShouldDraw_original = nullptr;
 
@@ -108,7 +111,6 @@ CatCommand
 
 void CreateMove()
 {
-
     // Crithack
     static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
     static int tries, cmdn, md5seed, rseed, c, b;
@@ -123,22 +125,23 @@ void CreateMove()
     static IClientEntity *last_checked_weapon = nullptr;
 
     /*IF_GAME (IsTF2()) {
-		if (crit_hack_next && CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
-			PROF_SECTION(CM_misc_crit_hack_prediction);
-			weapon = RAW_ENT(LOCAL_W);
-			// IsBaseCombatWeapon
-			if (weapon &&
-				vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
-				/*if (experimental_crit_hack.KeyDown()) {
-					if (!g_pUserCmd->command_number || critWarmup < 8) {
-						if (g_pUserCmd->buttons & IN_ATTACK) {
-							critWarmup++;
-						} else {
-							critWarmup = 0;
-						}
-						g_pUserCmd->buttons &= ~(IN_ATTACK);
-					}
-				}*/ /*
+        if (crit_hack_next && CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) &&
+       WeaponCanCrit() && RandomCrits()) {
+            PROF_SECTION(CM_misc_crit_hack_prediction);
+            weapon = RAW_ENT(LOCAL_W);
+            // IsBaseCombatWeapon
+            if (weapon &&
+                vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
+                /*if (experimental_crit_hack.KeyDown()) {
+                    if (!g_pUserCmd->command_number || critWarmup < 8) {
+                        if (g_pUserCmd->buttons & IN_ATTACK) {
+                            critWarmup++;
+                        } else {
+                            critWarmup = 0;
+                        }
+                        g_pUserCmd->buttons &= ~(IN_ATTACK);
+                    }
+                }*/ /*
                              if (g_pUserCmd->command_number &&
                  (last_checked_weapon !=
                  weapon || last_checked_command_number <
@@ -280,7 +283,7 @@ void CreateMove()
             static bool flswitch = false;
             if (flswitch && !g_pUserCmd->impulse)
                 g_pUserCmd->impulse = 100;
-            flswitch                = !flswitch;
+            flswitch = !flswitch;
         }
     }
 
@@ -317,7 +320,7 @@ void CreateMove()
                     if (!(hacks::shared::antiaim::enabled &&
                           hacks::shared::antiaim::yaw_mode &&
                           !(side || forward)))
-                        g_pUserCmd->viewangles.y       = camera_angle[1];
+                        g_pUserCmd->viewangles.y = camera_angle[1];
                     g_pLocalPlayer->v_OrigViewangles.y = camera_angle[1];
 
                     // Use silent since we dont want to prevent the player from
@@ -375,7 +378,37 @@ void DrawText()
     fonts::font_main, color);
 
     }*/
-
+    if (show_spectators)
+    {
+        for (int i = 0; i < 32; i++)
+        {
+            // Assign the for loops tick number to an ent
+            CachedEntity *ent = ENTITY(i);
+            player_info_s info;
+            if (!CE_BAD(ent) && ent != LOCAL_E &&
+                ent->m_Type == ENTITY_PLAYER &&
+                (CE_INT(ent, netvar.hObserverTarget) & 0xFFF) ==
+                    LOCAL_E->m_IDX &&
+                CE_INT(ent, netvar.iObserverMode) >= 4 &&
+                g_IEngine->GetPlayerInfo(i, &info))
+            {
+                auto observermode = "N/A";
+                switch (CE_INT(ent, netvar.iObserverMode))
+                {
+                case 4:
+                    observermode = "Firstperson";
+                    break;
+                case 5:
+                    observermode = "Thirdperson";
+                    break;
+                case 7:
+                    observermode = "Freecam";
+                    break;
+                }
+                AddSideString(format(info.name, " ", observermode));
+            }
+        }
+    }
     if (!debug_info)
         return;
     if (CE_GOOD(g_pLocalPlayer->weapon()))
@@ -655,9 +688,9 @@ static CatCommand
                   const char *ft = (args.ArgC() > 1 ? args[2] : 0);
                   DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
               });
-}
-}
-}
+} // namespace misc
+} // namespace shared
+} // namespace hacks
 
 /*void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char*
 ft, unsigned acc_offset) { bool forcetable = ft && strlen(ft); if (!forcetable
