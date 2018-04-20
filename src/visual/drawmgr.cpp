@@ -145,7 +145,7 @@ void DrawCheatVisuals()
             hacks::tf::spyalert::Draw();
         }
 #if ENABLE_IPC == 1
-        IF_GAME(IsTF()) hacks::shared::followbot::Draw();
+        IF_GAME(IsTF()) hacks::shared::followbot::DrawTick();
 #endif
         {
             PROF_SECTION(DRAW_esp);

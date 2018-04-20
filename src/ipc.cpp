@@ -49,7 +49,6 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
                                     hack::command_stack().push(
                                         std::string((const char *) payload));
                                 });
-        hacks::shared::followbot::AddMessageHandlers(peer);
         user_data_s &data = peer->memory->peer_user_data[peer->client_id];
 
         // Preserve accumulated data

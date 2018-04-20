@@ -678,7 +678,7 @@ static const std::string list_tf2 = R"(
 			"bptf_enable"
 				"Followbot"[
 					"Followbot Menu"
-					"fb_bot"
+					"fb"
 					"fb_autoteam"
 					"fb_autoclass"
 					"fb_activation"
@@ -687,7 +687,7 @@ static const std::string list_tf2 = R"(
 					"fb_sync_taunt"
 					"fb_always_medigun"
 					"fb_roaming"
-					"fb_crumb_draw"
+					"fb_draw"
 				]
 				"Catbot Utilities"[
 					"Catbot Utilities Menu"

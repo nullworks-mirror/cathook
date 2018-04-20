@@ -1019,6 +1019,7 @@ void LevelInit_hook(void *_this, const char *newmap)
     static const LevelInit_t original =
         (LevelInit_t) hooks::clientmode.GetMethod(offsets::LevelInit());
     playerlist::Save();
+    hacks::shared::lagexploit::bcalled = false;
     typedef bool *(*LoadNamedSkys_Fn)(const char *);
     uintptr_t addr =
         gSignatures.GetEngineSignature("55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 "
@@ -1035,10 +1036,12 @@ void LevelInit_hook(void *_this, const char *newmap)
 #endif
     logging::Info("Loaded Skybox: %s", succ ? "true" : "false");
     ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
+
     if (halloween_mode)
         holiday->SetValue(2);
     else if (holiday->m_nValue == 2)
         holiday->SetValue(2);
+
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
     hacks::shared::aimbot::Reset();
     chat_stack::Reset();

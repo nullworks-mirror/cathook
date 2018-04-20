@@ -1198,8 +1198,8 @@ void Move()
         if (boost::contains(prvlvlname, "pl_"))
         {
             bool ret = false;
-            if (lagexploit::point || lagexploit::point2 || lagexploit::point3 ||
-                lagexploit::point4 || lagexploit::point5)
+            if (lagexploit::pointarr[0] || lagexploit::pointarr[1] || lagexploit::pointarr[2] ||
+            		lagexploit::pointarr[3] || lagexploit::pointarr[4])
                 for (int i = 0; i < MAX_ENTITIES; i++)
                 {
                     if (!ret)
@@ -1212,10 +1212,10 @@ void Move()
                         const model_t *model = RAW_ENT(ent)->GetModel();
                         if (model)
                         {
-                            if ((model == lagexploit::point2 ||
-                                 model == lagexploit::point3 ||
-                                 model == lagexploit::point4 ||
-                                 model == lagexploit::point5) &&
+                            if ((model == lagexploit::pointarr[1] ||
+                                 model == lagexploit::pointarr[2] ||
+                                 model == lagexploit::pointarr[3] ||
+                                 model == lagexploit::pointarr[4]) &&
                                 ent->m_flDistance < 400.0f &&
                                 IsVectorVisible(g_pLocalPlayer->v_Eye,
                                                 ent->m_vecOrigin))

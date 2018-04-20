@@ -252,9 +252,9 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
     static float last_jointeam_try = 0;
     CachedEntity *found_entity, *ent;
 
-    if (hacks::shared::followbot::bot)
+    if (hacks::shared::followbot::followbot)
     {
-
+    	hacks::shared::followbot::WorldTick();
         if (g_GlobalVars->curtime < last_jointeam_try)
         {
             team_joining_state = 0;
@@ -287,7 +287,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
                 if (CE_BAD(ent))
                     continue;
                 if (ent->player_info.friendsID ==
-                    hacks::shared::followbot::follow_steamid)
+                    (int)hacks::shared::followbot::follow_steam)
                 {
                     found_entity = ent;
                     break;
@@ -530,13 +530,6 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 
             ret = false;
         }
-#if ENABLE_IPC == 1
-        if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state)
-        {
-            PROF_SECTION(CM_followbot);
-            hacks::shared::followbot::AfterCreateMove();
-        }
-#endif
         if (cmd)
             g_Settings.last_angles = cmd->viewangles;
     }
