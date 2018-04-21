@@ -521,7 +521,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
     }
     if (serverlag_amount)
         for (int i = 0; i < (int) serverlag_amount; i++)
-            g_IEngine->ServerCmd("voicecommand 0 0", false);
+            g_IEngine->ServerCmd("voicemenu 0 0", false);
 
     //	PROF_END("CreateMove");
     if (!(cmd->buttons & IN_ATTACK))
