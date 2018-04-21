@@ -111,7 +111,9 @@ static CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0",
                                 "Debug Projectiles");
 
 static CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
-static CatVar serverlag_amount(CV_INT, "serverlag", "0", "Lag the server by spamming this many voicecommands per tick");
+static CatVar serverlag_amount(
+    CV_INT, "serverlag", "0",
+    "Lag the server by spamming this many voicecommands per tick");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
 
 bool *bSendPackets;
@@ -518,8 +520,8 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             g_Settings.last_angles = cmd->viewangles;
     }
     if (serverlag_amount)
-    	for (int i = 0; i < (int)serverlag_amount; i++)
-    		g_IEngine->ServerCmd("voicecommand 0 0", false);
+        for (int i = 0; i < (int) serverlag_amount; i++)
+            g_IEngine->ServerCmd("voicecommand 0 0", false);
 
     //	PROF_END("CreateMove");
     if (!(cmd->buttons & IN_ATTACK))

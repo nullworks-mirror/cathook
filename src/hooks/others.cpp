@@ -667,7 +667,8 @@ void FrameStageNotify_hook(void *_this, int stage)
             }
         }
     }
-    if (cathook && stage == FRAME_RENDER_START) {
+    if (cathook && stage == FRAME_RENDER_START)
+    {
         INetChannel *ch;
         ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
         if (ch && !hooks::IsHooked((void *) ch))
@@ -680,9 +681,9 @@ void FrameStageNotify_hook(void *_this, int stage)
             hooks::netchannel.HookMethod((void *) Shutdown_hook,
                                          offsets::Shutdown());
             hooks::netchannel.Apply();
-    #if ENABLE_IPC
+#if ENABLE_IPC
             ipc::UpdateServerAddress();
-    #endif
+#endif
         }
     }
     if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START)
