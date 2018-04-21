@@ -290,7 +290,8 @@ static CatVar chat_filter(CV_STRING, "chat_censor", "", "Censor words",
                           "said, seperate with commas");
 static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
                                   "Enable censor", "Censor Words in chat");
-
+static CatVar server_crash_key(CV_KEY, "crash_server", "0", "Server crash key",
+                               "hold key and wait...");
 bool SendNetMsg_hook(void *_this, INetMessage &msg, bool bForceReliable = false,
                      bool bVoice = false)
 {
@@ -664,6 +665,24 @@ void FrameStageNotify_hook(void *_this, int stage)
                     angles.y += 360.0f;
                 angles.y -= 180.0f;
             }
+        }
+    }
+    if (cathook && stage == FRAME_RENDER_START) {
+        INetChannel *ch;
+        ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+        if (ch && !hooks::IsHooked((void *) ch))
+        {
+            hooks::netchannel.Set(ch);
+            hooks::netchannel.HookMethod((void *) CanPacket_hook,
+                                         offsets::CanPacket());
+            hooks::netchannel.HookMethod((void *) SendNetMsg_hook,
+                                         offsets::SendNetMsg());
+            hooks::netchannel.HookMethod((void *) Shutdown_hook,
+                                         offsets::Shutdown());
+            hooks::netchannel.Apply();
+    #if ENABLE_IPC
+            ipc::UpdateServerAddress();
+    #endif
         }
     }
     if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START)

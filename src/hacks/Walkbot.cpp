@@ -1198,8 +1198,9 @@ void Move()
         if (boost::contains(prvlvlname, "pl_"))
         {
             bool ret = false;
-            if (lagexploit::pointarr[0] || lagexploit::pointarr[1] || lagexploit::pointarr[2] ||
-            		lagexploit::pointarr[3] || lagexploit::pointarr[4])
+            if (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
+                lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
+                lagexploit::pointarr[4])
                 for (int i = 0; i < MAX_ENTITIES; i++)
                 {
                     if (!ret)

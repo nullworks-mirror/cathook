@@ -111,6 +111,7 @@ static CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0",
                                 "Debug Projectiles");
 
 static CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
+static CatVar serverlag_amount(CV_INT, "serverlag", "0", "Lag the server by spamming this many voicecommands per tick");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
 
 bool *bSendPackets;
@@ -126,7 +127,6 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
     bool time_replaced, ret, speedapplied;
     float curtime_old, servertime, speed, yaw;
     Vector vsilent, ang;
-    INetChannel *ch;
 
     tickcount++;
     g_pUserCmd = cmd;
@@ -167,22 +167,6 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 
     if (g_pUserCmd && g_pUserCmd->command_number)
         last_cmd_number = g_pUserCmd->command_number;
-
-    ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-    if (ch && !hooks::IsHooked((void *) ch))
-    {
-        hooks::netchannel.Set(ch);
-        hooks::netchannel.HookMethod((void *) CanPacket_hook,
-                                     offsets::CanPacket());
-        hooks::netchannel.HookMethod((void *) SendNetMsg_hook,
-                                     offsets::SendNetMsg());
-        hooks::netchannel.HookMethod((void *) Shutdown_hook,
-                                     offsets::Shutdown());
-        hooks::netchannel.Apply();
-#if ENABLE_IPC
-        ipc::UpdateServerAddress();
-#endif
-    }
 
     /**bSendPackets = true;
     if (hacks::shared::lagexploit::ExploitActive()) {
@@ -254,7 +238,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 
     if (hacks::shared::followbot::followbot)
     {
-    	hacks::shared::followbot::WorldTick();
+        hacks::shared::followbot::WorldTick();
         if (g_GlobalVars->curtime < last_jointeam_try)
         {
             team_joining_state = 0;
@@ -287,7 +271,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
                 if (CE_BAD(ent))
                     continue;
                 if (ent->player_info.friendsID ==
-                    (int)hacks::shared::followbot::follow_steam)
+                    (int) hacks::shared::followbot::follow_steam)
                 {
                     found_entity = ent;
                     break;
@@ -533,6 +517,9 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
         if (cmd)
             g_Settings.last_angles = cmd->viewangles;
     }
+    if (serverlag_amount)
+    	for (int i = 0; i < (int)serverlag_amount; i++)
+    		g_IEngine->ServerCmd("voicecommand 0 0", false);
 
     //	PROF_END("CreateMove");
     if (!(cmd->buttons & IN_ATTACK))
