@@ -36,6 +36,10 @@ export LD_LIBRARY_PATH="$GAMEROOT"\
 ":$HOME/.steam/steam/ubuntu12_32/steam-runtime/amd64/lib"\
 ":$HOME/.steam/steam/ubuntu12_32/steam-runtime/amd64/usr/lib/x86_64-linux-gnu"\
 ":$HOME/.steam/steam/ubuntu12_32/steam-runtime/amd64/usr/lib"\
+":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/lib/i386-linux-gnu"\
+":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/lib"\
+":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/usr/lib/i386-linux-gnu"\
+":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/usr/lib"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/lib/x86_64-linux-gnu"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/lib"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/usr/lib/x86_64-linux-gnu"\

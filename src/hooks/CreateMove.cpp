@@ -519,9 +519,16 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
         if (cmd)
             g_Settings.last_angles = cmd->viewangles;
     }
-    if (serverlag_amount)
+    if (serverlag_amount || votelogger::antikick_ticks) {
+    	if (votelogger::antikick_ticks) {
+    		votelogger::antikick_ticks--;
+    		for (int i = 0; i < (int) 70; i++)
+    		            g_IEngine->ServerCmd("voicemenu 0 0", false);
+    	}
+    	else
         for (int i = 0; i < (int) serverlag_amount; i++)
             g_IEngine->ServerCmd("voicemenu 0 0", false);
+    }
 
     //	PROF_END("CreateMove");
     if (!(cmd->buttons & IN_ATTACK))
