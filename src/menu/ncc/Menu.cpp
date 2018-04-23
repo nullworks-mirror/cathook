@@ -657,7 +657,7 @@ static const std::string list_tf2 = R"(
 	]
 	"Misc" [
 	    "Misc Menu"
-			"serverlag_amount"
+			"serverlag"
 			"deadringer_auto"
 			"halloween_mode"
 			"name"
@@ -730,6 +730,7 @@ static const std::string list_tf2 = R"(
 				]
 				"Automated" [
 				"Automated Menu"
+				"anti_votekick"
 				"autoqueue"
 				"autoqueue_mode"
 				"autojoin_team"
@@ -769,6 +770,10 @@ static const std::string list_tf2 = R"(
 		"debug_pp_extrapolate"
 		"debug_engine_pred_others"
 	]
+	"God Mode" [
+		"God Mode Menu"
+		"godmode"
+]
 )";
 
 List &MainList()

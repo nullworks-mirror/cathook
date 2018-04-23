@@ -113,7 +113,7 @@ static CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0",
 static CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
 static CatVar serverlag_amount(
     CV_INT, "serverlag", "0",
-    "Lag the server by spamming this many voicecommands per tick");
+    "serverlag", "Lag the server by spamming this many voicecommands per tick");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
 
 bool *bSendPackets;

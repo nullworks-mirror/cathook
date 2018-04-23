@@ -43,7 +43,7 @@ CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0",
 CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push",
                       "Prevents other players from pushing you around.");
 
-// CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
+CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
 // Taunting stuff
 CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide",
                   "Allows moving and shooting while taunting");
@@ -53,7 +53,7 @@ CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide",
 CatVar
     show_spectators(CV_SWITCH, "show_spectators", "0", "Show spectators",
                     "Show who's spectating you\nonly works in valve servers");
-
+CatVar god_mode(CV_SWITCH, "godmode", "0", "no description", "no description");
 void *C_TFPlayer__ShouldDraw_original = nullptr;
 
 bool C_TFPlayer__ShouldDraw_hook(IClientEntity *thisptr)
@@ -355,7 +355,12 @@ void CreateMove()
 
 void DrawText()
 {
-    /*if (!no_homo) {
+	if (god_mode)
+		for (int i = 0; i < 40000; i++) {
+			g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
+			god_mode = 0;
+		}
+    if (!no_homo) {
         int width, height;
         g_IEngine->GetScreenSize(width, height);
 
@@ -363,21 +368,19 @@ void DrawText()
         int step = (height / 7);
 
         // Go through steps creating a rainbow screen
-        for (int i = 1; i < 7; i++) {
+        for (int i = 1; i < 8; i++) {
             // Get Color and set opacity to %50
-            rgba_t gaybow = colors::FromHSL(fabs(sin((g_GlobalVars->curtime
-    / 2.0f) + (i / 2))) * 360.0f, 0.85f, 0.9f); gaybow.a = .5;
+            colors::rgba_t gaybow = colors::FromHSL(fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 1.41241))) * 360.0f, 0.85f, 0.9f);
+            gaybow.a = .5;
             // Draw next step
-            draw_api::FilledRect(0, step * (i - 1), width, (step * i) - (step *
-    (i - 1)), gaybow);
+            draw_api::draw_rect(0, step * (i - 1), width, (step * i) - (step * (i - 1)), gaybow);
         }
 
         //int size_x;
         //FTGL_StringLength(string.data, fonts::font_main, &size_x);
-        //FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y,
-    fonts::font_main, color);
+        //FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y,fonts::font_main, color);
 
-    }*/
+    }
     if (show_spectators)
     {
         for (int i = 0; i < 32; i++)

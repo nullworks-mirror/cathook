@@ -305,7 +305,7 @@ free(logname);*/
         clientMode = **(
             uintptr_t ***) ((uintptr_t)((*(void ***) g_IBaseClient)[10]) + 1)))
     {
-        sleep(1);
+        usleep(10000);
     }
     hooks::clientmode.Set((void *) clientMode);
     hooks::clientmode.HookMethod((void *) CreateMove_hook,

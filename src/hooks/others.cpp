@@ -1039,6 +1039,7 @@ void LevelInit_hook(void *_this, const char *newmap)
     static const LevelInit_t original =
         (LevelInit_t) hooks::clientmode.GetMethod(offsets::LevelInit());
     playerlist::Save();
+    votelogger::antikick_ticks = 0;
     hacks::shared::lagexploit::bcalled = false;
     typedef bool *(*LoadNamedSkys_Fn)(const char *);
     uintptr_t addr =
