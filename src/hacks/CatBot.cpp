@@ -118,7 +118,8 @@ void update_catbot_list()
         if (strcasestr(info.name, "cat-bot") ||
             strcasestr(info.name, "just disable vac tf") ||
             strcasestr(info.name, "raul.garcia") ||
-            strcasestr(info.name, "zCat"))
+            strcasestr(info.name, "zCat") || 
+            strcasestr(info.name, "lagger bot"))
         {
             if (human_detecting_map.find(info.friendsID) ==
                 human_detecting_map.end())
