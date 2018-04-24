@@ -83,6 +83,9 @@ git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && b
 `/usr/include/c++/5/string:38:28: fatal error: bits/c++config.h: No such file or directory`
 You don't have gcc-multilib-6 installed correctly.
 
+`/usr/bin/ld: cannot find -lxoverlay`
+You don't have cathook libs installed. Use ./catlibs script in scripts folder to install them.
+
 `src/<any file>: fatal error: mathlib/vector.h: No such file or directory`
 You didn't download Source SDK. **DO NOT DOWNLOAD CATHOOK USING "DOWNLOAD .ZIP" FROM GITHUB. USE git clone --recursive!**
 
