@@ -3,16 +3,18 @@
 cmake_minimum_required(VERSION 3.0)
 project(cathook VERSION 0.0.1 DESCRIPTION "Free Source Engine Trainer")
 
-find_library(SDL2 REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 add_library(cathook SHARED "")
 
-set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3" LINK_FLAGS "-m32")
+set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3" LINK_FLAGS "-m32 -static")
 
 target_compile_definitions(cathook PRIVATE
         GAME=tf2
         ENABLE_VISUALS=1
         ENABLE_IPC=1
+        ENABLE_GUI=1
         ENABLE_NULL_GRAPHICS=0
         TEXTMODE_STDIN=0
         TEXTMODE_VAC=0
@@ -48,25 +50,13 @@ target_include_directories(cathook PRIVATE
 add_subdirectory(include)
 add_subdirectory(src)
 
-add_library(libc SHARED IMPORTED)
-set_target_properties(libc PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/lib/libc.so.6")
+find_library(LIBSDL2     NAMES libSDL2-2.0.so.0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+find_library(LIBTIER0    NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+find_library(LIBVSTDLIB  NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 
-add_library(freetype SHARED IMPORTED)
-set_target_properties(freetype PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/lib/libfreetype.so")
+find_library(LIBXOVERLAY NAMES xoverlay)
+find_library(LIBGLEZ     NAMES glez)
 
-add_library(glew SHARED IMPORTED)
-set_target_properties(glew PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/lib/libGLEW.so")
+target_link_libraries(cathook ${LIBTIER0} ${LIBVSTDLIB} ${LIBGLEZ} ${LIBXOVERLAY} ssl GLEW stdc++ ${LIBSDL2})
 
-add_library(sdl2 SHARED IMPORTED)
-set_target_properties(sdl2 PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/lib/libSDL2-2.0.so.0")
-
-add_library(stdcpp SHARED IMPORTED)
-set_target_properties(stdcpp PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/lib/libstdc++.so.6")
-
-add_library(tier0 SHARED IMPORTED)
-set_target_properties(tier0 PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/lib/libtier0.so")
-
-add_library(vstdlib SHARED IMPORTED)
-set_target_properties(vstdlib PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/lib/libvstdlib.so")
-
-target_link_libraries(cathook libc freetype glew sdl2 stdcpp tier0 vstdlib)
+set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

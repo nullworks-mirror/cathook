@@ -113,7 +113,6 @@
 #include "copypasted/CSignature.h"
 
 #if ENABLE_GUI
-#include "gui/GUI.hpp"
 #include "GUI.h"
 #endif
 

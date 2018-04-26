@@ -26,8 +26,7 @@ public:
     struct end_t
     {
     };
-    static constexpr end_t end{};
-
+    static end_t end;
 public:
     csv_stream()
     {
@@ -56,6 +55,8 @@ public:
     int columns{ 0 };
     std::ofstream stream;
 };
+
+csv_stream::end_t csv_stream::end{};
 
 csv_stream &operator<<(csv_stream &log, const std::string &string)
 {
