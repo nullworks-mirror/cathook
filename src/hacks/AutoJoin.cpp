@@ -44,6 +44,7 @@ bool UnassignedClass()
 }
 
 Timer autoqueue_timer{};
+Timer req_timer{};
 /*CatVar party_bypass(CV_SWITCH, "party_bypass", "0", "Party Bypass",
                    "Bypass Party restrictions");*/
 void UpdateSearch()
@@ -88,6 +89,10 @@ void UpdateSearch()
             logging::Info("Starting queue");
             tfmm::queue_start();
         }
+    }
+    if (req_timer.test_and_set(1800000)) {
+        logging::Info("Starting queue");
+        tfmm::queue_start();
     }
 }
 
