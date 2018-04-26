@@ -266,3 +266,6 @@ CTestTestfile.cmake
 Data Folder
 /core
 .vscode/settings.json
+
+.idea
+cmake-build-debug
