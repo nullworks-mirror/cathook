@@ -23,3 +23,4 @@
 #include "CTFPartyClient.hpp"
 
 #include "C_MannVsMachineStats.hpp"
+#include "CTFInventoryManager.hpp"
