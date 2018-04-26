@@ -10,7 +10,7 @@
 #include "hooks/hookedmethods.hpp"
 #include "hack.hpp"
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_events.h>
 #include <GL/glew.h>

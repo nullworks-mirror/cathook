@@ -8,7 +8,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #include <GL/glew.h>
 #include <GL/gl.h>

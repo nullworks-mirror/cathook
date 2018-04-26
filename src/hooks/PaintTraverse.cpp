@@ -6,7 +6,7 @@
  */
 
 #include "common.hpp"
-#include "hack.hpp"
+#include "GUI.h"
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
                          "Clean screenshots",

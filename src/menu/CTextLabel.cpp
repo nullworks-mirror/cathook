@@ -9,6 +9,7 @@
 
 #include "common.hpp"
 #include "sdk.hpp"
+#include "GUI.h"
 
 #if TEXTMODE_VAC != 1
 std::string WordWrap(std::string &in, int max, unsigned long font)

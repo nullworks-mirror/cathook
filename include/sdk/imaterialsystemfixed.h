@@ -13,11 +13,6 @@
 #pragma once
 #endif
 
-#define OVERBRIGHT 2.0f
-#define OO_OVERBRIGHT (1.0f / 2.0f)
-#define GAMMA 2.2f
-#define TEXGAMMA 2.2f
-
 #include "tier1/interface.h"
 #include "tier1/refcount.h"
 #include "mathlib/vector.h"

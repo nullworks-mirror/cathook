@@ -7,6 +7,8 @@
 
 #include "menu/CBaseWidget.h"
 #include "common.hpp"
+#include "GUI.h"
+
 #if TEXTMODE_VAC != 1
 void CBaseWidget::DrawBounds(int x, int y)
 {
