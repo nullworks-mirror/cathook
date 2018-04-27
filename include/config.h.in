@@ -1,0 +1,8 @@
+#pragma once
+
+#define GAME @Game@
+#define ENABLE_VISUALS @EnableVisuals@
+#define ENABLE_GUI @EnableGUI@
+#define ENABLE_IPC @EnableIPC@
+#define DATA_PATH "@DataPath@"
+#define ENABLE_VAC_BYPASS @VACBypass@

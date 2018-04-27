@@ -3,6 +3,16 @@
 cmake_minimum_required(VERSION 3.0)
 project(cathook VERSION 0.0.1 DESCRIPTION "Free Source Engine Trainer")
 
+set(Game "tf2" CACHE STRING "Target game")
+set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supported game types")
+set_property(CACHE Game PROPERTY STRINGS ${GameValues})
+
+set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
+set(EnableGUI 1 CACHE BOOL "Enable GUI")
+set(EnableIPC 0 CACHE BOOL "Enable IPC")
+set(DataPath "/opt/cathook/data" CACHE STRING "Data location")
+set(VACBypass 0 CACHE BOOL "Textmode VAC bypass")
+
 find_package(SDL2 REQUIRED)
 find_package(OpenSSL REQUIRED)
 
@@ -12,22 +22,12 @@ find_package(xoverlay REQUIRED)
 find_package(SimpleIPC REQUIRED)
 
 get_target_property(SimpleIPC_INCLUDE_DIRS SimpleIPC INTERFACE_INCLUDE_DIRECTORIES)
-message("DIRS: ${SimpleIPC_INCLUDE_DIRS}")
 
 add_library(cathook SHARED "")
 
 set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3" LINK_FLAGS "-m32 -static")
 
 target_compile_definitions(cathook PRIVATE
-        GAME=tf2
-        ENABLE_VISUALS=1
-        ENABLE_IPC=1
-        ENABLE_GUI=1
-        ENABLE_NULL_GRAPHICS=0
-        TEXTMODE_STDIN=0
-        TEXTMODE_VAC=0
-        DATA_PATH="/opt/cathook/data"
-        NO_LTO=0
         _GLIBCXX_USE_CXX11_ABI=0
         _POSIX=1
         FREETYPE_GL_USE_VAO=1
