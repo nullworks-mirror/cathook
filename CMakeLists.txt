@@ -5,8 +5,14 @@ project(cathook VERSION 0.0.1 DESCRIPTION "Free Source Engine Trainer")
 
 find_package(SDL2 REQUIRED)
 find_package(OpenSSL REQUIRED)
+
+# cat packages
 find_package(glez REQUIRED)
 find_package(xoverlay REQUIRED)
+find_package(SimpleIPC REQUIRED)
+
+get_target_property(SimpleIPC_INCLUDE_DIRS SimpleIPC INTERFACE_INCLUDE_DIRECTORIES)
+message("DIRS: ${SimpleIPC_INCLUDE_DIRS}")
 
 add_library(cathook SHARED "")
 
@@ -47,7 +53,8 @@ target_include_directories(cathook PRIVATE
         "ucccccp"
         "${SDL2_INCLUDE_DIRS}"
         "${glez_INCLUDE_DIRS}"
-        "${xoverlay_INCLUDE_DIRS}")
+        "${xoverlay_INCLUDE_DIRS}"
+        "${SimpleIPC_INCLUDE_DIRS}")
 
 add_subdirectory(include)
 add_subdirectory(src)
