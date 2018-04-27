@@ -15,7 +15,9 @@ class SDL_Window;
 class CatVar;
 
 extern CatVar disconnect_reason;
+#if ENABLE_VISUALS == 1
 extern int spectator_target;
+#endif
 
 bool CanPacket_hook(void *);
 int IN_KeyEvent_hook(void *, int, int, const char *);
