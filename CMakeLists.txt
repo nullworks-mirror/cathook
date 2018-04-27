@@ -5,6 +5,8 @@ project(cathook VERSION 0.0.1 DESCRIPTION "Free Source Engine Trainer")
 
 find_package(SDL2 REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(glez REQUIRED)
+find_package(xoverlay REQUIRED)
 
 add_library(cathook SHARED "")
 
@@ -42,10 +44,10 @@ target_include_directories(cathook PRIVATE
 
 target_include_directories(cathook PRIVATE
         "simple-ipc/src/include"
-        "libglez/include"
-        "libxoverlay/include"
         "ucccccp"
-        "${SDL2_INCLUDE_DIRS}")
+        "${SDL2_INCLUDE_DIRS}"
+        "${glez_INCLUDE_DIRS}"
+        "${xoverlay_INCLUDE_DIRS}")
 
 add_subdirectory(include)
 add_subdirectory(src)
@@ -54,9 +56,7 @@ find_library(LIBSDL2     NAMES libSDL2-2.0.so.0 PATHS "${PROJECT_SOURCE_DIR}/lib
 find_library(LIBTIER0    NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 find_library(LIBVSTDLIB  NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 
-find_library(LIBXOVERLAY NAMES xoverlay)
-find_library(LIBGLEZ     NAMES glez)
-
-target_link_libraries(cathook ${LIBTIER0} ${LIBVSTDLIB} ${LIBGLEZ} ${LIBXOVERLAY} ssl GLEW stdc++ ${LIBSDL2})
+# TODO glez_LIBRARIES?
+target_link_libraries(cathook ${LIBTIER0} ${LIBVSTDLIB} glez xoverlay ssl GLEW stdc++ ${LIBSDL2})
 
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

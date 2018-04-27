@@ -271,3 +271,5 @@ Data Folder
 cmake-build-debug
 libcathook.so
 build
+# idk where it comes from
+cathook.cbp

@@ -7,12 +7,6 @@
 [submodule "ucccccp"]
 	path = ucccccp
 	url = https://github.com/nullifiedcat/ucccccp
-[submodule "libxoverlay"]
-	path = libxoverlay
-	url = https://github.com/nullifiedcat/libxoverlay
-[submodule "libglez"]
-	path = libglez
-	url = https://github.com/BenCat07/libglez
 [submodule "source-sdk-2013-headers"]
 	path = source-sdk-2013-headers
 	url = https://github.com/nullifiedcat/source-sdk-2013-headers
