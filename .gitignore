@@ -270,3 +270,4 @@ Data Folder
 .idea
 cmake-build-debug
 libcathook.so
+build
