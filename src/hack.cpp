@@ -47,7 +47,7 @@ const std::string &hack::GetType()
 #if not ENABLE_GUI
     version += " NOGUI";
 #else
-    version += " IMGUI";
+    version += " GUI";
 #endif
 
 #ifndef DYNAMIC_CLASSES

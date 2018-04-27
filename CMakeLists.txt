@@ -8,6 +8,7 @@ set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supporte
 set_property(CACHE Game PROPERTY STRINGS ${GameValues})
 
 set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
+set(ExternalDrawing 0 CACHE BOOL "External Visuals")
 set(EnableGUI 1 CACHE BOOL "Enable GUI")
 set(EnableIPC 0 CACHE BOOL "Enable IPC")
 set(DataPath "/opt/cathook/data" CACHE STRING "Data location")
@@ -22,6 +23,8 @@ find_package(xoverlay REQUIRED)
 find_package(SimpleIPC REQUIRED)
 
 get_target_property(SimpleIPC_INCLUDE_DIRS SimpleIPC INTERFACE_INCLUDE_DIRECTORIES)
+
+configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 
 add_library(cathook SHARED "")
 

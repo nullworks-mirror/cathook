@@ -6,7 +6,6 @@
  */
 
 #include "common.hpp"
-#include <link.h>
 
 CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info");
 CatVar crit_key(CV_KEY, "crit_key", "0", "Crit Key");
