@@ -3,6 +3,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(cathook VERSION 0.0.1 DESCRIPTION "Free Source Engine Trainer")
 
+set(GameSpecific 1 CACHE BOOL "Build for specific target game (As opposed to universal, but slower, lib)")
 set(Game "tf2" CACHE STRING "Target game")
 set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supported game types")
 set_property(CACHE Game PROPERTY STRINGS ${GameValues})
@@ -10,7 +11,7 @@ set_property(CACHE Game PROPERTY STRINGS ${GameValues})
 set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
 set(ExternalDrawing 0 CACHE BOOL "External Visuals")
 set(EnableGUI 1 CACHE BOOL "Enable GUI")
-set(EnableIPC 0 CACHE BOOL "Enable IPC")
+set(EnableIPC 1 CACHE BOOL "Enable IPC")
 set(DataPath "/opt/cathook/data" CACHE STRING "Data location")
 set(VACBypass 0 CACHE BOOL "Textmode VAC bypass")
 

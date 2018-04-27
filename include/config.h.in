@@ -1,5 +1,9 @@
 #pragma once
 
+#define OFF 0
+#define ON 1
+
+#define GAME_SPECIFIC @GameSpecific@
 #define GAME @Game@
 #define ENABLE_VISUALS @EnableVisuals@
 #define EXTERNAL_DRAWING @ExternalDrawing@

@@ -52,8 +52,8 @@ const std::string &hack::GetType()
 
 #ifndef DYNAMIC_CLASSES
 
-#ifdef BUILD_GAME
-    version += " GAME " TO_STRING(BUILD_GAME);
+#ifdef GAME_SPECIFIC
+    version += " GAME " TO_STRING(GAME);
 #else
     version += " UNIVERSAL";
 #endif
@@ -236,13 +236,7 @@ free(logname);*/
 #if ENABLE_VISUALS == 1
 
     {
-        std::vector<std::string> essential = { "shaders/v2f-c4f.frag",
-                                               "shaders/v2f-c4f.vert",
-                                               "shaders/v2f-t2f-c4f.frag",
-                                               "shaders/v2f-t2f-c4f.vert",
-                                               "shaders/v3f-t2f-c4f.frag",
-                                               "shaders/v3f-t2f-c4f.vert",
-                                               "menu.json",
+        std::vector<std::string> essential = { "menu.json",
                                                "fonts/tf2build.ttf" };
         for (const auto &s : essential)
         {
