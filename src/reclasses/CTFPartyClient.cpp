@@ -69,7 +69,7 @@ char re::CTFPartyClient::RequestQueueForMatch(int type)
 {
     typedef char (*RequestQueueForMatch_t)(re::CTFPartyClient *, int);
     uintptr_t addr = gSignatures.GetClientSignature(
-        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 ? E8 ? ? ? ?");
+        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 75 ? 89 F0");
     RequestQueueForMatch_t RequestQueueForMatch_fn =
         RequestQueueForMatch_t(addr);
 
