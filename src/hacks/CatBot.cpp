@@ -172,10 +172,12 @@ bool should_ignore_player(CachedEntity *player)
     return is_a_catbot(player->player_info.friendsID);
 }
 
+#if ENABLE_IPC
 void update_ipc_data(ipc::user_data_s &data)
 {
     data.ingame.bot_count = count_bots;
 }
+#endif
 
 Timer level_init_timer{};
 

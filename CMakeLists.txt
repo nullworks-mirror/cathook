@@ -63,11 +63,11 @@ target_include_directories(cathook PRIVATE
 add_subdirectory(include)
 add_subdirectory(src)
 
-find_library(LIBSDL2     NAMES libSDL2-2.0.so.0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
-find_library(LIBTIER0    NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
-find_library(LIBVSTDLIB  NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+find_library(ValveLibrarySDL2    NAMES libSDL2-2.0.so.0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+find_library(ValveLibraryTier0   NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+find_library(ValveLibraryVStdLib NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 
 # TODO glez_LIBRARIES?
-target_link_libraries(cathook ${LIBTIER0} ${LIBVSTDLIB} glez xoverlay ssl GLEW stdc++ ${LIBSDL2})
+target_link_libraries(cathook ${ValveLibrarySDL2} ${ValveLibraryTier0} ${ValveLibraryVStdLib} glez xoverlay ssl GLEW stdc++)
 
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
