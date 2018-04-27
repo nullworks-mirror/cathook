@@ -718,16 +718,15 @@ static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
                            "Log dispatched user messages");
 std::string clear = "";
-//Timer sendmsg{};
-//Timer gitgud{};
 std::string lastfilter{};
 std::string lastname{};
 static bool retrun = false;
+
+static Timer sendmsg{};
+static Timer gitgud{};
+
 bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
 {
-    // TEMP!!
-    Timer sendmsg{};
-    Timer gitgud{};
     if (retrun && gitgud.test_and_set(10000))
     {
         PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),
