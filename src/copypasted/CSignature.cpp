@@ -78,6 +78,9 @@ uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
             firstMatch = 0;
         }
     }
+
+    logging::Info("THIS IS SERIOUS: Could not locate signature: \n============\n\"%s\"\n============", szPattern);
+
     return NULL;
 }
 //===================================================================================
