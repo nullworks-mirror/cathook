@@ -402,8 +402,8 @@ void _FASTCALL emoji(CachedEntity *ent)
                     }
                     glez_rgba_t white = glez_rgba(255, 255, 255, 255);
                     while (!textur || textur == 4294967295)
-                        textur = glez_texture_load_png_rgba(DATA_PATH
-                                                            "/textures/atlas.png");
+                        textur = glez_texture_load_png_rgba(
+                            DATA_PATH "/textures/atlas.png");
                     player_info_s info;
                     unsigned int steamID;
                     unsigned int steamidarray[32]{};

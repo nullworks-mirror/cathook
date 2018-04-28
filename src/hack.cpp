@@ -79,7 +79,7 @@ std::stack<std::string> &hack::command_stack()
     return stack;
 }
 
-#if ENABLE_VISUALS /* Why would we need colored chat stuff in textmode?   \
+#if ENABLE_VISUALS /* Why would we need colored chat stuff in textmode?        \
                          */
 #define red 184, 56, 59, 255
 #define blu 88, 133, 162, 255
@@ -245,8 +245,9 @@ free(logname);*/
             if (not exists)
             {
                 Error(("Missing essential file: " + s +
-                      "/%s\nYou MUST run install-data script to finish "
-                      "installation").c_str(),
+                       "/%s\nYou MUST run install-data script to finish "
+                       "installation")
+                          .c_str(),
                       s.c_str());
             }
         }
