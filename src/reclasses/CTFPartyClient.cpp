@@ -47,7 +47,7 @@ re::CTFPartyClient::MutLocalGroupCriteria(re::CTFPartyClient *client)
     typedef re::ITFGroupMatchCriteria *(*MutLocalGroupCriteria_t)(
         re::CTFPartyClient *);
     static uintptr_t addr = gSignatures.GetClientSignature(
-        "55 89 E5 8B 45 ? 8B 50 ? C6 80 ? ? ? ? ?");
+        "55 89 E5 8B 45 ? 8B 50 ? C6 80");
     static MutLocalGroupCriteria_t MutLocalGroupCriteria_fn =
         MutLocalGroupCriteria_t(addr);
 
@@ -58,7 +58,7 @@ int re::CTFPartyClient::LoadSavedCasualCriteria()
 {
     typedef int (*LoadSavedCasualCriteria_t)(re::CTFPartyClient *);
     uintptr_t addr = gSignatures.GetClientSignature(
-        "55 89 E5 83 EC ? 8B 45 ? 8B 50 ? C6 80 ? ? ? ? ?");
+        "55 89 E5 83 EC ? 8B 45 ? 8B 50 ? C6 80");
     LoadSavedCasualCriteria_t LoadSavedCasualCriteria_fn =
         LoadSavedCasualCriteria_t(addr);
 
@@ -69,7 +69,7 @@ char re::CTFPartyClient::RequestQueueForMatch(int type)
 {
     typedef char (*RequestQueueForMatch_t)(re::CTFPartyClient *, int);
     uintptr_t addr = gSignatures.GetClientSignature(
-        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 75 ? 89 F0");
+        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 ? E8");
     RequestQueueForMatch_t RequestQueueForMatch_fn =
         RequestQueueForMatch_t(addr);
 
@@ -80,7 +80,7 @@ char re::CTFPartyClient::RequestLeaveForMatch(int type)
     typedef char (*RequestLeaveForMatch_t)(re::CTFPartyClient *, int);
     uintptr_t addr = gSignatures.GetClientSignature(
         "55 89 E5 57 56 53 83 EC ? 8B 45 ? 89 44 24 ? 8B 45 ? 89 04 24 E8 ? ? "
-        "? ? 84 C0 89 C6 75 ?");
+        "? ? 84 C0 89 C6 75");
     RequestLeaveForMatch_t RequestLeaveForMatch_fn =
         RequestLeaveForMatch_t(addr);
 
