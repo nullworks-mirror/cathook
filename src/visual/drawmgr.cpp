@@ -27,9 +27,9 @@ void render_cheat_visuals()
 
 void BeginCheatVisuals()
 {
-/*#if RENDERING_ENGINE_OPENGL
-    std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-#endif*/
+    /*#if RENDERING_ENGINE_OPENGL
+        std::lock_guard<std::mutex> draw_lock(drawing_mutex);
+    #endif*/
     draw_api::draw_begin();
     ResetStrings();
 }
@@ -45,9 +45,9 @@ CatVar enable_logo(CV_SWITCH, "nullcore_mode_logo", "1",
 
 void DrawCheatVisuals()
 {
-/*#if RENDERING_ENGINE_OPENGL
-    std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-#endif*/
+    /*#if RENDERING_ENGINE_OPENGL
+        std::lock_guard<std::mutex> draw_lock(drawing_mutex);
+    #endif*/
     {
         PROF_SECTION(DRAW_misc);
         hacks::shared::misc::DrawText();

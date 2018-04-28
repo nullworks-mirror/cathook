@@ -5,7 +5,6 @@
  *      Author: nullifiedcat
  */
 
-
 #pragma once
 
 namespace projectile_logging
