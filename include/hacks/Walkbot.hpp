@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "config.h"
+
 namespace hacks
 {
 namespace shared

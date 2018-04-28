@@ -8,6 +8,7 @@
 #pragma once
 
 #include <enums.hpp>
+#include "config.h"
 
 class CachedEntity;
 class Vector;

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "common.hpp"
+#include "config.h"
 
 class ConVar;
 class IClientEntity;
