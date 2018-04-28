@@ -7,7 +7,7 @@
 
 #include "common.hpp"
 
-#include "hooks/hookedmethods.hpp"
+#include "hooks/HookedMethods.hpp"
 #include "hack.hpp"
 
 #include <SDL2/SDL.h>
