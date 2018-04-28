@@ -2,6 +2,7 @@
 
 cmake_minimum_required(VERSION 3.0)
 project(cathook VERSION 0.0.1 DESCRIPTION "Free Source Engine Trainer")
+add_library(cathook SHARED "")
 
 set(GameSpecific 1 CACHE BOOL "Build for specific target game (As opposed to universal, but slower, lib)")
 set(Game "tf2" CACHE STRING "Target game")
@@ -20,13 +21,9 @@ set(EnableWarnings 1 CACHE BOOL "Enable compile warnings")
 set(EnableNullGraphics 0 CACHE BOOL "Enable experimental textmode hooks (CRASHES)")
 
 find_package(Git REQUIRED)
-find_package(SDL2 REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 # cat packages
-find_package(glez REQUIRED)
-find_package(xoverlay REQUIRED)
-find_package(SimpleIPC REQUIRED)
 
 execute_process(COMMAND
         "${GIT_EXECUTABLE}" log -1 --pretty=\"%h\"
@@ -40,12 +37,34 @@ execute_process(COMMAND
         OUTPUT_VARIABLE GIT_COMMIT_TIME
         ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-get_target_property(SimpleIPC_INCLUDE_DIRS SimpleIPC INTERFACE_INCLUDE_DIRECTORIES)
+find_library(ValveLibrarySDL2    NAMES libSDL2-2.0.so.0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+find_library(ValveLibraryTier0   NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+find_library(ValveLibraryVStdLib NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+
+if(EnableIPC)
+    find_package(SimpleIPC REQUIRED)
+    get_target_property(SimpleIPC_INCLUDE_DIRS SimpleIPC INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(cathook PRIVATE "${SimpleIPC_INCLUDE_DIRS}")
+endif()
+
+if(EnableVisuals)
+    find_package(glez REQUIRED)
+    find_package(SDL2 REQUIRED)
+    find_package(GLEW REQUIRED)
+    if(ExternalDrawing)
+        find_package(xoverlay REQUIRED)
+        target_include_directories(cathook PRIVATE
+                "${xoverlay_INCLUDE_DIRS}")
+        target_link_libraries(cathook xoverlay)
+    endif()
+    target_include_directories(cathook PRIVATE
+            "${SDL2_INCLUDE_DIRS}"
+            "${glez_INCLUDE_DIRS}")
+    target_link_libraries(cathook ${ValveLibrarySDL2} glez ${GLEW_LIBRARIES})
+endif()
 
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
-
-add_library(cathook SHARED "")
 
 set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3" LINK_FLAGS "-m32 -static")
 
@@ -70,13 +89,7 @@ target_include_directories(cathook SYSTEM PRIVATE
         "source-sdk-2013-headers/mp/src/tier1"
         "source-sdk-2013-headers/mp/src")
 
-target_include_directories(cathook PRIVATE
-        "simple-ipc/src/include"
-        "ucccccp"
-        "${SDL2_INCLUDE_DIRS}"
-        "${glez_INCLUDE_DIRS}"
-        "${xoverlay_INCLUDE_DIRS}"
-        "${SimpleIPC_INCLUDE_DIRS}")
+target_include_directories(cathook PRIVATE "ucccccp")
 
 if(EnableWarnings)
     target_compile_options(cathook PRIVATE -Wundef -Werror)
@@ -85,11 +98,6 @@ endif()
 add_subdirectory(include)
 add_subdirectory(src)
 
-find_library(ValveLibrarySDL2    NAMES libSDL2-2.0.so.0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
-find_library(ValveLibraryTier0   NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
-find_library(ValveLibraryVStdLib NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
-
 # TODO glez_LIBRARIES?
-target_link_libraries(cathook ${ValveLibrarySDL2} ${ValveLibraryTier0} ${ValveLibraryVStdLib} glez xoverlay ssl GLEW stdc++)
-
+target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl stdc++)
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
