@@ -11,7 +11,6 @@
 #include "sdk.hpp"
 #include "GUI.h"
 
-#if TEXTMODE_VAC != 1
 std::string WordWrap(std::string &in, int max, unsigned long font)
 {
     std::stringstream result, line, wordstream, next;
@@ -134,4 +133,3 @@ void CTextLabel::Draw(int x, int y)
     else
         draw::String(fonts::MENU, x, y, colorsint::white, 1, GetText());
 }
-#endif

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "config.h"
+
 class INetMessage;
 class CViewSetup;
 class bf_read;
@@ -14,7 +16,7 @@ class SDL_Window;
 class CatVar;
 
 extern CatVar disconnect_reason;
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 extern int spectator_target;
 #endif
 
@@ -29,7 +31,7 @@ void LevelInit_hook(void *, const char *);
 void LevelShutdown_hook(void *);
 int RandomInt_hook(void *, int, int);
 
-#if ENABLE_NULL_GRAPHICS == 1
+#if ENABLE_NULL_GRAPHICS
 typedef ITexture *(*FindTexture_t)(void *, const char *, const char *, bool,
                                    int);
 typedef IMaterial *(*FindMaterialEx_t)(void *, const char *, const char *, int,

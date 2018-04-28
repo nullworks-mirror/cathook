@@ -6,8 +6,7 @@
  */
 
 #include "menu/IWidget.h"
-#if TEXTMODE_VAC != 1
+
 IWidget::~IWidget()
 {
 }
-#endif

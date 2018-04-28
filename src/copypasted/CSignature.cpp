@@ -67,10 +67,8 @@ uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
                 firstMatch = pCur;
             if (!pat[2])
                 return firstMatch;
-            if (*(uintptr_t *) pat == '\?\?' || *(uint8_t *) pat != '\?')
+            if (*pat == '\?')
                 pat += 3;
-            else
-                pat += 2;
         }
         else
         {
@@ -94,7 +92,7 @@ void *CSignature::GetModuleHandleSafe(const char *pszModuleName)
     return moduleHandle;
 }
 //===================================================================================
-uintptr_t CSignature::GetClientSignature(char *chPattern)
+uintptr_t CSignature::GetClientSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
@@ -121,7 +119,7 @@ uintptr_t CSignature::GetClientSignature(char *chPattern)
            (uintptr_t)(module) + moduleMap->l_addr;
 }
 //===================================================================================
-uintptr_t CSignature::GetEngineSignature(char *chPattern)
+uintptr_t CSignature::GetEngineSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
@@ -148,7 +146,7 @@ uintptr_t CSignature::GetEngineSignature(char *chPattern)
            (uintptr_t)(module) + moduleMap->l_addr;
 }
 //===================================================================================
-uintptr_t CSignature::GetVstdSignature(char *chPattern)
+uintptr_t CSignature::GetVstdSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot

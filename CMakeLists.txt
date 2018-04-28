@@ -14,6 +14,10 @@ set(EnableGUI 1 CACHE BOOL "Enable GUI")
 set(EnableIPC 1 CACHE BOOL "Enable IPC")
 set(DataPath "/opt/cathook/data" CACHE STRING "Data location")
 set(VACBypass 0 CACHE BOOL "Textmode VAC bypass")
+set(Textmode 0 CACHE BOOL "Various textmode-only features for bots")
+set(EnableTextmodeStdin 0 CACHE BOOL "Textmode Stdin -> Console bridge (EXPERIMENTAL)")
+set(EnableWarnings 1 CACHE BOOL "Enable compile warnings")
+set(EnableNullGraphics 0 CACHE BOOL "Enable experimental textmode hooks (CRASHES)")
 
 find_package(Git REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -57,7 +61,7 @@ target_compile_definitions(cathook PRIVATE
         GNUC=1
         NO_MALLOC_OVERRIDE=1)
 
-target_include_directories(cathook PRIVATE
+target_include_directories(cathook SYSTEM PRIVATE
         "source-sdk-2013-headers/mp/src/mathlib"
         "source-sdk-2013-headers/mp/src/public"
         "source-sdk-2013-headers/mp/src/common"
@@ -73,6 +77,10 @@ target_include_directories(cathook PRIVATE
         "${glez_INCLUDE_DIRS}"
         "${xoverlay_INCLUDE_DIRS}"
         "${SimpleIPC_INCLUDE_DIRS}")
+
+if(EnableWarnings)
+    target_compile_options(cathook PRIVATE -Wundef -Werror)
+endif()
 
 add_subdirectory(include)
 add_subdirectory(src)

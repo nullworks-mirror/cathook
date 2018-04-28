@@ -1,6 +1,5 @@
 #include "common.hpp"
 
-#if TEXTMODE_VAC != 1
 namespace fonts
 {
 unsigned long MENU                   = 0;
@@ -74,7 +73,7 @@ void draw::OutlineRect(int x, int y, int w, int h, int color)
     g_ISurface->DrawOutlinedRect(x, y, x + w, y + h);
 }
 
-void draw::GetStringLength(unsigned long font, char *string, int &length,
+void draw::GetStringLength(unsigned long font, const char *string, int &length,
                            int &height)
 {
     wchar_t buf[512];
@@ -186,4 +185,3 @@ std::pair<int, int> draw::GetStringLength(unsigned long font,
     draw::GetStringLength(font, (char *) string.c_str(), l, h);
     return std::make_pair(l, h);
 }
-#endif
