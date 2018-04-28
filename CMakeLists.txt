@@ -126,3 +126,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_custom_command(TARGET cathook POST_BUILD
             COMMAND strip --strip-all "$<TARGET_FILE:cathook>")
 endif()
+
+add_custom_command(TARGET cathook POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
