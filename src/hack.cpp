@@ -42,7 +42,7 @@ const std::string &hack::GetType()
     if (version_set)
         return version;
     version = "";
-#if not defined(ENABLE_IPC)
+#if not ENABLE_IPC
     version += " NOIPC";
 #endif
 #if not ENABLE_GUI

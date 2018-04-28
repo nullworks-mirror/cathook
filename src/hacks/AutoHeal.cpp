@@ -552,7 +552,7 @@ int HealingPriority(int idx)
         priority += 50 * (1 - healthp);
         priority += 10 * (1 - overhealp);
     }
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
     if (ipc::peer)
     {
         if (hacks::shared::followbot::followbot &&

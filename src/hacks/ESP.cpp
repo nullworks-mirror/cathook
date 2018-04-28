@@ -1173,7 +1173,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     AddEntityString(ent, classes[pclass - 1]);
             }
 
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
             // ipc bot esp
             if (show_bot_id && ipc::peer && ent != LOCAL_E)
             {

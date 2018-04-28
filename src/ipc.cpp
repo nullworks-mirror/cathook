@@ -11,7 +11,7 @@
 #include "hack.hpp"
 #include "hitrate.hpp"
 
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
 
 namespace ipc
 {
