@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_MISC_HPP_
-#define HACKS_MISC_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -86,5 +85,3 @@ void Schema_Reload();
 void CC_Misc_Disconnect_VAC();
 
 DECLARE_HACK_SINGLETON(Misc);*/
-
-#endif /* HACKS_MISC_HPP_ */

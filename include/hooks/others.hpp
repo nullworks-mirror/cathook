@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef OTHERS_H_
-#define OTHERS_H_
+#pragma once
 
 class INetMessage;
 class CViewSetup;
@@ -60,5 +59,3 @@ typedef IMaterial *(*FindMaterial_t)(void *, const char *, const char *, bool,
 
 // extern unsigned int* swapwindow_ptr;
 // extern unsigned int  swapwindow_orig;
-
-#endif /* OTHERS_H_ */

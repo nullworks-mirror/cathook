@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef EFFECTGLOW_HPP_
-#define EFFECTGLOW_HPP_
+#pragma once
 
 #include "common.hpp"
 #include "sdk.hpp"
@@ -59,5 +58,3 @@ public:
 extern EffectGlow g_EffectGlow;
 extern CScreenSpaceEffectRegistration *g_pEffectGlow;
 }
-
-#endif /* EFFECTGLOW_HPP_ */

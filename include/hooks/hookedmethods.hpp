@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HOOKEDMETHODS_H_
-#define HOOKEDMETHODS_H_
+#pragma once
 
 #include "common.hpp"
 
@@ -70,5 +69,3 @@ void DoSDLUnhooking();
 #include "CreateMove.hpp"
 #include "PaintTraverse.hpp"
 #include "others.hpp"
-
-#endif /* HOOKEDMETHODS_H_ */

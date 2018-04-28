@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_HACKLIST_HPP_
-#define HACKS_HACKLIST_HPP_
+#pragma once
 
 #if ENABLE_VISUALS == 1
 
@@ -45,5 +44,3 @@
 #include "Announcer.hpp"
 #include "Killstreak.hpp"
 #include "CatBot.hpp"
-
-#endif /* HACKS_HACKLIST_HPP_ */

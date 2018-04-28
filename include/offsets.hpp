@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef OFFSETS_HPP_
-#define OFFSETS_HPP_
+#pragma once
 
 #include <stdint.h>
 #include <exception>
@@ -166,5 +165,3 @@ struct offsets
         return PlatformOffset(2, undefined, undefined);
     }
 };
-
-#endif /* OFFSETS_HPP_ */

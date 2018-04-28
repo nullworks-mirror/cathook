@@ -5,9 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ROOT_HPP_
-#define ROOT_HPP_
-#if TEXTMODE_VAC != 1
+#pragma once
+
 #include "../CBaseWindow.h"
 
 namespace menu
@@ -27,5 +26,3 @@ public:
 };
 }
 }
-#endif
-#endif /* ROOT_HPP_ */

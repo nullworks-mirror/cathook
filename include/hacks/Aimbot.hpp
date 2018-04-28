@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HAIMBOT_H_
-#define HAIMBOT_H_
+#pragma once
 
 #include "common.hpp"
 
@@ -63,5 +62,3 @@ float EffectiveTargetingRange();
 }
 }
 }
-
-#endif /* HAIMBOT_H_ */

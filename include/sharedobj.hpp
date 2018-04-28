@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef SHAREDOBJ_HPP_
-#define SHAREDOBJ_HPP_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -53,5 +52,3 @@ SharedObject &libsdl();
 
 void LoadAllSharedObjects();
 }
-
-#endif /* SHAREDOBJ_HPP_ */

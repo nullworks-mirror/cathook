@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_SPAM_HPP_
-#define HACKS_SPAM_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -36,5 +35,3 @@ void Reload();
 }
 }
 }
-
-#endif /* HACKS_SPAM_HPP_ */

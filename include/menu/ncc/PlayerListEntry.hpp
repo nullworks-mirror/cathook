@@ -5,9 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef PLAYERLISTENTRY_HPP_
-#define PLAYERLISTENTRY_HPP_
-#if TEXTMODE_VAC != 1
+#pragma once
+
 #include "menu/ncc/Menu.hpp"
 
 namespace menu
@@ -78,5 +77,3 @@ public:
 }
 }
 }
-#endif
-#endif /* PLAYERLISTENTRY_HPP_ */

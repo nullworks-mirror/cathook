@@ -6,8 +6,7 @@
 //
 //===========================================================================//
 
-#ifndef IMATERIALSYSTEMFIXED_H
-#define IMATERIALSYSTEMFIXED_H
+#pragma once
 
 #ifdef _WIN32
 #pragma once
@@ -622,5 +621,3 @@ public:
         int mips, ImageFormat fmt, int srcBufferSize, byte *srcBits,
         int nFlags) = 0;
 };
-
-#endif // IMATERIALSYSTEMFIXED_H

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef SDK_HPP_
-#define SDK_HPP_
+#pragma once
 
 #define private public
 #define protected public
@@ -64,4 +63,5 @@
 #include "sdk/HUD.h"
 #include "sdk/CGameRules.h"
 
-#endif /* SDK_HPP_ */
+#undef private
+#undef protected

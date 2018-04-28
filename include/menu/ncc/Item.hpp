@@ -5,9 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ITEM_HPP_
-#define ITEM_HPP_
-#if TEXTMODE_VAC != 1
+#pragma once
+
 #include "../CBaseWidget.h"
 
 namespace menu
@@ -31,5 +30,3 @@ public:
 };
 }
 }
-#endif
-#endif /* ITEM_HPP_ */

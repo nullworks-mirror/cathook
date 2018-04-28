@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef VELOCITY_HPP_
-#define VELOCITY_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -18,5 +17,3 @@ extern EstimateAbsVelocity_t EstimateAbsVelocity;
 
 void Init();
 }
-
-#endif /* VELOCITY_HPP_ */

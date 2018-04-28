@@ -5,9 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CBASECONTAINER_H_
-#define CBASECONTAINER_H_
-#if TEXTMODE_VAC != 1
+#pragma once
+
 #include "menu/CBaseWidget.h"
 
 class CBaseContainer : public CBaseWidget, public virtual IWidget
@@ -53,5 +52,3 @@ public:
 
     std::vector<IWidget *> m_children;
 };
-#endif
-#endif /* CBASECONTAINER_H_ */

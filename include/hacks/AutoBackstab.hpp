@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_AUTOBACKSTAB_HPP_
-#define HACKS_AUTOBACKSTAB_HPP_
+#pragma once
 
 namespace hacks
 {
@@ -20,5 +19,3 @@ const Vector GetWorldSpaceCenter(CachedEntity *ent);
 }
 }
 }
-
-#endif /* HACKS_AUTOBACKSTAB_HPP_ */

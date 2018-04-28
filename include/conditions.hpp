@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CONDITIONS_HPP_
-#define CONDITIONS_HPP_
+#pragma once
 
 #include <entitycache.hpp>
 #include "netvars.hpp"
@@ -315,5 +314,3 @@ template <condition cond> inline void RemoveCondition(CachedEntity *ent)
     }
     CondBitSet<cond, false>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
-
-#endif /* CONDITIONS_HPP_ */

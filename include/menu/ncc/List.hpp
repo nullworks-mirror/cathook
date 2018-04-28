@@ -5,9 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef LIST_HPP_
-#define LIST_HPP_
-#if TEXTMODE_VAC != 1
+#pragma once
+
 #include "../CBaseContainer.h"
 #include "common.hpp"
 
@@ -66,5 +65,3 @@ public:
 };
 }
 }
-#endif
-#endif /* LIST_HPP_ */

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HESP_H_
-#define HESP_H_
+#pragma once
 
 #include "common.hpp"
 
@@ -64,5 +63,3 @@ void ResetEntityStrings();
 }
 }
 }
-
-#endif /* HESP_H_ */

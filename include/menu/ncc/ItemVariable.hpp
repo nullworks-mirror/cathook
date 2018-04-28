@@ -5,9 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ITEMVARIABLE_HPP_
-#define ITEMVARIABLE_HPP_
-#if TEXTMODE_VAC != 1
+#pragma once
+
 #include "menu/ncc/Item.hpp"
 
 class CatVar;
@@ -38,5 +37,3 @@ public:
 };
 }
 }
-#endif
-#endif /* ITEMVARIABLE_HPP_ */

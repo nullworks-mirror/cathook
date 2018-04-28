@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_SPYALERT_HPP_
-#define HACKS_SPYALERT_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -25,5 +24,3 @@ void Draw();
 }
 }
 }
-
-#endif /* HACKS_SPYALERT_HPP_ */

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_RADAR_HPP_
-#define HACKS_RADAR_HPP_
+#pragma once
 
 #include "visual/atlas.hpp"
 #include "common.hpp"
@@ -30,5 +29,3 @@ void Draw();
 }
 }
 }
-
-#endif /* HACKS_RADAR_HPP_ */

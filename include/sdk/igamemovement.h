@@ -7,8 +7,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#if !defined(IGAMEMOVEMENT_H)
-#define IGAMEMOVEMENT_H
+#pragma once
 
 #ifdef _WIN32
 #pragma once
@@ -131,5 +130,3 @@ public:
     virtual Vector GetPlayerMaxs(bool ducked) const       = 0;
     virtual Vector GetPlayerViewOffset(bool ducked) const = 0;
 };
-
-#endif // IGAMEMOVEMENT_H

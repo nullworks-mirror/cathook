@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef USERCMD_HPP_
-#define USERCMD_HPP_
+#pragma once
 
 #include <stdint.h>
 
@@ -31,5 +30,3 @@ public:
     short mousedy;
     bool hasbeenpredicted;
 };
-
-#endif /* USERCMD_HPP_ */

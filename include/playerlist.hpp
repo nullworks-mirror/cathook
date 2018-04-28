@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef PLAYERLIST_HPP_
-#define PLAYERLIST_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -59,5 +58,3 @@ userdata &AccessData(CachedEntity *player);
 bool IsDefault(unsigned steamid);
 bool IsDefault(CachedEntity *player);
 }
-
-#endif /* PLAYERLIST_HPP_ */

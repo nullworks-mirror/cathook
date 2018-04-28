@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef PREDICTION_HPP_
-#define PREDICTION_HPP_
+#pragma once
 
 #include <enums.hpp>
 
@@ -33,5 +32,3 @@ void Prediction_PaintTraverse();
 
 float DistanceToGround(CachedEntity *ent);
 float DistanceToGround(Vector origin);
-
-#endif /* PREDICTION_HPP_ */

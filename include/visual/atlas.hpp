@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ATLAS_HPP_
-#define ATLAS_HPP_
+#pragma once
 
 #include "common.hpp"
 #include "visual/drawex.hpp"
@@ -52,5 +51,3 @@ public:
 
 texture_atlas &atlas();
 }
-
-#endif /* ATLAS_HPP_ */

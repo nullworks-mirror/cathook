@@ -5,10 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HOOVY_HPP_
-#define HOOVY_HPP_
+#pragma once
 
 void UpdateHoovyList();
 bool IsHoovy(CachedEntity *entity);
-
-#endif /* HOOVY_HPP_ */

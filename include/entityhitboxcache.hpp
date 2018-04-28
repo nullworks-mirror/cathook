@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ENTITYHITBOXCACHE_HPP_
-#define ENTITYHITBOXCACHE_HPP_
+#pragma once
 
 #include <mathlib/vector.h>
 #include <mathlib/mathlib.h>
@@ -70,5 +69,3 @@ inline EntityHitboxCache &Get(unsigned i)
     return array[i];
 }
 }
-
-#endif /* ENTITYHITBOXCACHE_HPP_ */

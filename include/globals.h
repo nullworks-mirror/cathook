@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef GLOBALS_H_
-#define GLOBALS_H_
+#pragma once
 
 #include <time.h>
 
@@ -54,5 +53,3 @@ class CUserCmd;
 extern CUserCmd *g_pUserCmd;
 
 extern GlobalSettings g_Settings;
-
-#endif /* GLOBALS_H_ */

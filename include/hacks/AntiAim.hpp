@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ANTIAIM_H_
-#define ANTIAIM_H_
+#pragma once
 
 class CatVar;
 class CUserCmd;
@@ -39,5 +38,3 @@ void ProcessUserCmd(CUserCmd *cmd);
 }
 }
 }
-
-#endif /* ANTIAIM_H_ */

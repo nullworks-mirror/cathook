@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_ANTIBACKSTAB_HPP_
-#define HACKS_ANTIBACKSTAB_HPP_
+#pragma once
 
 namespace hacks
 {
@@ -20,5 +19,3 @@ void PaintTraverse();
 }
 }
 }
-
-#endif /* HACKS_ANTIBACKSTAB_HPP_ */

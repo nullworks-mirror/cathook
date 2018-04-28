@@ -5,9 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef TOOLTIP_HPP_
-#define TOOLTIP_HPP_
-#if TEXTMODE_VAC != 1
+#pragma once
+
 #include "menu/CTextLabel.h"
 
 #include "common.hpp"
@@ -31,5 +30,3 @@ public:
 };
 }
 }
-#endif
-#endif /* TOOLTIP_HPP_ */

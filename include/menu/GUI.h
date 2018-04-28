@@ -5,10 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef GUI_H_
-#define GUI_H_
-#if TEXTMODE_VAC != 1
-#undef RootWindow
+#pragma once
+
 class IWidget;
 class CatVar;
 
@@ -57,5 +55,3 @@ public:
 };
 
 extern CatGUI *g_pGUI;
-#endif
-#endif /* GUI_H_ */

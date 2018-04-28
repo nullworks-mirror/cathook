@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef PLAYERRESOURCE_H_
-#define PLAYERRESOURCE_H_
+#pragma once
 
 class CachedEntity;
 
@@ -24,5 +23,3 @@ public:
 };
 
 extern TFPlayerResource *g_pPlayerResource;
-
-#endif /* PLAYERRESOURCE_H_ */

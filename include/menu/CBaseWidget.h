@@ -5,19 +5,14 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CBASEWIDGET_H_
-#define CBASEWIDGET_H_
-#if TEXTMODE_VAC != 1
+#pragma once
+
 #include "menu/IWidget.h"
-// #include "../beforecheaders.h"
 #include <memory>
 #include <vector>
 #include <cstring>
 #include <algorithm>
-// #include "../aftercheaders.h"
-
 #include "logging.hpp"
-
 #include <KeyValues.h>
 
 class CBaseWidget : public virtual IWidget
@@ -177,5 +172,3 @@ public:
     KeyValues::AutoDelete m_KeyValues;
     IWidget *m_pParent;
 };
-#endif
-#endif /* CBASEWIDGET_H_ */

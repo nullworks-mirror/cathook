@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef LOCALPLAYER_HPP_
-#define LOCALPLAYER_HPP_
+#pragma once
 
 #include <mathlib/vector.h>
 
@@ -43,5 +42,3 @@ public:
 #define LOCAL_W g_pLocalPlayer->weapon()
 
 extern LocalPlayer *g_pLocalPlayer;
-
-#endif /* LOCALPLAYER_HPP_ */
