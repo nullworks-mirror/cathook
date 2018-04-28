@@ -17,8 +17,9 @@ namespace followbot
 
 CatVar followbot(CV_SWITCH, "fb", "0", "Followbot Switch",
                  "Set to 1 in followbots' configs");
-static CatVar roambot(CV_SWITCH, "fb_roaming", "1", "Roambot",
-                      "Followbot will roam free, finding targets it can");
+bool followcart = false;
+CatVar roambot(CV_SWITCH, "fb_roaming", "1", "Roambot",
+               "Followbot will roam free, finding targets it can");
 static CatVar draw_crumb(CV_SWITCH, "fb_draw", "1", "Draw crumbs",
                          "Self explanitory");
 static CatVar follow_distance(CV_INT, "fb_distance", "175", "Follow Distance",
@@ -103,24 +104,37 @@ void WorldTick()
         if ((!follow_target || change) && roambot)
         {
             // Try to get a new target
-            auto ent_count = g_IEngine->GetMaxClients();
-            for (int i = 0; i < ent_count; i++)
+            auto ent_count = HIGHEST_ENTITY;
+            for (int i = 0; i < HIGHEST_ENTITY; i++)
             {
                 auto entity = ENTITY(i);
                 if (CE_BAD(entity)) // Exist + dormant
                     continue;
-                if (entity->m_Type != ENTITY_PLAYER)
-                    continue;
+                if (!followcart)
+                    if (entity->m_Type != ENTITY_PLAYER)
+                        continue;
                 if (entity == LOCAL_E) // Follow self lol
                     continue;
-                if (!entity->m_bAlivePlayer ||
-                    entity->m_iTeam ==
-                        LOCAL_E->m_iTeam) // Dont follow dead players
+                if (!entity->m_bAlivePlayer) // Dont follow dead players
                     continue;
                 if (follow_activation &&
                     entity->m_flDistance > (float) follow_activation)
                     continue;
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
+                    continue;
+                const model_t *model =
+                    ENTITY(follow_target)->InternalEntity()->GetModel();
+                if (followcart && model &&
+                    (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
+                     lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
+                     lagexploit::pointarr[4]) &&
+                    (model == lagexploit::pointarr[0] ||
+                     model == lagexploit::pointarr[1] ||
+                     model == lagexploit::pointarr[2] ||
+                     model == lagexploit::pointarr[3] ||
+                     model == lagexploit::pointarr[4]))
+                    follow_target = entity->m_IDX;
+                if (entity->m_Type != ENTITY_PLAYER)
                     continue;
                 if (follow_target &&
                     ENTITY(follow_target)->m_flDistance >

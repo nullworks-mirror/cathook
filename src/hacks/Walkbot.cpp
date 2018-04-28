@@ -1191,89 +1191,27 @@ void Move()
                 }
             }
         }
-        if (!prevlvlname)
-            prevlvlname        = g_IEngine->GetLevelName();
+        prevlvlname            = g_IEngine->GetLevelName();
         std::string prvlvlname = format(prevlvlname);
-        logging::Info("%s", prevlvlname);
-        if (boost::contains(prvlvlname, "pl_"))
+        logging::Info("%s %s", prevlvlname, prvlvlname.c_str());
+        if (boost::contains(prvlvlname, "pl_") || boost::contains(prvlvlname, "cp_"))
         {
+            logging::Info("1");
             bool ret = false;
             if (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
                 lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
                 lagexploit::pointarr[4])
-                for (int i = 0; i < MAX_ENTITIES; i++)
-                {
-                    if (!ret)
-                    {
-                        CachedEntity *ent = ENTITY(i);
-                        if (!CE_GOOD(ent))
-                            continue;
-                        if (ent->m_iTeam == LOCAL_E->m_iTeam)
-                            continue;
-                        const model_t *model = RAW_ENT(ent)->GetModel();
-                        if (model)
-                        {
-                            if ((model == lagexploit::pointarr[1] ||
-                                 model == lagexploit::pointarr[2] ||
-                                 model == lagexploit::pointarr[3] ||
-                                 model == lagexploit::pointarr[4]) &&
-                                ent->m_flDistance < 400.0f &&
-                                IsVectorVisible(g_pLocalPlayer->v_Eye,
-                                                ent->m_vecOrigin))
-                            {
-                                index_t node = CreateNode(ent->m_vecOrigin);
-                                auto &n      = state::nodes[node];
-                                if (g_pUserCmd->buttons & IN_DUCK)
-                                    n.flags |= NF_DUCK;
-                                if (g_pUserCmd->buttons & IN_JUMP)
-                                    n.flags |= NF_JUMP;
-                                if (state::node_good(state::active_node))
-                                {
-                                    auto &c = state::nodes[state::active_node];
-                                    n.link(state::active_node);
-                                    c.link(node);
-                                    logging::Info("[wb] Node %u auto-linked to "
-                                                  "node %u at (%.2f %.2f %.2f)",
-                                                  node, state::active_node, c.x,
-                                                  c.y, c.z);
-                                }
-                                state::last_node_buttons = g_pUserCmd->buttons;
-                                state::active_node       = node;
-                                ret                      = true;
-                            }
-                        }
-                        else if (ent->m_flDistance < 500.0f &&
-                                 IsVectorVisible(g_pLocalPlayer->v_Eye,
-                                                 ent->m_vecOrigin))
-                        {
-                            index_t node = CreateNode(ent->m_vecOrigin);
-                            auto &n      = state::nodes[node];
-                            if (g_pUserCmd->buttons & IN_DUCK)
-                                n.flags |= NF_DUCK;
-                            if (g_pUserCmd->buttons & IN_JUMP)
-                                n.flags |= NF_JUMP;
-                            if (state::node_good(state::active_node))
-                            {
-                                auto &c = state::nodes[state::active_node];
-                                n.link(state::active_node);
-                                c.link(node);
-                                logging::Info("[wb] Node %u auto-linked to "
-                                              "node %u at (%.2f %.2f %.2f)",
-                                              node, state::active_node, c.x,
-                                              c.y, c.z);
-                            }
-                            state::last_node_buttons = g_pUserCmd->buttons;
-                            state::active_node       = node;
-                            ret                      = true;
-                        }
-                    }
-                }
-            if (erasedelay > 6 && nodes.size() > 0)
             {
-                nodes.erase(nodes.begin());
-                erasedelay = 0;
+                hacks::shared::followbot::followbot  = 1;
+                hacks::shared::followbot::roambot    = 1;
+                hacks::shared::followbot::followcart = true;
             }
-            erasedelay++;
+            else
+            {
+                hacks::shared::followbot::followbot  = 0;
+                hacks::shared::followbot::roambot    = 0;
+                hacks::shared::followbot::followcart = false;
+            }
         }
         if (nodes.size() == 0)
             return;

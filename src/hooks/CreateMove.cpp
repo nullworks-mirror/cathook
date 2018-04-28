@@ -112,10 +112,11 @@ static CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0",
 
 static CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
 static CatVar serverlag_amount(
-    CV_INT, "serverlag", "0",
-    "serverlag", "Lag the server by spamming this many voicecommands per tick");
+    CV_INT, "serverlag", "0", "serverlag",
+    "Lag the server by spamming this many voicecommands per tick");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
-CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers", "Crash servers by spamming signon net messages");
+CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
+                   "Crash servers by spamming signon net messages");
 bool *bSendPackets;
 bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 {
@@ -519,15 +520,17 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
         if (cmd)
             g_Settings.last_angles = cmd->viewangles;
     }
-    if (serverlag_amount || votelogger::antikick_ticks) {
-    	if (votelogger::antikick_ticks) {
-    		votelogger::antikick_ticks--;
-    		for (int i = 0; i < (int) 70; i++)
-    		            g_IEngine->ServerCmd("voicemenu 0 0", false);
-    	}
-    	else
-        for (int i = 0; i < (int) serverlag_amount; i++)
-            g_IEngine->ServerCmd("voicemenu 0 0", false);
+    if (serverlag_amount || votelogger::antikick_ticks)
+    {
+        if (votelogger::antikick_ticks)
+        {
+            votelogger::antikick_ticks--;
+            for (int i = 0; i < (int) 70; i++)
+                g_IEngine->ServerCmd("voicemenu 0 0", false);
+        }
+        else
+            for (int i = 0; i < (int) serverlag_amount; i++)
+                g_IEngine->ServerCmd("use", false);
     }
 
     //	PROF_END("CreateMove");

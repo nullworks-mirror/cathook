@@ -6,7 +6,8 @@
  */
 #include "common.hpp"
 
-void CreateMove() {
-	auto preset = g_ICvar->FindCommand("load_itempreset");
-	const CCommand cmd;
+void CreateMove()
+{
+    auto preset = g_ICvar->FindCommand("load_itempreset");
+    const CCommand cmd;
 }
