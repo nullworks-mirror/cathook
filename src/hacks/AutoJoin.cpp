@@ -49,7 +49,7 @@ Timer req_timer{};
                    "Bypass Party restrictions");*/
 void UpdateSearch()
 {
-	// segfaults for no reason
+    // segfaults for no reason
     /*static bool calld = false;
     if (party_bypass && !calld) {
         static unsigned char patch[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
@@ -90,7 +90,8 @@ void UpdateSearch()
             tfmm::queue_start();
         }
     }
-    if (req_timer.test_and_set(1800000)) {
+    if (req_timer.test_and_set(1800000))
+    {
         logging::Info("Starting queue");
         tfmm::queue_start();
     }

@@ -13,7 +13,9 @@ namespace votelogger
 static CatVar enabled(CV_SWITCH, "votelog", "0", "Log votes");
 static CatVar requeue(CV_SWITCH, "votelog_requeue", "1",
                       "Auto requeue on vote kick", "Auto requeue on vote kick");
-static CatVar anti_votekick(CV_SWITCH, "anti_votekick", "0", "requires votelog", "Prevent votekicks by lagging the server in a way that every vote comes in delayed");
+static CatVar anti_votekick(CV_SWITCH, "anti_votekick", "0", "requires votelog",
+                            "Prevent votekicks by lagging the server in a way "
+                            "that every vote comes in delayed");
 int antikick_ticks = 0;
 void user_message(bf_read &buffer, int type)
 {
@@ -45,15 +47,16 @@ void user_message(bf_read &buffer, int type)
         {
             steamID = info.friendsID;
         }
-        if (eid == LOCAL_E->m_IDX) {
+        if (eid == LOCAL_E->m_IDX)
+        {
             islocalplayer = true;
-            if (anti_votekick) {
-            	antikick_ticks = 600;
+            if (anti_votekick)
+            {
+                antikick_ticks = 600;
                 for (int i = 0; i < (int) 70; i++)
                     g_IEngine->ServerCmd("voicemenu 0 0", false);
             }
         }
-
 
         logging::Info("Vote called to kick %s [U:1:%u] for %s", name, steamID,
                       reason);

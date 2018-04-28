@@ -7,7 +7,8 @@
 #pragma once
 
 #include "common.hpp"
-namespace re {
+namespace re
+{
 class CTFInventoryManager
 {
 public:
@@ -22,11 +23,13 @@ class CEconItem
 public:
     unsigned long long uniqueid();
 };
-class CTFPlayerInventory {
+class CTFPlayerInventory
+{
 public:
-	CTFPlayerInventory() = delete;
-	static CTFPlayerInventory *GTFPlayerInventory();
+    CTFPlayerInventory() = delete;
+    static CTFPlayerInventory *GTFPlayerInventory();
+
 public:
-	CEconItem *GetFirstItemOfItemDef(int id);
+    CEconItem *GetFirstItemOfItemDef(int id);
 };
 }

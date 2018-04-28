@@ -355,12 +355,14 @@ void CreateMove()
 
 void DrawText()
 {
-	if (god_mode)
-		for (int i = 0; i < 40000; i++) {
-			g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
-			god_mode = 0;
-		}
-    if (!no_homo) {
+    if (god_mode)
+        for (int i = 0; i < 40000; i++)
+        {
+            g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
+            god_mode = 0;
+        }
+    if (!no_homo)
+    {
         int width, height;
         g_IEngine->GetScreenSize(width, height);
 
@@ -368,18 +370,23 @@ void DrawText()
         int step = (height / 7);
 
         // Go through steps creating a rainbow screen
-        for (int i = 1; i < 8; i++) {
+        for (int i = 1; i < 8; i++)
+        {
             // Get Color and set opacity to %50
-            colors::rgba_t gaybow = colors::FromHSL(fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 1.41241))) * 360.0f, 0.85f, 0.9f);
+            colors::rgba_t gaybow = colors::FromHSL(
+                fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 1.41241))) *
+                    360.0f,
+                0.85f, 0.9f);
             gaybow.a = .5;
             // Draw next step
-            draw_api::draw_rect(0, step * (i - 1), width, (step * i) - (step * (i - 1)), gaybow);
+            draw_api::draw_rect(0, step * (i - 1), width,
+                                (step * i) - (step * (i - 1)), gaybow);
         }
 
-        //int size_x;
-        //FTGL_StringLength(string.data, fonts::font_main, &size_x);
-        //FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y,fonts::font_main, color);
-
+        // int size_x;
+        // FTGL_StringLength(string.data, fonts::font_main, &size_x);
+        // FTGL_Draw(string.data, draw_point.x - size_x / 2,
+        // draw_point.y,fonts::font_main, color);
     }
     if (show_spectators)
     {

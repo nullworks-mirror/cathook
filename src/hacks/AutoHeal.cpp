@@ -44,7 +44,8 @@ static CatEnum vacc_sniper_enum({ "NEVER", "ZOOM & VISIBLE", "ANY ZOOMED" });
 static CatVar vacc_sniper(vacc_sniper_enum, "auto_vacc_sniper_pop", "1",
                           "Pop if Sniper",
                           "Defines Auto-Vacc behaviour with snipers");
-static CatVar ignore(CV_STRING, "autoheal_ignore", "", "Ignore", "Ignore people with this name");
+static CatVar ignore(CV_STRING, "autoheal_ignore", "", "Ignore",
+                     "Ignore people with this name");
 
 int ChargeCount()
 {
@@ -566,7 +567,7 @@ int HealingPriority(int idx)
     g_IEngine->GetPlayerInfo(idx, &info);
     info.name[31] = 0;
     if (strcasestr(info.name, ignore.GetString()))
-    	priority = 0.0f;
+        priority = 0.0f;
     return priority;
 }
 
