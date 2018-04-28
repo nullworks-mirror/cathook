@@ -105,7 +105,7 @@ target_include_directories(cathook SYSTEM PRIVATE
 target_include_directories(cathook PRIVATE "ucccccp")
 
 if(EnableWarnings)
-    target_compile_options(cathook PRIVATE -Wundef)
+    target_compile_options(cathook PRIVATE -Wall -Wextra)
 endif()
 
 add_subdirectory(include)
