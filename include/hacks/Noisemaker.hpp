@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_NOISEMAKER_HPP_
-#define HACKS_NOISEMAKER_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -23,5 +22,3 @@ void CreateMove();
 }
 }
 }
-
-#endif /* HACKS_NOISEMAKER_HPP_ */

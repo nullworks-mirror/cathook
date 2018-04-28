@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_ANTIDISGUISE_HPP_
-#define HACKS_ANTIDISGUISE_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -23,5 +22,3 @@ void Draw();
 }
 }
 }
-
-#endif /* HACKS_ANTIDISGUISE_HPP_ */

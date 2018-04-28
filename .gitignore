@@ -266,3 +266,10 @@ CTestTestfile.cmake
 Data Folder
 /core
 .vscode/settings.json
+
+.idea
+cmake-build-debug
+libcathook.so
+build
+# idk where it comes from
+cathook.cbp

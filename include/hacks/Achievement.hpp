@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_ACHIEVEMENT_HPP_
-#define HACKS_ACHIEVEMENT_HPP_
+#pragma once
 
 namespace hacks
 {
@@ -20,5 +19,3 @@ void Unlock();
 }
 }
 }
-
-#endif /* HACKS_ACHIEVEMENT_HPP_ */

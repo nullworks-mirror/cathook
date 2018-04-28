@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_SKINCHANGER_HPP_
-#define HACKS_SKINCHANGER_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -145,5 +144,3 @@ void DrawText();
 }
 }
 }
-
-#endif /* HACKS_SKINCHANGER_HPP_ */

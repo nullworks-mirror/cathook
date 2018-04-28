@@ -1,18 +1,13 @@
 /*
- * common.h
+ * common.hpp
  *
  *  Created on: Dec 5, 2016
  *      Author: nullifiedcat
  */
 
-#ifndef COMMON_H_
-#define COMMON_H_
+#pragma once
 
-#if defined(LINUX) and not defined(NO_IPC)
-#define ENABLE_IPC 1
-#else
-#undef ENABLE_IPC
-#endif
+#include "config.h"
 
 #include <emmintrin.h>
 #include <vector>
@@ -41,12 +36,12 @@
 #include <elf.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <string.h>
 #include <pwd.h>
-#include <assert.h>
+#include <cstring>
+#include <cstdio>
+#include <cassert>
 
 #include "timer.hpp"
 #include "averager.hpp"
@@ -54,7 +49,7 @@
 #include "macros.hpp"
 #include <visual/colors.hpp>
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
 #include <visual/drawex.hpp>
 #include <visual/drawing.hpp>
@@ -113,8 +108,7 @@
 #include "copypasted/CSignature.h"
 
 #if ENABLE_GUI
-#include "gui/GUI.hpp"
-#include "menu/GUI.h"
+#include "GUI.h"
 #endif
 
 #include <hacks/hacklist.hpp>
@@ -152,5 +146,3 @@ template <typename T> constexpr T _clamp(T _min, T _max, T _val)
 #define GET_RENDER_CONTEXT                                                     \
     (IsTF2() ? g_IMaterialSystem->GetRenderContext()                           \
              : g_IMaterialSystemHL->GetRenderContext())
-
-#endif /* COMMON_H_ */

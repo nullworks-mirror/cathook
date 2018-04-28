@@ -118,7 +118,7 @@ void CreateMove()
 
 void Draw()
 {
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     if (healarrow)
     {
         if ((g_GlobalVars->curtime - healarrow_time) < float(healarrow_timeout))

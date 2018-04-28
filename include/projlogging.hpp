@@ -5,13 +5,11 @@
  *      Author: nullifiedcat
  */
 
-#ifndef PROJLOGGING_HPP_
-#define PROJLOGGING_HPP_
+
+#pragma once
 
 namespace projectile_logging
 {
 
 void Update();
 }
-
-#endif /* PROJLOGGING_HPP_ */

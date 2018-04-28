@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HELPERS_HPP_
-#define HELPERS_HPP_
+#pragma once
 
 class CachedEntity;
 class IClientEntity;
@@ -168,5 +167,3 @@ template <typename... Args> std::string format(const Args &... args)
 
 extern const std::string classes[10];
 extern const char *powerups[POWERUP_COUNT];
-
-#endif /* HELPERS_HPP_ */

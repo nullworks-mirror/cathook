@@ -234,7 +234,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 
     hacks::shared::autojoin::Update();
 
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
     static int team_joining_state  = 0;
     static float last_jointeam_try = 0;
     CachedEntity *found_entity, *ent;
@@ -310,7 +310,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             UpdateHoovyList();
         }
         g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
         {
             PROF_SECTION(CM_esp);
             hacks::shared::esp::CreateMove();

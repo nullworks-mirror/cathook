@@ -5,10 +5,10 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_MISC_HPP_
-#define HACKS_MISC_HPP_
+#pragma once
 
 #include "common.hpp"
+#include "config.h"
 
 namespace hacks
 {
@@ -18,7 +18,7 @@ namespace misc
 {
 
 void CreateMove();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void DrawText();
 #endif
 
@@ -86,5 +86,3 @@ void Schema_Reload();
 void CC_Misc_Disconnect_VAC();
 
 DECLARE_HACK_SINGLETON(Misc);*/
-
-#endif /* HACKS_MISC_HPP_ */

@@ -79,7 +79,7 @@ void Prediction_CreateMove()
         }
     }
 }
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void Prediction_PaintTraverse()
 {
     if (!debug_enginepred)

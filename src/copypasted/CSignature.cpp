@@ -61,16 +61,16 @@ uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
     {
         if (!*pat)
             return firstMatch;
-        if (*(uint8_t *) pat == '\?' || *(uint8_t *) pCur == getByte(pat))
+        if (*pat == '\?' || *(uint8_t *) pCur == getByte(pat))
         {
             if (!firstMatch)
                 firstMatch = pCur;
             if (!pat[2])
                 return firstMatch;
-            if (*(uintptr_t *) pat == '\?\?' || *(uint8_t *) pat != '\?')
-                pat += 3;
-            else
+            if (*pat == '\?')
                 pat += 2;
+            else
+                pat += 3;
         }
         else
         {
@@ -78,6 +78,9 @@ uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
             firstMatch = 0;
         }
     }
+
+    logging::Info("THIS IS SERIOUS: Could not locate signature: \n============\n\"%s\"\n============", szPattern);
+
     return NULL;
 }
 //===================================================================================
@@ -94,7 +97,7 @@ void *CSignature::GetModuleHandleSafe(const char *pszModuleName)
     return moduleHandle;
 }
 //===================================================================================
-uintptr_t CSignature::GetClientSignature(char *chPattern)
+uintptr_t CSignature::GetClientSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
@@ -121,7 +124,7 @@ uintptr_t CSignature::GetClientSignature(char *chPattern)
            (uintptr_t)(module) + moduleMap->l_addr;
 }
 //===================================================================================
-uintptr_t CSignature::GetEngineSignature(char *chPattern)
+uintptr_t CSignature::GetEngineSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
@@ -148,7 +151,7 @@ uintptr_t CSignature::GetEngineSignature(char *chPattern)
            (uintptr_t)(module) + moduleMap->l_addr;
 }
 //===================================================================================
-uintptr_t CSignature::GetVstdSignature(char *chPattern)
+uintptr_t CSignature::GetVstdSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot

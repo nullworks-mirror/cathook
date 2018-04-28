@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef PROFILER_H_
-#define PROFILER_H_
+#pragma once
 
 #include <chrono>
 #include <string>
@@ -48,5 +47,3 @@ public:
 #else
 #define PROF_SECTION(id)
 #endif
-
-#endif /* PROFILER_H_ */

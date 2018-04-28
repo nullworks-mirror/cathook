@@ -65,7 +65,7 @@ void Paint_hook(IEngineVGui *_this, PaintMode_t mode)
                 hack::command_stack().pop();
             }
         }
-#if TEXTMODE_STDIN == 1
+#if ENABLE_TEXTMODE_STDIN == 1
         static auto last_stdin = std::chrono::system_clock::from_time_t(0);
         auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                       std::chrono::system_clock::now() - last_stdin)

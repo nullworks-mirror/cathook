@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CDUMPER_HPP_
-#define CDUMPER_HPP_
+#pragma once
 
 #include <fstream>
 #include <string>
@@ -116,5 +115,3 @@ public:
 private:
     std::fstream m_file;
 };
-
-#endif /* CDUMPER_HPP_ */

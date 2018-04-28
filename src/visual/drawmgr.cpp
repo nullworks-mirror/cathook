@@ -27,9 +27,9 @@ void render_cheat_visuals()
 
 void BeginCheatVisuals()
 {
-#if RENDERING_ENGINE_OPENGL
+/*#if RENDERING_ENGINE_OPENGL
     std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-#endif
+#endif*/
     draw_api::draw_begin();
     ResetStrings();
 }
@@ -45,9 +45,9 @@ CatVar enable_logo(CV_SWITCH, "nullcore_mode_logo", "1",
 
 void DrawCheatVisuals()
 {
-#if RENDERING_ENGINE_OPENGL
+/*#if RENDERING_ENGINE_OPENGL
     std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-#endif
+#endif*/
     {
         PROF_SECTION(DRAW_misc);
         hacks::shared::misc::DrawText();
@@ -144,7 +144,7 @@ void DrawCheatVisuals()
             PROF_SECTION(PT_spyalert);
             hacks::tf::spyalert::Draw();
         }
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
         IF_GAME(IsTF()) hacks::shared::followbot::DrawTick();
 #endif
         {

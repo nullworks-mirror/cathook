@@ -79,8 +79,8 @@ void *VMTHook::GetMethod(uint32_t idx) const
 
 void VMTHook::HookMethod(ptr_t func, uint32_t idx)
 {
-    logging::Info("Hooking method %d of vtable 0x%08x, replacing 0x%08x", idx,
-                  vtable_original, GetMethod(idx));
+    logging::Info("Hooking method %d of vtable 0x%08x, replacing 0x%08x with 0x%08x", idx,
+                  vtable_original, GetMethod(idx), func);
     vtable_hooked[2 + idx] = func;
 }
 

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef INTERFACES_HPP_
-#define INTERFACES_HPP_
+#pragma once
 
 #include <sharedobj.hpp>
 #include <string>
@@ -88,5 +87,3 @@ extern IEngineVGui *g_IEngineVGui;
 extern IUniformRandomStream *g_pUniformStream;
 
 void CreateInterfaces();
-
-#endif /* INTERFACES_HPP_ */

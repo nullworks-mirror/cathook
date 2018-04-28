@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef NETMESSAGE_HPP_
-#define NETMESSAGE_HPP_
+#pragma once
 
 #include <bitbuf.h>
 #include <utlvector.h>
@@ -310,5 +309,3 @@ public:
 private:
     char m_szCommandBuffer[1024]; // buffer for received messages
 };
-
-#endif /* NETMESSAGE_HPP_ */

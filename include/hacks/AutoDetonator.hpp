@@ -5,8 +5,7 @@
  *      Author: nullifiedcat & Lighty
  */
 
-#ifndef HACKS_AUTODETONATOR_HPP_
-#define HACKS_AUTODETONATOR_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -20,5 +19,3 @@ void CreateMove();
 }
 }
 }
-
-#endif /* HACKS_AUTODETONATOR_HPP_ */

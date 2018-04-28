@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef SCONVARS_HPP_
-#define SCONVARS_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -28,5 +27,3 @@ public:
     ConVar *spoof;
 };
 }
-
-#endif /* SCONVARS_HPP_ */

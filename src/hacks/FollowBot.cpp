@@ -257,7 +257,7 @@ void WorldTick()
 
 void DrawTick()
 {
-#if TEXTMODE_VAC != 1
+#if ENABLE_VISUALS
     if (!followbot || !draw_crumb)
         return;
     if (breadcrumbs.size() < 2)
@@ -281,6 +281,7 @@ void DrawTick()
 #endif
 }
 
+#if ENABLE_IPC
 static CatCommand
     follow_me("fb_follow_me", "IPC connected bots will follow you", []() {
         if (!ipc::peer)
@@ -317,6 +318,7 @@ static CatCommand
                                    ipc::commands::execute_client_cmd, 0, 0);
         }
     });
+#endif
 }
 }
 }

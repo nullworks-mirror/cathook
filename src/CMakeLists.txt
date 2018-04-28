@@ -1,1 +1,53 @@
-aux_source_directory (. SOURCES)
+target_sources(cathook PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/angles.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/backpacktf.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/chatlog.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/chatstack.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/conditions.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/crits.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/cvwrapper.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/entitycache.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/entityhitboxcache.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/entry.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/globals.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/hack.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/headshake.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/helpers.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/hitrate.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/hooks.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/hoovy.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/https_request.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/init.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/interfaces.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/ipc.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/itemtypes.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/localplayer.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/logging.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/netmessage.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/netvars.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/playerlist.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/playerresource.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/prediction.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/profiler.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/projlogging.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/sconvars.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/sharedobj.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/targethelper.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/textfile.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/textmode.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/tfmm.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/trace.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/ucccccp_cmds.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/velocity.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/votelogger.cpp")
+
+add_subdirectory(classinfo)
+add_subdirectory(copypasted)
+add_subdirectory(hacks)
+add_subdirectory(hooks)
+add_subdirectory(reclasses)
+add_subdirectory(sdk)
+
+if(EnableVisuals)
+    add_subdirectory(visual)
+endif()

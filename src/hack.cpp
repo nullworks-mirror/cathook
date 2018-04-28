@@ -12,6 +12,7 @@
 #define TO_STRING(x) STRINGIFY(x)
 
 #include "CDumper.hpp"
+#include "version.h"
 
 /*
  *  Credits to josh33901 aka F1ssi0N for butifel F1Public and Darkstorm 2015
@@ -41,19 +42,19 @@ const std::string &hack::GetType()
     if (version_set)
         return version;
     version = "";
-#if not defined(ENABLE_IPC)
+#if not ENABLE_IPC
     version += " NOIPC";
 #endif
 #if not ENABLE_GUI
     version += " NOGUI";
 #else
-    version += " IMGUI";
+    version += " GUI";
 #endif
 
 #ifndef DYNAMIC_CLASSES
 
-#ifdef BUILD_GAME
-    version += " GAME " TO_STRING(BUILD_GAME);
+#ifdef GAME_SPECIFIC
+    version += " GAME " TO_STRING(GAME);
 #else
     version += " UNIVERSAL";
 #endif
@@ -78,7 +79,7 @@ std::stack<std::string> &hack::command_stack()
     return stack;
 }
 
-#if ENABLE_VISUALS == 1 /* Why would we need colored chat stuff in textmode?   \
+#if ENABLE_VISUALS /* Why would we need colored chat stuff in textmode?   \
                          */
 #define red 184, 56, 59, 255
 #define blu 88, 133, 162, 255
@@ -233,25 +234,19 @@ freopen(logname, "w", stderr);
 free(logname);*/
 // Essential files must always exist, except when the game is running in text
 // mode.
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
     {
-        std::vector<std::string> essential = { "shaders/v2f-c4f.frag",
-                                               "shaders/v2f-c4f.vert",
-                                               "shaders/v2f-t2f-c4f.frag",
-                                               "shaders/v2f-t2f-c4f.vert",
-                                               "shaders/v3f-t2f-c4f.frag",
-                                               "shaders/v3f-t2f-c4f.vert",
-                                               "menu.json",
+        std::vector<std::string> essential = { "menu.json",
                                                "fonts/tf2build.ttf" };
         for (const auto &s : essential)
         {
             std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
             if (not exists)
             {
-                Error("Missing essential file: " DATA_PATH
-                      "/%s\nYou MUST run check-data script to finish "
-                      "installation",
+                Error(("Missing essential file: " + s +
+                      "/%s\nYou MUST run install-data script to finish "
+                      "installation").c_str(),
                       s.c_str());
             }
         }
@@ -277,7 +272,7 @@ free(logname);*/
     g_Settings.Init();
     EndConVars();
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     draw::Initialize();
 #if ENABLE_GUI
 
@@ -292,7 +287,7 @@ free(logname);*/
     InitNetVars();
     g_pLocalPlayer    = new LocalPlayer();
     g_pPlayerResource = new TFPlayerResource();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::panel.Set(g_IPanel);
     hooks::panel.HookMethod((void *) PaintTraverse_hook,
                             offsets::PaintTraverse());
@@ -310,7 +305,7 @@ free(logname);*/
     hooks::clientmode.Set((void *) clientMode);
     hooks::clientmode.HookMethod((void *) CreateMove_hook,
                                  offsets::CreateMove());
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::clientmode.HookMethod((void *) OverrideView_hook,
                                  offsets::OverrideView());
 #endif
@@ -324,20 +319,20 @@ free(logname);*/
     hooks::clientmode4.Apply();
     hooks::client.Set(g_IBaseClient);
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::client.HookMethod((void *) FrameStageNotify_hook,
                              offsets::FrameStageNotify());
 #endif
     hooks::client.HookMethod((void *) DispatchUserMessage_hook,
                              offsets::DispatchUserMessage());
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::vstd.Set((void *) g_pUniformStream);
     hooks::vstd.HookMethod((void *) RandomInt_hook, offsets::RandomInt());
     hooks::vstd.Apply();
 #endif
 
-#if ENABLE_NULL_GRAPHICS == 1
+#if ENABLE_NULL_GRAPHICS
     g_IMaterialSystem->SetInStubMode(true);
     IF_GAME(IsTF2())
     {
@@ -359,7 +354,7 @@ free(logname);*/
         // hooks::materialsystem.HookMethod();
     }
 #endif
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::client.HookMethod((void *) IN_KeyEvent_hook, offsets::IN_KeyEvent());
 #endif
     hooks::client.Apply();
@@ -367,18 +362,18 @@ free(logname);*/
     hooks::input.HookMethod((void *) GetUserCmd_hook, offsets::GetUserCmd());
     hooks::input.Apply();
 #ifndef HOOK_DME_DISABLED
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::modelrender.Set(g_IVModelRender);
     hooks::modelrender.HookMethod((void *) DrawModelExecute_hook,
                                   offsets::DrawModelExecute());
     hooks::modelrender.Apply();
-#endif
-#endif
     hooks::enginevgui.Set(g_IEngineVGui);
     hooks::enginevgui.HookMethod(
         (void *) Paint_hook,
         offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
     hooks::enginevgui.Apply();
+#endif
+#endif
     hooks::steamfriends.Set(g_ISteamFriends);
     hooks::steamfriends.HookMethod((void *) GetFriendPersonaName_hook,
                                    offsets::GetFriendPersonaName());
@@ -405,7 +400,7 @@ free(logname);*/
     velocity::Init();
     playerlist::Load();
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
     InitStrings();
 #if ENABLE_GUI
@@ -434,7 +429,7 @@ free(logname);*/
     hacks::shared::anticheat::Init();
     hacks::tf2::healarrow::Init();
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
     InitSpinner();
     logging::Info("Initialized Fidget Spinner");
@@ -474,7 +469,9 @@ void hack::Shutdown()
         return;
     hack::shutdown = true;
     playerlist::Save();
+#if ENABLE_VISUALS
     DoSDLUnhooking();
+#endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
     logging::Info("Shutting down killsay...");

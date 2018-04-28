@@ -7,9 +7,6 @@
 
 #include "common.hpp"
 
-#include <fcntl.h>
-#include <unistd.h>
-
 bool *allowSecureServers{ nullptr };
 
 // valve pls no ban
@@ -42,19 +39,19 @@ CatCommand fixvac("fixvac", "Lemme in to secure servers",
                   []() { *allowSecureServers = true; });
 
 InitRoutine init([]() {
-#if TEXTMODE_STDIN == 1
+#if ENABLE_TEXTMODE_STDIN
     logging::Info("[TEXTMODE] Setting up input handling");
     int flags = fcntl(0, F_GETFL, 0);
     flags |= O_NONBLOCK;
     fcntl(0, F_SETFL, flags);
     logging::Info("[TEXTMODE] stdin is now non-blocking");
 #endif
-#if TEXTMODE_VAC == 1
+#if ENABLE_VAC_BYPASS
     EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG();
 #endif
 });
 
-#if TEXTMODE_STDIN == 1
+#if ENABLE_TEXTMODE_STDIN
 void UpdateInput()
 {
     char buffer[256];

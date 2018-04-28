@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_AUTOREFLECT_HPP_
-#define HACKS_AUTOREFLECT_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -29,5 +28,3 @@ bool IsEntStickyBomb(CachedEntity *ent);
 }
 }
 }
-
-#endif /* HACKS_AUTOREFLECT_HPP_ */

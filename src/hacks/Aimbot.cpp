@@ -215,7 +215,7 @@ void CreateMove()
         }
     }
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     static effect_chams::EffectChams Effectchams;
     hacks::shared::esp::SetEntityColor(target_entity, colors::pink);
     Effectchams.SetEntityColor(target_entity, colors::pink);
@@ -1150,7 +1150,7 @@ void Reset()
     projectile_mode = false;
 }
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring",
                        "Draws a ring to represent your current aimbot fov");
 void DrawText()

@@ -5,10 +5,11 @@
  *      Author: nullifiedcat
  */
 
-#if ENABLE_IPC == 1
+#pragma once
 
-#ifndef IPC_H_
-#define IPC_H_
+#include "config.h"
+
+#if ENABLE_IPC
 
 #include "ipcb.hpp"
 #include "pthread.h"
@@ -111,7 +112,5 @@ void UpdateServerAddress(bool shutdown = false);
 void StoreClientData();
 void UpdatePlayerlist();
 }
-
-#endif /* IPC_H_ */
 
 #endif

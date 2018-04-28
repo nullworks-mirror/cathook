@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef DRAWING_HPP_
-#define DRAWING_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -68,5 +67,3 @@ void UpdateWTS();
 bool WorldToScreen(const Vector &origin, Vector &screen);
 bool EntityCenterToScreen(CachedEntity *entity, Vector &out);
 }
-
-#endif /* DRAWING_HPP_ */

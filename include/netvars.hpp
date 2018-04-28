@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef NETVARS_HPP_
-#define NETVARS_HPP_
+#pragma once
 
 #include <logging.hpp>
 
@@ -146,5 +145,3 @@ public:
 };
 
 extern NetVars netvar;
-
-#endif /* NETVARS_HPP_ */

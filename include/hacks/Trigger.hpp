@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HTRIGGER_H_
-#define HTRIGGER_H_
+#pragma once
 
 #include "common.hpp"
 
@@ -31,5 +30,3 @@ bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector &Hit);
 }
 }
 }
-
-#endif /* HTRIGGER_H_ */

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CVWRAPPER_HPP_
-#define CVWRAPPER_HPP_
+#pragma once
 
 class ConVar;
 
@@ -189,5 +188,3 @@ std::vector<CatVar *> &CatVarList();
 void RegisterCatCommands();
 void RegisterCatVars();
 int GetRebasedCatVarCount();
-
-#endif /* CVWRAPPER_HPP_ */

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ITEMTYPES_HPP_
-#define ITEMTYPES_HPP_
+#pragma once
 
 #include <map>
 #include <string>
@@ -230,5 +229,3 @@ public:
 };
 
 extern ItemManager g_ItemManager;
-
-#endif /* ITEMTYPES_HPP_ */

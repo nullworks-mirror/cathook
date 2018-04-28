@@ -6,8 +6,7 @@
 //
 //=====================================================================================//
 
-#ifndef SCREENSPACEEFFECTS_H
-#define SCREENSPACEEFFECTS_H
+#pragma once
 
 #ifdef _WIN32
 #pragma once
@@ -89,4 +88,3 @@ extern CScreenSpaceEffectRegistration **g_ppScreenSpaceRegistrationHead;
     CScreenSpaceEffectRegistration pEffectName##_reg(#pEffectName,             \
                                                      &pEffectName##_effect);
 
-#endif

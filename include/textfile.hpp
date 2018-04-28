@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef TEXTFILE_HPP_
-#define TEXTFILE_HPP_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -23,5 +22,3 @@ public:
 public:
     std::vector<std::string> lines;
 };
-
-#endif /* TEXTFILE_HPP_ */

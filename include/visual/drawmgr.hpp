@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef DRAWMGR_HPP_
-#define DRAWMGR_HPP_
+#pragma once
 
 #include <mutex>
 
@@ -17,5 +16,3 @@ void render_cheat_visuals();
 void BeginCheatVisuals();
 void DrawCheatVisuals();
 void EndCheatVisuals();
-
-#endif /* DRAWMGR_HPP_ */
