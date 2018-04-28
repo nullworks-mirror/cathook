@@ -22,6 +22,9 @@ extern int spectator_target;
 union SDL_Event;
 #endif
 
+namespace hooked_methods
+{
+
 namespace types
 {
 // ClientMode
@@ -32,75 +35,90 @@ using LevelShutdown = void(*)(void *);
 using FireGameEvent = void(*)(void *_this, IGameEvent *event);
 // IBaseClient
 using DispatchUserMessage = bool(*)(void *, int, bf_read &);
+using IN_KeyEvent = int(*)(void *, int, int, const char *);
 // IInput
 using GetUserCmd = CUserCmd *(*)(IInput *, int);
-
-using CanPacket = bool(*)(void *);
-using IN_KeyEvent = int(*)(void *, int, int, const char *);
-using SendNetMsg = bool(*)(void *, INetMessage &, bool, bool);
-using Shutdown = void(*)(void *, const char *);
-using BeginFrame = void(*)(IStudioRender *);
-using CanInspect = bool(*)(IClientEntity *);
+// INetChannel
+using SendNetMsg = bool(*)(INetChannel *, INetMessage &, bool, bool);
+using CanPacket = bool(*)(INetChannel *);
+using Shutdown = void(*)(INetChannel *, const char *);
+// CBaseClientState
 using GetClientName = const char *(*)(CBaseClientState *);
 using ProcessSetConVar = bool(*)(CBaseClientState *, NET_SetConVar *);
 using ProcessGetCvarValue = bool(*)(CBaseClientState *, SVC_GetCvarValue *);
 // ISteamFriends
 using GetFriendPersonaName = const char *(*)(ISteamFriends *, CSteamID);
+// IEngineVGui
+using Paint = void(*)(IEngineVGui *, PaintMode_t);
 
 #if ENABLE_VISUALS
 // ClientMode
 using OverrideView = void(*)(void *, CViewSetup *);
-// IEngineVGui
-using Paint = void(*)(IEngineVGui *, PaintMode_t);
-//IVModelRender
+// IVModelRender
 using DrawModelExecute = void(*)(IVModelRender *, const DrawModelState_t &,
                                  const ModelRenderInfo_t &, matrix3x4_t *);
+// IStudioRender
+using BeginFrame = void(*)(IStudioRender *);
 // IBaseClient
 using FrameStageNotify = void(*)(void *, int);
-
-using PaintTraverse = void(*)(void *, unsigned int, bool, bool);
+// vgui::IPanel
+using PaintTraverse = void(*)(vgui::IPanel *, unsigned int, bool, bool);
 // SDL
 using SDL_GL_SwapWindow = void(*)(SDL_Window *window);
 using SDL_PollEvent = int(*)(SDL_Event *event);
-// Manual
+// IUniformRandomStream
 using RandomInt = int(*)(void *, int, int);
 #endif
 }
 
 namespace methods
 {
+// ClientMode
 bool CreateMove(void *, float, CUserCmd *);
-void PaintTraverse(void *, unsigned int, bool, bool);
+void LevelInit(void *, const char *);
+void LevelShutdown(void *);
+// ClientMode + 4
+void FireGameEvent(void *_this, IGameEvent *event);
+// IBaseClient
+bool DispatchUserMessage(void *, int, bf_read &);
+int IN_KeyEvent(void *, int, int, const char *);
+// IInput
+CUserCmd *GetUserCmd(IInput *, int);
+// INetChannel
+bool SendNetMsg(INetChannel *, INetMessage &, bool, bool);
+bool CanPacket(INetChannel *);
+void Shutdown(INetChannel *, const char *);
+// CBaseClientState
 const char *GetClientName(CBaseClientState *_this);
 bool ProcessSetConVar(CBaseClientState *_this, NET_SetConVar *msg);
 bool ProcessGetCvarValue(CBaseClientState *_this, SVC_GetCvarValue *msg);
+// ISteamFriends
 const char *GetFriendPersonaName(ISteamFriends *_this, CSteamID steamID);
-void FireGameEvent(void *_this, IGameEvent *event);
-CUserCmd *GetUserCmd(IInput *, int);
-void DrawModelExecute(IVModelRender *_this, const DrawModelState_t &state,
-                           const ModelRenderInfo_t &info, matrix3x4_t *matrix);
-bool CanPacket(void *);
-int IN_KeyEvent(void *, int, int, const char *);
-bool SendNetMsg(void *, INetMessage &, bool, bool);
-void Shutdown(void *, const char *);
-void OverrideView(void *, CViewSetup *);
-bool DispatchUserMessage(void *, int, bf_read &);
-void FrameStageNotify(void *, int);
-void LevelInit(void *, const char *);
-void LevelShutdown(void *);
-int RandomInt(void *, int, int);
-int SDL_PollEvent(SDL_Event *event);
-void SDL_GL_SwapWindow(SDL_Window *window);
+// IEngineVGui
 void Paint(IEngineVGui *_this, PaintMode_t mode);
+
+#if ENABLE_VISUALS
+// ClientMode
+void OverrideView(void *, CViewSetup *);
+// IVModelRender
+void DrawModelExecute(IVModelRender *_this, const DrawModelState_t &state,
+                      const ModelRenderInfo_t &info, matrix3x4_t *matrix);
+// IStudioRender
+void BeginFrame(IStudioRender *);
+// IBaseClient
+void FrameStageNotify(void *, int);
+// vgui::IPanel
+void PaintTraverse(vgui::IPanel *, unsigned int, bool, bool);
+// SDL
+void SDL_GL_SwapWindow(SDL_Window *window);
+int SDL_PollEvent(SDL_Event *event);
+// IUniformRandomStream
+int RandomInt(void *, int, int);
+#endif
 
 }
 
-
-
-// typedef void(*CInput__CreateMove_t)(void*, int, float, bool);
-// void CInput__CreateMove_hook(void*, int sequence_number, float
-// input_sample_frametime, bool active);
-
+}
 
 #if ENABLE_VISUALS
 
@@ -117,7 +135,8 @@ void DoSDLUnhooking();
 #endif
 
 
-// TODO!
+// TODO
+// wontfix.club
 #if 0
 
 #if ENABLE_NULL_GRAPHICS
