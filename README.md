@@ -3,7 +3,7 @@
 
 [cathook announcements channel in telegram](https://t.me/cathook_cheat)
 
-# Detected
+## Risk of VAC detection
 
 The software is most likely detected. Only use it on accounts you won't regret getting VAC banned.
 
@@ -37,6 +37,24 @@ and a lot of useful features, including
 
 # INSTALLATION
 
+You need CMake to build cathook, CMake should take care of dependencies
+
+Install [libglez](https://github.com/nullifiedcat/libglez) and [libxoverlay](https://github.com/nullifiedcat/libxoverlay)
+
+* Clone the repo of library (`git clone <URL>`)
+* `mkdir build && cd build`
+* `cmake ..`
+* `make && sudo make install`
+
+Install cathook
+
+* `git clone --recursive https://github.com/nullifiedcat/cathook`
+* `cd cathook && mkdir build && cd build`
+* `cmake .. && make`
+* `sudo make data`
+
+### Outdated (but might be helpful):
+
 You can use gcc-7 for compiling cathook if you add `-e CC=gcc-7 CXX=g++-7` to make command line
 
 Ubuntu gcc6 installation: (check if you have gcc-6 installed already by typing `gcc-6 -v`
@@ -58,10 +76,12 @@ sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multili
 
 If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the list of what cathook requires:
 
-* `gcc-6`
-* `g++-6`
-* `gcc-6-multilib`
-* `g++-6-multilib`
+* `cmake-qt-gui` (optional, for easy configuring)
+* `cmake`
+* `gcc-7`
+* `g++-7`
+* `gcc-7-multilib`
+* `g++-7-multilib`
 * `glew`
 * `gdb` (for the injection script, you can use different injector if you want)
 * `libssl-dev:i386`
@@ -81,15 +101,16 @@ git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && b
 **Errors while installing?**
 
 `/usr/include/c++/5/string:38:28: fatal error: bits/c++config.h: No such file or directory`
-You don't have gcc-multilib-6 installed correctly.
+You don't have gcc-7-multilib installed correctly.
 
-`/usr/bin/ld: cannot find -lxoverlay`
-You don't have cathook libs installed. Use ./catlibs script in scripts folder to install them.
+Anything related to `glez` or `xoverlay`
+
+Install libglez and libxoverlay.
 
 `src/<any file>: fatal error: mathlib/vector.h: No such file or directory`
 You didn't download Source SDK. **DO NOT DOWNLOAD CATHOOK USING "DOWNLOAD .ZIP" FROM GITHUB. USE git clone --recursive!**
 
-If you are using another distro, make sure to have g++-6, gdb, libc6 and build essentials installed.
+If you are using another distro, make sure to have required dependencies installed.
 
 ## Updating cathook
 Run the `update` script in cathook folder.
