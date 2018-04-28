@@ -3,6 +3,8 @@
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type")
 endif()
+set(CMAKE_BUILD_TYPE_VALUES "Debug;Release" CACHE INTERNAL "List of supported build")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_BUILD_TYPE_VALUES})
 
 cmake_minimum_required(VERSION 3.0)
 project(cathook VERSION 0.0.1 DESCRIPTION "Free Source Engine Trainer")
@@ -13,8 +15,6 @@ set(Game "tf2" CACHE STRING "Target game")
 set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supported game types")
 set_property(CACHE Game PROPERTY STRINGS ${GameValues})
 
-set(CMAKE_BUILD_TYPE_VALUES "Debug;Release" CACHE INTERNAL "List of supported build")
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_BUILD_TYPE_VALUES})
 
 set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
 set(ExternalDrawing 0 CACHE BOOL "External Visuals")
@@ -105,7 +105,7 @@ target_include_directories(cathook SYSTEM PRIVATE
 target_include_directories(cathook PRIVATE "ucccccp")
 
 if(EnableWarnings)
-    target_compile_options(cathook PRIVATE -Wundef -Werror)
+    target_compile_options(cathook PRIVATE -Wundef)
 endif()
 
 add_subdirectory(include)
@@ -119,3 +119,10 @@ add_custom_target(data
 # TODO glez_LIBRARIES?
 target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl stdc++)
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# Strip
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    message("Stripping info from library")
+    add_custom_command(TARGET cathook POST_BUILD
+            COMMAND strip --strip-all "$<TARGET_FILE:cathook>")
+endif()
