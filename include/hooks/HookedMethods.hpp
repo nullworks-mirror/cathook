@@ -9,17 +9,9 @@
 
 #include "common.hpp"
 
-extern bool *bSendPackets;
-extern CatVar no_zoom;
-extern CatVar clean_screenshots;
-extern CatVar disable_visuals;
-extern CatVar disconnect_reason;
-#if ENABLE_VISUALS
-extern int spectator_target;
-#endif
-
 #if ENABLE_VISUALS
 union SDL_Event;
+struct SDL_Window;
 #endif
 
 namespace hooked_methods
@@ -42,10 +34,6 @@ using GetUserCmd = CUserCmd *(*)(IInput *, int);
 using SendNetMsg = bool(*)(INetChannel *, INetMessage &, bool, bool);
 using CanPacket = bool(*)(INetChannel *);
 using Shutdown = void(*)(INetChannel *, const char *);
-// CBaseClientState
-using GetClientName = const char *(*)(CBaseClientState *);
-using ProcessSetConVar = bool(*)(CBaseClientState *, NET_SetConVar *);
-using ProcessGetCvarValue = bool(*)(CBaseClientState *, SVC_GetCvarValue *);
 // ISteamFriends
 using GetFriendPersonaName = const char *(*)(ISteamFriends *, CSteamID);
 // IEngineVGui
@@ -88,10 +76,6 @@ CUserCmd *GetUserCmd(IInput *, int);
 bool SendNetMsg(INetChannel *, INetMessage &, bool, bool);
 bool CanPacket(INetChannel *);
 void Shutdown(INetChannel *, const char *);
-// CBaseClientState
-const char *GetClientName(CBaseClientState *_this);
-bool ProcessSetConVar(CBaseClientState *_this, NET_SetConVar *msg);
-bool ProcessGetCvarValue(CBaseClientState *_this, SVC_GetCvarValue *msg);
 // ISteamFriends
 const char *GetFriendPersonaName(ISteamFriends *_this, CSteamID steamID);
 // IEngineVGui
@@ -119,20 +103,6 @@ int RandomInt(void *, int, int);
 }
 
 }
-
-#if ENABLE_VISUALS
-
-/* SDL HOOKS */
-union SDL_Event;
-class SDL_Window;
-
-extern SDL_Window *sdl_current_window;
-
-
-
-void DoSDLHooking();
-void DoSDLUnhooking();
-#endif
 
 
 // TODO

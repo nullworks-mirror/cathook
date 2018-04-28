@@ -53,7 +53,8 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/velocity.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/vfunc.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/votelogger.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/xorstring.hpp")
+        "${CMAKE_CURRENT_LIST_DIR}/xorstring.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/MiscTemporary.hpp")
 
 target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}")
 
