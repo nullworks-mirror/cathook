@@ -9,6 +9,13 @@ set(Game "tf2" CACHE STRING "Target game")
 set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supported game types")
 set_property(CACHE Game PROPERTY STRINGS ${GameValues})
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type")
+endif()
+
+set(CMAKE_BUILD_TYPE_VALUES "Debug;Release" CACHE INTERNAL "List of supported build")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_BUILD_TYPE_VALUES})
+
 set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
 set(ExternalDrawing 0 CACHE BOOL "External Visuals")
 set(EnableGUI 1 CACHE BOOL "Enable GUI")
