@@ -13,7 +13,7 @@
 #include "netmessage.hpp"
 #include <boost/algorithm/string.hpp>
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
 static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip",
                          "");
@@ -587,7 +587,7 @@ void FireGameEvent_hook(void *_this, IGameEvent *event)
     original(_this, event);
 }
 CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void FrameStageNotify_hook(void *_this, int stage)
 {
     if (nightmode)
@@ -1099,7 +1099,7 @@ void LevelShutdown_hook(void *_this)
     }
 #endif
 }
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 int RandomInt_hook(void *_this, int iMinVal, int iMaxVal)
 {
     static const RandomInt_t original =

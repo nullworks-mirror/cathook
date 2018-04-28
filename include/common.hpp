@@ -49,7 +49,7 @@
 #include "macros.hpp"
 #include <visual/colors.hpp>
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
 #include <visual/drawex.hpp>
 #include <visual/drawing.hpp>

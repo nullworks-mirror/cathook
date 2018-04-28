@@ -17,7 +17,7 @@ namespace misc
 {
 
 void CreateMove();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void DrawText();
 #endif
 

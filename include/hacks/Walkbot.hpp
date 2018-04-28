@@ -15,7 +15,7 @@ namespace walkbot
 {
 
 void Initialize();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void Draw();
 #endif
 void Move();

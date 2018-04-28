@@ -198,7 +198,7 @@ void CreateInterfaces()
     g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>(
         "VMaterialSystem", sharedobj::materialsystem());
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     g_pUniformStream =
         **(IUniformRandomStream ***) (gSignatures.GetVstdSignature(
                                           "A3 ? ? ? ? C3 89 F6") +

@@ -42,7 +42,7 @@ extern int target_eid;
 
 // Functions called by other functions for when certian game calls are run
 void CreateMove();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void DrawText();
 #endif
 void Reset();

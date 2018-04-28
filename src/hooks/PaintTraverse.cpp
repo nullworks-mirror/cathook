@@ -41,7 +41,7 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
     static const char *name;
     static std::string name_s, name_stripped, reason_stripped;
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     if (!textures_loaded)
     {
         textures_loaded = true;

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
 #include "ESP.hpp"
 #include "SkinChanger.hpp"

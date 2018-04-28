@@ -191,7 +191,7 @@ bool random_crits_enabled()
     return tf_weapon_criticals->GetBool();
 }
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void draw()
 {
     if (CE_BAD(LOCAL_W))

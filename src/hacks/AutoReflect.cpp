@@ -202,7 +202,7 @@ bool IsEntStickyBomb(CachedEntity *ent)
 }
 void Draw()
 {
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     // Dont draw to screen when reflect is disabled
     if (!enabled)
         return;
