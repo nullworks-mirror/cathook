@@ -87,4 +87,3 @@ extern CScreenSpaceEffectRegistration **g_ppScreenSpaceRegistrationHead;
     CEffect pEffectName##_effect;                                              \
     CScreenSpaceEffectRegistration pEffectName##_reg(#pEffectName,             \
                                                      &pEffectName##_effect);
-

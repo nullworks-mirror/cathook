@@ -1045,8 +1045,8 @@ void LevelInit_hook(void *_this, const char *newmap)
     hacks::shared::lagexploit::bcalled = false;
 #if ENABLE_VISUALS
     typedef bool *(*LoadNamedSkys_Fn)(const char *);
-    uintptr_t addr =
-        gSignatures.GetEngineSignature("55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 81 EC 6C 01 00 00");
+    uintptr_t addr = gSignatures.GetEngineSignature(
+        "55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 81 EC 6C 01 00 00");
     static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
     bool succ;
     logging::Info("Going to load the skybox");

@@ -1194,7 +1194,8 @@ void Move()
         prevlvlname            = g_IEngine->GetLevelName();
         std::string prvlvlname = format(prevlvlname);
         logging::Info("%s %s", prevlvlname, prvlvlname.c_str());
-        if (boost::contains(prvlvlname, "pl_") || boost::contains(prvlvlname, "cp_"))
+        if (boost::contains(prvlvlname, "pl_") ||
+            boost::contains(prvlvlname, "cp_"))
         {
             logging::Info("1");
             bool ret = false;
