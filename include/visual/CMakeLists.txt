@@ -9,4 +9,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/glez.h"
         "${CMAKE_CURRENT_LIST_DIR}/xoverlay.h")
 
+add_subdirectory(menu)
+
 target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}")

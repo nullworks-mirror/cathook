@@ -6,3 +6,5 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/drawmgr.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/EffectChams.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/EffectGlow.cpp")
+
+add_subdirectory(menu)

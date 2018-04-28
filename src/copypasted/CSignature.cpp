@@ -61,13 +61,15 @@ uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
     {
         if (!*pat)
             return firstMatch;
-        if (*(uint8_t *) pat == '\?' || *(uint8_t *) pCur == getByte(pat))
+        if (*pat == '\?' || *(uint8_t *) pCur == getByte(pat))
         {
             if (!firstMatch)
                 firstMatch = pCur;
             if (!pat[2])
                 return firstMatch;
             if (*pat == '\?')
+                pat += 2;
+            else
                 pat += 3;
         }
         else
