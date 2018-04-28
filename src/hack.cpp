@@ -244,9 +244,9 @@ free(logname);*/
             std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
             if (not exists)
             {
-                Error("Missing essential file: " DATA_PATH
-                      "/%s\nYou MUST run check-data script to finish "
-                      "installation",
+                Error(("Missing essential file: " + s +
+                      "/%s\nYou MUST run install-data script to finish "
+                      "installation").c_str(),
                       s.c_str());
             }
         }

@@ -1,5 +1,9 @@
 # UNFINISHED - DO NOT USE.
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type")
+endif()
+
 cmake_minimum_required(VERSION 3.0)
 project(cathook VERSION 0.0.1 DESCRIPTION "Free Source Engine Trainer")
 add_library(cathook SHARED "")
@@ -8,10 +12,6 @@ set(GameSpecific 1 CACHE BOOL "Build for specific target game (As opposed to uni
 set(Game "tf2" CACHE STRING "Target game")
 set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supported game types")
 set_property(CACHE Game PROPERTY STRINGS ${GameValues})
-
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type")
-endif()
 
 set(CMAKE_BUILD_TYPE_VALUES "Debug;Release" CACHE INTERNAL "List of supported build")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_BUILD_TYPE_VALUES})
@@ -110,6 +110,11 @@ endif()
 
 add_subdirectory(include)
 add_subdirectory(src)
+
+add_custom_target(data
+        bash ./install-data "${DataPath}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        VERBATIM)
 
 # TODO glez_LIBRARIES?
 target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl stdc++)
