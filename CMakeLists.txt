@@ -15,6 +15,7 @@ set(EnableIPC 1 CACHE BOOL "Enable IPC")
 set(DataPath "/opt/cathook/data" CACHE STRING "Data location")
 set(VACBypass 0 CACHE BOOL "Textmode VAC bypass")
 
+find_package(Git REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(OpenSSL REQUIRED)
 
@@ -23,9 +24,22 @@ find_package(glez REQUIRED)
 find_package(xoverlay REQUIRED)
 find_package(SimpleIPC REQUIRED)
 
+execute_process(COMMAND
+        "${GIT_EXECUTABLE}" log -1 --pretty=\"%h\"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE GIT_COMMIT_HASH
+        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(COMMAND
+        "${GIT_EXECUTABLE}" log -1 --pretty=\"%ai\"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE GIT_COMMIT_TIME
+        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 get_target_property(SimpleIPC_INCLUDE_DIRS SimpleIPC INTERFACE_INCLUDE_DIRECTORIES)
 
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
+configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
 add_library(cathook SHARED "")
 

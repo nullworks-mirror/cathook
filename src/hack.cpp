@@ -12,6 +12,7 @@
 #define TO_STRING(x) STRINGIFY(x)
 
 #include "CDumper.hpp"
+#include "version.h"
 
 /*
  *  Credits to josh33901 aka F1ssi0N for butifel F1Public and Darkstorm 2015
