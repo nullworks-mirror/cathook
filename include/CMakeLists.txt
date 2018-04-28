@@ -14,7 +14,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/entitycache.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/entityhitboxcache.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/enums.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/fidgetspinner.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/gameinfo.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/globals.h"
         "${CMAKE_CURRENT_LIST_DIR}/hack.hpp"

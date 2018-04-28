@@ -9,7 +9,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/entitycache.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/entityhitboxcache.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/entry.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/fidgetspinner.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/globals.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/hack.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/headshake.cpp"

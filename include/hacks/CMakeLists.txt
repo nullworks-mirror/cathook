@@ -16,7 +16,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/AutoTaunt.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Bunnyhop.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/CatBot.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/ESP.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/FollowBot.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/hacklist.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/HealArrows.hpp"
@@ -25,13 +24,18 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/LagExploit.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Misc.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Noisemaker.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Radar.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/SkinChanger.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Spam.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/SpyAlert.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/UberSpam.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Walkbot.hpp")
+
+if(EnableVisuals)
+target_sources(cathook PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/ESP.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/Radar.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/SkinChanger.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/SpyAlert.hpp")
+endif()
 
 target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}")
 

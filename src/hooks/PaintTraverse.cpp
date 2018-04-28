@@ -6,7 +6,10 @@
  */
 
 #include "common.hpp"
+
+#if ENABLE_GUI
 #include "GUI.h"
+#endif
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
                          "Clean screenshots",
@@ -159,7 +162,9 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
 
     if (clean_screenshots && g_IEngine->IsTakingScreenshot())
         return;
+#if ENABLE_GUI
     g_pGUI->Update();
+#endif
     PROF_SECTION(PT_active);
     draw::UpdateWTS();
 }

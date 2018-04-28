@@ -6,8 +6,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/drawmgr.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/EffectChams.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/EffectGlow.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/glez.h"
-        "${CMAKE_CURRENT_LIST_DIR}/xoverlay.h")
+        "${CMAKE_CURRENT_LIST_DIR}/fidgetspinner.hpp")
 
 if(EnableGUI)
     add_subdirectory(menu)

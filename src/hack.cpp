@@ -367,13 +367,13 @@ free(logname);*/
     hooks::modelrender.HookMethod((void *) DrawModelExecute_hook,
                                   offsets::DrawModelExecute());
     hooks::modelrender.Apply();
-#endif
-#endif
     hooks::enginevgui.Set(g_IEngineVGui);
     hooks::enginevgui.HookMethod(
         (void *) Paint_hook,
         offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
     hooks::enginevgui.Apply();
+#endif
+#endif
     hooks::steamfriends.Set(g_ISteamFriends);
     hooks::steamfriends.HookMethod((void *) GetFriendPersonaName_hook,
                                    offsets::GetFriendPersonaName());
@@ -469,7 +469,9 @@ void hack::Shutdown()
         return;
     hack::shutdown = true;
     playerlist::Save();
+#if ENABLE_VISUALS
     DoSDLUnhooking();
+#endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
     logging::Info("Shutting down killsay...");

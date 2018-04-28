@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include "fidgetspinner.hpp"
+#include "visual/fidgetspinner.hpp"
 #include "common.hpp"
 
 #include <math.h>

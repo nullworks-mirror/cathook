@@ -49,6 +49,7 @@ CUserCmd *GetUserCmd_hook(IInput *, int);
 void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
                            const ModelRenderInfo_t &info, matrix3x4_t *matrix);
 
+#if ENABLE_VISUALS
 void Paint_hook(IEngineVGui *_this, PaintMode_t mode);
 
 /* SDL HOOKS */
@@ -65,6 +66,7 @@ void SDL_GL_SwapWindow_hook(SDL_Window *window);
 
 void DoSDLHooking();
 void DoSDLUnhooking();
+#endif
 
 #include "CreateMove.hpp"
 #include "PaintTraverse.hpp"

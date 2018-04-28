@@ -20,6 +20,10 @@ set(EnableTextmodeStdin 0 CACHE BOOL "Textmode Stdin -> Console bridge (EXPERIME
 set(EnableWarnings 1 CACHE BOOL "Enable compile warnings")
 set(EnableNullGraphics 0 CACHE BOOL "Enable experimental textmode hooks (CRASHES)")
 
+if(NOT EnableVisuals)
+    set(EnableGUI 0)
+endif()
+
 find_package(Git REQUIRED)
 find_package(OpenSSL REQUIRED)
 
@@ -49,10 +53,12 @@ endif()
 
 if(EnableVisuals)
     find_package(glez REQUIRED)
+    get_target_property(glez_INCLUDE_DIRS glez INTERFACE_INCLUDE_DIRECTORIES)
     find_package(SDL2 REQUIRED)
     find_package(GLEW REQUIRED)
     if(ExternalDrawing)
         find_package(xoverlay REQUIRED)
+        get_target_property(xoverlay_INCLUDE_DIRS xoverlay INTERFACE_INCLUDE_DIRECTORIES)
         target_include_directories(cathook PRIVATE
                 "${xoverlay_INCLUDE_DIRS}")
         target_link_libraries(cathook xoverlay)
