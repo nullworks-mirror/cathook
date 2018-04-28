@@ -5,8 +5,6 @@
  *      Author: nullifiedcat
  */
 
-#if ENABLE_VISUALS == 1
-
 #include "common.hpp"
 
 namespace textures
@@ -42,5 +40,3 @@ texture_atlas &atlas()
     return object;
 }
 }
-
-#endif

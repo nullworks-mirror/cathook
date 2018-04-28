@@ -5,8 +5,6 @@
  *      Author: nullifiedcat
  */
 
-#if ENABLE_VISUALS == 1
-
 #include "common.hpp"
 
 #include <GL/gl.h>
@@ -134,5 +132,3 @@ bool draw::WorldToScreen(const Vector &origin, Vector &screen)
     }
     return false;
 }
-
-#endif

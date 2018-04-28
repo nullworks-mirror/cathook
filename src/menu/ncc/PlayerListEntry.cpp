@@ -7,7 +7,6 @@
 
 #include "menu/ncc/PlayerListEntry.hpp"
 #include "helpers.hpp"
-#if TEXTMODE_VAC != 1
 namespace menu
 {
 namespace ncc
@@ -307,4 +306,3 @@ void SubState::OnKeyPress(ButtonCode_t key, bool repeat)
 }
 }
 }
-#endif

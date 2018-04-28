@@ -29,7 +29,6 @@
 #define ALLOW_DEVELOPMENT_CVARS
 #endif
 
-#define Q_snprintf snprintf
 #include <logging.hpp>
 #include <interfaces.hpp>
 

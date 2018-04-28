@@ -12,7 +12,6 @@
 #include "menu/ncc/ItemSublist.hpp"
 #include "menu/ncc/Tooltip.hpp"
 
-#if TEXTMODE_VAC != 1
 namespace menu
 {
 namespace ncc
@@ -783,4 +782,3 @@ List &MainList()
 }
 }
 }
-#endif

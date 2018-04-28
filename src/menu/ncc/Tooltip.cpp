@@ -9,7 +9,6 @@
 #include "menu/CTextLabel.h"
 #include "common.hpp"
 #include "GUI.h"
-#if TEXTMODE_VAC != 1
 namespace menu
 {
 namespace ncc
@@ -57,4 +56,3 @@ void Tooltip::Draw(int x, int y)
 }
 }
 }
-#endif
