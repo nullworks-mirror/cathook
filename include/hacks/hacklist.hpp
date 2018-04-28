@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "config.h"
+
 #if ENABLE_VISUALS
 
 #include "ESP.hpp"
