@@ -17,7 +17,15 @@ class ITFGroupMatchCriteria
 public:
     enum group
     {
-        CASUAL = 7
+        MvmPractice                = 0,
+        MvmMannup                  = 1,
+        LadderMatch6v6             = 2,
+        LadderMatch9v9             = 3,
+        LadderMatch12v12           = 4,
+        CasualMatch6v6             = 5,
+        CasualMatch9v9             = 6,
+        CasualMatch12v12           = 7,
+        CompetitiveEventMatch12v12 = 8
     };
 
 public:

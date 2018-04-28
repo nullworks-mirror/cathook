@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ENUMS_HPP_
-#define ENUMS_HPP_
+#pragma once
 
 enum EntityType
 {
@@ -104,5 +103,3 @@ enum hitbox_t
     knee_R     = 16,
     foot_R     = 17
 };
-
-#endif /* ENUMS_HPP_ */

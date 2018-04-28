@@ -28,6 +28,15 @@ CatVar blastkey(CV_KEY, "reflect_key", "0", "Reflect Key",
                 "Hold this key to activate auto-airblast");
 CatVar stickies(CV_SWITCH, "reflect_stickybombs", "0", "Reflect stickies",
                 "Reflect Stickybombs");
+CatVar teammates(CV_SWITCH, "reflect_teammates", "0",
+                 "Reflect teammates projectiles", "Useful in dodgeball with "
+                                                  "free-for-all enabled");
+CatVar fov(CV_FLOAT, "reflect_fov", "85", "Reflect FOV", "Reflect FOV", 180.0f);
+CatVar fov_draw(CV_SWITCH, "reflect_fov_draw", "0", "Draw Fov Ring",
+                "Draws a ring to represent your current reflect fov");
+CatVar fovcircle_opacity(CV_FLOAT, "reflect_fov_draw_opacity", "0.7",
+                         "FOV Circle Opacity", "Defines opacity of FOV circle",
+                         0.0f, 1.0f);
 // TODO setup proj sorting
 // TODO CatVar big_proj(CV_SWITCH, "reflect_big_projectile", "0", "Reflect big
 // projectiles", "Reflect Rockets");
@@ -108,7 +117,7 @@ void CreateMove()
         if (legit)
         {
             if (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye,
-                       predicted_proj) > 85.0f)
+                       predicted_proj) > (float) fov)
                 continue;
         }
 
@@ -149,13 +158,16 @@ bool ShouldReflect(CachedEntity *ent)
     if (ent->m_Type != ENTITY_PROJECTILE)
         return false;
 
-    // We dont want to do these checks in dodgeball, it breakes if we do
-    if (!dodgeball)
+    if (!teammates)
     {
         // Check if the projectile is your own teams
         if (!ent->m_bEnemy)
             return false;
+    }
 
+    // We dont want to do these checks in dodgeball, it breakes if we do
+    if (!dodgeball)
+    {
         // If projectile is already deflected, don't deflect it again.
         if (CE_INT(ent, (ent->m_bGrenadeProjectile
                              ?
@@ -187,6 +199,45 @@ bool IsEntStickyBomb(CachedEntity *ent)
     }
     // Ent didnt pass the test so return false
     return false;
+}
+void Draw()
+{
+#if ENABLE_VISUALS
+    // Dont draw to screen when reflect is disabled
+    if (!enabled)
+        return;
+    // Don't draw to screen when legit is disabled
+    if (!legit)
+        return;
+
+    // Fov ring to represent when a projectile will be reflected
+    if (fov_draw)
+    {
+        // It cant use fovs greater than 180, so we check for that
+        if (float(fov) > 0.0f && float(fov) < 180)
+        {
+            // Dont show ring while player is dead
+            if (LOCAL_E->m_bAlivePlayer)
+            {
+                rgba_t color = GUIColor();
+                color.a      = float(fovcircle_opacity);
+
+                int width, height;
+                g_IEngine->GetScreenSize(width, height);
+
+                // Math
+                float mon_fov = (float(width) / float(height) / (4.0f / 3.0f));
+                float fov_real =
+                    RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
+                float radius = tan(DEG2RAD(float(fov)) / 2) /
+                               tan(DEG2RAD(fov_real) / 2) * (width);
+
+                draw_api::draw_circle(width / 2, height / 2, radius, color, 1,
+                                      100);
+            }
+        }
+    }
+#endif
 }
 }
 }

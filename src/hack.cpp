@@ -12,6 +12,7 @@
 #define TO_STRING(x) STRINGIFY(x)
 
 #include "CDumper.hpp"
+#include "version.h"
 
 /*
  *  Credits to josh33901 aka F1ssi0N for butifel F1Public and Darkstorm 2015
@@ -41,19 +42,19 @@ const std::string &hack::GetType()
     if (version_set)
         return version;
     version = "";
-#if not defined(ENABLE_IPC)
+#if not ENABLE_IPC
     version += " NOIPC";
 #endif
 #if not ENABLE_GUI
     version += " NOGUI";
 #else
-    version += " IMGUI";
+    version += " GUI";
 #endif
 
 #ifndef DYNAMIC_CLASSES
 
-#ifdef BUILD_GAME
-    version += " GAME " TO_STRING(BUILD_GAME);
+#ifdef GAME_SPECIFIC
+    version += " GAME " TO_STRING(GAME);
 #else
     version += " UNIVERSAL";
 #endif
@@ -78,9 +79,14 @@ std::stack<std::string> &hack::command_stack()
     return stack;
 }
 
-#if ENABLE_VISUALS == 1 /* Why would we need colored chat stuff in textmode?   \
+#if ENABLE_VISUALS /* Why would we need colored chat stuff in textmode?   \
                          */
-
+#define red 184, 56, 59, 255
+#define blu 88, 133, 162, 255
+static CatVar cat_event_hurt(CV_SWITCH, "cat_event_hurt", "1",
+                             "Enable OnHurt Event",
+                             "Disable if your chat gets spammed with \"blah "
+                             "damaged blah down to blah hp\"");
 class AdvancedEventListener : public IGameEventListener
 {
 public:
@@ -90,20 +96,16 @@ public:
             return;
         const char *name = event->GetName();
         if (!strcmp(name, "player_connect_client"))
-        {
             PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 joining", 0xa06ba0,
                       event->GetString("name"), 0x914e65,
                       event->GetString("networkid"));
-        }
         else if (!strcmp(name, "player_activate"))
         {
             int uid    = event->GetInt("userid");
             int entity = g_IEngine->GetPlayerForUserID(uid);
             player_info_s info;
             if (g_IEngine->GetPlayerInfo(entity, &info))
-            {
                 PrintChat("\x07%06X%s\x01 connected", 0xa06ba0, info.name);
-            }
         }
         else if (!strcmp(name, "player_disconnect"))
         {
@@ -129,6 +131,72 @@ public:
                           colors::chat::team(nteam), nteam_s);
             }
         }
+        else if (!strcmp(name, "player_hurt"))
+        {
+            int victim   = event->GetInt("userid");
+            int attacker = event->GetInt("attacker");
+            int health   = event->GetInt("health");
+            player_info_s kinfo;
+            player_info_s vinfo;
+            g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim),
+                                     &vinfo);
+            g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker),
+                                     &kinfo);
+            CachedEntity *vic = ENTITY(g_IEngine->GetPlayerForUserID(victim));
+            CachedEntity *att = ENTITY(g_IEngine->GetPlayerForUserID(attacker));
+            PrintChat(
+                "\x07%06X%s\x01 hurt \x07%06X%s\x01 down to \x07%06X%d\x01hp",
+                colors::chat::team(att->m_iTeam), kinfo.name,
+                colors::chat::team(vic->m_iTeam), vinfo.name, 0x2aaf18, health);
+        }
+        else if (!strcmp(name, "player_death"))
+        {
+            int victim   = event->GetInt("userid");
+            int attacker = event->GetInt("attacker");
+            player_info_s kinfo;
+            player_info_s vinfo;
+            g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim),
+                                     &vinfo);
+            g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker),
+                                     &kinfo);
+            CachedEntity *vic = ENTITY(g_IEngine->GetPlayerForUserID(victim));
+            CachedEntity *att = ENTITY(g_IEngine->GetPlayerForUserID(attacker));
+            PrintChat("\x07%06X%s\x01 killed \x07%06X%s\x01",
+                      colors::chat::team(att->m_iTeam), kinfo.name,
+                      colors::chat::team(vic->m_iTeam), vinfo.name);
+        }
+        else if (!strcmp(name, "player_spawn"))
+        {
+            int id = event->GetInt("userid");
+            player_info_s info;
+            g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
+            CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(id));
+            PrintChat("\x07%06X%s\x01 (re)spawned",
+                      colors::chat::team(player->m_iTeam), info.name);
+        }
+        else if (!strcmp(name, "player_changeclass"))
+        {
+            int id = event->GetInt("userid");
+            player_info_s info;
+            g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
+            CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(id));
+            PrintChat("\x07%06X%s\x01 changed to \x07%06X%s\x01",
+                      colors::chat::team(player->m_iTeam), info.name, 0xa06ba0,
+                      classname(event->GetInt("class")));
+        }
+        else if (!strcmp(name, "vote_cast"))
+        {
+            int vote_option = event->GetInt("vote_option");
+            int team        = event->GetInt("team");
+            int idx         = event->GetInt("entityid");
+            player_info_s info;
+            const char *team_s = teamname(team);
+            g_IEngine->GetPlayerInfo(idx, &info);
+            PrintChat(
+                "\x07%06X%s\x01 Voted \x07%06X%d\x01 on team \x07%06X%s\x01",
+                colors::chat::team(team), info.name, colors::chat::team(team),
+                vote_option, colors::chat::team(team), team_s);
+        };
     }
 };
 
@@ -155,34 +223,30 @@ void hack::Initialize()
 {
     signal(SIGPIPE, SIG_IGN);
     time_injected = time(nullptr);
-    /*passwd *pwd   = getpwuid(getuid());
-    char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name, time_injected);
-    freopen(logname, "w", stdout);
-    free(logname);
-    logname = strfmt("/tmp/cathook-game-stderr-%s-%u.log", pwd->pw_name, time_injected);
-    freopen(logname, "w", stderr);
-    free(logname);*/
-    // Essential files must always exist, except when the game is running in text
+/*passwd *pwd   = getpwuid(getuid());
+char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name,
+time_injected);
+freopen(logname, "w", stdout);
+free(logname);
+logname = strfmt("/tmp/cathook-game-stderr-%s-%u.log", pwd->pw_name,
+time_injected);
+freopen(logname, "w", stderr);
+free(logname);*/
+// Essential files must always exist, except when the game is running in text
 // mode.
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
     {
-        std::vector<std::string> essential = { "shaders/v2f-c4f.frag",
-                                               "shaders/v2f-c4f.vert",
-                                               "shaders/v2f-t2f-c4f.frag",
-                                               "shaders/v2f-t2f-c4f.vert",
-                                               "shaders/v3f-t2f-c4f.frag",
-                                               "shaders/v3f-t2f-c4f.vert",
-                                               "menu.json",
+        std::vector<std::string> essential = { "menu.json",
                                                "fonts/tf2build.ttf" };
         for (const auto &s : essential)
         {
             std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
             if (not exists)
             {
-                Error("Missing essential file: " DATA_PATH
-                      "/%s\nYou MUST run check-data script to finish "
-                      "installation",
+                Error(("Missing essential file: " + s +
+                      "/%s\nYou MUST run install-data script to finish "
+                      "installation").c_str(),
                       s.c_str());
             }
         }
@@ -203,44 +267,18 @@ void hack::Initialize()
     logging::Info("Is TF? %d", IsTF());
     InitClassTable();
 
-#if ENABLE_VISUALS ==                                                          \
-    1 /* We don't need medal to flip 100% when running textmode */
-
-    IF_GAME(IsTF2())
-    {
-        /*
-    uintptr_t mmmf = (gSignatures.GetClientSignature("C7 44 24 04 09 00 00 00 BB
-    ? ? ? ? C7 04 24 00 00 00 00 E8 ? ? ? ? BA ? ? ? ? 85 C0 B8 ? ? ? ? 0F 44
-    DA") + 37); if (mmmf) { unsigned char patch1[] = { 0x89, 0xD3, 0x90 };
-        unsigned char patch2[] = { 0x89, 0xC2, 0x90 };
-        Patch((void*)mmmf, (void*)patch1, 3);
-        Patch((void*)(mmmf + 8), (void*)patch2, 3);
-    }*/
-        /*uintptr_t canInspectSig = (gSignatures.GetClientSignature("55 0F 57 C0
-        89 E5 83 EC 48 8B 45 08 F3 0F 11 04 24 F3 0F 11 45 E8 C7 44 24 10 01 00
-        00 00 C7 44 24 0C 00 00 00 00 89 44 24 08 C7 44 24 ? ? ? ? ? E8 ? ? ? ?
-        F3 0F 10 45 E8 D9 5D E4 F3 0F 10 4D E4 C9 0F 2F C8 0F 95 C0 C3") + 72);
-        if (canInspectSig) {
-            unsigned char patch[] = { 0xB0, 0x01, 0x90 };
-            Patch((void*)canInspectSig, (void*)patch, 3);
-        }*/
-    }
-
-#endif /* TEXTMODE */
-
     BeginConVars();
     hack::c_Cat = CreateConCommand(CON_NAME, &hack::CC_Cat, "Info");
     g_Settings.Init();
     EndConVars();
 
-#if ENABLE_VISUALS == 1
-
+#if ENABLE_VISUALS
     draw::Initialize();
 #if ENABLE_GUI
-/*
-g_pGUI = new CatGUI();
-g_pGUI->Setup();
-*/
+
+    g_pGUI = new CatGUI();
+    g_pGUI->Setup();
+
 #endif
 
 #endif /* TEXTMODE */
@@ -249,7 +287,7 @@ g_pGUI->Setup();
     InitNetVars();
     g_pLocalPlayer    = new LocalPlayer();
     g_pPlayerResource = new TFPlayerResource();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::panel.Set(g_IPanel);
     hooks::panel.HookMethod((void *) PaintTraverse_hook,
                             offsets::PaintTraverse());
@@ -262,12 +300,12 @@ g_pGUI->Setup();
         clientMode = **(
             uintptr_t ***) ((uintptr_t)((*(void ***) g_IBaseClient)[10]) + 1)))
     {
-        sleep(1);
+        usleep(10000);
     }
     hooks::clientmode.Set((void *) clientMode);
     hooks::clientmode.HookMethod((void *) CreateMove_hook,
                                  offsets::CreateMove());
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::clientmode.HookMethod((void *) OverrideView_hook,
                                  offsets::OverrideView());
 #endif
@@ -281,14 +319,20 @@ g_pGUI->Setup();
     hooks::clientmode4.Apply();
     hooks::client.Set(g_IBaseClient);
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::client.HookMethod((void *) FrameStageNotify_hook,
                              offsets::FrameStageNotify());
 #endif
     hooks::client.HookMethod((void *) DispatchUserMessage_hook,
                              offsets::DispatchUserMessage());
 
-#if ENABLE_NULL_GRAPHICS == 1
+#if ENABLE_VISUALS
+    hooks::vstd.Set((void *) g_pUniformStream);
+    hooks::vstd.HookMethod((void *) RandomInt_hook, offsets::RandomInt());
+    hooks::vstd.Apply();
+#endif
+
+#if ENABLE_NULL_GRAPHICS
     g_IMaterialSystem->SetInStubMode(true);
     IF_GAME(IsTF2())
     {
@@ -310,7 +354,7 @@ g_pGUI->Setup();
         // hooks::materialsystem.HookMethod();
     }
 #endif
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::client.HookMethod((void *) IN_KeyEvent_hook, offsets::IN_KeyEvent());
 #endif
     hooks::client.Apply();
@@ -318,16 +362,18 @@ g_pGUI->Setup();
     hooks::input.HookMethod((void *) GetUserCmd_hook, offsets::GetUserCmd());
     hooks::input.Apply();
 #ifndef HOOK_DME_DISABLED
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     hooks::modelrender.Set(g_IVModelRender);
     hooks::modelrender.HookMethod((void *) DrawModelExecute_hook,
                                   offsets::DrawModelExecute());
     hooks::modelrender.Apply();
-#endif
-#endif
     hooks::enginevgui.Set(g_IEngineVGui);
-    hooks::enginevgui.HookMethod((void *)Paint_hook, offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
+    hooks::enginevgui.HookMethod(
+        (void *) Paint_hook,
+        offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
     hooks::enginevgui.Apply();
+#endif
+#endif
     hooks::steamfriends.Set(g_ISteamFriends);
     hooks::steamfriends.HookMethod((void *) GetFriendPersonaName_hook,
                                    offsets::GetFriendPersonaName());
@@ -354,7 +400,7 @@ g_pGUI->Setup();
     velocity::Init();
     playerlist::Load();
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
     InitStrings();
 #if ENABLE_GUI
@@ -383,8 +429,8 @@ g_pGUI->Setup();
     hacks::shared::anticheat::Init();
     hacks::tf2::healarrow::Init();
 
-#if ENABLE_VISUALS == 1
-#ifndef FEATURE_FIDGET_SPINNER_DISABLED
+#if ENABLE_VISUALS
+#ifndef FEATURE_FIDGET_SPINNER_ENABLED
     InitSpinner();
     logging::Info("Initialized Fidget Spinner");
 #endif
@@ -423,7 +469,9 @@ void hack::Shutdown()
         return;
     hack::shutdown = true;
     playerlist::Save();
+#if ENABLE_VISUALS
     DoSDLUnhooking();
+#endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
     logging::Info("Shutting down killsay...");

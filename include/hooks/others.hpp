@@ -5,8 +5,9 @@
  *      Author: nullifiedcat
  */
 
-#ifndef OTHERS_H_
-#define OTHERS_H_
+#pragma once
+
+#include "config.h"
 
 class INetMessage;
 class CViewSetup;
@@ -15,7 +16,9 @@ class SDL_Window;
 class CatVar;
 
 extern CatVar disconnect_reason;
+#if ENABLE_VISUALS
 extern int spectator_target;
+#endif
 
 bool CanPacket_hook(void *);
 int IN_KeyEvent_hook(void *, int, int, const char *);
@@ -26,8 +29,9 @@ bool DispatchUserMessage_hook(void *, int, bf_read &);
 void FrameStageNotify_hook(void *, int);
 void LevelInit_hook(void *, const char *);
 void LevelShutdown_hook(void *);
+int RandomInt_hook(void *, int, int);
 
-#if ENABLE_NULL_GRAPHICS == 1
+#if ENABLE_NULL_GRAPHICS
 typedef ITexture *(*FindTexture_t)(void *, const char *, const char *, bool,
                                    int);
 typedef IMaterial *(*FindMaterialEx_t)(void *, const char *, const char *, int,
@@ -57,5 +61,3 @@ typedef IMaterial *(*FindMaterial_t)(void *, const char *, const char *, bool,
 
 // extern unsigned int* swapwindow_ptr;
 // extern unsigned int  swapwindow_orig;
-
-#endif /* OTHERS_H_ */

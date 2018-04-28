@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef EFFECTCHAMS_HPP_
-#define EFFECTCHAMS_HPP_
+#pragma once
 
 #include "common.hpp"
 #include "sdk/ScreenSpaceEffects.h"
@@ -34,6 +33,7 @@ public:
         return enabled;
     };
 
+    void SetEntityColor(CachedEntity *ent, rgba_t color);
     rgba_t ChamsColor(IClientEntity *entity);
     bool ShouldRenderChams(IClientEntity *entity);
     void RenderChams(int idx);
@@ -55,5 +55,3 @@ public:
 extern EffectChams g_EffectChams;
 extern CScreenSpaceEffectRegistration *g_pEffectChams;
 }
-
-#endif /* EFFECTCHAMS_HPP_ */

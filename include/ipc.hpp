@@ -5,10 +5,11 @@
  *      Author: nullifiedcat
  */
 
-#if ENABLE_IPC == 1
+#pragma once
 
-#ifndef IPC_H_
-#define IPC_H_
+#include "config.h"
+
+#if ENABLE_IPC
 
 #include "ipcb.hpp"
 #include "pthread.h"
@@ -59,31 +60,31 @@ struct user_data_s
     time_t ts_disconnected;
 
     struct accumulated_t
-	{
-    	int kills;		// TODO
-    	int deaths;		// TODO
-    	int score;
+    {
+        int kills;  // TODO
+        int deaths; // TODO
+        int score;
 
-    	int shots;
-    	int hits;
-    	int headshots;
-	} accumulated;
+        int shots;
+        int hits;
+        int headshots;
+    } accumulated;
 
     struct
-	{
-	    bool good;
+    {
+        bool good;
 
-    	int kills;		// TODO
-    	int deaths;		// TODO
-    	int score;
+        int kills;  // TODO
+        int deaths; // TODO
+        int score;
 
-    	int shots;		// TODO
-    	int hits;		// TODO
-    	int headshots;	// TODO
+        int shots;     // TODO
+        int hits;      // TODO
+        int headshots; // TODO
 
-    	int team;
-    	int role; // class
-    	char life_state;
+        int team;
+        int role; // class
+        char life_state;
         int health;
         int health_max;
 
@@ -96,7 +97,7 @@ struct user_data_s
 
         char server[24];
         char mapname[32];
-	} ingame;
+    } ingame;
 };
 
 using peer_t = cat_ipc::Peer<server_data_s, user_data_s>;
@@ -111,7 +112,5 @@ void UpdateServerAddress(bool shutdown = false);
 void StoreClientData();
 void UpdatePlayerlist();
 }
-
-#endif /* IPC_H_ */
 
 #endif

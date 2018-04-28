@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef NETVARS_HPP_
-#define NETVARS_HPP_
+#pragma once
 
 #include <logging.hpp>
 
@@ -62,6 +61,8 @@ public:
     offset_t iBuildingHealth;
     offset_t iBuildingMaxHealth;
     offset_t m_iAmmo;
+    offset_t m_iPrimaryAmmoType;
+    offset_t m_iSecondaryAmmoType;
     offset_t iHitboxSet;
     offset_t vVelocity;
     offset_t bGlowEnabled;
@@ -72,8 +73,10 @@ public:
     offset_t flNextAttack;
     offset_t iNextMeleeCrit;
     offset_t flNextPrimaryAttack;
+    offset_t flNextSecondaryAttack;
     offset_t iNextThinkTick;
     offset_t m_iClip1;
+    offset_t m_iClip2;
     // offset_t flReloadPriorNextFire;
     // offset_t flObservedCritChance;
     offset_t nTickBase;
@@ -142,5 +145,3 @@ public:
 };
 
 extern NetVars netvar;
-
-#endif /* NETVARS_HPP_ */

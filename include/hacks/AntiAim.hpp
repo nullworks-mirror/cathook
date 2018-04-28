@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ANTIAIM_H_
-#define ANTIAIM_H_
+#pragma once
 
 class CatVar;
 class CUserCmd;
@@ -29,6 +28,7 @@ extern CatVar roll;
 extern CatVar no_clamping;
 extern CatVar spin;
 extern CatVar lisp;
+extern CatVar communicate;
 
 extern int safe_space;
 
@@ -38,5 +38,3 @@ void ProcessUserCmd(CUserCmd *cmd);
 }
 }
 }
-
-#endif /* ANTIAIM_H_ */

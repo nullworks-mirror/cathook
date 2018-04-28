@@ -119,6 +119,8 @@ rgba_t Color(unsigned steamid)
 {
     if (AccessData(steamid).state == k_EState::DEVELOPER)
         return colors::RainbowCurrent();
+    if (AccessData(steamid).state == k_EState::CAT)
+        return colors::RainbowCurrent();
     if (AccessData(steamid).color.a)
     {
         return AccessData(steamid).color;

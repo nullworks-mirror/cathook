@@ -27,9 +27,9 @@ void render_cheat_visuals()
 
 void BeginCheatVisuals()
 {
-#if RENDERING_ENGINE_OPENGL
+/*#if RENDERING_ENGINE_OPENGL
     std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-#endif
+#endif*/
     draw_api::draw_begin();
     ResetStrings();
 }
@@ -40,51 +40,56 @@ CatVar info_text(CV_SWITCH, "info", "1", "Show info",
                  "Show cathook version in top left corner");
 CatVar info_text_min(CV_SWITCH, "info_min", "0", "Show minimal info",
                      "Only show cathook title in top left corner");
+CatVar enable_logo(CV_SWITCH, "nullcore_mode_logo", "1",
+                   "Enable Nullcore watermark", "");
 
 void DrawCheatVisuals()
 {
-#if RENDERING_ENGINE_OPENGL
+/*#if RENDERING_ENGINE_OPENGL
     std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-#endif
+#endif*/
     {
         PROF_SECTION(DRAW_misc);
         hacks::shared::misc::DrawText();
     }
-    if (info_text)
     {
         PROF_SECTION(DRAW_info);
         std::string name_s, reason_s;
         PROF_SECTION(PT_info_text);
-        AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
-        if (!info_text_min)
+        if (info_text)
         {
-            AddSideString(hack::GetVersion(),
-                          GUIColor()); // github commit and date
-            AddSideString(hack::GetType(), GUIColor()); //  Compile type
+            AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
+            if (!info_text_min)
+            {
+                AddSideString(hack::GetVersion(),
+                              GUIColor()); // github commit and date
+                AddSideString(hack::GetType(), GUIColor()); //  Compile type
 #if ENABLE_GUI
-            AddSideString(
-                "Press 'INSERT' or 'F11' key to open/close cheat menu.",
-                GUIColor());
-            AddSideString("Use mouse to navigate in menu.", GUIColor());
+                AddSideString(
+                    "Press 'INSERT' or 'F11' key to open/close cheat menu.",
+                    GUIColor());
+                AddSideString("Use mouse to navigate in menu.", GUIColor());
 #endif
-            if (!g_IEngine->IsInGame()
+                if (!g_IEngine->IsInGame()
 #if ENABLE_GUI
 /*
 || g_pGUI->Visible()
 */
 #endif
-                    )
-            {
-                name_s = force_name.GetString();
-                if (name_s.length() < 3)
-                    name_s = "*Not Set*";
-                reason_s   = disconnect_reason.GetString();
-                if (reason_s.length() < 3)
-                    reason_s = "*Not Set*";
-                AddSideString(""); // foolish
-                AddSideString(format("Custom Name: ", name_s), GUIColor());
-                AddSideString(format("Custom Disconnect Reason: ", reason_s),
-                              GUIColor());
+                        )
+                {
+                    name_s = force_name.GetString();
+                    if (name_s.length() < 3)
+                        name_s = "*Not Set*";
+                    reason_s   = disconnect_reason.GetString();
+                    if (reason_s.length() < 3)
+                        reason_s = "*Not Set*";
+                    AddSideString(""); // foolish
+                    AddSideString(format("Custom Name: ", name_s), GUIColor());
+                    AddSideString(
+                        format("Custom Disconnect Reason: ", reason_s),
+                        GUIColor());
+                }
             }
         }
     }
@@ -99,6 +104,10 @@ void DrawCheatVisuals()
             PROF_SECTION(DRAW_aimbot);
             hacks::shared::aimbot::DrawText();
         }
+        {
+            PROF_SECTION(DRAW_lagexploit)
+            hacks::shared::lagexploit::Draw();
+        }
         IF_GAME(IsTF2())
         {
             PROF_SECTION(DRAW_skinchanger);
@@ -111,6 +120,11 @@ void DrawCheatVisuals()
             hacks::tf::radar::Draw();
         }
 #endif
+        IF_GAME(IsTF())
+        {
+            PROF_SECTION(DRAW_autoreflect);
+            hacks::tf::autoreflect::Draw();
+        }
         IF_GAME(IsTF2())
         {
             PROF_SECTION(DRAW_healarrows);
@@ -130,8 +144,8 @@ void DrawCheatVisuals()
             PROF_SECTION(PT_spyalert);
             hacks::tf::spyalert::Draw();
         }
-#if ENABLE_IPC == 1
-        IF_GAME(IsTF()) hacks::shared::followbot::Draw();
+#if ENABLE_IPC
+        IF_GAME(IsTF()) hacks::shared::followbot::DrawTick();
 #endif
         {
             PROF_SECTION(DRAW_esp);
@@ -141,7 +155,7 @@ void DrawCheatVisuals()
         {
             criticals::draw();
         }
-#ifndef FEATURE_FIDGET_SPINNER_DISABLED
+#ifndef FEATURE_FIDGET_SPINNER_ENABLED
         DrawSpinner();
 #endif
         Prediction_PaintTraverse();

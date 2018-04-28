@@ -215,8 +215,10 @@ void CreateMove()
         }
     }
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
+    static effect_chams::EffectChams Effectchams;
     hacks::shared::esp::SetEntityColor(target_entity, colors::pink);
+    Effectchams.SetEntityColor(target_entity, colors::pink);
 #endif
 
     // Local player check + Aimkey
@@ -251,6 +253,11 @@ void CreateMove()
                 return;
 
             // Not release type weapon
+        }
+        else if (GetWeaponMode() == weapon_melee &&
+                 (g_pUserCmd->buttons & IN_ATTACK))
+        {
+            Aim(target_entity);
         }
         else if (CanShoot() && (g_pUserCmd->buttons & IN_ATTACK) &&
                  CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0)
@@ -417,7 +424,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                     scr = 450.0f - ent->m_iHealth;
                     break;
                 default:
-                	break;
+                    break;
                 }
             }
             // Compare the top score to our current ents score
@@ -478,8 +485,8 @@ bool IsTargetStateGood(CachedEntity *entity)
 
                 // Darwins damage correction, Darwins protects against 15% of
                 // damage
-//                if (HasDarwins(entity))
-//                    cdmg = (cdmg * .85) - 1;
+                //                if (HasDarwins(entity))
+                //                    cdmg = (cdmg * .85) - 1;
                 // Vaccinator damage correction, Vac charge protects against 75%
                 // of damage
                 if (HasCondition<TFCond_UberBulletResist>(entity))
@@ -549,7 +556,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             }
         }
         if (hacks::shared::catbot::should_ignore_player(entity))
-        	return false;
+            return false;
         // Preform hitbox prediction
         int hitbox                 = BestHitbox(entity);
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
@@ -785,7 +792,9 @@ const Vector &PredictEntity(CachedEntity *entity)
     if ((entity->m_Type == ENTITY_PLAYER))
     {
         // If using projectiles, predict a vector
-        if (projectile_mode)
+        if (projectile_mode &&
+            (g_pLocalPlayer->weapon_mode == weapon_projectile ||
+             g_pLocalPlayer->weapon_mode == weapon_throwable))
         {
             // Use prediction engine if user settings allow
             if (engine_projpred)
@@ -890,11 +899,11 @@ int BestHitbox(CachedEntity *target)
                 float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
                 float bdmg = 50;
                 // Darwins damage correction, protects against 15% of damage
-//                if (HasDarwins(target))
-//                {
-//                    bdmg = (bdmg * .85) - 1;
-//                    cdmg = (cdmg * .85) - 1;
-//                }
+                //                if (HasDarwins(target))
+                //                {
+                //                    bdmg = (bdmg * .85) - 1;
+                //                    cdmg = (cdmg * .85) - 1;
+                //                }
                 // Vaccinator damage correction, protects against 75% of damage
                 if (HasCondition<TFCond_UberBulletResist>(target))
                 {
@@ -967,7 +976,7 @@ int BestHitbox(CachedEntity *target)
     }
     break;
     default:
-    	break;
+        break;
     }
     // Hitbox machine :b:roke
     return -1;
@@ -1106,7 +1115,7 @@ bool UpdateAimkey()
                 allow_aimkey = false;
             break;
         default:
-        	break;
+            break;
         }
         pressed_last_tick = key_down;
     }
@@ -1118,8 +1127,7 @@ bool UpdateAimkey()
 float EffectiveTargetingRange()
 {
     if (GetWeaponMode() == weapon_melee)
-        return 100.0f; // Melees use a close range, TODO add dynamic range for
-                       // demoknight swords
+        return (float) re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower))
         return 185.0f; // Pyros only have so much untill their flames hit
 
@@ -1142,7 +1150,7 @@ void Reset()
     projectile_mode = false;
 }
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 static CatVar fov_draw(CV_SWITCH, "aimbot_fov_draw", "0", "Draw Fov Ring",
                        "Draws a ring to represent your current aimbot fov");
 void DrawText()

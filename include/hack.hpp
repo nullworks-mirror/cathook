@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACK_H_
-#define HACK_H_
+#pragma once
 
 class IHack;
 class CUserCmd;
@@ -38,5 +37,3 @@ void Shutdown();
 void CC_Cat(const CCommand &args);
 extern ConCommand *c_Cat;
 }
-
-#endif /* HACK_H_ */

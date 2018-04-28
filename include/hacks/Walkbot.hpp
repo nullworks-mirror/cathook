@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "config.h"
+
 namespace hacks
 {
 namespace shared
@@ -15,7 +17,7 @@ namespace walkbot
 {
 
 void Initialize();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void Draw();
 #endif
 void Move();

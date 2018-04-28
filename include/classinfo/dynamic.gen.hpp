@@ -257,6 +257,7 @@ public:
     int CTFMinigun{ 0 };
     int CTFMedigunShield{ 0 };
     int CWeaponMedigun{ 0 };
+    int CTFProjectile_MechanicalArmOrb{ 0 };
     int CTFMechanicalArm{ 0 };
     int CTFLunchBox_Drink{ 0 };
     int CTFLunchBox{ 0 };
@@ -522,6 +523,19 @@ public:
     int CSDKGameRulesProxy{ 0 };
     int CBaseGrenadeProjectile{ 0 };
     int CDAViewModel{ 0 };
+    int CTFWearableRazorback{ 0 };
+    int CTFWearableCampaignItem{ 0 };
+    int CTFSlap{ 0 };
+    int CTFRocketPack{ 0 };
+    int CTFGasManager{ 0 };
+    int CTFProjectile_JarGas{ 0 };
+    int CTFJarGas{ 0 };
+    int CTFWeaponFlameBall{ 0 };
+    int CTFBreakableSign{ 0 };
+    int CTFBreakableMelee{ 0 };
+    int CTFProjectile_BallOfFire{ 0 };
+    int CTFPointManager{ 0 };
+    int CTFFlameManager{ 0 };
 };
 
 extern dynamic dynamic_list;

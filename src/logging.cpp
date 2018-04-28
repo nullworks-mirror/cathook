@@ -17,8 +17,9 @@ FILE *logging::handle = 0;
 void logging::Initialize()
 {
     // FIXME other method of naming the file?
-    passwd *pwd     = getpwuid(getuid());
-    logging::handle = fopen(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()), "w");
+    passwd *pwd = getpwuid(getuid());
+    logging::handle =
+        fopen(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()), "w");
 }
 
 void logging::Info(const char *fmt, ...)
@@ -41,7 +42,7 @@ void logging::Info(const char *fmt, ...)
     sprintf(result, "%% [%s] %s\n", timeString, buffer);
     fprintf(logging::handle, "%s", result);
     fflush(logging::handle);
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     if (g_ICvar)
     {
         if (console_logging.convar_parent && console_logging)

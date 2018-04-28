@@ -398,7 +398,7 @@ void def_attribute_modifier::Set(int id, float value)
         logging::Info("Woah there, that's too many! Remove some.");
         return;
     }
-    modifiers.push_back(attribute_s{ id, value });
+    modifiers.push_back(attribute_s{ (uint16_t)id, value });
     logging::Info("Added new attribute: %i %.2f (%i)", id, value,
                   modifiers.size());
 }

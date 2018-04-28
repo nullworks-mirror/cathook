@@ -5,8 +5,8 @@
 // $NoKeywords: $
 //
 //=============================================================================//
-#if !defined(IINPUT_H)
-#define IINPUT_H
+#pragma once
+
 #ifdef _WIN32
 #pragma once
 #endif
@@ -121,5 +121,3 @@ public:
 };
 
 // extern ::IInput *input;
-
-#endif // IINPUT_H

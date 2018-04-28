@@ -31,6 +31,8 @@ void Init()
 
 void Update(CachedEntity *player)
 {
+    int amount[32];
+    auto &am = amount[player->m_IDX - 1];
     if (tickcount - last_accusation[player->m_IDX - 1] < 60 * 60)
         return;
     const auto &d = angles::data(player);
@@ -42,6 +44,15 @@ void Update(CachedEntity *player)
         if ((d.angles[idx].x < -89 || d.angles[idx].x > 89) &&
             (d.angles[idx].x < 89.2941 || d.angles[idx].x > 89.2942))
         {
+            am++;
+            player_info_t info;
+            g_IEngine->GetPlayerInfo(player->m_IDX, &info);
+            if (am > 5)
+            {
+                playerlist::AccessData(info.friendsID).state =
+                    playerlist::k_EState::RAGE;
+                am = 0;
+            }
             std::string reason =
                 format("Pitch: ", d.angles[idx].x, " Yaw: ", d.angles[idx].y);
             if (d.angles[idx].x == -271.0f)

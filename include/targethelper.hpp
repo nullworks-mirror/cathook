@@ -5,11 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#ifndef TARGETHELPER_HPP_
-#define TARGETHELPER_HPP_
+#pragma once
 
 class CachedEntity;
 
 int GetScoreForEntity(CachedEntity *entity);
-
-#endif /* TARGETHELPER_HPP_ */

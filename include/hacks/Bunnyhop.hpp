@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HBUNNYHOP_H_
-#define HBUNNYHOP_H_
+#pragma once
 
 #include "common.hpp"
 
@@ -23,5 +22,3 @@ void CreateMove();
 }
 }
 }
-
-#endif /* HBUNNYHOP_H_ */

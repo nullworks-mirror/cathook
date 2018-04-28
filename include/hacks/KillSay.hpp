@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_KILLSAY_HPP_
-#define HACKS_KILLSAY_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -35,5 +34,3 @@ extern const std::vector<std::string> builtin_nonecore_mlg;
 }
 }
 }
-
-#endif /* HACKS_KILLSAY_HPP_ */

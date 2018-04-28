@@ -35,7 +35,6 @@ CatVar
             "Disabling this completely disables cathook (can be re-enabled)");
 CatVar ignore_taunting(CV_SWITCH, "ignore_taunting", "1", "Ignore taunting",
                        "Aimbot/Triggerbot won't attack taunting enemies");
-bool *bSendPackets; // i'd probably want to hook it, idk.
 // CatVar send_packets(CV_SWITCH, "sendpackets", "1", "Send packets", "Internal
 // use");
 CatVar show_antiaim(CV_SWITCH, "thirdperson_angles", "1", "Real TP angles",
@@ -61,8 +60,6 @@ void GlobalSettings::Init()
     cl_interp                  = g_ICvar->FindVar("cl_interp");
     cl_interpolate             = g_ICvar->FindVar("cl_interpolate");
 
-    bSendPackets  = new bool;
-    *bSendPackets = true;
     force_thirdperson.OnRegister([](CatVar *var) {
         var->convar_parent->InstallChangeCallback(ThirdpersonCallback);
     });

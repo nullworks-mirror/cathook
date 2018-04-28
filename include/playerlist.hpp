@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef PLAYERLIST_HPP_
-#define PLAYERLIST_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -22,7 +21,8 @@ enum class k_EState
     RAGE,
     IPC,
     DEVELOPER,
-    STATE_LAST = DEVELOPER
+    CAT,
+    STATE_LAST = CAT
 };
 
 extern rgba_t k_Colors[];
@@ -58,5 +58,3 @@ userdata &AccessData(CachedEntity *player);
 bool IsDefault(unsigned steamid);
 bool IsDefault(CachedEntity *player);
 }
-
-#endif /* PLAYERLIST_HPP_ */

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_UBERSPAM_HPP_
-#define HACKS_UBERSPAM_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -26,5 +25,3 @@ extern const std::vector<std::string> builtin_nonecore;
 }
 }
 }
-
-#endif /* HACKS_UBERSPAM_HPP_ */

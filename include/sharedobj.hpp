@@ -5,11 +5,11 @@
  *      Author: nullifiedcat
  */
 
-#ifndef SHAREDOBJ_HPP_
-#define SHAREDOBJ_HPP_
+#pragma once
 
 #include <string>
 #include <vector>
+#include "config.h"
 
 struct link_map;
 typedef void *(*fn_CreateInterface_t)(const char *, int *);
@@ -44,7 +44,7 @@ SharedObject &vstdlib();
 SharedObject &tier0();
 SharedObject &inputsystem();
 SharedObject &materialsystem();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 SharedObject &vguimatsurface();
 SharedObject &vgui2();
 SharedObject &studiorender();
@@ -53,5 +53,3 @@ SharedObject &libsdl();
 
 void LoadAllSharedObjects();
 }
-
-#endif /* SHAREDOBJ_HPP_ */

@@ -44,6 +44,8 @@ static CatEnum vacc_sniper_enum({ "NEVER", "ZOOM & VISIBLE", "ANY ZOOMED" });
 static CatVar vacc_sniper(vacc_sniper_enum, "auto_vacc_sniper_pop", "1",
                           "Pop if Sniper",
                           "Defines Auto-Vacc behaviour with snipers");
+static CatVar ignore(CV_STRING, "autoheal_ignore", "", "Ignore",
+                     "Ignore people with this name");
 
 int ChargeCount()
 {
@@ -305,7 +307,6 @@ void DoResistSwitching()
 }
 
 int force_healing_target{ 0 };
-
 static CatCommand heal_steamid(
     "autoheal_heal_steamid",
     "Heals a player with SteamID (ONCE. Use for easy airstuck med setup)",
@@ -552,16 +553,21 @@ int HealingPriority(int idx)
         priority += 50 * (1 - healthp);
         priority += 10 * (1 - overhealp);
     }
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
     if (ipc::peer)
     {
-        if (hacks::shared::followbot::bot &&
-            hacks::shared::followbot::following_idx == idx)
+        if (hacks::shared::followbot::followbot &&
+            hacks::shared::followbot::follow_target == idx)
         {
             priority *= 3.0f;
         }
     }
 #endif
+    player_info_s info;
+    g_IEngine->GetPlayerInfo(idx, &info);
+    info.name[31] = 0;
+    if (strcasestr(info.name, ignore.GetString()))
+        priority = 0.0f;
     return priority;
 }
 

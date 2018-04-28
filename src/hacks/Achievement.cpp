@@ -39,6 +39,11 @@ void Lock()
 
 void Unlock()
 {
+    /*auto Invmng = re::CTFInventoryManager::GTFInventoryManager();
+    auto Inv = re::CTFPlayerInventory::GTFPlayerInventory();
+    auto Item = Inv->GetFirstItemOfItemDef(59);
+    Invmng->EquipItemInLoadout(0, 0, (unsigned long long
+    int)Item->uniqueid());*/
     if (safety)
     {
         ConColorMsg(

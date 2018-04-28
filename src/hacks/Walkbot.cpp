@@ -8,6 +8,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <sys/dir.h>
 #include <sys/stat.h>
 
@@ -31,7 +32,7 @@ void DeleteNode(index_t node);
 float distance_2d(Vector &xyz);
 void Save(std::string filename);
 bool Load(std::string filename);
-
+const char *prevlvlname = "";
 enum ENodeFlags
 {
     NF_GOOD = (1 << 0),
@@ -868,7 +869,6 @@ void UpdateSlot()
         }
     }
 }
-
 void UpdateWalker()
 {
     free_move_used = false;
@@ -979,7 +979,7 @@ void RecordNode()
     state::active_node       = node;
 }
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
 // Draws a single colored connection between 2 nodes
 void DrawConnection(index_t a, connection_s &b)
@@ -1149,7 +1149,8 @@ void OnLevelInit()
 }
 
 Timer quit_timer{};
-
+Timer map_check{};
+int erasedelay = 0;
 void Move()
 {
     if (state::state == WB_DISABLED)
@@ -1174,16 +1175,42 @@ void Move()
     {
         if (leave_if_empty)
         {
-            if (nodes.size() == 0)
+            if (nodes.size() == 0 || g_IEngine->GetLevelName() != prevlvlname)
             {
-                Load("default");
-                if (leave_if_empty && nodes.size() == 0 &&
-                    quit_timer.test_and_set(5000))
+                prevlvlname = g_IEngine->GetLevelName();
+                if (!boost::contains(prevlvlname, "pl_"))
                 {
-                    logging::Info("No map file, abandon");
-                    tfmm::abandon();
-                    return;
+                    Load("default");
+                    if (leave_if_empty && nodes.size() == 0 &&
+                        quit_timer.test_and_set(5000))
+                    {
+                        logging::Info("No map file, abandon");
+                        tfmm::abandon();
+                        return;
+                    }
                 }
+            }
+        }
+        prevlvlname            = g_IEngine->GetLevelName();
+        std::string prvlvlname = format(prevlvlname);
+        logging::Info("%s %s", prevlvlname, prvlvlname.c_str());
+        if (boost::contains(prvlvlname, "pl_") || boost::contains(prvlvlname, "cp_"))
+        {
+            logging::Info("1");
+            bool ret = false;
+            if (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
+                lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
+                lagexploit::pointarr[4])
+            {
+                hacks::shared::followbot::followbot  = 1;
+                hacks::shared::followbot::roambot    = 1;
+                hacks::shared::followbot::followcart = true;
+            }
+            else
+            {
+                hacks::shared::followbot::followbot  = 0;
+                hacks::shared::followbot::roambot    = 0;
+                hacks::shared::followbot::followcart = false;
             }
         }
         if (nodes.size() == 0)

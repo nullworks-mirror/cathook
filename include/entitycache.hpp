@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef ENTITYCACHE_HPP_
-#define ENTITYCACHE_HPP_
+#pragma once
 
 #include "entityhitboxcache.hpp"
 #include "averager.hpp"
@@ -136,5 +135,3 @@ void Update();
 void Invalidate();
 extern int max;
 }
-
-#endif /* ENTITYCACHE_HPP_ */

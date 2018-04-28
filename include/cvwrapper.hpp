@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CVWRAPPER_HPP_
-#define CVWRAPPER_HPP_
+#pragma once
 
 class ConVar;
 
@@ -158,7 +157,7 @@ public:
     const std::string defaults{ "0" };
     const std::string desc_short{ "" };
     const std::string desc_long{ "" };
-    const CatEnum *const enum_type{ nullptr };
+    CatEnum *enum_type{ nullptr };
 
     std::string current_base{ "0" };
 
@@ -189,5 +188,3 @@ std::vector<CatVar *> &CatVarList();
 void RegisterCatCommands();
 void RegisterCatVars();
 int GetRebasedCatVarCount();
-
-#endif /* CVWRAPPER_HPP_ */

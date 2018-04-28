@@ -16,5 +16,4 @@ extern int count_hits_head;
 extern CatVar hitrate_check;
 
 void Update();
-
 }

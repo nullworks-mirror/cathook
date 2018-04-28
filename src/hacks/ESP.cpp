@@ -25,16 +25,19 @@ CatEnum tracers_enum({ "OFF", "CENTER", "BOTTOM" });
 CatVar tracers(tracers_enum, "esp_tracers", "0", "Tracers",
                "SDraws a line from the player to a position on your screen");
 // Emoji Esp
-#ifndef FEATURE_EMOJI_ESP_DISABLED
 CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
 CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP",
                  "Draw emoji on peopels head");
-CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size");
+CatVar emoji_ok(CV_SWITCH, "esp_okhand", "0", "ok_hand",
+                "Draw ok_hand on hands");
+CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size",
+                      "Emoji size");
 CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1",
-                         "Emoji ESP Scaling");
+                         "Emoji ESP Scaling", "Emoji ESP Scaling");
 CatVar emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size",
                       "Minimum size for an emoji when you use auto scaling");
-#endif
+
+hitbox_cache::CachedHitbox *hitboxcache[32][18]{};
 // Other esp options
 CatEnum show_health_enum({ "None", "Text", "Healthbar", "Both" });
 CatVar show_health(show_health_enum, "esp_health", "3", "Health ESP",
@@ -130,7 +133,8 @@ CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
 std::mutex threadsafe_mutex;
 // Storage array for keeping strings and other data
 std::array<ESPData, 2048> data;
-
+std::array<const model_t *, 1024> modelcache;
+std::array<studiohdr_t *, 1024> stdiocache;
 // Storage vars for entities that need to be re-drawn
 std::vector<int> entities_need_repaint{};
 std::mutex entities_need_repaint_mutex{};
@@ -288,6 +292,9 @@ void Draw()
     for (auto &i : entities_need_repaint)
     {
         ProcessEntityPT(ENTITY(i));
+#ifndef FEATURE_EMOJI_ESP_DISABLED
+        emoji(ENTITY(i));
+#endif
     }
 }
 
@@ -317,7 +324,6 @@ void CreateMove()
     { // I still dont understand the purpose of prof_section and surrounding in
         // brackets
         PROF_SECTION(CM_ESP_EntityLoop);
-
         // Loop through entities
         for (int i = 0; i < limit; i++)
         {
@@ -325,6 +331,20 @@ void CreateMove()
             CachedEntity *ent = ENTITY(i);
             ProcessEntity(ent);
 
+            if (i <= g_IEngine->GetMaxClients())
+            {
+                for (int j            = 0; j < 18; ++j)
+                    hitboxcache[i][j] = ent->hitboxes.GetHitbox(j);
+                if (draw_bones && ent->m_Type == ENTITY_PLAYER)
+                {
+                    modelcache[i] = RAW_ENT(ent)->GetModel();
+                    if (modelcache[i])
+                    {
+                        stdiocache[i] =
+                            g_IModelInfo->GetStudiomodel(modelcache[i]);
+                    }
+                }
+            }
             // Dont know what this check is for
             if (data[i].string_count)
             {
@@ -347,6 +367,88 @@ void CreateMove()
     }
 }
 
+void _FASTCALL emoji(CachedEntity *ent)
+{
+    // Check to prevent crashes
+    if (CE_BAD(ent))
+        return;
+    // Emoji esp
+    if (emoji_esp)
+    {
+        if (ent->m_Type == ENTITY_PLAYER)
+        {
+            static glez_texture_t textur =
+                glez_texture_load_png_rgba(DATA_PATH "/textures/atlas.png");
+            static glez_texture_t idspecific;
+            if (emoji_ok)
+                auto hit = hitboxcache[ent->m_IDX][0];
+            auto hit     = hitboxcache[ent->m_IDX][0];
+            Vector hbm, hbx;
+            if (draw::WorldToScreen(hit->min, hbm) &&
+                draw::WorldToScreen(hit->max, hbx))
+            {
+                Vector head_scr;
+                if (draw::WorldToScreen(hit->center, head_scr))
+                {
+                    float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
+                                                   : float(emoji_esp_size);
+                    if (v9mode)
+                        size *= 1.4;
+                    if (!size || !float(emoji_min_size))
+                        return;
+                    if (emoji_esp_scaling && (size < float(emoji_min_size)))
+                    {
+                        size = float(emoji_min_size);
+                    }
+                    glez_rgba_t white = glez_rgba(255, 255, 255, 255);
+                    while (!textur || textur == 4294967295)
+                        textur = glez_texture_load_png_rgba(DATA_PATH
+                                                            "/textures/atlas.png");
+                    player_info_s info;
+                    unsigned int steamID;
+                    unsigned int steamidarray[32]{};
+                    bool hascall    = false;
+                    steamidarray[0] = 479487126;
+                    steamidarray[1] = 263966176;
+                    steamidarray[2] = 840255344;
+                    steamidarray[3] = 147831332;
+                    if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
+                        steamID = info.friendsID;
+                    if (!idspecific)
+                        idspecific = glez_texture_load_png_rgba(
+                            DATA_PATH "/textures/idspec.png");
+                    if (idspecific &&
+                        playerlist::AccessData(steamID).state ==
+                            playerlist::k_EState::CAT)
+                        glez_rect_textured(
+                            head_scr.x - size / 2, head_scr.y - size / 2, size,
+                            size, white, idspecific, 2 * 64, 1 * 64, 64, 64, 0);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (steamID == steamidarray[i])
+                        {
+                            while (!idspecific)
+                                idspecific = glez_texture_load_png_rgba(
+                                    DATA_PATH "/textures/idspec.png");
+                            if (idspecific)
+                                glez_rect_textured(head_scr.x - size / 2,
+                                                   head_scr.y - size / 2, size,
+                                                   size, white, idspecific,
+                                                   i * 64, 1 * 64, 64, 64, 0);
+                            hascall = true;
+                        }
+                    }
+                    if (textur && !hascall)
+                        draw_api::draw_rect_textured(
+                            head_scr.x - size / 2, head_scr.y - size / 2, size,
+                            size, colors::white, { textur },
+                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, 3 * 64,
+                            64, 64, 0);
+                }
+            }
+        }
+    }
+}
 // Used when processing entitys with cached data from createmove in draw
 void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 {
@@ -382,10 +484,10 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     // Bone esp
     if (draw_bones && ent->m_Type == ENTITY_PLAYER)
     {
-        const model_t *model = RAW_ENT(ent)->GetModel();
+        const model_t *model = modelcache[ent->m_IDX];
         if (model)
         {
-            auto hdr = g_IModelInfo->GetStudiomodel(model);
+            auto hdr = stdiocache[ent->m_IDX];
             bonelist_map[hdr].Draw(ent, fg);
         }
     }
@@ -427,7 +529,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             Vector &eye_angles =
                 NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
             Vector eye_position;
-            GetHitbox(ent, 0, eye_position);
+            eye_position = hitboxcache[ent->m_IDX][0]->center;
 
             // Main ray tracing area
             float sy         = sinf(DEG2RAD(eye_angles.y)); // yaw
@@ -516,45 +618,6 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             }
         }
     }
-#ifndef FEATURE_EMOJI_ESP_DISABLED
-    // Emoji esp
-    if (emoji_esp)
-    {
-        if (ent->m_Type == ENTITY_PLAYER)
-        {
-            // Positions in the atlas for the textures
-            static textures::AtlasTexture joy_texture(
-                64 * 4, textures::atlas_height - 64 * 4, 64, 64);
-            static textures::AtlasTexture thinking_texture(
-                64 * 5, textures::atlas_height - 64 * 4, 64, 64);
-
-            auto hb = ent->hitboxes.GetHitbox(0);
-            Vector hbm, hbx;
-            if (draw::WorldToScreen(hb->min, hbm) &&
-                draw::WorldToScreen(hb->max, hbx))
-            {
-                Vector head_scr;
-                if (draw::WorldToScreen(hb->center, head_scr))
-                {
-                    float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
-                                                   : float(emoji_esp_size);
-                    if (emoji_esp_scaling && (size < float(emoji_min_size)))
-                    {
-                        size = float(emoji_min_size);
-                    }
-                    textures::AtlasTexture *tx = nullptr;
-                    if (int(emoji_esp) == 1)
-                        tx = &joy_texture;
-                    if (int(emoji_esp) == 2)
-                        tx = &thinking_texture;
-                    if (tx)
-                        tx->Draw(head_scr.x - size / 2, head_scr.y - size / 2,
-                                 colors::white, size, size);
-                }
-            }
-        }
-    }
-#endif
     // Box esp
     if (box_esp)
     {
@@ -1110,7 +1173,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     AddEntityString(ent, classes[pclass - 1]);
             }
 
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
             // ipc bot esp
             if (show_bot_id && ipc::peer && ent != LOCAL_E)
             {

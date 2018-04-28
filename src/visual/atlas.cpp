@@ -5,8 +5,6 @@
  *      Author: nullifiedcat
  */
 
-#if ENABLE_VISUALS == 1
-
 #include "common.hpp"
 
 namespace textures
@@ -22,7 +20,7 @@ void sprite::draw(float scrx, float scry, float scrw, float scrh,
                   const rgba_t &rgba) const
 {
     draw_api::draw_rect_textured(scrx, scry, scrw, scrh, rgba, atlas.texture,
-                                 nx, ny, nw, nh);
+                                 nx, ny, nw, nh, 0);
 }
 
 texture_atlas::texture_atlas(std::string filename, float width, float height)
@@ -42,5 +40,3 @@ texture_atlas &atlas()
     return object;
 }
 }
-
-#endif

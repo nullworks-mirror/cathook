@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef LOGGING_HPP_
-#define LOGGING_HPP_
+#pragma once
 
 #include <stdio.h>
 
@@ -26,5 +25,3 @@ void Info(const char *fmt, ...);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* LOGGING_HPP_ */

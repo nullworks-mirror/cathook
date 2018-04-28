@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_AUTOREFLECT_HPP_
-#define HACKS_AUTOREFLECT_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -22,11 +21,10 @@ extern CatVar idle_only;
 extern CatVar stickies;
 extern CatVar max_distance;
 
+void Draw();
 void CreateMove();
 bool ShouldReflect(CachedEntity *ent);
 bool IsEntStickyBomb(CachedEntity *ent);
 }
 }
 }
-
-#endif /* HACKS_AUTOREFLECT_HPP_ */

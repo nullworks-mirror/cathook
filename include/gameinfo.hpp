@@ -5,32 +5,34 @@
  *      Author: nullifiedcat
  */
 
-#ifndef GAMEINFO_HPP_
-#define GAMEINFO_HPP_
+#pragma once
 
-#include "common.hpp"
+#include "config.h"
+#include "macros.hpp"
 
-#ifdef BUILD_GAME
+extern int g_AppID;
+
+#if GAME_SPECIFIC
 
 constexpr bool IsTF2()
 {
-    return !c_strcmp(TO_STRING(BUILD_GAME), "tf2");
+    return !c_strcmp(TO_STRING(GAME), "tf2");
 }
 constexpr bool IsTF2C()
 {
-    return !c_strcmp(TO_STRING(BUILD_GAME), "tf2c");
+    return !c_strcmp(TO_STRING(GAME), "tf2c");
 }
 constexpr bool IsHL2DM()
 {
-    return !c_strcmp(TO_STRING(BUILD_GAME), "hl2dm");
+    return !c_strcmp(TO_STRING(GAME), "hl2dm");
 }
 constexpr bool IsCSS()
 {
-    return !c_strcmp(TO_STRING(BUILD_GAME), "css");
+    return !c_strcmp(TO_STRING(GAME), "css");
 }
 constexpr bool IsDynamic()
 {
-    return !c_strcmp(TO_STRING(BUILD_GAME), "dynamic");
+    return !c_strcmp(TO_STRING(GAME), "dynamic");
 }
 
 constexpr bool IsTF()
@@ -42,6 +44,7 @@ constexpr bool IsTF()
 #define IF_GAME(x) if (x)
 
 #else
+
 inline bool IsTF2()
 {
     return g_AppID == 440;
@@ -71,5 +74,3 @@ inline bool IsTF()
 #define IF_GAME(x) if (x)
 
 #endif
-
-#endif /* GAMEINFO_HPP_ */

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HOOKS_H_
-#define HOOKS_H_
+#pragma once
 
 // Parts of copypasted code
 // Credits: Casual_Hacker
@@ -64,6 +63,5 @@ extern VMTHook baseclientstate8;
 extern VMTHook steamfriends;
 extern VMTHook materialsystem;
 extern VMTHook enginevgui;
+extern VMTHook vstd;
 }
-
-#endif /* HOOKS_H_ */

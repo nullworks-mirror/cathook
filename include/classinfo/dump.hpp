@@ -5,9 +5,6 @@
  *      Author: nullifiedcat
  */
 
-#ifndef DUMP_HPP_
-#define DUMP_HPP_
+#pragma once
 
 void PerformClassDump();
-
-#endif /* DUMP_HPP_ */

@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CRITS_HPP_
-#define CRITS_HPP_
+#pragma once
 
 class CUserCmd;
 class IClientEntity;
@@ -42,5 +41,3 @@ bool random_crits_enabled();
 
 extern int *g_PredictionRandomSeed;
 extern std::unordered_map<int, int> command_number_mod;
-
-#endif /* CRITS_HPP_ */

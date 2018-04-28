@@ -12,8 +12,6 @@ class bf_read;
 namespace votelogger
 {
 
-void user_message(bf_read& buffer, int type);
-
+void user_message(bf_read &buffer, int type);
+extern int antikick_ticks;
 }
-
-

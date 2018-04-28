@@ -5,10 +5,9 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CLASSINFO_HPP_
-#define CLASSINFO_HPP_
+#pragma once
 
-#include "common.hpp"
+#include "config.h"
 
 #include "dummy.gen.hpp"
 
@@ -27,10 +26,10 @@ void InitClassTable();
 
 extern client_classes::dummy *client_class_list;
 
-#if not defined(BUILD_GAME) or defined(DYNAMIC_CLASSES)
+#if not GAME_SPECIFIC
 #define CL_CLASS(x) (client_class_list->x)
 #else
-#define CL_CLASS(x) (client_classes_constexpr::BUILD_GAME::x)
+#define CL_CLASS(x) (client_classes_constexpr::GAME::x)
 #endif
 
 #define RCC_CLASS(tf, hl2dm, css, def)                                         \
@@ -40,5 +39,3 @@ extern client_classes::dummy *client_class_list;
 #define RCC_PLAYER RCC_CLASS(CTFPlayer, CHL2MP_Player, CCSPlayer, 0)
 #define RCC_PLAYERRESOURCE                                                     \
     RCC_CLASS(CTFPlayerResource, CPlayerResource, CCSPlayerResource, 0)
-
-#endif /* CLASSINFO_HPP_ */

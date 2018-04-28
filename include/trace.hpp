@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef TRACE_HPP_
-#define TRACE_HPP_
+#pragma once
 
 #include <engine/IEngineTrace.h>
 
@@ -62,5 +61,3 @@ extern FilterDefault filter_default;
 extern FilterNoPlayer filter_no_player;
 extern FilterPenetration filter_penetration;
 }
-
-#endif /* TRACE_HPP_ */

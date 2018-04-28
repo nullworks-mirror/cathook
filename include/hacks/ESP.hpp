@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HESP_H_
-#define HESP_H_
+#pragma once
 
 #include "common.hpp"
 
@@ -40,6 +39,7 @@ public:
 
 //
 extern std::array<ESPData, 2048> data;
+extern hitbox_cache::CachedHitbox *hitboxcache[32][18];
 
 void CreateMove();
 void Draw();
@@ -47,6 +47,7 @@ void Draw();
 // Entity Processing
 void __attribute__((fastcall)) ProcessEntity(CachedEntity *ent);
 void __attribute__((fastcall)) ProcessEntityPT(CachedEntity *ent);
+void __attribute__((fastcall)) emoji(CachedEntity *ent);
 
 // helper funcs
 void __attribute__((fastcall)) DrawBox(CachedEntity *ent, const rgba_t &clr);
@@ -62,5 +63,3 @@ void ResetEntityStrings();
 }
 }
 }
-
-#endif /* HESP_H_ */

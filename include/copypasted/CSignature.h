@@ -11,8 +11,9 @@ public:
     uintptr_t dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
                             const char *szPattern);
     void *GetModuleHandleSafe(const char *pszModuleName);
-    uintptr_t GetClientSignature(char *chPattern);
-    uintptr_t GetEngineSignature(char *chPattern);
+    uintptr_t GetClientSignature(const char *chPattern);
+    uintptr_t GetEngineSignature(const char *chPattern);
+    uintptr_t GetVstdSignature(const char *chPattern);
 };
 
 extern CSignature gSignatures;

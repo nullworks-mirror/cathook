@@ -8,16 +8,16 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 
+#if EXTERNAL_DRAWING
 extern "C" {
-#include "visual/xoverlay.h"
+#include <xoverlay.h>
 }
-
-#define DRAW_XOVERLAY 0
+#endif
 
 SDL_GLContext context = nullptr;
 
@@ -62,7 +62,7 @@ bool ready()
 
 void initialize()
 {
-#if DRAW_XOVERLAY
+#if EXTERNAL_DRAWING
     int status = xoverlay_init();
     xoverlay_draw_begin();
     glez_init(xoverlay_library.width, xoverlay_library.height);
@@ -106,11 +106,11 @@ void draw_line(float x, float y, float dx, float dy, const rgba_t &rgba,
 
 void draw_rect_textured(float x, float y, float w, float h, const rgba_t &rgba,
                         texture_handle_t texture, float u, float v, float s,
-                        float t)
+                        float t, float a)
 {
     glez_rect_textured(x, y, w, h,
                        *reinterpret_cast<const glez_rgba_t *>(&rgba),
-                       texture.handle, u, v, s, t);
+                       texture.handle, u, v, s, t, a);
 }
 
 void draw_circle(float x, float y, float radius, const rgba_t &rgba,
@@ -156,7 +156,7 @@ void get_string_size(const char *string, font_handle_t &font, float *x,
 void draw_begin()
 {
     PROF_SECTION(DRAWEX_draw_begin);
-#if DRAW_XOVERLAY
+#if EXTERNAL_DRAWING
     xoverlay_draw_begin();
 #else
     SDL_GL_MakeCurrent(sdl_current_window, context);
@@ -169,7 +169,7 @@ void draw_end()
     PROF_SECTION(DRAWEX_draw_end);
     glez_end();
     SDL_GL_MakeCurrent(sdl_current_window, nullptr);
-#if DRAW_XOVERLAY
+#if EXTERNAL_DRAWING
     xoverlay_draw_end();
 #endif
 }

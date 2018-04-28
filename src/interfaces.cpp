@@ -48,7 +48,8 @@ IGameEventManager *g_IGameEventManager  = nullptr;
 TFGCClientSystem *g_TFGCClientSystem    = nullptr;
 CHud *g_CHUD                            = nullptr;
 CGameRules *g_pGameRules                = nullptr;
-IEngineVGui *g_IEngineVGui				= nullptr;
+IEngineVGui *g_IEngineVGui              = nullptr;
+IUniformRandomStream *g_pUniformStream  = nullptr;
 
 template <typename T>
 T *BruteforceInterface(std::string name, sharedobj::SharedObject &object,
@@ -102,7 +103,8 @@ void CreateInterfaces()
     g_IVModelRender = BruteforceInterface<IVModelRender>(
         "VEngineModel", sharedobj::engine(), 16);
     g_ISteamFriends = nullptr;
-    g_IEngineVGui = BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
+    g_IEngineVGui =
+        BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
     IF_GAME(IsTF2())
     {
         uintptr_t sig_steamapi = gSignatures.GetEngineSignature(
@@ -196,7 +198,11 @@ void CreateInterfaces()
     g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>(
         "VMaterialSystem", sharedobj::materialsystem());
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
+    g_pUniformStream =
+        **(IUniformRandomStream ***) (gSignatures.GetVstdSignature(
+                                          "A3 ? ? ? ? C3 89 F6") +
+                                      0x1);
     g_IVDebugOverlay = BruteforceInterface<IVDebugOverlay>("VDebugOverlay",
                                                            sharedobj::engine());
     g_IPanel =

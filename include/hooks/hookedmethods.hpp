@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HOOKEDMETHODS_H_
-#define HOOKEDMETHODS_H_
+#pragma once
 
 #include "common.hpp"
 
@@ -21,6 +20,7 @@ typedef bool (*DispatchUserMessage_t)(void *, int, bf_read &);
 typedef void (*FrameStageNotify_t)(void *, int);
 typedef void (*LevelInit_t)(void *, const char *);
 typedef void (*LevelShutdown_t)(void *);
+
 typedef void (*BeginFrame_t)(IStudioRender *);
 typedef bool (*CanInspect_t)(IClientEntity *);
 typedef void (*DrawModelExecute_t)(IVModelRender *, const DrawModelState_t &,
@@ -30,6 +30,8 @@ typedef const char *(*GetClientName_t)(CBaseClientState *);
 typedef bool (*ProcessSetConVar_t)(CBaseClientState *, NET_SetConVar *);
 typedef bool (*ProcessGetCvarValue_t)(CBaseClientState *, SVC_GetCvarValue *);
 typedef void (*Paint_t)(IEngineVGui *, PaintMode_t);
+
+typedef int (*RandomInt_t)(void *, int, int);
 
 const char *GetClientName_hook(CBaseClientState *_this);
 bool ProcessSetConVar_hook(CBaseClientState *_this, NET_SetConVar *msg);
@@ -47,8 +49,8 @@ CUserCmd *GetUserCmd_hook(IInput *, int);
 void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
                            const ModelRenderInfo_t &info, matrix3x4_t *matrix);
 
+#if ENABLE_VISUALS
 void Paint_hook(IEngineVGui *_this, PaintMode_t mode);
-
 
 /* SDL HOOKS */
 union SDL_Event;
@@ -64,9 +66,8 @@ void SDL_GL_SwapWindow_hook(SDL_Window *window);
 
 void DoSDLHooking();
 void DoSDLUnhooking();
+#endif
 
 #include "CreateMove.hpp"
 #include "PaintTraverse.hpp"
 #include "others.hpp"
-
-#endif /* HOOKEDMETHODS_H_ */

@@ -3,6 +3,10 @@
 
 [cathook announcements channel in telegram](https://t.me/cathook_cheat)
 
+## Risk of VAC detection
+
+The software is most likely detected. Only use it on accounts you won't regret getting VAC banned.
+
 ## Community
 You can chat with other cathook users in [my official telegram group](https://t.me/nullifiedcat).
 
@@ -25,13 +29,31 @@ and a lot of useful features, including
 * Heal Arrows exploit (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
 * Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
 * Follow Bots
-* Working crit hack (does not work right now)
+* Working crit hack (does not work right now (works right now))
 
 [FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features) (list might be outdated)
 
 # stuff written below this line is outdated lol
 
 # INSTALLATION
+
+You need CMake to build cathook, CMake should take care of dependencies
+
+Install [libglez](https://github.com/nullifiedcat/libglez) and [libxoverlay](https://github.com/nullifiedcat/libxoverlay)
+
+* Clone the repo of library (`git clone <URL>`)
+* `mkdir build && cd build`
+* `cmake ..`
+* `make && sudo make install`
+
+Install cathook
+
+* `git clone --recursive https://github.com/nullifiedcat/cathook`
+* `cd cathook && mkdir build && cd build`
+* `cmake .. && make`
+* `sudo make data`
+
+### Outdated (but might be helpful):
 
 You can use gcc-7 for compiling cathook if you add `-e CC=gcc-7 CXX=g++-7` to make command line
 
@@ -43,7 +65,7 @@ sudo apt update && sudo apt install build-essential software-properties-common -
 Ubuntu other dependencies installation:
 
 ```bash
-sudo apt update && sudo apt install git libssl-dev:i386 libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libfreetype6-dev:i386 -y 
+sudo apt update && sudo apt install git libssl-dev:i386 libboost-all-dev libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libfreetype6-dev:i386 -y 
 ```
 
 
@@ -54,10 +76,12 @@ sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multili
 
 If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the list of what cathook requires:
 
-* `gcc-6`
-* `g++-6`
-* `gcc-6-multilib`
-* `g++-6-multilib`
+* `cmake-qt-gui` (optional, for easy configuring)
+* `cmake`
+* `gcc-7`
+* `g++-7`
+* `gcc-7-multilib`
+* `g++-7-multilib`
 * `glew`
 * `gdb` (for the injection script, you can use different injector if you want)
 * `libssl-dev:i386`
@@ -65,6 +89,7 @@ If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the li
 * `libsdl2-dev`
 * `libglew-dev:i386`
 * `libfreetype6-dev:i386`
+* `libboost-all-dev`
 * `rsync` (used for copying shaders/fonts to tf2 data directory, `check-data` script)
 
 
@@ -76,12 +101,16 @@ git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && b
 **Errors while installing?**
 
 `/usr/include/c++/5/string:38:28: fatal error: bits/c++config.h: No such file or directory`
-You don't have gcc-multilib-6 installed correctly.
+You don't have gcc-7-multilib installed correctly.
+
+Anything related to `glez` or `xoverlay`
+
+Install libglez and libxoverlay.
 
 `src/<any file>: fatal error: mathlib/vector.h: No such file or directory`
 You didn't download Source SDK. **DO NOT DOWNLOAD CATHOOK USING "DOWNLOAD .ZIP" FROM GITHUB. USE git clone --recursive!**
 
-If you are using another distro, make sure to have g++-6, gdb, libc6 and build essentials installed.
+If you are using another distro, make sure to have required dependencies installed.
 
 ## Updating cathook
 Run the `update` script in cathook folder.

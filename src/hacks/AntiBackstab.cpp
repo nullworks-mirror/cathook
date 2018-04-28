@@ -14,7 +14,7 @@ namespace tf2
 {
 namespace antibackstab
 {
-
+bool noaa = false;
 static CatVar enabled(CV_SWITCH, "antibackstab", "0", "Enable",
                       "Main anti-backstab switch");
 static CatVar distance(CV_FLOAT, "antibackstab_distance", "200", "Distance",
@@ -103,6 +103,7 @@ void CreateMove()
     spy = ClosestSpy();
     if (spy)
     {
+        noaa            = true;
         const Vector &A = LOCAL_E->m_vecOrigin;
         const Vector &B = spy->m_vecOrigin;
         diff            = (A - B);
@@ -126,6 +127,8 @@ void CreateMove()
         if (sayno)
             SayNope();
     }
+    else
+        noaa = false;
 }
 
 void PaintTraverse()

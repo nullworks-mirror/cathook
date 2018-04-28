@@ -61,16 +61,16 @@ uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
     {
         if (!*pat)
             return firstMatch;
-        if (*(uint8_t *) pat == '\?' || *(uint8_t *) pCur == getByte(pat))
+        if (*pat == '\?' || *(uint8_t *) pCur == getByte(pat))
         {
             if (!firstMatch)
                 firstMatch = pCur;
             if (!pat[2])
                 return firstMatch;
-            if (*(uintptr_t *) pat == '\?\?' || *(uint8_t *) pat != '\?')
-                pat += 3;
-            else
+            if (*pat == '\?')
                 pat += 2;
+            else
+                pat += 3;
         }
         else
         {
@@ -78,6 +78,9 @@ uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
             firstMatch = 0;
         }
     }
+
+    logging::Info("THIS IS SERIOUS: Could not locate signature: \n============\n\"%s\"\n============", szPattern);
+
     return NULL;
 }
 //===================================================================================
@@ -94,7 +97,7 @@ void *CSignature::GetModuleHandleSafe(const char *pszModuleName)
     return moduleHandle;
 }
 //===================================================================================
-uintptr_t CSignature::GetClientSignature(char *chPattern)
+uintptr_t CSignature::GetClientSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
@@ -121,7 +124,7 @@ uintptr_t CSignature::GetClientSignature(char *chPattern)
            (uintptr_t)(module) + moduleMap->l_addr;
 }
 //===================================================================================
-uintptr_t CSignature::GetEngineSignature(char *chPattern)
+uintptr_t CSignature::GetEngineSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
@@ -130,6 +133,33 @@ uintptr_t CSignature::GetEngineSignature(char *chPattern)
     static void *module =
         mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
     static link_map *moduleMap = sharedobj::engine().lmap;
+
+    // static void *module = (void *)moduleMap->l_addr;
+
+    static Elf32_Shdr *textHeader = getSectionHeader(module, ".text");
+
+    static int textOffset = textHeader->sh_offset;
+
+    static int textSize = textHeader->sh_size;
+
+    // we need to remap the address that we got from the pattern search from our
+    // mapped file to the actual memory we do this by rebasing the address
+    // (subbing the mmapped one and adding the dlopened one.
+    return dwFindPattern(((uintptr_t) module) + textOffset,
+                         ((uintptr_t) module) + textOffset + textSize,
+                         chPattern) -
+           (uintptr_t)(module) + moduleMap->l_addr;
+}
+//===================================================================================
+uintptr_t CSignature::GetVstdSignature(const char *chPattern)
+{
+    // we need to do this becuase (i assume that) under the hood, dlopen only
+    // loads up the sections that it needs into memory, meaning that we cannot
+    // get the string table from the module.
+    static int fd = open(sharedobj::vstdlib().path.c_str(), O_RDONLY);
+    static void *module =
+        mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    static link_map *moduleMap = sharedobj::vstdlib().lmap;
 
     // static void *module = (void *)moduleMap->l_addr;
 

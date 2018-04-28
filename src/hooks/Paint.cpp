@@ -14,15 +14,16 @@ static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1",
 
 void Paint_hook(IEngineVGui *_this, PaintMode_t mode)
 {
-	static const Paint_t original = (Paint_t)hooks::enginevgui.GetMethod(offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
+    static const Paint_t original = (Paint_t) hooks::enginevgui.GetMethod(
+        offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
 
     if (!g_IEngine->IsInGame())
         g_Settings.bInvalid = true;
 
-	if (mode & PaintMode_t::PAINT_UIPANELS)
-	{
-	    hacks::tf2::killstreak::apply_killstreaks();
-    	hacks::shared::catbot::update();
+    if (mode & PaintMode_t::PAINT_UIPANELS)
+    {
+        hacks::tf2::killstreak::apply_killstreaks();
+        hacks::shared::catbot::update();
         if (hitrate::hitrate_check)
         {
             hitrate::Update();
@@ -57,14 +58,14 @@ void Paint_hook(IEngineVGui *_this, PaintMode_t mode)
             std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
             while (!hack::command_stack().empty())
             {
-                //logging::Info("executing %s",
+                // logging::Info("executing %s",
                 //              hack::command_stack().top().c_str());
                 g_IEngine->ClientCmd_Unrestricted(
                     hack::command_stack().top().c_str());
                 hack::command_stack().pop();
             }
         }
-#if TEXTMODE_STDIN == 1
+#if ENABLE_TEXTMODE_STDIN == 1
         static auto last_stdin = std::chrono::system_clock::from_time_t(0);
         auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                       std::chrono::system_clock::now() - last_stdin)
@@ -85,7 +86,7 @@ void Paint_hook(IEngineVGui *_this, PaintMode_t mode)
                         }*/
         }
 #endif
-	}
+    }
 
-	original(_this, mode);
+    original(_this, mode);
 }

@@ -240,9 +240,10 @@ bool IsTargetStateGood(CachedEntity *entity)
                     CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
                 if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f)
                     bdmg = 50.0f;
-//                if ((bdmg * 3) < (HasDarwins(entity)
-//                                      ? (entity->m_iHealth * 1.15)
-//                                      : entity->m_iHealth))
+                //                if ((bdmg * 3) < (HasDarwins(entity)
+                //                                      ? (entity->m_iHealth *
+                //                                      1.15)
+                //                                      : entity->m_iHealth))
                 if (bdmg * 3 < entity->m_iHealth)
                 {
                     return false;
@@ -464,12 +465,12 @@ bool HeadPreferable(CachedEntity *target)
                 // Set our baseline bodyshot damage
                 bdmg = 50;
                 // Darwins damage correction
-//                if (HasDarwins(target))
-//                {
-                    // Darwins protects against 15% of damage
-//                    bdmg = (bdmg * .85) - 1;
-//                    cdmg = (cdmg * .85) - 1;
-//                }
+                //                if (HasDarwins(target))
+                //                {
+                // Darwins protects against 15% of damage
+                //                    bdmg = (bdmg * .85) - 1;
+                //                    cdmg = (cdmg * .85) - 1;
+                //                }
                 // Vaccinator damage correction
                 if (HasCondition<TFCond_UberBulletResist>(target))
                 {
@@ -579,10 +580,9 @@ bool UpdateAimkey()
 // Func to find value of how far to target ents
 float EffectiveTargetingRange()
 {
-    // Melees use a close range, TODO add dynamic range for demoknight swords
     if (GetWeaponMode() == weapon_melee)
     {
-        return 100.0f;
+        return re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
         // Pyros only have so much untill their flames hit
     }
     else if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower))

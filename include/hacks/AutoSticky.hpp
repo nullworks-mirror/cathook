@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_AUTOSTICKY_HPP_
-#define HACKS_AUTOSTICKY_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -26,5 +25,3 @@ void CreateMove();
 }
 }
 }
-
-#endif /* HACKS_AUTOSTICKY_HPP_ */

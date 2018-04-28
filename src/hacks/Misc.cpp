@@ -43,14 +43,17 @@ CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0",
 CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push",
                       "Prevents other players from pushing you around.");
 
-// CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
+CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
 // Taunting stuff
 CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide",
                   "Allows moving and shooting while taunting");
 CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide",
                       "Allows free movement while taunting with movable "
                       "taunts\nOnly works in tf2");
-
+CatVar
+    show_spectators(CV_SWITCH, "show_spectators", "0", "Show spectators",
+                    "Show who's spectating you\nonly works in valve servers");
+CatVar god_mode(CV_SWITCH, "godmode", "0", "no description", "no description");
 void *C_TFPlayer__ShouldDraw_original = nullptr;
 
 bool C_TFPlayer__ShouldDraw_hook(IClientEntity *thisptr)
@@ -108,7 +111,6 @@ CatCommand
 
 void CreateMove()
 {
-
     // Crithack
     static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
     static int tries, cmdn, md5seed, rseed, c, b;
@@ -123,60 +125,70 @@ void CreateMove()
     static IClientEntity *last_checked_weapon = nullptr;
 
     /*IF_GAME (IsTF2()) {
-		if (crit_hack_next && CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && WeaponCanCrit() && RandomCrits()) {
-			PROF_SECTION(CM_misc_crit_hack_prediction);
-			weapon = RAW_ENT(LOCAL_W);
-			// IsBaseCombatWeapon
-			if (weapon &&
-				vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
-				/*if (experimental_crit_hack.KeyDown()) {
-					if (!g_pUserCmd->command_number || critWarmup < 8) {
-						if (g_pUserCmd->buttons & IN_ATTACK) {
-							critWarmup++;
-						} else {
-							critWarmup = 0;
-						}
-						g_pUserCmd->buttons &= ~(IN_ATTACK);
-					}
-				}*/ /*
-                 if (g_pUserCmd->command_number && (last_checked_weapon !=
-     weapon || last_checked_command_number < g_pUserCmd->command_number)) {
-                     tries = 0;
-                     cmdn = g_pUserCmd->command_number;
-                     chc = false;
-                     state.Save(weapon);
-                     while (!chc && tries < 4096) {
-                         md5seed = MD5_PseudoRandom(cmdn) & 0x7fffffff;
-                         rseed = md5seed;
-                         //float bucket = *(float*)((uintptr_t)RAW_ENT(LOCAL_W)
-     + 2612u); *g_PredictionRandomSeed = md5seed; c = LOCAL_W->m_IDX << 8; b =
-     LOCAL_E->m_IDX; rseed = rseed ^ (b | c);
-                         *(float*)(weapon + 2872ul) = 0.0f;
-                         RandomSeed(rseed);
-                         chc = vfunc<bool(*)(IClientEntity*)>(weapon, 1836 / 4,
-     0)(weapon); if (!chc) { tries++; cmdn++;
+        if (crit_hack_next && CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) &&
+       WeaponCanCrit() && RandomCrits()) {
+            PROF_SECTION(CM_misc_crit_hack_prediction);
+            weapon = RAW_ENT(LOCAL_W);
+            // IsBaseCombatWeapon
+            if (weapon &&
+                vfunc<bool(*)(IClientEntity*)>(weapon, 1944 / 4, 0)(weapon)) {
+                /*if (experimental_crit_hack.KeyDown()) {
+                    if (!g_pUserCmd->command_number || critWarmup < 8) {
+                        if (g_pUserCmd->buttons & IN_ATTACK) {
+                            critWarmup++;
+                        } else {
+                            critWarmup = 0;
+                        }
+                        g_pUserCmd->buttons &= ~(IN_ATTACK);
+                    }
+                }*/ /*
+                             if (g_pUserCmd->command_number &&
+                 (last_checked_weapon !=
+                 weapon || last_checked_command_number <
+                 g_pUserCmd->command_number))
+                 {
+                                 tries = 0;
+                                 cmdn = g_pUserCmd->command_number;
+                                 chc = false;
+                                 state.Save(weapon);
+                                 while (!chc && tries < 4096) {
+                                     md5seed = MD5_PseudoRandom(cmdn) &
+                 0x7fffffff;
+                                     rseed = md5seed;
+                                     //float bucket =
+                 *(float*)((uintptr_t)RAW_ENT(LOCAL_W)
+                 + 2612u); *g_PredictionRandomSeed = md5seed; c = LOCAL_W->m_IDX
+                 << 8;
+                 b =
+                 LOCAL_E->m_IDX; rseed = rseed ^ (b | c);
+                                     *(float*)(weapon + 2872ul) = 0.0f;
+                                     RandomSeed(rseed);
+                                     chc =
+                 vfunc<bool(*)(IClientEntity*)>(weapon, 1836
+                 / 4,
+                 0)(weapon); if (!chc) { tries++; cmdn++;
+                                     }
+                                 }
+                                 last_checked_command_number = cmdn;
+                                 last_checked_weapon = weapon;
+                                 state.Load(weapon);
+                                 last_bucket = state.bucket;
+                                 if (chc) {
+                                     found_crit_weapon = weapon;
+                                     found_crit_number = cmdn;
+                                 }
+                             }
+                             if (g_pUserCmd->buttons & (IN_ATTACK)) {
+                                 if (found_crit_weapon == weapon &&
+                 g_pUserCmd->command_number < found_crit_number) { if
+                 (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack)))
+                 { command_number_mod[g_pUserCmd->command_number] = cmdn;
+                                     }
+                                 }
+                             }
                          }
                      }
-                     last_checked_command_number = cmdn;
-                     last_checked_weapon = weapon;
-                     state.Load(weapon);
-                     last_bucket = state.bucket;
-                     if (chc) {
-                         found_crit_weapon = weapon;
-                         found_crit_number = cmdn;
-                     }
-                 }
-                 if (g_pUserCmd->buttons & (IN_ATTACK)) {
-                     if (found_crit_weapon == weapon &&
-     g_pUserCmd->command_number < found_crit_number) { if
-     (g_IInputSystem->IsButtonDown((ButtonCode_t)((int)experimental_crit_hack)))
-     { command_number_mod[g_pUserCmd->command_number] = cmdn;
-                         }
-                     }
-                 }
-             }
-         }
-     }*/
+                 }*/
     /*
     {
         PROF_SECTION(CM_misc_crit_hack_apply);
@@ -205,7 +217,6 @@ void CreateMove()
             }
         }
     }
-
     // AntiAfk That after a certian time without movement keys depressed, causes
     // random keys to be spammed for 1 second
     if (anti_afk)
@@ -340,11 +351,18 @@ void CreateMove()
     }
 }
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
 void DrawText()
 {
-    /*if (!no_homo) {
+    if (god_mode)
+        for (int i = 0; i < 40000; i++)
+        {
+            g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
+            god_mode = 0;
+        }
+    if (!no_homo)
+    {
         int width, height;
         g_IEngine->GetScreenSize(width, height);
 
@@ -352,22 +370,55 @@ void DrawText()
         int step = (height / 7);
 
         // Go through steps creating a rainbow screen
-        for (int i = 1; i < 7; i++) {
+        for (int i = 1; i < 8; i++)
+        {
             // Get Color and set opacity to %50
-            rgba_t gaybow = colors::FromHSL(fabs(sin((g_GlobalVars->curtime
-    / 2.0f) + (i / 2))) * 360.0f, 0.85f, 0.9f); gaybow.a = .5;
+            colors::rgba_t gaybow = colors::FromHSL(
+                fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 1.41241))) *
+                    360.0f,
+                0.85f, 0.9f);
+            gaybow.a = .5;
             // Draw next step
-            draw_api::FilledRect(0, step * (i - 1), width, (step * i) - (step *
-    (i - 1)), gaybow);
+            draw_api::draw_rect(0, step * (i - 1), width,
+                                (step * i) - (step * (i - 1)), gaybow);
         }
 
-        //int size_x;
-        //FTGL_StringLength(string.data, fonts::font_main, &size_x);
-        //FTGL_Draw(string.data, draw_point.x - size_x / 2, draw_point.y,
-    fonts::font_main, color);
-
-    }*/
-
+        // int size_x;
+        // FTGL_StringLength(string.data, fonts::font_main, &size_x);
+        // FTGL_Draw(string.data, draw_point.x - size_x / 2,
+        // draw_point.y,fonts::font_main, color);
+    }
+    if (show_spectators)
+    {
+        for (int i = 0; i < 32; i++)
+        {
+            // Assign the for loops tick number to an ent
+            CachedEntity *ent = ENTITY(i);
+            player_info_s info;
+            if (!CE_BAD(ent) && ent != LOCAL_E &&
+                ent->m_Type == ENTITY_PLAYER &&
+                (CE_INT(ent, netvar.hObserverTarget) & 0xFFF) ==
+                    LOCAL_E->m_IDX &&
+                CE_INT(ent, netvar.iObserverMode) >= 4 &&
+                g_IEngine->GetPlayerInfo(i, &info))
+            {
+                auto observermode = "N/A";
+                switch (CE_INT(ent, netvar.iObserverMode))
+                {
+                case 4:
+                    observermode = "Firstperson";
+                    break;
+                case 5:
+                    observermode = "Thirdperson";
+                    break;
+                case 7:
+                    observermode = "Freecam";
+                    break;
+                }
+                AddSideString(format(info.name, " ", observermode));
+            }
+        }
+    }
     if (!debug_info)
         return;
     if (CE_GOOD(g_pLocalPlayer->weapon()))
@@ -479,39 +530,40 @@ void DrawText()
 void Schema_Reload()
 {
     logging::Info("Custom schema loading is not supported right now.");
-    /*
-    static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57
-    56 53 83 EC 4C 0F B6 7D 14 C7 04 ? ? ? ? 01 8B 5D 18 8B 75 0C 89 5C 24 04 E8
-    ? ? ? ? 89 F8 C7 45 C8 00 00 00 00 8D 7D C8 84 C0 8B 45 10 C7 45 CC");
-    typedef void(*InitSchema_t)(void*, void*, CUtlBuffer& buffer, bool byte,
-    unsigned version); static InitSchema_t InitSchema =
-    (InitSchema_t)InitSchema_s; static uintptr_t GetItemSchema_s =
-    gSignatures.GetClientSignature("55 89 E5 83 EC 18 89 5D F8 8B 1D ? ? ? ? 89
-    7D FC 85 DB 74 12 89 D8 8B 7D FC 8B 5D F8 89 EC 5D C3 8D B6 00 00 00 00 C7
-    04 24 A8 06 00 00 E8 ? ? ? ? B9 AA 01 00 00 89 C3 31 C0 89 DF"); typedef
-    void*(*GetItemSchema_t)(void); static GetItemSchema_t GetItemSchema =
-    (GetItemSchema_t)GetItemSchema_s;//(*(uintptr_t*)GetItemSchema_s +
-    GetItemSchema_s + 4);
+
+    static uintptr_t InitSchema_s = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 7D ? 8B 03 89 1C 24 FF 50 ? C7 "
+        "04 24 ? ? ? ?");
+    typedef bool (*InitSchema_t)(void *, CUtlBuffer &, int);
+    static InitSchema_t InitSchema   = (InitSchema_t) InitSchema_s;
+    static uintptr_t GetItemSchema_s = gSignatures.GetClientSignature(
+        "55 89 E5 83 EC ? E8 ? ? ? ? C9 83 C0 ? C3 55 89 E5 8B 45 ?");
+    typedef void *(*GetItemSchema_t)(void);
+    static GetItemSchema_t GetItemSchema = (GetItemSchema_t)
+        GetItemSchema_s; //(*(uintptr_t*)GetItemSchema_s +GetItemSchema_s + 4);
 
     logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-    void* itemschema = (void*)((unsigned)GetItemSchema() + 4);
-    void* data;
-    passwd* pwd = getpwuid(getuid());
-    char* user = pwd->pw_name;
-    char* path = strfmt("/home/%s/.cathook/items_game.txt", user);
-    FILE* file = fopen(path, "r");
-    delete [] path;
+    void *itemschema = (void *) ((unsigned) GetItemSchema() + 4);
+    void *data;
+    char *path = strfmt("/opt/cathook/data/items_game.txt");
+    FILE *file = fopen(path, "r");
+    delete[] path;
     fseek(file, 0L, SEEK_END);
-    char buffer[4 * 1000 * 1000];
+    char buffer[5 * 1000 * 1000];
     size_t len = ftell(file);
     rewind(file);
     buffer[len + 1] = 0;
     fread(&buffer, sizeof(char), len, file);
     fclose(file);
-    CUtlBuffer buf(&buffer, 4 * 1000 * 1000, 9);
+    CUtlBuffer buf(&buffer, 5 * 1000 * 1000, 9);
+    if (ferror(file) != 0)
+    {
+        logging::Info("Error loading file");
+        return;
+    }
     logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-    InitSchema(0, itemschema, buf, false, 0xDEADCA7);
-    */
+    bool ret = InitSchema(GetItemSchema(), buf, 133769);
+    logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
 }
 CatCommand schema("schema", "Load custom schema", Schema_Reload);
 
@@ -646,9 +698,9 @@ static CatCommand
                   const char *ft = (args.ArgC() > 1 ? args[2] : 0);
                   DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
               });
-}
-}
-}
+} // namespace misc
+} // namespace shared
+} // namespace hacks
 
 /*void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char*
 ft, unsigned acc_offset) { bool forcetable = ft && strlen(ft); if (!forcetable

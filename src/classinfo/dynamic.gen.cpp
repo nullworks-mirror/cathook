@@ -265,19 +265,21 @@ dynamic::dynamic()
     classid_mapping["CTFMinigun"]             = &CTFMinigun;
     classid_mapping["CTFMedigunShield"]       = &CTFMedigunShield;
     classid_mapping["CWeaponMedigun"]         = &CWeaponMedigun;
-    classid_mapping["CTFMechanicalArm"]       = &CTFMechanicalArm;
-    classid_mapping["CTFLunchBox_Drink"]      = &CTFLunchBox_Drink;
-    classid_mapping["CTFLunchBox"]            = &CTFLunchBox;
-    classid_mapping["CLaserDot"]              = &CLaserDot;
-    classid_mapping["CTFLaserPointer"]        = &CTFLaserPointer;
-    classid_mapping["CTFKnife"]               = &CTFKnife;
-    classid_mapping["CTFProjectile_Cleaver"]  = &CTFProjectile_Cleaver;
-    classid_mapping["CTFProjectile_JarMilk"]  = &CTFProjectile_JarMilk;
-    classid_mapping["CTFProjectile_Jar"]      = &CTFProjectile_Jar;
-    classid_mapping["CTFCleaver"]             = &CTFCleaver;
-    classid_mapping["CTFJarMilk"]             = &CTFJarMilk;
-    classid_mapping["CTFJar"]                 = &CTFJar;
-    classid_mapping["CTFWeaponInvis"]         = &CTFWeaponInvis;
+    classid_mapping["CTFProjectile_MechanicalArmOrb"] =
+        &CTFProjectile_MechanicalArmOrb;
+    classid_mapping["CTFMechanicalArm"]      = &CTFMechanicalArm;
+    classid_mapping["CTFLunchBox_Drink"]     = &CTFLunchBox_Drink;
+    classid_mapping["CTFLunchBox"]           = &CTFLunchBox;
+    classid_mapping["CLaserDot"]             = &CLaserDot;
+    classid_mapping["CTFLaserPointer"]       = &CTFLaserPointer;
+    classid_mapping["CTFKnife"]              = &CTFKnife;
+    classid_mapping["CTFProjectile_Cleaver"] = &CTFProjectile_Cleaver;
+    classid_mapping["CTFProjectile_JarMilk"] = &CTFProjectile_JarMilk;
+    classid_mapping["CTFProjectile_Jar"]     = &CTFProjectile_Jar;
+    classid_mapping["CTFCleaver"]            = &CTFCleaver;
+    classid_mapping["CTFJarMilk"]            = &CTFJarMilk;
+    classid_mapping["CTFJar"]                = &CTFJar;
+    classid_mapping["CTFWeaponInvis"]        = &CTFWeaponInvis;
     classid_mapping["CTFGrenadePipebombProjectile"] =
         &CTFGrenadePipebombProjectile;
     classid_mapping["CTFCannon"]           = &CTFCannon;
@@ -545,6 +547,19 @@ dynamic::dynamic()
     classid_mapping["CSDKGameRulesProxy"]       = &CSDKGameRulesProxy;
     classid_mapping["CBaseGrenadeProjectile"]   = &CBaseGrenadeProjectile;
     classid_mapping["CDAViewModel"]             = &CDAViewModel;
+    classid_mapping["CTFWearableRazorback"]     = &CTFWearableRazorback;
+    classid_mapping["CTFWearableCampaignItem"]  = &CTFWearableCampaignItem;
+    classid_mapping["CTFSlap"]                  = &CTFSlap;
+    classid_mapping["CTFRocketPack"]            = &CTFRocketPack;
+    classid_mapping["CTFGasManager"]            = &CTFGasManager;
+    classid_mapping["CTFProjectile_JarGas"]     = &CTFProjectile_JarGas;
+    classid_mapping["CTFJarGas"]                = &CTFJarGas;
+    classid_mapping["CTFWeaponFlameBall"]       = &CTFWeaponFlameBall;
+    classid_mapping["CTFBreakableSign"]         = &CTFBreakableSign;
+    classid_mapping["CTFBreakableMelee"]        = &CTFBreakableMelee;
+    classid_mapping["CTFProjectile_BallOfFire"] = &CTFProjectile_BallOfFire;
+    classid_mapping["CTFPointManager"]          = &CTFPointManager;
+    classid_mapping["CTFFlameManager"]          = &CTFFlameManager;
 }
 
 void dynamic::Populate()

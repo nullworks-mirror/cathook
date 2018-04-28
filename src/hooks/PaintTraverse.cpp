@@ -6,7 +6,10 @@
  */
 
 #include "common.hpp"
-#include "hack.hpp"
+
+#if ENABLE_GUI
+#include "GUI.h"
+#endif
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
                          "Clean screenshots",
@@ -41,7 +44,7 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
     static const char *name;
     static std::string name_s, name_stripped, reason_stripped;
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
     if (!textures_loaded)
     {
         textures_loaded = true;
@@ -56,9 +59,8 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
         {
             pure_addr = *reinterpret_cast<void ***>(
                 gSignatures.GetEngineSignature(
-                    "55 89 E5 83 EC 18 A1 ? ? ? ? 89 04 24 E8 0D FF FF FF A1 ? "
-                    "? ? ? 85 C0 74 08 89 04 24 E8 ? ? ? ? C9 C3") +
-                7);
+                    "A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") +
+                1);
         }
         if (*pure_addr)
             pure_orig = *pure_addr;
@@ -160,7 +162,9 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
 
     if (clean_screenshots && g_IEngine->IsTakingScreenshot())
         return;
-
+#if ENABLE_GUI
+    g_pGUI->Update();
+#endif
     PROF_SECTION(PT_active);
     draw::UpdateWTS();
 }

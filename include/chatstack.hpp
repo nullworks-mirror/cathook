@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CHATSTACK_HPP_
-#define CHATSTACK_HPP_
+#pragma once
 
 #define CHATSTACK_INTERVAL 0.8f
 
@@ -30,5 +29,3 @@ void Reset();
 extern std::stack<msg_t> stack;
 extern float last_say;
 }
-
-#endif /* CHATSTACK_HPP_ */

@@ -5,14 +5,12 @@
  *      Author: nullifiedcat
  */
 
-#ifndef COLORS_HPP_
-#define COLORS_HPP_
+#pragma once
 
 class CachedEntity;
 
 namespace colors
 {
-
 namespace chat
 {
 
@@ -148,5 +146,3 @@ rgba_t EntityF(CachedEntity *ent);
 }
 
 using rgba_t = colors::rgba_t;
-
-#endif /* COLORS_HPP_ */

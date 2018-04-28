@@ -5,10 +5,11 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_HACKLIST_HPP_
-#define HACKS_HACKLIST_HPP_
+#pragma once
 
-#if ENABLE_VISUALS == 1
+#include "config.h"
+
+#if ENABLE_VISUALS
 
 #include "ESP.hpp"
 #include "SkinChanger.hpp"
@@ -23,7 +24,9 @@
 #include "AutoHeal.hpp"
 #include "AutoReflect.hpp"
 #include "AutoSticky.hpp"
+#include "AutoDetonator.hpp"
 #include "AntiCheat.hpp"
+#include "AutoDeadringer.hpp"
 #include "Bunnyhop.hpp"
 #include "LagExploit.hpp"
 #include "Walkbot.hpp"
@@ -43,5 +46,3 @@
 #include "Announcer.hpp"
 #include "Killstreak.hpp"
 #include "CatBot.hpp"
-
-#endif /* HACKS_HACKLIST_HPP_ */

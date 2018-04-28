@@ -11,7 +11,7 @@
 #include "hack.hpp"
 #include "hitrate.hpp"
 
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
 
 namespace ipc
 {
@@ -49,7 +49,6 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
                                     hack::command_stack().push(
                                         std::string((const char *) payload));
                                 });
-        hacks::shared::followbot::AddMessageHandlers(peer);
         user_data_s &data = peer->memory->peer_user_data[peer->client_id];
 
         // Preserve accumulated data
@@ -187,21 +186,22 @@ void UpdateServerAddress(bool shutdown)
 
 void update_mapname()
 {
-	if (not peer)
-		return;
+    if (not peer)
+        return;
 
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];
-    strncpy(data.ingame.mapname, GetLevelName().c_str(), sizeof(data.ingame.mapname));
+    strncpy(data.ingame.mapname, GetLevelName().c_str(),
+            sizeof(data.ingame.mapname));
 }
 
 void UpdateTemporaryData()
 {
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];
 
-    data.connected    = g_IEngine->IsInGame();
+    data.connected = g_IEngine->IsInGame();
     // TODO kills, deaths
-    data.accumulated.shots = hitrate::count_shots;
-    data.accumulated.hits = hitrate::count_hits;
+    data.accumulated.shots     = hitrate::count_shots;
+    data.accumulated.hits      = hitrate::count_hits;
     data.accumulated.headshots = hitrate::count_hits_head;
 
     if (data.connected)
@@ -217,14 +217,15 @@ void UpdateTemporaryData()
 
             data.ingame.score =
                 g_pPlayerResource->GetScore(g_IEngine->GetLocalPlayer());
-            data.ingame.team = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
-            data.ingame.role = g_pPlayerResource->GetClass(LOCAL_E);
+            data.ingame.team =
+                g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
+            data.ingame.role       = g_pPlayerResource->GetClass(LOCAL_E);
             data.ingame.life_state = NET_BYTE(player, netvar.iLifeState);
-            data.ingame.health = NET_INT(player, netvar.iHealth);
+            data.ingame.health     = NET_INT(player, netvar.iHealth);
             data.ingame.health_max = g_pPlayerResource->GetMaxHealth(LOCAL_E);
 
             if (score_saved > data.ingame.score)
-            	score_saved = 0;
+                score_saved = 0;
 
             data.accumulated.score += data.ingame.score - score_saved;
 
@@ -234,23 +235,23 @@ void UpdateTemporaryData()
 
             int players = 0;
 
-    		for (int i = 1; i <= g_GlobalVars->maxClients; ++i)
-    		{
-    			if (g_IEntityList->GetClientEntity(i))
-    				++players;
-    			else
-    				continue;
-			}
+            for (int i = 1; i <= g_GlobalVars->maxClients; ++i)
+            {
+                if (g_IEntityList->GetClientEntity(i))
+                    ++players;
+                else
+                    continue;
+            }
 
-    		data.ingame.player_count = players;
-    		hacks::shared::catbot::update_ipc_data(data);
+            data.ingame.player_count = players;
+            hacks::shared::catbot::update_ipc_data(data);
         }
         else
         {
             data.ingame.good = false;
         }
         if (g_IEngine->GetLevelName())
-        	update_mapname();
+            update_mapname();
     }
 }
 

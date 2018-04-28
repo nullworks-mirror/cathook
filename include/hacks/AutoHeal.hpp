@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HACKS_AUTOHEAL_HPP_
-#define HACKS_AUTOHEAL_HPP_
+#pragma once
 
 #include "common.hpp"
 
@@ -41,5 +40,3 @@ bool CanHeal(int idx);
 }
 }
 }
-
-#endif /* HACKS_AUTOHEAL_HPP_ */

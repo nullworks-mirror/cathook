@@ -5,10 +5,10 @@
  *      Author: nullifiedcat
  */
 
-#ifndef HAIMBOT_H_
-#define HAIMBOT_H_
+#pragma once
 
 #include "common.hpp"
+#include "config.h"
 
 class ConVar;
 class IClientEntity;
@@ -43,7 +43,7 @@ extern int target_eid;
 
 // Functions called by other functions for when certian game calls are run
 void CreateMove();
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 void DrawText();
 #endif
 void Reset();
@@ -63,5 +63,3 @@ float EffectiveTargetingRange();
 }
 }
 }
-
-#endif /* HAIMBOT_H_ */

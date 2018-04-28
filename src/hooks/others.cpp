@@ -6,19 +6,20 @@
  */
 
 #include "common.hpp"
-#include "ucccccp/ucccccp.hpp"
+#include "ucccccp.hpp"
 #include "hack.hpp"
 #include "hitrate.hpp"
 #include "chatlog.hpp"
 #include "netmessage.hpp"
+#include <boost/algorithm/string.hpp>
 
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
 
-static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility",
-                              "Useful with chams!");
+static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip",
+                         "");
 
 // This hook isn't used yet!
-int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
+/*int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
 {
     float old_invis = *(float *) ((uintptr_t) _this + 79u);
     if (no_invisibility)
@@ -30,13 +31,13 @@ int C_TFPlayer__DrawModel_hook(IClientEntity *_this, int flags)
     }
 
     *(float *) ((uintptr_t) _this + 79u) = old_invis;
-}
+}*/
 
 static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms",
                       "Removes arms from first person");
 static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats",
                       "Removes non-stock hats");
-
+float last_say = 0.0f;
 void DrawModelExecute_hook(IVModelRender *_this, const DrawModelState_t &state,
                            const ModelRenderInfo_t &info, matrix3x4_t *matrix)
 {
@@ -240,7 +241,8 @@ CUserCmd *GetUserCmd_hook(IInput *_this, int sequence_number)
         // command_number_mod[def->command_number]);
         oldcmd              = def->command_number;
         def->command_number = command_number_mod[def->command_number];
-        def->random_seed = MD5_PseudoRandom(unsigned(def->command_number)) & 0x7fffffff;
+        def->random_seed =
+            MD5_PseudoRandom(unsigned(def->command_number)) & 0x7fffffff;
         command_number_mod.erase(command_number_mod.find(oldcmd));
         *(int *) ((unsigned) g_IBaseClientState +
                   offsets::lastoutgoingcommand()) = def->command_number - 1;
@@ -279,11 +281,17 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
 // "Use this if you want to use spam/killsay and still be able to chat normally
 // (without having your msgs eaten by valve cooldown)");
 
-static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck");
+static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck", "");
 static CatVar crypt_chat(
-    CV_SWITCH, "chat_crypto", "0", "Crypto chat",
+    CV_SWITCH, "chat_crypto", "1", "Crypto chat",
     "Start message with !! and it will be only visible to cathook users");
-
+static CatVar chat_filter(CV_STRING, "chat_censor", "", "Censor words",
+                          "Spam Chat with newlines if the chosen words are "
+                          "said, seperate with commas");
+static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
+                                  "Enable censor", "Censor Words in chat");
+static CatVar server_crash_key(CV_KEY, "crash_server", "0", "Server crash key",
+                               "hold key and wait...");
 bool SendNetMsg_hook(void *_this, INetMessage &msg, bool bForceReliable = false,
                      bool bVoice = false)
 {
@@ -378,7 +386,7 @@ static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
 
 void Shutdown_hook(void *_this, const char *reason)
 {
-	g_Settings.bInvalid = true;
+    g_Settings.bInvalid = true;
     // This is a INetChannel hook - it SHOULDN'T be static because netchannel
     // changes.
     const Shutdown_t original =
@@ -407,7 +415,7 @@ void Shutdown_hook(void *_this, const char *reason)
     }
 
     if (hacks::shared::autojoin::auto_queue)
-        tfmm::abandon();
+        tfmm::queue_start();
 }
 
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
@@ -578,10 +586,50 @@ void FireGameEvent_hook(void *_this, IGameEvent *event)
     }
     original(_this, event);
 }
-
-#if ENABLE_VISUALS == 1
+CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
+#if ENABLE_VISUALS
 void FrameStageNotify_hook(void *_this, int stage)
 {
+    if (nightmode)
+    {
+        static int OldNightmode = 0;
+        if (OldNightmode != (int) nightmode)
+        {
+
+            static ConVar *r_DrawSpecificStaticProp =
+                g_ICvar->FindVar("r_DrawSpecificStaticProp");
+            if (!r_DrawSpecificStaticProp)
+            {
+                r_DrawSpecificStaticProp =
+                    g_ICvar->FindVar("r_DrawSpecificStaticProp");
+                return;
+            }
+            r_DrawSpecificStaticProp->SetValue(0);
+
+            for (MaterialHandle_t i = g_IMaterialSystem->FirstMaterial();
+                 i != g_IMaterialSystem->InvalidMaterial();
+                 i = g_IMaterialSystem->NextMaterial(i))
+            {
+                IMaterial *pMaterial = g_IMaterialSystem->GetMaterial(i);
+
+                if (!pMaterial)
+                    continue;
+                if (strstr(pMaterial->GetTextureGroupName(), "World") ||
+                    strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
+                {
+                    if (nightmode)
+                        if (strstr(pMaterial->GetTextureGroupName(),
+                                   "StaticProp"))
+                            pMaterial->ColorModulate(0.3f, 0.3f, 0.3f);
+                        else
+                            pMaterial->ColorModulate(0.05f, 0.05f, 0.05f);
+                    else
+                        pMaterial->ColorModulate(1.0f, 1.0f, 1.0f);
+                }
+            }
+            OldNightmode = nightmode;
+        }
+    }
     static IClientEntity *ent;
 
     PROF_SECTION(FrameStageNotify_TOTAL);
@@ -619,6 +667,25 @@ void FrameStageNotify_hook(void *_this, int stage)
             }
         }
     }
+    if (cathook && stage == FRAME_RENDER_START)
+    {
+        INetChannel *ch;
+        ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+        if (ch && !hooks::IsHooked((void *) ch))
+        {
+            hooks::netchannel.Set(ch);
+            hooks::netchannel.HookMethod((void *) CanPacket_hook,
+                                         offsets::CanPacket());
+            hooks::netchannel.HookMethod((void *) SendNetMsg_hook,
+                                         offsets::SendNetMsg());
+            hooks::netchannel.HookMethod((void *) Shutdown_hook,
+                                         offsets::Shutdown());
+            hooks::netchannel.Apply();
+#if ENABLE_IPC
+            ipc::UpdateServerAddress();
+#endif
+        }
+    }
     if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START)
     {
         IF_GAME(IsTF())
@@ -650,9 +717,22 @@ static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
                          "Removes newlines from chat");
 static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
                            "Log dispatched user messages");
+std::string clear = "";
+std::string lastfilter{};
+std::string lastname{};
+static bool retrun = false;
+
+static Timer sendmsg{};
+static Timer gitgud{};
 
 bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
 {
+    if (retrun && gitgud.test_and_set(10000))
+    {
+        PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),
+                  lastfilter.c_str());
+        retrun = false;
+    }
     int loop_index, s, i, j;
     char *data, c;
 
@@ -685,12 +765,183 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
                         message.push_back(c);
                 }
             }
+            if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
+            {
+                if (!strcmp(chat_filter.GetString(), ""))
+                {
+                    std::string tmp  = {};
+                    std::string tmp2 = {};
+                    int iii          = 0;
+                    player_info_s info;
+                    g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
+                    std::string name1 = info.name;
+                    std::vector<std::string> name2{};
+                    std::vector<std::string> name3{};
+                    std::string claz = {};
+                    switch (g_pLocalPlayer->clazz)
+                    {
+                    case tf_scout:
+                        claz = "scout";
+                        break;
+                    case tf_soldier:
+                        claz = "soldier";
+                        break;
+                    case tf_pyro:
+                        claz = "pyro";
+                        break;
+                    case tf_demoman:
+                        claz = "demo";
+                        break;
+                    case tf_engineer:
+                        claz = "engi";
+                        break;
+                    case tf_heavy:
+                        claz = "heavy";
+                        break;
+                    case tf_medic:
+                        claz = "med";
+                        break;
+                    case tf_sniper:
+                        claz = "sniper";
+                        break;
+                    case tf_spy:
+                        claz = "spy";
+                        break;
+                    default:
+                        break;
+                    }
+                    for (char i : name1)
+                    {
+                        if (iii == 2)
+                        {
+                            iii = 0;
+                            tmp += i;
+                            name2.push_back(tmp);
+                            tmp = "";
+                        }
+                        else if (iii < 2)
+                        {
+                            iii++;
+                            tmp += i;
+                        }
+                    }
+                    iii = 0;
+                    for (char i : name1)
+                    {
+                        if (iii == 3)
+                        {
+                            iii = 0;
+                            tmp += i;
+                            name3.push_back(tmp2);
+                            tmp2 = "";
+                        }
+                        else if (iii < 3)
+                        {
+                            iii++;
+                            tmp2 += i;
+                        }
+                    }
+                    if (tmp.size() > 2)
+                        name2.push_back(tmp);
+                    if (tmp2.size() > 2)
+                        name3.push_back(tmp2);
+                    iii                          = 0;
+                    std::vector<std::string> res = {
+                        "skid", "script", "cheat", "hak",   "hac",  "f1",
+                        "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
+                        "cat",  "insta",  "revv",  "brass", "kick", claz
+                    };
+                    for (auto i : name2)
+                    {
+                        boost::to_lower(i);
+                        res.push_back(i);
+                    }
+                    for (auto i : name3)
+                    {
+                        boost::to_lower(i);
+                        res.push_back(i);
+                    }
+                    std::string message2 = message;
+                    boost::to_lower(message2);
+                    boost::replace_all(message2, "4", "a");
+                    boost::replace_all(message2, "3", "e");
+                    boost::replace_all(message2, "0", "o");
+                    boost::replace_all(message2, "6", "g");
+                    boost::replace_all(message2, "5", "s");
+                    boost::replace_all(message2, "7", "t");
+                    for (auto filter : res)
+                    {
+                        if (retrun)
+                            break;
+                        if (boost::contains(message2, filter))
+                        {
+
+                            if (clear == "")
+                            {
+                                for (int i = 0; i < 120; i++)
+                                    clear += "\n";
+                            }
+                            *bSendPackets = true;
+                            chat_stack::Say(". " + clear, true);
+                            retrun     = true;
+                            lastfilter = format(filter);
+                            lastname   = format(name);
+                        }
+                    }
+                }
+                else if (data[0] != LOCAL_E->m_IDX)
+                {
+                    std::string input = chat_filter.GetString();
+                    boost::to_lower(input);
+                    std::string message2 = message;
+                    std::vector<std::string> result{};
+                    boost::split(result, input, boost::is_any_of(","));
+                    boost::replace_all(message2, "4", "a");
+                    boost::replace_all(message2, "3", "e");
+                    boost::replace_all(message2, "0", "o");
+                    boost::replace_all(message2, "6", "g");
+                    boost::replace_all(message2, "5", "s");
+                    boost::replace_all(message2, "7", "t");
+                    for (auto filter : result)
+                    {
+                        if (retrun)
+                            break;
+                        if (boost::contains(message2, filter))
+                        {
+                            if (clear == "")
+                            {
+                                clear = "";
+                                for (int i = 0; i < 120; i++)
+                                    clear += "\n";
+                            }
+                            *bSendPackets = true;
+                            chat_stack::Say(". " + clear, true);
+                            retrun     = true;
+                            lastfilter = format(filter);
+                            lastname   = format(name);
+                        }
+                    }
+                }
+            }
+            if (sendmsg.test_and_set(300000) &&
+                hacks::shared::antiaim::communicate)
+                chat_stack::Say("!!meow");
             if (crypt_chat)
             {
                 if (message.find("!!") == 0)
                 {
                     if (ucccccp::validate(message))
                     {
+                        if (ucccccp::decrypt(message) == "meow" &&
+                            hacks::shared::antiaim::communicate &&
+                            data[0] != LOCAL_E->m_IDX &&
+                            playerlist::AccessData(ENTITY(data[0])).state !=
+                                playerlist::k_EState::CAT)
+                        {
+                            playerlist::AccessData(ENTITY(data[0])).state =
+                                playerlist::k_EState::CAT;
+                            chat_stack::Say("!!meow");
+                        }
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
                     }
@@ -704,24 +955,118 @@ bool DispatchUserMessage_hook(void *_this, int type, bf_read &buf)
     if (dispatch_log)
     {
         logging::Info("D> %i", type);
-		std::ostringstream str{};
-		while (buf.GetNumBytesLeft())
-		{
-			unsigned char byte = buf.ReadByte();
-			str << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << ' ';
-		}
-		logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
-		buf.Seek(0);
+        std::ostringstream str{};
+        while (buf.GetNumBytesLeft())
+        {
+            unsigned char byte = buf.ReadByte();
+            str << std::hex << std::setw(2) << std::setfill('0')
+                << static_cast<int>(byte) << ' ';
+        }
+        logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
+        buf.Seek(0);
     }
     votelogger::user_message(buf, type);
     return original(_this, type, buf);
 }
-
+const char *skynum[] = { "sky_tf2_04",
+                         "sky_upward",
+                         "sky_dustbowl_01",
+                         "sky_goldrush_01",
+                         "sky_granary_01",
+                         "sky_well_01",
+                         "sky_gravel_01",
+                         "sky_badlands_01",
+                         "sky_hydro_01",
+                         "sky_night_01",
+                         "sky_nightfall_01",
+                         "sky_trainyard_01",
+                         "sky_stormfront_01",
+                         "sky_morningsnow_01",
+                         "sky_alpinestorm_01",
+                         "sky_harvest_01",
+                         "sky_harvest_night_01",
+                         "sky_halloween",
+                         "sky_halloween_night_01",
+                         "sky_halloween_night2014_01",
+                         "sky_island_01",
+                         "sky_jungle_01",
+                         "sky_invasion2fort_01",
+                         "sky_well_02",
+                         "sky_outpost_01",
+                         "sky_coastal_01",
+                         "sky_rainbow_01",
+                         "sky_badlands_pyroland_01",
+                         "sky_pyroland_01",
+                         "sky_pyroland_02",
+                         "sky_pyroland_03" };
+CatEnum skys({ "sky_tf2_04",
+               "sky_upward",
+               "sky_dustbowl_01",
+               "sky_goldrush_01",
+               "sky_granary_01",
+               "sky_well_01",
+               "sky_gravel_01",
+               "sky_badlands_01",
+               "sky_hydro_01",
+               "sky_night_01",
+               "sky_nightfall_01",
+               "sky_trainyard_01",
+               "sky_stormfront_01",
+               "sky_morningsnow_01",
+               "sky_alpinestorm_01",
+               "sky_harvest_01",
+               "sky_harvest_night_01",
+               "sky_halloween",
+               "sky_halloween_night_01",
+               "sky_halloween_night2014_01",
+               "sky_island_01",
+               "sky_jungle_01",
+               "sky_invasion2fort_01",
+               "sky_well_02",
+               "sky_outpost_01",
+               "sky_coastal_01",
+               "sky_rainbow_01",
+               "sky_badlands_pyroland_01",
+               "sky_pyroland_01",
+               "sky_pyroland_02",
+               "sky_pyroland_03" });
+static CatVar
+    skybox_changer(skys, "skybox_changer", "0", "Change Skybox to this skybox",
+                   "Change Skybox to this skybox, only changes on map load");
+static CatVar halloween_mode(CV_SWITCH, "halloween_mode", "0",
+                             "Forced Halloween mode",
+                             "forced tf_forced_holiday 2");
 void LevelInit_hook(void *_this, const char *newmap)
 {
     static const LevelInit_t original =
         (LevelInit_t) hooks::clientmode.GetMethod(offsets::LevelInit());
     playerlist::Save();
+    votelogger::antikick_ticks         = 0;
+    hacks::shared::lagexploit::bcalled = false;
+#if ENABLE_VISUALS
+    typedef bool *(*LoadNamedSkys_Fn)(const char *);
+    uintptr_t addr =
+        gSignatures.GetEngineSignature("55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 81 EC 6C 01 00 00");
+    static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
+    bool succ;
+    logging::Info("Going to load the skybox");
+#ifdef __clang__
+    asm("movl %1, %%edi; push skynum[(int) skybox_changer]; call %%edi; mov "
+        "%%eax, %0; add %%esp, 4h"
+        : "=r"(succ)
+        : "r"(LoadNamedSkys));
+#else
+    succ = LoadNamedSkys(skynum[(int) skybox_changer]);
+#endif
+    logging::Info("Loaded Skybox: %s", succ ? "true" : "false");
+    ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
+
+    if (halloween_mode)
+        holiday->SetValue(2);
+    else if (holiday->m_nValue == 2)
+        holiday->SetValue(2);
+#endif
+
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
     hacks::shared::aimbot::Reset();
     chat_stack::Reset();
@@ -756,3 +1101,15 @@ void LevelShutdown_hook(void *_this)
     }
 #endif
 }
+#if ENABLE_VISUALS
+int RandomInt_hook(void *_this, int iMinVal, int iMaxVal)
+{
+    static const RandomInt_t original =
+        RandomInt_t(hooks::vstd.GetMethod(offsets::RandomInt()));
+
+    if (medal_flip && iMinVal == 0 && iMaxVal == 9)
+        return 0;
+
+    return original(_this, iMinVal, iMaxVal);
+}
+#endif

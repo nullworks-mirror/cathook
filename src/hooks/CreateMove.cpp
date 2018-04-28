@@ -42,7 +42,7 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
-    char *object         = new char[165];
+    char object[165];
     CMoveData *pMoveData = (CMoveData *) object;
 
     float frameTime = g_GlobalVars->frametime;
@@ -70,8 +70,6 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     oFinishMove(g_IPrediction, ent, ucmd, pMoveData);
     g_IGameMovement->FinishTrackPredictionErrors(
         reinterpret_cast<CBasePlayer *>(ent));
-
-    delete[] object;
 
     NET_VAR(ent, 4188, CUserCmd *) = nullptr;
 
@@ -113,17 +111,25 @@ static CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0",
                                 "Debug Projectiles");
 
 static CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
+static CatVar serverlag_amount(
+    CV_INT, "serverlag", "0", "serverlag",
+    "Lag the server by spamming this many voicecommands per tick");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
-
+CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
+                   "Crash servers by spamming signon net messages");
+bool *bSendPackets;
 bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 {
+    uintptr_t **fp;
+    __asm__("mov %%ebp, %0" : "=r"(fp));
+    bSendPackets = reinterpret_cast<bool *>(**fp - 8);
+
     g_Settings.is_create_move = true;
     static CreateMove_t original_method =
         (CreateMove_t) hooks::clientmode.GetMethod(offsets::CreateMove());
     bool time_replaced, ret, speedapplied;
     float curtime_old, servertime, speed, yaw;
     Vector vsilent, ang;
-    INetChannel *ch;
 
     tickcount++;
     g_pUserCmd = cmd;
@@ -164,22 +170,6 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 
     if (g_pUserCmd && g_pUserCmd->command_number)
         last_cmd_number = g_pUserCmd->command_number;
-
-    ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-    if (ch && !hooks::IsHooked((void *) ch))
-    {
-        hooks::netchannel.Set(ch);
-        hooks::netchannel.HookMethod((void *) CanPacket_hook,
-                                     offsets::CanPacket());
-        hooks::netchannel.HookMethod((void *) SendNetMsg_hook,
-                                     offsets::SendNetMsg());
-        hooks::netchannel.HookMethod((void *) Shutdown_hook,
-                                     offsets::Shutdown());
-        hooks::netchannel.Apply();
-#if ENABLE_IPC
-        ipc::UpdateServerAddress();
-#endif
-    }
 
     /**bSendPackets = true;
     if (hacks::shared::lagexploit::ExploitActive()) {
@@ -244,14 +234,14 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 
     hacks::shared::autojoin::Update();
 
-#if ENABLE_IPC == 1
+#if ENABLE_IPC
     static int team_joining_state  = 0;
     static float last_jointeam_try = 0;
     CachedEntity *found_entity, *ent;
 
-    if (hacks::shared::followbot::bot)
+    if (hacks::shared::followbot::followbot)
     {
-
+        hacks::shared::followbot::WorldTick();
         if (g_GlobalVars->curtime < last_jointeam_try)
         {
             team_joining_state = 0;
@@ -284,7 +274,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
                 if (CE_BAD(ent))
                     continue;
                 if (ent->player_info.friendsID ==
-                    hacks::shared::followbot::follow_steamid)
+                    (int) hacks::shared::followbot::follow_steam)
                 {
                     found_entity = ent;
                     break;
@@ -320,12 +310,13 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             UpdateHoovyList();
         }
         g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
-#if ENABLE_VISUALS == 1
+#if ENABLE_VISUALS
         {
             PROF_SECTION(CM_esp);
             hacks::shared::esp::CreateMove();
         }
 #endif
+        *bSendPackets = true;
         if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon()))
         {
             {
@@ -352,6 +343,10 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             {
                 PROF_SECTION(CM_noisemaker);
                 hacks::tf2::noisemaker::CreateMove();
+            }
+            {
+                PROF_SECTION(CM_deadringer);
+                hacks::shared::deadringer::CreateMove();
             }
             {
                 PROF_SECTION(CM_bunnyhop);
@@ -390,6 +385,11 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             }
             IF_GAME(IsTF())
             {
+                PROF_SECTION(CM_autodetonator);
+                hacks::tf::autodetonator::CreateMove();
+            }
+            IF_GAME(IsTF())
+            {
                 PROF_SECTION(CM_autoreflect);
                 hacks::tf::autoreflect::CreateMove();
             }
@@ -424,7 +424,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             hacks::shared::spam::CreateMove();
         }
         {
-        	PROF_SECTION(CM_AC);
+            PROF_SECTION(CM_AC);
             angles::Update();
             hacks::shared::anticheat::CreateMove();
         }
@@ -458,8 +458,6 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
         }
     }
 #endif
-
-    *bSendPackets = true;
 
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
@@ -519,15 +517,20 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 
             ret = false;
         }
-#if ENABLE_IPC == 1
-        if (CE_GOOD(g_pLocalPlayer->entity) && !g_pLocalPlayer->life_state)
-        {
-            PROF_SECTION(CM_followbot);
-            hacks::shared::followbot::AfterCreateMove();
-        }
-#endif
         if (cmd)
             g_Settings.last_angles = cmd->viewangles;
+    }
+    if (serverlag_amount || votelogger::antikick_ticks)
+    {
+        if (votelogger::antikick_ticks)
+        {
+            votelogger::antikick_ticks--;
+            for (int i = 0; i < (int) 70; i++)
+                g_IEngine->ServerCmd("voicemenu 0 0", false);
+        }
+        else
+            for (int i = 0; i < (int) serverlag_amount; i++)
+                g_IEngine->ServerCmd("use", false);
     }
 
     //	PROF_END("CreateMove");
