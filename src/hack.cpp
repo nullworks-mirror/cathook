@@ -290,8 +290,8 @@ free(logname);*/
     g_pPlayerResource = new TFPlayerResource();
 #if ENABLE_VISUALS
     hooks::panel.Set(g_IPanel);
-    hooks::panel.HookMethod((void *) PaintTraverse_hook,
-                            offsets::PaintTraverse());
+    hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse,
+                            offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);
     hooks::panel.Apply();
 #endif
     uintptr_t *clientMode = 0;
@@ -304,32 +304,27 @@ free(logname);*/
         usleep(10000);
     }
     hooks::clientmode.Set((void *) clientMode);
-    hooks::clientmode.HookMethod((void *) CreateMove_hook,
-                                 offsets::CreateMove());
+    hooks::clientmode.HookMethod(HOOK_ARGS(CreateMove));
 #if ENABLE_VISUALS
-    hooks::clientmode.HookMethod((void *) OverrideView_hook,
-                                 offsets::OverrideView());
+    hooks::clientmode.HookMethod(HOOK_ARGS(OverrideView));
 #endif
-    hooks::clientmode.HookMethod((void *) LevelInit_hook, offsets::LevelInit());
-    hooks::clientmode.HookMethod((void *) LevelShutdown_hook,
-                                 offsets::LevelShutdown());
+    hooks::clientmode.HookMethod(HOOK_ARGS(LevelInit));
+    hooks::clientmode.HookMethod(HOOK_ARGS(LevelShutdown));
     hooks::clientmode.Apply();
+
     hooks::clientmode4.Set((void *) (clientMode), 4);
-    hooks::clientmode4.HookMethod((void *) FireGameEvent_hook,
-                                  offsets::FireGameEvent());
+    hooks::clientmode4.HookMethod(HOOK_ARGS(FireGameEvent));
     hooks::clientmode4.Apply();
     hooks::client.Set(g_IBaseClient);
 
 #if ENABLE_VISUALS
-    hooks::client.HookMethod((void *) FrameStageNotify_hook,
-                             offsets::FrameStageNotify());
+    hooks::client.HookMethod(HOOK_ARGS(FrameStageNotify));
 #endif
-    hooks::client.HookMethod((void *) DispatchUserMessage_hook,
-                             offsets::DispatchUserMessage());
+    hooks::client.HookMethod(HOOK_ARGS(DispatchUserMessage);
 
 #if ENABLE_VISUALS
     hooks::vstd.Set((void *) g_pUniformStream);
-    hooks::vstd.HookMethod((void *) RandomInt_hook, offsets::RandomInt());
+    hooks::vstd.HookMethod(HOOK_ARGS(RandomInt));
     hooks::vstd.Apply();
 #endif
 
@@ -356,28 +351,24 @@ free(logname);*/
     }
 #endif
 #if ENABLE_VISUALS
-    hooks::client.HookMethod((void *) IN_KeyEvent_hook, offsets::IN_KeyEvent());
+    hooks::client.HookMethod(HOOK_ARGS(IN_KeyEvent));
 #endif
     hooks::client.Apply();
     hooks::input.Set(g_IInput);
-    hooks::input.HookMethod((void *) GetUserCmd_hook, offsets::GetUserCmd());
+    hooks::input.HookMethod(HOOK_ARGS(GetUserCmd));
     hooks::input.Apply();
 #ifndef HOOK_DME_DISABLED
 #if ENABLE_VISUALS
     hooks::modelrender.Set(g_IVModelRender);
-    hooks::modelrender.HookMethod((void *) DrawModelExecute_hook,
-                                  offsets::DrawModelExecute());
+    hooks::modelrender.HookMethod(HOOK_ARGS(DrawModelExecute));
     hooks::modelrender.Apply();
     hooks::enginevgui.Set(g_IEngineVGui);
-    hooks::enginevgui.HookMethod(
-        (void *) Paint_hook,
-        offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
+    hooks::enginevgui.HookMethod(HOOK_ARGS(Paint));
     hooks::enginevgui.Apply();
 #endif
 #endif
     hooks::steamfriends.Set(g_ISteamFriends);
-    hooks::steamfriends.HookMethod((void *) GetFriendPersonaName_hook,
-                                   offsets::GetFriendPersonaName());
+    hooks::steamfriends.HookMethod(HOOK_ARGS(GetFriendPersonaName));
     hooks::steamfriends.Apply();
     // logging::Info("After hacking: %s", g_ISteamFriends->GetPersonaName());
     // Sadly, it doesn't work as expected :(

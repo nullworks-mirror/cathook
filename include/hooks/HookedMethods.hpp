@@ -23,6 +23,9 @@ struct SDL_Window;
     types::name original::name{ nullptr }; \
     rtype name(__VA_ARGS__)
 
+#define HOOK_ARGS(name) \
+    hooked_methods::methods::name, offsets::name(), &hooked_methods::original::name
+
 namespace hooked_methods
 {
 // ClientMode
