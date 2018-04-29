@@ -9,6 +9,8 @@
 #include "hack.hpp"
 #include "common.hpp"
 
+#include <hacks/hacklist.hpp>
+
 #define STRINGIFY(x) #x
 #define TO_STRING(x) STRINGIFY(x)
 

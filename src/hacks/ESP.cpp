@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/ESP.hpp>
 #include "common.hpp"
 
 namespace hacks

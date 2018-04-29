@@ -7,11 +7,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace achievement
+namespace hacks::tf2::achievement
 {
 
 CatVar safety(CV_SWITCH, "achievement_safety", "1",
@@ -115,6 +111,5 @@ CatCommand
                 });
 CatCommand lock("achievement_lock", "Lock all achievements", Lock);
 CatCommand unlock("achievement_unlock", "Unlock all achievements", Unlock);
-}
-}
+
 }

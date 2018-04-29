@@ -6,6 +6,8 @@
  */
 
 #include "common.hpp"
+#include <hacks/AutoHeal.hpp>
+#include <hacks/FollowBot.hpp>
 
 namespace hacks
 {

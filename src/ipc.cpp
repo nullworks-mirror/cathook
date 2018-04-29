@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/CatBot.hpp>
 #include "ipc.hpp"
 
 #include "common.hpp"

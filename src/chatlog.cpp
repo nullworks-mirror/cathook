@@ -10,6 +10,7 @@
 
 #include <pwd.h>
 #include <unistd.h>
+#include <hacks/Spam.hpp>
 
 namespace chatlog
 {

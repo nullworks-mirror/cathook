@@ -3,6 +3,8 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <hacks/Aimbot.hpp>
+#include <hacks/hacklist.hpp>
 #include "HookedMethods.hpp"
 
 namespace hooked_methods

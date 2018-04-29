@@ -6,6 +6,9 @@
  */
 
 #include <MiscTemporary.hpp>
+#include <hacks/Misc.hpp>
+#include <hacks/Aimbot.hpp>
+#include <hacks/hacklist.hpp>
 #include "common.hpp"
 #include "visual/drawing.hpp"
 #include "hack.hpp"

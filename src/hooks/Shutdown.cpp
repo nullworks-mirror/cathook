@@ -3,6 +3,7 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <hacks/hacklist.hpp>
 #include "HookedMethods.hpp"
 
 static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");

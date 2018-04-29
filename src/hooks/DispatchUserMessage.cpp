@@ -7,6 +7,7 @@
 #include <ucccccp.hpp>
 #include <boost/algorithm/string.hpp>
 #include <MiscTemporary.hpp>
+#include <hacks/AntiAim.hpp>
 #include "HookedMethods.hpp"
 
 static bool retrun = false;

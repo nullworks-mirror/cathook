@@ -5,6 +5,10 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/Aimbot.hpp>
+#include <hacks/CatBot.hpp>
+#include <hacks/AntiAim.hpp>
+#include <hacks/ESP.hpp>
 #include "common.hpp"
 
 namespace hacks

@@ -5,6 +5,9 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/ac/aimbot.hpp>
+#include <hacks/ac/antiaim.hpp>
+#include <hacks/ac/bhop.hpp>
 #include "common.hpp"
 #include "hack.hpp"
 

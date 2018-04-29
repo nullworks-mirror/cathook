@@ -111,8 +111,6 @@
 #include "GUI.h"
 #endif
 
-#include <hacks/hacklist.hpp>
-
 #include <sdk.hpp>
 
 template <typename T> constexpr T _clamp(T _min, T _max, T _val)

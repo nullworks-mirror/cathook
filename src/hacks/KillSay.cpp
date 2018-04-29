@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/KillSay.hpp>
 #include "common.hpp"
 
 namespace hacks

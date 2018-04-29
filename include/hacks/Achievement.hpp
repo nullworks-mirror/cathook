@@ -7,15 +7,10 @@
 
 #pragma once
 
-namespace hacks
-{
-namespace tf2
-{
-namespace achievement
+namespace hacks::tf2::achievement
 {
 
 void Lock();
 void Unlock();
-}
-}
+
 }

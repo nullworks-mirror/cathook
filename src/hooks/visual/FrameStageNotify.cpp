@@ -4,6 +4,7 @@
 */
 
 #include <MiscTemporary.hpp>
+#include <hacks/hacklist.hpp>
 #include "HookedMethods.hpp"
 
 CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");

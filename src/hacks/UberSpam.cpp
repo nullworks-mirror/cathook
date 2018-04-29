@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include <hacks/UberSpam.hpp>
 
 namespace hacks
 {

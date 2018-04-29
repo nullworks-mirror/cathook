@@ -7,6 +7,7 @@
 
 #include <visual/EffectGlow.hpp>
 #include <MiscTemporary.hpp>
+#include <hacks/Aimbot.hpp>
 #include "common.hpp"
 
 IMaterialSystem *materials = nullptr;

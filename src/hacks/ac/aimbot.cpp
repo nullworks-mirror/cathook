@@ -5,6 +5,8 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/ac/aimbot.hpp>
+#include <hacks/AntiCheat.hpp>
 #include "common.hpp"
 
 namespace ac

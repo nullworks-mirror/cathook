@@ -11,6 +11,7 @@
 #include <boost/algorithm/string.hpp>
 #include <sys/dir.h>
 #include <sys/stat.h>
+#include <hacks/hacklist.hpp>
 
 namespace hacks
 {

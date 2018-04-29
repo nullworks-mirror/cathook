@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <link.h>
+#include <hacks/AntiAim.hpp>
 
 #include "sharedobj.hpp"
 

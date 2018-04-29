@@ -14,6 +14,16 @@ namespace tf2
 namespace autobackstab
 {
 
+// pPaste, thanks to F1ssi0N
+const Vector GetWorldSpaceCenter(CachedEntity *ent)
+{
+    Vector vMin, vMax;
+    RAW_ENT(ent)->GetRenderBounds(vMin, vMax);
+    Vector vWorldSpaceCenter = RAW_ENT(ent)->GetAbsOrigin();
+    vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
+    return vWorldSpaceCenter;
+}
+
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
 static CatVar value(CV_INT, "autobackstab_range", "110.0f",
@@ -89,15 +99,6 @@ void CreateMove()
     }
 }
 
-// pPaste, thanks to F1ssi0N
-const Vector GetWorldSpaceCenter(CachedEntity *ent)
-{
-    Vector vMin, vMax;
-    RAW_ENT(ent)->GetRenderBounds(vMin, vMax);
-    Vector vWorldSpaceCenter = RAW_ENT(ent)->GetAbsOrigin();
-    vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
-    return vWorldSpaceCenter;
-}
 }
 }
 }

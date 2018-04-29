@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/Spam.hpp>
 #include "common.hpp"
 
 namespace hacks
