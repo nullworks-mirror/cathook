@@ -140,15 +140,7 @@ rgba_t Color(CachedEntity *player)
 
 userdata &AccessData(unsigned steamid)
 {
-    try
-    {
-        return data.at(steamid);
-    }
-    catch (std::out_of_range &oor)
-    {
-        data.emplace(steamid, userdata{});
-        return data.at(steamid);
-    }
+    return data[steamid];
 }
 
 // Assume player is non-null
