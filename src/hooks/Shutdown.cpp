@@ -5,6 +5,8 @@
 
 #include "HookedMethods.hpp"
 
+static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
+
 namespace hooked_methods
 {
 

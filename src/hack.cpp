@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <visual/SDLHooks.hpp>
 #include "hack.hpp"
 #include "common.hpp"
 
@@ -312,7 +313,7 @@ free(logname);*/
     hooks::clientmode4.Apply();
 
     hooks::client.Set(g_IBaseClient);
-    hooks::client.HookMethod(HOOK_ARGS(DispatchUserMessage);
+    hooks::client.HookMethod(HOOK_ARGS(DispatchUserMessage));
 #if ENABLE_VISUALS
     hooks::client.HookMethod(HOOK_ARGS(FrameStageNotify));
     hooks::client.HookMethod(HOOK_ARGS(IN_KeyEvent));
@@ -403,7 +404,7 @@ free(logname);*/
     }
     logging::Info("SSE enabled..");
 #endif
-    DoSDLHooking();
+    sdl_hooks::applySdlHooks();
     logging::Info("SDL hooking done");
     g_IGameEventManager->AddListener(&adv_event_listener, false);
 
@@ -453,7 +454,7 @@ void hack::Shutdown()
     hack::shutdown = true;
     playerlist::Save();
 #if ENABLE_VISUALS
-    DoSDLUnhooking();
+    sdl_hooks::cleanSdlHooks();
 #endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();

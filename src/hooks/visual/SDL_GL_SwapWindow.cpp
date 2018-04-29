@@ -3,6 +3,9 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <SDL_syswm.h>
+#include <MiscTemporary.hpp>
+#include <visual/SDLHooks.hpp>
 #include "HookedMethods.hpp"
 
 namespace hooked_methods
@@ -24,8 +27,8 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
         GetWindowWMInfo(window, &wminfo);
         init_wminfo = true;
     }
-    if (!sdl_current_window)
-        sdl_current_window = window;
+    if (!sdl_hooks::window)
+        sdl_hooks::window = window;
 
     static bool init{ false };
 
@@ -44,13 +47,11 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
     {
         PROF_SECTION(SWAPWINDOW_tf2);
         SDL_GL_MakeCurrent(window, tf2_sdl);
-        SDL_GL_SwapWindow_o(window);
+        original::SDL_GL_SwapWindow(window);
         // glXMakeContextCurrent(wminfo.info.x11.display,
         // wminfo.info.x11.window,
         //                      wminfo.info.x11.window, tf2);
         // glXSwapBuffers(wminfo.info.x11.display, wminfo.info.x11.window);
     }
-
-    return original::SDL_GL_SwapWindow(window);
 }
 }

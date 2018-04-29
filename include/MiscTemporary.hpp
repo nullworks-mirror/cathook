@@ -14,12 +14,16 @@ extern CatVar no_zoom;
 extern CatVar clean_screenshots;
 extern CatVar disable_visuals;
 extern CatVar disconnect_reason;
-
+extern CatVar crypt_chat;
+extern CatVar minigun_jump;
+extern CatVar nolerp;
+extern CatVar joinclass;
+extern CatVar jointeam;
+extern CatVar fakelag_amount;
+extern CatVar serverlag_amount;
+extern CatVar debug_projectiles;
+extern CatVar semiauto;
+extern CatVar engine_pred;
 #if ENABLE_VISUALS
 extern int spectator_target;
 #endif
-
-extern SDL_Window *sdl_current_window;
-
-void DoSDLHooking();
-void DoSDLUnhooking();

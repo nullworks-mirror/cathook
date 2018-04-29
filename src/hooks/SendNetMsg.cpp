@@ -4,12 +4,21 @@
 */
 
 #include <ucccccp.hpp>
+#include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"
+
+static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
+                           "Add # newlines before each your message", 0, 24);
+
+
+static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0",
+                       "Log sent messages");
+static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck", "");
 
 namespace hooked_methods
 {
 
-DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &message,
+DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                      bool force_reliable, bool voice)
 {
     size_t say_idx, say_team_idx;
@@ -47,7 +56,7 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &message,
             str = str.substr(16, str.length() - 17);
             // if (queue_messages && !chat_stack::CanSend()) {
             stringcmd.m_szCommand = str.c_str();
-            return original(_this, stringcmd, bForceReliable, bVoice);
+            return original::SendNetMsg(this_, stringcmd, force_reliable, voice);
             //}
         }
     }
@@ -92,6 +101,6 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &message,
         logging::Info("%i bytes => %s", buffer.GetNumBytesWritten(),
                       bytes.c_str());
     }
-    return original::SendNetMsg(this_, message, force_reliable, voice);
+    return original::SendNetMsg(this_, msg, force_reliable, voice);
 }
 }

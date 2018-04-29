@@ -6,6 +6,7 @@
  */
 
 #include <visual/EffectGlow.hpp>
+#include <MiscTemporary.hpp>
 #include "common.hpp"
 
 IMaterialSystem *materials = nullptr;
