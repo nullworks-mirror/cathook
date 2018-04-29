@@ -33,8 +33,6 @@ and a lot of useful features, including
 
 [FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features) (list might be outdated)
 
-# stuff written below this line is outdated lol
-
 # INSTALLATION
 
 You need CMake to build cathook, CMake should take care of dependencies
