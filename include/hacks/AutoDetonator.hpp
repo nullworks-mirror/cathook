@@ -9,13 +9,8 @@
 
 #include "common.hpp"
 
-namespace hacks
+namespace hacks::tf::autodetonator
 {
-namespace tf
-{
-namespace autodetonator
-{
+
 void CreateMove();
-}
-}
 }

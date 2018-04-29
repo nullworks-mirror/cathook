@@ -6,13 +6,8 @@
  */
 
 #pragma once
-namespace hacks
+namespace hacks::shared::deadringer
 {
-namespace shared
-{
-namespace deadringer
-{
+
 void CreateMove();
-}
-}
 }

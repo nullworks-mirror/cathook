@@ -13,11 +13,7 @@
 #include "ac/antiaim.hpp"
 #include "ac/bhop.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace anticheat
+namespace hacks::shared::anticheat
 {
 
 void Accuse(int eid, const std::string &hack, const std::string &details);
@@ -27,6 +23,4 @@ void CreateMove();
 
 void ResetPlayer(int index);
 void ResetEverything();
-}
-}
 }

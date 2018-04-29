@@ -9,16 +9,10 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace announcer
+namespace hacks::shared::announcer
 {
 
 void playsound(const std::string &);
 void init();
 void shutdown();
-}
-}
 }
