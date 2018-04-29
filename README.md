@@ -37,7 +37,7 @@ and a lot of useful features, including
 
 You need CMake to build cathook, CMake should take care of dependencies
 
-Install [libglez](https://github.com/nullifiedcat/libglez) and [libxoverlay](https://github.com/nullifiedcat/libxoverlay)
+Install [libglez](https://github.com/nullifiedcat/libglez), [libxoverlay](https://github.com/nullifiedcat/libxoverlay) and [simple-ipc](https://github.com/nullworks/simple-ipc)
 
 * Clone the repo of library (`git clone <URL>`)
 * `mkdir build && cd build`
