@@ -18,104 +18,11 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                      CUserCmd *cmd)
 {
-    return original::CreateMove(this_, input_sample_time, cmd);
-}
-}
-
-class CMoveData;
-namespace engine_prediction
-{
-
-void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
-{
-    if (!ent)
-        return;
-
-    typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
-                                class IMoveHelper *, CMoveData *);
-    typedef void (*FinishMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
-                                 CMoveData *);
-
-    void **predictionVtable = *((void ***) g_IPrediction);
-    SetupMoveFn oSetupMove =
-        (SetupMoveFn)(*(unsigned *) (predictionVtable + 19));
-    FinishMoveFn oFinishMove =
-        (FinishMoveFn)(*(unsigned *) (predictionVtable + 20));
-
-    // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
-    // 0x1F69C0C);  CMoveData movedata {};
-    char object[165];
-    CMoveData *pMoveData = (CMoveData *) object;
-
-    float frameTime = g_GlobalVars->frametime;
-    float curTime   = g_GlobalVars->curtime;
-
-    CUserCmd defaultCmd;
-    if (ucmd == NULL)
-    {
-        ucmd = &defaultCmd;
-    }
-
-    NET_VAR(ent, 4188, CUserCmd *) = ucmd;
-
-    g_GlobalVars->curtime =
-        g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
-    g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
-
-    *g_PredictionRandomSeed =
-        MD5_PseudoRandom(g_pUserCmd->command_number) & 0x7FFFFFFF;
-    g_IGameMovement->StartTrackPredictionErrors(
-        reinterpret_cast<CBasePlayer *>(ent));
-    oSetupMove(g_IPrediction, ent, ucmd, NULL, pMoveData);
-    g_IGameMovement->ProcessMovement(reinterpret_cast<CBasePlayer *>(ent),
-                                     pMoveData);
-    oFinishMove(g_IPrediction, ent, ucmd, pMoveData);
-    g_IGameMovement->FinishTrackPredictionErrors(
-        reinterpret_cast<CBasePlayer *>(ent));
-
-    NET_VAR(ent, 4188, CUserCmd *) = nullptr;
-
-    g_GlobalVars->frametime = frameTime;
-    g_GlobalVars->curtime   = curTime;
-
-    return;
-}
-
-/*float o_curtime;
-float o_frametime;
-
-void Start() {
-    g_IGameMovement->StartTrackPredictionErrors((CBasePlayer*)(RAW_ENT(LOCAL_E)));
-
-    IClientEntity* player = RAW_ENT(LOCAL_E);
-    // CPredictableId::ResetInstanceCounters();
-    *(reinterpret_cast<CUserCmd*>(reinterpret_cast<uintptr_t>(player) + 1047)) =
-g_pUserCmd; o_curtime = g_GlobalVars->curtime; o_frametime =
-g_GlobalVars->frametime; *g_PredictionRandomSeed =
-MD5_PseudoRandom(g_pUserCmd->command_number) & 0x7FFFFFFF; g_GlobalVars->curtime
-= CE_INT(LOCAL_E, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
-    g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
-
-    CMoveData data;
-
-}
-
-void End() {
-    *g_PredictionRandomSeed = -1;
-    g_GlobalVars->curtime = o_curtime;
-    g_GlobalVars->frametime = o_frametime;
-}*/
-}
-
-bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
-{
     uintptr_t **fp;
     __asm__("mov %%ebp, %0" : "=r"(fp));
     bSendPackets = reinterpret_cast<bool *>(**fp - 8);
 
     g_Settings.is_create_move = true;
-    static CreateMove_t original_method =
-        (CreateMove_t) hooks::clientmode.GetMethod(offsets::CreateMove());
     bool time_replaced, ret, speedapplied;
     float curtime_old, servertime, speed, yaw;
     Vector vsilent, ang;
@@ -132,7 +39,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
         }
     }
 
-    ret = original_method(thisptr, inputSample, cmd);
+    ret = original::CreateMove(this_, input_sample_time, cmd);
 
     PROF_SECTION(CreateMove);
 
@@ -249,7 +156,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
             {
                 logging::Info("Trying to change CLASS");
                 g_IEngine->ExecuteClientCmd(
-                    format("join_class ", joinclass.GetString()).c_str());
+                        format("join_class ", joinclass.GetString()).c_str());
             }
             team_joining_state = 0;
         }
@@ -471,7 +378,7 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
         speedapplied = false;
         if (roll_speedhack &&
             g_IInputSystem->IsButtonDown(
-                (ButtonCode_t)((int) roll_speedhack)) &&
+                    (ButtonCode_t)((int) roll_speedhack)) &&
             !(cmd->buttons & IN_ATTACK))
         {
             speed = cmd->forwardmove;
@@ -530,4 +437,95 @@ bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
     g_pLocalPlayer->bAttackLastTick = (cmd->buttons & IN_ATTACK);
     g_Settings.is_create_move       = false;
     return ret;
+}
+}
+
+class CMoveData;
+namespace engine_prediction
+{
+
+void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
+{
+    if (!ent)
+        return;
+
+    typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
+                                class IMoveHelper *, CMoveData *);
+    typedef void (*FinishMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
+                                 CMoveData *);
+
+    void **predictionVtable = *((void ***) g_IPrediction);
+    SetupMoveFn oSetupMove =
+        (SetupMoveFn)(*(unsigned *) (predictionVtable + 19));
+    FinishMoveFn oFinishMove =
+        (FinishMoveFn)(*(unsigned *) (predictionVtable + 20));
+
+    // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
+    // 0x1F69C0C);  CMoveData movedata {};
+    char object[165];
+    CMoveData *pMoveData = (CMoveData *) object;
+
+    float frameTime = g_GlobalVars->frametime;
+    float curTime   = g_GlobalVars->curtime;
+
+    CUserCmd defaultCmd;
+    if (ucmd == NULL)
+    {
+        ucmd = &defaultCmd;
+    }
+
+    NET_VAR(ent, 4188, CUserCmd *) = ucmd;
+
+    g_GlobalVars->curtime =
+        g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
+    g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
+
+    *g_PredictionRandomSeed =
+        MD5_PseudoRandom(g_pUserCmd->command_number) & 0x7FFFFFFF;
+    g_IGameMovement->StartTrackPredictionErrors(
+        reinterpret_cast<CBasePlayer *>(ent));
+    oSetupMove(g_IPrediction, ent, ucmd, NULL, pMoveData);
+    g_IGameMovement->ProcessMovement(reinterpret_cast<CBasePlayer *>(ent),
+                                     pMoveData);
+    oFinishMove(g_IPrediction, ent, ucmd, pMoveData);
+    g_IGameMovement->FinishTrackPredictionErrors(
+        reinterpret_cast<CBasePlayer *>(ent));
+
+    NET_VAR(ent, 4188, CUserCmd *) = nullptr;
+
+    g_GlobalVars->frametime = frameTime;
+    g_GlobalVars->curtime   = curTime;
+
+    return;
+}
+
+/*float o_curtime;
+float o_frametime;
+
+void Start() {
+    g_IGameMovement->StartTrackPredictionErrors((CBasePlayer*)(RAW_ENT(LOCAL_E)));
+
+    IClientEntity* player = RAW_ENT(LOCAL_E);
+    // CPredictableId::ResetInstanceCounters();
+    *(reinterpret_cast<CUserCmd*>(reinterpret_cast<uintptr_t>(player) + 1047)) =
+g_pUserCmd; o_curtime = g_GlobalVars->curtime; o_frametime =
+g_GlobalVars->frametime; *g_PredictionRandomSeed =
+MD5_PseudoRandom(g_pUserCmd->command_number) & 0x7FFFFFFF; g_GlobalVars->curtime
+= CE_INT(LOCAL_E, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
+    g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
+
+    CMoveData data;
+
+}
+
+void End() {
+    *g_PredictionRandomSeed = -1;
+    g_GlobalVars->curtime = o_curtime;
+    g_GlobalVars->frametime = o_frametime;
+}*/
+}
+
+bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
+{
+
 }

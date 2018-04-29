@@ -323,7 +323,7 @@ free(logname);*/
     hooks::vstd.Set((void *) g_pUniformStream);
     hooks::vstd.HookMethod(HOOK_ARGS(RandomInt));
     hooks::vstd.Apply();
-    
+
     hooks::panel.Set(g_IPanel);
     hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse,
                             offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);

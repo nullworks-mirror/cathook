@@ -14,18 +14,6 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 {
-    return original::Paint(this_, mode);
-}
-}
-
-static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1",
-                                      "Cursor fix");
-
-void Paint_hook(IEngineVGui *_this, PaintMode_t mode)
-{
-    static const Paint_t original = (Paint_t) hooks::enginevgui.GetMethod(
-        offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
-
     if (!g_IEngine->IsInGame())
         g_Settings.bInvalid = true;
 
@@ -70,7 +58,7 @@ void Paint_hook(IEngineVGui *_this, PaintMode_t mode)
                 // logging::Info("executing %s",
                 //              hack::command_stack().top().c_str());
                 g_IEngine->ClientCmd_Unrestricted(
-                    hack::command_stack().top().c_str());
+                        hack::command_stack().top().c_str());
                 hack::command_stack().pop();
             }
         }
@@ -97,5 +85,9 @@ void Paint_hook(IEngineVGui *_this, PaintMode_t mode)
 #endif
     }
 
-    original(_this, mode);
+    return original::Paint(this_, mode);
 }
+}
+
+static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1",
+                                      "Cursor fix");

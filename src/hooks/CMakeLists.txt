@@ -5,7 +5,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/FireGameEvent.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/GetFriendPersonaName.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/GetUserCmd.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/IN_KeyEvent.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/LevelInit.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/LevelShutdown.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/nographics.cpp"

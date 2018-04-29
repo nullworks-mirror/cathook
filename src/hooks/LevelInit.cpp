@@ -10,6 +10,45 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 {
-    return original::LevelInit(this_, name);
+    playerlist::Save();
+    votelogger::antikick_ticks         = 0;
+    hacks::shared::lagexploit::bcalled = false;
+#if ENABLE_VISUALS
+    typedef bool *(*LoadNamedSkys_Fn)(const char *);
+    uintptr_t addr = gSignatures.GetEngineSignature(
+            "55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 81 EC 6C 01 00 00");
+    static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
+    bool succ;
+    logging::Info("Going to load the skybox");
+#ifdef __clang__
+    asm("movl %1, %%edi; push skynum[(int) skybox_changer]; call %%edi; mov "
+        "%%eax, %0; add %%esp, 4h"
+        : "=r"(succ)
+        : "r"(LoadNamedSkys));
+#else
+    succ = LoadNamedSkys(skynum[(int) skybox_changer]);
+#endif
+    logging::Info("Loaded Skybox: %s", succ ? "true" : "false");
+    ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
+
+    if (halloween_mode)
+        holiday->SetValue(2);
+    else if (holiday->m_nValue == 2)
+        holiday->SetValue(2);
+#endif
+
+    g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
+    hacks::shared::aimbot::Reset();
+    chat_stack::Reset();
+    hacks::shared::anticheat::ResetEverything();
+    original::LevelInit(this_, name);
+    hacks::shared::walkbot::OnLevelInit();
+#if ENABLE_IPC
+    if (ipc::peer)
+    {
+        ipc::peer->memory->peer_user_data[ipc::peer->client_id].ts_connected =
+                time(nullptr);
+    }
+#endif
 }
 }
