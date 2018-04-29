@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <MiscTemporary.hpp>
 #include "common.hpp"
 #include "visual/drawing.hpp"
 #include "hack.hpp"

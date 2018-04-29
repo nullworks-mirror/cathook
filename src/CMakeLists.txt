@@ -39,7 +39,8 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/trace.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/ucccccp_cmds.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/velocity.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/votelogger.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/votelogger.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/MiscTemporary.cpp")
 
 add_subdirectory(classinfo)
 add_subdirectory(copypasted)

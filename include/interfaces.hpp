@@ -51,6 +51,7 @@ class IGameEventManager;
 class TFGCClientSystem;
 class CGameRules;
 class IEngineVGui;
+class IUniformRandomStream;
 
 extern TFGCClientSystem *g_TFGCClientSystem;
 extern CHud *g_CHUD;

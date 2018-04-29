@@ -94,7 +94,7 @@
 #include "textfile.hpp"
 #include "ipc.hpp"
 #include "tfmm.hpp"
-#include "hooks/hookedmethods.hpp"
+#include "hooks/HookedMethods.hpp"
 #include "classinfo/classinfo.hpp"
 #include "votelogger.hpp"
 #include "crits.hpp"

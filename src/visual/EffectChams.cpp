@@ -6,6 +6,7 @@
  */
 
 #include <visual/EffectChams.hpp>
+#include <MiscTemporary.hpp>
 #include "common.hpp"
 
 // static CatVar chams_experimental(CV_SWITCH, "chams_effect", "0",

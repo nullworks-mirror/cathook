@@ -17,6 +17,7 @@ CatVar crit_experimental(CV_SWITCH, "crit_experimental", "0",
                          "Experimental crithack");
 
 std::unordered_map<int, int> command_number_mod{};
+
 int *g_PredictionRandomSeed = nullptr;
 
 namespace criticals
