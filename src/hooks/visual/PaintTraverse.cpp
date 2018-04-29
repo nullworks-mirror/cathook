@@ -1,15 +1,9 @@
 /*
- * PaintTraverse.cpp
- *
- *  Created on: Jan 8, 2017
- *      Author: nullifiedcat
- */
+  Created by Jenny White on 29.04.18.
+  Copyright (c) 2018 nullworks. All rights reserved.
+*/
 
-#include "common.hpp"
-
-#if ENABLE_GUI
-#include "GUI.h"
-#endif
+#include "HookedMethods.hpp"
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
                          "Clean screenshots",
@@ -26,14 +20,16 @@ void **pure_addr = nullptr;
 CatEnum software_cursor_enum({ "KEEP", "ALWAYS", "NEVER", "MENU ON",
                                "MENU OFF" });
 CatVar
-    software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
-                         "Software cursor",
-                         "Try to change this and see what works best for you");
+        software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
+                             "Software cursor",
+                             "Try to change this and see what works best for you");
 
-void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
+namespace hooked_methods
 {
-    static const PaintTraverse_t original =
-        (PaintTraverse_t) hooks::panel.GetMethod(offsets::PaintTraverse());
+
+DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
+                     unsigned int panel, bool force, bool allow_force)
+{
     static bool textures_loaded      = false;
     static unsigned long panel_focus = 0;
     static unsigned long panel_scope = 0;
@@ -58,9 +54,9 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
         if (!pure_addr)
         {
             pure_addr = *reinterpret_cast<void ***>(
-                gSignatures.GetEngineSignature(
-                    "A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") +
-                1);
+                    gSignatures.GetEngineSignature(
+                            "A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") +
+                    1);
         }
         if (*pure_addr)
             pure_orig = *pure_addr;
@@ -72,7 +68,7 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
         pure_orig  = (void *) 0;
     }
     call_default = true;
-    if (cathook && panel_scope && no_zoom && vp == panel_scope)
+    if (cathook && panel_scope && no_zoom && panel == panel_scope)
         call_default = false;
 
     if (software_cursor_mode)
@@ -105,44 +101,44 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
     }
 
     if (call_default)
-        original(_this, vp, fr, ar);
+        original::PaintTraverse(this_, panel, force, allow_force);
     // To avoid threading problems.
 
     PROF_SECTION(PT_total);
 
-    if (vp == panel_top)
+    if (panel == panel_top)
         draw_flag = true;
     if (!cathook)
         return;
 
     if (!panel_top)
     {
-        name = g_IPanel->GetName(vp);
+        name = g_IPanel->GetName(panel);
         if (strlen(name) > 4)
         {
             if (name[0] == 'M' && name[3] == 'S')
             {
-                panel_top = vp;
+                panel_top = panel;
             }
         }
     }
     if (!panel_focus)
     {
-        name = g_IPanel->GetName(vp);
+        name = g_IPanel->GetName(panel);
         if (strlen(name) > 5)
         {
             if (name[0] == 'F' && name[5] == 'O')
             {
-                panel_focus = vp;
+                panel_focus = panel;
             }
         }
     }
     if (!panel_scope)
     {
-        name = g_IPanel->GetName(vp);
+        name = g_IPanel->GetName(panel);
         if (!strcmp(name, "HudScope"))
         {
-            panel_scope = vp;
+            panel_scope = panel;
         }
     }
     if (!g_IEngine->IsInGame())
@@ -150,7 +146,7 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
         g_Settings.bInvalid = true;
     }
 
-    if (vp != panel_focus)
+    if (panel != panel_focus)
         return;
     g_IPanel->SetTopmostPopup(panel_focus, true);
     if (!draw_flag)
@@ -167,4 +163,5 @@ void PaintTraverse_hook(void *_this, unsigned int vp, bool fr, bool ar)
 #endif
     PROF_SECTION(PT_active);
     draw::UpdateWTS();
+}
 }

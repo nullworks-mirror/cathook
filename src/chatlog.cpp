@@ -27,6 +27,7 @@ public:
     {
     };
     static end_t end;
+
 public:
     csv_stream()
     {

@@ -137,11 +137,6 @@ bool FireEventClientSide(IGameEventManager2 *manager, IGameEvent *event)
 
 void init()
 {
-    hook.Set(g_IEventManager2, 0);
-    // hook.HookMethod(FireEvent_hook, offsets::FireEvent());
-    hook.HookMethod((void *) FireEventClientSide,
-                    offsets::FireEventClientSide());
-    hook.Apply();
 }
 }
 }

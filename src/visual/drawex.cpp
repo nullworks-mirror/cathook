@@ -12,6 +12,7 @@
 
 #include <GL/glew.h>
 #include <GL/gl.h>
+#include <visual/SDLHooks.hpp>
 
 #if EXTERNAL_DRAWING
 extern "C" {
@@ -77,7 +78,7 @@ void initialize()
     }
     xoverlay_show();
 #else
-    context = SDL_GL_CreateContext(sdl_current_window);
+    context = SDL_GL_CreateContext(sdl_hooks::window);
     glClearColor(1.0, 0.0, 0.0, 0.5);
     glewExperimental = GL_TRUE;
     glewInit();
@@ -159,7 +160,7 @@ void draw_begin()
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
 #else
-    SDL_GL_MakeCurrent(sdl_current_window, context);
+    SDL_GL_MakeCurrent(sdl_hooks::window, context);
 #endif
     glez_begin();
 }
@@ -168,7 +169,7 @@ void draw_end()
 {
     PROF_SECTION(DRAWEX_draw_end);
     glez_end();
-    SDL_GL_MakeCurrent(sdl_current_window, nullptr);
+    SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
 #if EXTERNAL_DRAWING
     xoverlay_draw_end();
 #endif

@@ -164,4 +164,8 @@ struct offsets
     {
         return PlatformOffset(2, undefined, undefined);
     }
+    static constexpr uint32_t Paint()
+    {
+        return PlatformOffset(14, undefined, undefined);
+    }
 };

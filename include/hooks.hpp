@@ -37,7 +37,12 @@ public:
     ~VMTHook();
     void Set(ptr_t inst, uint32_t offset = 0);
     void Release();
-    void HookMethod(ptr_t func, uint32_t idx);
+    template <typename T>
+    inline void HookMethod(T func, uint32_t idx, T *backup)
+    {
+        HookMethod(ptr_t(func), idx, (ptr_t *) (backup));
+    }
+    void HookMethod(ptr_t func, uint32_t idx, ptr_t *backup);
     void *GetMethod(uint32_t idx) const;
     void Apply();
 
@@ -64,4 +69,5 @@ extern VMTHook steamfriends;
 extern VMTHook materialsystem;
 extern VMTHook enginevgui;
 extern VMTHook vstd;
+extern VMTHook eventmanager2;
 }

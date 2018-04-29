@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <visual/SDLHooks.hpp>
 #include "hack.hpp"
 #include "common.hpp"
 
@@ -79,7 +80,7 @@ std::stack<std::string> &hack::command_stack()
     return stack;
 }
 
-#if ENABLE_VISUALS /* Why would we need colored chat stuff in textmode?   \
+#if ENABLE_VISUALS /* Why would we need colored chat stuff in textmode?        \
                          */
 #define red 184, 56, 59, 255
 #define blu 88, 133, 162, 255
@@ -245,8 +246,9 @@ free(logname);*/
             if (not exists)
             {
                 Error(("Missing essential file: " + s +
-                      "/%s\nYou MUST run install-data script to finish "
-                      "installation").c_str(),
+                       "/%s\nYou MUST run install-data script to finish "
+                       "installation")
+                          .c_str(),
                       s.c_str());
             }
         }
@@ -287,12 +289,7 @@ free(logname);*/
     InitNetVars();
     g_pLocalPlayer    = new LocalPlayer();
     g_pPlayerResource = new TFPlayerResource();
-#if ENABLE_VISUALS
-    hooks::panel.Set(g_IPanel);
-    hooks::panel.HookMethod((void *) PaintTraverse_hook,
-                            offsets::PaintTraverse());
-    hooks::panel.Apply();
-#endif
+
     uintptr_t *clientMode = 0;
     // Bad way to get clientmode.
     // FIXME [MP]?
@@ -303,34 +300,57 @@ free(logname);*/
         usleep(10000);
     }
     hooks::clientmode.Set((void *) clientMode);
-    hooks::clientmode.HookMethod((void *) CreateMove_hook,
-                                 offsets::CreateMove());
+    hooks::clientmode.HookMethod(HOOK_ARGS(CreateMove));
 #if ENABLE_VISUALS
-    hooks::clientmode.HookMethod((void *) OverrideView_hook,
-                                 offsets::OverrideView());
+    hooks::clientmode.HookMethod(HOOK_ARGS(OverrideView));
 #endif
-    hooks::clientmode.HookMethod((void *) LevelInit_hook, offsets::LevelInit());
-    hooks::clientmode.HookMethod((void *) LevelShutdown_hook,
-                                 offsets::LevelShutdown());
+    hooks::clientmode.HookMethod(HOOK_ARGS(LevelInit));
+    hooks::clientmode.HookMethod(HOOK_ARGS(LevelShutdown));
     hooks::clientmode.Apply();
-    hooks::clientmode4.Set((void *) (clientMode), 4);
-    hooks::clientmode4.HookMethod((void *) FireGameEvent_hook,
-                                  offsets::FireGameEvent());
-    hooks::clientmode4.Apply();
-    hooks::client.Set(g_IBaseClient);
 
+    hooks::clientmode4.Set((void *) (clientMode), 4);
+    hooks::clientmode4.HookMethod(HOOK_ARGS(FireGameEvent));
+    hooks::clientmode4.Apply();
+
+    hooks::client.Set(g_IBaseClient);
+    hooks::client.HookMethod(HOOK_ARGS(DispatchUserMessage));
 #if ENABLE_VISUALS
-    hooks::client.HookMethod((void *) FrameStageNotify_hook,
-                             offsets::FrameStageNotify());
+    hooks::client.HookMethod(HOOK_ARGS(FrameStageNotify));
+    hooks::client.HookMethod(HOOK_ARGS(IN_KeyEvent));
 #endif
-    hooks::client.HookMethod((void *) DispatchUserMessage_hook,
-                             offsets::DispatchUserMessage());
+    hooks::client.Apply();
 
 #if ENABLE_VISUALS
     hooks::vstd.Set((void *) g_pUniformStream);
-    hooks::vstd.HookMethod((void *) RandomInt_hook, offsets::RandomInt());
+    hooks::vstd.HookMethod(HOOK_ARGS(RandomInt));
     hooks::vstd.Apply();
+
+    hooks::panel.Set(g_IPanel);
+    hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse,
+                            offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);
+    hooks::panel.Apply();
 #endif
+
+    hooks::input.Set(g_IInput);
+    hooks::input.HookMethod(HOOK_ARGS(GetUserCmd));
+    hooks::input.Apply();
+#if ENABLE_VISUALS
+    hooks::modelrender.Set(g_IVModelRender);
+    hooks::modelrender.HookMethod(HOOK_ARGS(DrawModelExecute));
+    hooks::modelrender.Apply();
+#endif
+    hooks::enginevgui.Set(g_IEngineVGui);
+    hooks::enginevgui.HookMethod(HOOK_ARGS(Paint));
+    hooks::enginevgui.Apply();
+
+    hooks::eventmanager2.Set(g_IEventManager2);
+    hooks::eventmanager2.HookMethod(HOOK_ARGS(FireEvent));
+    hooks::eventmanager2.HookMethod(HOOK_ARGS(FireEventClientSide));
+    hooks::eventmanager2.Apply();
+
+    hooks::steamfriends.Set(g_ISteamFriends);
+    hooks::steamfriends.HookMethod(HOOK_ARGS(GetFriendPersonaName));
+    hooks::steamfriends.Apply();
 
 #if ENABLE_NULL_GRAPHICS
     g_IMaterialSystem->SetInStubMode(true);
@@ -354,42 +374,6 @@ free(logname);*/
         // hooks::materialsystem.HookMethod();
     }
 #endif
-#if ENABLE_VISUALS
-    hooks::client.HookMethod((void *) IN_KeyEvent_hook, offsets::IN_KeyEvent());
-#endif
-    hooks::client.Apply();
-    hooks::input.Set(g_IInput);
-    hooks::input.HookMethod((void *) GetUserCmd_hook, offsets::GetUserCmd());
-    hooks::input.Apply();
-#ifndef HOOK_DME_DISABLED
-#if ENABLE_VISUALS
-    hooks::modelrender.Set(g_IVModelRender);
-    hooks::modelrender.HookMethod((void *) DrawModelExecute_hook,
-                                  offsets::DrawModelExecute());
-    hooks::modelrender.Apply();
-    hooks::enginevgui.Set(g_IEngineVGui);
-    hooks::enginevgui.HookMethod(
-        (void *) Paint_hook,
-        offsets::PlatformOffset(14, offsets::undefined, offsets::undefined));
-    hooks::enginevgui.Apply();
-#endif
-#endif
-    hooks::steamfriends.Set(g_ISteamFriends);
-    hooks::steamfriends.HookMethod((void *) GetFriendPersonaName_hook,
-                                   offsets::GetFriendPersonaName());
-    hooks::steamfriends.Apply();
-    // logging::Info("After hacking: %s", g_ISteamFriends->GetPersonaName());
-    // Sadly, it doesn't work as expected :(
-    /*hooks::hkBaseClientState = new hooks::VMTHook();
-    hooks::hkBaseClientState->Init((void*)g_IBaseClientState, 0);
-    hooks::hkBaseClientState->HookMethod((void*)GetClientName_hook,
-    hooks::offGetClientName); hooks::hkBaseClientState->Apply();*/
-    // hooks::hkBaseClientState8 = new hooks::VMTHook();
-    // hooks::hkBaseClientState8->Init((void*)g_IBaseClientState, 8);
-    // hooks::hkBaseClientState8->HookMethod((void*)ProcessSetConVar_hook,
-    // hooks::offProcessSetConVar);
-    // hooks::hkBaseClientState8->HookMethod((void*)ProcessGetCvarValue_hook,
-    // hooks::offProcessGetCvarValue);  hooks::hkBaseClientState8->Apply();
 
     // FIXME [MP]
     hacks::shared::killsay::Init();
@@ -420,7 +404,7 @@ free(logname);*/
     }
     logging::Info("SSE enabled..");
 #endif
-    DoSDLHooking();
+    sdl_hooks::applySdlHooks();
     logging::Info("SDL hooking done");
     g_IGameEventManager->AddListener(&adv_event_listener, false);
 
@@ -470,7 +454,7 @@ void hack::Shutdown()
     hack::shutdown = true;
     playerlist::Save();
 #if ENABLE_VISUALS
-    DoSDLUnhooking();
+    sdl_hooks::cleanSdlHooks();
 #endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
