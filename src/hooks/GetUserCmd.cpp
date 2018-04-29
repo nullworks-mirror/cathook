@@ -14,8 +14,11 @@ DEFINE_HOOKED_METHOD(GetUserCmd, CUserCmd *, IInput *this_, int sequence_number)
     int oldcmd;
     INetChannel *ch;
 
+    if (def == nullptr)
+        return def;
+
     if (command_number_mod.find(def->command_number) !=
-            command_number_mod.end() && def != nullptr)
+            command_number_mod.end())
     {
         // logging::Info("Replacing command %i with %i", def->command_number,
         // command_number_mod[def->command_number]);
