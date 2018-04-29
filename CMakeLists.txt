@@ -20,7 +20,7 @@ set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
 set(ExternalDrawing 0 CACHE BOOL "External Visuals")
 set(EnableGUI 1 CACHE BOOL "Enable GUI")
 set(EnableIPC 1 CACHE BOOL "Enable IPC")
-set(DataPath "/opt/cathook/data" CACHE STRING "Data location")
+set(DataPath "/opt/cathook/data" CACHE FILEPATH "Data location")
 set(VACBypass 0 CACHE BOOL "Textmode VAC bypass")
 set(Textmode 0 CACHE BOOL "Various textmode-only features for bots")
 set(EnableTextmodeStdin 0 CACHE BOOL "Textmode Stdin -> Console bridge (EXPERIMENTAL)")
@@ -79,7 +79,7 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
-set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3" LINK_FLAGS "-m32 -fno-gnu-unique")
+set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions" LINK_FLAGS "-m32 -fno-gnu-unique -fexceptions")
 
 target_compile_definitions(cathook PRIVATE
         _GLIBCXX_USE_CXX11_ABI=0
@@ -117,7 +117,7 @@ add_custom_target(data
         VERBATIM)
 
 # TODO glez_LIBRARIES?
-target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl -static stdc++)
+target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl)
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Strip
