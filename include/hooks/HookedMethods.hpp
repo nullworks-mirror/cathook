@@ -29,7 +29,7 @@ struct SDL_Window;
 
 #define DEFINE_HOOKED_METHOD(name, rtype, ...)                                 \
     types::name original::name{ nullptr };                                     \
-    rtype name(__VA_ARGS__)
+    rtype methods::name(__VA_ARGS__)
 
 #define HOOK_ARGS(name)                                                        \
     hooked_methods::methods::name, offsets::name(),                            \
