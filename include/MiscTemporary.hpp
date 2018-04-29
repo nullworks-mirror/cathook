@@ -14,6 +14,7 @@ extern CatVar no_zoom;
 extern CatVar clean_screenshots;
 extern CatVar disable_visuals;
 extern CatVar disconnect_reason;
+
 #if ENABLE_VISUALS
 extern int spectator_target;
 #endif

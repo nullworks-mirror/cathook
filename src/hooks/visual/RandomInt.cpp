@@ -5,6 +5,9 @@
 
 #include "HookedMethods.hpp"
 
+static CatVar medal_flip(CV_SWITCH, "medal_flip", "0", "Infinite Medal Flip",
+                         "");
+
 namespace hooked_methods
 {
 

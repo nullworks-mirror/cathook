@@ -3,6 +3,7 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <ucccccp.hpp>
 #include "HookedMethods.hpp"
 
 namespace hooked_methods
@@ -16,10 +17,6 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &message,
     std::string newlines;
     NET_StringCmd stringcmd;
 
-    // This is a INetChannel hook - it SHOULDN'T be static because netchannel
-    // changes.
-    const SendNetMsg_t original =
-            (SendNetMsg_t) hooks::netchannel.GetMethod(offsets::SendNetMsg());
     // net_StringCmd
     if (msg.GetType() == 4 && (newlines_msg || crypt_chat))
     {

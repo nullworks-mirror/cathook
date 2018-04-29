@@ -5,6 +5,25 @@
 
 #include "HookedMethods.hpp"
 
+CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
+                         "Clean screenshots",
+                         "Don't draw visuals while taking a screenshot");
+CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing",
+                       "Completely hides cathook");
+CatVar no_zoom(CV_SWITCH, "no_zoom", "0", "Disable scope",
+               "Disables black scope overlay");
+CatVar pure_bypass(CV_SWITCH, "pure_bypass", "0", "Pure Bypass",
+                   "Bypass sv_pure");
+void *pure_orig  = nullptr;
+void **pure_addr = nullptr;
+
+CatEnum software_cursor_enum({ "KEEP", "ALWAYS", "NEVER", "MENU ON",
+                               "MENU OFF" });
+CatVar
+        software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
+                             "Software cursor",
+                             "Try to change this and see what works best for you");
+
 namespace hooked_methods
 {
 
@@ -49,7 +68,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         pure_orig  = (void *) 0;
     }
     call_default = true;
-    if (cathook && panel_scope && no_zoom && vp == panel_scope)
+    if (cathook && panel_scope && no_zoom && panel == panel_scope)
         call_default = false;
 
     if (software_cursor_mode)
@@ -87,39 +106,39 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
 
     PROF_SECTION(PT_total);
 
-    if (vp == panel_top)
+    if (panel == panel_top)
         draw_flag = true;
     if (!cathook)
         return;
 
     if (!panel_top)
     {
-        name = g_IPanel->GetName(vp);
+        name = g_IPanel->GetName(panel);
         if (strlen(name) > 4)
         {
             if (name[0] == 'M' && name[3] == 'S')
             {
-                panel_top = vp;
+                panel_top = panel;
             }
         }
     }
     if (!panel_focus)
     {
-        name = g_IPanel->GetName(vp);
+        name = g_IPanel->GetName(panel);
         if (strlen(name) > 5)
         {
             if (name[0] == 'F' && name[5] == 'O')
             {
-                panel_focus = vp;
+                panel_focus = panel;
             }
         }
     }
     if (!panel_scope)
     {
-        name = g_IPanel->GetName(vp);
+        name = g_IPanel->GetName(panel);
         if (!strcmp(name, "HudScope"))
         {
-            panel_scope = vp;
+            panel_scope = panel;
         }
     }
     if (!g_IEngine->IsInGame())
@@ -127,7 +146,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         g_Settings.bInvalid = true;
     }
 
-    if (vp != panel_focus)
+    if (panel != panel_focus)
         return;
     g_IPanel->SetTopmostPopup(panel_focus, true);
     if (!draw_flag)

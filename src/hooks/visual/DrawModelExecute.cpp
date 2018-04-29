@@ -3,7 +3,13 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"
+
+static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms",
+                      "Removes arms from first person");
+static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats",
+                      "Removes non-stock hats");
 
 namespace hooked_methods
 {
@@ -12,9 +18,6 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_,
                      const DrawModelState_t &state,
                      const ModelRenderInfo_t &info, matrix3x4_t *bone)
 {
-    static const DrawModelExecute_t original =
-            (DrawModelExecute_t) hooks::modelrender.GetMethod(
-                    offsets::DrawModelExecute());
     static const char *name;
     static std::string sname;
     static IClientUnknown *unk;
@@ -24,8 +27,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_,
         !(spectator_target || no_arms || no_hats ||
           (clean_screenshots && g_IEngine->IsTakingScreenshot())))
     {
-        original(_this, state, info, matrix);
-        return;
+        return original::DrawModelExecute(this_, state, info, bone);
     }
 
     PROF_SECTION(DrawModelExecute);

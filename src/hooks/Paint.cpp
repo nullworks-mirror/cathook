@@ -9,6 +9,9 @@
 #include "hitrate.hpp"
 #include "hack.hpp"
 
+static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1",
+                                      "Cursor fix");
+
 namespace hooked_methods
 {
 
@@ -88,6 +91,3 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
     return original::Paint(this_, mode);
 }
 }
-
-static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1",
-                                      "Cursor fix");

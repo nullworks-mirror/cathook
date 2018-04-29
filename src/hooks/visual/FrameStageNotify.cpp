@@ -3,7 +3,11 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"
+
+CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
+CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
 
 namespace hooked_methods
 {

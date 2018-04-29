@@ -3,13 +3,35 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <chatlog.hpp>
+#include <ucccccp.hpp>
+#include <boost/algorithm/string.hpp>
 #include "HookedMethods.hpp"
+
+static bool retrun = false;
+static Timer sendmsg{};
+static Timer gitgud{};
+static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
+                         "Removes newlines from chat");
+static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
+                           "Log dispatched user messages");
+static CatVar chat_filter(CV_STRING, "chat_censor", "", "Censor words",
+                          "Spam Chat with newlines if the chosen words are "
+                                  "said, seperate with commas");
+static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
+                                  "Enable censor", "Censor Words in chat");
+static CatVar crypt_chat(
+        CV_SWITCH, "chat_crypto", "1", "Crypto chat",
+        "Start message with !! and it will be only visible to cathook users");
+std::string clear = "";
+std::string lastfilter{};
+std::string lastname{};
 
 namespace hooked_methods
 {
 
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
-                     bf_read &buffer)
+                     bf_read &buf)
 {
     if (retrun && gitgud.test_and_set(10000))
     {
@@ -20,9 +42,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     int loop_index, s, i, j;
     char *data, c;
 
-    static const DispatchUserMessage_t original =
-            (DispatchUserMessage_t) hooks::client.GetMethod(
-                    offsets::DispatchUserMessage());
     if (type == 4)
     {
         loop_index = 0;
@@ -250,6 +269,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         buf.Seek(0);
     }
     votelogger::user_message(buf, type);
-    return original::DispatchUserMessage(this_, type, buffer);
+    return original::DispatchUserMessage(this_, type, buf);
 }
 }
