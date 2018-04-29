@@ -9,7 +9,7 @@
 #include "menu/IWidget.h"
 
 #include "common.hpp"
-#include "sdk.hpp"
+#include "core/sdk.hpp"
 
 #undef RootWindow
 

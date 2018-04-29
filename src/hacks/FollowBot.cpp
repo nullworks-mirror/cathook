@@ -7,6 +7,8 @@
  */
 
 #include "common.hpp"
+#include <hacks/FollowBot.hpp>
+#include <hacks/LagExploit.hpp>
 
 namespace hacks
 {

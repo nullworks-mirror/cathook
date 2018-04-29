@@ -37,7 +37,7 @@ font_handle_t create_font(const char *path, float size)
     font_handle_t result;
     result.filename = std::string(path);
     result.size     = size;
-    result.handle   = 0;
+    result.handle   = GLEZ_FONT_INVALID;
     return result;
 }
 
@@ -78,7 +78,7 @@ void initialize()
     }
     xoverlay_show();
 #else
-    context = SDL_GL_CreateContext(sdl_hooks::window);
+    //context = SDL_GL_CreateContext(sdl_hooks::window);
     glClearColor(1.0, 0.0, 0.0, 0.5);
     glewExperimental = GL_TRUE;
     glewInit();
@@ -124,7 +124,7 @@ void draw_circle(float x, float y, float radius, const rgba_t &rgba,
 void draw_string(float x, float y, const char *string, font_handle_t &font,
                  const rgba_t &rgba)
 {
-    if (!font.handle)
+    if (font.handle == GLEZ_FONT_INVALID)
         font.handle = glez_font_load(font.filename.c_str(), font.size);
     glez_string(x, y, string, font.handle,
                 *reinterpret_cast<const glez_rgba_t *>(&rgba), nullptr,
@@ -135,7 +135,7 @@ void draw_string_with_outline(float x, float y, const char *string,
                               font_handle_t &font, const rgba_t &rgba,
                               const rgba_t &rgba_outline, float thickness)
 {
-    if (!font.handle)
+    if (font.handle == GLEZ_FONT_INVALID)
         font.handle = glez_font_load(font.filename.c_str(), font.size);
     glez_string_with_outline(
         x, y, string, font.handle,
@@ -149,7 +149,7 @@ void draw_string_with_outline(float x, float y, const char *string,
 void get_string_size(const char *string, font_handle_t &font, float *x,
                      float *y)
 {
-    if (!font.handle)
+    if (font.handle == GLEZ_FONT_INVALID)
         font.handle = glez_font_load(font.filename.c_str(), font.size);
     glez_font_string_size(font.handle, string, x, y);
 }
@@ -160,16 +160,29 @@ void draw_begin()
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
 #else
-    SDL_GL_MakeCurrent(sdl_hooks::window, context);
+    {
+        PROF_SECTION(draw_begin__SDL_GL_MakeCurrent);
+        //SDL_GL_MakeCurrent(sdl_hooks::window, context);
+    }
 #endif
-    glez_begin();
+    {
+        glActiveTexture(GL_TEXTURE0);
+        PROF_SECTION(draw_begin__glez_end)
+        glez_begin();
+    }
 }
 
 void draw_end()
 {
     PROF_SECTION(DRAWEX_draw_end);
-    glez_end();
-    SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
+    {
+        PROF_SECTION(draw_end__glez_end);
+        glez_end();
+    }
+    {
+        PROF_SECTION(draw_end__SDL_GL_MakeCurrent);
+        //SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
+    }
 #if EXTERNAL_DRAWING
     xoverlay_draw_end();
 #endif

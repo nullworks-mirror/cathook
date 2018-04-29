@@ -6,7 +6,7 @@
  */
 
 #include "common.hpp"
-#include "e8call.hpp"
+#include "core/e8call.hpp"
 
 re::CTFParty *re::CTFParty::GetParty()
 {

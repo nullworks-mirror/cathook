@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include <hacks/AutoReflect.hpp>
 
 namespace hacks
 {

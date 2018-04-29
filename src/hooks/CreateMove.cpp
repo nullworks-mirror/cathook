@@ -10,6 +10,7 @@
 #include "MiscTemporary.hpp"
 
 #include <link.h>
+#include <hacks/hacklist.hpp>
 
 #include "HookedMethods.hpp"
 

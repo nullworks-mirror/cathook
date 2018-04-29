@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include <logging.hpp>
+#include <core/logging.hpp>
 #include "sdk/HUD.h"
 
 #include "copypasted/CSignature.h"

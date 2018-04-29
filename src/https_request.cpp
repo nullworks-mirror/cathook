@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include <logging.hpp>
+#include <core/logging.hpp>
 #include "https_request.hpp"
 
 #include <string.h>

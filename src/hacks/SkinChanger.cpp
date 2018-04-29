@@ -9,6 +9,7 @@
 
 #include <sys/dir.h>
 #include <sys/stat.h>
+#include <hacks/SkinChanger.hpp>
 
 namespace hacks
 {

@@ -8,7 +8,7 @@
 #include "menu/CTextLabel.h"
 
 #include "common.hpp"
-#include "sdk.hpp"
+#include "core/sdk.hpp"
 #include "GUI.h"
 
 std::string WordWrap(std::string &in, int max, unsigned long font)

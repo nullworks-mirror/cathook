@@ -15,7 +15,7 @@
 #include <icliententitylist.h>
 #include <cdll_int.h>
 #include <enums.hpp>
-#include <interfaces.hpp>
+#include <core/interfaces.hpp>
 #include <itemtypes.hpp>
 
 struct matrix3x4_t;

@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <logging.hpp>
+#include <core/logging.hpp>
 #include <utlvector.h>
-#include "vfunc.hpp"
+#include "core/vfunc.hpp"
 
 class CHudBaseChat
 {

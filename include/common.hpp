@@ -46,7 +46,7 @@
 #include "timer.hpp"
 #include "averager.hpp"
 
-#include "macros.hpp"
+#include "core/macros.hpp"
 #include <visual/colors.hpp>
 
 #if ENABLE_VISUALS
@@ -62,30 +62,29 @@
 
 #endif
 
-#include "profiler.hpp"
-#include "offsets.hpp"
+#include "core/profiler.hpp"
+#include "core/offsets.hpp"
 #include <entitycache.hpp>
 #include "hoovy.hpp"
 #include <enums.hpp>
 #include "projlogging.hpp"
-#include "ucccccp_cmds.hpp"
 #include "velocity.hpp"
 #include "angles.hpp"
 #include "entityhitboxcache.hpp"
 #include "globals.h"
 #include <helpers.hpp>
 #include "playerlist.hpp"
-#include <interfaces.hpp>
+#include <core/interfaces.hpp>
 #include <localplayer.hpp>
 #include <conditions.hpp>
-#include <logging.hpp>
+#include <core/logging.hpp>
 #include <targethelper.hpp>
 #include "playerresource.h"
 #include "usercmd.hpp"
 #include "trace.hpp"
-#include <cvwrapper.hpp>
-#include "netvars.hpp"
-#include "vfunc.hpp"
+#include <core/cvwrapper.hpp>
+#include "core/netvars.hpp"
+#include "core/vfunc.hpp"
 #include "hooks.hpp"
 #include <prediction.hpp>
 #include <conditions.hpp>
@@ -100,7 +99,7 @@
 #include "crits.hpp"
 #include "textmode.hpp"
 #include "backpacktf.hpp"
-#include "sharedobj.hpp"
+#include "core/sharedobj.hpp"
 #include "init.hpp"
 #include "reclasses/reclasses.hpp"
 
@@ -111,9 +110,7 @@
 #include "GUI.h"
 #endif
 
-#include <hacks/hacklist.hpp>
-
-#include <sdk.hpp>
+#include <core/sdk.hpp>
 
 template <typename T> constexpr T _clamp(T _min, T _max, T _val)
 {

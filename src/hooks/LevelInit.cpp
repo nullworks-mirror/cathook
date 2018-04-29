@@ -3,6 +3,7 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <hacks/hacklist.hpp>
 #include "HookedMethods.hpp"
 
 

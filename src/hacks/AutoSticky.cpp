@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include <hacks/AutoSticky.hpp>
 
 namespace hacks
 {

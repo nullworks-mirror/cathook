@@ -12,7 +12,7 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
-#include "logging.hpp"
+#include "core/logging.hpp"
 #include <KeyValues.h>
 
 class CBaseWidget : public virtual IWidget

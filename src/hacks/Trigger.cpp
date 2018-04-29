@@ -6,6 +6,7 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/Trigger.hpp>
 #include "common.hpp"
 
 namespace hacks

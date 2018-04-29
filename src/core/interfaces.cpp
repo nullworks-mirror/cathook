@@ -6,7 +6,7 @@
  */
 
 #include "common.hpp"
-#include "sharedobj.hpp"
+#include "core/sharedobj.hpp"
 
 #include <unistd.h>
 

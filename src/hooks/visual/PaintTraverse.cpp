@@ -104,8 +104,6 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         original::PaintTraverse(this_, panel, force, allow_force);
     // To avoid threading problems.
 
-    PROF_SECTION(PT_total);
-
     if (panel == panel_top)
         draw_flag = true;
     if (!cathook)
@@ -161,7 +159,6 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
 #if ENABLE_GUI
     g_pGUI->Update();
 #endif
-    PROF_SECTION(PT_active);
     draw::UpdateWTS();
 }
 }

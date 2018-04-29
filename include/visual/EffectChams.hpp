@@ -9,7 +9,7 @@
 
 #include "common.hpp"
 #include "sdk/ScreenSpaceEffects.h"
-#include "sdk.hpp"
+#include "core/sdk.hpp"
 
 namespace effect_chams
 {

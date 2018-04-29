@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <hacks/AntiCheat.hpp>
 #include "common.hpp"
 
 namespace ac

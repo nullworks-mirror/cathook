@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <logging.hpp>
+#include <core/logging.hpp>
 
 class IClientEntity;
 

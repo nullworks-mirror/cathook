@@ -26,7 +26,7 @@ namespace api
 
 struct font_handle_t
 {
-    glez_font_t handle;
+    glez_font_t handle{ GLEZ_FONT_INVALID };
     std::string filename;
     float size;
 };
