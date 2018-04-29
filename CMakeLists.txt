@@ -79,7 +79,7 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
-set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3" LINK_FLAGS "-m32 -static")
+set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3" LINK_FLAGS "-m32 -fno-gnu-unique")
 
 target_compile_definitions(cathook PRIVATE
         _GLIBCXX_USE_CXX11_ABI=0
@@ -117,7 +117,7 @@ add_custom_target(data
         VERBATIM)
 
 # TODO glez_LIBRARIES?
-target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl stdc++)
+target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl -static stdc++)
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Strip
