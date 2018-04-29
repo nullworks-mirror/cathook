@@ -8,7 +8,7 @@
 #pragma once
 
 #include "config.h"
-#include "macros.hpp"
+#include "core/macros.hpp"
 
 extern int g_AppID;
 

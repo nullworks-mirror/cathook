@@ -8,7 +8,7 @@
 #pragma once
 
 #include "common.hpp"
-#include "sdk.hpp"
+#include "core/sdk.hpp"
 
 namespace effect_glow
 {

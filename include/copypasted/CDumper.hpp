@@ -12,7 +12,7 @@
 #include <dt_common.h>
 #include <client_class.h>
 
-#include <logging.hpp>
+#include <core/logging.hpp>
 
 class CDumper
 {

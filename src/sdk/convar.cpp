@@ -29,8 +29,8 @@
 #define ALLOW_DEVELOPMENT_CVARS
 #endif
 
-#include <logging.hpp>
-#include <interfaces.hpp>
+#include <core/logging.hpp>
+#include <core/interfaces.hpp>
 
 //-----------------------------------------------------------------------------
 // Statically constructed list of ConCommandBases,

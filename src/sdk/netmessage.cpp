@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include <logging.hpp>
+#include <core/logging.hpp>
 #include <netmessage.hpp>
 #include "common.hpp"
 

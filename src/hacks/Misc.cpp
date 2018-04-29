@@ -13,7 +13,7 @@
 #include <link.h>
 #include <hacks/AntiAim.hpp>
 
-#include "sharedobj.hpp"
+#include "core/sharedobj.hpp"
 
 #include "hack.hpp"
 #include "common.hpp"

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <sharedobj.hpp>
+#include <core/sharedobj.hpp>
 #include <string>
 
 namespace vgui

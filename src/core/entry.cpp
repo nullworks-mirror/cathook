@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include <logging.hpp>
+#include <core/logging.hpp>
 #include <pthread.h>
 
 #include "hack.hpp"

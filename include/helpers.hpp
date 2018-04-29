@@ -26,14 +26,14 @@ void SetCVarInterface(ICvar *iface);
 #include <enums.hpp>
 #include <conditions.hpp>
 #include <entitycache.hpp>
-#include <logging.hpp>
+#include <core/logging.hpp>
 
 #include <string>
 #include <sstream>
 #include <vector>
 #include <mutex>
 
-#include <sdk.hpp>
+#include <core/sdk.hpp>
 
 // typedef void ( *FnCommandCallback_t )( const CCommand &command );
 

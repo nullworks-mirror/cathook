@@ -8,7 +8,7 @@
 #include "menu/CBaseContainer.h"
 #include "menu/GUI.h"
 #include "common.hpp"
-#include "sdk.hpp"
+#include "core/sdk.hpp"
 
 class IMemAlloc;
 IMemAlloc *g_pMemAlloc = 0;

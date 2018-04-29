@@ -8,7 +8,7 @@
 #pragma once
 
 #include <entitycache.hpp>
-#include "netvars.hpp"
+#include "core/netvars.hpp"
 #include "gameinfo.hpp"
 
 // So, tf2 actually stores cond netvars sequentionally, that's pretty good.
