@@ -15,7 +15,10 @@
 
 void render_cheat_visuals()
 {
-    BeginCheatVisuals();
+    {
+        PROF_SECTION(BeginCheatVisuals);
+        BeginCheatVisuals();
+    }
     //    xoverlay_draw_rect(300, 300, 100, 100, xoverlay_rgba(200, 100, 100,
     //    255));
     // draw_api::draw_string(100, 100, "Testing", fonts::main_font,
@@ -25,8 +28,14 @@ void render_cheat_visuals()
     //    "TestingSTR", fh.handle, *reinterpret_cast<const xoverlay_rgba_t
     //    *>(&colors::white), 0, 0);
     // xoverlay_draw_string_with_outline(100, 20, "Testing2", )
-    DrawCheatVisuals();
-    EndCheatVisuals();
+    {
+        PROF_SECTION(DrawCheatVisuals);
+        DrawCheatVisuals();
+    }
+    {
+        PROF_SECTION(EndCheatVisuals);
+        EndCheatVisuals();
+    }
 }
 
 void BeginCheatVisuals()
