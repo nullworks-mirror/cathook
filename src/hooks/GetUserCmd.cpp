@@ -4,3 +4,13 @@
 */
 
 #include "HookedMethods.hpp"
+
+namespace hooked_methods
+{
+
+DEFINE_HOOKED_METHOD(GetUserCmd, CUserCmd *, IInput *this_, int sequence_number)
+{
+    return original::GetUserCmd(this_, sequence_number);
+}
+
+}

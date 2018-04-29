@@ -14,93 +14,55 @@ union SDL_Event;
 struct SDL_Window;
 #endif
 
+#define DECLARE_HOOKED_METHOD(name, rtype, ...) \
+    namespace types { using name = rtype(*)(__VA_ARGS__); } \
+    namespace methods { rtype name(__VA_ARGS__); } \
+    namespace original { extern types::name name; }
+
+#define DEFINE_HOOKED_METHOD(name, rtype, ...) \
+    types::name original::name{ nullptr }; \
+    rtype name(__VA_ARGS__)
+
 namespace hooked_methods
 {
-
-namespace types
-{
 // ClientMode
-using CreateMove = bool(*)(void *, float, CUserCmd *);
-using LevelInit = void(*)(void *, const char *);
-using LevelShutdown = void(*)(void *);
+DECLARE_HOOKED_METHOD(CreateMove, bool, void *, float, CUserCmd *);
+DECLARE_HOOKED_METHOD(LevelInit, void, void *, const char *);
+DECLARE_HOOKED_METHOD(LevelShutdown, void, void *);
 // ClientMode + 4
-using FireGameEvent = void(*)(void *_this, IGameEvent *event);
+DECLARE_HOOKED_METHOD(FireGameEvent, void, void *, IGameEvent *);
 // IBaseClient
-using DispatchUserMessage = bool(*)(void *, int, bf_read &);
-using IN_KeyEvent = int(*)(void *, int, int, const char *);
+DECLARE_HOOKED_METHOD(DispatchUserMessage, bool, void *, int, bf_read &);
+DECLARE_HOOKED_METHOD(IN_KeyEvent, int, void *, int, ButtonCode_t, const char *);
 // IInput
-using GetUserCmd = CUserCmd *(*)(IInput *, int);
+DECLARE_HOOKED_METHOD(GetUserCmd, CUserCmd *, IInput *, int);
 // INetChannel
-using SendNetMsg = bool(*)(INetChannel *, INetMessage &, bool, bool);
-using CanPacket = bool(*)(INetChannel *);
-using Shutdown = void(*)(INetChannel *, const char *);
+DECLARE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *, INetMessage &, bool, bool);
+DECLARE_HOOKED_METHOD(CanPacket, bool, INetChannel *);
+DECLARE_HOOKED_METHOD(Shutdown, void, INetChannel *, const char *);
 // ISteamFriends
-using GetFriendPersonaName = const char *(*)(ISteamFriends *, CSteamID);
+DECLARE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *, CSteamID);
 // IEngineVGui
-using Paint = void(*)(IEngineVGui *, PaintMode_t);
+DECLARE_HOOKED_METHOD(Paint, void, IEngineVGui *, PaintMode_t);
 
 #if ENABLE_VISUALS
 // ClientMode
-using OverrideView = void(*)(void *, CViewSetup *);
+DECLARE_HOOKED_METHOD(OverrideView, void, void *, CViewSetup *);
 // IVModelRender
-using DrawModelExecute = void(*)(IVModelRender *, const DrawModelState_t &,
-                                 const ModelRenderInfo_t &, matrix3x4_t *);
+DECLARE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *, const DrawModelState_t &,
+const ModelRenderInfo_t &, matrix3x4_t *);
 // IStudioRender
-using BeginFrame = void(*)(IStudioRender *);
+DECLARE_HOOKED_METHOD(BeginFrame, void, IStudioRender *);
 // IBaseClient
-using FrameStageNotify = void(*)(void *, int);
+DECLARE_HOOKED_METHOD(FrameStageNotify, void, void *, ClientFrameStage_t);
 // vgui::IPanel
-using PaintTraverse = void(*)(vgui::IPanel *, unsigned int, bool, bool);
+DECLARE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *, unsigned int, bool, bool);
 // SDL
-using SDL_GL_SwapWindow = void(*)(SDL_Window *window);
-using SDL_PollEvent = int(*)(SDL_Event *event);
+DECLARE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *);
+DECLARE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *);
 // IUniformRandomStream
-using RandomInt = int(*)(void *, int, int);
+DECLARE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *, int, int);
 #endif
-}
-
-namespace methods
-{
-// ClientMode
-bool CreateMove(void *, float, CUserCmd *);
-void LevelInit(void *, const char *);
-void LevelShutdown(void *);
-// ClientMode + 4
-void FireGameEvent(void *_this, IGameEvent *event);
-// IBaseClient
-bool DispatchUserMessage(void *, int, bf_read &);
-int IN_KeyEvent(void *, int, int, const char *);
-// IInput
-CUserCmd *GetUserCmd(IInput *, int);
-// INetChannel
-bool SendNetMsg(INetChannel *, INetMessage &, bool, bool);
-bool CanPacket(INetChannel *);
-void Shutdown(INetChannel *, const char *);
-// ISteamFriends
-const char *GetFriendPersonaName(ISteamFriends *_this, CSteamID steamID);
-// IEngineVGui
-void Paint(IEngineVGui *_this, PaintMode_t mode);
-
-#if ENABLE_VISUALS
-// ClientMode
-void OverrideView(void *, CViewSetup *);
-// IVModelRender
-void DrawModelExecute(IVModelRender *_this, const DrawModelState_t &state,
-                      const ModelRenderInfo_t &info, matrix3x4_t *matrix);
-// IStudioRender
-void BeginFrame(IStudioRender *);
-// IBaseClient
-void FrameStageNotify(void *, int);
-// vgui::IPanel
-void PaintTraverse(vgui::IPanel *, unsigned int, bool, bool);
-// SDL
-void SDL_GL_SwapWindow(SDL_Window *window);
-int SDL_PollEvent(SDL_Event *event);
-// IUniformRandomStream
-int RandomInt(void *, int, int);
-#endif
-
-}
 
 }
 

@@ -10,6 +10,18 @@
 
 #include <link.h>
 
+#include "HookedMethods.hpp"
+
+namespace hooked_methods
+{
+
+DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
+{
+    return original::CreateMove(this_, input_sample_time, cmd);
+}
+
+}
+
 class CMoveData;
 namespace engine_prediction
 {

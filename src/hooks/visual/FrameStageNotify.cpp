@@ -4,3 +4,13 @@
 */
 
 #include "HookedMethods.hpp"
+
+namespace hooked_methods
+{
+
+DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_, ClientFrameStage_t stage)
+{
+    return original::FrameStageNotify(this_, stage);
+}
+
+}

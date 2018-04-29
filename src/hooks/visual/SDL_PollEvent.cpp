@@ -4,3 +4,13 @@
 */
 
 #include "HookedMethods.hpp"
+
+namespace hooked_methods
+{
+
+DEFINE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *event)
+{
+    return original::SDL_PollEvent(event);
+}
+
+}

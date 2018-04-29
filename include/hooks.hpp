@@ -37,7 +37,7 @@ public:
     ~VMTHook();
     void Set(ptr_t inst, uint32_t offset = 0);
     void Release();
-    void HookMethod(ptr_t func, uint32_t idx);
+    void HookMethod(ptr_t func, uint32_t idx, ptr_t *backup);
     void *GetMethod(uint32_t idx) const;
     void Apply();
 
