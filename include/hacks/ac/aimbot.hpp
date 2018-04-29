@@ -7,10 +7,10 @@
 
 #pragma once
 
+#include <cstddef>
+
 class KeyValues;
 class CachedEntity;
-
-#include <stddef.h>
 
 namespace ac
 {
