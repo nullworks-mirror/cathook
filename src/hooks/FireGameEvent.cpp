@@ -12,5 +12,4 @@ DEFINE_HOOKED_METHOD(FireGameEvent, void, void *this_, IGameEvent *event)
 {
     return original::FireGameEvent(this_, event);
 }
-
 }

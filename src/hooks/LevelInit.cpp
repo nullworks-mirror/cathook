@@ -12,5 +12,4 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 {
     return original::LevelInit(this_, name);
 }
-
 }

@@ -12,5 +12,4 @@ DEFINE_HOOKED_METHOD(BeginFrame, void, IStudioRender *this_)
 {
     return original::BeginFrame(this_);
 }
-
 }

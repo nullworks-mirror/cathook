@@ -8,9 +8,9 @@
 namespace hooked_methods
 {
 
-DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_, CSteamID steam_id)
+DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
+                     CSteamID steam_id)
 {
     return original::GetFriendPersonaName(this_, steam_id);
 }
-
 }

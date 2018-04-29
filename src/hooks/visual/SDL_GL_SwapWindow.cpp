@@ -12,5 +12,4 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
 {
     return original::SDL_GL_SwapWindow(window);
 }
-
 }

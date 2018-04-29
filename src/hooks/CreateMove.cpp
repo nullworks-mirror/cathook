@@ -15,11 +15,11 @@
 namespace hooked_methods
 {
 
-DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
+DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
+                     CUserCmd *cmd)
 {
     return original::CreateMove(this_, input_sample_time, cmd);
 }
-
 }
 
 class CMoveData;
@@ -106,7 +106,6 @@ void End() {
     g_GlobalVars->frametime = o_frametime;
 }*/
 }
-
 
 bool CreateMove_hook(void *thisptr, float inputSample, CUserCmd *cmd)
 {

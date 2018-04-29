@@ -12,5 +12,4 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
 {
     return original::Shutdown(this_, reason);
 }
-
 }

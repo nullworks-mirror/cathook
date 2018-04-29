@@ -12,5 +12,4 @@ DEFINE_HOOKED_METHOD(LevelShutdown, void, void *this_)
 {
     return original::LevelShutdown(this_);
 }
-
 }

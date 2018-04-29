@@ -46,8 +46,8 @@ re::CTFPartyClient::MutLocalGroupCriteria(re::CTFPartyClient *client)
 {
     typedef re::ITFGroupMatchCriteria *(*MutLocalGroupCriteria_t)(
         re::CTFPartyClient *);
-    static uintptr_t addr = gSignatures.GetClientSignature(
-        "55 89 E5 8B 45 ? 8B 50 ? C6 80");
+    static uintptr_t addr =
+        gSignatures.GetClientSignature("55 89 E5 8B 45 ? 8B 50 ? C6 80");
     static MutLocalGroupCriteria_t MutLocalGroupCriteria_fn =
         MutLocalGroupCriteria_t(addr);
 
