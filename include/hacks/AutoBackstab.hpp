@@ -7,15 +7,9 @@
 
 #pragma once
 
-namespace hacks
-{
-namespace tf2
-{
-namespace autobackstab
+namespace hacks::tf2::autobackstab
 {
 
 void CreateMove();
 const Vector GetWorldSpaceCenter(CachedEntity *ent);
-}
-}
 }

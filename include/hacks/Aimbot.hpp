@@ -13,11 +13,7 @@
 class ConVar;
 class IClientEntity;
 
-namespace hacks
-{
-namespace shared
-{
-namespace aimbot
+namespace hacks::shared::aimbot
 {
 
 // Used to store aimbot data to prevent calculating it again
@@ -60,6 +56,4 @@ int ClosestHitbox(CachedEntity *target);
 void DoSlowAim(Vector &inputAngle);
 bool UpdateAimkey();
 float EffectiveTargetingRange();
-}
-}
 }

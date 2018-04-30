@@ -7,15 +7,12 @@
 
 #pragma once
 
-namespace hacks
+namespace hacks::tf2::antibackstab
 {
-namespace tf2
-{
-namespace antibackstab
-{
+
 extern bool noaa;
+
 void CreateMove();
+
 void PaintTraverse();
-}
-}
 }

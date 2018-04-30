@@ -77,8 +77,8 @@ void initialize()
         logging::Info("Xoverlay initialized");
     }
     xoverlay_show();
+    context = SDL_GL_CreateContext(sdl_hooks::window);
 #else
-    //context = SDL_GL_CreateContext(sdl_hooks::window);
     glClearColor(1.0, 0.0, 0.0, 0.5);
     glewExperimental = GL_TRUE;
     glewInit();
@@ -159,10 +159,9 @@ void draw_begin()
     PROF_SECTION(DRAWEX_draw_begin);
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
-#else
     {
         PROF_SECTION(draw_begin__SDL_GL_MakeCurrent);
-        //SDL_GL_MakeCurrent(sdl_hooks::window, context);
+       // SDL_GL_MakeCurrent(sdl_hooks::window, context);
     }
 #endif
     {
@@ -179,12 +178,12 @@ void draw_end()
         PROF_SECTION(draw_end__glez_end);
         glez_end();
     }
-    {
-        PROF_SECTION(draw_end__SDL_GL_MakeCurrent);
-        //SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
-    }
 #if EXTERNAL_DRAWING
     xoverlay_draw_end();
+    {
+        PROF_SECTION(draw_end__SDL_GL_MakeCurrent);
+        SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
+    }
 #endif
 }
 }

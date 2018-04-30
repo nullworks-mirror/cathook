@@ -49,7 +49,9 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
     }
     {
         PROF_SECTION(SWAPWINDOW_tf2);
-        //SDL_GL_MakeCurrent(window, tf2_sdl);
+#if EXTERNAL_DRAWING
+        SDL_GL_MakeCurrent(window, tf2_sdl);
+#endif
         original::SDL_GL_SwapWindow(window);
         // glXMakeContextCurrent(wminfo.info.x11.display,
         // wminfo.info.x11.window,
