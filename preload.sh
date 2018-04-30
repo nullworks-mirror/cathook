@@ -51,7 +51,7 @@ export LD_LIBRARY_PATH="$GAMEROOT"\
 ulimit -n 2048
 
 export LD_PRELOAD
-LD_PRELOAD="$(pwd)/bin/libcathook.so"
+LD_PRELOAD="$(pwd)/bin/libcathook.so:/usr/lib/i386-linux-gnu/libstdc++.so.6"
 
 # Enable nVidia threaded optimizations
 export __GL_THREADED_OPTIMIZATIONS=1
