@@ -909,7 +909,7 @@ void ConVar::InternalSetFloatValue(float fNewValue)
     if (!(m_nFlags & FCVAR_NEVER_AS_STRING))
     {
         char tempVal[32];
-        Q_snprintf(tempVal, sizeof(tempVal), "%f", m_fValue);
+        snprintf(tempVal, sizeof(tempVal), "%f", m_fValue);
         ChangeStringValue(tempVal, flOldValue);
     }
     else
