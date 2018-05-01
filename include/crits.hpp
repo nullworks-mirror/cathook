@@ -25,10 +25,6 @@ struct crithack_saved_state
     void Load(IClientEntity *entity);
 };
 
-extern CatVar crit_info;
-extern CatVar crit_key;
-extern CatVar crit_melee;
-
 namespace criticals
 {
 

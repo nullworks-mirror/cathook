@@ -15,11 +15,6 @@ namespace tf
 {
 namespace autosticky
 {
-
-extern CatVar enabled;
-extern CatVar buildings;
-extern CatVar distance;
-
 bool ShouldDetonate(CachedEntity *bomb);
 void CreateMove();
 }

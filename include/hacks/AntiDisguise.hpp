@@ -11,8 +11,5 @@
 
 namespace hacks::tf2::antidisguise
 {
-
-extern CatVar enabled;
-
 void Draw();
 }

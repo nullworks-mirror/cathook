@@ -23,17 +23,6 @@ void DrawText();
 #endif
 
 extern int last_number;
-extern CatVar debug_info;
-extern CatVar flashlight_spam;
-extern CatVar anti_afk;
-extern CatVar tauntslide;
-extern CatCommand name;
-extern CatCommand save_settings;
-extern CatCommand say_lines;
-extern CatCommand disconnect;
-extern CatCommand schema;
-extern CatCommand disconnect_vac;
-extern CatCommand set_value;
 
 extern float last_bucket;
 }

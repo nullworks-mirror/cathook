@@ -93,7 +93,7 @@ bool List::ShouldClose()
     return nullptr;
 }*/
 
-CatVar *FindCatVar(const std::string name)
+static CatVar *FindCatVar(const std::string name)
 {
     for (auto var : CatVarList())
     {

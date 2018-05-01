@@ -16,10 +16,6 @@ namespace tf
 {
 namespace autotaunt
 {
-
-extern CatVar enabled;
-extern CatVar chance;
-
 extern InitRoutine init;
 }
 }

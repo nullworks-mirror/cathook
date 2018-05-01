@@ -25,7 +25,7 @@ std::mutex cache_mutex{};
 std::string api_key_s = "";
 bool valid_api_key    = false;
 
-CatVar enable_bptf(CV_SWITCH, "bptf_enable", "0", "Enable backpack.tf",
+static CatVar enable_bptf(CV_SWITCH, "bptf_enable", "0", "Enable backpack.tf",
                    "Enable backpack.tf integration\nYou have to set your API "
                    "key in cat_bptf_key");
 CatCommand api_key("bptf_key", "Set API Key", [](const CCommand &args) {

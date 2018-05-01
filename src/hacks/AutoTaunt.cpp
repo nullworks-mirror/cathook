@@ -15,10 +15,10 @@ namespace tf
 namespace autotaunt
 {
 
-CatVar enabled(
+static CatVar enabled(
     CV_SWITCH, "autotaunt", "0", "AutoTaunt",
     "Automatically taunt after killing an enemy, use with walkbots I guess");
-CatVar chance(CV_FLOAT, "autotaunt_chance", "8", "AutoTaunt chance",
+static CatVar chance(CV_FLOAT, "autotaunt_chance", "8", "AutoTaunt chance",
               "Chance of taunting after kill. 0 to 100.", 0.0f, 100.0f);
 
 class AutoTauntListener : public IGameEventListener2

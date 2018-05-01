@@ -15,9 +15,6 @@ namespace tf2
 {
 namespace noisemaker
 {
-
-extern CatVar enabled;
-
 void CreateMove();
 }
 }

@@ -34,8 +34,6 @@ void Update();
 
 extern const std::vector<std::string> fonts;
 extern CatEnum family_enum;
-extern CatVar esp_family;
-extern CatVar esp_height;
 }
 
 constexpr rgba_t GUIColor()

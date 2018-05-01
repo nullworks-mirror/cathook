@@ -12,7 +12,7 @@
 
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
 
-CatVar enable_spinner(CV_SWITCH, "fidgetspinner", "0", "Fidget Spinner",
+static CatVar enable_spinner(CV_SWITCH, "fidgetspinner", "0", "Fidget Spinner",
                       "Part of Cathook Autism Awareness program");
 CatVar v9mode(CV_SWITCH, "nullcore_mode", "0", "Nullcore mode",
               "Part of Cathook Autism Awareness program");
@@ -51,14 +51,14 @@ void InitSpinner()
     g_IGameEventManager->AddListener(&listener, false);
 }
 
-CatVar spinner_speed_cap(CV_FLOAT, "fidgetspinner_speed_cap", "30",
+static CatVar spinner_speed_cap(CV_FLOAT, "fidgetspinner_speed_cap", "30",
                          "Speed cap");
-CatVar spinner_speed_scale(CV_FLOAT, "fidgetspinner_speed_scale", "0.03",
+static CatVar spinner_speed_scale(CV_FLOAT, "fidgetspinner_speed_scale", "0.03",
                            "Speed scale");
-CatVar spinner_decay_speed(CV_FLOAT, "fidgetspinner_decay_speed", "0.1",
+static CatVar spinner_decay_speed(CV_FLOAT, "fidgetspinner_decay_speed", "0.1",
                            "Decay speed");
-CatVar spinner_scale(CV_FLOAT, "fidgetspinner_scale", "32", "Spinner Size");
-CatVar spinner_min_speed(CV_FLOAT, "fidgetspinner_min_speed", "2",
+static CatVar spinner_scale(CV_FLOAT, "fidgetspinner_scale", "32", "Spinner Size");
+static CatVar spinner_min_speed(CV_FLOAT, "fidgetspinner_min_speed", "2",
                          "Spinner Min Speed");
 
 draw_api::texture_handle_t text{ GLEZ_TEXTURE_INVALID };

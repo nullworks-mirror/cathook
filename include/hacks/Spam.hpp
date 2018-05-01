@@ -26,8 +26,6 @@ extern const std::vector<std::string> builtin_lmaobox;
 extern const std::vector<std::string> builtin_lithium;
 
 extern CatVar spam_source;
-extern CatVar filename;
-extern CatCommand reload;
 
 void Init();
 void CreateMove();

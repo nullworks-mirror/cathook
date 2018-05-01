@@ -11,7 +11,7 @@ namespace shared
 {
 namespace deadringer
 {
-CatVar enabled(CV_SWITCH, "deadringer_auto", "0", "Auto deadringer",
+static CatVar enabled(CV_SWITCH, "deadringer_auto", "0", "Auto deadringer",
                "automatically pull out DR on low health or projectile nearby");
 
 bool IsProjectile(CachedEntity *ent)
