@@ -30,7 +30,8 @@ CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration(
 namespace effect_glow
 {
 
-static CatVar enable(CV_SWITCH, "glow_enable", "0", "Enable", "Main glow switch");
+static CatVar enable(CV_SWITCH, "glow_enable", "0", "Enable",
+                     "Main glow switch");
 static CatVar health(CV_SWITCH, "glow_health", "0", "Health",
                      "Change glow color based on their health");
 static CatVar teammates(CV_SWITCH, "glow_teammates", "0", "Teammates",

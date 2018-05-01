@@ -20,48 +20,51 @@ CatVar communicate(CV_SWITCH, "identify", "1", "identify",
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
                "Master AntiAim switch");
 static CatVar trueang(CV_SWITCH, "aa_realfakes", "0", "Real fakes",
-               "Do real fakeangles (Unresolveable)");
-static CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)", 360.0);
-static CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch", "Static pitch (up/down)",
-             -89.0, 89.0);
+                      "Do real fakeangles (Unresolveable)");
+static CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)",
+                  360.0);
+static CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch",
+                    "Static pitch (up/down)", -89.0, 89.0);
 static CatVar yaw_real(CV_FLOAT, "aa_yaw_real", "0.0", "Real Yaw",
-                "Static yaw (left/right)", 360.0);
+                       "Static yaw (left/right)", 360.0);
 static CatVar pitch_real(CV_FLOAT, "aa_pitch_real", "-89.0", "Real Pitch",
-                  "Static pitch (up/down)", -89.0, 89.0);
-static CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM", "RANDOM",
-                        "SPIN", "OFFSETKEEP", "EDGE", "HECK", "FAKESIDEWAYS" });
+                         "Static pitch (up/down)", -89.0, 89.0);
+static CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM",
+                               "RANDOM", "SPIN", "OFFSETKEEP", "EDGE", "HECK",
+                               "FAKESIDEWAYS" });
 static CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
-                          "FAKEFLIP", "FAKEUP", "FAKEDOWN", "FAKECENTER", "UP",
-                          "DOWN", "HECK" });
+                                 "FAKEFLIP", "FAKEUP", "FAKEDOWN", "FAKECENTER",
+                                 "UP", "DOWN", "HECK" });
 CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "0", "Yaw mode", "Yaw mode");
 static CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "0", "Pitch mode",
-                  "Pitch mode");
-static CatVar true_yaw_mode(yaw_mode_enum, "aa_yaw_mode_real", "0", "The Real Yaw",
-                     "Yaw mode");
+                         "Pitch mode");
+static CatVar true_yaw_mode(yaw_mode_enum, "aa_yaw_mode_real", "0",
+                            "The Real Yaw", "Yaw mode");
 static CatVar true_pitch_mode(pitch_mode_enum, "aa_pitch_mode_real", "0",
-                       "The Real Pitch", "Pitch mode");
-static CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll", "Roll angle (viewangles.z)", -180,
-            180);
-static CatVar no_clamping(CV_SWITCH, "aa_no_clamp", "0", "Don't clamp angles",
-                   "Use this with STATIC mode for unclamped manual angles");
+                              "The Real Pitch", "Pitch mode");
+static CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll",
+                   "Roll angle (viewangles.z)", -180, 180);
+static CatVar
+    no_clamping(CV_SWITCH, "aa_no_clamp", "0", "Don't clamp angles",
+                "Use this with STATIC mode for unclamped manual angles");
 static CatVar spin(CV_FLOAT, "aa_spin", "10.0", "Spin speed",
-            "Spin speed (degrees/second)");
+                   "Spin speed (degrees/second)");
 
 static CatVar aaaa_enabled(CV_SWITCH, "aa_aaaa_enabled", "0", "Enable AAAA",
-                    "Enable Anti-Anti-Anti-Aim (Overrides AA Pitch)");
+                           "Enable Anti-Anti-Anti-Aim (Overrides AA Pitch)");
 static CatVar aaaa_interval(CV_FLOAT, "aa_aaaa_interval", "0", "Interval",
-                     "Interval in seconds, 0 = random");
+                            "Interval in seconds, 0 = random");
 static CatVar aaaa_interval_random_high(CV_FLOAT, "aa_aaaa_interval_high", "15",
-                                 "Interval Ceiling",
-                                 "Upper bound for random AAAA interval");
+                                        "Interval Ceiling",
+                                        "Upper bound for random AAAA interval");
 static CatVar aaaa_interval_random_low(CV_FLOAT, "aa_aaaa_interval_low", "3",
-                                "Interval Floor",
-                                "Lower bound for random AAAA interval");
+                                       "Interval Floor",
+                                       "Lower bound for random AAAA interval");
 static CatEnum aaaa_modes_enum({ "(FAKE)UP", "(FAKE)DOWN" });
 static CatVar aaaa_mode(aaaa_modes_enum, "aa_aaaa_mode", "0", "Mode",
-                 "Anti-Anti-Anti-Aim Mode");
+                        "Anti-Anti-Anti-Aim Mode");
 static CatVar aaaa_flip_key(CV_KEY, "aa_aaaa_flip_key", "0", "Flip key",
-                     "If you press that key, current AA will change");
+                            "If you press that key, current AA will change");
 
 float cur_yaw  = 0.0f;
 int safe_space = 0;

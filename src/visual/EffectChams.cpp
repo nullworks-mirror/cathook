@@ -15,7 +15,8 @@
 namespace effect_chams
 {
 
-static CatVar enable(CV_SWITCH, "chams_enable", "0", "Enable", "Main chams switch");
+static CatVar enable(CV_SWITCH, "chams_enable", "0", "Enable",
+                     "Main chams switch");
 static CatVar flat(CV_SWITCH, "chams_flat", "0", "Flat",
                    "Makes chams brighter and more full");
 static CatVar health(CV_SWITCH, "chams_health", "0", "Health",

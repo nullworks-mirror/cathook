@@ -254,8 +254,8 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
 static CatVar debug_pp_extrapolate(
     CV_SWITCH, "debug_pp_extrapolate", "0",
     "Extrapolate entity position when predicting projectiles");
-static CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping", "0",
-                               "Compensate for ping in pp");
+static CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping",
+                                      "0", "Compensate for ping in pp");
 
 Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
                             float gravitymod, float entgmod)

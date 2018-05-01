@@ -15,7 +15,7 @@ namespace antidisguise
 {
 
 static CatVar enabled(CV_SWITCH, "antidisguise", "0", "Remove spy disguise",
-               "Removes the disguise from spys\nUsefull for aimbot");
+                      "Removes the disguise from spys\nUsefull for aimbot");
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility",
                               "Useful with chams!");
 
