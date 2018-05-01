@@ -156,12 +156,13 @@ void get_string_size(const char *string, font_handle_t &font, float *x,
 
 void draw_begin()
 {
+    glColor3f(1, 1, 1);
     PROF_SECTION(DRAWEX_draw_begin);
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
     {
         PROF_SECTION(draw_begin__SDL_GL_MakeCurrent);
-       // SDL_GL_MakeCurrent(sdl_hooks::window, context);
+        // SDL_GL_MakeCurrent(sdl_hooks::window, context);
     }
 #endif
     {

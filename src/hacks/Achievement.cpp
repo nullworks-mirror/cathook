@@ -111,5 +111,4 @@ CatCommand
                 });
 CatCommand lock("achievement_lock", "Lock all achievements", Lock);
 CatCommand unlock("achievement_unlock", "Unlock all achievements", Unlock);
-
 }

@@ -16,10 +16,11 @@ namespace pointers
 hooked_methods::types::SDL_GL_SwapWindow *SDL_GL_SwapWindow{ nullptr };
 }
 
-
 void applySdlHooks()
 {
-    pointers::SDL_GL_SwapWindow = reinterpret_cast<hooked_methods::types::SDL_GL_SwapWindow *>(sharedobj::libsdl().Pointer(0xFD648));
+    pointers::SDL_GL_SwapWindow =
+        reinterpret_cast<hooked_methods::types::SDL_GL_SwapWindow *>(
+            sharedobj::libsdl().Pointer(0xFD648));
 
     hooked_methods::original::SDL_GL_SwapWindow = *pointers::SDL_GL_SwapWindow;
     *pointers::SDL_GL_SwapWindow = hooked_methods::methods::SDL_GL_SwapWindow;
@@ -29,5 +30,4 @@ void cleanSdlHooks()
 {
     *pointers::SDL_GL_SwapWindow = hooked_methods::original::SDL_GL_SwapWindow;
 }
-
 }

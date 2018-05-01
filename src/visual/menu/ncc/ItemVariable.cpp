@@ -25,10 +25,11 @@ void ItemVariable::Update()
     Item::Update();
     if (catvar.name.c_str())
         if (catvar.registered == true)
-            if (!catvar.desc_long.empty())
-                if (catvar.desc_long.length() && IsHovered() &&
-                    catvar.desc_long != "no description")
-                    ShowTooltip(catvar.desc_long);
+            if (catvar.desc_long.c_str())
+                if (!catvar.desc_long.empty())
+                    if (catvar.desc_long.length() && IsHovered() &&
+                        catvar.desc_long != "no description")
+                        ShowTooltip(catvar.desc_long);
 }
 
 void ItemVariable::Change(float amount)

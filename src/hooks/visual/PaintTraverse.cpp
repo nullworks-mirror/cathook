@@ -20,9 +20,9 @@ void **pure_addr = nullptr;
 CatEnum software_cursor_enum({ "KEEP", "ALWAYS", "NEVER", "MENU ON",
                                "MENU OFF" });
 CatVar
-        software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
-                             "Software cursor",
-                             "Try to change this and see what works best for you");
+    software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
+                         "Software cursor",
+                         "Try to change this and see what works best for you");
 
 namespace hooked_methods
 {
@@ -54,9 +54,9 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         if (!pure_addr)
         {
             pure_addr = *reinterpret_cast<void ***>(
-                    gSignatures.GetEngineSignature(
-                            "A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") +
-                    1);
+                gSignatures.GetEngineSignature(
+                    "A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") +
+                1);
         }
         if (*pure_addr)
             pure_orig = *pure_addr;

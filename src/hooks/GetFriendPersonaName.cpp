@@ -10,9 +10,9 @@ static CatVar ipc_name(CV_STRING, "name_ipc", "", "IPC Name");
 CatEnum namesteal_enum({ "OFF", "PASSIVE", "ACTIVE" });
 CatVar namesteal(namesteal_enum, "name_stealer", "0", "Name Stealer",
                  "Attemt to steal your teammates names. Usefull for avoiding "
-                         "kicks\nPassive only changes when the name stolen is no "
-                         "longer the best name to use\nActive Attemps to change the "
-                         "name whenever possible");
+                 "kicks\nPassive only changes when the name stolen is no "
+                 "longer the best name to use\nActive Attemps to change the "
+                 "name whenever possible");
 
 static std::string stolen_name;
 
@@ -83,7 +83,7 @@ bool StolenName()
 
     // Get random number that we can use with our array
     int target_random_num =
-            floor(RandFloatRange(0, potential_targets_length - 0.1F));
+        floor(RandFloatRange(0, potential_targets_length - 0.1F));
 
     // Get a idx from our random array position
     int new_target = potential_targets[target_random_num];
@@ -101,7 +101,6 @@ bool StolenName()
     // Didnt get playerinfo
     return false;
 }
-
 
 namespace hooked_methods
 {
