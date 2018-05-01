@@ -14,7 +14,7 @@ namespace tf2
 namespace noisemaker
 {
 
-CatVar
+static CatVar
     enabled(CV_SWITCH, "noisemaker", "0", "Noisemaker spam",
             "Spams noisemakers Infinitly\nWorks with limited use noisemakers");
 

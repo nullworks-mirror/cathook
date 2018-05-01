@@ -16,26 +16,26 @@ namespace autoreflect
 {
 
 // Vars for user settings
-CatVar enabled(CV_SWITCH, "reflect_enabled", "0", "Auto Reflect",
+static CatVar enabled(CV_SWITCH, "reflect_enabled", "0", "Auto Reflect",
                "Master AutoReflect switch");
-CatVar idle_only(CV_SWITCH, "reflect_only_idle", "0", "Only when not shooting",
+static CatVar idle_only(CV_SWITCH, "reflect_only_idle", "0", "Only when not shooting",
                  "Don't AutoReflect if you're holding M1");
-CatVar legit(CV_SWITCH, "reflect_legit", "0", "Legit Reflect",
+static CatVar legit(CV_SWITCH, "reflect_legit", "0", "Legit Reflect",
              "Only Auto-airblasts projectiles that you can see, doesnt move "
              "your crosshair");
-CatVar dodgeball(CV_SWITCH, "reflect_dodgeball", "0", "Dodgeball Mode",
+static CatVar dodgeball(CV_SWITCH, "reflect_dodgeball", "0", "Dodgeball Mode",
                  "Allows auto-reflect to work in dodgeball servers");
-CatVar blastkey(CV_KEY, "reflect_key", "0", "Reflect Key",
+static CatVar blastkey(CV_KEY, "reflect_key", "0", "Reflect Key",
                 "Hold this key to activate auto-airblast");
-CatVar stickies(CV_SWITCH, "reflect_stickybombs", "0", "Reflect stickies",
+static CatVar stickies(CV_SWITCH, "reflect_stickybombs", "0", "Reflect stickies",
                 "Reflect Stickybombs");
-CatVar teammates(CV_SWITCH, "reflect_teammates", "0",
+static CatVar teammates(CV_SWITCH, "reflect_teammates", "0",
                  "Reflect teammates projectiles", "Useful in dodgeball with "
                                                   "free-for-all enabled");
-CatVar fov(CV_FLOAT, "reflect_fov", "85", "Reflect FOV", "Reflect FOV", 180.0f);
-CatVar fov_draw(CV_SWITCH, "reflect_fov_draw", "0", "Draw Fov Ring",
+static CatVar fov(CV_FLOAT, "reflect_fov", "85", "Reflect FOV", "Reflect FOV", 180.0f);
+static CatVar fov_draw(CV_SWITCH, "reflect_fov_draw", "0", "Draw Fov Ring",
                 "Draws a ring to represent your current reflect fov");
-CatVar fovcircle_opacity(CV_FLOAT, "reflect_fov_draw_opacity", "0.7",
+static CatVar fovcircle_opacity(CV_FLOAT, "reflect_fov_draw_opacity", "0.7",
                          "FOV Circle Opacity", "Defines opacity of FOV circle",
                          0.0f, 1.0f);
 // TODO setup proj sorting

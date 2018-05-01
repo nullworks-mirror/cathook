@@ -22,9 +22,9 @@ unsigned long font_item  = 0;
 
 CatVar scale(CV_FLOAT, "gui_ncc_scale", "1", "NCC GUI Scale",
              "Defines scale of NCC gui", 0.5f, 4.0f);
-CatVar font_family(fonts::family_enum, "gui_ncc_font_family", "3",
+static CatVar font_family(fonts::family_enum, "gui_ncc_font_family", "3",
                    "NCC Font Family", "Defines font family for NCC menu");
-CatVar font_title_family(fonts::family_enum, "gui_ncc_font_title_family", "4",
+static CatVar font_title_family(fonts::family_enum, "gui_ncc_font_title_family", "4",
                          "NCC Title Family",
                          "Defines font family for NCC menu titles");
 

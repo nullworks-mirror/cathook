@@ -15,9 +15,6 @@ namespace shared
 {
 namespace bunnyhop
 {
-
-extern CatVar enabled;
-
 void CreateMove();
 }
 }

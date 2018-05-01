@@ -37,7 +37,7 @@ const char *skynum[] = { "sky_tf2_04",
                          "sky_pyroland_01",
                          "sky_pyroland_02",
                          "sky_pyroland_03" };
-CatEnum skys({ "sky_tf2_04",
+static CatEnum skys({ "sky_tf2_04",
                "sky_upward",
                "sky_dustbowl_01",
                "sky_goldrush_01",

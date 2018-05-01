@@ -15,9 +15,9 @@ namespace autodetonator
 {
 
 // Vars for user settings
-CatVar enabled(CV_SWITCH, "detonator_enabled", "0", "Auto-Detonator-detonator",
+static CatVar enabled(CV_SWITCH, "detonator_enabled", "0", "Auto-Detonator-detonator",
                "Master auto detonator switch");
-CatVar legit(CV_SWITCH, "detonator_legit", "0", "Ignore invis",
+static CatVar legit(CV_SWITCH, "detonator_legit", "0", "Ignore invis",
              "Ignores invis spies");
 
 // A storage array for ents

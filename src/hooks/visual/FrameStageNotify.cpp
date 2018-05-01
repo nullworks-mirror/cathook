@@ -7,8 +7,8 @@
 #include <hacks/hacklist.hpp>
 #include "HookedMethods.hpp"
 
-CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
-CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
+static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
+static CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
 
 namespace hooked_methods
 {

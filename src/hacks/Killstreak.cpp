@@ -15,7 +15,7 @@ namespace tf2
 namespace killstreak
 {
 
-CatVar enabled(CV_SWITCH, "killstreak", "0",
+static CatVar enabled(CV_SWITCH, "killstreak", "0",
                "Enable killstreaks on all weapons");
 
 int killstreak{ 0 };

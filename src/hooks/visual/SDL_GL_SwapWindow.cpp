@@ -3,7 +3,7 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
-#include <SDL_syswm.h>
+#include <SDL2/SDL_syswm.h>
 #include <MiscTemporary.hpp>
 #include <visual/SDLHooks.hpp>
 #include "HookedMethods.hpp"

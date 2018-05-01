@@ -14,7 +14,7 @@ namespace shared
 namespace announcer
 {
 
-CatVar enabled(CV_SWITCH, "announcer", "0", "Enable announcer");
+static CatVar enabled(CV_SWITCH, "announcer", "0", "Enable announcer");
 
 struct announcer_entry_s
 {

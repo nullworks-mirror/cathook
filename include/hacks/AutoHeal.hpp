@@ -15,9 +15,6 @@ namespace tf
 {
 namespace autoheal
 {
-
-extern CatVar enabled;
-extern CatVar silent;
 // TODO extern CatVar target_only;
 void CreateMove();
 

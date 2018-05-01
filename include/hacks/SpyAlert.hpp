@@ -15,11 +15,6 @@ namespace tf
 {
 namespace spyalert
 {
-
-extern CatVar enabled;
-extern CatVar distance_warning;
-extern CatVar distance_backstab;
-
 void Draw();
 }
 }

@@ -8,7 +8,6 @@ const std::vector<std::string> fonts = { "Tahoma Bold",  "Tahoma",
                                          "TF2 Build",    "Verdana",
                                          "Verdana Bold", "Arial",
                                          "Courier New",  "Ubuntu Mono Bold" };
-CatEnum family_enum(fonts);
 }
 
 int colorsint::FromHSL(float h, float s, float v)

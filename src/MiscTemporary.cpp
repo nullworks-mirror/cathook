@@ -24,7 +24,7 @@ CatVar serverlag_amount(
     CV_INT, "serverlag", "0", "serverlag",
     "Lag the server by spamming this many voicecommands per tick");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
-CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
+static CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
                    "Crash servers by spamming signon net messages");
 bool *bSendPackets;
 

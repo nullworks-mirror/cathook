@@ -32,8 +32,6 @@ class List;
 class Tooltip;
 
 extern CatVar scale;
-extern CatVar font_family;
-extern CatVar font_title_family;
 
 constexpr int psize_font_item  = 12;
 constexpr int psize_font_title = 14;

@@ -426,7 +426,7 @@ bool IsEntityVisible(CachedEntity *entity, int hb)
     }
 }
 
-CatVar tcm(CV_SWITCH, "debug_tcm", "1", "TCM");
+static CatVar tcm(CV_SWITCH, "debug_tcm", "1", "TCM");
 
 std::mutex trace_lock;
 bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos)

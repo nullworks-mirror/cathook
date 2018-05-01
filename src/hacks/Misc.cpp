@@ -25,36 +25,36 @@ namespace shared
 namespace misc
 {
 
-CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info",
+static CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info",
                   "Shows some debug info in-game");
-CatVar flashlight_spam(CV_SWITCH, "flashlight", "0", "Flashlight spam",
+static CatVar flashlight_spam(CV_SWITCH, "flashlight", "0", "Flashlight spam",
                        "HL2DM flashlight spam");
-CatVar auto_balance_spam(CV_SWITCH, "request_balance_spam", "0",
+static CatVar auto_balance_spam(CV_SWITCH, "request_balance_spam", "0",
                          "Inf Auto Balance Spam",
                          "Use to send a autobalance request to the server that "
                          "doesnt prevent you from using it again\nCredits to "
                          "Blackfire");
-CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK",
+static CatVar anti_afk(CV_SWITCH, "anti_afk", "0", "Anti-AFK",
                 "Sends random commands to prevent being kicked from server");
-CatVar auto_strafe(CV_SWITCH, "auto_strafe", "0", "Auto-Strafe",
+static CatVar auto_strafe(CV_SWITCH, "auto_strafe", "0", "Auto-Strafe",
                    "Automaticly airstrafes for you.");
-CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0",
+static CatVar render_zoomed(CV_SWITCH, "render_zoomed", "0",
                      "Render model when zoomed-in",
                      "Renders player model while being zoomed in as Sniper");
-CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push",
+static CatVar nopush_enabled(CV_SWITCH, "nopush_enabled", "0", "No Push",
                       "Prevents other players from pushing you around.");
 
-CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
+static CatVar no_homo(CV_SWITCH, "no_homo", "1", "No Homo", "read if gay");
 // Taunting stuff
-CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide",
+static CatVar tauntslide(CV_SWITCH, "tauntslide", "0", "TF2C tauntslide",
                   "Allows moving and shooting while taunting");
-CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide",
+static CatVar tauntslide_tf2(CV_SWITCH, "tauntslide_tf2", "0", "Tauntslide",
                       "Allows free movement while taunting with movable "
                       "taunts\nOnly works in tf2");
-CatVar
+static CatVar
     show_spectators(CV_SWITCH, "show_spectators", "0", "Show spectators",
                     "Show who's spectating you\nonly works in valve servers");
-CatVar god_mode(CV_SWITCH, "godmode", "0", "no description", "no description");
+static CatVar god_mode(CV_SWITCH, "godmode", "0", "no description", "no description");
 void *C_TFPlayer__ShouldDraw_original = nullptr;
 
 bool C_TFPlayer__ShouldDraw_hook(IClientEntity *thisptr)

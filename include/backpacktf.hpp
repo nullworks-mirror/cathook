@@ -20,8 +20,6 @@ constexpr unsigned OUTDATED_AGE =
     60 * 60 * 24 * 3; // After how many seconds backpack is marked "outdated"
                       // (possibly private)
 
-extern CatVar enable_bptf;
-
 struct backpack_data_s
 {
     bool pending{ false };

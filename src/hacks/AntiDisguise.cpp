@@ -14,7 +14,7 @@ namespace tf2
 namespace antidisguise
 {
 
-CatVar enabled(CV_SWITCH, "antidisguise", "0", "Remove spy disguise",
+static CatVar enabled(CV_SWITCH, "antidisguise", "0", "Remove spy disguise",
                "Removes the disguise from spys\nUsefull for aimbot");
 static CatVar no_invisibility(CV_SWITCH, "no_invis", "0", "Remove Invisibility",
                               "Useful with chams!");

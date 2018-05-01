@@ -10,7 +10,7 @@
 namespace hacks::tf2::achievement
 {
 
-CatVar safety(CV_SWITCH, "achievement_safety", "1",
+static CatVar safety(CV_SWITCH, "achievement_safety", "1",
               "Achievement commands safety switch");
 
 void Lock()

@@ -13,8 +13,6 @@
 class CatVar;
 
 extern std::array<textures::sprite, 4> spinner_states;
-
-extern CatVar enable_spinner;
 extern CatVar v9mode;
 void InitSpinner();
 void DrawSpinner();

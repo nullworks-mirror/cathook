@@ -19,11 +19,11 @@ namespace autojoin
  * Credits to Blackfire for helping me with auto-requeue!
  */
 
-CatEnum classes_enum({ "DISABLED", "SCOUT", "SNIPER", "SOLDIER", "DEMOMAN",
+static CatEnum classes_enum({ "DISABLED", "SCOUT", "SNIPER", "SOLDIER", "DEMOMAN",
                        "MEDIC", "HEAVY", "PYRO", "SPY", "ENGINEER" });
-CatVar autojoin_team(CV_SWITCH, "autojoin_team", "0", "AutoJoin",
+static CatVar autojoin_team(CV_SWITCH, "autojoin_team", "0", "AutoJoin",
                      "Automatically joins a team");
-CatVar preferred_class(classes_enum, "autojoin_class", "0", "AutoJoin class",
+static CatVar preferred_class(classes_enum, "autojoin_class", "0", "AutoJoin class",
                        "You will pick a class automatically");
 
 CatVar auto_queue(CV_SWITCH, "autoqueue", "0", "AutoQueue",
