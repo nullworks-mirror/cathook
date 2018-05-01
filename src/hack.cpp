@@ -329,7 +329,8 @@ free(logname);*/
 
     hooks::panel.Set(g_IPanel);
     hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse,
-                            offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);
+                            offsets::PaintTraverse(),
+                            &hooked_methods::original::PaintTraverse);
     hooks::panel.Apply();
 #endif
 

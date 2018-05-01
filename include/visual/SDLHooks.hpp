@@ -14,5 +14,4 @@ extern SDL_Window *window;
 
 void applySdlHooks();
 void cleanSdlHooks();
-
 }

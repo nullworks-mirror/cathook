@@ -31,10 +31,7 @@
     *(float *) ((uintptr_t) _this + 79u) = old_invis;
 }*/
 
-
 float last_say = 0.0f;
-
-
 
 CatCommand spectate("spectate", "Spectate", [](const CCommand &args) {
     if (args.ArgC() < 1)
@@ -52,7 +49,6 @@ CatCommand spectate("spectate", "Spectate", [](const CCommand &args) {
 });
 
 #endif
-
 
 static CatCommand plus_use_action_slot_item_server(
     "+cat_use_action_slot_item_server", "use_action_slot_item_server", []() {
@@ -76,9 +72,3 @@ static CatCommand minus_use_action_slot_item_server(
 
 static CatVar server_crash_key(CV_KEY, "crash_server", "0", "Server crash key",
                                "hold key and wait...");
-
-
-
-
-
-

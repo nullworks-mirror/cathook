@@ -10,7 +10,6 @@
 static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
                            "Add # newlines before each your message", 0, 24);
 
-
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0",
                        "Log sent messages");
 static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck", "");
@@ -56,12 +55,13 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
             str = str.substr(16, str.length() - 17);
             // if (queue_messages && !chat_stack::CanSend()) {
             stringcmd.m_szCommand = str.c_str();
-            return original::SendNetMsg(this_, stringcmd, force_reliable, voice);
+            return original::SendNetMsg(this_, stringcmd, force_reliable,
+                                        voice);
             //}
         }
     }
     static ConVar *sv_player_usercommand_timeout =
-            g_ICvar->FindVar("sv_player_usercommand_timeout");
+        g_ICvar->FindVar("sv_player_usercommand_timeout");
     static float lastcmd = 0.0f;
     if (lastcmd > g_GlobalVars->absoluteframetime)
     {

@@ -98,7 +98,6 @@ void CreateMove()
             g_pUserCmd->buttons |= IN_ATTACK;
     }
 }
-
 }
 }
 }

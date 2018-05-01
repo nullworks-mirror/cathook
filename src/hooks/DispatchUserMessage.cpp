@@ -19,7 +19,7 @@ static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
                            "Log dispatched user messages");
 static CatVar chat_filter(CV_STRING, "chat_censor", "", "Censor words",
                           "Spam Chat with newlines if the chosen words are "
-                                  "said, seperate with commas");
+                          "said, seperate with commas");
 static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
                                   "Enable censor", "Censor Words in chat");
 std::string clear = "";
@@ -149,9 +149,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         name3.push_back(tmp2);
                     iii                          = 0;
                     std::vector<std::string> res = {
-                            "skid", "script", "cheat", "hak",   "hac",  "f1",
-                            "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
-                            "cat",  "insta",  "revv",  "brass", "kick", claz
+                        "skid", "script", "cheat", "hak",   "hac",  "f1",
+                        "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
+                        "cat",  "insta",  "revv",  "brass", "kick", claz
                     };
                     for (auto i : name2)
                     {
@@ -238,10 +238,10 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             hacks::shared::antiaim::communicate &&
                             data[0] != LOCAL_E->m_IDX &&
                             playerlist::AccessData(ENTITY(data[0])).state !=
-                            playerlist::k_EState::CAT)
+                                playerlist::k_EState::CAT)
                         {
                             playerlist::AccessData(ENTITY(data[0])).state =
-                                    playerlist::k_EState::CAT;
+                                playerlist::k_EState::CAT;
                             chat_stack::Say("!!meow");
                         }
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),

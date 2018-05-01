@@ -28,9 +28,8 @@ CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
                    "Crash servers by spamming signon net messages");
 bool *bSendPackets;
 
-
 CatVar crypt_chat(
-        CV_SWITCH, "chat_crypto", "1", "Crypto chat",
-        "Start message with !! and it will be only visible to cathook users");
+    CV_SWITCH, "chat_crypto", "1", "Crypto chat",
+    "Start message with !! and it will be only visible to cathook users");
 
 int spectator_target;
