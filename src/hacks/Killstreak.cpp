@@ -16,7 +16,7 @@ namespace killstreak
 {
 
 static CatVar enabled(CV_SWITCH, "killstreak", "0",
-               "Enable killstreaks on all weapons");
+                      "Enable killstreaks on all weapons");
 
 int killstreak{ 0 };
 

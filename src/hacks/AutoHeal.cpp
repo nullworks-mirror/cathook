@@ -17,9 +17,9 @@ namespace autoheal
 {
 
 static CatVar enabled(CV_SWITCH, "autoheal_enabled", "0", "AutoHeal",
-               "Automatically heals nearby teammates");
+                      "Automatically heals nearby teammates");
 static CatVar silent(CV_SWITCH, "autoheal_silent", "1", "Silent AutoHeal",
-              "Silent AutoHeal. Disable this to make ghetto followbot");
+                     "Silent AutoHeal. Disable this to make ghetto followbot");
 // extern CatVar target_only;
 
 int m_iCurrentHealingTarget{ -1 };

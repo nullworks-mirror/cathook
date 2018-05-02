@@ -449,27 +449,27 @@ index_t CreateNode(const Vector &xyz)
 }
 
 static CatVar active_recording(CV_SWITCH, "wb_recording", "0", "Do recording",
-                        "Use BindToggle with this");
+                               "Use BindToggle with this");
 static CatVar draw_info(CV_SWITCH, "wb_info", "1", "Walkbot info");
 static CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
 static CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
 static CatVar draw_indices(CV_SWITCH, "wb_indices", "0", "Node indices");
 static CatVar free_move(CV_SWITCH, "wb_freemove", "1", "Allow free movement",
-                 "Allow free movement while pressing movement keys");
+                        "Allow free movement while pressing movement keys");
 static CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "54",
-                      "Node spawn distance");
+                             "Node spawn distance");
 static CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "100",
-                    "Max distance to node when replaying");
+                           "Max distance to node when replaying");
 static CatVar reach_distance(
     CV_FLOAT, "wb_replay_reach_distance", "32",
     "Distance where bot can be considered 'stepping' on the node");
 static CatVar draw_connection_flags(CV_SWITCH, "wb_connection_flags", "1",
-                             "Connection flags");
+                                    "Connection flags");
 static CatVar force_slot(CV_INT, "wb_force_slot", "1", "Force slot",
-                  "Walkbot will always select weapon in this slot");
+                         "Walkbot will always select weapon in this slot");
 static CatVar leave_if_empty(CV_SWITCH, "wb_leave_if_empty", "0",
-                      "Leave if no walkbot",
-                      "Leave game if there is no walkbot map");
+                             "Leave if no walkbot",
+                             "Leave game if there is no walkbot map");
 
 CatCommand c_start_recording("wb_record", "Start recording",
                              []() { state::state = WB_RECORDING; });

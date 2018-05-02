@@ -33,13 +33,13 @@ static CatVar follow_activation(CV_INT, "fb_activation", "175",
 CatVar follow_steam(CV_INT, "fb_steam", "0", "Follow Steam Id",
                     "Set a steam id to let followbot prioritize players");
 static CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "0", "Mimic weapon slot",
-                  "Mimic follow target's weapon slot");
-static CatVar always_medigun(CV_SWITCH, "fb_always_medigun", "0", "Always Medigun",
-                      "Always use medigun");
+                         "Mimic follow target's weapon slot");
+static CatVar always_medigun(CV_SWITCH, "fb_always_medigun", "0",
+                             "Always Medigun", "Always use medigun");
 static CatVar sync_taunt(CV_SWITCH, "fb_sync_taunt", "0", "Synced taunt",
-                  "Taunt when follow target does");
+                         "Taunt when follow target does");
 static CatVar change(CV_SWITCH, "fb_switch", "1", "Change followbot target",
-              "Always change roaming target when possible");
+                     "Always change roaming target when possible");
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
 static const int crumb_limit = 64; // limit

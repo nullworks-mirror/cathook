@@ -21,20 +21,22 @@ CatVar spam_source(spam_enum, "spam", "0", "Chat Spam",
                    "in cat_spam_file and loaded with cat_spam_reload (Use "
                    "console!)");
 static CatVar random_order(CV_SWITCH, "spam_random", "0", "Random Order");
-static CatVar filename(CV_STRING, "spam_file", "spam.txt", "Spam file",
-                "Spam file name. Each line should be no longer than 100 "
-                "characters, file must be located in cathook data folder");
+static CatVar
+    filename(CV_STRING, "spam_file", "spam.txt", "Spam file",
+             "Spam file name. Each line should be no longer than 100 "
+             "characters, file must be located in cathook data folder");
 CatCommand reload("spam_reload", "Reload spam file", Reload);
 static CatVar spam_delay(CV_INT, "spam_delay", "800", "Spam delay",
-                  "Delay between spam messages (in ms)", 0.0f, 8000.0f);
+                         "Delay between spam messages (in ms)", 0.0f, 8000.0f);
 
 static CatEnum voicecommand_enum({ "DISABLED", "RANDOM", "MEDIC", "THANKS",
                                    "NICE SHOT", "CHEERS", "JEERS" });
 static CatVar voicecommand_spam(voicecommand_enum, "spam_voicecommand", "0",
-                         "Voice Command Spam", "Spams tf voice commands");
+                                "Voice Command Spam",
+                                "Spams tf voice commands");
 
 static CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam",
-                     "Spam changes the tournament name");
+                            "Spam changes the tournament name");
 
 std::chrono::time_point<std::chrono::system_clock> last_spam_point{};
 

@@ -14,7 +14,7 @@ static CatVar crit_legiter(
     CV_SWITCH, "crit_force_gameplay", "0", "Don't hinder gameplay",
     "Attempt to crit when possible but do not hinder normal gameplay");
 static CatVar crit_experimental(CV_SWITCH, "crit_experimental", "0",
-                         "Experimental crithack");
+                                "Experimental crithack");
 
 std::unordered_map<int, int> command_number_mod{};
 

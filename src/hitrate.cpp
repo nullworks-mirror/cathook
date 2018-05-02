@@ -18,7 +18,7 @@ int count_shots{ 0 };
 int count_hits{ 0 };
 int count_hits_head{ 0 };
 
-static CatVar hitrate_check(CV_SWITCH, "hitrate", "1", "Monitor hitrate");
+CatVar hitrate_check(CV_SWITCH, "hitrate", "1", "Monitor hitrate");
 
 std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>>
     shots{};

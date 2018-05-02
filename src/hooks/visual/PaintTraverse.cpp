@@ -13,12 +13,12 @@ CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing",
 CatVar no_zoom(CV_SWITCH, "no_zoom", "0", "Disable scope",
                "Disables black scope overlay");
 static CatVar pure_bypass(CV_SWITCH, "pure_bypass", "0", "Pure Bypass",
-                   "Bypass sv_pure");
+                          "Bypass sv_pure");
 void *pure_orig  = nullptr;
 void **pure_addr = nullptr;
 
 static CatEnum software_cursor_enum({ "KEEP", "ALWAYS", "NEVER", "MENU ON",
-                               "MENU OFF" });
+                                      "MENU OFF" });
 static CatVar
     software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
                          "Software cursor",
