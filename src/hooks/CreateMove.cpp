@@ -484,11 +484,17 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         {
             votelogger::antikick_ticks--;
             for (int i = 0; i < (int) 70; i++)
-                g_IEngine->ServerCmd("voicemenu 0 0", false);
-        }
-        else
-            for (int i = 0; i < (int) serverlag_amount; i++)
                 g_IEngine->ServerCmd("use", false);
+        }
+        else {
+    	    NET_StringCmd senddata("voicemenu 0 0");
+    	    INetChannel *ch2 = (INetChannel *) g_IEngine->GetNetChannelInfo();
+	        senddata.SetNetChannel(ch2);
+	        senddata.SetReliable(false);
+            for (int i = 0; i < (int) serverlag_amount; i++)
+            	ch2->SendNetMsg(senddata, false);
+            ch2->Transmit();
+        }
     }
 
     //	PROF_END("CreateMove");
