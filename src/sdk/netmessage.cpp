@@ -408,7 +408,7 @@ bool NET_SignonState::ReadFromBuffer(bf_read &buffer)
 
 const char *NET_SignonState::ToString(void) const
 {
-    return "(null)";
+    return strfmt("net_SignonState: state %i, count %i", m_nSignonState, m_nSpawnCount);
 }
 
 bool NET_SetConVar::WriteToBuffer(bf_write &buffer)

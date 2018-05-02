@@ -8,7 +8,6 @@
 #include "common.hpp"
 
 // This is a temporary file to put code that needs moving/refactoring in.
-
 extern bool *bSendPackets;
 extern CatVar no_zoom;
 extern CatVar clean_screenshots;
