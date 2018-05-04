@@ -487,7 +487,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 g_IEngine->ServerCmd("use", false);
         }
         else {
-    	    NET_StringCmd senddata("use");
+    	    NET_StringCmd senddata("voicemenu 0 0");
     	    INetChannel *ch2 = (INetChannel *) g_IEngine->GetNetChannelInfo();
 	        senddata.SetNetChannel(ch2);
 	        senddata.SetReliable(false);
