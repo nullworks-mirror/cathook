@@ -133,8 +133,7 @@ void LogMessage(int eid, std::string message)
         if (x == '\n' || x == '\r')
             x = '*';
     }
-
     logger() << std::to_string(time(nullptr)) << std::to_string(info.friendsID)
-             << name << message << csv_stream::end;
+             << name << message << std::to_string(ipc::peer->client_id) <<csv_stream::end;
 }
 }
