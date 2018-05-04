@@ -47,8 +47,8 @@ bool UnassignedClass()
 
 Timer autoqueue_timer{};
 Timer req_timer{};
-/*CatVar party_bypass(CV_SWITCH, "party_bypass", "0", "Party Bypass",
-                   "Bypass Party restrictions");*/
+CatVar party_bypass(CV_SWITCH, "party_bypass", "0", "Party Bypass",
+                   "Bypass Party restrictions");
 void UpdateSearch()
 {
     // segfaults for no reason
@@ -56,19 +56,19 @@ void UpdateSearch()
     if (party_bypass && !calld) {
         static unsigned char patch[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
         static uintptr_t party_addr1 = gSignatures.GetClientSignature(
-             "0F 84 ? ? ? ? 8B 7B ? 8D 45 ?");
+             "0F 84 ? ? ? ? 8B 7B ? 8D 45");
         static unsigned char patch2[] = { 0x90, 0xE9};
         static uintptr_t party_addr2 = gSignatures.GetClientSignature(
-            "0F 8E ? ? ? ? 31 DB 0F B6 BD ? ? ? ?");
+            "0F 8E ? ? ? ? 31 DB 0F B6 BD");
         static unsigned char patch3[] = { 0x90, 0x90};
         static uintptr_t party_addr3 = gSignatures.GetClientSignature(
             "74 ? E8 ? ? ? ? 89 F1");
         static unsigned char patch4[] = { 0x90, 0xE9};
         static uintptr_t party_addr4 = gSignatures.GetClientSignature(
-            "0F 85 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 ?");
+            "0F 85 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24");
         static unsigned char patch5[] = { 0x90, 0x90, 0x90, 0x90};
         static uintptr_t party_addr5 = gSignatures.GetClientSignature(
-            "0F 84 ? ? ? ? 8B 45 ? 8B 70 ? 8B 78 ? 8D 45 ?");
+            "0F 84 ? ? ? ? 8B 45 ? 8B 70 ? 8B 78 ? 8D 45");
         Patch((void *) party_addr1, (void *) patch, sizeof(patch));
         Patch((void *) party_addr2, (void *) patch2, sizeof(patch2));
         Patch((void *) party_addr3, (void *) patch3, sizeof(patch3));
