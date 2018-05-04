@@ -480,17 +480,20 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     }
     if (serverlag_amount || votelogger::antikick_ticks)
     {
+	    NET_StringCmd senddata("voicemenu 0 0");
+	    INetChannel *ch2 = (INetChannel *) g_IEngine->GetNetChannelInfo();
+        senddata.SetNetChannel(ch2);
+        senddata.SetReliable(false);
         if (votelogger::antikick_ticks)
+        	votelogger::antikick_ticks--;
+        if (votelogger::antikick_ticks > 10)
         {
-            votelogger::antikick_ticks--;
-            for (int i = 0; i < (int) 70; i++)
-                g_IEngine->ServerCmd("use", false);
+            for (int i = 0; i < (int) 500; i++)
+                ch2->SendNetMsg(senddata, false);
+            ch2->Transmit();
         }
-        else {
-    	    NET_StringCmd senddata("voicemenu 0 0");
-    	    INetChannel *ch2 = (INetChannel *) g_IEngine->GetNetChannelInfo();
-	        senddata.SetNetChannel(ch2);
-	        senddata.SetReliable(false);
+        else if (!votelogger::antikick_ticks)
+        {
             for (int i = 0; i < (int) serverlag_amount; i++)
             	ch2->SendNetMsg(senddata, false);
             ch2->Transmit();
