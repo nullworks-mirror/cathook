@@ -23,7 +23,9 @@ CatCommand fix_deadlock("ipc_fix_deadlock", "Fix deadlock", []() {
         pthread_mutex_unlock(&peer->memory->mutex);
     }
 });
-
+CatCommand id("ipc_id", "Echo ipc id", []() {
+	logging::Info("%d",ipc::peer->client_id);
+});
 CatCommand connect("ipc_connect", "Connect to IPC server", []() {
     if (peer)
     {

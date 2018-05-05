@@ -93,6 +93,7 @@ void VMTHook::Apply()
 }
 
 VMTHook input{};
+VMTHook localbaseent{};
 VMTHook steamfriends{};
 VMTHook baseclientstate{};
 VMTHook baseclientstate8{};
