@@ -41,7 +41,6 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 
     float frameTime = g_GlobalVars->frametime;
     float curTime   = g_GlobalVars->curtime;
-
     CUserCmd defaultCmd;
     if (ucmd == NULL)
     {

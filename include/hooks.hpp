@@ -54,6 +54,7 @@ public:
 };
 
 extern VMTHook panel;
+extern VMTHook localbaseent;
 extern VMTHook clientmode;
 extern VMTHook clientmode4;
 extern VMTHook client;
