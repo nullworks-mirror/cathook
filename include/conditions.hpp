@@ -211,8 +211,8 @@ template <condition cond> inline bool CondBitCheck(condition_data_s &data)
     }
     if (cond < 32)
     {
-    	if (data.cond_0)
-    		return data.cond_0 & (1u << (cond));
+        if (data.cond_0)
+            return data.cond_0 & (1u << (cond));
     }
     return false;
 }
@@ -258,8 +258,8 @@ inline void CondBitSet(condition_data_s &data)
         }
         else
         {
-        	if (data.cond_0)
-        		data.cond_0 |= (1 << (cond));
+            if (data.cond_0)
+                data.cond_0 |= (1 << (cond));
         }
     }
     else
@@ -278,8 +278,8 @@ inline void CondBitSet(condition_data_s &data)
         }
         else
         {
-        	if (data.cond_0)
-        		data.cond_0 &= ~(1u << (cond));
+            if (data.cond_0)
+                data.cond_0 &= ~(1u << (cond));
         }
     }
 }

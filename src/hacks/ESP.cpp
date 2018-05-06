@@ -382,20 +382,57 @@ void CreateMove()
         }
     }
 }
-
+static glez_texture_t idspecific;
+static glez_texture_t textur;
+Timer retry{};
+void Init()
+{
+    textur     = glez_texture_load_png_rgba(DATA_PATH "/textures/atlas.png");
+    idspecific = glez_texture_load_png_rgba(DATA_PATH "/textures/idspec.png");
+    if (textur == GLEZ_TEXTURE_INVALID)
+    {
+        logging::Info("Invalid atlas, retrying in 10 seconds....");
+        while (1)
+        {
+            if (retry.test_and_set(10000))
+            {
+                textur =
+                    glez_texture_load_png_rgba(DATA_PATH "/textures/atlas.png");
+                if (textur != GLEZ_TEXTURE_INVALID)
+                    break;
+                logging::Info("Invalid atlas, retrying in 10 seconds....");
+            }
+        }
+    }
+    if (idspecific == GLEZ_TEXTURE_INVALID)
+    {
+        logging::Info("Invalid idspecific, retrying in 10 seconds....");
+        while (1)
+        {
+            if (retry.test_and_set(10000))
+            {
+                idspecific = glez_texture_load_png_rgba(DATA_PATH
+                                                        "/textures/idspec.png");
+                if (idspecific != GLEZ_TEXTURE_INVALID)
+                    break;
+                logging::Info("Invalid idspecific, retrying in 10 seconds....");
+            }
+        }
+    }
+}
 void _FASTCALL emoji(CachedEntity *ent)
 {
     // Check to prevent crashes
     if (CE_BAD(ent))
+        return;
+    if (textur == GLEZ_TEXTURE_INVALID)
         return;
     // Emoji esp
     if (emoji_esp)
     {
         if (ent->m_Type == ENTITY_PLAYER)
         {
-            static glez_texture_t textur =
-                glez_texture_load_png_rgba(DATA_PATH "/textures/atlas.png");
-            static glez_texture_t idspecific;
+
             if (emoji_ok)
                 auto hit = hitboxcache[ent->m_IDX][0];
             auto hit     = hitboxcache[ent->m_IDX][0];
@@ -417,9 +454,6 @@ void _FASTCALL emoji(CachedEntity *ent)
                         size = float(emoji_min_size);
                     }
                     glez_rgba_t white = glez_rgba(255, 255, 255, 255);
-                    while (!textur || textur == 4294967295)
-                        textur = glez_texture_load_png_rgba(
-                            DATA_PATH "/textures/atlas.png");
                     player_info_s info;
                     unsigned int steamID;
                     unsigned int steamidarray[32]{};
@@ -428,32 +462,33 @@ void _FASTCALL emoji(CachedEntity *ent)
                     steamidarray[1] = 263966176;
                     steamidarray[2] = 840255344;
                     steamidarray[3] = 147831332;
+                    steamidarray[4] = 854198748;
                     if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
                         steamID = info.friendsID;
-                    if (!idspecific)
-                        idspecific = glez_texture_load_png_rgba(
-                            DATA_PATH "/textures/idspec.png");
-                    if (idspecific &&
+                    if (idspecific != GLEZ_TEXTURE_INVALID &&
                         playerlist::AccessData(steamID).state ==
                             playerlist::k_EState::CAT)
                         glez_rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
                             size, white, idspecific, 2 * 64, 1 * 64, 64, 64, 0);
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (steamID == steamidarray[i])
+                    if (idspecific != GLEZ_TEXTURE_INVALID)
+                        for (int i = 0; i < 4; i++)
                         {
-                            while (!idspecific)
-                                idspecific = glez_texture_load_png_rgba(
-                                    DATA_PATH "/textures/idspec.png");
-                            if (idspecific)
+                            if (steamID == steamidarray[i])
+                            {
+                                static int ii = 1;
+                                while (i > 3)
+                                {
+                                    ii++;
+                                    i -= 4;
+                                }
                                 glez_rect_textured(head_scr.x - size / 2,
                                                    head_scr.y - size / 2, size,
                                                    size, white, idspecific,
-                                                   i * 64, 1 * 64, 64, 64, 0);
-                            hascall = true;
+                                                   i * 64, ii * 64, 64, 64, 0);
+                                hascall = true;
+                            }
                         }
-                    }
                     if (textur && !hascall)
                         draw_api::draw_rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,

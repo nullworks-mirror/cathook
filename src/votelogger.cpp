@@ -15,7 +15,10 @@ static CatVar requeue(CV_SWITCH, "votelog_requeue", "1",
                       "Auto requeue on vote kick", "Auto requeue on vote kick");
 static CatVar anti_votekick(CV_SWITCH, "anti_votekick", "0", "anti-votekick",
                             "Prevent votekicks by lagging the server in a way "
-                            "that every vote comes is delayed.\ndo not forget to enable votelog and that this\nmakes the server be down for about 30 seconds\ncl_timeout 60 is a must");
+                            "that every vote comes is delayed.\ndo not forget "
+                            "to enable votelog and that this\nmakes the server "
+                            "be down for about 30 seconds\ncl_timeout 60 is a "
+                            "must");
 int antikick_ticks = 0;
 void user_message(bf_read &buffer, int type)
 {
@@ -52,7 +55,7 @@ void user_message(bf_read &buffer, int type)
             islocalplayer = true;
             if (anti_votekick && !antikick_ticks)
             {
-                antikick_ticks = 66 * 100;
+                antikick_ticks = 66 * 60;
                 for (int i = 0; i < (int) 70; i++)
                     g_IEngine->ServerCmd("voicemenu 0 0", false);
             }

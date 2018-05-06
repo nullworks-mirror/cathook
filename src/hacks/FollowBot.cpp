@@ -91,7 +91,7 @@ void WorldTick()
                     continue;
                 player_info_s info;
                 g_IEngine->GetPlayerInfo(entity->m_IDX, &info);
-                if ((int) follow_steam != info.friendsID) // steamid check
+                if ((int) follow_steam != (int) info.friendsID) // steamid check
                     continue;
                 if (!entity->m_bAlivePlayer) // Dont follow dead players
                     continue;

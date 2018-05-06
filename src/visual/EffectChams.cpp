@@ -129,7 +129,8 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     switch (ent->m_Type)
     {
     case ENTITY_BUILDING:
-        if (!ent->m_bEnemy && !(teammates || teammate_buildings) && (!(chamsR || chamsB || chamsG) && ent != LOCAL_E))
+        if (!ent->m_bEnemy && !(teammates || teammate_buildings) &&
+            (!(chamsR || chamsB || chamsG) && ent != LOCAL_E))
         {
             return colors::empty;
         }

@@ -104,7 +104,7 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     if (halloween_mode)
         holiday->SetValue(2);
     else if (holiday->m_nValue == 2)
-        holiday->SetValue(2);
+        holiday->SetValue(0);
 #endif
 
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");

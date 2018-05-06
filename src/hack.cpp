@@ -427,6 +427,7 @@ free(logname);*/
 #endif
 
     hacks::shared::walkbot::Initialize();
+    hacks::shared::esp::Init();
 
     logging::Info("Clearing initializer stack");
     while (!init_stack().empty())
