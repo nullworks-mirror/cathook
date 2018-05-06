@@ -91,7 +91,9 @@ void WorldTick()
                     continue;
                 player_info_s info;
                 g_IEngine->GetPlayerInfo(entity->m_IDX, &info);
-                if ((int) follow_steam != (int) info.friendsID) // steamid check
+                unsigned int xd = info.friendsID;
+                int xdd = xd;
+                if ((int)follow_steam != xdd) // steamid check
                     continue;
                 if (!entity->m_bAlivePlayer) // Dont follow dead players
                     continue;
@@ -153,6 +155,9 @@ void WorldTick()
 
     // If the player is close enough, we dont need to follow the path
     CachedEntity *followtar = ENTITY(follow_target);
+    // wtf is this needed
+    if (CE_BAD(followtar))
+    	return;
     auto tar_orig           = followtar->m_vecOrigin;
     auto loc_orig           = LOCAL_E->m_vecOrigin;
     auto dist_to_target     = loc_orig.DistTo(tar_orig);
