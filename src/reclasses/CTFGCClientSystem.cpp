@@ -50,8 +50,8 @@ bool CTFGCClientSystem::BConnectedToMatchServer(bool flag)
 bool CTFGCClientSystem::BHaveLiveMatch()
 {
     typedef int (*BHaveLiveMatch_t)(CTFGCClientSystem *);
-    static uintptr_t addr = gSignatures.GetClientSignature(
-        "55 31 C0 89 E5 53 8B 4D ? 0F B6 91");
+    static uintptr_t addr =
+        gSignatures.GetClientSignature("55 31 C0 89 E5 53 8B 4D ? 0F B6 91");
     static BHaveLiveMatch_t BHaveLiveMatch_fn = BHaveLiveMatch_t(addr);
     if (BHaveLiveMatch_fn == nullptr)
     {

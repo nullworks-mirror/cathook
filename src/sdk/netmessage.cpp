@@ -408,31 +408,32 @@ bool NET_SignonState::ReadFromBuffer(bf_read &buffer)
 
 const char *NET_SignonState::ToString(void) const
 {
-    return strfmt("net_SignonState: state %i, count %i", m_nSignonState, m_nSpawnCount);
+    return strfmt("net_SignonState: state %i, count %i", m_nSignonState,
+                  m_nSpawnCount);
 }
 
 const char *CLC_VoiceData::ToString(void) const
 {
-	return strfmt("%s: %i bytes", GetName(), m_nLength );
+    return strfmt("%s: %i bytes", GetName(), m_nLength);
 }
 
-bool CLC_VoiceData::WriteToBuffer( bf_write &buffer )
+bool CLC_VoiceData::WriteToBuffer(bf_write &buffer)
 {
-	buffer.WriteUBitLong( GetType(), NETMSG_TYPE_BITS );
+    buffer.WriteUBitLong(GetType(), NETMSG_TYPE_BITS);
 
-	m_nLength = m_DataOut.GetNumBitsWritten();
+    m_nLength = m_DataOut.GetNumBitsWritten();
 
-	buffer.WriteWord( m_nLength );	// length in bits
+    buffer.WriteWord(m_nLength); // length in bits
 
-	return buffer.WriteBits( m_DataOut.GetBasePointer(), m_nLength );
+    return buffer.WriteBits(m_DataOut.GetBasePointer(), m_nLength);
 }
 
-bool CLC_VoiceData::ReadFromBuffer( bf_read &buffer )
+bool CLC_VoiceData::ReadFromBuffer(bf_read &buffer)
 {
-	m_nLength = buffer.ReadWord();	// length in bits
-	m_DataIn = buffer;
+    m_nLength = buffer.ReadWord(); // length in bits
+    m_DataIn  = buffer;
 
-	return buffer.SeekRelative( m_nLength );
+    return buffer.SeekRelative(m_nLength);
 }
 
 bool NET_SetConVar::WriteToBuffer(bf_write &buffer)

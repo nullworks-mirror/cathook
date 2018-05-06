@@ -257,17 +257,23 @@ private:
 
 class CLC_VoiceData : public CNetMessage
 {
-	DECLARE_CLC_MESSAGE( VoiceData );
+    DECLARE_CLC_MESSAGE(VoiceData);
 
-	int	GetGroup() const { return INetChannelInfo::VOICE; }
+    int GetGroup() const
+    {
+        return INetChannelInfo::VOICE;
+    }
 
-	CLC_VoiceData() { m_bReliable = false; };
+    CLC_VoiceData()
+    {
+        m_bReliable = false;
+    };
 
 public:
-	int				m_nLength;
-	bf_read			m_DataIn;
-	bf_write		m_DataOut;
-	uint64			m_xuid;
+    int m_nLength;
+    bf_read m_DataIn;
+    bf_write m_DataOut;
+    uint64 m_xuid;
 };
 
 class NET_SetConVar : public CNetMessage

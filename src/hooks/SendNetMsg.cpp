@@ -12,7 +12,8 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
 
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0",
                        "Log sent messages");
-static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck", "");namespace hooked_methods
+static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck", "");
+namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                      bool force_reliable, bool voice)
