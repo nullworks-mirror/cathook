@@ -37,7 +37,7 @@ header += `
 
 var POPULATED_MAP = "";
 
-for (var clz in full_class_table) {
+for (var clz in fullClassTable) {
 	POPULATED_MAP += `\t\tclassid_mapping["${clz}"] = &${clz};\n`;
 }
 
