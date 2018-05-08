@@ -1,12 +1,12 @@
 const fs = require("fs");
 
-var full_class_table = {};
+var fullClassTable = {};
 try {
-	full_class_table = JSON.parse(fs.readFileSync("full-class-table.json").toString());
+	fullClassTable = JSON.parse(fs.readFileSync("full-class-table.json").toString());
 } catch (e) {}
 
 console.log("Generating dummy class header");
-console.log(full_class_table.Stringify);
+console.log(fullClassTable.Stringify);
 var header = `/*
 	AUTO-GENERATED HEADER - DO NOT MODIFY
 	NON-CONSTEXPR HEADER FOR $mod
@@ -21,7 +21,7 @@ namespace client_classes {
 	public:
 `;
 
-for (var clz in full_class_table) {
+for (var clz in fullClassTable) {
 	header += "\t\tint " + clz + " { 0 };\n";
 }
 

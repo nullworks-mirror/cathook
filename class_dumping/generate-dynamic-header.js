@@ -1,8 +1,8 @@
 const fs = require("fs");
 
-var full_class_table = {};
+var fullClassTable = {};
 try {
-	full_class_table = JSON.parse(fs.readFileSync("full-class-table.json").toString());
+	fullClassTable = JSON.parse(fs.readFileSync("full-class-table.json").toString());
 } catch (e) {}
 
 console.log("Generating dummy class header");
@@ -23,7 +23,7 @@ namespace client_classes {
 		void Populate();
 `;
 
-for (var clz in full_class_table) {
+for (var clz in fullClassTable) {
 	header += "\t\tint " + clz + " { 0 };\n";
 }
 
@@ -37,7 +37,7 @@ header += `
 
 var POPULATED_MAP = "";
 
-for (var clz in full_class_table) {
+for (var clz in fullClassTable) {
 	POPULATED_MAP += `\t\tclassid_mapping["${clz}"] = &${clz};\n`;
 }
 
