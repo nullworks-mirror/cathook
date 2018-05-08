@@ -2,7 +2,7 @@ const fs = require("fs");
 
 var full_class_table = {};
 try {
-	full_class_table = JSON.parse(fs.readFileSync("full-class-table.json").toString());
+	fullClassTable = JSON.parse(fs.readFileSync("full-class-table.json").toString());
 } catch (e) {}
 
 const file = fs.readFileSync(process.argv[2]).toString().split("\n");
