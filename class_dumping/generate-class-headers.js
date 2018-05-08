@@ -14,8 +14,8 @@ var classes = {};
 for (var i in file) {
 	var classInfo = /\[(\d+)\] (\w+)/gi.exec(file[i]);	
 	if (classInfo) {
-		fullClassTable[class_info[2]] = true;
-		classes[classInfo[2]] = parseInt(class_info[1]);
+		fullClassTable[classInfo[2]] = true;
+		classes[classInfo[2]] = parseInt(classInfo[1]);
 	}
 }
 
@@ -71,7 +71,7 @@ headerConstexpr += `
 #endif /* $mod_CONSTEXPR_AUTOGEN_HPP */`;
 
 fs.writeFileSync("include/classinfo/" + modname + ".gen.hpp", header.replace(/\$mod/g, modname));
-fs.writeFileSync("include/classinfo/" + modname + "_constexpr.gen.hpp", header_constexpr.replace(/\$mod/g, modname));
+fs.writeFileSync("include/classinfo/" + modname + "_constexpr.gen.hpp", headerConstexpr.replace(/\$mod/g, modname));
 
 
 console.log(classes);
