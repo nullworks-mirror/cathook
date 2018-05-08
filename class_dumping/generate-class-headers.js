@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-var full_class_table = {};
+var fullClassTable = {};
 try {
 	fullClassTable = JSON.parse(fs.readFileSync("full-class-table.json").toString());
 } catch (e) {}
@@ -12,16 +12,16 @@ console.log("Generating info for", modname, "from", process.argv[2]);
 
 var classes = {};
 for (var i in file) {
-	var class_info = /\[(\d+)\] (\w+)/gi.exec(file[i]);	
-	if (class_info) {
+	var classInfo = /\[(\d+)\] (\w+)/gi.exec(file[i]);	
+	if (classInfo) {
 		full_class_table[class_info[2]] = true;
-		classes[class_info[2]] = parseInt(class_info[1]);
+		classes[classInfo[2]] = parseInt(class_info[1]);
 	}
 }
 
 fs.writeFileSync("full-class-table.json", JSON.stringify(full_class_table));
 
-var header_constexpr = `/*
+var headerConstexpr = `/*
 	AUTO-GENERATED HEADER - DO NOT MODIFY
 	CONSTEXPR HEADER FOR $mod
 */
@@ -52,7 +52,7 @@ namespace client_classes {
 for (var clz in full_class_table) {
 	var value = "0";
 	if (classes[clz]) value = classes[clz];
-	header_constexpr += "\t\tstatic constexpr int " + clz + " = " + value + ";\n";
+	headerConstexpr += "\t\tstatic constexpr int " + clz + " = " + value + ";\n";
 	header += "\t\tint " + clz + " { " + value + " };\n";
 }
 
@@ -64,7 +64,7 @@ header += `
 
 #endif /* $mod_AUTOGEN_HPP */`;
 
-header_constexpr += `
+headerConstexpr += `
 	};
 }
 
