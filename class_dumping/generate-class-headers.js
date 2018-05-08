@@ -14,12 +14,12 @@ var classes = {};
 for (var i in file) {
 	var classInfo = /\[(\d+)\] (\w+)/gi.exec(file[i]);	
 	if (classInfo) {
-		full_class_table[class_info[2]] = true;
+		fullClassTable[class_info[2]] = true;
 		classes[classInfo[2]] = parseInt(class_info[1]);
 	}
 }
 
-fs.writeFileSync("full-class-table.json", JSON.stringify(full_class_table));
+fs.writeFileSync("full-class-table.json", JSON.stringify(fullClassTable));
 
 var headerConstexpr = `/*
 	AUTO-GENERATED HEADER - DO NOT MODIFY
@@ -49,7 +49,7 @@ namespace client_classes {
 	public:
 `;
 
-for (var clz in full_class_table) {
+for (var clz in fullClassTable) {
 	var value = "0";
 	if (classes[clz]) value = classes[clz];
 	headerConstexpr += "\t\tstatic constexpr int " + clz + " = " + value + ";\n";
