@@ -39,7 +39,7 @@ gdb -n -q -batch \
   -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
   -ex "call \$dlopen(\"$FILENAME\", 1)" \
   -ex "call dlerror()" \
-  -ex 'print (char *) $2' \
+  -ex "print (char *) $2" \
   -ex "catch syscall exit exit_group" \
   -ex "continue" \
   -ex "backtrace"
