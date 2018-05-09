@@ -51,6 +51,8 @@ Install cathook
 * `cmake .. && make`
 * `sudo make data`
 
+Make sure to put the required files in ../requirements/lib*, and cathook in ../cathook.
+
 ### Outdated (but might be helpful):
 
 You can use gcc-7 for compiling cathook if you add `-e CC=gcc-7 CXX=g++-7` to make command line
