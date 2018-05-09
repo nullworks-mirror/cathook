@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 if ! [ -d "$1" ]; then
-	echo "Creating cathook data directory at $1"
-	mkdir -p "$1"
-	chown -R $USER "$1"
-	chmod -R 777 "$1"
+	echo "Creating cathook data directory at /opt/cathook/data"
+	mkdir -p "/opt/cathook/data"
+	chown -R $USER "/opt/cathook/data"
+	chmod -R 777 "/opt/cathook/data"
 fi
 
-echo "Installing cathook data to $1"
-rsync -avh --progress "data/" "$1"
+echo "Installing cathook data to /opt/cathook/data"
+rsync -avh --progress "data/" "/opt/cathook/data"

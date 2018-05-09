@@ -226,8 +226,6 @@ void draw()
                     {
                         float nextcrit =
                             ((float) number - (float) lastusercmd) / (float) 90;
-                        nextcrit =
-                            ((float) number - (float) lastusercmd) / (float) 90;
                         if (nextcrit > 0.0f)
                         {
                             AddCenterString(

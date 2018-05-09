@@ -12,7 +12,7 @@ You can chat with other cathook users in [my official telegram group](https://t.
 
 ## Important
 
-Right now cathook isn't in its greatest state, a lot of things may not work/crash the game, please open issues on github using [this page](https://github.com/nullifiedcat/cathook/issues).
+Right now cathook isn't in its greatest state, a lot of things may not work/crash the game, please open issues on github using [this page](https://github.com/nullworks/cathook/issues).
 
 ## Overview
 
@@ -31,13 +31,13 @@ and a lot of useful features, including
 * Follow Bots
 * Working crit hack (does not work right now (works right now))
 
-[FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features) (list might be outdated)
+[FULL LIST OF FEATURES HERE](https://github.com/nullworks/cathook/wiki/List-of-features) (list might be outdated)
 
 # INSTALLATION
 
 You need CMake to build cathook, CMake should take care of dependencies
 
-Install [libglez](https://github.com/nullifiedcat/libglez), [libxoverlay](https://github.com/nullifiedcat/libxoverlay) and [simple-ipc](https://github.com/nullworks/simple-ipc)
+Install [libglez](https://github.com/nullworks/libglez), [libxoverlay](https://github.com/nullworks/libxoverlay) and [simple-ipc](https://github.com/nullworks/simple-ipc)
 
 * Clone the repo of library (`git clone <URL>`)
 * `mkdir build && cd build`
@@ -46,10 +46,12 @@ Install [libglez](https://github.com/nullifiedcat/libglez), [libxoverlay](https:
 
 Install cathook
 
-* `git clone --recursive https://github.com/nullifiedcat/cathook`
+* `git clone --recursive https://github.com/nullworks/cathook`
 * `cd cathook && mkdir build && cd build`
 * `cmake .. && make`
 * `sudo make data`
+
+Make sure to put the required files in ../requirements/lib*, and cathook in ../cathook.
 
 ### Outdated (but might be helpful):
 
@@ -93,7 +95,7 @@ If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the li
 
 Cathook installation script:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && bash build-tf2
+git clone --recursive https://github.com/nullworks/cathook && cd cathook && bash build-tf2
 ```
 
 **Errors while installing?**
@@ -127,7 +129,7 @@ You may also ask someone in our discord server to help you out.
 
 The installation script is as followed:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook-ipc-server && cd cathook-ipc-server && make -j4
+git clone --recursive https://github.com/nullworks/cathook-ipc-server && cd cathook-ipc-server && make -j4
 ```
 To run the Followbot server, run `./bin/cathook-ipc-server`. You can also use `./bin/cathook-ipc-server &>/dev/null &` to run it in background.
 
