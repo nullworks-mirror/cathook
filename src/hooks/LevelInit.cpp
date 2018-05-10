@@ -5,6 +5,7 @@
 
 #include <hacks/hacklist.hpp>
 #include "HookedMethods.hpp"
+#include "MiscTemporary.hpp"
 
 const char *skynum[] = { "sky_tf2_04",
                          "sky_upward",
@@ -80,6 +81,7 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 {
+	DelayTimer.update();
     playerlist::Save();
     votelogger::antikick_ticks         = 0;
     hacks::shared::lagexploit::bcalled = false;

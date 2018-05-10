@@ -22,6 +22,9 @@ CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
 CatVar serverlag_amount(
     CV_INT, "serverlag", "0", "serverlag",
     "Lag the server by spamming this many voicecommands per tick");
+CatVar serverlag_string(CV_STRING, "serverlag_string", "voicemenu 0 0", "serverlag string", "String to spam with serverlag");
+CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
+                              "Crash servers by spamming signon net messages");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
 bool *bSendPackets;
 
@@ -30,3 +33,6 @@ CatVar crypt_chat(
     "Start message with !! and it will be only visible to cathook users");
 
 int spectator_target;
+CLC_VoiceData *voicecrash{};
+Timer DelayTimer{};
+CatVar delay(CV_INT, "delay", "0", "Delay", "Delay actions like chat spam and serverlag/crash by this many seconds.");

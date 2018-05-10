@@ -20,9 +20,14 @@ extern CatVar joinclass;
 extern CatVar jointeam;
 extern CatVar fakelag_amount;
 extern CatVar serverlag_amount;
+extern CatVar serverlag_string;
+extern CatVar servercrash;
 extern CatVar debug_projectiles;
 extern CatVar semiauto;
 extern CatVar engine_pred;
+extern Timer DelayTimer;
+extern CatVar delay;
 #if ENABLE_VISUALS
 extern int spectator_target;
+extern CLC_VoiceData *voicecrash;
 #endif

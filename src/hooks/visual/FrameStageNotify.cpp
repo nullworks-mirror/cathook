@@ -9,8 +9,6 @@
 
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 static CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
-static CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
-                          "Crash servers by spamming signon net messages");
 namespace hooked_methods
 {
 
