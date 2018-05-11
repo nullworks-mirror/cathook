@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if ! [ -d "$1" ]; then
+if ! [ -d "/opt/cathook/data" ]; then
 	echo "Creating cathook data directory at /opt/cathook/data"
 	mkdir -p "/opt/cathook/data"
 	chown -R $USER "/opt/cathook/data"
