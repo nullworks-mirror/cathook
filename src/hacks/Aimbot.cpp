@@ -33,6 +33,8 @@ static CatVar aimkey_mode(aimkey_modes_enum, "aimbot_aimkey_mode", "1",
 static CatVar autoshoot(CV_SWITCH, "aimbot_autoshoot", "1", "Autoshoot",
                         "Shoot automatically when the target is locked, isn't "
                         "compatible with 'Enable when attacking'");
+static CatVar multipoint(CV_SWITCH, "aimbot_multipoint", "1", "Multipoint",
+                         "Multipoint aimbot");
 static CatEnum hitbox_mode_enum({ "AUTO", "AUTO-CLOSEST", "STATIC" });
 static CatVar hitbox_mode(hitbox_mode_enum, "aimbot_hitboxmode", "0",
                           "Hitbox Mode", "Defines hitbox selection mode");
@@ -690,6 +692,55 @@ void Aim(CachedEntity *entity)
 
     // Get angles
     Vector tr = (PredictEntity(entity) - g_pLocalPlayer->v_Eye);
+
+    // Multipoint
+    if (multipoint && !projectile_mode)
+    {
+        // Get hitbox num
+        AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
+        float minx, maxx, miny, maxy, minz, maxz, centerx, centery, centerz;
+        auto hitbox = entity->hitboxes.GetHitbox(cd.hitbox);
+
+        // get positions
+        minx = hitbox->min.x;
+        miny = hitbox->min.y;
+        maxx = hitbox->max.x;
+        maxy = hitbox->max.y;
+        minz = hitbox->min.z;
+        maxz = hitbox->max.z;
+        centerx = hitbox->center.x;
+        centery = hitbox->center.y;
+        centerz = hitbox->center.z;
+
+        // Shrink positions
+        std::vector<Vector> positions;
+        minx += (maxx - minx) / 6;
+        maxx -= (maxx - minx) / 6;
+        maxy -= (maxy - miny) / 6;
+        miny += (maxy - miny) / 6;
+        maxz -= (maxz - minz) / 6;
+        minz += (maxz - minz) / 6;
+        // Create Vectors
+        positions.push_back({minx, centery, minz});
+        positions.push_back({maxx, centery, minz});
+        positions.push_back({minx, centery, maxz});
+        positions.push_back({maxx, centery, maxz});
+        positions.push_back({centerx, miny, minz});
+        positions.push_back({centerx, maxy, minz});
+        positions.push_back({centerx, miny, maxz});
+        positions.push_back({centerx, maxy, maxz});
+        positions.push_back({minx, miny, centerz});
+        positions.push_back({maxx, maxy, centerz});
+        positions.push_back({minx, miny, centerz});
+        positions.push_back({maxx, maxy, centerz});
+        positions.push_back(hitbox->center);
+        for (auto pos : positions)
+            if (IsVectorVisible(g_pLocalPlayer->v_Eye, pos))
+            {
+                tr = (pos - g_pLocalPlayer->v_Eye);
+                break;
+            }
+    }
     Vector angles;
     VectorAngles(tr, angles);
     // Clamping is important

@@ -98,6 +98,10 @@ struct offsets
     {
         return PlatformOffset(36, undefined, undefined);
     }
+    static constexpr uint32_t WriteUsercmdDeltaToBuffer()
+    {
+        return PlatformOffset(22, undefined, 22);
+    }
     static constexpr uint32_t CanPacket()
     {
         return PlatformOffset(57, undefined, undefined);

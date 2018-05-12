@@ -33,6 +33,9 @@ if grep -q "$FILENAME" /proc/"$proc"/maps; then
   exit
 fi
 
+sudo killall -19 steam
+sudo killall -19 steamwebhelper
+
 echo loading "$FILENAME" to "$proc"
 gdb -n -q -batch \
   -ex "attach $proc" \
@@ -43,3 +46,6 @@ gdb -n -q -batch \
   -ex "catch syscall exit exit_group" \
   -ex "continue" \
   -ex "backtrace"
+
+sudo killall -18 steamwebhelper
+sudo killall -18 steam

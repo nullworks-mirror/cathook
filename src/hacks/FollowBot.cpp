@@ -92,8 +92,8 @@ void WorldTick()
                 player_info_s info;
                 g_IEngine->GetPlayerInfo(entity->m_IDX, &info);
                 unsigned int xd = info.friendsID;
-                int xdd = xd;
-                if ((int)follow_steam != xdd) // steamid check
+                int xdd         = xd;
+                if ((int) follow_steam != xdd) // steamid check
                     continue;
                 if (!entity->m_bAlivePlayer) // Dont follow dead players
                     continue;
@@ -157,10 +157,10 @@ void WorldTick()
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed
     if (CE_BAD(followtar))
-    	return;
-    auto tar_orig           = followtar->m_vecOrigin;
-    auto loc_orig           = LOCAL_E->m_vecOrigin;
-    auto dist_to_target     = loc_orig.DistTo(tar_orig);
+        return;
+    auto tar_orig       = followtar->m_vecOrigin;
+    auto loc_orig       = LOCAL_E->m_vecOrigin;
+    auto dist_to_target = loc_orig.DistTo(tar_orig);
     if (dist_to_target < 30)
         breadcrumbs.clear();
 
