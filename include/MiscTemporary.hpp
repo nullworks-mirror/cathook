@@ -27,6 +27,7 @@ extern CatVar semiauto;
 extern CatVar engine_pred;
 extern Timer DelayTimer;
 extern CatVar delay;
+extern CatVar adjust;
 #if ENABLE_VISUALS
 extern int spectator_target;
 extern CLC_VoiceData *voicecrash;

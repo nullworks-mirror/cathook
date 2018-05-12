@@ -255,6 +255,28 @@ private:
     char m_szCvarNameBuffer[256];
 };
 
+class CLC_Move : public CNetMessage
+{
+    DECLARE_CLC_MESSAGE(Move);
+
+    int GetGroup() const
+    {
+        return INetChannelInfo::MOVE;
+    }
+
+    CLC_Move()
+    {
+        m_bReliable = false;
+    }
+
+public:
+    int m_nBackupCommands;
+    int m_nNewCommands;
+    int m_nLength;
+    bf_read m_DataIn;
+    bf_write m_DataOut;
+};
+
 class CLC_VoiceData : public CNetMessage
 {
     DECLARE_CLC_MESSAGE(VoiceData);

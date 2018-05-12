@@ -81,7 +81,7 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 {
-	DelayTimer.update();
+    DelayTimer.update();
     playerlist::Save();
     votelogger::antikick_ticks         = 0;
     hacks::shared::lagexploit::bcalled = false;

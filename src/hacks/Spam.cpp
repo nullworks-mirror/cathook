@@ -270,8 +270,8 @@ bool FormatSpamMessage(std::string &message)
 
 void CreateMove()
 {
-	if (!DelayTimer.check((int)delay * 1000))
-		return;
+    if (!DelayTimer.check((int) delay * 1000))
+        return;
     IF_GAME(IsTF2())
     {
         // Spam changes the tournament name in casual and compeditive gamemodes

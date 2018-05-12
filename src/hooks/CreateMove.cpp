@@ -481,22 +481,29 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     senddata.SetNetChannel(ch);
     senddata.SetReliable(false);
-    if (servercrash && DelayTimer.check((int)delay * 1000)) {
-        for (int i = 0; i < 7800; i+= sizeof(serverlag_string.GetString()))
+    if (servercrash && DelayTimer.check((int) delay * 1000))
+    {
+        for (int i = 0; i < 7800; i += sizeof(serverlag_string.GetString()))
             ch->SendNetMsg(senddata);
         ch->Transmit();
     }
     if (serverlag_amount || votelogger::antikick_ticks)
     {
+        float latency =
+            g_IEngine->GetNetChannelInfo()->GetAvgPackets(FLOW_INCOMING);
+        logging::Info("%f", latency);
+        if (latency > 200 && adjust)
+            serverlag_amount = (int) serverlag_amount + 1;
         if (votelogger::antikick_ticks)
             votelogger::antikick_ticks--;
         if (votelogger::antikick_ticks)
         {
-            for (int i = 0; i < 7800; i+= sizeof(serverlag_string.GetString()))
+            for (int i = 0; i < 7800; i += sizeof(serverlag_string.GetString()))
                 ch->SendNetMsg(senddata, false);
             ch->Transmit();
         }
-        else if (!votelogger::antikick_ticks && DelayTimer.check((int)delay * 1000))
+        else if (!votelogger::antikick_ticks &&
+                 DelayTimer.check((int) delay * 1000))
         {
             for (int i = 0; i < (int) serverlag_amount; i++)
                 ch->SendNetMsg(senddata, false);
