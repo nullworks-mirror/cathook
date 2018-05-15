@@ -29,7 +29,9 @@
 #include "AutoDeadringer.hpp"
 #include "Bunnyhop.hpp"
 #include "LagExploit.hpp"
+#if ENABLE_VISUALS
 #include "Radar.hpp"
+#endif
 #include "Walkbot.hpp"
 #include "AutoJoin.hpp"
 #include "AntiBackstab.hpp"
