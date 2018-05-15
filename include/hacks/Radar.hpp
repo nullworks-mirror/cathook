@@ -6,7 +6,7 @@
  */
 
 #pragma once
-
+#if ENABLE_VISUALS
 #include "visual/atlas.hpp"
 #include "common.hpp"
 
@@ -21,3 +21,4 @@ void Draw();
 }
 }
 }
+#endif
