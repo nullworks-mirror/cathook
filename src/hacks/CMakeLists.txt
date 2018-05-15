@@ -16,6 +16,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/AutoSticky.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AutoTaunt.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Bunnyhop.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/Backtrack.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/CatBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/FollowBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/HealArrows.cpp"
@@ -27,7 +28,8 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/Spam.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/UberSpam.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/Radar.cpp")
 
 if(EnableVisuals)
     target_sources(cathook PRIVATE

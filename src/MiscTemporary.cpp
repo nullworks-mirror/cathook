@@ -12,7 +12,7 @@ CatVar jointeam(CV_SWITCH, "fb_autoteam", "1",
 CatVar joinclass(CV_STRING, "fb_autoclass", "spy",
                  "Class that will be picked after joining a team (NYI)");
 
-CatVar nolerp(CV_SWITCH, "nolerp", "0", "NoLerp mode (experimental)");
+CatVar nolerp(CV_SWITCH, "nolerp", "1", "NoLerp mode (experimental)");
 
 CatVar engine_pred(CV_SWITCH, "engine_prediction", "0", "Engine Prediction");
 CatVar debug_projectiles(CV_SWITCH, "debug_projectiles", "0",

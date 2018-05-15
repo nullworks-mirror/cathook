@@ -100,6 +100,7 @@ VMTHook baseclientstate8{};
 VMTHook clientmode{};
 VMTHook panel{};
 VMTHook client{};
+VMTHook engine{};
 VMTHook ctfpartyclient;
 VMTHook netchannel{};
 VMTHook clientdll{};

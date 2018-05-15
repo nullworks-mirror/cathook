@@ -16,8 +16,6 @@ namespace tf
 {
 namespace radar
 {
-
-void Init();
 std::pair<int, int> WorldToRadar(int x, int y);
 void Draw();
 }

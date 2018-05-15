@@ -111,6 +111,7 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
     hacks::shared::aimbot::Reset();
+    hacks::shared::backtrack::Init();
     chat_stack::Reset();
     hacks::shared::anticheat::ResetEverything();
     original::LevelInit(this_, name);

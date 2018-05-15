@@ -68,6 +68,8 @@ DECLARE_HOOKED_METHOD(FireEventClientSide, bool, IGameEventManager2 *,
 #if ENABLE_VISUALS
 // ClientMode
 DECLARE_HOOKED_METHOD(OverrideView, void, void *, CViewSetup *);
+// g_IEngine
+DECLARE_HOOKED_METHOD(IsPlayingTimeDemo, bool);
 // IVModelRender
 DECLARE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *,
                       const DrawModelState_t &, const ModelRenderInfo_t &,
