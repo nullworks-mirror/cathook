@@ -19,19 +19,20 @@ class sprite;
 class sprite
 {
 public:
-    sprite(float x, float y, float w, float h, const texture_atlas &atlas);
+    sprite(float x, float y, float w, float h, texture_atlas &atlas);
 
 public:
+    void setsprite(float x, float y, float w, float h);
     void draw(float scrx, float scry, float scrw, float scrh,
-              const rgba_t &rgba) const;
+              const rgba_t &rgba);
 
 public:
-    const float nx;
-    const float ny;
-    const float nw;
-    const float nh;
+    float nx;
+    float ny;
+    float nw;
+    float nh;
 
-    const texture_atlas &atlas;
+    texture_atlas &atlas;
 };
 
 class texture_atlas
@@ -40,7 +41,7 @@ public:
     texture_atlas(std::string filename, float width, float height);
 
 public:
-    sprite create_sprite(float x, float y, float sx, float sy) const;
+    sprite create_sprite(float x, float y, float sx, float sy);
 
 public:
     const float width;

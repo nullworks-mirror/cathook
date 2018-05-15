@@ -81,7 +81,7 @@ void WorldTick()
         if (follow_steam)
         {
             // Find a target with the steam id, as it is prioritized
-            auto ent_count = g_IEngine->GetMaxClients();
+            auto ent_count = HIGHEST_ENTITY;
             for (int i = 0; i < ent_count; i++)
             {
                 auto entity = ENTITY(i);
@@ -89,12 +89,10 @@ void WorldTick()
                     continue;
                 if (entity->m_Type != ENTITY_PLAYER)
                     continue;
-                player_info_s info;
-                g_IEngine->GetPlayerInfo(entity->m_IDX, &info);
-                unsigned int xd = info.friendsID;
-                int xdd         = xd;
-                if ((int) follow_steam != xdd) // steamid check
+                if ((int)follow_steam + 18 != entity->player_info.friendsID) // steamid check
                     continue;
+                logging::Info("Success");
+
                 if (!entity->m_bAlivePlayer) // Dont follow dead players
                     continue;
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
@@ -149,7 +147,7 @@ void WorldTick()
             }
         }
         // last check for entity before we continue
-        if (!follow_target)
+if (!follow_target)
             return;
     }
 

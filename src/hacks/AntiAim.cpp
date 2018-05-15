@@ -15,7 +15,7 @@ namespace shared
 namespace antiaim
 {
 
-CatVar communicate(CV_SWITCH, "identify", "1", "identify",
+CatVar communicate(CV_SWITCH, "identify", "0", "identify",
                    "Auto identify for other cathook users");
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
                "Master AntiAim switch");

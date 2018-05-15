@@ -140,6 +140,11 @@ void DrawCheatVisuals()
         }
         IF_GAME(IsTF2())
         {
+        	PROF_SECTION(DRAW_backtracc);
+        	hacks::shared::backtrack::Draw();
+        }
+        IF_GAME(IsTF2())
+        {
             PROF_SECTION(DRAW_healarrows);
             hacks::tf2::healarrow::Draw();
         }

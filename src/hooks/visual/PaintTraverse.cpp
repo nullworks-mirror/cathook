@@ -4,6 +4,7 @@
 */
 
 #include "HookedMethods.hpp"
+#include "Radar.hpp"
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
                          "Clean screenshots",
@@ -44,9 +45,6 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
     if (!textures_loaded)
     {
         textures_loaded = true;
-#ifndef FEATURE_RADAR_DISABLED
-        hacks::tf::radar::Init();
-#endif
     }
 #endif
     if (pure_bypass)

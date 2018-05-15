@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include "Backtrack.hpp"
 
 /*
  * Targeting priorities:

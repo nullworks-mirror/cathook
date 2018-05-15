@@ -172,4 +172,8 @@ struct offsets
     {
         return PlatformOffset(14, undefined, undefined);
     }
+    static constexpr uint32_t IsPlayingTimeDemo()
+    {
+        return PlatformOffset(77, undefined, 77);
+    }
 };

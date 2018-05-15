@@ -29,6 +29,7 @@
 #include "AutoDeadringer.hpp"
 #include "Bunnyhop.hpp"
 #include "LagExploit.hpp"
+#include "Radar.hpp"
 #include "Walkbot.hpp"
 #include "AutoJoin.hpp"
 #include "AntiBackstab.hpp"
@@ -46,3 +47,4 @@
 #include "Announcer.hpp"
 #include "Killstreak.hpp"
 #include "CatBot.hpp"
+#include "Backtrack.hpp"
