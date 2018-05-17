@@ -10,7 +10,7 @@
 namespace hacks {
 namespace shared {
 namespace backtrack {
-CatVar enable(CV_SWITCH, "backtrack", "1", "Enable backtrack", "For legit play only as of right now.");
+CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack", "For legit play only as of right now.");
 BacktrackData headPositions[24][12];
 
 //=======================================================================
