@@ -718,6 +718,10 @@ static const std::string list_tf2 = R"(
 				"spyalert_interval"
 				"spyalert_warning"
 				]
+				"Backtrack" [
+				"Backtrack Menu"
+				"backtrack"
+				]
 				"Anti Cheat" [
 				"Anti Cheat Menu"
 				"ac_enabled"
