@@ -3,7 +3,7 @@
 	url = https://github.com/ValveSoftware/source-sdk-2013
 [submodule "ucccccp"]
 	path = ucccccp
-	url = https://github.com/nullifiedcat/ucccccp
+	url = https://github.com/nullworks/ucccccp
 [submodule "source-sdk-2013-headers"]
 	path = source-sdk-2013-headers
-	url = https://github.com/nullifiedcat/source-sdk-2013-headers
+	url = https://github.com/nullworks/source-sdk-2013-headers
