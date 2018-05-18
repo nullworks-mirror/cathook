@@ -523,6 +523,13 @@
 			},
 			{
 				"type": "list",
+				"name": "Backtrack",
+				"list": [
+					"backtrack"
+				]
+			},
+			{
+				"type": "list",
 				"name": "Debug Settings",
 				"list": [
 					"enabled",
