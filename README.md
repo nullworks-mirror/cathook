@@ -5,7 +5,7 @@
 
 ## Risk of VAC detection
 
-The software is most likely detected. Only use it on accounts you won't regret getting VAC banned.
+The software Might be VAC detected. Only use it on accounts you won't regret getting VAC banned.
 
 ## Community
 You can chat with other cathook users in [my official telegram group](https://t.me/nullifiedcat).
@@ -35,6 +35,12 @@ and a lot of useful features, including
 
 # INSTALLATION
 
+## Automatic:
+If you already downloaded the repo, simply run `install-all`, else:
+`git clone --recursive https://github.com/nullworks/One-in-all-cathook-install/blob/master/install-all.git`
+and run it's install-all script.
+
+## Manual:
 You need CMake to build cathook, CMake should take care of dependencies
 
 Install [libglez](https://github.com/nullworks/libglez), [libxoverlay](https://github.com/nullworks/libxoverlay) and [simple-ipc](https://github.com/nullworks/simple-ipc)
