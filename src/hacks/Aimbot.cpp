@@ -206,6 +206,10 @@ void CreateMove()
     if (CE_BAD(target_entity) || !foundTarget)
         return;
 
+    if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
+    	return;
+    if (!target_entity->hitboxes.GetHitbox(calculated_data_array[target_entity->m_IDX].hitbox))
+    	return;
     // Auto-zoom
     IF_GAME(IsTF())
     {
@@ -700,7 +704,6 @@ void Aim(CachedEntity *entity)
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
         float minx, maxx, miny, maxy, minz, maxz, centerx, centery, centerz;
         auto hitbox = entity->hitboxes.GetHitbox(cd.hitbox);
-
         // get positions
         minx = hitbox->min.x;
         miny = hitbox->min.y;
