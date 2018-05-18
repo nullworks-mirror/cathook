@@ -36,8 +36,10 @@ and a lot of useful features, including
 # INSTALLATION
 
 ## Automatic:
-If you already downloaded the repo, simply run `install-all`, else:
-`git clone --recursive https://github.com/nullworks/One-in-all-cathook-install/blob/master/install-all.git`
+If you already downloaded the repo, simply run 
+*`install-all`
+else run this command:
+*`git clone --recursive https://github.com/nullworks/One-in-all-cathook-install/blob/master/install-all.git`
 and run it's install-all script.
 
 ## Manual:
