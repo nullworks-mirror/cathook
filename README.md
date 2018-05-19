@@ -36,10 +36,7 @@ and a lot of useful features, including
 # INSTALLATION
 
 ## Automatic: (Ubuntu based only)
-If you already downloaded the repo, simply run 
-* `install-all`
-
-Else simply run:
+Run in terminal:
 
 * `wget https://raw.githubusercontent.com/nullworks/cathook/master/install-all && bash install-all`
 
