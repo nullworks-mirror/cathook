@@ -25,5 +25,4 @@ git clone --recursive https://github.com/nullworks/simple-ipc.git;cd simple-ipc;
 #
 # Build cathook
 #
-
-mkdir build;cd build;cmake ..;make -j$(grep -c '^processor' /proc/cpuinfo);make data
+git clone --recursive https://github.com/nullworks/cathook.git;cd cathook;mkdir build;cd build;cmake ..;make -j$(grep -c '^processor' /proc/cpuinfo);make data
