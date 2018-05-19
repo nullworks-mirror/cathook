@@ -35,14 +35,13 @@ and a lot of useful features, including
 
 # INSTALLATION
 
-## Automatic:
+## Automatic: (Ubuntu based only)
 If you already downloaded the repo, simply run 
 * `install-all`
 
 Else simply run:
 
-* `git clone --recursive https://github.com/nullworks/One-in-all-cathook-install/blob/master/install-all.git`
-and run it's install-all script.
+* `wget https://raw.githubusercontent.com/nullworks/cathook/master/install-all && bash install-all`
 
 ## Manual:
 You need CMake to build cathook, CMake should take care of dependencies
