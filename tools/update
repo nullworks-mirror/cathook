@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
+rm ./updater
+wget https://raw.githubusercontent.com/TotallyNotElite/cathook/testingbranch01/tools/updater
+bash updater
 
+: '
 cd cathook
 
 update()
@@ -20,4 +24,4 @@ update
 cd build; cmake ..; make; cd ..; cd ..
 
 cp -a -u ./cathook/tools/. ./; rm ./README
-
+'
