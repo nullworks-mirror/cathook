@@ -36,3 +36,4 @@ git clone --recursive https://github.com/nullworks/cathook.git;cd cathook;mkdir 
 
 cp -a -u ./cathook/tools/. ./
 rm ./README
+cd ..; rm install-all
