@@ -15,7 +15,7 @@ namespace backtrack
 {
 CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
               "For legit play only as of right now.");
-extern CatVar draw_bt(CV_SWITCH, "backtrack_draw", "0", "Draw", "Draw backtrack ticks");
+CatVar draw_bt(CV_SWITCH, "backtrack_draw", "0", "Draw", "Draw backtrack ticks");
 BacktrackData headPositions[24][13];
 
 //=======================================================================
