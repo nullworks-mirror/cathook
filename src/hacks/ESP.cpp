@@ -349,15 +349,18 @@ void CreateMove()
 
             if (i <= g_IEngine->GetMaxClients())
             {
-                for (int j            = 0; j < 18; ++j)
-                    hitboxcache[i][j] = ent->hitboxes.GetHitbox(j);
-                if (draw_bones && ent->m_Type == ENTITY_PLAYER)
+                if (!CE_BAD(ent))
                 {
-                    modelcache[i] = RAW_ENT(ent)->GetModel();
-                    if (modelcache[i])
+                    for (int j            = 0; j < 18; ++j)
+                        hitboxcache[i][j] = ent->hitboxes.GetHitbox(j);
+                    if (draw_bones && ent->m_Type == ENTITY_PLAYER)
                     {
-                        stdiocache[i] =
-                            g_IModelInfo->GetStudiomodel(modelcache[i]);
+                        modelcache[i] = RAW_ENT(ent)->GetModel();
+                        if (modelcache[i])
+                        {
+                            stdiocache[i] =
+                                g_IModelInfo->GetStudiomodel(modelcache[i]);
+                        }
                     }
                 }
             }

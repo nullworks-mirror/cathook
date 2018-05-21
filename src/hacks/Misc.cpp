@@ -116,6 +116,7 @@ CatCommand
 
 void CreateMove()
 {
+#if not LAGBOT_MODE
     // Crithack
     static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
     static int tries, cmdn, md5seed, rseed, c, b;
@@ -354,6 +355,7 @@ void CreateMove()
         if (nopush_enabled == pNoPush->GetBool())
             pNoPush->SetValue(!nopush_enabled);
     }
+#endif
 }
 
 #if ENABLE_VISUALS

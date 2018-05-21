@@ -679,11 +679,8 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     {
         IF_GAME(IsTF2())
         {
-            rspeed = re::C_TFWeaponBaseGun::GetProjectileSpeed(
-                RAW_ENT(g_pLocalPlayer->weapon()));
-            // TODO Wrong grenade launcher gravity
-            rgrav = re::C_TFWeaponBaseGun::GetProjectileGravity(
-                RAW_ENT(g_pLocalPlayer->weapon()));
+            rspeed = 1200.0f;
+            rgrav  = 0.4f;
         }
         else IF_GAME(IsTF2C())
         {
@@ -693,10 +690,13 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     }
     else if (weapon->m_iClassID == CL_CLASS(CTFCompoundBow))
     {
-        rspeed = re::C_TFWeaponBaseGun::GetProjectileSpeed(
-            RAW_ENT(g_pLocalPlayer->weapon()));
-        rgrav = re::C_TFWeaponBaseGun::GetProjectileGravity(
-            RAW_ENT(g_pLocalPlayer->weapon()));
+        float chargetime =
+            g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
+        rspeed = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) * 800.0) +
+                          1800.0);
+        rgrav = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) *
+                                  -0.40000001) +
+                         0.5);
     }
     else if (weapon->m_iClassID == CL_CLASS(CTFBat_Wood))
     {

@@ -17,6 +17,7 @@ set_property(CACHE Game PROPERTY STRINGS ${GameValues})
 
 
 set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
+set(LagbotMode 0 CACHE BOOL "Build light cathook made for lagbots")
 set(ExternalDrawing 0 CACHE BOOL "External Visuals")
 set(EnableGUI 1 CACHE BOOL "Enable GUI")
 set(EnableIPC 1 CACHE BOOL "Enable IPC")

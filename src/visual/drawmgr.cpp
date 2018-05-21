@@ -140,8 +140,8 @@ void DrawCheatVisuals()
         }
         IF_GAME(IsTF2())
         {
-        	PROF_SECTION(DRAW_backtracc);
-        	hacks::shared::backtrack::Draw();
+            PROF_SECTION(DRAW_backtracc);
+            hacks::shared::backtrack::Draw();
         }
         IF_GAME(IsTF2())
         {

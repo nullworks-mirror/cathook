@@ -75,7 +75,6 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 
 namespace hooked_methods
 {
-
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                      CUserCmd *cmd)
 {
@@ -90,7 +89,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 
     tickcount++;
     g_pUserCmd = cmd;
-
+#if not LAGBOT_MODE
     IF_GAME(IsTF2C())
     {
         if (CE_GOOD(LOCAL_W) && minigun_jump &&
@@ -99,7 +98,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
         }
     }
-
+#endif
     ret = original::CreateMove(this_, input_sample_time, cmd);
 
     PROF_SECTION(CreateMove);
@@ -192,6 +191,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     hacks::shared::autojoin::Update();
 
 #if ENABLE_IPC
+#if not LAGBOT_MODE
     static int team_joining_state  = 0;
     static float last_jointeam_try = 0;
     CachedEntity *found_entity, *ent;
@@ -260,8 +260,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         }
     }
 #endif
+#endif
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
+#if not LAGBOT_MODE
         IF_GAME(IsTF2())
         {
             UpdateHoovyList();
@@ -273,9 +275,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             hacks::shared::esp::CreateMove();
         }
 #endif
+#endif
         *bSendPackets = true;
         if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon()))
         {
+#if not LAGBOT_MODE
             {
                 PROF_SECTION(CM_walkbot);
                 hacks::shared::walkbot::Move();
@@ -313,8 +317,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E),
                                                        g_pUserCmd);
             {
-            	PROF_SECTION(CM_backtracc);
-            	hacks::shared::backtrack::Run();
+                PROF_SECTION(CM_backtracc);
+                hacks::shared::backtrack::Run();
             }
             {
                 PROF_SECTION(CM_aimbot);
@@ -371,7 +375,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             if (debug_projectiles)
                 projectile_logging::Update();
             Prediction_CreateMove();
+#endif
         }
+#if not LAGBOT_MODE
         {
             PROF_SECTION(CM_misc);
             hacks::shared::misc::CreateMove();
@@ -380,19 +386,23 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             PROF_SECTION(CM_crits);
             criticals::create_move();
         }
+#endif
         {
             PROF_SECTION(CM_spam);
             hacks::shared::spam::CreateMove();
         }
+#if not LAGBOT_MODE
         {
             PROF_SECTION(CM_AC);
             angles::Update();
             hacks::shared::anticheat::CreateMove();
         }
+#endif
     }
     if (time_replaced)
         g_GlobalVars->curtime = curtime_old;
     g_Settings.bInvalid       = false;
+#if not LAGBOT_MODE
     {
         PROF_SECTION(CM_chat_stack);
         chat_stack::OnCreateMove();
@@ -405,6 +415,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         PROF_SECTION(CM_lagexploit);
         hacks::shared::lagexploit::CreateMove();
     }
+#endif
 
 // TODO Auto Steam Friend
 
@@ -419,7 +430,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         }
     }
 #endif
-
+#if not LAGBOT_MODE
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         static int fakelag_queue = 0;
@@ -481,6 +492,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         if (cmd)
             g_Settings.last_angles = cmd->viewangles;
     }
+#endif
     NET_StringCmd senddata(serverlag_string.GetString());
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     senddata.SetNetChannel(ch);
@@ -493,11 +505,24 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     }
     if (serverlag_amount || votelogger::antikick_ticks)
     {
-        float latency =
-            g_IEngine->GetNetChannelInfo()->GetAvgPackets(FLOW_INCOMING);
-        logging::Info("%f", latency);
-        if (latency > 200 && adjust)
-            serverlag_amount = (int) serverlag_amount + 1;
+        if (adjust)
+        {
+            if ((int) serverlag_amount == 1)
+                serverlag_amount = (int) serverlag_amount + 10;
+            if (ch->GetAvgData(FLOW_INCOMING) == prevflow)
+            {
+                if (prevflowticks > 66 * (int) adjust)
+                    serverlag_amount = (int) serverlag_amount - 1;
+                prevflowticks++;
+            }
+            if (ch->GetAvgData(FLOW_INCOMING) != prevflow)
+            {
+                if (prevflowticks < 66 * (int) adjust)
+                    serverlag_amount = (int) serverlag_amount + 1;
+                prevflowticks        = 0;
+            }
+            prevflow = ch->GetAvgData(FLOW_INCOMING);
+        }
         if (votelogger::antikick_ticks)
             votelogger::antikick_ticks--;
         if (votelogger::antikick_ticks)

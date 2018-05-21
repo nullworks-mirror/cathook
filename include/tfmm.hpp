@@ -12,5 +12,6 @@ namespace tfmm
 
 void queue_start();
 void queue_leave();
+void dcandabandon();
 void abandon();
 }

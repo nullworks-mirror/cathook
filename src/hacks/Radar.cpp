@@ -82,7 +82,6 @@ std::pair<int, int> WorldToRadar(int x, int y)
 }
 bool loaded = false;
 
-
 textures::texture_atlas texture(DATA_PATH "/res/atlas.png", 1024, 512);
 
 void DrawEntity(int x, int y, CachedEntity *ent)
@@ -101,20 +100,21 @@ void DrawEntity(int x, int y, CachedEntity *ent)
         else if (texture.texture.handle != GLEZ_TEXTURE_INVALID)
             loaded = true;
         else
-        	return;
+            return;
     }
     struct basesprite
     {
-    	textures::sprite sprite = texture.create_sprite(0, 0, 0, 0);
+        textures::sprite sprite = texture.create_sprite(0, 0, 0, 0);
     };
     static std::array<std::array<basesprite, 9>, 3> tx_class;
     static std::array<basesprite, 2> tx_teams;
     static std::array<basesprite, 2> tx_items;
     for (int i = 0; i < 3; i++)
-    	for (int j = 0; j < 9; j++)
-    		tx_class[i][j].sprite.setsprite(64 * j, texture.height -64 * (i + 1), 64, 64);
+        for (int j = 0; j < 9; j++)
+            tx_class[i][j].sprite.setsprite(
+                64 * j, texture.height - 64 * (i + 1), 64, 64);
     tx_teams[0].sprite.setsprite(11 * 64, texture.height - 128, 64, 64);
-    tx_teams[1].sprite.setsprite(11 * 64, texture.height -64, 64, 64);
+    tx_teams[1].sprite.setsprite(11 * 64, texture.height - 64, 64, 64);
 
     tx_items[0].sprite.setsprite(10 * 64, texture.height - 64, 64, 64);
     tx_items[1].sprite.setsprite(10 * 64, texture.height - 128, 64, 64);

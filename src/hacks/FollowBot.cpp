@@ -89,7 +89,8 @@ void WorldTick()
                     continue;
                 if (entity->m_Type != ENTITY_PLAYER)
                     continue;
-                if ((int)follow_steam + 18 != entity->player_info.friendsID) // steamid check
+                if ((int) follow_steam + 18 !=
+                    entity->player_info.friendsID) // steamid check
                     continue;
                 logging::Info("Success");
 
@@ -147,7 +148,7 @@ void WorldTick()
             }
         }
         // last check for entity before we continue
-if (!follow_target)
+        if (!follow_target)
             return;
     }
 

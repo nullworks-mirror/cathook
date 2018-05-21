@@ -195,7 +195,7 @@ void update_mapname()
     strncpy(data.ingame.mapname, GetLevelName().c_str(),
             sizeof(data.ingame.mapname));
 }
-
+float framerate = 0.0f;
 void UpdateTemporaryData()
 {
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];

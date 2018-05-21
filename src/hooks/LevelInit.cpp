@@ -82,9 +82,13 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 {
     DelayTimer.update();
+#if not LAGBOT_MODE
     playerlist::Save();
+#endif
     votelogger::antikick_ticks         = 0;
+#if not LAGBOT_MODE
     hacks::shared::lagexploit::bcalled = false;
+#endif
 #if ENABLE_VISUALS
     typedef bool *(*LoadNamedSkys_Fn)(const char *);
     uintptr_t addr = gSignatures.GetEngineSignature(
@@ -110,12 +114,14 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 #endif
 
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
+#if not LAGBOT_MODE
     hacks::shared::aimbot::Reset();
     hacks::shared::backtrack::Init();
     chat_stack::Reset();
     hacks::shared::anticheat::ResetEverything();
     original::LevelInit(this_, name);
     hacks::shared::walkbot::OnLevelInit();
+#endif
 #if ENABLE_IPC
     if (ipc::peer)
     {

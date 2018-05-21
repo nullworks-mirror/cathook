@@ -8,6 +8,7 @@
 #include <visual/SDLHooks.hpp>
 #include "hack.hpp"
 #include "common.hpp"
+#include "MiscTemporary.hpp"
 
 #include <hacks/hacklist.hpp>
 
@@ -381,11 +382,12 @@ free(logname);*/
         // hooks::materialsystem.HookMethod();
     }
 #endif
-
+#if not LAGBOT_MODE
     // FIXME [MP]
     hacks::shared::killsay::Init();
     hacks::shared::announcer::init();
     hacks::tf2::killstreak::init();
+#endif
     hacks::shared::catbot::init();
     logging::Info("Hooked!");
     velocity::Init();
@@ -416,10 +418,10 @@ free(logname);*/
     g_IGameEventManager->AddListener(&adv_event_listener, false);
 
 #endif /* TEXTMODE */
-
+#if not LAGBOT_MODE
     hacks::shared::anticheat::Init();
     hacks::tf2::healarrow::Init();
-
+#endif
 #if ENABLE_VISUALS
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
     InitSpinner();
@@ -429,8 +431,9 @@ free(logname);*/
     backpacktf::init();
     logging::Info("Initialized Backpack.TF integration");
 #endif
-
+#if not LAGBOT_MODE
     hacks::shared::walkbot::Initialize();
+#endif
 #if ENABLE_VISUALS
     hacks::shared::esp::Init();
 #endif
@@ -467,8 +470,10 @@ void hack::Shutdown()
 #endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
+#if not LAGBOT_MODE
     logging::Info("Shutting down killsay...");
     hacks::shared::killsay::Shutdown();
     hacks::shared::announcer::shutdown();
+#endif
     logging::Info("Success..");
 }

@@ -8,18 +8,21 @@
 #pragma once
 #include "common.hpp"
 
-namespace hacks {
-namespace shared {
-namespace backtrack {
+namespace hacks
+{
+namespace shared
+{
+namespace backtrack
+{
 struct BacktrackData
 {
-	int tickcount;
-	Vector hitboxpos;
+    int tickcount;
+    Vector hitboxpos;
 };
 void Init();
 void Run();
 void Draw();
-extern BacktrackData headPositions[24][12];
+extern BacktrackData headPositions[24][13];
 }
 }
 }
