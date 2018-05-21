@@ -75,7 +75,14 @@ void Run()
         CachedEntity *pEntity = ENTITY(i);
 
         if (CE_BAD(pEntity))
+        {
+            for (int j = 0; j < 13; j++)
+            {
+                headPositions[i][j].hitboxpos = { 0, 0, 0 };
+                headPositions[i][j].tickcount = 0;
+            }
             continue;
+        }
         if (!pEntity->m_bAlivePlayer)
         {
             for (int j = 0; j < 13; j++)
@@ -111,7 +118,7 @@ void Run()
             for (int t = 0; t < 12; ++t)
             {
                 Vector ViewDir = angle_vector(cmd->viewangles);
-                float tempFOV  = distance_point_to_line(
+                tempFOV  = distance_point_to_line(
                     headPositions[iBestTarget][t].hitboxpos,
                     g_pLocalPlayer->v_Eye, ViewDir);
                 if (bestFOV > tempFOV)
