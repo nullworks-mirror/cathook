@@ -28,6 +28,8 @@ extern CatVar engine_pred;
 extern Timer DelayTimer;
 extern CatVar delay;
 extern CatVar adjust;
+extern float prevflow;
+extern int prevflowticks;
 #if ENABLE_VISUALS
 extern int spectator_target;
 extern CLC_VoiceData *voicecrash;

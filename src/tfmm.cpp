@@ -53,23 +53,32 @@ void queue_leave()
         logging::Info("queue_start: CTFPartyClient == null!");
 }
 Timer abandont{};
-CatCommand abandoncmd("disconnect_and_abandon", "Disconnect and abandon", []() {
+
+void dcandabandon()
+{
     re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
+    re::CTFGCClientSystem *gc  = re::CTFGCClientSystem::GTFGCClientSystem();
     if (client)
-    {
         abandon();
+    else
+    {
+        logging::Info("your party client is gay!");
+        if (gc)
+            queue_leave();
+        else
+            logging::Info("your gc is gay!");
+    }
+    if (gc && client)
         while (1)
-        {
             if (abandont.test_and_set(4000))
             {
                 queue_leave();
                 break;
             }
-        }
-    }
-    else
-        logging::Info("your party client is gay!");
-});
+}
+CatCommand abandoncmd("disconnect_and_abandon", "Disconnect and abandon",
+                      []() { dcandabandon(); });
+
 void abandon()
 {
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();

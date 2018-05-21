@@ -39,5 +39,7 @@ Timer DelayTimer{};
 CatVar delay(
     CV_INT, "delay", "0", "Delay",
     "Delay actions like chat spam and serverlag/crash by this many seconds.");
-CatVar adjust(CV_SWITCH, "serverlag_ramp", "0", "Ramp lag",
-              "increase lag while packet loss is below 80%");
+CatVar adjust(CV_INT, "serverlag_ramp", "0", "Ramp lag",
+              "keep lag around this many seconds");
+float prevflow    = 0.0f;
+int prevflowticks = 0;

@@ -1,4 +1,9 @@
 target_sources(cathook PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/AutoJoin.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/CatBot.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/Spam.hpp")
+if(NOT LagbotMode)
+target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/Achievement.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Aimbot.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Announcer.hpp"
@@ -30,7 +35,8 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/UberSpam.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Walkbot.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Radar.hpp")
-
+        add_subdirectory(ac)
+endif()
 if(EnableVisuals)
 target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/ESP.hpp"
@@ -40,5 +46,3 @@ target_sources(cathook PRIVATE
 endif()
 
 target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}")
-
-add_subdirectory(ac)

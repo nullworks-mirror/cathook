@@ -7,7 +7,7 @@
 #include "HookedMethods.hpp"
 
 static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
-
+static CatVar autoabandon(CV_SWITCH, "cbu_abandon", "0", "Auto abandon");
 namespace hooked_methods
 {
 
@@ -39,6 +39,8 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
         original::Shutdown(this_, reason);
     }
 
+    if (autoabandon)
+        tfmm::dcandabandon();
     if (hacks::shared::autojoin::auto_queue)
         tfmm::queue_start();
 }

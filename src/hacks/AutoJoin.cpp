@@ -102,6 +102,7 @@ void UpdateSearch()
 Timer timer{};
 void Update()
 {
+#if not LAGBOT_MODE
     if (timer.test_and_set(500))
     {
         if (autojoin_team and UnassignedTeam())
@@ -116,6 +117,7 @@ void Update()
                         .c_str());
         }
     }
+#endif
 }
 }
 }

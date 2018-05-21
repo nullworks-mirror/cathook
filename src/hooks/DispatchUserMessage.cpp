@@ -225,15 +225,18 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     }
                 }
             }
+#if not LAGBOT_MODE
             if (sendmsg.test_and_set(300000) &&
                 hacks::shared::antiaim::communicate)
                 chat_stack::Say("!!meow");
+#endif
             if (crypt_chat)
             {
                 if (message.find("!!") == 0)
                 {
                     if (ucccccp::validate(message))
                     {
+#if not LAGBOT_MODE
                         if (ucccccp::decrypt(message) == "meow" &&
                             hacks::shared::antiaim::communicate &&
                             data[0] != LOCAL_E->m_IDX &&
@@ -244,6 +247,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                                 playerlist::k_EState::CAT;
                             chat_stack::Say("!!meow");
                         }
+#endif
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
                     }
