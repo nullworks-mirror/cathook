@@ -20,6 +20,7 @@ namespace fonts
 {
 
 extern draw_api::font_handle_t main_font;
+extern draw_api::font_handle_t esp_font;
 }
 
 namespace fonts
