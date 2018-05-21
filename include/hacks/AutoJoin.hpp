@@ -15,6 +15,7 @@ namespace autojoin
 {
 
 extern CatVar auto_queue;
+extern Timer queuetime;
 
 void Update();
 void UpdateSearch();
