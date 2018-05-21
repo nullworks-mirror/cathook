@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd cathook
+sudo bash attach
