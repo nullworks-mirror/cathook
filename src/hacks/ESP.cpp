@@ -76,6 +76,7 @@ static CatVar
     legit(CV_SWITCH, "esp_legit", "0", "Legit Mode",
           "Don't show invisible enemies\nHides invisable enemies with "
           "visibility enabled");
+static CatVar esp_font_scale(CV_INT, "esp_font_scale", "14", "ESP font scale");
 // Selective esp options
 static CatVar local_esp(CV_SWITCH, "esp_local", "1", "ESP Local Player",
                         "Shows local player ESP in thirdperson");
@@ -426,6 +427,13 @@ void Init()
             }
         }
     }
+    esp_font_scale.InstallChangeCallback(
+        [](IConVar *var, const char *pszOldValue, float flOldValue) {
+            if (fonts::esp_font.handle != GLEZ_FONT_INVALID)
+                draw_api::destroy_font(fonts::esp_font);
+            fonts::esp_font = draw_api::create_font(
+                DATA_PATH "/fonts/verasans.ttf", esp_font_scale);
+        });
 }
 void _FASTCALL emoji(CachedEntity *ent)
 {
@@ -856,7 +864,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             {
                 draw_api::draw_string_with_outline(
                     draw_point.x, draw_point.y, string.data.c_str(),
-                    fonts::main_font, color, colors::black, 1.5f);
+                    fonts::esp_font, color, colors::black, 1.5f);
             }
             else
             { /*

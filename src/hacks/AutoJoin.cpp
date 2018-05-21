@@ -46,6 +46,7 @@ bool UnassignedClass()
 }
 
 Timer autoqueue_timer{};
+Timer queuetime{};
 Timer req_timer{};
 /*CatVar party_bypass(CV_SWITCH, "party_bypass", "0", "Party Bypass",
                    "Bypass Party restrictions");*/
@@ -86,6 +87,8 @@ void UpdateSearch()
         tfmm::queue_leave();
     if (autoqueue_timer.test_and_set(60000))
     {
+    	if (!gc->BConnectedToMatchServer(false) && queuetime.test_and_set(10 * 1000 * 60))
+    		tfmm::queue_leave();
         if (gc && !gc->BConnectedToMatchServer(false))
         {
             logging::Info("Starting queue");
