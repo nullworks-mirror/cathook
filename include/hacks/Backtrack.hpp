@@ -22,7 +22,7 @@ struct BacktrackData
 void Init();
 void Run();
 void Draw();
-extern BacktrackData headPositions[24][13];
+extern BacktrackData headPositions[32][13];
 }
 }
 }

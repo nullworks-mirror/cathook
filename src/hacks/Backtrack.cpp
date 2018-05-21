@@ -16,7 +16,7 @@ namespace backtrack
 CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
               "For legit play only as of right now.");
 CatVar draw_bt(CV_SWITCH, "backtrack_draw", "0", "Draw", "Draw backtrack ticks");
-BacktrackData headPositions[24][13];
+BacktrackData headPositions[32][13];
 
 //=======================================================================
 inline float distance_point_to_line(Vector Point, Vector LineOrigin, Vector Dir)
@@ -76,11 +76,12 @@ void Run()
 
         if (CE_BAD(pEntity))
         {
-            for (int j = 0; j < 13; j++)
-            {
-                headPositions[i][j].hitboxpos = { 0, 0, 0 };
-                headPositions[i][j].tickcount = 0;
-            }
+        	if (headPositions[i][0].hitboxpos.x)
+        		for (int j = 0; j < 13; j++)
+        		{
+        			headPositions[i][j].hitboxpos = { 0, 0, 0 };
+        			headPositions[i][j].tickcount = 0;
+        		}
             continue;
         }
         if (!pEntity->m_bAlivePlayer)
@@ -137,7 +138,7 @@ void Draw()
 		return;
 	if (!draw_bt)
 		return;
-    for (int i = 0; i < 24; i++)
+    for (int i = 0; i < 32; i++)
         for (int j = 0; j < 12; j++)
         {
             auto hbpos    = headPositions[i][j].hitboxpos;
