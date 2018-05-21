@@ -81,6 +81,7 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 {
+	hacks::shared::autojoin::queuetime.update();
     DelayTimer.update();
 #if not LAGBOT_MODE
     playerlist::Save();

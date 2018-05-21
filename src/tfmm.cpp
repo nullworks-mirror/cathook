@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include "AutoJoin.hpp"
 
 CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue",
                            []() { tfmm::queue_start(); });
@@ -40,6 +41,7 @@ void queue_start()
         if (queue == 7)
             client->LoadSavedCasualCriteria();
         client->RequestQueueForMatch((int) queue);
+        hacks::shared::autojoin::queuetime.update();
     }
     else
         logging::Info("queue_start: CTFPartyClient == null!");
