@@ -458,6 +458,8 @@ static const std::string list_tf2 = R"(
 				"ESP Preferences"[
 					"ESP Preferences Menu"
 			    	"esp_box"
+					"esp_3d_players"
+					"esp_3d_buildings"
 					"esp_text_position"
 					"esp_expand"
 			    	"esp_local"

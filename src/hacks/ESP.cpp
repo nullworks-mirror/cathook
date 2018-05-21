@@ -23,6 +23,10 @@ static CatEnum box_esp_enum({ "None", "Normal", "Corners" });
 static CatVar box_esp(box_esp_enum, "esp_box", "2", "Box", "Draw a 2D box");
 static CatVar box_corner_size(CV_INT, "esp_box_corner_size", "10",
                               "Corner Size");
+static CatVar box_3d_player(CV_SWITCH, "esp_3d_players", "0",
+                            "Draw 3D box over players");
+static CatVar box_3d_building(CV_SWITCH, "esp_3d_buildings", "1",
+                              "Draw 3D box over buildings");
 // Tracers
 static CatEnum tracers_enum({ "OFF", "CENTER", "BOTTOM" });
 static CatVar
@@ -673,7 +677,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         }
     }
     // Box esp
-    if (box_esp)
+    if (box_esp || box_3d_player || box_3d_building)
     {
         switch (ent->m_Type)
         {
@@ -684,7 +688,10 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 fg = colors::EntityF(ent);
             if (transparent)
                 fg = colors::Transparent(fg);
+            if (!box_3d_player && box_esp)
             DrawBox(ent, fg);
+            else if (box_3d_player)
+                Draw3DBox(ent, fg);
             break;
         case ENTITY_BUILDING:
             if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team &&
@@ -696,7 +703,10 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 fg = colors::EntityF(ent);
             if (transparent)
                 fg = colors::Transparent(fg);
+            if (!box_3d_building && box_esp)
             DrawBox(ent, fg);
+            else if (box_3d_building)
+                Draw3DBox(ent, fg);
             break;
         }
     }
@@ -1390,6 +1400,70 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             espdata.needs_paint = true;
         }
         return;
+    }
+}
+
+// Draw 3D box around player/building
+void _FASTCALL Draw3DBox(CachedEntity *ent, const rgba_t &clr)
+{
+    if (CE_BAD(ent))
+        return;
+
+    const Vector &origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
+    Vector mins          = RAW_ENT(ent)->GetCollideable()->OBBMins();
+    Vector maxs          = RAW_ENT(ent)->GetCollideable()->OBBMaxs();
+
+    // Create a array for storing box points
+    Vector corners[8]; // World vectors
+    Vector points[8];  // Screen vectors
+
+    // Create points for the box based on max and mins
+    float x    = maxs.x - mins.x;
+    float y    = maxs.y - mins.y;
+    float z    = maxs.z - mins.z;
+    corners[0] = mins;
+    corners[1] = mins + Vector(x, 0, 0);
+    corners[2] = mins + Vector(x, y, 0);
+    corners[3] = mins + Vector(0, y, 0);
+    corners[4] = mins + Vector(0, 0, z);
+    corners[5] = mins + Vector(x, 0, z);
+    corners[6] = mins + Vector(x, y, z);
+    corners[7] = mins + Vector(0, y, z);
+
+    // Rotate the box and check if any point of the box isnt on the screen
+    bool success = true;
+    for (int i = 0; i < 8; i++)
+    {
+        float yaw    = NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles).y;
+        float s      = sinf(DEG2RAD(yaw));
+        float c      = cosf(DEG2RAD(yaw));
+        float xx     = corners[i].x;
+        float yy     = corners[i].y;
+        corners[i].x = (xx * c) - (yy * s);
+        corners[i].y = (xx * s) + (yy * c);
+        corners[i] += origin;
+
+        if (!draw::WorldToScreen(corners[i], points[i]))
+            success = false;
+    }
+
+    // Don't continue if a point isn't on the screen
+    if (!success)
+        return;
+
+    // Draw the actual box
+    for (int i = 1; i <= 4; i++)
+    {
+        draw_api::draw_line((points[i - 1].x), (points[i - 1].y),
+                            (points[i % 4].x) - (points[i - 1].x),
+                            (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
+        draw_api::draw_line((points[i - 1].x), (points[i - 1].y),
+                            (points[i + 3].x) - (points[i - 1].x),
+                            (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
+        draw_api::draw_line((points[i + 3].x), (points[i + 3].y),
+                            (points[i % 4 + 4].x) - (points[i + 3].x),
+                            (points[i % 4 + 4].y) - (points[i + 3].y), clr,
+                            0.5f);
     }
 }
 

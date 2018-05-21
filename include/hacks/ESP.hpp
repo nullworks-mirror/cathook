@@ -51,6 +51,7 @@ void __attribute__((fastcall)) ProcessEntityPT(CachedEntity *ent);
 void __attribute__((fastcall)) emoji(CachedEntity *ent);
 
 // helper funcs
+void __attribute__((fastcall)) Draw3DBox(CachedEntity *ent, const rgba_t &clr);
 void __attribute__((fastcall)) DrawBox(CachedEntity *ent, const rgba_t &clr);
 void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color,
                 bool transparent);
