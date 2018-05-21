@@ -25,8 +25,7 @@ cathook is a training software designed for Team Fortress 2 for Linux. cathook i
 
 and a lot of useful features, including
 
-* Anti Backstab with option to say "No" voice command when spy tries to backstab you
-* Heal Arrows exploit (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
+* Anti Backstab with option to use "No" voice command when spy tries to backstab you
 * Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
 * Follow Bots
 * Working crit hack (does not work right now (works right now))
