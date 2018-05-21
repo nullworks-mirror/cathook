@@ -76,11 +76,12 @@ void Run()
 
         if (CE_BAD(pEntity))
         {
-            for (int j = 0; j < 13; j++)
-            {
-                headPositions[i][j].hitboxpos = { 0, 0, 0 };
-                headPositions[i][j].tickcount = 0;
-            }
+        	if (headPositions[i][0].hitboxpos.x)
+        		for (int j = 0; j < 13; j++)
+        		{
+        			headPositions[i][j].hitboxpos = { 0, 0, 0 };
+        			headPositions[i][j].tickcount = 0;
+        		}
             continue;
         }
         if (!pEntity->m_bAlivePlayer)
