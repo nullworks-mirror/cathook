@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 rm ./updater.sh
-wget https://raw.githubusercontent.com/TotallyNotElite/cathook/testingbranch01/tools/updater.sh
+wget https://raw.githubusercontent.com/nullworks/cathook/master/tools/updater.sh
 updater() {
   source updater.sh
 }

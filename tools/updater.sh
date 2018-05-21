@@ -50,4 +50,4 @@ fi
 cd build; cmake ..; make; cd ..; cd ..
 
 
-cp -a -u ./cathook/tools/. ./; rm ./README; rm ./updater
+cp -a -u ./cathook/tools/. ./; rm ./README; rm ./updater.sh
