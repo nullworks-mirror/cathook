@@ -51,5 +51,3 @@ cd build; cmake ..; make; cd ..; cd ..
 
 
 cp -a -u ./cathook/tools/. ./; rm ./README; rm ./updater
-exit
-#Important! Otherwise you will run into weird bash issues after copying files
