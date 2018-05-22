@@ -8,6 +8,7 @@
 
 #include <hacks/Trigger.hpp>
 #include "common.hpp"
+#include <hacks/Backtrack.hpp>
 
 namespace hacks
 {
@@ -80,7 +81,55 @@ float target_time = 0.0f;
 
 int last_hb_traced = 0;
 Vector forward;
+bool CanBacktrack(CachedEntity *entity)
+{
+    if (CE_BAD(entity))
+        return false;
+    if (entity->m_Type != ENTITY_PLAYER)
+        return false;
+    auto min = hacks::shared::backtrack::headPositions
+                   [entity->m_IDX][hacks::shared::backtrack::BestTick]
+                       .min;
+    auto max = hacks::shared::backtrack::headPositions
+                   [entity->m_IDX][hacks::shared::backtrack::BestTick]
+                       .max;
+    if (!min.x && !max.x)
+        return false;
 
+    // Get the min and max for the hitbox
+    Vector minz(std::min(min.x, max.x), std::min(min.y, max.y),
+                std::min(min.z, max.z));
+    Vector maxz(std::max(min.x, max.x), std::max(min.y, max.y),
+                std::max(min.z, max.z));
+
+    // Shrink the hitbox here
+    Vector size = maxz - minz;
+    Vector smod = size * 0.05f * (int) accuracy;
+
+    // Save the changes to the vectors
+    minz += smod;
+    maxz -= smod;
+
+    // Trace and test if it hits the smaller hitbox, if it fails
+    // we
+    // return false
+    Vector hit;
+
+    if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) &&
+        !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
+    {
+        return false;
+    }
+    if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
+    {
+        g_pUserCmd->tick_count =
+            hacks::shared::backtrack::headPositions
+                [entity->m_IDX][hacks::shared::backtrack::BestTick]
+                    .tickcount;
+        return true;
+    }
+    return false;
+}
 // The main "loop" of the triggerbot
 void CreateMove()
 {
@@ -98,13 +147,19 @@ void CreateMove()
 
     // Reset our last hitbox traced
     last_hb_traced = -1;
-
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        if (CanBacktrack(ENTITY(i)))
+        {
+            g_pUserCmd->buttons |= IN_ATTACK;
+            return;
+        }
     // Get and ent in front of the player
     CachedEntity *ent = FindEntInSight(EffectiveTargetingRange());
 
     // Check if dormant or null to prevent crashes
     if (CE_BAD(ent))
         return;
+    AddSideString("Found target, gigalul");
 
     // Determine whether the triggerbot should shoot, then act accordingly
     if (IsTargetStateGood(ent))
@@ -133,7 +188,6 @@ void CreateMove()
             g_pUserCmd->buttons |= IN_ATTACK;
         }
     }
-
     return;
 }
 
@@ -297,36 +351,59 @@ bool IsTargetStateGood(CachedEntity *entity)
             // Check for null
             if (hb)
             {
-
-                // Get the min and max for the hitbox
-                Vector minz(std::min(hb->min.x, hb->max.x),
-                            std::min(hb->min.y, hb->max.y),
-                            std::min(hb->min.z, hb->max.z));
-                Vector maxz(std::max(hb->min.x, hb->max.x),
-                            std::max(hb->min.y, hb->max.y),
-                            std::max(hb->min.z, hb->max.z));
-
-                // Shrink the hitbox here
-                Vector size = maxz - minz;
-                Vector smod = size * 0.05f * (int) accuracy;
-
-                // Save the changes to the vectors
-                minz += smod;
-                maxz -= smod;
-
-                // Trace and test if it hits the smaller hitbox, if it fails we
-                // return false
-                Vector hit;
-                if (!CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
-                                  hit))
+                for (int i = -1; i < 12; i++)
                 {
-                    return false;
+                    if (i > -1)
+                    {
+                        auto min = hacks::shared::backtrack::headPositions
+                                       [entity->m_IDX][i]
+                                           .min;
+                        auto max = hacks::shared::backtrack::headPositions
+                                       [entity->m_IDX][i]
+                                           .max;
+                        if (min.x && max.x)
+                        {
+                            hb->min = hacks::shared::backtrack::headPositions
+                                          [entity->m_IDX][i]
+                                              .min;
+                            hb->max = hacks::shared::backtrack::headPositions
+                                          [entity->m_IDX][i]
+                                              .max;
+                        }
+                        else
+                            break;
+                    }
+                    // Get the min and max for the hitbox
+                    Vector minz(std::min(hb->min.x, hb->max.x),
+                                std::min(hb->min.y, hb->max.y),
+                                std::min(hb->min.z, hb->max.z));
+                    Vector maxz(std::max(hb->min.x, hb->max.x),
+                                std::max(hb->min.y, hb->max.y),
+                                std::max(hb->min.z, hb->max.z));
+
+                    // Shrink the hitbox here
+                    Vector size = maxz - minz;
+                    Vector smod = size * 0.05f * (int) accuracy;
+
+                    // Save the changes to the vectors
+                    minz += smod;
+                    maxz -= smod;
+
+                    // Trace and test if it hits the smaller hitbox, if it fails
+                    // we
+                    // return false
+                    Vector hit;
+                    if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
+                                     hit))
+                    {
+                        return true;
+                    }
                 }
             }
         }
 
         // Target passed the tests so return true
-        return true;
+        return false;
 
         // Check for buildings
     }

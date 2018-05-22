@@ -6,6 +6,9 @@
 #include <hacks/hacklist.hpp>
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
+#if not LAGBOT_MODE
+#include "Backtrack.hpp"
+#endif
 
 const char *skynum[] = { "sky_tf2_04",
                          "sky_upward",
@@ -81,12 +84,16 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 {
-	hacks::shared::autojoin::queuetime.update();
+#if not LAGBOT_MODE
+    hacks::shared::backtrack::lastincomingsequencenumber = 0;
+    hacks::shared::backtrack::sequences.clear();
+#endif
+    hacks::shared::autojoin::queuetime.update();
     DelayTimer.update();
 #if not LAGBOT_MODE
     playerlist::Save();
 #endif
-    votelogger::antikick_ticks         = 0;
+    votelogger::antikick_ticks = 0;
 #if not LAGBOT_MODE
     hacks::shared::lagexploit::bcalled = false;
 #endif

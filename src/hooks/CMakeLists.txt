@@ -14,7 +14,8 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/Shutdown.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/FireEvent.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/FireEventClientSide.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/IsPlayingTimeDemo.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/IsPlayingTimeDemo.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/SendDatagram.cpp")
 
 if(EnableVisuals)
     add_subdirectory(visual)

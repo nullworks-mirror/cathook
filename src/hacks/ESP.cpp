@@ -465,9 +465,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                     if (!size || !float(emoji_min_size))
                         return;
                     if (emoji_esp_scaling && (size < float(emoji_min_size)))
-                    {
-                        size = float(emoji_min_size);
-                    }
+                        size          = float(emoji_min_size);
                     glez_rgba_t white = glez_rgba(255, 255, 255, 255);
                     player_info_s info;
                     unsigned int steamID;
@@ -697,7 +695,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             if (transparent)
                 fg = colors::Transparent(fg);
             if (!box_3d_player && box_esp)
-            DrawBox(ent, fg);
+                DrawBox(ent, fg);
             else if (box_3d_player)
                 Draw3DBox(ent, fg);
             break;
@@ -712,7 +710,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             if (transparent)
                 fg = colors::Transparent(fg);
             if (!box_3d_building && box_esp)
-            DrawBox(ent, fg);
+                DrawBox(ent, fg);
             else if (box_3d_building)
                 Draw3DBox(ent, fg);
             break;

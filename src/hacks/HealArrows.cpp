@@ -83,6 +83,8 @@ void Init()
 
 void CreateMove()
 {
+#if ENABLE_VISUALS
+#if not ENABLE_VISUALS
     if (CE_BAD(LOCAL_W))
         return;
     if (healarrow)
@@ -114,11 +116,14 @@ void CreateMove()
             }
         }
     }
+#endif
+#endif
 }
 
 void Draw()
 {
 #if ENABLE_VISUALS
+#if not ENABLE_VISUALS
     if (healarrow)
     {
         if ((g_GlobalVars->curtime - healarrow_time) < float(healarrow_timeout))
@@ -139,8 +144,7 @@ void Draw()
             AddCenterString("Heal arrow ready", colors::green);
         }
     }
-#else
-    logging::Info("[WTF] THIS SHOULD NEVER BE CALLED!!! CALL THE POLICE!!!");
+#endif
 #endif
 }
 }

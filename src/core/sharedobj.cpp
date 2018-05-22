@@ -28,9 +28,11 @@ bool LocateSharedObject(std::string &name, std::string &out_full_path)
         {
             out_full_path.assign(path);
             out_full_path.resize(out_full_path.size() - 1);
+            fclose(proc_maps);
             return true;
         }
     }
+    fclose(proc_maps);
     return false;
 }
 
