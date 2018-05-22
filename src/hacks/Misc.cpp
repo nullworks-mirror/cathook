@@ -561,13 +561,14 @@ void Schema_Reload()
     rewind(file);
     buffer[len + 1] = 0;
     fread(&buffer, sizeof(char), len, file);
-    fclose(file);
     CUtlBuffer buf(&buffer, 5 * 1000 * 1000, 9);
     if (ferror(file) != 0)
     {
         logging::Info("Error loading file");
+        fclose(file);
         return;
     }
+    fclose(file);
     logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
     bool ret = InitSchema(GetItemSchema(), buf, 133769);
     logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");

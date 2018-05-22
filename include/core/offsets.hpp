@@ -146,7 +146,6 @@ struct offsets
     {
         return PlatformOffset(9, 0, 0);
     }
-
     static constexpr uint32_t AreRandomCritsEnabled()
     {
         return PlatformOffset(466, 0, 466);
@@ -171,6 +170,10 @@ struct offsets
     static constexpr uint32_t Paint()
     {
         return PlatformOffset(14, undefined, undefined);
+    }
+    static constexpr uint32_t SendDatagram()
+    {
+        return PlatformOffset(47, undefined, 47);
     }
     static constexpr uint32_t IsPlayingTimeDemo()
     {

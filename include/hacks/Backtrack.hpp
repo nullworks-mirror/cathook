@@ -18,11 +18,32 @@ struct BacktrackData
 {
     int tickcount;
     Vector hitboxpos;
+    Vector min;
+    Vector max;
 };
 void Init();
 void Run();
 void Draw();
-extern BacktrackData headPositions[32][13];
+void AddLatencyToNetchan(INetChannel *, float);
+void UpdateIncomingSequences();
+extern int lastincomingsequencenumber;
+extern int BestTick;
+struct CIncomingSequence
+{
+    CIncomingSequence(int instate, int seqnr, float time)
+    {
+        inreliablestate = instate;
+        sequencenr      = seqnr;
+        curtime         = time;
+    }
+    int inreliablestate;
+    int sequencenr;
+    float curtime;
+};
+extern std::deque<CIncomingSequence> sequences;
+extern CatVar latency;
+extern CatVar enable;
+extern BacktrackData headPositions[32][66];
 }
 }
 }

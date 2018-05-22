@@ -6,7 +6,9 @@
 #include <MiscTemporary.hpp>
 #include <hacks/hacklist.hpp>
 #include "HookedMethods.hpp"
-
+#if not LAGBOT_MODE
+#include "Backtrack.hpp"
+#endif
 static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 static CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
 namespace hooked_methods
@@ -95,6 +97,7 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
         if (ch && !hooks::IsHooked((void *) ch))
         {
             hooks::netchannel.Set(ch);
+            hooks::netchannel.HookMethod(HOOK_ARGS(SendDatagram));
             hooks::netchannel.HookMethod(HOOK_ARGS(CanPacket));
             hooks::netchannel.HookMethod(HOOK_ARGS(SendNetMsg));
             hooks::netchannel.HookMethod(HOOK_ARGS(Shutdown));

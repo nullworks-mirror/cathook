@@ -68,13 +68,13 @@ void user_message(bf_read &buffer, int type)
             {
                 antikick_ticks  = 66 * 60;
                 std::string msg = std::to_string(*kick_msg.GetString());
-                boost::replace_all(msg, "$NAME", format(info.name));
+                ReplaceString(msg, "$NAME", format(info.name));
                 if (CE_GOOD(ENTITY(eid)))
                 {
                     int clz = g_pPlayerResource->GetClass(ENTITY(eid));
-                    boost::replace_all(msg, "$CLASS", format(tf_classes[clz]));
+                    ReplaceString(msg, "$CLASS", format(tf_classes[clz]));
                 }
-                chat_stack::Say(msg);
+                chat_stack::Say(msg, false);
             }
         }
 

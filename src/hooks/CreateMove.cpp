@@ -431,6 +431,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     }
 #endif
 #if not LAGBOT_MODE
+    hacks::shared::backtrack::UpdateIncomingSequences();
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         static int fakelag_queue = 0;

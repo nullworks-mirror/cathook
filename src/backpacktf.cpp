@@ -84,7 +84,7 @@ void processing_thread()
                         auto sock = https::RAII_HTTPS_Socket("backpack.tf");
                         std::string response =
                             sock.get("/api/users/info/v1?" + query);
-                        if (response.find("HTTP/1.1 200 OK\r\n") != 0)
+                        if (response.compare("HTTP/1.1 200 OK\r\n") != 0)
                         {
                             size_t status = response.find("\r\n");
                             throw std::runtime_error(

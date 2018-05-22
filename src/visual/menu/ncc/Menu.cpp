@@ -725,6 +725,7 @@ static const std::string list_tf2 = R"(
 				"Backtrack Menu"
 				"backtrack"
 				"backtrack_draw"
+				"backtrack_latency"
 				]
 				"Anti Cheat" [
 				"Anti Cheat Menu"
