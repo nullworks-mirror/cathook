@@ -746,13 +746,6 @@ static const std::string list_tf2 = R"(
 				"autotaunt"
 				"autotaunt_chance"
 				]
-				"HealArrow" [
-					"HealArrow Menu"
-					"healarrow"
-					"healarrow_timeout"
-					"healarrow_charge"
-					"healarrow_callout"
-				]
 	]
 	"Debug" [
 		"Debug Menu"
