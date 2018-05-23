@@ -96,7 +96,6 @@ void CreateMove()
 {
     CachedEntity *spy;
     Vector diff;
-    float yaw2, resultangle;
 
     if (!enabled)
         return;
@@ -106,20 +105,6 @@ void CreateMove()
     if (spy)
     {
         noaa = true;
-        //        const Vector &A = LOCAL_E->m_vecOrigin;
-        //        const Vector &B = spy->m_vecOrigin;
-        //        diff            = (A - B);
-        //        yaw2            = acos(diff.x / diff.Length()) * 180.0f / PI;
-        //        if (diff.y < 0)
-        //            yaw2 = -yaw2;
-        //        if (yaw2 < -180)
-        //            yaw2 += 360;
-        //        if (yaw2 > 180)
-        //            yaw2 -= 360;
-        //        resultangle = -180 + yaw2;
-        //        if (resultangle < -180)
-        //            resultangle += 360;
-        //        g_pUserCmd->viewangles.y = resultangle;
         pitchdown->SetValue(180);
         g_pUserCmd->viewangles.x = 140.0f;
         if (silent)
@@ -132,28 +117,6 @@ void CreateMove()
         pitchdown->SetValue(normal_val);
         noaa = false;
     }
-}
-
-void PaintTraverse()
-{
-    if (!enabled)
-        return;
-    /*CachedEntity* spy = ClosestSpy();
-    if (!spy) return;
-    const Vector& A = LOCAL_E->m_vecOrigin;
-    const Vector& B = spy->m_vecOrigin;
-    const float yaw = g_pLocalPlayer->v_OrigViewangles.y;
-    const Vector diff = (A - B);
-    float yaw2 = acos(diff.x / diff.Length()) * 180.0f / PI;
-    if (diff.y < 0) yaw2 = -yaw2;
-    float anglediff = yaw - yaw2;
-    if (anglediff > 180) anglediff -= 360;
-    if (anglediff < -180) anglediff += 360;
-    AddSideString(format("closest: ", B.x, ' ', B.y, ' ', B.z));
-    AddSideString(format("yaw: ", yaw));
-    AddSideString(format("diff: ", diff.x, ' ', diff.y, ' ', diff.z));
-    AddSideString(format("yaw2: ", yaw2));
-    AddSideString(format("anglediff: ", anglediff));*/
 }
 }
 }
