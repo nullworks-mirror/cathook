@@ -351,53 +351,30 @@ bool IsTargetStateGood(CachedEntity *entity)
             // Check for null
             if (hb)
             {
-                for (int i = -1; i < 12; i++)
+                // Get the min and max for the hitbox
+                Vector minz(std::min(hb->min.x, hb->max.x),
+                            std::min(hb->min.y, hb->max.y),
+                            std::min(hb->min.z, hb->max.z));
+                Vector maxz(std::max(hb->min.x, hb->max.x),
+                            std::max(hb->min.y, hb->max.y),
+                            std::max(hb->min.z, hb->max.z));
+
+                // Shrink the hitbox here
+                Vector size = maxz - minz;
+                Vector smod = size * 0.05f * (int) accuracy;
+
+                // Save the changes to the vectors
+                minz += smod;
+                maxz -= smod;
+
+                // Trace and test if it hits the smaller hitbox, if it fails
+                // we
+                // return false
+                Vector hit;
+                if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
+                                 hit))
                 {
-                    if (i > -1)
-                    {
-                        auto min = hacks::shared::backtrack::headPositions
-                                       [entity->m_IDX][i]
-                                           .min;
-                        auto max = hacks::shared::backtrack::headPositions
-                                       [entity->m_IDX][i]
-                                           .max;
-                        if (min.x && max.x)
-                        {
-                            hb->min = hacks::shared::backtrack::headPositions
-                                          [entity->m_IDX][i]
-                                              .min;
-                            hb->max = hacks::shared::backtrack::headPositions
-                                          [entity->m_IDX][i]
-                                              .max;
-                        }
-                        else
-                            break;
-                    }
-                    // Get the min and max for the hitbox
-                    Vector minz(std::min(hb->min.x, hb->max.x),
-                                std::min(hb->min.y, hb->max.y),
-                                std::min(hb->min.z, hb->max.z));
-                    Vector maxz(std::max(hb->min.x, hb->max.x),
-                                std::max(hb->min.y, hb->max.y),
-                                std::max(hb->min.z, hb->max.z));
-
-                    // Shrink the hitbox here
-                    Vector size = maxz - minz;
-                    Vector smod = size * 0.05f * (int) accuracy;
-
-                    // Save the changes to the vectors
-                    minz += smod;
-                    maxz -= smod;
-
-                    // Trace and test if it hits the smaller hitbox, if it fails
-                    // we
-                    // return false
-                    Vector hit;
-                    if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
-                                     hit))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
@@ -660,7 +637,7 @@ float EffectiveTargetingRange()
 {
     if (GetWeaponMode() == weapon_melee)
     {
-        return re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+        return re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W);
         // Pyros only have so much untill their flames hit
     }
     else if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower))

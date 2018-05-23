@@ -1047,7 +1047,7 @@ int ClosestHitbox(CachedEntity *target)
     // FIXME this will break multithreading if it will be ever implemented. When
     // implementing it, these should be made non-static
     int closest;
-    float closest_fov, fov;
+    float closest_fov, fov = 0.0f;
 
     closest     = -1;
     closest_fov = 256;
@@ -1186,7 +1186,7 @@ bool UpdateAimkey()
 float EffectiveTargetingRange()
 {
     if (GetWeaponMode() == weapon_melee)
-        return (float) re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+        return (float) re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W);
     if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower))
         return 185.0f; // Pyros only have so much untill their flames hit
 

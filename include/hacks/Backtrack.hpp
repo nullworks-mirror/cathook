@@ -7,6 +7,7 @@
 
 #pragma once
 #include "common.hpp"
+#include <boost/circular_buffer.hpp>
 
 namespace hacks
 {
@@ -40,7 +41,8 @@ struct CIncomingSequence
     int sequencenr;
     float curtime;
 };
-extern std::deque<CIncomingSequence> sequences;
+typedef boost::circular_buffer<CIncomingSequence> circular_buf;
+extern circular_buf sequences;
 extern CatVar latency;
 extern CatVar enable;
 extern BacktrackData headPositions[32][66];

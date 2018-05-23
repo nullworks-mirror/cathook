@@ -7,6 +7,8 @@
 
 #include "common.hpp"
 #include "Backtrack.hpp"
+#include <boost/circular_buffer.hpp>
+
 namespace hacks
 {
 namespace shared
@@ -22,7 +24,7 @@ CatVar latency(CV_FLOAT, "backtrack_latency", "0", "fake lantency",
 BacktrackData headPositions[32][66];
 int lastincomingsequencenumber = 0;
 
-std::deque<CIncomingSequence> sequences;
+circular_buf sequences{ 2048 };
 void UpdateIncomingSequences()
 {
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
@@ -84,18 +86,28 @@ inline Vector angle_vector(Vector meme)
     return Vector(cp * cy, cp * sy, -sp);
 }
 //=======================================================================
+bool installed = false;
+int ticks      = 12;
 void Init()
 {
     for (int i = 0; i < 32; i++)
         for (int j = 0; j < 66; j++)
             headPositions[i][j] =
                 BacktrackData{ 0, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
+    if (!installed)
+    {
+        latency.InstallChangeCallback(
+            [](IConVar *var, const char *pszOldValue, float flOldValue) {
+                ticks = max(min(int((float) latency) / 15, 65), 12);
+            });
+        installed = true;
+    }
 }
 bool disabled = true;
-int BestTick = 0;
+int BestTick  = 0;
+
 void Run()
 {
-    int ticks = latency ? (float) latency / 15 : 12;
     if (!enable)
     {
         if (!disabled)
@@ -111,7 +123,7 @@ void Run()
     if (CE_BAD(LOCAL_E))
         return;
 
-    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *pEntity = ENTITY(i);
 
@@ -133,21 +145,19 @@ void Run()
         Vector hitboxpos = pEntity->hitboxes.GetHitbox(0)->center;
         Vector min       = pEntity->hitboxes.GetHitbox(0)->min;
         Vector max       = pEntity->hitboxes.GetHitbox(0)->max;
-        headPositions[i][cmd->command_number % ticks] =
+        headPositions[i][cmd->command_number % ticks + 1] =
             BacktrackData{ cmd->tick_count, hitboxpos, min, max };
         Vector ViewDir = angle_vector(cmd->viewangles);
         float FOVDistance =
             distance_point_to_line(hitboxpos, g_pLocalPlayer->v_Eye, ViewDir);
-
-        if (bestFov > FOVDistance)
+        if (bestFov > FOVDistance && FOVDistance < 10.0f)
         {
             bestFov     = FOVDistance;
             iBestTarget = i;
         }
-
         if (iBestTarget != -1)
         {
-            int bestTick      = 0;
+            int bestTick  = 0;
             float tempFOV = 9999;
             float bestFOV = 30;
             Vector lowestDistTicks(180, 180, 0);
@@ -158,7 +168,7 @@ void Run()
                 tempFOV        = distance_point_to_line(
                     headPositions[iBestTarget][t].hitboxpos,
                     g_pLocalPlayer->v_Eye, ViewDir);
-                if (bestFOV > tempFOV)
+                if (bestFOV > tempFOV && tempFOV < 10.0f)
                     bestTick = t, bestFOV = tempFOV;
             }
 
@@ -175,7 +185,6 @@ void Draw()
         return;
     if (!draw_bt)
         return;
-    int ticks = latency ? (float) latency / 15 : 12;
     for (int i = 0; i < 32; i++)
         for (int j = 0; j < ticks; j++)
         {
