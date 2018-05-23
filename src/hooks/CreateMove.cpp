@@ -486,6 +486,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                               cmd->viewangles.y);
                 cmd->forwardmove = cos(yaw) * speed;
                 cmd->sidemove    = sin(yaw) * speed;
+                if (hacks::tf2::antibackstab::noaa)
+                	if (cmd->viewangles.x >= 90 && cmd->viewangles.x <= 270)
+                		cmd->forwardmove = -cmd->forwardmove;
             }
 
             ret = false;
