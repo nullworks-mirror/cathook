@@ -71,7 +71,7 @@ void CreateMove()
 {
     if (!GetSource())
         return;
-    if (LOCAL_W->m_iClassID != CL_CLASS(CWeaponMedigun))
+    if (LOCAL_W->m_iClassID() != CL_CLASS(CWeaponMedigun))
         return;
     if (GetSource()->size() < 4)
         return;

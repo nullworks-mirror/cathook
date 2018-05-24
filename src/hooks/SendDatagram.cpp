@@ -24,7 +24,9 @@ DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
     int in     = ch->m_nInSequenceNr;
     auto state = ch->m_nInReliableState;
 
-    hacks::shared::backtrack::AddLatencyToNetchan(ch, latency2);
+    float latencysend = round(
+        (round((latency2 - 0.5f) / 15.1515151515f) - 0.5f) * 15.1515151515f);
+    hacks::shared::backtrack::AddLatencyToNetchan(ch, latencysend);
 #endif
 
     int ret = original::SendDatagram(ch, buf);

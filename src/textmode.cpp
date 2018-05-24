@@ -35,8 +35,9 @@ void EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG()
     logging::Info("Allow Secure Servers: %d", *allowSecureServers);
 }
 
-CatCommand fixvac("fixvac", "Lemme in to secure servers",
-                  []() { *allowSecureServers = true; });
+CatCommand fixvac("fixvac", "Lemme in to secure servers", []() {
+    EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG();
+});
 
 InitRoutine init([]() {
 #if ENABLE_TEXTMODE_STDIN

@@ -63,15 +63,15 @@ void Prediction_CreateMove()
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent))
         {
-            Vector o = ent->m_vecOrigin;
+            Vector o = ent->m_vecOrigin();
             predicted_players[i].clear();
             for (int j = 0; j < 20; j++)
             {
                 Vector r         = EnginePrediction(ent, 0.05f);
-                ent->m_vecOrigin = r;
+                ent->m_vecOrigin() = r;
                 predicted_players[i].push_back(std::move(r));
             }
-            ent->m_vecOrigin = o;
+            ent->m_vecOrigin() = o;
             CE_VECTOR(ent, 0x354) = o;
             // logging::Info("Predicted %d to be at [%.2f, %.2f, %.2f] vs [%.2f,
             // %.2f, %.2f]", i, r.x,r.y,r.z, o.x, o.y, o.z);
@@ -90,7 +90,7 @@ void Prediction_PaintTraverse()
         if (CE_GOOD(ent))
         {
             Vector previous_screen;
-            if (!draw::WorldToScreen(ent->m_vecOrigin, previous_screen))
+            if (!draw::WorldToScreen(ent->m_vecOrigin(), previous_screen))
                 continue;
             rgba_t color = colors::FromRGBA8(255, 0, 0, 255);
             for (int j = 0; j < predicted_players[i].size(); j++)
@@ -115,7 +115,7 @@ void Prediction_PaintTraverse()
 #endif
 Vector EnginePrediction(CachedEntity *entity, float time)
 {
-    Vector result      = entity->m_vecOrigin;
+    Vector result      = entity->m_vecOrigin();
     IClientEntity *ent = RAW_ENT(entity);
 
     typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
@@ -161,8 +161,8 @@ Vector EnginePrediction(CachedEntity *entity, float time)
         g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
     g_GlobalVars->frametime = time;
 
-    Vector old_origin = entity->m_vecOrigin;
-    NET_VECTOR(ent, 0x354) = entity->m_vecOrigin;
+    Vector old_origin = entity->m_vecOrigin();
+    NET_VECTOR(ent, 0x354) = entity->m_vecOrigin();
 
     //*g_PredictionRandomSeed = MD5_PseudoRandom(g_pUserCmd->command_number) &
     // 0x7FFFFFFF;
@@ -192,7 +192,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
                                    float gravitymod,
                                    float entgmod /* ignored */)
 {
-    Vector origin = ent->m_vecOrigin;
+    Vector origin = ent->m_vecOrigin();
     Vector hitbox;
     GetHitbox(ent, hb, hitbox);
     Vector hitbox_offset = hitbox - origin;
@@ -224,7 +224,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
     float steplength = ((float) (2 * range) / (float) maxsteps);
     for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
     {
-        ent->m_vecOrigin = current;
+        ent->m_vecOrigin() = current;
         current          = EnginePrediction(ent, steplength);
 
         if (onground)
@@ -241,7 +241,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
             mindelta = fabs(rockettime - currenttime);
         }
     }
-    ent->m_vecOrigin = origin;
+    ent->m_vecOrigin() = origin;
     CE_VECTOR(ent, 0x354) = origin;
     bestpos.z += (400 * besttime * besttime * gravitymod);
     // S = at^2/2 ; t = sqrt(2S/a)*/
@@ -331,7 +331,7 @@ float DistanceToGround(CachedEntity *ent)
         if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
             return 0;
     }
-    Vector &origin = ent->m_vecOrigin;
+    Vector origin = ent->m_vecOrigin();
     float v1       = DistanceToGround(origin + Vector(10.0f, 10.0f, 0.0f));
     float v2       = DistanceToGround(origin + Vector(-10.0f, 10.0f, 0.0f));
     float v3       = DistanceToGround(origin + Vector(10.0f, -10.0f, 0.0f));

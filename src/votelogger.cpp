@@ -27,12 +27,15 @@ static CatVar kick_msg(CV_STRING, "anti_votekick_string",
                        "Send this message on Votekick attempts against "
                        "you.\n$NAME gets replaced with their name\n$CLASS with "
                        "their class.");
-int antikick_ticks             = 0;
+Timer antikick{};
+bool active = false;
+
 const std::string tf_classes[] = { "class",   "scout",   "sniper", "soldier",
                                    "demoman", "medic",   "heavy",  "pyro",
                                    "spy",     "engineer" };
 void user_message(bf_read &buffer, int type)
 {
+
     bool islocalplayer = false;
     if (!enabled)
         return;
@@ -64,17 +67,24 @@ void user_message(bf_read &buffer, int type)
                 playerlist::k_EState::FRIEND)
         {
             islocalplayer = true;
-            if (anti_votekick && !antikick_ticks)
+            if (anti_votekick && !active)
             {
-                antikick_ticks  = 66 * 60;
-                std::string msg = std::to_string(*kick_msg.GetString());
+                active = true;
+                antikick.update();
+                std::string msg(kick_msg.GetString());
                 ReplaceString(msg, "$NAME", format(info.name));
                 if (CE_GOOD(ENTITY(eid)))
                 {
                     int clz = g_pPlayerResource->GetClass(ENTITY(eid));
                     ReplaceString(msg, "$CLASS", format(tf_classes[clz]));
                 }
-                chat_stack::Say(msg, false);
+                NET_StringCmd senddata(format("say", msg).c_str());
+                INetChannel *ch =
+                    (INetChannel *) g_IEngine->GetNetChannelInfo();
+                senddata.SetNetChannel(ch);
+                senddata.SetReliable(true);
+                ch->SendNetMsg(senddata, true);
+                ch->Transmit();
             }
         }
 

@@ -56,7 +56,7 @@ void Update(CachedEntity *player)
             if (!CE_GOOD(wep))
                 return;
             if (deviation > float(detect_angle) &&
-                wep->m_iClassID != CL_CLASS(CTFFlameThrower))
+                wep->m_iClassID() != CL_CLASS(CTFFlameThrower))
             {
                 am++;
                 // logging::Info("[ac] %d deviation %.2f #%d", player->m_IDX,
@@ -114,7 +114,7 @@ void Event(KeyValues *event)
         {
             CachedEntity *victim   = ENTITY(vid);
             CachedEntity *attacker = ENTITY(eid);
-            if (victim->m_vecOrigin.DistTo(attacker->m_vecOrigin) > 250)
+            if (victim->m_vecOrigin().DistTo(attacker->m_vecOrigin()) > 250)
             {
                 data_table[eid - 1].check_timer = 1;
                 data_table[eid - 1].last_weapon = event->GetInt("weaponid");

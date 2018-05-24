@@ -45,14 +45,11 @@ void UpdateIncomingSequences()
 }
 void AddLatencyToNetchan(INetChannel *ch, float Latency)
 {
-    int amt = 0;
-    for (auto &seq : sequences)
-        amt++;
-    amt = 0;
+    if (Latency > 200.0f)
+        Latency -= ch->GetLatency(MAX_FLOWS);
     for (auto &seq : sequences)
     {
-        amt++;
-        if (g_GlobalVars->realtime - seq.curtime >= Latency / 1000.0f)
+        if (g_GlobalVars->realtime - seq.curtime > Latency / 1000.0f)
         {
             ch->m_nInReliableState = seq.inreliablestate;
             ch->m_nInSequenceNr    = seq.sequencenr;
@@ -60,40 +57,15 @@ void AddLatencyToNetchan(INetChannel *ch, float Latency)
         }
     }
 }
-//=======================================================================
-inline float distance_point_to_line(Vector Point, Vector LineOrigin, Vector Dir)
-{
-    auto PointDir = Point - LineOrigin;
-
-    auto TempOffset =
-        PointDir.Dot(Dir) / (Dir.x * Dir.x + Dir.y * Dir.y + Dir.z * Dir.z);
-    if (TempOffset < 0.000001f)
-        return FLT_MAX;
-
-    auto PerpendicularPoint = LineOrigin + (Dir * TempOffset);
-
-    return (Point - PerpendicularPoint).Length();
-}
-
-inline Vector angle_vector(Vector meme)
-{
-    auto sy = sin(meme.y / 180.f * static_cast<float>(PI));
-    auto cy = cos(meme.y / 180.f * static_cast<float>(PI));
-
-    auto sp = sin(meme.x / 180.f * static_cast<float>(PI));
-    auto cp = cos(meme.x / 180.f * static_cast<float>(PI));
-
-    return Vector(cp * cy, cp * sy, -sp);
-}
-//=======================================================================
 bool installed = false;
 int ticks      = 12;
 void Init()
 {
     for (int i = 0; i < 32; i++)
-        for (int j = 0; j < 66; j++)
-            headPositions[i][j] =
-                BacktrackData{ 0, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
+        for (int j              = 0; j < 66; j++)
+            headPositions[i][j] = BacktrackData{
+                0, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
+            };
     if (!installed)
     {
         latency.InstallChangeCallback(
@@ -103,9 +75,9 @@ void Init()
         installed = true;
     }
 }
-bool disabled = true;
-int BestTick  = 0;
-
+bool disabled   = true;
+int BestTick    = 0;
+int iBestTarget = -1;
 void Run()
 {
     if (!enable)
@@ -115,10 +87,9 @@ void Run()
         disabled = true;
         return;
     }
-    disabled        = true;
-    CUserCmd *cmd   = g_pUserCmd;
-    int iBestTarget = -1;
-    float bestFov   = 99999;
+    disabled      = true;
+    CUserCmd *cmd = g_pUserCmd;
+    float bestFov = 99999;
 
     if (CE_BAD(LOCAL_E))
         return;
@@ -127,16 +98,15 @@ void Run()
     {
         CachedEntity *pEntity = ENTITY(i);
 
-        if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer)
+        if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
         {
-            if (headPositions[i][0].hitboxpos.x)
-                for (int j              = 0; j < 66; j++)
-                    headPositions[i][j] = BacktrackData{
-                        0, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
-                    };
+            for (BacktrackData &btd : headPositions[i])
+                btd = BacktrackData{
+                    0, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
+                };
             continue;
         }
-        if (pEntity->m_iTeam == LOCAL_E->m_iTeam)
+        if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
             continue;
         if (pEntity->m_Type != ENTITY_PLAYER)
             continue;
@@ -146,29 +116,32 @@ void Run()
         Vector min       = pEntity->hitboxes.GetHitbox(0)->min;
         Vector max       = pEntity->hitboxes.GetHitbox(0)->max;
         headPositions[i][cmd->command_number % ticks + 1] =
-            BacktrackData{ cmd->tick_count, hitboxpos, min, max };
-        Vector ViewDir = angle_vector(cmd->viewangles);
-        float FOVDistance =
-            distance_point_to_line(hitboxpos, g_pLocalPlayer->v_Eye, ViewDir);
+            BacktrackData{ cmd->tick_count, hitboxpos, min, max,
+                           pEntity->m_vecOrigin() };
+        float FOVDistance = GetFov(g_pLocalPlayer->v_OrigViewangles,
+                                   g_pLocalPlayer->v_Eye, hitboxpos);
+        iBestTarget = -1;
         if (bestFov > FOVDistance && FOVDistance < 10.0f)
         {
             bestFov     = FOVDistance;
             iBestTarget = i;
         }
-        if (iBestTarget != -1)
+        if (iBestTarget != -1 && (g_pUserCmd->buttons & IN_ATTACK ||
+                                  g_pUserCmd->buttons & IN_ATTACK2))
         {
             int bestTick  = 0;
             float tempFOV = 9999;
-            float bestFOV = 30;
-            Vector lowestDistTicks(180, 180, 0);
-
-            for (int t = 0; t < 12; ++t)
+            float bestFOV = 40.0f;
+            for (int t = 0; t < ticks; ++t)
             {
-                Vector ViewDir = angle_vector(cmd->viewangles);
-                tempFOV        = distance_point_to_line(
-                    headPositions[iBestTarget][t].hitboxpos,
-                    g_pLocalPlayer->v_Eye, ViewDir);
-                if (bestFOV > tempFOV && tempFOV < 10.0f)
+                if (GetWeaponMode() == weapon_melee)
+                    if (g_pLocalPlayer->v_Eye.DistTo(
+                            headPositions[iBestTarget][t].hitboxpos) > 90.0f)
+                        return;
+                tempFOV = GetFov(g_pLocalPlayer->v_OrigViewangles,
+                                 g_pLocalPlayer->v_Eye,
+                                 headPositions[iBestTarget][t].hitboxpos);
+                if (bestFOV > tempFOV)
                     bestTick = t, bestFOV = tempFOV;
             }
 
@@ -190,15 +163,25 @@ void Draw()
         {
             auto hbpos    = headPositions[i][j].hitboxpos;
             auto tickount = headPositions[i][j].tickcount;
+            auto min      = headPositions[i][j].min;
+            auto max      = headPositions[i][j].max;
             if (!hbpos.x && !hbpos.y && !hbpos.z)
                 continue;
+            float size = 0.0f;
+            if (abs(max.x - min.x) > abs(max.y - min.y))
+                size = abs(max.x - min.x);
+            else
+                size = abs(max.y - min.y);
             Vector out;
-            rgba_t color =
-                colors::FromHSL(fabs(sin(j / 2.0f)) * 360.0f, 0.85f, 0.9f);
-            if (draw::WorldToScreen(hbpos, out))
+            if (i == iBestTarget && j == BestTick)
             {
-                draw_api::draw_rect(out.x, out.y, 3, 3, color);
+                if (draw::WorldToScreen(hbpos, out))
+                    draw_api::draw_rect(out.x, out.y, size / 2, size / 2,
+                                        colors::red);
             }
+            else if (draw::WorldToScreen(hbpos, out))
+                draw_api::draw_rect(out.x, out.y, size / 4, size / 4,
+                                    colors::green);
         }
 #endif
 }

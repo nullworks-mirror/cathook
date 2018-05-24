@@ -244,7 +244,7 @@ void CreateMove()
     {
 
         // Handle Compound bow
-        if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow))
+        if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
         {
             static bool currently_charging_huntsman = false;
 
@@ -313,7 +313,7 @@ bool ShouldAim()
         if (IsPlayerInvisible(g_pLocalPlayer->entity))
             return false;
         // Disable aimbot with stickbomb launcher
-        if (g_pLocalPlayer->weapon()->m_iClassID ==
+        if (g_pLocalPlayer->weapon()->m_iClassID() ==
             CL_CLASS(CTFPipebombLauncher))
             return false;
     }
@@ -351,7 +351,7 @@ bool ShouldAim()
         }
 
         // Minigun spun up handler
-        if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFMinigun))
+        if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
         {
             int weapon_state =
                 CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
@@ -432,7 +432,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                     scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
                     break;
                 case 3: // Health Priority
-                    scr = 450.0f - ent->m_iHealth;
+                    scr = 450.0f - ent->m_iHealth();
                     break;
                 default:
                     break;
@@ -465,16 +465,16 @@ bool IsTargetStateGood(CachedEntity *entity)
         if (entity == LOCAL_E)
             return false;
         // Dead
-        if (!entity->m_bAlivePlayer)
+        if (!entity->m_bAlivePlayer())
             return false;
         // Teammates
-        if ((int) teammates != 2 && ((!entity->m_bEnemy && !teammates) ||
-                                     (entity->m_bEnemy && teammates)))
+        if ((int) teammates != 2 && ((!entity->m_bEnemy() && !teammates) ||
+                                     (entity->m_bEnemy() && teammates)))
             return false;
         // Distance
         if (EffectiveTargetingRange())
         {
-            if (entity->m_flDistance > EffectiveTargetingRange())
+            if (entity->m_flDistance() > EffectiveTargetingRange())
                 return false;
         }
         // Rage only check
@@ -516,9 +516,9 @@ bool IsTargetStateGood(CachedEntity *entity)
 
                 // Check if player will die from headshot or if target has more
                 // than 450 health and sniper has max chage
-                if (!(entity->m_iHealth <= 150.0F ||
-                      entity->m_iHealth <= cdmg || !g_pLocalPlayer->bZoomed ||
-                      (maxCharge && entity->m_iHealth > 450.0F)))
+                if (!(entity->m_iHealth() <= 150.0F ||
+                      entity->m_iHealth() <= cdmg || !g_pLocalPlayer->bZoomed ||
+                      (maxCharge && entity->m_iHealth() > 450.0F)))
                 {
                     return false;
                 }
@@ -550,7 +550,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             }
             // Vaccinator
             if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan ||
-                LOCAL_W->m_iClassID == CL_CLASS(CTFCompoundBow))
+                LOCAL_W->m_iClassID() == CL_CLASS(CTFCompoundBow))
                 if (ignore_vaccinator &&
                     HasCondition<TFCond_UberBulletResist>(entity))
                     return false;
@@ -590,12 +590,12 @@ bool IsTargetStateGood(CachedEntity *entity)
             return false;
         // Teammates, Even with friendly fire enabled, buildings can NOT be
         // damaged
-        if (!entity->m_bEnemy)
+        if (!entity->m_bEnemy())
             return false;
         // Distance
         if (EffectiveTargetingRange())
         {
-            if (entity->m_flDistance > (int) EffectiveTargetingRange())
+            if (entity->m_flDistance() > (int) EffectiveTargetingRange())
                 return false;
         }
 
@@ -603,7 +603,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         if (!(buildings_other && buildings_sentry))
         {
             // Check if target is a sentrygun
-            if (entity->m_iClassID == CL_CLASS(CObjectSentrygun))
+            if (entity->m_iClassID() == CL_CLASS(CObjectSentrygun))
             {
                 if (!buildings_sentry)
                     return false;
@@ -629,7 +629,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // Check for stickybombs
     }
-    else if (entity->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile))
+    else if (entity->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
     {
         // Enabled
         if (!stickybot)
@@ -643,13 +643,13 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Distance
         if (EffectiveTargetingRange())
         {
-            if (entity->m_flDistance > (int) EffectiveTargetingRange())
+            if (entity->m_flDistance() > (int) EffectiveTargetingRange())
                 return false;
         }
 
         // Teammates, Even with friendly fire enabled, stickys can NOT be
         // destroied
-        if (!entity->m_bEnemy)
+        if (!entity->m_bEnemy())
             return false;
 
         // Check if target is a pipe bomb
@@ -773,7 +773,7 @@ void DoAutoshoot()
         return;
 
     // Handle Compound bow
-    if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow))
+    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
     {
 
         // Grab time when charge began
@@ -820,7 +820,7 @@ void DoAutoshoot()
     }
 
     // Forbidden weapons check
-    if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFKnife))
+    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFKnife))
         attack = false;
 
     // Autoshoot breaks with Slow aimbot, so use a workaround to detect when it
@@ -882,7 +882,7 @@ const Vector &PredictEntity(CachedEntity *entity)
     }
     else
     {
-        result = entity->m_vecOrigin;
+        result = entity->m_vecOrigin();
     }
 
     cd.predict_tick = tickcount;
@@ -906,7 +906,7 @@ int BestHitbox(CachedEntity *target)
 
         IF_GAME(IsTF())
         {
-            int ci    = g_pLocalPlayer->weapon()->m_iClassID;
+            int ci    = g_pLocalPlayer->weapon()->m_iClassID();
             preferred = hitbox_t::pelvis;
             // Sniper rifle
             if (g_pLocalPlayer->holding_sniper_rifle)
@@ -925,7 +925,7 @@ int BestHitbox(CachedEntity *target)
                 // 18 health is a good number to use as thats the usual minimum
                 // damage it can do with a bodyshot, but damage could
                 // potentially be higher
-                if (target->m_iHealth <= 18 ||
+                if (target->m_iHealth() <= 18 ||
                     IsPlayerCritBoosted(g_pLocalPlayer->entity))
                     headonly = false;
                 // Rocket launcher
@@ -943,7 +943,7 @@ int BestHitbox(CachedEntity *target)
                 bool ground = CE_INT(target, netvar.iFlags) & (1 << 0);
                 if (!ground)
                 {
-                    if (g_pLocalPlayer->weapon()->m_iClassID !=
+                    if (g_pLocalPlayer->weapon()->m_iClassID() !=
                         CL_CLASS(CTFCompoundBow))
                     {
                         preferred = hitbox_t::spine_3;
@@ -988,10 +988,10 @@ int BestHitbox(CachedEntity *target)
                 // only if they have less than 150 health will it try to
                 // bodyshot
                 if (CanHeadshot() &&
-                    (cdmg >= target->m_iHealth ||
+                    (cdmg >= target->m_iHealth() ||
                      IsPlayerCritBoosted(g_pLocalPlayer->entity) ||
-                     !g_pLocalPlayer->bZoomed || target->m_iHealth <= bdmg) &&
-                    target->m_iHealth <= 150)
+                     !g_pLocalPlayer->bZoomed || target->m_iHealth() <= bdmg) &&
+                    target->m_iHealth() <= 150)
                 {
                     // We dont need to hit the head as a bodyshot will kill
                     preferred = hitbox_t::spine_1;
@@ -1187,7 +1187,7 @@ float EffectiveTargetingRange()
 {
     if (GetWeaponMode() == weapon_melee)
         return (float) re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W);
-    if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower))
+    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
         return 185.0f; // Pyros only have so much untill their flames hit
 
     return (float) max_range;
@@ -1225,7 +1225,7 @@ void DrawText()
         if (float(fov) > 0.0f && float(fov) < 180)
         {
             // Dont show ring while player is dead
-            if (LOCAL_E->m_bAlivePlayer)
+            if (LOCAL_E->m_bAlivePlayer())
             {
                 rgba_t color = GUIColor();
                 color.a      = float(fovcircle_opacity);
@@ -1257,7 +1257,7 @@ void DrawText()
             Vector oscreen;
             if (draw::WorldToScreen(calculated_data_array[i].aim_position,
                                     screen) &&
-                draw::WorldToScreen(ent->m_vecOrigin, oscreen))
+                draw::WorldToScreen(ent->m_vecOrigin(), oscreen))
             {
                 draw_api::draw_rect(screen.x - 2, screen.y - 2, 4, 4,
                                     colors::white);

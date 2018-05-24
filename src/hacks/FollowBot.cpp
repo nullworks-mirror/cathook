@@ -94,7 +94,7 @@ void WorldTick()
                     continue;
                 logging::Info("Success");
 
-                if (!entity->m_bAlivePlayer) // Dont follow dead players
+                if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
                     continue;
@@ -118,10 +118,10 @@ void WorldTick()
                         continue;
                 if (entity == LOCAL_E) // Follow self lol
                     continue;
-                if (!entity->m_bAlivePlayer) // Dont follow dead players
+                if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
                 if (follow_activation &&
-                    entity->m_flDistance > (float) follow_activation)
+                    entity->m_flDistance() > (float) follow_activation)
                     continue;
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
                     continue;
@@ -140,8 +140,8 @@ void WorldTick()
                 if (entity->m_Type != ENTITY_PLAYER)
                     continue;
                 if (follow_target &&
-                    ENTITY(follow_target)->m_flDistance >
-                        entity->m_flDistance) // favor closer entitys
+                    ENTITY(follow_target)->m_flDistance() >
+                        entity->m_flDistance()) // favor closer entitys
                     continue;
                 // ooooo, a target
                 follow_target = entity->m_IDX;
@@ -157,8 +157,8 @@ void WorldTick()
     // wtf is this needed
     if (CE_BAD(followtar))
         return;
-    auto tar_orig       = followtar->m_vecOrigin;
-    auto loc_orig       = LOCAL_E->m_vecOrigin;
+    auto tar_orig       = followtar->m_vecOrigin();
+    auto loc_orig       = LOCAL_E->m_vecOrigin();
     auto dist_to_target = loc_orig.DistTo(tar_orig);
     if (dist_to_target < 30)
         breadcrumbs.clear();

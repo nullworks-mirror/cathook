@@ -116,7 +116,7 @@ public:
             CachedEntity *player =
                 ENTITY(g_IEngine->GetPlayerForUserID(event->GetInt("userid")));
             PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 disconnected",
-                      colors::chat::team(player->m_iTeam),
+                      colors::chat::team(player->m_iTeam()),
                       event->GetString("name"), 0x914e65,
                       event->GetString("networkid"));
         }
@@ -150,8 +150,8 @@ public:
             CachedEntity *att = ENTITY(g_IEngine->GetPlayerForUserID(attacker));
             PrintChat(
                 "\x07%06X%s\x01 hurt \x07%06X%s\x01 down to \x07%06X%d\x01hp",
-                colors::chat::team(att->m_iTeam), kinfo.name,
-                colors::chat::team(vic->m_iTeam), vinfo.name, 0x2aaf18, health);
+                colors::chat::team(att->m_iTeam()), kinfo.name,
+                colors::chat::team(vic->m_iTeam()), vinfo.name, 0x2aaf18, health);
         }
         else if (!strcmp(name, "player_death"))
         {
@@ -166,8 +166,8 @@ public:
             CachedEntity *vic = ENTITY(g_IEngine->GetPlayerForUserID(victim));
             CachedEntity *att = ENTITY(g_IEngine->GetPlayerForUserID(attacker));
             PrintChat("\x07%06X%s\x01 killed \x07%06X%s\x01",
-                      colors::chat::team(att->m_iTeam), kinfo.name,
-                      colors::chat::team(vic->m_iTeam), vinfo.name);
+                      colors::chat::team(att->m_iTeam()), kinfo.name,
+                      colors::chat::team(vic->m_iTeam()), vinfo.name);
         }
         else if (!strcmp(name, "player_spawn"))
         {
@@ -176,7 +176,7 @@ public:
             g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
             CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(id));
             PrintChat("\x07%06X%s\x01 (re)spawned",
-                      colors::chat::team(player->m_iTeam), info.name);
+                      colors::chat::team(player->m_iTeam()), info.name);
         }
         else if (!strcmp(name, "player_changeclass"))
         {
@@ -185,7 +185,7 @@ public:
             g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
             CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(id));
             PrintChat("\x07%06X%s\x01 changed to \x07%06X%s\x01",
-                      colors::chat::team(player->m_iTeam), info.name, 0xa06ba0,
+                      colors::chat::team(player->m_iTeam()), info.name, 0xa06ba0,
                       classname(event->GetInt("class")));
         }
         else if (!strcmp(name, "vote_cast"))

@@ -32,7 +32,7 @@ std::vector<CachedEntity *> targets;
 bool IsBomb(CachedEntity *ent)
 {
     // Check if ent is a stickybomb
-    if (ent->m_iClassID != CL_CLASS(CTFGrenadePipebombProjectile))
+    if (ent->m_iClassID() != CL_CLASS(CTFGrenadePipebombProjectile))
         return false;
     if (CE_INT(ent, netvar.iPipeType) != 1)
         return false;
@@ -53,14 +53,14 @@ bool IsTarget(CachedEntity *ent)
         return false;
 
     // Check if target is an enemy
-    if (!ent->m_bEnemy)
+    if (!ent->m_bEnemy())
         return false;
 
     // Player specific
     if (ent->m_Type == ENTITY_PLAYER)
     {
         // Dont detonate on dead players
-        if (!ent->m_bAlivePlayer)
+        if (!ent->m_bAlivePlayer())
             return false;
         // Dont detonate on friendly players
         if (playerlist::IsFriendly(playerlist::AccessData(ent).state))
@@ -142,7 +142,7 @@ void CreateMove()
         for (auto target : targets)
         {
             // Check distance to the target to see if the sticky will hit
-            if (bomb->m_vecOrigin.DistToSqr(target->m_vecOrigin) < 16900)
+            if (bomb->m_vecOrigin().DistToSqr(target->m_vecOrigin()) < 16900)
             {
                 // Vis check the target from the bomb
                 if (VisCheckEntFromEnt(bomb, target))
@@ -152,7 +152,7 @@ void CreateMove()
                     if (!legit)
                     {
                         // Aim at bomb
-                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin,
+                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(),
                               g_pUserCmd);
                         // Use silent
                         g_pLocalPlayer->bUseSilentAngles = true;
@@ -170,7 +170,7 @@ void CreateMove()
                     else if (VisCheckEntFromEnt(bomb, LOCAL_E))
                     {
                         // Aim at bomb
-                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin,
+                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(),
                               g_pUserCmd);
                         // Use silent
                         g_pLocalPlayer->bUseSilentAngles = true;

@@ -97,7 +97,7 @@ ItemManager::ItemManager() : mapper()
 
     RegisterSpecialMapping(
         [](CachedEntity *ent) -> bool {
-            return ent->m_iClassID == CL_CLASS(CTFAmmoPack);
+            return ent->m_iClassID() == CL_CLASS(CTFAmmoPack);
         },
         ITEM_AMMO_MEDIUM);
 
@@ -261,7 +261,7 @@ ItemManager::ItemManager() : mapper()
             return result;
         }();
 
-        if (entity->m_iClassID == CL_CLASS(CWeaponSpawner))
+        if (entity->m_iClassID() == CL_CLASS(CWeaponSpawner))
         {
             return tf2c_weapon_mapper.GetItemType(entity);
         }

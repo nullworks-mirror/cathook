@@ -136,7 +136,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
             if (clazz <= 0 || clazz > 9)
                 return;
             const auto &wtr =
-                WorldToRadar(ent->m_vecOrigin.x, ent->m_vecOrigin.y);
+                WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
 
             if (use_icons)
             {
@@ -157,10 +157,10 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                     (int) icon_size, idx ? colors::blu_v : colors::red_v, 0.5f);
             }
 
-            if (ent->m_iMaxHealth && healthbar)
+            if (ent->m_iMaxHealth() && healthbar)
             {
-                healthp = (float) ent->m_iHealth / (float) ent->m_iMaxHealth;
-                clr     = colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
+                healthp = (float) ent->m_iHealth() / (float) ent->m_iMaxHealth();
+                clr     = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
                 if (healthp > 1.0f)
                     healthp = 1.0f;
                 draw_api::draw_rect_outlined(
@@ -173,18 +173,18 @@ void DrawEntity(int x, int y, CachedEntity *ent)
         }
         else if (ent->m_Type == ENTITY_BUILDING)
         {
-            /*if (ent->m_iClassID == CL_CLASS(CObjectDispenser)) {
+            /*if (ent->m_iClassID() == CL_CLASS(CObjectDispenser)) {
                 const int& team = CE_INT(ent, netvar.iTeamNum);
                 int idx = team - 2;
                 if (idx < 0 || idx > 1) return;
-                const auto& wtr = WorldToRadar(ent->m_vecOrigin.x,
-            ent->m_vecOrigin.y); buildings[0].Draw(x + wtr.first, y +
+                const auto& wtr = WorldToRadar(ent->m_vecOrigin().x,
+            ent->m_vecOrigin().y); buildings[0].Draw(x + wtr.first, y +
             wtr.second, (int)icon_size, (int)icon_size, idx ? colors::blu :
             colors::red	); draw::OutlineRect(x + wtr.first, y + wtr.second,
             (int)icon_size, (int)icon_size, idx ? colors::blu_v :
-            colors::red_v); if (ent->m_iMaxHealth && healthbar) { float healthp
-            = (float)ent->m_iHealth / (float)ent->m_iMaxHealth; int clr =
-            colors::Health(ent->m_iHealth, ent->m_iMaxHealth); if (healthp
+            colors::red_v); if (ent->m_iMaxHealth() && healthbar) { float healthp
+            = (float)ent->m_iHealth() / (float)ent->m_iMaxHealth(); int clr =
+            colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()); if (healthp
             > 1.0f) healthp = 1.0f; draw::OutlineRect(x + wtr.first, y +
             wtr.second + (int)icon_size, (int)icon_size, 4, colors::black);
                     draw::DrawRect(x + wtr.first + 1, y + wtr.second +
@@ -199,7 +199,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                                      ent->m_ItemType == ITEM_HEALTH_SMALL))
             {
                 const auto &wtr =
-                    WorldToRadar(ent->m_vecOrigin.x, ent->m_vecOrigin.y);
+                    WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
                 float sz  = float(icon_size) * 0.15f * 0.5f;
                 float sz2 = float(icon_size) * 0.85;
                 tx_items[1].sprite.draw(x + wtr.first + sz, y + wtr.second + sz,
@@ -210,7 +210,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                                         ent->m_ItemType == ITEM_AMMO_SMALL))
             {
                 const auto &wtr =
-                    WorldToRadar(ent->m_vecOrigin.x, ent->m_vecOrigin.y);
+                    WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
                 float sz  = float(icon_size) * 0.15f * 0.5f;
                 float sz2 = float(icon_size) * 0.85;
                 tx_items[0].sprite.draw(x + wtr.first + sz, y + wtr.second + sz,
@@ -256,7 +256,7 @@ void Draw()
             continue;
         if (ent->m_Type == ENTITY_PLAYER)
         {
-            if (!ent->m_bEnemy && !show_teammates)
+            if (!ent->m_bEnemy() && !show_teammates)
                 continue;
         }
         if (!enemies_over_teammates || !show_teammates ||
@@ -264,7 +264,7 @@ void Draw()
             DrawEntity(x, y, ent);
         else
         {
-            if (ent->m_bEnemy)
+            if (ent->m_bEnemy())
                 enemies.push_back(ent);
             else
                 DrawEntity(x, y, ent);

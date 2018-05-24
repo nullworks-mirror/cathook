@@ -250,7 +250,7 @@ bool HasLowAmmo()
 
 bool HasLowHealth()
 {
-    return float(LOCAL_E->m_iHealth) / float(LOCAL_E->m_iMaxHealth) < 0.45;
+    return float(LOCAL_E->m_iHealth()) / float(LOCAL_E->m_iMaxHealth()) < 0.45;
 }
 
 void DeleteNode(index_t node)

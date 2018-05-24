@@ -262,18 +262,18 @@ bool ShouldAA(CUserCmd *cmd)
         return false;
     if ((cmd->buttons & IN_ATTACK) &&
         !(IsTF2() &&
-          g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow)) &&
+          g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow)) &&
         CanShoot())
     {
         return false;
     }
     if ((cmd->buttons & IN_ATTACK2) &&
-        g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFLunchBox))
+        g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFLunchBox))
         return false;
     switch (GetWeaponMode())
     {
     case weapon_projectile:
-        if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFCompoundBow))
+        if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
         {
             if (!(cmd->buttons & IN_ATTACK))
             {
@@ -467,7 +467,7 @@ void ProcessUserCmd(CUserCmd *cmd)
     static bool angstate = true;
     if (trueang)
         angstate = !angstate;
-    if (!LOCAL_E->m_bAlivePlayer)
+    if (!LOCAL_E->m_bAlivePlayer())
         angstate = true;
     if (lagexploit::ExploitActive() || g_pUserCmd->buttons & IN_ATTACK ||
         g_pUserCmd->buttons & IN_ATTACK2)
