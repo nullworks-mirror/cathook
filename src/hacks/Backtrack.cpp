@@ -76,6 +76,12 @@ void Init()
         installed = true;
     }
 }
+std::pair<int, int> backtracked;
+void setbesttick(CachedEntity* ent, int tick)
+{
+	backtracked.first = ent->m_IDX;
+	backtracked.second = tick;
+}
 bool disabled   = true;
 int BestTick    = 0;
 int iBestTarget = -1;
@@ -123,6 +129,7 @@ void Run()
     if (CE_BAD(target))
         return;
     int tick = Besttick(target);
+    setbesttick(target, tick);
     if ((g_pUserCmd->buttons & IN_ATTACK || g_pUserCmd->buttons & IN_ATTACK2) &&
         !dontbacktrack && CanShoot())
         Backtrack(target, tick);
@@ -178,11 +185,14 @@ CachedEntity *BestTarget()
     else
     	return nullptr;
 }
-
 void Backtrack(CachedEntity *ent, int tick)
 {
     if (CE_GOOD(ent))
+    {
+    	backtracked.first = ent->m_IDX;
+    	backtracked.second = tick;
         g_pUserCmd->tick_count = headPositions[ent->m_IDX][tick].tickcount;
+    }
 }
 void Draw()
 {

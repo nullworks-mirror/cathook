@@ -526,7 +526,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     }
     if (serverlag_amount ||
         (votelogger::active &&
-         !votelogger::antikick.test_and_set(antikick_time * 1000)))
+         !votelogger::antikick.check(antikick_time * 1000)))
     {
         if (adjust && !votelogger::active)
         {
