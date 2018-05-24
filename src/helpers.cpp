@@ -100,7 +100,7 @@ void WalkTo(const Vector &vector)
     if (CE_BAD(LOCAL_E))
         return;
     // Calculate how to get to a vector
-    auto result = ComputeMove(LOCAL_E->m_vecOrigin, vector);
+    auto result = ComputeMove(LOCAL_E->m_vecOrigin(), vector);
     // Push our move to usercmd
     g_pUserCmd->forwardmove = result.first;
     g_pUserCmd->sidemove    = result.second;
@@ -149,11 +149,11 @@ const char *GetBuildingName(CachedEntity *ent)
 {
     if (!ent)
         return "[NULL]";
-    if (ent->m_iClassID == CL_CLASS(CObjectSentrygun))
+    if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
         return "Sentry";
-    if (ent->m_iClassID == CL_CLASS(CObjectDispenser))
+    if (ent->m_iClassID() == CL_CLASS(CObjectDispenser))
         return "Dispenser";
-    if (ent->m_iClassID == CL_CLASS(CObjectTeleporter))
+    if (ent->m_iClassID() == CL_CLASS(CObjectTeleporter))
         return "Teleporter";
     return "[NULL]";
 }
@@ -263,7 +263,7 @@ bool GetHitbox(CachedEntity *entity, int hb, Vector &out)
         return false;
     box = entity->hitboxes.GetHitbox(hb);
     if (!box)
-        out = entity->m_vecOrigin;
+        out = entity->m_vecOrigin();
     else
         out = box->center;
     return true;
@@ -418,7 +418,7 @@ bool IsEntityVisible(CachedEntity *entity, int hb)
         return true;
     if (hb == -1)
     {
-        return IsEntityVectorVisible(entity, entity->m_vecOrigin);
+        return IsEntityVectorVisible(entity, entity->m_vecOrigin());
     }
     else
     {
@@ -466,7 +466,7 @@ bool VisCheckEntFromEnt(CachedEntity *startEnt, CachedEntity *endEnt)
     // Setup the trace starting with the origin of the starting ent attemting to
     // hit the origin of the end ent
     Ray_t ray;
-    ray.Init(startEnt->m_vecOrigin, endEnt->m_vecOrigin);
+    ray.Init(startEnt->m_vecOrigin(), endEnt->m_vecOrigin());
     {
         PROF_SECTION(IEVV_TraceRay);
         g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
@@ -494,7 +494,7 @@ bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt,
     // Setup the trace starting with the origin of the starting ent attemting to
     // hit the origin of the end ent
     Ray_t ray;
-    ray.Init(startVector, endEnt->m_vecOrigin);
+    ray.Init(startVector, endEnt->m_vecOrigin());
     {
         PROF_SECTION(IEVV_TraceRay);
         g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
@@ -512,12 +512,12 @@ bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt,
 Vector GetBuildingPosition(CachedEntity *ent)
 {
     Vector res;
-    res = ent->m_vecOrigin;
-    if (ent->m_iClassID == CL_CLASS(CObjectDispenser))
+    res = ent->m_vecOrigin();
+    if (ent->m_iClassID() == CL_CLASS(CObjectDispenser))
         res.z += 30;
-    if (ent->m_iClassID == CL_CLASS(CObjectTeleporter))
+    if (ent->m_iClassID() == CL_CLASS(CObjectTeleporter))
         res.z += 8;
-    if (ent->m_iClassID == CL_CLASS(CObjectSentrygun))
+    if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
     {
         switch (CE_INT(ent, netvar.iUpgradeLevel))
         {
@@ -561,7 +561,7 @@ float DistToSqr(CachedEntity *entity)
 {
     if (CE_BAD(entity))
         return 0.0f;
-    return g_pLocalPlayer->v_Origin.DistToSqr(entity->m_vecOrigin);
+    return g_pLocalPlayer->v_Origin.DistToSqr(entity->m_vecOrigin());
 }
 
 void Patch(void *address, void *patch, size_t length)
@@ -602,34 +602,34 @@ weaponmode GetWeaponMode()
     {
         return weaponmode::weapon_pda;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFLunchBox) ||
-             weapon->m_iClassID == CL_CLASS(CTFLunchBox_Drink) ||
-             weapon->m_iClassID == CL_CLASS(CTFBuffItem))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFLunchBox) ||
+             weapon->m_iClassID() == CL_CLASS(CTFLunchBox_Drink) ||
+             weapon->m_iClassID() == CL_CLASS(CTFBuffItem))
     {
         return weaponmode::weapon_consumable;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFRocketLauncher_DirectHit) ||
-             weapon->m_iClassID == CL_CLASS(CTFRocketLauncher) ||
-             weapon->m_iClassID == CL_CLASS(CTFGrenadeLauncher) ||
-             weapon->m_iClassID == CL_CLASS(CTFPipebombLauncher) ||
-             weapon->m_iClassID == CL_CLASS(CTFCompoundBow) ||
-             weapon->m_iClassID == CL_CLASS(CTFBat_Wood) ||
-             weapon->m_iClassID == CL_CLASS(CTFBat_Giftwrap) ||
-             weapon->m_iClassID == CL_CLASS(CTFFlareGun) ||
-             weapon->m_iClassID == CL_CLASS(CTFFlareGun_Revenge) ||
-             weapon->m_iClassID == CL_CLASS(CTFSyringeGun) ||
-             weapon->m_iClassID == CL_CLASS(CTFCrossbow) ||
-             weapon->m_iClassID == CL_CLASS(CTFShotgunBuildingRescue) ||
-             weapon->m_iClassID == CL_CLASS(CTFDRGPomson))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFRocketLauncher_DirectHit) ||
+             weapon->m_iClassID() == CL_CLASS(CTFRocketLauncher) ||
+             weapon->m_iClassID() == CL_CLASS(CTFGrenadeLauncher) ||
+             weapon->m_iClassID() == CL_CLASS(CTFPipebombLauncher) ||
+             weapon->m_iClassID() == CL_CLASS(CTFCompoundBow) ||
+             weapon->m_iClassID() == CL_CLASS(CTFBat_Wood) ||
+             weapon->m_iClassID() == CL_CLASS(CTFBat_Giftwrap) ||
+             weapon->m_iClassID() == CL_CLASS(CTFFlareGun) ||
+             weapon->m_iClassID() == CL_CLASS(CTFFlareGun_Revenge) ||
+             weapon->m_iClassID() == CL_CLASS(CTFSyringeGun) ||
+             weapon->m_iClassID() == CL_CLASS(CTFCrossbow) ||
+             weapon->m_iClassID() == CL_CLASS(CTFShotgunBuildingRescue) ||
+             weapon->m_iClassID() == CL_CLASS(CTFDRGPomson))
     {
         return weaponmode::weapon_projectile;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFJar) ||
-             weapon->m_iClassID == CL_CLASS(CTFJarMilk))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFJar) ||
+             weapon->m_iClassID() == CL_CLASS(CTFJarMilk))
     {
         return weaponmode::weapon_throwable;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CWeaponMedigun))
+    else if (weapon->m_iClassID() == CL_CLASS(CWeaponMedigun))
     {
         return weaponmode::weapon_medigun;
     }
@@ -667,15 +667,15 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     rgrav  = 0.0f;
     typedef float(GetProjectileData)(IClientEntity *);
 
-    if (weapon->m_iClassID == CL_CLASS(CTFRocketLauncher_DirectHit))
+    if (weapon->m_iClassID() == CL_CLASS(CTFRocketLauncher_DirectHit))
     {
         rspeed = 1980.0f;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFRocketLauncher))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFRocketLauncher))
     {
         rspeed = 1100.0f;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFGrenadeLauncher))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFGrenadeLauncher))
     {
         IF_GAME(IsTF2())
         {
@@ -688,7 +688,7 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
             rgrav  = 0.5f;
         }
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFCompoundBow))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFCompoundBow))
     {
         float chargetime =
             g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
@@ -698,36 +698,36 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
                                   -0.40000001) +
                          0.5);
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFBat_Wood))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFBat_Wood))
     {
         rspeed = 3000.0f;
         rgrav  = 0.5f;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFFlareGun))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFFlareGun))
     {
         rspeed = 2000.0f;
         rgrav  = 0.25f;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFSyringeGun))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFSyringeGun))
     {
         rgrav  = 0.2f;
         rspeed = 990.0f;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFCrossbow))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFCrossbow))
     {
         rgrav  = 0.2f;
         rspeed = 2400.0f;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFShotgunBuildingRescue))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFShotgunBuildingRescue))
     {
         rgrav  = 0.2f;
         rspeed = 2400.0f;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFDRGPomson))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFDRGPomson))
     {
         rspeed = 1200.0f;
     }
-    else if (weapon->m_iClassID == CL_CLASS(CTFWeaponFlameBall))
+    else if (weapon->m_iClassID() == CL_CLASS(CTFWeaponFlameBall))
     {
         // ??
         rspeed = 2500.0f;
@@ -824,7 +824,7 @@ bool IsSentryBuster(CachedEntity *entity)
 bool IsAmbassador(CachedEntity *entity)
 {
     IF_GAME(!IsTF2()) return false;
-    if (entity->m_iClassID != CL_CLASS(CTFRevolver))
+    if (entity->m_iClassID() != CL_CLASS(CTFRevolver))
         return false;
     const int &defidx = CE_INT(entity, netvar.iItemDefinitionIndex);
     return (defidx == 61 || defidx == 1006);
@@ -933,7 +933,7 @@ void AimAt(Vector origin, Vector target, CUserCmd *cmd)
 void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd)
 {
     Vector r;
-    r = ent->m_vecOrigin;
+    r = ent->m_vecOrigin();
     GetHitbox(ent, hitbox, r);
     AimAt(g_pLocalPlayer->v_Eye, r, cmd);
 }

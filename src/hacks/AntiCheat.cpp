@@ -37,7 +37,7 @@ void Accuse(int eid, const std::string &hack, const std::string &details)
         else
         {
             PrintChat("\x07%06X%s\x01 (%s) suspected \x07%06X%s\x01: %s",
-                      colors::chat::team(ENTITY(eid)->m_iTeam), info.name,
+                      colors::chat::team(ENTITY(eid)->m_iTeam()), info.name,
                       classname(CE_INT(ent, netvar.iClass)), 0xe05938,
                       hack.c_str(), details.c_str());
         }

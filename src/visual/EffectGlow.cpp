@@ -249,12 +249,12 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
     case ENTITY_BUILDING:
         if (health)
         {
-            return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
+            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     case ENTITY_PLAYER:
         if (ent->m_IDX == LOCAL_E->m_IDX && glowteam)
-            if (LOCAL_E->m_iTeam == TEAM_BLU)
+            if (LOCAL_E->m_iTeam() == TEAM_BLU)
                 return colors::blu;
             else
                 return colors::red;
@@ -262,7 +262,7 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
             return colors::FromRGBA8(glowR, glowG, glowB, 255);
         if (health)
         {
-            return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
+            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     }
@@ -288,23 +288,23 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
     case ENTITY_BUILDING:
         if (!buildings)
             return false;
-        if (!ent->m_bEnemy && !(teammate_buildings || teammates))
+        if (!ent->m_bEnemy() && !(teammate_buildings || teammates))
             return false;
         return true;
     case ENTITY_PLAYER:
         if (!players)
             return false;
-        if (!teammates && !ent->m_bEnemy && playerlist::IsDefault(ent))
+        if (!teammates && !ent->m_bEnemy() && playerlist::IsDefault(ent))
             return false;
         if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE)
             return false;
         return true;
         break;
     case ENTITY_PROJECTILE:
-        if (!ent->m_bEnemy)
+        if (!ent->m_bEnemy())
             return false;
         if (stickies &&
-            ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile))
+            ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
         {
             return true;
         }

@@ -62,7 +62,7 @@ int BulletDangerValue(CachedEntity *patient)
     for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (!ent->m_bEnemy)
+        if (!ent->m_bEnemy())
             continue;
         if (g_pPlayerResource->GetClass(ent) != tf_sniper)
             continue;
@@ -101,13 +101,13 @@ int FireDangerValue(CachedEntity *patient)
         for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
-            if (!ent->m_bEnemy)
+            if (!ent->m_bEnemy())
                 continue;
             if (g_pPlayerResource->GetClass(ent) != tf_pyro)
                 continue;
             if (CE_BYTE(ent, netvar.iLifeState))
                 continue;
-            if (patient->m_vecOrigin.DistTo(ent->m_vecOrigin) >
+            if (patient->m_vecOrigin().DistTo(ent->m_vecOrigin()) >
                 (int) auto_vacc_pyro_range)
                 continue;
             if ((int) auto_vacc_pop_if_pyro == 2)
@@ -162,10 +162,10 @@ int BlastDangerValue(CachedEntity *patient)
         if (CE_GOOD(ent))
         {
             // Rocket is getting closer
-            if (patient->m_vecOrigin.DistToSqr(d.last_pos) >
-                patient->m_vecOrigin.DistToSqr(ent->m_vecOrigin))
+            if (patient->m_vecOrigin().DistToSqr(d.last_pos) >
+                patient->m_vecOrigin().DistToSqr(ent->m_vecOrigin()))
             {
-                if (ent->m_bCritProjectile)
+                if (ent->m_bCritProjectile())
                     hasCritRockets = true;
                 hasRockets         = true;
             }
@@ -178,7 +178,7 @@ int BlastDangerValue(CachedEntity *patient)
     }
     if (hasRockets)
     {
-        if (patient->m_iHealth < (int) auto_vacc_blast_health ||
+        if (patient->m_iHealth() < (int) auto_vacc_blast_health ||
             (auto_vacc_blast_crit_pop && hasCritRockets))
         {
             return 2;
@@ -191,21 +191,21 @@ int BlastDangerValue(CachedEntity *patient)
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
             continue;
-        if (!ent->m_bEnemy)
+        if (!ent->m_bEnemy())
             continue;
         if (ent->m_Type != ENTITY_PROJECTILE)
             continue;
-        if (patient->m_vecOrigin.DistTo(ent->m_vecOrigin) >
+        if (patient->m_vecOrigin().DistTo(ent->m_vecOrigin()) >
             (int) auto_vacc_proj_danger_range)
             continue;
-        proj_data_array.push_back(proj_data_s{ i, ent->m_vecOrigin });
+        proj_data_array.push_back(proj_data_s{ i, ent->m_vecOrigin() });
     }
     return 0;
 }
 
 int CurrentResistance()
 {
-    if (LOCAL_W->m_iClassID != CL_CLASS(CWeaponMedigun))
+    if (LOCAL_W->m_iClassID() != CL_CLASS(CWeaponMedigun))
         return 0;
     return CE_INT(LOCAL_W, netvar.m_nChargeResistType);
 }
@@ -343,7 +343,7 @@ static CatCommand vaccinator_fire("vacc_fire", "Fire Vaccinator",
 bool IsPopped()
 {
     CachedEntity *weapon = g_pLocalPlayer->weapon();
-    if (CE_BAD(weapon) || weapon->m_iClassID != CL_CLASS(CWeaponMedigun))
+    if (CE_BAD(weapon) || weapon->m_iClassID() != CL_CLASS(CWeaponMedigun))
         return false;
     return CE_BYTE(weapon, netvar.bChargeRelease);
 }
@@ -353,7 +353,7 @@ bool ShouldChargePlayer(int idx)
     CachedEntity *target = ENTITY(idx);
     const float damage_accum_duration =
         g_GlobalVars->curtime - data[idx].accum_damage_start;
-    const int health = target->m_iHealth;
+    const int health = target->m_iHealth();
     if (!data[idx].accum_damage_start)
         return false;
     if (health > 30 && data[idx].accum_damage < 45)
@@ -481,7 +481,7 @@ void UpdateData()
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent))
         {
-            int health = ent->m_iHealth;
+            int health = ent->m_iHealth();
             if (data[i].last_damage > g_GlobalVars->curtime)
             {
                 data[i].last_damage = 0.0f;
@@ -584,11 +584,11 @@ bool CanHeal(int idx)
         return false;
     if (g_IEngine->GetLocalPlayer() == idx)
         return false;
-    if (!ent->m_bAlivePlayer)
+    if (!ent->m_bAlivePlayer())
         return false;
-    if (ent->m_bEnemy)
+    if (ent->m_bEnemy())
         return false;
-    if (ent->m_flDistance > 420)
+    if (ent->m_flDistance() > 420)
         return false;
     // TODO visible any hitbox
     if (!IsEntityVisible(ent, 7))

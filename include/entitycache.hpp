@@ -17,6 +17,10 @@
 #include <enums.hpp>
 #include <core/interfaces.hpp>
 #include <itemtypes.hpp>
+#include "localplayer.hpp"
+#include <core/netvars.hpp>
+#include "playerresource.h"
+#include "globals.h"
 
 struct matrix3x4_t;
 
@@ -53,6 +57,7 @@ struct mstudiobbox_t;
 #define HIGHEST_ENTITY (entity_cache::max)
 #define ENTITY(idx) (&entity_cache::Get(idx))
 
+bool IsProjectileACrit(CachedEntity* ent);
 class CachedEntity
 {
 public:
@@ -69,7 +74,7 @@ public:
     }
     __attribute__((always_inline, hot, const)) inline bool Good() const
     {
-        if (!m_iClassID)
+    	if (!RAW_ENT(this) || !RAW_ENT(this)->GetClientClass() || !RAW_ENT(this)->GetClientClass()->m_ClassID || !RAW_ENT(this)->GetClientClass()->m_ClassID)
             return false;
         IClientEntity *const entity = InternalEntity();
         return entity && !entity->IsDormant();
@@ -83,21 +88,69 @@ public:
 
     const int m_IDX;
 
-    int m_iClassID{ 0 };
-
-    Vector m_vecOrigin{ 0 };
-    int m_iTeam{ 0 };
-    bool m_bAlivePlayer{ false };
-    bool m_bEnemy{ false };
-    int m_iMaxHealth{ 0 };
-    int m_iHealth{ 0 };
+    int m_iClassID()
+    {
+    	if (RAW_ENT(this))
+    		if (RAW_ENT(this)->GetClientClass())
+    			if (RAW_ENT(this)->GetClientClass()->m_ClassID)
+    				return RAW_ENT(this)->GetClientClass()->m_ClassID;
+    	return 0;
+    };
+    Vector m_vecOrigin()
+    {
+        return RAW_ENT(this)->GetAbsOrigin();
+    };
+    int m_iTeam()
+    {
+        return NET_INT(RAW_ENT(this), netvar.iTeamNum);
+    };
+    bool m_bAlivePlayer()
+    {
+        return !(NET_BYTE(RAW_ENT(this), netvar.iLifeState));
+    };
+    bool m_bEnemy()
+    {
+        if (CE_BAD(g_pLocalPlayer->entity))
+            return true;
+        return m_iTeam() != g_pLocalPlayer->team;
+    };
+    int m_iMaxHealth()
+    {
+        if (m_Type == ENTITY_PLAYER)
+            return g_pPlayerResource->GetMaxHealth(this);
+        else if (m_Type == ENTITY_BUILDING)
+            return NET_INT(RAW_ENT(this), netvar.iBuildingMaxHealth);
+        else
+            return 0.0f;
+    };
+    int m_iHealth()
+    {
+        if (m_Type == ENTITY_PLAYER)
+            return NET_INT(RAW_ENT(this), netvar.iHealth);
+        else if (m_Type == ENTITY_BUILDING)
+            return NET_INT(RAW_ENT(this), netvar.iBuildingHealth);
+        else
+            return 0.0f;
+    };
 
     // Entity fields start here
     EntityType m_Type{ ENTITY_GENERIC };
 
-    float m_flDistance{ 0.0f };
+    float m_flDistance()
+    {
+        if (CE_GOOD(g_pLocalPlayer->entity))
+            return g_pLocalPlayer->v_Origin.DistTo(m_vecOrigin());
+        else
+            return FLT_MAX;
+    };
 
-    bool m_bCritProjectile{ false };
+    bool m_bCritProjectile()
+    {
+        if (m_Type == EntityType::ENTITY_PROJECTILE)
+            return IsProjectileACrit(this);
+        else
+            return false;
+    };
     bool m_bGrenadeProjectile{ false };
 
     bool m_bAnyHitboxVisible{ false };
@@ -114,7 +167,10 @@ public:
     hitbox_cache::EntityHitboxCache &hitboxes;
     player_info_s player_info{};
     Averager<float> velocity_averager{ 8 };
-    bool was_dormant{ true };
+    bool was_dormant()
+    {
+        return RAW_ENT(this)->IsDormant();
+    };
     bool velocity_is_valid{ false };
 #if PROXY_ENTITY != true
     IClientEntity *m_pEntity{ nullptr };

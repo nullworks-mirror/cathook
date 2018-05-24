@@ -17,15 +17,15 @@ static CatVar
 
 bool IsProjectile(CachedEntity *ent)
 {
-    return (ent->m_iClassID == CL_CLASS(CTFProjectile_Rocket) ||
-            ent->m_iClassID == CL_CLASS(CTFProjectile_Flare) ||
-            ent->m_iClassID == CL_CLASS(CTFProjectile_EnergyBall) ||
-            ent->m_iClassID == CL_CLASS(CTFProjectile_HealingBolt) ||
-            ent->m_iClassID == CL_CLASS(CTFProjectile_Arrow) ||
-            ent->m_iClassID == CL_CLASS(CTFProjectile_SentryRocket) ||
-            ent->m_iClassID == CL_CLASS(CTFProjectile_Cleaver) ||
-            ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile) ||
-            ent->m_iClassID == CL_CLASS(CTFProjectile_EnergyRing));
+    return (ent->m_iClassID() == CL_CLASS(CTFProjectile_Rocket) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_Flare) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_EnergyBall) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_HealingBolt) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_Arrow) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_SentryRocket) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) ||
+            ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_EnergyRing));
 }
 void CreateMove()
 {
@@ -43,7 +43,7 @@ void CreateMove()
             continue;
         if (!IsProjectile(ent))
             continue;
-        if (ent->m_flDistance < 100.0f)
+        if (ent->m_flDistance() < 100.0f)
             g_pUserCmd->buttons |= IN_ATTACK2;
     }
 }

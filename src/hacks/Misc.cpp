@@ -256,7 +256,7 @@ void CreateMove()
                 g_pUserCmd->buttons & IN_BACK ||
                 g_pUserCmd->buttons & IN_MOVELEFT ||
                 g_pUserCmd->buttons & IN_MOVERIGHT ||
-                g_pUserCmd->buttons & IN_JUMP || !LOCAL_E->m_bAlivePlayer)
+                g_pUserCmd->buttons & IN_JUMP || !LOCAL_E->m_bAlivePlayer())
                 afk_time_idle = g_GlobalVars->curtime;
         }
     }
@@ -456,7 +456,7 @@ void DrawText()
             "clip: ", CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1)));
         /*AddSideString(colors::white, "Weapon: %s [%i]",
         RAW_ENT(g_pLocalPlayer->weapon())->GetClientClass()->GetName(),
-        g_pLocalPlayer->weapon()->m_iClassID);
+        g_pLocalPlayer->weapon()->m_iClassID());
         //AddSideString(colors::white, "flNextPrimaryAttack: %f",
         CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack));
         //AddSideString(colors::white, "nTickBase: %f",

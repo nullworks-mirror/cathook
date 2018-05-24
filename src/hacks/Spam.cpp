@@ -95,7 +95,7 @@ bool PlayerPassesQuery(Query query, int idx)
     CachedEntity *player = ENTITY(idx);
     if (!RAW_ENT(player))
         return false;
-    int teammate = !player->m_bEnemy;
+    int teammate = !player->m_bEnemy();
     bool alive   = !CE_BYTE(player, netvar.iLifeState);
     int clazzBit = (1 << CE_INT(player, netvar.iClass) - 1);
     if (static_cast<int>(query.flags_class))

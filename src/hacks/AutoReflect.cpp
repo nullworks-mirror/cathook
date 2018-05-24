@@ -60,7 +60,7 @@ void CreateMove()
         return;
 
     // Check if player is using a flame thrower
-    if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFFlameThrower))
+    if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFFlameThrower))
         return;
 
     // Check for phlogistinator, which is item 594
@@ -99,7 +99,7 @@ void CreateMove()
         // Grab Velocity of projectile
         velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
         // Predict a vector for where the projectile will be
-        Vector predicted_proj = ent->m_vecOrigin + (velocity * latency);
+        Vector predicted_proj = ent->m_vecOrigin() + (velocity * latency);
         ;
 
         // Dont vischeck if ent is stickybomb or if dodgeball mode is enabled
@@ -166,7 +166,7 @@ bool ShouldReflect(CachedEntity *ent)
     if (!teammates)
     {
         // Check if the projectile is your own teams
-        if (!ent->m_bEnemy)
+        if (!ent->m_bEnemy())
             return false;
     }
 
@@ -194,7 +194,7 @@ bool ShouldReflect(CachedEntity *ent)
 bool IsEntStickyBomb(CachedEntity *ent)
 {
     // Check if the projectile is a sticky bomb
-    if (ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile))
+    if (ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
     {
         if (CE_INT(ent, netvar.iPipeType) == 1)
         {
@@ -222,7 +222,7 @@ void Draw()
         if (float(fov) > 0.0f && float(fov) < 180)
         {
             // Dont show ring while player is dead
-            if (LOCAL_E->m_bAlivePlayer)
+            if (LOCAL_E->m_bAlivePlayer())
             {
                 rgba_t color = GUIColor();
                 color.a      = float(fovcircle_opacity);

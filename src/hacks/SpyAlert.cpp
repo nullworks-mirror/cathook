@@ -59,7 +59,7 @@ void Draw()
             continue;
         if (IsPlayerInvisible(ent))
             continue;
-        distance = ent->m_flDistance;
+        distance = ent->m_flDistance();
         if (distance < closest_spy_distance || !closest_spy_distance)
         {
             closest_spy_distance = distance;

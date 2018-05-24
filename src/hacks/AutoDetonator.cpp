@@ -29,7 +29,7 @@ std::vector<CachedEntity *> targets;
 bool IsFlare(CachedEntity *ent)
 {
     // Check if ent is a flare
-    if (ent->m_iClassID != CL_CLASS(CTFProjectile_Flare))
+    if (ent->m_iClassID() != CL_CLASS(CTFProjectile_Flare))
         return false;
 
     // Check if we're the owner of the flare
@@ -48,14 +48,14 @@ bool IsTarget(CachedEntity *ent)
         return false;
 
     // Check if target is an enemy
-    if (!ent->m_bEnemy)
+    if (!ent->m_bEnemy())
         return false;
 
     // Player specific
     if (ent->m_Type == ENTITY_PLAYER)
     {
         // Dont detonate on dead players
-        if (!ent->m_bAlivePlayer)
+        if (!ent->m_bAlivePlayer())
             return false;
         // Dont detonate on friendly players
         if (playerlist::IsFriendly(playerlist::AccessData(ent).state))
@@ -123,7 +123,7 @@ void CreateMove()
         for (auto target : targets)
         {
             // Check distance to the target to see if the flare will hit
-            if (flare->m_vecOrigin.DistToSqr(target->m_vecOrigin) < 22000)
+            if (flare->m_vecOrigin().DistToSqr(target->m_vecOrigin()) < 22000)
             {
                 // Vis check the target from the flare
                 if (VisCheckEntFromEnt(flare, target))

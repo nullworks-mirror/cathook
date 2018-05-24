@@ -179,7 +179,7 @@ void create_move()
     }
     else if ((g_pUserCmd->buttons & IN_ATTACK) && g_pUserCmd->command_number &&
              GetWeaponMode() == weapon_melee && crit_melee &&
-             g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife))
+             g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
     {
         force_crit(weapon);
     }

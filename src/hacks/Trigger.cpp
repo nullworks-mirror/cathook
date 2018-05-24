@@ -159,11 +159,11 @@ void CreateMove()
     // Check if dormant or null to prevent crashes
     if (CE_BAD(ent))
         return;
-    AddSideString("Found target, gigalul");
 
     // Determine whether the triggerbot should shoot, then act accordingly
     if (IsTargetStateGood(ent))
     {
+        AddSideString("Found target, gigalul");
         target_time = backup_time;
         if (delay)
         {
@@ -279,10 +279,10 @@ bool IsTargetStateGood(CachedEntity *entity)
         if (entity == LOCAL_E)
             return false;
         // Dont aim at dead player
-        if (!entity->m_bAlivePlayer)
+        if (!entity->m_bAlivePlayer())
             return false;
         // Dont aim at teammates
-        if (!entity->m_bEnemy && !teammates)
+        if (!entity->m_bEnemy() && !teammates)
             return false;
 
         IF_GAME(IsTF())
@@ -296,10 +296,10 @@ bool IsTargetStateGood(CachedEntity *entity)
                 if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f)
                     bdmg = 50.0f;
                 //                if ((bdmg * 3) < (HasDarwins(entity)
-                //                                      ? (entity->m_iHealth *
+                //                                      ? (entity->m_iHealth() *
                 //                                      1.15)
-                //                                      : entity->m_iHealth))
-                if (bdmg * 3 < entity->m_iHealth)
+                //                                      : entity->m_iHealth()))
+                if (bdmg * 3 < entity->m_iHealth())
                 {
                     return false;
                 }
@@ -315,7 +315,7 @@ bool IsTargetStateGood(CachedEntity *entity)
                 return false;
             // If settings allow, dont target vaccinated players
             if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan ||
-                LOCAL_W->m_iClassID == CL_CLASS(CTFCompoundBow))
+                LOCAL_W->m_iClassID() == CL_CLASS(CTFCompoundBow))
                 if (ignore_vaccinator &&
                     HasCondition<TFCond_UberBulletResist>(entity))
                     return false;
@@ -390,14 +390,14 @@ bool IsTargetStateGood(CachedEntity *entity)
         if (!(buildings_other || buildings_sentry))
             return false;
         // Check if enemy building
-        if (!entity->m_bEnemy)
+        if (!entity->m_bEnemy())
             return false;
 
         // If needed, Check if building type is allowed
         if (!(buildings_other && buildings_sentry))
         {
             // Check if target is a sentrygun
-            if (entity->m_iClassID == CL_CLASS(CObjectSentrygun))
+            if (entity->m_iClassID() == CL_CLASS(CObjectSentrygun))
             {
                 // If sentrys are not allowed, dont target
                 if (!buildings_sentry)
@@ -417,14 +417,14 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // Check for stickybombs
     }
-    else if (entity->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile))
+    else if (entity->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
     {
         // Check if sticky aimbot is enabled
         if (!stickybot)
             return false;
 
         // Check if thrower is a teammate
-        if (!entity->m_bEnemy)
+        if (!entity->m_bEnemy())
             return false;
 
         // Check if target is a pipe bomb
@@ -496,7 +496,7 @@ bool HeadPreferable(CachedEntity *target)
         // Var to keep if we can bodyshot
         bool headonly = false;
         // Save the local players current weapon to a var
-        int ci = g_pLocalPlayer->weapon()->m_iClassID;
+        int ci = g_pLocalPlayer->weapon()->m_iClassID();
         IF_GAME(IsTF())
         {
             // If user is using a sniper rifle, Set headonly to whether we can
@@ -552,10 +552,10 @@ bool HeadPreferable(CachedEntity *target)
                 // only if they have less than 150 health will it try to
                 // bodyshot
                 if (CanHeadshot() &&
-                    (cdmg >= target->m_iHealth ||
+                    (cdmg >= target->m_iHealth() ||
                      IsPlayerCritBoosted(g_pLocalPlayer->entity) ||
-                     !g_pLocalPlayer->bZoomed || target->m_iHealth <= bdmg) &&
-                    target->m_iHealth <= 150)
+                     !g_pLocalPlayer->bZoomed || target->m_iHealth() <= bdmg) &&
+                    target->m_iHealth() <= 150)
                 {
                     // We dont need to hit the head as a bodyshot will kill
                     headonly = false;
@@ -640,7 +640,7 @@ float EffectiveTargetingRange()
         return re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W);
         // Pyros only have so much untill their flames hit
     }
-    else if (g_pLocalPlayer->weapon()->m_iClassID == CL_CLASS(CTFFlameThrower))
+    else if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
     {
         return 185.0f;
     }

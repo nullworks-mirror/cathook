@@ -23,14 +23,14 @@ void LocalPlayer::Update()
     if (CE_GOOD(wep))
     {
         weapon_mode = GetWeaponMode();
-        if (wep->m_iClassID == CL_CLASS(CTFSniperRifle) ||
-            wep->m_iClassID == CL_CLASS(CTFSniperRifleDecap))
+        if (wep->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
+            wep->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
             holding_sniper_rifle = true;
     }
     team                   = CE_INT(entity, netvar.iTeamNum);
     life_state             = CE_BYTE(entity, netvar.iLifeState);
     v_ViewOffset           = CE_VECTOR(entity, netvar.vViewOffset);
-    v_Origin               = entity->m_vecOrigin;
+    v_Origin               = entity->m_vecOrigin();
     v_Eye                  = v_Origin + v_ViewOffset;
     clazz                  = CE_INT(entity, netvar.iClass);
     health                 = CE_INT(entity, netvar.iHealth);

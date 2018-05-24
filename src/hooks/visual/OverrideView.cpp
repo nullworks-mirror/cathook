@@ -42,7 +42,7 @@ DEFINE_HOOKED_METHOD(OverrideView, void, void *this_, CViewSetup *setup)
         if (CE_GOOD(spec) && !CE_BYTE(spec, netvar.iLifeState))
         {
             setup->origin =
-                spec->m_vecOrigin + CE_VECTOR(spec, netvar.vViewOffset);
+                spec->m_vecOrigin() + CE_VECTOR(spec, netvar.vViewOffset);
             // why not spectate yourself
             if (spec == LOCAL_E)
             {

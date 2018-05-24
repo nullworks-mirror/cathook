@@ -63,7 +63,7 @@ rgba_t colors::EntityF(CachedEntity *ent)
         }
     }
 
-    if (ent->m_iClassID == CL_CLASS(CCurrencyPack))
+    if (ent->m_iClassID() == CL_CLASS(CCurrencyPack))
     {
         if (CE_BYTE(ent, netvar.bDistributed))
             result = red;
@@ -73,30 +73,30 @@ rgba_t colors::EntityF(CachedEntity *ent)
 
     if (ent->m_Type == ENTITY_PROJECTILE)
     {
-        if (ent->m_iTeam == TEAM_BLU)
+        if (ent->m_iTeam() == TEAM_BLU)
             result = blu;
-        else if (ent->m_iTeam == TEAM_RED)
+        else if (ent->m_iTeam() == TEAM_RED)
             result = red;
-        if (ent->m_bCritProjectile)
+        if (ent->m_bCritProjectile())
         {
-            if (ent->m_iTeam == TEAM_BLU)
+            if (ent->m_iTeam() == TEAM_BLU)
                 result = blu_u;
-            else if (ent->m_iTeam == TEAM_RED)
+            else if (ent->m_iTeam() == TEAM_RED)
                 result = red_u;
         }
     }
 
     if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING)
     {
-        if (ent->m_iTeam == TEAM_BLU)
+        if (ent->m_iTeam() == TEAM_BLU)
             result = blu;
-        else if (ent->m_iTeam == TEAM_RED)
+        else if (ent->m_iTeam() == TEAM_RED)
             result = red;
         // If user has custom color, check if we should change, and do so here
         if (user_red_blue || user_red_green || user_red_red || user_blue_blue ||
             user_blue_green || user_blue_red)
         {
-            switch (ent->m_iTeam)
+            switch (ent->m_iTeam())
             {
             case TEAM_BLU:
                 if (user_blue_blue || user_blue_green || user_blue_red)
@@ -118,16 +118,16 @@ rgba_t colors::EntityF(CachedEntity *ent)
         {
             if (IsPlayerInvulnerable(ent))
             {
-                if (ent->m_iTeam == TEAM_BLU)
+                if (ent->m_iTeam() == TEAM_BLU)
                     result = blu_u;
-                else if (ent->m_iTeam == TEAM_RED)
+                else if (ent->m_iTeam() == TEAM_RED)
                     result = red_u;
             }
             if (HasCondition<TFCond_UberBulletResist>(ent))
             {
-                if (ent->m_iTeam == TEAM_BLU)
+                if (ent->m_iTeam() == TEAM_BLU)
                     result = blu_v;
-                else if (ent->m_iTeam == TEAM_RED)
+                else if (ent->m_iTeam() == TEAM_RED)
                     result = red_v;
             }
             plclr = playerlist::Color(ent);

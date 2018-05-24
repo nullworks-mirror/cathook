@@ -15,6 +15,19 @@
 #include "HookedMethods.hpp"
 
 class CMoveData;
+#if LAGBOT_MODE
+CatCommand set_value("set", "Set value", [](const CCommand &args) {
+    if (args.ArgC() < 2)
+        return;
+    ConVar *var = g_ICvar->FindVar(args.Arg(1));
+    if (!var)
+        return;
+    std::string value(args.Arg(2));
+    ReplaceString(value, "\\n", "\n");
+    var->SetValue(value.c_str());
+    logging::Info("Set '%s' to '%s'", args.Arg(1), value.c_str());
+});
+#endif
 namespace engine_prediction
 {
 
@@ -72,7 +85,11 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     return;
 }
 }
-
+#if not LAGBOT_MODE
+#define antikick_time 35
+#else
+#define antikick_time 90
+#endif
 namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
@@ -93,7 +110,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     IF_GAME(IsTF2C())
     {
         if (CE_GOOD(LOCAL_W) && minigun_jump &&
-            LOCAL_W->m_iClassID == CL_CLASS(CTFMinigun))
+            LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun))
         {
             CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
         }
@@ -141,7 +158,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 
     if (nolerp)
     {
-        g_pUserCmd->tick_count += 1;
+        // g_pUserCmd->tick_count += 1;
         if (sv_client_min_interp_ratio->GetInt() != -1)
         {
             // sv_client_min_interp_ratio->m_nFlags = 0;
@@ -487,8 +504,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 cmd->forwardmove = cos(yaw) * speed;
                 cmd->sidemove    = sin(yaw) * speed;
                 if (hacks::tf2::antibackstab::noaa)
-                	if (cmd->viewangles.x >= 90 && cmd->viewangles.x <= 270)
-                		cmd->forwardmove = -cmd->forwardmove;
+                    if (cmd->viewangles.x >= 90 && cmd->viewangles.x <= 270)
+                        cmd->forwardmove = -cmd->forwardmove;
             }
 
             ret = false;
@@ -507,9 +524,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             ch->SendNetMsg(senddata);
         ch->Transmit();
     }
-    if (serverlag_amount || votelogger::antikick_ticks)
+    if (serverlag_amount ||
+        (votelogger::active &&
+         !votelogger::antikick.test_and_set(antikick_time * 1000)))
     {
-        if (adjust)
+        if (adjust && !votelogger::active)
         {
             if ((int) serverlag_amount == 1)
                 serverlag_amount = (int) serverlag_amount + 10;
@@ -525,23 +544,34 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                     serverlag_amount = (int) serverlag_amount + 1;
                 prevflowticks        = 0;
             }
-            prevflow = ch->GetAvgData(FLOW_INCOMING);
         }
-        if (votelogger::antikick_ticks)
-            votelogger::antikick_ticks--;
-        if (votelogger::antikick_ticks)
+        else if (votelogger::active &&
+                 !votelogger::antikick.test_and_set(antikick_time * 1000))
         {
-            for (int i = 0; i < 7800; i += sizeof(serverlag_string.GetString()))
+            static int additionallag = 1;
+            if (ch->GetAvgData(FLOW_INCOMING) == prevflow)
+            {
+                prevflowticks++;
+            }
+            else
+                prevflowticks = 0;
+            if (prevflowticks <= 10)
+                additionallag *= 0.1f;
+            for (int i = 0; i < 7800 + additionallag;
+                 i += sizeof(serverlag_string.GetString()))
                 ch->SendNetMsg(senddata, false);
             ch->Transmit();
         }
-        else if (!votelogger::antikick_ticks &&
-                 DelayTimer.check((int) delay * 1000))
+        else if (votelogger::active &&
+                 votelogger::antikick.test_and_set(antikick_time * 1000))
+            votelogger::active = false;
+        else if (!votelogger::active && DelayTimer.check((int) delay * 1000))
         {
             for (int i = 0; i < (int) serverlag_amount; i++)
                 ch->SendNetMsg(senddata, false);
             ch->Transmit();
         }
+        prevflow = ch->GetAvgData(FLOW_INCOMING);
     }
 
     //	PROF_END("CreateMove");

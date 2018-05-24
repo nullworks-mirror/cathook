@@ -13,5 +13,6 @@ namespace votelogger
 {
 
 void user_message(bf_read &buffer, int type);
-extern int antikick_ticks;
+extern Timer antikick;
+extern bool active;
 }

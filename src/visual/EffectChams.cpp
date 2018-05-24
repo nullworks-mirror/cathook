@@ -129,21 +129,21 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     switch (ent->m_Type)
     {
     case ENTITY_BUILDING:
-        if (!ent->m_bEnemy && !(teammates || teammate_buildings) &&
+        if (!ent->m_bEnemy() && !(teammates || teammate_buildings) &&
             (!(chamsR || chamsB || chamsG) && ent != LOCAL_E))
         {
             return colors::empty;
         }
         if (health)
         {
-            return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
+            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     case ENTITY_PLAYER:
         if (!players)
             return colors::empty;
         if (ent->m_IDX == LOCAL_E->m_IDX && chamsteam)
-            if (LOCAL_E->m_iTeam == TEAM_BLU)
+            if (LOCAL_E->m_iTeam() == TEAM_BLU)
                 return colors::blu;
             else
                 return colors::red;
@@ -151,7 +151,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
             return colors::FromRGBA8(chamsR, chamsG, chamsB, 255);
         if (health)
         {
-            return colors::Health(ent->m_iHealth, ent->m_iMaxHealth);
+            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     }
@@ -174,28 +174,28 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
     case ENTITY_BUILDING:
         if (!buildings)
             return false;
-        if (!ent->m_bEnemy && !(teammate_buildings || teammates))
+        if (!ent->m_bEnemy() && !(teammate_buildings || teammates))
             return false;
-        if (ent->m_iHealth == 0 || !ent->m_iHealth)
+        if (ent->m_iHealth() == 0 || !ent->m_iHealth())
             return false;
         if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject) &&
-            LOCAL_E->m_vecOrigin.DistTo(ent->m_vecOrigin) <= 100.0f)
+            LOCAL_E->m_vecOrigin().DistTo(ent->m_vecOrigin()) <= 100.0f)
             return false;
         return true;
     case ENTITY_PLAYER:
         if (!players)
             return false;
-        if (!teammates && !ent->m_bEnemy && playerlist::IsDefault(ent))
+        if (!teammates && !ent->m_bEnemy() && playerlist::IsDefault(ent))
             return false;
         if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE)
             return false;
         return true;
         break;
     case ENTITY_PROJECTILE:
-        if (!ent->m_bEnemy)
+        if (!ent->m_bEnemy())
             return false;
         if (stickies &&
-            ent->m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile))
+            ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
         {
             return true;
         }

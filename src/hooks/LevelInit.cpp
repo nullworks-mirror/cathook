@@ -93,7 +93,6 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 #if not LAGBOT_MODE
     playerlist::Save();
 #endif
-    votelogger::antikick_ticks = 0;
 #if not LAGBOT_MODE
     hacks::shared::lagexploit::bcalled = false;
 #endif

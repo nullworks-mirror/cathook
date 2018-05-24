@@ -25,8 +25,8 @@ public:
     inline static float GetSwingRange(CachedEntity *self)
     {
         int ret = 48.0f;
-        if (self->m_iClassID == CL_CLASS(CTFSword) ||
-            self->m_iClassID == CL_CLASS(CTFKatana))
+        if (self->m_iClassID() == CL_CLASS(CTFSword) ||
+            self->m_iClassID() == CL_CLASS(CTFKatana))
             ret = 72.0f;
         return ret;
     }

@@ -64,8 +64,8 @@ void Update()
     CachedEntity *weapon = LOCAL_W;
     if (CE_GOOD(weapon))
     {
-        if (LOCAL_W->m_iClassID == CL_CLASS(CTFSniperRifle) ||
-            LOCAL_W->m_iClassID == CL_CLASS(CTFSniperRifleDecap))
+        if (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
+            LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
         {
             // ONLY tracks primary ammo
             int ammo = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
@@ -97,8 +97,8 @@ public:
             g_IEngine->GetLocalPlayer())
         {
             if (CE_GOOD(LOCAL_W) &&
-                (LOCAL_W->m_iClassID == CL_CLASS(CTFSniperRifle) ||
-                 LOCAL_W->m_iClassID == CL_CLASS(CTFSniperRifleDecap)))
+                (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
+                 LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap)))
                 OnHit(event->GetBool("crit"));
         }
     }

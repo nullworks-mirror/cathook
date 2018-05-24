@@ -40,8 +40,8 @@ float GetAngle(CachedEntity *spy)
     float yaw, yaw2, anglediff;
     Vector diff;
     yaw             = g_pLocalPlayer->v_OrigViewangles.y;
-    const Vector &A = LOCAL_E->m_vecOrigin;
-    const Vector &B = spy->m_vecOrigin;
+    const Vector &A = LOCAL_E->m_vecOrigin();
+    const Vector &B = spy->m_vecOrigin();
     diff            = (A - B);
     yaw2            = acos(diff.x / diff.Length()) * 180.0f / PI;
     if (diff.y < 0)
@@ -77,7 +77,7 @@ CachedEntity *ClosestSpy()
             continue;
         if (IsPlayerInvisible(ent))
             continue;
-        dist = ent->m_flDistance;
+        dist = ent->m_flDistance();
         if (fabs(GetAngle(ent)) > (float) angle)
         {
             break;

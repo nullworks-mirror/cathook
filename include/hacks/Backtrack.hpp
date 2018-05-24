@@ -21,6 +21,7 @@ struct BacktrackData
     Vector hitboxpos;
     Vector min;
     Vector max;
+    Vector origin;
 };
 void Init();
 void Run();

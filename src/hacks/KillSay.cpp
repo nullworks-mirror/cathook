@@ -73,8 +73,8 @@ std::string ComposeKillSay(IGameEvent *event)
     player_info_s infok;
     g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(kid), &infok);
     ReplaceString(msg, "%killer%", std::string(infok.name));
-    ReplaceString(msg, "%team%", tf_teams_killsay[ent->m_iTeam - 2]);
-    ReplaceString(msg, "%myteam%", tf_teams_killsay[LOCAL_E->m_iTeam - 2]);
+    ReplaceString(msg, "%team%", tf_teams_killsay[ent->m_iTeam() - 2]);
+    ReplaceString(msg, "%myteam%", tf_teams_killsay[LOCAL_E->m_iTeam() - 2]);
     ReplaceString(msg, "%myclass%",
                   tf_classes_killsay[g_pPlayerResource->GetClass(LOCAL_E)]);
     ReplaceString(msg, "\\n", "\n");

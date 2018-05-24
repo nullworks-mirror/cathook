@@ -9,6 +9,12 @@
 
 #include <time.h>
 
+bool IsProjectileACrit(CachedEntity *ent)
+{
+    if (ent->m_bGrenadeProjectile)
+        return CE_BYTE(ent, netvar.Grenade_bCritical);
+    return CE_BYTE(ent, netvar.Rocket_bCritical);
+}
 // This method of const'ing the index is weird.
 CachedEntity::CachedEntity()
     : m_IDX(int(((unsigned) this - (unsigned) &entity_cache::array) /
@@ -24,19 +30,10 @@ CachedEntity::CachedEntity()
 void CachedEntity::Reset()
 {
     m_Type               = ENTITY_GENERIC;
-    m_iClassID           = 0;
-    m_flDistance         = 0.0f;
-    m_bCritProjectile    = false;
     m_bGrenadeProjectile = false;
     m_bAnyHitboxVisible  = false;
     m_bVisCheckComplete  = false;
-    m_vecOrigin.Zero();
     m_ItemType     = ITEM_NONE;
-    m_iTeam        = 0;
-    m_bAlivePlayer = false;
-    m_bEnemy       = false;
-    m_iMaxHealth   = 0;
-    m_iHealth      = 0;
     m_lLastSeen    = 0;
     m_lSeenTicks   = 0;
     memset(&player_info, 0, sizeof(player_info_s));
@@ -69,10 +66,7 @@ void CachedEntity::Update()
     }
 #endif
     bool dormant               = raw->IsDormant();
-    bool dormant_state_changed = dormant != was_dormant;
-    was_dormant                = dormant;
-    m_iClassID                 = raw->GetClientClass()->m_ClassID;
-    m_vecOrigin                = raw->GetAbsOrigin();
+    bool dormant_state_changed = dormant != was_dormant();
     /*float simtime = CE_FLOAT(this, netvar.m_flSimulationTime);
     float deltat = (simtime - m_fLastUpdate);
     if (ve_smooth) {
@@ -124,33 +118,33 @@ void CachedEntity::Update()
     m_bGrenadeProjectile = false;
     m_bVisCheckComplete  = false;
 
-    if (m_iClassID == RCC_PLAYER)
+    if (m_iClassID() == RCC_PLAYER)
     {
         m_Type = EntityType::ENTITY_PLAYER;
     }
-    else if (m_iClassID == CL_CLASS(CTFGrenadePipebombProjectile) ||
-             m_iClassID == CL_CLASS(CTFProjectile_Cleaver) ||
-             m_iClassID == CL_CLASS(CTFProjectile_Jar) ||
-             m_iClassID == CL_CLASS(CTFProjectile_JarMilk))
+    else if (m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_Jar) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_JarMilk))
     {
         m_Type               = EntityType::ENTITY_PROJECTILE;
         m_bGrenadeProjectile = true;
     }
-    else if (m_iClassID == CL_CLASS(CObjectTeleporter) ||
-             m_iClassID == CL_CLASS(CObjectSentrygun) ||
-             m_iClassID == CL_CLASS(CObjectDispenser))
+    else if (m_iClassID() == CL_CLASS(CObjectTeleporter) ||
+             m_iClassID() == CL_CLASS(CObjectSentrygun) ||
+             m_iClassID() == CL_CLASS(CObjectDispenser))
     {
         m_Type = EntityType::ENTITY_BUILDING;
     }
-    else if (m_iClassID == CL_CLASS(CTFProjectile_Arrow) ||
-             m_iClassID == CL_CLASS(CTFProjectile_EnergyBall) ||
-             m_iClassID == CL_CLASS(CTFProjectile_EnergyRing) ||
-             m_iClassID == CL_CLASS(CTFProjectile_GrapplingHook) ||
-             m_iClassID == CL_CLASS(CTFProjectile_HealingBolt) ||
-             m_iClassID == CL_CLASS(CTFProjectile_Rocket) ||
-             m_iClassID == CL_CLASS(CTFProjectile_SentryRocket) ||
-             m_iClassID == CL_CLASS(CTFProjectile_BallOfFire) ||
-             m_iClassID == CL_CLASS(CTFProjectile_Flare))
+    else if (m_iClassID() == CL_CLASS(CTFProjectile_Arrow) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_EnergyBall) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_EnergyRing) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_GrapplingHook) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_HealingBolt) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_Rocket) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_SentryRocket) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_BallOfFire) ||
+             m_iClassID() == CL_CLASS(CTFProjectile_Flare))
     {
         m_Type = EntityType::ENTITY_PROJECTILE;
     }
@@ -159,12 +153,6 @@ void CachedEntity::Update()
         m_ItemType = g_ItemManager.GetItemType(this);
         m_Type     = EntityType::ENTITY_GENERIC;
     }
-
-    if (CE_GOOD(g_pLocalPlayer->entity))
-    {
-        m_flDistance = (g_pLocalPlayer->v_Origin.DistTo(m_vecOrigin));
-    }
-    m_bAlivePlayer = false;
     // TODO temporary!
     /*m_bCritProjectile = false;
     m_bIsVisible = false;
@@ -177,32 +165,8 @@ void CachedEntity::Update()
     m_lLastSeen = 0;
     m_lSeenTicks = 0;*/
 
-    if (CE_BAD(g_pLocalPlayer->entity))
-        return;
-
-    if (m_Type == EntityType::ENTITY_PROJECTILE)
-    {
-        m_bCritProjectile = IsProjectileCrit(this);
-        m_iTeam           = NET_INT(raw, netvar.iTeamNum);
-        m_bEnemy          = (m_iTeam != g_pLocalPlayer->team);
-    }
-
     if (m_Type == EntityType::ENTITY_PLAYER)
-    {
-        m_bAlivePlayer = !(NET_BYTE(raw, netvar.iLifeState));
         g_IEngine->GetPlayerInfo(m_IDX, &player_info);
-        m_iTeam      = NET_INT(raw, netvar.iTeamNum); // TODO
-        m_bEnemy     = (m_iTeam != g_pLocalPlayer->team);
-        m_iHealth    = NET_INT(raw, netvar.iHealth);
-        m_iMaxHealth = g_pPlayerResource->GetMaxHealth(this);
-    }
-    if (m_Type == EntityType::ENTITY_BUILDING)
-    {
-        m_iTeam      = NET_INT(raw, netvar.iTeamNum); // TODO
-        m_bEnemy     = (m_iTeam != g_pLocalPlayer->team);
-        m_iHealth    = NET_INT(raw, netvar.iBuildingHealth);
-        m_iMaxHealth = NET_INT(raw, netvar.iBuildingMaxHealth);
-    }
 }
 
 static CatVar fast_vischeck(CV_SWITCH, "fast_vischeck", "0", "Fast VisCheck",
@@ -219,7 +183,7 @@ bool CachedEntity::IsVisible()
     if (m_bVisCheckComplete)
         return m_bAnyHitboxVisible;
 
-    vischeck0 = IsEntityVectorVisible(this, m_vecOrigin);
+    vischeck0 = IsEntityVectorVisible(this, m_vecOrigin());
 
     if (vischeck0)
     {
