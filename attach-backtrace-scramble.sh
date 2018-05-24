@@ -44,11 +44,6 @@ gdb -n -q -batch \
   -ex "call dlerror()" \
   -ex "print (char *) $2" \
   -ex "catch syscall exit exit_group" \
-  -ex "detach" \
-  -ex "quit" 
-wait 1000
-gdb -n -q -batch \
-  -ex "attach $proc" \
   -ex "continue" \
   -ex "backtrace"
 

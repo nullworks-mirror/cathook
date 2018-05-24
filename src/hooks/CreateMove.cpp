@@ -562,9 +562,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 ch->SendNetMsg(senddata, false);
             ch->Transmit();
         }
-        else if (votelogger::active &&
-                 votelogger::antikick.test_and_set(antikick_time * 1000))
-            votelogger::active = false;
         else if (!votelogger::active && DelayTimer.check((int) delay * 1000))
         {
             for (int i = 0; i < (int) serverlag_amount; i++)
@@ -573,7 +570,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         }
         prevflow = ch->GetAvgData(FLOW_INCOMING);
     }
-
+    else if (votelogger::active &&
+             votelogger::antikick.test_and_set(antikick_time * 1000))
+        votelogger::active = false;
     //	PROF_END("CreateMove");
     if (!(cmd->buttons & IN_ATTACK))
     {
