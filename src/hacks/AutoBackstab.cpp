@@ -72,7 +72,8 @@ void CreateMove()
             scr -= abs(g_pLocalPlayer->v_Eye.y -
                        NET_VECTOR(pEnt, netvar.m_angEyeAngles).y);
             if ((scr > scr_best) &&
-                LOCAL_E->m_vecOrigin().DistTo(pEnt->m_vecOrigin()) < (int) value)
+                LOCAL_E->m_vecOrigin().DistTo(pEnt->m_vecOrigin()) <
+                    (int) value)
             {
                 scr_best = scr;
                 ent      = pEnt;
@@ -90,8 +91,9 @@ void CreateMove()
         // Get a vector from my origin to my targets origin
         Vector vecToTarget;
 
+        int tick = hacks::shared::backtrack::Besttick(ent);
         vecToTarget = hacks::shared::backtrack::headPositions
-                          [ent->m_IDX][hacks::shared::backtrack::BestTick]
+                          [ent->m_IDX][tick]
                               .origin -
                       GetWorldSpaceCenter(LOCAL_E);
         vecToTarget.z = 0.0f;
@@ -101,9 +103,14 @@ void CreateMove()
 
         bool isbehind = flDot > -0.1;
         if (isbehind &&
-            abs(g_pLocalPlayer->v_Eye.y -
-                NET_VECTOR(ent, netvar.m_angEyeAngles).y) <= 90.0f)
+            hacks::shared::backtrack::headPositions
+                    [ent->m_IDX][tick]
+                        .origin.DistTo(g_pLocalPlayer->v_Eye) <=
+                re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W)) {
+        	hacks::shared::backtrack::dontbacktrack = true;
+        	hacks::shared::backtrack::Backtrack(ent, tick);
             g_pUserCmd->buttons |= IN_ATTACK;
+        }
     }
 }
 }

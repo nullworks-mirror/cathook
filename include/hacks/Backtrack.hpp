@@ -25,9 +25,13 @@ struct BacktrackData
 };
 void Init();
 void Run();
+void Backtrack(CachedEntity *, int);
+int Besttick(CachedEntity *);
+CachedEntity *BestTarget();
 void Draw();
 void AddLatencyToNetchan(INetChannel *, float);
 void UpdateIncomingSequences();
+extern bool dontbacktrack;
 extern int lastincomingsequencenumber;
 extern int BestTick;
 struct CIncomingSequence

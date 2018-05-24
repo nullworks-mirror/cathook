@@ -33,9 +33,9 @@ void CachedEntity::Reset()
     m_bGrenadeProjectile = false;
     m_bAnyHitboxVisible  = false;
     m_bVisCheckComplete  = false;
-    m_ItemType     = ITEM_NONE;
-    m_lLastSeen    = 0;
-    m_lSeenTicks   = 0;
+    m_ItemType           = ITEM_NONE;
+    m_lLastSeen          = 0;
+    m_lSeenTicks         = 0;
     memset(&player_info, 0, sizeof(player_info_s));
     m_vecAcceleration.Zero();
     m_vecVOrigin.Zero();

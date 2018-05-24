@@ -57,7 +57,7 @@ struct mstudiobbox_t;
 #define HIGHEST_ENTITY (entity_cache::max)
 #define ENTITY(idx) (&entity_cache::Get(idx))
 
-bool IsProjectileACrit(CachedEntity* ent);
+bool IsProjectileACrit(CachedEntity *ent);
 class CachedEntity
 {
 public:
@@ -74,7 +74,7 @@ public:
     }
     __attribute__((always_inline, hot, const)) inline bool Good() const
     {
-    	if (!RAW_ENT(this) || !RAW_ENT(this)->GetClientClass() || !RAW_ENT(this)->GetClientClass()->m_ClassID || !RAW_ENT(this)->GetClientClass()->m_ClassID)
+        if (!RAW_ENT(this) || !RAW_ENT(this)->GetClientClass()->m_ClassID)
             return false;
         IClientEntity *const entity = InternalEntity();
         return entity && !entity->IsDormant();
@@ -90,11 +90,11 @@ public:
 
     int m_iClassID()
     {
-    	if (RAW_ENT(this))
-    		if (RAW_ENT(this)->GetClientClass())
-    			if (RAW_ENT(this)->GetClientClass()->m_ClassID)
-    				return RAW_ENT(this)->GetClientClass()->m_ClassID;
-    	return 0;
+        if (RAW_ENT(this))
+            if (RAW_ENT(this)->GetClientClass())
+                if (RAW_ENT(this)->GetClientClass()->m_ClassID)
+                    return RAW_ENT(this)->GetClientClass()->m_ClassID;
+        return 0;
     };
     Vector m_vecOrigin()
     {

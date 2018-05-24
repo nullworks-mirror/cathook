@@ -159,8 +159,9 @@ void DrawEntity(int x, int y, CachedEntity *ent)
 
             if (ent->m_iMaxHealth() && healthbar)
             {
-                healthp = (float) ent->m_iHealth() / (float) ent->m_iMaxHealth();
-                clr     = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+                healthp =
+                    (float) ent->m_iHealth() / (float) ent->m_iMaxHealth();
+                clr = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
                 if (healthp > 1.0f)
                     healthp = 1.0f;
                 draw_api::draw_rect_outlined(
@@ -182,7 +183,8 @@ void DrawEntity(int x, int y, CachedEntity *ent)
             wtr.second, (int)icon_size, (int)icon_size, idx ? colors::blu :
             colors::red	); draw::OutlineRect(x + wtr.first, y + wtr.second,
             (int)icon_size, (int)icon_size, idx ? colors::blu_v :
-            colors::red_v); if (ent->m_iMaxHealth() && healthbar) { float healthp
+            colors::red_v); if (ent->m_iMaxHealth() && healthbar) { float
+            healthp
             = (float)ent->m_iHealth() / (float)ent->m_iMaxHealth(); int clr =
             colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()); if (healthp
             > 1.0f) healthp = 1.0f; draw::OutlineRect(x + wtr.first, y +

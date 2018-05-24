@@ -379,9 +379,10 @@ void CreateMove()
                 // If snow distance, add string here
                 if (show_distance)
                 {
-                    AddEntityString(ent, format((int) (ENTITY(i)->m_flDistance() /
-                                                       64 * 1.22f),
-                                                'm'));
+                    AddEntityString(
+                        ent,
+                        format((int) (ENTITY(i)->m_flDistance() / 64 * 1.22f),
+                               'm'));
                 }
             }
             // No idea, this is confusing
@@ -401,7 +402,7 @@ void Init()
                 draw_api::destroy_font(fonts::esp_font);
             fonts::esp_font = draw_api::create_font(
                 DATA_PATH "/fonts/verasans.ttf", esp_font_scale);
-    });
+        });
     textur     = glez_texture_load_png_rgba(DATA_PATH "/textures/atlas.png");
     idspecific = glez_texture_load_png_rgba(DATA_PATH "/textures/idspec.png");
     if (textur == GLEZ_TEXTURE_INVALID)
@@ -754,7 +755,8 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 rgba_t hp = colors::Transparent(
                     colors::Health(health, healthmax), fg.a);
                 rgba_t border =
-                    ((ent->m_iClassID() == RCC_PLAYER) && IsPlayerInvisible(ent))
+                    ((ent->m_iClassID() == RCC_PLAYER) &&
+                     IsPlayerInvisible(ent))
                         ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f)
                         : colors::Transparent(colors::black, fg.a);
                 // Get bar height
@@ -1263,7 +1265,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             if ((int) show_health == 1 || (int) show_health == 3)
             {
                 AddEntityString(
-                    ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"),
+                    ent,
+                    format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"),
                     colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
             }
             IF_GAME(IsTF())
@@ -1495,9 +1498,10 @@ void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
 
     // Depending on whether the player is cloaked, we change the color
     // acordingly
-    rgba_t border = ((ent->m_iClassID() == RCC_PLAYER) && IsPlayerInvisible(ent))
-                        ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f)
-                        : colors::Transparent(colors::black, clr.a);
+    rgba_t border =
+        ((ent->m_iClassID() == RCC_PLAYER) && IsPlayerInvisible(ent))
+            ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f)
+            : colors::Transparent(colors::black, clr.a);
 
     // With box corners, we draw differently
     if ((int) box_esp == 2)

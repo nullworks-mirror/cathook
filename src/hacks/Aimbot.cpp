@@ -8,6 +8,7 @@
 #include <hacks/Aimbot.hpp>
 #include <hacks/CatBot.hpp>
 #include <hacks/AntiAim.hpp>
+#include <hacks/Backtrack.hpp>
 #include <hacks/ESP.hpp>
 #include "common.hpp"
 
@@ -204,7 +205,12 @@ void CreateMove()
     // Refresh our best target
     CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
     if (CE_BAD(target_entity) || !foundTarget)
-        return;
+    {
+    	hacks::shared::backtrack::dontbacktrack = true;
+        target_entity = hacks::shared::backtrack::BestTarget();
+        if (CE_BAD(target_entity))
+            return;
+    }
 
     if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
         return;
@@ -698,6 +704,14 @@ void Aim(CachedEntity *entity)
     // Get angles
     Vector tr = (PredictEntity(entity) - g_pLocalPlayer->v_Eye);
 
+    if (!VischeckPredictedEntity(entity))
+    {
+        int tick = hacks::shared::backtrack::Besttick(entity);
+        hacks::shared::backtrack::Backtrack(entity, tick);
+        tr = hacks::shared::backtrack::headPositions[entity->m_IDX][tick]
+                 .hitboxpos -
+             g_pLocalPlayer->v_Eye;
+    }
     // Multipoint
     if (multipoint && !projectile_mode)
     {

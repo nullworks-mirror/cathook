@@ -87,12 +87,9 @@ bool CanBacktrack(CachedEntity *entity)
         return false;
     if (entity->m_Type != ENTITY_PLAYER)
         return false;
-    auto min = hacks::shared::backtrack::headPositions
-                   [entity->m_IDX][hacks::shared::backtrack::BestTick]
-                       .min;
-    auto max = hacks::shared::backtrack::headPositions
-                   [entity->m_IDX][hacks::shared::backtrack::BestTick]
-                       .max;
+    int tick = hacks::shared::backtrack::Besttick(entity);
+    auto min = hacks::shared::backtrack::headPositions[entity->m_IDX][tick].min;
+    auto max = hacks::shared::backtrack::headPositions[entity->m_IDX][tick].max;
     if (!min.x && !max.x)
         return false;
 
@@ -117,15 +114,11 @@ bool CanBacktrack(CachedEntity *entity)
 
     if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) &&
         !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
-    {
         return false;
-    }
     if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
     {
-        g_pUserCmd->tick_count =
-            hacks::shared::backtrack::headPositions
-                [entity->m_IDX][hacks::shared::backtrack::BestTick]
-                    .tickcount;
+    	hacks::shared::backtrack::dontbacktrack = true;
+        hacks::shared::backtrack::Backtrack(entity, tick);
         return true;
     }
     return false;
@@ -640,7 +633,8 @@ float EffectiveTargetingRange()
         return re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W);
         // Pyros only have so much untill their flames hit
     }
-    else if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
+    else if (g_pLocalPlayer->weapon()->m_iClassID() ==
+             CL_CLASS(CTFFlameThrower))
     {
         return 185.0f;
     }
