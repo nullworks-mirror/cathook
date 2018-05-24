@@ -260,7 +260,7 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
                 return colors::red;
         if (ent->m_IDX == LOCAL_E->m_IDX && glowself && !rainbow)
             return colors::FromRGBA8(glowR, glowG, glowB, 255);
-        if (health)
+        if (health && playerlist::IsDefault(ent))
         {
             return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
         }
