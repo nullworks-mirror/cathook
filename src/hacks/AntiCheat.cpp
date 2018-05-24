@@ -20,6 +20,7 @@ namespace anticheat
 
 static CatVar enabled(CV_SWITCH, "ac_enabled", "0", "Enable AC");
 static CatVar accuse_chat(CV_SWITCH, "ac_chat", "0", "Accuse in chat");
+static CatVar setrage(CV_SWITCH, "ac_setrage", "0", "Auto Rage");
 
 void Accuse(int eid, const std::string &hack, const std::string &details)
 {

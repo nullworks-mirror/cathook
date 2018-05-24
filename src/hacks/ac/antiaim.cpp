@@ -12,7 +12,7 @@ namespace ac
 {
 namespace antiaim
 {
-
+static CatVar enabled(CV_SWITCH, "ac_antiaim", "1", "Detect Antiaim");
 unsigned long last_accusation[32]{ 0 };
 
 void ResetEverything()
@@ -32,6 +32,8 @@ void Init()
 
 void Update(CachedEntity *player)
 {
+    if (!enabled)
+        return;
     int amount[32];
     auto &am = amount[player->m_IDX - 1];
     if (tickcount - last_accusation[player->m_IDX - 1] < 60 * 60)
@@ -48,7 +50,7 @@ void Update(CachedEntity *player)
             am++;
             player_info_t info;
             g_IEngine->GetPlayerInfo(player->m_IDX, &info);
-            if (am > 5)
+            if (am > 5 && hacks::shared::anticheat::setrage)
             {
                 playerlist::AccessData(info.friendsID).state =
                     playerlist::k_EState::RAGE;
