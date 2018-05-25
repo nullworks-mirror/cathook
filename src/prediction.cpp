@@ -67,7 +67,7 @@ void Prediction_CreateMove()
             predicted_players[i].clear();
             for (int j = 0; j < 20; j++)
             {
-                Vector r         = EnginePrediction(ent, 0.05f);
+                Vector r           = EnginePrediction(ent, 0.05f);
                 ent->m_vecOrigin() = r;
                 predicted_players[i].push_back(std::move(r));
             }
@@ -216,7 +216,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
     Vector current  = origin;
     int maxsteps    = 40;
     bool onground   = false;
-    if (ent->m_Type == ENTITY_PLAYER)
+    if (ent->m_Type() == ENTITY_PLAYER)
     {
         if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
             onground = true;
@@ -225,7 +225,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
     for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
     {
         ent->m_vecOrigin() = current;
-        current          = EnginePrediction(ent, steplength);
+        current            = EnginePrediction(ent, steplength);
 
         if (onground)
         {
@@ -326,16 +326,16 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
 
 float DistanceToGround(CachedEntity *ent)
 {
-    if (ent->m_Type == ENTITY_PLAYER)
+    if (ent->m_Type() == ENTITY_PLAYER)
     {
         if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
             return 0;
     }
     Vector origin = ent->m_vecOrigin();
-    float v1       = DistanceToGround(origin + Vector(10.0f, 10.0f, 0.0f));
-    float v2       = DistanceToGround(origin + Vector(-10.0f, 10.0f, 0.0f));
-    float v3       = DistanceToGround(origin + Vector(10.0f, -10.0f, 0.0f));
-    float v4       = DistanceToGround(origin + Vector(-10.0f, -10.0f, 0.0f));
+    float v1      = DistanceToGround(origin + Vector(10.0f, 10.0f, 0.0f));
+    float v2      = DistanceToGround(origin + Vector(-10.0f, 10.0f, 0.0f));
+    float v3      = DistanceToGround(origin + Vector(10.0f, -10.0f, 0.0f));
+    float v4      = DistanceToGround(origin + Vector(-10.0f, -10.0f, 0.0f));
     return MIN(v1, MIN(v2, MIN(v3, v4)));
 }
 

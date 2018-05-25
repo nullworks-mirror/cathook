@@ -52,7 +52,7 @@ bool IsTarget(CachedEntity *ent)
         return false;
 
     // Player specific
-    if (ent->m_Type == ENTITY_PLAYER)
+    if (ent->m_Type() == ENTITY_PLAYER)
     {
         // Dont detonate on dead players
         if (!ent->m_bAlivePlayer())

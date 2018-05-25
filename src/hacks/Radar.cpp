@@ -124,7 +124,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
 
     if (CE_GOOD(ent))
     {
-        if (ent->m_Type == ENTITY_PLAYER)
+        if (ent->m_Type() == ENTITY_PLAYER)
         {
             if (CE_BYTE(ent, netvar.iLifeState))
                 return; // DEAD. not big surprise.
@@ -159,8 +159,9 @@ void DrawEntity(int x, int y, CachedEntity *ent)
 
             if (ent->m_iMaxHealth() && healthbar)
             {
-                healthp = (float) ent->m_iHealth() / (float) ent->m_iMaxHealth();
-                clr     = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+                healthp =
+                    (float) ent->m_iHealth() / (float) ent->m_iMaxHealth();
+                clr = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
                 if (healthp > 1.0f)
                     healthp = 1.0f;
                 draw_api::draw_rect_outlined(
@@ -171,7 +172,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                     ((float) icon_size - 2.0f) * healthp, 2, clr);
             }
         }
-        else if (ent->m_Type == ENTITY_BUILDING)
+        else if (ent->m_Type() == ENTITY_BUILDING)
         {
             /*if (ent->m_iClassID() == CL_CLASS(CObjectDispenser)) {
                 const int& team = CE_INT(ent, netvar.iTeamNum);
@@ -182,7 +183,8 @@ void DrawEntity(int x, int y, CachedEntity *ent)
             wtr.second, (int)icon_size, (int)icon_size, idx ? colors::blu :
             colors::red	); draw::OutlineRect(x + wtr.first, y + wtr.second,
             (int)icon_size, (int)icon_size, idx ? colors::blu_v :
-            colors::red_v); if (ent->m_iMaxHealth() && healthbar) { float healthp
+            colors::red_v); if (ent->m_iMaxHealth() && healthbar) { float
+            healthp
             = (float)ent->m_iHealth() / (float)ent->m_iMaxHealth(); int clr =
             colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()); if (healthp
             > 1.0f) healthp = 1.0f; draw::OutlineRect(x + wtr.first, y +
@@ -192,11 +194,11 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                 }
             }*/
         }
-        else if (ent->m_Type == ENTITY_GENERIC)
+        else if (ent->m_Type() == ENTITY_GENERIC)
         {
-            if (show_healthpacks && (ent->m_ItemType == ITEM_HEALTH_LARGE ||
-                                     ent->m_ItemType == ITEM_HEALTH_MEDIUM ||
-                                     ent->m_ItemType == ITEM_HEALTH_SMALL))
+            if (show_healthpacks && (ent->m_ItemType() == ITEM_HEALTH_LARGE ||
+                                     ent->m_ItemType() == ITEM_HEALTH_MEDIUM ||
+                                     ent->m_ItemType() == ITEM_HEALTH_SMALL))
             {
                 const auto &wtr =
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
@@ -205,9 +207,9 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                 tx_items[1].sprite.draw(x + wtr.first + sz, y + wtr.second + sz,
                                         sz2, sz2, colors::white);
             }
-            else if (show_ammopacks && (ent->m_ItemType == ITEM_AMMO_LARGE ||
-                                        ent->m_ItemType == ITEM_AMMO_MEDIUM ||
-                                        ent->m_ItemType == ITEM_AMMO_SMALL))
+            else if (show_ammopacks && (ent->m_ItemType() == ITEM_AMMO_LARGE ||
+                                        ent->m_ItemType() == ITEM_AMMO_MEDIUM ||
+                                        ent->m_ItemType() == ITEM_AMMO_SMALL))
             {
                 const auto &wtr =
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
@@ -254,13 +256,13 @@ void Draw()
             continue;
         if (i == g_IEngine->GetLocalPlayer())
             continue;
-        if (ent->m_Type == ENTITY_PLAYER)
+        if (ent->m_Type() == ENTITY_PLAYER)
         {
             if (!ent->m_bEnemy() && !show_teammates)
                 continue;
         }
         if (!enemies_over_teammates || !show_teammates ||
-            ent->m_Type != ENTITY_PLAYER)
+            ent->m_Type() != ENTITY_PLAYER)
             DrawEntity(x, y, ent);
         else
         {

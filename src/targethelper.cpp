@@ -23,7 +23,7 @@ int GetScoreForEntity(CachedEntity *entity)
     if (!entity)
         return 0;
     // TODO
-    if (entity->m_Type == ENTITY_BUILDING)
+    if (entity->m_Type() == ENTITY_BUILDING)
     {
         if (entity->m_iClassID() == CL_CLASS(CObjectSentrygun))
         {
@@ -31,14 +31,15 @@ int GetScoreForEntity(CachedEntity *entity)
         }
         return 0;
     }
-    int clazz      = CE_INT(entity, netvar.iClass);
-    int health     = CE_INT(entity, netvar.iHealth);
-    float distance = (g_pLocalPlayer->v_Origin - entity->m_vecOrigin()).Length();
-    bool zoomed    = HasCondition<TFCond_Zoomed>(entity);
-    bool pbullet   = HasCondition<TFCond_SmallBulletResist>(entity);
-    bool special   = false;
-    bool kritz     = IsPlayerCritBoosted(entity);
-    int total      = 0;
+    int clazz  = CE_INT(entity, netvar.iClass);
+    int health = CE_INT(entity, netvar.iHealth);
+    float distance =
+        (g_pLocalPlayer->v_Origin - entity->m_vecOrigin()).Length();
+    bool zoomed  = HasCondition<TFCond_Zoomed>(entity);
+    bool pbullet = HasCondition<TFCond_SmallBulletResist>(entity);
+    bool special = false;
+    bool kritz   = IsPlayerCritBoosted(entity);
+    int total    = 0;
     switch (clazz)
     {
     case tf_sniper:

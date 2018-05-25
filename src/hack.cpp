@@ -151,7 +151,8 @@ public:
             PrintChat(
                 "\x07%06X%s\x01 hurt \x07%06X%s\x01 down to \x07%06X%d\x01hp",
                 colors::chat::team(att->m_iTeam()), kinfo.name,
-                colors::chat::team(vic->m_iTeam()), vinfo.name, 0x2aaf18, health);
+                colors::chat::team(vic->m_iTeam()), vinfo.name, 0x2aaf18,
+                health);
         }
         else if (!strcmp(name, "player_death"))
         {
@@ -185,8 +186,8 @@ public:
             g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
             CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(id));
             PrintChat("\x07%06X%s\x01 changed to \x07%06X%s\x01",
-                      colors::chat::team(player->m_iTeam()), info.name, 0xa06ba0,
-                      classname(event->GetInt("class")));
+                      colors::chat::team(player->m_iTeam()), info.name,
+                      0xa06ba0, classname(event->GetInt("class")));
         }
         else if (!strcmp(name, "vote_cast"))
         {

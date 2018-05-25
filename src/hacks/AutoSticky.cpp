@@ -57,7 +57,7 @@ bool IsTarget(CachedEntity *ent)
         return false;
 
     // Player specific
-    if (ent->m_Type == ENTITY_PLAYER)
+    if (ent->m_Type() == ENTITY_PLAYER)
     {
         // Dont detonate on dead players
         if (!ent->m_bAlivePlayer())
@@ -86,7 +86,7 @@ bool IsTarget(CachedEntity *ent)
 
         // Building specific
     }
-    else if (ent->m_Type == ENTITY_BUILDING)
+    else if (ent->m_Type() == ENTITY_BUILDING)
     {
         return buildings;
     }

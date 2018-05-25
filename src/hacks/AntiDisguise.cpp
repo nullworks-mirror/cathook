@@ -28,7 +28,7 @@ void Draw()
             ent = ENTITY(i);
             if (CE_BAD(ent))
                 continue;
-            if (ent->m_Type == ENTITY_PLAYER)
+            if (ent->m_Type() == ENTITY_PLAYER)
             {
                 if (CE_INT(ent, netvar.iClass) == tf_class::tf_spy)
                 {
@@ -44,7 +44,7 @@ void Draw()
         ent = ENTITY(i);
         if (CE_BAD(ent))
             continue;
-        if (ent->m_Type == ENTITY_PLAYER)
+        if (ent->m_Type() == ENTITY_PLAYER)
         {
             if (CE_INT(ent, netvar.iClass) == tf_class::tf_spy)
             {

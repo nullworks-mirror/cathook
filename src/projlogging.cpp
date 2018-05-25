@@ -18,7 +18,7 @@ void Update()
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
             continue;
-        if (ent->m_Type == ENTITY_PROJECTILE)
+        if (ent->m_Type() == ENTITY_PROJECTILE)
         {
             int owner = CE_INT(ent, 0x894) & 0xFFF;
             if (owner != LOCAL_W->m_IDX)

@@ -244,7 +244,7 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
             return GlowColor(owner);
         }
     }
-    switch (ent->m_Type)
+    switch (ent->m_Type())
     {
     case ENTITY_BUILDING:
         if (health)
@@ -283,7 +283,7 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
         return false;
     if (ent->m_IDX == LOCAL_E->m_IDX && !glowself)
         return false;
-    switch (ent->m_Type)
+    switch (ent->m_Type())
     {
     case ENTITY_BUILDING:
         if (!buildings)
@@ -310,7 +310,7 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
         }
         break;
     case ENTITY_GENERIC:
-        const auto &type = ent->m_ItemType;
+        const auto &type = ent->m_ItemType();
         if (type >= ITEM_HEALTH_SMALL && type <= ITEM_HEALTH_LARGE)
         {
             return medkits;
