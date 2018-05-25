@@ -8,7 +8,6 @@
 #include <hacks/Aimbot.hpp>
 #include <hacks/CatBot.hpp>
 #include <hacks/AntiAim.hpp>
-#include <hacks/Backtrack.hpp>
 #include <hacks/ESP.hpp>
 #include "common.hpp"
 
@@ -205,12 +204,8 @@ void CreateMove()
     // Refresh our best target
     CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
     if (CE_BAD(target_entity) || !foundTarget)
-    {
-        hacks::shared::backtrack::dontbacktrack = true;
-        target_entity = hacks::shared::backtrack::BestTarget();
-        if (CE_BAD(target_entity))
-            return;
-    }
+        return;
+
     if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
         return;
     if (!target_entity->hitboxes.GetHitbox(
@@ -464,7 +459,7 @@ bool IsTargetStateGood(CachedEntity *entity)
     PROF_SECTION(PT_aimbot_targetstatecheck);
 
     // Checks for Players
-    if (entity->m_Type() == ENTITY_PLAYER)
+    if (entity->m_Type == ENTITY_PLAYER)
     {
         // Local player check
         if (entity == LOCAL_E)
@@ -588,7 +583,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // Check for buildings
     }
-    else if (entity->m_Type() == ENTITY_BUILDING)
+    else if (entity->m_Type == ENTITY_BUILDING)
     {
         // Enabled check
         if (!(buildings_other || buildings_sentry))
@@ -703,14 +698,6 @@ void Aim(CachedEntity *entity)
     // Get angles
     Vector tr = (PredictEntity(entity) - g_pLocalPlayer->v_Eye);
 
-    if (!VischeckPredictedEntity(entity))
-    {
-        int tick = hacks::shared::backtrack::Besttick(entity);
-        hacks::shared::backtrack::Backtrack(entity, tick);
-        tr = hacks::shared::backtrack::headPositions[entity->m_IDX][tick]
-                 .hitboxpos -
-             g_pLocalPlayer->v_Eye;
-    }
     // Multipoint
     if (multipoint && !projectile_mode)
     {
@@ -861,7 +848,7 @@ const Vector &PredictEntity(CachedEntity *entity)
         return result;
 
     // Players
-    if ((entity->m_Type() == ENTITY_PLAYER))
+    if ((entity->m_Type == ENTITY_PLAYER))
     {
         // If using projectiles, predict a vector
         if (projectile_mode &&
@@ -888,7 +875,7 @@ const Vector &PredictEntity(CachedEntity *entity)
         }
         // Buildings
     }
-    else if (entity->m_Type() == ENTITY_BUILDING)
+    else if (entity->m_Type == ENTITY_BUILDING)
     {
         result = GetBuildingPosition(entity);
         // Other
