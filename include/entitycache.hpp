@@ -22,6 +22,8 @@
 #include "playerresource.h"
 #include "globals.h"
 #include "classinfo.hpp"
+#include "tf2.gen.hpp"
+#include "client_class.h"
 
 struct matrix3x4_t;
 
