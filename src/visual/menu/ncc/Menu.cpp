@@ -733,6 +733,8 @@ static const std::string list_tf2 = R"(
 				"ac_aimbot"
 				"ac_aimbot_detections"
 				"ac_aimbot_angle"
+				"ac_antiaim"
+				"ac_autorage"
 				"ac_bhop_count"
 				"ac_ignore_local"
 				"ac_chat"

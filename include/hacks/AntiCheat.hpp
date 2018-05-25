@@ -17,7 +17,7 @@ namespace hacks::shared::anticheat
 {
 
 void Accuse(int eid, const std::string &hack, const std::string &details);
-
+static CatVar autorage(CV_SWITCH, "ac_autorage", "0", "Auto Rage");
 void Init();
 void CreateMove();
 
