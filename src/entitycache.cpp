@@ -139,8 +139,6 @@ CachedEntity array[MAX_ENTITIES]{};
 
 void Update()
 {
-	PROF_SECTION(CACHE_UPDATE)
-		{
     max = g_IEntityList->GetHighestEntityIndex();
     if (max >= MAX_ENTITIES)
         max = MAX_ENTITIES - 1;
@@ -148,7 +146,6 @@ void Update()
     {
         array[i].Update();
     }
-		}
 }
 
 void Invalidate()
