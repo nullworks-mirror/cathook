@@ -260,20 +260,21 @@ bool ShouldAA(CUserCmd *cmd)
         return false;
     if (cmd->buttons & IN_USE)
         return false;
+    int classid = LOCAL_W->m_iClassID();
     if ((cmd->buttons & IN_ATTACK) &&
         !(IsTF2() &&
-          g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow)) &&
+          classid == CL_CLASS(CTFCompoundBow)) &&
         CanShoot())
     {
         return false;
     }
     if ((cmd->buttons & IN_ATTACK2) &&
-        g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFLunchBox))
+        classid == CL_CLASS(CTFLunchBox))
         return false;
     switch (GetWeaponMode())
     {
     case weapon_projectile:
-        if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
+        if (classid == CL_CLASS(CTFCompoundBow))
         {
             if (!(cmd->buttons & IN_ATTACK))
             {

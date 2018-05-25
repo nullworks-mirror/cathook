@@ -216,7 +216,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
     Vector current  = origin;
     int maxsteps    = 40;
     bool onground   = false;
-    if (ent->m_Type == ENTITY_PLAYER)
+    if (ent->m_Type() == ENTITY_PLAYER)
     {
         if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
             onground = true;
@@ -326,7 +326,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
 
 float DistanceToGround(CachedEntity *ent)
 {
-    if (ent->m_Type == ENTITY_PLAYER)
+    if (ent->m_Type() == ENTITY_PLAYER)
     {
         if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
             return 0;

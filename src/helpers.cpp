@@ -149,11 +149,12 @@ const char *GetBuildingName(CachedEntity *ent)
 {
     if (!ent)
         return "[NULL]";
-    if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
+	int classid = ent->m_iClassID();
+    if (classid == CL_CLASS(CObjectSentrygun))
         return "Sentry";
-    if (ent->m_iClassID() == CL_CLASS(CObjectDispenser))
+    if (classid == CL_CLASS(CObjectDispenser))
         return "Dispenser";
-    if (ent->m_iClassID() == CL_CLASS(CObjectTeleporter))
+    if (classid == CL_CLASS(CObjectTeleporter))
         return "Teleporter";
     return "[NULL]";
 }
@@ -513,11 +514,12 @@ Vector GetBuildingPosition(CachedEntity *ent)
 {
     Vector res;
     res = ent->m_vecOrigin();
-    if (ent->m_iClassID() == CL_CLASS(CObjectDispenser))
+    int classid = ent->m_iClassID();
+    if (classid == CL_CLASS(CObjectDispenser))
         res.z += 30;
-    if (ent->m_iClassID() == CL_CLASS(CObjectTeleporter))
+    if (classid == CL_CLASS(CObjectTeleporter))
         res.z += 8;
-    if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
+    if (classid == CL_CLASS(CObjectSentrygun))
     {
         switch (CE_INT(ent, netvar.iUpgradeLevel))
         {
@@ -574,7 +576,7 @@ void Patch(void *address, void *patch, size_t length)
 
 bool IsProjectileCrit(CachedEntity *ent)
 {
-    if (ent->m_bGrenadeProjectile)
+    if (ent->m_bGrenadeProjectile())
         return CE_BYTE(ent, netvar.Grenade_bCritical);
     return CE_BYTE(ent, netvar.Rocket_bCritical);
 }
@@ -595,6 +597,7 @@ weaponmode GetWeaponMode()
     weapon = (ENTITY(weapon_handle & 0xFFF));
     if (CE_BAD(weapon))
         return weaponmode::weapon_invalid;
+    int classid = weapon->m_iClassID();
     slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(weapon));
     if (slot == 2)
         return weaponmode::weapon_melee;
@@ -602,34 +605,34 @@ weaponmode GetWeaponMode()
     {
         return weaponmode::weapon_pda;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFLunchBox) ||
-             weapon->m_iClassID() == CL_CLASS(CTFLunchBox_Drink) ||
-             weapon->m_iClassID() == CL_CLASS(CTFBuffItem))
+    else if (classid == CL_CLASS(CTFLunchBox) ||
+             classid == CL_CLASS(CTFLunchBox_Drink) ||
+             classid == CL_CLASS(CTFBuffItem))
     {
         return weaponmode::weapon_consumable;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFRocketLauncher_DirectHit) ||
-             weapon->m_iClassID() == CL_CLASS(CTFRocketLauncher) ||
-             weapon->m_iClassID() == CL_CLASS(CTFGrenadeLauncher) ||
-             weapon->m_iClassID() == CL_CLASS(CTFPipebombLauncher) ||
-             weapon->m_iClassID() == CL_CLASS(CTFCompoundBow) ||
-             weapon->m_iClassID() == CL_CLASS(CTFBat_Wood) ||
-             weapon->m_iClassID() == CL_CLASS(CTFBat_Giftwrap) ||
-             weapon->m_iClassID() == CL_CLASS(CTFFlareGun) ||
-             weapon->m_iClassID() == CL_CLASS(CTFFlareGun_Revenge) ||
-             weapon->m_iClassID() == CL_CLASS(CTFSyringeGun) ||
-             weapon->m_iClassID() == CL_CLASS(CTFCrossbow) ||
-             weapon->m_iClassID() == CL_CLASS(CTFShotgunBuildingRescue) ||
-             weapon->m_iClassID() == CL_CLASS(CTFDRGPomson))
+    else if (classid == CL_CLASS(CTFRocketLauncher_DirectHit) ||
+             classid == CL_CLASS(CTFRocketLauncher) ||
+             classid == CL_CLASS(CTFGrenadeLauncher) ||
+             classid == CL_CLASS(CTFPipebombLauncher) ||
+             classid == CL_CLASS(CTFCompoundBow) ||
+             classid == CL_CLASS(CTFBat_Wood) ||
+             classid == CL_CLASS(CTFBat_Giftwrap) ||
+             classid == CL_CLASS(CTFFlareGun) ||
+             classid == CL_CLASS(CTFFlareGun_Revenge) ||
+             classid == CL_CLASS(CTFSyringeGun) ||
+             classid == CL_CLASS(CTFCrossbow) ||
+             classid == CL_CLASS(CTFShotgunBuildingRescue) ||
+             classid == CL_CLASS(CTFDRGPomson))
     {
         return weaponmode::weapon_projectile;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFJar) ||
-             weapon->m_iClassID() == CL_CLASS(CTFJarMilk))
+    else if (classid == CL_CLASS(CTFJar) ||
+             classid == CL_CLASS(CTFJarMilk))
     {
         return weaponmode::weapon_throwable;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CWeaponMedigun))
+    else if (classid == CL_CLASS(CWeaponMedigun))
     {
         return weaponmode::weapon_medigun;
     }
@@ -667,15 +670,16 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     rgrav  = 0.0f;
     typedef float(GetProjectileData)(IClientEntity *);
 
-    if (weapon->m_iClassID() == CL_CLASS(CTFRocketLauncher_DirectHit))
+    int classid = weapon->m_iClassID();
+    if (classid == CL_CLASS(CTFRocketLauncher_DirectHit))
     {
         rspeed = 1980.0f;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFRocketLauncher))
+    else if (classid == CL_CLASS(CTFRocketLauncher))
     {
         rspeed = 1100.0f;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFGrenadeLauncher))
+    else if (classid == CL_CLASS(CTFGrenadeLauncher))
     {
         IF_GAME(IsTF2())
         {
@@ -688,7 +692,7 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
             rgrav  = 0.5f;
         }
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFCompoundBow))
+    else if (classid == CL_CLASS(CTFCompoundBow))
     {
         float chargetime =
             g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
@@ -698,36 +702,36 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
                                   -0.40000001) +
                          0.5);
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFBat_Wood))
+    else if (classid == CL_CLASS(CTFBat_Wood))
     {
         rspeed = 3000.0f;
         rgrav  = 0.5f;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFFlareGun))
+    else if (classid == CL_CLASS(CTFFlareGun))
     {
         rspeed = 2000.0f;
         rgrav  = 0.25f;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFSyringeGun))
+    else if (classid == CL_CLASS(CTFSyringeGun))
     {
         rgrav  = 0.2f;
         rspeed = 990.0f;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFCrossbow))
+    else if (classid == CL_CLASS(CTFCrossbow))
     {
         rgrav  = 0.2f;
         rspeed = 2400.0f;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFShotgunBuildingRescue))
+    else if (classid == CL_CLASS(CTFShotgunBuildingRescue))
     {
         rgrav  = 0.2f;
         rspeed = 2400.0f;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFDRGPomson))
+    else if (classid == CL_CLASS(CTFDRGPomson))
     {
         rspeed = 1200.0f;
     }
-    else if (weapon->m_iClassID() == CL_CLASS(CTFWeaponFlameBall))
+    else if (classid == CL_CLASS(CTFWeaponFlameBall))
     {
         // ??
         rspeed = 2500.0f;
@@ -816,7 +820,7 @@ void WhatIAmLookingAt(int *result_eindex, Vector *result_pos)
 
 bool IsSentryBuster(CachedEntity *entity)
 {
-    return (entity->m_Type == EntityType::ENTITY_PLAYER &&
+    return (entity->m_Type() == EntityType::ENTITY_PLAYER &&
             CE_INT(entity, netvar.iClass) == tf_class::tf_demoman &&
             g_pPlayerResource->GetMaxHealth(entity) == 2500);
 }

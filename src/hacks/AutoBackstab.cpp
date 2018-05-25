@@ -58,7 +58,7 @@ void CreateMove()
             CachedEntity *pEnt = ENTITY(i);
             if (!CE_GOOD(pEnt))
                 continue;
-            if (pEnt->m_Type != ENTITY_PLAYER)
+            if (pEnt->m_Type() != ENTITY_PLAYER)
                 continue;
             if (!pEnt->m_bAlivePlayer())
                 continue;
@@ -67,13 +67,9 @@ void CreateMove()
             if (LOCAL_E->m_iTeam() == pEnt->m_iTeam())
                 continue;
             scr = 4096.0f - pEnt->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
-            if (pEnt->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) > 90.0f)
-                continue;
             scr -= abs(g_pLocalPlayer->v_Eye.y -
                        NET_VECTOR(pEnt, netvar.m_angEyeAngles).y);
-            if ((scr > scr_best) &&
-                LOCAL_E->m_vecOrigin().DistTo(pEnt->m_vecOrigin()) <
-                    (int) value)
+            if (scr > scr_best)
             {
                 scr_best = scr;
                 ent      = pEnt;
@@ -92,10 +88,9 @@ void CreateMove()
         Vector vecToTarget;
 
         int tick = hacks::shared::backtrack::Besttick(ent);
-        vecToTarget = hacks::shared::backtrack::headPositions
-                          [ent->m_IDX][tick]
-                              .origin -
-                      GetWorldSpaceCenter(LOCAL_E);
+        vecToTarget =
+            hacks::shared::backtrack::headPositions[ent->m_IDX][tick].origin -
+            GetWorldSpaceCenter(LOCAL_E);
         vecToTarget.z = 0.0f;
         vecToTarget.NormalizeInPlace();
 
@@ -103,12 +98,12 @@ void CreateMove()
 
         bool isbehind = flDot > -0.1;
         if (isbehind &&
-            hacks::shared::backtrack::headPositions
-                    [ent->m_IDX][tick]
-                        .origin.DistTo(g_pLocalPlayer->v_Eye) <=
-                re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W)) {
-        	hacks::shared::backtrack::dontbacktrack = true;
-        	hacks::shared::backtrack::Backtrack(ent, tick);
+            hacks::shared::backtrack::headPositions[ent->m_IDX][tick]
+                    .origin.DistTo(g_pLocalPlayer->v_Eye) <=
+                re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W))
+        {
+            hacks::shared::backtrack::dontbacktrack = true;
+            hacks::shared::backtrack::Backtrack(ent, tick);
             g_pUserCmd->buttons |= IN_ATTACK;
         }
     }

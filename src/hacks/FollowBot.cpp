@@ -87,7 +87,7 @@ void WorldTick()
                 auto entity = ENTITY(i);
                 if (CE_BAD(entity)) // Exist + dormant
                     continue;
-                if (entity->m_Type != ENTITY_PLAYER)
+                if (entity->m_Type() != ENTITY_PLAYER)
                     continue;
                 if ((int) follow_steam + 18 !=
                     entity->player_info.friendsID) // steamid check
@@ -114,7 +114,7 @@ void WorldTick()
                 if (CE_BAD(entity)) // Exist + dormant
                     continue;
                 if (!followcart)
-                    if (entity->m_Type != ENTITY_PLAYER)
+                    if (entity->m_Type() != ENTITY_PLAYER)
                         continue;
                 if (entity == LOCAL_E) // Follow self lol
                     continue;
@@ -137,7 +137,7 @@ void WorldTick()
                      model == lagexploit::pointarr[3] ||
                      model == lagexploit::pointarr[4]))
                     follow_target = entity->m_IDX;
-                if (entity->m_Type != ENTITY_PLAYER)
+                if (entity->m_Type() != ENTITY_PLAYER)
                     continue;
                 if (follow_target &&
                     ENTITY(follow_target)->m_flDistance() >

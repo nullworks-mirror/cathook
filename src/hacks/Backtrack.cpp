@@ -77,10 +77,10 @@ void Init()
     }
 }
 std::pair<int, int> backtracked;
-void setbesttick(CachedEntity* ent, int tick)
+void setbesttick(CachedEntity *ent, int tick)
 {
-	backtracked.first = ent->m_IDX;
-	backtracked.second = tick;
+    backtracked.first  = ent->m_IDX;
+    backtracked.second = tick;
 }
 bool disabled   = true;
 int BestTick    = 0;
@@ -114,7 +114,7 @@ void Run()
         }
         if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
             continue;
-        if (pEntity->m_Type != ENTITY_PLAYER)
+        if (pEntity->m_Type() != ENTITY_PLAYER)
             continue;
         if (!pEntity->hitboxes.GetHitbox(0))
             continue;
@@ -125,21 +125,23 @@ void Run()
             BacktrackData{ g_pUserCmd->tick_count, hitboxpos, min, max,
                            pEntity->m_vecOrigin() };
     }
-    CachedEntity *target = BestTarget();
-    if (CE_BAD(target))
-        return;
-    int tick = Besttick(target);
-    setbesttick(target, tick);
+
     if ((g_pUserCmd->buttons & IN_ATTACK || g_pUserCmd->buttons & IN_ATTACK2) &&
         !dontbacktrack && CanShoot())
+    {
+        CachedEntity *target = BestTarget();
+        if (CE_BAD(target))
+            return;
+        int tick = Besttick(target);
         Backtrack(target, tick);
+    }
     dontbacktrack = false;
 }
 int Besttick(CachedEntity *ent)
 {
-    float tempFOV         = 9999;
-    float bestFOV         = 40.0f;
-    int bestTick          = 0;
+    float tempFOV = 9999;
+    float bestFOV = 40.0f;
+    int bestTick  = 0;
     for (int t = 0; t < ticks; ++t)
     {
         if (!IsVectorVisible(g_pLocalPlayer->v_Eye,
@@ -183,14 +185,14 @@ CachedEntity *BestTarget()
     if (iBestTarget != -1)
         return ENTITY(iBestTarget);
     else
-    	return nullptr;
+        return nullptr;
 }
 void Backtrack(CachedEntity *ent, int tick)
 {
     if (CE_GOOD(ent))
     {
-    	backtracked.first = ent->m_IDX;
-    	backtracked.second = tick;
+        backtracked.first      = ent->m_IDX;
+        backtracked.second     = tick;
         g_pUserCmd->tick_count = headPositions[ent->m_IDX][tick].tickcount;
     }
 }

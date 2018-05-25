@@ -37,7 +37,7 @@ bool StolenName()
             continue;
         if (ent == LOCAL_E)
             continue;
-        if (!ent->m_Type == ENTITY_PLAYER)
+        if (!ent->m_Type() == ENTITY_PLAYER)
             continue;
         if (ent->m_bEnemy())
             continue;

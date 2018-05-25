@@ -193,7 +193,7 @@ int BlastDangerValue(CachedEntity *patient)
             continue;
         if (!ent->m_bEnemy())
             continue;
-        if (ent->m_Type != ENTITY_PROJECTILE)
+        if (ent->m_Type() != ENTITY_PROJECTILE)
             continue;
         if (patient->m_vecOrigin().DistTo(ent->m_vecOrigin()) >
             (int) auto_vacc_proj_danger_range)
@@ -323,7 +323,7 @@ static CatCommand heal_steamid(
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent))
                 continue;
-            if (ent->m_Type != ENTITY_PLAYER)
+            if (ent->m_Type() != ENTITY_PLAYER)
                 continue;
             if (ent->player_info.friendsID == strtol(args.Arg(1), nullptr, 10))
             {
@@ -580,7 +580,7 @@ bool CanHeal(int idx)
         return false;
     if (CE_BAD(ent))
         return false;
-    if (ent->m_Type != ENTITY_PLAYER)
+    if (ent->m_Type() != ENTITY_PLAYER)
         return false;
     if (g_IEngine->GetLocalPlayer() == idx)
         return false;

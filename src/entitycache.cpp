@@ -11,7 +11,7 @@
 
 bool IsProjectileACrit(CachedEntity *ent)
 {
-    if (ent->m_bGrenadeProjectile)
+    if (ent->m_bGrenadeProjectile())
         return CE_BYTE(ent, netvar.Grenade_bCritical);
     return CE_BYTE(ent, netvar.Rocket_bCritical);
 }
@@ -29,13 +29,10 @@ CachedEntity::CachedEntity()
 
 void CachedEntity::Reset()
 {
-    m_Type               = ENTITY_GENERIC;
-    m_bGrenadeProjectile = false;
-    m_bAnyHitboxVisible  = false;
-    m_bVisCheckComplete  = false;
-    m_ItemType           = ITEM_NONE;
-    m_lLastSeen          = 0;
-    m_lSeenTicks         = 0;
+    m_bAnyHitboxVisible = false;
+    m_bVisCheckComplete = false;
+    m_lLastSeen         = 0;
+    m_lSeenTicks        = 0;
     memset(&player_info, 0, sizeof(player_info_s));
     m_vecAcceleration.Zero();
     m_vecVOrigin.Zero();
@@ -67,105 +64,15 @@ void CachedEntity::Update()
 #endif
     bool dormant               = raw->IsDormant();
     bool dormant_state_changed = dormant != was_dormant();
-    /*float simtime = CE_FLOAT(this, netvar.m_flSimulationTime);
-    float deltat = (simtime - m_fLastUpdate);
-    if (ve_smooth) {
-        //
-        if (dormant_state_changed) {
-            velocity_averager.reset(0);
-            velocity_is_valid = false;
-        }
-        if (size_t(int(ve_averager_size)) != velocity_averager.size()) {
-            velocity_averager.resize(size_t(int(ve_averager_size)));
-            velocity_averager.reset(0);
-        }
-    }
-    if (!dormant && deltat > (float)ve_window) {
-        ICollideable* ca = RAW_ENT(this)->GetCollideable();
-        Vector origin = m_vecOrigin;
-        if (ca) {
-            origin = ca->GetCollisionOrigin();
-        }
-        Vector delta = origin - m_vecVOrigin;
-        Vector velnew = delta / deltat;
-        m_vecAcceleration = velnew - m_vecVelocity;
-        if (ve_smooth) {
-            if (velocity_is_valid) {
-                static Vector zero {0.0f, 0.0f, 0.0f};
-                float length = velnew.Length();
-                velocity_averager.push(length);
-                Vector normalized = (length ? (velnew / length) : zero);
-                m_vecVelocity = normalized * velocity_averager.average();
-                //m_vecVelocity = velocity_averager.average();
-            } else {
-                EstimateAbsVelocity(RAW_ENT(this), m_vecVelocity);
-                //velocity_averager.push(m_vecVelocity);
-                velocity_is_valid = true;
-            }
-        } else
-            m_vecVelocity = velnew;
-        m_vecVOrigin = origin;
-        m_fLastUpdate = simtime;
-    }*/
-
-    m_ItemType = ITEM_NONE;
 
     m_lSeenTicks = 0;
     m_lLastSeen  = 0;
 
     hitboxes.Update();
 
-    m_bGrenadeProjectile = false;
-    m_bVisCheckComplete  = false;
+    m_bVisCheckComplete = false;
 
-    if (m_iClassID() == RCC_PLAYER)
-    {
-        m_Type = EntityType::ENTITY_PLAYER;
-    }
-    else if (m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_Jar) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_JarMilk))
-    {
-        m_Type               = EntityType::ENTITY_PROJECTILE;
-        m_bGrenadeProjectile = true;
-    }
-    else if (m_iClassID() == CL_CLASS(CObjectTeleporter) ||
-             m_iClassID() == CL_CLASS(CObjectSentrygun) ||
-             m_iClassID() == CL_CLASS(CObjectDispenser))
-    {
-        m_Type = EntityType::ENTITY_BUILDING;
-    }
-    else if (m_iClassID() == CL_CLASS(CTFProjectile_Arrow) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_EnergyBall) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_EnergyRing) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_GrapplingHook) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_HealingBolt) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_Rocket) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_SentryRocket) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_BallOfFire) ||
-             m_iClassID() == CL_CLASS(CTFProjectile_Flare))
-    {
-        m_Type = EntityType::ENTITY_PROJECTILE;
-    }
-    else
-    {
-        m_ItemType = g_ItemManager.GetItemType(this);
-        m_Type     = EntityType::ENTITY_GENERIC;
-    }
-    // TODO temporary!
-    /*m_bCritProjectile = false;
-    m_bIsVisible = false;
-    m_iTeam = 0;
-    m_bEnemy = false;
-    m_bAlivePlayer = false;
-    m_pPlayerInfo = 0;
-    m_iHealth = 0;
-    m_iMaxHealth = 0;
-    m_lLastSeen = 0;
-    m_lSeenTicks = 0;*/
-
-    if (m_Type == EntityType::ENTITY_PLAYER)
+    if (m_Type() == EntityType::ENTITY_PLAYER)
         g_IEngine->GetPlayerInfo(m_IDX, &player_info);
 }
 
@@ -192,7 +99,7 @@ bool CachedEntity::IsVisible()
         return true;
     }
 
-    if (m_Type == ENTITY_PLAYER && fast_vischeck)
+    if (m_Type() == ENTITY_PLAYER && fast_vischeck)
     {
         for (int i = 0; i < 4; i++)
         {
@@ -232,6 +139,8 @@ CachedEntity array[MAX_ENTITIES]{};
 
 void Update()
 {
+	PROF_SECTION(CACHE_UPDATE)
+		{
     max = g_IEntityList->GetHighestEntityIndex();
     if (max >= MAX_ENTITIES)
         max = MAX_ENTITIES - 1;
@@ -239,6 +148,7 @@ void Update()
     {
         array[i].Update();
     }
+		}
 }
 
 void Invalidate()

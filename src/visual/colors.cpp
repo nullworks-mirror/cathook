@@ -30,7 +30,7 @@ rgba_t colors::EntityF(CachedEntity *ent)
 
     using namespace colors;
     result = white;
-    type   = ent->m_ItemType;
+    type   = ent->m_ItemType();
     if (type)
     {
         if ((type >= ITEM_HEALTH_SMALL && type <= ITEM_HEALTH_LARGE) ||
@@ -71,7 +71,7 @@ rgba_t colors::EntityF(CachedEntity *ent)
             result = green;
     }
 
-    if (ent->m_Type == ENTITY_PROJECTILE)
+    if (ent->m_Type() == ENTITY_PROJECTILE)
     {
         if (ent->m_iTeam() == TEAM_BLU)
             result = blu;
@@ -86,7 +86,7 @@ rgba_t colors::EntityF(CachedEntity *ent)
         }
     }
 
-    if (ent->m_Type == ENTITY_PLAYER || ent->m_Type == ENTITY_BUILDING)
+    if (ent->m_Type() == ENTITY_PLAYER || ent->m_Type() == ENTITY_BUILDING)
     {
         if (ent->m_iTeam() == TEAM_BLU)
             result = blu;
@@ -114,7 +114,7 @@ rgba_t colors::EntityF(CachedEntity *ent)
                 break;
             }
         }
-        if (ent->m_Type == ENTITY_PLAYER)
+        if (ent->m_Type() == ENTITY_PLAYER)
         {
             if (IsPlayerInvulnerable(ent))
             {

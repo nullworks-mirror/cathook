@@ -403,7 +403,7 @@ void DrawText()
             CachedEntity *ent = ENTITY(i);
             player_info_s info;
             if (!CE_BAD(ent) && ent != LOCAL_E &&
-                ent->m_Type == ENTITY_PLAYER &&
+                ent->m_Type() == ENTITY_PLAYER &&
                 (CE_INT(ent, netvar.hObserverTarget) & 0xFFF) ==
                     LOCAL_E->m_IDX &&
                 CE_INT(ent, netvar.iObserverMode) >= 4 &&
@@ -503,7 +503,7 @@ void DrawText()
         for (int i = 0; i < HIGHEST_ENTITY; i++) {
             CachedEntity* e = ENTITY(i);
             if (CE_GOOD(e)) {
-                if (e->m_Type == EntityType::ENTITY_PROJECTILE) {
+                if (e->m_Type() == EntityType::ENTITY_PROJECTILE) {
                     //logging::Info("Entity %i [%s]: V %.2f (X: %.2f, Y: %.2f,
         Z: %.2f) ACC %.2f (X: %.2f, Y: %.2f, Z: %.2f)", i,
         RAW_ENT(e)->GetClientClass()->GetName(), e->m_vecVelocity.Length(),

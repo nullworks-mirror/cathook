@@ -85,7 +85,7 @@ bool CanBacktrack(CachedEntity *entity)
 {
     if (CE_BAD(entity))
         return false;
-    if (entity->m_Type != ENTITY_PLAYER)
+    if (entity->m_Type() != ENTITY_PLAYER)
         return false;
     int tick = hacks::shared::backtrack::Besttick(entity);
     auto min = hacks::shared::backtrack::headPositions[entity->m_IDX][tick].min;
@@ -117,7 +117,7 @@ bool CanBacktrack(CachedEntity *entity)
         return false;
     if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
     {
-    	hacks::shared::backtrack::dontbacktrack = true;
+        hacks::shared::backtrack::dontbacktrack = true;
         hacks::shared::backtrack::Backtrack(entity, tick);
         return true;
     }
@@ -266,7 +266,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 {
 
     // Check for Players
-    if (entity->m_Type == ENTITY_PLAYER)
+    if (entity->m_Type() == ENTITY_PLAYER)
     {
         // Check if target is The local player
         if (entity == LOCAL_E)
@@ -377,7 +377,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // Check for buildings
     }
-    else if (entity->m_Type == ENTITY_BUILDING)
+    else if (entity->m_Type() == ENTITY_BUILDING)
     {
         // Check if building aimbot is enabled
         if (!(buildings_other || buildings_sentry))

@@ -126,7 +126,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
             return ChamsColor(owner);
         }
     }
-    switch (ent->m_Type)
+    switch (ent->m_Type())
     {
     case ENTITY_BUILDING:
         if (!ent->m_bEnemy() && !(teammates || teammate_buildings) &&
@@ -169,7 +169,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
         return false;
     if (ent->m_IDX == LOCAL_E->m_IDX && !chamsself)
         return false;
-    switch (ent->m_Type)
+    switch (ent->m_Type())
     {
     case ENTITY_BUILDING:
         if (!buildings)
@@ -201,7 +201,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
         }
         break;
     case ENTITY_GENERIC:
-        switch (ent->m_ItemType)
+        switch (ent->m_ItemType())
         {
         case ITEM_HEALTH_LARGE:
         case ITEM_HEALTH_MEDIUM:

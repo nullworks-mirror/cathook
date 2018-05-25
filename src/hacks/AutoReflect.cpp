@@ -160,7 +160,7 @@ void CreateMove()
 bool ShouldReflect(CachedEntity *ent)
 {
     // Check if the entity is a projectile
-    if (ent->m_Type != ENTITY_PROJECTILE)
+    if (ent->m_Type() != ENTITY_PROJECTILE)
         return false;
 
     if (!teammates)
@@ -174,7 +174,7 @@ bool ShouldReflect(CachedEntity *ent)
     if (!dodgeball)
     {
         // If projectile is already deflected, don't deflect it again.
-        if (CE_INT(ent, (ent->m_bGrenadeProjectile
+        if (CE_INT(ent, (ent->m_bGrenadeProjectile()
                              ?
                              /* NetVar for grenades */ netvar.Grenade_iDeflected
                              :

@@ -21,6 +21,7 @@
 #include <core/netvars.hpp>
 #include "playerresource.h"
 #include "globals.h"
+#include "classinfo.hpp"
 
 struct matrix3x4_t;
 
@@ -116,25 +117,52 @@ public:
     };
     int m_iMaxHealth()
     {
-        if (m_Type == ENTITY_PLAYER)
+        if (m_Type() == ENTITY_PLAYER)
             return g_pPlayerResource->GetMaxHealth(this);
-        else if (m_Type == ENTITY_BUILDING)
+        else if (m_Type() == ENTITY_BUILDING)
             return NET_INT(RAW_ENT(this), netvar.iBuildingMaxHealth);
         else
             return 0.0f;
     };
     int m_iHealth()
     {
-        if (m_Type == ENTITY_PLAYER)
+        if (m_Type() == ENTITY_PLAYER)
             return NET_INT(RAW_ENT(this), netvar.iHealth);
-        else if (m_Type == ENTITY_BUILDING)
+        else if (m_Type() == ENTITY_BUILDING)
             return NET_INT(RAW_ENT(this), netvar.iBuildingHealth);
         else
             return 0.0f;
     };
 
     // Entity fields start here
-    EntityType m_Type{ ENTITY_GENERIC };
+    EntityType m_Type()
+    {
+        EntityType ret = ENTITY_GENERIC;
+        int classid = m_iClassID();
+        if (classid == CL_CLASS(CTFPlayer))
+            ret = ENTITY_PLAYER;
+        else if (classid == CL_CLASS(CTFGrenadePipebombProjectile) ||
+                 classid == CL_CLASS(CTFProjectile_Cleaver) ||
+                 classid == CL_CLASS(CTFProjectile_Jar) ||
+                 classid == CL_CLASS(CTFProjectile_JarMilk) ||
+                 classid == CL_CLASS(CTFProjectile_Arrow) ||
+                 classid == CL_CLASS(CTFProjectile_EnergyBall) ||
+                 classid == CL_CLASS(CTFProjectile_EnergyRing) ||
+                 classid == CL_CLASS(CTFProjectile_GrapplingHook) ||
+                 classid == CL_CLASS(CTFProjectile_HealingBolt) ||
+                 classid == CL_CLASS(CTFProjectile_Rocket) ||
+                 classid == CL_CLASS(CTFProjectile_SentryRocket) ||
+                 classid == CL_CLASS(CTFProjectile_BallOfFire) ||
+                 classid == CL_CLASS(CTFProjectile_Flare))
+            ret = ENTITY_PROJECTILE;
+        else if (classid == CL_CLASS(CObjectTeleporter) ||
+                 classid == CL_CLASS(CObjectSentrygun) ||
+                 classid == CL_CLASS(CObjectDispenser))
+            ret = ENTITY_BUILDING;
+        else
+            ret = ENTITY_GENERIC;
+        return ret;
+    };
 
     float m_flDistance()
     {
@@ -146,17 +174,29 @@ public:
 
     bool m_bCritProjectile()
     {
-        if (m_Type == EntityType::ENTITY_PROJECTILE)
+        if (m_Type() == EntityType::ENTITY_PROJECTILE)
             return IsProjectileACrit(this);
         else
             return false;
     };
-    bool m_bGrenadeProjectile{ false };
+    bool m_bGrenadeProjectile()
+    {
+        return m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) ||
+               m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) ||
+               m_iClassID() == CL_CLASS(CTFProjectile_Jar) ||
+               m_iClassID() == CL_CLASS(CTFProjectile_JarMilk);
+    };
 
     bool m_bAnyHitboxVisible{ false };
     bool m_bVisCheckComplete{ false };
 
-    k_EItemType m_ItemType{ ITEM_NONE };
+    k_EItemType m_ItemType()
+    {
+        if (m_Type() == ENTITY_GENERIC)
+            return g_ItemManager.GetItemType(this);
+        else
+            return ITEM_NONE;
+    };
 
     unsigned long m_lSeenTicks{ 0 };
     unsigned long m_lLastSeen{ 0 };
