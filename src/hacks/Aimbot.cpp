@@ -33,6 +33,8 @@ static CatVar aimkey_mode(aimkey_modes_enum, "aimbot_aimkey_mode", "1",
 static CatVar autoshoot(CV_SWITCH, "aimbot_autoshoot", "1", "Autoshoot",
                         "Shoot automatically when the target is locked, isn't "
                         "compatible with 'Enable when attacking'");
+static CatVar autoshoot_disguised(CV_SWITCH, "aimbot_autoshoot_disguised", "1", "Autoshoot while disguised",
+                        "Shoot automatically if disguised.");
 static CatVar multipoint(CV_SWITCH, "aimbot_multipoint", "0", "Multipoint",
                          "Multipoint aimbot");
 static CatEnum hitbox_mode_enum({ "AUTO", "AUTO-CLOSEST", "STATIC" });
@@ -488,6 +490,10 @@ bool IsTargetStateGood(CachedEntity *entity)
         }
         IF_GAME(IsTF())
         {
+            //don't aim if holding sapper
+            if  (g_pLocalPlayer->holding_sapper)
+                return false;
+
             // Wait for charge
             if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
             {
@@ -585,6 +591,9 @@ bool IsTargetStateGood(CachedEntity *entity)
     }
     else if (entity->m_Type() == ENTITY_BUILDING)
     {
+        //Don't aim if holding sapper
+        if  (g_pLocalPlayer->holding_sapper)
+            return false;
         // Enabled check
         if (!(buildings_other || buildings_sentry))
             return false;
@@ -767,11 +776,11 @@ void Aim(CachedEntity *entity)
 // A function to check whether player can autoshoot
 void DoAutoshoot()
 {
-
     // Enable check
     if (!autoshoot)
         return;
-
+    if (IsPlayerDisguised(g_pLocalPlayer->entity) && !autoshoot_disguised)
+        return;
     // Handle Compound bow
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
     {
@@ -814,7 +823,7 @@ void DoAutoshoot()
         if (IsAmbassador(g_pLocalPlayer->weapon()))
         {
             // Check if ambasador can headshot
-            if (!AmbassadorCanHeadshot())
+            if (!AmbassadorCanHeadshot() && wait_for_charge)
                 attack = false;
         }
     }

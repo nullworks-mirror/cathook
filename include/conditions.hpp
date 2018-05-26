@@ -179,6 +179,8 @@ constexpr condition_data_s CreateConditionMask(ConditionList... conds)
 // Should be either expanded or unused
 constexpr condition_data_s KInvisibilityMask =
     CreateConditionMask(TFCond_Cloaked);
+constexpr condition_data_s KDisguisedMask =
+    CreateConditionMask(TFCond_Disguised);
 // Original name
 constexpr condition_data_s KVisibilityMask =
     CreateConditionMask(TFCond_OnFire, TFCond_Jarated, TFCond_CloakFlicker,
