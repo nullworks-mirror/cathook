@@ -63,10 +63,9 @@ void Update(CachedEntity *player)
                 // deviation, data.detections);
                 player_info_t info;
                 g_IEngine->GetPlayerInfo(player->m_IDX, &info);
-                if (am > 5 && hacks::shared::anticheat::autorage)
+                if (am > 5)
                 {
-                    playerlist::AccessData(info.friendsID).state =
-                        playerlist::k_EState::RAGE;
+                    hacks::shared::anticheat::SetRage(info);
                     am = 0;
                 }
                 if (++data.detections > int(detections_warning))
