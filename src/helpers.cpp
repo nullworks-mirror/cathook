@@ -1021,13 +1021,13 @@ void PrintChat(const char *fmt, ...)
     CHudBaseChat *chat = (CHudBaseChat *) g_CHUD->FindElement("CHudChat");
     if (chat)
     {
-        char *buf = new char[1024];
+        std::unique_ptr<char> buf (new char[1024]);
         va_list list;
         va_start(list, fmt);
-        vsprintf(buf, fmt, list);
+        vsprintf(buf.get(), fmt, list);
         va_end(list);
         std::unique_ptr<char> str(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s",
-                                         0x5e3252, 0xba3d9a, 0x5e3252, buf));
+                                         0x5e3252, 0xba3d9a, 0x5e3252, buf.get()));
         // FIXME DEBUG LOG
         logging::Info("%s", str.get());
         chat->Printf(str.get());

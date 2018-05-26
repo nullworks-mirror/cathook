@@ -17,7 +17,6 @@ namespace shared
 {
 namespace anticheat
 {
-
 static CatVar enabled(CV_SWITCH, "ac_enabled", "0", "Enable AC");
 static CatVar accuse_chat(CV_SWITCH, "ac_chat", "0", "Accuse in chat");
 static CatVar autorage(CV_SWITCH, "ac_autorage", "0", "Auto Rage");
@@ -46,6 +45,12 @@ void Accuse(int eid, const std::string &hack, const std::string &details)
 }
 
 static CatVar skip_local(CV_SWITCH, "ac_ignore_local", "1", "Ignore Local");
+
+void SetRage(player_info_t info)
+{
+    if (autorage)
+        playerlist::AccessData(info.friendsID).state = playerlist::k_EState::RAGE;
+}
 
 void CreateMove()
 {
