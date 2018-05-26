@@ -855,6 +855,13 @@ bool IsPlayerInvisible(CachedEntity *player)
         player);
 }
 
+bool IsPlayerDisguised(CachedEntity *player)
+{
+    return HasConditionMask<KDisguisedMask.cond_0, KDisguisedMask.cond_1,
+                            KDisguisedMask.cond_2, KDisguisedMask.cond_3>(
+        player);
+}
+
 // F1 c&p
 Vector CalcAngle(Vector src, Vector dst)
 {
