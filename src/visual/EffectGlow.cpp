@@ -140,7 +140,7 @@ ITexture *GetBuffer(int i)
                 IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags,
                 renderTargetFlags);
         }
-
+        delete newname;
         buffers[i].Init(texture);
     }
     return buffers[i];
