@@ -823,7 +823,7 @@ void DoAutoshoot()
         if (IsAmbassador(g_pLocalPlayer->weapon()))
         {
             // Check if ambasador can headshot
-            if (!AmbassadorCanHeadshot())
+            if (!AmbassadorCanHeadshot() && wait_for_charge)
                 attack = false;
         }
     }
