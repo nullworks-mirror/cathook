@@ -23,6 +23,7 @@ public:
     bool bZoomed;
     float flZoomBegin;
     bool holding_sniper_rifle;
+    bool holding_sapper;
     weaponmode weapon_mode;
     bool using_action_slot_item{ false };
 

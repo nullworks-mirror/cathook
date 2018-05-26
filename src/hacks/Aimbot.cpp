@@ -488,6 +488,10 @@ bool IsTargetStateGood(CachedEntity *entity)
         }
         IF_GAME(IsTF())
         {
+            //don't aim if holding sapper
+            if  (g_pLocalPlayer->holding_sapper)
+                return false;
+
             // Wait for charge
             if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
             {
@@ -585,6 +589,9 @@ bool IsTargetStateGood(CachedEntity *entity)
     }
     else if (entity->m_Type() == ENTITY_BUILDING)
     {
+        //Don't aim if holding sapper
+        if  (g_pLocalPlayer->holding_sapper)
+            return false;
         // Enabled check
         if (!(buildings_other || buildings_sentry))
             return false;
