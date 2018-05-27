@@ -15,11 +15,10 @@
 //------------------------------------------------------------------------------------------------------------------//  //
 																													//	//
 Hook + Aimbot FIX																									//	//
-																													//	//
-no aim sapper																										//	//
+																													//	//																								        //	//
 																													//	//
 Make hacks respect Mannpower powerups and other conditions when calcuating damage, hitbox and prioritizing targets	//	//
-Proper AutoHitbox, Isnt this already a thing??																		//	//
+																		//	//
 																													//	//
 Flare aim on fire																									//	//
 Improve Projectile Aimbot. A lot.																					//	//
@@ -28,7 +27,7 @@ MAX -> MIN priority																									//	//
 																													//	//
 Hunter Rifle?																										//	//
 																													//	//
-No AutoShoot when disguised																							//	//
+																							//	//
 Ambassador bodyshotting																								//	//
 No Trigger Mediguns																									//	//
 More projectile weapons aimbot (wrap assassin, wrangler, stickybomb, airstrike)										//	//
@@ -42,9 +41,9 @@ add Spectator Silent for projectile weapons 																		//	//
 																													//	//
 Improve aimbot accuracy 																							//	//
 																													//	//
-Add Multipoint (Take hitbox, shrink it, then use corners as points to check)										//	//
+										//	//
 																													//	//
-Make ambasador check rely on wait for charge user setting															//	//
+															//	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//
 //																														//
@@ -56,14 +55,14 @@ Make ambasador check rely on wait for charge user setting															//	//
 //Visuals/GUI																											//
 //------------------------------------------------------------------------------------------------------------------//  //
 																													//	//
-Display on the left																									//	//
+																									//	//
 																													//	//
-make gui color change																								//	//
+																								//	//
 																													//	//
 Cheat status menu (A gui to display enabled/disabled states of user settings for when the menu is off)				//	//
 																													//	//
 add teleporter count down																							//	//
-add spy cloak esp																									//	//
+																									//	//
 																													//	//
 Make ubercharge esp color RGB when fully charged																	//	//
 																													//	//
@@ -88,11 +87,11 @@ Tracers/Spy Cam																										//	//
 //------------------------------------------------------------------------------------------------------------------//  //
 																													//	//
 TTS																													//	//
-namesteal																											//	//
-autovote																											//	//
+																											//	//
+																											//	//
 																													//	//
 dominatesay assistsay worldsay																						//	//
-InsultSpam																											//	//
+																											//	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//
 //																														//

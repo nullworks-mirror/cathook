@@ -295,6 +295,7 @@ static const std::string list_tf2 = R"(
 	    "aimbot_aimkey"
 	    "aimbot_aimkey_mode"
 	    "aimbot_autoshoot"
+        "aimbot_autoshoot_disguised"
 	    "aimbot_hitboxmode"
 	    "aimbot_fov"
 		"aimbot_fov_draw"
