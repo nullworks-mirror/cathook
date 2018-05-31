@@ -4,3 +4,12 @@
 [submodule "source-sdk-2013-headers"]
 	path = source-sdk-2013-headers
 	url = https://github.com/nullworks/source-sdk-2013-headers
+[submodule "libglez"]
+	path = libglez
+	url = https://github.com/nullworks/libglez
+[submodule "libxoverlay"]
+	path = libxoverlay
+	url = https://github.com/nullworks/libxoverlay
+[submodule "simple-ipc"]
+	path = simple-ipc
+	url = https://github.com/nullworks/simple-ipc
