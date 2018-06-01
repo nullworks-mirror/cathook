@@ -42,17 +42,21 @@ Run in terminal:
 ## Manual:
 You need CMake to build cathook, CMake should take care of dependencies
 
-Install [libglez](https://github.com/nullworks/libglez), [libxoverlay](https://github.com/nullworks/libxoverlay) and [simple-ipc](https://github.com/nullworks/simple-ipc)
+Install libglez, libxoverlay and simple-ipc
 
-* Clone the repo of library (`git clone <URL>`)
+Clone Cathook (`git clone --recursive https://github.com/nullworks/cathook`)
+
+* `cd <name>`
 * `mkdir build && cd build`
 * `cmake ..`
 * `make && sudo make install`
+* `cd ..`
+
+Repeat until libglez, libxoverlay and simple-ipc are installed
 
 Install cathook
 
-* `git clone --recursive https://github.com/nullworks/cathook`
-* `cd cathook && mkdir build && cd build`
+* `mkdir build && cd build`
 * `cmake .. && make`
 * `sudo make data`
 
