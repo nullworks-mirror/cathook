@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-rm ./updater.sh
-wget https://raw.githubusercontent.com/nullworks/cathook/master/tools/updater.sh
-updater() {
-  source updater.sh
-}
-updater

@@ -156,7 +156,6 @@ void CreateMove()
     // Determine whether the triggerbot should shoot, then act accordingly
     if (IsTargetStateGood(ent))
     {
-        AddSideString("Found target, gigalul");
         target_time = backup_time;
         if (delay)
         {
