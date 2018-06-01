@@ -1,3 +1,5 @@
+rm ../install-all
+
 #
 # Install base Dependencies
 #
