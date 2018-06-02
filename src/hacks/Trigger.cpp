@@ -81,15 +81,12 @@ float target_time = 0.0f;
 
 int last_hb_traced = 0;
 Vector forward;
-bool CanBacktrack(CachedEntity *entity)
+bool CanBacktrack()
 {
-    if (CE_BAD(entity))
-        return false;
-    if (entity->m_Type() != ENTITY_PLAYER)
-        return false;
-    int tick = hacks::shared::backtrack::Besttick(entity);
-    auto min = hacks::shared::backtrack::headPositions[entity->m_IDX][tick].min;
-    auto max = hacks::shared::backtrack::headPositions[entity->m_IDX][tick].max;
+    int target   = hacks::shared::backtrack::iBestTarget;
+    int BestTick = hacks::shared::backtrack::BestTick;
+    auto min = hacks::shared::backtrack::headPositions[target][BestTick].min;
+    auto max = hacks::shared::backtrack::headPositions[target][BestTick].max;
     if (!min.x && !max.x)
         return false;
 
@@ -114,14 +111,17 @@ bool CanBacktrack(CachedEntity *entity)
 
     if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) &&
         !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
-        return false;
-    if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
     {
-        hacks::shared::backtrack::dontbacktrack = true;
-        hacks::shared::backtrack::Backtrack(entity, tick);
         return true;
     }
-    return false;
+    if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
+    {
+        g_pUserCmd->tick_count =
+            hacks::shared::backtrack::headPositions[target][BestTick].tickcount;
+        g_pUserCmd->buttons |= IN_ATTACK;
+        return false;
+    }
+    return true;
 }
 // The main "loop" of the triggerbot
 void CreateMove()
@@ -140,14 +140,13 @@ void CreateMove()
 
     // Reset our last hitbox traced
     last_hb_traced = -1;
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
-        if (CanBacktrack(ENTITY(i)))
-        {
-            g_pUserCmd->buttons |= IN_ATTACK;
-            return;
-        }
+
     // Get and ent in front of the player
     CachedEntity *ent = FindEntInSight(EffectiveTargetingRange());
+
+    // Check if can backtrack, shoot if we can
+    if (!CanBacktrack())
+        return;
 
     // Check if dormant or null to prevent crashes
     if (CE_BAD(ent))
@@ -629,7 +628,7 @@ float EffectiveTargetingRange()
 {
     if (GetWeaponMode() == weapon_melee)
     {
-        return re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W);
+        return re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
         // Pyros only have so much untill their flames hit
     }
     else if (g_pLocalPlayer->weapon()->m_iClassID() ==

@@ -26,6 +26,7 @@ extern CatVar debug_projectiles;
 extern CatVar semiauto;
 extern CatVar engine_pred;
 extern Timer DelayTimer;
+extern bool firstcm;
 extern CatVar delay;
 extern CatVar adjust;
 extern float prevflow;

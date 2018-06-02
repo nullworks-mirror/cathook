@@ -140,7 +140,7 @@ public:
     EntityType m_Type()
     {
         EntityType ret = ENTITY_GENERIC;
-        int classid = m_iClassID();
+        int classid    = m_iClassID();
         if (classid == CL_CLASS(CTFPlayer))
             ret = ENTITY_PLAYER;
         else if (classid == CL_CLASS(CTFGrenadePipebombProjectile) ||

@@ -3,6 +3,7 @@
  *
  *  Created on: Jan 8, 2017
  *      Author: nullifiedcat
+ *
  */
 
 #include "common.hpp"
@@ -13,7 +14,7 @@
 #include "netmessage.hpp"
 #include <boost/algorithm/string.hpp>
 #include <MiscTemporary.hpp>
-
+#include "HookedMethods.hpp"
 #if ENABLE_VISUALS
 
 // This hook isn't used yet!
@@ -69,6 +70,4 @@ static CatCommand minus_use_action_slot_item_server(
 // static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages",
 // "Use this if you want to use spam/killsay and still be able to chat normally
 // (without having your msgs eaten by valve cooldown)");
-
-static CatVar server_crash_key(CV_KEY, "crash_server", "0", "Server crash key",
-                               "hold key and wait...");
+static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck", "");

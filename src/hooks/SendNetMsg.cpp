@@ -12,7 +12,7 @@ static CatVar newlines_msg(CV_INT, "chat_newlines", "0", "Prefix newlines",
 
 static CatVar log_sent(CV_SWITCH, "debug_log_sent_messages", "0",
                        "Log sent messages");
-static CatVar airstuck(CV_KEY, "airstuck", "0", "Airstuck", "");
+
 namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
@@ -63,22 +63,6 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
     if (lastcmd > g_GlobalVars->absoluteframetime)
     {
         lastcmd = g_GlobalVars->absoluteframetime;
-    }
-    if (airstuck.KeyDown() && !g_Settings.bInvalid)
-    {
-        if (CE_GOOD(LOCAL_E))
-        {
-            if (lastcmd + sv_player_usercommand_timeout->GetFloat() - 0.1f <
-                g_GlobalVars->curtime)
-            {
-                if (msg.GetType() == clc_Move)
-                    return false;
-            }
-            else
-            {
-                lastcmd = g_GlobalVars->absoluteframetime;
-            }
-        }
     }
     if (log_sent && msg.GetType() != 3 && msg.GetType() != 9)
     {

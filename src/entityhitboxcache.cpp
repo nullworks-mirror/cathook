@@ -71,7 +71,6 @@ void EntityHitboxCache::Init()
         if (!dynamic_cast<mstudiohitboxset_t *>(set))
             return;
         m_pLastModel   = model;
-        m_pHitboxSet   = set;
         m_nNumHitboxes = 0;
         if (set)
         {
@@ -152,7 +151,6 @@ void EntityHitboxCache::Reset()
     m_bInit        = false;
     m_bModelSet    = false;
     m_bSuccess     = false;
-    m_pHitboxSet   = nullptr;
     m_pLastModel   = nullptr;
     bones_setup    = false;
 }
@@ -167,22 +165,28 @@ CachedHitbox *EntityHitboxCache::GetHitbox(int id)
         return 0;
     if (!m_bSuccess)
         return 0;
-    if (!m_CacheValidationFlags[id])
-    {
-        box = m_pHitboxSet->pHitbox(id);
-        if (!box)
-            return 0;
-        if (box->bone < 0 || box->bone >= MAXSTUDIOBONES)
-            return 0;
-        VectorTransform(box->bbmin, GetBones()[box->bone],
-                        m_CacheInternal[id].min);
-        VectorTransform(box->bbmax, GetBones()[box->bone],
-                        m_CacheInternal[id].max);
-        m_CacheInternal[id].bbox = box;
-        m_CacheInternal[id].center =
-            (m_CacheInternal[id].min + m_CacheInternal[id].max) / 2;
-        m_CacheValidationFlags[id] = true;
-    }
+    if (CE_BAD(parent_ref))
+        return 0;
+    auto model = (model_t *) RAW_ENT(parent_ref)->GetModel();
+    if (!model)
+        return 0;
+    auto shdr = g_IModelInfo->GetStudiomodel(model);
+    if (!shdr)
+        return 0;
+    auto set = shdr->pHitboxSet(CE_INT(parent_ref, netvar.iHitboxSet));
+    if (!dynamic_cast<mstudiohitboxset_t *>(set))
+        return 0;
+    box = set->pHitbox(id);
+    if (!box)
+        return 0;
+    if (box->bone < 0 || box->bone >= MAXSTUDIOBONES)
+        return 0;
+    VectorTransform(box->bbmin, GetBones()[box->bone], m_CacheInternal[id].min);
+    VectorTransform(box->bbmax, GetBones()[box->bone], m_CacheInternal[id].max);
+    m_CacheInternal[id].bbox = box;
+    m_CacheInternal[id].center =
+        (m_CacheInternal[id].min + m_CacheInternal[id].max) / 2;
+    m_CacheValidationFlags[id] = true;
     return &m_CacheInternal[id];
 }
 

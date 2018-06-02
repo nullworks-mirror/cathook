@@ -104,6 +104,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     float curtime_old, servertime, speed, yaw;
     Vector vsilent, ang;
 
+    if (firstcm)
+    {
+        DelayTimer.update();
+        firstcm = false;
+    }
     tickcount++;
     g_pUserCmd = cmd;
 #if not LAGBOT_MODE
@@ -248,7 +253,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 if (CE_BAD(ent))
                     continue;
                 if (ent->player_info.friendsID ==
-                    (int) hacks::shared::followbot::follow_steam)
+                    hacks::shared::followbot::steamid)
                 {
                     found_entity = ent;
                     break;
@@ -314,11 +319,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             }
             IF_GAME(IsTF2())
             {
-                PROF_SECTION(CM_antibackstab);
-                hacks::tf2::antibackstab::CreateMove();
-            }
-            IF_GAME(IsTF2())
-            {
                 PROF_SECTION(CM_noisemaker);
                 hacks::tf2::noisemaker::CreateMove();
             }
@@ -340,6 +340,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             {
                 PROF_SECTION(CM_aimbot);
                 hacks::shared::aimbot::CreateMove();
+            }
+            IF_GAME(IsTF2())
+            {
+                PROF_SECTION(CM_antibackstab);
+                hacks::tf2::antibackstab::CreateMove();
             }
             static int attackticks = 0;
             if (g_pUserCmd->buttons & IN_ATTACK)
@@ -388,6 +393,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             {
                 PROF_SECTION(CM_autobackstab);
                 hacks::tf2::autobackstab::CreateMove();
+            }
+            IF_GAME(IsTF2())
+            {
+                PROF_SECTION(CM_autodeadringer);
+                hacks::shared::deadringer::CreateMove();
             }
             if (debug_projectiles)
                 projectile_logging::Update();
@@ -503,9 +513,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                               cmd->viewangles.y);
                 cmd->forwardmove = cos(yaw) * speed;
                 cmd->sidemove    = sin(yaw) * speed;
-                if (hacks::tf2::antibackstab::noaa)
-                    if (cmd->viewangles.x >= 90 && cmd->viewangles.x <= 270)
-                        cmd->forwardmove = -cmd->forwardmove;
+                if (cmd->viewangles.x >= 90 && cmd->viewangles.x <= 270)
+                    cmd->forwardmove = -cmd->forwardmove;
             }
 
             ret = false;
@@ -516,6 +525,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #endif
     NET_StringCmd senddata(serverlag_string.GetString());
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+
     senddata.SetNetChannel(ch);
     senddata.SetReliable(false);
     if (servercrash && DelayTimer.check((int) delay * 1000))
@@ -540,12 +550,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             if (ch->GetAvgData(FLOW_INCOMING) != prevflow)
             {
                 if (prevflowticks < 66 * (int) adjust)
-                    serverlag_amount = (int) serverlag_amount + 1;
+                    serverlag_amount = (int) serverlag_amount + 4;
                 prevflowticks        = 0;
             }
         }
-        else if (votelogger::active &&
-                 !votelogger::antikick.check(antikick_time * 1000))
+        if (votelogger::active &&
+            !votelogger::antikick.check(antikick_time * 1000))
         {
             static int additionallag = 1;
             if (ch->GetAvgData(FLOW_INCOMING) == prevflow)
@@ -561,7 +571,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 ch->SendNetMsg(senddata, false);
             ch->Transmit();
         }
-        else if (!votelogger::active && DelayTimer.check((int) delay * 1000))
+        else if (!votelogger::active && serverlag_amount &&
+                 DelayTimer.check((int) delay * 1000))
         {
             for (int i = 0; i < (int) serverlag_amount; i++)
                 ch->SendNetMsg(senddata, false);

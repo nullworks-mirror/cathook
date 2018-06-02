@@ -22,13 +22,9 @@ public:
             self, offsets::PlatformOffset(522, offsets::undefined, 522),
             0)(self, trace);
     }
-    inline static float GetSwingRange(CachedEntity *self)
+    inline static int GetSwingRange(IClientEntity *self)
     {
-        int ret = 48.0f;
-        if (self->m_iClassID() == CL_CLASS(CTFSword) ||
-            self->m_iClassID() == CL_CLASS(CTFKatana))
-            ret = 72.0f;
-        return ret;
+        return 128;
     }
 };
 }

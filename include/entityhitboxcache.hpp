@@ -47,7 +47,6 @@ public:
     bool m_bInit;
     bool m_bSuccess;
 
-    mstudiohitboxset_t *m_pHitboxSet;
     model_t *m_pLastModel;
     CachedEntity *parent_ref; // TODO FIXME turn this into an actual reference
 

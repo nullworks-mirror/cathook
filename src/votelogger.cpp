@@ -78,7 +78,7 @@ void user_message(bf_read &buffer, int type)
                     int clz = g_pPlayerResource->GetClass(ENTITY(eid));
                     ReplaceString(msg, "$CLASS", format(tf_classes[clz]));
                 }
-                NET_StringCmd senddata(format("say", msg).c_str());
+                NET_StringCmd senddata(format("say ", msg).c_str());
                 INetChannel *ch =
                     (INetChannel *) g_IEngine->GetNetChannelInfo();
                 senddata.SetNetChannel(ch);

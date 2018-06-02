@@ -33,8 +33,9 @@ static CatVar aimkey_mode(aimkey_modes_enum, "aimbot_aimkey_mode", "1",
 static CatVar autoshoot(CV_SWITCH, "aimbot_autoshoot", "1", "Autoshoot",
                         "Shoot automatically when the target is locked, isn't "
                         "compatible with 'Enable when attacking'");
-static CatVar autoshoot_disguised(CV_SWITCH, "aimbot_autoshoot_disguised", "1", "Autoshoot while disguised",
-                        "Shoot automatically if disguised.");
+static CatVar autoshoot_disguised(CV_SWITCH, "aimbot_autoshoot_disguised", "1",
+                                  "Autoshoot while disguised",
+                                  "Shoot automatically if disguised.");
 static CatVar multipoint(CV_SWITCH, "aimbot_multipoint", "0", "Multipoint",
                          "Multipoint aimbot");
 static CatEnum hitbox_mode_enum({ "AUTO", "AUTO-CLOSEST", "STATIC" });
@@ -239,7 +240,6 @@ void CreateMove()
         return;
 
     // Attemt to auto-shoot
-    DoAutoshoot();
 
     // flNextPrimaryAttack meme
     if (only_can_shoot)
@@ -248,6 +248,7 @@ void CreateMove()
         // Handle Compound bow
         if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
         {
+            DoAutoshoot();
             static bool currently_charging_huntsman = false;
 
             // Hunstman started charging
@@ -267,17 +268,23 @@ void CreateMove()
 
             // Not release type weapon
         }
-        else if (GetWeaponMode() == weapon_melee &&
-                 (g_pUserCmd->buttons & IN_ATTACK))
+        else if (GetWeaponMode() == weapon_melee)
         {
+            DoAutoshoot();
             Aim(target_entity);
         }
-        else if (CanShoot() && (g_pUserCmd->buttons & IN_ATTACK) &&
+        else if (CanShoot() &&
                  CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0)
+        {
             Aim(target_entity);
+            DoAutoshoot();
+        }
     }
     else
+    {
+        DoAutoshoot();
         Aim(target_entity);
+    }
 
     return;
 }
@@ -490,8 +497,8 @@ bool IsTargetStateGood(CachedEntity *entity)
         }
         IF_GAME(IsTF())
         {
-            //don't aim if holding sapper
-            if  (g_pLocalPlayer->holding_sapper)
+            // don't aim if holding sapper
+            if (g_pLocalPlayer->holding_sapper)
                 return false;
 
             // Wait for charge
@@ -591,8 +598,8 @@ bool IsTargetStateGood(CachedEntity *entity)
     }
     else if (entity->m_Type() == ENTITY_BUILDING)
     {
-        //Don't aim if holding sapper
-        if  (g_pLocalPlayer->holding_sapper)
+        // Don't aim if holding sapper
+        if (g_pLocalPlayer->holding_sapper)
             return false;
         // Enabled check
         if (!(buildings_other || buildings_sentry))
@@ -774,6 +781,7 @@ void Aim(CachedEntity *entity)
 }
 
 // A function to check whether player can autoshoot
+bool begancharge = false;
 void DoAutoshoot()
 {
     // Enable check
@@ -790,19 +798,25 @@ void DoAutoshoot()
             CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
 
         // Release hunstman if over huntsmans limit
-        if (g_GlobalVars->curtime - begincharge >= (float) huntsman_autoshoot)
+        if ((g_GlobalVars->curtime - begincharge >=
+             (float) huntsman_autoshoot) &&
+            begancharge)
         {
             g_pUserCmd->buttons &= ~IN_ATTACK;
             hacks::shared::antiaim::SetSafeSpace(3);
-
+            begancharge = false;
             // Pull string if charge isnt enough
         }
         else
+        {
             g_pUserCmd->buttons |= IN_ATTACK;
+            begancharge = true;
+        }
         return;
     }
-
-    bool attack = true;
+    else
+        begancharge = false;
+    bool attack     = true;
 
     // Rifle check
     IF_GAME(IsTF())
@@ -843,6 +857,7 @@ void DoAutoshoot()
 
     if (attack)
         g_pUserCmd->buttons |= IN_ATTACK;
+    hacks::shared::antiaim::SetSafeSpace(1);
 
     return;
 }
@@ -1195,7 +1210,7 @@ bool UpdateAimkey()
 float EffectiveTargetingRange()
 {
     if (GetWeaponMode() == weapon_melee)
-        return (float) re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W);
+        return (float) re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
         return 185.0f; // Pyros only have so much untill their flames hit
 

@@ -98,10 +98,6 @@ struct offsets
     {
         return PlatformOffset(36, undefined, undefined);
     }
-    static constexpr uint32_t WriteUsercmdDeltaToBuffer()
-    {
-        return PlatformOffset(22, undefined, 22);
-    }
     static constexpr uint32_t CanPacket()
     {
         return PlatformOffset(57, undefined, undefined);
@@ -158,6 +154,10 @@ struct offsets
     static constexpr uint32_t m_nOutSequenceNr()
     {
         return PlatformOffset(8, undefined, undefined);
+    }
+    static constexpr uint32_t ProcessMovement()
+    {
+        return PlatformOffset(1, undefined, 1);
     }
     static constexpr uint32_t m_NetChannel()
     {

@@ -24,7 +24,10 @@ static CatVar
     software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
                          "Software cursor",
                          "Try to change this and see what works best for you");
-
+static CatVar no_reportlimit(CV_SWITCH, "no_reportlimit", "0",
+                             "no report limit",
+                             "Remove playerlist report time limit");
+bool replaced = false;
 namespace hooked_methods
 {
 
@@ -47,6 +50,22 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         textures_loaded = true;
     }
 #endif
+    if (no_reportlimit && !replaced)
+    {
+        static unsigned char patch[] = { 0xB8, 0x01, 0x00, 0x00, 0x00 };
+        static uintptr_t report_addr = gSignatures.GetClientSignature(
+            "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+        if (report_addr)
+        {
+            uintptr_t topatch = report_addr + 0x75;
+            logging::Info("No Report limit: 0x%08x", report_addr);
+            Patch((void *) topatch, (void *) patch, sizeof(patch));
+            replaced = true;
+        }
+        else
+            report_addr = gSignatures.GetClientSignature(
+                "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+    }
     if (pure_bypass)
     {
         if (!pure_addr)

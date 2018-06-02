@@ -23,5 +23,5 @@ constexpr int c_strcmp(char const *lhs, char const *rhs)
                                     : c_strcmp(lhs + 1, rhs + 1);
 }
 
-#define FEATURE_RADAR_DISABLED
+//#define FEATURE_RADAR_DISABLED
 #define FEATURE_FIDGET_SPINNER_DISABLED

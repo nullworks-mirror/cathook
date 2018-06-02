@@ -19,17 +19,17 @@ void LocalPlayer::Update()
         return;
     }
     holding_sniper_rifle = false;
-    holding_sapper = false;
+    holding_sapper       = false;
     wep                  = weapon();
     if (CE_GOOD(wep))
     {
         weapon_mode = GetWeaponMode();
         if (wep->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
-                wep->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
-                holding_sniper_rifle = true;
+            wep->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
+            holding_sniper_rifle = true;
         if (wep->m_iClassID() == CL_CLASS(CTFWeaponBuilder) ||
-                wep->m_iClassID() == CL_CLASS(CTFWeaponSapper))
-                holding_sapper = true;
+            wep->m_iClassID() == CL_CLASS(CTFWeaponSapper))
+            holding_sapper = true;
     }
     team                   = CE_INT(entity, netvar.iTeamNum);
     life_state             = CE_BYTE(entity, netvar.iLifeState);

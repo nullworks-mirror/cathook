@@ -35,6 +35,7 @@ CatVar crypt_chat(
 
 int spectator_target;
 CLC_VoiceData *voicecrash{};
+bool firstcm = false;
 Timer DelayTimer{};
 CatVar delay(
     CV_INT, "delay", "0", "Delay",
