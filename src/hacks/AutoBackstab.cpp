@@ -27,7 +27,7 @@ const Vector GetWorldSpaceCenter(CachedEntity *ent)
 
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
-static CatVar value(CV_INT, "autobackstab_range", "110.0f",
+static CatVar value(CV_INT, "autobackstab_range", "75.0f",
                     "Set Detection Distance to this much");
 bool found;
 // TODO improve
@@ -47,63 +47,24 @@ void CreateMove()
     {
         if (!hacks::shared::backtrack::enable)
             return;
-        found = false;
-        if (!CE_GOOD(LOCAL_E))
+        if (hacks::shared::backtrack::iBestTarget == -1)
             return;
-        CachedEntity *ent;
-        for (int i = 0; i < 32; i++)
-        {
-            float scr          = 0;
-            float scr_best     = 0;
-            CachedEntity *pEnt = ENTITY(i);
-            if (!CE_GOOD(pEnt))
-                continue;
-            if (pEnt->m_Type() != ENTITY_PLAYER)
-                continue;
-            if (!pEnt->m_bAlivePlayer())
-                continue;
-            if (pEnt == LOCAL_E)
-                continue;
-            if (LOCAL_E->m_iTeam() == pEnt->m_iTeam())
-                continue;
-            scr = 4096.0f - pEnt->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
-            scr -= abs(g_pLocalPlayer->v_Eye.y -
-                       NET_VECTOR(pEnt, netvar.m_angEyeAngles).y);
-            if (scr > scr_best)
-            {
-                scr_best = scr;
-                ent      = pEnt;
-                found    = true;
-            }
-        }
-        if (!found)
-            return;
-        if (!CE_GOOD(ent))
-            return;
-        Vector vecVictimForward = NET_VECTOR(ent, netvar.m_angEyeAngles);
-        vecVictimForward.z      = 0.0f;
-        vecVictimForward.NormalizeInPlace();
+        int iBestTarget = hacks::shared::backtrack::iBestTarget;
+        int BestTick    = hacks::shared::backtrack::BestTick;
 
-        // Get a vector from my origin to my targets origin
-        Vector vecToTarget;
+        float scr =
+            abs(g_pLocalPlayer->v_OrigViewangles.y -
+                hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
+                    .viewangles);
 
-        int tick = hacks::shared::backtrack::Besttick(ent);
-        vecToTarget =
-            hacks::shared::backtrack::headPositions[ent->m_IDX][tick].origin -
-            GetWorldSpaceCenter(LOCAL_E);
-        vecToTarget.z = 0.0f;
-        vecToTarget.NormalizeInPlace();
-
-        float flDot = DotProduct(vecVictimForward, vecToTarget);
-
-        bool isbehind = flDot > -0.1;
-        if (isbehind &&
-            hacks::shared::backtrack::headPositions[ent->m_IDX][tick]
+        if (scr < 40.0f &&
+            hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
                     .origin.DistTo(g_pLocalPlayer->v_Eye) <=
-                re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W))
+                re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)))
         {
-            hacks::shared::backtrack::dontbacktrack = true;
-            hacks::shared::backtrack::Backtrack(ent, tick);
+            g_pUserCmd->tick_count =
+                hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
+                    .tickcount;
             g_pUserCmd->buttons |= IN_ATTACK;
         }
     }

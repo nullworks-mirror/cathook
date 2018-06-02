@@ -82,11 +82,11 @@ std::pair<int, int> WorldToRadar(int x, int y)
 }
 bool loaded = false;
 
-textures::texture_atlas texture(DATA_PATH "/res/atlas.png", 1024, 512);
-
 void DrawEntity(int x, int y, CachedEntity *ent)
 {
 
+    static textures::texture_atlas texture(DATA_PATH "/res/atlas.png", 1024,
+                                           512);
     if (!loaded)
     {
         if (texture.texture.handle == GLEZ_TEXTURE_INVALID &&
@@ -99,28 +99,31 @@ void DrawEntity(int x, int y, CachedEntity *ent)
         }
         else if (texture.texture.handle != GLEZ_TEXTURE_INVALID)
             loaded = true;
-        else
-            return;
+        return;
     }
     struct basesprite
     {
         textures::sprite sprite = texture.create_sprite(0, 0, 0, 0);
     };
+
     static std::array<std::array<basesprite, 9>, 3> tx_class;
     static std::array<basesprite, 2> tx_teams;
     static std::array<basesprite, 2> tx_items;
+    bool call = false;
+    if (call)
+        goto label1;
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 9; j++)
-            tx_class[i][j].sprite.setsprite(
-                64 * j, texture.height - 64 * (i + 1), 64, 64);
-    tx_teams[0].sprite.setsprite(11 * 64, texture.height - 128, 64, 64);
-    tx_teams[1].sprite.setsprite(11 * 64, texture.height - 64, 64, 64);
-
-    tx_items[0].sprite.setsprite(10 * 64, texture.height - 64, 64, 64);
-    tx_items[1].sprite.setsprite(10 * 64, texture.height - 128, 64, 64);
-    int idx;
+            tx_class[i][j].sprite.setsprite(64 * j, 64 * i, 64, 64);
+    tx_teams[0].sprite.setsprite(11 * 64, 128, 64, 64);
+    tx_teams[1].sprite.setsprite(11 * 64, 64, 64, 64);
+    tx_items[0].sprite.setsprite(10 * 64, 64, 64, 64);
+    tx_items[1].sprite.setsprite(10 * 64, 128, 64, 64);
+    call = true;
+label1:
+    int idx = -1;
     rgba_t clr;
-    float healthp;
+    float healthp = 0.0f;
 
     if (CE_GOOD(ent))
     {
@@ -254,31 +257,24 @@ void Draw()
         ent = ENTITY(i);
         if (CE_BAD(ent))
             continue;
+        if (!ent->m_bAlivePlayer())
+            continue;
         if (i == g_IEngine->GetLocalPlayer())
             continue;
-        if (ent->m_Type() == ENTITY_PLAYER)
-        {
-            if (!ent->m_bEnemy() && !show_teammates)
-                continue;
-        }
+        if (!show_teammates && ent->m_Type() == ENTITY_PLAYER &&
+            !ent->m_bEnemy())
+            continue;
         if (!enemies_over_teammates || !show_teammates ||
             ent->m_Type() != ENTITY_PLAYER)
             DrawEntity(x, y, ent);
+        else if (ent->m_bEnemy())
+            enemies.push_back(ent);
         else
-        {
-            if (ent->m_bEnemy())
-                enemies.push_back(ent);
-            else
-                DrawEntity(x, y, ent);
-        }
+            DrawEntity(x, y, ent);
     }
     if (enemies_over_teammates && show_teammates)
-    {
         for (auto enemy : enemies)
-        {
             DrawEntity(x, y, enemy);
-        }
-    }
     if (CE_GOOD(LOCAL_E))
     {
         DrawEntity(x, y, LOCAL_E);

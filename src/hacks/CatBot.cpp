@@ -186,6 +186,39 @@ Timer level_init_timer{};
 Timer micspam_on_timer{};
 Timer micspam_off_timer{};
 
+void reportall()
+{
+    typedef uint64_t (*ReportPlayer_t)(uint64_t, int);
+    static uintptr_t addr2 = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+    ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr2);
+    if (!addr2)
+        return;
+    player_info_s local;
+    g_IEngine->GetPlayerInfo(g_pLocalPlayer->entity_idx, &local);
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        // We only want a nullptr check since dormant entities are still on the
+        // server
+        if (!ent)
+            continue;
+        player_info_s info;
+        if (g_IEngine->GetPlayerInfo(i, &info))
+        {
+            if (info.friendsID == local.friendsID ||
+                playerlist::AccessData(info.friendsID).state ==
+                    playerlist::k_EState::FRIEND ||
+                playerlist::AccessData(info.friendsID).state ==
+                    playerlist::k_EState::IPC)
+                continue;
+            CSteamID id(info.friendsID, EUniverse::k_EUniversePublic,
+                        EAccountType::k_EAccountTypeIndividual);
+            ReportPlayer_fn(id.ConvertToUint64(), 1);
+        }
+    }
+}
+CatCommand report("report_debug", "debug", []() { reportall(); });
 void update()
 {
     if (!enabled)

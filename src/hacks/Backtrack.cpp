@@ -21,7 +21,11 @@ CatVar draw_bt(CV_SWITCH, "backtrack_draw", "0", "Draw",
                "Draw backtrack ticks");
 CatVar latency(CV_FLOAT, "backtrack_latency", "0", "fake lantency",
                "Set fake latency to this many ms");
+CatVar mindistance(CV_FLOAT, "mindistance", "60", "mindistance");
+
 BacktrackData headPositions[32][66];
+BestTickData sorted_ticks[66];
+int highesttick[32]{};
 int lastincomingsequencenumber = 0;
 
 circular_buf sequences{ 2048 };
@@ -49,7 +53,7 @@ void AddLatencyToNetchan(INetChannel *ch, float Latency)
         Latency -= ch->GetLatency(MAX_FLOWS);
     for (auto &seq : sequences)
     {
-        if (g_GlobalVars->realtime - seq.curtime >= Latency / 1000.0f)
+        if (g_GlobalVars->realtime - seq.curtime > Latency / 1000.0f)
         {
             ch->m_nInReliableState = seq.inreliablestate;
             ch->m_nInSequenceNr    = seq.sequencenr;
@@ -57,9 +61,8 @@ void AddLatencyToNetchan(INetChannel *ch, float Latency)
         }
     }
 }
-bool installed     = false;
-int ticks          = 12;
-bool dontbacktrack = false;
+bool installed = false;
+int ticks      = 12;
 void Init()
 {
     for (int i = 0; i < 32; i++)
@@ -76,29 +79,23 @@ void Init()
         installed = true;
     }
 }
-std::pair<int, int> backtracked;
-void setbesttick(CachedEntity *ent, int tick)
-{
-    backtracked.first  = ent->m_IDX;
-    backtracked.second = tick;
-}
-bool disabled   = true;
+
 int BestTick    = 0;
 int iBestTarget = -1;
 void Run()
 {
     if (!enable)
-    {
-        if (!disabled)
-            Init();
-        disabled = true;
         return;
-    }
-    disabled      = true;
-    float bestFov = 99999;
 
     if (CE_BAD(LOCAL_E))
         return;
+
+    CUserCmd *cmd       = g_pUserCmd;
+    float bestFov       = 99999;
+    BestTick            = 0;
+    iBestTarget         = -1;
+    bool IsMelee        = GetWeaponMode() == weapon_melee;
+    float prev_distance = 9999;
 
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
@@ -107,9 +104,8 @@ void Run()
         if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
         {
             for (BacktrackData &btd : headPositions[i])
-                btd = BacktrackData{
-                    0, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
-                };
+                btd = BacktrackData{ 0,           { 0, 0, 0 }, { 0, 0, 0 },
+                                     { 0, 0, 0 }, { 0, 0, 0 }, 0 };
             continue;
         }
         if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
@@ -121,79 +117,69 @@ void Run()
         Vector hitboxpos = pEntity->hitboxes.GetHitbox(0)->center;
         Vector min       = pEntity->hitboxes.GetHitbox(0)->min;
         Vector max       = pEntity->hitboxes.GetHitbox(0)->max;
-        headPositions[i][g_pUserCmd->command_number % ticks + 1] =
-            BacktrackData{ g_pUserCmd->tick_count, hitboxpos, min, max,
-                           pEntity->m_vecOrigin() };
-    }
-
-    if ((g_pUserCmd->buttons & IN_ATTACK || g_pUserCmd->buttons & IN_ATTACK2) &&
-        !dontbacktrack && CanShoot())
-    {
-        CachedEntity *target = BestTarget();
-        if (CE_BAD(target))
-            return;
-        int tick = Besttick(target);
-        Backtrack(target, tick);
-    }
-    dontbacktrack = false;
-}
-int Besttick(CachedEntity *ent)
-{
-    float tempFOV = 9999;
-    float bestFOV = 40.0f;
-    int bestTick  = 0;
-    for (int t = 0; t < ticks; ++t)
-    {
-        if (!IsVectorVisible(g_pLocalPlayer->v_Eye,
-                             headPositions[ent->m_IDX][t].hitboxpos))
-            continue;
-        if (GetWeaponMode() == weapon_melee)
-            if (g_pLocalPlayer->v_Eye.DistTo(
-                    headPositions[ent->m_IDX][t].hitboxpos) >
-                re::C_TFWeaponBaseMelee::GetSwingRange(LOCAL_W))
-                continue;
-        tempFOV =
-            GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye,
-                   headPositions[ent->m_IDX][t].hitboxpos);
-        if (bestFOV > tempFOV)
-            bestTick = t, bestFOV = tempFOV;
-    }
-    BestTick = bestTick;
-    return BestTick;
-}
-CachedEntity *BestTarget()
-{
-    float bestFov = 99999;
-    iBestTarget   = -1;
-    for (int i = 0; i < 32; i++)
-    {
-        for (int t = 0; t < ticks; ++t)
+        float _viewangles =
+            NET_VECTOR(RAW_ENT(pEntity), netvar.m_angEyeAngles).y;
+        float viewangles =
+            (_viewangles > 180) ? _viewangles - 360 : _viewangles;
+        Vector hitbox_spine = pEntity->hitboxes.GetHitbox(3)->center;
+        headPositions[i][cmd->command_number % ticks] =
+            BacktrackData{ cmd->tick_count, hitboxpos, min, max,
+                           hitbox_spine,    viewangles };
+        float FOVDistance = GetFov(g_pLocalPlayer->v_OrigViewangles,
+                                   g_pLocalPlayer->v_Eye, hitboxpos);
+        float distance = g_pLocalPlayer->v_Eye.DistTo(hitbox_spine);
+        if (!IsMelee && bestFov > FOVDistance && FOVDistance < 60.0f)
         {
-            if (!IsVectorVisible(g_pLocalPlayer->v_Eye,
-                                 headPositions[iBestTarget][t].hitboxpos))
-                continue;
-            Vector hitboxpos  = headPositions[i][t].hitboxpos;
-            float FOVDistance = GetFov(g_pLocalPlayer->v_OrigViewangles,
-                                       g_pLocalPlayer->v_Eye, hitboxpos);
-            if (bestFov > FOVDistance && FOVDistance < 40.0f)
-            {
-                bestFov     = FOVDistance;
-                iBestTarget = i;
-            }
+            bestFov     = FOVDistance;
+            iBestTarget = i;
+        }
+        if (IsMelee && distance < prev_distance)
+        {
+            prev_distance = distance;
+            iBestTarget   = i;
         }
     }
-    if (iBestTarget != -1)
-        return ENTITY(iBestTarget);
-    else
-        return nullptr;
-}
-void Backtrack(CachedEntity *ent, int tick)
-{
-    if (CE_GOOD(ent))
+    if (iBestTarget != -1 && CanShoot())
     {
-        backtracked.first      = ent->m_IDX;
-        backtracked.second     = tick;
-        g_pUserCmd->tick_count = headPositions[ent->m_IDX][tick].tickcount;
+        int bestTick  = 0;
+        float tempFOV = 9999;
+        float bestFOV = 40.0f;
+        float distance, prev_distance_ticks = 9999;
+
+        for (int t = 0; t < ticks; ++t)
+            sorted_ticks[t] =
+                BestTickData{ headPositions[iBestTarget][t].tickcount, t };
+        std::sort(sorted_ticks, sorted_ticks + ticks);
+        for (int t = 0; t < ticks; ++t)
+        {
+            bool good_tick = false;
+            for (int i = 0; i < 12; ++i)
+                if (t == sorted_ticks[i].tick)
+                    good_tick = true;
+            if (!good_tick)
+                continue;
+            tempFOV =
+                GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye,
+                       headPositions[iBestTarget][t].hitboxpos);
+            if (IsMelee)
+            {
+                distance = g_pLocalPlayer->v_Eye.DistTo(
+                    headPositions[iBestTarget][t].origin);
+                if (distance < (float) mindistance)
+                    continue;
+                if (distance < prev_distance_ticks && tempFOV < 90.0f)
+                    prev_distance_ticks = distance, bestTick = t;
+            }
+            else
+            {
+                if (bestFOV > tempFOV)
+                    bestTick = t, bestFOV = tempFOV;
+            }
+        }
+
+        BestTick = bestTick;
+        if (cmd->buttons & IN_ATTACK)
+            cmd->tick_count = headPositions[iBestTarget][bestTick].tickcount;
     }
 }
 void Draw()
@@ -203,31 +189,40 @@ void Draw()
         return;
     if (!draw_bt)
         return;
-    for (int i = 0; i < 32; i++)
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    {
         for (int j = 0; j < ticks; j++)
         {
+            bool good_tick = false;
+            for (int i = 0; i < 12; ++i)
+                if (j == sorted_ticks[i].tick)
+                    good_tick = true;
+            if (!good_tick)
+                continue;
             auto hbpos    = headPositions[i][j].hitboxpos;
             auto tickount = headPositions[i][j].tickcount;
             auto min      = headPositions[i][j].min;
             auto max      = headPositions[i][j].max;
             if (!hbpos.x && !hbpos.y && !hbpos.z)
                 continue;
-            float size = 0.0f;
-            if (abs(max.x - min.x) > abs(max.y - min.y))
-                size = abs(max.x - min.x);
-            else
-                size = abs(max.y - min.y);
             Vector out;
-            if (i == backtracked.first && j == backtracked.second)
+            if (draw::WorldToScreen(hbpos, out))
             {
-                if (draw::WorldToScreen(hbpos, out))
+                float size = 0.0f;
+                if (abs(max.x - min.x) > abs(max.y - min.y))
+                    size = abs(max.x - min.x);
+                else
+                    size = abs(max.y - min.y);
+
+                if (i == iBestTarget && j == BestTick)
                     draw_api::draw_rect(out.x, out.y, size / 2, size / 2,
                                         colors::red);
+                else
+                    draw_api::draw_rect(out.x, out.y, size / 4, size / 4,
+                                        colors::green);
             }
-            else if (draw::WorldToScreen(hbpos, out))
-                draw_api::draw_rect(out.x, out.y, size / 4, size / 4,
-                                    colors::green);
         }
+    }
 #endif
 }
 }

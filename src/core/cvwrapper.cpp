@@ -59,6 +59,10 @@ static CatCommand save_settings(
         }
         for (const auto &i : CatVarList())
         {
+            if (!i)
+                continue;
+            if (!i->GetString())
+                continue;
             if (i->GetBase() != std::string(i->GetString()))
             {
                 file << CON_PREFIX << i->name << " \"" << i->GetString()
@@ -91,6 +95,10 @@ static CatCommand save_settings_complete(
         }
         for (const auto &i : CatVarList())
         {
+            if (!i)
+                continue;
+            if (!i->GetString())
+                continue;
             file << CON_PREFIX << i->name << " \"" << i->GetString() << "\"\n";
         }
         file.close();

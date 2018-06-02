@@ -29,5 +29,12 @@ public:
             self, offsets::PlatformOffset(535, offsets::undefined, 535),
             0)(self);
     }
+    inline static int LaunchGrenade(IClientEntity *self)
+    {
+        typedef int (*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(
+            self, offsets::PlatformOffset(548, offsets::undefined, 548),
+            0)(self);
+    }
 };
 }

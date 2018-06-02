@@ -523,7 +523,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     if (CE_BAD(ent))
         return;
 
-    int classid = ent->m_iClassID();
+    int classid     = ent->m_iClassID();
     EntityType type = ent->m_Type();
     // Grab esp data
     ESPData &ent_data = data[ent->m_IDX];
@@ -757,8 +757,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 rgba_t hp = colors::Transparent(
                     colors::Health(health, healthmax), fg.a);
                 rgba_t border =
-                    ((classid == RCC_PLAYER) &&
-                     IsPlayerInvisible(ent))
+                    ((classid == RCC_PLAYER) && IsPlayerInvisible(ent))
                         ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f)
                         : colors::Transparent(colors::black, fg.a);
                 // Get bar height
@@ -1085,9 +1084,9 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
     {
 
         // Health pack esp
-        if (item_health_packs && (itemtype >= ITEM_HEALTH_SMALL &&
-                                      itemtype <= ITEM_HEALTH_LARGE ||
-                                  itemtype == ITEM_HL_BATTERY))
+        if (item_health_packs &&
+            (itemtype >= ITEM_HEALTH_SMALL && itemtype <= ITEM_HEALTH_LARGE ||
+             itemtype == ITEM_HL_BATTERY))
         {
             if (itemtype == ITEM_HEALTH_SMALL)
                 AddEntityString(ent, "[+]");
@@ -1121,27 +1120,24 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         else if (item_powerups && itemtype >= ITEM_POWERUP_FIRST &&
                  itemtype <= ITEM_POWERUP_LAST)
         {
-            AddEntityString(
-                ent, format(powerups[itemtype - ITEM_POWERUP_FIRST],
-                            " PICKUP"));
+            AddEntityString(ent, format(powerups[itemtype - ITEM_POWERUP_FIRST],
+                                        " PICKUP"));
 
             // TF2C weapon spawner esp
         }
-        else if (item_weapon_spawners &&
-                 itemtype >= ITEM_TF2C_W_FIRST &&
+        else if (item_weapon_spawners && itemtype >= ITEM_TF2C_W_FIRST &&
                  itemtype <= ITEM_TF2C_W_LAST)
         {
             AddEntityString(
-                ent,
-                format(tf2c_weapon_names[itemtype - ITEM_TF2C_W_FIRST],
-                       " SPAWNER"));
+                ent, format(tf2c_weapon_names[itemtype - ITEM_TF2C_W_FIRST],
+                            " SPAWNER"));
             if (CE_BYTE(ent, netvar.bRespawning))
                 AddEntityString(ent, "-- RESPAWNING --");
 
             // Halloween spell esp
         }
-        else if (item_spellbooks && (itemtype == ITEM_SPELL ||
-                                     itemtype == ITEM_SPELL_RARE))
+        else if (item_spellbooks &&
+                 (itemtype == ITEM_SPELL || itemtype == ITEM_SPELL_RARE))
         {
             if (itemtype == ITEM_SPELL)
             {
@@ -1176,9 +1172,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             const std::string &name =
                 (classid == CL_CLASS(CObjectTeleporter)
                      ? "Teleporter"
-                     : (classid == CL_CLASS(CObjectSentrygun)
-                            ? "Sentry Gun"
-                            : "Dispenser"));
+                     : (classid == CL_CLASS(CObjectSentrygun) ? "Sentry Gun"
+                                                              : "Dispenser"));
             int level = CE_INT(ent, netvar.iUpgradeLevel);
             AddEntityString(ent, format("LV ", level, ' ', name));
         }

@@ -120,10 +120,12 @@ uintptr_t CSignature::GetClientSignature(const char *chPattern)
     // we need to remap the address that we got from the pattern search from our
     // mapped file to the actual memory we do this by rebasing the address
     // (subbing the mmapped one and replacing it with the dlopened one.
-    return dwFindPattern(((uintptr_t) module) + textOffset,
-                         ((uintptr_t) module) + textOffset + textSize,
-                         chPattern) -
-           (uintptr_t)(module) + moduleMap->l_addr;
+    uintptr_t patr =
+        dwFindPattern(((uintptr_t) module) + textOffset,
+                      ((uintptr_t) module) + textOffset + textSize, chPattern);
+    if (!patr)
+        return NULL;
+    return patr - (uintptr_t)(module) + moduleMap->l_addr;
 }
 //===================================================================================
 uintptr_t CSignature::GetEngineSignature(const char *chPattern)
@@ -147,10 +149,12 @@ uintptr_t CSignature::GetEngineSignature(const char *chPattern)
     // we need to remap the address that we got from the pattern search from our
     // mapped file to the actual memory we do this by rebasing the address
     // (subbing the mmapped one and adding the dlopened one.
-    return dwFindPattern(((uintptr_t) module) + textOffset,
-                         ((uintptr_t) module) + textOffset + textSize,
-                         chPattern) -
-           (uintptr_t)(module) + moduleMap->l_addr;
+    uintptr_t patr =
+        dwFindPattern(((uintptr_t) module) + textOffset,
+                      ((uintptr_t) module) + textOffset + textSize, chPattern);
+    if (!patr)
+        return NULL;
+    return patr - (uintptr_t)(module) + moduleMap->l_addr;
 }
 //===================================================================================
 uintptr_t CSignature::GetVstdSignature(const char *chPattern)
@@ -174,10 +178,12 @@ uintptr_t CSignature::GetVstdSignature(const char *chPattern)
     // we need to remap the address that we got from the pattern search from our
     // mapped file to the actual memory we do this by rebasing the address
     // (subbing the mmapped one and adding the dlopened one.
-    return dwFindPattern(((uintptr_t) module) + textOffset,
-                         ((uintptr_t) module) + textOffset + textSize,
-                         chPattern) -
-           (uintptr_t)(module) + moduleMap->l_addr;
+    uintptr_t patr =
+        dwFindPattern(((uintptr_t) module) + textOffset,
+                      ((uintptr_t) module) + textOffset + textSize, chPattern);
+    if (!patr)
+        return NULL;
+    return patr - (uintptr_t)(module) + moduleMap->l_addr;
 }
 
 CSignature gSignatures;

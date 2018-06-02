@@ -89,7 +89,7 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     hacks::shared::backtrack::sequences.clear();
 #endif
     hacks::shared::autojoin::queuetime.update();
-    DelayTimer.update();
+    firstcm = true;
 #if not LAGBOT_MODE
     playerlist::Save();
 #endif

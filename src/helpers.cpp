@@ -149,7 +149,7 @@ const char *GetBuildingName(CachedEntity *ent)
 {
     if (!ent)
         return "[NULL]";
-	int classid = ent->m_iClassID();
+    int classid = ent->m_iClassID();
     if (classid == CL_CLASS(CObjectSentrygun))
         return "Sentry";
     if (classid == CL_CLASS(CObjectDispenser))
@@ -513,7 +513,7 @@ bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt,
 Vector GetBuildingPosition(CachedEntity *ent)
 {
     Vector res;
-    res = ent->m_vecOrigin();
+    res         = ent->m_vecOrigin();
     int classid = ent->m_iClassID();
     if (classid == CL_CLASS(CObjectDispenser))
         res.z += 30;
@@ -569,9 +569,10 @@ float DistToSqr(CachedEntity *entity)
 void Patch(void *address, void *patch, size_t length)
 {
     void *page = (void *) ((uintptr_t) address & ~0xFFF);
-    mprotect(page, 0xFFF, PROT_WRITE | PROT_EXEC);
+    logging::Info("mprotect: %d",
+                  mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC));
     memcpy(address, patch, length);
-    mprotect(page, 0xFFF, PROT_EXEC);
+    logging::Info("mprotect reverse: %d", mprotect(page, 0xFFF, PROT_EXEC));
 }
 
 bool IsProjectileCrit(CachedEntity *ent)
@@ -598,7 +599,7 @@ weaponmode GetWeaponMode()
     if (CE_BAD(weapon))
         return weaponmode::weapon_invalid;
     int classid = weapon->m_iClassID();
-    slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(weapon));
+    slot        = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(weapon));
     if (slot == 2)
         return weaponmode::weapon_melee;
     if (slot > 2)
@@ -627,8 +628,7 @@ weaponmode GetWeaponMode()
     {
         return weaponmode::weapon_projectile;
     }
-    else if (classid == CL_CLASS(CTFJar) ||
-             classid == CL_CLASS(CTFJarMilk))
+    else if (classid == CL_CLASS(CTFJar) || classid == CL_CLASS(CTFJarMilk))
     {
         return weaponmode::weapon_throwable;
     }
@@ -695,12 +695,11 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     else if (classid == CL_CLASS(CTFCompoundBow))
     {
         float chargetime =
-            g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
-        rspeed = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) * 800.0) +
-                          1800.0);
-        rgrav = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) *
-                                  -0.40000001) +
-                         0.5);
+            g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
+            CE_FLOAT(weapon, netvar.flChargeBeginTime) *
+                g_GlobalVars->interval_per_tick;
+        rspeed = (fminf(fmaxf(chargetime, 0.0f), 1.0f) * 800.0f) + 1800.0f;
+        rgrav  = (fminf(fmaxf(chargetime, 0.0f), 1.0f) * -0.40000001f) + 0.5f;
     }
     else if (classid == CL_CLASS(CTFBat_Wood))
     {
@@ -1028,13 +1027,14 @@ void PrintChat(const char *fmt, ...)
     CHudBaseChat *chat = (CHudBaseChat *) g_CHUD->FindElement("CHudChat");
     if (chat)
     {
-        std::unique_ptr<char> buf (new char[1024]);
+        std::unique_ptr<char> buf(new char[1024]);
         va_list list;
         va_start(list, fmt);
         vsprintf(buf.get(), fmt, list);
         va_end(list);
         std::unique_ptr<char> str(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s",
-                                         0x5e3252, 0xba3d9a, 0x5e3252, buf.get()));
+                                         0x5e3252, 0xba3d9a, 0x5e3252,
+                                         buf.get()));
         // FIXME DEBUG LOG
         logging::Info("%s", str.get());
         chat->Printf(str.get());

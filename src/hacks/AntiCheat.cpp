@@ -49,7 +49,8 @@ static CatVar skip_local(CV_SWITCH, "ac_ignore_local", "1", "Ignore Local");
 void SetRage(player_info_t info)
 {
     if (autorage)
-        playerlist::AccessData(info.friendsID).state = playerlist::k_EState::RAGE;
+        playerlist::AccessData(info.friendsID).state =
+            playerlist::k_EState::RAGE;
 }
 
 void CreateMove()
