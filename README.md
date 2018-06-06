@@ -1,30 +1,68 @@
 # Cathook Training Software
 ![banner](http://i.imgur.com/w96wdtE.png)
 
-## Discord Server
-[Official Discord Server](https://discord.gg/kvNVNSX)
+[cathook announcements channel in telegram](https://t.me/cathook_cheat)
+
+## Risk of VAC detection
+
+The software Might be VAC detected. Only use it on accounts you won't regret getting VAC banned.
+
+## Community
+You can chat with other cathook users in [my official telegram group](https://t.me/nullifiedcat).
+
+## Important
+
+Right now cathook isn't in its greatest state, a lot of things may not work/crash the game, please open issues on github using [this page](https://github.com/nullworks/cathook/issues).
+
+## Overview
 
 cathook is a training software designed for Team Fortress 2 for Linux. cathook includes some joke features like
 
 * Backpack.TF API integration with playerlist GUI, allowing you to see players' inventory values
-* Always/Never spycrab
 * Ignore Hoovy
-* 100% Casual/Comp coin flip
 * Encrypted chat
-* Emoji ESP
-* Fidget Spinner crosshair
+* Chance to get manually VAC banned by Valve
 
 and a lot of useful features, including
 
-* Anti Backstab with option to say "No" voice command when spy tries to backstab you
-* Heal Arrows exploit (overheal an enemy for 1200 health with single huntsman arrow, you can also do it with buildings!)
+* Anti Backstab with option to use "No" voice command when spy tries to backstab you
 * Extremely customizable spam (you can make spam lines that'll include name of random dead enemy pyro or sniper)
 * Follow Bots
-* Working crit hack
+* Working crit hack (does not work right now (works right now))
 
-[FULL LIST OF FEATURES HERE](https://github.com/nullifiedcat/cathook/wiki/List-of-features)
+[FULL LIST OF FEATURES HERE](https://github.com/nullworks/cathook/wiki/List-of-features) (list might be outdated)
 
 # INSTALLATION
+
+## Automatic: (Ubuntu based only)
+Run in terminal:
+
+* `wget https://raw.githubusercontent.com/nullworks/One-in-all-cathook-install/master/install-all && bash install-all`
+
+## Manual:
+You need CMake to build cathook, CMake should take care of dependencies
+
+Install libglez, libxoverlay and simple-ipc
+
+Clone Cathook (`git clone --recursive https://github.com/nullworks/cathook`)
+
+* `cd <name>`
+* `mkdir build && cd build`
+* `cmake ..`
+* `make && sudo make install`
+* `cd ..`
+
+Repeat until libglez, libxoverlay and simple-ipc are installed
+
+Install cathook
+
+* `mkdir build && cd build`
+* `cmake .. && make`
+* `sudo make data`
+
+Make sure to put the required files in ../requirements/lib*, and cathook in ../cathook.
+
+### Outdated (but might be helpful):
 
 You can use gcc-7 for compiling cathook if you add `-e CC=gcc-7 CXX=g++-7` to make command line
 
@@ -36,21 +74,23 @@ sudo apt update && sudo apt install build-essential software-properties-common -
 Ubuntu other dependencies installation:
 
 ```bash
-sudo apt update && sudo apt install git libssl-dev:i386 libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libfreetype6-dev:i386 -y 
+sudo apt update && sudo apt install git libssl-dev:i386 libboost-all-dev libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libfreetype6-dev:i386 -y 
 ```
 
 
 Arch gcc6 & dependencies installation:
 ```bash
-sudo pacman -U /var/cache/pacman/pkg/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz /var/cache/pacman/pkg/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz /var/cache/pacman/pkg/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz && sudo cp -r /usr/include/c++/6.3.1/ /tmp/ && sudo pacman -S gdb gdb-common glew1.10 glew lib32-glew1.10 rsync lib62-gcc-libs gcc-libs-multilib gcc-multilib --noconfirm && yes | sudo cp -r  /tmp/6.3.1/ /usr/include/c++/
+sudo pacman -U https://archive.archlinux.org/packages/g/gcc-multilib/gcc-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/g/gcc-libs-multilib/gcc-libs-multilib-6.3.1-2-x86_64.pkg.tar.xz https://archive.archlinux.org/packages/l/lib32-gcc-libs/lib32-gcc-libs-6.3.1-2-x86_64.pkg.tar.xz && sudo cp -r /usr/include/c++/6.3.1/ /tmp/ && sudo pacman -S gdb gdb-common glew1.10 glew lib32-glew1.10 rsync lib62-gcc-libs gcc-libs-multilib gcc-multilib --noconfirm && yes | sudo cp -r  /tmp/6.3.1/ /usr/include/c++/
 ```
 
 If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the list of what cathook requires:
 
-* `gcc-6`
-* `g++-6`
-* `gcc-6-multilib`
-* `g++-6-multilib`
+* `cmake-qt-gui` (optional, for easy configuring)
+* `cmake`
+* `gcc-7`
+* `g++-7`
+* `gcc-7-multilib`
+* `g++-7-multilib`
 * `glew`
 * `gdb` (for the injection script, you can use different injector if you want)
 * `libssl-dev:i386`
@@ -58,23 +98,28 @@ If you don't use Ubuntu or Arch (or if Arch script gets outdated), here's the li
 * `libsdl2-dev`
 * `libglew-dev:i386`
 * `libfreetype6-dev:i386`
+* `libboost-all-dev`
 * `rsync` (used for copying shaders/fonts to tf2 data directory, `check-data` script)
 
 
 Cathook installation script:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook && cd cathook && bash build-tf2 && bash check-data /opt/cathook/data
+git clone --recursive https://github.com/nullworks/cathook && cd cathook && bash build-tf2
 ```
 
 **Errors while installing?**
 
 `/usr/include/c++/5/string:38:28: fatal error: bits/c++config.h: No such file or directory`
-You don't have gcc-multilib-6 installed correctly.
+You don't have gcc-7-multilib installed correctly.
+
+Anything related to `glez` or `xoverlay`
+
+Install libglez and libxoverlay.
 
 `src/<any file>: fatal error: mathlib/vector.h: No such file or directory`
 You didn't download Source SDK. **DO NOT DOWNLOAD CATHOOK USING "DOWNLOAD .ZIP" FROM GITHUB. USE git clone --recursive!**
 
-If you are using another distro, make sure to have g++-6, gdb, libc6 and build essentials installed.
+If you are using another distro, make sure to have required dependencies installed.
 
 ## Updating cathook
 Run the `update` script in cathook folder.
@@ -93,6 +138,7 @@ You may also ask someone in our discord server to help you out.
 
 The installation script is as followed:
 ```bash
-git clone --recursive https://github.com/nullifiedcat/cathook-ipc-server && cd cathook-ipc-server && make -j4
+git clone --recursive https://github.com/nullworks/cathook-ipc-server && cd cathook-ipc-server && make -j4
 ```
 To run the Followbot server, run `./bin/cathook-ipc-server`. You can also use `./bin/cathook-ipc-server &>/dev/null &` to run it in background.
+

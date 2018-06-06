@@ -52,22 +52,16 @@
 					"aimbot_hitbox",
 					"aimbot_zoomed",
 					"aimbot_only_when_can_shoot",
-					"aimbot_enable_attack_only",
 					"aimbot_maxrange",
 					"aimbot_slow",
-					"aimbot_slow_smooth",
-					"aimbot_slow_autoshoot",
 					{
 						"type": "list",
 						"name": "Projectile Aimbot Tweaks",
 						"list": [
 							"aimbot_projectile",
-							"aimbot_proj_fovpred",
-							"aimbot_proj_vispred",
 							"aimbot_proj_gravity",
 							"aimbot_proj_speed",
-							"aimbot_huntsman_charge",
-							"aimbot_full_auto_huntsman"
+							"aimbot_huntsman_charge"
 						]
 					}
 				]
@@ -439,31 +433,30 @@
 		"type": "list",
 		"name": "Miscellaneous",
 		"list": [
+			"name",
+			"disconnect_reason",
+			"name_stealer",
+			"bhop_enabled",
+			"nopush_enabled",
+			"noisemaker",
+			"tauntslide_tf2",
+			"anti_afk",
+			"events",
+			"airstuck",
+			"fast_vischeck",
+			"instant_weapon_switch",
+			"fakelag",
+			"skinchanger",
+			"autoqueue",
 			"autotaunt",
 			"autotaunt_chance",
 			"autojoin_team",
 			"autojoin_class",
-			"autoqueue",
-			"events",
-			"airstuck",
-			"instant_weapon_switch",
-			"name",
-			"fakelag",
-			"disconnect_reason",
-			"name_stealer",
 			"minigun_jump",
-			"spycrab",
-			"skinchanger",
-			"bhop_enabled",
-			"noisemaker",
-			"nopush_enabled",
-			"fast_vischeck",
-			"anti_afk",
-			"rollspeedhack",
-			"info",
-			"tauntslide_tf2",
 			"tauntslide",
 			"flashlight",
+			"rollspeedhack",	
+			"info",
 			"request_balance_spam",
 			{
 				"type": "list",
@@ -476,6 +469,7 @@
 					"removecond_taunt",
 					"removecond_bleeding",
 					"removecond_stun",
+					"spycrab",
 					"instant_decloak",
 					"instant_rezoom",
 					"infinite_packs",
@@ -525,6 +519,13 @@
 					"antibackstab_angle",
 					"antibackstab_distance",
 					"antibackstab_silent"
+				]
+			},
+			{
+				"type": "list",
+				"name": "Backtrack",
+				"list": [
+					"backtrack"
 				]
 			},
 			{

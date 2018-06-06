@@ -5,84 +5,136 @@
  *      Author: nullifiedcat
  */
 
-#include "../common.h"
-#include "../hack.h"
-#include "../copypasted/CSignature.h"
+#include "common.hpp"
+#include "hack.hpp"
 
-namespace hacks { namespace shared { namespace autojoin {
+namespace hacks
+{
+namespace shared
+{
+namespace autojoin
+{
 
 /*
  * Credits to Blackfire for helping me with auto-requeue!
  */
 
-CatEnum classes_enum({ "DISABLED", "SCOUT", "SNIPER", "SOLDIER", "DEMOMAN", "MEDIC", "HEAVY", "PYRO", "SPY", "ENGINEER" });
-CatVar autojoin_team(CV_SWITCH, "autojoin_team", "0", "AutoJoin", "Automatically joins a team");
-CatVar preferred_class(classes_enum, "autojoin_class", "0", "AutoJoin class", "You will pick a class automatically");
+static CatEnum classes_enum({ "DISABLED", "SCOUT", "SNIPER", "SOLDIER",
+                              "DEMOMAN", "MEDIC", "HEAVY", "PYRO", "SPY",
+                              "ENGINEER" });
+static CatVar autojoin_team(CV_SWITCH, "autojoin_team", "0", "AutoJoin",
+                            "Automatically joins a team");
+static CatVar preferred_class(classes_enum, "autojoin_class", "0",
+                              "AutoJoin class",
+                              "You will pick a class automatically");
 
-CatVar auto_queue(CV_SWITCH, "autoqueue", "0", "AutoQueue", "Automatically queue in casual matches");
+CatVar auto_queue(CV_SWITCH, "autoqueue", "0", "AutoQueue",
+                  "Automatically queue in casual matches");
 
-const std::string classnames[] = {
-	"scout", "sniper", "soldier", "demoman", "medic", "heavyweapons", "pyro", "spy", "engineer"
-};
+const std::string classnames[] = { "scout",   "sniper", "soldier",
+                                   "demoman", "medic",  "heavyweapons",
+                                   "pyro",    "spy",    "engineer" };
 
-CatCommand debug_startsearch("debug_startsearch", "DEBUG StartSearch", []() {
-	logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(4));
-});
-CatCommand debug_casual("debug_casual", "DEBUG Casual", []() {
-	g_IEngine->ExecuteClientCmd("OpenMatchmakingLobby casual");
-	g_TFGCClientSystem->LoadSearchCriteria();
-	//logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
-});
-
-CatCommand debug_readytosearch("debug_gcstate", "DEBUG GCState", []() {
-	logging::Info("%d", g_TFGCClientSystem->GetState());
-});
-CatCommand debug_abandon("debug_abandon", "DEBUG Abandon", []() {
-	g_TFGCClientSystem->SendExitMatchmaking(true);
-});
-bool UnassignedTeam() {
-	return !g_pLocalPlayer->team or (g_pLocalPlayer->team == TEAM_SPEC);
+bool UnassignedTeam()
+{
+    return !g_pLocalPlayer->team or (g_pLocalPlayer->team == TEAM_SPEC);
 }
 
-bool UnassignedClass() {
-	return g_pLocalPlayer->clazz != int(preferred_class);
+bool UnassignedClass()
+{
+    return g_pLocalPlayer->clazz != int(preferred_class);
 }
 
-void UpdateSearch() {
-	if (!auto_queue) return;
-	if (g_IEngine->IsInGame()) return;
-	static auto last_check = std::chrono::system_clock::now();
-	auto s = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - last_check).count();
-	if (s < 4) return;
+Timer autoqueue_timer{};
+Timer queuetime{};
+Timer req_timer{};
+/*CatVar party_bypass(CV_SWITCH, "party_bypass", "0", "Party Bypass",
+                    "Bypass Party restrictions");*/
+void UpdateSearch()
+{
+    // segfaults for no reason
+    /*static bool calld = false;
+    if (party_bypass && !calld)
+    {
+        static unsigned char patch[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+        uintptr_t party_addr1        = gSignatures.GetClientSignature(
+            "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 ? 8B 5D ? 8B 55 ? 89 85 ? ? "
+            "? ? 65 A1 ? ? ? ? 89 45 ? 31 C0 8B 45");
+        static unsigned char patch2[] = { 0x90, 0xE9 };
+        uintptr_t party_addr2         = gSignatures.GetClientSignature(
+            "55 89 E5 57 56 53 81 EC ? ? ? ? C7 85 ? ? ? ? ? ? ? ? C7 85 ? ? ? "
+            "? ? ? ? ? 8B 45 ? 89 85 ? ? ? ? 65 A1 ? ? ? ? 89 45 ? 31 C0 A1 ? "
+            "? ? ? 85 C0 0F 84");
+        static unsigned char patch3[] = { 0x90, 0x90 };
+        uintptr_t party_addr3         = gSignatures.GetClientSignature(
+            "8D 65 ? 5B 5E 5F 5D C3 31 F6 8B 87");
+        static unsigned char patch4[] = { 0x90, 0xE9 };
+        static unsigned char patch5[] = { 0x90, 0x90, 0x90, 0x90 };
+        uintptr_t party_addr4         = gSignatures.GetClientSignature(
+            "55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 75 ? 8B 7D ? 89 1C 24 89 74 24
+    ? 89 7C 24 ? E8 ? ? ? ? 84 C0 74 ? 83 C4");
+        if (!party_addr1 || !party_addr2 || !party_addr3 || !party_addr4)
+            logging::Info("Invalid Party signature");
+        else
+        {
+            Patch((void *) (party_addr1 + 0x41), (void *) patch, sizeof(patch));
+            Patch((void *) (party_addr2 + 0x9FA), (void *) patch2,
+                  sizeof(patch2));
+            Patch((void *) (party_addr3 + 0xC5), (void *) patch3,
+                  sizeof(patch3));
+            Patch((void *) (party_addr3 + 0xF0), (void *) patch4,
+                  sizeof(patch4));
+            Patch((void *) (party_addr4 + 0x7F), (void *) patch5,
+                  sizeof(patch5));
+            calld = true;
+        }
+    }*/
+    if (!auto_queue)
+        return;
+    if (g_IEngine->IsInGame())
+        return;
 
-	if (g_TFGCClientSystem->GetState() == 6) {
-		logging::Info("Sending MM request");
-		g_TFGCClientSystem->RequestSelectWizardStep(4);
-	} else if (g_TFGCClientSystem->GetState() == 5) {
-		g_IEngine->ExecuteClientCmd("OpenMatchmakingLobby casual");
-		g_TFGCClientSystem->LoadSearchCriteria();
-		//logging::Info("%d", g_TFGCClientSystem->RequestSelectWizardStep(6));
-	}
-
-	last_check = std::chrono::system_clock::now();
+    re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
+    if (g_pUserCmd && gc && gc->BConnectedToMatchServer(false))
+        tfmm::queue_leave();
+    if (autoqueue_timer.test_and_set(60000))
+    {
+        if (!gc->BConnectedToMatchServer(false) &&
+            queuetime.test_and_set(10 * 1000 * 60))
+            tfmm::queue_leave();
+        if (gc && !gc->BConnectedToMatchServer(false))
+        {
+            logging::Info("Starting queue");
+            tfmm::queue_start();
+        }
+    }
+    if (req_timer.test_and_set(1800000))
+    {
+        logging::Info("Starting queue");
+        tfmm::queue_start();
+    }
 }
 
-void Update() {
-	static auto last_check = std::chrono::system_clock::now();
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_check).count();
-
-	if (ms < 500) {
-		return;
-	}
-
-	if (autojoin_team and UnassignedTeam()) {
-		hack::ExecuteCommand("jointeam auto");
-	} else if (preferred_class and UnassignedClass()) {
-		if (int(preferred_class) < 10)
-		g_IEngine->ExecuteClientCmd(format("join_class ", classnames[int(preferred_class) - 1]).c_str());
-	}
-
-	last_check = std::chrono::system_clock::now();
+Timer timer{};
+void Update()
+{
+#if not LAGBOT_MODE
+    if (timer.test_and_set(500))
+    {
+        if (autojoin_team and UnassignedTeam())
+        {
+            hack::ExecuteCommand("jointeam auto");
+        }
+        else if (preferred_class and UnassignedClass())
+        {
+            if (int(preferred_class) < 10)
+                g_IEngine->ExecuteClientCmd(
+                    format("join_class ", classnames[int(preferred_class) - 1])
+                        .c_str());
+        }
+    }
+#endif
 }
-
-}}}
+}
+}
+}

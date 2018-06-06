@@ -5,34 +5,70 @@
  *      Author: nullifiedcat
  */
 
-#include "../common.h"
-#include "../copypasted/CSignature.h"
+#include "common.hpp"
+#include "Backtrack.hpp"
 
-namespace hacks { namespace tf2 { namespace autobackstab {
+namespace hacks
+{
+namespace tf2
+{
+namespace autobackstab
+{
 
-static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab", "Does not depend on triggerbot!");
-
-// TODO improve
-void CreateMove() {
-	if (!enabled) return;
-	if (g_pLocalPlayer->weapon()->m_iClassID != CL_CLASS(CTFKnife)) return;
-	trace_t trace;
-	IClientEntity* weapon = RAW_ENT(LOCAL_W);
-
-	typedef bool(*IsBehindAndFacingTarget_t)(IClientEntity*, IClientEntity*);
-	static auto IsBehindAndFacingTarget_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 5C 8B 45 08 8B 75 0C 89 04 24 E8 ? ? ? ? 85 C0 89 C3 74 0F 8B 00 89 1C 24 FF 90 E0 02 00 00 84 C0");
-	static auto IsBehindAndFacingTarget = reinterpret_cast<IsBehindAndFacingTarget_t>(IsBehindAndFacingTarget_addr);
-
-	// 515 = DoSwingTrace
-	// FIXME offset
-	if (vfunc<bool(*)(IClientEntity*, trace_t*)>(weapon, 515)(weapon, &trace)) {
-		if (trace.m_pEnt && reinterpret_cast<IClientEntity*>(trace.m_pEnt)->GetClientClass()->m_ClassID == RCC_PLAYER) {
-			if (NET_INT(trace.m_pEnt, netvar.iTeamNum) != g_pLocalPlayer->team) {
-				if (IsBehindAndFacingTarget(weapon, reinterpret_cast<IClientEntity*>(trace.m_pEnt)))
-					g_pUserCmd->buttons |= IN_ATTACK;
-			}
-		}
-	}
+// pPaste, thanks to F1ssi0N
+const Vector GetWorldSpaceCenter(CachedEntity *ent)
+{
+    Vector vMin, vMax;
+    RAW_ENT(ent)->GetRenderBounds(vMin, vMax);
+    Vector vWorldSpaceCenter = RAW_ENT(ent)->GetAbsOrigin();
+    vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
+    return vWorldSpaceCenter;
 }
 
-}}}
+static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
+                      "Does not depend on triggerbot!");
+static CatVar value(CV_INT, "autobackstab_range", "75.0f",
+                    "Set Detection Distance to this much");
+bool found;
+// TODO improve
+void CreateMove()
+{
+    if (!enabled)
+        return;
+    if (!CE_GOOD(LOCAL_E))
+        return;
+    if (!LOCAL_E->m_bAlivePlayer())
+        return;
+    if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
+        return;
+    if (CE_BYTE(g_pLocalPlayer->weapon(), netvar.m_bReadyToBackstab))
+        g_pUserCmd->buttons |= IN_ATTACK;
+    else
+    {
+        if (!hacks::shared::backtrack::enable)
+            return;
+        if (hacks::shared::backtrack::iBestTarget == -1)
+            return;
+        int iBestTarget = hacks::shared::backtrack::iBestTarget;
+        int BestTick    = hacks::shared::backtrack::BestTick;
+
+        float scr =
+            abs(g_pLocalPlayer->v_OrigViewangles.y -
+                hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
+                    .viewangles);
+
+        if (scr < 40.0f &&
+            hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
+                    .origin.DistTo(g_pLocalPlayer->v_Eye) <=
+                re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)))
+        {
+            g_pUserCmd->tick_count =
+                hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
+                    .tickcount;
+            g_pUserCmd->buttons |= IN_ATTACK;
+        }
+    }
+}
+}
+}
+}

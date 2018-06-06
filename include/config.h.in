@@ -1,0 +1,17 @@
+#pragma once
+
+#define OFF 0
+#define ON 1
+
+#define GAME_SPECIFIC @GameSpecific@
+#define GAME @Game@
+#define ENABLE_VISUALS @EnableVisuals@
+#define LAGBOT_MODE @LagbotMode@
+#define EXTERNAL_DRAWING @ExternalDrawing@
+#define ENABLE_GUI @EnableGUI@
+#define ENABLE_IPC @EnableIPC@
+#define DATA_PATH "@DataPath@"
+#define ENABLE_VAC_BYPASS @VACBypass@
+#define ENABLE_TEXTMODE_STDIN @EnableTextmodeStdin@
+#define ENABLE_NULL_GRAPHICS @EnableNullGraphics@
+#define TEXTMODE @Textmode@
