@@ -36,12 +36,12 @@ FILENAME=$(shuf -n 1 build_names)
 
 # Create directory if it doesn't exist
 if [ ! -d "/usr/lib64" ]; then
-	sudo mkdir /usr/lib64
+  sudo mkdir /usr/lib64
 fi
 
 # In case this file exists, get another one. ( checked it works )
 while [ -f "/usr/lib64/${FILENAME}" ]; do
-	FILENAME=$(shuf -n 1 build_names)
+  FILENAME=$(shuf -n 1 build_names)
 done
 
 echo $FILENAME > build_id
