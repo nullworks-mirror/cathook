@@ -44,7 +44,7 @@ while [ -f "/usr/lib64/${FILENAME}" ]; do
   FILENAME=$(shuf -n 1 build_names)
 done
 
-echo $FILENAME > build_id
+# echo $FILENAME > build_id # For detaching
 
 cp "bin/libcathook.so" "/usr/lib64/${FILENAME}"
 
