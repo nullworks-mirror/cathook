@@ -1,9 +1,0 @@
-image: registry.gitlab.com/nullworks/cathook-ci/ubuntu-cat-dependencies:build
-variables:
-  DOCKER_DRIVER: overlay2
-build:
-    stage: build
-    before_script:
-        - "git submodule update --init --recursive"
-    script:
-        - "mkdir build; cd build; cmake ..; make; cd .."
