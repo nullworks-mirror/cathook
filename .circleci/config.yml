@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: registry.gitlab.com/nullworks/cathook-ci-docker/ubuntu-cat-dependencies:build
+    steps:
+      - checkout
+      - run:
+          name: compile-cathook
+          script: "git submodule update --init --recursive; mkdir build; cd build; cmake ..; make; cd .."
