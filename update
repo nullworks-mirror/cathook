@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-sudo echo Elevated
 #Get updated source code
 git fetch;git pull origin;git submodule update --remote --recursive
 #Update cathook
