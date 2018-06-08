@@ -1,4 +1,8 @@
-# UNFINISHED - DO NOT USE.
+# Current dependencies:
+#   Git
+#   OpenSSL (maybe should be removed, only used by backpack.tf esp)
+#   SDL2
+#   GLEW
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type")
@@ -14,7 +18,6 @@ set(GameSpecific 1 CACHE BOOL "Build for specific target game (As opposed to uni
 set(Game "tf2" CACHE STRING "Target game")
 set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supported game types")
 set_property(CACHE Game PROPERTY STRINGS ${GameValues})
-
 
 set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
 set(LagbotMode 0 CACHE BOOL "Build light cathook made for lagbots")
@@ -54,27 +57,20 @@ find_library(ValveLibraryTier0   NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" N
 find_library(ValveLibraryVStdLib NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 
 if(EnableIPC)
-    find_package(SimpleIPC REQUIRED)
-    get_target_property(SimpleIPC_INCLUDE_DIRS SimpleIPC INTERFACE_INCLUDE_DIRECTORIES)
-    target_include_directories(cathook PRIVATE "${SimpleIPC_INCLUDE_DIRS}")
+    add_subdirectory(simple-ipc)
+    target_link_libraries(cathook SimpleIPC)
 endif()
 
 if(EnableVisuals)
-    find_package(glez REQUIRED)
-    get_target_property(glez_INCLUDE_DIRS glez INTERFACE_INCLUDE_DIRECTORIES)
+    add_subdirectory(libglez)
     find_package(SDL2 REQUIRED)
     find_package(GLEW REQUIRED)
     if(ExternalDrawing)
-        find_package(xoverlay REQUIRED)
-        get_target_property(xoverlay_INCLUDE_DIRS xoverlay INTERFACE_INCLUDE_DIRECTORIES)
-        target_include_directories(cathook PRIVATE
-                "${xoverlay_INCLUDE_DIRS}")
+        add_subdirectory(libxoverlay)
         target_link_libraries(cathook xoverlay)
     endif()
-    target_include_directories(cathook PRIVATE
-            "${SDL2_INCLUDE_DIRS}"
-            "${glez_INCLUDE_DIRS}")
-    target_link_libraries(cathook ${ValveLibrarySDL2} glez ${GLEW_LIBRARIES})
+    target_include_directories(cathook PRIVATE "${SDL2_INCLUDE_DIRS}")
+    target_link_libraries(cathook glez ${ValveLibrarySDL2} ${GLEW_LIBRARIES})
 endif()
 
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
