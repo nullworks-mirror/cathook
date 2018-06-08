@@ -1,6 +1,6 @@
 version: 2
 jobs:
-    compile_cathook:
+    build:
       docker:
         - image: registry.gitlab.com/nullworks/cathook-ci-docker/ubuntu-cat-dependencies:build
       steps:
