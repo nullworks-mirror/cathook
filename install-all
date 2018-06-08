@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 rm ../install-all
 
 #
@@ -11,24 +13,6 @@ sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sud
 #
 
 git fetch;git pull origin;git submodule update --remote --recursive
-
-#
-# Install libglez
-#
-
-cd libglez;mkdir build;cd build;cmake ..;make;sudo make install;cd ..;cd ..
-
-#
-# Install libxoverlay
-#
-
-cd libxoverlay;mkdir build;cd build;cmake ..;make;sudo make install;cd ..;cd ..
-
-#
-# Install Simple-ipc
-#
-
-cd simple-ipc;mkdir build;cd build;cmake ..;make;sudo make install;cd ..;cd ..
 
 #
 # Build cathook
