@@ -11,7 +11,7 @@
 
 #if ENABLE_IPC
 
-#include "ipcb.hpp"
+#include <SimpleIPC/ipcb.hpp>
 #include "pthread.h"
 #include <time.h>
 
