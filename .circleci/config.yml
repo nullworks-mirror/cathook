@@ -7,4 +7,4 @@ jobs:
         - checkout
         - run: 
             name: "Compiling cathook"
-            command: git submodule update --init --recursive; mkdir build; cd build; cmake ..; make; cd ..
+            command: git submodule update --init --recursive; mkdir build; cd build; cmake ..; make -j$(grep -c '^processor' /proc/cpuinfo); cd ..
