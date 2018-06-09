@@ -1,6 +1,6 @@
 # Cathook Training Software
 ![banner](http://i.imgur.com/w96wdtE.png)
-[![pipeline status](https://gitlab.com/nullworks/cathook-ci/badges/master/pipeline.svg)](https://gitlab.com/nullworks/cathook-ci/commits/master)
+[![CircleCI](https://circleci.com/gh/nullworks/cathook.svg?style=svg)](https://circleci.com/gh/nullworks/cathook)
 
 
 [cathook announcements channel in telegram](https://t.me/cathook_cheat)

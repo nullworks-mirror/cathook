@@ -1,0 +1,10 @@
+version: 2
+jobs:
+    build:
+      docker:
+        - image: registry.gitlab.com/nullworks/cathook-ci-docker/ubuntu-cat-dependencies:build
+      steps:
+        - checkout
+        - run: 
+            name: "Compiling cathook"
+            command: git submodule update --init --recursive; mkdir build; cd build; cmake ..; make -j$(grep -c '^processor' /proc/cpuinfo); cd ..
