@@ -8,19 +8,20 @@ namespace lightesp
 {
 
 
-CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
-              "For legit play only as of right now.");
-Vector hitp[256];
-Vector minp[256];
-Vector maxp[256];
+CatVar enable(CV_SWITCH, "lightesp", "0", "Enable LightESP",
+              "Lightweight ESP. Only shows head.");
+Vector hitp[32];
+Vector minp[32];
+Vector maxp[32];
 
 void run() {
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *pEntity = ENTITY(i);
-        if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
+        if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer()) {
             hitp[i] = {0, 0, 0};
             continue;
+        }
         if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
             continue;
         if (pEntity->m_Type() != ENTITY_PLAYER)
@@ -37,6 +38,8 @@ void run() {
 }
 void draw() {
     #if ENABLE_VISUALS
+    if (!enable)
+        return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++) {
         auto hitboxpos = hitp[i];
         auto min = minp[i];
