@@ -26,6 +26,7 @@ if(NOT LagbotMode)
         "${CMAKE_CURRENT_LIST_DIR}/KillSay.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Killstreak.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/LagExploit.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/LightESP.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Misc.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Noisemaker.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.cpp"
