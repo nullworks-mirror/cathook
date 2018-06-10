@@ -1,4 +1,4 @@
-#include "common.hpp"
+#include "LightESP.hpp"
 
 namespace hacks
 {
@@ -22,18 +22,15 @@ void run() {
             hitp[i] = {0, 0, 0};
             continue;
         }
-        if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
+        if (pEntity->m_iTeam() == LOCAL_E->m_iTeam() && playerlist::IsDefault(pEntity)) {
+            hitp[i] = {0, 0, 0};
             continue;
-        if (pEntity->m_Type() != ENTITY_PLAYER)
-            continue;
+        }
         if (!pEntity->hitboxes.GetHitbox(0))
             continue;
-        Vector hitboxpos = pEntity->hitboxes.GetHitbox(0)->center;
-        Vector min       = pEntity->hitboxes.GetHitbox(0)->min;
-        Vector max       = pEntity->hitboxes.GetHitbox(0)->max;
-        hitp[i] = hitboxpos;
-        minp[i] = min;
-        maxp[i] = max;
+        hitp[i] = pEntity->hitboxes.GetHitbox(0)->center;
+        minp[i] = pEntity->hitboxes.GetHitbox(0)->min;
+        maxp[i] = pEntity->hitboxes.GetHitbox(0)->max;
     }
 }
 void draw() {
@@ -41,6 +38,9 @@ void draw() {
     if (!enable)
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++) {
+        CachedEntity *pEntity = ENTITY(i);
+        if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
+            continue;
         auto hitboxpos = hitp[i];
         auto min = minp[i];
         auto max = maxp[i];
@@ -57,10 +57,17 @@ void draw() {
                 size = abs(max.y - min.y);
 
                 draw_api::draw_rect(out.x, out.y, size / 4, size / 4,
-                                    colors::green);
+                                    hacks::shared::lightesp::LightESPColor(pEntity)); //hacks::shared::lightesp::LightESPColor(pEntity)
         }
     }
 #endif
 }
 
+rgba_t LightESPColor(CachedEntity *ent)
+{
+    if (!playerlist::IsDefault(ent)) {
+        return playerlist::Color(ent);
+    }
+    return colors::green;
+}
 }}}
