@@ -48,6 +48,8 @@ int NearbyEntities()
 }
 void CreateMove()
 {
+    if (!enabled)
+        return;
     if (CE_BAD(LOCAL_E))
         return;
     if (!HasWeapon(LOCAL_E, 59))
