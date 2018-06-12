@@ -46,14 +46,14 @@ done
 
 # echo $FILENAME > build_id # For detaching
 
-cp "bin/libcathook.so" "/usr/lib64/${FILENAME}"
+sudo cp "bin/libcathook.so" "/usr/lib64/${FILENAME}"
 
 echo loading "$FILENAME" to "$proc"
 
 sudo killall -19 steam
 sudo killall -19 steamwebhelper
 
-gdb -n -q -batch \
+sudo gdb -n -q -batch \
   -ex "attach $proc" \
   -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
   -ex "call \$dlopen(\"/usr/lib64/$FILENAME\", 1)" \

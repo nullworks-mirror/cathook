@@ -52,20 +52,18 @@ void CreateMove()
         return;
     if (CE_BAD(LOCAL_E))
         return;
-    if (!HasWeapon(LOCAL_E, 59))
-        return;
-    if (CE_INT(LOCAL_E, netvar.iHealth) < 30 && NearbyEntities() > 2)
+    if (CE_INT(LOCAL_E, netvar.iHealth) < 30 && NearbyEntities() > 1)
         g_pUserCmd->buttons |= IN_ATTACK2;
     for (int i = 0; i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
             continue;
-        if (!IsProjectile(ent))
+        if (!IsProjectile(ent) && !ent->m_bGrenadeProjectile())
             continue;
-        if (ent->m_bCritProjectile())
+        if (ent->m_bCritProjectile() && ent->m_flDistance() <= 1000.0f)
             g_pUserCmd->buttons |= IN_ATTACK2;
-        if (ent->m_flDistance() < 100.0f)
+        if (ent->m_flDistance() < 300.0f)
             g_pUserCmd->buttons |= IN_ATTACK2;
     }
 }

@@ -146,7 +146,6 @@ struct offsets
     {
         return PlatformOffset(466, 0, 466);
     }
-
     static constexpr uint32_t lastoutgoingcommand()
     {
         return PlatformOffset(19228, undefined, undefined);
@@ -154,10 +153,6 @@ struct offsets
     static constexpr uint32_t m_nOutSequenceNr()
     {
         return PlatformOffset(8, undefined, undefined);
-    }
-    static constexpr uint32_t ProcessMovement()
-    {
-        return PlatformOffset(1, undefined, 1);
     }
     static constexpr uint32_t m_NetChannel()
     {

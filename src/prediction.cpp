@@ -246,8 +246,8 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
     bestpos.z += (400 * besttime * besttime * gravitymod);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result = bestpos + hitbox_offset;
-    logging::Info("[Pred][%d] delta: %.2f   %.2f   %.2f", result.x - origin.x,
-                  result.y - origin.y, result.z - origin.z);
+    /*logging::Info("[Pred][%d] delta: %.2f   %.2f   %.2f", result.x - origin.x,
+                  result.y - origin.y, result.z - origin.z);*/
     return result;
 }
 

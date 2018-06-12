@@ -70,7 +70,9 @@ enum EConnectionFlags
     CF_CAPPED_2 = (1 << 6),
     CF_CAPPED_3 = (1 << 7),
     CF_CAPPED_4 = (1 << 8),
-    CF_CAPPED_5 = (1 << 9)
+    CF_CAPPED_5 = (1 << 9),
+
+	CF_STICKYBOMB = (1 << 10)
 };
 
 struct connection_s
@@ -643,6 +645,10 @@ std::string DescribeConnection(index_t node, connection conn)
         {
             extra += "H";
         }
+        if (c.flags & CF_STICKYBOMB)
+        {
+        	extra += "S";
+        }
     }
     std::string result =
         format(node, ' ', (broken ? "-x>" : (oneway ? "-->" : "<->")), ' ',
@@ -689,6 +695,27 @@ CatCommand c_toggle_cf_health(
                 c.flags &= ~CF_LOW_HEALTH;
             else
                 c.flags |= CF_LOW_HEALTH;
+        }
+    });
+CatCommand c_toggle_cf_sticky(
+    "wb_conn_sticky",
+    "Toggle 'Sticky' flag on connection from ACTIVE to CLOSEST node", []() {
+        auto a = state::active();
+        auto b = state::closest();
+        if (not(a and b))
+            return;
+        for (connection i = 0; i < MAX_CONNECTIONS; i++)
+        {
+            auto &c = a->connections[i];
+            if (c.free())
+                continue;
+            if (c.node != state::closest_node)
+                continue;
+            // Actually flip the flag
+            if (c.flags & CF_STICKYBOMB)
+                c.flags &= ~CF_STICKYBOMB;
+            else
+                c.flags |= CF_STICKYBOMB;
         }
     });
 // Displays all info about closest node and its connections
@@ -809,7 +836,7 @@ index_t FindNearestNode(bool traceray)
 
     return r_node;
 }
-
+int begansticky = 0;
 index_t SelectNextNode()
 {
     if (not state::node_good(state::active_node))
@@ -833,8 +860,45 @@ index_t SelectNextNode()
             {
                 return n.connections[i].node;
             }
-            if (not(n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)))
+            if (not(n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)) && not(n.connections[i].flags & CF_STICKYBOMB))
                 chance.push_back(n.connections[i].node);
+            if ((n.connections[i].flags & CF_STICKYBOMB) && g_pLocalPlayer->clazz == tf_demoman)
+            {
+            	state::node_good(n.connections[i].node);
+            	if (IsVectorVisible(state::nodes[n.connections[i].node].xyz(), g_pLocalPlayer->v_Eye) && g_pLocalPlayer->v_Eye.DistTo(state::nodes[n.connections[i].node].xyz()) < 400.0f)
+            	{
+            		if (re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)) != 1)
+            		{
+            			begansticky = 0;
+            			hack::ExecuteCommand("slot1");
+            		}
+            		else if (CanShoot())
+            		{
+            			 Vector tr = (state::nodes[n.connections[i].node].xyz() - g_pLocalPlayer->v_Eye);
+            			 Vector angles;
+            			 VectorAngles(tr, angles);
+            			 // Clamping is important
+            			 fClampAngle(angles);
+            			 g_pLocalPlayer->bUseSilentAngles = true;
+            		        float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+            		        float chargetime  = g_GlobalVars->curtime - chargebegin;
+
+            		        // Release Sticky if > chargetime
+            		        if ((chargetime >= 0.1f) && begansticky > 3)
+            		        {
+            		            g_pUserCmd->buttons &= ~IN_ATTACK;
+            		            hacks::shared::antiaim::SetSafeSpace(3);
+            		            begansticky = 0;
+            		        }
+            		        // Else just keep charging
+            		        else
+            		        {
+            		            g_pUserCmd->buttons |= IN_ATTACK;
+            		            begansticky++;
+            		        }
+            		}
+            	}
+            }
         }
     }
     if (not chance.empty())

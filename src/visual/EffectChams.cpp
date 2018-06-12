@@ -51,6 +51,9 @@ static CatVar chamsself(CV_SWITCH, "chams_self", "0", "Enable chams on self",
 static CatVar rainbow(CV_SWITCH, "chams_self_rainbow", "1",
                       "Enable rainbow chams on self",
                       "Only visible in thirdperson!");
+static CatVar
+    disco_chams(CV_SWITCH, "chams_disco", "0", "Disco chams",
+                "Constantly change color of the chams on all players");
 static CatVar chamsteam(CV_SWITCH, "chams_self_team", "0", "Team chams color");
 static CatVar chamsR(CV_INT, "chams_self_r", "0", "Self chams red", "", 0, 255);
 static CatVar chamsG(CV_INT, "chams_self_g", "0", "Self chams green", "", 0,
@@ -108,9 +111,68 @@ void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
 {
     data[ent->m_IDX] = color;
 }
+Timer t{};
+int prevcolor = -1;
 rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
     CachedEntity *ent = ENTITY(entity->entindex());
+    if (disco_chams)
+    {
+        static rgba_t disco = { 0, 0, 0, 0 };
+        if (t.test_and_set(200))
+        {
+            int color = rand() % 20;
+            while (color == prevcolor)
+                color = rand() % 20;
+            prevcolor = color;
+            switch (color)
+            {
+            case 2:
+                disco = colors::pink;
+                break;
+            case 3:
+                disco = colors::red;
+                break;
+            case 4:
+                disco = colors::blu;
+                break;
+            case 5:
+                disco = colors::red_b;
+                break;
+            case 6:
+                disco = colors::blu_b;
+                break;
+            case 7:
+                disco = colors::red_v;
+                break;
+            case 8:
+                disco = colors::blu_v;
+                break;
+            case 9:
+                disco = colors::red_u;
+                break;
+            case 10:
+                disco = colors::blu_u;
+                break;
+            case 0:
+            case 1:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+                float color1 = rand() % 256;
+                float color2 = rand() % 256;
+                float color3 = rand() % 256;
+                disco        = { color1, color2, color3, 255.0f };
+            }
+        }
+        return disco;
+    }
     if (data[entity->entindex()])
     {
         data[entity->entindex()] = false;
