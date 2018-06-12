@@ -198,10 +198,6 @@ static const std::string list_hl2dm = R"(
 		"glow_medkits"
 		"glow_ammo"
 	]
-	"LightESP" [
-		"LightESP Menu"
-		"lightesp_enabled"
-	]
 	"GUI" [
 		"GUI Settings"
 		"logo"
@@ -570,6 +566,10 @@ static const std::string list_tf2 = R"(
 			"glow_self_g"
 			"glow_self_b"
 			]
+			]
+			"LightESP" [
+			"LightESP Menu"
+			"lightesp_enabled"
 			]
 			"Colors" [
 			"Colors Menu"
