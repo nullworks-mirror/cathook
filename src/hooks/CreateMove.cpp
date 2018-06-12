@@ -333,16 +333,16 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E),
                                                        g_pUserCmd);
             {
-                PROF_SECTION(CM_backtracc);
-                hacks::shared::backtrack::Run();
-            }
-            {
                 PROF_SECTION(CM_lightesp);
                 hacks::shared::lightesp::run();
             }
             {
                 PROF_SECTION(CM_aimbot);
                 hacks::shared::aimbot::CreateMove();
+            }
+            {
+                PROF_SECTION(CM_backtracc);
+                hacks::shared::backtrack::Run();
             }
             IF_GAME(IsTF2())
             {

@@ -95,24 +95,25 @@ void UpdateSearch()
         return;
 
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
-    if (g_pUserCmd && gc && gc->BConnectedToMatchServer(false))
+    if (g_pUserCmd && gc && gc->BConnectedToMatchServer(false) &&
+        gc->BHaveLiveMatch())
         tfmm::queue_leave();
-    if (autoqueue_timer.test_and_set(60000))
-    {
-        if (!gc->BConnectedToMatchServer(false) &&
-            queuetime.test_and_set(10 * 1000 * 60))
-            tfmm::queue_leave();
-        if (gc && !gc->BConnectedToMatchServer(false))
-        {
-            logging::Info("Starting queue");
-            tfmm::queue_start();
-        }
-    }
-    if (req_timer.test_and_set(1800000))
+    if (!gc->BConnectedToMatchServer(false) &&
+        queuetime.test_and_set(10 * 1000 * 60) && !gc->BHaveLiveMatch())
+        tfmm::queue_leave();
+    if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch())
     {
         logging::Info("Starting queue");
         tfmm::queue_start();
     }
+#if LAGBOT_MODE
+    if (req_timer.test_and_set(1800000))
+    {
+        logging::Info("Stuck in queue, segfaulting");
+        *(int *) nullptr;
+        exit(1);
+    }
+#endif
 }
 
 Timer timer{};

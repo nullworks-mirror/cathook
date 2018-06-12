@@ -30,6 +30,7 @@ struct AimbotCalculatedData_s
 // Functions used to calculate aimbot data, and if already calculated use it
 const Vector &PredictEntity(CachedEntity *entity);
 bool VischeckPredictedEntity(CachedEntity *entity);
+bool BacktrackVisCheck(CachedEntity *entity);
 
 // Variable used to tell when the aimbot has found a target
 extern bool foundTarget;
