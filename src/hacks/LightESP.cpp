@@ -16,6 +16,9 @@ bool drawEsp[32];
 
 void run()
 {
+#if ENABLE_VISUALS
+    if (!enable)
+        return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *pEntity = ENTITY(i);
@@ -37,6 +40,7 @@ void run()
         maxp[i]    = pEntity->hitboxes.GetHitbox(0)->max;
         drawEsp[i] = true;
     }
+#endif
 }
 void draw()
 {
