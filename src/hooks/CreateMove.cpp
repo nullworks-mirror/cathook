@@ -8,7 +8,6 @@
 #include "common.hpp"
 #include "hack.hpp"
 #include "MiscTemporary.hpp"
-
 #include <link.h>
 #include <hacks/hacklist.hpp>
 
@@ -336,6 +335,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             {
                 PROF_SECTION(CM_backtracc);
                 hacks::shared::backtrack::Run();
+            }
+            {
+                PROF_SECTION(CM_lightesp);
+                hacks::shared::lightesp::run();
             }
             {
                 PROF_SECTION(CM_aimbot);

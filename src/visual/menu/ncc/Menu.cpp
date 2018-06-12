@@ -567,6 +567,10 @@ static const std::string list_tf2 = R"(
 			"glow_self_b"
 			]
 			]
+			"LightESP" [
+			"LightESP Menu"
+			"lightesp_enabled"
+			]
 			"Colors" [
 			"Colors Menu"
 			"gui_rainbow"

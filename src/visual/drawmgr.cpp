@@ -145,6 +145,11 @@ void DrawCheatVisuals()
         }
         IF_GAME(IsTF2())
         {
+            PROF_SECTION(DRAW_lightesp);
+            hacks::shared::lightesp::draw();
+        }
+        IF_GAME(IsTF2())
+        {
             PROF_SECTION(DRAW_healarrows);
             hacks::tf2::healarrow::Draw();
         }
