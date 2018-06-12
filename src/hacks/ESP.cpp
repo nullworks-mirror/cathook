@@ -25,7 +25,7 @@ static CatVar box_corner_size(CV_INT, "esp_box_corner_size", "10",
                               "Corner Size");
 static CatVar box_3d_player(CV_SWITCH, "esp_3d_players", "0",
                             "Draw 3D box over players");
-static CatVar box_3d_building(CV_SWITCH, "esp_3d_buildings", "1",
+static CatVar box_3d_building(CV_SWITCH, "esp_3d_buildings", "0",
                               "Draw 3D box over buildings");
 // Tracers
 static CatEnum tracers_enum({ "OFF", "CENTER", "BOTTOM" });
