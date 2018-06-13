@@ -137,6 +137,13 @@ static CatVar
                        "Set it to 0.01 if you want to shoot as soon as you "
                        "start pulling the arrow",
                        0.01f, 1.0f);
+static CatVar
+    sticky_autoshoot(CV_FLOAT, "aimbot_sticky_charge", "0.5",
+                     "Sticky autoshoot",
+                     "Minimum charge for autoshooting with Pipebomb Launcher.\n"
+                     "Set it to 0.01 if you want to shoot as soon as you "
+                     "start Charging",
+                     0.01f, 4.0f);
 static CatVar miss_chance(CV_FLOAT, "aimbot_miss_chance", "0", "Miss chance",
                           "From 0 to 1. Aimbot will NOT aim in these % cases",
                           0.0f, 1.0f);
@@ -268,6 +275,30 @@ void CreateMove()
 
             // Not release type weapon
         }
+        else if (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
+        {
+            float chargebegin =
+                *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+            float chargetime = g_GlobalVars->curtime - chargebegin;
+
+            DoAutoshoot();
+            static bool currently_charging_pipe = false;
+
+            // Grenade started charging
+            if (chargetime < 6.0f && chargetime)
+                currently_charging_pipe = true;
+
+            // Grenade was released
+            if (!(g_pUserCmd->buttons & IN_ATTACK) && currently_charging_pipe)
+            {
+                currently_charging_pipe = false;
+                Aim(target_entity);
+            }
+            else
+                return;
+
+            // Not release type weapon
+        }
         else if (GetWeaponMode() == weapon_melee)
         {
             DoAutoshoot();
@@ -320,10 +351,6 @@ bool ShouldAim()
             return false;
         // Is cloaked
         if (IsPlayerInvisible(g_pLocalPlayer->entity))
-            return false;
-        // Disable aimbot with stickbomb launcher
-        if (g_pLocalPlayer->weapon()->m_iClassID() ==
-            CL_CLASS(CTFPipebombLauncher))
             return false;
     }
 
@@ -740,6 +767,7 @@ void Aim(CachedEntity *entity)
         miny += (maxy - miny) / 6;
         maxz -= (maxz - minz) / 6;
         minz += (maxz - minz) / 6;
+
         // Create Vectors
         positions.push_back({ minx, centery, minz });
         positions.push_back({ maxx, centery, minz });
@@ -782,6 +810,7 @@ void Aim(CachedEntity *entity)
 
 // A function to check whether player can autoshoot
 bool begancharge = false;
+int begansticky  = 0;
 void DoAutoshoot()
 {
     // Enable check
@@ -816,6 +845,28 @@ void DoAutoshoot()
     }
     else
         begancharge = false;
+    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
+    {
+        float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+        float chargetime  = g_GlobalVars->curtime - chargebegin;
+
+        // Release Sticky if > chargetime
+        if ((chargetime >= (float) sticky_autoshoot) && begansticky > 3)
+        {
+            g_pUserCmd->buttons &= ~IN_ATTACK;
+            hacks::shared::antiaim::SetSafeSpace(3);
+            begansticky = 0;
+        }
+        // Else just keep charging
+        else
+        {
+            g_pUserCmd->buttons |= IN_ATTACK;
+            begansticky++;
+        }
+        return;
+    }
+    else
+        begansticky = 0;
     bool attack     = true;
 
     // Rifle check
@@ -957,7 +1008,8 @@ int BestHitbox(CachedEntity *target)
             else if (ci == CL_CLASS(CTFRocketLauncher) ||
                      ci == CL_CLASS(CTFRocketLauncher_AirStrike) ||
                      ci == CL_CLASS(CTFRocketLauncher_DirectHit) ||
-                     ci == CL_CLASS(CTFRocketLauncher_Mortar))
+                     ci == CL_CLASS(CTFRocketLauncher_Mortar) ||
+                     ci == CL_CLASS(CTFPipebombLauncher))
             {
                 preferred = hitbox_t::hip_L;
             }

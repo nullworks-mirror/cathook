@@ -420,46 +420,6 @@ int val       = 0;
 int value[32] = { 0 };
 void ProcessUserCmd(CUserCmd *cmd)
 {
-    if (communicate && CE_GOOD(LOCAL_E))
-    {
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
-        {
-            CachedEntity *ent = ENTITY(i);
-            if (CE_GOOD(ent))
-            {
-                if ((int) (CE_FLOAT(ent, netvar.angEyeAngles)) == 33 &&
-                    (int) (CE_FLOAT(ent, netvar.angEyeAngles + 4)) == 33)
-                {
-                    player_info_s info;
-                    if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info) &&
-                        playerlist::AccessData(info.friendsID).state !=
-                            playerlist::k_EState::CAT)
-                    {
-                        value[ent->m_IDX]++;
-                        if (value[ent->m_IDX] > 5)
-                        {
-                            playerlist::AccessData(info.friendsID).state =
-                                playerlist::k_EState::CAT;
-                            cmd->viewangles.y                = 53;
-                            cmd->viewangles.x                = 33;
-                            g_pLocalPlayer->bUseSilentAngles = true;
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-        if (delay.test_and_set(180000) || val)
-        {
-            cmd->viewangles.y                = 33;
-            cmd->viewangles.x                = 33;
-            g_pLocalPlayer->bUseSilentAngles = true;
-            val++;
-            if (val == 3)
-                val = 0;
-            return;
-        }
-    }
     if (!ShouldAA(cmd))
         return;
     static bool angstate = true;

@@ -8,24 +8,20 @@
 #include "Backtrack.hpp"
 namespace hooked_methods
 {
-float latency2 = 0.0f;
 DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
 {
 #if not LAGBOT_MODE
-    if ((float) hacks::shared::backtrack::latency > latency2)
-        latency2 += 1.0f;
-    else if ((float) hacks::shared::backtrack::latency < latency2)
-        latency2 -= 1.0f;
-    if (latency2 + 1.0f > (float) hacks::shared::backtrack::latency &&
-        latency2 - 1.0f < (float) hacks::shared::backtrack::latency)
-        latency2 = (float) hacks::shared::backtrack::latency;
-    if (!hacks::shared::backtrack::enable || latency2 <= 0.001f)
+    if (!hacks::shared::backtrack::enable ||
+        (float) hacks::shared::backtrack::latency <= 200.0f)
         return original::SendDatagram(ch, buf);
     int in     = ch->m_nInSequenceNr;
     auto state = ch->m_nInReliableState;
 
-    float latencysend = round(
-        (round((latency2 - 0.5f) / 15.1515151515f) - 0.5f) * 15.1515151515f);
+    float latencysend =
+        round((round(((float) hacks::shared::backtrack::latency - 0.5f) /
+                     15.1515151515f) -
+               0.5f) *
+              15.1515151515f);
     hacks::shared::backtrack::AddLatencyToNetchan(ch, latencysend);
 #endif
 

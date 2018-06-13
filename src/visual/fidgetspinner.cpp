@@ -64,6 +64,7 @@ static CatVar spinner_min_speed(CV_FLOAT, "fidgetspinner_min_speed", "2",
 
 draw_api::texture_handle_t text{ GLEZ_TEXTURE_INVALID };
 
+Timer retrytimer{};
 void DrawSpinner()
 {
     if (not enable_spinner)
@@ -96,8 +97,14 @@ void DrawSpinner()
     const glez_rgba_t color = glez_rgba(255, 255, 255, 255);
 
     if (text.handle == GLEZ_TEXTURE_INVALID)
-        text = draw_api::create_texture(DATA_PATH "/textures/atlas.png");
-
+    {
+    	if (retrytimer.test_and_set(5000))
+    	{
+    		logging::Info("Invalid texture, retrying...");
+    		text = draw_api::create_texture(DATA_PATH "/textures/atlas.png");
+    	}
+    	return;
+    }
     draw_api::draw_rect_textured(draw::width / 2, draw::height / 2, size, size,
                                  colors::white, text, 0 + 64 * state,
                                  (3 + (v9mode ? 1 : 0)) * 64, 64, 64, angle);

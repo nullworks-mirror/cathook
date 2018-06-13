@@ -261,7 +261,7 @@ void WorldTick()
                 }
             }
         }
-        WalkTo(breadcrumbs.at(0));
+        WalkTo(breadcrumbs[0]);
     }
     else
         idle_time.update();
@@ -277,15 +277,15 @@ void DrawTick()
     for (size_t i = 0; i < breadcrumbs.size() - 1; i++)
     {
         Vector wts1, wts2;
-        if (draw::WorldToScreen(breadcrumbs.at(i), wts1) &&
-            draw::WorldToScreen(breadcrumbs.at(i + 1), wts2))
+        if (draw::WorldToScreen(breadcrumbs[i], wts1) &&
+            draw::WorldToScreen(breadcrumbs[i + 1], wts2))
         {
             draw_api::draw_line(wts1.x, wts1.y, wts2.x - wts1.x,
                                 wts2.y - wts1.y, colors::white, 0.1f);
         }
     }
     Vector wts;
-    if (!draw::WorldToScreen(breadcrumbs.at(0), wts))
+    if (!draw::WorldToScreen(breadcrumbs[0], wts))
         return;
     draw_api::draw_rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
     draw_api::draw_rect_outlined(wts.x - 4, wts.y - 4, 7, 7, colors::white,

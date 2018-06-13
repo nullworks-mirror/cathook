@@ -692,6 +692,15 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
             rgrav  = 0.5f;
         }
     }
+    else if (classid == CL_CLASS(CTFPipebombLauncher))
+    {
+        float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+        float chargetime  = g_GlobalVars->curtime - chargebegin;
+        rspeed =
+            (fminf(fmaxf(chargetime / 4.0f, 0.0f), 1.0f) * 1500.0f) + 900.0f;
+        rgrav =
+            (fminf(fmaxf(chargetime / 4.0f, 0.0f), 1.0f) * -0.70000001f) + 0.5f;
+    }
     else if (classid == CL_CLASS(CTFCompoundBow))
     {
         float chargetime =

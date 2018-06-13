@@ -53,7 +53,7 @@ struct CIncomingSequence
     int sequencenr;
     float curtime;
 };
-typedef boost::circular_buffer<CIncomingSequence> circular_buf;
+typedef boost::circular_buffer_space_optimized<CIncomingSequence> circular_buf;
 extern circular_buf sequences;
 extern CatVar latency;
 extern CatVar enable;
