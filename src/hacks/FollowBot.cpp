@@ -191,8 +191,9 @@ void WorldTick()
     // Follow the crumbs when too far away, or just starting to follow
     if (dist_to_target > (float) follow_distance)
     {
-
         // Check for idle
+    	if (idle_time.check(1000) || LOCAL_E->m_vecVelocity.IsZero(3.0f))
+    		g_pUserCmd->buttons |= IN_JUMP;
         if (idle_time.test_and_set(3000))
         {
             follow_target = 0;

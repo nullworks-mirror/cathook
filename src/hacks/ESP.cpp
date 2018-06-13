@@ -535,7 +535,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         fg = ent_data.color = colors::EntityF(ent);
 
     // Check if entity is on screen, then save screen position if true
-    Vector screen, origin_screen;
+    static Vector screen, origin_screen;
     if (!draw::EntityCenterToScreen(ent, screen) &&
         !draw::WorldToScreen(ent->m_vecOrigin(), origin_screen))
         return;
