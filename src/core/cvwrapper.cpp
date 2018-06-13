@@ -171,7 +171,6 @@ CatVar::CatVar(CatVar_t _type, std::string _name, std::string _defaults,
       desc_long(_desc_long)
 {
     registrationArray().push_back(this);
-    logging::Info("Registered CatVars: %d", registrationArray().size());
 }
 
 CatVar::CatVar(CatVar_t _type, std::string _name, std::string _defaults,
@@ -181,7 +180,6 @@ CatVar::CatVar(CatVar_t _type, std::string _name, std::string _defaults,
 {
     max = max_val;
     registrationArray().push_back(this);
-    logging::Info("Registered CatVars: %d", registrationArray().size());
 }
 
 CatVar::CatVar(CatVar_t _type, std::string _name, std::string _defaults,
@@ -193,7 +191,6 @@ CatVar::CatVar(CatVar_t _type, std::string _name, std::string _defaults,
     min = min_val;
     max = max_val;
     registrationArray().push_back(this);
-    logging::Info("Registered CatVars: %d", registrationArray().size());
 }
 
 CatVar::CatVar(CatEnum &cat_enum, std::string _name, std::string _defaults,
@@ -204,7 +201,6 @@ CatVar::CatVar(CatEnum &cat_enum, std::string _name, std::string _defaults,
     min = cat_enum.min_value;
     max = cat_enum.max_value;
     registrationArray().push_back(this);
-    logging::Info("Registered CatVars: %d", registrationArray().size());
 }
 
 void CatVar::OnRegister(CatVar::RegisterCallbackFn fn)
