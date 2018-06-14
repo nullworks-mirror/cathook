@@ -273,9 +273,6 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
 bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
 {
     static CachedEntity *ent;
-
-    if (!enable)
-        return false;
     if (entity->entindex() < 0)
         return false;
     ent = ENTITY(entity->entindex());
@@ -449,16 +446,15 @@ void EffectGlow::RenderGlow(IClientEntity *entity)
 
 void EffectGlow::Render(int x, int y, int w, int h)
 {
+    if (!enable)
+        return;
     static ITexture *orig;
     static IClientEntity *ent;
     static IMaterialVar *blury_bloomamount;
-
     if (!init)
         Init();
     if (!cathook || (g_IEngine->IsTakingScreenshot() && clean_screenshots) ||
         g_Settings.bInvalid)
-        return;
-    if (!enable)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     orig = ptr->GetRenderTarget();
