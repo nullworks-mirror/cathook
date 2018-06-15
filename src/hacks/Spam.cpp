@@ -39,6 +39,8 @@ static CatVar voicecommand_spam(voicecommand_enum, "spam_voicecommand", "0",
 static CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam",
                             "Spam changes the tournament name");
 
+static int last_index;
+
 std::chrono::time_point<std::chrono::system_clock> last_spam_point{};
 
 int current_index{ 0 };
@@ -381,7 +383,14 @@ void CreateMove()
             if (current_index >= source->size())
                 current_index = 0;
             if (random_order)
+            {
                 current_index      = rand() % source->size();
+                while (current_index == last_index)
+                {
+                current_index      = rand() % source->size();
+                }
+            }
+            last_index = current_index;
             std::string spamString = source->at(current_index);
             if (FormatSpamMessage(spamString))
                 chat_stack::Say(spamString, false);

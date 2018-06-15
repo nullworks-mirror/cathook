@@ -33,6 +33,8 @@ const std::string tf_classes_killsay[] = { "class",   "scout",   "sniper",
 
 const std::string tf_teams_killsay[] = { "RED", "BLU" };
 
+static std::string lastmsg = "";
+
 TextFile file{};
 
 std::string ComposeKillSay(IGameEvent *event)
@@ -64,6 +66,11 @@ std::string ComposeKillSay(IGameEvent *event)
     if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer())
         return "";
     std::string msg = source->at(rand() % source->size());
+    while (msg == lastmsg)
+    {
+    msg = source->at(rand() % source->size());
+    }
+    lastmsg = msg;
     player_info_s info;
     g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
     ReplaceString(msg, "%name%", std::string(info.name));

@@ -232,7 +232,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
 #endif
             if (crypt_chat)
             {
-                if (message.find("!!") == 0)
+                if (message.find("!!B") == 0)
                 {
                     if (ucccccp::validate(message))
                     {
