@@ -23,7 +23,7 @@ void Draw()
 {
     CachedEntity *ent;
     if (no_invisibility)
-        for (int i = 0; i < 32 && i < HIGHEST_ENTITY; i++)
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             ent = ENTITY(i);
             if (CE_BAD(ent))
@@ -39,7 +39,7 @@ void Draw()
         }
     if (!enabled)
         return;
-    for (int i = 0; i < 32 && i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         ent = ENTITY(i);
         if (CE_BAD(ent))

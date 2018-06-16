@@ -307,9 +307,9 @@ std::unordered_map<studiohdr_t *, bonelist_s> bonelist_map{};
 // Function called on draw
 void Draw()
 {
-    std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
     if (!enabled)
         return;
+    std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
     for (auto &i : entities_need_repaint)
     {
         ProcessEntityPT(ENTITY(i));

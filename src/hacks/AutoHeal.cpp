@@ -395,6 +395,8 @@ static CatVar auto_vacc(CV_SWITCH, "auto_vacc", "0", "Auto Vaccinator",
 
 void CreateMove()
 {
+    if (!enabled)
+        return;
     bool pop = false;
     if (IsVaccinator() && auto_vacc)
     {
@@ -409,7 +411,7 @@ void CreateMove()
             g_pUserCmd->buttons |= IN_ATTACK2;
         }
     }
-    if (!enabled && !force_healing_target)
+    if (!force_healing_target)
         return;
     if (GetWeaponMode() != weapon_medigun)
         return;

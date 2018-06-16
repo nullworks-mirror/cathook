@@ -424,7 +424,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #if not LAGBOT_MODE
         {
             PROF_SECTION(CM_AC);
-            angles::Update();
             hacks::shared::anticheat::CreateMove();
         }
 #endif

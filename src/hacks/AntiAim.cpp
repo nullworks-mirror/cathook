@@ -254,8 +254,6 @@ void SetSafeSpace(int safespace)
 
 bool ShouldAA(CUserCmd *cmd)
 {
-    if (!enabled)
-        return false;
     if (hacks::tf2::antibackstab::noaa)
         return false;
     if (cmd->buttons & IN_USE)
@@ -420,6 +418,8 @@ int val       = 0;
 int value[32] = { 0 };
 void ProcessUserCmd(CUserCmd *cmd)
 {
+    if (!enabled)
+        return;
     if (!ShouldAA(cmd))
         return;
     static bool angstate = true;
