@@ -33,12 +33,11 @@ float last_say          = 0.0f;
 
 void Draw()
 {
+    if (!enabled)
+        return;
     CachedEntity *closest_spy, *ent;
     float closest_spy_distance, distance;
     int spy_count;
-
-    if (!enabled)
-        return;
     if (g_pLocalPlayer->life_state)
         return;
     closest_spy          = nullptr;

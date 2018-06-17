@@ -57,6 +57,7 @@ void CreateMove()
 {
     if (!enabled)
         return;
+    angles::Update();
     for (int i = 1; i < 33; i++)
     {
         if (skip_local && (i == g_IEngine->GetLocalPlayer()))

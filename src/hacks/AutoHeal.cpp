@@ -409,7 +409,7 @@ void CreateMove()
             g_pUserCmd->buttons |= IN_ATTACK2;
         }
     }
-    if (!enabled && !force_healing_target)
+    if (!force_healing_target && !enabled)
         return;
     if (GetWeaponMode() != weapon_medigun)
         return;

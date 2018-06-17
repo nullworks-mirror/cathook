@@ -228,6 +228,8 @@ label1:
 
 void Draw()
 {
+    if (!radar_enabled)
+        return;
     if (!g_IEngine->IsInGame())
         return;
     if (CE_BAD(LOCAL_E))
@@ -237,8 +239,6 @@ void Draw()
     std::vector<CachedEntity *> enemies{};
     CachedEntity *ent;
 
-    if (!radar_enabled)
-        return;
     x              = (int) radar_x;
     y              = (int) radar_y;
     int radar_size = size;
