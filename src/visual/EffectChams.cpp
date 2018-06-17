@@ -355,11 +355,12 @@ void EffectChams::RenderChams(int idx)
 
 void EffectChams::Render(int x, int y, int w, int h)
 {
+    PROF_SECTION(DRAW_chams);
+    if (!enable)
+        return;
     if (!init)
         Init();
     if (!cathook || (g_IEngine->IsTakingScreenshot() && clean_screenshots))
-        return;
-    if (!enable)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     BeginRenderChams();
