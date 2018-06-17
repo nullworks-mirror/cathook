@@ -198,27 +198,29 @@ void CreateMove()
             }
         }
     }
-    
-    //check if we need to run projectile Aimbot code
+
+    // check if we need to run projectile Aimbot code
     projectileAimbotRequired = false;
-    if (projectile_aimbot && (g_pLocalPlayer->weapon_mode == weapon_projectile ||
-                            g_pLocalPlayer->weapon_mode == weapon_throwable)) {
+    if (projectile_aimbot &&
+        (g_pLocalPlayer->weapon_mode == weapon_projectile ||
+         g_pLocalPlayer->weapon_mode == weapon_throwable))
+    {
         projectileAimbotRequired = true;
-}
+    }
     // We do this as we need to pass whether the aimkey allows aiming to both
     // the find target and aiming system. If we just call the func than toggle
     // aimkey would break so we save it to a var to use it twice
-    bool aimkey_status = UpdateAimkey();    
-    
+    bool aimkey_status = UpdateAimkey();
+
     // Local player check + Aimkey
     if (!aimkey_status || !ShouldAim())
         return;
-    
+
     // Refresh projectile info
     if (projectileAimbotRequired)
     {
         projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(),
-                                    cur_proj_speed, cur_proj_grav));
+                                             cur_proj_speed, cur_proj_grav));
         if (!projectile_mode)
             return;
         if (proj_speed)
@@ -257,7 +259,6 @@ void CreateMove()
     hacks::shared::esp::SetEntityColor(target_entity, colors::pink);
     Effectchams.SetEntityColor(target_entity, colors::pink);
 #endif
-
 
     // Attemt to auto-shoot
 
@@ -465,9 +466,8 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
             if (GetWeaponMode() == weaponmode::weapon_melee ||
                 (int) priority_mode == 2)
             {
-                scr = 4096.0f -
-                      calculated_data_array[i].aim_position.DistTo(
-                          g_pLocalPlayer->v_Eye);
+                scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(
+                                    g_pLocalPlayer->v_Eye);
             }
             else
             {
@@ -879,7 +879,7 @@ void DoAutoshoot()
     }
     else
         begansticky = 0;
-    bool attack     = true;
+    bool attack = true;
 
     // Rifle check
     IF_GAME(IsTF())
@@ -1355,6 +1355,6 @@ void DrawText()
     }
 }
 #endif
-}
-}
-}
+} // namespace aimbot
+} // namespace shared
+} // namespace hacks
