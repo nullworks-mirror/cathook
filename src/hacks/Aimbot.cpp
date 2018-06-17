@@ -173,6 +173,7 @@ float cur_proj_speed{ 0.0f };
 float cur_proj_grav{ 0.0f };
 // If slow aimbot allows autoshoot
 bool slow_can_shoot = false;
+bool projectileAimbotRequired;
 
 // This array will store calculated projectile/hitscan predictions
 // for current frame, to avoid performing them again
@@ -197,19 +198,34 @@ void CreateMove()
             }
         }
     }
-
-    // Refresh projectile info
-    projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(),
-                                         cur_proj_speed, cur_proj_grav));
-    if (proj_speed)
-        cur_proj_speed = float(proj_speed);
-    if (proj_gravity)
-        cur_proj_grav = float(proj_gravity);
-
+    
+    //check if we need to run projectile Aimbot code
+    projectileAimbotRequired = false;
+    if (projectile_aimbot && (g_pLocalPlayer->weapon_mode == weapon_projectile ||
+                            g_pLocalPlayer->weapon_mode == weapon_throwable)) {
+        projectileAimbotRequired = true;
+}
     // We do this as we need to pass whether the aimkey allows aiming to both
     // the find target and aiming system. If we just call the func than toggle
     // aimkey would break so we save it to a var to use it twice
-    bool aimkey_status = UpdateAimkey();
+    bool aimkey_status = UpdateAimkey();    
+    
+    // Local player check + Aimkey
+    if (!aimkey_status || !ShouldAim())
+        return;
+    
+    // Refresh projectile info
+    if (projectileAimbotRequired)
+    {
+        projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(),
+                                    cur_proj_speed, cur_proj_grav));
+        if (!projectile_mode)
+            return;
+        if (proj_speed)
+            cur_proj_speed = float(proj_speed);
+        if (proj_gravity)
+            cur_proj_grav = float(proj_gravity);
+    }
 
     // Refresh our best target
     CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
@@ -242,9 +258,6 @@ void CreateMove()
     Effectchams.SetEntityColor(target_entity, colors::pink);
 #endif
 
-    // Local player check + Aimkey
-    if (!ShouldAim() || !aimkey_status)
-        return;
 
     // Attemt to auto-shoot
 
@@ -362,10 +375,9 @@ bool ShouldAim()
             break;
         case weapon_melee:
             break;
-        // Check if player is using a projectile based weapon without the
-        // setting enabled
+        // Check we need to run projectile Aimbot code
         case weapon_projectile:
-            if (!projectile_aimbot)
+            if (!projectileAimbotRequired)
                 return false;
             break;
         // Check if player doesnt have a weapon usable by aimbot
@@ -926,9 +938,7 @@ const Vector &PredictEntity(CachedEntity *entity)
     if ((entity->m_Type() == ENTITY_PLAYER))
     {
         // If using projectiles, predict a vector
-        if (projectile_mode &&
-            (g_pLocalPlayer->weapon_mode == weapon_projectile ||
-             g_pLocalPlayer->weapon_mode == weapon_throwable))
+        if (projectileAimbotRequired)
         {
             // Use prediction engine if user settings allow
             if (engine_projpred)
