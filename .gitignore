@@ -273,3 +273,7 @@ libcathook.so
 build
 # idk where it comes from
 cathook.cbp
+
+.project
+.cproject
+.settings
