@@ -57,16 +57,16 @@ find_library(ValveLibraryTier0   NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" N
 find_library(ValveLibraryVStdLib NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 
 if(EnableIPC)
-    add_subdirectory(simple-ipc)
+    add_subdirectory(external/simple-ipc)
     target_link_libraries(cathook SimpleIPC)
 endif()
 
 if(EnableVisuals)
-    add_subdirectory(libglez)
+    add_subdirectory(external/libglez)
     find_package(SDL2 REQUIRED)
     find_package(GLEW REQUIRED)
     if(ExternalDrawing)
-        add_subdirectory(libxoverlay)
+        add_subdirectory(external/libxoverlay)
         target_link_libraries(cathook xoverlay)
     endif()
     target_include_directories(cathook PRIVATE "${SDL2_INCLUDE_DIRS}")
@@ -91,15 +91,15 @@ target_compile_definitions(cathook PRIVATE
         NO_MALLOC_OVERRIDE=1)
 
 target_include_directories(cathook SYSTEM PRIVATE
-        "source-sdk-2013-headers/mp/src/mathlib"
-        "source-sdk-2013-headers/mp/src/public"
-        "source-sdk-2013-headers/mp/src/common"
-        "source-sdk-2013-headers/mp/src/public/tier0"
-        "source-sdk-2013-headers/mp/src/public/tier1"
-        "source-sdk-2013-headers/mp/src/tier1"
-        "source-sdk-2013-headers/mp/src")
+        "external/source-sdk-2013-headers/mp/src/mathlib"
+        "external/source-sdk-2013-headers/mp/src/public"
+        "external/source-sdk-2013-headers/mp/src/common"
+        "external/source-sdk-2013-headers/mp/src/public/tier0"
+        "external/source-sdk-2013-headers/mp/src/public/tier1"
+        "external/source-sdk-2013-headers/mp/src/tier1"
+        "external/source-sdk-2013-headers/mp/src")
 
-target_include_directories(cathook PRIVATE "ucccccp")
+target_include_directories(cathook PRIVATE "external/ucccccp")
 
 if(EnableWarnings)
     target_compile_options(cathook PRIVATE -Wall -Wextra)
