@@ -19,6 +19,7 @@ set(Game "tf2" CACHE STRING "Target game")
 set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supported game types")
 set_property(CACHE Game PROPERTY STRINGS ${GameValues})
 
+set(EnableProfiler 0 CACHE BOOL "Enable Profiler")
 set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
 set(LagbotMode 0 CACHE BOOL "Build light cathook made for lagbots")
 set(ExternalDrawing 0 CACHE BOOL "External Visuals")
