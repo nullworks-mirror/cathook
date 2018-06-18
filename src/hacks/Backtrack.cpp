@@ -17,11 +17,13 @@ namespace backtrack
 {
 CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
               "For legit play only as of right now.");
-CatVar draw_bt(CV_SWITCH, "backtrack_draw", "0", "Draw",
+static CatVar draw_bt(CV_SWITCH, "backtrack_draw", "0", "Draw",
                "Draw backtrack ticks");
 CatVar latency(CV_FLOAT, "backtrack_latency", "0", "fake lantency",
                "Set fake latency to this many ms");
-CatVar mindistance(CV_FLOAT, "mindistance", "60", "mindistance");
+static CatVar mindistance(CV_FLOAT, "mindistance", "60", "mindistance");
+static CatEnum slots_enum({ "All", "Primary", "Secondary", "Melee", "Primary Secondary", "Primary Melee", "Secondary Melee" });
+static CatVar slots(slots_enum, "backtrack_slots", "0", "Enabled Slots", "Select what slots backtrack should be enabled on.");
 
 BacktrackData headPositions[32][66];
 BestTickData sorted_ticks[66];
@@ -89,7 +91,10 @@ void Run()
 
     if (CE_BAD(LOCAL_E))
         return;
-
+    
+    if (!shouldBacktrack())
+        return;
+    
     CUserCmd *cmd       = g_pUserCmd;
     float bestFov       = 99999;
     BestTick            = 0;
@@ -225,6 +230,38 @@ void Draw()
     }
 #endif
 }
+
+bool shouldBacktrack()
+{
+    int slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(g_pLocalPlayer->weapon()));
+    switch((int) slots) 
+    {
+        case 0:
+            return true;
+        case 1:
+            if (slot == 0)
+                return true;
+        case 2:
+            if (slot == 1)
+                return true;
+        case 3:
+            if (slot == 2)
+                return true;
+        case 4:
+            if (slot == 0 || slot == 1)
+                return true;
+        case 5:
+            if (slot == 0 || slot == 2)
+                return true;
+        case 6:
+            if (slot == 1 || slot == 2)
+                return true;
+        default:
+            return false;
+    }
+    return false;
+}
+
 }
 }
 }
