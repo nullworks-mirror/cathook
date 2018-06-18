@@ -104,10 +104,15 @@ target_include_directories(cathook PRIVATE "external/ucccccp")
 
 if(EnableWarnings)
     target_compile_options(cathook PRIVATE -Wall -Wextra)
+else()
+    target_compile_options(cathook PRIVATE -w)
 endif()
 
-add_subdirectory(include)
-add_subdirectory(src)
+file(GLOB_RECURSE Headers "${CMAKE_CURRENT_LIST_DIR}/include/*.hpp")
+file(GLOB_RECURSE Sources "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
+
+target_sources(cathook PRIVATE ${Sources} ${Headers})
+target_include_directories(cathook PRIVATE include)
 
 add_custom_target(data
         bash ./install-data "${DataPath}"

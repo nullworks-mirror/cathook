@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <glez/font.hpp>
 #include "common.hpp"
 
 class CachedEntity;
@@ -19,8 +20,9 @@ class VMatrix;
 namespace fonts
 {
 
-extern draw_api::font_handle_t main_font;
-extern draw_api::font_handle_t esp_font;
+extern std::unique_ptr<glez::font> esp;
+extern std::unique_ptr<glez::font> menu;
+
 }
 
 namespace fonts

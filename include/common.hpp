@@ -51,7 +51,6 @@
 
 #if ENABLE_VISUALS
 
-#include <visual/drawex.hpp>
 #include <visual/drawing.hpp>
 #include "fidgetspinner.hpp"
 #include <visual/EffectGlow.hpp>

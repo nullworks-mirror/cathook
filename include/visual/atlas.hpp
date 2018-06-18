@@ -7,8 +7,8 @@
 
 #pragma once
 
+#include <glez/texture.hpp>
 #include "common.hpp"
-#include "visual/drawex.hpp"
 
 namespace textures
 {
@@ -47,7 +47,7 @@ public:
     const float width;
     const float height;
 
-    draw_api::texture_handle_t texture;
+    glez::texture texture;
 };
 
 texture_atlas &atlas();
