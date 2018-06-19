@@ -31,11 +31,15 @@ void render_cheat_visuals()
     }
 }
 
-glez::record::Record cache{};
+glez::record::Record bufferA{};
+glez::record::Record bufferB{};
+
+glez::record::Record *buffers[] = { &bufferA, &bufferB };
+int currentBuffer = 0;
 
 void BeginCheatVisuals()
 {
-    cache.begin();
+    buffers[currentBuffer]->begin();
     ResetStrings();
 }
 
@@ -183,10 +187,11 @@ void DrawCheatVisuals()
 
 void EndCheatVisuals()
 {
-    cache.end();
+    buffers[currentBuffer]->end();
+    currentBuffer = !currentBuffer;
 }
 
 void DrawCache()
 {
-    cache.replay();
+    buffers[!currentBuffer]->replay();
 }
