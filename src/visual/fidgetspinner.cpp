@@ -65,6 +65,7 @@ static CatVar spinner_min_speed(CV_FLOAT, "fidgetspinner_min_speed", "2",
                                 "Spinner Min Speed");
 
 Timer retrytimer{};
+
 void DrawSpinner()
 {
     if (not enable_spinner)
@@ -94,9 +95,9 @@ void DrawSpinner()
     angle += speed_scale * real_speed;
     int state = min(3, int(spinning_speed / 250));
 
-    /*glez::draw::rect_textured(draw::width / 2, draw::height / 2, size, size,
-                                 colors::white, textures::atlas(), 0 + 64 * state,
-                                 (3 + (v9mode ? 1 : 0)) * 64, 64, 64, angle);*/
+    glez::draw::rect_textured(draw::width / 2, draw::height / 2, size, size,
+                                 colors::white, textures::atlas().texture, 64 * state,
+                                 (3 + (v9mode ? 0 : 1)) * 64, 64, 64, angle);
     if (angle > PI * 4)
         angle -= PI * 4;
 }

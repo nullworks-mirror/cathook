@@ -84,32 +84,29 @@ std::pair<int, int> WorldToRadar(int x, int y)
 }
 bool loaded = false;
 
+static std::vector<std::vector<textures::sprite>> tx_class{};
+static std::vector<textures::sprite> tx_teams{};
+static std::vector<textures::sprite> tx_items{};
+
+InitRoutine init([]() {
+    // Background circles
+    for (int i = 0; i < 2; ++i)
+        tx_teams.push_back(textures::atlas().create_sprite(704, 384 + i * 64, 64, 64));
+    // Items
+    for (int i = 0; i < 2; ++i)
+        tx_items.push_back(textures::atlas().create_sprite(640, 384 + i * 64, 64, 64));
+    // Classes
+    for (int i = 0; i < 3; ++i)
+    {
+        tx_class.emplace_back();
+        for (int j = 0; j < 9; ++j)
+            tx_class[i].push_back(textures::atlas().create_sprite(j * 64, 320 + i * 64, 64, 64));
+    }
+    logging::Info("Radar sprites loaded");
+});
+
 void DrawEntity(int x, int y, CachedEntity *ent)
 {
-
-    static textures::texture_atlas texture(DATA_PATH "/res/atlas.png", 1024,
-                                           512);
-
-    struct basesprite
-    {
-        textures::sprite sprite = texture.create_sprite(0, 0, 0, 0);
-    };
-
-    static std::array<std::array<basesprite, 9>, 3> tx_class;
-    static std::array<basesprite, 2> tx_teams;
-    static std::array<basesprite, 2> tx_items;
-    bool call = false;
-    if (call)
-        goto label1;
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 9; j++)
-            tx_class[i][j].sprite.setsprite(64 * j, 64 * i, 64, 64);
-    tx_teams[0].sprite.setsprite(11 * 64, 128, 64, 64);
-    tx_teams[1].sprite.setsprite(11 * 64, 64, 64, 64);
-    tx_items[0].sprite.setsprite(10 * 64, 64, 64, 64);
-    tx_items[1].sprite.setsprite(10 * 64, 128, 64, 64);
-    call = true;
-label1:
     int idx = -1;
     rgba_t clr;
     float healthp = 0.0f;
@@ -132,21 +129,21 @@ label1:
 
             if (use_icons)
             {
-                tx_teams[idx].sprite.draw(x + wtr.first, y + wtr.second,
+                tx_teams[idx].draw(x + wtr.first, y + wtr.second,
                                           (int) icon_size, (int) icon_size,
                                           colors::white);
-                tx_class[2][clazz - 1].sprite.draw(
+                tx_class[0][clazz - 1].draw(
                     x + wtr.first, y + wtr.second, (int) icon_size,
                     (int) icon_size, colors::white);
             }
             else
             {
-                tx_class[idx][clazz - 1].sprite.draw(
+                tx_class[2 - idx][clazz - 1].draw(
                     x + wtr.first, y + wtr.second, (int) icon_size,
                     (int) icon_size, colors::white);
                 glez::draw::rect_outline(
                     x + wtr.first, y + wtr.second, (int) icon_size,
-                    (int) icon_size, idx ? colors::blu_v : colors::red_v, 0.5f);
+                    (int) icon_size, idx ? colors::blu_v : colors::red_v, 1.0f);
             }
 
             if (ent->m_iMaxHealth() && healthbar)
@@ -196,7 +193,7 @@ label1:
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
                 float sz  = float(icon_size) * 0.15f * 0.5f;
                 float sz2 = float(icon_size) * 0.85;
-                tx_items[1].sprite.draw(x + wtr.first + sz, y + wtr.second + sz,
+                tx_items[1].draw(x + wtr.first + sz, y + wtr.second + sz,
                                         sz2, sz2, colors::white);
             }
             else if (show_ammopacks && (ent->m_ItemType() == ITEM_AMMO_LARGE ||
@@ -207,7 +204,7 @@ label1:
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
                 float sz  = float(icon_size) * 0.15f * 0.5f;
                 float sz2 = float(icon_size) * 0.85;
-                tx_items[0].sprite.draw(x + wtr.first + sz, y + wtr.second + sz,
+                tx_items[0].draw(x + wtr.first + sz, y + wtr.second + sz,
                                         sz2, sz2, colors::white);
             }
         }

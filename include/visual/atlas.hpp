@@ -22,7 +22,6 @@ public:
     sprite(float x, float y, float w, float h, texture_atlas &atlas);
 
 public:
-    void setsprite(float x, float y, float w, float h);
     void draw(float scrx, float scry, float scrw, float scrh,
               const rgba_t &rgba);
 

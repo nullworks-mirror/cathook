@@ -405,9 +405,10 @@ void Init()
             fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", esp_font_scale));
         });*/
 }
+
 void _FASTCALL emoji(CachedEntity *ent)
 {
-    /*// Check to prevent crashes
+    // Check to prevent crashes
     if (CE_BAD(ent))
         return;
     // Emoji esp
@@ -445,40 +446,38 @@ void _FASTCALL emoji(CachedEntity *ent)
                     steamidarray[4] = 854198748;
                     if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
                         steamID = info.friendsID;
-                    if (idspecific != GLEZ_TEXTURE_INVALID &&
-                        playerlist::AccessData(steamID).state ==
+                    if (playerlist::AccessData(steamID).state ==
                             playerlist::k_EState::CAT)
-                        glez_rect_textured(
-                            head_scr.x - size / 2, head_scr.y - size / 2, size,
-                            size, white, idspecific, 2 * 64, 1 * 64, 64, 64, 0);
-                    if (idspecific != GLEZ_TEXTURE_INVALID)
-                        for (int i = 0; i < 4; i++)
-                        {
-                            if (steamID == steamidarray[i])
-                            {
-                                static int ii = 1;
-                                while (i > 3)
-                                {
-                                    ii++;
-                                    i -= 4;
-                                }
-                                glez_rect_textured(head_scr.x - size / 2,
-                                                   head_scr.y - size / 2, size,
-                                                   size, white, idspecific,
-                                                   i * 64, ii * 64, 64, 64, 0);
-                                hascall = true;
-                            }
-                        }
-                    if (textur && !hascall)
                         glez::draw::rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
-                            size, colors::white, { textur },
+                            size, glez::color::white, idspec, 2 * 64, 1 * 64, 64, 64, 0);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (steamID == steamidarray[i])
+                        {
+                            static int ii = 1;
+                            while (i > 3)
+                            {
+                                ii++;
+                                i -= 4;
+                            }
+                            glez::draw::rect_textured(head_scr.x - size / 2,
+                                               head_scr.y - size / 2, size,
+                                               size, glez::color::white, idspec,
+                                               i * 64, ii * 64, 64, 64, 0);
+                            hascall = true;
+                        }
+                    }
+                    if (!hascall)
+                        glez::draw::rect_textured(
+                            head_scr.x - size / 2, head_scr.y - size / 2, size,
+                            size, colors::white, textures::atlas().texture,
                             (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, 3 * 64,
                             64, 64, 0);
                 }
             }
         }
-    }*/
+    }
 }
 // Used when processing entitys with cached data from createmove in draw
 void _FASTCALL ProcessEntityPT(CachedEntity *ent)

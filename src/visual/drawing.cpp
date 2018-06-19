@@ -49,7 +49,7 @@ void DrawStrings()
         glez::draw::outlined_string(
             8, y, side_strings[i].c_str(), *fonts::menu,
             side_strings_colors[i], colors::black, nullptr, nullptr);
-        y += /*((int)fonts::font_main->height)*/ 14 + 1;
+        y += fonts::menu->size + 1;
     }
     y = draw::height / 2;
     for (size_t i = 0; i < center_strings_count; ++i)
@@ -59,7 +59,7 @@ void DrawStrings()
         glez::draw::outlined_string(
             (draw::width - sx) / 2, y, center_strings[i].c_str(),
             *fonts::menu, center_strings_colors[i], colors::black, nullptr, nullptr);
-        y += /*((int)fonts::font_main->height)*/ 14 + 1;
+        y += fonts::menu->size + 1;
     }
 }
 
@@ -181,8 +181,7 @@ void draw::BeginGL()
 #endif
     {
         glActiveTexture(GL_TEXTURE0);
-        PROF_SECTION(draw_begin__glez_begin)
-        logging::Info("glez::begin");
+        PROF_SECTION(draw_begin__glez_begin);
         glez::begin();
     }
 }
@@ -192,7 +191,6 @@ void draw::EndGL()
     PROF_SECTION(DRAWEX_draw_end);
     {
         PROF_SECTION(draw_end__glez_end);
-        logging::Info("glez::end");
         glez::end();
     }
 #if EXTERNAL_DRAWING
