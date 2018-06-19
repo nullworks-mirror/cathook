@@ -29,6 +29,7 @@ BacktrackData headPositions[32][66];
 BestTickData sorted_ticks[66];
 int highesttick[32]{};
 int lastincomingsequencenumber = 0;
+static bool shouldDrawBt;
 
 circular_buf sequences{ 2048 };
 void UpdateIncomingSequences()
@@ -92,9 +93,13 @@ void Run()
     if (CE_BAD(LOCAL_E))
         return;
     
-    if (!shouldBacktrack())
-        return;
-    
+	if (!shouldBacktrack())
+	{
+		shouldDrawBt = false;
+		return;
+	}
+	shouldDrawBt = true;
+
     CUserCmd *cmd       = g_pUserCmd;
     float bestFov       = 99999;
     BestTick            = 0;
@@ -238,26 +243,31 @@ bool shouldBacktrack()
     {
         case 0:
             return true;
+			break;
         case 1:
             if (slot == 0)
                 return true;
+			break;
         case 2:
             if (slot == 1)
                 return true;
+			break;
         case 3:
             if (slot == 2)
                 return true;
+			break;
         case 4:
             if (slot == 0 || slot == 1)
                 return true;
+			break;
         case 5:
             if (slot == 0 || slot == 2)
                 return true;
+			break;
         case 6:
             if (slot == 1 || slot == 2)
                 return true;
-        default:
-            return false;
+			break;
     }
     return false;
 }
