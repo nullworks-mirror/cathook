@@ -44,13 +44,13 @@ struct rgba_t
         float rgba[4];
     };
 
-    constexpr rgba_t() : r(0.0f), g(0.0f), b(0.0f), a(0.0f){};
+    constexpr rgba_t() : r(0.0f), g(0.0f), b(0.0f), a(1.0f){};
     constexpr rgba_t(float _r, float _g, float _b, float _a = 1.0f)
         : r(_r), g(_g), b(_b), a(_a){};
 
     constexpr operator glez::rgba() const
     {
-        return glez::rgba(r, g, b, a);
+        return *reinterpret_cast<const glez::rgba *>(this);
     }
 
     constexpr operator bool() const
