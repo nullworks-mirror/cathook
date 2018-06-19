@@ -45,11 +45,13 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
                     strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
                 {
                     if (nightmode)
+                    {
                         if (strstr(pMaterial->GetTextureGroupName(),
                                    "StaticProp"))
                             pMaterial->ColorModulate(0.3f, 0.3f, 0.3f);
                         else
                             pMaterial->ColorModulate(0.05f, 0.05f, 0.05f);
+                    }
                     else
                         pMaterial->ColorModulate(1.0f, 1.0f, 1.0f);
                 }

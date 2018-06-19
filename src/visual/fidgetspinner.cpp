@@ -98,12 +98,12 @@ void DrawSpinner()
 
     if (text.handle == GLEZ_TEXTURE_INVALID)
     {
-    	if (retrytimer.test_and_set(5000))
-    	{
-    		logging::Info("Invalid texture, retrying...");
-    		text = draw_api::create_texture(DATA_PATH "/textures/atlas.png");
-    	}
-    	return;
+        if (retrytimer.test_and_set(5000))
+        {
+            logging::Info("Invalid texture, retrying...");
+            text = draw_api::create_texture(DATA_PATH "/textures/atlas.png");
+        }
+        return;
     }
     draw_api::draw_rect_textured(draw::width / 2, draw::height / 2, size, size,
                                  colors::white, text, 0 + 64 * state,

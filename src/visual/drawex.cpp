@@ -107,7 +107,7 @@ void draw_line(float x, float y, float dx, float dy, const rgba_t &rgba,
 
 void draw_rect_textured(float x, float y, float w, float h, const rgba_t &rgba,
                         texture_handle_t texture, float u, float v, float s,
-                        float t, float a)
+                        float t, float a = 0.0f)
 {
     glez_rect_textured(x, y, w, h,
                        *reinterpret_cast<const glez_rgba_t *>(&rgba),

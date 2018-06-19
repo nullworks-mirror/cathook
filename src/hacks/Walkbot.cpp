@@ -72,7 +72,7 @@ enum EConnectionFlags
     CF_CAPPED_4 = (1 << 8),
     CF_CAPPED_5 = (1 << 9),
 
-	CF_STICKYBOMB = (1 << 10)
+    CF_STICKYBOMB = (1 << 10)
 };
 
 struct connection_s
@@ -647,7 +647,7 @@ std::string DescribeConnection(index_t node, connection conn)
         }
         if (c.flags & CF_STICKYBOMB)
         {
-        	extra += "S";
+            extra += "S";
         }
     }
     std::string result =
@@ -860,44 +860,51 @@ index_t SelectNextNode()
             {
                 return n.connections[i].node;
             }
-            if (not(n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)) && not(n.connections[i].flags & CF_STICKYBOMB))
+            if (not(n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)) &&
+                not(n.connections[i].flags & CF_STICKYBOMB))
                 chance.push_back(n.connections[i].node);
-            if ((n.connections[i].flags & CF_STICKYBOMB) && g_pLocalPlayer->clazz == tf_demoman)
+            if ((n.connections[i].flags & CF_STICKYBOMB) &&
+                g_pLocalPlayer->clazz == tf_demoman)
             {
-            	state::node_good(n.connections[i].node);
-            	if (IsVectorVisible(state::nodes[n.connections[i].node].xyz(), g_pLocalPlayer->v_Eye) && g_pLocalPlayer->v_Eye.DistTo(state::nodes[n.connections[i].node].xyz()) < 400.0f)
-            	{
-            		if (re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)) != 1)
-            		{
-            			begansticky = 0;
-            			hack::ExecuteCommand("slot1");
-            		}
-            		else if (CanShoot())
-            		{
-            			 Vector tr = (state::nodes[n.connections[i].node].xyz() - g_pLocalPlayer->v_Eye);
-            			 Vector angles;
-            			 VectorAngles(tr, angles);
-            			 // Clamping is important
-            			 fClampAngle(angles);
-            			 g_pLocalPlayer->bUseSilentAngles = true;
-            		        float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
-            		        float chargetime  = g_GlobalVars->curtime - chargebegin;
+                state::node_good(n.connections[i].node);
+                if (IsVectorVisible(state::nodes[n.connections[i].node].xyz(),
+                                    g_pLocalPlayer->v_Eye) &&
+                    g_pLocalPlayer->v_Eye.DistTo(
+                        state::nodes[n.connections[i].node].xyz()) < 400.0f)
+                {
+                    if (re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)) != 1)
+                    {
+                        begansticky = 0;
+                        hack::ExecuteCommand("slot1");
+                    }
+                    else if (CanShoot())
+                    {
+                        Vector tr = (state::nodes[n.connections[i].node].xyz() -
+                                     g_pLocalPlayer->v_Eye);
+                        Vector angles;
+                        VectorAngles(tr, angles);
+                        // Clamping is important
+                        fClampAngle(angles);
+                        g_pLocalPlayer->bUseSilentAngles = true;
+                        float chargebegin =
+                            *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+                        float chargetime = g_GlobalVars->curtime - chargebegin;
 
-            		        // Release Sticky if > chargetime
-            		        if ((chargetime >= 0.1f) && begansticky > 3)
-            		        {
-            		            g_pUserCmd->buttons &= ~IN_ATTACK;
-            		            hacks::shared::antiaim::SetSafeSpace(3);
-            		            begansticky = 0;
-            		        }
-            		        // Else just keep charging
-            		        else
-            		        {
-            		            g_pUserCmd->buttons |= IN_ATTACK;
-            		            begansticky++;
-            		        }
-            		}
-            	}
+                        // Release Sticky if > chargetime
+                        if ((chargetime >= 0.1f) && begansticky > 3)
+                        {
+                            g_pUserCmd->buttons &= ~IN_ATTACK;
+                            hacks::shared::antiaim::SetSafeSpace(3);
+                            begansticky = 0;
+                        }
+                        // Else just keep charging
+                        else
+                        {
+                            g_pUserCmd->buttons |= IN_ATTACK;
+                            begansticky++;
+                        }
+                    }
+                }
             }
         }
     }

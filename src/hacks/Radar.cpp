@@ -82,45 +82,47 @@ std::pair<int, int> WorldToRadar(int x, int y)
              ny + halfsize - (int) icon_size / 2 };
 }
 bool loaded = false;
+bool call   = false;
+struct basesprite
+{
+    float x = 0.0f;
+    float y = 0.0f;
+    float w = 0.0f;
+    float h = 0.0f;
+};
 
+static std::array<std::array<basesprite, 9>, 3> tx_class;
+static std::array<basesprite, 2> tx_teams;
+static std::array<basesprite, 2> tx_items;
 void DrawEntity(int x, int y, CachedEntity *ent)
 {
 
-    static textures::texture_atlas texture(DATA_PATH "/res/atlas.png", 1024,
-                                           512);
+    static draw_api::texture_handle_t texture =
+        draw_api::create_texture(DATA_PATH "/textures/atlas.png");
     if (!loaded)
     {
-        if (texture.texture.handle == GLEZ_TEXTURE_INVALID &&
+        if (texture.handle == GLEZ_TEXTURE_INVALID &&
             invalid.test_and_set(10000))
         {
             logging::Info("Invalid atlas, retrying....");
-            texture.texture.handle =
-                glez_texture_load_png_rgba(DATA_PATH "/res/atlas.png");
+            texture.handle =
+                glez_texture_load_png_rgba(DATA_PATH "/textures/atlas.png");
             return;
         }
-        else if (texture.texture.handle != GLEZ_TEXTURE_INVALID)
+        else if (texture.handle != GLEZ_TEXTURE_INVALID)
             loaded = true;
         return;
     }
-    struct basesprite
-    {
-        textures::sprite sprite = texture.create_sprite(0, 0, 0, 0);
-    };
-
-    static std::array<std::array<basesprite, 9>, 3> tx_class;
-    static std::array<basesprite, 2> tx_teams;
-    static std::array<basesprite, 2> tx_items;
-    bool call = false;
     if (call)
         goto label1;
     for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 9; j++)
-            tx_class[i][j].sprite.setsprite(64 * j, 64 * i, 64, 64);
-    tx_teams[0].sprite.setsprite(11 * 64, 128, 64, 64);
-    tx_teams[1].sprite.setsprite(11 * 64, 64, 64, 64);
-    tx_items[0].sprite.setsprite(10 * 64, 64, 64, 64);
-    tx_items[1].sprite.setsprite(10 * 64, 128, 64, 64);
-    call = true;
+        for (int j         = 0; j < 9; j++)
+            tx_class[i][j] = basesprite{ 64 * j, 64 * i, 64, 64 };
+    tx_teams[0]            = basesprite{ 11 * 64, 128, 64, 64 };
+    tx_teams[1]            = basesprite{ 11 * 64, 64, 64, 64 };
+    tx_items[0]            = basesprite{ 10 * 64, 64, 64, 64 };
+    tx_items[1]            = basesprite{ 10 * 64, 128, 64, 64 };
+    call                   = true;
 label1:
     int idx = -1;
     rgba_t clr;
@@ -141,24 +143,30 @@ label1:
                 return;
             const auto &wtr =
                 WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
-
             if (use_icons)
             {
-                tx_teams[idx].sprite.draw(x + wtr.first, y + wtr.second,
-                                          (int) icon_size, (int) icon_size,
-                                          colors::white);
-                tx_class[2][clazz - 1].sprite.draw(
-                    x + wtr.first, y + wtr.second, (int) icon_size,
-                    (int) icon_size, colors::white);
+                auto team   = tx_teams[idx];
+                auto class2 = tx_class[2][clazz - 1];
+                draw_api::draw_rect_textured(
+                    x + wtr.first, x + wtr.second, (int) icon_size,
+                    (int) icon_size, colors::white, texture, class2.x, class2.y,
+                    class2.w, class2.h, 0.0f);
+                draw_api::draw_rect_textured(x + wtr.first, y + wtr.second,
+                                             (int) icon_size, (int) icon_size,
+                                             colors::white, texture, team.x,
+                                             team.y, team.w, team.h, 0.0f);
             }
             else
             {
-                tx_class[idx][clazz - 1].sprite.draw(
-                    x + wtr.first, y + wtr.second, (int) icon_size,
-                    (int) icon_size, colors::white);
+                auto class1 = tx_class[idx][clazz - 1];
                 draw_api::draw_rect_outlined(
                     x + wtr.first, y + wtr.second, (int) icon_size,
-                    (int) icon_size, idx ? colors::blu_v : colors::red_v, 0.5f);
+                    (int) icon_size, idx ? colors::blu_v : colors::red_v,
+                    0.01f);
+                draw_api::draw_rect_textured(
+                    x + wtr.first, x + wtr.second, (int) icon_size,
+                    (int) icon_size, colors::white, texture, class1.x, class1.y,
+                    class1.w, class1.h, 0.0f);
             }
 
             if (ent->m_iMaxHealth() && healthbar)
@@ -168,12 +176,12 @@ label1:
                 clr = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
                 if (healthp > 1.0f)
                     healthp = 1.0f;
-                draw_api::draw_rect_outlined(
-                    x + wtr.first, y + wtr.second + (int) icon_size,
-                    (int) icon_size, 4, colors::black, 0.5f);
                 draw_api::draw_rect(
                     x + wtr.first + 1, y + wtr.second + (int) icon_size + 1,
                     ((float) icon_size - 2.0f) * healthp, 2, clr);
+                draw_api::draw_rect_outlined(
+                    x + wtr.first, y + wtr.second + (int) icon_size,
+                    (int) icon_size, 4, colors::black, 0.01f);
             }
         }
         else if (ent->m_Type() == ENTITY_BUILDING)
@@ -206,10 +214,13 @@ label1:
             {
                 const auto &wtr =
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
-                float sz  = float(icon_size) * 0.15f * 0.5f;
-                float sz2 = float(icon_size) * 0.85;
-                tx_items[1].sprite.draw(x + wtr.first + sz, y + wtr.second + sz,
-                                        sz2, sz2, colors::white);
+                float sz    = float(icon_size) * 0.15f * 0.5f;
+                float sz2   = float(icon_size) * 0.85;
+                auto items2 = tx_items[1];
+                draw_api::draw_rect_textured(
+                    x + wtr.first + sz, x + wtr.second + sz, sz2, sz2,
+                    colors::white, texture, items2.x, items2.y, items2.w,
+                    items2.h, 0.0f);
             }
             else if (show_ammopacks && (ent->m_ItemType() == ITEM_AMMO_LARGE ||
                                         ent->m_ItemType() == ITEM_AMMO_MEDIUM ||
@@ -217,10 +228,13 @@ label1:
             {
                 const auto &wtr =
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
-                float sz  = float(icon_size) * 0.15f * 0.5f;
-                float sz2 = float(icon_size) * 0.85;
-                tx_items[0].sprite.draw(x + wtr.first + sz, y + wtr.second + sz,
-                                        sz2, sz2, colors::white);
+                float sz    = float(icon_size) * 0.15f * 0.5f;
+                float sz2   = float(icon_size) * 0.85;
+                auto items1 = tx_items[0];
+                draw_api::draw_rect_textured(
+                    x + wtr.first + sz, x + wtr.second + sz, sz2, sz2,
+                    colors::white, texture, items1.x, items1.y, items1.w,
+                    items1.h, 0.0f);
             }
         }
     }
