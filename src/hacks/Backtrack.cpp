@@ -200,6 +200,8 @@ void Draw()
         return;
     if (!draw_bt)
         return;
+    if (!shouldDrawBt)
+        return;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         for (int j = 0; j < ticks; j++)

@@ -16,7 +16,7 @@ sudo apt install build-essential git gcc-multilib g++-multilib software-properti
 
 git fetch # fetch github repo for udpates
 git pull origin # pull changes from github
-git submodule update --remote --recursive # update submodules
+git submodule update --init --recursive # update/init submodules
 
 #
 # Build cathook
