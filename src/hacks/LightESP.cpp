@@ -8,7 +8,7 @@ namespace shared
 namespace lightesp
 {
 
-CatVar enable(CV_SWITCH, "lightesp_enabled", "0", "Enable LightESP",
+static CatVar enable(CV_SWITCH, "lightesp_enabled", "0", "Enable LightESP",
               "Lightweight ESP. Only shows head.");
 Vector hitp[32];
 Vector minp[32];
