@@ -16,3 +16,4 @@ void render_cheat_visuals();
 void BeginCheatVisuals();
 void DrawCheatVisuals();
 void EndCheatVisuals();
+void DrawCache();
