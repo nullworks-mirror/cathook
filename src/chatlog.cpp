@@ -134,7 +134,10 @@ void LogMessage(int eid, std::string message)
             x = '*';
     }
     logger() << std::to_string(time(nullptr)) << std::to_string(info.friendsID)
-             << name << message << std::to_string(ipc::peer->client_id)
+             << name << message
+#if ENABLE_IPC
+             << std::to_string(ipc::peer ? ipc::peer->client_id : 0)
+#endif
              << csv_stream::end;
 }
 }

@@ -4,7 +4,7 @@
 */
 
 #include "HookedMethods.hpp"
-#include "Radar.hpp"
+#include "hacks/Radar.hpp"
 
 CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
                          "Clean screenshots",

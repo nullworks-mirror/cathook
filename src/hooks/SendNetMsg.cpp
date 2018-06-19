@@ -38,11 +38,12 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                 msg = msg.substr(0, msg.length() - 2);
                 if (msg.find("!!") == 0)
                 {
-                	// Change this version if you want version A back, look at ucccccp docs for more info
-                	char Version = 'B';
-                    msg  = ucccccp::encrypt(msg.substr(2), Version);
-                    str  = str.substr(0, offset) + msg + "\"\"";
-                    crpt = true;
+                    // Change this version if you want version A back, look at
+                    // ucccccp docs for more info
+                    char Version = 'B';
+                    msg          = ucccccp::encrypt(msg.substr(2), Version);
+                    str          = str.substr(0, offset) + msg + "\"\"";
+                    crpt         = true;
                 }
             }
             if (!crpt && newlines_msg)

@@ -7,8 +7,10 @@
 
 #include "visual/fidgetspinner.hpp"
 #include "common.hpp"
+#include "../../external/libglez/ftgl/freetype-gl.h"
 
 #include <math.h>
+#include <glez/draw.hpp>
 
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
 
@@ -62,9 +64,8 @@ static CatVar spinner_scale(CV_FLOAT, "fidgetspinner_scale", "32",
 static CatVar spinner_min_speed(CV_FLOAT, "fidgetspinner_min_speed", "2",
                                 "Spinner Min Speed");
 
-draw_api::texture_handle_t text{ GLEZ_TEXTURE_INVALID };
-
 Timer retrytimer{};
+
 void DrawSpinner()
 {
     if (not enable_spinner)
@@ -94,20 +95,9 @@ void DrawSpinner()
     angle += speed_scale * real_speed;
     int state = min(3, int(spinning_speed / 250));
 
-    const glez_rgba_t color = glez_rgba(255, 255, 255, 255);
-
-    if (text.handle == GLEZ_TEXTURE_INVALID)
-    {
-    	if (retrytimer.test_and_set(5000))
-    	{
-    		logging::Info("Invalid texture, retrying...");
-    		text = draw_api::create_texture(DATA_PATH "/textures/atlas.png");
-    	}
-    	return;
-    }
-    draw_api::draw_rect_textured(draw::width / 2, draw::height / 2, size, size,
-                                 colors::white, text, 0 + 64 * state,
-                                 (3 + (v9mode ? 1 : 0)) * 64, 64, 64, angle);
+    glez::draw::rect_textured(draw::width / 2, draw::height / 2, size, size,
+                                 colors::white, textures::atlas().texture, 64 * state,
+                                 (3 + (v9mode ? 0 : 1)) * 64, 64, 64, angle);
     if (angle > PI * 4)
         angle -= PI * 4;
 }

@@ -7,7 +7,14 @@
 
 #include "common.hpp"
 
-#include <GL/gl.h>
+#include <glez/glez.hpp>
+#include <glez/draw.hpp>
+#include <GL/glew.h>
+#include <SDL_video.h>
+#include <SDLHooks.hpp>
+#if EXTERNAL_DRAWING
+#include "xoverlay.h"
+#endif
 
 std::array<std::string, 32> side_strings;
 std::array<std::string, 32> center_strings;
@@ -39,21 +46,20 @@ void DrawStrings()
     int y{ 8 };
     for (size_t i = 0; i < side_strings_count; ++i)
     {
-        draw_api::draw_string_with_outline(
-            8, y, side_strings[i].c_str(), fonts::main_font,
-            side_strings_colors[i], colors::black, 1.5f);
-        y += /*((int)fonts::font_main->height)*/ 14 + 1;
+        glez::draw::outlined_string(
+            8, y, side_strings[i].c_str(), *fonts::menu,
+            side_strings_colors[i], colors::black, nullptr, nullptr);
+        y += fonts::menu->size + 1;
     }
     y = draw::height / 2;
     for (size_t i = 0; i < center_strings_count; ++i)
     {
         float sx, sy;
-        draw_api::get_string_size(center_strings[i].c_str(), fonts::main_font,
-                                  &sx, &sy);
-        draw_api::draw_string_with_outline(
+        fonts::menu->stringSize(center_strings[i], &sx, &sy);
+        glez::draw::outlined_string(
             (draw::width - sx) / 2, y, center_strings[i].c_str(),
-            fonts::main_font, center_strings_colors[i], colors::black, 1.5f);
-        y += /*((int)fonts::font_main->height)*/ 14 + 1;
+            *fonts::menu, center_strings_colors[i], colors::black, nullptr, nullptr);
+        y += fonts::menu->size + 1;
     }
 }
 
@@ -73,8 +79,9 @@ std::mutex draw::draw_mutex;
 namespace fonts
 {
 
-draw_api::font_handle_t main_font;
-draw_api::font_handle_t esp_font;
+std::unique_ptr<glez::font> menu{ nullptr };
+std::unique_ptr<glez::font> esp{ nullptr };
+
 }
 
 void draw::Initialize()
@@ -83,10 +90,9 @@ void draw::Initialize()
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
-    fonts::main_font =
-        draw_api::create_font(DATA_PATH "/fonts/verasans.ttf", 14);
-    fonts::esp_font =
-        draw_api::create_font(DATA_PATH "/fonts/verasans.ttf", 14);
+    glez::preInit();
+    fonts::menu.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
+    fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
 }
 
 bool draw::EntityCenterToScreen(CachedEntity *entity, Vector &out)
@@ -134,4 +140,66 @@ bool draw::WorldToScreen(const Vector &origin, Vector &screen)
         return true;
     }
     return false;
+}
+
+SDL_GLContext context = nullptr;
+
+void draw::InitGL()
+{
+    logging::Info("InitGL: %d, %d", draw::width, draw::height);
+#if EXTERNAL_DRAWING
+    int status = xoverlay_init();
+    xoverlay_draw_begin();
+    glez::init(xoverlay_library.width, xoverlay_library.height);
+    xoverlay_draw_end();
+    if (status < 0)
+    {
+        logging::Info("ERROR: could not initialize Xoverlay: %d", status);
+    }
+    else
+    {
+        logging::Info("Xoverlay initialized");
+    }
+    xoverlay_show();
+    context = SDL_GL_CreateContext(sdl_hooks::window);
+#else
+    glClearColor(1.0, 0.0, 0.0, 0.5);
+    glewExperimental = GL_TRUE;
+    glewInit();
+    glez::init(draw::width, draw::height);
+#endif
+}
+
+void draw::BeginGL()
+{
+    glColor3f(1, 1, 1);
+    PROF_SECTION(DRAWEX_draw_begin);
+#if EXTERNAL_DRAWING
+    xoverlay_draw_begin();
+    {
+        PROF_SECTION(draw_begin__SDL_GL_MakeCurrent);
+        // SDL_GL_MakeCurrent(sdl_hooks::window, context);
+    }
+#endif
+    {
+        glActiveTexture(GL_TEXTURE0);
+        PROF_SECTION(draw_begin__glez_begin);
+        glez::begin();
+    }
+}
+
+void draw::EndGL()
+{
+    PROF_SECTION(DRAWEX_draw_end);
+    {
+        PROF_SECTION(draw_end__glez_end);
+        glez::end();
+    }
+#if EXTERNAL_DRAWING
+    xoverlay_draw_end();
+    {
+        PROF_SECTION(draw_end__SDL_GL_MakeCurrent);
+        SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
+    }
+#endif
 }

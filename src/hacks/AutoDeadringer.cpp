@@ -14,6 +14,8 @@ namespace deadringer
 static CatVar
     enabled(CV_SWITCH, "deadringer_auto", "0", "Auto deadringer",
             "automatically pull out DR on low health or projectile nearby");
+static CatVar trigger_health(CV_SWITCH, "deadringer_health", "30", "Health",
+                             "Trigger on this much health or less");
 
 bool IsProjectile(CachedEntity *ent)
 {
@@ -52,7 +54,10 @@ void CreateMove()
         return;
     if (CE_BAD(LOCAL_E))
         return;
-    if (CE_INT(LOCAL_E, netvar.iHealth) < 30 && NearbyEntities() > 1)
+    if (CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
+        return;
+    if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health &&
+        NearbyEntities() > 1)
         g_pUserCmd->buttons |= IN_ATTACK2;
     for (int i = 0; i < HIGHEST_ENTITY; i++)
     {

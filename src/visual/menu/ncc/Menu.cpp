@@ -136,6 +136,7 @@ static const std::string list_hl2dm = R"(
 	"ESP" [
 		"ESP Menu"
 		"esp_enabled"
+		"esp_range"
 		"font_esp_family"
 		"font_esp_height"
 		"esp_name"
@@ -512,7 +513,6 @@ static const std::string list_tf2 = R"(
 				"Emoji ESP"[
 					"Emoji ESP Menu"
 					"esp_emoji"
-					"esp_okhand"
 					"esp_emoji_size"
 				]
 				]

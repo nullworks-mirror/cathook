@@ -6,7 +6,7 @@
  */
 
 #include "common.hpp"
-#include "Backtrack.hpp"
+#include "hacks/Backtrack.hpp"
 
 namespace hacks
 {

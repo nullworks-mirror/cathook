@@ -78,7 +78,10 @@ public: // TODo, unknown reverse
 
     inline operator bool() const
     {
-        return !!convar_parent->m_nValue;
+    	if (this && convar_parent && convar_parent->IsRegistered() && this->registered)
+    		return !!convar_parent->m_nValue;
+    	else
+    		return false;
     }
     inline operator int() const
     {

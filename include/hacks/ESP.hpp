@@ -35,12 +35,12 @@ public:
     bool has_collide{ false };
     Vector collide_max{ 0, 0, 0 };
     Vector collide_min{ 0, 0, 0 };
+    bool transparent{ false };
 };
 
 // Init
 void Init();
 extern std::array<ESPData, 2048> data;
-extern hitbox_cache::CachedHitbox *hitboxcache[32][18];
 
 void CreateMove();
 void Draw();

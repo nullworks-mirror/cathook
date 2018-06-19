@@ -12,6 +12,7 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <hacks/hacklist.hpp>
+#include <glez/draw.hpp>
 
 namespace hacks
 {
@@ -72,7 +73,7 @@ enum EConnectionFlags
     CF_CAPPED_4 = (1 << 8),
     CF_CAPPED_5 = (1 << 9),
 
-	CF_STICKYBOMB = (1 << 10)
+    CF_STICKYBOMB = (1 << 10)
 };
 
 struct connection_s
@@ -647,7 +648,7 @@ std::string DescribeConnection(index_t node, connection conn)
         }
         if (c.flags & CF_STICKYBOMB)
         {
-        	extra += "S";
+            extra += "S";
         }
     }
     std::string result =
@@ -860,44 +861,51 @@ index_t SelectNextNode()
             {
                 return n.connections[i].node;
             }
-            if (not(n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)) && not(n.connections[i].flags & CF_STICKYBOMB))
+            if (not(n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)) &&
+                not(n.connections[i].flags & CF_STICKYBOMB))
                 chance.push_back(n.connections[i].node);
-            if ((n.connections[i].flags & CF_STICKYBOMB) && g_pLocalPlayer->clazz == tf_demoman)
+            if ((n.connections[i].flags & CF_STICKYBOMB) &&
+                g_pLocalPlayer->clazz == tf_demoman)
             {
-            	state::node_good(n.connections[i].node);
-            	if (IsVectorVisible(state::nodes[n.connections[i].node].xyz(), g_pLocalPlayer->v_Eye) && g_pLocalPlayer->v_Eye.DistTo(state::nodes[n.connections[i].node].xyz()) < 400.0f)
-            	{
-            		if (re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)) != 1)
-            		{
-            			begansticky = 0;
-            			hack::ExecuteCommand("slot1");
-            		}
-            		else if (CanShoot())
-            		{
-            			 Vector tr = (state::nodes[n.connections[i].node].xyz() - g_pLocalPlayer->v_Eye);
-            			 Vector angles;
-            			 VectorAngles(tr, angles);
-            			 // Clamping is important
-            			 fClampAngle(angles);
-            			 g_pLocalPlayer->bUseSilentAngles = true;
-            		        float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
-            		        float chargetime  = g_GlobalVars->curtime - chargebegin;
+                state::node_good(n.connections[i].node);
+                if (IsVectorVisible(state::nodes[n.connections[i].node].xyz(),
+                                    g_pLocalPlayer->v_Eye) &&
+                    g_pLocalPlayer->v_Eye.DistTo(
+                        state::nodes[n.connections[i].node].xyz()) < 400.0f)
+                {
+                    if (re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)) != 1)
+                    {
+                        begansticky = 0;
+                        hack::ExecuteCommand("slot1");
+                    }
+                    else if (CanShoot())
+                    {
+                        Vector tr = (state::nodes[n.connections[i].node].xyz() -
+                                     g_pLocalPlayer->v_Eye);
+                        Vector angles;
+                        VectorAngles(tr, angles);
+                        // Clamping is important
+                        fClampAngle(angles);
+                        g_pLocalPlayer->bUseSilentAngles = true;
+                        float chargebegin =
+                            *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+                        float chargetime = g_GlobalVars->curtime - chargebegin;
 
-            		        // Release Sticky if > chargetime
-            		        if ((chargetime >= 0.1f) && begansticky > 3)
-            		        {
-            		            g_pUserCmd->buttons &= ~IN_ATTACK;
-            		            hacks::shared::antiaim::SetSafeSpace(3);
-            		            begansticky = 0;
-            		        }
-            		        // Else just keep charging
-            		        else
-            		        {
-            		            g_pUserCmd->buttons |= IN_ATTACK;
-            		            begansticky++;
-            		        }
-            		}
-            	}
+                        // Release Sticky if > chargetime
+                        if ((chargetime >= 0.1f) && begansticky > 3)
+                        {
+                            g_pUserCmd->buttons &= ~IN_ATTACK;
+                            hacks::shared::antiaim::SetSafeSpace(3);
+                            begansticky = 0;
+                        }
+                        // Else just keep charging
+                        else
+                        {
+                            g_pUserCmd->buttons |= IN_ATTACK;
+                            begansticky++;
+                        }
+                    }
+                }
             }
         }
     }
@@ -1072,7 +1080,7 @@ void DrawConnection(index_t a, connection_s &b)
     else if ((a_.flags & b_.flags) & NF_DUCK)
         color = &colors::green;
 
-    draw_api::draw_line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y,
+    glez::draw::line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y,
                         *color, 0.5f);
 
     if (draw_connection_flags && b.flags != CF_GOOD)
@@ -1084,8 +1092,8 @@ void DrawConnection(index_t a, connection_s &b)
             flags += "H";
         // int size_x = 0, size_y = 0;
         // FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-        draw_api::draw_string(wts_cc.x, wts_cc.y - 4, flags.c_str(),
-                              fonts::main_font, colors::white);
+        glez::draw::string(wts_cc.x, wts_cc.y - 4, flags,
+                              *fonts::menu, colors::white, nullptr, nullptr);
     }
 }
 
@@ -1123,7 +1131,7 @@ void DrawNode(index_t node, bool draw_back)
         if (node == state::active_node)
             color = &colors::red;
 
-        draw_api::draw_rect(wts.x - node_size, wts.y - node_size, 2 * node_size,
+        glez::draw::rect(wts.x - node_size, wts.y - node_size, 2 * node_size,
                             2 * node_size, *color);
     }
 
@@ -1139,9 +1147,9 @@ void DrawNode(index_t node, bool draw_back)
         if (not draw::WorldToScreen(n.xyz(), wts))
             return;
 
-        draw_api::draw_string_with_outline(
-            wts.x, wts.y, std::to_string(node).c_str(), fonts::main_font,
-            *color, colors::black, 1.5f);
+        glez::draw::outlined_string(
+            wts.x, wts.y, std::to_string(node).c_str(), *fonts::menu,
+            *color, colors::black, nullptr, nullptr);
     }
 }
 
