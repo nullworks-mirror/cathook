@@ -6,7 +6,7 @@
  */
 
 #include <core/logging.hpp>
-#include <netmessage.hpp>
+#include <sdk/netmessage.hpp>
 #include "common.hpp"
 
 bf_write::bf_write()

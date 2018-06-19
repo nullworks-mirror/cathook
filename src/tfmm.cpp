@@ -6,7 +6,7 @@
  */
 
 #include "common.hpp"
-#include "AutoJoin.hpp"
+#include "hacks/AutoJoin.hpp"
 
 CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue",
                            []() { tfmm::queue_start(); });

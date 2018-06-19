@@ -6,8 +6,9 @@
  */
 
 #include "common.hpp"
-#include "Backtrack.hpp"
+#include "hacks/Backtrack.hpp"
 #include <boost/circular_buffer.hpp>
+#include <glez/draw.hpp>
 
 namespace hacks
 {
@@ -215,10 +216,10 @@ void Draw()
                     size = abs(max.y - min.y);
 
                 if (i == iBestTarget && j == BestTick)
-                    draw_api::draw_rect(out.x, out.y, size / 2, size / 2,
+                    glez::draw::rect(out.x, out.y, size / 2, size / 2,
                                         colors::red);
                 else
-                    draw_api::draw_rect(out.x, out.y, size / 4, size / 4,
+                    glez::draw::rect(out.x, out.y, size / 4, size / 4,
                                         colors::green);
             }
         }

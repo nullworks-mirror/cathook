@@ -6,6 +6,7 @@
 #include <SDL2/SDL_syswm.h>
 #include <MiscTemporary.hpp>
 #include <visual/SDLHooks.hpp>
+#include <glez/draw.hpp>
 #include "HookedMethods.hpp"
 
 static bool init{ false };
@@ -43,7 +44,7 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
         PROF_SECTION(SWAPWINDOW_cathook);
         if (not init)
         {
-            draw_api::initialize();
+            draw::InitGL();
             init = true;
         }
         render_cheat_visuals();

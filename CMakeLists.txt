@@ -64,11 +64,13 @@ endif()
 
 if(EnableVisuals)
     add_subdirectory(external/libglez)
+    target_include_directories(cathook PRIVATE include/visual)
     find_package(SDL2 REQUIRED)
     find_package(GLEW REQUIRED)
     if(ExternalDrawing)
         add_subdirectory(external/libxoverlay)
         target_link_libraries(cathook xoverlay)
+        target_include_directories(cathook PRIVATE external/libxoverlay/include)
     endif()
     target_include_directories(cathook PRIVATE "${SDL2_INCLUDE_DIRS}")
     target_link_libraries(cathook glez ${ValveLibrarySDL2} ${GLEW_LIBRARIES})
@@ -104,10 +106,12 @@ target_include_directories(cathook PRIVATE "external/ucccccp")
 
 if(EnableWarnings)
     target_compile_options(cathook PRIVATE -Wall -Wextra)
+else()
+    target_compile_options(cathook PRIVATE -w)
 endif()
 
-add_subdirectory(include)
-add_subdirectory(src)
+
+target_include_directories(cathook PRIVATE include include/hooks)
 
 add_custom_target(data
         bash ./install-data "${DataPath}"
@@ -124,6 +128,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_custom_command(TARGET cathook POST_BUILD
             COMMAND strip --strip-all "$<TARGET_FILE:cathook>")
 endif()
+
+add_subdirectory(src)
+add_subdirectory(include)
 
 add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
