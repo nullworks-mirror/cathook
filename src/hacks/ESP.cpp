@@ -388,7 +388,11 @@ void CreateMove()
             }
             // No idea, this is confusing
             if (data[ent->m_IDX].needs_paint)
+            {
+                if (vischeck)
+                    data[ent->m_IDX].transparent = !ent->IsVisible();
                 entities_need_repaint.push_back(ent->m_IDX);
+            }
         }
     }
 }
@@ -509,9 +513,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     ent_data.has_collide = false;
 
     // Get if ent should be transparent
-    bool transparent = false;
-    if (vischeck && !ent->IsVisible())
-        transparent = true;
+    bool transparent = vischeck && ent_data.transparent;
 
     // Bone esp
     if (draw_bones && type == ENTITY_PLAYER)
