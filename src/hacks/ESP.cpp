@@ -472,7 +472,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                         glez::draw::rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
                             size, colors::white, textures::atlas().texture,
-                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, 3 * 64,
+                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, (v9mode ? 3 : 4) * 64,
                             64, 64, 0);
                 }
             }
