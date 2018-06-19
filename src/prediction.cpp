@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <glez/draw.hpp>
 #include "common.hpp"
 
 // TODO there is a Vector() object created each call.
@@ -98,7 +99,7 @@ void Prediction_PaintTraverse()
                 Vector screen;
                 if (draw::WorldToScreen(predicted_players[i][j], screen))
                 {
-                    draw_api::draw_line(
+                    glez::draw::line(
                         screen.x, screen.y, previous_screen.x - screen.x,
                         previous_screen.y - screen.y, color, 0.5f);
                     previous_screen = screen;

@@ -35,6 +35,7 @@ public:
     bool has_collide{ false };
     Vector collide_max{ 0, 0, 0 };
     Vector collide_min{ 0, 0, 0 };
+    bool transparent{ false };
 };
 
 // Init

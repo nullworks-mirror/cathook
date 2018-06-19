@@ -7,6 +7,7 @@
 
 #include "common.hpp"
 #include <hacks/AutoReflect.hpp>
+#include <glez/draw.hpp>
 
 namespace hacks
 {
@@ -237,7 +238,7 @@ void Draw()
                 float radius = tan(DEG2RAD(float(fov)) / 2) /
                                tan(DEG2RAD(fov_real) / 2) * (width);
 
-                draw_api::draw_circle(width / 2, height / 2, radius, color, 1,
+                glez::draw::circle(width / 2, height / 2, radius, color, 1,
                                       100);
             }
         }

@@ -51,7 +51,7 @@
 #include <iprediction.h>
 #include <engine/ICollideable.h>
 #include <icommandline.h>
-#include <netmessage.hpp>
+#include <sdk/netmessage.hpp>
 #include <dbg.h>
 #include <ienginevgui.h>
 
