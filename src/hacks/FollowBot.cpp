@@ -9,6 +9,7 @@
 #include "common.hpp"
 #include <hacks/FollowBot.hpp>
 #include <hacks/LagExploit.hpp>
+#include <glez/draw.hpp>
 
 namespace hacks
 {
@@ -66,7 +67,7 @@ void WorldTick()
     }
 
     // We need a local player to control
-    if (CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
     {
         follow_target = 0;
         return;
@@ -192,9 +193,9 @@ void WorldTick()
     if (dist_to_target > (float) follow_distance)
     {
         // Check for idle
-    	if (idle_time.check(1000) || LOCAL_E->m_vecVelocity.IsZero(3.0f))
-    		g_pUserCmd->buttons |= IN_JUMP;
-        if (idle_time.test_and_set(3000))
+        if (idle_time.check(3000) || (breadcrumbs.size() > 1 && LOCAL_E->m_vecVelocity.IsZero(5.0f)))
+            g_pUserCmd->buttons |= IN_JUMP;
+        if (idle_time.test_and_set(5000))
         {
             follow_target = 0;
             return;
@@ -281,15 +282,15 @@ void DrawTick()
         if (draw::WorldToScreen(breadcrumbs[i], wts1) &&
             draw::WorldToScreen(breadcrumbs[i + 1], wts2))
         {
-            draw_api::draw_line(wts1.x, wts1.y, wts2.x - wts1.x,
+            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x,
                                 wts2.y - wts1.y, colors::white, 0.1f);
         }
     }
     Vector wts;
     if (!draw::WorldToScreen(breadcrumbs[0], wts))
         return;
-    draw_api::draw_rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
-    draw_api::draw_rect_outlined(wts.x - 4, wts.y - 4, 7, 7, colors::white,
+    glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
+    glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white,
                                  1.0f);
 #endif
 }

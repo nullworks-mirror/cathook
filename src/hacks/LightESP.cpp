@@ -1,4 +1,5 @@
-#include "LightESP.hpp"
+#include <glez/draw.hpp>
+#include "hacks/LightESP.hpp"
 
 namespace hacks
 {
@@ -63,7 +64,7 @@ void draw()
             else
                 size = abs(maxp[i].y - minp[i].y);
 
-            draw_api::draw_rect(
+            glez::draw::rect(
                 out.x, out.y, size / 4, size / 4,
                 hacks::shared::lightesp::LightESPColor(pEntity));
         }

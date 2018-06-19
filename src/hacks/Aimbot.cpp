@@ -9,6 +9,7 @@
 #include <hacks/CatBot.hpp>
 #include <hacks/AntiAim.hpp>
 #include <hacks/ESP.hpp>
+#include <glez/draw.hpp>
 #include "common.hpp"
 
 namespace hacks
@@ -1326,7 +1327,7 @@ void DrawText()
                 float radius = tan(DEG2RAD(float(fov)) / 2) /
                                tan(DEG2RAD(fov_real) / 2) * (width);
 
-                draw_api::draw_circle(width / 2, height / 2, radius, color, 1,
+                glez::draw::circle(width / 2, height / 2, radius, color, 1,
                                       100);
             }
         }
@@ -1345,9 +1346,9 @@ void DrawText()
                                     screen) &&
                 draw::WorldToScreen(ent->m_vecOrigin(), oscreen))
             {
-                draw_api::draw_rect(screen.x - 2, screen.y - 2, 4, 4,
+                glez::draw::rect(screen.x - 2, screen.y - 2, 4, 4,
                                     colors::white);
-                draw_api::draw_line(oscreen.x, oscreen.y, screen.x - oscreen.x,
+                glez::draw::line(oscreen.x, oscreen.y, screen.x - oscreen.x,
                                     screen.y - oscreen.y, colors::EntityF(ent),
                                     0.5f);
             }

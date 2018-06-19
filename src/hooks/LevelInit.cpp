@@ -7,7 +7,7 @@
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
 #if not LAGBOT_MODE
-#include "Backtrack.hpp"
+#include "hacks/Backtrack.hpp"
 #endif
 
 const char *skynum[] = { "sky_tf2_04",

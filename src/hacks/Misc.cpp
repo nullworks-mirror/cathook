@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <link.h>
 #include <hacks/AntiAim.hpp>
+#include <glez/draw.hpp>
 
 #include "core/sharedobj.hpp"
 
@@ -386,7 +387,7 @@ void DrawText()
                 0.85f, 0.9f);
             gaybow.a = .5;
             // Draw next step
-            draw_api::draw_rect(0, step * (i - 1), width,
+            glez::draw::rect(0, step * (i - 1), width,
                                 (step * i) - (step * (i - 1)), gaybow);
         }
 

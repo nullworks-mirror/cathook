@@ -55,11 +55,11 @@ bool CTFGCClientSystem::BHaveLiveMatch()
     if (!addr)
     {
         logging::Info("calling NULL!");
-        addr = gSignatures.GetClientSignature("55 31 C0 89 E5 53 8B 4D ? 0F B6 91");
+        addr = gSignatures.GetClientSignature(
+            "55 31 C0 89 E5 53 8B 4D ? 0F B6 91");
         return true;
     }
-    static BHaveLiveMatch_t BHaveLiveMatch_fn =
-        BHaveLiveMatch_t(addr);
+    static BHaveLiveMatch_t BHaveLiveMatch_fn = BHaveLiveMatch_t(addr);
     return BHaveLiveMatch_fn(this);
 }
 

@@ -6,6 +6,7 @@
  */
 
 #include <hacks/ESP.hpp>
+#include <glez/draw.hpp>
 #include "common.hpp"
 
 namespace hacks
@@ -18,6 +19,10 @@ namespace esp
 // Main Switch
 static CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP",
                       "Master ESP switch");
+
+// Distance limit
+static CatVar max_dist(CV_FLOAT, "esp_range", "5000.0f", "ESP Range",
+                       "Max ESP Range");
 // Box esp + Options
 static CatEnum box_esp_enum({ "None", "Normal", "Corners" });
 static CatVar box_esp(box_esp_enum, "esp_box", "2", "Box", "Draw a 2D box");
@@ -36,8 +41,6 @@ static CatVar
 static CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
 static CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP",
                         "Draw emoji on peopels head");
-static CatVar emoji_ok(CV_SWITCH, "esp_okhand", "0", "ok_hand",
-                       "Draw ok_hand on hands");
 static CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size",
                              "Emoji size");
 static CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1",
@@ -46,7 +49,6 @@ static CatVar
     emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size",
                    "Minimum size for an emoji when you use auto scaling");
 
-hitbox_cache::CachedHitbox *hitboxcache[32][18]{};
 // Other esp options
 static CatEnum show_health_enum({ "None", "Text", "Healthbar", "Both" });
 static CatVar show_health(show_health_enum, "esp_health", "3", "Health ESP",
@@ -154,8 +156,6 @@ static CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
 std::mutex threadsafe_mutex;
 // Storage array for keeping strings and other data
 std::array<ESPData, 2048> data;
-std::array<const model_t *, 1024> modelcache;
-std::array<studiohdr_t *, 1024> stdiocache;
 // Storage vars for entities that need to be re-drawn
 std::vector<int> entities_need_repaint{};
 std::mutex entities_need_repaint_mutex{};
@@ -251,7 +251,7 @@ struct bonelist_s
             }
             if (i > 0)
             {
-                draw_api::draw_line(last_screen.x, last_screen.y,
+                glez::draw::line(last_screen.x, last_screen.y,
                                     current_screen.x - last_screen.x,
                                     current_screen.y - last_screen.y, color,
                                     0.5f);
@@ -350,25 +350,9 @@ void CreateMove()
         {
             // Get an entity from the loop tick and process it
             CachedEntity *ent = ENTITY(i);
+
             ProcessEntity(ent);
 
-            if (i <= g_IEngine->GetMaxClients())
-            {
-                if (!CE_BAD(ent))
-                {
-                    for (int j            = 0; j < 18; ++j)
-                        hitboxcache[i][j] = ent->hitboxes.GetHitbox(j);
-                    if (draw_bones && ent->m_Type() == ENTITY_PLAYER)
-                    {
-                        modelcache[i] = RAW_ENT(ent)->GetModel();
-                        if (modelcache[i])
-                        {
-                            stdiocache[i] =
-                                g_IModelInfo->GetStudiomodel(modelcache[i]);
-                        }
-                    }
-                }
-            }
             // Dont know what this check is for
             if (data[i].string_count)
             {
@@ -387,71 +371,39 @@ void CreateMove()
             }
             // No idea, this is confusing
             if (data[ent->m_IDX].needs_paint)
+            {
+                if (vischeck)
+                    data[ent->m_IDX].transparent = !ent->IsVisible();
                 entities_need_repaint.push_back(ent->m_IDX);
+            }
         }
     }
 }
-static glez_texture_t idspecific;
-static glez_texture_t textur;
+
+static glez::texture atlas{ DATA_PATH "/textures/atlas.png" };
+static glez::texture idspec{ DATA_PATH "/textures/idspec.png" };
+
 Timer retry{};
 void Init()
 {
-    esp_font_scale.InstallChangeCallback(
+    /*esp_font_scale.InstallChangeCallback(
         [](IConVar *var, const char *pszOldValue, float flOldValue) {
-            if (fonts::esp_font.handle != GLEZ_FONT_INVALID)
-                draw_api::destroy_font(fonts::esp_font);
-            fonts::esp_font = draw_api::create_font(
-                DATA_PATH "/fonts/verasans.ttf", esp_font_scale);
-        });
-    textur     = glez_texture_load_png_rgba(DATA_PATH "/textures/atlas.png");
-    idspecific = glez_texture_load_png_rgba(DATA_PATH "/textures/idspec.png");
-    if (textur == GLEZ_TEXTURE_INVALID)
-    {
-        logging::Info("Invalid atlas, retrying in 10 seconds....");
-        while (1)
-        {
-            if (retry.test_and_set(10000))
-            {
-                textur =
-                    glez_texture_load_png_rgba(DATA_PATH "/textures/atlas.png");
-                if (textur != GLEZ_TEXTURE_INVALID)
-                    break;
-                logging::Info("Invalid atlas, retrying in 10 seconds....");
-            }
-        }
-    }
-    if (idspecific == GLEZ_TEXTURE_INVALID)
-    {
-        logging::Info("Invalid idspecific, retrying in 10 seconds....");
-        while (1)
-        {
-            if (retry.test_and_set(10000))
-            {
-                idspecific = glez_texture_load_png_rgba(DATA_PATH
-                                                        "/textures/idspec.png");
-                if (idspecific != GLEZ_TEXTURE_INVALID)
-                    break;
-                logging::Info("Invalid idspecific, retrying in 10 seconds....");
-            }
-        }
-    }
+            logging::Info("current font: %p %s %d", fonts::esp.get(), fonts::esp->path.c_str(), fonts::esp->isLoaded());
+            fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", esp_font_scale));
+        });*/
 }
+
 void _FASTCALL emoji(CachedEntity *ent)
 {
     // Check to prevent crashes
     if (CE_BAD(ent))
-        return;
-    if (textur == GLEZ_TEXTURE_INVALID)
         return;
     // Emoji esp
     if (emoji_esp)
     {
         if (ent->m_Type() == ENTITY_PLAYER)
         {
-
-            if (emoji_ok)
-                auto hit = hitboxcache[ent->m_IDX][0];
-            auto hit     = hitboxcache[ent->m_IDX][0];
+            auto hit = ent->hitboxes.GetHitbox(0);
             Vector hbm, hbx;
             if (draw::WorldToScreen(hit->min, hbm) &&
                 draw::WorldToScreen(hit->max, hbx))
@@ -467,7 +419,6 @@ void _FASTCALL emoji(CachedEntity *ent)
                         return;
                     if (emoji_esp_scaling && (size < float(emoji_min_size)))
                         size          = float(emoji_min_size);
-                    glez_rgba_t white = glez_rgba(255, 255, 255, 255);
                     player_info_s info;
                     unsigned int steamID;
                     unsigned int steamidarray[32]{};
@@ -479,35 +430,33 @@ void _FASTCALL emoji(CachedEntity *ent)
                     steamidarray[4] = 854198748;
                     if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
                         steamID = info.friendsID;
-                    if (idspecific != GLEZ_TEXTURE_INVALID &&
-                        playerlist::AccessData(steamID).state ==
+                    if (playerlist::AccessData(steamID).state ==
                             playerlist::k_EState::CAT)
-                        glez_rect_textured(
+                        glez::draw::rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
-                            size, white, idspecific, 2 * 64, 1 * 64, 64, 64, 0);
-                    if (idspecific != GLEZ_TEXTURE_INVALID)
-                        for (int i = 0; i < 4; i++)
+                            size, glez::color::white, idspec, 2 * 64, 1 * 64, 64, 64, 0);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (steamID == steamidarray[i])
                         {
-                            if (steamID == steamidarray[i])
+                            static int ii = 1;
+                            while (i > 3)
                             {
-                                static int ii = 1;
-                                while (i > 3)
-                                {
-                                    ii++;
-                                    i -= 4;
-                                }
-                                glez_rect_textured(head_scr.x - size / 2,
-                                                   head_scr.y - size / 2, size,
-                                                   size, white, idspecific,
-                                                   i * 64, ii * 64, 64, 64, 0);
-                                hascall = true;
+                                ii++;
+                                i -= 4;
                             }
+                            glez::draw::rect_textured(head_scr.x - size / 2,
+                                               head_scr.y - size / 2, size,
+                                               size, glez::color::white, idspec,
+                                               i * 64, ii * 64, 64, 64, 0);
+                            hascall = true;
                         }
-                    if (textur && !hascall)
-                        draw_api::draw_rect_textured(
+                    }
+                    if (!hascall)
+                        glez::draw::rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
-                            size, colors::white, { textur },
-                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, 3 * 64,
+                            size, colors::white, textures::atlas().texture,
+                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, (v9mode ? 3 : 4) * 64,
                             64, 64, 0);
                 }
             }
@@ -544,17 +493,15 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     ent_data.has_collide = false;
 
     // Get if ent should be transparent
-    bool transparent = false;
-    if (vischeck && !ent->IsVisible())
-        transparent = true;
+    bool transparent = vischeck && ent_data.transparent;
 
     // Bone esp
     if (draw_bones && type == ENTITY_PLAYER)
     {
-        const model_t *model = modelcache[ent->m_IDX];
+        const model_t *model = RAW_ENT(ent)->GetModel();
         if (model)
         {
-            auto hdr = stdiocache[ent->m_IDX];
+            auto hdr = g_IModelInfo->GetStudiomodel(model);
             bonelist_map[hdr].Draw(ent, fg);
         }
     }
@@ -578,7 +525,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         draw::WorldToScreen(ent->m_vecOrigin(), scn);
 
         // Draw a line
-        draw_api::draw_line(scn.x, scn.y, width - scn.x, height - scn.y, fg,
+        glez::draw::line(scn.x, scn.y, width - scn.x, height - scn.y, fg,
                             0.5f);
     }
 
@@ -596,7 +543,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             Vector &eye_angles =
                 NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
             Vector eye_position;
-            eye_position = hitboxcache[ent->m_IDX][0]->center;
+            eye_position = ent->hitboxes.GetHitbox(0)->center;
 
             // Main ray tracing area
             float sy         = sinf(DEG2RAD(eye_angles.y)); // yaw
@@ -679,7 +626,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 // We have both vectors, draw
                 if (found_scn1)
                 {
-                    draw_api::draw_line(scn1.x, scn1.y, scn2.x - scn1.x,
+                    glez::draw::line(scn1.x, scn1.y, scn2.x - scn1.x,
                                         scn2.y - scn1.y, fg, 0.5f);
                 }
             }
@@ -765,9 +712,9 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                           std::min((float) health / (float) healthmax, 1.0f);
 
                 // Draw
-                draw_api::draw_rect_outlined(min_x - 7, min_y, 7, max_y - min_y,
+                glez::draw::rect_outline(min_x - 7, min_y, 7, max_y - min_y,
                                              border, 0.5f);
-                draw_api::draw_rect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
+                glez::draw::rect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
             }
         }
     }
@@ -863,9 +810,9 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             // If the origin is centered, we use one method. if not, the other
             if (!origin_is_zero || true)
             {
-                draw_api::draw_string_with_outline(
-                    draw_point.x, draw_point.y, string.data.c_str(),
-                    fonts::esp_font, color, colors::black, 1.5f);
+                glez::draw::outlined_string(
+                    draw_point.x, draw_point.y, string.data,
+                    *fonts::esp, color, colors::black, nullptr, nullptr);
             }
             else
             { /*
@@ -936,7 +883,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         return; // Esp enable check
     if (CE_BAD(ent))
         return; // CE_BAD check to prevent crashes
-
+    if (max_dist && ent->m_flDistance() > (float) max_dist)
+        return;
     int classid = ent->m_iClassID();
     // Entity esp
     if (entity_info)
@@ -1463,13 +1411,13 @@ void _FASTCALL Draw3DBox(CachedEntity *ent, const rgba_t &clr)
     // Draw the actual box
     for (int i = 1; i <= 4; i++)
     {
-        draw_api::draw_line((points[i - 1].x), (points[i - 1].y),
+        glez::draw::line((points[i - 1].x), (points[i - 1].y),
                             (points[i % 4].x) - (points[i - 1].x),
                             (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
-        draw_api::draw_line((points[i - 1].x), (points[i - 1].y),
+        glez::draw::line((points[i - 1].x), (points[i - 1].y),
                             (points[i + 3].x) - (points[i - 1].x),
                             (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
-        draw_api::draw_line((points[i + 3].x), (points[i + 3].y),
+        glez::draw::line((points[i + 3].x), (points[i + 3].y),
                             (points[i % 4 + 4].x) - (points[i + 3].x),
                             (points[i % 4 + 4].y) - (points[i + 3].y), clr,
                             0.5f);
@@ -1509,11 +1457,11 @@ void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
     // Otherwise, we just do simple draw funcs
     else
     {
-        draw_api::draw_rect_outlined(min_x, min_y, max_x - min_x, max_y - min_y,
+        glez::draw::rect_outline(min_x, min_y, max_x - min_x, max_y - min_y,
                                      border, 0.5f);
-        draw_api::draw_rect_outlined(min_x + 1, min_y + 1, max_x - min_x - 2,
+        glez::draw::rect_outline(min_x + 1, min_y + 1, max_x - min_x - 2,
                                      max_y - min_y - 2, clr, 0.5f);
-        draw_api::draw_rect_outlined(min_x + 2, min_y + 2, max_x - min_x - 4,
+        glez::draw::rect_outline(min_x + 2, min_y + 2, max_x - min_x - 4,
                                      max_y - min_y - 4, border, 0.5f);
     }
 }
@@ -1528,31 +1476,31 @@ void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color,
 
     // Black corners
     // Top Left
-    draw_api::draw_rect(minx, miny, size, 3, black);
-    draw_api::draw_rect(minx, miny + 3, 3, size - 3, black);
+    glez::draw::rect(minx, miny, size, 3, black);
+    glez::draw::rect(minx, miny + 3, 3, size - 3, black);
     // Top Right
-    draw_api::draw_rect(maxx - size + 1, miny, size, 3, black);
-    draw_api::draw_rect(maxx - 3 + 1, miny + 3, 3, size - 3, black);
+    glez::draw::rect(maxx - size + 1, miny, size, 3, black);
+    glez::draw::rect(maxx - 3 + 1, miny + 3, 3, size - 3, black);
     // Bottom Left
-    draw_api::draw_rect(minx, maxy - 3, size, 3, black);
-    draw_api::draw_rect(minx, maxy - size, 3, size - 3, black);
+    glez::draw::rect(minx, maxy - 3, size, 3, black);
+    glez::draw::rect(minx, maxy - size, 3, size - 3, black);
     // Bottom Right
-    draw_api::draw_rect(maxx - size + 1, maxy - 3, size, 3, black);
-    draw_api::draw_rect(maxx - 2, maxy - size, 3, size - 3, black);
+    glez::draw::rect(maxx - size + 1, maxy - 3, size, 3, black);
+    glez::draw::rect(maxx - 2, maxy - size, 3, size - 3, black);
 
     // Colored corners
     // Top Left
-    draw_api::draw_line(minx + 1, miny + 1, size - 2, 0, color, 0.5f);
-    draw_api::draw_line(minx + 1, miny + 1, 0, size - 2, color, 0.5f);
+    glez::draw::line(minx + 1, miny + 1, size - 2, 0, color, 0.5f);
+    glez::draw::line(minx + 1, miny + 1, 0, size - 2, color, 0.5f);
     // Top Right
-    draw_api::draw_line(maxx - 1, miny + 1, -(size - 2), 0, color, 0.5f);
-    draw_api::draw_line(maxx - 1, miny + 1, 0, size - 2, color, 0.5f);
+    glez::draw::line(maxx - 1, miny + 1, -(size - 2), 0, color, 0.5f);
+    glez::draw::line(maxx - 1, miny + 1, 0, size - 2, color, 0.5f);
     // Bottom Left
-    draw_api::draw_line(minx + 1, maxy - 2, size - 2, 0, color, 0.5f);
-    draw_api::draw_line(minx + 1, maxy - 2, 0, -(size - 2), color, 0.5f);
+    glez::draw::line(minx + 1, maxy - 2, size - 2, 0, color, 0.5f);
+    glez::draw::line(minx + 1, maxy - 2, 0, -(size - 2), color, 0.5f);
     // Bottom Right
-    draw_api::draw_line(maxx - 1, maxy - 2, -(size - 2), 0, color, 0.5f);
-    draw_api::draw_line(maxx - 1, maxy - 2, 0, -(size - 2), color, 0.5f);
+    glez::draw::line(maxx - 1, maxy - 2, -(size - 2), 0, color, 0.5f);
+    glez::draw::line(maxx - 1, maxy - 2, 0, -(size - 2), color, 0.5f);
 }
 
 // Used for caching collidable bounds
