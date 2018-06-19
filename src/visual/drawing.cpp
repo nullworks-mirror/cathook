@@ -85,6 +85,7 @@ void draw::Initialize()
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
+    glez::preInit();
     fonts::menu.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
     fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
 }

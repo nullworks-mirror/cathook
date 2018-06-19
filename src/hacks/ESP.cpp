@@ -399,10 +399,11 @@ static glez::texture idspec{ DATA_PATH "/textures/idspec.png" };
 Timer retry{};
 void Init()
 {
-    esp_font_scale.InstallChangeCallback(
+    /*esp_font_scale.InstallChangeCallback(
         [](IConVar *var, const char *pszOldValue, float flOldValue) {
+            logging::Info("current font: %p %s %d", fonts::esp.get(), fonts::esp->path.c_str(), fonts::esp->isLoaded());
             fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", esp_font_scale));
-        });
+        });*/
 }
 void _FASTCALL emoji(CachedEntity *ent)
 {
@@ -829,7 +830,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             if (!origin_is_zero || true)
             {
                 glez::draw::outlined_string(
-                    draw_point.x, draw_point.y, string.data.c_str(),
+                    draw_point.x, draw_point.y, string.data,
                     *fonts::esp, color, colors::black, nullptr, nullptr);
             }
             else

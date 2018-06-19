@@ -13,6 +13,9 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_BUILD_TYPE_VALUES})
 cmake_minimum_required(VERSION 3.0)
 project(cathook VERSION 0.0.1)
 add_library(cathook SHARED "")
+file(GLOB_RECURSE Headers "${CMAKE_CURRENT_LIST_DIR}/include/*.hpp")
+file(GLOB_RECURSE Sources "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
+target_sources(cathook PRIVATE ${Sources} ${Headers})
 
 set(GameSpecific 1 CACHE BOOL "Build for specific target game (As opposed to universal, but slower, lib)")
 set(Game "tf2" CACHE STRING "Target game")
@@ -109,10 +112,7 @@ else()
     target_compile_options(cathook PRIVATE -w)
 endif()
 
-file(GLOB_RECURSE Headers "${CMAKE_CURRENT_LIST_DIR}/include/*.hpp")
-file(GLOB_RECURSE Sources "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
 
-target_sources(cathook PRIVATE ${Sources} ${Headers})
 target_include_directories(cathook PRIVATE include include/hooks)
 
 add_custom_target(data

@@ -44,7 +44,7 @@ void BeginCheatVisuals()
     /*#if RENDERING_ENGINE_OPENGL
         std::lock_guard<std::mutex> draw_lock(drawing_mutex);
     #endif*/
-    glez::begin();
+    draw::BeginGL();
     ResetStrings();
 }
 
@@ -192,5 +192,5 @@ void DrawCheatVisuals()
 
 void EndCheatVisuals()
 {
-    glez::end();
+    draw::EndGL();
 }
