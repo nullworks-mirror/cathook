@@ -295,6 +295,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             PROF_SECTION(CM_esp);
             hacks::shared::esp::CreateMove();
         }
+        {
+            PROF_SECTION(CM_lightesp);
+            hacks::shared::lightesp::run();
+        }
 #endif
 #endif
         *bSendPackets = true;
@@ -332,10 +336,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             if (engine_pred)
                 engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E),
                                                        g_pUserCmd);
-            {
-                PROF_SECTION(CM_lightesp);
-                hacks::shared::lightesp::run();
-            }
             {
                 PROF_SECTION(CM_aimbot);
                 hacks::shared::aimbot::CreateMove();
@@ -424,7 +424,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #if not LAGBOT_MODE
         {
             PROF_SECTION(CM_AC);
-            angles::Update();
             hacks::shared::anticheat::CreateMove();
         }
 #endif
