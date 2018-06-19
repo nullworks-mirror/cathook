@@ -142,6 +142,8 @@ bool draw::WorldToScreen(const Vector &origin, Vector &screen)
     return false;
 }
 
+SDL_GLContext context = nullptr;
+
 void draw::InitGL()
 {
     logging::Info("InitGL: %d, %d", draw::width, draw::height);
