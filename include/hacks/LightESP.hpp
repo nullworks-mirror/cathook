@@ -9,4 +9,6 @@ namespace lightesp
 void run();
 void draw();
 rgba_t LightESPColor(CachedEntity *ent);
-}}}
+}
+}
+}

@@ -62,6 +62,8 @@ int BulletDangerValue(CachedEntity *patient)
     for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+        	continue;
         if (!ent->m_bEnemy())
             continue;
         if (g_pPlayerResource->GetClass(ent) != tf_sniper)
@@ -101,6 +103,8 @@ int FireDangerValue(CachedEntity *patient)
         for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
+            if (CE_BAD(ent))
+            	continue;
             if (!ent->m_bEnemy())
                 continue;
             if (g_pPlayerResource->GetClass(ent) != tf_pyro)

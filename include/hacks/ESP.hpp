@@ -41,7 +41,6 @@ public:
 // Init
 void Init();
 extern std::array<ESPData, 2048> data;
-extern hitbox_cache::CachedHitbox *hitboxcache[32][18];
 
 void CreateMove();
 void Draw();

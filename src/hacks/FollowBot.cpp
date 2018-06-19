@@ -67,7 +67,7 @@ void WorldTick()
     }
 
     // We need a local player to control
-    if (CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
     {
         follow_target = 0;
         return;
@@ -193,9 +193,9 @@ void WorldTick()
     if (dist_to_target > (float) follow_distance)
     {
         // Check for idle
-    	if (idle_time.check(1000) || LOCAL_E->m_vecVelocity.IsZero(3.0f))
-    		g_pUserCmd->buttons |= IN_JUMP;
-        if (idle_time.test_and_set(3000))
+        if (idle_time.check(3000) || (breadcrumbs.size() > 1 && LOCAL_E->m_vecVelocity.IsZero(5.0f)))
+            g_pUserCmd->buttons |= IN_JUMP;
+        if (idle_time.test_and_set(5000))
         {
             follow_target = 0;
             return;

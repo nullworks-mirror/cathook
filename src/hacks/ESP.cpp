@@ -19,6 +19,10 @@ namespace esp
 // Main Switch
 static CatVar enabled(CV_SWITCH, "esp_enabled", "0", "ESP",
                       "Master ESP switch");
+
+// Distance limit
+static CatVar max_dist(CV_FLOAT, "esp_range", "5000.0f", "ESP Range",
+                       "Max ESP Range");
 // Box esp + Options
 static CatEnum box_esp_enum({ "None", "Normal", "Corners" });
 static CatVar box_esp(box_esp_enum, "esp_box", "2", "Box", "Draw a 2D box");
@@ -37,8 +41,6 @@ static CatVar
 static CatEnum emoji_esp_enum({ "None", "Joy", "Thinking" });
 static CatVar emoji_esp(emoji_esp_enum, "esp_emoji", "0", "Emoji ESP",
                         "Draw emoji on peopels head");
-static CatVar emoji_ok(CV_SWITCH, "esp_okhand", "0", "ok_hand",
-                       "Draw ok_hand on hands");
 static CatVar emoji_esp_size(CV_FLOAT, "esp_emoji_size", "32", "Emoji ESP Size",
                              "Emoji size");
 static CatVar emoji_esp_scaling(CV_SWITCH, "esp_emoji_scaling", "1",
@@ -47,7 +49,6 @@ static CatVar
     emoji_min_size(CV_INT, "esp_emoji_min_size", "20", "Emoji ESP min size",
                    "Minimum size for an emoji when you use auto scaling");
 
-hitbox_cache::CachedHitbox *hitboxcache[32][18]{};
 // Other esp options
 static CatEnum show_health_enum({ "None", "Text", "Healthbar", "Both" });
 static CatVar show_health(show_health_enum, "esp_health", "3", "Health ESP",
@@ -155,8 +156,6 @@ static CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
 std::mutex threadsafe_mutex;
 // Storage array for keeping strings and other data
 std::array<ESPData, 2048> data;
-std::array<const model_t *, 1024> modelcache;
-std::array<studiohdr_t *, 1024> stdiocache;
 // Storage vars for entities that need to be re-drawn
 std::vector<int> entities_need_repaint{};
 std::mutex entities_need_repaint_mutex{};
@@ -351,25 +350,9 @@ void CreateMove()
         {
             // Get an entity from the loop tick and process it
             CachedEntity *ent = ENTITY(i);
+
             ProcessEntity(ent);
 
-            if (i <= g_IEngine->GetMaxClients())
-            {
-                if (!CE_BAD(ent))
-                {
-                    for (int j            = 0; j < 18; ++j)
-                        hitboxcache[i][j] = ent->hitboxes.GetHitbox(j);
-                    if (draw_bones && ent->m_Type() == ENTITY_PLAYER)
-                    {
-                        modelcache[i] = RAW_ENT(ent)->GetModel();
-                        if (modelcache[i])
-                        {
-                            stdiocache[i] =
-                                g_IModelInfo->GetStudiomodel(modelcache[i]);
-                        }
-                    }
-                }
-            }
             // Dont know what this check is for
             if (data[i].string_count)
             {
@@ -420,10 +403,7 @@ void _FASTCALL emoji(CachedEntity *ent)
     {
         if (ent->m_Type() == ENTITY_PLAYER)
         {
-
-            if (emoji_ok)
-                auto hit = hitboxcache[ent->m_IDX][0];
-            auto hit     = hitboxcache[ent->m_IDX][0];
+            auto hit = ent->hitboxes.GetHitbox(0);
             Vector hbm, hbx;
             if (draw::WorldToScreen(hit->min, hbm) &&
                 draw::WorldToScreen(hit->max, hbx))
@@ -518,10 +498,10 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     // Bone esp
     if (draw_bones && type == ENTITY_PLAYER)
     {
-        const model_t *model = modelcache[ent->m_IDX];
+        const model_t *model = RAW_ENT(ent)->GetModel();
         if (model)
         {
-            auto hdr = stdiocache[ent->m_IDX];
+            auto hdr = g_IModelInfo->GetStudiomodel(model);
             bonelist_map[hdr].Draw(ent, fg);
         }
     }
@@ -563,7 +543,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             Vector &eye_angles =
                 NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
             Vector eye_position;
-            eye_position = hitboxcache[ent->m_IDX][0]->center;
+            eye_position = ent->hitboxes.GetHitbox(0)->center;
 
             // Main ray tracing area
             float sy         = sinf(DEG2RAD(eye_angles.y)); // yaw
@@ -903,7 +883,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         return; // Esp enable check
     if (CE_BAD(ent))
         return; // CE_BAD check to prevent crashes
-
+    if (max_dist && ent->m_flDistance() > (float) max_dist)
+        return;
     int classid = ent->m_iClassID();
     // Entity esp
     if (entity_info)
