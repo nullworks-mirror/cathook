@@ -371,7 +371,11 @@ void CreateMove()
             }
             // No idea, this is confusing
             if (data[ent->m_IDX].needs_paint)
+            {
+                if (vischeck)
+                    data[ent->m_IDX].transparent = !ent->IsVisible();
                 entities_need_repaint.push_back(ent->m_IDX);
+            }
         }
     }
 }
@@ -452,7 +456,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                         glez::draw::rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
                             size, colors::white, textures::atlas().texture,
-                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, 3 * 64,
+                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, (v9mode ? 3 : 4) * 64,
                             64, 64, 0);
                 }
             }
@@ -489,9 +493,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     ent_data.has_collide = false;
 
     // Get if ent should be transparent
-    bool transparent = false;
-    if (vischeck && !ent->IsVisible())
-        transparent = true;
+    bool transparent = vischeck && ent_data.transparent;
 
     // Bone esp
     if (draw_bones && type == ENTITY_PLAYER)
