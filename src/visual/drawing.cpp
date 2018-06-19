@@ -10,6 +10,11 @@
 #include <glez/glez.hpp>
 #include <glez/draw.hpp>
 #include <GL/glew.h>
+#include <SDL_video.h>
+#include <SDLHooks.hpp>
+#if EXTERNAL_DRAWING
+#include "xoverlay.h"
+#endif
 
 std::array<std::string, 32> side_strings;
 std::array<std::string, 32> center_strings;
@@ -139,10 +144,11 @@ bool draw::WorldToScreen(const Vector &origin, Vector &screen)
 
 void draw::InitGL()
 {
+    logging::Info("InitGL: %d, %d", draw::width, draw::height);
 #if EXTERNAL_DRAWING
     int status = xoverlay_init();
     xoverlay_draw_begin();
-    glez_init(xoverlay_library.width, xoverlay_library.height);
+    glez::init(xoverlay_library.width, xoverlay_library.height);
     xoverlay_draw_end();
     if (status < 0)
     {
@@ -176,6 +182,7 @@ void draw::BeginGL()
     {
         glActiveTexture(GL_TEXTURE0);
         PROF_SECTION(draw_begin__glez_begin)
+        logging::Info("glez::begin");
         glez::begin();
     }
 }
@@ -185,6 +192,7 @@ void draw::EndGL()
     PROF_SECTION(DRAWEX_draw_end);
     {
         PROF_SECTION(draw_end__glez_end);
+        logging::Info("glez::end");
         glez::end();
     }
 #if EXTERNAL_DRAWING

@@ -6,6 +6,7 @@
 #include <SDL2/SDL_syswm.h>
 #include <MiscTemporary.hpp>
 #include <visual/SDLHooks.hpp>
+#include <glez/draw.hpp>
 #include "HookedMethods.hpp"
 
 static bool init{ false };
