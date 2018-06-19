@@ -8,7 +8,7 @@
 #include "menu/ncc/Tooltip.hpp"
 #include "menu/CTextLabel.h"
 #include "common.hpp"
-#include "GUI.h"
+#include "menu/GUI.h"
 namespace menu
 {
 namespace ncc

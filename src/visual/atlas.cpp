@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <glez/draw.hpp>
 #include "common.hpp"
 
 namespace textures
@@ -25,14 +26,13 @@ void sprite::setsprite(float x, float y, float w, float h)
 void sprite::draw(float scrx, float scry, float scrw, float scrh,
                   const rgba_t &rgba)
 {
-    draw_api::draw_rect_textured(scrx, scry, scrw, scrh, rgba, atlas.texture,
+    glez::draw::rect_textured(scrx, scry, scrw, scrh, rgba, atlas.texture,
                                  nx, ny, nw, nh, 0);
 }
 
 texture_atlas::texture_atlas(std::string filename, float width, float height)
-    : width(width), height(height)
+    : width(width), height(height), texture(filename)
 {
-    texture = draw_api::create_texture(filename.c_str());
 }
 
 sprite texture_atlas::create_sprite(float x, float y, float sx, float sy)

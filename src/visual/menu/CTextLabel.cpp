@@ -9,7 +9,7 @@
 
 #include "common.hpp"
 #include "core/sdk.hpp"
-#include "GUI.h"
+#include "menu/GUI.h"
 
 std::string WordWrap(std::string &in, int max, unsigned long font)
 {

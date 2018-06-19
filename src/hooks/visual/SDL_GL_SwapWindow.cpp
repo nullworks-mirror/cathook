@@ -43,7 +43,7 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
         PROF_SECTION(SWAPWINDOW_cathook);
         if (not init)
         {
-            draw_api::initialize();
+            draw::InitGL();
             init = true;
         }
         render_cheat_visuals();

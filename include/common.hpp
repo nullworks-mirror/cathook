@@ -52,12 +52,12 @@
 #if ENABLE_VISUALS
 
 #include <visual/drawing.hpp>
-#include "fidgetspinner.hpp"
+#include "visual/fidgetspinner.hpp"
 #include <visual/EffectGlow.hpp>
 #include <visual/atlas.hpp>
 #include <visual/EffectChams.hpp>
 #include <visual/drawmgr.hpp>
-#include "menu/compatlayer.hpp"
+#include "visual/menu/compatlayer.hpp"
 
 #endif
 
@@ -79,7 +79,7 @@
 #include <core/logging.hpp>
 #include <targethelper.hpp>
 #include "playerresource.h"
-#include "usercmd.hpp"
+#include "sdk/usercmd.hpp"
 #include "trace.hpp"
 #include <core/cvwrapper.hpp>
 #include "core/netvars.hpp"
@@ -106,7 +106,7 @@
 #include "copypasted/CSignature.h"
 
 #if ENABLE_GUI
-#include "GUI.h"
+#include "visual/menu/GUI.h"
 #endif
 
 #include <core/sdk.hpp>

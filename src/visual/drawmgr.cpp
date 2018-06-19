@@ -9,6 +9,7 @@
 #include <hacks/Misc.hpp>
 #include <hacks/Aimbot.hpp>
 #include <hacks/hacklist.hpp>
+#include <glez/glez.hpp>
 #include "common.hpp"
 #include "visual/drawing.hpp"
 #include "hack.hpp"
@@ -21,7 +22,7 @@ void render_cheat_visuals()
     }
     //    xoverlay_draw_rect(300, 300, 100, 100, xoverlay_rgba(200, 100, 100,
     //    255));
-    // draw_api::draw_string(100, 100, "Testing", fonts::main_font,
+    // glez::draw::string(100, 100, "Testing", fonts::main_font,
     // colors::white);
     //    static draw_api::font_handle_t fh = draw_api::create_font(DATA_PATH
     //    "/fonts/tf2build.ttf", 14); xoverlay_draw_string(100, 100,
@@ -43,7 +44,7 @@ void BeginCheatVisuals()
     /*#if RENDERING_ENGINE_OPENGL
         std::lock_guard<std::mutex> draw_lock(drawing_mutex);
     #endif*/
-    draw_api::draw_begin();
+    glez::begin();
     ResetStrings();
 }
 
@@ -191,5 +192,5 @@ void DrawCheatVisuals()
 
 void EndCheatVisuals()
 {
-    draw_api::draw_end();
+    glez::end();
 }

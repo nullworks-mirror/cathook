@@ -5,8 +5,9 @@
  *      Author: nullifiedcat
  */
 
+#include <glez/draw.hpp>
 #include "common.hpp"
-#include "Radar.hpp"
+#include "hacks/Radar.hpp"
 
 #ifndef FEATURE_RADAR_DISABLED
 #if ENABLE_VISUALS
@@ -88,20 +89,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
 
     static textures::texture_atlas texture(DATA_PATH "/res/atlas.png", 1024,
                                            512);
-    if (!loaded)
-    {
-        if (texture.texture.handle == GLEZ_TEXTURE_INVALID &&
-            invalid.test_and_set(10000))
-        {
-            logging::Info("Invalid atlas, retrying....");
-            texture.texture.handle =
-                glez_texture_load_png_rgba(DATA_PATH "/res/atlas.png");
-            return;
-        }
-        else if (texture.texture.handle != GLEZ_TEXTURE_INVALID)
-            loaded = true;
-        return;
-    }
+
     struct basesprite
     {
         textures::sprite sprite = texture.create_sprite(0, 0, 0, 0);
@@ -156,7 +144,7 @@ label1:
                 tx_class[idx][clazz - 1].sprite.draw(
                     x + wtr.first, y + wtr.second, (int) icon_size,
                     (int) icon_size, colors::white);
-                draw_api::draw_rect_outlined(
+                glez::draw::rect_outline(
                     x + wtr.first, y + wtr.second, (int) icon_size,
                     (int) icon_size, idx ? colors::blu_v : colors::red_v, 0.5f);
             }
@@ -168,10 +156,10 @@ label1:
                 clr = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
                 if (healthp > 1.0f)
                     healthp = 1.0f;
-                draw_api::draw_rect_outlined(
+                glez::draw::rect_outline(
                     x + wtr.first, y + wtr.second + (int) icon_size,
                     (int) icon_size, 4, colors::black, 0.5f);
-                draw_api::draw_rect(
+                glez::draw::rect(
                     x + wtr.first + 1, y + wtr.second + (int) icon_size + 1,
                     ((float) icon_size - 2.0f) * healthp, 2, clr);
             }
@@ -246,9 +234,9 @@ void Draw()
 
     outlineclr = GUIColor();
 
-    draw_api::draw_rect(x, y, radar_size, radar_size,
+    glez::draw::rect(x, y, radar_size, radar_size,
                         colors::Transparent(colors::black, 0.4f));
-    draw_api::draw_rect_outlined(x, y, radar_size, radar_size, outlineclr,
+    glez::draw::rect_outline(x, y, radar_size, radar_size, outlineclr,
                                  0.5f);
 
     if (enemies_over_teammates)
@@ -282,14 +270,14 @@ void Draw()
         const auto &wtr = WorldToRadar(g_pLocalPlayer->v_Origin.x,
                                        g_pLocalPlayer->v_Origin.y);
         if (!use_icons)
-            draw_api::draw_rect_outlined(x + wtr.first, y + wtr.second,
+            glez::draw::rect_outline(x + wtr.first, y + wtr.second,
                                          int(icon_size), int(icon_size),
                                          GUIColor(), 0.5f);
     }
 
-    draw_api::draw_line(x + half_size, y + half_size / 2, 0, half_size,
+    glez::draw::line(x + half_size, y + half_size / 2, 0, half_size,
                         colors::Transparent(GUIColor(), 0.4f), 0.5f);
-    draw_api::draw_line(x + half_size / 2, y + half_size, half_size, 0,
+    glez::draw::line(x + half_size / 2, y + half_size, half_size, 0,
                         colors::Transparent(GUIColor(), 0.4f), 0.5f);
 }
 }

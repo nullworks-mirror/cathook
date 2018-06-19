@@ -14,8 +14,8 @@ class CatVar;
 #include <string>
 // #include "../aftercheaders.h"
 
-#include "menu/ncc/Root.hpp"
-#include "menu/ncc/Menu.hpp"
+#include "visual/menu/ncc/Root.hpp"
+#include "visual/menu/ncc/Menu.hpp"
 
 class RootWindow;
 

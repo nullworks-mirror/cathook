@@ -12,6 +12,7 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <hacks/hacklist.hpp>
+#include <glez/draw.hpp>
 
 namespace hacks
 {
@@ -1072,7 +1073,7 @@ void DrawConnection(index_t a, connection_s &b)
     else if ((a_.flags & b_.flags) & NF_DUCK)
         color = &colors::green;
 
-    draw_api::draw_line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y,
+    glez::draw::line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y,
                         *color, 0.5f);
 
     if (draw_connection_flags && b.flags != CF_GOOD)
@@ -1084,8 +1085,8 @@ void DrawConnection(index_t a, connection_s &b)
             flags += "H";
         // int size_x = 0, size_y = 0;
         // FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-        draw_api::draw_string(wts_cc.x, wts_cc.y - 4, flags.c_str(),
-                              fonts::main_font, colors::white);
+        glez::draw::string(wts_cc.x, wts_cc.y - 4, flags,
+                              *fonts::menu, colors::white, nullptr, nullptr);
     }
 }
 
@@ -1123,7 +1124,7 @@ void DrawNode(index_t node, bool draw_back)
         if (node == state::active_node)
             color = &colors::red;
 
-        draw_api::draw_rect(wts.x - node_size, wts.y - node_size, 2 * node_size,
+        glez::draw::rect(wts.x - node_size, wts.y - node_size, 2 * node_size,
                             2 * node_size, *color);
     }
 
@@ -1139,9 +1140,9 @@ void DrawNode(index_t node, bool draw_back)
         if (not draw::WorldToScreen(n.xyz(), wts))
             return;
 
-        draw_api::draw_string_with_outline(
-            wts.x, wts.y, std::to_string(node).c_str(), fonts::main_font,
-            *color, colors::black, 1.5f);
+        glez::draw::outlined_string(
+            wts.x, wts.y, std::to_string(node).c_str(), *fonts::menu,
+            *color, colors::black, nullptr, nullptr);
     }
 }
 

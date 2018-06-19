@@ -7,7 +7,7 @@
 
 #include "menu/CBaseWidget.h"
 #include "common.hpp"
-#include "GUI.h"
+#include "menu/GUI.h"
 
 void CBaseWidget::DrawBounds(int x, int y)
 {

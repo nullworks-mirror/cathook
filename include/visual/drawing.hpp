@@ -67,4 +67,8 @@ void Initialize();
 void UpdateWTS();
 bool WorldToScreen(const Vector &origin, Vector &screen);
 bool EntityCenterToScreen(CachedEntity *entity, Vector &out);
+
+void InitGL();
+void BeginGL();
+void EndGL();
 }

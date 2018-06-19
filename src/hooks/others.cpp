@@ -11,7 +11,7 @@
 #include "hack.hpp"
 #include "hitrate.hpp"
 #include "chatlog.hpp"
-#include "netmessage.hpp"
+#include "sdk/netmessage.hpp"
 #include <boost/algorithm/string.hpp>
 #include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"

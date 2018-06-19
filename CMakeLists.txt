@@ -64,6 +64,7 @@ endif()
 
 if(EnableVisuals)
     add_subdirectory(external/libglez)
+    target_include_directories(cathook PRIVATE include/visual)
     find_package(SDL2 REQUIRED)
     find_package(GLEW REQUIRED)
     if(ExternalDrawing)
@@ -112,7 +113,7 @@ file(GLOB_RECURSE Headers "${CMAKE_CURRENT_LIST_DIR}/include/*.hpp")
 file(GLOB_RECURSE Sources "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
 
 target_sources(cathook PRIVATE ${Sources} ${Headers})
-target_include_directories(cathook PRIVATE include)
+target_include_directories(cathook PRIVATE include include/hooks)
 
 add_custom_target(data
         bash ./install-data "${DataPath}"

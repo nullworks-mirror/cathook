@@ -34,7 +34,7 @@
 #define STRINGIFY(x) #x
 #define TO_STRING(x) STRINGIFY(x)
 
-#include "CDumper.hpp"
+#include "copypasted/CDumper.hpp"
 #include "version.h"
 
 /*
