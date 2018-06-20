@@ -38,6 +38,7 @@ void Run();
 void Draw();
 void AddLatencyToNetchan(INetChannel *, float);
 void UpdateIncomingSequences();
+bool shouldBacktrack();
 extern int lastincomingsequencenumber;
 extern int BestTick;
 extern int iBestTarget;

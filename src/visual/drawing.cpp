@@ -47,7 +47,7 @@ void DrawStrings()
     for (size_t i = 0; i < side_strings_count; ++i)
     {
         glez::draw::outlined_string(
-            8, y, side_strings[i].c_str(), *fonts::menu,
+            8, y, side_strings[i], *fonts::menu,
             side_strings_colors[i], colors::black, nullptr, nullptr);
         y += fonts::menu->size + 1;
     }
@@ -141,6 +141,8 @@ bool draw::WorldToScreen(const Vector &origin, Vector &screen)
     }
     return false;
 }
+
+SDL_GLContext context = nullptr;
 
 void draw::InitGL()
 {

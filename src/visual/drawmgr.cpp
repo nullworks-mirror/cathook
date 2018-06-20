@@ -10,6 +10,7 @@
 #include <hacks/Aimbot.hpp>
 #include <hacks/hacklist.hpp>
 #include <glez/glez.hpp>
+#include <glez/record.hpp>
 #include "common.hpp"
 #include "visual/drawing.hpp"
 #include "hack.hpp"
@@ -20,15 +21,6 @@ void render_cheat_visuals()
         PROF_SECTION(BeginCheatVisuals);
         BeginCheatVisuals();
     }
-    //    xoverlay_draw_rect(300, 300, 100, 100, xoverlay_rgba(200, 100, 100,
-    //    255));
-    // glez::draw::string(100, 100, "Testing", fonts::main_font,
-    // colors::white);
-    //    static draw_api::font_handle_t fh = draw_api::create_font(DATA_PATH
-    //    "/fonts/tf2build.ttf", 14); xoverlay_draw_string(100, 100,
-    //    "TestingSTR", fh.handle, *reinterpret_cast<const xoverlay_rgba_t
-    //    *>(&colors::white), 0, 0);
-    // xoverlay_draw_string_with_outline(100, 20, "Testing2", )
     {
         PROF_SECTION(DrawCheatVisuals);
         DrawCheatVisuals();
@@ -39,12 +31,15 @@ void render_cheat_visuals()
     }
 }
 
+glez::record::Record bufferA{};
+glez::record::Record bufferB{};
+
+glez::record::Record *buffers[] = { &bufferA, &bufferB };
+int currentBuffer = 0;
+
 void BeginCheatVisuals()
 {
-    /*#if RENDERING_ENGINE_OPENGL
-        std::lock_guard<std::mutex> draw_lock(drawing_mutex);
-    #endif*/
-    draw::BeginGL();
+    buffers[currentBuffer]->begin();
     ResetStrings();
 }
 
@@ -192,5 +187,11 @@ void DrawCheatVisuals()
 
 void EndCheatVisuals()
 {
-    draw::EndGL();
+    buffers[currentBuffer]->end();
+    currentBuffer = !currentBuffer;
+}
+
+void DrawCache()
+{
+    buffers[!currentBuffer]->replay();
 }

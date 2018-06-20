@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #Get updated source code
-git fetch;git pull origin;git submodule update --remote --recursive
+git fetch;git pull origin;git submodule update --init --recursive
 #Update cathook
 cd build; cmake ..; make -j$(grep -c '^processor' /proc/cpuinfo); cd ..; cd ..
 printf "\n\n";printf '\e[1;34m%-6s\e' "Cathook update complete!";printf "\n\n"
