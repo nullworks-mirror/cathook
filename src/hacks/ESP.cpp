@@ -252,9 +252,8 @@ struct bonelist_s
             if (i > 0)
             {
                 glez::draw::line(last_screen.x, last_screen.y,
-                                    current_screen.x - last_screen.x,
-                                    current_screen.y - last_screen.y, color,
-                                    0.5f);
+                                 current_screen.x - last_screen.x,
+                                 current_screen.y - last_screen.y, color, 0.5f);
             }
             last_screen = current_screen;
         }
@@ -388,8 +387,10 @@ void Init()
 {
     /*esp_font_scale.InstallChangeCallback(
         [](IConVar *var, const char *pszOldValue, float flOldValue) {
-            logging::Info("current font: %p %s %d", fonts::esp.get(), fonts::esp->path.c_str(), fonts::esp->isLoaded());
-            fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", esp_font_scale));
+            logging::Info("current font: %p %s %d", fonts::esp.get(),
+       fonts::esp->path.c_str(), fonts::esp->isLoaded());
+            fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf",
+       esp_font_scale));
         });*/
 }
 
@@ -418,7 +419,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                     if (!size || !float(emoji_min_size))
                         return;
                     if (emoji_esp_scaling && (size < float(emoji_min_size)))
-                        size          = float(emoji_min_size);
+                        size = float(emoji_min_size);
                     player_info_s info;
                     unsigned int steamID;
                     unsigned int steamidarray[32]{};
@@ -431,10 +432,11 @@ void _FASTCALL emoji(CachedEntity *ent)
                     if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
                         steamID = info.friendsID;
                     if (playerlist::AccessData(steamID).state ==
-                            playerlist::k_EState::CAT)
+                        playerlist::k_EState::CAT)
                         glez::draw::rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
-                            size, glez::color::white, idspec, 2 * 64, 1 * 64, 64, 64, 0);
+                            size, glez::color::white, idspec, 2 * 64, 1 * 64,
+                            64, 64, 0);
                     for (int i = 0; i < 4; i++)
                     {
                         if (steamID == steamidarray[i])
@@ -445,10 +447,10 @@ void _FASTCALL emoji(CachedEntity *ent)
                                 ii++;
                                 i -= 4;
                             }
-                            glez::draw::rect_textured(head_scr.x - size / 2,
-                                               head_scr.y - size / 2, size,
-                                               size, glez::color::white, idspec,
-                                               i * 64, ii * 64, 64, 64, 0);
+                            glez::draw::rect_textured(
+                                head_scr.x - size / 2, head_scr.y - size / 2,
+                                size, size, glez::color::white, idspec, i * 64,
+                                ii * 64, 64, 64, 0);
                             hascall = true;
                         }
                     }
@@ -456,8 +458,8 @@ void _FASTCALL emoji(CachedEntity *ent)
                         glez::draw::rect_textured(
                             head_scr.x - size / 2, head_scr.y - size / 2, size,
                             size, colors::white, textures::atlas().texture,
-                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, (v9mode ? 3 : 4) * 64,
-                            64, 64, 0);
+                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64,
+                            (v9mode ? 3 : 4) * 64, 64, 64, 0);
                 }
             }
         }
@@ -525,8 +527,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         draw::WorldToScreen(ent->m_vecOrigin(), scn);
 
         // Draw a line
-        glez::draw::line(scn.x, scn.y, width - scn.x, height - scn.y, fg,
-                            0.5f);
+        glez::draw::line(scn.x, scn.y, width - scn.x, height - scn.y, fg, 0.5f);
     }
 
     // Sightline esp
@@ -627,7 +628,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 if (found_scn1)
                 {
                     glez::draw::line(scn1.x, scn1.y, scn2.x - scn1.x,
-                                        scn2.y - scn1.y, fg, 0.5f);
+                                     scn2.y - scn1.y, fg, 0.5f);
                 }
             }
         }
@@ -713,7 +714,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 
                 // Draw
                 glez::draw::rect_outline(min_x - 7, min_y, 7, max_y - min_y,
-                                             border, 0.5f);
+                                         border, 0.5f);
                 glez::draw::rect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
             }
         }
@@ -810,9 +811,9 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             // If the origin is centered, we use one method. if not, the other
             if (!origin_is_zero || true)
             {
-                glez::draw::outlined_string(
-                    draw_point.x, draw_point.y, string.data,
-                    *fonts::esp, color, colors::black, nullptr, nullptr);
+                glez::draw::outlined_string(draw_point.x, draw_point.y,
+                                            string.data, *fonts::esp, color,
+                                            colors::black, nullptr, nullptr);
             }
             else
             { /*
@@ -1412,15 +1413,14 @@ void _FASTCALL Draw3DBox(CachedEntity *ent, const rgba_t &clr)
     for (int i = 1; i <= 4; i++)
     {
         glez::draw::line((points[i - 1].x), (points[i - 1].y),
-                            (points[i % 4].x) - (points[i - 1].x),
-                            (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
+                         (points[i % 4].x) - (points[i - 1].x),
+                         (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
         glez::draw::line((points[i - 1].x), (points[i - 1].y),
-                            (points[i + 3].x) - (points[i - 1].x),
-                            (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
+                         (points[i + 3].x) - (points[i - 1].x),
+                         (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
         glez::draw::line((points[i + 3].x), (points[i + 3].y),
-                            (points[i % 4 + 4].x) - (points[i + 3].x),
-                            (points[i % 4 + 4].y) - (points[i + 3].y), clr,
-                            0.5f);
+                         (points[i % 4 + 4].x) - (points[i + 3].x),
+                         (points[i % 4 + 4].y) - (points[i + 3].y), clr, 0.5f);
     }
 }
 
@@ -1458,11 +1458,11 @@ void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
     else
     {
         glez::draw::rect_outline(min_x, min_y, max_x - min_x, max_y - min_y,
-                                     border, 0.5f);
+                                 border, 0.5f);
         glez::draw::rect_outline(min_x + 1, min_y + 1, max_x - min_x - 2,
-                                     max_y - min_y - 2, clr, 0.5f);
+                                 max_y - min_y - 2, clr, 0.5f);
         glez::draw::rect_outline(min_x + 2, min_y + 2, max_x - min_x - 4,
-                                     max_y - min_y - 4, border, 0.5f);
+                                 max_y - min_y - 4, border, 0.5f);
     }
 }
 

@@ -56,6 +56,8 @@ void CreateMove()
         return;
     if (CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
         return;
+    if (HasCondition<TFCond_Cloaked>(LOCAL_E) || HasCondition<TFCond_CloakFlicker>(LOCAL_E))
+    	return;
     if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health &&
         NearbyEntities() > 1)
         g_pUserCmd->buttons |= IN_ATTACK2;

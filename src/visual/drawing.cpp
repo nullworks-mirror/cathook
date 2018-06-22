@@ -46,9 +46,9 @@ void DrawStrings()
     int y{ 8 };
     for (size_t i = 0; i < side_strings_count; ++i)
     {
-        glez::draw::outlined_string(
-            8, y, side_strings[i], *fonts::menu,
-            side_strings_colors[i], colors::black, nullptr, nullptr);
+        glez::draw::outlined_string(8, y, side_strings[i], *fonts::menu,
+                                    side_strings_colors[i], colors::black,
+                                    nullptr, nullptr);
         y += fonts::menu->size + 1;
     }
     y = draw::height / 2;
@@ -57,8 +57,8 @@ void DrawStrings()
         float sx, sy;
         fonts::menu->stringSize(center_strings[i], &sx, &sy);
         glez::draw::outlined_string(
-            (draw::width - sx) / 2, y, center_strings[i].c_str(),
-            *fonts::menu, center_strings_colors[i], colors::black, nullptr, nullptr);
+            (draw::width - sx) / 2, y, center_strings[i].c_str(), *fonts::menu,
+            center_strings_colors[i], colors::black, nullptr, nullptr);
         y += fonts::menu->size + 1;
     }
 }
@@ -81,7 +81,6 @@ namespace fonts
 
 std::unique_ptr<glez::font> menu{ nullptr };
 std::unique_ptr<glez::font> esp{ nullptr };
-
 }
 
 void draw::Initialize()

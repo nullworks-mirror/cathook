@@ -35,7 +35,7 @@ glez::record::Record bufferA{};
 glez::record::Record bufferB{};
 
 glez::record::Record *buffers[] = { &bufferA, &bufferB };
-int currentBuffer = 0;
+int currentBuffer               = 0;
 
 void BeginCheatVisuals()
 {
@@ -102,6 +102,7 @@ void DrawCheatVisuals()
             }
         }
     }
+    hacks::tf2::global::runcfg();
     if (spectator_target)
     {
         AddCenterString("Press SPACE to stop spectating");

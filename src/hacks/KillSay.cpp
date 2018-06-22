@@ -68,7 +68,7 @@ std::string ComposeKillSay(IGameEvent *event)
     std::string msg = source->at(rand() % source->size());
     while (msg == lastmsg)
     {
-    msg = source->at(rand() % source->size());
+        msg = source->at(rand() % source->size());
     }
     lastmsg = msg;
     player_info_s info;

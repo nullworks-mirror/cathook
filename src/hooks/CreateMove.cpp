@@ -160,6 +160,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     time_replaced = false;
     curtime_old   = g_GlobalVars->curtime;
 
+    hacks::tf2::global::runcfg();
     if (nolerp)
     {
         // g_pUserCmd->tick_count += 1;

@@ -24,7 +24,11 @@ public:
     }
     inline static int GetSwingRange(IClientEntity *self)
     {
-        return 128;
+        if (self->GetClientClass()->m_ClassID == CL_CLASS(CTFSword) ||
+            self->GetClientClass()->m_ClassID == CL_CLASS(CTFKatana))
+            return 128;
+        else
+            return (128.0f * 0.67) - 0.5f;
     }
 };
 }
