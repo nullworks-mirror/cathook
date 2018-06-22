@@ -41,7 +41,16 @@ public:
     int max_value;
     int size;
 };
-
+namespace hacks
+{
+namespace tf2
+{
+namespace global
+{
+void runcfg();
+}
+}
+}
 // TODO reverse, no idea how catcommands are handled
 class CatCommand
 {
@@ -78,10 +87,11 @@ public: // TODo, unknown reverse
 
     inline operator bool() const
     {
-    	if (this && convar_parent && convar_parent->IsRegistered() && this->registered)
-    		return !!convar_parent->m_nValue;
-    	else
-    		return false;
+        if (this && convar_parent && convar_parent->IsRegistered() &&
+            this->registered)
+            return !!convar_parent->m_nValue;
+        else
+            return false;
     }
     inline operator int() const
     {
@@ -109,6 +119,7 @@ public: // TODo, unknown reverse
     }
 
     void Register();
+
     typedef std::function<void(CatVar *)> RegisterCallbackFn;
     void OnRegister(RegisterCallbackFn fn);
     void InstallChangeCallback(FnChangeCallback_t callback);

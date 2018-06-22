@@ -63,7 +63,7 @@ int BulletDangerValue(CachedEntity *patient)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
-        	continue;
+            continue;
         if (!ent->m_bEnemy())
             continue;
         if (g_pPlayerResource->GetClass(ent) != tf_sniper)
@@ -104,7 +104,7 @@ int FireDangerValue(CachedEntity *patient)
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent))
-            	continue;
+                continue;
             if (!ent->m_bEnemy())
                 continue;
             if (g_pPlayerResource->GetClass(ent) != tf_pyro)

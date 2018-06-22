@@ -99,9 +99,9 @@ void Prediction_PaintTraverse()
                 Vector screen;
                 if (draw::WorldToScreen(predicted_players[i][j], screen))
                 {
-                    glez::draw::line(
-                        screen.x, screen.y, previous_screen.x - screen.x,
-                        previous_screen.y - screen.y, color, 0.5f);
+                    glez::draw::line(screen.x, screen.y,
+                                     previous_screen.x - screen.x,
+                                     previous_screen.y - screen.y, color, 0.5f);
                     previous_screen = screen;
                 }
                 else

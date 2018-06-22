@@ -193,7 +193,8 @@ void WorldTick()
     if (dist_to_target > (float) follow_distance)
     {
         // Check for idle
-        if (idle_time.check(3000) || (breadcrumbs.size() > 1 && LOCAL_E->m_vecVelocity.IsZero(5.0f)))
+        if (idle_time.check(3000) ||
+            (breadcrumbs.size() > 1 && LOCAL_E->m_vecVelocity.IsZero(5.0f)))
             g_pUserCmd->buttons |= IN_JUMP;
         if (idle_time.test_and_set(5000))
         {
@@ -282,16 +283,15 @@ void DrawTick()
         if (draw::WorldToScreen(breadcrumbs[i], wts1) &&
             draw::WorldToScreen(breadcrumbs[i + 1], wts2))
         {
-            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x,
-                                wts2.y - wts1.y, colors::white, 0.1f);
+            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
+                             colors::white, 0.1f);
         }
     }
     Vector wts;
     if (!draw::WorldToScreen(breadcrumbs[0], wts))
         return;
     glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
-    glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white,
-                                 1.0f);
+    glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
 #endif
 }
 

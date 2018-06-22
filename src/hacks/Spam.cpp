@@ -384,13 +384,13 @@ void CreateMove()
                 current_index = 0;
             if (random_order)
             {
-                current_index      = rand() % source->size();
+                current_index = rand() % source->size();
                 while (current_index == last_index)
                 {
-                current_index      = rand() % source->size();
+                    current_index = rand() % source->size();
                 }
             }
-            last_index = current_index;
+            last_index             = current_index;
             std::string spamString = source->at(current_index);
             if (FormatSpamMessage(spamString))
                 chat_stack::Say(spamString, false);
