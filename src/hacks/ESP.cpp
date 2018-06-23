@@ -1188,7 +1188,12 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                 for (auto& s: data->shown_roles)
                     AddEntityString(ent, s, colors::orange);
             if (online_software && data->has_software)
-                AddEntityString(ent, "Software: " + data->software_name);
+            {
+                if (data->is_using_friendly_software)
+                    AddEntityString(ent, "Software: " + data->software_name);
+                else
+                    AddEntityString(ent, "Software: " + data->software_name, colors::red);
+            }
         }
 
         // Powerup handling
