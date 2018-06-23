@@ -28,7 +28,7 @@ int m_iNewTarget{ 0 };
 static CatVar pop_uber_auto(CV_SWITCH, "autoheal_uber", "1", "AutoUber",
                             "Use ubercharge automatically");
 static CatVar
-    pop_uber_percent(CV_FLOAT, "autoheal_uber_health", "30",
+    pop_uber_percent(CV_FLOAT, "autoheal_uber_health", "0",
                      "Pop uber if health% <",
                      "When under a percentage of health, use ubercharge");
 static CatVar share_uber(
@@ -355,9 +355,17 @@ bool IsPopped()
 bool ShouldChargePlayer(int idx)
 {
     CachedEntity *target = ENTITY(idx);
+    const int health = target->m_iHealth();
+    if (float(pop_uber_percent) > 0)
+    {
+        const float pophealth = target->m_iMaxHealth() * (float(pop_uber_percent) / 100);
+        if (health < pophealth)
+            return true;
+    }
+    else
+    {
     const float damage_accum_duration =
         g_GlobalVars->curtime - data[idx].accum_damage_start;
-    const int health = target->m_iHealth();
     if (!data[idx].accum_damage_start)
         return false;
     if (health > 30 && data[idx].accum_damage < 45)
@@ -369,6 +377,8 @@ bool ShouldChargePlayer(int idx)
     }
     if (health < 30 && data[idx].accum_damage > 10)
         return true;
+    return false;
+    }
     return false;
 }
 

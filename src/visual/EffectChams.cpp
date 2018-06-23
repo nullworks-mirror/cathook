@@ -222,8 +222,6 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 
 bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 {
-    if (!enable)
-        return false;
     if (entity->entindex() < 0)
         return false;
     CachedEntity *ent = ENTITY(entity->entindex());
@@ -366,11 +364,7 @@ void EffectChams::Render(int x, int y, int w, int h)
     BeginRenderChams();
     for (int i = 1; i < HIGHEST_ENTITY; i++)
     {
-        IClientEntity *ent = g_IEntityList->GetClientEntity(i);
-        if (ent && !ent->IsDormant())
-        {
-            RenderChams(i);
-        }
+        RenderChams(i);
     }
     EndRenderChams();
 }

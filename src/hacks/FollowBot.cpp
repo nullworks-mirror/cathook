@@ -10,6 +10,7 @@
 #include <hacks/FollowBot.hpp>
 #include <hacks/LagExploit.hpp>
 #include <glez/draw.hpp>
+#include <time.h>
 
 namespace hacks
 {
@@ -51,12 +52,16 @@ static CatVar sync_taunt(CV_SWITCH, "fb_sync_taunt", "0", "Synced taunt",
                          "Taunt when follow target does");
 static CatVar change(CV_SWITCH, "fb_switch", "1", "Change followbot target",
                      "Always change roaming target when possible");
+static CatVar autojump(CV_SWITCH, "fb_autojump", "1", "Autojump",
+                       "Automatically jump if stuck");
+
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
 static const int crumb_limit = 64; // limit
 
 // Followed entity, externed for highlight color
 int follow_target = 0;
+long int lasttaunt;
 
 void WorldTick()
 {
@@ -159,21 +164,35 @@ void WorldTick()
     if (!follow_target)
         return;
 
-    // If the player is close enough, we dont need to follow the path
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed
     if (CE_BAD(followtar))
         return;
-    auto tar_orig       = followtar->m_vecOrigin();
-    auto loc_orig       = LOCAL_E->m_vecOrigin();
-    auto dist_to_target = loc_orig.DistTo(tar_orig);
-    if (dist_to_target < 30)
-        breadcrumbs.clear();
-
     // Update timer on new target
     static Timer idle_time{};
     if (breadcrumbs.empty())
         idle_time.update();
+
+    // If the player is close enough, we dont need to follow the path
+    auto tar_orig       = followtar->m_vecOrigin();
+    auto loc_orig       = LOCAL_E->m_vecOrigin();
+    auto dist_to_target = loc_orig.DistTo(tar_orig);
+    if (roambot)
+    {
+        if ((dist_to_target < (float)follow_distance) && VisCheckEntFromEnt(LOCAL_E, followtar))
+        {
+            breadcrumbs.clear();
+            idle_time.update();
+        }
+    }
+    else
+    {
+        if (dist_to_target < 30)
+        {
+            breadcrumbs.clear();
+            idle_time.update();
+        }
+    }
 
     // New crumbs, we add one if its empty so we have something to follow
     if ((breadcrumbs.empty() ||
@@ -189,20 +208,29 @@ void WorldTick()
         breadcrumbs.erase(breadcrumbs.begin());
     }
 
+    //moved because its worthless otherwise
+    if (sync_taunt && HasCondition<TFCond_Taunting>(followtar)) {
+        //std::time_t time = std::time(nullptr);
+        long int t = static_cast<long int> (std::time(nullptr));
+        if (!(t == lasttaunt))
+        {
+            lasttaunt = t;
+            g_IEngine->ClientCmd("taunt");
+        }
+    }
+
     // Follow the crumbs when too far away, or just starting to follow
     if (dist_to_target > (float) follow_distance)
     {
         // Check for idle
-        if (idle_time.check(3000) ||
-            (breadcrumbs.size() > 1 && LOCAL_E->m_vecVelocity.IsZero(5.0f)))
+        if (autojump && (idle_time.check(3000) ||
+            (breadcrumbs.size() > 1 && LOCAL_E->m_vecVelocity.IsZero(5.0f))))
             g_pUserCmd->buttons |= IN_JUMP;
         if (idle_time.test_and_set(5000))
         {
             follow_target = 0;
             return;
         }
-        if (sync_taunt && HasCondition<TFCond_Taunting>(ENTITY(follow_target)))
-            g_IEngine->ClientCmd("taunt");
         static float last_slot_check = 0.0f;
         if (g_GlobalVars->curtime < last_slot_check)
             last_slot_check = 0.0f;
