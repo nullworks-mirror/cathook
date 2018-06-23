@@ -13,3 +13,6 @@
 [submodule "ucccccp"]
 	path = external/ucccccp
 	url = https://github.com/nullworks/ucccccp.git
+[submodule "external/co-library"]
+	path = external/co-library
+	url = git@gitcat:nullworks/co-library.git
