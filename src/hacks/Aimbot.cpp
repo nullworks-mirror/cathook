@@ -467,8 +467,9 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
             if (GetWeaponMode() == weaponmode::weapon_melee ||
                 (int) priority_mode == 2)
             {
-                scr = 4096.0f - calculated_data_array[i].aim_position.DistTo(
-                                    g_pLocalPlayer->v_Eye);
+                scr = 4096.0f -
+                      calculated_data_array[i].aim_position.DistTo(
+                          g_pLocalPlayer->v_Eye);
             }
             else
             {
@@ -880,7 +881,7 @@ void DoAutoshoot()
     }
     else
         begansticky = 0;
-    bool attack = true;
+    bool attack     = true;
 
     // Rifle check
     IF_GAME(IsTF())
@@ -1328,7 +1329,7 @@ void DrawText()
                                tan(DEG2RAD(fov_real) / 2) * (width);
 
                 glez::draw::circle(width / 2, height / 2, radius, color, 1,
-                                      100);
+                                   100);
             }
         }
     }
@@ -1347,10 +1348,10 @@ void DrawText()
                 draw::WorldToScreen(ent->m_vecOrigin(), oscreen))
             {
                 glez::draw::rect(screen.x - 2, screen.y - 2, 4, 4,
-                                    colors::white);
+                                 colors::white);
                 glez::draw::line(oscreen.x, oscreen.y, screen.x - oscreen.x,
-                                    screen.y - oscreen.y, colors::EntityF(ent),
-                                    0.5f);
+                                 screen.y - oscreen.y, colors::EntityF(ent),
+                                 0.5f);
             }
         }
     }

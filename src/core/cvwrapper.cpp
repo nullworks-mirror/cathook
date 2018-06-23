@@ -15,34 +15,53 @@ int GetRebasedCatVarCount()
 {
     return rebased_count;
 }
-
-static CatCommand cfg_rebase("cfg_setbase", "Rebase config", []() {
-    for (auto &cv : CatVarList())
+enum torun
+{
+    rebase = 0,
+    resetbase,
+    save,
+    save_complete
+};
+int torun = -1;
+std::string Args[3];
+namespace hacks
+{
+namespace tf2
+{
+namespace global
+{
+void runcfg()
+{
+    if (torun == -1)
+        return;
+    if (torun == rebase)
     {
-        std::string value(cv->GetString());
-        if (value != cv->defaults)
+        for (auto &cv : CatVarList())
         {
-            cv->current_base = value;
-            rebased_count++;
+            std::string value(cv->GetString());
+            if (value != cv->defaults)
+            {
+                cv->current_base = value;
+                rebased_count++;
+            }
         }
+        logging::Info("Successfully rebased %d variables", rebased_count);
     }
-    logging::Info("Successfully rebased %d variables", rebased_count);
-});
-
-static CatCommand cfg_resetbase("cfg_resetbase", "Reset config base", []() {
-    for (auto &cv : CatVarList())
+    else if (torun == resetbase)
     {
-        cv->current_base = cv->defaults;
-    }
-    rebased_count = 0;
-});
-
-static CatCommand save_settings(
-    "save", "Save settings (optional filename)", [](const CCommand &args) {
-        std::string filename("lastcfg");
-        if (args.ArgC() > 1)
+        for (auto &cv : CatVarList())
         {
-            filename = std::string(args.Arg(1));
+            cv->current_base = cv->defaults;
+        }
+        rebased_count = 0;
+    }
+    else if (torun == save)
+    {
+        std::string filename("lastcfg");
+        if (Args[0] != "")
+        {
+            filename = Args[0];
+            Args[0]  = "";
         }
         std::string path = format("tf/cfg/cat_", filename, ".cfg");
         logging::Info("Saving settings to %s", path.c_str());
@@ -55,6 +74,7 @@ static CatCommand save_settings(
         if (file.bad())
         {
             logging::Info("Couldn't open the file!");
+            torun = -1;
             return;
         }
         for (const auto &i : CatVarList())
@@ -70,15 +90,14 @@ static CatCommand save_settings(
             }
         }
         file.close();
-    });
-
-static CatCommand save_settings_complete(
-    "save_complete", "Save all settings (optional filename)",
-    [](const CCommand &args) {
+    }
+    else if (torun == save_complete)
+    {
         std::string filename("lastcfg");
-        if (args.ArgC() > 1)
+        if (Args[0] != "")
         {
-            filename = std::string(args.Arg(1));
+            filename = Args[0];
+            Args[0]  = "";
         }
         std::string path = format("tf/cfg/cat_", filename, ".cfg");
         logging::Info("Saving settings to %s", path.c_str());
@@ -102,7 +121,38 @@ static CatCommand save_settings_complete(
             file << CON_PREFIX << i->name << " \"" << i->GetString() << "\"\n";
         }
         file.close();
-    });
+    }
+    torun = -1;
+}
+}
+}
+}
+
+static CatCommand cfg_rebase("cfg_setbase", "Rebase config",
+                             []() { torun = rebase; });
+
+static CatCommand cfg_resetbase("cfg_resetbase", "Reset config base",
+                                []() { torun = resetbase; });
+
+static CatCommand save_settings("save", "Save settings (optional filename)",
+                                [](const CCommand &args) {
+                                    if (args.ArgC() > 1)
+                                    {
+                                        Args[0] = std::string(args.Arg(1));
+                                    }
+                                    torun = save;
+                                });
+
+static CatCommand
+    save_settings_complete("save_complete",
+                           "Save all settings (optional filename)",
+                           [](const CCommand &args) {
+                               if (args.ArgC() > 1)
+                               {
+                                   Args[0] = std::string(args.Arg(1));
+                               }
+                               torun = save_complete;
+                           });
 
 // Prevent initialization errors.
 std::vector<CatVar *> &registrationArray()

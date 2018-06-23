@@ -96,8 +96,9 @@ void DrawSpinner()
     int state = min(3, int(spinning_speed / 250));
 
     glez::draw::rect_textured(draw::width / 2, draw::height / 2, size, size,
-                                 colors::white, textures::atlas().texture, 64 * state,
-                                 (3 + (v9mode ? 0 : 1)) * 64, 64, 64, angle);
+                              colors::white, textures::atlas().texture,
+                              64 * state, (3 + (v9mode ? 0 : 1)) * 64, 64, 64,
+                              angle);
     if (angle > PI * 4)
         angle -= PI * 4;
 }

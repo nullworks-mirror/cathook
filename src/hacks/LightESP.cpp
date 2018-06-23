@@ -9,7 +9,7 @@ namespace lightesp
 {
 
 static CatVar enable(CV_SWITCH, "lightesp_enabled", "0", "Enable LightESP",
-              "Lightweight ESP. Only shows head.");
+                     "Lightweight ESP. Only shows head.");
 Vector hitp[32];
 Vector minp[32];
 Vector maxp[32];
@@ -64,9 +64,8 @@ void draw()
             else
                 size = abs(maxp[i].y - minp[i].y);
 
-            glez::draw::rect(
-                out.x, out.y, size / 4, size / 4,
-                hacks::shared::lightesp::LightESPColor(pEntity));
+            glez::draw::rect(out.x, out.y, size / 4, size / 4,
+                             hacks::shared::lightesp::LightESPColor(pEntity));
         }
     }
 #endif

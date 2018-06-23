@@ -22,7 +22,6 @@ namespace fonts
 
 extern std::unique_ptr<glez::font> esp;
 extern std::unique_ptr<glez::font> menu;
-
 }
 
 namespace fonts

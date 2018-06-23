@@ -239,7 +239,7 @@ void Draw()
                                tan(DEG2RAD(fov_real) / 2) * (width);
 
                 glez::draw::circle(width / 2, height / 2, radius, color, 1,
-                                      100);
+                                   100);
             }
         }
     }

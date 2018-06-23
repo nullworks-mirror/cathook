@@ -1081,7 +1081,7 @@ void DrawConnection(index_t a, connection_s &b)
         color = &colors::green;
 
     glez::draw::line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y,
-                        *color, 0.5f);
+                     *color, 0.5f);
 
     if (draw_connection_flags && b.flags != CF_GOOD)
     {
@@ -1092,8 +1092,8 @@ void DrawConnection(index_t a, connection_s &b)
             flags += "H";
         // int size_x = 0, size_y = 0;
         // FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-        glez::draw::string(wts_cc.x, wts_cc.y - 4, flags,
-                              *fonts::menu, colors::white, nullptr, nullptr);
+        glez::draw::string(wts_cc.x, wts_cc.y - 4, flags, *fonts::menu,
+                           colors::white, nullptr, nullptr);
     }
 }
 
@@ -1132,7 +1132,7 @@ void DrawNode(index_t node, bool draw_back)
             color = &colors::red;
 
         glez::draw::rect(wts.x - node_size, wts.y - node_size, 2 * node_size,
-                            2 * node_size, *color);
+                         2 * node_size, *color);
     }
 
     if (draw_indices)
@@ -1147,9 +1147,9 @@ void DrawNode(index_t node, bool draw_back)
         if (not draw::WorldToScreen(n.xyz(), wts))
             return;
 
-        glez::draw::outlined_string(
-            wts.x, wts.y, std::to_string(node).c_str(), *fonts::menu,
-            *color, colors::black, nullptr, nullptr);
+        glez::draw::outlined_string(wts.x, wts.y, std::to_string(node).c_str(),
+                                    *fonts::menu, *color, colors::black,
+                                    nullptr, nullptr);
     }
 }
 

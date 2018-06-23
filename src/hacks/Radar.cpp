@@ -91,16 +91,19 @@ static std::vector<textures::sprite> tx_items{};
 InitRoutine init([]() {
     // Background circles
     for (int i = 0; i < 2; ++i)
-        tx_teams.push_back(textures::atlas().create_sprite(704, 384 + i * 64, 64, 64));
+        tx_teams.push_back(
+            textures::atlas().create_sprite(704, 384 + i * 64, 64, 64));
     // Items
     for (int i = 0; i < 2; ++i)
-        tx_items.push_back(textures::atlas().create_sprite(640, 384 + i * 64, 64, 64));
+        tx_items.push_back(
+            textures::atlas().create_sprite(640, 384 + i * 64, 64, 64));
     // Classes
     for (int i = 0; i < 3; ++i)
     {
         tx_class.emplace_back();
         for (int j = 0; j < 9; ++j)
-            tx_class[i].push_back(textures::atlas().create_sprite(j * 64, 320 + i * 64, 64, 64));
+            tx_class[i].push_back(
+                textures::atlas().create_sprite(j * 64, 320 + i * 64, 64, 64));
     }
     logging::Info("Radar sprites loaded");
 });
@@ -130,11 +133,11 @@ void DrawEntity(int x, int y, CachedEntity *ent)
             if (use_icons)
             {
                 tx_teams[idx].draw(x + wtr.first, y + wtr.second,
-                                          (int) icon_size, (int) icon_size,
-                                          colors::white);
-                tx_class[0][clazz - 1].draw(
-                    x + wtr.first, y + wtr.second, (int) icon_size,
-                    (int) icon_size, colors::white);
+                                   (int) icon_size, (int) icon_size,
+                                   colors::white);
+                tx_class[0][clazz - 1].draw(x + wtr.first, y + wtr.second,
+                                            (int) icon_size, (int) icon_size,
+                                            colors::white);
             }
             else
             {
@@ -156,9 +159,9 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                 glez::draw::rect_outline(
                     x + wtr.first, y + wtr.second + (int) icon_size,
                     (int) icon_size, 4, colors::black, 0.5f);
-                glez::draw::rect(
-                    x + wtr.first + 1, y + wtr.second + (int) icon_size + 1,
-                    ((float) icon_size - 2.0f) * healthp, 2, clr);
+                glez::draw::rect(x + wtr.first + 1,
+                                 y + wtr.second + (int) icon_size + 1,
+                                 ((float) icon_size - 2.0f) * healthp, 2, clr);
             }
         }
         else if (ent->m_Type() == ENTITY_BUILDING)
@@ -193,8 +196,8 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
                 float sz  = float(icon_size) * 0.15f * 0.5f;
                 float sz2 = float(icon_size) * 0.85;
-                tx_items[1].draw(x + wtr.first + sz, y + wtr.second + sz,
-                                        sz2, sz2, colors::white);
+                tx_items[0].draw(x + wtr.first + sz, y + wtr.second + sz, sz2,
+                                 sz2, colors::white);
             }
             else if (show_ammopacks && (ent->m_ItemType() == ITEM_AMMO_LARGE ||
                                         ent->m_ItemType() == ITEM_AMMO_MEDIUM ||
@@ -204,8 +207,8 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
                 float sz  = float(icon_size) * 0.15f * 0.5f;
                 float sz2 = float(icon_size) * 0.85;
-                tx_items[0].draw(x + wtr.first + sz, y + wtr.second + sz,
-                                        sz2, sz2, colors::white);
+                tx_items[1].draw(x + wtr.first + sz, y + wtr.second + sz, sz2,
+                                 sz2, colors::white);
             }
         }
     }
@@ -232,9 +235,8 @@ void Draw()
     outlineclr = GUIColor();
 
     glez::draw::rect(x, y, radar_size, radar_size,
-                        colors::Transparent(colors::black, 0.4f));
-    glez::draw::rect_outline(x, y, radar_size, radar_size, outlineclr,
-                                 0.5f);
+                     colors::Transparent(colors::black, 0.4f));
+    glez::draw::rect_outline(x, y, radar_size, radar_size, outlineclr, 0.5f);
 
     if (enemies_over_teammates)
         enemies.clear();
@@ -268,14 +270,14 @@ void Draw()
                                        g_pLocalPlayer->v_Origin.y);
         if (!use_icons)
             glez::draw::rect_outline(x + wtr.first, y + wtr.second,
-                                         int(icon_size), int(icon_size),
-                                         GUIColor(), 0.5f);
+                                     int(icon_size), int(icon_size), GUIColor(),
+                                     0.5f);
     }
 
     glez::draw::line(x + half_size, y + half_size / 2, 0, half_size,
-                        colors::Transparent(GUIColor(), 0.4f), 0.5f);
+                     colors::Transparent(GUIColor(), 0.4f), 0.5f);
     glez::draw::line(x + half_size / 2, y + half_size, half_size, 0,
-                        colors::Transparent(GUIColor(), 0.4f), 0.5f);
+                     colors::Transparent(GUIColor(), 0.4f), 0.5f);
 }
 }
 }

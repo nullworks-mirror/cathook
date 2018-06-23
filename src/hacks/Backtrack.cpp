@@ -19,12 +19,15 @@ namespace backtrack
 CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
               "For legit play only as of right now.");
 static CatVar draw_bt(CV_SWITCH, "backtrack_draw", "0", "Draw",
-               "Draw backtrack ticks");
+                      "Draw backtrack ticks");
 CatVar latency(CV_FLOAT, "backtrack_latency", "0", "fake lantency",
                "Set fake latency to this many ms");
 static CatVar mindistance(CV_FLOAT, "mindistance", "60", "mindistance");
-static CatEnum slots_enum({ "All", "Primary", "Secondary", "Melee", "Primary Secondary", "Primary Melee", "Secondary Melee" });
-static CatVar slots(slots_enum, "backtrack_slots", "0", "Enabled Slots", "Select what slots backtrack should be enabled on.");
+static CatEnum slots_enum({ "All", "Primary", "Secondary", "Melee",
+                            "Primary Secondary", "Primary Melee",
+                            "Secondary Melee" });
+static CatVar slots(slots_enum, "backtrack_slots", "0", "Enabled Slots",
+                    "Select what slots backtrack should be enabled on.");
 
 BacktrackData headPositions[32][66];
 BestTickData sorted_ticks[66];
@@ -93,13 +96,13 @@ void Run()
 
     if (CE_BAD(LOCAL_E))
         return;
-    
-	if (!shouldBacktrack())
-	{
-		shouldDrawBt = false;
-		return;
-	}
-	shouldDrawBt = true;
+
+    if (!shouldBacktrack())
+    {
+        shouldDrawBt = false;
+        return;
+    }
+    shouldDrawBt = true;
 
     CUserCmd *cmd       = g_pUserCmd;
     float bestFov       = 99999;
@@ -229,10 +232,10 @@ void Draw()
 
                 if (i == iBestTarget && j == BestTick)
                     glez::draw::rect(out.x, out.y, size / 2, size / 2,
-                                        colors::red);
+                                     colors::red);
                 else
                     glez::draw::rect(out.x, out.y, size / 4, size / 4,
-                                        colors::green);
+                                     colors::green);
             }
         }
     }
@@ -241,40 +244,40 @@ void Draw()
 
 bool shouldBacktrack()
 {
-    int slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(g_pLocalPlayer->weapon()));
-    switch((int) slots) 
+    int slot =
+        re::C_BaseCombatWeapon::GetSlot(RAW_ENT(g_pLocalPlayer->weapon()));
+    switch ((int) slots)
     {
-        case 0:
+    case 0:
+        return true;
+        break;
+    case 1:
+        if (slot == 0)
             return true;
-			break;
-        case 1:
-            if (slot == 0)
-                return true;
-			break;
-        case 2:
-            if (slot == 1)
-                return true;
-			break;
-        case 3:
-            if (slot == 2)
-                return true;
-			break;
-        case 4:
-            if (slot == 0 || slot == 1)
-                return true;
-			break;
-        case 5:
-            if (slot == 0 || slot == 2)
-                return true;
-			break;
-        case 6:
-            if (slot == 1 || slot == 2)
-                return true;
-			break;
+        break;
+    case 2:
+        if (slot == 1)
+            return true;
+        break;
+    case 3:
+        if (slot == 2)
+            return true;
+        break;
+    case 4:
+        if (slot == 0 || slot == 1)
+            return true;
+        break;
+    case 5:
+        if (slot == 0 || slot == 2)
+            return true;
+        break;
+    case 6:
+        if (slot == 1 || slot == 2)
+            return true;
+        break;
     }
     return false;
 }
-
 }
 }
 }

@@ -47,7 +47,9 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
             draw::InitGL();
             init = true;
         }
-        render_cheat_visuals();
+        draw::BeginGL();
+        DrawCache();
+        draw::EndGL();
     }
     {
         PROF_SECTION(SWAPWINDOW_tf2);

@@ -388,7 +388,7 @@ void DrawText()
             gaybow.a = .5;
             // Draw next step
             glez::draw::rect(0, step * (i - 1), width,
-                                (step * i) - (step * (i - 1)), gaybow);
+                             (step * i) - (step * (i - 1)), gaybow);
         }
 
         // int size_x;
