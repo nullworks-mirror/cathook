@@ -318,6 +318,7 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
 }
 
 void EffectChams::RenderChams(int idx)
+void EffectChams::RenderChams(IClientEntity *entity)
 {
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     IClientEntity *entity = g_IEntityList->GetClientEntity(idx);
@@ -365,6 +366,7 @@ void EffectChams::Render(int x, int y, int w, int h)
     for (int i = 1; i < HIGHEST_ENTITY; i++)
     {
         RenderChams(i);
+        RenderChams(entity);
     }
     EndRenderChams();
 }

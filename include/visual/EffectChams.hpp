@@ -36,7 +36,7 @@ public:
     void SetEntityColor(CachedEntity *ent, rgba_t color);
     rgba_t ChamsColor(IClientEntity *entity);
     bool ShouldRenderChams(IClientEntity *entity);
-    void RenderChams(int idx);
+    void RenderChams(IClientEntity *entity);
     void BeginRenderChams();
     void EndRenderChams();
     void RenderChamsRecursive(IClientEntity *entity);

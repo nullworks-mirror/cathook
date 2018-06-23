@@ -131,6 +131,10 @@ void WorldTick()
                     continue;
             if (entity == LOCAL_E) // Follow self lol
                 continue;
+            if (entity->m_bEnemy())
+                continue;
+            if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
+                continue;
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
                 continue;
             if (follow_activation &&
@@ -168,6 +172,12 @@ void WorldTick()
     // wtf is this needed
     if (CE_BAD(followtar))
         return;
+    // Check if we are following a disguised/spy
+    if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
+    {
+        follow_target = 0;
+        return;
+    }
     // Update timer on new target
     static Timer idle_time{};
     if (breadcrumbs.empty())
