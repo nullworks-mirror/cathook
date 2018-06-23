@@ -9,6 +9,7 @@
 #include <hacks/Trigger.hpp>
 #include "common.hpp"
 #include <hacks/Backtrack.hpp>
+#include <PlayerTools.hpp>
 
 namespace hacks
 {
@@ -276,6 +277,10 @@ bool IsTargetStateGood(CachedEntity *entity)
         if (!entity->m_bEnemy() && !teammates)
             return false;
 
+        // Global checks
+        if (player_tools::shouldTarget(entity) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            return false;
+
         IF_GAME(IsTF())
         {
             // If settings allow waiting for charge, and current charge cant
@@ -295,9 +300,6 @@ bool IsTargetStateGood(CachedEntity *entity)
                     return false;
                 }
             }
-            // If settings allow, ignore taunting players
-            if (ignore_taunting && HasCondition<TFCond_Taunting>(entity))
-                return false;
             // Dont target invulnerable players, ex: uber, bonk
             if (IsPlayerInvulnerable(entity))
                 return false;
@@ -310,17 +312,6 @@ bool IsTargetStateGood(CachedEntity *entity)
                 if (ignore_vaccinator &&
                     HasCondition<TFCond_UberBulletResist>(entity))
                     return false;
-        }
-        // Dont target players marked as friendly
-        if (playerlist::IsFriendly(playerlist::AccessData(entity).state))
-            return false;
-        IF_GAME(IsTF())
-        {
-            // If settings allow, ignore hoovys
-            if (ignore_hoovy && IsHoovy(entity))
-            {
-                return false;
-            }
         }
 
         // Head hitbox detection

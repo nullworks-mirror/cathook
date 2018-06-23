@@ -78,6 +78,16 @@ struct rgba_t
     }
 };
 
+constexpr bool operator==(const rgba_t& lhs, const rgba_t& rhs)
+{
+    return rhs.r == lhs.r && rhs.g == lhs.g && rhs.b == lhs.b && rhs.a == lhs.a;
+}
+
+constexpr bool operator!=(const rgba_t& lhs, const rgba_t& rhs)
+{
+    return !(lhs == rhs);
+}
+
 constexpr rgba_t FromRGBA8(float r, float g, float b, float a)
 {
     return rgba_t{ r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f };

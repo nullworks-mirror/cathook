@@ -8,6 +8,7 @@
 #include <hacks/ESP.hpp>
 #include <glez/draw.hpp>
 #include <online/Online.hpp>
+#include <PlayerTools.hpp>
 #include "common.hpp"
 
 namespace hacks
@@ -1199,8 +1200,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         }
 
         // Dont understand reasoning for this check
-        if (ent->m_bEnemy() || teammates ||
-            !playerlist::IsDefault(info.friendsID))
+        if (ent->m_bEnemy() || teammates || player_tools::shouldAlwaysRenderEsp(ent))
         {
 
             // Playername

@@ -7,6 +7,7 @@
 
 #include "common.hpp"
 #include <hacks/AutoSticky.hpp>
+#include <PlayerTools.hpp>
 
 namespace hacks
 {
@@ -62,8 +63,9 @@ bool IsTarget(CachedEntity *ent)
         // Dont detonate on dead players
         if (!ent->m_bAlivePlayer())
             return false;
-        // Dont detonate on friendly players
-        if (playerlist::IsFriendly(playerlist::AccessData(ent).state))
+
+        // Global checks
+        if (player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
             return false;
 
         IF_GAME(IsTF())

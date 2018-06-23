@@ -10,6 +10,7 @@
 #include <hacks/AntiAim.hpp>
 #include <hacks/ESP.hpp>
 #include <glez/draw.hpp>
+#include <PlayerTools.hpp>
 #include "common.hpp"
 
 namespace hacks
@@ -64,8 +65,6 @@ static CatVar
 static CatVar ignore_vaccinator(
     CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator",
     "Hitscan weapons won't fire if enemy is vaccinated against bullets");
-static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0",
-                           "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1",
                            "Ignore cloaked", "Don't aim at invisible enemies");
 static CatVar ignore_deadringer(CV_SWITCH, "aimbot_ignore_deadringer", "1",
@@ -578,8 +577,10 @@ bool IsTargetStateGood(CachedEntity *entity)
                 }
             }
 
-            // Taunting
-            if (ignore_taunting && HasCondition<TFCond_Taunting>(entity))
+            // Some global checks
+            if (player_tools::shouldTarget(entity) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+                return false;
+            if (hacks::shared::catbot::should_ignore_player(entity))
                 return false;
             // Invulnerable players, ex: uber, bonk
             if (IsPlayerInvulnerable(entity))
@@ -609,19 +610,7 @@ bool IsTargetStateGood(CachedEntity *entity)
                     HasCondition<TFCond_UberBulletResist>(entity))
                     return false;
         }
-        // Friendly player
-        if (playerlist::IsFriendly(playerlist::AccessData(entity).state))
-            return false;
-        IF_GAME(IsTF())
-        {
-            // Hoovys
-            if (ignore_hoovy && IsHoovy(entity))
-            {
-                return false;
-            }
-        }
-        if (hacks::shared::catbot::should_ignore_player(entity))
-            return false;
+
         // Preform hitbox prediction
         int hitbox                 = BestHitbox(entity);
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];

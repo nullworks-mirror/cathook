@@ -6,6 +6,7 @@
  */
 
 #include <online/Online.hpp>
+#include <PlayerTools.hpp>
 #include "common.hpp"
 
 static CatVar user_red_blue(CV_INT, "esp_color_red_b", "0", "Red Team: Blue",
@@ -131,21 +132,10 @@ rgba_t colors::EntityF(CachedEntity *ent)
                 else if (ent->m_iTeam() == TEAM_RED)
                     result = red_v;
             }
-            plclr = playerlist::Color(ent);
-            if (plclr.a)
-                result = plclr;
-            player_info_s pinfo{};
-            if (g_IEngine->GetPlayerInfo(ent->m_IDX, &pinfo))
-            {
-                auto data = online::getUserData(pinfo.friendsID);
-                if (data)
-                {
-                    if (data->rainbow)
-                        result = RainbowCurrent();
-                    else if (data->has_color)
-                        result = data->color;
-                }
-            }
+
+            auto o = player_tools::forceEspColor(ent);
+            if (o.has_value())
+                return *o;
         }
     }
 

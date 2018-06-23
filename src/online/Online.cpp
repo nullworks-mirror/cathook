@@ -121,10 +121,15 @@ void processOnlineIdentity(unsigned id, co::identified_user& user)
     {
         if (i.display_name.has_value())
             udata.shown_roles.push_back(*i.display_name);
+        if (i.name == "notarget")
+            udata.no_target = true;
+        if (i.name == "owner" || i.name == "contributor")
+        {
+            udata.is_developer = true;
 #if ENABLE_VISUALS
-        if (i.name == "owner")
             udata.rainbow = true;
 #endif
+        }
     }
 #if ENABLE_VISUALS
     if (user.color.has_value())

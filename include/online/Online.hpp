@@ -21,6 +21,8 @@ struct user_data
     std::vector<std::string> shown_roles{};
     std::string software_name{};
     bool has_software{ false };
+    bool no_target{ false };
+    bool is_developer{};
 #if ENABLE_VISUALS
     bool has_color{ false };
     colors::rgba_t color{};
