@@ -16,18 +16,17 @@ struct user_data
 {
     bool is_anonymous{ false };
     bool is_using_friendly_software{ false };
+    bool is_steamid_verified{ false };
     std::string username{};
     std::vector<std::string> shown_roles{};
+    std::string software_name{};
+    bool has_software{ false };
 #if ENABLE_VISUALS
+    bool has_color{ false };
     colors::rgba_t color{};
     bool rainbow{ false };
 #endif
 };
-
-/*
- * Initialize everything, login if key is saved
- */
-void init();
 
 /*
  * Identify unidentified users, send online status, etc

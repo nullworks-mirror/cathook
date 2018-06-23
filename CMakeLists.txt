@@ -33,6 +33,7 @@ set(Textmode 0 CACHE BOOL "Various textmode-only features for bots")
 set(EnableTextmodeStdin 0 CACHE BOOL "Textmode Stdin -> Console bridge (EXPERIMENTAL)")
 set(EnableWarnings 1 CACHE BOOL "Enable compile warnings")
 set(EnableNullGraphics 0 CACHE BOOL "Enable experimental textmode hooks (CRASHES)")
+set(EnableOnlineFeatures 1 CACHE BOOL "Enable online features (WIP)")
 
 if(NOT EnableVisuals)
     set(EnableGUI 0)
@@ -62,6 +63,11 @@ find_library(ValveLibraryVStdLib NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib"
 if(EnableIPC)
     add_subdirectory(external/simple-ipc)
     target_link_libraries(cathook SimpleIPC)
+endif()
+
+if(EnableOnlineFeatures)
+    add_subdirectory(external/co-library)
+    target_link_libraries(cathook co-library)
 endif()
 
 if(EnableVisuals)

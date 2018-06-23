@@ -7,6 +7,7 @@
 
 #include <hacks/ESP.hpp>
 #include <glez/draw.hpp>
+#include <online/Online.hpp>
 #include "common.hpp"
 
 namespace hacks
@@ -149,6 +150,11 @@ static CatVar entity_model(CV_SWITCH, "esp_model_name", "0", "Model name ESP",
                            "Model name esp (DEBUG ONLY)");
 static CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
                         "Used with Entity ESP. Shows entityID");
+
+// Online
+static CatVar online(CV_SWITCH, "esp_online", "1", "Show online info", "Username, etc");
+static CatVar online_roles(CV_SWITCH, "esp_online_roles", "1", "Show online roles", "Admin, developer, etc");
+static CatVar online_software(CV_SWITCH, "esp_online_software", "1", "Show software", "cathook, lmaobox, etc");
 
 // CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
 
@@ -1155,10 +1161,12 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
             return;
 
+        online::user_data *data = online ? online::getUserData(info.friendsID) : nullptr;
+
         // TODO, check if u can just use "ent->m_bEnemy()" instead of m_iTeam
         // Legit mode handling
         if (legit && ent->m_iTeam() != g_pLocalPlayer->team &&
-            playerlist::IsDefault(info.friendsID))
+            playerlist::IsDefault(info.friendsID) && !(data))
         {
             if (IsPlayerInvisible(ent))
                 return; // Invis check
@@ -1168,6 +1176,18 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                         // if (ent->m_lLastSeen >
                         // (unsigned)v_iLegitSeenTicks->GetInt())
             // return;
+        }
+
+        if (data)
+        {
+            AddEntityString(ent, "CO: " + data->username, colors::yellow);
+            if (data->is_steamid_verified)
+                AddEntityString(ent, "Verified SteamID", colors::green);
+            if (online_roles)
+                for (auto& s: data->shown_roles)
+                    AddEntityString(ent, s, colors::orange);
+            if (online_software && data->has_software)
+                AddEntityString(ent, "Software: " + data->software_name);
         }
 
         // Powerup handling

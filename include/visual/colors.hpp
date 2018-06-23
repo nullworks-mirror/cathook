@@ -48,6 +48,8 @@ struct rgba_t
     constexpr rgba_t(float _r, float _g, float _b, float _a = 1.0f)
         : r(_r), g(_g), b(_b), a(_a){};
 
+    explicit rgba_t(const char hex[6]);
+
     constexpr operator glez::rgba() const
     {
         return *reinterpret_cast<const glez::rgba *>(this);
