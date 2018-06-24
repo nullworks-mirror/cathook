@@ -8,11 +8,7 @@
 #include "common.hpp"
 #include "hacks/Backtrack.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace autobackstab
+namespace hacks::tf2::autobackstab
 {
 
 // pPaste, thanks to F1ssi0N
@@ -68,7 +64,5 @@ void CreateMove()
             g_pUserCmd->buttons |= IN_ATTACK;
         }
     }
-}
-}
 }
 }

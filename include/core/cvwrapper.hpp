@@ -41,15 +41,9 @@ public:
     int max_value;
     int size;
 };
-namespace hacks
-{
-namespace tf2
-{
-namespace global
+namespace hacks::tf2::global
 {
 void runcfg();
-}
-}
 }
 // TODO reverse, no idea how catcommands are handled
 class CatCommand

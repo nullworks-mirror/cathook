@@ -9,9 +9,7 @@
 #include <hacks/AntiCheat.hpp>
 #include "common.hpp"
 
-namespace ac
-{
-namespace aimbot
+namespace ac::aimbot
 {
 
 static CatVar enabled(CV_SWITCH, "ac_aimbot", "1", "Detect Aimbot",
@@ -120,6 +118,5 @@ void Event(KeyValues *event)
             }
         }
     }
-}
 }
 }

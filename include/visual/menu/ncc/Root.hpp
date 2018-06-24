@@ -9,9 +9,7 @@
 
 #include "../CBaseWindow.h"
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class Root : public CBaseWindow
@@ -24,5 +22,4 @@ public:
     virtual void Draw(int x, int y) override;
     inline virtual void MoveChildren() override{};
 };
-}
 }

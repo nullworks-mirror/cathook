@@ -12,11 +12,7 @@
 #include <glez/draw.hpp>
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace aimbot
+namespace hacks::shared::aimbot
 {
 
 // User settings are stored and used by these vars
@@ -1357,6 +1353,4 @@ void DrawText()
     }
 }
 #endif
-} // namespace aimbot
-} // namespace shared
-} // namespace hacks
+} // namespace hacks::shared::aimbot

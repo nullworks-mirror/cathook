@@ -9,11 +9,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace killstreak
+namespace hacks::tf2::killstreak
 {
 
 int current_streak();
@@ -21,6 +17,4 @@ void init();
 void shutdown();
 void fire_event(IGameEvent *event);
 void apply_killstreaks();
-}
-}
 }

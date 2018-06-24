@@ -9,11 +9,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace skinchanger
+namespace hacks::tf2::skinchanger
 {
 
 class CAttributeList;
@@ -141,6 +137,4 @@ void Load(std::string filename, bool merge = false);
 void InvalidateCookie();
 void FrameStageNotify(int stage);
 void DrawText();
-}
-}
 }

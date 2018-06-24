@@ -19,11 +19,7 @@
 #include "hack.hpp"
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace misc
+namespace hacks::shared::misc
 {
 
 static CatVar debug_info(CV_SWITCH, "debug_info", "0", "Debug info",
@@ -707,9 +703,7 @@ static CatCommand
                   const char *ft = (args.ArgC() > 1 ? args[2] : 0);
                   DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
               });
-} // namespace misc
-} // namespace shared
-} // namespace hacks
+} // namespace hacks::shared::misc
 
 /*void DumpRecvTable(CachedEntity* ent, RecvTable* table, int depth, const char*
 ft, unsigned acc_offset) { bool forcetable = ft && strlen(ft); if (!forcetable

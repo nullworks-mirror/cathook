@@ -11,11 +11,7 @@
 
 class CatCommand;
 
-namespace hacks
-{
-namespace shared
-{
-namespace spam
+namespace hacks::shared::spam
 {
 
 extern const std::vector<std::string> builtin_default;
@@ -30,6 +26,4 @@ extern CatVar spam_source;
 void Init();
 void CreateMove();
 void Reload();
-}
-}
 }

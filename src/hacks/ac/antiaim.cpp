@@ -8,10 +8,9 @@
 #include <hacks/AntiCheat.hpp>
 #include "common.hpp"
 
-namespace ac
+namespace ac::antiaim
 {
-namespace antiaim
-{
+
 static CatVar enabled(CV_SWITCH, "ac_antiaim", "1", "Detect Antiaim");
 unsigned long last_accusation[32]{ 0 };
 
@@ -75,4 +74,4 @@ void Event(KeyValues *event)
 {
 }
 }
-}
+

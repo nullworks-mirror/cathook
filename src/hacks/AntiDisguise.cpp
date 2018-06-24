@@ -7,11 +7,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace antidisguise
+namespace hacks::tf2::antidisguise
 {
 
 static CatVar enabled(CV_SWITCH, "antidisguise", "0", "Remove spy disguise",
@@ -52,7 +48,5 @@ void Draw()
             }
         }
     }
-}
-}
 }
 }

@@ -9,11 +9,7 @@
 
 #include "config.h"
 
-namespace hacks
-{
-namespace shared
-{
-namespace walkbot
+namespace hacks::shared::walkbot
 {
 
 void Initialize();
@@ -22,6 +18,4 @@ void Draw();
 #endif
 void Move();
 void OnLevelInit();
-}
-}
 }

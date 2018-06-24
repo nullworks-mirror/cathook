@@ -11,11 +11,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace anticheat
+namespace hacks::shared::anticheat
 {
 static CatVar enabled(CV_SWITCH, "ac_enabled", "0", "Enable AC");
 static CatVar accuse_chat(CV_SWITCH, "ac_chat", "0", "Accuse in chat");
@@ -120,7 +116,5 @@ void Init()
 {
     // FIXME free listener
     g_IGameEventManager->AddListener(&listener, false);
-}
-}
 }
 }

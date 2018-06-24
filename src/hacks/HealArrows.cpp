@@ -7,11 +7,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace healarrow
+namespace hacks::tf2::healarrow
 {
 
 static CatVar healarrow_charge(CV_FLOAT, "healarrow_charge", "0.25",
@@ -146,7 +142,5 @@ void Draw()
     }
 #endif
 #endif
-}
-}
 }
 }

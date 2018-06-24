@@ -8,11 +8,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace autojoin
+namespace hacks::shared::autojoin
 {
 
 /*
@@ -135,7 +131,5 @@ void Update()
         }
     }
 #endif
-}
-}
 }
 }

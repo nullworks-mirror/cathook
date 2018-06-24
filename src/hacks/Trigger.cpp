@@ -10,11 +10,7 @@
 #include "common.hpp"
 #include <hacks/Backtrack.hpp>
 
-namespace hacks
-{
-namespace shared
-{
-namespace triggerbot
+namespace hacks::shared::triggerbot
 {
 
 // Vars for usersettings
@@ -716,7 +712,5 @@ bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector &Hit)
 
 void Draw()
 {
-}
-}
 }
 }

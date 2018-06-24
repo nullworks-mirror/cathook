@@ -9,11 +9,7 @@
 #include <hacks/AutoReflect.hpp>
 #include <glez/draw.hpp>
 
-namespace hacks
-{
-namespace tf
-{
-namespace autoreflect
+namespace hacks::tf::autoreflect
 {
 
 // Vars for user settings
@@ -244,7 +240,5 @@ void Draw()
         }
     }
 #endif
-}
-}
 }
 }

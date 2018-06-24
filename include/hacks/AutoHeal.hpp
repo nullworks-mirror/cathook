@@ -9,11 +9,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf
-{
-namespace autoheal
+namespace hacks::tf::autoheal
 {
 // TODO extern CatVar target_only;
 void CreateMove();
@@ -34,6 +30,4 @@ void UpdateData();
 int BestTarget();
 int HealingPriority(int idx);
 bool CanHeal(int idx);
-}
-}
 }

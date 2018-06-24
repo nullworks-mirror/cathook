@@ -7,11 +7,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace noisemaker
+namespace hacks::tf2::noisemaker
 {
 
 static CatVar
@@ -31,7 +27,5 @@ void CreateMove()
         }
     }
     return;
-}
-}
 }
 }

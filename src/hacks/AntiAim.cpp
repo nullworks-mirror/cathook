@@ -8,11 +8,7 @@
 #include <hacks/hacklist.hpp>
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace antiaim
+namespace hacks::shared::antiaim
 {
 
 CatVar communicate(CV_SWITCH, "identify", "0", "identify",
@@ -628,7 +624,5 @@ void ProcessUserCmd(CUserCmd *cmd)
         p = GetAAAAPitch();
     }
     g_pLocalPlayer->bUseSilentAngles = true;
-}
-}
 }
 }

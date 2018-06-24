@@ -8,11 +8,7 @@
 #include "common.hpp"
 #include <hacks/UberSpam.hpp>
 
-namespace hacks
-{
-namespace tf
-{
-namespace uberspam
+namespace hacks::tf::uberspam
 {
 
 TextFile custom_lines;
@@ -137,6 +133,4 @@ const std::vector<std::string> builtin_nonecore = {
     ">>> GET READY TO RUMBLE! <<<", ">>> CHEATS ACTIVATED! <<<",
     ">>> RUMBLE COMPLETE! <<<", ">>> RUMBLE IS %i%% CHARGED! <<<"
 };
-}
-}
 }

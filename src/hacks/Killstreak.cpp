@@ -8,11 +8,7 @@
 #include "common.hpp"
 #include "hooks.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace killstreak
+namespace hacks::tf2::killstreak
 {
 
 static CatVar enabled(CV_SWITCH, "killstreak", "0",
@@ -137,7 +133,5 @@ bool FireEventClientSide(IGameEventManager2 *manager, IGameEvent *event)
 
 void init()
 {
-}
-}
 }
 }

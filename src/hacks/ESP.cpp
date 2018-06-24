@@ -9,11 +9,7 @@
 #include <glez/draw.hpp>
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace esp
+namespace hacks::shared::esp
 {
 
 // Main Switch
@@ -351,7 +347,9 @@ void CreateMove()
             CachedEntity *ent = ENTITY(i);
 
             ProcessEntity(ent);
-
+            // Update Bones
+            if (i <= 32)
+            	ent->hitboxes.GetHitbox(0);
             // Dont know what this check is for
             if (data[i].string_count)
             {
@@ -1626,7 +1624,5 @@ void ResetEntityStrings()
 void SetEntityColor(CachedEntity *entity, const rgba_t &color)
 {
     data[entity->m_IDX].color = color;
-}
-}
 }
 }

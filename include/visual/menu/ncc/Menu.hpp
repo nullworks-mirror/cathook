@@ -23,9 +23,7 @@
 #include "menu/ncc/Root.hpp"
 #include "menu/ncc/Tooltip.hpp"
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class List;
@@ -47,5 +45,4 @@ void ShowTooltip(const std::string &text);
 
 void Init();
 List &MainList();
-}
 }
