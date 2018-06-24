@@ -79,7 +79,7 @@ Ubuntu other dependencies installation:
 sudo apt update && sudo apt install git libssl-dev:i386 libboost-all-dev libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libfreetype6-dev:i386 -y 
 ```
 
-### Even more Outdated (but miht still be helpful):
+### Even more Outdated (but might still be helpful):
 
 Arch gcc6 & dependencies installation:
 ```bash
