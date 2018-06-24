@@ -32,7 +32,8 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/velocity.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/votelogger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/MiscTemporary.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Options.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/Options.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/PlayerTools.cpp")
 
 add_subdirectory(core)
 add_subdirectory(classinfo)
@@ -41,6 +42,7 @@ add_subdirectory(hacks)
 add_subdirectory(hooks)
 add_subdirectory(reclasses)
 add_subdirectory(sdk)
+add_subdirectory(online)
 
 if(EnableVisuals)
     add_subdirectory(visual)

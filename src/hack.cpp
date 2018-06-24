@@ -532,6 +532,13 @@ free(logname);*/
 #if ENABLE_VISUALS
     hacks::shared::esp::Init();
 #endif
+#if not ENABLE_VISUALS
+    hack::command_stack().push("exec cat_autoexec_textmode");
+#endif
+    hack::command_stack().push("exec cat_autoexec");
+    hack::command_stack().push("cat_killsay_reload");
+    hack::command_stack().push("cat_spam_reload");
+
     logging::Info("Clearing initializer stack");
     while (!init_stack().empty())
     {
@@ -540,12 +547,6 @@ free(logname);*/
     }
     logging::Info("Initializer stack done");
 
-#if not ENABLE_VISUALS
-    hack::command_stack().push("exec cat_autoexec_textmode");
-#endif
-    hack::command_stack().push("exec cat_autoexec");
-    hack::command_stack().push("cat_killsay_reload");
-    hack::command_stack().push("cat_spam_reload");
     hack::initialized = true;
 }
 
