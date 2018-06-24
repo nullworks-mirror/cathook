@@ -11,9 +11,7 @@
 
 class CatVar;
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class ItemVariable : public Item
@@ -35,5 +33,4 @@ public:
     CatVar &catvar;
     bool capturing{ false };
 };
-}
 }

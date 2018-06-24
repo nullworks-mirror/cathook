@@ -7,11 +7,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace announcer
+namespace hacks::shared::announcer
 {
 
 static CatVar enabled(CV_SWITCH, "announcer", "0", "Enable announcer");
@@ -181,5 +177,4 @@ void shutdown()
     g_IEventManager2->RemoveListener(&listener());
 }
 }
-}
-}
+

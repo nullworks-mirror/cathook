@@ -9,11 +9,7 @@
 #include "common.hpp"
 #include <boost/circular_buffer.hpp>
 
-namespace hacks
-{
-namespace shared
-{
-namespace backtrack
+namespace hacks::shared::backtrack
 {
 struct BacktrackData
 {
@@ -60,6 +56,4 @@ extern CatVar latency;
 extern CatVar enable;
 extern BacktrackData headPositions[32][66];
 extern BestTickData sorted_ticks[66];
-}
-}
 }

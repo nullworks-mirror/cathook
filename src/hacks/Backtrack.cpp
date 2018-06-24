@@ -10,11 +10,7 @@
 #include <boost/circular_buffer.hpp>
 #include <glez/draw.hpp>
 
-namespace hacks
-{
-namespace shared
-{
-namespace backtrack
+namespace hacks::shared::backtrack
 {
 CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
               "For legit play only as of right now.");
@@ -277,7 +273,5 @@ bool shouldBacktrack()
         break;
     }
     return false;
-}
-}
 }
 }

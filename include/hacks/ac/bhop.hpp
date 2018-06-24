@@ -10,9 +10,7 @@
 class KeyValues;
 class CachedEntity;
 
-namespace ac
-{
-namespace bhop
+namespace ac::bhop
 {
 
 struct ac_data
@@ -29,5 +27,4 @@ void ResetPlayer(int idx);
 void Init();
 void Update(CachedEntity *player);
 void Event(KeyValues *event);
-}
 }

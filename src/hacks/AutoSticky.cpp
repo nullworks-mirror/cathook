@@ -9,11 +9,7 @@
 #include <hacks/AutoSticky.hpp>
 #include <PlayerTools.hpp>
 
-namespace hacks
-{
-namespace tf
-{
-namespace autosticky
+namespace hacks::tf::autosticky
 {
 
 // Vars for user settings
@@ -190,7 +186,5 @@ void CreateMove()
     }
     // End of function, just return
     return;
-}
-}
 }
 }

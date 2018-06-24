@@ -10,11 +10,7 @@
 #include "common.hpp"
 #include "config.h"
 
-namespace hacks
-{
-namespace shared
-{
-namespace misc
+namespace hacks::shared::misc
 {
 
 void CreateMove();
@@ -25,8 +21,6 @@ void DrawText();
 extern int last_number;
 
 extern float last_bucket;
-}
-}
 }
 
 /*class Misc : public IHack {

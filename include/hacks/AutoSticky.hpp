@@ -9,14 +9,8 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf
-{
-namespace autosticky
+namespace hacks::tf::autosticky
 {
 bool ShouldDetonate(CachedEntity *bomb);
 void CreateMove();
-}
-}
 }

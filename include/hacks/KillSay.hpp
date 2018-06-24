@@ -16,11 +16,7 @@ class KillSayEventListener : public IGameEventListener2
     virtual void FireGameEvent(IGameEvent *event);
 };
 
-namespace hacks
-{
-namespace shared
-{
-namespace killsay
+namespace hacks::shared::killsay
 {
 
 void Init();
@@ -31,6 +27,4 @@ std::string ComposeKillSay(IGameEvent *event);
 extern const std::vector<std::string> builtin_default;
 extern const std::vector<std::string> builtin_nonecore_offensive;
 extern const std::vector<std::string> builtin_nonecore_mlg;
-}
-}
 }

@@ -9,9 +9,7 @@
 
 #include "../CBaseContainer.h"
 #include "menu/ncc/Menu.hpp"
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 constexpr int size_table[] = { 32, 32, 80, 160, 80, 80, 32, 32, 32 };
@@ -29,5 +27,4 @@ public:
     virtual bool IsVisible() override;
     inline virtual void SortByZIndex() override{};
 };
-}
 }

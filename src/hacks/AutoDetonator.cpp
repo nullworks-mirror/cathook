@@ -8,11 +8,7 @@
 #include <PlayerTools.hpp>
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf
-{
-namespace autodetonator
+namespace hacks::tf::autodetonator
 {
 
 // Vars for user settings
@@ -136,7 +132,5 @@ void CreateMove()
     }
     // End of function, just return
     return;
-}
-}
 }
 }

@@ -9,13 +9,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace bunnyhop
+namespace hacks::shared::bunnyhop
 {
 void CreateMove();
-}
-}
 }
