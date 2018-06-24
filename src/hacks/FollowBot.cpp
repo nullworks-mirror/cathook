@@ -52,9 +52,9 @@ static CatVar autojump(CV_SWITCH, "fb_autojump", "1", "Autojump",
                        "Automatically jump if stuck");
 static CatVar afk(CV_SWITCH, "fb_afk", "1", "Switch target if AFK",
                   "Automatically switch target if the target is afk");
-static CatVar afktime(CV_INT, "fb_afk_time", "990", "Max AFK Time",
-                      "Max ticks (66 * time in seconds) spent standing still "
-                      "until a player is declared afk.");
+static CatVar afktime(
+    CV_INT, "fb_afk_time", "15000", "Max AFK Time",
+    "Max time in ms spent standing still before player gets declared afk");
 
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
@@ -62,9 +62,10 @@ static const int crumb_limit = 64; // limit
 
 // Followed entity, externed for highlight color
 int follow_target = 0;
+bool inited;
 
-static long int lasttaunt; //time since epoch when "taunt" was last executed
-std::array<int, 32> afkticks; //for how many createmove ticks the player hasn't been moving
+Timer lastTaunt{}; //time since taunt was last executed, used to avoid kicks
+std::array<Timer, 32> afkTicks; //for how many ms the player hasn't been moving
 
 void checkAFK()
 {
@@ -73,15 +74,20 @@ void checkAFK()
         auto entity = ENTITY(i);
         if (CE_BAD(entity))
             continue;
-        if (CE_VECTOR(entity, netvar.vVelocity).IsZero(5.0f))
+        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(5.0f))
         {
-            afkTicks[i] = afkTicks[i] + 1;
-        }
-        else
-        {
-            afkTicks[i] = 0;
+            afkTicks[i].update();
         }
     }
+}
+
+void init()
+{
+    for (int i; i < afkTicks.size(); i++)
+    {
+        afkTicks[i].update();
+    }
+    inited = true;
 }
 
 void WorldTick()
@@ -91,6 +97,8 @@ void WorldTick()
         follow_target = 0;
         return;
     }
+    if (!inited)
+        init();
 
     // We need a local player to control
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
@@ -157,7 +165,7 @@ void WorldTick()
                 continue;
             if (entity->m_bEnemy())
                 continue;
-            if (afk && afkTicks[i] >= int(afktime)) //don't follow target that was determined afk
+            if (afk && afkTicks[i].check(int(afktime))) //don't follow target that was determined afk
                 continue;
             if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
                 continue;
@@ -188,7 +196,7 @@ void WorldTick()
                 continue;
             // ooooo, a target
             follow_target = i;
-            afkTicks[i] = 0; //set afk ticks to 0
+            afkTicks[i].update(); //set afk time to 0
         }
     }
     // last check for entity before we continue
@@ -208,7 +216,7 @@ void WorldTick()
     //check if target is afk
     if (afk)
     {
-        if (afkTicks[follow_target] >= int(afktime))
+        if (afkTicks[follow_target].check(int(afktime)))
         {
             follow_target = 0;
             return;
@@ -267,11 +275,8 @@ void WorldTick()
 
     //moved because its worthless otherwise
     if (sync_taunt && HasCondition<TFCond_Taunting>(followtar)) {
-        //std::time_t time = std::time(nullptr);
-        long int t = static_cast<long int> (std::time(nullptr));
-        if (!(t == lasttaunt))
+        if (lastTaunt.test_and_set(1000))
         {
-            lasttaunt = t;
             g_IEngine->ClientCmd("taunt");
         }
     }
