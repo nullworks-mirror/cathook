@@ -24,7 +24,7 @@ static CatVar draw_crumb(CV_SWITCH, "fb_draw", "1", "Draw crumbs",
                          "Self explanitory");
 static CatVar follow_distance(CV_INT, "fb_distance", "175", "Follow Distance",
                               "How close the bots should stay to the target");
-static CatVar follow_activation(CV_INT, "fb_activation", "175",
+static CatVar follow_activation(CV_INT, "fb_activation", "1000",
                                 "Activation Distance",
                                 "How close a player should be until the "
                                 "followbot will pick them as a target");
@@ -75,11 +75,11 @@ void checkAFK()
             continue;
         if (CE_VECTOR(entity, netvar.vVelocity).IsZero(5.0f))
         {
-            afkticks[i] = afkticks[i] + 1;
+            afkTicks[i] = afkTicks[i] + 1;
         }
         else
         {
-            afkticks[i] = 0;
+            afkTicks[i] = 0;
         }
     }
 }
@@ -157,7 +157,7 @@ void WorldTick()
                 continue;
             if (entity->m_bEnemy())
                 continue;
-            if (afk && afkticks[i] >= int(afktime)) //don't follow target that was determined afk
+            if (afk && afkTicks[i] >= int(afktime)) //don't follow target that was determined afk
                 continue;
             if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
                 continue;
@@ -188,7 +188,7 @@ void WorldTick()
                 continue;
             // ooooo, a target
             follow_target = i;
-            afkticks[i] = 0; //set afk ticks to 0
+            afkTicks[i] = 0; //set afk ticks to 0
         }
     }
     // last check for entity before we continue
@@ -208,7 +208,7 @@ void WorldTick()
     //check if target is afk
     if (afk)
     {
-        if (afkticks[follow_target] >= 990)
+        if (afkTicks[follow_target] >= int(afktime))
         {
             follow_target = 0;
             return;
@@ -260,7 +260,7 @@ void WorldTick()
         if (loc_orig.DistTo(breadcrumbs.at(i)) < 60.f)
         {
             idle_time.update();
-            for (int i2 = 0; i2 <= i; i2++)
+            for (int j = 0; j <= i; j++)
                 breadcrumbs.erase(breadcrumbs.begin());
         }
     }
