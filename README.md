@@ -66,11 +66,11 @@ Make sure to put the required files in ../requirements/lib*, and cathook in ../c
 
 ### Outdated (but might be helpful):
 
-You can use gcc-7 for compiling cathook if you add `-e CC=gcc-7 CXX=g++-7` to make command line
+You need to use gcc-7 for compiling cathook if you add `-e CC=gcc-7 CXX=g++-7` to make command line
 
-Ubuntu gcc6 installation: (check if you have gcc-6 installed already by typing `gcc-6 -v`
+Ubuntu gcc7 installation: (check if you have gcc-6 installed already by typing `gcc-6 -v`
 ```bash
-sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot g++-6-multilib gcc-6 g++-6 -y
+sudo apt update && sudo apt install build-essential software-properties-common -y && sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt update && sudo apt install gcc-snapshot g++-7-multilib gcc-7 g++-7 -y
 ```
 
 Ubuntu other dependencies installation:
@@ -79,6 +79,7 @@ Ubuntu other dependencies installation:
 sudo apt update && sudo apt install git libssl-dev:i386 libboost-all-dev libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libfreetype6-dev:i386 -y 
 ```
 
+### Even more Outdated (but miht still be helpful):
 
 Arch gcc6 & dependencies installation:
 ```bash
@@ -111,7 +112,7 @@ git clone --recursive https://github.com/nullworks/cathook && cd cathook && bash
 
 **Errors while installing?**
 
-`/usr/include/c++/5/string:38:28: fatal error: bits/c++config.h: No such file or directory`
+`/usr/include/c++/7/string:38:28: fatal error: bits/c++config.h: No such file or directory`
 You don't have gcc-7-multilib installed correctly.
 
 Anything related to `glez` or `xoverlay`
