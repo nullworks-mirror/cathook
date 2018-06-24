@@ -20,7 +20,7 @@
 namespace online
 {
 
-void saveApiKey();
+void saveApiKeyAndHost(std::string host);
 void claimSteamId();
 
 static co::OnlineService cathookOnlineService{};
@@ -32,20 +32,29 @@ static std::string api_key{};
 
 static CatVar enable(CV_SWITCH, "online", "1", "Enable online features");
 static CatCommand login("online_login", "Login", [](const CCommand& args) {
-    if (args.ArgC() != 2)
+    if (args.ArgC() != 3)
     {
-        logging::Info("\nUsage: online_login <API_KEY>\nKey will be saved in your data folder");
+        logging::Info("\nUsage: online_login <API_KEY> \"<IP:PORT>\"\nKey will be saved in your data folder");
+        return;
+    }
+    std::string host(args.Arg(2));
+    logging::Info("[CO] Host = %s", host.c_str());
+    try {
+        cathookOnlineService.setHost(host);
+    } catch (std::exception& ex)
+    {
+        logging::Info("[CO] Error setting host: %s", ex.what());
         return;
     }
     std::string key(args.Arg(1));
     try
     {
-        cathookOnlineService.login(key, [key](co::ApiCallResult result, std::optional<co::logged_in_user> me) {
+        cathookOnlineService.login(key, [key, host](co::ApiCallResult result, std::optional<co::logged_in_user> me) {
             if (result == co::ApiCallResult::OK)
             {
                 logging::Info("[CO] Successfully logged in. Welcome, %s", me->username.c_str());
                 api_key = key;
-                saveApiKey();
+                saveApiKeyAndHost(host);
                 claimSteamId();
             }
             else
@@ -62,7 +71,6 @@ static CatCommand flush("online_flush_cache", "Flush player cache", [](const CCo
     identify_queue.clear();
     identify_stale = true;
 });
-static CatVar host(CV_STRING, "online_host", "localhost:8000", "Online host");
 
 // INTERNAL METHODS
 
@@ -77,19 +85,27 @@ void claimSteamId()
     }
 }
 
-bool tryLoadApiKey()
+bool tryLoadApiKeyAndHost()
 {
     std::ifstream keyfile(DATA_PATH "/api_key", std::ios::in);
     if (keyfile)
     {
-        keyfile >> api_key;
-        if (!api_key.empty())
+        std::string host{};
+        keyfile >> api_key >> host;
+        if (!api_key.empty() && !host.empty())
+        {
+            try {
+                cathookOnlineService.setHost(host);
+            } catch (std::exception& ex) {
+                logging::Info("Error while setting host: %s", ex.what());
+            }
             return true;
+        }
     }
     return false;
 }
 
-void saveApiKey()
+void saveApiKeyAndHost(std::string host)
 {
     std::ofstream keyfile(DATA_PATH "/api_key", std::ios::out);
     if (!keyfile)
@@ -97,7 +113,7 @@ void saveApiKey()
         logging::Info("[CO] Something went wrong while saving API key");
         return;
     }
-    keyfile << api_key << '\n';
+    keyfile << api_key << '\n' << host << '\n';
 }
 
 void queueUserForIdentification(unsigned steamId)
@@ -181,37 +197,32 @@ void sendIdentifyRequest()
         }
     }
     logging::Info("[CO] Sending identify request for %u players", steamIds.size());
-    cathookOnlineService.userIdentify(steamIds, (std::function<void(co::ApiCallResult, std::optional<co::identified_user_group>)>)[steamIds](co::ApiCallResult result, std::optional<co::identified_user_group> group) {
-        if (result == co::ApiCallResult::OK)
-        {
-            processIdentifyResponse(steamIds, *group);
-        }
-        else
-        {
-            logging::Info("[CO] Something went wrong while identifying %u players: code %d", steamIds.size(), result);
-            for (auto i: steamIds)
+    try {
+        cathookOnlineService.userIdentify(steamIds, (std::function<void(co::ApiCallResult, std::optional<co::identified_user_group>)>)[steamIds](co::ApiCallResult result, std::optional<co::identified_user_group> group) {
+            if (result == co::ApiCallResult::OK)
             {
-                identify_queue[i] = false;
+                processIdentifyResponse(steamIds, *group);
             }
-            identify_stale = true;
-        }
-    });
+            else
+                {
+                    logging::Info("[CO] Something went wrong while identifying %u players: code %d", steamIds.size(), result);
+                    for (auto i: steamIds)
+                    {
+                        identify_queue[i] = false;
+                    }
+                    identify_stale = true;
+                }
+        });
+    } catch (std::exception& ex) {
+        logging::Info("[CO] Exception: %s", ex.what());
+    }
 }
 
 InitRoutine init([]() {
     cathookOnlineService.setErrorHandler((std::function<void(std::string)>)[](std::string error) {
         logging::Info("[CO] Error: %s", error.c_str());
     });
-    host.InstallChangeCallback([](IConVar *var, const char *pszOldValue, float flOldValue) {
-        logging::Info("[CO] Host = %s", host.GetString());
-        try {
-            cathookOnlineService.setHost(host.GetString());
-        } catch (std::exception& ex)
-        {
-            logging::Info("[CO] Error: %s", ex.what());
-        }
-    });
-    if (tryLoadApiKey())
+    if (tryLoadApiKeyAndHost())
     {
         logging::Info("[CO] API key loaded successfully");
         try {
