@@ -120,10 +120,10 @@ std::optional<colors::rgba_t> forceEspColorSteamId(unsigned id)
     auto *co = online::getUserData(id);
     if (co)
     {
-        if (co->rainbow)
-            return std::optional<colors::rgba_t>{ colors::RainbowCurrent() };
         if (co->has_color)
             return std::optional<colors::rgba_t>{ co->color };
+        if (co->rainbow)
+            return std::optional<colors::rgba_t>{ colors::RainbowCurrent() };
     }
 
     return std::nullopt;
