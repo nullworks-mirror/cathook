@@ -9,9 +9,7 @@
 
 #include "menu/ncc/Menu.hpp"
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class PlayerListEntry : public CBaseContainer
@@ -74,6 +72,5 @@ public:
 public:
     const Component component;
 };
-}
 }
 }

@@ -14,11 +14,7 @@
 #include <hacks/hacklist.hpp>
 #include <glez/draw.hpp>
 
-namespace hacks
-{
-namespace shared
-{
-namespace walkbot
+namespace hacks::shared::walkbot
 {
 
 using index_t    = unsigned;
@@ -1295,7 +1291,5 @@ void Move()
     }
     break;
     }
-}
-}
 }
 }

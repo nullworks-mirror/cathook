@@ -8,9 +8,7 @@
 #include <hacks/AntiCheat.hpp>
 #include "common.hpp"
 
-namespace ac
-{
-namespace bhop
+namespace ac::bhop
 {
 
 static CatVar bhop_detect_count(CV_INT, "ac_bhop_count", "4",
@@ -81,6 +79,5 @@ void Update(CachedEntity *player)
 
 void Event(KeyValues *event)
 {
-}
 }
 }

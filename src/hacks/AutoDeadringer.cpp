@@ -5,11 +5,7 @@
  *      Author: bencat07
  */
 #include "common.hpp"
-namespace hacks
-{
-namespace shared
-{
-namespace deadringer
+namespace hacks::shared::deadringer
 {
 static CatVar
     enabled(CV_SWITCH, "deadringer_auto", "0", "Auto deadringer",
@@ -73,7 +69,5 @@ void CreateMove()
         if (ent->m_flDistance() < 300.0f)
             g_pUserCmd->buttons |= IN_ATTACK2;
     }
-}
-}
 }
 }

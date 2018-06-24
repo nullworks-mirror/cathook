@@ -8,11 +8,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace catbot
+namespace hacks::shared::catbot
 {
 
 static CatVar enabled(CV_SWITCH, "cbu", "0", "CatBot Utils");
@@ -324,7 +320,5 @@ void init()
 void level_init()
 {
     level_init_timer.update();
-}
-}
 }
 }

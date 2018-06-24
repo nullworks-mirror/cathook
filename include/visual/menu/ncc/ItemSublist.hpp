@@ -12,9 +12,7 @@
 
 class CatVar;
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class List; // ????
@@ -36,5 +34,4 @@ public:
     List *const list;
     const std::string title;
 };
-}
 }

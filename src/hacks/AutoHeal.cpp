@@ -9,11 +9,7 @@
 #include <hacks/AutoHeal.hpp>
 #include <hacks/FollowBot.hpp>
 
-namespace hacks
-{
-namespace tf
-{
-namespace autoheal
+namespace hacks::tf::autoheal
 {
 
 static CatVar enabled(CV_SWITCH, "autoheal_enabled", "0", "AutoHeal",
@@ -600,7 +596,5 @@ bool CanHeal(int idx)
     if (IsPlayerInvisible(ent))
         return false;
     return true;
-}
-}
 }
 }

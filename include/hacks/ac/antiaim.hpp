@@ -10,9 +10,7 @@
 class KeyValues;
 class CachedEntity;
 
-namespace ac
-{
-namespace antiaim
+namespace ac::antiaim
 {
 
 extern int amount[32];
@@ -22,5 +20,4 @@ void ResetPlayer(int idx);
 void Init();
 void Update(CachedEntity *player);
 void Event(KeyValues *event);
-}
 }

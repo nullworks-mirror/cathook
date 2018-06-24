@@ -1,11 +1,7 @@
 #include <glez/draw.hpp>
 #include "hacks/LightESP.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace lightesp
+namespace hacks::shared::lightesp
 {
 
 static CatVar enable(CV_SWITCH, "lightesp_enabled", "0", "Enable LightESP",
@@ -78,7 +74,5 @@ rgba_t LightESPColor(CachedEntity *ent)
         return playerlist::Color(ent);
     }
     return colors::green;
-}
-}
 }
 }

@@ -9,11 +9,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace esp
+namespace hacks::shared::esp
 {
 
 // Strings
@@ -62,6 +58,4 @@ void AddEntityString(CachedEntity *entity, const std::string &string,
                      const rgba_t &color = colors::empty);
 void SetEntityColor(CachedEntity *entity, const rgba_t &color);
 void ResetEntityStrings();
-}
-}
 }

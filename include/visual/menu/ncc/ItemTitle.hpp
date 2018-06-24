@@ -9,9 +9,7 @@
 
 #include "menu/ncc/Item.hpp"
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class ItemTitle : public Item
@@ -24,5 +22,4 @@ public:
 public:
     const std::string title;
 };
-}
 }

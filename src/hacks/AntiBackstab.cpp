@@ -8,11 +8,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-namespace hacks
-{
-namespace tf2
-{
-namespace antibackstab
+namespace hacks::tf2::antibackstab
 {
 bool noaa = false;
 static CatVar enabled(CV_SWITCH, "antibackstab", "0", "Enable",
@@ -117,7 +113,5 @@ void CreateMove()
         pitchdown->SetValue(normal_val);
         noaa = false;
     }
-}
-}
 }
 }
