@@ -50,10 +50,12 @@ static CatVar always_medigun(CV_SWITCH, "fb_always_medigun", "0",
                              "Always Medigun", "Always use medigun");
 static CatVar sync_taunt(CV_SWITCH, "fb_sync_taunt", "0", "Synced taunt",
                          "Taunt when follow target does");
-static CatVar change(CV_SWITCH, "fb_switch", "1", "Change followbot target",
+static CatVar change(CV_SWITCH, "fb_switch", "0", "Change followbot target",
                      "Always change roaming target when possible");
 static CatVar autojump(CV_SWITCH, "fb_autojump", "1", "Autojump",
                        "Automatically jump if stuck");
+static CatVar afk(CV_SWITCH, "fb_afk", "1", "Switch target if AFK",
+                       "Automatically switch target if the target is afk");
 
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
@@ -61,7 +63,10 @@ static const int crumb_limit = 64; // limit
 
 // Followed entity, externed for highlight color
 int follow_target = 0;
-long int lasttaunt;
+
+long int lasttaunt; //time since epoch when "taunt" was last executed
+int lasttarget; //target we should not follow again
+int tickswasted; //how many createmove ticks we have wasted because a target is afk
 
 void WorldTick()
 {
@@ -133,6 +138,8 @@ void WorldTick()
                 continue;
             if (entity->m_bEnemy())
                 continue;
+            if (i == lasttarget) //don't follow target that was determined afk
+                continue;
             if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
                 continue;
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
@@ -162,6 +169,7 @@ void WorldTick()
                 continue;
             // ooooo, a target
             follow_target = entity->m_IDX;
+            tickswasted = 0; //set afk ticks to 0
         }
     }
     // last check for entity before we continue
@@ -173,11 +181,31 @@ void WorldTick()
     if (CE_BAD(followtar))
         return;
     // Check if we are following a disguised/spy
-    if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
+    if (IsPlayerDisguised(followtar) || IsPlayerInvisible(followtar))
     {
         follow_target = 0;
         return;
     }
+    //check if player is afk
+    if (afk)
+    {
+        if (CE_VECTOR(followtar, netvar.vVelocity).IsZero(1.0f))
+        {
+            tickswasted = tickswasted + 1;
+            if (tickswasted >= 990)
+            {
+                lasttarget = follow_target;
+                follow_target = 0;
+                return;
+            }
+        }
+        else
+        {
+            tickswasted = 0;
+        }
+
+    }
+
     // Update timer on new target
     static Timer idle_time{};
     if (breadcrumbs.empty())
@@ -233,8 +261,7 @@ void WorldTick()
     if (dist_to_target > (float) follow_distance)
     {
         // Check for idle
-        if (autojump && (idle_time.check(3000) ||
-            (breadcrumbs.size() > 1 && LOCAL_E->m_vecVelocity.IsZero(5.0f))))
+        if (autojump && idle_time.check(3000))
             g_pUserCmd->buttons |= IN_JUMP;
         if (idle_time.test_and_set(5000))
         {

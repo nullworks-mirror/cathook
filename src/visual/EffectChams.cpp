@@ -222,11 +222,11 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 
 bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 {
+    if (!enable)
+        return false;
     if (entity->entindex() < 0)
         return false;
     CachedEntity *ent = ENTITY(entity->entindex());
-    if (CE_BAD(ent))
-        return false;
     if (ent->m_IDX == LOCAL_E->m_IDX && !chamsself)
         return false;
     switch (ent->m_Type())
@@ -317,13 +317,9 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
     }
 }
 
-void EffectChams::RenderChams(int idx)
 void EffectChams::RenderChams(IClientEntity *entity)
 {
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-    IClientEntity *entity = g_IEntityList->GetClientEntity(idx);
-    if (entity && !entity->IsDormant())
-    {
         if (ShouldRenderChams(entity))
         {
             rgba_t color   = ChamsColor(entity);
@@ -347,7 +343,6 @@ void EffectChams::RenderChams(IClientEntity *entity)
                 g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit
                                                              : mat_lit);
                 RenderChamsRecursive(entity);
-            }
         }
     }
 }
@@ -365,7 +360,9 @@ void EffectChams::Render(int x, int y, int w, int h)
     BeginRenderChams();
     for (int i = 1; i < HIGHEST_ENTITY; i++)
     {
-        RenderChams(i);
+        IClientEntity *entity = g_IEntityList->GetClientEntity(i);
+        if (!entity || entity->IsDormant() || CE_BAD(ENTITY(i)))
+            return;
         RenderChams(entity);
     }
     EndRenderChams();
