@@ -117,7 +117,7 @@ void processOnlineIdentity(unsigned id, co::identified_user& user)
     udata.username = user.username;
     udata.is_anonymous = (user.username == "anonymous");
     udata.is_steamid_verified = user.steamid_verified;
-    for (auto& i: user.roles)
+    for (auto& i: user.groups)
     {
         if (i.display_name.has_value())
             udata.shown_roles.push_back(*i.display_name);
@@ -147,7 +147,7 @@ void processOnlineIdentity(unsigned id, co::identified_user& user)
     data[id] = std::move(udata);
 }
 
-void processIdentifyResponse(std::vector<unsigned> input, co::identified_group& group)
+void processIdentifyResponse(std::vector<unsigned> input, co::identified_user_group& group)
 {
     logging::Info("[CO] Processing identify response containing %u / %u entries", group.users.size(), input.size());
     for (auto i: input)
@@ -177,7 +177,7 @@ void sendIdentifyRequest()
         }
     }
     logging::Info("[CO] Sending identify request for %u players", steamIds.size());
-    cathookOnlineService.userIdentify(steamIds, (std::function<void(co::ApiCallResult, std::optional<co::identified_group>)>)[steamIds](co::ApiCallResult result, std::optional<co::identified_group> group) {
+    cathookOnlineService.userIdentify(steamIds, (std::function<void(co::ApiCallResult, std::optional<co::identified_user_group>)>)[steamIds](co::ApiCallResult result, std::optional<co::identified_user_group> group) {
         if (result == co::ApiCallResult::OK)
         {
             processIdentifyResponse(steamIds, *group);
