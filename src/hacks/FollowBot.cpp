@@ -51,7 +51,10 @@ static CatVar change(CV_SWITCH, "fb_switch", "0", "Change followbot target",
 static CatVar autojump(CV_SWITCH, "fb_autojump", "1", "Autojump",
                        "Automatically jump if stuck");
 static CatVar afk(CV_SWITCH, "fb_afk", "1", "Switch target if AFK",
-                       "Automatically switch target if the target is afk");
+                  "Automatically switch target if the target is afk");
+static CatVar afktime(CV_INT, "fb_afk_time", "990", "Max AFK Time",
+                      "Max ticks (66 * time in seconds) spent standing still "
+                      "until a player is declared afk.");
 
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
@@ -60,9 +63,26 @@ static const int crumb_limit = 64; // limit
 // Followed entity, externed for highlight color
 int follow_target = 0;
 
-long int lasttaunt; //time since epoch when "taunt" was last executed
-int lasttarget; //target we should not follow again
-int tickswasted; //how many createmove ticks we have wasted because a target is afk
+static long int lasttaunt; //time since epoch when "taunt" was last executed
+std::array<int, 32> afkticks; //for how many createmove ticks the player hasn't been moving
+
+void checkAFK()
+{
+    for (int i = 0; i < g_GlobalVars->maxClients; i++)
+    {
+        auto entity = ENTITY(i);
+        if (CE_BAD(entity))
+            continue;
+        if (CE_VECTOR(entity, netvar.vVelocity).IsZero(5.0f))
+        {
+            afkticks[i] = afkticks[i] + 1;
+        }
+        else
+        {
+            afkticks[i] = 0;
+        }
+    }
+}
 
 void WorldTick()
 {
@@ -78,6 +98,9 @@ void WorldTick()
         follow_target = 0;
         return;
     }
+
+    if (afk)
+        checkAFK();
 
     // Still good check
     if (follow_target)
@@ -134,7 +157,7 @@ void WorldTick()
                 continue;
             if (entity->m_bEnemy())
                 continue;
-            if (i == lasttarget) //don't follow target that was determined afk
+            if (afk && afkticks[i] >= int(afktime)) //don't follow target that was determined afk
                 continue;
             if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
                 continue;
@@ -164,8 +187,8 @@ void WorldTick()
                     entity->m_flDistance()) // favor closer entitys
                 continue;
             // ooooo, a target
-            follow_target = entity->m_IDX;
-            tickswasted = 0; //set afk ticks to 0
+            follow_target = i;
+            afkticks[i] = 0; //set afk ticks to 0
         }
     }
     // last check for entity before we continue
@@ -182,22 +205,13 @@ void WorldTick()
         follow_target = 0;
         return;
     }
-    //check if player is afk
+    //check if target is afk
     if (afk)
     {
-        if (CE_VECTOR(followtar, netvar.vVelocity).IsZero(1.0f))
+        if (afkticks[follow_target] >= 990)
         {
-            tickswasted = tickswasted + 1;
-            if (tickswasted >= 990)
-            {
-                lasttarget = follow_target;
-                follow_target = 0;
-                return;
-            }
-        }
-        else
-        {
-            tickswasted = 0;
+            follow_target = 0;
+            return;
         }
 
     }
@@ -215,7 +229,6 @@ void WorldTick()
     {
         if ((dist_to_target < (float)follow_distance) && VisCheckEntFromEnt(LOCAL_E, followtar))
         {
-            breadcrumbs.clear();
             idle_time.update();
         }
     }
@@ -240,6 +253,16 @@ void WorldTick()
     {
         idle_time.update();
         breadcrumbs.erase(breadcrumbs.begin());
+    }
+
+    for (int i = 0; i < breadcrumbs.size(); i++)
+    {
+        if (loc_orig.DistTo(breadcrumbs.at(i)) < 60.f)
+        {
+            idle_time.update();
+            for (int i2 = 0; i2 <= i; i2++)
+                breadcrumbs.erase(breadcrumbs.begin());
+        }
     }
 
     //moved because its worthless otherwise
