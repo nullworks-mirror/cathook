@@ -226,7 +226,7 @@ void update()
     if (!enable)
         return;
     // Only send a request after 3 seconds passed since last unknown steamId was added to the queue
-    if (!api_key.empty() && identify_stale && identify_timer.check(3000))
+    if (!api_key.empty() && identify_stale && identify_timer.check(3000) && !identify_queue.empty())
     {
         sendIdentifyRequest();
         identify_stale = false;
