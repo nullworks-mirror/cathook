@@ -18,7 +18,7 @@ struct user_data
     bool is_using_friendly_software{ false };
     bool is_steamid_verified{ false };
     std::string username{};
-    std::vector<std::string> shown_roles{};
+    std::vector<std::string> shown_groups{};
     std::string software_name{};
     bool has_software{ false };
     bool no_target{ false };

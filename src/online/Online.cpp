@@ -70,7 +70,11 @@ void claimSteamId()
 {
     auto id = g_ISteamUser->GetSteamID();
     logging::Info("[CO] Claiming SteamID %u", id.GetAccountID());
-    cathookOnlineService.gameStartup(id.GetAccountID());
+    try {
+        cathookOnlineService.gameStartup(id.GetAccountID());
+    } catch (std::exception& ex) {
+        logging::Info("[CO] Exception: %s", ex.what());
+    }
 }
 
 bool tryLoadApiKey()
@@ -120,7 +124,7 @@ void processOnlineIdentity(unsigned id, co::identified_user& user)
     for (auto& i: user.groups)
     {
         if (i.display_name.has_value())
-            udata.shown_roles.push_back(*i.display_name);
+            udata.shown_groups.push_back(*i.display_name);
         if (i.name == "notarget")
             udata.no_target = true;
         if (i.name == "owner" || i.name == "contributor")
@@ -200,22 +204,31 @@ InitRoutine init([]() {
     });
     host.InstallChangeCallback([](IConVar *var, const char *pszOldValue, float flOldValue) {
         logging::Info("[CO] Host = %s", host.GetString());
-        cathookOnlineService.setHost(host.GetString());
+        try {
+            cathookOnlineService.setHost(host.GetString());
+        } catch (std::exception& ex)
+        {
+            logging::Info("[CO] Error: %s", ex.what());
+        }
     });
     if (tryLoadApiKey())
     {
         logging::Info("[CO] API key loaded successfully");
-        cathookOnlineService.login(api_key, [](co::ApiCallResult result, std::optional<co::logged_in_user> me) {
-            if (result == co::ApiCallResult::OK)
-            {
-                logging::Info("[CO] Successfully logged in. Welcome, %s", me->username.c_str());
-                claimSteamId();
-            }
-            else
-            {
-                logging::Info("[CO] There was an error logging in: code %d", result);
-            }
-        });
+        try {
+            cathookOnlineService.login(api_key, [](co::ApiCallResult result, std::optional<co::logged_in_user> me) {
+                if (result == co::ApiCallResult::OK)
+                {
+                    logging::Info("[CO] Successfully logged in. Welcome, %s", me->username.c_str());
+                    claimSteamId();
+                }
+                else
+                {
+                    logging::Info("[CO] There was an error logging in: code %d", result);
+                }
+            });
+        } catch (std::exception& ex) {
+            logging::Info("[CO] Exception: %s", ex.what());
+        }
     }
 });
 

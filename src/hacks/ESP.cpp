@@ -154,7 +154,7 @@ static CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
 
 // Online
 static CatVar online(CV_SWITCH, "esp_online", "1", "Show online info", "Username, etc");
-static CatVar online_roles(CV_SWITCH, "esp_online_roles", "1", "Show online roles", "Admin, developer, etc");
+static CatVar online_groups(CV_SWITCH, "esp_online_groups", "1", "Show online groups", "Admin, developer, etc");
 static CatVar online_software(CV_SWITCH, "esp_online_software", "1", "Show software", "cathook, lmaobox, etc");
 
 // CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
@@ -1184,8 +1184,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             AddEntityString(ent, "CO: " + data->username, colors::yellow);
             if (data->is_steamid_verified)
                 AddEntityString(ent, "Verified SteamID", colors::green);
-            if (online_roles)
-                for (auto& s: data->shown_roles)
+            if (online_groups)
+                for (auto& s: data->shown_groups)
                     AddEntityString(ent, s, colors::orange);
             if (online_software && data->has_software)
             {
