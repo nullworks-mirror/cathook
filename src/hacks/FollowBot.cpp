@@ -12,11 +12,7 @@
 #include <glez/draw.hpp>
 #include <time.h>
 
-namespace hacks
-{
-namespace shared
-{
-namespace followbot
+namespace hacks::shared::followbot
 {
 
 CatVar followbot(CV_SWITCH, "fb", "0", "Followbot Switch",
@@ -398,6 +394,4 @@ static CatCommand
         }
     });
 #endif
-}
-}
 }

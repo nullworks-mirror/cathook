@@ -24,11 +24,7 @@ enum torun
 };
 int torun = -1;
 std::string Args[3];
-namespace hacks
-{
-namespace tf2
-{
-namespace global
+namespace hacks::tf2::global
 {
 void runcfg()
 {
@@ -123,8 +119,6 @@ void runcfg()
         file.close();
     }
     torun = -1;
-}
-}
 }
 }
 

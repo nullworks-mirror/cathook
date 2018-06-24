@@ -9,11 +9,7 @@
 #include "common.hpp"
 #include "MiscTemporary.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace spam
+namespace hacks::shared::spam
 {
 static CatEnum spam_enum({ "DISABLED", "CUSTOM", "DEFAULT", "LENNYFACES",
                            "BLANKS", "NULLCORE", "LMAOBOX", "LITHIUM" });
@@ -443,6 +439,4 @@ const std::vector<std::string> builtin_lithium = {
     "SAVE YOUR MONEY AND GET LITHIUMCHEAT! IT IS FREE!",
     "GOT ROLLED BY LITHIUM? HEY, THAT MEANS IT'S TIME TO GET LITHIUMCHEAT!!"
 };
-}
-}
 }

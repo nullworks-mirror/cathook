@@ -11,11 +11,7 @@
 
 class CatVar;
 
-namespace hacks
-{
-namespace shared
-{
-namespace triggerbot
+namespace hacks::shared::triggerbot
 {
 
 void CreateMove();
@@ -27,6 +23,4 @@ bool UpdateAimkey();
 float EffectiveTargetingRange();
 void Draw();
 bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector &Hit);
-}
-}
 }

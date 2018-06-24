@@ -12,9 +12,7 @@
 
 class Item;
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class List : public CBaseContainer
@@ -63,5 +61,4 @@ public:
     {
     }
 };
-}
 }

@@ -9,13 +9,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf
-{
-namespace spyalert
+namespace hacks::tf::spyalert
 {
 void Draw();
-}
-}
 }

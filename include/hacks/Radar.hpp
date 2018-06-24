@@ -10,15 +10,9 @@
 #include "visual/atlas.hpp"
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf
-{
-namespace radar
+namespace hacks::tf::radar
 {
 std::pair<int, int> WorldToRadar(int x, int y);
 void Draw();
-}
-}
 }
 #endif

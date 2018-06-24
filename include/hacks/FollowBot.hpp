@@ -7,11 +7,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace followbot
+namespace hacks::shared::followbot
 {
 
 // Followed entity, externed for highlight color
@@ -23,6 +19,4 @@ extern CatCommand follow_steam;
 extern unsigned steamid;
 void DrawTick();
 void WorldTick();
-}
-}
 }

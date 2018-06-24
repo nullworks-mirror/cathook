@@ -11,9 +11,7 @@
 
 #include "common.hpp"
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class Tooltip : public CTextLabel
@@ -28,5 +26,4 @@ public:
         return PositionMode::FLOATING;
     }
 };
-}
 }

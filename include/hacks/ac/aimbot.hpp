@@ -12,9 +12,7 @@
 class KeyValues;
 class CachedEntity;
 
-namespace ac
-{
-namespace aimbot
+namespace ac::aimbot
 {
 
 struct ac_data
@@ -31,5 +29,4 @@ void ResetPlayer(int idx);
 void Init();
 void Update(CachedEntity *player);
 void Event(KeyValues *event);
-}
 }

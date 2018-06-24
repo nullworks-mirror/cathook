@@ -7,11 +7,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace tf
-{
-namespace spyalert
+namespace hacks::tf::spyalert
 {
 
 static CatVar enabled(CV_SWITCH, "spyalert_enabled", "0", "Enable",
@@ -114,7 +110,5 @@ void Draw()
         warning_triggered  = false;
         backstab_triggered = false;
     }
-}
-}
 }
 }

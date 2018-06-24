@@ -9,9 +9,7 @@
 
 #include "../CBaseWidget.h"
 
-namespace menu
-{
-namespace ncc
+namespace menu::ncc
 {
 
 class Item : public CBaseWidget
@@ -28,5 +26,4 @@ public:
     virtual void Draw(int x, int y) override;
     virtual void HandleCustomEvent(KeyValues *event) override;
 };
-}
 }

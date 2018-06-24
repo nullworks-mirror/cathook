@@ -9,11 +9,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace catbot
+namespace hacks::shared::catbot
 {
 
 bool is_a_catbot(unsigned steamID);
@@ -25,6 +21,4 @@ void level_init();
 #if ENABLE_IPC
 void update_ipc_data(ipc::user_data_s &data);
 #endif
-}
-}
 }

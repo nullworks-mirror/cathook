@@ -20,7 +20,6 @@ extern CatVar joinclass;
 extern CatVar jointeam;
 extern CatVar fakelag_amount;
 extern CatVar serverlag_amount;
-extern CatVar serverlag_string;
 extern CatVar servercrash;
 extern CatVar debug_projectiles;
 extern CatVar semiauto;

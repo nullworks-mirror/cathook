@@ -8,11 +8,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-namespace hacks
-{
-namespace tf
-{
-namespace autotaunt
+namespace hacks::tf::autotaunt
 {
 
 static CatVar enabled(
@@ -47,6 +43,4 @@ AutoTauntListener listener;
 InitRoutine init([]() {
     g_IEventManager2->AddListener(&listener, "player_death", false);
 });
-}
-}
 }

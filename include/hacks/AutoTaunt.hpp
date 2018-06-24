@@ -10,13 +10,7 @@
 class CatVar;
 class InitRoutine;
 
-namespace hacks
-{
-namespace tf
-{
-namespace autotaunt
+namespace hacks::tf::autotaunt
 {
 extern InitRoutine init;
-}
-}
 }

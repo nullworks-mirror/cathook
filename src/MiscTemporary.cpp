@@ -22,8 +22,6 @@ CatVar fakelag_amount(CV_INT, "fakelag", "0", "Bad Fakelag");
 CatVar serverlag_amount(
     CV_INT, "serverlag", "0", "serverlag",
     "Lag the server by spamming this many voicecommands per tick");
-CatVar serverlag_string(CV_STRING, "serverlag_string", "voicemenu 0 0",
-                        "serverlag string", "String to spam with serverlag");
 CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
                    "Crash servers by spamming signon net messages");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");

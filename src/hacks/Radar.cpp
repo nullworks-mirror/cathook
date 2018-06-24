@@ -12,11 +12,7 @@
 #ifndef FEATURE_RADAR_DISABLED
 #if ENABLE_VISUALS
 
-namespace hacks
-{
-namespace tf
-{
-namespace radar
+namespace hacks::tf::radar
 {
 
 static CatVar size(CV_INT, "radar_size", "300", "Radar size",
@@ -278,8 +274,6 @@ void Draw()
                      colors::Transparent(GUIColor(), 0.4f), 0.5f);
     glez::draw::line(x + half_size / 2, y + half_size, half_size, 0,
                      colors::Transparent(GUIColor(), 0.4f), 0.5f);
-}
-}
 }
 }
 

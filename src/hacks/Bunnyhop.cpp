@@ -7,11 +7,7 @@
 
 #include "common.hpp"
 
-namespace hacks
-{
-namespace shared
-{
-namespace bunnyhop
+namespace hacks::shared::bunnyhop
 {
 
 // Var for user settings
@@ -62,7 +58,5 @@ void CreateMove()
 
     // Finish the function with return
     return;
-}
-}
 }
 }
