@@ -10,7 +10,6 @@
 #include <hacks/FollowBot.hpp>
 #include <hacks/LagExploit.hpp>
 #include <glez/draw.hpp>
-#include <time.h>
 
 namespace hacks::shared::followbot
 {
@@ -233,20 +232,11 @@ void WorldTick()
     auto tar_orig       = followtar->m_vecOrigin();
     auto loc_orig       = LOCAL_E->m_vecOrigin();
     auto dist_to_target = loc_orig.DistTo(tar_orig);
-    if (roambot)
+
+    if ((dist_to_target < (float) follow_distance) &&
+        VisCheckEntFromEnt(LOCAL_E, followtar))
     {
-        if ((dist_to_target < (float)follow_distance) && VisCheckEntFromEnt(LOCAL_E, followtar))
-        {
-            idle_time.update();
-        }
-    }
-    else
-    {
-        if (dist_to_target < 30)
-        {
-            breadcrumbs.clear();
-            idle_time.update();
-        }
+        idle_time.update();
     }
 
     // New crumbs, we add one if its empty so we have something to follow
@@ -257,12 +247,6 @@ void WorldTick()
 
     // Prune old and close crumbs that we wont need anymore, update idle timer
     // too
-    while (breadcrumbs.size() > 1 && loc_orig.DistTo(breadcrumbs.at(0)) < 60.f)
-    {
-        idle_time.update();
-        breadcrumbs.erase(breadcrumbs.begin());
-    }
-
     for (int i = 0; i < breadcrumbs.size(); i++)
     {
         if (loc_orig.DistTo(breadcrumbs.at(i)) < 60.f)
@@ -274,11 +258,8 @@ void WorldTick()
     }
 
     //moved because its worthless otherwise
-    if (sync_taunt && HasCondition<TFCond_Taunting>(followtar)) {
-        if (lastTaunt.test_and_set(1000))
-        {
+    if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) && lastTaunt.test_and_set(1000)) {
             g_IEngine->ClientCmd("taunt");
-        }
     }
 
     // Follow the crumbs when too far away, or just starting to follow
