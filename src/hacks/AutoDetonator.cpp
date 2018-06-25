@@ -5,6 +5,7 @@
  *      Author: nullifiedcat & Lighty
  */
 
+#include <PlayerTools.hpp>
 #include "common.hpp"
 
 namespace hacks::tf::autodetonator
@@ -53,19 +54,16 @@ bool IsTarget(CachedEntity *ent)
         // Dont detonate on dead players
         if (!ent->m_bAlivePlayer())
             return false;
-        // Dont detonate on friendly players
-        if (playerlist::IsFriendly(playerlist::AccessData(ent).state))
-            return false;
 
+        // Global checks
+        if (player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            return false;
         IF_GAME(IsTF())
         {
             // Dont target invulnerable players, ex: uber, bonk
             if (IsPlayerInvulnerable(ent))
                 return false;
 
-            // If settings allow, ignore taunting players
-            if (ignore_taunting && HasCondition<TFCond_Taunting>(ent))
-                return false;
 
             // If settings allow, dont target cloaked players
             if (legit && IsPlayerInvisible(ent))

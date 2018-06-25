@@ -23,7 +23,7 @@ static CatVar draw_crumb(CV_SWITCH, "fb_draw", "1", "Draw crumbs",
                          "Self explanitory");
 static CatVar follow_distance(CV_INT, "fb_distance", "175", "Follow Distance",
                               "How close the bots should stay to the target");
-static CatVar follow_activation(CV_INT, "fb_activation", "175",
+static CatVar follow_activation(CV_INT, "fb_activation", "1000",
                                 "Activation Distance",
                                 "How close a player should be until the "
                                 "followbot will pick them as a target");
@@ -45,14 +45,49 @@ static CatVar always_medigun(CV_SWITCH, "fb_always_medigun", "0",
                              "Always Medigun", "Always use medigun");
 static CatVar sync_taunt(CV_SWITCH, "fb_sync_taunt", "0", "Synced taunt",
                          "Taunt when follow target does");
-static CatVar change(CV_SWITCH, "fb_switch", "1", "Change followbot target",
+static CatVar change(CV_SWITCH, "fb_switch", "0", "Change followbot target",
                      "Always change roaming target when possible");
+static CatVar autojump(CV_SWITCH, "fb_autojump", "1", "Autojump",
+                       "Automatically jump if stuck");
+static CatVar afk(CV_SWITCH, "fb_afk", "1", "Switch target if AFK",
+                  "Automatically switch target if the target is afk");
+static CatVar afktime(
+    CV_INT, "fb_afk_time", "15000", "Max AFK Time",
+    "Max time in ms spent standing still before player gets declared afk");
+
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
 static const int crumb_limit = 64; // limit
 
 // Followed entity, externed for highlight color
 int follow_target = 0;
+bool inited;
+
+Timer lastTaunt{}; //time since taunt was last executed, used to avoid kicks
+std::array<Timer, 32> afkTicks; //for how many ms the player hasn't been moving
+
+void checkAFK()
+{
+    for (int i = 0; i < g_GlobalVars->maxClients; i++)
+    {
+        auto entity = ENTITY(i);
+        if (CE_BAD(entity))
+            continue;
+        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(5.0f))
+        {
+            afkTicks[i].update();
+        }
+    }
+}
+
+void init()
+{
+    for (int i; i < afkTicks.size(); i++)
+    {
+        afkTicks[i].update();
+    }
+    inited = true;
+}
 
 void WorldTick()
 {
@@ -61,6 +96,8 @@ void WorldTick()
         follow_target = 0;
         return;
     }
+    if (!inited)
+        init();
 
     // We need a local player to control
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
@@ -68,6 +105,9 @@ void WorldTick()
         follow_target = 0;
         return;
     }
+
+    if (afk)
+        checkAFK();
 
     // Still good check
     if (follow_target)
@@ -122,6 +162,12 @@ void WorldTick()
                     continue;
             if (entity == LOCAL_E) // Follow self lol
                 continue;
+            if (entity->m_bEnemy())
+                continue;
+            if (afk && afkTicks[i].check(int(afktime))) //don't follow target that was determined afk
+                continue;
+            if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
+                continue;
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
                 continue;
             if (follow_activation &&
@@ -148,28 +194,50 @@ void WorldTick()
                     entity->m_flDistance()) // favor closer entitys
                 continue;
             // ooooo, a target
-            follow_target = entity->m_IDX;
+            follow_target = i;
+            afkTicks[i].update(); //set afk time to 0
         }
     }
     // last check for entity before we continue
     if (!follow_target)
         return;
 
-    // If the player is close enough, we dont need to follow the path
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed
     if (CE_BAD(followtar))
         return;
-    auto tar_orig       = followtar->m_vecOrigin();
-    auto loc_orig       = LOCAL_E->m_vecOrigin();
-    auto dist_to_target = loc_orig.DistTo(tar_orig);
-    if (dist_to_target < 30)
-        breadcrumbs.clear();
+    // Check if we are following a disguised/spy
+    if (IsPlayerDisguised(followtar) || IsPlayerInvisible(followtar))
+    {
+        follow_target = 0;
+        return;
+    }
+    //check if target is afk
+    if (afk)
+    {
+        if (afkTicks[follow_target].check(int(afktime)))
+        {
+            follow_target = 0;
+            return;
+        }
+
+    }
 
     // Update timer on new target
     static Timer idle_time{};
     if (breadcrumbs.empty())
         idle_time.update();
+
+    // If the player is close enough, we dont need to follow the path
+    auto tar_orig       = followtar->m_vecOrigin();
+    auto loc_orig       = LOCAL_E->m_vecOrigin();
+    auto dist_to_target = loc_orig.DistTo(tar_orig);
+
+    if ((dist_to_target < (float) follow_distance) &&
+        VisCheckEntFromEnt(LOCAL_E, followtar))
+    {
+        idle_time.update();
+    }
 
     // New crumbs, we add one if its empty so we have something to follow
     if ((breadcrumbs.empty() ||
@@ -179,26 +247,32 @@ void WorldTick()
 
     // Prune old and close crumbs that we wont need anymore, update idle timer
     // too
-    while (breadcrumbs.size() > 1 && loc_orig.DistTo(breadcrumbs.at(0)) < 60.f)
+    for (int i = 0; i < breadcrumbs.size(); i++)
     {
-        idle_time.update();
-        breadcrumbs.erase(breadcrumbs.begin());
+        if (loc_orig.DistTo(breadcrumbs.at(i)) < 60.f)
+        {
+            idle_time.update();
+            for (int j = 0; j <= i; j++)
+                breadcrumbs.erase(breadcrumbs.begin());
+        }
+    }
+
+    //moved because its worthless otherwise
+    if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) && lastTaunt.test_and_set(1000)) {
+            g_IEngine->ClientCmd("taunt");
     }
 
     // Follow the crumbs when too far away, or just starting to follow
     if (dist_to_target > (float) follow_distance)
     {
         // Check for idle
-        if (idle_time.check(3000) ||
-            (breadcrumbs.size() > 1 && LOCAL_E->m_vecVelocity.IsZero(5.0f)))
+        if (autojump && idle_time.check(3000))
             g_pUserCmd->buttons |= IN_JUMP;
         if (idle_time.test_and_set(5000))
         {
             follow_target = 0;
             return;
         }
-        if (sync_taunt && HasCondition<TFCond_Taunting>(ENTITY(follow_target)))
-            g_IEngine->ClientCmd("taunt");
         static float last_slot_check = 0.0f;
         if (g_GlobalVars->curtime < last_slot_check)
             last_slot_check = 0.0f;

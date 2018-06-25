@@ -48,6 +48,8 @@ struct rgba_t
     constexpr rgba_t(float _r, float _g, float _b, float _a = 1.0f)
         : r(_r), g(_g), b(_b), a(_a){};
 
+    explicit rgba_t(const char hex[6]);
+
     constexpr operator glez::rgba() const
     {
         return *reinterpret_cast<const glez::rgba *>(this);
@@ -75,6 +77,16 @@ struct rgba_t
         return rgba_t(r * value, g * value, b * value, a * value);
     }
 };
+
+constexpr bool operator==(const rgba_t& lhs, const rgba_t& rhs)
+{
+    return rhs.r == lhs.r && rhs.g == lhs.g && rhs.b == lhs.b && rhs.a == lhs.a;
+}
+
+constexpr bool operator!=(const rgba_t& lhs, const rgba_t& rhs)
+{
+    return !(lhs == rhs);
+}
 
 constexpr rgba_t FromRGBA8(float r, float g, float b, float a)
 {

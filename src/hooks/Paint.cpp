@@ -6,6 +6,7 @@
  */
 
 #include <hacks/hacklist.hpp>
+#include <online/Online.hpp>
 #include "common.hpp"
 #include "hitrate.hpp"
 #include "hack.hpp"
@@ -31,6 +32,7 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
         {
             hitrate::Update();
         }
+        online::update();
 #if ENABLE_IPC
         static Timer nametimer{};
         if (nametimer.test_and_set(1000 * 10))
