@@ -106,6 +106,44 @@ void WalkTo(const Vector &vector)
     g_pUserCmd->sidemove    = result.second;
 }
 
+// Function to get the corner location that a vischeck to an entity is possible
+// from
+Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist)
+{
+    int maxiterations = maxdist / 40;
+    Vector origin = player->m_vecOrigin();
+
+    if (VisCheckEntFromEnt(player, target))
+        return origin;
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < maxiterations; j++)
+        {
+            Vector virtualOrigin = origin;
+            switch (i)
+            {
+            case 0:
+                virtualOrigin.x = virtualOrigin.x + 40 * (j + 1);
+                break;
+            case 1:
+                virtualOrigin.x = virtualOrigin.x - 40 * (j + 1);
+                break;
+            case 2:
+                virtualOrigin.y = virtualOrigin.y + 40 * (j + 1);
+                break;
+            case 3:
+                virtualOrigin.y = virtualOrigin.y - 40 * (j + 1);
+                break;
+            }
+            if (!IsVectorVisible(origin, virtualOrigin))
+                continue;
+            if (VisCheckEntFromEntVector(virtualOrigin, player, target))
+                return virtualOrigin;
+        }
+    }
+    return { 0, 0, 0 };
+}
+
 std::string GetLevelName()
 {
 
