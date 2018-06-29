@@ -142,8 +142,19 @@ void WorldTick()
 
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
                 continue;
-            if (!VisCheckEntFromEnt(LOCAL_E, entity))
-                continue;
+            if (corneractivate)
+            {
+                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
+                if (!indirectOrigin.z) //if we couldn't find it, exit
+                    continue;
+                breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
+                breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
+            }
+            else
+            {
+                if (!VisCheckEntFromEnt(LOCAL_E, entity))
+                    continue;
+            }
             follow_target = entity->m_IDX;
             break;
         }
@@ -191,11 +202,11 @@ void WorldTick()
                 continue;
             if (corneractivate)
             {
-                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 600);
-                if (!indirectOrigin.x || !indirectOrigin.y)
+                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
+                if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
-                breadcrumbs.clear();
-                breadcrumbs.push_back(indirectOrigin);
+                breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
+                breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
             }
             else
             {
