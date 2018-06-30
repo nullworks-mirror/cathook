@@ -82,13 +82,70 @@ void checkAFK()
     }
 }
 
+float vectormax(Vector i) // TODO: Move to helpers.cpp soon tm
+{
+float res = fmaxf(i.x, i.y);
+return fmaxf(res, i.z);
+}
+
+
 void init()
 {
-    for (int i; i < afkTicks.size(); i++)
+    for (int i = 0; i < afkTicks.size(); i++)
     {
         afkTicks[i].update();
     }
     inited = true;
+    return;
+}
+
+
+bool canReachVector(Vector loc)
+{
+    trace_t trace;
+    Ray_t ray;
+    Vector down = loc;
+    down.z = down.z - 5;
+    ray.Init(loc, down);
+    g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player,
+                       &trace);
+    if (trace.startpos.z - trace.endpos.z <= 75) // higher as to avoid small false positives, player can jump 72 hu
+        return true;
+    return false;
+}
+
+// auto add checked crumbs for the walbot to follow
+bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
+{
+    if (g_pLocalPlayer->v_Origin != corner)
+    {
+        Vector dist       = corner - g_pLocalPlayer->v_Origin;
+        dist.x            = fabsf(dist.x);
+        dist.y            = fabsf(dist.y);
+        dist.z            = fabsf(dist.z);
+        int maxiterations = floor(corner.DistTo(g_pLocalPlayer->v_Origin)) / 40;
+        for (int i = 0; i < maxiterations; i++)
+        {
+            Vector result = g_pLocalPlayer->v_Origin + dist / vectormax(dist) * 40.0f * (i + 1);
+            if (!canReachVector(result))
+                return false;
+            breadcrumbs.push_back(result);
+        }
+    }
+
+    Vector dist       = target->m_vecOrigin() - corner;
+    dist.x            = fabsf(dist.x);
+    dist.y            = fabsf(dist.y);
+    dist.z            = fabsf(dist.z);
+    int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
+    for (int i = 0; i < maxiterations; i++)
+    {
+        Vector result = corner + dist / vectormax(dist) * 40.0f * (i + 1);
+        if (!canReachVector(result))
+            return false;
+        breadcrumbs.push_back(result);
+    }
+    return false;
 }
 
 void WorldTick()
@@ -205,8 +262,9 @@ void WorldTick()
                 Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
                 if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
-                breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
-                breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
+                //breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
+                //breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
+                addCrumbs(entity, indirectOrigin);
             }
             else
             {
@@ -246,6 +304,12 @@ void WorldTick()
         }
 
     }
+
+//    if(!checkPath()) //wip do not merge if you see this
+//    {
+//        follow_target = 0;
+//        return;
+//    }
 
     // Update timer on new target
     static Timer idle_time{};
