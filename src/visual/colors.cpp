@@ -169,8 +169,8 @@ colors::rgba_t::rgba_t(const char hex[6])
     auto ri = hexToByte(hex[0], hex[1]);
     auto gi = hexToByte(hex[2], hex[3]);
     auto bi = hexToByte(hex[4], hex[5]);
-    r = float(ri) / 255.0f;
-    g = float(gi) / 255.0f;
-    b = float(bi) / 255.0f;
-    a = 1.0f;
+    r       = float(ri) / 255.0f;
+    g       = float(gi) / 255.0f;
+    b       = float(bi) / 255.0f;
+    a       = 1.0f;
 }

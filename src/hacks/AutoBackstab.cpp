@@ -37,7 +37,8 @@ void CreateMove()
         return;
     if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
         return;
-    if (CE_BYTE(g_pLocalPlayer->weapon(), netvar.m_bReadyToBackstab))
+    if (!hacks::shared::backtrack::enable &&
+        CE_BYTE(g_pLocalPlayer->weapon(), netvar.m_bReadyToBackstab))
         g_pUserCmd->buttons |= IN_ATTACK;
     else
     {
@@ -46,22 +47,34 @@ void CreateMove()
         if (hacks::shared::backtrack::iBestTarget == -1)
             return;
         int iBestTarget = hacks::shared::backtrack::iBestTarget;
-        int BestTick    = hacks::shared::backtrack::BestTick;
-
-        float scr =
-            abs(g_pLocalPlayer->v_OrigViewangles.y -
-                hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
-                    .viewangles);
-
-        if (scr < 40.0f &&
-            hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
-                    .origin.DistTo(g_pLocalPlayer->v_Eye) <=
-                re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)))
+        int tickcnt     = 0;
+        for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
         {
-            g_pUserCmd->tick_count =
-                hacks::shared::backtrack::headPositions[iBestTarget][BestTick]
-                    .tickcount;
-            g_pUserCmd->buttons |= IN_ATTACK;
+            bool good_tick = false;
+            for (int j = 0; j < 12; ++j)
+                if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick)
+                    good_tick = true;
+            tickcnt++;
+            if (!good_tick)
+                continue;
+
+            float scr = abs(g_pLocalPlayer->v_OrigViewangles.y - i.viewangles);
+
+            if (scr <= 90.0f &&
+                i.origin.DistTo(g_pLocalPlayer->v_Eye) <=
+                    re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)))
+            {
+                CachedEntity *tar = ENTITY(iBestTarget);
+                // ok just in case
+                if (CE_BAD(tar))
+                    continue;
+                Vector &angles = NET_VECTOR(tar, netvar.m_angEyeAngles);
+                float &simtime = NET_FLOAT(tar, netvar.m_flSimulationTime);
+                angles.y       = i.viewangles;
+                g_pUserCmd->tick_count = i.tickcount;
+                g_pUserCmd->buttons |= IN_ATTACK;
+                break;
+            }
         }
     }
 }

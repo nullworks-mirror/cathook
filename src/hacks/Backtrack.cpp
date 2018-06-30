@@ -25,8 +25,8 @@ static CatEnum slots_enum({ "All", "Primary", "Secondary", "Melee",
 static CatVar slots(slots_enum, "backtrack_slots", "0", "Enabled Slots",
                     "Select what slots backtrack should be enabled on.");
 
-BacktrackData headPositions[32][66];
-BestTickData sorted_ticks[66];
+BacktrackData headPositions[32][66]{};
+BestTickData sorted_ticks[66]{};
 int highesttick[32]{};
 int lastincomingsequencenumber = 0;
 static bool shouldDrawBt;
@@ -69,10 +69,11 @@ int ticks      = 12;
 void Init()
 {
     for (int i = 0; i < 32; i++)
-        for (int j              = 0; j < 66; j++)
-            headPositions[i][j] = BacktrackData{
-                0, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
-            };
+        for (int j = 0; j < 66; j++)
+            headPositions[i][j] =
+                BacktrackData{ 0,           { 0, 0, 0 }, { 0, 0, 0 },
+                               { 0, 0, 0 }, { 0, 0, 0 }, 0,
+                               0,           { 0, 0, 0 } };
     if (!installed)
     {
         latency.InstallChangeCallback(
@@ -115,7 +116,8 @@ void Run()
         {
             for (BacktrackData &btd : headPositions[i])
                 btd = BacktrackData{ 0,           { 0, 0, 0 }, { 0, 0, 0 },
-                                     { 0, 0, 0 }, { 0, 0, 0 }, 0 };
+                                     { 0, 0, 0 }, { 0, 0, 0 }, 0,
+                                     0,           { 0, 0, 0 } };
             continue;
         }
         if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
@@ -131,10 +133,12 @@ void Run()
             NET_VECTOR(RAW_ENT(pEntity), netvar.m_angEyeAngles).y;
         float viewangles =
             (_viewangles > 180) ? _viewangles - 360 : _viewangles;
+        float simtime       = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
         Vector hitbox_spine = pEntity->hitboxes.GetHitbox(3)->center;
+        Vector ent_orig     = pEntity->InternalEntity()->GetAbsOrigin();
         headPositions[i][cmd->command_number % ticks] =
-            BacktrackData{ cmd->tick_count, hitboxpos, min, max,
-                           hitbox_spine,    viewangles };
+            BacktrackData{ cmd->tick_count, hitboxpos,  min,     max,
+                           hitbox_spine,    viewangles, simtime, ent_orig };
         float FOVDistance = GetFov(g_pLocalPlayer->v_OrigViewangles,
                                    g_pLocalPlayer->v_Eye, hitboxpos);
         float distance = g_pLocalPlayer->v_Eye.DistTo(hitbox_spine);
@@ -189,7 +193,18 @@ void Run()
 
         BestTick = bestTick;
         if (cmd->buttons & IN_ATTACK)
-            cmd->tick_count = headPositions[iBestTarget][bestTick].tickcount;
+        {
+            CachedEntity *tar = ENTITY(iBestTarget);
+            // ok just in case
+            if (CE_BAD(tar))
+                return;
+            auto i          = headPositions[iBestTarget][bestTick];
+            cmd->tick_count = i.tickcount;
+            Vector &angles  = NET_VECTOR(tar, netvar.m_angEyeAngles);
+            float &simtime  = NET_FLOAT(tar, netvar.m_flSimulationTime);
+            angles.y        = i.viewangles;
+            simtime         = i.simtime;
+        }
     }
 }
 void Draw()

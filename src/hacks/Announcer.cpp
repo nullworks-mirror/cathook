@@ -177,4 +177,3 @@ void shutdown()
     g_IEventManager2->RemoveListener(&listener());
 }
 }
-

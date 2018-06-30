@@ -56,14 +56,14 @@ bool IsTarget(CachedEntity *ent)
             return false;
 
         // Global checks
-        if (player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (player_tools::shouldTarget(ent) !=
+            player_tools::IgnoreReason::DO_NOT_IGNORE)
             return false;
         IF_GAME(IsTF())
         {
             // Dont target invulnerable players, ex: uber, bonk
             if (IsPlayerInvulnerable(ent))
                 return false;
-
 
             // If settings allow, dont target cloaked players
             if (legit && IsPlayerInvisible(ent))

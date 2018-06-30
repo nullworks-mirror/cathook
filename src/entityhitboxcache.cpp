@@ -47,8 +47,8 @@ void EntityHitboxCache::Update()
 {
     InvalidateCache();
     if (CE_BAD(parent_ref))
-    	if (GetHitbox(0))
-    		return;
+        if (GetHitbox(0))
+            return;
 }
 
 void EntityHitboxCache::Init()

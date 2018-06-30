@@ -61,7 +61,8 @@ bool IsTarget(CachedEntity *ent)
             return false;
 
         // Global checks
-        if (player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (player_tools::shouldTarget(ent) !=
+            player_tools::IgnoreReason::DO_NOT_IGNORE)
             return false;
 
         IF_GAME(IsTF())

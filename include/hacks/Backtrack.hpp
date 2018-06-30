@@ -13,17 +13,19 @@ namespace hacks::shared::backtrack
 {
 struct BacktrackData
 {
-    int tickcount;
-    Vector hitboxpos;
-    Vector min;
-    Vector max;
-    Vector origin;
-    float viewangles;
+    int tickcount{ 0 };
+    Vector hitboxpos{ 0.0f, 0.0f, 0.0f };
+    Vector min{ 0.0f, 0.0f, 0.0f };
+    Vector max{ 0.0f, 0.0f, 0.0f };
+    Vector origin{ 0.0f, 0.0f, 0.0f };
+    float viewangles{ 0.0f };
+    float simtime{ 0.0f };
+    Vector entorigin{ 0.0f, 0.0f, 0.0f };
 };
 struct BestTickData
 {
-    int tickcount;
-    int tick;
+    int tickcount{ 0 };
+    int tick{ 0 };
     bool operator<(const BestTickData &rhs) const
     {
         return tickcount < rhs.tickcount;
@@ -54,6 +56,7 @@ typedef boost::circular_buffer_space_optimized<CIncomingSequence> circular_buf;
 extern circular_buf sequences;
 extern CatVar latency;
 extern CatVar enable;
+extern int ticks;
 extern BacktrackData headPositions[32][66];
 extern BestTickData sorted_ticks[66];
 }
