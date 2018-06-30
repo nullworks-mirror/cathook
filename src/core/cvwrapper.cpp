@@ -108,13 +108,17 @@ void runcfg()
             logging::Info("Couldn't open the file!");
             return;
         }
+        file << "exec cat_defaults\n";
         for (const auto &i : CatVarList())
         {
             if (!i)
                 continue;
             if (!i->GetString())
                 continue;
+            if (i->GetBase() != std::string(i->GetString()))
+            {
             file << CON_PREFIX << i->name << " \"" << i->GetString() << "\"\n";
+            }
         }
         file.close();
     }
