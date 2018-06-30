@@ -697,6 +697,8 @@ static const std::string list_tf2 = R"(
 					"fb_always_medigun"
 					"fb_roaming"
 					"fb_draw"
+                    "fb_afk"
+                    "fb_afk_time"
 				]
 				"Catbot Utilities"[
 					"Catbot Utilities Menu"

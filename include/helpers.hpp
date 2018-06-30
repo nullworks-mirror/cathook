@@ -77,6 +77,7 @@ bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos);
 bool VisCheckEntFromEnt(CachedEntity *startEnt, CachedEntity *endEnt);
 bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt,
                               CachedEntity *endEnt);
+Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist);
 
 bool LineIntersectsBox(Vector &bmin, Vector &bmax, Vector &lmin, Vector &lmax);
 

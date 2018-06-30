@@ -54,6 +54,8 @@ static CatVar afk(CV_SWITCH, "fb_afk", "1", "Switch target if AFK",
 static CatVar afktime(
     CV_INT, "fb_afk_time", "15000", "Max AFK Time",
     "Max time in ms spent standing still before player gets declared afk");
+static CatVar corneractivate(CV_SWITCH, "fb_activation_corners", "1", "Activate arround corners",
+                  "Try to find an activation path to an entity behind a corner.");
 
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
@@ -140,8 +142,19 @@ void WorldTick()
 
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
                 continue;
-            if (!VisCheckEntFromEnt(LOCAL_E, entity))
-                continue;
+            if (corneractivate)
+            {
+                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
+                if (!indirectOrigin.z) //if we couldn't find it, exit
+                    continue;
+                breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
+                breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
+            }
+            else
+            {
+                if (!VisCheckEntFromEnt(LOCAL_E, entity))
+                    continue;
+            }
             follow_target = entity->m_IDX;
             break;
         }
@@ -173,8 +186,6 @@ void WorldTick()
             if (follow_activation &&
                 entity->m_flDistance() > (float) follow_activation)
                 continue;
-            if (!VisCheckEntFromEnt(LOCAL_E, entity))
-                continue;
             const model_t *model =
                 ENTITY(follow_target)->InternalEntity()->GetModel();
             if (followcart && model &&
@@ -189,6 +200,19 @@ void WorldTick()
                 follow_target = entity->m_IDX;
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
+            if (corneractivate)
+            {
+                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
+                if (!indirectOrigin.z) //if we couldn't find it, exit
+                    continue;
+                breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
+                breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
+            }
+            else
+            {
+                if (!VisCheckEntFromEnt(LOCAL_E, entity))
+                    continue;
+            }
             if (follow_target &&
                 ENTITY(follow_target)->m_flDistance() >
                     entity->m_flDistance()) // favor closer entitys
@@ -266,7 +290,7 @@ void WorldTick()
     if (dist_to_target > (float) follow_distance)
     {
         // Check for idle
-        if (autojump && idle_time.check(3000))
+        if (autojump && idle_time.check(2000))
             g_pUserCmd->buttons |= IN_JUMP;
         if (idle_time.test_and_set(5000))
         {
