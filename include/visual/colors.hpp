@@ -78,12 +78,12 @@ struct rgba_t
     }
 };
 
-constexpr bool operator==(const rgba_t& lhs, const rgba_t& rhs)
+constexpr bool operator==(const rgba_t &lhs, const rgba_t &rhs)
 {
     return rhs.r == lhs.r && rhs.g == lhs.g && rhs.b == lhs.b && rhs.a == lhs.a;
 }
 
-constexpr bool operator!=(const rgba_t& lhs, const rgba_t& rhs)
+constexpr bool operator!=(const rgba_t &lhs, const rgba_t &rhs)
 {
     return !(lhs == rhs);
 }

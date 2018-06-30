@@ -8,6 +8,7 @@
 #pragma once
 
 #include "reclasses.hpp"
+#include "copypasted/CSignature.h"
 
 namespace re
 {
@@ -26,6 +27,16 @@ public:
     {
         static int placeholder = 0;
         return placeholder;
+    }
+    inline static int SetAbsOrigin(IClientEntity *self, Vector const &origin)
+    {
+        typedef int (*SetAbsOrigin_t)(IClientEntity *, Vector const &);
+        uintptr_t addr = gSignatures.GetClientSignature(
+            "55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 75 ? 89 1C 24 E8 ? ? ? ? F3 "
+            "0F 10 06");
+        SetAbsOrigin_t SetAbsOrigin_fn = SetAbsOrigin_t(addr);
+
+        return SetAbsOrigin_fn(self, origin);
     }
 };
 }

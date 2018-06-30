@@ -89,7 +89,8 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 #else
 #define antikick_time 90
 #endif
-const char *cmds[7] = {"use", "voicecommand", "spec_next", "spec_prev", "spec_player", "invprev", "invnext"};
+const char *cmds[7] = { "use",         "voicecommand", "spec_next", "spec_prev",
+                        "spec_player", "invprev",      "invnext" };
 namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
@@ -339,12 +340,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E),
                                                        g_pUserCmd);
             {
-                PROF_SECTION(CM_aimbot);
-                hacks::shared::aimbot::CreateMove();
-            }
-            {
                 PROF_SECTION(CM_backtracc);
                 hacks::shared::backtrack::Run();
+            }
+            {
+                PROF_SECTION(CM_aimbot);
+                hacks::shared::aimbot::CreateMove();
             }
             IF_GAME(IsTF2())
             {
@@ -537,12 +538,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         for (int i = 0; i < 7800; i += sizeof(cmds[nextdata]))
         {
-        	senddata.m_szCommand = cmds[nextdata];
+            senddata.m_szCommand = cmds[nextdata];
             ch->SendNetMsg(senddata);
             if (nextdata == 6)
-            	nextdata = 0;
+                nextdata = 0;
             else
-            	nextdata++;
+                nextdata++;
         }
         ch->Transmit();
     }
@@ -581,12 +582,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             for (int i = 0; i < 7800 + additionallag;
                  i += sizeof(cmds[nextdata]))
             {
-            	senddata.m_szCommand = cmds[nextdata];
+                senddata.m_szCommand = cmds[nextdata];
                 ch->SendNetMsg(senddata, false);
                 if (nextdata == 6)
-                	nextdata = 0;
+                    nextdata = 0;
                 else
-                	nextdata++;
+                    nextdata++;
             }
             ch->Transmit();
         }
@@ -595,11 +596,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         {
             for (int i = 0; i < (int) serverlag_amount; i++)
             {
-            	senddata.m_szCommand = cmds[nextdata];
+                senddata.m_szCommand = cmds[nextdata];
                 if (nextdata == 6)
-                	nextdata = 0;
+                    nextdata = 0;
                 else
-                	nextdata++;
+                    nextdata++;
                 ch->SendNetMsg(senddata, false);
             }
             ch->Transmit();

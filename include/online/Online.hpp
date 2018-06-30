@@ -36,5 +36,4 @@ struct user_data
 void update();
 
 user_data *getUserData(unsigned steamId);
-
 }

@@ -40,5 +40,4 @@ std::optional<colors::rgba_t> forceEspColor(CachedEntity *entity);
 #endif
 
 void onKilledBy(CachedEntity *entity);
-
 }

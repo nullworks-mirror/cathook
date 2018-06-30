@@ -15,6 +15,7 @@ namespace hacks::shared::triggerbot
 {
 
 void CreateMove();
+CachedEntity *FindEntInSight(float range);
 bool ShouldShoot();
 bool IsTargetStateGood(CachedEntity *entity);
 CachedEntity *FindEntInSight(float range);

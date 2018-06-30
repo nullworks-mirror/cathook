@@ -8,6 +8,7 @@
 #include <visual/EffectChams.hpp>
 #include <MiscTemporary.hpp>
 #include "common.hpp"
+#include "Backtrack.hpp"
 
 // static CatVar chams_experimental(CV_SWITCH, "chams_effect", "0",
 // "Experimental Chams");
@@ -320,29 +321,28 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
 void EffectChams::RenderChams(IClientEntity *entity)
 {
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-        if (ShouldRenderChams(entity))
+    if (ShouldRenderChams(entity))
+    {
+        rgba_t color   = ChamsColor(entity);
+        rgba_t color_2 = color * 0.6f;
+        if (!legit)
         {
-            rgba_t color   = ChamsColor(entity);
-            rgba_t color_2 = color * 0.6f;
-            if (!legit)
-            {
-                mat_unlit_z->AlphaModulate(1.0f);
-                ptr->DepthRange(0.0f, 0.01f);
-                g_IVRenderView->SetColorModulation(color_2);
-                g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit_z
-                                                             : mat_lit_z);
+            mat_unlit_z->AlphaModulate(1.0f);
+            ptr->DepthRange(0.0f, 0.01f);
+            g_IVRenderView->SetColorModulation(color_2);
+            g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit_z
+                                                         : mat_lit_z);
 
-                RenderChamsRecursive(entity);
-            }
+            RenderChamsRecursive(entity);
+        }
 
-            if (legit || !singlepass)
-            {
-                mat_unlit->AlphaModulate(1.0f);
-                g_IVRenderView->SetColorModulation(color);
-                ptr->DepthRange(0.0f, 1.0f);
-                g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit
-                                                             : mat_lit);
-                RenderChamsRecursive(entity);
+        if (legit || !singlepass)
+        {
+            mat_unlit->AlphaModulate(1.0f);
+            g_IVRenderView->SetColorModulation(color);
+            ptr->DepthRange(0.0f, 1.0f);
+            g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit : mat_lit);
+            RenderChamsRecursive(entity);
         }
     }
 }

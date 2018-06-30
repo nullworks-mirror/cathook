@@ -12,21 +12,32 @@
 
 static std::unordered_map<unsigned, unsigned> betrayal_list{};
 
-static CatCommand forgive_all("pt_forgive_all", "Clear betrayal list", []() {
-    betrayal_list.clear();
-});
+static CatCommand forgive_all("pt_forgive_all", "Clear betrayal list",
+                              []() { betrayal_list.clear(); });
 
 namespace settings
 {
 
-static CatVar online_notarget(CV_SWITCH, "pt_ignore_notarget", "1", "Ignore notarget", "Ignore online players with notarget role");
+static CatVar online_notarget(CV_SWITCH, "pt_ignore_notarget", "1",
+                              "Ignore notarget",
+                              "Ignore online players with notarget role");
 static CatVar hoovy(CV_SWITCH, "pt_ignore_hoovy", "1", "Ignore hoovy");
-static CatVar online_friendly_software(CV_SWITCH, "pt_ignore_friendly_software", "1", "Ignore friendly software", "Ignore CO-compatible software");
-static CatVar online_only_verified(CV_SWITCH, "pt_ignore_only_verified", "0", "Only ignore verified", "If online checks are enabled, only apply ignore if SteamID is verified (not recommended right now)");
-static CatVar online_anonymous(CV_SWITCH, "pt_ignore_anonymous", "1", "Ignore anonymous", "Apply ignore checks to anonymous accounts too");
-static CatVar betrayal_limit(CV_INT, "pt_betrayal_limit", "3", "Betrayal limit", "Stop ignoring a player after N kills while you ignored them");
-static CatVar taunting(CV_SWITCH, "pt_ignore_taunting", "1", "Ignore taunting", "Don't shoot taunting players");
-
+static CatVar online_friendly_software(CV_SWITCH, "pt_ignore_friendly_software",
+                                       "1", "Ignore friendly software",
+                                       "Ignore CO-compatible software");
+static CatVar online_only_verified(CV_SWITCH, "pt_ignore_only_verified", "0",
+                                   "Only ignore verified",
+                                   "If online checks are enabled, only apply "
+                                   "ignore if SteamID is verified (not "
+                                   "recommended right now)");
+static CatVar online_anonymous(CV_SWITCH, "pt_ignore_anonymous", "1",
+                               "Ignore anonymous",
+                               "Apply ignore checks to anonymous accounts too");
+static CatVar betrayal_limit(
+    CV_INT, "pt_betrayal_limit", "3", "Betrayal limit",
+    "Stop ignoring a player after N kills while you ignored them");
+static CatVar taunting(CV_SWITCH, "pt_ignore_taunting", "1", "Ignore taunting",
+                       "Don't shoot taunting players");
 }
 
 namespace player_tools
@@ -43,21 +54,23 @@ IgnoreReason shouldTargetSteamId(unsigned id)
             return IgnoreReason::DO_NOT_IGNORE;
     }
 
-    auto& pl = playerlist::AccessData(id);
+    auto &pl = playerlist::AccessData(id);
     if (playerlist::IsFriendly(pl.state))
         return IgnoreReason::LOCAL_PLAYER_LIST;
 
     auto *co = online::getUserData(id);
     if (co)
     {
-        bool check_verified = !settings::online_only_verified || co->is_steamid_verified;
+        bool check_verified =
+            !settings::online_only_verified || co->is_steamid_verified;
         bool check_anonymous = settings::online_anonymous || !co->is_anonymous;
 
         if (check_verified && check_anonymous)
         {
             if (settings::online_notarget && co->no_target)
                 return IgnoreReason::ONLINE_NO_TARGET;
-            if (settings::online_friendly_software && co->is_using_friendly_software)
+            if (settings::online_friendly_software &&
+                co->is_using_friendly_software)
                 return IgnoreReason::ONLINE_FRIENDLY_SOFTWARE;
         }
         // Always check developer status, no exceptions
@@ -87,7 +100,7 @@ bool shouldAlwaysRenderEspSteamId(unsigned id)
     if (id == 0)
         return false;
 
-    auto& pl = playerlist::AccessData(id);
+    auto &pl = playerlist::AccessData(id);
     if (pl.state != playerlist::k_EState::DEFAULT)
         return true;
 
@@ -155,7 +168,4 @@ void onKilledBy(CachedEntity *entity)
 {
     onKilledBy(entity->player_info.friendsID);
 }
-
-
-
 }

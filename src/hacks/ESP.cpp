@@ -149,9 +149,12 @@ static CatVar entity_id(CV_SWITCH, "esp_entity_id", "1", "Entity ID",
                         "Used with Entity ESP. Shows entityID");
 
 // Online
-static CatVar online(CV_SWITCH, "esp_online", "1", "Show online info", "Username, etc");
-static CatVar online_groups(CV_SWITCH, "esp_online_groups", "1", "Show online groups", "Admin, developer, etc");
-static CatVar online_software(CV_SWITCH, "esp_online_software", "1", "Show software", "cathook, lmaobox, etc");
+static CatVar online(CV_SWITCH, "esp_online", "1", "Show online info",
+                     "Username, etc");
+static CatVar online_groups(CV_SWITCH, "esp_online_groups", "1",
+                            "Show online groups", "Admin, developer, etc");
+static CatVar online_software(CV_SWITCH, "esp_online_software", "1",
+                              "Show software", "cathook, lmaobox, etc");
 
 // CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
 
@@ -356,7 +359,7 @@ void CreateMove()
             ProcessEntity(ent);
             // Update Bones
             if (i <= 32)
-            	ent->hitboxes.GetHitbox(0);
+                ent->hitboxes.GetHitbox(0);
             // Dont know what this check is for
             if (data[i].string_count)
             {
@@ -1160,7 +1163,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
             return;
 
-        online::user_data *data = online ? online::getUserData(info.friendsID) : nullptr;
+        online::user_data *data =
+            online ? online::getUserData(info.friendsID) : nullptr;
 
         // TODO, check if u can just use "ent->m_bEnemy()" instead of m_iTeam
         // Legit mode handling
@@ -1183,14 +1187,15 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             if (data->is_steamid_verified)
                 AddEntityString(ent, "Verified SteamID", colors::green);
             if (online_groups)
-                for (auto& s: data->shown_groups)
+                for (auto &s : data->shown_groups)
                     AddEntityString(ent, s, colors::orange);
             if (online_software && data->has_software)
             {
                 if (data->is_using_friendly_software)
                     AddEntityString(ent, "Software: " + data->software_name);
                 else
-                    AddEntityString(ent, "Software: " + data->software_name, colors::red);
+                    AddEntityString(ent, "Software: " + data->software_name,
+                                    colors::red);
             }
         }
 
@@ -1203,7 +1208,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         }
 
         // Dont understand reasoning for this check
-        if (ent->m_bEnemy() || teammates || player_tools::shouldAlwaysRenderEsp(ent))
+        if (ent->m_bEnemy() || teammates ||
+            player_tools::shouldAlwaysRenderEsp(ent))
         {
 
             // Playername

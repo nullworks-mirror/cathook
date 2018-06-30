@@ -80,43 +80,57 @@ int last_hb_traced = 0;
 Vector forward;
 bool CanBacktrack()
 {
-    int target   = hacks::shared::backtrack::iBestTarget;
-    int BestTick = hacks::shared::backtrack::BestTick;
-    auto min = hacks::shared::backtrack::headPositions[target][BestTick].min;
-    auto max = hacks::shared::backtrack::headPositions[target][BestTick].max;
-    if (!min.x && !max.x)
-        return false;
-
-    // Get the min and max for the hitbox
-    Vector minz(std::min(min.x, max.x), std::min(min.y, max.y),
-                std::min(min.z, max.z));
-    Vector maxz(std::max(min.x, max.x), std::max(min.y, max.y),
-                std::max(min.z, max.z));
-
-    // Shrink the hitbox here
-    Vector size = maxz - minz;
-    Vector smod = size * 0.05f * (int) accuracy;
-
-    // Save the changes to the vectors
-    minz += smod;
-    maxz -= smod;
-
-    // Trace and test if it hits the smaller hitbox, if it fails
-    // we
-    // return false
-    Vector hit;
-
-    if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) &&
-        !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
+    int target  = hacks::shared::backtrack::iBestTarget;
+    int tickcnt = 0;
+    for (auto i : hacks::shared::backtrack::headPositions[target])
     {
-        return true;
-    }
-    if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
-    {
-        g_pUserCmd->tick_count =
-            hacks::shared::backtrack::headPositions[target][BestTick].tickcount;
-        g_pUserCmd->buttons |= IN_ATTACK;
-        return false;
+        bool good_tick = false;
+        for (int j = 0; j < 12; ++j)
+            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick)
+                good_tick = true;
+        tickcnt++;
+        if (!good_tick)
+            continue;
+        auto min = i.min;
+        auto max = i.max;
+        if (!min.x && !max.x)
+            continue;
+
+        // Get the min and max for the hitbox
+        Vector minz(fminf(min.x, max.x), fminf(min.y, max.y),
+                    fminf(min.z, max.z));
+        Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y),
+                    fmaxf(min.z, max.z));
+
+        // Shrink the hitbox here
+        Vector size = maxz - minz;
+        Vector smod = size * 0.05f * (int) accuracy;
+
+        // Save the changes to the vectors
+        minz += smod;
+        maxz -= smod;
+
+        // Trace and test if it hits the smaller hitbox, if it fails
+        // we
+        // return false
+        Vector hit;
+
+        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) &&
+            !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
+            continue;
+        if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
+        {
+            CachedEntity *tar = ENTITY(target);
+            // ok just in case
+            if (CE_BAD(tar))
+                continue;
+            Vector &angles         = NET_VECTOR(tar, netvar.m_angEyeAngles);
+            float &simtime         = NET_FLOAT(tar, netvar.m_flSimulationTime);
+            angles.y               = i.viewangles;
+            g_pUserCmd->tick_count = i.tickcount;
+            g_pUserCmd->buttons |= IN_ATTACK;
+            return false;
+        }
     }
     return true;
 }
@@ -142,7 +156,7 @@ void CreateMove()
     CachedEntity *ent = FindEntInSight(EffectiveTargetingRange());
 
     // Check if can backtrack, shoot if we can
-    if (!CanBacktrack())
+    if (!CanBacktrack() || hacks::shared::backtrack::enable)
         return;
 
     // Check if dormant or null to prevent crashes
@@ -274,7 +288,8 @@ bool IsTargetStateGood(CachedEntity *entity)
             return false;
 
         // Global checks
-        if (player_tools::shouldTarget(entity) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (player_tools::shouldTarget(entity) !=
+            player_tools::IgnoreReason::DO_NOT_IGNORE)
             return false;
 
         IF_GAME(IsTF())
@@ -330,12 +345,12 @@ bool IsTargetStateGood(CachedEntity *entity)
             if (hb)
             {
                 // Get the min and max for the hitbox
-                Vector minz(std::min(hb->min.x, hb->max.x),
-                            std::min(hb->min.y, hb->max.y),
-                            std::min(hb->min.z, hb->max.z));
-                Vector maxz(std::max(hb->min.x, hb->max.x),
-                            std::max(hb->min.y, hb->max.y),
-                            std::max(hb->min.z, hb->max.z));
+                Vector minz(fminf(hb->min.x, hb->max.x),
+                            fminf(hb->min.y, hb->max.y),
+                            fminf(hb->min.z, hb->max.z));
+                Vector maxz(fmaxf(hb->min.x, hb->max.x),
+                            fmaxf(hb->min.y, hb->max.y),
+                            fmaxf(hb->min.z, hb->max.z));
 
                 // Shrink the hitbox here
                 Vector size = maxz - minz;
@@ -614,25 +629,17 @@ bool UpdateAimkey()
 float EffectiveTargetingRange()
 {
     if (GetWeaponMode() == weapon_melee)
-    {
         return re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
-        // Pyros only have so much untill their flames hit
-    }
+    // Pyros only have so much untill their flames hit
     else if (g_pLocalPlayer->weapon()->m_iClassID() ==
              CL_CLASS(CTFFlameThrower))
-    {
-        return 185.0f;
-    }
+        return 200.0f;
     // If user has set a max range, then use their setting,
     if (max_range)
-    {
         return (float) max_range;
-        // else use a pre-set range
-    }
+    // else use a pre-set range
     else
-    {
         return 8012.0f;
-    }
 }
 
 // Helper functions to trace for hitboxes
