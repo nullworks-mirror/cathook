@@ -9,7 +9,9 @@
 #include <hacks/CatBot.hpp>
 #include <hacks/AntiAim.hpp>
 #include <hacks/ESP.hpp>
+#include <hacks/Backtrack.hpp>
 #include <glez/draw.hpp>
+#include <PlayerTools.hpp>
 #include "common.hpp"
 
 namespace hacks::shared::aimbot
@@ -60,8 +62,6 @@ static CatVar
 static CatVar ignore_vaccinator(
     CV_SWITCH, "aimbot_ignore_vaccinator", "1", "Ignore Vaccinator",
     "Hitscan weapons won't fire if enemy is vaccinated against bullets");
-static CatVar ignore_hoovy(CV_SWITCH, "aimbot_ignore_hoovy", "0",
-                           "Ignore Hoovies", "Aimbot won't attack hoovies");
 static CatVar ignore_cloak(CV_SWITCH, "aimbot_ignore_cloak", "1",
                            "Ignore cloaked", "Don't aim at invisible enemies");
 static CatVar ignore_deadringer(CV_SWITCH, "aimbot_ignore_deadringer", "1",
@@ -175,7 +175,101 @@ bool projectileAimbotRequired;
 // This array will store calculated projectile/hitscan predictions
 // for current frame, to avoid performing them again
 AimbotCalculatedData_s calculated_data_array[2048]{};
+bool BacktrackAimbot()
+{
 
+    if (!hacks::shared::backtrack::enable)
+        return false;
+
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !CanShoot())
+        return false;
+
+    if (zoomed_only && !g_pLocalPlayer->bZoomed &&
+        !(g_pUserCmd->buttons & IN_ATTACK))
+        return false;
+
+    int iBestTarget = hacks::shared::backtrack::iBestTarget;
+    if (iBestTarget == -1)
+    {
+
+        float bestscr = 999.0f;
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        {
+            if (i == g_pLocalPlayer->entity_idx)
+                continue;
+            CachedEntity *it = ENTITY(i);
+            if (CE_BAD(it) || !it->m_bAlivePlayer() ||
+                it->m_Type() != ENTITY_PLAYER)
+                continue;
+            if (it->m_iTeam() == LOCAL_E->m_iTeam())
+                continue;
+            if (!hacks::shared::backtrack::headPositions[iBestTarget][0].hitboxpos.z)
+                continue;
+            if (!it->hitboxes.GetHitbox(0))
+                continue;
+            if (IsPlayerInvisible(it) && ignore_cloak)
+            	continue;
+            float scr =
+                GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye,
+                       it->hitboxes.GetHitbox(0)->center);
+            if (scr < bestscr)
+            {
+                iBestTarget = it->m_IDX;
+                bestscr     = scr;
+            }
+        }
+        if (iBestTarget == -1)
+            return true;
+
+    };
+
+    for (int t = 0; t < hacks::shared::backtrack::ticks; ++t)
+        hacks::shared::backtrack::sorted_ticks[t] =
+        		hacks::shared::backtrack::BestTickData{ hacks::shared::backtrack::headPositions[iBestTarget][t].tickcount, t };
+    std::sort(hacks::shared::backtrack::sorted_ticks, hacks::shared::backtrack::sorted_ticks + hacks::shared::backtrack::ticks);
+    int tickcnt = 0;
+
+    for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
+    {
+        bool good_tick = false;
+        for (int j = 0; j < 12; ++j)
+            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick)
+                good_tick = true;
+        tickcnt++;
+        if (!i.hitboxpos.z)
+            continue;
+        if (!good_tick)
+            continue;
+        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxpos))
+            continue;
+        float scr = abs(g_pLocalPlayer->v_OrigViewangles.y - i.viewangles);
+
+        CachedEntity *tar = ENTITY(iBestTarget);
+        // ok just in case
+        if (CE_BAD(tar))
+            continue;
+        Vector &angles         = NET_VECTOR(tar, netvar.m_angEyeAngles);
+        float &simtime         = NET_FLOAT(tar, netvar.m_flSimulationTime);
+        angles.y               = i.viewangles;
+        simtime                = i.simtime;
+        g_pUserCmd->tick_count = i.tickcount;
+        Vector tr              = (i.hitboxpos - g_pLocalPlayer->v_Eye);
+        Vector angles2;
+        VectorAngles(tr, angles2);
+        // Clamping is important
+        fClampAngle(angles2);
+        // Slow aim
+        if (slow_aim)
+            DoSlowAim(angles2);
+        else if (silent)
+            g_pLocalPlayer->bUseSilentAngles = true;
+        // Set angles
+        g_pUserCmd->viewangles = angles2;
+        g_pUserCmd->buttons |= IN_ATTACK;
+        return true;
+    }
+    return true;
+}
 // The main "loop" of the aimbot.
 void CreateMove()
 {
@@ -226,6 +320,8 @@ void CreateMove()
             cur_proj_grav = float(proj_gravity);
     }
 
+    if (BacktrackAimbot())
+        return;
     // Refresh our best target
     CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
     if (CE_BAD(target_entity) || !foundTarget)
@@ -574,8 +670,11 @@ bool IsTargetStateGood(CachedEntity *entity)
                 }
             }
 
-            // Taunting
-            if (ignore_taunting && HasCondition<TFCond_Taunting>(entity))
+            // Some global checks
+            if (player_tools::shouldTarget(entity) !=
+                player_tools::IgnoreReason::DO_NOT_IGNORE)
+                return false;
+            if (hacks::shared::catbot::should_ignore_player(entity))
                 return false;
             // Invulnerable players, ex: uber, bonk
             if (IsPlayerInvulnerable(entity))
@@ -605,19 +704,7 @@ bool IsTargetStateGood(CachedEntity *entity)
                     HasCondition<TFCond_UberBulletResist>(entity))
                     return false;
         }
-        // Friendly player
-        if (playerlist::IsFriendly(playerlist::AccessData(entity).state))
-            return false;
-        IF_GAME(IsTF())
-        {
-            // Hoovys
-            if (ignore_hoovy && IsHoovy(entity))
-            {
-                return false;
-            }
-        }
-        if (hacks::shared::catbot::should_ignore_player(entity))
-            return false;
+
         // Preform hitbox prediction
         int hitbox                 = BestHitbox(entity);
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];

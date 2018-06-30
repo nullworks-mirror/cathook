@@ -5,6 +5,8 @@
  *      Author: nullifiedcat
  */
 
+#include <online/Online.hpp>
+#include <PlayerTools.hpp>
 #include "common.hpp"
 
 static CatVar user_red_blue(CV_INT, "esp_color_red_b", "0", "Red Team: Blue",
@@ -130,9 +132,10 @@ rgba_t colors::EntityF(CachedEntity *ent)
                 else if (ent->m_iTeam() == TEAM_RED)
                     result = red_v;
             }
-            plclr = playerlist::Color(ent);
-            if (plclr.a)
-                result = plclr;
+
+            auto o = player_tools::forceEspColor(ent);
+            if (o.has_value())
+                return *o;
         }
     }
 
@@ -143,4 +146,31 @@ rgba_t colors::RainbowCurrent()
 {
     return colors::FromHSL(fabs(sin(g_GlobalVars->curtime / 2.0f)) * 360.0f,
                            0.85f, 0.9f);
+}
+
+static unsigned char hexToChar(char i)
+{
+    if (i >= '0' && i <= '9')
+        return i - '0';
+    if (i >= 'a' && i <= 'f')
+        return i - 'a' + 10;
+    if (i >= 'A' && i <= 'F')
+        return i - 'A' + 10;
+    return 0;
+}
+
+static unsigned int hexToByte(char hi, char lo)
+{
+    return (hexToChar(hi) << 4) | (hexToChar(lo));
+}
+
+colors::rgba_t::rgba_t(const char hex[6])
+{
+    auto ri = hexToByte(hex[0], hex[1]);
+    auto gi = hexToByte(hex[2], hex[3]);
+    auto bi = hexToByte(hex[4], hex[5]);
+    r       = float(ri) / 255.0f;
+    g       = float(gi) / 255.0f;
+    b       = float(bi) / 255.0f;
+    a       = 1.0f;
 }

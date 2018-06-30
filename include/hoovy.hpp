@@ -7,5 +7,7 @@
 
 #pragma once
 
+class CachedEntity;
+
 void UpdateHoovyList();
 bool IsHoovy(CachedEntity *entity);

@@ -50,10 +50,13 @@ void CreateMove()
         return;
     if (CE_BAD(LOCAL_E))
         return;
+    if (g_pLocalPlayer->clazz != tf_spy)
+        return;
     if (CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
         return;
-    if (HasCondition<TFCond_Cloaked>(LOCAL_E) || HasCondition<TFCond_CloakFlicker>(LOCAL_E))
-    	return;
+    if (HasCondition<TFCond_Cloaked>(LOCAL_E) ||
+        HasCondition<TFCond_CloakFlicker>(LOCAL_E))
+        return;
     if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health &&
         NearbyEntities() > 1)
         g_pUserCmd->buttons |= IN_ATTACK2;
@@ -63,6 +66,10 @@ void CreateMove()
         if (CE_BAD(ent))
             continue;
         if (!IsProjectile(ent) && !ent->m_bGrenadeProjectile())
+            continue;
+        if (!ent->m_bEnemy())
+            continue;
+        if (ent->m_Type() != ENTITY_PROJECTILE)
             continue;
         if (ent->m_bCritProjectile() && ent->m_flDistance() <= 1000.0f)
             g_pUserCmd->buttons |= IN_ATTACK2;

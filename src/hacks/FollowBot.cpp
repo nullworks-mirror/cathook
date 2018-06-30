@@ -65,8 +65,8 @@ static const int crumb_limit = 64; // limit
 int follow_target = 0;
 bool inited;
 
-Timer lastTaunt{}; //time since taunt was last executed, used to avoid kicks
-std::array<Timer, 32> afkTicks; //for how many ms the player hasn't been moving
+Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
+std::array<Timer, 32> afkTicks; // for how many ms the player hasn't been moving
 
 void checkAFK()
 {
@@ -234,7 +234,9 @@ void WorldTick()
                 continue;
             if (entity->m_bEnemy())
                 continue;
-            if (afk && afkTicks[i].check(int(afktime))) //don't follow target that was determined afk
+            if (afk &&
+                afkTicks[i].check(int(
+                    afktime))) // don't follow target that was determined afk
                 continue;
             if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
                 continue;
@@ -277,7 +279,7 @@ void WorldTick()
                 continue;
             // ooooo, a target
             follow_target = i;
-            afkTicks[i].update(); //set afk time to 0
+            afkTicks[i].update(); // set afk time to 0
         }
     }
     // last check for entity before we continue
@@ -294,7 +296,7 @@ void WorldTick()
         follow_target = 0;
         return;
     }
-    //check if target is afk
+    // check if target is afk
     if (afk)
     {
         if (afkTicks[follow_target].check(int(afktime)))
@@ -302,7 +304,6 @@ void WorldTick()
             follow_target = 0;
             return;
         }
-
     }
 
 //    if(!checkPath()) //wip do not merge if you see this
@@ -345,9 +346,11 @@ void WorldTick()
         }
     }
 
-    //moved because its worthless otherwise
-    if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) && lastTaunt.test_and_set(1000)) {
-            g_IEngine->ClientCmd("taunt");
+    // moved because its worthless otherwise
+    if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) &&
+        lastTaunt.test_and_set(1000))
+    {
+        g_IEngine->ClientCmd("taunt");
     }
 
     // Follow the crumbs when too far away, or just starting to follow

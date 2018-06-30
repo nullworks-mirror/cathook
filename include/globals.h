@@ -23,7 +23,6 @@ extern ConVar *cl_interpolate;
 
 extern CatVar event_log;
 extern CatVar cathook; // Master switch
-extern CatVar ignore_taunting;
 extern bool *bSendPackets;
 extern CatVar show_antiaim;
 extern CatVar force_thirdperson;

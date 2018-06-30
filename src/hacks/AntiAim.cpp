@@ -15,29 +15,20 @@ CatVar communicate(CV_SWITCH, "identify", "0", "identify",
                    "Auto identify for other cathook users");
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
                "Master AntiAim switch");
-static CatVar trueang(CV_SWITCH, "aa_realfakes", "0", "Real fakes",
-                      "Do real fakeangles (Unresolveable)");
 static CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)",
                   360.0);
 static CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch",
                     "Static pitch (up/down)", -89.0, 89.0);
-static CatVar yaw_real(CV_FLOAT, "aa_yaw_real", "0.0", "Real Yaw",
-                       "Static yaw (left/right)", 360.0);
-static CatVar pitch_real(CV_FLOAT, "aa_pitch_real", "-89.0", "Real Pitch",
-                         "Static pitch (up/down)", -89.0, 89.0);
 static CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM",
                                "RANDOM", "SPIN", "OFFSETKEEP", "EDGE", "HECK",
-                               "FAKESIDEWAYS" });
+                               "FAKESIDEWAYS", "FAKERIGHT", "FAKELEFT",
+                               "FAKEFUCK" });
 static CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
                                  "FAKEFLIP", "FAKEUP", "FAKEDOWN", "FAKECENTER",
                                  "UP", "DOWN", "HECK" });
 CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "0", "Yaw mode", "Yaw mode");
 static CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "0", "Pitch mode",
                          "Pitch mode");
-static CatVar true_yaw_mode(yaw_mode_enum, "aa_yaw_mode_real", "0",
-                            "The Real Yaw", "Yaw mode");
-static CatVar true_pitch_mode(pitch_mode_enum, "aa_pitch_mode_real", "0",
-                              "The Real Pitch", "Pitch mode");
 static CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll",
                    "Roll angle (viewangles.z)", -180, 180);
 static CatVar
@@ -72,37 +63,16 @@ bool aaaa_key_pressed  = false;
 
 float GetAAAAPitch()
 {
-    if (!trueang)
+    switch ((int) aaaa_mode)
     {
-        switch ((int) aaaa_mode)
-        {
-        case 0:
-            return aaaa_stage ? -271 : -89;
-        case 1:
-            return aaaa_stage ? 271 : 89;
-        default:
-            break;
-        }
-        return 0;
+    case 0:
+        return aaaa_stage ? -271 : -89;
+    case 1:
+        return aaaa_stage ? 271 : 89;
+    default:
+        break;
     }
-    else
-    {
-        if (*bSendPackets == true)
-        {
-            switch ((int) aaaa_mode)
-            {
-            case 0:
-                return aaaa_stage ? -271 : -89;
-            case 1:
-                return aaaa_stage ? 271 : 89;
-            default:
-                break;
-            }
-        }
-        else if (*bSendPackets == false)
-            return g_pUserCmd->viewangles.x;
-        return 0;
-    }
+    return 0;
 }
 
 float GetAAAATimerLength()
@@ -419,12 +389,13 @@ void ProcessUserCmd(CUserCmd *cmd)
     if (!ShouldAA(cmd))
         return;
     static bool angstate = true;
-    if (trueang)
+    if ((int) yaw_mode >= 9)
         angstate = !angstate;
+    else
+        angstate = true;
     if (!LOCAL_E->m_bAlivePlayer())
         angstate = true;
-    if (lagexploit::ExploitActive() || g_pUserCmd->buttons & IN_ATTACK ||
-        g_pUserCmd->buttons & IN_ATTACK2)
+    if (g_pUserCmd->buttons & IN_ATTACK || g_pUserCmd->buttons & IN_ATTACK2)
         angstate     = true;
     *bSendPackets    = angstate;
     float &p         = cmd->viewangles.x;
@@ -438,180 +409,103 @@ void ProcessUserCmd(CUserCmd *cmd)
         g_pLocalPlayer->bUseSilentAngles = true;
         return;
     }
-    if (!*bSendPackets)
-        switch ((int) true_yaw_mode)
-        {
-        case 1: // FIXED
-            y = (float) yaw_real;
-            break;
-        case 2: // JITTER
-            if (flip)
-                y += 90;
-            else
-                y -= 90;
-            break;
-        case 3: // BIGRANDOM
-            y     = RandFloatRange(-65536.0f, 65536.0f);
-            clamp = false;
-            break;
-        case 4: // RANDOM
-            y = RandFloatRange(-180.0f, 180.0f);
-            break;
-        case 5: // SPIN
-            cur_yaw += (float) spin;
-            if (cur_yaw > 180)
-                cur_yaw = -180;
-            if (cur_yaw < -180)
-                cur_yaw = 180;
-            y           = cur_yaw;
-            break;
-        case 6: // OFFSETKEEP
-            y += (float) yaw_real;
-            break;
-        case 7: // Edge
-            // Attemt to find an edge and if found, edge
-            if (findEdge(y))
-                y = useEdge(y);
-            break;
-        case 8:
-            FuckYaw(y);
-            clamp = false;
-            break;
-        default:
-            break;
-        }
-    if (*bSendPackets)
-        switch ((int) yaw_mode)
-        {
-        case 1: // FIXED
-            y = (float) yaw;
-            break;
-        case 2: // JITTER
-            if (flip)
-                y += 90;
-            else
-                y -= 90;
-            break;
-        case 3: // BIGRANDOM
-            y     = RandFloatRange(-65536.0f, 65536.0f);
-            clamp = false;
-            break;
-        case 4: // RANDOM
-            y = RandFloatRange(-180.0f, 180.0f);
-            break;
-        case 5: // SPIN
-            cur_yaw += (float) spin;
-            if (cur_yaw > 180)
-                cur_yaw = -180;
-            if (cur_yaw < -180)
-                cur_yaw = 180;
-            y           = cur_yaw;
-            break;
-        case 6: // OFFSETKEEP
-            y += (float) yaw;
-            break;
-        case 7: // Edge
-            // Attemt to find an edge and if found, edge
-            if (findEdge(y))
-                y = useEdge(y);
-            break;
-        case 8:
-            FuckYaw(y);
-            clamp = false;
-            break;
-        default:
-            break;
-        }
-    if (yaw_mode == 9)
+    switch ((int) yaw_mode)
+    {
+    case 1: // FIXED
+        y = (float) yaw;
+        break;
+    case 2: // JITTER
+        if (flip)
+            y += 90;
+        else
+            y -= 90;
+        break;
+    case 3: // BIGRANDOM
+        y     = RandFloatRange(-65536.0f, 65536.0f);
+        clamp = false;
+        break;
+    case 4: // RANDOM
+        y = RandFloatRange(-180.0f, 180.0f);
+        break;
+    case 5: // SPIN
+        cur_yaw += (float) spin;
+        if (cur_yaw > 180)
+            cur_yaw = -180;
+        if (cur_yaw < -180)
+            cur_yaw = 180;
+        y           = cur_yaw;
+        break;
+    case 6: // OFFSETKEEP
+        y += (float) yaw;
+        break;
+    case 7: // Edge
+        // Attemt to find an edge and if found, edge
+        if (findEdge(y))
+            y = useEdge(y);
+        break;
+    case 8:
+        FuckYaw(y);
+        clamp = false;
+        break;
+    case 9:
         y += *bSendPackets ? 90.0f : -90.0f;
-    if (!*bSendPackets)
-        switch (int(true_pitch_mode))
-        {
-        case 1:
-            p = float(pitch_real);
-            break;
-        case 2:
-            if (flip)
-                p += 30.0f;
-            else
-                p -= 30.0f;
-            break;
-        case 3:
-            p = RandFloatRange(-89.0f, 89.0f);
-            break;
-        case 4:
-            p = flip ? 89.0f : -89.0f;
-            break;
-        case 5:
-            p     = flip ? 271.0f : -271.0f;
-            clamp = false;
-            break;
-        case 6:
-            p     = -271.0f;
-            clamp = false;
-            break;
-        case 7:
-            p     = 271.0f;
-            clamp = false;
-            break;
-        case 8:
-            p     = -3256.0f;
-            clamp = false;
-            break;
-        case 9:
-            p = -89.0f;
-            break;
-        case 10:
-            p = 89.0f;
-            break;
-        case 11:
-            FuckPitch(p);
-            clamp = false;
-        }
-    if (*bSendPackets)
-        switch (int(pitch_mode))
-        {
-        case 1:
-            p = float(pitch);
-            break;
-        case 2:
-            if (flip)
-                p += 30.0f;
-            else
-                p -= 30.0f;
-            break;
-        case 3:
-            p = RandFloatRange(-89.0f, 89.0f);
-            break;
-        case 4:
-            p = flip ? 89.0f : -89.0f;
-            break;
-        case 5:
-            p     = flip ? 271.0f : -271.0f;
-            clamp = false;
-            break;
-        case 6:
-            p     = -271.0f;
-            clamp = false;
-            break;
-        case 7:
-            p     = 271.0f;
-            clamp = false;
-            break;
-        case 8:
-            p     = -3256.0f;
-            clamp = false;
-            break;
-        case 9:
-            p = -89.0f;
-            break;
-        case 10:
-            p = 89.0f;
-            break;
-        case 11:
-            FuckPitch(p);
-            clamp = false;
-        }
+        break;
+    case 10:
+        y += *bSendPackets ? 0.0f : 90.0f;
+        break;
+    case 11:
+        y += *bSendPackets ? 0.0f : -90.0f;
+        break;
+    case 12:
+        if (*bSendPackets)
+            FuckYaw(y);
+        break;
+    default:
+        break;
+    }
+    switch (int(pitch_mode))
+    {
+    case 1:
+        p = float(pitch);
+        break;
+    case 2:
+        if (flip)
+            p += 30.0f;
+        else
+            p -= 30.0f;
+        break;
+    case 3:
+        p = RandFloatRange(-89.0f, 89.0f);
+        break;
+    case 4:
+        p = flip ? 89.0f : -89.0f;
+        break;
+    case 5:
+        p     = flip ? 271.0f : -271.0f;
+        clamp = false;
+        break;
+    case 6:
+        p     = -271.0f;
+        clamp = false;
+        break;
+    case 7:
+        p     = 271.0f;
+        clamp = false;
+        break;
+    case 8:
+        p     = -3256.0f;
+        clamp = false;
+        break;
+    case 9:
+        p = -89.0f;
+        break;
+    case 10:
+        p = 89.0f;
+        break;
+    case 11:
+        FuckPitch(p);
+        clamp = false;
+    }
     flip = !flip;
     if (clamp)
         fClampAngle(cmd->viewangles);

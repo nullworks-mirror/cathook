@@ -351,29 +351,31 @@ bool IsPopped()
 bool ShouldChargePlayer(int idx)
 {
     CachedEntity *target = ENTITY(idx);
-    const int health = target->m_iHealth();
+    const int health     = target->m_iHealth();
     if (float(pop_uber_percent) > 0)
     {
-        const float pophealth = target->m_iMaxHealth() * (float(pop_uber_percent) / 100);
+        const float pophealth =
+            target->m_iMaxHealth() * (float(pop_uber_percent) / 100);
         if (health < pophealth)
             return true;
     }
     else
     {
-    const float damage_accum_duration =
-        g_GlobalVars->curtime - data[idx].accum_damage_start;
-    if (!data[idx].accum_damage_start)
+        const float damage_accum_duration =
+            g_GlobalVars->curtime - data[idx].accum_damage_start;
+        if (!data[idx].accum_damage_start)
+            return false;
+        if (health > 30 && data[idx].accum_damage < 45)
+            return false;
+        const float dd =
+            ((float) data[idx].accum_damage / damage_accum_duration);
+        if (dd > 40)
+        {
+            return true;
+        }
+        if (health < 30 && data[idx].accum_damage > 10)
+            return true;
         return false;
-    if (health > 30 && data[idx].accum_damage < 45)
-        return false;
-    const float dd = ((float) data[idx].accum_damage / damage_accum_duration);
-    if (dd > 40)
-    {
-        return true;
-    }
-    if (health < 30 && data[idx].accum_damage > 10)
-        return true;
-    return false;
     }
     return false;
 }

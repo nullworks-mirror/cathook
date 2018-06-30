@@ -308,8 +308,6 @@ static const std::string list_tf2 = R"(
 					"aimbot_ignore_cloak"
 					"aimbot_ignore_deadringer"
 					"aimbot_ignore_vaccinator"
-	        "ignore_taunting"
-	        "aimbot_ignore_hoovy"
 	        "aimbot_teammates"
 	    ]
 	    "Auto Heal" [
@@ -598,11 +596,6 @@ static const std::string list_tf2 = R"(
 	"Anti-Aim" [
 	"Anti-Aim Menu"
 	"aa_enabled"
-	"aa_realfakes"
-	"aa_pitch_real"
-	"aa_yaw_real"
-	"aa_pitch_mode_real"
-	"aa_yaw_mode_real"
 	"aa_pitch"
 	"aa_yaw"
 	"aa_pitch_mode"
