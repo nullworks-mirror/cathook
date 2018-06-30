@@ -120,13 +120,14 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     if (g_pLocalPlayer->v_Origin != corner)
     {
         Vector dist       = corner - g_pLocalPlayer->v_Origin;
-        dist.x            = fabsf(dist.x);
-        dist.y            = fabsf(dist.y);
-        dist.z            = fabsf(dist.z);
+        Vector distabs = dist;
+        distabs.x            = fabsf(distabs.x);
+        distabs.y            = fabsf(distabs.y);
+        distabs.z            = fabsf(distabs.z);
         int maxiterations = floor(corner.DistTo(g_pLocalPlayer->v_Origin)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            Vector result = g_pLocalPlayer->v_Origin + dist / vectormax(dist) * 40.0f * (i + 1);
+            Vector result = g_pLocalPlayer->v_Origin + dist / vectormax(distabs) * 40.0f * (i + 1);
             if (!canReachVector(result))
                 return false;
             breadcrumbs.push_back(result);
@@ -134,13 +135,14 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     }
 
     Vector dist       = target->m_vecOrigin() - corner;
-    dist.x            = fabsf(dist.x);
-    dist.y            = fabsf(dist.y);
-    dist.z            = fabsf(dist.z);
+    Vector distabs = dist;
+    distabs.x            = fabsf(distabs.x);
+    distabs.y            = fabsf(distabs.y);
+    distabs.z            = fabsf(distabs.z);
     int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
     for (int i = 0; i < maxiterations; i++)
     {
-        Vector result = corner + dist / vectormax(dist) * 40.0f * (i + 1);
+        Vector result = corner + dist / vectormax(distabs) * 40.0f * (i + 1);
         if (!canReachVector(result))
             return false;
         breadcrumbs.push_back(result);
