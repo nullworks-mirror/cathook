@@ -116,7 +116,7 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
         int maxiterations = floor(corner.DistTo(g_pLocalPlayer->v_Origin)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            Vector result = g_pLocalPlayer->v_Origin + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
+            Vector result = g_pLocalPlayer->v_Origin + dist / vectorMax(vectorABS(dist)) * 40.0f * (i + 1);
             if (!canReachVector(result))
                 return false;
             breadcrumbs.push_back(result);
@@ -127,7 +127,7 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
     for (int i = 0; i < maxiterations; i++)
     {
-        Vector result = corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
+        Vector result = corner + dist / vectorMax(vectorABS(dist)) * 40.0f * (i + 1);
         if (!canReachVector(result))
             return false;
         breadcrumbs.push_back(result);
@@ -188,7 +188,7 @@ void WorldTick()
                 continue;
             if (corneractivate)
             {
-                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
+                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
                 if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
                 breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
@@ -248,7 +248,7 @@ void WorldTick()
                 continue;
             if (corneractivate)
             {
-                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
+                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
                 if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
                 //breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty

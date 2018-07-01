@@ -166,9 +166,9 @@ float vectorMax(Vector i) // Returns a vectors max value. For example: {123,
 Vector vectorABS(Vector i)
 {
     Vector result = i;
-    result.x      = fabsf(i.x);
-    result.y      = fabsf(i.y);
-    result.z      = fabsf(i.z);
+    result.x      = fabsf(result.x);
+    result.y      = fabsf(result.y);
+    result.z      = fabsf(result.z);
     return result;
 }
 
@@ -177,18 +177,17 @@ Vector vectorABS(Vector i)
 bool canReachVector(Vector loc)
 {
     // check if the vector is too high above ground
-    {
-        trace_t trace;
-        Ray_t ray;
-        Vector down = loc;
-        down.z      = down.z - 5;
-        ray.Init(loc, down);
-        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
-        if (!(trace.startpos.z - trace.endpos.z <=
-              75)) // higher as to avoid small false positives, player can jump
-                   // 72 hu
-            return false;
-    }
+    trace_t trace;
+    Ray_t ray;
+    Vector down = loc;
+    down.z      = down.z - 5;
+    ray.Init(loc, down);
+    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
+    if (!(trace.startpos.z - trace.endpos.z <=
+          75)) // higher as to avoid small false positives, player can jump
+               // 72 hu
+        return false;
+
     for (int i = 0; i < 4; i++) // for loop for all 4 directions
     {
         Vector directionalLoc = loc;
@@ -207,10 +206,11 @@ bool canReachVector(Vector loc)
             directionalLoc.y = directionalLoc.y - 40;
             break;
         }
-        trace_t trace;
-        Ray_t ray;
-        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
-        if (trace.startpos.DistTo(trace.endpos) < 26.0f)
+        trace_t trace2;
+        Ray_t ray2;
+        ray2.Init(loc, directionalLoc);
+        g_ITrace->TraceRay(ray2, 0x4200400B, &trace::filter_no_player, &trace);
+        if (trace2.startpos.DistTo(trace2.endpos) < 26.0f)
             return false;
     }
     return true;
