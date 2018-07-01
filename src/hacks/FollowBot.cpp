@@ -82,13 +82,6 @@ void checkAFK()
     }
 }
 
-float vectormax(Vector i) // TODO: Move to helpers.cpp soon tm
-{
-float res = fmaxf(i.x, i.y);
-return fmaxf(res, i.z);
-}
-
-
 void init()
 {
     for (int i = 0; i < afkTicks.size(); i++)
@@ -100,19 +93,19 @@ void init()
 }
 
 
-bool canReachVector(Vector loc)
-{
-    trace_t trace;
-    Ray_t ray;
-    Vector down = loc;
-    down.z = down.z - 5;
-    ray.Init(loc, down);
-    g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player,
-                       &trace);
-    if (trace.startpos.z - trace.endpos.z <= 75) // higher as to avoid small false positives, player can jump 72 hu
-        return true;
-    return false;
-}
+//bool canReachVector(Vector loc)
+//{
+//    trace_t trace;
+//    Ray_t ray;
+//    Vector down = loc;
+//    down.z = down.z - 5;
+//    ray.Init(loc, down);
+//    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
+//                       &trace);
+//    if (trace.startpos.z - trace.endpos.z <= 75) // higher as to avoid small false positives, player can jump 72 hu
+//        return true;
+//    return false;
+//}
 
 // auto add checked crumbs for the walbot to follow
 bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
@@ -120,14 +113,10 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     if (g_pLocalPlayer->v_Origin != corner)
     {
         Vector dist       = corner - g_pLocalPlayer->v_Origin;
-        Vector distabs = dist;
-        distabs.x            = fabsf(distabs.x);
-        distabs.y            = fabsf(distabs.y);
-        distabs.z            = fabsf(distabs.z);
         int maxiterations = floor(corner.DistTo(g_pLocalPlayer->v_Origin)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            Vector result = g_pLocalPlayer->v_Origin + dist / vectormax(distabs) * 40.0f * (i + 1);
+            Vector result = g_pLocalPlayer->v_Origin + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
             if (!canReachVector(result))
                 return false;
             breadcrumbs.push_back(result);
@@ -135,14 +124,10 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     }
 
     Vector dist       = target->m_vecOrigin() - corner;
-    Vector distabs = dist;
-    distabs.x            = fabsf(distabs.x);
-    distabs.y            = fabsf(distabs.y);
-    distabs.z            = fabsf(distabs.z);
     int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
     for (int i = 0; i < maxiterations; i++)
     {
-        Vector result = corner + dist / vectormax(distabs) * 40.0f * (i + 1);
+        Vector result = corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
         if (!canReachVector(result))
             return false;
         breadcrumbs.push_back(result);
