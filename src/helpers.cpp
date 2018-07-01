@@ -144,7 +144,8 @@ Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist)
             if (VisCheckEntFromEntVector(
                     virtualOrigin, player,
                     target)) // check if the virtualOrigin can see the target
-                return virtualOrigin; // return the corner position that we know
+            	if (abs(player->m_vecOrigin().z - virtualOrigin.z) < 400) // check for accidental height tracers
+            		return virtualOrigin; // return the corner position that we know
                                       // can see the target
         }
     }

@@ -149,7 +149,32 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     }
     return false;
 }
-
+int ClassPriority(CachedEntity* ent)
+{
+	switch (g_pPlayerResource->GetClass(ent))
+	{
+		if (g_pPlayerResource->GetClass(ent) == tf_spy)
+			return 0;
+		case tf_engineer:
+			return 1;
+		case tf_medic:
+			return 2;
+		case tf_pyro:
+			return 3;
+		case tf_scout:
+			return 4;
+		case tf_sniper:
+			return 5;
+		case tf_demoman:
+			return 6;
+		case tf_soldier:
+			return 7;
+		case tf_heavy:
+			return 8;
+		default:
+			return 0;
+	}
+}
 void WorldTick()
 {
     if (!followbot)
@@ -197,7 +222,6 @@ void WorldTick()
                 continue;
             if (steamid != entity->player_info.friendsID) // steamid check
                 continue;
-            logging::Info("Success");
 
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
                 continue;
@@ -220,7 +244,7 @@ void WorldTick()
     }
     // If we dont have a follow target from that, we look again for someone
     // else who is suitable
-    if ((!follow_target || change) && roambot)
+    if ((!follow_target || change || ClassPriority(ENTITY(follow_target)) < 6) && roambot)
     {
         // Try to get a new target
         auto ent_count = HIGHEST_ENTITY;
@@ -278,7 +302,11 @@ void WorldTick()
             if (follow_target &&
                 ENTITY(follow_target)->m_flDistance() >
                     entity->m_flDistance()) // favor closer entitys
-                continue;
+            {
+            	if (ClassPriority(ENTITY(follow_target)) > ClassPriority(entity))
+            		continue;
+            }
+
             // ooooo, a target
             follow_target = i;
             afkTicks[i].update(); // set afk time to 0

@@ -120,7 +120,7 @@ void Update()
     {
         if (autojoin_team and UnassignedTeam())
         {
-            hack::ExecuteCommand("jointeam auto");
+            hack::ExecuteCommand("autoteam");
         }
         else if (preferred_class and UnassignedClass())
         {
