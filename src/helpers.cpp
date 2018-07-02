@@ -114,16 +114,18 @@ Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
     int maxiterations = maxdist / 40;
     Vector origin     = player->m_vecOrigin();
 
-    if (VisCheckEntFromEnt(player, target)) // if we can see an entity, we don't
-                                            // need to run calculations
+    // if we can see an entity, we don't need to run calculations
+    if (VisCheckEntFromEnt(player, target))
+
         return origin;
     for (int i = 0; i < 4; i++) // for loop for all 4 directions
     {
-        for (int j = 0; j < maxiterations;
-             j++) // 40 * maxiterations = range in HU
+        // 40 * maxiterations = range in HU
+        for (int j = 0; j < maxiterations; j++)
         {
             Vector virtualOrigin = origin;
-            switch (i) // what direction to go in
+            // what direction to go in
+            switch (i)
             {
             case 0:
                 virtualOrigin.x = virtualOrigin.x + 40 * (j + 1);
@@ -138,32 +140,33 @@ Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
                 virtualOrigin.y = virtualOrigin.y - 40 * (j + 1);
                 break;
             }
-            if (!IsVectorVisible(origin,
-                                 virtualOrigin)) // check if player can see the
-                                                 // players virtualOrigin
+            // check if player can see the players virtualOrigin
+            if (!IsVectorVisible(origin, virtualOrigin))
                 continue;
-            if (!VisCheckEntFromEntVector(
-                    virtualOrigin, player,
-                    target)) // check if the virtualOrigin can see the target
+            // check if the virtualOrigin can see the target
+            if (!VisCheckEntFromEntVector(virtualOrigin, player, target))
                 continue;
             if (!checkWalkable)
                 return virtualOrigin;
+            // check if the location is accessible
             if (canReachVector(virtualOrigin))
-                return virtualOrigin; // return the corner position that we know
-                                      // can see the target
+                return virtualOrigin;
         }
     }
+    // if we didn't find anything, return an empty Vector
     return { 0, 0, 0 };
 }
 
-float vectorMax(Vector i) // Returns a vectors max value. For example: {123,
-                          // -150, 125} = 125
+// Returns a vectors max value. For example: {123,-150, 125} = 125
+float vectorMax(Vector i)
 {
     float res = fmaxf(i.x, i.y);
     return fmaxf(res, i.z);
 }
 
-Vector vectorABS(Vector i)
+// Returns a vectors absolute value. For example {123,-150, 125} = {123,150,
+// 125}
+Vector vectorAbs(Vector i)
 {
     Vector result = i;
     result.x      = fabsf(result.x);
@@ -180,18 +183,21 @@ bool canReachVector(Vector loc)
     trace_t trace;
     Ray_t ray;
     Vector down = loc;
-    down.z      = down.z - 5;
+    down.z      = down.z - 50;
     ray.Init(loc, down);
     g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
-    if (!(trace.startpos.z - trace.endpos.z <=
-          75)) // higher as to avoid small false positives, player can jump
-               // 72 hu
+    // higher to avoid small false positives, player can jump 42 hu according to
+    // the tf2 wiki
+    if (!(trace.startpos.DistTo(trace.endpos) <= 45))
         return false;
 
-    for (int i = 0; i < 4; i++) // for loop for all 4 directions
+    // check if there is enough space arround the vector for a player to fit
+    // for loop for all 4 directions
+    for (int i = 0; i < 4; i++)
     {
         Vector directionalLoc = loc;
-        switch (i) // what to check
+        // what direction to check
+        switch (i)
         {
         case 0:
             directionalLoc.x = directionalLoc.x + 40;
@@ -210,10 +216,31 @@ bool canReachVector(Vector loc)
         Ray_t ray2;
         ray2.Init(loc, directionalLoc);
         g_ITrace->TraceRay(ray2, 0x4200400B, &trace::filter_no_player, &trace);
+        // distance of trace < than 26
         if (trace2.startpos.DistTo(trace2.endpos) < 26.0f)
             return false;
     }
     return true;
+}
+
+// returns if the player is currently jumping/falling.
+bool isJumping(Vector vec)
+{
+    // check if the vector is too high above ground
+    trace_t trace;
+    Ray_t ray;
+    Vector down = vec;
+    Vector loc = vec;
+    down.z      = down.z - 50;
+    loc.z = loc.z + 5;
+    ray.Init(vec, down);
+    //trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
+    // lower to avoid small false negatives, player can jump 42 hu according to
+    // the tf2 wiki, higher because loc.z = loc.z + 5;
+    if (fabsf(trace.startpos.DistTo(trace.endpos)) > 45)
+        return true;
+    return false;
 }
 
 std::string GetLevelName()

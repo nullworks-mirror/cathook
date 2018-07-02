@@ -80,8 +80,9 @@ bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt,
 Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
                     bool checkWalkable);
 float vectorMax(Vector i);
-Vector vectorABS(Vector i);
+Vector vectorAbs(Vector i);
 bool canReachVector(Vector loc);
+bool isJumping(Vector vec);
 
 bool LineIntersectsBox(Vector &bmin, Vector &bmax, Vector &lmin, Vector &lmax);
 

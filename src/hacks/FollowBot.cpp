@@ -92,33 +92,22 @@ void init()
     return;
 }
 
-
-//bool canReachVector(Vector loc)
-//{
-//    trace_t trace;
-//    Ray_t ray;
-//    Vector down = loc;
-//    down.z = down.z - 5;
-//    ray.Init(loc, down);
-//    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
-//                       &trace);
-//    if (trace.startpos.z - trace.endpos.z <= 75) // higher as to avoid small false positives, player can jump 72 hu
-//        return true;
-//    return false;
-//}
-
 // auto add checked crumbs for the walbot to follow
 bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
 {
+    breadcrumbs.clear();
     if (g_pLocalPlayer->v_Origin != corner)
     {
         Vector dist       = corner - g_pLocalPlayer->v_Origin;
         int maxiterations = floor(corner.DistTo(g_pLocalPlayer->v_Origin)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            Vector result = g_pLocalPlayer->v_Origin + dist / vectorMax(vectorABS(dist)) * 40.0f * (i + 1);
+            Vector result = g_pLocalPlayer->v_Origin + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
             if (!canReachVector(result))
+            {
+                breadcrumbs.clear();
                 return false;
+            }
             breadcrumbs.push_back(result);
         }
     }
@@ -127,12 +116,15 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
     for (int i = 0; i < maxiterations; i++)
     {
-        Vector result = corner + dist / vectorMax(vectorABS(dist)) * 40.0f * (i + 1);
+        Vector result = corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
         if (!canReachVector(result))
+        {
+            breadcrumbs.clear();
             return false;
+        }
         breadcrumbs.push_back(result);
     }
-    return false;
+    return true;
 }
 
 void WorldTick()
@@ -178,6 +170,8 @@ void WorldTick()
             auto entity = ENTITY(i);
             if (CE_BAD(entity)) // Exist + dormant
                 continue;
+            if (i == follow_target)
+                break;
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
             if (steamid != entity->player_info.friendsID) // steamid check
@@ -253,7 +247,8 @@ void WorldTick()
                     continue;
                 //breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
                 //breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
-                addCrumbs(entity, indirectOrigin);
+                if (!addCrumbs(entity, indirectOrigin))
+                    continue;
             }
             else
             {
@@ -275,8 +270,11 @@ void WorldTick()
 
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed
-    if (CE_BAD(followtar))
+    if (CE_BAD(followtar) || !followtar->m_bAlivePlayer())
+    {
+        follow_target = 0;
         return;
+    }
     // Check if we are following a disguised/spy
     if (IsPlayerDisguised(followtar) || IsPlayerInvisible(followtar))
     {
@@ -343,9 +341,10 @@ void WorldTick()
     // Follow the crumbs when too far away, or just starting to follow
     if (dist_to_target > (float) follow_distance)
     {
-        // Check for idle
-        if (autojump && idle_time.check(2000))
+        // Check for jump
+        if (autojump && (idle_time.check(2000) || isJumping(breadcrumbs[0])))
             g_pUserCmd->buttons |= IN_JUMP;
+        // Check for idle
         if (idle_time.test_and_set(5000))
         {
             follow_target = 0;
