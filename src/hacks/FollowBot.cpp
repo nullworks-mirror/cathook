@@ -102,13 +102,7 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
         int maxiterations = floor(corner.DistTo(g_pLocalPlayer->v_Origin)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            Vector result = g_pLocalPlayer->v_Origin + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
-            if (!canReachVector(result))
-            {
-                breadcrumbs.clear();
-                return false;
-            }
-            breadcrumbs.push_back(result);
+            breadcrumbs.push_back(g_pLocalPlayer->v_Origin + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
         }
     }
 
@@ -116,13 +110,7 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
     for (int i = 0; i < maxiterations; i++)
     {
-        Vector result = corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
-        if (!canReachVector(result))
-        {
-            breadcrumbs.clear();
-            return false;
-        }
-        breadcrumbs.push_back(result);
+        breadcrumbs.push_back(corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
     }
     return true;
 }
@@ -245,8 +233,6 @@ void WorldTick()
                 Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
                 if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
-                //breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
-                //breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
                 if (!addCrumbs(entity, indirectOrigin))
                     continue;
             }
@@ -255,9 +241,9 @@ void WorldTick()
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
                     continue;
             }
+            // favor closer entitys
             if (follow_target &&
-                ENTITY(follow_target)->m_flDistance() >
-                    entity->m_flDistance()) // favor closer entitys
+                ENTITY(follow_target)->m_flDistance() > entity->m_flDistance())
                 continue;
             // ooooo, a target
             follow_target = i;
