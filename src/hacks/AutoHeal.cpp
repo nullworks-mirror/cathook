@@ -311,7 +311,7 @@ void DoResistSwitching()
 int force_healing_target{ 0 };
 static CatCommand heal_steamid(
     "autoheal_heal_steamid",
-    "Heals a player with SteamID (ONCE. Use for easy airstuck med setup)",
+    "Heals a player with SteamID",
     [](const CCommand &args) {
         if (args.ArgC() < 2)
         {
@@ -434,7 +434,6 @@ void CreateMove()
             GetHitbox(target, 7, out);
             AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
             g_pUserCmd->buttons |= IN_ATTACK;
-            force_healing_target = 0;
         }
     }
     if (!enabled)
@@ -553,19 +552,20 @@ int HealingPriority(int idx)
     int overheal        = maxoverheal - (maxbuffedhealth - health);
     float overhealp     = ((float) overheal / (float) maxoverheal);
     float healthp       = ((float) health / (float) maxhealth);
+    priority += hacks::shared::followbot::ClassPriority(ent) * 10;
     switch (playerlist::AccessData(ent).state)
     {
     case playerlist::k_EState::FRIEND:
         priority += 70 * (1 - healthp);
-        priority += 15 * (1 - overhealp);
+        priority += 5 * (1 - overhealp);
         break;
     case playerlist::k_EState::IPC:
         priority += 100 * (1 - healthp);
-        priority += 20 * (1 - overhealp);
+        priority += 10 * (1 - overhealp);
         break;
     default:
-        priority += 50 * (1 - healthp);
-        priority += 10 * (1 - overhealp);
+        priority += 40 * (1 - healthp);
+        priority += 3 * (1 - overhealp);
     }
 #if ENABLE_IPC
     if (ipc::peer)
@@ -573,7 +573,7 @@ int HealingPriority(int idx)
         if (hacks::shared::followbot::followbot &&
             hacks::shared::followbot::follow_target == idx)
         {
-            priority *= 3.0f;
+            priority *= 6.0f;
         }
     }
 #endif
