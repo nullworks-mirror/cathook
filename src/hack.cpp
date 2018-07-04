@@ -491,10 +491,6 @@ free(logname);*/
 #if ENABLE_VISUALS
 
     InitStrings();
-#if ENABLE_GUI
-    // cat_reloadscheme to load imgui
-    hack::command_stack().push("cat_reloadscheme");
-#endif
 #ifndef FEATURE_EFFECTS_DISABLED
     if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects)
     {
