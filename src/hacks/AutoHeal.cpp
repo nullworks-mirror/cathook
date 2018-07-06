@@ -225,6 +225,39 @@ static CatVar auto_vacc_blast_pop_ubers(
     CV_INT, "auto_vacc_blast_pop_ubers", "0", "Pop Blast if Ubers >=",
     "Only pop an uber if you have >= # Ubercharges in your Vaccinator", 0, 4);
 
+bool IsProjectile(CachedEntity *ent)
+{
+    return (ent->m_iClassID() == CL_CLASS(CTFProjectile_Rocket) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_Flare) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_EnergyBall) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_HealingBolt) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_Arrow) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_SentryRocket) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) ||
+            ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) ||
+            ent->m_iClassID() == CL_CLASS(CTFProjectile_EnergyRing));
+}
+
+int NearbyEntities()
+{
+    int ret = 0;
+    if (CE_BAD(LOCAL_E))
+        return ret;
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent == LOCAL_E)
+            continue;
+        if (!ent->m_bAlivePlayer())
+            continue;
+        if (ent->m_flDistance() <= 300.0f)
+            ret++;
+    }
+    return ret;
+}
+
 int OptimalResistance(CachedEntity *patient, bool *shouldPop)
 {
     int bd = BlastDangerValue(patient), fd = FireDangerValue(patient),
@@ -348,34 +381,27 @@ bool IsPopped()
     return CE_BYTE(weapon, netvar.bChargeRelease);
 }
 
-bool ShouldChargePlayer(int idx)
+bool ShouldChargePlayer(int targetIdx)
 {
-    CachedEntity *target = ENTITY(idx);
-    const int health     = target->m_iHealth();
-    if (float(pop_uber_percent) > 0)
+    int idx;
+    for (int i = 0; i < 2; i++)
     {
-        const float pophealth =
-            target->m_iMaxHealth() * (float(pop_uber_percent) / 100);
-        if (health < pophealth)
-            return true;
-    }
-    else
-    {
-        const float damage_accum_duration =
-            g_GlobalVars->curtime - data[idx].accum_damage_start;
-        if (!data[idx].accum_damage_start)
-            return false;
-        if (health > 30 && data[idx].accum_damage < 45)
-            return false;
-        const float dd =
-            ((float) data[idx].accum_damage / damage_accum_duration);
-        if (dd > 40)
+        switch (i)
         {
-            return true;
+        case 0:
+            idx = LOCAL_E->m_IDX;
+            break;
+        case 1:
+            idx = targetIdx;
+            break;
         }
-        if (health < 30 && data[idx].accum_damage > 10)
-            return true;
-        return false;
+        CachedEntity *ent = ENTITY(idx);
+        float uberhealth     = ent->m_iMaxHealth() * ((float)pop_uber_percent / 100);
+        if (CE_INT(LOCAL_E, netvar.iHealth) < uberhealth &&
+            NearbyEntities() > 1)
+        {
+
+        }
     }
     return false;
 }
