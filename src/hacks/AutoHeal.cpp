@@ -315,6 +315,12 @@ static CatCommand heal_steamid(
         if (args.ArgC() < 2)
         {
             logging::Info("Invalid call!");
+            force_healing_target = 0;
+            return;
+        }
+        if (strtol(args.Arg(1), nullptr, 10) == 0x0)
+        {
+            force_healing_target = 0;
             return;
         }
         for (int i = 1; i <= 32 && i < HIGHEST_ENTITY; i++)

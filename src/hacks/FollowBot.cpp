@@ -184,7 +184,7 @@ void WorldTick()
             if (CE_BAD(entity)) // Exist + dormant
                 continue;
             if (i == follow_target)
-                break;
+                continue;
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
             if (steamid != entity->player_info.friendsID) // steamid check
@@ -211,11 +211,11 @@ void WorldTick()
     }
     // If we dont have a follow target from that, we look again for someone
     // else who is suitable
-    if ((!follow_target || change || ClassPriority(ENTITY(follow_target)) < 6) && roambot)
+    if ((!follow_target || change || (ClassPriority(ENTITY(follow_target)) < 6 && ENTITY(follow_target)->player_info.friendsID != steamid)) && roambot)
     {
         // Try to get a new target
-        auto ent_count = HIGHEST_ENTITY;
-        for (int i = 0; i < HIGHEST_ENTITY; i++)
+        auto ent_count = followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
+        for (int i = 0; i < ent_count; i++)
         {
             auto entity = ENTITY(i);
             if (CE_BAD(entity)) // Exist + dormant
