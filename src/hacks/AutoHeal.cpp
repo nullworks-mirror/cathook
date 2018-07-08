@@ -310,8 +310,7 @@ void DoResistSwitching()
 
 int force_healing_target{ 0 };
 static CatCommand heal_steamid(
-    "autoheal_heal_steamid",
-    "Heals a player with SteamID",
+    "autoheal_heal_steamid", "Heals a player with SteamID",
     [](const CCommand &args) {
         if (args.ArgC() < 2)
         {

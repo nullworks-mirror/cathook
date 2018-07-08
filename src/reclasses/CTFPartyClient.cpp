@@ -58,7 +58,7 @@ int re::CTFPartyClient::LoadSavedCasualCriteria()
 {
     typedef int (*LoadSavedCasualCriteria_t)(re::CTFPartyClient *);
     uintptr_t addr = gSignatures.GetClientSignature(
-        "55 89 E5 83 EC ? 8B 45 ? 8B 50 ? C6 80");
+        "55 89 E5 8B 45 ? 5D 8B 80 ? ? ? ? C3 66 90 55 89 E5 8B 45 ? 5D 0F B6 80 ? ? ? ? C3 90 55 89 E5 56") - 0x40;
     LoadSavedCasualCriteria_t LoadSavedCasualCriteria_fn =
         LoadSavedCasualCriteria_t(addr);
 

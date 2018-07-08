@@ -90,7 +90,7 @@ float DistToSqr(CachedEntity *entity);
 void fClampAngle(Vector &qaAng);
 // const char* MakeInfoString(IClientEntity* player);
 bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity);
-bool IsVectorVisible(Vector a, Vector b);
+bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false);
 bool IsSentryBuster(CachedEntity *ent);
 char *strfmt(const char *fmt, ...);
 // TODO move that to weaponid.h

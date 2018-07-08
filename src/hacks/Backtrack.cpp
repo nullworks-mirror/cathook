@@ -9,6 +9,7 @@
 #include "hacks/Backtrack.hpp"
 #include <boost/circular_buffer.hpp>
 #include <glez/draw.hpp>
+#define IsMelee GetWeaponMode() == weapon_melee
 
 namespace hacks::shared::backtrack
 {
@@ -105,7 +106,7 @@ void Run()
     float bestFov       = 99999;
     BestTick            = 0;
     iBestTarget         = -1;
-    bool IsMelee        = GetWeaponMode() == weapon_melee;
+
     float prev_distance = 9999;
 
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
@@ -157,18 +158,23 @@ void Run()
     {
         int bestTick  = 0;
         float tempFOV = 9999;
-        float bestFOV = 40.0f;
+        float bestFOV = 180.0f;
         float distance, prev_distance_ticks = 9999;
 
+        for (int i = 0; i < 12; ++i)
+        	sorted_ticks[i] = BestTickData{FLT_MAX, i};
         for (int t = 0; t < ticks; ++t)
-            sorted_ticks[t] =
-                BestTickData{ headPositions[iBestTarget][t].tickcount, t };
+        {
+        	if (headPositions[iBestTarget][t].tickcount)
+        		sorted_ticks[t] =
+        				BestTickData{ headPositions[iBestTarget][t].tickcount, t };
+        }
         std::sort(sorted_ticks, sorted_ticks + ticks);
         for (int t = 0; t < ticks; ++t)
         {
             bool good_tick = false;
             for (int i = 0; i < 12; ++i)
-                if (t == sorted_ticks[i].tick)
+                if (t == sorted_ticks[i].tick && sorted_ticks[i].tickcount != FLT_MAX)
                     good_tick = true;
             if (!good_tick)
                 continue;

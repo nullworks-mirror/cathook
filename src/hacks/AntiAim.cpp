@@ -15,14 +15,18 @@ CatVar communicate(CV_SWITCH, "identify", "0", "identify",
                    "Auto identify for other cathook users");
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
                "Master AntiAim switch");
+static CatVar crouch(CV_SWITCH, "aa_fakecrouch", "0", "Fake Crouch", "Fake crouch");
 static CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)",
                   360.0);
 static CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch",
                     "Static pitch (up/down)", -89.0, 89.0);
-static CatEnum yaw_mode_enum({ "KEEP", "STATIC", "JITTER", "BIGRANDOM",
-                               "RANDOM", "SPIN", "OFFSETKEEP", "EDGE", "HECK",
-                               "FAKESIDEWAYS", "FAKERIGHT", "FAKELEFT",
-                               "FAKEFUCK" });
+static CatEnum yaw_mode_enum({ "KEEP",           "STATIC",       "JITTER",
+                               "BIGRANDOM",      "RANDOM",       "SPIN",
+                               "OFFSETKEEP",     "EDGE",         "HECK",
+                               "FAKEKEEP",       "FAKESTATIC",   "FAKEJITTER",
+                               "FAKEBIGRANDOM",  "FAKERANDOM",   "FAKESPIN",
+                               "FAKEOFFSETKEEP", "FAKEEDGE", "FAKEHECK", "FAKESIDEWAYS", "FAKELEFT",
+                               "FAKERIGHT", "FAKEREVERSEEDGE"});
 static CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
                                  "FAKEFLIP", "FAKEUP", "FAKEDOWN", "FAKECENTER",
                                  "UP", "DOWN", "HECK" });
@@ -47,7 +51,7 @@ static CatVar aaaa_interval_random_high(CV_FLOAT, "aa_aaaa_interval_high", "15",
 static CatVar aaaa_interval_random_low(CV_FLOAT, "aa_aaaa_interval_low", "3",
                                        "Interval Floor",
                                        "Lower bound for random AAAA interval");
-static CatEnum aaaa_modes_enum({ "(FAKE)UP", "(FAKE)DOWN" });
+static CatEnum aaaa_modes_enum({ "(FAKE)UP", "(FAKE)DOWN", "(FAKE)CENTER" });
 static CatVar aaaa_mode(aaaa_modes_enum, "aa_aaaa_mode", "0", "Mode",
                         "Anti-Anti-Anti-Aim Mode");
 static CatVar aaaa_flip_key(CV_KEY, "aa_aaaa_flip_key", "0", "Flip key",
@@ -69,6 +73,8 @@ float GetAAAAPitch()
         return aaaa_stage ? -271 : -89;
     case 1:
         return aaaa_stage ? 271 : 89;
+    case 2:
+    	return aaaa_stage ? -180 : 180;
     default:
         break;
     }
@@ -382,6 +388,37 @@ float useEdge(float edgeViewAngle)
 Timer delay{};
 int val       = 0;
 int value[32] = { 0 };
+void FakeCrouch(CUserCmd * cmd)
+{
+	if (!crouch)
+		return;
+	if (cmd->buttons & IN_ATTACK)
+	{
+		*bSendPackets = true;
+		return;
+	}
+	static bool bDuck = false;
+
+	static int waittime = 0;
+
+	if (waittime)
+	{
+		waittime--;
+		return;
+	}
+	bDuck = !bDuck;
+
+	if (bDuck)
+	{
+		cmd->buttons |= IN_DUCK;
+		*bSendPackets = false;
+		waittime = 15;
+	}
+	else{
+		cmd->buttons &= ~IN_DUCK;
+		*bSendPackets = true;
+	}
+}
 void ProcessUserCmd(CUserCmd *cmd)
 {
     if (!enabled)
@@ -389,7 +426,9 @@ void ProcessUserCmd(CUserCmd *cmd)
     if (!ShouldAA(cmd))
         return;
     static bool angstate = true;
-    if ((int) yaw_mode >= 9)
+    static bool keepmode = true;
+    keepmode             = !keepmode;
+    if ((int) yaw_mode >= 8)
         angstate = !angstate;
     else
         angstate = true;
@@ -443,23 +482,102 @@ void ProcessUserCmd(CUserCmd *cmd)
         if (findEdge(y))
             y = useEdge(y);
         break;
-    case 8:
+    case 8: // HECK
         FuckYaw(y);
         clamp = false;
         break;
-    case 9:
+    case 9: // Fake keep (basically just spam random angles)
+        if (keepmode && !*bSendPackets)
+        {
+            cur_yaw += (float) spin;
+            if (cur_yaw > 180)
+                cur_yaw = -180;
+            if (cur_yaw < -180)
+                cur_yaw = 180;
+            y           = cur_yaw;
+        }
+        else if (!keepmode && !*bSendPackets)
+        {
+            if (flip)
+                y += 90;
+            else
+                y -= 90;
+            break;
+            flip = !flip;
+        }
+        clamp = false;
+        break;
+    case 10: // Fake Static
+        if (*bSendPackets)
+            y = (float) yaw;
+        break;
+    case 11: // Fake jitter
+        if (*bSendPackets)
+        {
+            if (flip)
+                y += 90;
+            else
+                y -= 90;
+        }
+        break;
+    case 12: // Fake bigrandom
+        if (*bSendPackets)
+        {
+            y     = RandFloatRange(-65536.0f, 65536.0f);
+            clamp = false;
+        }
+        break;
+    case 13: // Fake random
+        if (*bSendPackets)
+            y = RandFloatRange(-180.0f, 180.0f);
+        break;
+    case 14: // Fake spin
+        if (*bSendPackets)
+        {
+            cur_yaw += (float) spin;
+            if (cur_yaw > 180)
+                cur_yaw = -180;
+            if (cur_yaw < -180)
+                cur_yaw = 180;
+            y           = cur_yaw;
+        }
+        break;
+    case 15: // Fake offsetkeep
+        if (*bSendPackets)
+            y += (float) yaw;
+        break;
+    case 16: // Fake edge
+    	if (*bSendPackets)
+    	{
+            // Attemt to find an edge and if found, edge
+            if (findEdge(y))
+                y = useEdge(y);
+    	}
+    	break;
+    case 17: // Fake heck
+    	if (*bSendPackets)
+    	{
+            FuckYaw(y);
+            clamp = false;
+    	}
+    	break;
+    case 18: // Fake sideways
         y += *bSendPackets ? 90.0f : -90.0f;
         break;
-    case 10:
-        y += *bSendPackets ? 0.0f : 90.0f;
+    case 19: // Fake left
+        y += !*bSendPackets ? 0.0f : -90.0f;
         break;
-    case 11:
-        y += *bSendPackets ? 0.0f : -90.0f;
+    case 20: // Fake right
+        y += !*bSendPackets ? 0.0f : 90.0f;
         break;
-    case 12:
-        if (*bSendPackets)
-            FuckYaw(y);
-        break;
+    case 21: // Fake reverse edge
+    	if (*bSendPackets)
+    	{
+            // Attemt to find an edge and if found, edge
+            if (findEdge(y))
+                y = useEdge(y) + 180.0f;
+    	}
+    	break;
     default:
         break;
     }
@@ -506,7 +624,8 @@ void ProcessUserCmd(CUserCmd *cmd)
         FuckPitch(p);
         clamp = false;
     }
-    flip = !flip;
+    if (*bSendPackets)
+    	flip = !flip;
     if (clamp)
         fClampAngle(cmd->viewangles);
     if (roll)
@@ -518,5 +637,6 @@ void ProcessUserCmd(CUserCmd *cmd)
         p = GetAAAAPitch();
     }
     g_pLocalPlayer->bUseSilentAngles = true;
+    FakeCrouch(cmd);
 }
 }
