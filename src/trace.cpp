@@ -79,6 +79,7 @@ void trace::FilterNoPlayer::SetSelf(IClientEntity *self)
 
 bool trace::FilterNoPlayer::ShouldHitEntity(IHandleEntity *handle, int mask)
 {
+	return false;
     IClientEntity *entity;
     ClientClass *clazz;
 

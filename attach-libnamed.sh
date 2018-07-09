@@ -35,18 +35,18 @@ sudo chmod 000 /tmp/dumps # No permissions
 FILENAME=$(shuf -n 1 build_names)
 
 # Create directory if it doesn't exist
-if [ ! -d "/usr/lib64" ]; then
-  sudo mkdir /usr/lib64
+if [ ! -d "/lib/i386-linux-gnu/" ]; then
+  sudo mkdir /lib/i386-linux-gnu/
 fi
 
 # In case this file exists, get another one. ( checked it works )
-while [ -f "/usr/lib64/${FILENAME}" ]; do
+while [ -f "/lib/i386-linux-gnu/${FILENAME}" ]; do
   FILENAME=$(shuf -n 1 build_names)
 done
 
 # echo $FILENAME > build_id # For detaching
 
-sudo cp "bin/libcathook.so" "/usr/lib64/${FILENAME}"
+sudo cp "bin/libcathook.so" "/lib/i386-linux-gnu/${FILENAME}"
 
 echo loading "$FILENAME" to "$proc"
 
@@ -56,14 +56,14 @@ sudo killall -19 steamwebhelper
 sudo gdb -n -q -batch \
   -ex "attach $proc" \
   -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
-  -ex "call \$dlopen(\"/usr/lib64/$FILENAME\", 1)" \
+  -ex "call \$dlopen(\"/lib/i386-linux-gnu/$FILENAME\", 1)" \
   -ex "call dlerror()" \
   -ex 'print (char *) $2' \
   -ex "catch syscall exit exit_group" \
   -ex "detach" \
   -ex "quit"
 
-sudo rm "/usr/lib64/${FILENAME}"
+sudo rm "/lib/i386-linux-gnu/${FILENAME}"
 
 sudo killall -18 steamwebhelper
 sudo killall -18 steam

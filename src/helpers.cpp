@@ -146,7 +146,7 @@ Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
                 break;
             }
             // check if player can see the players virtualOrigin
-            if (!IsVectorVisible(origin, virtualOrigin))
+            if (!IsVectorVisible(origin, virtualOrigin, true))
                 continue;
             // check if the virtualOrigin can see the target
             if (!VisCheckEntFromEntVector(virtualOrigin, player, target))
@@ -976,15 +976,20 @@ netvar.iHealth));
     return buf;
 }*/
 
-bool IsVectorVisible(Vector origin, Vector target)
+bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only)
 {
     trace_t trace_visible;
     Ray_t ray;
 
     trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
     ray.Init(origin, target);
-    g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
+    if (!enviroment_only)
+    	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
                        &trace_visible);
+    else
+    	g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
+    	                       &trace_visible);
+
     return (trace_visible.fraction == 1.0f);
 }
 

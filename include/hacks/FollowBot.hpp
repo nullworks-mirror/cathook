@@ -19,5 +19,5 @@ extern CatCommand follow_steam;
 extern unsigned steamid;
 void DrawTick();
 void WorldTick();
-int ClassPriority(CachedEntity* ent);
+int ClassPriority(CachedEntity *ent);
 }

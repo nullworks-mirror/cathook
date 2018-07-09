@@ -117,7 +117,8 @@ void runcfg()
                 continue;
             if (i->GetBase() != std::string(i->GetString()))
             {
-            file << CON_PREFIX << i->name << " \"" << i->GetString() << "\"\n";
+                file << CON_PREFIX << i->name << " \"" << i->GetString()
+                     << "\"\n";
             }
         }
         file.close();
