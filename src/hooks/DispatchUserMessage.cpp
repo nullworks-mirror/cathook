@@ -22,7 +22,7 @@ static CatVar chat_filter(CV_STRING, "chat_censor", "", "Censor words",
                           "said, seperate with commas");
 static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
                                   "Enable censor", "Censor Words in chat");
-std::string clear = "";
+const std::string clear = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 std::string lastfilter{};
 std::string lastname{};
 
@@ -177,12 +177,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             break;
                         if (boost::contains(message2, filter))
                         {
-
-                            if (clear == "")
-                            {
-                                for (int i = 0; i < 120; i++)
-                                    clear += "\n";
-                            }
                             *bSendPackets = true;
                             chat_stack::Say(". " + clear, true);
                             retrun     = true;
@@ -210,12 +204,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             break;
                         if (boost::contains(message2, filter))
                         {
-                            if (clear == "")
-                            {
-                                clear = "";
-                                for (int i = 0; i < 120; i++)
-                                    clear += "\n";
-                            }
                             *bSendPackets = true;
                             chat_stack::Say(". " + clear, true);
                             retrun     = true;
