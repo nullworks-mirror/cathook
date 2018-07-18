@@ -161,13 +161,8 @@ void Run()
         float bestFOV = 180.0f;
         float distance, prev_distance_ticks = 9999;
 
-<<<<<<< Updated upstream
         for (int i = 0; i < 12; ++i)
             sorted_ticks[i] = BestTickData{INT_MAX, i};
-=======
-        for (int i          = 0; i < 12; ++i)
-            sorted_ticks[i] = BestTickData{ FLT_MAX, i };
->>>>>>> Stashed changes
         for (int t = 0; t < ticks; ++t)
         {
             if (headPositions[iBestTarget][t].tickcount)

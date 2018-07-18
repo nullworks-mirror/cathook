@@ -203,15 +203,7 @@ void WorldTick()
                                         // future target is visible from
                 if (!indirectOrigin.z) // if we couldn't find it, exit
                     continue;
-<<<<<<< Updated upstream
                 addCrumbs(entity, indirectOrigin);
-=======
-                breadcrumbs.clear(); // we need to ensure that the breadcrumbs
-                                     // std::vector is empty
-                breadcrumbs.push_back(indirectOrigin); // add the corner
-                                                       // location to the
-                                                       // breadcrumb list
->>>>>>> Stashed changes
             }
             else
             {
@@ -295,18 +287,6 @@ void WorldTick()
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
                     continue;
             }
-<<<<<<< Updated upstream
-=======
-            // favor closer entitys
-            if (follow_target &&
-                ENTITY(follow_target)->m_flDistance() >
-                    entity->m_flDistance()) // favor closer entitys
-            {
-                if (ClassPriority(ENTITY(follow_target)) >
-                    ClassPriority(entity))
-                    continue;
-            }
->>>>>>> Stashed changes
 
             // ooooo, a target
             follow_target = i;
