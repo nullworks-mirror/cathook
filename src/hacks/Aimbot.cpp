@@ -158,6 +158,8 @@ static CatVar auto_zoom(
     "Automatically zoom in if you can see target, useful for followbots");
 static CatVar auto_unzoom(CV_SWITCH, "aimbot_auto_unzoom", "0", "Auto Un-zoom",
                           "Automatically unzoom");
+static CatVar backtrackAimbot(CV_SWITCH, "backtrack_aimbot", "0", "Backtrack Aimbot",
+                               "Enable Backtrack Aimbot");
 
 // Current Entity
 int target_eid{ 0 };
@@ -175,11 +177,13 @@ bool projectileAimbotRequired;
 // This array will store calculated projectile/hitscan predictions
 // for current frame, to avoid performing them again
 AimbotCalculatedData_s calculated_data_array[2048]{};
+#define IsMelee GetWeaponMode() == weapon_melee
 bool BacktrackAimbot()
 {
-
-    if (!hacks::shared::backtrack::enable)
+    if (!hacks::shared::backtrack::enable || !backtrackAimbot)
         return false;
+	if (aimkey && !aimkey.KeyDown())
+		return false;
 
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !CanShoot())
         return false;
@@ -190,57 +194,21 @@ bool BacktrackAimbot()
 
     int iBestTarget = hacks::shared::backtrack::iBestTarget;
     if (iBestTarget == -1)
-    {
-
-        float bestscr = 999.0f;
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
-        {
-            if (i == g_pLocalPlayer->entity_idx)
-                continue;
-            CachedEntity *it = ENTITY(i);
-            if (CE_BAD(it) || !it->m_bAlivePlayer() ||
-                it->m_Type() != ENTITY_PLAYER)
-                continue;
-            if (it->m_iTeam() == LOCAL_E->m_iTeam())
-                continue;
-            if (!hacks::shared::backtrack::headPositions[iBestTarget][0].hitboxpos.z)
-                continue;
-            if (!it->hitboxes.GetHitbox(0))
-                continue;
-            if (IsPlayerInvisible(it) && ignore_cloak)
-            	continue;
-            float scr =
-                GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye,
-                       it->hitboxes.GetHitbox(0)->center);
-            if (scr < bestscr)
-            {
-                iBestTarget = it->m_IDX;
-                bestscr     = scr;
-            }
-        }
-        if (iBestTarget == -1)
-            return true;
-
-    };
-
-    for (int t = 0; t < hacks::shared::backtrack::ticks; ++t)
-        hacks::shared::backtrack::sorted_ticks[t] =
-        		hacks::shared::backtrack::BestTickData{ hacks::shared::backtrack::headPositions[iBestTarget][t].tickcount, t };
-    std::sort(hacks::shared::backtrack::sorted_ticks, hacks::shared::backtrack::sorted_ticks + hacks::shared::backtrack::ticks);
+    	return true;
     int tickcnt = 0;
 
     for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
     {
         bool good_tick = false;
         for (int j = 0; j < 12; ++j)
-            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick)
+            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick && hacks::shared::backtrack::sorted_ticks[j].tickcount != FLT_MAX)
                 good_tick = true;
         tickcnt++;
         if (!i.hitboxpos.z)
             continue;
         if (!good_tick)
             continue;
-        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxpos))
+        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxpos, true))
             continue;
         float scr = abs(g_pLocalPlayer->v_OrigViewangles.y - i.viewangles);
 
@@ -263,9 +231,12 @@ bool BacktrackAimbot()
             DoSlowAim(angles2);
         else if (silent)
             g_pLocalPlayer->bUseSilentAngles = true;
+        if (!slow_aim)
+        	slow_can_shoot = true;
         // Set angles
         g_pUserCmd->viewangles = angles2;
-        g_pUserCmd->buttons |= IN_ATTACK;
+        if (autoshoot && slow_can_shoot)
+        	g_pUserCmd->buttons |= IN_ATTACK;
         return true;
     }
     return true;
@@ -289,19 +260,36 @@ void CreateMove()
             }
         }
     }
-
+    // We do this as we need to pass whether the aimkey allows aiming to both
+    // the find target and aiming system. If we just call the func than toggle
+    // aimkey would break so we save it to a var to use it twice
+    bool aimkey_status = UpdateAimkey();
+    // Refresh our best target
+    CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
+    if (CE_BAD(target_entity) || !foundTarget)
+        return;
+    // Auto-zoom
+    IF_GAME(IsTF())
+    {
+        if (auto_zoom)
+        {
+            if (g_pLocalPlayer->holding_sniper_rifle)
+            {
+                if (not g_pLocalPlayer->bZoomed)
+                {
+                    g_pUserCmd->buttons |= IN_ATTACK2;
+                }
+            }
+        }
+    }
     // check if we need to run projectile Aimbot code
     projectileAimbotRequired = false;
     if (projectile_aimbot &&
         (g_pLocalPlayer->weapon_mode == weapon_projectile ||
          g_pLocalPlayer->weapon_mode == weapon_throwable))
-    {
         projectileAimbotRequired = true;
-    }
-    // We do this as we need to pass whether the aimkey allows aiming to both
-    // the find target and aiming system. If we just call the func than toggle
-    // aimkey would break so we save it to a var to use it twice
-    bool aimkey_status = UpdateAimkey();
+
+
 
     // Local player check + Aimkey
     if (!aimkey_status || !ShouldAim())
@@ -319,33 +307,14 @@ void CreateMove()
         if (proj_gravity)
             cur_proj_grav = float(proj_gravity);
     }
-
     if (BacktrackAimbot())
-        return;
-    // Refresh our best target
-    CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
-    if (CE_BAD(target_entity) || !foundTarget)
-        return;
+    	return;
 
     if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
         return;
     if (!target_entity->hitboxes.GetHitbox(
             calculated_data_array[target_entity->m_IDX].hitbox))
         return;
-    // Auto-zoom
-    IF_GAME(IsTF())
-    {
-        if (auto_zoom)
-        {
-            if (g_pLocalPlayer->holding_sniper_rifle)
-            {
-                if (not g_pLocalPlayer->bZoomed)
-                {
-                    g_pUserCmd->buttons |= IN_ATTACK2;
-                }
-            }
-        }
-    }
 
 #if ENABLE_VISUALS
     static effect_chams::EffectChams Effectchams;

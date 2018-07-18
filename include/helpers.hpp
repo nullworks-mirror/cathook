@@ -77,7 +77,12 @@ bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos);
 bool VisCheckEntFromEnt(CachedEntity *startEnt, CachedEntity *endEnt);
 bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt,
                               CachedEntity *endEnt);
-Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist);
+Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
+                    bool checkWalkable);
+float vectorMax(Vector i);
+Vector vectorAbs(Vector i);
+bool canReachVector(Vector loc, Vector dest = {0,0,0});
+bool isJumping(Vector vec);
 
 bool LineIntersectsBox(Vector &bmin, Vector &bmax, Vector &lmin, Vector &lmax);
 
@@ -85,9 +90,9 @@ float DistToSqr(CachedEntity *entity);
 void fClampAngle(Vector &qaAng);
 // const char* MakeInfoString(IClientEntity* player);
 bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity);
-bool IsVectorVisible(Vector a, Vector b);
+bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false);
 bool IsSentryBuster(CachedEntity *ent);
-char *strfmt(const char *fmt, ...);
+std::unique_ptr<char[]> strfmt(const char *fmt, ...);
 // TODO move that to weaponid.h
 bool HasWeapon(CachedEntity *ent, int wantedId);
 bool IsAmbassador(CachedEntity *ent);

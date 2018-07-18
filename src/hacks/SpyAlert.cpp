@@ -22,10 +22,16 @@ static CatVar sound_alerts(CV_SWITCH, "spyalert_sound", "1", "Sound Alerts",
                            "Demoman yells spy when a spy is within distance");
 static CatVar sound_alert_interval(CV_FLOAT, "spyalert_interval", "3",
                                    "Alert Interval", "Sound alert interval");
+static CatVar voicemenu(CV_SWITCH, "spyalert_voice", "0",
+                                   "Voicemenu", "Inform other Players of a nearby Spy using the Voicemenu.");
+static CatVar invisible(CV_SWITCH, "spyalert_invisible", "0",
+                                   "Detect Invisible", "Detect invisible Spies.");
+
 
 bool warning_triggered  = false;
 bool backstab_triggered = false;
 float last_say          = 0.0f;
+Timer lastVoicemenu{};
 
 void Draw()
 {
@@ -52,7 +58,7 @@ void Draw()
             continue;
         if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team)
             continue;
-        if (IsPlayerInvisible(ent))
+        if (IsPlayerInvisible(ent) && !invisible)
             continue;
         distance = ent->m_flDistance();
         if (distance < closest_spy_distance || !closest_spy_distance)
@@ -80,6 +86,8 @@ void Draw()
                 }
                 backstab_triggered = true;
             }
+            if (voicemenu && lastVoicemenu.test_and_set(5000))
+                g_IEngine->ClientCmd_Unrestricted("voicemenu 1 1");
             AddCenterString(format("BACKSTAB WARNING! ",
                                    (int) (closest_spy_distance / 64 * 1.22f),
                                    "m (", spy_count, ")"),
@@ -99,6 +107,8 @@ void Draw()
                 }
                 warning_triggered = true;
             }
+            if (voicemenu && lastVoicemenu.test_and_set(5000))
+                g_IEngine->ClientCmd_Unrestricted("voicemenu 1 1");
             AddCenterString(format("Incoming spy! ",
                                    (int) (closest_spy_distance / 64 * 1.22f),
                                    "m (", spy_count, ")"),

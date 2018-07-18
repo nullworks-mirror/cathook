@@ -7,6 +7,11 @@
 
 #include "common.hpp"
 
+CatCommand printfov(
+    "fov_print", "Dump achievements to file (development)", []() {
+	if (CE_GOOD(LOCAL_E))
+		logging::Info("%d", CE_INT(LOCAL_E, netvar.iFOV));
+    });
 void LocalPlayer::Update()
 {
     CachedEntity *wep;
@@ -40,7 +45,7 @@ void LocalPlayer::Update()
     health                 = CE_INT(entity, netvar.iHealth);
     this->bUseSilentAngles = false;
     bZoomed                = CE_INT(entity, netvar.iFOV) ==
-              20; //!= NET_INT(entity, netvar.iDefaultFOV);
+              20.0f; //!= NET_INT(entity, netvar.iDefaultFOV);
     if (bZoomed)
     {
         if (flZoomBegin == 0.0f)

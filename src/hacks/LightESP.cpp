@@ -18,6 +18,8 @@ void run()
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
+        if (g_pLocalPlayer->entity_idx == i)
+            continue;
         CachedEntity *pEntity = ENTITY(i);
         if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
         {

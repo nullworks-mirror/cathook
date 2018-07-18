@@ -125,9 +125,9 @@ const std::vector<std::string> builtin_cathook = {
     "-> I am charged!",
     "-> Not a step back! UBERCHARGE USED!",
     "-> My Ubercharge comes to an end!",
-    "-> I have a bit of ubercharge!",
+    "-> I have %i%% of ubercharge!",
     "-> I have half of the ubercharge!",
-    "-> Ubercharge almost ready!"
+    "-> Ubercharge almost ready! (%i%%)"
 };
 const std::vector<std::string> builtin_nonecore = {
     ">>> GET READY TO RUMBLE! <<<", ">>> CHEATS ACTIVATED! <<<",

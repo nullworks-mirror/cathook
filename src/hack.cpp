@@ -279,7 +279,7 @@ void crit_err_hdlr(int sig_num, siginfo_t *info, void *ucontext)
     // just fprintf to stderr (or do both).
     passwd *pwd   = getpwuid(getuid());
     backtraceFile = fopen(
-        strfmt("/tmp/cathook-%s-%d-segfault.log", pwd->pw_name, getpid()), "w");
+        strfmt("/tmp/cathook-%s-%d-segfault.log", pwd->pw_name, getpid()).get(), "w");
 
     if (sig_num == SIGSEGV)
         fprintf(backtraceFile, "signal %d (%s), address is %p from %p\n",
@@ -321,6 +321,7 @@ void hack::Initialize()
     signal(SIGPIPE, SIG_IGN);
     installSignal(SIGSEGV);
     installSignal(SIGABRT);
+    installSignal(SIGINT);
     time_injected = time(nullptr);
 /*passwd *pwd   = getpwuid(getuid());
 char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name,
@@ -491,10 +492,6 @@ free(logname);*/
 #if ENABLE_VISUALS
 
     InitStrings();
-#if ENABLE_GUI
-    // cat_reloadscheme to load imgui
-    hack::command_stack().push("cat_reloadscheme");
-#endif
 #ifndef FEATURE_EFFECTS_DISABLED
     if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects)
     {

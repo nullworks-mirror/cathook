@@ -84,13 +84,61 @@ void checkAFK()
 
 void init()
 {
-    for (int i; i < afkTicks.size(); i++)
+    for (int i = 0; i < afkTicks.size(); i++)
     {
         afkTicks[i].update();
     }
     inited = true;
+    return;
 }
 
+// auto add checked crumbs for the walkbot to follow
+void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
+{
+    breadcrumbs.clear();
+    if (g_pLocalPlayer->v_Origin != corner)
+    {
+        Vector dist       = corner - g_pLocalPlayer->v_Origin;
+        int maxiterations = floor(corner.DistTo(g_pLocalPlayer->v_Origin)) / 40;
+        for (int i = 0; i < maxiterations; i++)
+        {
+            breadcrumbs.push_back(g_pLocalPlayer->v_Origin + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+        }
+    }
+
+    Vector dist       = target->m_vecOrigin() - corner;
+    int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
+    for (int i = 0; i < maxiterations; i++)
+    {
+        breadcrumbs.push_back(corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+    }
+}
+int ClassPriority(CachedEntity* ent)
+{
+	switch (g_pPlayerResource->GetClass(ent))
+	{
+		if (g_pPlayerResource->GetClass(ent) == tf_spy)
+			return 0;
+		case tf_engineer:
+			return 1;
+		case tf_medic:
+			return 2;
+		case tf_pyro:
+			return 3;
+		case tf_scout:
+			return 4;
+		case tf_sniper:
+			return 5;
+		case tf_demoman:
+			return 6;
+		case tf_soldier:
+			return 7;
+		case tf_heavy:
+			return 8;
+		default:
+			return 0;
+	}
+}
 void WorldTick()
 {
     if (!followbot)
@@ -134,21 +182,21 @@ void WorldTick()
             auto entity = ENTITY(i);
             if (CE_BAD(entity)) // Exist + dormant
                 continue;
+            if (i == follow_target)
+                continue;
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
             if (steamid != entity->player_info.friendsID) // steamid check
                 continue;
-            logging::Info("Success");
 
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
                 continue;
             if (corneractivate)
             {
-                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
+                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
                 if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
-                breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
-                breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
+                addCrumbs(entity, indirectOrigin);
             }
             else
             {
@@ -161,11 +209,11 @@ void WorldTick()
     }
     // If we dont have a follow target from that, we look again for someone
     // else who is suitable
-    if ((!follow_target || change) && roambot)
+    if ((!follow_target || change || (ClassPriority(ENTITY(follow_target)) < 6 && ENTITY(follow_target)->player_info.friendsID != steamid)) && roambot)
     {
         // Try to get a new target
-        auto ent_count = HIGHEST_ENTITY;
-        for (int i = 0; i < HIGHEST_ENTITY; i++)
+        auto ent_count = followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
+        for (int i = 0; i < ent_count; i++)
         {
             auto entity = ENTITY(i);
             if (CE_BAD(entity)) // Exist + dormant
@@ -202,23 +250,30 @@ void WorldTick()
                 follow_target = entity->m_IDX;
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
+            // favor closer entitys
+            if (follow_target &&
+                ENTITY(follow_target)->m_flDistance() <
+                    entity->m_flDistance()) // favor closer entitys
+            {
+                continue;
+            }
+            // check if new target has a higher priority than current target
+            if (ClassPriority(ENTITY(follow_target)) >= ClassPriority(ENTITY(i)))
+                continue;
+
             if (corneractivate)
             {
-                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250); //get the corner location that the future target is visible from
+                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
                 if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
-                breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
-                breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
+                addCrumbs(entity, indirectOrigin);
             }
             else
             {
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
                     continue;
             }
-            if (follow_target &&
-                ENTITY(follow_target)->m_flDistance() >
-                    entity->m_flDistance()) // favor closer entitys
-                continue;
+
             // ooooo, a target
             follow_target = i;
             afkTicks[i].update(); // set afk time to 0
@@ -230,8 +285,11 @@ void WorldTick()
 
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed
-    if (CE_BAD(followtar))
+    if (CE_BAD(followtar) || !followtar->m_bAlivePlayer())
+    {
+        follow_target = 0;
         return;
+    }
     // Check if we are following a disguised/spy
     if (IsPlayerDisguised(followtar) || IsPlayerInvisible(followtar))
     {
@@ -247,6 +305,12 @@ void WorldTick()
             return;
         }
     }
+
+//    if(!checkPath()) //wip do not merge if you see this
+//    {
+//        follow_target = 0;
+//        return;
+//    }
 
     // Update timer on new target
     static Timer idle_time{};
@@ -282,7 +346,7 @@ void WorldTick()
         }
     }
 
-    // moved because its worthless otherwise
+    // Tauntsync
     if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) &&
         lastTaunt.test_and_set(1000))
     {
@@ -292,9 +356,10 @@ void WorldTick()
     // Follow the crumbs when too far away, or just starting to follow
     if (dist_to_target > (float) follow_distance)
     {
-        // Check for idle
-        if (autojump && idle_time.check(2000))
+        // Check for jump
+        if (autojump && (idle_time.check(2000) || isJumping(breadcrumbs[0])))
             g_pUserCmd->buttons |= IN_JUMP;
+        // Check for idle
         if (idle_time.test_and_set(5000))
         {
             follow_target = 0;
