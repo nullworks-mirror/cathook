@@ -10,7 +10,7 @@
 #include <glez/glez.hpp>
 #include <glez/draw.hpp>
 #include <GL/glew.h>
-#include <SDL_video.h>
+#include <SDL2/SDL_video.h>
 #include <SDLHooks.hpp>
 #if EXTERNAL_DRAWING
 #include "xoverlay.h"
