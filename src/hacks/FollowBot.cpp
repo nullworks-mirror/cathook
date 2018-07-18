@@ -250,6 +250,17 @@ void WorldTick()
                 follow_target = entity->m_IDX;
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
+            // favor closer entitys
+            if (follow_target &&
+                ENTITY(follow_target)->m_flDistance() <
+                    entity->m_flDistance()) // favor closer entitys
+            {
+                continue;
+            }
+            // check if new target has a higher priority than current target
+            if (ClassPriority(ENTITY(follow_target)) >= ClassPriority(ENTITY(i)))
+                continue;
+
             if (corneractivate)
             {
                 Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
@@ -261,14 +272,6 @@ void WorldTick()
             {
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
                     continue;
-            }
-            // favor closer entitys
-            if (follow_target &&
-                ENTITY(follow_target)->m_flDistance() >
-                    entity->m_flDistance()) // favor closer entitys
-            {
-            	if (ClassPriority(ENTITY(follow_target)) > ClassPriority(entity))
-            		continue;
             }
 
             // ooooo, a target
@@ -343,7 +346,7 @@ void WorldTick()
         }
     }
 
-    // moved because its worthless otherwise
+    // Tauntsync
     if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) &&
         lastTaunt.test_and_set(1000))
     {

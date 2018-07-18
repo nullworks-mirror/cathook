@@ -386,28 +386,23 @@ bool IsPopped()
     return CE_BYTE(weapon, netvar.bChargeRelease);
 }
 
-bool ShouldChargePlayer(int targetIdx)
+bool ShouldChargePlayer(int idx)
 {
-    int idx;
-    for (int i = 0; i < 2; i++)
+    CachedEntity *target = ENTITY(idx);
+    const float damage_accum_duration =
+        g_GlobalVars->curtime - data[idx].accum_damage_start;
+    const int health = target->m_iHealth();
+    if (!data[idx].accum_damage_start)
+        return false;
+    if (health > 30 && data[idx].accum_damage < 45)
+        return false;
+    const float dd = ((float) data[idx].accum_damage / damage_accum_duration);
+    if (dd > 40)
     {
-        switch (i)
-        {
-        case 0:
-            idx = LOCAL_E->m_IDX;
-            break;
-        case 1:
-            idx = targetIdx;
-            break;
-        }
-        CachedEntity *ent = ENTITY(idx);
-        float uberhealth     = ent->m_iMaxHealth() * ((float)pop_uber_percent / 100);
-        if (CE_INT(LOCAL_E, netvar.iHealth) < uberhealth &&
-            NearbyEntities() > 1)
-        {
-
-        }
+        return true;
     }
+    if (health < 30 && data[idx].accum_damage > 10)
+        return true;
     return false;
 }
 
