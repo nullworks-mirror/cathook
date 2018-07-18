@@ -16,7 +16,7 @@ SpoofedConVar::SpoofedConVar(ConVar *var) : original(var)
 {
     int flags        = var->m_nFlags;
     const char *name = var->m_pszName;
-    char *s_name     = strfmt("q_%s", name);
+    char *s_name     = strfmt("q_%s", name).get();
     if (g_ICvar->FindVar(s_name))
         return;
     var->m_pszName = s_name;
