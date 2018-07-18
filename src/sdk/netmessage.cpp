@@ -370,7 +370,7 @@ bool CLC_RespondCvarValue::ReadFromBuffer(bf_read &buffer)
 const char *CLC_RespondCvarValue::ToString(void) const
 {
     return strfmt("%s: status: %d, value: %s, cookie: %d", GetName(),
-                  m_eStatusCode, m_szCvarValue, m_iCookie);
+                  m_eStatusCode, m_szCvarValue, m_iCookie).get();
 }
 
 bool NET_NOP::WriteToBuffer(bf_write &buffer)
@@ -409,12 +409,12 @@ bool NET_SignonState::ReadFromBuffer(bf_read &buffer)
 const char *NET_SignonState::ToString(void) const
 {
     return strfmt("net_SignonState: state %i, count %i", m_nSignonState,
-                  m_nSpawnCount);
+                  m_nSpawnCount).get();
 }
 
 const char *CLC_VoiceData::ToString(void) const
 {
-    return strfmt("%s: %i bytes", GetName(), m_nLength);
+    return strfmt("%s: %i bytes", GetName(), m_nLength).get();
 }
 
 bool CLC_VoiceData::WriteToBuffer(bf_write &buffer)
@@ -443,7 +443,7 @@ bool CLC_VoiceData::ReadFromBuffer(bf_read &buffer)
 const char *CLC_Move::ToString(void) const
 {
     return strfmt("%s: backup %i, new %i, bytes %i", GetName(), m_nNewCommands,
-                  m_nBackupCommands, Bits2Bytes(m_nLength));
+                  m_nBackupCommands, Bits2Bytes(m_nLength)).get();
 }
 
 bool CLC_Move::WriteToBuffer(bf_write &buffer)

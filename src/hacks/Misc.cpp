@@ -87,7 +87,7 @@ static CatCommand test_chat_print(
         if (chat)
         {
             std::unique_ptr<char> str(
-                strfmt("\x07%06X[CAT]\x01 %s", 0x4D7942, args.ArgS()));
+                strfmt("\x07%06X[CAT]\x01 %s", 0x4D7942, args.ArgS()).get());
             chat->Printf(str.get());
         }
         else
@@ -549,7 +549,7 @@ void Schema_Reload()
     logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
     void *itemschema = (void *) ((unsigned) GetItemSchema() + 4);
     void *data;
-    char *path = strfmt("/opt/cathook/data/items_game.txt");
+    char *path = strfmt("/opt/cathook/data/items_game.txt").get();
     FILE *file = fopen(path, "r");
     delete[] path;
     fseek(file, 0L, SEEK_END);

@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 
+if [ $EUID == 0 ]; then
+    echo "This script must not be run as root"
+    exit
+fi
+
 rm ../install-all # remove install file
 
 #
 # Install base Dependencies
 #
-
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-sudo apt update
-sudo apt install build-essential git gcc-multilib g++-multilib software-properties-common gcc-snapshot g++-7-multilib gcc-7 g++-7 libssl-dev:i386 libboost-all-dev libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libglew-dev libfreetype6-dev libfreetype6-dev:i386 cmake libpng-dev libssl-dev cmake gcc-multilib g++-multilib -y
-
+if [ -f "/etc/arch-release" ]; then
+    sudo pacman -S --needed --noconfirm boost cmake make lib32-openssl lib32-libpng gcc gdb lib32-sdl2 lib32-glew freetype2
+else
+    sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+    sudo apt update
+    sudo apt install build-essential git gcc-multilib g++-multilib software-properties-common gcc-snapshot g++-7-multilib gcc-7 g++-7 libssl-dev:i386 libboost-all-dev libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libglew-dev libfreetype6-dev libfreetype6-dev:i386 cmake libpng-dev libssl-dev cmake gcc-multilib g++-multilib -y
+fi
 #
 # Update cathook
 #

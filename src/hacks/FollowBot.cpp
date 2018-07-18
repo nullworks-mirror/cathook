@@ -92,8 +92,8 @@ void init()
     return;
 }
 
-// auto add checked crumbs for the walbot to follow
-bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
+// auto add checked crumbs for the walkbot to follow
+void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
 {
     breadcrumbs.clear();
     if (g_pLocalPlayer->v_Origin != corner)
@@ -112,7 +112,6 @@ bool addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     {
         breadcrumbs.push_back(corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
     }
-    return true;
 }
 int ClassPriority(CachedEntity* ent)
 {
@@ -197,8 +196,7 @@ void WorldTick()
                 Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
                 if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
-                breadcrumbs.clear(); //we need to ensure that the breadcrumbs std::vector is empty
-                breadcrumbs.push_back(indirectOrigin); //add the corner location to the breadcrumb list
+                addCrumbs(entity, indirectOrigin);
             }
             else
             {
@@ -252,26 +250,28 @@ void WorldTick()
                 follow_target = entity->m_IDX;
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
+            // favor closer entitys
+            if (follow_target &&
+                ENTITY(follow_target)->m_flDistance() <
+                    entity->m_flDistance()) // favor closer entitys
+            {
+                continue;
+            }
+            // check if new target has a higher priority than current target
+            if (ClassPriority(ENTITY(follow_target)) >= ClassPriority(ENTITY(i)))
+                continue;
+
             if (corneractivate)
             {
                 Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
                 if (!indirectOrigin.z) //if we couldn't find it, exit
                     continue;
-                if (!addCrumbs(entity, indirectOrigin))
-                    continue;
+                addCrumbs(entity, indirectOrigin);
             }
             else
             {
                 if (!VisCheckEntFromEnt(LOCAL_E, entity))
                     continue;
-            }
-            // favor closer entitys
-            if (follow_target &&
-                ENTITY(follow_target)->m_flDistance() >
-                    entity->m_flDistance()) // favor closer entitys
-            {
-            	if (ClassPriority(ENTITY(follow_target)) > ClassPriority(entity))
-            		continue;
             }
 
             // ooooo, a target
@@ -346,7 +346,7 @@ void WorldTick()
         }
     }
 
-    // moved because its worthless otherwise
+    // Tauntsync
     if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) &&
         lastTaunt.test_and_set(1000))
     {

@@ -1242,7 +1242,7 @@ void PrintChat(const char *fmt, ...)
         va_end(list);
         std::unique_ptr<char> str(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s",
                                          0x5e3252, 0xba3d9a, 0x5e3252,
-                                         buf.get()));
+                                         buf.get()).get());
         // FIXME DEBUG LOG
         logging::Info("%s", str.get());
         chat->Printf(str.get());
@@ -1252,13 +1252,15 @@ void PrintChat(const char *fmt, ...)
     }
 }
 
-// You are responsible for delete[]'ing the resulting string.
-char *strfmt(const char *fmt, ...)
+// You shouldn't delete[] this unique_ptr since it
+// does it on its own
+std::unique_ptr<char[]> strfmt(const char *fmt, ...)
 {
-    char *buf = new char[1024];
+    //char *buf = new char[1024];
+    auto buf = std::make_unique<char[]>(1024);
     va_list list;
     va_start(list, fmt);
-    vsprintf(buf, fmt, list);
+    vsprintf(buf.get(), fmt, list);
     va_end(list);
     return buf;
 }

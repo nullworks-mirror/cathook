@@ -112,12 +112,13 @@ ITexture *GetBuffer(int i)
                                                    TEXTURE_GROUP_RENDER_TARGET);
         else fullframe = g_IMaterialSystemHL->FindTexture(
             "_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
-        char *newname    = new char[32];
+        //char *newname    = new char[32];
+        std::unique_ptr<char[]> newname(new char[32]);
         std::string name = format("_cathook_buff", i);
-        strncpy(newname, name.c_str(), 30);
+        strncpy(newname.get(), name.c_str(), 30);
         logging::Info("Creating new buffer %d with size %dx%d %s", i,
                       fullframe->GetActualWidth(), fullframe->GetActualHeight(),
-                      newname);
+                      newname.get());
 
         int textureFlags = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT |
                            TEXTUREFLAGS_EIGHTBITALPHA;
@@ -127,7 +128,7 @@ ITexture *GetBuffer(int i)
         IF_GAME(IsTF2())
         {
             texture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx(
-                newname, fullframe->GetActualWidth(),
+                newname.get(), fullframe->GetActualWidth(),
                 fullframe->GetActualHeight(), RT_SIZE_LITERAL,
                 IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags,
                 renderTargetFlags);
@@ -135,12 +136,11 @@ ITexture *GetBuffer(int i)
         else
         {
             texture = g_IMaterialSystemHL->CreateNamedRenderTargetTextureEx(
-                newname, fullframe->GetActualWidth(),
+                newname.get(), fullframe->GetActualWidth(),
                 fullframe->GetActualHeight(), RT_SIZE_LITERAL,
                 IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags,
                 renderTargetFlags);
         }
-        delete newname;
         buffers[i].Init(texture);
     }
     return buffers[i];

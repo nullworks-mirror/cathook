@@ -92,7 +92,7 @@ void fClampAngle(Vector &qaAng);
 bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity);
 bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false);
 bool IsSentryBuster(CachedEntity *ent);
-char *strfmt(const char *fmt, ...);
+std::unique_ptr<char[]> strfmt(const char *fmt, ...);
 // TODO move that to weaponid.h
 bool HasWeapon(CachedEntity *ent, int wantedId);
 bool IsAmbassador(CachedEntity *ent);

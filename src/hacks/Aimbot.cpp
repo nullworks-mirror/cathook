@@ -158,6 +158,8 @@ static CatVar auto_zoom(
     "Automatically zoom in if you can see target, useful for followbots");
 static CatVar auto_unzoom(CV_SWITCH, "aimbot_auto_unzoom", "0", "Auto Un-zoom",
                           "Automatically unzoom");
+static CatVar backtrackAimbot(CV_SWITCH, "backtrack_aimbot", "0", "Backtrack Aimbot",
+                               "Enable Backtrack Aimbot");
 
 // Current Entity
 int target_eid{ 0 };
@@ -178,7 +180,7 @@ AimbotCalculatedData_s calculated_data_array[2048]{};
 #define IsMelee GetWeaponMode() == weapon_melee
 bool BacktrackAimbot()
 {
-    if (!hacks::shared::backtrack::enable)
+    if (!hacks::shared::backtrack::enable || !backtrackAimbot)
         return false;
 	if (aimkey && !aimkey.KeyDown())
 		return false;

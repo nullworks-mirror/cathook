@@ -36,7 +36,7 @@ and a lot of useful features, including
 
 # INSTALLATION
 
-## Automatic: (Ubuntu based only)
+## Automatic: (Ubuntu/Arch based only)
 Run in terminal:
 
 * `wget https://raw.githubusercontent.com/nullworks/One-in-all-cathook-install/master/install-all && bash install-all`
