@@ -9,55 +9,56 @@
 #if not LAGBOT_MODE
 #include "hacks/Backtrack.hpp"
 #endif
-static CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
-static CatVar nightmode(CV_SWITCH, "nightmode", "0", "Enable nightmode", "");
+
+static CatVar nightmode(CV_FLOAT, "nightmode", "0", "Enable nightmode", "");
 namespace hooked_methods
 {
 
 DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
                      ClientFrameStage_t stage)
 {
-    if (nightmode)
+    static float OldNightmode = 0.0f;
+    if (OldNightmode != (float) nightmode)
     {
-        static int OldNightmode = 0;
-        if (OldNightmode != (int) nightmode)
+
+        static ConVar *r_DrawSpecificStaticProp =
+            g_ICvar->FindVar("r_DrawSpecificStaticProp");
+        if (!r_DrawSpecificStaticProp)
         {
-
-            static ConVar *r_DrawSpecificStaticProp =
+            r_DrawSpecificStaticProp =
                 g_ICvar->FindVar("r_DrawSpecificStaticProp");
-            if (!r_DrawSpecificStaticProp)
-            {
-                r_DrawSpecificStaticProp =
-                    g_ICvar->FindVar("r_DrawSpecificStaticProp");
-                return;
-            }
-            r_DrawSpecificStaticProp->SetValue(0);
-
-            for (MaterialHandle_t i = g_IMaterialSystem->FirstMaterial();
-                 i != g_IMaterialSystem->InvalidMaterial();
-                 i = g_IMaterialSystem->NextMaterial(i))
-            {
-                IMaterial *pMaterial = g_IMaterialSystem->GetMaterial(i);
-
-                if (!pMaterial)
-                    continue;
-                if (strstr(pMaterial->GetTextureGroupName(), "World") ||
-                    strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
-                {
-                    if (nightmode)
-                    {
-                        if (strstr(pMaterial->GetTextureGroupName(),
-                                   "StaticProp"))
-                            pMaterial->ColorModulate(0.3f, 0.3f, 0.3f);
-                        else
-                            pMaterial->ColorModulate(0.05f, 0.05f, 0.05f);
-                    }
-                    else
-                        pMaterial->ColorModulate(1.0f, 1.0f, 1.0f);
-                }
-            }
-            OldNightmode = nightmode;
+            return;
         }
+        r_DrawSpecificStaticProp->SetValue(0);
+
+        for (MaterialHandle_t i = g_IMaterialSystem->FirstMaterial();
+             i != g_IMaterialSystem->InvalidMaterial();
+             i = g_IMaterialSystem->NextMaterial(i))
+        {
+            IMaterial *pMaterial = g_IMaterialSystem->GetMaterial(i);
+
+            if (!pMaterial)
+                continue;
+            if (strstr(pMaterial->GetTextureGroupName(), "World") ||
+                strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
+            {
+                if (float(nightmode) > 0.0f)
+                {
+                    if (strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
+                        pMaterial->ColorModulate(1.0f - float(nightmode) / 100.0f,
+                                                 1.0f - float(nightmode) / 100.0f,
+                                                 1.0f - float(nightmode) / 100.0f);
+                    else
+                        pMaterial->ColorModulate(
+                            (1.0f - float(nightmode) / 100.0f) / 6.0f,
+                            (1.0f - float(nightmode) / 100.0f) / 6.0f,
+                            (1.0f - float(nightmode) / 100.0f) / 6.0f);
+                }
+                else
+                    pMaterial->ColorModulate(1.0f, 1.0f, 1.0f);
+            }
+        }
+        OldNightmode = nightmode;
     }
     static IClientEntity *ent;
 

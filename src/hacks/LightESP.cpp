@@ -53,14 +53,16 @@ void draw()
         CachedEntity *pEntity = ENTITY(i);
         if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
             continue;
+        if (pEntity == LOCAL_E)
+            continue;
         Vector out;
         if (draw::WorldToScreen(hitp[i], out))
         {
             float size;
-            if (abs(maxp[i].x - minp[i].x) > abs(maxp[i].y - minp[i].y))
-                size = abs(maxp[i].x - minp[i].x);
-            else
-                size = abs(maxp[i].y - minp[i].y);
+            Vector pout, pout2;
+            if (draw::WorldToScreen(minp[i], pout) &&
+                draw::WorldToScreen(maxp[i], pout2))
+                size = fmaxf(fabsf(pout2.x - pout.x), fabsf(pout2.y - pout.y));
 
             glez::draw::rect(out.x, out.y, size / 4, size / 4,
                              hacks::shared::lightesp::LightESPColor(pEntity));

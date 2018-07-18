@@ -71,7 +71,7 @@ void CreateMove()
                 Vector &angles = NET_VECTOR(tar, netvar.m_angEyeAngles);
                 float &simtime = NET_FLOAT(tar, netvar.m_flSimulationTime);
                 angles.y       = i.viewangles;
-                simtime 	   = i.simtime;
+                simtime        = i.simtime;
                 g_pUserCmd->tick_count = i.tickcount;
                 g_pUserCmd->buttons |= IN_ATTACK;
                 break;

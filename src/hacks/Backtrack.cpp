@@ -102,10 +102,10 @@ void Run()
     }
     shouldDrawBt = true;
 
-    CUserCmd *cmd       = g_pUserCmd;
-    float bestFov       = 99999;
-    BestTick            = 0;
-    iBestTarget         = -1;
+    CUserCmd *cmd = g_pUserCmd;
+    float bestFov = 99999;
+    BestTick      = 0;
+    iBestTarget   = -1;
 
     float prev_distance = 9999;
 
@@ -161,20 +161,26 @@ void Run()
         float bestFOV = 180.0f;
         float distance, prev_distance_ticks = 9999;
 
+<<<<<<< Updated upstream
         for (int i = 0; i < 12; ++i)
             sorted_ticks[i] = BestTickData{INT_MAX, i};
+=======
+        for (int i          = 0; i < 12; ++i)
+            sorted_ticks[i] = BestTickData{ FLT_MAX, i };
+>>>>>>> Stashed changes
         for (int t = 0; t < ticks; ++t)
         {
-        	if (headPositions[iBestTarget][t].tickcount)
-        		sorted_ticks[t] =
-        				BestTickData{ headPositions[iBestTarget][t].tickcount, t };
+            if (headPositions[iBestTarget][t].tickcount)
+                sorted_ticks[t] =
+                    BestTickData{ headPositions[iBestTarget][t].tickcount, t };
         }
         std::sort(sorted_ticks, sorted_ticks + ticks);
         for (int t = 0; t < ticks; ++t)
         {
             bool good_tick = false;
             for (int i = 0; i < 12; ++i)
-                if (t == sorted_ticks[i].tick && sorted_ticks[i].tickcount != FLT_MAX)
+                if (t == sorted_ticks[i].tick &&
+                    sorted_ticks[i].tickcount != FLT_MAX)
                     good_tick = true;
             if (!good_tick)
                 continue;

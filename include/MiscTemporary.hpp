@@ -9,6 +9,8 @@
 
 // This is a temporary file to put code that needs moving/refactoring in.
 extern bool *bSendPackets;
+extern std::array<int, 32> bruteint;
+extern std::array<Timer, 32> timers;
 extern CatVar no_zoom;
 extern CatVar clean_screenshots;
 extern CatVar disable_visuals;
@@ -23,6 +25,7 @@ extern CatVar serverlag_amount;
 extern CatVar servercrash;
 extern CatVar debug_projectiles;
 extern CatVar semiauto;
+extern CatVar resolver;
 extern CatVar engine_pred;
 extern Timer DelayTimer;
 extern bool firstcm;

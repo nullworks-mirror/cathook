@@ -6,27 +6,31 @@
  */
 
 #include <hacks/hacklist.hpp>
+#include <glez/draw.hpp>
 #include "common.hpp"
 
 namespace hacks::shared::antiaim
 {
-
 CatVar communicate(CV_SWITCH, "identify", "0", "identify",
                    "Auto identify for other cathook users");
 CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
                "Master AntiAim switch");
-static CatVar crouch(CV_SWITCH, "aa_fakecrouch", "0", "Fake Crouch", "Fake crouch");
+CatVar draw_fakes(CV_SWITCH, "aa_drawfakes", "1", "Draw Fakes",
+                  "Draw a nice box around the head hitboxes");
+static CatVar crouch(CV_SWITCH, "aa_fakecrouch", "0", "Fake Crouch",
+                     "Fake crouch");
 static CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)",
                   360.0);
 static CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch",
                     "Static pitch (up/down)", -89.0, 89.0);
-static CatEnum yaw_mode_enum({ "KEEP",           "STATIC",       "JITTER",
-                               "BIGRANDOM",      "RANDOM",       "SPIN",
-                               "OFFSETKEEP",     "EDGE",         "HECK",
-                               "FAKEKEEP",       "FAKESTATIC",   "FAKEJITTER",
-                               "FAKEBIGRANDOM",  "FAKERANDOM",   "FAKESPIN",
-                               "FAKEOFFSETKEEP", "FAKEEDGE", "FAKEHECK", "FAKESIDEWAYS", "FAKELEFT",
-                               "FAKERIGHT", "FAKEREVERSEEDGE"});
+static CatEnum yaw_mode_enum({ "KEEP",           "STATIC",     "JITTER",
+                               "BIGRANDOM",      "RANDOM",     "SPIN",
+                               "OFFSETKEEP",     "EDGE",       "HECK",
+                               "FAKEKEEP",       "FAKESTATIC", "FAKEJITTER",
+                               "FAKEBIGRANDOM",  "FAKERANDOM", "FAKESPIN",
+                               "FAKEOFFSETKEEP", "FAKEEDGE",   "FAKEHECK",
+                               "FAKESIDEWAYS",   "FAKELEFT",   "FAKERIGHT",
+                               "FAKEREVERSEEDGE" });
 static CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
                                  "FAKEFLIP", "FAKEUP", "FAKEDOWN", "FAKECENTER",
                                  "UP", "DOWN", "HECK" });
@@ -74,7 +78,7 @@ float GetAAAAPitch()
     case 1:
         return aaaa_stage ? 271 : 89;
     case 2:
-    	return aaaa_stage ? -180 : 180;
+        return aaaa_stage ? -180 : 180;
     default:
         break;
     }
@@ -388,59 +392,54 @@ float useEdge(float edgeViewAngle)
 Timer delay{};
 int val       = 0;
 int value[32] = { 0 };
-void FakeCrouch(CUserCmd * cmd)
+void FakeCrouch(CUserCmd *cmd)
 {
-	if (!crouch)
-		return;
-	if (cmd->buttons & IN_ATTACK)
-	{
-		*bSendPackets = true;
-		return;
-	}
-	static bool bDuck = false;
+    if (!crouch)
+        return;
+    if (cmd->buttons & IN_ATTACK)
+    {
+        *bSendPackets = true;
+        return;
+    }
+    static bool bDuck = false;
 
-	static int waittime = 0;
+    static int waittime = 0;
 
-	if (waittime)
-	{
-		waittime--;
-		return;
-	}
-	bDuck = !bDuck;
+    if (waittime)
+    {
+        waittime--;
+        return;
+    }
+    bDuck = !bDuck;
 
-	if (bDuck)
-	{
-		cmd->buttons |= IN_DUCK;
-		*bSendPackets = false;
-		waittime = 15;
-	}
-	else{
-		cmd->buttons &= ~IN_DUCK;
-		*bSendPackets = true;
-	}
+    if (bDuck)
+    {
+        cmd->buttons |= IN_DUCK;
+        *bSendPackets = false;
+        waittime      = 15;
+    }
+    else
+    {
+        cmd->buttons &= ~IN_DUCK;
+        *bSendPackets = true;
+    }
 }
 void ProcessUserCmd(CUserCmd *cmd)
 {
     if (!enabled)
+    {
+        *bSendPackets = true;
         return;
+    }
     if (!ShouldAA(cmd))
         return;
-    static bool angstate = true;
-    static bool keepmode = true;
-    keepmode             = !keepmode;
-    if ((int) yaw_mode >= 8)
-        angstate = !angstate;
-    else
-        angstate = true;
-    if (!LOCAL_E->m_bAlivePlayer())
-        angstate = true;
-    if (g_pUserCmd->buttons & IN_ATTACK || g_pUserCmd->buttons & IN_ATTACK2)
-        angstate     = true;
-    *bSendPackets    = angstate;
-    float &p         = cmd->viewangles.x;
-    float &y         = cmd->viewangles.y;
-    static bool flip = false;
-    bool clamp       = !no_clamping;
+    static bool keepmode  = true;
+    keepmode              = !keepmode;
+    float &p              = cmd->viewangles.x;
+    float &y              = cmd->viewangles.y;
+    static bool flip      = false;
+    static bool bsendflip = true;
+    bool clamp            = !no_clamping;
     if (test)
     {
         cmd->viewangles.x                = FLT_MAX;
@@ -503,7 +502,6 @@ void ProcessUserCmd(CUserCmd *cmd)
             else
                 y -= 90;
             break;
-            flip = !flip;
         }
         clamp = false;
         break;
@@ -547,20 +545,20 @@ void ProcessUserCmd(CUserCmd *cmd)
             y += (float) yaw;
         break;
     case 16: // Fake edge
-    	if (*bSendPackets)
-    	{
+        if (*bSendPackets)
+        {
             // Attemt to find an edge and if found, edge
             if (findEdge(y))
                 y = useEdge(y);
-    	}
-    	break;
+        }
+        break;
     case 17: // Fake heck
-    	if (*bSendPackets)
-    	{
+        if (*bSendPackets)
+        {
             FuckYaw(y);
             clamp = false;
-    	}
-    	break;
+        }
+        break;
     case 18: // Fake sideways
         y += *bSendPackets ? 90.0f : -90.0f;
         break;
@@ -571,13 +569,13 @@ void ProcessUserCmd(CUserCmd *cmd)
         y += !*bSendPackets ? 0.0f : 90.0f;
         break;
     case 21: // Fake reverse edge
-    	if (*bSendPackets)
-    	{
+        if (*bSendPackets)
+        {
             // Attemt to find an edge and if found, edge
             if (findEdge(y))
                 y = useEdge(y) + 180.0f;
-    	}
-    	break;
+        }
+        break;
     default:
         break;
     }
@@ -625,7 +623,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         clamp = false;
     }
     if (*bSendPackets)
-    	flip = !flip;
+        flip = !flip;
     if (clamp)
         fClampAngle(cmd->viewangles);
     if (roll)

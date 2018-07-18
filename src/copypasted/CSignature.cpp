@@ -3,12 +3,6 @@
 
 #include "common.hpp"
 
-#define INRANGE(x, a, b) (x >= a && x <= b)
-#define getBits(x)                                                             \
-    (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xa)            \
-                                      : (INRANGE(x, '0', '9') ? x - '0' : 0))
-#define getByte(x) (getBits(x[0]) << 4 | getBits(x[1]))
-
 // module should be a pointer to the base of an elf32 module
 // this is not the value returned by dlopen (which returns an opaque handle to
 // the module) the best method to get this address is with fopen() and mmap()
@@ -51,8 +45,72 @@ Elf32_Shdr *getSectionHeader(void *module, const char *sectionName)
     }
     return 0;
 }
+bool InRange(char x, char a, char b)
+{
+    return x >= a && x <= b;
+}
 
+int GetBits(char x)
+{
+    if (InRange((char) (x & (~0x20)), 'A', 'F'))
+    {
+        return (x & (~0x20)) - 'A' + 0xa;
+    }
+    else if (InRange(x, '0', '9'))
+    {
+        return x - '0';
+    }
+
+    return 0;
+}
+int GetBytes(const char *x)
+{
+    return GetBits(x[0]) << 4 | GetBits(x[1]);
+}
 uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
+                                    const char *szPattern)
+{
+    const char *pattern  = szPattern;
+    uintptr_t firstMatch = 0;
+
+    uintptr_t start = dwAddress;
+    uintptr_t end   = dwLength;
+
+    for (uintptr_t pos = start; pos < end; pos++)
+    {
+        if (*pattern == 0)
+            return firstMatch;
+
+        const uint8_t currentPattern =
+            *reinterpret_cast<const uint8_t *>(pattern);
+        const uint8_t currentMemory = *reinterpret_cast<const uint8_t *>(pos);
+
+        if (currentPattern == '\?' || currentMemory == GetBytes(pattern))
+        {
+            if (firstMatch == 0)
+                firstMatch = pos;
+
+            if (pattern[2] == 0)
+            {
+                logging::Info("Found pattern \"%s\" at 0x%08X.", szPattern,
+                              firstMatch);
+                return firstMatch;
+            }
+
+            pattern += currentPattern != '\?' ? 3 : 2;
+        }
+        else
+        {
+            pattern    = szPattern;
+            firstMatch = 0;
+        }
+    }
+    logging::Info("THIS IS SERIOUS: Could not locate signature: "
+                  "\n============\n\"%s\"\n============",
+                  szPattern);
+    return 0;
+}
+/*uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
                                     const char *szPattern)
 {
     const char *pat      = szPattern;
@@ -84,7 +142,7 @@ uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
                   szPattern);
 
     return NULL;
-}
+}*/
 //===================================================================================
 void *CSignature::GetModuleHandleSafe(const char *pszModuleName)
 {

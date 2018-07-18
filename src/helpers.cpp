@@ -192,7 +192,8 @@ bool canReachVector(Vector loc, Vector dest)
         int maxiterations = floor(dest.DistTo(loc)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            Vector vec = loc + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
+            Vector vec =
+                loc + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
 
             trace_t trace;
             Ray_t ray;
@@ -243,7 +244,8 @@ bool canReachVector(Vector loc, Vector dest)
         down.z      = down.z - 50;
         ray.Init(loc, down);
         g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
-        // higher to avoid small false positives, player can jump 42 hu according to
+        // higher to avoid small false positives, player can jump 42 hu
+        // according to
         // the tf2 wiki
         if (!(trace.startpos.DistTo(trace.endpos) <= 45))
             return false;
@@ -271,7 +273,8 @@ bool canReachVector(Vector loc, Vector dest)
             trace_t trace2;
             Ray_t ray2;
             ray2.Init(loc, directionalLoc);
-            g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace2);
+            g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
+                               &trace2);
             // distance of trace < than 26
             if (trace2.startpos.DistTo(trace2.endpos) < 26.0f)
                 return false;
@@ -984,11 +987,11 @@ bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only)
     trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
     ray.Init(origin, target);
     if (!enviroment_only)
-    	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
-                       &trace_visible);
+        g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
+                           &trace_visible);
     else
-    	g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
-    	                       &trace_visible);
+        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
+                           &trace_visible);
 
     return (trace_visible.fraction == 1.0f);
 }

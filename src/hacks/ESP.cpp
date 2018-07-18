@@ -308,7 +308,6 @@ struct bonelist_s
 };
 
 std::unordered_map<studiohdr_t *, bonelist_s> bonelist_map{};
-
 // Function called on draw
 void Draw()
 {
@@ -504,17 +503,6 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 
     // Get if ent should be transparent
     bool transparent = vischeck && ent_data.transparent;
-
-    // Bone esp
-    if (draw_bones && type == ENTITY_PLAYER)
-    {
-        const model_t *model = RAW_ENT(ent)->GetModel();
-        if (model)
-        {
-            auto hdr = g_IModelInfo->GetStudiomodel(model);
-            bonelist_map[hdr].Draw(ent, fg);
-        }
-    }
 
     // Tracers
     if (tracers && type == ENTITY_PLAYER)

@@ -6,6 +6,8 @@
  */
 
 #include "common.hpp"
+#include <hacks/Aimbot.hpp>
+#include "MiscTemporary.hpp"
 #include "init.hpp"
 
 namespace hitrate
@@ -58,7 +60,7 @@ CatCommand debug_ammo("debug_ammo", "Debug ammo", []() {
         logging::Info("%d %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + i * 4));
     }
 });
-
+std::deque<int> entstocheck{};
 void Update()
 {
     CachedEntity *weapon = LOCAL_W;
@@ -67,14 +69,50 @@ void Update()
         if (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
             LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
         {
+        	/*INetChannel *ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
+        	static int prevhits = count_hits;
+        	int latency = ch->GetAvgLatency(MAX_FLOWS) * 1000 + 0.5f;
+            if (hacks::shared::aimbot::target_eid != -1 && !timers[hacks::shared::aimbot::target_eid].check(latency))
+            {
+            	if (count_hits > prevhits)
+				{
+            		prevhits = count_hits;
+            		timers[hacks::shared::aimbot::target_eid].update();
+				}
+            }*/
             // ONLY tracks primary ammo
             int ammo = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
+
             if (lastweapon)
             {
                 if (ammo < lastammo)
                 {
-                    OnShot();
+                	//for (auto i : entstocheck)
+                	//{
+                		OnShot();
+                		/*static int prevent = 0;
+
+                		if (hacks::shared::aimbot::target_eid != prevent)
+                		{
+                			entstocheck.push_back(hacks::shared::aimbot::target_eid);
+                			prevent = hacks::shared::aimbot::target_eid;
+                			timers[hacks::shared::aimbot::target_eid].update();
+                		}
+                   		if (i != -1)
+                    		{
+                   				if (timers[i].test_and_set(latency))
+                   				{
+                   					bruteint[i]++;
+                   					entstocheck[];
+                   				}
+                    		}
+                		}
+                	}*/
                 }
+                /*else if (timers[hacks::shared::aimbot::target_eid].check(latency / 2))
+                {
+
+                }*/
             }
             lastweapon = weapon->m_IDX;
             lastammo   = ammo;
@@ -91,7 +129,7 @@ class HurtListener : public IGameEventListener
 public:
     virtual void FireGameEvent(KeyValues *event)
     {
-        if (strcmp("player_hurt", event->GetName()))
+        if (strcmp("player_hurt", event->GetName()) || strcmp("player_death", event->GetName()))
             return;
         if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) ==
             g_IEngine->GetLocalPlayer())
@@ -99,7 +137,7 @@ public:
             if (CE_GOOD(LOCAL_W) &&
                 (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
                  LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap)))
-                OnHit(event->GetBool("crit"));
+                OnHit(strcmp("player_death", event->GetName()) ? event->GetBool("crit") : false);
         }
     }
 };

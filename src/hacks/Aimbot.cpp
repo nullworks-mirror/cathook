@@ -182,8 +182,8 @@ bool BacktrackAimbot()
 {
     if (!hacks::shared::backtrack::enable || !backtrackAimbot)
         return false;
-	if (aimkey && !aimkey.KeyDown())
-		return false;
+    if (aimkey && !aimkey.KeyDown())
+        return false;
 
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !CanShoot())
         return false;
@@ -194,14 +194,15 @@ bool BacktrackAimbot()
 
     int iBestTarget = hacks::shared::backtrack::iBestTarget;
     if (iBestTarget == -1)
-    	return true;
+        return true;
     int tickcnt = 0;
 
     for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
     {
         bool good_tick = false;
         for (int j = 0; j < 12; ++j)
-            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick && hacks::shared::backtrack::sorted_ticks[j].tickcount != FLT_MAX)
+            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick &&
+                hacks::shared::backtrack::sorted_ticks[j].tickcount != FLT_MAX)
                 good_tick = true;
         tickcnt++;
         if (!i.hitboxpos.z)
@@ -216,6 +217,7 @@ bool BacktrackAimbot()
         // ok just in case
         if (CE_BAD(tar))
             continue;
+        //target_eid = tar->m_IDX;
         Vector &angles         = NET_VECTOR(tar, netvar.m_angEyeAngles);
         float &simtime         = NET_FLOAT(tar, netvar.m_flSimulationTime);
         angles.y               = i.viewangles;
@@ -232,11 +234,11 @@ bool BacktrackAimbot()
         else if (silent)
             g_pLocalPlayer->bUseSilentAngles = true;
         if (!slow_aim)
-        	slow_can_shoot = true;
+            slow_can_shoot = true;
         // Set angles
         g_pUserCmd->viewangles = angles2;
         if (autoshoot && slow_can_shoot)
-        	g_pUserCmd->buttons |= IN_ATTACK;
+            g_pUserCmd->buttons |= IN_ATTACK;
         return true;
     }
     return true;
@@ -289,8 +291,6 @@ void CreateMove()
          g_pLocalPlayer->weapon_mode == weapon_throwable))
         projectileAimbotRequired = true;
 
-
-
     // Local player check + Aimkey
     if (!aimkey_status || !ShouldAim())
         return;
@@ -308,7 +308,7 @@ void CreateMove()
             cur_proj_grav = float(proj_gravity);
     }
     if (BacktrackAimbot())
-    	return;
+        return;
 
     if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
         return;
@@ -325,6 +325,7 @@ void CreateMove()
     // Attemt to auto-shoot
 
     // flNextPrimaryAttack meme
+    //target_eid = target_entity->m_IDX;
     if (only_can_shoot)
     {
 

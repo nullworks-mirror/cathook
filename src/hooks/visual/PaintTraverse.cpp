@@ -15,6 +15,17 @@ CatVar no_zoom(CV_SWITCH, "no_zoom", "0", "Disable scope",
                "Disables black scope overlay");
 static CatVar pure_bypass(CV_SWITCH, "pure_bypass", "0", "Pure Bypass",
                           "Bypass sv_pure");
+int spamdur = 0;
+Timer joinspam{};
+CatCommand join_spam("join_spam",
+                         "Spam joins server for X seconds",
+                         [](const CCommand &args) {
+							 if (args.ArgC() < 1)
+								 return;
+                             int id    = atoi(args.Arg(1));
+                             joinspam.update();
+                             spamdur = id;
+                         });
 void *pure_orig  = nullptr;
 void **pure_addr = nullptr;
 
@@ -27,6 +38,34 @@ static CatVar
 static CatVar no_reportlimit(CV_SWITCH, "no_reportlimit", "0",
                              "no report limit",
                              "Remove playerlist report time limit");
+// static CatVar disable_ban_tf(CV_SWITCH, "disable_mm_ban", "0", "Disable MM
+// ban", "Disable matchmaking ban");
+// static CatVar party_bypass(CV_SWITCH, "party_bypass", "0", "Party bypass",
+// "Bypass the have to be friended restrictions on party");
+/*void JoinParty(uint32 steamid)
+{
+    CSteamID id(steamid, EUniverse::k_EUniversePublic,
+                EAccountType::k_EAccountTypeIndividual);
+}
+CatCommand join_party("join_party", "Join this players party (steamid3, no U:1:
+and no [])", [](const CCommand &args) {
+    if (args.ArgC() < 1)
+    {
+        g_ICvar->ConsolePrintf("Please give a steamid3, thanks.\n");
+        return;
+    }
+
+    std::string tofind(args.Arg(1));
+    if (tofind.find("[U:1:") || tofind.find("]"))
+        g_ICvar->ConsolePrintf("Invalid steamid3. Please remove the [U:1 and the
+].\n");
+    unsigned int id = atol(args.Arg(1));
+    if (!id)
+        g_ICvar->ConsolePrintf("Invalid steamid3.\n");
+    else
+        JoinParty(id);
+});*/
+
 bool replaced = false;
 namespace hooked_methods
 {
@@ -46,10 +85,74 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
 
 #if ENABLE_VISUALS
     if (!textures_loaded)
-    {
         textures_loaded = true;
-    }
 #endif
+    static bool switcherido = false;
+    if (switcherido && spamdur && !joinspam.check(spamdur * 1000))
+    {
+    	auto gc = re::CTFGCClientSystem::GTFGCClientSystem();
+    	if (!gc)
+    		goto label1;
+    	gc->JoinMMMatch();
+    }
+    else if (!joinspam.check(spamdur * 1000) && spamdur)
+    {
+    	INetChannel *ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
+    	if (!ch)
+    		goto label1;
+    	ch->Shutdown("GET GOOD GET CATHOOK");
+    }
+    label1:
+    /*static bool replacedparty = false;
+    if (party_bypass && !replacedparty)
+    {
+        static unsigned char patch[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
+        static unsigned char patch2[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+        static unsigned char patch3[] = { 0x90, 0x90};
+        static unsigned char patch4[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
+        uintptr_t addr = gSignatures.GetClientSignature("0F 84 ? ? ? ? 8B 7B ?
+    8D 45");
+        uintptr_t addr2 = gSignatures.GetClientSignature("0F 8F ? ? ? ? 80 BD ?
+    ? ? ? ? 0F 84 ? ? ? ? 80 BD");
+        uintptr_t addr3 = gSignatures.GetClientSignature("74 ? E8 ? ? ? ? 89
+    F1");
+        uintptr_t addr4 = gSignatures.GetClientSignature("0F 84 ? ? ? ? 8B 45 ?
+    8B 70 ? 8B 78 ? 8D 45");
+        uintptr_t addr5 = gSignatures.GetClientSignature("89 C6 74 ? 8B 43 ? 85
+    C0 74 ? 8B 10");
+        if (addr && addr2 && addr3 && addr4 && addr5)
+        {
+            logging::Info("Party bypass: 0x%08X, 0x%08X, 0x%08X, 0x%08X", addr,
+    addr2, addr3, addr4);
+            Patch((void*) addr, (void *) patch, sizeof(patch));
+            Patch((void*) addr2, (void *) patch2, sizeof(patch2));
+            Patch((void*) addr3, (void *) patch3, sizeof(patch3));
+            Patch((void*) addr4, (void *) patch4, sizeof(patch4));
+            replacedparty = true;
+        }
+        else
+            logging::Info("No Party bypass Signature");
+    }
+    static bool replacedban = false;
+    if (disable_ban_tf && !replacedban)
+    {
+        static unsigned char patch[] = { 0x31, 0xe0 };
+        static unsigned char patch2[] = { 0xb0, 0x01, 0x90 };
+        uintptr_t addr = gSignatures.GetClientSignature("31 C0 5B 5E 5F 5D C3 8D
+    B6 00 00 00 00 BA");
+        uintptr_t addr2 = gSignatures.GetClientSignature("0F 92 C0 83 C4 ? 5B 5E
+    5F 5D C3 8D B4 26 00 00 00 00 83 C4");
+        if (addr && addr2)
+        {
+            logging::Info("MM Banned: 0x%08x, 0x%08x", addr, addr2);
+            Patch((void*) addr, (void *) patch, sizeof(patch));
+            Patch((void*) addr2, (void *) patch2, sizeof(patch2));
+            replacedban = true;
+        }
+        else
+            logging::Info("No disable ban Signature");
+
+    }*/
     if (no_reportlimit && !replaced)
     {
         static unsigned char patch[] = { 0xB8, 0x01, 0x00, 0x00, 0x00 };
