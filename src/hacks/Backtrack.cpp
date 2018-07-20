@@ -174,7 +174,7 @@ void Run()
         {
             bool good_tick = false;
             for (int i = 0; i < 12; ++i)
-                if (t == sorted_ticks[i].tick && sorted_ticks[i].tickcount != FLT_MAX)
+                if (t == sorted_ticks[i].tick && sorted_ticks[i].tickcount != INT_MAX)
                     good_tick = true;
             if (!good_tick)
                 continue;

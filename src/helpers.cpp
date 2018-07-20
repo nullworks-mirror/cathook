@@ -192,16 +192,10 @@ bool canReachVector(Vector loc, Vector dest)
         int maxiterations = floor(dest.DistTo(loc)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
+            // math to get the next vector 40.0f in the direction of dest
             Vector vec = loc + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
 
-            trace_t trace;
-            Ray_t ray;
-            Vector down = vec;
-            down.z      = down.z - 50;
-            ray.Init(vec, down);
-            g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
-                               &trace);
-            if (!(trace.startpos.DistTo(trace.endpos) <= 45))
+            if (DistanceToGround(vec) >= 45)
                 return false;
 
             for (int j = 0; j < 4; j++)
@@ -223,13 +217,13 @@ bool canReachVector(Vector loc, Vector dest)
                     directionalLoc.y = directionalLoc.y - 40;
                     break;
                 }
-                trace_t trace2;
-                Ray_t ray2;
-                ray2.Init(vec, directionalLoc);
-                g_ITrace->TraceRay(ray2, 0x4200400B, &trace::filter_no_player,
-                                   &trace2);
+                trace_t trace;
+                Ray_t ray;
+                ray.Init(vec, directionalLoc);
+                g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
+                                   &trace);
                 // distance of trace < than 26
-                if (trace2.startpos.DistTo(trace2.endpos) < 26.0f)
+                if (trace.startpos.DistTo(trace.endpos) < 26.0f)
                     return false;
             }
         }
@@ -237,16 +231,11 @@ bool canReachVector(Vector loc, Vector dest)
     else
     {
         // check if the vector is too high above ground
-        trace_t trace;
-        Ray_t ray;
-        Vector down = loc;
-        down.z      = down.z - 50;
-        ray.Init(loc, down);
-        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
         // higher to avoid small false positives, player can jump 42 hu according to
         // the tf2 wiki
-        if (!(trace.startpos.DistTo(trace.endpos) <= 45))
+        if (DistanceToGround(loc) >= 45)
             return false;
+
         // check if there is enough space arround the vector for a player to fit
         // for loop for all 4 directions
         for (int i = 0; i < 4; i++)
@@ -268,36 +257,16 @@ bool canReachVector(Vector loc, Vector dest)
                 directionalLoc.y = directionalLoc.y - 40;
                 break;
             }
-            trace_t trace2;
-            Ray_t ray2;
-            ray2.Init(loc, directionalLoc);
-            g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace2);
+            trace_t trace;
+            Ray_t ray;
+            ray.Init(loc, directionalLoc);
+            g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
             // distance of trace < than 26
-            if (trace2.startpos.DistTo(trace2.endpos) < 26.0f)
+            if (trace.startpos.DistTo(trace.endpos) < 26.0f)
                 return false;
         }
     }
     return true;
-}
-
-// returns if the player is currently jumping/falling.
-bool isJumping(Vector vec)
-{
-    // check if the vector is too high above ground
-    trace_t trace;
-    Ray_t ray;
-    Vector down = vec;
-    Vector loc  = vec;
-    down.z      = down.z - 50;
-    loc.z       = loc.z + 5;
-    ray.Init(vec, down);
-    // trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
-    // lower to avoid small false negatives, player can jump 42 hu according to
-    // the tf2 wiki, higher because loc.z = loc.z + 5;
-    if (trace.startpos.DistTo(trace.endpos) > 45)
-        return true;
-    return false;
 }
 
 std::string GetLevelName()
