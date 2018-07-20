@@ -52,7 +52,7 @@ void CreateMove()
         {
             bool good_tick = false;
             for (int j = 0; j < 12; ++j)
-                if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick)
+                if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick && hacks::shared::backtrack::sorted_ticks[j].tickcount != INT_MAX)
                     good_tick = true;
             tickcnt++;
             if (!good_tick)
