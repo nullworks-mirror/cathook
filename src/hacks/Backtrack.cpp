@@ -9,8 +9,10 @@
 #include "hacks/Backtrack.hpp"
 #include <boost/circular_buffer.hpp>
 #include <glez/draw.hpp>
-#define IsMelee GetWeaponMode() == weapon_melee
-
+bool IsMelee()
+{
+	return GetWeaponMode() == weapon_melee;
+}
 namespace hacks::shared::backtrack
 {
 CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
@@ -175,7 +177,7 @@ void Run()
             bool good_tick = false;
             for (int i = 0; i < 12; ++i)
                 if (t == sorted_ticks[i].tick &&
-                    sorted_ticks[i].tickcount != FLT_MAX)
+                    sorted_ticks[i].tickcount != INT_MAX && sorted_ticks[i].tickcount)
                     good_tick = true;
             if (!good_tick)
                 continue;
