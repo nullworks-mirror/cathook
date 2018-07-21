@@ -195,7 +195,7 @@ bool canReachVector(Vector loc, Vector dest)
             // math to get the next vector 40.0f in the direction of dest
             Vector vec = loc + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
 
-            if (DistanceToGround(vec) >= 45)
+            if (DistanceToGround({vec.x,vec.y,vec.z + 5}) >= 40)
                 return false;
 
             for (int j = 0; j < 4; j++)
@@ -233,7 +233,7 @@ bool canReachVector(Vector loc, Vector dest)
         // check if the vector is too high above ground
         // higher to avoid small false positives, player can jump 42 hu according to
         // the tf2 wiki
-        if (DistanceToGround(loc) >= 45)
+        if (DistanceToGround({loc.x,loc.y,loc.z + 5}) >= 40)
             return false;
 
         // check if there is enough space arround the vector for a player to fit

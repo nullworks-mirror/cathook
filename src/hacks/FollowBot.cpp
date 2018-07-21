@@ -76,7 +76,7 @@ void checkAFK()
         auto entity = ENTITY(i);
         if (CE_BAD(entity))
             continue;
-        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(40.0f))
+        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(60.0f))
         {
             afkTicks[i].update();
         }
@@ -352,7 +352,7 @@ void WorldTick()
     if (dist_to_target > (float) follow_distance)
     {
         // Check for jump
-        if (autojump && lastJump.check(1000) && (idle_time.check(2000) || DistanceToGround(breadcrumbs[0]) > 42))
+        if (autojump && lastJump.check(1000) && (idle_time.check(2000) || DistanceToGround({breadcrumbs[0].x,breadcrumbs[0].y,breadcrumbs[0].z + 5}) > 47))
         {
             g_pUserCmd->buttons |= IN_JUMP;
             lastJump.update();
