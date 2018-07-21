@@ -64,9 +64,10 @@ static const int crumb_limit = 64; // limit
 
 // Followed entity, externed for highlight color
 int follow_target = 0;
-bool inited;
+static bool inited;
 
 Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
+Timer lastJump{};
 std::array<Timer, 32> afkTicks; // for how many ms the player hasn't been moving
 
 void checkAFK()
@@ -76,7 +77,7 @@ void checkAFK()
         auto entity = ENTITY(i);
         if (CE_BAD(entity))
             continue;
-        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(5.0f))
+        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(60.0f))
         {
             afkTicks[i].update();
         }
@@ -321,12 +322,6 @@ void WorldTick()
         }
     }
 
-    //    if(!checkPath()) //wip do not merge if you see this
-    //    {
-    //        follow_target = 0;
-    //        return;
-    //    }
-
     // Update timer on new target
     static Timer idle_time{};
     if (breadcrumbs.empty())
@@ -346,7 +341,7 @@ void WorldTick()
     // New crumbs, we add one if its empty so we have something to follow
     if ((breadcrumbs.empty() ||
          tar_orig.DistTo(breadcrumbs.at(breadcrumbs.size() - 1)) > 40.0F) &&
-        DistanceToGround(ENTITY(follow_target)) < 30)
+        DistanceToGround(ENTITY(follow_target)) < 45)
         breadcrumbs.push_back(tar_orig);
 
     // Prune old and close crumbs that we wont need anymore, update idle timer
@@ -372,14 +367,24 @@ void WorldTick()
     if (dist_to_target > (float) follow_distance)
     {
         // Check for jump
-        if (autojump && (idle_time.check(2000) || isJumping(breadcrumbs[0])))
+        if (autojump && lastJump.check(1000) && (idle_time.check(2000) || DistanceToGround({breadcrumbs[0].x,breadcrumbs[0].y,breadcrumbs[0].z + 5}) > 47))
+        {
             g_pUserCmd->buttons |= IN_JUMP;
-        // Check for idle
+            lastJump.update();
+        }
+        // Check if still moving. 70 HU = Sniper Zoomed Speed
+        if (idle_time.check(3000) && CE_VECTOR(g_pLocalPlayer->entity, netvar.vVelocity).IsZero(60.0f))
+        {
+            follow_target = 0;
+            return;
+        }
+        // Basic idle check
         if (idle_time.test_and_set(5000))
         {
             follow_target = 0;
             return;
         }
+
         static float last_slot_check = 0.0f;
         if (g_GlobalVars->curtime < last_slot_check)
             last_slot_check = 0.0f;
