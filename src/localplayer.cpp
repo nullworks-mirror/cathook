@@ -7,11 +7,11 @@
 
 #include "common.hpp"
 
-CatCommand printfov(
-    "fov_print", "Dump achievements to file (development)", []() {
-	if (CE_GOOD(LOCAL_E))
-		logging::Info("%d", CE_INT(LOCAL_E, netvar.iFOV));
-    });
+CatCommand printfov("fov_print", "Dump achievements to file (development)",
+                    []() {
+                        if (CE_GOOD(LOCAL_E))
+                            logging::Info("%d", CE_INT(LOCAL_E, netvar.iFOV));
+                    });
 void LocalPlayer::Update()
 {
     CachedEntity *wep;

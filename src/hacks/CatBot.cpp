@@ -29,6 +29,7 @@ static CatVar micspam_on(CV_INT, "cbu_micspam_on_interval", "3",
                          "+voicerecord interval");
 static CatVar micspam_off(CV_INT, "cbu_micspam_off_interval", "60",
                           "-voicerecord interval");
+static CatVar auto_crouch(CV_SWITCH, "cbu_autocrouch", "1", "Auto crouch");
 
 struct catbot_user_state
 {
@@ -215,6 +216,49 @@ void reportall()
     }
 }
 CatCommand report("report_debug", "debug", []() { reportall(); });
+Timer crouchcdr{};
+void smart_crouch()
+{
+    bool foundtar      = false;
+    static bool crouch = false;
+    if (crouchcdr.test_and_set(1000))
+    {
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        {
+            auto ent = ENTITY(i);
+            if (CE_BAD(ent) || ent->m_iTeam() == LOCAL_E->m_iTeam() ||
+                !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) ||
+                playerlist::AccessData(ent).state ==
+                    playerlist::k_EState::FRIEND ||
+                playerlist::AccessData(ent).state ==
+                    playerlist::k_EState::IPC ||
+                should_ignore_player(ent))
+            	continue;
+            bool failedvis = false;
+            for (int j = -1; j < 18; j++)
+            	if (IsEntityVisible(ent, j))
+            		failedvis = true;
+            if (failedvis)
+            	continue;
+            for (int j = 0; j < 18; j++)
+            {
+            	if (!LOCAL_E->hitboxes.GetHitbox(j))
+            		continue;
+            	if (!IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->center) && !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->min) && !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->max))
+            		continue;
+                else
+                {
+                    foundtar = true;
+                    crouch   = true;
+                }
+            }
+        }
+        if (!foundtar && crouch)
+            crouch = false;
+    }
+    if (crouch)
+        g_pUserCmd->buttons |= IN_DUCK;
+}
 void update()
 {
     if (!enabled)
@@ -239,6 +283,8 @@ void update()
         do_random_votekick();
     if (timer_catbot_list.test_and_set(3000))
         update_catbot_list();
+    if (auto_crouch)
+        smart_crouch();
     if (timer_abandon.test_and_set(2000) && level_init_timer.check(13000))
     {
         count_bots      = 0;

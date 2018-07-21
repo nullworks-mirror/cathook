@@ -22,11 +22,11 @@ static CatVar sound_alerts(CV_SWITCH, "spyalert_sound", "1", "Sound Alerts",
                            "Demoman yells spy when a spy is within distance");
 static CatVar sound_alert_interval(CV_FLOAT, "spyalert_interval", "3",
                                    "Alert Interval", "Sound alert interval");
-static CatVar voicemenu(CV_SWITCH, "spyalert_voice", "0",
-                                   "Voicemenu", "Inform other Players of a nearby Spy using the Voicemenu.");
+static CatVar
+    voicemenu(CV_SWITCH, "spyalert_voice", "0", "Voicemenu",
+              "Inform other Players of a nearby Spy using the Voicemenu.");
 static CatVar invisible(CV_SWITCH, "spyalert_invisible", "0",
-                                   "Detect Invisible", "Detect invisible Spies.");
-
+                        "Detect Invisible", "Detect invisible Spies.");
 
 bool warning_triggered  = false;
 bool backstab_triggered = false;

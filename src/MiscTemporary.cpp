@@ -4,6 +4,8 @@
 */
 
 #include "MiscTemporary.hpp"
+std::array<Timer, 32> timers{};
+std::array<int, 32> bruteint{};
 CatVar minigun_jump(CV_SWITCH, "minigun_jump", "0", "TF2C minigun jump",
                     "Allows jumping while shooting with minigun");
 
@@ -25,7 +27,8 @@ CatVar serverlag_amount(
 CatVar servercrash(CV_SWITCH, "servercrash", "0", "crash servers",
                    "Crash servers by spamming signon net messages");
 CatVar semiauto(CV_INT, "semiauto", "0", "Semiauto");
-bool *bSendPackets;
+bool *bSendPackets = nullptr;
+CatVar resolver(CV_SWITCH, "resolver", "0", "Resolve angles");
 
 CatVar crypt_chat(
     CV_SWITCH, "chat_crypto", "1", "Crypto chat",

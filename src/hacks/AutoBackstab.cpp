@@ -52,7 +52,9 @@ void CreateMove()
         {
             bool good_tick = false;
             for (int j = 0; j < 12; ++j)
-                if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick && hacks::shared::backtrack::sorted_ticks[j].tickcount != INT_MAX)
+                if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick &&
+                    hacks::shared::backtrack::sorted_ticks[j].tickcount !=
+                        INT_MAX)
                     good_tick = true;
             tickcnt++;
             if (!good_tick)
@@ -71,7 +73,7 @@ void CreateMove()
                 Vector &angles = NET_VECTOR(tar, netvar.m_angEyeAngles);
                 float &simtime = NET_FLOAT(tar, netvar.m_flSimulationTime);
                 angles.y       = i.viewangles;
-                simtime 	   = i.simtime;
+                simtime        = i.simtime;
                 g_pUserCmd->tick_count = i.tickcount;
                 g_pUserCmd->buttons |= IN_ATTACK;
                 break;

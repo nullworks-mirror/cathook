@@ -304,7 +304,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         }
 #endif
 #endif
-        *bSendPackets = true;
         if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon()))
         {
 #if not LAGBOT_MODE
@@ -347,26 +346,24 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 PROF_SECTION(CM_aimbot);
                 hacks::shared::aimbot::CreateMove();
             }
-            IF_GAME(IsTF2())
-            {
-                PROF_SECTION(CM_antibackstab);
-                hacks::tf2::antibackstab::CreateMove();
-            }
             static int attackticks = 0;
             if (g_pUserCmd->buttons & IN_ATTACK)
                 ++attackticks;
             else
                 attackticks = 0;
             if (semiauto)
-            {
                 if (g_pUserCmd->buttons & IN_ATTACK)
-                {
                     if (attackticks % int(semiauto) < int(semiauto) - 1)
-                    {
                         g_pUserCmd->buttons &= ~IN_ATTACK;
-                    }
+            static int fakelag_queue = 0;
+            if (CE_GOOD(LOCAL_E))
+                if (fakelag_amount)
+                {
+                    *bSendPackets = int(fakelag_amount) == fakelag_queue;
+                    fakelag_queue++;
+                    if (fakelag_queue > int(fakelag_amount))
+                        fakelag_queue = 0;
                 }
-            }
             {
                 PROF_SECTION(CM_antiaim);
                 hacks::shared::antiaim::ProcessUserCmd(cmd);
@@ -394,6 +391,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             {
                 PROF_SECTION(CM_autoheal);
                 hacks::tf::autoheal::CreateMove();
+            }
+            IF_GAME(IsTF2())
+            {
+                PROF_SECTION(CM_antibackstab);
+                hacks::tf2::antibackstab::CreateMove();
             }
             IF_GAME(IsTF2())
             {
@@ -466,24 +468,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     hacks::shared::backtrack::UpdateIncomingSequences();
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
-        static int fakelag_queue = 0;
-        if (fakelag_amount)
-        {
-            if (fakelag_queue == int(fakelag_amount) ||
-                (g_pUserCmd->buttons & IN_ATTACK))
-            {
-                *bSendPackets = true;
-            }
-            else if (fakelag_queue < int(fakelag_amount))
-            {
-                *bSendPackets = false;
-            }
-            else
-            {
-                fakelag_queue = 0;
-            }
-            fakelag_queue++;
-        }
         speedapplied = false;
         if (roll_speedhack &&
             g_IInputSystem->IsButtonDown(
@@ -524,7 +508,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 
             ret = false;
         }
-        if (cmd)
+        if (cmd &&
+            (cmd->buttons & IN_ATTACK ||
+             !(hacks::shared::antiaim::enabled &&
+               float(hacks::shared::antiaim::yaw_mode) >= 9 && !*bSendPackets)))
             g_Settings.last_angles = cmd->viewangles;
     }
 #endif

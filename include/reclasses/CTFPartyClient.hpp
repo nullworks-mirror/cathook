@@ -21,7 +21,8 @@ public:
     static bool BCanQueueForStandby(CTFPartyClient *this_);
     char RequestQueueForMatch(int type);
     char RequestLeaveForMatch(int type);
-    int BInvitePlayerToParty(int steamid);
+    int BInvitePlayerToParty(CSteamID steamid);
+    int BRequestJoinPlayer(CSteamID steamid);
     static bool BInQueue(CTFPartyClient *this_);
 };
 }

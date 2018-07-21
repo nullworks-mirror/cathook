@@ -578,7 +578,7 @@ int HealingPriority(int idx)
     int overheal        = maxoverheal - (maxbuffedhealth - health);
     float overhealp     = ((float) overheal / (float) maxoverheal);
     float healthp       = ((float) health / (float) maxhealth);
-    priority += hacks::shared::followbot::ClassPriority(ent) * 10;
+    priority += hacks::shared::followbot::ClassPriority(ent) * 1.3;
     switch (playerlist::AccessData(ent).state)
     {
     case playerlist::k_EState::FRIEND:

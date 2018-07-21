@@ -279,7 +279,8 @@ void crit_err_hdlr(int sig_num, siginfo_t *info, void *ucontext)
     // just fprintf to stderr (or do both).
     passwd *pwd   = getpwuid(getuid());
     backtraceFile = fopen(
-        strfmt("/tmp/cathook-%s-%d-segfault.log", pwd->pw_name, getpid()).get(), "w");
+        strfmt("/tmp/cathook-%s-%d-segfault.log", pwd->pw_name, getpid()).get(),
+        "w");
 
     if (sig_num == SIGSEGV)
         fprintf(backtraceFile, "signal %d (%s), address is %p from %p\n",

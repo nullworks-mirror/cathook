@@ -54,8 +54,9 @@ static CatVar afk(CV_SWITCH, "fb_afk", "1", "Switch target if AFK",
 static CatVar afktime(
     CV_INT, "fb_afk_time", "15000", "Max AFK Time",
     "Max time in ms spent standing still before player gets declared afk");
-static CatVar corneractivate(CV_SWITCH, "fb_activation_corners", "1", "Activate arround corners",
-                  "Try to find an activation path to an entity behind a corner.");
+static CatVar corneractivate(
+    CV_SWITCH, "fb_activation_corners", "1", "Activate arround corners",
+    "Try to find an activation path to an entity behind a corner.");
 
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
@@ -102,7 +103,9 @@ void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
         int maxiterations = floor(corner.DistTo(g_pLocalPlayer->v_Origin)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            breadcrumbs.push_back(g_pLocalPlayer->v_Origin + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+            breadcrumbs.push_back(g_pLocalPlayer->v_Origin +
+                                  dist / vectorMax(vectorAbs(dist)) * 40.0f *
+                                      (i + 1));
         }
     }
 
@@ -110,34 +113,35 @@ void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
     for (int i = 0; i < maxiterations; i++)
     {
-        breadcrumbs.push_back(corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+        breadcrumbs.push_back(
+            corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
     }
 }
-int ClassPriority(CachedEntity* ent)
+int ClassPriority(CachedEntity *ent)
 {
-	switch (g_pPlayerResource->GetClass(ent))
-	{
-		if (g_pPlayerResource->GetClass(ent) == tf_spy)
-			return 0;
-		case tf_engineer:
-			return 1;
-		case tf_medic:
-			return 2;
-		case tf_pyro:
-			return 3;
-		case tf_scout:
-			return 4;
-		case tf_sniper:
-			return 5;
-		case tf_demoman:
-			return 6;
-		case tf_soldier:
-			return 7;
-		case tf_heavy:
-			return 8;
-		default:
-			return 0;
-	}
+    switch (g_pPlayerResource->GetClass(ent))
+    {
+        if (g_pPlayerResource->GetClass(ent) == tf_spy)
+            return 0;
+    case tf_engineer:
+        return 1;
+    case tf_medic:
+        return 2;
+    case tf_pyro:
+        return 3;
+    case tf_scout:
+        return 4;
+    case tf_sniper:
+        return 5;
+    case tf_demoman:
+        return 6;
+    case tf_soldier:
+        return 7;
+    case tf_heavy:
+        return 8;
+    default:
+        return 0;
+    }
 }
 void WorldTick()
 {
@@ -183,7 +187,7 @@ void WorldTick()
             if (CE_BAD(entity)) // Exist + dormant
                 continue;
             if (i == follow_target)
-                continue;
+                break;
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
             if (steamid != entity->player_info.friendsID) // steamid check
@@ -193,8 +197,11 @@ void WorldTick()
                 continue;
             if (corneractivate)
             {
-                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
-                if (!indirectOrigin.z) //if we couldn't find it, exit
+                Vector indirectOrigin =
+                    VischeckWall(LOCAL_E, entity, 250,
+                                 true); // get the corner location that the
+                                        // future target is visible from
+                if (!indirectOrigin.z)  // if we couldn't find it, exit
                     continue;
                 addCrumbs(entity, indirectOrigin);
             }
@@ -209,10 +216,14 @@ void WorldTick()
     }
     // If we dont have a follow target from that, we look again for someone
     // else who is suitable
-    if ((!follow_target || change || (ClassPriority(ENTITY(follow_target)) < 6 && ENTITY(follow_target)->player_info.friendsID != steamid)) && roambot)
+    if ((!follow_target || change ||
+         (ClassPriority(ENTITY(follow_target)) < 6 &&
+          ENTITY(follow_target)->player_info.friendsID != steamid)) &&
+        roambot)
     {
         // Try to get a new target
-        auto ent_count = followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
+        auto ent_count =
+            followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
         for (int i = 0; i < ent_count; i++)
         {
             auto entity = ENTITY(i);
@@ -258,13 +269,17 @@ void WorldTick()
                 continue;
             }
             // check if new target has a higher priority than current target
-            if (ClassPriority(ENTITY(follow_target)) >= ClassPriority(ENTITY(i)))
+            if (ClassPriority(ENTITY(follow_target)) >=
+                ClassPriority(ENTITY(i)))
                 continue;
 
             if (corneractivate)
             {
-                Vector indirectOrigin = VischeckWall(LOCAL_E, entity, 250, true); //get the corner location that the future target is visible from
-                if (!indirectOrigin.z) //if we couldn't find it, exit
+                Vector indirectOrigin =
+                    VischeckWall(LOCAL_E, entity, 250,
+                                 true); // get the corner location that the
+                                        // future target is visible from
+                if (!indirectOrigin.z)  // if we couldn't find it, exit
                     continue;
                 addCrumbs(entity, indirectOrigin);
             }
@@ -306,11 +321,11 @@ void WorldTick()
         }
     }
 
-//    if(!checkPath()) //wip do not merge if you see this
-//    {
-//        follow_target = 0;
-//        return;
-//    }
+    //    if(!checkPath()) //wip do not merge if you see this
+    //    {
+    //        follow_target = 0;
+    //        return;
+    //    }
 
     // Update timer on new target
     static Timer idle_time{};
