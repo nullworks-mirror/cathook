@@ -11,7 +11,7 @@ rm ../install-all # remove install file
 # Install base Dependencies
 #
 if [ -f "/etc/arch-release" ]; then
-    sudo pacman -S --needed --noconfirm boost cmake make lib32-openssl lib32-libpng gcc gdb lib32-sdl2 lib32-glew freetype2
+    sudo pacman -S --needed --noconfirm boost cmake make lib32-openssl lib32-libpng gcc gdb lib32-sdl2 lib32-glew freetype2 rsync
 else
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     sudo apt update
