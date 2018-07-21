@@ -55,7 +55,7 @@ static CatVar afktime(
     CV_INT, "fb_afk_time", "15000", "Max AFK Time",
     "Max time in ms spent standing still before player gets declared afk");
 static CatVar corneractivate(
-    CV_SWITCH, "fb_activation_corners", "1", "Activate arround corners",
+    CV_SWITCH, "fb_activation_corners", "1", "Activate around corners",
     "Try to find an activation path to an entity behind a corner.");
 
 // Something to store breadcrumbs created by followed players
@@ -143,6 +143,8 @@ int ClassPriority(CachedEntity *ent)
         return 0;
     }
 }
+Timer waittime{};
+int lastent = 0;
 void WorldTick()
 {
     if (!followbot)
@@ -195,15 +197,28 @@ void WorldTick()
 
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
                 continue;
+            lastent++;
+            if (lastent > g_IEngine->GetMaxClients())
+            	lastent = 0;
             if (corneractivate)
             {
                 Vector indirectOrigin =
-                    VischeckWall(LOCAL_E, entity, 250,
+                    VischeckCorner(LOCAL_E, entity, 500,
                                  true); // get the corner location that the
                                         // future target is visible from
-                if (!indirectOrigin.z)  // if we couldn't find it, exit
-                    continue;
-                addCrumbs(entity, indirectOrigin);
+                std::pair<Vector, Vector> corners;
+                if (!indirectOrigin.z && entity->m_IDX == lastent)  // if we couldn't find it, run wallcheck instead
+                {
+                	corners = VischeckWall(LOCAL_E, entity, 500, true);
+                	if (!corners.first.z || !corners.second.z)
+                		continue;
+                	addCrumbs(LOCAL_E, corners.first);
+                	addCrumbs(entity, corners.second);
+                }
+                if (indirectOrigin.z)
+                	addCrumbs(entity, indirectOrigin);
+                else if (!indirectOrigin.z && !corners.first.z)
+                	continue;
             }
             else
             {
@@ -265,9 +280,7 @@ void WorldTick()
             if (follow_target &&
                 ENTITY(follow_target)->m_flDistance() <
                     entity->m_flDistance()) // favor closer entitys
-            {
                 continue;
-            }
             // check if new target has a higher priority than current target
             if (ClassPriority(ENTITY(follow_target)) >=
                 ClassPriority(ENTITY(i)))
@@ -276,12 +289,22 @@ void WorldTick()
             if (corneractivate)
             {
                 Vector indirectOrigin =
-                    VischeckWall(LOCAL_E, entity, 250,
+                    VischeckCorner(LOCAL_E, entity, 500,
                                  true); // get the corner location that the
                                         // future target is visible from
-                if (!indirectOrigin.z)  // if we couldn't find it, exit
-                    continue;
-                addCrumbs(entity, indirectOrigin);
+                std::pair<Vector, Vector> corners;
+                if (!indirectOrigin.z && entity->m_IDX == lastent)  // if we couldn't find it, run wallcheck instead
+                {
+                	corners = VischeckWall(LOCAL_E, entity, 500, true);
+                	if (!corners.first.z || !corners.second.z)
+                		continue;
+                	addCrumbs(LOCAL_E, corners.first);
+                	addCrumbs(entity, corners.second);
+                }
+                if (indirectOrigin.z)
+                	addCrumbs(entity, indirectOrigin);
+                else if (!indirectOrigin.z && !corners.first.z)
+                	continue;
             }
             else
             {
