@@ -9,10 +9,6 @@
 #include "hacks/Backtrack.hpp"
 #include <boost/circular_buffer.hpp>
 #include <glez/draw.hpp>
-bool IsMelee()
-{
-    return GetWeaponMode() == weapon_melee;
-}
 namespace hacks::shared::backtrack
 {
 CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
@@ -108,6 +104,7 @@ void Run()
     float bestFov = 99999;
     BestTick      = 0;
     iBestTarget   = -1;
+    bool IsMelee        = GetWeaponMode() == weapon_melee;
 
     float prev_distance = 9999;
 
