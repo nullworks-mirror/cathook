@@ -112,7 +112,7 @@ ITexture *GetBuffer(int i)
                                                    TEXTURE_GROUP_RENDER_TARGET);
         else fullframe = g_IMaterialSystemHL->FindTexture(
             "_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
-        //char *newname    = new char[32];
+        // char *newname    = new char[32];
         std::unique_ptr<char[]> newname(new char[32]);
         std::string name = format("_cathook_buff", i);
         strncpy(newname.get(), name.c_str(), 30);

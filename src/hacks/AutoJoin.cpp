@@ -97,7 +97,8 @@ void UpdateSearch()
     if (!gc->BConnectedToMatchServer(false) &&
         queuetime.test_and_set(10 * 1000 * 60) && !gc->BHaveLiveMatch())
         tfmm::queue_leave();
-    if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch())
+    if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
+        autoqueue_timer.test_and_set(1000 * 30))
     {
         logging::Info("Starting queue");
         tfmm::queue_start();

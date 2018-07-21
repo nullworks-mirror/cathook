@@ -193,7 +193,8 @@ bool canReachVector(Vector loc, Vector dest)
         for (int i = 0; i < maxiterations; i++)
         {
             // math to get the next vector 40.0f in the direction of dest
-            Vector vec = loc + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
+            Vector vec =
+                loc + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1);
 
             if (DistanceToGround({vec.x,vec.y,vec.z + 5}) >= 40)
                 return false;
@@ -953,11 +954,11 @@ bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only)
     trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
     ray.Init(origin, target);
     if (!enviroment_only)
-    	g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
-                       &trace_visible);
+        g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
+                           &trace_visible);
     else
-    	g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
-    	                       &trace_visible);
+        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
+                           &trace_visible);
 
     return (trace_visible.fraction == 1.0f);
 }
@@ -1225,7 +1226,7 @@ void PrintChat(const char *fmt, ...)
 // does it on its own
 std::unique_ptr<char[]> strfmt(const char *fmt, ...)
 {
-    //char *buf = new char[1024];
+    // char *buf = new char[1024];
     auto buf = std::make_unique<char[]>(1024);
     va_list list;
     va_start(list, fmt);
