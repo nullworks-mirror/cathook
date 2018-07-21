@@ -35,8 +35,7 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                                 steamid = 0x0;
                                 return;
                             }
-                            unsigned tempid = atol(args.Arg(1));
-                            steamid         = *(unsigned int *) &tempid;
+                            steamid = atol(args.Arg(1));
 
                         });
 static CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "0", "Mimic weapon slot",
@@ -198,9 +197,6 @@ void WorldTick()
 
             if (!entity->m_bAlivePlayer()) // Dont follow dead players
                 continue;
-            lastent++;
-            if (lastent > g_IEngine->GetMaxClients())
-            	lastent = 0;
             if (corneractivate)
             {
                 Vector indirectOrigin =
@@ -290,13 +286,15 @@ void WorldTick()
             if (corneractivate)
             {
                 Vector indirectOrigin =
-                    VischeckCorner(LOCAL_E, entity, 500,
+                    VischeckCorner(LOCAL_E, entity, 250,
                                  true); // get the corner location that the
                                         // future target is visible from
                 std::pair<Vector, Vector> corners;
+                corners.first.z = 0;
+                corners.second.z = 0;
                 if (!indirectOrigin.z && entity->m_IDX == lastent)  // if we couldn't find it, run wallcheck instead
                 {
-                	corners = VischeckWall(LOCAL_E, entity, 500, true);
+                	corners = VischeckWall(LOCAL_E, entity, 250, true);
                 	if (!corners.first.z || !corners.second.z)
                 		continue;
                 	addCrumbs(LOCAL_E, corners.first);
@@ -318,6 +316,9 @@ void WorldTick()
             afkTicks[i].update(); // set afk time to 0
         }
     }
+    lastent++;
+    if (lastent > g_IEngine->GetMaxClients())
+    	lastent = 0;
     // last check for entity before we continue
     if (!follow_target)
         return;

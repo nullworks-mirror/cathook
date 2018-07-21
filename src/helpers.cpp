@@ -212,7 +212,7 @@ std::pair<Vector,Vector> VischeckWall(CachedEntity *player, CachedEntity *target
                 // 40 * maxiterations = range in HU
                 for (int j = 0; j < maxiterations; j++)
                 {
-                    Vector virtualOrigin2 = origin;
+                    Vector virtualOrigin2 = target->m_vecOrigin();
                     // what direction to go in
                     switch (i)
                     {
@@ -238,9 +238,9 @@ std::pair<Vector,Vector> VischeckWall(CachedEntity *player, CachedEntity *target
                     if (!checkWalkable)
                         return toret;
                     // check if the location is accessible
-                    if (!canReachVector(origin, virtualOrigin) || !canReachVector(target->m_vecOrigin(), virtualOrigin2))
+                    if (!canReachVector(origin, virtualOrigin) || !canReachVector(virtualOrigin2, virtualOrigin) || !canReachVector(target->m_vecOrigin(), virtualOrigin2))
                         continue;
-                    if (canReachVector(virtualOrigin, target->m_vecOrigin()))
+                    if (canReachVector(virtualOrigin2, target->m_vecOrigin()))
                         return toret;
                 }
             }
