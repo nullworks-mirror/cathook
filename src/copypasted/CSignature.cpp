@@ -67,6 +67,16 @@ int GetBytes(const char *x)
 {
     return GetBits(x[0]) << 4 | GetBits(x[1]);
 }
+
+/* Shoutouts
+ * To
+ * Marc3842h
+ * for
+ * the
+ * way
+ * better
+ * sigscan
+ */
 uintptr_t CSignature::dwFindPattern(uintptr_t dwAddress, uintptr_t dwLength,
                                     const char *szPattern)
 {

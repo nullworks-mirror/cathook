@@ -11,7 +11,7 @@
 #include <glez/draw.hpp>
 bool IsMelee()
 {
-	return GetWeaponMode() == weapon_melee;
+    return GetWeaponMode() == weapon_melee;
 }
 namespace hacks::shared::backtrack
 {
@@ -163,8 +163,8 @@ void Run()
         float bestFOV = 180.0f;
         float distance, prev_distance_ticks = 9999;
 
-        for (int i = 0; i < 12; ++i)
-            sorted_ticks[i] = BestTickData{INT_MAX, i};
+        for (int i          = 0; i < 12; ++i)
+            sorted_ticks[i] = BestTickData{ INT_MAX, i };
         for (int t = 0; t < ticks; ++t)
         {
             if (headPositions[iBestTarget][t].tickcount)
@@ -177,7 +177,8 @@ void Run()
             bool good_tick = false;
             for (int i = 0; i < 12; ++i)
                 if (t == sorted_ticks[i].tick &&
-                    sorted_ticks[i].tickcount != INT_MAX && sorted_ticks[i].tickcount)
+                    sorted_ticks[i].tickcount != INT_MAX &&
+                    sorted_ticks[i].tickcount)
                     good_tick = true;
             if (!good_tick)
                 continue;

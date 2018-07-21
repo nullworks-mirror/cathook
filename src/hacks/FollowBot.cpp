@@ -201,7 +201,7 @@ void WorldTick()
                     VischeckWall(LOCAL_E, entity, 250,
                                  true); // get the corner location that the
                                         // future target is visible from
-                if (!indirectOrigin.z) // if we couldn't find it, exit
+                if (!indirectOrigin.z)  // if we couldn't find it, exit
                     continue;
                 addCrumbs(entity, indirectOrigin);
             }
@@ -269,7 +269,8 @@ void WorldTick()
                 continue;
             }
             // check if new target has a higher priority than current target
-            if (ClassPriority(ENTITY(follow_target)) >= ClassPriority(ENTITY(i)))
+            if (ClassPriority(ENTITY(follow_target)) >=
+                ClassPriority(ENTITY(i)))
                 continue;
 
             if (corneractivate)
@@ -278,7 +279,7 @@ void WorldTick()
                     VischeckWall(LOCAL_E, entity, 250,
                                  true); // get the corner location that the
                                         // future target is visible from
-                if (!indirectOrigin.z) // if we couldn't find it, exit
+                if (!indirectOrigin.z)  // if we couldn't find it, exit
                     continue;
                 addCrumbs(entity, indirectOrigin);
             }

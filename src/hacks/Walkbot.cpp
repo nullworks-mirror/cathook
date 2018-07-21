@@ -1260,9 +1260,8 @@ void Move()
                 }
             }
         }
-        prevlvlname            = g_IEngine->GetLevelName();
-        std::string prvlvlname = format(prevlvlname);
-        logging::Info("%s %s", prevlvlname, prvlvlname.c_str());
+        prevlvlname = g_IEngine->GetLevelName();
+        std::string prvlvlname(prevlvlname);
         if (boost::contains(prvlvlname, "pl_") ||
             boost::contains(prvlvlname, "cp_"))
         {

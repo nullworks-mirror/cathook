@@ -359,9 +359,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             if (CE_GOOD(LOCAL_E))
                 if (fakelag_amount)
                 {
-                	*bSendPackets = int(fakelag_amount) == fakelag_queue;
+                    *bSendPackets = int(fakelag_amount) == fakelag_queue;
                     fakelag_queue++;
-                   	if (fakelag_queue > int(fakelag_amount))
+                    if (fakelag_queue > int(fakelag_amount))
                         fakelag_queue = 0;
                 }
             {

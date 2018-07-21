@@ -158,8 +158,8 @@ static CatVar auto_zoom(
     "Automatically zoom in if you can see target, useful for followbots");
 static CatVar auto_unzoom(CV_SWITCH, "aimbot_auto_unzoom", "0", "Auto Un-zoom",
                           "Automatically unzoom");
-static CatVar backtrackAimbot(CV_SWITCH, "backtrack_aimbot", "0", "Backtrack Aimbot",
-                               "Enable Backtrack Aimbot");
+static CatVar backtrackAimbot(CV_SWITCH, "backtrack_aimbot", "0",
+                              "Backtrack Aimbot", "Enable Backtrack Aimbot");
 
 // Current Entity
 int target_eid{ 0 };
@@ -217,7 +217,7 @@ bool BacktrackAimbot()
         // ok just in case
         if (CE_BAD(tar))
             continue;
-        //target_eid = tar->m_IDX;
+        // target_eid = tar->m_IDX;
         Vector &angles         = NET_VECTOR(tar, netvar.m_angEyeAngles);
         float &simtime         = NET_FLOAT(tar, netvar.m_flSimulationTime);
         angles.y               = i.viewangles;
@@ -325,7 +325,7 @@ void CreateMove()
     // Attemt to auto-shoot
 
     // flNextPrimaryAttack meme
-    //target_eid = target_entity->m_IDX;
+    // target_eid = target_entity->m_IDX;
     if (only_can_shoot)
     {
 

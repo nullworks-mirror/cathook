@@ -45,9 +45,10 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
                 if (float(nightmode) > 0.0f)
                 {
                     if (strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
-                        pMaterial->ColorModulate(1.0f - float(nightmode) / 100.0f,
-                                                 1.0f - float(nightmode) / 100.0f,
-                                                 1.0f - float(nightmode) / 100.0f);
+                        pMaterial->ColorModulate(
+                            1.0f - float(nightmode) / 100.0f,
+                            1.0f - float(nightmode) / 100.0f,
+                            1.0f - float(nightmode) / 100.0f);
                     else
                         pMaterial->ColorModulate(
                             (1.0f - float(nightmode) / 100.0f) / 6.0f,

@@ -11,9 +11,9 @@
 re::CTFPartyClient *re::CTFPartyClient::GTFPartyClient()
 {
     typedef re::CTFPartyClient *(*GTFPartyClient_t)(void);
-    uintptr_t addr = gSignatures.GetClientSignature(
+    static uintptr_t addr = gSignatures.GetClientSignature(
         "55 A1 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 A1 ? ? ? ? 85 C0");
-    GTFPartyClient_t GTFPartyClient_fn = GTFPartyClient_t(addr);
+    static GTFPartyClient_t GTFPartyClient_fn = GTFPartyClient_t(addr);
 
     return GTFPartyClient_fn();
 }
@@ -57,11 +57,12 @@ re::CTFPartyClient::MutLocalGroupCriteria(re::CTFPartyClient *client)
 int re::CTFPartyClient::LoadSavedCasualCriteria()
 {
     typedef int (*LoadSavedCasualCriteria_t)(re::CTFPartyClient *);
-    uintptr_t addr = gSignatures.GetClientSignature(
-                         "55 89 E5 8B 45 ? 5D 8B 80 ? ? ? ? C3 66 90 55 89 E5 "
-                         "8B 45 ? 5D 0F B6 80 ? ? ? ? C3 90 55 89 E5 56") -
-                     0x40;
-    LoadSavedCasualCriteria_t LoadSavedCasualCriteria_fn =
+    static uintptr_t addr =
+        gSignatures.GetClientSignature(
+            "55 89 E5 8B 45 ? 5D 8B 80 ? ? ? ? C3 66 90 55 89 E5 "
+            "8B 45 ? 5D 0F B6 80 ? ? ? ? C3 90 55 89 E5 56") -
+        0x40;
+    static LoadSavedCasualCriteria_t LoadSavedCasualCriteria_fn =
         LoadSavedCasualCriteria_t(addr);
 
     return LoadSavedCasualCriteria_fn(this);
@@ -70,9 +71,9 @@ int re::CTFPartyClient::LoadSavedCasualCriteria()
 char re::CTFPartyClient::RequestQueueForMatch(int type)
 {
     typedef char (*RequestQueueForMatch_t)(re::CTFPartyClient *, int);
-    uintptr_t addr = gSignatures.GetClientSignature(
+    static uintptr_t addr = gSignatures.GetClientSignature(
         "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 ? E8");
-    RequestQueueForMatch_t RequestQueueForMatch_fn =
+    static RequestQueueForMatch_t RequestQueueForMatch_fn =
         RequestQueueForMatch_t(addr);
 
     return RequestQueueForMatch_fn(this, type);
@@ -80,11 +81,31 @@ char re::CTFPartyClient::RequestQueueForMatch(int type)
 char re::CTFPartyClient::RequestLeaveForMatch(int type)
 {
     typedef char (*RequestLeaveForMatch_t)(re::CTFPartyClient *, int);
-    uintptr_t addr = gSignatures.GetClientSignature(
+    static uintptr_t addr = gSignatures.GetClientSignature(
         "55 89 E5 57 56 53 83 EC ? 8B 45 ? 89 44 24 ? 8B 45 ? 89 04 24 E8 ? ? "
         "? ? 84 C0 89 C6 75");
-    RequestLeaveForMatch_t RequestLeaveForMatch_fn =
+    static RequestLeaveForMatch_t RequestLeaveForMatch_fn =
         RequestLeaveForMatch_t(addr);
 
     return RequestLeaveForMatch_fn(this, type);
+}
+int re::CTFPartyClient::BInvitePlayerToParty(CSteamID steamid)
+{
+    typedef int (*BInvitePlayerToParty_t)(re::CTFPartyClient *, CSteamID, bool);
+    static uintptr_t addr = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 ? 8B 5D ? 8B 55 ? 89 85 ? ? ? ? "
+        "65 A1 ? ? ? ? 89 45 ? 31 C0 8B 45");
+    static BInvitePlayerToParty_t BInvitePlayerToParty_fn =
+        BInvitePlayerToParty_t(addr);
+    return BInvitePlayerToParty_fn(this, steamid, false);
+}
+int re::CTFPartyClient::BRequestJoinPlayer(CSteamID steamid)
+{
+    typedef int (*BRequestJoinPlayer_t)(re::CTFPartyClient *, CSteamID, bool);
+    static uintptr_t addr = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 ? 8B 5D ? 8B 55 ? 89 85 ? ? ? ? "
+        "65 A1 ? ? ? ? 89 45 ? 31 C0 8B 45");
+    static BRequestJoinPlayer_t BRequestJoinPlayer_fn =
+        BRequestJoinPlayer_t(addr);
+    return BRequestJoinPlayer_fn(this, steamid, false);
 }

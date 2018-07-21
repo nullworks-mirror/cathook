@@ -73,8 +73,8 @@ int CTFGCClientSystem::JoinMMMatch()
 {
     // TODO
     typedef int (*JoinMMMatch_t)(CTFGCClientSystem *);
-    static uintptr_t addr =
-        gSignatures.GetClientSignature("55 89 E5 56 53 83 EC ? 8B 5D ? 0F B6 83 ? ? ? ? 89 C2");
+    static uintptr_t addr = gSignatures.GetClientSignature(
+        "55 89 E5 56 53 83 EC ? 8B 5D ? 0F B6 83 ? ? ? ? 89 C2");
     if (!addr)
     {
         logging::Info("calling NULL!");
