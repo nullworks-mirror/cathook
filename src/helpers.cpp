@@ -1211,7 +1211,7 @@ void PrintChat(const char *fmt, ...)
         va_end(list);
         std::unique_ptr<char> str(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s",
                                          0x5e3252, 0xba3d9a, 0x5e3252,
-                                         buf.get()).get());
+                                         buf.get()).release());
         // FIXME DEBUG LOG
         logging::Info("%s", str.get());
         chat->Printf(str.get());
