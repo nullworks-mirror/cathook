@@ -173,6 +173,8 @@ float cur_proj_grav{ 0.0f };
 // If slow aimbot allows autoshoot
 bool slow_can_shoot = false;
 bool projectileAimbotRequired;
+// Keep track of our zoom time
+Timer zoomTime{};
 
 // This array will store calculated projectile/hitscan predictions
 // for current frame, to avoid performing them again
@@ -252,13 +254,9 @@ void CreateMove()
     // Auto-Unzoom
     if (auto_unzoom)
     {
-        if (g_pLocalPlayer->holding_sniper_rifle)
+        if (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed && zoomTime.check(3000))
         {
-            if (g_pLocalPlayer->bZoomed)
-            {
-                if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin > 5.0f)
                     g_pUserCmd->buttons |= IN_ATTACK2;
-            }
         }
     }
     // We do this as we need to pass whether the aimkey allows aiming to both
@@ -276,6 +274,7 @@ void CreateMove()
         {
             if (g_pLocalPlayer->holding_sniper_rifle)
             {
+                zoomTime.update();
                 if (not g_pLocalPlayer->bZoomed)
                 {
                     g_pUserCmd->buttons |= IN_ATTACK2;
