@@ -221,7 +221,7 @@ void smart_crouch()
 {
     bool foundtar      = false;
     static bool crouch = false;
-    if (crouchcdr.test_and_set(1000))
+    if (crouchcdr.test_and_set(2000))
     {
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
@@ -246,11 +246,8 @@ void smart_crouch()
             		continue;
             	if (!IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->center) && !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->min) && !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->max))
             		continue;
-                else
-                {
-                    foundtar = true;
-                    crouch   = true;
-                }
+                foundtar = true;
+                crouch   = true;
             }
         }
         if (!foundtar && crouch)

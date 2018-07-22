@@ -108,7 +108,7 @@ void WalkTo(const Vector &vector)
 
 // Function to get the corner location that a vischeck to an entity is possible
 // from
-Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
+Vector VischeckCorner(CachedEntity *player, CachedEntity *target, float maxdist,
                     bool checkWalkable)
 {
     int maxiterations = maxdist / 40;
@@ -163,6 +163,93 @@ Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
     }
     // if we didn't find anything, return an empty Vector
     return { 0, 0, 0 };
+}
+
+// return Two Corners that connect perfectly to ent and local player
+std::pair<Vector,Vector> VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
+                    bool checkWalkable)
+{
+    int maxiterations = maxdist / 40;
+    Vector origin     = player->m_vecOrigin();
+
+    // if we can see an entity, we don't need to run calculations
+    if (VisCheckEntFromEnt(player, target))
+    {
+    	std::pair<Vector, Vector> orig(origin, target->m_vecOrigin());
+        if (!checkWalkable)
+            return orig;
+        else if (canReachVector(origin, target->m_vecOrigin()))
+            return orig;
+    }
+
+    for (int i = 0; i < 4; i++) // for loop for all 4 directions
+    {
+        // 40 * maxiterations = range in HU
+        for (int j = 0; j < maxiterations; j++)
+        {
+            Vector virtualOrigin = origin;
+            // what direction to go in
+            switch (i)
+            {
+            case 0:
+                virtualOrigin.x = virtualOrigin.x + 40 * (j + 1);
+                break;
+            case 1:
+                virtualOrigin.x = virtualOrigin.x - 40 * (j + 1);
+                break;
+            case 2:
+                virtualOrigin.y = virtualOrigin.y + 40 * (j + 1);
+                break;
+            case 3:
+                virtualOrigin.y = virtualOrigin.y - 40 * (j + 1);
+                break;
+            }
+            // check if player can see the players virtualOrigin
+            if (!IsVectorVisible(origin, virtualOrigin, true))
+                continue;
+            for (int i = 0; i < 4; i++) // for loop for all 4 directions
+            {
+                // 40 * maxiterations = range in HU
+                for (int j = 0; j < maxiterations; j++)
+                {
+                    Vector virtualOrigin2 = target->m_vecOrigin();
+                    // what direction to go in
+                    switch (i)
+                    {
+                    case 0:
+                        virtualOrigin2.x = virtualOrigin2.x + 40 * (j + 1);
+                        break;
+                    case 1:
+                        virtualOrigin2.x = virtualOrigin2.x - 40 * (j + 1);
+                        break;
+                    case 2:
+                        virtualOrigin2.y = virtualOrigin2.y + 40 * (j + 1);
+                        break;
+                    case 3:
+                        virtualOrigin2.y = virtualOrigin2.y - 40 * (j + 1);
+                        break;
+                    }
+                    // check if the virtualOrigin2 can see the target
+                    if (!VisCheckEntFromEntVector(virtualOrigin2, player, target))
+                        continue;
+                    if (!IsVectorVisible(virtualOrigin, virtualOrigin2, true))
+                        continue;
+                    if (!IsVectorVisible(virtualOrigin2, target->m_vecOrigin(), true))
+                    	continue;
+                    std::pair<Vector, Vector> toret(virtualOrigin, virtualOrigin2);
+                    if (!checkWalkable)
+                        return toret;
+                    // check if the location is accessible
+                    if (!canReachVector(origin, virtualOrigin) || !canReachVector(virtualOrigin2, virtualOrigin))
+                        continue;
+                    if (canReachVector(virtualOrigin2, target->m_vecOrigin()))
+                        return toret;
+                }
+            }
+        }
+    }
+    // if we didn't find anything, return an empty Vector
+    return { {0, 0, 0}, {0, 0, 0} };
 }
 
 // Returns a vectors max value. For example: {123,-150, 125} = 125
@@ -616,8 +703,7 @@ bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos)
             g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default,
                                &trace_object);
     }
-    return (trace_object.fraction >= 0.99f ||
-            (((IClientEntity *) trace_object.m_pEnt)) == RAW_ENT(entity));
+    return (((IClientEntity *) trace_object.m_pEnt) == RAW_ENT(entity) || trace_object.fraction >= 0.99f);
 }
 
 // For when you need to vis check something that isnt the local player
