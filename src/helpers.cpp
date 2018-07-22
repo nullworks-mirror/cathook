@@ -175,7 +175,7 @@ std::pair<Vector,Vector> VischeckWall(CachedEntity *player, CachedEntity *target
     // if we can see an entity, we don't need to run calculations
     if (VisCheckEntFromEnt(player, target))
     {
-    	std::pair<Vector, Vector> orig(origin, origin);
+    	std::pair<Vector, Vector> orig(origin, target->m_vecOrigin());
         if (!checkWalkable)
             return orig;
         else if (canReachVector(origin, target->m_vecOrigin()))
@@ -234,11 +234,13 @@ std::pair<Vector,Vector> VischeckWall(CachedEntity *player, CachedEntity *target
                         continue;
                     if (!IsVectorVisible(virtualOrigin, virtualOrigin2, true))
                         continue;
+                    if (!IsVectorVisible(virtualOrigin2, target->m_vecOrigin(), true))
+                    	continue;
                     std::pair<Vector, Vector> toret(virtualOrigin, virtualOrigin2);
                     if (!checkWalkable)
                         return toret;
                     // check if the location is accessible
-                    if (!canReachVector(origin, virtualOrigin) || !canReachVector(virtualOrigin2, virtualOrigin) || !canReachVector(target->m_vecOrigin(), virtualOrigin2))
+                    if (!canReachVector(origin, virtualOrigin) || !canReachVector(virtualOrigin2, virtualOrigin))
                         continue;
                     if (canReachVector(virtualOrigin2, target->m_vecOrigin()))
                         return toret;

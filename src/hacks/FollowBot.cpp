@@ -200,13 +200,13 @@ void WorldTick()
             if (corneractivate)
             {
                 Vector indirectOrigin =
-                    VischeckCorner(LOCAL_E, entity, 500,
+                    VischeckCorner(LOCAL_E, entity, float(follow_activation) / 2,
                                  true); // get the corner location that the
                                         // future target is visible from
                 std::pair<Vector, Vector> corners;
                 if (!indirectOrigin.z && entity->m_IDX == lastent)  // if we couldn't find it, run wallcheck instead
                 {
-                	corners = VischeckWall(LOCAL_E, entity, 500, true);
+                	corners = VischeckWall(LOCAL_E, entity, float(follow_activation) / 2, true);
                 	if (!corners.first.z || !corners.second.z)
                 		continue;
                 	addCrumbs(LOCAL_E, corners.first);
