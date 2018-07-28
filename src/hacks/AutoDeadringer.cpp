@@ -5,13 +5,12 @@
  *      Author: bencat07
  */
 #include "common.hpp"
+
+static settings::Bool enable{ "auto-deadringer.enable", "0" };
+static settings::Int trigger_health{ "auto-deadringer.health", "30" };
+
 namespace hacks::shared::deadringer
 {
-static CatVar
-    enabled(CV_SWITCH, "deadringer_auto", "0", "Auto deadringer",
-            "automatically pull out DR on low health or projectile nearby");
-static CatVar trigger_health(CV_SWITCH, "deadringer_health", "30", "Health",
-                             "Trigger on this much health or less");
 
 bool IsProjectile(CachedEntity *ent)
 {
@@ -46,7 +45,7 @@ int NearbyEntities()
 }
 void CreateMove()
 {
-    if (!enabled)
+    if (!enable)
         return;
     if (CE_BAD(LOCAL_E))
         return;

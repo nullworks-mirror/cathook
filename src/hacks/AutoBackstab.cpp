@@ -5,8 +5,13 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Bool.hpp>
 #include "common.hpp"
 #include "hacks/Backtrack.hpp"
+
+static settings::Bool enable{ "autobackstab.enable", "0" };
+static settings::Bool silent{ "autobackstab.silent", "1" };
+
 namespace hacks::tf2::autobackstab
 {
 
@@ -20,9 +25,6 @@ const Vector GetWorldSpaceCenter(CachedEntity *ent)
     return vWorldSpaceCenter;
 }
 
-static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
-                      "Does not depend on triggerbot!");
-static CatVar silent(CV_SWITCH, "autobackstab_silent", "1", "Silent");
 bool found;
 std::pair<Vector, Vector> GetHitboxBounds(CachedEntity *it, int hitbox)
 {

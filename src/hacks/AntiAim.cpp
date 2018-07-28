@@ -7,60 +7,39 @@
 
 #include <hacks/hacklist.hpp>
 #include <glez/draw.hpp>
+#include <settings/Bool.hpp>
 #include "common.hpp"
+
+static settings::Bool communicate{ "antiaim.identify", "0" };
+static settings::Bool enable{ "antiaim.enable", "0" };
+static settings::Bool crouch{ "antiaim.fake-crouch", "0" };
+
+static settings::Float yaw{ "antiaim.yaw.static", "0" };
+static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
+
+static settings::Float pitch{ "antiaim.pitch.static", "0" };
+static settings::Int pitch_mode{ "antiaim.pitch.mode", "0" };
+
+static settings::Float roll{ "antiaim.roll", "0" };
+static settings::Bool no_clamping{ "antiaim.no-clamp", "0" };
+static settings::Float spin{ "antiaim.spin-speed", "10" };
+
+static settings::Bool aaaa_enable{ "antiaim.aaaa.enable", "0" };
+static settings::Float aaaa_interval{ "antiaim.aaaa.interval.seconds", "0" };
+static settings::Float aaaa_interval_random_high{ "antiaim.aaaa.interval.random-high"};
+static settings::Float aaaa_interval_random_low{ "antiaim.aaaa.interval.random-low"};
+static settings::Int aaaa_mode{ "antiaim.aaaa.mode", "0" };
+static settings::Button aaaa_flip_key{ "antiaim.aaaa.flip-key", "<null>" };
+
+static settings::Bool test{ "antiaim.debug", "0" };
+
+#if ENABLE_VISUALS
+static settings::Bool draw_fakes{ "antiaim.draw-fakes", "1" };
+#endif
 
 namespace hacks::shared::antiaim
 {
-CatVar communicate(CV_SWITCH, "identify", "0", "identify",
-                   "Auto identify for other cathook users");
-CatVar enabled(CV_SWITCH, "aa_enabled", "0", "Anti-Aim",
-               "Master AntiAim switch");
-CatVar draw_fakes(CV_SWITCH, "aa_drawfakes", "1", "Draw Fakes",
-                  "Draw a nice box around the head hitboxes");
-static CatVar crouch(CV_SWITCH, "aa_fakecrouch", "0", "Fake Crouch",
-                     "Fake crouch");
-static CatVar yaw(CV_FLOAT, "aa_yaw", "0.0", "Yaw", "Static yaw (left/right)",
-                  360.0);
-static CatVar pitch(CV_FLOAT, "aa_pitch", "-89.0", "Pitch",
-                    "Static pitch (up/down)", -89.0, 89.0);
-static CatEnum yaw_mode_enum({ "KEEP",           "STATIC",     "JITTER",
-                               "BIGRANDOM",      "RANDOM",     "SPIN",
-                               "OFFSETKEEP",     "EDGE",       "HECK",
-                               "FAKEKEEP",       "FAKESTATIC", "FAKEJITTER",
-                               "FAKEBIGRANDOM",  "FAKERANDOM", "FAKESPIN",
-                               "FAKEOFFSETKEEP", "FAKEEDGE",   "FAKEHECK",
-                               "FAKESIDEWAYS",   "FAKELEFT",   "FAKERIGHT",
-                               "FAKEREVERSEEDGE" });
-static CatEnum pitch_mode_enum({ "KEEP", "STATIC", "JITTER", "RANDOM", "FLIP",
-                                 "FAKEFLIP", "FAKEUP", "FAKEDOWN", "FAKECENTER",
-                                 "UP", "DOWN", "HECK" });
-CatVar yaw_mode(yaw_mode_enum, "aa_yaw_mode", "0", "Yaw mode", "Yaw mode");
-static CatVar pitch_mode(pitch_mode_enum, "aa_pitch_mode", "0", "Pitch mode",
-                         "Pitch mode");
-static CatVar roll(CV_FLOAT, "aa_roll", "0", "Roll",
-                   "Roll angle (viewangles.z)", -180, 180);
-static CatVar
-    no_clamping(CV_SWITCH, "aa_no_clamp", "0", "Don't clamp angles",
-                "Use this with STATIC mode for unclamped manual angles");
-static CatVar spin(CV_FLOAT, "aa_spin", "10.0", "Spin speed",
-                   "Spin speed (degrees/second)");
 
-static CatVar aaaa_enabled(CV_SWITCH, "aa_aaaa_enabled", "0", "Enable AAAA",
-                           "Enable Anti-Anti-Anti-Aim (Overrides AA Pitch)");
-static CatVar aaaa_interval(CV_FLOAT, "aa_aaaa_interval", "0", "Interval",
-                            "Interval in seconds, 0 = random");
-static CatVar aaaa_interval_random_high(CV_FLOAT, "aa_aaaa_interval_high", "15",
-                                        "Interval Ceiling",
-                                        "Upper bound for random AAAA interval");
-static CatVar aaaa_interval_random_low(CV_FLOAT, "aa_aaaa_interval_low", "3",
-                                       "Interval Floor",
-                                       "Lower bound for random AAAA interval");
-static CatEnum aaaa_modes_enum({ "(FAKE)UP", "(FAKE)DOWN", "(FAKE)CENTER" });
-static CatVar aaaa_mode(aaaa_modes_enum, "aa_aaaa_mode", "0", "Mode",
-                        "Anti-Anti-Anti-Aim Mode");
-static CatVar aaaa_flip_key(CV_KEY, "aa_aaaa_flip_key", "0", "Flip key",
-                            "If you press that key, current AA will change");
-static CatVar test(CV_KEY, "aa_test", "0", "debug", "test");
 float cur_yaw  = 0.0f;
 int safe_space = 0;
 
@@ -108,7 +87,7 @@ void NextAAAA()
 
 void UpdateAAAAKey()
 {
-    if (g_IInputSystem->IsButtonDown((ButtonCode_t)(int) aaaa_flip_key))
+    if (aaaa_flip_key.isKeyDown())
     {
         if (!aaaa_key_pressed)
         {
@@ -426,7 +405,7 @@ void FakeCrouch(CUserCmd *cmd)
 }
 void ProcessUserCmd(CUserCmd *cmd)
 {
-    if (!enabled)
+    if (!enable)
     {
         *bSendPackets = true;
         return;
@@ -628,7 +607,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         fClampAngle(cmd->viewangles);
     if (roll)
         cmd->viewangles.z = float(roll);
-    if (aaaa_enabled)
+    if (aaaa_enable)
     {
         UpdateAAAAKey();
         UpdateAAAATimer();

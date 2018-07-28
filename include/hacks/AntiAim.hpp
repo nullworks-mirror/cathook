@@ -13,12 +13,6 @@ class CUserCmd;
 namespace hacks::shared::antiaim
 {
 
-// TODO paste AA from AimTux
-
-extern CatVar enabled;
-extern CatVar communicate;
-extern CatVar yaw_mode;
-
 extern int safe_space;
 
 void SetSafeSpace(int safespace);
