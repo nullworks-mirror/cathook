@@ -5,31 +5,26 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Bool.hpp>
 #include "common.hpp"
 #include "hack.hpp"
 
+static settings::Bool enable{ "cat-bot.enable", "false" };
+
+static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
+static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte", "0" };
+static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte", "0" };
+static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte", "0" };
+static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills", "2" };
+
+static settings::Bool micspam{ "cat-bot.micspam.enable", "false" };
+static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
+static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
+
+static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "true" };
+
 namespace hacks::shared::catbot
 {
-
-static CatVar enabled(CV_SWITCH, "cbu", "0", "CatBot Utils");
-static CatVar abandon_if_bots_gte(CV_INT, "cbu_abandon_if_bots_gte", "0",
-                                  "Abandon if bots >=");
-static CatVar abandon_if_ipc_bots_gte(CV_INT, "cbu_abandon_if_ipc_bots_gte",
-                                      "0", "Abandon if IPC bots >=");
-static CatVar abandon_if_humans_lte(CV_INT, "cbu_abandon_if_humans_lte", "0",
-                                    "Abandon if humans <=");
-static CatVar abandon_if_players_lte(CV_INT, "cbu_abandon_if_players_lte", "0",
-                                     "Abandon if players <=");
-static CatVar mark_human_threshold(CV_INT, "cbu_mark_human_threshold", "2",
-                                   "Mark human after N kills");
-static CatVar random_votekicks(CV_SWITCH, "cbu_random_votekicks", "0",
-                               "Randomly initiate votekicks");
-static CatVar micspam(CV_SWITCH, "cbu_micspam", "0", "Micspam helper");
-static CatVar micspam_on(CV_INT, "cbu_micspam_on_interval", "3",
-                         "+voicerecord interval");
-static CatVar micspam_off(CV_INT, "cbu_micspam_off_interval", "60",
-                          "-voicerecord interval");
-static CatVar auto_crouch(CV_SWITCH, "cbu_autocrouch", "1", "Auto crouch");
 
 struct catbot_user_state
 {
