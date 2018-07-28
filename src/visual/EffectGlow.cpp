@@ -24,6 +24,9 @@ static settings::Bool show_powerups{ "glow.show.powerups", "true" };
 static settings::Bool weapons_white{ "glow.white-weapons", "true" };
 static settings::Bool glowself{ "glow.self", "true" };
 static settings::Bool rainbow{ "glow.self-rainbow", "true" };
+static settings::Int blur_scale{ "glow.blur-scale", "5" };
+// https://puu.sh/vobH4/5da8367aef.png
+static settings::Int solid_when{ "glow.solid-when", "0" };
 
 IMaterialSystem *materials = nullptr;
 
@@ -331,12 +334,6 @@ void EffectGlow::EndRenderGlow()
     ptr->PopRenderTargetAndViewport();
 }
 
-// https://puu.sh/vobH4/5da8367aef.png
-static CatEnum solid_when_enum({ "Never", "Always", "Invisible" });
-static CatVar blur_scale(CV_INT, "glow_blur_scale", "5", "Blur amount",
-                         "Ammount to blur the glow");
-static CatVar solid_when(solid_when_enum, "glow_solid_when", "0", "Solid when",
-                         "Glow will be solid when entity is...");
 
 void EffectGlow::StartStenciling()
 {

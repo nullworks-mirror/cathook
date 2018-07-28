@@ -54,8 +54,6 @@ struct CIncomingSequence
 };
 typedef boost::circular_buffer_space_optimized<CIncomingSequence> circular_buf;
 extern circular_buf sequences;
-extern CatVar latency;
-extern CatVar enable;
 extern int ticks;
 extern BacktrackData headPositions[32][66];
 extern BestTickData sorted_ticks[66];

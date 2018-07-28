@@ -7,7 +7,6 @@
 
 #pragma once
 
-class CatVar;
 class CUserCmd;
 
 namespace hacks::shared::antiaim

@@ -14,6 +14,4 @@ void queue_start();
 void queue_leave();
 void dcandabandon();
 void abandon();
-extern CatVar queue;
-extern CatEnum queue_mode;
 }

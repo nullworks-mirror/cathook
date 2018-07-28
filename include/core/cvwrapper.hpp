@@ -38,4 +38,4 @@ public:
 
 std::vector<CatCommand *> &commandRegistrationArray();
 
-void RegisterCatVars();
+void RegisterCatCommands();
