@@ -5,13 +5,13 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Bool.hpp>
 #include "common.hpp"
+
+static settings::Bool safety{ "achievement.safety", "true" };
 
 namespace hacks::tf2::achievement
 {
-
-static CatVar safety(CV_SWITCH, "achievement_safety", "1",
-                     "Achievement commands safety switch");
 
 void Lock()
 {
