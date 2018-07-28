@@ -5,16 +5,14 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Bool.hpp>
 #include "common.hpp"
 
-static CatVar crit_info(CV_SWITCH, "crit_info", "0", "Show crit info");
-static CatVar crit_key(CV_KEY, "crit_key", "0", "Crit Key");
-static CatVar crit_melee(CV_SWITCH, "crit_melee", "0", "Melee crits");
-static CatVar crit_legiter(
-    CV_SWITCH, "crit_force_gameplay", "0", "Don't hinder gameplay",
-    "Attempt to crit when possible but do not hinder normal gameplay");
-static CatVar crit_experimental(CV_SWITCH, "crit_experimental", "0",
-                                "Experimental crithack");
+static settings::Bool crit_info{ "crit.info", "false" };
+static settings::Button crit_key{ "crit.key", "<null>" };
+static settings::Bool crit_melee{ "crit.melee", "false" };
+static settings::Bool crit_legiter{ "crit.force-gameplay", "false" };
+static settings::Bool crit_experimental{ "crit.experimental", "false" };
 
 std::unordered_map<int, int> command_number_mod{};
 
@@ -172,8 +170,8 @@ void create_move()
     if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon))
         return;
     unfuck_bucket(weapon);
-    if ((g_pUserCmd->buttons & IN_ATTACK) && crit_key.KeyDown() &&
-        g_pUserCmd->command_number && crit_key)
+    if ((g_pUserCmd->buttons & IN_ATTACK) && crit_key && crit_key.isKeyDown() &&
+        g_pUserCmd->command_number)
     {
         force_crit(weapon);
     }

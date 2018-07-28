@@ -21,8 +21,7 @@ extern const std::vector<std::string> builtin_nonecore;
 extern const std::vector<std::string> builtin_lmaobox;
 extern const std::vector<std::string> builtin_lithium;
 
-extern CatVar spam_source;
-
+bool isActive();
 void Init();
 void CreateMove();
 void Reload();

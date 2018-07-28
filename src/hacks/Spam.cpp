@@ -6,34 +6,21 @@
  */
 
 #include <hacks/Spam.hpp>
+#include <settings/Bool.hpp>
 #include "common.hpp"
 #include "MiscTemporary.hpp"
 
+static settings::Int spam_source{ "spam.source", "0" };
+static settings::Bool random_order{ "spam.random", "0" };
+static settings::String filename{ "spam.filename", "spam.txt" };
+static settings::Int spam_delay{ "spam.delay", "800" };
+static settings::Int voicecommand_spam{ "spam.voicecommand", "0" };
+static settings::Bool teamname_spam{ "spam.teamname","0" };
+
 namespace hacks::shared::spam
 {
-static CatEnum spam_enum({ "DISABLED", "CUSTOM", "DEFAULT", "LENNYFACES",
-                           "BLANKS", "NULLCORE", "LMAOBOX", "LITHIUM" });
-CatVar spam_source(spam_enum, "spam", "0", "Chat Spam",
-                   "Defines source of spam lines. CUSTOM spam file must be set "
-                   "in cat_spam_file and loaded with cat_spam_reload (Use "
-                   "console!)");
-static CatVar random_order(CV_SWITCH, "spam_random", "0", "Random Order");
-static CatVar
-    filename(CV_STRING, "spam_file", "spam.txt", "Spam file",
-             "Spam file name. Each line should be no longer than 100 "
-             "characters, file must be located in cathook data folder");
-CatCommand reload("spam_reload", "Reload spam file", Reload);
-static CatVar spam_delay(CV_INT, "spam_delay", "800", "Spam delay",
-                         "Delay between spam messages (in ms)", 0.0f, 8000.0f);
 
-static CatEnum voicecommand_enum({ "DISABLED", "RANDOM", "MEDIC", "THANKS",
-                                   "NICE SHOT", "CHEERS", "JEERS" });
-static CatVar voicecommand_spam(voicecommand_enum, "spam_voicecommand", "0",
-                                "Voice Command Spam",
-                                "Spams tf voice commands");
-
-static CatVar teamname_spam(CV_SWITCH, "spam_teamname", "0", "Teamname Spam",
-                            "Spam changes the tournament name");
+static CatCommand reload("spam_reload", "Reload spam file", Reload);
 
 static int last_index;
 
@@ -226,10 +213,9 @@ int QueryPlayer(Query query)
 
 void Init()
 {
-    filename.InstallChangeCallback(
-        [](IConVar *var, const char *pszOV, float flOV) {
-            file.TryLoad(std::string(filename.GetString()));
-        });
+    filename.installChangeCallback([](settings::VariableBase<std::string>& var, std::string after) {
+        file.TryLoad(after);
+    });
 }
 
 bool SubstituteQueries(std::string &input)
@@ -268,8 +254,6 @@ bool FormatSpamMessage(std::string &message)
 
 void CreateMove()
 {
-    if (!DelayTimer.check((int) delay * 1000))
-        return;
     IF_GAME(IsTF2())
     {
         // Spam changes the tournament name in casual and compeditive gamemodes
@@ -439,4 +423,9 @@ const std::vector<std::string> builtin_lithium = {
     "SAVE YOUR MONEY AND GET LITHIUMCHEAT! IT IS FREE!",
     "GOT ROLLED BY LITHIUM? HEY, THAT MEANS IT'S TIME TO GET LITHIUMCHEAT!!"
 };
+
+bool isActive()
+{
+    return bool(spam_source);
+}
 }

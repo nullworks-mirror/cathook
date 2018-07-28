@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Int.hpp>
 #include "common.hpp"
 
 namespace hitbox_cache
@@ -105,11 +106,7 @@ bool EntityHitboxCache::VisibilityCheck(int id)
     return m_VisCheck[id];
 }
 
-static CatEnum setupbones_time_enum({ "ZERO", "CURTIME", "LP SERVERTIME",
-                                      "SIMTIME" });
-static CatVar setupbones_time(
-    setupbones_time_enum, "setupbones_time", "3", "Setupbones",
-    "Defines setupbones 4th argument, change it if your aimbot misses, idk!!");
+static settings::Int setupbones_time{ "source.setupbones-time", "3" };
 
 std::mutex setupbones_mutex;
 
