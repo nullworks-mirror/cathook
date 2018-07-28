@@ -35,8 +35,7 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                                 steamid = 0x0;
                                 return;
                             }
-                            unsigned tempid = atol(args.Arg(1));
-                            steamid         = *(unsigned int *) &tempid;
+                            steamid = atol(args.Arg(1));
 
                         });
 static CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "0", "Mimic weapon slot",
@@ -55,7 +54,7 @@ static CatVar afktime(
     CV_INT, "fb_afk_time", "15000", "Max AFK Time",
     "Max time in ms spent standing still before player gets declared afk");
 static CatVar corneractivate(
-    CV_SWITCH, "fb_activation_corners", "1", "Activate arround corners",
+    CV_SWITCH, "fb_activation_corners", "1", "Activate around corners",
     "Try to find an activation path to an entity behind a corner.");
 
 // Something to store breadcrumbs created by followed players
@@ -118,6 +117,43 @@ void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
             corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
     }
 }
+
+void addCrumbPair(CachedEntity *player1, CachedEntity *player2,
+                  std::pair<Vector, Vector> corners)
+{
+    Vector corner1 = corners.first;
+    Vector corner2 = corners.second;
+
+    {
+        Vector dist       = corner1 - player1->m_vecOrigin();
+        int maxiterations = floor(corner1.DistTo(player1->m_vecOrigin())) / 40;
+        for (int i = 0; i < maxiterations; i++)
+        {
+            breadcrumbs.push_back(player1->m_vecOrigin() +
+                                  dist / vectorMax(vectorAbs(dist)) * 40.0f *
+                                      (i + 1));
+        }
+    }
+    {
+        Vector dist       = corner2 - corner1;
+        int maxiterations = floor(corner2.DistTo(corner1)) / 40;
+        for (int i = 0; i < maxiterations; i++)
+        {
+            breadcrumbs.push_back(
+                corner1 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+        }
+    }
+    {
+        Vector dist       = player2->m_vecOrigin() - corner2;
+        int maxiterations = floor(corner2.DistTo(player2->m_vecOrigin())) / 40;
+        for (int i = 0; i < maxiterations; i++)
+        {
+            breadcrumbs.push_back(
+                corner2 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+        }
+    }
+}
+
 int ClassPriority(CachedEntity *ent)
 {
     switch (g_pPlayerResource->GetClass(ent))
@@ -144,6 +180,8 @@ int ClassPriority(CachedEntity *ent)
         return 0;
     }
 }
+Timer waittime{};
+int lastent = 0;
 void WorldTick()
 {
     if (!followbot)
@@ -198,13 +236,27 @@ void WorldTick()
                 continue;
             if (corneractivate)
             {
-                Vector indirectOrigin =
-                    VischeckWall(LOCAL_E, entity, 250,
-                                 true); // get the corner location that the
-                                        // future target is visible from
-                if (!indirectOrigin.z)  // if we couldn't find it, exit
+                Vector indirectOrigin = VischeckCorner(
+                    LOCAL_E, entity, float(follow_activation) / 2,
+                    true); // get the corner location that the
+                           // future target is visible from
+                std::pair<Vector, Vector> corners;
+                if (!indirectOrigin.z &&
+                    entity->m_IDX == lastent) // if we couldn't find it, run
+                                              // wallcheck instead
+                {
+                    corners = VischeckWall(LOCAL_E, entity,
+                                           float(follow_activation) / 2, true);
+                    if (!corners.first.z || !corners.second.z)
+                        continue;
+                    // addCrumbs(LOCAL_E, corners.first);
+                    // addCrumbs(entity, corners.second);
+                    addCrumbPair(LOCAL_E, entity, corners);
+                }
+                if (indirectOrigin.z)
+                    addCrumbs(entity, indirectOrigin);
+                else if (!indirectOrigin.z && !corners.first.z)
                     continue;
-                addCrumbs(entity, indirectOrigin);
             }
             else
             {
@@ -266,9 +318,7 @@ void WorldTick()
             if (follow_target &&
                 ENTITY(follow_target)->m_flDistance() <
                     entity->m_flDistance()) // favor closer entitys
-            {
                 continue;
-            }
             // check if new target has a higher priority than current target
             if (ClassPriority(ENTITY(follow_target)) >=
                 ClassPriority(ENTITY(i)))
@@ -277,12 +327,25 @@ void WorldTick()
             if (corneractivate)
             {
                 Vector indirectOrigin =
-                    VischeckWall(LOCAL_E, entity, 250,
-                                 true); // get the corner location that the
-                                        // future target is visible from
-                if (!indirectOrigin.z)  // if we couldn't find it, exit
+                    VischeckCorner(LOCAL_E, entity, 250,
+                                   true); // get the corner location that the
+                                          // future target is visible from
+                std::pair<Vector, Vector> corners;
+                corners.first.z  = 0;
+                corners.second.z = 0;
+                if (!indirectOrigin.z &&
+                    entity->m_IDX == lastent) // if we couldn't find it, run
+                                              // wallcheck instead
+                {
+                    corners = VischeckWall(LOCAL_E, entity, 250, true);
+                    if (!corners.first.z || !corners.second.z)
+                        continue;
+                    addCrumbPair(LOCAL_E, entity, corners);
+                }
+                if (indirectOrigin.z)
+                    addCrumbs(entity, indirectOrigin);
+                else if (!indirectOrigin.z && !corners.first.z)
                     continue;
-                addCrumbs(entity, indirectOrigin);
             }
             else
             {
@@ -295,6 +358,9 @@ void WorldTick()
             afkTicks[i].update(); // set afk time to 0
         }
     }
+    lastent++;
+    if (lastent > g_IEngine->GetMaxClients())
+        lastent = 0;
     // last check for entity before we continue
     if (!follow_target)
         return;
@@ -367,13 +433,17 @@ void WorldTick()
     if (dist_to_target > (float) follow_distance)
     {
         // Check for jump
-        if (autojump && lastJump.check(1000) && (idle_time.check(2000) || DistanceToGround({breadcrumbs[0].x,breadcrumbs[0].y,breadcrumbs[0].z + 5}) > 47))
+        if (autojump && lastJump.check(1000) &&
+            (idle_time.check(2000) ||
+             DistanceToGround({ breadcrumbs[0].x, breadcrumbs[0].y,
+                                breadcrumbs[0].z + 5 }) > 47))
         {
             g_pUserCmd->buttons |= IN_JUMP;
             lastJump.update();
         }
         // Check if still moving. 70 HU = Sniper Zoomed Speed
-        if (idle_time.check(3000) && CE_VECTOR(g_pLocalPlayer->entity, netvar.vVelocity).IsZero(60.0f))
+        if (idle_time.check(3000) &&
+            CE_VECTOR(g_pLocalPlayer->entity, netvar.vVelocity).IsZero(60.0f))
         {
             follow_target = 0;
             return;

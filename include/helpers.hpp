@@ -77,8 +77,11 @@ bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos);
 bool VisCheckEntFromEnt(CachedEntity *startEnt, CachedEntity *endEnt);
 bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt,
                               CachedEntity *endEnt);
-Vector VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist,
-                    bool checkWalkable);
+Vector VischeckCorner(CachedEntity *player, CachedEntity *target, float maxdist,
+                      bool checkWalkable);
+std::pair<Vector, Vector> VischeckWall(CachedEntity *player,
+                                       CachedEntity *target, float maxdist,
+                                       bool checkWalkable);
 float vectorMax(Vector i);
 Vector vectorAbs(Vector i);
 bool canReachVector(Vector loc, Vector dest = { 0, 0, 0 });

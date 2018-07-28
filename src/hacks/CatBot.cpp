@@ -221,7 +221,7 @@ void smart_crouch()
 {
     bool foundtar      = false;
     static bool crouch = false;
-    if (crouchcdr.test_and_set(1000))
+    if (crouchcdr.test_and_set(2000))
     {
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
@@ -233,24 +233,26 @@ void smart_crouch()
                 playerlist::AccessData(ent).state ==
                     playerlist::k_EState::IPC ||
                 should_ignore_player(ent))
-            	continue;
+                continue;
             bool failedvis = false;
             for (int j = -1; j < 18; j++)
-            	if (IsEntityVisible(ent, j))
-            		failedvis = true;
+                if (IsEntityVisible(ent, j))
+                    failedvis = true;
             if (failedvis)
-            	continue;
+                continue;
             for (int j = 0; j < 18; j++)
             {
-            	if (!LOCAL_E->hitboxes.GetHitbox(j))
-            		continue;
-            	if (!IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->center) && !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->min) && !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->max))
-            		continue;
-                else
-                {
-                    foundtar = true;
-                    crouch   = true;
-                }
+                if (!LOCAL_E->hitboxes.GetHitbox(j))
+                    continue;
+                if (!IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
+                                     LOCAL_E->hitboxes.GetHitbox(j)->center) &&
+                    !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
+                                     LOCAL_E->hitboxes.GetHitbox(j)->min) &&
+                    !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
+                                     LOCAL_E->hitboxes.GetHitbox(j)->max))
+                    continue;
+                foundtar = true;
+                crouch   = true;
             }
         }
         if (!foundtar && crouch)
