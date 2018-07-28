@@ -7,8 +7,27 @@
 
 #include <visual/EffectChams.hpp>
 #include <MiscTemporary.hpp>
+#include <settings/Bool.hpp>
 #include "common.hpp"
 #include "Backtrack.hpp"
+
+static settings::Bool enable{ "chams.enable", "false" };
+static settings::Bool flat{ "chams.flat", "false" };
+static settings::Bool health{ "chams.health", "false" };
+static settings::Bool teammates{ "chams.show.teammates", "false" };
+static settings::Bool players{ "chams.show.players", "true" };
+static settings::Bool medkits{ "chams.show.medkits", "false" };
+static settings::Bool ammobox{ "chams.show.ammoboxes", "false" };
+static settings::Bool buildings{ "chams.show.buildings", "true" };
+static settings::Bool stickies{ "chams.show.stickies", "true" };
+static settings::Bool teammate_buildings{ "chams.show.teammate-buildings", "false" };
+static settings::Bool recursive{ "chams.recursive", "true" };
+static settings::Bool weapons_white{ "chams.white-weapons", "true" };
+static settings::Bool legit{ "chams.legit", "false" };
+static settings::Bool singlepass{ "chams.single-pass", "false" };
+static settings::Bool chamsself{ "chams.self", "true" };
+static settings::Bool rainbow{ "chams.self-rainbow", "true" };
+static settings::Bool disco_chams{ "chams.disco", "false" };
 
 // static CatVar chams_experimental(CV_SWITCH, "chams_effect", "0",
 // "Experimental Chams");
@@ -16,51 +35,6 @@
 namespace effect_chams
 {
 
-static CatVar enable(CV_SWITCH, "chams_enable", "0", "Enable",
-                     "Main chams switch");
-static CatVar flat(CV_SWITCH, "chams_flat", "0", "Flat",
-                   "Makes chams brighter and more full");
-static CatVar health(CV_SWITCH, "chams_health", "0", "Health",
-                     "Change chams color based on their health");
-static CatVar teammates(CV_SWITCH, "chams_teammates", "0", "Teammates",
-                        "Render chams on teammates");
-static CatVar players(CV_SWITCH, "chams_players", "1", "Players",
-                      "Render chams on player models");
-static CatVar medkits(CV_SWITCH, "chams_medkits", "0", "Medkits",
-                      "Render chams on medkits");
-static CatVar ammobox(CV_SWITCH, "chams_ammo", "0", "Ammoboxes",
-                      "Render chams on ammoboxes");
-static CatVar buildings(CV_SWITCH, "chams_buildings", "0", "Buildings",
-                        "Render chams on buildings");
-static CatVar stickies(CV_SWITCH, "chams_stickies", "0", "Stickies",
-                       "Render chams on stickybombs");
-static CatVar teammate_buildings(CV_SWITCH, "chams_teammate_buildings", "0",
-                                 "Teammate Buildings",
-                                 "Render chams on teammates buildings");
-static CatVar recursive(CV_SWITCH, "chams_recursive", "1", "Recursive",
-                        "Render chams on weapons and cosmetics");
-static CatVar weapons_white(CV_SWITCH, "chams_weapons_white", "1",
-                            "White Weapons",
-                            "Should chams on weapons be white");
-static CatVar legit(CV_SWITCH, "chams_legit", "0", "Legit chams",
-                    "Don't show chams through walls");
-static CatVar singlepass(CV_SWITCH, "chams_singlepass", "0", "Single-pass",
-                         "Render chams only once (this disables 'darker' chams "
-                         "on invisible parts of player");
-static CatVar chamsself(CV_SWITCH, "chams_self", "0", "Enable chams on self",
-                        "");
-static CatVar rainbow(CV_SWITCH, "chams_self_rainbow", "1",
-                      "Enable rainbow chams on self",
-                      "Only visible in thirdperson!");
-static CatVar
-    disco_chams(CV_SWITCH, "chams_disco", "0", "Disco chams",
-                "Constantly change color of the chams on all players");
-static CatVar chamsteam(CV_SWITCH, "chams_self_team", "0", "Team chams color");
-static CatVar chamsR(CV_INT, "chams_self_r", "0", "Self chams red", "", 0, 255);
-static CatVar chamsG(CV_INT, "chams_self_g", "0", "Self chams green", "", 0,
-                     255);
-static CatVar chamsB(CV_INT, "chams_self_b", "0", "Self chams blue", "", 0,
-                     255);
 void EffectChams::Init()
 {
     logging::Info("Init EffectChams...");

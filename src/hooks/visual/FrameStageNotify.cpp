@@ -5,12 +5,14 @@
 
 #include <MiscTemporary.hpp>
 #include <hacks/hacklist.hpp>
+#include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
 #if not LAGBOT_MODE
 #include "hacks/Backtrack.hpp"
 #endif
 
-static CatVar nightmode(CV_FLOAT, "nightmode", "0", "Enable nightmode", "");
+static settings::Float nightmode{ "visual.night-mode", "0" };
+
 namespace hooked_methods
 {
 #include "reclasses.hpp"

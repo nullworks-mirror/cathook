@@ -3,18 +3,18 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <settings/Registered.hpp>
 #include "HookedMethods.hpp"
 #include "hacks/Radar.hpp"
 
-CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
-                         "Clean screenshots",
-                         "Don't draw visuals while taking a screenshot");
-CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing",
-                       "Completely hides cathook");
-CatVar no_zoom(CV_SWITCH, "no_zoom", "0", "Disable scope",
-               "Disables black scope overlay");
-static CatVar pure_bypass(CV_SWITCH, "pure_bypass", "0", "Pure Bypass",
-                          "Bypass sv_pure");
+static settings::Bool disable_visuals{ "visual.disable", "false" };
+static settings::Bool no_zoom{ "remove.scope", "false" };
+static settings::Bool pure_bypass{ "visual.sv-pure-bypass", "false" };
+static settings::Int software_cursor_move{ "visual.software-cursor-mode", "0" };
+
+static settings::Int waittime{ "debug.join-wait-time", "2500" };
+static settings::Bool no_reportlimit{ "misc.no-report-limit", "false" };
+
 int spamdur = 0;
 Timer joinspam{};
 CatCommand join_spam("join_spam", "Spam joins server for X seconds",
@@ -26,21 +26,9 @@ CatCommand join_spam("join_spam", "Spam joins server for X seconds",
                          spamdur = id;
                      });
 
-CatVar waittime(CV_INT, "join_debug_time", "2500", "wait time",
-                "Wait this many Paint Traverse Calls between each join (~2500 "
-                "recommended, higher if slower internet)");
 void *pure_orig  = nullptr;
 void **pure_addr = nullptr;
 
-static CatEnum software_cursor_enum({ "KEEP", "ALWAYS", "NEVER", "MENU ON",
-                                      "MENU OFF" });
-static CatVar
-    software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
-                         "Software cursor",
-                         "Try to change this and see what works best for you");
-static CatVar no_reportlimit(CV_SWITCH, "no_reportlimit", "0",
-                             "no report limit",
-                             "Remove playerlist report time limit");
 // static CatVar disable_ban_tf(CV_SWITCH, "disable_mm_ban", "0", "Disable MM
 // ban", "Disable matchmaking ban");
 /*static CatVar

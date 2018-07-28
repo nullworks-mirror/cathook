@@ -4,12 +4,11 @@
 */
 
 #include <MiscTemporary.hpp>
+#include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
 
-static CatVar no_arms(CV_SWITCH, "no_arms", "0", "No Arms",
-                      "Removes arms from first person");
-static CatVar no_hats(CV_SWITCH, "no_hats", "0", "No Hats",
-                      "Removes non-stock hats");
+static settings::Bool no_arms{ "remove.arms", "false" };
+static settings::Bool no_hats{ "remove.hats", "false" };
 
 namespace hooked_methods
 {
