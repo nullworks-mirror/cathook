@@ -23,7 +23,6 @@ if(NOT LagbotMode)
         "${CMAKE_CURRENT_LIST_DIR}/Bunnyhop.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Backtrack.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/FollowBot.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/HealArrows.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/KillSay.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Killstreak.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/LightESP.cpp"

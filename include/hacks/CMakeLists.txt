@@ -25,7 +25,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/CatBot.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/FollowBot.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/hacklist.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/HealArrows.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/KillSay.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Killstreak.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/LightESP.hpp"

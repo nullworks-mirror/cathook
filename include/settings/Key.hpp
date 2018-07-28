@@ -105,7 +105,7 @@ public:
             if (flag & SDL_BUTTON(value.mouse))
                 return true;
         }
-        else
+        else if (value.scan)
         {
             auto keys = SDL_GetKeyboardState(nullptr);
             if (keys[value.scan])

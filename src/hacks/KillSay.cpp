@@ -6,20 +6,15 @@
  */
 
 #include <hacks/KillSay.hpp>
+#include <settings/Int.hpp>
 #include "common.hpp"
+
+static settings::Int killsay_mode{ "killsay.mode", "0" };
+static settings::String filename{ "killsay.file", "killsays.txt" };
 
 namespace hacks::shared::killsay
 {
 
-static CatEnum killsay_enum({ "NONE", "CUSTOM", "DEFAULT", "NCC - OFFENSIVE",
-                              "NCC - MLG" });
-static CatVar killsay_mode(killsay_enum, "killsay", "0", "Killsay",
-                           "Defines source of killsay lines. CUSTOM killsay "
-                           "file must be set in cat_killsay_file and loaded "
-                           "with cat_killsay_reload (Use console!)");
-static CatVar
-    filename(CV_STRING, "killsay_file", "killsays.txt", "Killsay file",
-             "Killsay file name. Should be located in cathook data folder");
 static CatCommand reload("killsay_reload", "Reload killsays", Reload);
 
 const std::string tf_classes_killsay[] = { "class",   "scout",   "sniper",
