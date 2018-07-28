@@ -8,18 +8,14 @@
 #include "common.hpp"
 #include <hacks/AutoSticky.hpp>
 #include <PlayerTools.hpp>
+#include <settings/Bool.hpp>
+
+static settings::Bool enable{ "autosticky.enable", "false" };
+static settings::Bool buildings{ "autosticky.buildings", "true" };
+static settings::Bool legit{ "autosticky.legit", "false" };
 
 namespace hacks::tf::autosticky
 {
-
-// Vars for user settings
-static CatVar enabled(CV_SWITCH, "sticky_enabled", "0", "AutoSticky",
-                      "Master AutoSticky switch");
-static CatVar buildings(CV_SWITCH, "sticky_buildings", "1",
-                        "Detonate buildings", "Stickies react to buildings");
-static CatVar
-    legit(CV_SWITCH, "sticky_legit", "0", "Legit",
-          "Stickys only detonate when you see them\nAlso ignores invis spies");
 
 // A storage array for ents
 std::vector<CachedEntity *> bombs;
@@ -97,7 +93,7 @@ bool IsTarget(CachedEntity *ent)
 void CreateMove()
 {
     // Check user settings if auto-sticky is enabled
-    if (!enabled)
+    if (!enable)
         return;
 
     // Check if game is a tf game

@@ -10,69 +10,30 @@
 #include "common.hpp"
 #include <hacks/Backtrack.hpp>
 #include <PlayerTools.hpp>
+#include <settings/Bool.hpp>
+
+static settings::Bool enable{ "trigger.enable", "false" };
+static settings::Int hitbox_mode{ "trigger.hitbox-mode", "0" };
+static settings::Int accuracy{ "trigger.accuracy", "1" };
+static settings::Bool wait_for_charge{ "trigger.wait-for-charge", "false" };
+static settings::Bool zoomed_only{ "trigger.zoomed-only", "true" };
+static settings::Float delay{ "trigger.delay", "0" };
+
+static settings::Button trigger_key{ "trigger.key.button", "<null>" };
+static settings::Int trigger_key_mode{ "trigger.key.mode", "1" };
+// FIXME move these into targeting
+static settings::Bool ignore_cloak{ "trigger.target.ignore-cloaked-spies", "true" };
+static settings::Bool ignore_vaccinator{ "trigger.target.ignore-vaccinator", "true" };
+static settings::Bool buildings_sentry{ "trigger.target.buildings-sentry", "true" };
+static settings::Bool buildings_other{ "trigger.target.buildings-other", "true" };
+static settings::Bool stickybot{ "trigger.target.stickybombs", "false" };
+static settings::Bool teammates{ "trigger.target.teammates", "false" };
+static settings::Int max_range{ "trigger.target.max-range", "4096" };
 
 namespace hacks::shared::triggerbot
 {
 
 // Vars for usersettings
-static CatVar enabled(CV_SWITCH, "trigger_enabled", "0", "Enable",
-                      "Master Triggerbot switch");
-
-static CatVar trigger_key(CV_KEY, "trigger_key", "0", "Triggerbot key",
-                          "Triggerbot key. Look at Triggerbot key Mode too!");
-static CatEnum trigger_key_modes_enum({ "DISABLED", "TRIGGERKEY", "REVERSE",
-                                        "TOGGLE" });
-static CatVar trigger_key_mode(trigger_key_modes_enum, "trigger_key_mode", "1",
-                               "Triggerbot key mode",
-                               "DISABLED: triggerbot is always active\nAIMKEY: "
-                               "triggerbot is active when key is "
-                               "down\nREVERSE: triggerbot is disabled when key "
-                               "is down\nTOGGLE: pressing key toggles "
-                               "triggerbot");
-
-static CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "Head only" });
-static CatVar hitbox_mode(hitbox_mode_enum, "trigger_hitboxmode", "0",
-                          "Hitbox Mode", "Defines hitbox selection mode");
-
-static CatVar accuracy(CV_INT, "trigger_accuracy", "1", "Improve accuracy",
-                       "Improves triggerbot accuracy when aiming for specific "
-                       "hitbox. Recommended to use with sniper "
-                       "rifle/ambassador");
-
-static CatVar ignore_vaccinator(
-    CV_SWITCH, "trigger_ignore_vaccinator", "1", "Ignore Vaccinator",
-    "Hitscan weapons won't fire if enemy is vaccinated against bullets");
-static CatVar ignore_hoovy(CV_SWITCH, "trigger_ignore_hoovy", "1",
-                           "Ignore Hoovies", "Triggerbot won't attack hoovies");
-static CatVar ignore_cloak(CV_SWITCH, "trigger_ignore_cloak", "1",
-                           "Ignore cloaked",
-                           "Don't trigger at invisible enemies");
-static CatVar buildings_sentry(CV_SWITCH, "trigger_buildings_sentry", "1",
-                               "Trigger Sentry",
-                               "Should trigger at sentryguns?");
-static CatVar buildings_other(CV_SWITCH, "trigger_buildings_other", "1",
-                              "Trigger Other building",
-                              "Should trigger at other buildings");
-static CatVar stickybot(CV_SWITCH, "trigger_stickys", "0", "Trigger Sticky",
-                        "Should trigger at stickys");
-static CatVar teammates(CV_SWITCH, "trigger_teammates", "0",
-                        "Trigger teammates",
-                        "Trigger at your own team. Useful for HL2DM");
-
-static CatVar
-    wait_for_charge(CV_SWITCH, "trigger_charge", "0",
-                    "Wait for sniper rifle charge",
-                    "Triggerbot waits until it has enough charge to kill");
-static CatVar zoomed_only(CV_SWITCH, "trigger_zoomed", "1", "Zoomed only",
-                          "Don't trigger with unzoomed rifles");
-static CatVar
-    max_range(CV_INT, "trigger_maxrange", "0", "Max distance",
-              "Max range for triggerbot\n"
-              "900-1100 range is efficient for scout/widowmaker engineer",
-              4096.0f);
-
-static CatVar delay(CV_FLOAT, "trigger_delay", "0", "Delay",
-                    "Triggerbot delay in seconds", 0.0f, 1.0f);
 
 float target_time = 0.0f;
 
@@ -144,7 +105,7 @@ void CreateMove()
     target_time       = 0;
 
     // Check if aimbot is enabled
-    if (!enabled)
+    if (!enable)
         return;
 
     // Check if player can aim

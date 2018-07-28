@@ -5,8 +5,14 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Int.hpp>
 #include "common.hpp"
 #include "hack.hpp"
+
+static settings::Int autojoin_team{ "autojoin.team", "0" };
+static settings::Int autojoin_class{ "autojoin.class", "0" };
+static settings::Bool auto_queue{ "autojoin.auto-queue", "false" };
+
 
 namespace hacks::shared::autojoin
 {
@@ -14,18 +20,6 @@ namespace hacks::shared::autojoin
 /*
  * Credits to Blackfire for helping me with auto-requeue!
  */
-
-static CatEnum classes_enum({ "DISABLED", "SCOUT", "SNIPER", "SOLDIER",
-                              "DEMOMAN", "MEDIC", "HEAVY", "PYRO", "SPY",
-                              "ENGINEER" });
-static CatVar autojoin_team(CV_SWITCH, "autojoin_team", "0", "AutoJoin",
-                            "Automatically joins a team");
-static CatVar preferred_class(classes_enum, "autojoin_class", "0",
-                              "AutoJoin class",
-                              "You will pick a class automatically");
-
-CatVar auto_queue(CV_SWITCH, "autoqueue", "0", "AutoQueue",
-                  "Automatically queue in casual matches");
 
 const std::string classnames[] = { "scout",   "sniper", "soldier",
                                    "demoman", "medic",  "heavyweapons",
@@ -117,18 +111,18 @@ void UpdateSearch()
 Timer timer{};
 void Update()
 {
-#if not LAGBOT_MODE
+#if !LAGBOT_MODE
     if (timer.test_and_set(500))
     {
         if (autojoin_team and UnassignedTeam())
         {
             hack::ExecuteCommand("autoteam");
         }
-        else if (preferred_class and UnassignedClass())
+        else if (autojoin_class and UnassignedClass())
         {
-            if (int(preferred_class) < 10)
+            if (int(autojoin_class) < 10)
                 g_IEngine->ExecuteClientCmd(
-                    format("join_class ", classnames[int(preferred_class) - 1])
+                    format("join_class ", classnames[int(autojoin_class) - 1])
                         .c_str());
         }
     }

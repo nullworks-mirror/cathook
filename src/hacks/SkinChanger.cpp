@@ -10,6 +10,10 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <hacks/SkinChanger.hpp>
+#include <settings/Bool.hpp>
+
+static settings::Bool enable{ "skinchanger.enable", "false" };
+static settings::Bool debug{ "skinchanger.debug", "false" };
 
 namespace hacks::tf2::skinchanger
 {
@@ -95,7 +99,6 @@ void CAttributeList::SetAttribute(int index, float value)
     */
 }
 
-static CatVar enabled(CV_SWITCH, "skinchanger", "0", "Skin Changer");
 static CatCommand
     set_attr("skinchanger_set", "Set Attribute", [](const CCommand &args) {
         unsigned attrid = strtoul(args.Arg(1), nullptr, 10);
@@ -245,9 +248,6 @@ void FrameStageNotify(int stage)
         cookie.Update(my_weapon & 0xFFF);
     last_weapon_out = my_weapon_ptr;
 }
-
-static CatVar show_debug_info(CV_SWITCH, "skinchanger_debug", "0",
-                              "Debug Skinchanger");
 
 void DrawText()
 {
