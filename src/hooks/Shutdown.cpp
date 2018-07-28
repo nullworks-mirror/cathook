@@ -4,10 +4,12 @@
 */
 
 #include <hacks/hacklist.hpp>
+#include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
 
-static CatVar die_if_vac(CV_SWITCH, "die_if_vac", "0", "Die if VAC banned");
-static CatVar autoabandon(CV_SWITCH, "cbu_abandon", "0", "Auto abandon");
+static settings::Bool die_if_vac{ "misc.die-if-vac", "false" };
+static settings::Bool autoabandon{ "misc.auto-abandon", "false" };
+
 namespace hooked_methods
 {
 Timer t{};

@@ -8,7 +8,6 @@
 
 #include "common.hpp"
 #include <hacks/FollowBot.hpp>
-#include <hacks/LagExploit.hpp>
 #include <glez/draw.hpp>
 
 namespace hacks::shared::followbot

@@ -6,12 +6,14 @@
  */
 
 #include <hacks/AntiCheat.hpp>
+#include <settings/Bool.hpp>
 #include "common.hpp"
+
+static settings::Bool enable{ "find-cheaters.antiaim.enable", "true" };
 
 namespace ac::antiaim
 {
 
-static CatVar enabled(CV_SWITCH, "ac_antiaim", "1", "Detect Antiaim");
 unsigned long last_accusation[32]{ 0 };
 
 void ResetEverything()

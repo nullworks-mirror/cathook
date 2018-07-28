@@ -7,12 +7,12 @@
 
 #include <hacks/hacklist.hpp>
 #include <online/Online.hpp>
+#include <settings/Bool.hpp>
 #include "common.hpp"
 #include "hitrate.hpp"
 #include "hack.hpp"
 
-static CatVar cursor_fix_experimental(CV_SWITCH, "experimental_cursor_fix", "1",
-                                      "Cursor fix");
+static settings::Bool cursor_fix_experimental{ "debug.cursor-fix", "false" };
 
 namespace hooked_methods
 {

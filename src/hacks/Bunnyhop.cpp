@@ -5,19 +5,15 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Bool.hpp>
 #include "common.hpp"
+
+static settings::Bool enable{ "bunnyhop.enable", "false" };
 
 namespace hacks::shared::bunnyhop
 {
 
 // Var for user settings
-static CatVar
-    enabled(CV_SWITCH, "bhop_enabled", "0", "Bunnyhop",
-            "Enable Bunnyhop. All extra features like autojump and perfect "
-            "jump limit were temporary removed.");
-// CatVar perfect_jump_limit(CV_INT, "bhop_enabled", "0", "Bunnyhop", "Enable
-// Bunnyhop. All extra features like autojump and perfect jump limit were
-// temporary removed.");
 
 static int ticks_last_jump = 0;
 // static int perfect_jumps = 0;
@@ -26,7 +22,7 @@ static int ticks_last_jump = 0;
 void CreateMove()
 {
     // Check user settings if bhop is enabled
-    if (!enabled)
+    if (!enable)
         return;
     if (!g_pUserCmd)
         return;

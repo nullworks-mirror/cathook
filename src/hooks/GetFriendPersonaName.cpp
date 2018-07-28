@@ -3,17 +3,11 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <settings/String.hpp>
 #include "HookedMethods.hpp"
 
-static CatVar ipc_name(CV_STRING, "name_ipc", "", "IPC Name");
-
-static CatEnum namesteal_enum({ "OFF", "PASSIVE", "ACTIVE" });
-static CatVar
-    namesteal(namesteal_enum, "name_stealer", "0", "Name Stealer",
-              "Attemt to steal your teammates names. Usefull for avoiding "
-              "kicks\nPassive only changes when the name stolen is no "
-              "longer the best name to use\nActive Attemps to change the "
-              "name whenever possible");
+static settings::String ipc_name{ "name.ipc", "" };
+static settings::Int namesteal{ "name.namesteal", "0" };
 
 static std::string stolen_name;
 

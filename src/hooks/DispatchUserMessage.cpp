@@ -8,20 +8,18 @@
 #include <boost/algorithm/string.hpp>
 #include <MiscTemporary.hpp>
 #include <hacks/AntiAim.hpp>
+#include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
+
+static settings::Bool clean_chat{ "misc.clean-chat", "false" };
+static settings::Bool dispatch_log{ "debug.log-dispatch-user-msg", "false" };
+static settings::String chat_filter{ "misc.chat-censor.filter", "" };
+static settings::Bool chat_filter_enable{ "misc.chat-censor.enable", "false" };
 
 static bool retrun = false;
 static Timer sendmsg{};
 static Timer gitgud{};
-static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
-                         "Removes newlines from chat");
-static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
-                           "Log dispatched user messages");
-static CatVar chat_filter(CV_STRING, "chat_censor", "", "Censor words",
-                          "Spam Chat with newlines if the chosen words are "
-                          "said, seperate with commas");
-static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
-                                  "Enable censor", "Censor Words in chat");
+
 const std::string clear = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
                           "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
                           "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"

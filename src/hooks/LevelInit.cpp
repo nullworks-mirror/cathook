@@ -4,11 +4,15 @@
 */
 
 #include <hacks/hacklist.hpp>
+#include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
 #if not LAGBOT_MODE
 #include "hacks/Backtrack.hpp"
 #endif
+
+static settings::Bool halloween_mode{ "misc.force-halloween", "false" };
+static settings::Int skybox_changer{ "misc.skybox-override", "0" };
 
 const char *skynum[] = { "sky_tf2_04",
                          "sky_upward",
@@ -72,12 +76,6 @@ static CatEnum skys({ "sky_tf2_04",
                       "sky_pyroland_01",
                       "sky_pyroland_02",
                       "sky_pyroland_03" });
-static CatVar
-    skybox_changer(skys, "skybox_changer", "0", "Change Skybox to this skybox",
-                   "Change Skybox to this skybox, only changes on map load");
-static CatVar halloween_mode(CV_SWITCH, "halloween_mode", "0",
-                             "Forced Halloween mode",
-                             "forced tf_forced_holiday 2");
 
 namespace hooked_methods
 {
