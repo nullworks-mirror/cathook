@@ -106,10 +106,7 @@ std::stack<std::string> &hack::command_stack()
                          */
 #define red 184, 56, 59, 255
 #define blu 88, 133, 162, 255
-static CatVar cat_event_hurt(CV_SWITCH, "cat_event_hurt", "1",
-                             "Enable OnHurt Event",
-                             "Disable if your chat gets spammed with \"blah "
-                             "damaged blah down to blah hp\"");
+
 class AdvancedEventListener : public IGameEventListener
 {
 public:

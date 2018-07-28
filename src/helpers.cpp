@@ -8,6 +8,9 @@
 #include "common.hpp"
 
 #include <sys/mman.h>
+#include <settings/Bool.hpp>
+
+static settings::Bool tcm{ "debug.tcm", "true" };
 
 std::vector<ConVar *> &RegisteredVarsList()
 {
@@ -52,8 +55,7 @@ void BeginConVars()
 
 void EndConVars()
 {
-    logging::Info("Registering ConVars");
-    RegisterCatVars();
+    logging::Info("Registering CatCommands");
     RegisterCatCommands();
     ConVar_Register();
 
@@ -738,8 +740,6 @@ bool IsEntityVisible(CachedEntity *entity, int hb)
         return entity->hitboxes.VisibilityCheck(hb);
     }
 }
-
-static CatVar tcm(CV_SWITCH, "debug_tcm", "1", "TCM");
 
 std::mutex trace_lock;
 bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos)

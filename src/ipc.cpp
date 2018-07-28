@@ -6,6 +6,7 @@
  */
 
 #include <hacks/CatBot.hpp>
+#include <settings/Bool.hpp>
 #include "ipc.hpp"
 
 #include "common.hpp"
@@ -13,6 +14,9 @@
 #include "hitrate.hpp"
 
 #if ENABLE_IPC
+
+static settings::Bool ipc_update_list{ "ipc.update-player-list", "true" };
+static settings::String server_name{ "ipc.server", "cathook_followbot_server" };
 
 namespace ipc
 {
@@ -129,8 +133,6 @@ CatCommand exec_all("ipc_exec_all", "Execute command (on every peer)",
                                               0, 0);
                         }
                     });
-CatVar server_name(CV_STRING, "ipc_server", "cathook_followbot_server",
-                   "IPC server name");
 
 peer_t *peer{ nullptr };
 
@@ -274,9 +276,6 @@ void Heartbeat()
     data.heartbeat    = time(nullptr);
 }
 
-static CatVar ipc_update_list(CV_SWITCH, "ipc_update_list", "1",
-                              "IPC Auto-Ignore",
-                              "Automaticly assign playerstates for bots");
 void UpdatePlayerlist()
 {
     if (peer && ipc_update_list)

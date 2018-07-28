@@ -9,20 +9,16 @@
 #include "hacks/Backtrack.hpp"
 #include <boost/circular_buffer.hpp>
 #include <glez/draw.hpp>
+#include <settings/Bool.hpp>
+
+static settings::Bool enable{ "backtrack.enable", "false" };
+static settings::Bool draw_bt{ "backtrack.draw", "false" };
+static settings::Float latency{ "backtrack.latency", "false" };
+static settings::Float mindistance{ "backtrack.min-distance", "false" };
+static settings::Int slots{ "backtrack.slots", "false" };
+
 namespace hacks::shared::backtrack
 {
-CatVar enable(CV_SWITCH, "backtrack", "0", "Enable backtrack",
-              "For legit play only as of right now.");
-static CatVar draw_bt(CV_SWITCH, "backtrack_draw", "0", "Draw",
-                      "Draw backtrack ticks");
-CatVar latency(CV_FLOAT, "backtrack_latency", "0", "fake lantency",
-               "Set fake latency to this many ms");
-static CatVar mindistance(CV_FLOAT, "mindistance", "60", "mindistance");
-static CatEnum slots_enum({ "All", "Primary", "Secondary", "Melee",
-                            "Primary Secondary", "Primary Melee",
-                            "Secondary Melee" });
-static CatVar slots(slots_enum, "backtrack_slots", "0", "Enabled Slots",
-                    "Select what slots backtrack should be enabled on.");
 
 BacktrackData headPositions[32][66]{};
 BestTickData sorted_ticks[66]{};

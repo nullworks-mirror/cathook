@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Int.hpp>
 #include "common.hpp"
 #include "hacks/AutoJoin.hpp"
 
@@ -24,13 +25,11 @@ CatCommand get_state("mm_state", "Get party state", []() {
     logging::Info("State: %d", re::CTFParty::state_(party));
 });
 
+settings::Int queue{ "autoqueue_mode", "7" };
+
 namespace tfmm
 {
-CatEnum queue_mode({ "MvmPractice", "MvmMannup", "LadderMatch6v6",
-                     "LadderMatch9v9", "LadderMatch12v12", "CasualMatch6v6",
-                     "CasualMatch9v9", "CasualMatch12v12",
-                     "CompetitiveEventMatch12v12" });
-CatVar queue(queue_mode, "autoqueue_mode", "7", "Autoqueue for this mode", "");
+
 void queue_start()
 {
     re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
