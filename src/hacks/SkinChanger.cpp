@@ -195,7 +195,7 @@ void FrameStageNotify(int stage)
 
     if (stage != FRAME_NET_UPDATE_POSTDATAUPDATE_START)
         return;
-    if (!enabled)
+    if (!enable)
         return;
     if (CE_BAD(LOCAL_E))
         return;
@@ -253,9 +253,9 @@ void DrawText()
 {
     CAttributeList *list;
 
-    if (!enabled)
+    if (!enable)
         return;
-    if (!show_debug_info)
+    if (!debug)
         return;
     if (CE_GOOD(LOCAL_W))
     {
@@ -417,7 +417,7 @@ void patched_weapon_cookie::Update(int entity)
     ent = g_IEntityList->GetClientEntity(entity);
     if (!ent || ent->IsDormant())
         return;
-    if (show_debug_info)
+    if (debug)
         logging::Info("Updating cookie for %i", entity); // FIXME DEBUG LOGS!
     list   = (CAttributeList *) ((uintptr_t) ent + netvar.AttributeList);
     attrs  = list->m_Attributes.Size();
@@ -482,7 +482,7 @@ void def_attribute_modifier::Apply(int entity)
         NET_INT(ent, netvar.iItemDefinitionIndex) != defidx_redirect)
     {
         NET_INT(ent, netvar.iItemDefinitionIndex) = defidx_redirect;
-        if (show_debug_info)
+        if (debug)
             logging::Info("Redirect -> %i",
                           NET_INT(ent, netvar.iItemDefinitionIndex));
         GetModifier(defidx_redirect).Apply(entity);

@@ -13,4 +13,5 @@ namespace hacks::shared::autojoin
 void resetQueueTimer();
 void update();
 void updateSearch();
+void onShutdown();
 }

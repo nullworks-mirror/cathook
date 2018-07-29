@@ -76,6 +76,8 @@ static settings::Bool online_support{ "esp.online.enable", "true" };
 static settings::Bool online_groups{ "esp.online.groups", "true" };
 static settings::Bool online_software{ "esp.online.software", "true" };
 
+static settings::Bool v9mode{ "esp.v952-mode", "false" };
+
 namespace hacks::shared::esp
 {
 
@@ -232,7 +234,7 @@ std::unordered_map<studiohdr_t *, bonelist_s> bonelist_map{};
 // Function called on draw
 void Draw()
 {
-    if (!enabled)
+    if (!enable)
         return;
     std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
     for (auto &i : entities_need_repaint)
@@ -249,7 +251,7 @@ void CreateMove()
 {
 
     // Check usersettings if enabled
-    if (!enabled)
+    if (!enable)
         return;
 
     // Something
@@ -341,14 +343,14 @@ void _FASTCALL emoji(CachedEntity *ent)
                 if (draw::WorldToScreen(hit->center, head_scr))
                 {
                     float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
-                                                   : float(emoji_esp_size);
+                                                   : *emoji_esp_size;
                     if (v9mode)
                         size *= 1.4;
-                    if (!size || !float(emoji_min_size))
+                    if (!size || !emoji_min_size)
                         return;
-                    if (emoji_esp_scaling && (size < float(emoji_min_size)))
-                        size = float(emoji_min_size);
-                    player_info_s info;
+                    if (emoji_esp_scaling && (size < *emoji_min_size))
+                        size = *emoji_min_size;
+                    player_info_s info{};
                     unsigned int steamID;
                     unsigned int steamidarray[32]{};
                     bool hascall    = false;
@@ -797,11 +799,11 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 // Used to process entities from CreateMove
 void _FASTCALL ProcessEntity(CachedEntity *ent)
 {
-    if (!enabled)
+    if (!enable)
         return; // Esp enable check
     if (CE_BAD(ent))
         return; // CE_BAD check to prevent crashes
-    if (max_dist && ent->m_flDistance() > (float) max_dist)
+    if (max_dist && ent->m_flDistance() > *max_dist)
         return;
     int classid = ent->m_iClassID();
     // Entity esp
@@ -1410,7 +1412,7 @@ void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color,
 {
     const rgba_t &black =
         transparent ? colors::Transparent(colors::black) : colors::black;
-    const int size = box_corner_size;
+    const int size = *box_corner_size;
 
     // Black corners
     // Top Left
@@ -1470,7 +1472,7 @@ bool GetCollide(CachedEntity *ent)
         // If user setting for box expnad is true, spread the max and mins
         if (esp_expand)
         {
-            const float &exp = (float) esp_expand;
+            const float exp = *esp_expand;
             maxs.x += exp;
             maxs.y += exp;
             maxs.z += exp;

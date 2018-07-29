@@ -50,21 +50,21 @@ public:
         setInternal(next);
     }
 
-    Variable<glez::rgba>& operator=(const glez::rgba& rgba)
+    inline Variable<glez::rgba>& operator=(const glez::rgba& rgba)
     {
         setInternal(rgba);
     }
 
-    Variable<glez::rgba>& operator=(const std::string& string)
+    inline Variable<glez::rgba>& operator=(const std::string& string)
     {
         fromString(string);
     }
 
-    const std::string &toString() override
+    inline const std::string &toString() override
     {
         return string;
     }
-    const glez::rgba &operator*() override
+    inline const glez::rgba &operator*() override
     {
         return value;
     }

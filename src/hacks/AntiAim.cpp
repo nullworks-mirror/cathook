@@ -619,7 +619,7 @@ void ProcessUserCmd(CUserCmd *cmd)
     FakeCrouch(cmd);
 }
 
-bool antiaim::isEnabled()
+bool isEnabled()
 {
     return *enable;
 }

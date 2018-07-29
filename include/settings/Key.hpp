@@ -82,22 +82,22 @@ public:
         setInternal(k);
     }
 
-    const Key &operator*() override
+    inline const Key &operator*() override
     {
         return value;
     }
 
-    const std::string &toString() override
+    inline const std::string &toString() override
     {
         return string;
     }
 
-    explicit operator bool() const
+    inline explicit operator bool() const
     {
         return value.mouse || value.scan;
     }
 
-    bool isKeyDown() const
+    inline bool isKeyDown() const
     {
         if (value.mouse)
         {

@@ -424,7 +424,7 @@ void WorldTick()
              DistanceToGround({ breadcrumbs[0].x, breadcrumbs[0].y,
                                 breadcrumbs[0].z + 5 }) > 47))
         {
-            g_pUserCmd->buttons |= IN_JUMP;
+            current_user_cmd->buttons |= IN_JUMP;
             lastJump.update();
         }
         // Check if still moving. 70 HU = Sniper Zoomed Speed
@@ -511,7 +511,7 @@ void WorldTick()
 void DrawTick()
 {
 #if ENABLE_VISUALS
-    if (!followbot || !draw_crumb)
+    if (!enable || !draw_crumb)
         return;
     if (breadcrumbs.size() < 2)
         return;

@@ -352,7 +352,7 @@ free(logname);*/
 #endif
 #if not LAGBOT_MODE
     // FIXME [MP]
-    hacks::shared::killsay::Init();
+    hacks::shared::killsay::init();
     hacks::shared::announcer::init();
     hacks::tf2::killstreak::init();
 #endif
@@ -435,7 +435,7 @@ void hack::Shutdown()
     ConVar_Unregister();
 #if not LAGBOT_MODE
     logging::Info("Shutting down killsay...");
-    hacks::shared::killsay::Shutdown();
+    hacks::shared::killsay::shutdown();
     hacks::shared::announcer::shutdown();
 #endif
     logging::Info("Success..");

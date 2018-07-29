@@ -60,4 +60,6 @@ extern BestTickData sorted_ticks[66];
 bool isBacktrackEnabled();
 float getLatency();
 int getTicks();
+// FIXME
+int getTicks2();
 }

@@ -17,7 +17,7 @@ static settings::Bool radar_enabled{ "radar.enable", "false" };
 static settings::Int size{ "radar.size", "300" };
 static settings::Float zoom{ "radar.zoom", "20" };
 static settings::Bool healthbar{ "radar.healthbar", "true" };
-static settings::Bool enemis_over_teammates{ "radar.enemies-over-teammates", "true" };
+static settings::Bool enemies_over_teammates{ "radar.enemies-over-teammates", "true" };
 static settings::Int icon_size{ "radar.icon-size", "20" };
 static settings::Int radar_x{ "radar.x", "100" };
 static settings::Int radar_y{ "radar.y", "100" };
@@ -146,7 +146,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                     (int) icon_size, 4, colors::black, 0.5f);
                 glez::draw::rect(x + wtr.first + 1,
                                  y + wtr.second + (int) icon_size + 1,
-                                 ((float) icon_size - 2.0f) * healthp, 2, clr);
+                                 (*icon_size - 2.0f) * healthp, 2, clr);
             }
         }
         else if (ent->m_Type() == ENTITY_BUILDING)
@@ -179,8 +179,8 @@ void DrawEntity(int x, int y, CachedEntity *ent)
             {
                 const auto &wtr =
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
-                float sz  = float(icon_size) * 0.15f * 0.5f;
-                float sz2 = float(icon_size) * 0.85;
+                float sz  = *icon_size * 0.15f * 0.5f;
+                float sz2 = *icon_size * 0.85;
                 tx_items[0].draw(x + wtr.first + sz, y + wtr.second + sz, sz2,
                                  sz2, colors::white);
             }
@@ -190,8 +190,8 @@ void DrawEntity(int x, int y, CachedEntity *ent)
             {
                 const auto &wtr =
                     WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
-                float sz  = float(icon_size) * 0.15f * 0.5f;
-                float sz2 = float(icon_size) * 0.85;
+                float sz  = *icon_size * 0.15f * 0.5f;
+                float sz2 = *icon_size * 0.85;
                 tx_items[1].draw(x + wtr.first + sz, y + wtr.second + sz, sz2,
                                  sz2, colors::white);
             }
@@ -214,7 +214,7 @@ void Draw()
 
     x              = (int) radar_x;
     y              = (int) radar_y;
-    int radar_size = size;
+    int radar_size = *size;
     int half_size  = radar_size / 2;
 
     outlineclr = GUIColor();

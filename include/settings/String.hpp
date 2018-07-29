@@ -26,23 +26,23 @@ public:
         value = string;
     }
 
-    const std::string &toString() override
+    inline const std::string &toString() override
     {
         return value;
     }
 
-    Variable<std::string>& operator=(const std::string& string)
+    inline Variable<std::string>& operator=(const std::string& string)
     {
         fireCallbacks(std::string(string));
         value = string;
     }
 
-    const std::string &operator*() override
+    inline const std::string &operator*() override
     {
         return value;
     }
 
-    explicit operator bool() const
+    inline explicit operator bool() const
     {
         return !value.empty();
     }

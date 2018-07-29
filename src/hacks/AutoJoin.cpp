@@ -133,4 +133,10 @@ void resetQueueTimer()
     queuetime.update();
 }
 
+void onShutdown()
+{
+    if (auto_queue)
+        tfmm::startQueue();
+}
+
 }

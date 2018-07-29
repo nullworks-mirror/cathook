@@ -9,6 +9,7 @@ if(NOT LagbotMode)
         "${CMAKE_CURRENT_LIST_DIR}/Aimbot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Announcer.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiAim.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/AntiAntiAim.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiBackstab.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiCheat.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiDisguise.cpp"

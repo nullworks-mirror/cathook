@@ -36,31 +36,32 @@ public:
             setInternal(true);
     }
 
-    Variable<bool>& operator=(const std::string& string)
+    inline Variable<bool>& operator=(const std::string& string)
     {
         fromString(string);
     }
 
-    const std::string &toString() override
+    inline const std::string &toString() override
     {
         return string;
     }
 
-    explicit operator bool() const
+    inline explicit operator bool() const
     {
         return value;
     }
-    Variable<bool>& operator=(bool next)
+
+    inline Variable<bool>& operator=(bool next)
     {
         setInternal(next);
     }
 
-    const bool &operator*() override
+    inline const bool &operator*() override
     {
         return value;
     }
 
-    void flip()
+    inline void flip()
     {
         setInternal(!value);
     }

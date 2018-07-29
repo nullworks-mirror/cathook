@@ -9,6 +9,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/Aimbot.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Announcer.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiAim.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/AntiAntiAim.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiBackstab.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiCheat.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiDisguise.hpp"

@@ -158,7 +158,7 @@ void Run()
                     BestTickData{ headPositions[iBestTarget][t].tickcount, t };
         }
         std::sort(sorted_ticks, sorted_ticks + getTicks());
-        int tickus = (*latency > 800 || *latency < 200) ? 12 : 24;
+        int tickus = getTicks2();
         for (int t = 0; t < getTicks(); ++t)
         {
             bool good_tick = false;
@@ -214,7 +214,7 @@ void Draw()
         return;
     if (!shouldDrawBt)
         return;
-    int tickus = (*latency > 800 || *latency < 200.0f) ? 12 : 24;
+    int tickus = getTicks2();
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         for (int j = 0; j < getTicks(); j++)
@@ -303,5 +303,10 @@ float getLatency()
 int getTicks()
 {
     return max(min(*latency / 15, 65), 12);
+}
+
+int getTicks2()
+{
+    return (*latency > 800 || *latency < 200) ? 12 : 24;
 }
 }

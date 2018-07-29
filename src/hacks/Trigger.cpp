@@ -43,7 +43,7 @@ bool CanBacktrack()
 {
     int target  = hacks::shared::backtrack::iBestTarget;
     int tickcnt = 0;
-    int tickus = (float(hacks::shared::backtrack::latency) > 800.0f || float(hacks::shared::backtrack::latency) < 200.0f) ? 12 : 24;
+    int tickus = hacks::shared::backtrack::getTicks2();
     for (auto i : hacks::shared::backtrack::headPositions[target])
     {
         bool good_tick = false;
@@ -90,8 +90,8 @@ bool CanBacktrack()
             Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
             float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
             angles.y       = i.viewangles;
-            g_pUserCmd->tick_count = i.tickcount;
-            g_pUserCmd->buttons |= IN_ATTACK;
+            current_user_cmd->tick_count = i.tickcount;
+            current_user_cmd->buttons |= IN_ATTACK;
             return false;
         }
     }
@@ -119,7 +119,7 @@ void CreateMove()
     CachedEntity *ent = FindEntInSight(EffectiveTargetingRange());
 
     // Check if can backtrack, shoot if we can
-    if (!CanBacktrack() || hacks::shared::backtrack::enable)
+    if (!CanBacktrack() || hacks::shared::backtrack::isBacktrackEnabled())
         return;
 
     // Check if dormant or null to prevent crashes
@@ -144,16 +144,15 @@ void CreateMove()
             {
                 if (g_GlobalVars->curtime - float(delay) >= target_time)
                 {
-                    g_pUserCmd->buttons |= IN_ATTACK;
+                    current_user_cmd->buttons |= IN_ATTACK;
                 }
             }
         }
         else
         {
-            g_pUserCmd->buttons |= IN_ATTACK;
+            current_user_cmd->buttons |= IN_ATTACK;
         }
     }
-    return;
 }
 
 // The first check to see if the player should shoot in the first place
@@ -161,7 +160,7 @@ bool ShouldShoot()
 {
 
     // Check for +use
-    if (g_pUserCmd->buttons & IN_USE)
+    if (current_user_cmd->buttons & IN_USE)
         return false;
 
     // Check if using action slot item
@@ -183,7 +182,7 @@ bool ShouldShoot()
         // If zoomed only is on, check if zoomed
         if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
         {
-            if (!g_pLocalPlayer->bZoomed && !(g_pUserCmd->buttons & IN_ATTACK))
+            if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
                 return false;
         }
         // Check if player is taunting
@@ -223,7 +222,7 @@ bool ShouldShoot()
         // Check if player is zooming
         if (g_pLocalPlayer->bZoomed)
         {
-            if (!(g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+            if (!(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
             {
                 if (!CanHeadshot())
                     return false;
@@ -554,8 +553,7 @@ bool UpdateAimkey()
     if (trigger_key && trigger_key_mode)
     {
         // Grab whether the aimkey is depressed
-        bool key_down =
-            g_IInputSystem->IsButtonDown((ButtonCode_t)(int) trigger_key);
+        bool key_down = trigger_key.isKeyDown();
         // Switch based on the user set aimkey mode
         switch ((int) trigger_key_mode)
         {
@@ -599,7 +597,7 @@ float EffectiveTargetingRange()
         return 200.0f;
     // If user has set a max range, then use their setting,
     if (max_range)
-        return (float) max_range;
+        return *max_range;
     // else use a pre-set range
     else
         return 8012.0f;

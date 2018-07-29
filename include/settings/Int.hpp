@@ -29,17 +29,17 @@ public:
         set(result);
     }
 
-    Variable<int>& operator=(const std::string& string)
+    inline Variable<int>& operator=(const std::string& string)
     {
         fromString(string);
     }
 
-    Variable<int>& operator=(const int& next)
+    inline Variable<int>& operator=(const int& next)
     {
         set(next);
     }
 
-    explicit operator bool() const
+    inline explicit operator bool() const
     {
         return value != 0;
     }

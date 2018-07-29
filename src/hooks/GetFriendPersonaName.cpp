@@ -7,6 +7,7 @@
 #include "HookedMethods.hpp"
 
 static settings::String ipc_name{ "name.ipc", "" };
+static settings::String force_name{ "name.custom", "" };
 static settings::Int namesteal{ "name.namesteal", "0" };
 
 static std::string stolen_name;
@@ -106,11 +107,11 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
 #if ENABLE_IPC
     if (ipc::peer)
     {
-        static std::string namestr(ipc_name.GetString());
-        namestr.assign(ipc_name.GetString());
+        std::string namestr(*ipc_name);
         if (namestr.length() > 3)
         {
             ReplaceString(namestr, "%%", std::to_string(ipc::peer->client_id));
+            ReplaceString(namestr, "\\n", "\n");
             return namestr.c_str();
         }
     }
@@ -136,11 +137,10 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
         }
     }
 
-    if ((strlen(force_name.GetString()) > 1) &&
+    if ((*force_name).size() > 1 &&
         steam_id == g_ISteamUser->GetSteamID())
     {
-
-        return force_name_newlined;
+        return force_name.toString().c_str();
     }
     return original::GetFriendPersonaName(this_, steam_id);
 }

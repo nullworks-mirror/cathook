@@ -6,4 +6,5 @@
 
 namespace event_logging
 {
+bool isEnabled();
 }

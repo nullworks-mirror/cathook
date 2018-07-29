@@ -451,8 +451,8 @@ void CreateMove()
         current_user_cmd->buttons |= IN_ATTACK;
     /*if (m_iNewTarget || !(g_GlobalVars->tickcount % 300)) {
         if (silent) g_pLocalPlayer->bUseSilentAngles = true;
-        AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
-        g_pUserCmd->buttons |= IN_ATTACK;
+        AimAt(g_pLocalPlayer->v_Eye, out, current_user_cmd);
+        current_user_cmd->buttons |= IN_ATTACK;
     }*/
     if (IsVaccinator() && CE_GOOD(target) && auto_vacc)
     {

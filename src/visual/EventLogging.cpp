@@ -174,3 +174,7 @@ InitRoutine init([]() {
     g_IGameEventManager->AddListener(&listener, false);
 });
 
+bool event_logging::isEnabled()
+{
+    return *enable;
+}

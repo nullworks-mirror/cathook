@@ -94,15 +94,15 @@ class ArithmeticVariable: public VariableBase<T>
 public:
     ~ArithmeticVariable<T>() override = default;
 
-    explicit operator T() const
+    explicit inline operator T() const
     {
         return value;
     }
-    const std::string &toString() override
+    const inline std::string &toString() override
     {
         return string;
     }
-    const T &operator*() override
+    const inline T &operator*() override
     {
         return value;
     }

@@ -28,10 +28,7 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
         hacks::tf2::killstreak::apply_killstreaks();
 #endif
         hacks::shared::catbot::update();
-        if (hitrate::hitrate_check)
-        {
-            hitrate::Update();
-        }
+        hitrate::Update();
         online::update();
 #if ENABLE_IPC
         static Timer nametimer{};

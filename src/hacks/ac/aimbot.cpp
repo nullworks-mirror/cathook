@@ -37,7 +37,7 @@ void Init()
 
 void Update(CachedEntity *player)
 {
-    if (not enabled)
+    if (!enable)
         return;
     auto &data = data_table[player->m_IDX - 1];
     auto &am   = amount[player->m_IDX - 1];
@@ -97,7 +97,7 @@ void Update(CachedEntity *player)
 
 void Event(KeyValues *event)
 {
-    if (not enabled)
+    if (!enable)
         return;
     if (!strcmp(event->GetName(), "player_death") ||
         !strcmp(event->GetName(), "player_hurt"))

@@ -33,7 +33,7 @@ void Init()
 
 void Update(CachedEntity *player)
 {
-    if (!enabled)
+    if (!enable)
         return;
     int amount[32];
     auto &am = amount[player->m_IDX - 1];
