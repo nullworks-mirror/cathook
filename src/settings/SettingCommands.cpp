@@ -2,6 +2,10 @@
 #include <core/cvwrapper.hpp>
 #include <settings/Manager.hpp>
 #include <init.hpp>
+#include <settings/SettingsIO.hpp>
+#include <dirent.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 /*
   Created on 29.07.18.
@@ -41,6 +45,38 @@ static CatCommand cat("cat", "", [](const CCommand& args) {
     {
         g_ICvar->ConsolePrintf("Usage: cat <set/get> <variable> <value>\n");
         return;
+    }
+});
+
+static CatCommand save("save", "", [](const CCommand& args) {
+    settings::SettingsWriter writer{ settings::Manager::instance() };
+
+    DIR *config_directory = opendir(DATA_PATH "/configs");
+    if (!config_directory)
+    {
+        logging::Info("Configs directory doesn't exist, creating one!");
+        mkdir(DATA_PATH "/configs", S_IRWXU | S_IRWXG);
+    }
+
+    if (args.ArgC() == 1)
+    {
+        writer.saveTo(DATA_PATH "/configs/default.conf", false);
+    }
+    else
+    {
+        writer.saveTo(std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf", false);
+    }
+});
+
+static CatCommand load("load", "", [](const CCommand& args) {
+    settings::SettingsReader loader{ settings::Manager::instance() };
+    if (args.ArgC() == 1)
+    {
+        loader.loadFrom(DATA_PATH "/configs/default.conf");
+    }
+    else
+    {
+        loader.loadFrom(std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf");
     }
 });
 

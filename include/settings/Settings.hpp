@@ -114,7 +114,7 @@ public:
     {
         //if (next < min) next = min;
         //if (next > max) next = max;
-        if (next != value)
+        if (next != value || string.empty())
         {
             this->fireCallbacks(next);
             value = next;
