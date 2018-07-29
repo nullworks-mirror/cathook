@@ -8,6 +8,8 @@
 #include <hacks/hacklist.hpp>
 #include <glez/draw.hpp>
 #include <settings/Bool.hpp>
+#include <hacks/AntiAim.hpp>
+
 #include "common.hpp"
 
 static settings::Bool communicate{ "antiaim.identify", "0" };
@@ -615,5 +617,10 @@ void ProcessUserCmd(CUserCmd *cmd)
     }
     g_pLocalPlayer->bUseSilentAngles = true;
     FakeCrouch(cmd);
+}
+
+bool antiaim::isEnabled()
+{
+    return *enable;
 }
 }
