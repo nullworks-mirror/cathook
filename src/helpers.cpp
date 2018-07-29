@@ -1006,11 +1006,12 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     else if (classid == CL_CLASS(CTFCompoundBow))
     {
         float chargetime =
-            g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
-            CE_FLOAT(weapon, netvar.flChargeBeginTime) *
-                g_GlobalVars->interval_per_tick;
-        rspeed = (fminf(fmaxf(chargetime, 0.0f), 1.0f) * 800.0f) + 1800.0f;
-        rgrav  = (fminf(fmaxf(chargetime, 0.0f), 1.0f) * -0.40000001f) + 0.5f;
+            g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
+        rspeed = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) * 800.0) +
+                          1800.0);
+        rgrav  = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) *
+                                  -0.40000001) +
+                         0.5);
     }
     else if (classid == CL_CLASS(CTFBat_Wood))
     {
