@@ -29,9 +29,6 @@ static settings::Bool chamsself{ "chams.self", "true" };
 static settings::Bool rainbow{ "chams.self-rainbow", "true" };
 static settings::Bool disco_chams{ "chams.disco", "false" };
 
-// static CatVar chams_experimental(CV_SWITCH, "chams_effect", "0",
-// "Experimental Chams");
-
 namespace effect_chams
 {
 

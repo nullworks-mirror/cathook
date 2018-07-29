@@ -79,8 +79,6 @@ static settings::Bool online_software{ "esp.online.software", "true" };
 namespace hacks::shared::esp
 {
 
-// CatVar draw_hitbox(CV_SWITCH, "esp_hitbox", "1", "Draw Hitbox");
-
 // Unknown
 std::mutex threadsafe_mutex;
 // Storage array for keeping strings and other data

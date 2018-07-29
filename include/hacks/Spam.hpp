@@ -22,7 +22,7 @@ extern const std::vector<std::string> builtin_lmaobox;
 extern const std::vector<std::string> builtin_lithium;
 
 bool isActive();
-void Init();
-void CreateMove();
-void Reload();
+void init();
+void createMove();
+void reload();
 }

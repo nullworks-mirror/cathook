@@ -8,7 +8,10 @@
 #pragma once
 #include <boost/circular_buffer.hpp>
 #include <time.h>
+#include <mathlib/vector.h>
+
 class Vector;
+class CUserCmd;
 class ConVar;
 
 extern int g_AppID;
@@ -43,7 +46,8 @@ public:
     brutestruct brute;
 };
 
-class CUserCmd;
-extern CUserCmd *g_pUserCmd;
+bool isHackActive();
+
+extern CUserCmd *current_user_cmd;
 
 extern GlobalSettings g_Settings;

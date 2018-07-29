@@ -110,7 +110,7 @@ bool PlayerPassesQuery(Query query, int idx)
 
 Query QueryFromSubstring(const std::string &string)
 {
-    Query result;
+    Query result{};
     bool read = true;
     for (auto it = string.begin(); read && *it; it++)
     {
@@ -211,13 +211,6 @@ int QueryPlayer(Query query)
     return index_result;
 }
 
-void Init()
-{
-    filename.installChangeCallback([](settings::VariableBase<std::string>& var, std::string after) {
-        file.TryLoad(after);
-    });
-}
-
 bool SubstituteQueries(std::string &input)
 {
     size_t index = input.find("%query:");
@@ -252,7 +245,14 @@ bool FormatSpamMessage(std::string &message)
     return SubstituteQueries(message);
 }
 
-void CreateMove()
+void init()
+{
+    filename.installChangeCallback([](settings::VariableBase<std::string>& var, std::string after) {
+        file.TryLoad(after);
+    });
+}
+
+void createMove()
 {
     IF_GAME(IsTF2())
     {
@@ -380,9 +380,14 @@ void CreateMove()
     }
 }
 
-void Reload()
+void reload()
 {
     file.Load(std::string(filename.GetString()));
+}
+
+bool isActive()
+{
+    return bool(spam_source);
 }
 
 const std::vector<std::string> builtin_default = {
@@ -423,9 +428,4 @@ const std::vector<std::string> builtin_lithium = {
     "SAVE YOUR MONEY AND GET LITHIUMCHEAT! IT IS FREE!",
     "GOT ROLLED BY LITHIUM? HEY, THAT MEANS IT'S TIME TO GET LITHIUMCHEAT!!"
 };
-
-bool isActive()
-{
-    return bool(spam_source);
-}
 }

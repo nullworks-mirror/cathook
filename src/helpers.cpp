@@ -446,7 +446,7 @@ std::pair<float, float> ComputeMove(const Vector &a, const Vector &b)
     float speed = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
     Vector ang;
     VectorAngles(vsilent, ang);
-    float yaw = DEG2RAD(ang.y - g_pUserCmd->viewangles.y);
+    float yaw = DEG2RAD(ang.y - current_user_cmd->viewangles.y);
     return { cos(yaw) * 450, -sin(yaw) * 450 };
 }
 

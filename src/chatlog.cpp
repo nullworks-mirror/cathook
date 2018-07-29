@@ -109,10 +109,10 @@ void LogMessage(int eid, std::string message)
     {
         return;
     }
-    if (no_spam && hacks::shared::spam::spam_source and
+    if (no_spam && hacks::shared::spam::isActive() and
         eid == g_IEngine->GetLocalPlayer())
         return;
-    player_info_s info;
+    player_info_s info{};
     if (not g_IEngine->GetPlayerInfo(eid, &info))
         return;
     if (no_ipc &&

@@ -29,7 +29,6 @@
 #include "AntiCheat.hpp"
 #include "AutoDeadringer.hpp"
 #include "Bunnyhop.hpp"
-#include "LagExploit.hpp"
 #include "SeedPrediction.hpp"
 #endif
 #if ENABLE_VISUALS
@@ -43,7 +42,6 @@
 #include "AntiBackstab.hpp"
 #include "AutoBackstab.hpp"
 #include "FollowBot.hpp"
-#include "HealArrows.hpp"
 #include "Misc.hpp"
 #include "Trigger.hpp"
 #include "KillSay.hpp"

@@ -38,8 +38,6 @@ bool UnassignedClass()
 Timer autoqueue_timer{};
 Timer queuetime{};
 Timer req_timer{};
-/*CatVar party_bypass(CV_SWITCH, "party_bypass", "0", "Party Bypass",
-                    "Bypass Party restrictions");*/
 void UpdateSearch()
 {
     // segfaults for no reason

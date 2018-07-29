@@ -65,8 +65,3 @@ static CatCommand minus_use_action_slot_item_server(
         g_IEngine->ServerCmdKeyValues(kv);
     });
 
-// TODO replace \\n with \n
-// TODO name \\n = \n
-// static CatVar queue_messages(CV_SWITCH, "chat_queue", "0", "Queue messages",
-// "Use this if you want to use spam/killsay and still be able to chat normally
-// (without having your msgs eaten by valve cooldown)");

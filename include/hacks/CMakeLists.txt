@@ -42,6 +42,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/ESP.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Radar.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/SkinChanger.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/Thirdperson.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/SpyAlert.hpp")
 endif()
 

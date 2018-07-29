@@ -27,14 +27,6 @@ static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity", "0.7" 
 namespace hacks::tf::autoreflect
 {
 
-// TODO setup proj sorting
-// TODO CatVar big_proj(CV_SWITCH, "reflect_big_projectile", "0", "Reflect big
-// projectiles", "Reflect Rockets");
-// TODO CatVar small_proj(CV_SWITCH, "reflect_small_projectile", "0", "Reflect
-// small projectiles", "Reflect Huntsman arrows, Crusaders bolts");
-// TODO CatVar misc_proj(CV_SWITCH, "reflect_misc_projectile", "0", "Reflect
-// other", "Reflect jarate, milk");
-
 // Function called by game for movement
 void CreateMove()
 {

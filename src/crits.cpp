@@ -23,10 +23,10 @@ namespace criticals
 
 int find_next_random_crit_for_weapon(IClientEntity *weapon)
 {
-    int tries = 0, number = g_pUserCmd->command_number, found = 0, seed,
+    int tries = 0, number = current_user_cmd->command_number, found = 0, seed,
         seed_md5, seed_backup;
 
-    crithack_saved_state state;
+    crithack_saved_state state{};
     state.Save(weapon);
 
     seed_backup = *g_PredictionRandomSeed;
@@ -56,7 +56,7 @@ void unfuck_bucket(IClientEntity *weapon)
     static float last_bucket;
     static int last_weapon;
 
-    if (g_pUserCmd->command_number)
+    if (current_user_cmd->command_number)
         changed = false;
 
     float &bucket = re::C_TFWeaponBase::crit_bucket_(weapon);
@@ -92,15 +92,17 @@ static const model_t *lastweapon = nullptr;
 
 bool force_crit(IClientEntity *weapon)
 {
-    if (lastnumber < g_pUserCmd->command_number ||
+    auto command_number = current_user_cmd->command_number;
+
+    if (lastnumber < command_number ||
         lastweapon != weapon->GetModel() ||
-        lastnumber - g_pUserCmd->command_number > 1000)
+        lastnumber - command_number > 1000)
     {
-        if (cached_calculation.init_command > g_pUserCmd->command_number ||
-            g_pUserCmd->command_number - cached_calculation.init_command >
+        if (cached_calculation.init_command > command_number ||
+                command_number - cached_calculation.init_command >
                 4096 ||
-            (g_pUserCmd->command_number &&
-             (cached_calculation.command_number < g_pUserCmd->command_number)))
+            (command_number &&
+             (cached_calculation.command_number < command_number)))
             cached_calculation.weapon_entity = 0;
         if (cached_calculation.weapon_entity == weapon->entindex())
             return bool(cached_calculation.command_number);
@@ -109,7 +111,7 @@ bool force_crit(IClientEntity *weapon)
     }
     else
         number = lastnumber;
-    logging::Info("Found critical: %d -> %d", g_pUserCmd->command_number,
+    logging::Info("Found critical: %d -> %d", command_number,
                   number);
     lastweapon = weapon->GetModel();
     lastnumber = number;
@@ -117,16 +119,16 @@ bool force_crit(IClientEntity *weapon)
     {
         if (!crit_legiter)
         {
-            if (number && number != g_pUserCmd->command_number)
-                command_number_mod[g_pUserCmd->command_number] = number;
+            if (number && number != command_number)
+                command_number_mod[command_number] = number;
 
             cached_calculation.command_number = number;
             cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
         }
         else
         {
-            if (number && number - 30 < g_pUserCmd->command_number)
-                command_number_mod[g_pUserCmd->command_number] = number;
+            if (number && number - 30 < command_number)
+                command_number_mod[command_number] = number;
 
             cached_calculation.command_number = number;
             cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
@@ -136,22 +138,22 @@ bool force_crit(IClientEntity *weapon)
     {
         if (!crit_legiter)
         {
-            if (g_pUserCmd->command_number != number && number &&
-                number != g_pUserCmd->command_number)
-                g_pUserCmd->buttons &= ~IN_ATTACK;
+            if (command_number != number && number &&
+                number != command_number)
+                current_user_cmd->buttons &= ~IN_ATTACK;
             else
-                g_pUserCmd->buttons |= IN_ATTACK;
+                current_user_cmd->buttons |= IN_ATTACK;
         }
         else
         {
-            if (g_pUserCmd->command_number + 30 > number && number &&
-                number != g_pUserCmd->command_number)
-                g_pUserCmd->buttons &= ~IN_ATTACK;
+            if (command_number + 30 > number && number &&
+                number != command_number)
+                current_user_cmd->buttons &= ~IN_ATTACK;
             else
-                g_pUserCmd->buttons |= IN_ATTACK;
+                current_user_cmd->buttons |= IN_ATTACK;
         }
     }
-    return !!number;
+    return number != 0;
 }
 
 void create_move()
@@ -162,20 +164,20 @@ void create_move()
         return;
     if (CE_BAD(LOCAL_W))
         return;
-    if (g_pUserCmd->command_number)
-        lastusercmd       = g_pUserCmd->command_number;
+    if (current_user_cmd->command_number)
+        lastusercmd       = current_user_cmd->command_number;
     IClientEntity *weapon = RAW_ENT(LOCAL_W);
     if (!re::C_TFWeaponBase::IsBaseCombatWeapon(weapon))
         return;
     if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon))
         return;
     unfuck_bucket(weapon);
-    if ((g_pUserCmd->buttons & IN_ATTACK) && crit_key && crit_key.isKeyDown() &&
-        g_pUserCmd->command_number)
+    if ((current_user_cmd->buttons & IN_ATTACK) && crit_key && crit_key.isKeyDown() &&
+            current_user_cmd->command_number)
     {
         force_crit(weapon);
     }
-    else if ((g_pUserCmd->buttons & IN_ATTACK) && g_pUserCmd->command_number &&
+    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number &&
              GetWeaponMode() == weapon_melee && crit_melee &&
              g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
     {
@@ -204,7 +206,7 @@ void draw()
         return;
     if (crit_info && CE_GOOD(LOCAL_W))
     {
-        if (crit_key.KeyDown())
+        if (crit_key.isKeyDown())
         {
             AddCenterString("FORCED CRITS!", colors::red);
         }

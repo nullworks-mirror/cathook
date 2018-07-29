@@ -104,21 +104,7 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
             if (CE_GOOD(LOCAL_E) && no_zoom)
                 RemoveCondition<TFCond_Zoomed>(LOCAL_E);
         }
-        if (force_thirdperson && !g_pLocalPlayer->life_state &&
-            CE_GOOD(g_pLocalPlayer->entity))
-        {
-            CE_INT(g_pLocalPlayer->entity, netvar.nForceTauntCam) = 1;
-        }
-        if (stage == 5 && show_antiaim && g_IInput->CAM_IsThirdPerson())
-        {
-            if (CE_GOOD(g_pLocalPlayer->entity))
-            {
-                CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 4) =
-                    g_Settings.brute.last_angles[LOCAL_E->m_IDX].x;
-                CE_FLOAT(g_pLocalPlayer->entity, netvar.deadflag + 8) =
-                    g_Settings.brute.last_angles[LOCAL_E->m_IDX].y;
-            }
-        }
+        hacks::tf::thirdperson::frameStageNotify();
     }
     return original::FrameStageNotify(this_, stage);
 }

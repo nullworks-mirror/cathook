@@ -39,5 +39,6 @@ if(EnableVisuals)
             "${CMAKE_CURRENT_LIST_DIR}/ESP.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Radar.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/SkinChanger.cpp"
-            "${CMAKE_CURRENT_LIST_DIR}/SpyAlert.cpp")
+            "${CMAKE_CURRENT_LIST_DIR}/SpyAlert.cpp"
+            "${CMAKE_CURRENT_LIST_DIR}/Thirdperson.cpp")
 endif()
