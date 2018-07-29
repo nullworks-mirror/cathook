@@ -64,7 +64,7 @@ bool CanBackstab(CachedEntity *tar, Vector Local_ang)
 }
 void CreateMove()
 {
-    if (!enabled)
+    if (!enable)
         return;
     if (!CE_GOOD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !CE_GOOD(LOCAL_W))
         return;
@@ -85,7 +85,7 @@ void CreateMove()
     if (CE_GOOD(target) && target != LOCAL_E &&
         target->m_iTeam() != LOCAL_E->m_iTeam() && target->m_bAlivePlayer() &&
         target->m_Type() == ENTITY_PLAYER &&
-        !hacks::shared::backtrack::enable &&
+        !hacks::shared::backtrack::isBacktrackEnabled() &&
         CanBackstab(target, g_pLocalPlayer->v_OrigViewangles))
     {
         float swingrange =
@@ -97,9 +97,9 @@ void CreateMove()
         if ((min1.x <= max2.x && max1.x >= min2.x) &&
             (min1.y <= max2.y && max1.y >= min2.y) &&
             (min1.z <= max2.z && max1.z >= min2.z))
-            g_pUserCmd->buttons |= IN_ATTACK;
+            current_user_cmd->buttons |= IN_ATTACK;
     }
-    else if (!hacks::shared::backtrack::enable)
+    else if (!hacks::shared::backtrack::isBacktrackEnabled())
     {
         CachedEntity *tar = nullptr;
         float bestscr     = 9999.9f;
@@ -143,8 +143,8 @@ void CreateMove()
             eyeang.y = i;
             if (CanBackstab(tar, eyeang))
             {
-                g_pUserCmd->viewangles.y = eyeang.y;
-                g_pUserCmd->buttons |= IN_ATTACK;
+                current_user_cmd->viewangles.y = eyeang.y;
+                current_user_cmd->buttons |= IN_ATTACK;
                 if (silent)
                     g_pLocalPlayer->bUseSilentAngles = true;
             }
@@ -153,13 +153,13 @@ void CreateMove()
     }
     else
     {
-        if (!hacks::shared::backtrack::enable)
+        if (!hacks::shared::backtrack::isBacktrackEnabled())
             return;
         if (hacks::shared::backtrack::iBestTarget == -1)
             return;
         int iBestTarget = hacks::shared::backtrack::iBestTarget;
         int tickcnt     = 0;
-        int tickus = (float(hacks::shared::backtrack::latency) > 800.0f || float(hacks::shared::backtrack::latency) < 200.0f) ? 12 : 24;
+        int tickus = (float(hacks::shared::backtrack::getLatency()) > 800.0f || float(hacks::shared::backtrack::getLatency()) < 200.0f) ? 12 : 24;
         for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
         {
             bool good_tick = false;
@@ -188,8 +188,8 @@ void CreateMove()
                     NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
                 angles.y               = i.viewangles;
                 simtime                = i.simtime;
-                g_pUserCmd->tick_count = i.tickcount;
-                g_pUserCmd->buttons |= IN_ATTACK;
+                current_user_cmd->tick_count = i.tickcount;
+                current_user_cmd->buttons |= IN_ATTACK;
                 break;
             }
         }

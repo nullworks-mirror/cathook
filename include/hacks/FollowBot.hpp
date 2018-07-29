@@ -10,12 +10,11 @@
 namespace hacks::shared::followbot
 {
 
-// Followed entity, externed for highlight color
-extern int follow_target;
-extern bool followcart;
-extern CatCommand follow_steam;
-extern unsigned steamid;
 void DrawTick();
 void WorldTick();
 int ClassPriority(CachedEntity *ent);
+
+bool isEnabled();
+int getTarget();
+
 }

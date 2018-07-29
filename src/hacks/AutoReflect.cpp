@@ -45,7 +45,7 @@ void CreateMove()
         return;
 
     // If user settings allow, return if local player is in attack
-    if (idle_only && (g_pUserCmd->buttons & IN_ATTACK))
+    if (idle_only && (current_user_cmd->buttons & IN_ATTACK))
         return;
 
     // Create some book-keeping vars
@@ -121,16 +121,13 @@ void CreateMove()
     if (!legit)
     {
         // Aim at predicted projectile
-        AimAt(g_pLocalPlayer->v_Eye, closest_vec, g_pUserCmd);
+        AimAt(g_pLocalPlayer->v_Eye, closest_vec, current_user_cmd);
         // Use silent angles
         g_pLocalPlayer->bUseSilentAngles = true;
     }
 
     // Airblast
-    g_pUserCmd->buttons |= IN_ATTACK2;
-
-    // Function is finished, return
-    return;
+    current_user_cmd->buttons |= IN_ATTACK2;
 }
 
 // Function to determine whether an ent is good to reflect
@@ -196,7 +193,7 @@ void Draw()
     if (fov_draw)
     {
         // It cant use fovs greater than 180, so we check for that
-        if (float(fov) > 0.0f && float(fov) < 180)
+        if (*fov > 0.0f && *fov < 180)
         {
             // Dont show ring while player is dead
             if (LOCAL_E->m_bAlivePlayer())

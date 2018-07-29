@@ -101,7 +101,7 @@ void CreateMove()
     {
         noaa = true;
         pitchdown->SetValue(180);
-        g_pUserCmd->viewangles.x = 140.0f;
+        current_user_cmd->viewangles.x = 140.0f;
         if (silent)
             g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)

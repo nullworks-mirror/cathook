@@ -285,7 +285,7 @@ void DoResistSwitching()
         vaccinator_change_stage = 0;
         return;
     }
-    if (g_pUserCmd->buttons & IN_RELOAD)
+    if (current_user_cmd->buttons & IN_RELOAD)
     {
         vaccinator_change_ticks = 8;
         return;
@@ -294,7 +294,7 @@ void DoResistSwitching()
     {
         if (vaccinator_change_ticks <= 0)
         {
-            g_pUserCmd->buttons |= IN_RELOAD;
+            current_user_cmd->buttons |= IN_RELOAD;
             vaccinator_change_stage--;
             vaccinator_change_ticks = 8;
         }
@@ -406,10 +406,10 @@ void CreateMove()
         }
         if (pop && CurrentResistance() == my_opt)
         {
-            g_pUserCmd->buttons |= IN_ATTACK2;
+            current_user_cmd->buttons |= IN_ATTACK2;
         }
     }
-    if (!force_healing_target && !enabled)
+    if (!force_healing_target && !enable)
         return;
     if (GetWeaponMode() != weapon_medigun)
         return;
@@ -420,11 +420,11 @@ void CreateMove()
         {
             Vector out;
             GetHitbox(target, 7, out);
-            AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
-            g_pUserCmd->buttons |= IN_ATTACK;
+            AimAt(g_pLocalPlayer->v_Eye, out, current_user_cmd);
+            current_user_cmd->buttons |= IN_ATTACK;
         }
     }
-    if (!enabled)
+    if (!enable)
         return;
     UpdateData();
     int old_target          = m_iCurrentHealingTarget;
@@ -444,11 +444,11 @@ void CreateMove()
     Vector out;
     GetHitbox(target, 7, out);
 
-    AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
+    AimAt(g_pLocalPlayer->v_Eye, out, current_user_cmd);
     if (silent)
         g_pLocalPlayer->bUseSilentAngles = true;
     if (!m_iNewTarget && (g_GlobalVars->tickcount % 300))
-        g_pUserCmd->buttons |= IN_ATTACK;
+        current_user_cmd->buttons |= IN_ATTACK;
     /*if (m_iNewTarget || !(g_GlobalVars->tickcount % 300)) {
         if (silent) g_pLocalPlayer->bUseSilentAngles = true;
         AimAt(g_pLocalPlayer->v_Eye, out, g_pUserCmd);
@@ -461,15 +461,14 @@ void CreateMove()
             SetResistance(opt);
         if (pop && CurrentResistance() == opt)
         {
-            g_pUserCmd->buttons |= IN_ATTACK2;
+            current_user_cmd->buttons |= IN_ATTACK2;
         }
     }
     else
     {
         if (pop_uber_auto && ShouldPop())
-            g_pUserCmd->buttons |= IN_ATTACK2;
+            current_user_cmd->buttons |= IN_ATTACK2;
     }
-    return;
 }
 
 std::vector<patient_data_s> data(32);
@@ -558,18 +557,18 @@ int HealingPriority(int idx)
 #if ENABLE_IPC
     if (ipc::peer)
     {
-        if (hacks::shared::followbot::followbot &&
-            hacks::shared::followbot::follow_target == idx)
+        if (hacks::shared::followbot::isEnabled() &&
+            hacks::shared::followbot::getTarget() == idx)
         {
             priority *= 6.0f;
         }
     }
 #endif
-    player_info_s info;
+/*    player_info_s info;
     g_IEngine->GetPlayerInfo(idx, &info);
     info.name[31] = 0;
     if (strcasestr(info.name, ignore.GetString()))
-        priority = 0.0f;
+        priority = 0.0f;*/
     return priority;
 }
 

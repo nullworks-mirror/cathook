@@ -120,7 +120,7 @@ void CreateMove()
                 if (VisCheckEntFromEnt(flare, target))
                 {
                     // Detonate
-                    g_pUserCmd->buttons |= IN_ATTACK2;
+                    current_user_cmd->buttons |= IN_ATTACK2;
 
                     return;
                 }

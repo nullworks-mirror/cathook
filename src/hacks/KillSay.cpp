@@ -12,10 +12,13 @@
 static settings::Int killsay_mode{ "killsay.mode", "0" };
 static settings::String filename{ "killsay.file", "killsays.txt" };
 
+
+static CatCommand reload_command("killsay_reload", "Reload killsays", []() {
+    hacks::shared::killsay::reload();
+});
+
 namespace hacks::shared::killsay
 {
-
-static CatCommand reload("killsay_reload", "Reload killsays", Reload);
 
 const std::string tf_classes_killsay[] = { "class",   "scout",   "sniper",
                                            "soldier", "demoman", "medic",
@@ -79,30 +82,37 @@ std::string ComposeKillSay(IGameEvent *event)
     return msg;
 }
 
-KillSayEventListener &getListener()
+
+class KillSayEventListener : public IGameEventListener2
 {
-    static KillSayEventListener listener;
-    return listener;
+    void FireGameEvent(IGameEvent *event) override
+    {
+        if (!killsay_mode)
+            return;
+        std::string message = hacks::shared::killsay::ComposeKillSay(event);
+        if (message.size())
+        {
+            chat_stack::Say(message, false);
+        }
+    }
+};
+
+static KillSayEventListener listener{};
+
+void reload()
+{
+    file.Load(*filename);
 }
 
-void Reload()
+void init()
 {
-    file.Load(std::string(filename.GetString()));
-}
-
-void Init()
-{
-    g_IEventManager2->AddListener(&getListener(), (const char *) "player_death",
+    g_IEventManager2->AddListener(&listener, (const char *) "player_death",
                                   false);
-    filename.InstallChangeCallback(
-        [](IConVar *var, const char *pszOV, float flOV) {
-            file.TryLoad(std::string(filename.GetString()));
-        });
 }
 
-void Shutdown()
+void shutdown()
 {
-    g_IEventManager2->RemoveListener(&getListener());
+    g_IEventManager2->RemoveListener(&listener);
 }
 
 // Thanks HellJustFroze for linking me http://daviseford.com/shittalk/
@@ -153,13 +163,5 @@ const std::vector<std::string> builtin_nonecore_mlg = {
 };
 }
 
-void KillSayEventListener::FireGameEvent(IGameEvent *event)
-{
-    if (!hacks::shared::killsay::killsay_mode)
-        return;
-    std::string message = hacks::shared::killsay::ComposeKillSay(event);
-    if (message.size())
-    {
-        chat_stack::Say(message, false);
-    }
-}
+
+

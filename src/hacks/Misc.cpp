@@ -79,7 +79,7 @@ CatCommand
 
 void CreateMove()
 {
-#if not LAGBOT_MODE
+#if !LAGBOT_MODE
     // Crithack
     static IClientEntity *localplayer, *weapon, *last_weapon = nullptr;
     static int tries, cmdn, md5seed, rseed, c, b;

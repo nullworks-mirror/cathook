@@ -11,18 +11,18 @@
 #include <glez/draw.hpp>
 #include <settings/Bool.hpp>
 
-static settings::Bool followbot{ "follow-bot.enable", "false" };
+static settings::Bool enable{ "follow-bot.enable", "false" };
 static settings::Bool roambot{ "follow-bot.roaming", "false" };
 static settings::Bool draw_crumb{ "follow-bot.draw-crumbs", "false" };
-static settings::Bool follow_distance{ "follow-bot.distance", "175" };
-static settings::Bool follow_activation{ "follow-bot.max-range", "1000" };
+static settings::Float follow_distance{ "follow-bot.distance", "175" };
+static settings::Float follow_activation{ "follow-bot.max-range", "1000" };
 static settings::Bool mimic_slot{ "follow-bot.mimic-slot", "false" };
 static settings::Bool always_medigun{ "follow-bot.always-medigun", "false" };
 static settings::Bool sync_taunt{ "follow-bot.taunt-sync", "false" };
 static settings::Bool change{ "follow-bot.change-roaming-target", "false" };
 static settings::Bool autojump{ "follow-bot.jump-if-stuck", "true" };
 static settings::Bool afk{ "follow-bot.switch-afk", "true" };
-static settings::Bool afktime{ "follow-bot.afk-time", "15000" };
+static settings::Int afktime{ "follow-bot.afk-time", "15000" };
 static settings::Bool corneractivate{ "follow-bot.corners", "true" };
 
 namespace hacks::shared::followbot
@@ -43,6 +43,8 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
 static const int crumb_limit = 64; // limit
+
+static bool followcart{ false };
 
 // Followed entity, externed for highlight color
 int follow_target = 0;
@@ -167,7 +169,7 @@ Timer waittime{};
 int lastent = 0;
 void WorldTick()
 {
-    if (!followbot)
+    if (!enable)
     {
         follow_target = 0;
         return;
@@ -220,7 +222,7 @@ void WorldTick()
             if (corneractivate)
             {
                 Vector indirectOrigin = VischeckCorner(
-                    LOCAL_E, entity, float(follow_activation) / 2,
+                    LOCAL_E, entity, *follow_activation / 2,
                     true); // get the corner location that the
                            // future target is visible from
                 std::pair<Vector, Vector> corners;
@@ -285,7 +287,8 @@ void WorldTick()
                 continue;
             const model_t *model =
                 ENTITY(follow_target)->InternalEntity()->GetModel();
-            if (followcart && model &&
+            // FIXME follow cart/point
+            /*if (followcart && model &&
                 (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
                  lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
                  lagexploit::pointarr[4]) &&
@@ -294,7 +297,7 @@ void WorldTick()
                  model == lagexploit::pointarr[2] ||
                  model == lagexploit::pointarr[3] ||
                  model == lagexploit::pointarr[4]))
-                follow_target = entity->m_IDX;
+                follow_target = entity->m_IDX;*/
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
             // favor closer entitys
@@ -528,6 +531,16 @@ void DrawTick()
     glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
     glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
 #endif
+}
+
+int getTarget()
+{
+    return follow_target;
+}
+
+bool isEnabled()
+{
+    return *enable;
 }
 
 #if ENABLE_IPC

@@ -54,10 +54,10 @@ struct CIncomingSequence
 };
 typedef boost::circular_buffer_space_optimized<CIncomingSequence> circular_buf;
 extern circular_buf sequences;
-extern int ticks;
 extern BacktrackData headPositions[32][66];
 extern BestTickData sorted_ticks[66];
 
 bool isBacktrackEnabled();
 float getLatency();
+int getTicks();
 }

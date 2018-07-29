@@ -83,7 +83,7 @@ bool IsTarget(CachedEntity *ent)
     }
     else if (ent->m_Type() == ENTITY_BUILDING)
     {
-        return buildings;
+        return *buildings;
     }
 
     // Target isnt a good type
@@ -148,12 +148,12 @@ void CreateMove()
                     {
                         // Aim at bomb
                         AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(),
-                              g_pUserCmd);
+                              current_user_cmd);
                         // Use silent
                         g_pLocalPlayer->bUseSilentAngles = true;
 
                         // Detonate
-                        g_pUserCmd->buttons |= IN_ATTACK2;
+                        current_user_cmd->buttons |= IN_ATTACK2;
 
                         // Return as its a waste to check anymore, we detonated
                         // and all the rest of the stickys are gone
@@ -166,12 +166,12 @@ void CreateMove()
                     {
                         // Aim at bomb
                         AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(),
-                              g_pUserCmd);
+                              current_user_cmd);
                         // Use silent
                         g_pLocalPlayer->bUseSilentAngles = true;
 
                         // Detonate
-                        g_pUserCmd->buttons |= IN_ATTACK2;
+                        current_user_cmd->buttons |= IN_ATTACK2;
 
                         // Return as its a waste to check anymore, we detonated
                         // and all the rest of the stickys are gone
@@ -181,7 +181,5 @@ void CreateMove()
             }
         }
     }
-    // End of function, just return
-    return;
 }
 }

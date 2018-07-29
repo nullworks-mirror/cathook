@@ -88,15 +88,15 @@ void updateSearch()
     re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
     if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) &&
         gc->BHaveLiveMatch())
-        tfmm::queue_leave();
+        tfmm::leaveQueue();
     if (gc && !gc->BConnectedToMatchServer(false) &&
         queuetime.test_and_set(10 * 1000 * 60) && !gc->BHaveLiveMatch())
-        tfmm::queue_leave();
+        tfmm::leaveQueue();
     if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch())
-        if (!(pc && pc->BInQueueForMatchGroup(int(tfmm::queue))))
+        if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
         {
             logging::Info("Starting queue");
-            tfmm::queue_start();
+            tfmm::startQueue();
         }
 #if LAGBOT_MODE
     if (req_timer.test_and_set(1800000))
@@ -128,7 +128,7 @@ void update()
 #endif
 }
 
-void autojoin::resetQueueTimer()
+void resetQueueTimer()
 {
     queuetime.update();
 }

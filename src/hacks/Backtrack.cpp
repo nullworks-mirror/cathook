@@ -15,9 +15,9 @@
 
 static settings::Bool enable{ "backtrack.enable", "false" };
 static settings::Bool draw_bt{ "backtrack.draw", "false" };
-static settings::Float latency{ "backtrack.latency", "false" };
-static settings::Float mindistance{ "backtrack.min-distance", "false" };
-static settings::Int slots{ "backtrack.slots", "false" };
+static settings::Int latency{ "backtrack.latency", "0" };
+static settings::Float mindistance{ "backtrack.min-distance", "60" };
+static settings::Int slots{ "backtrack.slots", "0" };
 
 namespace hacks::shared::backtrack
 {
@@ -61,8 +61,6 @@ void AddLatencyToNetchan(INetChannel *ch, float Latency)
         }
     }
 }
-bool installed = false;
-int ticks      = 12;
 void Init()
 {
     for (int i = 0; i < 32; i++)
@@ -71,14 +69,6 @@ void Init()
                 BacktrackData{ 0,           { 0, 0, 0 }, { 0, 0, 0 },
                                { 0, 0, 0 }, { 0, 0, 0 }, 0,
                                0,           { 0, 0, 0 } };
-    if (!installed)
-    {
-        latency.InstallChangeCallback(
-            [](IConVar *var, const char *pszOldValue, float flOldValue) {
-                ticks = max(min(int((float) latency) / 15, 65), 12);
-            });
-        installed = true;
-    }
 }
 
 int BestTick    = 0;
@@ -98,7 +88,7 @@ void Run()
     }
     shouldDrawBt = true;
 
-    CUserCmd *cmd = g_pUserCmd;
+    CUserCmd *cmd = current_user_cmd;
     float bestFov = 99999;
     BestTick      = 0;
     iBestTarget   = -1;
@@ -135,7 +125,7 @@ void Run()
         Vector hitbox_spine = pEntity->hitboxes.GetHitbox(3)->center;
         Vector ent_orig     = pEntity->InternalEntity()->GetAbsOrigin();
         auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
-        headPositions[i][cmd->command_number % ticks] =
+        headPositions[i][cmd->command_number % getTicks()] =
             BacktrackData{ cmd->tick_count, hitboxpos,  min,     max,
                            hitbox_spine,    viewangles, simtime, ent_orig };
         float FOVDistance = GetFov(g_pLocalPlayer->v_OrigViewangles,
@@ -159,17 +149,17 @@ void Run()
         float bestFOV = 180.0f;
         float distance, prev_distance_ticks = 9999;
 
-        for (int i          = 0; i < ticks; ++i)
+        for (int i          = 0; i < getTicks(); ++i)
             sorted_ticks[i] = BestTickData{ INT_MAX, i };
-        for (int t = 0; t < ticks; ++t)
+        for (int t = 0; t < getTicks(); ++t)
         {
             if (headPositions[iBestTarget][t].tickcount)
                 sorted_ticks[t] =
                     BestTickData{ headPositions[iBestTarget][t].tickcount, t };
         }
-        std::sort(sorted_ticks, sorted_ticks + ticks);
-        int tickus = (float(latency) > 800.0f || float(latency) < 200.0f) ? 12 : 24;
-        for (int t = 0; t < ticks; ++t)
+        std::sort(sorted_ticks, sorted_ticks + getTicks());
+        int tickus = (*latency > 800 || *latency < 200) ? 12 : 24;
+        for (int t = 0; t < getTicks(); ++t)
         {
             bool good_tick = false;
 
@@ -224,10 +214,10 @@ void Draw()
         return;
     if (!shouldDrawBt)
         return;
-    int tickus = (float(latency) > 800.0f || float(latency) < 200.0f) ? 12 : 24;
+    int tickus = (*latency > 800 || *latency < 200.0f) ? 12 : 24;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
-        for (int j = 0; j < ticks; j++)
+        for (int j = 0; j < getTicks(); j++)
         {
             bool good_tick = false;
 
@@ -308,5 +298,10 @@ bool isBacktrackEnabled()
 float getLatency()
 {
     return *latency;
+}
+
+int getTicks()
+{
+    return max(min(*latency / 15, 65), 12);
 }
 }

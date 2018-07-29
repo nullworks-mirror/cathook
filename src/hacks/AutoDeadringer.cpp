@@ -4,6 +4,7 @@
  *  Created on: Apr 12, 2018
  *      Author: bencat07
  */
+#include <settings/Bool.hpp>
 #include "common.hpp"
 
 static settings::Bool enable{ "auto-deadringer.enable", "0" };
@@ -58,7 +59,7 @@ void CreateMove()
         return;
     if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health &&
         NearbyEntities() > 1)
-        g_pUserCmd->buttons |= IN_ATTACK2;
+        current_user_cmd->buttons |= IN_ATTACK2;
     for (int i = 0; i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
@@ -71,9 +72,9 @@ void CreateMove()
         if (ent->m_Type() != ENTITY_PROJECTILE)
             continue;
         if (ent->m_bCritProjectile() && ent->m_flDistance() <= 1000.0f)
-            g_pUserCmd->buttons |= IN_ATTACK2;
+            current_user_cmd->buttons |= IN_ATTACK2;
         if (ent->m_flDistance() < 300.0f)
-            g_pUserCmd->buttons |= IN_ATTACK2;
+            current_user_cmd->buttons |= IN_ATTACK2;
     }
 }
 }
