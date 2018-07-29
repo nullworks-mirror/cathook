@@ -1,0 +1,21 @@
+<menu>
+    <Include path="color-picker.xml"/>
+    <Include path="window-settings.xml"/>
+    <Include path="player-list-row.xml"/>
+    <!--<Include path="player-list-window.xml"/>-->
+    <Window width="content" height="content" x="400" y="400" name="All Variables">
+        <ScrollableList id="special-variables" x="0" y="0" width="400" height="600"/>
+    </Window>
+    <Window x="400" y="300" width="content" min-width="100" height="content" name="IQ meter">
+        <Text>300+</Text>
+    </Window>
+    <Window x="300" y="300" width="content" height="content" name="Main Window">
+        <Box width="content" height="content" padding="12 6 6 6" name="Group 1">
+            <List width="200">
+                <AutoVariable width="fill" target="aimbot.enable" label="Enable Aimbot" tooltip="Click to enable aimbot"/>
+                <AutoVariable width="fill" target="esp.enable" label="Enable ESP" tooltip="Click to enable ESP"/>
+                <AutoVariable width="fill" target="bunnyhop.enable" label="Enable Bunnyhop" tooltip="Click to enable bunnyhop"/>
+            </List>
+        </Box>
+    </Window>
+</menu>

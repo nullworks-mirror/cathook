@@ -36,7 +36,7 @@ using Bool = RegisteredVariableProxy<bool>;
 using Int = RegisteredVariableProxy<int>;
 using Float = RegisteredVariableProxy<float>;
 using String = RegisteredVariableProxy<std::string>;
-using Button = RegisteredVariableProxy<Key>;
+using Button = RegisteredVariableProxy<settings::Key>;
 
 #if ENABLE_VISUALS
 using Rgba = RegisteredVariableProxy<glez::rgba>;

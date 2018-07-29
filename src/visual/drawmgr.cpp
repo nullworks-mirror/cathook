@@ -12,6 +12,7 @@
 #include <glez/glez.hpp>
 #include <glez/record.hpp>
 #include <settings/Bool.hpp>
+#include <menu/GuiInterface.hpp>
 #include "common.hpp"
 #include "visual/drawing.hpp"
 #include "hack.hpp"
@@ -172,6 +173,12 @@ void DrawCheatVisuals()
         PROF_SECTION(DRAW_strings);
         DrawStrings();
     }
+#if ENABLE_GUI
+    {
+        PROF_SECTION(DRAW_GUI);
+        gui::draw();
+    }
+#endif
 }
 
 void EndCheatVisuals()
