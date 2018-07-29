@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <settings/Bool.hpp>
 #include "common.hpp"
 
 // This is a temporary file to put code that needs moving/refactoring in.
@@ -21,3 +22,9 @@ extern int prevflowticks;
 extern int spectator_target;
 extern CLC_VoiceData *voicecrash;
 #endif
+
+extern settings::Bool clean_screenshots;
+extern settings::Bool crypt_chat;
+extern settings::Bool nolerp;
+extern settings::Bool no_zoom;
+extern settings::Bool disable_visuals;

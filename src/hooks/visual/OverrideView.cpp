@@ -16,20 +16,18 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(OverrideView, void, void *this_, CViewSetup *setup)
 {
-    static bool zoomed;
     original::OverrideView(this_, setup);
-    if (!cathook)
+
+    if (!isHackActive())
         return;
+
     if (g_pLocalPlayer->bZoomed && override_fov_zoomed)
     {
-        setup->fov = override_fov_zoomed;
+        setup->fov = *override_fov_zoomed;
     }
-    else
+    else if (override_fov)
     {
-        if (override_fov)
-        {
-            setup->fov = override_fov;
-        }
+        setup->fov = *override_fov;
     }
 
     if (spectator_target)
@@ -81,7 +79,7 @@ DEFINE_HOOKED_METHOD(OverrideView, void, void *this_, CViewSetup *setup)
             freecam_origin += forward;
             setup->origin = freecam_origin;
         }
-        freecam_last = freecam.KeyDown();
+        freecam_last = freecam.isKeyDown();
     }
 
     draw::fov = setup->fov;

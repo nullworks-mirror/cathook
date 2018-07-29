@@ -84,7 +84,8 @@ void DrawCheatVisuals()
 #endif
                         )
                 {
-                    name_s = force_name.GetString();
+                    // FIXME
+                    /*name_s = *force_name;
                     if (name_s.length() < 3)
                         name_s = "*Not Set*";
                     reason_s   = disconnect_reason.GetString();
@@ -94,12 +95,11 @@ void DrawCheatVisuals()
                     AddSideString(format("Custom Name: ", name_s), GUIColor());
                     AddSideString(
                         format("Custom Disconnect Reason: ", reason_s),
-                        GUIColor());
+                        GUIColor());*/
                 }
             }
         }
     }
-    hacks::tf2::global::runcfg();
     if (spectator_target)
     {
         AddCenterString("Press SPACE to stop spectating");
@@ -110,10 +110,6 @@ void DrawCheatVisuals()
         {
             PROF_SECTION(DRAW_aimbot);
             hacks::shared::aimbot::DrawText();
-        }
-        {
-            PROF_SECTION(DRAW_lagexploit)
-            hacks::shared::lagexploit::Draw();
         }
         IF_GAME(IsTF2())
         {
@@ -141,11 +137,6 @@ void DrawCheatVisuals()
         {
             PROF_SECTION(DRAW_lightesp);
             hacks::shared::lightesp::draw();
-        }
-        IF_GAME(IsTF2())
-        {
-            PROF_SECTION(DRAW_healarrows);
-            hacks::tf2::healarrow::Draw();
         }
         {
             PROF_SECTION(DRAW_walkbot);

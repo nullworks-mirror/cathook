@@ -163,8 +163,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     switch (ent->m_Type())
     {
     case ENTITY_BUILDING:
-        if (!ent->m_bEnemy() && !(teammates || teammate_buildings) &&
-            (!(chamsR || chamsB || chamsG) && ent != LOCAL_E))
+        if (!ent->m_bEnemy() && !(teammates || teammate_buildings) && ent != LOCAL_E)
         {
             return colors::empty;
         }
@@ -176,13 +175,6 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     case ENTITY_PLAYER:
         if (!players)
             return colors::empty;
-        if (ent->m_IDX == LOCAL_E->m_IDX && chamsteam)
-            if (LOCAL_E->m_iTeam() == TEAM_BLU)
-                return colors::blu;
-            else
-                return colors::red;
-        if (ent->m_IDX == LOCAL_E->m_IDX && !rainbow)
-            return colors::FromRGBA8(chamsR, chamsG, chamsB, 255);
         if (health)
         {
             return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
@@ -238,11 +230,11 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
         case ITEM_HEALTH_LARGE:
         case ITEM_HEALTH_MEDIUM:
         case ITEM_HEALTH_SMALL:
-            return medkits;
+            return *medkits;
         case ITEM_AMMO_LARGE:
         case ITEM_AMMO_MEDIUM:
         case ITEM_AMMO_SMALL:
-            return ammobox;
+            return *ammobox;
         }
         break;
     }
@@ -325,7 +317,7 @@ void EffectChams::Render(int x, int y, int w, int h)
         return;
     if (!init)
         Init();
-    if (!cathook || (g_IEngine->IsTakingScreenshot() && clean_screenshots))
+    if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots))
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     BeginRenderChams();

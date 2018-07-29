@@ -239,13 +239,11 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
         }
         break;
     case ENTITY_PLAYER:
-        if (ent->m_IDX == LOCAL_E->m_IDX && glowteam)
+        if (ent->m_IDX == LOCAL_E->m_IDX)
             if (LOCAL_E->m_iTeam() == TEAM_BLU)
                 return colors::blu;
             else
                 return colors::red;
-        if (ent->m_IDX == LOCAL_E->m_IDX && glowself && !rainbow)
-            return colors::FromRGBA8(glowR, glowG, glowB, 255);
         if (health && playerlist::IsDefault(ent))
         {
             return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
@@ -296,11 +294,11 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
         const auto &type = ent->m_ItemType();
         if (type >= ITEM_HEALTH_SMALL && type <= ITEM_HEALTH_LARGE)
         {
-            return medkits;
+            return *medkits;
         }
         else if (type >= ITEM_AMMO_SMALL && type <= ITEM_AMMO_SMALL)
         {
-            return ammobox;
+            return *ammobox;
         }
         else if (type >= ITEM_POWERUP_FIRST && type <= ITEM_POWERUP_LAST)
         {
@@ -433,7 +431,7 @@ void EffectGlow::Render(int x, int y, int w, int h)
     static IMaterialVar *blury_bloomamount;
     if (!init)
         Init();
-    if (!cathook || (g_IEngine->IsTakingScreenshot() && clean_screenshots) ||
+    if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots) ||
         g_Settings.bInvalid)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);

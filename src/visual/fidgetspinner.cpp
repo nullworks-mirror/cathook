@@ -50,7 +50,7 @@ public:
     }
 };
 
-SpinnerListener listener;
+static SpinnerListener listener;
 
 void InitSpinner()
 {

@@ -11,10 +11,10 @@
 #include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
 
-static settings::Bool clean_chat{ "misc.clean-chat", "false" };
+static settings::Bool clean_chat{ "chat.clean", "false" };
 static settings::Bool dispatch_log{ "debug.log-dispatch-user-msg", "false" };
-static settings::String chat_filter{ "misc.chat-censor.filter", "" };
-static settings::Bool chat_filter_enable{ "misc.chat-censor.enable", "false" };
+static settings::String chat_filter{ "chat.censor.filter", "" };
+static settings::Bool chat_filter_enable{ "chat.censor.enable", "false" };
 
 static bool retrun = false;
 static Timer sendmsg{};
@@ -69,9 +69,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         message.push_back(c);
                 }
             }
-            if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
+            if (chat_filter_enable && data[0] != LOCAL_E->m_IDX)
             {
-                if (!strcmp(chat_filter.GetString(), ""))
+                if (chat_filter)
                 {
                     std::string tmp  = {};
                     std::string tmp2 = {};
@@ -189,7 +189,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
                 else if (data[0] != LOCAL_E->m_IDX)
                 {
-                    std::string input = chat_filter.GetString();
+                    std::string input = *chat_filter;
                     boost::to_lower(input);
                     std::string message2 = message;
                     std::vector<std::string> result{};
@@ -215,10 +215,10 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     }
                 }
             }
-#if not LAGBOT_MODE
-            if (sendmsg.test_and_set(300000) &&
+#if !LAGBOT_MODE
+            /*if (sendmsg.test_and_set(300000) &&
                 hacks::shared::antiaim::communicate)
-                chat_stack::Say("!!meow");
+                chat_stack::Say("!!meow");*/
 #endif
             if (crypt_chat)
             {
@@ -226,8 +226,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 {
                     if (ucccccp::validate(message))
                     {
-#if not LAGBOT_MODE
-                        if (ucccccp::decrypt(message) == "meow" &&
+#if !LAGBOT_MODE
+/*                        if (ucccccp::decrypt(message) == "meow" &&
                             hacks::shared::antiaim::communicate &&
                             data[0] != LOCAL_E->m_IDX &&
                             playerlist::AccessData(ENTITY(data[0])).state !=
@@ -236,7 +236,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             playerlist::AccessData(ENTITY(data[0])).state =
                                 playerlist::k_EState::CAT;
                             chat_stack::Say("!!meow");
-                        }
+                        }*/
 #endif
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
                                   ucccccp::decrypt(message).c_str());
@@ -261,7 +261,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
         buf.Seek(0);
     }
-    votelogger::user_message(buf, type);
+    votelogger::dispatchUserMessage(buf, type);
     return original::DispatchUserMessage(this_, type, buf);
 }
 }

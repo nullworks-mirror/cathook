@@ -13,3 +13,9 @@ bool firstcm = false;
 Timer DelayTimer{};
 float prevflow    = 0.0f;
 int prevflowticks = 0;
+
+settings::Bool crypt_chat{ "chat.crypto", "false" };
+settings::Bool clean_screenshots{ "visual.clean-screenshots", "false" };
+settings::Bool nolerp{ "misc.no-lerp", "false" };
+settings::Bool no_zoom{ "remove.scope", "false" };
+settings::Bool disable_visuals{ "visual.disable", "false" };

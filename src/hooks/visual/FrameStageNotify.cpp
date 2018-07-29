@@ -6,12 +6,15 @@
 #include <MiscTemporary.hpp>
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
+#include <hacks/Thirdperson.hpp>
 #include "HookedMethods.hpp"
 #if not LAGBOT_MODE
 #include "hacks/Backtrack.hpp"
 #endif
 
 static settings::Float nightmode{ "visual.night-mode", "0" };
+
+static float old_nightmode{ 0.0f };
 
 namespace hooked_methods
 {
@@ -20,10 +23,13 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
                      ClientFrameStage_t stage)
 {
-    static float OldNightmode = 0.0f;
-    if (OldNightmode != (float) nightmode)
-    {
+    if (!isHackActive())
+        return original::FrameStageNotify(this_, stage);
 
+    PROF_SECTION(FrameStageNotify_TOTAL);
+
+    if (old_nightmode != *nightmode)
+    {
         static ConVar *r_DrawSpecificStaticProp =
             g_ICvar->FindVar("r_DrawSpecificStaticProp");
         if (!r_DrawSpecificStaticProp)
@@ -62,10 +68,8 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
                     pMaterial->ColorModulate(1.0f, 1.0f, 1.0f);
             }
         }
-        OldNightmode = nightmode;
+        old_nightmode = *nightmode;
     }
-
-    PROF_SECTION(FrameStageNotify_TOTAL);
 
     if (!g_IEngine->IsInGame())
         g_Settings.bInvalid = true;
@@ -73,7 +77,7 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
         PROF_SECTION(FSN_skinchanger);
         hacks::tf2::skinchanger::FrameStageNotify(stage);
     }
-    if (cathook && stage == FRAME_RENDER_START)
+    if (isHackActive() && stage == FRAME_RENDER_START)
     {
         INetChannel *ch;
         ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
@@ -97,11 +101,11 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
         	hooks::firebullets.Apply();
         }
     }
-    if (cathook && !g_Settings.bInvalid && stage == FRAME_RENDER_START)
+    if (isHackActive() && !g_Settings.bInvalid && stage == FRAME_RENDER_START)
     {
         IF_GAME(IsTF())
         {
-            if (CE_GOOD(LOCAL_E) && no_zoom)
+            if (no_zoom && CE_GOOD(LOCAL_E))
                 RemoveCondition<TFCond_Zoomed>(LOCAL_E);
         }
         hacks::tf::thirdperson::frameStageNotify();

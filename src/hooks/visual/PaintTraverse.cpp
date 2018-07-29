@@ -4,13 +4,12 @@
 */
 
 #include <settings/Registered.hpp>
+#include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"
 #include "hacks/Radar.hpp"
 
-static settings::Bool disable_visuals{ "visual.disable", "false" };
-static settings::Bool no_zoom{ "remove.scope", "false" };
 static settings::Bool pure_bypass{ "visual.sv-pure-bypass", "false" };
-static settings::Int software_cursor_move{ "visual.software-cursor-mode", "0" };
+static settings::Int software_cursor_mode{ "visual.software-cursor-mode", "0" };
 
 static settings::Int waittime{ "debug.join-wait-time", "2500" };
 static settings::Bool no_reportlimit{ "misc.no-report-limit", "false" };
@@ -230,13 +229,13 @@ label1:
         pure_orig  = (void *) 0;
     }
     call_default = true;
-    if (cathook && panel_scope && no_zoom && panel == panel_scope)
+    if (isHackActive() && panel_scope && no_zoom && panel == panel_scope)
         call_default = false;
 
     if (software_cursor_mode)
     {
         cur = software_cursor->GetBool();
-        switch ((int) software_cursor_mode)
+        switch (*software_cursor_mode)
         {
         case 1:
             if (!software_cursor->GetBool())
@@ -268,7 +267,7 @@ label1:
 
     if (panel == panel_top)
         draw_flag = true;
-    if (!cathook)
+    if (!isHackActive())
         return;
 
     if (!panel_top)
@@ -319,7 +318,7 @@ label1:
     if (clean_screenshots && g_IEngine->IsTakingScreenshot())
         return;
 #if ENABLE_GUI
-    g_pGUI->Update();
+    // FIXME
 #endif
     draw::UpdateWTS();
 }

@@ -168,7 +168,7 @@ public:
     }
 };
 
-LoggingEventListener listener{};
+static LoggingEventListener listener{};
 
 InitRoutine init([]() {
     g_IGameEventManager->AddListener(&listener, false);

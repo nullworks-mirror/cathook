@@ -16,7 +16,6 @@
 #include "HookedMethods.hpp"
 
 static settings::Bool minigun_jump{ "misc.minigun-jump-tf2c", "false" };
-static settings::Bool nolerp{ "misc.no-lerp", "false" };
 static settings::Button roll_speedhack{ "misc.roll-speedhack", "false" };
 static settings::Bool engine_pred{ "misc.engine-prediction", "false" };
 static settings::Bool debug_projectiles{ "debug.projectiles", "false" };
