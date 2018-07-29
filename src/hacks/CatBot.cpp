@@ -22,6 +22,7 @@ static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
 static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
 
 static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "true" };
+static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
 
 namespace hacks::shared::catbot
 {
@@ -129,9 +130,9 @@ void update_catbot_list()
 
 class CatBotEventListener : public IGameEventListener2
 {
-    virtual void FireGameEvent(IGameEvent *event)
+    void FireGameEvent(IGameEvent *event) override
     {
-        if (!enabled)
+        if (!enable)
             return;
 
         int killer_id =
@@ -152,9 +153,9 @@ CatBotEventListener &listener()
     return object;
 }
 
-Timer timer_votekicks{};
-Timer timer_catbot_list{};
-Timer timer_abandon{};
+static Timer timer_votekicks{};
+static Timer timer_catbot_list{};
+static Timer timer_abandon{};
 
 int count_bots{ 0 };
 
@@ -254,11 +255,11 @@ void smart_crouch()
             crouch = false;
     }
     if (crouch)
-        g_pUserCmd->buttons |= IN_DUCK;
+        current_user_cmd->buttons |= IN_DUCK;
 }
 void update()
 {
-    if (!enabled)
+    if (!enable)
         return;
 
     if (g_Settings.bInvalid)
@@ -269,10 +270,10 @@ void update()
 
     if (micspam)
     {
-        if (micspam_on && micspam_on_timer.test_and_set(int(micspam_on) * 1000))
+        if (micspam_on && micspam_on_timer.test_and_set(*micspam_on * 1000))
             g_IEngine->ExecuteClientCmd("+voicerecord");
         if (micspam_off &&
-            micspam_off_timer.test_and_set(int(micspam_off) * 1000))
+            micspam_off_timer.test_and_set(*micspam_off * 1000))
             g_IEngine->ExecuteClientCmd("-voicerecord");
     }
 
@@ -295,7 +296,7 @@ void update()
             else
                 continue;
 
-            player_info_s info;
+            player_info_s info{};
             if (!g_IEngine->GetPlayerInfo(i, &info))
                 continue;
 

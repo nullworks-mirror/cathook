@@ -10,6 +10,7 @@
 namespace hacks::shared::autojoin
 {
 
-void Update();
-void UpdateSearch();
+void resetQueueTimer();
+void update();
+void updateSearch();
 }

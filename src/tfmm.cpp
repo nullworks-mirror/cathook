@@ -35,10 +35,10 @@ void queue_start()
     re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
     if (client)
     {
-        if (queue == 7)
+        if (*queue == 7)
             client->LoadSavedCasualCriteria();
         client->RequestQueueForMatch((int) queue);
-        hacks::shared::autojoin::queuetime.update();
+        hacks::shared::autojoin::resetQueueTimer();
     }
     else
         logging::Info("queue_start: CTFPartyClient == null!");

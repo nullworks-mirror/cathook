@@ -59,5 +59,5 @@ void logging::Info(const char *fmt, ...)
 void logging::Shutdown()
 {
     fclose(logging::handle);
-    logging::handle = nullptr
+    logging::handle = nullptr;
 }

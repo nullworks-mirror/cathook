@@ -6,6 +6,8 @@
  */
 
 #include <settings/Int.hpp>
+#include <hacks/AutoJoin.hpp>
+
 #include "common.hpp"
 #include "hack.hpp"
 
@@ -32,13 +34,13 @@ bool UnassignedTeam()
 
 bool UnassignedClass()
 {
-    return g_pLocalPlayer->clazz != int(preferred_class);
+    return g_pLocalPlayer->clazz != *autojoin_class;
 }
 
-Timer autoqueue_timer{};
-Timer queuetime{};
-Timer req_timer{};
-void UpdateSearch()
+static Timer autoqueue_timer{};
+static Timer queuetime{};
+static Timer req_timer{};
+void updateSearch()
 {
     // segfaults for no reason
     /*static bool calld = false;
@@ -84,7 +86,7 @@ void UpdateSearch()
 
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
     re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
-    if (g_pUserCmd && gc && gc->BConnectedToMatchServer(false) &&
+    if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) &&
         gc->BHaveLiveMatch())
         tfmm::queue_leave();
     if (gc && !gc->BConnectedToMatchServer(false) &&
@@ -106,11 +108,10 @@ void UpdateSearch()
 #endif
 }
 
-Timer timer{};
-void Update()
+void update()
 {
 #if !LAGBOT_MODE
-    if (timer.test_and_set(500))
+    if (autoqueue_timer.test_and_set(500))
     {
         if (autojoin_team and UnassignedTeam())
         {
@@ -126,4 +127,10 @@ void Update()
     }
 #endif
 }
+
+void autojoin::resetQueueTimer()
+{
+    queuetime.update();
+}
+
 }

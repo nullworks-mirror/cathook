@@ -383,14 +383,13 @@ free(logname);*/
 #endif /* TEXTMODE */
 #if not LAGBOT_MODE
     hacks::shared::anticheat::Init();
-    hacks::tf2::healarrow::Init();
 #endif
 #if ENABLE_VISUALS
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
     InitSpinner();
     logging::Info("Initialized Fidget Spinner");
 #endif
-    hacks::shared::spam::Init();
+    hacks::shared::spam::init();
     backpacktf::init();
     logging::Info("Initialized Backpack.TF integration");
 #endif

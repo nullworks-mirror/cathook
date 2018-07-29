@@ -10,6 +10,8 @@
 #include <boost/circular_buffer.hpp>
 #include <glez/draw.hpp>
 #include <settings/Bool.hpp>
+#include <hacks/Backtrack.hpp>
+
 
 static settings::Bool enable{ "backtrack.enable", "false" };
 static settings::Bool draw_bt{ "backtrack.draw", "false" };
@@ -296,5 +298,15 @@ bool shouldBacktrack()
         break;
     }
     return false;
+}
+
+bool isBacktrackEnabled()
+{
+    return *enable;
+}
+
+float getLatency()
+{
+    return *latency;
 }
 }

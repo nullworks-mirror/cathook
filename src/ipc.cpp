@@ -35,7 +35,7 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
         logging::Info("Already connected!");
         return;
     }
-    peer = new peer_t(std::string(server_name.GetString()), false, false);
+    peer = new peer_t(*server_name, false, false);
     try
     {
         peer->Connect();

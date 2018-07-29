@@ -20,7 +20,6 @@ static settings::Bool teamname_spam{ "spam.teamname","0" };
 namespace hacks::shared::spam
 {
 
-static CatCommand reload("spam_reload", "Reload spam file", Reload);
 
 static int last_index;
 
@@ -380,9 +379,9 @@ void createMove()
     }
 }
 
-void reload()
+void reloadSpamFile()
 {
-    file.Load(std::string(filename.GetString()));
+    file.Load(*filename);
 }
 
 bool isActive()
@@ -429,3 +428,5 @@ const std::vector<std::string> builtin_lithium = {
     "GOT ROLLED BY LITHIUM? HEY, THAT MEANS IT'S TIME TO GET LITHIUMCHEAT!!"
 };
 }
+
+static CatCommand reload("spam_reload", "Reload spam file", hacks::shared::spam::reloadSpamFile);

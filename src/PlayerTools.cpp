@@ -72,7 +72,7 @@ IgnoreReason shouldTarget(CachedEntity *entity)
     {
         if (hoovy && IsHoovy(entity))
             return IgnoreReason::IS_HOOVY;
-        if (settings::taunting && HasCondition<TFCond_Taunting>(entity))
+        if (taunting && HasCondition<TFCond_Taunting>(entity))
             return IgnoreReason::IS_TAUNTING;
 
         return shouldTargetSteamId(entity->player_info.friendsID);

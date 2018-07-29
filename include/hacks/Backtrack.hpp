@@ -57,4 +57,7 @@ extern circular_buf sequences;
 extern int ticks;
 extern BacktrackData headPositions[32][66];
 extern BestTickData sorted_ticks[66];
+
+bool isBacktrackEnabled();
+float getLatency();
 }

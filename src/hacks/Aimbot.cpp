@@ -91,7 +91,7 @@ AimbotCalculatedData_s calculated_data_array[2048]{};
 #define IsMelee GetWeaponMode() == weapon_melee
 bool BacktrackAimbot()
 {
-    if (!hacks::shared::backtrack::enable || !backtrackAimbot)
+    if (!hacks::shared::backtrack::isBacktrackEnabled() || !backtrackAimbot)
         return false;
     if (aimkey && !aimkey.isKeyDown())
         return false;
@@ -100,14 +100,14 @@ bool BacktrackAimbot()
         return false;
 
     if (zoomed_only && !g_pLocalPlayer->bZoomed &&
-        !(g_pUserCmd->buttons & IN_ATTACK))
+        !(current_user_cmd->buttons & IN_ATTACK))
         return false;
 
     int iBestTarget = hacks::shared::backtrack::iBestTarget;
     if (iBestTarget == -1)
         return true;
     int tickcnt = 0;
-    int tickus = (float(hacks::shared::backtrack::latency) > 800.0f || float(hacks::shared::backtrack::latency) < 200.0f) ? 12 : 24;
+    int tickus = (float(hacks::shared::backtrack::getLatency()) > 800.0f || float(hacks::shared::backtrack::getLatency()) < 200.0f) ? 12 : 24;
     for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
     {
         bool good_tick = false;
@@ -133,7 +133,7 @@ bool BacktrackAimbot()
         float &simtime = CE_FLOAT(tar, netvar.m_flSimulationTime);
         angles.y       = i.viewangles;
         simtime        = i.simtime;
-        g_pUserCmd->tick_count = i.tickcount;
+        current_user_cmd->tick_count = i.tickcount;
         Vector tr              = (i.hitboxpos - g_pLocalPlayer->v_Eye);
         Vector angles2;
         VectorAngles(tr, angles2);
@@ -147,9 +147,9 @@ bool BacktrackAimbot()
         if (!slow_aim)
             slow_can_shoot = true;
         // Set angles
-        g_pUserCmd->viewangles = angles2;
+        current_user_cmd->viewangles = angles2;
         if (autoshoot && slow_can_shoot)
-            g_pUserCmd->buttons |= IN_ATTACK;
+            current_user_cmd->buttons |= IN_ATTACK;
         return true;
     }
     return true;
@@ -158,7 +158,7 @@ bool BacktrackAimbot()
 void CreateMove()
 {
     PROF_SECTION(PT_aimbot_cm);
-    if (!enabled)
+    if (!enable)
         return;
 
     // Auto-Unzoom
@@ -167,7 +167,7 @@ void CreateMove()
         if (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed &&
             zoomTime.check(3000))
         {
-            g_pUserCmd->buttons |= IN_ATTACK2;
+            current_user_cmd->buttons |= IN_ATTACK2;
         }
     }
     // We do this as we need to pass whether the aimkey allows aiming to both
@@ -188,7 +188,7 @@ void CreateMove()
                 zoomTime.update();
                 if (not g_pLocalPlayer->bZoomed)
                 {
-                    g_pUserCmd->buttons |= IN_ATTACK2;
+                    current_user_cmd->buttons |= IN_ATTACK2;
                 }
             }
         }
@@ -250,7 +250,7 @@ void CreateMove()
                 currently_charging_huntsman = true;
 
             // Huntsman was released
-            if (!(g_pUserCmd->buttons & IN_ATTACK) &&
+            if (!(current_user_cmd->buttons & IN_ATTACK) &&
                 currently_charging_huntsman)
             {
                 currently_charging_huntsman = false;
@@ -275,7 +275,7 @@ void CreateMove()
                 currently_charging_pipe = true;
 
             // Grenade was released
-            if (!(g_pUserCmd->buttons & IN_ATTACK) && currently_charging_pipe)
+            if (!(current_user_cmd->buttons & IN_ATTACK) && currently_charging_pipe)
             {
                 currently_charging_pipe = false;
                 Aim(target_entity);
@@ -302,8 +302,6 @@ void CreateMove()
         DoAutoshoot();
         Aim(target_entity);
     }
-
-    return;
 }
 
 // The first check to see if the player should aim in the first place
@@ -312,7 +310,7 @@ bool ShouldAim()
     // Checks should be in order: cheap -> expensive
 
     // Check for +use
-    if (g_pUserCmd->buttons & IN_USE)
+    if (current_user_cmd->buttons & IN_USE)
         return false;
     // Check if using action slot item
     if (g_pLocalPlayer->using_action_slot_item)
@@ -329,7 +327,7 @@ bool ShouldAim()
         // If zoomed only is on, check if zoomed
         if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
         {
-            if (!g_pLocalPlayer->bZoomed && !(g_pUserCmd->buttons & IN_ATTACK))
+            if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
                 return false;
         }
         // Is taunting?
@@ -364,7 +362,7 @@ bool ShouldAim()
         // Check if player is zooming
         if (g_pLocalPlayer->bZoomed)
         {
-            if (!(g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+            if (!(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
             {
                 if (!CanHeadshot())
                     return false;
@@ -386,9 +384,9 @@ bool ShouldAim()
             }
             if (auto_spin_up)
             {
-                g_pUserCmd->buttons |= IN_ATTACK2;
+                current_user_cmd->buttons |= IN_ATTACK2;
             }
-            if (!(g_pUserCmd->buttons & (IN_ATTACK2 | IN_ATTACK)))
+            if (!(current_user_cmd->buttons & (IN_ATTACK2 | IN_ATTACK)))
             {
                 return false;
             }
@@ -779,7 +777,7 @@ void Aim(CachedEntity *entity)
         DoSlowAim(angles);
 
     // Set angles
-    g_pUserCmd->viewangles = angles;
+    current_user_cmd->viewangles = angles;
 
     if (silent && !slow_aim)
         g_pLocalPlayer->bUseSilentAngles = true;
@@ -811,14 +809,14 @@ void DoAutoshoot()
              (float) huntsman_autoshoot) &&
             begancharge)
         {
-            g_pUserCmd->buttons &= ~IN_ATTACK;
+            current_user_cmd->buttons &= ~IN_ATTACK;
             hacks::shared::antiaim::SetSafeSpace(3);
             begancharge = false;
             // Pull string if charge isnt enough
         }
         else
         {
-            g_pUserCmd->buttons |= IN_ATTACK;
+            current_user_cmd->buttons |= IN_ATTACK;
             begancharge = true;
         }
         return;
@@ -833,14 +831,14 @@ void DoAutoshoot()
         // Release Sticky if > chargetime
         if ((chargetime >= (float) sticky_autoshoot) && begansticky > 3)
         {
-            g_pUserCmd->buttons &= ~IN_ATTACK;
+            current_user_cmd->buttons &= ~IN_ATTACK;
             hacks::shared::antiaim::SetSafeSpace(3);
             begansticky = 0;
         }
         // Else just keep charging
         else
         {
-            g_pUserCmd->buttons |= IN_ATTACK;
+            current_user_cmd->buttons |= IN_ATTACK;
             begansticky++;
         }
         return;
@@ -887,10 +885,8 @@ void DoAutoshoot()
         attack = false;
 
     if (attack)
-        g_pUserCmd->buttons |= IN_ATTACK;
+        current_user_cmd->buttons |= IN_ATTACK;
     hacks::shared::antiaim::SetSafeSpace(1);
-
-    return;
 }
 
 // Grab a vector for a specific ent
@@ -1132,32 +1128,35 @@ bool VischeckPredictedEntity(CachedEntity *entity)
     return cd.visible;
 }
 
+static float slow_change_dist_p = 0;
+static float slow_change_dist_y = 0;
+
 // A helper function to find a user angle that isnt directly on the target
 // angle, effectively slowing the aiming process
 void DoSlowAim(Vector &input_angle)
 {
-    static float slow_change_dist_p = 0;
-    static float slow_change_dist_y = 0;
+
+    auto viewangles = current_user_cmd->viewangles;
 
     // Yaw
-    if (g_pUserCmd->viewangles.y != input_angle.y)
+    if (viewangles.y != input_angle.y)
     {
 
         // Check if input angle and user angle are on opposing sides of yaw so
         // we can correct for that
         bool slow_opposing = false;
-        if (input_angle.y < -90 && g_pUserCmd->viewangles.y > 90 ||
-            input_angle.y > 90 && g_pUserCmd->viewangles.y < -90)
+        if (input_angle.y < -90 && viewangles.y > 90 ||
+            input_angle.y > 90 && viewangles.y < -90)
             slow_opposing = true;
 
         // Direction
         bool slow_dir = false;
         if (slow_opposing)
         {
-            if (input_angle.y > 90 && g_pUserCmd->viewangles.y < -90)
+            if (input_angle.y > 90 && viewangles.y < -90)
                 slow_dir = true;
         }
-        else if (g_pUserCmd->viewangles.y > input_angle.y)
+        else if (viewangles.y > input_angle.y)
             slow_dir = true;
 
         // Speed, check if opposing. We dont get a new distance due to the
@@ -1165,28 +1164,28 @@ void DoSlowAim(Vector &input_angle)
         // our last one.
         if (!slow_opposing)
             slow_change_dist_y =
-                std::abs(g_pUserCmd->viewangles.y - input_angle.y) /
+                std::abs(viewangles.y - input_angle.y) /
                 (int) slow_aim;
 
         // Move in the direction of the input angle
         if (slow_dir)
-            input_angle.y = g_pUserCmd->viewangles.y - slow_change_dist_y;
+            input_angle.y = viewangles.y - slow_change_dist_y;
         else
-            input_angle.y = g_pUserCmd->viewangles.y + slow_change_dist_y;
+            input_angle.y = viewangles.y + slow_change_dist_y;
     }
 
     // Pitch
-    if (g_pUserCmd->viewangles.x != input_angle.x)
+    if (viewangles.x != input_angle.x)
     {
         // Get speed
         slow_change_dist_p =
-            std::abs(g_pUserCmd->viewangles.x - input_angle.x) / (int) slow_aim;
+            std::abs(viewangles.x - input_angle.x) / (int) slow_aim;
 
         // Move in the direction of the input angle
-        if (g_pUserCmd->viewangles.x > input_angle.x)
-            input_angle.x = g_pUserCmd->viewangles.x - slow_change_dist_p;
+        if (viewangles.x > input_angle.x)
+            input_angle.x = viewangles.x - slow_change_dist_p;
         else
-            input_angle.x = g_pUserCmd->viewangles.x + slow_change_dist_p;
+            input_angle.x = viewangles.x + slow_change_dist_p;
     }
 
     // 0.17 is a good amount in general

@@ -104,8 +104,8 @@ void WalkTo(const Vector &vector)
     // Calculate how to get to a vector
     auto result = ComputeMove(LOCAL_E->m_vecOrigin(), vector);
     // Push our move to usercmd
-    g_pUserCmd->forwardmove = result.first;
-    g_pUserCmd->sidemove    = result.second;
+    current_user_cmd->forwardmove = result.first;
+    current_user_cmd->sidemove    = result.second;
 }
 
 // Function to get the corner location that a vischeck to an entity is possible
