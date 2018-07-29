@@ -32,7 +32,7 @@ static settings::Bool nopush_enabled{ "misc.no-push", "false" };
 #if ENABLE_VISUALS
 static settings::Bool god_mode{ "misc.god-mode", "false" };
 static settings::Bool debug_info{ "misc.debug-info", "false" };
-static settings::Bool no_homo{ "misc.no-homo", "false" };
+static settings::Bool no_homo{ "misc.no-homo", "true" };
 static settings::Bool show_spectators{ "misc.show-spectators", "false" };
 #endif
 

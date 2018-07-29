@@ -33,7 +33,7 @@ void CatCommand::Register()
 {
     char *name_c = new char[256];
     char *help_c = new char[256];
-    if (name.at(0) == '+' || name.at(0) == '-')
+    if (name.at(0) == '+' || name.at(0) == '-' || name == "cat")
     {
         strncpy(name_c, (name).c_str(), 255);
     }

@@ -108,15 +108,6 @@ void hack::ExecuteCommand(const std::string command)
     hack::command_stack().push(command);
 }
 
-ConCommand *hack::c_Cat = 0;
-
-void hack::CC_Cat(const CCommand &args)
-{
-    g_ICvar->ConsoleColorPrintf(Color(255, 255, 255, 255), "cathook");
-    g_ICvar->ConsoleColorPrintf(Color(0, 0, 255, 255), " by ");
-    g_ICvar->ConsoleColorPrintf(Color(255, 0, 0, 255), "nullifiedcat\n");
-}
-
 /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
 typedef struct _sig_ucontext
 {
@@ -244,7 +235,6 @@ free(logname);*/
     InitClassTable();
 
     BeginConVars();
-    hack::c_Cat = CreateConCommand(CON_NAME, &hack::CC_Cat, "Info");
     g_Settings.Init();
     EndConVars();
 
