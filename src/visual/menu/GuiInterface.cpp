@@ -7,6 +7,7 @@
 #include <drawing.hpp>
 #include <menu/menu/special/SettingsManagerList.hpp>
 #include <menu/menu/special/PlayerListController.hpp>
+#include <hack.hpp>
 
 static settings::Button open_gui_button{ "visual.open-gui-button", "Insert" };
 
@@ -21,10 +22,11 @@ static zerokernel::special::PlayerListData createPlayerListData(int userid)
     player_info_s info{};
     g_IEngine->GetPlayerInfo(idx, &info);
     data.classId = g_pPlayerResource->getClass(idx);
-    data.teamId = g_pPlayerResource->getTeam(idx);
+    data.teamId = g_pPlayerResource->getTeam(idx) - 1;
     data.dead = !g_pPlayerResource->isAlive(idx);
     data.steam = info.friendsID;
-    strncpy(data.name, info.name, 31);
+    logging::Info("Player name: %s", info.name);
+    snprintf(data.name, 31, "%s", info.name);
     return data;
 }
 
@@ -43,31 +45,38 @@ public:
         std::string name = event->GetName();
         if (name == "player_connect_client")
         {
+            logging::Info("addPlayer %d", userid);
             controller->addPlayer(userid, createPlayerListData(userid));
         }
         else if (name == "player_disconnect")
         {
+            logging::Info("removePlayer %d", userid);
             controller->removePlayer(userid);
         }
         else if (name == "player_team")
         {
-            controller->updatePlayerTeam(userid, event->GetInt("team"));
+            logging::Info("updatePlayerTeam %d", userid);
+            controller->updatePlayerTeam(userid, event->GetInt("team") - 1);
         }
         else if (name == "player_changeclass")
         {
+            logging::Info("updatePlayerClass %d", userid);
             controller->updatePlayerClass(userid, event->GetInt("class"));
         }
         else if (name == "player_changename")
         {
+            logging::Info("updatePlayerName %d", userid);
             controller->updatePlayerName(userid, event->GetString("newname"));
         }
         else if (name == "player_death")
         {
-            controller->updatePlayerLifeState(userid, false);
+            logging::Info("updatePlayerLifeState %d", userid);
+            controller->updatePlayerLifeState(userid, true);
         }
         else if (name == "player_spawn")
         {
-            controller->updatePlayerLifeState(userid, true);
+            logging::Info("updatePlayerLifeState %d", userid);
+            controller->updatePlayerLifeState(userid, false);
         }
     }
 };
@@ -81,13 +90,17 @@ static void initPlayerlist()
     {
         controller = std::make_unique<zerokernel::special::PlayerListController>(*pl);
         controller->setKickButtonCallback([](int uid) {
-            // TODO
+            hack::command_stack().push("callvote kick " + uid);
         });
         controller->setOpenSteamCallback([](unsigned steam) {
             CSteamID id{};
             id.SetFromUint64((0b1000100000000000000000001 << 32) | steam);
             g_ISteamFriends->ActivateGameOverlayToUser("steamid", id);
         });
+    }
+    else
+    {
+        logging::Info("PlayerList element not found\n");
     }
 }
 
@@ -137,7 +150,6 @@ bool gui::handleSdlEvent(SDL_Event *event)
 {
     if (event->type == SDL_KEYDOWN)
     {
-        logging::Info("%d %d\n", event->key.keysym.scancode, (*open_gui_button).scan);
         if (event->key.keysym.scancode == (*open_gui_button).scan)
         {
             logging::Info("GUI open button pressed");
@@ -154,6 +166,14 @@ void gui::onLevelLoad()
     if (controller)
     {
         controller->removeAll();
+        for (auto i = 1; i < 32; ++i)
+        {
+            player_info_s info{};
+            if (g_IEngine->GetPlayerInfo(i, &info))
+            {
+                controller->addPlayer(info.userID, createPlayerListData(info.userID));
+            }
+        }
     }
 }
 
