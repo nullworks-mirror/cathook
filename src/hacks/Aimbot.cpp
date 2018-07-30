@@ -60,7 +60,7 @@ static settings::Bool buildings_sentry{ "aimbot.target.sentry", "1" };
 static settings::Bool buildings_other{ "aimbot.target.other-buildings", "1" };
 static settings::Bool stickybot{ "aimbot.target.stickybomb", "0" };
 static settings::Bool rageonly{ "aimbot.target.ignore-non-rage", "0" };
-static settings::Bool teammates{ "aimbot.target.teammates", "0" };
+static settings::Int teammates{ "aimbot.target.teammates", "0" };
 
 #if ENABLE_VISUALS
 static settings::Bool fov_draw{ "aimbot.fov-circle.enable", "0" };

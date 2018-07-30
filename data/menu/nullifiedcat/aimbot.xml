@@ -30,7 +30,13 @@
             <AutoVariable width="fill" target="aimbot.target.other-buildings" label="Other buildings"/>
             <AutoVariable width="fill" target="aimbot.target.sentry" label="Sentry guns"/>
             <AutoVariable width="fill" target="aimbot.target.stickybomb" label="Stickybombs"/>
-            <AutoVariable width="fill" target="aimbot.target.teammates" label="Teammates"/>
+            <LabeledObject width="fill" label="Teammates">
+                <Select target="aimbot.target.teammates">
+                    <Option name="Disable" value="0"/>
+                    <Option name="Enable" value="1"/>
+                    <Option name="Teammates only" value="2"/>
+                </Select>
+            </LabeledObject>
             <AutoVariable width="fill" target="aimbot.target.max-range" label="Max Range" min="0" max="4096"/>
 
             <AutoVariable width="fill" target="aimbot.projectile.enable" label="Enable"/>
