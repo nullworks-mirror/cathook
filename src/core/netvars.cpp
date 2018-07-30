@@ -43,6 +43,8 @@ void NetVars::Init()
     {
         res_iTeam =
             gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
+        res_bAlive =
+                gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_bAlive");
         this->res_iMaxBuffedHealth =
             gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");
         m_angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata",

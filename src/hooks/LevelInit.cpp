@@ -5,6 +5,7 @@
 
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
+#include <menu/GuiInterface.hpp>
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
 #if !LAGBOT_MODE
@@ -61,6 +62,10 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     playerlist::Save();
 #endif
 #if ENABLE_VISUALS
+#if ENABLE_GUI
+    gui::onLevelLoad();
+#endif
+
     typedef bool (*LoadNamedSkys_Fn)(const char *);
     uintptr_t addr = gSignatures.GetEngineSignature(
         "55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 81 EC 6C 01 00 00");
