@@ -39,7 +39,9 @@ public:
      */
     void updatePlayerName(int id, const char *name);
 
-    void updatePlayerTeamClass(int id, int team, int classId);
+    void updatePlayerTeam(int id, int team);
+
+    void updatePlayerClass(int id, int classId);
 
     void updatePlayerLifeState(int id, bool dead);
 

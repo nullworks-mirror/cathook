@@ -6,6 +6,8 @@
 #include <settings/Registered.hpp>
 #include <menu/object/container/TData.hpp>
 #include <menu/Message.hpp>
+#include <menu/menu/special/PlayerListController.hpp>
+
 
 /*
   Created on 26.07.18.
@@ -120,11 +122,11 @@ void zerokernel::special::PlayerListController::updatePlayerLifeState(int id,
     });
 }
 
-void zerokernel::special::PlayerListController::updatePlayerTeamClass(int id,
-                                                                      int team,
-                                                                      int classId)
+
+void
+zerokernel::special::PlayerListController::updatePlayerTeam(int id, int team)
 {
-    table.iterateObjects([this, id, team, classId](BaseMenuObject *a) {
+    table.iterateObjects([this, id, team](BaseMenuObject *a) {
         auto row = dynamic_cast<TRow *>(a);
         // Shouldn't happen
         if (row == nullptr)
@@ -132,6 +134,21 @@ void zerokernel::special::PlayerListController::updatePlayerTeamClass(int id,
         if ((int)row->kv["player_id"] == id)
         {
             row->kv["player_team"] = team;
+            updateRow(row);
+        }
+    });
+}
+
+
+void zerokernel::special::PlayerListController::updatePlayerClass(int id, int classId)
+{
+    table.iterateObjects([this, id, classId](BaseMenuObject *a) {
+        auto row = dynamic_cast<TRow *>(a);
+        // Shouldn't happen
+        if (row == nullptr)
+            return;
+        if ((int)row->kv["player_id"] == id)
+        {
             row->kv["player_class"] = classId;
             updateRow(row);
         }

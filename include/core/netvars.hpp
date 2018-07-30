@@ -128,6 +128,7 @@ public:
     offset_t m_Collision;
     offset_t res_iTeam;
     offset_t res_iScore;
+    offset_t res_bAlive;
     offset_t m_nChargeResistType;
     offset_t m_flChargeLevel;
 
