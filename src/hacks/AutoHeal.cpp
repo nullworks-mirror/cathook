@@ -18,8 +18,8 @@ static settings::Bool share_uber{ "autoheal.uber.share", "true" };
 
 static settings::Bool auto_vacc{ "autoheal.vacc.enable", "false" };
 
-static settings::Bool auto_vacc_bullets{ "autoheal.vacc.bullets.enable", "true" };
-static settings::Int vacc_sniper{ "autoheal.vacc.bullets.sniper-pop", "true" };
+static settings::Bool auto_vacc_bullets{ "autoheal.vacc.bullet.enable", "true" };
+static settings::Int vacc_sniper{ "autoheal.vacc.bullet.sniper-pop", "true" };
 
 static settings::Bool auto_vacc_fire_checking{ "autoheal.vacc.fire.enable", "true" };
 static settings::Int auto_vacc_pop_if_pyro{ "autoheal.vacc.fire.pyro-pop", "1" };
