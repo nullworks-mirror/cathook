@@ -12,9 +12,7 @@
 
 #include "common.hpp"
 
-static settings::Bool communicate{ "antiaim.identify", "0" };
 static settings::Bool enable{ "antiaim.enable", "0" };
-static settings::Bool crouch{ "antiaim.fake-crouch", "0" };
 
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
@@ -33,11 +31,6 @@ static settings::Float aaaa_interval_random_low{ "antiaim.aaaa.interval.random-l
 static settings::Int aaaa_mode{ "antiaim.aaaa.mode", "0" };
 static settings::Button aaaa_flip_key{ "antiaim.aaaa.flip-key", "<null>" };
 
-static settings::Bool test{ "antiaim.debug", "0" };
-
-#if ENABLE_VISUALS
-static settings::Bool draw_fakes{ "antiaim.draw-fakes", "1" };
-#endif
 
 namespace hacks::shared::antiaim
 {
@@ -373,7 +366,7 @@ float useEdge(float edgeViewAngle)
 Timer delay{};
 int val       = 0;
 int value[32] = { 0 };
-void FakeCrouch(CUserCmd *cmd)
+/*void FakeCrouch(CUserCmd *cmd)
 {
     if (!crouch)
         return;
@@ -404,7 +397,7 @@ void FakeCrouch(CUserCmd *cmd)
         cmd->buttons &= ~IN_DUCK;
         *bSendPackets = true;
     }
-}
+}*/
 void ProcessUserCmd(CUserCmd *cmd)
 {
     if (!enable)
@@ -421,13 +414,6 @@ void ProcessUserCmd(CUserCmd *cmd)
     static bool flip      = false;
     static bool bsendflip = true;
     bool clamp            = !no_clamping;
-    if (test)
-    {
-        cmd->viewangles.x                = FLT_MAX;
-        cmd->viewangles.y                = FLT_MAX;
-        g_pLocalPlayer->bUseSilentAngles = true;
-        return;
-    }
     switch ((int) yaw_mode)
     {
     case 1: // FIXED
@@ -449,9 +435,9 @@ void ProcessUserCmd(CUserCmd *cmd)
     case 5: // SPIN
         cur_yaw += (float) spin;
         if (cur_yaw > 180)
-            cur_yaw = -180;
+            cur_yaw -= -180;
         if (cur_yaw < -180)
-            cur_yaw = 180;
+            cur_yaw += 180;
         y           = cur_yaw;
         break;
     case 6: // OFFSETKEEP
@@ -616,7 +602,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         p = GetAAAAPitch();
     }
     g_pLocalPlayer->bUseSilentAngles = true;
-    FakeCrouch(cmd);
+    //FakeCrouch(cmd);
 }
 
 bool isEnabled()
