@@ -1,0 +1,5 @@
+<Tab name="Anti-Aim">
+    <List width="150">
+        <AutoVariable width="fill" target="antiaim.enable" label="Enable"/>
+    </List>
+</Tab>

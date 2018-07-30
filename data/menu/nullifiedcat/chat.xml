@@ -1,0 +1,23 @@
+<Tab name="Chat">
+    <Box name="Uber Spam" width="content" height="content" padding="12 6 6 6">
+        <List width="150">
+            <LabeledObject width="fill" label="Source">
+                <Select target="uberspam.source">
+                    <Option name="Disable" value="0"/>
+                    <Option name="Default" value="1"/>
+                    <Option name="Null Core" value="2"/>
+                    <Option name="Custom" value="3"/>
+                </Select>
+            </LabeledObject>
+            <AutoVariable width="fill" target="uberspam.file" label="File"/>
+            <AutoVariable width="fill" target="uberspam.team-chat" label="Team chat"/>
+
+            <AutoVariable width="fill" target="uberspam.triggers.ended" label="Uber end"/>
+            <AutoVariable width="fill" target="uberspam.triggers.ready" label="Uber ready"/>
+            <AutoVariable width="fill" target="uberspam.triggers.used" label="Uber used"/>
+            <AutoVariable width="fill" target="uberspam.triggers.every-n-percent" label="Every %"/>
+
+            <!-- FIXME add button -->
+        </List>
+    </Box>
+</Tab>
