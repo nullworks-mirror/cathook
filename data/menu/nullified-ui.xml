@@ -4,6 +4,7 @@
             <Include path="nullifiedcat/aimbot.xml"/>
             <Include path="nullifiedcat/triggerbot.xml"/>
             <Include path="nullifiedcat/antiaim.xml"/>
+            <Include path="nullifiedcat/antibackstab.xml"/>
             <Include path="nullifiedcat/autoheal.xml"/>
             <Include path="nullifiedcat/chat.xml"/>
             <Include path="nullifiedcat/visuals.xml"/>

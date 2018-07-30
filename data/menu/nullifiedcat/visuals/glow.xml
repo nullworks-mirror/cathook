@@ -1,4 +1,4 @@
-<Tab name="Glow">
+<Tab name="Glow" padding="4 4 4 4">
     <List width="150">
         <AutoVariable width="fill" target="glow.enable" label="Enable"/>
         <AutoVariable width="fill" target="glow.blur-scale" label="Blur Scale" min="0" max="10"/>
