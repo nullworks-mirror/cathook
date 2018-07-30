@@ -3,6 +3,7 @@
 */
 
 #include <menu/object/input/Checkbox.hpp>
+#include <menu/menu/special/SettingsManagerList.hpp>
 
 static settings::RVariable<int> checkbox_size{ "zk.style.checkbox.size", "12" };
 static settings::RVariable<glez::rgba> color_border{ "zk.style.checkbox.color.border", "079797" };
@@ -61,6 +62,10 @@ void zerokernel::Checkbox::loadFromXml(const tinyxml2::XMLElement *data)
     {
         std::string str(target);
         auto opt = settings::Manager::instance().lookup(str);
-        option = dynamic_cast<settings::Variable<bool> *>(opt);
+        if (opt)
+        {
+            option = dynamic_cast<settings::Variable<bool> *>(opt);
+            zerokernel::special::SettingsManagerList::markVariable(target);
+        }
     }
 }

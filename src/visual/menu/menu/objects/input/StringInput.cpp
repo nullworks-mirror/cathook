@@ -3,6 +3,7 @@
 */
 
 #include <menu/object/input/StringInput.hpp>
+#include <menu/menu/special/SettingsManagerList.hpp>
 
 static settings::RVariable<int> default_width{ "zk.style.input.string.width", "60" };
 static settings::RVariable<int> default_height{ "zk.style.input.string.height", "14" };
@@ -44,7 +45,10 @@ void zerokernel::StringInput::loadFromXml(const tinyxml2::XMLElement *data)
     const char *target{ nullptr };
     if (tinyxml2::XML_SUCCESS == data->QueryStringAttribute("target", &target))
     {
-        std::string str(target);
-        option = settings::Manager::instance().lookup(str);
+        option = settings::Manager::instance().lookup(target);
+        if (option)
+        {
+            zerokernel::special::SettingsManagerList::markVariable(target);
+        }
     }
 }

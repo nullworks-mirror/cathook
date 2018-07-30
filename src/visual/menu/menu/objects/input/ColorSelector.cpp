@@ -5,6 +5,7 @@
 #include <menu/object/input/ColorSelector.hpp>
 #include <menu/Menu.hpp>
 #include <menu/object/container/ModalColorSelect.hpp>
+#include <menu/menu/special/SettingsManagerList.hpp>
 
 static settings::RVariable<int> default_width{ "zk.style.input.color.width", "36" };
 static settings::RVariable<int> default_height{ "zk.style.input.color.height", "14" };
@@ -59,7 +60,11 @@ void ColorSelector::loadFromXml(const tinyxml2::XMLElement *data)
     {
         std::string str(target);
         auto opt = settings::Manager::instance().lookup(str);
-        variable = dynamic_cast<settings::Variable<glez::rgba> *>(opt);
+        if (opt)
+        {
+            variable = dynamic_cast<settings::Variable<glez::rgba> *>(opt);
+            zerokernel::special::SettingsManagerList::markVariable(target);
+        }
     }
 }
 

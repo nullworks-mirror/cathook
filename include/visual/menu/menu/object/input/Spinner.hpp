@@ -5,6 +5,7 @@
 #pragma once
 
 #include <menu/object/input/TextInput.hpp>
+#include <menu/menu/special/SettingsManagerList.hpp>
 
 namespace zerokernel
 {
@@ -67,6 +68,10 @@ public:
         {
             std::string str(target);
             opt = settings::Manager::instance().lookup(str);
+            if (opt)
+            {
+                zerokernel::special::SettingsManagerList::markVariable(target);
+            }
         }
 
         if constexpr (std::is_same<int, T>::value)

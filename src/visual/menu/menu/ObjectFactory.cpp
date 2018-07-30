@@ -73,7 +73,7 @@ ObjectFactory::createObjectFromXml(const tinyxml2::XMLElement *element)
             if (EXIT_SUCCESS == strcmp("int", type))
                 result = std::make_unique<Slider<int>>();
             else if (EXIT_SUCCESS == strcmp("float", type))
-                result = std::make_unique<Slider<int>>();
+                result = std::make_unique<Slider<float>>();
         }
     }
     else if (type == "StringInput")
@@ -103,6 +103,8 @@ ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
         printf("Could not find settings '%s'\n", name);
         return nullptr;
     }
+
+    special::SettingsManagerList::markVariable(name);
 
     std::unique_ptr<BaseMenuObject> control{ nullptr };
 
@@ -134,7 +136,11 @@ ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
         if (!element->QueryIntAttribute("min", &min) && !element->QueryIntAttribute("max", &max))
         {
             // Make a slider
-            control = std::make_unique<Slider<int>>(*obj);
+            auto slider = std::make_unique<Slider<int>>(*obj);
+            slider->min = min;
+            slider->max = max;
+            element->QueryIntAttribute("step", &slider->step);
+            control = std::move(slider);
         }
         else
         {
@@ -156,7 +162,11 @@ ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
         if (!element->QueryFloatAttribute("min", &min) && !element->QueryFloatAttribute("max", &max))
         {
             // Make a slider
-            control = std::make_unique<Slider<float>>(*obj);
+            auto slider = std::make_unique<Slider<float>>(*obj);
+            slider->min = min;
+            slider->max = max;
+            element->QueryFloatAttribute("step", &slider->step);
+            control = std::move(slider);
         }
         else
         {

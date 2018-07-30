@@ -5,6 +5,7 @@
 #include <menu/object/input/Select.hpp>
 #include <menu/Message.hpp>
 #include <menu/Debug.hpp>
+#include <menu/menu/special/SettingsManagerList.hpp>
 
 static settings::RVariable<glez::rgba> color_border{ "zk.style.input.select.border", "079797" };
 
@@ -99,7 +100,10 @@ void zerokernel::Select::loadFromXml(const tinyxml2::XMLElement *data)
             printf("WARNING: Creating Select element: could not find settings '%s'\n", target);
         }
         else
+        {
+            zerokernel::special::SettingsManagerList::markVariable(target);
             variable = var;
+        }
     }
 
     auto child = data->FirstChildElement(nullptr);

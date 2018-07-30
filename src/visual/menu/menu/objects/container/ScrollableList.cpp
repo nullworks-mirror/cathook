@@ -57,7 +57,16 @@ void zerokernel::ScrollableList::scrollUp()
 {
     if (start_index == 0)
         return;
-    --start_index;
+
+    auto delta = 1;
+
+    if (SDL_GetModState() & KMOD_SHIFT)
+        delta = 4;
+
+    if (delta > start_index)
+        delta = start_index;
+
+    start_index -= delta;
     updateScroll();
 }
 
@@ -66,7 +75,14 @@ void zerokernel::ScrollableList::scrollDown()
     // FIXME
     /*if (end_index >= objects.size() - 1)
         return;*/
-    ++start_index;
+
+    auto delta = 1;
+
+    if (SDL_GetModState() & KMOD_SHIFT)
+        delta = 4;
+
+    start_index += delta;
+
     updateScroll();
 }
 

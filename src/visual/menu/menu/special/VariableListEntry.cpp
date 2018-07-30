@@ -5,6 +5,11 @@
 #include <menu/object/input/ColorSelector.hpp>
 #include <menu/object/input/InputKey.hpp>
 #include <menu/object/input/Spinner.hpp>
+#include <menu/menu/special/SettingsManagerList.hpp>
+#include <menu/menu/special/VariableListEntry.hpp>
+
+
+static settings::RVariable<glez::rgba> marked_color{ "zk.color.variable-list.color.registered", "ffff00" };
 
 /*
   Created on 26.07.18.
@@ -197,4 +202,9 @@ void zerokernel::VariableListEntry::setDepth(int depth)
     TreeListBaseEntry::setDepth(depth);
 
     label.move(depth * 5 + 4, 0);
+}
+
+void zerokernel::VariableListEntry::markPresentInUi()
+{
+    label.setColorText(&*marked_color);
 }

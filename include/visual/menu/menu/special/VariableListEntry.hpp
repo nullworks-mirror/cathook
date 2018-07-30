@@ -40,6 +40,8 @@ public:
 
     void setDepth(int depth) override;
 
+    void markPresentInUi();
+
     std::unique_ptr<BaseMenuObject> createCheckbox(settings::IVariable *variable);
 
     std::unique_ptr<BaseMenuObject> createSpinner(settings::IVariable *variable);

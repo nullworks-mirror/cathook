@@ -39,6 +39,8 @@ public:
 
     bool isHidden() override;
 
+    bool isFocused();
+
     // Functions
 
     void moveObjects();

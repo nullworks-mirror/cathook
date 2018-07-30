@@ -7,6 +7,8 @@
 #include <sstream>
 #include <menu/special/VariableListEntry.hpp>
 #include <menu/special/TreeListCollapsible.hpp>
+#include <menu/menu/special/SettingsManagerList.hpp>
+
 
 zerokernel::special::SettingsManagerList::SettingsManagerList(
         zerokernel::Container &list): list(list)
@@ -35,6 +37,7 @@ void zerokernel::special::SettingsManagerList::construct()
         {
             node = &((*node)[n]);
         }
+        node->full_name = v.first;
         node->variable = v.second;
     }
 
@@ -50,8 +53,7 @@ void zerokernel::special::SettingsManagerList::recursiveWork(zerokernel::special
     {
         if (n.second.variable)
         {
-            addVariable(n.first, depth, n.second.variable);
-            printf("depth %u: settings %s\n", depth, n.first.c_str());
+            addVariable(n.first, depth, n.second.variable, isVariableMarked(n.second.full_name));
         }
 
         if (!n.second.nodes.empty())
@@ -99,12 +101,14 @@ zerokernel::special::SettingsManagerList::TreeNode::operator[](
 }
 
 void zerokernel::special::SettingsManagerList::addVariable(std::string name, size_t depth,
-                                      settings::IVariable *variable)
+                                      settings::IVariable *variable, bool registered)
 {
     auto entry = std::make_unique<VariableListEntry>();
     entry->setText(name);
     entry->setVariable(variable);
     entry->setDepth(depth);
+    if (registered)
+        entry->markPresentInUi();
     list.addObject(std::move(entry));
 }
 
@@ -114,4 +118,22 @@ void zerokernel::special::SettingsManagerList::addCollapsible(std::string name, 
     entry->setText(name);
     entry->setDepth(depth);
     list.addObject(std::move(entry));
+}
+
+static std::unordered_map<std::string, bool> marks{};
+
+void zerokernel::special::SettingsManagerList::markVariable(std::string name)
+{
+    marks[name] = true;
+}
+
+void zerokernel::special::SettingsManagerList::resetMarks()
+{
+    marks.clear();
+}
+
+bool
+zerokernel::special::SettingsManagerList::isVariableMarked(std::string name)
+{
+    return marks.find(name) != marks.end();
 }

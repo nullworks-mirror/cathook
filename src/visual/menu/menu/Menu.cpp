@@ -18,6 +18,7 @@
 #include <iostream>
 #include <menu/menu/Menu.hpp>
 #include <config.h>
+#include <core/logging.hpp>
 
 static void recursiveXmlResolveIncludes(const std::string& directory, tinyxml2::XMLElement *element)
 {
@@ -40,13 +41,28 @@ static void recursiveXmlResolveIncludes(const std::string& directory, tinyxml2::
                 {
                     printf("File loaded\n");
                     auto content = document.RootElement()->DeepClone(c->GetDocument());
-                        auto next = content;
-                        element->InsertAfterChild(c, content);
-                        element->DeleteChild(c);
-                        c = content->ToElement();
-                        continue;
+                    element->InsertAfterChild(c, content);
+                    element->DeleteChild(c);
+                    c = content->ToElement();
+                    continue;
                 }
             }
+        }
+        if (!strcmp("ElementGroup", c->Name()))
+        {
+            auto it = c->FirstChild();
+            auto prev = c;
+            while (it)
+            {
+                auto next = it->NextSibling();
+                element->InsertAfterChild(prev, it);
+                printf("GroupedElement: %s\n", it->ToElement()->Name());
+                it = next;
+            }
+            auto n = c->NextSiblingElement();
+            element->DeleteChild(c);
+            c = n;
+            continue;
         }
         recursiveXmlResolveIncludes(directory, c);
         c = c->NextSiblingElement();
@@ -169,6 +185,7 @@ void Menu::destroy()
 
 void Menu::reset()
 {
+    special::SettingsManagerList::resetMarks();
     wm = std::make_unique<WindowManager>();
     wm->init();
     ready = true;

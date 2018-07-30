@@ -2,6 +2,7 @@
   Created on 27.07.18.
 */
 #include <menu/object/input/InputKey.hpp>
+#include <menu/menu/special/SettingsManagerList.hpp>
 
 static settings::RVariable<int> default_width{ "zk.style.input.key.width", "60" };
 static settings::RVariable<int> default_height{ "zk.style.input.key.height", "14" };
@@ -102,7 +103,11 @@ void zerokernel::InputKey::loadFromXml(const tinyxml2::XMLElement *data)
     {
         std::string str(target);
         auto opt = settings::Manager::instance().lookup(str);
-        key = dynamic_cast<settings::Variable<settings::Key> *>(opt);
+        if (opt)
+        {
+            key = dynamic_cast<settings::Variable<settings::Key> *>(opt);
+            zerokernel::special::SettingsManagerList::markVariable(target);
+        }
     }
 }
 

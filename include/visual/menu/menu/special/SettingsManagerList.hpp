@@ -20,6 +20,7 @@ public:
     {
     public:
         settings::IVariable *variable{ nullptr };
+        std::string full_name{};
         std::vector<std::pair<std::string, TreeNode>> nodes{};
         TreeNode& operator[](const std::string& path);
     };
@@ -34,7 +35,17 @@ public:
 
     void addCollapsible(std::string name, size_t depth);
 
-    void addVariable(std::string name, size_t depth, settings::IVariable *variable);
+    void addVariable(std::string name, size_t depth, settings::IVariable *variable, bool registered);
+
+    //
+
+    static void markVariable(std::string name);
+
+    static bool isVariableMarked(std::string name);
+
+    static void resetMarks();
+
+    //
 
     TreeNode root{};
     Container& list;

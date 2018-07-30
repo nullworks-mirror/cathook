@@ -54,9 +54,9 @@ bool zerokernel::WindowHeader::handleSdlEvent(SDL_Event *event)
 
 void zerokernel::WindowHeader::render()
 {
-    renderBackground(window.focused ? *color_background_focused : *color_background);
+    renderBackground(window.isFocused() ? *color_background_focused : *color_background);
     //glez::draw::line(bb.getBorderBox().left(), bb.getBorderBox().bottom() - 1, bb.getBorderBox().width, 0, window.focused ? *color_border_focused : *color_border, 1);
-    renderBorder(window.focused ? *color_border_focused : *color_border);
+    renderBorder(window.isFocused() ? *color_border_focused : *color_border);
 
     Container::render();
 }

@@ -21,7 +21,7 @@ void zerokernel::Task::render()
         renderBackground(*color_hovered);
     renderBorder(*color_border);
 
-    if (window.focused)
+    if (window.isFocused())
     {
         text.setColorText(&*color_focused);
     }
@@ -44,7 +44,7 @@ bool zerokernel::Task::onLeftMouseClick()
     }
     else
     {
-        if (window.focused)
+        if (window.isFocused())
             window.wmCloseWindow();
         else
             window.requestFocus();

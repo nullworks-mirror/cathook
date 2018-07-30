@@ -43,7 +43,7 @@ void WMWindow::render()
     if (isHidden())
         return;
 
-    if (focused)
+    if (isFocused())
         renderBackground(*color_background);
     else
         renderBackground(*color_background_inactive);
@@ -177,7 +177,12 @@ void WMWindow::reorderElements()
 
 bool WMWindow::isHidden()
 {
-    return BaseMenuObject::isHidden() || Menu::instance->isInGame();
+    return BaseMenuObject::isHidden() || (Menu::instance->isInGame() && !should_render_in_game);
+}
+
+bool WMWindow::isFocused()
+{
+    return focused && !Menu::instance->isInGame();
 }
 
 }
