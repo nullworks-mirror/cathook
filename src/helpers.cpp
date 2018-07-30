@@ -544,20 +544,6 @@ bool HasWeapon(CachedEntity *ent, int wantedId)
     return false;
 }
 
-bool HasDarwins(CachedEntity *ent)
-{
-    if (CE_BAD(ent))
-        return false;
-    // Check if player is sniper
-    if (CE_INT(ent, netvar.iClass) != tf_sniper)
-        return false;
-    // Check if player is using darwins, 231 is the id for darwins danger sheild
-    if (HasWeapon(ent, 231))
-        return true;
-    // Else return false
-    return false;
-}
-
 void VectorTransform(const float *in1, const matrix3x4_t &in2, float *out)
 {
     out[0] = (in1[0] * in2[0][0] + in1[1] * in2[0][1] + in1[2] * in2[0][2]) +
@@ -724,7 +710,6 @@ float RandFloatRange(float min, float max)
 
 bool IsEntityVisible(CachedEntity *entity, int hb)
 {
-    Vector hit;
     if (g_Settings.bInvalid)
         return false;
     if (entity == g_pLocalPlayer->entity)
@@ -936,7 +921,10 @@ weaponmode GetWeaponMode()
              classid == CL_CLASS(CTFSyringeGun) ||
              classid == CL_CLASS(CTFCrossbow) ||
              classid == CL_CLASS(CTFShotgunBuildingRescue) ||
-             classid == CL_CLASS(CTFDRGPomson))
+             classid == CL_CLASS(CTFDRGPomson) ||
+             classid == CL_CLASS(CTFWeaponFlameBall) ||
+             classid == CL_CLASS(CTFRaygun) ||
+             classid == CL_CLASS(CTFGrapplingHook))
     {
         return weaponmode::weapon_projectile;
     }
@@ -1382,10 +1370,9 @@ void PrintChat(const char *fmt, ...)
         va_start(list, fmt);
         vsprintf(buf.get(), fmt, list);
         va_end(list);
-        std::unique_ptr<char> str(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s",
-                                         0x5e3252, 0xba3d9a, 0x5e3252,
-                                         buf.get())
-                                      .release());
+        std::unique_ptr<char[]> str =
+            std::move(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s", 0x5e3252,
+                             0xba3d9a, 0x5e3252, buf.get()));
         // FIXME DEBUG LOG
         logging::Info("%s", str.get());
         chat->Printf(str.get());

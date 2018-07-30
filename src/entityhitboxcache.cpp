@@ -111,7 +111,7 @@ static CatVar setupbones_time(
     setupbones_time_enum, "setupbones_time", "3", "Setupbones",
     "Defines setupbones 4th argument, change it if your aimbot misses, idk!!");
 
-std::mutex setupbones_mutex;
+static std::mutex setupbones_mutex;
 
 matrix3x4_t *EntityHitboxCache::GetBones()
 {
