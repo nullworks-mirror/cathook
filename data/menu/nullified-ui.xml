@@ -8,6 +8,7 @@
                 <Box padding="6 6 6 6" width="content" height="content">
                     <List width="150">
                         <AutoVariable width="fill" target="aimbot.enable" label="Enable Aimbot"/>
+                        <AutoVariable width="fill" target="aimbot.backtrack" label="Backtracking"/>
                         <AutoVariable width="fill" target="aimbot.aimkey.button" label="Aimkey"/>
                         <LabeledObject width="fill" label="Aimkey mode">
                             <Select target="aimbot.aimkey.mode">
@@ -18,8 +19,50 @@
                             </Select>
                         </LabeledObject>
                         <AutoVariable width="fill" target="aimbot.autoshoot" label="Autoshoot"/>
+                        <AutoVariable width="fill" target="aimbot.autoshoot-disguised" label="Disguised autoshoot"/>
+                        <AutoVariable width="fill" target="aimbot.wait-for-charge" label="Wait for charge"/>
+                        <AutoVariable width="fill" target="aimbot.can-shoot-only" label="CanShoot check"/>
+                        <AutoVariable width="fill" target="aimbot.silent" label="Silent"/>
+                        <AutoVariable width="fill" target="aimbot.zoomed-only" label="Zoomed only"/>
+                        <AutoVariable width="fill" target="aimbot.auto.spin-up" label="Auto spin-up"/>
+                        <AutoVariable width="fill" target="aimbot.auto.unzoom" label="Auto unzoom"/>
+                        <AutoVariable width="fill" target="aimbot.auto.zoom" label="Auto zoom"/>
+                        <AutoVariable width="fill" target="aimbot.zoomed-only" label="Zoomed only"/>
+
+                        <AutoVariable width="fill" target="aimbot.target.ignore-cloaked-spies" label="NOT Cloaked Spies"/>
+                        <AutoVariable width="fill" target="aimbot.target.ignore-deadringer" label="NOT Dead Ringer Spies"/>
+                        <AutoVariable width="fill" target="aimbot.target.ignore-vaccinator" label="NOT Vaccinator"/>
+                        <AutoVariable width="fill" target="aimbot.target.ignore-non-rage" label="Rage only"/>
+                        <AutoVariable width="fill" target="aimbot.target.other-buildings" label="Other buildings"/>
+                        <AutoVariable width="fill" target="aimbot.target.sentry" label="Sentry guns"/>
+                        <AutoVariable width="fill" target="aimbot.target.stickybomb" label="Stickybombs"/>
+                        <AutoVariable width="fill" target="aimbot.target.teammates" label="Teammates"/>
+                        <AutoVariable width="fill" target="aimbot.target.max-range" label="Max Range" min="0" max="4096"/>
+
+                        <AutoVariable width="fill" target="aimbot.projectile.enable" label="Enable"/>
+                        <AutoVariable width="fill" target="aimbot.projectile.huntsman-autoshoot" label="Arrow autoshoot charge"/>
+                        <AutoVariable width="fill" target="aimbot.projectile.sticky-autoshoot" label="Sticky autoshoot charge"/>
+                        <AutoVariable width="fill" target="aimbot.projectile.gravity" label="Gravity override"/>
+                        <AutoVariable width="fill" target="aimbot.projectile.speed" label="Velocity override"/>
                     </List>
                 </Box>
+            </Tab>
+            <Tab name="Trigger Bot">
+                <List width="150">
+                    <AutoVariable width="fill" target="trigger.enable" label="Enable"/>
+                    <AutoVariable width="fill" target="trigger.wait-for-charge" label="Wait for charge"/>
+                    <AutoVariable width="fill" target="trigger.zoomed-only" label="Zoomed only"/>
+                    <AutoVariable width="fill" target="trigger.accuracy" label="Accuracy mode" min="0" max="10"/>
+                    <AutoVariable width="fill" target="trigger.delay" label="Delay" min="0" max="1"/>
+
+                    <AutoVariable width="fill" target="trigger.target.ignore-cloaked-spies" label="NOT Cloaked Spies"/>
+                    <AutoVariable width="fill" target="trigger.target.ignore-vaccinator" label="NOT Vaccinator"/>
+                    <AutoVariable width="fill" target="trigger.target.buildings-other" label="Other Buildings"/>
+                    <AutoVariable width="fill" target="trigger.target.buildings-sentry" label="Sentry Guns"/>
+                    <AutoVariable width="fill" target="trigger.target.stickybombs" label="Stickybombs"/>
+                    <AutoVariable width="fill" target="trigger.target.teammates" label="Teammates"/>
+                    <AutoVariable width="fill" target="trigger.target.max-range" label="Max Range" min="0" max="4096"/>
+                </List>
             </Tab>
             <Tab name="Anti-Aim">
                 <List width="150">
@@ -35,11 +78,35 @@
                     <AutoVariable width="fill" target="autoheal.uber.health-below-ratio" label="Uber on health" min="0" max="100"/>
                 </List>
             </Tab>
+            <Tab name="Chat">
+                <Box name="Uber Spam" width="content" height="content" padding="12 6 6 6">
+                    <List width="150">
+                        <LabeledObject width="fill" label="Source">
+                            <Select target="uberspam.source">
+                                <Option name="Disable" value="0"/>
+                                <Option name="Default" value="1"/>
+                                <Option name="Null Core" value="2"/>
+                                <Option name="Custom" value="3"/>
+                            </Select>
+                        </LabeledObject>
+                        <AutoVariable width="fill" target="uberspam.file" label="File"/>
+                        <AutoVariable width="fill" target="uberspam.team-chat" label="Team chat"/>
+
+                        <AutoVariable width="fill" target="uberspam.triggers.ended" label="Uber end"/>
+                        <AutoVariable width="fill" target="uberspam.triggers.ready" label="Uber ready"/>
+                        <AutoVariable width="fill" target="uberspam.triggers.used" label="Uber used"/>
+                        <AutoVariable width="fill" target="uberspam.triggers.every-n-percent" label="Every %"/>
+
+                        <!-- FIXME add button -->
+                    </List>
+                </Box>
+            </Tab>
             <Tab name="Visuals">
                 <TabContainer width="fill" height="fill">
                     <Tab name="ESP">
                         <List width="150">
                             <AutoVariable width="fill" target="esp.enable" label="Enable"/>
+                            <AutoVariable width="fill" target="esp.legit" label="Legit Mode"/>
                             <AutoVariable width="fill" target="esp.range" label="Max Range" min="0" max="4096"/>
 
                         </List>
@@ -72,6 +139,29 @@
                                     <Option name="Crit only" value="2"/>
                                 </Select>
                             </LabeledObject>
+
+                            <AutoVariable width="fill" target="esp.info.name" label="Name"/>
+                            <AutoVariable width="fill" target="esp.info.distance" label="Distance"/>
+                            <AutoVariable width="fill" target="esp.info.class" label="Class"/>
+                            <AutoVariable width="fill" target="esp.info.conditions" label="Conditions"/>
+                            <AutoVariable width="fill" target="esp.info.ubercharge" label="UberCharge %"/>
+                            <AutoVariable width="fill" target="esp.info.powerup" label="Powerup"/>
+                            <AutoVariable width="fill" target="esp.info.bot-id" label="Bot ID"/>
+                            <AutoVariable width="fill" target="esp.info.weapon" label="Weapon"/>
+                            <AutoVariable width="fill" target="esp.online.enable" label="Online: Enable"/>
+                            <AutoVariable width="fill" target="esp.online.groups" label="Online: Groups"/>
+                            <AutoVariable width="fill" target="esp.online.software" label="Online: Software"/>
+
+                            <AutoVariable width="fill" target="esp.item.enable" label="Enable Item ESP"/>
+                            <AutoVariable width="fill" target="esp.item.ammo" label="Ammo Packs"/>
+                            <AutoVariable width="fill" target="esp.item.health" label="Health Packs"/>
+                            <AutoVariable width="fill" target="esp.item.money" label="MvM Money"/>
+                            <AutoVariable width="fill" target="esp.item.money-red" label="MvM Red Money"/>
+                            <AutoVariable width="fill" target="esp.item.powerup" label="Mannpower Powerups"/>
+                            <AutoVariable width="fill" target="esp.item.spellbook" label="Spellbooks"/>
+                            <AutoVariable width="fill" target="esp.item.weapons" label="HL2:DM Weapons"/>
+                            <AutoVariable width="fill" target="esp.item.adrenaline" label="TF2C Adrenaline"/>
+                            <AutoVariable width="fill" target="esp.item.weapon-spawner" label="TC2C Weapon Spawner"/>
                         </List>
                     </Tab>
                     <Tab name="Glow">
@@ -129,6 +219,23 @@
                             <AutoVariable width="fill" target="chams.show.stickies" label="Stickies"/>
                             <AutoVariable width="fill" target="chams.show.ammoboxes" label="Ammo Boxes"/>
                             <AutoVariable width="fill" target="chams.show.medkits" label="Health Packs"/>
+                        </List>
+                    </Tab>
+                    <Tab name="Radar">
+                        <List width="150">
+                            <AutoVariable width="fill" target="radar.enable" label="Enable"/>
+                            <AutoVariable width="fill" target="radar.enemies-over-teammates" label="Enemies on top"/>
+                            <AutoVariable width="fill" target="radar.healthbar" label="Health bars"/>
+                            <AutoVariable width="fill" target="radar.use-icons" label="Use icons"/>
+                            <AutoVariable width="fill" target="radar.size" label="Size" min="1" max="480"/>
+                            <AutoVariable width="fill" target="radar.icon-size" label="Icon size" min="1" max="48"/>
+                            <AutoVariable width="fill" target="radar.x" label="Radar X"/>
+                            <AutoVariable width="fill" target="radar.y" label="Radar Y"/>
+                            <AutoVariable width="fill" target="radar.zoom" label="Zoom" min="1" max="20"/>
+
+                            <AutoVariable width="fill" target="radar.show.ammo" label="Ammo packs"/>
+                            <AutoVariable width="fill" target="radar.show.health" label="Health packs"/>
+                            <AutoVariable width="fill" target="radar.show.teammates" label="Teammates"/>
                         </List>
                     </Tab>
                 </TabContainer>

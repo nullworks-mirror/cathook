@@ -36,7 +36,7 @@ static settings::Bool extrapolate{ "aimbot.extrapolate", "0" };
 static settings::Int slow_aim{ "aimbot.slow", "0" };
 static settings::Float miss_chance{ "aimbot.miss-chance", "0" };
 
-static settings::Bool projectile_aimbot{ "aimbot.projectile.enabled", "1" };
+static settings::Bool projectile_aimbot{ "aimbot.projectile.enable", "true" };
 static settings::Float proj_gravity{ "aimbot.projectile.gravity", "0" };
 static settings::Float proj_speed{ "aimbot.projectile.speed", "0" };
 static settings::Float huntsman_autoshoot{ "aimbot.projectile.huntsman-autoshoot", "0.5" };
@@ -60,7 +60,7 @@ static settings::Bool buildings_sentry{ "aimbot.target.sentry", "1" };
 static settings::Bool buildings_other{ "aimbot.target.other-buildings", "1" };
 static settings::Bool stickybot{ "aimbot.target.stickybomb", "0" };
 static settings::Bool rageonly{ "aimbot.target.ignore-non-rage", "0" };
-static settings::Int teammates{ "aimbot.target.teammates", "0" };
+static settings::Bool teammates{ "aimbot.target.teammates", "0" };
 
 #if ENABLE_VISUALS
 static settings::Bool fov_draw{ "aimbot.fov-circle.enable", "0" };
