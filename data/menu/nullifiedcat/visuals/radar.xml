@@ -1,4 +1,4 @@
-<Tab name="Radar">
+<Tab name="Radar" padding="4 4 4 4">
     <List width="150">
         <AutoVariable width="fill" target="radar.enable" label="Enable"/>
         <AutoVariable width="fill" target="radar.enemies-over-teammates" label="Enemies on top"/>

@@ -29,29 +29,29 @@
             <LabeledObject width="fill" label="Arrows">
                 <Select target="esp.projectile.arrows">
                     <Option name="Disable" value="0"/>
-                    <Option name="Enemy only" value="1"/>
-                    <Option name="Crit only" value="2"/>
+                    <Option name="Enemy" value="1"/>
+                    <Option name="Crit" value="2"/>
                 </Select>
             </LabeledObject>
             <LabeledObject width="fill" label="Pipes">
                 <Select target="esp.projectile.pipes">
                     <Option name="Disable" value="0"/>
-                    <Option name="Enemy only" value="1"/>
-                    <Option name="Crit only" value="2"/>
+                    <Option name="Enemy" value="1"/>
+                    <Option name="Crit" value="2"/>
                 </Select>
             </LabeledObject>
             <LabeledObject width="fill" label="Rockets">
                 <Select target="esp.projectile.rockets">
                     <Option name="Disable" value="0"/>
-                    <Option name="Enemy only" value="1"/>
-                    <Option name="Crit only" value="2"/>
+                    <Option name="Enemy" value="1"/>
+                    <Option name="Crit" value="2"/>
                 </Select>
             </LabeledObject>
             <LabeledObject width="fill" label="Stickies">
                 <Select target="esp.projectile.stickies">
                     <Option name="Disable" value="0"/>
-                    <Option name="Enemy only" value="1"/>
-                    <Option name="Crit only" value="2"/>
+                    <Option name="Enemy" value="1"/>
+                    <Option name="Crit" value="2"/>
                 </Select>
             </LabeledObject>
 

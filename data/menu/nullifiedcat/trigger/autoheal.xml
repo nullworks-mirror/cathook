@@ -39,7 +39,7 @@
                     <AutoVariable width="fill" target="autoheal.vacc.blast.crit-pop" label="Pop on near crit"/>
                     <AutoVariable width="fill" target="autoheal.vacc.blast.danger-range" label="Danger range" min="0" max="1000"/>
                     <AutoVariable width="fill" target="autoheal.vacc.blast.pop-near-rocket-health" label="Rocket health pop" tooltip="Pop ubercharge if rocket is near and health is less than" min="0" max="450"/>
-                    <AutoVariable width="fill" target="autoheal.vacc.bullet.min-charges" label="Min. charges" min="0" max="4"/>
+                    <AutoVariable width="fill" target="autoheal.vacc.blast.min-charges" label="Min. charges" min="0" max="4"/>
                 </List>
             </Box>
             <Box padding="12 6 6 6" name="Fire" width="content" height="content" y="100" x="170">
@@ -57,6 +57,6 @@
                     </LabeledObject>
                 </List>
             </Box>
-    	</Box>
+        </Box>
     </Box>
 </Tab>

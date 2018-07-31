@@ -148,7 +148,7 @@ void CreateMove()
                     {
                         // Aim at bomb
                         AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(),
-                              current_user_cmd);
+                                  current_user_cmd);
                         // Use silent
                         g_pLocalPlayer->bUseSilentAngles = true;
 

@@ -111,8 +111,8 @@ bool force_crit(IClientEntity *weapon)
     }
     else
         number = lastnumber;
-    logging::Info("Found critical: %d -> %d", command_number,
-                  number);
+    //logging::Info("Found critical: %d -> %d", command_number,
+    //              number);
     lastweapon = weapon->GetModel();
     lastnumber = number;
     if (crit_experimental)

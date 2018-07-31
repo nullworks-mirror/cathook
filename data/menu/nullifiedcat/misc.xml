@@ -1,0 +1,10 @@
+<Tab name="Misc">
+    <TabContainer width="fill" height="fill">
+        <Include path="nullifiedcat/misc/antibackstab.xml"/>
+        <Include path="nullifiedcat/misc/achievement.xml"/>
+        <Include path="nullifiedcat/misc/autodeadringer.xml"/>
+        <Include path="nullifiedcat/misc/announcer.xml"/>
+        <Include path="nullifiedcat/misc/bhop.xml"/>
+        <Include path="nullifiedcat/misc/bptf.xml"/>
+    </TabContainer>
+</Tab>

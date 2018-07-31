@@ -18,8 +18,8 @@
 static settings::Bool enable{ "aimbot.enable", "false" };
 static settings::Button aimkey{ "aimbot.aimkey.button", "<null>" };
 static settings::Int aimkey_mode{ "aimbot.aimkey.mode", "1" };
-static settings::Bool autoshoot{ "aimbot.autoshoot", "0" };
-static settings::Bool autoshoot_disguised{ "aimbot.autoshoot-disguised", "0" };
+static settings::Bool autoshoot{ "aimbot.autoshoot", "1" };
+static settings::Bool autoshoot_disguised{ "aimbot.autoshoot-disguised", "1" };
 static settings::Bool multipoint{ "aimbot.multipoint", "false" };
 static settings::Int hitbox_mode{ "aimbot.hitbox-mode", "0" };
 static settings::Float fov{ "aimbot.fov", "0" };

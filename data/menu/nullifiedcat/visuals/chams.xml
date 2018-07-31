@@ -1,4 +1,4 @@
-<Tab name="Chams">
+<Tab name="Chams" padding="4 4 4 4">
     <List width="150">
         <AutoVariable width="fill" target="chams.enable" label="Enable"/>
         <AutoVariable width="fill" target="chams.legit" label="Legit"/>

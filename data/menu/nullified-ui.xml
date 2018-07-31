@@ -4,10 +4,12 @@
             <Include path="nullifiedcat/aimbot.xml"/>
             <Include path="nullifiedcat/triggerbot.xml"/>
             <Include path="nullifiedcat/antiaim.xml"/>
-            <Include path="nullifiedcat/antibackstab.xml"/>
-            <Include path="nullifiedcat/autoheal.xml"/>
             <Include path="nullifiedcat/chat.xml"/>
+            <Include path="nullifiedcat/crits.xml"/>
             <Include path="nullifiedcat/visuals.xml"/>
+            <Include path="nullifiedcat/catbot.xml"/>
+            <Include path="nullifiedcat/misc.xml"/>
+            <Include path="nullifiedcat/debug.xml"/>
             <Tab name="WIP">
                 <List width="150">
 

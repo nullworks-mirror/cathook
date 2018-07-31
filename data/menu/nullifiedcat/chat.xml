@@ -1,4 +1,4 @@
-<Tab name="Chat">
+<Tab name="Chat" padding="4 4 4 4">
     <Box name="Uber Spam" width="content" height="content" padding="12 6 6 6">
         <List width="150">
             <LabeledObject width="fill" label="Source">
@@ -18,6 +18,27 @@
             <AutoVariable width="fill" target="uberspam.triggers.every-n-percent" label="Every %"/>
 
             <!-- FIXME add button -->
+        </List>
+    </Box>
+    <Box name="Chat log" width="content" height="content" padding="12 6 6 6" y="135">
+        <List width="200">
+            <AutoVariable width="fill" target="chat-log.enable" label="Enable chatlog"/>
+            <AutoVariable width="fill" target="chat-log.no-ipc" label="IPCless"/>
+            <AutoVariable width="fill" target="chat-log.no-spam" label="Anti spam"/>
+        </List>
+    </Box>
+    <Box name="Chat censor" width="content" height="content" padding="12 6 6 6" x="180">
+        <List width="200">
+            <AutoVariable width="fill" target="chat.censor.enable" label="Enable chat censor"/>
+            <AutoVariable width="fill" target="chat.censor.filter" label="Filter"/>
+        </List>
+    </Box>
+    <Box name="Misc" width="content" height="content" padding="12 6 6 6" x="180" y="60">
+        <List width="200">
+            <AutoVariable width="fill" target="chat.clean" label="Clean Chat"/>
+            <AutoVariable width="fill" target="chat.crypto" label="Crypto Chat"/>
+            <AutoVariable width="fill" target="chat.prefix-newlines" label="Newlines" min="0" max="100"/>
+            <AutoVariable width="fill" target="chat.log-events" label="Log events"/>
         </List>
     </Box>
 </Tab>

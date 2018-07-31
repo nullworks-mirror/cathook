@@ -24,7 +24,6 @@
             <AutoVariable width="fill" target="aimbot.auto.spin-up" label="Auto spin-up"/>
             <AutoVariable width="fill" target="aimbot.auto.unzoom" label="Auto unzoom"/>
             <AutoVariable width="fill" target="aimbot.auto.zoom" label="Auto zoom"/>
-            <AutoVariable width="fill" target="aimbot.zoomed-only" label="Zoomed only"/>
             <LabeledObject width="fill" label="Hitbox">
                 <Select target="aimbot.hitbox">
                     <Option name="Head" value="0"/>
@@ -95,6 +94,24 @@
             <AutoVariable width="fill" target="aimbot.target.ignore-vaccinator" label="NOT Vaccinator"/>
             <AutoVariable width="fill" target="aimbot.target.ignore-non-rage" label="Rage only"/>
             <AutoVariable width="fill" target="aimbot.target.other-buildings" label="Other buildings"/>
+        </List>
+    </Box>
+    <Box padding="12 6 6 6" width="content" height="content" name="Backtrack" y="140" x="380">
+        <List width="150">
+            <AutoVariable width="fill" target="backtrack.enable" label="Enable Backtrack"/>
+            <AutoVariable width="fill" target="backtrack.draw" label="Draw Backtrack"/>
+            <AutoVariable width="fill" target="backtrack.latency" label="Fake Latency" min="0" max="1000"/>
+            <LabeledObject width="fill" label="Backtrack Slots">
+                <Select target="backtrack.slots">
+                    <Option name="All" value="0"/>
+                    <Option name="Primary" value="1"/>
+                    <Option name="Secondary" value="2"/>
+                    <Option name="Melee" value="3"/>
+                    <Option name="Primary + Secondary" value="4"/>
+                    <Option name="Primary + Melee" value="5"/>
+                    <Option name="Secondary + Melee" value="6"/>
+                </Select>
+            </LabeledObject>
         </List>
     </Box>
 </Tab>
