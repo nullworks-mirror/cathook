@@ -11,14 +11,13 @@ namespace hacks::tf2::autobackstab
 {
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
+static CatVar silent(CV_SWITCH, "autobackstab_silent", "1", "Silent");
 
-bool canBackstab(CachedEntity *tar)
+bool canBackstab(CachedEntity *tar, float angleY)
 {
-    float _viewangles =
-        NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles).y;
-    float viewangles =
-        (_viewangles > 180) ? _viewangles - 360 : _viewangles;
-    float scr = abs(g_pLocalPlayer->v_OrigViewangles.y - viewangles);
+    float _viewangles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles).y;
+    float viewangles  = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
+    float scr         = abs(angleY - viewangles);
     return (scr <= 90.0f);
 }
 
@@ -30,6 +29,7 @@ void CreateMove()
         return;
     if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
         return;
+    // Get melee range of knife
     int meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     CachedEntity *besttarget = nullptr;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
@@ -40,18 +40,15 @@ void CreateMove()
         if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
             !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
             continue;
-        if (target
-                ->m_vecOrigin() /*target->hitboxes.GetHitbox(spine_3)->center*/
-                .DistTo(g_pLocalPlayer->v_Eye) <= meleeRange)
+        if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
+                g_pLocalPlayer->v_Eye) <= meleeRange)
         {
             if (CE_GOOD(besttarget))
             {
-                if (target
-                        ->m_vecOrigin() /*target->hitboxes.GetHitbox(spine_3)->center*/
-                        .DistTo(g_pLocalPlayer->v_Eye) >
-                    target
-                        ->m_vecOrigin() /* besttarget->hitboxes.GetHitbox(spine_3)->center*/
-                        .DistTo(g_pLocalPlayer->v_Eye))
+                if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
+                        g_pLocalPlayer->v_Eye) >
+                    besttarget->hitboxes.GetHitbox(spine_3)->center.DistTo(
+                        g_pLocalPlayer->v_Eye))
                     besttarget = target;
             }
             else
@@ -60,10 +57,29 @@ void CreateMove()
             }
         }
     }
-    if (CE_GOOD(besttarget) && canBackstab(besttarget))
+    if (CE_GOOD(besttarget))
     {
+        if (canBackstab(besttarget, g_pLocalPlayer->v_OrigViewangles.y))
+        {
         g_pUserCmd->buttons |= IN_ATTACK;
         besttarget = nullptr;
+        return;
+        }
+        else
+        {
+            for (float i = -180.0f; i < 180.0f; i += 30.0f)
+            {
+                if (canBackstab(besttarget, i))
+                {
+                    g_pUserCmd->viewangles.y = i;
+                    g_pUserCmd->buttons |= IN_ATTACK;
+                    besttarget = nullptr;
+                    if (silent)
+                        g_pLocalPlayer->bUseSilentAngles = true;
+                    return;
+                }
+            }
+        }
     }
 }
 }
