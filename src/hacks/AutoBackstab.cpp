@@ -13,12 +13,50 @@ static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
 static CatVar silent(CV_SWITCH, "autobackstab_silent", "1", "Silent");
 
-bool canBackstab(CachedEntity *tar, float angleY)
+
+void hitEntity(int *result_eindex, Vector *result_pos, QAngle angle)
 {
-    float _viewangles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles).y;
-    float viewangles  = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
-    float scr         = abs(angleY - viewangles);
-    return (scr <= 90.0f);
+    Ray_t ray;
+    Vector forward;
+    float sp, sy, cp, cy;
+    trace_t trace;
+
+    trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+    sy        = sinf(DEG2RAD(angle[1]));
+    cy        = cosf(DEG2RAD(angle[1]));
+    sp        = sinf(DEG2RAD(angle[0]));
+    cp        = cosf(DEG2RAD(angle[0]));
+    forward.x = cp * cy;
+    forward.y = cp * sy;
+    forward.z = -sp;
+    forward   = forward * 8192.0f + g_pLocalPlayer->v_Eye;
+    ray.Init(g_pLocalPlayer->v_Eye, forward);
+    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);
+    if (result_pos)
+        *result_pos = trace.endpos;
+    if (result_eindex)
+    {
+        *result_eindex = 0;
+    }
+    if (trace.m_pEnt && result_eindex)
+    {
+        *result_eindex = ((IClientEntity *) (trace.m_pEnt))->entindex();
+    }
+}
+
+
+bool canBackstab(CachedEntity *tar, Vector angle)
+{
+    Vector targetAngle = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
+    if (fabsf(angle.y - targetAngle.y) < 90)
+    {
+        int IDX;
+        Vector hitLoc;
+        hitEntity(&IDX, &hitLoc, QAngle(angle.x, angle.y, angle.z));
+        if (IDX == tar->m_IDX)
+            return true;
+    }
+    return false;
 }
 
 void CreateMove()
@@ -59,7 +97,8 @@ void CreateMove()
     }
     if (CE_GOOD(besttarget))
     {
-        if (canBackstab(besttarget, g_pLocalPlayer->v_OrigViewangles.y))
+        Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
+        if (canBackstab(besttarget, angle))
         {
         g_pUserCmd->buttons |= IN_ATTACK;
         besttarget = nullptr;
@@ -67,9 +106,11 @@ void CreateMove()
         }
         else
         {
-            for (float i = -180.0f; i < 180.0f; i += 30.0f)
+
+            for (float i = -180.0f; i < 180.0f; i += 5.0f)
             {
-                if (canBackstab(besttarget, i))
+                angle.y = i;
+                if (canBackstab(besttarget, angle))
                 {
                     g_pUserCmd->viewangles.y = i;
                     g_pUserCmd->buttons |= IN_ATTACK;
