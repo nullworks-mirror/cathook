@@ -14,6 +14,8 @@ static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
 static CatVar silent(CV_SWITCH, "autobackstab_silent", "1", "Silent");
 
+int checkNextTick = -1;
+
 void traceEntity(int *result_eindex, Vector *result_pos, QAngle angle,
                  Vector loc)
 {
@@ -56,8 +58,10 @@ bool canBackstab(CachedEntity *tar, Vector angle, Vector loc, Vector hitboxLoc)
         traceEntity(&IDX, &hitLoc, QAngle(angle.x, angle.y, angle.z), loc);
         if (IDX == tar->m_IDX)
         {
-            if (loc.DistTo(hitboxLoc) < meleeRange)
+            if (loc.DistTo(hitboxLoc) <= meleeRange)
                 return true;
+            else
+                checkNextTick = tar->m_IDX;
         }
     }
     return false;
@@ -71,8 +75,11 @@ void CreateMove()
         return;
     if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
         return;
-    // Get melee range of knife
     CachedEntity *besttarget = nullptr;
+
+    //Check if we need to check a player again. We do this because our backstab range may be different after we have rotated
+    if (checkNextTick == -1)
+    {
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *target = ENTITY(i);
@@ -98,22 +105,20 @@ void CreateMove()
             }
         }
     }
+    }
+    else
+    {
+        // If we need to check a player again, set besttarget to the idx of the player
+        besttarget = ENTITY(checkNextTick);
+        checkNextTick = -1;
+    }
     if (CE_GOOD(besttarget))
     {
         Vector hitboxLoc =
             besttarget->hitboxes.GetHitbox(hacks::shared::aimbot::ClosestHitbox(besttarget))
                 ->center;
         Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
-        if (canBackstab(besttarget, angle, g_pLocalPlayer->v_Eye, hitboxLoc))
-        {
-            g_pUserCmd->buttons |= IN_ATTACK;
-            besttarget = nullptr;
-            return;
-        }
-        else
-        {
-
-            for (float i = -180.0f; i < 180.0f; i += 1.0f)
+            for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 1.0f)
             {
                 // Get angles
                 Vector tr = (hitboxLoc - g_pLocalPlayer->v_Eye);
@@ -122,7 +127,6 @@ void CreateMove()
                 // Clamping is important
                 fClampAngle(xAngle);
                 angle.x                = xAngle.x;
-                angle.y = i;
                 if (canBackstab(besttarget, angle, g_pLocalPlayer->v_Eye, hitboxLoc))
                 {
                     g_pUserCmd->viewangles = angle;
@@ -132,7 +136,6 @@ void CreateMove()
                         g_pLocalPlayer->bUseSilentAngles = true;
                     return;
                 }
-            }
         }
     }
 }
