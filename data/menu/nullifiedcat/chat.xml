@@ -33,12 +33,41 @@
             <AutoVariable width="fill" target="chat.censor.filter" label="Filter"/>
         </List>
     </Box>
-    <Box name="Misc" width="content" height="content" padding="12 6 6 6" x="180" y="60">
+    <Box name="Misc" width="content" height="content" padding="12 6 6 6" x="180" y="50">
         <List width="200">
             <AutoVariable width="fill" target="chat.clean" label="Clean Chat"/>
             <AutoVariable width="fill" target="chat.crypto" label="Crypto Chat"/>
             <AutoVariable width="fill" target="chat.prefix-newlines" label="Newlines" min="0" max="100"/>
             <AutoVariable width="fill" target="chat.log-events" label="Log events"/>
+        </List>
+    </Box>
+    <Box name="Killsay and Chatspam" width="content" height="content" padding="12 6 6 6" y="135" x="220">
+        <List width="200">
+            <AutoVariable width="fill" target="killsay.file" label="Killsay file"/>
+            <LabeledObject width="fill" label="Killsay Mode">
+                <Select target="killsay.mode">
+                    <Option name="Disable" value="0"/>
+                    <Option name="Custom" value="1"/>
+                    <Option name="Default" value="2"/>
+                    <Option name="NCC - Offensive" value="3"/>
+                    <Option name="NCC - MLG" value="4"/>
+                </Select>
+            </LabeledObject>
+            <AutoVariable width="fill" target="spam.filename" label="Spam file"/>
+            <AutoVariable width="fill" target="spam.delay" label="Spam delay"/>
+            <AutoVariable width="fill" target="spam.random" label="Random"/>
+            <LabeledObject width="fill" label="Spam Mode">
+                <Select target="spam.source">
+                    <Option name="Disable" value="0"/>
+                    <Option name="Custom" value="1"/>
+                    <Option name="Default" value="2"/>
+                    <Option name="Lennyfaces" value="3"/>
+                    <Option name="Newlines" value="4"/>
+                    <Option name="Nullcore" value="5"/>
+                    <Option name="Lmaobox" value="6"/>
+                    <Option name="Lithium" value="7"/>
+                </Select>
+            </LabeledObject>
         </List>
     </Box>
 </Tab>

@@ -19,7 +19,6 @@ static float old_nightmode{ 0.0f };
 namespace hooked_methods
 {
 #include "reclasses.hpp"
-#include "C_TEFireBullets.hpp"
 DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
                      ClientFrameStage_t stage)
 {
@@ -93,14 +92,24 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
             ipc::UpdateServerAddress();
 #endif
         }
-        C_TEFireBullets *fire = C_TEFireBullets::GTEFireBullets();
-        if (fire && !hooks::IsHooked((void *)fire))
-        {
-        	hooks::firebullets.Set(fire);
-        	hooks::firebullets.HookMethod(HOOK_ARGS(PreDataUpdate));
-        	hooks::firebullets.Apply();
-        }
     }
+    /*if (hacks::tf2::seedprediction::prediction && CE_GOOD(LOCAL_E)) {
+        C_BaseTempEntity *fire = C_TEFireBullets::GTEFireBullets();
+        while (fire) {
+            logging::Info("0x%08X", (uintptr_t) fire);
+            C_TEFireBullets *fire2 = nullptr;
+            if (!fire->IsDormant() && fire->GetClientNetworkable()->GetClientClass() && fire->GetClientNetworkable()->GetClientClass()->m_ClassID == CL_CLASS(CTEFireBullets))
+                fire2 = (C_TEFireBullets *) fire;
+            if (fire2 && !hooks::IsHooked((void *) fire2)) {
+                hooks::firebullets.Set(fire2);
+                hooks::firebullets.HookMethod(HOOK_ARGS(PreDataUpdate));
+                hooks::firebullets.Apply();
+            }
+            if (fire2)
+                logging::Info("%d", fire2->m_iSeed());
+            fire = fire->m_pNext;
+        }
+    }*/
     if (isHackActive() && !g_Settings.bInvalid && stage == FRAME_RENDER_START)
     {
         IF_GAME(IsTF())

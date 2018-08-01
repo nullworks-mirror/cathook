@@ -8,6 +8,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 #include "MiscTemporary.hpp"
+#include "SeedPrediction.hpp"
 #include <link.h>
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
@@ -16,7 +17,7 @@
 #include "HookedMethods.hpp"
 
 static settings::Bool minigun_jump{ "misc.minigun-jump-tf2c", "false" };
-static settings::Button roll_speedhack{ "misc.roll-speedhack", "false" };
+static settings::Bool roll_speedhack{ "misc.roll-speedhack", "false" };
 static settings::Bool engine_pred{ "misc.engine-prediction", "false" };
 static settings::Bool debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int semiauto{ "misc.semi-auto", "0" };
@@ -418,7 +419,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         speedapplied = false;
-        if (roll_speedhack.isKeyDown() &&
+        if (roll_speedhack && cmd->buttons & IN_DUCK &&
             !(cmd->buttons & IN_ATTACK))
         {
             speed = cmd->forwardmove;

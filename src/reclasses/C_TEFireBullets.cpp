@@ -7,13 +7,11 @@
 #include "reclasses.hpp"
 #pragma once
 
-C_TEFireBullets *C_TEFireBullets::GTEFireBullets()
+C_BaseTempEntity *C_TEFireBullets::GTEFireBullets()
 {
-	typedef C_TEFireBullets *(*GTEFireBullets_t)();
-	static uintptr_t addr1 = gSignatures.GetClientSignature("55 B8 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 55 89 E5 56 53 83 EC ? C7 45");
-	GTEFireBullets_t GTEFireBullets_fn = GTEFireBullets_t(addr1);
-
-	return GTEFireBullets_fn();
+    static uintptr_t fireaddr = (gSignatures.GetClientSignature("C7 40 ? ? ? ? ? C7 40 ? ? ? ? ? A3 ? ? ? ? 89 50") - 0x4);
+    C_BaseTempEntity * fire = *(C_BaseTempEntity **)fireaddr;
+	return fire;
 }
 int C_TEFireBullets::m_iSeed()
 {

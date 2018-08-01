@@ -3,6 +3,7 @@
         <List width="200">
             <AutoVariable width="fill" target="autojoin.auto-queue" label="Auto Queue"/>
             <AutoVariable width="fill" target="autoqueue.mode" label="Autoqueue Mode" min="0" max="12"/>
+            <AutoVariable width="fill" target="hack.requeue-on-kick" label="Requeue on kick"/>
             <AutoVariable width="fill" target="autotaunt.enable" label="Autotaunt enabled"/>
             <AutoVariable width="fill" target="autotaunt.chance" label="Autotaunt chance" min="0" max="100"/>
             <LabeledObject width="fill" label="Autojoin Class">
@@ -22,7 +23,7 @@
             <AutoVariable width="fill" target="autojoin.team" label="Autojoin Team" min="0" max="1"/>
         </List>
     </Box>
-    <Box name="CBU" width="content" height="content" padding="12 6 6 6" y="120">
+    <Box name="CBU" width="content" height="content" padding="12 6 6 6" y="130">
         <List width="200">
             <AutoVariable width="fill" target="cat-bot.enable" label="Enable CBU"/>
             <AutoVariable width="fill" target="cat-bot.abandon-if.bots-gte" label="Abandon if bots gte"/>

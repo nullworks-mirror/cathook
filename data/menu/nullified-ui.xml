@@ -8,13 +8,10 @@
             <Include path="nullifiedcat/crits.xml"/>
             <Include path="nullifiedcat/visuals.xml"/>
             <Include path="nullifiedcat/catbot.xml"/>
+            <Include path="nullifiedcat/spyalert.xml"/>
             <Include path="nullifiedcat/misc.xml"/>
+            <Include path="nullifiedcat/hackinfo.xml"/>
             <Include path="nullifiedcat/debug.xml"/>
-            <Tab name="WIP">
-                <List width="150">
-
-                </List>
-            </Tab>
         </TabContainer>
     </Window>
 </ElementGroup>
