@@ -7,14 +7,15 @@
 
 #include "common.hpp"
 #include "hacks/Backtrack.hpp"
+#include "hacks/Aimbot.hpp"
 namespace hacks::tf2::autobackstab
 {
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
 static CatVar silent(CV_SWITCH, "autobackstab_silent", "1", "Silent");
 
-
-void hitEntity(int *result_eindex, Vector *result_pos, QAngle angle)
+void traceEntity(int *result_eindex, Vector *result_pos, QAngle angle,
+                 Vector loc)
 {
     Ray_t ray;
     Vector forward;
@@ -29,9 +30,9 @@ void hitEntity(int *result_eindex, Vector *result_pos, QAngle angle)
     forward.x = cp * cy;
     forward.y = cp * sy;
     forward.z = -sp;
-    forward   = forward * 8192.0f + g_pLocalPlayer->v_Eye;
-    ray.Init(g_pLocalPlayer->v_Eye, forward);
-    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);
+    forward   = forward * 8192.0f + loc;
+    ray.Init(loc, forward);
+    g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
     if (result_pos)
         *result_pos = trace.endpos;
     if (result_eindex)
@@ -44,17 +45,20 @@ void hitEntity(int *result_eindex, Vector *result_pos, QAngle angle)
     }
 }
 
-
-bool canBackstab(CachedEntity *tar, Vector angle)
+bool canBackstab(CachedEntity *tar, Vector angle, Vector loc, Vector hitboxLoc)
 {
+    float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     Vector targetAngle = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
-    if (fabsf(angle.y - targetAngle.y) < 90)
+    if (fabsf(angle.y - targetAngle.y) < 85)
     {
         int IDX;
         Vector hitLoc;
-        hitEntity(&IDX, &hitLoc, QAngle(angle.x, angle.y, angle.z));
+        traceEntity(&IDX, &hitLoc, QAngle(angle.x, angle.y, angle.z), loc);
         if (IDX == tar->m_IDX)
-            return true;
+        {
+            if (loc.DistTo(hitboxLoc) < meleeRange)
+                return true;
+        }
     }
     return false;
 }
@@ -68,7 +72,6 @@ void CreateMove()
     if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
         return;
     // Get melee range of knife
-    int meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     CachedEntity *besttarget = nullptr;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
@@ -79,12 +82,12 @@ void CreateMove()
             !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
             continue;
         if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
-                g_pLocalPlayer->v_Eye) <= meleeRange)
+                g_pLocalPlayer->v_Eye) <= 300.0f)
         {
             if (CE_GOOD(besttarget))
             {
                 if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
-                        g_pLocalPlayer->v_Eye) >
+                        g_pLocalPlayer->v_Eye) <
                     besttarget->hitboxes.GetHitbox(spine_3)->center.DistTo(
                         g_pLocalPlayer->v_Eye))
                     besttarget = target;
@@ -97,22 +100,32 @@ void CreateMove()
     }
     if (CE_GOOD(besttarget))
     {
+        Vector hitboxLoc =
+            besttarget->hitboxes.GetHitbox(hacks::shared::aimbot::ClosestHitbox(besttarget))
+                ->center;
         Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
-        if (canBackstab(besttarget, angle))
+        if (canBackstab(besttarget, angle, g_pLocalPlayer->v_Eye, hitboxLoc))
         {
-        g_pUserCmd->buttons |= IN_ATTACK;
-        besttarget = nullptr;
-        return;
+            g_pUserCmd->buttons |= IN_ATTACK;
+            besttarget = nullptr;
+            return;
         }
         else
         {
 
-            for (float i = -180.0f; i < 180.0f; i += 5.0f)
+            for (float i = -180.0f; i < 180.0f; i += 1.0f)
             {
+                // Get angles
+                Vector tr = (hitboxLoc - g_pLocalPlayer->v_Eye);
+                Vector xAngle;
+                VectorAngles(tr, xAngle);
+                // Clamping is important
+                fClampAngle(xAngle);
+                angle.x                = xAngle.x;
                 angle.y = i;
-                if (canBackstab(besttarget, angle))
+                if (canBackstab(besttarget, angle, g_pLocalPlayer->v_Eye, hitboxLoc))
                 {
-                    g_pUserCmd->viewangles.y = i;
+                    g_pUserCmd->viewangles = angle;
                     g_pUserCmd->buttons |= IN_ATTACK;
                     besttarget = nullptr;
                     if (silent)
@@ -123,4 +136,4 @@ void CreateMove()
         }
     }
 }
-}
+} // namespace hacks::tf2::autobackstab
