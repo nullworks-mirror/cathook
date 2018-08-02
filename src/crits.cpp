@@ -115,7 +115,7 @@ bool force_crit(IClientEntity *weapon)
     //              number);
     lastweapon = weapon->GetModel();
     lastnumber = number;
-    if (crit_experimental)
+    if (crit_experimental && GetWeaponMode() != weapon_melee)
     {
         if (!crit_legiter)
         {

@@ -110,11 +110,12 @@ void Event(KeyValues *event)
         {
             CachedEntity *victim   = ENTITY(vid);
             CachedEntity *attacker = ENTITY(eid);
-            if (victim->m_vecOrigin().DistTo(attacker->m_vecOrigin()) > 250)
-            {
-                data_table[eid - 1].check_timer = 1;
-                data_table[eid - 1].last_weapon = event->GetInt("weaponid");
-            }
+            if (CE_GOOD(victim) && CE_GOOD(attacker))
+                if (victim->m_vecOrigin().DistTo(attacker->m_vecOrigin()) > 250)
+                {
+                    data_table[eid - 1].check_timer = 1;
+                    data_table[eid - 1].last_weapon = event->GetInt("weaponid");
+                }
         }
     }
 }
