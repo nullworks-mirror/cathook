@@ -8,9 +8,11 @@
 #include "reclasses.hpp"
 #include "C_TEFireBullets.hpp"
 #include "common.hpp"
+#include <settings/Bool.hpp>
 #pragma once
 namespace hacks::tf2::seedprediction
 {
+	extern settings::Bool prediction;
 	void handleFireBullets(C_TEFireBullets *);
 	struct seedstruct
 	{

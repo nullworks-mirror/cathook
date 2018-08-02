@@ -12,6 +12,8 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_video.h>
 #include <SDLHooks.hpp>
+#include <menu/GuiInterface.hpp>
+
 #if EXTERNAL_DRAWING
 #include "xoverlay.h"
 #endif
@@ -166,12 +168,15 @@ void draw::InitGL()
     glewInit();
     glez::init(draw::width, draw::height);
 #endif
+
+#if ENABLE_GUI
+    gui::init();
+#endif
 }
 
 void draw::BeginGL()
 {
     glColor3f(1, 1, 1);
-    PROF_SECTION(DRAWEX_draw_begin);
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
     {
@@ -183,6 +188,8 @@ void draw::BeginGL()
         glActiveTexture(GL_TEXTURE0);
         PROF_SECTION(draw_begin__glez_begin);
         glez::begin();
+        glDisable(GL_FRAMEBUFFER_SRGB);
+        PROF_SECTION(DRAWEX_draw_begin);
     }
 }
 
@@ -191,6 +198,7 @@ void draw::EndGL()
     PROF_SECTION(DRAWEX_draw_end);
     {
         PROF_SECTION(draw_end__glez_end);
+        glEnable(GL_FRAMEBUFFER_SRGB);
         glez::end();
     }
 #if EXTERNAL_DRAWING

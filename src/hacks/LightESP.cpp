@@ -1,11 +1,12 @@
 #include <glez/draw.hpp>
+#include <settings/Bool.hpp>
 #include "hacks/LightESP.hpp"
+
+static settings::Bool enable{ "lightesp.enable", "false" };
 
 namespace hacks::shared::lightesp
 {
 
-static CatVar enable(CV_SWITCH, "lightesp_enabled", "0", "Enable LightESP",
-                     "Lightweight ESP. Only shows head.");
 Vector hitp[32];
 Vector minp[32];
 Vector maxp[32];

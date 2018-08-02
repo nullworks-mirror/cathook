@@ -12,7 +12,6 @@
 
 class CachedEntity;
 class Vector;
-class CatVar;
 class IClientEntity;
 class CatEnum;
 class VMatrix;

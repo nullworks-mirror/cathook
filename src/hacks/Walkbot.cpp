@@ -13,6 +13,22 @@
 #include <sys/stat.h>
 #include <hacks/hacklist.hpp>
 #include <glez/draw.hpp>
+#include <settings/Bool.hpp>
+
+static settings::Button recording_key{ "walkbot.recording-key", "<null>" };
+
+static settings::Bool draw_info{ "walkbot.draw.info", "true" };
+static settings::Bool draw_path{ "walkbot.draw.path", "true" };
+static settings::Bool draw_nodes{ "walkbot.draw.nodes", "true" };
+static settings::Bool draw_indices{ "walkbot.draw.indices", "false" };
+static settings::Bool draw_connection_flags{ "walkbot.draw.connection-flags", "true" };
+
+static settings::Bool free_move{ "walkbot.free-move", "true" };
+static settings::Int spawn_distance{ "walkbot.edit.node-spawn-distance", "54" };
+static settings::Int max_distance{ "walkbot.node-max-distance", "100" };
+static settings::Int reach_distance{ "walkbot.node-reach-distance", "32" };
+static settings::Int force_slot{ "walkbot.force-slot", "0" };
+static settings::Bool leave_if_empty{ "walkbot.leave-if-empty", "false" };
 
 namespace hacks::shared::walkbot
 {
@@ -196,7 +212,7 @@ walkbot_node_s *closest()
 // Global state
 EWalkbotState state{ WB_DISABLED };
 
-// g_pUserCmd->buttons state when last node was recorded
+// current_user_cmd->buttons state when last node was recorded
 int last_node_buttons{ 0 };
 
 // Set to true when bot is moving to nearest node after dying/losing its active
@@ -447,29 +463,6 @@ index_t CreateNode(const Vector &xyz)
     return node;
 }
 
-static CatVar active_recording(CV_SWITCH, "wb_recording", "0", "Do recording",
-                               "Use BindToggle with this");
-static CatVar draw_info(CV_SWITCH, "wb_info", "1", "Walkbot info");
-static CatVar draw_path(CV_SWITCH, "wb_path", "1", "Walkbot path");
-static CatVar draw_nodes(CV_SWITCH, "wb_nodes", "1", "Walkbot nodes");
-static CatVar draw_indices(CV_SWITCH, "wb_indices", "0", "Node indices");
-static CatVar free_move(CV_SWITCH, "wb_freemove", "1", "Allow free movement",
-                        "Allow free movement while pressing movement keys");
-static CatVar spawn_distance(CV_FLOAT, "wb_node_spawn_distance", "54",
-                             "Node spawn distance");
-static CatVar max_distance(CV_FLOAT, "wb_replay_max_distance", "100",
-                           "Max distance to node when replaying");
-static CatVar reach_distance(
-    CV_FLOAT, "wb_replay_reach_distance", "32",
-    "Distance where bot can be considered 'stepping' on the node");
-static CatVar draw_connection_flags(CV_SWITCH, "wb_connection_flags", "1",
-                                    "Connection flags");
-static CatVar force_slot(CV_INT, "wb_force_slot", "1", "Force slot",
-                         "Walkbot will always select weapon in this slot");
-static CatVar leave_if_empty(CV_SWITCH, "wb_leave_if_empty", "0",
-                             "Leave if no walkbot",
-                             "Leave game if there is no walkbot map");
-
 CatCommand c_start_recording("wb_record", "Start recording",
                              []() { state::state = WB_RECORDING; });
 CatCommand c_start_editing("wb_edit", "Start editing",
@@ -523,7 +516,7 @@ CatCommand c_delete_node("wb_delete", "Delete node",
 CatCommand c_create_node("wb_create", "Create node", []() {
     index_t node = CreateNode(g_pLocalPlayer->v_Origin);
     auto &n      = state::nodes[node];
-    if (g_pUserCmd->buttons & IN_DUCK)
+    if (current_user_cmd->buttons & IN_DUCK)
         n.flags |= NF_DUCK;
     if (state::node_good(state::closest_node))
     {
@@ -889,14 +882,14 @@ index_t SelectNextNode()
                         // Release Sticky if > chargetime
                         if ((chargetime >= 0.1f) && begansticky > 3)
                         {
-                            g_pUserCmd->buttons &= ~IN_ATTACK;
+                            current_user_cmd->buttons &= ~IN_ATTACK;
                             hacks::shared::antiaim::SetSafeSpace(3);
                             begansticky = 0;
                         }
                         // Else just keep charging
                         else
                         {
-                            g_pUserCmd->buttons |= IN_ATTACK;
+                            current_user_cmd->buttons |= IN_ATTACK;
                             begansticky++;
                         }
                     }
@@ -930,9 +923,9 @@ void UpdateSlot()
         if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
         {
             int slot = re::C_BaseCombatWeapon::GetSlot(weapon);
-            if (slot != int(force_slot) - 1)
+            if (slot != *force_slot - 1)
             {
-                hack::ExecuteCommand(format("slot", int(force_slot)));
+                hack::ExecuteCommand(format("slot", *force_slot));
             }
         }
     }
@@ -942,7 +935,7 @@ void UpdateWalker()
     free_move_used = false;
     if (free_move)
     {
-        if (g_pUserCmd->forwardmove != 0.0f or g_pUserCmd->sidemove != 0.0f)
+        if (current_user_cmd->forwardmove != 0.0f or current_user_cmd->sidemove != 0.0f)
         {
             free_move_used = true;
             return;
@@ -952,7 +945,7 @@ void UpdateWalker()
     static int jump_ticks = 0;
     if (jump_ticks > 0)
     {
-        g_pUserCmd->buttons |= IN_JUMP;
+        current_user_cmd->buttons |= IN_JUMP;
         jump_ticks--;
     }
     bool timeout = std::chrono::duration_cast<std::chrono::seconds>(
@@ -969,15 +962,15 @@ void UpdateWalker()
     {
         auto &l = state::nodes[state::last_node];
         if (l.flags & NF_DUCK)
-            g_pUserCmd->buttons |= IN_DUCK;
+            current_user_cmd->buttons |= IN_DUCK;
     }
     float dist = distance_2d(n.xyz());
-    if (dist > float(max_distance))
+    if (dist > *max_distance)
     {
         state::active_node = FindNearestNode(true);
         state::recovery    = true;
     }
-    if (dist < float(reach_distance))
+    if (dist < *reach_distance)
     {
         state::recovery    = false;
         index_t last       = state::active_node;
@@ -988,8 +981,8 @@ void UpdateWalker()
         {
             if (state::nodes[state::active_node].flags & NF_JUMP)
             {
-                g_pUserCmd->buttons |= IN_DUCK;
-                g_pUserCmd->buttons |= IN_JUMP;
+                current_user_cmd->buttons |= IN_DUCK;
+                current_user_cmd->buttons |= IN_JUMP;
                 jump_ticks = 6;
             }
         }
@@ -1009,17 +1002,17 @@ bool ShouldSpawnNode()
         return true;
 
     bool was_jumping = state::last_node_buttons & IN_JUMP;
-    bool is_jumping  = g_pUserCmd->buttons & IN_JUMP;
+    bool is_jumping  = current_user_cmd->buttons & IN_JUMP;
 
     if (was_jumping != is_jumping and is_jumping)
         return true;
 
-    if ((state::last_node_buttons & IN_DUCK) != (g_pUserCmd->buttons & IN_DUCK))
+    if ((state::last_node_buttons & IN_DUCK) != (current_user_cmd->buttons & IN_DUCK))
         return true;
 
     auto &node = state::nodes[state::active_node];
 
-    if (distance_2d(node.xyz()) > float(spawn_distance))
+    if (distance_2d(node.xyz()) > *spawn_distance)
     {
         return true;
     }
@@ -1031,9 +1024,9 @@ void RecordNode()
 {
     index_t node = CreateNode(g_pLocalPlayer->v_Origin);
     auto &n      = state::nodes[node];
-    if (g_pUserCmd->buttons & IN_DUCK)
+    if (current_user_cmd->buttons & IN_DUCK)
         n.flags |= NF_DUCK;
-    if (g_pUserCmd->buttons & IN_JUMP)
+    if (current_user_cmd->buttons & IN_JUMP)
         n.flags |= NF_JUMP;
     if (state::node_good(state::active_node))
     {
@@ -1043,7 +1036,7 @@ void RecordNode()
         logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)",
                       node, state::active_node, c.x, c.y, c.z);
     }
-    state::last_node_buttons = g_pUserCmd->buttons;
+    state::last_node_buttons = current_user_cmd->buttons;
     state::active_node       = node;
 }
 
@@ -1228,7 +1221,7 @@ void Move()
     case WB_RECORDING:
     {
         UpdateClosestNode();
-        if (active_recording and ShouldSpawnNode())
+        if (recording_key.isKeyDown() and ShouldSpawnNode())
         {
             RecordNode();
         }
@@ -1259,7 +1252,7 @@ void Move()
                 }
             }
         }
-        prevlvlname = g_IEngine->GetLevelName();
+        /*prevlvlname = g_IEngine->GetLevelName();
         std::string prvlvlname(prevlvlname);
         if (boost::contains(prvlvlname, "pl_") ||
             boost::contains(prvlvlname, "cp_"))
@@ -1280,7 +1273,7 @@ void Move()
                 hacks::shared::followbot::roambot    = 0;
                 hacks::shared::followbot::followcart = false;
             }
-        }
+        }*/
         if (nodes.size() == 0)
             return;
         if (force_slot)

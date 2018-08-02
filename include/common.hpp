@@ -56,7 +56,6 @@
 #include <visual/atlas.hpp>
 #include <visual/EffectChams.hpp>
 #include <visual/drawmgr.hpp>
-#include "visual/menu/compatlayer.hpp"
 #endif
 
 #include "core/profiler.hpp"
@@ -104,7 +103,7 @@
 #include "copypasted/CSignature.h"
 
 #if ENABLE_GUI
-#include "visual/menu/GUI.h"
+// FIXME add gui
 #endif
 
 #include <core/sdk.hpp>

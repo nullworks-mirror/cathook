@@ -10,7 +10,7 @@ class C_TEFireBullets : public C_BaseTempEntity
 {
 public:
 	C_TEFireBullets() = delete;
-	static C_TEFireBullets *GTEFireBullets();
+	static C_BaseTempEntity *GTEFireBullets();
 
 public:
 	int m_iSeed();

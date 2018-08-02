@@ -6,7 +6,12 @@
  */
 
 #include <glez/draw.hpp>
+#include <settings/Bool.hpp>
 #include "common.hpp"
+
+static settings::Bool debug_enginepred{ "debug.engine-pred-others", "false" };
+static settings::Bool debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
+static settings::Bool debug_pp_rockettimeping{ "debug.pp-rocket-time-ping", "false" };
 
 // TODO there is a Vector() object created each call.
 
@@ -46,8 +51,6 @@ std::vector<std::vector<Vector>> predicted_players{};
 
 int predicted_player_count = 0;
 
-static CatVar debug_enginepred(CV_SWITCH, "debug_engine_pred_others", "0",
-                               "DO NOT USE - MOVEMENT");
 
 void Prediction_CreateMove()
 {
@@ -165,7 +168,7 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     Vector old_origin = entity->m_vecOrigin();
     NET_VECTOR(ent, 0x354) = entity->m_vecOrigin();
 
-    //*g_PredictionRandomSeed = MD5_PseudoRandom(g_pUserCmd->command_number) &
+    //*g_PredictionRandomSeed = MD5_PseudoRandom(current_user_cmd->command_number) &
     // 0x7FFFFFFF;
     g_IGameMovement->StartTrackPredictionErrors(
         reinterpret_cast<CBasePlayer *>(ent));
@@ -252,11 +255,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
     return result;
 }
 
-static CatVar debug_pp_extrapolate(
-    CV_SWITCH, "debug_pp_extrapolate", "0",
-    "Extrapolate entity position when predicting projectiles");
-static CatVar debug_pp_rockettimeping(CV_SWITCH, "debug_pp_rocket_time_ping",
-                                      "0", "Compensate for ping in pp");
+
 
 Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
                             float gravitymod, float entgmod)

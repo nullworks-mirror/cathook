@@ -8,6 +8,9 @@
 #include "common.hpp"
 
 #include <sys/mman.h>
+#include <settings/Bool.hpp>
+
+static settings::Bool tcm{ "debug.tcm", "true" };
 
 std::vector<ConVar *> &RegisteredVarsList()
 {
@@ -52,8 +55,7 @@ void BeginConVars()
 
 void EndConVars()
 {
-    logging::Info("Registering ConVars");
-    RegisterCatVars();
+    logging::Info("Registering CatCommands");
     RegisterCatCommands();
     ConVar_Register();
 
@@ -102,8 +104,8 @@ void WalkTo(const Vector &vector)
     // Calculate how to get to a vector
     auto result = ComputeMove(LOCAL_E->m_vecOrigin(), vector);
     // Push our move to usercmd
-    g_pUserCmd->forwardmove = result.first;
-    g_pUserCmd->sidemove    = result.second;
+    current_user_cmd->forwardmove = result.first;
+    current_user_cmd->sidemove    = result.second;
 }
 
 // Function to get the corner location that a vischeck to an entity is possible
@@ -444,7 +446,7 @@ std::pair<float, float> ComputeMove(const Vector &a, const Vector &b)
     float speed = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
     Vector ang;
     VectorAngles(vsilent, ang);
-    float yaw = DEG2RAD(ang.y - g_pUserCmd->viewangles.y);
+    float yaw = DEG2RAD(ang.y - current_user_cmd->viewangles.y);
     return { cos(yaw) * 450, -sin(yaw) * 450 };
 }
 
@@ -723,8 +725,6 @@ bool IsEntityVisible(CachedEntity *entity, int hb)
         return entity->hitboxes.VisibilityCheck(hb);
     }
 }
-
-static CatVar tcm(CV_SWITCH, "debug_tcm", "1", "TCM");
 
 std::mutex trace_lock;
 bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos)

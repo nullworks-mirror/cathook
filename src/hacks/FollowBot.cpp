@@ -8,25 +8,26 @@
 
 #include "common.hpp"
 #include <hacks/FollowBot.hpp>
-#include <hacks/LagExploit.hpp>
 #include <glez/draw.hpp>
+#include <settings/Bool.hpp>
+
+static settings::Bool enable{ "follow-bot.enable", "false" };
+static settings::Bool roambot{ "follow-bot.roaming", "false" };
+static settings::Bool draw_crumb{ "follow-bot.draw-crumbs", "false" };
+static settings::Float follow_distance{ "follow-bot.distance", "175" };
+static settings::Float follow_activation{ "follow-bot.max-range", "1000" };
+static settings::Bool mimic_slot{ "follow-bot.mimic-slot", "false" };
+static settings::Bool always_medigun{ "follow-bot.always-medigun", "false" };
+static settings::Bool sync_taunt{ "follow-bot.taunt-sync", "false" };
+static settings::Bool change{ "follow-bot.change-roaming-target", "false" };
+static settings::Bool autojump{ "follow-bot.jump-if-stuck", "true" };
+static settings::Bool afk{ "follow-bot.switch-afk", "true" };
+static settings::Int afktime{ "follow-bot.afk-time", "15000" };
+static settings::Bool corneractivate{ "follow-bot.corners", "true" };
 
 namespace hacks::shared::followbot
 {
 
-CatVar followbot(CV_SWITCH, "fb", "0", "Followbot Switch",
-                 "Set to 1 in followbots' configs");
-bool followcart = false;
-CatVar roambot(CV_SWITCH, "fb_roaming", "1", "Roambot",
-               "Followbot will roam free, finding targets it can");
-static CatVar draw_crumb(CV_SWITCH, "fb_draw", "1", "Draw crumbs",
-                         "Self explanitory");
-static CatVar follow_distance(CV_INT, "fb_distance", "175", "Follow Distance",
-                              "How close the bots should stay to the target");
-static CatVar follow_activation(CV_INT, "fb_activation", "1000",
-                                "Activation Distance",
-                                "How close a player should be until the "
-                                "followbot will pick them as a target");
 unsigned steamid = 0x0;
 CatCommand follow_steam("fb_steam", "Follow Steam Id",
                         [](const CCommand &args) {
@@ -38,28 +39,12 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                             steamid = atol(args.Arg(1));
 
                         });
-static CatVar mimic_slot(CV_SWITCH, "fb_mimic_slot", "0", "Mimic weapon slot",
-                         "Mimic follow target's weapon slot");
-static CatVar always_medigun(CV_SWITCH, "fb_always_medigun", "0",
-                             "Always Medigun", "Always use medigun");
-static CatVar sync_taunt(CV_SWITCH, "fb_sync_taunt", "0", "Synced taunt",
-                         "Taunt when follow target does");
-static CatVar change(CV_SWITCH, "fb_switch", "0", "Change followbot target",
-                     "Always change roaming target when possible");
-static CatVar autojump(CV_SWITCH, "fb_autojump", "1", "Autojump",
-                       "Automatically jump if stuck");
-static CatVar afk(CV_SWITCH, "fb_afk", "1", "Switch target if AFK",
-                  "Automatically switch target if the target is afk");
-static CatVar afktime(
-    CV_INT, "fb_afk_time", "15000", "Max AFK Time",
-    "Max time in ms spent standing still before player gets declared afk");
-static CatVar corneractivate(
-    CV_SWITCH, "fb_activation_corners", "1", "Activate around corners",
-    "Try to find an activation path to an entity behind a corner.");
 
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
 static const int crumb_limit = 64; // limit
+
+static bool followcart{ false };
 
 // Followed entity, externed for highlight color
 int follow_target = 0;
@@ -184,7 +169,7 @@ Timer waittime{};
 int lastent = 0;
 void WorldTick()
 {
-    if (!followbot)
+    if (!enable)
     {
         follow_target = 0;
         return;
@@ -237,7 +222,7 @@ void WorldTick()
             if (corneractivate)
             {
                 Vector indirectOrigin = VischeckCorner(
-                    LOCAL_E, entity, float(follow_activation) / 2,
+                    LOCAL_E, entity, *follow_activation / 2,
                     true); // get the corner location that the
                            // future target is visible from
                 std::pair<Vector, Vector> corners;
@@ -302,7 +287,8 @@ void WorldTick()
                 continue;
             const model_t *model =
                 ENTITY(follow_target)->InternalEntity()->GetModel();
-            if (followcart && model &&
+            // FIXME follow cart/point
+            /*if (followcart && model &&
                 (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
                  lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
                  lagexploit::pointarr[4]) &&
@@ -311,7 +297,7 @@ void WorldTick()
                  model == lagexploit::pointarr[2] ||
                  model == lagexploit::pointarr[3] ||
                  model == lagexploit::pointarr[4]))
-                follow_target = entity->m_IDX;
+                follow_target = entity->m_IDX;*/
             if (entity->m_Type() != ENTITY_PLAYER)
                 continue;
             // favor closer entitys
@@ -438,7 +424,7 @@ void WorldTick()
              DistanceToGround({ breadcrumbs[0].x, breadcrumbs[0].y,
                                 breadcrumbs[0].z + 5 }) > 47))
         {
-            g_pUserCmd->buttons |= IN_JUMP;
+            current_user_cmd->buttons |= IN_JUMP;
             lastJump.update();
         }
         // Check if still moving. 70 HU = Sniper Zoomed Speed
@@ -525,7 +511,7 @@ void WorldTick()
 void DrawTick()
 {
 #if ENABLE_VISUALS
-    if (!followbot || !draw_crumb)
+    if (!enable || !draw_crumb)
         return;
     if (breadcrumbs.size() < 2)
         return;
@@ -545,6 +531,16 @@ void DrawTick()
     glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
     glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
 #endif
+}
+
+int getTarget()
+{
+    return follow_target;
+}
+
+bool isEnabled()
+{
+    return *enable;
 }
 
 #if ENABLE_IPC

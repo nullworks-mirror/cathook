@@ -9,8 +9,6 @@
 
 #include "common.hpp"
 
-class CatVar;
-
 namespace hacks::shared::triggerbot
 {
 

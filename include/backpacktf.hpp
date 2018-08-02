@@ -7,8 +7,6 @@
 
 #pragma once
 
-class CatVar;
-
 namespace backpacktf
 {
 

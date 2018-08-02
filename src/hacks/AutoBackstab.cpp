@@ -5,14 +5,45 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Bool.hpp>
 #include "common.hpp"
 #include "hacks/Backtrack.hpp"
 #include "hacks/Aimbot.hpp"
+
+static settings::Bool enable{ "autobackstab.enable", "0" };
+static settings::Bool silent{ "autobackstab.silent", "1" };
+
 namespace hacks::tf2::autobackstab
 {
+
+// pPaste, thanks to F1ssi0N
+const Vector GetWorldSpaceCenter(CachedEntity *ent)
+{
+    Vector vMin, vMax;
+    RAW_ENT(ent)->GetRenderBounds(vMin, vMax);
+    Vector vWorldSpaceCenter = RAW_ENT(ent)->GetAbsOrigin();
+    vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
+    return vWorldSpaceCenter;
+}
+
 static CatVar enabled(CV_SWITCH, "autobackstab", "0", "Auto Backstab",
                       "Does not depend on triggerbot!");
 static CatVar silent(CV_SWITCH, "autobackstab_silent", "1", "Silent");
+bool found;
+std::pair<Vector, Vector> GetHitboxBounds(CachedEntity *it, int hitbox)
+{
+	std::pair<Vector, Vector> result(it->hitboxes.GetHitbox(hitbox)->min,it->hitboxes.GetHitbox(hitbox)->max);
+	return result;
+}
+// TODO improve
+bool CanBackstab(CachedEntity *tar, Vector Local_ang)
+{
+    if (CE_BAD(tar))
+        return false;
+    // Get the forward view vector of the target, ignore Z
+    Vector vecVictimForward = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
+    vecVictimForward.z      = 0.0f;
+    vecVictimForward.NormalizeInPlace();
 
 int checkNextTick = -1;
 
@@ -69,7 +100,7 @@ bool canBackstab(CachedEntity *tar, Vector angle, Vector loc, Vector hitboxLoc)
 
 void CreateMove()
 {
-    if (!enabled)
+    if (!enable)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !LOCAL_E->m_bAlivePlayer())
         return;

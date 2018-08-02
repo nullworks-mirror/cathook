@@ -26,7 +26,7 @@ void Update()
             }
             if (i == g_IEngine->GetLocalPlayer())
             {
-                d.push(g_pUserCmd->viewangles);
+                d.push(current_user_cmd->viewangles);
             }
             else
             {

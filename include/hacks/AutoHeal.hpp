@@ -11,7 +11,7 @@
 
 namespace hacks::tf::autoheal
 {
-// TODO extern CatVar target_only;
+
 void CreateMove();
 
 struct patient_data_s

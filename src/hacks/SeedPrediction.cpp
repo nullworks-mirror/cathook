@@ -4,6 +4,7 @@
  *  Created on: Jul 27, 2018
  *      Author: bencat07
  */
+#include <settings/Bool.hpp>
 #include "common.hpp"
 #include "SeedPrediction.hpp"
 #include "reclasses.hpp"
@@ -11,9 +12,9 @@ constexpr double MIN_CLOCKRES = 0.25;
 constexpr double MAX_CLOCKRES = 8192.5;
 double clockRes;
 float seedFraction = 0.0f;
-//static CatVar enableSeedPrediction(CV_SWITCH, "seed_prediction", "1", "Seed Predcition", "Enable Seed prediction");
 namespace hacks::tf2::seedprediction
 {
+	settings::Bool prediction{"seed-prediction.enable", "false"};
 	buf bases{9999};
 	buf2 rebased{9999};
 	buf3 intervals{9999};
