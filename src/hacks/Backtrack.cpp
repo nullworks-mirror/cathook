@@ -313,6 +313,6 @@ int getTicks2()
 {
     // Removed for now
     //return (*latency > 800 || *latency < 200) ? 12 : 24;
-    12;
+    return 12;
 }
 }
