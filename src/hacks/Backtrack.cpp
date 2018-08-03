@@ -65,10 +65,10 @@ void Init()
 {
     for (int i = 0; i < 32; i++)
         for (int j = 0; j < 66; j++)
-            headPositions[i][j] =
-                BacktrackData{ 0,           { 0, 0, 0 }, { 0, 0, 0 },
-                               { 0, 0, 0 }, { 0, 0, 0 }, 0,
-                               0,           { 0, 0, 0 } };
+            headPositions[i][j] = BacktrackData{
+                0,           { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
+                { 0, 0, 0 }, { 0, 0, 0 }, 0,           0,           { 0, 0, 0 }
+            };
 }
 
 int BestTick    = 0;
@@ -104,8 +104,9 @@ void Run()
         {
             for (BacktrackData &btd : headPositions[i])
                 btd = BacktrackData{ 0,           { 0, 0, 0 }, { 0, 0, 0 },
-                                     { 0, 0, 0 }, { 0, 0, 0 }, 0,
-                                     0,           { 0, 0, 0 } };
+                                     { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
+                                     { 0, 0, 0 }, 0,           0,
+                                     { 0, 0, 0 } };
             continue;
         }
         if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
@@ -122,15 +123,18 @@ void Run()
         float viewangles =
             (_viewangles > 180) ? _viewangles - 360 : _viewangles;
         float simtime       = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
-        Vector hitbox_spine = pEntity->hitboxes.GetHitbox(3)->center;
+        Vector hitbox_spine = pEntity->hitboxes.GetHitbox(spine_3)->center;
+        Vector hitbox_min   = pEntity->hitboxes.GetHitbox(spine_3)->min;
+        Vector hitbox_max   = pEntity->hitboxes.GetHitbox(spine_3)->max;
         Vector ent_orig     = pEntity->InternalEntity()->GetAbsOrigin();
         auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
         headPositions[i][cmd->command_number % getTicks()] =
-            BacktrackData{ cmd->tick_count, hitboxpos,  min,     max,
-                           hitbox_spine,    viewangles, simtime, ent_orig };
+            BacktrackData{ cmd->tick_count, hitboxpos,  min,        max,
+                           hitbox_spine,    hitbox_min, hitbox_max, viewangles,
+                           simtime,         ent_orig };
         float FOVDistance = GetFov(g_pLocalPlayer->v_OrigViewangles,
                                    g_pLocalPlayer->v_Eye, hitboxpos);
-        float distance = g_pLocalPlayer->v_Eye.DistTo(hitbox_spine);
+        float distance    = g_pLocalPlayer->v_Eye.DistTo(hitbox_spine);
         if (!IsMelee && bestFov > FOVDistance && FOVDistance < 60.0f)
         {
             bestFov     = FOVDistance;
@@ -176,7 +180,7 @@ void Run()
             if (IsMelee)
             {
                 distance = g_pLocalPlayer->v_Eye.DistTo(
-                    headPositions[iBestTarget][t].origin);
+                    headPositions[iBestTarget][t].spine);
                 if (distance < (float) mindistance)
                     continue;
                 if (distance < prev_distance_ticks && tempFOV < 90.0f)
