@@ -71,7 +71,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             }
             if (chat_filter_enable && data[0] != LOCAL_E->m_IDX)
             {
-                if (chat_filter.toString() != "")
+                if (sizeof(*chat_filter) > 5)
                 {
                     std::string tmp  = {};
                     std::string tmp2 = {};
