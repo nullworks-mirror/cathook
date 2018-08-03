@@ -10,6 +10,7 @@
 #include "hacks/Backtrack.hpp"
 #include "hacks/Aimbot.hpp"
 #include "hacks/Trigger.hpp"
+#include "hacks/AntiAntiAim.hpp"
 
 static settings::Bool enable{ "autobackstab.enable", "0" };
 static settings::Bool silent{ "autobackstab.silent", "1" };
@@ -43,13 +44,6 @@ const Vector GetWorldSpaceCenter(CachedEntity *ent)
     Vector vWorldSpaceCenter = RAW_ENT(ent)->GetAbsOrigin();
     vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
     return vWorldSpaceCenter;
-}
-
-std::pair<Vector, Vector> GetHitboxBounds(CachedEntity *it, int hitbox)
-{
-    std::pair<Vector, Vector> result(it->hitboxes.GetHitbox(hitbox)->min,
-                                     it->hitboxes.GetHitbox(hitbox)->max);
-    return result;
 }
 
 void traceEntity(int *result_eindex, Vector *result_pos, QAngle angle,
@@ -102,10 +96,9 @@ bool canBackstab(CachedEntity *tar, Vector angle, Vector loc, Vector hitboxLoc)
 }
 
 bool canBacktrackStab(hacks::shared::backtrack::BacktrackData &i,
-                      Vector vecAngle, Vector loc, Vector hitboxLoc)
+                      Vector vecAngle, Vector loc, Vector hitboxLoc, float targetAngle)
 {
     float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
-    float targetAngle = i.viewangles;
     if (fabsf(vecAngle.y - targetAngle) >= 45)
         return false;
     if (loc.DistTo(hitboxLoc) > meleeRange)
@@ -182,6 +175,7 @@ void CreateMove()
     }
     if (CE_GOOD(besttarget))
     {
+        hacks::shared::anti_anti_aim::resolveEnt(besttarget->m_IDX);
         Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
         if (!hacks::shared::backtrack::isBacktrackEnabled())
         {
@@ -242,7 +236,7 @@ void CreateMove()
                 for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 40.0f)
                 {
                     if (canBacktrackStab(i, angle, g_pLocalPlayer->v_Eye,
-                                         i.spine))
+                                         i.spine, NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y))
                     {
                         current_user_cmd->tick_count = i.tickcount;
                         current_user_cmd->viewangles = angle;
