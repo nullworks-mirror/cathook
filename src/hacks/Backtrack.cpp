@@ -306,7 +306,7 @@ float getLatency()
 
 int getTicks()
 {
-    return max(min(int(*latency / 200.0f * 13.0f) + 12, 65), 12);
+    return max(min(int(*latency / 200.0f * 13.0f), 65), 12);
 }
 
 int getTicks2()
