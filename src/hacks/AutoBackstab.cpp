@@ -17,16 +17,6 @@ namespace hacks::tf2::autobackstab
 static settings::Bool enable{ "autobackstab.enable", "0" };
 static settings::Bool silent{ "autobackstab.silent", "1" };
 
-const static float headOffset = 2.5f;
-
-bool rangeCheck(Vector hitboxLoc)
-{
-    float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
-    Vector center = (LOCAL_E->hitboxes.GetHitbox(upperArm_L)->center + LOCAL_E->hitboxes.GetHitbox(upperArm_R)->center) / 2;
-    center.z = g_pLocalPlayer->v_Eye.z;
-    return (center.DistTo(hitboxLoc) <= meleeRange + headOffset);
-}
-
 Vector rotateVector(Vector center, float radianAngle, Vector p)
 {
     float s = sin(radianAngle);
@@ -47,20 +37,6 @@ Vector rotateVector(Vector center, float radianAngle, Vector p)
     return p;
 }
 
-//void updateHeadOffset()
-//{
-//    Vector center = (LOCAL_E->hitboxes.GetHitbox(upperArm_L)->center + LOCAL_E->hitboxes.GetHitbox(upperArm_R)->center) / 2;
-//    Vector eye = g_pLocalPlayer->v_Eye;
-//    center.z = eye.z;
-//    float currOffset = eye.DistTo(center);
-//    if (currOffset > headOffset)
-//    {
-//        headOffset = currOffset;
-//    }
-//    if (removeMe.test_and_set(2000))
-//        logging::Info("%f", currOffset);
-//}
-
 // Function to find the closest hitbox to the v_Eye for a given ent
 int ClosestDistanceHitbox(CachedEntity *target)
 {
@@ -80,119 +56,24 @@ int ClosestDistanceHitbox(CachedEntity *target)
     return closest;
 }
 
-// pPaste, thanks to F1ssi0N
-const Vector GetWorldSpaceCenter(CachedEntity *ent)
-{
-    Vector vMin, vMax;
-    RAW_ENT(ent)->GetRenderBounds(vMin, vMax);
-    Vector vWorldSpaceCenter = RAW_ENT(ent)->GetAbsOrigin();
-    vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
-    return vWorldSpaceCenter;
-}
-
-void traceEntity(int *result_eindex, Vector *result_pos, QAngle angle,
-                 Vector loc, float meleeRange)
-{
-    Ray_t ray;
-    Vector forward;
-    float sp, sy, cp, cy;
-    trace_t trace;
-
-    trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-    sy        = sinf(DEG2RAD(angle[1]));
-    cy        = cosf(DEG2RAD(angle[1]));
-    sp        = sinf(DEG2RAD(angle[0]));
-    cp        = cosf(DEG2RAD(angle[0]));
-    forward.x = cp * cy;
-    forward.y = cp * sy;
-    forward.z = -sp;
-    forward   = forward * meleeRange + loc;
-    ray.Init(loc, forward);
-    g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
-    if (result_pos)
-        *result_pos = trace.endpos;
-    if (result_eindex)
-    {
-        *result_eindex = 0;
-    }
-    if (trace.m_pEnt && result_eindex)
-    {
-        *result_eindex = ((IClientEntity *) (trace.m_pEnt))->entindex();
-    }
-}
-
-bool canBackstab(CachedEntity *tar, Vector angle, Vector loc, Vector hitboxLoc)
-{
-    float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
-    Vector targetAngle = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
-    if (fabsf(angle.y - targetAngle.y) < 45)
-    {
-        int IDX;
-        Vector hitLoc;
-        traceEntity(&IDX, &hitLoc, QAngle(angle.x, angle.y, angle.z), loc, meleeRange);
-        if (IDX == tar->m_IDX)
-        {
-            loc.z = g_pLocalPlayer->v_Eye.z;
-            if (rangeCheck(hitboxLoc))
-                return true;
-        }
-    }
-    return false;
-}
-
-bool canBacktrackStab(hacks::shared::backtrack::BacktrackData &i,
-                      Vector vecAngle, Vector loc, Vector hitboxLoc, float targetAngle)
-{
-    float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
-    if (fabsf(vecAngle.y - targetAngle) >= 45)
-        return false;
-    if (!rangeCheck(hitboxLoc))
-        return false;
-
-    auto min = i.spineMin;
-    auto max = i.spineMax;
-    if (!min.x && !max.x)
-        return false;
-
-    // Get the min and max for the hitbox
-    Vector minz(fminf(min.x, max.x), fminf(min.y, max.y), fminf(min.z, max.z));
-    Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y), fmaxf(min.z, max.z));
-
-    Vector forward;
-    float sp, sy, cp, cy;
-    QAngle angle = VectorToQAngle(vecAngle);
-
-    // Use math to get a vector in front of the player
-    sy        = sinf(DEG2RAD(angle[1]));
-    cy        = cosf(DEG2RAD(angle[1]));
-    sp        = sinf(DEG2RAD(angle[0]));
-    cp        = cosf(DEG2RAD(angle[0]));
-    forward.x = cp * cy;
-    forward.y = cp * sy;
-    forward.z = -sp;
-    forward   = forward * (meleeRange + headOffset) + loc;
-
-    Vector hit;
-    if (hacks::shared::triggerbot::CheckLineBox(
-            minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
-        return true;
-    return false;
-}
-
-bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max, Vector hitboxLoc, CachedEntity *besttarget)
+bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max,
+                        Vector hitboxLoc, CachedEntity *besttarget)
 {
     // Get melee range
     float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
-    if (fabsf(vecAngle.y - NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y) >= 45)
+    if (fabsf(vecAngle.y -
+              NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y) >= 45)
         return false;
     if (!min.x && !max.x)
         return false;
 
-    //Calculate head position
-    Vector currEye = g_pLocalPlayer->v_Eye;
-    float rotateRadians = atan2(currEye.x,currEye.y);
-    Vector center = (LOCAL_E->hitboxes.GetHitbox(upperArm_L)->center + LOCAL_E->hitboxes.GetHitbox(upperArm_R)->center) / 2;
-    center.z = currEye.z;
+    // Calculate head position
+    Vector currEye      = g_pLocalPlayer->v_Eye;
+    float rotateRadians = atan2(currEye.x, currEye.y);
+    Vector center       = (LOCAL_E->hitboxes.GetHitbox(upperArm_L)->center +
+                     LOCAL_E->hitboxes.GetHitbox(upperArm_R)->center) /
+                    2;
+    center.z    = currEye.z;
     Vector head = rotateVector(center, rotateRadians, currEye);
 
     // Check if we are in range. Note: This has to be done in order to avoid
@@ -201,7 +82,7 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max, Vector hitboxL
     if (head.DistTo(hitboxLoc) > meleeRange)
         return false;
 
-    //Calculate head x angle
+    // Calculate head x angle
     Vector tr = (hitboxLoc - head);
     Vector xAngle;
     VectorAngles(tr, xAngle);
@@ -227,13 +108,10 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max, Vector hitboxL
 
     Vector hit;
     // Check if we our line is within the targets hitbox
-    if (hacks::shared::triggerbot::CheckLineBox(
-            minz, maxz, head, forward, hit))
+    if (hacks::shared::triggerbot::CheckLineBox(minz, maxz, head, forward, hit))
         return true;
     return false;
 }
-
-
 
 void CreateMove()
 {
@@ -242,6 +120,8 @@ void CreateMove()
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !LOCAL_E->m_bAlivePlayer())
         return;
     if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
+        return;
+    if (!CanShoot())
         return;
     CachedEntity *besttarget = nullptr;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
@@ -252,14 +132,14 @@ void CreateMove()
         if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
             !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
             continue;
-        if (target->hitboxes.GetHitbox(spine_2)->center.DistTo(
+        if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
                 g_pLocalPlayer->v_Eye) <= 300.0f)
         {
             if (CE_GOOD(besttarget))
             {
-                if (target->hitboxes.GetHitbox(spine_2)->center.DistTo(
+                if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
                         g_pLocalPlayer->v_Eye) <
-                    besttarget->hitboxes.GetHitbox(spine_2)->center.DistTo(
+                    besttarget->hitboxes.GetHitbox(spine_3)->center.DistTo(
                         g_pLocalPlayer->v_Eye))
                     besttarget = target;
             }
@@ -282,7 +162,15 @@ void CreateMove()
                         .GetHitbox(ClosestDistanceHitbox(besttarget))
                         ->center;
 
-                if (!unifiedCanBackstab(angle, besttarget->hitboxes.GetHitbox(ClosestDistanceHitbox(besttarget))->min, besttarget->hitboxes.GetHitbox(ClosestDistanceHitbox(besttarget))->max, hitboxLoc, besttarget))
+                if (!unifiedCanBackstab(
+                        angle,
+                        besttarget->hitboxes
+                            .GetHitbox(ClosestDistanceHitbox(besttarget))
+                            ->min,
+                        besttarget->hitboxes
+                            .GetHitbox(ClosestDistanceHitbox(besttarget))
+                            ->max,
+                        hitboxLoc, besttarget))
                     continue;
                 current_user_cmd->viewangles = angle;
                 current_user_cmd->buttons |= IN_ATTACK;
@@ -309,9 +197,37 @@ void CreateMove()
                 if (!good_tick)
                     continue;
 
+                // Check if we are inside the target (which will in most cases
+                // result in a failstab)
+                std::pair<Vector, Vector> collidableMinMax(
+                    RAW_ENT(LOCAL_E)->GetCollideable()->OBBMins() +
+                        g_pLocalPlayer->v_Origin,
+                    RAW_ENT(LOCAL_E)->GetCollideable()->OBBMaxs() +
+                        g_pLocalPlayer->v_Origin);
+                // Get dist Z to Z
+                float halfHeight =
+                    (i.spineMin.DistTo(
+                        Vector{ i.spineMin.x, i.spineMin.y, i.spineMax.z })) /
+                    2;
+                // Make our first diagonal line
+                std::pair<Vector, Vector> line1(
+                    { i.spineMin.x, i.spineMin.y, i.spineMin.z + halfHeight },
+                    { i.spineMax.x, i.spineMax.y, i.spineMax.z - halfHeight });
+                // Make our second diagonal line
+                std::pair<Vector, Vector> line2(
+                    { line1.second.x, line1.first.y, line1.first.z },
+                    { line1.first.x, line1.second.y, line1.first.z });
+                if (LineIntersectsBox(collidableMinMax.first,
+                                      collidableMinMax.second, line1.first,
+                                      line1.second) ||
+                    LineIntersectsBox(collidableMinMax.first,
+                                      collidableMinMax.second, line2.first,
+                                      line2.second))
+                    continue;
                 for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 20.0f)
                 {
-                    if (unifiedCanBackstab(angle, i.spineMin, i.spineMax, i.spine, besttarget))
+                    if (unifiedCanBackstab(angle, i.spineMin, i.spineMax,
+                                           i.spine, besttarget))
                     {
                         current_user_cmd->tick_count = i.tickcount;
                         current_user_cmd->viewangles = angle;
