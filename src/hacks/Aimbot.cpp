@@ -102,33 +102,23 @@ bool BacktrackAimbot()
     if (zoomed_only && !g_pLocalPlayer->bZoomed &&
         !(current_user_cmd->buttons & IN_ATTACK))
         return false;
-
     int iBestTarget = hacks::shared::backtrack::iBestTarget;
     if (iBestTarget == -1)
         return true;
+    CachedEntity *tar = ENTITY(iBestTarget);
+    if (CE_BAD(tar))
+        return false;
     int tickcnt = 0;
     int tickus = (float(hacks::shared::backtrack::getLatency()) > 800.0f || float(hacks::shared::backtrack::getLatency()) < 200.0f) ? 12 : 24;
     for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
     {
-        bool good_tick = false;
-        for (int j = 0; j < tickus; ++j)
-            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick &&
-                hacks::shared::backtrack::sorted_ticks[j].tickcount != INT_MAX)
-                good_tick = true;
-        tickcnt++;
+        if (hacks::shared::backtrack::ValidTick(i, tar))
+             continue;
         if (!i.hitboxpos.z)
-            continue;
-        if (!good_tick)
             continue;
         if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxpos, true))
             continue;
         float scr = abs(g_pLocalPlayer->v_OrigViewangles.y - i.viewangles);
-
-        CachedEntity *tar = ENTITY(iBestTarget);
-        // ok just in case
-        if (CE_BAD(tar))
-            continue;
-        // target_eid = tar->m_IDX;
         Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
         float &simtime = CE_FLOAT(tar, netvar.m_flSimulationTime);
         angles.y       = i.viewangles;

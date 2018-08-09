@@ -41,18 +41,12 @@ int last_hb_traced = 0;
 Vector forward;
 bool CanBacktrack()
 {
-    int target  = hacks::shared::backtrack::iBestTarget;
-    int tickcnt = 0;
-    int tickus = hacks::shared::backtrack::getTicks2();
-    for (auto i : hacks::shared::backtrack::headPositions[target])
+    CachedEntity *tar = ENTITY(hacks::shared::backtrack::iBestTarget);
+    if (CE_BAD(tar))
+        return false;
+    for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
     {
-        bool good_tick = false;
-        for (int j = 0; j < tickus; ++j)
-            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick &&
-                hacks::shared::backtrack::sorted_ticks[j].tickcount != INT_MAX)
-                good_tick = true;
-        tickcnt++;
-        if (!good_tick)
+        if(!hacks::shared::backtrack::ValidTick(i, tar))
             continue;
         auto min = i.min;
         auto max = i.max;
@@ -83,10 +77,6 @@ bool CanBacktrack()
             continue;
         if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
         {
-            CachedEntity *tar = ENTITY(target);
-            // ok just in case
-            if (CE_BAD(tar))
-                continue;
             Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
             float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
             angles.y       = i.viewangles;

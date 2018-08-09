@@ -12,7 +12,6 @@
 #include <settings/Bool.hpp>
 #include <hacks/Backtrack.hpp>
 
-
 static settings::Bool enable{ "backtrack.enable", "false" };
 static settings::Bool draw_bt{ "backtrack.draw", "false" };
 static settings::Int latency{ "backtrack.latency", "0" };
@@ -148,64 +147,51 @@ void Run()
     }
     if (iBestTarget != -1 && CanShoot())
     {
-        int bestTick  = 0;
-        float tempFOV = 9999;
-        float bestFOV = 180.0f;
-        float distance, prev_distance_ticks = 9999;
-
-        for (int i          = 0; i < getTicks(); ++i)
-            sorted_ticks[i] = BestTickData{ INT_MAX, i };
-        for (int t = 0; t < getTicks(); ++t)
+        CachedEntity *tar = ENTITY(iBestTarget);
+        if (CE_GOOD(tar))
         {
-            if (headPositions[iBestTarget][t].tickcount)
-                sorted_ticks[t] =
-                    BestTickData{ headPositions[iBestTarget][t].tickcount, t };
-        }
-        std::sort(sorted_ticks, sorted_ticks + getTicks());
-        int tickus = getTicks2();
-        for (int t = 0; t < getTicks(); ++t)
-        {
-            bool good_tick = false;
-
-            for (int i = 0; i < tickus; ++i)
-                if (t == sorted_ticks[i].tick &&
-                    sorted_ticks[i].tickcount != INT_MAX &&
-                    sorted_ticks[i].tickcount)
-                    good_tick = true;
-            if (!good_tick)
-                continue;
-            tempFOV =
-                GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye,
-                       headPositions[iBestTarget][t].hitboxpos);
-            if (IsMelee)
+            int bestTick  = 0;
+            float tempFOV = 9999;
+            float bestFOV = 180.0f;
+            float distance, prev_distance_ticks = 9999;
+            for (int t = 0; t < getTicks(); ++t)
             {
-                distance = g_pLocalPlayer->v_Eye.DistTo(
-                    headPositions[iBestTarget][t].spine);
-                if (distance < (float) mindistance)
+                if (!ValidTick(headPositions[tar->m_IDX][t], tar))
                     continue;
-                if (distance < prev_distance_ticks && tempFOV < 90.0f)
-                    prev_distance_ticks = distance, bestTick = t;
+                tempFOV = GetFov(g_pLocalPlayer->v_OrigViewangles,
+                                 g_pLocalPlayer->v_Eye,
+                                 headPositions[iBestTarget][t].hitboxpos);
+                if (IsMelee)
+                {
+                    distance = g_pLocalPlayer->v_Eye.DistTo(
+                        headPositions[iBestTarget][t].spine);
+                    if (distance < (float) mindistance)
+                        continue;
+                    if (distance < prev_distance_ticks)
+                        prev_distance_ticks = distance, bestTick = t;
+                }
+                else
+                {
+                    if (bestFOV > tempFOV)
+                        bestTick = t, bestFOV = tempFOV;
+                }
             }
-            else
-            {
-                if (bestFOV > tempFOV)
-                    bestTick = t, bestFOV = tempFOV;
-            }
-        }
 
-        BestTick = bestTick;
-        if (cmd->buttons & IN_ATTACK)
-        {
-            CachedEntity *tar = ENTITY(iBestTarget);
-            // ok just in case
-            if (CE_BAD(tar))
-                return;
-            auto i          = headPositions[iBestTarget][bestTick];
-            cmd->tick_count = i.tickcount;
-            Vector &angles  = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
-            float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
-            angles.y       = i.viewangles;
-            simtime        = i.simtime;
+            BestTick = bestTick;
+            if (cmd->buttons & IN_ATTACK)
+            {
+                // ok just in case
+                if (CE_BAD(tar))
+                    return;
+                auto i          = headPositions[iBestTarget][bestTick];
+                cmd->tick_count = i.tickcount;
+                Vector &angles =
+                    NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
+                float &simtime =
+                    NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
+                angles.y = i.viewangles;
+                simtime  = i.simtime;
+            }
         }
     }
 }
@@ -218,22 +204,18 @@ void Draw()
         return;
     if (!shouldDrawBt)
         return;
-    int tickus = getTicks2();
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
         for (int j = 0; j < getTicks(); j++)
         {
-            bool good_tick = false;
-
-            for (int i = 0; i < tickus; ++i)
-                if (j == sorted_ticks[i].tick)
-                    good_tick = true;
-            if (!good_tick)
+            if (!ValidTick(headPositions[i][j], ent))
                 continue;
-            auto hbpos    = headPositions[i][j].hitboxpos;
-            auto tickount = headPositions[i][j].tickcount;
-            auto min      = headPositions[i][j].min;
-            auto max      = headPositions[i][j].max;
+            auto hbpos = headPositions[i][j].hitboxpos;
+            auto min   = headPositions[i][j].min;
+            auto max   = headPositions[i][j].max;
             if (!hbpos.x && !hbpos.y && !hbpos.z)
                 continue;
             Vector out;
@@ -306,13 +288,13 @@ float getLatency()
 
 int getTicks()
 {
-    return max(min(int(*latency / 200.0f * 13.0f), 65), 12);
+    return max(min(int(*latency / 200.0f * 13.0f) + 12, 65), 12);
 }
 
-int getTicks2()
+bool ValidTick(BacktrackData &i, CachedEntity *ent)
 {
-    // Removed for now
-    //return (*latency > 800 || *latency < 200) ? 12 : 24;
-    return 12;
+    return fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
+                 getLatency() - i.simtime * 1000.0f) < 200.0f;
 }
-}
+
+} // namespace hacks::shared::backtrack
