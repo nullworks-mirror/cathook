@@ -167,7 +167,7 @@ void CreateMove()
             return;
         // Check if besttick distance is < 200.0f
         if (backtrack::headPositions[target->m_IDX][backtrack::BestTick]
-                .spine.DistTo(g_pLocalPlayer->v_Eye) < 200.0f)
+                .hitboxes.at(spine_3).center.DistTo(g_pLocalPlayer->v_Eye) < 200.0f)
             besttarget = target;
     }
 
@@ -219,13 +219,13 @@ void CreateMove()
                         g_pLocalPlayer->v_Origin);
                 // Get dist Z to Z
                 float halfHeight =
-                    (i.spineMin.DistTo(
-                        Vector{ i.spineMin.x, i.spineMin.y, i.spineMax.z })) /
+                    (i.hitboxes.at(spine_3).min.DistTo(
+                        Vector{ i.hitboxes.at(spine_3).min.x, i.hitboxes.at(spine_3).min.y, i.hitboxes.at(spine_3).max.z })) /
                     2;
                 // Make our first diagonal line
                 std::pair<Vector, Vector> line1(
-                    { i.spineMin.x, i.spineMin.y, i.spineMin.z + halfHeight },
-                    { i.spineMax.x, i.spineMax.y, i.spineMax.z - halfHeight });
+                    { i.hitboxes.at(spine_3).min.x, i.hitboxes.at(spine_3).min.y, i.hitboxes.at(spine_3).min.z + halfHeight },
+                    { i.hitboxes.at(spine_3).max.x, i.hitboxes.at(spine_3).max.y, i.hitboxes.at(spine_3).max.z - halfHeight });
                 // Make our second diagonal line
                 std::pair<Vector, Vector> line2(
                     { line1.second.x, line1.first.y, line1.first.z },
@@ -241,8 +241,8 @@ void CreateMove()
 
                 for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 20.0f)
                 {
-                    if (unifiedCanBackstab(angle, i.spineMin, i.spineMax,
-                                           i.spine, besttarget))
+                    if (unifiedCanBackstab(angle, i.hitboxes.at(spine_3).min, i.hitboxes.at(spine_3).max,
+                                           i.hitboxes.at(spine_3).center, besttarget))
                     {
                         current_user_cmd->tick_count = i.tickcount;
                         current_user_cmd->viewangles = angle;

@@ -48,8 +48,8 @@ bool CanBacktrack()
     {
         if(!hacks::shared::backtrack::ValidTick(i, tar))
             continue;
-        auto min = i.min;
-        auto max = i.max;
+        auto min = i.hitboxes.at(head).min;
+        auto max = i.hitboxes.at(head).max;
         if (!min.x && !max.x)
             continue;
 

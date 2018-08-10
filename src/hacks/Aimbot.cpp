@@ -114,9 +114,9 @@ bool BacktrackAimbot()
     {
         if (hacks::shared::backtrack::ValidTick(i, tar))
              continue;
-        if (!i.hitboxpos.z)
+        if (!i.hitboxes.at(head).center.z)
             continue;
-        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxpos, true))
+        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes.at(head).center, true))
             continue;
         float scr = abs(g_pLocalPlayer->v_OrigViewangles.y - i.viewangles);
         Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
@@ -124,7 +124,7 @@ bool BacktrackAimbot()
         angles.y       = i.viewangles;
         simtime        = i.simtime;
         current_user_cmd->tick_count = i.tickcount;
-        Vector tr              = (i.hitboxpos - g_pLocalPlayer->v_Eye);
+        Vector tr              = (i.hitboxes.at(head).center - g_pLocalPlayer->v_Eye);
         Vector angles2;
         VectorAngles(tr, angles2);
         // Clamping is important

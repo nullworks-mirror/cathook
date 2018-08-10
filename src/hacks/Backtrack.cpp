@@ -20,9 +20,8 @@ static settings::Int slots{ "backtrack.slots", "0" };
 
 namespace hacks::shared::backtrack
 {
-
+void EmptyBacktrackData(BacktrackData &i);
 BacktrackData headPositions[32][66]{};
-BestTickData sorted_ticks[66]{};
 int highesttick[32]{};
 int lastincomingsequencenumber = 0;
 static bool shouldDrawBt;
@@ -64,10 +63,7 @@ void Init()
 {
     for (int i = 0; i < 32; i++)
         for (int j = 0; j < 66; j++)
-            headPositions[i][j] = BacktrackData{
-                0,           { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                { 0, 0, 0 }, { 0, 0, 0 }, 0,           0,           { 0, 0, 0 }
-            };
+            EmptyBacktrackData(headPositions[i][j]);
 }
 
 int BestTick    = 0;
@@ -102,10 +98,7 @@ void Run()
         if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
         {
             for (BacktrackData &btd : headPositions[i])
-                btd = BacktrackData{ 0,           { 0, 0, 0 }, { 0, 0, 0 },
-                                     { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },
-                                     { 0, 0, 0 }, 0,           0,
-                                     { 0, 0, 0 } };
+                EmptyBacktrackData(btd);
             continue;
         }
         if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
@@ -113,27 +106,26 @@ void Run()
         if (pEntity->m_Type() != ENTITY_PLAYER)
             continue;
         if (!pEntity->hitboxes.GetHitbox(0))
-            continue;
-        Vector hitboxpos = pEntity->hitboxes.GetHitbox(0)->center;
-        Vector min       = pEntity->hitboxes.GetHitbox(0)->min;
-        Vector max       = pEntity->hitboxes.GetHitbox(0)->max;
+            continue; 
         float _viewangles =
             NET_VECTOR(RAW_ENT(pEntity), netvar.m_angEyeAngles).y;
         float viewangles =
             (_viewangles > 180) ? _viewangles - 360 : _viewangles;
         float simtime       = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
-        Vector hitbox_spine = pEntity->hitboxes.GetHitbox(spine_3)->center;
-        Vector hitbox_min   = pEntity->hitboxes.GetHitbox(spine_3)->min;
-        Vector hitbox_max   = pEntity->hitboxes.GetHitbox(spine_3)->max;
+        std::array<hitboxData, 18> hbdArray;
+        for (size_t i = 0; i < hbdArray.max_size(); i++)
+        {
+            hbdArray.at(i).center = pEntity->hitboxes.GetHitbox(i)->center;
+            hbdArray.at(i).min = pEntity->hitboxes.GetHitbox(i)->min;
+            hbdArray.at(i).max = pEntity->hitboxes.GetHitbox(i)->max;
+        }
         Vector ent_orig     = pEntity->InternalEntity()->GetAbsOrigin();
         auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
         headPositions[i][cmd->command_number % getTicks()] =
-            BacktrackData{ cmd->tick_count, hitboxpos,  min,        max,
-                           hitbox_spine,    hitbox_min, hitbox_max, viewangles,
-                           simtime,         ent_orig };
+            BacktrackData{ cmd->tick_count, hbdArray, viewangles, simtime, ent_orig };
         float FOVDistance = GetFov(g_pLocalPlayer->v_OrigViewangles,
-                                   g_pLocalPlayer->v_Eye, hitboxpos);
-        float distance    = g_pLocalPlayer->v_Eye.DistTo(hitbox_spine);
+                                   g_pLocalPlayer->v_Eye, hbdArray.at(head).center);
+        float distance    = g_pLocalPlayer->v_Eye.DistTo(hbdArray.at(spine_3).center);
         if (!IsMelee && bestFov > FOVDistance && FOVDistance < 60.0f)
         {
             bestFov     = FOVDistance;
@@ -160,11 +152,11 @@ void Run()
                     continue;
                 tempFOV = GetFov(g_pLocalPlayer->v_OrigViewangles,
                                  g_pLocalPlayer->v_Eye,
-                                 headPositions[iBestTarget][t].hitboxpos);
+                                 headPositions[iBestTarget][t].hitboxes.at(head).center);
                 if (IsMelee)
                 {
                     distance = g_pLocalPlayer->v_Eye.DistTo(
-                        headPositions[iBestTarget][t].spine);
+                        headPositions[iBestTarget][t].hitboxes.at(spine_3).center);
                     if (distance < (float) mindistance)
                         continue;
                     if (distance < prev_distance_ticks)
@@ -213,9 +205,9 @@ void Draw()
         {
             if (!ValidTick(headPositions[i][j], ent))
                 continue;
-            auto hbpos = headPositions[i][j].hitboxpos;
-            auto min   = headPositions[i][j].min;
-            auto max   = headPositions[i][j].max;
+            auto hbpos = headPositions[i][j].hitboxes.at(head).center;
+            auto min   = headPositions[i][j].hitboxes.at(head).min;
+            auto max   = headPositions[i][j].hitboxes.at(head).max;
             if (!hbpos.x && !hbpos.y && !hbpos.z)
                 continue;
             Vector out;
@@ -295,6 +287,11 @@ bool ValidTick(BacktrackData &i, CachedEntity *ent)
 {
     return fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
                  getLatency() - i.simtime * 1000.0f) < 200.0f;
+}
+
+void EmptyBacktrackData(BacktrackData &i)
+{
+    i = {};
 }
 
 } // namespace hacks::shared::backtrack

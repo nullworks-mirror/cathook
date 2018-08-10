@@ -11,15 +11,17 @@
 
 namespace hacks::shared::backtrack
 {
+struct hitboxData
+{
+    Vector center{ 0.0f, 0.0f, 0.0f };
+    Vector min{ 0.0f, 0.0f, 0.0f };
+    Vector max{ 0.0f, 0.0f, 0.0f };
+};
+
 struct BacktrackData
 {
     int tickcount{ 0 };
-    Vector hitboxpos{ 0.0f, 0.0f, 0.0f };
-    Vector min{ 0.0f, 0.0f, 0.0f };
-    Vector max{ 0.0f, 0.0f, 0.0f };
-    Vector spine{ 0.0f, 0.0f, 0.0f };
-    Vector spineMin{ 0.0f, 0.0f, 0.0f };
-    Vector spineMax{ 0.0f, 0.0f, 0.0f };
+    std::array<hitboxData, 18> hitboxes;
     float viewangles{ 0.0f };
     float simtime{ 0.0f };
     Vector entorigin{ 0.0f, 0.0f, 0.0f };
