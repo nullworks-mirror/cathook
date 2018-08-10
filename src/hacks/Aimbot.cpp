@@ -91,20 +91,22 @@ AimbotCalculatedData_s calculated_data_array[2048]{};
 #define IsMelee GetWeaponMode() == weapon_melee
 bool BacktrackAimbot()
 {
-    if (!hacks::shared::backtrack::isBacktrackEnabled() || !backtrackAimbot)
+    if (!hacks::shared::backtrack::isBacktrackEnabled() || !*backtrackAimbot)
         return false;
     if (aimkey && !aimkey.isKeyDown())
-        return false;
+        return true;
 
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !CanShoot())
-        return false;
+        return true;
 
-    if (zoomed_only && !g_pLocalPlayer->bZoomed &&
+    if (*zoomed_only && !g_pLocalPlayer->bZoomed &&
         !(current_user_cmd->buttons & IN_ATTACK))
-        return false;
+        return true;
+
     int iBestTarget = hacks::shared::backtrack::iBestTarget;
     if (iBestTarget == -1)
         return true;
+    int tickcnt = 0;
     CachedEntity *tar = ENTITY(iBestTarget);
     if (CE_BAD(tar))
         return false;
