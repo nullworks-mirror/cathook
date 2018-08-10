@@ -18,6 +18,7 @@ namespace backtrack = hacks::shared::backtrack;
 static settings::Bool enable{ "autobackstab.enable", "0" };
 static settings::Bool silent{ "autobackstab.silent", "1" };
 
+// Not required anymore, keeping for future reference
 Vector rotateVector(Vector center, float radianAngle, Vector p)
 {
     float s = sin(radianAngle);
@@ -71,14 +72,7 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max,
     if (!min.x && !max.x)
         return false;
 
-    // Calculate head position
-    Vector currEye      = g_pLocalPlayer->v_Eye;
-    float rotateRadians = atan2(currEye.x, currEye.y);
-    Vector center       = (LOCAL_E->hitboxes.GetHitbox(upperArm_L)->center +
-                     LOCAL_E->hitboxes.GetHitbox(upperArm_R)->center) /
-                    2;
-    center.z    = currEye.z;
-    Vector head = rotateVector(center, rotateRadians, currEye);
+    Vector head      = g_pLocalPlayer->v_Eye;
 
     // Check if we are in range. Note: This has to be done in order to avoid
     // false positives even when "forward" is only "meleeRange" away from the
