@@ -39,15 +39,18 @@ Vector rotateVector(Vector center, float radianAngle, Vector p)
 }
 
 // Function to find the closest hitbox to the v_Eye for a given ent
-int ClosestDistanceHitbox(CachedEntity *target)
+int ClosestDistanceHitbox(CachedEntity *target,
+                          backtrack::BacktrackData btd = {})
 {
     int closest        = -1;
     float closest_dist = 0.0f, dist = 0.0f;
-
-    for (int i = spine_0; i < spine_3; i++)
+    for (int i = pelvis; i < lowerArm_R; i++)
     {
-        dist =
-            g_pLocalPlayer->v_Eye.DistTo(target->hitboxes.GetHitbox(i)->center);
+        if (hacks::shared::backtrack::isBacktrackEnabled())
+            dist = g_pLocalPlayer->v_Eye.DistTo(btd.hitboxes.at(i).center);
+        else
+            dist = g_pLocalPlayer->v_Eye.DistTo(
+                target->hitboxes.GetHitbox(i)->center);
         if (dist < closest_dist || closest == -1)
         {
             closest      = i;
@@ -167,7 +170,8 @@ void CreateMove()
             return;
         // Check if besttick distance is < 200.0f
         if (backtrack::headPositions[target->m_IDX][backtrack::BestTick]
-                .hitboxes.at(spine_3).center.DistTo(g_pLocalPlayer->v_Eye) < 200.0f)
+                .hitboxes.at(spine_3)
+                .center.DistTo(g_pLocalPlayer->v_Eye) < 200.0f)
             besttarget = target;
     }
 
@@ -204,11 +208,13 @@ void CreateMove()
         }
         else
         {
-            int idx     = besttarget->m_IDX;
+            int idx = besttarget->m_IDX;
             for (auto i : backtrack::headPositions[idx])
             {
                 if (!backtrack::ValidTick(i, besttarget))
                     continue;
+                backtrack::hitboxData &hitbox =
+                    i.hitboxes.at(ClosestDistanceHitbox(besttarget, i));
 
                 // Check if we are inside the target (which will in most cases
                 // result in a failstab)
@@ -219,13 +225,13 @@ void CreateMove()
                         g_pLocalPlayer->v_Origin);
                 // Get dist Z to Z
                 float halfHeight =
-                    (i.hitboxes.at(spine_3).min.DistTo(
-                        Vector{ i.hitboxes.at(spine_3).min.x, i.hitboxes.at(spine_3).min.y, i.hitboxes.at(spine_3).max.z })) /
+                    (hitbox.min.DistTo(
+                        Vector{ hitbox.min.x, hitbox.min.y, hitbox.max.z })) /
                     2;
                 // Make our first diagonal line
                 std::pair<Vector, Vector> line1(
-                    { i.hitboxes.at(spine_3).min.x, i.hitboxes.at(spine_3).min.y, i.hitboxes.at(spine_3).min.z + halfHeight },
-                    { i.hitboxes.at(spine_3).max.x, i.hitboxes.at(spine_3).max.y, i.hitboxes.at(spine_3).max.z - halfHeight });
+                    { hitbox.min.x, hitbox.min.y, hitbox.min.z + halfHeight },
+                    { hitbox.max.x, hitbox.max.y, hitbox.max.z - halfHeight });
                 // Make our second diagonal line
                 std::pair<Vector, Vector> line2(
                     { line1.second.x, line1.first.y, line1.first.z },
@@ -241,8 +247,8 @@ void CreateMove()
 
                 for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 20.0f)
                 {
-                    if (unifiedCanBackstab(angle, i.hitboxes.at(spine_3).min, i.hitboxes.at(spine_3).max,
-                                           i.hitboxes.at(spine_3).center, besttarget))
+                    if (unifiedCanBackstab(angle, hitbox.min, hitbox.max,
+                                           hitbox.center, besttarget))
                     {
                         current_user_cmd->tick_count = i.tickcount;
                         current_user_cmd->viewangles = angle;
