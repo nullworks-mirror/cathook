@@ -108,8 +108,6 @@ bool BacktrackAimbot()
     CachedEntity *tar = ENTITY(iBestTarget);
     if (CE_BAD(tar))
         return false;
-    int tickcnt = 0;
-    int tickus = (float(hacks::shared::backtrack::getLatency()) > 800.0f || float(hacks::shared::backtrack::getLatency()) < 200.0f) ? 12 : 24;
     for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
     {
         if (hacks::shared::backtrack::ValidTick(i, tar))
