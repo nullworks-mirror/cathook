@@ -107,6 +107,9 @@ bool BacktrackAimbot()
     if (iBestTarget == -1)
         return true;
     int tickcnt = 0;
+    CachedEntity *tar = ENTITY(iBestTarget);
+    if (CE_BAD(tar))
+        return false;
     for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
     {
         if (hacks::shared::backtrack::ValidTick(i, tar))
