@@ -44,7 +44,7 @@ int ClosestDistanceHitbox(CachedEntity *target,
 {
     int closest        = -1;
     float closest_dist = 0.0f, dist = 0.0f;
-    for (int i = pelvis; i < lowerArm_R; i++)
+    for (int i = spine_0; i < spine_3; i++)
     {
         if (hacks::shared::backtrack::isBacktrackEnabled())
             dist = g_pLocalPlayer->v_Eye.DistTo(btd.hitboxes.at(i).center);
