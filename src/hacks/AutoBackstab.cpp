@@ -14,6 +14,7 @@
 
 namespace hacks::tf2::autobackstab
 {
+namespace backtrack = hacks::shared::backtrack;
 static settings::Bool enable{ "autobackstab.enable", "0" };
 static settings::Bool silent{ "autobackstab.silent", "1" };
 
@@ -38,15 +39,18 @@ Vector rotateVector(Vector center, float radianAngle, Vector p)
 }
 
 // Function to find the closest hitbox to the v_Eye for a given ent
-int ClosestDistanceHitbox(CachedEntity *target)
+int ClosestDistanceHitbox(CachedEntity *target,
+                          backtrack::BacktrackData btd = {})
 {
     int closest        = -1;
     float closest_dist = 0.0f, dist = 0.0f;
-
     for (int i = spine_0; i < spine_3; i++)
     {
-        dist =
-            g_pLocalPlayer->v_Eye.DistTo(target->hitboxes.GetHitbox(i)->center);
+        if (hacks::shared::backtrack::isBacktrackEnabled())
+            dist = g_pLocalPlayer->v_Eye.DistTo(btd.hitboxes.at(i).center);
+        else
+            dist = g_pLocalPlayer->v_Eye.DistTo(
+                target->hitboxes.GetHitbox(i)->center);
         if (dist < closest_dist || closest == -1)
         {
             closest      = i;
@@ -62,7 +66,7 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max,
     // Get melee range
     float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (fabsf(vecAngle.y -
-              NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y) >= 45)
+              NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y) >= 50)
         return false;
     if (!min.x && !max.x)
         return false;
@@ -124,36 +128,58 @@ void CreateMove()
     if (!CanShoot())
         return;
     CachedEntity *besttarget = nullptr;
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    if (!backtrack::isBacktrackEnabled())
     {
-        CachedEntity *target = ENTITY(i);
-        if (CE_BAD(target))
-            continue;
-        if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
-            !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
-            continue;
-        if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
-                g_pLocalPlayer->v_Eye) <= 300.0f)
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
-            if (CE_GOOD(besttarget))
+            CachedEntity *target = ENTITY(i);
+            if (CE_BAD(target))
+                continue;
+            if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
+                !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
+                continue;
+            if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
+                    g_pLocalPlayer->v_Eye) <= 200.0f)
             {
-                if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
-                        g_pLocalPlayer->v_Eye) <
-                    besttarget->hitboxes.GetHitbox(spine_3)->center.DistTo(
-                        g_pLocalPlayer->v_Eye))
+                if (CE_GOOD(besttarget))
+                {
+                    if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
+                            g_pLocalPlayer->v_Eye) <
+                        besttarget->hitboxes.GetHitbox(spine_3)->center.DistTo(
+                            g_pLocalPlayer->v_Eye))
+                        besttarget = target;
+                }
+                else
+                {
                     besttarget = target;
-            }
-            else
-            {
-                besttarget = target;
+                }
             }
         }
     }
+    else
+    {
+        // Run if backtrack is enabled
+        if (backtrack::iBestTarget == -1)
+            return;
+        CachedEntity *target = ENTITY(backtrack::iBestTarget);
+        // Various valid entity checks
+        if (CE_BAD(target))
+            return;
+        if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
+            !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
+            return;
+        // Check if besttick distance is < 200.0f
+        if (backtrack::headPositions[target->m_IDX][backtrack::BestTick]
+                .hitboxes.at(spine_3)
+                .center.DistTo(g_pLocalPlayer->v_Eye) < 200.0f)
+            besttarget = target;
+    }
+
     if (CE_GOOD(besttarget))
     {
         hacks::shared::anti_anti_aim::resolveEnt(besttarget->m_IDX);
         Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
-        if (!hacks::shared::backtrack::isBacktrackEnabled())
+        if (!backtrack::isBacktrackEnabled())
         {
             for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 10.0f)
             {
@@ -182,20 +208,13 @@ void CreateMove()
         }
         else
         {
-            int idx     = besttarget->m_IDX;
-            int tickcnt = 0;
-            for (auto i : hacks::shared::backtrack::headPositions[idx])
+            int idx = besttarget->m_IDX;
+            for (auto i : backtrack::headPositions[idx])
             {
-                bool good_tick = false;
-                for (int j = 0; j < hacks::shared::backtrack::getTicks2(); ++j)
-                    if (tickcnt ==
-                            hacks::shared::backtrack::sorted_ticks[j].tick &&
-                        hacks::shared::backtrack::sorted_ticks[j].tickcount !=
-                            INT_MAX)
-                        good_tick = true;
-                tickcnt++;
-                if (!good_tick)
+                if (!backtrack::ValidTick(i, besttarget))
                     continue;
+                backtrack::hitboxData &hitbox =
+                    i.hitboxes.at(ClosestDistanceHitbox(besttarget, i));
 
                 // Check if we are inside the target (which will in most cases
                 // result in a failstab)
@@ -206,17 +225,18 @@ void CreateMove()
                         g_pLocalPlayer->v_Origin);
                 // Get dist Z to Z
                 float halfHeight =
-                    (i.spineMin.DistTo(
-                        Vector{ i.spineMin.x, i.spineMin.y, i.spineMax.z })) /
+                    (hitbox.min.DistTo(
+                        Vector{ hitbox.min.x, hitbox.min.y, hitbox.max.z })) /
                     2;
                 // Make our first diagonal line
                 std::pair<Vector, Vector> line1(
-                    { i.spineMin.x, i.spineMin.y, i.spineMin.z + halfHeight },
-                    { i.spineMax.x, i.spineMax.y, i.spineMax.z - halfHeight });
+                    { hitbox.min.x, hitbox.min.y, hitbox.min.z + halfHeight },
+                    { hitbox.max.x, hitbox.max.y, hitbox.max.z - halfHeight });
                 // Make our second diagonal line
                 std::pair<Vector, Vector> line2(
                     { line1.second.x, line1.first.y, line1.first.z },
                     { line1.first.x, line1.second.y, line1.first.z });
+                // Check if one of the lines intersects with our collidable
                 if (LineIntersectsBox(collidableMinMax.first,
                                       collidableMinMax.second, line1.first,
                                       line1.second) ||
@@ -224,10 +244,11 @@ void CreateMove()
                                       collidableMinMax.second, line2.first,
                                       line2.second))
                     continue;
+
                 for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 20.0f)
                 {
-                    if (unifiedCanBackstab(angle, i.spineMin, i.spineMax,
-                                           i.spine, besttarget))
+                    if (unifiedCanBackstab(angle, hitbox.min, hitbox.max,
+                                           hitbox.center, besttarget))
                     {
                         current_user_cmd->tick_count = i.tickcount;
                         current_user_cmd->viewangles = angle;
