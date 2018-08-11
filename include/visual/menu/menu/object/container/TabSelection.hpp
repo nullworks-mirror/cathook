@@ -18,7 +18,7 @@ class TabContainer;
 class TabSelection : public Container
 {
 public:
-    explicit TabSelection(TabContainer& parent);
+    explicit TabSelection(TabContainer &parent);
 
     void render() override;
 
@@ -31,10 +31,9 @@ public:
     void selectTab(size_t id);
 
 public:
-    TabContainer& container;
+    TabContainer &container;
     std::vector<std::string> options{};
     int offset{ 0 };
     size_t active{ 0 };
 };
-
 }

@@ -39,23 +39,28 @@ static settings::Float miss_chance{ "aimbot.miss-chance", "0" };
 static settings::Bool projectile_aimbot{ "aimbot.projectile.enable", "true" };
 static settings::Float proj_gravity{ "aimbot.projectile.gravity", "0" };
 static settings::Float proj_speed{ "aimbot.projectile.speed", "0" };
-static settings::Float huntsman_autoshoot{ "aimbot.projectile.huntsman-autoshoot", "0.5" };
-static settings::Float sticky_autoshoot{ "aimbot.projectile.sticky-autoshoot", "0.5" };
+static settings::Float huntsman_autoshoot{
+    "aimbot.projectile.huntsman-autoshoot", "0.5"
+};
+static settings::Float sticky_autoshoot{ "aimbot.projectile.sticky-autoshoot",
+                                         "0.5" };
 
 static settings::Bool aimbot_debug{ "aimbot.debug", "0" };
 static settings::Bool engine_projpred{ "aimbot.debug.engine-pp", "0" };
 
 static settings::Bool auto_spin_up{ "aimbot.auto.spin-up", "0" };
 static settings::Bool auto_zoom{ "aimbot.auto.zoom", "0" };
-static settings::Bool auto_unzoom{ "aimbot.auto.unzoom","0" };
+static settings::Bool auto_unzoom{ "aimbot.auto.unzoom", "0" };
 
 static settings::Bool backtrackAimbot{ "aimbot.backtrack", "0" };
 
 // TODO maybe these should be moved into "Targeting"
 static settings::Float max_range{ "aimbot.target.max-range", "4096" };
-static settings::Bool ignore_vaccinator{ "aimbot.target.ignore-vaccinator", "1" };
+static settings::Bool ignore_vaccinator{ "aimbot.target.ignore-vaccinator",
+                                         "1" };
 static settings::Bool ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
-static settings::Bool ignore_deadringer{ "aimbot.target.ignore-deadringer", "1" };
+static settings::Bool ignore_deadringer{ "aimbot.target.ignore-deadringer",
+                                         "1" };
 static settings::Bool buildings_sentry{ "aimbot.target.sentry", "1" };
 static settings::Bool buildings_other{ "aimbot.target.other-buildings", "1" };
 static settings::Bool stickybot{ "aimbot.target.stickybomb", "0" };
@@ -91,57 +96,52 @@ AimbotCalculatedData_s calculated_data_array[2048]{};
 #define IsMelee GetWeaponMode() == weapon_melee
 bool BacktrackAimbot()
 {
-    if (!hacks::shared::backtrack::isBacktrackEnabled() || !*backtrackAimbot)
+    if (!hacks::shared::backtrack::isBacktrackEnabled() || !backtrackAimbot)
         return false;
     if (aimkey && !aimkey.isKeyDown())
         return true;
-
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !CanShoot())
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return true;
-
-    if (*zoomed_only && !g_pLocalPlayer->bZoomed &&
-        !(current_user_cmd->buttons & IN_ATTACK))
+    if (only_can_shoot && !CanShoot())
         return true;
-
+    if (g_pLocalPlayer->clazz == tf_sniper)
+        if (zoomed_only && !CanHeadshot())
+            return true;
     int iBestTarget = hacks::shared::backtrack::iBestTarget;
     if (iBestTarget == -1)
         return true;
+    int iBestTick = hacks::shared::backtrack::BestTick;
     int tickcnt = 0;
     CachedEntity *tar = ENTITY(iBestTarget);
     if (CE_BAD(tar))
-        return false;
-    for (auto i : hacks::shared::backtrack::headPositions[iBestTarget])
-    {
-        if (hacks::shared::backtrack::ValidTick(i, tar))
-             continue;
-        if (!i.hitboxes.at(head).center.z)
-            continue;
-        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes.at(head).center, true))
-            continue;
-        float scr = abs(g_pLocalPlayer->v_OrigViewangles.y - i.viewangles);
-        Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
-        float &simtime = CE_FLOAT(tar, netvar.m_flSimulationTime);
-        angles.y       = i.viewangles;
-        simtime        = i.simtime;
-        current_user_cmd->tick_count = i.tickcount;
-        Vector tr              = (i.hitboxes.at(head).center - g_pLocalPlayer->v_Eye);
-        Vector angles2;
-        VectorAngles(tr, angles2);
-        // Clamping is important
-        fClampAngle(angles2);
-        // Slow aim
-        if (slow_aim)
-            DoSlowAim(angles2);
-        else if (silent)
-            g_pLocalPlayer->bUseSilentAngles = true;
-        if (!slow_aim)
-            slow_can_shoot = true;
-        // Set angles
-        current_user_cmd->viewangles = angles2;
-        if (autoshoot && slow_can_shoot)
-            current_user_cmd->buttons |= IN_ATTACK;
         return true;
-    }
+    auto i = hacks::shared::backtrack::headPositions[iBestTarget][iBestTick];
+    if (!hacks::shared::backtrack::ValidTick(i, tar))
+        return true;
+    if (!i.hitboxes.at(head).center.z)
+        return true;
+    if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes.at(head).center,
+                         true))
+        return true;
+    Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
+    float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
+    angles.y       = i.viewangles;
+    simtime        = i.simtime;
+    current_user_cmd->tick_count = i.tickcount;
+    Vector tr = (i.hitboxes.at(head).center - g_pLocalPlayer->v_Eye);
+    Vector angles2;
+    VectorAngles(tr, angles2);
+    // Clamping is important
+    fClampAngle(angles2);
+    // Slow aim
+    if (slow_aim)
+        DoSlowAim(angles2);
+    else if (silent)
+        g_pLocalPlayer->bUseSilentAngles = true;
+    // Set angles
+    current_user_cmd->viewangles = angles2;
+    if (autoshoot && !slow_aim)
+        current_user_cmd->buttons |= IN_ATTACK;
     return true;
 }
 // The main "loop" of the aimbot.
@@ -265,7 +265,8 @@ void CreateMove()
                 currently_charging_pipe = true;
 
             // Grenade was released
-            if (!(current_user_cmd->buttons & IN_ATTACK) && currently_charging_pipe)
+            if (!(current_user_cmd->buttons & IN_ATTACK) &&
+                currently_charging_pipe)
             {
                 currently_charging_pipe = false;
                 Aim(target_entity);
@@ -317,7 +318,8 @@ bool ShouldAim()
         // If zoomed only is on, check if zoomed
         if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
         {
-            if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
+            if (!g_pLocalPlayer->bZoomed &&
+                !(current_user_cmd->buttons & IN_ATTACK))
                 return false;
         }
         // Is taunting?
@@ -1154,8 +1156,7 @@ void DoSlowAim(Vector &input_angle)
         // our last one.
         if (!slow_opposing)
             slow_change_dist_y =
-                std::abs(viewangles.y - input_angle.y) /
-                (int) slow_aim;
+                std::abs(viewangles.y - input_angle.y) / (int) slow_aim;
 
         // Move in the direction of the input angle
         if (slow_dir)

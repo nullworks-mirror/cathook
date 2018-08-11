@@ -20,8 +20,7 @@ constexpr uint8_t hexToInt(char c)
 namespace settings
 {
 
-template<>
-class Variable<glez::rgba>: public VariableBase<glez::rgba>
+template <> class Variable<glez::rgba> : public VariableBase<glez::rgba>
 {
 public:
     ~Variable<glez::rgba>() override = default;
@@ -31,7 +30,7 @@ public:
         return VariableType::COLOR;
     }
 
-    void fromString(const std::string& string) override
+    void fromString(const std::string &string) override
     {
         uint8_t rgba[4] = { 0, 0, 0, 255 };
 
@@ -50,12 +49,12 @@ public:
         setInternal(next);
     }
 
-    inline Variable<glez::rgba>& operator=(const glez::rgba& rgba)
+    inline Variable<glez::rgba> &operator=(const glez::rgba &rgba)
     {
         setInternal(rgba);
     }
 
-    inline Variable<glez::rgba>& operator=(const std::string& string)
+    inline Variable<glez::rgba> &operator=(const std::string &string)
     {
         fromString(string);
     }
@@ -68,15 +67,19 @@ public:
     {
         return value;
     }
+
 protected:
     void setInternal(glez::rgba next)
     {
         fireCallbacks(next);
-        value = next;
-        uint8_t rgba_int[4] = { uint8_t(next.r * 255.f), uint8_t(next.g * 255.f), uint8_t(next.b * 255.f), uint8_t(next.a * 255.f) };
+        value               = next;
+        uint8_t rgba_int[4] = { uint8_t(next.r * 255.f),
+                                uint8_t(next.g * 255.f),
+                                uint8_t(next.b * 255.f),
+                                uint8_t(next.a * 255.f) };
         for (int i = 0; i < 4; ++i)
         {
-            string[i * 2] = "0123456789abcdef"[(rgba_int[i] >> 4u) & 0xF];
+            string[i * 2]     = "0123456789abcdef"[(rgba_int[i] >> 4u) & 0xF];
             string[i * 2 + 1] = "0123456789abcdef"[rgba_int[i] & 0xF];
         }
     }
@@ -84,5 +87,4 @@ protected:
     glez::rgba value{};
     std::string string{ "00000000" };
 };
-
 }

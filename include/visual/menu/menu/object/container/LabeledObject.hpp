@@ -12,7 +12,7 @@
 namespace zerokernel
 {
 
-class LabeledObject: public Container
+class LabeledObject : public Container
 {
 public:
     LabeledObject();
@@ -25,7 +25,7 @@ public:
 
     //
 
-    void setObject(std::unique_ptr<BaseMenuObject>&& object);
+    void setObject(std::unique_ptr<BaseMenuObject> &&object);
 
     void setLabel(std::string text);
 
@@ -33,5 +33,4 @@ public:
 
     Text *label{ nullptr };
 };
-
 }

@@ -26,11 +26,14 @@ static settings::Float spin{ "antiaim.spin-speed", "10" };
 
 static settings::Bool aaaa_enable{ "antiaim.aaaa.enable", "0" };
 static settings::Float aaaa_interval{ "antiaim.aaaa.interval.seconds", "0" };
-static settings::Float aaaa_interval_random_high{ "antiaim.aaaa.interval.random-high", "10"};
-static settings::Float aaaa_interval_random_low{ "antiaim.aaaa.interval.random-low", "2" };
+static settings::Float aaaa_interval_random_high{
+    "antiaim.aaaa.interval.random-high", "10"
+};
+static settings::Float aaaa_interval_random_low{
+    "antiaim.aaaa.interval.random-low", "2"
+};
 static settings::Int aaaa_mode{ "antiaim.aaaa.mode", "0" };
 static settings::Button aaaa_flip_key{ "antiaim.aaaa.flip-key", "<null>" };
-
 
 namespace hacks::shared::antiaim
 {
@@ -438,7 +441,7 @@ void ProcessUserCmd(CUserCmd *cmd)
             cur_yaw += -180;
         if (cur_yaw < -180)
             cur_yaw += 180;
-        y           = cur_yaw;
+        y = cur_yaw;
         break;
     case 6: // OFFSETKEEP
         y += (float) yaw;
@@ -460,7 +463,7 @@ void ProcessUserCmd(CUserCmd *cmd)
                 cur_yaw += -180;
             if (cur_yaw < -180)
                 cur_yaw += 180;
-            y           = cur_yaw;
+            y = cur_yaw;
         }
         else if (!keepmode && !*bSendPackets)
         {
@@ -504,7 +507,7 @@ void ProcessUserCmd(CUserCmd *cmd)
                 cur_yaw += -180;
             if (cur_yaw < -180)
                 cur_yaw += 180;
-            y           = cur_yaw;
+            y = cur_yaw;
         }
         break;
     case 15: // Fake offsetkeep
@@ -602,7 +605,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         p = GetAAAAPitch();
     }
     g_pLocalPlayer->bUseSilentAngles = true;
-    //FakeCrouch(cmd);
+    // FakeCrouch(cmd);
 }
 
 bool isEnabled()

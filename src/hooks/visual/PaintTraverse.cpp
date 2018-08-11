@@ -318,7 +318,7 @@ label1:
     if (clean_screenshots && g_IEngine->IsTakingScreenshot())
         return;
 #if ENABLE_GUI
-    // FIXME
+// FIXME
 #endif
     draw::UpdateWTS();
 }

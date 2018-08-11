@@ -15,5 +15,4 @@ void leaveQueue();
 void disconnectAndAbandon();
 void abandon();
 int getQueue();
-
 }

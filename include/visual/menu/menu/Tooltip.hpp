@@ -13,7 +13,7 @@
 namespace zerokernel
 {
 
-class Tooltip: public BaseMenuObject
+class Tooltip : public BaseMenuObject
 {
 public:
     Tooltip();
@@ -26,7 +26,6 @@ public:
 
     Text text{};
     std::string lastText;
-    bool shown{false};
+    bool shown{ false };
 };
-
 }

@@ -13,31 +13,50 @@
 static settings::Bool enable{ "autoheal.enable", "false" };
 static settings::Bool silent{ "autoheal.silent", "true" };
 static settings::Bool pop_uber_auto{ "autoheal.uber.enable", "true" };
-static settings::Float pop_uber_percent{ "autoheal.uber.health-below-ratio", "0" };
+static settings::Float pop_uber_percent{ "autoheal.uber.health-below-ratio",
+                                         "0" };
 static settings::Bool share_uber{ "autoheal.uber.share", "true" };
 
 static settings::Bool auto_vacc{ "autoheal.vacc.enable", "false" };
 
-static settings::Bool auto_vacc_bullets{ "autoheal.vacc.bullet.enable", "true" };
+static settings::Bool auto_vacc_bullets{ "autoheal.vacc.bullet.enable",
+                                         "true" };
 static settings::Int vacc_sniper{ "autoheal.vacc.bullet.sniper-pop", "true" };
 
-static settings::Bool auto_vacc_fire_checking{ "autoheal.vacc.fire.enable", "true" };
-static settings::Int auto_vacc_pop_if_pyro{ "autoheal.vacc.fire.pyro-pop", "1" };
-static settings::Bool auto_vacc_check_on_fire{ "autoheal.vacc.fire.prevent-afterburn", "true" };
-static settings::Int auto_vacc_pyro_range{ "autoheal.vacc.fire.pyro-range", "450" };
+static settings::Bool auto_vacc_fire_checking{ "autoheal.vacc.fire.enable",
+                                               "true" };
+static settings::Int auto_vacc_pop_if_pyro{ "autoheal.vacc.fire.pyro-pop",
+                                            "1" };
+static settings::Bool auto_vacc_check_on_fire{
+    "autoheal.vacc.fire.prevent-afterburn", "true"
+};
+static settings::Int auto_vacc_pyro_range{ "autoheal.vacc.fire.pyro-range",
+                                           "450" };
 
-static settings::Bool auto_vacc_blast_checking{ "autoheal.vacc.blast.enable", "true" };
-static settings::Bool auto_vacc_blast_crit_pop{ "autoheal.vacc.blast.crit-pop", "true" };
-static settings::Int auto_vacc_blast_health{ "autoheal.vacc.blast.pop-near-rocket-health", "80" };
-static settings::Int auto_vacc_proj_danger_range{ "autoheal.vacc.blast.danger-range", "650" };
+static settings::Bool auto_vacc_blast_checking{ "autoheal.vacc.blast.enable",
+                                                "true" };
+static settings::Bool auto_vacc_blast_crit_pop{ "autoheal.vacc.blast.crit-pop",
+                                                "true" };
+static settings::Int auto_vacc_blast_health{
+    "autoheal.vacc.blast.pop-near-rocket-health", "80"
+};
+static settings::Int auto_vacc_proj_danger_range{
+    "autoheal.vacc.blast.danger-range", "650"
+};
 
 static settings::Int change_timer{ "autoheal.vacc.reset-timer", "200" };
 
-static settings::Int auto_vacc_bullet_pop_ubers{ "autoheal.vacc.bullet.min-charges", "0" };
-static settings::Int auto_vacc_fire_pop_ubers{ "autoheal.vacc.fire.min-charges", "0" };
-static settings::Int auto_vacc_blast_pop_ubers{ "autoheal.vacc.blast.min-charges", "0" };
+static settings::Int auto_vacc_bullet_pop_ubers{
+    "autoheal.vacc.bullet.min-charges", "0"
+};
+static settings::Int auto_vacc_fire_pop_ubers{ "autoheal.vacc.fire.min-charges",
+                                               "0" };
+static settings::Int auto_vacc_blast_pop_ubers{
+    "autoheal.vacc.blast.min-charges", "0"
+};
 
-static settings::Int default_resistance{ "autoheal.vacc.default-resistance", "0" };
+static settings::Int default_resistance{ "autoheal.vacc.default-resistance",
+                                         "0" };
 
 namespace hacks::tf::autoheal
 {
@@ -134,7 +153,6 @@ struct proj_data_s
 
 std::vector<proj_data_s> proj_data_array;
 
-
 int BlastDangerValue(CachedEntity *patient)
 {
     if (!auto_vacc_blast_checking)
@@ -196,7 +214,6 @@ int CurrentResistance()
         return 0;
     return CE_INT(LOCAL_W, netvar.m_nChargeResistType);
 }
-
 
 bool IsProjectile(CachedEntity *ent)
 {
@@ -396,7 +413,6 @@ bool IsVaccinator()
     return CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 998;
 }
 
-
 void CreateMove()
 {
     bool pop = false;
@@ -568,11 +584,11 @@ int HealingPriority(int idx)
         }
     }
 #endif
-/*    player_info_s info;
-    g_IEngine->GetPlayerInfo(idx, &info);
-    info.name[31] = 0;
-    if (strcasestr(info.name, ignore.GetString()))
-        priority = 0.0f;*/
+    /*    player_info_s info;
+        g_IEngine->GetPlayerInfo(idx, &info);
+        info.name[31] = 0;
+        if (strcasestr(info.name, ignore.GetString()))
+            priority = 0.0f;*/
     return priority;
 }
 

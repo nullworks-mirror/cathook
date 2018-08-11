@@ -10,7 +10,7 @@
 namespace zerokernel
 {
 
-class Text: public BaseMenuObject
+class Text : public BaseMenuObject
 {
 public:
     enum class VAlign
@@ -48,7 +48,7 @@ public:
 
     void set(std::string text);
 
-    const std::string& get() const;
+    const std::string &get() const;
 
     void calculate();
 
@@ -72,5 +72,4 @@ public:
 protected:
     std::string data{};
 };
-
 }

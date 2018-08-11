@@ -9,8 +9,7 @@
 namespace settings
 {
 
-template<>
-class Variable<std::string>: public VariableBase<std::string>
+template <> class Variable<std::string> : public VariableBase<std::string>
 {
 public:
     ~Variable() override = default;
@@ -20,7 +19,7 @@ public:
         return VariableType::STRING;
     }
 
-    void fromString(const std::string& string) override
+    void fromString(const std::string &string) override
     {
         fireCallbacks(string);
         value = string;
@@ -31,7 +30,7 @@ public:
         return value;
     }
 
-    inline Variable<std::string>& operator=(const std::string& string)
+    inline Variable<std::string> &operator=(const std::string &string)
     {
         fireCallbacks(std::string(string));
         value = string;
@@ -50,5 +49,4 @@ public:
 protected:
     std::string value{};
 };
-
 }

@@ -28,7 +28,7 @@ public:
     typedef std::function<void(int)> kick_callback_type;
     typedef std::function<void(unsigned)> open_steam_callback_type;
 
-    explicit PlayerListController(Table& table);
+    explicit PlayerListController(Table &table);
 
     void addPlayer(int id, PlayerListData data);
 
@@ -58,16 +58,15 @@ public:
 
     void updateRow(TRow *row);
 
-    void changeRowColor(TRow *row, const glez::rgba& color);
+    void changeRowColor(TRow *row, const glez::rgba &color);
 
     void handleMessage(Message &msg, bool is_relayed) override;
 
     //
 
-    Table& table;
+    Table &table;
 
     kick_callback_type cb_kick;
     open_steam_callback_type cb_open_steam;
 };
-
 }

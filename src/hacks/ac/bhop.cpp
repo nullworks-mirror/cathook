@@ -9,7 +9,8 @@
 #include <settings/Int.hpp>
 #include "common.hpp"
 
-static settings::Int bhop_detect_count{ "find-cheaters.bunnyhop.detections", "4" };
+static settings::Int bhop_detect_count{ "find-cheaters.bunnyhop.detections",
+                                        "4" };
 
 namespace ac::bhop
 {

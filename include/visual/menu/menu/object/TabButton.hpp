@@ -14,12 +14,12 @@ namespace zerokernel
 
 class TabSelection;
 
-class TabButton: public BaseMenuObject
+class TabButton : public BaseMenuObject
 {
 public:
     ~TabButton() override = default;
 
-    TabButton(TabSelection& parent, size_t id);
+    TabButton(TabSelection &parent, size_t id);
 
     void render() override;
 
@@ -36,5 +36,4 @@ protected:
     TabSelection &parent;
     const size_t id;
 };
-
 }

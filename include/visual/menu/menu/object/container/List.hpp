@@ -21,7 +21,6 @@ public:
 
     // Properties
 
-    int interval{3};
+    int interval{ 3 };
 };
-
 }

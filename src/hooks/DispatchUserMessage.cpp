@@ -216,9 +216,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
             }
 #if !LAGBOT_MODE
-            /*if (sendmsg.test_and_set(300000) &&
-                hacks::shared::antiaim::communicate)
-                chat_stack::Say("!!meow");*/
+/*if (sendmsg.test_and_set(300000) &&
+    hacks::shared::antiaim::communicate)
+    chat_stack::Say("!!meow");*/
 #endif
             if (crypt_chat)
             {

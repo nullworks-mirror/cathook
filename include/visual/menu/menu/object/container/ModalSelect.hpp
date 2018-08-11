@@ -12,7 +12,7 @@
 namespace zerokernel
 {
 
-class ModalSelect: public ModalContainer
+class ModalSelect : public ModalContainer
 {
 public:
     ~ModalSelect() override = default;
@@ -25,7 +25,7 @@ public:
 
     //
 
-    void addOption(std::string name, std::string value, std::optional<std::string> tooltip);
+    void addOption(std::string name, std::string value,
+                   std::optional<std::string> tooltip);
 };
-
 }

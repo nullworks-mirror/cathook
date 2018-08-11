@@ -29,18 +29,18 @@ public:
     static settings::RVariable<glez::rgba> bar_color;
 };
 
-template<typename T>
-class Slider : public BaseMenuObject
+template <typename T> class Slider : public BaseMenuObject
 {
 public:
     ~Slider() override = default;
 
-    Slider(): BaseMenuObject{}
+    Slider() : BaseMenuObject{}
     {
         bb.resize(*SliderStyle::default_width, *SliderStyle::default_height);
     }
 
-    explicit Slider(settings::ArithmeticVariable<T>& option): BaseMenuObject{}, option(&option)
+    explicit Slider(settings::ArithmeticVariable<T> &option)
+        : BaseMenuObject{}, option(&option)
     {
         bb.resize(*SliderStyle::default_width, *SliderStyle::default_height);
     }
@@ -65,7 +65,8 @@ public:
                         return true;
                     }
                 }
-            } else if (event->type == SDL_MOUSEBUTTONUP)
+            }
+            else if (event->type == SDL_MOUSEBUTTONUP)
                 grabbed = false;
         }
 
@@ -84,17 +85,25 @@ public:
         else
         {
             // Bar
-            glez::draw::rect(bb.getBorderBox().left() + *SliderStyle::handle_width / 2,
-                    bb.getBorderBox().top() + (bb.getBorderBox().height - *SliderStyle::bar_width) / 2,
-                    bb.getBorderBox().width - *SliderStyle::handle_width, *SliderStyle::bar_width,
-                    option ? *SliderStyle::bar_color : *style::colors::error);
+            glez::draw::rect(
+                bb.getBorderBox().left() + *SliderStyle::handle_width / 2,
+                bb.getBorderBox().top() +
+                    (bb.getBorderBox().height - *SliderStyle::bar_width) / 2,
+                bb.getBorderBox().width - *SliderStyle::handle_width,
+                *SliderStyle::bar_width,
+                option ? *SliderStyle::bar_color : *style::colors::error);
             // Handle body
-            auto offset = handleOffset() * (bb.getBorderBox().width - *SliderStyle::handle_width);
-            glez::draw::rect(bb.getBorderBox().left() + offset, bb.getBorderBox().top(), *SliderStyle::handle_width, bb.getBorderBox().height,
-                             *SliderStyle::handle_body);
+            auto offset = handleOffset() * (bb.getBorderBox().width -
+                                            *SliderStyle::handle_width);
+            glez::draw::rect(
+                bb.getBorderBox().left() + offset, bb.getBorderBox().top(),
+                *SliderStyle::handle_width, bb.getBorderBox().height,
+                *SliderStyle::handle_body);
             // Handle outline
-            glez::draw::rect_outline(bb.getBorderBox().left() + offset, bb.getBorderBox().top(), *SliderStyle::handle_width, bb.getBorderBox().height,
-                                     *SliderStyle::handle_border, 1);
+            glez::draw::rect_outline(
+                bb.getBorderBox().left() + offset, bb.getBorderBox().top(),
+                *SliderStyle::handle_width, bb.getBorderBox().height,
+                *SliderStyle::handle_border, 1);
         }
 
         BaseMenuObject::render();
@@ -106,7 +115,8 @@ public:
 
         const char *target{ nullptr };
         settings::IVariable *opt{ nullptr };
-        if (tinyxml2::XML_SUCCESS == data->QueryStringAttribute("target", &target))
+        if (tinyxml2::XML_SUCCESS ==
+            data->QueryStringAttribute("target", &target))
         {
             std::string str(target);
             opt = settings::Manager::instance().lookup(str);
@@ -116,20 +126,22 @@ public:
             }
         }
 
-        if constexpr (std::is_same<int, T>::value)
-        {
-            data->QueryIntAttribute("min", &min);
-            data->QueryIntAttribute("max", &max);
-            data->QueryIntAttribute("step", &step);
-            option = dynamic_cast<settings::Variable<int> *>(opt);
-        }
-        else if constexpr (std::is_same<float, T>::value)
-        {
-            data->QueryFloatAttribute("min", &min);
-            data->QueryFloatAttribute("max", &max);
-            data->QueryFloatAttribute("step", &step);
-            option = dynamic_cast<settings::Variable<float> *>(opt);
-        }
+        if
+            constexpr(std::is_same<int, T>::value)
+            {
+                data->QueryIntAttribute("min", &min);
+                data->QueryIntAttribute("max", &max);
+                data->QueryIntAttribute("step", &step);
+                option = dynamic_cast<settings::Variable<int> *>(opt);
+            }
+        else if
+            constexpr(std::is_same<float, T>::value)
+            {
+                data->QueryFloatAttribute("min", &min);
+                data->QueryFloatAttribute("max", &max);
+                data->QueryFloatAttribute("step", &step);
+                option = dynamic_cast<settings::Variable<float> *>(opt);
+            }
     }
 
     void update() override
@@ -153,11 +165,14 @@ public:
         if (!option)
             return;
 
-        auto mouse_offset = mouse - (vertical ? bb.getBorderBox().top() : bb.getBorderBox().left());
-        auto bar_length = (vertical ? bb.getBorderBox().height : bb.getBorderBox().width) - *SliderStyle::handle_width;
+        auto mouse_offset = mouse - (vertical ? bb.getBorderBox().top()
+                                              : bb.getBorderBox().left());
+        auto bar_length =
+            (vertical ? bb.getBorderBox().height : bb.getBorderBox().width) -
+            *SliderStyle::handle_width;
         auto fraction = mouse_offset / float(bar_length);
-        fraction = std::clamp(fraction, 0.f, 1.f);
-        T value = (max - min) * fraction + min;
+        fraction      = std::clamp(fraction, 0.f, 1.f);
+        T value       = (max - min) * fraction + min;
         if (step != 0)
             value -= utility::mod(value, step);
         if (value != **option)
@@ -191,7 +206,7 @@ public:
     {
         if (!is_relayed && msg.name == "ModalClose")
         {
-            modal = nullptr;
+            modal   = nullptr;
             grabbed = false;
         }
         BaseMenuObject::handleMessage(msg, is_relayed);
@@ -201,9 +216,9 @@ public:
     {
         if (!option)
             return;
-        grabbed = false;
+        grabbed      = false;
         auto spinner = std::make_unique<ModalSpinner<T>>(*option);
-        modal = spinner.get();
+        modal        = spinner.get();
         // TODO style this
         spinner->resize(bb.getBorderBox().width, bb.getBorderBox().height);
         spinner->move(bb.getBorderBox().left(), bb.getBorderBox().top());
@@ -227,5 +242,4 @@ public:
 
     settings::ArithmeticVariable<T> *option{ nullptr };
 };
-
 }

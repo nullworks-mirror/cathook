@@ -137,8 +137,7 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
         }
     }
 
-    if ((*force_name).size() > 1 &&
-        steam_id == g_ISteamUser->GetSteamID())
+    if ((*force_name).size() > 1 && steam_id == g_ISteamUser->GetSteamID())
     {
         return force_name.toString().c_str();
     }

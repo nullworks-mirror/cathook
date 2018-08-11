@@ -9,7 +9,7 @@
 namespace zerokernel
 {
 
-class ScrollableList: public Container
+class ScrollableList : public Container
 {
 public:
     ~ScrollableList() override = default;
@@ -39,5 +39,4 @@ public:
     size_t start_index{ 0 };
     size_t end_index{ 0 };
 };
-
 }

@@ -17,12 +17,12 @@ class WindowManager;
  *  Manages Z-Order of these windows
  *  Can bring a window to top
  */
-class WindowContainer: public BaseMenuObject
+class WindowContainer : public BaseMenuObject
 {
 public:
     ~WindowContainer() override = default;
 
-    explicit WindowContainer(WindowManager& wm);
+    explicit WindowContainer(WindowManager &wm);
 
     bool handleSdlEvent(SDL_Event *event) override;
 
@@ -49,7 +49,7 @@ public:
 
     // WM Functions
 
-    WMWindow& wmCreateWindow();
+    WMWindow &wmCreateWindow();
     WMWindow *wmFindWindow(size_t uid);
     WMWindow *wmGetActive();
     void wmRequestFocus(size_t uid);
@@ -63,7 +63,6 @@ public:
     WMWindow *active_window{ nullptr };
     size_t request_move_top{};
 
-    WindowManager& wm;
+    WindowManager &wm;
 };
-
 }

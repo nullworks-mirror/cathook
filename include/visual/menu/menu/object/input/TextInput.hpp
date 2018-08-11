@@ -12,7 +12,7 @@
 namespace zerokernel
 {
 
-class TextInput: public BaseMenuObject
+class TextInput : public BaseMenuObject
 {
 public:
     ~TextInput() override = default;
@@ -31,7 +31,7 @@ public:
 
     virtual void finishInput(bool accept);
 
-    virtual const std::string& getValue();
+    virtual const std::string &getValue();
 
     virtual void setValue(std::string value);
 
@@ -49,5 +49,4 @@ public:
     std::string current_text{};
     std::string text{};
 };
-
 }

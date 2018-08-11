@@ -52,44 +52,44 @@ public:
     virtual ~IVariable() = default;
 
     // Faster than checking with dynamic_cast
-    virtual VariableType getType() = 0;
-    virtual void fromString(const std::string& string) = 0;
-    // Const reference because every variable will cache the string value instead of generating it every call
-    virtual const std::string& toString() = 0;
+    virtual VariableType getType()                     = 0;
+    virtual void fromString(const std::string &string) = 0;
+    // Const reference because every variable will cache the string value
+    // instead of generating it every call
+    virtual const std::string &toString() = 0;
 };
 
-template<typename T>
-class VariableBase: public IVariable
+template <typename T> class VariableBase : public IVariable
 {
 public:
     using type = T;
 
     ~VariableBase() override = default;
 
-    virtual const T& operator*() = 0;
+    virtual const T &operator*() = 0;
 
-    void installChangeCallback(std::function<void(VariableBase<T>& var, T after)> callback)
+    void installChangeCallback(
+        std::function<void(VariableBase<T> &var, T after)> callback)
     {
         callbacks.push_back(callback);
     }
+
 protected:
     void fireCallbacks(T next)
     {
-        for (auto& c: callbacks)
+        for (auto &c : callbacks)
             c(*this, next);
     }
 
-    std::vector<std::function<void(VariableBase<T>&, T)>> callbacks{};
+    std::vector<std::function<void(VariableBase<T> &, T)>> callbacks{};
     T default_value{};
 };
 
-template<typename T>
-class Variable
+template <typename T> class Variable
 {
 };
 
-template<typename T>
-class ArithmeticVariable: public VariableBase<T>
+template <typename T> class ArithmeticVariable : public VariableBase<T>
 {
 public:
     ~ArithmeticVariable<T>() override = default;
@@ -107,13 +107,13 @@ public:
         return value;
     }
 
-    //T min{ std::numeric_limits<T>::min() };
-    //T max{ std::numeric_limits<T>::max() };
+    // T min{ std::numeric_limits<T>::min() };
+    // T max{ std::numeric_limits<T>::max() };
 
     virtual void set(T next)
     {
-        //if (next < min) next = min;
-        //if (next > max) next = max;
+        // if (next < min) next = min;
+        // if (next > max) next = max;
         if (next != value || string.empty())
         {
             this->fireCallbacks(next);
@@ -131,7 +131,6 @@ protected:
         string = std::to_string(value);
     }
 };
-
 }
 
 #include "Bool.hpp"

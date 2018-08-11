@@ -40,11 +40,12 @@ void zerokernel::TreeListCollapsible::listCollapse()
     auto container = dynamic_cast<Container *>(parent);
     if (!container)
     {
-        printf("TreeListCollapsible: can't collapse: Container(parent) == NULL\n");
+        printf(
+            "TreeListCollapsible: can't collapse: Container(parent) == NULL\n");
         return;
     }
     bool flag = false;
-    for (auto& o: container->objects)
+    for (auto &o : container->objects)
     {
         auto item = dynamic_cast<TreeListBaseEntry *>(o.get());
         if (item)
@@ -72,11 +73,12 @@ void zerokernel::TreeListCollapsible::listUncollapse()
     auto container = dynamic_cast<Container *>(parent);
     if (!container)
     {
-        printf("TreeListCollapsible: can't uncollapse: Container(parent) == NULL\n");
+        printf("TreeListCollapsible: can't uncollapse: Container(parent) == "
+               "NULL\n");
         return;
     }
     bool flag = false;
-    for (auto& o: container->objects)
+    for (auto &o : container->objects)
     {
         auto item = dynamic_cast<TreeListBaseEntry *>(o.get());
         if (item)

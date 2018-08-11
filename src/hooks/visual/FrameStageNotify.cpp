@@ -98,7 +98,10 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
         while (fire) {
             logging::Info("0x%08X", (uintptr_t) fire);
             C_TEFireBullets *fire2 = nullptr;
-            if (!fire->IsDormant() && fire->GetClientNetworkable()->GetClientClass() && fire->GetClientNetworkable()->GetClientClass()->m_ClassID == CL_CLASS(CTEFireBullets))
+            if (!fire->IsDormant() &&
+    fire->GetClientNetworkable()->GetClientClass() &&
+    fire->GetClientNetworkable()->GetClientClass()->m_ClassID ==
+    CL_CLASS(CTEFireBullets))
                 fire2 = (C_TEFireBullets *) fire;
             if (fire2 && !hooks::IsHooked((void *) fire2)) {
                 hooks::firebullets.Set(fire2);

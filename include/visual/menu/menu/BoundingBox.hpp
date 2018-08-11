@@ -89,8 +89,9 @@ public:
             return y + height;
         }
     };
+
 public:
-    explicit BoundingBox(BaseMenuObject& object);
+    explicit BoundingBox(BaseMenuObject &object);
 
     /*
      * Does the border box area contain the point
@@ -101,11 +102,11 @@ public:
      * Extends the box, if needed, to fit the other box without moving it
      * Returns true if the size of the box was changed
      */
-    bool extend(BoundingBox& box);
+    bool extend(BoundingBox &box);
 
     //
 
-    BoundingBox& getParentBox();
+    BoundingBox &getParentBox();
 
     bool isFloating();
 
@@ -159,7 +160,7 @@ public:
 
     box getContentBox() const;
 
-    const box& getBorderBox() const;
+    const box &getBorderBox() const;
 
     //
 
@@ -172,7 +173,6 @@ public:
 
     bool floating{ false };
 
-    BaseMenuObject& object;
+    BaseMenuObject &object;
 };
-
 }

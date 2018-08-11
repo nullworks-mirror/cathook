@@ -17,7 +17,8 @@ static settings::Bool radar_enabled{ "radar.enable", "false" };
 static settings::Int size{ "radar.size", "300" };
 static settings::Float zoom{ "radar.zoom", "20" };
 static settings::Bool healthbar{ "radar.healthbar", "true" };
-static settings::Bool enemies_over_teammates{ "radar.enemies-over-teammates", "true" };
+static settings::Bool enemies_over_teammates{ "radar.enemies-over-teammates",
+                                              "true" };
 static settings::Int icon_size{ "radar.icon-size", "20" };
 static settings::Int radar_x{ "radar.x", "100" };
 static settings::Int radar_y{ "radar.y", "100" };

@@ -15,7 +15,6 @@ static settings::Bool autojoin_team{ "autojoin.team", "false" };
 static settings::Int autojoin_class{ "autojoin.class", "0" };
 static settings::Bool auto_queue{ "autojoin.auto-queue", "false" };
 
-
 namespace hacks::shared::autojoin
 {
 
@@ -138,5 +137,4 @@ void onShutdown()
     if (auto_queue)
         tfmm::startQueue();
 }
-
 }

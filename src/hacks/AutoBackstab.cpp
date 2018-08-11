@@ -72,7 +72,7 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max,
     if (!min.x && !max.x)
         return false;
 
-    Vector head      = g_pLocalPlayer->v_Eye;
+    Vector head = g_pLocalPlayer->v_Eye;
 
     // Check if we are in range. Note: This has to be done in order to avoid
     // false positives even when "forward" is only "meleeRange" away from the

@@ -13,9 +13,7 @@ namespace zerokernel
 class StaticTextComponent
 {
 public:
-    StaticTextComponent(const std::string& string, glez::font& font);
-
-
+    StaticTextComponent(const std::string &string, glez::font &font);
 
     int x{};
     int y{};
@@ -25,7 +23,6 @@ public:
     int size_y{};
 
     const std::string string;
-    glez::font& font;
+    glez::font &font;
 };
-
 }

@@ -6,9 +6,15 @@
 #include <menu/menu/special/SettingsManagerList.hpp>
 
 static settings::RVariable<int> checkbox_size{ "zk.style.checkbox.size", "12" };
-static settings::RVariable<glez::rgba> color_border{ "zk.style.checkbox.color.border", "079797" };
-static settings::RVariable<glez::rgba> color_checked{ "zk.style.checkbox.color.checked", "079797" };
-static settings::RVariable<glez::rgba> color_hover{ "zk.style.checkbox.color.hover", "07979777" };
+static settings::RVariable<glez::rgba> color_border{
+    "zk.style.checkbox.color.border", "079797"
+};
+static settings::RVariable<glez::rgba> color_checked{
+    "zk.style.checkbox.color.checked", "079797"
+};
+static settings::RVariable<glez::rgba> color_hover{
+    "zk.style.checkbox.color.hover", "07979777"
+};
 
 bool zerokernel::Checkbox::onLeftMouseClick()
 {
@@ -19,13 +25,14 @@ bool zerokernel::Checkbox::onLeftMouseClick()
     return true;
 }
 
-zerokernel::Checkbox::Checkbox(): BaseMenuObject{}
+zerokernel::Checkbox::Checkbox() : BaseMenuObject{}
 {
     bb.resize(*checkbox_size, *checkbox_size);
     bb.setPadding(3, 3, 3, 3);
 }
 
-zerokernel::Checkbox::Checkbox(settings::Variable<bool> &option): option(&option)
+zerokernel::Checkbox::Checkbox(settings::Variable<bool> &option)
+    : option(&option)
 {
     bb.resize(*checkbox_size, *checkbox_size);
     bb.setPadding(3, 3, 3, 3);

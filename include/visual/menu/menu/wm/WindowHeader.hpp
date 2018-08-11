@@ -18,10 +18,10 @@ class WMWindow;
  *  Allows closing (hiding) windows
  *  Allows dragging windows around
  */
-class WindowHeader: public Container
+class WindowHeader : public Container
 {
 public:
-    explicit WindowHeader(WMWindow& window);
+    explicit WindowHeader(WMWindow &window);
 
     ~WindowHeader() override = default;
 
@@ -43,10 +43,9 @@ public:
 
     //
 
-    WMWindow& window;
+    WMWindow &window;
     bool dragged{ false };
     WindowCloseButton *close{ nullptr };
     Text *title{ nullptr };
 };
-
 }

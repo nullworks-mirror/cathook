@@ -13,5 +13,4 @@ namespace votelogger
 {
 
 void dispatchUserMessage(bf_read &buffer, int type);
-
 }

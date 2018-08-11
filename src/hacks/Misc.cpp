@@ -41,7 +41,7 @@ static void *C_TFPlayer__ShouldDraw_original = nullptr;
 static bool C_TFPlayer__ShouldDraw_hook(IClientEntity *thisptr)
 {
     if (thisptr ==
-        g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) &&
+            g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) &&
         g_pLocalPlayer->bZoomed && thisptr)
     {
         // NET_INT(thisptr, netvar.iCond) &= ~(1 << TFCond_Zoomed);
@@ -53,7 +53,7 @@ static bool C_TFPlayer__ShouldDraw_hook(IClientEntity *thisptr)
     else
     {
         return ((bool (*)(IClientEntity *)) C_TFPlayer__ShouldDraw_original)(
-                thisptr);
+            thisptr);
     }
 }
 
@@ -66,8 +66,7 @@ static void tryPatchLocalPlayerShouldDraw()
         C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];
         void *page = (void *) ((uintptr_t) vtable & ~0xFFF);
         mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-        vtable[offsets::ShouldDraw()] =
-                (void *) C_TFPlayer__ShouldDraw_hook;
+        vtable[offsets::ShouldDraw()] = (void *) C_TFPlayer__ShouldDraw_hook;
         mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
     }
 }
@@ -150,12 +149,14 @@ void CreateMove()
     // Automaticly airstrafes in the air
     if (auto_strafe)
     {
-        auto ground = (bool)(CE_INT(g_pLocalPlayer->entity, netvar.iFlags) & FL_ONGROUND);
+        auto ground = (bool) (CE_INT(g_pLocalPlayer->entity, netvar.iFlags) &
+                              FL_ONGROUND);
         if (!ground)
         {
             if (current_user_cmd->mousedx)
             {
-                current_user_cmd->sidemove = current_user_cmd->mousedx > 1 ? 450.f : -450.f;
+                current_user_cmd->sidemove =
+                    current_user_cmd->mousedx > 1 ? 450.f : -450.f;
             }
         }
     }
@@ -174,7 +175,7 @@ void CreateMove()
         {
             if (flash_light_spam_switch && !current_user_cmd->impulse)
                 current_user_cmd->impulse = 100;
-            flash_light_spam_switch = !flash_light_spam_switch;
+            flash_light_spam_switch       = !flash_light_spam_switch;
         }
     }
 
@@ -208,7 +209,7 @@ void CreateMove()
                     // Doesnt work with anti-aim as well as I hoped... I guess
                     // this is as far as I can go with such a simple tauntslide
                     if (!hacks::shared::antiaim::isEnabled())
-                        current_user_cmd->viewangles.y       = camera_angle[1];
+                        current_user_cmd->viewangles.y = camera_angle[1];
                     g_pLocalPlayer->v_OrigViewangles.y = camera_angle[1];
 
                     // Use silent since we dont want to prevent the player from

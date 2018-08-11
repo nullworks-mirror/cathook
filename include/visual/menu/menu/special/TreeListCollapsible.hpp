@@ -10,7 +10,7 @@
 namespace zerokernel
 {
 
-class TreeListCollapsible: public TreeListBaseEntry
+class TreeListCollapsible : public TreeListBaseEntry
 {
 public:
     TreeListCollapsible();
@@ -46,5 +46,4 @@ public:
     Text text{};
     std::string name{};
 };
-
 }

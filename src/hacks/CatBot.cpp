@@ -12,10 +12,14 @@
 static settings::Bool enable{ "cat-bot.enable", "false" };
 
 static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
-static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte", "0" };
-static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte", "0" };
-static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte", "0" };
-static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills", "2" };
+static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte",
+                                              "0" };
+static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte",
+                                            "0" };
+static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte",
+                                             "0" };
+static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills",
+                                           "2" };
 
 static settings::Bool micspam{ "cat-bot.micspam.enable", "false" };
 static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
@@ -272,8 +276,7 @@ void update()
     {
         if (micspam_on && micspam_on_timer.test_and_set(*micspam_on * 1000))
             g_IEngine->ExecuteClientCmd("+voicerecord");
-        if (micspam_off &&
-            micspam_off_timer.test_and_set(*micspam_off * 1000))
+        if (micspam_off && micspam_off_timer.test_and_set(*micspam_off * 1000))
             g_IEngine->ExecuteClientCmd("-voicerecord");
     }
 

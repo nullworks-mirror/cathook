@@ -9,7 +9,7 @@
 namespace zerokernel
 {
 
-class TRow: public Container
+class TRow : public Container
 {
 public:
     TRow();
@@ -26,5 +26,4 @@ public:
 
     Table *table;
 };
-
 }

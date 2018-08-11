@@ -21,7 +21,8 @@ static settings::Float fov{ "autoreflect.fov", "85" };
 
 #if ENABLE_VISUALS
 static settings::Bool fov_draw{ "autoreflect.draw-fov", "false" };
-static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity", "0.7" };
+static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity",
+                                          "0.7" };
 #endif
 
 namespace hacks::tf::autoreflect

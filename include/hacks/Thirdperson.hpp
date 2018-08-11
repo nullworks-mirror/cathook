@@ -8,5 +8,4 @@ namespace hacks::tf::thirdperson
 {
 
 void frameStageNotify();
-
 }

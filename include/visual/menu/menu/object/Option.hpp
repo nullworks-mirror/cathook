@@ -10,7 +10,7 @@
 namespace zerokernel
 {
 
-class Option: public BaseMenuObject
+class Option : public BaseMenuObject
 {
 public:
     ~Option() override = default;
@@ -35,5 +35,4 @@ public:
     const std::string name;
     const std::string value;
 };
-
 }

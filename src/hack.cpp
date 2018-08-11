@@ -241,7 +241,7 @@ free(logname);*/
 #if ENABLE_VISUALS
     draw::Initialize();
 #if ENABLE_GUI
-    // FIXME put gui here
+// FIXME put gui here
 #endif
 
 #endif /* TEXTMODE */

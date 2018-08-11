@@ -13,7 +13,7 @@ namespace zerokernel
 
 class WindowContainer;
 
-class WMWindow: public Container
+class WMWindow : public Container
 {
 public:
     enum class HeaderLocation
@@ -25,7 +25,7 @@ public:
 
     ~WMWindow() override = default;
 
-    explicit WMWindow(WindowContainer& container);
+    explicit WMWindow(WindowContainer &container);
 
     bool handleSdlEvent(SDL_Event *event) override;
 
@@ -61,7 +61,7 @@ public:
 
     // WM info
 
-    WindowContainer& container;
+    WindowContainer &container;
     std::string name{};
     std::string short_name{};
     bool focused{ false };
@@ -75,5 +75,4 @@ public:
     WindowHeader *header{ nullptr };
     Container *contents{ nullptr };
 };
-
 }

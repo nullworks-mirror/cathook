@@ -21,7 +21,8 @@ static settings::Bool draw_info{ "walkbot.draw.info", "true" };
 static settings::Bool draw_path{ "walkbot.draw.path", "true" };
 static settings::Bool draw_nodes{ "walkbot.draw.nodes", "true" };
 static settings::Bool draw_indices{ "walkbot.draw.indices", "false" };
-static settings::Bool draw_connection_flags{ "walkbot.draw.connection-flags", "true" };
+static settings::Bool draw_connection_flags{ "walkbot.draw.connection-flags",
+                                             "true" };
 
 static settings::Bool free_move{ "walkbot.free-move", "true" };
 static settings::Int spawn_distance{ "walkbot.edit.node-spawn-distance", "54" };
@@ -935,7 +936,8 @@ void UpdateWalker()
     free_move_used = false;
     if (free_move)
     {
-        if (current_user_cmd->forwardmove != 0.0f or current_user_cmd->sidemove != 0.0f)
+        if (current_user_cmd->forwardmove != 0.0f or
+            current_user_cmd->sidemove != 0.0f)
         {
             free_move_used = true;
             return;
@@ -1007,7 +1009,8 @@ bool ShouldSpawnNode()
     if (was_jumping != is_jumping and is_jumping)
         return true;
 
-    if ((state::last_node_buttons & IN_DUCK) != (current_user_cmd->buttons & IN_DUCK))
+    if ((state::last_node_buttons & IN_DUCK) !=
+        (current_user_cmd->buttons & IN_DUCK))
         return true;
 
     auto &node = state::nodes[state::active_node];

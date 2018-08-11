@@ -11,7 +11,7 @@
 namespace zerokernel
 {
 
-class WindowCloseButton: public BaseMenuObject
+class WindowCloseButton : public BaseMenuObject
 {
 public:
     ~WindowCloseButton() override = default;
@@ -22,5 +22,4 @@ public:
 
     bool onLeftMouseClick() override;
 };
-
 }

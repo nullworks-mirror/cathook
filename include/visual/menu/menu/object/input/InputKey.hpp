@@ -20,7 +20,7 @@ public:
 
     InputKey();
 
-    explicit InputKey(settings::Variable<settings::Key>& key);
+    explicit InputKey(settings::Variable<settings::Key> &key);
 
     bool handleSdlEvent(SDL_Event *event) override;
 
@@ -32,7 +32,6 @@ public:
 
     Text text{};
     settings::Variable<settings::Key> *key{};
-    bool capturing{false};
+    bool capturing{ false };
 };
-
 }

@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <functional>
 
-
 namespace zerokernel
 {
 
@@ -61,9 +60,9 @@ public:
     virtual void reorderElements();
 
     virtual void iterateObjects(std::function<void(BaseMenuObject *)> callback);
+
 public:
     bool reorder_needed{ true };
     std::vector<std::unique_ptr<BaseMenuObject>> objects{};
 };
-
 }

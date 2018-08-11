@@ -22,10 +22,14 @@ static settings::Float delay{ "trigger.delay", "0" };
 static settings::Button trigger_key{ "trigger.key.button", "<null>" };
 static settings::Int trigger_key_mode{ "trigger.key.mode", "1" };
 // FIXME move these into targeting
-static settings::Bool ignore_cloak{ "trigger.target.ignore-cloaked-spies", "true" };
-static settings::Bool ignore_vaccinator{ "trigger.target.ignore-vaccinator", "true" };
-static settings::Bool buildings_sentry{ "trigger.target.buildings-sentry", "true" };
-static settings::Bool buildings_other{ "trigger.target.buildings-other", "true" };
+static settings::Bool ignore_cloak{ "trigger.target.ignore-cloaked-spies",
+                                    "true" };
+static settings::Bool ignore_vaccinator{ "trigger.target.ignore-vaccinator",
+                                         "true" };
+static settings::Bool buildings_sentry{ "trigger.target.buildings-sentry",
+                                        "true" };
+static settings::Bool buildings_other{ "trigger.target.buildings-other",
+                                       "true" };
 static settings::Bool stickybot{ "trigger.target.stickybombs", "false" };
 static settings::Bool teammates{ "trigger.target.teammates", "false" };
 static settings::Int max_range{ "trigger.target.max-range", "4096" };
@@ -46,7 +50,7 @@ bool CanBacktrack()
         return false;
     for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
     {
-        if(!hacks::shared::backtrack::ValidTick(i, tar))
+        if (!hacks::shared::backtrack::ValidTick(i, tar))
             continue;
         auto min = i.hitboxes.at(head).min;
         auto max = i.hitboxes.at(head).max;
@@ -172,7 +176,8 @@ bool ShouldShoot()
         // If zoomed only is on, check if zoomed
         if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
         {
-            if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
+            if (!g_pLocalPlayer->bZoomed &&
+                !(current_user_cmd->buttons & IN_ATTACK))
                 return false;
         }
         // Check if player is taunting

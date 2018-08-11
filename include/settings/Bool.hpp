@@ -10,8 +10,7 @@
 namespace settings
 {
 
-template<>
-class Variable<bool>: public VariableBase<bool>
+template <> class Variable<bool> : public VariableBase<bool>
 {
 public:
     ~Variable() override = default;
@@ -28,7 +27,7 @@ public:
         return VariableType::BOOL;
     }
 
-    void fromString(const std::string& string) override
+    void fromString(const std::string &string) override
     {
         if (string == "0" || string == "false")
             setInternal(false);
@@ -36,7 +35,7 @@ public:
             setInternal(true);
     }
 
-    inline Variable<bool>& operator=(const std::string& string)
+    inline Variable<bool> &operator=(const std::string &string)
     {
         fromString(string);
     }
@@ -51,7 +50,7 @@ public:
         return value;
     }
 
-    inline Variable<bool>& operator=(bool next)
+    inline Variable<bool> &operator=(bool next)
     {
         setInternal(next);
     }
@@ -72,12 +71,11 @@ protected:
         if (next == value)
             return;
         fireCallbacks(next);
-        value = next;
+        value  = next;
         string = value ? "true" : "false";
     }
 
     bool value{ false };
     std::string string{ "false" };
 };
-
 }

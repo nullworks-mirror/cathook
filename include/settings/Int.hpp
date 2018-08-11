@@ -9,8 +9,7 @@
 namespace settings
 {
 
-template<>
-class Variable<int>: public ArithmeticVariable<int>
+template <> class Variable<int> : public ArithmeticVariable<int>
 {
 public:
     ~Variable() override = default;
@@ -20,21 +19,21 @@ public:
         return VariableType::INT;
     }
 
-    void fromString(const std::string& string) override
+    void fromString(const std::string &string) override
     {
-        errno = 0;
+        errno       = 0;
         auto result = std::strtol(string.c_str(), nullptr, 10);
         if (result == 0 && errno)
             return;
         set(result);
     }
 
-    inline Variable<int>& operator=(const std::string& string)
+    inline Variable<int> &operator=(const std::string &string)
     {
         fromString(string);
     }
 
-    inline Variable<int>& operator=(const int& next)
+    inline Variable<int> &operator=(const int &next)
     {
         set(next);
     }
@@ -44,5 +43,4 @@ public:
         return value != 0;
     }
 };
-
 }

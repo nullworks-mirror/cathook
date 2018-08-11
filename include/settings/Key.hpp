@@ -18,8 +18,7 @@ struct Key
     SDL_Scancode scan{ static_cast<SDL_Scancode>(0) };
 };
 
-template<>
-class Variable<Key>: public VariableBase<Key>
+template <> class Variable<Key> : public VariableBase<Key>
 {
 public:
     ~Variable() override = default;
@@ -30,7 +29,7 @@ public:
     }
 
     // Valid inputs: "Mouse1", "Mouse5", "Key 6", "Key 10", "Key 2", "Space".
-    void fromString(const std::string& string) override
+    void fromString(const std::string &string) override
     {
         if (string == "<null>")
         {
@@ -45,8 +44,8 @@ public:
         }
         else if (string.find("Key ") != std::string::npos)
         {
-            key.scan = static_cast<SDL_Scancode>(std::strtol(string.c_str() + 4,
-                                                             nullptr, 10));
+            key.scan = static_cast<SDL_Scancode>(
+                std::strtol(string.c_str() + 4, nullptr, 10));
         }
         else
         {
@@ -58,24 +57,24 @@ public:
         setInternal(key);
     }
 
-    Variable& operator=(const std::string& string)
+    Variable &operator=(const std::string &string)
     {
         fromString(string);
     }
 
-    Variable& reset()
+    Variable &reset()
     {
         setInternal(Key{});
     }
 
-    Variable& key(SDL_Scancode key)
+    Variable &key(SDL_Scancode key)
     {
         Key k{};
         k.scan = key;
         setInternal(k);
     }
 
-    Variable& mouse(int mouse_key)
+    Variable &mouse(int mouse_key)
     {
         Key k{};
         k.mouse = mouse_key;
@@ -125,7 +124,8 @@ protected:
                 string = "<null>";
             else
             {
-                const char *s = SDL_GetKeyName(SDL_GetKeyFromScancode(next.scan));
+                const char *s =
+                    SDL_GetKeyName(SDL_GetKeyFromScancode(next.scan));
                 if (!s || *s == 0)
                     string = "Key " + std::to_string(next.scan);
                 else
@@ -139,5 +139,4 @@ protected:
     std::string string{};
     Key value{};
 };
-
 }

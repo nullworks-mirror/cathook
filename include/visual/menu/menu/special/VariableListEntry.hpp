@@ -42,20 +42,24 @@ public:
 
     void markPresentInUi();
 
-    std::unique_ptr<BaseMenuObject> createCheckbox(settings::IVariable *variable);
+    std::unique_ptr<BaseMenuObject>
+    createCheckbox(settings::IVariable *variable);
 
-    std::unique_ptr<BaseMenuObject> createSpinner(settings::IVariable *variable);
+    std::unique_ptr<BaseMenuObject>
+    createSpinner(settings::IVariable *variable);
 
-    std::unique_ptr<BaseMenuObject> createTextInput(settings::IVariable *variable);
+    std::unique_ptr<BaseMenuObject>
+    createTextInput(settings::IVariable *variable);
 
-    std::unique_ptr<BaseMenuObject> createColorPicker(settings::IVariable *variable);
+    std::unique_ptr<BaseMenuObject>
+    createColorPicker(settings::IVariable *variable);
 
-    std::unique_ptr<BaseMenuObject> createKeyInput(settings::IVariable *variable);
+    std::unique_ptr<BaseMenuObject>
+    createKeyInput(settings::IVariable *variable);
 
     //
 
     std::unique_ptr<BaseMenuObject> control{ nullptr };
     Text label{};
 };
-
 }

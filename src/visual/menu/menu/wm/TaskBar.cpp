@@ -7,21 +7,27 @@
 #include <menu/wm/Task.hpp>
 #include <menu/Menu.hpp>
 
-static settings::RVariable<glez::rgba> color_background{ "zk.style.taskbar.color.background", "1d2f40" };
-static settings::RVariable<glez::rgba> color_border{ "zk.style.taskbar.color.border", "079797" };
+static settings::RVariable<glez::rgba> color_background{
+    "zk.style.taskbar.color.background", "1d2f40"
+};
+static settings::RVariable<glez::rgba> color_border{
+    "zk.style.taskbar.color.border", "079797"
+};
 
 void zerokernel::TaskBar::reorderElements()
 {
     int acc{ 0 };
-    for (auto& i: objects)
+    for (auto &i : objects)
     {
         acc += i->getBoundingBox().margin.left;
         i->move(acc, i->getBoundingBox().margin.top);
-        acc += i->getBoundingBox().getFullBox().width - i->getBoundingBox().margin.left;
+        acc += i->getBoundingBox().getFullBox().width -
+               i->getBoundingBox().margin.left;
     }
 }
 
-zerokernel::TaskBar::TaskBar(zerokernel::WindowManager &wm): BaseMenuObject{}, wm(wm)
+zerokernel::TaskBar::TaskBar(zerokernel::WindowManager &wm)
+    : BaseMenuObject{}, wm(wm)
 {
     bb.width.setFill();
     bb.height.setContent();

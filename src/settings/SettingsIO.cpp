@@ -6,9 +6,9 @@
 #include <fstream>
 #include <sstream>
 
-settings::SettingsWriter::SettingsWriter(settings::Manager &manager): manager(manager)
+settings::SettingsWriter::SettingsWriter(settings::Manager &manager)
+    : manager(manager)
 {
-
 }
 
 bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
@@ -22,17 +22,19 @@ bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
 
     using pair_type = std::pair<std::string, settings::IVariable *>;
     std::vector<pair_type> all_registered{};
-    for (auto& v: settings::Manager::instance().registered)
+    for (auto &v : settings::Manager::instance().registered)
     {
         if (!only_changed || v.second.isChanged())
-            all_registered.emplace_back(std::make_pair(v.first, &v.second.variable));
+            all_registered.emplace_back(
+                std::make_pair(v.first, &v.second.variable));
     }
 
-    std::sort(all_registered.begin(), all_registered.end(), [](const pair_type& a, const pair_type& b) -> bool {
-        return a.first.compare(b.first) < 0;
-    });
+    std::sort(all_registered.begin(), all_registered.end(),
+              [](const pair_type &a, const pair_type &b) -> bool {
+                  return a.first.compare(b.first) < 0;
+              });
 
-    for (auto& v: all_registered)
+    for (auto &v : all_registered)
     {
         write(v.first, v.second);
     }
@@ -50,7 +52,7 @@ void settings::SettingsWriter::write(std::string name, IVariable *variable)
 
 void settings::SettingsWriter::writeEscaped(std::string str)
 {
-    for (auto c: str)
+    for (auto c : str)
     {
         switch (c)
         {
@@ -66,9 +68,9 @@ void settings::SettingsWriter::writeEscaped(std::string str)
     }
 }
 
-settings::SettingsReader::SettingsReader(settings::Manager &manager): manager(manager)
+settings::SettingsReader::SettingsReader(settings::Manager &manager)
+    : manager(manager)
 {
-
 }
 
 bool settings::SettingsReader::loadFrom(std::string path)
@@ -130,7 +132,7 @@ void settings::SettingsReader::pushChar(char c)
             temporary_spaces.push_back(c);
         else
         {
-            for (auto x: temporary_spaces)
+            for (auto x : temporary_spaces)
                 oss.push_back(x);
             temporary_spaces.clear();
             oss.push_back(c);
@@ -163,13 +165,13 @@ void settings::SettingsReader::finishString(bool complete)
     {
         onReadKeyValue(stored_key, str);
     }
-    reading_key = !reading_key;
+    reading_key   = !reading_key;
     was_non_space = false;
     temporary_spaces.clear();
 }
 
-void
-settings::SettingsReader::onReadKeyValue(std::string key, std::string value)
+void settings::SettingsReader::onReadKeyValue(std::string key,
+                                              std::string value)
 {
     printf("Read: '%s' = '%s'\n", key.c_str(), value.c_str());
     auto v = manager.lookup(key);

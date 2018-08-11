@@ -10,7 +10,7 @@
 namespace zerokernel
 {
 
-class WindowManager: public Container
+class WindowManager : public Container
 {
 public:
     ~WindowManager() override = default;
@@ -36,5 +36,4 @@ public:
 
     size_t active_window{ 0 };
 };
-
 }

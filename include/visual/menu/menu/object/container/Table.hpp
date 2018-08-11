@@ -9,7 +9,7 @@
 namespace zerokernel
 {
 
-class Table: public Container
+class Table : public Container
 {
 public:
     class Column
@@ -40,5 +40,4 @@ public:
 
     std::vector<Column> columns{};
 };
-
 }

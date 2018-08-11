@@ -40,7 +40,7 @@ void TabContainer::emitSizeUpdate()
     BaseMenuObject::emitSizeUpdate();
 
     selection.onParentSizeUpdate();
-    for (auto& c: containers)
+    for (auto &c : containers)
         c->onParentSizeUpdate();
 }
 
@@ -56,7 +56,7 @@ void TabContainer::recursiveSizeUpdate()
     BaseMenuObject::recursiveSizeUpdate();
 
     selection.recursiveSizeUpdate();
-    for (auto& c: containers)
+    for (auto &c : containers)
         c->recursiveSizeUpdate();
 }
 
@@ -67,7 +67,7 @@ TabContainer::findElement(const std::function<bool(BaseMenuObject *)> &search)
     if (result)
         return result;
 
-    for (auto& c: containers)
+    for (auto &c : containers)
     {
         result = c->findElement(search);
         if (result)
@@ -110,7 +110,7 @@ void TabContainer::addTab(std::string title)
     auto container = std::make_unique<Container>();
     container->setParent(this);
     container->move(0, selection.getBoundingBox().getFullBox().height);
-    container->getBoundingBox().width.mode = BoundingBox::SizeMode::Mode::FILL;
+    container->getBoundingBox().width.mode  = BoundingBox::SizeMode::Mode::FILL;
     container->getBoundingBox().height.mode = BoundingBox::SizeMode::Mode::FILL;
 
     containers.push_back(std::move(container));
@@ -133,7 +133,7 @@ void TabContainer::onMove()
     BaseMenuObject::onMove();
 
     selection.onParentMove();
-    for (auto& c: containers)
+    for (auto &c : containers)
         c->onParentMove();
 }
 
@@ -148,7 +148,7 @@ void TabContainer::renderDebugOverlay()
         active->renderDebugOverlay();
 }
 
-TabContainer::TabContainer(): BaseMenuObject{}, selection{ *this }
+TabContainer::TabContainer() : BaseMenuObject{}, selection{ *this }
 {
 }
 
@@ -163,5 +163,4 @@ Container *TabContainer::getActiveContainer()
     }
     return containers.at(selection.active).get();
 }
-
 }

@@ -9,7 +9,6 @@
 #include "common.hpp"
 #include "hacks/AutoJoin.hpp"
 
-
 settings::Int queue{ "autoqueue.mode", "7" };
 
 CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue",

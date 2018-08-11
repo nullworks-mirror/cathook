@@ -9,7 +9,5 @@ namespace zerokernel::special
 
 class ModalFactory
 {
-
 };
-
 }

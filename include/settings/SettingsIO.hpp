@@ -15,9 +15,10 @@ namespace settings
 class SettingsReader
 {
 public:
-    explicit SettingsReader(Manager& manager);
+    explicit SettingsReader(Manager &manager);
 
     bool loadFrom(std::string path);
+
 protected:
     void pushChar(char c);
     void finishString(bool complete);
@@ -33,13 +34,13 @@ protected:
     std::string oss{};
     std::string stored_key{};
     std::ifstream stream{};
-    Manager& manager;
+    Manager &manager;
 };
 
 class SettingsWriter
 {
 public:
-    explicit SettingsWriter(Manager& manager);
+    explicit SettingsWriter(Manager &manager);
 
     bool saveTo(std::string path, bool only_changed);
 
@@ -49,7 +50,6 @@ protected:
 
     bool only_changed{ false };
     std::ofstream stream{};
-    Manager& manager;
+    Manager &manager;
 };
-
 }

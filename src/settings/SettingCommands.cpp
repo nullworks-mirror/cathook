@@ -11,7 +11,7 @@
   Created on 29.07.18.
 */
 
-static CatCommand cat("cat", "", [](const CCommand& args) {
+static CatCommand cat("cat", "", [](const CCommand &args) {
     if (args.ArgC() < 3)
     {
         g_ICvar->ConsolePrintf("Usage: cat <set/get> <variable> [value]\n");
@@ -33,12 +33,14 @@ static CatCommand cat("cat", "", [](const CCommand& args) {
             return;
         }
         variable->fromString(args.Arg(3));
-        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
+        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2),
+                               variable->toString().c_str());
         return;
     }
     else if (!strcmp(args.Arg(1), "get"))
     {
-        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
+        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2),
+                               variable->toString().c_str());
         return;
     }
     else
@@ -48,7 +50,7 @@ static CatCommand cat("cat", "", [](const CCommand& args) {
     }
 });
 
-static CatCommand save("save", "", [](const CCommand& args) {
+static CatCommand save("save", "", [](const CCommand &args) {
     settings::SettingsWriter writer{ settings::Manager::instance() };
 
     DIR *config_directory = opendir(DATA_PATH "/configs");
@@ -64,11 +66,12 @@ static CatCommand save("save", "", [](const CCommand& args) {
     }
     else
     {
-        writer.saveTo(std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf", false);
+        writer.saveTo(
+            std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf", false);
     }
 });
 
-static CatCommand load("load", "", [](const CCommand& args) {
+static CatCommand load("load", "", [](const CCommand &args) {
     settings::SettingsReader loader{ settings::Manager::instance() };
     if (args.ArgC() == 1)
     {
@@ -76,7 +79,8 @@ static CatCommand load("load", "", [](const CCommand& args) {
     }
     else
     {
-        loader.loadFrom(std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf");
+        loader.loadFrom(std::string(DATA_PATH "/configs/") + args.Arg(1) +
+                        ".conf");
     }
 });
 
@@ -84,7 +88,7 @@ static std::vector<std::string> sorted{};
 
 static void getAndSortAllVariables()
 {
-    for (auto& v: settings::Manager::instance().registered)
+    for (auto &v : settings::Manager::instance().registered)
     {
         sorted.push_back(v.first);
     }
@@ -94,17 +98,19 @@ static void getAndSortAllVariables()
     logging::Info("Sorted %u variables\n", sorted.size());
 }
 
-static int completionCallback(const char *c_partial, char commands[ COMMAND_COMPLETION_MAXITEMS ][ COMMAND_COMPLETION_ITEM_LENGTH ])
+static int completionCallback(
+    const char *c_partial,
+    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
-    std::string parts[2] {};
-    auto j = 0u;
-    auto f = false;
+    std::string parts[2]{};
+    auto j    = 0u;
+    auto f    = false;
     int count = 0;
 
     for (auto i = 0u; i < partial.size() && j < 3; ++i)
     {
-        auto space = (bool)isspace(partial[i]);
+        auto space = (bool) isspace(partial[i]);
         if (!space)
         {
             if (j)
@@ -126,23 +132,28 @@ static int completionCallback(const char *c_partial, char commands[ COMMAND_COMP
 
     logging::Info("%s|%s", parts[0].c_str(), parts[1].c_str());
 
-    if (parts[0].empty() || parts[1].empty() && (!parts[0].empty() && partial.back() != ' '))
+    if (parts[0].empty() ||
+        parts[1].empty() && (!parts[0].empty() && partial.back() != ' '))
     {
         if (std::string("get").find(parts[0]) != std::string::npos)
-            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH, "cat get ");
+            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH,
+                     "cat get ");
         if (std::string("set").find(parts[0]) != std::string::npos)
-            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH, "cat set ");
+            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH,
+                     "cat set ");
         return count;
     }
 
-    for (const auto& s: sorted)
+    for (const auto &s : sorted)
     {
         if (s.find(parts[1]) == 0)
         {
             auto variable = settings::Manager::instance().lookup(s);
             if (variable)
             {
-                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat %s %s %s", parts[0].c_str(), s.c_str(), variable->toString().c_str());
+                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1,
+                         "cat %s %s %s", parts[0].c_str(), s.c_str(),
+                         variable->toString().c_str());
                 if (count == COMMAND_COMPLETION_MAXITEMS)
                     break;
             }
@@ -154,5 +165,5 @@ static int completionCallback(const char *c_partial, char commands[ COMMAND_COMP
 static InitRoutine init([]() {
     getAndSortAllVariables();
     cat.cmd->m_bHasCompletionCallback = true;
-    cat.cmd->m_fnCompletionCallback = completionCallback;
+    cat.cmd->m_fnCompletionCallback   = completionCallback;
 });

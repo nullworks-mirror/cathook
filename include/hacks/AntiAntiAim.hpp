@@ -16,5 +16,4 @@ namespace hacks::shared::anti_anti_aim
 
 void createMove();
 void resolveEnt(int IDX, IClientEntity *entity = nullptr);
-
 }

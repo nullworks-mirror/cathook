@@ -9,25 +9,31 @@
  * When object changes size:
  *
  * Example: Text change
- * Structure: [setSize]F*Text -> [onChildSizeUpdate..extend..setSize]C*Label -> [onChildSizeUpdate..extend..setSize]C*LabeledObject -> [onChildSizeUpdate..extend..setSize]C*Window
+ * Structure: [setSize]F*Text -> [onChildSizeUpdate..extend..setSize]C*Label ->
+ * [onChildSizeUpdate..extend..setSize]C*LabeledObject ->
+ * [onChildSizeUpdate..extend..setSize]C*Window
  *
  * Example: Window resize
- * Structure: [setSize]C*Window -> [onParentSizeUpdate..updateFillSize..setSize]F*Bar
+ * Structure: [setSize]C*Window ->
+ * [onParentSizeUpdate..updateFillSize..setSize]F*Bar
  */
 
-zerokernel::BoundingBox::BoundingBox(BaseMenuObject &object): object(object) {}
+zerokernel::BoundingBox::BoundingBox(BaseMenuObject &object) : object(object)
+{
+}
 
 zerokernel::BoundingBox::box zerokernel::BoundingBox::getContentBox() const
 {
     box result{};
-    result.x = border_box.x + padding.left;
-    result.y = border_box.y + padding.top;
-    result.width = border_box.width - padding.left - padding.right;
+    result.x      = border_box.x + padding.left;
+    result.y      = border_box.y + padding.top;
+    result.width  = border_box.width - padding.left - padding.right;
     result.height = border_box.height - padding.top - padding.bottom;
     return result;
 }
 
-const zerokernel::BoundingBox::box& zerokernel::BoundingBox::getBorderBox() const
+const zerokernel::BoundingBox::box &
+zerokernel::BoundingBox::getBorderBox() const
 {
     return border_box;
 }
@@ -35,9 +41,9 @@ const zerokernel::BoundingBox::box& zerokernel::BoundingBox::getBorderBox() cons
 zerokernel::BoundingBox::box zerokernel::BoundingBox::getFullBox() const
 {
     box result{};
-    result.x = border_box.x - margin.left;
-    result.y = border_box.y - margin.top;
-    result.width = border_box.width + margin.left + margin.right;
+    result.x      = border_box.x - margin.left;
+    result.y      = border_box.y - margin.top;
+    result.width  = border_box.width + margin.left + margin.right;
     result.height = border_box.height + margin.top + margin.bottom;
     return result;
 }
@@ -56,12 +62,12 @@ bool zerokernel::BoundingBox::move(int x, int y)
     if (x >= 0 && border_box.x != x)
     {
         border_box.x = x;
-        changed = true;
+        changed      = true;
     }
     if (y >= 0 && border_box.y != y)
     {
         border_box.y = y;
-        changed = true;
+        changed      = true;
     }
     return changed;
 }
@@ -76,12 +82,12 @@ bool zerokernel::BoundingBox::resize(int width, int height)
     if (width >= 0 && width != border_box.width)
     {
         border_box.width = width;
-        changed = true;
+        changed          = true;
     }
     if (height >= 0 && height != border_box.height)
     {
         border_box.height = height;
-        changed = true;
+        changed           = true;
     }
     return changed;
 }
@@ -92,21 +98,22 @@ bool zerokernel::BoundingBox::updateFillSize()
     if (width.mode == SizeMode::Mode::FILL)
     {
         auto area = getParentBox().getContentBox();
-        int max = area.right() - border_box.x - margin.right;
-        changed = resize(max, -1);
+        int max   = area.right() - border_box.x - margin.right;
+        changed   = resize(max, -1);
     }
     if (height.mode == SizeMode::Mode::FILL)
     {
         auto area = getParentBox().getContentBox();
-        int max = area.bottom() - border_box.y - margin.bottom;
-        changed = resize(-1, max) || changed;
+        int max   = area.bottom() - border_box.y - margin.bottom;
+        changed   = resize(-1, max) || changed;
     }
     return changed;
 }
 
 bool zerokernel::BoundingBox::contains(int x, int y)
 {
-    return x >= border_box.left() && x <= border_box.right() && y >= border_box.top() && y <= border_box.bottom();
+    return x >= border_box.left() && x <= border_box.right() &&
+           y >= border_box.top() && y <= border_box.bottom();
 }
 
 bool zerokernel::BoundingBox::extend(zerokernel::BoundingBox &box)
@@ -114,28 +121,34 @@ bool zerokernel::BoundingBox::extend(zerokernel::BoundingBox &box)
     if (box.isFloating())
         return false;
 
-    auto other = box.getBorderBox();
+    auto other   = box.getBorderBox();
     bool changed = false;
-    auto area = getParentBox().getContentBox();
-    if (width.mode != SizeMode::Mode::FIXED && box.width.mode != SizeMode::Mode::FILL)
+    auto area    = getParentBox().getContentBox();
+    if (width.mode != SizeMode::Mode::FIXED &&
+        box.width.mode != SizeMode::Mode::FILL)
     {
-        //int req_w = other.right() - border_box.left() + padding.right;
-        int req_w = padding.left + box.object.xOffset + other.width + box.margin.right + padding.right;
+        // int req_w = other.right() - border_box.left() + padding.right;
+        int req_w = padding.left + box.object.xOffset + other.width +
+                    box.margin.right + padding.right;
         int max = area.right() - border_box.x - margin.right;
-        req_w = width.clamp(req_w);
-        if (req_w > max && getParentBox().width.mode == SizeMode::Mode::FIXED) req_w = max;
+        req_w   = width.clamp(req_w);
+        if (req_w > max && getParentBox().width.mode == SizeMode::Mode::FIXED)
+            req_w = max;
         if (req_w > border_box.width)
         {
             changed = resize(req_w, -1);
         }
     }
-    if (height.mode != SizeMode::Mode::FIXED && box.height.mode != SizeMode::Mode::FILL)
+    if (height.mode != SizeMode::Mode::FIXED &&
+        box.height.mode != SizeMode::Mode::FILL)
     {
-        //int req_h = other.bottom() - border_box.top() + padding.bottom;
-        int req_h = padding.top + box.object.yOffset + other.height + box.margin.bottom + padding.bottom;
+        // int req_h = other.bottom() - border_box.top() + padding.bottom;
+        int req_h = padding.top + box.object.yOffset + other.height +
+                    box.margin.bottom + padding.bottom;
         int max = area.bottom() - border_box.y - margin.bottom;
-        req_h = height.clamp(req_h);
-        if (req_h > max && getParentBox().height.mode == SizeMode::Mode::FIXED) req_h = max;
+        req_h   = height.clamp(req_h);
+        if (req_h > max && getParentBox().height.mode == SizeMode::Mode::FIXED)
+            req_h = max;
         if (req_h > border_box.height)
         {
             changed = resize(-1, req_h) || changed;
@@ -145,27 +158,28 @@ bool zerokernel::BoundingBox::extend(zerokernel::BoundingBox &box)
     return changed;
 }
 
-void
-zerokernel::BoundingBox::setPadding(int top, int bottom, int left, int right)
+void zerokernel::BoundingBox::setPadding(int top, int bottom, int left,
+                                         int right)
 {
-    padding.top = top;
+    padding.top    = top;
     padding.bottom = bottom;
-    padding.left = left;
-    padding.right = right;
+    padding.left   = left;
+    padding.right  = right;
 }
 
-void
-zerokernel::BoundingBox::setMargin(int top, int bottom, int left, int right)
+void zerokernel::BoundingBox::setMargin(int top, int bottom, int left,
+                                        int right)
 {
-    margin.top = top;
+    margin.top    = top;
     margin.bottom = bottom;
-    margin.left = left;
-    margin.right = right;
+    margin.left   = left;
+    margin.right  = right;
 }
 
 bool zerokernel::BoundingBox::normalizeSize()
 {
-    return resize(width.clamp(border_box.width), height.clamp(border_box.height));
+    return resize(width.clamp(border_box.width),
+                  height.clamp(border_box.height));
 }
 
 bool zerokernel::BoundingBox::shrink()
@@ -181,7 +195,8 @@ bool zerokernel::BoundingBox::shrink()
 
 void zerokernel::BoundingBox::onParentSizeUpdate()
 {
-    if (width.mode == SizeMode::Mode::FILL || height.mode == SizeMode::Mode::FILL)
+    if (width.mode == SizeMode::Mode::FILL ||
+        height.mode == SizeMode::Mode::FILL)
     {
         if (updateFillSize())
             emitObjectSizeUpdate();
@@ -195,7 +210,8 @@ void zerokernel::BoundingBox::emitObjectSizeUpdate()
 
 void zerokernel::BoundingBox::onChildSizeUpdate()
 {
-    if (!(width.mode == SizeMode::Mode::FIXED && height.mode == SizeMode::Mode::FIXED))
+    if (!(width.mode == SizeMode::Mode::FIXED &&
+          height.mode == SizeMode::Mode::FIXED))
     {
         auto ow = border_box.width;
         auto oh = border_box.height;
@@ -230,9 +246,8 @@ void zerokernel::BoundingBox::setFloating(bool flag)
 bool zerokernel::BoundingBox::resizeContent(int width, int height)
 {
     return resize(width >= 0 ? padding.left + width + padding.right : -1,
-            height >= 0 ? padding.top + height + padding.bottom : -1);
+                  height >= 0 ? padding.top + height + padding.bottom : -1);
 }
-
 
 void zerokernel::BoundingBox::SizeMode::setFixed()
 {

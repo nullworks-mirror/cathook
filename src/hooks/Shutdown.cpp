@@ -9,7 +9,8 @@
 
 static settings::Bool die_if_vac{ "misc.die-if-vac", "false" };
 static settings::Bool autoabandon{ "misc.auto-abandon", "false" };
-static settings::String custom_disconnect_reason{ "misc.disconnect-reason", "" };
+static settings::String custom_disconnect_reason{ "misc.disconnect-reason",
+                                                  "" };
 
 namespace hooked_methods
 {

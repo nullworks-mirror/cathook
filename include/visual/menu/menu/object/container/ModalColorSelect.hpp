@@ -14,12 +14,12 @@
 namespace zerokernel
 {
 
-class ModalColorSelect: public ModalContainer
+class ModalColorSelect : public ModalContainer
 {
 public:
     ~ModalColorSelect() override = default;
 
-    explicit ModalColorSelect(settings::Variable<glez::rgba>& option);
+    explicit ModalColorSelect(settings::Variable<glez::rgba> &option);
 
     void render() override;
 
@@ -47,10 +47,9 @@ public:
     settings::Variable<int> blue{};
     settings::Variable<int> alpha{};
 
-    settings::Variable<glez::rgba>& option;
+    settings::Variable<glez::rgba> &option;
     size_t hex_input_uid{ 0 };
 
     ModalBehavior modal;
 };
-
 }

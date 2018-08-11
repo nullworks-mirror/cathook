@@ -17,19 +17,18 @@ public:
     static settings::RVariable<int> default_height;
 };
 
-template<typename T>
-class Spinner: public TextInput
+template <typename T> class Spinner : public TextInput
 {
 public:
-
     ~Spinner() override = default;
 
-    Spinner(): TextInput{}
+    Spinner() : TextInput{}
     {
         bb.resize(*SpinnerStyle::default_width, *SpinnerStyle::default_height);
     }
 
-    explicit Spinner(settings::ArithmeticVariable<T>& option): TextInput{}, option(&option)
+    explicit Spinner(settings::ArithmeticVariable<T> &option)
+        : TextInput{}, option(&option)
     {
         bb.resize(*SpinnerStyle::default_width, *SpinnerStyle::default_height);
     }
@@ -64,7 +63,8 @@ public:
 
         const char *target{ nullptr };
         settings::IVariable *opt{ nullptr };
-        if (tinyxml2::XML_SUCCESS == data->QueryStringAttribute("target", &target))
+        if (tinyxml2::XML_SUCCESS ==
+            data->QueryStringAttribute("target", &target))
         {
             std::string str(target);
             opt = settings::Manager::instance().lookup(str);
@@ -74,19 +74,21 @@ public:
             }
         }
 
-        if constexpr (std::is_same<int, T>::value)
-        {
-            data->QueryIntAttribute("step", &step);
-            option = dynamic_cast<settings::Variable<int> *>(opt);
-        }
-        else if constexpr (std::is_same<float, T>::value)
-        {
-            data->QueryFloatAttribute("step", &step);
-            option = dynamic_cast<settings::Variable<float> *>(opt);
-        }
+        if
+            constexpr(std::is_same<int, T>::value)
+            {
+                data->QueryIntAttribute("step", &step);
+                option = dynamic_cast<settings::Variable<int> *>(opt);
+            }
+        else if
+            constexpr(std::is_same<float, T>::value)
+            {
+                data->QueryFloatAttribute("step", &step);
+                option = dynamic_cast<settings::Variable<float> *>(opt);
+            }
     }
 
-    const std::string& getValue() override
+    const std::string &getValue() override
     {
         if (option)
             return option->toString();
@@ -111,5 +113,4 @@ public:
 
     settings::ArithmeticVariable<T> *option{ nullptr };
 };
-
 }
