@@ -96,7 +96,7 @@ AimbotCalculatedData_s calculated_data_array[2048]{};
 #define IsMelee GetWeaponMode() == weapon_melee
 bool BacktrackAimbot()
 {
-    if (!hacks::shared::backtrack::isBacktrackEnabled() || !backtrackAimbot)
+    if (!hacks::shared::backtrack::isBacktrackEnabled || !*backtrackAimbot)
         return false;
     if (aimkey && !aimkey.isKeyDown())
         return true;

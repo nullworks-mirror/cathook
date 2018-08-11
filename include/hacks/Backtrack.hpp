@@ -40,7 +40,6 @@ void Run();
 void Draw();
 void AddLatencyToNetchan(INetChannel *, float);
 void UpdateIncomingSequences();
-bool shouldBacktrack();
 extern int lastincomingsequencenumber;
 extern int BestTick;
 extern int iBestTarget;
@@ -60,7 +59,7 @@ typedef boost::circular_buffer_space_optimized<CIncomingSequence> circular_buf;
 extern circular_buf sequences;
 extern BacktrackData headPositions[32][66];
 
-bool isBacktrackEnabled();
+extern bool isBacktrackEnabled;
 float getLatency();
 int getTicks();
 bool ValidTick(BacktrackData &i, CachedEntity *ent);

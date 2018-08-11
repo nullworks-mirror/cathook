@@ -45,9 +45,9 @@ int ClosestDistanceHitbox(CachedEntity *target,
 {
     int closest        = -1;
     float closest_dist = 0.0f, dist = 0.0f;
-    for (int i = spine_0; i < spine_3; i++)
+    for (int i = pelvis; i < lowerArm_R; i++)
     {
-        if (hacks::shared::backtrack::isBacktrackEnabled())
+        if (hacks::shared::backtrack::isBacktrackEnabled)
             dist = g_pLocalPlayer->v_Eye.DistTo(btd.hitboxes.at(i).center);
         else
             dist = g_pLocalPlayer->v_Eye.DistTo(
@@ -67,7 +67,7 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max,
     // Get melee range
     float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (fabsf(vecAngle.y -
-              NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y) >= 50)
+              NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y) >= 60.0f)
         return false;
     if (!min.x && !max.x)
         return false;
@@ -122,7 +122,7 @@ void CreateMove()
     if (!CanShoot())
         return;
     CachedEntity *besttarget = nullptr;
-    if (!backtrack::isBacktrackEnabled())
+    if (!backtrack::isBacktrackEnabled)
     {
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
@@ -173,7 +173,7 @@ void CreateMove()
     {
         hacks::shared::anti_anti_aim::resolveEnt(besttarget->m_IDX);
         Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
-        if (!backtrack::isBacktrackEnabled())
+        if (!backtrack::isBacktrackEnabled)
         {
             for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 10.0f)
             {
