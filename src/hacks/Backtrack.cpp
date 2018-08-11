@@ -293,7 +293,7 @@ std::pair<int, int> getBestEntBestTick()
     }
     else
     {
-        float bestFov = 100.0f;
+        float bestFov = 180.0f;
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *tar = ENTITY(i);

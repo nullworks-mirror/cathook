@@ -374,7 +374,7 @@ int CUtlString::Format(const char *pFormat, ...)
 int CUtlString::FormatV(const char *pFormat, va_list marker)
 {
     char tmpBuf[4096]; //< Nice big 4k buffer, as much memory as my first
-                       //computer had, a Radio Shack Color Computer
+                       // computer had, a Radio Shack Color Computer
 
     // va_start( marker, pFormat );
     int len = V_vsprintf_safe(tmpBuf, pFormat, marker);

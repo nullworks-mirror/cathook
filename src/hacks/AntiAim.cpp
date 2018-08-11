@@ -13,7 +13,9 @@
 #include "common.hpp"
 
 static settings::Bool enable{ "antiaim.enable", "0" };
-
+static settings::Bool crouch{ "antiaim.crouch", "0" };
+static settings::Int dur{ "antiaim.crouch.dur", "15" };
+static settings::Int dursneak{ "antiaim.crouch.dursneak", "15" };
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
 
@@ -369,38 +371,37 @@ float useEdge(float edgeViewAngle)
 Timer delay{};
 int val       = 0;
 int value[32] = { 0 };
-/*void FakeCrouch(CUserCmd *cmd)
+void FakeCrouch(CUserCmd *cmd)
 {
-    if (!crouch)
+    if (!crouch || !(cmd->buttons & IN_DUCK))
         return;
-    if (cmd->buttons & IN_ATTACK)
-    {
-        *bSendPackets = true;
-        return;
-    }
-    static bool bDuck = false;
+    static bool bDoCrouch   = false;
+    static int iCrouchCount = 0;
 
-    static int waittime = 0;
-
-    if (waittime)
+    if (iCrouchCount == *dur)
     {
-        waittime--;
-        return;
-    }
-    bDuck = !bDuck;
-
-    if (bDuck)
-    {
-        cmd->buttons |= IN_DUCK;
-        *bSendPackets = false;
-        waittime      = 15;
+        iCrouchCount = 0;
+        bDoCrouch    = !bDoCrouch;
     }
     else
     {
-        cmd->buttons &= ~IN_DUCK;
+        iCrouchCount++;
+    }
+    if (bDoCrouch)
+    {
+        cmd->buttons |= IN_DUCK;
         *bSendPackets = true;
     }
-}*/
+    else
+    {
+        if (iCrouchCount + *dursneak < *dur)
+            cmd->buttons &= ~IN_DUCK;
+        *bSendPackets = false;
+    }
+
+    if ((cmd->buttons & IN_ATTACK))
+        *bSendPackets = true;
+}
 void ProcessUserCmd(CUserCmd *cmd)
 {
     if (!enable)
@@ -605,7 +606,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         p = GetAAAAPitch();
     }
     g_pLocalPlayer->bUseSilentAngles = true;
-    // FakeCrouch(cmd);
+    FakeCrouch(cmd);
 }
 
 bool isEnabled()

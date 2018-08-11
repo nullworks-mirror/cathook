@@ -110,8 +110,8 @@ bool BacktrackAimbot()
     int iBestTarget = hacks::shared::backtrack::iBestTarget;
     if (iBestTarget == -1)
         return true;
-    int iBestTick = hacks::shared::backtrack::BestTick;
-    int tickcnt = 0;
+    int iBestTick     = hacks::shared::backtrack::BestTick;
+    int tickcnt       = 0;
     CachedEntity *tar = ENTITY(iBestTarget);
     if (CE_BAD(tar))
         return true;
@@ -123,9 +123,7 @@ bool BacktrackAimbot()
     if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes.at(head).center,
                          true))
         return true;
-    Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
     float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
-    angles.y       = i.viewangles;
     simtime        = i.simtime;
     current_user_cmd->tick_count = i.tickcount;
     Vector tr = (i.hitboxes.at(head).center - g_pLocalPlayer->v_Eye);
@@ -134,13 +132,13 @@ bool BacktrackAimbot()
     // Clamping is important
     fClampAngle(angles2);
     // Slow aim
-    if (slow_aim)
+    if (*slow_aim)
         DoSlowAim(angles2);
     else if (silent)
         g_pLocalPlayer->bUseSilentAngles = true;
     // Set angles
     current_user_cmd->viewangles = angles2;
-    if (autoshoot && !slow_aim)
+    if (autoshoot && !*slow_aim)
         current_user_cmd->buttons |= IN_ATTACK;
     return true;
 }

@@ -169,7 +169,7 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     NET_VECTOR(ent, 0x354) = entity->m_vecOrigin();
 
     //*g_PredictionRandomSeed =
-    //MD5_PseudoRandom(current_user_cmd->command_number) &
+    // MD5_PseudoRandom(current_user_cmd->command_number) &
     // 0x7FFFFFFF;
     g_IGameMovement->StartTrackPredictionErrors(
         reinterpret_cast<CBasePlayer *>(ent));
