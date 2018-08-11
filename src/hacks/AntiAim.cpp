@@ -13,7 +13,9 @@
 #include "common.hpp"
 
 static settings::Bool enable{ "antiaim.enable", "0" };
-
+static settings::Bool crouch{ "antiaim.crouch", "0" };
+static settings::Int dur{ "antiaim.crouch.dur", "15" };
+static settings::Int dursneak{ "antiaim.crouch.dursneak", "15" };
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
 
@@ -26,11 +28,14 @@ static settings::Float spin{ "antiaim.spin-speed", "10" };
 
 static settings::Bool aaaa_enable{ "antiaim.aaaa.enable", "0" };
 static settings::Float aaaa_interval{ "antiaim.aaaa.interval.seconds", "0" };
-static settings::Float aaaa_interval_random_high{ "antiaim.aaaa.interval.random-high", "10"};
-static settings::Float aaaa_interval_random_low{ "antiaim.aaaa.interval.random-low", "2" };
+static settings::Float aaaa_interval_random_high{
+    "antiaim.aaaa.interval.random-high", "10"
+};
+static settings::Float aaaa_interval_random_low{
+    "antiaim.aaaa.interval.random-low", "2"
+};
 static settings::Int aaaa_mode{ "antiaim.aaaa.mode", "0" };
 static settings::Button aaaa_flip_key{ "antiaim.aaaa.flip-key", "<null>" };
-
 
 namespace hacks::shared::antiaim
 {
@@ -366,38 +371,37 @@ float useEdge(float edgeViewAngle)
 Timer delay{};
 int val       = 0;
 int value[32] = { 0 };
-/*void FakeCrouch(CUserCmd *cmd)
+void FakeCrouch(CUserCmd *cmd)
 {
-    if (!crouch)
+    if (!crouch || !(cmd->buttons & IN_DUCK))
         return;
-    if (cmd->buttons & IN_ATTACK)
-    {
-        *bSendPackets = true;
-        return;
-    }
-    static bool bDuck = false;
+    static bool bDoCrouch   = false;
+    static int iCrouchCount = 0;
 
-    static int waittime = 0;
-
-    if (waittime)
+    if (iCrouchCount == *dur)
     {
-        waittime--;
-        return;
-    }
-    bDuck = !bDuck;
-
-    if (bDuck)
-    {
-        cmd->buttons |= IN_DUCK;
-        *bSendPackets = false;
-        waittime      = 15;
+        iCrouchCount = 0;
+        bDoCrouch    = !bDoCrouch;
     }
     else
     {
-        cmd->buttons &= ~IN_DUCK;
+        iCrouchCount++;
+    }
+    if (bDoCrouch)
+    {
+        cmd->buttons |= IN_DUCK;
         *bSendPackets = true;
     }
-}*/
+    else
+    {
+        if (iCrouchCount + *dursneak < *dur)
+            cmd->buttons &= ~IN_DUCK;
+        *bSendPackets = false;
+    }
+
+    if ((cmd->buttons & IN_ATTACK))
+        *bSendPackets = true;
+}
 void ProcessUserCmd(CUserCmd *cmd)
 {
     if (!enable)
@@ -438,7 +442,7 @@ void ProcessUserCmd(CUserCmd *cmd)
             cur_yaw += -180;
         if (cur_yaw < -180)
             cur_yaw += 180;
-        y           = cur_yaw;
+        y = cur_yaw;
         break;
     case 6: // OFFSETKEEP
         y += (float) yaw;
@@ -460,7 +464,7 @@ void ProcessUserCmd(CUserCmd *cmd)
                 cur_yaw += -180;
             if (cur_yaw < -180)
                 cur_yaw += 180;
-            y           = cur_yaw;
+            y = cur_yaw;
         }
         else if (!keepmode && !*bSendPackets)
         {
@@ -504,7 +508,7 @@ void ProcessUserCmd(CUserCmd *cmd)
                 cur_yaw += -180;
             if (cur_yaw < -180)
                 cur_yaw += 180;
-            y           = cur_yaw;
+            y = cur_yaw;
         }
         break;
     case 15: // Fake offsetkeep
@@ -602,7 +606,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         p = GetAAAAPitch();
     }
     g_pLocalPlayer->bUseSilentAngles = true;
-    //FakeCrouch(cmd);
+    FakeCrouch(cmd);
 }
 
 bool isEnabled()

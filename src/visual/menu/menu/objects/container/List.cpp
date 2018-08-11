@@ -4,7 +4,7 @@
 
 #include <menu/object/container/List.hpp>
 
-zerokernel::List::List(): Container{}
+zerokernel::List::List() : Container{}
 {
     bb.height.mode = BoundingBox::SizeMode::Mode::CONTENT;
 }
@@ -13,7 +13,7 @@ void zerokernel::List::reorderElements()
 {
     int total{ 0 };
     bool first{ false };
-    for (auto& object: objects)
+    for (auto &object : objects)
     {
         if (object->isHidden())
             continue;

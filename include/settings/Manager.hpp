@@ -29,21 +29,21 @@ class Manager
 public:
     struct VariableDescriptor
     {
-        explicit VariableDescriptor(IVariable& variable);
+        explicit VariableDescriptor(IVariable &variable);
 
         bool isChanged();
 
-        IVariable& variable;
+        IVariable &variable;
         std::string defaults{};
         VariableType type{};
     };
 
-    static Manager& instance();
+    static Manager &instance();
+
 public:
-    void add(IVariable& me, std::string name);
-    IVariable *lookup(const std::string& string);
+    void add(IVariable &me, std::string name);
+    IVariable *lookup(const std::string &string);
 
     std::unordered_map<std::string, VariableDescriptor> registered{};
 };
-
 }

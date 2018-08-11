@@ -4,13 +4,21 @@
 
 #include <menu/object/input/TextInput.hpp>
 
-static settings::RVariable<glez::rgba> color_border_active{ "zk.style.input.text.color.border.active", "38b28f" };
-static settings::RVariable<glez::rgba> color_border{ "zk.style.input.text.color.border.inactive", "079797" };
+static settings::RVariable<glez::rgba> color_border_active{
+    "zk.style.input.text.color.border.active", "38b28f"
+};
+static settings::RVariable<glez::rgba> color_border{
+    "zk.style.input.text.color.border.inactive", "079797"
+};
 
-static settings::RVariable<glez::rgba> color_text_active{ "zk.style.input.text.color.text.active", "ffffff" };
-static settings::RVariable<glez::rgba> color_text{ "zk.style.input.text.color.text.inactive", "aaaaaa" };
+static settings::RVariable<glez::rgba> color_text_active{
+    "zk.style.input.text.color.text.active", "ffffff"
+};
+static settings::RVariable<glez::rgba> color_text{
+    "zk.style.input.text.color.text.inactive", "aaaaaa"
+};
 
-zerokernel::TextInput::TextInput(): BaseMenuObject{}
+zerokernel::TextInput::TextInput() : BaseMenuObject{}
 {
     text_object.setParent(this);
     text_object.move(0, 0);
@@ -45,7 +53,7 @@ bool zerokernel::TextInput::handleSdlEvent(SDL_Event *event)
     case SDL_TEXTINPUT:
         if (is_input_active)
         {
-            for (auto c: event->text.text)
+            for (auto c : event->text.text)
             {
                 if (!c)
                     break;
@@ -102,7 +110,7 @@ void zerokernel::TextInput::render()
 void zerokernel::TextInput::startInput()
 {
     is_input_active = true;
-    current_text = getValue();
+    current_text    = getValue();
 }
 
 void zerokernel::TextInput::finishInput(bool accept)

@@ -32,10 +32,9 @@ void hacks::tf::thirdperson::frameStageNotify()
     }
     if (angles && g_IInput->CAM_IsThirdPerson())
     {
-            CE_FLOAT(LOCAL_E, netvar.deadflag + 4) =
-                    g_Settings.brute.last_angles[LOCAL_E->m_IDX].x;
-            CE_FLOAT(LOCAL_E, netvar.deadflag + 8) =
-                    g_Settings.brute.last_angles[LOCAL_E->m_IDX].y;
+        CE_FLOAT(LOCAL_E, netvar.deadflag + 4) =
+            g_Settings.brute.last_angles[LOCAL_E->m_IDX].x;
+        CE_FLOAT(LOCAL_E, netvar.deadflag + 8) =
+            g_Settings.brute.last_angles[LOCAL_E->m_IDX].y;
     }
 }
-

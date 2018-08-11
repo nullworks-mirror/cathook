@@ -16,10 +16,16 @@ static settings::Int betrayal_limit{ "player-tools.betrayal-limit", "true" };
 static settings::Bool taunting{ "player-tools.ignore.taunting", "true" };
 static settings::Bool hoovy{ "player-tools.ignore.hoovy", "true" };
 
-static settings::Bool online_notarget{ "player-tools.ignore.online.notarget", "true" };
-static settings::Bool online_friendly_software{ "player-tools.ignore.online.friendly-software", "true" };
-static settings::Bool online_only_verified{ "player-tools.ignore.online.only-verified-accounts", "true" };
-static settings::Bool online_anonymous{ "player-tools.ignore.online.anonymous", "true" };
+static settings::Bool online_notarget{ "player-tools.ignore.online.notarget",
+                                       "true" };
+static settings::Bool online_friendly_software{
+    "player-tools.ignore.online.friendly-software", "true"
+};
+static settings::Bool online_only_verified{
+    "player-tools.ignore.online.only-verified-accounts", "true"
+};
+static settings::Bool online_anonymous{ "player-tools.ignore.online.anonymous",
+                                        "true" };
 
 static std::unordered_map<unsigned, unsigned> betrayal_list{};
 
@@ -47,16 +53,14 @@ IgnoreReason shouldTargetSteamId(unsigned id)
     auto *co = online::getUserData(id);
     if (co)
     {
-        bool check_verified =
-            !online_only_verified || co->is_steamid_verified;
+        bool check_verified  = !online_only_verified || co->is_steamid_verified;
         bool check_anonymous = online_anonymous || !co->is_anonymous;
 
         if (check_verified && check_anonymous)
         {
             if (online_notarget && co->no_target)
                 return IgnoreReason::ONLINE_NO_TARGET;
-            if (online_friendly_software &&
-                co->is_using_friendly_software)
+            if (online_friendly_software && co->is_using_friendly_software)
                 return IgnoreReason::ONLINE_FRIENDLY_SOFTWARE;
         }
         // Always check developer status, no exceptions

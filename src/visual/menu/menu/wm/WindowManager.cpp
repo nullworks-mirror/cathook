@@ -23,8 +23,8 @@ zerokernel::WindowManager::WindowManager() : BaseMenuObject{}
     bb.height.setFill();
 }
 
-void
-zerokernel::WindowManager::loadWindowFromXml(const tinyxml2::XMLElement *data)
+void zerokernel::WindowManager::loadWindowFromXml(
+    const tinyxml2::XMLElement *data)
 {
     const char *title{ nullptr };
     const char *title_short{ nullptr };
@@ -37,7 +37,7 @@ zerokernel::WindowManager::loadWindowFromXml(const tinyxml2::XMLElement *data)
     if (data->QueryStringAttribute("short_name", &title_short))
         title_short = title;
 
-    auto& win = container->wmCreateWindow();
+    auto &win = container->wmCreateWindow();
     win.loadFromXml(data);
     win.name = title;
     if (title_short)
@@ -65,16 +65,13 @@ void zerokernel::WindowManager::focusOnWindow(size_t uid)
 
 void zerokernel::WindowManager::init()
 {
-    auto container = std::make_unique<WindowContainer>(*this);
+    auto container  = std::make_unique<WindowContainer>(*this);
     this->container = container.get();
     container->move(0, 0);
     addObject(std::move(container));
 
-    auto bar = std::make_unique<TaskBar>(*this);
+    auto bar  = std::make_unique<TaskBar>(*this);
     this->bar = bar.get();
     bar->move(0, 0);
     addObject(std::move(bar));
 }
-
-
-

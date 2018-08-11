@@ -9,13 +9,14 @@ void zerokernel::LabeledObject::loadFromXml(const tinyxml2::XMLElement *data)
     Container::loadFromXml(data);
 
     const char *label_text;
-    if (tinyxml2::XML_SUCCESS == data->QueryStringAttribute("label", &label_text))
+    if (tinyxml2::XML_SUCCESS ==
+        data->QueryStringAttribute("label", &label_text))
     {
         setLabel(label_text);
     }
 }
 
-zerokernel::LabeledObject::LabeledObject(): BaseMenuObject{}
+zerokernel::LabeledObject::LabeledObject() : BaseMenuObject{}
 {
     bb.width.setContent();
     bb.height.setContent();
@@ -45,11 +46,16 @@ void zerokernel::LabeledObject::reorderElements()
 {
     if (!objects.empty())
     {
-        int x = bb.getContentBox().width - objects[0]->getBoundingBox().getFullBox().width;
+        int x = bb.getContentBox().width -
+                objects[0]->getBoundingBox().getFullBox().width;
         if (this->label)
         {
-            if (x < this->label->getBoundingBox().getFullBox().width + this->label->getBoundingBox().margin.right + objects[0]->getBoundingBox().margin.left)
-                x = this->label->getBoundingBox().getFullBox().width + this->label->getBoundingBox().margin.right + objects[0]->getBoundingBox().margin.left;
+            if (x < this->label->getBoundingBox().getFullBox().width +
+                        this->label->getBoundingBox().margin.right +
+                        objects[0]->getBoundingBox().margin.left)
+                x = this->label->getBoundingBox().getFullBox().width +
+                    this->label->getBoundingBox().margin.right +
+                    objects[0]->getBoundingBox().margin.left;
         }
         objects[0]->move(x, 0);
     }
@@ -60,7 +66,7 @@ void zerokernel::LabeledObject::reorderElements()
 }
 
 void zerokernel::LabeledObject::setObject(
-        std::unique_ptr<zerokernel::BaseMenuObject> &&object)
+    std::unique_ptr<zerokernel::BaseMenuObject> &&object)
 {
     addObject(std::move(object));
 }

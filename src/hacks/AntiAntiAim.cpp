@@ -37,13 +37,13 @@ void hacks::shared::anti_anti_aim::resolveEnt(int IDX, IClientEntity *entity)
                 else
                     quotaf++;
             }
-        float quota    = quotat / quotaf;
-        Vector &angles = NET_VECTOR(entity, netvar.m_angEyeAngles);
+        float quota            = quotat / quotaf;
+        Vector &angles         = NET_VECTOR(entity, netvar.m_angEyeAngles);
         static bool brutepitch = false;
         if (g_Settings.brute.brutenum[IDX] > 5)
         {
             g_Settings.brute.brutenum[IDX] = 0;
-            brutepitch                   = !brutepitch;
+            brutepitch                     = !brutepitch;
         }
         angles.y = fmod(angles.y + 180.0f, 360.0f);
         if (angles.y < 0)

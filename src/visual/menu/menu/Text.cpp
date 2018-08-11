@@ -9,7 +9,9 @@
 
 void zerokernel::Text::render()
 {
-    glez::draw::outlined_string(bb.getContentBox().left() + text_x, bb.getContentBox().top() + text_y, data, *font, *color_text, *color_outline, nullptr, nullptr);
+    glez::draw::outlined_string(bb.getContentBox().left() + text_x,
+                                bb.getContentBox().top() + text_y, data, *font,
+                                *color_text, *color_outline, nullptr, nullptr);
 
     BaseMenuObject::render();
 }
@@ -18,7 +20,7 @@ void zerokernel::Text::set(std::string text)
 {
     if (text == data)
         return;
-    data = std::move(text);
+    data   = std::move(text);
     int ow = bb.border_box.width;
     int oh = bb.border_box.height;
     recalculateSize();
@@ -64,8 +66,8 @@ zerokernel::Text::Text()
 {
     bb.width.setContent();
     bb.height.setContent();
-    font = &resource::font::base;
-    color_text = &*style::colors::text;
+    font          = &resource::font::base;
+    color_text    = &*style::colors::text;
     color_outline = &*style::colors::text_shadow;
 }
 
@@ -108,6 +110,6 @@ void zerokernel::Text::emitSizeUpdate()
 
 void zerokernel::Text::setOwnColor(glez::rgba color)
 {
-    own_color = color;
+    own_color  = color;
     color_text = &own_color;
 }

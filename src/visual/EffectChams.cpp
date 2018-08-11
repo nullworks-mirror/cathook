@@ -20,7 +20,8 @@ static settings::Bool medkits{ "chams.show.medkits", "false" };
 static settings::Bool ammobox{ "chams.show.ammoboxes", "false" };
 static settings::Bool buildings{ "chams.show.buildings", "true" };
 static settings::Bool stickies{ "chams.show.stickies", "true" };
-static settings::Bool teammate_buildings{ "chams.show.teammate-buildings", "false" };
+static settings::Bool teammate_buildings{ "chams.show.teammate-buildings",
+                                          "false" };
 static settings::Bool recursive{ "chams.recursive", "true" };
 static settings::Bool weapons_white{ "chams.white-weapons", "true" };
 static settings::Bool legit{ "chams.legit", "false" };
@@ -163,7 +164,8 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     switch (ent->m_Type())
     {
     case ENTITY_BUILDING:
-        if (!ent->m_bEnemy() && !(teammates || teammate_buildings) && ent != LOCAL_E)
+        if (!ent->m_bEnemy() && !(teammates || teammate_buildings) &&
+            ent != LOCAL_E)
         {
             return colors::empty;
         }
@@ -317,7 +319,8 @@ void EffectChams::Render(int x, int y, int w, int h)
         return;
     if (!init)
         Init();
-    if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots))
+    if (!isHackActive() ||
+        (g_IEngine->IsTakingScreenshot() && clean_screenshots))
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     BeginRenderChams();

@@ -36,7 +36,7 @@ bool zerokernel::WindowContainer::handleSdlEvent(SDL_Event *event)
 
 void zerokernel::WindowContainer::render()
 {
-    for (auto i: order)
+    for (auto i : order)
     {
         if (!windows[i]->isHidden())
             windows[i]->render();
@@ -53,7 +53,7 @@ void zerokernel::WindowContainer::update()
         request_move_top = 0;
     }
 
-    for (auto i: order)
+    for (auto i : order)
     {
         if (!windows[i]->isHidden())
             windows[i]->update();
@@ -62,7 +62,8 @@ void zerokernel::WindowContainer::update()
     BaseMenuObject::update();
 }
 
-zerokernel::WindowContainer::WindowContainer(zerokernel::WindowManager &wm): BaseMenuObject{}, wm(wm)
+zerokernel::WindowContainer::WindowContainer(zerokernel::WindowManager &wm)
+    : BaseMenuObject{}, wm(wm)
 {
     bb.width.setFill();
     bb.height.setFill();
@@ -72,7 +73,7 @@ zerokernel::WMWindow &zerokernel::WindowContainer::wmCreateWindow()
 {
     // TODO
     auto window = std::make_unique<WMWindow>(*this);
-    auto w = window.get();
+    auto w      = window.get();
     windows.push_back(std::move(window));
     order.push_back(windows.size() - 1);
     return *w;
@@ -80,7 +81,7 @@ zerokernel::WMWindow &zerokernel::WindowContainer::wmCreateWindow()
 
 zerokernel::WMWindow *zerokernel::WindowContainer::wmFindWindow(size_t uid)
 {
-    for (auto& w: windows)
+    for (auto &w : windows)
         if (w->uid == uid)
             return w.get();
     return nullptr;
@@ -122,7 +123,7 @@ void zerokernel::WindowContainer::recursiveSizeUpdate()
 {
     BaseMenuObject::recursiveSizeUpdate();
 
-    for (auto& w: windows)
+    for (auto &w : windows)
         w->recursiveSizeUpdate();
 }
 
@@ -146,7 +147,7 @@ void zerokernel::WindowContainer::emitSizeUpdate()
 {
     BaseMenuObject::emitSizeUpdate();
 
-    for (auto& w: windows)
+    for (auto &w : windows)
         w->onParentSizeUpdate();
 }
 
@@ -166,13 +167,13 @@ void zerokernel::WindowContainer::moveWindowToTop(size_t uid)
 }
 
 zerokernel::BaseMenuObject *zerokernel::WindowContainer::findElement(
-        const std::function<bool(BaseMenuObject *)> &search)
+    const std::function<bool(BaseMenuObject *)> &search)
 {
     auto result = BaseMenuObject::findElement(search);
     if (result)
         return result;
 
-    for (auto& w: windows)
+    for (auto &w : windows)
     {
         result = w->findElement(search);
         if (result)
@@ -187,7 +188,7 @@ void zerokernel::WindowContainer::onMove()
 
     printf("WindowContainer::onMove()\n");
 
-    for (auto& w: windows)
+    for (auto &w : windows)
         w->onParentMove();
 }
 
@@ -195,7 +196,7 @@ void zerokernel::WindowContainer::renderDebugOverlay()
 {
     BaseMenuObject::renderDebugOverlay();
 
-    for (auto i: order)
+    for (auto i : order)
     {
         if (!windows[i]->isHidden())
             windows[i]->renderDebugOverlay();

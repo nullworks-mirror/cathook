@@ -15,13 +15,20 @@
 
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
 
-static settings::Bool enable_spinner{ "visuals.fidget-spinner.enable", "false" };
+static settings::Bool enable_spinner{ "visuals.fidget-spinner.enable",
+                                      "false" };
 static settings::Bool v9mode{ "visuals.fidget-spinner.v952-mode", "false" };
-static settings::Float spinner_speed_cap{ "visuals.fidget-spinner.speed-cap", "30" };
-static settings::Float spinner_speed_scale{ "visuals.fidget-spinner.speed-scale", "0.03" };
-static settings::Float spinner_decay_speed{ "visuals.fidget-spinner.decay-speed", "0.1" };
+static settings::Float spinner_speed_cap{ "visuals.fidget-spinner.speed-cap",
+                                          "30" };
+static settings::Float spinner_speed_scale{
+    "visuals.fidget-spinner.speed-scale", "0.03"
+};
+static settings::Float spinner_decay_speed{
+    "visuals.fidget-spinner.decay-speed", "0.1"
+};
 static settings::Float spinner_scale{ "visuals.fidget-spinner.scale", "32" };
-static settings::Float spinner_min_speed{ "visuals.fidget-spinner.min-speed", "2" };
+static settings::Float spinner_min_speed{ "visuals.fidget-spinner.min-speed",
+                                          "2" };
 
 float spinning_speed = 0.0f;
 float angle          = 0;
@@ -56,7 +63,6 @@ void InitSpinner()
 {
     g_IGameEventManager->AddListener(&listener, false);
 }
-
 
 Timer retrytimer{};
 

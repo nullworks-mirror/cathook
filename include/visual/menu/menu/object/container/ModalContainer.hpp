@@ -10,7 +10,7 @@
 namespace zerokernel
 {
 
-class ModalContainer: public Container
+class ModalContainer : public Container
 {
 public:
     ModalContainer();
@@ -23,5 +23,4 @@ public:
 
     ModalBehavior modal;
 };
-
 }

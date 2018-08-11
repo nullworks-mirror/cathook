@@ -11,13 +11,13 @@
 namespace zerokernel
 {
 
-class ColorSelector: public BaseMenuObject
+class ColorSelector : public BaseMenuObject
 {
 public:
     ~ColorSelector() override = default;
 
     ColorSelector();
-    explicit ColorSelector(settings::Variable<glez::rgba>& variable);
+    explicit ColorSelector(settings::Variable<glez::rgba> &variable);
 
     void render() override;
 
@@ -26,8 +26,6 @@ public:
     void loadFromXml(const tinyxml2::XMLElement *data) override;
 
 protected:
-
     settings::Variable<glez::rgba> *variable{ nullptr };
 };
-
 }

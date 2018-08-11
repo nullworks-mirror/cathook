@@ -7,7 +7,7 @@
 namespace settings
 {
 
-Manager& Manager::instance()
+Manager &Manager::instance()
 {
     static Manager object{};
     return object;
@@ -30,9 +30,10 @@ IVariable *Manager::lookup(const std::string &string)
     return nullptr;
 }
 
-Manager::VariableDescriptor::VariableDescriptor(IVariable& variable): variable(variable)
+Manager::VariableDescriptor::VariableDescriptor(IVariable &variable)
+    : variable(variable)
 {
-    type = variable.getType();
+    type     = variable.getType();
     defaults = variable.toString();
 }
 
@@ -40,5 +41,4 @@ bool Manager::VariableDescriptor::isChanged()
 {
     return variable.toString() != defaults;
 }
-
 }

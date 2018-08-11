@@ -16,10 +16,10 @@ class WMWindow;
  *  Shows or hides a window when pressed on
  *  Managed by TaskBar/WM
  */
-class Task: public BaseMenuObject
+class Task : public BaseMenuObject
 {
 public:
-    explicit Task(WMWindow& window);
+    explicit Task(WMWindow &window);
 
     //
 
@@ -39,8 +39,7 @@ public:
 
     //
 
-    WMWindow& window;
+    WMWindow &window;
     Text text{};
 };
-
 }

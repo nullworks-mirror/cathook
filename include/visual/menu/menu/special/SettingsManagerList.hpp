@@ -22,20 +22,21 @@ public:
         settings::IVariable *variable{ nullptr };
         std::string full_name{};
         std::vector<std::pair<std::string, TreeNode>> nodes{};
-        TreeNode& operator[](const std::string& path);
+        TreeNode &operator[](const std::string &path);
     };
 
-    explicit SettingsManagerList(Container& list);
+    explicit SettingsManagerList(Container &list);
 
-    std::vector<std::string> explodeVariableName(const std::string& name);
+    std::vector<std::string> explodeVariableName(const std::string &name);
 
-    void recursiveWork(TreeNode& node, size_t depth);
+    void recursiveWork(TreeNode &node, size_t depth);
 
     void construct();
 
     void addCollapsible(std::string name, size_t depth);
 
-    void addVariable(std::string name, size_t depth, settings::IVariable *variable, bool registered);
+    void addVariable(std::string name, size_t depth,
+                     settings::IVariable *variable, bool registered);
 
     //
 
@@ -48,7 +49,6 @@ public:
     //
 
     TreeNode root{};
-    Container& list;
+    Container &list;
 };
-
 }

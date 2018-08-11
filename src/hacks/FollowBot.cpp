@@ -221,10 +221,10 @@ void WorldTick()
                 continue;
             if (corneractivate)
             {
-                Vector indirectOrigin = VischeckCorner(
-                    LOCAL_E, entity, *follow_activation / 2,
-                    true); // get the corner location that the
-                           // future target is visible from
+                Vector indirectOrigin =
+                    VischeckCorner(LOCAL_E, entity, *follow_activation / 2,
+                                   true); // get the corner location that the
+                                          // future target is visible from
                 std::pair<Vector, Vector> corners;
                 if (!indirectOrigin.z &&
                     entity->m_IDX == lastent) // if we couldn't find it, run

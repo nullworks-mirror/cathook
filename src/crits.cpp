@@ -94,13 +94,11 @@ bool force_crit(IClientEntity *weapon)
 {
     auto command_number = current_user_cmd->command_number;
 
-    if (lastnumber < command_number ||
-        lastweapon != weapon->GetModel() ||
+    if (lastnumber < command_number || lastweapon != weapon->GetModel() ||
         lastnumber - command_number > 1000)
     {
         if (cached_calculation.init_command > command_number ||
-                command_number - cached_calculation.init_command >
-                4096 ||
+            command_number - cached_calculation.init_command > 4096 ||
             (command_number &&
              (cached_calculation.command_number < command_number)))
             cached_calculation.weapon_entity = 0;
@@ -111,7 +109,7 @@ bool force_crit(IClientEntity *weapon)
     }
     else
         number = lastnumber;
-    //logging::Info("Found critical: %d -> %d", command_number,
+    // logging::Info("Found critical: %d -> %d", command_number,
     //              number);
     lastweapon = weapon->GetModel();
     lastnumber = number;
@@ -138,8 +136,7 @@ bool force_crit(IClientEntity *weapon)
     {
         if (!crit_legiter)
         {
-            if (command_number != number && number &&
-                number != command_number)
+            if (command_number != number && number && number != command_number)
                 current_user_cmd->buttons &= ~IN_ATTACK;
             else
                 current_user_cmd->buttons |= IN_ATTACK;
@@ -172,12 +169,13 @@ void create_move()
     if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon))
         return;
     unfuck_bucket(weapon);
-    if ((current_user_cmd->buttons & IN_ATTACK) && crit_key && crit_key.isKeyDown() &&
-            current_user_cmd->command_number)
+    if ((current_user_cmd->buttons & IN_ATTACK) && crit_key &&
+        crit_key.isKeyDown() && current_user_cmd->command_number)
     {
         force_crit(weapon);
     }
-    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number &&
+    else if ((current_user_cmd->buttons & IN_ATTACK) &&
+             current_user_cmd->command_number &&
              GetWeaponMode() == weapon_melee && crit_melee &&
              g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
     {

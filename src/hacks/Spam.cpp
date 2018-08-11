@@ -15,11 +15,10 @@ static settings::Bool random_order{ "spam.random", "0" };
 static settings::String filename{ "spam.filename", "spam.txt" };
 static settings::Int spam_delay{ "spam.delay", "800" };
 static settings::Int voicecommand_spam{ "spam.voicecommand", "0" };
-static settings::Bool teamname_spam{ "spam.teamname","0" };
+static settings::Bool teamname_spam{ "spam.teamname", "0" };
 
 namespace hacks::shared::spam
 {
-
 
 static int last_index;
 
@@ -246,9 +245,10 @@ bool FormatSpamMessage(std::string &message)
 
 void init()
 {
-    filename.installChangeCallback([](settings::VariableBase<std::string>& var, std::string after) {
-        file.TryLoad(after);
-    });
+    filename.installChangeCallback(
+        [](settings::VariableBase<std::string> &var, std::string after) {
+            file.TryLoad(after);
+        });
 }
 
 void createMove()
@@ -429,4 +429,5 @@ const std::vector<std::string> builtin_lithium = {
 };
 }
 
-static CatCommand reload("spam_reload", "Reload spam file", hacks::shared::spam::reloadSpamFile);
+static CatCommand reload("spam_reload", "Reload spam file",
+                         hacks::shared::spam::reloadSpamFile);

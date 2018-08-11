@@ -15,14 +15,18 @@ namespace zerokernel
 
 std::size_t BaseMenuObject::objectCount{ 0 };
 
-static settings::RVariable<bool> render_objects{ "zk.debug.object-overlay", "false" };
-static settings::RVariable<bool> render_objects_nonfocus{ "zk.debug.overlay-all", "false" };
+static settings::RVariable<bool> render_objects{ "zk.debug.object-overlay",
+                                                 "false" };
+static settings::RVariable<bool> render_objects_nonfocus{
+    "zk.debug.overlay-all", "false"
+};
 
 bool BaseMenuObject::handleSdlEvent(SDL_Event *event)
 {
     if (!isHidden())
     {
-        if (event->type == SDL_MOUSEBUTTONDOWN && event->button.button == SDL_BUTTON_LEFT)
+        if (event->type == SDL_MOUSEBUTTONDOWN &&
+            event->button.button == SDL_BUTTON_LEFT)
         {
             if (isHovered())
                 if (onLeftMouseClick())
@@ -40,7 +44,6 @@ void BaseMenuObject::render()
 
 void BaseMenuObject::update()
 {
-
 }
 
 void BaseMenuObject::setParent(BaseMenuObject *parent)
@@ -61,7 +64,8 @@ void BaseMenuObject::updateLocation()
 {
     if (parent)
     {
-        bb.move(xOffset + parent->getBoundingBox().getContentBox().left(), yOffset + parent->getBoundingBox().getContentBox().top());
+        bb.move(xOffset + parent->getBoundingBox().getContentBox().left(),
+                yOffset + parent->getBoundingBox().getContentBox().top());
     }
     else
     {
@@ -102,7 +106,7 @@ void BaseMenuObject::emit(Message &msg, bool is_relayed)
     printf("%p: emitting %s\n", this, msg.name.c_str());
     if (!msg.sender)
         msg.sender = this;
-    for (auto& handler: handlers)
+    for (auto &handler : handlers)
     {
         handler->handleMessage(msg, is_relayed);
     }
@@ -125,12 +129,14 @@ void BaseMenuObject::loadFromXml(const tinyxml2::XMLElement *data)
     if (tinyxml2::XML_SUCCESS == data->QueryStringAttribute("padding", &str))
     {
         std::istringstream stream{ str };
-        stream >> bb.padding.top >> bb.padding.right >> bb.padding.bottom >> bb.padding.left;
+        stream >> bb.padding.top >> bb.padding.right >> bb.padding.bottom >>
+            bb.padding.left;
     }
     if (tinyxml2::XML_SUCCESS == data->QueryStringAttribute("margin", &str))
     {
         std::istringstream stream{ str };
-        stream >> bb.margin.top >> bb.margin.right >> bb.margin.bottom >> bb.margin.left;
+        stream >> bb.margin.top >> bb.margin.right >> bb.margin.bottom >>
+            bb.margin.left;
     }
     if (tinyxml2::XML_SUCCESS == data->QueryStringAttribute("width", &str))
     {
@@ -211,12 +217,15 @@ bool BaseMenuObject::containsMouse()
 
 void BaseMenuObject::renderBackground(glez::rgba color)
 {
-    glez::draw::rect(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, color);
+    glez::draw::rect(bb.getBorderBox().x, bb.getBorderBox().y,
+                     bb.getBorderBox().width, bb.getBorderBox().height, color);
 }
 
 void BaseMenuObject::renderBorder(glez::rgba color)
 {
-    glez::draw::rect_outline(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, color, 1.0f);
+    glez::draw::rect_outline(bb.getBorderBox().x, bb.getBorderBox().y,
+                             bb.getBorderBox().width, bb.getBorderBox().height,
+                             color, 1.0f);
 }
 
 void BaseMenuObject::onParentSizeUpdate()
@@ -268,9 +277,8 @@ BaseMenuObject::findElement(const std::function<bool(BaseMenuObject *)> &search)
 
 BaseMenuObject *BaseMenuObject::getElementById(const std::string &id)
 {
-    return findElement([id](BaseMenuObject *object) {
-        return object->string_id == id;
-    });
+    return findElement(
+        [id](BaseMenuObject *object) { return object->string_id == id; });
 }
 
 BoundingBox &BaseMenuObject::getBoundingBox()
@@ -299,8 +307,10 @@ void BaseMenuObject::renderDebugOverlay()
     {
         int t = int(this);
         t *= 13737373 + 487128758242;
-        glez::draw::rect(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, glez::rgba(t & 0xFF, (t >> 8) & 0xFF, (t >> 16) & 0xFF, 80));
-
+        glez::draw::rect(
+            bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width,
+            bb.getBorderBox().height,
+            glez::rgba(t & 0xFF, (t >> 8) & 0xFF, (t >> 16) & 0xFF, 80));
     }
     // Container classes should call renderDebugOverlay() on children
 }
@@ -315,5 +325,4 @@ bool BaseMenuObject::onLeftMouseClick()
     emit(msg, false);
     return false;
 }
-
 }

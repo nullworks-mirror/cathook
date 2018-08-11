@@ -11,9 +11,15 @@
 #include <menu/object/input/Select.hpp>
 #include <menu/object/input/Checkbox.hpp>
 
-static settings::RVariable<glez::rgba> color_border{ "zk.style.window.color.border", "079797" };
-static settings::RVariable<glez::rgba> color_background{ "zk.style.window.color.background.active", "1d2f40" };
-static settings::RVariable<glez::rgba> color_background_inactive{ "zk.style.window.color.background.inactive", "1d2f4088" };
+static settings::RVariable<glez::rgba> color_border{
+    "zk.style.window.color.border", "079797"
+};
+static settings::RVariable<glez::rgba> color_background{
+    "zk.style.window.color.background.active", "1d2f40"
+};
+static settings::RVariable<glez::rgba> color_background_inactive{
+    "zk.style.window.color.background.inactive", "1d2f4088"
+};
 
 namespace zerokernel
 {
@@ -23,7 +29,8 @@ bool WMWindow::handleSdlEvent(SDL_Event *event)
     if (isHidden())
         return false;
 
-    if (event->type == SDL_MOUSEBUTTONDOWN && event->button.button == SDL_BUTTON_RIGHT)
+    if (event->type == SDL_MOUSEBUTTONDOWN &&
+        event->button.button == SDL_BUTTON_RIGHT)
     {
         if (isHovered())
         {
@@ -62,7 +69,7 @@ void WMWindow::loadFromXml(const tinyxml2::XMLElement *data)
     contents->fillFromXml(data);
 
     contents->resize(bb.border_box.width, bb.border_box.height);
-    contents->bb.width = bb.width;
+    contents->bb.width  = bb.width;
     contents->bb.height = bb.height;
 
     bb.width.setContent();
@@ -96,12 +103,12 @@ void WMWindow::wmOpenWindow()
 
 void WMWindow::requestFocus()
 {
-   container.wmRequestFocus(uid);
+    container.wmRequestFocus(uid);
 }
 
 void WMWindow::requestClose()
 {
-   wmCloseWindow();
+    wmCloseWindow();
 }
 
 void WMWindow::moveObjects()
@@ -122,24 +129,26 @@ void WMWindow::moveObjects()
     }
 }
 
-WMWindow::WMWindow(WindowContainer &container): BaseMenuObject{}, container(container)
+WMWindow::WMWindow(WindowContainer &container)
+    : BaseMenuObject{}, container(container)
 {
     setParent(&container);
 
-    auto header_obj = std::make_unique<WindowHeader>(*this);
+    auto header_obj    = std::make_unique<WindowHeader>(*this);
     auto container_obj = std::make_unique<Container>();
 
-    header = header_obj.get();
+    header   = header_obj.get();
     contents = container_obj.get();
 
     addObject(std::move(header_obj));
     addObject(std::move(container_obj));
 
-    header_location.installChangeCallback([this](settings::VariableBase<int>& var, int after) {
-        location = static_cast<HeaderLocation>(after);
-        moveObjects();
-        recalculateSize();
-    });
+    header_location.installChangeCallback(
+        [this](settings::VariableBase<int> &var, int after) {
+            location = static_cast<HeaderLocation>(after);
+            moveObjects();
+            recalculateSize();
+        });
 }
 
 void WMWindow::openSettingsModal()
@@ -151,12 +160,15 @@ void WMWindow::openSettingsModal()
         printf("WARNING: WMWindow::openSettingsModal: window == NULL\n");
         return;
     }
-    auto select_header_location = dynamic_cast<Select *>(window->getElementById("header-location"));
-    auto checkbox_show_in_game = dynamic_cast<Checkbox *>(window->getElementById("show-in-game"));
+    auto select_header_location =
+        dynamic_cast<Select *>(window->getElementById("header-location"));
+    auto checkbox_show_in_game =
+        dynamic_cast<Checkbox *>(window->getElementById("show-in-game"));
     if (select_header_location)
         select_header_location->variable = &header_location;
     else
-        printf("WARNING: WMWindow::openSettingsModal: header-location == NULL\n");
+        printf(
+            "WARNING: WMWindow::openSettingsModal: header-location == NULL\n");
     if (checkbox_show_in_game)
         checkbox_show_in_game->setVariable(should_render_in_game);
     else
@@ -177,12 +189,12 @@ void WMWindow::reorderElements()
 
 bool WMWindow::isHidden()
 {
-    return BaseMenuObject::isHidden() || (Menu::instance->isInGame() && !should_render_in_game);
+    return BaseMenuObject::isHidden() ||
+           (Menu::instance->isInGame() && !should_render_in_game);
 }
 
 bool WMWindow::isFocused()
 {
     return focused && !Menu::instance->isInGame();
 }
-
 }

@@ -456,9 +456,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 
             ret = false;
         }
-        if (cmd &&
-            (cmd->buttons & IN_ATTACK ||
-             !(hacks::shared::antiaim::isEnabled() && !*bSendPackets)))
+        if (cmd && (cmd->buttons & IN_ATTACK ||
+                    !(hacks::shared::antiaim::isEnabled() && !*bSendPackets)))
             g_Settings.brute.last_angles[LOCAL_E->m_IDX] = cmd->viewangles;
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
@@ -507,7 +506,8 @@ void Start() {
     *(reinterpret_cast<CUserCmd*>(reinterpret_cast<uintptr_t>(player) + 1047)) =
 current_user_cmd; o_curtime = g_GlobalVars->curtime; o_frametime =
 g_GlobalVars->frametime; *g_PredictionRandomSeed =
-MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF; g_GlobalVars->curtime
+MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF;
+g_GlobalVars->curtime
 = CE_INT(LOCAL_E, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
     g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
 

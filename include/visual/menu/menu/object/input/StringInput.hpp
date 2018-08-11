@@ -10,14 +10,14 @@
 namespace zerokernel
 {
 
-class StringInput: public TextInput
+class StringInput : public TextInput
 {
 public:
     ~StringInput() override = default;
 
     StringInput();
 
-    explicit StringInput(settings::IVariable& option);
+    explicit StringInput(settings::IVariable &option);
 
     const std::string &getValue() override;
 
@@ -30,5 +30,4 @@ public:
 protected:
     settings::IVariable *option{ nullptr };
 };
-
 }

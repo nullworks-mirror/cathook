@@ -9,7 +9,7 @@
 namespace zerokernel
 {
 
-class TreeListBaseEntry: public BaseMenuObject
+class TreeListBaseEntry : public BaseMenuObject
 {
 public:
     TreeListBaseEntry();
@@ -34,5 +34,4 @@ public:
 
     size_t depth{ 0 };
 };
-
 }

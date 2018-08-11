@@ -20,7 +20,8 @@
 #include <config.h>
 #include <core/logging.hpp>
 
-static void recursiveXmlResolveIncludes(const std::string& directory, tinyxml2::XMLElement *element)
+static void recursiveXmlResolveIncludes(const std::string &directory,
+                                        tinyxml2::XMLElement *element)
 {
     printf("recursively resolving includes for element %s\n", element->Name());
     auto c = element->FirstChildElement();
@@ -40,7 +41,8 @@ static void recursiveXmlResolveIncludes(const std::string& directory, tinyxml2::
                 if (tinyxml2::XML_SUCCESS == document.LoadFile(fp.c_str()))
                 {
                     printf("File loaded\n");
-                    auto content = document.RootElement()->DeepClone(c->GetDocument());
+                    auto content =
+                        document.RootElement()->DeepClone(c->GetDocument());
                     element->InsertAfterChild(c, content);
                     element->DeleteChild(c);
                     c = content->ToElement();
@@ -50,7 +52,7 @@ static void recursiveXmlResolveIncludes(const std::string& directory, tinyxml2::
         }
         if (!strcmp("ElementGroup", c->Name()))
         {
-            auto it = c->FirstChild();
+            auto it   = c->FirstChild();
             auto prev = c;
             while (it)
             {
@@ -98,7 +100,6 @@ Menu::Menu(int w, int h) : tooltip{}, wm{ nullptr }
 
 void Menu::setup()
 {
-
 }
 
 void Menu::showTooltip(std::string tooltip)
@@ -128,7 +129,7 @@ void Menu::render()
     wm->renderDebugOverlay();
 
     // TODO maybe move these into WM...
-    for (auto& m: modal_stack)
+    for (auto &m : modal_stack)
     {
         m->render();
     }
@@ -152,18 +153,19 @@ void Menu::update()
             --modal_close_next_frame;
         }
         if (modal_close_next_frame != 0)
-            printf("WARNING: %d queued modal close events, modal stack empty\n", modal_close_next_frame);
+            printf("WARNING: %d queued modal close events, modal stack empty\n",
+                   modal_close_next_frame);
     }
     int mx, my;
     SDL_GetMouseState(&mx, &my);
-    dx = mx - mouseX;
-    dy = my - mouseY;
+    dx     = mx - mouseX;
+    dy     = my - mouseY;
     mouseX = mx;
     mouseY = my;
 
     wm->update();
 
-    for (auto& m: modal_stack)
+    for (auto &m : modal_stack)
     {
         m->update();
     }
@@ -228,7 +230,8 @@ void Menu::handleMessage(Message &msg, bool is_relayed)
     {
         if (!modal_stack.empty())
         {
-            printf("%p[%u] requested close, top %p\n", msg.sender, msg.sender->uid, modal_stack.back().get());
+            printf("%p[%u] requested close, top %p\n", msg.sender,
+                   msg.sender->uid, modal_stack.back().get());
             if (modal_stack.back().get() == msg.sender)
                 ++modal_close_next_frame;
         }
@@ -240,7 +243,7 @@ void Menu::updateHovered()
 {
     for (auto i = 0; i < modal_stack.size(); ++i)
     {
-        auto& m = modal_stack[modal_stack.size() - 1 - i];
+        auto &m = modal_stack[modal_stack.size() - 1 - i];
         if (m->containsMouse())
         {
             m->updateIsHovered();
@@ -286,5 +289,4 @@ void Menu::loadFromFile(std::string directory, std::string path)
     recursiveXmlResolveIncludes(directory, xml_source.RootElement());
     loadFromXml(xml_source.RootElement());
 }
-
 }

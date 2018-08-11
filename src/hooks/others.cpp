@@ -64,4 +64,3 @@ static CatCommand minus_use_action_slot_item_server(
         g_pLocalPlayer->using_action_slot_item = false;
         g_IEngine->ServerCmdKeyValues(kv);
     });
-

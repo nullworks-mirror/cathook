@@ -13,24 +13,23 @@
 namespace utility
 {
 
-std::string wrapString(const std::string& input, glez::font& font, int width, int *resultWidth, int *resultLines);
-std::string dotCompactString(const std::string& input, glez::font& font, int width, bool reverse);
-void drawCenteredString(int x, int y, const std::string& string, glez::font& font, glez::rgba color);
+std::string wrapString(const std::string &input, glez::font &font, int width,
+                       int *resultWidth, int *resultLines);
+std::string dotCompactString(const std::string &input, glez::font &font,
+                             int width, bool reverse);
+void drawCenteredString(int x, int y, const std::string &string,
+                        glez::font &font, glez::rgba color);
 
-template<typename T>
-T mod(T first, T second);
+template <typename T> T mod(T first, T second);
 
-template<>
-inline float mod(float first, float second)
+template <> inline float mod(float first, float second)
 {
     return std::fmod(first, second);
 }
-template<>
-inline int mod(int first, int second)
+template <> inline int mod(int first, int second)
 {
     return first % second;
 }
 
 extern const std::string empty_string;
-
 }

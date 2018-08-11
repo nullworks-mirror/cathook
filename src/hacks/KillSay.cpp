@@ -12,10 +12,8 @@
 static settings::Int killsay_mode{ "killsay.mode", "0" };
 static settings::String filename{ "killsay.file", "killsays.txt" };
 
-
-static CatCommand reload_command("killsay_reload", "Reload killsays", []() {
-    hacks::shared::killsay::reload();
-});
+static CatCommand reload_command("killsay_reload", "Reload killsays",
+                                 []() { hacks::shared::killsay::reload(); });
 
 namespace hacks::shared::killsay
 {
@@ -81,7 +79,6 @@ std::string ComposeKillSay(IGameEvent *event)
     ReplaceString(msg, "\\n", "\n");
     return msg;
 }
-
 
 class KillSayEventListener : public IGameEventListener2
 {
@@ -162,6 +159,3 @@ const std::vector<std::string> builtin_nonecore_mlg = {
     "U GOT QUICKSCOPED M8", "2 FAST 4 U, SCRUB", "U GOT REKT, M8"
 };
 }
-
-
-

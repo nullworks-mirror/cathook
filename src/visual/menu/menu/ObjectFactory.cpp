@@ -68,7 +68,8 @@ ObjectFactory::createObjectFromXml(const tinyxml2::XMLElement *element)
     else if (type == "Slider")
     {
         const char *type{ nullptr };
-        if (tinyxml2::XML_SUCCESS == element->QueryStringAttribute("type", &type))
+        if (tinyxml2::XML_SUCCESS ==
+            element->QueryStringAttribute("type", &type))
         {
             if (EXIT_SUCCESS == strcmp("int", type))
                 result = std::make_unique<Slider<int>>();
@@ -133,7 +134,8 @@ ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
             return nullptr;
         }
         int min, max;
-        if (!element->QueryIntAttribute("min", &min) && !element->QueryIntAttribute("max", &max))
+        if (!element->QueryIntAttribute("min", &min) &&
+            !element->QueryIntAttribute("max", &max))
         {
             // Make a slider
             auto slider = std::make_unique<Slider<int>>(*obj);
@@ -159,7 +161,8 @@ ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
             return nullptr;
         }
         float min, max;
-        if (!element->QueryFloatAttribute("min", &min) && !element->QueryFloatAttribute("max", &max))
+        if (!element->QueryFloatAttribute("min", &min) &&
+            !element->QueryFloatAttribute("max", &max))
         {
             // Make a slider
             auto slider = std::make_unique<Slider<float>>(*obj);

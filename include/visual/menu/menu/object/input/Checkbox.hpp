@@ -14,26 +14,24 @@
 namespace zerokernel
 {
 
-class Checkbox: public BaseMenuObject
+class Checkbox : public BaseMenuObject
 {
 public:
     ~Checkbox() override = default;
 
     Checkbox();
 
-    explicit Checkbox(settings::Variable<bool>& option);
+    explicit Checkbox(settings::Variable<bool> &option);
 
     void render() override;
 
-    void setVariable(settings::Variable<bool>& variable);
+    void setVariable(settings::Variable<bool> &variable);
 
     bool onLeftMouseClick() override;
 
     void loadFromXml(const tinyxml2::XMLElement *data) override;
 
 protected:
-
     settings::Variable<bool> *option{ nullptr };
 };
-
 }

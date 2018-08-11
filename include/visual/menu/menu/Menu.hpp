@@ -31,7 +31,7 @@ extern color_type text_shadow;
 extern color_type error;
 }
 
-class Menu: public IMessageHandler
+class Menu : public IMessageHandler
 {
 public:
     Menu(int w, int h);
@@ -64,9 +64,9 @@ public:
 
     void resize(int x, int y);
 
-    BoundingBox& wmRootBoundingBox();
+    BoundingBox &wmRootBoundingBox();
 
-    tinyxml2::XMLElement *getPrefab(const std::string& name);
+    tinyxml2::XMLElement *getPrefab(const std::string &name);
 
     int mouseX;
     int mouseY;
@@ -89,6 +89,4 @@ public:
     tinyxml2::XMLDocument xml_source{};
     std::unordered_map<std::string, tinyxml2::XMLElement *> prefabs{};
 };
-
-
 }

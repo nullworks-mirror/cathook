@@ -19,7 +19,8 @@ static settings::Bool medkits{ "glow.show.medkits", "false" };
 static settings::Bool ammobox{ "glow.show.ammoboxes", "false" };
 static settings::Bool buildings{ "glow.show.buildings", "true" };
 static settings::Bool stickies{ "glow.show.stickies", "true" };
-static settings::Bool teammate_buildings{ "glow.show.teammate-buildings", "false" };
+static settings::Bool teammate_buildings{ "glow.show.teammate-buildings",
+                                          "false" };
 static settings::Bool show_powerups{ "glow.show.powerups", "true" };
 static settings::Bool weapons_white{ "glow.white-weapons", "true" };
 static settings::Bool glowself{ "glow.self", "true" };
@@ -332,7 +333,6 @@ void EffectGlow::EndRenderGlow()
     ptr->PopRenderTargetAndViewport();
 }
 
-
 void EffectGlow::StartStenciling()
 {
     static ShaderStencilState_t state;
@@ -431,7 +431,8 @@ void EffectGlow::Render(int x, int y, int w, int h)
     static IMaterialVar *blury_bloomamount;
     if (!init)
         Init();
-    if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots) ||
+    if (!isHackActive() ||
+        (g_IEngine->IsTakingScreenshot() && clean_screenshots) ||
         g_Settings.bInvalid)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);

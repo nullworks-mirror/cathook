@@ -9,8 +9,7 @@
 namespace settings
 {
 
-template<>
-class Variable<float>: public ArithmeticVariable<float>
+template <> class Variable<float> : public ArithmeticVariable<float>
 {
 public:
     ~Variable<float>() override = default;
@@ -22,19 +21,19 @@ public:
 
     void fromString(const std::string &string) override
     {
-        errno = 0;
+        errno     = 0;
         auto next = std::strtof(string.c_str(), nullptr);
         if (next == 0.0f && errno)
             return;
         set(next);
     }
 
-    inline Variable<float>& operator=(const std::string& string)
+    inline Variable<float> &operator=(const std::string &string)
     {
         fromString(string);
     }
 
-    inline Variable<float>& operator=(const float& next)
+    inline Variable<float> &operator=(const float &next)
     {
         set(next);
     }
@@ -43,6 +42,7 @@ public:
     {
         return value != 0.0f;
     }
+
 protected:
     void updateString() override
     {
@@ -51,5 +51,4 @@ protected:
         string = str;
     }
 };
-
 }

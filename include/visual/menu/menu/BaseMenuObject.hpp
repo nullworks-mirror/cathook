@@ -20,7 +20,7 @@ namespace zerokernel
 class Menu;
 class BoundingBox;
 
-class BaseMenuObject: public IMessageHandler
+class BaseMenuObject : public IMessageHandler
 {
 public:
     friend class ModalBehavior;
@@ -30,13 +30,15 @@ public:
     inline virtual ~BaseMenuObject()
     {
         --objectCount;
-        //printf("~BaseMenuObject %u\n", --objectCount);
+        // printf("~BaseMenuObject %u\n", --objectCount);
     }
 
-    inline BaseMenuObject(): uid(object_sequence_number), kv("Object" + std::to_string(uid)), bb{ *this }
+    inline BaseMenuObject()
+        : uid(object_sequence_number),
+          kv("Object" + std::to_string(uid)), bb{ *this }
     {
         ++object_sequence_number;
-        //printf("BaseMenuObject(%u) %u\n", uid, ++objectCount);
+        // printf("BaseMenuObject(%u) %u\n", uid, ++objectCount);
     }
 
     virtual bool handleSdlEvent(SDL_Event *event);
@@ -55,7 +57,8 @@ public:
 
     virtual void show();
 
-    virtual BaseMenuObject *findElement(const std::function<bool(BaseMenuObject *)>& search);
+    virtual BaseMenuObject *
+    findElement(const std::function<bool(BaseMenuObject *)> &search);
 
     virtual void updateIsHovered();
 
@@ -70,7 +73,8 @@ public:
     // End of virtual methods
 
     /*
-     * Explicitly moves the object - updates location and calls childMove on children.
+     * Explicitly moves the object - updates location and calls childMove on
+     * children.
      */
     void move(int x, int y);
 
@@ -78,13 +82,13 @@ public:
 
     bool isHovered();
 
-    void addMessageHandler(IMessageHandler& handler);
+    void addMessageHandler(IMessageHandler &handler);
 
     bool containsMouse();
 
     void markForDelete();
 
-    BaseMenuObject *getElementById(const std::string& id);
+    BaseMenuObject *getElementById(const std::string &id);
 
     /*
      * Event handling (WIP)
@@ -100,7 +104,7 @@ public:
     virtual void recalculateSize();
     virtual void recursiveSizeUpdate();
 
-    BoundingBox& getBoundingBox();
+    BoundingBox &getBoundingBox();
 
     void resize(int width, int height);
 
@@ -112,10 +116,10 @@ public:
     void renderBackground(glez::rgba color);
     void renderBorder(glez::rgba color);
 
-    int xOffset{0};
-    int yOffset{0};
+    int xOffset{ 0 };
+    int yOffset{ 0 };
 
-    bool markedForDelete{false};
+    bool markedForDelete{ false };
     BaseMenuObject *parent{ nullptr };
 
     bool hidden{ false };
@@ -128,12 +132,12 @@ public:
     const size_t uid;
     KeyValue kv;
     BoundingBox bb;
+
 protected:
-    void emit(Message& msg, bool is_relayed);
+    void emit(Message &msg, bool is_relayed);
 
     std::vector<IMessageHandler *> handlers{};
 
     static size_t object_sequence_number;
 };
-
 }

@@ -25,15 +25,15 @@ void dispatchUserMessage(bf_read &buffer, int type)
         break;
     case 46:
     {
-        was_local_player        = false;
-        auto caller = (unsigned char)buffer.ReadByte();
+        was_local_player = false;
+        auto caller      = (unsigned char) buffer.ReadByte();
         // unknown
         buffer.ReadByte();
         char reason[64];
         char name[64];
         buffer.ReadString(reason, 64, false, nullptr);
         buffer.ReadString(name, 64, false, nullptr);
-        auto eid = (unsigned char)buffer.ReadByte();
+        auto eid = (unsigned char) buffer.ReadByte();
         buffer.Seek(0);
         eid >>= 1;
 

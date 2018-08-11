@@ -15,7 +15,7 @@
 namespace zerokernel
 {
 
-class Select: public BaseMenuObject
+class Select : public BaseMenuObject
 {
 public:
     struct option
@@ -29,7 +29,7 @@ public:
 
     Select();
 
-    explicit Select(settings::IVariable& variable);
+    explicit Select(settings::IVariable &variable);
 
     void render() override;
 
@@ -55,5 +55,4 @@ public:
 
 protected:
 };
-
 }

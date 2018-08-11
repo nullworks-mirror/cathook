@@ -39,7 +39,7 @@ void Container::emitSizeUpdate()
 
     reorder_needed = true;
 
-    for (auto& o: objects)
+    for (auto &o : objects)
         o->onParentSizeUpdate();
 }
 
@@ -47,7 +47,7 @@ void Container::recursiveSizeUpdate()
 {
     BaseMenuObject::recursiveSizeUpdate();
 
-    for (auto& o: objects)
+    for (auto &o : objects)
         o->recursiveSizeUpdate();
 }
 
@@ -64,10 +64,9 @@ void Container::fillFromXml(const tinyxml2::XMLElement *element)
     }
 }
 
-void Container::iterateObjects(
-        std::function<void(BaseMenuObject *)> callback)
+void Container::iterateObjects(std::function<void(BaseMenuObject *)> callback)
 {
-    for (auto& o: objects)
+    for (auto &o : objects)
         callback(o.get());
 }
 
@@ -78,7 +77,7 @@ Container::findElement(const std::function<bool(BaseMenuObject *)> &search)
     if (result)
         return result;
 
-    for (auto& o: objects)
+    for (auto &o : objects)
     {
         result = o->findElement(search);
         if (result)
@@ -91,7 +90,7 @@ bool Container::handleSdlEvent(SDL_Event *event)
 {
     cleanupObjects();
     bool handled{ false };
-    for (auto& object: objects)
+    for (auto &object : objects)
     {
         if (!object->isHidden() && object->handleSdlEvent(event))
             handled = true;
@@ -101,7 +100,7 @@ bool Container::handleSdlEvent(SDL_Event *event)
 
 void Container::render()
 {
-    for (auto &object: objects)
+    for (auto &object : objects)
     {
         if (!object->isHidden())
             object->render();
@@ -116,7 +115,7 @@ void Container::update()
         reorderElements();
         reorder_needed = false;
     }
-    for (auto &object: objects)
+    for (auto &object : objects)
         object->update();
 }
 
@@ -130,11 +129,11 @@ void Container::addObject(std::unique_ptr<BaseMenuObject> &&object)
 
 void Container::cleanupObjects()
 {
-    for (auto it = objects.begin(); it != objects.end(); )
+    for (auto it = objects.begin(); it != objects.end();)
     {
         if ((*it)->markedForDelete)
         {
-            it = objects.erase(it);
+            it             = objects.erase(it);
             reorder_needed = true;
         }
         else
@@ -157,7 +156,7 @@ void Container::onMove()
 {
     BaseMenuObject::onMove();
 
-    for (auto& o: objects)
+    for (auto &o : objects)
         o->onParentMove();
 }
 
@@ -171,7 +170,7 @@ void Container::recalculateSize()
     bb.shrinkContent();
     bb.updateFillSize();
 
-    for (auto& o: objects)
+    for (auto &o : objects)
         bb.extend(o->getBoundingBox());
 }
 
@@ -179,11 +178,10 @@ void Container::renderDebugOverlay()
 {
     BaseMenuObject::renderDebugOverlay();
 
-    for (auto& o: objects)
+    for (auto &o : objects)
     {
         if (!o->isHidden())
             o->renderDebugOverlay();
     }
 }
-
 }

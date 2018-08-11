@@ -21,5 +21,4 @@ public:
     KeyValue kv;
     BaseMenuObject *sender{ nullptr };
 };
-
 }

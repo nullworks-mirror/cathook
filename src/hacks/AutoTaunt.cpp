@@ -15,7 +15,6 @@ static settings::Float chance{ "autotaunt.chance", "8" };
 namespace hacks::tf::autotaunt
 {
 
-
 class AutoTauntListener : public IGameEventListener2
 {
 public:

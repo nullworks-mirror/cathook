@@ -11,7 +11,7 @@
 namespace zerokernel
 {
 
-class TabContainer: public BaseMenuObject
+class TabContainer : public BaseMenuObject
 {
 public:
     ~TabContainer() override = default;
@@ -52,5 +52,4 @@ public:
     TabSelection selection;
     std::vector<std::unique_ptr<Container>> containers{};
 };
-
 }

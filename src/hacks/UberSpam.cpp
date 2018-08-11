@@ -23,9 +23,9 @@ namespace hacks::tf::uberspam
 
 TextFile custom_lines;
 
-static CatCommand custom_file_reload(
-    "uberspam_file_reload", "Reload Ubercharge Spam File",
-    []() { custom_lines.Load(*custom_file); });
+static CatCommand custom_file_reload("uberspam_file_reload",
+                                     "Reload Ubercharge Spam File",
+                                     []() { custom_lines.Load(*custom_file); });
 
 const std::vector<std::string> *GetSource()
 {

@@ -13,7 +13,9 @@ static settings::Button open_gui_button{ "visual.open-gui-button", "Insert" };
 
 static bool init_done{ false };
 
-static std::unique_ptr<zerokernel::special::PlayerListController> controller{ nullptr };
+static std::unique_ptr<zerokernel::special::PlayerListController> controller{
+    nullptr
+};
 
 static zerokernel::special::PlayerListData createPlayerListData(int userid)
 {
@@ -22,15 +24,15 @@ static zerokernel::special::PlayerListData createPlayerListData(int userid)
     player_info_s info{};
     g_IEngine->GetPlayerInfo(idx, &info);
     data.classId = g_pPlayerResource->getClass(idx);
-    data.teamId = g_pPlayerResource->getTeam(idx) - 1;
-    data.dead = !g_pPlayerResource->isAlive(idx);
-    data.steam = info.friendsID;
+    data.teamId  = g_pPlayerResource->getTeam(idx) - 1;
+    data.dead    = !g_pPlayerResource->isAlive(idx);
+    data.steam   = info.friendsID;
     logging::Info("Player name: %s", info.name);
     snprintf(data.name, 31, "%s", info.name);
     return data;
 }
 
-class PlayerListEventListener: public IGameEventListener
+class PlayerListEventListener : public IGameEventListener
 {
 public:
     void FireGameEvent(KeyValues *event) override
@@ -85,10 +87,12 @@ static PlayerListEventListener listener{};
 
 static void initPlayerlist()
 {
-    auto pl = dynamic_cast<zerokernel::Table *>(zerokernel::Menu::instance->wm->getElementById("special-player-list"));
+    auto pl = dynamic_cast<zerokernel::Table *>(
+        zerokernel::Menu::instance->wm->getElementById("special-player-list"));
     if (pl)
     {
-        controller = std::make_unique<zerokernel::special::PlayerListController>(*pl);
+        controller =
+            std::make_unique<zerokernel::special::PlayerListController>(*pl);
         controller->setKickButtonCallback([](int uid) {
             hack::command_stack().push("callvote kick " + uid);
         });
@@ -108,7 +112,8 @@ static void load()
 {
     zerokernel::Menu::instance->loadFromFile(DATA_PATH "/menu", "menu.xml");
 
-    zerokernel::Container *sv = dynamic_cast<zerokernel::Container *>(zerokernel::Menu::instance->wm->getElementById("special-variables"));
+    zerokernel::Container *sv = dynamic_cast<zerokernel::Container *>(
+        zerokernel::Menu::instance->wm->getElementById("special-variables"));
     if (sv)
     {
         zerokernel::special::SettingsManagerList list(*sv);
@@ -121,11 +126,7 @@ static void load()
     zerokernel::Menu::instance->setInGame(true);
 }
 
-static CatCommand reload("gui_reload", "Reload", []() {
-    load();
-});
-
-
+static CatCommand reload("gui_reload", "Reload", []() { load(); });
 
 void gui::init()
 {
@@ -153,12 +154,14 @@ bool gui::handleSdlEvent(SDL_Event *event)
         if (event->key.keysym.scancode == (*open_gui_button).scan)
         {
             logging::Info("GUI open button pressed");
-            zerokernel::Menu::instance->setInGame(!zerokernel::Menu::instance->isInGame());
+            zerokernel::Menu::instance->setInGame(
+                !zerokernel::Menu::instance->isInGame());
             return true;
         }
     }
 
-    return zerokernel::Menu::instance->handleSdlEvent(event) && !zerokernel::Menu::instance->isInGame();
+    return zerokernel::Menu::instance->handleSdlEvent(event) &&
+           !zerokernel::Menu::instance->isInGame();
 }
 
 void gui::onLevelLoad()
@@ -171,9 +174,9 @@ void gui::onLevelLoad()
             player_info_s info{};
             if (g_IEngine->GetPlayerInfo(i, &info))
             {
-                controller->addPlayer(info.userID, createPlayerListData(info.userID));
+                controller->addPlayer(info.userID,
+                                      createPlayerListData(info.userID));
             }
         }
     }
 }
-

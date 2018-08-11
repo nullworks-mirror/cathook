@@ -18,12 +18,12 @@ class WMWindow;
  *  Shows hidden (closed) windows in different colors
  *  Used to open these windows
  */
-class TaskBar: public Container
+class TaskBar : public Container
 {
 public:
     ~TaskBar() override = default;
 
-    explicit TaskBar(WindowManager& wm);
+    explicit TaskBar(WindowManager &wm);
 
     void reorderElements() override;
 
@@ -33,11 +33,10 @@ public:
 
     //
 
-    void addWindowButton(WMWindow& window);
+    void addWindowButton(WMWindow &window);
 
     //
 
-    WindowManager& wm;
+    WindowManager &wm;
 };
-
 }

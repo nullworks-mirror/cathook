@@ -8,8 +8,9 @@
 #include <menu/menu/special/SettingsManagerList.hpp>
 #include <menu/menu/special/VariableListEntry.hpp>
 
-
-static settings::RVariable<glez::rgba> marked_color{ "zk.color.variable-list.color.registered", "ffff00" };
+static settings::RVariable<glez::rgba> marked_color{
+    "zk.color.variable-list.color.registered", "ffff00"
+};
 
 /*
   Created on 26.07.18.
@@ -192,7 +193,9 @@ void zerokernel::VariableListEntry::recalculateSize()
 void zerokernel::VariableListEntry::emitSizeUpdate()
 {
     if (control)
-        control->move(bb.getContentBox().width - control->getBoundingBox().getFullBox().width, 0);
+        control->move(bb.getContentBox().width -
+                          control->getBoundingBox().getFullBox().width,
+                      0);
 
     BaseMenuObject::emitSizeUpdate();
 }

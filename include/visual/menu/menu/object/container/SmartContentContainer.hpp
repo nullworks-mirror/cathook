@@ -16,7 +16,7 @@
 namespace zerokernel
 {
 
-class SmartContentContainer: public Container
+class SmartContentContainer : public Container
 {
 public:
     enum class Direction
@@ -30,6 +30,7 @@ public:
         END,
         CENTER
     };
+
 public:
     ~SmartContentContainer() override = default;
 
@@ -46,13 +47,10 @@ public:
 
     void reorderObjects()
     {
-
     }
 
     // Properties
 
     Direction direction{ Direction::HORIZONTAL };
-
 };
-
 }

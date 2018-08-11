@@ -6,7 +6,6 @@
   Created on 08.07.18.
 */
 
-
 void zerokernel::TRow::reorderElements()
 {
     Container::reorderElements();
@@ -14,7 +13,7 @@ void zerokernel::TRow::reorderElements()
     int acc{ 0 };
     int max_h{ 0 };
     size_t i{ 0 };
-    for (auto& o: objects)
+    for (auto &o : objects)
     {
         o->move(acc, 0);
         auto h = o->bb.getFullBox().height;
@@ -37,8 +36,8 @@ void zerokernel::TRow::setParent(zerokernel::BaseMenuObject *parent)
         printf("WARNING: TRow::setParent is not a table\n");
 }
 
-zerokernel::TRow::TRow(): Container{}
+zerokernel::TRow::TRow() : Container{}
 {
-    bb.width.mode = BoundingBox::SizeMode::Mode::FILL;
+    bb.width.mode  = BoundingBox::SizeMode::Mode::FILL;
     bb.height.mode = BoundingBox::SizeMode::Mode::CONTENT;
 }

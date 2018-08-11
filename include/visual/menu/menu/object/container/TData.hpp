@@ -10,7 +10,7 @@
 namespace zerokernel
 {
 
-class TData: public Container
+class TData : public Container
 {
 public:
     TData();
@@ -23,5 +23,4 @@ public:
 
     TRow *row;
 };
-
 }

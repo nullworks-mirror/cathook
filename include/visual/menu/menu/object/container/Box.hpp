@@ -14,7 +14,7 @@
 namespace zerokernel
 {
 
-class Box: public Container
+class Box : public Container
 {
 public:
     Box();
@@ -29,7 +29,7 @@ public:
 
     //
 
-    void setTitle(const std::string& string);
+    void setTitle(const std::string &string);
 
     //
 
@@ -37,5 +37,4 @@ public:
 
     Text title{};
 };
-
 }

@@ -16,5 +16,4 @@ public:
 
     int depth{ 0 };
 };
-
 }

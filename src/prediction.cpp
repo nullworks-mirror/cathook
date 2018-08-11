@@ -11,7 +11,8 @@
 
 static settings::Bool debug_enginepred{ "debug.engine-pred-others", "false" };
 static settings::Bool debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
-static settings::Bool debug_pp_rockettimeping{ "debug.pp-rocket-time-ping", "false" };
+static settings::Bool debug_pp_rockettimeping{ "debug.pp-rocket-time-ping",
+                                               "false" };
 
 // TODO there is a Vector() object created each call.
 
@@ -50,7 +51,6 @@ bool PerformProjectilePrediction(CachedEntity *target, int hitbox)
 std::vector<std::vector<Vector>> predicted_players{};
 
 int predicted_player_count = 0;
-
 
 void Prediction_CreateMove()
 {
@@ -168,7 +168,8 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     Vector old_origin = entity->m_vecOrigin();
     NET_VECTOR(ent, 0x354) = entity->m_vecOrigin();
 
-    //*g_PredictionRandomSeed = MD5_PseudoRandom(current_user_cmd->command_number) &
+    //*g_PredictionRandomSeed =
+    // MD5_PseudoRandom(current_user_cmd->command_number) &
     // 0x7FFFFFFF;
     g_IGameMovement->StartTrackPredictionErrors(
         reinterpret_cast<CBasePlayer *>(ent));
@@ -254,8 +255,6 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
                   result.y - origin.y, result.z - origin.z);*/
     return result;
 }
-
-
 
 Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
                             float gravitymod, float entgmod)

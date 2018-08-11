@@ -235,6 +235,5 @@ std::thread &GetBackpackTFThread()
 void init()
 {
     GetBackpackTFThread();
-
 }
 }
