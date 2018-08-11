@@ -27,7 +27,7 @@ bool shouldBacktrack();
 BacktrackData headPositions[32][66]{};
 int highesttick[32]{};
 int lastincomingsequencenumber = 0;
-bool isBacktrackEnabled;
+bool isBacktrackEnabled = false;
 
 circular_buf sequences{ 2048 };
 void UpdateIncomingSequences()
@@ -50,6 +50,8 @@ void UpdateIncomingSequences()
 }
 void AddLatencyToNetchan(INetChannel *ch, float Latency)
 {
+    if (!isBacktrackEnabled)
+        return;
     if (Latency > 200.0f)
         Latency -= ch->GetLatency(MAX_FLOWS);
     for (auto &seq : sequences)

@@ -104,8 +104,9 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max,
     forward.z = -sp;
     forward   = forward * meleeRange + head;
 
+    Vector hit;
     // Check if we our line is within the targets hitbox
-    if (LineIntersectsBox(minz, maxz, head, forward))
+    if (hacks::shared::triggerbot::CheckLineBox(minz, maxz, head, forward, hit))
         return true;
     return false;
 }
