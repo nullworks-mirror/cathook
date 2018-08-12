@@ -93,10 +93,11 @@ Timer zoomTime{};
 // This array will store calculated projectile/hitscan predictions
 // for current frame, to avoid performing them again
 AimbotCalculatedData_s calculated_data_array[2048]{};
+<<<<<<< Updated upstream
 #define IsMelee GetWeaponMode() == weapon_melee
 bool BacktrackAimbot()
 {
-    if (!hacks::shared::backtrack::isBacktrackEnabled() || !backtrackAimbot)
+    if (!hacks::shared::backtrack::isBacktrackEnabled || !*backtrackAimbot)
         return false;
     if (aimkey && !aimkey.isKeyDown())
         return true;
@@ -142,6 +143,7 @@ bool BacktrackAimbot()
         current_user_cmd->buttons |= IN_ATTACK;
     return true;
 }
+
 // The main "loop" of the aimbot.
 void CreateMove()
 {
@@ -162,25 +164,6 @@ void CreateMove()
     // the find target and aiming system. If we just call the func than toggle
     // aimkey would break so we save it to a var to use it twice
     bool aimkey_status = UpdateAimkey();
-    // Refresh our best target
-    CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
-    if (CE_BAD(target_entity) || !foundTarget)
-        return;
-    // Auto-zoom
-    IF_GAME(IsTF())
-    {
-        if (auto_zoom)
-        {
-            if (g_pLocalPlayer->holding_sniper_rifle)
-            {
-                zoomTime.update();
-                if (not g_pLocalPlayer->bZoomed)
-                {
-                    current_user_cmd->buttons |= IN_ATTACK2;
-                }
-            }
-        }
-    }
     // check if we need to run projectile Aimbot code
     projectileAimbotRequired = false;
     if (projectile_aimbot &&
@@ -204,8 +187,25 @@ void CreateMove()
         if (proj_gravity)
             cur_proj_grav = float(proj_gravity);
     }
-    if (BacktrackAimbot())
+    // Refresh our best target
+    CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
+    if (CE_BAD(target_entity) || !foundTarget)
         return;
+    // Auto-zoom
+    IF_GAME(IsTF())
+    {
+        if (auto_zoom)
+        {
+            if (g_pLocalPlayer->holding_sniper_rifle)
+            {
+                zoomTime.update();
+                if (not g_pLocalPlayer->bZoomed)
+                {
+                    current_user_cmd->buttons |= IN_ATTACK2;
+                }
+            }
+        }
+    }
 
     if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
         return;
@@ -413,50 +413,58 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
     CachedEntity *ent;
     CachedEntity *target_highest_ent = 0;
     target_highest_score             = -256;
-
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    if (!hacks::shared::backtrack::isBacktrackEnabled() || projectile_mode)
     {
-        ent = ENTITY(i);
-        if (CE_BAD(ent))
-            continue; // Check for null and dormant
-        // Check whether the current ent is good enough to target
-        if (IsTargetStateGood(ent))
+        for (int i = 0; i < HIGHEST_ENTITY; i++)
         {
+            ent = ENTITY(i);
+            if (CE_BAD(ent))
+                continue; // Check for null and dormant
+            // Check whether the current ent is good enough to target
+            if (IsTargetStateGood(ent))
+            {
 
-            // Distance Priority, Uses this is melee is used
-            if (GetWeaponMode() == weaponmode::weapon_melee ||
-                (int) priority_mode == 2)
-            {
-                scr = 4096.0f -
-                      calculated_data_array[i].aim_position.DistTo(
-                          g_pLocalPlayer->v_Eye);
-            }
-            else
-            {
-                switch ((int) priority_mode)
+                // Distance Priority, Uses this is melee is used
+                if (GetWeaponMode() == weaponmode::weapon_melee ||
+                    (int) priority_mode == 2)
                 {
-                case 0: // Smart Priority
-                    scr = GetScoreForEntity(ent);
-                    break;
-                case 1: // Fov Priority
-                    scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
-                    break;
-                case 3: // Health Priority
-                    scr = 450.0f - ent->m_iHealth();
-                    break;
-                default:
-                    break;
+                    scr = 4096.0f -
+                          calculated_data_array[i].aim_position.DistTo(
+                              g_pLocalPlayer->v_Eye);
                 }
-            }
-            // Compare the top score to our current ents score
-            if (scr > target_highest_score)
-            {
-                foundTarget          = true;
-                target_highest_score = scr;
-                target_highest_ent   = ent;
+                else
+                {
+                    switch ((int) priority_mode)
+                    {
+                    case 0: // Smart Priority
+                        scr = GetScoreForEntity(ent);
+                        break;
+                    case 1: // Fov Priority
+                        scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
+                        break;
+                    case 3: // Health Priority
+                        scr = 450.0f - ent->m_iHealth();
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                // Compare the top score to our current ents score
+                if (scr > target_highest_score)
+                {
+                    foundTarget          = true;
+                    target_highest_score = scr;
+                    target_highest_ent   = ent;
+                }
             }
         }
     }
+    else if (hacks::shared::backtrack::iBestTarget != -1)
+    {
+        target_highest_ent = ENTITY(hacks::shared::backtrack::iBestTarget);
+        foundTarget        = true;
+    }
+
     // Save the ent for future use with target lock
     target_last = target_highest_ent;
 
@@ -471,6 +479,9 @@ bool IsTargetStateGood(CachedEntity *entity)
 {
     PROF_SECTION(PT_aimbot_targetstatecheck);
 
+    if (hacks::shared::backtrack::isBacktrackEnabled() &&
+        entity->m_Type() != ENTITY_PLAYER)
+        return false;
     // Checks for Players
     if (entity->m_Type() == ENTITY_PLAYER)
     {
@@ -584,7 +595,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Vis check + fov check
         if (!VischeckPredictedEntity(entity))
             return false;
-        if ((float) fov > 0.0f && cd.fov > (float) fov)
+        if (*fov > 0.0f && cd.fov > *fov)
             return false;
 
         return true;
@@ -633,7 +644,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Vis and fov checks
         if (!VischeckPredictedEntity(entity))
             return false;
-        if ((float) fov > 0.0f && cd.fov > (float) fov)
+        if (*fov  > 0.0f && cd.fov > *fov)
             return false;
 
         return true;
@@ -677,7 +688,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Vis and fov check
         if (!VischeckPredictedEntity(entity))
             return false;
-        if ((float) fov > 0.0f && cd.fov > (float) fov)
+        if (*fov > 0.0f && cd.fov > *fov)
             return false;
 
         return true;
@@ -715,17 +726,35 @@ void Aim(CachedEntity *entity)
         // Get hitbox num
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
         float minx, maxx, miny, maxy, minz, maxz, centerx, centery, centerz;
-        auto hitbox = entity->hitboxes.GetHitbox(cd.hitbox);
+        auto hitboxmin    = entity->hitboxes.GetHitbox(cd.hitbox)->min;
+        auto hitboxmax    = entity->hitboxes.GetHitbox(cd.hitbox)->max;
+        auto hitboxcenter = entity->hitboxes.GetHitbox(cd.hitbox)->center;
+        if (hacks::shared::backtrack::isBacktrackEnabled())
+        {
+            hitboxcenter =
+                hacks::shared::backtrack::headPositions
+                    [entity->m_IDX][hacks::shared::backtrack::BestTick]
+                        .hitboxes[cd.hitbox]
+                        .center;
+            hitboxmin = hacks::shared::backtrack::headPositions
+                            [entity->m_IDX][hacks::shared::backtrack::BestTick]
+                                .hitboxes[cd.hitbox]
+                                .min;
+            hitboxmax = hacks::shared::backtrack::headPositions
+                            [entity->m_IDX][hacks::shared::backtrack::BestTick]
+                                .hitboxes[cd.hitbox]
+                                .max;
+        }
         // get positions
-        minx    = hitbox->min.x;
-        miny    = hitbox->min.y;
-        maxx    = hitbox->max.x;
-        maxy    = hitbox->max.y;
-        minz    = hitbox->min.z;
-        maxz    = hitbox->max.z;
-        centerx = hitbox->center.x;
-        centery = hitbox->center.y;
-        centerz = hitbox->center.z;
+        minx    = hitboxmin.x;
+        miny    = hitboxmin.y;
+        maxx    = hitboxmax.x;
+        maxy    = hitboxmax.y;
+        minz    = hitboxmin.z;
+        maxz    = hitboxmax.z;
+        centerx = hitboxcenter.x;
+        centery = hitboxcenter.y;
+        centerz = hitboxcenter.z;
 
         // Shrink positions
         std::vector<Vector> positions;
@@ -749,7 +778,7 @@ void Aim(CachedEntity *entity)
         positions.push_back({ maxx, maxy, centerz });
         positions.push_back({ minx, miny, centerz });
         positions.push_back({ maxx, maxy, centerz });
-        positions.push_back(hitbox->center);
+        positions.push_back(hitboxcenter);
         for (auto pos : positions)
             if (IsVectorVisible(g_pLocalPlayer->v_Eye, pos))
             {
@@ -771,7 +800,15 @@ void Aim(CachedEntity *entity)
 
     if (silent && !slow_aim)
         g_pLocalPlayer->bUseSilentAngles = true;
-
+    if (hacks::shared::backtrack::isBacktrackEnabled())
+    {
+        auto i = hacks::shared::backtrack::headPositions
+            [hacks::shared::backtrack::iBestTarget]
+            [hacks::shared::backtrack::BestTick];
+        current_user_cmd->tick_count = i.tickcount;
+        float &simtime = NET_FLOAT(RAW_ENT(entity), netvar.m_flSimulationTime);
+        simtime        = i.simtime;
+    }
     // Finish function
     return;
 }
@@ -888,45 +925,64 @@ const Vector &PredictEntity(CachedEntity *entity)
     if (cd.predict_tick == tickcount)
         return result;
 
-    // Players
-    if ((entity->m_Type() == ENTITY_PLAYER))
+    if (!hacks::shared::backtrack::isBacktrackEnabled() || projectile_mode)
     {
-        // If using projectiles, predict a vector
-        if (projectileAimbotRequired)
+
+        // Players
+        if ((entity->m_Type() == ENTITY_PLAYER))
         {
-            // Use prediction engine if user settings allow
-            if (engine_projpred)
-                result = ProjectilePrediction_Engine(
-                    entity, cd.hitbox, cur_proj_speed, cur_proj_grav, 0);
+            // If using projectiles, predict a vector
+            if (projectileAimbotRequired)
+            {
+                // Use prediction engine if user settings allow
+                if (engine_projpred)
+                    result = ProjectilePrediction_Engine(
+                        entity, cd.hitbox, cur_proj_speed, cur_proj_grav, 0);
+                else
+                    result = ProjectilePrediction(entity, cd.hitbox,
+                                                  cur_proj_speed, cur_proj_grav,
+                                                  PlayerGravityMod(entity));
+            }
             else
-                result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed,
-                                              cur_proj_grav,
-                                              PlayerGravityMod(entity));
+            {
+                // If using extrapolation, then predict a vector
+                if (extrapolate)
+                    result = SimpleLatencyPrediction(entity, cd.hitbox);
+                // else just grab strait from the hitbox
+                else
+                    GetHitbox(entity, cd.hitbox, result);
+            }
+            // Buildings
+        }
+        else if (entity->m_Type() == ENTITY_BUILDING)
+        {
+            result = GetBuildingPosition(entity);
+            // Other
         }
         else
         {
-            // If using extrapolation, then predict a vector
-            if (extrapolate)
-                result = SimpleLatencyPrediction(entity, cd.hitbox);
-            // else just grab strait from the hitbox
-            else
-                GetHitbox(entity, cd.hitbox, result);
+            result = entity->m_vecOrigin();
         }
-        // Buildings
-    }
-    else if (entity->m_Type() == ENTITY_BUILDING)
-    {
-        result = GetBuildingPosition(entity);
-        // Other
+
+        cd.predict_tick = tickcount;
+
+        cd.fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye,
+                        result);
     }
     else
     {
-        result = entity->m_vecOrigin();
+        // Players only
+        if ((entity->m_Type() == ENTITY_PLAYER))
+        {
+            auto hb = hacks::shared::backtrack::headPositions
+                [entity->m_IDX]
+                [hacks::shared::backtrack::BestTick];
+            cd.predict_tick = tickcount;
+            result          = hb.hitboxes[cd.hitbox].center;
+            cd.fov          = GetFov(g_pLocalPlayer->v_OrigViewangles,
+                            g_pLocalPlayer->v_Eye, result);
+        }
     }
-
-    cd.predict_tick = tickcount;
-    cd.fov =
-        GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, result);
     // Return the found vector
     return result;
 }
@@ -1114,7 +1170,16 @@ bool VischeckPredictedEntity(CachedEntity *entity)
 
     // Update info
     cd.vcheck_tick = tickcount;
-    cd.visible     = IsEntityVectorVisible(entity, PredictEntity(entity));
+    if (!hacks::shared::backtrack::isBacktrackEnabled() || projectile_mode)
+        cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
+    else
+        cd.visible = IsVectorVisible(
+            g_pLocalPlayer->v_Eye,
+            hacks::shared::backtrack::headPositions
+                [entity->m_IDX][hacks::shared::backtrack::BestTick]
+                    .hitboxes[cd.hitbox]
+                    .center,
+            true);
     return cd.visible;
 }
 

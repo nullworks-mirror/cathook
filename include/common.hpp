@@ -48,6 +48,8 @@
 
 #include "core/macros.hpp"
 #include <visual/colors.hpp>
+#include <CNavFile.h>
+#include <astar.h>
 
 #if ENABLE_VISUALS
 #include <visual/drawing.hpp>

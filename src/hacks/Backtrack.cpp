@@ -22,10 +22,12 @@ namespace hacks::shared::backtrack
 {
 void EmptyBacktrackData(BacktrackData &i);
 std::pair<int, int> getBestEntBestTick();
+bool shouldBacktrack();
+
 BacktrackData headPositions[32][66]{};
 int highesttick[32]{};
 int lastincomingsequencenumber = 0;
-static bool shouldDrawBt;
+bool isBacktrackEnabled = false;
 
 circular_buf sequences{ 2048 };
 void UpdateIncomingSequences()
@@ -48,6 +50,8 @@ void UpdateIncomingSequences()
 }
 void AddLatencyToNetchan(INetChannel *ch, float Latency)
 {
+    if (!isBacktrackEnabled)
+        return;
     if (Latency > 200.0f)
         Latency -= ch->GetLatency(MAX_FLOWS);
     for (auto &seq : sequences)
@@ -69,21 +73,24 @@ void Init()
 
 int BestTick    = 0;
 int iBestTarget = -1;
+bool istickvalid[66]{};
+bool istickinvalid[66]{};
 void Run()
 {
-    if (!enable)
+    if (!shouldBacktrack())
+    {
+        isBacktrackEnabled = false;
         return;
+    }
+    isBacktrackEnabled = true;
 
     if (CE_BAD(LOCAL_E))
         return;
 
-    if (!shouldBacktrack())
-    {
-        shouldDrawBt = false;
-        return;
-    }
-    shouldDrawBt = true;
-
+    for (auto &a : istickvalid)
+        a = false;
+    for (auto &a : istickinvalid)
+        a = false;
     CUserCmd *cmd = current_user_cmd;
     float bestFov = 99999;
 
@@ -124,7 +131,7 @@ void Run()
         auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
         headPositions[i][cmd->command_number % getTicks()] =
             BacktrackData{ cmd->tick_count, hbdArray, viewangles, simtime,
-                           ent_orig };
+                           ent_orig, cmd->command_number % getTicks() };
     }
     if (iBestTarget != -1 && CanShoot())
     {
@@ -151,11 +158,9 @@ void Run()
 void Draw()
 {
 #if ENABLE_VISUALS
-    if (!enable)
+    if (!isBacktrackEnabled)
         return;
     if (!draw_bt)
-        return;
-    if (!shouldDrawBt)
         return;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
@@ -192,10 +197,16 @@ void Draw()
 #endif
 }
 
+// Internal only, use isBacktrackEnabled var instead
 bool shouldBacktrack()
 {
+    if (!*enable)
+        return false;
+    CachedEntity *wep = g_pLocalPlayer->weapon();
+    if (CE_BAD(wep))
+        return false;
     int slot =
-        re::C_BaseCombatWeapon::GetSlot(RAW_ENT(g_pLocalPlayer->weapon()));
+        re::C_BaseCombatWeapon::GetSlot(RAW_ENT(wep));
     switch ((int) slots)
     {
     case 0:
@@ -229,11 +240,6 @@ bool shouldBacktrack()
     return false;
 }
 
-bool isBacktrackEnabled()
-{
-    return *enable;
-}
-
 float getLatency()
 {
     return *latency;
@@ -246,8 +252,19 @@ int getTicks()
 
 bool ValidTick(BacktrackData &i, CachedEntity *ent)
 {
-    return fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
-                 getLatency() - i.simtime * 1000.0f) < 200.0f;
+    if (istickvalid[i.index])
+        return true;
+    if (istickinvalid[i.index])
+        return false;
+    if (IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center, true))
+    	if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
+                 getLatency() - i.simtime * 1000.0f) < 200.0f)
+        {
+    	    istickvalid[i.index] = true;
+    	    return true;
+        }
+    istickinvalid[i.index] = true;
+    return false;
 }
 
 void EmptyBacktrackData(BacktrackData &i)

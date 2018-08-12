@@ -33,7 +33,8 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/votelogger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/MiscTemporary.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Options.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/PlayerTools.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/PlayerTools.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/pathfinder.cpp")
 
 add_subdirectory(core)
 add_subdirectory(classinfo)
