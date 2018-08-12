@@ -3,41 +3,70 @@
 #include "external/PathFinder/src/PathFinder.h"
 #include "external/PathFinder/src/AStar.h"
 
-struct navNode : public AStarNode
+namespace hacks::shared::pathfinder
 {
-    navNode()
-    {
-    }
+Vector loc;
+//std::vector<Vector> findPath(Vector loc, Vector dest);
+//bool initiatenavfile();
 
-    ~navNode()
-    {
-    }
+//CatCommand navset("nav_set", "Debug nav set",
+//                  [](const CCommand &args) { loc = g_pLocalPlayer->v_Origin; });
 
+//CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
+//    std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc);
+//    if (path.empty())
+//    {
+//        logging::Info("Pathing: No path found");
+//    }
+//    std::string output = "Pathing: Path found! Path: ";
+//    for (int i = 0; i < path.size(); i++)
+//    {
+//        output.append(format(path.at(i).x, ",", format(path.at(i).y)));
+//    }
+//    logging::Info(output.c_str());
+//});
+
+//CatCommand navinit("nav_init", "Debug nav init",
+//                   [](const CCommand &args) { initiatenavfile(); });
+
+class navNode : public AStarNode
+{
+//    navNode()
+//    {
+//    }
+
+//    ~navNode()
+//    {
+//    }
+public:
     Vector vecLoc;
 };
 
-std::unique_ptr<CNavFile> navData = nullptr;
 std::vector<navNode *> nodes;
-Timer pathtimer{};
-settings::Bool enabled{"pathing.enabled", 0};
+//settings::Bool enabled{ "pathing.enabled", 0 };
 
-bool init()
+bool initiatenavfile()
 {
-    if(!enabled)
-        return false;
+    //if (!enabled)
+    //    return false;
     logging::Info("Pathing: Initiating path...");
 
     // This will not work, please fix
+    std::string dir =
+        "/home/elite/.steam/steam/steamapps/common/Team Fortress 2/tf/maps/";
     std::string levelName = g_IEngine->GetLevelName();
-    navData = std::make_unique<CNavFile>(CNavFile(levelName.c_str()));
-    if (!navData->m_isOK)
-    {
-        navData = nullptr;
-        logging::Info("Pathing: Failed to parse nav file!");
+    int dotpos            = levelName.find('.');
+    levelName             = levelName.substr(0, dotpos);
+    levelName.append(".nav");
+    dir.append(levelName);
 
+    CNavFile navData(dir.c_str());
+    if (!navData.m_isOK)
+    {
+        logging::Info("Pathing: Failed to parse nav file!");
         return false;
     }
-    std::vector<CNavArea> *areas = &navData->m_areas;
+    std::vector<CNavArea> *areas = &navData.m_areas;
     int nodeCount                = areas->size();
 
     nodes.clear();
@@ -47,7 +76,7 @@ bool init()
     for (int i = 0; i < nodeCount; i++)
     {
         navNode *node{};
-        //node->setPosition(areas->at(i).m_center.x, areas->at(i).m_center.y);
+        // node->setPosition(areas->at(i).m_center.x, areas->at(i).m_center.y);
         node->vecLoc = areas->at(i).m_center;
         nodes.push_back(node);
     }
@@ -73,9 +102,9 @@ int findClosestNavSquare(Vector vec)
     for (int i = 0; i < nodes.size(); i++)
     {
         float dist = nodes.at(i)->vecLoc.DistTo(vec);
-        if(dist < bestDist)
+        if (dist < bestDist)
         {
-            bestDist = dist;
+            bestDist   = dist;
             bestSquare = i;
         }
     }
@@ -85,17 +114,26 @@ int findClosestNavSquare(Vector vec)
 std::vector<Vector> findPath(Vector loc, Vector dest)
 {
     if (nodes.empty())
-        return {};
+        return std::vector<Vector>(0);
 
-    int node_loc = findClosestNavSquare(loc);
-    int node_dest = findClosestNavSquare(dest);
+    int id_loc  = findClosestNavSquare(loc);
+    int id_dest = findClosestNavSquare(dest);
 
-    PathFinder<navNode> Finder;
-    Finder.setStart(*nodes.at(node_loc));
-    Finder.setGoal(*nodes.at(node_dest));
+    navNode &node_loc = *nodes.at(id_loc);
+    navNode &node_dest = *nodes.at(id_dest);
 
-    std::vector<navNode> pathNodes;
-    //bool result = Finder.findPath<AStar>(pathNodes);
+    PathFinder<navNode> p;
+    std::vector<navNode*> pathNodes;
+
+    p.setStart(node_loc);
+    p.setGoal(node_dest);
+
+    p.findPath<navNode>(pathNodes);
+
     std::vector<Vector> path;
-
-}
+    for (int i = 0; i < pathNodes.size(); i++)
+    {
+        path.push_back(pathNodes.at(i)->vecLoc);
+    }
+    return path;
+}}
