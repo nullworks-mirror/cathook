@@ -20,5 +20,5 @@
 	path = include/TF2_NavFile_Reader
 	url = https://github.com/nullworks/TF2_NavFile_Reader.git
 [submodule "external/MicroPather"]
-	path = src/MicroPather
-	url = https://github.com/leethomason/MicroPather.git
+	path = external/MicroPather
+	url = https://github.com/leethomason/MicroPather
