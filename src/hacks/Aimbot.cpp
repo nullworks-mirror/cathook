@@ -93,57 +93,6 @@ Timer zoomTime{};
 // This array will store calculated projectile/hitscan predictions
 // for current frame, to avoid performing them again
 AimbotCalculatedData_s calculated_data_array[2048]{};
-<<<<<<< Updated upstream
-#define IsMelee GetWeaponMode() == weapon_melee
-bool BacktrackAimbot()
-{
-    if (!hacks::shared::backtrack::isBacktrackEnabled || !*backtrackAimbot)
-        return false;
-    if (aimkey && !aimkey.isKeyDown())
-        return true;
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
-        return true;
-    if (only_can_shoot && !CanShoot())
-        return true;
-    if (g_pLocalPlayer->clazz == tf_sniper)
-        if (zoomed_only && !CanHeadshot())
-            return true;
-    int iBestTarget = hacks::shared::backtrack::iBestTarget;
-    if (iBestTarget == -1)
-        return true;
-    int iBestTick     = hacks::shared::backtrack::BestTick;
-    int tickcnt       = 0;
-    CachedEntity *tar = ENTITY(iBestTarget);
-    if (CE_BAD(tar))
-        return true;
-    auto i = hacks::shared::backtrack::headPositions[iBestTarget][iBestTick];
-    if (!hacks::shared::backtrack::ValidTick(i, tar))
-        return true;
-    if (!i.hitboxes.at(head).center.z)
-        return true;
-    if (!IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes.at(head).center,
-                         true))
-        return true;
-    float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
-    simtime        = i.simtime;
-    current_user_cmd->tick_count = i.tickcount;
-    Vector tr = (i.hitboxes.at(head).center - g_pLocalPlayer->v_Eye);
-    Vector angles2;
-    VectorAngles(tr, angles2);
-    // Clamping is important
-    fClampAngle(angles2);
-    // Slow aim
-    if (*slow_aim)
-        DoSlowAim(angles2);
-    else if (silent)
-        g_pLocalPlayer->bUseSilentAngles = true;
-    // Set angles
-    current_user_cmd->viewangles = angles2;
-    if (autoshoot && !*slow_aim)
-        current_user_cmd->buttons |= IN_ATTACK;
-    return true;
-}
-
 // The main "loop" of the aimbot.
 void CreateMove()
 {
@@ -413,7 +362,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
     CachedEntity *ent;
     CachedEntity *target_highest_ent = 0;
     target_highest_score             = -256;
-    if (!hacks::shared::backtrack::isBacktrackEnabled() || projectile_mode)
+    if (!hacks::shared::backtrack::isBacktrackEnabled || projectile_mode)
     {
         for (int i = 0; i < HIGHEST_ENTITY; i++)
         {
@@ -479,7 +428,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 {
     PROF_SECTION(PT_aimbot_targetstatecheck);
 
-    if (hacks::shared::backtrack::isBacktrackEnabled() &&
+    if (hacks::shared::backtrack::isBacktrackEnabled &&
         entity->m_Type() != ENTITY_PLAYER)
         return false;
     // Checks for Players
@@ -729,7 +678,7 @@ void Aim(CachedEntity *entity)
         auto hitboxmin    = entity->hitboxes.GetHitbox(cd.hitbox)->min;
         auto hitboxmax    = entity->hitboxes.GetHitbox(cd.hitbox)->max;
         auto hitboxcenter = entity->hitboxes.GetHitbox(cd.hitbox)->center;
-        if (hacks::shared::backtrack::isBacktrackEnabled())
+        if (hacks::shared::backtrack::isBacktrackEnabled)
         {
             hitboxcenter =
                 hacks::shared::backtrack::headPositions
@@ -800,7 +749,7 @@ void Aim(CachedEntity *entity)
 
     if (silent && !slow_aim)
         g_pLocalPlayer->bUseSilentAngles = true;
-    if (hacks::shared::backtrack::isBacktrackEnabled())
+    if (hacks::shared::backtrack::isBacktrackEnabled)
     {
         auto i = hacks::shared::backtrack::headPositions
             [hacks::shared::backtrack::iBestTarget]
@@ -925,7 +874,7 @@ const Vector &PredictEntity(CachedEntity *entity)
     if (cd.predict_tick == tickcount)
         return result;
 
-    if (!hacks::shared::backtrack::isBacktrackEnabled() || projectile_mode)
+    if (!hacks::shared::backtrack::isBacktrackEnabled || projectile_mode)
     {
 
         // Players
@@ -1170,7 +1119,7 @@ bool VischeckPredictedEntity(CachedEntity *entity)
 
     // Update info
     cd.vcheck_tick = tickcount;
-    if (!hacks::shared::backtrack::isBacktrackEnabled() || projectile_mode)
+    if (!hacks::shared::backtrack::isBacktrackEnabled || projectile_mode)
         cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
     else
         cd.visible = IsVectorVisible(

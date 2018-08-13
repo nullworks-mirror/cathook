@@ -48,8 +48,6 @@
 
 #include "core/macros.hpp"
 #include <visual/colors.hpp>
-#include <CNavFile.h>
-#include <astar.h>
 
 #if ENABLE_VISUALS
 #include <visual/drawing.hpp>
@@ -100,6 +98,8 @@
 #include "core/sharedobj.hpp"
 #include "init.hpp"
 #include "reclasses/reclasses.hpp"
+#include <CNavFile.h>
+#include <astar.h>
 
 #include "copypasted/Netvar.h"
 #include "copypasted/CSignature.h"
