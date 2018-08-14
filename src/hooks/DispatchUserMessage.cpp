@@ -34,7 +34,7 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                      bf_read &buf)
 {
-    if (retrun && gitgud.test_and_set(10000))
+    if (retrun && gitgud.test_and_set(100))
     {
         PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),
                   lastfilter.c_str());
@@ -175,8 +175,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     boost::replace_all(message2, "7", "t");
                     for (auto filter : res)
                     {
-                        if (retrun)
-                            break;
                         if (boost::contains(message2, filter))
                         {
                             *bSendPackets = true;
@@ -184,6 +182,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             retrun     = true;
                             lastfilter = format(filter);
                             lastname   = format(name);
+			    gitgud.update();
                         }
                     }
                 }
@@ -211,6 +210,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             retrun     = true;
                             lastfilter = format(filter);
                             lastname   = format(name);
+			    gitgud.update();
                         }
                     }
                 }
