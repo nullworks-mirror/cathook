@@ -98,6 +98,8 @@
 #include "core/sharedobj.hpp"
 #include "init.hpp"
 #include "reclasses/reclasses.hpp"
+#include <CNavFile.h>
+#include <astar.h>
 
 #include "copypasted/Netvar.h"
 #include "copypasted/CSignature.h"

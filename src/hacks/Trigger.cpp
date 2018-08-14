@@ -45,7 +45,9 @@ int last_hb_traced = 0;
 Vector forward;
 bool CanBacktrack()
 {
-    CachedEntity *tar = ENTITY(hacks::shared::backtrack::iBestTarget);
+    CachedEntity *tar = (hacks::shared::backtrack::iBestTarget != -1)
+                            ? ENTITY(hacks::shared::backtrack::iBestTarget)
+                            : nullptr;
     if (CE_BAD(tar))
         return false;
     for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])

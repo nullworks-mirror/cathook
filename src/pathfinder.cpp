@@ -1,5 +1,4 @@
 #include "common.hpp"
-#include "external/TF2_NavFile_Reader/CNavFile.h"
 #include "external/PathFinder/src/PathFinder.h"
 #include "external/PathFinder/src/AStar.h"
 

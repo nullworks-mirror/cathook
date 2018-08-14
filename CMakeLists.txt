@@ -111,8 +111,7 @@ target_include_directories(cathook SYSTEM PRIVATE
         "external/source-sdk-2013-headers/mp/src")
 
 target_include_directories(cathook PRIVATE "external/ucccccp")
-target_include_directories(cathook PRIVATE "external/TF2_NavFile_Reader")
-target_include_directories(cathook PRIVATE "external/PathFinder/src/")
+target_include_directories(cathook PRIVATE "external/MicroPather")
 
 if(EnableWarnings)
     target_compile_options(cathook PRIVATE -Wall -Wextra)

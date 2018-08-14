@@ -25,6 +25,7 @@ struct BacktrackData
     float viewangles{ 0.0f };
     float simtime{ 0.0f };
     Vector entorigin{ 0.0f, 0.0f, 0.0f };
+    int index{ 0 };
 };
 struct BestTickData
 {
