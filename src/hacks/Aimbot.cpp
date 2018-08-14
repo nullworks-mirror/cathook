@@ -74,7 +74,10 @@ static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 
 namespace hacks::shared::aimbot
 {
-
+bool IsBacktracking()
+{
+    return !(!aimkey || !aimkey.isKeyDown()) && *enable && *backtrackAimbot;
+}
 // Current Entity
 int target_eid{ 0 };
 CachedEntity *target      = 0;
@@ -469,7 +472,13 @@ bool IsTargetStateGood(CachedEntity *entity)
             if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
             {
                 float cdmg     = CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 3;
-                bool maxCharge = cdmg >= 450.0F;
+                float maxhs = 450.0f;
+                if (NET_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 230 || HasCondition<TFCond_Jarated>(entity))
+                {
+                    cdmg = roundeven(CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 1.35f);
+                    maxhs = 203.0f;
+                }
+                bool maxCharge = cdmg >= maxhs;
 
                 // Darwins damage correction, Darwins protects against 15% of
                 // damage
@@ -493,9 +502,12 @@ bool IsTargetStateGood(CachedEntity *entity)
 
                 // Check if player will die from headshot or if target has more
                 // than 450 health and sniper has max chage
-                if (!(entity->m_iHealth() <= 150.0F ||
+                float hsdmg = 150.0f;
+                if (NET_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 230)
+                    hsdmg = roundeven(50.0f * 1.35f);
+                if (!(entity->m_iHealth() <= hsdmg ||
                       entity->m_iHealth() <= cdmg || !g_pLocalPlayer->bZoomed ||
-                      (maxCharge && entity->m_iHealth() > 450.0F)))
+                      (maxCharge && entity->m_iHealth() > maxhs)))
                 {
                     return false;
                 }

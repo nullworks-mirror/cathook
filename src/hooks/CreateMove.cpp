@@ -210,7 +210,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         entity_cache::Invalidate();
     }
-
     // Disabled because this causes EXTREME aimbot inaccuracy
     // if (!cmd->command_number) return ret;
     //	PROF_BEGIN();
