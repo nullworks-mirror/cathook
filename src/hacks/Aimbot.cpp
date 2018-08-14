@@ -473,9 +473,9 @@ bool IsTargetStateGood(CachedEntity *entity)
             {
                 float cdmg     = CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 3;
                 float maxhs = 450.0f;
-                if (NET_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 230 || HasCondition<TFCond_Jarated>(entity))
+                if (CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 230 || HasCondition<TFCond_Jarated>(entity))
                 {
-                    cdmg = roundeven(CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 1.35f);
+                    cdmg = int(CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 1.35f);
                     maxhs = 203.0f;
                 }
                 bool maxCharge = cdmg >= maxhs;
@@ -503,8 +503,8 @@ bool IsTargetStateGood(CachedEntity *entity)
                 // Check if player will die from headshot or if target has more
                 // than 450 health and sniper has max chage
                 float hsdmg = 150.0f;
-                if (NET_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 230)
-                    hsdmg = roundeven(50.0f * 1.35f);
+                if (CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 230)
+                    hsdmg = int(50.0f * 1.35f);
                 if (!(entity->m_iHealth() <= hsdmg ||
                       entity->m_iHealth() <= cdmg || !g_pLocalPlayer->bZoomed ||
                       (maxCharge && entity->m_iHealth() > maxhs)))
