@@ -112,6 +112,7 @@ target_include_directories(cathook SYSTEM PRIVATE
 
 target_include_directories(cathook PRIVATE "external/ucccccp")
 target_include_directories(cathook PRIVATE "external/MicroPather")
+target_include_directories(cathook PRIVATE "external/TF2_NavFile_Reader")
 
 if(EnableWarnings)
     target_compile_options(cathook PRIVATE -Wall -Wextra)
