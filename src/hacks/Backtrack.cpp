@@ -73,8 +73,8 @@ void Init()
 
 int BestTick    = 0;
 int iBestTarget = -1;
-bool istickvalid[66]{};
-bool istickinvalid[66]{};
+bool istickvalid[32][66]{};
+bool istickinvalid[32][66]{};
 void Run()
 {
     if (!shouldBacktrack())
@@ -88,9 +88,11 @@ void Run()
         return;
 
     for (auto &a : istickvalid)
-        a = false;
+        for (auto &b : a)
+            b = false;
     for (auto &a : istickinvalid)
-        a = false;
+        for (auto &b : a)
+            b = false;
     CUserCmd *cmd = current_user_cmd;
     float bestFov = 99999;
 
@@ -252,18 +254,18 @@ int getTicks()
 
 bool ValidTick(BacktrackData &i, CachedEntity *ent)
 {
-    if (istickvalid[i.index])
+    if (istickvalid[ent->m_IDX][i.index])
         return true;
-    if (istickinvalid[i.index])
+    if (istickinvalid[ent->m_IDX][i.index])
         return false;
     if (IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center, true))
     	if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
                  getLatency() - i.simtime * 1000.0f) < 200.0f)
         {
-    	    istickvalid[i.index] = true;
+    	    istickvalid[ent->m_IDX][i.index] = true;
     	    return true;
         }
-    istickinvalid[i.index] = true;
+    istickinvalid[ent->m_IDX][i.index] = true;
     return false;
 }
 
