@@ -1,30 +1,43 @@
 #include "common.hpp"
 #include "micropather.h"
+#include "pwd.h"
 namespace nav
 {
-CNavFile navfile(nullptr);
-CNavArea LocalNav;
-std::vector<CNavArea> areas;
+static CNavFile navfile(nullptr);
+// Todo: CNavArea* to navfile
+static std::vector<CNavArea> areas;
 // std::vector<CNavArea> SniperAreas;
+
+// Todo fix
+int FindInVector(int id)
+{
+    for (int i = 0; i < areas.size(); i++)
+    {
+        if (areas.at(i).m_id == id)
+            return i;
+    }
+}
 
 struct MAP : public micropather::Graph
 {
     float LeastCostEstimate(void *stateStart, void *stateEnd)
     {
-        int *start = (int *) (stateStart);
-        int *end   = (int *) (stateEnd);
-        return areas.at(*start).m_center.DistTo(areas.at(*end).m_center);
+        CNavArea *start = static_cast<CNavArea *>(stateStart);
+        CNavArea *end   = static_cast<CNavArea *>(stateEnd);
+        float dist      = start->m_center.DistTo(end->m_center);
+        return dist;
     }
-    void AdjacentCost(void *state,
-                              MP_VECTOR<micropather::StateCost> *adjacent)
+    void AdjacentCost(void *state, MP_VECTOR<micropather::StateCost> *adjacent)
     {
-        int *area        = (int *) (state);
-        auto &neighbours = areas.at(*area).m_connections;
+        CNavArea *area   = static_cast<CNavArea *>(state);
+        auto &neighbours = area->m_connections;
         for (auto i : neighbours)
         {
-            adjacent->push_back(micropather::StateCost{
-                (void *) (i.area->m_id),
-                i.area->m_center.DistTo(areas.at(*area).m_center) });
+            micropather::StateCost cost;
+            cost.state =
+                static_cast<void *>(&areas.at(FindInVector(i.area->m_id)));
+            cost.cost = area->m_center.DistTo(i.area->m_center);
+            adjacent->push_back(cost);
         }
     }
     void PrintStateInfo(void *state)
@@ -38,31 +51,31 @@ struct MAP : public micropather::Graph
 
     virtual ~MAP()
     {
-
     }
 };
 
 void Init()
 {
     // TODO: Improve performance
-    //    std::string lvlname(g_IEngine->GetLevelName());
-    //    int dotpos = lvlname.find('.');
-    //    lvlname  = lvlname.substr(0, dotpos);
+    std::string lvlname(g_IEngine->GetLevelName());
+    int dotpos = lvlname.find('.');
+    lvlname    = lvlname.substr(0, dotpos);
 
-    //    std::string lvldir("/home/elite/Schreibtisch/tf2/maps/");
-    //    lvldir.append(lvlname);
-    //    lvldir.append(".nav");
-    // FIXME temp
-    std::string lvldir = "/home/elite/Schreibtisch/tf2/maps/cp_dustbowl.nav";
+    std::string lvldir("/home/");
+    passwd *pwd     = getpwuid(getuid());
+    lvldir.append(pwd->pw_name);
+    lvldir.append("/.steam/steam/steamapps/common/Team Fortress 2/tf/");
+    lvldir.append(lvlname);
+    lvldir.append(".nav");
+    logging::Info(lvldir.c_str());
 
-    for (auto &it : areas)
-        it = {};
+    areas.empty();
     navfile = CNavFile(lvldir.c_str());
     if (!navfile.m_isOK)
         logging::Info("Invalid Nav File");
     else
     {
-        areas.empty();
+        areas.reserve(navfile.m_areas.size());
         for (auto i : navfile.m_areas)
             areas.push_back(i);
     }
@@ -98,14 +111,18 @@ std::vector<Vector> findPath(Vector loc, Vector dest)
     logging::Info("Initiating map");
     MAP TF2MAP;
     logging::Info("Initiating pather");
-    micropather::MicroPather pather(&TF2MAP, 5000, 8, true);
+    // Todo: Make MicroPather a member of TF2MAP
+    micropather::MicroPather pather(&TF2MAP, areas.size(), 8, true);
     logging::Info("Solving");
-    pather.Solve((void *) (&id_loc), (void *) (&id_dest), &pathNodes, &cost);
+    int result = pather.Solve(static_cast<void *>(&areas.at(id_loc)),
+                              static_cast<void *>(&areas.at(id_dest)),
+                              &pathNodes, &cost);
+    logging::Info(format("Result:", result).c_str());
     logging::Info("Converting to vector");
     std::vector<Vector> path;
     for (int i = 0; i < pathNodes.size(); i++)
     {
-        path.push_back(areas.at(*(int *) (pathNodes[i])).m_center);
+        path.push_back(static_cast<CNavArea *>(pathNodes[i])->m_center);
     }
     return path;
 }
@@ -123,6 +140,7 @@ CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
     if (path.empty())
     {
         logging::Info("Pathing: No path found");
+        return;
     }
     std::string output = "Pathing: Path found! Path: ";
     for (int i = 0; i < path.size(); i++)
@@ -132,26 +150,4 @@ CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
     logging::Info(output.c_str());
 });
 
-//    Timer cd{};
-//    void CreateMove()
-//    {
-//        if (navfile.m_isOK)
-//        {
-//            if (cd.test_and_set(300)) {
-//                for (auto i : navfile.m_areas) {
-//            Vector vec = LOCAL_E->m_vecOrigin();
-//                    if (i.Contains(vec)) {
-//                        LocalNav = i;
-//                        break;
-//                    }
-//                }
-//            }
-//            if (SniperAreas.size()) {
-//                auto res =
-//                areas[LocalNav.m_id]->FindPath(areas[SniperAreas[0].m_id]);
-//                for (auto r : res)
-//                    logging::Info("%f, %f, %f", r->pos.x, r->pos.y, r->pos.z);
-//            }
-//        }
-//    }
 } // namespace nav
