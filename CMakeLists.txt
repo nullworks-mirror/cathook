@@ -141,6 +141,7 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(include)
+add_subdirectory(external/MicroPather)
 
 add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
