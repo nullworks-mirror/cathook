@@ -8,6 +8,7 @@
 #include <menu/GuiInterface.hpp>
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
+#include "navparser.hpp"
 #if !LAGBOT_MODE
 #include "hacks/Backtrack.hpp"
 #endif
@@ -58,6 +59,7 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 #endif
     hacks::shared::autojoin::resetQueueTimer();
     firstcm = true;
+    nav::init = false;
 #if !LAGBOT_MODE
     playerlist::Save();
 #endif

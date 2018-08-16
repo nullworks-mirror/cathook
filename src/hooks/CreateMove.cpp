@@ -269,6 +269,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 PROF_SECTION(CM_walkbot);
                 hacks::shared::walkbot::Move();
             }
+            {
+                PROF_SECTION(CM_navbot);
+                nav::CreateMove();
+            }
             // Walkbot can leave game.
             if (!g_IEngine->IsInGame())
             {

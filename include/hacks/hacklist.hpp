@@ -36,6 +36,7 @@
 #endif
 #if not LAGBOT_MODE
 #include "Walkbot.hpp"
+#include "navparser.hpp"
 #endif
 #include "AutoJoin.hpp"
 #if not LAGBOT_MODE
