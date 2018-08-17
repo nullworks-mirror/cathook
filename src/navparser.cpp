@@ -5,13 +5,11 @@
 namespace nav
 {
 static CNavFile navfile(nullptr);
-// Todo: CNavArea* to navfile
-static std::vector<CNavArea> areas;
+std::vector<CNavArea> areas;
 // std::vector<CNavArea> SniperAreas;
 bool init        = false;
 bool pathfinding = true;
 static settings::Bool enabled{ "misc.pathing", "true" };
-
 
 // Todo fix
 int FindInVector(int id)
@@ -122,7 +120,7 @@ void Init()
     lvldir.append("/.steam/steam/steamapps/common/Team Fortress 2/tf/");
     lvldir.append(lvlname);
     lvldir.append(".nav");
-    logging::Info(format("Pathing: Nav File location: ",lvldir).c_str());
+    logging::Info(format("Pathing: Nav File location: ", lvldir).c_str());
 
     areas.empty();
     navfile = CNavFile(lvldir.c_str());
@@ -131,14 +129,16 @@ void Init()
     else
     {
         int size = navfile.m_areas.size();
-        logging::Info(format("Pathing: Number of areas to index:", size).c_str());
+        logging::Info(
+            format("Pathing: Number of areas to index:", size).c_str());
         areas.reserve(size);
         for (auto i : navfile.m_areas)
             areas.push_back(i);
         if (size > 7000)
             size = 7000;
         TF2MAP = std::make_unique<MAP>();
-        pather = std::make_unique<micropather::MicroPather>(TF2MAP.get(), size, 6, true);
+        pather = std::make_unique<micropather::MicroPather>(TF2MAP.get(), size,
+                                                            6, true);
     }
     pathfinding = true;
 }
@@ -165,6 +165,7 @@ int findClosestNavSquare(Vector vec)
         if (areas.at(i).Contains(vec))
             return i;
     }
+    return -1;
 }
 
 std::vector<Vector> findPath(Vector loc, Vector dest)
@@ -176,15 +177,15 @@ std::vector<Vector> findPath(Vector loc, Vector dest)
     if (id_loc == -1 || id_dest == -1)
         return std::vector<Vector>(0);
     micropather::MPVector<void *> pathNodes;
-    //MAP TF2MAP;
-    //micropather::MicroPather pather(&TF2MAP, areas.size(), 8, true);
+    // MAP TF2MAP;
+    // micropather::MicroPather pather(&TF2MAP, areas.size(), 8, true);
     float cost;
     int result = pather->Solve(static_cast<void *>(&areas.at(id_loc)),
-                              static_cast<void *>(&areas.at(id_dest)),
-                              &pathNodes, &cost);
+                               static_cast<void *>(&areas.at(id_dest)),
+                               &pathNodes, &cost);
+    logging::Info(format(result).c_str());
     if (result)
         return std::vector<Vector>(0);
-    logging::Info(format(result).c_str());
     std::vector<Vector> path;
     for (int i = 0; i < pathNodes.size(); i++)
     {
@@ -218,7 +219,8 @@ void CreateMove()
         return;
     if (CE_BAD(LOCAL_E))
         return;
-    if (!crumbs.empty() && g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 20.0f)
+    if (!crumbs.empty() &&
+        g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 20.0f)
     {
         crumbs.erase(crumbs.begin());
         inactivity.update();
