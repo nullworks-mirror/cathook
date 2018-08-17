@@ -9,6 +9,7 @@ std::vector<CNavArea> areas;
 // std::vector<CNavArea> SniperAreas;
 bool init        = false;
 bool pathfinding = true;
+bool ReadyForCommands = false;
 static settings::Bool enabled{ "misc.pathing", "true" };
 
 // Todo fix
@@ -83,7 +84,7 @@ struct MAP : public micropather::Graph
         auto &neighbours = area->m_connections;
         for (auto i : neighbours)
         {
-            if (GetZBetweenAreas(area, i.area) > 40)
+            if (GetZBetweenAreas(area, i.area) > 30)
                 continue;
             micropather::StateCost cost;
             cost.state =
@@ -160,12 +161,18 @@ bool Prepare()
 
 int findClosestNavSquare(Vector vec)
 {
+    float bestDist = FLT_MAX;
+    int bestSquare = -1;
     for (int i = 0; i < areas.size(); i++)
     {
-        if (areas.at(i).Contains(vec))
-            return i;
+        float dist = areas.at(i).m_center.DistTo(vec);
+        if (dist < bestDist)
+        {
+            bestDist   = dist;
+            bestSquare = i;
+        }
     }
-    return -1;
+    return bestSquare;
 }
 
 std::vector<Vector> findPath(Vector loc, Vector dest)
@@ -219,18 +226,19 @@ void CreateMove()
         return;
     if (CE_BAD(LOCAL_E))
         return;
-    if (!crumbs.empty() &&
-        g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 20.0f)
+    if (crumbs.empty())
+    {
+        ReadyForCommands = true;
+        return;
+    }
+    ReadyForCommands = false;
+    if(g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 20.0f)
     {
         crumbs.erase(crumbs.begin());
         inactivity.update();
     }
     if (crumbs.empty())
         return;
-    if (inactivity.check(2000) && lastJump.test_and_set(1000))
-    {
-        current_user_cmd->buttons |= IN_JUMP;
-    }
     if (inactivity.test_and_set(5000))
     {
         logging::Info("NavBot inactive for too long. Canceling tasks...");
