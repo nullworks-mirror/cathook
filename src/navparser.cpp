@@ -1,6 +1,3 @@
-#include "common.hpp"
-#include "micropather.h"
-#include "pwd.h"
 #include "navparser.hpp"
 
 namespace nav
@@ -8,9 +5,11 @@ namespace nav
 static CNavFile navfile(nullptr);
 std::vector<CNavArea> areas;
 // std::vector<CNavArea> SniperAreas;
-bool init        = false;
-bool pathfinding = true;
+bool init             = false;
+bool pathfinding      = true;
 bool ReadyForCommands = false;
+std::vector<int> ignores;
+
 static settings::Bool enabled{ "misc.pathing", "true" };
 
 // Todo fix
@@ -25,6 +24,18 @@ int FindInVector(int id)
 
 struct MAP : public micropather::Graph
 {
+    std::unique_ptr<micropather::MicroPather> pather;
+    bool IsIgnored(int connectionID)
+    {
+        for (int i = 0; i < ignores.size(); i++)
+        {
+            if (ignores.at(i) == connectionID)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     Vector GetClosestCornerToArea(CNavArea *CornerOf, CNavArea *Target)
     {
         std::array<Vector, 4> corners;
@@ -87,6 +98,8 @@ struct MAP : public micropather::Graph
         {
             if (GetZBetweenAreas(area, i.area) > 42)
                 continue;
+            if (IsIgnored(i.id))
+                continue;
             micropather::StateCost cost;
             cost.state =
                 static_cast<void *>(&areas.at(FindInVector(i.area->m_id)));
@@ -97,8 +110,10 @@ struct MAP : public micropather::Graph
     void PrintStateInfo(void *state)
     {
     }
-    MAP()
+    MAP(size_t size)
     {
+        pather =
+            std::make_unique<micropather::MicroPather>(this, size, 6, true);
     }
 
     ~MAP()
@@ -107,7 +122,6 @@ struct MAP : public micropather::Graph
 };
 
 std::unique_ptr<MAP> TF2MAP;
-std::unique_ptr<micropather::MicroPather> pather;
 
 void Init()
 {
@@ -130,7 +144,7 @@ void Init()
         logging::Info("Pathing: Invalid Nav File");
     else
     {
-        int size = navfile.m_areas.size();
+        size_t size = navfile.m_areas.size();
         logging::Info(
             format("Pathing: Number of areas to index:", size).c_str());
         areas.reserve(size);
@@ -138,9 +152,7 @@ void Init()
             areas.push_back(i);
         if (size > 7000)
             size = 7000;
-        TF2MAP = std::make_unique<MAP>();
-        pather = std::make_unique<micropather::MicroPather>(TF2MAP.get(), size,
-                                                            6, true);
+        TF2MAP = std::make_unique<MAP>(size);
     }
     pathfinding = true;
 }
@@ -162,15 +174,24 @@ bool Prepare()
 
 int findClosestNavSquare(Vector vec)
 {
-    float bestDist = FLT_MAX;
-    int bestSquare = -1;
+    std::vector<std::pair<int, CNavArea *>> overlapping;
     for (int i = 0; i < areas.size(); i++)
     {
-        float dist = areas.at(i).m_center.DistTo(vec);
+        if (areas.at(i).IsOverlapping(vec))
+        {
+            overlapping.push_back({i, &areas.at(i)});
+        }
+    }
+
+    float bestDist = FLT_MAX;
+    int bestSquare = -1;
+    for (int i = 0; i < overlapping.size(); i++)
+    {
+        float dist = overlapping.at(i).second->m_center.DistTo(vec);
         if (dist < bestDist)
         {
             bestDist   = dist;
-            bestSquare = i;
+            bestSquare = overlapping.at(i).first;
         }
     }
     return bestSquare;
@@ -184,15 +205,13 @@ std::vector<Vector> findPath(Vector loc, Vector dest)
     int id_dest = findClosestNavSquare(dest);
     if (id_loc == -1 || id_dest == -1)
         return std::vector<Vector>(0);
-    micropather::MPVector<void *> pathNodes;
-    // MAP TF2MAP;
-    // micropather::MicroPather pather(&TF2MAP, areas.size(), 8, true);
     float cost;
-    int result = pather->Solve(static_cast<void *>(&areas.at(id_loc)),
+    micropather::MPVector<void *> pathNodes;
+    int result = TF2MAP->pather->Solve(static_cast<void *>(&areas.at(id_loc)),
                                static_cast<void *>(&areas.at(id_dest)),
                                &pathNodes, &cost);
     logging::Info(format(result).c_str());
-    if (result)
+    if (result == 1)
         return std::vector<Vector>(0);
     std::vector<Vector> path;
     for (int i = 0; i < pathNodes.size(); i++)
@@ -222,12 +241,55 @@ bool NavTo(Vector dest)
     return true;
 }
 
+void ignoreConnection()
+{
+    if (crumbs.size() < 1)
+        return;
+
+    int closestArea = findClosestNavSquare(g_pLocalPlayer->v_Origin);
+    if (closestArea == -1)
+        return;
+    CNavArea currnode = areas.at(closestArea);
+
+    CNavArea nextnode;
+    for (int i = 0; i < areas.size(); i++)
+    {
+        if (areas.at(i).m_center == crumbs.at(0))
+        {
+            nextnode = areas.at(i);
+            break;
+        }
+    }
+
+    for (auto i : currnode.m_connections)
+    {
+        logging::Info(format("1 ", i.area->m_id, " ", nextnode.m_id).c_str());
+        if (i.area->m_id == nextnode.m_id)
+        {
+            ignores.push_back(i.id);
+            TF2MAP->pather->Reset();
+            return;
+        }
+    }
+}
+
+Timer ignoreReset{};
+void clearIgnores()
+{
+    if (ignoreReset.test_and_set(120000))
+    {
+        ignores.clear();
+        TF2MAP->pather->Reset();
+    }
+}
+
 void CreateMove()
 {
     if (!enabled)
         return;
     if (CE_BAD(LOCAL_E))
         return;
+    clearIgnores();
     if (crumbs.empty())
     {
         ReadyForCommands = true;
@@ -236,7 +298,7 @@ void CreateMove()
     ReadyForCommands = false;
     if (g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 30.0f)
     {
-        crumbs.erase(crumbs.begin());
+        crumbs.erase(crumbs.begin()); 
         inactivity.update();
     }
     if (crumbs.empty())
@@ -246,7 +308,8 @@ void CreateMove()
         current_user_cmd->buttons |= IN_JUMP;
     if (inactivity.test_and_set(5000))
     {
-        logging::Info("NavBot inactive for too long. Canceling tasks...");
+        logging::Info("NavBot inactive for too long. Canceling tasks and ignoring connection...");
+        ignoreConnection();
         crumbs.clear();
         return;
     }

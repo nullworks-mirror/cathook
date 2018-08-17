@@ -1,6 +1,8 @@
 #pragma once
 
 #include "common.hpp"
+#include "micropather.h"
+#include "pwd.h"
 
 namespace nav
 {
