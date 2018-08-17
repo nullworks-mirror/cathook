@@ -1,6 +1,7 @@
 #include "common.hpp"
 #include "micropather.h"
 #include "pwd.h"
+#include "navparser.hpp"
 
 namespace nav
 {
@@ -84,7 +85,7 @@ struct MAP : public micropather::Graph
         auto &neighbours = area->m_connections;
         for (auto i : neighbours)
         {
-            if (GetZBetweenAreas(area, i.area) > 30)
+            if (GetZBetweenAreas(area, i.area) > 42)
                 continue;
             micropather::StateCost cost;
             cost.state =
@@ -123,7 +124,7 @@ void Init()
     lvldir.append(".nav");
     logging::Info(format("Pathing: Nav File location: ", lvldir).c_str());
 
-    areas.empty();
+    areas.clear();
     navfile = CNavFile(lvldir.c_str());
     if (!navfile.m_isOK)
         logging::Info("Pathing: Invalid Nav File");
@@ -198,6 +199,7 @@ std::vector<Vector> findPath(Vector loc, Vector dest)
     {
         path.push_back(static_cast<CNavArea *>(pathNodes[i])->m_center);
     }
+    path.push_back(dest);
     return path;
 }
 
@@ -232,13 +234,16 @@ void CreateMove()
         return;
     }
     ReadyForCommands = false;
-    if(g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 20.0f)
+    if (g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 30.0f)
     {
         crumbs.erase(crumbs.begin());
         inactivity.update();
     }
     if (crumbs.empty())
         return;
+    if (crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
+        lastJump.test_and_set(200))
+        current_user_cmd->buttons |= IN_JUMP;
     if (inactivity.test_and_set(5000))
     {
         logging::Info("NavBot inactive for too long. Canceling tasks...");
