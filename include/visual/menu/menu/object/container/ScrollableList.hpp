@@ -39,4 +39,4 @@ public:
     size_t start_index{ 0 };
     size_t end_index{ 0 };
 };
-}
+} // namespace zerokernel

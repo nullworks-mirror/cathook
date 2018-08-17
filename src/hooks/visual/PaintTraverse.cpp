@@ -221,7 +221,7 @@ label1:
         }
         if (*pure_addr)
             pure_orig = *pure_addr;
-        *pure_addr    = (void *) 0;
+        *pure_addr = (void *) 0;
     }
     else if (pure_orig)
     {
@@ -322,4 +322,4 @@ label1:
 #endif
     draw::UpdateWTS();
 }
-}
+} // namespace hooked_methods

@@ -236,10 +236,10 @@ index_t free_node()
     nodes.emplace_back();
     return nodes.size() - 1;
 }
-}
+} // namespace state
 
-using state::nodes;
 using state::node_good;
+using state::nodes;
 
 bool HasLowAmmo()
 {
@@ -507,7 +507,6 @@ CatCommand c_split_connection("wb_split", "Split connection", []() {
     n.link(state::active_node);
     b.link(node);
     n.link(state::closest_node);
-
 });
 // Deletes closest node and its connections
 CatCommand c_delete_node("wb_delete", "Delete node",
@@ -1286,4 +1285,4 @@ void Move()
     break;
     }
 }
-}
+} // namespace hacks::shared::walkbot

@@ -30,6 +30,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/Killstreak.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/LightESP.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Misc.hpp"
+	"${CMAKE_CURRENT_LIST_DIR}/NavBot.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Noisemaker.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Spam.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.hpp"

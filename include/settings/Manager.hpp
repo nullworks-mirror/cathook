@@ -46,4 +46,4 @@ public:
 
     std::unordered_map<std::string, VariableDescriptor> registered{};
 };
-}
+} // namespace settings

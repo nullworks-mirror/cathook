@@ -84,4 +84,4 @@ DEFINE_HOOKED_METHOD(OverrideView, void, void *this_, CViewSetup *setup)
 
     draw::fov = setup->fov;
 }
-}
+} // namespace hooked_methods

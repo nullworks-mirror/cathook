@@ -108,4 +108,4 @@ void ModalColorSelect::handleMessage(Message &msg, bool is_relayed)
 
     BaseMenuObject::handleMessage(msg, is_relayed);
 }
-}
+} // namespace zerokernel

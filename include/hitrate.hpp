@@ -15,4 +15,4 @@ extern int count_hits;
 extern int count_hits_head;
 
 void Update();
-}
+} // namespace hitrate

@@ -159,4 +159,4 @@ void Invalidate()
 }
 
 int max = 0;
-}
+} // namespace entity_cache

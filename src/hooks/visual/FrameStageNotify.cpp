@@ -124,4 +124,4 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
     }
     return original::FrameStageNotify(this_, stage);
 }
-}
+} // namespace hooked_methods

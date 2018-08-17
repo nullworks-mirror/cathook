@@ -21,4 +21,4 @@ void DrawText();
 extern int last_number;
 
 extern float last_bucket;
-}
+} // namespace hacks::shared::misc

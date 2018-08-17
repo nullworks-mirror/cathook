@@ -50,4 +50,4 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
     }
     hacks::shared::autojoin::onShutdown();
 }
-}
+} // namespace hooked_methods

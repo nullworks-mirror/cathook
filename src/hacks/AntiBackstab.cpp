@@ -40,7 +40,7 @@ float GetAngle(CachedEntity *spy)
     diff            = (A - B);
     yaw2            = acos(diff.x / diff.Length()) * 180.0f / PI;
     if (diff.y < 0)
-        yaw2  = -yaw2;
+        yaw2 = -yaw2;
     anglediff = yaw - yaw2;
     if (anglediff > 180)
         anglediff -= 360;
@@ -113,4 +113,4 @@ void CreateMove()
         noaa = false;
     }
 }
-}
+} // namespace hacks::tf2::antibackstab

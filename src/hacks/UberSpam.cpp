@@ -128,4 +128,4 @@ const std::vector<std::string> builtin_nonecore = {
     ">>> GET READY TO RUMBLE! <<<", ">>> CHEATS ACTIVATED! <<<",
     ">>> RUMBLE COMPLETE! <<<", ">>> RUMBLE IS %i%% CHARGED! <<<"
 };
-}
+} // namespace hacks::tf::uberspam

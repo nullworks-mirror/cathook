@@ -25,4 +25,4 @@ public:
     const std::string string;
     glez::font &font;
 };
-}
+} // namespace zerokernel

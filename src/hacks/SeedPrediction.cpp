@@ -162,10 +162,10 @@ int predictTick()
 
 int predictSeed(double targetTime)
 {
-    INetChannel *ch  = (INetChannel *) g_IEngine->GetNetChannelInfo();
-    double ping      = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
-    double deltaTime = targetTime - selected.time + ping;
-    int tick         = int(double(selected.tickcount) +
+    INetChannel *ch   = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    double ping       = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
+    double deltaTime  = targetTime - selected.time + ping;
+    int tick          = int(double(selected.tickcount) +
                    deltaTime / g_GlobalVars->interval_per_tick + 0.7);
     double SeedOffset = predictOffset(selected, tick, clockRes);
     int seed          = predictSeed(selected, tick, clockRes, SeedOffset);
@@ -190,4 +190,4 @@ void reset()
         clockRes = 2.0;
     }
 }
-}
+} // namespace hacks::tf2::seedprediction

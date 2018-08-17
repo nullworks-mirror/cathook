@@ -236,4 +236,4 @@ void init()
 {
     GetBackpackTFThread();
 }
-}
+} // namespace backpacktf

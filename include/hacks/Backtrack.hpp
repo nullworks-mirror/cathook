@@ -64,4 +64,4 @@ extern bool isBacktrackEnabled;
 float getLatency();
 int getTicks();
 bool ValidTick(BacktrackData &i, CachedEntity *ent);
-}
+} // namespace hacks::shared::backtrack

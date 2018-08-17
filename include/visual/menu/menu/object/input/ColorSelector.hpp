@@ -28,4 +28,4 @@ public:
 protected:
     settings::Variable<glez::rgba> *variable{ nullptr };
 };
-}
+} // namespace zerokernel

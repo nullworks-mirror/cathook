@@ -336,4 +336,4 @@ void EffectChams::Render(int x, int y, int w, int h)
 
 EffectChams g_EffectChams;
 CScreenSpaceEffectRegistration *g_pEffectChams = nullptr;
-}
+} // namespace effect_chams

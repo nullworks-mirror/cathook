@@ -74,18 +74,16 @@ public:
             }
         }
 
-        if
-            constexpr(std::is_same<int, T>::value)
-            {
-                data->QueryIntAttribute("step", &step);
-                option = dynamic_cast<settings::Variable<int> *>(opt);
-            }
-        else if
-            constexpr(std::is_same<float, T>::value)
-            {
-                data->QueryFloatAttribute("step", &step);
-                option = dynamic_cast<settings::Variable<float> *>(opt);
-            }
+        if constexpr (std::is_same<int, T>::value)
+        {
+            data->QueryIntAttribute("step", &step);
+            option = dynamic_cast<settings::Variable<int> *>(opt);
+        }
+        else if constexpr (std::is_same<float, T>::value)
+        {
+            data->QueryFloatAttribute("step", &step);
+            option = dynamic_cast<settings::Variable<float> *>(opt);
+        }
     }
 
     const std::string &getValue() override
@@ -113,4 +111,4 @@ public:
 
     settings::ArithmeticVariable<T> *option{ nullptr };
 };
-}
+} // namespace zerokernel

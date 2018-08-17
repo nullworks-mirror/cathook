@@ -23,4 +23,4 @@ public:
 
     TRow *row;
 };
-}
+} // namespace zerokernel

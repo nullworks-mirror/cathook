@@ -137,4 +137,4 @@ void onShutdown()
     if (auto_queue)
         tfmm::startQueue();
 }
-}
+} // namespace hacks::shared::autojoin

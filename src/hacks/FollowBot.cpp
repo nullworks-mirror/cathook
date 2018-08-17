@@ -37,7 +37,6 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                                 return;
                             }
                             steamid = atol(args.Arg(1));
-
                         });
 
 // Something to store breadcrumbs created by followed players
@@ -98,8 +97,8 @@ void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
     for (int i = 0; i < maxiterations; i++)
     {
-        breadcrumbs.push_back(
-            corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+        breadcrumbs.push_back(corner + dist / vectorMax(vectorAbs(dist)) *
+                                           40.0f * (i + 1));
     }
 }
 
@@ -124,8 +123,8 @@ void addCrumbPair(CachedEntity *player1, CachedEntity *player2,
         int maxiterations = floor(corner2.DistTo(corner1)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            breadcrumbs.push_back(
-                corner1 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+            breadcrumbs.push_back(corner1 + dist / vectorMax(vectorAbs(dist)) *
+                                                40.0f * (i + 1));
         }
     }
     {
@@ -133,8 +132,8 @@ void addCrumbPair(CachedEntity *player1, CachedEntity *player2,
         int maxiterations = floor(corner2.DistTo(player2->m_vecOrigin())) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            breadcrumbs.push_back(
-                corner2 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+            breadcrumbs.push_back(corner2 + dist / vectorMax(vectorAbs(dist)) *
+                                                40.0f * (i + 1));
         }
     }
 }
@@ -581,4 +580,4 @@ static CatCommand
         }
     });
 #endif
-}
+} // namespace hacks::shared::followbot

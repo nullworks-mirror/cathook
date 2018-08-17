@@ -120,4 +120,4 @@ void Event(KeyValues *event)
         }
     }
 }
-}
+} // namespace ac::aimbot

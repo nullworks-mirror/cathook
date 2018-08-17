@@ -143,4 +143,4 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
     }
     return original::GetFriendPersonaName(this_, steam_id);
 }
-}
+} // namespace hooked_methods

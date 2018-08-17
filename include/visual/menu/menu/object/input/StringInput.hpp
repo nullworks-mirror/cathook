@@ -30,4 +30,4 @@ public:
 protected:
     settings::IVariable *option{ nullptr };
 };
-}
+} // namespace zerokernel

@@ -48,4 +48,4 @@ public:
     WindowCloseButton *close{ nullptr };
     Text *title{ nullptr };
 };
-}
+} // namespace zerokernel

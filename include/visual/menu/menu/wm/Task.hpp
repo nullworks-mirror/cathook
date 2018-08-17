@@ -42,4 +42,4 @@ public:
     WMWindow &window;
     Text text{};
 };
-}
+} // namespace zerokernel

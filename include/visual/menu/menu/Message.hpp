@@ -21,4 +21,4 @@ public:
     KeyValue kv;
     BaseMenuObject *sender{ nullptr };
 };
-}
+} // namespace zerokernel

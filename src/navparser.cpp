@@ -8,8 +8,8 @@ namespace nav
 static CNavFile navfile(nullptr);
 std::vector<CNavArea> areas;
 // std::vector<CNavArea> SniperAreas;
-bool init        = false;
-bool pathfinding = true;
+bool init             = false;
+bool pathfinding      = true;
 bool ReadyForCommands = false;
 static settings::Bool enabled{ "misc.pathing", "true" };
 

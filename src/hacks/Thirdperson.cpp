@@ -28,7 +28,7 @@ void hacks::tf::thirdperson::frameStageNotify()
     {
         // Remove thirdperson
         CE_INT(LOCAL_E, netvar.nForceTauntCam) = 0;
-        was_enabled = false;
+        was_enabled                            = false;
     }
     if (angles && g_IInput->CAM_IsThirdPerson())
     {

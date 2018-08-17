@@ -39,4 +39,4 @@ using Button = RegisteredVariableProxy<settings::Key>;
 #if ENABLE_VISUALS
 using Rgba = RegisteredVariableProxy<glez::rgba>;
 #endif
-}
+} // namespace settings

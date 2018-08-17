@@ -34,4 +34,4 @@ public:
 protected:
     settings::Variable<bool> *option{ nullptr };
 };
-}
+} // namespace zerokernel

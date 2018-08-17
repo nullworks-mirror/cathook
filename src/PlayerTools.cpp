@@ -158,4 +158,4 @@ void onKilledBy(CachedEntity *entity)
 {
     onKilledBy(entity->player_info.friendsID);
 }
-}
+} // namespace player_tools

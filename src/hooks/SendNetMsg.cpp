@@ -86,4 +86,4 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
     }
     return original::SendNetMsg(this_, msg, force_reliable, voice);
 }
-}
+} // namespace hooked_methods

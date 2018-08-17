@@ -13,6 +13,7 @@
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
 #include <hacks/AntiAntiAim.hpp>
+#include "NavBot.hpp"
 
 #include "HookedMethods.hpp"
 
@@ -93,7 +94,7 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 
     return;
 }
-}
+} // namespace engine_prediction
 #if not LAGBOT_MODE
 #define antikick_time 35
 #else
@@ -126,6 +127,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     if (firstcm)
     {
         DelayTimer.update();
+        hacks::tf2::NavBot::Init();
         firstcm = false;
     }
     tickcount++;
@@ -273,6 +275,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 PROF_SECTION(CM_navbot);
                 nav::CreateMove();
             }
+            {
+                PROF_SECTION(CM_NavParse);
+                hacks::tf2::NavBot::CreateMove();
+            }
             // Walkbot can leave game.
             if (!g_IEngine->IsInGame())
             {
@@ -396,7 +402,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     }
     if (time_replaced)
         g_GlobalVars->curtime = curtime_old;
-    g_Settings.bInvalid       = false;
+    g_Settings.bInvalid = false;
 #if !LAGBOT_MODE
     {
         PROF_SECTION(CM_chat_stack);
@@ -404,7 +410,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     }
 #endif
 
-// TODO Auto Steam Friend
+    // TODO Auto Steam Friend
 
 #if ENABLE_IPC
     {
@@ -496,7 +502,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     g_Settings.is_create_move       = false;
     return ret;
 }
-}
+} // namespace hooked_methods
 
 /*float o_curtime;
 float o_frametime;

@@ -43,4 +43,4 @@ public:
         return value != 0;
     }
 };
-}
+} // namespace settings

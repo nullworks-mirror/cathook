@@ -51,4 +51,4 @@ public:
     TreeNode root{};
     Container &list;
 };
-}
+} // namespace zerokernel::special

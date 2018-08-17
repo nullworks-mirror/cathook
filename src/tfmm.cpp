@@ -86,4 +86,4 @@ void abandon()
     else
         logging::Info("abandon: CTFGCClientSystem == null!");
 }
-}
+} // namespace tfmm

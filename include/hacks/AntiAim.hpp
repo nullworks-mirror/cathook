@@ -16,4 +16,4 @@ void SetSafeSpace(int safespace);
 bool ShouldAA(CUserCmd *cmd);
 void ProcessUserCmd(CUserCmd *cmd);
 bool isEnabled();
-}
+} // namespace hacks::shared::antiaim

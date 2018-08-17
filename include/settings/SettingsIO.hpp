@@ -52,4 +52,4 @@ protected:
     std::ofstream stream{};
     Manager &manager;
 };
-}
+} // namespace settings

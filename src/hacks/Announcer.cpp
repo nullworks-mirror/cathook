@@ -177,4 +177,4 @@ void shutdown()
 {
     g_IEventManager2->RemoveListener(&listener());
 }
-}
+} // namespace hacks::shared::announcer

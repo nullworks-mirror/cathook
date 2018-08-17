@@ -70,4 +70,4 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_,
 
     return original::DrawModelExecute(this_, state, info, bone);
 }
-}
+} // namespace hooked_methods

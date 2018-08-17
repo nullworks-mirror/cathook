@@ -65,4 +65,4 @@ public:
     bool reorder_needed{ true };
     std::vector<std::unique_ptr<BaseMenuObject>> objects{};
 };
-}
+} // namespace zerokernel

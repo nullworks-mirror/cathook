@@ -32,4 +32,4 @@ template <> inline int mod(int first, int second)
 }
 
 extern const std::string empty_string;
-}
+} // namespace utility

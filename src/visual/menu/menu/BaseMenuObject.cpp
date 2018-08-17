@@ -325,4 +325,4 @@ bool BaseMenuObject::onLeftMouseClick()
     emit(msg, false);
     return false;
 }
-}
+} // namespace zerokernel
