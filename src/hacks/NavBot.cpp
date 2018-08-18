@@ -187,7 +187,7 @@ void CreateMove()
             if (random_spot.z)
                 nav::NavTo(random_spot, true, true);
         }
-        else
+        else if (cdr.check(5000))
         {
             CachedEntity *tar = NearestEnemy();
             if (CE_BAD(tar))
