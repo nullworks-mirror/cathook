@@ -184,7 +184,7 @@ void CreateMove()
             int rng     = rand() % sniper_spots.size();
             random_spot = sniper_spots.at(rng);
             if (random_spot.z)
-                nav::NavTo(random_spot);
+                nav::NavTo(random_spot, false);
         }
         else
         {
@@ -201,10 +201,10 @@ void CreateMove()
                 int rng     = rand() % sniper_spots.size();
                 random_spot = sniper_spots.at(rng);
                 if (random_spot.z)
-                    nav::NavTo(random_spot);
+                    nav::NavTo(random_spot, false);
                 return;
             }
-            nav::NavTo(tar->m_vecOrigin());
+            nav::NavTo(tar->m_vecOrigin(), false);
         }
     }
 }
