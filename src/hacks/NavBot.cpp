@@ -185,7 +185,7 @@ void CreateMove()
             int rng     = rand() % sniper_spots.size();
             random_spot = sniper_spots.at(rng);
             if (random_spot.z)
-                nav::NavTo(random_spot, false, true);
+                nav::NavTo(random_spot, true, true);
         }
         else
         {
