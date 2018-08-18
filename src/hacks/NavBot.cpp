@@ -8,6 +8,8 @@
 namespace hacks::tf2::NavBot
 {
 static settings::Bool enable("navbot.enable", "false");
+static settings::Bool spy_mode("navbot.spy-mode", "false");
+static settings::Bool heavy_mode("navbot.heavy-mode", "false");
 static settings::Bool primary_only("navbot.primary-only", "true");
 
 bool HasLowAmmo()
@@ -78,15 +80,40 @@ CachedEntity *nearestAmmo()
     }
     return bestent;
 }
+CachedEntity *NearestEnemy()
+{
+    float bestscr         = FLT_MAX;
+    CachedEntity *bestent = nullptr;
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
+            continue;
+        if (ent == LOCAL_E || !ent->m_bAlivePlayer() ||
+            ent->m_iTeam() == LOCAL_E->m_iTeam())
+            continue;
+        float scr = ent->m_flDistance();
+        if (g_pPlayerResource->GetClass(ent) == tf_engineer)
+            scr *= 5.0f;
+        if (g_pPlayerResource->GetClass(ent) == tf_pyro)
+            scr *= 7.0f;
+        if (scr < bestscr)
+        {
+            bestscr = scr;
+            bestent = ent;
+        }
+    }
+    return bestent;
+}
 std::vector<Vector> sniper_spots;
 void Init()
 {
     sniper_spots.clear();
     for (auto area : nav::areas)
         for (auto hide : area.m_hidingSpots)
-            if (hide.IsGoodSniperSpot() || hide.IsIdealSniperSpot() || hide.IsExposed())
+            if (hide.IsGoodSniperSpot() || hide.IsIdealSniperSpot() ||
+                hide.IsExposed())
                 sniper_spots.push_back(hide.m_pos);
-
 }
 Timer slot_timer{};
 void UpdateSlot()
@@ -99,10 +126,13 @@ void UpdateSlot()
         // IsBaseCombatWeapon()
         if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
         {
-            int slot = re::C_BaseCombatWeapon::GetSlot(weapon);
-            if (slot != 0)
-                g_IEngine->ClientCmd(format("slot", 1).c_str());
-
+            int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
+            int newslot = 1;
+            if (spy_mode)
+                newslot = 3;
+            if (slot != newslot - 1)
+                g_IEngine->ClientCmd_Unrestricted(
+                    format("slot", newslot).c_str());
         }
     }
 }
@@ -115,7 +145,8 @@ void CreateMove()
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
-    UpdateSlot();
+    if (primary_only)
+        UpdateSlot();
     if (HasLowHealth() && cdr.test_and_set(5000))
     {
         CachedEntity *med = nearestHealth();
@@ -134,21 +165,47 @@ void CreateMove()
             return;
         }
     }
-    if (!nav::ReadyForCommands)
+    if (!nav::ReadyForCommands && !spy_mode)
         cd3.update();
-    if (nav::ReadyForCommands && cd3.test_and_set(5000))
+    bool isready = (spy_mode || heavy_mode) ? 1 : nav::ReadyForCommands;
+    int waittime = (spy_mode || heavy_mode) ? 100 : 5000;
+    if (isready && cd3.test_and_set(waittime))
     {
-        Vector random_spot;
-        if (sniper_spots.empty())
+        if (!spy_mode && !heavy_mode)
         {
-            if (cd2.test_and_set(5000))
-                Init();
-            return;
+            cd3.update();
+            Vector random_spot;
+            if (sniper_spots.empty())
+            {
+                if (cd2.test_and_set(5000))
+                    Init();
+                return;
+            }
+            int rng     = rand() % sniper_spots.size();
+            random_spot = sniper_spots.at(rng);
+            if (random_spot.z)
+                nav::NavTo(random_spot);
         }
-        int rng = rand() % sniper_spots.size();
-        random_spot = sniper_spots.at(rng);
-        if (random_spot.z)
-            nav::NavTo(random_spot);
+        else
+        {
+            CachedEntity *tar = NearestEnemy();
+            if (CE_BAD(tar))
+            {
+                Vector random_spot;
+                if (sniper_spots.empty())
+                {
+                    if (cd2.test_and_set(5000))
+                        Init();
+                    return;
+                }
+                int rng     = rand() % sniper_spots.size();
+                random_spot = sniper_spots.at(rng);
+                if (random_spot.z)
+                    nav::NavTo(random_spot);
+                return;
+            }
+            nav::NavTo(tar->m_vecOrigin());
+        }
     }
 }
 } // namespace hacks::tf2::NavBot
