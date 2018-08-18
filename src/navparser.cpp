@@ -8,7 +8,7 @@ std::vector<CNavArea> areas;
 bool init             = false;
 bool pathfinding      = true;
 bool ReadyForCommands = false;
-std::vector<std::pair<int, int>> ignores;
+std::vector<std::pair<int, int>> ignoredConnections;
 
 static settings::Bool enabled{ "misc.pathing", "true" };
 
@@ -27,10 +27,10 @@ struct MAP : public micropather::Graph
     std::unique_ptr<micropather::MicroPather> pather;
     bool IsIgnored(int currState, int connectionID)
     {
-        for (int i = 0; i < ignores.size(); i++)
+        for (int i = 0; i < ignoredConnections.size(); i++)
         {
-            if (ignores.at(i).first == currState &&
-                ignores.at(i).second == connectionID)
+            if (ignoredConnections.at(i).first == currState &&
+                ignoredConnections.at(i).second == connectionID)
             {
                 return true;
             }
@@ -157,30 +157,42 @@ void Init()
     }
     pathfinding = true;
 }
-
+std::string lastmap;
 bool Prepare()
 {
     if (!enabled)
         return false;
     if (!init)
     {
-        pathfinding = false;
-        init        = true;
-        Init();
+        if (lastmap == g_IEngine->GetLevelName())
+        {
+            init = true;
+        }
+        else
+        {
+            lastmap     = g_IEngine->GetLevelName();
+            pathfinding = false;
+            init        = true;
+            Init();
+        }
     }
     if (!pathfinding)
         return false;
     return true;
 }
 
+std::vector<int> localAreas(6);
 int findClosestNavSquare(Vector vec)
 {
+    if (localAreas.size() > 5)
+        localAreas.erase(localAreas.begin());
     std::vector<std::pair<int, CNavArea *>> overlapping;
     for (int i = 0; i < areas.size(); i++)
     {
         if (areas.at(i).IsOverlapping(vec))
         {
-            overlapping.push_back({ i, &areas.at(i) });
+            if (std::count(localAreas.begin(), localAreas.end(), i) < 2)
+                overlapping.push_back({ i, &areas.at(i) });
         }
     }
 
@@ -195,6 +207,26 @@ int findClosestNavSquare(Vector vec)
             bestSquare = overlapping.at(i).first;
         }
     }
+    if (bestSquare != -1)
+    {
+        if (vec == g_pLocalPlayer->v_Origin)
+            localAreas.push_back(bestSquare);
+        return bestSquare;
+    }
+    for (int i = 0; i < areas.size(); i++)
+    {
+        float dist = areas.at(i).m_center.DistTo(vec);
+        if (dist < bestDist)
+        {
+            if (std::count(localAreas.begin(), localAreas.end(), i) < 2)
+            {
+                bestDist   = dist;
+                bestSquare = i;
+            }
+        }
+    }
+    if (vec == g_pLocalPlayer->v_Origin)
+        localAreas.push_back(bestSquare);
     return bestSquare;
 }
 
@@ -224,10 +256,11 @@ std::vector<Vector> findPath(Vector loc, Vector dest)
 }
 
 static Timer inactivity{};
-Timer lastJump{};
+static Timer lastJump{};
 static std::vector<Vector> crumbs;
+static bool ensureArrival;
 
-bool NavTo(Vector dest, bool navToLocalCenter)
+bool NavTo(Vector dest, bool navToLocalCenter, bool persistent)
 {
     if (CE_BAD(LOCAL_E))
         return false;
@@ -241,46 +274,57 @@ bool NavTo(Vector dest, bool navToLocalCenter)
     if (!navToLocalCenter)
         crumbs.erase(crumbs.begin());
     inactivity.update();
+    ensureArrival = persistent;
     return true;
 }
 
+static Vector lastArea = { 0.0f, 0.0f, 0.0f };
 void ignoreConnection()
 {
     if (crumbs.size() < 1)
         return;
 
-    int closestArea = findClosestNavSquare(g_pLocalPlayer->v_Origin);
-    if (closestArea == -1)
+    CNavArea *currnode = nullptr;
+    for (int i = 0; i < areas.size(); i++)
+    {
+        if (areas.at(i).m_center == lastArea)
+        {
+            currnode = &areas.at(i);
+            break;
+        }
+    }
+    if (!currnode)
         return;
-    CNavArea currnode = areas.at(closestArea);
 
-    CNavArea nextnode;
+    CNavArea *nextnode = nullptr;
     for (int i = 0; i < areas.size(); i++)
     {
         if (areas.at(i).m_center == crumbs.at(0))
         {
-            nextnode = areas.at(i);
+            nextnode = &areas.at(i);
             break;
         }
     }
+    if (!nextnode)
+        return;
 
-    for (auto i : currnode.m_connections)
+    for (auto i : currnode->m_connections)
     {
-        if (i.area->m_id == nextnode.m_id)
+        if (i.area->m_id == nextnode->m_id)
         {
-            ignores.push_back({currnode.m_id, i.area->m_id});
+            ignoredConnections.push_back({ currnode->m_id, nextnode->m_id });
             TF2MAP->pather->Reset();
             return;
         }
     }
 }
 
-Timer ignoreReset{};
+static Timer ignoreReset{};
 void clearIgnores()
 {
-    if (ignoreReset.test_and_set(120000))
+    if (ignoreReset.test_and_set(180000))
     {
-        ignores.clear();
+        ignoredConnections.clear();
         if (TF2MAP && TF2MAP->pather)
             TF2MAP->pather->Reset();
     }
@@ -296,11 +340,13 @@ void CreateMove()
     if (crumbs.empty())
     {
         ReadyForCommands = true;
+        ensureArrival    = false;
         return;
     }
     ReadyForCommands = false;
     if (g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 30.0f)
     {
+        lastArea = crumbs.at(0);
         crumbs.erase(crumbs.begin());
         inactivity.update();
     }
@@ -311,24 +357,41 @@ void CreateMove()
         current_user_cmd->buttons |= IN_JUMP;
     if (inactivity.test_and_set(5000))
     {
-        logging::Info("Pathing: NavBot inactive for too long. Canceling tasks and "
-                      "ignoring connection...");
         ignoreConnection();
-        crumbs.clear();
+        if (ensureArrival)
+        {
+            logging::Info("Pathing: NavBot inactive for too long. Ignoring "
+                          "connection and finding another path...");
+            // NavTo(crumbs.back(), true, true);
+            crumbs = findPath(g_pLocalPlayer->v_Origin, crumbs.back());
+            inactivity.update();
+        }
+        else
+        {
+            logging::Info(
+                "Pathing: NavBot inactive for too long. Canceling tasks and "
+                "ignoring connection...");
+            crumbs.clear();
+        }
         return;
     }
     WalkTo(crumbs.at(0));
 }
 
-CatCommand navinit("nav_init", "Debug nav init",
-                   [](const CCommand &args) { Prepare(); });
+CatCommand navinit("nav_init", "Debug nav init", [](const CCommand &args) {
+    lastmap = "";
+    init    = false;
+    Prepare();
+});
 
 Vector loc;
 
 CatCommand navset("nav_set", "Debug nav set",
                   [](const CCommand &args) { loc = LOCAL_E->m_vecOrigin(); });
-CatCommand navprint("nav_print", "Debug nav print",
-                  [](const CCommand &args) { logging::Info(format(findClosestNavSquare(g_pLocalPlayer->v_Origin)).c_str()); });
+CatCommand navprint("nav_print", "Debug nav print", [](const CCommand &args) {
+    logging::Info(
+        format(findClosestNavSquare(g_pLocalPlayer->v_Origin)).c_str());
+});
 
 CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc);
@@ -346,7 +409,7 @@ CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
 });
 
 CatCommand navpath("nav_path", "Debug nav path", [](const CCommand &args) {
-    if (NavTo(loc))
+    if (NavTo(loc, true, true))
     {
         logging::Info("Pathing: Success! Walking to path...");
     }

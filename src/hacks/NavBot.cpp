@@ -35,7 +35,7 @@ bool HasLowAmmo()
 
 bool HasLowHealth()
 {
-    return float(LOCAL_E->m_iHealth()) / float(LOCAL_E->m_iMaxHealth()) < 0.45;
+    return float(LOCAL_E->m_iHealth()) / float(LOCAL_E->m_iMaxHealth()) < 0.64;
 }
 
 CachedEntity *nearestHealth()
@@ -141,7 +141,7 @@ Timer cd2{};
 Timer cd3{};
 void CreateMove()
 {
-    if (!nav::Prepare() || !enable)
+    if ( !enable || !nav::Prepare())
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
