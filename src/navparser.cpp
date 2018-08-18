@@ -259,12 +259,16 @@ static Timer inactivity{};
 static Timer lastJump{};
 static std::vector<Vector> crumbs;
 static bool ensureArrival;
+int priority = 0;
 
-bool NavTo(Vector dest, bool navToLocalCenter, bool persistent)
+bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
+           int instructionPriority)
 {
     if (CE_BAD(LOCAL_E))
         return false;
     if (!Prepare())
+        return false;
+    if (instructionPriority <= priority)
         return false;
     auto path = findPath(g_pLocalPlayer->v_Origin, dest);
     if (path.empty())
@@ -273,9 +277,9 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent)
     crumbs = std::move(path);
     if (!navToLocalCenter)
         crumbs.erase(crumbs.begin());
-    inactivity.update();
     ensureArrival = persistent;
     localAreas.clear();
+    priority = instructionPriority;
     return true;
 }
 
@@ -337,15 +341,23 @@ void CreateMove()
         return;
     if (CE_BAD(LOCAL_E))
         return;
+    if (!LOCAL_E->m_bAlivePlayer())
+    {
+        crumbs.clear();
+        return;
+    }
     clearIgnores();
     if (crumbs.empty())
     {
+        priority         = 0;
         ReadyForCommands = true;
         ensureArrival    = false;
         return;
     }
     ReadyForCommands = false;
-    if (g_pLocalPlayer->v_Origin.DistTo(Vector{crumbs.at(0).x, crumbs.at(0).y, g_pLocalPlayer->v_Origin.z}) < 30.0f)
+    if (g_pLocalPlayer->v_Origin.DistTo(Vector{ crumbs.at(0).x, crumbs.at(0).y,
+                                                g_pLocalPlayer->v_Origin.z }) <
+        30.0f)
     {
         lastArea = crumbs.at(0);
         crumbs.erase(crumbs.begin());
@@ -410,7 +422,7 @@ CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
 });
 
 CatCommand navpath("nav_path", "Debug nav path", [](const CCommand &args) {
-    if (NavTo(loc, true, true))
+    if (NavTo(loc, true, true, 50 + priority))
     {
         logging::Info("Pathing: Success! Walking to path...");
     }
