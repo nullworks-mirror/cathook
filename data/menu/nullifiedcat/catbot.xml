@@ -54,4 +54,13 @@
             <AutoVariable width="fill" target="follow-bot.corners" label="Corner activate"/>
         </List>
     </Box>
+    <Box name="NavBot" width="content" height="content" padding="12 6 6 6" x="210" y="233">
+        <List width="200">
+            <AutoVariable width="fill" target="misc.pathing" label="Enable Pathing"/>
+            <AutoVariable width="fill" target="navbot.enable" label="Enable NavBot"/>
+            <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/>
+            <AutoVariable width="fill" target="navbot.heavy-mode" label="Enable Heavy Mode"/>
+            <AutoVariable width="fill" target="navbot.primary-only" label="Best Weapon only"/>
+        </List>
+    </Box>
 </Tab>
