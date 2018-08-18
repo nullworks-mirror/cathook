@@ -259,14 +259,19 @@ bool ValidTick(BacktrackData &i, CachedEntity *ent)
         return true;
     if (istickinvalid[ent->m_IDX][i.index])
         return false;
-    if (!hacks::shared::aimbot::IsBacktracking() ||
-        IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center, true))
-        if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
-                  getLatency() - i.simtime * 1000.0f) <= 200.0f)
-        {
-            istickvalid[ent->m_IDX][i.index] = true;
-            return true;
-        }
+    if (hacks::shared::aimbot::IsBacktracking()) {
+        if (IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center, true))
+            if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
+                      getLatency() - i.simtime * 1000.0f) <= 200.0f) {
+                istickvalid[ent->m_IDX][i.index] = true;
+                return true;
+            }
+    }
+    else if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
+              getLatency() - i.simtime * 1000.0f) <= 200.0f) {
+        istickvalid[ent->m_IDX][i.index] = true;
+        return true;
+    }
     istickinvalid[ent->m_IDX][i.index] = true;
     return false;
 }
