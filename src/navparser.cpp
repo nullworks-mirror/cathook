@@ -8,7 +8,7 @@ std::vector<CNavArea> areas;
 bool init             = false;
 bool pathfinding      = true;
 bool ReadyForCommands = false;
-std::vector<int> ignores;
+std::vector<std::pair<int, int>> ignores;
 
 static settings::Bool enabled{ "misc.pathing", "true" };
 
@@ -25,11 +25,12 @@ int FindInVector(int id)
 struct MAP : public micropather::Graph
 {
     std::unique_ptr<micropather::MicroPather> pather;
-    bool IsIgnored(int connectionID)
+    bool IsIgnored(int currState, int connectionID)
     {
         for (int i = 0; i < ignores.size(); i++)
         {
-            if (ignores.at(i) == connectionID)
+            if (ignores.at(i).first == currState &&
+                ignores.at(i).second == connectionID)
             {
                 return true;
             }
@@ -98,7 +99,7 @@ struct MAP : public micropather::Graph
         {
             if (GetZBetweenAreas(area, i.area) > 42)
                 continue;
-            if (IsIgnored(i.id))
+            if (IsIgnored(area->m_id, i.area->m_id))
                 continue;
             micropather::StateCost cost;
             cost.state =
@@ -179,7 +180,7 @@ int findClosestNavSquare(Vector vec)
     {
         if (areas.at(i).IsOverlapping(vec))
         {
-            overlapping.push_back({i, &areas.at(i)});
+            overlapping.push_back({ i, &areas.at(i) });
         }
     }
 
@@ -208,8 +209,8 @@ std::vector<Vector> findPath(Vector loc, Vector dest)
     float cost;
     micropather::MPVector<void *> pathNodes;
     int result = TF2MAP->pather->Solve(static_cast<void *>(&areas.at(id_loc)),
-                               static_cast<void *>(&areas.at(id_dest)),
-                               &pathNodes, &cost);
+                                       static_cast<void *>(&areas.at(id_dest)),
+                                       &pathNodes, &cost);
     logging::Info(format(result).c_str());
     if (result == 1)
         return std::vector<Vector>(0);
@@ -226,7 +227,7 @@ static Timer inactivity{};
 Timer lastJump{};
 static std::vector<Vector> crumbs;
 
-bool NavTo(Vector dest)
+bool NavTo(Vector dest, bool navToLocalCenter)
 {
     if (CE_BAD(LOCAL_E))
         return false;
@@ -237,6 +238,8 @@ bool NavTo(Vector dest)
         return false;
     crumbs.clear();
     crumbs = std::move(path);
+    if (!navToLocalCenter)
+        crumbs.erase(crumbs.begin());
     inactivity.update();
     return true;
 }
@@ -263,10 +266,9 @@ void ignoreConnection()
 
     for (auto i : currnode.m_connections)
     {
-        logging::Info(format("1 ", i.area->m_id, " ", nextnode.m_id).c_str());
         if (i.area->m_id == nextnode.m_id)
         {
-            ignores.push_back(i.id);
+            ignores.push_back({currnode.m_id, i.area->m_id});
             TF2MAP->pather->Reset();
             return;
         }
@@ -279,7 +281,8 @@ void clearIgnores()
     if (ignoreReset.test_and_set(120000))
     {
         ignores.clear();
-        TF2MAP->pather->Reset();
+        if (TF2MAP && TF2MAP->pather)
+            TF2MAP->pather->Reset();
     }
 }
 
@@ -298,7 +301,7 @@ void CreateMove()
     ReadyForCommands = false;
     if (g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 30.0f)
     {
-        crumbs.erase(crumbs.begin()); 
+        crumbs.erase(crumbs.begin());
         inactivity.update();
     }
     if (crumbs.empty())
@@ -308,7 +311,8 @@ void CreateMove()
         current_user_cmd->buttons |= IN_JUMP;
     if (inactivity.test_and_set(5000))
     {
-        logging::Info("NavBot inactive for too long. Canceling tasks and ignoring connection...");
+        logging::Info("Pathing: NavBot inactive for too long. Canceling tasks and "
+                      "ignoring connection...");
         ignoreConnection();
         crumbs.clear();
         return;
@@ -323,6 +327,8 @@ Vector loc;
 
 CatCommand navset("nav_set", "Debug nav set",
                   [](const CCommand &args) { loc = LOCAL_E->m_vecOrigin(); });
+CatCommand navprint("nav_print", "Debug nav print",
+                  [](const CCommand &args) { logging::Info(format(findClosestNavSquare(g_pLocalPlayer->v_Origin)).c_str()); });
 
 CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc);
