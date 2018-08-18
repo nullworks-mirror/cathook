@@ -115,6 +115,7 @@ void Init()
                 hide.IsExposed())
                 sniper_spots.push_back(hide.m_pos);
 }
+
 Timer slot_timer{};
 void UpdateSlot()
 {

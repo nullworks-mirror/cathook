@@ -345,7 +345,7 @@ void CreateMove()
         return;
     }
     ReadyForCommands = false;
-    if (g_pLocalPlayer->v_Origin.DistTo(crumbs.at(0)) < 30.0f)
+    if (g_pLocalPlayer->v_Origin.DistTo(Vector{crumbs.at(0).x, crumbs.at(0).y, g_pLocalPlayer->v_Origin.z}) < 30.0f)
     {
         lastArea = crumbs.at(0);
         crumbs.erase(crumbs.begin());
