@@ -14,4 +14,4 @@ void draw();
 bool handleSdlEvent(SDL_Event *event);
 
 void onLevelLoad();
-}
+} // namespace gui

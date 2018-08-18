@@ -69,4 +69,4 @@ public:
     kick_callback_type cb_kick;
     open_steam_callback_type cb_open_steam;
 };
-}
+} // namespace zerokernel::special

@@ -36,4 +36,4 @@ public:
 
     size_t active_window{ 0 };
 };
-}
+} // namespace zerokernel

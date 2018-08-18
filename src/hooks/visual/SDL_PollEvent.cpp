@@ -18,4 +18,4 @@ DEFINE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *event)
 #endif
     return ret;
 }
-}
+} // namespace hooked_methods

@@ -80,7 +80,7 @@ void EntityHitboxCache::Init()
         }
         if (m_nNumHitboxes > CACHE_MAX_HITBOXES)
             m_nNumHitboxes = CACHE_MAX_HITBOXES;
-        m_bModelSet        = true;
+        m_bModelSet = true;
     }
     m_bSuccess = true;
 }
@@ -197,4 +197,4 @@ void Update()
 void Invalidate()
 {
 }
-}
+} // namespace hitbox_cache

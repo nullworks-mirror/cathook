@@ -77,4 +77,4 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
     }
 }
-}
+} // namespace hacks::shared::deadringer

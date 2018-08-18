@@ -26,4 +26,4 @@ void CreateMove()
         }
     }
 }
-}
+} // namespace hacks::tf2::noisemaker

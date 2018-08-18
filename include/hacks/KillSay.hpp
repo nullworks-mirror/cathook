@@ -19,4 +19,4 @@ void reload();
 extern const std::vector<std::string> builtin_default;
 extern const std::vector<std::string> builtin_nonecore_offensive;
 extern const std::vector<std::string> builtin_nonecore_mlg;
-}
+} // namespace hacks::shared::killsay

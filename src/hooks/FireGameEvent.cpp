@@ -29,4 +29,4 @@ DEFINE_HOOKED_METHOD(FireGameEvent, void, void *this_, IGameEvent *event)
     }
     original::FireGameEvent(this_, event);
 }
-}
+} // namespace hooked_methods

@@ -139,4 +139,4 @@ protected:
     std::string string{};
     Key value{};
 };
-}
+} // namespace settings

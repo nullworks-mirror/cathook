@@ -93,21 +93,21 @@ std::mutex entities_need_repaint_mutex{};
 // be a pain.
 
 // Vars to store what bones connect to what
-const std::string bonenames_leg_r[] = { "bip_foot_R", "bip_knee_R",
+const std::string bonenames_leg_r[]  = { "bip_foot_R", "bip_knee_R",
                                         "bip_hip_R" };
-const std::string bonenames_leg_l[] = { "bip_foot_L", "bip_knee_L",
+const std::string bonenames_leg_l[]  = { "bip_foot_L", "bip_knee_L",
                                         "bip_hip_L" };
 const std::string bonenames_bottom[] = { "bip_hip_R", "bip_pelvis",
                                          "bip_hip_L" };
-const std::string bonenames_spine[] = { "bip_pelvis",  "bip_spine_0",
+const std::string bonenames_spine[]  = { "bip_pelvis",  "bip_spine_0",
                                         "bip_spine_1", "bip_spine_2",
                                         "bip_spine_3", "bip_neck",
                                         "bip_head" };
-const std::string bonenames_arm_r[] = { "bip_upperArm_R", "bip_lowerArm_R",
+const std::string bonenames_arm_r[]  = { "bip_upperArm_R", "bip_lowerArm_R",
                                         "bip_hand_R" };
-const std::string bonenames_arm_l[] = { "bip_upperArm_L", "bip_lowerArm_L",
+const std::string bonenames_arm_l[]  = { "bip_upperArm_L", "bip_lowerArm_L",
                                         "bip_hand_L" };
-const std::string bonenames_up[] = { "bip_upperArm_R", "bip_spine_3",
+const std::string bonenames_up[]     = { "bip_upperArm_R", "bip_spine_3",
                                      "bip_upperArm_L" };
 
 // Dont fully understand struct but a guess is a group of something.
@@ -141,21 +141,21 @@ struct bonelist_s
         }
         try
         {
-            for (int i   = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
                 leg_r[i] = bones.at(bonenames_leg_r[i]);
-            for (int i   = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
                 leg_l[i] = bones.at(bonenames_leg_l[i]);
-            for (int i    = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
                 bottom[i] = bones.at(bonenames_bottom[i]);
-            for (int i   = 0; i < 7; i++)
+            for (int i = 0; i < 7; i++)
                 spine[i] = bones.at(bonenames_spine[i]);
-            for (int i   = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
                 arm_r[i] = bones.at(bonenames_arm_r[i]);
-            for (int i   = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
                 arm_l[i] = bones.at(bonenames_arm_l[i]);
             for (int i = 0; i < 3; i++)
-                up[i]  = bones.at(bonenames_up[i]);
-            success    = true;
+                up[i] = bones.at(bonenames_up[i]);
+            success = true;
         }
         catch (std::exception &ex)
         {
@@ -676,12 +676,11 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 break;
                 case 1:
                 { // BOTTOM RIGHT
-                    draw_point =
-                        Vector(max_x + 2,
-                               max_y -
-                                   data.at(ent->m_IDX).string_count *
-                                       /*((int)fonts::font_main->height)*/ 14,
-                               0);
+                    draw_point = Vector(
+                        max_x + 2,
+                        max_y - data.at(ent->m_IDX).string_count *
+                                    /*((int)fonts::font_main->height)*/ 14,
+                        0);
                 }
                 break;
                 case 2:
@@ -692,12 +691,11 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 break;
                 case 3:
                 { // ABOVE
-                    draw_point =
-                        Vector(min_x,
-                               min_y -
-                                   data.at(ent->m_IDX).string_count *
-                                       /*((int)fonts::font_main->height)*/ 14,
-                               0);
+                    draw_point = Vector(
+                        min_x,
+                        min_y - data.at(ent->m_IDX).string_count *
+                                    /*((int)fonts::font_main->height)*/ 14,
+                        0);
                 }
                 break;
                 case 4:
@@ -1567,4 +1565,4 @@ void SetEntityColor(CachedEntity *entity, const rgba_t &color)
 {
     data[entity->m_IDX].color = color;
 }
-}
+} // namespace hacks::shared::esp

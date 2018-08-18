@@ -1010,7 +1010,7 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
             g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
         rspeed = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) * 800.0) +
                           1800.0);
-        rgrav = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) *
+        rgrav  = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) *
                                   -0.40000001) +
                          0.5);
         break;
@@ -1335,7 +1335,6 @@ bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)
 CatCommand print_classnames(
     "debug_print_classnames", "Lists classnames currently available in console",
     []() {
-
         // Create a tmp ent for the loop
         CachedEntity *ent;
 
@@ -1353,7 +1352,6 @@ CatCommand print_classnames(
             logging::Info(
                 format(RAW_ENT(ent)->GetClientClass()->m_pNetworkName).c_str());
         }
-
     });
 
 void PrintChat(const char *fmt, ...)

@@ -134,4 +134,4 @@ bool FireEventClientSide(IGameEventManager2 *manager, IGameEvent *event)
 void init()
 {
 }
-}
+} // namespace hacks::tf2::killstreak

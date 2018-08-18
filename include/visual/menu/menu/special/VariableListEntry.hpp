@@ -62,4 +62,4 @@ public:
     std::unique_ptr<BaseMenuObject> control{ nullptr };
     Text label{};
 };
-}
+} // namespace zerokernel

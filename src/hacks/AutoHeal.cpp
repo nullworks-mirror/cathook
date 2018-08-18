@@ -131,9 +131,8 @@ int FireDangerValue(CachedEntity *patient)
                 return 2;
             IClientEntity *pyro_weapon = g_IEntityList->GetClientEntity(
                 CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
-            return (pyro_weapon &&
-                    pyro_weapon->GetClientClass()->m_ClassID ==
-                        CL_CLASS(CTFFlameThrower))
+            return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID ==
+                                       CL_CLASS(CTFFlameThrower))
                        ? 2
                        : 0;
         }
@@ -172,7 +171,7 @@ int BlastDangerValue(CachedEntity *patient)
             {
                 if (ent->m_bCritProjectile())
                     hasCritRockets = true;
-                hasRockets         = true;
+                hasRockets = true;
             }
             it++;
         }
@@ -453,7 +452,7 @@ void CreateMove()
         m_iNewTarget++;
     else
         m_iNewTarget = 0;
-    bool new_target  = (old_target != m_iCurrentHealingTarget);
+    bool new_target = (old_target != m_iCurrentHealingTarget);
     if (new_target)
     {
         m_iNewTarget = 1;
@@ -518,7 +517,7 @@ void UpdateData()
                     data[i].accum_damage += (last_health - health);
                     if (!data[i].accum_damage_start)
                         data[i].accum_damage_start = g_GlobalVars->curtime;
-                    data[i].last_damage            = g_GlobalVars->curtime;
+                    data[i].last_damage = g_GlobalVars->curtime;
                 }
             }
         }
@@ -616,4 +615,4 @@ bool CanHeal(int idx)
         return false;
     return true;
 }
-}
+} // namespace hacks::tf::autoheal

@@ -131,7 +131,7 @@ protected:
         string = std::to_string(value);
     }
 };
-}
+} // namespace settings
 
 #include "Bool.hpp"
 #include "Float.hpp"

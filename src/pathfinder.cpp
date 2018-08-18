@@ -5,13 +5,14 @@
 namespace hacks::shared::pathfinder
 {
 Vector loc;
-//std::vector<Vector> findPath(Vector loc, Vector dest);
-//bool initiatenavfile();
+// std::vector<Vector> findPath(Vector loc, Vector dest);
+// bool initiatenavfile();
 
-//CatCommand navset("nav_set", "Debug nav set",
-//                  [](const CCommand &args) { loc = g_pLocalPlayer->v_Origin; });
+// CatCommand navset("nav_set", "Debug nav set",
+//                  [](const CCommand &args) { loc = g_pLocalPlayer->v_Origin;
+//                  });
 
-//CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
+// CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
 //    std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc);
 //    if (path.empty())
 //    {
@@ -25,28 +26,28 @@ Vector loc;
 //    logging::Info(output.c_str());
 //});
 
-//CatCommand navinit("nav_init", "Debug nav init",
+// CatCommand navinit("nav_init", "Debug nav init",
 //                   [](const CCommand &args) { initiatenavfile(); });
 
 class navNode : public AStarNode
 {
-//    navNode()
-//    {
-//    }
+    //    navNode()
+    //    {
+    //    }
 
-//    ~navNode()
-//    {
-//    }
+    //    ~navNode()
+    //    {
+    //    }
 public:
     Vector vecLoc;
 };
 
 std::vector<navNode *> nodes;
-//settings::Bool enabled{ "pathing.enabled", 0 };
+// settings::Bool enabled{ "pathing.enabled", 0 };
 
 bool initiatenavfile()
 {
-    //if (!enabled)
+    // if (!enabled)
     //    return false;
     logging::Info("Pathing: Initiating path...");
 
@@ -118,11 +119,11 @@ std::vector<Vector> findPath(Vector loc, Vector dest)
     int id_loc  = findClosestNavSquare(loc);
     int id_dest = findClosestNavSquare(dest);
 
-    navNode &node_loc = *nodes.at(id_loc);
+    navNode &node_loc  = *nodes.at(id_loc);
     navNode &node_dest = *nodes.at(id_dest);
 
     PathFinder<navNode> p;
-    std::vector<navNode*> pathNodes;
+    std::vector<navNode *> pathNodes;
 
     p.setStart(node_loc);
     p.setGoal(node_dest);
@@ -135,4 +136,5 @@ std::vector<Vector> findPath(Vector loc, Vector dest)
         path.push_back(pathNodes.at(i)->vecLoc);
     }
     return path;
-}}
+}
+} // namespace hacks::shared::pathfinder

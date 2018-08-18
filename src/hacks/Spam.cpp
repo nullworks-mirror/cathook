@@ -427,7 +427,7 @@ const std::vector<std::string> builtin_lithium = {
     "SAVE YOUR MONEY AND GET LITHIUMCHEAT! IT IS FREE!",
     "GOT ROLLED BY LITHIUM? HEY, THAT MEANS IT'S TIME TO GET LITHIUMCHEAT!!"
 };
-}
+} // namespace hacks::shared::spam
 
 static CatCommand reload("spam_reload", "Reload spam file",
                          hacks::shared::spam::reloadSpamFile);

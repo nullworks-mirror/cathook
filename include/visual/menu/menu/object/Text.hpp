@@ -72,4 +72,4 @@ public:
 protected:
     std::string data{};
 };
-}
+} // namespace zerokernel

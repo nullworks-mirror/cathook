@@ -36,4 +36,4 @@ DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
 #endif
     return ret;
 }
-}
+} // namespace hooked_methods

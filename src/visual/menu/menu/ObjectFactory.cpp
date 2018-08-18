@@ -232,4 +232,4 @@ ObjectFactory::createFromPrefab(const std::string &prefab_name)
         return createObjectFromXml(prefab->FirstChildElement());
     return nullptr;
 }
-}
+} // namespace zerokernel

@@ -55,4 +55,4 @@ void Tooltip::onMove()
 
     text.onParentMove();
 }
-}
+} // namespace zerokernel

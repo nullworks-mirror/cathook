@@ -158,4 +158,4 @@ const std::vector<std::string> builtin_nonecore_mlg = {
     "GET REKT U SCRUB",     "GET REKT M8",       "U GOT NOSCOPED M8",
     "U GOT QUICKSCOPED M8", "2 FAST 4 U, SCRUB", "U GOT REKT, M8"
 };
-}
+} // namespace hacks::shared::killsay

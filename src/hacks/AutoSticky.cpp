@@ -182,4 +182,4 @@ void CreateMove()
         }
     }
 }
-}
+} // namespace hacks::tf::autosticky

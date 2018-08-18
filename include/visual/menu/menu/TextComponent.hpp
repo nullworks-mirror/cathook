@@ -33,4 +33,4 @@ public:
     const glez::rgba &default_text;
     const glez::rgba &default_outline;
 };
-}
+} // namespace zerokernel

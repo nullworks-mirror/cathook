@@ -82,7 +82,7 @@ namespace fonts
 
 std::unique_ptr<glez::font> menu{ nullptr };
 std::unique_ptr<glez::font> esp{ nullptr };
-}
+} // namespace fonts
 
 void draw::Initialize()
 {
@@ -126,15 +126,17 @@ bool draw::WorldToScreen(const Vector &origin, Vector &screen)
     {
         odw      = 1.0f / w;
         screen.x = (draw::width / 2) +
-                   (0.5 * ((wts[0][0] * origin[0] + wts[0][1] * origin[1] +
-                            wts[0][2] * origin[2] + wts[0][3]) *
-                           odw) *
+                   (0.5 *
+                        ((wts[0][0] * origin[0] + wts[0][1] * origin[1] +
+                          wts[0][2] * origin[2] + wts[0][3]) *
+                         odw) *
                         draw::width +
                     0.5);
         screen.y = (draw::height / 2) -
-                   (0.5 * ((wts[1][0] * origin[0] + wts[1][1] * origin[1] +
-                            wts[1][2] * origin[2] + wts[1][3]) *
-                           odw) *
+                   (0.5 *
+                        ((wts[1][0] * origin[0] + wts[1][1] * origin[1] +
+                          wts[1][2] * origin[2] + wts[1][3]) *
+                         odw) *
                         draw::height +
                     0.5);
         return true;

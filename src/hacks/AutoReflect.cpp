@@ -219,4 +219,4 @@ void Draw()
     }
 #endif
 }
-}
+} // namespace hacks::tf::autoreflect

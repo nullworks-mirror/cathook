@@ -80,4 +80,4 @@ rgba_t LightESPColor(CachedEntity *ent)
     }
     return colors::green;
 }
-}
+} // namespace hacks::shared::lightesp

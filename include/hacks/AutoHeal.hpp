@@ -30,4 +30,4 @@ void UpdateData();
 int BestTarget();
 int HealingPriority(int idx);
 bool CanHeal(int idx);
-}
+} // namespace hacks::tf::autoheal

@@ -34,4 +34,4 @@ public:
 
     size_t depth{ 0 };
 };
-}
+} // namespace zerokernel

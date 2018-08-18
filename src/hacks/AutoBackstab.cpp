@@ -67,7 +67,8 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max,
     // Get melee range
     float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (fabsf(vecAngle.y -
-              NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y) >= 60.0f)
+              NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles).y) >=
+        60.0f)
         return false;
     if (!min.x && !max.x)
         return false;

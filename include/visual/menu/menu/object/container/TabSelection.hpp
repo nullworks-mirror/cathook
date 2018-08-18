@@ -36,4 +36,4 @@ public:
     int offset{ 0 };
     size_t active{ 0 };
 };
-}
+} // namespace zerokernel

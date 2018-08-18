@@ -175,7 +175,7 @@ void CreateMove()
         {
             if (flash_light_spam_switch && !current_user_cmd->impulse)
                 current_user_cmd->impulse = 100;
-            flash_light_spam_switch       = !flash_light_spam_switch;
+            flash_light_spam_switch = !flash_light_spam_switch;
         }
     }
 

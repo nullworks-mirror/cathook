@@ -15,4 +15,4 @@ void leaveQueue();
 void disconnectAndAbandon();
 void abandon();
 int getQueue();
-}
+} // namespace tfmm

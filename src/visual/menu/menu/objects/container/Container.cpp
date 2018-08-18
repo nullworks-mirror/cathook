@@ -184,4 +184,4 @@ void Container::renderDebugOverlay()
             o->renderDebugOverlay();
     }
 }
-}
+} // namespace zerokernel

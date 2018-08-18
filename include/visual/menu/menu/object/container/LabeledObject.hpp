@@ -33,4 +33,4 @@ public:
 
     Text *label{ nullptr };
 };
-}
+} // namespace zerokernel

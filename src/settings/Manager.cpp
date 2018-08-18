@@ -41,4 +41,4 @@ bool Manager::VariableDescriptor::isChanged()
 {
     return variable.toString() != defaults;
 }
-}
+} // namespace settings

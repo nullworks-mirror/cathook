@@ -32,4 +32,4 @@ DEFINE_HOOKED_METHOD(LevelShutdown, void, void *this_)
 #endif
     return original::LevelShutdown(this_);
 }
-}
+} // namespace hooked_methods

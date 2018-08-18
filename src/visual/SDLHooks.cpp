@@ -15,7 +15,7 @@ namespace pointers
 {
 hooked_methods::types::SDL_GL_SwapWindow *SDL_GL_SwapWindow{ nullptr };
 hooked_methods::types::SDL_PollEvent *SDL_PollEvent{ nullptr };
-}
+} // namespace pointers
 
 void applySdlHooks()
 {
@@ -38,4 +38,4 @@ void cleanSdlHooks()
 {
     *pointers::SDL_GL_SwapWindow = hooked_methods::original::SDL_GL_SwapWindow;
 }
-}
+} // namespace sdl_hooks

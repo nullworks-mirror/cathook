@@ -40,4 +40,4 @@ public:
 
     std::vector<Column> columns{};
 };
-}
+} // namespace zerokernel

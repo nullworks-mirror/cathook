@@ -50,9 +50,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         if (s < 256)
         {
             data = (char *) alloca(s);
-            for (i      = 0; i < s; i++)
+            for (i = 0; i < s; i++)
                 data[i] = buf.ReadByte();
-            j           = 0;
+            j = 0;
             std::string name;
             std::string message;
             for (i = 0; i < 3; i++)
@@ -264,4 +264,4 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     votelogger::dispatchUserMessage(buf, type);
     return original::DispatchUserMessage(this_, type, buf);
 }
-}
+} // namespace hooked_methods

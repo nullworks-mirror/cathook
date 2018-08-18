@@ -50,4 +50,4 @@ void CreateMove()
     if (!jump)
         ticks_last_jump = 0;
 }
-}
+} // namespace hacks::shared::bunnyhop

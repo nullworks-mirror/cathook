@@ -69,4 +69,4 @@ KeyValue::Value &KeyValue::operator[](const std::string &key)
 KeyValue::KeyValue(std::string name) : name{ std::move(name) }
 {
 }
-}
+} // namespace zerokernel

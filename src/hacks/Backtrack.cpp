@@ -28,7 +28,7 @@ bool shouldBacktrack();
 BacktrackData headPositions[32][66]{};
 int highesttick[32]{};
 int lastincomingsequencenumber = 0;
-bool isBacktrackEnabled = false;
+bool isBacktrackEnabled        = false;
 
 circular_buf sequences{ 2048 };
 void UpdateIncomingSequences()
@@ -133,8 +133,9 @@ void Run()
         Vector ent_orig = pEntity->InternalEntity()->GetAbsOrigin();
         auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
         headPositions[i][cmd->command_number % getTicks()] =
-            BacktrackData{ cmd->tick_count, hbdArray, viewangles, simtime,
-                           ent_orig, cmd->command_number % getTicks() };
+            BacktrackData{ cmd->tick_count, hbdArray,
+                           viewangles,      simtime,
+                           ent_orig,        cmd->command_number % getTicks() };
     }
     if (iBestTarget != -1 && CanShoot())
     {
@@ -208,8 +209,7 @@ bool shouldBacktrack()
     CachedEntity *wep = g_pLocalPlayer->weapon();
     if (CE_BAD(wep))
         return false;
-    int slot =
-        re::C_BaseCombatWeapon::GetSlot(RAW_ENT(wep));
+    int slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(wep));
     switch ((int) slots)
     {
     case 0:

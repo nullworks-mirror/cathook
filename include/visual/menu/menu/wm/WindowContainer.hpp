@@ -65,4 +65,4 @@ public:
 
     WindowManager &wm;
 };
-}
+} // namespace zerokernel

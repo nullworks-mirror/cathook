@@ -51,4 +51,4 @@ extern buf2 rebased;
 extern buf3 intervals;
 void selectBase();
 double predictOffset(const seedstruct &entry, int targetTick, double clockRes);
-}
+} // namespace hacks::tf2::seedprediction

@@ -39,4 +39,4 @@ void Update()
         }
     }
 }
-}
+} // namespace angles

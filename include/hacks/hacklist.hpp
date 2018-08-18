@@ -36,6 +36,7 @@
 #endif
 #if not LAGBOT_MODE
 #include "Walkbot.hpp"
+#include "navparser.hpp"
 #endif
 #include "AutoJoin.hpp"
 #if not LAGBOT_MODE
@@ -50,6 +51,7 @@
 #endif
 #include "Spam.hpp"
 #if not LAGBOT_MODE
+#include "NavBot.hpp"
 #include "Noisemaker.hpp"
 #include "FollowBot.hpp"
 #include "Announcer.hpp"

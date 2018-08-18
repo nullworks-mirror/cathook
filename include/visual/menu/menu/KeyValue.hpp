@@ -49,4 +49,4 @@ public:
 protected:
     std::unordered_map<std::string, Value> values{};
 };
-}
+} // namespace zerokernel

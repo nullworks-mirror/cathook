@@ -36,4 +36,4 @@ protected:
     TabSelection &parent;
     const size_t id;
 };
-}
+} // namespace zerokernel

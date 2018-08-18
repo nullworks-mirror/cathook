@@ -95,4 +95,4 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 
     return original::Paint(this_, mode);
 }
-}
+} // namespace hooked_methods

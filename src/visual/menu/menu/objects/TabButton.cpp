@@ -96,4 +96,4 @@ void TabButton::recursiveSizeUpdate()
 
     text.recursiveSizeUpdate();
 }
-}
+} // namespace zerokernel

@@ -75,4 +75,4 @@ public:
     WindowHeader *header{ nullptr };
     Container *contents{ nullptr };
 };
-}
+} // namespace zerokernel

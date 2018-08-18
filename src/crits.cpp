@@ -162,7 +162,7 @@ void create_move()
     if (CE_BAD(LOCAL_W))
         return;
     if (current_user_cmd->command_number)
-        lastusercmd       = current_user_cmd->command_number;
+        lastusercmd = current_user_cmd->command_number;
     IClientEntity *weapon = RAW_ENT(LOCAL_W);
     if (!re::C_TFWeaponBase::IsBaseCombatWeapon(weapon))
         return;
@@ -246,7 +246,7 @@ void draw()
     }
 }
 #endif
-}
+} // namespace criticals
 
 void crithack_saved_state::Load(IClientEntity *entity)
 {
