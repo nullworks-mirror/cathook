@@ -275,6 +275,7 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent)
         crumbs.erase(crumbs.begin());
     inactivity.update();
     ensureArrival = persistent;
+    localAreas.clear();
     return true;
 }
 
