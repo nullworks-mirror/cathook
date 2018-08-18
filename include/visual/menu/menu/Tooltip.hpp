@@ -28,4 +28,4 @@ public:
     std::string lastText;
     bool shown{ false };
 };
-}
+} // namespace zerokernel

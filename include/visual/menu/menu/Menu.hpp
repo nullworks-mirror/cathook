@@ -20,7 +20,7 @@ namespace resource::font
 {
 extern glez::font base;
 extern glez::font bold;
-}
+} // namespace resource::font
 
 namespace style::colors
 {
@@ -29,7 +29,7 @@ using color_type = settings::RVariable<glez::rgba>;
 extern color_type text;
 extern color_type text_shadow;
 extern color_type error;
-}
+} // namespace style::colors
 
 class Menu : public IMessageHandler
 {
@@ -89,4 +89,4 @@ public:
     tinyxml2::XMLDocument xml_source{};
     std::unordered_map<std::string, tinyxml2::XMLElement *> prefabs{};
 };
-}
+} // namespace zerokernel

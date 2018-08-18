@@ -140,4 +140,4 @@ protected:
 
     static size_t object_sequence_number;
 };
-}
+} // namespace zerokernel

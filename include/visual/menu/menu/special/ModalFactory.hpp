@@ -10,4 +10,4 @@ namespace zerokernel::special
 class ModalFactory
 {
 };
-}
+} // namespace zerokernel::special

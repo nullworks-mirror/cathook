@@ -53,4 +53,4 @@ public:
 
     Direction direction{ Direction::HORIZONTAL };
 };
-}
+} // namespace zerokernel

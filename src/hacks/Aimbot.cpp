@@ -107,7 +107,7 @@ void CreateMove()
     if (auto_unzoom)
     {
         if (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed &&
-            zoomTime.check(3000))
+            zoomTime.test_and_set(3000))
         {
             current_user_cmd->buttons |= IN_ATTACK2;
         }
@@ -152,11 +152,15 @@ void CreateMove()
             {
                 zoomTime.update();
                 if (not g_pLocalPlayer->bZoomed)
-                {
                     current_user_cmd->buttons |= IN_ATTACK2;
-                }
             }
         }
+    }
+    // If zoomed only is on, check if zoomed
+    if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
+    {
+    	if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
+            return;
     }
 
     if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
@@ -265,13 +269,6 @@ bool ShouldAim()
         // Deadringer out?
         if (CE_BYTE(g_pLocalPlayer->entity, netvar.m_bFeignDeathReady))
             return false;
-        // If zoomed only is on, check if zoomed
-        if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
-        {
-            if (!g_pLocalPlayer->bZoomed &&
-                !(current_user_cmd->buttons & IN_ATTACK))
-                return false;
-        }
         // Is taunting?
         if (HasCondition<TFCond_Taunting>(g_pLocalPlayer->entity))
             return false;
@@ -380,9 +377,9 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                 if (GetWeaponMode() == weaponmode::weapon_melee ||
                     (int) priority_mode == 2)
                 {
-                    scr = 4096.0f -
-                          calculated_data_array[i].aim_position.DistTo(
-                              g_pLocalPlayer->v_Eye);
+                    scr =
+                        4096.0f - calculated_data_array[i].aim_position.DistTo(
+                                      g_pLocalPlayer->v_Eye);
                 }
                 else
                 {
@@ -471,11 +468,13 @@ bool IsTargetStateGood(CachedEntity *entity)
             // Wait for charge
             if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
             {
-                float cdmg     = CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 3;
+                float cdmg  = CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 3;
                 float maxhs = 450.0f;
-                if (CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 230 || HasCondition<TFCond_Jarated>(entity))
+                if (CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 230 ||
+                    HasCondition<TFCond_Jarated>(entity))
                 {
-                    cdmg = int(CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 1.35f);
+                    cdmg =
+                        int(CE_FLOAT(LOCAL_W, netvar.flChargedDamage) * 1.35f);
                     maxhs = 203.0f;
                 }
                 bool maxCharge = cdmg >= maxhs;
@@ -605,7 +604,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Vis and fov checks
         if (!VischeckPredictedEntity(entity))
             return false;
-        if (*fov  > 0.0f && cd.fov > *fov)
+        if (*fov > 0.0f && cd.fov > *fov)
             return false;
 
         return true;
@@ -833,7 +832,7 @@ void DoAutoshoot()
     }
     else
         begansticky = 0;
-    bool attack     = true;
+    bool attack = true;
 
     // Rifle check
     IF_GAME(IsTF())
@@ -936,8 +935,7 @@ const Vector &PredictEntity(CachedEntity *entity)
         if ((entity->m_Type() == ENTITY_PLAYER))
         {
             auto hb = hacks::shared::backtrack::headPositions
-                [entity->m_IDX]
-                [hacks::shared::backtrack::BestTick];
+                [entity->m_IDX][hacks::shared::backtrack::BestTick];
             cd.predict_tick = tickcount;
             result          = hb.hitboxes[cd.hitbox].center;
             cd.fov          = GetFov(g_pLocalPlayer->v_OrigViewangles,

@@ -31,4 +31,4 @@ settings::RVariable<glez::rgba> SliderStyle::handle_border{
 settings::RVariable<glez::rgba> SliderStyle::bar_color{
     "zk.style.input.slider.color.bar", "079797"
 };
-}
+} // namespace zerokernel

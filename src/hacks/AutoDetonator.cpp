@@ -130,4 +130,4 @@ void CreateMove()
     // End of function, just return
     return;
 }
-}
+} // namespace hacks::tf::autodetonator

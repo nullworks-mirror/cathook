@@ -28,7 +28,7 @@ bool shouldBacktrack();
 BacktrackData headPositions[32][66]{};
 int highesttick[32]{};
 int lastincomingsequencenumber = 0;
-bool isBacktrackEnabled = false;
+bool isBacktrackEnabled        = false;
 
 circular_buf sequences{ 2048 };
 void UpdateIncomingSequences()
@@ -133,8 +133,9 @@ void Run()
         Vector ent_orig = pEntity->InternalEntity()->GetAbsOrigin();
         auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
         headPositions[i][cmd->command_number % getTicks()] =
-            BacktrackData{ cmd->tick_count, hbdArray, viewangles, simtime,
-                           ent_orig, cmd->command_number % getTicks() };
+            BacktrackData{ cmd->tick_count, hbdArray,
+                           viewangles,      simtime,
+                           ent_orig,        cmd->command_number % getTicks() };
     }
     if (iBestTarget != -1 && CanShoot())
     {
@@ -208,8 +209,7 @@ bool shouldBacktrack()
     CachedEntity *wep = g_pLocalPlayer->weapon();
     if (CE_BAD(wep))
         return false;
-    int slot =
-        re::C_BaseCombatWeapon::GetSlot(RAW_ENT(wep));
+    int slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(wep));
     switch ((int) slots)
     {
     case 0:
@@ -259,12 +259,13 @@ bool ValidTick(BacktrackData &i, CachedEntity *ent)
         return true;
     if (istickinvalid[ent->m_IDX][i.index])
         return false;
-    if (!hacks::shared::aimbot::IsBacktracking() || IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center, true))
-    	if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
-                 getLatency() - i.simtime * 1000.0f) <= 200.0f)
+    if (!hacks::shared::aimbot::IsBacktracking() ||
+        IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center, true))
+        if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
+                  getLatency() - i.simtime * 1000.0f) <= 200.0f)
         {
-    	    istickvalid[ent->m_IDX][i.index] = true;
-    	    return true;
+            istickvalid[ent->m_IDX][i.index] = true;
+            return true;
         }
     istickinvalid[ent->m_IDX][i.index] = true;
     return false;

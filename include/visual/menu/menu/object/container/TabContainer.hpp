@@ -52,4 +52,4 @@ public:
     TabSelection selection;
     std::vector<std::unique_ptr<Container>> containers{};
 };
-}
+} // namespace zerokernel

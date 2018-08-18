@@ -78,4 +78,4 @@ protected:
     bool value{ false };
     std::string string{ "false" };
 };
-}
+} // namespace settings

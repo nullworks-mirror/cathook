@@ -37,4 +37,4 @@ public:
 
     Text title{};
 };
-}
+} // namespace zerokernel

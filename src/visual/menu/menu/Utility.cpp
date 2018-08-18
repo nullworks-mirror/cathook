@@ -40,7 +40,7 @@ std::string wrapString(const std::string &input, glez::font &font, int width,
                 lineCount++;
                 if (lineWidth > maxWidth)
                     maxWidth = lineWidth;
-                lineWidth    = 0;
+                lineWidth = 0;
             }
             if (lineWidth)
                 resultStream << ' ';
@@ -62,7 +62,7 @@ std::string wrapString(const std::string &input, glez::font &font, int width,
             lineCount++;
             if (lineWidth > maxWidth)
                 maxWidth = lineWidth;
-            lineWidth    = 0;
+            lineWidth = 0;
         }
         else
             wordStream << c;
@@ -124,4 +124,4 @@ void drawCenteredString(int x, int y, const std::string &string,
                                 *zerokernel::style::colors::text_shadow,
                                 nullptr, nullptr);
 }
-}
+} // namespace utility

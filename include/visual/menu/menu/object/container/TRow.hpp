@@ -26,4 +26,4 @@ public:
 
     Table *table;
 };
-}
+} // namespace zerokernel

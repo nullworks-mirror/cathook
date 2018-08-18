@@ -1980,7 +1980,7 @@ public:
         return _writeBOM;
     }
     /** Sets whether to write the BOM when writing the file.
-    */
+     */
     void SetBOM(bool useBOM)
     {
         _writeBOM = useBOM;
@@ -2610,7 +2610,7 @@ private:
     XMLPrinter &operator=(const XMLPrinter &);
 };
 
-} // tinyxml2
+} // namespace tinyxml2
 
 #if defined(_MSC_VER)
 #pragma warning(pop)

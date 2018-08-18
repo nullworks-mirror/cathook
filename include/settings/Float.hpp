@@ -51,4 +51,4 @@ protected:
         string = str;
     }
 };
-}
+} // namespace settings

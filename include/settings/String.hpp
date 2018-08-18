@@ -49,4 +49,4 @@ public:
 protected:
     std::string value{};
 };
-}
+} // namespace settings

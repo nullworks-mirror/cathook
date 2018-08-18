@@ -265,7 +265,7 @@ void Draw()
     glez::draw::line(x + half_size / 2, y + half_size, half_size, 0,
                      colors::Transparent(GUIColor(), 0.4f), 0.5f);
 }
-}
+} // namespace hacks::tf::radar
 
 #endif
 #endif

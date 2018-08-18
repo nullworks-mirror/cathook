@@ -63,4 +63,4 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
         // glXSwapBuffers(wminfo.info.x11.display, wminfo.info.x11.window);
     }
 }
-}
+} // namespace hooked_methods

@@ -23,4 +23,4 @@ public:
 
     int interval{ 3 };
 };
-}
+} // namespace zerokernel

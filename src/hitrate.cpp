@@ -190,4 +190,4 @@ HurtListener &listener()
 InitRoutine init([]() {
     g_IGameEventManager->AddListener(&listener(), false);
 });
-}
+} // namespace hitrate

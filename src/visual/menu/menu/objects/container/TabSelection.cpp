@@ -51,4 +51,4 @@ void TabSelection::reorderElements()
         acc += o->getBoundingBox().getFullBox().width;
     }
 }
-}
+} // namespace zerokernel

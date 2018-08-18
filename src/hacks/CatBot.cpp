@@ -368,4 +368,4 @@ void level_init()
 {
     level_init_timer.update();
 }
-}
+} // namespace hacks::shared::catbot

@@ -49,4 +49,4 @@ public:
     std::string current_text{};
     std::string text{};
 };
-}
+} // namespace zerokernel

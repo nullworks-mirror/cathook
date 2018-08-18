@@ -41,4 +41,4 @@ AutoTauntListener listener;
 InitRoutine init([]() {
     g_IEventManager2->AddListener(&listener, "player_death", false);
 });
-}
+} // namespace hacks::tf::autotaunt

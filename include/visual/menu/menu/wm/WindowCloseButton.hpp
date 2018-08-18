@@ -22,4 +22,4 @@ public:
 
     bool onLeftMouseClick() override;
 };
-}
+} // namespace zerokernel

@@ -83,7 +83,7 @@ void DrawCheatVisuals()
 || g_pGUI->Visible()
 */
 #endif
-                        )
+                )
                 {
                     // FIXME
                     /*name_s = *force_name;

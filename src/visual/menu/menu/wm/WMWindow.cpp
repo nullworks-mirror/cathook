@@ -197,4 +197,4 @@ bool WMWindow::isFocused()
 {
     return focused && !Menu::instance->isInGame();
 }
-}
+} // namespace zerokernel

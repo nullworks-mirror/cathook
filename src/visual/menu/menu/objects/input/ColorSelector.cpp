@@ -69,4 +69,4 @@ void ColorSelector::loadFromXml(const tinyxml2::XMLElement *data)
         }
     }
 }
-}
+} // namespace zerokernel

@@ -19,4 +19,4 @@ DEFINE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *this_, int min,
 
     return original::RandomInt(this_, min, max);
 }
-}
+} // namespace hooked_methods

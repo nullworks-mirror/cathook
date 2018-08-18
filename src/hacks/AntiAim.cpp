@@ -338,7 +338,7 @@ float useEdge(float edgeViewAngle)
             edgeYaw = (float) -90;
         if (edgeToEdgeOn == 2)
             edgeYaw = (float) 90;
-        edgeTest    = false;
+        edgeTest = false;
     }
     if ((edgeViewAngle >= -135) && (edgeViewAngle < -45) && edgeTest == true)
     {
@@ -346,7 +346,7 @@ float useEdge(float edgeViewAngle)
             edgeYaw = (float) 0;
         if (edgeToEdgeOn == 2)
             edgeYaw = (float) 179;
-        edgeTest    = false;
+        edgeTest = false;
     }
     if ((edgeViewAngle >= -45) && (edgeViewAngle < 45) && edgeTest == true)
     {
@@ -354,7 +354,7 @@ float useEdge(float edgeViewAngle)
             edgeYaw = (float) 90;
         if (edgeToEdgeOn == 2)
             edgeYaw = (float) -90;
-        edgeTest    = false;
+        edgeTest = false;
     }
     if ((edgeViewAngle <= 135) && (edgeViewAngle >= 45) && edgeTest == true)
     {
@@ -362,7 +362,7 @@ float useEdge(float edgeViewAngle)
             edgeYaw = (float) 179;
         if (edgeToEdgeOn == 2)
             edgeYaw = (float) 0;
-        edgeTest    = false;
+        edgeTest = false;
     }
     // return with the angle choosen
     return edgeYaw;
@@ -613,4 +613,4 @@ bool isEnabled()
 {
     return *enable;
 }
-}
+} // namespace hacks::shared::antiaim

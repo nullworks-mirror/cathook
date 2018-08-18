@@ -175,4 +175,4 @@ public:
 
     BaseMenuObject &object;
 };
-}
+} // namespace zerokernel

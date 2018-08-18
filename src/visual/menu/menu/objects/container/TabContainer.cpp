@@ -163,4 +163,4 @@ Container *TabContainer::getActiveContainer()
     }
     return containers.at(selection.active).get();
 }
-}
+} // namespace zerokernel

@@ -21,4 +21,4 @@ public:
     static std::unique_ptr<BaseMenuObject>
     createFromPrefab(const std::string &prefab_id);
 };
-}
+} // namespace zerokernel

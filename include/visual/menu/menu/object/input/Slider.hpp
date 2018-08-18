@@ -126,22 +126,20 @@ public:
             }
         }
 
-        if
-            constexpr(std::is_same<int, T>::value)
-            {
-                data->QueryIntAttribute("min", &min);
-                data->QueryIntAttribute("max", &max);
-                data->QueryIntAttribute("step", &step);
-                option = dynamic_cast<settings::Variable<int> *>(opt);
-            }
-        else if
-            constexpr(std::is_same<float, T>::value)
-            {
-                data->QueryFloatAttribute("min", &min);
-                data->QueryFloatAttribute("max", &max);
-                data->QueryFloatAttribute("step", &step);
-                option = dynamic_cast<settings::Variable<float> *>(opt);
-            }
+        if constexpr (std::is_same<int, T>::value)
+        {
+            data->QueryIntAttribute("min", &min);
+            data->QueryIntAttribute("max", &max);
+            data->QueryIntAttribute("step", &step);
+            option = dynamic_cast<settings::Variable<int> *>(opt);
+        }
+        else if constexpr (std::is_same<float, T>::value)
+        {
+            data->QueryFloatAttribute("min", &min);
+            data->QueryFloatAttribute("max", &max);
+            data->QueryFloatAttribute("step", &step);
+            option = dynamic_cast<settings::Variable<float> *>(opt);
+        }
     }
 
     void update() override
@@ -242,4 +240,4 @@ public:
 
     settings::ArithmeticVariable<T> *option{ nullptr };
 };
-}
+} // namespace zerokernel

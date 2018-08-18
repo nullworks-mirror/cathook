@@ -118,4 +118,4 @@ void Init()
     // FIXME free listener
     g_IGameEventManager->AddListener(&listener, false);
 }
-}
+} // namespace hacks::shared::anticheat

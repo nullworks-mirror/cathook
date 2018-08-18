@@ -48,4 +48,4 @@ void Draw()
         }
     }
 }
-}
+} // namespace hacks::tf2::antidisguise

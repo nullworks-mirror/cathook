@@ -52,4 +52,4 @@ public:
 
     ModalBehavior modal;
 };
-}
+} // namespace zerokernel

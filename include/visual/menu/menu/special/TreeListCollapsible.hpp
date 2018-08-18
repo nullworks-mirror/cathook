@@ -46,4 +46,4 @@ public:
     Text text{};
     std::string name{};
 };
-}
+} // namespace zerokernel

@@ -16,4 +16,4 @@ public:
 
     int depth{ 0 };
 };
-}
+} // namespace zerokernel::debug

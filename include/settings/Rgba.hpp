@@ -87,4 +87,4 @@ protected:
     glez::rgba value{};
     std::string string{ "00000000" };
 };
-}
+} // namespace settings

@@ -332,4 +332,4 @@ user_data *getUserData(unsigned steamId)
     // SteamID does not belong to online user
     return nullptr;
 }
-}
+} // namespace online

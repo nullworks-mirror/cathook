@@ -34,4 +34,4 @@ public:
     settings::Variable<settings::Key> *key{};
     bool capturing{ false };
 };
-}
+} // namespace zerokernel
