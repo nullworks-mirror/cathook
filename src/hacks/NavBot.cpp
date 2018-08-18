@@ -141,7 +141,7 @@ Timer cd2{};
 Timer cd3{};
 void CreateMove()
 {
-    if ( !enable || !nav::Prepare())
+    if (!enable || !nav::Prepare())
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
@@ -165,7 +165,7 @@ void CreateMove()
             return;
         }
     }
-    if (!nav::ReadyForCommands && !spy_mode)
+    if (!nav::ReadyForCommands && !spy_mode && !heavy_mode)
         cd3.update();
     bool isready = (spy_mode || heavy_mode) ? 1 : nav::ReadyForCommands;
     int waittime = (spy_mode || heavy_mode) ? 100 : 5000;
@@ -184,7 +184,7 @@ void CreateMove()
             int rng     = rand() % sniper_spots.size();
             random_spot = sniper_spots.at(rng);
             if (random_spot.z)
-                nav::NavTo(random_spot, false);
+                nav::NavTo(random_spot, false, true);
         }
         else
         {

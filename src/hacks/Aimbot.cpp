@@ -162,7 +162,22 @@ void CreateMove()
     	if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
             return;
     }
-
+    // Minigun spun up handler
+    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
+    {
+        int weapon_state =
+                CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
+        // If user setting for autospin isnt true, then we check if minigun
+        // is already zoomed
+        if ((weapon_state == MinigunState_t::AC_STATE_IDLE ||
+             weapon_state == MinigunState_t::AC_STATE_STARTFIRING) &&
+            !auto_spin_up)
+            return;
+        if (auto_spin_up)
+            current_user_cmd->buttons |= IN_ATTACK2;
+        if (!(current_user_cmd->buttons & (IN_ATTACK2 | IN_ATTACK)))
+            return;
+    }
     if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
         return;
     if (!target_entity->hitboxes.GetHitbox(
@@ -305,29 +320,6 @@ bool ShouldAim()
             {
                 if (!CanHeadshot())
                     return false;
-            }
-        }
-
-        // Minigun spun up handler
-        if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-        {
-            int weapon_state =
-                CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
-            // If user setting for autospin isnt true, then we check if minigun
-            // is already zoomed
-            if ((weapon_state == MinigunState_t::AC_STATE_IDLE ||
-                 weapon_state == MinigunState_t::AC_STATE_STARTFIRING) &&
-                !auto_spin_up)
-            {
-                return false;
-            }
-            if (auto_spin_up)
-            {
-                current_user_cmd->buttons |= IN_ATTACK2;
-            }
-            if (!(current_user_cmd->buttons & (IN_ATTACK2 | IN_ATTACK)))
-            {
-                return false;
             }
         }
     }
