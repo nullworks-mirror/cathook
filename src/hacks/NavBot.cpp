@@ -2,8 +2,6 @@
 // Created by bencat07 on 17.08.18.
 //
 #include "common.hpp"
-#include <glez/draw.hpp>
-#include <glez/color.hpp>
 #include "navparser.hpp"
 #include "FollowBot.hpp"
 #include "NavBot.hpp"

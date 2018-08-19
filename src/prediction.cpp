@@ -4,8 +4,9 @@
  *  Created on: Dec 5, 2016
  *      Author: nullifiedcat
  */
-
+#if ENABLE_VISUALS
 #include <glez/draw.hpp>
+#endif
 #include <settings/Bool.hpp>
 #include "common.hpp"
 

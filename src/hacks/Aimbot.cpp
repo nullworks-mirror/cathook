@@ -10,7 +10,9 @@
 #include <hacks/AntiAim.hpp>
 #include <hacks/ESP.hpp>
 #include <hacks/Backtrack.hpp>
+#if ENABLE_VISUALS
 #include <glez/draw.hpp>
+#endif
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"

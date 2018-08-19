@@ -4,12 +4,11 @@
  *  Created on: Jul 23, 2017
  *      Author: nullifiedcat
  */
-
+#include "config.h"
+#include "common.hpp"
 #include "backpacktf.hpp"
 #include "json.hpp"
 #include "https_request.hpp"
-
-#include "common.hpp"
 
 #include <thread>
 #include <queue>

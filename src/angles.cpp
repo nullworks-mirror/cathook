@@ -4,7 +4,6 @@
  *  Created on: Jun 5, 2017
  *      Author: nullifiedcat
  */
-
 #include "angles.hpp"
 
 namespace angles

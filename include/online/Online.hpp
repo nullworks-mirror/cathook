@@ -5,7 +5,9 @@
 #pragma once
 
 #include <string>
+#if ENABLE_VISUALS
 #include <colors.hpp>
+#endif
 #include <config.h>
 #include <vector>
 
@@ -24,7 +26,9 @@ struct user_data
     bool no_target{ false };
     bool is_developer{};
     bool has_color{ false };
+#if ENABLE_VISUALS
     colors::rgba_t color{};
+#endif
     bool rainbow{ false };
 };
 

@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "config.h"
 
 namespace backpacktf
 {

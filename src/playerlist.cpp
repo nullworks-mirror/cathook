@@ -18,14 +18,17 @@ namespace playerlist
 std::unordered_map<unsigned, userdata> data{};
 
 const userdata null_data{};
-
+#if ENABLE_VISUALS
 rgba_t k_Colors[] = { colors::empty, colors::FromRGBA8(99, 226, 161, 255),
                       colors::FromRGBA8(226, 204, 99, 255),
                       colors::FromRGBA8(232, 134, 6, 255), colors::empty };
-
+#endif
 bool ShouldSave(const userdata &data)
 {
+#if ENABLE_VISUALS
     return data.color || (data.state != k_EState::DEFAULT);
+#endif
+    return (data.state != k_EState::DEFAULT);
 }
 
 void Save()
@@ -114,7 +117,7 @@ void Load()
         logging::Info("Reading unsuccessful: %s", e.what());
     }
 }
-
+#if ENABLE_VISUALS
 rgba_t Color(unsigned steamid)
 {
     if (AccessData(steamid).state == k_EState::DEVELOPER)
@@ -137,7 +140,7 @@ rgba_t Color(CachedEntity *player)
         return Color(player->player_info.friendsID);
     return colors::empty;
 }
-
+#endif
 userdata &AccessData(unsigned steamid)
 {
     return data[steamid];
@@ -154,7 +157,10 @@ userdata &AccessData(CachedEntity *player)
 bool IsDefault(unsigned steamid)
 {
     const userdata &data = AccessData(steamid);
+#if ENABLE_VISUALS
     return data.state == k_EState::DEFAULT && !data.color.a;
+#endif
+    return data.state == k_EState ::DEFAULT;
 }
 
 bool IsDefault(CachedEntity *entity)
@@ -184,7 +190,7 @@ CatCommand pl_set_state(
         AccessData(steamid).state = state;
         logging::Info("Set %d to %d", steamid, state);
     });
-
+#if ENABLE_VISUALS
 CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b",
                         [](const CCommand &args) {
                             if (args.ArgC() < 5)
@@ -201,7 +207,7 @@ CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b",
                             AccessData(steamid).color = color;
                             logging::Info("Changed %d's color", steamid);
                         });
-
+#endif
 CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand &args) {
     if (args.ArgC() < 2)
     {

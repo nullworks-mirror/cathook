@@ -1,4 +1,6 @@
+#if ENABLE_VISUALS
 #include <glez/draw.hpp>
+#endif
 #include <settings/Bool.hpp>
 #include "hacks/LightESP.hpp"
 
@@ -71,7 +73,7 @@ void draw()
     }
 #endif
 }
-
+#if ENABLE_VISUALS
 rgba_t LightESPColor(CachedEntity *ent)
 {
     if (!playerlist::IsDefault(ent))
@@ -80,4 +82,5 @@ rgba_t LightESPColor(CachedEntity *ent)
     }
     return colors::green;
 }
+#endif
 } // namespace hacks::shared::lightesp

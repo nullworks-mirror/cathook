@@ -1,10 +1,11 @@
 /*
   Created on 29.07.18.
 */
-
+#include "config.h"
 #include <EventLogging.hpp>
 #include <settings/Bool.hpp>
 #include <helpers.hpp>
+#if ENABLE_VISUALS
 #include <colors.hpp>
 #include <init.hpp>
 
@@ -166,3 +167,4 @@ bool event_logging::isEnabled()
 {
     return *enable;
 }
+#endif

@@ -4,8 +4,9 @@
  *  Created on: Mar 28, 2017
  *      Author: nullifiedcat
  */
-
+#if ENABLE_VISUALS
 #include <glez/draw.hpp>
+#endif
 #include <settings/Int.hpp>
 #include "common.hpp"
 #include "hacks/Radar.hpp"

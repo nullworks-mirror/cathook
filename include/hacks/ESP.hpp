@@ -8,7 +8,7 @@
 #pragma once
 
 #include "common.hpp"
-
+#if ENABLE_VISUALS
 namespace hacks::shared::esp
 {
 
@@ -59,3 +59,4 @@ void AddEntityString(CachedEntity *entity, const std::string &string,
 void SetEntityColor(CachedEntity *entity, const rgba_t &color);
 void ResetEntityStrings();
 } // namespace hacks::shared::esp
+#endif

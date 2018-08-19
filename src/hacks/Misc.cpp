@@ -12,7 +12,9 @@
 #include <fcntl.h>
 #include <link.h>
 #include <hacks/AntiAim.hpp>
+#if ENABLE_VISUALS
 #include <glez/draw.hpp>
+#endif
 #include <settings/Bool.hpp>
 
 #include "core/sharedobj.hpp"
