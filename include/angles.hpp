@@ -7,9 +7,8 @@
 
 #pragma once
 
-#include <core/logging.hpp>
 #include "common.hpp"
-
+#include <core/logging.hpp>
 namespace angles
 {
 

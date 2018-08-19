@@ -64,6 +64,7 @@ bool IsProjectileACrit(CachedEntity *ent);
 class CachedEntity
 {
 public:
+    typedef CachedEntity ThisClass;
     CachedEntity();
     ~CachedEntity();
 

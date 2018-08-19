@@ -9,7 +9,9 @@
 #include "hacks/Aimbot.hpp"
 #include "hacks/Backtrack.hpp"
 #include <boost/circular_buffer.hpp>
+#if ENABLE_VISUALS
 #include <glez/draw.hpp>
+#endif
 #include <settings/Bool.hpp>
 #include <hacks/Backtrack.hpp>
 

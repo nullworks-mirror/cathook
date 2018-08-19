@@ -380,8 +380,6 @@ free(logname);*/
     logging::Info("Initialized Fidget Spinner");
 #endif
     hacks::shared::spam::init();
-    backpacktf::init();
-    logging::Info("Initialized Backpack.TF integration");
 #endif
 #if not LAGBOT_MODE
     hacks::shared::walkbot::Initialize();

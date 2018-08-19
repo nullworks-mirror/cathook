@@ -12,7 +12,9 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <hacks/hacklist.hpp>
+#if ENABLE_VISUALS
 #include <glez/draw.hpp>
+#endif
 #include <settings/Bool.hpp>
 
 static settings::Button recording_key{ "walkbot.recording-key", "<null>" };

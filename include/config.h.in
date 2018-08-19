@@ -16,3 +16,4 @@
 #define ENABLE_NULL_GRAPHICS @EnableNullGraphics@
 #define TEXTMODE @Textmode@
 #define ENABLE_PROFILER @EnableProfiler@
+#define ENABLE_ONLINE @EnableOnlineFeatures@
