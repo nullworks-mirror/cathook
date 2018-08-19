@@ -1,7 +1,6 @@
 target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/angles.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/averager.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/backpacktf.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/base64.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/chatlog.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/chatstack.hpp"
