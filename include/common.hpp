@@ -93,7 +93,6 @@
 #include "votelogger.hpp"
 #include "crits.hpp"
 #include "textmode.hpp"
-#include "backpacktf.hpp"
 #include "core/sharedobj.hpp"
 #include "init.hpp"
 #include "reclasses/reclasses.hpp"
