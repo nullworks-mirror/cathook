@@ -3,19 +3,45 @@
 namespace nav
 {
 static CNavFile navfile(nullptr);
+// Vector containing areas on map
 std::vector<CNavArea> areas;
-// std::vector<CNavArea> SniperAreas;
-bool init             = false;
-bool pathfinding      = true;
-bool ReadyForCommands = false;
-std::vector<std::pair<int, int>> ignoredConnections;
+bool init               = false;
+static bool pathfinding = true;
+bool ReadyForCommands   = false;
+// Vector containing ignored connections
+//static std::vector<std::pair<size_t, size_t>> ignoredConnections;
+
 
 static settings::Bool enabled{ "misc.pathing", "true" };
+static settings::Bool draw{ "misc.pathing.draw", "false" };
+
+struct inactivityTracker
+{
+    void ininactivityTracker(){};
+    ~inactivityTracker(){};
+    // Unordered map for storing inactivity per connection
+    std::unordered_map<std::pair<int, int>, unsigned int> inactives;
+
+    void reset()
+    {
+        inactives.clear();
+    }
+    void addTime(std::pair<int, int> connection, Timer &timer)
+    {
+        if (inactives.find(connection) == inactives.end())
+        {
+            inactives[connection] = 0;
+
+        }
+    }
+
+};
+
 
 // Todo fix
-int FindInVector(int id)
+size_t FindInVector(size_t id)
 {
-    for (int i = 0; i < areas.size(); i++)
+    for (size_t i = 0; i < areas.size(); i++)
     {
         if (areas.at(i).m_id == id)
             return i;
@@ -25,9 +51,10 @@ int FindInVector(int id)
 struct MAP : public micropather::Graph
 {
     std::unique_ptr<micropather::MicroPather> pather;
-    bool IsIgnored(int currState, int connectionID)
+    // Function to check if a connection is ignored
+    bool IsIgnored(size_t currState, size_t connectionID)
     {
-        for (int i = 0; i < ignoredConnections.size(); i++)
+        for (size_t i = 0; i < ignoredConnections.size(); i++)
         {
             if (ignoredConnections.at(i).first == currState &&
                 ignoredConnections.at(i).second == connectionID)
@@ -50,7 +77,7 @@ struct MAP : public micropather::Graph
         Vector bestVec;
         float bestDist = FLT_MAX;
 
-        for (int i = 0; i < corners.size(); i++)
+        for (size_t i = 0; i < corners.size(); i++)
         {
             float dist = corners.at(i).DistTo(Target->m_center);
             if (dist < bestDist)
@@ -63,7 +90,7 @@ struct MAP : public micropather::Graph
         Vector bestVec2;
         float bestDist2 = FLT_MAX;
 
-        for (int i = 0; i < corners.size(); i++)
+        for (size_t i = 0; i < corners.size(); i++)
         {
             if (corners.at(i) == bestVec2)
                 continue;
@@ -84,6 +111,7 @@ struct MAP : public micropather::Graph
 
         return z2 - z1;
     }
+    // Function required by MicroPather for getting an estimated cost
     float LeastCostEstimate(void *stateStart, void *stateEnd)
     {
         CNavArea *start = static_cast<CNavArea *>(stateStart);
@@ -91,6 +119,8 @@ struct MAP : public micropather::Graph
         float dist      = start->m_center.DistTo(end->m_center);
         return dist;
     }
+    // Function required by MicroPather to retrieve neighbours and their
+    // associated costs.
     void AdjacentCost(void *state, MP_VECTOR<micropather::StateCost> *adjacent)
     {
         CNavArea *area   = static_cast<CNavArea *>(state);
@@ -110,6 +140,10 @@ struct MAP : public micropather::Graph
     }
     void PrintStateInfo(void *state)
     {
+        CNavArea *area = static_cast<CNavArea *>(state);
+        logging::Info(format(area->m_center.x, " ", area->m_center.y, " ",
+                             area->m_center.z)
+                          .c_str());
     }
     MAP(size_t size)
     {
@@ -122,14 +156,14 @@ struct MAP : public micropather::Graph
     }
 };
 
-std::unique_ptr<MAP> TF2MAP;
+static std::unique_ptr<MAP> TF2MAP;
 
 void Init()
 {
-    // TODO: Improve performance
+    // Get NavFile location
     std::string lvlname(g_IEngine->GetLevelName());
-    int dotpos = lvlname.find('.');
-    lvlname    = lvlname.substr(0, dotpos);
+    size_t dotpos = lvlname.find('.');
+    lvlname       = lvlname.substr(0, dotpos);
 
     std::string lvldir("/home/");
     passwd *pwd = getpwuid(getuid());
@@ -140,6 +174,7 @@ void Init()
     logging::Info(format("Pathing: Nav File location: ", lvldir).c_str());
 
     areas.clear();
+    // Load the NavFile
     navfile = CNavFile(lvldir.c_str());
     if (!navfile.m_isOK)
         logging::Info("Pathing: Invalid Nav File");
@@ -149,15 +184,20 @@ void Init()
         logging::Info(
             format("Pathing: Number of areas to index:", size).c_str());
         areas.reserve(size);
+        // Add areas from CNavFile to our Vector
         for (auto i : navfile.m_areas)
             areas.push_back(i);
+        // Don't reserve more than 7000 states
         if (size > 7000)
             size = 7000;
+        // Initiate "Map", contains micropather object
         TF2MAP = std::make_unique<MAP>(size);
     }
     pathfinding = true;
 }
-std::string lastmap;
+
+static std::string lastmap;
+// Function that decides if pathing is possible, and inits pathing if necessary
 bool Prepare()
 {
     if (!enabled)
@@ -181,24 +221,29 @@ bool Prepare()
     return true;
 }
 
-std::vector<int> localAreas(6);
+// This prevents the bot from gettings completely stuck in some cases
+static std::vector<int> findClosestNavSquare_localAreas(6);
+// Function for getting closest Area to player, aka "LocalNav"
 int findClosestNavSquare(Vector vec)
 {
-    if (localAreas.size() > 5)
-        localAreas.erase(localAreas.begin());
+    if (findClosestNavSquare_localAreas.size() > 5)
+        findClosestNavSquare_localAreas.erase(findClosestNavSquare_localAreas.begin());
     std::vector<std::pair<int, CNavArea *>> overlapping;
-    for (int i = 0; i < areas.size(); i++)
+    for (size_t i = 0; i < areas.size(); i++)
     {
+        // Check if we are within x and y bounds of an area
         if (areas.at(i).IsOverlapping(vec))
         {
-            if (std::count(localAreas.begin(), localAreas.end(), i) < 2)
+            // Make sure we're not stuck on the same area for too long
+            if (std::count(findClosestNavSquare_localAreas.begin(), findClosestNavSquare_localAreas.end(), i) < 3)
                 overlapping.push_back({ i, &areas.at(i) });
         }
     }
 
+    // If multiple candidates for LocalNav have been found, pick the closest
     float bestDist = FLT_MAX;
     int bestSquare = -1;
-    for (int i = 0; i < overlapping.size(); i++)
+    for (size_t i = 0; i < overlapping.size(); i++)
     {
         float dist = overlapping.at(i).second->m_center.DistTo(vec);
         if (dist < bestDist)
@@ -210,15 +255,16 @@ int findClosestNavSquare(Vector vec)
     if (bestSquare != -1)
     {
         if (vec == g_pLocalPlayer->v_Origin)
-            localAreas.push_back(bestSquare);
+            findClosestNavSquare_localAreas.push_back(bestSquare);
         return bestSquare;
     }
-    for (int i = 0; i < areas.size(); i++)
+    // If no LocalNav was found, pick the closest available Area
+    for (size_t i = 0; i < areas.size(); i++)
     {
         float dist = areas.at(i).m_center.DistTo(vec);
         if (dist < bestDist)
         {
-            if (std::count(localAreas.begin(), localAreas.end(), i) < 2)
+            if (std::count(findClosestNavSquare_localAreas.begin(), findClosestNavSquare_localAreas.end(), i) < 3)
             {
                 bestDist   = dist;
                 bestSquare = i;
@@ -226,41 +272,58 @@ int findClosestNavSquare(Vector vec)
         }
     }
     if (vec == g_pLocalPlayer->v_Origin)
-        localAreas.push_back(bestSquare);
+        findClosestNavSquare_localAreas.push_back(bestSquare);
     return bestSquare;
 }
 
-std::vector<Vector> findPath(Vector loc, Vector dest)
+std::vector<Vector> findPath(Vector loc, Vector dest, int &id_loc, int &id_dest)
 {
     if (areas.empty())
         return std::vector<Vector>(0);
-    int id_loc  = findClosestNavSquare(loc);
-    int id_dest = findClosestNavSquare(dest);
+    // Get areas of Vector loc and dest
+    id_loc  = findClosestNavSquare(loc);
+    id_dest = findClosestNavSquare(dest);
     if (id_loc == -1 || id_dest == -1)
         return std::vector<Vector>(0);
     float cost;
     micropather::MPVector<void *> pathNodes;
+    // Find a solution to get to location
     int result = TF2MAP->pather->Solve(static_cast<void *>(&areas.at(id_loc)),
                                        static_cast<void *>(&areas.at(id_dest)),
                                        &pathNodes, &cost);
     logging::Info(format(result).c_str());
-    if (result == 1)
+    // If no result found, return empty Vector
+    if (result == micropather::MicroPather::NO_SOLUTION)
         return std::vector<Vector>(0);
+    // Convert (void *) CNavArea * to Vector
     std::vector<Vector> path;
-    for (int i = 0; i < pathNodes.size(); i++)
+    for (size_t i = 0; i < pathNodes.size(); i++)
     {
         path.push_back(static_cast<CNavArea *>(pathNodes[i])->m_center);
     }
+    // Add our destination to the std::vector
     path.push_back(dest);
     return path;
 }
 
+// Timer for measuring inactivity, aka time between not reaching a crumb
 static Timer inactivity{};
-static Timer lastJump{};
-static std::vector<Vector> crumbs;
-static bool ensureArrival;
-int priority = 0;
 
+// Time since our last Jump
+static Timer lastJump{};
+// std::vector containing our path
+static std::vector<Vector> crumbs;
+// Bot will keep trying to get to the target even if it fails a few times
+static bool ensureArrival;
+// Priority value for current instructions, only higher priority can overwrite
+// itlocalAreas
+int priority = 0;
+// This prevents the bot from getting stuck in situations where NavTo is spammed (eg NavBot Ammo/Health), prevents updates to inactivity timer
+//static std::vector<int> NavTo_localAreas(6);
+
+// dest = Destination, navToLocalCenter = Should bot travel to local center
+// first before resuming pathing activity? (Increases accuracy) persistent =
+// ensureArrival above, instructionPriority = priority above
 bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
            int instructionPriority)
 {
@@ -268,29 +331,45 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
         return false;
     if (!Prepare())
         return false;
-    if (instructionPriority <= priority)
+    // Only allow instructions to overwrite others if their priority is higher
+    if (instructionPriority < priority)
         return false;
-    auto path = findPath(g_pLocalPlayer->v_Origin, dest);
+    int locNav, tarNav;
+    auto path = findPath(g_pLocalPlayer->v_Origin, dest, locNav, tarNav);
     if (path.empty())
         return false;
+
+//    // Prevent Vector from getting too large
+//    if (NavTo_localAreas.size() > 5)
+//        NavTo_localAreas.erase(NavTo_localAreas.begin());
+//    NavTo_localAreas.push_back(locNav);
+//    if (std::count(NavTo_localAreas.begin(), NavTo_localAreas.end(), locNav) < 2)
+//        inactivity.update();
+
     crumbs.clear();
     crumbs = std::move(path);
     if (!navToLocalCenter)
         crumbs.erase(crumbs.begin());
     ensureArrival = persistent;
-    localAreas.clear();
+    findClosestNavSquare_localAreas.clear();
     priority = instructionPriority;
     return true;
 }
 
+void clearInstructions()
+{
+    crumbs.clear();
+}
+
 static Vector lastArea = { 0.0f, 0.0f, 0.0f };
+// Function for ignoring a connection
 void ignoreConnection()
 {
     if (crumbs.size() < 1)
         return;
 
     CNavArea *currnode = nullptr;
-    for (int i = 0; i < areas.size(); i++)
+    for (size_t i = 0; i < areas.size(); i++)
     {
         if (areas.at(i).m_center == lastArea)
         {
@@ -302,7 +381,7 @@ void ignoreConnection()
         return;
 
     CNavArea *nextnode = nullptr;
-    for (int i = 0; i < areas.size(); i++)
+    for (size_t i = 0; i < areas.size(); i++)
     {
         if (areas.at(i).m_center == crumbs.at(0))
         {
@@ -325,6 +404,7 @@ void ignoreConnection()
 }
 
 static Timer ignoreReset{};
+// Function for removing ignores
 void clearIgnores()
 {
     if (ignoreReset.test_and_set(180000))
@@ -335,6 +415,7 @@ void clearIgnores()
     }
 }
 
+// Main movement function, gets path from NavTo
 void CreateMove()
 {
     if (!enabled)
@@ -343,10 +424,12 @@ void CreateMove()
         return;
     if (!LOCAL_E->m_bAlivePlayer())
     {
+        // Clear path if player dead
         crumbs.clear();
         return;
     }
     clearIgnores();
+    // Crumbs empty, prepare for next instruction
     if (crumbs.empty())
     {
         priority         = 0;
@@ -355,6 +438,7 @@ void CreateMove()
         return;
     }
     ReadyForCommands = false;
+    // Remove old crumbs
     if (g_pLocalPlayer->v_Origin.DistTo(Vector{ crumbs.at(0).x, crumbs.at(0).y,
                                                 g_pLocalPlayer->v_Origin.z }) <
         30.0f)
@@ -365,30 +449,66 @@ void CreateMove()
     }
     if (crumbs.empty())
         return;
+    // Detect when jumping is necessary
     if (crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
         lastJump.test_and_set(200))
         current_user_cmd->buttons |= IN_JUMP;
+    // If inactive for too long
     if (inactivity.test_and_set(5000))
     {
+        // Ignore connection
         ignoreConnection();
         if (ensureArrival)
         {
             logging::Info("Pathing: NavBot inactive for too long. Ignoring "
                           "connection and finding another path...");
-            // NavTo(crumbs.back(), true, true);
-            crumbs = findPath(g_pLocalPlayer->v_Origin, crumbs.back());
-            inactivity.update();
+            // Find a new path
+            int i1, i2;
+            crumbs = findPath(g_pLocalPlayer->v_Origin, crumbs.back(), i1, i2);
         }
         else
         {
             logging::Info(
                 "Pathing: NavBot inactive for too long. Canceling tasks and "
                 "ignoring connection...");
+            // Wait for new instructions
             crumbs.clear();
         }
         return;
     }
+    // Walk to next crumb
     WalkTo(crumbs.at(0));
+}
+
+void Draw()
+{
+#if ENABLE_VISUALS
+    if (!enabled || !draw)
+        return;
+    if (!enabled)
+        return;
+    if (CE_BAD(LOCAL_E))
+        return;
+    if (!LOCAL_E->m_bAlivePlayer())
+        return;
+    if (crumbs.size() < 2)
+        return;
+    for (size_t i = 0; i < crumbs.size() - 1; i++)
+    {
+        Vector wts1, wts2;
+        if (draw::WorldToScreen(crumbs[i], wts1) &&
+            draw::WorldToScreen(crumbs[i + 1], wts2))
+        {
+            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
+                             colors::white, 0.1f);
+        }
+    }
+    Vector wts;
+    if (!draw::WorldToScreen(crumbs[0], wts))
+        return;
+    glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
+    glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
+#endif
 }
 
 CatCommand navinit("nav_init", "Debug nav init", [](const CCommand &args) {
@@ -407,7 +527,8 @@ CatCommand navprint("nav_print", "Debug nav print", [](const CCommand &args) {
 });
 
 CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
-    std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc);
+    int i1,i2;
+    std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc, i1, i2);
     if (path.empty())
     {
         logging::Info("Pathing: No path found");

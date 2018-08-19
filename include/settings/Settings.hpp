@@ -4,11 +4,13 @@
 
 #pragma once
 
+#include <config.h>
 #include <string>
 #include <functional>
-#include <glez/color.hpp>
 
-#include <config.h>
+#if ENABLE_VISUALS
+#include <glez/color.hpp>
+#endif
 
 /*
 

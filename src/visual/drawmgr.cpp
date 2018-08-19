@@ -143,6 +143,10 @@ void DrawCheatVisuals()
             PROF_SECTION(DRAW_walkbot);
             hacks::shared::walkbot::Draw();
         }
+        {
+            PROF_SECTION(DRAW_navparse);
+            nav::Draw();
+        }
         IF_GAME(IsTF())
         {
             PROF_SECTION(PT_antidisguise);
