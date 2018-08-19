@@ -147,6 +147,9 @@ CachedEntity *NearestEnemy()
     }
     return bestent;
 }
+Timer cdr{};
+Timer cd2{};
+Timer cd3{};
 std::vector<Vector> sniper_spots;
 void Init()
 {
@@ -156,11 +159,15 @@ void Init()
             if (hide.IsGoodSniperSpot() || hide.IsIdealSniperSpot() ||
                 hide.IsExposed())
                 sniper_spots.push_back(hide.m_pos);
+    logging::Info("%d", sniper_spots.size());
 }
 void initonce()
 {
     for (int i = 0; i < afkTicks.size(); i++)
         afkTicks[i].update();
+    cdr.update();
+    cd2.update();
+    cd3.update();
     return;
 }
 
@@ -185,9 +192,6 @@ void UpdateSlot()
         }
     }
 }
-Timer cdr{};
-Timer cd2{};
-Timer cd3{};
 int follow_target = 0;
 void CreateMove()
 {
@@ -202,7 +206,7 @@ void CreateMove()
         CachedEntity *med = nearestHealth();
         if (CE_GOOD(med))
         {
-            nav::NavTo(med->m_vecOrigin(), true, true , 7);
+            nav::NavTo(med->m_vecOrigin(), true, true, 7);
         }
     }
     if (HasLowAmmo() && cdr.test_and_set(5000))
@@ -225,7 +229,7 @@ void CreateMove()
             {
                 cd3.update();
                 Vector random_spot;
-                if (cd2.test_and_set(20000))
+                if (cd2.test_and_set(5000))
                     Init();
                 if (!sniper_spots.size())
                     return;
@@ -240,7 +244,7 @@ void CreateMove()
                 if (CE_BAD(tar))
                 {
                     Vector random_spot;
-                    if (cd2.test_and_set(20000))
+                    if (cd2.test_and_set(5000))
                         Init();
                     if (!sniper_spots.size())
                         return;

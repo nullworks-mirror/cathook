@@ -10,7 +10,8 @@ extern bool init;
 extern bool ReadyForCommands;
 extern std::vector<CNavArea> areas;
 std::vector<Vector> findPath(Vector loc, Vector dest);
-bool NavTo(Vector dest, bool navToLocalCenter = true, bool persistent = true, int instructionPriority = 5);
+bool NavTo(Vector dest, bool navToLocalCenter = true, bool persistent = true,
+           int instructionPriority = 5);
 int findClosestNavSquare(Vector vec);
 bool Prepare();
 void CreateMove();

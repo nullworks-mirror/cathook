@@ -183,6 +183,20 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     time_replaced = false;
     curtime_old   = g_GlobalVars->curtime;
 
+    INetChannel *ch;
+    ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    if (ch && !hooks::IsHooked((void *) ch))
+    {
+        hooks::netchannel.Set(ch);
+        hooks::netchannel.HookMethod(HOOK_ARGS(SendDatagram));
+        hooks::netchannel.HookMethod(HOOK_ARGS(CanPacket));
+        hooks::netchannel.HookMethod(HOOK_ARGS(SendNetMsg));
+        hooks::netchannel.HookMethod(HOOK_ARGS(Shutdown));
+        hooks::netchannel.Apply();
+#if ENABLE_IPC
+        ipc::UpdateServerAddress();
+#endif
+    }
     if (nolerp)
     {
         // current_user_cmd->tick_count += 1;
