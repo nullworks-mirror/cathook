@@ -28,7 +28,7 @@ struct MAP : public micropather::Graph
     // Function to check if a connection is ignored
     bool IsIgnored(size_t currState, size_t connectionID)
     {
-        if (inactiveTracker.getTime({currState, connectionID}) >= 5000)
+        if (inactiveTracker.getTime({ currState, connectionID }) >= 5000)
             return true;
         return false;
     }
@@ -287,7 +287,7 @@ static std::vector<Vector> crumbs;
 static bool ensureArrival;
 // Priority value for current instructions, only higher priority can overwrite
 // itlocalAreas
-int priority = 0;
+int priority           = 0;
 static Vector lastArea = { 0.0f, 0.0f, 0.0f };
 
 // dest = Destination, navToLocalCenter = Should bot travel to local center
@@ -310,7 +310,7 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
     if (!crumbs.empty())
     {
         bool reset = false;
-        inactiveTracker.addTime({lastArea, crumbs.at(0)}, inactivity, reset);
+        inactiveTracker.addTime({ lastArea, crumbs.at(0) }, inactivity, reset);
         if (reset)
             TF2MAP->pather->Reset();
     }
@@ -385,7 +385,7 @@ void CreateMove()
     {
         // Ignore connection
         bool i3 = false;
-        inactiveTracker.addTime({lastArea, crumbs.at(0)}, inactivity, i3);
+        inactiveTracker.addTime({ lastArea, crumbs.at(0) }, inactivity, i3);
         if (i3)
             TF2MAP->pather->Reset();
         if (ensureArrival)

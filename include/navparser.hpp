@@ -13,8 +13,10 @@ extern bool init;
 extern bool ReadyForCommands;
 extern int priority;
 extern std::vector<CNavArea> areas;
-std::vector<Vector> findPath(Vector loc, Vector dest, int &id_loc, int &id_dest);
-bool NavTo(Vector dest, bool navToLocalCenter = true, bool persistent = true, int instructionPriority = 5);
+std::vector<Vector> findPath(Vector loc, Vector dest, int &id_loc,
+                             int &id_dest);
+bool NavTo(Vector dest, bool navToLocalCenter = true, bool persistent = true,
+           int instructionPriority = 5);
 void clearInstructions();
 int findClosestNavSquare(Vector vec);
 bool Prepare();
@@ -28,9 +30,10 @@ struct inactivityTracker
 
     void reset()
     {
-        //inactives.clear();
+        // inactives.clear();
     }
-    void addTime(std::pair<int, int> connection, Timer &timer, bool &resetPather)
+    void addTime(std::pair<int, int> connection, Timer &timer,
+                 bool &resetPather)
     {
         if (inactives.find(connection) == inactives.end())
         {
@@ -44,7 +47,8 @@ struct inactivityTracker
         if (inactives[connection] >= 5000)
             resetPather = true;
     }
-    void addTime(std::pair<Vector, Vector> connection, Timer &timer, bool &resetPather)
+    void addTime(std::pair<Vector, Vector> connection, Timer &timer,
+                 bool &resetPather)
     {
         CNavArea *currnode = nullptr;
         for (size_t i = 0; i < areas.size(); i++)
@@ -74,7 +78,8 @@ struct inactivityTracker
         {
             if (i.area->m_id == nextnode->m_id)
             {
-                addTime(std::pair{currnode->m_id, nextnode->m_id}, timer, resetPather);
+                addTime(std::pair{ currnode->m_id, nextnode->m_id }, timer,
+                        resetPather);
                 return;
             }
         }
@@ -84,6 +89,5 @@ struct inactivityTracker
         return inactives[connection];
     }
 };
-
 
 } // namespace nav
