@@ -76,23 +76,6 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
         PROF_SECTION(FSN_skinchanger);
         hacks::tf2::skinchanger::FrameStageNotify(stage);
     }
-    if (isHackActive() && stage == FRAME_RENDER_START)
-    {
-        INetChannel *ch;
-        ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-        if (ch && !hooks::IsHooked((void *) ch))
-        {
-            hooks::netchannel.Set(ch);
-            hooks::netchannel.HookMethod(HOOK_ARGS(SendDatagram));
-            hooks::netchannel.HookMethod(HOOK_ARGS(CanPacket));
-            hooks::netchannel.HookMethod(HOOK_ARGS(SendNetMsg));
-            hooks::netchannel.HookMethod(HOOK_ARGS(Shutdown));
-            hooks::netchannel.Apply();
-#if ENABLE_IPC
-            ipc::UpdateServerAddress();
-#endif
-        }
-    }
     /*if (hacks::tf2::seedprediction::prediction && CE_GOOD(LOCAL_E)) {
         C_BaseTempEntity *fire = C_TEFireBullets::GTEFireBullets();
         while (fire) {
