@@ -142,8 +142,8 @@ int ClassPriority(CachedEntity *ent)
 {
     switch (g_pPlayerResource->GetClass(ent))
     {
-        if (g_pPlayerResource->GetClass(ent) == tf_spy)
-            return 0;
+    case tf_spy:
+        return 0;
     case tf_engineer:
         return 1;
     case tf_medic:
@@ -223,11 +223,11 @@ void WorldTick()
                 Vector indirectOrigin =
                     VischeckCorner(LOCAL_E, entity, *follow_activation / 2,
                                    true); // get the corner location that the
-                                          // future target is visible from
+                // future target is visible from
                 std::pair<Vector, Vector> corners;
                 if (!indirectOrigin.z &&
                     entity->m_IDX == lastent) // if we couldn't find it, run
-                                              // wallcheck instead
+                // wallcheck instead
                 {
                     corners = VischeckWall(LOCAL_E, entity,
                                            float(follow_activation) / 2, true);
@@ -314,13 +314,13 @@ void WorldTick()
                 Vector indirectOrigin =
                     VischeckCorner(LOCAL_E, entity, 250,
                                    true); // get the corner location that the
-                                          // future target is visible from
+                // future target is visible from
                 std::pair<Vector, Vector> corners;
                 corners.first.z  = 0;
                 corners.second.z = 0;
                 if (!indirectOrigin.z &&
                     entity->m_IDX == lastent) // if we couldn't find it, run
-                                              // wallcheck instead
+                // wallcheck instead
                 {
                     corners = VischeckWall(LOCAL_E, entity, 250, true);
                     if (!corners.first.z || !corners.second.z)
