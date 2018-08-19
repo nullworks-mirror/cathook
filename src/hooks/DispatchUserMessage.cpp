@@ -182,7 +182,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             retrun     = true;
                             lastfilter = format(filter);
                             lastname   = format(name);
-			    gitgud.update();
+                            gitgud.update();
                         }
                     }
                 }
@@ -210,7 +210,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             retrun     = true;
                             lastfilter = format(filter);
                             lastname   = format(name);
-			    gitgud.update();
+                            gitgud.update();
                         }
                     }
                 }

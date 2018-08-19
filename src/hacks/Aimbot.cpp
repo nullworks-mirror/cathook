@@ -159,14 +159,15 @@ void CreateMove()
     // If zoomed only is on, check if zoomed
     if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
     {
-    	if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
+        if (!g_pLocalPlayer->bZoomed &&
+            !(current_user_cmd->buttons & IN_ATTACK))
             return;
     }
     // Minigun spun up handler
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
     {
         int weapon_state =
-                CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
+            CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
         // If user setting for autospin isnt true, then we check if minigun
         // is already zoomed
         if ((weapon_state == MinigunState_t::AC_STATE_IDLE ||
