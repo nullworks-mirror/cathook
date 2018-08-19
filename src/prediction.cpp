@@ -4,11 +4,11 @@
  *  Created on: Dec 5, 2016
  *      Author: nullifiedcat
  */
+#include "common.hpp"
 #if ENABLE_VISUALS
 #include <glez/draw.hpp>
 #endif
 #include <settings/Bool.hpp>
-#include "common.hpp"
 
 static settings::Bool debug_enginepred{ "debug.engine-pred-others", "false" };
 static settings::Bool debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
