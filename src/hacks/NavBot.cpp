@@ -153,8 +153,7 @@ void CreateMove()
         CachedEntity *med = nearestHealth();
         if (CE_GOOD(med))
         {
-            nav::NavTo(med->m_vecOrigin());
-            return;
+            nav::NavTo(med->m_vecOrigin(), true, true , 7);
         }
     }
     if (HasLowAmmo() && cdr.test_and_set(5000))
@@ -162,8 +161,7 @@ void CreateMove()
         CachedEntity *ammo = nearestAmmo();
         if (CE_GOOD(ammo))
         {
-            nav::NavTo(ammo->m_vecOrigin());
-            return;
+            nav::NavTo(ammo->m_vecOrigin(), true, true, 6);
         }
     }
     if (!nav::ReadyForCommands && !spy_mode && !heavy_mode)
