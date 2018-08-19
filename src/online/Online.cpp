@@ -1,7 +1,8 @@
 /*
   Created on 23.06.18.
 */
-
+#include "config.h"
+#if ENABLE_ONLINE
 #include <online/Online.hpp>
 #include <core/cvwrapper.hpp>
 
@@ -11,6 +12,7 @@
 #include <sstream>
 
 #undef null
+
 
 #include <co/OnlineService.hpp>
 #include <fstream>
@@ -333,3 +335,4 @@ user_data *getUserData(unsigned steamId)
     return nullptr;
 }
 } // namespace online
+#endif

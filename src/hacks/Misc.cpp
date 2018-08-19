@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include "common.hpp"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -20,7 +21,6 @@
 #include "core/sharedobj.hpp"
 
 #include "hack.hpp"
-#include "common.hpp"
 
 static settings::Bool render_zoomed{ "visuals.render-local-zoomed", "false" };
 static settings::Bool anti_afk{ "misc.anti-afk", "false" };
