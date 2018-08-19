@@ -3,7 +3,8 @@
 */
 
 #pragma once
-
+#include "config.h"
+#if ENABLE_ONLINE
 #include <string>
 #if ENABLE_VISUALS
 #include <colors.hpp>
@@ -39,3 +40,4 @@ void update();
 
 user_data *getUserData(unsigned steamId);
 } // namespace online
+#endif
