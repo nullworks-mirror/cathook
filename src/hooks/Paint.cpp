@@ -29,7 +29,9 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 #endif
         hacks::shared::catbot::update();
         hitrate::Update();
+#if ENABLE_ONLINE
         online::update();
+#endif
 #if ENABLE_IPC
         static Timer nametimer{};
         if (nametimer.test_and_set(1000 * 10))

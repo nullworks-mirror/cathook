@@ -49,7 +49,7 @@ IgnoreReason shouldTargetSteamId(unsigned id)
     auto &pl = playerlist::AccessData(id);
     if (playerlist::IsFriendly(pl.state))
         return IgnoreReason::LOCAL_PLAYER_LIST;
-
+#if ENABLE_ONLINE
     auto *co = online::getUserData(id);
     if (co)
     {
@@ -67,7 +67,7 @@ IgnoreReason shouldTargetSteamId(unsigned id)
         if (co->is_developer)
             return IgnoreReason::DEVELOPER;
     }
-
+#endif
     return IgnoreReason::DO_NOT_IGNORE;
 }
 IgnoreReason shouldTarget(CachedEntity *entity)
@@ -93,11 +93,11 @@ bool shouldAlwaysRenderEspSteamId(unsigned id)
     auto &pl = playerlist::AccessData(id);
     if (pl.state != playerlist::k_EState::DEFAULT)
         return true;
-
+#if ENABLE_ONLINE
     auto *co = online::getUserData(id);
     if (co)
         return true;
-
+#endif
     return false;
 }
 bool shouldAlwaysRenderEsp(CachedEntity *entity)

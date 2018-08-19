@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "config.h"
 #include <string>
 
 namespace chatlog

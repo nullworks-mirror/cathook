@@ -5,7 +5,9 @@
 
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
+#if ENABLE_VISUALS
 #include <menu/GuiInterface.hpp>
+#endif
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
 #include "navparser.hpp"
@@ -78,14 +80,13 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     logging::Info("Loaded Skybox: %s", succ ? "true" : "false");
     ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
 
-    for (int i = 0; i < 32; i++)
-        g_Settings.brute.brutenum[i] = 0;
     if (halloween_mode)
         holiday->SetValue(2);
     else if (holiday->m_nValue == 2)
         holiday->SetValue(0);
 #endif
-
+    for (int i = 0; i < 32; i++)
+        g_Settings.brute.brutenum[i] = 0;
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
 #if !LAGBOT_MODE
     hacks::shared::aimbot::Reset();

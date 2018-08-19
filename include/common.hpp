@@ -47,9 +47,8 @@
 #include "averager.hpp"
 
 #include "core/macros.hpp"
-#include <visual/colors.hpp>
-
 #if ENABLE_VISUALS
+#include <visual/colors.hpp>
 #include <visual/drawing.hpp>
 #include "visual/fidgetspinner.hpp"
 #include <visual/EffectGlow.hpp>
@@ -94,7 +93,6 @@
 #include "votelogger.hpp"
 #include "crits.hpp"
 #include "textmode.hpp"
-#include "backpacktf.hpp"
 #include "core/sharedobj.hpp"
 #include "init.hpp"
 #include "reclasses/reclasses.hpp"

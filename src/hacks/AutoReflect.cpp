@@ -7,7 +7,9 @@
 
 #include "common.hpp"
 #include <hacks/AutoReflect.hpp>
+#if ENABLE_VISUALS
 #include <glez/draw.hpp>
+#endif
 #include <settings/Bool.hpp>
 
 static settings::Bool enable{ "autoreflect.enable", "false" };

@@ -6,7 +6,6 @@
  */
 
 #include <hacks/hacklist.hpp>
-#include <glez/draw.hpp>
 #include <settings/Bool.hpp>
 #include <hacks/AntiAim.hpp>
 

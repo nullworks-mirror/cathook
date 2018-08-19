@@ -10,7 +10,7 @@
 #include <glez/color.hpp>
 
 class CachedEntity;
-
+#if ENABLE_VISUALS
 namespace colors
 {
 namespace chat
@@ -165,3 +165,4 @@ rgba_t EntityF(CachedEntity *ent);
 } // namespace colors
 
 using rgba_t = colors::rgba_t;
+#endif

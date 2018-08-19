@@ -4,10 +4,11 @@
  *  Created on: Mar 28, 2017
  *      Author: nullifiedcat
  */
-
-#include <glez/draw.hpp>
-#include <settings/Int.hpp>
 #include "common.hpp"
+#if ENABLE_VISUALS
+#include <glez/draw.hpp>
+#endif
+#include <settings/Int.hpp>
 #include "hacks/Radar.hpp"
 
 #ifndef FEATURE_RADAR_DISABLED
