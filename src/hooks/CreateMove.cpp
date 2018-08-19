@@ -287,11 +287,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 hacks::shared::walkbot::Move();
             }
             {
-                PROF_SECTION(CM_navbot);
+                PROF_SECTION(CM_navparse);
                 nav::CreateMove();
             }
             {
-                PROF_SECTION(CM_NavParse);
+                PROF_SECTION(CM_navbot);
                 hacks::tf2::NavBot::CreateMove();
             }
             // Walkbot can leave game.
