@@ -1,8 +1,8 @@
+#include "hacks/LightESP.hpp"
 #if ENABLE_VISUALS
 #include <glez/draw.hpp>
 #endif
 #include <settings/Bool.hpp>
-#include "hacks/LightESP.hpp"
 
 static settings::Bool enable{ "lightesp.enable", "false" };
 
