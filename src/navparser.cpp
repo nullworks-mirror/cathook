@@ -437,7 +437,7 @@ void Draw()
             draw::WorldToScreen(crumbs[i + 1], wts2))
         {
             glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
-                             colors::white, 0.1f);
+                             colors::white, 0.3f);
         }
     }
     Vector wts;

@@ -115,8 +115,9 @@ void CreateMove()
     CachedEntity *ent = FindEntInSight(EffectiveTargetingRange());
 
     // Check if can backtrack, shoot if we can
-    if (!CanBacktrack() || hacks::shared::backtrack::isBacktrackEnabled)
-        return;
+    if (hacks::shared::backtrack::isBacktrackEnabled)
+        if (!CanBacktrack())
+            return;
 
     // Check if dormant or null to prevent crashes
     if (CE_BAD(ent))

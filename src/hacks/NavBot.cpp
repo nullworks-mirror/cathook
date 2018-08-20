@@ -1,6 +1,7 @@
 //
 // Created by bencat07 on 17.08.18.
 //
+#include <hacks/Backtrack.hpp>
 #include "common.hpp"
 #include "navparser.hpp"
 #include "FollowBot.hpp"
@@ -120,30 +121,38 @@ CachedEntity *nearestAmmo()
     }
     return bestent;
 }
+int last_tar = -1;
 CachedEntity *NearestEnemy()
 {
-    float bestscr         = FLT_MAX;
-    CachedEntity *bestent = nullptr;
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
-    {
-        CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
-            continue;
-        if (ent == LOCAL_E || !ent->m_bAlivePlayer() ||
-            ent->m_iTeam() == LOCAL_E->m_iTeam())
-            continue;
-        float scr = ent->m_flDistance();
-        if (g_pPlayerResource->GetClass(ent) == tf_engineer)
-            scr *= 5.0f;
-        if (g_pPlayerResource->GetClass(ent) == tf_pyro)
-            scr *= 7.0f;
-        if (scr < bestscr)
-        {
-            bestscr = scr;
-            bestent = ent;
+    if (last_tar == -1 || nav::ReadyForCommands) {
+        float bestscr = FLT_MAX;
+        CachedEntity *bestent = nullptr;
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++) {
+            CachedEntity *ent = ENTITY(i);
+            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
+                continue;
+            if (ent == LOCAL_E || !ent->m_bAlivePlayer() ||
+                ent->m_iTeam() == LOCAL_E->m_iTeam())
+                continue;
+            float scr = ent->m_flDistance();
+            if (g_pPlayerResource->GetClass(ent) == tf_engineer)
+                scr *= 5.0f;
+            if (g_pPlayerResource->GetClass(ent) == tf_pyro)
+                scr *= 7.0f;
+            if (scr < bestscr) {
+                bestscr = scr;
+                bestent = ent;
+            }
         }
+        if (!bestent)
+            last_tar = -1;
+        else
+            last_tar = bestent->m_IDX;
+        return bestent;
     }
-    return bestent;
+    if (CE_GOOD(ENTITY(last_tar)))
+        return ENTITY(last_tar);
+    return nullptr;
 }
 Timer cdr{};
 Timer cd2{};
@@ -215,6 +224,8 @@ void CreateMove()
             nav::NavTo(ammo->m_vecOrigin(), true, true, 6);
         }
     }
+    if ((!HasLowHealth() && nav::priority == 7) || (!HasLowAmmo() && nav::priority == 6))
+        nav::clearInstructions();
     if (enable)
     {
         if (!nav::ReadyForCommands && !spy_mode && !heavy_mode)
@@ -236,10 +247,10 @@ void CreateMove()
                 if (random_spot.z)
                     nav::NavTo(random_spot, true, true);
             }
-            else if (cdr.check(5000))
+            else
             {
                 CachedEntity *tar = NearestEnemy();
-                if (CE_BAD(tar))
+                if (CE_BAD(tar) && last_tar == -1 && nav::ReadyForCommands)
                 {
                     Vector random_spot;
                     if (cd2.test_and_set(5000))
@@ -252,7 +263,21 @@ void CreateMove()
                         nav::NavTo(random_spot, false);
                     return;
                 }
-                nav::NavTo(tar->m_vecOrigin(), false);
+                if (CE_GOOD(tar))
+                {
+                    if (!spy_mode || !hacks::shared::backtrack::isBacktrackEnabled)
+                        nav::NavTo(tar->m_vecOrigin(), false);
+                    else
+                    {
+                        for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
+                        {
+                            if (!hacks::shared::backtrack::ValidTick(i, tar))
+                                continue;
+                            nav::NavTo(i.entorigin, false, false);
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
