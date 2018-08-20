@@ -419,7 +419,7 @@ void CreateMove()
                                 float center = GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye);
                                 float closest = fminf(minf, fminf(maxf, center));
                                 Vector tonav = (minf == closest) ? min : (maxf == closest) ? max : GetBuildingPosition(ent);
-                                nav::NavTo(closest, false, false);
+                                nav::NavTo(tonav, false, false);
                             }
                             Vector tr = GetBuildingPosition(ent) - g_pLocalPlayer->v_Eye;
                             Vector angles;
