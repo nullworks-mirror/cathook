@@ -11,6 +11,7 @@ bool ReadyForCommands   = false;
 inactivityTracker inactiveTracker;
 static settings::Bool enabled{ "misc.pathing", "true" };
 static settings::Bool draw{ "misc.pathing.draw", "false" };
+static bool threadingFinished = false;
 
 // Todo fix
 size_t FindInVector(size_t id)
@@ -161,7 +162,9 @@ void Init()
         // Initiate "Map", contains micropather object
         TF2MAP = std::make_unique<MAP>(size);
     }
-    pathfinding = true;
+    if (!areas.empty())
+        pathfinding = true;
+    threadingFinished = true;
 }
 
 static std::string lastmap;
@@ -181,10 +184,12 @@ bool Prepare()
             lastmap     = g_IEngine->GetLevelName();
             pathfinding = false;
             init        = true;
-            Init();
+            threadingFinished = false;
+            std::thread initer(Init);
+            initer.detach();
         }
     }
-    if (!pathfinding)
+    if (!pathfinding || !threadingFinished)
         return false;
     return true;
 }
@@ -345,7 +350,7 @@ void clearIgnores()
 // Main movement function, gets path from NavTo
 void CreateMove()
 {
-    if (!enabled)
+    if (!enabled || !threadingFinished)
         return;
     if (CE_BAD(LOCAL_E))
         return;

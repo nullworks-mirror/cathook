@@ -3,6 +3,7 @@
 #include "common.hpp"
 #include "micropather.h"
 #include "pwd.h"
+#include <thread>
 #if ENABLE_VISUALS
 #include <glez/draw.hpp>
 #endif
