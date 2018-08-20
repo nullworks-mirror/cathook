@@ -211,7 +211,7 @@ int findClosestNavSquare(Vector vec)
             // Make sure we're not stuck on the same area for too long
             if (std::count(findClosestNavSquare_localAreas.begin(),
                            findClosestNavSquare_localAreas.end(), i) < 3)
-                overlapping.push_back({ i, &areas.at(i) });
+                overlapping.emplace_back( i, &areas.at(i) );
         }
     }
 
@@ -267,7 +267,7 @@ std::vector<Vector> findPath(Vector loc, Vector dest, int &id_loc, int &id_dest)
     int result = TF2MAP->pather->Solve(static_cast<void *>(&areas.at(id_loc)),
                                        static_cast<void *>(&areas.at(id_dest)),
                                        &pathNodes, &cost);
-    logging::Info(format(result).c_str());
+    logging::Info(format("Pathing: Pather result: ", result).c_str());
     // If no result found, return empty Vector
     if (result == micropather::MicroPather::NO_SOLUTION)
         return std::vector<Vector>(0);
@@ -321,7 +321,8 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
     }
     crumbs.clear();
     crumbs = std::move(path);
-    if (!navToLocalCenter)
+    lastArea = crumbs.at(0);
+    if (!navToLocalCenter && crumbs.size() > 1)
         crumbs.erase(crumbs.begin());
     ensureArrival = persistent;
     findClosestNavSquare_localAreas.clear();
@@ -480,6 +481,17 @@ CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
 
 CatCommand navpath("nav_path", "Debug nav path", [](const CCommand &args) {
     if (NavTo(loc, true, true, 50 + priority))
+    {
+        logging::Info("Pathing: Success! Walking to path...");
+    }
+    else
+    {
+        logging::Info("Pathing: Failed!");
+    }
+});
+
+CatCommand navpathnolocal("nav_path_nolocal", "Debug nav path", [](const CCommand &args) {
+    if (NavTo(loc, false, true, 50 + priority))
     {
         logging::Info("Pathing: Success! Walking to path...");
     }
