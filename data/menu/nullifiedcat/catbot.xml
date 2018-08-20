@@ -61,6 +61,7 @@
             <AutoVariable width="fill" target="navbot.enable" label="Enable NavBot"/>
             <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/>
             <AutoVariable width="fill" target="navbot.heavy-mode" label="Enable Heavy Mode"/>
+            <AutoVariable width="fill" target="navbot.engi-mode" label="Enable Engie Mode"/>
             <AutoVariable width="fill" target="navbot.primary-only" label="Best Weapon only"/>
         </List>
         <Box name="Nav FollowBot" width="content" height="content" padding="12 6 6 6" y="90">
