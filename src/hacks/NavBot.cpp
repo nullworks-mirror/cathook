@@ -414,10 +414,11 @@ void CreateMove()
                             // Distance check
                             if (min.DistTo(g_pLocalPlayer->v_Eye) > re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) && max.DistTo(g_pLocalPlayer->v_Eye) > re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) && GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye) > re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)))
                             {
-                                float min = min.DistTo(g_pLocalPlayer->v_Eye);
-                                float max = max.DistTo(g_pLocalPlayer->v_Eye);
+                                float minf = min.DistTo(g_pLocalPlayer->v_Eye);
+                                float maxf = max.DistTo(g_pLocalPlayer->v_Eye);
                                 float center = GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye);
-                                float closest = fminf(min, fminf(max, center));
+                                float closest = fminf(minf, fminf(maxf, center));
+                                Vector tonav = (minf == closest) ? min : (maxf == closest) ? max : GetBuildingPosition(ent);
                                 nav::NavTo(closest, false, false);
                             }
                             Vector tr = GetBuildingPosition(ent) - g_pLocalPlayer->v_Eye;
