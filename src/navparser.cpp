@@ -181,9 +181,9 @@ bool Prepare()
         }
         else
         {
-            lastmap     = g_IEngine->GetLevelName();
-            pathfinding = false;
-            init        = true;
+            lastmap           = g_IEngine->GetLevelName();
+            pathfinding       = false;
+            init              = true;
             threadingFinished = false;
             std::thread initer(Init);
             initer.detach();
@@ -211,7 +211,7 @@ int findClosestNavSquare(Vector vec)
             // Make sure we're not stuck on the same area for too long
             if (std::count(findClosestNavSquare_localAreas.begin(),
                            findClosestNavSquare_localAreas.end(), i) < 3)
-                overlapping.emplace_back( i, &areas.at(i) );
+                overlapping.emplace_back(i, &areas.at(i));
         }
     }
 
@@ -320,7 +320,7 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
             TF2MAP->pather->Reset();
     }
     crumbs.clear();
-    crumbs = std::move(path);
+    crumbs   = std::move(path);
     lastArea = crumbs.at(0);
     if (!navToLocalCenter && crumbs.size() > 1)
         crumbs.erase(crumbs.begin());
@@ -490,15 +490,17 @@ CatCommand navpath("nav_path", "Debug nav path", [](const CCommand &args) {
     }
 });
 
-CatCommand navpathnolocal("nav_path_nolocal", "Debug nav path", [](const CCommand &args) {
-    if (NavTo(loc, false, true, 50 + priority))
-    {
-        logging::Info("Pathing: Success! Walking to path...");
-    }
-    else
-    {
-        logging::Info("Pathing: Failed!");
-    }
-});
+CatCommand navpathnolocal("nav_path_nolocal", "Debug nav path",
+                          [](const CCommand &args) {
+                              if (NavTo(loc, false, true, 50 + priority))
+                              {
+                                  logging::Info(
+                                      "Pathing: Success! Walking to path...");
+                              }
+                              else
+                              {
+                                  logging::Info("Pathing: Failed!");
+                              }
+                          });
 
 } // namespace nav

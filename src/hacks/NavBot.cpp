@@ -125,10 +125,12 @@ CachedEntity *nearestAmmo()
 int last_tar = -1;
 CachedEntity *NearestEnemy()
 {
-    if (last_tar == -1 || nav::ReadyForCommands) {
-        float bestscr = FLT_MAX;
+    if (last_tar == -1 || nav::ReadyForCommands)
+    {
+        float bestscr         = FLT_MAX;
         CachedEntity *bestent = nullptr;
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++) {
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
                 continue;
@@ -140,7 +142,8 @@ CachedEntity *NearestEnemy()
                 scr *= 5.0f;
             if (g_pPlayerResource->GetClass(ent) == tf_pyro)
                 scr *= 7.0f;
-            if (scr < bestscr) {
+            if (scr < bestscr)
+            {
                 bestscr = scr;
                 bestent = ent;
             }
@@ -178,7 +181,9 @@ void Init()
                 hide.IsExposed())
                 sniper_spots.push_back(hide.m_pos);
     }
-    logging::Info("Sniper spots: %d, Manual Sniper Spots: %d, Sentry Spots: %d", sniper_spots.size(), preferred_sniper_spots.size(), nest_spots.size());
+    logging::Info("Sniper spots: %d, Manual Sniper Spots: %d, Sentry Spots: %d",
+                  sniper_spots.size(), preferred_sniper_spots.size(),
+                  nest_spots.size());
 }
 void initonce()
 {
@@ -220,27 +225,28 @@ enum BuildingNum
     TELEPORT_EXT,
 };
 std::vector<int> GetBuildings()
+{
+    float bestscr = FLT_MAX;
+    std::vector<int> buildings;
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
     {
-        float bestscr = FLT_MAX;
-        std::vector<int> buildings;
-        for (int i = 0; i < HIGHEST_ENTITY; i++)
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent->m_Type() != ENTITY_BUILDING)
+            continue;
+        if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) !=
+            g_pLocalPlayer->entity_idx)
+            continue;
+        if (ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) < bestscr)
         {
-            CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent))
-                continue;
-            if (ent->m_Type() != ENTITY_BUILDING)
-                continue;
-            if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) != g_pLocalPlayer->entity_idx)
-                continue;
-            if (ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) < bestscr)
-            {
-                buildings.push_back(i);
-                bestscr = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
-            }
+            buildings.push_back(i);
+            bestscr = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
         }
-        return buildings;
+    }
+    return buildings;
 }
-int cost[4] = {100, 50, 130, 50};
+int cost[4] = { 100, 50, 130, 50 };
 int GetBestBuilding(int metal)
 {
     bool hasSentry, hasDispenser;
@@ -263,7 +269,7 @@ int GetBestBuilding(int metal)
 }
 int GetClosestBuilding()
 {
-    float bestscr = FLT_MAX;
+    float bestscr    = FLT_MAX;
     int BestBuilding = -1;
     for (int i = 0; i < HIGHEST_ENTITY; i++)
     {
@@ -272,12 +278,13 @@ int GetClosestBuilding()
             continue;
         if (ent->m_Type() != ENTITY_BUILDING)
             continue;
-        if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) != g_pLocalPlayer->entity_idx)
+        if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) !=
+            g_pLocalPlayer->entity_idx)
             continue;
         if (ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) < bestscr)
         {
             BestBuilding = i;
-            bestscr = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+            bestscr      = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
         }
     }
     return BestBuilding;
@@ -303,13 +310,15 @@ void CreateMove()
         if (CE_GOOD(ammo))
             nav::NavTo(ammo->m_vecOrigin(), true, true, 6);
     }
-    if ((!HasLowHealth() && nav::priority == 7) || (!HasLowAmmo() && nav::priority == 6))
+    if ((!HasLowHealth() && nav::priority == 7) ||
+        (!HasLowAmmo() && nav::priority == 6))
         nav::clearInstructions();
     if (enable)
     {
         if (!nav::ReadyForCommands && !spy_mode && !heavy_mode && !engi_mode)
             cd3.update();
-        bool isready = (spy_mode || heavy_mode || engi_mode) ? 1 : nav::ReadyForCommands;
+        bool isready =
+            (spy_mode || heavy_mode || engi_mode) ? 1 : nav::ReadyForCommands;
         int waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 5000;
         if (isready && cd3.test_and_set(waittime))
         {
@@ -321,7 +330,9 @@ void CreateMove()
                     Init();
                 if (!sniper_spots.size() && !preferred_sniper_spots.size())
                     return;
-                auto snip_spot = preferred_sniper_spots.size() ? preferred_sniper_spots : sniper_spots;
+                auto snip_spot = preferred_sniper_spots.size()
+                                     ? preferred_sniper_spots
+                                     : sniper_spots;
                 int rng     = rand() % snip_spot.size();
                 random_spot = snip_spot.at(rng);
                 if (random_spot.z)
@@ -338,7 +349,9 @@ void CreateMove()
                         Init();
                     if (!sniper_spots.size() && !preferred_sniper_spots.size())
                         return;
-                    auto snip_spot = preferred_sniper_spots.size() ? preferred_sniper_spots : sniper_spots;
+                    auto snip_spot = preferred_sniper_spots.size()
+                                         ? preferred_sniper_spots
+                                         : sniper_spots;
                     int rng     = rand() % snip_spot.size();
                     random_spot = snip_spot.at(rng);
                     if (random_spot.z)
@@ -347,11 +360,13 @@ void CreateMove()
                 }
                 if (CE_GOOD(tar))
                 {
-                    if (!spy_mode || !hacks::shared::backtrack::isBacktrackEnabled)
+                    if (!spy_mode ||
+                        !hacks::shared::backtrack::isBacktrackEnabled)
                         nav::NavTo(tar->m_vecOrigin(), false);
                     else
                     {
-                        for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
+                        for (auto i : hacks::shared::backtrack::headPositions
+                                 [tar->m_IDX])
                         {
                             if (!hacks::shared::backtrack::ValidTick(i, tar))
                                 continue;
@@ -382,7 +397,7 @@ void CreateMove()
                     {
                         if (spot.DistTo(LOCAL_E->m_vecOrigin()) < bestscr)
                         {
-                            bestscr = spot.DistTo(LOCAL_E->m_vecOrigin());
+                            bestscr   = spot.DistTo(LOCAL_E->m_vecOrigin());
                             best_spot = spot;
                         }
                     }
@@ -397,7 +412,8 @@ void CreateMove()
                     }
                 }
                 // If Near The best spot and ready for commands
-                if (best_spot.DistTo(LOCAL_E->m_vecOrigin()) < 300.0f && (nav::ReadyForCommands || nav::priority == 1))
+                if (best_spot.DistTo(LOCAL_E->m_vecOrigin()) < 300.0f &&
+                    (nav::ReadyForCommands || nav::priority == 1))
                 {
                     // Get the closest Building
                     int ClosestBuilding = GetClosestBuilding();
@@ -405,23 +421,46 @@ void CreateMove()
                     if (ClosestBuilding != -1)
                     {
                         CachedEntity *ent = ENTITY(ClosestBuilding);
-                        // If we have more than 25 metal and the building is damaged or not fully upgraded hit it with the wrench
-                        if (metal > 25 && (CE_INT(ent, netvar.iUpgradeLevel) < 3 || CE_INT(ent, netvar.iBuildingHealth) < CE_INT(ent, netvar.iBuildingMaxHealth)))
+                        // If we have more than 25 metal and the building is
+                        // damaged or not fully upgraded hit it with the wrench
+                        if (metal > 25 &&
+                            (CE_INT(ent, netvar.iUpgradeLevel) < 3 ||
+                             CE_INT(ent, netvar.iBuildingHealth) <
+                                 CE_INT(ent, netvar.iBuildingMaxHealth)))
                         {
                             auto collide = RAW_ENT(ent)->GetCollideable();
-                            Vector min = ent->m_vecOrigin() + collide->OBBMins();
-                            Vector max = ent->m_vecOrigin() + collide->OBBMaxs();
+                            Vector min =
+                                ent->m_vecOrigin() + collide->OBBMins();
+                            Vector max =
+                                ent->m_vecOrigin() + collide->OBBMaxs();
                             // Distance check
-                            if (min.DistTo(g_pLocalPlayer->v_Eye) > re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) && max.DistTo(g_pLocalPlayer->v_Eye) > re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) && GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye) > re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)))
+                            if (min.DistTo(g_pLocalPlayer->v_Eye) >
+                                    re::C_TFWeaponBaseMelee::GetSwingRange(
+                                        RAW_ENT(LOCAL_W)) &&
+                                max.DistTo(g_pLocalPlayer->v_Eye) >
+                                    re::C_TFWeaponBaseMelee::GetSwingRange(
+                                        RAW_ENT(LOCAL_W)) &&
+                                GetBuildingPosition(ent).DistTo(
+                                    g_pLocalPlayer->v_Eye) >
+                                    re::C_TFWeaponBaseMelee::GetSwingRange(
+                                        RAW_ENT(LOCAL_W)))
                             {
                                 float minf = min.DistTo(g_pLocalPlayer->v_Eye);
                                 float maxf = max.DistTo(g_pLocalPlayer->v_Eye);
-                                float center = GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye);
-                                float closest = fminf(minf, fminf(maxf, center));
-                                Vector tonav = (minf == closest) ? min : (maxf == closest) ? max : GetBuildingPosition(ent);
+                                float center = GetBuildingPosition(ent).DistTo(
+                                    g_pLocalPlayer->v_Eye);
+                                float closest =
+                                    fminf(minf, fminf(maxf, center));
+                                Vector tonav =
+                                    (minf == closest)
+                                        ? min
+                                        : (maxf == closest)
+                                              ? max
+                                              : GetBuildingPosition(ent);
                                 nav::NavTo(tonav, false, false);
                             }
-                            Vector tr = GetBuildingPosition(ent) - g_pLocalPlayer->v_Eye;
+                            Vector tr = GetBuildingPosition(ent) -
+                                        g_pLocalPlayer->v_Eye;
                             Vector angles;
                             VectorAngles(tr, angles);
                             // Clamping is important
@@ -449,9 +488,12 @@ void CreateMove()
                             Vector random_spot;
                             if (cd2.test_and_set(5000))
                                 Init();
-                            if (!sniper_spots.size() && !preferred_sniper_spots.size())
+                            if (!sniper_spots.size() &&
+                                !preferred_sniper_spots.size())
                                 return;
-                            auto snip_spot = preferred_sniper_spots.size() ? preferred_sniper_spots : sniper_spots;
+                            auto snip_spot = preferred_sniper_spots.size()
+                                                 ? preferred_sniper_spots
+                                                 : sniper_spots;
                             int rng     = rand() % snip_spot.size();
                             random_spot = snip_spot.at(rng);
                             if (random_spot.z)
@@ -467,7 +509,8 @@ void CreateMove()
                         // Build buildings in a 360° angle around player
                         current_user_cmd->viewangles.y = 90.0f * (tobuild + 1);
                         // Build new one
-                        g_IEngine->ServerCmd(format("build ", tobuild).c_str(), true);
+                        g_IEngine->ServerCmd(format("build ", tobuild).c_str(),
+                                             true);
                         current_user_cmd->buttons |= IN_ATTACK;
                         g_pLocalPlayer->bUseSilentAngles = true;
                     }

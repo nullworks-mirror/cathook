@@ -120,8 +120,7 @@ void NetVars::Init()
             "DT_TFSniperRifle", "SniperRifleLocalData", "m_flChargedDamage");
         this->iUpgradeLevel =
             gNetvars.get_offset("DT_BaseObject", "m_iUpgradeLevel");
-        this->m_hBuilder =
-            gNetvars.get_offset("DT_BaseObject", "m_hBuilder");
+        this->m_hBuilder = gNetvars.get_offset("DT_BaseObject", "m_hBuilder");
         this->iPipeType =
             gNetvars.get_offset("DT_TFProjectile_Pipebomb", "m_iType");
         this->iBuildingHealth =

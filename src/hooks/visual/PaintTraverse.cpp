@@ -70,7 +70,7 @@ and no [])", [](const CCommand &args) {
 bool replaced = false;
 namespace hooked_methods
 {
-
+Timer checkmmban{};
 DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
                      unsigned int panel, bool force, bool allow_force)
 {
@@ -96,21 +96,28 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         if (switcherido && spamdur && !joinspam.check(spamdur * 1000))
         {
             auto gc = re::CTFGCClientSystem::GTFGCClientSystem();
-            if (!gc)
-                goto label1;
-            gc->JoinMMMatch();
+            if (gc)
+                gc->JoinMMMatch();
         }
         else if (!joinspam.check(spamdur * 1000) && spamdur)
         {
             INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-            if (!ch)
-                goto label1;
-            ch->Shutdown("");
+            if (ch)
+                ch->Shutdown("");
         }
     }
-label1:
     scndwait++;
     switcherido = !switcherido;
+#if not ENABLE_VISUALS
+    if (checkmmban.test_and_set(1000))
+    {
+        if (tfmm::isMMBanned())
+        {
+            *(int *) nullptr = 0;
+            exit(1);
+        }
+    }
+#endif
     /*static bool replacedparty = false;
     static int callcnt        = 0;
     if (party_bypass && !replacedparty && callcnt < 5)
