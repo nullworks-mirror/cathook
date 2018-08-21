@@ -97,14 +97,6 @@ void updateSearch()
             logging::Info("Starting queue");
             tfmm::startQueue();
         }
-#if not ENABLE_VISUALS
-    if (req_timer.test_and_set(1800000))
-    {
-        logging::Info("Stuck in queue, segfaulting");
-        *(int *) nullptr;
-        exit(1);
-    }
-#endif
 }
 
 void update()
