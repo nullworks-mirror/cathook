@@ -58,6 +58,8 @@ bool HasLowAmmo()
 {
     int *weapon_list =
         (int *) ((unsigned) (RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
+    if (g_pLocalPlayer->holding_sniper_rifle && NET_INT(LOCAL_W, netvar.m_iAmmo + 4) <= 5)
+        return true;
     for (int i = 0; weapon_list[i]; i++)
     {
         int handle = weapon_list[i];
@@ -68,7 +70,7 @@ bool HasLowAmmo()
             if (weapon and
                 re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) &&
                 re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) && 
-                (!re::C_TFWeaponBase::HasPrimaryAmmo(weapon) || NET_INT(weapon, netvar.m_iAmmo + 4) <= 5))
+                !re::C_TFWeaponBase::HasPrimaryAmmo(weapon))
                 return true;
         }
     }
