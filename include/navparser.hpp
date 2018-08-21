@@ -113,10 +113,12 @@ public:
         }
         auto &pair = inactives.at(connection);
 
-        pair.second = pair.second +
-                      (std::chrono::duration_cast<std::chrono::milliseconds>(
-                           std::chrono::system_clock::now() - timer.last)
-                           .count());
+        unsigned int newTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                    std::chrono::system_clock::now() - timer.last)
+                                    .count();
+        if (pair.first == 2 && !vischeckConnection(connection))
+            newTime = (newTime > 2500 ? 2500 : newTime);
+        pair.second = pair.second + newTime;
         if (pair.second >= 5000)
             resetPather = true;
     }

@@ -467,7 +467,7 @@ void CreateMove()
                             fClampAngle(angles);
                             current_user_cmd->viewangles = angles;
                             current_user_cmd->buttons |= IN_ATTACK;
-                            g_pLocalPlayer->bUseSilentAngles = true;
+                            g_pLocalPlayer->bUseSilentAngles = false;
                             return;
                         }
                     }
