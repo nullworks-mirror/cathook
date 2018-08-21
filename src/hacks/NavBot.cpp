@@ -12,6 +12,7 @@ namespace hacks::tf2::NavBot
 static settings::Bool enable("navbot.enable", "false");
 static settings::Bool spy_mode("navbot.spy-mode", "false");
 static settings::Bool heavy_mode("navbot.heavy-mode", "false");
+static settings::Bool engi_mode("navbot.engi-mode", "false");
 static settings::Bool primary_only("navbot.primary-only", "true");
 
 static settings::Bool enable_fb{ "navbot.medbot", "false" };
@@ -124,10 +125,12 @@ CachedEntity *nearestAmmo()
 int last_tar = -1;
 CachedEntity *NearestEnemy()
 {
-    if (last_tar == -1 || nav::ReadyForCommands) {
-        float bestscr = FLT_MAX;
+    if (last_tar == -1 || nav::ReadyForCommands)
+    {
+        float bestscr         = FLT_MAX;
         CachedEntity *bestent = nullptr;
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++) {
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
                 continue;
@@ -139,7 +142,8 @@ CachedEntity *NearestEnemy()
                 scr *= 5.0f;
             if (g_pPlayerResource->GetClass(ent) == tf_pyro)
                 scr *= 7.0f;
-            if (scr < bestscr) {
+            if (scr < bestscr)
+            {
                 bestscr = scr;
                 bestent = ent;
             }
@@ -157,16 +161,29 @@ CachedEntity *NearestEnemy()
 Timer cdr{};
 Timer cd2{};
 Timer cd3{};
+Timer engi_spot_cd{};
+std::vector<Vector> preferred_sniper_spots;
 std::vector<Vector> sniper_spots;
+std::vector<Vector> nest_spots;
 void Init()
 {
     sniper_spots.clear();
+    preferred_sniper_spots.clear();
+    nest_spots.clear();
     for (auto area : nav::areas)
+    {
+        if (area.m_attributeFlags & NAV_MESH_NO_HOSTAGES)
+            preferred_sniper_spots.push_back(area.m_center);
+        if (area.m_attributeFlags & NAV_MESH_RUN)
+            nest_spots.push_back(area.m_center);
         for (auto hide : area.m_hidingSpots)
             if (hide.IsGoodSniperSpot() || hide.IsIdealSniperSpot() ||
                 hide.IsExposed())
                 sniper_spots.push_back(hide.m_pos);
-    logging::Info("%d", sniper_spots.size());
+    }
+    logging::Info("Sniper spots: %d, Manual Sniper Spots: %d, Sentry Spots: %d",
+                  sniper_spots.size(), preferred_sniper_spots.size(),
+                  nest_spots.size());
 }
 void initonce()
 {
@@ -175,6 +192,7 @@ void initonce()
     cdr.update();
     cd2.update();
     cd3.update();
+    engi_spot_cd.update();
     return;
 }
 
@@ -191,13 +209,85 @@ void UpdateSlot()
         {
             int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
             int newslot = 1;
-            if (spy_mode)
+            if (spy_mode || engi_mode)
                 newslot = 3;
             if (slot != newslot - 1)
                 g_IEngine->ClientCmd_Unrestricted(
                     format("slot", newslot).c_str());
         }
     }
+}
+enum BuildingNum
+{
+    DISPENSER = 0,
+    TELEPORT_ENT,
+    SENTRY,
+    TELEPORT_EXT,
+};
+std::vector<int> GetBuildings()
+{
+    float bestscr = FLT_MAX;
+    std::vector<int> buildings;
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent->m_Type() != ENTITY_BUILDING)
+            continue;
+        if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) !=
+            g_pLocalPlayer->entity_idx)
+            continue;
+        if (ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) < bestscr)
+        {
+            buildings.push_back(i);
+            bestscr = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+        }
+    }
+    return buildings;
+}
+int cost[4] = { 100, 50, 130, 50 };
+int GetBestBuilding(int metal)
+{
+    bool hasSentry, hasDispenser;
+    if (!GetBuildings().empty())
+        for (auto build : GetBuildings())
+        {
+            CachedEntity *building = ENTITY(build);
+            if (building->m_iClassID() == CL_CLASS(CObjectSentrygun))
+                hasSentry = true;
+            if (building->m_iClassID() == CL_CLASS(CObjectDispenser))
+                hasDispenser = true;
+        }
+    if (metal >= cost[SENTRY] && !hasSentry)
+        return SENTRY;
+    else if (metal >= cost[DISPENSER] && !hasDispenser)
+        return DISPENSER;
+    if (hasSentry && hasDispenser)
+        return 3;
+    return -1;
+}
+int GetClosestBuilding()
+{
+    float bestscr    = FLT_MAX;
+    int BestBuilding = -1;
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent->m_Type() != ENTITY_BUILDING)
+            continue;
+        if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) !=
+            g_pLocalPlayer->entity_idx)
+            continue;
+        if (ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) < bestscr)
+        {
+            BestBuilding = i;
+            bestscr      = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+        }
+    }
+    return BestBuilding;
 }
 int follow_target = 0;
 void CreateMove()
@@ -212,42 +302,44 @@ void CreateMove()
     {
         CachedEntity *med = nearestHealth();
         if (CE_GOOD(med))
-        {
             nav::NavTo(med->m_vecOrigin(), true, true, 7);
-        }
     }
     if (HasLowAmmo() && cdr.test_and_set(5000))
     {
         CachedEntity *ammo = nearestAmmo();
         if (CE_GOOD(ammo))
-        {
             nav::NavTo(ammo->m_vecOrigin(), true, true, 6);
-        }
     }
-    if ((!HasLowHealth() && nav::priority == 7) || (!HasLowAmmo() && nav::priority == 6))
+    if ((!HasLowHealth() && nav::priority == 7) ||
+        (!HasLowAmmo() && nav::priority == 6))
         nav::clearInstructions();
     if (enable)
     {
-        if (!nav::ReadyForCommands && !spy_mode && !heavy_mode)
+        if (!nav::ReadyForCommands && !spy_mode && !heavy_mode && !engi_mode)
             cd3.update();
-        bool isready = (spy_mode || heavy_mode) ? 1 : nav::ReadyForCommands;
-        int waittime = (spy_mode || heavy_mode) ? 100 : 5000;
+        bool isready =
+            (spy_mode || heavy_mode || engi_mode) ? 1 : nav::ReadyForCommands;
+        int waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 5000;
         if (isready && cd3.test_and_set(waittime))
         {
-            if (!spy_mode && !heavy_mode)
+            if (!spy_mode && !heavy_mode && !engi_mode)
             {
                 cd3.update();
                 Vector random_spot;
                 if (cd2.test_and_set(5000))
                     Init();
-                if (!sniper_spots.size())
+                if (!sniper_spots.size() && !preferred_sniper_spots.size())
                     return;
-                int rng     = rand() % sniper_spots.size();
-                random_spot = sniper_spots.at(rng);
+                auto snip_spot = preferred_sniper_spots.size()
+                                     ? preferred_sniper_spots
+                                     : sniper_spots;
+                int rng     = rand() % snip_spot.size();
+                random_spot = snip_spot.at(rng);
                 if (random_spot.z)
                     nav::NavTo(random_spot, true, true);
+                return;
             }
-            else
+            else if (!engi_mode)
             {
                 CachedEntity *tar = NearestEnemy();
                 if (CE_BAD(tar) && last_tar == -1 && nav::ReadyForCommands)
@@ -255,21 +347,26 @@ void CreateMove()
                     Vector random_spot;
                     if (cd2.test_and_set(5000))
                         Init();
-                    if (!sniper_spots.size())
+                    if (!sniper_spots.size() && !preferred_sniper_spots.size())
                         return;
-                    int rng     = rand() % sniper_spots.size();
-                    random_spot = sniper_spots.at(rng);
+                    auto snip_spot = preferred_sniper_spots.size()
+                                         ? preferred_sniper_spots
+                                         : sniper_spots;
+                    int rng     = rand() % snip_spot.size();
+                    random_spot = snip_spot.at(rng);
                     if (random_spot.z)
                         nav::NavTo(random_spot, false);
                     return;
                 }
                 if (CE_GOOD(tar))
                 {
-                    if (!spy_mode || !hacks::shared::backtrack::isBacktrackEnabled)
+                    if (!spy_mode ||
+                        !hacks::shared::backtrack::isBacktrackEnabled)
                         nav::NavTo(tar->m_vecOrigin(), false);
                     else
                     {
-                        for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
+                        for (auto i : hacks::shared::backtrack::headPositions
+                                 [tar->m_IDX])
                         {
                             if (!hacks::shared::backtrack::ValidTick(i, tar))
                                 continue;
@@ -278,6 +375,149 @@ void CreateMove()
                         }
                     }
                 }
+            }
+            // Engi Mode
+            else
+            {
+                // Init things
+                if (cd2.test_and_set(5000))
+                    Init();
+                // If No spots set just return
+                if (nest_spots.empty())
+                    return;
+                // Get Metal (offset of MAX metal is +8 and current metal +12)
+                int metal = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
+                // Best spot storage
+                static Vector best_spot{};
+                // Get Best spot based on distance
+                if (engi_spot_cd.test_and_set(10000))
+                {
+                    float bestscr = FLT_MAX;
+                    for (auto spot : nest_spots)
+                    {
+                        if (spot.DistTo(LOCAL_E->m_vecOrigin()) < bestscr)
+                        {
+                            bestscr   = spot.DistTo(LOCAL_E->m_vecOrigin());
+                            best_spot = spot;
+                        }
+                    }
+                }
+                if (nav::priority == 1)
+                {
+                    CachedEntity *ammo = nearestAmmo();
+                    if (CE_GOOD(ammo))
+                    {
+                        nav::NavTo(ammo->m_vecOrigin(), false, true);
+                        return;
+                    }
+                }
+                // If Near The best spot and ready for commands
+                if (best_spot.DistTo(LOCAL_E->m_vecOrigin()) < 300.0f &&
+                    (nav::ReadyForCommands || nav::priority == 1))
+                {
+                    // Get the closest Building
+                    int ClosestBuilding = GetClosestBuilding();
+                    // If A Building was found
+                    if (ClosestBuilding != -1)
+                    {
+                        CachedEntity *ent = ENTITY(ClosestBuilding);
+                        // If we have more than 25 metal and the building is
+                        // damaged or not fully upgraded hit it with the wrench
+                        if (metal > 25 &&
+                            (CE_INT(ent, netvar.iUpgradeLevel) < 3 ||
+                             CE_INT(ent, netvar.iBuildingHealth) <
+                                 CE_INT(ent, netvar.iBuildingMaxHealth)))
+                        {
+                            auto collide = RAW_ENT(ent)->GetCollideable();
+                            Vector min =
+                                ent->m_vecOrigin() + collide->OBBMins();
+                            Vector max =
+                                ent->m_vecOrigin() + collide->OBBMaxs();
+                            // Distance check
+                            if (min.DistTo(g_pLocalPlayer->v_Eye) >
+                                    re::C_TFWeaponBaseMelee::GetSwingRange(
+                                        RAW_ENT(LOCAL_W)) &&
+                                max.DistTo(g_pLocalPlayer->v_Eye) >
+                                    re::C_TFWeaponBaseMelee::GetSwingRange(
+                                        RAW_ENT(LOCAL_W)) &&
+                                GetBuildingPosition(ent).DistTo(
+                                    g_pLocalPlayer->v_Eye) >
+                                    re::C_TFWeaponBaseMelee::GetSwingRange(
+                                        RAW_ENT(LOCAL_W)))
+                            {
+                                float minf = min.DistTo(g_pLocalPlayer->v_Eye);
+                                float maxf = max.DistTo(g_pLocalPlayer->v_Eye);
+                                float center = GetBuildingPosition(ent).DistTo(
+                                    g_pLocalPlayer->v_Eye);
+                                float closest =
+                                    fminf(minf, fminf(maxf, center));
+                                Vector tonav =
+                                    (minf == closest)
+                                        ? min
+                                        : (maxf == closest)
+                                              ? max
+                                              : GetBuildingPosition(ent);
+                                nav::NavTo(tonav, false, false);
+                            }
+                            Vector tr = GetBuildingPosition(ent) -
+                                        g_pLocalPlayer->v_Eye;
+                            Vector angles;
+                            VectorAngles(tr, angles);
+                            // Clamping is important
+                            fClampAngle(angles);
+                            current_user_cmd->viewangles = angles;
+                            current_user_cmd->buttons |= IN_ATTACK;
+                            g_pLocalPlayer->bUseSilentAngles = true;
+                            return;
+                        }
+                    }
+                    // Get A building, Sentry > Dispenser
+                    int tobuild = GetBestBuilding(metal);
+                    // If not enough metal then Find ammo
+                    if (tobuild == -1)
+                    {
+                        CachedEntity *ammo = nearestAmmo();
+                        if (CE_GOOD(ammo))
+                        {
+                            nav::NavTo(ammo->m_vecOrigin(), false, true);
+                            return;
+                        }
+                        // Ammo is dormant, go and find it!
+                        else if (sniper_spots.size() && nav::ReadyForCommands)
+                        {
+                            Vector random_spot;
+                            if (cd2.test_and_set(5000))
+                                Init();
+                            if (!sniper_spots.size() &&
+                                !preferred_sniper_spots.size())
+                                return;
+                            auto snip_spot = preferred_sniper_spots.size()
+                                                 ? preferred_sniper_spots
+                                                 : sniper_spots;
+                            int rng     = rand() % snip_spot.size();
+                            random_spot = snip_spot.at(rng);
+                            if (random_spot.z)
+                                nav::NavTo(random_spot, false, false, 1);
+                            return;
+                        }
+                    }
+                    // Build Building
+                    else if (tobuild != 3)
+                    {
+                        // Make ENgi look slightly down
+                        current_user_cmd->viewangles.x = 20.0f;
+                        // Build buildings in a 360° angle around player
+                        current_user_cmd->viewangles.y = 90.0f * (tobuild + 1);
+                        // Build new one
+                        g_IEngine->ServerCmd(format("build ", tobuild).c_str(),
+                                             true);
+                        current_user_cmd->buttons |= IN_ATTACK;
+                        g_pLocalPlayer->bUseSilentAngles = true;
+                    }
+                }
+                // If not near best spot then navigate to it
+                else if (nav::ReadyForCommands)
+                    nav::NavTo(best_spot, false, true);
             }
         }
     }

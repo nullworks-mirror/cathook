@@ -32,7 +32,17 @@ CatCommand get_state("mm_state", "Get party state", []() {
 
 namespace tfmm
 {
-
+int queuecount = 0;
+bool isMMBanned()
+{
+    auto client = re::CTFPartyClient::GTFPartyClient();
+    if (!client || (client->BInQueueForMatchGroup(7) && queuecount < 10))
+    {
+        queuecount = 0;
+        return false;
+    }
+    return true;
+}
 int getQueue()
 {
     return *queue;
@@ -47,6 +57,7 @@ void startQueue()
             client->LoadSavedCasualCriteria();
         client->RequestQueueForMatch((int) queue);
         hacks::shared::autojoin::resetQueueTimer();
+        queuecount++;
     }
     else
         logging::Info("queue_start: CTFPartyClient == null!");

@@ -13,7 +13,6 @@
 
 #undef null
 
-
 #include <co/OnlineService.hpp>
 #include <fstream>
 #include <init.hpp>

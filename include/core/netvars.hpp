@@ -63,6 +63,7 @@ public:
     offset_t hActiveWeapon;
     offset_t flChargedDamage;
     offset_t iUpgradeLevel;
+    offset_t m_hBuilder;
     offset_t iPipeType;
     offset_t iBuildingHealth;
     offset_t iBuildingMaxHealth;
