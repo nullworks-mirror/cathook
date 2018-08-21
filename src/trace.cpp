@@ -92,7 +92,8 @@ bool trace::FilterNoPlayer::ShouldHitEntity(IHandleEntity *handle, int mask)
     switch (clazz->m_ClassID)
     {
     // TODO magic numbers: invisible entity ids
-    case
+    case 248:
+    case 246:
     case 64:
     case 225:
     case 55:
