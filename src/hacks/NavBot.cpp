@@ -66,9 +66,9 @@ bool HasLowAmmo()
         {
             IClientEntity *weapon = g_IEntityList->GetClientEntity(eid);
             if (weapon and
-                re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) and
-                re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) and
-                not re::C_TFWeaponBase::HasPrimaryAmmo(weapon))
+                re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) &&
+                re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) && 
+                (!re::C_TFWeaponBase::HasPrimaryAmmo(weapon) || NET_INT(weapon, netvar.m_iAmmo + 4) <= 5))
                 return true;
         }
     }
