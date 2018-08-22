@@ -48,9 +48,7 @@ void checkAFK()
         if (CE_BAD(entity))
             continue;
         if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(60.0f))
-        {
             afkTicks[i].update();
-        }
     }
 }
 
