@@ -10,6 +10,7 @@
 #include "common.hpp"
 
 #include "C_BaseEntity.hpp"
+#include "ITFGroupMatchCriteria.hpp"
 #include "CTFPlayerShared.hpp"
 #include "C_BasePlayer.hpp"
 #include "C_BaseCombatWeapon.hpp"
