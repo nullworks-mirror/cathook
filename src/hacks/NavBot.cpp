@@ -187,10 +187,14 @@ void Init()
                   sniper_spots.size(), preferred_sniper_spots.size(),
                   nest_spots.size());
 }
+// I doubtwe'd use more than 128 Sniper spots
+std::array<int, 128> priority_spots;
 void initonce()
 {
     for (int i = 0; i < afkTicks.size(); i++)
         afkTicks[i].update();
+    for (auto &e :priority_spots)
+        e = 0;
     cdr.update();
     cd2.update();
     cd3.update();
@@ -291,6 +295,43 @@ int GetClosestBuilding()
     }
     return BestBuilding;
 }
+
+void NavToSniperSpot(int priority)
+{
+    Vector random_spot;
+    if (!sniper_spots.size() && !preferred_sniper_spots.size())
+        return;
+    auto snip_spot = preferred_sniper_spots.size()
+                     ? preferred_sniper_spots
+                     : sniper_spots;
+    int best_spot = -1;
+    float maxscr = FLT_MAX;
+    int lowest_priority = 9999;
+    for (int i = 0; i < snip_spot.size();i++)
+    {
+        if ((priority_spots[i] < lowest_priority))
+           lowest_priority =  priority_spots[i];
+    }
+    for (int i = 0; i < snip_spot.size();i++)
+    {
+        if ((priority_spots[i] > lowest_priority))
+            continue;
+        float scr = snip_spot[i].DistTo(g_pLocalPlayer->v_Eye);
+        if (scr < maxscr)
+        {
+            maxscr = scr;
+            best_spot = i;
+        }
+    }
+
+    if (best_spot == -1)
+        return;
+    random_spot = snip_spot.at(best_spot);
+    if (random_spot.z)
+        nav::NavTo(random_spot, false, true, priority);
+    priority_spots[best_spot]++;
+    return;
+}
 int follow_target = 0;
 void CreateMove()
 {
@@ -327,38 +368,18 @@ void CreateMove()
             if (!spy_mode && !heavy_mode && !engi_mode)
             {
                 cd3.update();
-                Vector random_spot;
                 if (cd2.test_and_set(5000))
                     Init();
-                if (!sniper_spots.size() && !preferred_sniper_spots.size())
-                    return;
-                auto snip_spot = preferred_sniper_spots.size()
-                                     ? preferred_sniper_spots
-                                     : sniper_spots;
-                int rng     = rand() % snip_spot.size();
-                random_spot = snip_spot.at(rng);
-                if (random_spot.z)
-                    nav::NavTo(random_spot, true, true);
-                return;
+                NavToSniperSpot(5);
             }
             else if (!engi_mode)
             {
                 CachedEntity *tar = NearestEnemy();
                 if (CE_BAD(tar) && last_tar == -1 && nav::ReadyForCommands)
                 {
-                    Vector random_spot;
                     if (cd2.test_and_set(5000))
                         Init();
-                    if (!sniper_spots.size() && !preferred_sniper_spots.size())
-                        return;
-                    auto snip_spot = preferred_sniper_spots.size()
-                                         ? preferred_sniper_spots
-                                         : sniper_spots;
-                    int rng     = rand() % snip_spot.size();
-                    random_spot = snip_spot.at(rng);
-                    if (random_spot.z)
-                        nav::NavTo(random_spot, false);
-                    return;
+                    NavToSniperSpot(5);
                 }
                 if (CE_GOOD(tar))
                 {
@@ -414,7 +435,7 @@ void CreateMove()
                     }
                 }
                 // If Near The best spot and ready for commands
-                if (best_spot.DistTo(LOCAL_E->m_vecOrigin()) < 300.0f &&
+                if (best_spot.DistTo(LOCAL_E->m_vecOrigin()) < 200.0f &&
                     (nav::ReadyForCommands || nav::priority == 1))
                 {
                     // Get the closest Building
@@ -469,7 +490,7 @@ void CreateMove()
                             fClampAngle(angles);
                             current_user_cmd->viewangles = angles;
                             current_user_cmd->buttons |= IN_ATTACK;
-                            g_pLocalPlayer->bUseSilentAngles = false;
+                            g_pLocalPlayer->bUseSilentAngles = true;
                             return;
                         }
                     }
@@ -487,19 +508,9 @@ void CreateMove()
                         // Ammo is dormant, go and find it!
                         else if (sniper_spots.size() && nav::ReadyForCommands)
                         {
-                            Vector random_spot;
                             if (cd2.test_and_set(5000))
                                 Init();
-                            if (!sniper_spots.size() &&
-                                !preferred_sniper_spots.size())
-                                return;
-                            auto snip_spot = preferred_sniper_spots.size()
-                                                 ? preferred_sniper_spots
-                                                 : sniper_spots;
-                            int rng     = rand() % snip_spot.size();
-                            random_spot = snip_spot.at(rng);
-                            if (random_spot.z)
-                                nav::NavTo(random_spot, false, false, 1);
+                            NavToSniperSpot(1);
                             return;
                         }
                     }
