@@ -185,14 +185,13 @@ void Init()
                   sniper_spots.size(), preferred_sniper_spots.size(),
                   nest_spots.size());
 }
-// I doubtwe'd use more than 128 Sniper spots
-std::array<int, 128> priority_spots;
+
+std::unordered_map<int, int> priority_spots;
 void initonce()
 {
     for (int i = 0; i < afkTicks.size(); i++)
         afkTicks[i].update();
-    for (auto &e :priority_spots)
-        e = 0;
+    priority_spots.clear();
     cdr.update();
     cd2.update();
     cd3.update();
