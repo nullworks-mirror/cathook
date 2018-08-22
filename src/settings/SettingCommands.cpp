@@ -11,6 +11,8 @@
   Created on 29.07.18.
 */
 
+static void getAndSortAllConfigs();
+
 static CatCommand cat("cat", "", [](const CCommand &args) {
     if (args.ArgC() < 3)
     {
@@ -69,6 +71,8 @@ static CatCommand save("save", "", [](const CCommand &args) {
         writer.saveTo(
             std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf", false);
     }
+    getAndSortAllConfigs();
+    closedir(config_directory);
 });
 
 static CatCommand load("load", "", [](const CCommand &args) {
@@ -84,21 +88,50 @@ static CatCommand load("load", "", [](const CCommand &args) {
     }
 });
 
-static std::vector<std::string> sorted{};
+static std::vector<std::string> sortedVariables{};
 
 static void getAndSortAllVariables()
 {
     for (auto &v : settings::Manager::instance().registered)
     {
-        sorted.push_back(v.first);
+        sortedVariables.push_back(v.first);
     }
 
-    std::sort(sorted.begin(), sorted.end());
+    std::sort(sortedVariables.begin(), sortedVariables.end());
 
-    logging::Info("Sorted %u variables\n", sorted.size());
+    logging::Info("Sorted %u variables\n", sortedVariables.size());
 }
 
-static int completionCallback(
+static std::vector<std::string> sortedConfigs{};
+
+static void getAndSortAllConfigs()
+{
+    DIR *config_directory = opendir(DATA_PATH "/configs");
+    if (!config_directory)
+    {
+        logging::Info("Config directoy does not exist.");
+        closedir(config_directory);
+        return;
+    }
+    sortedConfigs.clear();
+
+    struct dirent *ent;
+    while ((ent = readdir(config_directory)))
+    {
+        std::string s(ent->d_name);
+        s = s.substr(0, s.find_last_of("."));
+        logging::Info(s.c_str());
+        sortedConfigs.push_back(s);
+    }
+    std::sort(sortedConfigs.begin(), sortedConfigs.end());
+    sortedConfigs.erase(sortedConfigs.begin());
+    sortedConfigs.erase(sortedConfigs.begin());
+
+    closedir(config_directory);
+    logging::Info("Sorted %u config files\n", sortedConfigs.size());
+}
+
+static int cat_completionCallback(
     const char *c_partial,
     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
@@ -144,7 +177,7 @@ static int completionCallback(
         return count;
     }
 
-    for (const auto &s : sorted)
+    for (const auto &s : sortedVariables)
     {
         if (s.find(parts[1]) == 0)
         {
@@ -162,8 +195,52 @@ static int completionCallback(
     return count;
 }
 
+static int load_completionCallback(
+    const char *c_partial,
+    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::string partial = c_partial;
+    std::string parts[2]{};
+    auto j    = 0u;
+    auto f    = false;
+    int count = 0;
+
+    for (auto i = 0u; i < partial.size() && j < 3; ++i)
+    {
+        auto space = (bool) isspace(partial[i]);
+        if (!space)
+        {
+            if (j)
+                parts[j - 1].push_back(partial[i]);
+            f = true;
+        }
+
+        if (i == partial.size() - 1 || (f && space))
+        {
+            if (space)
+                ++j;
+            f = false;
+        }
+    }
+
+    for (const auto &s : sortedConfigs)
+    {
+        if (s.find(parts[0]) == 0)
+        {
+            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1,
+                     "cat_load %s", s.c_str());
+            if (count == COMMAND_COMPLETION_MAXITEMS)
+                break;
+        }
+    }
+    return count;
+}
+
 static InitRoutine init([]() {
     getAndSortAllVariables();
-    cat.cmd->m_bHasCompletionCallback = true;
-    cat.cmd->m_fnCompletionCallback   = completionCallback;
+    getAndSortAllConfigs();
+    cat.cmd->m_bHasCompletionCallback  = true;
+    cat.cmd->m_fnCompletionCallback    = cat_completionCallback;
+    load.cmd->m_bHasCompletionCallback = true;
+    load.cmd->m_fnCompletionCallback   = load_completionCallback;
 });
