@@ -4,6 +4,7 @@
 #include "micropather.h"
 #include "pwd.h"
 #include <thread>
+#include <boost/functional/hash.hpp>
 #if ENABLE_VISUALS
 #include <glez/draw.hpp>
 #endif
@@ -29,7 +30,11 @@ size_t FindInVector(size_t id);
 class inactivityTracker
 {
     // Map for storing inactivity per connection
-    std::map<std::pair<int, int>, std::pair<int, unsigned int>> inactives;
+    std::unordered_map<std::pair<int, int>, std::pair<int, unsigned int>,
+                       boost::hash<std::pair<int, int>>>
+        inactives;
+    std::vector<int> sentryAreas;
+
     bool vischeckConnection(std::pair<int, int> &connection)
     {
         Vector begin = areas.at(FindInVector(connection.first)).m_center;
@@ -39,6 +44,7 @@ class inactivityTracker
         bool result = IsVectorVisible(begin, end, false);
         return result;
     }
+
     std::pair<int, int> VectorToId(std::pair<Vector, Vector> &connection)
     {
         CNavArea *currnode = nullptr;
@@ -83,6 +89,30 @@ public:
             i.second.second = 0;
         }
     }
+    void updateSentries()
+    {
+        logging::Info("1");
+        sentryAreas.clear();
+
+        for (int i = 0; i < HIGHEST_ENTITY; i++)
+        {
+            CachedEntity *ent = ENTITY(i);
+            if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CObjectSentrygun))
+                continue;
+            Vector sentryloc = GetBuildingPosition(ent);
+            for (auto i : areas)
+            {
+                Vector area = i.m_center;
+                area.z += 30.0f;
+                if (area.DistTo(sentryloc) > 1100.0f)
+                    continue;
+                if (!IsVectorVisible(area, sentryloc, true))
+                    continue;
+                logging::Info("5");
+                sentryAreas.push_back(i.m_id);
+            }
+        }
+    }
     bool IsIgnored(std::pair<int, int> connection)
     {
         if (inactives.find(connection) == inactives.end())
@@ -101,6 +131,14 @@ public:
                 "Ignored a connection due to type 2 connection type.");
             return true;
         }
+        if (std::find(sentryAreas.begin(), sentryAreas.end(),
+                      connection.first) != sentryAreas.end() ||
+            std::find(sentryAreas.begin(), sentryAreas.end(),
+                      connection.second) != sentryAreas.end())
+        {
+            logging::Info("Ignored a connection due to sentry gun coverage");
+            return true;
+        }
         return false;
     }
 
@@ -113,9 +151,10 @@ public:
         }
         auto &pair = inactives.at(connection);
 
-        unsigned int newTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                    std::chrono::system_clock::now() - timer.last)
-                                    .count();
+        unsigned int newTime =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now() - timer.last)
+                .count();
         if (pair.first == 2 && !vischeckConnection(connection))
             newTime = (newTime > 2500 ? 2500 : newTime);
         pair.second = pair.second + newTime;
