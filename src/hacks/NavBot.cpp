@@ -293,11 +293,11 @@ int GetClosestBuilding()
     return BestBuilding;
 }
 
-void NavToSniperSpot(int priority)
+bool NavToSniperSpot(int priority)
 {
     Vector random_spot;
     if (!sniper_spots.size() && !preferred_sniper_spots.size())
-        return;
+        return false;
     auto snip_spot = preferred_sniper_spots.size()
                      ? preferred_sniper_spots
                      : sniper_spots;
@@ -322,12 +322,13 @@ void NavToSniperSpot(int priority)
     }
 
     if (best_spot == -1)
-        return;
+        return false;
     random_spot = snip_spot.at(best_spot);
+    bool toret = false;
     if (random_spot.z)
-        nav::NavTo(random_spot, false, true, priority);
+        toret = nav::NavTo(random_spot, false, true, priority);
     priority_spots[best_spot]++;
-    return;
+    return toret;
 }
 int follow_target = 0;
 void CreateMove()
@@ -359,15 +360,17 @@ void CreateMove()
             cd3.update();
         bool isready =
             (spy_mode || heavy_mode || engi_mode) ? 1 : nav::ReadyForCommands;
-        int waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 5000;
+        static int waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 2000;
         if (isready && cd3.test_and_set(waittime))
         {
+            waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 2000;
             if (!spy_mode && !heavy_mode && !engi_mode)
             {
                 cd3.update();
                 if (cd2.test_and_set(5000))
                     Init();
-                NavToSniperSpot(5);
+                if (!NavToSniperSpot(5))
+                    waittime = 1;
             }
             else if (!engi_mode)
             {
@@ -376,13 +379,17 @@ void CreateMove()
                 {
                     if (cd2.test_and_set(5000))
                         Init();
-                    NavToSniperSpot(5);
+                    if (!NavToSniperSpot(5))
+                        waittime = 1;
                 }
                 if (CE_GOOD(tar))
                 {
                     if (!spy_mode ||
                         !hacks::shared::backtrack::isBacktrackEnabled)
-                        nav::NavTo(tar->m_vecOrigin(), false);
+                    {
+                        if (!nav::NavTo(tar->m_vecOrigin(), false))
+                            last_tar = -1;
+                    }
                     else
                     {
                         for (auto i : hacks::shared::backtrack::headPositions
@@ -507,7 +514,8 @@ void CreateMove()
                         {
                             if (cd2.test_and_set(5000))
                                 Init();
-                            NavToSniperSpot(1);
+                            if (!NavToSniperSpot(1))
+                                waittime = 1;
                             return;
                         }
                     }
