@@ -242,8 +242,9 @@ void clearInstructions()
 
 static Timer ignoreReset{};
 static Timer patherReset{};
+static Timer sentryUpdate{};
 // Function for removing ignores
-void clearIgnores()
+void ignoreManagerCM()
 {
     if (!TF2MAP || !TF2MAP->pather)
         return;
@@ -251,6 +252,8 @@ void clearIgnores()
         TF2MAP->inactiveTracker.reset();
     if (patherReset.test_and_set(30000))
         TF2MAP->pather->Reset();
+    if(sentryUpdate.test_and_set(2000))
+           TF2MAP->inactiveTracker.updateSentries();
 }
 
 void Repath()
@@ -287,7 +290,7 @@ void CreateMove()
         crumbs.clear();
         return;
     }
-    clearIgnores();
+    ignoreManagerCM();
     // Crumbs empty, prepare for next instruction
     if (crumbs.empty())
     {
