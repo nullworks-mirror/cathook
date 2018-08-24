@@ -33,7 +33,8 @@ class inactivityTracker
     std::unordered_map<std::pair<int, int>, std::pair<int, unsigned int>,
                        boost::hash<std::pair<int, int>>>
         inactives;
-    std::vector<int> sentryAreas;
+    std::unordered_map<int, bool> sentryAreas;
+    std::vector<Vector> sentries;
 
     bool vischeckConnection(std::pair<int, int> &connection)
     {
@@ -89,36 +90,52 @@ public:
             i.second.second = 0;
         }
     }
+    bool ShouldCancelPath(std::vector<Vector> crumbs)
+    {
+        for (auto sentry : sentries)
+            for (auto crumb : crumbs)
+            {
+                if (crumb.DistTo(sentry) > 1100)
+                    continue;
+                if (!IsVectorVisible(crumb, sentry, true))
+                    continue;
+                return true;
+            }
+         return false;
+    }
     void updateSentries()
     {
-        logging::Info("1");
         sentryAreas.clear();
-
+        sentries.clear();
         for (int i = 0; i < HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CObjectSentrygun))
+            if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CObjectSentrygun) || ent->m_iTeam() == LOCAL_E->m_iTeam())
                 continue;
             Vector sentryloc = GetBuildingPosition(ent);
+            sentries.push_back(sentryloc);
             for (auto i : areas)
             {
                 Vector area = i.m_center;
-                area.z += 30.0f;
+                area.z += 83.0f;
                 if (area.DistTo(sentryloc) > 1100.0f)
                     continue;
                 if (!IsVectorVisible(area, sentryloc, true))
                     continue;
-                logging::Info("5");
-                sentryAreas.push_back(i.m_id);
+                sentryAreas[i.m_id] = true;
             }
         }
     }
     bool IsIgnored(std::pair<int, int> connection)
     {
-        if (inactives.find(connection) == inactives.end())
+        if (sentryAreas[connection.first] ||
+            sentryAreas[connection.second])
         {
-            return false;
+            logging::Info("Ignored a connection due to sentry gun coverage");
+            return true;
         }
+        if (inactives.find(connection) == inactives.end())
+            return false;
         auto &pair = inactives.at(connection);
         if (pair.second >= 5000)
         {
@@ -129,14 +146,6 @@ public:
         {
             logging::Info(
                 "Ignored a connection due to type 2 connection type.");
-            return true;
-        }
-        if (std::find(sentryAreas.begin(), sentryAreas.end(),
-                      connection.first) != sentryAreas.end() ||
-            std::find(sentryAreas.begin(), sentryAreas.end(),
-                      connection.second) != sentryAreas.end())
-        {
-            logging::Info("Ignored a connection due to sentry gun coverage");
             return true;
         }
         return false;

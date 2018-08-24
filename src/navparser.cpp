@@ -243,6 +243,7 @@ void clearInstructions()
 static Timer ignoreReset{};
 static Timer patherReset{};
 static Timer sentryUpdate{};
+static Timer sentryCheck{};
 // Function for removing ignores
 void ignoreManagerCM()
 {
@@ -252,8 +253,8 @@ void ignoreManagerCM()
         TF2MAP->inactiveTracker.reset();
     if (patherReset.test_and_set(30000))
         TF2MAP->pather->Reset();
-    if(sentryUpdate.test_and_set(2000))
-           TF2MAP->inactiveTracker.updateSentries();
+    if(sentryUpdate.test_and_set(1000))
+        TF2MAP->inactiveTracker.updateSentries();
 }
 
 void Repath()
@@ -265,6 +266,7 @@ void Repath()
         // Throwaway int
         int i1, i2;
         // Find a new path
+        TF2MAP->pather->Reset();
         crumbs = findPath(g_pLocalPlayer->v_Origin, crumbs.back(), i1, i2);
     }
     else
@@ -273,6 +275,7 @@ void Repath()
             "Pathing: NavBot inactive for too long. Canceling tasks and "
             "ignoring connection...");
         // Wait for new instructions
+        TF2MAP->pather->Reset();
         crumbs.clear();
     }
 }
@@ -324,6 +327,13 @@ void CreateMove()
         Repath();
         inactivity.update();
         return;
+    }
+    // Check for new sentries
+    if (sentryCheck.test_and_set(1000) && TF2MAP->inactiveTracker.ShouldCancelPath(crumbs))
+    {
+        logging::Info("Pathing: New Sentry found!");
+        TF2MAP->pather->Reset();
+        Repath();
     }
     // If inactive for too long
     if (inactivity.check(5000))
