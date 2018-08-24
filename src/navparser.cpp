@@ -225,6 +225,8 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
     }
     crumbs.clear();
     crumbs   = std::move(path);
+    if (crumbs.empty())
+        return false;
     lastArea = crumbs.at(0);
     if (!navToLocalCenter && crumbs.size() > 1)
         crumbs.erase(crumbs.begin());
@@ -334,6 +336,7 @@ void CreateMove()
         logging::Info("Pathing: New Sentry found!");
         TF2MAP->pather->Reset();
         Repath();
+        return;
     }
     // If inactive for too long
     if (inactivity.check(5000))

@@ -8,13 +8,17 @@
 #include "common.hpp"
 #include "SeedPrediction.hpp"
 #include "reclasses.hpp"
-constexpr double MIN_CLOCKRES = 0.25;
-constexpr double MAX_CLOCKRES = 8192.5;
-double clockRes;
+constexpr float MIN_CLOCKRES = 0.25;
+constexpr float MAX_CLOCKRES = 8192.5;
+float clockRes;
 float seedFraction = 0.0f;
 namespace hacks::tf2::seedprediction
 {
-settings::Bool prediction{ "seed-prediction.enable", "false" };
+static settings::Bool prediction{ "seed-prediction.enable", "false" };
+bool predon()
+{
+    return *prediction;
+}
 buf bases{ 9999 };
 buf2 rebased{ 9999 };
 buf3 intervals{ 9999 };
@@ -27,7 +31,7 @@ void handleFireBullets(C_TEFireBullets *ent)
     if (g_IEngine->IsInGame())
     {
         INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-        double time = g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
+        float time = g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
                       (ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f);
         bases.push_back(seedstruct{ g_GlobalVars->tickcount, ent->m_iSeed(),
                                     time }); // It's circular buffer
@@ -54,9 +58,9 @@ void selectBase()
     // between).
 
     int bestGap        = 0;
-    double newClockRes = 1.0;
+    float newClockRes = 1.0;
 
-    for (double res = MIN_CLOCKRES; res < MAX_CLOCKRES + 1.0; res *= 2.0)
+    for (float res = MIN_CLOCKRES; res < MAX_CLOCKRES + 1.0; res *= 2.0)
     {
         rebased.clear();
         for (seedstruct &base : bases)
@@ -93,21 +97,21 @@ void selectBase()
     // interpret them as intervals of size 1 and find offset which covers most
     // of them.
 
-    double maxDisp = 5.0 / clockRes;
+    float maxDisp = 5.0 / clockRes;
     intervals.clear();
 
     for (seedstruct &base : bases)
     {
-        double disp = double(base.seed) - double(selected.seed);
+        float disp = float(base.seed) - float(selected.seed);
         disp =
             fmod(disp - predictOffset(selected, base.tickcount, clockRes), 256);
-        disp = (disp > 128.0 ? disp - 256.0 : disp);
+        disp = (disp > 128.0f ? disp - 256.0f : disp);
 
-        if (abs(disp) < max(1.2, maxDisp))
+        if (abs(disp) < fmaxf(1.2, maxDisp))
         {
             intervals.push_back(
-                { 1, disp - 0.5 }); // Actually "interval ends", not "intervals"
-            intervals.push_back({ -1, disp + 0.5 });
+                { 1, disp - 0.5f }); // Actually "interval ends", not "intervals"
+            intervals.push_back({ -1, disp + 0.5f });
         }
     }
 
@@ -122,7 +126,7 @@ void selectBase()
         if (curChance > bestChance)
         {
             bestChance   = curChance;
-            seedFraction = (inter.pos + intervals[i + 1].pos) / 2;
+            seedFraction = (inter.pos + intervals[i + 1].pos) / 2.0f;
         }
     }
 
@@ -131,14 +135,14 @@ void selectBase()
                   bestChance * 100 / total);
 }
 
-double predictOffset(const seedstruct &entry, int targetTick, double clockRes)
+float predictOffset(const seedstruct &entry, int targetTick, float clockRes)
 {
-    return (1000.0 * g_GlobalVars->interval_per_tick / clockRes) *
-           double(targetTick - entry.tickcount);
+    return (1000.0f * g_GlobalVars->interval_per_tick / clockRes) *
+           float(targetTick - entry.tickcount);
 }
 
-int predictSeed(const seedstruct &entry, int targetTick, double clockRes,
-                double SeedOffset)
+int predictSeed(const seedstruct &entry, int targetTick, float clockRes,
+                float SeedOffset)
 {
     return (entry.seed +
             int(roundeven(predictOffset(entry, targetTick, clockRes)) +
@@ -146,12 +150,12 @@ int predictSeed(const seedstruct &entry, int targetTick, double clockRes,
            256;
 }
 
-int predictTick(double targetTime)
+int predictTick(float targetTime)
 {
     INetChannel *ch  = (INetChannel *) g_IEngine->GetNetChannelInfo();
-    double ping      = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
-    double deltaTime = targetTime - selected.time + ping;
-    return int(double(selected.tickcount) +
+    float ping      = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
+    float deltaTime = targetTime - selected.time + ping;
+    return int(float(selected.tickcount) +
                deltaTime / g_GlobalVars->interval_per_tick + 0.7);
 }
 
@@ -160,14 +164,14 @@ int predictTick()
     return predictTick(g_GlobalVars->curtime * g_GlobalVars->interval_per_tick);
 }
 
-int predictSeed(double targetTime)
+int predictSeed(float targetTime)
 {
     INetChannel *ch   = (INetChannel *) g_IEngine->GetNetChannelInfo();
-    double ping       = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
-    double deltaTime  = targetTime - selected.time + ping;
-    int tick          = int(double(selected.tickcount) +
+    float ping       = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
+    float deltaTime  = targetTime - selected.time + ping;
+    int tick          = int(float(selected.tickcount) +
                    deltaTime / g_GlobalVars->interval_per_tick + 0.7);
-    double SeedOffset = predictOffset(selected, tick, clockRes);
+    float SeedOffset = predictOffset(selected, tick, clockRes);
     int seed          = predictSeed(selected, tick, clockRes, SeedOffset);
 
     logging::Info("seedpred-pred",

@@ -6,11 +6,11 @@
  */
 #pragma once
 #include "reclasses.hpp"
-class C_TEFireBullets : public C_BaseTempEntity
+class C_TEFireBullets
 {
 public:
     C_TEFireBullets() = delete;
-    static C_BaseTempEntity *GTEFireBullets();
+    static C_TEFireBullets *GTEFireBullets();
 
 public:
     int m_iSeed();

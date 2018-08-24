@@ -16,6 +16,7 @@
 #include "NavBot.hpp"
 
 #include "HookedMethods.hpp"
+#include "PreDataUpdate.hpp"
 
 static settings::Bool minigun_jump{ "misc.minigun-jump-tf2c", "false" };
 static settings::Bool roll_speedhack{ "misc.roll-speedhack", "false" };
@@ -197,6 +198,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         ipc::UpdateServerAddress();
 #endif
     }
+    hooked_methods::CreateMove();
+
     if (nolerp)
     {
         // current_user_cmd->tick_count += 1;
