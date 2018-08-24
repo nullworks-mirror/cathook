@@ -85,6 +85,11 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
+#set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions" LINK_FLAGS "-m32 -fno-gnu-unique -fexceptions -DNDEBUG")
+set(CMAKE_CXX_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions -fno-gnu-unique -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 
 target_compile_definitions(cathook PRIVATE
         _GLIBCXX_USE_CXX11_ABI=0
@@ -124,13 +129,6 @@ add_custom_target(data
 # TODO glez_LIBRARIES?
 target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl)
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-# Strip
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    message("Stripping info from library")
-    add_custom_command(TARGET cathook POST_BUILD
-            COMMAND strip --strip-all "$<TARGET_FILE:cathook>")
-endif()
 
 add_subdirectory(src)
 add_subdirectory(include)
