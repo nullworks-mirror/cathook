@@ -46,7 +46,7 @@ class inactivityTracker
         return result;
     }
 
-    std::pair<int, int> VectorToId(std::pair<Vector, Vector> &connection)
+    std::pair<int, int> VectorsToId(std::pair<Vector, Vector> &connection)
     {
         CNavArea *currnode = nullptr;
         for (size_t i = 0; i < areas.size(); i++)
@@ -81,6 +81,22 @@ class inactivityTracker
         }
     }
 
+    int VectorToID(Vector vec)
+    {
+        CNavArea *currnode = nullptr;
+        for (size_t i = 0; i < areas.size(); i++)
+        {
+            if (areas.at(i).m_center == vec)
+            {
+                currnode = &areas.at(i);
+                break;
+            }
+        }
+        if (!currnode)
+            return -1;
+        return currnode->m_id;
+    }
+
 public:
     void reset()
     {
@@ -92,16 +108,15 @@ public:
     }
     bool ShouldCancelPath(std::vector<Vector> crumbs)
     {
-        for (auto sentry : sentries)
-            for (auto crumb : crumbs)
-            {
-                if (crumb.DistTo(sentry) > 1100)
-                    continue;
-                if (!IsVectorVisible(crumb, sentry, true))
-                    continue;
+        for (auto crumb : crumbs)
+        {
+            int id = VectorToID(crumb);
+            if (id == -1)
+                continue;
+            if (sentryAreas[id])
                 return true;
-            }
-         return false;
+        }
+        return false;
     }
     void updateSentries()
     {
@@ -110,7 +125,9 @@ public:
         for (int i = 0; i < HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CObjectSentrygun) || ent->m_iTeam() == LOCAL_E->m_iTeam())
+            if (CE_BAD(ent) ||
+                ent->m_iClassID() != CL_CLASS(CObjectSentrygun) /*||
+                ent->m_iTeam() == LOCAL_E->m_iTeam()*/)
                 continue;
             Vector sentryloc = GetBuildingPosition(ent);
             sentries.push_back(sentryloc);
@@ -128,8 +145,7 @@ public:
     }
     bool IsIgnored(std::pair<int, int> connection)
     {
-        if (sentryAreas[connection.first] ||
-            sentryAreas[connection.second])
+        if (sentryAreas[connection.first] || sentryAreas[connection.second])
         {
             logging::Info("Ignored a connection due to sentry gun coverage");
             return true;
@@ -173,7 +189,7 @@ public:
     void AddTime(std::pair<Vector, Vector> connection, Timer &timer,
                  bool &resetPather)
     {
-        auto pair = VectorToId(connection);
+        auto pair = VectorsToId(connection);
         if (pair.first == -1 || pair.second == -1)
             return;
         AddTime(pair, timer, resetPather);
@@ -201,7 +217,7 @@ public:
     }
     bool CheckType2(std::pair<Vector, Vector> connection)
     {
-        auto pair = VectorToId(connection);
+        auto pair = VectorsToId(connection);
         if (pair.first == -1 || pair.second == -1)
             return false;
         return CheckType2(pair);

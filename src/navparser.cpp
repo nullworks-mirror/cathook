@@ -211,7 +211,7 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
     // Only allow instructions to overwrite others if their priority is higher
     if (instructionPriority < priority)
         return false;
-    int locNav, tarNav;
+    int locNav = 0, tarNav = 0;
     auto path = findPath(g_pLocalPlayer->v_Origin, dest, locNav, tarNav);
     if (path.empty())
         return false;
@@ -266,7 +266,7 @@ void Repath()
         logging::Info("Pathing: NavBot inactive for too long. Ignoring "
                       "connection and finding another path...");
         // Throwaway int
-        int i1, i2;
+        int i1 = 0, i2 = 0;
         // Find a new path
         TF2MAP->pather->Reset();
         crumbs = findPath(g_pLocalPlayer->v_Origin, crumbs.back(), i1, i2);
@@ -402,7 +402,7 @@ CatCommand navprint("nav_print", "Debug nav print", [](const CCommand &args) {
 });
 
 CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
-    int i1, i2;
+    int i1 = 0, i2 = 0;
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc, i1, i2);
     if (path.empty())
     {
