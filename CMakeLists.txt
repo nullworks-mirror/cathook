@@ -1,6 +1,5 @@
 # Current dependencies:
 #   Git
-#   OpenSSL (maybe should be removed, only used by backpack.tf esp)
 #   SDL2
 #   GLEW
 
@@ -40,7 +39,6 @@ if(NOT EnableVisuals)
 endif()
 
 find_package(Git REQUIRED)
-find_package(OpenSSL REQUIRED)
 
 # cat packages
 
@@ -87,7 +85,6 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
-set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions" LINK_FLAGS "-m32 -fno-gnu-unique -fexceptions -DNDEBUG")
 
 target_compile_definitions(cathook PRIVATE
         _GLIBCXX_USE_CXX11_ABI=0
