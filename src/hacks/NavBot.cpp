@@ -295,39 +295,48 @@ int GetClosestBuilding()
 
 bool NavToSniperSpot(int priority)
 {
-    Vector random_spot;
+    Vector random_spot{};
     if (!sniper_spots.size() && !preferred_sniper_spots.size())
         return false;
-    auto snip_spot = preferred_sniper_spots.size()
+    bool use_preferred = !preferred_sniper_spots.empty();
+    auto snip_spot = use_preferred
                      ? preferred_sniper_spots
                      : sniper_spots;
-    int best_spot = -1;
-    float maxscr = FLT_MAX;
-    int lowest_priority = 9999;
-    for (int i = 0; i < snip_spot.size();i++)
-    {
-        if ((priority_spots[i] < lowest_priority))
-           lowest_priority =  priority_spots[i];
-    }
-    for (int i = 0; i < snip_spot.size();i++)
-    {
-        if ((priority_spots[i] > lowest_priority))
-            continue;
-        float scr = snip_spot[i].DistTo(g_pLocalPlayer->v_Eye);
-        if (scr < maxscr)
-        {
-            maxscr = scr;
-            best_spot = i;
-        }
-    }
-
-    if (best_spot == -1)
-        return false;
-    random_spot = snip_spot.at(best_spot);
     bool toret = false;
-    if (random_spot.z)
-        toret = nav::NavTo(random_spot, false, true, priority);
-    priority_spots[best_spot]++;
+    if (use_preferred)
+    {
+        int best_spot = -1;
+        float maxscr = FLT_MAX;
+        int lowest_priority = 9999;
+        for (int i = 0; i < snip_spot.size(); i++)
+        {
+            if ((priority_spots[i] < lowest_priority))
+                lowest_priority = priority_spots[i];
+        }
+        for (int i = 0; i < snip_spot.size(); i++) {
+            if ((priority_spots[i] > lowest_priority))
+                continue;
+            float scr = snip_spot[i].DistTo(g_pLocalPlayer->v_Eye);
+            if (scr < maxscr) {
+                maxscr = scr;
+                best_spot = i;
+            }
+        }
+
+        if (best_spot == -1)
+            return false;
+        random_spot = snip_spot.at(best_spot);
+        if (random_spot.z)
+            toret = nav::NavTo(random_spot, false, true, priority);
+        priority_spots[best_spot]++;
+    }
+    else if (!snip_spot.empty())
+    {
+        int rng = rand() % snip_spot.size();
+        random_spot = snip_spot.at(rng);
+        if (random_spot.z)
+            toret = nav::NavTo(random_spot, false, true, priority);
+    }
     return toret;
 }
 int follow_target = 0;
@@ -359,7 +368,7 @@ void CreateMove()
         if (!nav::ReadyForCommands && !spy_mode && !heavy_mode && !engi_mode)
             cd3.update();
         bool isready =
-            (spy_mode || heavy_mode || engi_mode) ? 1 : nav::ReadyForCommands;
+            (spy_mode || heavy_mode || engi_mode) ? true : nav::ReadyForCommands;
         static int waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 2000;
         if (isready && cd3.test_and_set(waittime))
         {

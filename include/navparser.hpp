@@ -34,7 +34,7 @@ class inactivityTracker
                        boost::hash<std::pair<int, int>>>
         inactives;
     std::unordered_map<int, bool> sentryAreas;
-    std::vector<Vector> sentries;
+    std::vector<Vector> sentries{};
 
     bool vischeckConnection(std::pair<int, int> &connection)
     {

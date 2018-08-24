@@ -12,7 +12,7 @@
 #pragma once
 namespace hacks::tf2::seedprediction
 {
-extern settings::Bool prediction;
+bool predon();
 void handleFireBullets(C_TEFireBullets *);
 struct seedstruct
 {
@@ -28,7 +28,7 @@ struct predictSeed2
 {
     seedstruct base;
     int tickcount;
-    double resolution;
+    float resolution;
     bool operator<(const predictSeed2 &rhs) const
     {
         return tickcount < rhs.tickcount;
@@ -37,7 +37,7 @@ struct predictSeed2
 struct IntervalEdge
 {
     int pos;
-    double val;
+    float val;
     bool operator<(const IntervalEdge &rhs) const
     {
         return val < rhs.val;
@@ -50,5 +50,5 @@ extern buf bases;
 extern buf2 rebased;
 extern buf3 intervals;
 void selectBase();
-double predictOffset(const seedstruct &entry, int targetTick, double clockRes);
+float predictOffset(const seedstruct &entry, int targetTick, float clockRes);
 } // namespace hacks::tf2::seedprediction

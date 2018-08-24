@@ -36,8 +36,6 @@ struct SDL_Window;
         &hooked_methods::original::name
 namespace hooked_methods
 {
-// FireBullets
-DECLARE_HOOKED_METHOD(PreDataUpdate, void, void *, int);
 // ClientMode
 DECLARE_HOOKED_METHOD(CreateMove, bool, void *, float, CUserCmd *);
 DECLARE_HOOKED_METHOD(LevelInit, void, void *, const char *);

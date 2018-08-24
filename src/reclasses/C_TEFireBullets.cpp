@@ -5,14 +5,15 @@
  *      Author: bencat07
  */
 #include "reclasses.hpp"
+#include "C_TEFireBullets.hpp"
 
-C_BaseTempEntity *C_TEFireBullets::GTEFireBullets()
+C_TEFireBullets *C_TEFireBullets::GTEFireBullets()
 {
     static uintptr_t fireaddr =
         (gSignatures.GetClientSignature(
-             "C7 40 ? ? ? ? ? C7 40 ? ? ? ? ? A3 ? ? ? ? 89 50") -
-         0x4);
-    C_BaseTempEntity *fire = *(C_BaseTempEntity **) fireaddr;
+             "55 B8 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 55 89 E5 56 53 83 EC ? C7 45") +
+         0x2);
+    C_TEFireBullets *fire = *(C_TEFireBullets **) fireaddr;
     return fire;
 }
 int C_TEFireBullets::m_iSeed()
