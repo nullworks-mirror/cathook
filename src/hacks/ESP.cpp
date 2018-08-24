@@ -351,7 +351,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                     if (emoji_esp_scaling && (size < *emoji_min_size))
                         size = *emoji_min_size;
                     player_info_s info{};
-                    unsigned int steamID;
+                    unsigned int steamID = 0;
                     unsigned int steamidarray[32]{};
                     bool hascall    = false;
                     steamidarray[0] = 479487126;

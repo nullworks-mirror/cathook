@@ -11,8 +11,8 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
 {
 #if !LAGBOT_MODE
-    int in;
-    int state;
+    int in = 0;
+    int state = 0;
     if (CE_GOOD(LOCAL_E))
     {
         in    = ch->m_nInSequenceNr;

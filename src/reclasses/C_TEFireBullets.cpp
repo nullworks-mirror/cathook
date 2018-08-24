@@ -5,7 +5,6 @@
  *      Author: bencat07
  */
 #include "reclasses.hpp"
-#pragma once
 
 C_BaseTempEntity *C_TEFireBullets::GTEFireBullets()
 {

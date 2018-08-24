@@ -61,8 +61,8 @@ public:
     {
         fromString(string);
     }
-
-    Variable &reset()
+    // Variable & causes segfault with gcc optimizations
+    void reset()
     {
         setInternal(Key{});
     }
