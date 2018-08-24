@@ -33,11 +33,9 @@ bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
               [](const pair_type &a, const pair_type &b) -> bool {
                   return a.first.compare(b.first) < 0;
               });
-
     for (auto &v : all_registered)
-    {
-        write(v.first, v.second);
-    }
+        if (!v.first.empty())
+            write(v.first, v.second);
     stream.close();
     return true;
 }
