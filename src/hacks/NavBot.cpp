@@ -303,6 +303,7 @@ bool NavToSniperSpot(int priority)
                      ? preferred_sniper_spots
                      : sniper_spots;
     bool toret = false;
+
     if (use_preferred)
     {
         int best_spot = -1;

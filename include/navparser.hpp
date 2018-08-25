@@ -240,7 +240,7 @@ struct MAP : public micropather::Graph
         corners.at(3) = Vector{ CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y,
                                 CornerOf->m_seCorner.z }; // SW
 
-        Vector bestVec;
+        Vector bestVec{};
         float bestDist = FLT_MAX;
 
         for (size_t i = 0; i < corners.size(); i++)
@@ -253,7 +253,7 @@ struct MAP : public micropather::Graph
             }
         }
 
-        Vector bestVec2;
+        Vector bestVec2{};
         float bestDist2 = FLT_MAX;
 
         for (size_t i = 0; i < corners.size(); i++)
