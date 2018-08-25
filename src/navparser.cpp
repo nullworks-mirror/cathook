@@ -17,9 +17,9 @@ static std::unique_ptr<MAP> TF2MAP;
 // Function to get place in Vector by connection ID
 // Todo: find an alternative for this, maybe a map for storing ptrs to the
 // std::vector?
-size_t FindInVector(size_t id)
+int FindInVector(size_t id)
 {
-    for (size_t i = 0; i < areas.size(); i++)
+    for (int i = 0; i < areas.size(); i++)
     {
         if (areas.at(i).m_id == id)
             return i;
