@@ -79,6 +79,7 @@ class inactivityTracker
                 return { currnode->m_id, nextnode->m_id };
             }
         }
+        return { -1, -1 };
     }
 
     int VectorToID(Vector vec)
