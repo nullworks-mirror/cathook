@@ -38,8 +38,12 @@ class inactivityTracker
 
     bool vischeckConnection(std::pair<int, int> &connection)
     {
-        Vector begin = areas.at(FindInVector(connection.first)).m_center;
-        Vector end   = areas.at(FindInVector(connection.second)).m_center;
+        int id0 = FindInVector(connection.first);
+        int id1 = FindInVector(connection.second);
+        if (id0 == -1 || id1 == -1)
+            return false;
+        Vector begin = areas.at(id0).m_center;
+        Vector end   = areas.at(id1).m_center;
         begin.z += 72;
         end.z += 72;
         bool result = IsVectorVisible(begin, end, false);

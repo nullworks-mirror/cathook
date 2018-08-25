@@ -24,6 +24,7 @@ size_t FindInVector(size_t id)
         if (areas.at(i).m_id == id)
             return i;
     }
+    return -1;
 }
 
 void Init()
