@@ -25,7 +25,7 @@ bool Prepare();
 void CreateMove();
 void Draw();
 
-size_t FindInVector(size_t id);
+int FindInVector(size_t id);
 
 class inactivityTracker
 {
@@ -131,8 +131,8 @@ public:
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) ||
-                ent->m_iClassID() != CL_CLASS(CObjectSentrygun) /*||
-                ent->m_iTeam() == LOCAL_E->m_iTeam()*/)
+                ent->m_iClassID() != CL_CLASS(CObjectSentrygun) ||
+                ent->m_iTeam() == LOCAL_E->m_iTeam())
                 continue;
             Vector sentryloc = GetBuildingPosition(ent);
             sentries.push_back(sentryloc);
@@ -303,9 +303,12 @@ struct MAP : public micropather::Graph
             if (inactiveTracker.IsIgnored(
                     std::pair{ area->m_id, i.area->m_id }))
                 continue;
+            int id = FindInVector(i.area->m_id);
+            if (id == -1)
+                return;
             micropather::StateCost cost;
             cost.state =
-                static_cast<void *>(&areas.at(FindInVector(i.area->m_id)));
+                static_cast<void *>(&areas.at(id));
             cost.cost = area->m_center.DistTo(i.area->m_center);
             adjacent->push_back(cost);
         }
