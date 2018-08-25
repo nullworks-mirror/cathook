@@ -131,8 +131,8 @@ public:
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) ||
-                ent->m_iClassID() != CL_CLASS(CObjectSentrygun) /*||
-                ent->m_iTeam() == LOCAL_E->m_iTeam()*/)
+                ent->m_iClassID() != CL_CLASS(CObjectSentrygun) ||
+                ent->m_iTeam() == LOCAL_E->m_iTeam())
                 continue;
             Vector sentryloc = GetBuildingPosition(ent);
             sentries.push_back(sentryloc);
