@@ -26,14 +26,14 @@ public:
     int BRequestJoinPlayer(CSteamID steamid);
     static bool BInQueue(CTFPartyClient *this_);
 };
-    class ITFMatchGroupDescription
-    {
-    public:
-        char pad0[4];
-        int m_iID;
-        char pad1[63];
-        bool m_bForceCompetitiveSettings;
-    };
+class ITFMatchGroupDescription
+{
+public:
+    char pad0[4];
+    int m_iID;
+    char pad1[63];
+    bool m_bForceCompetitiveSettings;
+};
 
-    ITFMatchGroupDescription* GetMatchGroupDescription(int& idx);
+ITFMatchGroupDescription *GetMatchGroupDescription(int &idx);
 } // namespace re

@@ -233,7 +233,7 @@ void CreateMove()
 }
 
 #if ENABLE_VISUALS
-//Timer ussr{};
+// Timer ussr{};
 void DrawText()
 {
     /*if (ussr.test_and_set(207000))

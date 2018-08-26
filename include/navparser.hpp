@@ -26,6 +26,7 @@ void CreateMove();
 void Draw();
 
 int FindInVector(size_t id);
+int FindNearestValid(Vector vec);
 
 class inactivityTracker
 {
@@ -33,7 +34,11 @@ class inactivityTracker
     std::unordered_map<std::pair<int, int>, std::pair<int, unsigned int>,
                        boost::hash<std::pair<int, int>>>
         inactives;
+
+public:
     std::unordered_map<int, bool> sentryAreas;
+
+private:
     std::vector<Vector> sentries{};
 
     bool vischeckConnection(std::pair<int, int> &connection)
@@ -307,9 +312,8 @@ struct MAP : public micropather::Graph
             if (id == -1)
                 return;
             micropather::StateCost cost;
-            cost.state =
-                static_cast<void *>(&areas.at(id));
-            cost.cost = area->m_center.DistTo(i.area->m_center);
+            cost.state = static_cast<void *>(&areas.at(id));
+            cost.cost  = area->m_center.DistTo(i.area->m_center);
             adjacent->push_back(cost);
         }
     }

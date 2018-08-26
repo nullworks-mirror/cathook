@@ -26,7 +26,49 @@ int FindInVector(size_t id)
     }
     return -1;
 }
-
+static int bestarea = -1;
+Timer reselect{};
+int FindNearestValid(Vector vec)
+{
+    if (reselect.test_and_set(500))
+    {
+        float bestscr = FLT_MAX;
+        if (bestarea != -1)
+        {
+            bool success = false;
+            Vector area  = areas[bestarea].m_center;
+            area.z += 72.0f;
+            if (!TF2MAP->inactiveTracker.sentryAreas[bestarea])
+            {
+                float scr = area.DistTo(vec);
+                if (scr < 2000.0f)
+                    if (IsVectorVisible(vec, area, false))
+                        success = true;
+            }
+            if (!success)
+                bestarea = -1;
+        }
+        else
+            for (int ar = 0; ar < areas.size(); ar++)
+            {
+                Vector area = areas[ar].m_center;
+                area.z += 72.0f;
+                if (TF2MAP->inactiveTracker.sentryAreas[ar])
+                    continue;
+                float scr = area.DistTo(vec);
+                if (scr > 2000.0f)
+                    continue;
+                if (scr > bestscr)
+                    continue;
+                if (IsVectorVisible(vec, area, false))
+                {
+                    bestscr  = scr;
+                    bestarea = ar;
+                }
+            }
+    }
+    return bestarea;
+}
 void Init()
 {
     // Get NavFile location
@@ -225,7 +267,7 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
             TF2MAP->pather->Reset();
     }
     crumbs.clear();
-    crumbs   = std::move(path);
+    crumbs = std::move(path);
     if (crumbs.empty())
         return false;
     lastArea = crumbs.at(0);
@@ -256,7 +298,7 @@ void ignoreManagerCM()
         TF2MAP->inactiveTracker.reset();
     if (patherReset.test_and_set(30000))
         TF2MAP->pather->Reset();
-    if(sentryUpdate.test_and_set(1000))
+    if (sentryUpdate.test_and_set(1000))
         TF2MAP->inactiveTracker.updateSentries();
 }
 
@@ -332,7 +374,8 @@ void CreateMove()
         return;
     }
     // Check for new sentries
-    if (sentryCheck.test_and_set(1000) && TF2MAP->inactiveTracker.ShouldCancelPath(crumbs))
+    if (sentryCheck.test_and_set(1000) &&
+        TF2MAP->inactiveTracker.ShouldCancelPath(crumbs))
     {
         logging::Info("Pathing: New Sentry found!");
         TF2MAP->pather->Reset();

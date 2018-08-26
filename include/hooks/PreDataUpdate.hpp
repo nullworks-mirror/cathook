@@ -6,5 +6,5 @@
 #include "HookedMethods.hpp"
 namespace hooked_methods
 {
-    void CreateMove();
+void CreateMove();
 }

@@ -15,6 +15,8 @@ static settings::Bool heavy_mode("navbot.heavy-mode", "false");
 static settings::Bool engi_mode("navbot.engi-mode", "false");
 static settings::Bool primary_only("navbot.primary-only", "true");
 
+static settings::Bool target_sentry{ "navbot.target-sentry", "true" };
+static settings::Bool take_tele{ "navbot.take-teleporters", "true" };
 static settings::Bool enable_fb{ "navbot.medbot", "false" };
 static settings::Bool roambot{ "navbot.roaming", "true" };
 static settings::Float follow_activation{ "navbot.max-range", "1000" };
@@ -56,7 +58,8 @@ bool HasLowAmmo()
 {
     int *weapon_list =
         (int *) ((unsigned) (RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
-    if (g_pLocalPlayer->holding_sniper_rifle && CE_INT(LOCAL_E, netvar.m_iAmmo + 4) <= 5)
+    if (g_pLocalPlayer->holding_sniper_rifle &&
+        CE_INT(LOCAL_E, netvar.m_iAmmo + 4) <= 5)
         return true;
     for (int i = 0; weapon_list[i]; i++)
     {
@@ -65,9 +68,8 @@ bool HasLowAmmo()
         if (eid >= 32 && eid <= HIGHEST_ENTITY)
         {
             IClientEntity *weapon = g_IEntityList->GetClientEntity(eid);
-            if (weapon and
-                re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) &&
-                re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) && 
+            if (weapon and re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) &&
+                re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) &&
                 !re::C_TFWeaponBase::HasPrimaryAmmo(weapon))
                 return true;
         }
@@ -80,6 +82,24 @@ bool HasLowHealth()
     return float(LOCAL_E->m_iHealth()) / float(LOCAL_E->m_iMaxHealth()) < 0.64;
 }
 
+CachedEntity *nearestSentry()
+{
+    float bestscr         = FLT_MAX;
+    CachedEntity *bestent = nullptr;
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CObjectSentrygun) ||
+            ent->m_iTeam() == LOCAL_E->m_iTeam())
+            continue;
+        if (ent->m_flDistance() < bestscr)
+        {
+            bestscr = ent->m_flDistance();
+            bestent = ent;
+        }
+    }
+    return bestent;
+}
 CachedEntity *nearestHealth()
 {
     float bestscr         = FLT_MAX;
@@ -125,6 +145,10 @@ CachedEntity *nearestAmmo()
 int last_tar = -1;
 CachedEntity *NearestEnemy()
 {
+    if (last_tar != -1 && CE_GOOD(ENTITY(last_tar)))
+        return ENTITY(last_tar);
+    else
+        last_tar = -1;
     if (last_tar == -1 || nav::ReadyForCommands)
     {
         float bestscr         = FLT_MAX;
@@ -148,14 +172,12 @@ CachedEntity *NearestEnemy()
                 bestent = ent;
             }
         }
-        if (!bestent)
+        if (CE_BAD(bestent))
             last_tar = -1;
         else
             last_tar = bestent->m_IDX;
         return bestent;
     }
-    if (CE_GOOD(ENTITY(last_tar)))
-        return ENTITY(last_tar);
     return nullptr;
 }
 Timer cdr{};
@@ -252,7 +274,8 @@ std::vector<int> GetBuildings()
 int cost[4] = { 100, 50, 130, 50 };
 int GetBestBuilding(int metal)
 {
-    bool hasSentry, hasDispenser;
+    bool hasSentry    = false;
+    bool hasDispenser = false;
     if (!GetBuildings().empty())
         for (auto build : GetBuildings())
         {
@@ -292,34 +315,65 @@ int GetClosestBuilding()
     }
     return BestBuilding;
 }
-
+int GetClosestTeleporter()
+{
+    float bestscr    = FLT_MAX;
+    int BestBuilding = -1;
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent->m_iClassID() != CL_CLASS(CObjectTeleporter))
+            continue;
+        if (ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) < bestscr)
+        {
+            BestBuilding = i;
+            bestscr      = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+        }
+    }
+    return BestBuilding;
+}
+bool NavToSentry(int priority)
+{
+    CachedEntity *Sentry = nearestSentry();
+    if (CE_BAD(Sentry))
+        return false;
+    int num = nav::FindNearestValid(GetBuildingPosition(Sentry));
+    if (num == -1)
+        return false;
+    auto area = nav::areas[num];
+    if (nav::NavTo(area.m_center, false, true, priority))
+        return true;
+    return false;
+}
 bool NavToSniperSpot(int priority)
 {
     Vector random_spot{};
     if (!sniper_spots.size() && !preferred_sniper_spots.size())
         return false;
     bool use_preferred = !preferred_sniper_spots.empty();
-    auto snip_spot = use_preferred
-                     ? preferred_sniper_spots
-                     : sniper_spots;
-    bool toret = false;
+    auto snip_spot     = use_preferred ? preferred_sniper_spots : sniper_spots;
+    bool toret         = false;
 
     if (use_preferred)
     {
-        int best_spot = -1;
-        float maxscr = FLT_MAX;
+        int best_spot       = -1;
+        float maxscr        = FLT_MAX;
         int lowest_priority = 9999;
         for (int i = 0; i < snip_spot.size(); i++)
         {
             if ((priority_spots[i] < lowest_priority))
                 lowest_priority = priority_spots[i];
         }
-        for (int i = 0; i < snip_spot.size(); i++) {
+        for (int i = 0; i < snip_spot.size(); i++)
+        {
             if ((priority_spots[i] > lowest_priority))
                 continue;
             float scr = snip_spot[i].DistTo(g_pLocalPlayer->v_Eye);
-            if (scr < maxscr) {
-                maxscr = scr;
+            if (scr < maxscr)
+            {
+                maxscr    = scr;
                 best_spot = i;
             }
         }
@@ -333,13 +387,29 @@ bool NavToSniperSpot(int priority)
     }
     else if (!snip_spot.empty())
     {
-        int rng = rand() % snip_spot.size();
+        int rng     = rand() % snip_spot.size();
         random_spot = snip_spot.at(rng);
         if (random_spot.z)
             toret = nav::NavTo(random_spot, false, true, priority);
     }
     return toret;
 }
+CatCommand debug_tele("navbot_debug", "debug", []() {
+    int idx = GetClosestBuilding();
+    if (idx == -1)
+        return;
+    CachedEntity *ent = ENTITY(idx);
+    if (CE_BAD(ent))
+        return;
+    logging::Info(
+        "%d %d %d %f %f %d %f %f %f", CE_INT(ent, netvar.m_iObjectType),
+        CE_INT(ent, netvar.m_bBuilding), CE_INT(ent, netvar.m_iTeleState),
+        CE_FLOAT(ent, netvar.m_flTeleRechargeTime),
+        CE_FLOAT(ent, netvar.m_flTeleCurrentRechargeDuration),
+        CE_INT(ent, netvar.m_iTeleTimesUsed),
+        CE_FLOAT(ent, netvar.m_flTeleYawToExit), g_GlobalVars->curtime,
+        g_GlobalVars->curtime * g_GlobalVars->interval_per_tick);
+});
 int follow_target = 0;
 void CreateMove()
 {
@@ -364,13 +434,33 @@ void CreateMove()
     if ((!HasLowHealth() && nav::priority == 7) ||
         (!HasLowAmmo() && nav::priority == 6))
         nav::clearInstructions();
+    static int waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 2000;
+    if (*take_tele)
+    {
+        int idx = GetClosestTeleporter();
+        if (idx != -1)
+        {
+            CachedEntity *ent = ENTITY(idx);
+            if (CE_GOOD(ent) && ent->m_flDistance() < 300.0f)
+                if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) &&
+                    CE_FLOAT(ent, netvar.m_flTeleRechargeTime) <
+                        g_GlobalVars->curtime)
+                {
+                    waittime = 1000;
+                    cd3.update();
+                    nav::NavTo(GetBuildingPosition(ent), false, false);
+                }
+        }
+    }
     if (enable)
     {
         if (!nav::ReadyForCommands && !spy_mode && !heavy_mode && !engi_mode)
             cd3.update();
-        bool isready =
-            (spy_mode || heavy_mode || engi_mode) ? true : nav::ReadyForCommands;
-        static int waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 2000;
+        if (target_sentry && NavToSentry(3))
+            return;
+        bool isready = (spy_mode || heavy_mode || engi_mode)
+                           ? true
+                           : nav::ReadyForCommands;
         if (isready && cd3.test_and_set(waittime))
         {
             waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 2000;
@@ -389,7 +479,7 @@ void CreateMove()
                 {
                     if (cd2.test_and_set(5000))
                         Init();
-                    if (!NavToSniperSpot(5))
+                    if (!NavToSniperSpot(4))
                         waittime = 1;
                 }
                 if (CE_GOOD(tar))

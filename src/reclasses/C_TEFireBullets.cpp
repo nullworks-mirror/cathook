@@ -10,8 +10,8 @@
 C_TEFireBullets *C_TEFireBullets::GTEFireBullets()
 {
     static uintptr_t fireaddr =
-        (gSignatures.GetClientSignature(
-             "55 B8 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 55 89 E5 56 53 83 EC ? C7 45") +
+        (gSignatures.GetClientSignature("55 B8 ? ? ? ? 89 E5 5D C3 8D B6 00 00 "
+                                        "00 00 55 89 E5 56 53 83 EC ? C7 45") +
          0x2);
     C_TEFireBullets *fire = *(C_TEFireBullets **) fireaddr;
     return fire;

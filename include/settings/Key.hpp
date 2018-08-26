@@ -57,7 +57,8 @@ public:
         setInternal(key);
     }
 
-    // Variable & causes segfault with gcc optimizations + these dont even return anything
+    // Variable & causes segfault with gcc optimizations + these dont even
+    // return anything
     void operator=(const std::string &string)
     {
         fromString(string);

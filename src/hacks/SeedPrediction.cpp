@@ -32,7 +32,7 @@ void handleFireBullets(C_TEFireBullets *ent)
     {
         INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
         float time = g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
-                      (ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f);
+                     (ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f);
         bases.push_back(seedstruct{ g_GlobalVars->tickcount, ent->m_iSeed(),
                                     time }); // It's circular buffer
         selectBase();
@@ -57,7 +57,7 @@ void selectBase()
     // and check if they are close to each other (by looking for largest gap
     // between).
 
-    int bestGap        = 0;
+    int bestGap       = 0;
     float newClockRes = 1.0;
 
     for (float res = MIN_CLOCKRES; res < MAX_CLOCKRES + 1.0; res *= 2.0)
@@ -110,7 +110,8 @@ void selectBase()
         if (abs(disp) < fmaxf(1.2, maxDisp))
         {
             intervals.push_back(
-                { 1, disp - 0.5f }); // Actually "interval ends", not "intervals"
+                { 1,
+                  disp - 0.5f }); // Actually "interval ends", not "intervals"
             intervals.push_back({ -1, disp + 0.5f });
         }
     }
@@ -152,7 +153,7 @@ int predictSeed(const seedstruct &entry, int targetTick, float clockRes,
 
 int predictTick(float targetTime)
 {
-    INetChannel *ch  = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     float ping      = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
     float deltaTime = targetTime - selected.time + ping;
     return int(float(selected.tickcount) +
@@ -166,13 +167,13 @@ int predictTick()
 
 int predictSeed(float targetTime)
 {
-    INetChannel *ch   = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    INetChannel *ch  = (INetChannel *) g_IEngine->GetNetChannelInfo();
     float ping       = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
     float deltaTime  = targetTime - selected.time + ping;
-    int tick          = int(float(selected.tickcount) +
+    int tick         = int(float(selected.tickcount) +
                    deltaTime / g_GlobalVars->interval_per_tick + 0.7);
     float SeedOffset = predictOffset(selected, tick, clockRes);
-    int seed          = predictSeed(selected, tick, clockRes, SeedOffset);
+    int seed         = predictSeed(selected, tick, clockRes, SeedOffset);
 
     logging::Info("seedpred-pred",
                   "Last shot: guessed server tick = %d, guessed seed = %03d\n",
