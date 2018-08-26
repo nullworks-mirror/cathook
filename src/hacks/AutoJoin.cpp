@@ -79,7 +79,12 @@ void updateSearch()
         }
     }*/
     if (!auto_queue)
+    {
+#if not ENABLE_VISUALS
+        req_timer.update();
+#endif
         return;
+    }
     if (g_IEngine->IsInGame())
         return;
 
@@ -87,7 +92,12 @@ void updateSearch()
     re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
     if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) &&
         gc->BHaveLiveMatch())
+    {
+#if not ENABLE_VISUALS
+        req_timer.update();
+#endif
         tfmm::leaveQueue();
+    }
     if (gc && !gc->BConnectedToMatchServer(false) &&
         queuetime.test_and_set(10 * 1000 * 60) && !gc->BHaveLiveMatch())
         tfmm::leaveQueue();
@@ -97,6 +107,14 @@ void updateSearch()
             logging::Info("Starting queue");
             tfmm::startQueue();
         }
+#if not ENABLE_VISUALS
+    if (req_timer.test_and_set(600000))
+    {
+        logging::Info("Stuck in queue, segfaulting");
+        *(int *) nullptr;
+        exit(1);
+    }
+#endif
 }
 
 void update()
