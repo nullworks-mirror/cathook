@@ -88,6 +88,12 @@ void updateSearch()
     if (g_IEngine->IsInGame())
         return;
 
+    static uintptr_t addr = gSignatures.GetClientSignature("C7 04 24 ? ? ? ? 8D 7D ? 31 F6");
+    static uintptr_t offset0 = uintptr_t(*(uintptr_t *)(addr + 0x3));
+    static uintptr_t offset1 = gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 ? 8B 80 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24 E8 ? ? ? ? 85 C0 74 ? 8B 40");
+    typedef int (*GetPendingInvites_t)(uintptr_t);
+    GetPendingInvites_t GetPendingInvites = GetPendingInvites_t(offset1);
+    int invites = GetPendingInvites(offset0);
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
     re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
     if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) &&
@@ -101,10 +107,10 @@ void updateSearch()
     if (gc && !gc->BConnectedToMatchServer(false) &&
         queuetime.test_and_set(10 * 1000 * 60) && !gc->BHaveLiveMatch())
         tfmm::leaveQueue();
-    if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch())
+    if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() && !invites)
         if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
         {
-            logging::Info("Starting queue");
+            logging::Info("Starting queue, Invites %d", invites);
             tfmm::startQueue();
         }
 #if not ENABLE_VISUALS
