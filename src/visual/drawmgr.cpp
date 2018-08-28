@@ -168,6 +168,7 @@ void DrawCheatVisuals()
         {
             criticals::draw();
         }
+        hacks::tf2::autobackstab::Draw();
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
         DrawSpinner();
 #endif

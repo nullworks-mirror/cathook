@@ -49,7 +49,7 @@ bool CanBacktrack()
                             ? ENTITY(hacks::shared::backtrack::iBestTarget)
                             : nullptr;
     if (CE_BAD(tar))
-        return false;
+        return true;
     for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
     {
         if (!hacks::shared::backtrack::ValidTick(i, tar))
@@ -88,10 +88,10 @@ bool CanBacktrack()
             angles.y       = i.viewangles;
             current_user_cmd->tick_count = i.tickcount;
             current_user_cmd->buttons |= IN_ATTACK;
-            return false;
+            return true;
         }
     }
-    return true;
+    return false;
 }
 // The main "loop" of the triggerbot
 void CreateMove()
@@ -116,7 +116,7 @@ void CreateMove()
 
     // Check if can backtrack, shoot if we can
     if (hacks::shared::backtrack::isBacktrackEnabled)
-        if (!CanBacktrack())
+        if (CanBacktrack())
             return;
 
     // Check if dormant or null to prevent crashes
@@ -442,7 +442,7 @@ bool HeadPreferable(CachedEntity *target)
 {
 
     // Switch based on the priority type we need
-    switch ((int) hitbox_mode)
+    switch (*hitbox_mode)
     {
     case 0:
     { // AUTO-HEAD priority
@@ -558,25 +558,19 @@ bool UpdateAimkey()
         // Only while key is depressed, enable
         case 1:
             if (!key_down)
-            {
                 allow_trigger_key = false;
-            }
             break;
         // Only while key is not depressed, enable
         case 2:
             if (key_down)
-            {
                 allow_trigger_key = false;
-            }
             break;
         // Aimkey acts like a toggle switch
         case 3:
             if (!pressed_last_tick && key_down)
                 trigger_key_flip = !trigger_key_flip;
             if (!trigger_key_flip)
-            {
                 allow_trigger_key = false;
-            }
         }
         pressed_last_tick = key_down;
     }

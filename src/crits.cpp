@@ -20,7 +20,12 @@ int *g_PredictionRandomSeed = nullptr;
 
 namespace criticals
 {
-
+CatCommand test("crit_debug_print", "debug", []() {
+    bool test = (*((unsigned char *) RAW_ENT(LOCAL_E) + 9645) & 2) >> 1;
+    int test2 = (*((unsigned char *) RAW_ENT(LOCAL_E) + 9645) & 2);
+    int test3 = (*((unsigned *) RAW_ENT(LOCAL_E) + 9645));
+    logging::Info("%d, %d, %d", test, test2, test3);
+});
 int find_next_random_crit_for_weapon(IClientEntity *weapon)
 {
     int tries = 0, number = current_user_cmd->command_number, found = 0, seed,

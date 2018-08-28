@@ -94,7 +94,7 @@ static void initPlayerlist()
         controller =
             std::make_unique<zerokernel::special::PlayerListController>(*pl);
         controller->setKickButtonCallback([](int uid) {
-            hack::command_stack().push("callvote kick " + uid);
+            hack::command_stack().push(format("callvote kick ", uid));
         });
         controller->setOpenSteamCallback([](unsigned steam) {
             CSteamID id{};

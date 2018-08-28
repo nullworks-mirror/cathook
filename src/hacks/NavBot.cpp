@@ -492,14 +492,25 @@ void CreateMove()
                     }
                     else
                     {
+                        int bestscr = INT_MAX;
+                        hacks::shared::backtrack::BacktrackData besttick{};
                         for (auto i : hacks::shared::backtrack::headPositions
                                  [tar->m_IDX])
                         {
                             if (!hacks::shared::backtrack::ValidTick(i, tar))
-                                continue;
-                            nav::NavTo(i.entorigin, false, false);
-                            break;
+                            {
+                                int scr = i.tickcount;
+                                if (scr < bestscr)
+                                {
+                                    bestscr  = scr;
+                                    besttick = i;
+                                }
+                            }
                         }
+                        if (besttick.tickcount)
+                            nav::NavTo(besttick.entorigin, false, false);
+                        else if (!nav::NavTo(tar->m_vecOrigin(), false))
+                            last_tar = -1;
                     }
                 }
             }

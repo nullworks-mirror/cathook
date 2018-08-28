@@ -1155,13 +1155,10 @@ void WhatIAmLookingAt(int *result_eindex, Vector *result_pos)
     if (result_pos)
         *result_pos = trace.endpos;
     if (result_eindex)
-    {
-        *result_eindex = 0;
-    }
+        *result_eindex = -1;
     if (trace.m_pEnt && result_eindex)
-    {
         *result_eindex = ((IClientEntity *) (trace.m_pEnt))->entindex();
-    }
+
 }
 
 bool IsSentryBuster(CachedEntity *entity)

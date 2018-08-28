@@ -256,4 +256,49 @@ void CreateMove()
         }
     }
 }
+const Vector GetWorldSpaceCenter(CachedEntity *ent)
+{
+    Vector vMin, vMax;
+    RAW_ENT(ent)->GetRenderBounds(vMin, vMax);
+    Vector vWorldSpaceCenter = RAW_ENT(ent)->GetAbsOrigin();
+    vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
+    return vWorldSpaceCenter;
+}
+void Draw()
+{
+    int idx = -1;
+    Vector result{};
+    WhatIAmLookingAt(&idx, &result);
+    if (idx == -1)
+        return;
+    CachedEntity *target = ENTITY(idx);
+    if (CE_BAD(target))
+        return;
+    Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
+    Vector tarAngle = NET_VECTOR(RAW_ENT(target), netvar.m_angEyeAngles);
+    Vector wsc_spy_to_victim = GetWorldSpaceCenter(target) - GetWorldSpaceCenter(LOCAL_E);
+    wsc_spy_to_victim.z = 0;
+    wsc_spy_to_victim.NormalizeInPlace();
+
+    Vector eye_spy = angle;
+    eye_spy.z = 0;
+    eye_spy.NormalizeInPlace();
+
+    Vector eye_victim = tarAngle;
+    eye_victim.z = 0;
+    eye_victim.NormalizeInPlace();
+
+    float dot1 = DotProduct(wsc_spy_to_victim, eye_victim);
+    float dot2 =  DotProduct(wsc_spy_to_victim, eye_spy);
+    float dot3 = DotProduct(eye_spy, eye_victim);
+    bool IsBehind =  dot1 <=  0.0f;
+    bool LookingAtVic = dot2 <=  0.5f;
+    bool InBackstabAngleRange =  dot3 <= -0.3f;
+    rgba_t col1 = IsBehind ? colors::red : colors::green;
+    rgba_t col2 = LookingAtVic ? colors::red : colors::green;
+    rgba_t col3 = InBackstabAngleRange ? colors::red : colors::green;
+    AddCenterString(format("Behind target: ", dot1), col1);
+    AddCenterString(format("Looking at Target: ", dot2), col2);
+    AddCenterString(format("In Angle Range: ", dot3), col3);
+}
 } // namespace hacks::tf2::autobackstab

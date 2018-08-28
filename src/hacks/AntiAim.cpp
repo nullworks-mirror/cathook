@@ -404,10 +404,7 @@ void FakeCrouch(CUserCmd *cmd)
 void ProcessUserCmd(CUserCmd *cmd)
 {
     if (!enable)
-    {
-        *bSendPackets = true;
         return;
-    }
     if (!ShouldAA(cmd))
         return;
     static bool keepmode  = true;
@@ -416,6 +413,7 @@ void ProcessUserCmd(CUserCmd *cmd)
     float &y              = cmd->viewangles.y;
     static bool flip      = false;
     static bool bsendflip = true;
+    static float rngyaw   = 0.0f;
     bool clamp            = !no_clamping;
     switch ((int) yaw_mode)
     {
@@ -545,6 +543,15 @@ void ProcessUserCmd(CUserCmd *cmd)
             if (findEdge(y))
                 y = useEdge(y) + 180.0f;
         }
+        break;
+    case 22: // Omegayaw
+        if (*bSendPackets)
+        {
+            rngyaw = RandFloatRange(-180.0f, 180.0f);
+            y      = rngyaw;
+        }
+        else
+            y = rngyaw - 180.0f;
         break;
     default:
         break;

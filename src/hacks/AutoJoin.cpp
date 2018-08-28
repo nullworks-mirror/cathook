@@ -14,6 +14,7 @@
 static settings::Bool autojoin_team{ "autojoin.team", "false" };
 static settings::Int autojoin_class{ "autojoin.class", "0" };
 static settings::Bool auto_queue{ "autojoin.auto-queue", "false" };
+static settings::Bool party_bypass{ "autojoin.party-bypass", "false" };
 
 namespace hacks::shared::autojoin
 {
@@ -42,7 +43,8 @@ static Timer req_timer{};
 void updateSearch()
 {
     // segfaults for no reason
-    /*static bool calld = false;
+    static bool calld = false;
+    /*
     if (party_bypass && !calld)
     {
         static unsigned char patch[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
@@ -97,6 +99,7 @@ void updateSearch()
     typedef int (*GetPendingInvites_t)(uintptr_t);
     GetPendingInvites_t GetPendingInvites = GetPendingInvites_t(offset1);
     int invites                           = GetPendingInvites(offset0);
+
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
     re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
     if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) &&

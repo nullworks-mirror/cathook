@@ -163,13 +163,9 @@ public:
                     else
                     {
                         if (AreRandomCritsEnabled(self))
-                        {
                             return CalcIsAttackCriticalHelper(self);
-                        }
                         else
-                        {
                             return CalcIsAttackCriticalHelperNoCrits(self);
-                        }
                     }
                 }
             }
