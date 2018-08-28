@@ -8,124 +8,67 @@ std::vector<CNavArea> areas;
 bool init               = false;
 static bool pathfinding = true;
 bool ReadyForCommands   = false;
-inactivityTracker inactiveTracker;
 static settings::Bool enabled{ "misc.pathing", "true" };
 static settings::Bool draw{ "misc.pathing.draw", "false" };
+static std::atomic<bool> threadingFinished;
 
-// Todo fix
-size_t FindInVector(size_t id)
+static std::unique_ptr<MAP> TF2MAP;
+
+// Function to get place in Vector by connection ID
+// Todo: find an alternative for this, maybe a map for storing ptrs to the
+// std::vector?
+int FindInVector(size_t id)
 {
-    for (size_t i = 0; i < areas.size(); i++)
+    for (int i = 0; i < areas.size(); i++)
     {
         if (areas.at(i).m_id == id)
             return i;
     }
+    return -1;
 }
-
-struct MAP : public micropather::Graph
+static int bestarea = -1;
+Timer reselect{};
+int FindNearestValid(Vector vec)
 {
-    std::unique_ptr<micropather::MicroPather> pather;
-    // Function to check if a connection is ignored
-    bool IsIgnored(size_t currState, size_t connectionID)
+    if (reselect.test_and_set(500))
     {
-        if (inactiveTracker.getTime({ currState, connectionID }) >= 5000)
-            return true;
-        return false;
-    }
-    Vector GetClosestCornerToArea(CNavArea *CornerOf, CNavArea *Target)
-    {
-        std::array<Vector, 4> corners;
-        corners.at(0) = CornerOf->m_nwCorner; // NW
-        corners.at(1) = CornerOf->m_seCorner; // SE
-        corners.at(2) = Vector{ CornerOf->m_seCorner.x, CornerOf->m_nwCorner.y,
-                                CornerOf->m_nwCorner.z }; // NE
-        corners.at(3) = Vector{ CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y,
-                                CornerOf->m_seCorner.z }; // SW
-
-        Vector bestVec;
-        float bestDist = FLT_MAX;
-
-        for (size_t i = 0; i < corners.size(); i++)
+        float bestscr = FLT_MAX;
+        if (bestarea != -1)
         {
-            float dist = corners.at(i).DistTo(Target->m_center);
-            if (dist < bestDist)
+            bool success = false;
+            Vector area  = areas[bestarea].m_center;
+            area.z += 72.0f;
+            if (!TF2MAP->inactiveTracker.sentryAreas[bestarea])
             {
-                bestVec  = corners.at(i);
-                bestDist = dist;
+                float scr = area.DistTo(vec);
+                if (scr < 2000.0f)
+                    if (IsVectorVisible(vec, area, false))
+                        success = true;
             }
+            if (!success)
+                bestarea = -1;
         }
-
-        Vector bestVec2;
-        float bestDist2 = FLT_MAX;
-
-        for (size_t i = 0; i < corners.size(); i++)
-        {
-            if (corners.at(i) == bestVec2)
-                continue;
-            float dist = corners.at(i).DistTo(Target->m_center);
-            if (dist < bestDist2)
+        else
+            for (int ar = 0; ar < areas.size(); ar++)
             {
-                bestVec2  = corners.at(i);
-                bestDist2 = dist;
+                Vector area = areas[ar].m_center;
+                area.z += 72.0f;
+                if (TF2MAP->inactiveTracker.sentryAreas[ar])
+                    continue;
+                float scr = area.DistTo(vec);
+                if (scr > 2000.0f)
+                    continue;
+                if (scr > bestscr)
+                    continue;
+                if (IsVectorVisible(vec, area, false))
+                {
+                    bestscr  = scr;
+                    bestarea = ar;
+                }
             }
-        }
-        return (bestVec + bestVec2) / 2;
     }
-
-    float GetZBetweenAreas(CNavArea *start, CNavArea *end)
-    {
-        float z1 = GetClosestCornerToArea(start, end).z;
-        float z2 = GetClosestCornerToArea(end, start).z;
-
-        return z2 - z1;
-    }
-    // Function required by MicroPather for getting an estimated cost
-    float LeastCostEstimate(void *stateStart, void *stateEnd)
-    {
-        CNavArea *start = static_cast<CNavArea *>(stateStart);
-        CNavArea *end   = static_cast<CNavArea *>(stateEnd);
-        float dist      = start->m_center.DistTo(end->m_center);
-        return dist;
-    }
-    // Function required by MicroPather to retrieve neighbours and their
-    // associated costs.
-    void AdjacentCost(void *state, MP_VECTOR<micropather::StateCost> *adjacent)
-    {
-        CNavArea *area   = static_cast<CNavArea *>(state);
-        auto &neighbours = area->m_connections;
-        for (auto i : neighbours)
-        {
-            if (GetZBetweenAreas(area, i.area) > 42)
-                continue;
-            if (IsIgnored(area->m_id, i.area->m_id))
-                continue;
-            micropather::StateCost cost;
-            cost.state =
-                static_cast<void *>(&areas.at(FindInVector(i.area->m_id)));
-            cost.cost = area->m_center.DistTo(i.area->m_center);
-            adjacent->push_back(cost);
-        }
-    }
-    void PrintStateInfo(void *state)
-    {
-        CNavArea *area = static_cast<CNavArea *>(state);
-        logging::Info(format(area->m_center.x, " ", area->m_center.y, " ",
-                             area->m_center.z)
-                          .c_str());
-    }
-    MAP(size_t size)
-    {
-        pather =
-            std::make_unique<micropather::MicroPather>(this, size, 6, true);
-    }
-
-    ~MAP()
-    {
-    }
-};
-
-static std::unique_ptr<MAP> TF2MAP;
-
+    return bestarea;
+}
 void Init()
 {
     // Get NavFile location
@@ -160,8 +103,11 @@ void Init()
             size = 7000;
         // Initiate "Map", contains micropather object
         TF2MAP = std::make_unique<MAP>(size);
+        TF2MAP->inactiveTracker.reset();
     }
-    pathfinding = true;
+    if (!areas.empty())
+        pathfinding = true;
+    threadingFinished.store(true);
 }
 
 static std::string lastmap;
@@ -172,6 +118,7 @@ bool Prepare()
         return false;
     if (!init)
     {
+        // Don't reinit if same map
         if (lastmap == g_IEngine->GetLevelName())
         {
             init = true;
@@ -181,10 +128,14 @@ bool Prepare()
             lastmap     = g_IEngine->GetLevelName();
             pathfinding = false;
             init        = true;
-            Init();
+            threadingFinished.store(false);
+            // Parsing CNavFile takes time, run it in a seperate thread
+            std::thread initer(Init);
+            // We need to either detach or join to avoid std::terminate
+            initer.detach();
         }
     }
-    if (!pathfinding)
+    if (!pathfinding || !threadingFinished.load())
         return false;
     return true;
 }
@@ -206,7 +157,7 @@ int findClosestNavSquare(Vector vec)
             // Make sure we're not stuck on the same area for too long
             if (std::count(findClosestNavSquare_localAreas.begin(),
                            findClosestNavSquare_localAreas.end(), i) < 3)
-                overlapping.push_back({ i, &areas.at(i) });
+                overlapping.emplace_back(i, &areas.at(i));
         }
     }
 
@@ -262,7 +213,7 @@ std::vector<Vector> findPath(Vector loc, Vector dest, int &id_loc, int &id_dest)
     int result = TF2MAP->pather->Solve(static_cast<void *>(&areas.at(id_loc)),
                                        static_cast<void *>(&areas.at(id_dest)),
                                        &pathNodes, &cost);
-    logging::Info(format(result).c_str());
+    logging::Info(format("Pathing: Pather result: ", result).c_str());
     // If no result found, return empty Vector
     if (result == micropather::MicroPather::NO_SOLUTION)
         return std::vector<Vector>(0);
@@ -285,8 +236,8 @@ static Timer lastJump{};
 static std::vector<Vector> crumbs;
 // Bot will keep trying to get to the target even if it fails a few times
 static bool ensureArrival;
-// Priority value for current instructions, only higher priority can overwrite
-// itlocalAreas
+// Priority value for current instructions, only higher or equal priorites can
+// overwrite it
 int priority           = 0;
 static Vector lastArea = { 0.0f, 0.0f, 0.0f };
 
@@ -303,20 +254,24 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
     // Only allow instructions to overwrite others if their priority is higher
     if (instructionPriority < priority)
         return false;
-    int locNav, tarNav;
+    int locNav = 0, tarNav = 0;
     auto path = findPath(g_pLocalPlayer->v_Origin, dest, locNav, tarNav);
     if (path.empty())
         return false;
     if (!crumbs.empty())
     {
         bool reset = false;
-        inactiveTracker.addTime({ lastArea, crumbs.at(0) }, inactivity, reset);
+        TF2MAP->inactiveTracker.AddTime({ lastArea, crumbs.at(0) }, inactivity,
+                                        reset);
         if (reset)
             TF2MAP->pather->Reset();
     }
     crumbs.clear();
     crumbs = std::move(path);
-    if (!navToLocalCenter)
+    if (crumbs.empty())
+        return false;
+    lastArea = crumbs.at(0);
+    if (!navToLocalCenter && crumbs.size() > 1)
         crumbs.erase(crumbs.begin());
     ensureArrival = persistent;
     findClosestNavSquare_localAreas.clear();
@@ -331,21 +286,49 @@ void clearInstructions()
 }
 
 static Timer ignoreReset{};
+static Timer patherReset{};
+static Timer sentryUpdate{};
+static Timer sentryCheck{};
 // Function for removing ignores
-void clearIgnores()
+void ignoreManagerCM()
 {
-    if (ignoreReset.test_and_set(180000))
+    if (!TF2MAP || !TF2MAP->pather)
+        return;
+    if (ignoreReset.test_and_set(120000))
+        TF2MAP->inactiveTracker.reset();
+    if (patherReset.test_and_set(30000))
+        TF2MAP->pather->Reset();
+    if (sentryUpdate.test_and_set(1000))
+        TF2MAP->inactiveTracker.updateSentries();
+}
+
+void Repath()
+{
+    if (ensureArrival)
     {
-        inactiveTracker.reset();
-        if (TF2MAP && TF2MAP->pather)
-            TF2MAP->pather->Reset();
+        logging::Info("Pathing: NavBot inactive for too long. Ignoring "
+                      "connection and finding another path...");
+        // Throwaway int
+        int i1 = 0, i2 = 0;
+        // Find a new path
+        TF2MAP->pather->Reset();
+        crumbs = findPath(g_pLocalPlayer->v_Origin, crumbs.back(), i1, i2);
+    }
+    else
+    {
+        logging::Info(
+            "Pathing: NavBot inactive for too long. Canceling tasks and "
+            "ignoring connection...");
+        // Wait for new instructions
+        TF2MAP->pather->Reset();
+        crumbs.clear();
     }
 }
 
 // Main movement function, gets path from NavTo
 void CreateMove()
 {
-    if (!enabled)
+    if (!enabled || !threadingFinished.load())
         return;
     if (CE_BAD(LOCAL_E))
         return;
@@ -355,7 +338,7 @@ void CreateMove()
         crumbs.clear();
         return;
     }
-    clearIgnores();
+    ignoreManagerCM();
     // Crumbs empty, prepare for next instruction
     if (crumbs.empty())
     {
@@ -380,30 +363,35 @@ void CreateMove()
     if (crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
         lastJump.test_and_set(200))
         current_user_cmd->buttons |= IN_JUMP;
+    // Check if were dealing with a type 2 connection
+    if (inactivity.check(3000) &&
+        TF2MAP->inactiveTracker.CheckType2({ lastArea, crumbs.at(0) }))
+    {
+        logging::Info("Pathing: Type 2 connection detected!");
+        TF2MAP->pather->Reset();
+        Repath();
+        inactivity.update();
+        return;
+    }
+    // Check for new sentries
+    if (sentryCheck.test_and_set(1000) &&
+        TF2MAP->inactiveTracker.ShouldCancelPath(crumbs))
+    {
+        logging::Info("Pathing: New Sentry found!");
+        TF2MAP->pather->Reset();
+        Repath();
+        return;
+    }
     // If inactive for too long
     if (inactivity.check(5000))
     {
         // Ignore connection
-        bool i3 = false;
-        inactiveTracker.addTime({ lastArea, crumbs.at(0) }, inactivity, i3);
-        if (i3)
+        bool resetPather = false;
+        TF2MAP->inactiveTracker.AddTime({ lastArea, crumbs.at(0) }, inactivity,
+                                        resetPather);
+        if (resetPather)
             TF2MAP->pather->Reset();
-        if (ensureArrival)
-        {
-            logging::Info("Pathing: NavBot inactive for too long. Ignoring "
-                          "connection and finding another path...");
-            // Find a new path
-            int i1, i2;
-            crumbs = findPath(g_pLocalPlayer->v_Origin, crumbs.back(), i1, i2);
-        }
-        else
-        {
-            logging::Info(
-                "Pathing: NavBot inactive for too long. Canceling tasks and "
-                "ignoring connection...");
-            // Wait for new instructions
-            crumbs.clear();
-        }
+        Repath();
         inactivity.update();
         return;
     }
@@ -431,7 +419,7 @@ void Draw()
             draw::WorldToScreen(crumbs[i + 1], wts2))
         {
             glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
-                             colors::white, 0.1f);
+                             colors::white, 0.3f);
         }
     }
     Vector wts;
@@ -458,7 +446,7 @@ CatCommand navprint("nav_print", "Debug nav print", [](const CCommand &args) {
 });
 
 CatCommand navfind("nav_find", "Debug nav find", [](const CCommand &args) {
-    int i1, i2;
+    int i1 = 0, i2 = 0;
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc, i1, i2);
     if (path.empty())
     {
@@ -483,5 +471,19 @@ CatCommand navpath("nav_path", "Debug nav path", [](const CCommand &args) {
         logging::Info("Pathing: Failed!");
     }
 });
+
+// Clang format pls
+CatCommand navpathnolocal("nav_path_nolocal", "Debug nav path",
+                          [](const CCommand &args) {
+                              if (NavTo(loc, false, true, 50 + priority))
+                              {
+                                  logging::Info(
+                                      "Pathing: Success! Walking to path...");
+                              }
+                              else
+                              {
+                                  logging::Info("Pathing: Failed!");
+                              }
+                          });
 
 } // namespace nav

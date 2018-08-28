@@ -156,6 +156,16 @@ bool gui::handleSdlEvent(SDL_Event *event)
             logging::Info("GUI open button pressed");
             zerokernel::Menu::instance->setInGame(
                 !zerokernel::Menu::instance->isInGame());
+            if (!zerokernel::Menu::instance->isInGame())
+            {
+                g_ISurface->UnlockCursor();
+                g_ISurface->SetCursorAlwaysVisible(true);
+            }
+            else
+            {
+                g_ISurface->LockCursor();
+                g_ISurface->SetCursorAlwaysVisible(false);
+            }
             return true;
         }
     }

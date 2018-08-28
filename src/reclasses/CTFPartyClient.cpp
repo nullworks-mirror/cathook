@@ -119,3 +119,13 @@ int re::CTFPartyClient::BRequestJoinPlayer(CSteamID steamid)
         BRequestJoinPlayer_t(addr);
     return BRequestJoinPlayer_fn(this, steamid, false);
 }
+re::ITFMatchGroupDescription *re::GetMatchGroupDescription(int &idx)
+{
+    typedef re::ITFMatchGroupDescription *(*GetMatchGroupDescription_t)(int &);
+    static uintptr_t addr =
+        gSignatures.GetClientSignature("55 89 E5 8B 45 08 8B 00 83 F8 FF");
+    static GetMatchGroupDescription_t GetMatchGroupDescription_fn =
+        GetMatchGroupDescription_t(addr);
+
+    return GetMatchGroupDescription_fn(idx);
+}

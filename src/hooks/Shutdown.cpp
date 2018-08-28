@@ -21,11 +21,11 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
     // This is a INetChannel hook - it SHOULDN'T be static because netchannel
     // changes.
     logging::Info("Disconnect: %s", reason);
-    if (strstr(reason, "banned"))
+    if (strstr(reason, "banned") || strstr(reason, "Generic_Kicked"))
     {
         if (die_if_vac)
         {
-            logging::Info("VAC banned");
+            logging::Info("VAC/Matchmaking banned");
             *(int *) 0 = 0;
             exit(1);
         }

@@ -233,9 +233,13 @@ void CreateMove()
 }
 
 #if ENABLE_VISUALS
-
+// Timer ussr{};
 void DrawText()
 {
+    /*if (ussr.test_and_set(207000))
+    {
+        g_ISurface->PlaySound()
+    }*/
     if (god_mode)
         for (int i = 0; i < 40000; i++)
         {
@@ -255,7 +259,7 @@ void DrawText()
         {
             // Get Color and set opacity to %50
             colors::rgba_t gaybow = colors::FromHSL(
-                fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 1.41241))) *
+                fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 1.41241f))) *
                     360.0f,
                 0.85f, 0.9f);
             gaybow.a = .5;

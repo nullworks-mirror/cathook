@@ -57,24 +57,26 @@ public:
         setInternal(key);
     }
 
-    Variable &operator=(const std::string &string)
+    // Variable & causes segfault with gcc optimizations + these dont even
+    // return anything
+    void operator=(const std::string &string)
     {
         fromString(string);
     }
 
-    Variable &reset()
+    void reset()
     {
         setInternal(Key{});
     }
 
-    Variable &key(SDL_Scancode key)
+    void key(SDL_Scancode key)
     {
         Key k{};
         k.scan = key;
         setInternal(k);
     }
 
-    Variable &mouse(int mouse_key)
+    void mouse(int mouse_key)
     {
         Key k{};
         k.mouse = mouse_key;

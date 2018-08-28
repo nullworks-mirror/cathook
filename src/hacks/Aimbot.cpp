@@ -353,7 +353,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
     target_last = nullptr;
     target_eid  = -1;
 
-    float target_highest_score, scr;
+    float target_highest_score, scr = 0.0f;
     CachedEntity *ent;
     CachedEntity *target_highest_ent = 0;
     target_highest_score             = -256;

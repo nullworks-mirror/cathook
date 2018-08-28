@@ -18,7 +18,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/hitrate.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/hooks.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/hoovy.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/https_request.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/init.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/ipc.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/itemtypes.hpp"
@@ -38,7 +37,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/velocity.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/votelogger.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/MiscTemporary.hpp"
-	"${CMAKE_CURRENT_LIST_DIR}/navparser.hpp"
+        "${CMAKE_CURRENT_LIST_DIR}/navparser.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/Options.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/PlayerTools.hpp")
 

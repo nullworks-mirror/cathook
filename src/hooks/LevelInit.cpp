@@ -11,9 +11,6 @@
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
 #include "navparser.hpp"
-#if !LAGBOT_MODE
-#include "hacks/Backtrack.hpp"
-#endif
 
 static settings::Bool halloween_mode{ "misc.force-halloween", "false" };
 static settings::Int skybox_changer{ "misc.skybox-override", "0" };

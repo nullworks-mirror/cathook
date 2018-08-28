@@ -42,6 +42,8 @@ bool trace::FilterDefault::ShouldHitEntity(IHandleEntity *handle, int mask)
     switch (clazz->m_ClassID)
     {
     // TODO magic numbers: invisible entity ids
+    case 246:
+    case 248:
     case 64:
     case 225:
     case 55:
@@ -79,7 +81,6 @@ void trace::FilterNoPlayer::SetSelf(IClientEntity *self)
 
 bool trace::FilterNoPlayer::ShouldHitEntity(IHandleEntity *handle, int mask)
 {
-    return false;
     IClientEntity *entity;
     ClientClass *clazz;
 
@@ -91,6 +92,8 @@ bool trace::FilterNoPlayer::ShouldHitEntity(IHandleEntity *handle, int mask)
     switch (clazz->m_ClassID)
     {
     // TODO magic numbers: invisible entity ids
+    case 248:
+    case 246:
     case 64:
     case 225:
     case 55:
@@ -107,7 +110,34 @@ TraceType_t trace::FilterNoPlayer::GetTraceType() const
 {
     return TRACE_EVERYTHING;
 }
+/* No-Entity filter */
 
+trace::FilterNoEntity::FilterNoEntity()
+{
+    m_pSelf = nullptr;
+}
+
+trace::FilterNoEntity::~FilterNoEntity(){};
+
+void trace::FilterNoEntity::SetSelf(IClientEntity *self)
+{
+    if (self == nullptr)
+    {
+        logging::Info("nullptr in FilterNoPlayer::SetSelf");
+        return;
+    }
+    m_pSelf = self;
+}
+
+bool trace::FilterNoEntity::ShouldHitEntity(IHandleEntity *handle, int mask)
+{
+    return false;
+}
+
+TraceType_t trace::FilterNoEntity::GetTraceType() const
+{
+    return TRACE_EVERYTHING;
+}
 /* Penetration Filter */
 
 trace::FilterPenetration::FilterPenetration()
@@ -169,4 +199,5 @@ void trace::FilterPenetration::Reset()
 
 trace::FilterDefault trace::filter_default{};
 trace::FilterNoPlayer trace::filter_no_player{};
+trace::FilterNoEntity trace::filter_no_entity{};
 trace::FilterPenetration trace::filter_penetration{};

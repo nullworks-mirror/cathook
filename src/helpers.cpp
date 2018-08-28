@@ -1107,19 +1107,29 @@ netvar.iHealth));
 
 bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only)
 {
-    trace_t trace_visible;
-    Ray_t ray;
 
-    trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-    ray.Init(origin, target);
     if (!enviroment_only)
+    {
+        trace_t trace_visible;
+        Ray_t ray;
+
+        trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+        ray.Init(origin, target);
         g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
                            &trace_visible);
+        return (trace_visible.fraction == 1.0f);
+    }
     else
-        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
-                           &trace_visible);
+    {
+        trace_t trace_visible;
+        Ray_t ray;
 
-    return (trace_visible.fraction == 1.0f);
+        trace::filter_no_entity.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+        ray.Init(origin, target);
+        g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_entity,
+                           &trace_visible);
+        return (trace_visible.fraction == 1.0f);
+    }
 }
 
 void WhatIAmLookingAt(int *result_eindex, Vector *result_pos)

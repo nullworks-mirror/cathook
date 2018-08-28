@@ -63,6 +63,14 @@ public:
     offset_t hActiveWeapon;
     offset_t flChargedDamage;
     offset_t iUpgradeLevel;
+    offset_t m_hBuilder;
+    offset_t m_iObjectType;
+    offset_t m_bBuilding;
+    offset_t m_iTeleState;
+    offset_t m_flTeleRechargeTime;
+    offset_t m_flTeleCurrentRechargeDuration;
+    offset_t m_iTeleTimesUsed;
+    offset_t m_flTeleYawToExit;
     offset_t iPipeType;
     offset_t iBuildingHealth;
     offset_t iBuildingMaxHealth;

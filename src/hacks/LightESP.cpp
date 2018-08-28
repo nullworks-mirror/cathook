@@ -61,7 +61,7 @@ void draw()
         Vector out;
         if (draw::WorldToScreen(hitp[i], out))
         {
-            float size;
+            float size = 0.0f;
             Vector pout, pout2;
             if (draw::WorldToScreen(minp[i], pout) &&
                 draw::WorldToScreen(maxp[i], pout2))
