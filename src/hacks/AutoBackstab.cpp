@@ -218,7 +218,7 @@ void CreateMove()
 
                 for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 20.0f)
                 {
-                    if (unifiedCanBackstab(besttarget, angle, i.entorigin, i.hitboxes.at(spine_3).min, i.hitboxes.at(spine_3).max))
+                    if (unifiedCanBackstab(besttarget, angle, i.entorigin, i.collidable.min, i.collidable.max))
                     {
                         current_user_cmd->tick_count = i.tickcount;
                         current_user_cmd->viewangles = angle;

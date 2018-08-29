@@ -118,30 +118,7 @@ void draw::UpdateWTS()
 
 bool draw::WorldToScreen(const Vector &origin, Vector &screen)
 {
-    float w, odw;
-    screen.z = 0;
-    w = wts[3][0] * origin[0] + wts[3][1] * origin[1] + wts[3][2] * origin[2] +
-        wts[3][3];
-    if (w > 0.001)
-    {
-        odw      = 1.0f / w;
-        screen.x = (draw::width / 2) +
-                   (0.5 *
-                        ((wts[0][0] * origin[0] + wts[0][1] * origin[1] +
-                          wts[0][2] * origin[2] + wts[0][3]) *
-                         odw) *
-                        draw::width +
-                    0.5);
-        screen.y = (draw::height / 2) -
-                   (0.5 *
-                        ((wts[1][0] * origin[0] + wts[1][1] * origin[1] +
-                          wts[1][2] * origin[2] + wts[1][3]) *
-                         odw) *
-                        draw::height +
-                    0.5);
-        return true;
-    }
-    return false;
+    return g_IVDebugOverlay->ScreenPosition(origin, screen) == 0;
 }
 
 SDL_GLContext context = nullptr;
