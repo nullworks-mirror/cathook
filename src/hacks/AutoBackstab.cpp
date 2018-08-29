@@ -17,6 +17,20 @@ namespace hacks::tf2::autobackstab
 namespace backtrack = hacks::shared::backtrack;
 static settings::Bool enable{ "autobackstab.enable", "0" };
 static settings::Bool silent{ "autobackstab.silent", "1" };
+void testingFunc();
+void AngleVectors2 (const QAngle &angles, Vector *forward)
+{
+    float	sp, sy, cp, cy;
+
+    SinCos( DEG2RAD( angles[YAW] ), &sy, &cy );
+    SinCos( DEG2RAD( angles[PITCH] ), &sp, &cp );
+
+    forward->x = cp*cy;
+    forward->y = cp*sy;
+    forward->z = -sp;
+}
+
+
 
 // Not required anymore, keeping for future reference
 Vector rotateVector(Vector center, float radianAngle, Vector p)
@@ -114,6 +128,7 @@ bool unifiedCanBackstab(Vector &vecAngle, Vector min, Vector max,
 
 void CreateMove()
 {
+//    testingFunc();
     if (!enable)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !LOCAL_E->m_bAlivePlayer())
@@ -264,41 +279,131 @@ const Vector GetWorldSpaceCenter(CachedEntity *ent)
     vWorldSpaceCenter.z += (vMin.z + vMax.z) / 2;
     return vWorldSpaceCenter;
 }
+
+static bool InBackstabAngleRange = false;
+static bool LookingAtVic         = false;
+static bool IsBehind             = false;
+
 void Draw()
 {
-    int idx = -1;
-    Vector result{};
-    WhatIAmLookingAt(&idx, &result);
-    if (idx == -1)
-        return;
-    CachedEntity *target = ENTITY(idx);
-    if (CE_BAD(target))
-        return;
-    Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
-    Vector tarAngle = NET_VECTOR(RAW_ENT(target), netvar.m_angEyeAngles);
-    Vector wsc_spy_to_victim = GetWorldSpaceCenter(target) - GetWorldSpaceCenter(LOCAL_E);
-    wsc_spy_to_victim.z = 0;
-    wsc_spy_to_victim.NormalizeInPlace();
+    //    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !LOCAL_E->m_bAlivePlayer())
+    //        return;
+    //    if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
+    //        return;
+    //    CachedEntity *besttarget = nullptr;
+    //        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    //        {
+    //            CachedEntity *target = ENTITY(i);
+    //            if (CE_BAD(target))
+    //                continue;
+    //            if (target == LOCAL_E || target->m_iTeam() ==
+    //            LOCAL_E->m_iTeam() ||
+    //                !target->m_bAlivePlayer() || target->m_Type() !=
+    //                ENTITY_PLAYER) continue;
+    //            if (target->m_vecOrigin().DistTo(
+    //                    g_pLocalPlayer->v_Eye) <= 200.0f)
+    //            {
+    //                if (CE_GOOD(besttarget))
+    //                {
+    //                    if (besttarget->m_vecOrigin().DistTo(
+    //                            g_pLocalPlayer->v_Eye) <
+    //                        besttarget->m_vecOrigin().DistTo(
+    //                            g_pLocalPlayer->v_Eye))
+    //                        besttarget = target;
+    //                }
+    //                else
+    //                {
+    //                    besttarget = target;
+    //                }
+    //            }
+    //        }
 
-    Vector eye_spy = angle;
-    eye_spy.z = 0;
-    eye_spy.NormalizeInPlace();
+    //    if (CE_BAD(besttarget))
+    //        return;
+    //    Vector angle = NET_VECTOR(RAW_ENT(LOCAL_E), netvar.m_angEyeAngles);
+    //    Vector tarAngle = NET_VECTOR(RAW_ENT(besttarget),
+    //    netvar.m_angEyeAngles);
 
-    Vector eye_victim = tarAngle;
-    eye_victim.z = 0;
-    eye_victim.NormalizeInPlace();
+    //    //bool IsBehind =  dot1 <=  0.0f;
+    //    bool LookingAtVic = GetFov(angle, g_pLocalPlayer->v_Eye,
+    //    GetWorldSpaceCenter(besttarget)) <= 60.0f; bool InBackstabAngleRange =
+    //    fabsf(tarAngle.y - angle.y) <= 107.5f;
 
-    float dot1 = DotProduct(wsc_spy_to_victim, eye_victim);
-    float dot2 =  DotProduct(wsc_spy_to_victim, eye_spy);
-    float dot3 = DotProduct(eye_spy, eye_victim);
-    bool IsBehind =  dot1 <=  0.0f;
-    bool LookingAtVic = dot2 <=  0.5f;
-    bool InBackstabAngleRange =  dot3 <= -0.3f;
-    rgba_t col1 = IsBehind ? colors::red : colors::green;
-    rgba_t col2 = LookingAtVic ? colors::red : colors::green;
-    rgba_t col3 = InBackstabAngleRange ? colors::red : colors::green;
-    AddCenterString(format("Behind target: ", dot1), col1);
-    AddCenterString(format("Looking at Target: ", dot2), col2);
-    AddCenterString(format("In Angle Range: ", dot3), col3);
+
+
+
+//    rgba_t col1 = IsBehind ? colors::green : colors::red;
+//    rgba_t col2 = LookingAtVic ? colors::green : colors::red;
+//    rgba_t col3 = InBackstabAngleRange ? colors::green : colors::red;
+//    AddCenterString(format("Behind target" /*, dot1*/), col1);
+//    AddCenterString(format("Looking at Target" /*, dot2*/), col2);
+//    AddCenterString(format("In Angle Range" /*, dot3*/), col3);
 }
+
+void testingFunc()
+{
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !LOCAL_E->m_bAlivePlayer())
+        return;
+    if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
+        return;
+    CachedEntity *besttarget = nullptr;
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *target = ENTITY(i);
+        if (CE_BAD(target))
+            continue;
+        if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
+            !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
+            continue;
+        if (target->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye) <= 200.0f)
+        {
+            if (CE_GOOD(besttarget))
+            {
+                if (besttarget->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye) <
+                    besttarget->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye))
+                    besttarget = target;
+            }
+            else
+            {
+                besttarget = target;
+            }
+        }
+    }
+
+    if (CE_BAD(besttarget))
+        return;
+    Vector angle    = NET_VECTOR(RAW_ENT(LOCAL_E), 4104);
+    Vector tarAngle = NET_VECTOR(RAW_ENT(besttarget), netvar.m_angEyeAngles);
+
+    logging::Info("Loc: %f; Tar: %f", angle.y, tarAngle.y);
+
+    float toclamp = tarAngle.y - angle.y;
+
+    while (toclamp > 180)
+        toclamp -= 360;
+
+    while (toclamp < -180)
+        toclamp += 360;
+
+    // Get the forward view vector of the target, ignore Z
+    Vector vecVictimForward;
+    AngleVectors2(VectorToQAngle(tarAngle), &vecVictimForward);
+    vecVictimForward.z      = 0.0f;
+    vecVictimForward.NormalizeInPlace();
+
+    // Get a vector from my origin to my targets origin
+    Vector vecToTarget;
+    vecToTarget   = GetWorldSpaceCenter(besttarget) - GetWorldSpaceCenter(LOCAL_E);
+    vecToTarget.z = 0.0f;
+    vecToTarget.NormalizeInPlace();
+
+    float dot = DotProduct(vecVictimForward, vecToTarget);
+
+    LookingAtVic         = GetFov(angle, g_pLocalPlayer->v_Eye,
+                          GetWorldSpaceCenter(besttarget)) <= 60.0f;
+    InBackstabAngleRange = fabsf(toclamp) <= 107.5f;
+    IsBehind             = (dot > 0.0f);
+    logging::Info("Dot: %f", dot);
+}
+
 } // namespace hacks::tf2::autobackstab
