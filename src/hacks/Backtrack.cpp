@@ -125,6 +125,7 @@ void Run()
         float viewangles =
             (_viewangles > 180) ? _viewangles - 360 : _viewangles;
         float simtime = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
+        Vector ent_orig = pEntity->InternalEntity()->GetAbsOrigin();
         std::array<hitboxData, 18> hbdArray;
         for (size_t i = 0; i < hbdArray.max_size(); i++)
         {
@@ -132,10 +133,15 @@ void Run()
             hbdArray.at(i).min    = pEntity->hitboxes.GetHitbox(i)->min;
             hbdArray.at(i).max    = pEntity->hitboxes.GetHitbox(i)->max;
         }
-        Vector ent_orig = pEntity->InternalEntity()->GetAbsOrigin();
+        hitboxData collidable{};
+        {
+            collidable.min         = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + ent_orig;
+            collidable.max         = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + ent_orig;
+            collidable.center = (collidable.min + collidable.max)/2;
+        }
         auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
         headPositions[i][cmd->command_number % getTicks()] =
-            BacktrackData{ cmd->tick_count, hbdArray,
+            BacktrackData{ cmd->tick_count, hbdArray, collidable,
                            viewangles,      simtime,
                            ent_orig,        cmd->command_number % getTicks() };
     }

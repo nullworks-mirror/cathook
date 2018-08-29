@@ -22,8 +22,7 @@ bool HasSandvichOut(CachedEntity *entity)
     weapon = ENTITY(weapon_idx);
     if (CE_GOOD(weapon))
     {
-        if (weapon->m_iClassID() == CL_CLASS(CTFLunchBox) &&
-            CE_INT(entity, netvar.iClass) == tf_heavy)
+        if (weapon->m_iClassID() == CL_CLASS(CTFLunchBox))
         {
             return true;
         }

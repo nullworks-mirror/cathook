@@ -22,6 +22,7 @@ struct BacktrackData
 {
     int tickcount{ 0 };
     std::array<hitboxData, 18> hitboxes;
+    hitboxData collidable{};
     float viewangles{ 0.0f };
     float simtime{ 0.0f };
     Vector entorigin{ 0.0f, 0.0f, 0.0f };
