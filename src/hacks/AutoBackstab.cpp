@@ -107,17 +107,8 @@ bool unifiedCanBackstab(CachedEntity *tar, Vector &vecAngle,
     Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y), fmaxf(min.z, max.z));
 
     Vector forward;
-    float sp, sy, cp, cy;
-    QAngle angle = VectorToQAngle(vecAngle);
-    // Use math to get a vector in front of the player
-    sy        = sinf(DEG2RAD(angle[1]));
-    cy        = cosf(DEG2RAD(angle[1]));
-    sp        = sinf(DEG2RAD(angle[0]));
-    cp        = cosf(DEG2RAD(angle[0]));
-    forward.x = cp * cy;
-    forward.y = cp * sy;
-    forward.z = -sp;
-    forward   = forward * meleeRange + head;
+    AngleVectors2(VectorToQAngle(vecAngle), &forward);
+    forward = forward * meleeRange + head;
 
     Vector hit;
     // Check if we our line is within the targets hitbox
@@ -206,11 +197,6 @@ void CreateMove()
 
             for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 10.0f)
             {
-                Vector hitboxLoc =
-                    besttarget->hitboxes
-                        .GetHitbox(ClosestDistanceHitbox(besttarget))
-                        ->center;
-
                 if (!unifiedCanBackstab(besttarget, angle, origin, min, max))
                     continue;
                 current_user_cmd->viewangles = angle;
@@ -224,22 +210,22 @@ void CreateMove()
         else
         {
             int idx = besttarget->m_IDX;
-            for (auto i : backtrack::headPositions[idx])
+            for (int j = 0; j < 66; j++)
             {
+                auto i = backtrack::headPositions[idx][j];
                 if (!backtrack::ValidTick(i, besttarget))
                     continue;
-                backtrack::hitboxData &hitbox =
-                    i.hitboxes.at(ClosestDistanceHitbox(besttarget, i));
 
                 for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 20.0f)
                 {
-                    if (unifiedCanBackstab(besttarget, angle, i.entorigin, i.collidable.min, i.collidable.max))
+                    if (unifiedCanBackstab(besttarget, angle, i.entorigin, i.hitboxes.at(spine_3).min, i.hitboxes.at(spine_3).max))
                     {
                         current_user_cmd->tick_count = i.tickcount;
                         current_user_cmd->viewangles = angle;
                         current_user_cmd->buttons |= IN_ATTACK;
                         if (silent)
                             g_pLocalPlayer->bUseSilentAngles = true;
+                        logging::Info("Success on tick %i", j);
                         return;
                     }
                 }
