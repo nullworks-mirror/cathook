@@ -483,6 +483,8 @@ CatCommand set_value("set", "Set value", [](const CCommand &args) {
         return;
     std::string value(args.Arg(2));
     ReplaceString(value, "\\n", "\n");
+    var->m_fMaxVal = 999999999.9f;
+    var->m_fMinVal = -999999999.9f;
     var->SetValue(value.c_str());
     logging::Info("Set '%s' to '%s'", args.Arg(1), value.c_str());
 });
