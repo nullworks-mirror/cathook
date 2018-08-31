@@ -218,6 +218,8 @@ void initonce()
     cd2.update();
     cd3.update();
     engi_spot_cd.update();
+    sniper_spots.update();
+    preferred_sniper_spots.update();
     return;
 }
 
