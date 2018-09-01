@@ -401,6 +401,7 @@ void FakeCrouch(CUserCmd *cmd)
     if ((cmd->buttons & IN_ATTACK))
         *bSendPackets = true;
 }
+static float randyaw = 0.0f;
 void ProcessUserCmd(CUserCmd *cmd)
 {
     if (!enable)
@@ -547,12 +548,11 @@ void ProcessUserCmd(CUserCmd *cmd)
     case 22: // Omegayaw
         if (*bSendPackets)
         {
-            rngyaw = RandFloatRange(-180.0f, 180.0f);
-            y      = rngyaw;
+            randyaw += RandFloatRange(-30.0f, 30.0f);
+            y = randyaw;
         }
         else
-            y = rngyaw - 180.0f;
-        break;
+            y = randyaw - 180.0f + RandFloatRange(-40.0f, 40.0f);
     default:
         break;
     }

@@ -50,7 +50,7 @@
                     <Option name="FakeLeft" value="19"/>
                     <Option name="FakeRight" value="20"/>
                     <Option name="FakeREdge" value="21"/>
-                    <Option name="OmegaFake" value="22"/>
+                    <Option name="TestAA" value="22"/>
                 </Select>
             </LabeledObject>
         </List>

@@ -13,7 +13,10 @@ settings::Int queue{ "autoqueue.mode", "7" };
 
 CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue",
                            []() { tfmm::startQueue(); });
-
+CatCommand queue_party("mm_queue_party", "Queue for Party", []() {
+    re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
+    client->RequestQueueForStandby();
+});
 CatCommand cmd_abandon("mm_abandon", "Abandon match",
                        []() { tfmm::abandon(); });
 
@@ -56,6 +59,7 @@ void startQueue()
         if (*queue == 7)
             client->LoadSavedCasualCriteria();
         client->RequestQueueForMatch((int) queue);
+        client->RequestQueueForStandby();
         hacks::shared::autojoin::resetQueueTimer();
         queuecount++;
     }

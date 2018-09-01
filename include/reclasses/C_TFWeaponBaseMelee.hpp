@@ -28,7 +28,7 @@ public:
             self->GetClientClass()->m_ClassID == CL_CLASS(CTFKatana))
             return 128;
         else
-            return (128.0f * 0.67) - 0.5f;
+            return 72;
     }
 };
 } // namespace re
