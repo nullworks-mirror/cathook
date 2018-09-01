@@ -6,6 +6,7 @@
 
 #include "config.h"
 #include <optional>
+#include "settings/Bool.hpp"
 
 #if ENABLE_VISUALS
 #include <colors.hpp>
@@ -15,7 +16,7 @@ class CachedEntity;
 
 namespace player_tools
 {
-
+extern settings::Bool ignoreCathook;
 enum class IgnoreReason
 {
     DO_NOT_IGNORE,
