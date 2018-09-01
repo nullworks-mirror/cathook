@@ -10,6 +10,8 @@
 #include <settings/Bool.hpp>
 
 static settings::Bool requeue{ "hack.requeue-on-kick", "false" };
+static settings::Bool vote_kicky{"hack.autovote.yes", "false"};
+static settings::Bool vote_kickn{"hack.autovote.no", "false"};
 
 namespace votelogger
 {
@@ -43,10 +45,13 @@ void dispatchUserMessage(bf_read &buffer, int type)
         if (g_IEngine->GetPlayerInfo(eid, &info))
             steamID = info.friendsID;
         if (eid == LOCAL_E->m_IDX)
-        {
             was_local_player = true;
-        }
-
+        if (*vote_kickn)
+	        if (playerlist::AccessData(info.friendsID).state == playerlist::k_EState::CAT)
+                g_IEngine->ClientCmd_Unrestricted("vote option2");
+        if (*vote_kicky)
+            if (playerlist::AccessData(info.friendsID).state != playerlist::k_EState::CAT)
+                g_IEngine->ClientCmd_Unrestricted("vote option1");
         logging::Info("Vote called to kick %s [U:1:%u] for %s", name, steamID,
                       reason);
         break;
