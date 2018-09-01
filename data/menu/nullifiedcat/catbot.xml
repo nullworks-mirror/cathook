@@ -57,7 +57,7 @@
     <Box name="NavBot" width="content" height="content" padding="12 6 6 6" x="390">
         <List width="170">
             <AutoVariable width="fill" target="misc.pathing" label="Enable Pathing"/>
-	    <AutoVariable width="fill" target="misc.pathing.draw" label="Draw Path"/>
+	        <AutoVariable width="fill" target="misc.pathing.draw" label="Draw Path"/>
             <AutoVariable width="fill" target="navbot.enable" label="Enable NavBot"/>
             <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/>
             <AutoVariable width="fill" target="navbot.heavy-mode" label="Enable Heavy Mode"/>

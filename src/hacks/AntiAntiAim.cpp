@@ -49,6 +49,10 @@ void hacks::shared::anti_anti_aim::resolveEnt(int IDX, IClientEntity *entity)
         if (angles.y < 0)
             angles.y += 360.0f;
         angles.y -= 180.0f;
+        if (angles.x >= 90)
+            angles.x = -89;
+        if (angles.x <= -90)
+            angles.x = 89;
         if (quota < 0.8f)
             switch (g_Settings.brute.brutenum[IDX])
             {

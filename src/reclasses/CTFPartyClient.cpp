@@ -70,7 +70,8 @@ int re::CTFPartyClient::LoadSavedCasualCriteria()
 void re::CTFPartyClient::RequestQueueForStandby()
 {
     typedef void (*RequestStandby_t)(re::CTFPartyClient *);
-    static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 4F ? 85 C9 74");
+    static uintptr_t addr = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 4F ? 85 C9 74");
     static RequestStandby_t RequestStandby_fn = RequestStandby_t(addr);
     RequestStandby_fn(this);
     return;
