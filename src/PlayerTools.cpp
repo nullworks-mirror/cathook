@@ -9,12 +9,13 @@
 #include <online/Online.hpp>
 #include "PlayerTools.hpp"
 #include "entitycache.hpp"
+#include "settings/Bool.hpp"
 
 static settings::Int betrayal_limit{ "player-tools.betrayal-limit", "true" };
 
 static settings::Bool taunting{ "player-tools.ignore.taunting", "true" };
 static settings::Bool hoovy{ "player-tools.ignore.hoovy", "true" };
-settings::Bool ignoreCathook{ "player-tools.ignore.cathook", "true" };
+static settings::Bool ignoreCathook{ "player-tools.ignore.cathook", "true" };
 
 static settings::Bool online_notarget{ "player-tools.ignore.online.notarget",
                                        "true" };
