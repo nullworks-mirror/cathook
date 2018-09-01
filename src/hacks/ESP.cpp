@@ -251,7 +251,7 @@ void CreateMove()
 {
 
     // Check usersettings if enabled
-    if (!enable)
+    if (!*enable)
         return;
 
     // Something
