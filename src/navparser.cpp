@@ -240,6 +240,7 @@ static bool ensureArrival;
 // overwrite it
 int priority           = 0;
 static Vector lastArea = { 0.0f, 0.0f, 0.0f };
+static int persistentTries = 0;
 
 // dest = Destination, navToLocalCenter = Should bot travel to local center
 // first before resuming pathing activity? (Increases accuracy) persistent =
@@ -277,6 +278,7 @@ bool NavTo(Vector dest, bool navToLocalCenter, bool persistent,
     findClosestNavSquare_localAreas.clear();
     priority = instructionPriority;
     inactivity.update();
+    persistentTries = 0;
     return true;
 }
 
@@ -304,7 +306,7 @@ void ignoreManagerCM()
 
 void Repath()
 {
-    if (ensureArrival)
+    if (ensureArrival && persistentTries < 10)
     {
         logging::Info("Pathing: NavBot inactive for too long. Ignoring "
                       "connection and finding another path...");
@@ -313,6 +315,7 @@ void Repath()
         // Find a new path
         TF2MAP->pather->Reset();
         crumbs = findPath(g_pLocalPlayer->v_Origin, crumbs.back(), i1, i2);
+        persistentTries++;
     }
     else
     {

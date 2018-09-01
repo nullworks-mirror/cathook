@@ -7,7 +7,6 @@
 #include <hoovy.hpp>
 #include <playerlist.hpp>
 #include <online/Online.hpp>
-#include <settings/Bool.hpp>
 #include "PlayerTools.hpp"
 #include "entitycache.hpp"
 
@@ -15,6 +14,7 @@ static settings::Int betrayal_limit{ "player-tools.betrayal-limit", "true" };
 
 static settings::Bool taunting{ "player-tools.ignore.taunting", "true" };
 static settings::Bool hoovy{ "player-tools.ignore.hoovy", "true" };
+settings::Bool ignoreCathook{ "player-tools.ignore.cathook", "true" };
 
 static settings::Bool online_notarget{ "player-tools.ignore.online.notarget",
                                        "true" };
@@ -47,7 +47,7 @@ IgnoreReason shouldTargetSteamId(unsigned id)
     }
 
     auto &pl = playerlist::AccessData(id);
-    if (playerlist::IsFriendly(pl.state))
+    if (playerlist::IsFriendly(pl.state) || (pl.state == playerlist::k_EState::CAT && *ignoreCathook))
         return IgnoreReason::LOCAL_PLAYER_LIST;
 #if ENABLE_ONLINE
     auto *co = online::getUserData(id);

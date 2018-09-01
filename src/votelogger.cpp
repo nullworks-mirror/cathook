@@ -25,6 +25,7 @@ void dispatchUserMessage(bf_read &buffer, int type)
         break;
     case 46:
     {
+        // TODO: Add always vote no/vote no on friends. Cvar is "vote option2"
         was_local_player = false;
         auto caller      = (unsigned char) buffer.ReadByte();
         // unknown
