@@ -82,14 +82,11 @@ void do_random_votekick()
         player_info_s info;
         if (!g_IEngine->GetPlayerInfo(i, &info))
             continue;
-
         if (g_pPlayerResource->GetTeam(i) != g_pLocalPlayer->team)
             continue;
-
         if (is_a_catbot(info.friendsID))
             continue;
-        if (playerlist::AccessData(info.friendsID).state ==
-                    playerlist::k_EState::CAT)
+        if (playerlist::AccessData(info.friendsID).state != playerlist::k_EState::RAGE && playerlist::AccessData(info.friendsID).state != playerlist::k_EState::DEFAULT)
             continue;
         targets.push_back(info.userID);
     }
