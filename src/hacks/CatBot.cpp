@@ -88,7 +88,9 @@ void do_random_votekick()
 
         if (is_a_catbot(info.friendsID))
             continue;
-
+        if (playerlist::AccessData(info.friendsID).state ==
+                    playerlist::k_EState::CAT)
+            continue;
         targets.push_back(info.userID);
     }
 
