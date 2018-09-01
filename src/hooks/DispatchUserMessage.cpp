@@ -246,7 +246,7 @@ if (*identify && sendmsg.test_and_set(300000))
                             if (state == playerlist::k_EState::DEFAULT)
                             {
                                 state = playerlist::k_EState::CAT;
-                                if (*answerIdentify && sendmsg.test_and_set(60000))
+                                if (*answerIdentify && sendmsg.test_and_set(5000))
                                     chat_stack::Say("!!meow");
                             }
                         }
