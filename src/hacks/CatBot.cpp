@@ -77,6 +77,10 @@ void on_killed_by(int userid)
 void do_random_votekick()
 {
     std::vector<int> targets;
+    player_info_s local_info;
+    
+    if (CE_BAD(LOCAL_E) || !g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &local_info))
+        return;
     for (int i = 1; i <= g_GlobalVars->maxClients; ++i)
     {
         player_info_s info;
@@ -86,8 +90,11 @@ void do_random_votekick()
             continue;
         if (is_a_catbot(info.friendsID))
             continue;
+        if (info.friendsID == local_info.friendsID)
+            continue;
         if (playerlist::AccessData(info.friendsID).state != playerlist::k_EState::RAGE && playerlist::AccessData(info.friendsID).state != playerlist::k_EState::DEFAULT)
             continue;
+
         targets.push_back(info.userID);
     }
 
