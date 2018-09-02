@@ -168,7 +168,7 @@ struct offsets
     }
     static constexpr uint32_t PreDataUpdate()
     {
-        return PlatformOffset(17, undefined, undefined);
+        return PlatformOffset(15, undefined, undefined);
     }
     static constexpr uint32_t Paint()
     {
