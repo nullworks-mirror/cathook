@@ -357,7 +357,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
     CachedEntity *ent;
     CachedEntity *target_highest_ent = 0;
     target_highest_score             = -256;
-    if (!hacks::shared::backtrack::isBacktrackEnabled || projectile_mode)
+    if (!IsBacktracking() || projectile_mode)
     {
         for (int i = 0; i < HIGHEST_ENTITY; i++)
         {

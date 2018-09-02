@@ -255,6 +255,12 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                                     sendmsg.test_and_set(5000))
                                     chat_stack::Say("!!meow");
                             }
+                            else if (state == playerlist::k_EState::CAT)
+                            {
+                                if (*answerIdentify &&
+                                    sendmsg.test_and_set(60000))
+                                    chat_stack::Say("!!meow");
+                            }
                         }
 #endif
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),

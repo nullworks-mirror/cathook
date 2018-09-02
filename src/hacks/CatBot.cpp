@@ -8,6 +8,7 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 #include "hack.hpp"
+#include "PlayerTools.hpp"
 
 static settings::Bool enable{ "cat-bot.enable", "false" };
 
@@ -27,6 +28,7 @@ static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
 
 static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "true" };
 static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
+static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
 namespace hacks::shared::catbot
 {
@@ -211,14 +213,18 @@ void reportall()
         // server
         if (!ent)
             continue;
+        if (ent == LOCAL_E)
+            continue;
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(i, &info))
         {
-            if (info.friendsID == local.friendsID ||
-                playerlist::AccessData(info.friendsID).state ==
-                    playerlist::k_EState::FRIEND ||
-                playerlist::AccessData(info.friendsID).state ==
-                    playerlist::k_EState::IPC)
+//            if (info.friendsID == local.friendsID ||
+//                playerlist::AccessData(info.friendsID).state ==
+//                    playerlist::k_EState::FRIEND ||
+//                playerlist::AccessData(info.friendsID).state ==
+//                    playerlist::k_EState::IPC)
+//                continue;
+            if (player_tools::shouldTargetSteamId(info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             CSteamID id(info.friendsID, EUniverse::k_EUniversePublic,
                         EAccountType::k_EAccountTypeIndividual);

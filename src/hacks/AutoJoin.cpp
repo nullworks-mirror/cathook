@@ -15,6 +15,7 @@ static settings::Bool autojoin_team{ "autojoin.team", "false" };
 static settings::Int autojoin_class{ "autojoin.class", "0" };
 static settings::Bool auto_queue{ "autojoin.auto-queue", "false" };
 static settings::Bool party_bypass{ "autojoin.party-bypass", "false" };
+static settings::Bool auto_requeue{ "autojoin.auto-requeue", "false" };
 
 namespace hacks::shared::autojoin
 {
@@ -80,7 +81,8 @@ void updateSearch()
             calld = true;
         }
     }*/
-    if (!auto_queue)
+
+    if (!auto_queue && !auto_requeue)
     {
 #if not ENABLE_VISUALS
         req_timer.update();
@@ -102,24 +104,40 @@ void updateSearch()
 
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
     re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
+
     if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) &&
-        gc->BHaveLiveMatch())
+            gc->BHaveLiveMatch())
     {
 #if not ENABLE_VISUALS
         req_timer.update();
 #endif
         tfmm::leaveQueue();
     }
-    if (gc && !gc->BConnectedToMatchServer(false) &&
-        queuetime.test_and_set(10 * 1000 * 60) && !gc->BHaveLiveMatch())
-        tfmm::leaveQueue();
-    if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
-        !invites)
-        if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
-        {
-            logging::Info("Starting queue, Invites %d", invites);
-            tfmm::startQueue();
-        }
+//    if (gc && !gc->BConnectedToMatchServer(false) &&
+//            queuetime.test_and_set(10 * 1000 * 60) && !gc->BHaveLiveMatch())
+//        tfmm::leaveQueue();
+
+    if (auto_requeue)
+    {
+        if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
+                !invites)
+            if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
+            {
+                logging::Info("Starting queue for standby, Invites %d", invites);
+                tfmm::startQueueStandby();
+            }
+    }
+
+    if (auto_queue)
+    {
+        if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
+                !invites)
+            if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
+            {
+                logging::Info("Starting queue, Invites %d", invites);
+                tfmm::startQueue();
+            }
+    }
 #if not ENABLE_VISUALS
     if (req_timer.test_and_set(600000))
     {

@@ -11,6 +11,7 @@ namespace tfmm
 {
 
 void startQueue();
+void startQueueStandby();
 void leaveQueue();
 void disconnectAndAbandon();
 void abandon();

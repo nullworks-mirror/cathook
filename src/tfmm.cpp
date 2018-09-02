@@ -59,12 +59,21 @@ void startQueue()
         if (*queue == 7)
             client->LoadSavedCasualCriteria();
         client->RequestQueueForMatch((int) queue);
-        client->RequestQueueForStandby();
+        //client->RequestQueueForStandby();
         hacks::shared::autojoin::resetQueueTimer();
         queuecount++;
     }
     else
         logging::Info("queue_start: CTFPartyClient == null!");
+}
+void startQueueStandby()
+{
+    re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
+    if (client)
+    {
+        client->RequestQueueForStandby();
+        hacks::shared::autojoin::resetQueueTimer();
+    }
 }
 void leaveQueue()
 {
