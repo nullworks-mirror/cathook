@@ -390,9 +390,9 @@ bool isActive()
 }
 
 const std::vector<std::string> builtin_default = {
-    "cathook - more fun than a ball of yarn!", "GNU/Linux is the best OS!",
-    "visit youtube.com/c/nullifiedcat for more information!",
-    "cathook - free tf2 cheat!", "cathook - ca(n)t stop me meow!"
+    "Cathook - more fun than a ball of yarn!", "GNU/Linux is the best OS!",
+    "Visit https://github.com/nullworks/cathook for more information!",
+    "Cathook - Free and Open-Source tf2 cheat!", "Cathook - ca(n)t stop me meow!"
 };
 const std::vector<std::string> builtin_lennyfaces = {
     "( ͡° ͜ʖ ͡°)",  "( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)",

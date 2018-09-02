@@ -11,6 +11,7 @@
 #include "hacks/Aimbot.hpp"
 #include "hacks/Trigger.hpp"
 #include "hacks/AntiAntiAim.hpp"
+#include "PlayerTools.hpp"
 
 namespace hacks::tf2::autobackstab
 {
@@ -147,6 +148,9 @@ void CreateMove()
             if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
                 !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
                 continue;
+            if (player_tools::shouldTarget(target) !=
+                player_tools::IgnoreReason::DO_NOT_IGNORE)
+                continue;
             if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
                     g_pLocalPlayer->v_Eye) <= 200.0f)
             {
@@ -176,6 +180,9 @@ void CreateMove()
             return;
         if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
             !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
+            return;
+        if (player_tools::shouldTarget(target) !=
+            player_tools::IgnoreReason::DO_NOT_IGNORE)
             return;
         // Check if besttick distance is < 200.0f
         if (backtrack::headPositions[target->m_IDX][backtrack::BestTick]
