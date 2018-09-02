@@ -260,7 +260,7 @@ void CreateMove()
     ResetEntityStrings();          // Clear any strings entities have
     entities_need_repaint.clear(); // Clear data on entities that need redraw
     int max_clients = g_IEngine->GetMaxClients();
-    int limit              = HIGHEST_ENTITY;
+    int limit       = HIGHEST_ENTITY;
 
     // If not using any other special esp, we lower the min to the max clients
     if (!buildings && !proj_esp && !item_esp)
@@ -1037,7 +1037,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                      ? "Teleporter"
                      : (classid == CL_CLASS(CObjectSentrygun) ? "Sentry Gun"
                                                               : "Dispenser"));
-            int level = CE_INT(ent, netvar.iUpgradeLevel);
+            int level  = CE_INT(ent, netvar.iUpgradeLevel);
             int IsMini = CE_INT(ent, netvar.m_bMiniBuilding);
             if (!IsMini)
                 AddEntityString(ent, format("LV ", level, ' ', name));
@@ -1045,14 +1045,17 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                 AddEntityString(ent, format("Mini ", name));
             if (classid == CL_CLASS(CObjectTeleporter))
             {
-                float next_teleport = CE_FLOAT(ent, netvar.m_flTeleRechargeTime);
+                float next_teleport =
+                    CE_FLOAT(ent, netvar.m_flTeleRechargeTime);
                 float yaw_to_exit = CE_FLOAT(ent, netvar.m_flTeleYawToExit);
                 if (yaw_to_exit)
                 {
                     if (next_teleport < g_GlobalVars->curtime)
                         AddEntityString(ent, "Ready");
                     else
-                        AddEntityString(ent, format(next_teleport - g_GlobalVars->curtime, "s"));
+                        AddEntityString(
+                            ent,
+                            format(next_teleport - g_GlobalVars->curtime, "s"));
                 }
             }
         }

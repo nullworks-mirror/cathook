@@ -27,6 +27,7 @@ void Draw();
 
 int FindInVector(size_t id);
 int FindNearestValid(Vector vec);
+int FindNearestValidbyDist(Vector vec, float mindist, float maxdist);
 
 class inactivityTracker
 {

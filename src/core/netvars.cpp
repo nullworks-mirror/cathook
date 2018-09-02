@@ -125,7 +125,7 @@ void NetVars::Init()
         this->m_iObjectType =
             gNetvars.get_offset("DT_BaseObject", "m_iObjectType");
         this->m_bMiniBuilding =
-                gNetvars.get_offset("DT_BaseObject", "m_bMiniBuilding");
+            gNetvars.get_offset("DT_BaseObject", "m_bMiniBuilding");
         this->m_iTeleState =
             gNetvars.get_offset("DT_ObjectTeleporter", "m_iState");
         this->m_flTeleRechargeTime =

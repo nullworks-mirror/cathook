@@ -124,7 +124,7 @@ void Run()
         float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
         float viewangles =
             (_viewangles > 180) ? _viewangles - 360 : _viewangles;
-        float simtime = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
+        float simtime   = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
         Vector ent_orig = pEntity->InternalEntity()->GetAbsOrigin();
         std::array<hitboxData, 18> hbdArray;
         for (size_t i = 0; i < hbdArray.max_size(); i++)
@@ -135,15 +135,21 @@ void Run()
         }
         hitboxData collidable{};
         {
-            collidable.min         = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + ent_orig;
-            collidable.max         = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + ent_orig;
-            collidable.center = (collidable.min + collidable.max)/2;
+            collidable.min =
+                RAW_ENT(pEntity)->GetCollideable()->OBBMins() + ent_orig;
+            collidable.max =
+                RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + ent_orig;
+            collidable.center = (collidable.min + collidable.max) / 2;
         }
         auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
         headPositions[i][cmd->command_number % getTicks()] =
-            BacktrackData{ cmd->tick_count, hbdArray, collidable,
-                           viewangles,      simtime,
-                           ent_orig,        cmd->command_number % getTicks() };
+            BacktrackData{ cmd->tick_count,
+                           hbdArray,
+                           collidable,
+                           viewangles,
+                           simtime,
+                           ent_orig,
+                           cmd->command_number % getTicks() };
     }
     if (iBestTarget != -1 && CanShoot())
     {
@@ -265,23 +271,24 @@ bool ValidTick(BacktrackData &i, CachedEntity *ent)
 {
     // TODO: Fix this func
 
-
-//    if (istickvalid[ent->m_IDX][i.index])
-//        return true;
-//    if (istickinvalid[ent->m_IDX][i.index])
-//        return false;
-//    if (IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center, true))
-//        if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
-//                  getLatency() - i.simtime * 1000.0f) <= 200.0f)
-//        {
-//            istickvalid[ent->m_IDX][i.index] = true;
-//            return true;
-//        }
-//    istickinvalid[ent->m_IDX][i.index] = true;
-//    return false;
+    //    if (istickvalid[ent->m_IDX][i.index])
+    //        return true;
+    //    if (istickinvalid[ent->m_IDX][i.index])
+    //        return false;
+    //    if (IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center,
+    //    true))
+    //        if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) *
+    //        1000.0f -
+    //                  getLatency() - i.simtime * 1000.0f) <= 200.0f)
+    //        {
+    //            istickvalid[ent->m_IDX][i.index] = true;
+    //            return true;
+    //        }
+    //    istickinvalid[ent->m_IDX][i.index] = true;
+    //    return false;
 
     if (!(fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
-              getLatency() - i.simtime * 1000.0f) < 200.0f))
+                getLatency() - i.simtime * 1000.0f) < 200.0f))
         return false;
     return true;
 }
