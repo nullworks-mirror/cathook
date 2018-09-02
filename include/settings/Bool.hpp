@@ -35,7 +35,7 @@ public:
             setInternal(true);
     }
 
-    inline Variable<bool> &operator=(const std::string &string)
+    inline void operator=(const std::string &string)
     {
         fromString(string);
     }
@@ -50,7 +50,7 @@ public:
         return value;
     }
 
-    inline Variable<bool> &operator=(bool next)
+    inline void operator=(bool next)
     {
         setInternal(next);
     }
