@@ -49,12 +49,12 @@ public:
         setInternal(next);
     }
 
-    inline Variable<glez::rgba> &operator=(const glez::rgba &rgba)
+    inline void operator=(const glez::rgba &rgba)
     {
         setInternal(rgba);
     }
 
-    inline Variable<glez::rgba> &operator=(const std::string &string)
+    inline void operator=(const std::string &string)
     {
         fromString(string);
     }

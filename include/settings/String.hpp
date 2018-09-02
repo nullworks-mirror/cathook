@@ -30,7 +30,7 @@ public:
         return value;
     }
 
-    inline Variable<std::string> &operator=(const std::string &string)
+    inline void operator=(const std::string &string)
     {
         fireCallbacks(std::string(string));
         value = string;

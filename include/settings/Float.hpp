@@ -28,12 +28,12 @@ public:
         set(next);
     }
 
-    inline Variable<float> &operator=(const std::string &string)
+    inline void operator=(const std::string &string)
     {
         fromString(string);
     }
 
-    inline Variable<float> &operator=(const float &next)
+    inline void operator=(const float &next)
     {
         set(next);
     }
