@@ -259,25 +259,22 @@ void CreateMove()
 
     ResetEntityStrings();          // Clear any strings entities have
     entities_need_repaint.clear(); // Clear data on entities that need redraw
-
-    // TODO, Find the benefit of using max clients with this logic
-    // Get max clients and
-    static int max_clients = g_IEngine->GetMaxClients();
-    int limit              = HIGHEST_ENTITY;
+    int max_clients = g_IEngine->GetMaxClients();
+    int limit       = HIGHEST_ENTITY;
 
     // If not using any other special esp, we lower the min to the max clients
     if (!buildings && !proj_esp && !item_esp)
         limit = std::min(max_clients, HIGHEST_ENTITY);
 
-    { // I still dont understand the purpose of prof_section and surrounding in
-        // brackets
+    { // Prof section ends when out of scope, these brackets here.
         PROF_SECTION(CM_ESP_EntityLoop);
         // Loop through entities
         for (int i = 0; i < limit; i++)
         {
             // Get an entity from the loop tick and process it
             CachedEntity *ent = ENTITY(i);
-
+            if (CE_BAD(ent))
+                continue;
             ProcessEntity(ent);
             // Update Bones
             if (i <= 32)
@@ -1040,8 +1037,27 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                      ? "Teleporter"
                      : (classid == CL_CLASS(CObjectSentrygun) ? "Sentry Gun"
                                                               : "Dispenser"));
-            int level = CE_INT(ent, netvar.iUpgradeLevel);
-            AddEntityString(ent, format("LV ", level, ' ', name));
+            int level  = CE_INT(ent, netvar.iUpgradeLevel);
+            int IsMini = CE_INT(ent, netvar.m_bMiniBuilding);
+            if (!IsMini)
+                AddEntityString(ent, format("LV ", level, ' ', name));
+            else
+                AddEntityString(ent, format("Mini ", name));
+            if (classid == CL_CLASS(CObjectTeleporter))
+            {
+                float next_teleport =
+                    CE_FLOAT(ent, netvar.m_flTeleRechargeTime);
+                float yaw_to_exit = CE_FLOAT(ent, netvar.m_flTeleYawToExit);
+                if (yaw_to_exit)
+                {
+                    if (next_teleport < g_GlobalVars->curtime)
+                        AddEntityString(ent, "Ready");
+                    else
+                        AddEntityString(
+                            ent,
+                            format(next_teleport - g_GlobalVars->curtime, "s"));
+                }
+            }
         }
         // If text health is true, then add a string with the health
         if ((int) show_health == 1 || (int) show_health == 3)

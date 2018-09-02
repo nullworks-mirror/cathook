@@ -28,6 +28,44 @@ int FindInVector(size_t id)
 }
 static int bestarea = -1;
 Timer reselect{};
+int FindNearestValidbyDist(Vector vec, float mindist, float maxdist)
+{
+    if (reselect.test_and_set(500))
+    {
+        float bestscr = FLT_MAX;
+        if (bestarea != -1)
+        {
+            bool success = false;
+            Vector area  = areas[bestarea].m_center;
+            float scr    = area.DistTo(vec);
+            if (scr < maxdist && scr > mindist)
+                if (IsVectorVisible(vec, area, false))
+                    success = true;
+            if (!success)
+                bestarea = -1;
+        }
+        else
+        {
+            bestarea = -1;
+            for (int ar = 0; ar < areas.size(); ar++)
+            {
+                Vector area = areas[ar].m_center;
+                area.z += 72.0f;
+                float scr = area.DistTo(vec);
+                if (scr > maxdist || scr < mindist)
+                    continue;
+                if (scr > bestscr)
+                    continue;
+                if (IsVectorVisible(vec, area, false))
+                {
+                    bestscr  = scr;
+                    bestarea = ar;
+                }
+            }
+        }
+    }
+    return bestarea;
+}
 int FindNearestValid(Vector vec)
 {
     if (reselect.test_and_set(500))
@@ -238,8 +276,8 @@ static std::vector<Vector> crumbs;
 static bool ensureArrival;
 // Priority value for current instructions, only higher or equal priorites can
 // overwrite it
-int priority           = 0;
-static Vector lastArea = { 0.0f, 0.0f, 0.0f };
+int priority               = 0;
+static Vector lastArea     = { 0.0f, 0.0f, 0.0f };
 static int persistentTries = 0;
 
 // dest = Destination, navToLocalCenter = Should bot travel to local center

@@ -6,6 +6,7 @@
 #include "navparser.hpp"
 #include "FollowBot.hpp"
 #include "NavBot.hpp"
+#include "PlayerTools.hpp"
 
 namespace hacks::tf2::NavBot
 {
@@ -16,6 +17,7 @@ static settings::Bool engi_mode("navbot.engi-mode", "false");
 static settings::Bool primary_only("navbot.primary-only", "true");
 
 static settings::Bool target_sentry{ "navbot.target-sentry", "true" };
+static settings::Bool stay_near{ "navbot.stay-near", "false" };
 static settings::Bool take_tele{ "navbot.take-teleporters", "true" };
 static settings::Bool enable_fb{ "navbot.medbot", "false" };
 static settings::Bool roambot{ "navbot.roaming", "true" };
@@ -157,6 +159,9 @@ CachedEntity *NearestEnemy()
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
+                continue;
+            if (player_tools::shouldTarget(ent) !=
+                player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             if (ent == LOCAL_E || !ent->m_bAlivePlayer() ||
                 ent->m_iTeam() == LOCAL_E->m_iTeam())
@@ -357,7 +362,21 @@ bool NavToSniperSpot(int priority)
     bool use_preferred = !preferred_sniper_spots.empty();
     auto snip_spot     = use_preferred ? preferred_sniper_spots : sniper_spots;
     bool toret         = false;
-
+    if (*stay_near)
+    {
+        CachedEntity *ent = NearestEnemy();
+        if (CE_GOOD(ent))
+        {
+            int nearestvalid =
+                nav::FindNearestValidbyDist(ent->m_vecOrigin(), 1000, 4000);
+            if (nearestvalid != -1)
+            {
+                auto area = nav::areas[nearestvalid];
+                nav::NavTo(area.m_center, false, true, priority);
+                return true;
+            }
+        }
+    }
     if (use_preferred)
     {
         int best_spot       = -1;

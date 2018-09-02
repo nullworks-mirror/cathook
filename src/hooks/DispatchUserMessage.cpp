@@ -218,8 +218,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
             }
 #if !LAGBOT_MODE
-if (*identify && sendmsg.test_and_set(300000))
-    chat_stack::Say("!!meow");
+            if (*identify && sendmsg.test_and_set(300000))
+                chat_stack::Say("!!meow");
 #endif
             if (crypt_chat)
             {
@@ -229,24 +229,30 @@ if (*identify && sendmsg.test_and_set(300000))
                     {
                         std::string msg = ucccccp::decrypt(message);
 #if !LAGBOT_MODE
-//                        if (ucccccp::decrypt(message) == "meow" &&
-//                            hacks::shared::antiaim::communicate &&
-//                            data[0] != LOCAL_E->m_IDX &&
-//                            playerlist::AccessData(ENTITY(data[0])).state !=
-//                                playerlist::k_EState::CAT)
-//                        {
-//                            playerlist::AccessData(ENTITY(data[0])).state =
-//                                playerlist::k_EState::CAT;
-//                            chat_stack::Say("!!meow");
-//                        }
+                        //                        if (ucccccp::decrypt(message)
+                        //                        == "meow" &&
+                        //                            hacks::shared::antiaim::communicate
+                        //                            && data[0] !=
+                        //                            LOCAL_E->m_IDX &&
+                        //                            playerlist::AccessData(ENTITY(data[0])).state
+                        //                            !=
+                        //                                playerlist::k_EState::CAT)
+                        //                        {
+                        //                            playerlist::AccessData(ENTITY(data[0])).state
+                        //                            =
+                        //                                playerlist::k_EState::CAT;
+                        //                            chat_stack::Say("!!meow");
+                        //                        }
                         CachedEntity *ent = ENTITY(data[0]);
-                        if (msg != "Attempt at ucccccping and failing" && msg != "Unsupported version" && ent != LOCAL_E)
+                        if (msg != "Attempt at ucccccping and failing" &&
+                            msg != "Unsupported version" && ent != LOCAL_E)
                         {
                             auto &state = playerlist::AccessData(ent).state;
                             if (state == playerlist::k_EState::DEFAULT)
                             {
                                 state = playerlist::k_EState::CAT;
-                                if (*answerIdentify && sendmsg.test_and_set(5000))
+                                if (*answerIdentify &&
+                                    sendmsg.test_and_set(5000))
                                     chat_stack::Say("!!meow");
                             }
                         }

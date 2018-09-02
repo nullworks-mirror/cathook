@@ -42,14 +42,13 @@ add Spectator Silent for projectile weapons 																		//	//
 //Visuals/GUI																											//
 //------------------------------------------------------------------------------------------------------------------//  //
 																													//	//
-																									//	//
+																									                //	//
 																													//	//
-																								//	//
+																								                    //	//
 																													//	//
 Cheat status menu (A gui to display enabled/disabled states of user settings for when the menu is off)				//	//
 																													//	//
-add teleporter count down																							//	//
-																									//	//
+																									                //	//
 																													//	//
 Make ubercharge esp color RGB when fully charged																	//	//
 																													//	//
@@ -61,7 +60,7 @@ ESP Icons																											//	//
 ESP Distance sort																									//	//
 Show sapped buildings in ESP																						//	//																									//	//
 carrying esp																										//	//
-Tracers/Spy Cam																										//	//
+Spy Cam																										//	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//
 //																														//
@@ -74,11 +73,11 @@ Tracers/Spy Cam																										//	//
 //------------------------------------------------------------------------------------------------------------------//  //
 																													//	//
 TTS																													//	//
-																											//	//
-																											//	//
+																											        //	//
+																											        //	//
 																													//	//
 dominatesay assistsay worldsay																						//	//
-																											//	//
+																											        //	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//
 //																														//

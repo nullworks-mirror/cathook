@@ -48,7 +48,8 @@ IgnoreReason shouldTargetSteamId(unsigned id)
     }
 
     auto &pl = playerlist::AccessData(id);
-    if (playerlist::IsFriendly(pl.state) || (pl.state == playerlist::k_EState::CAT && *ignoreCathook))
+    if (playerlist::IsFriendly(pl.state) ||
+        (pl.state == playerlist::k_EState::CAT && *ignoreCathook))
         return IgnoreReason::LOCAL_PLAYER_LIST;
 #if ENABLE_ONLINE
     auto *co = online::getUserData(id);
