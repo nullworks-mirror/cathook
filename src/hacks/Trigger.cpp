@@ -116,12 +116,18 @@ void CreateMove()
 
     // Check if can backtrack, shoot if we can
     if (hacks::shared::backtrack::isBacktrackEnabled)
-        if (CanBacktrack())
-            return;
+    {
+        // We need to return because we can't hit non backtrackable ticks if we
+        // have backtrack latency.
+        CanBacktrack();
+        return;
+    }
 
     // Check if dormant or null to prevent crashes
     if (CE_BAD(ent))
+    {
         return;
+    }
 
     // Determine whether the triggerbot should shoot, then act accordingly
     if (IsTargetStateGood(ent))
@@ -256,7 +262,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         {
             // If settings allow waiting for charge, and current charge cant
             // kill target, dont aim
-            if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
+            if (*wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
             {
                 float bdmg =
                     CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
@@ -294,13 +300,12 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // If usersettings tell us to use accuracy improvements and the cached
         // hitbox isnt null, then we check if it hits here
-        if (accuracy)
+        if (*accuracy)
         {
 
             // Get a cached hitbox for the one traced
             hitbox_cache::CachedHitbox *hb =
                 entity->hitboxes.GetHitbox(last_hb_traced);
-
             // Check for null
             if (hb)
             {
@@ -314,7 +319,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
                 // Shrink the hitbox here
                 Vector size = maxz - minz;
-                Vector smod = size * 0.05f * (int) accuracy;
+                Vector smod = size * 0.05f * *accuracy;
 
                 // Save the changes to the vectors
                 minz += smod;
@@ -324,16 +329,14 @@ bool IsTargetStateGood(CachedEntity *entity)
                 // we
                 // return false
                 Vector hit;
-                if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
+                if (!CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
                                  hit))
-                {
-                    return true;
-                }
+                    return false;
             }
         }
 
         // Target passed the tests so return true
-        return false;
+        return true;
 
         // Check for buildings
     }
@@ -434,7 +437,7 @@ CachedEntity *FindEntInSight(float range)
     }
 
     // Since we didnt hit and entity, the vis check failed so return 0
-    return 0;
+    return nullptr;
 }
 
 // A function to find whether the head should be used for a target

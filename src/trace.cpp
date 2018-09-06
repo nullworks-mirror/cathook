@@ -42,8 +42,6 @@ bool trace::FilterDefault::ShouldHitEntity(IHandleEntity *handle, int mask)
     switch (clazz->m_ClassID)
     {
     // TODO magic numbers: invisible entity ids
-    case 246:
-    case 248:
     case 64:
     case 225:
     case 55:
