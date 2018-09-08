@@ -14,6 +14,7 @@
 #include <settings/Bool.hpp>
 #include <hacks/AntiAntiAim.hpp>
 #include "NavBot.hpp"
+#include "HookTools.hpp"
 
 #include "HookedMethods.hpp"
 #include "PreDataUpdate.hpp"
@@ -253,6 +254,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         PROF_SECTION(CM_AAA);
         hacks::shared::anti_anti_aim::createMove();
+    }
+
+    {
+        PROF_SECTION(CM_WRAPPER);
+        HookTools::CreateMove();
     }
 
 #if ENABLE_IPC
