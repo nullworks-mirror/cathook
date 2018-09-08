@@ -27,6 +27,7 @@ static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
 static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
 
 static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "true" };
+static settings::Bool always_crouch{ "cat-bot.always-crouch", "false" };
 static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
 static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
@@ -236,6 +237,11 @@ CatCommand report("report_debug", "debug", []() { reportall(); });
 Timer crouchcdr{};
 void smart_crouch()
 {
+    if (*always_crouch)
+    {
+        current_user_cmd->buttons |= IN_DUCK;
+        return;
+    }
     bool foundtar      = false;
     static bool crouch = false;
     if (crouchcdr.test_and_set(2000))
@@ -243,17 +249,14 @@ void smart_crouch()
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_iTeam() == LOCAL_E->m_iTeam() ||
+            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() ||
                 !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) ||
-                playerlist::AccessData(ent).state ==
-                    playerlist::k_EState::FRIEND ||
-                playerlist::AccessData(ent).state ==
-                    playerlist::k_EState::IPC ||
+                    player_tools::shouldTargetSteamId(ent->player_info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE ||
                 should_ignore_player(ent))
                 continue;
             bool failedvis = false;
-            for (int j = -1; j < 18; j++)
-                if (IsEntityVisible(ent, j))
+            for (int j = 0; j < 18; j++)
+                if (IsVectorVisible(g_pLocalPlayer->v_Eye, ent->hitboxes.GetHitbox(j)->center))
                     failedvis = true;
             if (failedvis)
                 continue;
@@ -261,6 +264,7 @@ void smart_crouch()
             {
                 if (!LOCAL_E->hitboxes.GetHitbox(j))
                     continue;
+                // Check if they see my hitboxes
                 if (!IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
                                      LOCAL_E->hitboxes.GetHitbox(j)->center) &&
                     !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
@@ -278,6 +282,14 @@ void smart_crouch()
     if (crouch)
         current_user_cmd->buttons |= IN_DUCK;
 }
+
+// TODO: add more stuffs
+void CreateMove()
+{
+    if (auto_crouch)
+        smart_crouch();
+}
+
 void update()
 {
     if (!enable)
@@ -301,8 +313,6 @@ void update()
         do_random_votekick();
     if (timer_catbot_list.test_and_set(3000))
         update_catbot_list();
-    if (auto_crouch)
-        smart_crouch();
     if (timer_abandon.test_and_set(2000) && level_init_timer.check(13000))
     {
         count_bots      = 0;

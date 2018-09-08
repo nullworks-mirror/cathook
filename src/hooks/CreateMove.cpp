@@ -271,6 +271,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             UpdateHoovyList();
         }
         g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
+        {
+            PROF_SECTION(CM_catbot)
+            hacks::shared::catbot::CreateMove();
+        }
 #if ENABLE_VISUALS
         {
             PROF_SECTION(CM_esp);
@@ -449,15 +453,27 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         if (roll_speedhack && cmd->buttons & IN_DUCK &&
             !(cmd->buttons & IN_ATTACK))
         {
-            speed = cmd->forwardmove;
+            speed = Vector{cmd->forwardmove, cmd->sidemove, 0.0f}.Length();
+            static float prevspeedang = 0.0f;
             if (fabs(speed) > 0.0f)
             {
-                cmd->forwardmove  = -speed;
-                cmd->sidemove     = 0.0f;
-                cmd->viewangles.y = g_pLocalPlayer->v_OrigViewangles.y;
-                cmd->viewangles.y -= 180.0f;
-                if (cmd->viewangles.y < -180.0f)
-                    cmd->viewangles.y += 360.0f;
+
+                Vector vecMove( cmd->forwardmove, cmd->sidemove, 0.0f );
+                vecMove *= -1;
+                float flLength = vecMove.Length();
+                Vector angMoveReverse{};
+                VectorAngles( vecMove, angMoveReverse );
+                cmd->forwardmove = -flLength;
+                cmd->sidemove = 0.0f; // Move only backwards, no sidemove
+                float res = g_pLocalPlayer->v_OrigViewangles.y - angMoveReverse.y;
+                while (res > 180)
+                    res -= 360;
+                while (res < -180)
+                    res += 360;
+                if (res - prevspeedang > 90.0f)
+                    res = (res + prevspeedang) / 2;
+                prevspeedang = res;
+                cmd->viewangles.y = res;
                 cmd->viewangles.z                = 90.0f;
                 g_pLocalPlayer->bUseSilentAngles = true;
                 speedapplied                     = true;
