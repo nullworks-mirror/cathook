@@ -65,7 +65,7 @@ void DrawCheatVisuals()
         PROF_SECTION(PT_info_text);
         if (info_text)
         {
-            AddSideString("cathook by nullifiedcat", colors::RainbowCurrent());
+            AddSideString("cathook by nullworks", colors::RainbowCurrent());
             if (!info_text_min)
             {
                 AddSideString(hack::GetVersion(),
@@ -73,7 +73,7 @@ void DrawCheatVisuals()
                 AddSideString(hack::GetType(), GUIColor()); //  Compile type
 #if ENABLE_GUI
                 AddSideString(
-                    "Press 'INSERT' or 'F11' key to open/close cheat menu.",
+                    "Press 'INSERT' key to open/close cheat menu.",
                     GUIColor());
                 AddSideString("Use mouse to navigate in menu.", GUIColor());
 #endif

@@ -2,6 +2,7 @@
     <Box name="Autojoin and taunt" width="content" height="content" padding="12 6 6 6">
         <List width="200">
             <AutoVariable width="fill" target="autojoin.auto-queue" label="Auto Queue"/>
+            <AutoVariable width="fill" target="autojoin.auto-requeue" label="Auto requeue"/>
             <AutoVariable width="fill" target="autoqueue.mode" label="Autoqueue Mode" min="0" max="12"/>
             <AutoVariable width="fill" target="hack.requeue-on-kick" label="Requeue on kick"/>
             <AutoVariable width="fill" target="autotaunt.enable" label="Autotaunt enabled"/>
@@ -23,7 +24,7 @@
             <AutoVariable width="fill" target="autojoin.team" label="Autojoin Team" min="0" max="1"/>
         </List>
     </Box>
-    <Box name="CBU" width="content" height="content" padding="12 6 6 6" y="130">
+    <Box name="CBU" width="content" height="content" padding="12 6 6 6" y="140">
         <List width="200">
             <AutoVariable width="fill" target="cat-bot.enable" label="Enable CBU"/>
             <AutoVariable width="fill" target="cat-bot.abandon-if.bots-gte" label="Abandon if bots gte"/>
@@ -36,6 +37,8 @@
             <AutoVariable width="fill" target="cat-bot.micspam.interval-off" label="Micspam interval off"/>
             <AutoVariable width="fill" target="cat-bot.micspam.interval-on" label="Micspam interval on"/>
             <AutoVariable width="fill" target="cat-bot.votekicks" label="Random votekicks"/>
+            <AutoVariable width="fill" target="cat-bot.always-crouch" label="Always Crouch"/>
+            <AutoVariable width="fill" target="cat-bot.autoreport" label="Autoreport"/>
         </List>
     </Box>
     <Box name="Followbot" width="content" height="content" padding="12 6 6 6" x="210">

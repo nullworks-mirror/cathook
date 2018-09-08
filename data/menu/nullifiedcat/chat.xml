@@ -21,7 +21,7 @@
         </List>
     </Box>
     <Box name="Chat log" width="content" height="content" padding="12 6 6 6" y="135">
-        <List width="200">
+        <List width="150">
             <AutoVariable width="fill" target="chat-log.enable" label="Enable chatlog"/>
             <AutoVariable width="fill" target="chat-log.no-ipc" label="IPCless"/>
             <AutoVariable width="fill" target="chat-log.no-spam" label="Anti spam"/>
@@ -39,10 +39,12 @@
             <AutoVariable width="fill" target="chat.crypto" label="Crypto Chat"/>
             <AutoVariable width="fill" target="chat.prefix-newlines" label="Newlines" min="0" max="100"/>
             <AutoVariable width="fill" target="chat.log-events" label="Log events"/>
+            <AutoVariable width="fill" target="chat.identify" label="Identify"/>
+            <AutoVariable width="fill" target="chat.identify.answer" label="Counter Identify"/>
         </List>
     </Box>
-    <Box name="Killsay and Chatspam" width="content" height="content" padding="12 6 6 6" y="135" x="220">
-        <List width="200">
+    <Box name="Killsay and Chatspam" width="content" height="content" padding="12 6 6 6" x="410">
+        <List width="150">
             <AutoVariable width="fill" target="killsay.file" label="Killsay file"/>
             <LabeledObject width="fill" label="Killsay Mode">
                 <Select target="killsay.mode">

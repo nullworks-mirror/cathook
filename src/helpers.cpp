@@ -717,13 +717,9 @@ bool IsEntityVisible(CachedEntity *entity, int hb)
     if (entity == g_pLocalPlayer->entity)
         return true;
     if (hb == -1)
-    {
         return IsEntityVectorVisible(entity, entity->m_vecOrigin());
-    }
     else
-    {
         return entity->hitboxes.VisibilityCheck(hb);
-    }
 }
 
 std::mutex trace_lock;
