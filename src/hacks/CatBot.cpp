@@ -240,6 +240,8 @@ void smart_crouch()
     if (*always_crouch)
     {
         current_user_cmd->buttons |= IN_DUCK;
+        if (crouchcdr.test_and_set(10000))
+            current_user_cmd->buttons &= ~IN_DUCK;
         return;
     }
     bool foundtar      = false;
@@ -286,6 +288,15 @@ void smart_crouch()
 // TODO: add more stuffs
 void CreateMove()
 {
+    if (!enable)
+        return;
+
+    if (g_Settings.bInvalid)
+        return;
+
+    if (CE_BAD(LOCAL_E))
+        return;
+
     if (auto_crouch)
         smart_crouch();
 }

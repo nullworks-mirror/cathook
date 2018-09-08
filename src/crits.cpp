@@ -21,10 +21,17 @@ int *g_PredictionRandomSeed = nullptr;
 namespace criticals
 {
 CatCommand test("crit_debug_print", "debug", []() {
-    bool test = (*((uint8_t *) RAW_ENT(LOCAL_E) + 9645) & 2) / 2;
-    int test2 = (*((uint8_t *) RAW_ENT(LOCAL_E) + 9645) & 2);
-    int test3 = (*((unsigned *) RAW_ENT(LOCAL_E) + 9645));
-    logging::Info("%d, %d, %d", test, test2, test3);
+    if (CE_BAD(LOCAL_E))
+        return;
+    if (CE_BAD(LOCAL_W))
+        return;
+    unsigned unk1 = *(unsigned *)(RAW_ENT(LOCAL_W) + 2832);
+    unsigned unk2 = *(unsigned *)(RAW_ENT(LOCAL_W) + 2820);
+    unsigned char CritSlots = *(unsigned char *)(unk1 + (unk2 << 6) + 1844);
+    int CritSlots2 = *(unsigned *)(unk1 + (unk2 << 6) + 1788);
+    unsigned CritSlots3 = *(unsigned *)(unk1 + (unk2 << 6) + 1788);
+    int CritSlots4 = *(int *)(unk1 + (unk2 << 6) + 1788);
+    logging::Info("%u %d %d %u %d", unk1, int(CritSlots), CritSlots2, CritSlots3, CritSlots4);
 });
 int find_next_random_crit_for_weapon(IClientEntity *weapon)
 {
