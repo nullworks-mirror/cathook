@@ -23,13 +23,11 @@ void HookTools::CreateMove()
 }
 
 static InitRoutine init([]() {
-        auto &CreateMoves = GetCreateMoves();
-        std::sort(CreateMoves.begin(),
-        CreateMoves.end(),
-                  [](std::pair<int, std::function<void()>> a,
-                     std::pair<int, std::function<void()>> b) {
-                      return a.first > b.first;
-                  });
-        logging::Info("Sorted CreateMove functions: %i",
-        CreateMoves.size());
+    auto &CreateMoves = GetCreateMoves();
+    std::sort(CreateMoves.begin(), CreateMoves.end(),
+              [](std::pair<int, std::function<void()>> a,
+                 std::pair<int, std::function<void()>> b) {
+                  return a.first > b.first;
+              });
+    logging::Info("Sorted CreateMove functions: %i", CreateMoves.size());
 });

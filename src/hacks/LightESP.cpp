@@ -14,9 +14,9 @@ Vector minp[32];
 Vector maxp[32];
 bool drawEsp[32];
 
-void run()
-{
 #if ENABLE_VISUALS
+static CreateMove run(5, []() {
+    PROF_SECTION(CM_lightesp);
     if (!enable)
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
@@ -42,8 +42,9 @@ void run()
         maxp[i]    = pEntity->hitboxes.GetHitbox(0)->max;
         drawEsp[i] = true;
     }
+});
 #endif
-}
+
 void draw()
 {
 #if ENABLE_VISUALS

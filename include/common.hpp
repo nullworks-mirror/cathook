@@ -97,7 +97,7 @@
 #include "init.hpp"
 #include "reclasses/reclasses.hpp"
 #include <CNavFile.h>
-#include <astar.h>
+#include "HookTools.hpp"
 
 #include "copypasted/Netvar.h"
 #include "copypasted/CSignature.h"

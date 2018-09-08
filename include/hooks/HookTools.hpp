@@ -4,11 +4,12 @@
 #include <init.hpp>
 #include "core/logging.hpp"
 
-namespace HookTools {
-    void CreateMove();
+namespace HookTools
+{
+void CreateMove();
 }
 
 struct CreateMove
 {
-    CreateMove(int priority = 5, std::function<void()> func = [](){});
+    CreateMove(int priority = 5, std::function<void()> func = []() {});
 };

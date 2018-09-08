@@ -286,10 +286,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             PROF_SECTION(CM_esp);
             hacks::shared::esp::CreateMove();
         }
-        {
-            PROF_SECTION(CM_lightesp);
-            hacks::shared::lightesp::run();
-        }
 #endif
 #endif
         if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon()))
