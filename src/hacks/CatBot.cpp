@@ -286,9 +286,9 @@ void smart_crouch()
 }
 
 // TODO: add more stuffs
-void CreateMove()
+static CreateMove cm(5, []()
 {
-    if (!enable)
+    if (!*enable)
         return;
 
     if (g_Settings.bInvalid)
@@ -297,9 +297,9 @@ void CreateMove()
     if (CE_BAD(LOCAL_E))
         return;
 
-    if (auto_crouch)
+    if (*auto_crouch)
         smart_crouch();
-}
+});
 
 void update()
 {
