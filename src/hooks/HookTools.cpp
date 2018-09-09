@@ -1,33 +1,34 @@
 #include "HookTools.hpp"
 
-std::vector<std::pair<int, std::function<void()>>> &GetCreateMoves()
+std::vector<HookedFunction*> &HookTools::GetHookedFunctions()
 {
-    static std::vector<std::pair<int, std::function<void()>>> CreateMoves;
+    static std::vector<HookedFunction*> CreateMoves{};
     return CreateMoves;
 }
 
-CreateMove::CreateMove(int priority, std::function<void()> func)
-{
-    auto &CreateMoves = GetCreateMoves();
-    CreateMoves.emplace_back(priority, func);
-}
+//CreateMove::CreateMove(int priority, std::function<void()> func)
+//{
+//    auto &CreateMoves = GetCreateMoves();
+//    CreateMoves.emplace_back(priority, func);
+//}
+
+
 
 // -----------------------------------------------------------
 
-void HookTools::CreateMove()
+void HookTools::CM()
 {
-    for (auto i : GetCreateMoves())
+    for (auto i : GetHookedFunctions())
     {
-        i.second();
+        i->run(HookTools::CreateMove);
     }
 }
 
 static InitRoutine init([]() {
-    auto &CreateMoves = GetCreateMoves();
-    std::sort(CreateMoves.begin(), CreateMoves.end(),
-              [](std::pair<int, std::function<void()>> a,
-                 std::pair<int, std::function<void()>> b) {
-                  return a.first > b.first;
-              });
-    logging::Info("Sorted CreateMove functions: %i", CreateMoves.size());
+    auto &HookedFunctions = HookTools::GetHookedFunctions();
+    std::sort(HookedFunctions.begin(), HookedFunctions.end(),
+              [](HookedFunction *a, HookedFunction *b){
+                return a->m_priority > b->m_priority;
+    });
+    logging::Info("Sorted Hooked Functions: %i", HookedFunctions.size());
 });

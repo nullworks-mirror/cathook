@@ -16,7 +16,6 @@ bool is_a_catbot(unsigned steamID);
 bool should_ignore_player(CachedEntity *player);
 void update();
 void init();
-void CreateMove();
 void level_init();
 
 #if ENABLE_IPC

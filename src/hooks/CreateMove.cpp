@@ -258,7 +258,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 
     {
         PROF_SECTION(CM_WRAPPER);
-        HookTools::CreateMove();
+        HookTools::CM();
     }
 
 #if ENABLE_IPC
@@ -277,10 +277,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             UpdateHoovyList();
         }
         g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
-        {
-            PROF_SECTION(CM_catbot)
-            hacks::shared::catbot::CreateMove();
-        }
 #if ENABLE_VISUALS
         {
             PROF_SECTION(CM_esp);
