@@ -18,7 +18,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_,
                      const ModelRenderInfo_t &info, matrix3x4_t *bone)
 {
     if (!isHackActive())
-        return;
+        return original::DrawModelExecute(this_, state, info, bone);
 
     if (!(spectator_target || no_arms || no_hats ||
           (clean_screenshots && g_IEngine->IsTakingScreenshot()) ||

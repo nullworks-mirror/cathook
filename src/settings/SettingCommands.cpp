@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <thread>
 
 /*
   Created on 29.07.18.
@@ -52,7 +53,9 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
     }
 });
 
-static CatCommand save("save", "", [](const CCommand &args) {
+void save_thread(const CCommand &args)
+{
+    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsWriter writer{ settings::Manager::instance() };
 
     DIR *config_directory = opendir(DATA_PATH "/configs");
@@ -73,9 +76,21 @@ static CatCommand save("save", "", [](const CCommand &args) {
     }
     getAndSortAllConfigs();
     closedir(config_directory);
+    settings::RVarLock.store(false);
+}
+
+static CatCommand save("save", "", [](const CCommand &args) {
+    if(!settings::RVarLock.load())
+    {
+        settings::RVarLock.store(true);
+        std::thread loader(save_thread, args);
+        loader.detach();
+    }
 });
 
-static CatCommand load("load", "", [](const CCommand &args) {
+void load_thread(const CCommand &args)
+{
+    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsReader loader{ settings::Manager::instance() };
     if (args.ArgC() == 1)
     {
@@ -86,6 +101,13 @@ static CatCommand load("load", "", [](const CCommand &args) {
         loader.loadFrom(std::string(DATA_PATH "/configs/") + args.Arg(1) +
                         ".conf");
     }
+    settings::RVarLock.store(false);
+}
+
+static CatCommand load("load", "", [](const CCommand &args) {
+    settings::RVarLock.store(true);
+    std::thread saver(load_thread, args);
+    saver.detach();
 });
 
 static std::vector<std::string> sortedVariables{};

@@ -17,6 +17,8 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                      bool force_reliable, bool voice)
 {
+    if (!isHackActive())
+        original::SendNetMsg(this_, msg, force_reliable, voice);
     size_t say_idx, say_team_idx;
     int offset;
     std::string newlines;

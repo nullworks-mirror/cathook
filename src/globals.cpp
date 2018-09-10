@@ -40,7 +40,7 @@ CUserCmd *current_user_cmd{ nullptr };
 
 bool isHackActive()
 {
-    return *global_enable;
+    return !settings::RVarLock.load() && *global_enable;
 }
 
 GlobalSettings g_Settings{};

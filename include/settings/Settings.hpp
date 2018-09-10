@@ -7,6 +7,7 @@
 #include <config.h>
 #include <string>
 #include <functional>
+#include <atomic>
 
 #if ENABLE_VISUALS
 #include <glez/color.hpp>
@@ -37,7 +38,7 @@
 
 namespace settings
 {
-
+extern std::atomic<bool> RVarLock;
 enum class VariableType
 {
     BOOL,

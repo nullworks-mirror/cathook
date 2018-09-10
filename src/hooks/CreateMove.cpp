@@ -126,13 +126,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     float curtime_old, servertime, speed, yaw;
     Vector vsilent, ang;
 
-    if (firstcm)
-    {
-        DelayTimer.update();
-        hacks::tf2::NavBot::Init();
-        hacks::tf2::NavBot::initonce();
-        firstcm = false;
-    }
     tickcount++;
     current_user_cmd = cmd;
 #if !LAGBOT_MODE
@@ -159,6 +152,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         g_Settings.is_create_move = false;
         return ret;
+    }
+
+    if (firstcm)
+    {
+        DelayTimer.update();
+        hacks::tf2::NavBot::Init();
+        hacks::tf2::NavBot::initonce();
+        firstcm = false;
     }
 
     if (!g_IEngine->IsInGame())

@@ -36,6 +36,8 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                      bf_read &buf)
 {
+    if (!isHackActive())
+        return original::DispatchUserMessage(this_, type, buf);
     if (retrun && gitgud.test_and_set(100))
     {
         PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),

@@ -5,6 +5,7 @@
 #include <settings/SettingsIO.hpp>
 #include <fstream>
 #include <sstream>
+#include "core/logging.hpp"
 
 settings::SettingsWriter::SettingsWriter(settings::Manager &manager)
     : manager(manager)
@@ -13,29 +14,40 @@ settings::SettingsWriter::SettingsWriter(settings::Manager &manager)
 
 bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
 {
+    logging::Info("cat_save: started");
     this->only_changed = only_changed;
 
     stream.open(path, std::ios::out);
 
-    if (stream.bad() || !stream.is_open())
+    if (stream.bad() || !stream.is_open() || stream.fail() || !stream)
+    {
+        logging::Info("FATAL: cat_save FAILED!");
         return false;
+    }
 
     using pair_type = std::pair<std::string, settings::IVariable *>;
     std::vector<pair_type> all_registered{};
+    logging::Info("cat_save: Getting variable references...");
     for (auto &v : settings::Manager::instance().registered)
     {
         if (!only_changed || v.second.isChanged())
             all_registered.emplace_back(
                 std::make_pair(v.first, &v.second.variable));
     }
-
+    logging::Info("cat_save: Sorting...");
     std::sort(all_registered.begin(), all_registered.end(),
               [](const pair_type &a, const pair_type &b) -> bool {
                   return a.first.compare(b.first) < 0;
               });
+    logging::Info("cat_save: Writing...");
     for (auto &v : all_registered)
         if (!v.first.empty())
+        {
             write(v.first, v.second);
+            stream.flush();
+        }
+    if (stream.bad() || stream.fail() || !stream)
+        logging::Info("cat_save: FATAL! Stream bad!");
     stream.close();
     return true;
 }
@@ -75,10 +87,10 @@ bool settings::SettingsReader::loadFrom(std::string path)
 {
     stream.open(path, std::ios::in | std::ios::binary);
 
-    if (stream.bad())
+    if (stream.bad() || stream.fail())
         return false;
 
-    while (stream)
+    while (stream && !stream.bad())
     {
         char c;
         stream.read(&c, 1);
@@ -86,6 +98,13 @@ bool settings::SettingsReader::loadFrom(std::string path)
             break;
         pushChar(c);
     }
+    if (stream.bad() || stream.fail())
+    {
+        logging::Info("FATAL: Read failed!");
+        return false;
+    }
+
+    logging::Info("Read Success!");
     finishString(true);
 
     return true;

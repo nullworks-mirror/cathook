@@ -6,4 +6,5 @@
 
 namespace settings
 {
+std::atomic<bool> RVarLock{false};
 }
