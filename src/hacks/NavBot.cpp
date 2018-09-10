@@ -189,6 +189,7 @@ Timer cdr{};
 Timer cd2{};
 Timer cd3{};
 Timer engi_spot_cd{};
+Timer nav_enemy_cd{};
 std::vector<Vector> preferred_sniper_spots;
 std::vector<Vector> sniper_spots;
 std::vector<Vector> nest_spots;
@@ -354,6 +355,25 @@ bool NavToSentry(int priority)
         return true;
     return false;
 }
+bool NavToEnemy()
+{
+    if (*stay_near)
+    {
+        CachedEntity *ent = NearestEnemy();
+        if (CE_GOOD(ent))
+        {
+            int nearestvalid =
+                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 1000, 4000);
+            if (nearestvalid != -1)
+            {
+                auto area = nav::areas[nearestvalid];
+                nav::NavTo(area.m_center, false, true, 1337);
+                return true;
+            }
+        }
+    }
+    return false;
+}
 bool NavToSniperSpot(int priority)
 {
     Vector random_spot{};
@@ -362,21 +382,6 @@ bool NavToSniperSpot(int priority)
     bool use_preferred = !preferred_sniper_spots.empty();
     auto snip_spot     = use_preferred ? preferred_sniper_spots : sniper_spots;
     bool toret         = false;
-    if (*stay_near)
-    {
-        CachedEntity *ent = NearestEnemy();
-        if (CE_GOOD(ent))
-        {
-            int nearestvalid =
-                nav::FindNearestValidbyDist(ent->m_vecOrigin(), 1000, 4000);
-            if (nearestvalid != -1)
-            {
-                auto area = nav::areas[nearestvalid];
-                nav::NavTo(area.m_center, false, true, priority);
-                return true;
-            }
-        }
-    }
     if (use_preferred)
     {
         int best_spot       = -1;
@@ -440,17 +445,27 @@ void CreateMove()
         return;
     if (primary_only && enable)
         UpdateSlot();
+    if (*stay_near && nav_enemy_cd.test_and_set(1000) && (!HasLowAmmo()) & (!HasLowHealth()))
+        NavToEnemy();
     if (HasLowHealth() && cdr.test_and_set(5000))
     {
         CachedEntity *med = nearestHealth();
         if (CE_GOOD(med))
+        {
+            if (nav::priority == 1337)
+                nav::clearInstructions();
             nav::NavTo(med->m_vecOrigin(), true, true, 7);
+        }
     }
     if (HasLowAmmo() && cdr.test_and_set(5000))
     {
         CachedEntity *ammo = nearestAmmo();
         if (CE_GOOD(ammo))
+        {
+            if (nav::priority == 1337)
+                nav::clearInstructions();
             nav::NavTo(ammo->m_vecOrigin(), true, true, 6);
+        }
     }
     if ((!HasLowHealth() && nav::priority == 7) ||
         (!HasLowAmmo() && nav::priority == 6))
@@ -469,6 +484,8 @@ void CreateMove()
                 {
                     waittime = 1000;
                     cd3.update();
+                    if (nav::priority == 1337)
+                        nav::clearInstructions();
                     nav::NavTo(GetBuildingPosition(ent), false, false);
                 }
         }
