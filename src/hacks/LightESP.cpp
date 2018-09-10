@@ -3,7 +3,6 @@
 #include <glez/draw.hpp>
 #endif
 #include <settings/Bool.hpp>
-#include "HookTools.hpp"
 
 static settings::Bool enable{ "lightesp.enable", "false" };
 
@@ -16,9 +15,8 @@ Vector maxp[32];
 bool drawEsp[32];
 
 #if ENABLE_VISUALS
-static HookedFunction cm(HookTools::CreateMove, 5, [](){
-    //PROF_SECTION(CM_lightesp);
-    if (!enable)
+static HookedFunction cm(HF_CreateMove, "lightesp", 5, [](){
+    if (!*enable)
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {

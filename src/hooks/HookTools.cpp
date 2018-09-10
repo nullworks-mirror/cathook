@@ -6,21 +6,13 @@ std::vector<HookedFunction*> &HookTools::GetHookedFunctions()
     return CreateMoves;
 }
 
-//CreateMove::CreateMove(int priority, std::function<void()> func)
-//{
-//    auto &CreateMoves = GetCreateMoves();
-//    CreateMoves.emplace_back(priority, func);
-//}
-
-
-
 // -----------------------------------------------------------
 
 void HookTools::CM()
 {
     for (auto i : GetHookedFunctions())
     {
-        i->run(HookTools::CreateMove);
+        i->run(HF_CreateMove);
     }
 }
 

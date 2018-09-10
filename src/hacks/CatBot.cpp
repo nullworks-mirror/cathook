@@ -9,7 +9,6 @@
 #include "common.hpp"
 #include "hack.hpp"
 #include "PlayerTools.hpp"
-#include "HookTools.hpp"
 
 static settings::Bool enable{ "cat-bot.enable", "false" };
 
@@ -287,7 +286,7 @@ void smart_crouch()
 }
 
 // TODO: add more stuffs
-static HookedFunction cm(HookTools::CreateMove, 5, []()
+static HookedFunction cm(HF_CreateMove, "catbot", 5, []()
 {
     if (!*enable)
         return;
