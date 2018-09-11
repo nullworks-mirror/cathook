@@ -88,6 +88,8 @@ Timer t{};
 int prevcolor = -1;
 rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
+    if (!isHackActive() || !*enable)
+        return colors::empty;;
     CachedEntity *ent = ENTITY(entity->entindex());
     if (disco_chams)
     {
@@ -188,6 +190,8 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 
 bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 {
+    if (!isHackActive() || !*enable)
+        return false;
     if (!enable)
         return false;
     if (entity->entindex() < 0)
@@ -245,6 +249,8 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 
 void EffectChams::RenderChamsRecursive(IClientEntity *entity)
 {
+    if (!isHackActive() || !*enable)
+        return;
     entity->DrawModel(1);
 
     if (!recursive)
@@ -285,6 +291,8 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
 
 void EffectChams::RenderChams(IClientEntity *entity)
 {
+    if (!isHackActive() || !*enable)
+        return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     if (ShouldRenderChams(entity))
     {
@@ -315,6 +323,8 @@ void EffectChams::RenderChams(IClientEntity *entity)
 void EffectChams::Render(int x, int y, int w, int h)
 {
     PROF_SECTION(DRAW_chams);
+    if (!isHackActive())
+        return;
     if (!enable)
         return;
     if (!init)

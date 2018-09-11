@@ -74,8 +74,11 @@ void save_thread(const CCommand &args)
         writer.saveTo(
             std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf", false);
     }
+    logging::Info("cat_save: Sorting configs...");
     getAndSortAllConfigs();
+    logging::Info("cat_save: Closing dir...");
     closedir(config_directory);
+    logging::Info("cat_save: Enabeling cathook...");
     settings::RVarLock.store(false);
 }
 
@@ -142,7 +145,6 @@ static void getAndSortAllConfigs()
     {
         std::string s(ent->d_name);
         s = s.substr(0, s.find_last_of("."));
-        logging::Info(s.c_str());
         sortedConfigs.push_back(s);
     }
     std::sort(sortedConfigs.begin(), sortedConfigs.end());

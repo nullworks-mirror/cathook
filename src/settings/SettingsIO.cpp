@@ -19,9 +19,9 @@ bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
 
     stream.open(path, std::ios::out);
 
-    if (stream.bad() || !stream.is_open() || stream.fail() || !stream)
+    if (!stream || stream.bad() || !stream.is_open() || stream.fail())
     {
-        logging::Info("FATAL: cat_save FAILED!");
+        logging::Info("cat_save: FATAL! FAILED to create stream!");
         return false;
     }
 
@@ -46,9 +46,12 @@ bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
             write(v.first, v.second);
             stream.flush();
         }
-    if (stream.bad() || stream.fail() || !stream)
+    if (!stream || stream.bad() || stream.fail())
         logging::Info("cat_save: FATAL! Stream bad!");
+    logging::Info("cat_save: Finished");
     stream.close();
+    if (stream.fail())
+        logging::Info("cat_save: FATAL! Stream bad (2)!");
     return true;
 }
 
@@ -56,8 +59,13 @@ void settings::SettingsWriter::write(std::string name, IVariable *variable)
 {
     writeEscaped(name);
     stream << "=";
-    writeEscaped(variable->toString());
-    stream << '\n';
+    if (variable)
+        writeEscaped(variable->toString());
+    else
+    {
+        logging::Info("cat_save: FATAL! Variable invalid! %s", name.c_str());
+    }
+    stream << std::endl;
 }
 
 void settings::SettingsWriter::writeEscaped(std::string str)
