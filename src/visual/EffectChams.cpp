@@ -79,7 +79,7 @@ void EffectChams::EndRenderChams()
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
-bool data[32] = {};
+rgba_t data[32] = {};
 void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
 {
     data[ent->m_IDX] = color;
@@ -91,7 +91,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     CachedEntity *ent = ENTITY(entity->entindex());
     if (disco_chams)
     {
-        static rgba_t disco = { 0, 0, 0, 0 };
+        static rgba_t disco{ 0, 0, 0, 0 };
         if (t.test_and_set(200))
         {
             int color = rand() % 20;
@@ -148,8 +148,8 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     }
     if (data[entity->entindex()])
     {
-        data[entity->entindex()] = false;
-        return colors::pink;
+        data[entity->entindex()] = {};
+        return data[entity->entindex()];
     }
     if (CE_BAD(ent))
         return colors::white;
@@ -182,6 +182,8 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
             return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
+    default:
+        break;
     }
     return colors::EntityF(ent);
 }
@@ -213,7 +215,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
             return false;
         if (!teammates && !ent->m_bEnemy() && playerlist::IsDefault(ent))
             return false;
-        if (CE_BYTE(ent, netvar.iLifeState) != LIFE_ALIVE)
+        if (CE_BYTE(ent, netvar.iLifeState))
             return false;
         return true;
         break;
@@ -237,7 +239,11 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
         case ITEM_AMMO_MEDIUM:
         case ITEM_AMMO_SMALL:
             return *ammobox;
+        default:
+            break;
         }
+        break;
+    default:
         break;
     }
     return false;
@@ -247,7 +253,7 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
 {
     entity->DrawModel(1);
 
-    if (!recursive)
+    if (!*recursive)
         return;
 
     IClientEntity *attach;
@@ -297,7 +303,6 @@ void EffectChams::RenderChams(IClientEntity *entity)
             g_IVRenderView->SetColorModulation(color_2);
             g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit_z
                                                          : mat_lit_z);
-
             RenderChamsRecursive(entity);
         }
 
