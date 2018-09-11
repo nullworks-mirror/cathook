@@ -40,7 +40,9 @@ bool UnassignedClass()
 
 static Timer autoqueue_timer{};
 static Timer queuetime{};
+#if not ENABLE_VISUALS
 static Timer req_timer{};
+#endif
 void updateSearch()
 {
     // segfaults for no reason
@@ -90,7 +92,12 @@ void updateSearch()
         return;
     }
     if (g_IEngine->IsInGame())
+    {
+#if not ENABLE_VISUALS
+        req_timer.update();
+#endif
         return;
+    }
 
     static uintptr_t addr =
         gSignatures.GetClientSignature("C7 04 24 ? ? ? ? 8D 7D ? 31 F6");
@@ -106,32 +113,34 @@ void updateSearch()
     re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
 
     if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) &&
-            gc->BHaveLiveMatch())
+        gc->BHaveLiveMatch())
     {
 #if not ENABLE_VISUALS
         req_timer.update();
 #endif
         tfmm::leaveQueue();
     }
-//    if (gc && !gc->BConnectedToMatchServer(false) &&
-//            queuetime.test_and_set(10 * 1000 * 60) && !gc->BHaveLiveMatch())
-//        tfmm::leaveQueue();
+    //    if (gc && !gc->BConnectedToMatchServer(false) &&
+    //            queuetime.test_and_set(10 * 1000 * 60) &&
+    //            !gc->BHaveLiveMatch())
+    //        tfmm::leaveQueue();
 
     if (auto_requeue)
     {
-        if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
-                !invites)
+        if (gc && !gc->BConnectedToMatchServer(false) &&
+            !gc->BHaveLiveMatch() && !invites)
             if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
             {
-                logging::Info("Starting queue for standby, Invites %d", invites);
+                logging::Info("Starting queue for standby, Invites %d",
+                              invites);
                 tfmm::startQueueStandby();
             }
     }
 
     if (auto_queue)
     {
-        if (gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
-                !invites)
+        if (gc && !gc->BConnectedToMatchServer(false) &&
+            !gc->BHaveLiveMatch() && !invites)
             if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
             {
                 logging::Info("Starting queue, Invites %d", invites);

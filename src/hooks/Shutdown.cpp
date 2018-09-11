@@ -23,7 +23,7 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
     logging::Info("Disconnect: %s", reason);
     if (strstr(reason, "Generic_Kicked"))
     {
-        if (die_if_vac) {
+        if (*die_if_vac) {
             static uintptr_t addr =
                     gSignatures.GetClientSignature("C7 04 24 ? ? ? ? 8D 7D ? 31 F6");
             static uintptr_t offset0 = uintptr_t(*(uintptr_t *) (addr + 0x3));
@@ -48,7 +48,7 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
     }
     if (strstr(reason, "banned"))
     {
-        if (die_if_vac)
+        if (*die_if_vac)
         {
             logging::Info("VAC/Matchmaking banned");
             *(int *) 0 = 0;
