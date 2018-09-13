@@ -7,6 +7,7 @@
 #include <visual/SDLHooks.hpp>
 #include <glez/draw.hpp>
 #include "HookedMethods.hpp"
+#include "timer.hpp"
 #include <SDL2/SDL_syswm.h>
 
 static bool init{ false };
@@ -20,12 +21,17 @@ typedef SDL_bool (*SDL_GetWindowWMInfo_t)(SDL_Window *window,
                                           SDL_SysWMinfo *info);
 static SDL_GetWindowWMInfo_t GetWindowWMInfo = nullptr;
 static SDL_GLContext tf2_sdl                 = nullptr;
-
+Timer delay{};
 namespace hooked_methods
 {
 
 DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
 {
+    if (!delay.check(2000))
+    {
+        original::SDL_GL_SwapWindow(window);
+        return;
+    }
     if (!init_wminfo)
     {
         GetWindowWMInfo = *reinterpret_cast<SDL_GetWindowWMInfo_t *>(
