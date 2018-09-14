@@ -94,7 +94,7 @@ static CatCommand save("save", "", [](const CCommand &args) {
 void load_thread(const CCommand &args)
 {
 #if not ENABLE_VISUALS
-    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
+    std::this_thread::sleep_for(std::chrono_literals::operator""s(10));
     settings::RVarLock.store(true);
 #endif
     std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
@@ -116,7 +116,7 @@ void load_thread(const CCommand &args)
                 break;
             if (i > 5)
             {
-                logging::Info("cat_load: Force crash. Couldn't load config");
+                logging::Info("cat_load: Force crash. Couldn't load config!");
                 std::terminate();
             }
             std::this_thread::sleep_for(std::chrono_literals::operator""s(3));
