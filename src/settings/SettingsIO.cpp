@@ -93,6 +93,7 @@ settings::SettingsReader::SettingsReader(settings::Manager &manager)
 
 bool settings::SettingsReader::loadFrom(std::string path)
 {
+    logging::Info("Path: %s", path.c_str());
     stream.open(path, std::ios::in | std::ios::binary);
 
     if (stream.bad() || stream.fail())
