@@ -93,10 +93,6 @@ static CatCommand save("save", "", [](const CCommand &args) {
 
 void load_thread(const CCommand &args)
 {
-#if not ENABLE_VISUALS
-    std::this_thread::sleep_for(std::chrono_literals::operator""s(10));
-    settings::RVarLock.store(true);
-#endif
     std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsReader loader{ settings::Manager::instance() };
     if (args.ArgC() == 1)
@@ -129,9 +125,7 @@ void load_thread(const CCommand &args)
 static CatCommand load("load", "", [](const CCommand &args) {
     if (!settings::RVarLock.load())
     {
-#if ENABLE_VISUALS
         settings::RVarLock.store(true);
-#endif
         std::thread saver(load_thread, args);
         saver.detach();
     }

@@ -93,10 +93,9 @@ settings::SettingsReader::SettingsReader(settings::Manager &manager)
 
 bool settings::SettingsReader::loadFrom(std::string path)
 {
-    logging::Info("Path: %s", path.c_str());
     stream.open(path, std::ios::in | std::ios::binary);
 
-    if (stream.bad() || stream.fail())
+    if (stream.fail())
     {
         logging::Info("cat_load: Can't access file!");
         return false;
