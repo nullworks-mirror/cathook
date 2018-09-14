@@ -98,7 +98,7 @@ bool settings::SettingsReader::loadFrom(std::string path)
     if (stream.bad() || stream.fail())
         return false;
 
-    while (stream && !stream.bad())
+    while (!stream.fail())
     {
         char c;
         stream.read(&c, 1);
@@ -106,13 +106,13 @@ bool settings::SettingsReader::loadFrom(std::string path)
             break;
         pushChar(c);
     }
-    if (stream.bad() || stream.fail())
+    if (stream.fail() && !stream.eof())
     {
-        logging::Info("FATAL: Read failed!");
+        logging::Info("cat_load: FATAL: Read failed!");
         return false;
     }
 
-    logging::Info("Read Success!");
+    logging::Info("cat_load: Read Success!");
     finishString(true);
 
     return true;

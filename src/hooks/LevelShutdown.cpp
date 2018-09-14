@@ -12,7 +12,6 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(LevelShutdown, void, void *this_)
 {
-    hacks::shared::autojoin::resetQueueTimer();
     need_name_change = true;
 #if !LAGBOT_MODE
     playerlist::Save();

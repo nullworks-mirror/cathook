@@ -83,7 +83,7 @@ void save_thread(const CCommand &args)
 }
 
 static CatCommand save("save", "", [](const CCommand &args) {
-    if(!settings::RVarLock.load())
+    if (!settings::RVarLock.load())
     {
         settings::RVarLock.store(true);
         std::thread loader(save_thread, args);
@@ -101,16 +101,31 @@ void load_thread(const CCommand &args)
     }
     else
     {
+#if ENABLE_VISUALS
         loader.loadFrom(std::string(DATA_PATH "/configs/") + args.Arg(1) +
                         ".conf");
+#else
+        for (int i = 0;; i++)
+        {
+            if (loader.loadFrom(std::string(DATA_PATH "/configs/") +
+                                args.Arg(1) + ".conf"))
+                break;
+            if (i > 5)
+                std::terminate();
+            std::this_thread::sleep_for(std::chrono_literals::operator""s(3));
+        }
+#endif
     }
     settings::RVarLock.store(false);
 }
 
 static CatCommand load("load", "", [](const CCommand &args) {
-    settings::RVarLock.store(true);
-    std::thread saver(load_thread, args);
-    saver.detach();
+    if (!settings::RVarLock.load())
+    {
+        settings::RVarLock.store(true);
+        std::thread saver(load_thread, args);
+        saver.detach();
+    }
 });
 
 static std::vector<std::string> sortedVariables{};

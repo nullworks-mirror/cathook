@@ -38,10 +38,10 @@ bool UnassignedClass()
     return g_pLocalPlayer->clazz != *autojoin_class;
 }
 
-static Timer autoqueue_timer{};
-static Timer queuetime{};
+static Timer autoteam_timer{};
+static Timer startqueue_timer{};
 #if not ENABLE_VISUALS
-static Timer req_timer{};
+static Timer queue_time{};
 #endif
 void updateSearch()
 {
@@ -87,14 +87,14 @@ void updateSearch()
     if (!auto_queue && !auto_requeue)
     {
 #if not ENABLE_VISUALS
-        req_timer.update();
+        queue_time.update();
 #endif
         return;
     }
     if (g_IEngine->IsInGame())
     {
 #if not ENABLE_VISUALS
-        req_timer.update();
+        queue_time.update();
 #endif
         return;
     }
@@ -116,7 +116,7 @@ void updateSearch()
         gc->BHaveLiveMatch())
     {
 #if not ENABLE_VISUALS
-        req_timer.update();
+        queue_time.update();
 #endif
         tfmm::leaveQueue();
     }
@@ -127,8 +127,9 @@ void updateSearch()
 
     if (auto_requeue)
     {
-        if (gc && !gc->BConnectedToMatchServer(false) &&
-            !gc->BHaveLiveMatch() && !invites)
+        if (startqueue_timer.check(5000) && gc &&
+            !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
+            !invites)
             if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
             {
                 logging::Info("Starting queue for standby, Invites %d",
@@ -139,20 +140,20 @@ void updateSearch()
 
     if (auto_queue)
     {
-        if (gc && !gc->BConnectedToMatchServer(false) &&
-            !gc->BHaveLiveMatch() && !invites)
+        if (startqueue_timer.check(5000) && gc &&
+            !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
+            !invites)
             if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
             {
                 logging::Info("Starting queue, Invites %d", invites);
                 tfmm::startQueue();
             }
     }
+    startqueue_timer.test_and_set(5000);
 #if not ENABLE_VISUALS
-    if (req_timer.test_and_set(600000))
+    if (queue_time.test_and_set(600000))
     {
-        logging::Info("Stuck in queue, segfaulting");
-        *(int *) nullptr;
-        exit(1);
+        std::terminate();
     }
 #endif
 }
@@ -160,7 +161,7 @@ void updateSearch()
 void update()
 {
 #if !LAGBOT_MODE
-    if (autoqueue_timer.test_and_set(500))
+    if (autoteam_timer.test_and_set(500))
     {
         if (autojoin_team and UnassignedTeam())
         {
@@ -175,11 +176,6 @@ void update()
         }
     }
 #endif
-}
-
-void resetQueueTimer()
-{
-    queuetime.update();
 }
 
 void onShutdown()

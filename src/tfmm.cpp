@@ -60,7 +60,6 @@ void startQueue()
             client->LoadSavedCasualCriteria();
         client->RequestQueueForMatch((int) queue);
         //client->RequestQueueForStandby();
-        hacks::shared::autojoin::resetQueueTimer();
         queuecount++;
     }
     else
@@ -72,7 +71,6 @@ void startQueueStandby()
     if (client)
     {
         client->RequestQueueForStandby();
-        hacks::shared::autojoin::resetQueueTimer();
     }
 }
 void leaveQueue()
