@@ -96,7 +96,10 @@ bool settings::SettingsReader::loadFrom(std::string path)
     stream.open(path, std::ios::in | std::ios::binary);
 
     if (stream.bad() || stream.fail())
+    {
+        logging::Info("cat_load: Can't access file!");
         return false;
+    }
 
     while (!stream.fail())
     {

@@ -115,7 +115,10 @@ void load_thread(const CCommand &args)
                                 args.Arg(1) + ".conf"))
                 break;
             if (i > 5)
+            {
+                logging::Info("cat_load: Force crash. Couldn't load config");
                 std::terminate();
+            }
             std::this_thread::sleep_for(std::chrono_literals::operator""s(3));
         }
 #endif
