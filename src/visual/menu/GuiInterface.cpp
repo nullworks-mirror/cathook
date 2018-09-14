@@ -98,7 +98,7 @@ static void initPlayerlist()
         });
         controller->setOpenSteamCallback([](unsigned steam) {
             CSteamID id{};
-            id.SetFromUint64((0b1000100000000000000000001 << 32) | steam);
+            id.Set(steam, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
             g_ISteamFriends->ActivateGameOverlayToUser("steamid", id);
         });
     }
@@ -169,7 +169,6 @@ bool gui::handleSdlEvent(SDL_Event *event)
             return true;
         }
     }
-
     return zerokernel::Menu::instance->handleSdlEvent(event) &&
            !zerokernel::Menu::instance->isInGame();
 }

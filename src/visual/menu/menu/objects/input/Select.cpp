@@ -85,9 +85,7 @@ void zerokernel::Select::handleMessage(zerokernel::Message &msg,
                                        bool is_relayed)
 {
     if (variable && !is_relayed && msg.name == "OptionSelected")
-    {
         variable->fromString((std::string) msg.kv["value"]);
-    }
 
     BaseMenuObject::handleMessage(msg, is_relayed);
 }
