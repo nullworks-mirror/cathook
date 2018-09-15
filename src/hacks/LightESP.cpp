@@ -15,7 +15,7 @@ Vector maxp[32];
 bool drawEsp[32];
 
 #if ENABLE_VISUALS
-static HookedFunction cm(HF_CreateMove, "lightesp", 5, [](){
+static HookedFunction cm(HF_CreateMove, "lightesp", 5, []() {
     if (!*enable)
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)

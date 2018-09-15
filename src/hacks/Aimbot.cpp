@@ -188,7 +188,7 @@ void CreateMove()
         return;
 
 #if ENABLE_VISUALS
-    if (target_entity->m_Type() != ENTITY_PLAYER)
+    if (target_entity->m_Type() == ENTITY_PLAYER)
     {
         static effect_chams::EffectChams Effectchams;
         hacks::shared::esp::SetEntityColor(target_entity, colors::pink);

@@ -46,7 +46,22 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     }
     int loop_index, s, i, j;
     char *data, c;
-
+    if (type == 5)
+        if (buf.GetNumBytesLeft() > 35)
+        {
+            std::string message_name{};
+            for (int i = 0; i < buf.GetNumBytesLeft(); i++)
+            {
+                int byte = buf.ReadByte();
+                if (byte == 0)
+                    break;
+                message_name.push_back(byte);
+            }
+            if (message_name.find("TF_Autobalance_TeamChangePending") !=
+                std::string::npos)
+                logging::Info("test, %d %d", int(message_name[0]),
+                              (CE_GOOD(LOCAL_E) ? LOCAL_E->m_IDX : -1));
+        }
     if (type == 4)
     {
         loop_index = 0;
@@ -61,7 +76,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             std::string message;
             for (i = 0; i < 3; i++)
             {
-                while ((c = data[j++]) && (loop_index < 128))
+                while ((c = data[j++]) && (loop_index < 150))
                 {
                     loop_index++;
                     if (clean_chat)
@@ -77,9 +92,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             {
                 if (sizeof(*chat_filter) < 10)
                 {
-                    std::string tmp  = {};
-                    std::string tmp2 = {};
-                    int iii          = 0;
+                    std::string tmp{};
+                    std::string tmp2{};
+                    int iii{};
                     player_info_s info;
                     g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
                     std::string name1 = info.name;
@@ -120,6 +135,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     }
                     for (char i : name1)
                     {
+                        if (i == ' ')
+                            ;
+                        continue;
                         if (iii == 2)
                         {
                             iii = 0;
@@ -136,6 +154,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     iii = 0;
                     for (char i : name1)
                     {
+                        if (i == ' ')
+                            ;
+                        continue;
                         if (iii == 3)
                         {
                             iii = 0;
@@ -171,6 +192,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     }
                     std::string message2 = message;
                     boost::to_lower(message2);
+                    boost::replace_all(message2, " ", "");
                     boost::replace_all(message2, "4", "a");
                     boost::replace_all(message2, "3", "e");
                     boost::replace_all(message2, "0", "o");

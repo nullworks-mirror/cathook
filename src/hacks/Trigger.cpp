@@ -330,7 +330,7 @@ bool IsTargetStateGood(CachedEntity *entity)
                 // return false
                 Vector hit;
                 if (!CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
-                                 hit))
+                                  hit))
                     return false;
             }
         }

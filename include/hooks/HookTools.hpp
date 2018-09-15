@@ -11,7 +11,7 @@
 class HookedFunction;
 namespace HookTools
 {
-std::vector<HookedFunction*> &GetHookedFunctions();
+std::vector<HookedFunction *> &GetHookedFunctions();
 void CM();
 } // namespace HookTools
 
@@ -27,7 +27,8 @@ class HookedFunction
     std::string m_name;
     std::function<void()> m_func;
     HookedFunctions_types m_type;
-    void init(HookedFunctions_types type, std::string name, int priority, std::function<void()> func)
+    void init(HookedFunctions_types type, std::string name, int priority,
+              std::function<void()> func)
     {
         switch (type)
         {
@@ -44,6 +45,7 @@ class HookedFunction
         m_type     = type;
         HookTools::GetHookedFunctions().push_back(this);
     }
+
 public:
     int m_priority;
     void run(HookedFunctions_types type)
@@ -57,16 +59,19 @@ public:
             m_func();
         }
     }
-    HookedFunction(HookedFunctions_types type, std::string name, int priority, std::function<void()> func)
+    HookedFunction(HookedFunctions_types type, std::string name, int priority,
+                   std::function<void()> func)
     {
         init(type, name, priority, func);
     }
-    HookedFunction(HookedFunctions_types type, int priority, std::function<void()> func)
+    HookedFunction(HookedFunctions_types type, int priority,
+                   std::function<void()> func)
     {
         static const std::string name("UNNAMED_FUNCTIONS");
         init(type, name, priority, func);
     }
-    HookedFunction(HookedFunctions_types type, std::string name, std::function<void()> func)
+    HookedFunction(HookedFunctions_types type, std::string name,
+                   std::function<void()> func)
     {
         int priority = 5;
         init(type, name, priority, func);

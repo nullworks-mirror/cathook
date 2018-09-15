@@ -89,7 +89,8 @@ int prevcolor = -1;
 rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
     if (!isHackActive() || !*enable)
-        return colors::empty;;
+        return colors::empty;
+    ;
     CachedEntity *ent = ENTITY(entity->entindex());
     if (disco_chams)
     {

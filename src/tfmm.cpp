@@ -59,7 +59,7 @@ void startQueue()
         if (*queue == 7)
             client->LoadSavedCasualCriteria();
         client->RequestQueueForMatch((int) queue);
-        //client->RequestQueueForStandby();
+        // client->RequestQueueForStandby();
         queuecount++;
     }
     else
