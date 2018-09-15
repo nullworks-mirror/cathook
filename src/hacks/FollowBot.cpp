@@ -168,347 +168,350 @@ int ClassPriority(CachedEntity *ent)
 }
 Timer waittime{};
 int lastent = 0;
-void WorldTick()
-{
-    if (!enable)
-    {
-        follow_target = 0;
-        return;
-    }
-    if (!inited)
-        init();
-
-    // We need a local player to control
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
-    {
-        follow_target = 0;
-        return;
-    }
-
-    if (afk)
-        checkAFK();
-
-    // Still good check
-    if (follow_target)
-    {
-        // Overflow protection
-        if (breadcrumbs.size() > crumb_limit)
-            follow_target = 0;
-        // Still good check
-        else if (CE_BAD(ENTITY(follow_target)))
-            follow_target = 0;
-    }
-
-    if (!follow_target)
-        breadcrumbs.clear(); // no target == no path
-    // Target Selection
-    if (steamid)
-    {
-        // Find a target with the steam id, as it is prioritized
-        auto ent_count = HIGHEST_ENTITY;
-        for (int i = 0; i < ent_count; i++)
+#if ENABLE_IPC
+static HookedFunction
+    WorldTick(HookedFunctions_types::HF_CreateMove, "followbot", 20, []() {
+        if (!enable)
         {
-            auto entity = ENTITY(i);
-            if (CE_BAD(entity)) // Exist + dormant
-                continue;
-            if (i == follow_target)
-                break;
-            if (entity->m_Type() != ENTITY_PLAYER)
-                continue;
-            if (steamid != entity->player_info.friendsID) // steamid check
-                continue;
-
-            if (!entity->m_bAlivePlayer()) // Dont follow dead players
-                continue;
-            if (corneractivate)
-            {
-                Vector indirectOrigin =
-                    VischeckCorner(LOCAL_E, entity, *follow_activation / 2,
-                                   true); // get the corner location that the
-                // future target is visible from
-                std::pair<Vector, Vector> corners;
-                if (!indirectOrigin.z &&
-                    entity->m_IDX == lastent) // if we couldn't find it, run
-                // wallcheck instead
-                {
-                    corners = VischeckWall(LOCAL_E, entity,
-                                           float(follow_activation) / 2, true);
-                    if (!corners.first.z || !corners.second.z)
-                        continue;
-                    // addCrumbs(LOCAL_E, corners.first);
-                    // addCrumbs(entity, corners.second);
-                    addCrumbPair(LOCAL_E, entity, corners);
-                }
-                if (indirectOrigin.z)
-                    addCrumbs(entity, indirectOrigin);
-                else if (!indirectOrigin.z && !corners.first.z)
-                    continue;
-            }
-            else
-            {
-                if (!VisCheckEntFromEnt(LOCAL_E, entity))
-                    continue;
-            }
-            follow_target = entity->m_IDX;
-            break;
+            follow_target = 0;
+            return;
         }
-    }
-    // If we dont have a follow target from that, we look again for someone
-    // else who is suitable
-    if ((!follow_target || change ||
-         (ClassPriority(ENTITY(follow_target)) < 6 &&
-          ENTITY(follow_target)->player_info.friendsID != steamid)) &&
-        roambot)
-    {
-        // Try to get a new target
-        auto ent_count =
-            followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
-        for (int i = 0; i < ent_count; i++)
+        if (!inited)
+            init();
+
+        // We need a local player to control
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         {
-            auto entity = ENTITY(i);
-            if (CE_BAD(entity)) // Exist + dormant
-                continue;
-            if (!followcart)
+            follow_target = 0;
+            return;
+        }
+
+        if (afk)
+            checkAFK();
+
+        // Still good check
+        if (follow_target)
+        {
+            // Overflow protection
+            if (breadcrumbs.size() > crumb_limit)
+                follow_target = 0;
+            // Still good check
+            else if (CE_BAD(ENTITY(follow_target)))
+                follow_target = 0;
+        }
+
+        if (!follow_target)
+            breadcrumbs.clear(); // no target == no path
+        // Target Selection
+        if (steamid)
+        {
+            // Find a target with the steam id, as it is prioritized
+            auto ent_count = HIGHEST_ENTITY;
+            for (int i = 0; i < ent_count; i++)
+            {
+                auto entity = ENTITY(i);
+                if (CE_BAD(entity)) // Exist + dormant
+                    continue;
+                if (i == follow_target)
+                    break;
                 if (entity->m_Type() != ENTITY_PLAYER)
                     continue;
-            if (entity == LOCAL_E) // Follow self lol
-                continue;
-            if (entity->m_bEnemy())
-                continue;
-            if (afk &&
-                afkTicks[i].check(int(
-                    afktime))) // don't follow target that was determined afk
-                continue;
-            if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
-                continue;
-            if (!entity->m_bAlivePlayer()) // Dont follow dead players
-                continue;
-            if (follow_activation &&
-                entity->m_flDistance() > (float) follow_activation)
-                continue;
-            const model_t *model =
-                ENTITY(follow_target)->InternalEntity()->GetModel();
-            // FIXME follow cart/point
-            /*if (followcart && model &&
-                (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
-                 lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
-                 lagexploit::pointarr[4]) &&
-                (model == lagexploit::pointarr[0] ||
-                 model == lagexploit::pointarr[1] ||
-                 model == lagexploit::pointarr[2] ||
-                 model == lagexploit::pointarr[3] ||
-                 model == lagexploit::pointarr[4]))
-                follow_target = entity->m_IDX;*/
-            if (entity->m_Type() != ENTITY_PLAYER)
-                continue;
-            // favor closer entitys
-            if (follow_target &&
-                ENTITY(follow_target)->m_flDistance() <
-                    entity->m_flDistance()) // favor closer entitys
-                continue;
-            // check if new target has a higher priority than current target
-            if (ClassPriority(ENTITY(follow_target)) >=
-                ClassPriority(ENTITY(i)))
-                continue;
+                if (steamid != entity->player_info.friendsID) // steamid check
+                    continue;
 
-            if (corneractivate)
-            {
-                Vector indirectOrigin =
-                    VischeckCorner(LOCAL_E, entity, 250,
-                                   true); // get the corner location that the
-                // future target is visible from
-                std::pair<Vector, Vector> corners;
-                corners.first.z  = 0;
-                corners.second.z = 0;
-                if (!indirectOrigin.z &&
-                    entity->m_IDX == lastent) // if we couldn't find it, run
-                // wallcheck instead
+                if (!entity->m_bAlivePlayer()) // Dont follow dead players
+                    continue;
+                if (corneractivate)
                 {
-                    corners = VischeckWall(LOCAL_E, entity, 250, true);
-                    if (!corners.first.z || !corners.second.z)
+                    Vector indirectOrigin = VischeckCorner(
+                        LOCAL_E, entity, *follow_activation / 2,
+                        true); // get the corner location that the
+                    // future target is visible from
+                    std::pair<Vector, Vector> corners;
+                    if (!indirectOrigin.z &&
+                        entity->m_IDX == lastent) // if we couldn't find it, run
+                    // wallcheck instead
+                    {
+                        corners =
+                            VischeckWall(LOCAL_E, entity,
+                                         float(follow_activation) / 2, true);
+                        if (!corners.first.z || !corners.second.z)
+                            continue;
+                        // addCrumbs(LOCAL_E, corners.first);
+                        // addCrumbs(entity, corners.second);
+                        addCrumbPair(LOCAL_E, entity, corners);
+                    }
+                    if (indirectOrigin.z)
+                        addCrumbs(entity, indirectOrigin);
+                    else if (!indirectOrigin.z && !corners.first.z)
                         continue;
-                    addCrumbPair(LOCAL_E, entity, corners);
                 }
-                if (indirectOrigin.z)
-                    addCrumbs(entity, indirectOrigin);
-                else if (!indirectOrigin.z && !corners.first.z)
-                    continue;
+                else
+                {
+                    if (!VisCheckEntFromEnt(LOCAL_E, entity))
+                        continue;
+                }
+                follow_target = entity->m_IDX;
+                break;
             }
-            else
-            {
-                if (!VisCheckEntFromEnt(LOCAL_E, entity))
-                    continue;
-            }
-
-            // ooooo, a target
-            follow_target = i;
-            afkTicks[i].update(); // set afk time to 0
         }
-    }
-    lastent++;
-    if (lastent > g_IEngine->GetMaxClients())
-        lastent = 0;
-    // last check for entity before we continue
-    if (!follow_target)
-        return;
+        // If we dont have a follow target from that, we look again for someone
+        // else who is suitable
+        if ((!follow_target || change ||
+             (ClassPriority(ENTITY(follow_target)) < 6 &&
+              ENTITY(follow_target)->player_info.friendsID != steamid)) &&
+            roambot)
+        {
+            // Try to get a new target
+            auto ent_count =
+                followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
+            for (int i = 0; i < ent_count; i++)
+            {
+                auto entity = ENTITY(i);
+                if (CE_BAD(entity)) // Exist + dormant
+                    continue;
+                if (!followcart)
+                    if (entity->m_Type() != ENTITY_PLAYER)
+                        continue;
+                if (entity == LOCAL_E) // Follow self lol
+                    continue;
+                if (entity->m_bEnemy())
+                    continue;
+                if (afk &&
+                    afkTicks[i].check(int(afktime))) // don't follow target that
+                                                     // was determined afk
+                    continue;
+                if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
+                    continue;
+                if (!entity->m_bAlivePlayer()) // Dont follow dead players
+                    continue;
+                if (follow_activation &&
+                    entity->m_flDistance() > (float) follow_activation)
+                    continue;
+                const model_t *model =
+                    ENTITY(follow_target)->InternalEntity()->GetModel();
+                // FIXME follow cart/point
+                /*if (followcart && model &&
+                    (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
+                     lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
+                     lagexploit::pointarr[4]) &&
+                    (model == lagexploit::pointarr[0] ||
+                     model == lagexploit::pointarr[1] ||
+                     model == lagexploit::pointarr[2] ||
+                     model == lagexploit::pointarr[3] ||
+                     model == lagexploit::pointarr[4]))
+                    follow_target = entity->m_IDX;*/
+                if (entity->m_Type() != ENTITY_PLAYER)
+                    continue;
+                // favor closer entitys
+                if (follow_target &&
+                    ENTITY(follow_target)->m_flDistance() <
+                        entity->m_flDistance()) // favor closer entitys
+                    continue;
+                // check if new target has a higher priority than current target
+                if (ClassPriority(ENTITY(follow_target)) >=
+                    ClassPriority(ENTITY(i)))
+                    continue;
 
-    CachedEntity *followtar = ENTITY(follow_target);
-    // wtf is this needed
-    if (CE_BAD(followtar) || !followtar->m_bAlivePlayer())
-    {
-        follow_target = 0;
-        return;
-    }
-    // Check if we are following a disguised/spy
-    if (IsPlayerDisguised(followtar) || IsPlayerInvisible(followtar))
-    {
-        follow_target = 0;
-        return;
-    }
-    // check if target is afk
-    if (afk)
-    {
-        if (afkTicks[follow_target].check(int(afktime)))
+                if (corneractivate)
+                {
+                    Vector indirectOrigin = VischeckCorner(
+                        LOCAL_E, entity, 250,
+                        true); // get the corner location that the
+                    // future target is visible from
+                    std::pair<Vector, Vector> corners;
+                    corners.first.z  = 0;
+                    corners.second.z = 0;
+                    if (!indirectOrigin.z &&
+                        entity->m_IDX == lastent) // if we couldn't find it, run
+                    // wallcheck instead
+                    {
+                        corners = VischeckWall(LOCAL_E, entity, 250, true);
+                        if (!corners.first.z || !corners.second.z)
+                            continue;
+                        addCrumbPair(LOCAL_E, entity, corners);
+                    }
+                    if (indirectOrigin.z)
+                        addCrumbs(entity, indirectOrigin);
+                    else if (!indirectOrigin.z && !corners.first.z)
+                        continue;
+                }
+                else
+                {
+                    if (!VisCheckEntFromEnt(LOCAL_E, entity))
+                        continue;
+                }
+
+                // ooooo, a target
+                follow_target = i;
+                afkTicks[i].update(); // set afk time to 0
+            }
+        }
+        lastent++;
+        if (lastent > g_IEngine->GetMaxClients())
+            lastent = 0;
+        // last check for entity before we continue
+        if (!follow_target)
+            return;
+
+        CachedEntity *followtar = ENTITY(follow_target);
+        // wtf is this needed
+        if (CE_BAD(followtar) || !followtar->m_bAlivePlayer())
         {
             follow_target = 0;
             return;
         }
-    }
+        // Check if we are following a disguised/spy
+        if (IsPlayerDisguised(followtar) || IsPlayerInvisible(followtar))
+        {
+            follow_target = 0;
+            return;
+        }
+        // check if target is afk
+        if (afk)
+        {
+            if (afkTicks[follow_target].check(int(afktime)))
+            {
+                follow_target = 0;
+                return;
+            }
+        }
 
-    // Update timer on new target
-    static Timer idle_time{};
-    if (breadcrumbs.empty())
-        idle_time.update();
+        // Update timer on new target
+        static Timer idle_time{};
+        if (breadcrumbs.empty())
+            idle_time.update();
 
-    // If the player is close enough, we dont need to follow the path
-    auto tar_orig       = followtar->m_vecOrigin();
-    auto loc_orig       = LOCAL_E->m_vecOrigin();
-    auto dist_to_target = loc_orig.DistTo(tar_orig);
+        // If the player is close enough, we dont need to follow the path
+        auto tar_orig       = followtar->m_vecOrigin();
+        auto loc_orig       = LOCAL_E->m_vecOrigin();
+        auto dist_to_target = loc_orig.DistTo(tar_orig);
 
-    if ((dist_to_target < (float) follow_distance) &&
-        VisCheckEntFromEnt(LOCAL_E, followtar))
-    {
-        idle_time.update();
-    }
-
-    // New crumbs, we add one if its empty so we have something to follow
-    if ((breadcrumbs.empty() ||
-         tar_orig.DistTo(breadcrumbs.at(breadcrumbs.size() - 1)) > 40.0F) &&
-        DistanceToGround(ENTITY(follow_target)) < 45)
-        breadcrumbs.push_back(tar_orig);
-
-    // Prune old and close crumbs that we wont need anymore, update idle timer
-    // too
-    for (int i = 0; i < breadcrumbs.size(); i++)
-    {
-        if (loc_orig.DistTo(breadcrumbs.at(i)) < 60.f)
+        if ((dist_to_target < (float) follow_distance) &&
+            VisCheckEntFromEnt(LOCAL_E, followtar))
         {
             idle_time.update();
-            for (int j = 0; j <= i; j++)
-                breadcrumbs.erase(breadcrumbs.begin());
-        }
-    }
-
-    // Tauntsync
-    if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) &&
-        lastTaunt.test_and_set(1000))
-    {
-        g_IEngine->ClientCmd("taunt");
-    }
-
-    // Follow the crumbs when too far away, or just starting to follow
-    if (dist_to_target > (float) follow_distance)
-    {
-        // Check for jump
-        if (autojump && lastJump.check(1000) &&
-            (idle_time.check(2000) ||
-             DistanceToGround({ breadcrumbs[0].x, breadcrumbs[0].y,
-                                breadcrumbs[0].z + 5 }) > 47))
-        {
-            current_user_cmd->buttons |= IN_JUMP;
-            lastJump.update();
-        }
-        // Check if still moving. 70 HU = Sniper Zoomed Speed
-        if (idle_time.check(3000) &&
-            CE_VECTOR(g_pLocalPlayer->entity, netvar.vVelocity).IsZero(60.0f))
-        {
-            follow_target = 0;
-            return;
-        }
-        // Basic idle check
-        if (idle_time.test_and_set(5000))
-        {
-            follow_target = 0;
-            return;
         }
 
-        static float last_slot_check = 0.0f;
-        if (g_GlobalVars->curtime < last_slot_check)
-            last_slot_check = 0.0f;
-        if (follow_target && (always_medigun || mimic_slot) &&
-            (g_GlobalVars->curtime - last_slot_check > 1.0f) &&
-            !g_pLocalPlayer->life_state &&
-            !CE_BYTE(ENTITY(follow_target), netvar.iLifeState))
+        // New crumbs, we add one if its empty so we have something to follow
+        if ((breadcrumbs.empty() ||
+             tar_orig.DistTo(breadcrumbs.at(breadcrumbs.size() - 1)) > 40.0F) &&
+            DistanceToGround(ENTITY(follow_target)) < 45)
+            breadcrumbs.push_back(tar_orig);
+
+        // Prune old and close crumbs that we wont need anymore, update idle
+        // timer too
+        for (int i = 0; i < breadcrumbs.size(); i++)
         {
+            if (loc_orig.DistTo(breadcrumbs.at(i)) < 60.f)
+            {
+                idle_time.update();
+                for (int j = 0; j <= i; j++)
+                    breadcrumbs.erase(breadcrumbs.begin());
+            }
+        }
 
-            // We are checking our slot so reset the timer
-            last_slot_check = g_GlobalVars->curtime;
+        // Tauntsync
+        if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) &&
+            lastTaunt.test_and_set(1000))
+        {
+            g_IEngine->ClientCmd("taunt");
+        }
 
-            // Get the follow targets active weapon
-            int owner_weapon_eid =
-                (CE_INT(ENTITY(follow_target), netvar.hActiveWeapon) & 0xFFF);
-            IClientEntity *owner_weapon =
-                g_IEntityList->GetClientEntity(owner_weapon_eid);
+        // Follow the crumbs when too far away, or just starting to follow
+        if (dist_to_target > (float) follow_distance)
+        {
+            // Check for jump
+            if (autojump && lastJump.check(1000) &&
+                (idle_time.check(2000) ||
+                 DistanceToGround({ breadcrumbs[0].x, breadcrumbs[0].y,
+                                    breadcrumbs[0].z + 5 }) > 47))
+            {
+                current_user_cmd->buttons |= IN_JUMP;
+                lastJump.update();
+            }
+            // Check if still moving. 70 HU = Sniper Zoomed Speed
+            if (idle_time.check(3000) &&
+                CE_VECTOR(g_pLocalPlayer->entity, netvar.vVelocity)
+                    .IsZero(60.0f))
+            {
+                follow_target = 0;
+                return;
+            }
+            // Basic idle check
+            if (idle_time.test_and_set(5000))
+            {
+                follow_target = 0;
+                return;
+            }
 
-            // If both the follow targets and the local players weapons arnt
-            // null or
-            // dormant
-            if (owner_weapon && CE_GOOD(g_pLocalPlayer->weapon()))
+            static float last_slot_check = 0.0f;
+            if (g_GlobalVars->curtime < last_slot_check)
+                last_slot_check = 0.0f;
+            if (follow_target && (always_medigun || mimic_slot) &&
+                (g_GlobalVars->curtime - last_slot_check > 1.0f) &&
+                !g_pLocalPlayer->life_state &&
+                !CE_BYTE(ENTITY(follow_target), netvar.iLifeState))
             {
 
-                // IsBaseCombatWeapon()
-                if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(
-                        RAW_ENT(g_pLocalPlayer->weapon())) &&
-                    re::C_BaseCombatWeapon::IsBaseCombatWeapon(owner_weapon))
+                // We are checking our slot so reset the timer
+                last_slot_check = g_GlobalVars->curtime;
+
+                // Get the follow targets active weapon
+                int owner_weapon_eid =
+                    (CE_INT(ENTITY(follow_target), netvar.hActiveWeapon) &
+                     0xFFF);
+                IClientEntity *owner_weapon =
+                    g_IEntityList->GetClientEntity(owner_weapon_eid);
+
+                // If both the follow targets and the local players weapons arnt
+                // null or
+                // dormant
+                if (owner_weapon && CE_GOOD(g_pLocalPlayer->weapon()))
                 {
 
-                    // Get the players slot numbers and store in some vars
-                    int my_slot = re::C_BaseCombatWeapon::GetSlot(
-                        RAW_ENT(g_pLocalPlayer->weapon()));
-                    int owner_slot =
-                        re::C_BaseCombatWeapon::GetSlot(owner_weapon);
-
-                    // If the local player is a medic and user settings allow,
-                    // then
-                    // keep the medigun out
-                    if (g_pLocalPlayer->clazz == tf_medic && always_medigun)
+                    // IsBaseCombatWeapon()
+                    if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(
+                            RAW_ENT(g_pLocalPlayer->weapon())) &&
+                        re::C_BaseCombatWeapon::IsBaseCombatWeapon(
+                            owner_weapon))
                     {
-                        if (my_slot != 1)
+
+                        // Get the players slot numbers and store in some vars
+                        int my_slot = re::C_BaseCombatWeapon::GetSlot(
+                            RAW_ENT(g_pLocalPlayer->weapon()));
+                        int owner_slot =
+                            re::C_BaseCombatWeapon::GetSlot(owner_weapon);
+
+                        // If the local player is a medic and user settings
+                        // allow, then keep the medigun out
+                        if (g_pLocalPlayer->clazz == tf_medic && always_medigun)
                         {
-                            g_IEngine->ExecuteClientCmd("slot2");
+                            if (my_slot != 1)
+                            {
+                                g_IEngine->ExecuteClientCmd("slot2");
+                            }
+
+                            // Else we attemt to keep our weapon mimiced with
+                            // our follow target
                         }
-
-                        // Else we attemt to keep our weapon mimiced with our
-                        // follow
-                        // target
-                    }
-                    else
-                    {
-                        if (my_slot != owner_slot)
+                        else
                         {
-                            g_IEngine->ExecuteClientCmd(
-                                format("slot", owner_slot + 1).c_str());
+                            if (my_slot != owner_slot)
+                            {
+                                g_IEngine->ExecuteClientCmd(
+                                    format("slot", owner_slot + 1).c_str());
+                            }
                         }
                     }
                 }
             }
+            WalkTo(breadcrumbs[0]);
         }
-        WalkTo(breadcrumbs[0]);
-    }
-    else
-        idle_time.update();
-}
-
+        else
+            idle_time.update();
+    });
+#endif
 void DrawTick()
 {
 #if ENABLE_VISUALS

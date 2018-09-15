@@ -9,5 +9,4 @@ namespace hacks::tf2::NavBot
 {
 void Init();
 void initonce();
-void CreateMove();
 } // namespace hacks::tf2::NavBot

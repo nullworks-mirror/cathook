@@ -37,28 +37,31 @@ bool IsHoovyHelper(CachedEntity *entity)
     return false;
 }
 
-void UpdateHoovyList()
-{
-    static CachedEntity *ent;
+static HookedFunction UpdateHoovyList(
+    HookedFunctions_types::HF_CreateMove, "HoovyList", 19, []() {
+        if (CE_BAD(LOCAL_E))
+            return;
 
-    for (int i = 1; i < 32 && i < g_IEntityList->GetHighestEntityIndex(); i++)
-    {
-        ent = ENTITY(i);
-        if (CE_GOOD(ent) && CE_BYTE(ent, netvar.iLifeState) == LIFE_ALIVE)
+        static CachedEntity *ent;
+        for (int i = 1; i < 32 && i < g_IEntityList->GetHighestEntityIndex();
+             i++)
         {
-            if (!hoovy_list[i - 1])
+            ent = ENTITY(i);
+            if (CE_GOOD(ent) && CE_BYTE(ent, netvar.iLifeState) == LIFE_ALIVE)
             {
-                if (IsHoovyHelper(ent))
-                    hoovy_list[i - 1] = true;
-            }
-            else
-            {
-                if (!HasSandvichOut(ent))
-                    hoovy_list[i - 1] = false;
+                if (!hoovy_list[i - 1])
+                {
+                    if (IsHoovyHelper(ent))
+                        hoovy_list[i - 1] = true;
+                }
+                else
+                {
+                    if (!HasSandvichOut(ent))
+                        hoovy_list[i - 1] = false;
+                }
             }
         }
-    }
-}
+    });
 
 bool IsHoovy(CachedEntity *entity)
 {

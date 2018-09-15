@@ -109,7 +109,13 @@ static int attackticks = 0;
 
 namespace hooked_methods
 {
-
+static HookedFunction viewangs(HookedFunctions_types::HF_CreateMove, "set_ang",
+                               21, []() {
+                                   if (CE_BAD(LOCAL_E))
+                                       return;
+                                   g_pLocalPlayer->v_OrigViewangles =
+                                       current_user_cmd->viewangles;
+                               });
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                      CUserCmd *cmd)
 {
@@ -249,9 +255,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         g_pLocalPlayer->Update();
     }
     g_Settings.bInvalid = false;
-
-    hacks::shared::autojoin::update();
-
     {
         PROF_SECTION(CM_AAA);
         hacks::shared::anti_anti_aim::createMove();
@@ -261,45 +264,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         PROF_SECTION(CM_WRAPPER);
         HookTools::CM();
     }
-
-#if ENABLE_IPC
-#if !LAGBOT_MODE
-    if (hacks::shared::followbot::isEnabled())
-    {
-        hacks::shared::followbot::WorldTick();
-    }
-#endif
-#endif
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
-#if !LAGBOT_MODE
-        IF_GAME(IsTF2())
-        {
-            UpdateHoovyList();
-        }
-        g_pLocalPlayer->v_OrigViewangles = cmd->viewangles;
-#if ENABLE_VISUALS
-        {
-            PROF_SECTION(CM_esp);
-            hacks::shared::esp::CreateMove();
-        }
-#endif
-#endif
         if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon()))
         {
 #if !LAGBOT_MODE
-            {
-                PROF_SECTION(CM_walkbot);
-                hacks::shared::walkbot::Move();
-            }
-            {
-                PROF_SECTION(CM_navparse);
-                nav::CreateMove();
-            }
-            {
-                PROF_SECTION(CM_navbot);
-                hacks::tf2::NavBot::CreateMove();
-            }
             // Walkbot can leave game.
             if (!g_IEngine->IsInGame())
             {

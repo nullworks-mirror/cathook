@@ -38,7 +38,6 @@ public:
 void Init();
 extern std::array<ESPData, 2048> data;
 
-void CreateMove();
 void Draw();
 
 // Entity Processing

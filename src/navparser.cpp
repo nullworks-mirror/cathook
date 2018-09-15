@@ -367,78 +367,78 @@ void Repath()
 }
 
 // Main movement function, gets path from NavTo
-void CreateMove()
-{
-    if (!enabled || !threadingFinished.load())
-        return;
-    if (CE_BAD(LOCAL_E))
-        return;
-    if (!LOCAL_E->m_bAlivePlayer())
-    {
-        // Clear path if player dead
-        crumbs.clear();
-        return;
-    }
-    ignoreManagerCM();
-    // Crumbs empty, prepare for next instruction
-    if (crumbs.empty())
-    {
-        priority         = 0;
-        ReadyForCommands = true;
-        ensureArrival    = false;
-        return;
-    }
-    ReadyForCommands = false;
-    // Remove old crumbs
-    if (g_pLocalPlayer->v_Origin.DistTo(Vector{ crumbs.at(0).x, crumbs.at(0).y,
-                                                g_pLocalPlayer->v_Origin.z }) <
-        30.0f)
-    {
-        lastArea = crumbs.at(0);
-        crumbs.erase(crumbs.begin());
-        inactivity.update();
-    }
-    if (crumbs.empty())
-        return;
-    // Detect when jumping is necessary
-    if (crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
-        lastJump.test_and_set(200))
-        current_user_cmd->buttons |= IN_JUMP;
-    // Check if were dealing with a type 2 connection
-    if (inactivity.check(3000) &&
-        TF2MAP->inactiveTracker.CheckType2({ lastArea, crumbs.at(0) }))
-    {
-        logging::Info("Pathing: Type 2 connection detected!");
-        TF2MAP->pather->Reset();
-        Repath();
-        inactivity.update();
-        return;
-    }
-    // Check for new sentries
-    if (sentryCheck.test_and_set(1000) &&
-        TF2MAP->inactiveTracker.ShouldCancelPath(crumbs))
-    {
-        logging::Info("Pathing: New Sentry found!");
-        TF2MAP->pather->Reset();
-        Repath();
-        return;
-    }
-    // If inactive for too long
-    if (inactivity.check(5000))
-    {
-        // Ignore connection
-        bool resetPather = false;
-        TF2MAP->inactiveTracker.AddTime({ lastArea, crumbs.at(0) }, inactivity,
-                                        resetPather);
-        if (resetPather)
+static HookedFunction
+    CreateMove(HookedFunctions_types::HF_CreateMove, "NavParser", 17, []() {
+        if (!enabled || !threadingFinished.load())
+            return;
+        if (CE_BAD(LOCAL_E))
+            return;
+        if (!LOCAL_E->m_bAlivePlayer())
+        {
+            // Clear path if player dead
+            crumbs.clear();
+            return;
+        }
+        ignoreManagerCM();
+        // Crumbs empty, prepare for next instruction
+        if (crumbs.empty())
+        {
+            priority         = 0;
+            ReadyForCommands = true;
+            ensureArrival    = false;
+            return;
+        }
+        ReadyForCommands = false;
+        // Remove old crumbs
+        if (g_pLocalPlayer->v_Origin.DistTo(Vector{
+                crumbs.at(0).x, crumbs.at(0).y, g_pLocalPlayer->v_Origin.z }) <
+            30.0f)
+        {
+            lastArea = crumbs.at(0);
+            crumbs.erase(crumbs.begin());
+            inactivity.update();
+        }
+        if (crumbs.empty())
+            return;
+        // Detect when jumping is necessary
+        if (crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
+            lastJump.test_and_set(200))
+            current_user_cmd->buttons |= IN_JUMP;
+        // Check if were dealing with a type 2 connection
+        if (inactivity.check(3000) &&
+            TF2MAP->inactiveTracker.CheckType2({ lastArea, crumbs.at(0) }))
+        {
+            logging::Info("Pathing: Type 2 connection detected!");
             TF2MAP->pather->Reset();
-        Repath();
-        inactivity.update();
-        return;
-    }
-    // Walk to next crumb
-    WalkTo(crumbs.at(0));
-}
+            Repath();
+            inactivity.update();
+            return;
+        }
+        // Check for new sentries
+        if (sentryCheck.test_and_set(1000) &&
+            TF2MAP->inactiveTracker.ShouldCancelPath(crumbs))
+        {
+            logging::Info("Pathing: New Sentry found!");
+            TF2MAP->pather->Reset();
+            Repath();
+            return;
+        }
+        // If inactive for too long
+        if (inactivity.check(5000))
+        {
+            // Ignore connection
+            bool resetPather = false;
+            TF2MAP->inactiveTracker.AddTime({ lastArea, crumbs.at(0) },
+                                            inactivity, resetPather);
+            if (resetPather)
+                TF2MAP->pather->Reset();
+            Repath();
+            inactivity.update();
+            return;
+        }
+        // Walk to next crumb
+        WalkTo(crumbs.at(0));
+    });
 
 void Draw()
 {

@@ -247,64 +247,66 @@ void Draw()
 }
 
 // Function called on create move
-void CreateMove()
-{
+static HookedFunction
+    CreateMove(HookedFunctions_types::HF_CreateMove, "ESP", 18, []() {
+        // Check usersettings if enabled
+        if (!*enable)
+            return;
+        if (CE_BAD(LOCAL_E))
+            return;
+        // Something
+        std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
 
-    // Check usersettings if enabled
-    if (!*enable)
-        return;
+        ResetEntityStrings(); // Clear any strings entities have
+        entities_need_repaint
+            .clear(); // Clear data on entities that need redraw
+        int max_clients = g_IEngine->GetMaxClients();
+        int limit       = HIGHEST_ENTITY;
 
-    // Something
-    std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
+        // If not using any other special esp, we lower the min to the max
+        // clients
+        if (!buildings && !proj_esp && !item_esp)
+            limit = std::min(max_clients, HIGHEST_ENTITY);
 
-    ResetEntityStrings();          // Clear any strings entities have
-    entities_need_repaint.clear(); // Clear data on entities that need redraw
-    int max_clients = g_IEngine->GetMaxClients();
-    int limit       = HIGHEST_ENTITY;
-
-    // If not using any other special esp, we lower the min to the max clients
-    if (!buildings && !proj_esp && !item_esp)
-        limit = std::min(max_clients, HIGHEST_ENTITY);
-
-    { // Prof section ends when out of scope, these brackets here.
-        PROF_SECTION(CM_ESP_EntityLoop);
-        // Loop through entities
-        for (int i = 0; i < limit; i++)
-        {
-            // Get an entity from the loop tick and process it
-            CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent))
-                continue;
-            ProcessEntity(ent);
-            // Update Bones
-            if (i <= 32)
-                ent->hitboxes.GetHitbox(0);
-            // Dont know what this check is for
-            if (data[i].string_count)
+        { // Prof section ends when out of scope, these brackets here.
+            PROF_SECTION(CM_ESP_EntityLoop);
+            // Loop through entities
+            for (int i = 0; i < limit; i++)
             {
-
-                // Set entity color
-                SetEntityColor(ent, colors::EntityF(ent));
-
-                // If snow distance, add string here
-                if (show_distance)
+                // Get an entity from the loop tick and process it
+                CachedEntity *ent = ENTITY(i);
+                if (CE_BAD(ent))
+                    continue;
+                ProcessEntity(ent);
+                // Update Bones
+                if (i <= 32)
+                    ent->hitboxes.GetHitbox(0);
+                // Dont know what this check is for
+                if (data[i].string_count)
                 {
-                    AddEntityString(
-                        ent,
-                        format((int) (ENTITY(i)->m_flDistance() / 64 * 1.22f),
-                               'm'));
+
+                    // Set entity color
+                    SetEntityColor(ent, colors::EntityF(ent));
+
+                    // If snow distance, add string here
+                    if (show_distance)
+                    {
+                        AddEntityString(
+                            ent, format((int) (ENTITY(i)->m_flDistance() / 64 *
+                                               1.22f),
+                                        'm'));
+                    }
+                }
+                // No idea, this is confusing
+                if (data[ent->m_IDX].needs_paint)
+                {
+                    if (vischeck)
+                        data[ent->m_IDX].transparent = !ent->IsVisible();
+                    entities_need_repaint.push_back(ent->m_IDX);
                 }
             }
-            // No idea, this is confusing
-            if (data[ent->m_IDX].needs_paint)
-            {
-                if (vischeck)
-                    data[ent->m_IDX].transparent = !ent->IsVisible();
-                entities_need_repaint.push_back(ent->m_IDX);
-            }
         }
-    }
-}
+    });
 
 static glez::texture atlas{ DATA_PATH "/textures/atlas.png" };
 static glez::texture idspec{ DATA_PATH "/textures/idspec.png" };

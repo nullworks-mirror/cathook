@@ -6,6 +6,7 @@
  */
 
 #include <settings/Int.hpp>
+#include "HookTools.hpp"
 #include <hacks/AutoJoin.hpp>
 
 #include "common.hpp"
@@ -157,26 +158,26 @@ void updateSearch()
     }
 #endif
 }
-
-void update()
-{
+static HookedFunction
+    update(HookedFunctions_types::HF_CreateMove, "Autojoin", 1, []() {
 #if !LAGBOT_MODE
-    if (autoteam_timer.test_and_set(500))
-    {
-        if (autojoin_team and UnassignedTeam())
+        if (autoteam_timer.test_and_set(500))
         {
-            hack::ExecuteCommand("autoteam");
+            if (autojoin_team and UnassignedTeam())
+            {
+                hack::ExecuteCommand("autoteam");
+            }
+            else if (autojoin_class and UnassignedClass())
+            {
+                if (int(autojoin_class) < 10)
+                    g_IEngine->ExecuteClientCmd(
+                        format("join_class ",
+                               classnames[int(autojoin_class) - 1])
+                            .c_str());
+            }
         }
-        else if (autojoin_class and UnassignedClass())
-        {
-            if (int(autojoin_class) < 10)
-                g_IEngine->ExecuteClientCmd(
-                    format("join_class ", classnames[int(autojoin_class) - 1])
-                        .c_str());
-        }
-    }
 #endif
-}
+    });
 
 void onShutdown()
 {

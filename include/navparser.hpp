@@ -22,7 +22,6 @@ bool NavTo(Vector dest, bool navToLocalCenter = true, bool persistent = true,
 void clearInstructions();
 int findClosestNavSquare(Vector vec);
 bool Prepare();
-void CreateMove();
 void Draw();
 
 int FindInVector(size_t id);

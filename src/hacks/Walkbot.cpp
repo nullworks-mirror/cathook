@@ -1216,75 +1216,78 @@ void OnLevelInit()
 Timer quit_timer{};
 Timer map_check{};
 int erasedelay = 0;
-void Move()
-{
-    if (state::state == WB_DISABLED)
-        return;
-    switch (state::state)
-    {
-    case WB_RECORDING:
-    {
-        UpdateClosestNode();
-        if (recording_key.isKeyDown() and ShouldSpawnNode())
+static HookedFunction
+    Move(HookedFunctions_types::HF_CreateMove, "Walkbot", 16, []() {
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+            return;
+        if (state::state == WB_DISABLED)
+            return;
+        switch (state::state)
         {
-            RecordNode();
-        }
-    }
-    break;
-    case WB_EDITING:
-    {
-        UpdateClosestNode();
-    }
-    break;
-    case WB_REPLAYING:
-    {
-        if (leave_if_empty)
+        case WB_RECORDING:
         {
-            if (nodes.size() == 0 || g_IEngine->GetLevelName() != prevlvlname)
+            UpdateClosestNode();
+            if (recording_key.isKeyDown() and ShouldSpawnNode())
             {
-                prevlvlname = g_IEngine->GetLevelName();
-                if (!boost::contains(prevlvlname, "pl_"))
+                RecordNode();
+            }
+        }
+        break;
+        case WB_EDITING:
+        {
+            UpdateClosestNode();
+        }
+        break;
+        case WB_REPLAYING:
+        {
+            if (leave_if_empty)
+            {
+                if (nodes.size() == 0 ||
+                    g_IEngine->GetLevelName() != prevlvlname)
                 {
-                    Load("default");
-                    if (leave_if_empty && nodes.size() == 0 &&
-                        quit_timer.test_and_set(5000))
+                    prevlvlname = g_IEngine->GetLevelName();
+                    if (!boost::contains(prevlvlname, "pl_"))
                     {
-                        logging::Info("No map file, abandon");
-                        tfmm::abandon();
-                        return;
+                        Load("default");
+                        if (leave_if_empty && nodes.size() == 0 &&
+                            quit_timer.test_and_set(5000))
+                        {
+                            logging::Info("No map file, abandon");
+                            tfmm::abandon();
+                            return;
+                        }
                     }
                 }
             }
+            /*prevlvlname = g_IEngine->GetLevelName();
+            std::string prvlvlname(prevlvlname);
+            if (boost::contains(prvlvlname, "pl_") ||
+                boost::contains(prvlvlname, "cp_"))
+            {
+                logging::Info("1");
+                bool ret = false;
+                if (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
+                    lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
+                    lagexploit::pointarr[4])
+                {
+                    hacks::shared::followbot::followbot  = 1;
+                    hacks::shared::followbot::roambot    = 1;
+                    hacks::shared::followbot::followcart = true;
+                }
+                else
+                {
+                    hacks::shared::followbot::followbot  = 0;
+                    hacks::shared::followbot::roambot    = 0;
+                    hacks::shared::followbot::followcart = false;
+                }
+            }*/
+            if (nodes.size() == 0)
+                return;
+            if (force_slot)
+                UpdateSlot();
+            UpdateWalker();
         }
-        /*prevlvlname = g_IEngine->GetLevelName();
-        std::string prvlvlname(prevlvlname);
-        if (boost::contains(prvlvlname, "pl_") ||
-            boost::contains(prvlvlname, "cp_"))
-        {
-            logging::Info("1");
-            bool ret = false;
-            if (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
-                lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
-                lagexploit::pointarr[4])
-            {
-                hacks::shared::followbot::followbot  = 1;
-                hacks::shared::followbot::roambot    = 1;
-                hacks::shared::followbot::followcart = true;
-            }
-            else
-            {
-                hacks::shared::followbot::followbot  = 0;
-                hacks::shared::followbot::roambot    = 0;
-                hacks::shared::followbot::followcart = false;
-            }
-        }*/
-        if (nodes.size() == 0)
-            return;
-        if (force_slot)
-            UpdateSlot();
-        UpdateWalker();
-    }
-    break;
-    }
-}
+        break;
+        }
+    });
 } // namespace hacks::shared::walkbot
