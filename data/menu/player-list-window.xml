@@ -1,4 +1,4 @@
-<Window width="content" height="content" x="200" y="200" name="Test2">
+<Window width="content" height="content" x="200" y="200" name="Playerlist (Incomplete. Use cat_pl_set_state instead!)">
     <Table id="special-player-list">
         <Column width="25"/>
         <Column width="70" />
