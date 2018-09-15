@@ -98,7 +98,8 @@ static void initPlayerlist()
         });
         controller->setOpenSteamCallback([](unsigned steam) {
             CSteamID id{};
-            id.Set(steam, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+            id.Set(steam, EUniverse::k_EUniversePublic,
+                   EAccountType::k_EAccountTypeIndividual);
             g_ISteamFriends->ActivateGameOverlayToUser("steamid", id);
         });
     }

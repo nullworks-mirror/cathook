@@ -219,13 +219,14 @@ void reportall()
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(i, &info))
         {
-//            if (info.friendsID == local.friendsID ||
-//                playerlist::AccessData(info.friendsID).state ==
-//                    playerlist::k_EState::FRIEND ||
-//                playerlist::AccessData(info.friendsID).state ==
-//                    playerlist::k_EState::IPC)
-//                continue;
-            if (player_tools::shouldTargetSteamId(info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            //            if (info.friendsID == local.friendsID ||
+            //                playerlist::AccessData(info.friendsID).state ==
+            //                    playerlist::k_EState::FRIEND ||
+            //                playerlist::AccessData(info.friendsID).state ==
+            //                    playerlist::k_EState::IPC)
+            //                continue;
+            if (player_tools::shouldTargetSteamId(info.friendsID) !=
+                player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             CSteamID id(info.friendsID, EUniverse::k_EUniversePublic,
                         EAccountType::k_EAccountTypeIndividual);
@@ -251,14 +252,17 @@ void smart_crouch()
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() ||
+            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER ||
+                ent->m_iTeam() == LOCAL_E->m_iTeam() ||
                 !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) ||
-                    player_tools::shouldTargetSteamId(ent->player_info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE ||
+                player_tools::shouldTargetSteamId(ent->player_info.friendsID) !=
+                    player_tools::IgnoreReason::DO_NOT_IGNORE ||
                 should_ignore_player(ent))
                 continue;
             bool failedvis = false;
             for (int j = 0; j < 18; j++)
-                if (IsVectorVisible(g_pLocalPlayer->v_Eye, ent->hitboxes.GetHitbox(j)->center))
+                if (IsVectorVisible(g_pLocalPlayer->v_Eye,
+                                    ent->hitboxes.GetHitbox(j)->center))
                     failedvis = true;
             if (failedvis)
                 continue;
@@ -286,8 +290,7 @@ void smart_crouch()
 }
 
 // TODO: add more stuffs
-static HookedFunction cm(HF_CreateMove, "catbot", 5, []()
-{
+static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
     if (!*enable)
         return;
 

@@ -53,12 +53,14 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             for (int i = 0; i < buf.GetNumBytesLeft(); i++)
             {
                 int byte = buf.ReadByte();
-                if ( byte == 0)
+                if (byte == 0)
                     break;
                 message_name.push_back(byte);
             }
-            if (message_name.find("TF_Autobalance_TeamChangePending") != std::string::npos)
-                logging::Info("test, %d %d", int(message_name[0]), (CE_GOOD(LOCAL_E) ? LOCAL_E->m_IDX : -1));
+            if (message_name.find("TF_Autobalance_TeamChangePending") !=
+                std::string::npos)
+                logging::Info("test, %d %d", int(message_name[0]),
+                              (CE_GOOD(LOCAL_E) ? LOCAL_E->m_IDX : -1));
         }
     if (type == 4)
     {
@@ -133,8 +135,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     }
                     for (char i : name1)
                     {
-                        if (i == ' ');
-                            continue;
+                        if (i == ' ')
+                            ;
+                        continue;
                         if (iii == 2)
                         {
                             iii = 0;
@@ -151,8 +154,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     iii = 0;
                     for (char i : name1)
                     {
-                        if (i == ' ');
-                            continue;
+                        if (i == ' ')
+                            ;
+                        continue;
                         if (iii == 3)
                         {
                             iii = 0;

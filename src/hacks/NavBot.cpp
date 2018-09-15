@@ -363,7 +363,7 @@ bool NavToEnemy()
         if (CE_GOOD(ent))
         {
             int nearestvalid =
-                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 1000, 4000);
+                nav::FindNearestValidbyDist(ent->m_vecOrigin(), 1000, 4000);
             if (nearestvalid != -1)
             {
                 auto area = nav::areas[nearestvalid];
@@ -445,7 +445,8 @@ void CreateMove()
         return;
     if (primary_only && enable)
         UpdateSlot();
-    if (*stay_near && nav_enemy_cd.test_and_set(1000) && (!HasLowAmmo()) & (!HasLowHealth()))
+    if (*stay_near && nav_enemy_cd.test_and_set(1000) &&
+        (!HasLowAmmo()) & (!HasLowHealth()))
         NavToEnemy();
     if (HasLowHealth() && cdr.test_and_set(5000))
     {
