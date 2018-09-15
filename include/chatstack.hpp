@@ -9,6 +9,7 @@
 
 #define CHATSTACK_INTERVAL 0.8f
 
+#include "config.h"
 #include <string>
 #include <stack>
 #include <functional>
@@ -28,4 +29,4 @@ void Reset();
 
 extern std::stack<msg_t> stack;
 extern float last_say;
-}
+} // namespace chat_stack

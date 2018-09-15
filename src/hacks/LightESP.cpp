@@ -1,20 +1,22 @@
-#include <glez/draw.hpp>
 #include "hacks/LightESP.hpp"
+#if ENABLE_VISUALS
+#include <glez/draw.hpp>
+#endif
+#include <settings/Bool.hpp>
+
+static settings::Bool enable{ "lightesp.enable", "false" };
 
 namespace hacks::shared::lightesp
 {
 
-static CatVar enable(CV_SWITCH, "lightesp_enabled", "0", "Enable LightESP",
-                     "Lightweight ESP. Only shows head.");
 Vector hitp[32];
 Vector minp[32];
 Vector maxp[32];
 bool drawEsp[32];
 
-void run()
-{
 #if ENABLE_VISUALS
-    if (!enable)
+static HookedFunction cm(HF_CreateMove, "lightesp", 5, []() {
+    if (!*enable)
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
@@ -39,8 +41,9 @@ void run()
         maxp[i]    = pEntity->hitboxes.GetHitbox(0)->max;
         drawEsp[i] = true;
     }
+});
 #endif
-}
+
 void draw()
 {
 #if ENABLE_VISUALS
@@ -58,7 +61,7 @@ void draw()
         Vector out;
         if (draw::WorldToScreen(hitp[i], out))
         {
-            float size;
+            float size = 0.0f;
             Vector pout, pout2;
             if (draw::WorldToScreen(minp[i], pout) &&
                 draw::WorldToScreen(maxp[i], pout2))
@@ -70,7 +73,7 @@ void draw()
     }
 #endif
 }
-
+#if ENABLE_VISUALS
 rgba_t LightESPColor(CachedEntity *ent)
 {
     if (!playerlist::IsDefault(ent))
@@ -79,4 +82,5 @@ rgba_t LightESPColor(CachedEntity *ent)
     }
     return colors::green;
 }
-}
+#endif
+} // namespace hacks::shared::lightesp

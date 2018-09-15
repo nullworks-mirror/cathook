@@ -5,31 +5,34 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Bool.hpp>
 #include "common.hpp"
 #include "hack.hpp"
+#include "PlayerTools.hpp"
+
+static settings::Bool enable{ "cat-bot.enable", "false" };
+
+static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
+static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte",
+                                              "0" };
+static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte",
+                                            "0" };
+static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte",
+                                             "0" };
+static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills",
+                                           "2" };
+
+static settings::Bool micspam{ "cat-bot.micspam.enable", "false" };
+static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
+static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
+
+static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "true" };
+static settings::Bool always_crouch{ "cat-bot.always-crouch", "false" };
+static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
+static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
 namespace hacks::shared::catbot
 {
-
-static CatVar enabled(CV_SWITCH, "cbu", "0", "CatBot Utils");
-static CatVar abandon_if_bots_gte(CV_INT, "cbu_abandon_if_bots_gte", "0",
-                                  "Abandon if bots >=");
-static CatVar abandon_if_ipc_bots_gte(CV_INT, "cbu_abandon_if_ipc_bots_gte",
-                                      "0", "Abandon if IPC bots >=");
-static CatVar abandon_if_humans_lte(CV_INT, "cbu_abandon_if_humans_lte", "0",
-                                    "Abandon if humans <=");
-static CatVar abandon_if_players_lte(CV_INT, "cbu_abandon_if_players_lte", "0",
-                                     "Abandon if players <=");
-static CatVar mark_human_threshold(CV_INT, "cbu_mark_human_threshold", "2",
-                                   "Mark human after N kills");
-static CatVar random_votekicks(CV_SWITCH, "cbu_random_votekicks", "0",
-                               "Randomly initiate votekicks");
-static CatVar micspam(CV_SWITCH, "cbu_micspam", "0", "Micspam helper");
-static CatVar micspam_on(CV_INT, "cbu_micspam_on_interval", "3",
-                         "+voicerecord interval");
-static CatVar micspam_off(CV_INT, "cbu_micspam_off_interval", "60",
-                          "-voicerecord interval");
-static CatVar auto_crouch(CV_SWITCH, "cbu_autocrouch", "1", "Auto crouch");
 
 struct catbot_user_state
 {
@@ -77,16 +80,26 @@ void on_killed_by(int userid)
 void do_random_votekick()
 {
     std::vector<int> targets;
+    player_info_s local_info;
+
+    if (CE_BAD(LOCAL_E) ||
+        !g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &local_info))
+        return;
     for (int i = 1; i <= g_GlobalVars->maxClients; ++i)
     {
         player_info_s info;
         if (!g_IEngine->GetPlayerInfo(i, &info))
             continue;
-
         if (g_pPlayerResource->GetTeam(i) != g_pLocalPlayer->team)
             continue;
-
         if (is_a_catbot(info.friendsID))
+            continue;
+        if (info.friendsID == local_info.friendsID)
+            continue;
+        if (playerlist::AccessData(info.friendsID).state !=
+                playerlist::k_EState::RAGE &&
+            playerlist::AccessData(info.friendsID).state !=
+                playerlist::k_EState::DEFAULT)
             continue;
 
         targets.push_back(info.userID);
@@ -118,7 +131,8 @@ void update_catbot_list()
             strcasestr(info.name, "zCat") ||
             strcasestr(info.name, "lagger bot") ||
             strcasestr(info.name, "zLag-bot") ||
-            strcasestr(info.name, "crash-bot"))
+            strcasestr(info.name, "crash-bot") ||
+            strcasestr(info.name, "reichstagbot"))
         {
             if (human_detecting_map.find(info.friendsID) ==
                 human_detecting_map.end())
@@ -134,9 +148,9 @@ void update_catbot_list()
 
 class CatBotEventListener : public IGameEventListener2
 {
-    virtual void FireGameEvent(IGameEvent *event)
+    void FireGameEvent(IGameEvent *event) override
     {
-        if (!enabled)
+        if (!enable)
             return;
 
         int killer_id =
@@ -157,9 +171,9 @@ CatBotEventListener &listener()
     return object;
 }
 
-Timer timer_votekicks{};
-Timer timer_catbot_list{};
-Timer timer_abandon{};
+static Timer timer_votekicks{};
+static Timer timer_catbot_list{};
+static Timer timer_abandon{};
 
 int count_bots{ 0 };
 
@@ -200,14 +214,19 @@ void reportall()
         // server
         if (!ent)
             continue;
+        if (ent == LOCAL_E)
+            continue;
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(i, &info))
         {
-            if (info.friendsID == local.friendsID ||
-                playerlist::AccessData(info.friendsID).state ==
-                    playerlist::k_EState::FRIEND ||
-                playerlist::AccessData(info.friendsID).state ==
-                    playerlist::k_EState::IPC)
+            //            if (info.friendsID == local.friendsID ||
+            //                playerlist::AccessData(info.friendsID).state ==
+            //                    playerlist::k_EState::FRIEND ||
+            //                playerlist::AccessData(info.friendsID).state ==
+            //                    playerlist::k_EState::IPC)
+            //                continue;
+            if (player_tools::shouldTargetSteamId(info.friendsID) !=
+                player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             CSteamID id(info.friendsID, EUniverse::k_EUniversePublic,
                         EAccountType::k_EAccountTypeIndividual);
@@ -219,6 +238,13 @@ CatCommand report("report_debug", "debug", []() { reportall(); });
 Timer crouchcdr{};
 void smart_crouch()
 {
+    if (*always_crouch)
+    {
+        current_user_cmd->buttons |= IN_DUCK;
+        if (crouchcdr.test_and_set(10000))
+            current_user_cmd->buttons &= ~IN_DUCK;
+        return;
+    }
     bool foundtar      = false;
     static bool crouch = false;
     if (crouchcdr.test_and_set(2000))
@@ -226,17 +252,17 @@ void smart_crouch()
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_iTeam() == LOCAL_E->m_iTeam() ||
+            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER ||
+                ent->m_iTeam() == LOCAL_E->m_iTeam() ||
                 !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) ||
-                playerlist::AccessData(ent).state ==
-                    playerlist::k_EState::FRIEND ||
-                playerlist::AccessData(ent).state ==
-                    playerlist::k_EState::IPC ||
+                player_tools::shouldTargetSteamId(ent->player_info.friendsID) !=
+                    player_tools::IgnoreReason::DO_NOT_IGNORE ||
                 should_ignore_player(ent))
                 continue;
             bool failedvis = false;
-            for (int j = -1; j < 18; j++)
-                if (IsEntityVisible(ent, j))
+            for (int j = 0; j < 18; j++)
+                if (IsVectorVisible(g_pLocalPlayer->v_Eye,
+                                    ent->hitboxes.GetHitbox(j)->center))
                     failedvis = true;
             if (failedvis)
                 continue;
@@ -244,6 +270,7 @@ void smart_crouch()
             {
                 if (!LOCAL_E->hitboxes.GetHitbox(j))
                     continue;
+                // Check if they see my hitboxes
                 if (!IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
                                      LOCAL_E->hitboxes.GetHitbox(j)->center) &&
                     !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
@@ -259,11 +286,27 @@ void smart_crouch()
             crouch = false;
     }
     if (crouch)
-        g_pUserCmd->buttons |= IN_DUCK;
+        current_user_cmd->buttons |= IN_DUCK;
 }
+
+// TODO: add more stuffs
+static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
+    if (!*enable)
+        return;
+
+    if (g_Settings.bInvalid)
+        return;
+
+    if (CE_BAD(LOCAL_E))
+        return;
+
+    if (*auto_crouch)
+        smart_crouch();
+});
+
 void update()
 {
-    if (!enabled)
+    if (!enable)
         return;
 
     if (g_Settings.bInvalid)
@@ -274,10 +317,9 @@ void update()
 
     if (micspam)
     {
-        if (micspam_on && micspam_on_timer.test_and_set(int(micspam_on) * 1000))
+        if (micspam_on && micspam_on_timer.test_and_set(*micspam_on * 1000))
             g_IEngine->ExecuteClientCmd("+voicerecord");
-        if (micspam_off &&
-            micspam_off_timer.test_and_set(int(micspam_off) * 1000))
+        if (micspam_off && micspam_off_timer.test_and_set(*micspam_off * 1000))
             g_IEngine->ExecuteClientCmd("-voicerecord");
     }
 
@@ -285,8 +327,6 @@ void update()
         do_random_votekick();
     if (timer_catbot_list.test_and_set(3000))
         update_catbot_list();
-    if (auto_crouch)
-        smart_crouch();
     if (timer_abandon.test_and_set(2000) && level_init_timer.check(13000))
     {
         count_bots      = 0;
@@ -300,7 +340,7 @@ void update()
             else
                 continue;
 
-            player_info_s info;
+            player_info_s info{};
             if (!g_IEngine->GetPlayerInfo(i, &info))
                 continue;
 
@@ -369,4 +409,4 @@ void level_init()
 {
     level_init_timer.update();
 }
-}
+} // namespace hacks::shared::catbot

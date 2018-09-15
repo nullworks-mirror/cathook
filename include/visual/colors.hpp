@@ -10,7 +10,7 @@
 #include <glez/color.hpp>
 
 class CachedEntity;
-
+#if ENABLE_VISUALS
 namespace colors
 {
 namespace chat
@@ -32,7 +32,7 @@ constexpr unsigned team(int team)
         return blu;
     return white;
 }
-}
+} // namespace chat
 
 struct rgba_t
 {
@@ -162,6 +162,7 @@ constexpr rgba_t Health(int health, int max)
 }
 rgba_t RainbowCurrent();
 rgba_t EntityF(CachedEntity *ent);
-}
+} // namespace colors
 
 using rgba_t = colors::rgba_t;
+#endif

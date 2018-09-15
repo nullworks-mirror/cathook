@@ -1,6 +1,5 @@
 target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/angles.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/backpacktf.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/chatlog.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/chatstack.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/conditions.cpp"
@@ -14,7 +13,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/hitrate.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/hooks.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/hoovy.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/https_request.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/ipc.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/itemtypes.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/localplayer.cpp"
@@ -32,6 +30,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/velocity.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/votelogger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/MiscTemporary.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/navparser.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Options.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/PlayerTools.cpp")
 
@@ -43,6 +42,7 @@ add_subdirectory(hooks)
 add_subdirectory(reclasses)
 add_subdirectory(sdk)
 add_subdirectory(online)
+add_subdirectory(settings)
 
 if(EnableVisuals)
     add_subdirectory(visual)

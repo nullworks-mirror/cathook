@@ -47,16 +47,14 @@
 #include "averager.hpp"
 
 #include "core/macros.hpp"
-#include <visual/colors.hpp>
-
 #if ENABLE_VISUALS
+#include <visual/colors.hpp>
 #include <visual/drawing.hpp>
 #include "visual/fidgetspinner.hpp"
 #include <visual/EffectGlow.hpp>
 #include <visual/atlas.hpp>
 #include <visual/EffectChams.hpp>
 #include <visual/drawmgr.hpp>
-#include "visual/menu/compatlayer.hpp"
 #endif
 
 #include "core/profiler.hpp"
@@ -95,16 +93,17 @@
 #include "votelogger.hpp"
 #include "crits.hpp"
 #include "textmode.hpp"
-#include "backpacktf.hpp"
 #include "core/sharedobj.hpp"
 #include "init.hpp"
 #include "reclasses/reclasses.hpp"
+#include <CNavFile.h>
+#include "HookTools.hpp"
 
 #include "copypasted/Netvar.h"
 #include "copypasted/CSignature.h"
 
 #if ENABLE_GUI
-#include "visual/menu/GUI.h"
+// FIXME add gui
 #endif
 
 #include <core/sdk.hpp>

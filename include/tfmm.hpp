@@ -10,10 +10,11 @@
 namespace tfmm
 {
 
-void queue_start();
-void queue_leave();
-void dcandabandon();
+void startQueue();
+void startQueueStandby();
+void leaveQueue();
+void disconnectAndAbandon();
 void abandon();
-extern CatVar queue;
-extern CatEnum queue_mode;
-}
+bool isMMBanned();
+int getQueue();
+} // namespace tfmm

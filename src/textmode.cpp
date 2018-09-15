@@ -21,8 +21,8 @@ void EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG()
     static unsigned char patch[] = { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0xB8,
                                      0x01, 0x00, 0x00, 0x00, 0xC9, 0xC3 };
     uintptr_t Host_IsSecureServerAllowed_addr = gSignatures.GetEngineSignature(
-        "55 89 E5 83 EC 18 E8 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 "
-        "2C 85 C0 74 11");
+        "55 89 E5 83 EC ? E8 ? ? ? ? 8B 10 C7 44 24 ? ? ? ? ? 89 04 24 FF 52 ? "
+        "85 C0 74 ? C6 05");
     // +0x21 = allowSecureServers
     // logging::Info("1337 VAC bypass: 0x%08x",
     // Host_IsSecureServerAllowed_addr);
@@ -39,7 +39,7 @@ CatCommand fixvac("fixvac", "Lemme in to secure servers", []() {
     EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG();
 });
 
-InitRoutine init([]() {
+static InitRoutine init([]() {
 #if ENABLE_TEXTMODE_STDIN
     logging::Info("[TEXTMODE] Setting up input handling");
     int flags = fcntl(0, F_GETFL, 0);

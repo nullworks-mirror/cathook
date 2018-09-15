@@ -5,6 +5,7 @@
  *      Author: nullifiedcat
  */
 
+#include <settings/Int.hpp>
 #include "common.hpp"
 
 namespace hitbox_cache
@@ -79,7 +80,7 @@ void EntityHitboxCache::Init()
         }
         if (m_nNumHitboxes > CACHE_MAX_HITBOXES)
             m_nNumHitboxes = CACHE_MAX_HITBOXES;
-        m_bModelSet        = true;
+        m_bModelSet = true;
     }
     m_bSuccess = true;
 }
@@ -91,27 +92,23 @@ bool EntityHitboxCache::VisibilityCheck(int id)
     if (!m_bInit)
         Init();
     if (id < 0 || id >= m_nNumHitboxes)
-        return 0;
+        return false;
     if (!m_bSuccess)
-        return 0;
+        return false;
     if (m_VisCheckValidationFlags[id])
         return m_VisCheck[id];
     // TODO corners
     hitbox = GetHitbox(id);
     if (!hitbox)
-        return 0;
+        return false;
     m_VisCheck[id] = (IsEntityVectorVisible(parent_ref, hitbox->center));
     m_VisCheckValidationFlags[id] = true;
     return m_VisCheck[id];
 }
 
-static CatEnum setupbones_time_enum({ "ZERO", "CURTIME", "LP SERVERTIME",
-                                      "SIMTIME" });
-static CatVar setupbones_time(
-    setupbones_time_enum, "setupbones_time", "3", "Setupbones",
-    "Defines setupbones 4th argument, change it if your aimbot misses, idk!!");
+static settings::Int setupbones_time{ "source.setupbones-time", "3" };
 
-std::mutex setupbones_mutex;
+static std::mutex setupbones_mutex;
 
 matrix3x4_t *EntityHitboxCache::GetBones()
 {
@@ -200,4 +197,4 @@ void Update()
 void Invalidate()
 {
 }
-}
+} // namespace hitbox_cache

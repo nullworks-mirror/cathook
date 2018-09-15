@@ -163,13 +163,9 @@ public:
                     else
                     {
                         if (AreRandomCritsEnabled(self))
-                        {
                             return CalcIsAttackCriticalHelper(self);
-                        }
                         else
-                        {
                             return CalcIsAttackCriticalHelperNoCrits(self);
-                        }
                     }
                 }
             }
@@ -186,4 +182,4 @@ public:
         return *(float *) (unsigned(self) + 2616u);
     }
 };
-}
+} // namespace re

@@ -3,11 +3,12 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
-#include <SDL2/SDL_syswm.h>
 #include <MiscTemporary.hpp>
 #include <visual/SDLHooks.hpp>
 #include <glez/draw.hpp>
 #include "HookedMethods.hpp"
+#include "timer.hpp"
+#include <SDL2/SDL_syswm.h>
 
 static bool init{ false };
 static bool init_wminfo{ false };
@@ -20,12 +21,17 @@ typedef SDL_bool (*SDL_GetWindowWMInfo_t)(SDL_Window *window,
                                           SDL_SysWMinfo *info);
 static SDL_GetWindowWMInfo_t GetWindowWMInfo = nullptr;
 static SDL_GLContext tf2_sdl                 = nullptr;
-
+Timer delay{};
 namespace hooked_methods
 {
 
 DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
 {
+    if (!delay.check(2000))
+    {
+        original::SDL_GL_SwapWindow(window);
+        return;
+    }
     if (!init_wminfo)
     {
         GetWindowWMInfo = *reinterpret_cast<SDL_GetWindowWMInfo_t *>(
@@ -39,7 +45,7 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
     if (!tf2_sdl)
         tf2_sdl = SDL_GL_GetCurrentContext();
 
-    if (cathook && !disable_visuals)
+    if (isHackActive() && !disable_visuals)
     {
         PROF_SECTION(SWAPWINDOW_cathook);
         if (not init)
@@ -63,4 +69,4 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
         // glXSwapBuffers(wminfo.info.x11.display, wminfo.info.x11.window);
     }
 }
-}
+} // namespace hooked_methods

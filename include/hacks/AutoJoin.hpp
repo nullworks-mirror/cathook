@@ -9,10 +9,6 @@
 #include "common.hpp"
 namespace hacks::shared::autojoin
 {
-
-extern CatVar auto_queue;
-extern Timer queuetime;
-
-void Update();
-void UpdateSearch();
-}
+void updateSearch();
+void onShutdown();
+} // namespace hacks::shared::autojoin

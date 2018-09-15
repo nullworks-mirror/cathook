@@ -64,6 +64,7 @@ bool IsProjectileACrit(CachedEntity *ent);
 class CachedEntity
 {
 public:
+    typedef CachedEntity ThisClass;
     CachedEntity();
     ~CachedEntity();
 
@@ -232,4 +233,4 @@ inline CachedEntity &Get(int idx)
 void Update();
 void Invalidate();
 extern int max;
-}
+} // namespace entity_cache

@@ -8,7 +8,7 @@
 #pragma once
 
 #include "common.hpp"
-
+#if ENABLE_VISUALS
 namespace hacks::shared::esp
 {
 
@@ -38,7 +38,6 @@ public:
 void Init();
 extern std::array<ESPData, 2048> data;
 
-void CreateMove();
 void Draw();
 
 // Entity Processing
@@ -58,4 +57,5 @@ void AddEntityString(CachedEntity *entity, const std::string &string,
                      const rgba_t &color = colors::empty);
 void SetEntityColor(CachedEntity *entity, const rgba_t &color);
 void ResetEntityStrings();
-}
+} // namespace hacks::shared::esp
+#endif

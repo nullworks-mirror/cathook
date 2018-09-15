@@ -8,6 +8,9 @@
 #include "common.hpp"
 
 #include <sys/mman.h>
+#include <settings/Bool.hpp>
+
+static settings::Bool tcm{ "debug.tcm", "true" };
 
 std::vector<ConVar *> &RegisteredVarsList()
 {
@@ -52,8 +55,7 @@ void BeginConVars()
 
 void EndConVars()
 {
-    logging::Info("Registering ConVars");
-    RegisterCatVars();
+    logging::Info("Registering CatCommands");
     RegisterCatCommands();
     ConVar_Register();
 
@@ -102,8 +104,8 @@ void WalkTo(const Vector &vector)
     // Calculate how to get to a vector
     auto result = ComputeMove(LOCAL_E->m_vecOrigin(), vector);
     // Push our move to usercmd
-    g_pUserCmd->forwardmove = result.first;
-    g_pUserCmd->sidemove    = result.second;
+    current_user_cmd->forwardmove = result.first;
+    current_user_cmd->sidemove    = result.second;
 }
 
 // Function to get the corner location that a vischeck to an entity is possible
@@ -444,7 +446,7 @@ std::pair<float, float> ComputeMove(const Vector &a, const Vector &b)
     float speed = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
     Vector ang;
     VectorAngles(vsilent, ang);
-    float yaw = DEG2RAD(ang.y - g_pUserCmd->viewangles.y);
+    float yaw = DEG2RAD(ang.y - current_user_cmd->viewangles.y);
     return { cos(yaw) * 450, -sin(yaw) * 450 };
 }
 
@@ -541,20 +543,6 @@ bool HasWeapon(CachedEntity *ent, int wantedId)
             return true;
     }
     // We didnt find the weapon we needed, return false
-    return false;
-}
-
-bool HasDarwins(CachedEntity *ent)
-{
-    if (CE_BAD(ent))
-        return false;
-    // Check if player is sniper
-    if (CE_INT(ent, netvar.iClass) != tf_sniper)
-        return false;
-    // Check if player is using darwins, 231 is the id for darwins danger sheild
-    if (HasWeapon(ent, 231))
-        return true;
-    // Else return false
     return false;
 }
 
@@ -724,22 +712,15 @@ float RandFloatRange(float min, float max)
 
 bool IsEntityVisible(CachedEntity *entity, int hb)
 {
-    Vector hit;
     if (g_Settings.bInvalid)
         return false;
     if (entity == g_pLocalPlayer->entity)
         return true;
     if (hb == -1)
-    {
         return IsEntityVectorVisible(entity, entity->m_vecOrigin());
-    }
     else
-    {
         return entity->hitboxes.VisibilityCheck(hb);
-    }
 }
-
-static CatVar tcm(CV_SWITCH, "debug_tcm", "1", "TCM");
 
 std::mutex trace_lock;
 bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos)
@@ -936,7 +917,10 @@ weaponmode GetWeaponMode()
              classid == CL_CLASS(CTFSyringeGun) ||
              classid == CL_CLASS(CTFCrossbow) ||
              classid == CL_CLASS(CTFShotgunBuildingRescue) ||
-             classid == CL_CLASS(CTFDRGPomson))
+             classid == CL_CLASS(CTFDRGPomson) ||
+             classid == CL_CLASS(CTFWeaponFlameBall) ||
+             classid == CL_CLASS(CTFRaygun) ||
+             classid == CL_CLASS(CTFGrapplingHook))
     {
         return weaponmode::weapon_projectile;
     }
@@ -968,8 +952,6 @@ bool LineIntersectsBox(Vector &bmin, Vector &bmax, Vector &lmin, Vector &lmax)
     return true;
 }
 
-// TODO add bison and grapple hook
-// TODO FIX this function
 bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
 {
     float rspeed, rgrav;
@@ -982,16 +964,19 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     rgrav  = 0.0f;
     typedef float(GetProjectileData)(IClientEntity *);
 
-    int classid = weapon->m_iClassID();
-    if (classid == CL_CLASS(CTFRocketLauncher_DirectHit))
+    switch (weapon->m_iClassID())
+    {
+    case CL_CLASS(CTFRocketLauncher_DirectHit):
     {
         rspeed = 1980.0f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFRocketLauncher))
+    case CL_CLASS(CTFRocketLauncher):
     {
         rspeed = 1100.0f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFGrenadeLauncher))
+    case CL_CLASS(CTFGrenadeLauncher):
     {
         IF_GAME(IsTF2())
         {
@@ -1003,8 +988,9 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
             rspeed = 1100.0f;
             rgrav  = 0.5f;
         }
+        break;
     }
-    else if (classid == CL_CLASS(CTFPipebombLauncher))
+    case CL_CLASS(CTFPipebombLauncher):
     {
         float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
         float chargetime  = g_GlobalVars->curtime - chargebegin;
@@ -1012,50 +998,71 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
             (fminf(fmaxf(chargetime / 4.0f, 0.0f), 1.0f) * 1500.0f) + 900.0f;
         rgrav =
             (fminf(fmaxf(chargetime / 4.0f, 0.0f), 1.0f) * -0.70000001f) + 0.5f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFCompoundBow))
+    case CL_CLASS(CTFCompoundBow):
     {
         float chargetime =
-            g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
-            CE_FLOAT(weapon, netvar.flChargeBeginTime) *
-                g_GlobalVars->interval_per_tick;
-        rspeed = (fminf(fmaxf(chargetime, 0.0f), 1.0f) * 800.0f) + 1800.0f;
-        rgrav  = (fminf(fmaxf(chargetime, 0.0f), 1.0f) * -0.40000001f) + 0.5f;
+            g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
+        rspeed = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) * 800.0) +
+                          1800.0);
+        rgrav  = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) *
+                                  -0.40000001) +
+                         0.5);
+        break;
     }
-    else if (classid == CL_CLASS(CTFBat_Wood))
+    case CL_CLASS(CTFBat_Wood):
     {
         rspeed = 3000.0f;
         rgrav  = 0.5f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFFlareGun))
+    case CL_CLASS(CTFFlareGun):
     {
         rspeed = 2000.0f;
         rgrav  = 0.25f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFSyringeGun))
+    case CL_CLASS(CTFSyringeGun):
     {
         rgrav  = 0.2f;
         rspeed = 990.0f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFCrossbow))
+    case CL_CLASS(CTFCrossbow):
     {
         rgrav  = 0.2f;
         rspeed = 2400.0f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFShotgunBuildingRescue))
+    case CL_CLASS(CTFShotgunBuildingRescue):
     {
         rgrav  = 0.2f;
         rspeed = 2400.0f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFDRGPomson))
+    case CL_CLASS(CTFDRGPomson):
     {
         rspeed = 1200.0f;
+        break;
     }
-    else if (classid == CL_CLASS(CTFWeaponFlameBall))
+    case CL_CLASS(CTFWeaponFlameBall):
     {
-        // ??
-        rspeed = 2500.0f;
+        rspeed = 3000.0f;
+        break;
     }
+    case CL_CLASS(CTFRaygun):
+    {
+        rspeed = 1200.0f;
+        break;
+    }
+    case CL_CLASS(CTFGrapplingHook):
+    {
+        rspeed = 1500.0f;
+        break;
+    }
+    }
+
     speed   = rspeed;
     gravity = rgrav;
     return (rspeed || rgrav);
@@ -1096,19 +1103,29 @@ netvar.iHealth));
 
 bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only)
 {
-    trace_t trace_visible;
-    Ray_t ray;
 
-    trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-    ray.Init(origin, target);
     if (!enviroment_only)
+    {
+        trace_t trace_visible;
+        Ray_t ray;
+
+        trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+        ray.Init(origin, target);
         g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
                            &trace_visible);
+        return (trace_visible.fraction == 1.0f);
+    }
     else
-        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player,
-                           &trace_visible);
+    {
+        trace_t trace_visible;
+        Ray_t ray;
 
-    return (trace_visible.fraction == 1.0f);
+        trace::filter_no_entity.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+        ray.Init(origin, target);
+        g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_entity,
+                           &trace_visible);
+        return (trace_visible.fraction == 1.0f);
+    }
 }
 
 void WhatIAmLookingAt(int *result_eindex, Vector *result_pos)
@@ -1134,13 +1151,9 @@ void WhatIAmLookingAt(int *result_eindex, Vector *result_pos)
     if (result_pos)
         *result_pos = trace.endpos;
     if (result_eindex)
-    {
-        *result_eindex = 0;
-    }
+        *result_eindex = -1;
     if (trace.m_pEnt && result_eindex)
-    {
         *result_eindex = ((IClientEntity *) (trace.m_pEnt))->entindex();
-    }
 }
 
 bool IsSentryBuster(CachedEntity *entity)
@@ -1324,7 +1337,6 @@ bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)
 CatCommand print_classnames(
     "debug_print_classnames", "Lists classnames currently available in console",
     []() {
-
         // Create a tmp ent for the loop
         CachedEntity *ent;
 
@@ -1342,7 +1354,6 @@ CatCommand print_classnames(
             logging::Info(
                 format(RAW_ENT(ent)->GetClientClass()->m_pNetworkName).c_str());
         }
-
     });
 
 void PrintChat(const char *fmt, ...)
@@ -1358,10 +1369,9 @@ void PrintChat(const char *fmt, ...)
         va_start(list, fmt);
         vsprintf(buf.get(), fmt, list);
         va_end(list);
-        std::unique_ptr<char> str(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s",
-                                         0x5e3252, 0xba3d9a, 0x5e3252,
-                                         buf.get())
-                                      .release());
+        std::unique_ptr<char[]> str =
+            std::move(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s", 0x5e3252,
+                             0xba3d9a, 0x5e3252, buf.get()));
         // FIXME DEBUG LOG
         logging::Info("%s", str.get());
         chat->Printf(str.get());

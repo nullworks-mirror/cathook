@@ -20,22 +20,15 @@ Improve Projectile Aimbot. A lot.																					//	//
 ProjPredOrigin																										//	//
 MAX -> MIN priority																									//	//
 																													//	//
-Hunter Rifle?																										//	//
 																													//	//
 																													//	//
-Ambassador bodyshotting																								//	//
 No Trigger Mediguns																									//	//
 More projectile weapons aimbot (wrap assassin, wrangler, stickybomb, airstrike)										//	//
-Auto trigger DR before rockets																						//	//
 																													//	//
 																													//	//
 Make building aimbot compensate for gravity on projectile weapons													//	//
 																													//	//
 add Spectator Silent for projectile weapons 																		//	//
-																													//	//
-Improve aimbot accuracy 																							//	//
-																													//	//
-																													//	//
 																													//	//
 																													//	//
 																													//	//
@@ -49,14 +42,13 @@ Improve aimbot accuracy 																							//	//
 //Visuals/GUI																											//
 //------------------------------------------------------------------------------------------------------------------//  //
 																													//	//
-																									//	//
+																									                //	//
 																													//	//
-																								//	//
+																								                    //	//
 																													//	//
 Cheat status menu (A gui to display enabled/disabled states of user settings for when the menu is off)				//	//
 																													//	//
-add teleporter count down																							//	//
-																									//	//
+																									                //	//
 																													//	//
 Make ubercharge esp color RGB when fully charged																	//	//
 																													//	//
@@ -68,7 +60,7 @@ ESP Icons																											//	//
 ESP Distance sort																									//	//
 Show sapped buildings in ESP																						//	//																									//	//
 carrying esp																										//	//
-Tracers/Spy Cam																										//	//
+Spy Cam																										//	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//
 //																														//
@@ -81,11 +73,11 @@ Tracers/Spy Cam																										//	//
 //------------------------------------------------------------------------------------------------------------------//  //
 																													//	//
 TTS																													//	//
-																											//	//
-																											//	//
+																											        //	//
+																											        //	//
 																													//	//
 dominatesay assistsay worldsay																						//	//
-																											//	//
+																											        //	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//
 //																														//
@@ -97,10 +89,8 @@ dominatesay assistsay worldsay																						//	//
 //Followbots																											//
 //------------------------------------------------------------------------------------------------------------------//  //
 																													//	//
-Proper medic followbot AI, breadcrumb followbot is good but a nav system would be better							//	//
 																													//	//
 Bot option for aiming at owner's prey (just for fun)																//	//
-Bot pathfinding & navigation files system																			//	//
 Proper entity classes (actually I might just use a lot of helper functions taking IClientEntity* as first arg)		//	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//
@@ -117,15 +107,11 @@ Proper entity classes (actually I might just use a lot of helper functions takin
 																													//	//
 Spy alert uses angles																								//	//
 																													//	//
-Add ignore gunslinger to melee crit hack 																			//	//
-																													//	//
 Priority system optimization and testing																			//	//
 General optimization and refactoring																				//	//
 																													//	//
 XorString or something to make it harder to detect.																	//	//
 																													//	//
-TF2C teams																											//	//
-TF2C merc																											//	//
 HL2DM teams																											//	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//

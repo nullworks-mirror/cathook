@@ -16,6 +16,5 @@ void Initialize();
 #if ENABLE_VISUALS
 void Draw();
 #endif
-void Move();
 void OnLevelInit();
-}
+} // namespace hacks::shared::walkbot

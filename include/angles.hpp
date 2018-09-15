@@ -7,9 +7,8 @@
 
 #pragma once
 
-#include <core/logging.hpp>
 #include "common.hpp"
-
+#include <core/logging.hpp>
 namespace angles
 {
 
@@ -95,4 +94,4 @@ inline angle_data_s &data(const CachedEntity *entity)
 {
     return data_idx(entity->m_IDX);
 }
-}
+} // namespace angles

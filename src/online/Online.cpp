@@ -1,7 +1,8 @@
 /*
   Created on 23.06.18.
 */
-
+#include "config.h"
+#if ENABLE_ONLINE
 #include <online/Online.hpp>
 #include <core/cvwrapper.hpp>
 
@@ -16,6 +17,9 @@
 #include <fstream>
 #include <init.hpp>
 #include <thread>
+#include <settings/Bool.hpp>
+
+static settings::Bool enable{ "online.enable", "false" };
 
 namespace online
 {
@@ -30,15 +34,14 @@ static Timer identify_timer{};
 static bool identify_stale{ false };
 static std::string api_key{};
 
-static CatVar enable(CV_SWITCH, "online", "1", "Enable online features");
 static CatCommand login("online_login", "Login", [](const CCommand &args) {
-    if (args.ArgC() != 3)
+    if (args.ArgC() != 2)
     {
-        logging::Info("\nUsage: online_login <API_KEY> \"<IP:PORT>\"\nKey will "
+        logging::Info("\nUsage: online_login <API_KEY> \nKey will "
                       "be saved in your data folder");
         return;
     }
-    std::string host(args.Arg(2));
+    std::string host("cathook-online.inkcat.net:8000");
     logging::Info("[CO] Host = %s", host.c_str());
     try
     {
@@ -330,4 +333,5 @@ user_data *getUserData(unsigned steamId)
     // SteamID does not belong to online user
     return nullptr;
 }
-}
+} // namespace online
+#endif

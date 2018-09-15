@@ -14,6 +14,7 @@
 #include <studio.h>
 #include <stdexcept>
 
+class CachedEntity;
 #define CACHE_MAX_HITBOXES 64
 
 namespace hitbox_cache
@@ -67,4 +68,4 @@ inline EntityHitboxCache &Get(unsigned i)
             "Requested out-of-range entity hitbox cache entry!");
     return array[i];
 }
-}
+} // namespace hitbox_cache

@@ -36,8 +36,6 @@ struct SDL_Window;
         &hooked_methods::original::name
 namespace hooked_methods
 {
-// FireBullets
-DECLARE_HOOKED_METHOD(PreDataUpdate, void, void *, int);
 // ClientMode
 DECLARE_HOOKED_METHOD(CreateMove, bool, void *, float, CUserCmd *);
 DECLARE_HOOKED_METHOD(LevelInit, void, void *, const char *);
@@ -88,7 +86,7 @@ DECLARE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *);
 // IUniformRandomStream
 DECLARE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *, int, int);
 #endif
-}
+} // namespace hooked_methods
 
 // TODO
 // wontfix.club

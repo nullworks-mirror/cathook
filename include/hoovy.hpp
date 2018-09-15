@@ -9,5 +9,4 @@
 
 class CachedEntity;
 
-void UpdateHoovyList();
 bool IsHoovy(CachedEntity *entity);

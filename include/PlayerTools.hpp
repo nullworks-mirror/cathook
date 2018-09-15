@@ -15,7 +15,6 @@ class CachedEntity;
 
 namespace player_tools
 {
-
 enum class IgnoreReason
 {
     DO_NOT_IGNORE,
@@ -40,4 +39,4 @@ std::optional<colors::rgba_t> forceEspColor(CachedEntity *entity);
 #endif
 
 void onKilledBy(CachedEntity *entity);
-}
+} // namespace player_tools

@@ -11,9 +11,15 @@
 
 class IClientEntity;
 
+// Fix clang gay
+#if defined(__clang__)
+#define NET_VAR(entity, offset, type)                                          \
+    (*(reinterpret_cast<type *>(reinterpret_cast<uint64_t>(entity) + (offset))))
+#elif defined(__GNUC__) || defined(__GNUG__)
 #define NET_VAR(entity, offset, type)                                          \
     (*(reinterpret_cast<type *>(reinterpret_cast<uintptr_t>(entity) +          \
                                 (offset))))
+#endif
 
 #define NET_INT(entity, offset) NET_VAR(entity, offset, int)
 
@@ -57,6 +63,15 @@ public:
     offset_t hActiveWeapon;
     offset_t flChargedDamage;
     offset_t iUpgradeLevel;
+    offset_t m_hBuilder;
+    offset_t m_iObjectType;
+    offset_t m_bMiniBuilding;
+    offset_t m_bBuilding;
+    offset_t m_iTeleState;
+    offset_t m_flTeleRechargeTime;
+    offset_t m_flTeleCurrentRechargeDuration;
+    offset_t m_iTeleTimesUsed;
+    offset_t m_flTeleYawToExit;
     offset_t iPipeType;
     offset_t iBuildingHealth;
     offset_t iBuildingMaxHealth;
@@ -128,6 +143,7 @@ public:
     offset_t m_Collision;
     offset_t res_iTeam;
     offset_t res_iScore;
+    offset_t res_bAlive;
     offset_t m_nChargeResistType;
     offset_t m_flChargeLevel;
 

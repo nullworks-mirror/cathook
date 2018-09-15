@@ -11,5 +11,5 @@ namespace hacks::tf2::autobackstab
 {
 
 void CreateMove();
-const Vector GetWorldSpaceCenter(CachedEntity *ent);
-}
+void Draw();
+} // namespace hacks::tf2::autobackstab

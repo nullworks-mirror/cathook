@@ -3,18 +3,17 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
+#include <settings/Registered.hpp>
+#include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"
 #include "hacks/Radar.hpp"
 
-CatVar clean_screenshots(CV_SWITCH, "clean_screenshots", "1",
-                         "Clean screenshots",
-                         "Don't draw visuals while taking a screenshot");
-CatVar disable_visuals(CV_SWITCH, "no_visuals", "0", "Disable ALL drawing",
-                       "Completely hides cathook");
-CatVar no_zoom(CV_SWITCH, "no_zoom", "0", "Disable scope",
-               "Disables black scope overlay");
-static CatVar pure_bypass(CV_SWITCH, "pure_bypass", "0", "Pure Bypass",
-                          "Bypass sv_pure");
+static settings::Bool pure_bypass{ "visual.sv-pure-bypass", "false" };
+static settings::Int software_cursor_mode{ "visual.software-cursor-mode", "0" };
+
+static settings::Int waittime{ "debug.join-wait-time", "2500" };
+static settings::Bool no_reportlimit{ "misc.no-report-limit", "false" };
+
 int spamdur = 0;
 Timer joinspam{};
 CatCommand join_spam("join_spam", "Spam joins server for X seconds",
@@ -26,21 +25,9 @@ CatCommand join_spam("join_spam", "Spam joins server for X seconds",
                          spamdur = id;
                      });
 
-CatVar waittime(CV_INT, "join_debug_time", "2500", "wait time",
-                "Wait this many Paint Traverse Calls between each join (~2500 "
-                "recommended, higher if slower internet)");
 void *pure_orig  = nullptr;
 void **pure_addr = nullptr;
 
-static CatEnum software_cursor_enum({ "KEEP", "ALWAYS", "NEVER", "MENU ON",
-                                      "MENU OFF" });
-static CatVar
-    software_cursor_mode(software_cursor_enum, "software_cursor_mode", "0",
-                         "Software cursor",
-                         "Try to change this and see what works best for you");
-static CatVar no_reportlimit(CV_SWITCH, "no_reportlimit", "0",
-                             "no report limit",
-                             "Remove playerlist report time limit");
 // static CatVar disable_ban_tf(CV_SWITCH, "disable_mm_ban", "0", "Disable MM
 // ban", "Disable matchmaking ban");
 /*static CatVar
@@ -83,7 +70,7 @@ and no [])", [](const CCommand &args) {
 bool replaced = false;
 namespace hooked_methods
 {
-
+Timer checkmmban{};
 DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
                      unsigned int panel, bool force, bool allow_force)
 {
@@ -109,21 +96,28 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         if (switcherido && spamdur && !joinspam.check(spamdur * 1000))
         {
             auto gc = re::CTFGCClientSystem::GTFGCClientSystem();
-            if (!gc)
-                goto label1;
-            gc->JoinMMMatch();
+            if (gc)
+                gc->JoinMMMatch();
         }
         else if (!joinspam.check(spamdur * 1000) && spamdur)
         {
             INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-            if (!ch)
-                goto label1;
-            ch->Shutdown("");
+            if (ch)
+                ch->Shutdown("");
         }
     }
-label1:
     scndwait++;
     switcherido = !switcherido;
+#if not ENABLE_VISUALS
+    if (checkmmban.test_and_set(1000))
+    {
+        if (tfmm::isMMBanned())
+        {
+            *(int *) nullptr = 0;
+            exit(1);
+        }
+    }
+#endif
     /*static bool replacedparty = false;
     static int callcnt        = 0;
     if (party_bypass && !replacedparty && callcnt < 5)
@@ -234,7 +228,7 @@ label1:
         }
         if (*pure_addr)
             pure_orig = *pure_addr;
-        *pure_addr    = (void *) 0;
+        *pure_addr = (void *) 0;
     }
     else if (pure_orig)
     {
@@ -242,13 +236,13 @@ label1:
         pure_orig  = (void *) 0;
     }
     call_default = true;
-    if (cathook && panel_scope && no_zoom && panel == panel_scope)
+    if (isHackActive() && panel_scope && no_zoom && panel == panel_scope)
         call_default = false;
 
     if (software_cursor_mode)
     {
         cur = software_cursor->GetBool();
-        switch ((int) software_cursor_mode)
+        switch (*software_cursor_mode)
         {
         case 1:
             if (!software_cursor->GetBool())
@@ -280,7 +274,7 @@ label1:
 
     if (panel == panel_top)
         draw_flag = true;
-    if (!cathook)
+    if (!isHackActive())
         return;
 
     if (!panel_top)
@@ -331,8 +325,8 @@ label1:
     if (clean_screenshots && g_IEngine->IsTakingScreenshot())
         return;
 #if ENABLE_GUI
-    g_pGUI->Update();
+// FIXME
 #endif
     draw::UpdateWTS();
 }
-}
+} // namespace hooked_methods

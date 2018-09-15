@@ -8,20 +8,20 @@
 #include <boost/algorithm/string.hpp>
 #include <MiscTemporary.hpp>
 #include <hacks/AntiAim.hpp>
+#include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
+
+static settings::Bool clean_chat{ "chat.clean", "false" };
+static settings::Bool dispatch_log{ "debug.log-dispatch-user-msg", "false" };
+static settings::String chat_filter{ "chat.censor.filter", "" };
+static settings::Bool chat_filter_enable{ "chat.censor.enable", "false" };
+static settings::Bool identify{ "chat.identify", "false" };
+static settings::Bool answerIdentify{ "chat.identify.answer", "true" };
 
 static bool retrun = false;
 static Timer sendmsg{};
 static Timer gitgud{};
-static CatVar clean_chat(CV_SWITCH, "clean_chat", "0", "Clean chat",
-                         "Removes newlines from chat");
-static CatVar dispatch_log(CV_SWITCH, "debug_log_usermessages", "0",
-                           "Log dispatched user messages");
-static CatVar chat_filter(CV_STRING, "chat_censor", "", "Censor words",
-                          "Spam Chat with newlines if the chosen words are "
-                          "said, seperate with commas");
-static CatVar chat_filter_enabled(CV_SWITCH, "chat_censor_enabled", "0",
-                                  "Enable censor", "Censor Words in chat");
+
 const std::string clear = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
                           "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
                           "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
@@ -36,7 +36,9 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                      bf_read &buf)
 {
-    if (retrun && gitgud.test_and_set(10000))
+    if (!isHackActive())
+        return original::DispatchUserMessage(this_, type, buf);
+    if (retrun && gitgud.test_and_set(100))
     {
         PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),
                   lastfilter.c_str());
@@ -44,7 +46,22 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     }
     int loop_index, s, i, j;
     char *data, c;
-
+    if (type == 5)
+        if (buf.GetNumBytesLeft() > 35)
+        {
+            std::string message_name{};
+            for (int i = 0; i < buf.GetNumBytesLeft(); i++)
+            {
+                int byte = buf.ReadByte();
+                if (byte == 0)
+                    break;
+                message_name.push_back(byte);
+            }
+            if (message_name.find("TF_Autobalance_TeamChangePending") !=
+                std::string::npos)
+                logging::Info("test, %d %d", int(message_name[0]),
+                              (CE_GOOD(LOCAL_E) ? LOCAL_E->m_IDX : -1));
+        }
     if (type == 4)
     {
         loop_index = 0;
@@ -52,14 +69,14 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         if (s < 256)
         {
             data = (char *) alloca(s);
-            for (i      = 0; i < s; i++)
+            for (i = 0; i < s; i++)
                 data[i] = buf.ReadByte();
-            j           = 0;
+            j = 0;
             std::string name;
             std::string message;
             for (i = 0; i < 3; i++)
             {
-                while ((c = data[j++]) && (loop_index < 128))
+                while ((c = data[j++]) && (loop_index < 150))
                 {
                     loop_index++;
                     if (clean_chat)
@@ -71,13 +88,13 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         message.push_back(c);
                 }
             }
-            if (chat_filter_enabled && data[0] != LOCAL_E->m_IDX)
+            if (chat_filter_enable && data[0] != LOCAL_E->m_IDX)
             {
-                if (!strcmp(chat_filter.GetString(), ""))
+                if (sizeof(*chat_filter) < 10)
                 {
-                    std::string tmp  = {};
-                    std::string tmp2 = {};
-                    int iii          = 0;
+                    std::string tmp{};
+                    std::string tmp2{};
+                    int iii{};
                     player_info_s info;
                     g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
                     std::string name1 = info.name;
@@ -118,6 +135,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     }
                     for (char i : name1)
                     {
+                        if (i == ' ')
+                            ;
+                        continue;
                         if (iii == 2)
                         {
                             iii = 0;
@@ -134,6 +154,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     iii = 0;
                     for (char i : name1)
                     {
+                        if (i == ' ')
+                            ;
+                        continue;
                         if (iii == 3)
                         {
                             iii = 0;
@@ -169,6 +192,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     }
                     std::string message2 = message;
                     boost::to_lower(message2);
+                    boost::replace_all(message2, " ", "");
                     boost::replace_all(message2, "4", "a");
                     boost::replace_all(message2, "3", "e");
                     boost::replace_all(message2, "0", "o");
@@ -177,8 +201,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     boost::replace_all(message2, "7", "t");
                     for (auto filter : res)
                     {
-                        if (retrun)
-                            break;
                         if (boost::contains(message2, filter))
                         {
                             *bSendPackets = true;
@@ -186,12 +208,13 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             retrun     = true;
                             lastfilter = format(filter);
                             lastname   = format(name);
+                            gitgud.update();
                         }
                     }
                 }
                 else if (data[0] != LOCAL_E->m_IDX)
                 {
-                    std::string input = chat_filter.GetString();
+                    std::string input = *chat_filter;
                     boost::to_lower(input);
                     std::string message2 = message;
                     std::vector<std::string> result{};
@@ -213,13 +236,13 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             retrun     = true;
                             lastfilter = format(filter);
                             lastname   = format(name);
+                            gitgud.update();
                         }
                     }
                 }
             }
-#if not LAGBOT_MODE
-            if (sendmsg.test_and_set(300000) &&
-                hacks::shared::antiaim::communicate)
+#if !LAGBOT_MODE
+            if (*identify && sendmsg.test_and_set(300000))
                 chat_stack::Say("!!meow");
 #endif
             if (crypt_chat)
@@ -228,20 +251,44 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 {
                     if (ucccccp::validate(message))
                     {
-#if not LAGBOT_MODE
-                        if (ucccccp::decrypt(message) == "meow" &&
-                            hacks::shared::antiaim::communicate &&
-                            data[0] != LOCAL_E->m_IDX &&
-                            playerlist::AccessData(ENTITY(data[0])).state !=
-                                playerlist::k_EState::CAT)
+                        std::string msg = ucccccp::decrypt(message);
+#if !LAGBOT_MODE
+                        //                        if (ucccccp::decrypt(message)
+                        //                        == "meow" &&
+                        //                            hacks::shared::antiaim::communicate
+                        //                            && data[0] !=
+                        //                            LOCAL_E->m_IDX &&
+                        //                            playerlist::AccessData(ENTITY(data[0])).state
+                        //                            !=
+                        //                                playerlist::k_EState::CAT)
+                        //                        {
+                        //                            playerlist::AccessData(ENTITY(data[0])).state
+                        //                            =
+                        //                                playerlist::k_EState::CAT;
+                        //                            chat_stack::Say("!!meow");
+                        //                        }
+                        CachedEntity *ent = ENTITY(data[0]);
+                        if (msg != "Attempt at ucccccping and failing" &&
+                            msg != "Unsupported version" && ent != LOCAL_E)
                         {
-                            playerlist::AccessData(ENTITY(data[0])).state =
-                                playerlist::k_EState::CAT;
-                            chat_stack::Say("!!meow");
+                            auto &state = playerlist::AccessData(ent).state;
+                            if (state == playerlist::k_EState::DEFAULT)
+                            {
+                                state = playerlist::k_EState::CAT;
+                                if (*answerIdentify &&
+                                    sendmsg.test_and_set(5000))
+                                    chat_stack::Say("!!meow");
+                            }
+                            else if (state == playerlist::k_EState::CAT)
+                            {
+                                if (*answerIdentify &&
+                                    sendmsg.test_and_set(60000))
+                                    chat_stack::Say("!!meow");
+                            }
                         }
 #endif
                         PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
-                                  ucccccp::decrypt(message).c_str());
+                                  msg.c_str());
                     }
                 }
             }
@@ -263,7 +310,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
         buf.Seek(0);
     }
-    votelogger::user_message(buf, type);
+    votelogger::dispatchUserMessage(buf, type);
     return original::DispatchUserMessage(this_, type, buf);
 }
-}
+} // namespace hooked_methods

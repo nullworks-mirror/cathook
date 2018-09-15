@@ -67,7 +67,15 @@ int re::CTFPartyClient::LoadSavedCasualCriteria()
 
     return LoadSavedCasualCriteria_fn(this);
 }
-
+void re::CTFPartyClient::RequestQueueForStandby()
+{
+    typedef void (*RequestStandby_t)(re::CTFPartyClient *);
+    static uintptr_t addr = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 4F ? 85 C9 74");
+    static RequestStandby_t RequestStandby_fn = RequestStandby_t(addr);
+    RequestStandby_fn(this);
+    return;
+}
 char re::CTFPartyClient::RequestQueueForMatch(int type)
 {
     typedef char (*RequestQueueForMatch_t)(re::CTFPartyClient *, int);
@@ -118,4 +126,14 @@ int re::CTFPartyClient::BRequestJoinPlayer(CSteamID steamid)
     static BRequestJoinPlayer_t BRequestJoinPlayer_fn =
         BRequestJoinPlayer_t(addr);
     return BRequestJoinPlayer_fn(this, steamid, false);
+}
+re::ITFMatchGroupDescription *re::GetMatchGroupDescription(int &idx)
+{
+    typedef re::ITFMatchGroupDescription *(*GetMatchGroupDescription_t)(int &);
+    static uintptr_t addr =
+        gSignatures.GetClientSignature("55 89 E5 8B 45 08 8B 00 83 F8 FF");
+    static GetMatchGroupDescription_t GetMatchGroupDescription_fn =
+        GetMatchGroupDescription_t(addr);
+
+    return GetMatchGroupDescription_fn(idx);
 }

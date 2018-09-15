@@ -10,69 +10,34 @@
 #include "common.hpp"
 #include <hacks/Backtrack.hpp>
 #include <PlayerTools.hpp>
+#include <settings/Bool.hpp>
+
+static settings::Bool enable{ "trigger.enable", "false" };
+static settings::Int hitbox_mode{ "trigger.hitbox-mode", "0" };
+static settings::Int accuracy{ "trigger.accuracy", "1" };
+static settings::Bool wait_for_charge{ "trigger.wait-for-charge", "false" };
+static settings::Bool zoomed_only{ "trigger.zoomed-only", "true" };
+static settings::Float delay{ "trigger.delay", "0" };
+
+static settings::Button trigger_key{ "trigger.key.button", "<null>" };
+static settings::Int trigger_key_mode{ "trigger.key.mode", "1" };
+// FIXME move these into targeting
+static settings::Bool ignore_cloak{ "trigger.target.ignore-cloaked-spies",
+                                    "true" };
+static settings::Bool ignore_vaccinator{ "trigger.target.ignore-vaccinator",
+                                         "true" };
+static settings::Bool buildings_sentry{ "trigger.target.buildings-sentry",
+                                        "true" };
+static settings::Bool buildings_other{ "trigger.target.buildings-other",
+                                       "true" };
+static settings::Bool stickybot{ "trigger.target.stickybombs", "false" };
+static settings::Bool teammates{ "trigger.target.teammates", "false" };
+static settings::Int max_range{ "trigger.target.max-range", "4096" };
 
 namespace hacks::shared::triggerbot
 {
 
 // Vars for usersettings
-static CatVar enabled(CV_SWITCH, "trigger_enabled", "0", "Enable",
-                      "Master Triggerbot switch");
-
-static CatVar trigger_key(CV_KEY, "trigger_key", "0", "Triggerbot key",
-                          "Triggerbot key. Look at Triggerbot key Mode too!");
-static CatEnum trigger_key_modes_enum({ "DISABLED", "TRIGGERKEY", "REVERSE",
-                                        "TOGGLE" });
-static CatVar trigger_key_mode(trigger_key_modes_enum, "trigger_key_mode", "1",
-                               "Triggerbot key mode",
-                               "DISABLED: triggerbot is always active\nAIMKEY: "
-                               "triggerbot is active when key is "
-                               "down\nREVERSE: triggerbot is disabled when key "
-                               "is down\nTOGGLE: pressing key toggles "
-                               "triggerbot");
-
-static CatEnum hitbox_mode_enum({ "AUTO-HEAD", "AUTO-CLOSEST", "Head only" });
-static CatVar hitbox_mode(hitbox_mode_enum, "trigger_hitboxmode", "0",
-                          "Hitbox Mode", "Defines hitbox selection mode");
-
-static CatVar accuracy(CV_INT, "trigger_accuracy", "1", "Improve accuracy",
-                       "Improves triggerbot accuracy when aiming for specific "
-                       "hitbox. Recommended to use with sniper "
-                       "rifle/ambassador");
-
-static CatVar ignore_vaccinator(
-    CV_SWITCH, "trigger_ignore_vaccinator", "1", "Ignore Vaccinator",
-    "Hitscan weapons won't fire if enemy is vaccinated against bullets");
-static CatVar ignore_hoovy(CV_SWITCH, "trigger_ignore_hoovy", "1",
-                           "Ignore Hoovies", "Triggerbot won't attack hoovies");
-static CatVar ignore_cloak(CV_SWITCH, "trigger_ignore_cloak", "1",
-                           "Ignore cloaked",
-                           "Don't trigger at invisible enemies");
-static CatVar buildings_sentry(CV_SWITCH, "trigger_buildings_sentry", "1",
-                               "Trigger Sentry",
-                               "Should trigger at sentryguns?");
-static CatVar buildings_other(CV_SWITCH, "trigger_buildings_other", "1",
-                              "Trigger Other building",
-                              "Should trigger at other buildings");
-static CatVar stickybot(CV_SWITCH, "trigger_stickys", "0", "Trigger Sticky",
-                        "Should trigger at stickys");
-static CatVar teammates(CV_SWITCH, "trigger_teammates", "0",
-                        "Trigger teammates",
-                        "Trigger at your own team. Useful for HL2DM");
-
-static CatVar
-    wait_for_charge(CV_SWITCH, "trigger_charge", "0",
-                    "Wait for sniper rifle charge",
-                    "Triggerbot waits until it has enough charge to kill");
-static CatVar zoomed_only(CV_SWITCH, "trigger_zoomed", "1", "Zoomed only",
-                          "Don't trigger with unzoomed rifles");
-static CatVar
-    max_range(CV_INT, "trigger_maxrange", "0", "Max distance",
-              "Max range for triggerbot\n"
-              "900-1100 range is efficient for scout/widowmaker engineer",
-              4096.0f);
-
-static CatVar delay(CV_FLOAT, "trigger_delay", "0", "Delay",
-                    "Triggerbot delay in seconds", 0.0f, 1.0f);
 
 float target_time = 0.0f;
 
@@ -80,21 +45,17 @@ int last_hb_traced = 0;
 Vector forward;
 bool CanBacktrack()
 {
-    int target  = hacks::shared::backtrack::iBestTarget;
-    int tickcnt = 0;
-    int tickus = (float(hacks::shared::backtrack::latency) > 800.0f || float(hacks::shared::backtrack::latency) < 200.0f) ? 12 : 24;
-    for (auto i : hacks::shared::backtrack::headPositions[target])
+    CachedEntity *tar = (hacks::shared::backtrack::iBestTarget != -1)
+                            ? ENTITY(hacks::shared::backtrack::iBestTarget)
+                            : nullptr;
+    if (CE_BAD(tar))
+        return true;
+    for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
     {
-        bool good_tick = false;
-        for (int j = 0; j < tickus; ++j)
-            if (tickcnt == hacks::shared::backtrack::sorted_ticks[j].tick &&
-                hacks::shared::backtrack::sorted_ticks[j].tickcount != INT_MAX)
-                good_tick = true;
-        tickcnt++;
-        if (!good_tick)
+        if (!hacks::shared::backtrack::ValidTick(i, tar))
             continue;
-        auto min = i.min;
-        auto max = i.max;
+        auto min = i.hitboxes.at(head).min;
+        auto max = i.hitboxes.at(head).max;
         if (!min.x && !max.x)
             continue;
 
@@ -122,19 +83,15 @@ bool CanBacktrack()
             continue;
         if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
         {
-            CachedEntity *tar = ENTITY(target);
-            // ok just in case
-            if (CE_BAD(tar))
-                continue;
             Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
             float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
             angles.y       = i.viewangles;
-            g_pUserCmd->tick_count = i.tickcount;
-            g_pUserCmd->buttons |= IN_ATTACK;
-            return false;
+            current_user_cmd->tick_count = i.tickcount;
+            current_user_cmd->buttons |= IN_ATTACK;
+            return true;
         }
     }
-    return true;
+    return false;
 }
 // The main "loop" of the triggerbot
 void CreateMove()
@@ -144,7 +101,7 @@ void CreateMove()
     target_time       = 0;
 
     // Check if aimbot is enabled
-    if (!enabled)
+    if (!enable)
         return;
 
     // Check if player can aim
@@ -158,12 +115,19 @@ void CreateMove()
     CachedEntity *ent = FindEntInSight(EffectiveTargetingRange());
 
     // Check if can backtrack, shoot if we can
-    if (!CanBacktrack() || hacks::shared::backtrack::enable)
+    if (hacks::shared::backtrack::isBacktrackEnabled)
+    {
+        // We need to return because we can't hit non backtrackable ticks if we
+        // have backtrack latency.
+        CanBacktrack();
         return;
+    }
 
     // Check if dormant or null to prevent crashes
     if (CE_BAD(ent))
+    {
         return;
+    }
 
     // Determine whether the triggerbot should shoot, then act accordingly
     if (IsTargetStateGood(ent))
@@ -183,16 +147,15 @@ void CreateMove()
             {
                 if (g_GlobalVars->curtime - float(delay) >= target_time)
                 {
-                    g_pUserCmd->buttons |= IN_ATTACK;
+                    current_user_cmd->buttons |= IN_ATTACK;
                 }
             }
         }
         else
         {
-            g_pUserCmd->buttons |= IN_ATTACK;
+            current_user_cmd->buttons |= IN_ATTACK;
         }
     }
-    return;
 }
 
 // The first check to see if the player should shoot in the first place
@@ -200,7 +163,7 @@ bool ShouldShoot()
 {
 
     // Check for +use
-    if (g_pUserCmd->buttons & IN_USE)
+    if (current_user_cmd->buttons & IN_USE)
         return false;
 
     // Check if using action slot item
@@ -222,7 +185,8 @@ bool ShouldShoot()
         // If zoomed only is on, check if zoomed
         if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
         {
-            if (!g_pLocalPlayer->bZoomed && !(g_pUserCmd->buttons & IN_ATTACK))
+            if (!g_pLocalPlayer->bZoomed &&
+                !(current_user_cmd->buttons & IN_ATTACK))
                 return false;
         }
         // Check if player is taunting
@@ -262,7 +226,7 @@ bool ShouldShoot()
         // Check if player is zooming
         if (g_pLocalPlayer->bZoomed)
         {
-            if (!(g_pUserCmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+            if (!(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
             {
                 if (!CanHeadshot())
                     return false;
@@ -298,7 +262,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         {
             // If settings allow waiting for charge, and current charge cant
             // kill target, dont aim
-            if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
+            if (*wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
             {
                 float bdmg =
                     CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
@@ -336,13 +300,12 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // If usersettings tell us to use accuracy improvements and the cached
         // hitbox isnt null, then we check if it hits here
-        if (accuracy)
+        if (*accuracy)
         {
 
             // Get a cached hitbox for the one traced
             hitbox_cache::CachedHitbox *hb =
                 entity->hitboxes.GetHitbox(last_hb_traced);
-
             // Check for null
             if (hb)
             {
@@ -356,7 +319,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
                 // Shrink the hitbox here
                 Vector size = maxz - minz;
-                Vector smod = size * 0.05f * (int) accuracy;
+                Vector smod = size * 0.05f * *accuracy;
 
                 // Save the changes to the vectors
                 minz += smod;
@@ -366,16 +329,14 @@ bool IsTargetStateGood(CachedEntity *entity)
                 // we
                 // return false
                 Vector hit;
-                if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
-                                 hit))
-                {
-                    return true;
-                }
+                if (!CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
+                                  hit))
+                    return false;
             }
         }
 
         // Target passed the tests so return true
-        return false;
+        return true;
 
         // Check for buildings
     }
@@ -476,7 +437,7 @@ CachedEntity *FindEntInSight(float range)
     }
 
     // Since we didnt hit and entity, the vis check failed so return 0
-    return 0;
+    return nullptr;
 }
 
 // A function to find whether the head should be used for a target
@@ -484,7 +445,7 @@ bool HeadPreferable(CachedEntity *target)
 {
 
     // Switch based on the priority type we need
-    switch ((int) hitbox_mode)
+    switch (*hitbox_mode)
     {
     case 0:
     { // AUTO-HEAD priority
@@ -593,33 +554,26 @@ bool UpdateAimkey()
     if (trigger_key && trigger_key_mode)
     {
         // Grab whether the aimkey is depressed
-        bool key_down =
-            g_IInputSystem->IsButtonDown((ButtonCode_t)(int) trigger_key);
+        bool key_down = trigger_key.isKeyDown();
         // Switch based on the user set aimkey mode
         switch ((int) trigger_key_mode)
         {
         // Only while key is depressed, enable
         case 1:
             if (!key_down)
-            {
                 allow_trigger_key = false;
-            }
             break;
         // Only while key is not depressed, enable
         case 2:
             if (key_down)
-            {
                 allow_trigger_key = false;
-            }
             break;
         // Aimkey acts like a toggle switch
         case 3:
             if (!pressed_last_tick && key_down)
                 trigger_key_flip = !trigger_key_flip;
             if (!trigger_key_flip)
-            {
                 allow_trigger_key = false;
-            }
         }
         pressed_last_tick = key_down;
     }
@@ -638,7 +592,7 @@ float EffectiveTargetingRange()
         return 200.0f;
     // If user has set a max range, then use their setting,
     if (max_range)
-        return (float) max_range;
+        return *max_range;
     // else use a pre-set range
     else
         return 8012.0f;
@@ -713,4 +667,4 @@ bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector &Hit)
 void Draw()
 {
 }
-}
+} // namespace hacks::shared::triggerbot
