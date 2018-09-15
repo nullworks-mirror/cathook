@@ -90,9 +90,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             {
                 if (sizeof(*chat_filter) < 10)
                 {
-                    std::string tmp  = {};
-                    std::string tmp2 = {};
-                    int iii          = 0;
+                    std::string tmp{};
+                    std::string tmp2{};
+                    int iii{};
                     player_info_s info;
                     g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
                     std::string name1 = info.name;
