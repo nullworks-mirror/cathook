@@ -21,7 +21,7 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
         original::SendNetMsg(this_, msg, force_reliable, voice);
     size_t say_idx, say_team_idx;
     int offset;
-    std::string newlines;
+    std::string newlines{};
     NET_StringCmd stringcmd;
     // net_StringCmd
     if (msg.GetType() == 4 && (newlines_msg || crypt_chat))
