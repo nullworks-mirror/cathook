@@ -339,7 +339,7 @@ void EffectGlow::StartStenciling()
     state.Reset();
     state.m_bEnable = true;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-    switch ((int) solid_when)
+    switch (*solid_when)
     {
     case 0:
         SS_NeverSolid.SetStencilState(ptr);
@@ -348,6 +348,8 @@ void EffectGlow::StartStenciling()
         SS_SolidInvisible.SetStencilState(ptr);
         break;
         /*case 3: https://puu.sh/vobH4/5da8367aef.png*/
+    default:
+        break;
     }
     if (!solid_when)
     {
