@@ -72,8 +72,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             for (i = 0; i < s; i++)
                 data[i] = buf.ReadByte();
             j = 0;
-            std::string name;
-            std::string message;
+            std::string name{};
+            std::string message{};
             for (i = 0; i < 3; i++)
             {
                 int starcount = 0;
@@ -85,6 +85,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         {
                             data[j - 1] = '*';
                             starcount++;
+                            if (starcount > 10)
+                                data[j -1] = '​';
                         }
                     if (i == 1)
                         name.push_back(c);
@@ -104,7 +106,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     std::string name1 = info.name;
                     std::vector<std::string> name2{};
                     std::vector<std::string> name3{};
-                    std::string claz = {};
+                    std::string claz{};
                     switch (g_pLocalPlayer->clazz)
                     {
                     case tf_scout:
