@@ -351,7 +351,7 @@ void EffectGlow::StartStenciling()
     default:
         break;
     }
-    if (!solid_when)
+    if (!*solid_when)
     {
         ptr->DepthRange(0.0f, 0.01f);
     }
@@ -361,7 +361,7 @@ void EffectGlow::StartStenciling()
     }
     g_IVRenderView->SetBlend(0.0f);
     mat_unlit->AlphaModulate(1.0f);
-    g_IVModelRender->ForcedMaterialOverride(solid_when ? mat_unlit
+    g_IVModelRender->ForcedMaterialOverride(*solid_when ? mat_unlit
                                                        : mat_unlit_z);
 }
 
@@ -449,7 +449,7 @@ void EffectGlow::Render(int x, int y, int w, int h)
         }
     }
     EndRenderGlow();
-    if ((int) solid_when != 1)
+    if (*solid_when != 1)
     {
         ptr->ClearStencilBufferRectangle(x, y, w, h, 0);
         StartStenciling();
@@ -476,13 +476,13 @@ void EffectGlow::Render(int x, int y, int w, int h)
     ptr->Viewport(x, y, w, h);
     ptr->SetRenderTarget(orig);
     g_IVRenderView->SetBlend(0.0f);
-    if ((int) solid_when != 1)
+    if (*solid_when != 1)
     {
         SS_Drawing.SetStencilState(ptr);
     }
     ptr->DrawScreenSpaceRectangle(mat_blit, x, y, w, h, 0, 0, w - 1, h - 1, w,
                                   h);
-    if ((int) solid_when != -1)
+    if (*solid_when != -1)
     {
         SS_Null.SetStencilState(ptr);
     }
