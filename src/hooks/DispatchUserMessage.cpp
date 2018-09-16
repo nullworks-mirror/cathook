@@ -72,8 +72,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             for (i = 0; i < s; i++)
                 data[i] = buf.ReadByte();
             j = 0;
-            std::string name;
-            std::string message;
+            std::string name{};
+            std::string message{};
             for (i = 0; i < 3; i++)
             {
                 while ((c = data[j++]) && (loop_index < 150))
