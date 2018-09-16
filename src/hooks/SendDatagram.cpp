@@ -10,10 +10,12 @@ namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
 {
+    if (!round(hacks::shared::backtrack::getLatency()))
+        return original::SendDatagram(ch, buf);
 #if !LAGBOT_MODE
     int in    = 0;
     int state = 0;
-    if (CE_GOOD(LOCAL_E))
+    if (CE_GOOD(LOCAL_E) && ch)
     {
         in    = ch->m_nInSequenceNr;
         state = ch->m_nInReliableState;
@@ -29,7 +31,7 @@ DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
 
     int ret = original::SendDatagram(ch, buf);
 #if !LAGBOT_MODE
-    if (CE_GOOD(LOCAL_E))
+    if (CE_GOOD(LOCAL_E) && ch)
     {
         ch->m_nInSequenceNr    = in;
         ch->m_nInReliableState = state;
