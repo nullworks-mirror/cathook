@@ -15,7 +15,7 @@ if [ -f "/etc/arch-release" ]; then
 else
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     sudo apt update
-    sudo apt install build-essential git gcc-multilib g++-multilib software-properties-common gcc-snapshot g++-7-multilib gcc-7 g++-7 libboost-all-dev libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libglew-dev libfreetype6-dev libfreetype6-dev:i386 cmake libpng-dev cmake gcc-multilib g++-multilib -y
+    sudo apt install build-essential git gcc-multilib g++-multilib software-properties-common gcc-snapshot g++-7-multilib gcc-7 g++-7 libboost-all-dev libc6-dev:i386 gdb libsdl2-dev libglew-dev:i386 libglew-dev libfreetype6-dev libfreetype6-dev:i386 cmake libpng-dev cmake gcc-multilib g++-multilib libssl-dev:i386 -y
 fi
 #
 # Update cathook
