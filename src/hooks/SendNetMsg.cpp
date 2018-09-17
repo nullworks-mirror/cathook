@@ -47,10 +47,10 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                     crpt         = true;
                 }
             }
-            if (!crpt && newlines_msg)
+            if (!crpt && *newlines_msg > 0)
             {
                 // TODO move out? update in a value change callback?
-                newlines = std::string((int) newlines_msg, '\n');
+                newlines = std::string(*newlines_msg, '\n');
                 str.insert(offset, newlines);
             }
             str = str.substr(16, str.length() - 17);
