@@ -42,14 +42,14 @@ int randomint() {
 
 void IRCThread()
 {
-    char address[] = "flash.rizon.net";
-    int port       = 7000;
+    char address[] = "cathook.irc.inkcat.net";
+    int port       = 8080;
     std::atomic<bool> thread_shouldrun;
     std::string user = g_ISteamFriends->GetPersonaName();
 //    user.append(format("-", getpid()));
     std::string nick = g_ISteamFriends->GetPersonaName();
     nick.append(format("-", randomint()));
-    std::string channel("#pixelz");
+    std::string channel("#cat_talk");
 
     IRCConnection     = std::make_unique<IRCClient>();
     IRCClient &client = *IRCConnection;
