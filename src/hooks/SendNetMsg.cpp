@@ -21,7 +21,7 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
         original::SendNetMsg(this_, msg, force_reliable, voice);
     size_t say_idx, say_team_idx;
     int offset;
-    std::string newlines;
+    std::string newlines{};
     NET_StringCmd stringcmd;
     // net_StringCmd
     if (msg.GetType() == 4 && (newlines_msg || crypt_chat))
@@ -47,10 +47,10 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                     crpt         = true;
                 }
             }
-            if (!crpt && newlines_msg)
+            if (!crpt && *newlines_msg > 0)
             {
                 // TODO move out? update in a value change callback?
-                newlines = std::string((int) newlines_msg, '\n');
+                newlines = std::string(*newlines_msg, '\n');
                 str.insert(offset, newlines);
             }
             str = str.substr(16, str.length() - 17);

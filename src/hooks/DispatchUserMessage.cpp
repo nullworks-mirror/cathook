@@ -76,12 +76,18 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             std::string message{};
             for (i = 0; i < 3; i++)
             {
-                while ((c = data[j++]) && (loop_index < 150))
+                int starcount = 0;
+                while ((c = data[j++]) && (loop_index < s))
                 {
                     loop_index++;
                     if (clean_chat)
                         if ((c == '\n' || c == '\r') && (i == 1 || i == 2))
+                        {
                             data[j - 1] = '*';
+                            starcount++;
+                            if (starcount > 10)
+                                data[j -1] = '​';
+                        }
                     if (i == 1)
                         name.push_back(c);
                     if (i == 2)
@@ -100,7 +106,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     std::string name1 = info.name;
                     std::vector<std::string> name2{};
                     std::vector<std::string> name3{};
-                    std::string claz = {};
+                    std::string claz{};
                     switch (g_pLocalPlayer->clazz)
                     {
                     case tf_scout:
