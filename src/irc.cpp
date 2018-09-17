@@ -7,14 +7,17 @@
 #include "boost/random.hpp"
 #include "boost/generator_iterator.hpp"
 
-
 namespace IRC
 {
-std::atomic<bool> thread_shouldrun;
-std::atomic<bool> thread_running;
-std::unique_ptr<IRCClient> IRCConnection;
-Timer heartbeat{};
-settings::Bool enabled("irc.enabled", "true");
+static std::atomic<bool> thread_shouldrun;
+static std::atomic<bool> thread_running;
+static std::unique_ptr<IRCClient> IRCConnection;
+static Timer heartbeat{};
+static settings::Bool enabled("irc.enabled", "true");
+
+static char address[] = "cathook.irc.inkcat.net";
+static int port       = 8080;
+static std::string channel("#cat_comms");
 
 void handleMessage(IRCMessage message, IRCClient *client)
 {
@@ -24,7 +27,6 @@ void handleMessage(IRCMessage message, IRCClient *client)
     std::string &usr     = message.prefix.nick;
     if (msg.empty() || usr.empty())
         return;
-    logging::Info("passed");
     if (g_Settings.bInvalid)
         logging::Info("[IRC] %s: %s", usr.c_str(), msg.c_str());
     else
@@ -32,24 +34,20 @@ void handleMessage(IRCMessage message, IRCClient *client)
                   msg.c_str());
 }
 
-int randomint() {
-      boost::mt19937 rng;
-      boost::uniform_int<> one_to_six( 1, 10000 );
-      boost::variate_generator< boost::mt19937, boost::uniform_int<> >
-                    dice(rng, one_to_six);
-      return dice();
+int randomint()
+{
+    boost::mt19937 rng{ static_cast<std::uint32_t>(std::time(nullptr)) };
+    boost::uniform_int<> oneto10000(1, 10000);
+    boost::variate_generator<boost::mt19937, boost::uniform_int<> > dice(
+        rng, oneto10000);
+    return dice();
 }
 
 void IRCThread()
 {
-    char address[] = "cathook.irc.inkcat.net";
-    int port       = 8080;
-    std::atomic<bool> thread_shouldrun;
     std::string user = g_ISteamFriends->GetPersonaName();
-//    user.append(format("-", getpid()));
     std::string nick = g_ISteamFriends->GetPersonaName();
     nick.append(format("-", randomint()));
-    std::string channel("#cat_talk");
 
     IRCConnection     = std::make_unique<IRCClient>();
     IRCClient &client = *IRCConnection;
@@ -69,7 +67,7 @@ void IRCThread()
                     std::this_thread::sleep_for(
                         std::chrono_literals::operator""s(3));
                     if (IRCConnection && IRCConnection->Connected())
-                    IRCConnection->SendIRC(format("JOIN ", channel));
+                        IRCConnection->SendIRC(format("JOIN ", channel));
                     logging::Info("IRC: Init complete.");
                 });
                 joinChannel.detach();
@@ -86,6 +84,7 @@ void IRCThread()
         }
     }
     logging::Info("Exiting IRC thread...");
+    IRCConnection->SendIRC("QUIT");
     IRCConnection->Disconnect();
     IRCConnection.reset();
     thread_running.store(false);
@@ -109,32 +108,32 @@ static HookedFunction pt(HF_Draw, "IRC", 16, []() {
     heartbeat.update();
 });
 
-namespace irc
+bool sendmsg(std::string msg)
 {
-bool sendmsg(std::string msg, std::string = "pixelz")
-{
-    if (!IRCConnection || IRCConnection->Connected())
+    if (IRCConnection && IRCConnection->Connected())
     {
-        if (IRCConnection->SendIRC(format("PRIVMSG #pixelz :", msg)))
+        if (IRCConnection->SendIRC(format("PRIVMSG ", channel, " :", msg)))
         {
-            ;
             return true;
         }
     }
     return false;
 }
-} // namespace irc
+
+CatCommand irc_send_cmd("irc_send_cmd", "Send message to IRC",
+                        [](const CCommand &args) {
+                            IRCConnection->SendIRC(args.ArgS());
+                            if (g_Settings.bInvalid)
+                                logging::Info("[IRC] You: %s", args.ArgS());
+                            else
+                                PrintChat("\x07%06X[IRC] You\x01: %s", 0xe05938, args.ArgS());
+                        });
 
 CatCommand irc_send("irc_send", "Send message to IRC",
                     [](const CCommand &args) {
-                        IRCConnection->SendIRC(args.ArgS());
+                        if (sendmsg(args.ArgS()))
+                            logging::Info("IRC: Sent!");
+                        else
+                            logging::Info("IRC: Error!");
                     });
-
-CatCommand irc_send_msg("irc_send_msg", "Send message to IRC",
-                        [](const CCommand &args) {
-                            if (irc::sendmsg(args.ArgS()))
-                                logging::Info("IRC: Sent!");
-                            else
-                                logging::Info("IRC: Error!");
-                        });
-}
+} // namespace IRC
