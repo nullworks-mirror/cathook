@@ -8,6 +8,7 @@
 #include <settings/Int.hpp>
 #include "HookedMethods.hpp"
 #include <MiscTemporary.hpp>
+#include "irc.hpp"
 
 static settings::Int newlines_msg{ "chat.prefix-newlines", "0" };
 static settings::Bool log_sent{ "debug.log-sent-chat", "false" };
@@ -18,7 +19,7 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                      bool force_reliable, bool voice)
 {
     if (!isHackActive())
-        original::SendNetMsg(this_, msg, force_reliable, voice);
+        return original::SendNetMsg(this_, msg, force_reliable, voice);
     size_t say_idx, say_team_idx;
     int offset;
     std::string newlines{};
@@ -33,18 +34,36 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
         {
             offset    = say_idx ? 26 : 21;
             bool crpt = false;
+
+            // Only allow !! and !!! if crypto_chat is on
             if (crypt_chat)
             {
-                std::string msg(str.substr(offset));
-                msg = msg.substr(0, msg.length() - 2);
-                if (msg.find("!!") == 0)
+                // Artifical Scope
                 {
-                    // Change this version if you want version A back, look at
-                    // ucccccp docs for more info
-                    char Version = 'B';
-                    msg          = ucccccp::encrypt(msg.substr(2), Version);
-                    str          = str.substr(0, offset) + msg + "\"\"";
-                    crpt         = true;
+                    std::string msg(str.substr(offset));
+                    msg = msg.substr(0, msg.length() - 2);
+                    if (msg.find("!!!") == 0)
+                    {
+                        // Message is sent over IRC.
+                        std::string substrmsg(msg.substr(3));
+                        IRC::sendmsg(substrmsg, true);
+                        // Do not send message over normal chat.
+                        return false;
+                    }
+                }
+                // Artifical Scope
+                {
+                    std::string msg(str.substr(offset));
+                    msg = msg.substr(0, msg.length() - 2);
+                    if ((msg.find("!!") == 0) && msg.find("!!!") == msg.npos)
+                    {
+                        // Change this version if you want version A back, look
+                        // at ucccccp docs for more info
+                        char Version = 'B';
+                        msg          = ucccccp::encrypt(msg.substr(2), Version);
+                        str          = str.substr(0, offset) + msg + "\"\"";
+                        crpt         = true;
+                    }
                 }
             }
             if (!crpt && *newlines_msg > 0)
