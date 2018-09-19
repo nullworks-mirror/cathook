@@ -53,7 +53,7 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
     }
 });
 
-void save_thread(const CCommand &args)
+void save_thread(const CCommand args)
 {
     std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsWriter writer{ settings::Manager::instance() };
@@ -91,7 +91,7 @@ static CatCommand save("save", "", [](const CCommand &args) {
     }
 });
 
-void load_thread(const CCommand &args)
+void load_thread(const CCommand args)
 {
     std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsReader loader{ settings::Manager::instance() };
