@@ -24,4 +24,4 @@
 	url = https://github.com/nullworks/TF2_NavFile_Reader
 [submodule "external/IRCClient"]
 	path = external/IRCClient
-	url = https://github.com/TotallyNotElite/IRCClient
+	url = https://github.com/nullworks/IRCClient
