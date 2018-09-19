@@ -15,6 +15,7 @@
 #include <hacks/AntiAntiAim.hpp>
 #include "NavBot.hpp"
 #include "HookTools.hpp"
+#include "irc.hpp"
 
 #include "HookedMethods.hpp"
 #include "PreDataUpdate.hpp"
@@ -160,14 +161,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         return ret;
     }
 
-    if (firstcm)
-    {
-        DelayTimer.update();
-        hacks::tf2::NavBot::Init();
-        hacks::tf2::NavBot::initonce();
-        firstcm = false;
-    }
-
     if (!g_IEngine->IsInGame())
     {
         g_Settings.bInvalid       = true;
@@ -253,6 +246,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         PROF_SECTION(CM_LocalPlayer);
         g_pLocalPlayer->Update();
+    }
+    if (firstcm)
+    {
+        DelayTimer.update();
+        hacks::tf2::NavBot::Init();
+        hacks::tf2::NavBot::initonce();
+        IRC::auth();
+        firstcm = false;
     }
     g_Settings.bInvalid = false;
     {

@@ -16,7 +16,7 @@ static settings::Bool dispatch_log{ "debug.log-dispatch-user-msg", "false" };
 static settings::String chat_filter{ "chat.censor.filter", "" };
 static settings::Bool chat_filter_enable{ "chat.censor.enable", "false" };
 static settings::Bool identify{ "chat.identify", "false" };
-static settings::Bool answerIdentify{ "chat.identify.answer", "true" };
+static settings::Bool answerIdentify{ "chat.identify.answer", "false" };
 
 static bool retrun = false;
 static Timer sendmsg{};
