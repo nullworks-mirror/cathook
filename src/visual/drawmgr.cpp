@@ -104,6 +104,10 @@ void DrawCheatVisuals()
     {
         AddCenterString("Press SPACE to stop spectating");
     }
+    {
+        PROF_SECTION(DRAW_WRAPPER);
+        HookTools::PT();
+    }
     if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid)
     {
         PROF_SECTION(PT_total_hacks);

@@ -13,12 +13,13 @@ namespace HookTools
 {
 std::vector<HookedFunction *> &GetHookedFunctions();
 void CM();
+void PT();
 } // namespace HookTools
 
 enum HookedFunctions_types
 {
     HF_CreateMove = 0,
-    HF_Painttraverse
+    HF_Draw
 
 };
 
@@ -35,8 +36,8 @@ class HookedFunction
         case HF_CreateMove:
             m_name = "CM_";
             break;
-        case HF_Painttraverse:
-            m_name = "PT_";
+        case HF_Draw:
+            m_name = "DRAW_";
             break;
         }
         m_name.append(name);

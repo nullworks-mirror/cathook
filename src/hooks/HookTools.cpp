@@ -16,6 +16,14 @@ void HookTools::CM()
     }
 }
 
+void HookTools::PT()
+{
+    for (auto i : GetHookedFunctions())
+    {
+        i->run(HF_Draw);
+    }
+}
+
 static InitRoutine init([]() {
     auto &HookedFunctions = HookTools::GetHookedFunctions();
     std::sort(HookedFunctions.begin(), HookedFunctions.end(),
