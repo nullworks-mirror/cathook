@@ -78,8 +78,15 @@ void handleMessage(IRCMessage message, IRCClient *client)
             // Check if we are in a game
             if (g_Settings.bInvalid)
                 return;
+            bool isreply;
+            std::string steamidhash;
+            if (msg.find("authrep"))
+                isreply = true;
+            if (isreply)
+                steamidhash = msg.substr(7);
+            else
+                steamidhash = msg.substr(4);
             // Get steamid hash from string
-            std::string steamidhash = msg.substr(4);
             for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
             {
                 if (i == g_pLocalPlayer->entity_idx)
@@ -100,9 +107,12 @@ void handleMessage(IRCMessage message, IRCClient *client)
                     for (int j = 0; j < 8; j++)
                         tarhash.append(std::to_string((i >> j) & 1));
                 }
-                // Check if steamid of sender == steamid we currently check (using hashes)
+                // Check if steamid of sender == steamid we currently check
+                // (using hashes)
+                logging::Info("%s | %s", steamidhash.c_str(), tarhash.c_str());
                 if (tarhash == steamidhash)
                 {
+                    logging::Info("Match found!");
                     // Use actual steamid to set cat status
                     auto &playerlistdata = playerlist::AccessData(tarsteamid);
                     if (playerlistdata.state == playerlist::k_EState::DEFAULT)
@@ -110,7 +120,7 @@ void handleMessage(IRCMessage message, IRCClient *client)
                         playerlistdata.state = playerlist::k_EState::CAT;
                     }
                     // Avoid replying to a reply
-                    if (msg.find("authrep"))
+                    if (isreply)
                         // We are done here. Steamid duplicates don't exist.
                         return;
                     // If message is not a reply, reply.
@@ -118,6 +128,7 @@ void handleMessage(IRCMessage message, IRCClient *client)
                     // We are done here. Steamid duplicates don't exist.
                     return;
                 }
+                logging::Info("No match!");
             }
         }
     }
@@ -137,6 +148,8 @@ void IRCThread()
     IRCData.username = g_ISteamFriends->GetPersonaName();
     IRCData.nickname = g_ISteamFriends->GetPersonaName();
     IRCData.nickname.append(format("-", randomint()));
+    std::replace(IRCData.nickname.begin(), IRCData.nickname.end(), ' ', '_');
+    std::replace(IRCData.username.begin(), IRCData.username.end(), ' ', '_');
 
     IRCConnection     = std::make_unique<IRCClient>();
     IRCClient &client = *IRCConnection;
