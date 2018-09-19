@@ -80,7 +80,7 @@ void handleMessage(IRCMessage message, IRCClient *client)
                 return;
             bool isreply;
             std::string steamidhash;
-            if (msg.find("authrep"))
+            if (msg.find("authrep") == 0)
                 isreply = true;
             if (isreply)
                 steamidhash = msg.substr(7);
