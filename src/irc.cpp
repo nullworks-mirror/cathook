@@ -78,7 +78,7 @@ void handleMessage(IRCMessage message, IRCClient *client)
             // Check if we are in a game
             if (g_Settings.bInvalid)
                 return;
-            bool isreply;
+            bool isreply = false;
             std::string steamidhash;
             if (msg.find("authrep") == 0)
                 isreply = true;
