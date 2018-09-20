@@ -362,7 +362,7 @@ void EffectGlow::StartStenciling()
     g_IVRenderView->SetBlend(0.0f);
     mat_unlit->AlphaModulate(1.0f);
     g_IVModelRender->ForcedMaterialOverride(*solid_when ? mat_unlit
-                                                       : mat_unlit_z);
+                                                        : mat_unlit_z);
 }
 
 void EffectGlow::EndStenciling()

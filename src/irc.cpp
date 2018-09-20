@@ -21,11 +21,11 @@ bool shouldauth;
 
 struct IRCData
 {
-    std::string address  = "cathook.irc.inkcat.net";
-    int port             = 8080;
-    std::string channel  = "#cat_comms";
-    std::string username = "You";
-    std::string nickname = "You";
+    std::string address                      = "cathook.irc.inkcat.net";
+    int port                                 = 8080;
+    std::string channel                      = "#cat_comms";
+    std::string username                     = "You";
+    std::string nickname                     = "You";
     std::unique_ptr<IRCClient> IRCConnection = nullptr;
 };
 
