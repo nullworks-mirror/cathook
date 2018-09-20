@@ -30,42 +30,7 @@ void **pure_addr = nullptr;
 
 // static CatVar disable_ban_tf(CV_SWITCH, "disable_mm_ban", "0", "Disable MM
 // ban", "Disable matchmaking ban");
-/*static CatVar
-    party_bypass(CV_SWITCH, "party_bypass", "0", "Party bypass",
-                 "Bypass the have to be friended restrictions on party");
-void JoinParty(uint32 steamid)
-{
-    CSteamID id(steamid, EUniverse::k_EUniversePublic,
-                EAccountType::k_EAccountTypeIndividual);
-    re::CTFPartyClient *party = re::CTFPartyClient::GTFPartyClient();
-    party->BRequestJoinPlayer(id);
-}
-CatCommand join_party("join_party",
-                      "Join party of target user with this steamid3",
-                      [](const CCommand &args) {
-                          if (args.ArgC() < 1)
-                              return;
-                          unsigned int steamid = atol(args.Arg(1));
-                          JoinParty(steamid);
-                      });
-CatCommand join_party("join_party", "Join this players party (steamid3, no U:1:
-and no [])", [](const CCommand &args) {
-    if (args.ArgC() < 1)
-    {
-        g_ICvar->ConsolePrintf("Please give a steamid3, thanks.\n");
-        return;
-    }
-
-    std::string tofind(args.Arg(1));
-    if (tofind.find("[U:1:") || tofind.find("]"))
-        g_ICvar->ConsolePrintf("Invalid steamid3. Please remove the [U:1 and the
-].\n");
-    unsigned int id = atol(args.Arg(1));
-    if (!id)
-        g_ICvar->ConsolePrintf("Invalid steamid3.\n");
-    else
-        JoinParty(id);
-});*/
+static settings::Bool party_bypass{ "misc.party_bypass", "false" };
 
 bool replaced = false;
 namespace hooked_methods
@@ -118,68 +83,6 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         }
     }
 #endif
-    /*static bool replacedparty = false;
-    static int callcnt        = 0;
-    if (party_bypass && !replacedparty && callcnt < 5)
-    {
-        callcnt++;
-        static unsigned char patch[]  = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
-        static unsigned char patch2[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
-        static unsigned char patch3[] = { 0x90, 0x90 };
-        static unsigned char patch4[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
-        static unsigned char patch5[] = { 0x89, 0xDE };
-        static unsigned char patch6[] = { 0x90, 0xE9 };
-        static unsigned char patch7[] = { 0x90, 0x90, 0x90, 0x90, 0x90 };
-        uintptr_t addr =
-            gSignatures.GetClientSignature("0F 84 ? ? ? ? 8B 7B ? 8D 45");
-        uintptr_t addr2 = gSignatures.GetClientSignature(
-            "0F 8F ? ? ? ? 80 BD ? ? ? ? ? 0F 84 ? ? ? ? 80 BD");
-        uintptr_t addr3 =
-            gSignatures.GetClientSignature("74 ? E8 ? ? ? ? 89 F1");
-        uintptr_t addr4 = gSignatures.GetClientSignature(
-            "0F 84 ? ? ? ? 8B 45 ? 8B 70 ? 8B 78 ? 8D 45");
-        uintptr_t addr5 = gSignatures.GetClientSignature(
-            "89 C6 74 ? 8B 43 ? 85 C0 74 ? 8B 10");
-        uintptr_t addr6 = gSignatures.GetClientSignature(
-            "0F 85 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 ?");
-        uintptr_t addr7 = gSignatures.GetClientSignature(
-            "E8 ? ? ? ? 83 C3 ? 39 5D ? 0F 8F ? ? ? ? 80 BD ? ? ? ? ?");
-        uintptr_t addr8 = gSignatures.GetClientSignature(
-            "E8 ? ? ? ? C7 44 24 ? ? ? ? ? 89 1C 24 E8 ? ? ? ? E9 ? ? ? ? 8D "
-            "B6 00 00 00 00");
-        uintptr_t addr9 = gSignatures.GetClientSignature(
-            "E8 ? ? ? ? A1 ? ? ? ? 8B 10 89 04 24 FF 52 ? 89 1C 24");
-        uintptr_t addr10 = gSignatures.GetClientSignature(
-            "74 ? 83 BB ? ? ? ? ? 0F 84 ? ? ? ? E8");
-        uintptr_t addr11 = gSignatures.GetClientSignature(
-            "0F 85 ? ? ? ? 8B 45 ? 8D 75 ? 31 DB");
-        uintptr_t addr12 = gSignatures.GetClientSignature(
-            "E8 ? ? ? ? 83 C3 ? 39 9D ? ? ? ? 0F 8F ? ? ? ? 80 BD");
-        if (addr && addr2 && addr3 && addr4 && addr5 && addr6 && addr7 &&
-            addr8 && addr9 && addr10 && addr11 && addr12)
-        {
-            logging::Info("Party bypass: 0x%08X, 0x%08X, 0x%08X, 0x%08X, "
-                          "0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, 0x%08X, "
-                          "0x%08X, 0x%08X, 0x%08X, 0x%08X",
-                          addr, addr2, addr3, addr4, addr5, addr6, addr7, addr8,
-                          addr9, addr10, addr11, addr12);
-            Patch((void *) addr, (void *) patch, sizeof(patch));
-            Patch((void *) addr2, (void *) patch2, sizeof(patch2));
-            Patch((void *) addr3, (void *) patch3, sizeof(patch3));
-            Patch((void *) addr4, (void *) patch4, sizeof(patch4));
-            Patch((void *) addr5, (void *) patch5, sizeof(patch5));
-            Patch((void *) addr6, (void *) patch6, sizeof(patch6));
-            Patch((void *) addr7, (void *) patch7, sizeof(patch7));
-            Patch((void *) addr8 + 0x49, (void *) patch7, sizeof(patch7));
-            Patch((void *) addr9, (void *) patch7, sizeof(patch7));
-            Patch((void *) addr10, (void *) patch3, sizeof(patch3));
-            Patch((void *) addr11, (void *) patch6, sizeof(patch6));
-            Patch((void *) addr12, (void *) patch7, sizeof(patch7));
-            replacedparty = true;
-        }
-        else
-            logging::Info("No Party bypass Signature");
-    }
     /*
     static bool replacedban = false;
     if (disable_ban_tf && !replacedban)
