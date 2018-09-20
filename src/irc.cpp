@@ -21,11 +21,11 @@ bool shouldauth;
 
 struct IRCData
 {
-    std::string address  = "cathook.irc.inkcat.net";
-    int port             = 8080;
-    std::string channel  = "#cat_comms";
-    std::string username = "You";
-    std::string nickname = "You";
+    std::string address                      = "cathook.irc.inkcat.net";
+    int port                                 = 8080;
+    std::string channel                      = "#cat_comms";
+    std::string username                     = "You";
+    std::string nickname                     = "You";
     std::unique_ptr<IRCClient> IRCConnection = nullptr;
 };
 
@@ -203,9 +203,16 @@ void IRCThread()
                 while (client.Connected() && thread_shouldrun.load())
                     client.ReceiveData();
             }
+            else
+                IRCConnection_mutex.unlock();
         }
+        else
+            IRCConnection_mutex.unlock();
     }
+    else
+        IRCConnection_mutex.unlock();
     logging::Info("Exiting IRC thread...");
+    // Lock mutex twice twice tf
     IRCConnection_mutex.lock();
     IRCData.IRCConnection->SendIRC("QUIT");
     IRCData.IRCConnection->Disconnect();
@@ -214,13 +221,15 @@ void IRCThread()
     IRCConnection_mutex.unlock();
 }
 
+static Timer IRCRetry{};
+
 static HookedFunction pt(HF_Draw, "IRC", 16, []() {
     if (!*enabled)
     {
-        thread_shouldrun.exchange(false);
+        thread_shouldrun.store(false);
         return;
     }
-    if (!thread_running.load())
+    if (!thread_running.load() && IRCRetry.test_and_set(10000))
     {
         thread_shouldrun.store(true);
         thread_running.store(true);
@@ -289,8 +298,20 @@ static CatCommand irc_send("irc_send", "Send message to IRC",
                                sendmsg(msg, true);
                            });
 
-static CatCommand irc_auth("irc_auth", "Send message to IRC",
+static CatCommand irc_auth("irc_auth",
+                           "Auth via IRC (Find users on same server)",
                            [](const CCommand &args) { auth(); });
+static CatCommand irc_disconnect(
+    "irc_disconnect",
+    "Disconnect from IRC (Warning you might automatically reconnect)",
+    [](const CCommand &args) {
+        std::lock_guard<std::mutex> lock(IRCConnection_mutex);
+        if (IRCData.IRCConnection)
+        {
+            // IRCData.IRCConnection->SendIRC("QUIT");
+            IRCData.IRCConnection->Disconnect();
+        }
+    });
 
 void rvarCallback(settings::VariableBase<bool> &var, bool after)
 {
