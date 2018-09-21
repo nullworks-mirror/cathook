@@ -53,7 +53,7 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
     }
 });
 
-void save_thread(const CCommand args)
+void save_thread(const int ArgC, const std::string ArgS)
 {
     std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsWriter writer{ settings::Manager::instance() };
@@ -65,14 +65,14 @@ void save_thread(const CCommand args)
         mkdir(DATA_PATH "/configs", S_IRWXU | S_IRWXG);
     }
 
-    if (args.ArgC() == 1)
+    if (ArgC == 1)
     {
         writer.saveTo(DATA_PATH "/configs/default.conf", false);
     }
     else
     {
         writer.saveTo(
-            std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf", false);
+            std::string(DATA_PATH "/configs/") + ArgS + ".conf", false);
     }
     logging::Info("cat_save: Sorting configs...");
     getAndSortAllConfigs();
@@ -86,29 +86,38 @@ static CatCommand save("save", "", [](const CCommand &args) {
     if (!settings::RVarLock.load())
     {
         settings::RVarLock.store(true);
-        std::thread loader(save_thread, args);
+        std::thread loader;
+        if (args.ArgC() == 1)
+        {
+            std::string string;
+            loader = std::thread(save_thread, 1, string);
+        }
+        else
+        {
+            loader = std::thread(save_thread, args.ArgC(), args.Arg(1));
+        }
         loader.detach();
     }
 });
 
-void load_thread(const CCommand args)
+void load_thread(const int ArgC, const std::string ArgS)
 {
     std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsReader loader{ settings::Manager::instance() };
-    if (args.ArgC() == 1)
+    if (ArgC == 1)
     {
         loader.loadFrom(DATA_PATH "/configs/default.conf");
     }
     else
     {
 #if ENABLE_VISUALS
-        loader.loadFrom(std::string(DATA_PATH "/configs/") + args.Arg(1) +
+        loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS +
                         ".conf");
 #else
         for (int i = 0;; i++)
         {
             if (loader.loadFrom(std::string(DATA_PATH "/configs/") +
-                                args.Arg(1) + ".conf"))
+                                ArgS + ".conf"))
                 break;
             if (i > 5)
             {
@@ -126,7 +135,16 @@ static CatCommand load("load", "", [](const CCommand &args) {
     if (!settings::RVarLock.load())
     {
         settings::RVarLock.store(true);
-        std::thread saver(load_thread, args);
+        std::thread saver;
+        if (args.ArgC() == 1)
+        {
+            std::string string;
+            saver = std::thread(load_thread, 1, string);
+        }
+        else
+        {
+            saver = std::thread(load_thread, args.ArgC(), args.Arg(1));
+        }
         saver.detach();
     }
 });
@@ -178,18 +196,18 @@ static int cat_completionCallback(
     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
-    std::string parts[2]{};
+    std::array<std::string,2> parts{};
     auto j    = 0u;
     auto f    = false;
     int count = 0;
 
     for (auto i = 0u; i < partial.size() && j < 3; ++i)
     {
-        auto space = (bool) isspace(partial[i]);
+        auto space = (bool) isspace(partial.at(i));
         if (!space)
         {
             if (j)
-                parts[j - 1].push_back(partial[i]);
+                parts.at(j - 1).push_back(partial[i]);
             f = true;
         }
 
@@ -205,12 +223,12 @@ static int cat_completionCallback(
     // "g" -> cat get
     // "get " -> cat get <variable>
 
-    logging::Info("%s|%s", parts[0].c_str(), parts[1].c_str());
+    logging::Info("%s|%s", parts.at(0).c_str(), parts.at(1).c_str());
 
-    if (parts[0].empty() ||
-        parts[1].empty() && (!parts[0].empty() && partial.back() != ' '))
+    if (parts.at(0).empty() ||
+        parts.at(1).empty() && (!parts.at(0).empty() && partial.back() != ' '))
     {
-        if (std::string("get").find(parts[0]) != std::string::npos)
+        if (std::string("get").find(parts.at(0)) != std::string::npos)
             snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH,
                      "cat get ");
         if (std::string("set").find(parts[0]) != std::string::npos)
@@ -221,13 +239,13 @@ static int cat_completionCallback(
 
     for (const auto &s : sortedVariables)
     {
-        if (s.find(parts[1]) == 0)
+        if (s.find(parts.at(1)) == 0)
         {
             auto variable = settings::Manager::instance().lookup(s);
             if (variable)
             {
                 snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1,
-                         "cat %s %s %s", parts[0].c_str(), s.c_str(),
+                         "cat %s %s %s", parts.at(0).c_str(), s.c_str(),
                          variable->toString().c_str());
                 if (count == COMMAND_COMPLETION_MAXITEMS)
                     break;
@@ -242,18 +260,18 @@ static int load_completionCallback(
     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
-    std::string parts[2]{};
+    std::array<std::string,2> parts{};
     auto j    = 0u;
     auto f    = false;
     int count = 0;
 
     for (auto i = 0u; i < partial.size() && j < 3; ++i)
     {
-        auto space = (bool) isspace(partial[i]);
+        auto space = (bool) isspace(partial.at(i));
         if (!space)
         {
             if (j)
-                parts[j - 1].push_back(partial[i]);
+                parts.at(j - 1).push_back(partial[i]);
             f = true;
         }
 
@@ -267,7 +285,7 @@ static int load_completionCallback(
 
     for (const auto &s : sortedConfigs)
     {
-        if (s.find(parts[0]) == 0)
+        if (s.find(parts.at(0)) == 0)
         {
             snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1,
                      "cat_load %s", s.c_str());
