@@ -131,7 +131,8 @@ void updateSearch()
         if (startqueue_timer.check(5000) && gc &&
             !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
             !invites)
-            if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
+            if (pc && !(pc->BInQueueForMatchGroup(tfmm::getQueue()) ||
+                        pc->BInQueueForStandby()))
             {
                 logging::Info("Starting queue for standby, Invites %d",
                               invites);
@@ -144,7 +145,8 @@ void updateSearch()
         if (startqueue_timer.check(5000) && gc &&
             !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
             !invites)
-            if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
+            if (pc && !(pc->BInQueueForMatchGroup(tfmm::getQueue()) ||
+                        pc->BInQueueForStandby()))
             {
                 logging::Info("Starting queue, Invites %d", invites);
                 tfmm::startQueue();

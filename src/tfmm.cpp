@@ -39,7 +39,9 @@ int queuecount = 0;
 bool isMMBanned()
 {
     auto client = re::CTFPartyClient::GTFPartyClient();
-    if (!client || (client->BInQueueForMatchGroup(7) && queuecount < 10))
+    if (!client ||
+        ((client->BInQueueForMatchGroup(7) || client->BInQueueForStandby()) &&
+         queuecount < 10))
     {
         queuecount = 0;
         return false;
