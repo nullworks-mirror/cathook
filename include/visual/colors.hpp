@@ -8,6 +8,7 @@
 #pragma once
 
 #include <glez/color.hpp>
+#include "config.h"
 
 class CachedEntity;
 #if ENABLE_VISUALS
@@ -49,11 +50,17 @@ struct rgba_t
         : r(_r), g(_g), b(_b), a(_a){};
 
     explicit rgba_t(const char hex[6]);
-
+#if __clang__
+    operator glez::rgba() const
+    {
+        return *reinterpret_cast<const glez::rgba *>(this);
+    }
+#else
     constexpr operator glez::rgba() const
     {
         return *reinterpret_cast<const glez::rgba *>(this);
     }
+#endif
 
     constexpr operator bool() const
     {

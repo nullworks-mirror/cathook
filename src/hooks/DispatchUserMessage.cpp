@@ -85,8 +85,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         {
                             data[j - 1] = '*';
                             starcount++;
-                            if (starcount > 10)
-                                data[j - 1] = '​';
                         }
                     if (i == 1)
                         name.push_back(c);
