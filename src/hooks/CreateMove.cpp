@@ -454,7 +454,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         static const int classes[3]{ tf_engineer, tf_pyro, tf_medic };
         if (*auto_disguise && g_pPlayerResource->GetClass(LOCAL_E) == tf_spy &&
             !HasCondition<TFCond_Disguised>(LOCAL_E) &&
-            disguise.test_and_set(1500))
+            disguise.test_and_set(2000))
         {
             int teamtodisguise =
                 (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_BLU : TEAM_RED;

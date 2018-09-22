@@ -114,6 +114,11 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
         }
     }
+    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
+    {
+        if (auto_spin_up && !zoomTime.check(3000))
+            current_user_cmd->buttons |= IN_ATTACK2;
+    }
     // We do this as we need to pass whether the aimkey allows aiming to both
     // the find target and aiming system. If we just call the func than toggle
     // aimkey would break so we save it to a var to use it twice
@@ -177,7 +182,10 @@ void CreateMove()
             !auto_spin_up)
             return;
         if (auto_spin_up)
+        {
+            zoomTime.update();
             current_user_cmd->buttons |= IN_ATTACK2;
+        }
         if (!(current_user_cmd->buttons & (IN_ATTACK2 | IN_ATTACK)))
             return;
     }

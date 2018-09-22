@@ -76,7 +76,8 @@ int FindNearestValid(Vector vec)
             bool success = false;
             Vector area  = areas[bestarea].m_center;
             area.z += 72.0f;
-            if (!TF2MAP->inactiveTracker.sentryAreas[bestarea])
+            if (IsPlayerDisguised(LOCAL_E) ||
+                !TF2MAP->inactiveTracker.sentryAreas[bestarea])
             {
                 float scr = area.DistTo(vec);
                 if (scr < 2000.0f)
@@ -91,7 +92,8 @@ int FindNearestValid(Vector vec)
             {
                 Vector area = areas[ar].m_center;
                 area.z += 72.0f;
-                if (TF2MAP->inactiveTracker.sentryAreas[ar])
+                if (!IsPlayerDisguised(LOCAL_E) &&
+                    TF2MAP->inactiveTracker.sentryAreas[ar])
                     continue;
                 float scr = area.DistTo(vec);
                 if (scr > 2000.0f)
