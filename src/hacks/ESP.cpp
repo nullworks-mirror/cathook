@@ -1089,10 +1089,9 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         player_info_s info;
         if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
             return;
-#if ENABLE_ONLINE
+
         online::user_data *data =
             online_support ? online::getUserData(info.friendsID) : nullptr;
-
 
         // TODO, check if u can just use "ent->m_bEnemy()" instead of m_iTeam
         // Legit mode handling
@@ -1126,22 +1125,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                                     colors::red);
             }
         }
-#endif
-#if !(ENABLE_ONLINE)
-        if (legit && ent->m_iTeam() != g_pLocalPlayer->team &&
-		        playerlist::IsDefault(info.friendsID))
-        {
-            if (IsPlayerInvisible(ent))
-                return; // Invis check
-            if (vischeck && !ent->IsVisible())
-                return; // Vis check
-                        // TODO, maybe...
-                        // if (ent->m_lLastSeen >
-                        // (unsigned)v_iLegitSeenTicks->GetInt())
-            // return;
-        }
-#endif
-      
+
         // Powerup handling
         if (powerup_esp)
         {
