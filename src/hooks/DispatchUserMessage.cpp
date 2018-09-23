@@ -75,11 +75,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             for (int i = 0; i < buf.GetNumBytesLeft(); i++)
             {
                 int byte = buf.ReadByte();
-                if (byte == 0)
-                    break;
                 message_name.push_back(byte);
             }
-            if (message_name.find("TF_Autobalance_TeamChangePending") !=
+            if (message_name.find("#TF_Autobalance_TeamChangePending") !=
                 std::string::npos)
                 logging::Info("test, %d %d", int(message_name[0]),
                               (CE_GOOD(LOCAL_E) ? LOCAL_E->m_IDX : -1));

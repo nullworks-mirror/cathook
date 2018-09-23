@@ -38,7 +38,7 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                                 steamid = 0x0;
                                 return;
                             }
-                            steamid = atol(args.Arg(1));
+                            steamid = std::stoul(args.Arg(1));
                         });
 
 // Something to store breadcrumbs created by followed players

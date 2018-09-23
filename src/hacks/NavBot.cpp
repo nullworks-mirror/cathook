@@ -38,7 +38,7 @@ CatCommand follow_steam("navbot_steam", "Follow Steam Id",
                                 steamid = 0x0;
                                 return;
                             }
-                            steamid = atol(args.Arg(1));
+                            steamid = std::stoul(args.Arg(1));
                         });
 Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
 Timer lastJump{};
@@ -535,28 +535,27 @@ static HookedFunction
                             if (!nav::NavTo(tar->m_vecOrigin(), false))
                                 last_tar = -1;
                         }
-                        else
-                        {
-                            int bestscr = INT_MAX;
-                            hacks::shared::backtrack::BacktrackData besttick{};
-                            for (auto i : hacks::shared::backtrack::
-                                     headPositions[tar->m_IDX])
-                            {
-                                if (!hacks::shared::backtrack::ValidTick(i,
-                                                                         tar))
-                                {
-                                    int scr = i.tickcount;
-                                    if (scr < bestscr)
-                                    {
-                                        bestscr  = scr;
-                                        besttick = i;
-                                    }
-                                }
+                        else {
+                            auto unsorted_ticks = hacks::shared::backtrack::headPositions[tar->m_IDX];
+                            std::vector<hacks::shared::backtrack::BacktrackData> sorted_ticks;
+                            for (int i = 0; i < 66; i++) {
+                                if (hacks::shared::backtrack::ValidTick(unsorted_ticks[i], tar))
+                                    sorted_ticks.push_back(unsorted_ticks[i]);
                             }
-                            if (besttick.tickcount)
-                                nav::NavTo(besttick.entorigin, false, false);
-                            else if (!nav::NavTo(tar->m_vecOrigin(), false))
-                                last_tar = -1;
+                            if (sorted_ticks.empty()) {
+                                if (!nav::NavTo(tar->m_vecOrigin(), false))
+                                    last_tar = -1;
+                                return;
+                            }
+                            std::sort(sorted_ticks.begin(), sorted_ticks.end(),
+                                      [](const hacks::shared::backtrack::BacktrackData &a,
+                                         const hacks::shared::backtrack::BacktrackData &b) {
+                                          return a.tickcount > b.tickcount;
+                                      });
+
+                            if (!sorted_ticks[5].tickcount || nav::NavTo(sorted_ticks[5].entorigin, false, false))
+                                if (!nav::NavTo(tar->m_vecOrigin(), false))
+                                    last_tar = -1;
                         }
                     }
                 }
