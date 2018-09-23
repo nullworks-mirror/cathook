@@ -118,7 +118,9 @@ bool Menu::handleSdlEvent(SDL_Event *event)
     if (!modal_stack.empty())
         return modal_stack.back()->handleSdlEvent(event);
 
-    return wm->handleSdlEvent(event);
+    if (wm)
+        return wm->handleSdlEvent(event);
+    return false;
 }
 
 void Menu::render()
