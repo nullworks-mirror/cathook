@@ -101,7 +101,7 @@ static void updateAntiAfk()
     }
 }
 
-CatCommand fix_cursor("fix_cursor", "Fix the GUI cursor being visible", [](){
+CatCommand fix_cursor("fix_cursor", "Fix the GUI cursor being visible", []() {
     g_ISurface->LockCursor();
     g_ISurface->SetCursorAlwaysVisible(false);
 });
