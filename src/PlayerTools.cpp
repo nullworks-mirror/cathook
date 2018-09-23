@@ -122,6 +122,7 @@ std::optional<colors::rgba_t> forceEspColorSteamId(unsigned id)
     if (pl != colors::empty)
         return std::optional<colors::rgba_t>{ pl };
 
+#if ENABLE_ONLINE
     auto *co = online::getUserData(id);
     if (co)
     {
@@ -130,8 +131,9 @@ std::optional<colors::rgba_t> forceEspColorSteamId(unsigned id)
         if (co->rainbow)
             return std::optional<colors::rgba_t>{ colors::RainbowCurrent() };
     }
+#endif
 
-    return std::nullopt;
+   return std::nullopt;
 }
 std::optional<colors::rgba_t> forceEspColor(CachedEntity *entity)
 {
