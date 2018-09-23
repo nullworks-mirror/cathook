@@ -1,4 +1,5 @@
 #include "HookTools.hpp"
+#include "common.hpp"
 
 std::vector<HookedFunction *> &HookTools::GetHookedFunctions()
 {
@@ -8,27 +9,56 @@ std::vector<HookedFunction *> &HookTools::GetHookedFunctions()
 
 // -----------------------------------------------------------
 
-void HookTools::CM()
+static std::array<int, 3> bounds{};
+
+void RunHookedFunctions(HookedFunctions_types type)
 {
-    for (auto i : GetHookedFunctions())
+    auto &HookedFunctions = HookTools::GetHookedFunctions();
+    for (int i = bounds.at(type); i < HookedFunctions.size(); i++)
     {
-        i->run(HF_CreateMove);
+        if (!HookedFunctions.at(i)->run(type))
+            break;
     }
 }
 
-void HookTools::PT()
+void HookTools::CM()
 {
-    for (auto i : GetHookedFunctions())
-    {
-        i->run(HF_Draw);
-    }
+    RunHookedFunctions(HF_CreateMove);
+}
+
+void HookTools::DRAW()
+{
+    RunHookedFunctions(HF_Draw);
+}
+
+void HookTools::PAINT()
+{
+    RunHookedFunctions(HF_Paint);
 }
 
 static InitRoutine init([]() {
     auto &HookedFunctions = HookTools::GetHookedFunctions();
     std::sort(HookedFunctions.begin(), HookedFunctions.end(),
-              [](HookedFunction *a, HookedFunction *b) {
-                  return a->m_priority > b->m_priority;
-              });
+              [](HookedFunction *a, HookedFunction *b) { return *a > *b; });
     logging::Info("Sorted Hooked Functions: %i", HookedFunctions.size());
+    for (int i = 0; i < bounds.size(); i++)
+    {
+        for (int j = 0; j < HookedFunctions.size(); j++)
+        {
+            if (HookedFunctions.at(j)->m_type == i)
+            {
+                bounds.at(i) = j;
+                break;
+            }
+        }
+    }
+    logging::Info(
+        "Initialized HookedFunction bounds: CM: %i, Draw: %i, Paint: %i",
+        bounds.at(0), bounds.at(1), bounds.at(2));
 });
+
+static CatCommand print("debug_print_hookedfunctions",
+                        "Print hooked functions (CreateMove, Draw, Paint)",
+                        []() {
+
+                        });

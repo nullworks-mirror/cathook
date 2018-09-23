@@ -106,7 +106,7 @@ void DrawCheatVisuals()
     }
     {
         PROF_SECTION(DRAW_WRAPPER);
-        HookTools::PT();
+        HookTools::DRAW();
     }
     if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid)
     {

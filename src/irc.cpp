@@ -125,7 +125,6 @@ void handleMessage(IRCMessage message, IRCClient *client)
                 }
                 // Check if steamid of sender == steamid we currently check
                 // (using hashes)
-                logging::Info("%s | %s", steamidhash.c_str(), tarhash.c_str());
                 if (tarhash == steamidhash)
                 {
                     // Use actual steamid to set cat status
@@ -223,7 +222,7 @@ void IRCThread()
 
 static Timer IRCRetry{};
 
-static HookedFunction pt(HF_Draw, "IRC", 16, []() {
+static HookedFunction pt(HF_Paint, "IRC", 16, []() {
     if (!*enabled)
     {
         thread_shouldrun.store(false);

@@ -1,8 +1,6 @@
 #pragma once
 #include <vector>
 #include <functional>
-#include <init.hpp>
-#include "core/logging.hpp"
 #include <string>
 #include "core/profiler.hpp"
 #include <string>
@@ -13,21 +11,25 @@ namespace HookTools
 {
 std::vector<HookedFunction *> &GetHookedFunctions();
 void CM();
-void PT();
+void DRAW();
+void PAINT();
 } // namespace HookTools
 
 enum HookedFunctions_types
 {
+    // Use CreateMove to run functions that need to run while ingame.
     HF_CreateMove = 0,
-    HF_Draw
-
+    // Use Draw to draw on screen
+    HF_Draw,
+    // Use Paint to run functions everywhere (including main menu)
+    HF_Paint
 };
 
 class HookedFunction
 {
-    std::string m_name;
     std::function<void()> m_func;
-    HookedFunctions_types m_type;
+    int m_priority;
+    std::string m_name;
     void init(HookedFunctions_types type, std::string name, int priority,
               std::function<void()> func)
     {
@@ -39,6 +41,9 @@ class HookedFunction
         case HF_Draw:
             m_name = "DRAW_";
             break;
+        case HF_Paint:
+            m_name = "PAINT_";
+            break;
         }
         m_name.append(name);
         m_priority = priority;
@@ -48,8 +53,8 @@ class HookedFunction
     }
 
 public:
-    int m_priority;
-    void run(HookedFunctions_types type)
+    HookedFunctions_types m_type;
+    bool run(HookedFunctions_types type)
     {
         if (m_type == type)
         {
@@ -58,7 +63,15 @@ public:
             ProfilerNode node(section);
 #endif
             m_func();
+            return true;
         }
+        return false;
+    }
+    bool operator>(HookedFunction const &other)
+    {
+        if (this->m_type < other.m_type)
+            return true;
+        return this->m_priority > other.m_priority;
     }
     HookedFunction(HookedFunctions_types type, std::string name, int priority,
                    std::function<void()> func)
