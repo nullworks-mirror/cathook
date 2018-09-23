@@ -258,7 +258,7 @@ void createMove()
         // Spam changes the tournament name in casual and compeditive gamemodes
         if (teamname_spam)
         {
-            if (!(g_GlobalVars->tickcount % 5))
+            if (!(g_GlobalVars->tickcount % 10))
             {
                 static bool teamname_swap = false;
                 if (teamname_swap)

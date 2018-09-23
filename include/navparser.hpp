@@ -322,7 +322,7 @@ struct MAP : public micropather::Graph
             cost.state = static_cast<void *>(&areas.at(id));
             cost.cost  = area->m_center.DistTo(i.area->m_center);
             if (!inactiveTracker.vischeckConnection(connection))
-                cost.cost *= 2;
+                cost.cost *= 999;
             adjacent->push_back(cost);
         }
     }
