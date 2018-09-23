@@ -1078,7 +1078,7 @@ int BestHitbox(CachedEntity *target)
             return preferred;
         // Else attempt to find a hitbox at all
         for (int i = projectile_mode ? 1 : 0;
-             i < target->hitboxes.GetNumHitboxes(); i++)
+             i < target->hitboxes.GetNumHitboxes() && i < 6; i++)
         {
             if (target->hitboxes.VisibilityCheck(i))
                 return i;
