@@ -302,7 +302,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
         }
         if (dtg > 0.0f)
         {
-            curpos.z -= currenttime * currenttime * 800.0f * entgmod;
+            curpos.z -= currenttime * currenttime * 400.0f * entgmod;
             if (curpos.z < result.z - dtg)
                 curpos.z = result.z - dtg;
         }
