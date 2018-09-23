@@ -71,8 +71,8 @@ void save_thread(const int ArgC, const std::string ArgS)
     }
     else
     {
-        writer.saveTo(
-            std::string(DATA_PATH "/configs/") + ArgS + ".conf", false);
+        writer.saveTo(std::string(DATA_PATH "/configs/") + ArgS + ".conf",
+                      false);
     }
     logging::Info("cat_save: Sorting configs...");
     getAndSortAllConfigs();
@@ -111,13 +111,12 @@ void load_thread(const int ArgC, const std::string ArgS)
     else
     {
 #if ENABLE_VISUALS
-        loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS +
-                        ".conf");
+        loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS + ".conf");
 #else
         for (int i = 0;; i++)
         {
-            if (loader.loadFrom(std::string(DATA_PATH "/configs/") +
-                                ArgS + ".conf"))
+            if (loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS +
+                                ".conf"))
                 break;
             if (i > 5)
             {
@@ -196,7 +195,7 @@ static int cat_completionCallback(
     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
-    std::array<std::string,2> parts{};
+    std::array<std::string, 2> parts{};
     auto j    = 0u;
     auto f    = false;
     int count = 0;
@@ -260,7 +259,7 @@ static int load_completionCallback(
     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
-    std::array<std::string,2> parts{};
+    std::array<std::string, 2> parts{};
     auto j    = 0u;
     auto f    = false;
     int count = 0;

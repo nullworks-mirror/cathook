@@ -258,16 +258,19 @@ void createMove()
         // Spam changes the tournament name in casual and compeditive gamemodes
         if (teamname_spam)
         {
-            static bool teamname_swap = false;
-            if (teamname_swap)
+            if (!(g_GlobalVars->tickcount % 10))
             {
-                teamname_swap = false;
-                g_IEngine->ServerCmd("tournament_teamname Cat");
-            }
-            else
-            {
-                teamname_swap = true;
-                g_IEngine->ServerCmd("tournament_teamname Hook");
+                static bool teamname_swap = false;
+                if (teamname_swap)
+                {
+                    teamname_swap = false;
+                    g_IEngine->ServerCmd("tournament_teamname Cat");
+                }
+                else
+                {
+                    teamname_swap = true;
+                    g_IEngine->ServerCmd("tournament_teamname Hook");
+                }
             }
         }
 

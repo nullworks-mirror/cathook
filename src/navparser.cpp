@@ -76,7 +76,8 @@ int FindNearestValid(Vector vec)
             bool success = false;
             Vector area  = areas[bestarea].m_center;
             area.z += 72.0f;
-            if (!TF2MAP->inactiveTracker.sentryAreas[bestarea])
+            if (IsPlayerDisguised(LOCAL_E) ||
+                !TF2MAP->inactiveTracker.sentryAreas[bestarea])
             {
                 float scr = area.DistTo(vec);
                 if (scr < 2000.0f)
@@ -91,7 +92,8 @@ int FindNearestValid(Vector vec)
             {
                 Vector area = areas[ar].m_center;
                 area.z += 72.0f;
-                if (TF2MAP->inactiveTracker.sentryAreas[ar])
+                if (!IsPlayerDisguised(LOCAL_E) &&
+                    TF2MAP->inactiveTracker.sentryAreas[ar])
                     continue;
                 float scr = area.DistTo(vec);
                 if (scr > 2000.0f)
@@ -391,8 +393,8 @@ static HookedFunction
         ReadyForCommands = false;
         // Remove old crumbs
         if (g_pLocalPlayer->v_Origin.DistTo(Vector{
-                crumbs.at(0).x, crumbs.at(0).y, g_pLocalPlayer->v_Origin.z }) <
-            30.0f)
+                crumbs.at(0).x, crumbs.at(0).y, crumbs.at(0).z }) <
+            50.0f)
         {
             lastArea = crumbs.at(0);
             crumbs.erase(crumbs.begin());
@@ -401,8 +403,8 @@ static HookedFunction
         if (crumbs.empty())
             return;
         // Detect when jumping is necessary
-        if (crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
-            lastJump.test_and_set(200))
+        if ((crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
+            lastJump.test_and_set(200)) || (lastJump.test_and_set(200) && inactivity.check(2000)))
             current_user_cmd->buttons |= IN_JUMP;
         // Check if were dealing with a type 2 connection
         if (inactivity.check(3000) &&
@@ -415,7 +417,7 @@ static HookedFunction
             return;
         }
         // Check for new sentries
-        if (sentryCheck.test_and_set(1000) &&
+        if (sentryCheck.test_and_set(500) &&
             TF2MAP->inactiveTracker.ShouldCancelPath(crumbs))
         {
             logging::Info("Pathing: New Sentry found!");
@@ -424,7 +426,7 @@ static HookedFunction
             return;
         }
         // If inactive for too long
-        if (inactivity.check(5000))
+        if (inactivity.check(3000))
         {
             // Ignore connection
             bool resetPather = false;

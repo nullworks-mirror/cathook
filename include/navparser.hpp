@@ -41,6 +41,7 @@ public:
 private:
     std::vector<Vector> sentries{};
 
+public:
     bool vischeckConnection(std::pair<int, int> &connection)
     {
         int id0 = FindInVector(connection.first);
@@ -55,6 +56,7 @@ private:
         return result;
     }
 
+private:
     std::pair<int, int> VectorsToId(std::pair<Vector, Vector> &connection)
     {
         CNavArea *currnode = nullptr;
@@ -155,10 +157,14 @@ public:
     }
     bool IsIgnored(std::pair<int, int> connection)
     {
-        if (sentryAreas[connection.first] || sentryAreas[connection.second])
+        if (!IsPlayerDisguised(LOCAL_E))
         {
-            logging::Info("Ignored a connection due to sentry gun coverage");
-            return true;
+            if (sentryAreas[connection.first] || sentryAreas[connection.second])
+            {
+                logging::Info(
+                    "Ignored a connection due to sentry gun coverage");
+                return true;
+            }
         }
         if (inactives.find(connection) == inactives.end())
             return false;
@@ -305,8 +311,9 @@ struct MAP : public micropather::Graph
         {
             if (GetZBetweenAreas(area, i.area) > 42)
                 continue;
-            if (inactiveTracker.IsIgnored(
-                    std::pair{ area->m_id, i.area->m_id }))
+            std::pair<int, int> connection =
+                std::pair{ area->m_id, i.area->m_id };
+            if (inactiveTracker.IsIgnored(connection))
                 continue;
             int id = FindInVector(i.area->m_id);
             if (id == -1)
@@ -314,6 +321,8 @@ struct MAP : public micropather::Graph
             micropather::StateCost cost;
             cost.state = static_cast<void *>(&areas.at(id));
             cost.cost  = area->m_center.DistTo(i.area->m_center);
+            if (!inactiveTracker.vischeckConnection(connection))
+                cost.cost *= 999;
             adjacent->push_back(cost);
         }
     }

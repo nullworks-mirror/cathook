@@ -96,6 +96,10 @@ bool re::CTFPartyClient::BInQueueForMatchGroup(int type)
 
     return BInQueueForMatchGroup_fn(this, type);
 }
+bool re::CTFPartyClient::BInQueueForStandby()
+{
+    return *((unsigned char *) this + 84);
+}
 char re::CTFPartyClient::RequestLeaveForMatch(int type)
 {
     typedef char (*RequestLeaveForMatch_t)(re::CTFPartyClient *, int);

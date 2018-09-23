@@ -40,9 +40,8 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
             re::CTFGCClientSystem *gc =
                 re::CTFGCClientSystem::GTFGCClientSystem();
             re::CTFPartyClient *pc = re::CTFPartyClient::GTFPartyClient();
-            if (gc && !gc->BConnectedToMatchServer(false) &&
-                !gc->BHaveLiveMatch() && !invites)
-                if (!(pc && pc->BInQueueForMatchGroup(tfmm::getQueue())))
+            if (gc && !gc->BConnectedToMatchServer(false))
+                if (pc)
                 {
                     logging::Info("VAC/Matchmaking banned");
                     *(int *) 0 = 0;
@@ -55,7 +54,7 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
         if (*die_if_vac)
         {
             logging::Info("VAC/Matchmaking banned");
-            *(int *) 0 = 0;
+            *(int *) nullptr = 0;
             exit(1);
         }
     }

@@ -147,42 +147,39 @@ CachedEntity *nearestAmmo()
 int last_tar = -1;
 CachedEntity *NearestEnemy()
 {
-    if (last_tar != -1 && CE_GOOD(ENTITY(last_tar)))
+    if (last_tar != -1 && CE_GOOD(ENTITY(last_tar)) &&
+        ENTITY(last_tar)->m_bAlivePlayer() &&
+        ENTITY(last_tar)->m_iTeam() != LOCAL_E->m_iTeam())
         return ENTITY(last_tar);
-    else
-        last_tar = -1;
-    if (last_tar == -1 || nav::ReadyForCommands)
+    float bestscr         = FLT_MAX;
+    CachedEntity *bestent = nullptr;
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
-        float bestscr         = FLT_MAX;
-        CachedEntity *bestent = nullptr;
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
+            continue;
+        if (player_tools::shouldTarget(ent) !=
+            player_tools::IgnoreReason::DO_NOT_IGNORE)
+            continue;
+        if (ent == LOCAL_E || !ent->m_bAlivePlayer() ||
+            ent->m_iTeam() == LOCAL_E->m_iTeam())
+            continue;
+        float scr = ent->m_flDistance();
+        if (g_pPlayerResource->GetClass(ent) == tf_engineer)
+            scr *= 5.0f;
+        if (g_pPlayerResource->GetClass(ent) == tf_pyro)
+            scr *= 7.0f;
+        if (scr < bestscr)
         {
-            CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
-                continue;
-            if (player_tools::shouldTarget(ent) !=
-                player_tools::IgnoreReason::DO_NOT_IGNORE)
-                continue;
-            if (ent == LOCAL_E || !ent->m_bAlivePlayer() ||
-                ent->m_iTeam() == LOCAL_E->m_iTeam())
-                continue;
-            float scr = ent->m_flDistance();
-            if (g_pPlayerResource->GetClass(ent) == tf_engineer)
-                scr *= 5.0f;
-            if (g_pPlayerResource->GetClass(ent) == tf_pyro)
-                scr *= 7.0f;
-            if (scr < bestscr)
-            {
-                bestscr = scr;
-                bestent = ent;
-            }
+            bestscr = scr;
+            bestent = ent;
         }
-        if (CE_BAD(bestent))
-            last_tar = -1;
-        else
-            last_tar = bestent->m_IDX;
-        return bestent;
     }
+    if (CE_BAD(bestent))
+        last_tar = -1;
+    else
+        last_tar = bestent->m_IDX;
+    return bestent;
     return nullptr;
 }
 Timer cdr{};
@@ -242,7 +239,7 @@ void UpdateSlot()
         {
             int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
             int newslot = 1;
-            if (spy_mode || engi_mode)
+            if (*spy_mode || *engi_mode)
                 newslot = 3;
             if (slot != newslot - 1)
                 g_IEngine->ClientCmd_Unrestricted(
@@ -362,8 +359,13 @@ bool NavToEnemy()
         CachedEntity *ent = NearestEnemy();
         if (CE_GOOD(ent))
         {
-            int nearestvalid =
-                nav::FindNearestValidbyDist(ent->m_vecOrigin(), 1000, 4000);
+            int nearestvalid{};
+            if (!*heavy_mode)
+                nearestvalid =
+                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 1000, 4000);
+            else
+                nearestvalid =
+                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000);
             if (nearestvalid != -1)
             {
                 auto area = nav::areas[nearestvalid];
@@ -473,7 +475,7 @@ static HookedFunction
             (!HasLowAmmo() && nav::priority == 6))
             nav::clearInstructions();
         static int waittime =
-            (spy_mode || heavy_mode || engi_mode) ? 100 : 2000;
+            /*(spy_mode || heavy_mode || engi_mode) ? 100 : 2000*/ 0;
         if (*take_tele)
         {
             int idx = GetClosestTeleporter();
@@ -505,7 +507,8 @@ static HookedFunction
                                : nav::ReadyForCommands;
             if (isready && cd3.test_and_set(waittime))
             {
-                waittime = (spy_mode || heavy_mode || engi_mode) ? 100 : 2000;
+                waittime =
+                    /*(spy_mode || heavy_mode || engi_mode) ? 100 : 2000*/ 0;
                 if (!spy_mode && !heavy_mode && !engi_mode)
                 {
                     cd3.update();
