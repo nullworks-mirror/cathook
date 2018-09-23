@@ -93,6 +93,8 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 #if ENABLE_VISUALS
         render_cheat_visuals();
 #endif
+        // Call all paint functions
+        HookTools::PAINT();
     }
 
     return original::Paint(this_, mode);
