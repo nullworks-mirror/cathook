@@ -5,6 +5,7 @@
 #include "core/profiler.hpp"
 #include <string>
 #include "config.h"
+#include "memory"
 
 class HookedFunction;
 namespace HookTools
@@ -30,6 +31,9 @@ class HookedFunction
     std::function<void()> m_func;
     int m_priority;
     std::string m_name;
+#if ENABLE_PROFILER
+    ProfilerSection section = ProfilerSection("UNNAMED_FUNCTIONS");
+#endif
     void init(HookedFunctions_types type, std::string name, int priority,
               std::function<void()> func)
     {
@@ -44,11 +48,17 @@ class HookedFunction
         case HF_Paint:
             m_name = "PAINT_";
             break;
+        default:
+            m_name = "UNDEFINED_";
+            break;
         }
         m_name.append(name);
         m_priority = priority;
         m_func     = func;
         m_type     = type;
+#if ENABLE_PROFILER
+        section.m_name = m_name;
+#endif
         HookTools::GetHookedFunctions().push_back(this);
     }
 
@@ -59,7 +69,6 @@ public:
         if (m_type == type)
         {
 #if ENABLE_PROFILER
-            static ProfilerSection section(m_name);
             ProfilerNode node(section);
 #endif
             m_func();
