@@ -67,7 +67,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
 {
     if (!isHackActive())
         return original::DispatchUserMessage(this_, type, buf);
-    if (retrun && gitgud.test_and_set(300))
+    if (retrun && type != 47 && gitgud.test_and_set(300))
     {
         PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),
                   lastfilter.c_str());

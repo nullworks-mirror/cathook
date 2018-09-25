@@ -66,6 +66,7 @@ public:
     offset_t m_hBuilder;
     offset_t m_iObjectType;
     offset_t m_bMiniBuilding;
+    offset_t m_bHasSapper;
     offset_t m_bBuilding;
     offset_t m_iTeleState;
     offset_t m_flTeleRechargeTime;

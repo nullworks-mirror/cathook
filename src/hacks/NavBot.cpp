@@ -182,9 +182,9 @@ CachedEntity *NearestEnemy()
     return bestent;
     return nullptr;
 }
-Timer cdr{};
-Timer cd2{};
-Timer cd3{};
+Timer ammo_health_cooldown{};
+Timer init_timer{};
+Timer nav_cooldown{};
 Timer engi_spot_cd{};
 Timer nav_enemy_cd{};
 std::vector<Vector> preferred_sniper_spots;
@@ -217,9 +217,9 @@ void initonce()
     for (int i = 0; i < afkTicks.size(); i++)
         afkTicks[i].update();
     priority_spots.clear();
-    cdr.update();
-    cd2.update();
-    cd3.update();
+    ammo_health_cooldown.update();
+    init_timer.update();
+    nav_cooldown.update();
     engi_spot_cd.update();
     sniper_spots.clear();
     preferred_sniper_spots.clear();
@@ -451,7 +451,7 @@ static HookedFunction
         if (*stay_near && nav_enemy_cd.test_and_set(1000) &&
             (!HasLowAmmo()) & (!HasLowHealth()))
             NavToEnemy();
-        if (HasLowHealth() && cdr.test_and_set(5000))
+        if (HasLowHealth() && ammo_health_cooldown.test_and_set(5000))
         {
             CachedEntity *med = nearestHealth();
             if (CE_GOOD(med))
@@ -461,7 +461,7 @@ static HookedFunction
                 nav::NavTo(med->m_vecOrigin(), true, true, 7);
             }
         }
-        if (HasLowAmmo() && cdr.test_and_set(5000))
+        if (HasLowAmmo() && ammo_health_cooldown.test_and_set(5000))
         {
             CachedEntity *ammo = nearestAmmo();
             if (CE_GOOD(ammo))
@@ -488,7 +488,7 @@ static HookedFunction
                             g_GlobalVars->curtime)
                     {
                         waittime = 1000;
-                        cd3.update();
+                        nav_cooldown.update();
                         if (nav::priority == 1337)
                             nav::clearInstructions();
                         nav::NavTo(GetBuildingPosition(ent), false, false);
@@ -499,20 +499,20 @@ static HookedFunction
         {
             if (!nav::ReadyForCommands && !spy_mode && !heavy_mode &&
                 !engi_mode)
-                cd3.update();
+                nav_cooldown.update();
             if (target_sentry && NavToSentry(3))
                 return;
             bool isready = (spy_mode || heavy_mode || engi_mode)
                                ? true
                                : nav::ReadyForCommands;
-            if (isready && cd3.test_and_set(waittime))
+            if (isready && nav_cooldown.test_and_set(waittime))
             {
                 waittime =
                     /*(spy_mode || heavy_mode || engi_mode) ? 100 : 2000*/ 0;
                 if (!spy_mode && !heavy_mode && !engi_mode)
                 {
-                    cd3.update();
-                    if (cd2.test_and_set(5000))
+                    nav_cooldown.update();
+                    if (init_timer.test_and_set(5000))
                         Init();
                     if (!NavToSniperSpot(5))
                         waittime = 1;
@@ -522,7 +522,7 @@ static HookedFunction
                     CachedEntity *tar = NearestEnemy();
                     if (CE_BAD(tar) && last_tar == -1 && nav::ReadyForCommands)
                     {
-                        if (cd2.test_and_set(5000))
+                        if (init_timer.test_and_set(5000))
                             Init();
                         if (!NavToSniperSpot(4))
                             waittime = 1;
@@ -563,7 +563,7 @@ static HookedFunction
                 else
                 {
                     // Init things
-                    if (cd2.test_and_set(5000))
+                    if (init_timer.test_and_set(5000))
                         Init();
                     // If No spots set just return
                     if (nest_spots.empty())
@@ -674,7 +674,7 @@ static HookedFunction
                             else if (sniper_spots.size() &&
                                      nav::ReadyForCommands)
                             {
-                                if (cd2.test_and_set(5000))
+                                if (init_timer.test_and_set(5000))
                                     Init();
                                 if (!NavToSniperSpot(1))
                                     waittime = 1;

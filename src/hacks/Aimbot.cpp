@@ -107,18 +107,14 @@ void CreateMove()
 
     // Auto-Unzoom
     if (auto_unzoom)
-    {
         if (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed &&
             zoomTime.test_and_set(3000))
-        {
             current_user_cmd->buttons |= IN_ATTACK2;
-        }
-    }
+
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-    {
         if (auto_spin_up && !zoomTime.check(3000))
             current_user_cmd->buttons |= IN_ATTACK2;
-    }
+
     // We do this as we need to pass whether the aimkey allows aiming to both
     // the find target and aiming system. If we just call the func than toggle
     // aimkey would break so we save it to a var to use it twice
@@ -208,7 +204,7 @@ void CreateMove()
 
     // flNextPrimaryAttack meme
     // target_eid = target_entity->m_IDX;
-    if (only_can_shoot)
+    if (only_can_shoot && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFMinigun) && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFLaserPointer))
     {
 
         // Handle Compound bow
@@ -821,8 +817,8 @@ void DoAutoshoot()
         float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
         float chargetime  = g_GlobalVars->curtime - chargebegin;
 
-        // Release Sticky if > chargetime
-        if ((chargetime >= (float) sticky_autoshoot) && begansticky > 3)
+        // Release Sticky if > chargetime, 3.85 is the max second chargetime, but we want a percent so here we go
+        if ((chargetime >= *sticky_autoshoot / 3.85f) && begansticky > 3)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
             hacks::shared::antiaim::SetSafeSpace(3);
@@ -879,6 +875,8 @@ void DoAutoshoot()
 
     if (attack)
         current_user_cmd->buttons |= IN_ATTACK;
+    if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
+        current_user_cmd->buttons |= IN_ATTACK2;
     hacks::shared::antiaim::SetSafeSpace(1);
 }
 
