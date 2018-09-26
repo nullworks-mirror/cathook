@@ -76,10 +76,16 @@ static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 
 namespace hacks::shared::aimbot
 {
+bool shouldBacktrack()
+{
+    return *enable && *backtrackAimbot;
+}
+
 bool IsBacktracking()
 {
-    return !(!aimkey || !aimkey.isKeyDown()) && *enable && *backtrackAimbot;
+    return !(!aimkey || !aimkey.isKeyDown()) && shouldBacktrack();
 }
+
 // Current Entity
 int target_eid{ 0 };
 CachedEntity *target      = 0;
@@ -430,7 +436,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 {
     PROF_SECTION(PT_aimbot_targetstatecheck);
 
-    if (hacks::shared::backtrack::isBacktrackEnabled &&
+    if (shouldBacktrack() &&
         entity->m_Type() != ENTITY_PLAYER)
         return false;
     // Checks for Players
@@ -691,7 +697,7 @@ void Aim(CachedEntity *entity)
         auto hitboxmin    = entity->hitboxes.GetHitbox(cd.hitbox)->min;
         auto hitboxmax    = entity->hitboxes.GetHitbox(cd.hitbox)->max;
         auto hitboxcenter = entity->hitboxes.GetHitbox(cd.hitbox)->center;
-        if (hacks::shared::backtrack::isBacktrackEnabled)
+        if (shouldBacktrack())
         {
             hitboxcenter =
                 hacks::shared::backtrack::headPositions
@@ -762,7 +768,7 @@ void Aim(CachedEntity *entity)
 
     if (silent && !slow_aim)
         g_pLocalPlayer->bUseSilentAngles = true;
-    if (hacks::shared::backtrack::isBacktrackEnabled)
+    if (shouldBacktrack())
     {
         auto i = hacks::shared::backtrack::headPositions
             [hacks::shared::backtrack::iBestTarget]
@@ -889,7 +895,7 @@ const Vector &PredictEntity(CachedEntity *entity)
     if (cd.predict_tick == tickcount)
         return result;
 
-    if (!hacks::shared::backtrack::isBacktrackEnabled || projectile_mode)
+    if (!shouldBacktrack() || projectile_mode)
     {
 
         // Players
@@ -1133,7 +1139,7 @@ bool VischeckPredictedEntity(CachedEntity *entity)
 
     // Update info
     cd.vcheck_tick = tickcount;
-    if (!hacks::shared::backtrack::isBacktrackEnabled || projectile_mode)
+    if (!shouldBacktrack() || projectile_mode)
         cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
     else
         cd.visible = IsVectorVisible(
