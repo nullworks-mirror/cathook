@@ -12,6 +12,7 @@
 static settings::Bool requeue{ "hack.requeue-on-kick", "false" };
 static settings::Bool vote_kicky{ "hack.autovote.yes", "false" };
 static settings::Bool vote_kickn{ "hack.autovote.no", "false" };
+static settings::Bool party_say{ "hack.partysay", "true" };
 
 namespace votelogger
 {
@@ -39,9 +40,10 @@ void dispatchUserMessage(bf_read &buffer, int type)
         auto eid = (unsigned char) buffer.ReadByte();
         buffer.Seek(0);
         eid >>= 1;
+        caller >>= 1;
 
         unsigned steamID = 0;
-        player_info_s info{};
+        player_info_s info{}, info2{};	//	info is the person getting kicked, info2 is the person calling the kick.;
         if (g_IEngine->GetPlayerInfo(eid, &info))
             steamID = info.friendsID;
         if (eid == LOCAL_E->m_IDX)
@@ -58,6 +60,17 @@ void dispatchUserMessage(bf_read &buffer, int type)
                 playerlist::AccessData(info.friendsID).state ==
                     playerlist::k_EState::DEFAULT)
                 g_IEngine->ClientCmd_Unrestricted("vote option1");
+        if (*party_say)
+        {
+        	g_IEngine->GetPlayerInfo(caller, &info2);
+        	g_IEngine->ExecuteClientCmd(format("say_party [cat] votekick called: ",
+        			boost::replace_all_copy((std::string)info2.name, ";", ";"),
+					" => ",
+        			boost::replace_all_copy((std::string)info.name, ";", ";"),
+        			" (",reason,")").c_str());
+        	//	because tf2 is stupid and doesn't have escape characters, i'll use the greek question mark instead.
+        	//	big brain.
+        }
         logging::Info("Vote called to kick %s [U:1:%u] for %s", name, steamID,
                       reason);
         break;

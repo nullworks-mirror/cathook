@@ -58,11 +58,15 @@ std::string ComposeKillSay(IGameEvent *event)
     if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer())
         return "";
     std::string msg = source->at(rand() % source->size());
-    while (msg == lastmsg)
+    if(source->size() != 1)
     {
-        msg = source->at(rand() % source->size());
+    	//	checks if the killsays.txt file is not 1 line. 100% sure it's going to crash if it is.
+    	while (msg == lastmsg)
+    	{
+    		msg = source->at(rand() % source->size());
+    	}
+    	lastmsg = msg;
     }
-    lastmsg = msg;
     player_info_s info;
     g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
     ReplaceString(msg, "%name%", std::string(info.name));
