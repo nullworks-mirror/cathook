@@ -30,7 +30,8 @@ void dispatchUserMessage(bf_read &buffer, int type)
         // TODO: Add always vote no/vote no on friends. Cvar is "vote option2"
         was_local_player = false;
         int team         = buffer.ReadByte();
-        int caller       = buffer.ReadByte(); //	client id of init apparently
+        // client id of init apparently
+        int caller       = buffer.ReadByte();
         char reason[64];
         char name[64];
         buffer.ReadString(reason, 64, false, nullptr);
@@ -84,8 +85,8 @@ void dispatchUserMessage(bf_read &buffer, int type)
     }
     case 47:
         logging::Info("Vote passed");
-        //        if (was_local_player && requeue)
-        //            tfmm::startQueue();
+        // if (was_local_player && requeue)
+        //    tfmm::startQueue();
         break;
     case 48:
         logging::Info("Vote failed");
