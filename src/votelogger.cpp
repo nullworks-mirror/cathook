@@ -30,7 +30,6 @@ void dispatchUserMessage(bf_read &buffer, int type)
         // TODO: Add always vote no/vote no on friends. Cvar is "vote option2"
         was_local_player = false;
         int team         = buffer.ReadByte();
-        // client id of init apparently
         int caller       = buffer.ReadByte();
         char reason[64];
         char name[64];
@@ -69,7 +68,7 @@ void dispatchUserMessage(bf_read &buffer, int type)
                 // use the greek question marks instead. big brain.
                 // Clang-format why, TODO: Don't use format func
                 g_IEngine->ExecuteClientCmd(
-                    format("say_party [cat] votekick called: ",
+                    format("say_party [CAT] votekick called: ",
                            boost::replace_all_copy((std::string) info2.name,
                                                    ";", ";"),
                            " => ",
