@@ -133,7 +133,7 @@ std::optional<colors::rgba_t> forceEspColorSteamId(unsigned id)
     }
 #endif
 
-   return std::nullopt;
+    return std::nullopt;
 }
 std::optional<colors::rgba_t> forceEspColor(CachedEntity *entity)
 {

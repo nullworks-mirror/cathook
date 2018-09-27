@@ -124,7 +124,8 @@ void NetVars::Init()
         this->m_bBuilding = gNetvars.get_offset("DT_BaseObject", "m_hBuilding");
         this->m_iObjectType =
             gNetvars.get_offset("DT_BaseObject", "m_iObjectType");
-        this->m_bHasSapper = gNetvars.get_offset("DT_BaseObject", "m_bHasSapper");
+        this->m_bHasSapper =
+            gNetvars.get_offset("DT_BaseObject", "m_bHasSapper");
         this->m_bMiniBuilding =
             gNetvars.get_offset("DT_BaseObject", "m_bMiniBuilding");
         this->m_iTeleState =

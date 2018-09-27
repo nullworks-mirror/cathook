@@ -210,7 +210,9 @@ void CreateMove()
 
     // flNextPrimaryAttack meme
     // target_eid = target_entity->m_IDX;
-    if (only_can_shoot && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFMinigun) && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFLaserPointer))
+    if (only_can_shoot &&
+        g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFMinigun) &&
+        g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFLaserPointer))
     {
 
         // Handle Compound bow
@@ -823,8 +825,9 @@ void DoAutoshoot()
         float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
         float chargetime  = g_GlobalVars->curtime - chargebegin;
 
-        // Release Sticky if > chargetime, 3.85 is the max second chargetime, but we want a percent so here we go
-        if ((chargetime >= *sticky_autoshoot / 3.85f) && begansticky > 3)
+        // Release Sticky if > chargetime, 3.85 is the max second chargetime,
+        // but we want a percent so here we go
+        if ((chargetime >= 3.85f / *sticky_autoshoot) && begansticky > 3)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
             hacks::shared::antiaim::SetSafeSpace(3);

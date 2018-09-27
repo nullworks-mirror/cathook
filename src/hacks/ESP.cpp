@@ -1039,8 +1039,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                      ? "Teleporter"
                      : (classid == CL_CLASS(CObjectSentrygun) ? "Sentry Gun"
                                                               : "Dispenser"));
-            int level  = CE_INT(ent, netvar.iUpgradeLevel);
-            bool IsMini = CE_BYTE(ent, netvar.m_bMiniBuilding);
+            int level     = CE_INT(ent, netvar.iUpgradeLevel);
+            bool IsMini   = CE_BYTE(ent, netvar.m_bMiniBuilding);
             bool IsSapped = CE_BYTE(ent, netvar.m_bHasSapper);
             if (!IsMini)
                 AddEntityString(ent, format("LV ", level, ' ', name));

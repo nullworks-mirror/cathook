@@ -22,13 +22,14 @@ static Timer sendmsg{};
 static Timer gitgud{};
 
 // Using repeated char causes crash on some systems. Suboptimal solution.
-const static std::string
-    clear("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-          "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-          "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-          "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-          "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-          "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+const static std::string clear(
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 std::string lastfilter{};
 std::string lastname{};
 
@@ -103,16 +104,14 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
             std::string message{};
             for (i = 0; i < 3; i++)
             {
-                int starcount = 0;
                 while ((c = data[j++]) && (loop_index < s))
                 {
                     loop_index++;
                     if (clean_chat)
+                    {
                         if ((c == '\n' || c == '\r') && (i == 1 || i == 2))
-                        {
-                            data[j - 1] = '*';
-                            starcount++;
-                        }
+                            data[j - 1] = '\0';
+                    }
                     if (i == 1)
                         name.push_back(c);
                     if (i == 2)
@@ -185,7 +184,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     if (boost::contains(message2, filter) && !filtered)
                     {
                         filtered = true;
-                        chat_stack::Say(". " + clear, true);
+                        chat_stack::Say("." + clear, true);
                         retrun     = true;
                         lastfilter = format(filter);
                         lastname   = format(name);

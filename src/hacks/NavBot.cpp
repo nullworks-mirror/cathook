@@ -535,25 +535,36 @@ static HookedFunction
                             if (!nav::NavTo(tar->m_vecOrigin(), false))
                                 last_tar = -1;
                         }
-                        else {
-                            auto unsorted_ticks = hacks::shared::backtrack::headPositions[tar->m_IDX];
-                            std::vector<hacks::shared::backtrack::BacktrackData> sorted_ticks;
-                            for (int i = 0; i < 66; i++) {
-                                if (hacks::shared::backtrack::ValidTick(unsorted_ticks[i], tar))
+                        else
+                        {
+                            auto unsorted_ticks = hacks::shared::backtrack::
+                                headPositions[tar->m_IDX];
+                            std::vector<hacks::shared::backtrack::BacktrackData>
+                                sorted_ticks;
+                            for (int i = 0; i < 66; i++)
+                            {
+                                if (hacks::shared::backtrack::ValidTick(
+                                        unsorted_ticks[i], tar))
                                     sorted_ticks.push_back(unsorted_ticks[i]);
                             }
-                            if (sorted_ticks.empty()) {
+                            if (sorted_ticks.empty())
+                            {
                                 if (!nav::NavTo(tar->m_vecOrigin(), false))
                                     last_tar = -1;
                                 return;
                             }
-                            std::sort(sorted_ticks.begin(), sorted_ticks.end(),
-                                      [](const hacks::shared::backtrack::BacktrackData &a,
-                                         const hacks::shared::backtrack::BacktrackData &b) {
-                                          return a.tickcount > b.tickcount;
-                                      });
+                            std::sort(
+                                sorted_ticks.begin(), sorted_ticks.end(),
+                                [](const hacks::shared::backtrack::BacktrackData
+                                       &a,
+                                   const hacks::shared::backtrack::BacktrackData
+                                       &b) {
+                                    return a.tickcount > b.tickcount;
+                                });
 
-                            if (!sorted_ticks[5].tickcount || nav::NavTo(sorted_ticks[5].entorigin, false, false))
+                            if (!sorted_ticks[5].tickcount ||
+                                nav::NavTo(sorted_ticks[5].entorigin, false,
+                                           false))
                                 if (!nav::NavTo(tar->m_vecOrigin(), false))
                                     last_tar = -1;
                         }
