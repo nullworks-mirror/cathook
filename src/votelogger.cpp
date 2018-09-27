@@ -30,9 +30,8 @@ void dispatchUserMessage(bf_read &buffer, int type)
     {
         // TODO: Add always vote no/vote no on friends. Cvar is "vote option2"
         was_local_player = false;
-        auto caller      = (unsigned char) buffer.ReadByte();
-        // unknown
-        buffer.ReadByte();
+        int team	=	buffer.ReadByte();
+        int caller      =	buffer.ReadByte();	//	client id of init apparently
         char reason[64];
         char name[64];
         buffer.ReadString(reason, 64, false, nullptr);
@@ -40,7 +39,6 @@ void dispatchUserMessage(bf_read &buffer, int type)
         auto eid = (unsigned char) buffer.ReadByte();
         buffer.Seek(0);
         eid >>= 1;
-        caller >>= 1;
 
         unsigned steamID = 0;
         player_info_s info{}, info2{};	//	info is the person getting kicked, info2 is the person calling the kick.;
