@@ -42,7 +42,7 @@ void Update()
                 Vector abs_orig = RAW_ENT(ent)->GetAbsOrigin();
                 float movement  = prevloc[i].DistTo(abs_orig);
                 logging::Info("movement: %f", movement);
-                prevloc[i] = abs_orig;
+                prevloc[i]      = abs_orig;
                 const Vector &v = ent->m_vecVelocity;
                 const Vector &a = ent->m_vecAcceleration;
                 Vector eav;

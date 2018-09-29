@@ -150,7 +150,7 @@ CatCommand debug_get_ingame_ipc(
         int count        = 0;
         unsigned highest = 0;
         std::vector<unsigned> botlist{};
-        for (unsigned i = 1; 0 < cat_ipc::max_peers; i++)
+        for (unsigned i = 1; i < cat_ipc::max_peers; i++)
         {
             if (!ipc::peer->memory->peer_data[i].free)
             {
