@@ -256,7 +256,66 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
                   result.y - origin.y, result.z - origin.z);*/
     return result;
 }
+Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed,
+                          float gravity)
+{
+    if (!vec.z || CE_BAD(building))
+        return Vector();
+    Vector result = vec;
+    // if (not debug_pp_extrapolate) {
+    //} else {
+    //        result = SimpleLatencyPrediction(ent, hb);
+    //
+    //}
+    float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
+                    g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
 
+    if (speed == 0.0f)
+        return Vector();
+    trace::filter_no_player.SetSelf(RAW_ENT(building));
+    float dtg = DistanceToGround(vec);
+    // TODO ProjAim
+    float medianTime  = g_pLocalPlayer->v_Eye.DistTo(result) / speed;
+    float range       = 1.5f;
+    float currenttime = medianTime - range;
+    if (currenttime <= 0.0f)
+        currenttime = 0.01f;
+    float besttime = currenttime;
+    float mindelta = 65536.0f;
+    Vector bestpos = result;
+    int maxsteps   = 300;
+    for (int steps = 0; steps < maxsteps;
+         steps++, currenttime += ((float) (2 * range) / (float) maxsteps))
+    {
+        Vector curpos = result;
+        curpos += 0 * currenttime;
+        if (debug_pp_extrapolate)
+        {
+            curpos += 0 * currenttime * latency;
+        }
+        if (dtg > 0.0f)
+        {
+            curpos.z -= currenttime * currenttime * 400.0f * 0;
+            if (curpos.z < result.z - dtg)
+                curpos.z = result.z - dtg;
+        }
+        float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
+        if (debug_pp_rockettimeping)
+            rockettime +=
+                g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+        if (fabs(rockettime - currenttime) < mindelta)
+        {
+            besttime = currenttime;
+            bestpos  = curpos;
+            mindelta = fabs(rockettime - currenttime);
+        }
+    }
+    if (debug_pp_rockettimeping)
+        besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+    bestpos.z += (400 * besttime * besttime * gravity);
+    // S = at^2/2 ; t = sqrt(2S/a)*/
+    return bestpos;
+}
 Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
                             float gravitymod, float entgmod)
 {

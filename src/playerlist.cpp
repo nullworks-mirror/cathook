@@ -192,7 +192,8 @@ CatCommand pl_set_state(
                 continue;
             std::string currname(info.name);
             std::replace(currname.begin(), currname.end(), ' ', '-');
-            std::replace_if(currname.begin(), currname.end(),[](char x){return !isprint(x);}, '*');
+            std::replace_if(currname.begin(), currname.end(),
+                            [](char x) { return !isprint(x); }, '*');
             if (currname.find(name) != 0)
                 continue;
             id = i;
@@ -259,7 +260,8 @@ static int cat_pl_set_state_completionCallback(
             continue;
         std::string name(info.name);
         std::replace(name.begin(), name.end(), ' ', '-');
-        std::replace_if(name.begin(), name.end(),[](char x){return !isprint(x);}, '*');
+        std::replace_if(name.begin(), name.end(),
+                        [](char x) { return !isprint(x); }, '*');
         names.push_back(name);
     }
     std::sort(names.begin(), names.end());

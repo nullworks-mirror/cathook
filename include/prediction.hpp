@@ -17,6 +17,8 @@ Vector SimpleLatencyPrediction(CachedEntity *ent, int hb);
 
 bool PerformProjectilePrediction(CachedEntity *target, int hitbox);
 
+Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed,
+                          float gravity);
 Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
                             float gravitymod, float entgmod);
 Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,

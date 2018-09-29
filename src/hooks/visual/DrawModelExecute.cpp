@@ -55,17 +55,11 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_,
     {
         IClientEntity *ent = unk->GetIClientEntity();
         if (ent)
-        {
             if (ent->entindex() == spectator_target)
-            {
                 return;
-            }
-        }
         if (ent && !effect_chams::g_EffectChams.drawing &&
             effect_chams::g_EffectChams.ShouldRenderChams(ent))
-        {
             return;
-        }
     }
 
     return original::DrawModelExecute(this_, state, info, bone);

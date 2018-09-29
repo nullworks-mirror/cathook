@@ -438,8 +438,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 {
     PROF_SECTION(PT_aimbot_targetstatecheck);
 
-    if (shouldBacktrack() &&
-        entity->m_Type() != ENTITY_PLAYER)
+    if (shouldBacktrack() && entity->m_Type() != ENTITY_PLAYER)
         return false;
     // Checks for Players
     if (entity->m_Type() == ENTITY_PLAYER)
@@ -827,7 +826,7 @@ void DoAutoshoot()
 
         // Release Sticky if > chargetime, 3.85 is the max second chargetime,
         // but we want a percent so here we go
-        if ((chargetime >= 3.85f / *sticky_autoshoot) && begansticky > 3)
+        if ((chargetime >= 3.85f * *sticky_autoshoot) && begansticky > 3)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
             hacks::shared::antiaim::SetSafeSpace(3);
@@ -929,7 +928,8 @@ const Vector &PredictEntity(CachedEntity *entity)
         }
         else if (entity->m_Type() == ENTITY_BUILDING)
         {
-            result = GetBuildingPosition(entity);
+            result = BuildingPrediction(entity, GetBuildingPosition(entity),
+                                        cur_proj_speed, cur_proj_grav);
             // Other
         }
         else
