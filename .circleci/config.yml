@@ -2,7 +2,7 @@ version: 2
 jobs:
     build:
       docker:
-        - image: registry.gitlab.com/nullworks/cathook-ci-docker/ubuntu-cat-dependencies:build
+        - image: nullworks/cathook-docker-ci:latest
       steps:
         - checkout
         - run: 
