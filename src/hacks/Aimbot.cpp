@@ -76,10 +76,16 @@ static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 
 namespace hacks::shared::aimbot
 {
+bool shouldBacktrack()
+{
+    return *enable && *backtrackAimbot;
+}
+
 bool IsBacktracking()
 {
-    return !(!aimkey || !aimkey.isKeyDown()) && *enable && *backtrackAimbot;
+    return !(!aimkey || !aimkey.isKeyDown()) && shouldBacktrack();
 }
+
 // Current Entity
 int target_eid{ 0 };
 CachedEntity *target      = 0;
@@ -107,18 +113,14 @@ void CreateMove()
 
     // Auto-Unzoom
     if (auto_unzoom)
-    {
         if (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed &&
             zoomTime.test_and_set(3000))
-        {
             current_user_cmd->buttons |= IN_ATTACK2;
-        }
-    }
+
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-    {
         if (auto_spin_up && !zoomTime.check(3000))
             current_user_cmd->buttons |= IN_ATTACK2;
-    }
+
     // We do this as we need to pass whether the aimkey allows aiming to both
     // the find target and aiming system. If we just call the func than toggle
     // aimkey would break so we save it to a var to use it twice
@@ -208,7 +210,9 @@ void CreateMove()
 
     // flNextPrimaryAttack meme
     // target_eid = target_entity->m_IDX;
-    if (only_can_shoot)
+    if (only_can_shoot &&
+        g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFMinigun) &&
+        g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFLaserPointer))
     {
 
         // Handle Compound bow
@@ -434,8 +438,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 {
     PROF_SECTION(PT_aimbot_targetstatecheck);
 
-    if (hacks::shared::backtrack::isBacktrackEnabled &&
-        entity->m_Type() != ENTITY_PLAYER)
+    if (shouldBacktrack() && entity->m_Type() != ENTITY_PLAYER)
         return false;
     // Checks for Players
     if (entity->m_Type() == ENTITY_PLAYER)
@@ -695,7 +698,7 @@ void Aim(CachedEntity *entity)
         auto hitboxmin    = entity->hitboxes.GetHitbox(cd.hitbox)->min;
         auto hitboxmax    = entity->hitboxes.GetHitbox(cd.hitbox)->max;
         auto hitboxcenter = entity->hitboxes.GetHitbox(cd.hitbox)->center;
-        if (hacks::shared::backtrack::isBacktrackEnabled)
+        if (shouldBacktrack())
         {
             hitboxcenter =
                 hacks::shared::backtrack::headPositions
@@ -766,7 +769,7 @@ void Aim(CachedEntity *entity)
 
     if (silent && !slow_aim)
         g_pLocalPlayer->bUseSilentAngles = true;
-    if (hacks::shared::backtrack::isBacktrackEnabled)
+    if (shouldBacktrack())
     {
         auto i = hacks::shared::backtrack::headPositions
             [hacks::shared::backtrack::iBestTarget]
@@ -821,8 +824,9 @@ void DoAutoshoot()
         float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
         float chargetime  = g_GlobalVars->curtime - chargebegin;
 
-        // Release Sticky if > chargetime
-        if ((chargetime >= (float) sticky_autoshoot) && begansticky > 3)
+        // Release Sticky if > chargetime, 3.85 is the max second chargetime,
+        // but we want a percent so here we go
+        if ((chargetime >= 3.85f * *sticky_autoshoot) && begansticky > 3)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
             hacks::shared::antiaim::SetSafeSpace(3);
@@ -879,6 +883,8 @@ void DoAutoshoot()
 
     if (attack)
         current_user_cmd->buttons |= IN_ATTACK;
+    if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
+        current_user_cmd->buttons |= IN_ATTACK2;
     hacks::shared::antiaim::SetSafeSpace(1);
 }
 
@@ -891,7 +897,7 @@ const Vector &PredictEntity(CachedEntity *entity)
     if (cd.predict_tick == tickcount)
         return result;
 
-    if (!hacks::shared::backtrack::isBacktrackEnabled || projectile_mode)
+    if (!shouldBacktrack() || projectile_mode)
     {
 
         // Players
@@ -922,7 +928,8 @@ const Vector &PredictEntity(CachedEntity *entity)
         }
         else if (entity->m_Type() == ENTITY_BUILDING)
         {
-            result = GetBuildingPosition(entity);
+            result = BuildingPrediction(entity, GetBuildingPosition(entity),
+                                        cur_proj_speed, cur_proj_grav);
             // Other
         }
         else
@@ -1135,7 +1142,7 @@ bool VischeckPredictedEntity(CachedEntity *entity)
 
     // Update info
     cd.vcheck_tick = tickcount;
-    if (!hacks::shared::backtrack::isBacktrackEnabled || projectile_mode)
+    if (!shouldBacktrack() || projectile_mode)
         cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
     else
         cd.visible = IsVectorVisible(

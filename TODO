@@ -23,12 +23,10 @@ MAX -> MIN priority																									//	//
 																													//	//
 																													//	//
 No Trigger Mediguns																									//	//
-More projectile weapons aimbot (wrap assassin, wrangler, stickybomb, airstrike)										//	//
+More projectile weapons aimbot (wrap assassin, wrangler, airstrike)										//	//
 																													//	//
 																													//	//
-Make building aimbot compensate for gravity on projectile weapons													//	//
 																													//	//
-add Spectator Silent for projectile weapons 																		//	//
 																													//	//
 																													//	//
 																													//	//
@@ -57,10 +55,9 @@ fullbright toggle																									//	//
 FLAG ESP?																											//	//
 																													//	//
 ESP Icons																											//	//
-ESP Distance sort																									//	//
-Show sapped buildings in ESP																						//	//																									//	//
+ESP Distance sort																									//	//																								//	//
 carrying esp																										//	//
-Spy Cam																										//	//
+Spy Cam																										        //	//
 																													//	//
 //------------------------------------------------------------------------------------------------------------------//	//
 //																														//

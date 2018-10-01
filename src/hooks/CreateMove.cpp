@@ -26,7 +26,8 @@ static settings::Bool engine_pred{ "misc.engine-prediction", "false" };
 static settings::Bool debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int semiauto{ "misc.semi-auto", "0" };
 static settings::Int fakelag_amount{ "misc.fakelag", "0" };
-static settings::Bool auto_disguise{ "misc.autodisguise", "true" };
+static settings::Bool auto_disguise{ "misc.autodisguise", "false" };
+static settings::Bool fuckmode{ "misc.fuckmode", "false" };
 
 class CMoveData;
 #if LAGBOT_MODE
@@ -142,9 +143,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         if (CE_GOOD(LOCAL_W) && minigun_jump &&
             LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun))
-        {
             CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
-        }
     }
 #endif
     ret = original::CreateMove(this_, input_sample_time, cmd);
@@ -200,6 +199,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #if ENABLE_IPC
         ipc::UpdateServerAddress();
 #endif
+    }
+    if (*fuckmode)
+    {
+        static int prevbuttons = 0;
+        current_user_cmd->buttons |= prevbuttons;
+        prevbuttons |= current_user_cmd->buttons;
     }
     hooked_methods::CreateMove();
 

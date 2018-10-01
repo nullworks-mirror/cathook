@@ -1039,12 +1039,15 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                      ? "Teleporter"
                      : (classid == CL_CLASS(CObjectSentrygun) ? "Sentry Gun"
                                                               : "Dispenser"));
-            int level  = CE_INT(ent, netvar.iUpgradeLevel);
-            int IsMini = CE_INT(ent, netvar.m_bMiniBuilding);
+            int level     = CE_INT(ent, netvar.iUpgradeLevel);
+            bool IsMini   = CE_BYTE(ent, netvar.m_bMiniBuilding);
+            bool IsSapped = CE_BYTE(ent, netvar.m_bHasSapper);
             if (!IsMini)
                 AddEntityString(ent, format("LV ", level, ' ', name));
             else
                 AddEntityString(ent, format("Mini ", name));
+            if (IsSapped)
+                AddEntityString(ent, "*Sapped*");
             if (classid == CL_CLASS(CObjectTeleporter))
             {
                 float next_teleport =

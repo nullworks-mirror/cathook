@@ -7,6 +7,7 @@ if(NOT LagbotMode)
 	target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/Achievement.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Aimbot.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/MiscAimbot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Announcer.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiAim.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AntiAntiAim.cpp"

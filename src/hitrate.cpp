@@ -165,8 +165,7 @@ class HurtListener : public IGameEventListener
 public:
     virtual void FireGameEvent(KeyValues *event)
     {
-        if (strcmp("player_hurt", event->GetName()) &&
-            strcmp("player_death", event->GetName()))
+        if (strcmp("player_hurt", event->GetName()))
             return;
         if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) ==
             g_IEngine->GetLocalPlayer())
@@ -174,9 +173,7 @@ public:
             if (CE_GOOD(LOCAL_W) &&
                 (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
                  LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap)))
-                OnHit(strcmp("player_death", event->GetName())
-                          ? event->GetBool("crit")
-                          : true);
+                OnHit(event->GetBool("crit"));
         }
     }
 };

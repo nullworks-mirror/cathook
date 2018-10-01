@@ -25,14 +25,14 @@ const std::string tf_classes_killsay[] = { "class",   "scout",   "sniper",
 
 const std::string tf_teams_killsay[] = { "RED", "BLU" };
 
-static std::string lastmsg = "";
+static std::string lastmsg{};
 
 TextFile file{};
 
 std::string ComposeKillSay(IGameEvent *event)
 {
     const std::vector<std::string> *source = nullptr;
-    switch ((int) killsay_mode)
+    switch (*killsay_mode)
     {
     case 1:
         source = &file.lines;
@@ -46,8 +46,10 @@ std::string ComposeKillSay(IGameEvent *event)
     case 4:
         source = &builtin_nonecore_mlg;
         break;
+    default:
+        break;
     }
-    if (!source || source->size() == 0)
+    if (!source || source->empty())
         return "";
     if (!event)
         return "";
@@ -58,18 +60,18 @@ std::string ComposeKillSay(IGameEvent *event)
     if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer())
         return "";
     std::string msg = source->at(rand() % source->size());
-    while (msg == lastmsg)
-    {
+    //	checks if the killsays.txt file is not 1 line. 100% sure it's going
+    // to crash if it is.
+    while (msg == lastmsg && source->size() > 1)
         msg = source->at(rand() % source->size());
-    }
     lastmsg = msg;
-    player_info_s info;
+    player_info_s info{};
     g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
     ReplaceString(msg, "%name%", std::string(info.name));
     CachedEntity *ent = ENTITY(g_IEngine->GetPlayerForUserID(vid));
     int clz           = g_pPlayerResource->GetClass(ent);
     ReplaceString(msg, "%class%", tf_classes_killsay[clz]);
-    player_info_s infok;
+    player_info_s infok{};
     g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(kid), &infok);
     ReplaceString(msg, "%killer%", std::string(infok.name));
     ReplaceString(msg, "%team%", tf_teams_killsay[ent->m_iTeam() - 2]);
@@ -87,10 +89,8 @@ class KillSayEventListener : public IGameEventListener2
         if (!killsay_mode)
             return;
         std::string message = hacks::shared::killsay::ComposeKillSay(event);
-        if (message.size())
-        {
+        if (!message.empty())
             chat_stack::Say(message, false);
-        }
     }
 };
 
@@ -123,7 +123,7 @@ const std::vector<std::string> builtin_default = {
     "You must really like that respawn timer, %name%.",
 
     "If your main is %class%, you should give up.",
-    "Hey %name%, i see you can't play %class%. Try quitting the game."
+    "Hey %name%, i see you can't play %class%. Try quitting the game.",
     "%team% is filled with spergs",
     "%name%@gmail.com to vacreview@valvesoftware.com\nFOUND CHEATER",
     "\n☐ Not rekt\n ☑ Rekt\n ☑ Really Rekt\n ☑ Tyrannosaurus Rekt"
