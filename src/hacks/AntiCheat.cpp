@@ -68,9 +68,7 @@ void CreateMove()
             if ((CE_BYTE(ent, netvar.iLifeState) == 0))
             {
                 if (player_tools::shouldTarget(ent) ==
-                        player_tools::IgnoreReason::DO_NOT_IGNORE ||
-                    player_tools::shouldTarget(ent) ==
-                        player_tools::IgnoreReason::LOCAL_PLAYER_LIST)
+                        player_tools::IgnoreReason::DO_NOT_IGNORE || ent == LOCAL_E)
                 {
                     ac::aimbot::Update(ent);
                     ac::antiaim::Update(ent);
