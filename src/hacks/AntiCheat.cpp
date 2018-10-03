@@ -10,6 +10,7 @@
 #include <hacks/ac/bhop.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
+#include "PlayerTools.hpp"
 #include "hack.hpp"
 
 static settings::Bool enable{ "find-cheaters.enable", "0" };
@@ -66,9 +67,15 @@ void CreateMove()
         {
             if ((CE_BYTE(ent, netvar.iLifeState) == 0))
             {
-                ac::aimbot::Update(ent);
-                ac::antiaim::Update(ent);
-                ac::bhop::Update(ent);
+                if (player_tools::shouldTarget(ent) ==
+                        player_tools::IgnoreReason::DO_NOT_IGNORE ||
+                    player_tools::shouldTarget(ent) ==
+                        player_tools::IgnoreReason::LOCAL_PLAYER_LIST)
+                {
+                    ac::aimbot::Update(ent);
+                    ac::antiaim::Update(ent);
+                    ac::bhop::Update(ent);
+                }
             }
         }
     }
