@@ -365,8 +365,8 @@ bool NavToEnemy()
                 int range = 0;
                 while (nearestvalid == -1 && range < 5000)
                 {
-                    nearestvalid =
-                        nav::FindNearestValidbyDist(ent->m_vecOrigin(), 2000 - range/4 , 6000  -  range);
+                    nearestvalid = nav::FindNearestValidbyDist(
+                        ent->m_vecOrigin(), 2000 - range / 4, 6000 - range);
                     range += 300.0f;
                 }
             }
