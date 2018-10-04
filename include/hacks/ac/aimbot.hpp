@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "config.h"
+#include "common.hpp"
 #include <cstddef>
 
 class KeyValues;
@@ -24,6 +26,7 @@ struct ac_data
 extern int amount[32];
 
 void ResetEverything();
+std::unordered_map<int, Vector> &player_orgs();
 void ResetPlayer(int idx);
 
 void Init();

@@ -20,15 +20,22 @@ namespace ac::aimbot
 
 ac_data data_table[32];
 int amount[32];
+std::unordered_map<int, Vector> Player_origs{};
 
+std::unordered_map<int, Vector> & player_orgs()
+{
+    return Player_origs;
+}
 void ResetEverything()
 {
     memset(&data_table, 0, sizeof(ac_data) * 32);
+    Player_origs.clear();
 }
 
 void ResetPlayer(int idx)
 {
     memset(&data_table[idx - 1], 0, sizeof(ac_data));
+    Player_origs.clear();
 }
 
 void Init()
@@ -40,6 +47,7 @@ void Update(CachedEntity *player)
 {
     if (!enable)
         return;
+    Player_origs[player->m_IDX] = player->m_vecOrigin();
     auto &data = data_table[player->m_IDX - 1];
     auto &am   = amount[player->m_IDX - 1];
     if (data.check_timer)
@@ -107,12 +115,12 @@ void Event(KeyValues *event)
         int victim   = event->GetInt("userid");
         int eid      = g_IEngine->GetPlayerForUserID(attacker);
         int vid      = g_IEngine->GetPlayerForUserID(victim);
-        if (eid > 0 && eid < 33)
+        if (eid > 0 && eid < 33 && vid > 0 && vid < 33)
         {
             CachedEntity *victim   = ENTITY(vid);
             CachedEntity *attacker = ENTITY(eid);
-            if (CE_GOOD(victim) && CE_GOOD(attacker))
-                if (victim->m_vecOrigin().DistTo(attacker->m_vecOrigin()) > 250)
+            if (Player_origs[vid].z != 0 && Player_origs[eid].z != 0)
+                if (Player_origs[vid].DistTo(Player_origs[eid]) > 250)
                 {
                     data_table[eid - 1].check_timer = 1;
                     data_table[eid - 1].last_weapon = event->GetInt("weaponid");

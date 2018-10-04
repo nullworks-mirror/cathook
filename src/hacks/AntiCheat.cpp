@@ -58,14 +58,15 @@ void CreateMove()
     if (!enable)
         return;
     angles::Update();
-    for (int i = 1; i < 33; i++)
+    ac::aimbot::player_orgs().clear();
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         if (skip_local && (i == g_IEngine->GetLocalPlayer()))
             continue;
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent))
         {
-            if ((CE_BYTE(ent, netvar.iLifeState) == 0))
+            if (ent->m_bAlivePlayer())
             {
                 if (player_tools::shouldTarget(ent) ==
                         player_tools::IgnoreReason::DO_NOT_IGNORE ||
