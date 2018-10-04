@@ -243,6 +243,8 @@ public:
 struct MAP : public micropather::Graph
 {
     std::unique_ptr<micropather::MicroPather> pather;
+    std::unordered_map<std::pair<int, int>, int, boost::hash<std::pair<int, int>>> vischeck_cd;
+    Timer vischeck_t{};
     // Maps already utilize dynamic allocation and we don't need a custom
     // constructor
     inactivityTracker inactiveTracker;
@@ -321,8 +323,20 @@ struct MAP : public micropather::Graph
             micropather::StateCost cost;
             cost.state = static_cast<void *>(&areas.at(id));
             cost.cost  = area->m_center.DistTo(i.area->m_center);
-            if (!inactiveTracker.vischeckConnection(connection))
-                cost.cost *= 999;
+            if (vischeck_t.test_and_set(2000))
+                vischeck_cd.clear();
+            if (vischeck_cd[connection] == 0)
+            {
+                if (!inactiveTracker.vischeckConnection(connection))
+                {
+                    cost.cost *= 99;
+                    vischeck_cd[connection] = 2;
+                }
+                else
+                    vischeck_cd[connection] = 1;
+            }
+            else if (vischeck_cd[connection] == 2)
+                cost.cost *= 99;
             adjacent->push_back(cost);
         }
     }
