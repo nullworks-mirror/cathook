@@ -11,6 +11,7 @@
 #include "PlayerTools.hpp"
 
 static settings::Bool enable{ "cat-bot.enable", "false" };
+static settings::Bool auto_disguise{ "misc.autodisguise", "true" };
 
 static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
 static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte",
@@ -39,7 +40,7 @@ struct catbot_user_state
     int treacherous_kills{ 0 };
 };
 
-std::unordered_map<unsigned, catbot_user_state> human_detecting_map{};
+static std::unordered_map<unsigned, catbot_user_state> human_detecting_map{};
 
 bool is_a_catbot(unsigned steamID)
 {
@@ -289,6 +290,8 @@ void smart_crouch()
         current_user_cmd->buttons |= IN_DUCK;
 }
 
+static Timer disguise{};
+static Timer report_timer{};
 // TODO: add more stuffs
 static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
     if (!*enable)
@@ -302,6 +305,20 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
 
     if (*auto_crouch)
         smart_crouch();
+
+    //
+    static const int classes[3]{ tf_spy, tf_sniper, tf_pyro };
+    if (*auto_disguise && g_pPlayerResource->GetClass(LOCAL_E) == tf_spy &&
+        !HasCondition<TFCond_Disguised>(LOCAL_E) && disguise.test_and_set(3000))
+    {
+        int teamtodisguise =
+            (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_BLU : TEAM_RED;
+        int classtojoin = classes[rand() % 3];
+        g_IEngine->ClientCmd_Unrestricted(
+            format("disguise ", classtojoin, " ", teamtodisguise).c_str());
+    }
+    if (*autoReport && report_timer.test_and_set(60000))
+        reportall();
 });
 
 void update()

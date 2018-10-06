@@ -26,7 +26,6 @@ static settings::Bool engine_pred{ "misc.engine-prediction", "false" };
 static settings::Bool debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int semiauto{ "misc.semi-auto", "0" };
 static settings::Int fakelag_amount{ "misc.fakelag", "0" };
-static settings::Bool auto_disguise{ "misc.autodisguise", "false" };
 static settings::Bool fuckmode{ "misc.fuckmode", "false" };
 
 class CMoveData;
@@ -119,7 +118,6 @@ static HookedFunction viewangs(HookedFunctions_types::HF_CreateMove, "set_ang",
                                    g_pLocalPlayer->v_OrigViewangles =
                                        current_user_cmd->viewangles;
                                });
-Timer disguise{};
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                      CUserCmd *cmd)
 {
@@ -455,17 +453,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 g_pLocalPlayer->bUseSilentAngles = true;
                 speedapplied                     = true;
             }
-        }
-        static const int classes[3]{ tf_engineer, tf_pyro, tf_medic };
-        if (*auto_disguise && g_pPlayerResource->GetClass(LOCAL_E) == tf_spy &&
-            !HasCondition<TFCond_Disguised>(LOCAL_E) &&
-            disguise.test_and_set(3000))
-        {
-            int teamtodisguise =
-                (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_BLU : TEAM_RED;
-            int classtojoin = classes[rand() % 3];
-            g_IEngine->ClientCmd_Unrestricted(
-                format("disguise ", classtojoin, " ", teamtodisguise).c_str());
         }
         if (g_pLocalPlayer->bUseSilentAngles)
         {

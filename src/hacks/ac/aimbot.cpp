@@ -22,7 +22,7 @@ ac_data data_table[32];
 int amount[32];
 std::unordered_map<int, Vector> Player_origs{};
 
-std::unordered_map<int, Vector> & player_orgs()
+std::unordered_map<int, Vector> &player_orgs()
 {
     return Player_origs;
 }
@@ -48,8 +48,8 @@ void Update(CachedEntity *player)
     if (!enable)
         return;
     Player_origs[player->m_IDX] = player->m_vecOrigin();
-    auto &data = data_table[player->m_IDX - 1];
-    auto &am   = amount[player->m_IDX - 1];
+    auto &data                  = data_table[player->m_IDX - 1];
+    auto &am                    = amount[player->m_IDX - 1];
     if (data.check_timer)
     {
         data.check_timer--;

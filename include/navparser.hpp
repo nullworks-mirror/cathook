@@ -243,7 +243,9 @@ public:
 struct MAP : public micropather::Graph
 {
     std::unique_ptr<micropather::MicroPather> pather;
-    std::unordered_map<std::pair<int, int>, int, boost::hash<std::pair<int, int>>> vischeck_cd;
+    std::unordered_map<std::pair<int, int>, int,
+                       boost::hash<std::pair<int, int>>>
+        vischeck_cd;
     Timer vischeck_t{};
     // Maps already utilize dynamic allocation and we don't need a custom
     // constructor

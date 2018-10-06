@@ -41,7 +41,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
 {
     static bool textures_loaded      = false;
     static unsigned long panel_scope = 0;
-    static bool call_default       = true;
+    static bool call_default         = true;
     static bool cur;
     static ConVar *software_cursor = g_ICvar->FindVar("cl_software_cursor");
     static const char *name;
