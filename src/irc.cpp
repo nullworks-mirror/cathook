@@ -2,34 +2,22 @@
 #include <thread>
 #include "IRCClient.h"
 #include <atomic>
-#include "boost/random.hpp"
-#include "boost/generator_iterator.hpp"
 #include "irc.hpp"
 #include "ucccccp.hpp"
 #include "Settings.hpp"
+#include "ChIRC.hpp"
+#include <random>
 
 namespace IRC
 {
-static std::atomic<bool> thread_shouldrun;
-static std::atomic<bool> thread_running;
 static settings::Bool enabled("irc.enabled", "true");
 static settings::Bool anon("irc.anon", "true");
 static settings::Bool authenticate("irc.auth", "true");
-// To prevent possible crashes when IRC shuts down while sending msg
-static std::mutex IRCConnection_mutex;
-bool shouldauth;
+static settings::String channel("irc.channel", "#cat_comms");
+static settings::String address("irc.address", "cathook.irc.inkcat.net");
+static settings::Int port("irc.port", "8080");
 
-struct IRCData
-{
-    std::string address                      = "cathook.irc.inkcat.net";
-    int port                                 = 8080;
-    std::string channel                      = "#cat_comms";
-    std::string username                     = "You";
-    std::string nickname                     = "You";
-    std::unique_ptr<IRCClient> IRCConnection = nullptr;
-};
-
-static IRCData IRCData;
+static ChIRC::ChIRC irc;
 
 void printmsg(std::string &usr, std::string &msg)
 {
@@ -64,7 +52,6 @@ void handleMessage(IRCMessage message, IRCClient *client)
     std::string &channel = message.parameters.at(0);
     std::string &rawmsg  = message.parameters.at(1);
     std::string &usr     = message.prefix.nick;
-
     if (!ucccccp::validate(rawmsg))
         return;
     std::string msg(ucccccp::decrypt(rawmsg));
@@ -147,117 +134,22 @@ void handleMessage(IRCMessage message, IRCClient *client)
     }
 }
 
-int randomint()
+void updateData(std::string commandandcontrol)
 {
-    boost::mt19937 rng{ static_cast<std::uint32_t>(std::time(nullptr)) };
-    boost::uniform_int<> oneto10000(1, 10000);
-    boost::variate_generator<boost::mt19937, boost::uniform_int<> > dice(
-        rng, oneto10000);
-    return dice();
-}
-
-void IRCThread()
-{
+    std::string nick("Anon");
     if (!*anon)
-    {
-        IRCData.username = g_ISteamFriends->GetPersonaName();
-        IRCData.nickname = g_ISteamFriends->GetPersonaName();
-        IRCData.nickname.append(format("-", randomint()));
-    }
-    else
-    {
-        IRCData.username = "Anon";
-        IRCData.nickname = "Anon";
-        IRCData.nickname.append(format("-", randomint()));
-    }
-    std::replace(IRCData.nickname.begin(), IRCData.nickname.end(), ' ', '_');
-    std::replace(IRCData.username.begin(), IRCData.username.end(), ' ', '_');
-
-    IRCConnection_mutex.lock();
-    IRCData.IRCConnection = std::make_unique<IRCClient>();
-    IRCClient &client     = *IRCData.IRCConnection;
-    client.HookIRCCommand("PRIVMSG", handleMessage);
-
-    logging::Info("IRC: Initializing IRC");
-    if (client.InitSocket())
-    {
-        logging::Info("IRC: Socket Initialized. Connecting to cathook IRC...");
-        if (client.Connect(IRCData.address.c_str(), IRCData.port))
-        {
-            logging::Info("IRC: Connected. Logging in...");
-            if (client.Login(IRCData.nickname, IRCData.username))
-            {
-                logging::Info("IRC: Logged in. Joining channel.");
-                std::thread joinChannel([=]() {
-                    std::this_thread::sleep_for(
-                        std::chrono_literals::operator""s(3));
-                    if (IRCData.IRCConnection &&
-                        IRCData.IRCConnection->Connected())
-                        IRCData.IRCConnection->SendIRC(
-                            format("JOIN ", IRCData.channel));
-                    logging::Info("IRC: Init complete.");
-                });
-                joinChannel.detach();
-                IRCConnection_mutex.unlock();
-                while (client.Connected() && thread_shouldrun.load())
-                    client.ReceiveData();
-            }
-            else
-                IRCConnection_mutex.unlock();
-        }
-        else
-            IRCConnection_mutex.unlock();
-    }
-    else
-        IRCConnection_mutex.unlock();
-    logging::Info("Exiting IRC thread...");
-    // Lock mutex twice twice tf
-    IRCConnection_mutex.lock();
-    IRCData.IRCConnection->SendIRC("QUIT");
-    IRCData.IRCConnection->Disconnect();
-    IRCData.IRCConnection.reset();
-    thread_running.store(false);
-    IRCConnection_mutex.unlock();
-}
-
-static Timer IRCRetry{};
-
-static HookedFunction pt(HF_Paint, "IRC", 16, []() {
-    if (!*enabled)
-    {
-        thread_shouldrun.store(false);
-        return;
-    }
-    if (!thread_running.load() && IRCRetry.test_and_set(10000))
-    {
-        thread_shouldrun.store(true);
-        thread_running.store(true);
-        std::thread ircthread(IRCThread);
-        ircthread.detach();
-        logging::Info("IRC: Running.");
-    }
-});
-
-bool sendraw(std::string &msg)
-{
-    std::lock_guard<std::mutex> lock(IRCConnection_mutex);
-    if (IRCData.IRCConnection && IRCData.IRCConnection->Connected())
-    {
-        if (IRCData.IRCConnection->SendIRC(format(
-                "PRIVMSG ", IRCData.channel, " :", ucccccp::encrypt(msg, 'B'))))
-            return true;
-    }
-    return false;
+        nick = g_ISteamFriends->GetPersonaName();
+    irc.UpdateData(nick, nick, *channel, commandandcontrol, *address, *port);
 }
 
 bool sendmsg(std::string &msg, bool loopback)
 {
     std::string raw = "msg" + msg;
-    if (sendraw(raw))
+    if (irc.privmsg(raw))
     {
         if (loopback)
         {
-            printmsg(IRCData.nickname, msg);
+            printmsgcopy(irc.getData().nick, msg);
         }
         return true;
     }
@@ -283,12 +175,50 @@ void auth(bool reply)
         for (int j = 0; j < 8; j++)
             msg.append(std::to_string((i >> j) & 1));
     }
-    sendraw(msg);
+    irc.privmsg(msg);
 }
+
+static bool restarting{ false };
+
+static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
+    if (!restarting)
+        irc.Update();
+});
+
+template <typename T> void rvarCallback(settings::VariableBase<T> &var, T after)
+{
+    if (!restarting)
+    {
+        restarting = true;
+        std::thread reload([]() {
+            std::this_thread::sleep_for(
+                std::chrono_literals::operator""ms(500));
+            irc.Disconnect();
+            updateData("");
+            if (enabled)
+                irc.Connect();
+            restarting = false;
+        });
+        reload.detach();
+    }
+}
+
+static InitRoutine init([]() {
+    updateData("");
+    enabled.installChangeCallback(rvarCallback<bool>);
+    anon.installChangeCallback(rvarCallback<bool>);
+    authenticate.installChangeCallback(rvarCallback<bool>);
+    channel.installChangeCallback(rvarCallback<std::string>);
+    address.installChangeCallback(rvarCallback<std::string>);
+    port.installChangeCallback(rvarCallback<int>);
+
+    irc.installCallback("PRIVMSG", handleMessage);
+    irc.Connect();
+});
 
 static CatCommand irc_send_cmd("irc_send_cmd", "Send cmd to IRC",
                                [](const CCommand &args) {
-                                   IRCData.IRCConnection->SendIRC(args.ArgS());
+                                   irc.sendraw(args.ArgS());
                                });
 
 static CatCommand irc_send("irc_send", "Send message to IRC",
@@ -299,31 +229,6 @@ static CatCommand irc_send("irc_send", "Send message to IRC",
 
 static CatCommand irc_auth("irc_auth",
                            "Auth via IRC (Find users on same server)",
-                           [](const CCommand &args) { auth(); });
-static CatCommand irc_disconnect(
-    "irc_disconnect",
-    "Disconnect from IRC (Warning you might automatically reconnect)",
-    [](const CCommand &args) {
-        std::lock_guard<std::mutex> lock(IRCConnection_mutex);
-        if (IRCData.IRCConnection)
-        {
-            // IRCData.IRCConnection->SendIRC("QUIT");
-            IRCData.IRCConnection->Disconnect();
-        }
-    });
+                           []() { auth(); });
 
-void rvarCallback(settings::VariableBase<bool> &var, bool after)
-{
-    std::lock_guard<std::mutex> lock(IRCConnection_mutex);
-    if (IRCData.IRCConnection)
-    {
-        IRCData.IRCConnection->SendIRC("QUIT");
-        IRCData.IRCConnection->Disconnect();
-    }
-}
-
-static InitRoutine init([]() {
-    enabled.installChangeCallback(rvarCallback);
-    anon.installChangeCallback(rvarCallback);
-});
 } // namespace IRC

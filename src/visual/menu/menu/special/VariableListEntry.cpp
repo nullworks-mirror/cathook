@@ -182,7 +182,7 @@ void zerokernel::VariableListEntry::onMove()
 
 void zerokernel::VariableListEntry::recalculateSize()
 {
-    printf("VLE::recalculateSize()\n");
+    //printf("VLE::recalculateSize()\n");
     bb.updateFillSize();
     bb.shrinkContent();
     bb.extend(label.getBoundingBox());
