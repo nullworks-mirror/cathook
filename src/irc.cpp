@@ -1,9 +1,7 @@
 #include "common.hpp"
 #include <thread>
-#include "IRCClient.h"
 #include <atomic>
 #include "irc.hpp"
-#include "ucccccp.hpp"
 #include "Settings.hpp"
 #include "ChIRC.hpp"
 #include <random>
