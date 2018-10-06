@@ -259,7 +259,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         DelayTimer.update();
         hacks::tf2::NavBot::Init();
         hacks::tf2::NavBot::initonce();
-        IRC::auth();
+        //IRC::auth();
         firstcm = false;
     }
     g_Settings.bInvalid = false;
