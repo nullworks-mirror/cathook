@@ -2,7 +2,7 @@ version: 2
 jobs:
     build:
       docker:
-        - image: nullworks/cathook-docker-ci:latest
+        - image: nullworks/cathook-docker-ci-arch:latest
       steps:
         - checkout
         - run: 
