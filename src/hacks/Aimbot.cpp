@@ -928,8 +928,11 @@ const Vector &PredictEntity(CachedEntity *entity)
         }
         else if (entity->m_Type() == ENTITY_BUILDING)
         {
-            result = BuildingPrediction(entity, GetBuildingPosition(entity),
-                                        cur_proj_speed, cur_proj_grav);
+            if (cur_proj_grav || cur_proj_grav)
+                result = BuildingPrediction(entity, GetBuildingPosition(entity),
+                                            cur_proj_speed, cur_proj_grav);
+            else
+                result = GetBuildingPosition(entity);
             // Other
         }
         else

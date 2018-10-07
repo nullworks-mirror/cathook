@@ -267,8 +267,6 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed,
     //        result = SimpleLatencyPrediction(ent, hb);
     //
     //}
-    float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
-                    g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
 
     if (speed == 0.0f)
         return Vector();
@@ -288,14 +286,8 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed,
          steps++, currenttime += ((float) (2 * range) / (float) maxsteps))
     {
         Vector curpos = result;
-        curpos += 0 * currenttime;
-        if (debug_pp_extrapolate)
-        {
-            curpos += 0 * currenttime * latency;
-        }
         if (dtg > 0.0f)
         {
-            curpos.z -= currenttime * currenttime * 400.0f * 0;
             if (curpos.z < result.z - dtg)
                 curpos.z = result.z - dtg;
         }
