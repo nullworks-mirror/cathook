@@ -256,6 +256,13 @@ static CatCommand irc_exec_all("irc_exec_all", "Send command to C&C channel",
                                    irc.privmsg(msg, true);
                                });
 
+static CatCommand invite_all("irc_invite_all", "Inivte all people in C&C channel",
+                               [](const CCommand &args) {
+                                   std::string msg("cc_cmdtf_party_request_join_user ");
+                                   msg.append(std::to_string(g_ISteamUser->GetSteamID().GetAccountID()));
+                                   irc.privmsg(msg, true);
+                               });
+
 static CatCommand irc_send("irc_send", "Send message to IRC",
                            [](const CCommand &args) {
                                std::string msg(args.ArgS());
