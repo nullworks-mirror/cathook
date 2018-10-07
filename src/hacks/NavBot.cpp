@@ -165,7 +165,7 @@ CachedEntity *NearestEnemy()
             ent->m_iTeam() == LOCAL_E->m_iTeam())
             continue;
         float scr = ent->m_flDistance();
-        if (g_pPlayerResource->GetClass(ent) == tf_engineer)
+        if (g_pPlayerResource->GetClass(ent) == tf_engineer || g_pPlayerResource->GetClass(ent) == tf_heavy)
             scr *= 5.0f;
         if (g_pPlayerResource->GetClass(ent) == tf_pyro)
             scr *= 7.0f;
@@ -180,7 +180,6 @@ CachedEntity *NearestEnemy()
     else
         last_tar = bestent->m_IDX;
     return bestent;
-    return nullptr;
 }
 Timer ammo_health_cooldown{};
 Timer init_timer{};
@@ -356,30 +355,30 @@ bool NavToEnemy()
 {
     if (*stay_near)
     {
+        static Vector lastgoal{};
         CachedEntity *ent = NearestEnemy();
         if (CE_GOOD(ent))
         {
             int nearestvalid{};
             if (!*heavy_mode)
-            {
-                int range = 0;
-                while (nearestvalid == -1 && range < 5000)
-                {
-                    nearestvalid = nav::FindNearestValidbyDist(
-                        ent->m_vecOrigin(), 2000 - range / 4, 6000 - range);
-                    range += 300.0f;
-                }
-            }
+                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 2000, 6000);
             else
-                nearestvalid =
-                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000);
+                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000);
             if (nearestvalid != -1)
             {
                 auto area = nav::areas[nearestvalid];
                 nav::NavTo(area.m_center, false, true, 1337);
+                lastgoal = area.m_center;
                 return true;
             }
         }
+        else if (lastgoal.z && LOCAL_E->m_vecOrigin().DistTo(lastgoal) > 200.0f)
+        {
+            nav::NavTo(lastgoal, false, true, 1337);
+            return true;
+        }
+        else
+            lastgoal = {};
     }
     return false;
 }
