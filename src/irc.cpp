@@ -238,7 +238,7 @@ static bool restarting{ false };
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
     {
-        if (!last_steamid_received.test_and_set(10000))
+        if (last_steamid_received.test_and_set(10000))
         {
             if (!steamidvec.empty())
             {
@@ -254,6 +254,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
                 if (idx != -1)
                     hack::command_stack().push(
                         format("tf_party_request_join_user ", steamidvec[idx]));
+                steamidvec.empty();
             }
         }
         if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000))
