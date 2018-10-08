@@ -254,7 +254,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
                 if (idx != -1)
                     hack::command_stack().push(
                         format("tf_party_request_join_user ", steamidvec[idx]));
-                steamidvec.empty();
+                steamidvec.clear();
             }
         }
         if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000))
