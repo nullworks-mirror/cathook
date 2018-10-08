@@ -165,7 +165,8 @@ CachedEntity *NearestEnemy()
             ent->m_iTeam() == LOCAL_E->m_iTeam())
             continue;
         float scr = ent->m_flDistance();
-        if (g_pPlayerResource->GetClass(ent) == tf_engineer || g_pPlayerResource->GetClass(ent) == tf_heavy)
+        if (g_pPlayerResource->GetClass(ent) == tf_engineer ||
+            g_pPlayerResource->GetClass(ent) == tf_heavy)
             scr *= 5.0f;
         if (g_pPlayerResource->GetClass(ent) == tf_pyro)
             scr *= 7.0f;
@@ -361,9 +362,11 @@ bool NavToEnemy()
         {
             int nearestvalid{};
             if (!*heavy_mode)
-                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 2000, 6000);
+                nearestvalid =
+                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 2000, 6000);
             else
-                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000);
+                nearestvalid =
+                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000);
             if (nearestvalid != -1)
             {
                 auto area = nav::areas[nearestvalid];

@@ -130,7 +130,9 @@ void cc_party(std::string &msg)
     }
     else if (answer_steam && msg.find("cc_partysteam") == 0)
     {
-        irc.privmsg(format("cc_partysteamrep", g_ISteamUser->GetSteamID().GetAccountID()), true);
+        irc.privmsg(format("cc_partysteamrep",
+                           g_ISteamUser->GetSteamID().GetAccountID()),
+                    true);
     }
 }
 void cc_cmd(std::string &msg)
@@ -180,7 +182,7 @@ void handleIRC(IRCMessage message, IRCClient *client)
             }
             if (msg.find("cc_party") == 0)
             {
-               handlers::cc_party(msg);
+                handlers::cc_party(msg);
             }
         }
     }
@@ -241,20 +243,23 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
             if (!steamidvec.empty())
             {
                 steamidvec.push_back(g_ISteamUser->GetSteamID().GetAccountID());
-                int idx = -1;
+                int idx         = -1;
                 unsigned lowest = UINT_MAX;
                 for (int i = 0; i < steamidvec.size(); i++)
                     if (steamidvec[i] < lowest)
                     {
                         lowest = steamidvec[i];
-                        idx = i;
+                        idx    = i;
                     }
                 if (idx != -1)
-                    hack::command_stack().push(format("tf_party_request_join_user ", steamidvec[idx]));
+                    hack::command_stack().push(
+                        format("tf_party_request_join_user ", steamidvec[idx]));
             }
         }
         if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000))
-            irc.privmsg(format("cc_partysteam", g_ISteamUser->GetSteamID().GetAccountID()), true);
+            irc.privmsg(format("cc_partysteam",
+                               g_ISteamUser->GetSteamID().GetAccountID()),
+                        true);
         irc.Update();
     }
 });
@@ -303,12 +308,13 @@ static CatCommand irc_exec_all("irc_exec_all", "Send command to C&C channel",
                                    irc.privmsg(msg, true);
                                });
 
-static CatCommand invite_all("irc_invite_all", "Inivte all people in C&C channel",
-                               [](const CCommand &args) {
-                                   std::string msg("cc_cmdtf_party_request_join_user ");
-                                   msg.append(std::to_string(g_ISteamUser->GetSteamID().GetAccountID()));
-                                   irc.privmsg(msg, true);
-                               });
+static CatCommand invite_all(
+    "irc_invite_all", "Inivte all people in C&C channel",
+    [](const CCommand &args) {
+        std::string msg("cc_cmdtf_party_request_join_user ");
+        msg.append(std::to_string(g_ISteamUser->GetSteamID().GetAccountID()));
+        irc.privmsg(msg, true);
+    });
 
 static CatCommand irc_send("irc_send", "Send message to IRC",
                            [](const CCommand &args) {
