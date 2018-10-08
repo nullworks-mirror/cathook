@@ -347,7 +347,7 @@ static CatCommand heal_steamid(
                 continue;
             if (ent->m_Type() != ENTITY_PLAYER)
                 continue;
-            if (ent->player_info.friendsID == strtol(args.Arg(1), nullptr, 10))
+            if (ent->player_info.friendsID == std::stoul(args.Arg(1)))
             {
                 force_healing_target = i;
                 return;
@@ -490,11 +490,14 @@ void CreateMove()
     }
 }
 
+std::array<Timer, 32> reset_cd{};
 std::vector<patient_data_s> data(32);
 void UpdateData()
 {
     for (int i = 1; i < 32; i++)
     {
+        if (reset_cd[i].test_and_set(10000))
+            data[i] = {};
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent))
         {
@@ -511,6 +514,7 @@ void UpdateData()
             const int last_health = data[i].last_health;
             if (health != last_health)
             {
+                reset_cd[i].update();
                 data[i].last_health = health;
                 if (health < last_health)
                 {

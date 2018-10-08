@@ -18,6 +18,13 @@ static settings::Int port("irc.port", "8080");
 static settings::String commandandcontrol_channel("irc.cc.channel", "");
 static settings::String commandandcontrol_password("irc.cc.password", "");
 
+static settings::Bool irc_party{ "irc.cc.party", "false" };
+static settings::Bool answer_steam{ "irc.cc.respondparty", "false" };
+static settings::Int party_cooldown{ "irc.cc.party-cooldown", "60" };
+static Timer last_sent_steamid{};
+static Timer last_steamid_received{};
+static std::vector<unsigned> steamidvec{};
+
 static ChIRC::ChIRC irc;
 
 void printmsg(std::string &usr, std::string &msg)
@@ -111,6 +118,21 @@ void authreq(std::string &msg)
         }
     }
 }
+void cc_party(std::string &msg)
+{
+    if (msg.find("cc_partysteamrep") == 0)
+    {
+        if (!irc_party)
+            return;
+        unsigned steamid = std::stoul(msg.substr(16));
+        steamidvec.push_back(steamid);
+        last_steamid_received.update();
+    }
+    else if (answer_steam && msg.find("cc_partysteam") == 0)
+    {
+        irc.privmsg(format("cc_partysteamrep", g_ISteamUser->GetSteamID().GetAccountID()), true);
+    }
+}
 void cc_cmd(std::string &msg)
 {
     hack::ExecuteCommand(msg.substr(6));
@@ -155,6 +177,10 @@ void handleIRC(IRCMessage message, IRCClient *client)
             if (msg.find("cc_cmd") == 0)
             {
                 handlers::cc_cmd(msg);
+            }
+            if (msg.find("cc_party") == 0)
+            {
+               handlers::cc_party(msg);
             }
         }
     }
@@ -209,7 +235,28 @@ static bool restarting{ false };
 
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
+    {
+        if (!last_steamid_received.test_and_set(10000))
+        {
+            if (!steamidvec.empty())
+            {
+                steamidvec.push_back(g_ISteamUser->GetSteamID().GetAccountID());
+                int idx = -1;
+                unsigned lowest = UINT_MAX;
+                for (int i = 0; i < steamidvec.size(); i++)
+                    if (steamidvec[i] < lowest)
+                    {
+                        lowest = steamidvec[i];
+                        idx = i;
+                    }
+                if (idx != -1)
+                    hack::command_stack().push(format("tf_party_request_join_user ", steamidvec[idx]));
+            }
+        }
+        if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000))
+            irc.privmsg(format("cc_partysteam", g_ISteamUser->GetSteamID().GetAccountID()), true);
         irc.Update();
+    }
 });
 
 template <typename T> void rvarCallback(settings::VariableBase<T> &var, T after)
