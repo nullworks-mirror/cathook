@@ -136,8 +136,8 @@ Vector EnginePrediction(CachedEntity *entity, float time)
 
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
-    char *object         = new char[165];
-    CMoveData *pMoveData = (CMoveData *) object;
+    auto object = std::make_unique<char[]>(165);
+    CMoveData *pMoveData = (CMoveData *) object.get();
 
     float frameTime = g_GlobalVars->frametime;
     float curTime   = g_GlobalVars->curtime;
@@ -180,8 +180,6 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     oFinishMove(g_IPrediction, ent, &fakecmd, pMoveData);
     g_IGameMovement->FinishTrackPredictionErrors(
         reinterpret_cast<CBasePlayer *>(ent));
-
-    delete[] object;
 
     NET_VAR(entity, 4188, CUserCmd *) = original_cmd;
 
