@@ -22,7 +22,7 @@
 
 static settings::Bool minigun_jump{ "misc.minigun-jump-tf2c", "false" };
 static settings::Bool roll_speedhack{ "misc.roll-speedhack", "false" };
-static settings::Bool engine_pred{ "misc.engine-prediction", "false" };
+static settings::Bool engine_pred{ "misc.engine-prediction", "true" };
 static settings::Bool debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int semiauto{ "misc.semi-auto", "0" };
 static settings::Int fakelag_amount{ "misc.fakelag", "0" };
@@ -49,7 +49,6 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 {
     if (!ent)
         return;
-
     typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
                                 class IMoveHelper *, CMoveData *);
     typedef void (*FinishMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
@@ -60,28 +59,33 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
         (SetupMoveFn)(*(unsigned *) (predictionVtable + 19));
     FinishMoveFn oFinishMove =
         (FinishMoveFn)(*(unsigned *) (predictionVtable + 20));
-
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
-    char object[165];
+    char *object         = new char[165];
     CMoveData *pMoveData = (CMoveData *) object;
 
+    // Backup
     float frameTime = g_GlobalVars->frametime;
     float curTime   = g_GlobalVars->curtime;
-    CUserCmd defaultCmd;
-    if (ucmd == NULL)
+
+    CUserCmd defaultCmd{};
+    if (ucmd == nullptr)
     {
         ucmd = &defaultCmd;
     }
 
+    // Set Usercmd for prediction
     NET_VAR(ent, 4188, CUserCmd *) = ucmd;
 
+    // Set correct CURTIME
     g_GlobalVars->curtime =
         g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
     g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
 
     *g_PredictionRandomSeed =
         MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF;
+
+    // Run The Prediction
     g_IGameMovement->StartTrackPredictionErrors(
         reinterpret_cast<CBasePlayer *>(ent));
     oSetupMove(g_IPrediction, ent, ucmd, NULL, pMoveData);
@@ -91,6 +95,9 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     g_IGameMovement->FinishTrackPredictionErrors(
         reinterpret_cast<CBasePlayer *>(ent));
 
+    delete[] object;
+
+    // Reset User CMD
     NET_VAR(ent, 4188, CUserCmd *) = nullptr;
 
     g_GlobalVars->frametime = frameTime;
@@ -104,8 +111,6 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 #else
 #define antikick_time 90
 #endif
-const char *cmds[7] = { "use",         "voicecommand", "spec_next", "spec_prev",
-                        "spec_player", "invprev",      "invnext" };
 
 static int attackticks = 0;
 
