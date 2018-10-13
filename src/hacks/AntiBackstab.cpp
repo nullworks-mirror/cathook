@@ -12,7 +12,7 @@
 static settings::Bool enable{ "antibackstab.enable", "0" };
 static settings::Float distance{ "antibackstab.distance", "200" };
 static settings::Bool silent{ "antibackstab.silent", "1" };
-static settings::Float angle{ "antibackstab.angle", "90" };
+static settings::Float angle{ "antibackstab.angle", "107.5" };
 static settings::Bool sayno{ "antibackstab.nope", "0" };
 
 namespace hacks::tf2::antibackstab
@@ -95,22 +95,17 @@ void CreateMove()
     if (!enable)
         return;
     spy                   = ClosestSpy();
-    ConVar *pitchdown     = g_ICvar->FindVar("cl_pitchdown");
-    static int normal_val = pitchdown->GetInt();
     if (spy)
     {
         noaa = true;
-        pitchdown->SetValue(180);
-        current_user_cmd->viewangles.x = 140.0f;
+        current_user_cmd->viewangles.x = 160.0f;
         if (silent)
             g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)
             SayNope();
     }
     else
-    {
-        pitchdown->SetValue(normal_val);
         noaa = false;
-    }
+
 }
 } // namespace hacks::tf2::antibackstab

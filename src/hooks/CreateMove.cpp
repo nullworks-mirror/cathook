@@ -101,6 +101,8 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     g_GlobalVars->frametime = frameTime;
     g_GlobalVars->curtime   = curTime;
 
+    // Adjust tickbase
+    NET_INT(ent, netvar.nTickBase)++;
     return;
 }
 } // namespace engine_prediction

@@ -246,24 +246,29 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     {
         if (last_steamid_received.test_and_set(10000))
         {
-            if (!steamidvec.empty())
-            {
-                steamidvec.push_back(g_ISteamUser->GetSteamID().GetAccountID());
-                int idx         = -1;
-                unsigned lowest = UINT_MAX;
-                for (int i = 0; i < steamidvec.size(); i++)
-                    if (steamidvec[i] < lowest)
-                    {
-                        lowest = steamidvec[i];
-                        idx    = i;
-                    }
-                if (idx != -1 && steamidvec[idx] != g_ISteamUser->GetSteamID().GetAccountID())
+            static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
+            typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
+            auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
+            auto party_client = re::CTFPartyClient::GTFPartyClient();
+            if (party_client && GetNumOnlineMembers_fn(party_client) != 6)
+                if (!steamidvec.empty())
                 {
-                    hack::command_stack().push("tf_party_leave");
-                    hack::command_stack().push(format("tf_party_request_join_user ", steamidvec[idx]));
+                    steamidvec.push_back(g_ISteamUser->GetSteamID().GetAccountID());
+                    int idx         = -1;
+                    unsigned lowest = UINT_MAX;
+                    for (int i = 0; i < steamidvec.size(); i++)
+                        if (steamidvec[i] < lowest)
+                        {
+                            lowest = steamidvec[i];
+                            idx    = i;
+                        }
+                    if (idx != -1 && steamidvec[idx] != g_ISteamUser->GetSteamID().GetAccountID())
+                    {
+                        hack::command_stack().push("tf_party_leave");
+                        hack::command_stack().push(format("tf_party_request_join_user ", steamidvec[idx]));
+                    }
+                    steamidvec.clear();
                 }
-                steamidvec.clear();
-            }
         }
         if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000))
             irc.privmsg(format("cc_partysteam",

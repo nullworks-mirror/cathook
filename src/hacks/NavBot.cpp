@@ -356,36 +356,93 @@ bool NavToSentry(int priority)
         return true;
     return false;
 }
+static Vector lastgoal{0, 0, 0};
+int lastent = -1;
 bool NavToEnemy()
 {
     if (*stay_near)
     {
-        static Vector lastgoal{};
-        CachedEntity *ent = NearestEnemy();
+        if (lastent != -1)
+        {
+            CachedEntity *ent = ENTITY(lastent);
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || ent->m_iTeam() == LOCAL_E->m_iTeam())
+            {
+                lastent = -1;
+                if (lastgoal.x > 1.0f || lastgoal.x < -1.0f)
+                {
+                    nav::NavTo(lastgoal, false, true, 1337);
+                    return true;
+                }
+            }
+            else
+            {
+                int nearestvalid = -1;
+                if (!*heavy_mode)
+                    nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 2000, true);
+                else
+                    nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000, true);
+                if (nearestvalid != -1)
+                {
+                    auto area = nav::areas[nearestvalid];
+                    nav::NavTo(area.m_center, false, true, 1337);
+                    lastgoal = area.m_center;
+                    lastent = ent->m_IDX;
+                    return true;
+                }
+                else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) && lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
+                {
+                    nav::NavTo(lastgoal, false, true, 1337);
+                    lastgoal = {0, 0, 0};
+                    return true;
+                }
+                else
+                {
+                    lastgoal = {0, 0, 0};
+                    lastent = -1;
+                }
+            }
+
+        }
+
+        auto ent = NearestEnemy();
         if (CE_GOOD(ent))
         {
-            int nearestvalid{};
+            int nearestvalid = -1;
             if (!*heavy_mode)
-                nearestvalid =
-                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 2000, 6000);
+                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 2000, true);
             else
-                nearestvalid =
-                    nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000);
+                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000, true);
             if (nearestvalid != -1)
             {
                 auto area = nav::areas[nearestvalid];
                 nav::NavTo(area.m_center, false, true, 1337);
                 lastgoal = area.m_center;
+                lastent = ent->m_IDX;
                 return true;
             }
+            else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) && lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
+            {
+                nav::NavTo(lastgoal, false, true, 1337);
+                lastgoal = {0, 0, 0};
+                return true;
+            }
+            else
+            {
+                lastgoal = {0, 0, 0};
+                lastent = -1;
+            }
         }
-        else if (lastgoal.z && LOCAL_E->m_vecOrigin().DistTo(lastgoal) > 200.0f)
+        else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) && lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
         {
             nav::NavTo(lastgoal, false, true, 1337);
+            lastgoal = {0, 0, 0};
             return true;
         }
         else
-            lastgoal = {};
+        {
+            lastgoal = {0, 0, 0};
+            lastent = -1;
+        }
     }
     return false;
 }
@@ -461,9 +518,6 @@ static HookedFunction
             return;
         if (primary_only && enable)
             UpdateSlot();
-        if (*stay_near && nav_enemy_cd.test_and_set(1000) &&
-            (!HasLowAmmo()) & (!HasLowHealth()))
-            NavToEnemy();
         if (HasLowHealth() && ammo_health_cooldown.test_and_set(5000))
         {
             CachedEntity *med = nearestHealth();
@@ -508,6 +562,10 @@ static HookedFunction
                     }
             }
         }
+        if (*stay_near && nav_enemy_cd.test_and_set(1000) &&
+            !HasLowAmmo() && !HasLowHealth())
+            if (NavToEnemy())
+                return;
         if (enable)
         {
             if (!nav::ReadyForCommands && !spy_mode && !heavy_mode &&
