@@ -12,12 +12,49 @@ static settings::Int aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
 
 float sandwich_speed = 350.0f;
 float grav           = 0.25f;
+int prevent = -1;
 std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
                                               bool zcheck)
 {
     CachedEntity *bestent = nullptr;
     float bestscr         = FLT_MAX;
     Vector predicted{};
+    for (int i = 0; i < 1; i++)
+    {
+        if (prevent != -1)
+        {
+            auto ent = ENTITY(prevent);
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) || ent == LOCAL_E)
+                continue;
+            if (!teammate && ent->m_iTeam() == LOCAL_E->m_ItemType())
+            continue;
+            if (!ent->hitboxes.GetHitbox(1))
+                continue;
+            Vector target{};
+            if (Predict)
+                target = ProjectilePrediction(ent, 1, sandwich_speed, grav,
+                                              PlayerGravityMod(ent));
+            else
+                target = ent->hitboxes.GetHitbox(1)->center;
+            if (!IsEntityVectorVisible(ent, target))
+                continue;
+            if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
+                continue;
+            float scr = ent->m_flDistance();
+            if (g_pPlayerResource->GetClass(ent) == tf_medic)
+                scr *= 0.1f;
+            if (scr < bestscr)
+            {
+                bestent   = ent;
+                predicted = target;
+                bestscr   = scr;
+                prevent = ent->m_IDX;
+            }
+        }
+        if (bestent && predicted.z)
+            return { bestent, predicted };
+    }
+    prevent = -1;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
@@ -47,6 +84,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
             bestent   = ent;
             predicted = target;
             bestscr   = scr;
+            prevent = ent->m_IDX;
         }
     }
     return { bestent, predicted };

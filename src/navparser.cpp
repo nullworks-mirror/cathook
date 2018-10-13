@@ -28,24 +28,11 @@ int FindInVector(size_t id)
 }
 static int bestarea = -1;
 Timer reselect{};
-int FindNearestValidbyDist(Vector vec, float mindist, float maxdist)
+int FindNearestValidbyDist(Vector vec, float mindist, float maxdist, bool closest)
 {
     if (reselect.test_and_set(500))
     {
         float bestscr = FLT_MAX;
-        if (bestarea != -1)
-        {
-            bool success = false;
-            Vector area  = areas[bestarea].m_center;
-            float scr    = area.DistTo(vec);
-            if (scr < maxdist && scr > mindist)
-                if (IsVectorVisible(vec, area, false))
-                    success = true;
-            if (!success)
-                bestarea = -1;
-        }
-        else
-        {
             bestarea = -1;
             for (int ar = 0; ar < areas.size(); ar++)
             {
@@ -54,7 +41,13 @@ int FindNearestValidbyDist(Vector vec, float mindist, float maxdist)
                 float scr = area.DistTo(vec);
                 if (scr > maxdist || scr < mindist)
                     continue;
-                if (scr > bestscr)
+                if (closest)
+                {
+                    if (scr > bestscr)
+                        continue;
+
+                }
+                else if (scr < bestscr)
                     continue;
                 if (IsVectorVisible(vec, area, false))
                 {
@@ -62,7 +55,6 @@ int FindNearestValidbyDist(Vector vec, float mindist, float maxdist)
                     bestarea = ar;
                 }
             }
-        }
     }
     return bestarea;
 }
@@ -330,6 +322,7 @@ void clearInstructions()
 static Timer ignoreReset{};
 static Timer patherReset{};
 static Timer sentryUpdate{};
+static Timer sentryClear{};
 static Timer sentryCheck{};
 // Function for removing ignores
 void ignoreManagerCM()
@@ -340,8 +333,10 @@ void ignoreManagerCM()
         TF2MAP->inactiveTracker.reset();
     if (patherReset.test_and_set(30000))
         TF2MAP->pather->Reset();
-    if (sentryUpdate.test_and_set(1000))
-        TF2MAP->inactiveTracker.updateSentries();
+    if (sentryClear.test_and_set(20000))
+        TF2MAP->inactiveTracker.ClearSentries();
+    if (sentryUpdate.test_and_set(500))
+        TF2MAP->inactiveTracker.AddSentries();
 }
 
 void Repath()

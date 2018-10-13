@@ -26,7 +26,7 @@ void Draw();
 
 int FindInVector(size_t id);
 int FindNearestValid(Vector vec);
-int FindNearestValidbyDist(Vector vec, float mindist, float maxdist);
+int FindNearestValidbyDist(Vector vec, float mindist, float maxdist, bool closest);
 
 class inactivityTracker
 {
@@ -130,10 +130,8 @@ public:
         }
         return false;
     }
-    void updateSentries()
+    void AddSentries()
     {
-        sentryAreas.clear();
-        sentries.clear();
         for (int i = 0; i < HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
@@ -154,6 +152,11 @@ public:
                 sentryAreas[i.m_id] = true;
             }
         }
+    }
+    void ClearSentries()
+    {
+        sentries.clear();
+        sentryAreas.clear();
     }
     bool IsIgnored(std::pair<int, int> connection)
     {
