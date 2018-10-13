@@ -319,7 +319,12 @@ CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand &args) {
         logging::Info("Invalid call");
         return;
     }
-    unsigned steamid = strtoul(args.Arg(1), nullptr, 10);
+    unsigned steamid;
+    try {
+        steamid = strtoul(args.Arg(1), nullptr, 10);
+    } catch (std::invalid_argument) {
+        return;
+    }
     logging::Info("Data for %i: ", steamid);
     logging::Info("   State: %i", AccessData(steamid).state);
     /*int clr = AccessData(steamid).color;

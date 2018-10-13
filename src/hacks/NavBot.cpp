@@ -38,7 +38,11 @@ CatCommand follow_steam("navbot_steam", "Follow Steam Id",
                                 steamid = 0x0;
                                 return;
                             }
-                            steamid = std::stoul(args.Arg(1));
+                            try {
+                                steamid = std::stoul(args.Arg(1));
+                            } catch (std::invalid_argument) {
+                                return;
+                            }
                         });
 Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
 Timer lastJump{};

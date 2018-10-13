@@ -6,6 +6,7 @@
 #include "ChIRC.hpp"
 #include <random>
 #include "hack.hpp"
+#include "ucccccp.hpp"
 
 namespace IRC
 {
@@ -124,7 +125,12 @@ void cc_party(std::string &msg)
     {
         if (!irc_party)
             return;
-        unsigned steamid = std::stoul(msg.substr(16));
+        unsigned steamid;
+        try {
+            steamid = std::stoul(msg.substr(16));
+        } catch (std::invalid_argument) {
+            return;
+        }
         steamidvec.push_back(steamid);
         last_steamid_received.update();
     }
