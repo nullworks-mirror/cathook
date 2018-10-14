@@ -140,15 +140,15 @@ struct offsets
     }
     static constexpr uint32_t FireEvent()
     {
-        return PlatformOffset(8, 0, 0);
+        return PlatformOffset(8, undefined, undefined);
     }
     static constexpr uint32_t FireEventClientSide()
     {
-        return PlatformOffset(9, 0, 0);
+        return PlatformOffset(9, undefined, undefined);
     }
     static constexpr uint32_t AreRandomCritsEnabled()
     {
-        return PlatformOffset(466, 0, 466);
+        return PlatformOffset(466, undefined, 466);
     }
     static constexpr uint32_t lastoutgoingcommand()
     {
