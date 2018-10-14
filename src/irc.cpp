@@ -1,10 +1,6 @@
 #include "common.hpp"
-#include <thread>
-#include <atomic>
 #include "irc.hpp"
-#include "Settings.hpp"
 #include "ChIRC.hpp"
-#include <random>
 #include "hack.hpp"
 #include "ucccccp.hpp"
 
@@ -43,16 +39,7 @@ void printmsg(std::string &usr, std::string &msg)
 }
 void printmsgcopy(std::string usr, std::string msg)
 {
-    if (msg.size() > 256 || usr.size() > 256)
-    {
-        logging::Info("IRC: Message too large.");
-        return;
-    }
-    if (g_Settings.bInvalid)
-        logging::Info("[IRC] %s: %s", usr.c_str(), msg.c_str());
-    else
-        PrintChat("\x07%06X[IRC] %s\x01: %s", 0xe05938, usr.c_str(),
-                  msg.c_str());
+    printmsg(usr, msg);
 }
 
 namespace handlers
@@ -70,10 +57,12 @@ void authreq(std::string &msg)
     if (g_Settings.bInvalid)
         return;
     bool isreply = false;
-    std::string steamidhash;
+
     if (msg.find("authrep") == 0)
         isreply = true;
+
     // Get steamid hash from string
+    std::string steamidhash;
     if (isreply)
         steamidhash = msg.substr(7);
     else
@@ -126,9 +115,12 @@ void cc_party(std::string &msg)
         if (!irc_party)
             return;
         unsigned steamid;
-        try {
+        try
+        {
             steamid = std::stoul(msg.substr(16));
-        } catch (std::invalid_argument) {
+        }
+        catch (std::invalid_argument)
+        {
             return;
         }
         steamidvec.push_back(steamid);
@@ -143,7 +135,39 @@ void cc_party(std::string &msg)
 }
 void cc_cmd(std::string &msg)
 {
-    hack::ExecuteCommand(msg.substr(6));
+    // Outdated cc_cmd. Return
+    if (msg.find("$cmd") == msg.npos)
+        return;
+    // Command applys to all bots
+    if (msg.find("$id") == msg.npos)
+    {
+        // Todo: Remove debug
+        std::cout << msg.substr(msg.find("$cmd") + 4) << std::endl;
+        hack::ExecuteCommand(msg.substr(msg.find("$cmd") + 4));
+    }
+    else
+    {
+        std::string string_id =
+            msg.substr(msg.find("$id") + 3, msg.find("$cmd") - (msg.find("$id") + 3));
+        int id;
+        // Todo: Remove debug
+        std::cout << "id:" << string_id << std::endl;
+        try
+        {
+            id = std::stoi(string_id);
+        }
+        catch (std::invalid_argument)
+        {
+            // id is not int???
+            return;
+        }
+        if (id == irc.getData().id)
+        {
+            // Thats me!
+            std::cout << msg.substr(msg.find("$cmd") + 4) << std::endl;
+            hack::ExecuteCommand(msg.substr(msg.find("$cmd") + 4));
+        }
+    }
 }
 } // namespace handlers
 
@@ -246,14 +270,16 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     {
         if (last_steamid_received.test_and_set(10000))
         {
-            static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
+            static uintptr_t addr = gSignatures.GetClientSignature(
+                "55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
             typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
             auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
-            auto party_client = re::CTFPartyClient::GTFPartyClient();
+            auto party_client           = re::CTFPartyClient::GTFPartyClient();
             if (party_client && GetNumOnlineMembers_fn(party_client) != 6)
                 if (!steamidvec.empty())
                 {
-                    steamidvec.push_back(g_ISteamUser->GetSteamID().GetAccountID());
+                    steamidvec.push_back(
+                        g_ISteamUser->GetSteamID().GetAccountID());
                     int idx         = -1;
                     unsigned lowest = UINT_MAX;
                     for (int i = 0; i < steamidvec.size(); i++)
@@ -262,10 +288,13 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
                             lowest = steamidvec[i];
                             idx    = i;
                         }
-                    if (idx != -1 && steamidvec[idx] != g_ISteamUser->GetSteamID().GetAccountID())
+                    if (idx != -1 &&
+                        steamidvec[idx] !=
+                            g_ISteamUser->GetSteamID().GetAccountID())
                     {
                         hack::command_stack().push("tf_party_leave");
-                        hack::command_stack().push(format("tf_party_request_join_user ", steamidvec[idx]));
+                        hack::command_stack().push(format(
+                            "tf_party_request_join_user ", steamidvec[idx]));
                     }
                     steamidvec.clear();
                 }
