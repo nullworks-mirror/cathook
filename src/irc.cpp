@@ -265,19 +265,18 @@ void auth(bool reply)
 
 static bool restarting{ false };
 
+Timer calledonce{};
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
     {
-        if (last_sent_steamid.check(8000) && !last_sent_steamid.check(9500))
+        if (last_sent_steamid.check(8000) && calledonce.test_and_set(2000))
         {
             static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
             typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
             auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
             auto party_client = re::CTFPartyClient::GTFPartyClient();
             if (party_client && GetNumOnlineMembers_fn(party_client) != 6 && !steamidvec.empty())
-            {
                 hack::command_stack().push("tf_party_leave");
-            }
         }
         if (last_steamid_received.test_and_set(10000))
         {
