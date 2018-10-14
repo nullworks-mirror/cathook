@@ -346,7 +346,7 @@ static CatCommand irc_send_cmd("irc_send_cmd", "Send cmd to IRC",
                                });
 static CatCommand irc_exec_all("irc_exec_all", "Send command to C&C channel",
                                [](const CCommand &args) {
-                                   std::string msg("cc_cmd");
+                                   std::string msg("cc_cmd$cmd");
                                    msg.append(args.ArgS());
                                    irc.privmsg(msg, true);
                                });
@@ -354,7 +354,7 @@ static CatCommand irc_exec_all("irc_exec_all", "Send command to C&C channel",
 static CatCommand invite_all(
     "irc_invite_all", "Inivte all people in C&C channel",
     [](const CCommand &args) {
-        std::string msg("cc_cmdtf_party_request_join_user ");
+        std::string msg("cc_cmd$cmdtf_party_request_join_user ");
         msg.append(std::to_string(g_ISteamUser->GetSteamID().GetAccountID()));
         irc.privmsg(msg, true);
     });
