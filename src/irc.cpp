@@ -276,7 +276,11 @@ int GetMaxParty()
         if (peer.second.can_party)
            partyable++;
     }
+    return partyable;
 }
+CatCommand debug_maxparty("debug_partysize", "Debug party size", [](){
+   logging::Info("%d", GetMaxParty());
+});
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
     {
