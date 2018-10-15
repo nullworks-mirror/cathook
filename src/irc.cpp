@@ -330,8 +330,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
             std::string nick("Anon");
             if (!*anon)
                 nick = g_ISteamFriends->GetPersonaName();
-            irc.UpdateState(nick, nick, *channel, *commandandcontrol_channel,
-                                           *commandandcontrol_password, *address, *port, *irc_party && *answer_steam);
+            irc.UpdateState(*irc_party && *answer_steam);
         }
     }
 });
