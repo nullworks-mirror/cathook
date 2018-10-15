@@ -266,6 +266,17 @@ void auth(bool reply)
 static bool restarting{ false };
 
 Timer calledonce{};
+Timer ircstate{};
+int GetMaxParty()
+{
+    int partyable = 1;
+    auto peers = irc.getPeers();
+    for (auto peer : peers)
+    {
+        if (peer.second.can_party)
+           partyable++;
+    }
+}
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
     {
@@ -275,7 +286,8 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
             typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
             auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
             auto party_client = re::CTFPartyClient::GTFPartyClient();
-            if (party_client && GetNumOnlineMembers_fn(party_client) != 6 && !steamidvec.empty())
+            int online_members = GetNumOnlineMembers_fn(party_client);
+            if (party_client && online_members != 6 && online_members < GetMaxParty())
                 hack::command_stack().push("tf_party_leave");
         }
         if (last_steamid_received.test_and_set(10000))
@@ -285,7 +297,8 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
             typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
             auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
             auto party_client           = re::CTFPartyClient::GTFPartyClient();
-            if (party_client && GetNumOnlineMembers_fn(party_client) != 6)
+            int online_members = GetNumOnlineMembers_fn(party_client);
+            if (party_client && online_members != 6 && online_members < GetMaxParty())
                 if (!steamidvec.empty())
                 {
                     steamidvec.push_back(
@@ -308,6 +321,14 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
                                g_ISteamUser->GetSteamID().GetAccountID()),
                         true);
         irc.Update();
+        if (ircstate.test_and_set(20000))
+        {
+            std::string nick("Anon");
+            if (!*anon)
+                nick = g_ISteamFriends->GetPersonaName();
+            irc.UpdateState(nick, nick, *channel, *commandandcontrol_channel,
+                                           *commandandcontrol_password, *address, *port, *irc_party && *answer_steam);
+        }
     }
 });
 
