@@ -232,7 +232,7 @@ void updateData()
     if (!*anon)
         nick = g_ISteamFriends->GetPersonaName();
     irc.UpdateData(nick, nick, *channel, *commandandcontrol_channel,
-                   *commandandcontrol_password, *address, *port, *hacks::shared::catbot::enable);
+                   *commandandcontrol_password, *address, *port, *catbotmode);
 }
 
 bool sendmsg(std::string &msg, bool loopback)

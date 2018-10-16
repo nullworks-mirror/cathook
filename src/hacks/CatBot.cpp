@@ -33,9 +33,6 @@ static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
 settings::Bool catbotmode{ "cat-bot.enable", "false" };
 
-namespace hacks::shared::catbot
-{
-
 struct catbot_user_state
 {
     int treacherous_kills{ 0 };
@@ -427,4 +424,3 @@ void level_init()
 {
     level_init_timer.update();
 }
-} // namespace hacks::shared::catbot
