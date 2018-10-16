@@ -31,9 +31,10 @@ static settings::Bool always_crouch{ "cat-bot.always-crouch", "false" };
 static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
 static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
+settings::Bool catbotmode{ "cat-bot.enable", "false" };
+
 namespace hacks::shared::catbot
 {
-settings::Bool enable{ "cat-bot.enable", "false" };
 
 struct catbot_user_state
 {
@@ -151,7 +152,7 @@ class CatBotEventListener : public IGameEventListener2
 {
     void FireGameEvent(IGameEvent *event) override
     {
-        if (!enable)
+        if (!catbotmode)
             return;
 
         int killer_id =
@@ -294,7 +295,7 @@ static Timer disguise{};
 static Timer report_timer{};
 // TODO: add more stuffs
 static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
-    if (!*enable)
+    if (!*catbotmode)
         return;
 
     if (g_Settings.bInvalid)
@@ -323,7 +324,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
 
 void update()
 {
-    if (!enable)
+    if (!catbotmode)
         return;
 
     if (g_Settings.bInvalid)

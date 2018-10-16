@@ -23,9 +23,7 @@ static Timer last_sent_steamid{};
 static Timer last_steamid_received{};
 static std::vector<unsigned> steamidvec{};
 
-namespace hacks::shared::catbot {
-    extern settings::Bool enable;
-}
+extern settings::Bool catbotmode;
 
 static ChIRC::ChIRC irc;
 
