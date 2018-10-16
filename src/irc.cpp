@@ -1,5 +1,6 @@
 #include "common.hpp"
 #include "irc.hpp"
+#include "CatBot.hpp"
 #include "ChIRC.hpp"
 #include "hack.hpp"
 #include "ucccccp.hpp"
@@ -22,8 +23,6 @@ static settings::Int party_size{ "irc.cc.party-size", "6" };
 static Timer last_sent_steamid{};
 static Timer last_steamid_received{};
 static std::vector<unsigned> steamidvec{};
-
-extern settings::Bool catbotmode;
 
 static ChIRC::ChIRC irc;
 
@@ -232,7 +231,7 @@ void updateData()
     if (!*anon)
         nick = g_ISteamFriends->GetPersonaName();
     irc.UpdateData(nick, nick, *channel, *commandandcontrol_channel,
-                   *commandandcontrol_password, *address, *port, *catbotmode);
+                   *commandandcontrol_password, *address, *port, *hacks::shared::catbot::catbotmode);
 }
 
 bool sendmsg(std::string &msg, bool loopback)
