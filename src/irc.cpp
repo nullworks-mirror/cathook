@@ -315,7 +315,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
         }
         if (last_sent_steamid.check(8000) && calledonce.test_and_set(2000) && online_members < *party_size)
         {
-            if (party_client && online_members != 6 && online_members < GetMaxParty())
+            if (!steamidvec.empty() && party_client && online_members != 6 && online_members < GetMaxParty())
                 hack::command_stack().push("tf_party_leave");
         }
         if (last_steamid_received.test_and_set(10000) && online_members < *party_size)
