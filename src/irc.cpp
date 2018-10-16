@@ -18,6 +18,7 @@ static settings::String commandandcontrol_password("irc.cc.password", "");
 static settings::Bool irc_party{ "irc.cc.party", "false" };
 static settings::Bool answer_steam{ "irc.cc.respondparty", "false" };
 static settings::Int party_cooldown{ "irc.cc.party-cooldown", "60" };
+static settings::Int party_size{ "irc.cc.party-size", "6" };
 static Timer last_sent_steamid{};
 static Timer last_steamid_received{};
 static std::vector<unsigned> steamidvec{};
@@ -281,27 +282,39 @@ int GetMaxParty()
 CatCommand debug_maxparty("debug_partysize", "Debug party size", [](){
    logging::Info("%d", GetMaxParty());
 });
+
+Timer resize_party{};
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
     {
+        static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
+        typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
+        auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
+        auto party_client = re::CTFPartyClient::GTFPartyClient();
+        int online_members = GetNumOnlineMembers_fn(party_client);
+
+        if (resize_party.test_and_set(10000) && party_client && online_members > *party_size)
+        {
+            int lowest_id = INT_MAX;
+            for (auto peer : irc.getPeers())
+            {
+                int id = peer.first;
+                int party_size = peer.second.party_size;
+                if (party_size != online_members)
+                    continue;
+                if ( id < lowest_id)
+                    lowest_id = id;
+            }
+            if ( irc.getData().id < lowest_id)
+                hack::command_stack().push("tf_party_leave");
+        }
         if (last_sent_steamid.check(8000) && calledonce.test_and_set(2000))
         {
-            static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
-            typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
-            auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
-            auto party_client = re::CTFPartyClient::GTFPartyClient();
-            int online_members = GetNumOnlineMembers_fn(party_client);
             if (party_client && online_members != 6 && online_members < GetMaxParty())
                 hack::command_stack().push("tf_party_leave");
         }
         if (last_steamid_received.test_and_set(10000))
         {
-            static uintptr_t addr = gSignatures.GetClientSignature(
-                "55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
-            typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
-            auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
-            auto party_client           = re::CTFPartyClient::GTFPartyClient();
-            int online_members = GetNumOnlineMembers_fn(party_client);
             if (party_client && online_members != 6 && online_members < GetMaxParty())
                 if (!steamidvec.empty())
                 {
@@ -327,10 +340,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
         irc.Update();
         if (ircstate.test_and_set(20000))
         {
-            std::string nick("Anon");
-            if (!*anon)
-                nick = g_ISteamFriends->GetPersonaName();
-            irc.UpdateState(*irc_party && *answer_steam);
+            irc.UpdateState(*irc_party && *answer_steam, online_members);
         }
     }
 });

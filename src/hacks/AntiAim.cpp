@@ -586,7 +586,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         clamp = false;
         break;
     case 8:
-        p     = -3256.0f;
+        p     = 360.0f;
         clamp = false;
         break;
     case 9:
