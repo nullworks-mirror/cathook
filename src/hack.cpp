@@ -4,9 +4,6 @@
  *  Created on: Oct 3, 2016
  *      Author: nullifiedcat
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 // The code below was obtained from:
 // http://stackoverflow.com/questions/77005/how-to-generate-a-stacktrace-when-my-gcc-c-app-crashes/1925461#1925461
