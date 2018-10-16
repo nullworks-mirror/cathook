@@ -316,7 +316,20 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
         if (last_sent_steamid.check(8000) && calledonce.test_and_set(2000) && online_members < *party_size)
         {
             if (!steamidvec.empty() && party_client && online_members != 6 && online_members < GetMaxParty())
-                hack::command_stack().push("tf_party_leave");
+            {
+                steamidvec.push_back(
+                    g_ISteamUser->GetSteamID().GetAccountID());
+                int idx         = -1;
+                unsigned lowest = UINT_MAX;
+                for (int i = 0; i < steamidvec.size(); i++)
+                    if (steamidvec[i] < lowest)
+                    {
+                        lowest = steamidvec[i];
+                        idx    = i;
+                    }
+                if (idx != -1 && steamidvec[idx] == g_ISteamUser->GetSteamID().GetAccountID())
+                    hack::command_stack().push("tf_party_leave");
+            }
         }
         if (last_steamid_received.test_and_set(10000) && online_members < *party_size)
         {

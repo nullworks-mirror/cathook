@@ -312,7 +312,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
         !HasCondition<TFCond_Disguised>(LOCAL_E) && disguise.test_and_set(3000))
     {
         int teamtodisguise =
-            (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_BLU : TEAM_RED;
+            (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_BLU - 1 : TEAM_RED - 1;
         int classtojoin = classes[rand() % 3];
         g_IEngine->ClientCmd_Unrestricted(
             format("disguise ", classtojoin, " ", teamtodisguise).c_str());
