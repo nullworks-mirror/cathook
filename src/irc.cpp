@@ -111,7 +111,12 @@ void authreq(std::string &msg)
 }
 void cc_party(std::string &msg)
 {
-    if (msg.find("cc_partysteamrep") == 0)
+    static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
+    typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
+    auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
+    auto party_client = re::CTFPartyClient::GTFPartyClient();
+    int online_members = GetNumOnlineMembers_fn(party_client);
+    if (msg.find("cc_partysteamrep") == 0 && online_members < *party_size && online_members != 6)
     {
         if (!irc_party)
             return;
@@ -127,7 +132,7 @@ void cc_party(std::string &msg)
         steamidvec.push_back(steamid);
         last_steamid_received.update();
     }
-    else if (answer_steam && msg.find("cc_partysteam") == 0)
+    else if (answer_steam && msg.find("cc_partysteam") == 0 && online_members < *party_size && online_members != 6)
     {
         irc.privmsg(format("cc_partysteamrep",
                            g_ISteamUser->GetSteamID().GetAccountID()),
@@ -308,12 +313,12 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
             if ( irc.getData().id < lowest_id)
                 hack::command_stack().push("tf_party_leave");
         }
-        if (last_sent_steamid.check(8000) && calledonce.test_and_set(2000))
+        if (last_sent_steamid.check(8000) && calledonce.test_and_set(2000) && online_members < *party_size)
         {
             if (party_client && online_members != 6 && online_members < GetMaxParty())
                 hack::command_stack().push("tf_party_leave");
         }
-        if (last_steamid_received.test_and_set(10000))
+        if (last_steamid_received.test_and_set(10000) && online_members < *party_size)
         {
             if (party_client && online_members != 6 && online_members < GetMaxParty())
                 if (!steamidvec.empty())
@@ -333,7 +338,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
                     steamidvec.clear();
                 }
         }
-        if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000))
+        if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000) && online_members < *party_size && online_members != 6)
             irc.privmsg(format("cc_partysteam",
                                g_ISteamUser->GetSteamID().GetAccountID()),
                         true);
