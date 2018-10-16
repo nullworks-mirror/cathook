@@ -331,7 +331,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
                         lowest = steamidvec[i];
                         idx    = i;
                     }
-                if (idx != -1 && steamidvec[idx] == g_ISteamUser->GetSteamID().GetAccountID())
+                if (idx != -1 && steamidvec[idx] != g_ISteamUser->GetSteamID().GetAccountID())
                     hack::command_stack().push("tf_party_leave");
             }
         }
