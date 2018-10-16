@@ -23,6 +23,10 @@ static Timer last_sent_steamid{};
 static Timer last_steamid_received{};
 static std::vector<unsigned> steamidvec{};
 
+namespace hacks::shared::catbot {
+    extern settings::Bool enable;
+}
+
 static ChIRC::ChIRC irc;
 
 void printmsg(std::string &usr, std::string &msg)
@@ -230,7 +234,7 @@ void updateData()
     if (!*anon)
         nick = g_ISteamFriends->GetPersonaName();
     irc.UpdateData(nick, nick, *channel, *commandandcontrol_channel,
-                   *commandandcontrol_password, *address, *port);
+                   *commandandcontrol_password, *address, *port, *hacks::shared::catbot::enable);
 }
 
 bool sendmsg(std::string &msg, bool loopback)
@@ -279,7 +283,7 @@ int GetMaxParty()
     auto peers = irc.getPeers();
     for (auto peer : peers)
     {
-        if (peer.second.can_party)
+        if (peer.second.party_size != -1)
            partyable++;
     }
     return partyable;
@@ -292,9 +296,9 @@ Timer resize_party{};
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
     {
-        static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
+        static const uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
         typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
-        auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
+        static const auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
         auto party_client = re::CTFPartyClient::GTFPartyClient();
         int online_members = GetNumOnlineMembers_fn(party_client);
 
@@ -358,7 +362,14 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
         irc.Update();
         if (ircstate.test_and_set(20000))
         {
-            irc.UpdateState(*irc_party && *answer_steam, online_members);
+            ChIRC::GameState state;
+            int size;
+            if (irc_party && answer_steam)
+                size = online_members;
+            else
+                size = -1;
+            state.party_size = size;
+            irc.setState(state);
         }
     }
 });

@@ -10,7 +10,6 @@
 #include "hack.hpp"
 #include "PlayerTools.hpp"
 
-static settings::Bool enable{ "cat-bot.enable", "false" };
 static settings::Bool auto_disguise{ "misc.autodisguise", "true" };
 
 static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
@@ -34,6 +33,7 @@ static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
 namespace hacks::shared::catbot
 {
+settings::Bool enable{ "cat-bot.enable", "false" };
 
 struct catbot_user_state
 {
