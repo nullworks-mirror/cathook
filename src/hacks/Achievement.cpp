@@ -92,20 +92,41 @@ CatCommand unlock_single("achievement_unlock_single",
 CatCommand lock_single(
     "achievement_lock_single", "Locks single achievement by INDEX!",
     [](const CCommand &args) {
-        char *out = nullptr;
-        int index = atoi(args.Arg(1));
-        if (out == args.Arg(1))
+        if (args.ArgC() < 1)
         {
-            logging::Info("NaN achievement INDEX!");
+            logging::Info("Actually provide an index");
             return;
         }
-        IAchievement *ach = reinterpret_cast<IAchievement *>(
-            g_IAchievementMgr->GetAchievementByIndex(index));
+        int id;
+        try
+        {
+            id = std::stoi(args.Arg(1));
+        }
+        catch (std::invalid_argument)
+        {
+            logging::Info("NaN achievement ID!");
+            return;
+        }
+        IAchievement *ach =
+            reinterpret_cast<IAchievement *>(
+                g_IAchievementMgr->GetAchievementByID(id));
+
+        int index = -1;
         if (ach)
+            for (int i = 0; i < g_IAchievementMgr->GetAchievementCount(); i++)
+            {
+                auto ach2 = g_IAchievementMgr->GetAchievementByIndex(i);
+                if (ach2->GetAchievementID()== id)
+                {
+                    index = i;
+                    break;
+                }
+            }
+        if (ach && index != -1)
         {
             g_ISteamUserStats->RequestCurrentStats();
-            g_ISteamUserStats->ClearAchievement(
-                g_IAchievementMgr->GetAchievementByIndex(index)->GetName());
+            auto ach = g_IAchievementMgr->GetAchievementByIndex(index);
+            g_ISteamUserStats->ClearAchievement(ach->GetName());
             g_ISteamUserStats->StoreStats();
             g_ISteamUserStats->RequestCurrentStats();
         }

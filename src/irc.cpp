@@ -181,6 +181,16 @@ void cc_cmd(std::string &msg)
 void handleIRC(IRCMessage message, IRCClient *client)
 {
     std::string &cmd     = message.command;
+    try
+    {
+        message.parameters.at(0);
+        message.parameters.at(1);
+    }
+    catch (std::out_of_range)
+    {
+        logging::Info("Something is out of range");
+        return;
+    }
     std::string &channel = message.parameters.at(0);
     std::string &rawmsg  = message.parameters.at(1);
     std::string &usr     = message.prefix.nick;
