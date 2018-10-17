@@ -36,18 +36,27 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                         [](const CCommand &args) {
                             if (args.ArgC() < 1)
                             {
-                                steamid = 0x0;
+                                steamid = 0;
                                 return;
                             }
                             try
                             {
                                 steamid = std::stoul(args.Arg(1));
+                                logging::Info("Stored Steamid: %u", steamid);
                             }
                             catch (std::invalid_argument)
                             {
                                 return;
                             }
                         });
+
+CatCommand steam_debug("debug_steamid", "Print steamids", []() {
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    {
+        auto ent = ENTITY(i);
+        logging::Info("%u", ent->player_info.friendsID);
+    }
+});
 
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
@@ -211,7 +220,10 @@ static HookedFunction
         if (!follow_target)
             breadcrumbs.clear(); // no target == no path
         // Target Selection
-        if (steamid)
+        if (steamid &&
+            ((follow_target &&
+              ENTITY(follow_target)->player_info.friendsID != steamid) ||
+             !follow_target))
         {
             // Find a target with the steam id, as it is prioritized
             auto ent_count = HIGHEST_ENTITY;
@@ -221,7 +233,7 @@ static HookedFunction
                 if (CE_BAD(entity)) // Exist + dormant
                     continue;
                 if (i == follow_target)
-                    break;
+                    continue;
                 if (entity->m_Type() != ENTITY_PLAYER)
                     continue;
                 if (steamid != entity->player_info.friendsID) // steamid check
@@ -235,10 +247,10 @@ static HookedFunction
                 {
                     int a, b;
                     auto crumbs = nav::findPath(g_pLocalPlayer->v_Origin,
-                                  entity->m_vecOrigin(), a, b);
+                                                entity->m_vecOrigin(), a, b);
                     if (!crumbs.empty())
                     {
-                        found = true;
+                        found       = true;
                         breadcrumbs = std::move(crumbs);
                     }
                 }
@@ -272,6 +284,7 @@ static HookedFunction
                     if (!VisCheckEntFromEnt(LOCAL_E, entity))
                         continue;
                 }
+                logging::Info("FB: Found steamid target!");
                 follow_target = entity->m_IDX;
                 break;
             }
@@ -339,10 +352,10 @@ static HookedFunction
                 {
                     int a, b;
                     auto crumbs = nav::findPath(g_pLocalPlayer->v_Origin,
-                                  entity->m_vecOrigin(), a, b);
+                                                entity->m_vecOrigin(), a, b);
                     if (!crumbs.empty())
                     {
-                        found = true;
+                        found       = true;
                         breadcrumbs = std::move(crumbs);
                     }
                 }
@@ -497,8 +510,8 @@ static HookedFunction
                 IClientEntity *owner_weapon =
                     g_IEntityList->GetClientEntity(owner_weapon_eid);
 
-                // If both the follow targets and the local players weapons are not
-                // null or dormant
+                // If both the follow targets and the local players weapons are
+                // not null or dormant
                 if (owner_weapon && CE_GOOD(g_pLocalPlayer->weapon()))
                 {
 
@@ -546,27 +559,26 @@ static HookedFunction
 #endif
 
 #if ENABLE_VISUALS
-static HookedFunction func(HF_Draw, "followbot", 10, [](){
-        if (!enable || !draw_crumb)
-            return;
-        if (breadcrumbs.size() < 2)
-            return;
-        for (size_t i = 0; i < breadcrumbs.size() - 1; i++)
+static HookedFunction func(HF_Draw, "followbot", 10, []() {
+    if (!enable || !draw_crumb)
+        return;
+    if (breadcrumbs.size() < 2)
+        return;
+    for (size_t i = 0; i < breadcrumbs.size() - 1; i++)
+    {
+        Vector wts1, wts2;
+        if (draw::WorldToScreen(breadcrumbs[i], wts1) &&
+            draw::WorldToScreen(breadcrumbs[i + 1], wts2))
         {
-            Vector wts1, wts2;
-            if (draw::WorldToScreen(breadcrumbs[i], wts1) &&
-                draw::WorldToScreen(breadcrumbs[i + 1], wts2))
-            {
-                glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
-                                 colors::white, 0.1f);
-            }
+            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
+                             colors::white, 0.1f);
         }
-        Vector wts;
-        if (!draw::WorldToScreen(breadcrumbs[0], wts))
-            return;
-        glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
-        glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
-
+    }
+    Vector wts;
+    if (!draw::WorldToScreen(breadcrumbs[0], wts))
+        return;
+    glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
+    glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
 });
 #endif
 
