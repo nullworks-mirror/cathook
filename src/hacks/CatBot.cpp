@@ -337,7 +337,10 @@ void update()
     if (micspam)
     {
         if (micspam_on && micspam_on_timer.test_and_set(*micspam_on * 1000))
+        {
             g_IEngine->ExecuteClientCmd("+voicerecord");
+            g_IEngine->ExecuteClientCmd("cat_set voice_maxgain 10000");
+        }
         if (micspam_off && micspam_off_timer.test_and_set(*micspam_off * 1000))
             g_IEngine->ExecuteClientCmd("-voicerecord");
     }

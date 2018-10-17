@@ -15,6 +15,8 @@ static settings::Bool spy_mode("navbot.spy-mode", "false");
 static settings::Bool heavy_mode("navbot.heavy-mode", "false");
 static settings::Bool engi_mode("navbot.engi-mode", "false");
 static settings::Bool primary_only("navbot.primary-only", "true");
+static settings::Bool random_jumps{ "navbot.random-jumps", "false" };
+static settings::Int jump_distance{ "navbot.jump-distance", "500" };
 
 static settings::Bool target_sentry{ "navbot.target-sentry", "true" };
 static settings::Bool stay_near{ "navbot.stay-near", "false" };
@@ -146,14 +148,15 @@ CachedEntity *NearestEnemy()
         last_tar = bestent->m_IDX;
     return bestent;
 }
-Timer ammo_health_cooldown{};
-Timer init_timer{};
-Timer nav_cooldown{};
-Timer engi_spot_cd{};
-Timer nav_enemy_cd{};
-std::vector<Vector> preferred_sniper_spots;
-std::vector<Vector> sniper_spots;
-std::vector<Vector> nest_spots;
+static Timer ammo_health_cooldown{};
+static Timer init_timer{};
+static Timer nav_cooldown{};
+static Timer engi_spot_cd{};
+static Timer nav_enemy_cd{};
+static Timer jump_cooldown{};
+static std::vector<Vector> preferred_sniper_spots;
+static std::vector<Vector> sniper_spots;
+static std::vector<Vector> nest_spots;
 void Init()
 {
     sniper_spots.clear();
@@ -475,6 +478,15 @@ static HookedFunction
             return;
         if (primary_only && enable)
             UpdateSlot();
+        if (*random_jumps && jump_cooldown.test_and_set(200))
+        {
+            auto ent = NearestEnemy();
+            if (CE_GOOD(ent))
+            {
+                if (ent->m_flDistance() < *jump_distance)
+                    current_user_cmd->buttons |= IN_JUMP;
+            }
+        }
         if (HasLowHealth() && ammo_health_cooldown.test_and_set(5000))
         {
             CachedEntity *med = nearestHealth();
