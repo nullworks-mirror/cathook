@@ -323,6 +323,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
         reportall();
 });
 
+static Timer autojointeam{};
 void update()
 {
     if (!catbotmode)
@@ -334,6 +335,11 @@ void update()
     if (CE_BAD(LOCAL_E))
         return;
 
+    if (autojointeam.test_and_set(10000) && !LOCAL_E->m_bAlivePlayer())
+    {
+        hack::command_stack().push("autoteam");
+        hack::command_stack().push("joinclass sniper");
+    }
     if (micspam)
     {
         if (micspam_on && micspam_on_timer.test_and_set(*micspam_on * 1000))
