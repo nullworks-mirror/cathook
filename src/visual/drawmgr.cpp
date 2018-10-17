@@ -160,9 +160,6 @@ void DrawCheatVisuals()
             PROF_SECTION(PT_spyalert);
             hacks::tf::spyalert::Draw();
         }
-#if ENABLE_IPC
-        IF_GAME(IsTF()) hacks::shared::followbot::DrawTick();
-#endif
         {
             PROF_SECTION(DRAW_esp);
             hacks::shared::esp::Draw();

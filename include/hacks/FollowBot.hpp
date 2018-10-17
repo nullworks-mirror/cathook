@@ -10,7 +10,6 @@
 namespace hacks::shared::followbot
 {
 
-void DrawTick();
 int ClassPriority(CachedEntity *ent);
 
 bool isEnabled();

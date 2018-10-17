@@ -12,6 +12,7 @@
 #include <glez/draw.hpp>
 #endif
 #include <settings/Bool.hpp>
+#include "navparser.hpp"
 
 static settings::Bool enable{ "follow-bot.enable", "false" };
 static settings::Bool roambot{ "follow-bot.roaming", "true" };
@@ -38,9 +39,12 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                                 steamid = 0x0;
                                 return;
                             }
-                            try {
+                            try
+                            {
                                 steamid = std::stoul(args.Arg(1));
-                            } catch (std::invalid_argument) {
+                            }
+                            catch (std::invalid_argument)
+                            {
                                 return;
                             }
                         });
@@ -225,7 +229,20 @@ static HookedFunction
 
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
-                if (corneractivate)
+
+                bool found = false;
+                if (nav::Prepare())
+                {
+                    int a, b;
+                    auto crumbs = nav::findPath(g_pLocalPlayer->v_Origin,
+                                  entity->m_vecOrigin(), a, b);
+                    if (!crumbs.empty())
+                    {
+                        found = true;
+                        breadcrumbs = std::move(crumbs);
+                    }
+                }
+                if (!found && corneractivate)
                 {
                     Vector indirectOrigin = VischeckCorner(
                         LOCAL_E, entity, *follow_activation / 2,
@@ -250,7 +267,7 @@ static HookedFunction
                     else if (!indirectOrigin.z && !corners.first.z)
                         continue;
                 }
-                else
+                else if (!found)
                 {
                     if (!VisCheckEntFromEnt(LOCAL_E, entity))
                         continue;
@@ -259,6 +276,7 @@ static HookedFunction
                 break;
             }
         }
+
         // If we dont have a follow target from that, we look again for someone
         // else who is suitable
         if ((!follow_target || change ||
@@ -316,8 +334,19 @@ static HookedFunction
                 if (ClassPriority(ENTITY(follow_target)) >=
                     ClassPriority(ENTITY(i)))
                     continue;
-
-                if (corneractivate)
+                bool found = false;
+                if (nav::Prepare())
+                {
+                    int a, b;
+                    auto crumbs = nav::findPath(g_pLocalPlayer->v_Origin,
+                                  entity->m_vecOrigin(), a, b);
+                    if (!crumbs.empty())
+                    {
+                        found = true;
+                        breadcrumbs = std::move(crumbs);
+                    }
+                }
+                if (!found && corneractivate)
                 {
                     Vector indirectOrigin = VischeckCorner(
                         LOCAL_E, entity, 250,
@@ -340,7 +369,7 @@ static HookedFunction
                     else if (!indirectOrigin.z && !corners.first.z)
                         continue;
                 }
-                else
+                else if (!found)
                 {
                     if (!VisCheckEntFromEnt(LOCAL_E, entity))
                         continue;
@@ -386,11 +415,11 @@ static HookedFunction
         if (breadcrumbs.empty())
             idle_time.update();
 
-        // If the player is close enough, we dont need to follow the path
         auto tar_orig       = followtar->m_vecOrigin();
         auto loc_orig       = LOCAL_E->m_vecOrigin();
         auto dist_to_target = loc_orig.DistTo(tar_orig);
 
+        // If the player is close enough, we dont need to follow the path
         if ((dist_to_target < (float) follow_distance) &&
             VisCheckEntFromEnt(LOCAL_E, followtar))
         {
@@ -468,9 +497,8 @@ static HookedFunction
                 IClientEntity *owner_weapon =
                     g_IEntityList->GetClientEntity(owner_weapon_eid);
 
-                // If both the follow targets and the local players weapons arnt
-                // null or
-                // dormant
+                // If both the follow targets and the local players weapons are not
+                // null or dormant
                 if (owner_weapon && CE_GOOD(g_pLocalPlayer->weapon()))
                 {
 
@@ -516,30 +544,31 @@ static HookedFunction
             idle_time.update();
     });
 #endif
-void DrawTick()
-{
+
 #if ENABLE_VISUALS
-    if (!enable || !draw_crumb)
-        return;
-    if (breadcrumbs.size() < 2)
-        return;
-    for (size_t i = 0; i < breadcrumbs.size() - 1; i++)
-    {
-        Vector wts1, wts2;
-        if (draw::WorldToScreen(breadcrumbs[i], wts1) &&
-            draw::WorldToScreen(breadcrumbs[i + 1], wts2))
+static HookedFunction func(HF_Draw, "followbot", 10, [](){
+        if (!enable || !draw_crumb)
+            return;
+        if (breadcrumbs.size() < 2)
+            return;
+        for (size_t i = 0; i < breadcrumbs.size() - 1; i++)
         {
-            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
-                             colors::white, 0.1f);
+            Vector wts1, wts2;
+            if (draw::WorldToScreen(breadcrumbs[i], wts1) &&
+                draw::WorldToScreen(breadcrumbs[i + 1], wts2))
+            {
+                glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
+                                 colors::white, 0.1f);
+            }
         }
-    }
-    Vector wts;
-    if (!draw::WorldToScreen(breadcrumbs[0], wts))
-        return;
-    glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
-    glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
+        Vector wts;
+        if (!draw::WorldToScreen(breadcrumbs[0], wts))
+            return;
+        glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
+        glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
+
+});
 #endif
-}
 
 int getTarget()
 {
