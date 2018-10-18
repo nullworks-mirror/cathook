@@ -231,6 +231,6 @@ static HookedFunction
                           return;
                       float offset = 0.0f;
                       if (current_user_cmd->mousedx > 1 || current_user_cmd->mousedx < -1)
-                          offset = current_user_cmd->mousedx / 10 * *charge_int;
+                          offset = -(current_user_cmd->mousedx / 100 * *charge_int);
                       current_user_cmd->viewangles.y += offset;
                   });
