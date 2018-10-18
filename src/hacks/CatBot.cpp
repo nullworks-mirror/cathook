@@ -335,7 +335,7 @@ void update()
     if (CE_BAD(LOCAL_E))
         return;
 
-    if (autojointeam.test_and_set(10000) && !LOCAL_E->m_bAlivePlayer())
+    if (autojointeam.test_and_set(60000) && !LOCAL_E->m_bAlivePlayer())
     {
         hack::command_stack().push("autoteam");
         hack::command_stack().push("joinclass sniper");
