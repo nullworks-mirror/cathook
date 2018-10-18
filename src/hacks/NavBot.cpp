@@ -317,7 +317,7 @@ bool NavToSentry(int priority)
         return true;
     return false;
 }
-static Vector lastgoal{0, 0, 0};
+static Vector lastgoal{ 0, 0, 0 };
 int lastent = -1;
 bool NavToEnemy()
 {
@@ -326,7 +326,8 @@ bool NavToEnemy()
         if (lastent != -1)
         {
             CachedEntity *ent = ENTITY(lastent);
-            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || ent->m_iTeam() == LOCAL_E->m_iTeam())
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer() ||
+                ent->m_iTeam() == LOCAL_E->m_iTeam())
             {
                 lastent = -1;
                 if (lastgoal.x > 1.0f || lastgoal.x < -1.0f)
@@ -339,30 +340,32 @@ bool NavToEnemy()
             {
                 int nearestvalid = -1;
                 if (!*heavy_mode)
-                    nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 2000, true);
+                    nearestvalid = nav::FindNearestValidbyDist(
+                        ent->m_vecOrigin(), 200, 2000, true);
                 else
-                    nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000, true);
+                    nearestvalid = nav::FindNearestValidbyDist(
+                        ent->m_vecOrigin(), 200, 1000, true);
                 if (nearestvalid != -1)
                 {
                     auto area = nav::areas[nearestvalid];
                     nav::NavTo(area.m_center, false, true, 1337);
                     lastgoal = area.m_center;
-                    lastent = ent->m_IDX;
+                    lastent  = ent->m_IDX;
                     return true;
                 }
-                else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) && lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
+                else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
+                         lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
                 {
                     nav::NavTo(lastgoal, false, true, 1337);
-                    lastgoal = {0, 0, 0};
+                    lastgoal = { 0, 0, 0 };
                     return true;
                 }
                 else
                 {
-                    lastgoal = {0, 0, 0};
-                    lastent = -1;
+                    lastgoal = { 0, 0, 0 };
+                    lastent  = -1;
                 }
             }
-
         }
 
         auto ent = NearestEnemy();
@@ -370,39 +373,43 @@ bool NavToEnemy()
         {
             int nearestvalid = -1;
             if (!*heavy_mode)
-                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 2000, true);
+                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(),
+                                                           200, 2000, true);
             else
-                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(), 200, 1000, true);
+                nearestvalid = nav::FindNearestValidbyDist(ent->m_vecOrigin(),
+                                                           200, 1000, true);
             if (nearestvalid != -1)
             {
                 auto area = nav::areas[nearestvalid];
                 nav::NavTo(area.m_center, false, true, 1337);
                 lastgoal = area.m_center;
-                lastent = ent->m_IDX;
+                lastent  = ent->m_IDX;
                 return true;
             }
-            else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) && lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
+            else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
+                     lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
             {
                 nav::NavTo(lastgoal, false, true, 1337);
-                lastgoal = {0, 0, 0};
+                lastgoal = { 0, 0, 0 };
                 return true;
             }
             else
             {
-                lastgoal = {0, 0, 0};
-                lastent = -1;
+                lastgoal = { 0, 0, 0 };
+                lastent  = -1;
             }
         }
-        else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) && lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
+        else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
+                 lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
         {
             nav::NavTo(lastgoal, false, true, 1337);
-            lastgoal = {0, 0, 0};
+            lastgoal = { 0, 0, 0 };
             return true;
         }
         else
         {
-            lastgoal = {0, 0, 0};
-            lastent = -1;
+            lastgoal = { 0, 0, 0 };
+            lastent  = -1;
         }
     }
     return false;
@@ -531,8 +538,8 @@ static HookedFunction
                     }
             }
         }
-        if (*stay_near && nav_enemy_cd.test_and_set(1000) &&
-            !HasLowAmmo() && !HasLowHealth())
+        if (*stay_near && nav_enemy_cd.test_and_set(1000) && !HasLowAmmo() &&
+            !HasLowHealth())
             if (NavToEnemy())
                 return;
         if (enable)

@@ -61,7 +61,7 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
         (FinishMoveFn)(*(unsigned *) (predictionVtable + 20));
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
-    auto object = std::make_unique<char[]>(165);
+    auto object          = std::make_unique<char[]>(165);
     CMoveData *pMoveData = (CMoveData *) object.get();
 
     // Backup

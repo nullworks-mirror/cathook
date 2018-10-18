@@ -12,7 +12,7 @@ static settings::Int aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
 
 float sandwich_speed = 350.0f;
 float grav           = 0.25f;
-int prevent = -1;
+int prevent          = -1;
 std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
                                               bool zcheck)
 {
@@ -24,10 +24,12 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
         if (prevent != -1)
         {
             auto ent = ENTITY(prevent);
-            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) || ent == LOCAL_E)
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer() ||
+                (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) ||
+                ent == LOCAL_E)
                 continue;
             if (!teammate && ent->m_iTeam() == LOCAL_E->m_ItemType())
-            continue;
+                continue;
             if (!ent->hitboxes.GetHitbox(1))
                 continue;
             Vector target{};
@@ -38,7 +40,8 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
                 target = ent->hitboxes.GetHitbox(1)->center;
             if (!IsEntityVectorVisible(ent, target))
                 continue;
-            if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
+            if (zcheck &&
+                (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
                 continue;
             float scr = ent->m_flDistance();
             if (g_pPlayerResource->GetClass(ent) == tf_medic)
@@ -48,7 +51,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
                 bestent   = ent;
                 predicted = target;
                 bestscr   = scr;
-                prevent = ent->m_IDX;
+                prevent   = ent->m_IDX;
             }
         }
         if (bestent && predicted.z)
@@ -84,7 +87,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
             bestent   = ent;
             predicted = target;
             bestscr   = scr;
-            prevent = ent->m_IDX;
+            prevent   = ent->m_IDX;
         }
     }
     return { bestent, predicted };
@@ -121,8 +124,7 @@ void DoSlowAim(Vector &input_angle)
         // opposing sides making the distance spike, so just cheap out and reuse
         // our last one.
         if (!slow_opposing)
-            slow_change_dist_y =
-                std::abs(viewangles.y - input_angle.y) / 5;
+            slow_change_dist_y = std::abs(viewangles.y - input_angle.y) / 5;
 
         // Move in the direction of the input angle
         if (slow_dir)
@@ -135,8 +137,7 @@ void DoSlowAim(Vector &input_angle)
     if (viewangles.x != input_angle.x)
     {
         // Get speed
-        slow_change_dist_p =
-            std::abs(viewangles.x - input_angle.x) / 5;
+        slow_change_dist_p = std::abs(viewangles.x - input_angle.x) / 5;
 
         // Move in the direction of the input angle
         if (viewangles.x > input_angle.x)
@@ -191,9 +192,11 @@ static HookedFunction
             g_pLocalPlayer->bUseSilentAngles = true;
         }
     });
+static bool charge_aimbotted = false;
 static settings::Bool charge_aim{ "chargeaim.enable", "false" };
 static HookedFunction
-    ChargeAimbot(HookedFunctions_types::HF_CreateMove, "ChargeAim", 1, []() {
+    ChargeAimbot(HookedFunctions_types::HF_CreateMove, "ChargeAim", 2, []() {
+        charge_aimbotted = false;
         if (!*charge_aim)
             return;
         if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
@@ -212,5 +215,22 @@ static HookedFunction
             fClampAngle(angles);
             DoSlowAim(angles);
             current_user_cmd->viewangles = angles;
+            charge_aimbotted = true;
         }
     });
+static settings::Bool charge_control{ "chargecontrol.enable", "false" };
+static settings::Int charge_int{ "chargecontrol.strength", "1" };
+static HookedFunction
+    ChargeControl(HookedFunctions_types::HF_CreateMove, "ChargeControl", 1,
+                  []() {
+                      if (!*charge_control || charge_aimbotted)
+                          return;
+                      if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+                          return;
+                      if (!HasCondition<TFCond_Charging>(LOCAL_E))
+                          return;
+                      float offset = 0.0f;
+                      if (current_user_cmd->mousedx > 1 || current_user_cmd->mousedx < -1)
+                          offset = current_user_cmd->mousedx / 10 * *charge_int;
+                      current_user_cmd->viewangles.y += offset;
+                  });

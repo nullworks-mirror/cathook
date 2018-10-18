@@ -320,9 +320,12 @@ CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand &args) {
         return;
     }
     unsigned steamid;
-    try {
+    try
+    {
         steamid = strtoul(args.Arg(1), nullptr, 10);
-    } catch (std::invalid_argument) {
+    }
+    catch (std::invalid_argument)
+    {
         return;
     }
     logging::Info("Data for %i: ", steamid);

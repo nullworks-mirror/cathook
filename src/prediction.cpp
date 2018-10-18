@@ -136,7 +136,7 @@ Vector EnginePrediction(CachedEntity *entity, float time)
 
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
-    auto object = std::make_unique<char[]>(165);
+    auto object          = std::make_unique<char[]>(165);
     CMoveData *pMoveData = (CMoveData *) object.get();
 
     float frameTime = g_GlobalVars->frametime;

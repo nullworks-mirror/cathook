@@ -94,10 +94,10 @@ void CreateMove()
 
     if (!enable)
         return;
-    spy                   = ClosestSpy();
+    spy = ClosestSpy();
     if (spy)
     {
-        noaa = true;
+        noaa                           = true;
         current_user_cmd->viewangles.x = 160.0f;
         if (silent)
             g_pLocalPlayer->bUseSilentAngles = true;
@@ -106,6 +106,5 @@ void CreateMove()
     }
     else
         noaa = false;
-
 }
 } // namespace hacks::tf2::antibackstab

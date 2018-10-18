@@ -107,16 +107,15 @@ CatCommand lock_single(
             logging::Info("NaN achievement ID!");
             return;
         }
-        IAchievement *ach =
-            reinterpret_cast<IAchievement *>(
-                g_IAchievementMgr->GetAchievementByID(id));
+        IAchievement *ach = reinterpret_cast<IAchievement *>(
+            g_IAchievementMgr->GetAchievementByID(id));
 
         int index = -1;
         if (ach)
             for (int i = 0; i < g_IAchievementMgr->GetAchievementCount(); i++)
             {
                 auto ach2 = g_IAchievementMgr->GetAchievementByIndex(i);
-                if (ach2->GetAchievementID()== id)
+                if (ach2->GetAchievementID() == id)
                 {
                     index = i;
                     break;

@@ -28,33 +28,33 @@ int FindInVector(size_t id)
 }
 static int bestarea = -1;
 Timer reselect{};
-int FindNearestValidbyDist(Vector vec, float mindist, float maxdist, bool closest)
+int FindNearestValidbyDist(Vector vec, float mindist, float maxdist,
+                           bool closest)
 {
     if (reselect.test_and_set(500))
     {
         float bestscr = FLT_MAX;
-            bestarea = -1;
-            for (int ar = 0; ar < areas.size(); ar++)
+        bestarea      = -1;
+        for (int ar = 0; ar < areas.size(); ar++)
+        {
+            Vector area = areas[ar].m_center;
+            area.z += 72.0f;
+            float scr = area.DistTo(vec);
+            if (scr > maxdist || scr < mindist)
+                continue;
+            if (closest)
             {
-                Vector area = areas[ar].m_center;
-                area.z += 72.0f;
-                float scr = area.DistTo(vec);
-                if (scr > maxdist || scr < mindist)
+                if (scr > bestscr)
                     continue;
-                if (closest)
-                {
-                    if (scr > bestscr)
-                        continue;
-
-                }
-                else if (scr < bestscr)
-                    continue;
-                if (IsVectorVisible(vec, area, false))
-                {
-                    bestscr  = scr;
-                    bestarea = ar;
-                }
             }
+            else if (scr < bestscr)
+                continue;
+            if (IsVectorVisible(vec, area, false))
+            {
+                bestscr  = scr;
+                bestarea = ar;
+            }
+        }
     }
     return bestarea;
 }
