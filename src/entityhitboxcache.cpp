@@ -106,15 +106,17 @@ bool EntityHitboxCache::VisibilityCheck(int id)
     return m_VisCheck[id];
 }
 
-static settings::Int setupbones_time{ "source.setupbones-time", "3" };
+static settings::Int setupbones_time{ "source.setupbones-time", "0" };
 
 static std::mutex setupbones_mutex;
 
 matrix3x4_t *EntityHitboxCache::GetBones()
 {
     static float bones_setup_time = 0.0f;
-    switch ((int) setupbones_time)
+    switch (*setupbones_time)
     {
+    case 0:
+        bones_setup_time = 0.0f;
     case 1:
         bones_setup_time = g_GlobalVars->curtime;
         break;
@@ -131,9 +133,12 @@ matrix3x4_t *EntityHitboxCache::GetBones()
     {
         // std::lock_guard<std::mutex> lock(setupbones_mutex);
         if (g_Settings.is_create_move)
+        {
+            RAW_ENT(parent_ref)->GetModel();
             bones_setup = RAW_ENT(parent_ref)
-                              ->SetupBones(bones, MAXSTUDIOBONES, 0x100,
+                              ->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00,
                                            bones_setup_time);
+        }
     }
     return bones;
 }
@@ -165,6 +170,10 @@ CachedHitbox *EntityHitboxCache::GetHitbox(int id)
         return 0;
     if (CE_BAD(parent_ref))
         return 0;
+    typedef int (*InvalidateBoneCache_t)(IClientEntity *);
+    static uintptr_t addr = gSignatures.GetClientSignature("55 8B 0D ? ? ? ? 89 E5 8B 45 ? 8D 51");
+    static InvalidateBoneCache_t InvalidateBoneCache = InvalidateBoneCache_t(addr);
+    InvalidateBoneCache(RAW_ENT(parent_ref));
     auto model = (model_t *) RAW_ENT(parent_ref)->GetModel();
     if (!model)
         return 0;
