@@ -184,6 +184,7 @@ int ClassPriority(CachedEntity *ent)
 }
 Timer waittime{};
 int lastent = 0;
+
 #if ENABLE_IPC
 static HookedFunction
     WorldTick(HookedFunctions_types::HF_CreateMove, "followbot", 20, []() {
@@ -204,6 +205,33 @@ static HookedFunction
 
         if (afk)
             checkAFK();
+
+        // Naving
+        static bool isnaving = false;
+        static Timer navtime{};
+        static Timer navtimeout{};
+
+        if (isnaving)
+        {
+            if (!follow_target)
+            {
+                isnaving = false;
+                return;
+            }
+            if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(2000))
+            {
+                if (nav::NavTo(ENTITY(follow_target)->m_vecOrigin()))
+                {
+                    navtimeout.update();
+                }
+            }
+            if (navtimeout.check(15000) || nav::priority == 0)
+            {
+                isnaving = false;
+                nav::clearInstructions();
+            }
+            return;
+        }
 
         // Still good check
         if (follow_target)
@@ -242,18 +270,7 @@ static HookedFunction
                     continue;
 
                 bool found = false;
-                if (nav::Prepare())
-                {
-                    int a, b;
-                    auto crumbs = nav::findPath(g_pLocalPlayer->v_Origin,
-                                                entity->m_vecOrigin(), a, b);
-                    if (!crumbs.empty())
-                    {
-                        found       = true;
-                        breadcrumbs = std::move(crumbs);
-                    }
-                }
-                if (!found && corneractivate)
+                if (corneractivate)
                 {
                     Vector indirectOrigin = VischeckCorner(
                         LOCAL_E, entity, *follow_activation / 2,
@@ -272,17 +289,28 @@ static HookedFunction
                         // addCrumbs(LOCAL_E, corners.first);
                         // addCrumbs(entity, corners.second);
                         addCrumbPair(LOCAL_E, entity, corners);
+                        found = true;
                     }
                     if (indirectOrigin.z)
+                    {
                         addCrumbs(entity, indirectOrigin);
-                    else if (!indirectOrigin.z && !corners.first.z)
-                        continue;
+                        found = true;
+                    }
                 }
-                else if (!found)
+                else
                 {
-                    if (!VisCheckEntFromEnt(LOCAL_E, entity))
-                        continue;
+                    if(VisCheckEntFromEnt(LOCAL_E, entity))
+                        found = true;
                 }
+                if (!found && nav::Prepare())
+                {
+                    if (!nav::NavTo(entity->m_vecOrigin()))
+                        continue;
+                    navtimeout.update();
+                    found = true;
+                }
+                if (!found)
+                    continue;
                 logging::Info("FB: Found steamid target!");
                 follow_target = entity->m_IDX;
                 break;
@@ -347,46 +375,47 @@ static HookedFunction
                     ClassPriority(ENTITY(i)))
                     continue;
                 bool found = false;
-                if (nav::Prepare())
-                {
-                    int a, b;
-                    auto crumbs = nav::findPath(g_pLocalPlayer->v_Origin,
-                                                entity->m_vecOrigin(), a, b);
-                    if (!crumbs.empty())
-                    {
-                        found       = true;
-                        breadcrumbs = std::move(crumbs);
-                    }
-                }
-                if (!found && corneractivate)
+                if (corneractivate)
                 {
                     Vector indirectOrigin = VischeckCorner(
-                        LOCAL_E, entity, 250,
+                        LOCAL_E, entity, *follow_activation / 2,
                         true); // get the corner location that the
                     // future target is visible from
                     std::pair<Vector, Vector> corners;
-                    corners.first.z  = 0;
-                    corners.second.z = 0;
                     if (!indirectOrigin.z &&
                         entity->m_IDX == lastent) // if we couldn't find it, run
                     // wallcheck instead
                     {
-                        corners = VischeckWall(LOCAL_E, entity, 250, true);
+                        corners =
+                            VischeckWall(LOCAL_E, entity,
+                                         float(follow_activation) / 2, true);
                         if (!corners.first.z || !corners.second.z)
                             continue;
+                        // addCrumbs(LOCAL_E, corners.first);
+                        // addCrumbs(entity, corners.second);
                         addCrumbPair(LOCAL_E, entity, corners);
+                        found = true;
                     }
                     if (indirectOrigin.z)
+                    {
                         addCrumbs(entity, indirectOrigin);
-                    else if (!indirectOrigin.z && !corners.first.z)
-                        continue;
+                        found = true;
+                    }
                 }
-                else if (!found)
+                else
                 {
-                    if (!VisCheckEntFromEnt(LOCAL_E, entity))
-                        continue;
+                    if(VisCheckEntFromEnt(LOCAL_E, entity))
+                        found = true;
                 }
-
+                if (!found && nav::Prepare())
+                {
+                    if (!nav::NavTo(entity->m_vecOrigin()))
+                        continue;
+                    navtimeout.update();
+                    found = true;
+                }
+                if (!found)
+                    continue;
                 // ooooo, a target
                 follow_target = i;
                 afkTicks[i].update(); // set afk time to 0
