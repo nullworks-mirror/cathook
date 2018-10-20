@@ -258,7 +258,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         g_pLocalPlayer->Update();
     }
     if (CE_GOOD(LOCAL_E) && !g_pLocalPlayer->life_state && CE_GOOD(LOCAL_W))
-         SetCanshootStatus();
+        SetCanshootStatus();
     if (firstcm)
     {
         DelayTimer.update();

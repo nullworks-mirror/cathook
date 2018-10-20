@@ -32,7 +32,7 @@ set(Textmode 0 CACHE BOOL "Various textmode-only features for bots")
 set(EnableTextmodeStdin 0 CACHE BOOL "Textmode Stdin -> Console bridge (EXPERIMENTAL)")
 set(EnableWarnings 1 CACHE BOOL "Enable compile warnings")
 set(EnableNullGraphics 0 CACHE BOOL "Enable experimental textmode hooks (CRASHES)")
-set(EnableOnlineFeatures 1 CACHE BOOL "Enable online features (WIP)")
+set(EnableOnlineFeatures 0 CACHE BOOL "Enable online features (WIP)")
 
 if(NOT EnableVisuals)
     set(EnableGUI 0)

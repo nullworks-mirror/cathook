@@ -19,7 +19,7 @@ bool *bSendPackets{ nullptr };
 bool CanShootException = false;
 void SetCanshootStatus()
 {
-    static int lastammo = -1;
+    static int lastammo        = -1;
     static int prevweaponclass = -1;
     if (LOCAL_W->m_iClassID() != prevweaponclass)
         lastammo = -1;
@@ -27,7 +27,7 @@ void SetCanshootStatus()
         CanShootException = true;
     else
         CanShootException = false;
-    lastammo = CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1);
+    lastammo        = CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1);
     prevweaponclass = LOCAL_W->m_iClassID();
 }
 
