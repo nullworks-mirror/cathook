@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include "MiscTemporary.hpp"
 
 #include <sys/mman.h>
 #include <settings/Bool.hpp>
@@ -1251,12 +1252,19 @@ bool CanHeadshot()
 
 bool CanShoot()
 {
+    static float servertime, lastfire, nextattack;
 
-    float servertime, nextattack;
+    float currfire = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flLastFireTime);
 
-    servertime = (float) (CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) *
-                 g_GlobalVars->interval_per_tick;
-    nextattack = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack);
+    if (lastfire != currfire)
+    {
+        lastfire = currfire;
+        nextattack = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack);
+    }
+
+    servertime = (float) (CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) *  g_GlobalVars->interval_per_tick;
+    if (CanShootException)
+        return true;
     return nextattack <= servertime;
 }
 
