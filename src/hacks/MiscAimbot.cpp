@@ -194,10 +194,13 @@ static HookedFunction
     });
 static bool charge_aimbotted = false;
 static settings::Bool charge_aim{ "chargeaim.enable", "false" };
+static settings::Button charge_key{ "chargeaim.key", "<null>" };
 static HookedFunction
     ChargeAimbot(HookedFunctions_types::HF_CreateMove, "ChargeAim", 2, []() {
         charge_aimbotted = false;
         if (!*charge_aim)
+            return;
+        if (charge_key && !charge_key.isKeyDown())
             return;
         if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
             return;
@@ -215,22 +218,21 @@ static HookedFunction
             fClampAngle(angles);
             DoSlowAim(angles);
             current_user_cmd->viewangles = angles;
-            charge_aimbotted = true;
+            charge_aimbotted             = true;
         }
     });
 static settings::Bool charge_control{ "chargecontrol.enable", "false" };
 static settings::Int charge_int{ "chargecontrol.strength", "1" };
-static HookedFunction
-    ChargeControl(HookedFunctions_types::HF_CreateMove, "ChargeControl", 1,
-                  []() {
-                      if (!*charge_control || charge_aimbotted)
-                          return;
-                      if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
-                          return;
-                      if (!HasCondition<TFCond_Charging>(LOCAL_E))
-                          return;
-                      float offset = 0.0f;
-                      if (current_user_cmd->mousedx > 1 || current_user_cmd->mousedx < -1)
-                          offset = -(current_user_cmd->mousedx / 100 * *charge_int);
-                      current_user_cmd->viewangles.y += offset;
-                  });
+static HookedFunction ChargeControl(
+    HookedFunctions_types::HF_CreateMove, "ChargeControl", 1, []() {
+        if (!*charge_control || charge_aimbotted)
+            return;
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+            return;
+        if (!HasCondition<TFCond_Charging>(LOCAL_E))
+            return;
+        float offset = 0.0f;
+        if (current_user_cmd->mousedx > 1 || current_user_cmd->mousedx < -1)
+            offset = -(current_user_cmd->mousedx / 100 * *charge_int);
+        current_user_cmd->viewangles.y += offset;
+    });

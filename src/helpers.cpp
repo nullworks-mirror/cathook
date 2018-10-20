@@ -1259,10 +1259,12 @@ bool CanShoot()
     if (lastfire != currfire)
     {
         lastfire = currfire;
-        nextattack = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack);
+        nextattack =
+            CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flNextPrimaryAttack);
     }
 
-    servertime = (float) (CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) *  g_GlobalVars->interval_per_tick;
+    servertime = (float) (CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) *
+                 g_GlobalVars->interval_per_tick;
     if (CanShootException)
         return true;
     return nextattack <= servertime;

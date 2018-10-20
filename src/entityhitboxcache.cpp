@@ -171,8 +171,10 @@ CachedHitbox *EntityHitboxCache::GetHitbox(int id)
     if (CE_BAD(parent_ref))
         return 0;
     typedef int (*InvalidateBoneCache_t)(IClientEntity *);
-    static uintptr_t addr = gSignatures.GetClientSignature("55 8B 0D ? ? ? ? 89 E5 8B 45 ? 8D 51");
-    static InvalidateBoneCache_t InvalidateBoneCache = InvalidateBoneCache_t(addr);
+    static uintptr_t addr =
+        gSignatures.GetClientSignature("55 8B 0D ? ? ? ? 89 E5 8B 45 ? 8D 51");
+    static InvalidateBoneCache_t InvalidateBoneCache =
+        InvalidateBoneCache_t(addr);
     InvalidateBoneCache(RAW_ENT(parent_ref));
     auto model = (model_t *) RAW_ENT(parent_ref)->GetModel();
     if (!model)
