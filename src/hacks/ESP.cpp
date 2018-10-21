@@ -1592,6 +1592,8 @@ void ResetEntityStrings()
 // Sets an entitys esp color
 void SetEntityColor(CachedEntity *entity, const rgba_t &color)
 {
+    if (entity->m_IDX > 2047 || entity->m_IDX < 0)
+        return;
     data[entity->m_IDX].color = color;
 }
 } // namespace hacks::shared::esp

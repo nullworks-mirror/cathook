@@ -297,7 +297,7 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
         {
             return *medkits;
         }
-        else if (type >= ITEM_AMMO_SMALL && type <= ITEM_AMMO_SMALL)
+        else if (type >= ITEM_AMMO_SMALL && type <= ITEM_AMMO_LARGE)
         {
             return *ammobox;
         }

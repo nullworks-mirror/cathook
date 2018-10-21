@@ -79,13 +79,15 @@ void EffectChams::EndRenderChams()
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
-rgba_t data[32] = {};
+static rgba_t data[32] = {};
 void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
 {
+    if (ent->m_IDX > 31 || ent->m_IDX < 0)
+        return;
     data[ent->m_IDX] = color;
 }
-Timer t{};
-int prevcolor = -1;
+static Timer t{};
+static int prevcolor = -1;
 rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
     if (!isHackActive() || !*enable)
