@@ -41,7 +41,7 @@ Run in terminal:
 
 * `wget https://raw.githubusercontent.com/nullworks/One-in-all-cathook-install/master/install-all && bash install-all`
 
-If your steam library is *NOT* located in ~/.steam/steam/steamapps/ you need to use sudo ln -s (path to steam) ~/.steam/steam/steamapps to properly setup cat-bots or Use NavBot.
+If your steam library is *NOT* located in ~/.steam/steam/steamapps/ you need to use sudo ln -s (path to steamapps) ~/.steam/steam/steamapps to properly setup cat-bots or Use NavBot.
 
 ## Manual:
 You need CMake to build cathook, CMake should take care of dependencies
