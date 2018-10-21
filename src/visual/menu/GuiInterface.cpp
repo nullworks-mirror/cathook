@@ -152,6 +152,8 @@ bool gui::handleSdlEvent(SDL_Event *event)
 {
     if (event->type == SDL_KEYDOWN)
     {
+        if (!zerokernel::Menu::instance)
+            return false;
         if (event->key.keysym.scancode == (*open_gui_button).scan)
         {
             logging::Info("GUI open button pressed");
