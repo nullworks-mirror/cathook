@@ -435,16 +435,24 @@ bool NavToSniperSpot(int priority)
         for (int i = 0; i < snip_spot.size(); i++)
         {
             if (disabled_spot[i])
+            {
                 if (!disabled_cooldown[i].test_and_set(30000))
                     continue;
+                else
+                    disabled_spot[i] = false;
+            }
             if ((priority_spots[i] < lowest_priority))
                 lowest_priority = priority_spots[i];
         }
         for (int i = 0; i < snip_spot.size(); i++)
         {
             if (disabled_spot[i])
+            {
                 if (!disabled_cooldown[i].test_and_set(30000))
                     continue;
+                else
+                    disabled_spot[i] = false;
+            }
             if ((priority_spots[i] > lowest_priority))
                 continue;
             float scr = snip_spot[i].DistTo(g_pLocalPlayer->v_Eye);
