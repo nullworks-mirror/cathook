@@ -177,7 +177,8 @@ void Init()
                   sniper_spots.size(), preferred_sniper_spots.size(),
                   nest_spots.size());
 }
-
+static std::unordered_map<int, bool> disabled_spot{};
+static std::unordered_map<int, Timer> disabled_cooldown{};
 std::unordered_map<int, int> priority_spots;
 void initonce()
 {
@@ -188,6 +189,8 @@ void initonce()
     engi_spot_cd.update();
     sniper_spots.clear();
     preferred_sniper_spots.clear();
+    disabled_cooldown.clear();
+    disabled_spot.clear();
     return;
 }
 
@@ -414,6 +417,8 @@ bool NavToEnemy()
     }
     return false;
 }
+
+
 bool NavToSniperSpot(int priority)
 {
     Vector random_spot{};
@@ -429,11 +434,17 @@ bool NavToSniperSpot(int priority)
         int lowest_priority = 9999;
         for (int i = 0; i < snip_spot.size(); i++)
         {
+            if (disabled_spot[i])
+                if (!disabled_cooldown[i].test_and_set(30000))
+                    continue;
             if ((priority_spots[i] < lowest_priority))
                 lowest_priority = priority_spots[i];
         }
         for (int i = 0; i < snip_spot.size(); i++)
         {
+            if (disabled_spot[i])
+                if (!disabled_cooldown[i].test_and_set(30000))
+                    continue;
             if ((priority_spots[i] > lowest_priority))
                 continue;
             float scr = snip_spot[i].DistTo(g_pLocalPlayer->v_Eye);
@@ -445,10 +456,22 @@ bool NavToSniperSpot(int priority)
         }
 
         if (best_spot == -1)
+        {
+            snip_spot = sniper_spots;
+            int rng     = rand() % snip_spot.size();
+            random_spot = snip_spot.at(rng);
+            if (random_spot.z)
+                return nav::NavTo(random_spot, false, true, priority);
             return false;
+        }
         random_spot = snip_spot.at(best_spot);
         if (random_spot.z)
             toret = nav::NavTo(random_spot, false, true, priority);
+        if (!toret)
+        {
+            disabled_spot[best_spot] = true;
+            disabled_cooldown[best_spot].update();
+        }
         priority_spots[best_spot]++;
     }
     else if (!snip_spot.empty())
