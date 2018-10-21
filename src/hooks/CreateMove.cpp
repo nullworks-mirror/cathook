@@ -28,6 +28,10 @@ static settings::Int semiauto{ "misc.semi-auto", "0" };
 static settings::Int fakelag_amount{ "misc.fakelag", "0" };
 static settings::Bool fuckmode{ "misc.fuckmode", "false" };
 
+#if !ENABLE_VISUALS
+static settings::Bool no_shake{ "visual.no-shake", "true" };
+#endif
+
 class CMoveData;
 #if LAGBOT_MODE
 CatCommand set_value("set", "Set value", [](const CCommand &args) {
@@ -248,6 +252,13 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         PROF_SECTION(EntityCache);
         entity_cache::Update();
     }
+#if !ENABLE_VISUALS
+    if (no_shake && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
+    {
+        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle) = {0.0f, 0.0f, 0.0f};
+        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = {0.0f, 0.0f, 0.0f};
+    }
+#endif
     //	PROF_END("Entity Cache updating");
     {
         PROF_SECTION(CM_PlayerResource);
