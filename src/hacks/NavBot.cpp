@@ -436,7 +436,7 @@ bool NavToSniperSpot(int priority)
         {
             if (disabled_spot[i])
             {
-                if (!disabled_cooldown[i].test_and_set(30000))
+                if (!disabled_cooldown[i].test_and_set(5000))
                     continue;
                 else
                     disabled_spot[i] = false;
@@ -448,7 +448,7 @@ bool NavToSniperSpot(int priority)
         {
             if (disabled_spot[i])
             {
-                if (!disabled_cooldown[i].test_and_set(30000))
+                if (!disabled_cooldown[i].test_and_set(5000))
                     continue;
                 else
                     disabled_spot[i] = false;
@@ -557,7 +557,7 @@ static HookedFunction
             {
                 CachedEntity *ent = ENTITY(idx);
                 if (CE_GOOD(ent) && ent->m_flDistance() < 300.0f)
-                    if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) &&
+                    if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) && CE_FLOAT(ent, netvar.m_flTeleRechargeTime &&
                         CE_FLOAT(ent, netvar.m_flTeleRechargeTime) <
                             g_GlobalVars->curtime)
                     {
