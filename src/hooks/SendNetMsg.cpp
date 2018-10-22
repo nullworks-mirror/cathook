@@ -42,27 +42,16 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                 {
                     std::string msg(str.substr(offset));
                     msg = msg.substr(0, msg.length() - 2);
-                    if (msg.find("!!!") == 0)
+                    if (msg.find("!!!") == 0 || msg.find("!!") == 0)
                     {
                         // Message is sent over IRC.
-                        std::string substrmsg(msg.substr(3));
+                        int sub_val = 2;
+                        if (msg.find("!!!") == 0)
+                            sub_val = 3;
+                        std::string substrmsg(msg.substr(sub_val));
                         IRC::sendmsg(substrmsg, true);
                         // Do not send message over normal chat.
                         return false;
-                    }
-                }
-                // Artifical Scope
-                {
-                    std::string msg(str.substr(offset));
-                    msg = msg.substr(0, msg.length() - 2);
-                    if ((msg.find("!!") == 0) && msg.find("!!!") == msg.npos)
-                    {
-                        // Change this version if you want version A back, look
-                        // at ucccccp docs for more info
-                        char Version = 'B';
-                        msg          = ucccccp::encrypt(msg.substr(2), Version);
-                        str          = str.substr(0, offset) + msg + "\"\"";
-                        crpt         = true;
                     }
                 }
             }
