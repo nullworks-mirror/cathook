@@ -557,7 +557,8 @@ static HookedFunction
             {
                 CachedEntity *ent = ENTITY(idx);
                 if (CE_GOOD(ent) && ent->m_flDistance() < 300.0f)
-                    if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) && CE_FLOAT(ent, netvar.m_flTeleRechargeTime &&
+                    if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) &&
+                            CE_FLOAT(ent, netvar.m_flTeleRechargeTime) &&
                         CE_FLOAT(ent, netvar.m_flTeleRechargeTime) <
                             g_GlobalVars->curtime)
                     {
