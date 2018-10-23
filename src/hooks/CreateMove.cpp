@@ -313,13 +313,13 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 PROF_SECTION(CM_deadringer);
                 hacks::shared::deadringer::CreateMove();
             }
+            if (engine_pred)
+                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E),
+                                                       current_user_cmd);
             {
                 PROF_SECTION(CM_bunnyhop);
                 hacks::shared::bunnyhop::CreateMove();
             }
-            if (engine_pred)
-                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E),
-                                                       current_user_cmd);
             {
                 PROF_SECTION(CM_backtracc);
                 hacks::shared::backtrack::Run();

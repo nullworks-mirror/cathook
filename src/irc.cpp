@@ -79,9 +79,10 @@ void authreq(std::string &msg)
         if (!g_IEngine->GetPlayerInfo(i, &pinfo))
             continue;
         auto tarsteamid = pinfo.friendsID;
+        std::string total_hash = std::to_string(tarsteamid) + pinfo.name;
         MD5Value_t result;
         // Hash steamid
-        MD5_ProcessSingleBuffer(&tarsteamid, sizeof(tarsteamid), result);
+        MD5_ProcessSingleBuffer(total_hash.c_str(), strlen(total_hash.c_str()), result);
         // Get bits of hash and store in string
         std::string tarhash;
         for (auto i : result.bits)
@@ -271,7 +272,11 @@ void auth(bool reply)
     if (!*authenticate)
         return;
     MD5Value_t result;
-    MD5_ProcessSingleBuffer(&LOCAL_E->player_info.friendsID, sizeof(uint32),
+    player_info_s pinfo{};
+    if (!g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &pinfo))
+        return;
+    std::string total_hash = std::to_string(pinfo.friendsID) + pinfo.name;
+    MD5_ProcessSingleBuffer(total_hash.c_str(), strlen(total_hash.c_str()),
                             result);
     std::string msg("auth");
     if (reply)
@@ -302,7 +307,7 @@ int GetMaxParty()
 CatCommand debug_maxparty("debug_partysize", "Debug party size",
                           []() { logging::Info("%d", GetMaxParty()); });
 
-Timer resize_party{};
+static Timer resize_party{};
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
     {
