@@ -220,16 +220,16 @@ static HookedFunction
             }
             if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(2000))
             {
-                if (nav::NavTo(ENTITY(follow_target)->m_vecOrigin()))
-                {
-                    navtimeout.update();
-                }
+//                if (nav::NavTo(ENTITY(follow_target)->m_vecOrigin()))
+//                {
+//                    navtimeout.update();
+//                }
             }
-            if (navtimeout.check(15000) || nav::priority == 0)
-            {
-                isnaving = false;
-                nav::clearInstructions();
-            }
+//            if (navtimeout.check(15000) || nav::priority == 0)
+//            {
+//                isnaving = false;
+//                nav::clearInstructions();
+//            }
             return;
         }
 
@@ -302,13 +302,13 @@ static HookedFunction
                     if(VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && nav::Prepare())
-                {
-                    if (!nav::NavTo(entity->m_vecOrigin()))
-                        continue;
-                    navtimeout.update();
-                    found = true;
-                }
+//                if (!found && nav::Prepare())
+//                {
+//                    if (!nav::NavTo(entity->m_vecOrigin()))
+//                        continue;
+//                    navtimeout.update();
+//                    found = true;
+//                }
                 if (!found)
                     continue;
                 logging::Info("FB: Found steamid target!");
@@ -407,13 +407,13 @@ static HookedFunction
                     if(VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && nav::Prepare())
-                {
-                    if (!nav::NavTo(entity->m_vecOrigin()))
-                        continue;
-                    navtimeout.update();
-                    found = true;
-                }
+//                if (!found && nav::Prepare())
+//                {
+//                    if (!nav::NavTo(entity->m_vecOrigin()))
+//                        continue;
+//                    navtimeout.update();
+//                    found = true;
+//                }
                 if (!found)
                     continue;
                 // ooooo, a target

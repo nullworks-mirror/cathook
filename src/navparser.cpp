@@ -1,10 +1,12 @@
-#include "common.hpp"
+#include "navparser.hpp"
 #include "CNavFile.h"
-#include <boost/thread/scoped_thread.hpp>
-#include <micropather.h>
+#include <thread>
+#include "micropather.h"
+#include <pwd.h>
 
 namespace nav
 {
+
 static settings::Bool enabled{ "misc.pathing", "true" };
 
 enum thread_status
@@ -57,7 +59,7 @@ static std::mutex navfile_lock;
 
 // Thread and status of thread
 static std::atomic<thread_status> status;
-static boost::scoped_thread thread;
+static std::thread thread;
 
 // See "Graph", does pathing and stuff I guess
 static Graph Map;
@@ -88,12 +90,13 @@ void initThread()
     status = on;
 }
 
+// todo: lowercase
 void init()
 {
     if (status == initing)
         return;
     status = initing;
-    thread = boost::scoped_thread(initThread);
+    thread = std::thread(initThread);
 }
 
 bool prepare()
@@ -164,7 +167,7 @@ CNavArea *findClosestNavSquare(Vector vec)
         if (dist < bestDist)
         {
             if (std::count(findClosestNavSquare_localAreas.begin(),
-                           findClosestNavSquare_localAreas.end(), i) < 3)
+                           findClosestNavSquare_localAreas.end(), &i) < 3)
             {
                 bestDist   = dist;
                 bestSquare = &i;
@@ -207,6 +210,66 @@ std::vector<Vector> findPath(Vector start, Vector end)
 }
 
 static Vector loc(0.0f, 0.0f, 0.0f);
+std::vector<Vector> crumbs;
+int priority = 0;
+bool ReadyForCommands = true;
+bool ensureArrival = false;
+
+bool navTo(Vector destination)
+{
+    std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, destination);
+    if (!prepare())
+        return false;
+    if (path.empty())
+        return true;
+    findClosestNavSquare_localAreas.clear();
+    crumbs.clear();
+    crumbs = std::move(path);
+    return false;
+}
+
+// Main movement function, gets path from NavTo
+static HookedFunction
+    CreateMove(HookedFunctions_types::HF_CreateMove, "NavParser", 17, []() {
+        if (!enabled || status != on)
+            return;
+        if (CE_BAD(LOCAL_E))
+            return;
+        if (!LOCAL_E->m_bAlivePlayer())
+        {
+            // Clear path if player dead
+            crumbs.clear();
+            return;
+        }
+        // Crumbs empty, prepare for next instruction
+        if (crumbs.empty())
+        {
+            priority         = 0;
+            ReadyForCommands = true;
+            ensureArrival    = false;
+            return;
+        }
+        ReadyForCommands = false;
+        // Remove old crumbs
+        if (g_pLocalPlayer->v_Origin.DistTo(Vector{
+                crumbs.at(0).x, crumbs.at(0).y, crumbs.at(0).z }) < 50.0f)
+        {
+//            lastArea = crumbs.at(0);
+            crumbs.erase(crumbs.begin());
+//            inactivity.update();
+        }
+        if (crumbs.empty())
+            return;
+        // Detect when jumping is necessary
+//        if ((crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
+//             lastJump.test_and_set(200)) ||
+//            (lastJump.test_and_set(200) && inactivity.check(2000)))
+//            current_user_cmd->buttons |= IN_JUMP;
+        // Walk to next crumb
+        WalkTo(crumbs.at(0));
+});
+
+
 
 static CatCommand nav_find("nav_find", "Debug nav find", []() {
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc);
@@ -225,6 +288,14 @@ static CatCommand nav_find("nav_find", "Debug nav find", []() {
 
 static CatCommand nav_set("nav_set", "Debug nav find", []() {
     loc = g_pLocalPlayer->v_Origin;
+});
+
+static CatCommand nav_init("nav_init", "Debug nav find", []() {
+    prepare();
+});
+
+static CatCommand nav_path("nav_path", "Debug nav path", [](){
+    navTo(loc);
 });
 
 } // namespace nav
