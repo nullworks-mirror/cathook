@@ -58,6 +58,11 @@ void authreq(std::string &msg)
     // Check if we are in a game
     if (g_Settings.bInvalid)
         return;
+    INetChannel *ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
+    if (!ch)
+        return;
+    std::string ip = ch->GetAddress();
+    logging::Info(ip.c_str());
     bool isreply = false;
 
     if (msg.find("authrep") == 0)
@@ -79,9 +84,10 @@ void authreq(std::string &msg)
         if (!g_IEngine->GetPlayerInfo(i, &pinfo))
             continue;
         auto tarsteamid = pinfo.friendsID;
+        std::string total_hash = std::to_string(tarsteamid).append(pinfo.name).append(ip);
         MD5Value_t result;
         // Hash steamid
-        MD5_ProcessSingleBuffer(&tarsteamid, sizeof(tarsteamid), result);
+        MD5_ProcessSingleBuffer(total_hash.c_str(), strlen(total_hash.c_str()), result);
         // Get bits of hash and store in string
         std::string tarhash;
         for (auto i : result.bits)
@@ -271,7 +277,15 @@ void auth(bool reply)
     if (!*authenticate)
         return;
     MD5Value_t result;
-    MD5_ProcessSingleBuffer(&LOCAL_E->player_info.friendsID, sizeof(uint32),
+    player_info_s pinfo{};
+    if (!g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &pinfo))
+        return;
+    INetChannel *ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
+    if (!ch)
+        return;
+    std::string ip = ch->GetName();
+    std::string total_hash = std::to_string(pinfo.friendsID).append(pinfo.name).append(ip);
+    MD5_ProcessSingleBuffer(total_hash.c_str(), strlen(total_hash.c_str()),
                             result);
     std::string msg("auth");
     if (reply)
@@ -302,7 +316,7 @@ int GetMaxParty()
 CatCommand debug_maxparty("debug_partysize", "Debug party size",
                           []() { logging::Info("%d", GetMaxParty()); });
 
-Timer resize_party{};
+static Timer resize_party{};
 static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     if (!restarting)
     {
