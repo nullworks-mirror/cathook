@@ -58,11 +58,6 @@ void authreq(std::string &msg)
     // Check if we are in a game
     if (g_Settings.bInvalid)
         return;
-    INetChannel *ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
-    if (!ch)
-        return;
-    std::string ip = ch->GetAddress();
-    logging::Info(ip.c_str());
     bool isreply = false;
 
     if (msg.find("authrep") == 0)
@@ -84,7 +79,7 @@ void authreq(std::string &msg)
         if (!g_IEngine->GetPlayerInfo(i, &pinfo))
             continue;
         auto tarsteamid = pinfo.friendsID;
-        std::string total_hash = std::to_string(tarsteamid).append(pinfo.name).append(ip);
+        std::string total_hash = std::to_string(tarsteamid) + pinfo.name;
         MD5Value_t result;
         // Hash steamid
         MD5_ProcessSingleBuffer(total_hash.c_str(), strlen(total_hash.c_str()), result);
@@ -280,11 +275,7 @@ void auth(bool reply)
     player_info_s pinfo{};
     if (!g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &pinfo))
         return;
-    INetChannel *ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
-    if (!ch)
-        return;
-    std::string ip = ch->GetName();
-    std::string total_hash = std::to_string(pinfo.friendsID).append(pinfo.name).append(ip);
+    std::string total_hash = std::to_string(pinfo.friendsID) + pinfo.name;
     MD5_ProcessSingleBuffer(total_hash.c_str(), strlen(total_hash.c_str()),
                             result);
     std::string msg("auth");
