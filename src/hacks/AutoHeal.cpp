@@ -58,6 +58,7 @@ static settings::Int auto_vacc_blast_pop_ubers{
 
 static settings::Int default_resistance{ "autoheal.vacc.default-resistance",
                                          "0" };
+static settings::Int steam_var{ "autoheal.steamid", "0" };
 
 namespace hacks::tf::autoheal
 {
@@ -622,4 +623,25 @@ bool CanHeal(int idx)
         return false;
     return true;
 }
+void rvarCallback(settings::VariableBase<int> &var, int after)
+{
+    if (after < 0)
+        return;
+    for (int i = 1; i <= 32 && i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent->m_Type() != ENTITY_PLAYER)
+            continue;
+        if (ent->player_info.friendsID == after)
+        {
+            force_healing_target = i;
+            return;
+        }
+    }
+}
+static InitRoutine Init([]() {
+    steam_var.installChangeCallback(rvarCallback);
+});
 } // namespace hacks::tf::autoheal
