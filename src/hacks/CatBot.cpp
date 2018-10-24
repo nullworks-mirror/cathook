@@ -240,6 +240,10 @@ CatCommand report("report_debug", "debug", []() { reportall(); });
 Timer crouchcdr{};
 void smart_crouch()
 {
+    if (g_Settings.bInvalid)
+        return;
+    if (!current_user_cmd)
+        return;
     if (*always_crouch)
     {
         current_user_cmd->buttons |= IN_DUCK;

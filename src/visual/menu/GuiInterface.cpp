@@ -150,10 +150,10 @@ void gui::draw()
 
 bool gui::handleSdlEvent(SDL_Event *event)
 {
+    if (!zerokernel::Menu::instance)
+        return false;
     if (event->type == SDL_KEYDOWN)
     {
-        if (!zerokernel::Menu::instance)
-            return false;
         if (event->key.keysym.scancode == (*open_gui_button).scan)
         {
             logging::Info("GUI open button pressed");
@@ -172,8 +172,11 @@ bool gui::handleSdlEvent(SDL_Event *event)
             return true;
         }
     }
-    return zerokernel::Menu::instance->handleSdlEvent(event) &&
-           !zerokernel::Menu::instance->isInGame();
+    zerokernel::Menu::instance->handleSdlEvent(event);
+    if (!zerokernel::Menu::instance->isInGame())
+        return true;
+    else
+        return false;
 }
 
 void gui::onLevelLoad()

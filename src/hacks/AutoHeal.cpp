@@ -11,6 +11,7 @@
 #include <settings/Bool.hpp>
 
 static settings::Bool enable{ "autoheal.enable", "false" };
+static settings::Bool steamid_only{ "autoheal.steam-only", "false" };
 static settings::Bool silent{ "autoheal.silent", "true" };
 static settings::Bool pop_uber_auto{ "autoheal.uber.enable", "true" };
 static settings::Float pop_uber_percent{ "autoheal.uber.health-below-ratio",
@@ -57,6 +58,7 @@ static settings::Int auto_vacc_blast_pop_ubers{
 
 static settings::Int default_resistance{ "autoheal.vacc.default-resistance",
                                          "0" };
+static settings::Int steam_var{ "autoheal.steamid", "0" };
 
 namespace hacks::tf::autoheal
 {
@@ -332,26 +334,22 @@ static CatCommand heal_steamid(
         if (args.ArgC() < 2)
         {
             logging::Info("Invalid call!");
-            force_healing_target = 0;
+            steam_var = 0;
             return;
         }
         if (strtol(args.Arg(1), nullptr, 10) == 0x0)
         {
-            force_healing_target = 0;
+            steam_var = 0;
             return;
         }
-        for (int i = 1; i <= 32 && i < HIGHEST_ENTITY; i++)
+        try
         {
-            CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent))
-                continue;
-            if (ent->m_Type() != ENTITY_PLAYER)
-                continue;
-            if (ent->player_info.friendsID == std::stoul(args.Arg(1)))
-            {
-                force_healing_target = i;
-                return;
-            }
+            steam_var = std::stoul(args.Arg(1));
+        }
+        catch (std::invalid_argument)
+        {
+            logging::Info("Invalid steamid! Setting current to null.");
+            steam_var = 0;
         }
     });
 
@@ -534,6 +532,8 @@ int BestTarget()
     int best_score = -65536;
     for (int i = 0; i < 32 && i < HIGHEST_ENTITY; i++)
     {
+        if (steamid_only && i != force_healing_target)
+            continue;
         int score = HealingPriority(i);
         if (score > best_score && score != -1)
         {
@@ -619,4 +619,25 @@ bool CanHeal(int idx)
         return false;
     return true;
 }
+void rvarCallback(settings::VariableBase<int> &var, int after)
+{
+    if (after < 0)
+        return;
+    for (int i = 1; i <= 32 && i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent->m_Type() != ENTITY_PLAYER)
+            continue;
+        if (ent->player_info.friendsID == after)
+        {
+            force_healing_target = i;
+            return;
+        }
+    }
+}
+static InitRoutine Init([]() {
+    steam_var.installChangeCallback(rvarCallback);
+});
 } // namespace hacks::tf::autoheal

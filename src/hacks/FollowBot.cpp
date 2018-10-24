@@ -17,6 +17,7 @@ static settings::Bool enable{ "follow-bot.enable", "false" };
 static settings::Bool roambot{ "follow-bot.roaming", "true" };
 static settings::Bool draw_crumb{ "follow-bot.draw-crumbs", "false" };
 static settings::Float follow_distance{ "follow-bot.distance", "175" };
+static settings::Float additional_distance{ "follow-bot.ipc-distance", "100" };
 static settings::Float follow_activation{ "follow-bot.max-range", "1000" };
 static settings::Bool mimic_slot{ "follow-bot.mimic-slot", "false" };
 static settings::Bool always_medigun{ "follow-bot.always-medigun", "false" };
@@ -26,7 +27,7 @@ static settings::Bool autojump{ "follow-bot.jump-if-stuck", "true" };
 static settings::Bool afk{ "follow-bot.switch-afk", "true" };
 static settings::Int afktime{ "follow-bot.afk-time", "15000" };
 static settings::Bool corneractivate{ "follow-bot.corners", "true" };
-
+static settings::Int steam_var{ "follow-bot.steamid", "0" };
 namespace hacks::shared::followbot
 {
 
@@ -35,16 +36,18 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                         [](const CCommand &args) {
                             if (args.ArgC() < 1)
                             {
-                                steamid = 0;
+                                steam_var = 0;
                                 return;
                             }
                             try
                             {
-                                steamid = std::stoul(args.Arg(1));
+                                steam_var = std::stoul(args.Arg(1));
                                 logging::Info("Stored Steamid: %u", steamid);
                             }
                             catch (std::invalid_argument)
                             {
+                                logging::Info("Invalid Argument! resetting steamid.");
+                                steam_var = 0;
                                 return;
                             }
                         });
@@ -240,7 +243,7 @@ static HookedFunction
             if (breadcrumbs.size() > crumb_limit)
                 follow_target = 0;
             // Still good check
-            else if (CE_BAD(ENTITY(follow_target)))
+            else if (CE_BAD(ENTITY(follow_target)) || IsPlayerInvisible(ENTITY(follow_target)))
                 follow_target = 0;
         }
 
@@ -253,7 +256,7 @@ static HookedFunction
              !follow_target))
         {
             // Find a target with the steam id, as it is prioritized
-            auto ent_count = HIGHEST_ENTITY;
+            auto ent_count = g_IEngine->GetMaxClients();
             for (int i = 0; i < ent_count; i++)
             {
                 auto entity = ENTITY(i);
@@ -268,7 +271,6 @@ static HookedFunction
 
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
-
                 bool found = false;
                 if (corneractivate)
                 {
@@ -311,7 +313,6 @@ static HookedFunction
 //                }
                 if (!found)
                     continue;
-                logging::Info("FB: Found steamid target!");
                 follow_target = entity->m_IDX;
                 break;
             }
@@ -493,7 +494,14 @@ static HookedFunction
         }
 
         // Follow the crumbs when too far away, or just starting to follow
+#if ENABLE_IPC
+        float follow_dist = (float) follow_distance;
+        if (ipc::peer)
+            follow_dist += (float) additional_distance * ipc::peer->client_id;
+        if (dist_to_target > follow_dist )
+#else
         if (dist_to_target > (float) follow_distance)
+#endif
         {
             // Check for jump
             if (autojump && lastJump.check(1000) &&
@@ -658,4 +666,13 @@ static CatCommand
         }
     });
 #endif
+void rvarCallback(settings::VariableBase<int> &var, int after)
+{
+    if (after < 0)
+        return;
+    steamid = after;
+}
+static InitRoutine Init([]() {
+    steam_var.installChangeCallback(rvarCallback);
+});
 } // namespace hacks::shared::followbot

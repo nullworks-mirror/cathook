@@ -89,7 +89,10 @@ void Run()
 
     if (CE_BAD(LOCAL_E))
         return;
-
+    if (g_Settings.bInvalid)
+        return;
+    if (!current_user_cmd)
+        return;
     for (auto &a : istickvalid)
         for (auto &b : a)
             b = false;

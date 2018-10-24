@@ -1,0 +1,18 @@
+<Tab name="IRC">
+    <Box width="content" height="content" padding="12 6 6 6">
+        <List width="250">
+            <AutoVariable width="fill" target="irc.enabled" label="Enable"/>
+            <AutoVariable width="fill" target="irc.anon" label="Be Anonymous"/>
+            <AutoVariable width="fill" target="irc.auth" label="Auth with cathook users"/>
+            <AutoVariable width="fill" target="irc.channel" label="Channel"/>
+            <AutoVariable width="fill" target="irc.address" label="Address"/>
+            <AutoVariable width="fill" target="irc.port" label="Port"/>
+            <AutoVariable width="fill" target="irc.cc.channel" label="Command Center Channel"/>
+            <AutoVariable width="fill" target="irc.cc.password" label="Command Center Password"/>
+            <AutoVariable width="fill" target="irc.cc.party" label="Command Center Autoparty"/>
+            <AutoVariable width="fill" target="irc.cc.respondparty" label="Command Center respond Autoparty"/>
+            <AutoVariable width="fill" target="irc.cc.party-cooldown" label="Command Center Party cooldown"/>
+            <AutoVariable width="fill" target="irc.cc.party-size" label="Command Center Party maxsize"/>
+        </List>
+    </Box>
+</Tab>
