@@ -334,26 +334,22 @@ static CatCommand heal_steamid(
         if (args.ArgC() < 2)
         {
             logging::Info("Invalid call!");
-            force_healing_target = 0;
+            steam_var = 0;
             return;
         }
         if (strtol(args.Arg(1), nullptr, 10) == 0x0)
         {
-            force_healing_target = 0;
+            steam_var = 0;
             return;
         }
-        for (int i = 1; i <= 32 && i < HIGHEST_ENTITY; i++)
+        try
         {
-            CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent))
-                continue;
-            if (ent->m_Type() != ENTITY_PLAYER)
-                continue;
-            if (ent->player_info.friendsID == std::stoul(args.Arg(1)))
-            {
-                force_healing_target = i;
-                return;
-            }
+            steam_var = std::stoul(args.Arg(1));
+        }
+        catch (std::invalid_argument)
+        {
+            logging::Info("Invalid steamid! Setting current to null.");
+            steam_var = 0;
         }
     });
 

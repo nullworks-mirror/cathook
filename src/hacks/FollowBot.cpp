@@ -36,16 +36,18 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                         [](const CCommand &args) {
                             if (args.ArgC() < 1)
                             {
-                                steamid = 0;
+                                steam_var = 0;
                                 return;
                             }
                             try
                             {
-                                steamid = std::stoul(args.Arg(1));
+                                steam_var = std::stoul(args.Arg(1));
                                 logging::Info("Stored Steamid: %u", steamid);
                             }
                             catch (std::invalid_argument)
                             {
+                                logging::Info("Invalid ARgument! resetting steamid.");
+                                steam_var = 0;
                                 return;
                             }
                         });
