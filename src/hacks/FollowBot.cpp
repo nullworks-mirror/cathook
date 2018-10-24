@@ -27,7 +27,7 @@ static settings::Bool autojump{ "follow-bot.jump-if-stuck", "true" };
 static settings::Bool afk{ "follow-bot.switch-afk", "true" };
 static settings::Int afktime{ "follow-bot.afk-time", "15000" };
 static settings::Bool corneractivate{ "follow-bot.corners", "true" };
-
+static settings::Int steam_var{ "follow-bot.steamid", "0" };
 namespace hacks::shared::followbot
 {
 
@@ -664,4 +664,13 @@ static CatCommand
         }
     });
 #endif
+void rvarCallback(settings::VariableBase<int> &var, int after)
+{
+    if (after < 0)
+        return;
+    steamid = after;
+}
+static InitRoutine Init([]() {
+    steam_var.installChangeCallback(rvarCallback);
+});
 } // namespace hacks::shared::followbot
