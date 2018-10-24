@@ -17,6 +17,7 @@ static settings::Bool enable{ "follow-bot.enable", "false" };
 static settings::Bool roambot{ "follow-bot.roaming", "true" };
 static settings::Bool draw_crumb{ "follow-bot.draw-crumbs", "false" };
 static settings::Float follow_distance{ "follow-bot.distance", "175" };
+static settings::Float additional_distance{ "follow-bot.ipc-distance", "100" };
 static settings::Float follow_activation{ "follow-bot.max-range", "1000" };
 static settings::Bool mimic_slot{ "follow-bot.mimic-slot", "false" };
 static settings::Bool always_medigun{ "follow-bot.always-medigun", "false" };
@@ -220,16 +221,16 @@ static HookedFunction
             }
             if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(2000))
             {
-                if (nav::NavTo(ENTITY(follow_target)->m_vecOrigin()))
-                {
-                    navtimeout.update();
-                }
+//                if (nav::NavTo(ENTITY(follow_target)->m_vecOrigin()))
+//                {
+//                    navtimeout.update();
+//                }
             }
-            if (navtimeout.check(15000) || nav::priority == 0)
-            {
-                isnaving = false;
-                nav::clearInstructions();
-            }
+//            if (navtimeout.check(15000) || nav::priority == 0)
+//            {
+//                isnaving = false;
+//                nav::clearInstructions();
+//            }
             return;
         }
 
@@ -240,7 +241,7 @@ static HookedFunction
             if (breadcrumbs.size() > crumb_limit)
                 follow_target = 0;
             // Still good check
-            else if (CE_BAD(ENTITY(follow_target)))
+            else if (CE_BAD(ENTITY(follow_target)) || IsPlayerInvisible(ENTITY(follow_target)))
                 follow_target = 0;
         }
 
@@ -253,7 +254,7 @@ static HookedFunction
              !follow_target))
         {
             // Find a target with the steam id, as it is prioritized
-            auto ent_count = HIGHEST_ENTITY;
+            auto ent_count = g_IEngine->GetMaxClients();
             for (int i = 0; i < ent_count; i++)
             {
                 auto entity = ENTITY(i);
@@ -268,7 +269,6 @@ static HookedFunction
 
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
-
                 bool found = false;
                 if (corneractivate)
                 {
@@ -302,16 +302,15 @@ static HookedFunction
                     if(VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && nav::Prepare())
-                {
-                    if (!nav::NavTo(entity->m_vecOrigin()))
-                        continue;
-                    navtimeout.update();
-                    found = true;
-                }
+//                if (!found && nav::Prepare())
+//                {
+//                    if (!nav::NavTo(entity->m_vecOrigin()))
+//                        continue;
+//                    navtimeout.update();
+//                    found = true;
+//                }
                 if (!found)
                     continue;
-                logging::Info("FB: Found steamid target!");
                 follow_target = entity->m_IDX;
                 break;
             }
@@ -407,13 +406,13 @@ static HookedFunction
                     if(VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && nav::Prepare())
-                {
-                    if (!nav::NavTo(entity->m_vecOrigin()))
-                        continue;
-                    navtimeout.update();
-                    found = true;
-                }
+//                if (!found && nav::Prepare())
+//                {
+//                    if (!nav::NavTo(entity->m_vecOrigin()))
+//                        continue;
+//                    navtimeout.update();
+//                    found = true;
+//                }
                 if (!found)
                     continue;
                 // ooooo, a target
@@ -493,7 +492,14 @@ static HookedFunction
         }
 
         // Follow the crumbs when too far away, or just starting to follow
+#if ENABLE_IPC
+        float follow_dist = (float) follow_distance;
+        if (ipc::peer)
+            follow_dist += (float) additional_distance * ipc::peer->client_id;
+        if (dist_to_target > follow_dist )
+#else
         if (dist_to_target > (float) follow_distance)
+#endif
         {
             // Check for jump
             if (autojump && lastJump.check(1000) &&

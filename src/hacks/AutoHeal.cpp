@@ -11,6 +11,7 @@
 #include <settings/Bool.hpp>
 
 static settings::Bool enable{ "autoheal.enable", "false" };
+static settings::Bool steamid_only{ "autoheal.steam-only", "false" };
 static settings::Bool silent{ "autoheal.silent", "true" };
 static settings::Bool pop_uber_auto{ "autoheal.uber.enable", "true" };
 static settings::Float pop_uber_percent{ "autoheal.uber.health-below-ratio",
@@ -534,6 +535,8 @@ int BestTarget()
     int best_score = -65536;
     for (int i = 0; i < 32 && i < HIGHEST_ENTITY; i++)
     {
+        if (steamid_only && i != force_healing_target)
+            continue;
         int score = HealingPriority(i);
         if (score > best_score && score != -1)
         {

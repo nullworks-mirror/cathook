@@ -67,19 +67,11 @@
             <AutoVariable width="fill" target="navbot.heavy-mode" label="Enable Heavy Mode"/>
             <AutoVariable width="fill" target="navbot.engi-mode" label="Enable Engie Mode"/>
             <AutoVariable width="fill" target="navbot.primary-only" label="Best Weapon only"/>
+            <AutoVariable width="fill" target="navbot.random-jumps" label="Randomly Jump"/>
+            <AutoVariable width="fill" target="navbot.jump-distance" label="Jump Distance"/>
+            <AutoVariable width="fill" target="navbot.target-sentry" label="Try to target sentries"/>
+            <AutoVariable width="fill" target="navbot.stay-near" label="Zone enemies (stay near)"/>
+            <AutoVariable width="fill" target="navbot.take-teleporters" label="take teleporters"/>
         </List>
-        <Box name="Nav FollowBot" width="content" height="content" padding="12 6 6 6" y="100">
-            <List width="170">
-                <AutoVariable width="fill" target="navbot.medbot" label="Enable Nav Followbot"/>
-                <AutoVariable width="fill" target="navbot.roaming" label="Roaming"/>
-                <AutoVariable width="fill" target="navbot.max-range" label="Max range" min="0" max="100000"/>
-                <AutoVariable width="fill" target="navbot.mimic-slot" label="Mimic slot"/>
-                <AutoVariable width="fill" target="navbot.always-medigun" label="Always Medigun"/>
-                <AutoVariable width="fill" target="navbot.taunt-sync" label="Taunt sync"/>
-                <AutoVariable width="fill" target="navbot.change-roaming-target" label="Change Roaming Target"/>
-                <AutoVariable width="fill" target="navbot.switch-afk" label="Switch target if target AFK"/>
-                <AutoVariable width="fill" target="navbot.afk-time" label="Max AFK time"/>
-            </List>
-        </Box>
     </Box>
 </Tab>
