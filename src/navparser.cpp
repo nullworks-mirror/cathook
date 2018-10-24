@@ -1,10 +1,9 @@
-#include <boost/functional/hash.hpp>
 #include "common.hpp"
-#include "CNavFile.h"
+#include "navparser.hpp"
 #include <thread>
 #include "micropather.h"
 #include <pwd.h>
-#include "settings/Bool.hpp"
+#include <boost/functional/hash.hpp>
 
 namespace nav
 {
@@ -20,7 +19,7 @@ enum thread_status
 };
 
 std::vector<Vector> crumbs;
-std::unique_ptr<CNavFile> navfile;
+
 void ResetPather();
 
 struct ignoredata
@@ -42,14 +41,19 @@ CNavArea *getNavArea(Vector &vec)
 
 class ignoremanager
 {
+    static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata,
+                              boost::hash<std::pair<CNavArea *, CNavArea *>>>
+        ignores;
+
 public:
     static bool isIgnored(CNavArea *begin, CNavArea *end)
     {
-        if (ignores().find({ begin, end }) == ignores().end())
+        if (ignores.find({ begin, end }) == ignores.end())
             return false;
-        if (ignores()[{ begin, end }].isignored)
+        if (ignores[{ begin, end }].isignored)
         {
-            logging::Info("Ignored Connection %i-&%", begin->m_id, end->m_id);
+            logging::Info("Not using ignored Connection %i-%i", begin->m_id,
+                          end->m_id);
             return true;
         }
         else
@@ -58,11 +62,11 @@ public:
     static void addTime(CNavArea *begin, CNavArea *end, Timer &time)
     {
         // Check if connection is already known
-        if (ignores().find({ begin, end }) == ignores().end())
+        if (ignores.find({ begin, end }) == ignores.end())
         {
-            ignores()[{ begin, end }] = {};
+            ignores[{ begin, end }] = {};
         }
-        ignoredata &connection = ignores()[{ begin, end }];
+        ignoredata &connection = ignores[{ begin, end }];
         if (connection.isignored)
             // Wtf
             return;
@@ -70,11 +74,11 @@ public:
             std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::system_clock::now() - time.last)
                 .count();
-        if (connection.stucktime > 5000)
+        if (connection.stucktime > 2999)
         {
             connection.isignored = true;
             connection.ignoreTimeout.update();
-            logging::Info("Ignored Connection &i-&i", begin->m_id, end->m_id);
+            logging::Info("Ignored Connection %i-%i", begin->m_id, end->m_id);
             ResetPather();
         }
     }
@@ -83,16 +87,26 @@ public:
         // todo: check nullptr
         addTime(getNavArea(begin), getNavArea(end), time);
     }
-    static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata,
-    boost::hash<std::pair<CNavArea *, CNavArea *>>> &ignores()
+    static void reset()
     {
-        static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata,
-                                  boost::hash<std::pair<CNavArea *, CNavArea *>>>
-            data;
-        return data;
+        ignores.clear();
+    }
+    static void updateIgnores()
+    {
+        for (auto &i : ignores)
+        {
+            if (i.second.isignored && i.second.ignoreTimeout.check(3000))
+            {
+                i.second.isignored = false;
+                i.second.stucktime = 0;
+            }
+        }
     }
     ignoremanager() = delete;
 };
+std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata,
+                   boost::hash<std::pair<CNavArea *, CNavArea *>>>
+    ignoremanager::ignores;
 
 struct Graph : public micropather::Graph
 {
@@ -133,7 +147,7 @@ struct Graph : public micropather::Graph
 };
 
 // Navfile containing areas and its lock
-
+std::unique_ptr<CNavFile> navfile;
 std::mutex navfile_lock;
 // Thread and status of thread
 static std::atomic<thread_status> status;
@@ -168,11 +182,11 @@ void initThread()
     status = on;
 }
 
-// todo: lowercase
 void init()
 {
     if (status == initing)
         return;
+    ignoremanager::reset();
     status = initing;
     thread = std::thread(initThread);
 }
@@ -283,31 +297,47 @@ std::vector<Vector> findPath(Vector start, Vector end)
         path.push_back(static_cast<CNavArea *>(pathNodes[i])->m_center);
     }
     // Add our destination to the std::vector
-    path.push_back(dest->m_center);
+    path.push_back(end);
     return path;
 }
 
 static Vector loc(0.0f, 0.0f, 0.0f);
 static Vector last_area(0.0f, 0.0f, 0.0f);
-int priority              = 0;
+int curr_priority         = 0;
 bool ReadyForCommands     = true;
 static bool ensureArrival = false;
 static Timer inactivity{};
 
-bool navTo(Vector destination)
+bool navTo(Vector destination, int priority, bool should_repath,
+           bool nav_to_local, bool is_repath)
 {
+    if (priority < curr_priority)
+        return false;
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, destination);
     if (!prepare())
         return false;
     if (path.empty())
-        return true;
+        return false;
+    last_area = path.at(0);
+    if (!nav_to_local)
+    {
+        path.erase(path.begin());
+        if (path.empty())
+            return false;
+    }
     inactivity.update();
-    findClosestNavSquare_localAreas.clear();
+    if (!is_repath)
+    {
+        findClosestNavSquare_localAreas.clear();
+    }
+    ensureArrival    = should_repath;
+    ReadyForCommands = false;
     crumbs.clear();
     crumbs = std::move(path);
-    return false;
+    return true;
 }
 
+static Timer last_jump{};
 // Main movement function, gets path from NavTo
 static HookedFunction
     CreateMove(HookedFunctions_types::HF_CreateMove, "NavParser", 17, []() {
@@ -324,9 +354,10 @@ static HookedFunction
         // Crumbs empty, prepare for next instruction
         if (crumbs.empty())
         {
-            priority         = 0;
+            curr_priority         = 0;
             ReadyForCommands = true;
             ensureArrival    = false;
+            ignoremanager::updateIgnores();
             return;
         }
         ReadyForCommands = false;
@@ -338,22 +369,29 @@ static HookedFunction
             crumbs.erase(crumbs.begin());
             inactivity.update();
         }
-        if (inactivity.check(5000))
-        {
-            if (crumbs.size() > 1)
-                ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
-            crumbs.clear();
-        }
         if (crumbs.empty())
             return;
         // Detect when jumping is necessary
-        //        if ((crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
-        //             lastJump.test_and_set(200)) ||
-        //            (lastJump.test_and_set(200) && inactivity.check(2000)))
-        //            current_user_cmd->buttons |= IN_JUMP;
+        if ((crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
+             last_jump.test_and_set(200)) ||
+            (last_jump.test_and_set(200) && inactivity.check(2000)))
+            current_user_cmd->buttons |= IN_JUMP;
+        // If inactive for too long
+        if (inactivity.check(3000))
+        {
+            // Ignore connection
+            ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
+            if (ensureArrival)
+            {
+                Vector last = crumbs.at(0);
+                crumbs.clear();
+                navTo(last, curr_priority, true, true, true);
+            }
+            return;
+        }
         // Walk to next crumb
         WalkTo(crumbs.at(0));
-    });
+});
 
 void ResetPather()
 {
@@ -378,9 +416,12 @@ static CatCommand nav_find("nav_find", "Debug nav find", []() {
 static CatCommand nav_set("nav_set", "Debug nav find",
                           []() { loc = g_pLocalPlayer->v_Origin; });
 
-static CatCommand nav_init("nav_init", "Debug nav find", []() { prepare(); });
+static CatCommand nav_init("nav_init", "Debug nav init", []() { prepare(); });
 
 static CatCommand nav_path("nav_path", "Debug nav path", []() { navTo(loc); });
+
+static CatCommand nav_reset_ignores("nav_reset_ignores", "Reset all ignores.",
+                                    []() { ignoremanager::reset(); });
 
 void yeet()
 {
