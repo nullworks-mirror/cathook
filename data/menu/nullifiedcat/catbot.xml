@@ -51,7 +51,7 @@
             <AutoVariable width="fill" target="follow-bot.taunt-sync" label="Synced taunts"/>
             <AutoVariable width="fill" target="follow-bot.max-range" label="Activation range"/>
             <AutoVariable width="fill" target="follow-bot.distance" label="Follow distance"/>
-            <AutoVariable width="fill" target="follow-bot.distance" label="Follow distance"/>
+            <AutoVariable width="fill" target="follow-bot.ipc-distance" label="IRC additive distance"/>
             <AutoVariable width="fill" target="follow-bot.mimic-slot" label="Mimic slot"/>
             <AutoVariable width="fill" target="follow-bot.always-medigun" label="Always Medigun"/>
             <AutoVariable width="fill" target="follow-bot.switch-afk" label="AFK Switch"/>
