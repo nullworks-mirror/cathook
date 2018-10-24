@@ -46,7 +46,7 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id",
                             }
                             catch (std::invalid_argument)
                             {
-                                logging::Info("Invalid ARgument! resetting steamid.");
+                                logging::Info("Invalid Argument! resetting steamid.");
                                 steam_var = 0;
                                 return;
                             }
