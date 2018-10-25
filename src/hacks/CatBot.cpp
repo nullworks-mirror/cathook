@@ -221,13 +221,7 @@ void reportall()
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(i, &info))
         {
-            //            if (info.friendsID == local.friendsID ||
-            //                playerlist::AccessData(info.friendsID).state ==
-            //                    playerlist::k_EState::FRIEND ||
-            //                playerlist::AccessData(info.friendsID).state ==
-            //                    playerlist::k_EState::IPC)
-            //                continue;
-            if (player_tools::shouldTargetSteamId(info.friendsID) !=
+            if (player_tools::shouldTarget(ent) !=
                 player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             CSteamID id(info.friendsID, EUniverse::k_EUniversePublic,

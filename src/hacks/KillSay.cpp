@@ -11,6 +11,16 @@
 
 static settings::Int killsay_mode{ "killsay.mode", "0" };
 static settings::String filename{ "killsay.file", "killsays.txt" };
+static settings::Int delay{ "killsay.delay", "100" };
+
+struct KillsayStorage
+{
+    Timer timer{};
+    unsigned delay{};
+    std::string message{};
+};
+
+static std::unordered_map<int, KillsayStorage> killsay_storage{};
 
 static CatCommand reload_command("killsay_reload", "Reload killsays",
                                  []() { hacks::shared::killsay::reload(); });
@@ -90,9 +100,29 @@ class KillSayEventListener : public IGameEventListener2
             return;
         std::string message = hacks::shared::killsay::ComposeKillSay(event);
         if (!message.empty())
-            chat_stack::Say(message, false);
+        {
+            int vid = event->GetInt("userid");
+            killsay_storage[vid].delay = *delay;
+            killsay_storage[vid].timer.update();
+            killsay_storage[vid].message = message;
+        }
     }
 };
+
+static HookedFunction ProcessKillsay(HookedFunctions_types::HF_Paint, "KillSay_send", 1, []() {
+    if (killsay_storage.empty())
+        return;
+    for (auto &i : killsay_storage)
+    {
+        if (i.second.message.empty())
+            continue;
+        if (i.second.timer.test_and_set(i.second.delay))
+        {
+            chat_stack::Say(i.second.message, false);
+            i.second = {};
+        }
+    }
+});
 
 static KillSayEventListener listener{};
 

@@ -55,6 +55,7 @@
                     <Option name="NCC - MLG" value="4"/>
                 </Select>
             </LabeledObject>
+            <AutoVariable width="fill" target="killsay.delay" label="Killsay Delay"/>
             <AutoVariable width="fill" target="spam.filename" label="Spam file"/>
             <AutoVariable width="fill" target="spam.delay" label="Spam delay"/>
             <AutoVariable width="fill" target="spam.random" label="Random"/>
