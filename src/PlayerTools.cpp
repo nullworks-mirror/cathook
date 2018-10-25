@@ -80,7 +80,8 @@ IgnoreReason shouldTarget(CachedEntity *entity)
             return IgnoreReason::IS_HOOVY;
         if (taunting && HasCondition<TFCond_Taunting>(entity))
             return IgnoreReason::IS_TAUNTING;
-
+        if (HasCondition<TFCond_HalloweenGhostMode>(entity))
+            return IgnoreReason::OTHER;
         return shouldTargetSteamId(entity->player_info.friendsID);
     }
 
