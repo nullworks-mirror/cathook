@@ -12,14 +12,6 @@ static settings::Bool enabled{ "misc.pathing", "true" };
 
 static std::vector<Vector> crumbs;
 
-enum thread_status : uint8_t
-{
-    off = 0,
-    unavailable,
-    initing,
-    on
-};
-
 enum ignore_status : uint8_t
 {
     // Status is unknown
@@ -172,7 +164,7 @@ public:
             std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::system_clock::now() - time.last)
                 .count();
-        if (connection.stucktime > 2999)
+        if (connection.stucktime > 3999)
         {
             connection.status = explicit_ignored;
             connection.ignoreTimeout.update();
@@ -280,11 +272,10 @@ struct Graph : public micropather::Graph
     }
 };
 
-// Navfile containing areas and its lock
+// Navfile containing areas
 std::unique_ptr<CNavFile> navfile;
-std::mutex navfile_lock;
 // Thread and status of thread
-static std::atomic<thread_status> status;
+std::atomic<thread_status> status;
 static std::thread thread;
 
 // See "Graph", does pathing and stuff I guess
@@ -304,13 +295,12 @@ void initThread()
     lvldir.append(".nav");
     logging::Info(format("Pathing: Nav File location: ", lvldir).c_str());
 
-    std::lock_guard<std::mutex> lock(navfile_lock);
     navfile = std::make_unique<CNavFile>(lvldir.c_str());
 
     if (!navfile->m_isOK)
     {
         navfile.reset();
-        status = off;
+        status = unavailable;
     }
     logging::Info("Pather: Initing with %i Areas", navfile->m_areas.size());
     status = on;
@@ -408,7 +398,6 @@ std::vector<Vector> findPath(Vector start, Vector end)
 {
     if (status != on)
         return {};
-    std::lock_guard<std::mutex> lock(navfile_lock);
     CNavArea *local = findClosestNavSquare(start);
     CNavArea *dest  = findClosestNavSquare(end);
 
@@ -517,12 +506,12 @@ static HookedFunction
         if (crumbs.empty())
             return;
         // Detect when jumping is necessary
-        if ((crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
+        if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
              last_jump.test_and_set(200)) ||
-            (last_jump.test_and_set(200) && inactivity.check(2000)))
+            (last_jump.test_and_set(200) && inactivity.check(3000)))
             current_user_cmd->buttons |= IN_JUMP;
         // If inactive for too long
-        if (inactivity.check(3000))
+        if (inactivity.check(4000))
         {
             // Ignore connection
             ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
@@ -556,15 +545,19 @@ static CatCommand nav_find("nav_find", "Debug nav find", []() {
 static CatCommand nav_set("nav_set", "Debug nav find",
                           []() { loc = g_pLocalPlayer->v_Origin; });
 
-static CatCommand nav_init("nav_init", "Debug nav init", []() { prepare(); });
+static CatCommand nav_init("nav_init", "Debug nav init", []() {
+    status = off;
+    prepare();
+});
 
 static CatCommand nav_path("nav_path", "Debug nav path", []() { navTo(loc); });
 
 static CatCommand nav_reset_ignores("nav_reset_ignores", "Reset all ignores.",
                                     []() { ignoremanager::reset(); });
 
-void yeet()
+void clearInstructions()
 {
+    crumbs.clear();
 }
 
 } // namespace nav

@@ -174,7 +174,7 @@ bool gui::handleSdlEvent(SDL_Event *event)
     }
     zerokernel::Menu::instance->handleSdlEvent(event);
     if (!zerokernel::Menu::instance->isInGame() &&
-        event->type == SDL_MOUSEBUTTONDOWN)
+        (event->type == SDL_MOUSEBUTTONDOWN || event->type == SDL_TEXTINPUT || event->type == SDL_KEYDOWN))
         return true;
     else
         return false;
