@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #Get updated source code
-git fetch;git pull origin;git submodule update --init --recursive
+git fetch && git pull origin && git submodule update --init --recursive || { echo -e "\033[1;31m \n \nFailed to pull from github!"; exit 1; }
 #Update cathook
-cd build; cmake ..; cmake --build . --target cathook -- -j$(grep -c '^processor' /proc/cpuinfo)
+cd build && cmake .. && cmake --build . --target cathook -- -j$(grep -c '^processor' /proc/cpuinfo) || { echo -e "\033[1;31m \n \nFailed to compile cathook"; exit 1; }
 #Update data
-sudo cmake --build . --target data;  cd ..; cd ..
-printf "\n\n";printf '\e[1;34m%-6s\e' "Cathook update complete!";printf "\n\n"
+sudo cmake --build . --target data || { echo -e "\033[1;31m \n \nFailed to update /opt/cathook/data directory"; exit 1; }
+echo -e "\n\n\033[1;34mCathook updated successfully"
