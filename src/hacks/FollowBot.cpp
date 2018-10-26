@@ -171,7 +171,7 @@ void addCrumbPair(CachedEntity *player1, CachedEntity *player2,
  *   tf_engineer = 9
  */
 
-static int priority_list[10][10] = {
+constexpr int priority_list[10][10] = {
     /*0  1  2  3  4  5  6  7  8  9 */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // No class
     { 0, 8, 2, 7, 6, 2, 5, 1, 0, 0 }, // Scout

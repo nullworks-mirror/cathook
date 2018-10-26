@@ -274,9 +274,8 @@ struct Graph : public micropather::Graph
 
 // Navfile containing areas
 std::unique_ptr<CNavFile> navfile;
-// Thread and status of thread
-std::atomic<thread_status> status;
-static std::thread thread;
+// Status
+std::atomic<init_status> status;
 
 // See "Graph", does pathing and stuff I guess
 static Graph Map;
@@ -311,14 +310,16 @@ void init()
 {
     ignoremanager::reset();
     status = initing;
+    std::thread thread;
     thread = std::thread(initThread);
+    thread.detach();
 }
 
 bool prepare()
 {
     if (!enabled)
         return false;
-    thread_status fast_status = status;
+    init_status fast_status = status;
     if (fast_status == on)
         return true;
     if (fast_status == off)

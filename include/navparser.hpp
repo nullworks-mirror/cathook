@@ -6,7 +6,7 @@
 namespace nav
 {
 
-enum thread_status : uint8_t
+enum init_status : uint8_t
 {
     off = 0,
     unavailable,
@@ -22,7 +22,7 @@ extern int curr_priority;
 // Check if ready to recieve another NavTo (to avoid overwriting of instructions)
 extern bool ReadyForCommands;
 // Ignore. For level init only
-extern std::atomic<thread_status> status;
+extern std::atomic<init_status> status;
 
 // Nav to vector
 bool navTo(Vector destination, int priority = 5, bool should_repath = true, bool nav_to_local = true, bool is_repath = false);
