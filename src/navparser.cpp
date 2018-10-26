@@ -434,11 +434,11 @@ static bool ensureArrival = false;
 bool navTo(Vector destination, int priority, bool should_repath,
            bool nav_to_local, bool is_repath)
 {
+    if (!prepare())
+        return false;
     if (priority < curr_priority)
         return false;
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, destination);
-    if (!prepare())
-        return false;
     if (path.empty())
         return false;
     last_area = path.at(0);
