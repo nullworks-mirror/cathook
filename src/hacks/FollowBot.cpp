@@ -198,6 +198,7 @@ int lastent = 0;
 #if ENABLE_IPC
 static HookedFunction
     WorldTick(HookedFunctions_types::HF_CreateMove, "followbot", 20, []() {
+        PROF_SECTION(FB_1);
         if (!enable)
         {
             follow_target = 0;
@@ -258,6 +259,9 @@ static HookedFunction
         if (!follow_target)
             breadcrumbs.clear(); // no target == no path
         // Target Selection
+        {
+            PROF_SECTION(FB_2);
+
         if (steamid &&
             ((follow_target &&
               ENTITY(follow_target)->player_info.friendsID != steamid) ||
@@ -325,9 +329,11 @@ static HookedFunction
                 break;
             }
         }
-
+        }
         // If we dont have a follow target from that, we look again for someone
         // else who is suitable
+        {
+            PROF_SECTION(FB_3);
         if ((!follow_target || change ||
              (ClassPriority(ENTITY(follow_target)) < 6 &&
               ENTITY(follow_target)->player_info.friendsID != steamid)) &&
@@ -429,6 +435,7 @@ static HookedFunction
                 follow_target = i;
                 afkTicks[i].update(); // set afk time to 0
             }
+        }
         }
         lastent++;
         if (lastent > g_IEngine->GetMaxClients())
