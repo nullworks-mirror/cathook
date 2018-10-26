@@ -30,8 +30,9 @@ static settings::Bool corneractivate{ "follow-bot.corners", "true" };
 static settings::Int steam_var{ "follow-bot.steamid", "0" };
 namespace hacks::shared::followbot
 {
-
+static Timer navBotInterval{};
 unsigned steamid = 0x0;
+
 CatCommand
     follow_steam("fb_steam", "Follow Steam Id", [](const CCommand &args) {
         if (args.ArgC() < 1)
@@ -198,7 +199,6 @@ int lastent = 0;
 #if ENABLE_IPC
 static HookedFunction
     WorldTick(HookedFunctions_types::HF_CreateMove, "followbot", 20, []() {
-        PROF_SECTION(FB_1);
         if (!enable)
         {
             follow_target = 0;
@@ -258,9 +258,11 @@ static HookedFunction
 
         if (!follow_target)
             breadcrumbs.clear(); // no target == no path
+
+        bool isNavBotCM = navBotInterval.test_and_set(3000);
+
         // Target Selection
         {
-            PROF_SECTION(FB_2);
 
         if (steamid &&
             ((follow_target &&
@@ -316,7 +318,7 @@ static HookedFunction
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && nav::prepare())
+                if (isNavBotCM && !found && nav::prepare())
                 {
                     if (!nav::navTo(entity->m_vecOrigin()))
                         continue;
@@ -333,7 +335,6 @@ static HookedFunction
         // If we dont have a follow target from that, we look again for someone
         // else who is suitable
         {
-            PROF_SECTION(FB_3);
         if ((!follow_target || change ||
              (ClassPriority(ENTITY(follow_target)) < 6 &&
               ENTITY(follow_target)->player_info.friendsID != steamid)) &&
@@ -422,7 +423,7 @@ static HookedFunction
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && nav::prepare())
+                if (isNavBotCM && !found && nav::prepare())
                 {
                     if (!nav::navTo(entity->m_vecOrigin()))
                         continue;
