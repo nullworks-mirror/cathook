@@ -164,6 +164,7 @@ void crit_err_hdlr(int sig_num, siginfo_t *info, void *ucontext)
     fclose(backtraceFile);
     free(messages);
 
+    std::abort();
     exit(EXIT_FAILURE);
 }
 

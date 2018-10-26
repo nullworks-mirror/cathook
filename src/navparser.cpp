@@ -10,7 +10,9 @@ namespace nav
 
 static settings::Bool enabled{ "misc.pathing", "true" };
 
-enum thread_status
+static std::vector<Vector> crumbs;
+
+enum thread_status : uint8_t
 {
     off = 0,
     unavailable,
@@ -18,13 +20,26 @@ enum thread_status
     on
 };
 
-std::vector<Vector> crumbs;
+enum ignore_status : uint8_t
+{
+    // Status is unknown
+    unknown = 0,
+    // Something like Z check failed, these are unchanging
+    const_ignored,
+    // LOS between areas is given
+    vischeck_success,
+    // No LOS between areas
+    vischeck_failed,
+    // Failed to actually walk thru connection
+    explicit_ignored
+};
 
 void ResetPather();
+void repath();
 
 struct ignoredata
 {
-    bool isignored{ false };
+    ignore_status status{ unknown };
     float stucktime{ 0.0f };
     Timer ignoreTimeout{};
 };
@@ -39,25 +54,111 @@ CNavArea *getNavArea(Vector &vec)
     return nullptr;
 }
 
+Vector GetClosestCornerToArea(CNavArea *CornerOf, CNavArea *Target)
+{
+    std::array<Vector, 4> corners;
+    corners.at(0) = CornerOf->m_nwCorner; // NW
+    corners.at(1) = CornerOf->m_seCorner; // SE
+    corners.at(2) = Vector{ CornerOf->m_seCorner.x, CornerOf->m_nwCorner.y,
+                            CornerOf->m_nwCorner.z }; // NE
+    corners.at(3) = Vector{ CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y,
+                            CornerOf->m_seCorner.z }; // SW
+
+    Vector bestVec{};
+    float bestDist = FLT_MAX;
+
+    for (size_t i = 0; i < corners.size(); i++)
+    {
+        float dist = corners.at(i).DistTo(Target->m_center);
+        if (dist < bestDist)
+        {
+            bestVec  = corners.at(i);
+            bestDist = dist;
+        }
+    }
+
+    Vector bestVec2{};
+    float bestDist2 = FLT_MAX;
+
+    for (size_t i = 0; i < corners.size(); i++)
+    {
+        if (corners.at(i) == bestVec2)
+            continue;
+        float dist = corners.at(i).DistTo(Target->m_center);
+        if (dist < bestDist2)
+        {
+            bestVec2  = corners.at(i);
+            bestDist2 = dist;
+        }
+    }
+    return (bestVec + bestVec2) / 2;
+}
+
+float getZBetweenAreas(CNavArea *start, CNavArea *end)
+{
+    float z1 = GetClosestCornerToArea(start, end).z;
+    float z2 = GetClosestCornerToArea(end, start).z;
+
+    return z2 - z1;
+}
+
 class ignoremanager
 {
     static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata,
                               boost::hash<std::pair<CNavArea *, CNavArea *>>>
         ignores;
+    static bool vischeck(CNavArea *begin, CNavArea *end)
+    {
+        Vector first  = begin->m_center;
+        Vector second = end->m_center;
+        first.z += 42;
+        second.z += 42;
+        return IsVectorVisible(first, second, false);
+    }
+    static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
+    {
+        if (getZBetweenAreas(begin, end) > 42)
+            return const_ignored;
+        if (vischeck(begin, end))
+            return vischeck_success;
+        else
+            return vischeck_failed;
+    }
+    static void checkPath()
+    {
+        for (size_t i = 0; i < crumbs.size() - 1; i++)
+        {
+            CNavArea *begin = getNavArea(crumbs.at(i));
+            CNavArea *end   = getNavArea(crumbs.at(i + 1));
+            if (!begin || !end)
+                continue;
+            ignoredata &data = ignores[{ begin, end }];
+            if (data.status == vischeck_failed)
+                return;
+            if (!vischeck(begin, end))
+            {
+                data.status = vischeck_failed;
+                data.ignoreTimeout.update();
+                repath();
+                return;
+            }
+        }
+    }
 
 public:
-    static bool isIgnored(CNavArea *begin, CNavArea *end)
+    // 0 = Not ignored, 1 = low priority, 2 = ignored
+    static int isIgnored(CNavArea *begin, CNavArea *end)
     {
-        if (ignores.find({ begin, end }) == ignores.end())
-            return false;
-        if (ignores[{ begin, end }].isignored)
-        {
-            logging::Info("Not using ignored Connection %i-%i", begin->m_id,
-                          end->m_id);
-            return true;
-        }
+        //
+        ignore_status &status = ignores[{ begin, end }].status;
+        if (status == unknown)
+            status = runIgnoreChecks(begin, end);
+        if (status == const_ignored || status == explicit_ignored)
+            return 2;
+        else if (status == vischeck_failed)
+            return 1;
         else
-            return false;
+            return 0;
     }
     static void addTime(CNavArea *begin, CNavArea *end, Timer &time)
     {
@@ -67,40 +168,69 @@ public:
             ignores[{ begin, end }] = {};
         }
         ignoredata &connection = ignores[{ begin, end }];
-        if (connection.isignored)
-            // Wtf
-            return;
         connection.stucktime +=
             std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::system_clock::now() - time.last)
                 .count();
         if (connection.stucktime > 2999)
         {
-            connection.isignored = true;
+            connection.status = explicit_ignored;
             connection.ignoreTimeout.update();
             logging::Info("Ignored Connection %i-%i", begin->m_id, end->m_id);
-            ResetPather();
         }
     }
     static void addTime(Vector &begin, Vector &end, Timer &time)
     {
         // todo: check nullptr
-        addTime(getNavArea(begin), getNavArea(end), time);
+        CNavArea *begin_area = getNavArea(begin);
+        CNavArea *end_area   = getNavArea(end);
+        if (!begin_area || !end_area)
+        {
+            // We can't reach the destination vector. Destination vector might
+            // be out of bounds/reach.
+            crumbs.clear();
+            return;
+        }
+        addTime(begin_area, end_area, time);
     }
     static void reset()
     {
         ignores.clear();
+        ResetPather();
     }
     static void updateIgnores()
     {
-        for (auto &i : ignores)
+        static Timer update{};
+        if (!update.test_and_set(500))
+            return;
+        if (crumbs.empty())
         {
-            if (i.second.isignored && i.second.ignoreTimeout.check(3000))
+            for (auto &i : ignores)
             {
-                i.second.isignored = false;
-                i.second.stucktime = 0;
+                switch (i.second.status)
+                {
+                case vischeck_failed:
+                case vischeck_success:
+                    if (i.second.ignoreTimeout.check(30000))
+                    {
+                        i.second.status    = unknown;
+                        i.second.stucktime = 0;
+                    }
+                    break;
+                case explicit_ignored:
+                    if (i.second.ignoreTimeout.check(60000))
+                    {
+                        i.second.status    = unknown;
+                        i.second.stucktime = 0;
+                    }
+                    break;
+                default:
+                    break;
+                }
             }
         }
+        else
+            checkPath();
     }
     ignoremanager() = delete;
 };
@@ -117,30 +247,34 @@ struct Graph : public micropather::Graph
         pather =
             std::make_unique<micropather::MicroPather>(this, 3000, 6, true);
     }
-    ~Graph()
+    ~Graph() override
     {
     }
-    void AdjacentCost(void *state, MP_VECTOR<micropather::StateCost> *adjacent)
+    void AdjacentCost(void *state,
+                      MP_VECTOR<micropather::StateCost> *adjacent) override
     {
         CNavArea *center = static_cast<CNavArea *>(state);
         for (auto &i : center->m_connections)
         {
             CNavArea *neighbour = i.area;
-            if (ignoremanager::isIgnored(center, neighbour))
+            int isIgnored       = ignoremanager::isIgnored(center, neighbour);
+            if (isIgnored == 2)
                 continue;
+            float distance = center->m_center.DistTo(i.area->m_center);
+            if (isIgnored == 1)
+                distance += 50000;
             micropather::StateCost cost{ static_cast<void *>(neighbour),
-                                         center->m_center.DistTo(
-                                             i.area->m_center) };
+                                         distance };
             adjacent->push_back(cost);
         }
     }
-    float LeastCostEstimate(void *stateStart, void *stateEnd)
+    float LeastCostEstimate(void *stateStart, void *stateEnd) override
     {
         CNavArea *start = static_cast<CNavArea *>(stateStart);
         CNavArea *end   = static_cast<CNavArea *>(stateEnd);
         return start->m_center.DistTo(end->m_center);
     }
-    void PrintStateInfo(void *)
+    void PrintStateInfo(void *) override
     {
         // Uhh no
     }
@@ -303,10 +437,10 @@ std::vector<Vector> findPath(Vector start, Vector end)
 
 static Vector loc(0.0f, 0.0f, 0.0f);
 static Vector last_area(0.0f, 0.0f, 0.0f);
-int curr_priority         = 0;
-bool ReadyForCommands     = true;
-static bool ensureArrival = false;
+bool ReadyForCommands = true;
 static Timer inactivity{};
+int curr_priority         = 0;
+static bool ensureArrival = false;
 
 bool navTo(Vector destination, int priority, bool should_repath,
            bool nav_to_local, bool is_repath)
@@ -337,6 +471,17 @@ bool navTo(Vector destination, int priority, bool should_repath,
     return true;
 }
 
+void repath()
+{
+    if (ensureArrival)
+    {
+        Vector last = crumbs.back();
+        crumbs.clear();
+        ResetPather();
+        navTo(last, curr_priority, true, true, true);
+    }
+}
+
 static Timer last_jump{};
 // Main movement function, gets path from NavTo
 static HookedFunction
@@ -351,13 +496,13 @@ static HookedFunction
             crumbs.clear();
             return;
         }
+        ignoremanager::updateIgnores();
         // Crumbs empty, prepare for next instruction
         if (crumbs.empty())
         {
-            curr_priority         = 0;
+            curr_priority    = 0;
             ReadyForCommands = true;
             ensureArrival    = false;
-            ignoremanager::updateIgnores();
             return;
         }
         ReadyForCommands = false;
@@ -381,17 +526,12 @@ static HookedFunction
         {
             // Ignore connection
             ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
-            if (ensureArrival)
-            {
-                Vector last = crumbs.at(0);
-                crumbs.clear();
-                navTo(last, curr_priority, true, true, true);
-            }
+            repath();
             return;
         }
         // Walk to next crumb
         WalkTo(crumbs.at(0));
-});
+    });
 
 void ResetPather()
 {
