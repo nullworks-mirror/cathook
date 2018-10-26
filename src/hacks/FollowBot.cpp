@@ -32,25 +32,25 @@ namespace hacks::shared::followbot
 {
 
 unsigned steamid = 0x0;
-CatCommand follow_steam("fb_steam", "Follow Steam Id",
-                        [](const CCommand &args) {
-                            if (args.ArgC() < 1)
-                            {
-                                steam_var = 0;
-                                return;
-                            }
-                            try
-                            {
-                                steam_var = std::stoul(args.Arg(1));
-                                logging::Info("Stored Steamid: %u", steamid);
-                            }
-                            catch (std::invalid_argument)
-                            {
-                                logging::Info("Invalid Argument! resetting steamid.");
-                                steam_var = 0;
-                                return;
-                            }
-                        });
+CatCommand
+    follow_steam("fb_steam", "Follow Steam Id", [](const CCommand &args) {
+        if (args.ArgC() < 1)
+        {
+            steam_var = 0;
+            return;
+        }
+        try
+        {
+            steam_var = std::stoul(args.Arg(1));
+            logging::Info("Stored Steamid: %u", steamid);
+        }
+        catch (std::invalid_argument)
+        {
+            logging::Info("Invalid Argument! resetting steamid.");
+            steam_var = 0;
+            return;
+        }
+    });
 
 CatCommand steam_debug("debug_steamid", "Print steamids", []() {
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
@@ -158,33 +158,40 @@ void addCrumbPair(CachedEntity *player1, CachedEntity *player2,
         }
     }
 }
+/* Order:
+ *   No Class = 0,
+ *   tf_scout = 1,
+ *   tf_sniper = 2,
+ *   tf_soldier = 3,
+ *   tf_demoman = 4,
+ *   tf_medic = 5,
+ *   tf_heavy = 6,
+ *   tf_pyro = 7,
+ *   tf_spy = 8,
+ *   tf_engineer = 9
+ */
+
+static int priority_list[10][10] = {
+    /*0  1  2  3  4  5  6  7  8  9 */
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // No class
+    { 0, 8, 2, 7, 6, 2, 5, 1, 0, 0 }, // Scout
+    { 0, 1, 8, 2, 2, 2, 2, 0, 0, 0 }, // Sniper
+    { 0, 6, 1, 8, 7, 5, 6, 4, 0, 0 }, // Soldier
+    { 0, 6, 1, 7, 8, 5, 6, 4, 0, 0 }, // Demoman
+    { 0, 3, 1, 7, 7, 1, 8, 2, 0, 0 }, // Medic
+    { 0, 2, 0, 7, 6, 4, 8, 5, 0, 0 }, // Heavy
+    { 0, 6, 1, 6, 5, 3, 5, 8, 0, 0 }, // Pyro
+    { 0, 1, 0, 0, 0, 0, 0, 0, 8, 0 }, // Spy
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 8 }  // Engineer
+};
 
 int ClassPriority(CachedEntity *ent)
 {
-    switch (g_pPlayerResource->GetClass(ent))
-    {
-    case tf_spy:
-        return 0;
-    case tf_engineer:
-        return 1;
-    case tf_medic:
-        return 2;
-    case tf_pyro:
-        return 3;
-    case tf_scout:
-        return 4;
-    case tf_sniper:
-        return 5;
-    case tf_demoman:
-        return 6;
-    case tf_soldier:
-        return 7;
-    case tf_heavy:
-        return 8;
-    default:
-        return 0;
-    }
+    int local_class = g_pPlayerResource->GetClass(LOCAL_E);
+    int ents_class  = g_pPlayerResource->GetClass(ent);
+    return priority_list[local_class][ents_class];
 }
+
 Timer waittime{};
 int lastent = 0;
 
@@ -243,7 +250,8 @@ static HookedFunction
             if (breadcrumbs.size() > crumb_limit)
                 follow_target = 0;
             // Still good check
-            else if (CE_BAD(ENTITY(follow_target)) || IsPlayerInvisible(ENTITY(follow_target)))
+            else if (CE_BAD(ENTITY(follow_target)) ||
+                     IsPlayerInvisible(ENTITY(follow_target)))
                 follow_target = 0;
         }
 
@@ -301,7 +309,7 @@ static HookedFunction
                 }
                 else
                 {
-                    if(VisCheckEntFromEnt(LOCAL_E, entity))
+                    if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
 //                if (!found && nav::Prepare())
@@ -405,7 +413,7 @@ static HookedFunction
                 }
                 else
                 {
-                    if(VisCheckEntFromEnt(LOCAL_E, entity))
+                    if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
 //                if (!found && nav::Prepare())
@@ -493,12 +501,12 @@ static HookedFunction
             g_IEngine->ClientCmd("taunt");
         }
 
-        // Follow the crumbs when too far away, or just starting to follow
+    // Follow the crumbs when too far away, or just starting to follow
 #if ENABLE_IPC
         float follow_dist = (float) follow_distance;
         if (ipc::peer)
             follow_dist += (float) additional_distance * ipc::peer->client_id;
-        if (dist_to_target > follow_dist )
+        if (dist_to_target > follow_dist)
 #else
         if (dist_to_target > (float) follow_distance)
 #endif

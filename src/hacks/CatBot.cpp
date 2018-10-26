@@ -216,12 +216,15 @@ void reportall()
         // server
         if (!ent)
             continue;
+
+        // Pointer comparison is fine
         if (ent == LOCAL_E)
             continue;
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(i, &info))
         {
-            if (player_tools::shouldTarget(ent) !=
+            // Need to use SteamID ignore
+            if (player_tools::shouldTargetSteamId(info.friendsID) !=
                 player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             CSteamID id(info.friendsID, EUniverse::k_EUniversePublic,
@@ -311,7 +314,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
         !HasCondition<TFCond_Disguised>(LOCAL_E) && disguise.test_and_set(3000))
     {
         int teamtodisguise =
-            (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_BLU - 1 : TEAM_RED - 1;
+            (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_RED - 1 : TEAM_BLU - 1;
         int classtojoin = classes[rand() % 3];
         g_IEngine->ClientCmd_Unrestricted(
             format("disguise ", classtojoin, " ", teamtodisguise).c_str());
