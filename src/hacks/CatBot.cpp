@@ -223,7 +223,6 @@ void reportall()
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(i, &info))
         {
-            // Need to use SteamID ignore
             if (player_tools::shouldTargetSteamId(info.friendsID) !=
                 player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
