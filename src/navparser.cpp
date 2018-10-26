@@ -301,6 +301,7 @@ void initThread()
     {
         navfile.reset();
         status = unavailable;
+        return;
     }
     logging::Info("Pather: Initing with %i Areas", navfile->m_areas.size());
     status = on;
@@ -308,8 +309,6 @@ void initThread()
 
 void init()
 {
-    if (status == initing)
-        return;
     ignoremanager::reset();
     status = initing;
     thread = std::thread(initThread);
