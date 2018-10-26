@@ -418,7 +418,6 @@ bool NavToEnemy()
     return false;
 }
 
-
 bool NavToSniperSpot(int priority)
 {
     Vector random_spot{};
@@ -465,7 +464,7 @@ bool NavToSniperSpot(int priority)
 
         if (best_spot == -1)
         {
-            snip_spot = sniper_spots;
+            snip_spot   = sniper_spots;
             int rng     = rand() % snip_spot.size();
             random_spot = snip_spot.at(rng);
             if (random_spot.z)
@@ -558,7 +557,7 @@ static HookedFunction
                 CachedEntity *ent = ENTITY(idx);
                 if (CE_GOOD(ent) && ent->m_flDistance() < 300.0f)
                     if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) &&
-                            CE_FLOAT(ent, netvar.m_flTeleRechargeTime) &&
+                        CE_FLOAT(ent, netvar.m_flTeleRechargeTime) &&
                         CE_FLOAT(ent, netvar.m_flTeleRechargeTime) <
                             g_GlobalVars->curtime)
                     {

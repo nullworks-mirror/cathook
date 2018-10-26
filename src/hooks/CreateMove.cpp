@@ -255,8 +255,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #if !ENABLE_VISUALS
     if (no_shake && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
     {
-        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle) = {0.0f, 0.0f, 0.0f};
-        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = {0.0f, 0.0f, 0.0f};
+        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle)    = { 0.0f, 0.0f,
+                                                               0.0f };
+        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = { 0.0f, 0.0f,
+                                                                  0.0f };
     }
 #endif
     //	PROF_END("Entity Cache updating");

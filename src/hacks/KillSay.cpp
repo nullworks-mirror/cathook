@@ -101,7 +101,7 @@ class KillSayEventListener : public IGameEventListener2
         std::string message = hacks::shared::killsay::ComposeKillSay(event);
         if (!message.empty())
         {
-            int vid = event->GetInt("userid");
+            int vid                    = event->GetInt("userid");
             killsay_storage[vid].delay = *delay;
             killsay_storage[vid].timer.update();
             killsay_storage[vid].message = message;
@@ -109,20 +109,21 @@ class KillSayEventListener : public IGameEventListener2
     }
 };
 
-static HookedFunction ProcessKillsay(HookedFunctions_types::HF_Paint, "KillSay_send", 1, []() {
-    if (killsay_storage.empty())
-        return;
-    for (auto &i : killsay_storage)
-    {
-        if (i.second.message.empty())
-            continue;
-        if (i.second.timer.test_and_set(i.second.delay))
+static HookedFunction
+    ProcessKillsay(HookedFunctions_types::HF_Paint, "KillSay_send", 1, []() {
+        if (killsay_storage.empty())
+            return;
+        for (auto &i : killsay_storage)
         {
-            chat_stack::Say(i.second.message, false);
-            i.second = {};
+            if (i.second.message.empty())
+                continue;
+            if (i.second.timer.test_and_set(i.second.delay))
+            {
+                chat_stack::Say(i.second.message, false);
+                i.second = {};
+            }
         }
-    }
-});
+    });
 
 static KillSayEventListener listener{};
 
