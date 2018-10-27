@@ -9,6 +9,8 @@ namespace nav
 {
 
 static settings::Bool enabled{ "misc.pathing", "true" };
+// Whether or not to run vischecks at pathtime
+static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "false" };
 
 static std::vector<Vector> crumbs;
 
@@ -111,6 +113,8 @@ class ignoremanager
     {
         if (getZBetweenAreas(begin, end) > 42)
             return const_ignored;
+        if (!vischecks)
+            return vischeck_success;
         if (vischeck(begin, end))
             return vischeck_success;
         else
@@ -405,11 +409,16 @@ std::vector<Vector> findPath(Vector start, Vector end)
         return {};
     micropather::MPVector<void *> pathNodes;
     float cost;
-
+    std::chrono::time_point begin_pathing =
+        std::chrono::high_resolution_clock::now();
     int result =
         Map.pather->Solve(static_cast<void *>(local), static_cast<void *>(dest),
                           &pathNodes, &cost);
-    logging::Info(format("Pathing: Pather result: ", result).c_str());
+    long long timetaken = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                  std::chrono::high_resolution_clock::now() - begin_pathing)
+                  .count();
+    logging::Info("Pathing: Pather result: %i. Time taken (NS): %lld", result,
+                  timetaken);
     // If no result found, return empty Vector
     if (result == micropather::MicroPather::NO_SOLUTION)
         return std::vector<Vector>(0);
@@ -453,8 +462,13 @@ bool navTo(Vector destination, int priority, bool should_repath,
     {
         findClosestNavSquare_localAreas.clear();
     }
+    if (!crumbs.empty())
+    {
+        ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
+    }
     ensureArrival    = should_repath;
     ReadyForCommands = false;
+    curr_priority = priority;
     crumbs.clear();
     crumbs = std::move(path);
     return true;
@@ -506,7 +520,9 @@ static HookedFunction
         if (crumbs.empty())
             return;
         // Detect when jumping is necessary
-        if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
+        if ((!(g_pLocalPlayer->holding_sniper_rifle &&
+               g_pLocalPlayer->bZoomed) &&
+             crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
              last_jump.test_and_set(200)) ||
             (last_jump.test_and_set(200) && inactivity.check(3000)))
             current_user_cmd->buttons |= IN_JUMP;
