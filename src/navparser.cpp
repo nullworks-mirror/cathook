@@ -107,7 +107,7 @@ class ignoremanager
         Vector second = end->m_center;
         first.z += 42;
         second.z += 42;
-        return IsVectorVisible(first, second, false);
+        return IsVectorVisible(first, second, true);
     }
     static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
     {
