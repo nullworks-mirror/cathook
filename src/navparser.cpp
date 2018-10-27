@@ -4,6 +4,9 @@
 #include "micropather.h"
 #include <pwd.h>
 #include <boost/functional/hash.hpp>
+#if ENABLE_VISUALS
+#include <glez/draw.hpp>
+#endif
 
 namespace nav
 {
@@ -11,6 +14,8 @@ namespace nav
 static settings::Bool enabled{ "misc.pathing", "true" };
 // Whether or not to run vischecks at pathtime
 static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "false" };
+static settings::Bool draw{ "misc.pathing.draw", "false" };
+
 
 static std::vector<Vector> crumbs;
 
@@ -541,6 +546,37 @@ static HookedFunction
         // Walk to next crumb
         WalkTo(crumbs.at(0));
     });
+
+#if ENABLE_VISUALS
+static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []()
+{
+    if (!enabled || !draw)
+        return;
+    if (!enabled)
+        return;
+    if (CE_BAD(LOCAL_E))
+        return;
+    if (!LOCAL_E->m_bAlivePlayer())
+        return;
+    if (crumbs.size() < 2)
+        return;
+    for (size_t i = 0; i < crumbs.size() - 1; i++)
+    {
+        Vector wts1, wts2;
+        if (draw::WorldToScreen(crumbs[i], wts1) &&
+            draw::WorldToScreen(crumbs[i + 1], wts2))
+        {
+            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
+                             colors::white, 0.3f);
+        }
+    }
+    Vector wts;
+    if (!draw::WorldToScreen(crumbs[0], wts))
+        return;
+    glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
+    glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
+});
+#endif
 
 void ResetPather()
 {

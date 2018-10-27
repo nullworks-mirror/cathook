@@ -231,7 +231,7 @@ static HookedFunction
             }
             if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(2000))
             {
-                if (nav::navTo(ENTITY(follow_target)->m_vecOrigin()))
+                if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 5, true, false))
                 {
                     navtimeout.update();
                 }
@@ -318,7 +318,7 @@ static HookedFunction
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (isNavBotCM && !found && nav::prepare())
+                if (isNavBotCM && !found)
                 {
                     if (!nav::navTo(entity->m_vecOrigin()))
                         continue;
@@ -423,7 +423,7 @@ static HookedFunction
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (isNavBotCM && !found && nav::prepare())
+                if (isNavBotCM && !found)
                 {
                     if (!nav::navTo(entity->m_vecOrigin()))
                         continue;
