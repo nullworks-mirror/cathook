@@ -1061,7 +1061,8 @@ int BestHitbox(CachedEntity *target)
                 if (CanHeadshot() &&
                     (std::floor(cdmg) >= target->m_iHealth() ||
                      IsPlayerCritBoosted(g_pLocalPlayer->entity) ||
-                     !g_pLocalPlayer->bZoomed || target->m_iHealth() <= std::floor(bdmg)) &&
+                     !g_pLocalPlayer->bZoomed ||
+                     target->m_iHealth() <= std::floor(bdmg)) &&
                     target->m_iHealth() <= 150)
                 {
                     // We dont need to hit the head as a bodyshot will kill

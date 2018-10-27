@@ -506,7 +506,9 @@ static HookedFunction
         if (crumbs.empty())
             return;
         // Detect when jumping is necessary
-        if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
+        if ((!(g_pLocalPlayer->holding_sniper_rifle &&
+               g_pLocalPlayer->bZoomed) &&
+             crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
              last_jump.test_and_set(200)) ||
             (last_jump.test_and_set(200) && inactivity.check(3000)))
             current_user_cmd->buttons |= IN_JUMP;

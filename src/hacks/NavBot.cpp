@@ -1,16 +1,34 @@
 #include "common.hpp"
+#include "NavBot.hpp"
+#include "PlayerTools.hpp"
 #include "navparser.hpp"
 #include "settings/Bool.hpp"
+#include "settings/Float.hpp"
 #include "HookedMethods.hpp"
 
 // Rvars
 static settings::Bool enable{ "navbot.enable", "false" };
+static settings::Bool sniper_mode{ "navbot.sniper-mode", "true" };
 static settings::Bool heavy_mode{ "navbot.heavy-mode", "false" };
+static settings::Bool scout_mode{ "navbot.scout-mode", "false" };
+static settings::Float jump_trigger{ "navbot.jump-distance", "500.0f" };
 static settings::Bool spy_mode{ "navbot.spy-mode", "false" };
+static settings::Bool stay_near{ "navbot.stay-near", "true" };
+static settings::Bool path_health{ "navbot.path-health", "true" };
+static settings::Bool path_ammo{ "navbot.path-ammo", "true" };
+static settings::Bool pick_optimal_slot{ "navbot.best-slot", "true" };
 
 // Timers
 static Timer general_cooldown{};
 static Timer init_cooldown{};
+static Timer path_health_cooldown{};
+static Timer path_ammo_cooldown{};
+static Timer refresh_nearest_target{};
+static Timer refresh_nearest_valid_vector{};
+static Timer nav_to_nearest_enemy_cooldown{};
+static Timer slot_timer{};
+static Timer non_sniper_sniper_nav_cooldown{};
+static Timer jump_cooldown{};
 
 // Vectors
 static std::vector<Vector *> default_spots{};
@@ -27,6 +45,11 @@ namespace hacks::shared::NavBot
 // Main Functions
 void Init(bool from_LevelInit)
 {
+    if (!*enable)
+    {
+        inited = false;
+        return;
+    }
     if (from_LevelInit)
     {
         inited = false;
@@ -53,37 +76,261 @@ void Init(bool from_LevelInit)
     }
 }
 
-static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "NavBot", 10, [](){
-    if (!*enable)
-        return;
-    if (!inited)
-    {
-        if (init_cooldown.test_and_set(10000))
-            Init(false);
-        return;
-    }
-    if (!nav::prepare())
-        return;
+static HookedFunction
+    CreateMove(HookedFunctions_types::HF_CreateMove, "NavBot", 10, []() {
+        // Master Switch
 
-});
+        if (!*enable)
+            return;
+
+        // init pls
+        if (!inited)
+        {
+            if (init_cooldown.test_and_set(10000))
+                Init(false);
+            return;
+        }
+
+        // no nav file loaded/inited
+        if (!nav::prepare())
+            return;
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+            return;
+        // Health and ammo have highest priority, but the stay near priorities has to be this high to override anything else
+        if (nav::curr_priority == 1337 && (HasLowAmmo() || HasLowHealth()))
+            nav::clearInstructions();
+
+        // Get health if low
+        if (path_health && HasLowHealth() &&
+            path_health_cooldown.test_and_set(500))
+        {
+            CachedEntity *health = nearestHealth();
+            if (CE_GOOD(health))
+                nav::navTo(health->m_vecOrigin(), 7, false, false);
+        }
+
+        // Get Ammo if low on ammo
+        if (path_ammo && HasLowAmmo() && path_ammo_cooldown.test_and_set(500))
+        {
+            CachedEntity *ammo = nearestAmmo();
+            if (CE_GOOD(ammo))
+                nav::navTo(ammo->m_vecOrigin(), 6, false, false);
+        }
+        // Stop pathing for ammo/Health if problem resolved
+        if ((!HasLowAmmo() && nav::curr_priority == 6) || ( nav::curr_priority == 7 && !HasLowHealth()))
+            nav::clearInstructions();
+        // If Zoning enabled then zone enemy
+        if (stay_near && nav_to_nearest_enemy_cooldown.test_and_set(100))
+            NavToNearestEnemy();
+
+        // Prevent path spam on sniper bots
+        if (CanPath())
+        {
+            if (sniper_mode)
+                NavToSniperSpot(5);
+            else if ((*heavy_mode || scout_mode) && nav_to_nearest_enemy_cooldown.test_and_set(100))
+                if (!NavToNearestEnemy() && non_sniper_sniper_nav_cooldown.test_and_set(10000))
+                    NavToSniperSpot(5);
+        }
+        if (*pick_optimal_slot)
+            UpdateSlot();
+        if (*scout_mode)
+            Jump();
+    });
 
 // Helpers
 
 bool CanPath()
 {
-    if ((*heavy_mode || *spy_mode) && general_cooldown.test_and_set(100))
+    if ((*heavy_mode || *spy_mode || *scout_mode) && general_cooldown.test_and_set(100))
         return true;
-    else
+    else if (sniper_mode)
     {
         if (nav::ReadyForCommands && general_cooldown.test_and_set(100))
             return true;
         return false;
     }
+    return false;
 }
 
+bool HasLowHealth()
+{
+    return float(LOCAL_E->m_iHealth()) / float(LOCAL_E->m_iMaxHealth()) < 0.64;
+}
+
+bool HasLowAmmo()
+{
+    int *weapon_list =
+        (int *) ((unsigned) (RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
+    if (g_pLocalPlayer->holding_sniper_rifle &&
+        CE_INT(LOCAL_E, netvar.m_iAmmo + 4) <= 5)
+        return true;
+    for (int i = 0; weapon_list[i]; i++)
+    {
+        int handle = weapon_list[i];
+        int eid    = handle & 0xFFF;
+        if (eid >= 32 && eid <= HIGHEST_ENTITY)
+        {
+            IClientEntity *weapon = g_IEntityList->GetClientEntity(eid);
+            if (weapon and re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) &&
+                re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) &&
+                !re::C_TFWeaponBase::HasPrimaryAmmo(weapon))
+                return true;
+        }
+    }
+    return false;
+}
+
+CachedEntity *nearestHealth()
+{
+    float bestscr         = FLT_MAX;
+    CachedEntity *bestent = nullptr;
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CBaseAnimating))
+            continue;
+        if (ent->m_ItemType() != ITEM_HEALTH_SMALL &&
+            ent->m_ItemType() != ITEM_HEALTH_MEDIUM &&
+            ent->m_ItemType() != ITEM_HEALTH_LARGE)
+            continue;
+        if (ent->m_flDistance() < bestscr)
+        {
+            bestscr = ent->m_flDistance();
+            bestent = ent;
+        }
+    }
+    return bestent;
+}
+
+CachedEntity *nearestAmmo()
+{
+    float bestscr         = FLT_MAX;
+    CachedEntity *bestent = nullptr;
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CBaseAnimating))
+            continue;
+        if (ent->m_ItemType() != ITEM_AMMO_SMALL &&
+            ent->m_ItemType() != ITEM_AMMO_MEDIUM &&
+            ent->m_ItemType() != ITEM_AMMO_LARGE)
+            continue;
+        if (ent->m_flDistance() < bestscr)
+        {
+            bestscr = ent->m_flDistance();
+            bestent = ent;
+        }
+    }
+    return bestent;
+}
+
+static int last_target = -1;
+CachedEntity *nearestEnemy()
+{
+    if (refresh_nearest_target.test_and_set(3000))
+    {
+        CachedEntity *best_tar = nullptr;
+        float best_dist        = FLT_MAX;
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        {
+            CachedEntity *ent = ENTITY(i);
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() ||
+                ent == LOCAL_E ||
+                player_tools::shouldTarget(ent) !=
+                    player_tools::IgnoreReason::DO_NOT_IGNORE)
+                continue;
+            if (ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) < best_dist)
+            {
+                best_dist = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+                best_tar  = ent;
+            }
+        }
+        if (CE_GOOD(best_tar))
+        {
+            last_target = best_tar->m_IDX;
+            return best_tar;
+        }
+        else
+        {
+            last_target = -1;
+            return nullptr;
+        }
+    }
+    else
+    {
+        if (last_target == -1)
+            return nullptr;
+        else
+        {
+            CachedEntity *ent = ENTITY(last_target);
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() ||
+                ent == LOCAL_E ||
+                player_tools::shouldTarget(ent) !=
+                    player_tools::IgnoreReason::DO_NOT_IGNORE)
+            {
+                last_target = -1;
+                return nullptr;
+            }
+            else
+                return ent;
+        }
+    }
+}
+
+static Vector cached_vector{0.0f, 0.0f, 0.0f};
+static Vector empty{0.0f, 0.0f, 0.0f};
+Vector GetClosestValidByDist(CachedEntity *ent, float mindist, float maxdist, bool near)
+{
+    if (refresh_nearest_valid_vector.test_and_set(100))
+    {
+        if (CE_BAD(ent))
+            return empty;
+
+        Vector best_area{0.0f, 0.0f, 0.0f};
+        float best_dist = near ? FLT_MAX : 0.0f;
+        for (auto &i : nav::navfile->m_areas)
+        {
+            Vector center = i.m_center;
+            float dist    = center.DistTo(ent->m_vecOrigin());
+
+            // Check if wihin the range specified
+            if (dist > maxdist || dist < mindist)
+                continue;
+
+            // We want to be standing the closest to them possible, besides as a sniper
+            if ((near && dist > best_dist) || (!near && dist < best_dist))
+                continue;
+
+            // Anti stuck in ground stuff
+            Vector zcheck = center;
+            zcheck.z += 48;
+
+            // Anti stuck in ground
+            Vector zent = ent->m_vecOrigin();
+            zent += 48;
+            if (!IsVectorVisible(zcheck, zent, false))
+                continue;
+            best_area = i.m_center;
+            best_dist = dist;
+        }
+        if (best_area.IsValid() && best_area.z )
+        {
+            cached_vector = best_area;
+            return best_area;
+        }
+        return empty;
+    }
+    // We Want a bit of caching
+    else
+        return cached_vector;
+}
+
+// Navigation
 bool NavToSniperSpot(int priority)
 {
-    // Already pathing currently and priority is below the wanted, so just return
+    // Already pathing currently and priority is below the wanted, so just
+    // return
     if (priority < nav::curr_priority)
         return true;
     // Preferred yay or nay?
@@ -91,7 +338,8 @@ bool NavToSniperSpot(int priority)
     if (!use_preferred && default_spots.empty())
         return false;
 
-    std::vector<Vector *> *sniper_spots = use_preferred ? &preferred_spots : &default_spots;
+    std::vector<Vector *> *sniper_spots =
+        use_preferred ? &preferred_spots : &default_spots;
 
     // Wtf Nullptr!
     if (!sniper_spots)
@@ -129,9 +377,9 @@ bool NavToSniperSpot(int priority)
                 // Score of the match
                 float score = match->DistTo(LOCAL_E->m_vecOrigin());
 
-                if ( score < min_dist)
+                if (score < min_dist)
                 {
-                    min_dist = score;
+                    min_dist  = score;
                     best_spot = idx;
                 }
             }
@@ -148,11 +396,68 @@ bool NavToSniperSpot(int priority)
     else
     {
         // Get Random Sniper Spot
-        unsigned index = unsigned(std::rand()) % sniper_spots->size();
+        unsigned index      = unsigned(std::rand()) % sniper_spots->size();
         Vector *random_spot = sniper_spots->at(index);
 
         // Nav to Spot
         return nav::navTo(*random_spot, priority);
     }
 }
+bool CanNavToNearestEnemy()
+{
+    if (HasLowAmmo() || HasLowHealth())
+        return false;
+    return true;
 }
+bool NavToNearestEnemy()
+{
+    CachedEntity *ent = nearestEnemy();
+    if (CE_BAD(ent))
+        return false;
+    if (nav::curr_priority == 6 || nav::curr_priority == 7)
+        return false;
+    float min_dist = 800.0f;
+    float max_dist = 4000.0f;
+    bool stay_near = *sniper_mode ? false : true;
+    if (*heavy_mode || *scout_mode)
+    {
+        min_dist = 100.0f;
+        max_dist = 1000.0f;
+    }
+    Vector to_nav = GetClosestValidByDist(ent, min_dist, max_dist, stay_near);
+    if (to_nav.z)
+        return nav::navTo(to_nav, 1337, false, false);
+    return false;
+}
+
+void UpdateSlot()
+{
+    if (!slot_timer.test_and_set(1000))
+        return;
+    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
+    {
+        IClientEntity *weapon = RAW_ENT(LOCAL_W);
+        // IsBaseCombatWeapon()
+        if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
+        {
+            int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
+            int newslot = 1;
+            if (*spy_mode)
+                newslot = 3;
+            if (slot != newslot - 1)
+                g_IEngine->ClientCmd_Unrestricted(
+                    format("slot", newslot).c_str());
+        }
+    }
+}
+
+void Jump()
+{
+    CachedEntity *ent = nearestEnemy();
+    if (CE_BAD(ent))
+        return;
+    if (ent->m_flDistance() < *jump_trigger && jump_cooldown.test_and_set(200))
+        current_user_cmd->buttons |= IN_JUMP;
+}
+
+} // namespace hacks::shared::NavBot
