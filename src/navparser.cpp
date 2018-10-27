@@ -342,6 +342,9 @@ CNavArea *findClosestNavSquare(Vector vec)
         findClosestNavSquare_localAreas.erase(
             findClosestNavSquare_localAreas.begin());
 
+    bool is_local = vec == g_pLocalPlayer->v_Origin;
+
+
     auto &areas = navfile->m_areas;
     std::vector<CNavArea *> overlapping;
 
@@ -375,7 +378,7 @@ CNavArea *findClosestNavSquare(Vector vec)
 
     if (bestSquare != nullptr)
     {
-        if (vec == g_pLocalPlayer->v_Origin)
+        if (is_local)
             findClosestNavSquare_localAreas.push_back(bestSquare);
         return bestSquare;
     }
@@ -394,7 +397,8 @@ CNavArea *findClosestNavSquare(Vector vec)
             }
         }
     }
-    findClosestNavSquare_localAreas.push_back(bestSquare);
+    if (is_local)
+        findClosestNavSquare_localAreas.push_back(bestSquare);
     return bestSquare;
 }
 
