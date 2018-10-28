@@ -263,6 +263,8 @@ public:
     static void updateIgnores()
     {
         static Timer update{};
+        static Timer last_pather_reset{};
+        static bool reset_pather = false;
         if (!update.test_and_set(500))
             return;
         updateDanger();
@@ -277,13 +279,17 @@ public:
                     {
                         i.second.status    = unknown;
                         i.second.stucktime = 0;
+                        reset_pather = true;
                     }
                     break;
                 case unknown:
                     break;
                 case danger_found:
                     if (i.second.ignoreTimeout.check(20000))
+                    {
                         i.second.status = unknown;
+                        reset_pather = true;
+                    }
                     break;
                 case vischeck_failed:
                 case vischeck_success:
@@ -292,6 +298,7 @@ public:
                     {
                         i.second.status    = unknown;
                         i.second.stucktime = 0;
+                        reset_pather = true;
                     }
                     break;
                 }
@@ -299,6 +306,11 @@ public:
         }
         else
             checkPath();
+        if (reset_pather && last_pather_reset.test_and_set(10000))
+        {
+            reset_pather = false;
+            ResetPather();
+        }
     }
     static bool isSafe(CNavArea *area)
     {
