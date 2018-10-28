@@ -4,6 +4,7 @@
 #include "micropather.h"
 #include <pwd.h>
 #include <boost/functional/hash.hpp>
+#include <boost/container/flat_set.hpp>
 #if ENABLE_VISUALS
 #include <glez/draw.hpp>
 #endif
@@ -15,7 +16,6 @@ static settings::Bool enabled{ "misc.pathing", "true" };
 // Whether or not to run vischecks at pathtime
 static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "false" };
 static settings::Bool draw{ "misc.pathing.draw", "false" };
-
 
 static std::vector<Vector> crumbs;
 
@@ -30,7 +30,9 @@ enum ignore_status : uint8_t
     // No LOS between areas
     vischeck_failed,
     // Failed to actually walk thru connection
-    explicit_ignored
+    explicit_ignored,
+    // Danger like sentry gun or sticky
+    danger_found
 };
 
 void ResetPather();
@@ -125,8 +127,61 @@ class ignoremanager
         else
             return vischeck_failed;
     }
+    static void updateDanger()
+    {
+        for (size_t i = 0; i < HIGHEST_ENTITY; i++)
+        {
+            CachedEntity *ent = ENTITY(i);
+            if (CE_BAD(ent))
+                continue;
+            if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
+            {
+                if (!ent->m_bEnemy())
+                    continue;
+                Vector loc = GetBuildingPosition(ent);
+                for (auto &i : navfile->m_areas)
+                {
+                    Vector area = i.m_center;
+                    area.z += 41.5f;
+                    if (loc.DistTo(area) > 1100)
+                        continue;
+                    // Check if sentry can see us
+                    if (!IsVectorVisible(loc, area, true))
+                        continue;
+                    ignoredata &data = ignores[{ &i, nullptr }];
+                    data.status      = danger_found;
+                    data.ignoreTimeout.update();
+                }
+            }
+            else if (ent->m_iClassID() ==
+                     CL_CLASS(CTFGrenadePipebombProjectile))
+            {
+                if (!ent->m_bEnemy())
+                    continue;
+                if (CE_INT(ent, netvar.iPipeType) == 1)
+                    continue;
+                Vector loc = ent->m_vecOrigin();
+                for (auto &i : navfile->m_areas)
+                {
+                    Vector area = i.m_center;
+                    if (loc.DistTo(area) > 130)
+                        continue;
+                    area.z += 41.5f;
+                    // Check if sentry can see us
+                    if (!IsVectorVisible(loc, area, true))
+                        continue;
+                    ignoredata &data = ignores[{ &i, nullptr }];
+                    data.status      = danger_found;
+                    data.ignoreTimeout.update();
+                }
+            }
+        }
+    }
+
     static void checkPath()
     {
+        bool perform_repath = false;
+        // Vischecks
         for (size_t i = 0; i < crumbs.size() - 1; i++)
         {
             CNavArea *begin = getNavArea(crumbs.at(i));
@@ -140,26 +195,32 @@ class ignoremanager
             {
                 data.status = vischeck_failed;
                 data.ignoreTimeout.update();
-                repath();
-                return;
+                perform_repath = true;
+            }
+            else if (ignores[{ end, nullptr }].status == danger_found)
+            {
+                perform_repath = true;
             }
         }
+        if (perform_repath)
+            repath();
     }
 
 public:
     // 0 = Not ignored, 1 = low priority, 2 = ignored
     static int isIgnored(CNavArea *begin, CNavArea *end)
     {
-        //
+        if (ignores[{ end, nullptr }].status == danger_found)
+            return 2;
         ignore_status &status = ignores[{ begin, end }].status;
         if (status == unknown)
             status = runIgnoreChecks(begin, end);
-        if (status == const_ignored || status == explicit_ignored)
-            return 2;
+        if (status == vischeck_success)
+            return 0;
         else if (status == vischeck_failed)
             return 1;
         else
-            return 0;
+            return 2;
     }
     static void addTime(CNavArea *begin, CNavArea *end, Timer &time)
     {
@@ -204,20 +265,13 @@ public:
         static Timer update{};
         if (!update.test_and_set(500))
             return;
+        updateDanger();
         if (crumbs.empty())
         {
             for (auto &i : ignores)
             {
                 switch (i.second.status)
                 {
-                case vischeck_failed:
-                case vischeck_success:
-                    if (i.second.ignoreTimeout.check(30000))
-                    {
-                        i.second.status    = unknown;
-                        i.second.stucktime = 0;
-                    }
-                    break;
                 case explicit_ignored:
                     if (i.second.ignoreTimeout.check(60000))
                     {
@@ -225,13 +279,30 @@ public:
                         i.second.stucktime = 0;
                     }
                     break;
+                case unknown:
+                    break;
+                case danger_found:
+                    if (i.second.ignoreTimeout.check(20000))
+                        i.second.status = unknown;
+                    break;
+                case vischeck_failed:
+                case vischeck_success:
                 default:
+                    if (i.second.ignoreTimeout.check(30000))
+                    {
+                        i.second.status    = unknown;
+                        i.second.stucktime = 0;
+                    }
                     break;
                 }
             }
         }
         else
             checkPath();
+    }
+    static bool isSafe(CNavArea *area)
+    {
+        return !(ignores[{ area, nullptr }].status == danger_found);
     }
     ignoremanager() = delete;
 };
@@ -349,7 +420,6 @@ CNavArea *findClosestNavSquare(Vector vec)
 
     bool is_local = vec == g_pLocalPlayer->v_Origin;
 
-
     auto &areas = navfile->m_areas;
     std::vector<CNavArea *> overlapping;
 
@@ -423,9 +493,10 @@ std::vector<Vector> findPath(Vector start, Vector end)
     int result =
         Map.pather->Solve(static_cast<void *>(local), static_cast<void *>(dest),
                           &pathNodes, &cost);
-    long long timetaken = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                  std::chrono::high_resolution_clock::now() - begin_pathing)
-                  .count();
+    long long timetaken =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::high_resolution_clock::now() - begin_pathing)
+            .count();
     logging::Info("Pathing: Pather result: %i. Time taken (NS): %lld", result,
                   timetaken);
     // If no result found, return empty Vector
@@ -477,7 +548,7 @@ bool navTo(Vector destination, int priority, bool should_repath,
     }
     ensureArrival    = should_repath;
     ReadyForCommands = false;
-    curr_priority = priority;
+    curr_priority    = priority;
     crumbs.clear();
     crumbs = std::move(path);
     return true;
@@ -548,8 +619,7 @@ static HookedFunction
     });
 
 #if ENABLE_VISUALS
-static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []()
-{
+static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []() {
     if (!enabled || !draw)
         return;
     if (!enabled)
@@ -581,6 +651,11 @@ static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []()
 void ResetPather()
 {
     Map.pather->Reset();
+}
+
+bool isSafe(CNavArea *area)
+{
+    return ignoremanager::isSafe(area);
 }
 
 static CatCommand nav_find("nav_find", "Debug nav find", []() {
