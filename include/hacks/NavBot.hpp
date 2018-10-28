@@ -13,6 +13,7 @@ bool HasLowAmmo();
 CachedEntity *nearestHealth();
 CachedEntity *nearestAmmo();
 CachedEntity *nearestEnemy();
+CachedEntity *nearestTeleporter();
 Vector GetClosestValidByDist(CachedEntity *ent, float mindist, float maxdist, bool near);
 void UpdateSlot();
 void Jump();

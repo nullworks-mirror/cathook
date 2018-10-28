@@ -18,6 +18,7 @@ static settings::Bool stay_near{ "navbot.stay-near", "true" };
 static settings::Bool path_health{ "navbot.path-health", "true" };
 static settings::Bool path_ammo{ "navbot.path-ammo", "true" };
 static settings::Bool pick_optimal_slot{ "navbot.best-slot", "true" };
+static settings::Bool take_tele{ "navbot.take-teleporter", "false" };
 
 // Timers
 static Timer general_cooldown{};
@@ -30,6 +31,9 @@ static Timer nav_to_nearest_enemy_cooldown{};
 static Timer slot_timer{};
 static Timer non_sniper_sniper_nav_cooldown{};
 static Timer jump_cooldown{};
+static Timer teleporter_cooldown{};
+static Timer teleporter_find_cooldown{};
+static Timer nav_timeout{};
 
 // Vectors
 static std::vector<Vector *> default_spots{};
@@ -91,10 +95,13 @@ static HookedFunction
                 Init(false);
             return;
         }
-
         // no nav file loaded/inited
         if (!nav::prepare())
             return;
+        // Timeout boys
+        if (!nav_timeout.test_and_set(2000))
+            return;
+
         if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
             return;
         // Health and ammo have highest priority, but the stay near priorities has to be this high to override anything else
@@ -121,6 +128,15 @@ static HookedFunction
         if ((!HasLowAmmo() && nav::curr_priority == 6) || ( nav::curr_priority == 7 && !HasLowHealth()))
             nav::clearInstructions();
 
+        // Take Teleporter
+        if (*take_tele && nav::curr_priority != 6 && nav::curr_priority != 7 && teleporter_cooldown.test_and_set(200))
+        {
+            CachedEntity *ent = nearestTeleporter();
+            if (CE_GOOD(ent) && ent->m_flDistance() <= 300.0f)
+                if (nav::navTo(ent->m_vecOrigin(), 4, false, false))
+                    return;
+
+        }
         // If Zoning enabled then zone enemy
         if (stay_near && nav_to_nearest_enemy_cooldown.test_and_set(100) && !*spy_mode)
             NavToNearestEnemy();
@@ -149,6 +165,8 @@ static HookedFunction
 
 bool CanPath()
 {
+    if (nav::curr_priority == 4 || nav::curr_priority == 6 || nav::curr_priority == 7)
+        return false;
     if ((*heavy_mode || *spy_mode || *scout_mode) && general_cooldown.test_and_set(100))
         return true;
     else if (sniper_mode)
@@ -298,6 +316,8 @@ Vector GetClosestValidByDist(CachedEntity *ent, float mindist, float maxdist, bo
         float best_dist = near ? FLT_MAX : 0.0f;
         for (auto &i : nav::navfile->m_areas)
         {
+            if (!nav::isSafe(&i))
+                continue;
             Vector center = i.m_center;
             float dist    = center.DistTo(ent->m_vecOrigin());
 
@@ -361,6 +381,49 @@ void Jump()
         return;
     if (ent->m_flDistance() < *jump_trigger && jump_cooldown.test_and_set(200))
         current_user_cmd->buttons |= IN_JUMP;
+}
+
+static int teleporter = -1;
+CachedEntity *nearestTeleporter()
+{
+    if (teleporter_find_cooldown.test_and_set(1000))
+    {
+        float closest = FLT_MAX;
+        CachedEntity *tele = nullptr;
+        for (int i = 0; i < HIGHEST_ENTITY; i++)
+        {
+            CachedEntity *ent = ENTITY(i);
+            if (CE_BAD(ent) || ent->m_bEnemy() || ent->m_iClassID() != CL_CLASS(CObjectTeleporter))
+                continue;
+            if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) && CE_FLOAT(ent, netvar.m_flTeleRechargeTime) && CE_FLOAT(ent, netvar.m_flTeleRechargeTime) < g_GlobalVars->curtime)
+            {
+                float score = ent->m_flDistance();
+                if (score < closest)
+                {
+                    tele = ent;
+                    closest = score;
+                    nav_timeout.update();
+                }
+            }
+        }
+        if (tele)
+            teleporter = tele->m_IDX;
+        return tele;
+    }
+    else
+    {
+        if (teleporter == -1)
+            return nullptr;
+        CachedEntity *ent = ENTITY(teleporter);
+        if (CE_BAD(ent) || ent->m_bEnemy() || ent->m_iClassID() != CL_CLASS(CObjectTeleporter))
+        {
+            teleporter = -1;
+            return nullptr;
+        }
+        return ent;
+    }
+    // Wtf Call the police
+    return nullptr;
 }
 
 // Navigation
@@ -451,7 +514,7 @@ bool NavToNearestEnemy()
     CachedEntity *ent = nearestEnemy();
     if (CE_BAD(ent))
         return false;
-    if (nav::curr_priority == 6 || nav::curr_priority == 7)
+    if (nav::curr_priority == 6 || nav::curr_priority == 7  || nav::curr_priority == 4)
         return false;
     float min_dist = 800.0f;
     float max_dist = 4000.0f;
