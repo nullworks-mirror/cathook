@@ -62,8 +62,10 @@
                 <Select target="aimbot.priority-mode">
                     <Option name="Smart" value="0"/>
                     <Option name="FOV" value="1"/>
-                    <Option name="Distance" value="2"/>
-                    <Option name="Health" value="3"/>
+                    <Option name="Distance (Closest)" value="2"/>
+                    <Option name="Distance (Highest)" value="4"/>
+                    <Option name="Health (Lowest)" value="3"/>
+                    <Option name="Health (Highest)" value="5"/>
                 </Select>
             </LabeledObject>
             <AutoVariable width="fill" target="aimbot.target.max-range" label="Max Range" min="0" max="4096"/>
@@ -78,7 +80,7 @@
             <AutoVariable width="fill" target="aimbot.slow" label="Slow Aimbot"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Target Options" x="380">
+    <Box padding="12 6 6 6" width="content" height="content" name="Target Options" x="400">
         <List width="150">
             <AutoVariable width="fill" target="aimbot.target.sentry" label="Sentry guns"/>
             <AutoVariable width="fill" target="aimbot.target.stickybomb" label="Stickybombs"/>
@@ -96,7 +98,7 @@
             <AutoVariable width="fill" target="aimbot.target.other-buildings" label="Other buildings"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Backtrack" y="140" x="380">
+    <Box padding="12 6 6 6" width="content" height="content" name="Backtrack" y="140" x="400">
         <List width="150">
             <AutoVariable width="fill" target="backtrack.enable" label="Enable Backtrack"/>
             <AutoVariable width="fill" target="backtrack.draw" label="Draw Backtrack"/>

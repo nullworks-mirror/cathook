@@ -18,20 +18,27 @@ class EffectChams : public IScreenSpaceEffect
 {
 public:
     virtual void Init();
-    inline virtual void Shutdown(){};
+    inline virtual void Shutdown()
+    {
+        mat_unlit.Shutdown();
+        mat_unlit_z.Shutdown();
+        mat_lit.Shutdown();
+        mat_lit_z.Shutdown();
+        init = false;
+    }
 
-    inline virtual void SetParameters(KeyValues *params){};
+    inline virtual void SetParameters(KeyValues *params){}
 
     virtual void Render(int x, int y, int w, int h);
 
     inline virtual void Enable(bool bEnable)
     {
         enabled = bEnable;
-    };
+    }
     inline virtual bool IsEnabled()
     {
         return enabled;
-    };
+    }
 
     void SetEntityColor(CachedEntity *ent, rgba_t color);
     rgba_t ChamsColor(IClientEntity *entity);

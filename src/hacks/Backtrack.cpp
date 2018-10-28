@@ -13,6 +13,7 @@
 #include <glez/draw.hpp>
 #endif
 #include <settings/Bool.hpp>
+#include "PlayerTools.hpp"
 #include <hacks/Backtrack.hpp>
 
 static settings::Bool enable{ "backtrack.enable", "false" };
@@ -123,6 +124,8 @@ void Run()
         if (pEntity->m_Type() != ENTITY_PLAYER)
             continue;
         if (!pEntity->hitboxes.GetHitbox(0))
+            continue;
+        if (HasCondition<TFCond_HalloweenGhostMode>(pEntity))
             continue;
         float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
         float viewangles =

@@ -1,5 +1,6 @@
 #include "common.hpp"
 #include "NavBot.hpp"
+#include "Backtrack.hpp"
 #include "PlayerTools.hpp"
 #include "navparser.hpp"
 #include "settings/Bool.hpp"
@@ -77,7 +78,7 @@ void Init(bool from_LevelInit)
 }
 
 static HookedFunction
-    CreateMove(HookedFunctions_types::HF_CreateMove, "NavBot", 10, []() {
+    CreateMove(HookedFunctions_types::HF_CreateMove, "NavBot", 18, []() {
         // Master Switch
 
         if (!*enable)
@@ -119,8 +120,9 @@ static HookedFunction
         // Stop pathing for ammo/Health if problem resolved
         if ((!HasLowAmmo() && nav::curr_priority == 6) || ( nav::curr_priority == 7 && !HasLowHealth()))
             nav::clearInstructions();
+
         // If Zoning enabled then zone enemy
-        if (stay_near && nav_to_nearest_enemy_cooldown.test_and_set(100))
+        if (stay_near && nav_to_nearest_enemy_cooldown.test_and_set(100) && !*spy_mode)
             NavToNearestEnemy();
 
         // Prevent path spam on sniper bots
@@ -129,8 +131,13 @@ static HookedFunction
             if (sniper_mode)
                 NavToSniperSpot(5);
             else if ((*heavy_mode || scout_mode) && nav_to_nearest_enemy_cooldown.test_and_set(100))
+            {
                 if (!NavToNearestEnemy() && non_sniper_sniper_nav_cooldown.test_and_set(10000))
                     NavToSniperSpot(5);
+            }
+            else if (*spy_mode && nav_to_nearest_enemy_cooldown.test_and_set(100))
+                    if (!NavToBacktrackTick(5) && non_sniper_sniper_nav_cooldown.test_and_set(10000))
+                        NavToSniperSpot(5);
         }
         if (*pick_optimal_slot)
             UpdateSlot();
@@ -326,6 +333,36 @@ Vector GetClosestValidByDist(CachedEntity *ent, float mindist, float maxdist, bo
         return cached_vector;
 }
 
+void UpdateSlot()
+{
+    if (!slot_timer.test_and_set(1000))
+        return;
+    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
+    {
+        IClientEntity *weapon = RAW_ENT(LOCAL_W);
+        // IsBaseCombatWeapon()
+        if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
+        {
+            int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
+            int newslot = 1;
+            if (*spy_mode)
+                newslot = 3;
+            if (slot != newslot - 1)
+                g_IEngine->ClientCmd_Unrestricted(
+                    format("slot", newslot).c_str());
+        }
+    }
+}
+
+void Jump()
+{
+    CachedEntity *ent = nearestEnemy();
+    if (CE_BAD(ent))
+        return;
+    if (ent->m_flDistance() < *jump_trigger && jump_cooldown.test_and_set(200))
+        current_user_cmd->buttons |= IN_JUMP;
+}
+
 // Navigation
 bool NavToSniperSpot(int priority)
 {
@@ -430,34 +467,52 @@ bool NavToNearestEnemy()
     return false;
 }
 
-void UpdateSlot()
-{
-    if (!slot_timer.test_and_set(1000))
-        return;
-    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
-    {
-        IClientEntity *weapon = RAW_ENT(LOCAL_W);
-        // IsBaseCombatWeapon()
-        if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
-        {
-            int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
-            int newslot = 1;
-            if (*spy_mode)
-                newslot = 3;
-            if (slot != newslot - 1)
-                g_IEngine->ClientCmd_Unrestricted(
-                    format("slot", newslot).c_str());
-        }
-    }
-}
-
-void Jump()
+bool NavToBacktrackTick(int priority)
 {
     CachedEntity *ent = nearestEnemy();
     if (CE_BAD(ent))
-        return;
-    if (ent->m_flDistance() < *jump_trigger && jump_cooldown.test_and_set(200))
-        current_user_cmd->buttons |= IN_JUMP;
+        return false;
+    // Health and ammo are more important
+    if (nav::curr_priority == 6 || nav::curr_priority == 7)
+        return false;
+    // Just backtrack data
+    auto unsorted_ticks = hacks::shared::backtrack::
+        headPositions[ent->m_IDX];
+    // Vector needed for later
+    std::vector<hacks::shared::backtrack::BacktrackData>
+        sorted_ticks;
+
+    // Only use good ticks
+    for (int i = 0; i < 66; i++)
+    {
+        if (hacks::shared::backtrack::ValidTick(
+                unsorted_ticks[i], ent))
+            sorted_ticks.push_back(unsorted_ticks[i]);
+    }
+    // Nav to Ent origin if everything falls flat
+    if (sorted_ticks.empty())
+    {
+        if (nav::navTo(ent->m_vecOrigin(), 5, false, false))
+            return true;
+        return false;
+    }
+    // Sort by tickcount
+    std::sort(
+        sorted_ticks.begin(), sorted_ticks.end(),
+        [](const hacks::shared::backtrack::BacktrackData
+               &a,
+           const hacks::shared::backtrack::BacktrackData
+               &b) {
+            return a.tickcount > b.tickcount;
+    });
+
+    // Get the 5th tick and path to it, better than pathing to the last tick since the bot may just lag behind and never reach it
+    if (!sorted_ticks[5].tickcount ||
+        !nav::navTo(sorted_ticks[5].entorigin, priority, false,
+                   false))
+        if (!nav::navTo(ent->m_vecOrigin(), priority, false))
+            return false;
+    return true;
 }
 
 } // namespace hacks::shared::NavBot
