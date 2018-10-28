@@ -62,8 +62,10 @@
                 <Select target="aimbot.priority-mode">
                     <Option name="Smart" value="0"/>
                     <Option name="FOV" value="1"/>
-                    <Option name="Distance" value="2"/>
-                    <Option name="Health" value="3"/>
+                    <Option name="Distance (Closest)" value="2"/>
+                    <Option name="Distance (Highest)" value="4">
+                    <Option name="Health (Lowest)" value="3"/>
+                    <Option name="Health (Highest)" value="5"/>
                 </Select>
             </LabeledObject>
             <AutoVariable width="fill" target="aimbot.target.max-range" label="Max Range" min="0" max="4096"/>

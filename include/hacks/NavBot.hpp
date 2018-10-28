@@ -20,5 +20,6 @@ void Jump();
 // Path
 bool NavToSniperSpot(int priority);
 bool NavToNearestEnemy();
+bool NavToBacktrackTick(int priority);
 
 } // namespace hacks::shared::NavBot
