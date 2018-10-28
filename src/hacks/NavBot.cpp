@@ -78,7 +78,7 @@ void Init(bool from_LevelInit)
 }
 
 static HookedFunction
-    CreateMove(HookedFunctions_types::HF_CreateMove, "NavBot", 10, []() {
+    CreateMove(HookedFunctions_types::HF_CreateMove, "NavBot", 18, []() {
         // Master Switch
 
         if (!*enable)

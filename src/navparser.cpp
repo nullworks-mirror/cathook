@@ -614,6 +614,7 @@ static CatCommand nav_reset_ignores("nav_reset_ignores", "Reset all ignores.",
 void clearInstructions()
 {
     crumbs.clear();
+    curr_priority = 0;
 }
 
 } // namespace nav
