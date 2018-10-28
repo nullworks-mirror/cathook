@@ -99,7 +99,7 @@ static HookedFunction
         if (!nav::prepare())
             return;
         // Timeout boys
-        if (!nav_timeout.test_and_set(2000))
+        if (!nav_timeout.check(2000))
             return;
 
         if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
