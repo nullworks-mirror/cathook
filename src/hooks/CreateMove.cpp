@@ -255,8 +255,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #if !ENABLE_VISUALS
     if (no_shake && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
     {
-        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle) = {0.0f, 0.0f, 0.0f};
-        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = {0.0f, 0.0f, 0.0f};
+        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle)    = { 0.0f, 0.0f,
+                                                               0.0f };
+        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = { 0.0f, 0.0f,
+                                                                  0.0f };
     }
 #endif
     //	PROF_END("Entity Cache updating");
@@ -273,9 +275,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     if (firstcm)
     {
         DelayTimer.update();
-        hacks::tf2::NavBot::Init();
-        hacks::tf2::NavBot::initonce();
+        //        hacks::tf2::NavBot::Init();
+        //        hacks::tf2::NavBot::initonce();
+        nav::status = nav::off;
         IRC::auth();
+        hacks::shared::NavBot::Init(true);
         firstcm = false;
     }
     g_Settings.bInvalid = false;

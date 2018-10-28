@@ -216,6 +216,8 @@ void reportall()
         // server
         if (!ent)
             continue;
+
+        // Pointer comparison is fine
         if (ent == LOCAL_E)
             continue;
         player_info_s info;
@@ -255,7 +257,7 @@ void smart_crouch()
             if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER ||
                 ent->m_iTeam() == LOCAL_E->m_iTeam() ||
                 !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) ||
-                player_tools::shouldTargetSteamId(ent->player_info.friendsID) !=
+                player_tools::shouldTarget(ent) !=
                     player_tools::IgnoreReason::DO_NOT_IGNORE ||
                 should_ignore_player(ent))
                 continue;

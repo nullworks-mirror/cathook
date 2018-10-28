@@ -32,7 +32,10 @@ static settings::Bool disco_chams{ "chams.disco", "false" };
 
 namespace effect_chams
 {
-
+CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", [](){
+    effect_chams::g_EffectChams.Shutdown();
+    effect_chams::g_EffectChams.Init();
+});
 void EffectChams::Init()
 {
     logging::Info("Init EffectChams...");
@@ -79,7 +82,7 @@ void EffectChams::EndRenderChams()
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
-static rgba_t data[32] = {};
+static rgba_t data[32] = {colors::empty};
 void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
 {
     if (ent->m_IDX > 31 || ent->m_IDX < 0)
@@ -151,10 +154,11 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
         }
         return disco;
     }
-    if (data[entity->entindex()])
+    if (data[entity->entindex()] != colors::empty)
     {
-        data[entity->entindex()] = {};
-        return data[entity->entindex()];
+        auto toret = data[entity->entindex()];
+        data[entity->entindex()] = colors::empty;
+        return toret;
     }
     if (CE_BAD(ent))
         return colors::white;
@@ -327,7 +331,6 @@ void EffectChams::RenderChams(IClientEntity *entity)
         }
     }
 }
-
 void EffectChams::Render(int x, int y, int w, int h)
 {
     PROF_SECTION(DRAW_chams);
@@ -351,7 +354,6 @@ void EffectChams::Render(int x, int y, int w, int h)
     }
     EndRenderChams();
 }
-
 EffectChams g_EffectChams;
 CScreenSpaceEffectRegistration *g_pEffectChams = nullptr;
 } // namespace effect_chams

@@ -13,6 +13,8 @@ DEFINE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *event)
 {
     auto ret = original::SDL_PollEvent(event);
 #if ENABLE_GUI
+    if (!isHackActive())
+        return ret;
     static Timer waitfirst{};
     if (gui::handleSdlEvent(event))
         return 0;

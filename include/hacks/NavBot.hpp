@@ -1,12 +1,26 @@
-//
-// Created by bencat07 on 17.08.18.
-//
-#pragma once
-
 #include "common.hpp"
-#include "config.h"
-namespace hacks::tf2::NavBot
+
+namespace hacks::shared::NavBot
 {
-void Init();
-void initonce();
-} // namespace hacks::tf2::NavBot
+
+// Main Functions
+void Init(bool from_LevelInit);
+
+// Helper
+bool CanPath();
+bool HasLowHealth();
+bool HasLowAmmo();
+CachedEntity *nearestHealth();
+CachedEntity *nearestAmmo();
+CachedEntity *nearestEnemy();
+CachedEntity *nearestTeleporter();
+Vector GetClosestValidByDist(CachedEntity *ent, float mindist, float maxdist, bool near);
+void UpdateSlot();
+void Jump();
+
+// Path
+bool NavToSniperSpot(int priority);
+bool NavToNearestEnemy();
+bool NavToBacktrackTick(int priority);
+
+} // namespace hacks::shared::NavBot

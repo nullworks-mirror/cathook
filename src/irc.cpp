@@ -78,11 +78,12 @@ void authreq(std::string &msg)
         // Get playerinfo and check if player on server
         if (!g_IEngine->GetPlayerInfo(i, &pinfo))
             continue;
-        auto tarsteamid = pinfo.friendsID;
+        auto tarsteamid        = pinfo.friendsID;
         std::string total_hash = std::to_string(tarsteamid) + pinfo.name;
         MD5Value_t result;
         // Hash steamid
-        MD5_ProcessSingleBuffer(total_hash.c_str(), strlen(total_hash.c_str()), result);
+        MD5_ProcessSingleBuffer(total_hash.c_str(), strlen(total_hash.c_str()),
+                                result);
         // Get bits of hash and store in string
         std::string tarhash;
         for (auto i : result.bits)

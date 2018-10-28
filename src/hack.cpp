@@ -164,6 +164,7 @@ void crit_err_hdlr(int sig_num, siginfo_t *info, void *ucontext)
     fclose(backtraceFile);
     free(messages);
 
+    std::abort();
     exit(EXIT_FAILURE);
 }
 
@@ -183,8 +184,6 @@ void hack::Initialize()
 {
     signal(SIGPIPE, SIG_IGN);
     installSignal(SIGSEGV);
-    installSignal(SIGABRT);
-    installSignal(SIGINT);
     time_injected = time(nullptr);
 /*passwd *pwd   = getpwuid(getuid());
 char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name,

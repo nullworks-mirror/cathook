@@ -374,6 +374,8 @@ bool ShouldChargePlayer(int idx)
     const float damage_accum_duration =
         g_GlobalVars->curtime - data[idx].accum_damage_start;
     const int health = target->m_iHealth();
+    if (health > g_pPlayerResource->GetMaxHealth(target))
+        return false;
     if (!data[idx].accum_damage_start)
         return false;
     if (health > 30 && data[idx].accum_damage < 45)

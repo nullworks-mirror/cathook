@@ -56,8 +56,8 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     hacks::shared::backtrack::lastincomingsequencenumber = 0;
     hacks::shared::backtrack::sequences.clear();
 #endif
-    firstcm   = true;
-    nav::init = false;
+    firstcm = true;
+    // nav::init = false;
 #if !LAGBOT_MODE
     playerlist::Save();
 #endif

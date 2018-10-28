@@ -30,8 +30,9 @@ static settings::Bool corneractivate{ "follow-bot.corners", "true" };
 static settings::Int steam_var{ "follow-bot.steamid", "0" };
 namespace hacks::shared::followbot
 {
-
+static Timer navBotInterval{};
 unsigned steamid = 0x0;
+
 CatCommand
     follow_steam("fb_steam", "Follow Steam Id", [](const CCommand &args) {
         if (args.ArgC() < 1)
@@ -171,7 +172,7 @@ void addCrumbPair(CachedEntity *player1, CachedEntity *player2,
  *   tf_engineer = 9
  */
 
-static int priority_list[10][10] = {
+constexpr int priority_list[10][10] = {
     /*0  1  2  3  4  5  6  7  8  9 */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // No class
     { 0, 8, 2, 7, 6, 2, 5, 1, 0, 0 }, // Scout
@@ -230,12 +231,12 @@ static HookedFunction
             }
             if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(2000))
             {
-                if (nav::NavTo(ENTITY(follow_target)->m_vecOrigin()))
+                if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 5, true, false))
                 {
                     navtimeout.update();
                 }
             }
-            if (navtimeout.check(15000) || nav::priority == 0)
+            if (navtimeout.check(15000) || nav::curr_priority == 0)
             {
                 isnaving = false;
                 nav::clearInstructions();
@@ -257,7 +258,12 @@ static HookedFunction
 
         if (!follow_target)
             breadcrumbs.clear(); // no target == no path
+
+        bool isNavBotCM = navBotInterval.test_and_set(3000);
+
         // Target Selection
+        {
+
         if (steamid &&
             ((follow_target &&
               ENTITY(follow_target)->player_info.friendsID != steamid) ||
@@ -312,9 +318,9 @@ static HookedFunction
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && nav::Prepare())
+                if (isNavBotCM && !found)
                 {
-                    if (!nav::NavTo(entity->m_vecOrigin()))
+                    if (!nav::navTo(entity->m_vecOrigin()))
                         continue;
                     navtimeout.update();
                     found = true;
@@ -325,9 +331,10 @@ static HookedFunction
                 break;
             }
         }
-
+        }
         // If we dont have a follow target from that, we look again for someone
         // else who is suitable
+        {
         if ((!follow_target || change ||
              (ClassPriority(ENTITY(follow_target)) < 6 &&
               ENTITY(follow_target)->player_info.friendsID != steamid)) &&
@@ -416,9 +423,9 @@ static HookedFunction
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && nav::Prepare())
+                if (isNavBotCM && !found)
                 {
-                    if (!nav::NavTo(entity->m_vecOrigin()))
+                    if (!nav::navTo(entity->m_vecOrigin()))
                         continue;
                     navtimeout.update();
                     found = true;
@@ -429,6 +436,7 @@ static HookedFunction
                 follow_target = i;
                 afkTicks[i].update(); // set afk time to 0
             }
+        }
         }
         lastent++;
         if (lastent > g_IEngine->GetMaxClients())

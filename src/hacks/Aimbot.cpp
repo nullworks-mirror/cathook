@@ -118,7 +118,7 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
 
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-        if (auto_spin_up && !zoomTime.check(3000))
+        if (auto_spin_up && CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0 && !zoomTime.check(1000))
             current_user_cmd->buttons |= IN_ATTACK2;
 
     // We do this as we need to pass whether the aimkey allows aiming to both
@@ -401,8 +401,15 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                     case 1: // Fov Priority
                         scr = 360.0f - calculated_data_array[ent->m_IDX].fov;
                         break;
-                    case 3: // Health Priority
+                    case 3: // Health Priority (Lowest)
                         scr = 450.0f - ent->m_iHealth();
+                        break;
+                    case 4: // Distance Priority (Furthest Away)
+                        scr = calculated_data_array[i].aim_position.DistTo(
+                                    g_pLocalPlayer->v_Eye);
+                        break;
+                    case 6: // Health Priority (Highest)
+                        scr = ent->m_iHealth() * 4;
                         break;
                     default:
                         break;
@@ -1059,9 +1066,10 @@ int BestHitbox(CachedEntity *target)
                 // only if they have less than 150 health will it try to
                 // bodyshot
                 if (CanHeadshot() &&
-                    (cdmg >= target->m_iHealth() ||
+                    (std::floor(cdmg) >= target->m_iHealth() ||
                      IsPlayerCritBoosted(g_pLocalPlayer->entity) ||
-                     !g_pLocalPlayer->bZoomed || target->m_iHealth() <= bdmg) &&
+                     !g_pLocalPlayer->bZoomed ||
+                     target->m_iHealth() <= std::floor(bdmg)) &&
                     target->m_iHealth() <= 150)
                 {
                     // We dont need to hit the head as a bodyshot will kill
