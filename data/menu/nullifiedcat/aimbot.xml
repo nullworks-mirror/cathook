@@ -80,7 +80,7 @@
             <AutoVariable width="fill" target="aimbot.slow" label="Slow Aimbot"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Target Options" x="380">
+    <Box padding="12 6 6 6" width="content" height="content" name="Target Options" x="400">
         <List width="150">
             <AutoVariable width="fill" target="aimbot.target.sentry" label="Sentry guns"/>
             <AutoVariable width="fill" target="aimbot.target.stickybomb" label="Stickybombs"/>
@@ -98,7 +98,7 @@
             <AutoVariable width="fill" target="aimbot.target.other-buildings" label="Other buildings"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Backtrack" y="140" x="380">
+    <Box padding="12 6 6 6" width="content" height="content" name="Backtrack" y="140" x="400">
         <List width="150">
             <AutoVariable width="fill" target="backtrack.enable" label="Enable Backtrack"/>
             <AutoVariable width="fill" target="backtrack.draw" label="Draw Backtrack"/>
