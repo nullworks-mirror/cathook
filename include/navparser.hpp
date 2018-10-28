@@ -32,5 +32,7 @@ bool navTo(Vector destination, int priority = 5, bool should_repath = true,
 bool prepare();
 // Clear current path
 void clearInstructions();
+// Check if area is safe from stickies and sentries
+bool isSafe(CNavArea *area);
 
 } // namespace nav
