@@ -409,7 +409,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                                     g_pLocalPlayer->v_Eye);
                         break;
                     case 6: // Health Priority (Highest)
-                        scr = ent->m_iHealth();
+                        scr = ent->m_iHealth() * 4;
                         break;
                     default:
                         break;
