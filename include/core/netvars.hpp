@@ -11,15 +11,8 @@
 
 class IClientEntity;
 
-// Fix clang gay
-#if defined(__clang__)
 #define NET_VAR(entity, offset, type)                                          \
     (*(reinterpret_cast<type *>(reinterpret_cast<uint64_t>(entity) + (offset))))
-#elif defined(__GNUC__) || defined(__GNUG__)
-#define NET_VAR(entity, offset, type)                                          \
-    (*(reinterpret_cast<type *>(reinterpret_cast<uintptr_t>(entity) +          \
-                                (offset))))
-#endif
 
 #define NET_INT(entity, offset) NET_VAR(entity, offset, int)
 
