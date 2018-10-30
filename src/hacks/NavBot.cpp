@@ -34,6 +34,7 @@ static Timer jump_cooldown{};
 static Timer teleporter_cooldown{};
 static Timer teleporter_find_cooldown{};
 static Timer nav_timeout{};
+static Timer stay_near_timeout{};
 
 // Vectors
 static std::vector<Vector *> default_spots{};
@@ -251,9 +252,9 @@ CachedEntity *nearestAmmo()
 }
 
 static int last_target = -1;
-CachedEntity *nearestEnemy()
+std::pair<CachedEntity *, int> nearestEnemy()
 {
-    if (refresh_nearest_target.test_and_set(3000))
+    if (refresh_nearest_target.test_and_set(10000))
     {
         CachedEntity *best_tar = nullptr;
         float best_dist        = FLT_MAX;
@@ -274,44 +275,43 @@ CachedEntity *nearestEnemy()
         if (CE_GOOD(best_tar))
         {
             last_target = best_tar->m_IDX;
-            return best_tar;
+            return {best_tar, best_tar->m_IDX};
         }
         else
         {
             last_target = -1;
-            return nullptr;
+            return {nullptr, last_target};
         }
     }
     else
     {
         if (last_target == -1)
-            return nullptr;
+            return {nullptr, last_target};
         else
         {
             CachedEntity *ent = ENTITY(last_target);
-            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() ||
+            if ((CE_GOOD(ent) && ent->m_bAlivePlayer()) && (!ent->m_bEnemy() ||
                 ent == LOCAL_E ||
                 player_tools::shouldTarget(ent) !=
-                    player_tools::IgnoreReason::DO_NOT_IGNORE)
+                    player_tools::IgnoreReason::DO_NOT_IGNORE))
             {
                 last_target = -1;
-                return nullptr;
+                return {nullptr, last_target};
             }
             else
-                return ent;
+                return {ent, last_target};
         }
     }
 }
 
 static Vector cached_vector{0.0f, 0.0f, 0.0f};
 static Vector empty{0.0f, 0.0f, 0.0f};
-Vector GetClosestValidByDist(CachedEntity *ent, float mindist, float maxdist, bool near)
-{
-    if (refresh_nearest_valid_vector.test_and_set(100))
-    {
-        if (CE_BAD(ent))
-            return empty;
 
+static int last_tar = -1;
+Vector GetClosestValidByDist(CachedEntity *ent, int idx, float mindist, float maxdist, bool near)
+{
+    if (refresh_nearest_valid_vector.test_and_set(*spy_mode ? 100 : 2000) && ( idx == -1 || idx != last_tar || CE_GOOD(ent)))
+    {
         Vector best_area{0.0f, 0.0f, 0.0f};
         float best_dist = near ? FLT_MAX : 0.0f;
         for (auto &i : nav::navfile->m_areas)
@@ -344,8 +344,10 @@ Vector GetClosestValidByDist(CachedEntity *ent, float mindist, float maxdist, bo
         if (best_area.IsValid() && best_area.z )
         {
             cached_vector = best_area;
+            last_tar = ent->m_IDX;
             return best_area;
         }
+        last_tar = -1;
         return empty;
     }
     // We Want a bit of caching
@@ -376,7 +378,9 @@ void UpdateSlot()
 
 void Jump()
 {
-    CachedEntity *ent = nearestEnemy();
+    std::pair<CachedEntity *, int> enemy_pair{nullptr, -1};
+    enemy_pair = nearestEnemy();
+    CachedEntity *ent = enemy_pair.first;
     if (CE_BAD(ent))
         return;
     if (ent->m_flDistance() < *jump_trigger && jump_cooldown.test_and_set(200))
@@ -511,8 +515,11 @@ bool CanNavToNearestEnemy()
 }
 bool NavToNearestEnemy()
 {
-    CachedEntity *ent = nearestEnemy();
-    if (CE_BAD(ent))
+    std::pair<CachedEntity *, int> enemy_pair{nullptr, -1};
+    enemy_pair = nearestEnemy();
+    CachedEntity *ent = enemy_pair.first;
+    int ent_idx = enemy_pair.second;
+    if (CE_BAD(ent) && ent_idx == -1)
         return false;
     if (nav::curr_priority == 6 || nav::curr_priority == 7  || nav::curr_priority == 4)
         return false;
@@ -524,17 +531,27 @@ bool NavToNearestEnemy()
         min_dist = 100.0f;
         max_dist = 1000.0f;
     }
-    Vector to_nav = GetClosestValidByDist(ent, min_dist, max_dist, stay_near);
+    Vector to_nav = GetClosestValidByDist(ent, ent_idx, min_dist, max_dist, stay_near);
     if (to_nav.z)
         return nav::navTo(to_nav, 1337, false, false);
     return false;
 }
 
+static bool first_unready = true;
 bool NavToBacktrackTick(int priority)
 {
-    CachedEntity *ent = nearestEnemy();
+    CachedEntity *ent = nearestEnemy().first;
     if (CE_BAD(ent))
         return false;
+    if (first_unready && !nav::ReadyForCommands && *sniper_mode && nav::curr_priority == 1337)
+    {
+        first_unready = false;
+        stay_near_timeout.update();
+    }
+    else if (nav::ReadyForCommands)
+        first_unready = true;
+    if (stay_near_timeout.test_and_set(5000) && !nav::ReadyForCommands && *sniper_mode && nav::curr_priority == 1337)
+        return true;
     // Health and ammo are more important
     if (nav::curr_priority == 6 || nav::curr_priority == 7)
         return false;
@@ -555,7 +572,7 @@ bool NavToBacktrackTick(int priority)
     // Nav to Ent origin if everything falls flat
     if (sorted_ticks.empty())
     {
-        if (nav::navTo(ent->m_vecOrigin(), 5, false, false))
+        if (nav::navTo(ent->m_vecOrigin(), priority, false, false))
             return true;
         return false;
     }

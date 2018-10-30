@@ -12,9 +12,9 @@ bool HasLowHealth();
 bool HasLowAmmo();
 CachedEntity *nearestHealth();
 CachedEntity *nearestAmmo();
-CachedEntity *nearestEnemy();
+std::pair<CachedEntity *, int> nearestEnemy();
 CachedEntity *nearestTeleporter();
-Vector GetClosestValidByDist(CachedEntity *ent, float mindist, float maxdist, bool near);
+Vector GetClosestValidByDist(CachedEntity *ent, int idx, float mindist, float maxdist, bool near);
 void UpdateSlot();
 void Jump();
 
