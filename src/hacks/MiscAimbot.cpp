@@ -222,7 +222,7 @@ static HookedFunction
         }
     });
 static settings::Bool charge_control{ "chargecontrol.enable", "false" };
-static settings::Int charge_int{ "chargecontrol.strength", "1" };
+static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
 static HookedFunction ChargeControl(
     HookedFunctions_types::HF_CreateMove, "ChargeControl", 1, []() {
         if (!*charge_control || charge_aimbotted)
@@ -232,7 +232,9 @@ static HookedFunction ChargeControl(
         if (!HasCondition<TFCond_Charging>(LOCAL_E))
             return;
         float offset = 0.0f;
-        if (current_user_cmd->mousedx > 1 || current_user_cmd->mousedx < -1)
-            offset = -(current_user_cmd->mousedx / 100 * *charge_int);
+        if (current_user_cmd->buttons & IN_MOVELEFT)
+            offset = *charge_float;
+        if (current_user_cmd->buttons & IN_MOVERIGHT)
+            offset = -*charge_float;
         current_user_cmd->viewangles.y += offset;
     });
