@@ -15,6 +15,7 @@ CachedEntity *nearestAmmo();
 std::pair<CachedEntity *, int> nearestEnemy();
 CachedEntity *nearestTeleporter();
 Vector GetClosestValidByDist(CachedEntity *ent, int idx, float mindist, float maxdist, bool near);
+CNavArea *GetNavArea(Vector loc);
 void UpdateSlot();
 void Jump();
 

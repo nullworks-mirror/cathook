@@ -695,6 +695,8 @@ static CatCommand nav_init("nav_init", "Debug nav init", []() {
 
 static CatCommand nav_path("nav_path", "Debug nav path", []() { navTo(loc); });
 
+static CatCommand nav_path_no_local("nav_path_no_local", "Debug nav path", []() { navTo(loc, 5, false, false); });
+
 static CatCommand nav_reset_ignores("nav_reset_ignores", "Reset all ignores.",
                                     []() { ignoremanager::reset(); });
 
