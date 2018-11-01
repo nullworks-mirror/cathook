@@ -339,6 +339,7 @@ free(logname);*/
 #if not LAGBOT_MODE
     // FIXME [MP]
     hacks::shared::killsay::init();
+    hacks::shared::dominatesay::init();
     hacks::shared::announcer::init();
     hacks::tf2::killstreak::init();
 #endif
@@ -431,6 +432,7 @@ void hack::Shutdown()
 #if not LAGBOT_MODE
     logging::Info("Shutting down killsay...");
     hacks::shared::killsay::shutdown();
+    hacks::shared::dominatesay::shutdown();
     hacks::shared::announcer::shutdown();
 #endif
     logging::Info("Success..");
