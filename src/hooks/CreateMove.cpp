@@ -163,6 +163,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         return ret;
     }
 
+    // Disabled because this causes EXTREME aimbot inaccuracy
+    // Actually dont disable it. It causes even more inaccuracy
+    if (!cmd->command_number)
+    {
+        g_Settings.is_create_move = false;
+        return ret;
+    }
+
     if (!isHackActive())
     {
         g_Settings.is_create_move = false;
@@ -245,10 +253,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         entity_cache::Invalidate();
     }
-    // Disabled because this causes EXTREME aimbot inaccuracy
-    // Actually dont disable it. It causes even more inaccuracy
-    if (!cmd->command_number)
-        return ret;
 
     //	PROF_BEGIN();
     {
