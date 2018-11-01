@@ -35,6 +35,7 @@ static Timer teleporter_cooldown{};
 static Timer teleporter_find_cooldown{};
 static Timer nav_timeout{};
 static Timer stay_near_timeout{};
+static Timer near_nav_timer{};
 
 // Vectors
 static std::vector<Vector *> default_spots{};
@@ -106,7 +107,7 @@ static HookedFunction
         if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
             return;
         // Health and ammo have highest priority, but the stay near priorities has to be this high to override anything else
-        if (nav::curr_priority == 1337 && (HasLowAmmo() || HasLowHealth()))
+        if (nav::curr_priority == 1337 && ((HasLowAmmo() && *path_ammo) || (HasLowHealth() && *path_health)))
             nav::clearInstructions();
 
         // Get health if low
@@ -139,15 +140,15 @@ static HookedFunction
 
         }
         // If Zoning enabled then zone enemy
-        if (stay_near && nav_to_nearest_enemy_cooldown.test_and_set(100) && !*spy_mode)
+        if (stay_near && nav_to_nearest_enemy_cooldown.test_and_set(*spy_mode ? 100 : 1000) && !*spy_mode)
             NavToNearestEnemy();
 
         // Prevent path spam on sniper bots
         if (CanPath())
         {
-            if (sniper_mode)
+            if (*sniper_mode)
                 NavToSniperSpot(5);
-            else if ((*heavy_mode || scout_mode) && nav_to_nearest_enemy_cooldown.test_and_set(100))
+            else if ((*heavy_mode || scout_mode) && nav_to_nearest_enemy_cooldown.test_and_set(*spy_mode ? 100 : 1000))
             {
                 if (!NavToNearestEnemy() && non_sniper_sniper_nav_cooldown.test_and_set(10000))
                     NavToSniperSpot(5);
@@ -290,10 +291,10 @@ std::pair<CachedEntity *, int> nearestEnemy()
         else
         {
             CachedEntity *ent = ENTITY(last_target);
-            if ((CE_GOOD(ent) && ent->m_bAlivePlayer()) && (!ent->m_bEnemy() ||
+            if (((CE_GOOD(ent) && ent->m_bAlivePlayer()) && (!ent->m_bEnemy() ||
                 ent == LOCAL_E ||
                 player_tools::shouldTarget(ent) !=
-                    player_tools::IgnoreReason::DO_NOT_IGNORE))
+                    player_tools::IgnoreReason::DO_NOT_IGNORE)) || (CE_GOOD(ent) && !ent->m_bAlivePlayer()))
             {
                 last_target = -1;
                 return {nullptr, last_target};
@@ -429,6 +430,21 @@ CachedEntity *nearestTeleporter()
     // Wtf Call the police
     return nullptr;
 }
+CNavArea *GetNavArea(Vector loc)
+{
+    float best_scr = FLT_MAX;
+    CNavArea *to_ret = nullptr;
+    for (auto &i : nav::navfile->m_areas)
+    {
+        float score = i.m_center.DistTo(loc);
+        if (score < best_scr)
+        {
+            best_scr = score;
+            to_ret = &i;
+        }
+    }
+    return to_ret;
+}
 
 // Navigation
 bool NavToSniperSpot(int priority)
@@ -509,31 +525,35 @@ bool NavToSniperSpot(int priority)
 }
 bool CanNavToNearestEnemy()
 {
-    if (HasLowAmmo() || HasLowHealth())
+    if (HasLowAmmo() || HasLowHealth() || near_nav_timer.test_and_set(*spy_mode ? 100 : 1000))
         return false;
     return true;
 }
 bool NavToNearestEnemy()
 {
+    if (!CanNavToNearestEnemy())
+        return false;
     std::pair<CachedEntity *, int> enemy_pair{nullptr, -1};
     enemy_pair = nearestEnemy();
     CachedEntity *ent = enemy_pair.first;
     int ent_idx = enemy_pair.second;
-    if (CE_BAD(ent) && ent_idx == -1)
+    if ((CE_BAD(ent) && ent_idx == -1) || (CE_GOOD(ent) && !ent->m_bAlivePlayer()))
         return false;
     if (nav::curr_priority == 6 || nav::curr_priority == 7  || nav::curr_priority == 4)
         return false;
     float min_dist = 800.0f;
     float max_dist = 4000.0f;
-    bool stay_near = *sniper_mode ? false : true;
+    bool near = *sniper_mode ? false : true;
     if (*heavy_mode || *scout_mode)
     {
         min_dist = 100.0f;
         max_dist = 1000.0f;
     }
-    Vector to_nav = GetClosestValidByDist(ent, ent_idx, min_dist, max_dist, stay_near);
+    Vector to_nav = GetClosestValidByDist(ent, ent_idx, min_dist, max_dist, near);
     if (to_nav.z)
-        return nav::navTo(to_nav, 1337, false, false);
+        return nav::navTo(to_nav, 1337, false, false); 
+    else if (CE_GOOD(ent) && ent->m_bAlivePlayer() && nav::isSafe(GetNavArea(ent->m_vecOrigin())))
+        return nav::navTo(ent->m_vecOrigin(), 1337, false, false);
     return false;
 }
 
