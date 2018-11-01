@@ -542,6 +542,10 @@ bool navTo(Vector destination, int priority, bool should_repath,
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, destination);
     if (path.empty())
         return false;
+    if (!crumbs.empty())
+    {
+        ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
+    }
     last_area = path.at(0);
     if (!nav_to_local)
     {
@@ -553,10 +557,6 @@ bool navTo(Vector destination, int priority, bool should_repath,
     if (!is_repath)
     {
         findClosestNavSquare_localAreas.clear();
-    }
-    if (!crumbs.empty())
-    {
-        ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
     }
     ensureArrival    = should_repath;
     ReadyForCommands = false;

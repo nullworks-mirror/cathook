@@ -67,8 +67,6 @@ powerup_type GetPowerupOnPlayer(CachedEntity *player);
 // It's better if it won't create a new object each time it gets called.
 // So it returns a success state, and the values are stored in out reference.
 bool GetHitbox(CachedEntity *entity, int hb, Vector &out);
-std::optional<hitbox_cache::CachedHitbox> GetUncachedHitbox(IClientEntity *ent,
-                                                            int id);
 weaponmode GetWeaponMode();
 
 void FixMovement(CUserCmd &cmd, Vector &viewangles);

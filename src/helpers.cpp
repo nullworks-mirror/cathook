@@ -571,53 +571,6 @@ bool GetHitbox(CachedEntity *entity, int hb, Vector &out)
     return true;
 }
 
-void VectorTransform2(const Vector in1, matrix3x4_t in2, Vector *out) {
-    Vector a = { in2[0][0], in2[0][1], in2[0][2] };
-    Vector b = { in2[1][0], in2[1][1], in2[1][2] };
-    Vector c = { in2[2][0], in2[2][1], in2[2][2] };
-    out->x = DotProduct(in1, a) + in2[0][3];
-    out->y = DotProduct(in1, b) + in2[1][3];
-    out->z = DotProduct(in1, c) + in2[2][3];
-}
-
-std::optional<hitbox_cache::CachedHitbox> GetUncachedHitbox(IClientEntity *ent,
-                                                            int id)
-{
-    if (ent && !g_Settings.bInvalid && !ent->IsDormant() &&
-        !(NET_BYTE(ent, netvar.iLifeState)))
-    {
-        const model_t *model = ent->GetModel();
-        if (!model)
-            return std::nullopt;
-        studiohdr_t *studiomodel = g_IModelInfo->GetStudiomodel(model);
-        if (!studiomodel)
-            return std::nullopt;
-        matrix3x4_t bonematrix[128];
-        if (!ent->SetupBones(bonematrix, 128, 0x7FFF, 0))
-            return std::nullopt;
-        mstudiohitboxset_t *set =
-            studiomodel->pHitboxSet(NET_INT(ent, netvar.iHitboxSet));
-        mstudiobbox_t *box = set->pHitbox(id);
-        if (!box)
-            return std::nullopt;
-        hitbox_cache::CachedHitbox hitbox;
-        VectorTransform2(box->bbmin, bonematrix[box->bone], &hitbox.min);
-        VectorTransform2(box->bbmax, bonematrix[box->bone], &hitbox.max);
-        hitbox.center = (hitbox.min + hitbox.max) / 2;
-        hitbox.bbox   = box;
-        return std::make_optional<hitbox_cache::CachedHitbox>(hitbox);
-    }
-    return std::nullopt;
-}
-
-std::optional<hitbox_cache::CachedHitbox> GetUncachedHitbox(CachedEntity *ent,
-                                                            int id)
-{
-    if (CE_BAD(ent))
-        return std::nullopt;
-    return GetUncachedHitbox(ent->InternalEntity(), id);
-}
-
 void VectorAngles(Vector &forward, Vector &angles)
 {
     float tmp, yaw, pitch;
