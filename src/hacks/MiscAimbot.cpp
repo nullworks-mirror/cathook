@@ -6,6 +6,7 @@
 #include <settings/Bool.hpp>
 #include <settings/Int.hpp>
 #include <settings/Key.hpp>
+#include <PlayerTools.hpp>
 static settings::Bool enable{ "sandwichaim.enable", "false" };
 static settings::Button aimkey{ "sandwichaim.aimkey", "<null>" };
 static settings::Int aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
@@ -31,6 +32,8 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
             if (!teammate && ent->m_iTeam() == LOCAL_E->m_ItemType())
                 continue;
             if (!ent->hitboxes.GetHitbox(1))
+                continue;
+            if (!teammate && player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             Vector target{};
             if (Predict)
