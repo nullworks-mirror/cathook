@@ -57,6 +57,8 @@ gdb -n -q -batch \
 sudo killall -18 steamwebhelper
 sudo killall -18 steam
 
+./scripts/auto-updater &
+
 gdb -n -q -batch \
   -ex "attach $proc" \
   -ex "continue" \

@@ -61,3 +61,5 @@ sudo gdb -n -q -batch \
   -ex "quit"
 
 sudo rm "/lib/i386-linux-gnu/${FILENAME}"
+
+./scripts/auto-updater &
