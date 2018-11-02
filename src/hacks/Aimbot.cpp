@@ -813,7 +813,7 @@ void DoAutoshoot()
             begancharge)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
-            hacks::shared::antiaim::SetSafeSpace(3);
+            hacks::shared::antiaim::SetSafeSpace(5);
             begancharge = false;
             // Pull string if charge isnt enough
         }
@@ -836,7 +836,7 @@ void DoAutoshoot()
         if ((chargetime >= 3.85f * *sticky_autoshoot) && begansticky > 3)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
-            hacks::shared::antiaim::SetSafeSpace(3);
+            hacks::shared::antiaim::SetSafeSpace(5);
             begansticky = 0;
         }
         // Else just keep charging

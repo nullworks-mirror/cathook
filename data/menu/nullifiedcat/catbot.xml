@@ -64,13 +64,11 @@
         <List width="170">
             <AutoVariable width="fill" target="misc.pathing" label="Enable Pathing"/>
 	        <AutoVariable width="fill" target="misc.pathing.draw" label="Draw Path"/>
-            <AutoVariable width="fill" target="navbot.enable" label="Master Switch"/>
-            <AutoVariable width="fill" target="navbot.sniper-mode" label="Enable Sniper Mode"/>
+            <AutoVariable width="fill" target="navbot.enable" label="Enable Navbot"/>
             <AutoVariable width="fill" target="navbot.scout-mode" label="Enable Scout Mode"/>
             <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/>
             <AutoVariable width="fill" target="navbot.heavy-mode" label="Enable Heavy Mode"/>
-            <AutoVariable width="fill" target="navbot.engi-mode" label="Enable Engie Mode"/>
-            <AutoVariable width="fill" target="navbot.best-slot" label="Best Weapon only"/>
+            <AutoVariable width="fill" target="navbot.primary-only" label="Best Weapon only"/>
             <AutoVariable width="fill" target="navbot.jump-distance" label="Jump Distance"/>
             <AutoVariable width="fill" target="navbot.target-sentry" label="Try to target sentries"/>
             <AutoVariable width="fill" target="navbot.stay-near" label="Zone enemies (stay near)"/>
