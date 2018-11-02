@@ -32,7 +32,7 @@ and a lot of useful features, including
 * Follow Bots
 * Working crit hack (does not work right now (works right now))
 
-[FULL LIST OF FEATURES HERE](https://github.com/nullworks/cathook/wiki/List-of-features) (list might be outdated)
+[FULL LIST OF FEATURES HERE](https://github.com/nullworks/cathook/wiki/Compiling,-Injecting-And-General-Infos) (list might be outdated)
 
 # INSTALLATION
 
