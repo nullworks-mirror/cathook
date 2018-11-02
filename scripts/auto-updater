@@ -18,7 +18,7 @@ pushd build >/dev/null || exit 1
 
 sudo cmake --build . --target data >/dev/null || { echo -e "\033[1;31m \n \nAuto Updater:Failed to update /opt/cathook/data directory\n\033[0m"; exit 1; }
 
-sudo -u $(logname) bash -c  'cmake .. >/dev/null && cmake --build . --target cathook >/dev/null' || { echo -e "\033[1;31m \n \nAuto Updater: Failed to compile cathook\n\033[0m"; exit 1; }
+sudo -u $(logname) bash -c  'cmake .. >/dev/null && nice -n 10 cmake --build . --target cathook >/dev/null' || { echo -e "\033[1;31m \n \nAuto Updater: Failed to compile cathook\n\033[0m"; exit 1; }
 
 rm -f ${LOCKFILE}
 
