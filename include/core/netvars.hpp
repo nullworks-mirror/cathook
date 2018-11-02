@@ -66,6 +66,7 @@ public:
     offset_t m_flTeleCurrentRechargeDuration;
     offset_t m_iTeleTimesUsed;
     offset_t m_flTeleYawToExit;
+    offset_t m_bMatchBuilding;
     offset_t iPipeType;
     offset_t iBuildingHealth;
     offset_t iBuildingMaxHealth;

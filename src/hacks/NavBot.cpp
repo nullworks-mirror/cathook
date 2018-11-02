@@ -532,8 +532,8 @@ CatCommand debug_tele("navbot_debug", "debug", []() {
     if (CE_BAD(ent))
         return;
     logging::Info(
-        "%d %d %d %f %f %d %f %f %f", CE_INT(ent, netvar.m_iObjectType),
-        CE_INT(ent, netvar.m_bBuilding), CE_INT(ent, netvar.m_iTeleState),
+        "%d %u %d %d %f %f %d %f %f %f", CE_INT(ent, netvar.m_iObjectType),
+        CE_BYTE(ent, netvar.m_bBuilding), CE_INT(ent, netvar.m_iTeleState), CE_INT(ent, netvar.m_bMatchBuilding),
         CE_FLOAT(ent, netvar.m_flTeleRechargeTime),
         CE_FLOAT(ent, netvar.m_flTeleCurrentRechargeDuration),
         CE_INT(ent, netvar.m_iTeleTimesUsed),
@@ -591,7 +591,7 @@ static HookedFunction
                 CachedEntity *ent = ENTITY(idx);
                 if (CE_GOOD(ent) && ent->m_flDistance() < 300.0f)
                     if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) &&
-                        CE_FLOAT(ent, netvar.m_flTeleRechargeTime) &&
+                       CE_INT(ent, netvar.m_iTeleState) == 2 &&
                         CE_FLOAT(ent, netvar.m_flTeleRechargeTime) <
                             g_GlobalVars->curtime)
                     {
