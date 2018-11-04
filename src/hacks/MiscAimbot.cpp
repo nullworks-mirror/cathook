@@ -33,7 +33,8 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
                 continue;
             if (!ent->hitboxes.GetHitbox(1))
                 continue;
-            if (!teammate && player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (!teammate && player_tools::shouldTarget(ent) !=
+                                 player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             Vector target{};
             if (Predict)
@@ -226,18 +227,19 @@ static HookedFunction
     });
 static settings::Bool charge_control{ "chargecontrol.enable", "false" };
 static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
-static HookedFunction ChargeControl(
-    HookedFunctions_types::HF_CreateMove, "ChargeControl", 1, []() {
-        if (!*charge_control || charge_aimbotted)
-            return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
-            return;
-        if (!HasCondition<TFCond_Charging>(LOCAL_E))
-            return;
-        float offset = 0.0f;
-        if (current_user_cmd->buttons & IN_MOVELEFT)
-            offset = *charge_float;
-        if (current_user_cmd->buttons & IN_MOVERIGHT)
-            offset = -*charge_float;
-        current_user_cmd->viewangles.y += offset;
-    });
+static HookedFunction
+    ChargeControl(HookedFunctions_types::HF_CreateMove, "ChargeControl", 1,
+                  []() {
+                      if (!*charge_control || charge_aimbotted)
+                          return;
+                      if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+                          return;
+                      if (!HasCondition<TFCond_Charging>(LOCAL_E))
+                          return;
+                      float offset = 0.0f;
+                      if (current_user_cmd->buttons & IN_MOVELEFT)
+                          offset = *charge_float;
+                      if (current_user_cmd->buttons & IN_MOVERIGHT)
+                          offset = -*charge_float;
+                      current_user_cmd->viewangles.y += offset;
+                  });

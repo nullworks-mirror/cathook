@@ -126,14 +126,14 @@ const std::vector<std::string> builtin_default = {
 };
 
 //	same goes to this one
-const std::vector<std::string> jp_anime = { 
-	"Get d-dominated %name%-senpai >:3", 
-	"g- gomenasai! %name%-san!", 
-	"Wow! hey hey hey H~ ey !!! I found you again~~!", 
-	"%name%-san please don't get mad at me.. ><",
-	//	https://youtu.be/sW3RT0tF020?t=207
+const std::vector<std::string> jp_anime = {
+    "Get d-dominated %name%-senpai >:3",
+    "g- gomenasai! %name%-san!",
+    "Wow! hey hey hey H~ ey !!! I found you again~~!",
+    "%name%-san please don't get mad at me.. ><",
+    //	https://youtu.be/sW3RT0tF020?t=207
     "kore kara mo douzo yoroshiku ne.",
-	"konna watashi dakedo waratte yurushite ne.",
+    "konna watashi dakedo waratte yurushite ne.",
     "zutto taisetsu ni shite ne.",
     "eikyuu hoshou no watashi dakara.",
 };

@@ -32,6 +32,7 @@ BacktrackData headPositions[32][66]{};
 int highesttick[32]{};
 int lastincomingsequencenumber = 0;
 bool isBacktrackEnabled        = false;
+bool Vischeck_Success          = false;
 
 circular_buf sequences{ 2048 };
 void UpdateIncomingSequences()
@@ -309,6 +310,8 @@ std::pair<int, int> getBestEntBestTick()
 {
     int bestEnt  = -1;
     int bestTick = -1;
+    bool vischeck_priority = false;
+    Vischeck_Success = false;
     if (GetWeaponMode() == weapon_melee)
     {
         float bestDist = 9999.0f;
@@ -328,11 +331,18 @@ std::pair<int, int> getBestEntBestTick()
                                 headPositions[i][j]
                                     .hitboxes.at(spine_3)
                                     .center.DistTo(g_pLocalPlayer->v_Eye);
-                            if (dist < bestDist && dist > *mindistance)
+                            bool Vischeck_suceeded = IsVectorVisible(g_pLocalPlayer->v_Eye, headPositions[i][j]
+                                                                     .hitboxes.at(0).center, true);
+                            if (((dist < bestDist) || (Vischeck_suceeded && !vischeck_priority)) && dist > *mindistance && (vischeck_priority ? Vischeck_suceeded : true))
                             {
                                 bestEnt  = i;
                                 bestTick = j;
                                 bestDist = dist;
+                                if (Vischeck_suceeded)
+                                {
+                                    Vischeck_Success = true;
+                                    vischeck_priority = true;
+                                }
                             }
                         }
                     }
@@ -358,11 +368,18 @@ std::pair<int, int> getBestEntBestTick()
                                 g_pLocalPlayer->v_OrigViewangles,
                                 g_pLocalPlayer->v_Eye,
                                 headPositions[i][j].hitboxes.at(head).center);
-                            if (bestFov > FOVDistance)
+                            bool Vischeck_suceeded = IsVectorVisible(g_pLocalPlayer->v_Eye, headPositions[i][j]
+                                                                     .hitboxes.at(0).center, false);
+                            if (((bestFov > FOVDistance) || (Vischeck_suceeded && !vischeck_priority)) && (vischeck_priority ? Vischeck_suceeded : true))
                             {
                                 bestFov  = FOVDistance;
                                 bestEnt  = i;
                                 bestTick = j;
+                                if (Vischeck_suceeded)
+                                {
+                                    Vischeck_Success = true;
+                                    vischeck_priority = true;
+                                }
                             }
                         }
                     }

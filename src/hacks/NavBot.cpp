@@ -10,11 +10,11 @@
 
 namespace hacks::tf2::NavBot
 {
-static settings::Bool enable{"navbot.enable", "false"};
-static settings::Bool spy_mode{"navbot.spy-mode", "false"};
-static settings::Bool heavy_mode{"navbot.heavy-mode", "false"};
-static settings::Bool scout_mode{"navbot.scout-mode", "false"};
-static settings::Bool primary_only{"navbot.primary-only", "true"};
+static settings::Bool enable{ "navbot.enable", "false" };
+static settings::Bool spy_mode{ "navbot.spy-mode", "false" };
+static settings::Bool heavy_mode{ "navbot.heavy-mode", "false" };
+static settings::Bool scout_mode{ "navbot.scout-mode", "false" };
+static settings::Bool primary_only{ "navbot.primary-only", "true" };
 static settings::Int jump_distance{ "navbot.jump-distance", "500" };
 
 static settings::Bool target_sentry{ "navbot.target-sentry", "true" };
@@ -24,7 +24,7 @@ static settings::Bool take_tele{ "navbot.take-teleporters", "true" };
 bool HasLowAmmo()
 {
     int *weapon_list =
-        (int *) ((uint64_t) (RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
+        (int *) ((uint64_t)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
     if (g_pLocalPlayer->holding_sniper_rifle &&
         CE_INT(LOCAL_E, netvar.m_iAmmo + 4) <= 5)
         return true;
@@ -148,9 +148,10 @@ CachedEntity *NearestEnemy()
     return bestent;
 }
 
-CNavArea *FindNearestValidByDist(Vector vec, float mindist, float maxdist, bool nearest)
+CNavArea *FindNearestValidByDist(Vector vec, float mindist, float maxdist,
+                                 bool nearest)
 {
-    float best_scr = nearest ? FLT_MAX : 0.0f;
+    float best_scr      = nearest ? FLT_MAX : 0.0f;
     CNavArea *best_area = nullptr;
     for (auto &i : nav::navfile->m_areas)
     {
@@ -167,7 +168,7 @@ CNavArea *FindNearestValidByDist(Vector vec, float mindist, float maxdist, bool 
         {
             if (score < best_scr)
             {
-                best_scr = score;
+                best_scr  = score;
                 best_area = &i;
             }
         }
@@ -175,14 +176,13 @@ CNavArea *FindNearestValidByDist(Vector vec, float mindist, float maxdist, bool 
         {
             if (score > best_scr)
             {
-                best_scr = score;
+                best_scr  = score;
                 best_area = &i;
             }
         }
     }
     return best_area;
 }
-
 
 static Timer ammo_health_cooldown{};
 static Timer init_timer{};
@@ -348,7 +348,8 @@ bool NavToSentry(int priority)
     CachedEntity *Sentry = nearestSentry();
     if (CE_BAD(Sentry))
         return false;
-    CNavArea *area = FindNearestValidByDist(GetBuildingPosition(Sentry), 1100.0f, 2000.0f, false);
+    CNavArea *area = FindNearestValidByDist(GetBuildingPosition(Sentry),
+                                            1100.0f, 2000.0f, false);
     if (!area)
         return false;
     if (nav::navTo(area->m_center, priority, true, false))
@@ -379,11 +380,11 @@ bool NavToEnemy()
             {
                 CNavArea *area = nullptr;
                 if (!*heavy_mode && !*scout_mode)
-                    area = FindNearestValidByDist(
-                        ent->m_vecOrigin(), 300, 6000, false);
+                    area = FindNearestValidByDist(ent->m_vecOrigin(), 300, 6000,
+                                                  false);
                 else
-                    area = FindNearestValidByDist(
-                        ent->m_vecOrigin(), 200, 1000, true);
+                    area = FindNearestValidByDist(ent->m_vecOrigin(), 200, 1000,
+                                                  true);
                 if (area)
                 {
                     nav::navTo(area->m_center, 1337, true, false);
@@ -411,11 +412,11 @@ bool NavToEnemy()
         {
             CNavArea *area = nullptr;
             if (!*heavy_mode && !*scout_mode)
-                area = FindNearestValidByDist(ent->m_vecOrigin(),
-                                                           200, 2000, false);
+                area = FindNearestValidByDist(ent->m_vecOrigin(), 200, 2000,
+                                              false);
             else
-                area = FindNearestValidByDist(ent->m_vecOrigin(),
-                                                           200, 1000, true);
+                area =
+                    FindNearestValidByDist(ent->m_vecOrigin(), 200, 1000, true);
             if (area)
             {
                 nav::navTo(area->m_center, 1337, true, false);
@@ -533,7 +534,8 @@ CatCommand debug_tele("navbot_debug", "debug", []() {
         return;
     logging::Info(
         "%d %u %d %d %f %f %d %f %f %f", CE_INT(ent, netvar.m_iObjectType),
-        CE_BYTE(ent, netvar.m_bBuilding), CE_INT(ent, netvar.m_iTeleState), CE_INT(ent, netvar.m_bMatchBuilding),
+        CE_BYTE(ent, netvar.m_bBuilding), CE_INT(ent, netvar.m_iTeleState),
+        CE_INT(ent, netvar.m_bMatchBuilding),
         CE_FLOAT(ent, netvar.m_flTeleRechargeTime),
         CE_FLOAT(ent, netvar.m_flTeleCurrentRechargeDuration),
         CE_INT(ent, netvar.m_iTeleTimesUsed),
@@ -591,7 +593,7 @@ static HookedFunction
                 CachedEntity *ent = ENTITY(idx);
                 if (CE_GOOD(ent) && ent->m_flDistance() < 300.0f)
                     if (CE_FLOAT(ent, netvar.m_flTeleYawToExit) &&
-                       CE_INT(ent, netvar.m_iTeleState) == 2 &&
+                        CE_INT(ent, netvar.m_iTeleState) == 2 &&
                         CE_FLOAT(ent, netvar.m_flTeleRechargeTime) <
                             g_GlobalVars->curtime)
                     {
@@ -609,7 +611,8 @@ static HookedFunction
                 return;
         if (enable)
         {
-            if (!nav::ReadyForCommands && !spy_mode && !heavy_mode && !scout_mode)
+            if (!nav::ReadyForCommands && !spy_mode && !heavy_mode &&
+                !scout_mode)
                 nav_cooldown.update();
             if (target_sentry && NavToSentry(3))
                 return;
@@ -660,7 +663,8 @@ static HookedFunction
                             }
                             if (sorted_ticks.empty())
                             {
-                                if (!nav::navTo(tar->m_vecOrigin(), 5, true, false))
+                                if (!nav::navTo(tar->m_vecOrigin(), 5, true,
+                                                false))
                                     last_tar = -1;
                                 return;
                             }
@@ -676,7 +680,8 @@ static HookedFunction
                             if (!sorted_ticks[5].tickcount ||
                                 nav::navTo(sorted_ticks[5].entorigin, false,
                                            false))
-                                if (!nav::navTo(tar->m_vecOrigin(), 5, true, false))
+                                if (!nav::navTo(tar->m_vecOrigin(), 5, true,
+                                                false))
                                     last_tar = -1;
                         }
                     }

@@ -138,7 +138,7 @@ static ShaderStencilState_t SS_SolidInvisible{};
 static ShaderStencilState_t SS_Null{};
 static ShaderStencilState_t SS_Drawing{};
 
-CatCommand fix_black_glow("fix_black_glow", "Fix Black Glow", [](){
+CatCommand fix_black_glow("fix_black_glow", "Fix Black Glow", []() {
     effect_glow::g_EffectGlow.Shutdown();
     effect_glow::g_EffectGlow.Init();
 });

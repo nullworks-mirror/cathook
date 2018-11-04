@@ -1,4 +1,4 @@
-/*
+﻿/*
  * HAimbot.cpp
  *
  *  Created on: Oct 9, 2016
@@ -83,7 +83,7 @@ bool shouldBacktrack()
 
 bool IsBacktracking()
 {
-    return !(!aimkey || !aimkey.isKeyDown()) && shouldBacktrack();
+    return (aimkey ? aimkey.isKeyDown() : true) && shouldBacktrack();
 }
 
 // Current Entity
@@ -428,6 +428,8 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
     else if (hacks::shared::backtrack::iBestTarget != -1)
     {
         target_highest_ent = ENTITY(hacks::shared::backtrack::iBestTarget);
+        if (!IsTargetStateGood(target_highest_ent))
+            target_highest_ent = nullptr;
         foundTarget        = true;
     }
 
@@ -1149,20 +1151,17 @@ bool VischeckPredictedEntity(CachedEntity *entity)
     // Retrieve predicted data
     AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
     if (cd.vcheck_tick == tickcount)
-        return cd.visible;
+    {
+        if (!shouldBacktrack() || projectile_mode)
+            return cd.visible;
+    }
 
     // Update info
     cd.vcheck_tick = tickcount;
     if (!shouldBacktrack() || projectile_mode)
         cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
     else
-        cd.visible = IsVectorVisible(
-            g_pLocalPlayer->v_Eye,
-            hacks::shared::backtrack::headPositions
-                [entity->m_IDX][hacks::shared::backtrack::BestTick]
-                    .hitboxes[cd.hitbox]
-                    .center,
-            true);
+        cd.visible = hacks::shared::backtrack::Vischeck_Success;
     return cd.visible;
 }
 
