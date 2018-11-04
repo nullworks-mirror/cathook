@@ -62,4 +62,4 @@ sudo gdb -n -q -batch \
 
 sudo rm "/lib/i386-linux-gnu/${FILENAME}"
 
-./scripts/auto-updater &
+sudo ./scripts/auto-updater &
