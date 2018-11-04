@@ -331,6 +331,8 @@ std::pair<int, int> getBestEntBestTick()
                                 headPositions[i][j]
                                     .hitboxes.at(spine_3)
                                     .center.DistTo(g_pLocalPlayer->v_Eye);
+			    if (dist > bestDist && vischeck_priority)
+			        continue;
                             bool Vischeck_suceeded = IsVectorVisible(g_pLocalPlayer->v_Eye, headPositions[i][j]
                                                                      .hitboxes.at(0).center, true);
                             if (((dist < bestDist) || (Vischeck_suceeded && !vischeck_priority)) && dist > *mindistance && (vischeck_priority ? Vischeck_suceeded : true))
@@ -368,18 +370,12 @@ std::pair<int, int> getBestEntBestTick()
                                 g_pLocalPlayer->v_OrigViewangles,
                                 g_pLocalPlayer->v_Eye,
                                 headPositions[i][j].hitboxes.at(head).center);
-                            bool Vischeck_suceeded = IsVectorVisible(g_pLocalPlayer->v_Eye, headPositions[i][j]
-                                                                     .hitboxes.at(0).center, false);
-                            if (((bestFov > FOVDistance) || (Vischeck_suceeded && !vischeck_priority)) && (vischeck_priority ? Vischeck_suceeded : true))
+                            Vischeck_Success = true;
+                            if (bestFov > FOVDistance)
                             {
                                 bestFov  = FOVDistance;
                                 bestEnt  = i;
                                 bestTick = j;
-                                if (Vischeck_suceeded)
-                                {
-                                    Vischeck_Success = true;
-                                    vischeck_priority = true;
-                                }
                             }
                         }
                     }
