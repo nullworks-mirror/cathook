@@ -1276,7 +1276,7 @@ float EffectiveTargetingRange()
     if (GetWeaponMode() == weapon_melee)
         return (float) re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
-        return 185.0f; // Pyros only have so much untill their flames hit
+        return 185.0f; // Pyros only have so much until their flames hit
 
     return (float) max_range;
 }

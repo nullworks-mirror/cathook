@@ -600,6 +600,19 @@ void VectorAngles(Vector &forward, Vector &angles)
     angles[2] = 0;
 }
 
+// Get forward vector
+void AngleVectors2(const QAngle &angles, Vector *forward)
+{
+    float sp, sy, cp, cy;
+
+    SinCos(DEG2RAD(angles[YAW]), &sy, &cy);
+    SinCos(DEG2RAD(angles[PITCH]), &sp, &cp);
+
+    forward->x = cp * cy;
+    forward->y = cp * sy;
+    forward->z = -sp;
+}
+
 char GetUpperChar(ButtonCode_t button)
 {
     switch (button)
@@ -1282,11 +1295,7 @@ Vector QAngleToVector(QAngle in)
 
 void AimAt(Vector origin, Vector target, CUserCmd *cmd)
 {
-    Vector angles, tr;
-    tr = (target - origin);
-    VectorAngles(tr, angles);
-    fClampAngle(angles);
-    cmd->viewangles = angles;
+    cmd->viewangles = GetAimAtAngles(origin, target);
 }
 
 void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd)

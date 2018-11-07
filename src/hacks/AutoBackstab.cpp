@@ -19,17 +19,6 @@ namespace backtrack = hacks::shared::backtrack;
 static settings::Bool enable{ "autobackstab.enable", "0" };
 static settings::Bool silent{ "autobackstab.silent", "1" };
 void testingFunc();
-void AngleVectors2(const QAngle &angles, Vector *forward)
-{
-    float sp, sy, cp, cy;
-
-    SinCos(DEG2RAD(angles[YAW]), &sy, &cy);
-    SinCos(DEG2RAD(angles[PITCH]), &sp, &cp);
-
-    forward->x = cp * cy;
-    forward->y = cp * sy;
-    forward->z = -sp;
-}
 
 // Not required anymore, keeping for future reference
 Vector rotateVector(Vector center, float radianAngle, Vector p)
