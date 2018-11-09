@@ -208,7 +208,7 @@ static HookedFunction
             init();
 
         // We need a local player to control
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         {
             follow_target = 0;
             return;

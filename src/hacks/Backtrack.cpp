@@ -89,7 +89,7 @@ void Run()
     }
     isBacktrackEnabled = true;
 
-    if (CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
     if (g_Settings.bInvalid)
         return;

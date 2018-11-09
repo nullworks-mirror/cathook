@@ -894,7 +894,7 @@ weaponmode GetWeaponMode()
     int weapon_handle, slot;
     CachedEntity *weapon;
 
-    if (CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E) | CE_BAD(LOCAL_W))
         return weapon_invalid;
     weapon_handle = CE_INT(LOCAL_E, netvar.hActiveWeapon);
     if (IDX_BAD((weapon_handle & 0xFFF)))

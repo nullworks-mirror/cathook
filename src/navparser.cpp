@@ -583,7 +583,7 @@ static HookedFunction
     CreateMove(HookedFunctions_types::HF_CreateMove, "NavParser", 17, []() {
         if (!enabled || status != on)
             return;
-        if (CE_BAD(LOCAL_E))
+        if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
             return;
         if (!LOCAL_E->m_bAlivePlayer())
         {
@@ -636,7 +636,7 @@ static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []() {
         return;
     if (!enabled)
         return;
-    if (CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
     if (!LOCAL_E->m_bAlivePlayer())
         return;

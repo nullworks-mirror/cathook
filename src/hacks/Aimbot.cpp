@@ -118,7 +118,7 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
 
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-        if (auto_spin_up && CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0 && !zoomTime.check(1000))
+        if (auto_spin_up && CE_INT(g_pLocalPlayer->weapon(), netvar.m_iAmmo + 4) != 0 && !zoomTime.check(1000))
             current_user_cmd->buttons |= IN_ATTACK2;
 
     // We do this as we need to pass whether the aimkey allows aiming to both

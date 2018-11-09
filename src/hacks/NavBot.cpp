@@ -543,11 +543,19 @@ CatCommand debug_tele("navbot_debug", "debug", []() {
         g_GlobalVars->curtime * g_GlobalVars->interval_per_tick);
 });
 
+static CatCommand debug_ammo("navbot_debug_ammo", "debug", [](){
+    if (CE_BAD(LOCAL_W) || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        return;
+    logging::Info("Clip size: %d %d", CE_INT(LOCAL_W, netvar.m_iClip1), CE_INT(LOCAL_W, netvar.m_iClip2));
+    for (int i = 0; i < 8; i++)
+        logging::Info("Ammo Table IDX %d: %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + 4 * i));
+});
+
 static HookedFunction
     CreateMove(HookedFunctions_types::HF_CreateMove, "NavBot", 16, []() {
         if (!enable || !nav::prepare())
             return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
             return;
         if (primary_only && enable)
             UpdateSlot();

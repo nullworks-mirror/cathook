@@ -160,7 +160,7 @@ static HookedFunction
     SandwichAim(HookedFunctions_types::HF_CreateMove, "SandwichAim", 1, []() {
         if (!*sandwichaim_enabled)
             return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
             return;
         if (sandwichaim_aimkey)
         {
@@ -208,7 +208,7 @@ static HookedFunction
             return;
         if (charge_key && !charge_key.isKeyDown())
             return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
             return;
         if (!HasCondition<TFCond_Charging>(LOCAL_E))
             return;
@@ -235,7 +235,7 @@ static HookedFunction
                   []() {
                       if (!*charge_control || charge_aimbotted)
                           return;
-                      if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+                      if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
                           return;
                       if (!HasCondition<TFCond_Charging>(LOCAL_E))
                           return;
