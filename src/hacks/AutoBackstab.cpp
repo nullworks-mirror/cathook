@@ -222,7 +222,6 @@ void CreateMove()
                         current_user_cmd->buttons |= IN_ATTACK;
                         if (silent)
                             g_pLocalPlayer->bUseSilentAngles = true;
-                        logging::Info("Success on tick %i", j);
                         return;
                     }
                 }
