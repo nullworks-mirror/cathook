@@ -98,7 +98,13 @@ void CreateMove()
     if (spy)
     {
         noaa                           = true;
-        current_user_cmd->viewangles.x = 160.0f;
+        if (current_user_cmd->buttons & IN_ATTACK)
+            return;
+        const Vector &A = LOCAL_E->m_vecOrigin();
+        const Vector &B = spy->m_vecOrigin();
+        diff            = (A - B);
+        if (diff.y < 0)
+            current_user_cmd->viewangles.x = 160.0f;
         if (silent)
             g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)
