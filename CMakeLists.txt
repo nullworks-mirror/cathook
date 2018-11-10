@@ -87,7 +87,7 @@ configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
 #set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions" LINK_FLAGS "-m32 -fno-gnu-unique -fexceptions -DNDEBUG")
 set(CMAKE_CXX_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions -fno-gnu-unique -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -ggdb -rdynamic")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -rdynamic -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
