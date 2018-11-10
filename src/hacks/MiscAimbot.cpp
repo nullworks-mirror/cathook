@@ -157,7 +157,7 @@ void DoSlowAim(Vector &input_angle)
 }
 
 static HookedFunction
-    SandwichAim(HookedFunctions_types::HF_CreateMove, "SandwichAim", 1, []() {
+    SandwichAim(HookedFunctions_types::HF_CreateMove, "SandwichAim", 5, []() {
         if (!*sandwichaim_enabled)
             return;
         if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
@@ -230,34 +230,33 @@ static HookedFunction
 
 static settings::Bool charge_control{ "chargecontrol.enable", "false" };
 static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
-static HookedFunction
-    ChargeControl(HookedFunctions_types::HF_CreateMove, "chargecontrol", 1,
-                  []() {
-                      if (!*charge_control || charge_aimbotted)
-                          return;
-                      if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
-                          return;
-                      if (!HasCondition<TFCond_Charging>(LOCAL_E))
-                          return;
-                      float offset = 0.0f;
-                      if (current_user_cmd->buttons & IN_MOVELEFT)
-                          offset = *charge_float;
-                      if (current_user_cmd->buttons & IN_MOVERIGHT)
-                          offset = -*charge_float;
-                      current_user_cmd->viewangles.y += offset;
-                  });
+static HookedFunction ChargeControl(
+    HookedFunctions_types::HF_CreateMove, "chargecontrol", 5, []() {
+        if (!*charge_control || charge_aimbotted)
+            return;
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+            return;
+        if (!HasCondition<TFCond_Charging>(LOCAL_E))
+            return;
+        float offset = 0.0f;
+        if (current_user_cmd->buttons & IN_MOVELEFT)
+            offset = *charge_float;
+        if (current_user_cmd->buttons & IN_MOVERIGHT)
+            offset = -*charge_float;
+        current_user_cmd->viewangles.y += offset;
+    });
 
-static settings::Bool autosapper_enabled( "autosapper.enabled", "false");
-static settings::Bool autosapper_silent( "autosapper.silent", "true");
+static settings::Bool autosapper_enabled("autosapper.enabled", "false");
+static settings::Bool autosapper_silent("autosapper.silent", "true");
 
-static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, [](){
+static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, []() {
     if (!autosapper_enabled)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !g_pLocalPlayer->holding_sapper)
         return;
 
     CachedEntity *target = nullptr;
-    float fov = FLT_MAX;
+    float fov            = FLT_MAX;
     float range = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     for (int i = 0; i < entity_cache::max; i++)
     {
@@ -272,16 +271,18 @@ static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, [](){
             continue;
         if (GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye) > range)
             continue;
-        float new_fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, GetBuildingPosition(ent));
+        float new_fov = GetFov(g_pLocalPlayer->v_OrigViewangles,
+                               g_pLocalPlayer->v_Eye, GetBuildingPosition(ent));
         if (fov <= new_fov)
             continue;
 
-        fov = new_fov;
+        fov    = new_fov;
         target = ent;
     }
     if (target)
     {
-        AimAt(g_pLocalPlayer->v_Eye, GetBuildingPosition(target), current_user_cmd);
+        AimAt(g_pLocalPlayer->v_Eye, GetBuildingPosition(target),
+              current_user_cmd);
         if (autosapper_silent)
             g_pLocalPlayer->bUseSilentAngles = true;
         current_user_cmd->buttons |= IN_ATTACK;

@@ -367,7 +367,7 @@ void createMove()
             if (random_order && source->size())
             {
                 current_index = rand() % source->size();
-                int tries = 0;
+                int tries     = 0;
                 while (current_index == last_index && tries++ < 1000)
                 {
                     current_index = rand() % source->size();

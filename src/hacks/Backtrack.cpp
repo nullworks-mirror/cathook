@@ -308,10 +308,10 @@ void EmptyBacktrackData(BacktrackData &i)
 // This func is internal only
 std::pair<int, int> getBestEntBestTick()
 {
-    int bestEnt  = -1;
-    int bestTick = -1;
+    int bestEnt            = -1;
+    int bestTick           = -1;
     bool vischeck_priority = false;
-    Vischeck_Success = false;
+    Vischeck_Success       = false;
     if (GetWeaponMode() == weapon_melee)
     {
         float bestDist = 9999.0f;
@@ -331,18 +331,23 @@ std::pair<int, int> getBestEntBestTick()
                                 headPositions[i][j]
                                     .hitboxes.at(spine_3)
                                     .center.DistTo(g_pLocalPlayer->v_Eye);
-			    if (dist > bestDist && vischeck_priority)
-			        continue;
-                            bool Vischeck_suceeded = IsVectorVisible(g_pLocalPlayer->v_Eye, headPositions[i][j]
-                                                                     .hitboxes.at(0).center, true);
-                            if (((dist < bestDist) || (Vischeck_suceeded && !vischeck_priority)) && dist > *mindistance && (vischeck_priority ? Vischeck_suceeded : true))
+                            if (dist > bestDist && vischeck_priority)
+                                continue;
+                            bool Vischeck_suceeded = IsVectorVisible(
+                                g_pLocalPlayer->v_Eye,
+                                headPositions[i][j].hitboxes.at(0).center,
+                                true);
+                            if (((dist < bestDist) ||
+                                 (Vischeck_suceeded && !vischeck_priority)) &&
+                                dist > *mindistance &&
+                                (vischeck_priority ? Vischeck_suceeded : true))
                             {
                                 bestEnt  = i;
                                 bestTick = j;
                                 bestDist = dist;
                                 if (Vischeck_suceeded)
                                 {
-                                    Vischeck_Success = true;
+                                    Vischeck_Success  = true;
                                     vischeck_priority = true;
                                 }
                             }

@@ -66,8 +66,20 @@ CachedEntity *ClosestSpy()
             continue;
         if (CE_BYTE(ent, netvar.iLifeState))
             continue;
+        bool ispyro = false;
         if (CE_INT(ent, netvar.iClass) != tf_class::tf_spy)
-            continue;
+        {
+            if (CE_INT(ent, netvar.iClass) != tf_class::tf_pyro)
+                continue;
+            int idx = CE_INT(ent, netvar.hActiveWeapon) & 0xFFF;
+            if (IDX_BAD(idx))
+                continue;
+            CachedEntity *pyro_weapon = ENTITY(idx);
+            int widx = CE_INT(pyro_weapon, netvar.iItemDefinitionIndex);
+            if (widx != 40 && widx != 1146)
+                continue;
+            ispyro = true;
+        }
         if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team)
             continue;
         if (IsPlayerInvisible(ent))
@@ -78,7 +90,9 @@ CachedEntity *ClosestSpy()
             break;
             // logging::Info("Backstab???");
         }
-        if (dist < (float) distance && (dist < closest_dist || !closest_dist))
+        if ((((!ispyro && dist < (float) distance)) ||
+             (ispyro && dist < 314.0f)) &&
+            (dist < closest_dist || !closest_dist))
         {
             closest_dist = dist;
             closest      = ent;
@@ -97,7 +111,7 @@ void CreateMove()
     spy = ClosestSpy();
     if (spy)
     {
-        noaa                           = true;
+        noaa = true;
         if (current_user_cmd->buttons & IN_ATTACK)
             return;
         const Vector &A = LOCAL_E->m_vecOrigin();

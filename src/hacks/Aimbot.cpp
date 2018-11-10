@@ -118,7 +118,9 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
 
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-        if (auto_spin_up && CE_INT(g_pLocalPlayer->weapon(), netvar.m_iAmmo + 4) != 0 && !zoomTime.check(1000))
+        if (auto_spin_up &&
+            CE_INT(g_pLocalPlayer->weapon(), netvar.m_iAmmo + 4) != 0 &&
+            !zoomTime.check(1000))
             current_user_cmd->buttons |= IN_ATTACK2;
 
     // We do this as we need to pass whether the aimkey allows aiming to both
@@ -406,7 +408,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                         break;
                     case 4: // Distance Priority (Furthest Away)
                         scr = calculated_data_array[i].aim_position.DistTo(
-                                    g_pLocalPlayer->v_Eye);
+                            g_pLocalPlayer->v_Eye);
                         break;
                     case 6: // Health Priority (Highest)
                         scr = ent->m_iHealth() * 4;
@@ -430,7 +432,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
         target_highest_ent = ENTITY(hacks::shared::backtrack::iBestTarget);
         if (!IsTargetStateGood(target_highest_ent))
             target_highest_ent = nullptr;
-        foundTarget        = true;
+        foundTarget = true;
     }
 
     // Save the ent for future use with target lock
@@ -1276,7 +1278,7 @@ float EffectiveTargetingRange()
     if (GetWeaponMode() == weapon_melee)
         return (float) re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
-        return 185.0f; // Pyros only have so much until their flames hit
+        return 310.0f; // Pyros only have so much until their flames hit
 
     return (float) max_range;
 }
