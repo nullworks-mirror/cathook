@@ -2,6 +2,7 @@
 // Created by bencat07 on 17.08.18.
 //
 #include <hacks/Backtrack.hpp>
+#include <boost/functional/hash.hpp>
 #include "common.hpp"
 #include "navparser.hpp"
 #include "FollowBot.hpp"
@@ -20,7 +21,6 @@ static settings::Int jump_distance{ "navbot.jump-distance", "500" };
 static settings::Bool target_sentry{ "navbot.target-sentry", "true" };
 static settings::Bool stay_near{ "navbot.stay-near", "false" };
 static settings::Bool take_tele{ "navbot.take-teleporters", "true" };
-
 bool HasLowAmmo()
 {
     int *weapon_list =
@@ -193,6 +193,7 @@ static Timer jump_cooldown{};
 static std::vector<Vector> preferred_sniper_spots;
 static std::vector<Vector> sniper_spots;
 static std::vector<Vector> nest_spots;
+Vector Best_Spot{ 0.0f, 0.0f, 0.0f };
 void Init()
 {
     sniper_spots.clear();
@@ -230,6 +231,101 @@ void initonce()
     return;
 }
 
+static Timer spot_timer{};
+#define retnull                                                                \
+    {                                                                          \
+        Best_Spot = { 0.0f, 0.0f, 0.0f };                                      \
+        return;                                                                \
+    }
+
+struct ent_info
+{
+    Vector origin{};
+    int team{};
+    int clazz{};
+    int idx{};
+};
+
+void UpdateBestSpot()
+{
+    if (!spot_timer.test_and_set(10000))
+        return;
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
+        retnull;
+    int ent_count = 0;
+    std::unordered_map<int, ent_info> stored_pos;
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent) || !ent->m_bAlivePlayer())
+            continue;
+        stored_pos[i].origin = ent->m_vecOrigin();
+        stored_pos[i].team   = ent->m_iTeam();
+        stored_pos[i].clazz  = g_pPlayerResource->GetClass(ent);
+        stored_pos[i].idx    = i;
+    }
+    // Get dist from each ent to another
+    std::unordered_map<std::pair<int, int>, float,
+                       boost::hash<std::pair<int, int>>>
+        distances;
+    for (auto &i : stored_pos)
+        for (auto &j : stored_pos)
+            distances[{ i.second.idx, j.second.idx }] =
+                i.second.origin.DistTo(j.second.origin);
+    Vector prefferred_spot{};
+    float score_max    = FLT_MAX;
+    bool must_be_enemy = false;
+    for (auto &i : distances)
+    {
+        // Mark self :thinking:
+        if (stored_pos[i.first.first].idx == LOCAL_E->m_IDX ||
+            stored_pos[i.first.second].idx == LOCAL_E->m_IDX)
+            continue;
+        // Not for us
+        if (stored_pos[i.first.first].team != stored_pos[i.first.second].team)
+            continue;
+        Vector pos1 = stored_pos[i.first.first].origin;
+        Vector pos2 = stored_pos[i.first.second].origin;
+
+        // Bot please don't get stuck midair thanks
+        if (fabsf(pos1.z - pos2.z) > 70)
+            continue;
+
+        // Get Pos inbetween the two coords.
+        Vector estimated_pos = (pos1 + pos2) / 2;
+        bool enemy = stored_pos[i.first.first].team != LOCAL_E->m_iTeam();
+        if (must_be_enemy && !enemy)
+            continue;
+        // Prevent lag thru vischecks
+        if (must_be_enemy && !enemy)
+            if ((!i.second || (i.second > score_max && !score_max)))
+                continue;
+        // Vischecks.club
+        if (!IsVectorVisible(pos1, estimated_pos, true) ||
+            !IsVectorVisible(pos2, estimated_pos, true))
+            continue;
+
+        // Distance check thing
+        if ((i.second && (i.second < score_max || !score_max )) || (enemy && !must_be_enemy))
+        {
+            score_max = i.second;
+            if (enemy)
+                must_be_enemy = true;
+            prefferred_spot = estimated_pos;
+        }
+    }
+    if (!prefferred_spot.IsZero())
+        Best_Spot = prefferred_spot;
+    else
+        retnull;
+
+}
+static CatCommand update_spot_debug{"navbot_debug_spotupdate", "debug", [](){
+        UpdateBestSpot();
+}};
+static CatCommand nav_best_spot{"navbot_debug_navbest", "debug", [](){
+        nav::navTo(Best_Spot);
+}};
 Timer slot_timer{};
 void UpdateSlot()
 {
@@ -543,12 +639,14 @@ CatCommand debug_tele("navbot_debug", "debug", []() {
         g_GlobalVars->curtime * g_GlobalVars->interval_per_tick);
 });
 
-static CatCommand debug_ammo("navbot_debug_ammo", "debug", [](){
+static CatCommand debug_ammo("navbot_debug_ammo", "debug", []() {
     if (CE_BAD(LOCAL_W) || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
-    logging::Info("Clip size: %d %d", CE_INT(LOCAL_W, netvar.m_iClip1), CE_INT(LOCAL_W, netvar.m_iClip2));
+    logging::Info("Clip size: %d %d", CE_INT(LOCAL_W, netvar.m_iClip1),
+                  CE_INT(LOCAL_W, netvar.m_iClip2));
     for (int i = 0; i < 8; i++)
-        logging::Info("Ammo Table IDX %d: %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + 4 * i));
+        logging::Info("Ammo Table IDX %d: %d", i,
+                      CE_INT(LOCAL_E, netvar.m_iAmmo + 4 * i));
 });
 
 static HookedFunction
@@ -557,8 +655,9 @@ static HookedFunction
             return;
         if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
             return;
-        if (primary_only && enable)
+        if (primary_only)
             UpdateSlot();
+        UpdateBestSpot();
         if (*scout_mode && jump_cooldown.test_and_set(200))
         {
             auto ent = NearestEnemy();

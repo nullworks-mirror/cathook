@@ -454,7 +454,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         speedapplied = false;
         if (roll_speedhack && cmd->buttons & IN_DUCK &&
-            !(cmd->buttons & IN_ATTACK))
+            !(cmd->buttons & IN_ATTACK) && !HasCondition<TFCond_Charging>(LOCAL_E))
         {
             speed = Vector{ cmd->forwardmove, cmd->sidemove, 0.0f }.Length();
             static float prevspeedang = 0.0f;

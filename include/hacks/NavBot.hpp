@@ -9,4 +9,5 @@ namespace hacks::tf2::NavBot
 {
 void Init();
 void initonce();
+extern Vector Best_Spot;
 } // namespace hacks::tf2::NavBot
