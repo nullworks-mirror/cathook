@@ -4,7 +4,7 @@
 #   GLEW
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type")
 endif()
 set(CMAKE_BUILD_TYPE_VALUES "Debug;Release" CACHE INTERNAL "List of supported build")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_BUILD_TYPE_VALUES})
