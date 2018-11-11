@@ -600,6 +600,19 @@ void VectorAngles(Vector &forward, Vector &angles)
     angles[2] = 0;
 }
 
+// Get forward vector
+void AngleVectors2(const QAngle &angles, Vector *forward)
+{
+    float sp, sy, cp, cy;
+
+    SinCos(DEG2RAD(angles[YAW]), &sy, &cy);
+    SinCos(DEG2RAD(angles[PITCH]), &sp, &cp);
+
+    forward->x = cp * cy;
+    forward->y = cp * sy;
+    forward->z = -sp;
+}
+
 char GetUpperChar(ButtonCode_t button)
 {
     switch (button)
@@ -878,62 +891,7 @@ bool IsProjectileCrit(CachedEntity *ent)
 
 weaponmode GetWeaponMode()
 {
-    int weapon_handle, slot;
-    CachedEntity *weapon;
-
-    if (CE_BAD(LOCAL_E))
-        return weapon_invalid;
-    weapon_handle = CE_INT(LOCAL_E, netvar.hActiveWeapon);
-    if (IDX_BAD((weapon_handle & 0xFFF)))
-    {
-        // logging::Info("IDX_BAD: %i", weapon_handle & 0xFFF);
-        return weaponmode::weapon_invalid;
-    }
-    weapon = (ENTITY(weapon_handle & 0xFFF));
-    if (CE_BAD(weapon))
-        return weaponmode::weapon_invalid;
-    int classid = weapon->m_iClassID();
-    slot        = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(weapon));
-    if (slot == 2)
-        return weaponmode::weapon_melee;
-    if (slot > 2)
-    {
-        return weaponmode::weapon_pda;
-    }
-    else if (classid == CL_CLASS(CTFLunchBox) ||
-             classid == CL_CLASS(CTFLunchBox_Drink) ||
-             classid == CL_CLASS(CTFBuffItem))
-    {
-        return weaponmode::weapon_consumable;
-    }
-    else if (classid == CL_CLASS(CTFRocketLauncher_DirectHit) ||
-             classid == CL_CLASS(CTFRocketLauncher) ||
-             classid == CL_CLASS(CTFGrenadeLauncher) ||
-             classid == CL_CLASS(CTFPipebombLauncher) ||
-             classid == CL_CLASS(CTFCompoundBow) ||
-             classid == CL_CLASS(CTFBat_Wood) ||
-             classid == CL_CLASS(CTFBat_Giftwrap) ||
-             classid == CL_CLASS(CTFFlareGun) ||
-             classid == CL_CLASS(CTFFlareGun_Revenge) ||
-             classid == CL_CLASS(CTFSyringeGun) ||
-             classid == CL_CLASS(CTFCrossbow) ||
-             classid == CL_CLASS(CTFShotgunBuildingRescue) ||
-             classid == CL_CLASS(CTFDRGPomson) ||
-             classid == CL_CLASS(CTFWeaponFlameBall) ||
-             classid == CL_CLASS(CTFRaygun) ||
-             classid == CL_CLASS(CTFGrapplingHook))
-    {
-        return weaponmode::weapon_projectile;
-    }
-    else if (classid == CL_CLASS(CTFJar) || classid == CL_CLASS(CTFJarMilk))
-    {
-        return weaponmode::weapon_throwable;
-    }
-    else if (classid == CL_CLASS(CWeaponMedigun))
-    {
-        return weaponmode::weapon_medigun;
-    }
-    return weaponmode::weapon_hitscan;
+    return g_pLocalPlayer->weapon_mode;
 }
 
 bool LineIntersectsBox(Vector &bmin, Vector &bmax, Vector &lmin, Vector &lmax)
@@ -1282,11 +1240,7 @@ Vector QAngleToVector(QAngle in)
 
 void AimAt(Vector origin, Vector target, CUserCmd *cmd)
 {
-    Vector angles, tr;
-    tr = (target - origin);
-    VectorAngles(tr, angles);
-    fClampAngle(angles);
-    cmd->viewangles = angles;
+    cmd->viewangles = GetAimAtAngles(origin, target);
 }
 
 void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd)

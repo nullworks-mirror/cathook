@@ -22,7 +22,7 @@
 
 #include "hack.hpp"
 
-static settings::Bool render_zoomed{ "visuals.render-local-zoomed", "false" };
+static settings::Bool render_zoomed{ "visual.render-local-zoomed", "false" };
 static settings::Bool anti_afk{ "misc.anti-afk", "false" };
 static settings::Bool auto_strafe{ "misc.autostrafe", "false" };
 static settings::Bool tauntslide{ "misc.tauntslide-tf2c", "false" };

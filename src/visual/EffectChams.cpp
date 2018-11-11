@@ -32,7 +32,7 @@ static settings::Bool disco_chams{ "chams.disco", "false" };
 
 namespace effect_chams
 {
-CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", [](){
+CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {
     effect_chams::g_EffectChams.Shutdown();
     effect_chams::g_EffectChams.Init();
 });
@@ -82,7 +82,7 @@ void EffectChams::EndRenderChams()
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
-static rgba_t data[32] = {colors::empty};
+static rgba_t data[32] = { colors::empty };
 void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
 {
     if (ent->m_IDX > 31 || ent->m_IDX < 0)
@@ -156,7 +156,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     }
     if (data[entity->entindex()] != colors::empty)
     {
-        auto toret = data[entity->entindex()];
+        auto toret               = data[entity->entindex()];
         data[entity->entindex()] = colors::empty;
         return toret;
     }

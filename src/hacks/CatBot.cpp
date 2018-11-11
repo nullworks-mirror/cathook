@@ -301,7 +301,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
     if (g_Settings.bInvalid)
         return;
 
-    if (CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
 
     if (*auto_crouch)

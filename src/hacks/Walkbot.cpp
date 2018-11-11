@@ -1218,7 +1218,7 @@ Timer map_check{};
 int erasedelay = 0;
 static HookedFunction
     Move(HookedFunctions_types::HF_CreateMove, "Walkbot", 16, []() {
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
             return;
         if (state::state == WB_DISABLED)
             return;

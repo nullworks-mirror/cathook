@@ -232,7 +232,7 @@ bool IsProjectile(CachedEntity *ent)
 int NearbyEntities()
 {
     int ret = 0;
-    if (CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return ret;
     for (int i = 0; i < HIGHEST_ENTITY; i++)
     {

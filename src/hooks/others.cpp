@@ -40,7 +40,17 @@ CatCommand spectate("spectate", "Spectate", [](const CCommand &args) {
         spectator_target = 0;
         return;
     }
-    int id = atoi(args.Arg(1));
+    int id;
+    try
+    {
+        id = std::stoi(args.Arg(1));
+    }
+    catch (const std::exception &e)
+    {
+        logging::Info("Error while setting spectate target. Error: %s",
+                      e.what());
+        id = 0;
+    }
     if (!id)
         spectator_target = 0;
     else

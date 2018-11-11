@@ -26,6 +26,7 @@ if(NOT LagbotMode)
         "${CMAKE_CURRENT_LIST_DIR}/Backtrack.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/FollowBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/KillSay.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/DominateSay.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Killstreak.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/LightESP.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Misc.cpp"

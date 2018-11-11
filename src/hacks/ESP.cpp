@@ -252,7 +252,7 @@ static HookedFunction
         // Check usersettings if enabled
         if (!*enable)
             return;
-        if (CE_BAD(LOCAL_E))
+        if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
             return;
         // Something
         std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);

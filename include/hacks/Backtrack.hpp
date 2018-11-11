@@ -62,6 +62,7 @@ extern circular_buf sequences;
 extern BacktrackData headPositions[32][66];
 
 extern bool isBacktrackEnabled;
+extern bool Vischeck_Success;
 float getLatency();
 int getTicks();
 bool ValidTick(BacktrackData &i, CachedEntity *ent);

@@ -58,3 +58,5 @@ rm $FILENAME
 
 sudo killall -18 steamwebhelper
 sudo killall -18 steam
+
+sudo ./scripts/auto-updater &

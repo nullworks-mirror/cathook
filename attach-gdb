@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Thank you LWSS
-# https://github.com/LWSS/Fuzion/commit/a53b6c634cde0ed47b08dd587ba40a3806adf3fe
-
 line=$(pidof hl2_linux)
 arr=($line)
 inst=$1
@@ -25,41 +22,46 @@ proc=${arr[$inst]}
 echo Running instances: "${arr[@]}"
 echo Attaching to "$proc"
 
+#sudo ./detach $inst bin/libcathook.so
+
+#if grep -q "$(realpath bin/libcathook.so)" /proc/"$proc"/maps; then
+#  echo already loaded
+#  exit
+#fi
+
 # pBypass for crash dumps being sent
 # You may also want to consider using -nobreakpad in your launch options.
 sudo rm -rf /tmp/dumps # Remove if it exists
 sudo mkdir /tmp/dumps # Make it as root
 sudo chmod 000 /tmp/dumps # No permissions
 
-# Get a Random name from the build_names file.
-FILENAME=$(shuf -n 1 build_names)
+FILENAME="/tmp/.gl$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)"
 
-# Create directory if it doesn't exist
-if [ ! -d "/lib/i386-linux-gnu/" ]; then
-  sudo mkdir /lib/i386-linux-gnu/
-fi
-
-# In case this file exists, get another one. ( checked it works )
-while [ -f "/lib/i386-linux-gnu/${FILENAME}" ]; do
-  FILENAME=$(shuf -n 1 build_names)
-done
-
-# echo $FILENAME > build_id # For detaching
-
-sudo cp "bin/libcathook.so" "/lib/i386-linux-gnu/${FILENAME}"
+cp "bin/libcathook.so" "$FILENAME"
 
 echo loading "$FILENAME" to "$proc"
 
-sudo gdb -n -q -batch \
+sudo killall -19 steam
+sudo killall -19 steamwebhelper
+
+gdb -n -q -batch \
   -ex "attach $proc" \
   -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
-  -ex "call \$dlopen(\"/lib/i386-linux-gnu/$FILENAME\", 1)" \
+  -ex "call \$dlopen(\"$FILENAME\", 1)" \
   -ex "call dlerror()" \
   -ex 'print (char *) $2' \
   -ex "catch syscall exit exit_group" \
   -ex "detach" \
   -ex "quit"
 
-sudo rm "/lib/i386-linux-gnu/${FILENAME}"
+sudo killall -18 steamwebhelper
+sudo killall -18 steam
 
 sudo ./scripts/auto-updater &
+
+gdb -n -q -batch \
+  -ex "attach $proc" \
+  -ex "continue" \
+  -ex "backtrace"
+
+rm $FILENAME

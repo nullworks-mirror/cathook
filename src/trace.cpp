@@ -141,9 +141,9 @@ bool trace::FilterNoEntity::ShouldHitEntity(IHandleEntity *handle, int mask)
     // Hit doors, carts, etc
     switch (clazz->m_ClassID)
     {
-        case 6:
-        case 7:
-            return true;
+    case 6:
+    case 7:
+        return true;
     }
     return false;
 }

@@ -163,6 +163,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         return ret;
     }
 
+    // Disabled because this causes EXTREME aimbot inaccuracy
+    // Actually dont disable it. It causes even more inaccuracy
+    if (!cmd->command_number)
+    {
+        g_Settings.is_create_move = false;
+        return ret;
+    }
+
     if (!isHackActive())
     {
         g_Settings.is_create_move = false;
@@ -245,8 +253,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         entity_cache::Invalidate();
     }
-    // Disabled because this causes EXTREME aimbot inaccuracy
-    // if (!cmd->command_number) return ret;
+
     //	PROF_BEGIN();
     {
         PROF_SECTION(EntityCache);
@@ -279,7 +286,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         //        hacks::tf2::NavBot::initonce();
         nav::status = nav::off;
         IRC::auth();
-        hacks::shared::NavBot::Init(true);
+        hacks::tf2::NavBot::initonce();
         firstcm = false;
     }
     g_Settings.bInvalid = false;
@@ -447,7 +454,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     {
         speedapplied = false;
         if (roll_speedhack && cmd->buttons & IN_DUCK &&
-            !(cmd->buttons & IN_ATTACK))
+            !(cmd->buttons & IN_ATTACK) && !HasCondition<TFCond_Charging>(LOCAL_E))
         {
             speed = Vector{ cmd->forwardmove, cmd->sidemove, 0.0f }.Length();
             static float prevspeedang = 0.0f;

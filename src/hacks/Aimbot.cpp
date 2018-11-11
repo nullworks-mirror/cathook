@@ -1,4 +1,4 @@
-/*
+﻿/*
  * HAimbot.cpp
  *
  *  Created on: Oct 9, 2016
@@ -83,7 +83,7 @@ bool shouldBacktrack()
 
 bool IsBacktracking()
 {
-    return !(!aimkey || !aimkey.isKeyDown()) && shouldBacktrack();
+    return (aimkey ? aimkey.isKeyDown() : true) && shouldBacktrack();
 }
 
 // Current Entity
@@ -118,7 +118,9 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
 
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-        if (auto_spin_up && CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0 && !zoomTime.check(1000))
+        if (auto_spin_up &&
+            CE_INT(g_pLocalPlayer->weapon(), netvar.m_iAmmo + 4) != 0 &&
+            !zoomTime.check(1000))
             current_user_cmd->buttons |= IN_ATTACK2;
 
     // We do this as we need to pass whether the aimkey allows aiming to both
@@ -406,7 +408,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
                         break;
                     case 4: // Distance Priority (Furthest Away)
                         scr = calculated_data_array[i].aim_position.DistTo(
-                                    g_pLocalPlayer->v_Eye);
+                            g_pLocalPlayer->v_Eye);
                         break;
                     case 6: // Health Priority (Highest)
                         scr = ent->m_iHealth() * 4;
@@ -428,7 +430,9 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
     else if (hacks::shared::backtrack::iBestTarget != -1)
     {
         target_highest_ent = ENTITY(hacks::shared::backtrack::iBestTarget);
-        foundTarget        = true;
+        if (!IsTargetStateGood(target_highest_ent))
+            target_highest_ent = nullptr;
+        foundTarget = true;
     }
 
     // Save the ent for future use with target lock
@@ -813,7 +817,7 @@ void DoAutoshoot()
             begancharge)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
-            hacks::shared::antiaim::SetSafeSpace(3);
+            hacks::shared::antiaim::SetSafeSpace(5);
             begancharge = false;
             // Pull string if charge isnt enough
         }
@@ -836,7 +840,7 @@ void DoAutoshoot()
         if ((chargetime >= 3.85f * *sticky_autoshoot) && begansticky > 3)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
-            hacks::shared::antiaim::SetSafeSpace(3);
+            hacks::shared::antiaim::SetSafeSpace(5);
             begansticky = 0;
         }
         // Else just keep charging
@@ -1149,20 +1153,17 @@ bool VischeckPredictedEntity(CachedEntity *entity)
     // Retrieve predicted data
     AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
     if (cd.vcheck_tick == tickcount)
-        return cd.visible;
+    {
+        if (!shouldBacktrack() || projectile_mode)
+            return cd.visible;
+    }
 
     // Update info
     cd.vcheck_tick = tickcount;
     if (!shouldBacktrack() || projectile_mode)
         cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
     else
-        cd.visible = IsVectorVisible(
-            g_pLocalPlayer->v_Eye,
-            hacks::shared::backtrack::headPositions
-                [entity->m_IDX][hacks::shared::backtrack::BestTick]
-                    .hitboxes[cd.hitbox]
-                    .center,
-            true);
+        cd.visible = hacks::shared::backtrack::Vischeck_Success;
     return cd.visible;
 }
 
@@ -1277,7 +1278,7 @@ float EffectiveTargetingRange()
     if (GetWeaponMode() == weapon_melee)
         return (float) re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
-        return 185.0f; // Pyros only have so much untill their flames hit
+        return 310.0f; // Pyros only have so much until their flames hit
 
     return (float) max_range;
 }

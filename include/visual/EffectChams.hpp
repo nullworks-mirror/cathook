@@ -27,7 +27,9 @@ public:
         init = false;
     }
 
-    inline virtual void SetParameters(KeyValues *params){}
+    inline virtual void SetParameters(KeyValues *params)
+    {
+    }
 
     virtual void Render(int x, int y, int w, int h);
 

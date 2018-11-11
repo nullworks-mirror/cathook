@@ -279,7 +279,7 @@ public:
                     {
                         i.second.status    = unknown;
                         i.second.stucktime = 0;
-                        reset_pather = true;
+                        reset_pather       = true;
                     }
                     break;
                 case unknown:
@@ -288,7 +288,7 @@ public:
                     if (i.second.ignoreTimeout.check(20000))
                     {
                         i.second.status = unknown;
-                        reset_pather = true;
+                        reset_pather    = true;
                     }
                     break;
                 case vischeck_failed:
@@ -298,7 +298,7 @@ public:
                     {
                         i.second.status    = unknown;
                         i.second.stucktime = 0;
-                        reset_pather = true;
+                        reset_pather       = true;
                     }
                     break;
                 }
@@ -542,6 +542,10 @@ bool navTo(Vector destination, int priority, bool should_repath,
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, destination);
     if (path.empty())
         return false;
+    if (!crumbs.empty())
+    {
+        ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
+    }
     last_area = path.at(0);
     if (!nav_to_local)
     {
@@ -553,10 +557,6 @@ bool navTo(Vector destination, int priority, bool should_repath,
     if (!is_repath)
     {
         findClosestNavSquare_localAreas.clear();
-    }
-    if (!crumbs.empty())
-    {
-        ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
     }
     ensureArrival    = should_repath;
     ReadyForCommands = false;
@@ -583,7 +583,7 @@ static HookedFunction
     CreateMove(HookedFunctions_types::HF_CreateMove, "NavParser", 17, []() {
         if (!enabled || status != on)
             return;
-        if (CE_BAD(LOCAL_E))
+        if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
             return;
         if (!LOCAL_E->m_bAlivePlayer())
         {
@@ -636,7 +636,7 @@ static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []() {
         return;
     if (!enabled)
         return;
-    if (CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
     if (!LOCAL_E->m_bAlivePlayer())
         return;
@@ -694,6 +694,9 @@ static CatCommand nav_init("nav_init", "Debug nav init", []() {
 });
 
 static CatCommand nav_path("nav_path", "Debug nav path", []() { navTo(loc); });
+
+static CatCommand nav_path_no_local("nav_path_no_local", "Debug nav path",
+                                    []() { navTo(loc, 5, false, false); });
 
 static CatCommand nav_reset_ignores("nav_reset_ignores", "Reset all ignores.",
                                     []() { ignoremanager::reset(); });

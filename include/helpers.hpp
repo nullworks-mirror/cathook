@@ -71,6 +71,7 @@ weaponmode GetWeaponMode();
 
 void FixMovement(CUserCmd &cmd, Vector &viewangles);
 void VectorAngles(Vector &forward, Vector &angles);
+void AngleVectors2(const QAngle &angles, Vector *forward);
 extern std::mutex trace_lock;
 bool IsEntityVisible(CachedEntity *entity, int hb);
 bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos);
@@ -124,6 +125,14 @@ void WhatIAmLookingAt(int *result_eindex, Vector *result_pos);
 
 void Patch(void *address, void *patch, size_t length);
 
+inline Vector GetAimAtAngles(Vector origin, Vector target)
+{
+    Vector angles, tr;
+    tr = (target - origin);
+    VectorAngles(tr, angles);
+    fClampAngle(angles);
+    return angles;
+}
 void AimAt(Vector origin, Vector target, CUserCmd *cmd);
 void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd);
 bool IsProjectileCrit(CachedEntity *ent);

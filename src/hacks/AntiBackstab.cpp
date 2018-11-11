@@ -66,19 +66,36 @@ CachedEntity *ClosestSpy()
             continue;
         if (CE_BYTE(ent, netvar.iLifeState))
             continue;
+        bool ispyro = false;
+        bool isheavy = false;
         if (CE_INT(ent, netvar.iClass) != tf_class::tf_spy)
-            continue;
+        {
+            if (CE_INT(ent, netvar.iClass) != tf_class::tf_pyro && CE_INT(ent, netvar.iClass) != tf_class::tf_heavy)
+                continue;
+            int idx = CE_INT(ent, netvar.hActiveWeapon) & 0xFFF;
+            if (IDX_BAD(idx))
+                continue;
+            CachedEntity *pyro_weapon = ENTITY(idx);
+            int widx = CE_INT(pyro_weapon, netvar.iItemDefinitionIndex);
+            if (widx != 40 && widx != 1146 && widx != 656)
+                continue;
+            if (widx == 656)
+                isheavy = true;
+            ispyro = true;
+        }
         if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team)
             continue;
         if (IsPlayerInvisible(ent))
             continue;
         dist = ent->m_flDistance();
-        if (fabs(GetAngle(ent)) > (float) angle)
+        if (fabs(GetAngle(ent)) > (float) angle || (ispyro && !isheavy && fabs(GetAngle(ent)) > 90.0f) || (isheavy && fabs(GetAngle(ent)) > 132.0f))
         {
             break;
             // logging::Info("Backstab???");
         }
-        if (dist < (float) distance && (dist < closest_dist || !closest_dist))
+        if ((((!ispyro && dist < (float) distance)) ||
+             (ispyro && !isheavy && dist < 314.0f) || (isheavy && dist < 120.0f)) &&
+            (dist < closest_dist || !closest_dist))
         {
             closest_dist = dist;
             closest      = ent;
@@ -97,8 +114,14 @@ void CreateMove()
     spy = ClosestSpy();
     if (spy)
     {
-        noaa                           = true;
-        current_user_cmd->viewangles.x = 160.0f;
+        noaa = true;
+        if (current_user_cmd->buttons & IN_ATTACK)
+            return;
+        const Vector &A = LOCAL_E->m_vecOrigin();
+        const Vector &B = spy->m_vecOrigin();
+        diff            = (A - B);
+        if (diff.y < 0 || CE_INT(spy, netvar.iClass) == tf_class::tf_heavy)
+            current_user_cmd->viewangles.x = 180.0f;
         if (silent)
             g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)

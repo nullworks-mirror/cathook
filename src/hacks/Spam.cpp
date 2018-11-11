@@ -279,7 +279,7 @@ void createMove()
             static float last_voice_spam = 0.0f;
             if (g_GlobalVars->curtime - 4.0F > last_voice_spam)
             {
-                switch ((int) voicecommand_spam)
+                switch (*voicecommand_spam)
                 {
                 case 1: // RANDOM
                     g_IEngine->ServerCmd(
@@ -312,10 +312,10 @@ void createMove()
     static int safety_ticks   = 0;
     static int last_source    = 0;
     static float last_message = 0;
-    if ((int) spam_source != last_source)
+    if (*spam_source != last_source)
     {
         safety_ticks = 300;
-        last_source  = (int) spam_source;
+        last_source  = *spam_source;
     }
     if (safety_ticks > 0)
     {
@@ -328,7 +328,7 @@ void createMove()
     }
 
     const std::vector<std::string> *source = nullptr;
-    switch ((int) spam_source)
+    switch (*spam_source)
     {
     case 1:
         source = &file.lines;
@@ -364,10 +364,11 @@ void createMove()
         {
             if (current_index >= source->size())
                 current_index = 0;
-            if (random_order)
+            if (random_order && source->size())
             {
                 current_index = rand() % source->size();
-                while (current_index == last_index)
+                int tries     = 0;
+                while (current_index == last_index && tries++ < 1000)
                 {
                     current_index = rand() % source->size();
                 }

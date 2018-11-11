@@ -3,12 +3,15 @@
 //
 
 #include "common.hpp"
-#include <settings/Bool.hpp>
-#include <settings/Int.hpp>
-#include <settings/Key.hpp>
-static settings::Bool enable{ "sandwichaim.enable", "false" };
-static settings::Button aimkey{ "sandwichaim.aimkey", "<null>" };
-static settings::Int aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
+#include "settings/Bool.hpp"
+#include "settings/Int.hpp"
+#include "settings/Key.hpp"
+#include "PlayerTools.hpp"
+#include "hacks/Trigger.hpp"
+
+static settings::Bool sandwichaim_enabled{ "sandwichaim.enable", "false" };
+static settings::Button sandwichaim_aimkey{ "sandwichaim.aimkey", "<null>" };
+static settings::Int sandwichaim_aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
 
 float sandwich_speed = 350.0f;
 float grav           = 0.25f;
@@ -31,6 +34,9 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
             if (!teammate && ent->m_iTeam() == LOCAL_E->m_ItemType())
                 continue;
             if (!ent->hitboxes.GetHitbox(1))
+                continue;
+            if (!teammate && player_tools::shouldTarget(ent) !=
+                                 player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             Vector target{};
             if (Predict)
@@ -151,21 +157,21 @@ void DoSlowAim(Vector &input_angle)
 }
 
 static HookedFunction
-    SandwichAim(HookedFunctions_types::HF_CreateMove, "SandwichAim", 1, []() {
-        if (!*enable)
+    SandwichAim(HookedFunctions_types::HF_CreateMove, "SandwichAim", 5, []() {
+        if (!*sandwichaim_enabled)
             return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
             return;
-        if (aimkey)
+        if (sandwichaim_aimkey)
         {
-            switch (*aimkey_mode)
+            switch (*sandwichaim_aimkey_mode)
             {
             case 1:
-                if (!aimkey.isKeyDown())
+                if (!sandwichaim_aimkey.isKeyDown())
                     return;
                 break;
             case 2:
-                if (aimkey.isKeyDown())
+                if (sandwichaim_aimkey.isKeyDown())
                     return;
                 break;
             default:
@@ -202,7 +208,7 @@ static HookedFunction
             return;
         if (charge_key && !charge_key.isKeyDown())
             return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
             return;
         if (!HasCondition<TFCond_Charging>(LOCAL_E))
             return;
@@ -221,18 +227,64 @@ static HookedFunction
             charge_aimbotted             = true;
         }
     });
+
 static settings::Bool charge_control{ "chargecontrol.enable", "false" };
-static settings::Int charge_int{ "chargecontrol.strength", "1" };
+static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
 static HookedFunction ChargeControl(
-    HookedFunctions_types::HF_CreateMove, "ChargeControl", 1, []() {
+    HookedFunctions_types::HF_CreateMove, "chargecontrol", 5, []() {
         if (!*charge_control || charge_aimbotted)
             return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
             return;
         if (!HasCondition<TFCond_Charging>(LOCAL_E))
             return;
         float offset = 0.0f;
-        if (current_user_cmd->mousedx > 1 || current_user_cmd->mousedx < -1)
-            offset = -(current_user_cmd->mousedx / 100 * *charge_int);
+        if (current_user_cmd->buttons & IN_MOVELEFT)
+            offset = *charge_float;
+        if (current_user_cmd->buttons & IN_MOVERIGHT)
+            offset = -*charge_float;
         current_user_cmd->viewangles.y += offset;
     });
+
+static settings::Bool autosapper_enabled("autosapper.enabled", "false");
+static settings::Bool autosapper_silent("autosapper.silent", "true");
+
+static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, []() {
+    if (!autosapper_enabled)
+        return;
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !g_pLocalPlayer->holding_sapper)
+        return;
+
+    CachedEntity *target = nullptr;
+    float fov            = FLT_MAX;
+    float range = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+    for (int i = 0; i < entity_cache::max; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent->m_Type() != ENTITY_BUILDING)
+            continue;
+        if (!ent->m_bEnemy())
+            continue;
+        if (CE_BYTE(ent, netvar.m_bHasSapper))
+            continue;
+        if (GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye) > range)
+            continue;
+        float new_fov = GetFov(g_pLocalPlayer->v_OrigViewangles,
+                               g_pLocalPlayer->v_Eye, GetBuildingPosition(ent));
+        if (fov <= new_fov)
+            continue;
+
+        fov    = new_fov;
+        target = ent;
+    }
+    if (target)
+    {
+        AimAt(g_pLocalPlayer->v_Eye, GetBuildingPosition(target),
+              current_user_cmd);
+        if (autosapper_silent)
+            g_pLocalPlayer->bUseSilentAngles = true;
+        current_user_cmd->buttons |= IN_ATTACK;
+    }
+});

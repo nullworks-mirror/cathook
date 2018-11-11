@@ -30,7 +30,7 @@ set(DataPath "/opt/cathook/data" CACHE FILEPATH "Data location")
 set(VACBypass 0 CACHE BOOL "Textmode VAC bypass")
 set(Textmode 0 CACHE BOOL "Various textmode-only features for bots")
 set(EnableTextmodeStdin 0 CACHE BOOL "Textmode Stdin -> Console bridge (EXPERIMENTAL)")
-set(EnableWarnings 1 CACHE BOOL "Enable compile warnings")
+set(EnableWarnings 0 CACHE BOOL "Enable compile warnings")
 set(EnableNullGraphics 0 CACHE BOOL "Enable experimental textmode hooks (CRASHES)")
 set(EnableOnlineFeatures 0 CACHE BOOL "Enable online features (WIP)")
 
@@ -87,7 +87,7 @@ configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
 #set_target_properties(cathook PROPERTIES COMPILE_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions" LINK_FLAGS "-m32 -fno-gnu-unique -fexceptions -DNDEBUG")
 set(CMAKE_CXX_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions -fno-gnu-unique -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -ggdb -rdynamic")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og -rdynamic -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 

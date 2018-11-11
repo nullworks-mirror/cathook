@@ -208,7 +208,7 @@ static HookedFunction
             init();
 
         // We need a local player to control
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         {
             follow_target = 0;
             return;
@@ -231,7 +231,8 @@ static HookedFunction
             }
             if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(2000))
             {
-                if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 5, true, false))
+                if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 5, true,
+                               false))
                 {
                     navtimeout.update();
                 }
@@ -264,179 +265,183 @@ static HookedFunction
         // Target Selection
         {
 
-        if (steamid &&
-            ((follow_target &&
-              ENTITY(follow_target)->player_info.friendsID != steamid) ||
-             !follow_target))
-        {
-            // Find a target with the steam id, as it is prioritized
-            auto ent_count = g_IEngine->GetMaxClients();
-            for (int i = 0; i < ent_count; i++)
+            if (steamid &&
+                ((follow_target &&
+                  ENTITY(follow_target)->player_info.friendsID != steamid) ||
+                 !follow_target))
             {
-                auto entity = ENTITY(i);
-                if (CE_BAD(entity)) // Exist + dormant
-                    continue;
-                if (i == follow_target)
-                    continue;
-                if (entity->m_Type() != ENTITY_PLAYER)
-                    continue;
-                if (steamid != entity->player_info.friendsID) // steamid check
-                    continue;
-
-                if (!entity->m_bAlivePlayer()) // Dont follow dead players
-                    continue;
-                bool found = false;
-                if (corneractivate)
+                // Find a target with the steam id, as it is prioritized
+                auto ent_count = g_IEngine->GetMaxClients();
+                for (int i = 0; i < ent_count; i++)
                 {
-                    Vector indirectOrigin = VischeckCorner(
-                        LOCAL_E, entity, *follow_activation / 2,
-                        true); // get the corner location that the
-                    // future target is visible from
-                    std::pair<Vector, Vector> corners;
-                    if (!indirectOrigin.z &&
-                        entity->m_IDX == lastent) // if we couldn't find it, run
-                    // wallcheck instead
-                    {
-                        corners =
-                            VischeckWall(LOCAL_E, entity,
-                                         float(follow_activation) / 2, true);
-                        if (!corners.first.z || !corners.second.z)
-                            continue;
-                        // addCrumbs(LOCAL_E, corners.first);
-                        // addCrumbs(entity, corners.second);
-                        addCrumbPair(LOCAL_E, entity, corners);
-                        found = true;
-                    }
-                    if (indirectOrigin.z)
-                    {
-                        addCrumbs(entity, indirectOrigin);
-                        found = true;
-                    }
-                }
-                else
-                {
-                    if (VisCheckEntFromEnt(LOCAL_E, entity))
-                        found = true;
-                }
-                if (isNavBotCM && !found)
-                {
-                    if (!nav::navTo(entity->m_vecOrigin()))
+                    auto entity = ENTITY(i);
+                    if (CE_BAD(entity)) // Exist + dormant
                         continue;
-                    navtimeout.update();
-                    found = true;
+                    if (i == follow_target)
+                        continue;
+                    if (entity->m_Type() != ENTITY_PLAYER)
+                        continue;
+                    if (steamid !=
+                        entity->player_info.friendsID) // steamid check
+                        continue;
+
+                    if (!entity->m_bAlivePlayer()) // Dont follow dead players
+                        continue;
+                    bool found = false;
+                    if (corneractivate)
+                    {
+                        Vector indirectOrigin = VischeckCorner(
+                            LOCAL_E, entity, *follow_activation / 2,
+                            true); // get the corner location that the
+                        // future target is visible from
+                        std::pair<Vector, Vector> corners;
+                        if (!indirectOrigin.z &&
+                            entity->m_IDX ==
+                                lastent) // if we couldn't find it, run
+                        // wallcheck instead
+                        {
+                            corners = VischeckWall(LOCAL_E, entity,
+                                                   float(follow_activation) / 2,
+                                                   true);
+                            if (!corners.first.z || !corners.second.z)
+                                continue;
+                            // addCrumbs(LOCAL_E, corners.first);
+                            // addCrumbs(entity, corners.second);
+                            addCrumbPair(LOCAL_E, entity, corners);
+                            found = true;
+                        }
+                        if (indirectOrigin.z)
+                        {
+                            addCrumbs(entity, indirectOrigin);
+                            found = true;
+                        }
+                    }
+                    else
+                    {
+                        if (VisCheckEntFromEnt(LOCAL_E, entity))
+                            found = true;
+                    }
+                    if (isNavBotCM && !found)
+                    {
+                        if (!nav::navTo(entity->m_vecOrigin()))
+                            continue;
+                        navtimeout.update();
+                        found = true;
+                    }
+                    if (!found)
+                        continue;
+                    follow_target = entity->m_IDX;
+                    break;
                 }
-                if (!found)
-                    continue;
-                follow_target = entity->m_IDX;
-                break;
             }
-        }
         }
         // If we dont have a follow target from that, we look again for someone
         // else who is suitable
         {
-        if ((!follow_target || change ||
-             (ClassPriority(ENTITY(follow_target)) < 6 &&
-              ENTITY(follow_target)->player_info.friendsID != steamid)) &&
-            roambot)
-        {
-            // Try to get a new target
-            auto ent_count =
-                followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
-            for (int i = 0; i < ent_count; i++)
+            if ((!follow_target || change ||
+                 (ClassPriority(ENTITY(follow_target)) < 6 &&
+                  ENTITY(follow_target)->player_info.friendsID != steamid)) &&
+                roambot)
             {
-                auto entity = ENTITY(i);
-                if (CE_BAD(entity)) // Exist + dormant
-                    continue;
-                if (!followcart)
+                // Try to get a new target
+                auto ent_count =
+                    followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
+                for (int i = 0; i < ent_count; i++)
+                {
+                    auto entity = ENTITY(i);
+                    if (CE_BAD(entity)) // Exist + dormant
+                        continue;
+                    if (!followcart)
+                        if (entity->m_Type() != ENTITY_PLAYER)
+                            continue;
+                    if (entity == LOCAL_E) // Follow self lol
+                        continue;
+                    if (entity->m_bEnemy())
+                        continue;
+                    if (afk && afkTicks[i].check(
+                                   int(afktime))) // don't follow target that
+                                                  // was determined afk
+                        continue;
+                    if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
+                        continue;
+                    if (!entity->m_bAlivePlayer()) // Dont follow dead players
+                        continue;
+                    if (follow_activation &&
+                        entity->m_flDistance() > (float) follow_activation)
+                        continue;
+                    const model_t *model =
+                        ENTITY(follow_target)->InternalEntity()->GetModel();
+                    // FIXME follow cart/point
+                    /*if (followcart && model &&
+                        (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
+                         lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
+                         lagexploit::pointarr[4]) &&
+                        (model == lagexploit::pointarr[0] ||
+                         model == lagexploit::pointarr[1] ||
+                         model == lagexploit::pointarr[2] ||
+                         model == lagexploit::pointarr[3] ||
+                         model == lagexploit::pointarr[4]))
+                        follow_target = entity->m_IDX;*/
                     if (entity->m_Type() != ENTITY_PLAYER)
                         continue;
-                if (entity == LOCAL_E) // Follow self lol
-                    continue;
-                if (entity->m_bEnemy())
-                    continue;
-                if (afk &&
-                    afkTicks[i].check(int(afktime))) // don't follow target that
-                                                     // was determined afk
-                    continue;
-                if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
-                    continue;
-                if (!entity->m_bAlivePlayer()) // Dont follow dead players
-                    continue;
-                if (follow_activation &&
-                    entity->m_flDistance() > (float) follow_activation)
-                    continue;
-                const model_t *model =
-                    ENTITY(follow_target)->InternalEntity()->GetModel();
-                // FIXME follow cart/point
-                /*if (followcart && model &&
-                    (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
-                     lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
-                     lagexploit::pointarr[4]) &&
-                    (model == lagexploit::pointarr[0] ||
-                     model == lagexploit::pointarr[1] ||
-                     model == lagexploit::pointarr[2] ||
-                     model == lagexploit::pointarr[3] ||
-                     model == lagexploit::pointarr[4]))
-                    follow_target = entity->m_IDX;*/
-                if (entity->m_Type() != ENTITY_PLAYER)
-                    continue;
-                // favor closer entitys
-                if (follow_target &&
-                    ENTITY(follow_target)->m_flDistance() <
-                        entity->m_flDistance()) // favor closer entitys
-                    continue;
-                // check if new target has a higher priority than current target
-                if (ClassPriority(ENTITY(follow_target)) >=
-                    ClassPriority(ENTITY(i)))
-                    continue;
-                bool found = false;
-                if (corneractivate)
-                {
-                    Vector indirectOrigin = VischeckCorner(
-                        LOCAL_E, entity, *follow_activation / 2,
-                        true); // get the corner location that the
-                    // future target is visible from
-                    std::pair<Vector, Vector> corners;
-                    if (!indirectOrigin.z &&
-                        entity->m_IDX == lastent) // if we couldn't find it, run
-                    // wallcheck instead
-                    {
-                        corners =
-                            VischeckWall(LOCAL_E, entity,
-                                         float(follow_activation) / 2, true);
-                        if (!corners.first.z || !corners.second.z)
-                            continue;
-                        // addCrumbs(LOCAL_E, corners.first);
-                        // addCrumbs(entity, corners.second);
-                        addCrumbPair(LOCAL_E, entity, corners);
-                        found = true;
-                    }
-                    if (indirectOrigin.z)
-                    {
-                        addCrumbs(entity, indirectOrigin);
-                        found = true;
-                    }
-                }
-                else
-                {
-                    if (VisCheckEntFromEnt(LOCAL_E, entity))
-                        found = true;
-                }
-                if (isNavBotCM && !found)
-                {
-                    if (!nav::navTo(entity->m_vecOrigin()))
+                    // favor closer entitys
+                    if (follow_target &&
+                        ENTITY(follow_target)->m_flDistance() <
+                            entity->m_flDistance()) // favor closer entitys
                         continue;
-                    navtimeout.update();
-                    found = true;
+                    // check if new target has a higher priority than current
+                    // target
+                    if (ClassPriority(ENTITY(follow_target)) >=
+                        ClassPriority(ENTITY(i)))
+                        continue;
+                    bool found = false;
+                    if (corneractivate)
+                    {
+                        Vector indirectOrigin = VischeckCorner(
+                            LOCAL_E, entity, *follow_activation / 2,
+                            true); // get the corner location that the
+                        // future target is visible from
+                        std::pair<Vector, Vector> corners;
+                        if (!indirectOrigin.z &&
+                            entity->m_IDX ==
+                                lastent) // if we couldn't find it, run
+                        // wallcheck instead
+                        {
+                            corners = VischeckWall(LOCAL_E, entity,
+                                                   float(follow_activation) / 2,
+                                                   true);
+                            if (!corners.first.z || !corners.second.z)
+                                continue;
+                            // addCrumbs(LOCAL_E, corners.first);
+                            // addCrumbs(entity, corners.second);
+                            addCrumbPair(LOCAL_E, entity, corners);
+                            found = true;
+                        }
+                        if (indirectOrigin.z)
+                        {
+                            addCrumbs(entity, indirectOrigin);
+                            found = true;
+                        }
+                    }
+                    else
+                    {
+                        if (VisCheckEntFromEnt(LOCAL_E, entity))
+                            found = true;
+                    }
+                    if (isNavBotCM && !found)
+                    {
+                        if (!nav::navTo(entity->m_vecOrigin()))
+                            continue;
+                        navtimeout.update();
+                        found = true;
+                    }
+                    if (!found)
+                        continue;
+                    // ooooo, a target
+                    follow_target = i;
+                    afkTicks[i].update(); // set afk time to 0
                 }
-                if (!found)
-                    continue;
-                // ooooo, a target
-                follow_target = i;
-                afkTicks[i].update(); // set afk time to 0
             }
-        }
         }
         lastent++;
         if (lastent > g_IEngine->GetMaxClients())

@@ -46,6 +46,7 @@
 #include "Misc.hpp"
 #include "Trigger.hpp"
 #include "KillSay.hpp"
+#include "DominateSay.hpp"
 #include "UberSpam.hpp"
 #include "Achievement.hpp"
 #endif

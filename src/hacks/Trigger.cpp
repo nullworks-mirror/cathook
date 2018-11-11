@@ -589,7 +589,7 @@ float EffectiveTargetingRange()
     // Pyros only have so much untill their flames hit
     else if (g_pLocalPlayer->weapon()->m_iClassID() ==
              CL_CLASS(CTFFlameThrower))
-        return 200.0f;
+        return 300.0f;
     // If user has set a max range, then use their setting,
     if (max_range)
         return *max_range;
