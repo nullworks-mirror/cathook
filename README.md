@@ -20,7 +20,6 @@ Right now cathook isn't in its greatest state, a lot of things may not work/cras
 
 cathook is a training software designed for Team Fortress 2 for Linux. cathook includes some joke features like
 
-* Backpack.TF API integration with playerlist GUI, allowing you to see players' inventory values
 * Ignore Hoovy
 * Encrypted chat
 * Chance to get manually VAC banned by Valve
