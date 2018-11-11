@@ -76,6 +76,8 @@ CachedEntity *ClosestSpy()
             if (IDX_BAD(idx))
                 continue;
             CachedEntity *pyro_weapon = ENTITY(idx);
+            if (CE_BAD(pyro_weapon))
+                continue;
             int widx = CE_INT(pyro_weapon, netvar.iItemDefinitionIndex);
             if (widx != 40 && widx != 1146 && widx != 656)
                 continue;
