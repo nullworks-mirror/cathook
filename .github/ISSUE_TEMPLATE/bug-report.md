@@ -22,7 +22,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Logs**
-Add logs from /tmp/ and  - if crashes - use symbolize-crash-log here.
+Add logs from /tmp/ and  - if it crashes - use symbolize-crash-log here.
 
 **Additional context**
 Add any other context about the problem here.
