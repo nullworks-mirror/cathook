@@ -98,7 +98,7 @@ void hack::ExecuteCommand(const std::string command)
     hack::command_stack().push(command);
 }
 
-void my_signal_handler(int signum)
+void critical_error_handler(int signum)
 {
     namespace st = boost::stacktrace;
     ::signal(signum, SIG_DFL);
@@ -110,7 +110,7 @@ void my_signal_handler(int signum)
     Dl_info info;
     if (!dladdr(reinterpret_cast<void *>(SetCanshootStatus), &info))
         return;
-    unsigned int baseaddr = (unsigned int) info.dli_fbase;
+    unsigned int baseaddr = (unsigned int) info.dli_fbase - 1;
 
     for (auto i : st::stacktrace())
     {
@@ -127,7 +127,7 @@ void my_signal_handler(int signum)
         {
             int status = -4;
             char *realname =
-                abi::__cxa_demangle(info2.dli_sname, 0, 0, &status);
+                abi::__cxa_demangle(info2.dli_sname, nullptr, nullptr, &status);
             if (status == 0)
             {
                 out << realname << std::endl;
@@ -137,7 +137,7 @@ void my_signal_handler(int signum)
                 out << info2.dli_sname << std::endl;
         }
         else
-            out << "Not found!" << std ::endl;
+            out << "No Symbol" << std ::endl;
     }
 
     out.close();
@@ -146,7 +146,7 @@ void my_signal_handler(int signum)
 
 void hack::Initialize()
 {
-    ::signal(SIGSEGV, &my_signal_handler);
+    ::signal(SIGSEGV, &critical_error_handler);
     //::signal(SIGABRT, &my_signal_handler);
     time_injected = time(nullptr);
 /*passwd *pwd   = getpwuid(getuid());
