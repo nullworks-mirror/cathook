@@ -828,6 +828,8 @@ Vector GetBuildingPosition(CachedEntity *ent)
         res.z += 8;
     if (classid == CL_CLASS(CObjectSentrygun))
     {
+        if (CE_BYTE(ent, netvar.m_bMiniBuilding))
+            res.z += 10.0f;
         switch (CE_INT(ent, netvar.iUpgradeLevel))
         {
         case 1:
