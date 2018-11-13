@@ -245,7 +245,18 @@ struct ent_info
     int clazz{};
     int idx{};
 };
-
+CNavArea *GetClosestToNav(Vector vec)
+{
+    CNavArea *target = nullptr;
+    float bestscr = FLT_MAX;
+    for (auto &i : nav::navfile->m_areas)
+        if (i.m_center.DistTo(vec) < bestscr)
+        {
+            target = &i;
+            bestscr = i.m_center.DistTo(vec);
+        }
+    return target;
+}
 void UpdateBestSpot()
 {
     if (!spot_timer.test_and_set(10000))
@@ -300,6 +311,9 @@ void UpdateBestSpot()
         if (must_be_enemy && !enemy)
             if ((!i.second || (i.second > score_max && !score_max)))
                 continue;
+        CNavArea *issafe = GetClosestToNav(estimated_pos);
+        if (!issafe || !nav::isSafe(issafe))
+            continue;
         // Vischecks.club
         if (!IsVectorVisible(pos1, estimated_pos, true) ||
             !IsVectorVisible(pos2, estimated_pos, true))
