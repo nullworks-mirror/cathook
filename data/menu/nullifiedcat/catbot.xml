@@ -67,7 +67,7 @@
             <AutoVariable width="fill" target="navbot.enable" label="Enable Navbot"/>
             <AutoVariable width="fill" target="navbot.scout-mode" label="Enable Scout Mode"/>
             <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/>
-            <AutoVariable width="fill" target="navbot.heavy-mode" label="Enable Heavy Mode"/>
+            <AutoVariable width="fill" target="navbot.heavy-mode" label="General Mode (only use if your class is not listed)"/>
             <AutoVariable width="fill" target="navbot.primary-only" label="Best Weapon only"/>
             <AutoVariable width="fill" target="navbot.jump-distance" label="Jump Distance"/>
             <AutoVariable width="fill" target="navbot.target-sentry" label="Try to target sentries"/>

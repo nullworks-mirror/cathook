@@ -767,7 +767,7 @@ static HookedFunction
                         if (!spy_mode ||
                             !hacks::shared::backtrack::isBacktrackEnabled)
                         {
-                            if (!nav::navTo(tar->m_vecOrigin(), 5, true, false))
+                            if (!nav::navTo(tar->m_vecOrigin(), 5, false, false))
                                 last_tar = -1;
                         }
                         else
@@ -784,7 +784,7 @@ static HookedFunction
                             }
                             if (sorted_ticks.empty())
                             {
-                                if (!nav::navTo(tar->m_vecOrigin(), 5, true,
+                                if (!nav::navTo(tar->m_vecOrigin(), 5, false,
                                                 false))
                                     last_tar = -1;
                                 return;
