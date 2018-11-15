@@ -16,6 +16,7 @@ static settings::Int port("irc.port", "8080");
 static settings::String commandandcontrol_channel("irc.cc.channel", "");
 static settings::String commandandcontrol_password("irc.cc.password", "");
 
+static settings::Bool botonly("irc.cc.command-bot-only", "true");
 static settings::Bool irc_party{ "irc.cc.party", "false" };
 static settings::Bool answer_steam{ "irc.cc.respondparty", "false" };
 static settings::Int party_cooldown{ "irc.cc.party-cooldown", "60" };
@@ -147,6 +148,8 @@ void cc_party(std::string &msg)
 }
 void cc_cmd(std::string &msg)
 {
+    if (!hacks::shared::catbot::catbotmode && botonly)
+        return;
     // Outdated cc_cmd. Return
     if (msg.find("$cmd") == msg.npos)
         return;
