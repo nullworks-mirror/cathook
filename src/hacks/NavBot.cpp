@@ -453,14 +453,16 @@ int GetClosestTeleporter()
     }
     return BestBuilding;
 }
+
 bool NavToSentry(int priority)
 {
+    static CNavArea *last_area = nullptr;
     CachedEntity *Sentry = nearestSentry();
     if (CE_BAD(Sentry))
         return false;
     CNavArea *area = FindNearestValidByDist(GetBuildingPosition(Sentry),
                                             1100.0f, 2000.0f, false);
-    if (!area)
+    if (!area || (area == last_area && !nav::ReadyForCommands))
         return false;
     if (nav::navTo(area->m_center, priority, true, false))
         return true;
@@ -471,6 +473,7 @@ int lastent = -1;
 
 bool NavToEnemy()
 {
+    static CNavArea *last_area = nullptr;
     if (*stay_near)
     {
         if (lastent != -1)
@@ -495,10 +498,11 @@ bool NavToEnemy()
                 else
                     area = FindNearestValidByDist(ent->m_vecOrigin(), 200, 1000,
                                                   true);
-                if (area)
+                if (area && (area == last_area && nav::ReadyForCommands))
                 {
                     nav::navTo(area->m_center, 1337, true, false);
                     lastgoal = area->m_center;
+                    last_area = area;
                     lastent  = ent->m_IDX;
                     return true;
                 }
@@ -527,11 +531,12 @@ bool NavToEnemy()
             else
                 area =
                     FindNearestValidByDist(ent->m_vecOrigin(), 200, 1000, true);
-            if (area)
+            if (area  && (area == last_area && nav::ReadyForCommands))
             {
                 nav::navTo(area->m_center, 1337, true, false);
                 lastgoal = area->m_center;
                 lastent  = ent->m_IDX;
+                last_area = area;
                 return true;
             }
             else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
@@ -799,7 +804,7 @@ static HookedFunction
                                 });
 
                             if (!sorted_ticks[5].tickcount ||
-                                nav::navTo(sorted_ticks[5].entorigin, false,
+                                !nav::navTo(sorted_ticks[5].entorigin, false,
                                            false))
                                 if (!nav::navTo(tar->m_vecOrigin(), 5, true,
                                                 false))

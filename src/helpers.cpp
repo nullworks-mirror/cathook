@@ -877,7 +877,7 @@ float DistToSqr(CachedEntity *entity)
 
 void Patch(void *address, void *patch, size_t length)
 {
-    void *page = (void *) ((uintptr_t) address & ~0xFFF);
+    void *page = (void *) ((uint64_t) address & ~0xFFF);
     logging::Info("mprotect: %d",
                   mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC));
     memcpy(address, patch, length);
@@ -932,9 +932,16 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
         rspeed = 1980.0f;
         break;
     }
+    case CL_CLASS(CTFParticleCannon):
+    case CL_CLASS(CTFRocketLauncher_AirStrike):
     case CL_CLASS(CTFRocketLauncher):
     {
         rspeed = 1100.0f;
+        break;
+    }
+    case CL_CLASS(CTFCannon):
+    {
+        rspeed = 1400.0f;
         break;
     }
     case CL_CLASS(CTFGrenadeLauncher):
@@ -953,7 +960,7 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     }
     case CL_CLASS(CTFPipebombLauncher):
     {
-        float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+        float chargebegin = *((float *) ((uint64_t) RAW_ENT(LOCAL_W) + 3152));
         float chargetime  = g_GlobalVars->curtime - chargebegin;
         rspeed =
             (fminf(fmaxf(chargetime / 4.0f, 0.0f), 1.0f) * 1500.0f) + 900.0f;
@@ -972,6 +979,7 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
                          0.5);
         break;
     }
+    case CL_CLASS(CTFBat_Giftwrap):
     case CL_CLASS(CTFBat_Wood):
     {
         rspeed = 3000.0f;
