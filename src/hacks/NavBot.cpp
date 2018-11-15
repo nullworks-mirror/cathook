@@ -693,7 +693,9 @@ static HookedFunction
             {
                 if (nav::curr_priority == 1337)
                     nav::clearInstructions();
-                nav::navTo(med->m_vecOrigin(), 7, true, true);
+                Vector tonav = med->m_vecOrigin();
+                tonav.z += 15.0f;
+                nav::navTo(tonav, 7, true, true);
             }
         }
         if (HasLowAmmo() && ammo_health_cooldown.test_and_set(5000))
@@ -703,7 +705,9 @@ static HookedFunction
             {
                 if (nav::curr_priority == 1337)
                     nav::clearInstructions();
-                nav::navTo(ammo->m_vecOrigin(), 6, true, true);
+                Vector tonav = ammo->m_vecOrigin();
+                tonav.z += 15.0f;
+                nav::navTo(tonav, 6, true, true);
             }
         }
         if ((!HasLowHealth() && nav::curr_priority == 7) ||
