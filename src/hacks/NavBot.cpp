@@ -110,11 +110,23 @@ CachedEntity *nearestAmmo()
     return bestent;
 }
 int last_tar = -1;
+CNavArea *GetClosestToNav(Vector vec)
+{
+    CNavArea *target = nullptr;
+    float bestscr = FLT_MAX;
+    for (auto &i : nav::navfile->m_areas)
+        if (i.m_center.DistTo(vec) < bestscr)
+        {
+            target = &i;
+            bestscr = i.m_center.DistTo(vec);
+        }
+    return target;
+}
 CachedEntity *NearestEnemy()
 {
     if (last_tar != -1 && CE_GOOD(ENTITY(last_tar)) &&
         ENTITY(last_tar)->m_bAlivePlayer() &&
-        ENTITY(last_tar)->m_iTeam() != LOCAL_E->m_iTeam())
+        ENTITY(last_tar)->m_iTeam() != LOCAL_E->m_iTeam() && nav::isSafe(GetClosestToNav(ENTITY(last_tar)->m_vecOrigin())))
         return ENTITY(last_tar);
     float bestscr         = FLT_MAX;
     CachedEntity *bestent = nullptr;
@@ -245,18 +257,7 @@ struct ent_info
     int clazz{};
     int idx{};
 };
-CNavArea *GetClosestToNav(Vector vec)
-{
-    CNavArea *target = nullptr;
-    float bestscr = FLT_MAX;
-    for (auto &i : nav::navfile->m_areas)
-        if (i.m_center.DistTo(vec) < bestscr)
-        {
-            target = &i;
-            bestscr = i.m_center.DistTo(vec);
-        }
-    return target;
-}
+
 void UpdateBestSpot()
 {
     if (!spot_timer.test_and_set(10000))
@@ -737,8 +738,12 @@ static HookedFunction
         }
         if (*stay_near && nav_enemy_cd.test_and_set(1000) && !HasLowAmmo() &&
             !HasLowHealth())
+        {
             if (NavToEnemy())
                 return;
+            else
+                NavToSniperSpot(5);
+        }
         if (enable)
         {
             if (!nav::ReadyForCommands && !spy_mode && !heavy_mode &&
