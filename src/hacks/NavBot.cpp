@@ -541,10 +541,7 @@ bool NavToEnemy()
                 if (lastgoal.x > 1.0f || lastgoal.x < -1.0f)
                 {
                     if (nav::ReadyForCommands)
-                    {
                         nav::navTo(lastgoal, 1337, true, false);
-                        logging::Info("Pathing xdddddd");
-                    }
                     return true;
                 }
             }
