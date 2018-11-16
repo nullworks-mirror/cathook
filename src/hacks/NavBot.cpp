@@ -21,6 +21,31 @@ static settings::Int jump_distance{ "navbot.jump-distance", "500" };
 static settings::Bool target_sentry{ "navbot.target-sentry", "true" };
 static settings::Bool stay_near{ "navbot.stay-near", "false" };
 static settings::Bool take_tele{ "navbot.take-teleporters", "true" };
+void rvarCallback(settings::VariableBase<bool> &var, bool after)
+{
+    if (!after)
+        return;
+    if (&var == &spy_mode)
+    {
+        scout_mode = false;
+        heavy_mode = false;
+    }
+    else if (&var == &heavy_mode)
+    {
+        spy_mode = false;
+        scout_mode = false;
+    }
+    else if (&var == &scout_mode)
+    {
+        spy_mode = false;
+        heavy_mode = false;
+    }
+}
+static InitRoutine init([]() {
+    spy_mode.installChangeCallback(rvarCallback);
+    scout_mode.installChangeCallback(rvarCallback);
+    heavy_mode.installChangeCallback(rvarCallback);
+});
 bool HasLowAmmo()
 {
     int *weapon_list =
@@ -160,11 +185,40 @@ CachedEntity *NearestEnemy()
     return bestent;
 }
 
+bool IsGood(CachedEntity *ent, Vector vec, float mindist, float maxdist, bool nearest)
+{
+    bool entchecks = false;
+    if (ent)
+        entchecks = true;
+    if (!nav::isSafe(GetClosestToNav(vec)))
+        return false;
+    Vector tmp_vec = vec;
+    tmp_vec.z += 48.0f;
+    if (entchecks)
+    {
+        Vector ent_orig = ent->m_vecOrigin();
+        float min_tol = mindist;
+        float max_tol = maxdist;
+        if (nearest)
+            max_tol /= 2;
+        else
+            min_tol /= 2;
+        ent_orig += 48.0f;
+        if (ent_orig.DistTo(tmp_vec) < min_tol || ent_orig.DistTo(vec) > max_tol)
+            return false;
+        if (!IsVectorVisible(tmp_vec, ent_orig, true))
+            return false;
+    }
+    return true;
+}
+
 CNavArea *FindNearestValidByDist(Vector vec, float mindist, float maxdist,
                                  bool nearest)
 {
     float best_scr      = nearest ? FLT_MAX : 0.0f;
     CNavArea *best_area = nullptr;
+    Vector tmp_vec = vec;
+    tmp_vec.z += 48.0f;
     for (auto &i : nav::navfile->m_areas)
     {
         float score = i.m_center.DistTo(vec);
@@ -172,7 +226,7 @@ CNavArea *FindNearestValidByDist(Vector vec, float mindist, float maxdist,
             continue;
         Vector tovischeck = i.m_center;
         tovischeck.z += 48.0f;
-        if (!IsVectorVisible(vec, tovischeck, false))
+        if (!IsVectorVisible(tmp_vec, tovischeck, true))
             continue;
         if (!nav::isSafe(&i))
             continue;
@@ -486,21 +540,32 @@ bool NavToEnemy()
                 lastent = -1;
                 if (lastgoal.x > 1.0f || lastgoal.x < -1.0f)
                 {
-                    nav::navTo(lastgoal, 1337, true, false);
+                    if (nav::ReadyForCommands)
+                    {
+                        nav::navTo(lastgoal, 1337, true, false);
+                        logging::Info("Pathing xdddddd");
+                    }
                     return true;
                 }
             }
             else
             {
                 CNavArea *area = nullptr;
-                if (!*heavy_mode && !*scout_mode)
-                    area = FindNearestValidByDist(ent->m_vecOrigin(), 300, 6000,
-                                                  false);
-                else
-                    area = FindNearestValidByDist(ent->m_vecOrigin(), 200, 1000,
-                                                  true);
-                if (area && (area == last_area && nav::ReadyForCommands))
+                float mindist = 300.0f;
+                float maxdist = 6000.0f;
+                bool nearest = false;
+                if (*heavy_mode || *scout_mode)
                 {
+                    mindist = 200.0f;
+                    maxdist = 1000.0f;
+                    nearest = true;
+                }
+                area = FindNearestValidByDist(ent->m_vecOrigin(), mindist, maxdist,
+                                              nearest);
+                if (area)
+                {
+                    if ((area == last_area || (last_area &&  IsGood(ent, last_area->m_center, mindist, maxdist, nearest))) && !nav::ReadyForCommands)
+                        return true;
                     nav::navTo(area->m_center, 1337, true, false);
                     lastgoal = area->m_center;
                     last_area = area;
@@ -510,7 +575,8 @@ bool NavToEnemy()
                 else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
                          lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
                 {
-                    nav::navTo(lastgoal, 1337, true, false);
+                    if (nav::ReadyForCommands)
+                        nav::navTo(lastgoal, 1337, true, false);
                     lastgoal = { 0, 0, 0 };
                     return true;
                 }
@@ -526,14 +592,21 @@ bool NavToEnemy()
         if (CE_GOOD(ent))
         {
             CNavArea *area = nullptr;
-            if (!*heavy_mode && !*scout_mode)
-                area = FindNearestValidByDist(ent->m_vecOrigin(), 200, 2000,
-                                              false);
-            else
-                area =
-                    FindNearestValidByDist(ent->m_vecOrigin(), 200, 1000, true);
-            if (area  && (area == last_area && nav::ReadyForCommands))
+            float mindist = 300.0f;
+            float maxdist = 6000.0f;
+            bool nearest = false;
+            if (*heavy_mode || *scout_mode)
             {
+                mindist = 200.0f;
+                maxdist = 1000.0f;
+                nearest = true;
+            }
+            area = FindNearestValidByDist(ent->m_vecOrigin(), mindist, maxdist,
+                                          nearest);
+            if (area)
+            {
+                if ((area == last_area || (last_area && IsGood(ent, last_area->m_center, mindist, maxdist, nearest))) && !nav::ReadyForCommands)
+                    return true;
                 nav::navTo(area->m_center, 1337, true, false);
                 lastgoal = area->m_center;
                 lastent  = ent->m_IDX;
@@ -543,7 +616,8 @@ bool NavToEnemy()
             else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
                      lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
             {
-                nav::navTo(lastgoal, 1337, true, false);
+                if (nav::ReadyForCommands)
+                    nav::navTo(lastgoal, 1337, true, false);
                 lastgoal = { 0, 0, 0 };
                 return true;
             }
@@ -556,7 +630,8 @@ bool NavToEnemy()
         else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
                  lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
         {
-            nav::navTo(lastgoal, 1337, true, false);
+            if (nav::ReadyForCommands)
+                nav::navTo(lastgoal, 1337, true, false);
             lastgoal = { 0, 0, 0 };
             return true;
         }
@@ -738,12 +813,12 @@ static HookedFunction
                     }
             }
         }
-        if (*stay_near && nav_enemy_cd.test_and_set(1000) && !HasLowAmmo() &&
+        if (*stay_near && nav_enemy_cd.test_and_set(100) && !HasLowAmmo() &&
             !HasLowHealth())
         {
             if (NavToEnemy())
                 return;
-            else
+            else if (nav::ReadyForCommands)
                 NavToSniperSpot(5);
         }
         if (enable)
@@ -778,7 +853,7 @@ static HookedFunction
                         if (!NavToSniperSpot(4))
                             waittime = 1;
                     }
-                    if (CE_GOOD(tar))
+                    if (CE_GOOD(tar) && *spy_mode)
                     {
                         if (!spy_mode ||
                             !hacks::shared::backtrack::isBacktrackEnabled)

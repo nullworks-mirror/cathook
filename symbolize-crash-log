@@ -6,7 +6,7 @@ unknown=0
 
 while read p; do
     out=$(addr2line $(echo $p | cut -f 1 -d " ") -pCe ./build/bin/libcathook.so)
-    if [ $out != "??:0" ] && [ $out != "??:?" ]; then
+    if [ "$out" != "??:0" ] && [ "$out" != "??:?" ]; then
         if [ $unknown -gt 0 ]; then
             echo "${unknown}x Unknown"
             unknown=0
