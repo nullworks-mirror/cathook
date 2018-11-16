@@ -222,7 +222,7 @@ public:
         else
             return 2;
     }
-    static void addTime(CNavArea *begin, CNavArea *end, Timer &time)
+    static bool addTime(CNavArea *begin, CNavArea *end, Timer &time)
     {
         // Check if connection is already known
         if (ignores.find({ begin, end }) == ignores.end())
@@ -239,9 +239,11 @@ public:
             connection.status = explicit_ignored;
             connection.ignoreTimeout.update();
             logging::Info("Ignored Connection %i-%i", begin->m_id, end->m_id);
+            return true;
         }
+        return false;
     }
-    static void addTime(Vector &begin, Vector &end, Timer &time)
+    static bool addTime(Vector &begin, Vector &end, Timer &time)
     {
         // todo: check nullptr
         CNavArea *begin_area = getNavArea(begin);
@@ -251,9 +253,9 @@ public:
             // We can't reach the destination vector. Destination vector might
             // be out of bounds/reach.
             crumbs.clear();
-            return;
+            return true;
         }
-        addTime(begin_area, end_area, time);
+        return addTime(begin_area, end_area, time);
     }
     static void reset()
     {
@@ -541,10 +543,14 @@ bool navTo(Vector destination, int priority, bool should_repath,
         return false;
     std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, destination);
     if (path.empty())
+    {
+        crumbs.clear();
         return false;
+    }
     if (!crumbs.empty())
     {
-        ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
+        if (ignoremanager::addTime(last_area, crumbs.at(0), inactivity))
+            ResetPather();
     }
     last_area = path.at(0);
     if (!nav_to_local)
