@@ -574,6 +574,8 @@ bool NavToSniperSpot(int priority)
     Vector random_spot{};
     if (!sniper_spots.size() && !preferred_sniper_spots.size())
         return false;
+    if (!nav::ReadyForCommands)
+        return false;
     bool use_preferred = !preferred_sniper_spots.empty();
     auto snip_spot     = use_preferred ? preferred_sniper_spots : sniper_spots;
     bool toret         = false;
