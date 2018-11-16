@@ -7,14 +7,18 @@
 
 ## Risk of VAC detection
 
-The software Might be VAC detected. Only use it on accounts you won't regret getting VAC banned.
+The software could be detected by VAC in the future. Only use it on accounts you won't regret getting VAC banned.
 
 ## Community
-You can chat with other cathook users in [my official telegram group](https://t.me/nullifiedcat).
+You can chat with other cathook users in [our official telegram group](https://t.me/nullifiedcat).
 
-## Important
+## Reporting Issues
 
-Right now cathook isn't in its greatest state, a lot of things may not work/crash the game, please open issues on github using [this page](https://github.com/nullworks/cathook/issues).
+If some things doesn't work as expected, please open issues on GitHub using [this page](https://github.com/nullworks/cathook/issues).
+
+## Contributing
+
+Do you want to submit code to cathook? Please read `CONTRIBUTING.md` for a short introduction.
 
 ## Overview
 
