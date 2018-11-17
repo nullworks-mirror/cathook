@@ -529,7 +529,7 @@ int lastent = -1;
 bool NavToEnemy()
 {
     static CNavArea *last_area = nullptr;
-    if (*stay_near)
+    if (*stay_near || *heavy_mode || *scout_mode)
     {
         if (lastent != -1)
         {
@@ -542,6 +542,7 @@ bool NavToEnemy()
                 {
                     if (nav::ReadyForCommands)
                         nav::navTo(lastgoal, 1337, true, false);
+                    lastgoal = {};
                     return true;
                 }
             }
@@ -640,13 +641,15 @@ bool NavToEnemy()
     }
     return false;
 }
-
+static Timer nav_to_spot{};
 bool NavToSniperSpot(int priority)
 {
     Vector random_spot{};
     if (!sniper_spots.size() && !preferred_sniper_spots.size())
         return false;
     if (!nav::ReadyForCommands)
+        return false;
+    if (!nav_to_spot.test_and_set(100))
         return false;
     bool use_preferred = !preferred_sniper_spots.empty();
     auto snip_spot     = use_preferred ? preferred_sniper_spots : sniper_spots;
@@ -693,7 +696,10 @@ bool NavToSniperSpot(int priority)
             int rng     = rand() % snip_spot.size();
             random_spot = snip_spot.at(rng);
             if (random_spot.z)
+            {
+                nav_to_spot.update();
                 return nav::navTo(random_spot, false, true, priority);
+            }
             return false;
         }
         random_spot = snip_spot.at(best_spot);
@@ -711,7 +717,10 @@ bool NavToSniperSpot(int priority)
         int rng     = rand() % snip_spot.size();
         random_spot = snip_spot.at(rng);
         if (random_spot.z)
+        {
+            nav_to_spot.update();
             toret = nav::navTo(random_spot, priority, true, false);
+        }
     }
     return toret;
 }
@@ -810,7 +819,7 @@ static HookedFunction
                     }
             }
         }
-        if (*stay_near && nav_enemy_cd.test_and_set(100) && !HasLowAmmo() &&
+        if ((*stay_near || *heavy_mode || *scout_mode) && nav_enemy_cd.test_and_set(100) && !HasLowAmmo() &&
             !HasLowHealth())
         {
             if (NavToEnemy())

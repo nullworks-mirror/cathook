@@ -79,16 +79,16 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     if (type == 5)
         if (buf.GetNumBytesLeft() > 35)
         {
-            std::string message_name{};
+            char message_name[buf.GetNumBytesLeft()]{};
             for (int i = 0; i < buf.GetNumBytesLeft(); i++)
             {
                 int byte = buf.ReadByte();
-                message_name.push_back(byte);
+                message_name[i] = byte;
             }
-            if (message_name.find("#TF_Autobalance_TeamChangePending") !=
-                std::string::npos)
+            if (!strcmp(message_name, "TeamChangePending"))
                 logging::Info("test, %d %d", int(message_name[0]),
                               (CE_GOOD(LOCAL_E) ? LOCAL_E->m_IDX : -1));
+            buf.Seek(0);
         }
     if (type == 4)
     {
