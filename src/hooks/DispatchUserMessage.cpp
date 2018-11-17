@@ -79,13 +79,14 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     if (type == 5)
         if (buf.GetNumBytesLeft() > 35)
         {
-            char message_name[buf.GetNumBytesLeft()]{};
+            std::string message_name;
             for (int i = 0; i < buf.GetNumBytesLeft(); i++)
             {
                 int byte = buf.ReadByte();
-                message_name[i] = byte;
+                message_name.push_back(byte);
             }
-            if (!strcmp(message_name, "TeamChangePending"))
+            logging::Info("%s", message_name.c_str());
+            if (message_name.find("TeamChangePending") != message_name.npos)
                 logging::Info("test, %d %d", int(message_name[0]),
                               (CE_GOOD(LOCAL_E) ? LOCAL_E->m_IDX : -1));
             buf.Seek(0);

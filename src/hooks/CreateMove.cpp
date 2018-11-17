@@ -252,12 +252,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         // if (cl_interpolate->GetInt() != 0) cl_interpolate->SetValue(0);
         firstcall = true;
     }
-    else if (!firstcall && !*nolerp)
+    else if (firstcall)
     {
         sv_client_min_interp_ratio->SetValue(min_interp);
         cl_interp->SetValue(interp_f);
         cl_interp_ratio->SetValue(ratio);
-        firstcall = true;
+        firstcall = false;
     }
 
     if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity))
