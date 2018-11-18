@@ -16,6 +16,7 @@ static settings::Bool dispatch_log{ "debug.log-dispatch-user-msg", "false" };
 static settings::Bool chat_filter_enable{ "chat.censor.enable", "false" };
 static settings::Bool identify{ "chat.identify", "false" };
 static settings::Bool answerIdentify{ "chat.identify.answer", "false" };
+static settings::Bool anti_votekick{ "cat-bot.anti-autobalance", "false" };
 
 static bool retrun = false;
 static Timer sendmsg{};
@@ -76,19 +77,15 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     }
     int loop_index, s, i, j;
     char *data, c;
-    if (type == 5)
+    if (type == 5 && *anti_votekick)
         if (buf.GetNumBytesLeft() > 35)
         {
             std::string message_name;
-            for (int i = 0; i < buf.GetNumBytesLeft(); i++)
-            {
-                int byte = buf.ReadByte();
-                message_name.push_back(byte);
-            }
+            while (buf.GetNumBytesLeft())
+                message_name.push_back(buf.ReadByte());
             logging::Info("%s", message_name.c_str());
-            if (message_name.find("TeamChangePending") != message_name.npos)
-                logging::Info("test, %d %d", int(message_name[0]),
-                              (CE_GOOD(LOCAL_E) ? LOCAL_E->m_IDX : -1));
+            if (message_name.find("TeamChangeP") != message_name.npos && CE_GOOD(LOCAL_E))
+                g_IEngine->ClientCmd_Unrestricted("cat_disconnect;wait 100;cat_mm_join");
             buf.Seek(0);
         }
     if (type == 4)

@@ -514,7 +514,13 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                               cmd->viewangles.y);
                 cmd->forwardmove = cos(yaw) * speed;
                 cmd->sidemove    = sin(yaw) * speed;
-                if (cmd->viewangles.x >= 90 && cmd->viewangles.x <= 270)
+
+                float angles = fmod(cmd->viewangles.x + 180.0f, 360.0f);
+                if (angles < 0)
+                    angles += 180.0f;
+                angles -= 180.0f;
+                angles *=-1;
+                if (angles >= 90 && angles <= 270)
                     cmd->forwardmove = -cmd->forwardmove;
             }
 

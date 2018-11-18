@@ -24,7 +24,11 @@ CatCommand join_spam("join_spam", "Spam joins server for X seconds",
                          joinspam.update();
                          spamdur = id;
                      });
-
+CatCommand join("mm_join", "Join mm Matcgh", [](){
+    auto gc = re::CTFGCClientSystem::GTFGCClientSystem();
+    if (gc)
+        gc->JoinMMMatch();
+});
 void *pure_orig  = nullptr;
 void **pure_addr = nullptr;
 
