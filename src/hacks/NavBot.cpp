@@ -202,7 +202,7 @@ bool IsGood(CachedEntity *ent, Vector vec, float mindist, float maxdist, bool ne
         if (nearest)
             max_tol /= 2;
         else
-            min_tol /= 2;
+            min_tol *= 2;
         ent_orig += 48.0f;
         if (ent_orig.DistTo(tmp_vec) < min_tol || ent_orig.DistTo(vec) > max_tol)
             return false;
@@ -528,6 +528,7 @@ int lastent = -1;
 
 bool NavToEnemy()
 {
+    bool toret = true;
     static CNavArea *last_area = nullptr;
     if (*stay_near || *heavy_mode || *scout_mode)
     {
@@ -540,17 +541,17 @@ bool NavToEnemy()
                 lastent = -1;
                 if (lastgoal.x > 1.0f || lastgoal.x < -1.0f)
                 {
-                    if (nav::ReadyForCommands)
-                        nav::navTo(lastgoal, 1337, true, false);
+                    if (nav::ReadyForCommands || nav::curr_priority != 1337)
+                        toret = nav::navTo(lastgoal, 1337, true, false);
                     lastgoal = {};
-                    return true;
+                    return toret;
                 }
             }
             else
             {
                 CNavArea *area = nullptr;
                 float mindist = 300.0f;
-                float maxdist = 6000.0f;
+                float maxdist = 3000.0f;
                 bool nearest = false;
                 if (*heavy_mode || *scout_mode)
                 {
@@ -562,21 +563,21 @@ bool NavToEnemy()
                                               nearest);
                 if (area)
                 {
-                    if ((area == last_area || (last_area &&  IsGood(ent, last_area->m_center, mindist, maxdist, nearest))) && !nav::ReadyForCommands)
+                    if ((area == last_area || (last_area && IsGood(ent, last_area->m_center, mindist, maxdist, nearest))) && !nav::ReadyForCommands)
                         return true;
-                    nav::navTo(area->m_center, 1337, true, false);
+                    toret = nav::navTo(area->m_center, 1337, true, false);
                     lastgoal = area->m_center;
                     last_area = area;
                     lastent  = ent->m_IDX;
-                    return true;
+                    return toret;
                 }
                 else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
                          lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
                 {
-                    if (nav::ReadyForCommands)
-                        nav::navTo(lastgoal, 1337, true, false);
+                    if (nav::ReadyForCommands || nav::curr_priority != 1337)
+                        toret = nav::navTo(lastgoal, 1337, true, false);
                     lastgoal = { 0, 0, 0 };
-                    return true;
+                    return toret;
                 }
                 else
                 {
@@ -590,8 +591,8 @@ bool NavToEnemy()
         if (CE_GOOD(ent))
         {
             CNavArea *area = nullptr;
-            float mindist = 300.0f;
-            float maxdist = 6000.0f;
+            float mindist = 200.0f;
+            float maxdist = 3000.0f;
             bool nearest = false;
             if (*heavy_mode || *scout_mode)
             {
@@ -605,19 +606,19 @@ bool NavToEnemy()
             {
                 if ((area == last_area || (last_area && IsGood(ent, last_area->m_center, mindist, maxdist, nearest))) && !nav::ReadyForCommands)
                     return true;
-                nav::navTo(area->m_center, 1337, true, false);
+                toret = nav::navTo(area->m_center, 1337, true, false);
                 lastgoal = area->m_center;
                 lastent  = ent->m_IDX;
                 last_area = area;
-                return true;
+                return toret;
             }
             else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
                      lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
             {
-                if (nav::ReadyForCommands)
-                    nav::navTo(lastgoal, 1337, true, false);
+                if (nav::ReadyForCommands || nav::curr_priority != 1337)
+                    toret = nav::navTo(lastgoal, 1337, true, false);
                 lastgoal = { 0, 0, 0 };
-                return true;
+                return toret;
             }
             else
             {
@@ -628,10 +629,10 @@ bool NavToEnemy()
         else if ((lastgoal.x > 1.0f || lastgoal.x < -1.0f) &&
                  lastgoal.DistTo(LOCAL_E->m_vecOrigin()) > 200.0f)
         {
-            if (nav::ReadyForCommands)
-                nav::navTo(lastgoal, 1337, true, false);
+            if (nav::ReadyForCommands || nav::curr_priority != 1337)
+                toret = nav::navTo(lastgoal, 1337, true, false);
             lastgoal = { 0, 0, 0 };
-            return true;
+            return toret;
         }
         else
         {
