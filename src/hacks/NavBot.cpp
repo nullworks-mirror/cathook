@@ -134,6 +134,7 @@ CachedEntity *nearestAmmo()
     }
     return bestent;
 }
+
 int last_tar = -1;
 CNavArea *GetClosestToNav(Vector vec)
 {
@@ -147,6 +148,7 @@ CNavArea *GetClosestToNav(Vector vec)
         }
     return target;
 }
+
 CachedEntity *NearestEnemy()
 {
     if (last_tar != -1 && CE_GOOD(ENTITY(last_tar)) &&
