@@ -39,7 +39,7 @@ void BeginConVars()
                             "YOU INJECT CATHOOK\n";
         }
     }
-    if (!std::ifstream("tf/cfg/cat_autoexec.cfg"))
+    if (!std::ifstream("tf/cfg/cat_matchexec.cfg"))
     {
         std::ofstream cfg_autoexec("tf/cfg/cat_matchexec.cfg",
                                    std::ios::out | std::ios::trunc);
