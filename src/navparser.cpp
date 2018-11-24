@@ -14,7 +14,7 @@ namespace nav
 
 static settings::Bool enabled{ "misc.pathing", "true" };
 // Whether or not to run vischecks at pathtime
-static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "false" };
+static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "true" };
 static settings::Bool draw{ "misc.pathing.draw", "false" };
 
 static std::vector<Vector> crumbs;

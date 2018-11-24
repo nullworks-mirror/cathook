@@ -8,9 +8,9 @@ namespace task
 {
 enum task : u_int8_t
 {
-    sniper_spot = 0,
-    stay_near = 0,
-    none
+    none = 0,
+    sniper_spot,
+    stay_near,
 };
 }
 } // namespace hacks::tf2::NavBot
