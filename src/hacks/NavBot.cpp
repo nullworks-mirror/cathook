@@ -20,8 +20,8 @@ static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
 static Timer wait_until_path{};
 // What is the bot currently doing
 static task::task current_task;
-constexpr std::pair<float, float> MIN_MAX_DIST_OTHER(200, 500);
-constexpr std::pair<float, float> MIN_MAX_DIST_SNIPER(1000, 4000);
+constexpr bot_class_config DIST_OTHER{ 100.0f, 200.0f, 300.0f };
+constexpr bot_class_config DIST_SNIPER{ 1000.0f, 1500.0f, 3000.0f };
 
 static void CreateMove()
 {
@@ -96,13 +96,13 @@ static bool navToSniperSpot()
 namespace stayNearHelpers
 {
 // Check if the location is close enough/far enough and has a visual to target
-static bool isValidNearPosition(Vector vec, Vector target, float min_distance,
-                                float max_distance)
+static bool isValidNearPosition(Vector vec, Vector target,
+                                const bot_class_config &config)
 {
     vec.z += 20;
     target.z += 20;
     float dist = vec.DistTo(target);
-    if (dist < min_distance || dist > max_distance)
+    if (dist < config.min || dist > config.max)
         return false;
     if (!IsVectorVisible(vec, target, true))
         return false;
@@ -110,46 +110,51 @@ static bool isValidNearPosition(Vector vec, Vector target, float min_distance,
 }
 
 // Returns true if began pathing
-static bool stayNearPlayer(CachedEntity *ent, float min_distance,
-                           float max_distance, CNavArea **result)
+static bool stayNearPlayer(CachedEntity *ent, const bot_class_config &config,
+                           CNavArea **result)
 {
-    // Find good near positions
-    std::vector<CNavArea *> checked_areas;
+    std::vector<CNavArea *> areas;
     for (auto &area : nav::navfile->m_areas)
     {
-        if (!nav::isSafe(&area))
+        if (!isValidNearPosition(area.m_center, ent->m_vecOrigin(), config))
             continue;
-        if (isValidNearPosition(area.m_center, ent->m_vecOrigin(), min_distance,
-                                max_distance))
-            checked_areas.push_back(&area);
+        areas.push_back(&area);
     }
-    if (checked_areas.empty())
+    if (areas.empty())
         return false;
-    unsigned int size = 5;
-    if (checked_areas.size() < size)
-        size = checked_areas.size() / 2;
-    std::partial_sort(checked_areas.begin(), checked_areas.begin() + size,
-                      checked_areas.end(), [](CNavArea *a, CNavArea *b) {
-                          return g_pLocalPlayer->v_Origin.DistTo(a->m_center) <
-                                 g_pLocalPlayer->v_Origin.DistTo(b->m_center);
-                      });
+    const Vector ent_orig = ent->m_vecOrigin();
+    std::sort(areas.begin(), areas.end(), [&](CNavArea *a, CNavArea *b) {
+        return std::abs(a->m_center.DistTo(ent_orig) - config.preferred) <
+               std::abs(b->m_center.DistTo(ent_orig) - config.preferred);
+    });
+
+    size_t size = 20;
+    if (areas.size() < size)
+        size = areas.size();
+    std::vector<CNavArea *> preferred_areas(areas.begin(),
+                                            areas.begin() + size / 2);
+    std::sort(preferred_areas.begin(), preferred_areas.end(),
+              [](CNavArea *a, CNavArea *b) {
+                  return a->m_center.DistTo(g_pLocalPlayer->v_Origin) <
+                         b->m_center.DistTo(g_pLocalPlayer->v_Origin);
+              });
 
     // Try to path up to 10 times to different areas
-    for (unsigned int attempts = 0; attempts < (size * 2); attempts++)
+    for (size_t attempts = 0; attempts < size / 2; attempts++)
     {
-        std::vector<CNavArea *>::iterator i;
-        if (attempts >= size)
+        std::vector<CNavArea *>::iterator it;
+        if (attempts <= size / 4)
         {
-            i = select_randomly(checked_areas.begin(), checked_areas.end());
+            it = preferred_areas.begin() + attempts;
         }
         else
         {
-            i = checked_areas.begin() + attempts;
+            it = select_randomly(areas.begin(), areas.end());
         }
 
-        if (nav::navTo((*i.base())->m_center, 7, true, false))
+        if (nav::navTo((*it.base())->m_center, 7, true, false))
         {
-            *result      = *i.base();
+            *result      = *it.base();
             current_task = task::stay_near;
             return true;
         }
@@ -158,7 +163,7 @@ static bool stayNearPlayer(CachedEntity *ent, float min_distance,
 }
 
 // Loop thru all players and find one we can path to
-static bool stayNearPlayers(float min_distance, float max_distance,
+static bool stayNearPlayers(const bot_class_config &config,
                             CachedEntity **result_ent, CNavArea **result_area)
 {
     logging::Info("Stay near players called!");
@@ -167,7 +172,7 @@ static bool stayNearPlayers(float min_distance, float max_distance,
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy())
             continue;
-        if (stayNearPlayer(ent, min_distance, max_distance, result_area))
+        if (stayNearPlayer(ent, config, result_area))
         {
             *result_ent = ent;
             return true;
@@ -184,14 +189,14 @@ static bool stayNear()
     static CNavArea *result         = nullptr;
 
     // What distances do we have to use?
-    const std::pair<float, float> *minMaxDist{};
+    const bot_class_config *config;
     if (heavy_mode)
     {
-        minMaxDist = &MIN_MAX_DIST_OTHER;
+        config = &DIST_OTHER;
     }
     else
     {
-        minMaxDist = &MIN_MAX_DIST_SNIPER;
+        config = &DIST_SNIPER;
     }
 
     if (current_task == task::stay_near)
@@ -200,21 +205,16 @@ static bool stayNear()
         if (CE_BAD(lastTarget))
         {
             current_task = task::none;
-            logging::Info("Player gone bad!");
-            // Don't cancel if target gone CE_BAD. We might still find him.
         }
         else if (!lastTarget->m_bAlivePlayer() || !lastTarget->m_bEnemy())
         {
             nav::clearInstructions();
             current_task = task::none;
-            logging::Info("Player gone bad!");
         }
         // Check if we still have LOS and are close enough/far enough
         else if (!stayNearHelpers::isValidNearPosition(
-                     result->m_center, lastTarget->m_vecOrigin(),
-                     minMaxDist->first, minMaxDist->second))
+                     result->m_center, lastTarget->m_vecOrigin(), *config))
         {
-            logging::Info("Location gone bad!");
             current_task = task::none;
             nav::clearInstructions();
         }
@@ -225,8 +225,7 @@ static bool stayNear()
              lastTarget->m_bAlivePlayer() && lastTarget->m_bEnemy())
     {
         if (stayNearHelpers::isValidNearPosition(
-                g_pLocalPlayer->v_Origin, lastTarget->m_vecOrigin(),
-                minMaxDist->first, minMaxDist->second))
+                g_pLocalPlayer->v_Origin, lastTarget->m_vecOrigin(), *config))
             return true;
     }
 
@@ -237,8 +236,7 @@ static bool stayNear()
     else
     {
         // We're doing nothing? Do something!
-        return stayNearHelpers::stayNearPlayers(
-            minMaxDist->first, minMaxDist->second, &lastTarget, &result);
+        return stayNearHelpers::stayNearPlayers(*config, &lastTarget, &result);
     }
 }
 
