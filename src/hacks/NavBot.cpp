@@ -7,7 +7,7 @@ namespace hacks::tf2::NavBot
 // -Rvars-
 static settings::Bool enabled("navbot.enabled", "false");
 static settings::Bool stay_near("navbot.stay-near", "true");
-static settings::Bool heavy_mode("navbot.other-node", "false");
+static settings::Bool heavy_mode("navbot.other-mode", "false");
 
 // -Forward declarations-
 bool init(bool first_cm);
@@ -20,7 +20,7 @@ static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
 static Timer wait_until_path{};
 // What is the bot currently doing
 static task::task current_task;
-constexpr std::pair<float, float> MIN_MAX_DIST_OTHER(200, 1000);
+constexpr std::pair<float, float> MIN_MAX_DIST_OTHER(200, 500);
 constexpr std::pair<float, float> MIN_MAX_DIST_SNIPER(1000, 4000);
 
 static void CreateMove()
@@ -125,15 +125,31 @@ static bool stayNearPlayer(CachedEntity *ent, float min_distance,
     }
     if (checked_areas.empty())
         return false;
+    unsigned int size = 5;
+    if (checked_areas.size() < size)
+        size = checked_areas.size() / 2;
+    std::partial_sort(checked_areas.begin(), checked_areas.begin() + size,
+                      checked_areas.end(), [](CNavArea *a, CNavArea *b) {
+                          return g_pLocalPlayer->v_Origin.DistTo(a->m_center) <
+                                 g_pLocalPlayer->v_Origin.DistTo(b->m_center);
+                      });
 
     // Try to path up to 10 times to different areas
-    for (int attempts = 0; attempts < 10; attempts++)
+    for (unsigned int attempts = 0; attempts < (size * 2); attempts++)
     {
-        auto random =
-            select_randomly(checked_areas.begin(), checked_areas.end());
-        if (nav::navTo((*random.base())->m_center, 7, true, false))
+        std::vector<CNavArea *>::iterator i;
+        if (attempts >= size)
         {
-            *result      = *random.base();
+            i = select_randomly(checked_areas.begin(), checked_areas.end());
+        }
+        else
+        {
+            i = checked_areas.begin() + attempts;
+        }
+
+        if (nav::navTo((*i.base())->m_center, 7, true, false))
+        {
+            *result      = *i.base();
             current_task = task::stay_near;
             return true;
         }
@@ -145,6 +161,7 @@ static bool stayNearPlayer(CachedEntity *ent, float min_distance,
 static bool stayNearPlayers(float min_distance, float max_distance,
                             CachedEntity **result_ent, CNavArea **result_area)
 {
+    logging::Info("Stay near players called!");
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
@@ -180,19 +197,26 @@ static bool stayNear()
     if (current_task == task::stay_near)
     {
         // Do we already have a stay near target? Check if its still good.
-        if (CE_BAD(lastTarget) || !lastTarget->m_bAlivePlayer() ||
-            !lastTarget->m_bEnemy())
+        if (CE_BAD(lastTarget))
         {
             current_task = task::none;
-            //nav::clearInstructions();
+            logging::Info("Player gone bad!");
+            // Don't cancel if target gone CE_BAD. We might still find him.
+        }
+        else if (!lastTarget->m_bAlivePlayer() || !lastTarget->m_bEnemy())
+        {
+            nav::clearInstructions();
+            current_task = task::none;
+            logging::Info("Player gone bad!");
         }
         // Check if we still have LOS and are close enough/far enough
         else if (!stayNearHelpers::isValidNearPosition(
                      result->m_center, lastTarget->m_vecOrigin(),
                      minMaxDist->first, minMaxDist->second))
         {
+            logging::Info("Location gone bad!");
             current_task = task::none;
-            //nav::clearInstructions();
+            nav::clearInstructions();
         }
     }
     // Are we doing nothing? Check if our current location can still attack our
@@ -210,13 +234,12 @@ static bool stayNear()
     {
         return true;
     }
-    else if (wait_until_path.check(1000))
+    else
     {
         // We're doing nothing? Do something!
         return stayNearHelpers::stayNearPlayers(
             minMaxDist->first, minMaxDist->second, &lastTarget, &result);
     }
-    return false;
 }
 
 static HookedFunction cm(HookedFunctions_types::HF_CreateMove, "NavBot", 16,
