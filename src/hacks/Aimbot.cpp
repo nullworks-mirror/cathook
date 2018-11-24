@@ -434,7 +434,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state)
         target_highest_ent = ENTITY(hacks::shared::backtrack::iBestTarget);
         if (!IsTargetStateGood(target_highest_ent))
             target_highest_ent = nullptr;
-        foundTarget = true;
+        foundTarget = (target_highest_ent == nullptr) ? false : true;
     }
 
     // Save the ent for future use with target lock

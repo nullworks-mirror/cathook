@@ -331,25 +331,13 @@ std::pair<int, int> getBestEntBestTick()
                                 headPositions[i][j]
                                     .hitboxes.at(spine_3)
                                     .center.DistTo(g_pLocalPlayer->v_Eye);
-                            if (dist > bestDist && vischeck_priority)
-                                continue;
-                            bool Vischeck_suceeded = IsVectorVisible(
-                                g_pLocalPlayer->v_Eye,
-                                headPositions[i][j].hitboxes.at(0).center,
-                                true);
-                            if (((dist < bestDist) ||
-                                 (Vischeck_suceeded && !vischeck_priority)) &&
-                                dist > *mindistance &&
-                                (vischeck_priority ? Vischeck_suceeded : true))
+                            if (dist < bestDist)
                             {
                                 bestEnt  = i;
                                 bestTick = j;
                                 bestDist = dist;
-                                if (Vischeck_suceeded)
-                                {
-                                    Vischeck_Success  = true;
-                                    vischeck_priority = true;
-                                }
+                                Vischeck_Success  = true;
+                                vischeck_priority = true;
                             }
                         }
                     }
@@ -375,12 +363,22 @@ std::pair<int, int> getBestEntBestTick()
                                 g_pLocalPlayer->v_OrigViewangles,
                                 g_pLocalPlayer->v_Eye,
                                 headPositions[i][j].hitboxes.at(head).center);
-                            Vischeck_Success = true;
-                            if (bestFov > FOVDistance)
+                            if (FOVDistance > bestFov && vischeck_priority)
+                                continue;
+                            bool Vischeck_suceeded = IsVectorVisible(
+                                g_pLocalPlayer->v_Eye,
+                                headPositions[i][j].hitboxes.at(0).center,
+                                true);
+                            if (FOVDistance < bestFov || ( Vischeck_suceeded && !vischeck_priority))
                             {
-                                bestFov  = FOVDistance;
                                 bestEnt  = i;
                                 bestTick = j;
+                                bestFov = FOVDistance;
+                                if (Vischeck_suceeded)
+                                {
+                                    Vischeck_Success  = true;
+                                    vischeck_priority = true;
+                                }
                             }
                         }
                     }
