@@ -11,6 +11,8 @@ enum task : uint8_t
     none = 0,
     sniper_spot,
     stay_near,
+    health,
+    ammo
 };
 }
 struct bot_class_config
