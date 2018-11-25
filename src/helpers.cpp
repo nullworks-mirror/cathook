@@ -1350,9 +1350,6 @@ void PrintChat(const char *fmt, ...)
         logging::Info("%s", str.get());
         chat->Printf(str.get());
     }
-    else
-    {
-    }
 }
 
 // You shouldn't delete[] this unique_ptr since it

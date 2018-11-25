@@ -9,12 +9,15 @@ static settings::Bool enabled("navbot.enabled", "false");
 static settings::Bool stay_near("navbot.stay-near", "true");
 static settings::Bool heavy_mode("navbot.other-mode", "false");
 static settings::Bool get_health("navbot.get-health-and-ammo", "true");
+static settings::Float jump_distance("navbot.autojump.trigger-distance", "300");
+static settings::Bool autojump("navbot.autojump.enabled", "false");
 
 // -Forward declarations-
 bool init(bool first_cm);
 static bool navToSniperSpot();
 static bool stayNear();
 static bool getHealthAndAmmo();
+static void autoJump();
 
 // -Variables-
 static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
@@ -36,7 +39,8 @@ static void CreateMove()
     else
         current_task = task::none;
 
-
+    if (autojump)
+        autoJump();
     if (get_health)
         if (getHealthAndAmmo())
             return;
@@ -97,6 +101,23 @@ static bool navToSniperSpot()
         }
     }
     return false;
+}
+
+static std::pair<CachedEntity *, float> getNearestPlayerDistance()
+{
+    float distance         = FLT_MAX;
+    CachedEntity *best_ent = nullptr;
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() &&
+            g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance)
+        {
+            distance = g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin());
+            best_ent = ent;
+        }
+    }
+    return { best_ent, distance };
 }
 
 namespace stayNearHelpers
@@ -179,14 +200,24 @@ static bool stayNearPlayer(CachedEntity *ent, const bot_class_config &config,
 static bool stayNearPlayers(const bot_class_config &config,
                             CachedEntity **result_ent, CNavArea **result_area)
 {
+    std::vector<CachedEntity *> players;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy())
             continue;
-        if (stayNearPlayer(ent, config, result_area))
+        players.push_back(ent);
+    }
+    std::sort(players.begin(), players.end(),
+              [](CachedEntity *a, CachedEntity *b) {
+                  return a->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin) <
+                         b->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin);
+              });
+    for (auto player : players)
+    {
+        if (stayNearPlayer(player, config, result_area))
         {
-            *result_ent = ent;
+            *result_ent = player;
             return true;
         }
     }
@@ -199,9 +230,6 @@ static bool stayNear()
 {
     static CachedEntity *last_target = nullptr;
     static CNavArea *last_area       = nullptr;
-    bool last_target_good            = CE_GOOD(last_target) &&
-                            last_target->m_bAlivePlayer() &&
-                            last_target->m_bEnemy();
 
     // What distances do we have to use?
     const bot_class_config *config;
@@ -213,6 +241,13 @@ static bool stayNear()
     {
         config = &DIST_SNIPER;
     }
+
+    // Check if someone is too close to us and then target them instead
+    auto nearest = getNearestPlayerDistance();
+    if (nearest.first && nearest.first != last_target &&
+        nearest.second < config->min)
+        return stayNearHelpers::stayNearPlayers(*config, &last_target,
+                                                &last_area);
 
     if (current_task == task::stay_near)
     {
@@ -236,12 +271,13 @@ static bool stayNear()
     }
     // Are we doing nothing? Check if our current location can still attack our
     // last target
-    else if (current_task == task::none && last_target_good)
+    else if (current_task == task::none && CE_GOOD(last_target) &&
+             last_target->m_bAlivePlayer() && last_target->m_bEnemy())
     {
         if (stayNearHelpers::isValidNearPosition(
                 g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
             return true;
-        // Can we try pathing to our last target again?
+        // If not, can we try pathing to our last target again?
         if (stayNearHelpers::stayNearPlayer(last_target, *config, &last_area))
             return true;
     }
@@ -293,7 +329,8 @@ static bool getHealthAndAmmo()
     if (current_task == task::health)
         return true;
 
-    if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() < 0.64f)
+    if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() <
+        0.64f)
     {
         std::vector<Vector> healthpacks;
         for (int i = 0; i < HIGHEST_ENTITY; i++)
@@ -352,6 +389,16 @@ static bool getHealthAndAmmo()
         }
     }
     return false;
+}
+
+static void autoJump()
+{
+    static Timer last_jump{};
+    if (!last_jump.test_and_set(200))
+        return;
+
+    if (getNearestPlayerDistance().second <= *jump_distance)
+        current_user_cmd->buttons |= IN_JUMP;
 }
 
 static HookedFunction cm(HookedFunctions_types::HF_CreateMove, "NavBot", 16,
