@@ -241,10 +241,7 @@ static bool stayNear()
         if (stayNearHelpers::isValidNearPosition(
                 g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
             return true;
-    }
-    // Can we try pathing to our last target again?
-    else if (last_target_good)
-    {
+        // Can we try pathing to our last target again?
         if (stayNearHelpers::stayNearPlayer(last_target, *config, &last_area))
             return true;
     }
@@ -296,7 +293,7 @@ static bool getHealthAndAmmo()
     if (current_task == task::health)
         return true;
 
-    if (float(LOCAL_E->m_iHealth()) / float(LOCAL_E->m_iMaxHealth()) < 0.64f)
+    if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() < 0.64f)
     {
         std::vector<Vector> healthpacks;
         for (int i = 0; i < HIGHEST_ENTITY; i++)
