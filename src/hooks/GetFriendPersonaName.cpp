@@ -132,7 +132,7 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
             {
 
                 // Return the name that has changed from the func above
-                return format(stolen_name, "\x0F").c_str();
+                return format(stolen_name, "\u000B").c_str();
             }
         }
     }
