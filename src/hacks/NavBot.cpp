@@ -1,6 +1,7 @@
 #include "common.hpp"
 #include "navparser.hpp"
 #include "NavBot.hpp"
+#include "PlayerTools.hpp"
 
 namespace hacks::tf2::NavBot
 {
@@ -11,6 +12,7 @@ static settings::Bool heavy_mode("navbot.other-mode", "false");
 static settings::Bool get_health("navbot.get-health-and-ammo", "true");
 static settings::Float jump_distance("navbot.autojump.trigger-distance", "300");
 static settings::Bool autojump("navbot.autojump.enabled", "false");
+static settings::Bool primary_only{ "navbot.primary-only", "true" };
 
 // -Forward declarations-
 bool init(bool first_cm);
@@ -18,6 +20,7 @@ static bool navToSniperSpot();
 static bool stayNear();
 static bool getHealthAndAmmo();
 static void autoJump();
+static void updateSlot();
 
 // -Variables-
 static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
@@ -41,6 +44,9 @@ static void CreateMove()
 
     if (autojump)
         autoJump();
+    if (primary_only)
+        updateSlot();
+
     if (get_health)
         if (getHealthAndAmmo())
             return;
@@ -111,7 +117,7 @@ static std::pair<CachedEntity *, float> getNearestPlayerDistance()
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() &&
-            g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance)
+            g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) == player_tools::IgnoreReason::DO_NOT_IGNORE)
         {
             distance = g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin());
             best_ent = ent;
@@ -204,7 +210,7 @@ static bool stayNearPlayers(const bot_class_config &config,
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy())
+        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
             continue;
         players.push_back(ent);
     }
@@ -260,6 +266,8 @@ static bool stayNear()
         // Do we already have a stay near target? Check if its still good.
         if (CE_GOOD(last_target))
             invalid_target_time.update();
+        else
+            invalid_area_time.update();
         // Check if we still have LOS and are close enough/far enough
         if (CE_GOOD(last_target) && stayNearHelpers::isValidNearPosition(
                      last_area->m_center, last_target->m_vecOrigin(), *config))
@@ -410,6 +418,26 @@ static void autoJump()
 
     if (getNearestPlayerDistance().second <= *jump_distance)
         current_user_cmd->buttons |= IN_JUMP;
+}
+
+static void updateSlot()
+{
+    static Timer slot_timer{};
+    if (!slot_timer.test_and_set(1000))
+        return;
+    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
+    {
+        IClientEntity *weapon = RAW_ENT(LOCAL_W);
+        // IsBaseCombatWeapon()
+        if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
+        {
+            int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
+            int newslot = 1;
+            if (slot != newslot - 1)
+                g_IEngine->ClientCmd_Unrestricted(
+                    format("slot", newslot).c_str());
+        }
+    }
 }
 
 static HookedFunction cm(HookedFunctions_types::HF_CreateMove, "NavBot", 16,
