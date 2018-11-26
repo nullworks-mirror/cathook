@@ -126,8 +126,8 @@ namespace stayNearHelpers
 static bool isValidNearPosition(Vector vec, Vector target,
                                 const bot_class_config &config)
 {
-    vec.z += 20;
-    target.z += 20;
+    vec.z += 40;
+    target.z += 40;
     float dist = vec.DistTo(target);
     if (dist < config.min || dist > config.max)
         return false;
@@ -137,8 +137,8 @@ static bool isValidNearPosition(Vector vec, Vector target,
 }
 
 // Returns true if began pathing
-static bool stayNearPlayer(CachedEntity *ent, const bot_class_config &config,
-                           CNavArea **result)
+static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config,
+                           CNavArea *&result)
 {
     // Get some valid areas
     std::vector<CNavArea *> areas;
@@ -188,7 +188,7 @@ static bool stayNearPlayer(CachedEntity *ent, const bot_class_config &config,
 
         if (nav::navTo((*it.base())->m_center, 7, true, false))
         {
-            *result      = *it.base();
+            result      = *it.base();
             current_task = task::stay_near;
             return true;
         }
@@ -198,10 +198,10 @@ static bool stayNearPlayer(CachedEntity *ent, const bot_class_config &config,
 
 // Loop thru all players and find one we can path to
 static bool stayNearPlayers(const bot_class_config &config,
-                            CachedEntity **result_ent, CNavArea **result_area)
+                            CachedEntity *&result_ent, CNavArea *&result_area)
 {
     std::vector<CachedEntity *> players;
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy())
@@ -217,7 +217,7 @@ static bool stayNearPlayers(const bot_class_config &config,
     {
         if (stayNearPlayer(player, config, result_area))
         {
-            *result_ent = player;
+            result_ent = player;
             return true;
         }
     }
@@ -246,27 +246,37 @@ static bool stayNear()
     auto nearest = getNearestPlayerDistance();
     if (nearest.first && nearest.first != last_target &&
         nearest.second < config->min)
-        return stayNearHelpers::stayNearPlayers(*config, &last_target,
-                                                &last_area);
+        if (stayNearHelpers::stayNearPlayer(nearest.first, *config,
+                                                last_area))
+        {
+            last_target = nearest.first;
+            return true;
+        }
 
     if (current_task == task::stay_near)
     {
+        static Timer invalid_area_time{};
+        static Timer invalid_target_time{};
         // Do we already have a stay near target? Check if its still good.
-        if (CE_BAD(last_target))
-        {
-            current_task = task::none;
-        }
-        else if (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy())
-        {
-            nav::clearInstructions();
-            current_task = task::none;
-        }
+        if (CE_GOOD(last_target))
+            invalid_target_time.update();
         // Check if we still have LOS and are close enough/far enough
-        else if (!stayNearHelpers::isValidNearPosition(
+        if (CE_GOOD(last_target) && stayNearHelpers::isValidNearPosition(
                      last_area->m_center, last_target->m_vecOrigin(), *config))
+            invalid_area_time.update();
+
+        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy()))
+        {
+            nav::clearInstructions();
+            current_task = task::none;
+        }
+        else if (invalid_area_time.test_and_set(300))
         {
             current_task = task::none;
-            nav::clearInstructions();
+        }
+        else if (invalid_target_time.test_and_set(5000))
+        {
+            current_task = task::none;
         }
     }
     // Are we doing nothing? Check if our current location can still attack our
@@ -278,8 +288,9 @@ static bool stayNear()
                 g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
             return true;
         // If not, can we try pathing to our last target again?
-        if (stayNearHelpers::stayNearPlayer(last_target, *config, &last_area))
+        if (stayNearHelpers::stayNearPlayer(last_target, *config, last_area))
             return true;
+        last_target = nullptr;
     }
 
     static Timer wait_until_stay_near{};
@@ -290,8 +301,8 @@ static bool stayNear()
     else if (wait_until_stay_near.test_and_set(1000))
     {
         // We're doing nothing? Do something!
-        return stayNearHelpers::stayNearPlayers(*config, &last_target,
-                                                &last_area);
+        return stayNearHelpers::stayNearPlayers(*config, last_target,
+                                                last_area);
     }
     return false;
 }
