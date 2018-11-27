@@ -68,7 +68,7 @@
             <AutoVariable width="fill" target="navbot.enable" label="Enable Navbot"/>
             <!--AutoVariable width="fill" target="navbot.scout-mode" label="Enable Scout Mode"/>
             <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/-->
-            <AutoVariable width="fill" target="navbot.get-health-and-ammo" label="Get Health & Ammo"/>
+            <AutoVariable width="fill" target="navbot.get-health-and-ammo" label="Get Health and Ammo"/>
             <AutoVariable width="fill" target="navbot.other-mode" label="General Mode"/>
             <AutoVariable width="fill" target="navbot.primary-only" label="Best Weapon only"/>
             <AutoVariable width="fill" target="navbot.autojump.enabled" label="Enable Autojump"/>
