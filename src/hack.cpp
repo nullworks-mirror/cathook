@@ -163,8 +163,7 @@ free(logname);*/
 #if ENABLE_VISUALS
 
     {
-        std::vector<std::string> essential = { "menu.json",
-                                               "fonts/tf2build.ttf" };
+        std::vector<std::string> essential = { "fonts/tf2build.ttf" };
         for (const auto &s : essential)
         {
             std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
