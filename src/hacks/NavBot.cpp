@@ -71,6 +71,7 @@ bool init(bool first_cm)
         return false;
     if (!inited)
     {
+        sniper_spots.clear();
         // Add all sniper spots to vector
         for (auto &area : nav::navfile->m_areas)
         {
