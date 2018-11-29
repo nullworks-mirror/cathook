@@ -79,6 +79,7 @@ bool init(bool first_cm)
                     hide.IsExposed())
                     sniper_spots.emplace_back(&area, hide.m_pos);
         }
+        inited = true;
     }
     return true;
 }
@@ -117,7 +118,9 @@ static std::pair<CachedEntity *, float> getNearestPlayerDistance()
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() &&
-            g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) == player_tools::IgnoreReason::DO_NOT_IGNORE)
+            g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance &&
+            player_tools::shouldTarget(ent) ==
+                player_tools::IgnoreReason::DO_NOT_IGNORE)
         {
             distance = g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin());
             best_ent = ent;
@@ -169,32 +172,35 @@ static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config,
         size = areas.size();
 
     // Get some areas that are close to the player
-    std::vector<CNavArea *> preferred_areas(areas.begin(),
-                                            areas.begin() + size / 2);
+    std::vector<CNavArea *> preferred_areas(areas.begin(), areas.end());
+    preferred_areas.resize(size/2);
+    if (preferred_areas.empty())
+        return false;
     std::sort(preferred_areas.begin(), preferred_areas.end(),
               [](CNavArea *a, CNavArea *b) {
                   return a->m_center.DistTo(g_pLocalPlayer->v_Origin) <
                          b->m_center.DistTo(g_pLocalPlayer->v_Origin);
               });
 
-    // Try to path up to 10 times to different areas
-    for (size_t attempts = 0; attempts < size / 2; attempts++)
+    preferred_areas.resize(size/4);
+    if (preferred_areas.empty())
+        return false;
+    for (auto &i : preferred_areas)
     {
-        std::vector<CNavArea *>::iterator it;
-        if (attempts <= size / 4)
+        if (nav::navTo(i->m_center, 7, true, false))
         {
-            // First try getting preferred areas (5 tries)
-            it = preferred_areas.begin() + attempts;
+            result       = i;
+            current_task = task::stay_near;
+            return true;
         }
-        else
-        {
-            // Then get random ones
-            it = select_randomly(areas.begin(), areas.end());
-        }
+    }
 
+    for (size_t attempts = 0; attempts < size / 4; attempts++)
+    {
+        auto it = select_randomly(areas.begin(), areas.end());
         if (nav::navTo((*it.base())->m_center, 7, true, false))
         {
-            result      = *it.base();
+            result       = *it.base();
             current_task = task::stay_near;
             return true;
         }
@@ -210,10 +216,14 @@ static bool stayNearPlayers(const bot_class_config &config,
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() ||
+            player_tools::shouldTarget(ent) !=
+                player_tools::IgnoreReason::DO_NOT_IGNORE)
             continue;
         players.push_back(ent);
     }
+    if (players.empty())
+        return false;
     std::sort(players.begin(), players.end(),
               [](CachedEntity *a, CachedEntity *b) {
                   return a->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin) <
@@ -249,11 +259,10 @@ static bool stayNear()
     }
 
     // Check if someone is too close to us and then target them instead
-    auto nearest = getNearestPlayerDistance();
+    std::pair<CachedEntity *, float> nearest = getNearestPlayerDistance();
     if (nearest.first && nearest.first != last_target &&
         nearest.second < config->min)
-        if (stayNearHelpers::stayNearPlayer(nearest.first, *config,
-                                                last_area))
+        if (stayNearHelpers::stayNearPlayer(nearest.first, *config, last_area))
         {
             last_target = nearest.first;
             return true;
@@ -269,11 +278,15 @@ static bool stayNear()
         else
             invalid_area_time.update();
         // Check if we still have LOS and are close enough/far enough
-        if (CE_GOOD(last_target) && stayNearHelpers::isValidNearPosition(
-                     last_area->m_center, last_target->m_vecOrigin(), *config))
+        if (CE_GOOD(last_target) &&
+            stayNearHelpers::isValidNearPosition(
+                last_area->m_center, last_target->m_vecOrigin(), *config))
             invalid_area_time.update();
 
-        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy()))
+        if (CE_GOOD(last_target) &&
+            (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() ||
+             player_tools::shouldTarget(last_target) !=
+                 player_tools::IgnoreReason::DO_NOT_IGNORE))
         {
             nav::clearInstructions();
             current_task = task::none;
@@ -289,7 +302,7 @@ static bool stayNear()
     }
     // Are we doing nothing? Check if our current location can still attack our
     // last target
-    else if (current_task == task::none && CE_GOOD(last_target) &&
+    if (current_task == task::none && CE_GOOD(last_target) &&
              last_target->m_bAlivePlayer() && last_target->m_bEnemy())
     {
         if (stayNearHelpers::isValidNearPosition(
