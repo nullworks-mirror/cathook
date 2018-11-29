@@ -23,7 +23,7 @@ bool StolenName()
     int potential_targets_length = 0;
 
     // Go through entities looking for potential targets
-    for (int i = 1; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
 
@@ -32,7 +32,7 @@ bool StolenName()
             continue;
         if (ent == LOCAL_E)
             continue;
-        if (!ent->m_Type() == ENTITY_PLAYER)
+        if (ent->m_Type() != ENTITY_PLAYER)
             continue;
         if (ent->m_bEnemy())
             continue;
@@ -97,12 +97,7 @@ bool StolenName()
     // Didnt get playerinfo
     return false;
 }
-
-namespace hooked_methods
-{
-
-DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
-                     CSteamID steam_id)
+const char *GetNamestealName(CSteamID steam_id)
 {
 #if ENABLE_IPC
     if (ipc::peer)
@@ -112,6 +107,8 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
         {
             ReplaceString(namestr, "%%", std::to_string(ipc::peer->client_id));
             ReplaceString(namestr, "\\n", "\n");
+            ReplaceString(namestr, "\\015", "\015");
+            ReplaceString(namestr, "\\u200F", "\u200F");
             return namestr.c_str();
         }
     }
@@ -132,7 +129,7 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
             {
 
                 // Return the name that has changed from the func above
-                return format(stolen_name, "\u200F").c_str();
+                return format(stolen_name, "\015").c_str();
             }
         }
     }
@@ -143,6 +140,51 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
         ReplaceString(new_name, "\\n", "\n");
         return new_name.c_str();
     }
-    return original::GetFriendPersonaName(this_, steam_id);
+    return nullptr;
 }
+namespace hooked_methods
+{
+
+DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
+                     CSteamID steam_id)
+{
+    const char *new_name = GetNamestealName(steam_id);
+    return (new_name ? new_name : original::GetFriendPersonaName(this_, steam_id));
+}
+static InitRoutine init([](){
+    namesteal.installChangeCallback([](settings::VariableBase<int> &var, int new_val){
+        if (new_val != 0)
+        {
+            const char *xd = GetNamestealName(g_ISteamUser->GetSteamID());
+            if (CE_BAD(LOCAL_E) || !xd)
+                return;
+            NET_SetConVar setname("name", xd);
+            INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+            if (ch)
+            {
+                setname.SetNetChannel(ch);
+                setname.SetReliable(false);
+                ch->SendNetMsg(setname, false);
+            }
+        }
+    });
+});
+static Timer set_name{};
+static HookedFunction CM(HookedFunctions_types::HF_CreateMove, "namesteal", 2, [](){
+    if (!namesteal)
+        return;
+    if (!set_name.test_and_set(500000))
+        return;
+    const char *name = GetNamestealName(g_ISteamUser->GetSteamID());
+    if (CE_BAD(LOCAL_E) || !name)
+        return;
+    NET_SetConVar setname("name", name);
+    INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    if (ch)
+    {
+        setname.SetNetChannel(ch);
+        setname.SetReliable(false);
+        ch->SendNetMsg(setname, false);
+    }
+});
 } // namespace hooked_methods
