@@ -3,6 +3,7 @@
 # Thank you LWSS
 # https://github.com/LWSS/Fuzion/commit/a53b6c634cde0ed47b08dd587ba40a3806adf3fe
 
+sudo ./scripts/auto-updater
 line=$(pidof hl2_linux)
 arr=($line)
 inst=$1
@@ -61,5 +62,3 @@ sudo gdb -n -q -batch \
   -ex "quit"
 
 sudo rm "/lib/i386-linux-gnu/${FILENAME}"
-
-sudo ./scripts/auto-updater &

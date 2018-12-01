@@ -1,29 +1,14 @@
 #!/usr/bin/env bash
-
-LOCKFILE=/tmp/chupdater.lock
-if [ -e ${LOCKFILE} ] && ps -p `cat ${LOCKFILE}` >/dev/null; then
-    echo -e "\033[1;31m \n \nAuto Updater: Auto Updater already running in the background\n\033[0m"
-    exit 1
+if [ ! -f ./scripts/updater-preferences ]; then
+    while true; do
+        read -p "Do you wan't to enable the cathook auto updater? y/n " yn
+        case $yn in
+            [Yy]* ) echo true > ./scripts/updater-preferences; break;;
+            [Nn]* ) echo false > ./scripts/updater-preferences; exit;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
 fi
-
-# make sure the lockfile is removed when we exit and then claim it
-trap "rm -f ${LOCKFILE}; exit" INT TERM EXIT
-echo $$ > ${LOCKFILE}
-
-echo -e "\033[1;34m \n \nAuto Updater: Updating cathook in the background\n\033[0m"
-
-sudo -u $LOGNAME bash -c 'git fetch && git pull origin >/dev/null && git submodule update --init --recursive >/dev/null' || { echo -e "\033[1;31m \n \nAuto Updater: Failed to pull from github!\n\033[0m"; exit 1; }
-
-pushd build >/dev/null || exit 1
-
-if [ $(id -u) -eq 0 ]; then
-    cmake --build . --target data >/dev/null || { echo -e "\033[1;31m \n \nAuto Updater:Failed to update /opt/cathook/data directory\n\033[0m"; exit 1; }
+if [ `cat ./scripts/updater-preferences` == "true" ]; then
+    ./scripts/run-update &
 fi
-
-sudo -u $LOGNAME bash -c  'cmake .. >/dev/null && nice -n 10 cmake --build . --target cathook -- -j 1 >/dev/null' || { echo -e "\033[1;31m \n \nAuto Updater: Failed to compile cathook\n\033[0m"; exit 1; }
-
-rm -f ${LOCKFILE}
-
-popd >/dev/null
-
-echo -e "\n\n\033[1;34mAuto Updater: Cathook updated successfully\033[0m" && exit 0

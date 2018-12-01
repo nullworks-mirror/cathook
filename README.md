@@ -41,7 +41,7 @@ and a lot of useful features, including
 ## Automatic: (Ubuntu 17.10+/Arch based only)
 Run in terminal:
 
-* `wget https://raw.githubusercontent.com/nullworks/One-in-all-cathook-install/master/install-all && bash install-all`
+* `wget -O - https://raw.githubusercontent.com/nullworks/One-in-all-cathook-install/master/install-all | bash`
 
 ## Manual:
 You need CMake to build cathook, CMake should take care of dependencies

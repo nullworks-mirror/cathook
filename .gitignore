@@ -282,3 +282,5 @@ cathook.cbp
 \.kdev4/cathook\.kdev4
 
 cathook\.kdev4
+
+scripts/updater-preferences

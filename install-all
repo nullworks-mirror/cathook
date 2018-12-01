@@ -5,8 +5,6 @@ if [ $EUID == 0 ]; then
     exit
 fi
 
-rm ../install-all # remove install file
-
 #
 # Install base Dependencies
 #
@@ -21,9 +19,8 @@ fi
 # Update cathook
 #
 
-git fetch # fetch github repo for udpates
-git pull origin # pull changes from github
-git submodule update --init --recursive # update/init submodules
+git pull --depth 1 origin # pull changes from github
+git submodule update --depth 1 --init --recursive # update/init submodules
 
 #
 # Build cathook
