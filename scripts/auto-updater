@@ -10,5 +10,5 @@ if [ ! -f ./scripts/updater-preferences ]; then
     done
 fi
 if [ `cat ./scripts/updater-preferences` == "true" ]; then
-    ./scripts/run-update &
+    ./scripts/run-updater &
 fi
