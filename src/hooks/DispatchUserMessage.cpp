@@ -76,7 +76,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         retrun = false;
     }
     int loop_index, s, i, j;
-    char *data, c;
+    char c;
     if (type == 5 && *anti_votekick)
         if (buf.GetNumBytesLeft() > 35)
         {
@@ -94,29 +94,43 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         s          = buf.GetNumBytesLeft();
         if (s < 256)
         {
-            data = (char *) alloca(s);
+            std::string data;
+            std::string cleaned_data;
             for (i = 0; i < s; i++)
-                data[i] = buf.ReadByte();
+            {
+                char to_app = buf.ReadByte();
+                data.push_back(to_app);
+            }
+            data = data.substr(0, data.size()-1);
+            for (auto i : data)
+            {
+                if (clean_chat)
+                {
+                    if ((i == '\n' || i == '\r'))
+                    {
+
+                    }
+                    else
+                        cleaned_data.push_back(i);
+                }
+            }
+            if (!*clean_chat)
+                cleaned_data = data;
             j = 0;
             std::string name{};
             std::string message{};
             for (i = 0; i < 3; i++)
             {
-                while ((c = data[j++]) && (loop_index < s))
+                while ((c = cleaned_data[j++]) && (loop_index < s) && (loop_index < cleaned_data.size()))
                 {
                     loop_index++;
-                    if (clean_chat)
-                    {
-                        if ((c == '\n' || c == '\r') && (i == 1 || i == 2))
-                            data[j - 1] = '\0';
-                    }
                     if (i == 1)
                         name.push_back(c);
                     if (i == 2)
                         message.push_back(c);
                 }
             }
-            if (chat_filter_enable && data[0] != LOCAL_E->m_IDX)
+            if (chat_filter_enable && cleaned_data[0] != LOCAL_E->m_IDX)
             {
                 player_info_s info{};
                 g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
@@ -184,7 +198,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         filtered = true;
                         chat_stack::Say("." + clear, true);
                         retrun     = true;
-                        lastfilter = format(filter);
+                        lastfilter = message;
                         lastname   = format(name);
                         gitgud.update();
                     }
@@ -215,7 +229,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         //                                playerlist::k_EState::CAT;
                         //                            chat_stack::Say("!!meow");
                         //                        }
-                        CachedEntity *ent = ENTITY(data[0]);
+                        CachedEntity *ent = ENTITY(cleaned_data[0]);
                         if (msg != "Attempt at ucccccping and failing" &&
                             msg != "Unsupported version" && ent != LOCAL_E)
                         {
@@ -240,8 +254,15 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     }
                 }
             }
-            chatlog::LogMessage(data[0], message);
-            buf = bf_read(data, s);
+            chatlog::LogMessage(cleaned_data[0], message);
+            char *cleaned_data_c = new char[cleaned_data.size()+1];
+            int idx = 0;
+            for (char i : cleaned_data)
+            {
+                cleaned_data_c[idx] = i;
+                idx++;
+            }
+            buf = bf_read(cleaned_data_c, cleaned_data.size()+1);
             buf.Seek(0);
         }
     }

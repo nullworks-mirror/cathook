@@ -314,7 +314,7 @@ void testingFunc()
         {
             if (CE_GOOD(besttarget))
             {
-                if (besttarget->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye) <
+                if (target->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye) <
                     besttarget->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye))
                     besttarget = target;
             }

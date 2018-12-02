@@ -117,6 +117,7 @@ matrix3x4_t *EntityHitboxCache::GetBones()
     {
     case 0:
         bones_setup_time = 0.0f;
+        break;
     case 1:
         bones_setup_time = g_GlobalVars->curtime;
         break;
