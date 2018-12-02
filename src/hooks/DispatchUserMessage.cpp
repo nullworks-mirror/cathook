@@ -262,7 +262,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 cleaned_data_c[idx] = i;
                 idx++;
             }
-            buf = bf_read(cleaned_data_c, cleaned_data.size()+1);
+            cleaned_data_c[cleaned_data.size()] = '\0';
+            buf = bf_read(cleaned_data_c, cleaned_data.size());
             buf.Seek(0);
         }
     }
