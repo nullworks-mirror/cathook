@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+if [ $EUID == 0 ]; then
+    echo "This script must not be run as root"
+    exit
+fi
+
+if [ ! -f ./scripts/updater-preferences ]; then
+    while true; do
+        read -p "Do you want to switch your cathook repository into developer mode? y/n " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) exit;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
+
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+git fetch --unshallow
+git fetch --all

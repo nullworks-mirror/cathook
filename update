@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 #Get updated source code
-git pull --depth 1 origin && git submodule update --depth 1 --init --recursive || { echo -e "\033[1;31m \n \nFailed to pull from github!"; exit 1; }
+if [ "$(git rev-parse --is-shallow-repository)" == "true" ]; then
+    git fetch --depth 1 origin && git reset --hard @{upstream} && git submodule update --depth 1 --init --recursive || { echo -e "\033[1;31m \n \nFailed to pull from github!"; exit 1; }
+else
+    git pull origin && git submodule update --init --recursive || { echo -e "\033[1;31m \n \nFailed to pull from github!"; exit 1; }
+fi
 #Update cathook
 cd build && cmake .. && cmake --build . --target cathook -- -j$(grep -c '^processor' /proc/cpuinfo) || { echo -e "\033[1;31m \n \nFailed to compile cathook"; exit 1; }
 #Update data
