@@ -12,7 +12,7 @@ echo $$ > ${LOCKFILE}
 
 echo -e "\033[1;34m \n \nAuto Updater: Updating cathook in the background\n\033[0m"
 
-if [ `git rev-parse --is-shallow-repository` == "true" ]; then
+if [ "$(git rev-parse --is-shallow-repository)" == "true" ]; then
     sudo -u $LOGNAME bash -c 'git fetch --depth 1 origin >/dev/null && git reset --hard @{upstream} >/dev/null && git submodule update --depth 1 --init --recursive >/dev/null' || { echo -e "\033[1;31m \n \nAuto Updater: Failed to pull from github!\n\033[0m"; exit 1; }
 else
     sudo -u $LOGNAME bash -c 'git pull origin >/dev/null && git submodule update --init --recursive >/dev/null' || { echo -e "\033[1;31m \n \nAuto Updater: Failed to pull from github!\n\033[0m"; exit 1; }

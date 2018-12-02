@@ -12,7 +12,7 @@ static settings::Bool heavy_mode("navbot.other-mode", "false");
 static settings::Bool get_health("navbot.get-health-and-ammo", "true");
 static settings::Float jump_distance("navbot.autojump.trigger-distance", "300");
 static settings::Bool autojump("navbot.autojump.enabled", "false");
-static settings::Bool primary_only{ "navbot.primary-only", "true" };
+static settings::Bool primary_only("navbot.primary-only", "true");
 
 // -Forward declarations-
 bool init(bool first_cm);
@@ -174,7 +174,7 @@ static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config,
 
     // Get some areas that are close to the player
     std::vector<CNavArea *> preferred_areas(areas.begin(), areas.end());
-    preferred_areas.resize(size/2);
+    preferred_areas.resize(size / 2);
     if (preferred_areas.empty())
         return false;
     std::sort(preferred_areas.begin(), preferred_areas.end(),
@@ -183,7 +183,7 @@ static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config,
                          b->m_center.DistTo(g_pLocalPlayer->v_Origin);
               });
 
-    preferred_areas.resize(size/4);
+    preferred_areas.resize(size / 4);
     if (preferred_areas.empty())
         return false;
     for (auto &i : preferred_areas)
@@ -304,7 +304,7 @@ static bool stayNear()
     // Are we doing nothing? Check if our current location can still attack our
     // last target
     if (current_task == task::none && CE_GOOD(last_target) &&
-             last_target->m_bAlivePlayer() && last_target->m_bEnemy())
+        last_target->m_bAlivePlayer() && last_target->m_bEnemy())
     {
         if (stayNearHelpers::isValidNearPosition(
                 g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
@@ -456,5 +456,14 @@ static void updateSlot()
 
 static HookedFunction cm(HookedFunctions_types::HF_CreateMove, "NavBot", 16,
                          &CreateMove);
+
+void change(settings::VariableBase<bool> &, bool)
+{
+    nav::clearInstructions();
+}
+
+static InitRoutine routine([](){
+    enabled.installChangeCallback(change);
+});
 
 } // namespace hacks::tf2::NavBot

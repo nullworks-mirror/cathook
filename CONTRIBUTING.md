@@ -7,6 +7,12 @@
 - Git knowledge
 - Ability to ask for help (Feel free to create empty pull-request or PM a maintainer in [Telegram](https://t.me/nullifiedcat))
 
+### Setting up cathook
+
+Cathook reduces its git repository size automatically by using a "shallow repository". This makes developing difficult by not providing branches and omitting the commit history.
+
+The easiest way to undo this is by running the `developer` script located in `scripts`.
+
 ### Pull requests and Branches
 
 In order to send code back to the official cathook repository, you must first create a copy of cathook on your github account ([fork](https://help.github.com/articles/creating-a-pull-request-from-a-fork/)) and then [create a pull request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/) back to cathook.
