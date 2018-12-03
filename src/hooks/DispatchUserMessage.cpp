@@ -112,6 +112,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 char to_app = buf.ReadByte();
                 data.push_back(to_app);
             }
+            data = data.substr(0, data.size()-1);
             for (auto i : data)
             {
                 if (clean_chat)
@@ -265,7 +266,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
             }
             chatlog::LogMessage(cleaned_data[0], message);
-            char *cleaned_data_c = new char[cleaned_data.size()];
+            char *cleaned_data_c = new char[cleaned_data.size()+1];
             int idx = 0;
             for (char i : cleaned_data)
             {
