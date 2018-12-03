@@ -7,6 +7,7 @@
 #include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"
 #include "hacks/Radar.hpp"
+#include "CatBot.hpp"
 
 static settings::Bool pure_bypass{ "visual.sv-pure-bypass", "false" };
 static settings::Int software_cursor_mode{ "visual.software-cursor-mode", "0" };
@@ -45,6 +46,8 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
 {
     static bool textures_loaded      = false;
     static unsigned long panel_scope = 0;
+    static unsigned long motd_panel  = 0;
+    static unsigned long motd_panel_sd  = 0;
     static bool call_default         = true;
     static bool cur;
     static ConVar *software_cursor = g_ICvar->FindVar("cl_software_cursor");
@@ -140,7 +143,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         pure_orig  = (void *) 0;
     }
     call_default = true;
-    if (isHackActive() && panel_scope && no_zoom && panel == panel_scope)
+    if (isHackActive() && (panel_scope || motd_panel || motd_panel_sd) && ((no_zoom && panel == panel_scope) || (hacks::shared::catbot::catbotmode && hacks::shared::catbot::anti_motd && (panel == motd_panel || panel == motd_panel_sd))))
         call_default = false;
 
     if (software_cursor_mode)
@@ -171,19 +174,20 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
 #endif
         }
     }
-
     if (call_default)
         original::PaintTraverse(this_, panel, force, allow_force);
     // To avoid threading problems.
 
+    //logging::Info("Panel name: %s", g_IPanel->GetName(panel));
     if (!panel_scope)
-    {
-        name = g_IPanel->GetName(panel);
-        if (!strcmp(name, "HudScope"))
-        {
+        if (!strcmp(g_IPanel->GetName(panel), "HudScope"))
             panel_scope = panel;
-        }
-    }
+    if (!motd_panel)
+        if (!strcmp(g_IPanel->GetName(panel), "info"))
+            motd_panel = panel;
+    if (!motd_panel_sd)
+        if (!strcmp(g_IPanel->GetName(panel), "ok"))
+            motd_panel_sd = panel;
     if (!g_IEngine->IsInGame())
     {
         g_Settings.bInvalid = true;

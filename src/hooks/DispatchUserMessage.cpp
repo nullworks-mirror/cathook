@@ -10,6 +10,7 @@
 #include <hacks/AntiAim.hpp>
 #include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
+#include "CatBot.hpp"
 
 static settings::Bool clean_chat{ "chat.clean", "false" };
 static settings::Bool dispatch_log{ "debug.log-dispatch-user-msg", "false" };
@@ -69,6 +70,16 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
 {
     if (!isHackActive())
         return original::DispatchUserMessage(this_, type, buf);
+
+    if (type == 12 && hacks::shared::catbot::anti_motd && hacks::shared::catbot::catbotmode)
+    {
+        std::string message_name;
+        while (buf.GetNumBytesLeft())
+            message_name.push_back(buf.ReadByte());
+        buf.Seek(0);
+        if (message_name.find("class_") != message_name.npos)
+            return false;
+    }
     if (retrun && type != 47 && gitgud.test_and_set(300))
     {
         PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),
@@ -101,7 +112,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 char to_app = buf.ReadByte();
                 data.push_back(to_app);
             }
-            data = data.substr(0, data.size()-1);
             for (auto i : data)
             {
                 if (clean_chat)
@@ -255,7 +265,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
             }
             chatlog::LogMessage(cleaned_data[0], message);
-            char *cleaned_data_c = new char[cleaned_data.size()+1];
+            char *cleaned_data_c = new char[cleaned_data.size()];
             int idx = 0;
             for (char i : cleaned_data)
             {

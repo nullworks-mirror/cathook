@@ -32,9 +32,11 @@ static settings::Bool always_crouch{ "cat-bot.always-crouch", "false" };
 static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
 static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
+
 namespace hacks::shared::catbot
 {
 settings::Bool catbotmode{ "cat-bot.enable", "false" };
+settings::Bool anti_motd{ "cat-bot.anti-motd", "false"};
 
 struct catbot_user_state
 {
@@ -291,13 +293,34 @@ void smart_crouch()
         current_user_cmd->buttons |= IN_DUCK;
 }
 
+CatCommand print_ammo("debug_print_ammo", "debug", [](){
+   if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+       return;
+   for (int i = 0; i < 10; i++)
+       logging::Info("Ammo Table %d: %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + i*4));
+});
 static Timer disguise{};
 static Timer report_timer{};
+static std::string health = "Health: 0/0";
+static std::string ammo = "Ammo: 0/0";
+static int max_ammo;
 // TODO: add more stuffs
 static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
+
     if (!*catbotmode)
         return;
 
+    if (CE_GOOD(LOCAL_E))
+    {
+        float max_hp = g_pPlayerResource->GetMaxHealth(LOCAL_E);
+        float curr_hp = CE_INT(LOCAL_E, netvar.iHealth);
+        int ammo0 = CE_INT(LOCAL_E, netvar.m_iAmmo+4);
+        int ammo2 = CE_INT(LOCAL_E, netvar.m_iAmmo+8);
+        if (ammo0 + ammo2 > max_ammo)
+            max_ammo = ammo0 + ammo2;
+        health = format("Health: ", curr_hp, "/", max_hp);
+        ammo = format("Ammo :", ammo0, "/", max_ammo);
+    }
     if (g_Settings.bInvalid)
         return;
 
@@ -334,10 +357,12 @@ void update()
     if (CE_BAD(LOCAL_E))
         return;
 
+    if (LOCAL_E->m_bAlivePlayer())
+        autojointeam.update();
     if (autojointeam.test_and_set(60000) && !LOCAL_E->m_bAlivePlayer())
     {
         hack::command_stack().push("autoteam");
-        hack::command_stack().push("joinclass sniper");
+        hack::command_stack().push("join_class sniper");
     }
     if (micspam)
     {
@@ -436,4 +461,12 @@ void level_init()
 {
     level_init_timer.update();
 }
+static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3, [](){
+    if (!catbotmode || !anti_motd)
+        return;
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        return;
+    AddCenterString(health, colors::green);
+    AddCenterString(ammo, colors::yellow);
+});
 } // namespace hacks::shared::catbot

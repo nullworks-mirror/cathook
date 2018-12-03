@@ -18,6 +18,7 @@ void update();
 void init();
 void level_init();
 extern settings::Bool catbotmode;
+extern settings::Bool anti_motd;
 
 #if ENABLE_IPC
 void update_ipc_data(ipc::user_data_s &data);
