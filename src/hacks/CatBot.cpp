@@ -319,7 +319,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
         if (ammo0 + ammo2 > max_ammo)
             max_ammo = ammo0 + ammo2;
         health = format("Health: ", curr_hp, "/", max_hp);
-        ammo = format("Ammo :", ammo0+ammo2, "/", max_ammo);
+        ammo = format("Ammo: ", ammo0+ammo2, "/", max_ammo);
     }
     if (g_Settings.bInvalid)
         return;
