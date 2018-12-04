@@ -87,7 +87,7 @@ void Update()
             // ONLY tracks primary ammo
             int ammo = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
 
-            INetChannel *ch       = (INetChannel *) g_IEngine->GetNetChannelInfo();
+            INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
             static bool firstcall = true;
             for (int i = 0; i < 32; i++)
             {

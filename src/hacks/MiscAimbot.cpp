@@ -257,7 +257,7 @@ static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, []() {
 
     CachedEntity *target = nullptr;
     float fov            = FLT_MAX;
-    float range          = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+    float range = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     for (int i = 0; i < entity_cache::max; i++)
     {
         CachedEntity *ent = ENTITY(i);

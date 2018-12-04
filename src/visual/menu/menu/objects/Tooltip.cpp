@@ -15,8 +15,7 @@ static settings::RVariable<glez::rgba> color_border{ "zk.style.tooltip.border",
 namespace zerokernel
 {
 
-Tooltip::Tooltip()
-    : BaseMenuObject{}
+Tooltip::Tooltip() : BaseMenuObject{}
 {
     text.setParent(this);
     bb.width.mode  = BoundingBox::SizeMode::Mode::CONTENT;

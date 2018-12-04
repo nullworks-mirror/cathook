@@ -13,8 +13,7 @@
 namespace zerokernel
 {
 
-template <typename T>
-class ModalSpinner : public Spinner<T>
+template <typename T> class ModalSpinner : public Spinner<T>
 {
 public:
     ~ModalSpinner() override = default;

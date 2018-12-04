@@ -28,9 +28,9 @@ static CatCommand reload_command("killsay_reload", "Reload killsays",
 namespace hacks::shared::killsay
 {
 
-const std::string tf_classes_killsay[] = { "class", "scout", "sniper",
+const std::string tf_classes_killsay[] = { "class",   "scout",   "sniper",
                                            "soldier", "demoman", "medic",
-                                           "heavy", "pyro", "spy",
+                                           "heavy",   "pyro",    "spy",
                                            "engineer" };
 
 const std::string tf_teams_killsay[] = { "RED", "BLU" };
@@ -186,7 +186,7 @@ const std::vector<std::string> builtin_nonecore_offensive = {
 
 };
 const std::vector<std::string> builtin_nonecore_mlg = {
-    "GET REKT U SCRUB", "GET REKT M8", "U GOT NOSCOPED M8",
+    "GET REKT U SCRUB",     "GET REKT M8",       "U GOT NOSCOPED M8",
     "U GOT QUICKSCOPED M8", "2 FAST 4 U, SCRUB", "U GOT REKT, M8"
 };
 } // namespace hacks::shared::killsay

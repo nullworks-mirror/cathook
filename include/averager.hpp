@@ -19,8 +19,7 @@
  * 	Can return average of last N pushed values, older values are discarded.
  */
 
-template <typename T>
-class Averager
+template <typename T> class Averager
 {
 public:
     /*

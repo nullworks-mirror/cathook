@@ -106,8 +106,7 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     g_GlobalVars->curtime   = curTime;
 
     // Adjust tickbase
-    NET_INT(ent, netvar.nTickBase)
-    ++;
+    NET_INT(ent, netvar.nTickBase)++;
     return;
 }
 } // namespace engine_prediction
@@ -136,8 +135,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #define TICKS_TO_TIME(t) (TICK_INTERVAL * (t))
 #define ROUND_TO_TICKS(t) (TICK_INTERVAL * TIME_TO_TICKS(t))
     uintptr_t **fp;
-    __asm__("mov %%ebp, %0"
-            : "=r"(fp));
+    __asm__("mov %%ebp, %0" : "=r"(fp));
     bSendPackets = reinterpret_cast<bool *>(**fp - 8);
 
     g_Settings.is_create_move = true;
@@ -228,7 +226,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     static bool firstcall = false;
     static float interp_f = 0.0f;
     static int min_interp = 0;
-    static float ratio    = 0;
+    static float ratio = 0;
     if (nolerp)
     {
         // current_user_cmd->tick_count += 1;
@@ -476,7 +474,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         if (roll_speedhack && cmd->buttons & IN_DUCK &&
             !(cmd->buttons & IN_ATTACK) && !HasCondition<TFCond_Charging>(LOCAL_E))
         {
-            speed                     = Vector{ cmd->forwardmove, cmd->sidemove, 0.0f }.Length();
+            speed = Vector{ cmd->forwardmove, cmd->sidemove, 0.0f }.Length();
             static float prevspeedang = 0.0f;
             if (fabs(speed) > 0.0f)
             {
@@ -512,7 +510,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 vsilent.z = cmd->upmove;
                 speed     = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
                 VectorAngles(vsilent, ang);
-                yaw              = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y +
+                yaw = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y +
                               cmd->viewangles.y);
                 cmd->forwardmove = cos(yaw) * speed;
                 cmd->sidemove    = sin(yaw) * speed;

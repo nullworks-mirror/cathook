@@ -46,8 +46,7 @@ Iter select_randomly(Iter start, Iter end, RandomGenerator &g)
     return start;
 }
 
-template <typename Iter>
-Iter select_randomly(Iter start, Iter end)
+template <typename Iter> Iter select_randomly(Iter start, Iter end)
 {
     static std::random_device rd;
     static std::mt19937 gen(rd());
@@ -192,8 +191,7 @@ void format_internal(std::stringstream &stream, T value, Targs... args)
     stream << value;
     format_internal(stream, args...);
 }
-template <typename... Args>
-std::string format(const Args &... args)
+template <typename... Args> std::string format(const Args &... args)
 {
     std::stringstream stream;
     format_internal(stream, args...);

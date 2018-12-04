@@ -122,8 +122,7 @@ static std::pair<CachedEntity *, float> getNearestPlayerDistance()
         if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() &&
             g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance &&
             player_tools::shouldTarget(ent) ==
-                player_tools::IgnoreReason::DO_NOT_IGNORE &&
-            (hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(ent)) && VisCheckEntFromEnt(LOCAL_E, ent))
+                player_tools::IgnoreReason::DO_NOT_IGNORE && (hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(ent)) && VisCheckEntFromEnt(LOCAL_E, ent))
         {
             distance = g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin());
             best_ent = ent;
@@ -289,8 +288,7 @@ static bool stayNear()
         if (CE_GOOD(last_target) &&
             (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() ||
              player_tools::shouldTarget(last_target) !=
-                 player_tools::IgnoreReason::DO_NOT_IGNORE ||
-             !(hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(last_target))))
+                 player_tools::IgnoreReason::DO_NOT_IGNORE  || !(hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(last_target))))
         {
             nav::clearInstructions();
             current_task = task::none;
@@ -465,7 +463,7 @@ void change(settings::VariableBase<bool> &, bool)
     nav::clearInstructions();
 }
 
-static InitRoutine routine([]() {
+static InitRoutine routine([](){
     enabled.installChangeCallback(change);
 });
 

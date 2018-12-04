@@ -16,8 +16,7 @@ static settings::RVariable<glez::rgba> color_background_capturing{
     "zk.style.input.key.color.background.capturing", "38b28f88"
 };
 
-zerokernel::InputKey::InputKey()
-    : BaseMenuObject{}
+zerokernel::InputKey::InputKey() : BaseMenuObject{}
 {
     text.setParent(this);
     text.bb.width.setFill();

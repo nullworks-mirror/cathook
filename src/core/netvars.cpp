@@ -47,7 +47,7 @@ void NetVars::Init()
             gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_bAlive");
         this->res_iMaxBuffedHealth =
             gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");
-        m_angEyeAngles      = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata",
+        m_angEyeAngles = gNetvars.get_offset("DT_TFPlayer", "tfnonlocaldata",
                                              "m_angEyeAngles[0]");
         m_angEyeAnglesLocal = gNetvars.get_offset("DT_TFPlayer", "tflocaldata",
                                                   "m_angEyeAngles[0]");
@@ -201,10 +201,10 @@ void NetVars::Init()
         gNetvars.get_offset("DT_BasePlayer", "m_iObserverMode");
     this->hObserverTarget =
         gNetvars.get_offset("DT_BasePlayer", "m_hObserverTarget");
-    this->deadflag              = gNetvars.get_offset("DT_BasePlayer", "pl", "deadflag");
-    this->iFOV                  = gNetvars.get_offset("DT_BasePlayer", "m_iFOV");
-    this->iDefaultFOV           = gNetvars.get_offset("DT_BasePlayer", "m_iDefaultFOV");
-    this->hOwner                = gNetvars.get_offset("DT_BaseCombatWeapon", "m_hOwner");
+    this->deadflag    = gNetvars.get_offset("DT_BasePlayer", "pl", "deadflag");
+    this->iFOV        = gNetvars.get_offset("DT_BasePlayer", "m_iFOV");
+    this->iDefaultFOV = gNetvars.get_offset("DT_BasePlayer", "m_iDefaultFOV");
+    this->hOwner      = gNetvars.get_offset("DT_BaseCombatWeapon", "m_hOwner");
     this->m_rgflCoordinateFrame = 0x324;
 }
 

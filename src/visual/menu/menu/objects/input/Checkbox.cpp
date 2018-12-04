@@ -25,8 +25,7 @@ bool zerokernel::Checkbox::onLeftMouseClick()
     return true;
 }
 
-zerokernel::Checkbox::Checkbox()
-    : BaseMenuObject{}
+zerokernel::Checkbox::Checkbox() : BaseMenuObject{}
 {
     bb.resize(*checkbox_size, *checkbox_size);
     bb.setPadding(3, 3, 3, 3);

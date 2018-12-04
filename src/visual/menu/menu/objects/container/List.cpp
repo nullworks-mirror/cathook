@@ -4,8 +4,7 @@
 
 #include <menu/object/container/List.hpp>
 
-zerokernel::List::List()
-    : Container{}
+zerokernel::List::List() : Container{}
 {
     bb.height.mode = BoundingBox::SizeMode::Mode::CONTENT;
 }

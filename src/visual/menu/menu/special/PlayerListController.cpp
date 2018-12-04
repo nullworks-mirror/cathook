@@ -31,9 +31,9 @@ static settings::RVariable<glez::rgba> color_team_other_dead{
     "zk.style.player-list.team.other-dead", "666666"
 };
 
-static const char *class_names[] = { "Unknown", "Scout", "Sniper", "Soldier",
-                                     "Demoman", "Medic", "Heavy", "Pyro",
-                                     "Spy", "Engineer" };
+static const char *class_names[] = { "Unknown", "Scout",   "Sniper", "Soldier",
+                                     "Demoman", "Medic",   "Heavy",  "Pyro",
+                                     "Spy",     "Engineer" };
 
 zerokernel::special::PlayerListController::PlayerListController(Table &table)
     : table(table)
@@ -178,10 +178,10 @@ void zerokernel::special::PlayerListController::addPlayer(
         trow->kv["player_class"] = data.classId;
         trow->kv["player_dead"]  = int(data.dead);
         trow->kv["player_steam"] = int(data.steam);
-        auto uid                 = dynamic_cast<Text *>(trow->getElementById("uid"));
-        auto steam               = dynamic_cast<Text *>(trow->getElementById("steam"));
-        auto username            = dynamic_cast<Text *>(trow->getElementById("username"));
-        auto kick                = dynamic_cast<Text *>(trow->getElementById("kick"));
+        auto uid      = dynamic_cast<Text *>(trow->getElementById("uid"));
+        auto steam    = dynamic_cast<Text *>(trow->getElementById("steam"));
+        auto username = dynamic_cast<Text *>(trow->getElementById("username"));
+        auto kick     = dynamic_cast<Text *>(trow->getElementById("kick"));
         if (uid)
             uid->set(std::to_string(id));
         if (steam)

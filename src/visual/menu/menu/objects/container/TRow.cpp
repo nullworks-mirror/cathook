@@ -36,8 +36,7 @@ void zerokernel::TRow::setParent(zerokernel::BaseMenuObject *parent)
         printf("WARNING: TRow::setParent is not a table\n");
 }
 
-zerokernel::TRow::TRow()
-    : Container{}
+zerokernel::TRow::TRow() : Container{}
 {
     bb.width.mode  = BoundingBox::SizeMode::Mode::FILL;
     bb.height.mode = BoundingBox::SizeMode::Mode::CONTENT;

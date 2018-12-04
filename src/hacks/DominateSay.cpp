@@ -19,9 +19,9 @@ static CatCommand reload_command("dominatesay_reload", "Reload dominatesays",
 namespace hacks::shared::dominatesay
 {
 
-const std::string tf_classes_dominatesay[] = { "class", "scout", "sniper",
+const std::string tf_classes_dominatesay[] = { "class",   "scout",   "sniper",
                                                "soldier", "demoman", "medic",
-                                               "heavy", "pyro", "spy",
+                                               "heavy",   "pyro",    "spy",
                                                "engineer" };
 
 const std::string tf_teams_dominatesay[] = { "RED", "BLU" };

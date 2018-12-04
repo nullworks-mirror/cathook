@@ -788,8 +788,8 @@ void Aim(CachedEntity *entity)
             [hacks::shared::backtrack::iBestTarget]
             [hacks::shared::backtrack::BestTick];
         current_user_cmd->tick_count = i.tickcount;
-        float &simtime               = NET_FLOAT(RAW_ENT(entity), netvar.m_flSimulationTime);
-        simtime                      = i.simtime;
+        float &simtime = NET_FLOAT(RAW_ENT(entity), netvar.m_flSimulationTime);
+        simtime        = i.simtime;
     }
     // Finish function
     return;

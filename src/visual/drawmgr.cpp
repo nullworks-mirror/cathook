@@ -69,7 +69,7 @@ void DrawCheatVisuals()
             if (!info_text_min)
             {
                 AddSideString(hack::GetVersion(),
-                              GUIColor());                  // github commit and date
+                              GUIColor()); // github commit and date
                 AddSideString(hack::GetType(), GUIColor()); //  Compile type
 #if ENABLE_GUI
                 AddSideString("Press 'INSERT' key to open/close cheat menu.",

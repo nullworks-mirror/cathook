@@ -83,8 +83,7 @@ void zerokernel::Table::loadFromXml(const tinyxml2::XMLElement *data)
     Container::loadFromXml(data);
 }
 
-zerokernel::Table::Table()
-    : Container()
+zerokernel::Table::Table() : Container()
 {
     bb.height.mode = BoundingBox::SizeMode::Mode::CONTENT;
 }

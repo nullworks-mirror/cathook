@@ -17,8 +17,7 @@ void zerokernel::WindowManager::loadFromXml(const tinyxml2::XMLElement *data)
     }
 }
 
-zerokernel::WindowManager::WindowManager()
-    : BaseMenuObject{}
+zerokernel::WindowManager::WindowManager() : BaseMenuObject{}
 {
     bb.width.setFill();
     bb.height.setFill();

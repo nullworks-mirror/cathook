@@ -400,8 +400,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     }
 });
 
-template <typename T>
-void rvarCallback(settings::VariableBase<T> &var, T after)
+template <typename T> void rvarCallback(settings::VariableBase<T> &var, T after)
 {
     if (!restarting)
     {

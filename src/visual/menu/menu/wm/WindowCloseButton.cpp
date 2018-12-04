@@ -29,8 +29,7 @@ void zerokernel::WindowCloseButton::render()
                               cb.height, 0);
 }
 
-zerokernel::WindowCloseButton::WindowCloseButton()
-    : BaseMenuObject{}
+zerokernel::WindowCloseButton::WindowCloseButton() : BaseMenuObject{}
 {
     bb.resize(16, 16);
 }

@@ -18,8 +18,7 @@ static settings::RVariable<glez::rgba> color_text{
     "zk.style.input.text.color.text.inactive", "aaaaaa"
 };
 
-zerokernel::TextInput::TextInput()
-    : BaseMenuObject{}
+zerokernel::TextInput::TextInput() : BaseMenuObject{}
 {
     text_object.setParent(this);
     text_object.move(0, 0);

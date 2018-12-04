@@ -78,7 +78,7 @@ void Update(CachedEntity *player)
                 {
 
                     const char *wp_name = "[unknown]";
-                    int widx            = CE_INT(player, netvar.hActiveWeapon) & 0xFFF;
+                    int widx = CE_INT(player, netvar.hActiveWeapon) & 0xFFF;
                     if (IDX_GOOD(widx))
                     {
                         CachedEntity *weapon = ENTITY(widx);

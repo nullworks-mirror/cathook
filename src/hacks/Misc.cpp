@@ -66,7 +66,7 @@ static void tryPatchLocalPlayerShouldDraw()
     if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook)
     {
         C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];
-        void *page                      = (void *) ((uintptr_t) vtable & ~0xFFF);
+        void *page = (void *) ((uintptr_t) vtable & ~0xFFF);
         mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
         vtable[offsets::ShouldDraw()] = (void *) C_TFPlayer__ShouldDraw_hook;
         mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);

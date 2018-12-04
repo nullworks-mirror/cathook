@@ -11,8 +11,7 @@ namespace settings
 
 void registerVariable(IVariable &variable, std::string name);
 
-template <typename T>
-class RegisteredVariableProxy : public Variable<T>
+template <typename T> class RegisteredVariableProxy : public Variable<T>
 {
 public:
     using Variable<T>::operator=;
@@ -29,8 +28,7 @@ public:
     }
 };
 
-template <typename T>
-using RVariable = RegisteredVariableProxy<T>;
+template <typename T> using RVariable = RegisteredVariableProxy<T>;
 
 using Bool   = RegisteredVariableProxy<bool>;
 using Int    = RegisteredVariableProxy<int>;

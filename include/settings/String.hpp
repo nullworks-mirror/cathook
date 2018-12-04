@@ -9,8 +9,7 @@
 namespace settings
 {
 
-template <>
-class Variable<std::string> : public VariableBase<std::string>
+template <> class Variable<std::string> : public VariableBase<std::string>
 {
 public:
     ~Variable() override = default;

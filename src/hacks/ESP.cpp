@@ -99,7 +99,7 @@ const std::string bonenames_leg_l[]  = { "bip_foot_L", "bip_knee_L",
                                         "bip_hip_L" };
 const std::string bonenames_bottom[] = { "bip_hip_R", "bip_pelvis",
                                          "bip_hip_L" };
-const std::string bonenames_spine[]  = { "bip_pelvis", "bip_spine_0",
+const std::string bonenames_spine[]  = { "bip_pelvis",  "bip_spine_0",
                                         "bip_spine_1", "bip_spine_2",
                                         "bip_spine_3", "bip_neck",
                                         "bip_head" };

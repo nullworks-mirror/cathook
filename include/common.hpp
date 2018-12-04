@@ -108,8 +108,7 @@
 
 #include <core/sdk.hpp>
 
-template <typename T>
-constexpr T _clamp(T _min, T _max, T _val)
+template <typename T> constexpr T _clamp(T _min, T _max, T _val)
 {
     return ((_val > _max) ? _max : ((_val < _min) ? _min : _val));
 }
@@ -137,6 +136,6 @@ constexpr T _clamp(T _min, T _max, T _val)
 
 #define STR(c) #c
 
-#define GET_RENDER_CONTEXT                           \
-    (IsTF2() ? g_IMaterialSystem->GetRenderContext() \
+#define GET_RENDER_CONTEXT                                                     \
+    (IsTF2() ? g_IMaterialSystem->GetRenderContext()                           \
              : g_IMaterialSystemHL->GetRenderContext())

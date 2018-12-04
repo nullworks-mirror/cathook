@@ -9,8 +9,7 @@
 
 #include <stdio.h>
 
-TextFile::TextFile()
-    : lines{}
+TextFile::TextFile() : lines{}
 {
 }
 

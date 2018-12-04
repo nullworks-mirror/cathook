@@ -80,10 +80,10 @@ T *BruteforceInterface(std::string name, sharedobj::SharedObject &object,
 
 void CreateInterfaces()
 {
-    g_ICvar        = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
-    g_IEngine      = BruteforceInterface<IVEngineClient013>("VEngineClient",
+    g_ICvar   = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
+    g_IEngine = BruteforceInterface<IVEngineClient013>("VEngineClient",
                                                        sharedobj::engine());
-    g_AppID        = g_IEngine->GetAppID();
+    g_AppID   = g_IEngine->GetAppID();
     g_IEntityList  = BruteforceInterface<IClientEntityList>("VClientEntityList",
                                                            sharedobj::client());
     g_ISteamClient = BruteforceInterface<ISteamClient>(
@@ -159,8 +159,8 @@ void CreateInterfaces()
             gSignatures.GetClientSignature(
                 "A1 ? ? ? ? 8B 10 89 04 24 FF 52 78 A1 ? ? ? ? 8B 10")));
     }
-    g_ISteamUser       = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
-    g_IModelInfo       = BruteforceInterface<IVModelInfoClient>("VModelInfoClient",
+    g_ISteamUser = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
+    g_IModelInfo = BruteforceInterface<IVModelInfoClient>("VModelInfoClient",
                                                           sharedobj::engine());
     g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(
         gSignatures.GetEngineSignature(

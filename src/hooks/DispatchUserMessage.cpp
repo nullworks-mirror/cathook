@@ -120,6 +120,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 {
                     if (indx && (i == '\n' || i == '\r'))
                     {
+
                     }
                     else
                         cleaned_data.push_back(i);
@@ -184,9 +185,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
 
                 std::vector<std::string> res = {
-                    "skid", "script", "cheat", "hak", "hac", "f1",
-                    "hax", "vac", "ban", "lmao", "bot", "report",
-                    "cat", "insta", "revv", "brass", "kick", claz
+                    "skid", "script", "cheat", "hak",   "hac",  "f1",
+                    "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
+                    "cat",  "insta",  "revv",  "brass", "kick", claz
                 };
                 name2 = SplitName(name1, 2);
                 for (auto i : name2)
@@ -197,7 +198,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 std::string message2 = message;
                 std::vector<std::string> toreplace{ " ", "4", "3", "0",
                                                     "6", "5", "7" };
-                std::vector<std::string> replacewith{ "", "a", "e", "o",
+                std::vector<std::string> replacewith{ "",  "a", "e", "o",
                                                       "g", "s", "t" };
                 boost::to_lower(message2);
 

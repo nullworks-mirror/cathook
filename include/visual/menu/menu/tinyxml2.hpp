@@ -82,26 +82,26 @@ distribution.
 #if defined(TINYXML2_DEBUG)
 #if defined(_MSC_VER)
 #// "(void)0," is for suppressing C4127 warning in "assert(false)", "assert(true)" and the like
-#define TIXMLASSERT(x)    \
-    if (!((void) 0, (x))) \
-    {                     \
-        __debugbreak();   \
+#define TIXMLASSERT(x)                                                         \
+    if (!((void) 0, (x)))                                                      \
+    {                                                                          \
+        __debugbreak();                                                        \
     }
 #elif defined(ANDROID_NDK)
 #include <android/log.h>
-#define TIXMLASSERT(x)                                                     \
-    if (!(x))                                                              \
-    {                                                                      \
-        __android_log_assert("assert", "grinliz", "ASSERT in '%s' at %d.", \
-                             __FILE__, __LINE__);                          \
+#define TIXMLASSERT(x)                                                         \
+    if (!(x))                                                                  \
+    {                                                                          \
+        __android_log_assert("assert", "grinliz", "ASSERT in '%s' at %d.",     \
+                             __FILE__, __LINE__);                              \
     }
 #else
 #include <assert.h>
 #define TIXMLASSERT assert
 #endif
 #else
-#define TIXMLASSERT(x) \
-    {                  \
+#define TIXMLASSERT(x)                                                         \
+    {                                                                          \
     }
 #endif
 
@@ -149,16 +149,15 @@ public:
         NEEDS_NEWLINE_NORMALIZATION = 0x02,
         NEEDS_WHITESPACE_COLLAPSING = 0x04,
 
-        TEXT_ELEMENT                   = NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
-        TEXT_ELEMENT_LEAVE_ENTITIES    = NEEDS_NEWLINE_NORMALIZATION,
-        ATTRIBUTE_NAME                 = 0,
-        ATTRIBUTE_VALUE                = NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
+        TEXT_ELEMENT = NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
+        TEXT_ELEMENT_LEAVE_ENTITIES = NEEDS_NEWLINE_NORMALIZATION,
+        ATTRIBUTE_NAME              = 0,
+        ATTRIBUTE_VALUE = NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
         ATTRIBUTE_VALUE_LEAVE_ENTITIES = NEEDS_NEWLINE_NORMALIZATION,
         COMMENT                        = NEEDS_NEWLINE_NORMALIZATION
     };
 
-    StrPair()
-        : _flags(0), _start(0), _end(0)
+    StrPair() : _flags(0), _start(0), _end(0)
     {
     }
     ~StrPair();
@@ -217,12 +216,10 @@ private:
     Has a small initial memory pool, so that low or no usage will not
     cause a call to new/delete
 */
-template <class T, int INITIAL_SIZE>
-class DynArray
+template <class T, int INITIAL_SIZE> class DynArray
 {
 public:
-    DynArray()
-        : _mem(_pool), _allocated(INITIAL_SIZE), _size(0)
+    DynArray() : _mem(_pool), _allocated(INITIAL_SIZE), _size(0)
     {
     }
 
@@ -380,8 +377,7 @@ public:
 /*
     Template child class to create pools of the correct type.
 */
-template <int ITEM_SIZE>
-class MemPoolT : public MemPool
+template <int ITEM_SIZE> class MemPoolT : public MemPool
 {
 public:
     MemPoolT()
@@ -1155,8 +1151,7 @@ public:
     virtual bool ShallowEqual(const XMLNode *compare) const;
 
 protected:
-    XMLText(XMLDocument *doc)
-        : XMLNode(doc), _isCData(false)
+    XMLText(XMLDocument *doc) : XMLNode(doc), _isCData(false)
     {
     }
     virtual ~XMLText()
@@ -1398,8 +1393,7 @@ private:
         BUF_SIZE = 200
     };
 
-    XMLAttribute()
-        : _name(), _value(), _parseLineNum(0), _next(0), _memPool(0)
+    XMLAttribute() : _name(), _value(), _parseLineNum(0), _next(0), _memPool(0)
     {
     }
     virtual ~XMLAttribute()
@@ -2259,18 +2253,15 @@ class TINYXML2_LIB XMLHandle
 public:
     /// Create a handle from any node (at any depth of the tree.) This can be a
     /// null pointer.
-    XMLHandle(XMLNode *node)
-        : _node(node)
+    XMLHandle(XMLNode *node) : _node(node)
     {
     }
     /// Create a handle from a node.
-    XMLHandle(XMLNode &node)
-        : _node(&node)
+    XMLHandle(XMLNode &node) : _node(&node)
     {
     }
     /// Copy constructor
-    XMLHandle(const XMLHandle &ref)
-        : _node(ref._node)
+    XMLHandle(const XMLHandle &ref) : _node(ref._node)
     {
     }
     /// Assignment
@@ -2360,16 +2351,13 @@ private:
 class TINYXML2_LIB XMLConstHandle
 {
 public:
-    XMLConstHandle(const XMLNode *node)
-        : _node(node)
+    XMLConstHandle(const XMLNode *node) : _node(node)
     {
     }
-    XMLConstHandle(const XMLNode &node)
-        : _node(&node)
+    XMLConstHandle(const XMLNode &node) : _node(&node)
     {
     }
-    XMLConstHandle(const XMLConstHandle &ref)
-        : _node(ref._node)
+    XMLConstHandle(const XMLConstHandle &ref) : _node(ref._node)
     {
     }
 

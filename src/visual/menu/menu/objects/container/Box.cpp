@@ -73,8 +73,7 @@ void zerokernel::Box::setTitle(const std::string &string)
     title.set(string);
 }
 
-zerokernel::Box::Box()
-    : Container{}
+zerokernel::Box::Box() : Container{}
 {
     title.setParent(this);
     title.getBoundingBox().setFloating(true);

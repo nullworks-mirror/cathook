@@ -132,8 +132,7 @@ void saveApiKeyAndHost(std::string host)
         logging::Info("[CO] Something went wrong while saving API key");
         return;
     }
-    keyfile << api_key << '\n'
-            << host << '\n';
+    keyfile << api_key << '\n' << host << '\n';
 }
 
 void queueUserForIdentification(unsigned steamId)

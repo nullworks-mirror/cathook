@@ -20,8 +20,7 @@ constexpr uint8_t hexToInt(char c)
 namespace settings
 {
 
-template <>
-class Variable<glez::rgba> : public VariableBase<glez::rgba>
+template <> class Variable<glez::rgba> : public VariableBase<glez::rgba>
 {
 public:
     ~Variable<glez::rgba>() override = default;

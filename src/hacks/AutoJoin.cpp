@@ -25,9 +25,9 @@ namespace hacks::shared::autojoin
  * Credits to Blackfire for helping me with auto-requeue!
  */
 
-const std::string classnames[] = { "scout", "sniper", "soldier",
-                                   "demoman", "medic", "heavyweapons",
-                                   "pyro", "spy", "engineer" };
+const std::string classnames[] = { "scout",   "sniper", "soldier",
+                                   "demoman", "medic",  "heavyweapons",
+                                   "pyro",    "spy",    "engineer" };
 
 bool UnassignedTeam()
 {

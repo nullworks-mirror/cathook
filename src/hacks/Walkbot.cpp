@@ -287,9 +287,9 @@ void DeleteNode(index_t node)
     memset(&n, 0, sizeof(walkbot_node_s));
 }
 
-#define BINARY_FILE_WRITE(handle, data) \
+#define BINARY_FILE_WRITE(handle, data)                                        \
     handle.write(reinterpret_cast<const char *>(&data), sizeof(data))
-#define BINARY_FILE_READ(handle, data) \
+#define BINARY_FILE_READ(handle, data)                                         \
     handle.read(reinterpret_cast<char *>(&data), sizeof(data))
 
 void Save(std::string filename)

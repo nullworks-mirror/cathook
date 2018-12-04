@@ -32,8 +32,8 @@ static settings::Int solid_when{ "glow.solid-when", "0" };
 IMaterialSystem *materials = nullptr;
 
 CScreenSpaceEffectRegistration *CScreenSpaceEffectRegistration::s_pHead = NULL;
-IScreenSpaceEffectManager *g_pScreenSpaceEffects                        = nullptr;
-CScreenSpaceEffectRegistration **g_ppScreenSpaceRegistrationHead        = nullptr;
+IScreenSpaceEffectManager *g_pScreenSpaceEffects                 = nullptr;
+CScreenSpaceEffectRegistration **g_ppScreenSpaceRegistrationHead = nullptr;
 CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration(
     const char *pName, IScreenSpaceEffect *pEffect)
 {

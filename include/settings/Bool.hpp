@@ -10,8 +10,7 @@
 namespace settings
 {
 
-template <>
-class Variable<bool> : public VariableBase<bool>
+template <> class Variable<bool> : public VariableBase<bool>
 {
 public:
     ~Variable() override = default;

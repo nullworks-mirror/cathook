@@ -67,7 +67,7 @@ static inline int TIXML_VSNPRINTF(char *buffer, size_t size, const char *format,
 #define TIXML_SSCANF sscanf
 #if (_MSC_VER < 1400) && (!defined WINCE)
 // Microsoft Visual Studio 2003 and not WinCE.
-#define TIXML_VSCPRINTF \
+#define TIXML_VSCPRINTF                                                        \
     _vscprintf // VS2003's C runtime has this, but VC6 C runtime or WinCE SDK
 // doesn't have.
 #else
@@ -738,13 +738,13 @@ char *XMLDocument::Identify(char *p, XMLNode **node)
     XMLNode *returnNode = 0;
     if (XMLUtil::StringEqual(p, xmlHeader, xmlHeaderLen))
     {
-        returnNode                = CreateUnlinkedNode<XMLDeclaration>(_commentPool);
+        returnNode = CreateUnlinkedNode<XMLDeclaration>(_commentPool);
         returnNode->_parseLineNum = _parseCurLineNum;
         p += xmlHeaderLen;
     }
     else if (XMLUtil::StringEqual(p, commentHeader, commentHeaderLen))
     {
-        returnNode                = CreateUnlinkedNode<XMLComment>(_commentPool);
+        returnNode = CreateUnlinkedNode<XMLComment>(_commentPool);
         returnNode->_parseLineNum = _parseCurLineNum;
         p += commentHeaderLen;
     }
@@ -758,13 +758,13 @@ char *XMLDocument::Identify(char *p, XMLNode **node)
     }
     else if (XMLUtil::StringEqual(p, dtdHeader, dtdHeaderLen))
     {
-        returnNode                = CreateUnlinkedNode<XMLUnknown>(_commentPool);
+        returnNode = CreateUnlinkedNode<XMLUnknown>(_commentPool);
         returnNode->_parseLineNum = _parseCurLineNum;
         p += dtdHeaderLen;
     }
     else if (XMLUtil::StringEqual(p, elementHeader, elementHeaderLen))
     {
-        returnNode                = CreateUnlinkedNode<XMLElement>(_elementPool);
+        returnNode = CreateUnlinkedNode<XMLElement>(_elementPool);
         returnNode->_parseLineNum = _parseCurLineNum;
         p += elementHeaderLen;
     }
@@ -772,7 +772,7 @@ char *XMLDocument::Identify(char *p, XMLNode **node)
     {
         returnNode = CreateUnlinkedNode<XMLText>(_textPool);
         returnNode->_parseLineNum =
-            _parseCurLineNum;     // Report line of first non-whitespace character
+            _parseCurLineNum; // Report line of first non-whitespace character
         p                = start; // Back it up, all the text counts.
         _parseCurLineNum = startLine;
     }
@@ -1303,8 +1303,7 @@ bool XMLText::Accept(XMLVisitor *visitor) const
 
 // --------- XMLComment ---------- //
 
-XMLComment::XMLComment(XMLDocument *doc)
-    : XMLNode(doc)
+XMLComment::XMLComment(XMLDocument *doc) : XMLNode(doc)
 {
 }
 
@@ -1349,8 +1348,7 @@ bool XMLComment::Accept(XMLVisitor *visitor) const
 
 // --------- XMLDeclaration ---------- //
 
-XMLDeclaration::XMLDeclaration(XMLDocument *doc)
-    : XMLNode(doc)
+XMLDeclaration::XMLDeclaration(XMLDocument *doc) : XMLNode(doc)
 {
 }
 
@@ -1397,8 +1395,7 @@ bool XMLDeclaration::Accept(XMLVisitor *visitor) const
 
 // --------- XMLUnknown ---------- //
 
-XMLUnknown::XMLUnknown(XMLDocument *doc)
-    : XMLNode(doc)
+XMLUnknown::XMLUnknown(XMLDocument *doc) : XMLNode(doc)
 {
 }
 
@@ -2334,8 +2331,7 @@ struct LongFitsIntoSizeTMinusOne
     }
 };
 
-template <>
-struct LongFitsIntoSizeTMinusOne<false>
+template <> struct LongFitsIntoSizeTMinusOne<false>
 {
     static bool Fits(unsigned long)
     {
