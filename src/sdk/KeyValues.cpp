@@ -293,8 +293,7 @@ private:
     class CLookupFunctor
     {
     public:
-        CLookupFunctor()
-            : m_pchCurString(NULL), m_pchCurBase(NULL)
+        CLookupFunctor() : m_pchCurString(NULL), m_pchCurBase(NULL)
         {
         }
 

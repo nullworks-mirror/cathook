@@ -404,8 +404,8 @@ public:
                                          // regenerated on video mode change).
         ImageFormat format,
         MaterialRenderTargetDepth_t depth = MATERIAL_RT_DEPTH_SHARED,
-        unsigned int textureFlags         = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT,
-        unsigned int renderTargetFlags    = 0) = 0;
+        unsigned int textureFlags = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT,
+        unsigned int renderTargetFlags = 0) = 0;
 
     virtual ITexture *CreateNamedRenderTargetTexture(
         const char *pRTName, int w, int h,
@@ -423,8 +423,8 @@ public:
                                          // regenerated on video mode change).
         ImageFormat format,
         MaterialRenderTargetDepth_t depth = MATERIAL_RT_DEPTH_SHARED,
-        unsigned int textureFlags         = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT,
-        unsigned int renderTargetFlags    = 0) = 0;
+        unsigned int textureFlags = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT,
+        unsigned int renderTargetFlags = 0) = 0;
 
     // -----------------------------------------------------------
     // Lightmaps

@@ -1087,8 +1087,7 @@ void ConVar::SetDefault(const char *pszDefault)
 class CEmptyConVar : public ConVar
 {
 public:
-    CEmptyConVar()
-        : ConVar("", "0")
+    CEmptyConVar() : ConVar("", "0")
     {
     }
     // Used for optimal read access

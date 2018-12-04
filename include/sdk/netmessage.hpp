@@ -13,50 +13,50 @@
 #include <inetmessage.h>
 #include <inetmsghandler.h>
 
-#define DECLARE_BASE_MESSAGE(msgtype)     \
-public:                                   \
-    bool ReadFromBuffer(bf_read &buffer); \
-    bool WriteToBuffer(bf_write &buffer); \
-    const char *ToString() const;         \
-    int GetType() const                   \
-    {                                     \
-        return msgtype;                   \
-    }                                     \
-    const char *GetName() const           \
-    {                                     \
-        return #msgtype;                  \
+#define DECLARE_BASE_MESSAGE(msgtype)                                          \
+public:                                                                        \
+    bool ReadFromBuffer(bf_read &buffer);                                      \
+    bool WriteToBuffer(bf_write &buffer);                                      \
+    const char *ToString() const;                                              \
+    int GetType() const                                                        \
+    {                                                                          \
+        return msgtype;                                                        \
+    }                                                                          \
+    const char *GetName() const                                                \
+    {                                                                          \
+        return #msgtype;                                                       \
     }
 
-#define DECLARE_NET_MESSAGE(name)          \
-    DECLARE_BASE_MESSAGE(net_##name);      \
-    INetMessageHandler *m_pMessageHandler; \
-    bool Process()                         \
-    {                                      \
-        return false;                      \
+#define DECLARE_NET_MESSAGE(name)                                              \
+    DECLARE_BASE_MESSAGE(net_##name);                                          \
+    INetMessageHandler *m_pMessageHandler;                                     \
+    bool Process()                                                             \
+    {                                                                          \
+        return false;                                                          \
     }
 
-#define DECLARE_SVC_MESSAGE(name)                      \
-    DECLARE_BASE_MESSAGE(svc_##name);                  \
-    IServerMessageHandler *m_pMessageHandler;          \
-    bool Process()                                     \
-    {                                                  \
-        return m_pMessageHandler->Process##name(this); \
+#define DECLARE_SVC_MESSAGE(name)                                              \
+    DECLARE_BASE_MESSAGE(svc_##name);                                          \
+    IServerMessageHandler *m_pMessageHandler;                                  \
+    bool Process()                                                             \
+    {                                                                          \
+        return m_pMessageHandler->Process##name(this);                         \
     }
 
-#define DECLARE_CLC_MESSAGE(name)                      \
-    DECLARE_BASE_MESSAGE(clc_##name);                  \
-    IClientMessageHandler *m_pMessageHandler;          \
-    bool Process()                                     \
-    {                                                  \
-        return m_pMessageHandler->Process##name(this); \
+#define DECLARE_CLC_MESSAGE(name)                                              \
+    DECLARE_BASE_MESSAGE(clc_##name);                                          \
+    IClientMessageHandler *m_pMessageHandler;                                  \
+    bool Process()                                                             \
+    {                                                                          \
+        return m_pMessageHandler->Process##name(this);                         \
     }
 
-#define DECLARE_MM_MESSAGE(name)                       \
-    DECLARE_BASE_MESSAGE(mm_##name);                   \
-    IMatchmakingMessageHandler *m_pMessageHandler;     \
-    bool Process()                                     \
-    {                                                  \
-        return m_pMessageHandler->Process##name(this); \
+#define DECLARE_MM_MESSAGE(name)                                               \
+    DECLARE_BASE_MESSAGE(mm_##name);                                           \
+    IMatchmakingMessageHandler *m_pMessageHandler;                             \
+    bool Process()                                                             \
+    {                                                                          \
+        return m_pMessageHandler->Process##name(this);                         \
     }
 
 class CNetMessage : public INetMessage
@@ -117,8 +117,8 @@ protected:
 #define svc_Print 7      // print text to console
 #define svc_ServerInfo 8 // first message from server about game, map etc
 #define svc_SendTable 9  // sends a sendtable description for a game class
-#define svc_ClassInfo \
-    10                  // Info about classes (first byte is a CLASSINFO_ define).
+#define svc_ClassInfo                                                          \
+    10 // Info about classes (first byte is a CLASSINFO_ define).
 #define svc_SetPause 11 // tells client if server paused or unpaused
 
 #define svc_CreateStringTable 12 // inits shared string tables
@@ -133,7 +133,7 @@ protected:
 
 #define svc_SetView 18  // sets entity as point of view
 #define svc_FixAngle 19 // sets/corrects players viewangle
-#define svc_CrosshairAngle \
+#define svc_CrosshairAngle                                                     \
     20 // adjusts crosshair in auto aim mode to lock on traget
 
 #define svc_BSPDecal 21 // add a static decal to the worl BSP
@@ -156,7 +156,7 @@ protected:
 
 #define svc_GameEventList 30 // list of known games events and fields
 
-#define svc_GetCvarValue \
+#define svc_GetCvarValue                                                       \
     31 // Server wants to know the value of a cvar on the client.
 
 #define SVC_LASTMSG 31 // last known server messages
@@ -170,9 +170,9 @@ protected:
 #define clc_VoiceData 10    // Voicestream data from a client
 #define clc_BaselineAck 11  // client acknowledges a new baseline seqnr
 #define clc_ListenEvents 12 // client acknowledges a new baseline seqnr
-#define clc_RespondCvarValue \
+#define clc_RespondCvarValue                                                   \
     13 // client is responding to a svc_GetCvarValue message.
-#define clc_FileCRCCheck \
+#define clc_FileCRCCheck                                                       \
     14 // client is sending a file's CRC to the server to be verified.
 
 #define CLC_LASTMSG 14 //	last known client message
