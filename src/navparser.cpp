@@ -16,6 +16,7 @@ static settings::Bool enabled{ "misc.pathing", "true" };
 // Whether or not to run vischecks at pathtime
 static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "true" };
 static settings::Bool draw{ "misc.pathing.draw", "false" };
+static settings::Bool look{ "misc.pathing.look-at-path", "false" };
 
 static std::vector<Vector> crumbs;
 
@@ -617,6 +618,14 @@ static HookedFunction
         }
         if (crumbs.empty())
             return;
+
+        if (look)
+        {
+            Vector next = crumbs.front();
+            next.z = g_pLocalPlayer->v_Eye.z;
+            AimAt(g_pLocalPlayer->v_Eye, next, current_user_cmd);
+        }
+
         // Detect when jumping is necessary
         if ((!(g_pLocalPlayer->holding_sniper_rifle &&
                g_pLocalPlayer->bZoomed) &&
