@@ -22,7 +22,26 @@ bool re::CTFPartyClient::BInQueue(re::CTFPartyClient *this_)
 {
     return *(uint8_t *) ((uint8_t *) this_ + 69);
 }
+int re::CTFPartyClient::GetNumOnlineMembers()
+{
+    typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
+    static uintptr_t addr = gSignatures.GetClientSignature(
+        "55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
+    static GetNumOnlineMembers_t GetNumOnlineMembers_fn =
+        GetNumOnlineMembers_t(addr);
 
+    return GetNumOnlineMembers_fn(this);
+}
+int re::CTFPartyClient::GetNumMembers()
+{
+    typedef int (*GetNumMembers_t)(re::CTFPartyClient *);
+    static uintptr_t addr = gSignatures.GetClientSignature(
+        "55 89 E5 8B 45 ? 8B 50 ? C6 80") + 0x30;
+    static GetNumMembers_t GetNumMembers_fn =
+        GetNumMembers_t(addr);
+
+    return GetNumMembers_fn(this);
+}
 int re::CTFPartyClient::SendPartyChat(re::CTFPartyClient *client,
                                       const char *message)
 {

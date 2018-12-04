@@ -113,15 +113,17 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 data.push_back(to_app);
             }
             data = data.substr(0, data.size() - 1);
+            int indx = 0;
             for (auto i : data)
             {
                 if (clean_chat)
                 {
-                    if ((i == '\n' || i == '\r'))
+                    if (indx && (i == '\n' || i == '\r'))
                     {
                     }
                     else
                         cleaned_data.push_back(i);
+                    indx++;
                 }
             }
             if (!*clean_chat)
@@ -265,15 +267,14 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
             }
             chatlog::LogMessage(cleaned_data[0], message);
-            char *cleaned_data_c = new char[cleaned_data.size() + 1];
-            int idx              = 0;
+            char *cleaned_data_c = new char[cleaned_data.size()];
+            int idx = 0;
             for (char i : cleaned_data)
             {
                 cleaned_data_c[idx] = i;
                 idx++;
             }
-            cleaned_data_c[cleaned_data.size()] = '\0';
-            buf                                 = bf_read(cleaned_data_c, cleaned_data.size());
+            buf = bf_read(cleaned_data_c, cleaned_data.size());
             buf.Seek(0);
         }
     }

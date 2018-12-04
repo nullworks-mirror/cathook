@@ -27,6 +27,8 @@ public:
     int BInvitePlayerToParty(CSteamID steamid);
     int BRequestJoinPlayer(CSteamID steamid);
     static bool BInQueue(CTFPartyClient *this_);
+    int GetNumOnlineMembers();
+    int GetNumMembers();
 };
 class ITFMatchGroupDescription
 {
