@@ -38,8 +38,7 @@ public:
 
     void renderDebugOverlay() override;
 
-    BaseMenuObject *
-    findElement(const std::function<bool(BaseMenuObject *)> &search) override;
+    BaseMenuObject *findElement(const std::function<bool(BaseMenuObject *)> &search) override;
 
     //
 

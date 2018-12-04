@@ -21,10 +21,8 @@ typedef void *AttributeDefinitionPtr_t;
 // FIXME move to separate header
 
 typedef ItemSchemaPtr_t (*ItemSystem_t)(void);
-typedef void *(*SetRuntimeAttributeValue_t)(CAttributeList *,
-                                            AttributeDefinitionPtr_t, float);
-typedef AttributeDefinitionPtr_t (*GetAttributeDefinition_t)(ItemSchemaPtr_t,
-                                                             int);
+typedef void *(*SetRuntimeAttributeValue_t)(CAttributeList *, AttributeDefinitionPtr_t, float);
+typedef AttributeDefinitionPtr_t (*GetAttributeDefinition_t)(ItemSchemaPtr_t, int);
 ItemSchemaPtr_t GetItemSchema(void);
 
 extern const char *sig_GetItemSchema;

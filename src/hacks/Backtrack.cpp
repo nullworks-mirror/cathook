@@ -45,8 +45,7 @@ void UpdateIncomingSequences()
         if (m_nInSequenceNr > lastincomingsequencenumber)
         {
             lastincomingsequencenumber = m_nInSequenceNr;
-            sequences.push_front(CIncomingSequence(instate, m_nInSequenceNr,
-                                                   g_GlobalVars->realtime));
+            sequences.push_front(CIncomingSequence(instate, m_nInSequenceNr, g_GlobalVars->realtime));
         }
 
         if (sequences.size() > 2048)
@@ -129,10 +128,9 @@ void Run()
         if (HasCondition<TFCond_HalloweenGhostMode>(pEntity))
             continue;
         float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
-        float viewangles =
-            (_viewangles > 180) ? _viewangles - 360 : _viewangles;
-        float simtime   = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
-        Vector ent_orig = pEntity->InternalEntity()->GetAbsOrigin();
+        float viewangles  = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
+        float simtime     = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
+        Vector ent_orig   = pEntity->InternalEntity()->GetAbsOrigin();
         std::array<hitboxData, 18> hbdArray;
         for (size_t i = 0; i < hbdArray.max_size(); i++)
         {
@@ -142,21 +140,12 @@ void Run()
         }
         hitboxData collidable{};
         {
-            collidable.min =
-                RAW_ENT(pEntity)->GetCollideable()->OBBMins() + ent_orig;
-            collidable.max =
-                RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + ent_orig;
+            collidable.min    = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + ent_orig;
+            collidable.max    = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + ent_orig;
             collidable.center = (collidable.min + collidable.max) / 2;
         }
-        auto hdr = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
-        headPositions[i][cmd->command_number % getTicks()] =
-            BacktrackData{ cmd->tick_count,
-                           hbdArray,
-                           collidable,
-                           viewangles,
-                           simtime,
-                           ent_orig,
-                           cmd->command_number % getTicks() };
+        auto hdr                                           = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
+        headPositions[i][cmd->command_number % getTicks()] = BacktrackData{ cmd->tick_count, hbdArray, collidable, viewangles, simtime, ent_orig, cmd->command_number % getTicks() };
     }
     if (iBestTarget != -1 && CanShoot())
     {
@@ -170,12 +159,10 @@ void Run()
                     return;
                 auto i          = headPositions[iBestTarget][BestTick];
                 cmd->tick_count = i.tickcount;
-                Vector &angles =
-                    NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
-                float &simtime =
-                    NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
-                angles.y = i.viewangles;
-                simtime  = i.simtime;
+                Vector &angles  = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
+                float &simtime  = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
+                angles.y        = i.viewangles;
+                simtime         = i.simtime;
             }
         }
     }
@@ -211,11 +198,9 @@ void Draw()
                     size = abs(max.y - min.y);
 
                 if (i == iBestTarget && j == BestTick)
-                    glez::draw::rect(out.x, out.y, size / 2, size / 2,
-                                     colors::red);
+                    glez::draw::rect(out.x, out.y, size / 2, size / 2, colors::red);
                 else
-                    glez::draw::rect(out.x, out.y, size / 4, size / 4,
-                                     colors::green);
+                    glez::draw::rect(out.x, out.y, size / 4, size / 4, colors::green);
             }
         }
     }
@@ -294,8 +279,7 @@ bool ValidTick(BacktrackData &i, CachedEntity *ent)
     //    istickinvalid[ent->m_IDX][i.index] = true;
     //    return false;
 
-    if (!(fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f -
-                getLatency() - i.simtime * 1000.0f) < 200.0f))
+    if (!(fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f - getLatency() - i.simtime * 1000.0f) < 200.0f))
         return false;
     return true;
 }
@@ -327,15 +311,12 @@ std::pair<int, int> getBestEntBestTick()
                     {
                         if (ValidTick(headPositions[i][j], ENTITY(i)))
                         {
-                            float dist =
-                                headPositions[i][j]
-                                    .hitboxes.at(spine_3)
-                                    .center.DistTo(g_pLocalPlayer->v_Eye);
+                            float dist = headPositions[i][j].hitboxes.at(spine_3).center.DistTo(g_pLocalPlayer->v_Eye);
                             if (dist < bestDist)
                             {
-                                bestEnt  = i;
-                                bestTick = j;
-                                bestDist = dist;
+                                bestEnt           = i;
+                                bestTick          = j;
+                                bestDist          = dist;
                                 Vischeck_Success  = true;
                                 vischeck_priority = true;
                             }
@@ -359,21 +340,15 @@ std::pair<int, int> getBestEntBestTick()
                     {
                         if (ValidTick(headPositions[i][j], tar))
                         {
-                            float FOVDistance = GetFov(
-                                g_pLocalPlayer->v_OrigViewangles,
-                                g_pLocalPlayer->v_Eye,
-                                headPositions[i][j].hitboxes.at(head).center);
+                            float FOVDistance = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, headPositions[i][j].hitboxes.at(head).center);
                             if (FOVDistance > bestFov && vischeck_priority)
                                 continue;
-                            bool Vischeck_suceeded = IsVectorVisible(
-                                g_pLocalPlayer->v_Eye,
-                                headPositions[i][j].hitboxes.at(0).center,
-                                true);
-                            if (FOVDistance < bestFov || ( Vischeck_suceeded && !vischeck_priority))
+                            bool Vischeck_suceeded = IsVectorVisible(g_pLocalPlayer->v_Eye, headPositions[i][j].hitboxes.at(0).center, true);
+                            if (FOVDistance < bestFov || (Vischeck_suceeded && !vischeck_priority))
                             {
                                 bestEnt  = i;
                                 bestTick = j;
-                                bestFov = FOVDistance;
+                                bestFov  = FOVDistance;
                                 if (Vischeck_suceeded)
                                 {
                                     Vischeck_Success  = true;

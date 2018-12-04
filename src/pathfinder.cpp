@@ -52,8 +52,7 @@ bool initiatenavfile()
     logging::Info("Pathing: Initiating path...");
 
     // This will not work, please fix
-    std::string dir =
-        "/home/elite/.steam/steam/steamapps/common/Team Fortress 2/tf/maps/";
+    std::string dir       = "/home/elite/.steam/steam/steamapps/common/Team Fortress 2/tf/maps/";
     std::string levelName = g_IEngine->GetLevelName();
     int dotpos            = levelName.find('.');
     levelName             = levelName.substr(0, dotpos);

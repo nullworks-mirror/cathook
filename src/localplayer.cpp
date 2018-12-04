@@ -7,11 +7,10 @@
 
 #include "common.hpp"
 
-CatCommand printfov("fov_print", "Dump achievements to file (development)",
-                    []() {
-                        if (CE_GOOD(LOCAL_E))
-                            logging::Info("%d", CE_INT(LOCAL_E, netvar.iFOV));
-                    });
+CatCommand printfov("fov_print", "Dump achievements to file (development)", []() {
+    if (CE_GOOD(LOCAL_E))
+        logging::Info("%d", CE_INT(LOCAL_E, netvar.iFOV));
+});
 weaponmode GetWeaponModeloc()
 {
     int weapon_handle, slot;
@@ -36,28 +35,11 @@ weaponmode GetWeaponModeloc()
     {
         return weaponmode::weapon_pda;
     }
-    else if (classid == CL_CLASS(CTFLunchBox) ||
-             classid == CL_CLASS(CTFLunchBox_Drink) ||
-             classid == CL_CLASS(CTFBuffItem))
+    else if (classid == CL_CLASS(CTFLunchBox) || classid == CL_CLASS(CTFLunchBox_Drink) || classid == CL_CLASS(CTFBuffItem))
     {
         return weaponmode::weapon_consumable;
     }
-    else if (classid == CL_CLASS(CTFRocketLauncher_DirectHit) ||
-             classid == CL_CLASS(CTFRocketLauncher) ||
-             classid == CL_CLASS(CTFGrenadeLauncher) ||
-             classid == CL_CLASS(CTFPipebombLauncher) ||
-             classid == CL_CLASS(CTFCompoundBow) ||
-             classid == CL_CLASS(CTFBat_Wood) ||
-             classid == CL_CLASS(CTFBat_Giftwrap) ||
-             classid == CL_CLASS(CTFFlareGun) ||
-             classid == CL_CLASS(CTFFlareGun_Revenge) ||
-             classid == CL_CLASS(CTFSyringeGun) ||
-             classid == CL_CLASS(CTFCrossbow) ||
-             classid == CL_CLASS(CTFShotgunBuildingRescue) ||
-             classid == CL_CLASS(CTFDRGPomson) ||
-             classid == CL_CLASS(CTFWeaponFlameBall) ||
-             classid == CL_CLASS(CTFRaygun) ||
-             classid == CL_CLASS(CTFGrapplingHook))
+    else if (classid == CL_CLASS(CTFRocketLauncher_DirectHit) || classid == CL_CLASS(CTFRocketLauncher) || classid == CL_CLASS(CTFGrenadeLauncher) || classid == CL_CLASS(CTFPipebombLauncher) || classid == CL_CLASS(CTFCompoundBow) || classid == CL_CLASS(CTFBat_Wood) || classid == CL_CLASS(CTFBat_Giftwrap) || classid == CL_CLASS(CTFFlareGun) || classid == CL_CLASS(CTFFlareGun_Revenge) || classid == CL_CLASS(CTFSyringeGun) || classid == CL_CLASS(CTFCrossbow) || classid == CL_CLASS(CTFShotgunBuildingRescue) || classid == CL_CLASS(CTFDRGPomson) || classid == CL_CLASS(CTFWeaponFlameBall) || classid == CL_CLASS(CTFRaygun) || classid == CL_CLASS(CTFGrapplingHook))
     {
         return weaponmode::weapon_projectile;
     }
@@ -88,11 +70,9 @@ void LocalPlayer::Update()
     if (CE_GOOD(wep))
     {
         weapon_mode = GetWeaponModeloc();
-        if (wep->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
-            wep->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
+        if (wep->m_iClassID() == CL_CLASS(CTFSniperRifle) || wep->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
             holding_sniper_rifle = true;
-        if (wep->m_iClassID() == CL_CLASS(CTFWeaponBuilder) ||
-            wep->m_iClassID() == CL_CLASS(CTFWeaponSapper))
+        if (wep->m_iClassID() == CL_CLASS(CTFWeaponBuilder) || wep->m_iClassID() == CL_CLASS(CTFWeaponSapper))
             holding_sapper = true;
     }
     team                   = CE_INT(entity, netvar.iTeamNum);
@@ -103,8 +83,7 @@ void LocalPlayer::Update()
     clazz                  = CE_INT(entity, netvar.iClass);
     health                 = CE_INT(entity, netvar.iHealth);
     this->bUseSilentAngles = false;
-    bZoomed                = CE_INT(entity, netvar.iFOV) ==
-              20.0f; //!= NET_INT(entity, netvar.iDefaultFOV);
+    bZoomed                = CE_INT(entity, netvar.iFOV) == 20.0f; //!= NET_INT(entity, netvar.iDefaultFOV);
     if (bZoomed)
     {
         if (flZoomBegin == 0.0f)

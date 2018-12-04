@@ -20,8 +20,7 @@ static float old_nightmode{ 0.0f };
 namespace hooked_methods
 {
 #include "reclasses.hpp"
-DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
-                     ClientFrameStage_t stage)
+DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_, ClientFrameStage_t stage)
 {
     if (!isHackActive())
         return original::FrameStageNotify(this_, stage);
@@ -30,39 +29,28 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
 
     if (old_nightmode != *nightmode)
     {
-        static ConVar *r_DrawSpecificStaticProp =
-            g_ICvar->FindVar("r_DrawSpecificStaticProp");
+        static ConVar *r_DrawSpecificStaticProp = g_ICvar->FindVar("r_DrawSpecificStaticProp");
         if (!r_DrawSpecificStaticProp)
         {
-            r_DrawSpecificStaticProp =
-                g_ICvar->FindVar("r_DrawSpecificStaticProp");
+            r_DrawSpecificStaticProp = g_ICvar->FindVar("r_DrawSpecificStaticProp");
             return;
         }
         r_DrawSpecificStaticProp->SetValue(0);
 
-        for (MaterialHandle_t i = g_IMaterialSystem->FirstMaterial();
-             i != g_IMaterialSystem->InvalidMaterial();
-             i = g_IMaterialSystem->NextMaterial(i))
+        for (MaterialHandle_t i = g_IMaterialSystem->FirstMaterial(); i != g_IMaterialSystem->InvalidMaterial(); i = g_IMaterialSystem->NextMaterial(i))
         {
             IMaterial *pMaterial = g_IMaterialSystem->GetMaterial(i);
 
             if (!pMaterial)
                 continue;
-            if (strstr(pMaterial->GetTextureGroupName(), "World") ||
-                strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
+            if (strstr(pMaterial->GetTextureGroupName(), "World") || strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
             {
                 if (float(nightmode) > 0.0f)
                 {
                     if (strstr(pMaterial->GetTextureGroupName(), "StaticProp"))
-                        pMaterial->ColorModulate(
-                            1.0f - float(nightmode) / 100.0f,
-                            1.0f - float(nightmode) / 100.0f,
-                            1.0f - float(nightmode) / 100.0f);
+                        pMaterial->ColorModulate(1.0f - float(nightmode) / 100.0f, 1.0f - float(nightmode) / 100.0f, 1.0f - float(nightmode) / 100.0f);
                     else
-                        pMaterial->ColorModulate(
-                            (1.0f - float(nightmode) / 100.0f) / 6.0f,
-                            (1.0f - float(nightmode) / 100.0f) / 6.0f,
-                            (1.0f - float(nightmode) / 100.0f) / 6.0f);
+                        pMaterial->ColorModulate((1.0f - float(nightmode) / 100.0f) / 6.0f, (1.0f - float(nightmode) / 100.0f) / 6.0f, (1.0f - float(nightmode) / 100.0f) / 6.0f);
                 }
                 else
                     pMaterial->ColorModulate(1.0f, 1.0f, 1.0f);
@@ -105,10 +93,8 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_,
                 RemoveCondition<TFCond_Zoomed>(LOCAL_E);
             if (no_shake && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
             {
-                NET_VECTOR(RAW_ENT(LOCAL_E),
-                           netvar.vecPunchAngle)    = { 0.0f, 0.0f, 0.0f };
-                NET_VECTOR(RAW_ENT(LOCAL_E),
-                           netvar.vecPunchAngleVel) = { 0.0f, 0.0f, 0.0f };
+                NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle)    = { 0.0f, 0.0f, 0.0f };
+                NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = { 0.0f, 0.0f, 0.0f };
             }
         }
         hacks::tf::thirdperson::frameStageNotify();

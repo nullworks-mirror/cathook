@@ -32,8 +32,7 @@ void netvar_tree::populate_nodes(RecvTable *recv_table, map_type *map)
     for (auto i = 0; i < recv_table->GetNumProps(); i++)
     {
         const auto *prop     = recv_table->GetProp(i);
-        const auto prop_info = std::make_shared<node>(
-            prop->GetOffset(), const_cast<RecvProp *>(prop));
+        const auto prop_info = std::make_shared<node>(prop->GetOffset(), const_cast<RecvProp *>(prop));
         if (prop->GetType() == DPT_DataTable)
         {
             populate_nodes(prop->GetDataTable(), &prop_info->nodes);

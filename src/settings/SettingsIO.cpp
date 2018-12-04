@@ -7,8 +7,7 @@
 #include <sstream>
 #include "core/logging.hpp"
 
-settings::SettingsWriter::SettingsWriter(settings::Manager &manager)
-    : manager(manager)
+settings::SettingsWriter::SettingsWriter(settings::Manager &manager) : manager(manager)
 {
 }
 
@@ -31,14 +30,10 @@ bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
     for (auto &v : settings::Manager::instance().registered)
     {
         if (!only_changed || v.second.isChanged())
-            all_registered.emplace_back(
-                std::make_pair(v.first, &v.second.variable));
+            all_registered.emplace_back(std::make_pair(v.first, &v.second.variable));
     }
     logging::Info("cat_save: Sorting...");
-    std::sort(all_registered.begin(), all_registered.end(),
-              [](const pair_type &a, const pair_type &b) -> bool {
-                  return a.first.compare(b.first) < 0;
-              });
+    std::sort(all_registered.begin(), all_registered.end(), [](const pair_type &a, const pair_type &b) -> bool { return a.first.compare(b.first) < 0; });
     logging::Info("cat_save: Writing...");
     for (auto &v : all_registered)
         if (!v.first.empty())
@@ -86,8 +81,7 @@ void settings::SettingsWriter::writeEscaped(std::string str)
     }
 }
 
-settings::SettingsReader::SettingsReader(settings::Manager &manager)
-    : manager(manager)
+settings::SettingsReader::SettingsReader(settings::Manager &manager) : manager(manager)
 {
 }
 
@@ -198,8 +192,7 @@ void settings::SettingsReader::finishString(bool complete)
     temporary_spaces.clear();
 }
 
-void settings::SettingsReader::onReadKeyValue(std::string key,
-                                              std::string value)
+void settings::SettingsReader::onReadKeyValue(std::string key, std::string value)
 {
     printf("Read: '%s' = '%s'\n", key.c_str(), value.c_str());
     auto v = manager.lookup(key);

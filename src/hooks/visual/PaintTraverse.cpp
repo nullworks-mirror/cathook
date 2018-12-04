@@ -17,15 +17,14 @@ static settings::Bool no_reportlimit{ "misc.no-report-limit", "false" };
 
 int spamdur = 0;
 Timer joinspam{};
-CatCommand join_spam("join_spam", "Spam joins server for X seconds",
-                     [](const CCommand &args) {
-                         if (args.ArgC() < 1)
-                             return;
-                         int id = atoi(args.Arg(1));
-                         joinspam.update();
-                         spamdur = id;
-                     });
-CatCommand join("mm_join", "Join mm Match", [](){
+CatCommand join_spam("join_spam", "Spam joins server for X seconds", [](const CCommand &args) {
+    if (args.ArgC() < 1)
+        return;
+    int id = atoi(args.Arg(1));
+    joinspam.update();
+    spamdur = id;
+});
+CatCommand join("mm_join", "Join mm Match", []() {
     auto gc = re::CTFGCClientSystem::GTFGCClientSystem();
     if (gc)
         gc->JoinMMMatch();
@@ -41,14 +40,13 @@ bool replaced = false;
 namespace hooked_methods
 {
 Timer checkmmban{};
-DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
-                     unsigned int panel, bool force, bool allow_force)
+DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int panel, bool force, bool allow_force)
 {
-    static bool textures_loaded      = false;
-    static unsigned long panel_scope = 0;
-    static unsigned long motd_panel  = 0;
-    static unsigned long motd_panel_sd  = 0;
-    static bool call_default         = true;
+    static bool textures_loaded        = false;
+    static unsigned long panel_scope   = 0;
+    static unsigned long motd_panel    = 0;
+    static unsigned long motd_panel_sd = 0;
+    static bool call_default           = true;
     static bool cur;
     static ConVar *software_cursor = g_ICvar->FindVar("cl_software_cursor");
     static const char *name;
@@ -111,8 +109,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
     if (no_reportlimit && !replaced)
     {
         static unsigned char patch[] = { 0xB8, 0x01, 0x00, 0x00, 0x00 };
-        static uintptr_t report_addr = gSignatures.GetClientSignature(
-            "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+        static uintptr_t report_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
         if (report_addr)
         {
             uintptr_t topatch = report_addr + 0x75;
@@ -121,17 +118,13 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
             replaced = true;
         }
         else
-            report_addr = gSignatures.GetClientSignature(
-                "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+            report_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
     }
     if (pure_bypass)
     {
         if (!pure_addr)
         {
-            pure_addr = *reinterpret_cast<void ***>(
-                gSignatures.GetEngineSignature(
-                    "A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") +
-                1);
+            pure_addr = *reinterpret_cast<void ***>(gSignatures.GetEngineSignature("A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") + 1);
         }
         if (*pure_addr)
             pure_orig = *pure_addr;
@@ -178,7 +171,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
         original::PaintTraverse(this_, panel, force, allow_force);
     // To avoid threading problems.
 
-    //logging::Info("Panel name: %s", g_IPanel->GetName(panel));
+    // logging::Info("Panel name: %s", g_IPanel->GetName(panel));
     if (!panel_scope)
         if (!strcmp(g_IPanel->GetName(panel), "HudScope"))
             panel_scope = panel;

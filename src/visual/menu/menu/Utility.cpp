@@ -13,8 +13,7 @@ namespace utility
 
 const std::string empty_string{};
 
-std::string wrapString(const std::string &input, glez::font &font, int width,
-                       int *resultWidth, int *resultLines)
+std::string wrapString(const std::string &input, glez::font &font, int width, int *resultWidth, int *resultLines)
 {
     int lineWidth{ 0 };
     float wordWidth{ 0 };
@@ -32,8 +31,7 @@ std::string wrapString(const std::string &input, glez::font &font, int width,
         wordStream.str("");
         if (not word.empty())
         {
-            font.stringSize((lineWidth == 0) ? word : ' ' + word, &wordWidth,
-                            nullptr);
+            font.stringSize((lineWidth == 0) ? word : ' ' + word, &wordWidth, nullptr);
             if (wordWidth + lineWidth > width && !newln)
             {
                 resultStream << '\n';
@@ -81,8 +79,7 @@ std::string wrapString(const std::string &input, glez::font &font, int width,
     return resultStream.str();
 }
 
-std::string dotCompactString(const std::string &input, glez::font &font,
-                             int width, bool reverse)
+std::string dotCompactString(const std::string &input, glez::font &font, int width, bool reverse)
 {
     float dotsWidth;
     unsigned charCount = 0;
@@ -92,9 +89,7 @@ std::string dotCompactString(const std::string &input, glez::font &font,
     for (auto i = 1u; i <= input.size(); ++i)
     {
         float tempWidth;
-        font.stringSize(reverse ? input.substr(input.size() - 1 - i, i)
-                                : input.substr(0, i),
-                        &tempWidth, nullptr);
+        font.stringSize(reverse ? input.substr(input.size() - 1 - i, i) : input.substr(0, i), &tempWidth, nullptr);
         if (tempWidth + dotsWidth < width)
             charCount = i;
         else
@@ -115,13 +110,10 @@ std::string dotCompactString(const std::string &input, glez::font &font,
         return input.substr(0, charCount) + "...";
 }
 
-void drawCenteredString(int x, int y, const std::string &string,
-                        glez::font &font, glez::rgba color)
+void drawCenteredString(int x, int y, const std::string &string, glez::font &font, glez::rgba color)
 {
     float width;
     font.stringSize(string, &width, nullptr);
-    glez::draw::outlined_string(x - width / 2, y, string, font, color,
-                                *zerokernel::style::colors::text_shadow,
-                                nullptr, nullptr);
+    glez::draw::outlined_string(x - width / 2, y, string, font, color, *zerokernel::style::colors::text_shadow, nullptr, nullptr);
 }
 } // namespace utility

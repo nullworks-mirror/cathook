@@ -13,16 +13,12 @@ static settings::Bool no_hats{ "remove.hats", "false" };
 namespace hooked_methods
 {
 
-DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_,
-                     const DrawModelState_t &state,
-                     const ModelRenderInfo_t &info, matrix3x4_t *bone)
+DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawModelState_t &state, const ModelRenderInfo_t &info, matrix3x4_t *bone)
 {
     if (!isHackActive())
         return original::DrawModelExecute(this_, state, info, bone);
 
-    if (!(spectator_target || no_arms || no_hats ||
-          (*clean_screenshots && g_IEngine->IsTakingScreenshot()) ||
-          CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer()))
+    if (!(spectator_target || no_arms || no_hats || (*clean_screenshots && g_IEngine->IsTakingScreenshot()) || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer()))
     {
         return original::DrawModelExecute(this_, state, info, bone);
     }
@@ -41,8 +37,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_,
                 {
                     return;
                 }
-                else if (no_hats &&
-                         sname.find("player/items") != std::string::npos)
+                else if (no_hats && sname.find("player/items") != std::string::npos)
                 {
                     return;
                 }
@@ -57,8 +52,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_,
         if (ent)
             if (ent->entindex() == spectator_target)
                 return;
-        if (ent && !effect_chams::g_EffectChams.drawing &&
-            effect_chams::g_EffectChams.ShouldRenderChams(ent))
+        if (ent && !effect_chams::g_EffectChams.drawing && effect_chams::g_EffectChams.ShouldRenderChams(ent))
             return;
     }
 

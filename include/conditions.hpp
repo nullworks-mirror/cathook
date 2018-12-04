@@ -150,8 +150,7 @@ enum condition : unsigned
     TFCond_NoTaunting
 };
 
-template <typename... ConditionList>
-constexpr condition_data_s CreateConditionMask(ConditionList... conds)
+template <typename... ConditionList> constexpr condition_data_s CreateConditionMask(ConditionList... conds)
 {
     uint32_t c0 = 0, c1 = 0, c2 = 0, c3 = 0;
     for (const auto &cond : { conds... })
@@ -177,22 +176,12 @@ constexpr condition_data_s CreateConditionMask(ConditionList... conds)
 }
 
 // Should be either expanded or unused
-constexpr condition_data_s KInvisibilityMask =
-    CreateConditionMask(TFCond_Cloaked);
-constexpr condition_data_s KDisguisedMask =
-    CreateConditionMask(TFCond_Disguised);
+constexpr condition_data_s KInvisibilityMask = CreateConditionMask(TFCond_Cloaked);
+constexpr condition_data_s KDisguisedMask    = CreateConditionMask(TFCond_Disguised);
 // Original name
-constexpr condition_data_s KVisibilityMask =
-    CreateConditionMask(TFCond_OnFire, TFCond_Jarated, TFCond_CloakFlicker,
-                        TFCond_Milked, TFCond_Bleeding);
-constexpr condition_data_s KInvulnerabilityMask = CreateConditionMask(
-    TFCond_Ubercharged, TFCond_UberchargedCanteen, TFCond_UberchargedHidden,
-    TFCond_UberchargedOnTakeDamage, TFCond_Bonked, TFCond_DefenseBuffMmmph);
-constexpr condition_data_s KCritBoostMask = CreateConditionMask(
-    TFCond_Kritzkrieged, TFCond_CritRuneTemp, TFCond_CritCanteen,
-    TFCond_CritMmmph, TFCond_CritOnKill, TFCond_CritOnDamage,
-    TFCond_CritOnFirstBlood, TFCond_CritOnWin, TFCond_CritRuneTemp,
-    TFCond_HalloweenCritCandy);
+constexpr condition_data_s KVisibilityMask      = CreateConditionMask(TFCond_OnFire, TFCond_Jarated, TFCond_CloakFlicker, TFCond_Milked, TFCond_Bleeding);
+constexpr condition_data_s KInvulnerabilityMask = CreateConditionMask(TFCond_Ubercharged, TFCond_UberchargedCanteen, TFCond_UberchargedHidden, TFCond_UberchargedOnTakeDamage, TFCond_Bonked, TFCond_DefenseBuffMmmph);
+constexpr condition_data_s KCritBoostMask       = CreateConditionMask(TFCond_Kritzkrieged, TFCond_CritRuneTemp, TFCond_CritCanteen, TFCond_CritMmmph, TFCond_CritOnKill, TFCond_CritOnDamage, TFCond_CritOnFirstBlood, TFCond_CritOnWin, TFCond_CritRuneTemp, TFCond_HalloweenCritCandy);
 
 // Compiler will optimize this to extremely small functions I guess.
 // These functions are never used with dynamic "cond" value anyways.
@@ -220,29 +209,23 @@ template <condition cond> inline bool CondBitCheck(condition_data_s &data)
 }
 
 // I haven't figured out how to pass a struct as a parameter, sorry.
-template <uint32_t c0, uint32_t c1, uint32_t c2, uint32_t c3>
-inline bool CondMaskCheck(condition_data_s &data)
+template <uint32_t c0, uint32_t c1, uint32_t c2, uint32_t c3> inline bool CondMaskCheck(condition_data_s &data)
 {
-    return (data.cond_0 & c0) || (data.cond_1 & c1) || (data.cond_2 & c2) ||
-           (data.cond_3 & c3);
+    return (data.cond_0 & c0) || (data.cond_1 & c1) || (data.cond_2 & c2) || (data.cond_3 & c3);
 }
 
-template <uint32_t c0, uint32_t c1, uint32_t c2, uint32_t c3>
-inline bool HasConditionMask(CachedEntity *ent)
+template <uint32_t c0, uint32_t c1, uint32_t c2, uint32_t c3> inline bool HasConditionMask(CachedEntity *ent)
 {
     IF_GAME(!IsTF()) return false;
     IF_GAME(IsTF2())
     {
-        if (CondMaskCheck<c0, c1, c2, c3>(
-                CE_VAR(ent, netvar._condition_bits, condition_data_s)))
+        if (CondMaskCheck<c0, c1, c2, c3>(CE_VAR(ent, netvar._condition_bits, condition_data_s)))
             return true;
     }
-    return CondMaskCheck<c0, c1, c2, c3>(
-        CE_VAR(ent, netvar.iCond, condition_data_s));
+    return CondMaskCheck<c0, c1, c2, c3>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
 
-template <condition cond, bool state>
-inline void CondBitSet(condition_data_s &data)
+template <condition cond, bool state> inline void CondBitSet(condition_data_s &data)
 {
     if (state)
     {
@@ -291,8 +274,7 @@ template <condition cond> inline bool HasCondition(CachedEntity *ent)
     IF_GAME(!IsTF()) return false;
     IF_GAME(IsTF2() && cond < condition(96))
     {
-        if (CondBitCheck<cond>(
-                CE_VAR(ent, netvar._condition_bits, condition_data_s)))
+        if (CondBitCheck<cond>(CE_VAR(ent, netvar._condition_bits, condition_data_s)))
             return true;
     }
     return CondBitCheck<cond>(CE_VAR(ent, netvar.iCond, condition_data_s));
@@ -303,8 +285,7 @@ template <condition cond> inline void AddCondition(CachedEntity *ent)
     IF_GAME(!IsTF()) return;
     IF_GAME(IsTF2())
     {
-        CondBitSet<cond, true>(
-            CE_VAR(ent, netvar._condition_bits, condition_data_s));
+        CondBitSet<cond, true>(CE_VAR(ent, netvar._condition_bits, condition_data_s));
     }
     CondBitSet<cond, true>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
@@ -314,8 +295,7 @@ template <condition cond> inline void RemoveCondition(CachedEntity *ent)
     IF_GAME(!IsTF()) return;
     IF_GAME(IsTF2())
     {
-        CondBitSet<cond, false>(
-            CE_VAR(ent, netvar._condition_bits, condition_data_s));
+        CondBitSet<cond, false>(CE_VAR(ent, netvar._condition_bits, condition_data_s));
     }
     CondBitSet<cond, false>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }

@@ -16,8 +16,7 @@ static settings::Int sandwichaim_aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
 float sandwich_speed = 350.0f;
 float grav           = 0.25f;
 int prevent          = -1;
-std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
-                                              bool zcheck)
+std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck)
 {
     CachedEntity *bestent = nullptr;
     float bestscr         = FLT_MAX;
@@ -27,27 +26,22 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
         if (prevent != -1)
         {
             auto ent = ENTITY(prevent);
-            if (CE_BAD(ent) || !ent->m_bAlivePlayer() ||
-                (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) ||
-                ent == LOCAL_E)
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) || ent == LOCAL_E)
                 continue;
             if (!teammate && ent->m_iTeam() == LOCAL_E->m_ItemType())
                 continue;
             if (!ent->hitboxes.GetHitbox(1))
                 continue;
-            if (!teammate && player_tools::shouldTarget(ent) !=
-                                 player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (!teammate && player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             Vector target{};
             if (Predict)
-                target = ProjectilePrediction(ent, 1, sandwich_speed, grav,
-                                              PlayerGravityMod(ent));
+                target = ProjectilePrediction(ent, 1, sandwich_speed, grav, PlayerGravityMod(ent));
             else
                 target = ent->hitboxes.GetHitbox(1)->center;
             if (!IsEntityVectorVisible(ent, target))
                 continue;
-            if (zcheck &&
-                (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
+            if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
                 continue;
             float scr = ent->m_flDistance();
             if (g_pPlayerResource->GetClass(ent) == tf_medic)
@@ -67,9 +61,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || !(ent->m_bAlivePlayer()) ||
-            (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) ||
-            ent == LOCAL_E)
+        if (CE_BAD(ent) || !(ent->m_bAlivePlayer()) || (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) || ent == LOCAL_E)
             continue;
         if (!teammate && ent->m_iTeam() == LOCAL_E->m_iTeam())
             continue;
@@ -77,8 +69,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict,
             continue;
         Vector target{};
         if (Predict)
-            target = ProjectilePrediction(ent, 1, sandwich_speed, grav,
-                                          PlayerGravityMod(ent));
+            target = ProjectilePrediction(ent, 1, sandwich_speed, grav, PlayerGravityMod(ent));
         else
             target = ent->hitboxes.GetHitbox(1)->center;
         if (!IsEntityVectorVisible(ent, target))
@@ -112,8 +103,7 @@ void DoSlowAim(Vector &input_angle)
         // Check if input angle and user angle are on opposing sides of yaw so
         // we can correct for that
         bool slow_opposing = false;
-        if ((input_angle.y < -90 && viewangles.y > 90) ||
-            (input_angle.y > 90 && viewangles.y < -90))
+        if ((input_angle.y < -90 && viewangles.y > 90) || (input_angle.y > 90 && viewangles.y < -90))
             slow_opposing = true;
 
         // Direction
@@ -156,95 +146,92 @@ void DoSlowAim(Vector &input_angle)
     fClampAngle(input_angle);
 }
 
-static HookedFunction
-    SandwichAim(HookedFunctions_types::HF_CreateMove, "SandwichAim", 5, []() {
-        if (!*sandwichaim_enabled)
-            return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
-            return;
-        if (sandwichaim_aimkey)
+static HookedFunction SandwichAim(HookedFunctions_types::HF_CreateMove, "SandwichAim", 5, []() {
+    if (!*sandwichaim_enabled)
+        return;
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+        return;
+    if (sandwichaim_aimkey)
+    {
+        switch (*sandwichaim_aimkey_mode)
         {
-            switch (*sandwichaim_aimkey_mode)
-            {
-            case 1:
-                if (!sandwichaim_aimkey.isKeyDown())
-                    return;
-                break;
-            case 2:
-                if (sandwichaim_aimkey.isKeyDown())
-                    return;
-                break;
-            default:
-                break;
-            }
+        case 1:
+            if (!sandwichaim_aimkey.isKeyDown())
+                return;
+            break;
+        case 2:
+            if (sandwichaim_aimkey.isKeyDown())
+                return;
+            break;
+        default:
+            break;
         }
-        if (LOCAL_W->m_iClassID() != CL_CLASS(CTFLunchBox))
-            return;
-        Vector Predict;
-        CachedEntity *bestent = nullptr;
-        std::pair<CachedEntity *, Vector> result{};
-        result  = FindBestEnt(true, true, false);
-        bestent = result.first;
-        Predict = result.second;
-        if (bestent)
-        {
-            Vector tr = Predict - g_pLocalPlayer->v_Eye;
-            Vector angles;
-            VectorAngles(tr, angles);
-            // Clamping is important
-            fClampAngle(angles);
-            current_user_cmd->viewangles = angles;
-            current_user_cmd->buttons |= IN_ATTACK2;
-            g_pLocalPlayer->bUseSilentAngles = true;
-        }
-    });
+    }
+    if (LOCAL_W->m_iClassID() != CL_CLASS(CTFLunchBox))
+        return;
+    Vector Predict;
+    CachedEntity *bestent = nullptr;
+    std::pair<CachedEntity *, Vector> result{};
+    result  = FindBestEnt(true, true, false);
+    bestent = result.first;
+    Predict = result.second;
+    if (bestent)
+    {
+        Vector tr = Predict - g_pLocalPlayer->v_Eye;
+        Vector angles;
+        VectorAngles(tr, angles);
+        // Clamping is important
+        fClampAngle(angles);
+        current_user_cmd->viewangles = angles;
+        current_user_cmd->buttons |= IN_ATTACK2;
+        g_pLocalPlayer->bUseSilentAngles = true;
+    }
+});
 static bool charge_aimbotted = false;
 static settings::Bool charge_aim{ "chargeaim.enable", "false" };
 static settings::Button charge_key{ "chargeaim.key", "<null>" };
-static HookedFunction
-    ChargeAimbot(HookedFunctions_types::HF_CreateMove, "ChargeAim", 2, []() {
-        charge_aimbotted = false;
-        if (!*charge_aim)
-            return;
-        if (charge_key && !charge_key.isKeyDown())
-            return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
-            return;
-        if (!HasCondition<TFCond_Charging>(LOCAL_E))
-            return;
-        std::pair<CachedEntity *, Vector> result{};
-        result                = FindBestEnt(false, false, true);
-        CachedEntity *bestent = result.first;
-        if (bestent && result.second.IsValid())
-        {
-            Vector tr = result.second - g_pLocalPlayer->v_Eye;
-            Vector angles;
-            VectorAngles(tr, angles);
-            // Clamping is important
-            fClampAngle(angles);
-            DoSlowAim(angles);
-            current_user_cmd->viewangles = angles;
-            charge_aimbotted             = true;
-        }
-    });
+static HookedFunction ChargeAimbot(HookedFunctions_types::HF_CreateMove, "ChargeAim", 2, []() {
+    charge_aimbotted = false;
+    if (!*charge_aim)
+        return;
+    if (charge_key && !charge_key.isKeyDown())
+        return;
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+        return;
+    if (!HasCondition<TFCond_Charging>(LOCAL_E))
+        return;
+    std::pair<CachedEntity *, Vector> result{};
+    result                = FindBestEnt(false, false, true);
+    CachedEntity *bestent = result.first;
+    if (bestent && result.second.IsValid())
+    {
+        Vector tr = result.second - g_pLocalPlayer->v_Eye;
+        Vector angles;
+        VectorAngles(tr, angles);
+        // Clamping is important
+        fClampAngle(angles);
+        DoSlowAim(angles);
+        current_user_cmd->viewangles = angles;
+        charge_aimbotted             = true;
+    }
+});
 
 static settings::Bool charge_control{ "chargecontrol.enable", "false" };
 static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
-static HookedFunction ChargeControl(
-    HookedFunctions_types::HF_CreateMove, "chargecontrol", 5, []() {
-        if (!*charge_control || charge_aimbotted)
-            return;
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
-            return;
-        if (!HasCondition<TFCond_Charging>(LOCAL_E))
-            return;
-        float offset = 0.0f;
-        if (current_user_cmd->buttons & IN_MOVELEFT)
-            offset = *charge_float;
-        if (current_user_cmd->buttons & IN_MOVERIGHT)
-            offset = -*charge_float;
-        current_user_cmd->viewangles.y += offset;
-    });
+static HookedFunction ChargeControl(HookedFunctions_types::HF_CreateMove, "chargecontrol", 5, []() {
+    if (!*charge_control || charge_aimbotted)
+        return;
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+        return;
+    if (!HasCondition<TFCond_Charging>(LOCAL_E))
+        return;
+    float offset = 0.0f;
+    if (current_user_cmd->buttons & IN_MOVELEFT)
+        offset = *charge_float;
+    if (current_user_cmd->buttons & IN_MOVERIGHT)
+        offset = -*charge_float;
+    current_user_cmd->viewangles.y += offset;
+});
 
 static settings::Bool autosapper_enabled("autosapper.enabled", "false");
 static settings::Bool autosapper_silent("autosapper.silent", "true");
@@ -257,7 +244,7 @@ static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, []() {
 
     CachedEntity *target = nullptr;
     float fov            = FLT_MAX;
-    float range = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+    float range          = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     for (int i = 0; i < entity_cache::max; i++)
     {
         CachedEntity *ent = ENTITY(i);
@@ -271,8 +258,7 @@ static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, []() {
             continue;
         if (GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye) > range)
             continue;
-        float new_fov = GetFov(g_pLocalPlayer->v_OrigViewangles,
-                               g_pLocalPlayer->v_Eye, GetBuildingPosition(ent));
+        float new_fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, GetBuildingPosition(ent));
         if (fov <= new_fov)
             continue;
 
@@ -281,8 +267,7 @@ static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, []() {
     }
     if (target)
     {
-        AimAt(g_pLocalPlayer->v_Eye, GetBuildingPosition(target),
-              current_user_cmd);
+        AimAt(g_pLocalPlayer->v_Eye, GetBuildingPosition(target), current_user_cmd);
         if (autosapper_silent)
             g_pLocalPlayer->bUseSilentAngles = true;
         current_user_cmd->buttons |= IN_ATTACK;

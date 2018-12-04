@@ -9,8 +9,7 @@
 
 static settings::Bool die_if_vac{ "misc.die-if-vac", "false" };
 static settings::Bool autoabandon{ "misc.auto-abandon", "false" };
-static settings::String custom_disconnect_reason{ "misc.disconnect-reason",
-                                                  "" };
+static settings::String custom_disconnect_reason{ "misc.disconnect-reason", "" };
 
 namespace hooked_methods
 {
@@ -31,8 +30,7 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
 #if ENABLE_IPC
     ipc::UpdateServerAddress(true);
 #endif
-    if (isHackActive() && (custom_disconnect_reason.toString().size() > 3) &&
-        strstr(reason, "user"))
+    if (isHackActive() && (custom_disconnect_reason.toString().size() > 3) && strstr(reason, "user"))
     {
         original::Shutdown(this_, custom_disconnect_reason.toString().c_str());
     }

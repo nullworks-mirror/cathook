@@ -24,8 +24,7 @@ public:
         {
             return;
         }
-        if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) ==
-            g_IEngine->GetLocalPlayer())
+        if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
             if (RandomFloat(0, 100) <= float(chance))
             {
@@ -38,7 +37,5 @@ public:
 AutoTauntListener listener;
 
 // TODO remove event listener when uninjecting?
-InitRoutine init([]() {
-    g_IEventManager2->AddListener(&listener, "player_death", false);
-});
+InitRoutine init([]() { g_IEventManager2->AddListener(&listener, "player_death", false); });
 } // namespace hacks::tf::autotaunt

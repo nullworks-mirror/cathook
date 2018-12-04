@@ -40,8 +40,7 @@ void zerokernel::TreeListCollapsible::listCollapse()
     auto container = dynamic_cast<Container *>(parent);
     if (!container)
     {
-        printf(
-            "TreeListCollapsible: can't collapse: Container(parent) == NULL\n");
+        printf("TreeListCollapsible: can't collapse: Container(parent) == NULL\n");
         return;
     }
     bool flag = false;

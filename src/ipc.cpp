@@ -27,8 +27,7 @@ CatCommand fix_deadlock("ipc_fix_deadlock", "Fix deadlock", []() {
         pthread_mutex_unlock(&peer->memory->mutex);
     }
 });
-CatCommand id("ipc_id", "Echo ipc id",
-              []() { logging::Info("%d", ipc::peer->client_id); });
+CatCommand id("ipc_id", "Echo ipc id", []() { logging::Info("%d", ipc::peer->client_id); });
 CatCommand connect("ipc_connect", "Connect to IPC server", []() {
     if (peer)
     {
@@ -40,21 +39,10 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
     {
         peer->Connect();
         logging::Info("peer count: %i", peer->memory->peer_count);
-        logging::Info("magic number: 0x%08x",
-                      peer->memory->global_data.magic_number);
-        logging::Info("magic number offset: 0x%08x",
-                      (uintptr_t) &peer->memory->global_data.magic_number -
-                          (uintptr_t) peer->memory);
-        peer->SetCommandHandler(commands::execute_client_cmd,
-                                [](cat_ipc::command_s &command, void *payload) {
-                                    hack::command_stack().push(std::string(
-                                        (const char *) &command.cmd_data));
-                                });
-        peer->SetCommandHandler(commands::execute_client_cmd_long,
-                                [](cat_ipc::command_s &command, void *payload) {
-                                    hack::command_stack().push(
-                                        std::string((const char *) payload));
-                                });
+        logging::Info("magic number: 0x%08x", peer->memory->global_data.magic_number);
+        logging::Info("magic number offset: 0x%08x", (uintptr_t) &peer->memory->global_data.magic_number - (uintptr_t) peer->memory);
+        peer->SetCommandHandler(commands::execute_client_cmd, [](cat_ipc::command_s &command, void *payload) { hack::command_stack().push(std::string((const char *) &command.cmd_data)); });
+        peer->SetCommandHandler(commands::execute_client_cmd_long, [](cat_ipc::command_s &command, void *payload) { hack::command_stack().push(std::string((const char *) payload)); });
         user_data_s &data = peer->memory->peer_user_data[peer->client_id];
 
         // Preserve accumulated data
@@ -78,99 +66,85 @@ CatCommand disconnect("ipc_disconnect", "Disconnect from IPC server", []() {
         delete peer;
     peer = nullptr;
 });
-CatCommand
-    exec("ipc_exec", "Execute command (first argument = bot ID)",
-         [](const CCommand &args) {
-             char *endptr       = nullptr;
-             unsigned target_id = strtol(args.Arg(1), &endptr, 10);
-             if (endptr == args.Arg(1))
-             {
-                 logging::Info("Target id is NaN!");
-                 return;
-             }
-             if (target_id == 0 || target_id > 31)
-             {
-                 logging::Info("Invalid target id: %u", target_id);
-                 return;
-             }
-             {
-                 if (peer->memory->peer_data[target_id].free)
-                 {
-                     logging::Info("Trying to send command to a dead peer");
-                     return;
-                 }
-             }
-             std::string command = std::string(args.ArgS());
-             command             = command.substr(command.find(' ', 0) + 1);
-             ReplaceString(command, " && ", " ; ");
-             if (command.length() >= 63)
-             {
-                 peer->SendMessage(0, (1 << target_id),
-                                   ipc::commands::execute_client_cmd_long,
-                                   command.c_str(), command.length() + 1);
-             }
-             else
-             {
-                 peer->SendMessage(command.c_str(), (1 << target_id),
-                                   ipc::commands::execute_client_cmd, 0, 0);
-             }
-         });
-CatCommand exec_all("ipc_exec_all", "Execute command (on every peer)",
-                    [](const CCommand &args) {
-                        std::string command = args.ArgS();
-                        ReplaceString(command, " && ", " ; ");
-                        if (command.length() >= 63)
-                        {
-                            peer->SendMessage(
-                                0, 0, ipc::commands::execute_client_cmd_long,
-                                command.c_str(), command.length() + 1);
-                        }
-                        else
-                        {
-                            peer->SendMessage(command.c_str(), 0,
-                                              ipc::commands::execute_client_cmd,
-                                              0, 0);
-                        }
-                    });
+CatCommand exec("ipc_exec", "Execute command (first argument = bot ID)", [](const CCommand &args) {
+    char *endptr       = nullptr;
+    unsigned target_id = strtol(args.Arg(1), &endptr, 10);
+    if (endptr == args.Arg(1))
+    {
+        logging::Info("Target id is NaN!");
+        return;
+    }
+    if (target_id == 0 || target_id > 31)
+    {
+        logging::Info("Invalid target id: %u", target_id);
+        return;
+    }
+    {
+        if (peer->memory->peer_data[target_id].free)
+        {
+            logging::Info("Trying to send command to a dead peer");
+            return;
+        }
+    }
+    std::string command = std::string(args.ArgS());
+    command             = command.substr(command.find(' ', 0) + 1);
+    ReplaceString(command, " && ", " ; ");
+    if (command.length() >= 63)
+    {
+        peer->SendMessage(0, (1 << target_id), ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
+    }
+    else
+    {
+        peer->SendMessage(command.c_str(), (1 << target_id), ipc::commands::execute_client_cmd, 0, 0);
+    }
+});
+CatCommand exec_all("ipc_exec_all", "Execute command (on every peer)", [](const CCommand &args) {
+    std::string command = args.ArgS();
+    ReplaceString(command, " && ", " ; ");
+    if (command.length() >= 63)
+    {
+        peer->SendMessage(0, 0, ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
+    }
+    else
+    {
+        peer->SendMessage(command.c_str(), 0, ipc::commands::execute_client_cmd, 0, 0);
+    }
+});
 
 peer_t *peer{ nullptr };
 
-CatCommand debug_get_ingame_ipc(
-    "ipc_debug_dump_server", "Show other bots on server", []() {
-        std::vector<unsigned> players{};
-        for (int j = 1; j < 32; j++)
+CatCommand debug_get_ingame_ipc("ipc_debug_dump_server", "Show other bots on server", []() {
+    std::vector<unsigned> players{};
+    for (int j = 1; j < 32; j++)
+    {
+        player_info_s info;
+        if (g_IEngine->GetPlayerInfo(j, &info))
         {
-            player_info_s info;
-            if (g_IEngine->GetPlayerInfo(j, &info))
-            {
-                if (info.friendsID)
-                    players.push_back(info.friendsID);
-            }
+            if (info.friendsID)
+                players.push_back(info.friendsID);
         }
-        int count        = 0;
-        unsigned highest = 0;
-        std::vector<unsigned> botlist{};
-        for (unsigned i = 1; i < cat_ipc::max_peers; i++)
+    }
+    int count        = 0;
+    unsigned highest = 0;
+    std::vector<unsigned> botlist{};
+    for (unsigned i = 1; i < cat_ipc::max_peers; i++)
+    {
+        if (!ipc::peer->memory->peer_data[i].free)
         {
-            if (!ipc::peer->memory->peer_data[i].free)
+            for (auto &k : players)
             {
-                for (auto &k : players)
+                if (ipc::peer->memory->peer_user_data[i].friendid && k == ipc::peer->memory->peer_user_data[i].friendid)
                 {
-                    if (ipc::peer->memory->peer_user_data[i].friendid &&
-                        k == ipc::peer->memory->peer_user_data[i].friendid)
-                    {
-                        botlist.push_back(i);
-                        logging::Info(
-                            "-> %u (%u)", i,
-                            ipc::peer->memory->peer_user_data[i].friendid);
-                        count++;
-                        highest = i;
-                    }
+                    botlist.push_back(i);
+                    logging::Info("-> %u (%u)", i, ipc::peer->memory->peer_user_data[i].friendid);
+                    count++;
+                    highest = i;
                 }
             }
         }
-        logging::Info("%d other IPC players on server", count);
-    });
+    }
+    logging::Info("%d other IPC players on server", count);
+});
 
 void UpdateServerAddress(bool shutdown)
 {
@@ -193,8 +167,7 @@ void update_mapname()
         return;
 
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];
-    strncpy(data.ingame.mapname, GetLevelName().c_str(),
-            sizeof(data.ingame.mapname));
+    strncpy(data.ingame.mapname, GetLevelName().c_str(), sizeof(data.ingame.mapname));
 }
 float framerate = 0.0f;
 void UpdateTemporaryData()
@@ -209,8 +182,7 @@ void UpdateTemporaryData()
 
     if (data.connected)
     {
-        IClientEntity *player =
-            g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+        IClientEntity *player = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
         if (player)
         {
             data.ingame.good = true;
@@ -218,10 +190,8 @@ void UpdateTemporaryData()
 
             int score_saved = data.ingame.score;
 
-            data.ingame.score =
-                g_pPlayerResource->GetScore(g_IEngine->GetLocalPlayer());
-            data.ingame.team =
-                g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
+            data.ingame.score      = g_pPlayerResource->GetScore(g_IEngine->GetLocalPlayer());
+            data.ingame.team       = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
             data.ingame.role       = g_pPlayerResource->GetClass(LOCAL_E);
             data.ingame.life_state = NET_BYTE(player, netvar.iLifeState);
             data.ingame.health     = NET_INT(player, netvar.iHealth);
@@ -264,10 +234,7 @@ void StoreClientData()
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];
     data.friendid     = g_ISteamUser->GetSteamID().GetAccountID();
     data.ts_injected  = time_injected;
-    strncpy(data.name,
-            hooked_methods::methods::GetFriendPersonaName(
-                g_ISteamFriends, g_ISteamUser->GetSteamID()),
-            sizeof(data.name));
+    strncpy(data.name, hooked_methods::methods::GetFriendPersonaName(g_ISteamFriends, g_ISteamUser->GetSteamID()), sizeof(data.name));
 }
 
 void Heartbeat()
@@ -284,8 +251,7 @@ void UpdatePlayerlist()
         {
             if (!peer->memory->peer_data[i].free)
             {
-                playerlist::userdata &info = playerlist::AccessData(
-                    peer->memory->peer_user_data[i].friendid);
+                playerlist::userdata &info = playerlist::AccessData(peer->memory->peer_user_data[i].friendid);
                 if (info.state == playerlist::k_EState::DEFAULT)
                     info.state = playerlist::k_EState::IPC;
             }

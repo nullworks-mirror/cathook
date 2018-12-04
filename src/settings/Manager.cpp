@@ -30,8 +30,7 @@ IVariable *Manager::lookup(const std::string &string)
     return nullptr;
 }
 
-Manager::VariableDescriptor::VariableDescriptor(IVariable &variable)
-    : variable(variable)
+Manager::VariableDescriptor::VariableDescriptor(IVariable &variable) : variable(variable)
 {
     type     = variable.getType();
     defaults = variable.toString();

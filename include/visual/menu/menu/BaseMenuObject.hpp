@@ -33,9 +33,7 @@ public:
         // printf("~BaseMenuObject %u\n", --objectCount);
     }
 
-    inline BaseMenuObject()
-        : uid(object_sequence_number),
-          kv("Object" + std::to_string(uid)), bb{ *this }
+    inline BaseMenuObject() : uid(object_sequence_number), kv("Object" + std::to_string(uid)), bb{ *this }
     {
         ++object_sequence_number;
         // printf("BaseMenuObject(%u) %u\n", uid, ++objectCount);
@@ -57,8 +55,7 @@ public:
 
     virtual void show();
 
-    virtual BaseMenuObject *
-    findElement(const std::function<bool(BaseMenuObject *)> &search);
+    virtual BaseMenuObject *findElement(const std::function<bool(BaseMenuObject *)> &search);
 
     virtual void updateIsHovered();
 

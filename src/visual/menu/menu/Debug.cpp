@@ -6,9 +6,7 @@
 #include <menu/wm/WindowContainer.hpp>
 #include <menu/object/container/TabContainer.hpp>
 
-zerokernel::debug::UiTreeGraph::UiTreeGraph(zerokernel::BaseMenuObject *object,
-                                            int depth)
-    : depth(depth)
+zerokernel::debug::UiTreeGraph::UiTreeGraph(zerokernel::BaseMenuObject *object, int depth) : depth(depth)
 {
     for (int i = 0; i < depth; ++i)
         printf("  ");
@@ -16,13 +14,10 @@ zerokernel::debug::UiTreeGraph::UiTreeGraph(zerokernel::BaseMenuObject *object,
     auto bb = object->getBoundingBox().getBorderBox();
     for (int i = 0; i < depth; ++i)
         printf("  ");
-    printf("> {%d, %d; %d x %d; offsets %d, %d}\n", bb.x, bb.y, bb.width,
-           bb.height, object->xOffset, object->yOffset);
+    printf("> {%d, %d; %d x %d; offsets %d, %d}\n", bb.x, bb.y, bb.width, bb.height, object->xOffset, object->yOffset);
     for (int i = 0; i < depth; ++i)
         printf("  ");
-    printf("> WidthMode{%d}, HeightMode{%d}\n",
-           object->getBoundingBox().width.mode,
-           object->getBoundingBox().height.mode);
+    printf("> WidthMode{%d}, HeightMode{%d}\n", object->getBoundingBox().width.mode, object->getBoundingBox().height.mode);
     auto container = dynamic_cast<zerokernel::Container *>(object);
     if (container)
     {

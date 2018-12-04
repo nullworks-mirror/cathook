@@ -8,8 +8,7 @@
 namespace hooked_methods
 {
 
-DEFINE_HOOKED_METHOD(FireEvent, bool, IGameEventManager2 *this_,
-                     IGameEvent *event, bool no_broadcast)
+DEFINE_HOOKED_METHOD(FireEvent, bool, IGameEventManager2 *this_, IGameEvent *event, bool no_broadcast)
 {
     return original::FireEvent(this_, event, no_broadcast);
 }

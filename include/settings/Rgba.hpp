@@ -73,10 +73,7 @@ protected:
     {
         fireCallbacks(next);
         value               = next;
-        uint8_t rgba_int[4] = { uint8_t(next.r * 255.f),
-                                uint8_t(next.g * 255.f),
-                                uint8_t(next.b * 255.f),
-                                uint8_t(next.a * 255.f) };
+        uint8_t rgba_int[4] = { uint8_t(next.r * 255.f), uint8_t(next.g * 255.f), uint8_t(next.b * 255.f), uint8_t(next.a * 255.f) };
         for (int i = 0; i < 4; ++i)
         {
             string[i * 2]     = "0123456789abcdef"[(rgba_int[i] >> 4u) & 0xF];

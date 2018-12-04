@@ -9,9 +9,7 @@
 
 void zerokernel::Text::render()
 {
-    glez::draw::outlined_string(bb.getContentBox().left() + text_x,
-                                bb.getContentBox().top() + text_y, data, *font,
-                                *color_text, *color_outline, nullptr, nullptr);
+    glez::draw::outlined_string(bb.getContentBox().left() + text_x, bb.getContentBox().top() + text_y, data, *font, *color_text, *color_outline, nullptr, nullptr);
 
     BaseMenuObject::render();
 }

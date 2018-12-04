@@ -92,8 +92,7 @@ public:
 
             if (pProp->GetDataTable())
             {
-                DumpTable(pProp->GetDataTable(), iLevel + 1,
-                          pProp->GetOffset());
+                DumpTable(pProp->GetDataTable(), iLevel + 1, pProp->GetOffset());
             }
 
             for (int j = 0; j < iLevel; j++)
@@ -102,9 +101,7 @@ public:
             int offset        = pProp->GetOffset();
             SendPropType type = pProp->GetType();
 
-            m_file << pProp->GetName() << " : 0x" << std::hex << offset
-                   << " (0x" << (parent_offset + offset) << ") ["
-                   << TypeToString(type) << "]"
+            m_file << pProp->GetName() << " : 0x" << std::hex << offset << " (0x" << (parent_offset + offset) << ") [" << TypeToString(type) << "]"
                    << "\n";
         }
 

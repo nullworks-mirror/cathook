@@ -9,12 +9,8 @@
   Created on 26.07.18.
 */
 
-static settings::RVariable<glez::rgba> background_hover{
-    "zk.style.tree-list-entry.color.hover", "38b28f66"
-};
-static settings::RVariable<glez::rgba> lines{
-    "zk.style.tree-list-entry.color.lines", "38b28f"
-};
+static settings::RVariable<glez::rgba> background_hover{ "zk.style.tree-list-entry.color.hover", "38b28f66" };
+static settings::RVariable<glez::rgba> lines{ "zk.style.tree-list-entry.color.lines", "38b28f" };
 
 bool zerokernel::TreeListBaseEntry::handleSdlEvent(SDL_Event *event)
 {
@@ -30,15 +26,11 @@ void zerokernel::TreeListBaseEntry::render()
 
     for (int i = 0; i <= int(depth) - 1; ++i)
     {
-        glez::draw::line(bb.getBorderBox().left() + 2 + i * 5,
-                         bb.getBorderBox().top() - 1, 0,
-                         bb.getBorderBox().height + 3, *lines, 1);
+        glez::draw::line(bb.getBorderBox().left() + 2 + i * 5, bb.getBorderBox().top() - 1, 0, bb.getBorderBox().height + 3, *lines, 1);
     }
     if (depth)
     {
-        glez::draw::line(bb.getBorderBox().left() + getRenderOffset() - 8,
-                         bb.getBorderBox().top() + bb.getBorderBox().height / 2,
-                         4, 0, *lines, 1);
+        glez::draw::line(bb.getBorderBox().left() + getRenderOffset() - 8, bb.getBorderBox().top() + bb.getBorderBox().height / 2, 4, 0, *lines, 1);
     }
 
     BaseMenuObject::render();

@@ -23,9 +23,7 @@ namespace hacks::tf::uberspam
 
 TextFile custom_lines;
 
-static CatCommand custom_file_reload("uberspam_file_reload",
-                                     "Reload Ubercharge Spam File",
-                                     []() { custom_lines.Load(*custom_file); });
+static CatCommand custom_file_reload("uberspam_file_reload", "Reload Ubercharge Spam File", []() { custom_lines.Load(*custom_file); });
 
 const std::vector<std::string> *GetSource()
 {
@@ -94,17 +92,13 @@ void CreateMove()
         {
             if ((int) (charge * 100.0f) != 0 && on_build)
             {
-                int chargeperline = ((int) on_build >= 100)
-                                        ? (100 / (GetSource()->size() - 2))
-                                        : (int) on_build;
+                int chargeperline = ((int) on_build >= 100) ? (100 / (GetSource()->size() - 2)) : (int) on_build;
                 if (chargeperline < 1)
                     chargeperline = 1;
                 if ((int) (charge * 100.0f) % chargeperline == 0)
                 {
-                    std::string res =
-                        GetSource()->at(ChargePercentLineIndex(charge));
-                    ReplaceString(res, "%i%",
-                                  std::to_string((int) (charge * 100.0f)));
+                    std::string res = GetSource()->at(ChargePercentLineIndex(charge));
+                    ReplaceString(res, "%i%", std::to_string((int) (charge * 100.0f)));
                     chat_stack::Say(res, !!team_chat);
                 }
             }
@@ -116,16 +110,6 @@ void CreateMove()
 
 // Ready, Used, Ended, %...
 
-const std::vector<std::string> builtin_cathook = {
-    "-> I am charged!",
-    "-> Not a step back! UBERCHARGE USED!",
-    "-> My Ubercharge comes to an end!",
-    "-> I have %i%% of ubercharge!",
-    "-> I have half of the ubercharge!",
-    "-> Ubercharge almost ready! (%i%%)"
-};
-const std::vector<std::string> builtin_nonecore = {
-    ">>> GET READY TO RUMBLE! <<<", ">>> CHEATS ACTIVATED! <<<",
-    ">>> RUMBLE COMPLETE! <<<", ">>> RUMBLE IS %i%% CHARGED! <<<"
-};
+const std::vector<std::string> builtin_cathook  = { "-> I am charged!", "-> Not a step back! UBERCHARGE USED!", "-> My Ubercharge comes to an end!", "-> I have %i%% of ubercharge!", "-> I have half of the ubercharge!", "-> Ubercharge almost ready! (%i%%)" };
+const std::vector<std::string> builtin_nonecore = { ">>> GET READY TO RUMBLE! <<<", ">>> CHEATS ACTIVATED! <<<", ">>> RUMBLE COMPLETE! <<<", ">>> RUMBLE IS %i%% CHARGED! <<<" };
 } // namespace hacks::tf::uberspam

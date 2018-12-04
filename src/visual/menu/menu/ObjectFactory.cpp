@@ -22,8 +22,7 @@
 namespace zerokernel
 {
 
-std::unique_ptr<BaseMenuObject>
-ObjectFactory::createObjectFromXml(const tinyxml2::XMLElement *element)
+std::unique_ptr<BaseMenuObject> ObjectFactory::createObjectFromXml(const tinyxml2::XMLElement *element)
 {
     if (element == nullptr)
         return nullptr;
@@ -68,8 +67,7 @@ ObjectFactory::createObjectFromXml(const tinyxml2::XMLElement *element)
     else if (type == "Slider")
     {
         const char *type{ nullptr };
-        if (tinyxml2::XML_SUCCESS ==
-            element->QueryStringAttribute("type", &type))
+        if (tinyxml2::XML_SUCCESS == element->QueryStringAttribute("type", &type))
         {
             if (EXIT_SUCCESS == strcmp("int", type))
                 result = std::make_unique<Slider<int>>();
@@ -90,8 +88,7 @@ ObjectFactory::createObjectFromXml(const tinyxml2::XMLElement *element)
     return nullptr;
 }
 
-std::unique_ptr<BaseMenuObject>
-ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
+std::unique_ptr<BaseMenuObject> ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
 {
     const char *name;
     if (element->QueryStringAttribute("target", &name))
@@ -134,8 +131,7 @@ ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
             return nullptr;
         }
         int min, max;
-        if (!element->QueryIntAttribute("min", &min) &&
-            !element->QueryIntAttribute("max", &max))
+        if (!element->QueryIntAttribute("min", &min) && !element->QueryIntAttribute("max", &max))
         {
             // Make a slider
             auto slider = std::make_unique<Slider<int>>(*obj);
@@ -161,8 +157,7 @@ ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
             return nullptr;
         }
         float min, max;
-        if (!element->QueryFloatAttribute("min", &min) &&
-            !element->QueryFloatAttribute("max", &max))
+        if (!element->QueryFloatAttribute("min", &min) && !element->QueryFloatAttribute("max", &max))
         {
             // Make a slider
             auto slider = std::make_unique<Slider<float>>(*obj);
@@ -224,8 +219,7 @@ ObjectFactory::createAutoVariable(const tinyxml2::XMLElement *element)
     return result;
 }
 
-std::unique_ptr<BaseMenuObject>
-ObjectFactory::createFromPrefab(const std::string &prefab_name)
+std::unique_ptr<BaseMenuObject> ObjectFactory::createFromPrefab(const std::string &prefab_name)
 {
     auto prefab = Menu::instance->getPrefab(prefab_name);
     if (prefab)

@@ -48,13 +48,11 @@ void __attribute__((fastcall)) emoji(CachedEntity *ent);
 // helper funcs
 void __attribute__((fastcall)) Draw3DBox(CachedEntity *ent, const rgba_t &clr);
 void __attribute__((fastcall)) DrawBox(CachedEntity *ent, const rgba_t &clr);
-void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color,
-                bool transparent);
+void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color, bool transparent);
 bool GetCollide(CachedEntity *ent);
 
 // Strings
-void AddEntityString(CachedEntity *entity, const std::string &string,
-                     const rgba_t &color = colors::empty);
+void AddEntityString(CachedEntity *entity, const std::string &string, const rgba_t &color = colors::empty);
 void SetEntityColor(CachedEntity *entity, const rgba_t &color);
 void ResetEntityStrings();
 } // namespace hacks::shared::esp

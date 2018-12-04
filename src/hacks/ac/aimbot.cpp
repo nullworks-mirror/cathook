@@ -12,8 +12,7 @@
 
 static settings::Bool enable{ "find-cheaters.aimbot.enable", "true" };
 static settings::Float detect_angle{ "find-cheaters.aimbot.angle", "30" };
-static settings::Int detections_warning{ "find-cheaters.aimbot.detections",
-                                         "3" };
+static settings::Int detections_warning{ "find-cheaters.aimbot.detections", "3" };
 
 namespace ac::aimbot
 {
@@ -61,8 +60,7 @@ void Update(CachedEntity *player)
             CachedEntity *wep = ENTITY(widx);
             if (!CE_GOOD(wep))
                 return;
-            if (deviation > float(detect_angle) &&
-                wep->m_iClassID() != CL_CLASS(CTFFlameThrower))
+            if (deviation > float(detect_angle) && wep->m_iClassID() != CL_CLASS(CTFFlameThrower))
             {
                 am++;
                 // logging::Info("[ac] %d deviation %.2f #%d", player->m_IDX,
@@ -78,13 +76,11 @@ void Update(CachedEntity *player)
                 {
 
                     const char *wp_name = "[unknown]";
-                    int widx = CE_INT(player, netvar.hActiveWeapon) & 0xFFF;
+                    int widx            = CE_INT(player, netvar.hActiveWeapon) & 0xFFF;
                     if (IDX_GOOD(widx))
                     {
                         CachedEntity *weapon = ENTITY(widx);
-                        wp_name              = weapon->InternalEntity()
-                                      ->GetClientClass()
-                                      ->GetName();
+                        wp_name              = weapon->InternalEntity()->GetClientClass()->GetName();
                         /*logging::Info("%d", weapon->m_IDX);
                         logging::Info("%s", );
                         IClientEntity* e_weapon = RAW_ENT(weapon);
@@ -94,10 +90,7 @@ void Update(CachedEntity *player)
                             if (wname) wp_name = wname;
                         }*/
                     }
-                    hacks::shared::anticheat::Accuse(
-                        player->m_IDX, "Aimbot",
-                        format("Weapon: ", wp_name, " | Deviation: ", deviation,
-                               "° | ", data.detections));
+                    hacks::shared::anticheat::Accuse(player->m_IDX, "Aimbot", format("Weapon: ", wp_name, " | Deviation: ", deviation, "° | ", data.detections));
                 }
             }
         }
@@ -108,8 +101,7 @@ void Event(KeyValues *event)
 {
     if (!enable)
         return;
-    if (!strcmp(event->GetName(), "player_death") ||
-        !strcmp(event->GetName(), "player_hurt"))
+    if (!strcmp(event->GetName(), "player_death") || !strcmp(event->GetName(), "player_hurt"))
     {
         int attacker = event->GetInt("attacker");
         int victim   = event->GetInt("userid");

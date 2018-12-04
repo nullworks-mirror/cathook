@@ -44,8 +44,7 @@ public:
         }
         else if (string.find("Key ") != std::string::npos)
         {
-            key.scan = static_cast<SDL_Scancode>(
-                std::strtol(string.c_str() + 4, nullptr, 10));
+            key.scan = static_cast<SDL_Scancode>(std::strtol(string.c_str() + 4, nullptr, 10));
         }
         else
         {
@@ -126,8 +125,7 @@ protected:
                 string = "<null>";
             else
             {
-                const char *s =
-                    SDL_GetKeyName(SDL_GetKeyFromScancode(next.scan));
+                const char *s = SDL_GetKeyName(SDL_GetKeyFromScancode(next.scan));
                 if (!s || *s == 0)
                     string = "Key " + std::to_string(next.scan);
                 else

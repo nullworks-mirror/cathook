@@ -18,8 +18,7 @@ template <typename T> class ModalSpinner : public Spinner<T>
 public:
     ~ModalSpinner() override = default;
 
-    explicit ModalSpinner(settings::ArithmeticVariable<T> &option)
-        : Spinner<T>(option), modal(this)
+    explicit ModalSpinner(settings::ArithmeticVariable<T> &option) : Spinner<T>(option), modal(this)
     {
         this->startInput();
     }

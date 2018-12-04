@@ -31,11 +31,9 @@ void apply_killstreaks()
     if (!enable)
         return;
 
-    IClientEntity *ent =
-        g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+    IClientEntity *ent = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
 
-    IClientEntity *resource =
-        g_IEntityList->GetClientEntity(g_pPlayerResource->entity);
+    IClientEntity *resource = g_IEntityList->GetClientEntity(g_pPlayerResource->entity);
     if (!ent || ent->GetClientClass()->m_ClassID != RCC_PLAYERRESOURCE)
         return;
 
@@ -44,13 +42,10 @@ void apply_killstreaks()
         logging::Info("1");
     }
 
-    int *streaks_resource =
-        (int *) ((unsigned) resource + netvar.m_nStreaks_Resource +
-                 4 * g_IEngine->GetLocalPlayer());
+    int *streaks_resource = (int *) ((unsigned) resource + netvar.m_nStreaks_Resource + 4 * g_IEngine->GetLocalPlayer());
     if (*streaks_resource != current_streak())
     {
-        logging::Info("Adjusting %d -> %d", *streaks_resource,
-                      current_streak());
+        logging::Info("Adjusting %d -> %d", *streaks_resource, current_streak());
         *streaks_resource = current_streak();
     }
     int *streaks_player = (int *) ent + netvar.m_nStreaks_Player;
@@ -113,11 +108,9 @@ void fire_event(IGameEvent *event)
 hooks::VMTHook hook;
 
 typedef bool (*FireEvent_t)(IGameEventManager2 *, IGameEvent *, bool);
-bool FireEvent_hook(IGameEventManager2 *manager, IGameEvent *event,
-                    bool bDontBroadcast)
+bool FireEvent_hook(IGameEventManager2 *manager, IGameEvent *event, bool bDontBroadcast)
 {
-    static FireEvent_t original =
-        (FireEvent_t) hook.GetMethod(offsets::FireEvent());
+    static FireEvent_t original = (FireEvent_t) hook.GetMethod(offsets::FireEvent());
     fire_event(event);
     return original(manager, event, bDontBroadcast);
 }
@@ -125,8 +118,7 @@ bool FireEvent_hook(IGameEventManager2 *manager, IGameEvent *event,
 typedef bool (*FireEventClientSide_t)(IGameEventManager2 *, IGameEvent *);
 bool FireEventClientSide(IGameEventManager2 *manager, IGameEvent *event)
 {
-    static FireEventClientSide_t original =
-        (FireEventClientSide_t) hook.GetMethod(offsets::FireEventClientSide());
+    static FireEventClientSide_t original = (FireEventClientSide_t) hook.GetMethod(offsets::FireEventClientSide());
     fire_event(event);
     return original(manager, event);
 }

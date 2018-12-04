@@ -38,8 +38,7 @@ void SetCVarInterface(ICvar *iface);
 
 // typedef void ( *FnCommandCallback_t )( const CCommand &command );
 
-template <typename Iter, typename RandomGenerator>
-Iter select_randomly(Iter start, Iter end, RandomGenerator &g)
+template <typename Iter, typename RandomGenerator> Iter select_randomly(Iter start, Iter end, RandomGenerator &g)
 {
     std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
     std::advance(start, dis(g));
@@ -75,8 +74,7 @@ Vector GetBuildingPosition(CachedEntity *ent);
 bool IsBuildingVisible(CachedEntity *ent);
 
 ConVar *CreateConVar(std::string name, std::string value, std::string help);
-ConCommand *CreateConCommand(const char *name, FnCommandCallback_t callback,
-                             const char *help);
+ConCommand *CreateConCommand(const char *name, FnCommandCallback_t callback, const char *help);
 
 powerup_type GetPowerupOnPlayer(CachedEntity *player);
 // GetHitbox() is being called really frequently.
@@ -92,13 +90,9 @@ extern std::mutex trace_lock;
 bool IsEntityVisible(CachedEntity *entity, int hb);
 bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos);
 bool VisCheckEntFromEnt(CachedEntity *startEnt, CachedEntity *endEnt);
-bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt,
-                              CachedEntity *endEnt);
-Vector VischeckCorner(CachedEntity *player, CachedEntity *target, float maxdist,
-                      bool checkWalkable);
-std::pair<Vector, Vector> VischeckWall(CachedEntity *player,
-                                       CachedEntity *target, float maxdist,
-                                       bool checkWalkable);
+bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt, CachedEntity *endEnt);
+Vector VischeckCorner(CachedEntity *player, CachedEntity *target, float maxdist, bool checkWalkable);
+std::pair<Vector, Vector> VischeckWall(CachedEntity *player, CachedEntity *target, float maxdist, bool checkWalkable);
 float vectorMax(Vector i);
 Vector vectorAbs(Vector i);
 bool canReachVector(Vector loc, Vector dest = { 0, 0, 0 });
@@ -176,8 +170,7 @@ Vector CalcAngle(Vector src, Vector dst);
 void MakeVector(Vector ang, Vector &out);
 float GetFov(Vector ang, Vector src, Vector dst);
 
-void ReplaceString(std::string &input, const std::string &what,
-                   const std::string &with_what);
+void ReplaceString(std::string &input, const std::string &what, const std::string &with_what);
 
 std::pair<float, float> ComputeMove(const Vector &a, const Vector &b);
 void WalkTo(const Vector &vector);
@@ -185,8 +178,7 @@ void WalkTo(const Vector &vector);
 std::string GetLevelName();
 
 void format_internal(std::stringstream &stream);
-template <typename T, typename... Targs>
-void format_internal(std::stringstream &stream, T value, Targs... args)
+template <typename T, typename... Targs> void format_internal(std::stringstream &stream, T value, Targs... args)
 {
     stream << value;
     format_internal(stream, args...);

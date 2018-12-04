@@ -20,8 +20,7 @@ static settings::Bool medkits{ "chams.show.medkits", "false" };
 static settings::Bool ammobox{ "chams.show.ammoboxes", "false" };
 static settings::Bool buildings{ "chams.show.buildings", "true" };
 static settings::Bool stickies{ "chams.show.stickies", "true" };
-static settings::Bool teammate_buildings{ "chams.show.teammate-buildings",
-                                          "false" };
+static settings::Bool teammate_buildings{ "chams.show.teammate-buildings", "false" };
 static settings::Bool recursive{ "chams.recursive", "true" };
 static settings::Bool weapons_white{ "chams.white-weapons", "true" };
 static settings::Bool legit{ "chams.legit", "false" };
@@ -173,8 +172,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
     switch (ent->m_Type())
     {
     case ENTITY_BUILDING:
-        if (!ent->m_bEnemy() && !(teammates || teammate_buildings) &&
-            ent != LOCAL_E)
+        if (!ent->m_bEnemy() && !(teammates || teammate_buildings) && ent != LOCAL_E)
         {
             return colors::empty;
         }
@@ -217,8 +215,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
             return false;
         if (ent->m_iHealth() == 0 || !ent->m_iHealth())
             return false;
-        if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject) &&
-            LOCAL_E->m_vecOrigin().DistTo(ent->m_vecOrigin()) <= 100.0f)
+        if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject) && LOCAL_E->m_vecOrigin().DistTo(ent->m_vecOrigin()) <= 100.0f)
             return false;
         return true;
     case ENTITY_PLAYER:
@@ -233,8 +230,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
     case ENTITY_PROJECTILE:
         if (!ent->m_bEnemy())
             return false;
-        if (stickies &&
-            ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
+        if (stickies && ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
         {
             return true;
         }
@@ -272,14 +268,12 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
     IClientEntity *attach;
     int passes = 0;
 
-    attach = g_IEntityList->GetClientEntity(
-        *(int *) ((uintptr_t) entity + netvar.m_Collision - 24) & 0xFFF);
+    attach = g_IEntityList->GetClientEntity(*(int *) ((uintptr_t) entity + netvar.m_Collision - 24) & 0xFFF);
     while (attach && passes++ < 32)
     {
         if (attach->ShouldDraw())
         {
-            if (entity->GetClientClass()->m_ClassID == RCC_PLAYER &&
-                re::C_BaseCombatWeapon::IsBaseCombatWeapon(attach))
+            if (entity->GetClientClass()->m_ClassID == RCC_PLAYER && re::C_BaseCombatWeapon::IsBaseCombatWeapon(attach))
             {
                 if (weapons_white)
                 {
@@ -297,8 +291,7 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
             else
                 attach->DrawModel(1);
         }
-        attach = g_IEntityList->GetClientEntity(
-            *(int *) ((uintptr_t) attach + netvar.m_Collision - 20) & 0xFFF);
+        attach = g_IEntityList->GetClientEntity(*(int *) ((uintptr_t) attach + netvar.m_Collision - 20) & 0xFFF);
     }
 }
 
@@ -316,8 +309,7 @@ void EffectChams::RenderChams(IClientEntity *entity)
             mat_unlit_z->AlphaModulate(1.0f);
             ptr->DepthRange(0.0f, 0.01f);
             g_IVRenderView->SetColorModulation(color_2);
-            g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit_z
-                                                         : mat_lit_z);
+            g_IVModelRender->ForcedMaterialOverride(flat ? mat_unlit_z : mat_lit_z);
             RenderChamsRecursive(entity);
         }
 
@@ -340,8 +332,7 @@ void EffectChams::Render(int x, int y, int w, int h)
         return;
     if (!init)
         Init();
-    if (!isHackActive() ||
-        (g_IEngine->IsTakingScreenshot() && clean_screenshots))
+    if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots))
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     BeginRenderChams();

@@ -71,8 +71,7 @@ public:
     __attribute__((hot)) void Update();
     bool IsVisible();
     void Reset();
-    __attribute__((always_inline, hot, const)) IClientEntity *
-    InternalEntity() const
+    __attribute__((always_inline, hot, const)) IClientEntity *InternalEntity() const
     {
         return g_IEntityList->GetClientEntity(m_IDX);
     }
@@ -83,9 +82,7 @@ public:
         IClientEntity *const entity = InternalEntity();
         return entity && !entity->IsDormant();
     }
-    template <typename T>
-    __attribute__((always_inline, hot, const)) inline T &
-    var(uintptr_t offset) const
+    template <typename T> __attribute__((always_inline, hot, const)) inline T &var(uintptr_t offset) const
     {
         return *reinterpret_cast<T *>(uintptr_t(RAW_ENT(this)) + offset);
     }
@@ -144,23 +141,9 @@ public:
         int classid    = m_iClassID();
         if (classid == CL_CLASS(CTFPlayer))
             ret = ENTITY_PLAYER;
-        else if (classid == CL_CLASS(CTFGrenadePipebombProjectile) ||
-                 classid == CL_CLASS(CTFProjectile_Cleaver) ||
-                 classid == CL_CLASS(CTFProjectile_Jar) ||
-                 classid == CL_CLASS(CTFProjectile_JarMilk) ||
-                 classid == CL_CLASS(CTFProjectile_Arrow) ||
-                 classid == CL_CLASS(CTFProjectile_EnergyBall) ||
-                 classid == CL_CLASS(CTFProjectile_EnergyRing) ||
-                 classid == CL_CLASS(CTFProjectile_GrapplingHook) ||
-                 classid == CL_CLASS(CTFProjectile_HealingBolt) ||
-                 classid == CL_CLASS(CTFProjectile_Rocket) ||
-                 classid == CL_CLASS(CTFProjectile_SentryRocket) ||
-                 classid == CL_CLASS(CTFProjectile_BallOfFire) ||
-                 classid == CL_CLASS(CTFProjectile_Flare))
+        else if (classid == CL_CLASS(CTFGrenadePipebombProjectile) || classid == CL_CLASS(CTFProjectile_Cleaver) || classid == CL_CLASS(CTFProjectile_Jar) || classid == CL_CLASS(CTFProjectile_JarMilk) || classid == CL_CLASS(CTFProjectile_Arrow) || classid == CL_CLASS(CTFProjectile_EnergyBall) || classid == CL_CLASS(CTFProjectile_EnergyRing) || classid == CL_CLASS(CTFProjectile_GrapplingHook) || classid == CL_CLASS(CTFProjectile_HealingBolt) || classid == CL_CLASS(CTFProjectile_Rocket) || classid == CL_CLASS(CTFProjectile_SentryRocket) || classid == CL_CLASS(CTFProjectile_BallOfFire) || classid == CL_CLASS(CTFProjectile_Flare))
             ret = ENTITY_PROJECTILE;
-        else if (classid == CL_CLASS(CObjectTeleporter) ||
-                 classid == CL_CLASS(CObjectSentrygun) ||
-                 classid == CL_CLASS(CObjectDispenser))
+        else if (classid == CL_CLASS(CObjectTeleporter) || classid == CL_CLASS(CObjectSentrygun) || classid == CL_CLASS(CObjectDispenser))
             ret = ENTITY_BUILDING;
         else
             ret = ENTITY_GENERIC;
@@ -184,10 +167,7 @@ public:
     };
     bool m_bGrenadeProjectile()
     {
-        return m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) ||
-               m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) ||
-               m_iClassID() == CL_CLASS(CTFProjectile_Jar) ||
-               m_iClassID() == CL_CLASS(CTFProjectile_JarMilk);
+        return m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) || m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) || m_iClassID() == CL_CLASS(CTFProjectile_Jar) || m_iClassID() == CL_CLASS(CTFProjectile_JarMilk);
     };
 
     bool m_bAnyHitboxVisible{ false };

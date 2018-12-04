@@ -69,8 +69,7 @@ void Draw()
         {
             if (!backstab_triggered)
             {
-                if (sound_alert && (g_GlobalVars->curtime - last_say) >
-                                       (float) sound_alert_interval)
+                if (sound_alert && (g_GlobalVars->curtime - last_say) > (float) sound_alert_interval)
                 {
                     g_ISurface->PlaySound("vo/demoman_cloakedspy03.mp3");
                     last_say = g_GlobalVars->curtime;
@@ -79,18 +78,14 @@ void Draw()
             }
             if (voicemenu && lastVoicemenu.test_and_set(5000))
                 g_IEngine->ClientCmd_Unrestricted("voicemenu 1 1");
-            AddCenterString(format("BACKSTAB WARNING! ",
-                                   (int) (closest_spy_distance / 64 * 1.22f),
-                                   "m (", spy_count, ")"),
-                            colors::red);
+            AddCenterString(format("BACKSTAB WARNING! ", (int) (closest_spy_distance / 64 * 1.22f), "m (", spy_count, ")"), colors::red);
         }
         else if (closest_spy_distance < (float) distance_warning)
         {
             backstab_triggered = false;
             if (!warning_triggered)
             {
-                if (sound_alert && (g_GlobalVars->curtime - last_say) >
-                                       (float) sound_alert_interval)
+                if (sound_alert && (g_GlobalVars->curtime - last_say) > (float) sound_alert_interval)
                 {
                     g_ISurface->PlaySound("vo/demoman_cloakedspy01.mp3");
                     last_say = g_GlobalVars->curtime;
@@ -99,10 +94,7 @@ void Draw()
             }
             if (voicemenu && lastVoicemenu.test_and_set(5000))
                 g_IEngine->ClientCmd_Unrestricted("voicemenu 1 1");
-            AddCenterString(format("Incoming spy! ",
-                                   (int) (closest_spy_distance / 64 * 1.22f),
-                                   "m (", spy_count, ")"),
-                            colors::yellow);
+            AddCenterString(format("Incoming spy! ", (int) (closest_spy_distance / 64 * 1.22f), "m (", spy_count, ")"), colors::yellow);
         }
     }
     else

@@ -17,9 +17,7 @@ DEFINE_HOOKED_METHOD(FireGameEvent, void, void *this_, IGameEvent *event)
 #if ENABLE_VISUALS
         if (event_logging::isEnabled())
         {
-            if (!strcmp(name, "player_connect_client") ||
-                !strcmp(name, "player_disconnect") ||
-                !strcmp(name, "player_team"))
+            if (!strcmp(name, "player_connect_client") || !strcmp(name, "player_disconnect") || !strcmp(name, "player_team"))
             {
                 return;
             }

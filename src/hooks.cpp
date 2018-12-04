@@ -59,8 +59,7 @@ void VMTHook::Release()
 {
     if (vtable_ptr && *vtable_ptr == &vtable_hooked[2])
     {
-        logging::Info("Un-hooking 0x%08x (vtable @ 0x%08x)", vtable_ptr,
-                      *vtable_ptr);
+        logging::Info("Un-hooking 0x%08x (vtable @ 0x%08x)", vtable_ptr, *vtable_ptr);
         if ((*vtable_ptr)[-1] == (method_t) GUARD)
         {
             *vtable_ptr = vtable_original;
@@ -79,9 +78,7 @@ void *VMTHook::GetMethod(uint32_t idx) const
 
 void VMTHook::HookMethod(ptr_t func, uint32_t idx, ptr_t *backup)
 {
-    logging::Info(
-        "Hooking method %d of vtable 0x%08x, replacing 0x%08x with 0x%08x", idx,
-        vtable_original, GetMethod(idx), func);
+    logging::Info("Hooking method %d of vtable 0x%08x, replacing 0x%08x with 0x%08x", idx, vtable_original, GetMethod(idx), func);
     if (backup)
         *backup = vtable_hooked[2 + idx];
     vtable_hooked[2 + idx] = func;

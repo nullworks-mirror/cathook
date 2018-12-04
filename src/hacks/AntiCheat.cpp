@@ -29,18 +29,12 @@ void Accuse(int eid, const std::string &hack, const std::string &details)
         CachedEntity *ent = ENTITY(eid);
         if (accuse_chat)
         {
-            hack::command_stack().push(
-                format("say \"", info.name, " (",
-                       classname(CE_INT(ent, netvar.iClass)), ") suspected ",
-                       hack, ": ", details, "\""));
+            hack::command_stack().push(format("say \"", info.name, " (", classname(CE_INT(ent, netvar.iClass)), ") suspected ", hack, ": ", details, "\""));
         }
         else
         {
 #if ENABLE_VISUALS
-            PrintChat("\x07%06X%s\x01 (%s) suspected \x07%06X%s\x01: %s",
-                      colors::chat::team(ENTITY(eid)->m_iTeam()), info.name,
-                      classname(CE_INT(ent, netvar.iClass)), 0xe05938,
-                      hack.c_str(), details.c_str());
+            PrintChat("\x07%06X%s\x01 (%s) suspected \x07%06X%s\x01: %s", colors::chat::team(ENTITY(eid)->m_iTeam()), info.name, classname(CE_INT(ent, netvar.iClass)), 0xe05938, hack.c_str(), details.c_str());
 #endif
         }
     }
@@ -49,8 +43,7 @@ void Accuse(int eid, const std::string &hack, const std::string &details)
 void SetRage(player_info_t info)
 {
     if (autorage)
-        playerlist::AccessData(info.friendsID).state =
-            playerlist::k_EState::RAGE;
+        playerlist::AccessData(info.friendsID).state = playerlist::k_EState::RAGE;
 }
 
 void CreateMove()
@@ -68,9 +61,7 @@ void CreateMove()
         {
             if (ent->m_bAlivePlayer())
             {
-                if (player_tools::shouldTarget(ent) ==
-                        player_tools::IgnoreReason::DO_NOT_IGNORE ||
-                    ent == LOCAL_E)
+                if (player_tools::shouldTarget(ent) == player_tools::IgnoreReason::DO_NOT_IGNORE || ent == LOCAL_E)
                 {
                     ac::aimbot::Update(ent);
                     ac::antiaim::Update(ent);

@@ -12,8 +12,7 @@
 
 static settings::Bool debug_enginepred{ "debug.engine-pred-others", "false" };
 static settings::Bool debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
-static settings::Bool debug_pp_rockettimeping{ "debug.pp-rocket-time-ping",
-                                               "false" };
+static settings::Bool debug_pp_rockettimeping{ "debug.pp-rocket-time-ping", "false" };
 
 // TODO there is a Vector() object created each call.
 
@@ -23,8 +22,7 @@ Vector SimpleLatencyPrediction(CachedEntity *ent, int hb)
         return Vector();
     Vector result;
     GetHitbox(ent, hb, result);
-    float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
-                    g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
+    float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
     result += CE_VECTOR(ent, netvar.vVelocity) * latency;
     return result;
 }
@@ -103,9 +101,7 @@ void Prediction_PaintTraverse()
                 Vector screen;
                 if (draw::WorldToScreen(predicted_players[i][j], screen))
                 {
-                    glez::draw::line(screen.x, screen.y,
-                                     previous_screen.x - screen.x,
-                                     previous_screen.y - screen.y, color, 0.5f);
+                    glez::draw::line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 0.5f);
                     previous_screen = screen;
                 }
                 else
@@ -123,16 +119,12 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     Vector result      = entity->m_vecOrigin();
     IClientEntity *ent = RAW_ENT(entity);
 
-    typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
-                                class IMoveHelper *, CMoveData *);
-    typedef void (*FinishMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
-                                 CMoveData *);
+    typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *, class IMoveHelper *, CMoveData *);
+    typedef void (*FinishMoveFn)(IPrediction *, IClientEntity *, CUserCmd *, CMoveData *);
 
-    void **predictionVtable = *((void ***) g_IPrediction);
-    SetupMoveFn oSetupMove =
-        (SetupMoveFn)(*(unsigned *) (predictionVtable + 19));
-    FinishMoveFn oFinishMove =
-        (FinishMoveFn)(*(unsigned *) (predictionVtable + 20));
+    void **predictionVtable  = *((void ***) g_IPrediction);
+    SetupMoveFn oSetupMove   = (SetupMoveFn)(*(unsigned *) (predictionVtable + 19));
+    FinishMoveFn oFinishMove = (FinishMoveFn)(*(unsigned *) (predictionVtable + 20));
 
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
@@ -162,8 +154,7 @@ Vector EnginePrediction(CachedEntity *entity, float time)
 
     NET_VAR(ent, 4188, CUserCmd *) = &fakecmd;
 
-    g_GlobalVars->curtime =
-        g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
+    g_GlobalVars->curtime   = g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
     g_GlobalVars->frametime = time;
 
     Vector old_origin      = entity->m_vecOrigin();
@@ -172,14 +163,11 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     //*g_PredictionRandomSeed =
     // MD5_PseudoRandom(current_user_cmd->command_number) &
     // 0x7FFFFFFF;
-    g_IGameMovement->StartTrackPredictionErrors(
-        reinterpret_cast<CBasePlayer *>(ent));
+    g_IGameMovement->StartTrackPredictionErrors(reinterpret_cast<CBasePlayer *>(ent));
     oSetupMove(g_IPrediction, ent, &fakecmd, NULL, pMoveData);
-    g_IGameMovement->ProcessMovement(reinterpret_cast<CBasePlayer *>(ent),
-                                     pMoveData);
+    g_IGameMovement->ProcessMovement(reinterpret_cast<CBasePlayer *>(ent), pMoveData);
     oFinishMove(g_IPrediction, ent, &fakecmd, pMoveData);
-    g_IGameMovement->FinishTrackPredictionErrors(
-        reinterpret_cast<CBasePlayer *>(ent));
+    g_IGameMovement->FinishTrackPredictionErrors(reinterpret_cast<CBasePlayer *>(ent));
 
     NET_VAR(entity, 4188, CUserCmd *) = original_cmd;
 
@@ -192,9 +180,7 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     return result;
 }
 
-Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
-                                   float gravitymod,
-                                   float entgmod /* ignored */)
+Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float gravitymod, float entgmod /* ignored */)
 {
     Vector origin = ent->m_vecOrigin();
     Vector hitbox;
@@ -254,8 +240,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed,
                   result.y - origin.y, result.z - origin.z);*/
     return result;
 }
-Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed,
-                          float gravity)
+Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float gravity)
 {
     if (!vec.z || CE_BAD(building))
         return Vector();
@@ -280,8 +265,7 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed,
     float mindelta = 65536.0f;
     Vector bestpos = result;
     int maxsteps   = 300;
-    for (int steps = 0; steps < maxsteps;
-         steps++, currenttime += ((float) (2 * range) / (float) maxsteps))
+    for (int steps = 0; steps < maxsteps; steps++, currenttime += ((float) (2 * range) / (float) maxsteps))
     {
         Vector curpos = result;
         if (dtg > 0.0f)
@@ -291,8 +275,7 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed,
         }
         float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
         if (debug_pp_rockettimeping)
-            rockettime +=
-                g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+            rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;
@@ -306,8 +289,7 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed,
     // S = at^2/2 ; t = sqrt(2S/a)*/
     return bestpos;
 }
-Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
-                            float gravitymod, float entgmod)
+Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravitymod, float entgmod)
 {
     if (!ent)
         return Vector();
@@ -318,8 +300,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
     //        result = SimpleLatencyPrediction(ent, hb);
     //
     //}
-    float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) +
-                    g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
+    float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
 
     if (speed == 0.0f)
         return Vector();
@@ -340,8 +321,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
     float mindelta = 65536.0f;
     Vector bestpos = result;
     int maxsteps   = 300;
-    for (int steps = 0; steps < maxsteps;
-         steps++, currenttime += ((float) (2 * range) / (float) maxsteps))
+    for (int steps = 0; steps < maxsteps; steps++, currenttime += ((float) (2 * range) / (float) maxsteps))
     {
         Vector curpos = result;
         curpos += vel * currenttime;
@@ -357,8 +337,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed,
         }
         float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
         if (debug_pp_rockettimeping)
-            rockettime +=
-                g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+            rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;
@@ -395,8 +374,7 @@ float DistanceToGround(Vector origin)
     Vector endpos = origin;
     endpos.z -= 8192;
     ray.Init(origin, endpos);
-    g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player,
-                       &ground_trace);
+    g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &ground_trace);
     return 8192.0f * ground_trace.fraction;
 }
 

@@ -8,9 +8,7 @@
 #include <menu/menu/special/SettingsManagerList.hpp>
 #include <menu/menu/special/VariableListEntry.hpp>
 
-static settings::RVariable<glez::rgba> marked_color{
-    "zk.color.variable-list.color.registered", "ffff00"
-};
+static settings::RVariable<glez::rgba> marked_color{ "zk.color.variable-list.color.registered", "ffff00" };
 
 /*
   Created on 26.07.18.
@@ -87,8 +85,7 @@ void zerokernel::VariableListEntry::setVariable(settings::IVariable *variable)
     }
 }
 
-std::unique_ptr<zerokernel::BaseMenuObject>
-zerokernel::VariableListEntry::createCheckbox(settings::IVariable *variable)
+std::unique_ptr<zerokernel::BaseMenuObject> zerokernel::VariableListEntry::createCheckbox(settings::IVariable *variable)
 {
     auto v = dynamic_cast<settings::Variable<bool> *>(variable);
     if (!v)
@@ -99,8 +96,7 @@ zerokernel::VariableListEntry::createCheckbox(settings::IVariable *variable)
     return std::make_unique<Checkbox>(*v);
 }
 
-std::unique_ptr<zerokernel::BaseMenuObject>
-zerokernel::VariableListEntry::createSpinner(settings::IVariable *variable)
+std::unique_ptr<zerokernel::BaseMenuObject> zerokernel::VariableListEntry::createSpinner(settings::IVariable *variable)
 {
     if (variable->getType() == settings::VariableType::INT)
     {
@@ -125,8 +121,7 @@ zerokernel::VariableListEntry::createSpinner(settings::IVariable *variable)
     return nullptr;
 }
 
-std::unique_ptr<zerokernel::BaseMenuObject>
-zerokernel::VariableListEntry::createTextInput(settings::IVariable *variable)
+std::unique_ptr<zerokernel::BaseMenuObject> zerokernel::VariableListEntry::createTextInput(settings::IVariable *variable)
 {
     auto v = dynamic_cast<settings::Variable<std::string> *>(variable);
     if (!v)
@@ -137,8 +132,7 @@ zerokernel::VariableListEntry::createTextInput(settings::IVariable *variable)
     return std::make_unique<StringInput>(*v);
 }
 
-std::unique_ptr<zerokernel::BaseMenuObject>
-zerokernel::VariableListEntry::createColorPicker(settings::IVariable *variable)
+std::unique_ptr<zerokernel::BaseMenuObject> zerokernel::VariableListEntry::createColorPicker(settings::IVariable *variable)
 {
     auto v = dynamic_cast<settings::Variable<glez::rgba> *>(variable);
     if (!v)
@@ -149,8 +143,7 @@ zerokernel::VariableListEntry::createColorPicker(settings::IVariable *variable)
     return std::make_unique<ColorSelector>(*v);
 }
 
-std::unique_ptr<zerokernel::BaseMenuObject>
-zerokernel::VariableListEntry::createKeyInput(settings::IVariable *variable)
+std::unique_ptr<zerokernel::BaseMenuObject> zerokernel::VariableListEntry::createKeyInput(settings::IVariable *variable)
 {
     auto v = dynamic_cast<settings::Variable<settings::Key> *>(variable);
     if (!v)
@@ -193,9 +186,7 @@ void zerokernel::VariableListEntry::recalculateSize()
 void zerokernel::VariableListEntry::emitSizeUpdate()
 {
     if (control)
-        control->move(bb.getContentBox().width -
-                          control->getBoundingBox().getFullBox().width,
-                      0);
+        control->move(bb.getContentBox().width - control->getBoundingBox().getFullBox().width, 0);
 
     BaseMenuObject::emitSizeUpdate();
 }

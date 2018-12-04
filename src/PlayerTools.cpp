@@ -17,21 +17,14 @@ static settings::Bool taunting{ "player-tools.ignore.taunting", "true" };
 static settings::Bool hoovy{ "player-tools.ignore.hoovy", "true" };
 static settings::Bool ignoreCathook{ "player-tools.ignore.cathook", "true" };
 
-static settings::Bool online_notarget{ "player-tools.ignore.online.notarget",
-                                       "true" };
-static settings::Bool online_friendly_software{
-    "player-tools.ignore.online.friendly-software", "true"
-};
-static settings::Bool online_only_verified{
-    "player-tools.ignore.online.only-verified-accounts", "true"
-};
-static settings::Bool online_anonymous{ "player-tools.ignore.online.anonymous",
-                                        "true" };
+static settings::Bool online_notarget{ "player-tools.ignore.online.notarget", "true" };
+static settings::Bool online_friendly_software{ "player-tools.ignore.online.friendly-software", "true" };
+static settings::Bool online_only_verified{ "player-tools.ignore.online.only-verified-accounts", "true" };
+static settings::Bool online_anonymous{ "player-tools.ignore.online.anonymous", "true" };
 
 static std::unordered_map<unsigned, unsigned> betrayal_list{};
 
-static CatCommand forgive_all("pt_forgive_all", "Clear betrayal list",
-                              []() { betrayal_list.clear(); });
+static CatCommand forgive_all("pt_forgive_all", "Clear betrayal list", []() { betrayal_list.clear(); });
 
 namespace player_tools
 {
@@ -48,8 +41,7 @@ IgnoreReason shouldTargetSteamId(unsigned id)
     }
 
     auto &pl = playerlist::AccessData(id);
-    if (playerlist::IsFriendly(pl.state) ||
-        (pl.state == playerlist::k_EState::CAT && *ignoreCathook))
+    if (playerlist::IsFriendly(pl.state) || (pl.state == playerlist::k_EState::CAT && *ignoreCathook))
         return IgnoreReason::LOCAL_PLAYER_LIST;
 #if ENABLE_ONLINE
     auto *co = online::getUserData(id);

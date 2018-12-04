@@ -24,14 +24,13 @@ static Timer sendmsg{};
 static Timer gitgud{};
 
 // Using repeated char causes crash on some systems. Suboptimal solution.
-const static std::string clear(
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+const static std::string clear("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                               "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                               "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                               "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                               "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                               "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+                               "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 std::string lastfilter{};
 std::string lastname{};
 
@@ -65,8 +64,7 @@ std::vector<std::string> SplitName(std::string name, int num)
         boost::to_lower(i);
     return name2;
 }
-DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
-                     bf_read &buf)
+DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &buf)
 {
     if (!isHackActive())
         return original::DispatchUserMessage(this_, type, buf);
@@ -82,8 +80,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     }
     if (retrun && type != 47 && gitgud.test_and_set(300))
     {
-        PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(),
-                  lastfilter.c_str());
+        PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(), lastfilter.c_str());
         retrun = false;
     }
     int loop_index, s, i, j;
@@ -112,7 +109,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 char to_app = buf.ReadByte();
                 data.push_back(to_app);
             }
-            data = data.substr(0, data.size() - 1);
+            data     = data.substr(0, data.size() - 1);
             int indx = 0;
             for (auto i : data)
             {
@@ -120,7 +117,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 {
                     if (indx && (i == '\n' || i == '\r'))
                     {
-
                     }
                     else
                         cleaned_data.push_back(i);
@@ -184,22 +180,16 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     break;
                 }
 
-                std::vector<std::string> res = {
-                    "skid", "script", "cheat", "hak",   "hac",  "f1",
-                    "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
-                    "cat",  "insta",  "revv",  "brass", "kick", claz
-                };
-                name2 = SplitName(name1, 2);
+                std::vector<std::string> res = { "skid", "script", "cheat", "hak", "hac", "f1", "hax", "vac", "ban", "lmao", "bot", "report", "cat", "insta", "revv", "brass", "kick", claz };
+                name2                        = SplitName(name1, 2);
                 for (auto i : name2)
                     res.push_back(i);
                 name2 = SplitName(name1, 3);
                 for (auto i : name2)
                     res.push_back(i);
                 std::string message2 = message;
-                std::vector<std::string> toreplace{ " ", "4", "3", "0",
-                                                    "6", "5", "7" };
-                std::vector<std::string> replacewith{ "",  "a", "e", "o",
-                                                      "g", "s", "t" };
+                std::vector<std::string> toreplace{ " ", "4", "3", "0", "6", "5", "7" };
+                std::vector<std::string> replacewith{ "", "a", "e", "o", "g", "s", "t" };
                 boost::to_lower(message2);
 
                 for (int i = 0; i < toreplace.size(); i++)
@@ -243,33 +233,29 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         //                            chat_stack::Say("!!meow");
                         //                        }
                         CachedEntity *ent = ENTITY(cleaned_data[0]);
-                        if (msg != "Attempt at ucccccping and failing" &&
-                            msg != "Unsupported version" && ent != LOCAL_E)
+                        if (msg != "Attempt at ucccccping and failing" && msg != "Unsupported version" && ent != LOCAL_E)
                         {
                             auto &state = playerlist::AccessData(ent).state;
                             if (state == playerlist::k_EState::DEFAULT)
                             {
                                 state = playerlist::k_EState::CAT;
-                                if (*answerIdentify &&
-                                    sendmsg.test_and_set(5000))
+                                if (*answerIdentify && sendmsg.test_and_set(5000))
                                     chat_stack::Say("!!meow");
                             }
                             else if (state == playerlist::k_EState::CAT)
                             {
-                                if (*answerIdentify &&
-                                    sendmsg.test_and_set(60000))
+                                if (*answerIdentify && sendmsg.test_and_set(60000))
                                     chat_stack::Say("!!meow");
                             }
                         }
 #endif
-                        PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
-                                  msg.c_str());
+                        PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), msg.c_str());
                     }
                 }
             }
             chatlog::LogMessage(cleaned_data[0], message);
             char *cleaned_data_c = new char[cleaned_data.size()];
-            int idx = 0;
+            int idx              = 0;
             for (char i : cleaned_data)
             {
                 cleaned_data_c[idx] = i;
@@ -286,8 +272,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         while (buf.GetNumBytesLeft())
         {
             unsigned char byte = buf.ReadByte();
-            str << std::hex << std::setw(2) << std::setfill('0')
-                << static_cast<int>(byte) << ' ';
+            str << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << ' ';
         }
         logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
         buf.Seek(0);

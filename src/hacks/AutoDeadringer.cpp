@@ -15,15 +15,7 @@ namespace hacks::shared::deadringer
 
 bool IsProjectile(CachedEntity *ent)
 {
-    return (ent->m_iClassID() == CL_CLASS(CTFProjectile_Rocket) ||
-            ent->m_iClassID() == CL_CLASS(CTFProjectile_Flare) ||
-            ent->m_iClassID() == CL_CLASS(CTFProjectile_EnergyBall) ||
-            ent->m_iClassID() == CL_CLASS(CTFProjectile_HealingBolt) ||
-            ent->m_iClassID() == CL_CLASS(CTFProjectile_Arrow) ||
-            ent->m_iClassID() == CL_CLASS(CTFProjectile_SentryRocket) ||
-            ent->m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) ||
-            ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) ||
-            ent->m_iClassID() == CL_CLASS(CTFProjectile_EnergyRing));
+    return (ent->m_iClassID() == CL_CLASS(CTFProjectile_Rocket) || ent->m_iClassID() == CL_CLASS(CTFProjectile_Flare) || ent->m_iClassID() == CL_CLASS(CTFProjectile_EnergyBall) || ent->m_iClassID() == CL_CLASS(CTFProjectile_HealingBolt) || ent->m_iClassID() == CL_CLASS(CTFProjectile_Arrow) || ent->m_iClassID() == CL_CLASS(CTFProjectile_SentryRocket) || ent->m_iClassID() == CL_CLASS(CTFProjectile_Cleaver) || ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile) || ent->m_iClassID() == CL_CLASS(CTFProjectile_EnergyRing));
 }
 int NearbyEntities()
 {
@@ -54,11 +46,9 @@ void CreateMove()
         return;
     if (CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
         return;
-    if (HasCondition<TFCond_Cloaked>(LOCAL_E) ||
-        HasCondition<TFCond_CloakFlicker>(LOCAL_E))
+    if (HasCondition<TFCond_Cloaked>(LOCAL_E) || HasCondition<TFCond_CloakFlicker>(LOCAL_E))
         return;
-    if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health &&
-        NearbyEntities() > 1)
+    if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health && NearbyEntities() > 1)
         current_user_cmd->buttons |= IN_ATTACK2;
     for (int i = 0; i < HIGHEST_ENTITY; i++)
     {

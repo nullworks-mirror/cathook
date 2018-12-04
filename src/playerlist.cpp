@@ -20,9 +20,7 @@ std::unordered_map<unsigned, userdata> data{};
 
 const userdata null_data{};
 #if ENABLE_VISUALS
-rgba_t k_Colors[] = { colors::empty, colors::FromRGBA8(99, 226, 161, 255),
-                      colors::FromRGBA8(226, 204, 99, 255),
-                      colors::FromRGBA8(232, 134, 6, 255), colors::empty };
+rgba_t k_Colors[] = { colors::empty, colors::FromRGBA8(99, 226, 161, 255), colors::FromRGBA8(226, 204, 99, 255), colors::FromRGBA8(232, 134, 6, 255), colors::empty };
 #endif
 bool ShouldSave(const userdata &data)
 {
@@ -45,10 +43,8 @@ void Save()
         closedir(cathook_directory);
     try
     {
-        std::ofstream file(DATA_PATH "/plist",
-                           std::ios::out | std::ios::binary);
-        file.write(reinterpret_cast<const char *>(&SERIALIZE_VERSION),
-                   sizeof(SERIALIZE_VERSION));
+        std::ofstream file(DATA_PATH "/plist", std::ios::out | std::ios::binary);
+        file.write(reinterpret_cast<const char *>(&SERIALIZE_VERSION), sizeof(SERIALIZE_VERSION));
         int size = 0;
         for (const auto &item : data)
         {
@@ -60,10 +56,8 @@ void Save()
         {
             if (!ShouldSave(item.second))
                 continue;
-            file.write(reinterpret_cast<const char *>(&item.first),
-                       sizeof(item.first));
-            file.write(reinterpret_cast<const char *>(&item.second),
-                       sizeof(item.second));
+            file.write(reinterpret_cast<const char *>(&item.first), sizeof(item.first));
+            file.write(reinterpret_cast<const char *>(&item.second), sizeof(item.second));
         }
         file.close();
         logging::Info("Writing successful");
@@ -90,12 +84,10 @@ void Load()
     {
         std::ifstream file(DATA_PATH "/plist", std::ios::in | std::ios::binary);
         int file_serialize = 0;
-        file.read(reinterpret_cast<char *>(&file_serialize),
-                  sizeof(file_serialize));
+        file.read(reinterpret_cast<char *>(&file_serialize), sizeof(file_serialize));
         if (file_serialize != SERIALIZE_VERSION)
         {
-            logging::Info(
-                "Outdated/corrupted playerlist file! Cannot load this.");
+            logging::Info("Outdated/corrupted playerlist file! Cannot load this.");
             file.close();
             return;
         }
@@ -174,58 +166,52 @@ bool IsDefault(CachedEntity *entity)
 CatCommand pl_save("pl_save", "Save playerlist", Save);
 CatCommand pl_load("pl_load", "Load playerlist", Load);
 
-CatCommand pl_set_state(
-    "pl_set_state",
-    "cat_pl_set_state [playername] [state] (Tab to autocomplete)",
-    [](const CCommand &args) {
-        if (args.ArgC() != 3)
-        {
-            logging::Info("Invalid call");
-            return;
-        }
-        auto name = args.Arg(1);
-        int id    = -1;
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
-        {
-            player_info_s info;
-            if (!g_IEngine->GetPlayerInfo(i, &info))
-                continue;
-            std::string currname(info.name);
-            std::replace(currname.begin(), currname.end(), ' ', '-');
-            std::replace_if(currname.begin(), currname.end(),
-                            [](char x) { return !isprint(x); }, '*');
-            if (currname.find(name) != 0)
-                continue;
-            id = i;
-            break;
-        }
-        if (id == -1)
-        {
-            logging::Info("Unknown Player Name. (Use tab for autocomplete)");
-            return;
-        }
-        std::string state = args.Arg(2);
-        boost::to_upper(state);
+CatCommand pl_set_state("pl_set_state", "cat_pl_set_state [playername] [state] (Tab to autocomplete)", [](const CCommand &args) {
+    if (args.ArgC() != 3)
+    {
+        logging::Info("Invalid call");
+        return;
+    }
+    auto name = args.Arg(1);
+    int id    = -1;
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    {
         player_info_s info;
-        g_IEngine->GetPlayerInfo(id, &info);
+        if (!g_IEngine->GetPlayerInfo(i, &info))
+            continue;
+        std::string currname(info.name);
+        std::replace(currname.begin(), currname.end(), ' ', '-');
+        std::replace_if(currname.begin(), currname.end(), [](char x) { return !isprint(x); }, '*');
+        if (currname.find(name) != 0)
+            continue;
+        id = i;
+        break;
+    }
+    if (id == -1)
+    {
+        logging::Info("Unknown Player Name. (Use tab for autocomplete)");
+        return;
+    }
+    std::string state = args.Arg(2);
+    boost::to_upper(state);
+    player_info_s info;
+    g_IEngine->GetPlayerInfo(id, &info);
 
-        if (k_Names[0] == state)
-            AccessData(info.friendsID).state = k_EState::DEFAULT;
-        else if (k_Names[1] == state)
-            AccessData(info.friendsID).state = k_EState::FRIEND;
-        else if (k_Names[2] == state)
-            AccessData(info.friendsID).state = k_EState::RAGE;
-        else if (k_Names[3] == state)
-            AccessData(info.friendsID).state = k_EState::IPC;
-        else if (k_Names[4] == state)
-            AccessData(info.friendsID).state = k_EState::DEVELOPER;
-        else
-            logging::Info("Unknown State. (Use tab for autocomplete)");
-    });
+    if (k_Names[0] == state)
+        AccessData(info.friendsID).state = k_EState::DEFAULT;
+    else if (k_Names[1] == state)
+        AccessData(info.friendsID).state = k_EState::FRIEND;
+    else if (k_Names[2] == state)
+        AccessData(info.friendsID).state = k_EState::RAGE;
+    else if (k_Names[3] == state)
+        AccessData(info.friendsID).state = k_EState::IPC;
+    else if (k_Names[4] == state)
+        AccessData(info.friendsID).state = k_EState::DEVELOPER;
+    else
+        logging::Info("Unknown State. (Use tab for autocomplete)");
+});
 
-static int cat_pl_set_state_completionCallback(
-    const char *c_partial,
-    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+static int cat_pl_set_state_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
     std::string parts[2]{};
@@ -260,14 +246,12 @@ static int cat_pl_set_state_completionCallback(
             continue;
         std::string name(info.name);
         std::replace(name.begin(), name.end(), ' ', '-');
-        std::replace_if(name.begin(), name.end(),
-                        [](char x) { return !isprint(x); }, '*');
+        std::replace_if(name.begin(), name.end(), [](char x) { return !isprint(x); }, '*');
         names.push_back(name);
     }
     std::sort(names.begin(), names.end());
 
-    if (parts[0].empty() ||
-        parts[1].empty() && (!parts[0].empty() && partial.back() != ' '))
+    if (parts[0].empty() || parts[1].empty() && (!parts[0].empty() && partial.back() != ' '))
     {
         boost::to_lower(parts[0]);
         for (const auto &s : names)
@@ -275,8 +259,7 @@ static int cat_pl_set_state_completionCallback(
             // if (s.find(parts[0]) == 0)
             if (boost::to_lower_copy(s).find(parts[0]) == 0)
             {
-                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1,
-                         "cat_pl_set_state %s", s.c_str());
+                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat_pl_set_state %s", s.c_str());
             }
         }
         return count;
@@ -286,8 +269,7 @@ static int cat_pl_set_state_completionCallback(
     {
         if (boost::to_lower_copy(s).find(parts[1]) == 0)
         {
-            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1,
-                     "cat_pl_set_state %s %s", parts[0].c_str(), s.c_str());
+            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat_pl_set_state %s %s", parts[0].c_str(), s.c_str());
             if (count == COMMAND_COMPLETION_MAXITEMS)
                 break;
         }
@@ -296,22 +278,20 @@ static int cat_pl_set_state_completionCallback(
 }
 
 #if ENABLE_VISUALS
-CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b",
-                        [](const CCommand &args) {
-                            if (args.ArgC() < 5)
-                            {
-                                logging::Info("Invalid call");
-                                return;
-                            }
-                            unsigned steamid =
-                                strtoul(args.Arg(1), nullptr, 10);
-                            int r        = strtol(args.Arg(2), nullptr, 10);
-                            int g        = strtol(args.Arg(3), nullptr, 10);
-                            int b        = strtol(args.Arg(4), nullptr, 10);
-                            rgba_t color = colors::FromRGBA8(r, g, b, 255);
-                            AccessData(steamid).color = color;
-                            logging::Info("Changed %d's color", steamid);
-                        });
+CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b", [](const CCommand &args) {
+    if (args.ArgC() < 5)
+    {
+        logging::Info("Invalid call");
+        return;
+    }
+    unsigned steamid          = strtoul(args.Arg(1), nullptr, 10);
+    int r                     = strtol(args.Arg(2), nullptr, 10);
+    int g                     = strtol(args.Arg(3), nullptr, 10);
+    int b                     = strtol(args.Arg(4), nullptr, 10);
+    rgba_t color              = colors::FromRGBA8(r, g, b, 255);
+    AccessData(steamid).color = color;
+    logging::Info("Changed %d's color", steamid);
+});
 #endif
 CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand &args) {
     if (args.ArgC() < 2)
@@ -338,7 +318,6 @@ CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand &args) {
 
 static InitRoutine init([]() {
     pl_set_state.cmd->m_bHasCompletionCallback = true;
-    pl_set_state.cmd->m_fnCompletionCallback =
-        cat_pl_set_state_completionCallback;
+    pl_set_state.cmd->m_fnCompletionCallback   = cat_pl_set_state_completionCallback;
 });
 } // namespace playerlist

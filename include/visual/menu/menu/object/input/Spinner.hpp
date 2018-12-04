@@ -27,8 +27,7 @@ public:
         bb.resize(*SpinnerStyle::default_width, *SpinnerStyle::default_height);
     }
 
-    explicit Spinner(settings::ArithmeticVariable<T> &option)
-        : TextInput{}, option(&option)
+    explicit Spinner(settings::ArithmeticVariable<T> &option) : TextInput{}, option(&option)
     {
         bb.resize(*SpinnerStyle::default_width, *SpinnerStyle::default_height);
     }
@@ -63,8 +62,7 @@ public:
 
         const char *target{ nullptr };
         settings::IVariable *opt{ nullptr };
-        if (tinyxml2::XML_SUCCESS ==
-            data->QueryStringAttribute("target", &target))
+        if (tinyxml2::XML_SUCCESS == data->QueryStringAttribute("target", &target))
         {
             std::string str(target);
             opt = settings::Manager::instance().lookup(str);

@@ -23,8 +23,7 @@ static settings::Bool draw_info{ "walkbot.draw.info", "true" };
 static settings::Bool draw_path{ "walkbot.draw.path", "true" };
 static settings::Bool draw_nodes{ "walkbot.draw.nodes", "true" };
 static settings::Bool draw_indices{ "walkbot.draw.indices", "false" };
-static settings::Bool draw_connection_flags{ "walkbot.draw.connection-flags",
-                                             "true" };
+static settings::Bool draw_connection_flags{ "walkbot.draw.connection-flags", "true" };
 
 static settings::Bool free_move{ "walkbot.free-move", "true" };
 static settings::Int spawn_distance{ "walkbot.edit.node-spawn-distance", "54" };
@@ -144,8 +143,7 @@ struct walkbot_node_s
         connection free = free_connection();
         if (free == BAD_CONNECTION)
         {
-            logging::Info("[wb] Too many connections! Node at (%.2f %.2f %.2f)",
-                          x, y, z);
+            logging::Info("[wb] Too many connections! Node at (%.2f %.2f %.2f)", x, y, z);
             return;
         }
         connections[free].link(node);
@@ -180,8 +178,7 @@ std::vector<walkbot_node_s> nodes{};
 
 bool node_good(index_t node)
 {
-    return node != BAD_NODE && node < nodes.size() &&
-           (nodes[node].flags & NF_GOOD);
+    return node != BAD_NODE && node < nodes.size() && (nodes[node].flags & NF_GOOD);
 }
 
 // Target node when replaying, selected node when editing, last node when
@@ -245,8 +242,7 @@ using state::nodes;
 
 bool HasLowAmmo()
 {
-    int *weapon_list =
-        (int *) ((unsigned) (RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
+    int *weapon_list = (int *) ((unsigned) (RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
     for (int i = 0; weapon_list[i]; i++)
     {
         int handle = weapon_list[i];
@@ -254,10 +250,7 @@ bool HasLowAmmo()
         if (eid >= 32 && eid <= HIGHEST_ENTITY)
         {
             IClientEntity *weapon = g_IEntityList->GetClientEntity(eid);
-            if (weapon and
-                re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) and
-                re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) and
-                not re::C_TFWeaponBase::HasPrimaryAmmo(weapon))
+            if (weapon and re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) and re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) and not re::C_TFWeaponBase::HasPrimaryAmmo(weapon))
             {
                 return true;
             }
@@ -287,10 +280,8 @@ void DeleteNode(index_t node)
     memset(&n, 0, sizeof(walkbot_node_s));
 }
 
-#define BINARY_FILE_WRITE(handle, data)                                        \
-    handle.write(reinterpret_cast<const char *>(&data), sizeof(data))
-#define BINARY_FILE_READ(handle, data)                                         \
-    handle.read(reinterpret_cast<char *>(&data), sizeof(data))
+#define BINARY_FILE_WRITE(handle, data) handle.write(reinterpret_cast<const char *>(&data), sizeof(data))
+#define BINARY_FILE_READ(handle, data) handle.read(reinterpret_cast<char *>(&data), sizeof(data))
 
 void Save(std::string filename)
 {
@@ -314,9 +305,7 @@ void Save(std::string filename)
         DIR *level_dir = opendir(path.c_str());
         if (!level_dir)
         {
-            logging::Info(
-                "Walkbot directory for %s doesn't exist, creating one!",
-                GetLevelName().c_str());
+            logging::Info("Walkbot directory for %s doesn't exist, creating one!", GetLevelName().c_str());
             mkdir(path.c_str(), S_IRWXU | S_IRWXG);
         }
         else
@@ -325,8 +314,7 @@ void Save(std::string filename)
     logging::Info("Saving in %s", format(path, "/", filename).c_str());
     try
     {
-        std::ofstream file(format(path, "/", filename),
-                           std::ios::out | std::ios::binary);
+        std::ofstream file(format(path, "/", filename), std::ios::out | std::ios::binary);
         if (not file)
         {
             logging::Info("Could not open file!");
@@ -343,8 +331,7 @@ void Save(std::string filename)
         BINARY_FILE_WRITE(file, header);
         file.write(map, map_s);
         file.write(name, name_s);
-        file.write(reinterpret_cast<const char *>(state::nodes.data()),
-                   sizeof(walkbot_node_s) * header.node_count);
+        file.write(reinterpret_cast<const char *>(state::nodes.data()), sizeof(walkbot_node_s) * header.node_count);
         file.close();
         logging::Info("Writing successful");
     }
@@ -371,9 +358,7 @@ bool Load(std::string filename)
         DIR *level_dir = opendir(path.c_str());
         if (!level_dir)
         {
-            logging::Info(
-                "Walkbot directory for %s doesn't exist, creating one!",
-                GetLevelName().c_str());
+            logging::Info("Walkbot directory for %s doesn't exist, creating one!", GetLevelName().c_str());
             mkdir(path.c_str(), S_IRWXU | S_IRWXG);
         }
         else
@@ -381,8 +366,7 @@ bool Load(std::string filename)
     }
     try
     {
-        std::ifstream file(format(path, "/", filename),
-                           std::ios::in | std::ios::binary);
+        std::ifstream file(format(path, "/", filename), std::ios::in | std::ios::binary);
         if (!file)
         {
             return false;
@@ -396,8 +380,7 @@ bool Load(std::string filename)
             file.close();
             return false;
         }
-        if (header.author_length > 64 or header.map_length > 512 or
-            (not header.author_length or not header.map_length))
+        if (header.author_length > 64 or header.map_length > 512 or (not header.author_length or not header.map_length))
         {
             logging::Info("Corrupted author/level data");
         }
@@ -409,23 +392,19 @@ bool Load(std::string filename)
             file.read(name_buffer, header.author_length);
             name_buffer[header.author_length] = 0;
             map_buffer[header.map_length]     = 0;
-            logging::Info("Walkbot navigation map for %s\nAuthor: %s",
-                          map_buffer, name_buffer);
+            logging::Info("Walkbot navigation map for %s\nAuthor: %s", map_buffer, name_buffer);
         }
         state::nodes.clear();
         logging::Info("Reading %i entries...", header.node_count);
         if (header.node_count > 32768)
         {
-            logging::Info("Read %d nodes, max is %d. Aborting.",
-                          header.node_count, 32768);
+            logging::Info("Read %d nodes, max is %d. Aborting.", header.node_count, 32768);
             return false;
         }
         state::nodes.resize(header.node_count);
-        file.read(reinterpret_cast<char *>(state::nodes.data()),
-                  sizeof(walkbot_node_s) * header.node_count);
+        file.read(reinterpret_cast<char *>(state::nodes.data()), sizeof(walkbot_node_s) * header.node_count);
         file.close();
-        logging::Info("Reading successful! Result: %i entries.",
-                      state::nodes.size());
+        logging::Info("Reading successful! Result: %i entries.", state::nodes.size());
         return true;
     }
     catch (std::exception &e)
@@ -457,8 +436,7 @@ static CatCommand load("wb_load", "Load", [](const CCommand &args) {
 index_t CreateNode(const Vector &xyz)
 {
     index_t node = state::free_node();
-    logging::Info("[wb] Creating node %u at (%.2f %.2f %.2f)", node, xyz.x,
-                  xyz.y, xyz.z);
+    logging::Info("[wb] Creating node %u at (%.2f %.2f %.2f)", node, xyz.x, xyz.y, xyz.z);
     auto &n = state::nodes[node];
     memset(&n, 0, sizeof(n));
     n.xyz() = xyz;
@@ -466,10 +444,8 @@ index_t CreateNode(const Vector &xyz)
     return node;
 }
 
-CatCommand c_start_recording("wb_record", "Start recording",
-                             []() { state::state = WB_RECORDING; });
-CatCommand c_start_editing("wb_edit", "Start editing",
-                           []() { state::state = WB_EDITING; });
+CatCommand c_start_recording("wb_record", "Start recording", []() { state::state = WB_RECORDING; });
+CatCommand c_start_editing("wb_edit", "Start editing", []() { state::state = WB_EDITING; });
 CatCommand c_start_replaying("wb_replay", "Start replaying", []() {
     state::last_node   = state::active_node;
     state::active_node = state::closest_node;
@@ -490,8 +466,7 @@ CatCommand c_select_node("wb_select", "Select node", []() {
 });
 // Makes a new node in the middle of connection between 2 nodes
 CatCommand c_split_connection("wb_split", "Split connection", []() {
-    if (not(state::node_good(state::active_node) and
-            state::node_good(state::closest_node)))
+    if (not(state::node_good(state::active_node) and state::node_good(state::closest_node)))
         return;
 
     if (state::active_node == state::closest_node)
@@ -511,8 +486,7 @@ CatCommand c_split_connection("wb_split", "Split connection", []() {
     n.link(state::closest_node);
 });
 // Deletes closest node and its connections
-CatCommand c_delete_node("wb_delete", "Delete node",
-                         []() { DeleteNode(state::closest_node); });
+CatCommand c_delete_node("wb_delete", "Delete node", []() { DeleteNode(state::closest_node); });
 // Creates a new node under your feet and connects it to closest node to your
 // crosshair
 CatCommand c_create_node("wb_create", "Create node", []() {
@@ -525,14 +499,12 @@ CatCommand c_create_node("wb_create", "Create node", []() {
         auto &c = state::nodes[state::closest_node];
         n.link(state::closest_node);
         c.link(node);
-        logging::Info("[wb] Node %u linked to node %u at (%.2f %.2f %.2f)",
-                      node, state::closest_node, c.x, c.y, c.z);
+        logging::Info("[wb] Node %u linked to node %u at (%.2f %.2f %.2f)", node, state::closest_node, c.x, c.y, c.z);
     }
 });
 // Connects selected node to closest one
 CatCommand c_connect_node("wb_connect", "Connect nodes", []() {
-    if (not(state::node_good(state::active_node) and
-            state::node_good(state::closest_node)))
+    if (not(state::node_good(state::active_node) and state::node_good(state::closest_node)))
         return;
     // Don't link a node to itself, idiot
     if (state::active_node == state::closest_node)
@@ -545,23 +517,20 @@ CatCommand c_connect_node("wb_connect", "Connect nodes", []() {
     b.link(state::active_node);
 });
 // Makes a one-way connection
-CatCommand
-    c_connect_single_node("wb_connect_single", "Connect nodes (one-way)", []() {
-        if (not(state::node_good(state::active_node) and
-                state::node_good(state::closest_node)))
-            return;
-        // Don't link a node to itself, idiot
-        if (state::active_node == state::closest_node)
-            return;
+CatCommand c_connect_single_node("wb_connect_single", "Connect nodes (one-way)", []() {
+    if (not(state::node_good(state::active_node) and state::node_good(state::closest_node)))
+        return;
+    // Don't link a node to itself, idiot
+    if (state::active_node == state::closest_node)
+        return;
 
-        auto &a = state::nodes[state::active_node];
+    auto &a = state::nodes[state::active_node];
 
-        a.link(state::closest_node);
-    });
+    a.link(state::closest_node);
+});
 // Connects selected node to closest one
 CatCommand c_disconnect_node("wb_disconnect", "Disconnect nodes", []() {
-    if (not(state::node_good(state::active_node) and
-            state::node_good(state::closest_node)))
+    if (not(state::node_good(state::active_node) and state::node_good(state::closest_node)))
         return;
     // Don't link a node to itself, idiot
     if (state::active_node == state::closest_node)
@@ -574,19 +543,17 @@ CatCommand c_disconnect_node("wb_disconnect", "Disconnect nodes", []() {
     b.unlink(state::active_node);
 });
 // Makes a one-way connection
-CatCommand c_disconnect_single_node(
-    "wb_disconnect_single", "Connect nodes (one-way)", []() {
-        if (not(state::node_good(state::active_node) and
-                state::node_good(state::closest_node)))
-            return;
-        // Don't link a node to itself, idiot
-        if (state::active_node == state::closest_node)
-            return;
+CatCommand c_disconnect_single_node("wb_disconnect_single", "Connect nodes (one-way)", []() {
+    if (not(state::node_good(state::active_node) and state::node_good(state::closest_node)))
+        return;
+    // Don't link a node to itself, idiot
+    if (state::active_node == state::closest_node)
+        return;
 
-        auto &a = state::nodes[state::active_node];
+    auto &a = state::nodes[state::active_node];
 
-        a.unlink(state::closest_node);
-    });
+    a.unlink(state::closest_node);
+});
 // Toggles jump flag on closest node
 CatCommand c_update_duck("wb_duck", "Toggle duck flag", []() {
     if (not state::node_good(state::closest_node))
@@ -642,74 +609,66 @@ std::string DescribeConnection(index_t node, connection conn)
             extra += "S";
         }
     }
-    std::string result =
-        format(node, ' ', (broken ? "-x>" : (oneway ? "-->" : "<->")), ' ',
-               c.node, ' ', extra);
+    std::string result = format(node, ' ', (broken ? "-x>" : (oneway ? "-->" : "<->")), ' ', c.node, ' ', extra);
     return result;
 }
-CatCommand c_toggle_cf_ammo(
-    "wb_conn_ammo",
-    "Toggle 'ammo' flag on connection from ACTIVE to CLOSEST node", []() {
-        auto a = state::active();
-        auto b = state::closest();
-        if (not(a and b))
-            return;
-        for (connection i = 0; i < MAX_CONNECTIONS; i++)
-        {
-            auto &c = a->connections[i];
-            if (c.free())
-                continue;
-            if (c.node != state::closest_node)
-                continue;
-            // Actually flip the flag
-            if (c.flags & CF_LOW_AMMO)
-                c.flags &= ~CF_LOW_AMMO;
-            else
-                c.flags |= CF_LOW_AMMO;
-        }
-    });
-CatCommand c_toggle_cf_health(
-    "wb_conn_health",
-    "Toggle 'health' flag on connection from ACTIVE to CLOSEST node", []() {
-        auto a = state::active();
-        auto b = state::closest();
-        if (not(a and b))
-            return;
-        for (connection i = 0; i < MAX_CONNECTIONS; i++)
-        {
-            auto &c = a->connections[i];
-            if (c.free())
-                continue;
-            if (c.node != state::closest_node)
-                continue;
-            // Actually flip the flag
-            if (c.flags & CF_LOW_HEALTH)
-                c.flags &= ~CF_LOW_HEALTH;
-            else
-                c.flags |= CF_LOW_HEALTH;
-        }
-    });
-CatCommand c_toggle_cf_sticky(
-    "wb_conn_sticky",
-    "Toggle 'Sticky' flag on connection from ACTIVE to CLOSEST node", []() {
-        auto a = state::active();
-        auto b = state::closest();
-        if (not(a and b))
-            return;
-        for (connection i = 0; i < MAX_CONNECTIONS; i++)
-        {
-            auto &c = a->connections[i];
-            if (c.free())
-                continue;
-            if (c.node != state::closest_node)
-                continue;
-            // Actually flip the flag
-            if (c.flags & CF_STICKYBOMB)
-                c.flags &= ~CF_STICKYBOMB;
-            else
-                c.flags |= CF_STICKYBOMB;
-        }
-    });
+CatCommand c_toggle_cf_ammo("wb_conn_ammo", "Toggle 'ammo' flag on connection from ACTIVE to CLOSEST node", []() {
+    auto a = state::active();
+    auto b = state::closest();
+    if (not(a and b))
+        return;
+    for (connection i = 0; i < MAX_CONNECTIONS; i++)
+    {
+        auto &c = a->connections[i];
+        if (c.free())
+            continue;
+        if (c.node != state::closest_node)
+            continue;
+        // Actually flip the flag
+        if (c.flags & CF_LOW_AMMO)
+            c.flags &= ~CF_LOW_AMMO;
+        else
+            c.flags |= CF_LOW_AMMO;
+    }
+});
+CatCommand c_toggle_cf_health("wb_conn_health", "Toggle 'health' flag on connection from ACTIVE to CLOSEST node", []() {
+    auto a = state::active();
+    auto b = state::closest();
+    if (not(a and b))
+        return;
+    for (connection i = 0; i < MAX_CONNECTIONS; i++)
+    {
+        auto &c = a->connections[i];
+        if (c.free())
+            continue;
+        if (c.node != state::closest_node)
+            continue;
+        // Actually flip the flag
+        if (c.flags & CF_LOW_HEALTH)
+            c.flags &= ~CF_LOW_HEALTH;
+        else
+            c.flags |= CF_LOW_HEALTH;
+    }
+});
+CatCommand c_toggle_cf_sticky("wb_conn_sticky", "Toggle 'Sticky' flag on connection from ACTIVE to CLOSEST node", []() {
+    auto a = state::active();
+    auto b = state::closest();
+    if (not(a and b))
+        return;
+    for (connection i = 0; i < MAX_CONNECTIONS; i++)
+    {
+        auto &c = a->connections[i];
+        if (c.free())
+            continue;
+        if (c.node != state::closest_node)
+            continue;
+        // Actually flip the flag
+        if (c.flags & CF_STICKYBOMB)
+            c.flags &= ~CF_STICKYBOMB;
+        else
+            c.flags |= CF_STICKYBOMB;
+    }
+});
 // Displays all info about closest node and its connections
 CatCommand c_info("wb_dump", "Show info", []() {
     index_t node = state::closest_node;
@@ -719,8 +678,7 @@ CatCommand c_info("wb_dump", "Show info", []() {
     auto &n = nodes[node];
 
     logging::Info("[wb] Info about node %u", node);
-    logging::Info("[wb] Flags: Duck=%d, Jump=%d, Raw=%u", n.flags & NF_DUCK,
-                  n.flags & NF_JUMP, n.flags);
+    logging::Info("[wb] Flags: Duck=%d, Jump=%d, Raw=%u", n.flags & NF_DUCK, n.flags & NF_JUMP, n.flags);
     logging::Info("[wb] X: %.2f | Y: %.2f | Z: %.2f", n.x, n.y, n.z);
     logging::Info("[wb] Connections:");
     for (size_t i = 0; i < MAX_CONNECTIONS; i++)
@@ -766,8 +724,7 @@ CatCommand c_delete_region("wb_delete_region", "Delete region of nodes", []() {
     } while (state::node_good(current) and (current != a));*/
 });
 // Clears the state
-CatCommand c_clear("wb_clear", "Removes all nodes",
-                   []() { state::nodes.clear(); });
+CatCommand c_clear("wb_clear", "Removes all nodes", []() { state::nodes.clear(); });
 
 void Initialize()
 {
@@ -786,8 +743,7 @@ void UpdateClosestNode()
             continue;
         // Eclipse shits itself when it sees Vector& beung used as Vector in
         // GetFov
-        float fov = GetFov(g_pLocalPlayer->v_OrigViewangles,
-                           g_pLocalPlayer->v_Eye, node.xyz());
+        float fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, node.xyz());
         if (fov < n_fov)
         {
             n_fov = fov;
@@ -814,8 +770,7 @@ index_t FindNearestNode(bool traceray)
         if (state::node_good(i))
         {
             auto &n = state::nodes[i];
-            if (traceray and
-                not IsVectorVisible(g_pLocalPlayer->v_Eye, n.xyz()))
+            if (traceray and not IsVectorVisible(g_pLocalPlayer->v_Eye, n.xyz()))
                 continue;
             float dist = distance_2d(n.xyz());
             if (dist < r_dist)
@@ -839,9 +794,7 @@ index_t SelectNextNode()
     std::vector<index_t> chance{};
     for (index_t i = 0; i < MAX_CONNECTIONS; i++)
     {
-        if (n.connections[i].good() and
-            n.connections[i].node != state::last_node and
-            node_good(n.connections[i].node))
+        if (n.connections[i].good() and n.connections[i].node != state::last_node and node_good(n.connections[i].node))
         {
             if (HasLowAmmo() && (n.connections[i].flags & CF_LOW_AMMO))
             {
@@ -851,17 +804,12 @@ index_t SelectNextNode()
             {
                 return n.connections[i].node;
             }
-            if (not(n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)) &&
-                not(n.connections[i].flags & CF_STICKYBOMB))
+            if (not(n.connections[i].flags & (CF_LOW_AMMO | CF_LOW_HEALTH)) && not(n.connections[i].flags & CF_STICKYBOMB))
                 chance.push_back(n.connections[i].node);
-            if ((n.connections[i].flags & CF_STICKYBOMB) &&
-                g_pLocalPlayer->clazz == tf_demoman)
+            if ((n.connections[i].flags & CF_STICKYBOMB) && g_pLocalPlayer->clazz == tf_demoman)
             {
                 state::node_good(n.connections[i].node);
-                if (IsVectorVisible(state::nodes[n.connections[i].node].xyz(),
-                                    g_pLocalPlayer->v_Eye) &&
-                    g_pLocalPlayer->v_Eye.DistTo(
-                        state::nodes[n.connections[i].node].xyz()) < 400.0f)
+                if (IsVectorVisible(state::nodes[n.connections[i].node].xyz(), g_pLocalPlayer->v_Eye) && g_pLocalPlayer->v_Eye.DistTo(state::nodes[n.connections[i].node].xyz()) < 400.0f)
                 {
                     if (re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)) != 1)
                     {
@@ -870,16 +818,14 @@ index_t SelectNextNode()
                     }
                     else if (CanShoot())
                     {
-                        Vector tr = (state::nodes[n.connections[i].node].xyz() -
-                                     g_pLocalPlayer->v_Eye);
+                        Vector tr = (state::nodes[n.connections[i].node].xyz() - g_pLocalPlayer->v_Eye);
                         Vector angles;
                         VectorAngles(tr, angles);
                         // Clamping is important
                         fClampAngle(angles);
                         g_pLocalPlayer->bUseSilentAngles = true;
-                        float chargebegin =
-                            *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
-                        float chargetime = g_GlobalVars->curtime - chargebegin;
+                        float chargebegin                = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+                        float chargetime                 = g_GlobalVars->curtime - chargebegin;
 
                         // Release Sticky if > chargetime
                         if ((chargetime >= 0.1f) && begansticky > 3)
@@ -937,8 +883,7 @@ void UpdateWalker()
     free_move_used = false;
     if (free_move)
     {
-        if (current_user_cmd->forwardmove != 0.0f or
-            current_user_cmd->sidemove != 0.0f)
+        if (current_user_cmd->forwardmove != 0.0f or current_user_cmd->sidemove != 0.0f)
         {
             free_move_used = true;
             return;
@@ -951,9 +896,7 @@ void UpdateWalker()
         current_user_cmd->buttons |= IN_JUMP;
         jump_ticks--;
     }
-    bool timeout = std::chrono::duration_cast<std::chrono::seconds>(
-                       std::chrono::system_clock::now() - state::time)
-                       .count() > 1;
+    bool timeout = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - state::time).count() > 1;
     if (not state::node_good(state::active_node) or timeout)
     {
         state::active_node = FindNearestNode(true);
@@ -1010,8 +953,7 @@ bool ShouldSpawnNode()
     if (was_jumping != is_jumping and is_jumping)
         return true;
 
-    if ((state::last_node_buttons & IN_DUCK) !=
-        (current_user_cmd->buttons & IN_DUCK))
+    if ((state::last_node_buttons & IN_DUCK) != (current_user_cmd->buttons & IN_DUCK))
         return true;
 
     auto &node = state::nodes[state::active_node];
@@ -1037,8 +979,7 @@ void RecordNode()
         auto &c = state::nodes[state::active_node];
         n.link(state::active_node);
         c.link(node);
-        logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)",
-                      node, state::active_node, c.x, c.y, c.z);
+        logging::Info("[wb] Node %u auto-linked to node %u at (%.2f %.2f %.2f)", node, state::active_node, c.x, c.y, c.z);
     }
     state::last_node_buttons = current_user_cmd->buttons;
     state::active_node       = node;
@@ -1061,9 +1002,7 @@ void DrawConnection(index_t a, connection_s &b)
     Vector center_connection = (a_.xyz() + center) / 2;
 
     Vector wts_a, wts_c, wts_cc;
-    if (not(draw::WorldToScreen(a_.xyz(), wts_a) and
-            draw::WorldToScreen(center, wts_c) and
-            draw::WorldToScreen(center_connection, wts_cc)))
+    if (not(draw::WorldToScreen(a_.xyz(), wts_a) and draw::WorldToScreen(center, wts_c) and draw::WorldToScreen(center_connection, wts_cc)))
         return;
 
     const rgba_t *color = &colors::white;
@@ -1072,8 +1011,7 @@ void DrawConnection(index_t a, connection_s &b)
     else if ((a_.flags & b_.flags) & NF_DUCK)
         color = &colors::green;
 
-    glez::draw::line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y,
-                     *color, 0.5f);
+    glez::draw::line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, *color, 0.5f);
 
     if (draw_connection_flags && b.flags != CF_GOOD)
     {
@@ -1084,8 +1022,7 @@ void DrawConnection(index_t a, connection_s &b)
             flags += "H";
         // int size_x = 0, size_y = 0;
         // FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-        glez::draw::string(wts_cc.x, wts_cc.y - 4, flags, *fonts::menu,
-                           colors::white, nullptr, nullptr);
+        glez::draw::string(wts_cc.x, wts_cc.y - 4, flags, *fonts::menu, colors::white, nullptr, nullptr);
     }
 }
 
@@ -1123,8 +1060,7 @@ void DrawNode(index_t node, bool draw_back)
         if (node == state::active_node)
             color = &colors::red;
 
-        glez::draw::rect(wts.x - node_size, wts.y - node_size, 2 * node_size,
-                         2 * node_size, *color);
+        glez::draw::rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, *color);
     }
 
     if (draw_indices)
@@ -1139,9 +1075,7 @@ void DrawNode(index_t node, bool draw_back)
         if (not draw::WorldToScreen(n.xyz(), wts))
             return;
 
-        glez::draw::outlined_string(wts.x, wts.y, std::to_string(node).c_str(),
-                                    *fonts::menu, *color, colors::black,
-                                    nullptr, nullptr);
+        glez::draw::outlined_string(wts.x, wts.y, std::to_string(node).c_str(), *fonts::menu, *color, colors::black, nullptr, nullptr);
     }
 }
 
@@ -1174,8 +1108,7 @@ void Draw()
         AddSideString("Walkbot: Replaying");
         if (free_move and free_move_used)
         {
-            AddSideString("Walkbot: FREE MOVEMENT (User override)",
-                          colors::green);
+            AddSideString("Walkbot: FREE MOVEMENT (User override)", colors::green);
         }
         if (HasLowAmmo())
         {
@@ -1216,78 +1149,75 @@ void OnLevelInit()
 Timer quit_timer{};
 Timer map_check{};
 int erasedelay = 0;
-static HookedFunction
-    Move(HookedFunctions_types::HF_CreateMove, "Walkbot", 16, []() {
-        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
-            return;
-        if (state::state == WB_DISABLED)
-            return;
-        switch (state::state)
+static HookedFunction Move(HookedFunctions_types::HF_CreateMove, "Walkbot", 16, []() {
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+        return;
+    if (state::state == WB_DISABLED)
+        return;
+    switch (state::state)
+    {
+    case WB_RECORDING:
+    {
+        UpdateClosestNode();
+        if (recording_key.isKeyDown() and ShouldSpawnNode())
         {
-        case WB_RECORDING:
-        {
-            UpdateClosestNode();
-            if (recording_key.isKeyDown() and ShouldSpawnNode())
-            {
-                RecordNode();
-            }
+            RecordNode();
         }
-        break;
-        case WB_EDITING:
+    }
+    break;
+    case WB_EDITING:
+    {
+        UpdateClosestNode();
+    }
+    break;
+    case WB_REPLAYING:
+    {
+        if (leave_if_empty)
         {
-            UpdateClosestNode();
-        }
-        break;
-        case WB_REPLAYING:
-        {
-            if (leave_if_empty)
+            if (nodes.size() == 0 || g_IEngine->GetLevelName() != prevlvlname)
             {
-                if (nodes.size() == 0 ||
-                    g_IEngine->GetLevelName() != prevlvlname)
+                prevlvlname = g_IEngine->GetLevelName();
+                if (!boost::contains(prevlvlname, "pl_"))
                 {
-                    prevlvlname = g_IEngine->GetLevelName();
-                    if (!boost::contains(prevlvlname, "pl_"))
+                    Load("default");
+                    if (leave_if_empty && nodes.size() == 0 && quit_timer.test_and_set(5000))
                     {
-                        Load("default");
-                        if (leave_if_empty && nodes.size() == 0 &&
-                            quit_timer.test_and_set(5000))
-                        {
-                            logging::Info("No map file, abandon");
-                            tfmm::abandon();
-                            return;
-                        }
+                        logging::Info("No map file, abandon");
+                        tfmm::abandon();
+                        return;
                     }
                 }
             }
-            /*prevlvlname = g_IEngine->GetLevelName();
-            std::string prvlvlname(prevlvlname);
-            if (boost::contains(prvlvlname, "pl_") ||
-                boost::contains(prvlvlname, "cp_"))
+        }
+        /*prevlvlname = g_IEngine->GetLevelName();
+        std::string prvlvlname(prevlvlname);
+        if (boost::contains(prvlvlname, "pl_") ||
+            boost::contains(prvlvlname, "cp_"))
+        {
+            logging::Info("1");
+            bool ret = false;
+            if (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
+                lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
+                lagexploit::pointarr[4])
             {
-                logging::Info("1");
-                bool ret = false;
-                if (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
-                    lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
-                    lagexploit::pointarr[4])
-                {
-                    hacks::shared::followbot::followbot  = 1;
-                    hacks::shared::followbot::roambot    = 1;
-                    hacks::shared::followbot::followcart = true;
-                }
-                else
-                {
-                    hacks::shared::followbot::followbot  = 0;
-                    hacks::shared::followbot::roambot    = 0;
-                    hacks::shared::followbot::followcart = false;
-                }
-            }*/
-            if (nodes.size() == 0)
-                return;
-            if (force_slot)
-                UpdateSlot();
-            UpdateWalker();
-        }
-        break;
-        }
-    });
+                hacks::shared::followbot::followbot  = 1;
+                hacks::shared::followbot::roambot    = 1;
+                hacks::shared::followbot::followcart = true;
+            }
+            else
+            {
+                hacks::shared::followbot::followbot  = 0;
+                hacks::shared::followbot::roambot    = 0;
+                hacks::shared::followbot::followcart = false;
+            }
+        }*/
+        if (nodes.size() == 0)
+            return;
+        if (force_slot)
+            UpdateSlot();
+        UpdateWalker();
+    }
+    break;
+    }
+});
 } // namespace hacks::shared::walkbot

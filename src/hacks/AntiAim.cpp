@@ -27,12 +27,8 @@ static settings::Float spin{ "antiaim.spin-speed", "10" };
 
 static settings::Bool aaaa_enable{ "antiaim.aaaa.enable", "0" };
 static settings::Float aaaa_interval{ "antiaim.aaaa.interval.seconds", "0" };
-static settings::Float aaaa_interval_random_high{
-    "antiaim.aaaa.interval.random-high", "10"
-};
-static settings::Float aaaa_interval_random_low{
-    "antiaim.aaaa.interval.random-low", "2"
-};
+static settings::Float aaaa_interval_random_high{ "antiaim.aaaa.interval.random-high", "10" };
+static settings::Float aaaa_interval_random_low{ "antiaim.aaaa.interval.random-low", "2" };
 static settings::Int aaaa_mode{ "antiaim.aaaa.mode", "0" };
 static settings::Button aaaa_flip_key{ "antiaim.aaaa.flip-key", "<null>" };
 
@@ -71,8 +67,7 @@ float GetAAAATimerLength()
     }
     else
     {
-        return RandFloatRange((float) aaaa_interval_random_low,
-                              (float) aaaa_interval_random_high);
+        return RandFloatRange((float) aaaa_interval_random_low, (float) aaaa_interval_random_high);
     }
 }
 
@@ -213,8 +208,7 @@ bool ShouldAA(CUserCmd *cmd)
     if (cmd->buttons & IN_USE)
         return false;
     int classid = LOCAL_W->m_iClassID();
-    if ((cmd->buttons & IN_ATTACK) &&
-        !(IsTF2() && classid == CL_CLASS(CTFCompoundBow)) && CanShoot())
+    if ((cmd->buttons & IN_ATTACK) && !(IsTF2() && classid == CL_CLASS(CTFCompoundBow)) && CanShoot())
     {
         return false;
     }
@@ -235,8 +229,7 @@ bool ShouldAA(CUserCmd *cmd)
     /* no break */
     case weapon_melee:
     case weapon_throwable:
-        if ((cmd->buttons & (IN_ATTACK | IN_ATTACK2)) ||
-            g_pLocalPlayer->bAttackLastTick)
+        if ((cmd->buttons & (IN_ATTACK | IN_ATTACK2)) || g_pLocalPlayer->bAttackLastTick)
         {
             SetSafeSpace(8);
             return false;
@@ -279,8 +272,7 @@ float edgeDistance(float edgeRayYaw)
     // trace::g_pFilterNoPlayer to only focus on the enviroment
     g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
     // Pythagorean theorem to calculate distance
-    float edgeDistance = (sqrt(pow(trace.startpos.x - trace.endpos.x, 2) +
-                               pow(trace.startpos.y - trace.endpos.y, 2)));
+    float edgeDistance = (sqrt(pow(trace.startpos.x - trace.endpos.x, 2) + pow(trace.startpos.y - trace.endpos.y, 2)));
     return edgeDistance;
 }
 
@@ -309,8 +301,7 @@ bool findEdge(float edgeOrigYaw)
     {
         edgeToEdgeOn = 1;
         // Correction for pitches to keep the head behind walls
-        if (((int) pitch_mode == 7) || ((int) pitch_mode == 2) ||
-            ((int) pitch_mode == 8))
+        if (((int) pitch_mode == 7) || ((int) pitch_mode == 2) || ((int) pitch_mode == 8))
             edgeToEdgeOn = 2;
         return true;
     }
@@ -318,8 +309,7 @@ bool findEdge(float edgeOrigYaw)
     {
         edgeToEdgeOn = 2;
         // Same as above
-        if (((int) pitch_mode == 7) || ((int) pitch_mode == 2) ||
-            ((int) pitch_mode == 8))
+        if (((int) pitch_mode == 7) || ((int) pitch_mode == 2) || ((int) pitch_mode == 8))
             edgeToEdgeOn = 1;
         return true;
     }

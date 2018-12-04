@@ -24,13 +24,11 @@ void InitClassTable()
     }
     if (IsTF2C())
     {
-        client_class_list =
-            (client_classes::dummy *) &client_classes::tf2c_list;
+        client_class_list = (client_classes::dummy *) &client_classes::tf2c_list;
     }
     if (IsHL2DM())
     {
-        client_class_list =
-            (client_classes::dummy *) &client_classes::hl2dm_list;
+        client_class_list = (client_classes::dummy *) &client_classes::hl2dm_list;
     }
     if (IsCSS())
     {
@@ -38,8 +36,7 @@ void InitClassTable()
     }
     if (IsDynamic())
     {
-        client_class_list =
-            (client_classes::dummy *) &client_classes::dynamic_list;
+        client_class_list = (client_classes::dummy *) &client_classes::dynamic_list;
     }
     if (!client_class_list)
     {

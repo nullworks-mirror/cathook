@@ -55,35 +55,30 @@ static CatCommand login("online_login", "Login", [](const CCommand &args) {
     std::string key(args.Arg(1));
     try
     {
-        cathookOnlineService.login(
-            key, [key, host](co::ApiCallResult result,
-                             std::optional<co::logged_in_user> me) {
-                if (result == co::ApiCallResult::OK)
-                {
-                    logging::Info("[CO] Successfully logged in. Welcome, %s",
-                                  me->username.c_str());
-                    api_key = key;
-                    saveApiKeyAndHost(host);
-                    claimSteamId();
-                }
-                else
-                {
-                    logging::Info("[CO] There was an error logging in: code %d",
-                                  result);
-                }
-            });
+        cathookOnlineService.login(key, [key, host](co::ApiCallResult result, std::optional<co::logged_in_user> me) {
+            if (result == co::ApiCallResult::OK)
+            {
+                logging::Info("[CO] Successfully logged in. Welcome, %s", me->username.c_str());
+                api_key = key;
+                saveApiKeyAndHost(host);
+                claimSteamId();
+            }
+            else
+            {
+                logging::Info("[CO] There was an error logging in: code %d", result);
+            }
+        });
     }
     catch (std::exception &ex)
     {
         logging::Info("[CO] Exception: %s", ex.what());
     }
 });
-static CatCommand flush("online_flush_cache", "Flush player cache",
-                        [](const CCommand &args) {
-                            data.clear();
-                            identify_queue.clear();
-                            identify_stale = true;
-                        });
+static CatCommand flush("online_flush_cache", "Flush player cache", [](const CCommand &args) {
+    data.clear();
+    identify_queue.clear();
+    identify_stale = true;
+});
 
 // INTERNAL METHODS
 
@@ -186,12 +181,9 @@ void processOnlineIdentity(unsigned id, co::identified_user &user)
     data[id] = std::move(udata);
 }
 
-void processIdentifyResponse(std::vector<unsigned> input,
-                             co::identified_user_group &group)
+void processIdentifyResponse(std::vector<unsigned> input, co::identified_user_group &group)
 {
-    logging::Info(
-        "[CO] Processing identify response containing %u / %u entries",
-        group.users.size(), input.size());
+    logging::Info("[CO] Processing identify response containing %u / %u entries", group.users.size(), input.size());
     for (auto i : input)
     {
         auto u = group.users.find(i);
@@ -201,8 +193,7 @@ void processIdentifyResponse(std::vector<unsigned> input,
             processOnlineIdentity(i, (*u).second);
 
         identify_queue.erase(i);
-        logging::Info("[CO] Removed %u from identify queue, left %u\n", i,
-                      identify_queue.size());
+        logging::Info("[CO] Removed %u from identify queue, left %u\n", i, identify_queue.size());
     }
 }
 
@@ -219,33 +210,26 @@ void sendIdentifyRequest()
             steamIds.push_back(it->first);
         }
     }
-    logging::Info("[CO] Sending identify request for %u players",
-                  steamIds.size());
+    logging::Info("[CO] Sending identify request for %u players", steamIds.size());
     try
     {
-        cathookOnlineService.userIdentify(
-            steamIds,
-            (std::function<void(
-                 co::ApiCallResult,
-                 std::optional<co::identified_user_group>)>) [steamIds](
-                co::ApiCallResult result,
-                std::optional<co::identified_user_group> group) {
-                if (result == co::ApiCallResult::OK)
+        cathookOnlineService.userIdentify(steamIds, (std::function<void(co::ApiCallResult, std::optional<co::identified_user_group>)>) [steamIds](co::ApiCallResult result, std::optional<co::identified_user_group> group) {
+            if (result == co::ApiCallResult::OK)
+            {
+                processIdentifyResponse(steamIds, *group);
+            }
+            else
+            {
+                logging::Info("[CO] Something went wrong while identifying "
+                              "%u players: code %d",
+                              steamIds.size(), result);
+                for (auto i : steamIds)
                 {
-                    processIdentifyResponse(steamIds, *group);
+                    identify_queue[i] = false;
                 }
-                else
-                {
-                    logging::Info("[CO] Something went wrong while identifying "
-                                  "%u players: code %d",
-                                  steamIds.size(), result);
-                    for (auto i : steamIds)
-                    {
-                        identify_queue[i] = false;
-                    }
-                    identify_stale = true;
-                }
-            });
+                identify_stale = true;
+            }
+        });
     }
     catch (std::exception &ex)
     {
@@ -254,30 +238,23 @@ void sendIdentifyRequest()
 }
 
 InitRoutine init([]() {
-    cathookOnlineService.setErrorHandler((std::function<void(std::string)>) [](
-        std::string error) { logging::Info("[CO] Error: %s", error.c_str()); });
+    cathookOnlineService.setErrorHandler((std::function<void(std::string)>) [](std::string error) { logging::Info("[CO] Error: %s", error.c_str()); });
     if (tryLoadApiKeyAndHost())
     {
         logging::Info("[CO] API key loaded successfully");
         try
         {
-            cathookOnlineService.login(
-                api_key, [](co::ApiCallResult result,
-                            std::optional<co::logged_in_user> me) {
-                    if (result == co::ApiCallResult::OK)
-                    {
-                        logging::Info(
-                            "[CO] Successfully logged in. Welcome, %s",
-                            me->username.c_str());
-                        claimSteamId();
-                    }
-                    else
-                    {
-                        logging::Info(
-                            "[CO] There was an error logging in: code %d",
-                            result);
-                    }
-                });
+            cathookOnlineService.login(api_key, [](co::ApiCallResult result, std::optional<co::logged_in_user> me) {
+                if (result == co::ApiCallResult::OK)
+                {
+                    logging::Info("[CO] Successfully logged in. Welcome, %s", me->username.c_str());
+                    claimSteamId();
+                }
+                else
+                {
+                    logging::Info("[CO] There was an error logging in: code %d", result);
+                }
+            });
         }
         catch (std::exception &ex)
         {
@@ -294,8 +271,7 @@ void update()
         return;
     // Only send a request after 3 seconds passed since last unknown steamId was
     // added to the queue
-    if (!api_key.empty() && identify_stale && identify_timer.check(3000) &&
-        !identify_queue.empty())
+    if (!api_key.empty() && identify_stale && identify_timer.check(3000) && !identify_queue.empty())
     {
         sendIdentifyRequest();
         identify_stale = false;

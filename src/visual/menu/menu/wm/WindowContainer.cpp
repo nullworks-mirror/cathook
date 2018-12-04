@@ -62,8 +62,7 @@ void zerokernel::WindowContainer::update()
     BaseMenuObject::update();
 }
 
-zerokernel::WindowContainer::WindowContainer(zerokernel::WindowManager &wm)
-    : BaseMenuObject{}, wm(wm)
+zerokernel::WindowContainer::WindowContainer(zerokernel::WindowManager &wm) : BaseMenuObject{}, wm(wm)
 {
     bb.width.setFill();
     bb.height.setFill();
@@ -166,8 +165,7 @@ void zerokernel::WindowContainer::moveWindowToTop(size_t uid)
     }
 }
 
-zerokernel::BaseMenuObject *zerokernel::WindowContainer::findElement(
-    const std::function<bool(BaseMenuObject *)> &search)
+zerokernel::BaseMenuObject *zerokernel::WindowContainer::findElement(const std::function<bool(BaseMenuObject *)> &search)
 {
     auto result = BaseMenuObject::findElement(search);
     if (result)

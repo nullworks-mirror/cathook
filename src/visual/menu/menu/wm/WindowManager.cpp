@@ -23,8 +23,7 @@ zerokernel::WindowManager::WindowManager() : BaseMenuObject{}
     bb.height.setFill();
 }
 
-void zerokernel::WindowManager::loadWindowFromXml(
-    const tinyxml2::XMLElement *data)
+void zerokernel::WindowManager::loadWindowFromXml(const tinyxml2::XMLElement *data)
 {
     const char *title{ nullptr };
     const char *title_short{ nullptr };

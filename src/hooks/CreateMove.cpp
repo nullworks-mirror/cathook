@@ -53,16 +53,12 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 {
     if (!ent)
         return;
-    typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
-                                class IMoveHelper *, CMoveData *);
-    typedef void (*FinishMoveFn)(IPrediction *, IClientEntity *, CUserCmd *,
-                                 CMoveData *);
+    typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *, class IMoveHelper *, CMoveData *);
+    typedef void (*FinishMoveFn)(IPrediction *, IClientEntity *, CUserCmd *, CMoveData *);
 
-    void **predictionVtable = *((void ***) g_IPrediction);
-    SetupMoveFn oSetupMove =
-        (SetupMoveFn)(*(unsigned *) (predictionVtable + 19));
-    FinishMoveFn oFinishMove =
-        (FinishMoveFn)(*(unsigned *) (predictionVtable + 20));
+    void **predictionVtable  = *((void ***) g_IPrediction);
+    SetupMoveFn oSetupMove   = (SetupMoveFn)(*(unsigned *) (predictionVtable + 19));
+    FinishMoveFn oFinishMove = (FinishMoveFn)(*(unsigned *) (predictionVtable + 20));
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
     auto object          = std::make_unique<char[]>(165);
@@ -82,22 +78,17 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     NET_VAR(ent, 4188, CUserCmd *) = ucmd;
 
     // Set correct CURTIME
-    g_GlobalVars->curtime =
-        g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
+    g_GlobalVars->curtime   = g_GlobalVars->interval_per_tick * NET_INT(ent, netvar.nTickBase);
     g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
 
-    *g_PredictionRandomSeed =
-        MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF;
+    *g_PredictionRandomSeed = MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF;
 
     // Run The Prediction
-    g_IGameMovement->StartTrackPredictionErrors(
-        reinterpret_cast<CBasePlayer *>(ent));
+    g_IGameMovement->StartTrackPredictionErrors(reinterpret_cast<CBasePlayer *>(ent));
     oSetupMove(g_IPrediction, ent, ucmd, NULL, pMoveData);
-    g_IGameMovement->ProcessMovement(reinterpret_cast<CBasePlayer *>(ent),
-                                     pMoveData);
+    g_IGameMovement->ProcessMovement(reinterpret_cast<CBasePlayer *>(ent), pMoveData);
     oFinishMove(g_IPrediction, ent, ucmd, pMoveData);
-    g_IGameMovement->FinishTrackPredictionErrors(
-        reinterpret_cast<CBasePlayer *>(ent));
+    g_IGameMovement->FinishTrackPredictionErrors(reinterpret_cast<CBasePlayer *>(ent));
 
     // Reset User CMD
     NET_VAR(ent, 4188, CUserCmd *) = nullptr;
@@ -120,15 +111,12 @@ static int attackticks = 0;
 
 namespace hooked_methods
 {
-static HookedFunction viewangs(HookedFunctions_types::HF_CreateMove, "set_ang",
-                               21, []() {
-                                   if (CE_BAD(LOCAL_E))
-                                       return;
-                                   g_pLocalPlayer->v_OrigViewangles =
-                                       current_user_cmd->viewangles;
-                               });
-DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
-                     CUserCmd *cmd)
+static HookedFunction viewangs(HookedFunctions_types::HF_CreateMove, "set_ang", 21, []() {
+    if (CE_BAD(LOCAL_E))
+        return;
+    g_pLocalPlayer->v_OrigViewangles = current_user_cmd->viewangles;
+});
+DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
 {
 #define TICK_INTERVAL (g_GlobalVars->interval_per_tick)
 #define TIME_TO_TICKS(dt) ((int) (0.5f + (float) (dt) / TICK_INTERVAL))
@@ -148,8 +136,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #if !LAGBOT_MODE
     IF_GAME(IsTF2C())
     {
-        if (CE_GOOD(LOCAL_W) && minigun_jump &&
-            LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun))
+        if (CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun))
             CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
     }
 #endif
@@ -226,7 +213,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     static bool firstcall = false;
     static float interp_f = 0.0f;
     static int min_interp = 0;
-    static float ratio = 0;
+    static float ratio    = 0;
     if (nolerp)
     {
         // current_user_cmd->tick_count += 1;
@@ -262,8 +249,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 
     if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity))
     {
-        servertime = (float) CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) *
-                     g_GlobalVars->interval_per_tick;
+        servertime            = (float) CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
         g_GlobalVars->curtime = servertime;
         time_replaced         = true;
     }
@@ -280,10 +266,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 #if !ENABLE_VISUALS
     if (no_shake && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
     {
-        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle)    = { 0.0f, 0.0f,
-                                                               0.0f };
-        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = { 0.0f, 0.0f,
-                                                                  0.0f };
+        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle)    = { 0.0f, 0.0f, 0.0f };
+        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = { 0.0f, 0.0f, 0.0f };
     }
 #endif
     //	PROF_END("Entity Cache updating");
@@ -343,8 +327,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 hacks::shared::deadringer::CreateMove();
             }
             if (engine_pred)
-                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E),
-                                                       current_user_cmd);
+                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
             {
                 PROF_SECTION(CM_bunnyhop);
                 hacks::shared::bunnyhop::CreateMove();
@@ -471,10 +454,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         speedapplied = false;
-        if (roll_speedhack && cmd->buttons & IN_DUCK &&
-            !(cmd->buttons & IN_ATTACK) && !HasCondition<TFCond_Charging>(LOCAL_E))
+        if (roll_speedhack && cmd->buttons & IN_DUCK && !(cmd->buttons & IN_ATTACK) && !HasCondition<TFCond_Charging>(LOCAL_E))
         {
-            speed = Vector{ cmd->forwardmove, cmd->sidemove, 0.0f }.Length();
+            speed                     = Vector{ cmd->forwardmove, cmd->sidemove, 0.0f }.Length();
             static float prevspeedang = 0.0f;
             if (fabs(speed) > 0.0f)
             {
@@ -486,8 +468,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 VectorAngles(vecMove, angMoveReverse);
                 cmd->forwardmove = -flLength;
                 cmd->sidemove    = 0.0f; // Move only backwards, no sidemove
-                float res =
-                    g_pLocalPlayer->v_OrigViewangles.y - angMoveReverse.y;
+                float res        = g_pLocalPlayer->v_OrigViewangles.y - angMoveReverse.y;
                 while (res > 180)
                     res -= 360;
                 while (res < -180)
@@ -510,8 +491,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
                 vsilent.z = cmd->upmove;
                 speed     = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
                 VectorAngles(vsilent, ang);
-                yaw = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y +
-                              cmd->viewangles.y);
+                yaw              = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y + cmd->viewangles.y);
                 cmd->forwardmove = cos(yaw) * speed;
                 cmd->sidemove    = sin(yaw) * speed;
                 if (cmd->viewangles.x >= 90 && cmd->viewangles.x <= 270)
@@ -520,8 +500,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
 
             ret = false;
         }
-        if (cmd && (cmd->buttons & IN_ATTACK ||
-                    !(hacks::shared::antiaim::isEnabled() && !*bSendPackets)))
+        if (cmd && (cmd->buttons & IN_ATTACK || !(hacks::shared::antiaim::isEnabled() && !*bSendPackets)))
             g_Settings.brute.last_angles[LOCAL_E->m_IDX] = cmd->viewangles;
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
@@ -536,13 +515,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
             if (NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) <= 1.5f)
                 continue;
             float latency = ch->GetAvgLatency(MAX_FLOWS);
-            g_Settings.brute.choke[i].push_back(
-                NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) ==
-                g_Settings.brute.lastsimtime);
-            g_Settings.brute.last_angles[ent->m_IDX] =
-                NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
-            if (!g_Settings.brute.choke[i].empty() &&
-                g_Settings.brute.choke[i].size() > 20)
+            g_Settings.brute.choke[i].push_back(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) == g_Settings.brute.lastsimtime);
+            g_Settings.brute.last_angles[ent->m_IDX] = NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
+            if (!g_Settings.brute.choke[i].empty() && g_Settings.brute.choke[i].size() > 20)
                 g_Settings.brute.choke[i].pop_front();
         }
     }

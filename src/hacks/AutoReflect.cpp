@@ -23,8 +23,7 @@ static settings::Float fov{ "autoreflect.fov", "85" };
 
 #if ENABLE_VISUALS
 static settings::Bool fov_draw{ "autoreflect.draw-fov", "false" };
-static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity",
-                                          "0.7" };
+static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity", "0.7" };
 #endif
 
 namespace hacks::tf::autoreflect
@@ -40,8 +39,7 @@ void CreateMove()
         return;
 
     // Check if player is using a flame thrower
-    if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFFlameThrower) &&
-        CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) != 528)
+    if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFFlameThrower) && CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) != 528)
         return;
 
     // Check for phlogistinator, which is item 594
@@ -72,9 +70,7 @@ void CreateMove()
 
         // Some extrapolating due to reflect timing being latency based
         // Grab latency
-        float latency =
-            g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING) +
-            g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+        float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING) + g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
         // Create a vector variable to store our velocity
         Vector velocity;
         // Grab Velocity of projectile
@@ -102,8 +98,7 @@ void CreateMove()
         // dont aim at the projectile
         if (legit)
         {
-            if (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye,
-                       predicted_proj) > (float) fov)
+            if (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, predicted_proj) > (float) fov)
                 continue;
         }
 
@@ -152,11 +147,10 @@ bool ShouldReflect(CachedEntity *ent)
     if (!dodgeball)
     {
         // If projectile is already deflected, don't deflect it again.
-        if (CE_INT(ent, (ent->m_bGrenadeProjectile()
-                             ?
-                             /* NetVar for grenades */ netvar.Grenade_iDeflected
-                             :
-                             /* For rockets */ netvar.Rocket_iDeflected)))
+        if (CE_INT(ent, (ent->m_bGrenadeProjectile() ?
+                                                     /* NetVar for grenades */ netvar.Grenade_iDeflected
+                                                     :
+                                                     /* For rockets */ netvar.Rocket_iDeflected)))
             return false;
     }
 
@@ -209,14 +203,11 @@ void Draw()
                 g_IEngine->GetScreenSize(width, height);
 
                 // Math
-                float mon_fov = (float(width) / float(height) / (4.0f / 3.0f));
-                float fov_real =
-                    RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
-                float radius = tan(DEG2RAD(float(fov)) / 2) /
-                               tan(DEG2RAD(fov_real) / 2) * (width);
+                float mon_fov  = (float(width) / float(height) / (4.0f / 3.0f));
+                float fov_real = RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
+                float radius   = tan(DEG2RAD(float(fov)) / 2) / tan(DEG2RAD(fov_real) / 2) * (width);
 
-                glez::draw::circle(width / 2, height / 2, radius, color, 1,
-                                   100);
+                glez::draw::circle(width / 2, height / 2, radius, color, 1, 100);
             }
         }
     }

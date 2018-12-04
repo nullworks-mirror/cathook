@@ -11,18 +11,12 @@
 static settings::Int dominatesay_mode{ "dominatesay.mode", "0" };
 static settings::String filename{ "dominatesay.file", "dominatesay.txt" };
 
-static CatCommand reload_command("dominatesay_reload", "Reload dominatesays",
-                                 []() {
-                                     hacks::shared::dominatesay::reload();
-                                 });
+static CatCommand reload_command("dominatesay_reload", "Reload dominatesays", []() { hacks::shared::dominatesay::reload(); });
 
 namespace hacks::shared::dominatesay
 {
 
-const std::string tf_classes_dominatesay[] = { "class",   "scout",   "sniper",
-                                               "soldier", "demoman", "medic",
-                                               "heavy",   "pyro",    "spy",
-                                               "engineer" };
+const std::string tf_classes_dominatesay[] = { "class", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
 
 const std::string tf_teams_dominatesay[] = { "RED", "BLU" };
 
@@ -79,10 +73,8 @@ std::string ComposeDominateSay(IGameEvent *event)
     ReplaceString(msg, "%dominum%", std::to_string(dnum));
     ReplaceString(msg, "%killer%", std::string(infok.name));
     ReplaceString(msg, "%team%", tf_teams_dominatesay[ent->m_iTeam() - 2]);
-    ReplaceString(msg, "%myteam%",
-                  tf_teams_dominatesay[LOCAL_E->m_iTeam() - 2]);
-    ReplaceString(msg, "%myclass%",
-                  tf_classes_dominatesay[g_pPlayerResource->GetClass(LOCAL_E)]);
+    ReplaceString(msg, "%myteam%", tf_teams_dominatesay[LOCAL_E->m_iTeam() - 2]);
+    ReplaceString(msg, "%myclass%", tf_classes_dominatesay[g_pPlayerResource->GetClass(LOCAL_E)]);
     ReplaceString(msg, "\\n", "\n");
     return msg;
 }
@@ -93,8 +85,7 @@ class DominateSayEventListener : public IGameEventListener2
     {
         if (!dominatesay_mode)
             return;
-        std::string message =
-            hacks::shared::dominatesay::ComposeDominateSay(event);
+        std::string message = hacks::shared::dominatesay::ComposeDominateSay(event);
         if (!message.empty())
             chat_stack::Say(message, false);
     }
@@ -109,8 +100,7 @@ void reload()
 
 void init()
 {
-    g_IEventManager2->AddListener(&listener, (const char *) "player_domination",
-                                  false);
+    g_IEventManager2->AddListener(&listener, (const char *) "player_domination", false);
 }
 
 void shutdown()

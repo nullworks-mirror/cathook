@@ -25,9 +25,7 @@ namespace hacks::shared::autojoin
  * Credits to Blackfire for helping me with auto-requeue!
  */
 
-const std::string classnames[] = { "scout",   "sniper", "soldier",
-                                   "demoman", "medic",  "heavyweapons",
-                                   "pyro",    "spy",    "engineer" };
+const std::string classnames[] = { "scout", "sniper", "soldier", "demoman", "medic", "heavyweapons", "pyro", "spy", "engineer" };
 
 bool UnassignedTeam()
 {
@@ -100,12 +98,10 @@ void updateSearch()
         return;
     }
 
-    static uintptr_t addr =
-        gSignatures.GetClientSignature("C7 04 24 ? ? ? ? 8D 7D ? 31 F6");
+    static uintptr_t addr    = gSignatures.GetClientSignature("C7 04 24 ? ? ? ? 8D 7D ? 31 F6");
     static uintptr_t offset0 = uintptr_t(*(uintptr_t *) (addr + 0x3));
-    static uintptr_t offset1 = gSignatures.GetClientSignature(
-        "55 89 E5 83 EC ? 8B 45 ? 8B 80 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? "
-        "89 04 24 E8 ? ? ? ? 85 C0 74 ? 8B 40");
+    static uintptr_t offset1 = gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 ? 8B 80 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? "
+                                                              "89 04 24 E8 ? ? ? ? 85 C0 74 ? 8B 40");
     typedef int (*GetPendingInvites_t)(uintptr_t);
     GetPendingInvites_t GetPendingInvites = GetPendingInvites_t(offset1);
     int invites                           = GetPendingInvites(offset0);
@@ -113,8 +109,7 @@ void updateSearch()
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
     re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
 
-    if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) &&
-        gc->BHaveLiveMatch())
+    if (current_user_cmd && gc && gc->BConnectedToMatchServer(false) && gc->BHaveLiveMatch())
     {
 #if not ENABLE_VISUALS
         queue_time.update();
@@ -128,25 +123,18 @@ void updateSearch()
 
     if (auto_requeue)
     {
-        if (startqueue_timer.check(5000) && gc &&
-            !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
-            !invites)
-            if (pc && !(pc->BInQueueForMatchGroup(tfmm::getQueue()) ||
-                        pc->BInQueueForStandby()))
+        if (startqueue_timer.check(5000) && gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() && !invites)
+            if (pc && !(pc->BInQueueForMatchGroup(tfmm::getQueue()) || pc->BInQueueForStandby()))
             {
-                logging::Info("Starting queue for standby, Invites %d",
-                              invites);
+                logging::Info("Starting queue for standby, Invites %d", invites);
                 tfmm::startQueueStandby();
             }
     }
 
     if (auto_queue)
     {
-        if (startqueue_timer.check(5000) && gc &&
-            !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() &&
-            !invites)
-            if (pc && !(pc->BInQueueForMatchGroup(tfmm::getQueue()) ||
-                        pc->BInQueueForStandby()))
+        if (startqueue_timer.check(5000) && gc && !gc->BConnectedToMatchServer(false) && !gc->BHaveLiveMatch() && !invites)
+            if (pc && !(pc->BInQueueForMatchGroup(tfmm::getQueue()) || pc->BInQueueForStandby()))
             {
                 logging::Info("Starting queue, Invites %d", invites);
                 tfmm::startQueue();
@@ -160,26 +148,22 @@ void updateSearch()
     }
 #endif
 }
-static HookedFunction
-    update(HookedFunctions_types::HF_CreateMove, "Autojoin", 1, []() {
+static HookedFunction update(HookedFunctions_types::HF_CreateMove, "Autojoin", 1, []() {
 #if !LAGBOT_MODE
-        if (autoteam_timer.test_and_set(500))
+    if (autoteam_timer.test_and_set(500))
+    {
+        if (autojoin_team and UnassignedTeam())
         {
-            if (autojoin_team and UnassignedTeam())
-            {
-                hack::ExecuteCommand("autoteam");
-            }
-            else if (autojoin_class and UnassignedClass())
-            {
-                if (int(autojoin_class) < 10)
-                    g_IEngine->ExecuteClientCmd(
-                        format("join_class ",
-                               classnames[int(autojoin_class) - 1])
-                            .c_str());
-            }
+            hack::ExecuteCommand("autoteam");
         }
+        else if (autojoin_class and UnassignedClass())
+        {
+            if (int(autojoin_class) < 10)
+                g_IEngine->ExecuteClientCmd(format("join_class ", classnames[int(autojoin_class) - 1]).c_str());
+        }
+    }
 #endif
-    });
+});
 
 void onShutdown()
 {

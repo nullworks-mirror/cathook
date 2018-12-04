@@ -6,9 +6,7 @@
 #include <menu/object/TabButton.hpp>
 #include <glez/draw.hpp>
 
-static settings::RVariable<glez::rgba> color_border{
-    "zk.style.tab-selection.color.border", "079797"
-};
+static settings::RVariable<glez::rgba> color_border{ "zk.style.tab-selection.color.border", "079797" };
 
 namespace zerokernel
 {
@@ -16,20 +14,17 @@ namespace zerokernel
 void TabSelection::render()
 {
     Container::render();
-    glez::draw::line(bb.getBorderBox().left(), bb.getBorderBox().bottom() - 1,
-                     bb.getBorderBox().width, 0, *color_border, 1);
+    glez::draw::line(bb.getBorderBox().left(), bb.getBorderBox().bottom() - 1, bb.getBorderBox().width, 0, *color_border, 1);
 }
 
 void TabSelection::add(const std::string &option)
 {
     options.push_back(option);
-    std::unique_ptr<TabButton> button =
-        std::make_unique<TabButton>(*this, options.size() - 1);
+    std::unique_ptr<TabButton> button = std::make_unique<TabButton>(*this, options.size() - 1);
     addObject(std::move(button));
 }
 
-TabSelection::TabSelection(TabContainer &parent)
-    : Container{}, container(parent)
+TabSelection::TabSelection(TabContainer &parent) : Container{}, container(parent)
 {
     setParent(&parent);
     bb.width.setFill();

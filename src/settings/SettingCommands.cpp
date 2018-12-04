@@ -36,14 +36,12 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
             return;
         }
         variable->fromString(args.Arg(3));
-        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2),
-                               variable->toString().c_str());
+        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
         return;
     }
     else if (!strcmp(args.Arg(1), "get"))
     {
-        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2),
-                               variable->toString().c_str());
+        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
         return;
     }
     else
@@ -71,8 +69,7 @@ void save_thread(const int ArgC, const std::string ArgS)
     }
     else
     {
-        writer.saveTo(std::string(DATA_PATH "/configs/") + ArgS + ".conf",
-                      false);
+        writer.saveTo(std::string(DATA_PATH "/configs/") + ArgS + ".conf", false);
     }
     logging::Info("cat_save: Sorting configs...");
     getAndSortAllConfigs();
@@ -118,8 +115,7 @@ void load_thread(const int ArgC, const std::string ArgS)
 #else
         for (int i = 0;; i++)
         {
-            if (loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS +
-                                ".conf"))
+            if (loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS + ".conf"))
                 break;
             if (i > 5)
             {
@@ -193,9 +189,7 @@ static void getAndSortAllConfigs()
     logging::Info("Sorted %u config files\n", sortedConfigs.size());
 }
 
-static int cat_completionCallback(
-    const char *c_partial,
-    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+static int cat_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
     std::array<std::string, 2> parts{};
@@ -227,15 +221,12 @@ static int cat_completionCallback(
 
     logging::Info("%s|%s", parts.at(0).c_str(), parts.at(1).c_str());
 
-    if (parts.at(0).empty() ||
-        parts.at(1).empty() && (!parts.at(0).empty() && partial.back() != ' '))
+    if (parts.at(0).empty() || parts.at(1).empty() && (!parts.at(0).empty() && partial.back() != ' '))
     {
         if (std::string("get").find(parts.at(0)) != std::string::npos)
-            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH,
-                     "cat get ");
+            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH, "cat get ");
         if (std::string("set").find(parts[0]) != std::string::npos)
-            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH,
-                     "cat set ");
+            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH, "cat set ");
         return count;
     }
 
@@ -246,9 +237,7 @@ static int cat_completionCallback(
             auto variable = settings::Manager::instance().lookup(s);
             if (variable)
             {
-                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1,
-                         "cat %s %s %s", parts.at(0).c_str(), s.c_str(),
-                         variable->toString().c_str());
+                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat %s %s %s", parts.at(0).c_str(), s.c_str(), variable->toString().c_str());
                 if (count == COMMAND_COMPLETION_MAXITEMS)
                     break;
             }
@@ -257,9 +246,7 @@ static int cat_completionCallback(
     return count;
 }
 
-static int load_completionCallback(
-    const char *c_partial,
-    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+static int load_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
     std::array<std::string, 2> parts{};
@@ -289,8 +276,7 @@ static int load_completionCallback(
     {
         if (s.find(parts.at(0)) == 0)
         {
-            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1,
-                     "cat_load %s", s.c_str());
+            snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat_load %s", s.c_str());
             if (count == COMMAND_COMPLETION_MAXITEMS)
                 break;
         }
