@@ -60,7 +60,6 @@ static settings::Bool backtrackAimbot{ "aimbot.backtrack", "0" };
 static settings::Float max_range{ "aimbot.target.max-range", "4096" };
 static settings::Bool ignore_vaccinator{ "aimbot.target.ignore-vaccinator",
                                          "1" };
-settings::Bool ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
 static settings::Bool ignore_deadringer{ "aimbot.target.ignore-deadringer",
                                          "1" };
 static settings::Bool buildings_sentry{ "aimbot.target.sentry", "1" };
@@ -76,6 +75,7 @@ static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 
 namespace hacks::shared::aimbot
 {
+settings::Bool ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
 bool shouldBacktrack()
 {
     return *enable && *backtrackAimbot;

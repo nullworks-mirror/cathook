@@ -66,6 +66,7 @@
         <List width="170">
             <AutoVariable width="fill" target="misc.pathing" label="Enable Pathing"/>
 	        <AutoVariable width="fill" target="misc.pathing.draw" label="Draw Path"/>
+            <AutoVariable width="fill" target="misc.pathing.look-at-path" label="Look at Path"/>
             <AutoVariable width="fill" target="navbot.enabled" label="Enable Navbot"/>
             <!--AutoVariable width="fill" target="navbot.scout-mode" label="Enable Scout Mode"/>
             <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/-->
