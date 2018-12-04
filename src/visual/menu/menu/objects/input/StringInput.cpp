@@ -15,7 +15,8 @@ void zerokernel::StringInput::setVariable(settings::IVariable *variable)
     option = variable;
 }
 
-zerokernel::StringInput::StringInput() : TextInput{}
+zerokernel::StringInput::StringInput()
+    : TextInput{}
 {
     resize(*default_width, *default_height);
     text_object.bb.setPadding(0, 0, 5, 0);

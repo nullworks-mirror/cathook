@@ -43,7 +43,8 @@ class netvar_tree
 
     struct node
     {
-        node(int offset, RecvProp *p) : offset(offset), prop(p)
+        node(int offset, RecvProp *p)
+            : offset(offset), prop(p)
         {
         }
 

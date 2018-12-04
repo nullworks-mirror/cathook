@@ -29,12 +29,14 @@ public:
     static settings::RVariable<glez::rgba> bar_color;
 };
 
-template <typename T> class Slider : public BaseMenuObject
+template <typename T>
+class Slider : public BaseMenuObject
 {
 public:
     ~Slider() override = default;
 
-    Slider() : BaseMenuObject{}
+    Slider()
+        : BaseMenuObject{}
     {
         bb.resize(*SliderStyle::default_width, *SliderStyle::default_height);
     }

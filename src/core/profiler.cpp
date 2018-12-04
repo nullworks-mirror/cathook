@@ -59,7 +59,8 @@ void ProfilerSection::OnNodeDeath(ProfilerNode &node)
     }
 }
 
-ProfilerNode::ProfilerNode(ProfilerSection &section) : m_section(section)
+ProfilerNode::ProfilerNode(ProfilerSection &section)
+    : m_section(section)
 {
     m_start = std::chrono::high_resolution_clock::now();
 }

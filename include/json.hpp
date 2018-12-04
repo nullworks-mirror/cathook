@@ -29,44 +29,44 @@ SOFTWARE.
 #ifndef NLOHMANN_JSON_HPP
 #define NLOHMANN_JSON_HPP
 
-#include <algorithm> // all_of, copy, fill, find, for_each, none_of, remove, reverse, transform
-#include <array>   // array
-#include <cassert> // assert
-#include <cctype>  // isdigit
-#include <ciso646> // and, not, or
-#include <cmath>   // isfinite, labs, ldexp, signbit
-#include <cstddef> // nullptr_t, ptrdiff_t, size_t
-#include <cstdint> // int64_t, uint64_t
-#include <cstdlib> // abort, strtod, strtof, strtold, strtoul, strtoll, strtoull
-#include <cstring> // strlen
+#include <algorithm>        // all_of, copy, fill, find, for_each, none_of, remove, reverse, transform
+#include <array>            // array
+#include <cassert>          // assert
+#include <cctype>           // isdigit
+#include <ciso646>          // and, not, or
+#include <cmath>            // isfinite, labs, ldexp, signbit
+#include <cstddef>          // nullptr_t, ptrdiff_t, size_t
+#include <cstdint>          // int64_t, uint64_t
+#include <cstdlib>          // abort, strtod, strtof, strtold, strtoul, strtoll, strtoull
+#include <cstring>          // strlen
 #include <forward_list>     // forward_list
 #include <functional>       // function, hash, less
 #include <initializer_list> // initializer_list
 #include <iomanip>          // setw
 #include <iostream>         // istream, ostream
-#include <iterator> // advance, begin, back_inserter, bidirectional_iterator_tag, distance, end, inserter, iterator, iterator_traits, next, random_access_iterator_tag, reverse_iterator
-#include <limits>   // numeric_limits
-#include <locale>   // locale
-#include <map>      // map
-#include <memory>   // addressof, allocator, allocator_traits, unique_ptr
-#include <numeric>  // accumulate
-#include <sstream>  // stringstream
-#include <stdexcept>   // domain_error, invalid_argument, out_of_range
-#include <string>      // getline, stoi, string, to_string
-#include <type_traits> // add_pointer, conditional, decay, enable_if, false_type, integral_constant, is_arithmetic, is_base_of, is_const, is_constructible, is_convertible, is_default_constructible, is_enum, is_floating_point, is_integral, is_nothrow_move_assignable, is_nothrow_move_constructible, is_pointer, is_reference, is_same, is_scalar, is_signed, remove_const, remove_cv, remove_pointer, remove_reference, true_type, underlying_type
-#include <utility>     // declval, forward, make_pair, move, pair, swap
-#include <vector>      // vector
+#include <iterator>         // advance, begin, back_inserter, bidirectional_iterator_tag, distance, end, inserter, iterator, iterator_traits, next, random_access_iterator_tag, reverse_iterator
+#include <limits>           // numeric_limits
+#include <locale>           // locale
+#include <map>              // map
+#include <memory>           // addressof, allocator, allocator_traits, unique_ptr
+#include <numeric>          // accumulate
+#include <sstream>          // stringstream
+#include <stdexcept>        // domain_error, invalid_argument, out_of_range
+#include <string>           // getline, stoi, string, to_string
+#include <type_traits>      // add_pointer, conditional, decay, enable_if, false_type, integral_constant, is_arithmetic, is_base_of, is_const, is_constructible, is_convertible, is_default_constructible, is_enum, is_floating_point, is_integral, is_nothrow_move_assignable, is_nothrow_move_constructible, is_pointer, is_reference, is_same, is_scalar, is_signed, remove_const, remove_cv, remove_pointer, remove_reference, true_type, underlying_type
+#include <utility>          // declval, forward, make_pair, move, pair, swap
+#include <vector>           // vector
 
 // exclude unsupported compilers
 #if defined(__clang__)
 #if (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__) < \
     30400
-#error                                                                         \
+#error \
     "unsupported Clang version - see https://github.com/nlohmann/json#supported-compilers"
 #endif
 #elif defined(__GNUC__)
 #if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) < 40900
-#error                                                                         \
+#error \
     "unsupported GCC version - see https://github.com/nlohmann/json#supported-compilers"
 #endif
 #endif
@@ -225,10 +225,12 @@ Please note that those constructs must be used with caution, since symbols can
 become very long quickly (which can slow down compilation and cause MSVC
 internal compiler errors). Only use it when you have to (see example ahead).
 */
-template <class...> struct conjunction : std::true_type
+template <class...>
+struct conjunction : std::true_type
 {
 };
-template <class B1> struct conjunction<B1> : B1
+template <class B1>
+struct conjunction<B1> : B1
 {
 };
 template <class B1, class... Bn>
@@ -237,15 +239,18 @@ struct conjunction<B1, Bn...>
 {
 };
 
-template <class B> struct negation : std::integral_constant<bool, !B::value>
+template <class B>
+struct negation : std::integral_constant<bool, !B::value>
 {
 };
 
 // dispatch utility (taken from ranges-v3)
-template <unsigned N> struct priority_tag : priority_tag<N - 1>
+template <unsigned N>
+struct priority_tag : priority_tag<N - 1>
 {
 };
-template <> struct priority_tag<0>
+template <>
+struct priority_tag<0>
 {
 };
 
@@ -253,9 +258,11 @@ template <> struct priority_tag<0>
 // constructors //
 //////////////////
 
-template <value_t> struct external_constructor;
+template <value_t>
+struct external_constructor;
 
-template <> struct external_constructor<value_t::boolean>
+template <>
+struct external_constructor<value_t::boolean>
 {
     template <typename BasicJsonType>
     static void construct(BasicJsonType &j,
@@ -267,7 +274,8 @@ template <> struct external_constructor<value_t::boolean>
     }
 };
 
-template <> struct external_constructor<value_t::string>
+template <>
+struct external_constructor<value_t::string>
 {
     template <typename BasicJsonType>
     static void construct(BasicJsonType &j,
@@ -279,7 +287,8 @@ template <> struct external_constructor<value_t::string>
     }
 };
 
-template <> struct external_constructor<value_t::number_float>
+template <>
+struct external_constructor<value_t::number_float>
 {
     template <typename BasicJsonType>
     static void construct(BasicJsonType &j,
@@ -299,7 +308,8 @@ template <> struct external_constructor<value_t::number_float>
     }
 };
 
-template <> struct external_constructor<value_t::number_unsigned>
+template <>
+struct external_constructor<value_t::number_unsigned>
 {
     template <typename BasicJsonType>
     static void
@@ -312,7 +322,8 @@ template <> struct external_constructor<value_t::number_unsigned>
     }
 };
 
-template <> struct external_constructor<value_t::number_integer>
+template <>
+struct external_constructor<value_t::number_integer>
 {
     template <typename BasicJsonType>
     static void construct(BasicJsonType &j,
@@ -324,7 +335,8 @@ template <> struct external_constructor<value_t::number_integer>
     }
 };
 
-template <> struct external_constructor<value_t::array>
+template <>
+struct external_constructor<value_t::array>
 {
     template <typename BasicJsonType>
     static void construct(BasicJsonType &j,
@@ -351,7 +363,8 @@ template <> struct external_constructor<value_t::array>
     }
 };
 
-template <> struct external_constructor<value_t::object>
+template <>
+struct external_constructor<value_t::object>
 {
     template <typename BasicJsonType>
     static void construct(BasicJsonType &j,
@@ -393,17 +406,18 @@ contains a `mapped_type`, whereas `std::vector` fails the test.
 @sa http://stackoverflow.com/a/7728728/266378
 @since version 1.0.0, overworked in version 2.0.6
 */
-#define NLOHMANN_JSON_HAS_HELPER(type)                                         \
-    template <typename T> struct has_##type                                    \
-    {                                                                          \
-    private:                                                                   \
-        template <typename U, typename = typename U::type>                     \
-        static int detect(U &&);                                               \
-        static void detect(...);                                               \
-                                                                               \
-    public:                                                                    \
-        static constexpr bool value =                                          \
-            std::is_integral<decltype(detect(std::declval<T>()))>::value;      \
+#define NLOHMANN_JSON_HAS_HELPER(type)                                    \
+    template <typename T>                                                 \
+    struct has_##type                                                     \
+    {                                                                     \
+    private:                                                              \
+        template <typename U, typename = typename U::type>                \
+        static int detect(U &&);                                          \
+        static void detect(...);                                          \
+                                                                          \
+    public:                                                               \
+        static constexpr bool value =                                     \
+            std::is_integral<decltype(detect(std::declval<T>()))>::value; \
     }
 
 NLOHMANN_JSON_HAS_HELPER(mapped_type);
@@ -440,7 +454,8 @@ struct is_compatible_object_type
         typename BasicJsonType::object_t, CompatibleObjectType>::value;
 };
 
-template <typename BasicJsonType, typename T> struct is_basic_json_nested_type
+template <typename BasicJsonType, typename T>
+struct is_basic_json_nested_type
 {
     static auto constexpr value =
         std::is_same<T, typename BasicJsonType::iterator>::value or
@@ -495,7 +510,8 @@ struct is_compatible_integer_type
 };
 
 // trait checking if JSONSerializer<T>::from_json(json const&, udt&) exists
-template <typename BasicJsonType, typename T> struct has_from_json
+template <typename BasicJsonType, typename T>
+struct has_from_json
 {
 private:
     // also check the return type of from_json
@@ -514,7 +530,8 @@ public:
 
 // This trait checks if JSONSerializer<T>::from_json(json const&) exists
 // this overload is used for non-default-constructible user-defined-types
-template <typename BasicJsonType, typename T> struct has_non_default_from_json
+template <typename BasicJsonType, typename T>
+struct has_non_default_from_json
 {
 private:
     template <typename U, typename = enable_if_t<std::is_same<
@@ -530,7 +547,8 @@ public:
 };
 
 // This trait checks if BasicJsonType::json_serializer<T>::to_json exists
-template <typename BasicJsonType, typename T> struct has_to_json
+template <typename BasicJsonType, typename T>
+struct has_to_json
 {
 private:
     template <typename U,
@@ -954,12 +972,14 @@ public:
 };
 
 // taken from ranges-v3
-template <typename T> struct static_const
+template <typename T>
+struct static_const
 {
     static constexpr T value{};
 };
 
-template <typename T> constexpr T static_const<T>::value;
+template <typename T>
+constexpr T static_const<T>::value;
 } // namespace detail
 
 /// namespace to hold default `to_json` / `from_json` functions
@@ -977,7 +997,8 @@ This serializer ignores the template arguments and uses ADL
 ([argument-dependent lookup](http://en.cppreference.com/w/cpp/language/adl))
 for serialization.
 */
-template <typename = void, typename = void> struct adl_serializer
+template <typename = void, typename = void>
+struct adl_serializer
 {
     /*!
     @brief convert a JSON value to any value type
@@ -1114,7 +1135,8 @@ template <template <typename U, typename V, typename... Args> class ObjectType =
 class basic_json
 {
 private:
-    template <detail::value_t> friend struct detail::external_constructor;
+    template <detail::value_t>
+    friend struct detail::external_constructor;
     /// workaround type for MSVC
     using basic_json_t =
         basic_json<ObjectType, ArrayType, StringType, BooleanType,
@@ -1124,8 +1146,10 @@ private:
 public:
     using value_t = detail::value_t;
     // forward declarations
-    template <typename U> class iter_impl;
-    template <typename Base> class json_reverse_iterator;
+    template <typename U>
+    class iter_impl;
+    template <typename Base>
+    class json_reverse_iterator;
     class json_pointer;
     template <typename T, typename SFINAE>
     using json_serializer = JSONSerializer<T, SFINAE>;
@@ -1707,7 +1731,8 @@ public:
 
 private:
     /// helper for exception-safe object creation
-    template <typename T, typename... Args> static T *create(Args &&... args)
+    template <typename T, typename... Args>
+    static T *create(Args &&... args)
     {
         AllocatorType<T> alloc;
         auto deleter = [&](T *object) { alloc.deallocate(object, 1); };
@@ -1765,19 +1790,23 @@ private:
         /// default constructor (for null values)
         json_value() = default;
         /// constructor for booleans
-        json_value(boolean_t v) noexcept : boolean(v)
+        json_value(boolean_t v) noexcept
+            : boolean(v)
         {
         }
         /// constructor for numbers (integer)
-        json_value(number_integer_t v) noexcept : number_integer(v)
+        json_value(number_integer_t v) noexcept
+            : number_integer(v)
         {
         }
         /// constructor for numbers (unsigned)
-        json_value(number_unsigned_t v) noexcept : number_unsigned(v)
+        json_value(number_unsigned_t v) noexcept
+            : number_unsigned(v)
         {
         }
         /// constructor for numbers (floating-point)
-        json_value(number_float_t v) noexcept : number_float(v)
+        json_value(number_float_t v) noexcept
+            : number_float(v)
         {
         }
         /// constructor for empty values of a given type
@@ -2034,7 +2063,8 @@ public:
 
     @since version 1.0.0
     */
-    basic_json(std::nullptr_t = nullptr) noexcept : basic_json(value_t::null)
+    basic_json(std::nullptr_t = nullptr) noexcept
+        : basic_json(value_t::null)
     {
         assert_invariant();
     }
@@ -2325,7 +2355,8 @@ public:
 
     @since version 1.0.0
     */
-    basic_json(size_type cnt, const basic_json &val) : m_type(value_t::array)
+    basic_json(size_type cnt, const basic_json &val)
+        : m_type(value_t::array)
     {
         m_value.array = create<array_t>(cnt, val);
         assert_invariant();
@@ -2530,7 +2561,8 @@ public:
 
     @since version 1.0.0
     */
-    basic_json(const basic_json &other) : m_type(other.m_type)
+    basic_json(const basic_json &other)
+        : m_type(other.m_type)
     {
         // check of passed value is valid
         other.assert_invariant();
@@ -4028,7 +4060,8 @@ public:
 
     @since version 1.0.0
     */
-    template <typename T, std::size_t n> reference operator[](T *(&key)[n])
+    template <typename T, std::size_t n>
+    reference operator[](T *(&key)[n])
     {
         return operator[](static_cast<const T>(key));
     }
@@ -4095,7 +4128,8 @@ public:
 
     @since version 1.1.0
     */
-    template <typename T> reference operator[](T *key)
+    template <typename T>
+    reference operator[](T *key)
     {
         // implicitly convert null to object
         if (is_null())
@@ -4145,7 +4179,8 @@ public:
 
     @since version 1.1.0
     */
-    template <typename T> const_reference operator[](T *key) const
+    template <typename T>
+    const_reference operator[](T *key) const
     {
         // at only works for objects
         if (is_object())
@@ -5085,7 +5120,8 @@ public:
 
 private:
     // forward declaration
-    template <typename IteratorType> class iteration_proxy;
+    template <typename IteratorType>
+    class iteration_proxy;
 
 public:
     /*!
@@ -5609,7 +5645,8 @@ public:
 
     @since version 2.0.8
     */
-    template <class... Args> void emplace_back(Args &&... args)
+    template <class... Args>
+    void emplace_back(Args &&... args)
     {
         // emplace_back only works for null objects or arrays
         if (not(is_null() or is_array()))
@@ -5657,7 +5694,8 @@ public:
 
     @since version 2.0.8
     */
-    template <class... Args> std::pair<iterator, bool> emplace(Args &&... args)
+    template <class... Args>
+    std::pair<iterator, bool> emplace(Args &&... args)
     {
         // emplace only works for null objects or arrays
         if (not(is_null() or is_object()))
@@ -8556,7 +8594,8 @@ private:
     struct numtostr
     {
     public:
-        template <typename NumberType> numtostr(NumberType value)
+        template <typename NumberType>
+        numtostr(NumberType value)
         {
             x_write(value, std::is_integral<NumberType>());
         }
@@ -9030,7 +9069,8 @@ private:
     };
 
     /// proxy class for the iterator_wrapper functions
-    template <typename IteratorType> class iteration_proxy
+    template <typename IteratorType>
+    class iteration_proxy
     {
     private:
         /// helper class for iteration
@@ -9185,7 +9225,8 @@ public:
         @pre object != nullptr
         @post The iterator is initialized; i.e. `m_object != nullptr`.
         */
-        explicit iter_impl(pointer object) noexcept : m_object(object)
+        explicit iter_impl(pointer object) noexcept
+            : m_object(object)
         {
             assert(m_object != nullptr);
 
@@ -9890,21 +9931,21 @@ private:
         /// token types for the parser
         enum class token_type
         {
-            uninitialized,  ///< indicating the scanner is uninitialized
-            literal_true,   ///< the `true` literal
-            literal_false,  ///< the `false` literal
-            literal_null,   ///< the `null` literal
-            value_string,   ///< a string -- use get_string() for actual value
-            value_unsigned, ///< an unsigned integer -- use get_number() for
-                            ///< actual value
-            value_integer,  ///< a signed integer -- use get_number() for actual
-                            ///< value
-            value_float,  ///< an floating point number -- use get_number() for
-                          ///< actual value
-            begin_array,  ///< the character for array begin `[`
-            begin_object, ///< the character for object begin `{`
-            end_array,    ///< the character for array end `]`
-            end_object,   ///< the character for object end `}`
+            uninitialized,   ///< indicating the scanner is uninitialized
+            literal_true,    ///< the `true` literal
+            literal_false,   ///< the `false` literal
+            literal_null,    ///< the `null` literal
+            value_string,    ///< a string -- use get_string() for actual value
+            value_unsigned,  ///< an unsigned integer -- use get_number() for
+                             ///< actual value
+            value_integer,   ///< a signed integer -- use get_number() for actual
+                             ///< value
+            value_float,     ///< an floating point number -- use get_number() for
+                             ///< actual value
+            begin_array,     ///< the character for array begin `[`
+            begin_object,    ///< the character for object begin `{`
+            end_array,       ///< the character for array end `]`
+            end_object,      ///< the character for object end `}`
             name_separator,  ///< the name separator `:`
             value_separator, ///< the value separator `,`
             parse_error,     ///< indicating a parse error
@@ -9924,7 +9965,8 @@ private:
         }
 
         /// a lexer from an input stream
-        explicit lexer(std::istream &s) : m_stream(&s), m_line_buffer()
+        explicit lexer(std::istream &s)
+            : m_stream(&s), m_line_buffer()
         {
             // immediately abort if stream is erroneous
             if (s.fail())
@@ -10128,30 +10170,262 @@ private:
                     lexer_char_t yych;
                     unsigned int yyaccept             = 0;
                     static const unsigned char yybm[] = {
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   32,  32,
-                        0,   0,   32,  0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   160,
-                        128, 0,   128, 128, 128, 128, 128, 128, 128, 128, 128,
-                        128, 128, 128, 128, 192, 192, 192, 192, 192, 192, 192,
-                        192, 192, 192, 128, 128, 128, 128, 128, 128, 128, 128,
-                        128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-                        128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-                        128, 128, 128, 128, 0,   128, 128, 128, 128, 128, 128,
-                        128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-                        128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-                        128, 128, 128, 128, 128, 128, 128, 0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-                        0,   0,   0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        32,
+                        32,
+                        0,
+                        0,
+                        32,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        160,
+                        128,
+                        0,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        192,
+                        192,
+                        192,
+                        192,
+                        192,
+                        192,
+                        192,
+                        192,
+                        192,
+                        192,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        0,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        128,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
                     };
                     if ((m_limit - m_cursor) < 5)
                     {
@@ -13351,7 +13625,8 @@ inline void swap(nlohmann::json &j1, nlohmann::json &j2) noexcept(
 }
 
 /// hash value for JSON objects
-template <> struct hash<nlohmann::json>
+template <>
+struct hash<nlohmann::json>
 {
     /*!
     @brief return a hash value for a JSON object

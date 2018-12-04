@@ -11,7 +11,8 @@ static bool hoovy_list[32] = { 0 };
 
 bool HasSandvichOut(CachedEntity *entity)
 {
-    IF_GAME(!IsTF2()) return false;
+    IF_GAME(!IsTF2())
+    return false;
 
     int weapon_idx;
     CachedEntity *weapon;

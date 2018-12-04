@@ -66,7 +66,7 @@ CachedEntity *ClosestSpy()
             continue;
         if (CE_BYTE(ent, netvar.iLifeState))
             continue;
-        bool ispyro = false;
+        bool ispyro  = false;
         bool isheavy = false;
         if (CE_INT(ent, netvar.iClass) != tf_class::tf_spy)
         {

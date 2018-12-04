@@ -27,12 +27,7 @@ std::vector<announcer_entry_s> announces_headshot_combo = {
 };
 
 std::vector<announcer_entry_s> announces_kill = {
-    { 5, "dominating.wav" },   { 7, "rampage.wav" },
-    { 9, "killingspree.wav" }, { 11, "monsterkill.wav" },
-    { 15, "unstoppable.wav" }, { 17, "ultrakill.wav" },
-    { 19, "godlike.wav" },     { 21, "wickedsick.wav" },
-    { 23, "impressive.wav" },  { 25, "ludicrouskill.wav" },
-    { 27, "holyshit.wav" }
+    { 5, "dominating.wav" }, { 7, "rampage.wav" }, { 9, "killingspree.wav" }, { 11, "monsterkill.wav" }, { 15, "unstoppable.wav" }, { 17, "ultrakill.wav" }, { 19, "godlike.wav" }, { 21, "wickedsick.wav" }, { 23, "impressive.wav" }, { 25, "ludicrouskill.wav" }, { 27, "holyshit.wav" }
 };
 
 std::vector<announcer_entry_s> announces_kill_combo = { { 2, "doublekill.wav" },

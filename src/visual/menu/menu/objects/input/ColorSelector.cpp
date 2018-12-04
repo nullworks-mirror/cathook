@@ -18,7 +18,8 @@ static settings::RVariable<glez::rgba> border{ "zk.style.input.color.border",
 namespace zerokernel
 {
 
-ColorSelector::ColorSelector() : BaseMenuObject{}
+ColorSelector::ColorSelector()
+    : BaseMenuObject{}
 {
     resize(*default_width, *default_height);
     bb.setPadding(3, 3, 3, 3);

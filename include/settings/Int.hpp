@@ -9,7 +9,8 @@
 namespace settings
 {
 
-template <> class Variable<int> : public ArithmeticVariable<int>
+template <>
+class Variable<int> : public ArithmeticVariable<int>
 {
 public:
     ~Variable() override = default;

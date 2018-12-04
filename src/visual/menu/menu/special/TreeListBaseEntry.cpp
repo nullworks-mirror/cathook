@@ -59,7 +59,8 @@ int zerokernel::TreeListBaseEntry::getRenderOffset()
     return depth * 5 + (depth ? 6 : 0);
 }
 
-zerokernel::TreeListBaseEntry::TreeListBaseEntry() : BaseMenuObject()
+zerokernel::TreeListBaseEntry::TreeListBaseEntry()
+    : BaseMenuObject()
 {
     bb.width.mode = BoundingBox::SizeMode::Mode::FILL;
 }

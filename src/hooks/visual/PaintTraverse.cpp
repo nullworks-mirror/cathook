@@ -25,7 +25,7 @@ CatCommand join_spam("join_spam", "Spam joins server for X seconds",
                          joinspam.update();
                          spamdur = id;
                      });
-CatCommand join("mm_join", "Join mm Match", [](){
+CatCommand join("mm_join", "Join mm Match", []() {
     auto gc = re::CTFGCClientSystem::GTFGCClientSystem();
     if (gc)
         gc->JoinMMMatch();
@@ -44,11 +44,11 @@ Timer checkmmban{};
 DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_,
                      unsigned int panel, bool force, bool allow_force)
 {
-    static bool textures_loaded      = false;
-    static unsigned long panel_scope = 0;
-    static unsigned long motd_panel  = 0;
-    static unsigned long motd_panel_sd  = 0;
-    static bool call_default         = true;
+    static bool textures_loaded        = false;
+    static unsigned long panel_scope   = 0;
+    static unsigned long motd_panel    = 0;
+    static unsigned long motd_panel_sd = 0;
+    static bool call_default           = true;
     static bool cur;
     static ConVar *software_cursor = g_ICvar->FindVar("cl_software_cursor");
     static const char *name;

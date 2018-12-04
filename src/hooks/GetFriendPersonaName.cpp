@@ -151,8 +151,8 @@ DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
     const char *new_name = GetNamestealName(steam_id);
     return (new_name ? new_name : original::GetFriendPersonaName(this_, steam_id));
 }
-static InitRoutine init([](){
-    namesteal.installChangeCallback([](settings::VariableBase<int> &var, int new_val){
+static InitRoutine init([]() {
+    namesteal.installChangeCallback([](settings::VariableBase<int> &var, int new_val) {
         if (new_val != 0)
         {
             const char *xd = GetNamestealName(g_ISteamUser->GetSteamID());
@@ -170,7 +170,7 @@ static InitRoutine init([](){
     });
 });
 static Timer set_name{};
-static HookedFunction CM(HookedFunctions_types::HF_CreateMove, "namesteal", 2, [](){
+static HookedFunction CM(HookedFunctions_types::HF_CreateMove, "namesteal", 2, []() {
     if (!namesteal)
         return;
     if (!set_name.test_and_set(500000))

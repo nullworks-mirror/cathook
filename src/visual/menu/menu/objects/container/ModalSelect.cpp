@@ -5,7 +5,8 @@
 #include <menu/object/container/ModalSelect.hpp>
 #include <menu/Message.hpp>
 
-zerokernel::ModalSelect::ModalSelect() : ModalContainer{}
+zerokernel::ModalSelect::ModalSelect()
+    : ModalContainer{}
 {
     bb.height.setContent();
 }

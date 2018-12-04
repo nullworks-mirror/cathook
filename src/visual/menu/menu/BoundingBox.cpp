@@ -18,7 +18,8 @@
  * [onParentSizeUpdate..updateFillSize..setSize]F*Bar
  */
 
-zerokernel::BoundingBox::BoundingBox(BaseMenuObject &object) : object(object)
+zerokernel::BoundingBox::BoundingBox(BaseMenuObject &object)
+    : object(object)
 {
 }
 

@@ -305,10 +305,10 @@ CatCommand pl_set_color("pl_set_color", "pl_set_color uniqueid r g b",
                             }
                             unsigned steamid =
                                 strtoul(args.Arg(1), nullptr, 10);
-                            int r        = strtol(args.Arg(2), nullptr, 10);
-                            int g        = strtol(args.Arg(3), nullptr, 10);
-                            int b        = strtol(args.Arg(4), nullptr, 10);
-                            rgba_t color = colors::FromRGBA8(r, g, b, 255);
+                            int r                     = strtol(args.Arg(2), nullptr, 10);
+                            int g                     = strtol(args.Arg(3), nullptr, 10);
+                            int b                     = strtol(args.Arg(4), nullptr, 10);
+                            rgba_t color              = colors::FromRGBA8(r, g, b, 255);
                             AccessData(steamid).color = color;
                             logging::Info("Changed %d's color", steamid);
                         });

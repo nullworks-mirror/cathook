@@ -18,7 +18,7 @@ void EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG()
     // "CommandLine_Tier0"))()->RemoveParm("-textmode");
     // ((ICommandLine*(*)(void))dlsym(sharedobj::tier0().lmap,
     // "CommandLine_Tier0"))()->RemoveParm("-insecure");
-    static unsigned char patch[] = { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0xB8,
+    static unsigned char patch[]              = { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x18, 0xB8,
                                      0x01, 0x00, 0x00, 0x00, 0xC9, 0xC3 };
     uintptr_t Host_IsSecureServerAllowed_addr = gSignatures.GetEngineSignature(
         "55 89 E5 83 EC ? E8 ? ? ? ? 8B 10 C7 44 24 ? ? ? ? ? 89 04 24 FF 52 ? "

@@ -32,6 +32,7 @@ void zerokernel::ModalContainer::render()
     Container::render();
 }
 
-zerokernel::ModalContainer::ModalContainer() : modal(this)
+zerokernel::ModalContainer::ModalContainer()
+    : modal(this)
 {
 }

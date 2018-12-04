@@ -92,7 +92,8 @@ color_type text_shadow{ "zk.style.menu.color.text_shadow", "000000" };
 color_type error{ "zk.style.menu.color.error", "ff0000" };
 } // namespace style::colors
 
-Menu::Menu(int w, int h) : tooltip{}, wm{ nullptr }
+Menu::Menu(int w, int h)
+    : tooltip{}, wm{ nullptr }
 {
     screen_x = w;
     screen_y = h;

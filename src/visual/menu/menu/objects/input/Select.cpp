@@ -57,7 +57,8 @@ zerokernel::Select::Select(settings::IVariable &variable)
     text.bb.setPadding(0, 0, 5, 0);
 }
 
-zerokernel::Select::Select() : BaseMenuObject{}
+zerokernel::Select::Select()
+    : BaseMenuObject{}
 {
     resize(*default_width, *default_height);
     text.setParent(this);

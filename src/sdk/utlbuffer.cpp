@@ -192,7 +192,8 @@ char CUtlCharConversion::FindConversion(const char *pString, int *pLength)
 //-----------------------------------------------------------------------------
 // constructors
 //-----------------------------------------------------------------------------
-CUtlBuffer::CUtlBuffer(int growSize, int initSize, int nFlags) : m_Error(0)
+CUtlBuffer::CUtlBuffer(int growSize, int initSize, int nFlags)
+    : m_Error(0)
 {
     MEM_ALLOC_CREDIT();
     m_Memory.Init(growSize, initSize);

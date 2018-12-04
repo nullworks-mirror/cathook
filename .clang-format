@@ -10,6 +10,7 @@ AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: 'false'
 AllowShortLoopsOnASingleLine: 'false'
 BreakBeforeBraces: Allman
+ColumnLimit: 0
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
 Cpp11BracedListStyle: 'false'
 IndentCaseLabels: 'false'
@@ -30,5 +31,6 @@ SpacesInSquareBrackets: 'false'
 Standard: Auto
 TabWidth: '4'
 UseTab: Never
+
 
 ...

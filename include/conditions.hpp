@@ -197,7 +197,8 @@ constexpr condition_data_s KCritBoostMask = CreateConditionMask(
 // Compiler will optimize this to extremely small functions I guess.
 // These functions are never used with dynamic "cond" value anyways.
 
-template <condition cond> inline bool CondBitCheck(condition_data_s &data)
+template <condition cond>
+inline bool CondBitCheck(condition_data_s &data)
 {
     if (cond >= 32 * 3)
     {
@@ -230,7 +231,8 @@ inline bool CondMaskCheck(condition_data_s &data)
 template <uint32_t c0, uint32_t c1, uint32_t c2, uint32_t c3>
 inline bool HasConditionMask(CachedEntity *ent)
 {
-    IF_GAME(!IsTF()) return false;
+    IF_GAME(!IsTF())
+    return false;
     IF_GAME(IsTF2())
     {
         if (CondMaskCheck<c0, c1, c2, c3>(
@@ -286,9 +288,11 @@ inline void CondBitSet(condition_data_s &data)
     }
 }
 
-template <condition cond> inline bool HasCondition(CachedEntity *ent)
+template <condition cond>
+inline bool HasCondition(CachedEntity *ent)
 {
-    IF_GAME(!IsTF()) return false;
+    IF_GAME(!IsTF())
+    return false;
     IF_GAME(IsTF2() && cond < condition(96))
     {
         if (CondBitCheck<cond>(
@@ -298,9 +302,11 @@ template <condition cond> inline bool HasCondition(CachedEntity *ent)
     return CondBitCheck<cond>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
 
-template <condition cond> inline void AddCondition(CachedEntity *ent)
+template <condition cond>
+inline void AddCondition(CachedEntity *ent)
 {
-    IF_GAME(!IsTF()) return;
+    IF_GAME(!IsTF())
+    return;
     IF_GAME(IsTF2())
     {
         CondBitSet<cond, true>(
@@ -309,9 +315,11 @@ template <condition cond> inline void AddCondition(CachedEntity *ent)
     CondBitSet<cond, true>(CE_VAR(ent, netvar.iCond, condition_data_s));
 }
 
-template <condition cond> inline void RemoveCondition(CachedEntity *ent)
+template <condition cond>
+inline void RemoveCondition(CachedEntity *ent)
 {
-    IF_GAME(!IsTF()) return;
+    IF_GAME(!IsTF())
+    return;
     IF_GAME(IsTF2())
     {
         CondBitSet<cond, false>(

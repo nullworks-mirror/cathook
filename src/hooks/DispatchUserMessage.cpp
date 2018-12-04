@@ -112,14 +112,13 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 char to_app = buf.ReadByte();
                 data.push_back(to_app);
             }
-            data = data.substr(0, data.size()-1);
+            data = data.substr(0, data.size() - 1);
             for (auto i : data)
             {
                 if (clean_chat)
                 {
                     if ((i == '\n' || i == '\r'))
                     {
-
                     }
                     else
                         cleaned_data.push_back(i);
@@ -183,9 +182,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
 
                 std::vector<std::string> res = {
-                    "skid", "script", "cheat", "hak",   "hac",  "f1",
-                    "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
-                    "cat",  "insta",  "revv",  "brass", "kick", claz
+                    "skid", "script", "cheat", "hak", "hac", "f1",
+                    "hax", "vac", "ban", "lmao", "bot", "report",
+                    "cat", "insta", "revv", "brass", "kick", claz
                 };
                 name2 = SplitName(name1, 2);
                 for (auto i : name2)
@@ -196,7 +195,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 std::string message2 = message;
                 std::vector<std::string> toreplace{ " ", "4", "3", "0",
                                                     "6", "5", "7" };
-                std::vector<std::string> replacewith{ "",  "a", "e", "o",
+                std::vector<std::string> replacewith{ "", "a", "e", "o",
                                                       "g", "s", "t" };
                 boost::to_lower(message2);
 
@@ -266,15 +265,15 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
             }
             chatlog::LogMessage(cleaned_data[0], message);
-            char *cleaned_data_c = new char[cleaned_data.size()+1];
-            int idx = 0;
+            char *cleaned_data_c = new char[cleaned_data.size() + 1];
+            int idx              = 0;
             for (char i : cleaned_data)
             {
                 cleaned_data_c[idx] = i;
                 idx++;
             }
             cleaned_data_c[cleaned_data.size()] = '\0';
-            buf = bf_read(cleaned_data_c, cleaned_data.size());
+            buf                                 = bf_read(cleaned_data_c, cleaned_data.size());
             buf.Seek(0);
         }
     }

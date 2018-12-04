@@ -31,7 +31,7 @@ void handleFireBullets(C_TEFireBullets *ent)
     if (g_IEngine->IsInGame())
     {
         INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-        float time = g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
+        float time      = g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
                      (ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f);
         bases.push_back(seedstruct{ g_GlobalVars->tickcount, ent->m_iSeed(),
                                     time }); // It's circular buffer

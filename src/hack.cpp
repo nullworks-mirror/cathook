@@ -116,7 +116,7 @@ void critical_error_handler(int signum)
     {
         unsigned int offset = (unsigned int) (i.address()) - baseaddr;
         Dl_info info2;
-        out << (void *)offset;
+        out << (void *) offset;
         if (!dladdr(i.address(), &info2))
         {
             out << std::endl;

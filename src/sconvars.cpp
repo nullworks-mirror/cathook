@@ -12,7 +12,8 @@ namespace sconvar
 
 std::vector<SpoofedConVar *> convars;
 
-SpoofedConVar::SpoofedConVar(ConVar *var) : original(var)
+SpoofedConVar::SpoofedConVar(ConVar *var)
+    : original(var)
 {
     int flags        = var->m_nFlags;
     const char *name = var->m_pszName;

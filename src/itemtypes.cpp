@@ -7,7 +7,8 @@
 
 #include "common.hpp"
 
-ItemManager::ItemManager() : mapper()
+ItemManager::ItemManager()
+    : mapper()
 {
     // == MEDKITS
     // Normal

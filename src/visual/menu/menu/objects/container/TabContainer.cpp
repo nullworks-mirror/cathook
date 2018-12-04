@@ -148,7 +148,8 @@ void TabContainer::renderDebugOverlay()
         active->renderDebugOverlay();
 }
 
-TabContainer::TabContainer() : BaseMenuObject{}, selection{ *this }
+TabContainer::TabContainer()
+    : BaseMenuObject{}, selection{ *this }
 {
 }
 

@@ -83,9 +83,9 @@ bool CanBacktrack()
             continue;
         if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
         {
-            Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
-            float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
-            angles.y       = i.viewangles;
+            Vector &angles               = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
+            float &simtime               = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
+            angles.y                     = i.viewangles;
             current_user_cmd->tick_count = i.tickcount;
             current_user_cmd->buttons |= IN_ATTACK;
             return true;

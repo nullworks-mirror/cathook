@@ -16,7 +16,8 @@ void zerokernel::LabeledObject::loadFromXml(const tinyxml2::XMLElement *data)
     }
 }
 
-zerokernel::LabeledObject::LabeledObject() : BaseMenuObject{}
+zerokernel::LabeledObject::LabeledObject()
+    : BaseMenuObject{}
 {
     bb.width.setContent();
     bb.height.setContent();

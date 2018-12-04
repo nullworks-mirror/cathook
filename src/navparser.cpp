@@ -622,8 +622,8 @@ static HookedFunction
 
         if (look)
         {
-            Vector next = crumbs.front();
-            next.z = g_pLocalPlayer->v_Eye.z;
+            Vector next  = crumbs.front();
+            next.z       = g_pLocalPlayer->v_Eye.z;
             Vector angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, next);
             DoSlowAim(angle);
             current_user_cmd->viewangles = angle;

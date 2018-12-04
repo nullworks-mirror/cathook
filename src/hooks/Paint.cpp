@@ -71,7 +71,7 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
         }
 #if ENABLE_TEXTMODE_STDIN == 1
         static auto last_stdin = std::chrono::system_clock::from_time_t(0);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        auto ms                = std::chrono::duration_cast<std::chrono::milliseconds>(
                       std::chrono::system_clock::now() - last_stdin)
                       .count();
         if (ms > 500)

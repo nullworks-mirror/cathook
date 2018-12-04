@@ -17,12 +17,14 @@ public:
     static settings::RVariable<int> default_height;
 };
 
-template <typename T> class Spinner : public TextInput
+template <typename T>
+class Spinner : public TextInput
 {
 public:
     ~Spinner() override = default;
 
-    Spinner() : TextInput{}
+    Spinner()
+        : TextInput{}
     {
         bb.resize(*SpinnerStyle::default_width, *SpinnerStyle::default_height);
     }

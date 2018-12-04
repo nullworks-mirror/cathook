@@ -143,7 +143,8 @@ void CMaterialReference::Shutdown()
 //-----------------------------------------------------------------------------
 // constructor, destructor
 //-----------------------------------------------------------------------------
-CTextureReference::CTextureReference() : m_pTexture(NULL)
+CTextureReference::CTextureReference()
+    : m_pTexture(NULL)
 {
 }
 
@@ -178,7 +179,7 @@ void CTextureReference::Init(char const *pTextureName,
 {
     Shutdown();
     IF_GAME(IsTF2())
-    m_pTexture = g_IMaterialSystem->FindTexture(pTextureName, pTextureGroupName,
+    m_pTexture      = g_IMaterialSystem->FindTexture(pTextureName, pTextureGroupName,
                                                 bComplain);
     else m_pTexture = g_IMaterialSystemHL->FindTexture(
         pTextureName, pTextureGroupName, bComplain);

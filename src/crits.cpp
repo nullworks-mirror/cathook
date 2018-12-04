@@ -47,8 +47,8 @@ int find_next_random_crit_for_weapon(IClientEntity *weapon)
     {
         seed_md5                = MD5_PseudoRandom(number) & 0x7FFFFFFF;
         *g_PredictionRandomSeed = seed_md5;
-        seed  = seed_md5 ^ (LOCAL_E->m_IDX | (LOCAL_W->m_IDX << 8));
-        found = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
+        seed                    = seed_md5 ^ (LOCAL_E->m_IDX | (LOCAL_W->m_IDX << 8));
+        found                   = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
         if (found)
             break;
         ++tries;

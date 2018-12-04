@@ -62,7 +62,8 @@ public:
     virtual const std::string &toString() = 0;
 };
 
-template <typename T> class VariableBase : public IVariable
+template <typename T>
+class VariableBase : public IVariable
 {
 public:
     using type = T;
@@ -88,11 +89,13 @@ protected:
     T default_value{};
 };
 
-template <typename T> class Variable
+template <typename T>
+class Variable
 {
 };
 
-template <typename T> class ArithmeticVariable : public VariableBase<T>
+template <typename T>
+class ArithmeticVariable : public VariableBase<T>
 {
 public:
     ~ArithmeticVariable<T>() override = default;

@@ -400,10 +400,10 @@ const std::vector<std::string> builtin_default = {
     "Cathook - ca(n)t stop me meow!"
 };
 const std::vector<std::string> builtin_lennyfaces = {
-    "( ͡° ͜ʖ ͡°)",  "( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)",
-    "ʕ•ᴥ•ʔ",     "(▀̿Ĺ̯▀̿ ̿)",
+    "( ͡° ͜ʖ ͡°)", "( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)",
+    "ʕ•ᴥ•ʔ", "(▀̿Ĺ̯▀̿ ̿)",
     "( ͡°╭͜ʖ╮͡° )", "(ง'̀-'́)ง",
-    "(◕‿◕✿)",    "༼ つ  ͡° ͜ʖ ͡° ༽つ"
+    "(◕‿◕✿)", "༼ つ  ͡° ͜ʖ ͡° ༽つ"
 };
 const std::vector<std::string> builtin_blanks = {
     ". \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n "

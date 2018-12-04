@@ -23,7 +23,7 @@
 #define F4(x, y, z) (y ^ (x | ~z))
 
 // This is the central step in the MD5 algorithm.
-#define MD5STEP(f, w, x, y, z, data, s)                                        \
+#define MD5STEP(f, w, x, y, z, data, s) \
     (w += f(x, y, z) + data, w = w << s | w >> (32 - s), w += x)
 
 //-----------------------------------------------------------------------------

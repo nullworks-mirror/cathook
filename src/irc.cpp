@@ -319,8 +319,8 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
             "55 89 E5 57 56 53 83 EC ? 8B 7D ? 8B 77 ? 85 F6 0F 84");
         typedef int (*GetNumOnlineMembers_t)(re::CTFPartyClient *);
         static const auto GetNumOnlineMembers_fn = GetNumOnlineMembers_t(addr);
-        auto party_client  = re::CTFPartyClient::GTFPartyClient();
-        int online_members = GetNumOnlineMembers_fn(party_client);
+        auto party_client                        = re::CTFPartyClient::GTFPartyClient();
+        int online_members                       = GetNumOnlineMembers_fn(party_client);
 
         if (resize_party.test_and_set(10000) && party_client &&
             online_members > *party_size)
@@ -404,7 +404,8 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
     }
 });
 
-template <typename T> void rvarCallback(settings::VariableBase<T> &var, T after)
+template <typename T>
+void rvarCallback(settings::VariableBase<T> &var, T after)
 {
     if (!restarting)
     {

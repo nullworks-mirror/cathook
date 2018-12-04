@@ -18,7 +18,8 @@ struct Key
     SDL_Scancode scan{ static_cast<SDL_Scancode>(0) };
 };
 
-template <> class Variable<Key> : public VariableBase<Key>
+template <>
+class Variable<Key> : public VariableBase<Key>
 {
 public:
     ~Variable() override = default;

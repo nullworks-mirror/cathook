@@ -34,7 +34,8 @@ public:
 public:
     ~SmartContentContainer() override = default;
 
-    SmartContentContainer() : Container()
+    SmartContentContainer()
+        : Container()
     {
     }
 

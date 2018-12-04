@@ -20,13 +20,16 @@ std::string dotCompactString(const std::string &input, glez::font &font,
 void drawCenteredString(int x, int y, const std::string &string,
                         glez::font &font, glez::rgba color);
 
-template <typename T> T mod(T first, T second);
+template <typename T>
+T mod(T first, T second);
 
-template <> inline float mod(float first, float second)
+template <>
+inline float mod(float first, float second)
 {
     return std::fmod(first, second);
 }
-template <> inline int mod(int first, int second)
+template <>
+inline int mod(int first, int second)
 {
     return first % second;
 }

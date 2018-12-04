@@ -83,7 +83,7 @@ public:
 // CATHOOK
 extern CScreenSpaceEffectRegistration **g_ppScreenSpaceRegistrationHead;
 
-#define ADD_SCREENSPACE_EFFECT(CEffect, pEffectName)                           \
-    CEffect pEffectName##_effect;                                              \
-    CScreenSpaceEffectRegistration pEffectName##_reg(#pEffectName,             \
+#define ADD_SCREENSPACE_EFFECT(CEffect, pEffectName)               \
+    CEffect pEffectName##_effect;                                  \
+    CScreenSpaceEffectRegistration pEffectName##_reg(#pEffectName, \
                                                      &pEffectName##_effect);
