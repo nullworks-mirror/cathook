@@ -461,6 +461,7 @@ void level_init()
 {
     level_init_timer.update();
 }
+#if ENABLE_VISUALS
 static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3, [](){
     if (!catbotmode || !anti_motd)
         return;
@@ -469,4 +470,5 @@ static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3,
     AddCenterString(health, colors::green);
     AddCenterString(ammo, colors::yellow);
 });
+#endif
 } // namespace hacks::shared::catbot
