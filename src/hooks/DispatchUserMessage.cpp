@@ -99,6 +99,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 g_IEngine->ClientCmd_Unrestricted("cat_disconnect;wait 100;cat_mm_join");
             buf.Seek(0);
         }
+
+    std::string cleaned_data;
     if (type == 4)
     {
         loop_index = 0;
@@ -106,7 +108,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         if (s < 256)
         {
             std::string data;
-            std::string cleaned_data;
             for (i = 0; i < s; i++)
             {
                 char to_app = buf.ReadByte();
@@ -253,15 +254,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                 }
             }
             chatlog::LogMessage(cleaned_data[0], message);
-            char *cleaned_data_c = new char[cleaned_data.size()+1];
-            int idx = 0;
-            for (char i : cleaned_data)
-            {
-                cleaned_data_c[idx] = i;
-                idx++;
-            }
-            cleaned_data_c[cleaned_data.size()] = '\0';
-            buf = bf_read(cleaned_data_c, cleaned_data.size());
+            buf = bf_read(cleaned_data.c_str(), cleaned_data.size());
             buf.Seek(0);
         }
     }
