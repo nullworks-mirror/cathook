@@ -23,11 +23,14 @@ void SetCanshootStatus()
     static int prevweaponclass = -1;
     if (LOCAL_W->m_iClassID() != prevweaponclass)
         lastammo = -1;
-    if (lastammo == 0 && CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1))
+    if (GetWeaponMode() != weapon_melee &&
+        lastammo == 0 && CE_INT(LOCAL_W, netvar.m_iClip1))
+    {
         CanShootException = true;
+    }
     else
         CanShootException = false;
-    lastammo        = CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1);
+    lastammo        = CE_INT(LOCAL_W, netvar.m_iClip1);
     prevweaponclass = LOCAL_W->m_iClassID();
 }
 
