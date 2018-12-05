@@ -22,6 +22,3 @@
 [submodule "external/TF2_NavFile_Reader"]
 	path = external/TF2_NavFile_Reader
 	url = https://github.com/nullworks/TF2_NavFile_Reader
-[submodule "external/chirc"]
-	path = external/chirc
-	url = https://github.com/nullworks/ChIRC
