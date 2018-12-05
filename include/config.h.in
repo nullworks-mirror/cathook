@@ -17,3 +17,4 @@
 #define TEXTMODE @Textmode@
 #define ENABLE_PROFILER @EnableProfiler@
 #define ENABLE_ONLINE @EnableOnlineFeatures@
+#define ENABLE_IRC @EnableIRC@

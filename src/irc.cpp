@@ -1,3 +1,5 @@
+#include "config.h"
+#if ENABLE_IRC
 #include "common.hpp"
 #include "irc.hpp"
 #include "CatBot.hpp"
@@ -427,3 +429,4 @@ static CatCommand irc_send("irc_send", "Send message to IRC", [](const CCommand 
 static CatCommand irc_auth("irc_auth", "Auth via IRC (Find users on same server)", []() { auth(); });
 
 } // namespace IRC
+#endif

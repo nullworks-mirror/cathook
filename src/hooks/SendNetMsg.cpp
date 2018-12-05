@@ -48,7 +48,9 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, boo
                         if (msg.find("!!!") == 0)
                             sub_val = 3;
                         std::string substrmsg(msg.substr(sub_val));
+#if ENABLE_IRC
                         IRC::sendmsg(substrmsg, true);
+#endif
                         // Do not send message over normal chat.
                         return false;
                     }

@@ -33,6 +33,7 @@ set(EnableTextmodeStdin 0 CACHE BOOL "Textmode Stdin -> Console bridge (EXPERIME
 set(EnableWarnings 0 CACHE BOOL "Enable compile warnings")
 set(EnableNullGraphics 0 CACHE BOOL "Enable experimental textmode hooks (CRASHES)")
 set(EnableOnlineFeatures 0 CACHE BOOL "Enable online features (WIP)")
+set(EnableIRC 1 CACHE BOOL "Enable IRC for messaging and ignore-cathook")
 
 if(NOT EnableVisuals)
     set(EnableGUI 0)
