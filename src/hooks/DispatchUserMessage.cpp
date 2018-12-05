@@ -214,10 +214,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                         gitgud.update();
                     }
             }
-#if !LAGBOT_MODE
-            if (*identify && sendmsg.test_and_set(300000))
-                chat_stack::Say("!!meow");
-#endif
             if (crypt_chat)
             {
                 if (message.find("!!B") == 0)
@@ -248,15 +244,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                             if (state == playerlist::k_EState::DEFAULT)
                             {
                                 state = playerlist::k_EState::CAT;
-                                if (*answerIdentify &&
-                                    sendmsg.test_and_set(5000))
-                                    chat_stack::Say("!!meow");
-                            }
-                            else if (state == playerlist::k_EState::CAT)
-                            {
-                                if (*answerIdentify &&
-                                    sendmsg.test_and_set(60000))
-                                    chat_stack::Say("!!meow");
                             }
                         }
 #endif

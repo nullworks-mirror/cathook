@@ -8,7 +8,6 @@
 #include <settings/Int.hpp>
 #include "HookedMethods.hpp"
 #include <MiscTemporary.hpp>
-#include "irc.hpp"
 
 static settings::Int newlines_msg{ "chat.prefix-newlines", "0" };
 static settings::Bool log_sent{ "debug.log-sent-chat", "false" };
@@ -49,7 +48,6 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                         if (msg.find("!!!") == 0)
                             sub_val = 3;
                         std::string substrmsg(msg.substr(sub_val));
-                        IRC::sendmsg(substrmsg, true);
                         // Do not send message over normal chat.
                         return false;
                     }

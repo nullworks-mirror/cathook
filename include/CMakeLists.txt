@@ -20,7 +20,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/hoovy.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/init.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/ipc.hpp"
-        "${CMAKE_CURRENT_LIST_DIR}/irc.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/itemtypes.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/json.hpp"
         "${CMAKE_CURRENT_LIST_DIR}/localplayer.hpp"

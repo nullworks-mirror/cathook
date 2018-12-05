@@ -15,7 +15,6 @@
 #include <hacks/AntiAntiAim.hpp>
 #include "NavBot.hpp"
 #include "HookTools.hpp"
-#include "irc.hpp"
 
 #include "HookedMethods.hpp"
 #include "PreDataUpdate.hpp"
@@ -303,7 +302,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time,
         //        hacks::tf2::NavBot::Init();
         //        hacks::tf2::NavBot::initonce();
         nav::status = nav::off;
-        IRC::auth();
         hacks::tf2::NavBot::init(true);
         firstcm = false;
     }
