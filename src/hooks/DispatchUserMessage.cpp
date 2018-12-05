@@ -96,6 +96,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                 g_IEngine->ClientCmd_Unrestricted("cat_disconnect;wait 100;cat_mm_join");
             buf.Seek(0);
         }
+
+    std::string cleaned_data;
     if (type == 4)
     {
         loop_index = 0;
@@ -103,7 +105,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         if (s < 256)
         {
             std::string data;
-            std::string cleaned_data;
             for (i = 0; i < s; i++)
             {
                 char to_app = buf.ReadByte();
@@ -206,10 +207,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                         gitgud.update();
                     }
             }
-#if !LAGBOT_MODE
-            if (*identify && sendmsg.test_and_set(300000))
-                chat_stack::Say("!!meow");
-#endif
             if (crypt_chat)
             {
                 if (message.find("!!B") == 0)
@@ -239,13 +236,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                             if (state == playerlist::k_EState::DEFAULT)
                             {
                                 state = playerlist::k_EState::CAT;
-                                if (*answerIdentify && sendmsg.test_and_set(5000))
-                                    chat_stack::Say("!!meow");
-                            }
-                            else if (state == playerlist::k_EState::CAT)
-                            {
-                                if (*answerIdentify && sendmsg.test_and_set(60000))
-                                    chat_stack::Say("!!meow");
                             }
                         }
 #endif
@@ -254,14 +244,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                 }
             }
             chatlog::LogMessage(cleaned_data[0], message);
-            char *cleaned_data_c = new char[cleaned_data.size()];
-            int idx              = 0;
-            for (char i : cleaned_data)
-            {
-                cleaned_data_c[idx] = i;
-                idx++;
-            }
-            buf = bf_read(cleaned_data_c, cleaned_data.size());
+            buf = bf_read(cleaned_data.c_str(), cleaned_data.size());
             buf.Seek(0);
         }
     }
