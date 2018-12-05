@@ -15,7 +15,8 @@
 static settings::Bool halloween_mode{ "misc.force-halloween", "false" };
 static settings::Int skybox_changer{ "misc.skybox-override", "0" };
 
-const char *skynum[] = { "sky_tf2_04",
+const char *skynum[] = { "",
+                         "sky_tf2_04",
                          "sky_upward",
                          "sky_dustbowl_01",
                          "sky_goldrush_01",
@@ -65,15 +66,16 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 #if ENABLE_GUI
     gui::onLevelLoad();
 #endif
-
-    typedef bool (*LoadNamedSkys_Fn)(const char *);
-    uintptr_t addr = gSignatures.GetEngineSignature(
-        "55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 81 EC 6C 01 00 00");
-    static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
-    bool succ;
-    logging::Info("Going to load the skybox");
-    succ = LoadNamedSkys(skynum[(int) skybox_changer]);
-    logging::Info("Loaded Skybox: %s", succ ? "true" : "false");
+    if (skybox_changer) {
+        typedef bool (*LoadNamedSkys_Fn)(const char *);
+        uintptr_t addr = gSignatures.GetEngineSignature(
+            "55 89 E5 57 31 FF 56 8D B5 ? ? ? ? 53 81 EC 6C 01 00 00");
+        static LoadNamedSkys_Fn LoadNamedSkys = LoadNamedSkys_Fn(addr);
+		bool succ;
+		logging::Info("Going to load the skybox");
+		succ = LoadNamedSkys(skynum[(int) skybox_changer]);
+		logging::Info("Loaded Skybox: %s", succ ? "true" : "false");
+    }
     ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
 
     if (halloween_mode)
