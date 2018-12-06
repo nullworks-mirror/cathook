@@ -197,19 +197,89 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                     gitgud.update();
                     break;
                 }
-        }
-        if (crypt_chat && message.find("!!B") == 0 && ucccccp::validate(message))
-        {
-            std::string msg = ucccccp::decrypt(message);
+
+                std::vector<std::string> res = {
+                    "skid", "script", "cheat", "hak",   "hac",  "f1",
+                    "hax",  "vac",    "ban",   "lmao",  "bot",  "report",
+                    "cat",  "insta",  "revv",  "brass", "kick", claz
+                };
+                name2 = SplitName(name1, 2);
+                for (auto i : name2)
+                    res.push_back(i);
+                name2 = SplitName(name1, 3);
+                for (auto i : name2)
+                    res.push_back(i);
+                std::string message2 = message;
+                std::vector<std::string> toreplace{ " ", "4", "3", "0",
+                                                    "6", "5", "7" };
+                std::vector<std::string> replacewith{ "",  "a", "e", "o",
+                                                      "g", "s", "t" };
+                boost::to_lower(message2);
+
+                for (int i = 0; i < toreplace.size(); i++)
+                    boost::replace_all(message2, toreplace[i], replacewith[i]);
+                bool filtered = false;
+                for (auto filter : res)
+                    if (boost::contains(message2, filter) && !filtered)
+                    {
+                        filtered = true;
+                        chat_stack::Say("." + clear, true);
+                        retrun     = true;
+                        lastfilter = message;
+                        lastname   = format(name);
+                        gitgud.update();
+                    }
+            }
 #if !LAGBOT_MODE
-            CachedEntity *ent = ENTITY(data[0]);
-            if (msg != "Attempt at ucccccping and failing" &&
-                msg != "Unsupported version" && ent != LOCAL_E)
+            if (*identify && sendmsg.test_and_set(300000))
+                chat_stack::Say("!!meow");
+#endif
+            if (crypt_chat)
             {
                 auto &state = playerlist::AccessData(ent).state;
                 if (state == playerlist::k_EState::DEFAULT)
                 {
-                    state = playerlist::k_EState::CAT;
+                    if (ucccccp::validate(message))
+                    {
+                        std::string msg = ucccccp::decrypt(message);
+#if !LAGBOT_MODE
+                        //                        if (ucccccp::decrypt(message)
+                        //                        == "meow" &&
+                        //                            hacks::shared::antiaim::communicate
+                        //                            && data[0] !=
+                        //                            LOCAL_E->m_IDX &&
+                        //                            playerlist::AccessData(ENTITY(data[0])).state
+                        //                            !=
+                        //                                playerlist::k_EState::CAT)
+                        //                        {
+                        //                            playerlist::AccessData(ENTITY(data[0])).state
+                        //                            =
+                        //                                playerlist::k_EState::CAT;
+                        //                            chat_stack::Say("!!meow");
+                        //                        }
+                        CachedEntity *ent = ENTITY(cleaned_data[0]);
+                        if (msg != "Attempt at ucccccping and failing" &&
+                            msg != "Unsupported version" && ent != LOCAL_E)
+                        {
+                            auto &state = playerlist::AccessData(ent).state;
+                            if (state == playerlist::k_EState::DEFAULT)
+                            {
+                                state = playerlist::k_EState::CAT;
+                                if (*answerIdentify &&
+                                    sendmsg.test_and_set(5000))
+                                    chat_stack::Say("!!meow");
+                            }
+                            else if (state == playerlist::k_EState::CAT)
+                            {
+                                if (*answerIdentify &&
+                                    sendmsg.test_and_set(60000))
+                                    chat_stack::Say("!!meow");
+                            }
+                        }
+#endif
+                        PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
+                                  msg.c_str());
+                    }
                 }
             }
 #endif
