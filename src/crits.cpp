@@ -80,15 +80,6 @@ void unfuck_bucket(IClientEntity *weapon)
     last_bucket = bucket;
 }
 
-struct cached_calculation_s
-{
-    int command_number;
-    int init_command;
-    int weapon_entity;
-};
-
-cached_calculation_s cached_calculation{};
-
 static int number                = 0;
 static int lastnumber            = 0;
 static int lastusercmd           = 0;
@@ -101,12 +92,6 @@ void force_crit(IClientEntity *weapon, bool really_force)
     if (lastnumber < command_number || lastweapon != weapon->GetModel() ||
         lastnumber - command_number > 1000)
     {
-        /*if ((command_number &&
-             (cached_calculation.command_number < command_number)))
-            cached_calculation.weapon_entity = -1;
-        if (cached_calculation.weapon_entity == weapon->entindex())
-            return;*/
-
         number = find_next_random_crit_for_weapon(weapon);
     }
     else
@@ -114,17 +99,15 @@ void force_crit(IClientEntity *weapon, bool really_force)
     // logging::Info("Found critical: %d -> %d", command_number,
     //              number);
 
-    if (really_force)
-    {
-        if (number && number != command_number)
+    if (number && number != command_number) {
+        if (really_force)
             command_number_mod[command_number] = number;
-
-        cached_calculation.command_number = number;
-        cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
+        /* BUG: Travelling too far into future seems to cancel out
+         * current attack and make instant crit lag
+         */
+        if (really_force ? lastnumber != command_number : true)
+            current_user_cmd->buttons &= ~IN_ATTACK;
     }
-    if (number && number != command_number && number != lastnumber)
-        current_user_cmd->buttons &= ~IN_ATTACK;
-
     lastweapon = weapon->GetModel();
     lastnumber = number;
     return;

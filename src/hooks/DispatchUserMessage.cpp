@@ -85,9 +85,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     case 12:
         if (hacks::shared::catbot::anti_motd && hacks::shared::catbot::catbotmode)
         {
-            /*while (buf.GetNumBytesLeft())
-                data.push_back(buf.ReadByte());
-            buf.Seek(0);*/
             data = std::string(buf_data);
             if (data.find("class_") != data.npos)
                 return false;
@@ -96,8 +93,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     case 5:
         if (*anti_votekick && buf.GetNumBytesLeft() > 35)
         {
-            /*while (buf.GetNumBytesLeft())
-                data.push_back(buf.ReadByte());*/
             data = std::string(buf_data);
             logging::Info("%s", data.c_str());
             if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
@@ -118,8 +113,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
 
             data.push_back(c);
         }
-        /*boost::replace_all(data, "\n", "");
-        boost::replace_all(data, "\r", "");*/
         /* First byte is player ENT index
          * Second byte is unindentified (equals to 0x01)
          */
