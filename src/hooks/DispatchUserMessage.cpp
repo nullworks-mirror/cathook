@@ -118,7 +118,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         if (chat_filter_enable && data[0] == LOCAL_E->m_IDX &&
             event == "#TF_Name_Change")
         {
-            chat_stack::Say("." + clear, true);
+            chat_stack::Say("." + clear, false);
         }
         else if (chat_filter_enable && data[0] != LOCAL_E->m_IDX &&
             event.find("TF_Chat") == 0)
