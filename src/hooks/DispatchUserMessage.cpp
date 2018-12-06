@@ -39,7 +39,7 @@ namespace hooked_methods
 {
 
 template<typename T>
-void SplitName(std::vector<T> &ret, T name, int num)
+void SplitName(std::vector<T> &ret, const T &name, int num)
 {
     T tmp;
     int chars = 0;
@@ -67,7 +67,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         return original::DispatchUserMessage(this_, type, buf);
 
     int s, i, j;
-    std::string data;
+    char c;
+    const char *buf_data = reinterpret_cast<const char *>(buf.m_pData);
+
     /* Delayed print of name and message, censored by chat_filter
      * TO DO: Document type 47
      */
@@ -77,14 +79,16 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
                   lastfilter.c_str());
         retrun = false;
     }
+    std::string data;
     switch (type) {
 
     case 12:
         if (hacks::shared::catbot::anti_motd && hacks::shared::catbot::catbotmode)
         {
-            while (buf.GetNumBytesLeft())
+            /*while (buf.GetNumBytesLeft())
                 data.push_back(buf.ReadByte());
-            buf.Seek(0);
+            buf.Seek(0);*/
+            data = std::string(buf_data);
             if (data.find("class_") != data.npos)
                 return false;
         }
@@ -92,8 +96,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
     case 5:
         if (*anti_votekick && buf.GetNumBytesLeft() > 35)
         {
-            while (buf.GetNumBytesLeft())
-                data.push_back(buf.ReadByte());
+            /*while (buf.GetNumBytesLeft())
+                data.push_back(buf.ReadByte());*/
+            data = std::string(buf_data);
             logging::Info("%s", data.c_str());
             if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
                 g_IEngine->ClientCmd_Unrestricted("cat_disconnect;wait 100;cat_mm_join");
@@ -105,15 +110,20 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         if (s >= 256)
             break;
 
-        for (i = 0; i < s - 1; i++)
-            data.push_back(buf.ReadByte());
+        for (i = 0; i < s; i++) {
+            c = buf_data[i];
+            if (clean_chat && i > 1)
+                if (c == '\n' || c == '\r')
+                    continue;
 
-        if (clean_chat) {
-            boost::replace_all(data, "\n", "");
-            boost::replace_all(data, "\r", "");
+            data.push_back(c);
         }
-        const char *p = data.c_str();
-        p += std::strlen(p) + 1;
+        /*boost::replace_all(data, "\n", "");
+        boost::replace_all(data, "\r", "");*/
+        /* First byte is player ENT index
+         * Second byte is unindentified (equals to 0x01)
+         */
+        const char *p = data.c_str() + 2;
         std::string event(p), name((p += event.size() + 1)), message(p + name.size() + 1);
         if (chat_filter_enable && data[0] == LOCAL_E->m_IDX &&
             event == "#TF_Name_Change")
@@ -125,9 +135,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         {
             player_info_s info{};
             g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
-            std::string name1 = info.name;
-            std::vector<std::string> name2{};
-            std::string claz{};
+            std::string name1 = info.name, claz;
 
             switch (g_pLocalPlayer->clazz)
             {
@@ -229,8 +237,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
         i = 0;
         msg.clear();
         while (buf.GetNumBytesLeft()) {
-            char c = buf.ReadByte();
-            if (c)
+            if ((c = buf.ReadByte()))
                 msg.push_back(c);
             else {
                 logging::Info("[%d] %s", i++, msg.c_str());
