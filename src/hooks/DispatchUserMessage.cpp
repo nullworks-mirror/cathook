@@ -36,148 +36,164 @@ std::string lastname{};
 
 namespace hooked_methods
 {
-std::vector<std::string> SplitName(std::string name, int num)
+
+template<typename T>
+void SplitName(std::vector<T> &ret, const T &name, int num)
 {
-    std::string tmp{};
-    std::vector<std::string> name2{};
+    T tmp;
     int chars = 0;
     for (char i : name)
     {
         if (i == ' ')
             continue;
-        if (chars == num)
-        {
+
+        tmp.push_back(std::tolower(i));
+        ++chars;
+        if (chars == num + 1) {
             chars = 0;
-            tmp += i;
-            name2.push_back(tmp);
-            tmp = "";
-        }
-        else if (chars < num)
-        {
-            chars++;
-            tmp += i;
+            ret.push_back(tmp);
+            tmp.clear();
         }
     }
     if (tmp.size() > 2)
-        name2.push_back(tmp);
-    for (auto &i : name2)
-        boost::to_lower(i);
-    return name2;
+        ret.push_back(tmp);
 }
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &buf)
+
+DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type,
+                     bf_read &buf)
 {
     if (!isHackActive())
         return original::DispatchUserMessage(this_, type, buf);
 
-    if (type == 12 && hacks::shared::catbot::anti_motd && hacks::shared::catbot::catbotmode)
-    {
-        std::string message_name;
-        while (buf.GetNumBytesLeft())
-            message_name.push_back(buf.ReadByte());
-        buf.Seek(0);
-        if (message_name.find("class_") != message_name.npos)
-            return false;
-    }
+    int s, i, j;
+    char c;
+    const char *buf_data = reinterpret_cast<const char *>(buf.m_pData);
+
+    /* Delayed print of name and message, censored by chat_filter
+     * TO DO: Document type 47
+     */
     if (retrun && type != 47 && gitgud.test_and_set(300))
     {
         PrintChat("\x07%06X%s\x01: %s", 0xe05938, lastname.c_str(), lastfilter.c_str());
         retrun = false;
     }
-    int loop_index, s, i, j;
-    char c;
-    if (type == 5 && *anti_votekick)
-        if (buf.GetNumBytesLeft() > 35)
+    std::string data;
+    switch (type) {
+
+    case 12:
+        if (hacks::shared::catbot::anti_motd && hacks::shared::catbot::catbotmode)
         {
-            std::string message_name;
-            while (buf.GetNumBytesLeft())
-                message_name.push_back(buf.ReadByte());
-            logging::Info("%s", message_name.c_str());
-            if (message_name.find("TeamChangeP") != message_name.npos && CE_GOOD(LOCAL_E))
+            /*while (buf.GetNumBytesLeft())
+                data.push_back(buf.ReadByte());
+            buf.Seek(0);*/
+            data = std::string(buf_data);
+            if (data.find("class_") != data.npos)
+                return false;
+        }
+        break;
+    case 5:
+        if (*anti_votekick && buf.GetNumBytesLeft() > 35)
+        {
+            /*while (buf.GetNumBytesLeft())
+                data.push_back(buf.ReadByte());*/
+            data = std::string(buf_data);
+            logging::Info("%s", data.c_str());
+            if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
                 g_IEngine->ClientCmd_Unrestricted("cat_disconnect;wait 100;cat_mm_join");
             buf.Seek(0);
         }
+        break;
+    case 4:
+        s = buf.GetNumBytesLeft();
+        if (s >= 256)
+            break;
 
-    std::string cleaned_data;
-    if (type == 4)
-    {
-        loop_index = 0;
-        s          = buf.GetNumBytesLeft();
-        if (s < 256)
+        for (i = 0; i < s; i++) {
+            c = buf_data[i];
+            if (clean_chat && i > 1)
+                if (c == '\n' || c == '\r')
+                    continue;
+
+            data.push_back(c);
+        }
+        /*boost::replace_all(data, "\n", "");
+        boost::replace_all(data, "\r", "");*/
+        /* First byte is player ENT index
+         * Second byte is unindentified (equals to 0x01)
+         */
+        const char *p = data.c_str() + 2;
+        std::string event(p), name((p += event.size() + 1)), message(p + name.size() + 1);
+        if (chat_filter_enable && data[0] == LOCAL_E->m_IDX &&
+            event == "#TF_Name_Change")
         {
-            std::string data;
-            for (i = 0; i < s; i++)
-            {
-                char to_app = buf.ReadByte();
-                data.push_back(to_app);
-            }
-            data     = data.substr(0, data.size() - 1);
-            int indx = 0;
-            for (auto i : data)
-            {
-                if (clean_chat)
-                {
-                    if (indx && (i == '\n' || i == '\r'))
-                    {
-                    }
-                    else
-                        cleaned_data.push_back(i);
-                    indx++;
-                }
-            }
-            if (!*clean_chat)
-                cleaned_data = data;
-            j = 0;
-            std::string name{};
-            std::string message{};
-            for (i = 0; i < 3; i++)
-            {
-                while ((c = cleaned_data[j++]) && (loop_index < s) && (loop_index < cleaned_data.size()))
-                {
-                    loop_index++;
-                    if (i == 1)
-                        name.push_back(c);
-                    if (i == 2)
-                        message.push_back(c);
-                }
-            }
-            if (chat_filter_enable && cleaned_data[0] != LOCAL_E->m_IDX)
-            {
-                player_info_s info{};
-                g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
-                std::string name1 = info.name;
-                std::vector<std::string> name2{};
-                std::string claz{};
+            chat_stack::Say("." + clear, false);
+        }
+        else if (chat_filter_enable && data[0] != LOCAL_E->m_IDX &&
+            event.find("TF_Chat") == 0)
+        {
+            player_info_s info{};
+            g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
+            std::string name1 = info.name, claz;
 
-                switch (g_pLocalPlayer->clazz)
+            switch (g_pLocalPlayer->clazz)
+            {
+            case tf_scout:
+                claz = "scout";
+                break;
+            case tf_soldier:
+                claz = "soldier";
+                break;
+            case tf_pyro:
+                claz = "pyro";
+                break;
+            case tf_demoman:
+                claz = "demo";
+                break;
+            case tf_engineer:
+                claz = "engi";
+                break;
+            case tf_heavy:
+                claz = "heavy";
+                break;
+            case tf_medic:
+                claz = "med";
+                break;
+            case tf_sniper:
+                claz = "sniper";
+                break;
+            case tf_spy:
+                claz = "spy";
+                break;
+            default:
+                break;
+            }
+
+            std::vector<std::string> res = {
+                "skid", "script", "cheat", "hak",   "hac",  "f1",
+                "hax",  "vac",    "ban",   "bot",  "report", "kick",
+                claz
+            };
+            SplitName(res, name1, 2);
+            SplitName(res, name1, 3);
+
+            std::string message2(message);
+            boost::to_lower(message2);
+
+            const char *toreplace[] = { " ", "4", "3", "0", "6", "5", "7" };
+            const char *replacewith[] = { "",  "a", "e", "o", "g", "s", "t" };
+
+            for (int i = 0; i < 7; i++)
+                boost::replace_all(message2, toreplace[i], replacewith[i]);
+
+            for (auto filter : res)
+                if (boost::contains(message2, filter))
                 {
-                case tf_scout:
-                    claz = "scout";
-                    break;
-                case tf_soldier:
-                    claz = "soldier";
-                    break;
-                case tf_pyro:
-                    claz = "pyro";
-                    break;
-                case tf_demoman:
-                    claz = "demo";
-                    break;
-                case tf_engineer:
-                    claz = "engi";
-                    break;
-                case tf_heavy:
-                    claz = "heavy";
-                    break;
-                case tf_medic:
-                    claz = "med";
-                    break;
-                case tf_sniper:
-                    claz = "sniper";
-                    break;
-                case tf_spy:
-                    claz = "spy";
-                    break;
-                default:
+                    chat_stack::Say("." + clear, true);
+                    retrun     = true;
+                    lastfilter = message;
+                    lastname   = format(name);
+                    gitgud.update();
                     break;
                 }
 
@@ -209,7 +225,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
             }
             if (crypt_chat)
             {
-                if (message.find("!!B") == 0)
+                auto &state = playerlist::AccessData(ent).state;
+                if (state == playerlist::k_EState::DEFAULT)
                 {
                     if (ucccccp::validate(message))
                     {
@@ -243,21 +260,38 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                     }
                 }
             }
-            chatlog::LogMessage(cleaned_data[0], message);
-            buf = bf_read(cleaned_data.c_str(), cleaned_data.size());
-            buf.Seek(0);
+#endif
+            PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(),
+                      msg.c_str());
         }
+        chatlog::LogMessage(data[0], message);
+        buf = bf_read(data.c_str(), data.size());
+        buf.Seek(0);
+        break;
+
     }
     if (dispatch_log)
     {
         logging::Info("D> %i", type);
-        std::ostringstream str{};
+        std::ostringstream str;
         while (buf.GetNumBytesLeft())
-        {
-            unsigned char byte = buf.ReadByte();
-            str << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << ' ';
+            str << std::hex << std::setw(2) << std::setfill('0')
+                << static_cast<int>(buf.ReadByte()) << ' ';
+
+        std::string msg(str.str());
+        logging::Info("MESSAGE %d, DATA = [ %s ] strings listed below", type, msg.c_str());
+        buf.Seek(0);
+
+        i = 0;
+        msg.clear();
+        while (buf.GetNumBytesLeft()) {
+            if ((c = buf.ReadByte()))
+                msg.push_back(c);
+            else {
+                logging::Info("[%d] %s", i++, msg.c_str());
+                msg.clear();
+            }
         }
-        logging::Info("MESSAGE %d, DATA = [ %s ]", type, str.str().c_str());
         buf.Seek(0);
     }
     votelogger::dispatchUserMessage(buf, type);
