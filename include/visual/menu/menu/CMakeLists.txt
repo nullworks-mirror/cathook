@@ -1,3 +1,7 @@
-file(GLOB_RECURSE Source ${CMAKE_CURRENT_LIST_DIR}/*.hpp)
-
-target_sources(cathook PRIVATE ${Source})
+target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}")
+target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/interface")
+target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/object")
+target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/object/container")
+target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/object/input")
+target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/special")
+target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/wm")
