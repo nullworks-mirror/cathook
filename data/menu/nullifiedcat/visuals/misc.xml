@@ -1,5 +1,5 @@
 <Tab name="Misc Visuals" padding="4 4 4 4">
-    <List width="150">
+    <List width="400">
         <AutoVariable width="fill" target="visual.clean-screenshots" label="Clean Screenshots"/>
         <AutoVariable width="fill" target="visual.disable" label="Disable Visuals"/>
         <AutoVariable width="fill" target="visual.fov" label="FOV"/>
@@ -19,5 +19,10 @@
         <AutoVariable width="fill" target="visual.sv-pure-bypass" label="SV Pure bypass"/>
         <AutoVariable width="fill" target="visual.thirdperson.enable" label="Thirdperson"/>
         <AutoVariable width="fill" target="visual.thirdperson.real-angles" label="Show Angles in thirdperson"/>
+        <AutoVariable width="fill" target="visual.snowflakes" label="Enable Snowflakes"/>
+        <AutoVariable width="fill" target="visual.snowflakes.fall-speed.min" label="Minimum fall speed"/>
+        <AutoVariable width="fill" target="visual.snowflakes.fall-speed.max" label="Maximum fall speed"/>
+        <AutoVariable width="fill" target="visual.snowflakes.sideways-speed.min" label="Minimum sidemove speed"/>
+        <AutoVariable width="fill" target="visual.snowflakes.sideways-speed.max" label="Maximum sidemove speed"/>
     </List>
 </Tab>
