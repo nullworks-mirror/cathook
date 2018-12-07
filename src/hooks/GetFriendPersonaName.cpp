@@ -137,6 +137,9 @@ const char *GetNamestealName(CSteamID steam_id)
     {
         auto new_name = force_name.toString();
         ReplaceString(new_name, "\\n", "\n");
+        ReplaceString(new_name, "\\015", "\015");
+        ReplaceString(new_name, "\\u200F", "\u200F");
+
         return new_name.c_str();
     }
     return nullptr;
