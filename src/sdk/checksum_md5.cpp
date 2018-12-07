@@ -23,8 +23,7 @@
 #define F4(x, y, z) (y ^ (x | ~z))
 
 // This is the central step in the MD5 algorithm.
-#define MD5STEP(f, w, x, y, z, data, s)                                        \
-    (w += f(x, y, z) + data, w = w << s | w >> (32 - s), w += x)
+#define MD5STEP(f, w, x, y, z, data, s) (w += f(x, y, z) + data, w = w << s | w >> (32 - s), w += x)
 
 //-----------------------------------------------------------------------------
 // Purpose: The core of the MD5 algorithm, this alters an existing MD5 hash to
@@ -268,8 +267,7 @@ unsigned int MD5_PseudoRandom(unsigned int nSeed)
     MD5Update(&ctx, (unsigned char *) &nSeed, sizeof(nSeed));
     MD5Final(digest, &ctx);
 
-    return *(unsigned int *) (digest +
-                              6); // use 4 middle bytes for random value
+    return *(unsigned int *) (digest + 6); // use 4 middle bytes for random value
 }
 
 //-----------------------------------------------------------------------------

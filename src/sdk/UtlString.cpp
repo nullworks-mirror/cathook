@@ -48,9 +48,8 @@ void CUtlString::SetDirect(const char *pValue, int nChars)
     {
         if (pValue == m_pString)
         {
-            AssertMsg(nChars == Q_strlen(m_pString),
-                      "CUtlString::SetDirect does not support resizing strings "
-                      "in place.");
+            AssertMsg(nChars == Q_strlen(m_pString), "CUtlString::SetDirect does not support resizing strings "
+                                                     "in place.");
             return; // Do nothing. Realloc in AllocMemory might move pValue's
                     // location resulting in a bad memcpy.
         }
@@ -629,11 +628,9 @@ CUtlString CUtlString::Replace(const char *pszFrom, const char *pszTo) const
         // Found an instance
         int nCurrentSearchOffset = pos - String();
         int nCopyLength          = nCurrentSearchOffset - nSrcOffset;
-        V_strncpy(strDest.GetForModify() + nDestOffset, String() + nSrcOffset,
-                  nCopyLength + 1);
+        V_strncpy(strDest.GetForModify() + nDestOffset, String() + nSrcOffset, nCopyLength + 1);
         nDestOffset += nCopyLength;
-        V_strncpy(strDest.GetForModify() + nDestOffset, pszTo,
-                  nReplaceLength + 1);
+        V_strncpy(strDest.GetForModify() + nDestOffset, pszTo, nReplaceLength + 1);
         nDestOffset += nReplaceLength;
 
         nSrcOffset = nCurrentSearchOffset + nSearchLength;
@@ -645,8 +642,7 @@ CUtlString CUtlString::Replace(const char *pszFrom, const char *pszTo) const
     Assert(destLength - nDestOffset == srcLength - nSrcOffset);
     if (destLength - nDestOffset > 0)
     {
-        V_strncpy(strDest.GetForModify() + nDestOffset, String() + nSrcOffset,
-                  destLength - nDestOffset + 1);
+        V_strncpy(strDest.GetForModify() + nDestOffset, String() + nSrcOffset, destLength - nDestOffset + 1);
     }
 
     return strDest;
@@ -682,9 +678,8 @@ CUtlString CUtlString::StripExtension() const
 
 CUtlString CUtlString::StripFilename() const
 {
-    const char *pFilename = V_UnqualifiedFileName(
-        Get()); // NOTE: returns 'Get()' on failure, never NULL
-    int nCharsToCopy = pFilename - Get();
+    const char *pFilename = V_UnqualifiedFileName(Get()); // NOTE: returns 'Get()' on failure, never NULL
+    int nCharsToCopy      = pFilename - Get();
     CUtlString result;
     result.SetDirect(Get(), nCharsToCopy);
     result.StripTrailingSlash();
@@ -751,9 +746,7 @@ void CUtlString::Append(const char *pchAddition, int nChars)
 
     AllocMemory(requestedLength);
     const int allocatedLength(requestedLength);
-    const int copyLength(allocatedLength - lhsLength < rhsLength
-                             ? allocatedLength - lhsLength
-                             : rhsLength);
+    const int copyLength(allocatedLength - lhsLength < rhsLength ? allocatedLength - lhsLength : rhsLength);
     memcpy(GetForModify() + lhsLength, pchAddition, copyLength);
     m_pString[allocatedLength] = '\0';
 }

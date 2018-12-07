@@ -420,7 +420,7 @@ void level_init()
 }
 
 #if ENABLE_VISUALS
-static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3, [](){
+static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3, []() {
     if (!catbotmode || !anti_motd)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())

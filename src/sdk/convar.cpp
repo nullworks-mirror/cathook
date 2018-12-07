@@ -39,9 +39,8 @@
 ConCommandBase *ConCommandBase::s_pConCommandBases   = NULL;
 IConCommandBaseAccessor *ConCommandBase::s_pAccessor = NULL;
 static int s_nCVarFlag                               = 0;
-static int s_nDLLIdentifier =
-    -1; // A unique identifier indicating which DLL this convar came from
-static bool s_bRegistered = false;
+static int s_nDLLIdentifier                          = -1; // A unique identifier indicating which DLL this convar came from
+static bool s_bRegistered                            = false;
 
 void SetCVarInterface(ICvar *iface)
 {
@@ -121,9 +120,7 @@ ConCommandBase::ConCommandBase(void)
 //			*pHelpString - help text
 //			flags - flags
 //-----------------------------------------------------------------------------
-ConCommandBase::ConCommandBase(const char *pName,
-                               const char *pHelpString /*=0*/,
-                               int flags /*= 0*/)
+ConCommandBase::ConCommandBase(const char *pName, const char *pHelpString /*=0*/, int flags /*= 0*/)
 {
     CreateBase(pName, pHelpString, flags);
 }
@@ -161,9 +158,7 @@ CVarDLLIdentifier_t ConCommandBase::GetDLLIdentifier() const
 //			*pHelpString -
 //			flags -
 //-----------------------------------------------------------------------------
-void ConCommandBase::CreateBase(const char *pName,
-                                const char *pHelpString /*= 0*/,
-                                int flags /*= 0*/)
+void ConCommandBase::CreateBase(const char *pName, const char *pHelpString /*= 0*/, int flags /*= 0*/)
 {
     m_bRegistered = false;
 
@@ -414,8 +409,7 @@ bool CCommand::Tokenize(const char *pCommand, characterset_t *pBreakSet)
     memcpy(m_pArgSBuffer, pCommand, nLen + 1);
 
     // Parse the current command into the current command buffer
-    CUtlBuffer bufParse(m_pArgSBuffer, nLen,
-                        CUtlBuffer::TEXT_BUFFER | CUtlBuffer::READ_ONLY);
+    CUtlBuffer bufParse(m_pArgSBuffer, nLen, CUtlBuffer::TEXT_BUFFER | CUtlBuffer::READ_ONLY);
     int nArgvBufferSize = 0;
     while (bufParse.IsValid() && (m_nArgc < COMMAND_MAX_ARGC))
     {
@@ -447,8 +441,7 @@ bool CCommand::Tokenize(const char *pCommand, characterset_t *pBreakSet)
 
             // The StartGet check is to handle this case: "foo"bar
             // which will parse into 2 different args. ArgS should point to bar.
-            bool bFoundStartQuote = (m_nArgv0Size > nStartGet) &&
-                                    (m_pArgSBuffer[m_nArgv0Size - 1] == '\"');
+            bool bFoundStartQuote = (m_nArgv0Size > nStartGet) && (m_pArgSBuffer[m_nArgv0Size - 1] == '\"');
             Assert(bFoundEndQuote == bFoundStartQuote);
             if (bFoundStartQuote)
             {
@@ -496,9 +489,7 @@ int CCommand::FindArgInt(const char *pName, int nDefaultVal) const
 //-----------------------------------------------------------------------------
 // Default console command autocompletion function
 //-----------------------------------------------------------------------------
-int DefaultCompletionFunc(
-    const char *partial,
-    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+int DefaultCompletionFunc(const char *partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     return 0;
 }
@@ -511,31 +502,25 @@ int DefaultCompletionFunc(
 //	m_bIsNewConCommand = true;
 //}
 
-ConCommand::ConCommand(const char *pName, FnCommandCallbackVoid_t callback,
-                       const char *pHelpString /*= 0*/, int flags /*= 0*/,
-                       FnCommandCompletionCallback completionFunc /*= 0*/)
+ConCommand::ConCommand(const char *pName, FnCommandCallbackVoid_t callback, const char *pHelpString /*= 0*/, int flags /*= 0*/, FnCommandCompletionCallback completionFunc /*= 0*/)
 {
     // Set the callback
     m_fnCommandCallbackV1            = callback;
     m_bUsingNewCommandCallback       = false;
     m_bUsingCommandCallbackInterface = false;
-    m_fnCompletionCallback =
-        completionFunc ? completionFunc : DefaultCompletionFunc;
-    m_bHasCompletionCallback = completionFunc != 0 ? true : false;
+    m_fnCompletionCallback           = completionFunc ? completionFunc : DefaultCompletionFunc;
+    m_bHasCompletionCallback         = completionFunc != 0 ? true : false;
 
     // Setup the rest
     BaseClass::CreateBase(pName, pHelpString, flags);
 }
 
-ConCommand::ConCommand(const char *pName, FnCommandCallback_t callback,
-                       const char *pHelpString /*= 0*/, int flags /*= 0*/,
-                       FnCommandCompletionCallback completionFunc /*= 0*/)
+ConCommand::ConCommand(const char *pName, FnCommandCallback_t callback, const char *pHelpString /*= 0*/, int flags /*= 0*/, FnCommandCompletionCallback completionFunc /*= 0*/)
 {
     // Set the callback
-    m_fnCommandCallback        = callback;
-    m_bUsingNewCommandCallback = true;
-    m_fnCompletionCallback =
-        completionFunc ? completionFunc : DefaultCompletionFunc;
+    m_fnCommandCallback              = callback;
+    m_bUsingNewCommandCallback       = true;
+    m_fnCompletionCallback           = completionFunc ? completionFunc : DefaultCompletionFunc;
     m_bHasCompletionCallback         = completionFunc != 0 ? true : false;
     m_bUsingCommandCallbackInterface = false;
 
@@ -543,9 +528,7 @@ ConCommand::ConCommand(const char *pName, FnCommandCallback_t callback,
     BaseClass::CreateBase(pName, pHelpString, flags);
 }
 
-ConCommand::ConCommand(const char *pName, ICommandCallback *pCallback,
-                       const char *pHelpString /*= 0*/, int flags /*= 0*/,
-                       ICommandCompletionCallback *pCompletionCallback /*= 0*/)
+ConCommand::ConCommand(const char *pName, ICommandCallback *pCallback, const char *pHelpString /*= 0*/, int flags /*= 0*/, ICommandCompletionCallback *pCompletionCallback /*= 0*/)
 {
     // Set the callback
     m_pCommandCallback               = pCallback;
@@ -604,30 +587,26 @@ void ConCommand::Dispatch(const CCommand &command)
     }
 
     // Command without callback!!!
-    AssertMsg(0, "Encountered ConCommand '%s' without a callback!\n",
-              GetName());
+    AssertMsg(0, "Encountered ConCommand '%s' without a callback!\n", GetName());
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Calls the autocompletion method to get autocompletion suggestions
 //-----------------------------------------------------------------------------
-int ConCommand::AutoCompleteSuggest(const char *partial,
-                                    CUtlVector<CUtlString> &commands)
+int ConCommand::AutoCompleteSuggest(const char *partial, CUtlVector<CUtlString> &commands)
 {
     if (m_bUsingCommandCallbackInterface)
     {
         if (!m_pCommandCompletionCallback)
             return 0;
-        return m_pCommandCompletionCallback->CommandCompletionCallback(
-            partial, commands);
+        return m_pCommandCompletionCallback->CommandCompletionCallback(partial, commands);
     }
 
     Assert(m_fnCompletionCallback);
     if (!m_fnCompletionCallback)
         return 0;
 
-    char rgpchCommands[COMMAND_COMPLETION_MAXITEMS]
-                      [COMMAND_COMPLETION_ITEM_LENGTH];
+    char rgpchCommands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH];
     int iret = (m_fnCompletionCallback)(partial, rgpchCommands);
     for (int i = 0; i < iret; ++i)
     {
@@ -654,38 +633,29 @@ bool ConCommand::CanAutoComplete(void)
 //-----------------------------------------------------------------------------
 // Various constructors
 //-----------------------------------------------------------------------------
-ConVar::ConVar(const char *pName, const char *pDefaultValue,
-               int flags /* = 0 */)
+ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags /* = 0 */)
 {
     Create(pName, pDefaultValue, flags);
 }
 
-ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags,
-               const char *pHelpString)
+ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags, const char *pHelpString)
 {
     Create(pName, pDefaultValue, flags, pHelpString);
 }
 
-ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags,
-               const char *pHelpString, bool bMin, float fMin, bool bMax,
-               float fMax)
+ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags, const char *pHelpString, bool bMin, float fMin, bool bMax, float fMax)
 {
     Create(pName, pDefaultValue, flags, pHelpString, bMin, fMin, bMax, fMax);
 }
 
-ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags,
-               const char *pHelpString, FnChangeCallback_t callback)
+ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags, const char *pHelpString, FnChangeCallback_t callback)
 {
-    Create(pName, pDefaultValue, flags, pHelpString, false, 0.0, false, 0.0,
-           callback);
+    Create(pName, pDefaultValue, flags, pHelpString, false, 0.0, false, 0.0, callback);
 }
 
-ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags,
-               const char *pHelpString, bool bMin, float fMin, bool bMax,
-               float fMax, FnChangeCallback_t callback)
+ConVar::ConVar(const char *pName, const char *pDefaultValue, int flags, const char *pHelpString, bool bMin, float fMin, bool bMax, float fMax, FnChangeCallback_t callback)
 {
-    Create(pName, pDefaultValue, flags, pHelpString, bMin, fMin, bMax, fMax,
-           callback);
+    Create(pName, pDefaultValue, flags, pHelpString, bMin, fMin, bMax, fMax, callback);
 }
 
 //-----------------------------------------------------------------------------
@@ -964,11 +934,7 @@ void ConVar::InternalSetIntValue(int nValue)
 //-----------------------------------------------------------------------------
 // Purpose: Private creation
 //-----------------------------------------------------------------------------
-void ConVar::Create(const char *pName, const char *pDefaultValue,
-                    int flags /*= 0*/, const char *pHelpString /*= NULL*/,
-                    bool bMin /*= false*/, float fMin /*= 0.0*/,
-                    bool bMax /*= false*/, float fMax /*= false*/,
-                    FnChangeCallback_t callback /*= NULL*/)
+void ConVar::Create(const char *pName, const char *pDefaultValue, int flags /*= 0*/, const char *pHelpString /*= NULL*/, bool bMin /*= false*/, float fMin /*= 0.0*/, bool bMax /*= false*/, float fMax /*= false*/, FnChangeCallback_t callback /*= NULL*/)
 {
     m_pParent = this;
 
@@ -987,8 +953,7 @@ void ConVar::Create(const char *pName, const char *pDefaultValue,
     m_fnChangeCallback = callback;
 
     m_fValue = (float) atof(m_pszString);
-    m_nValue =
-        atoi(m_pszString); // dont convert from float to int and lose bits
+    m_nValue = atoi(m_pszString); // dont convert from float to int and lose bits
 
     // Bounds Check, should never happen, if it does, no big deal
     if (m_bHasMin && (m_fValue < m_fMinVal))
@@ -1137,8 +1102,7 @@ void ConVarRef::Init(const char *pName, bool bIgnoreMissing)
         {
             if (!bIgnoreMissing)
             {
-                Warning("ConVarRef %s doesn't point to an existing ConVar\n",
-                        pName);
+                Warning("ConVarRef %s doesn't point to an existing ConVar\n", pName);
             }
             bFirst = false;
         }
@@ -1244,9 +1208,8 @@ void ConVar_PrintDescription(const ConCommandBase *pVar)
 
     if (!pVar->IsCommand())
     {
-        ConVar *var = (ConVar *) pVar;
-        const ConVar_ServerBounded *pBounded =
-            dynamic_cast<const ConVar_ServerBounded *>(var);
+        ConVar *var                          = (ConVar *) pVar;
+        const ConVar_ServerBounded *pBounded = dynamic_cast<const ConVar_ServerBounded *>(var);
 
         bMin = var->GetMin(fMin);
         bMax = var->GetMax(fMax);

@@ -35,8 +35,7 @@ CatCommand test("crit_debug_print", "debug", []() {
 });
 int find_next_random_crit_for_weapon(IClientEntity *weapon)
 {
-    int tries = 0, number = current_user_cmd->command_number, found = 0, seed,
-        seed_md5, seed_backup;
+    int tries = 0, number = current_user_cmd->command_number, found = 0, seed, seed_md5, seed_backup;
 
     crithack_saved_state state{};
     state.Save(weapon);
@@ -46,8 +45,8 @@ int find_next_random_crit_for_weapon(IClientEntity *weapon)
     {
         seed_md5                = MD5_PseudoRandom(number) & 0x7FFFFFFF;
         *g_PredictionRandomSeed = seed_md5;
-        seed  = seed_md5 ^ (LOCAL_E->m_IDX | (LOCAL_W->m_IDX << 8));
-        found = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
+        seed                    = seed_md5 ^ (LOCAL_E->m_IDX | (LOCAL_W->m_IDX << 8));
+        found                   = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
         if (found)
             break;
         ++tries;
@@ -104,10 +103,7 @@ bool force_crit(IClientEntity *weapon)
 
     if (lastnumber < command_number || lastweapon != weapon->GetModel() || lastnumber - command_number > 1000)
     {
-        if (cached_calculation.init_command > command_number ||
-            command_number - cached_calculation.init_command > 4096 ||
-            (command_number &&
-             (cached_calculation.command_number < command_number)))
+        if (cached_calculation.init_command > command_number || command_number - cached_calculation.init_command > 4096 || (command_number && (cached_calculation.command_number < command_number)))
             cached_calculation.weapon_entity = 0;
         if (cached_calculation.weapon_entity == weapon->entindex())
             return bool(cached_calculation.command_number);
@@ -150,8 +146,7 @@ bool force_crit(IClientEntity *weapon)
         }
         else
         {
-            if (command_number + 30 > number && number &&
-                number != command_number)
+            if (command_number + 30 > number && number && number != command_number)
                 current_user_cmd->buttons &= ~IN_ATTACK;
             else
                 current_user_cmd->buttons |= IN_ATTACK;
@@ -176,15 +171,11 @@ void create_move()
     if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon))
         return;
     unfuck_bucket(weapon);
-    if ((current_user_cmd->buttons & IN_ATTACK) && crit_key &&
-        crit_key.isKeyDown() && current_user_cmd->command_number)
+    if ((current_user_cmd->buttons & IN_ATTACK) && crit_key && crit_key.isKeyDown() && current_user_cmd->command_number)
     {
         force_crit(weapon);
     }
-    else if ((current_user_cmd->buttons & IN_ATTACK) &&
-             current_user_cmd->command_number &&
-             GetWeaponMode() == weapon_melee && crit_melee &&
-             g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
+    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number && GetWeaponMode() == weapon_melee && crit_melee && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
     {
         force_crit(weapon);
     }
