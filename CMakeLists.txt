@@ -136,7 +136,7 @@ add_subdirectory(src)
 add_subdirectory(include)
 add_subdirectory(external)
 
-set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp")
+set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp", "${CMAKE_SOURCE_DIR}/include/hacks/hacklist.hpp")
 cotire(cathook)
 
 add_custom_command(TARGET cathook POST_BUILD
