@@ -11,11 +11,11 @@
 
 bf_write::bf_write()
 {
-    m_pData      = NULL;
-    m_nDataBytes = 0;
-    m_nDataBits  = -1; // set to -1 so we generate overflow on any operation
-    m_iCurBit    = 0;
-    m_bOverflow  = false;
+    m_pData             = NULL;
+    m_nDataBytes        = 0;
+    m_nDataBits         = -1; // set to -1 so we generate overflow on any operation
+    m_iCurBit           = 0;
+    m_bOverflow         = false;
     m_bAssertOnOverflow = true;
     m_pDebugName        = NULL;
 }
@@ -45,12 +45,10 @@ public:
         {
             for (unsigned int nBitsLeft = 0; nBitsLeft < 33; nBitsLeft++)
             {
-                unsigned int endbit = startbit + nBitsLeft;
-                g_BitWriteMasks[startbit][nBitsLeft] =
-                    BitForBitnum(startbit) - 1;
+                unsigned int endbit                  = startbit + nBitsLeft;
+                g_BitWriteMasks[startbit][nBitsLeft] = BitForBitnum(startbit) - 1;
                 if (endbit < 32)
-                    g_BitWriteMasks[startbit][nBitsLeft] |=
-                        ~(BitForBitnum(endbit) - 1);
+                    g_BitWriteMasks[startbit][nBitsLeft] |= ~(BitForBitnum(endbit) - 1);
             }
         }
 
@@ -239,16 +237,14 @@ bf_read::bf_read(const void *pData, int nBytes, int nBits)
     StartReading(pData, nBytes, 0, nBits);
 }
 
-bf_read::bf_read(const char *pDebugName, const void *pData, int nBytes,
-                 int nBits)
+bf_read::bf_read(const char *pDebugName, const void *pData, int nBytes, int nBits)
 {
     m_bAssertOnOverflow = true;
     m_pDebugName        = pDebugName;
     StartReading(pData, nBytes, 0, nBits);
 }
 
-void bf_read::StartReading(const void *pData, int nBytes, int iStartBit,
-                           int nBits)
+void bf_read::StartReading(const void *pData, int nBytes, int iStartBit, int nBits)
 {
     // Make sure we're dword aligned.
     Assert(((unsigned long) pData & 3) == 0);
@@ -369,9 +365,7 @@ bool CLC_RespondCvarValue::ReadFromBuffer(bf_read &buffer)
 
 const char *CLC_RespondCvarValue::ToString(void) const
 {
-    return strfmt("%s: status: %d, value: %s, cookie: %d", GetName(),
-                  m_eStatusCode, m_szCvarValue, m_iCookie)
-        .get();
+    return strfmt("%s: status: %d, value: %s, cookie: %d", GetName(), m_eStatusCode, m_szCvarValue, m_iCookie).get();
 }
 
 bool NET_NOP::WriteToBuffer(bf_write &buffer)
@@ -409,9 +403,7 @@ bool NET_SignonState::ReadFromBuffer(bf_read &buffer)
 
 const char *NET_SignonState::ToString(void) const
 {
-    return strfmt("net_SignonState: state %i, count %i", m_nSignonState,
-                  m_nSpawnCount)
-        .get();
+    return strfmt("net_SignonState: state %i, count %i", m_nSignonState, m_nSpawnCount).get();
 }
 
 const char *CLC_VoiceData::ToString(void) const
@@ -444,9 +436,7 @@ bool CLC_VoiceData::ReadFromBuffer(bf_read &buffer)
 #define MAX_BACKUP_COMMANDS ((1 << NUM_BACKUP_COMMAND_BITS) - 1)
 const char *CLC_Move::ToString(void) const
 {
-    return strfmt("%s: backup %i, new %i, bytes %i", GetName(), m_nNewCommands,
-                  m_nBackupCommands, Bits2Bytes(m_nLength))
-        .get();
+    return strfmt("%s: backup %i, new %i, bytes %i", GetName(), m_nNewCommands, m_nBackupCommands, Bits2Bytes(m_nLength)).get();
 }
 
 bool CLC_Move::WriteToBuffer(bf_write &buffer)
@@ -520,8 +510,7 @@ const char *NET_SetConVar::ToString(void) const
 bool NET_StringCmd::WriteToBuffer(bf_write &buffer)
 {
     buffer.WriteUBitLong(GetType(), 6);
-    return buffer.WriteString(m_szCommand ? m_szCommand
-                                          : " NET_StringCmd NULL");
+    return buffer.WriteString(m_szCommand ? m_szCommand : " NET_StringCmd NULL");
 }
 
 bool NET_StringCmd::ReadFromBuffer(bf_read &buffer)

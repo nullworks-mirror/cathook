@@ -90,31 +90,49 @@ void DrawCheatVisuals()
 
         if (zerokernel::Menu::instance && !zerokernel::Menu::instance->isInGame())
         {
+            // used to count current vector index
             int idx = 0;
             for (snowflake &flake : snowflakes)
             {
+                // Only cache texture once, saves processing time
                 static textures::sprite snowflake_sprite(256, 0, 16, 16, textures::atlas());
+                // Draw at the pos
                 snowflake_sprite.draw(flake.pos.x, flake.pos.y, 16, 16, colors::white);
+                // about 30fps
                 if (flake_update.check(33))
                 {
                     flake.pos += flake.angle;
-                    float new_down = getRandom(fminf(*snowflake_min_down, flake.angle.y-0.01f), fmaxf(*snowflake_max_down, flake.angle.x+0.01f));
-                    float new_side = getRandom(fminf(*snowflake_min_side, flake.angle.x-0.01f), fmaxf(*snowflake_max_side, flake.angle.x+0.01f));
-                    flake.angle = {new_side, new_down};
+
+                    // Get a new value so the snowflakes look a bit more natural, don#t dip below min/go above max.
+                    float rand_down_min = fminf(*snowflake_min_down, flake.angle.y - 0.01f);
+                    float rand_down_max = fmaxf(*snowflake_max_down, flake.angle.x + 0.01f);
+                    float rand_side_min = fminf(*snowflake_min_side, flake.angle.x - 0.01f);
+                    float rand_side_max = fmaxf(*snowflake_max_side, flake.angle.x + 0.01f);
+                    float new_down      = getRandom(rand_down_min, rand_down_max);
+                    float new_side      = getRandom(rand_side_min, rand_side_max);
+                    // Store new angle
+                    flake.angle = { new_side, new_down };
+                    // Delet offscreen
                     if (flake.pos.x > draw::width || flake.pos.x < 0 || flake.pos.y > draw::height)
-                    snowflakes.erase(snowflakes.begin()+idx);
+                        snowflakes.erase(snowflakes.begin() + idx);
                 }
                 idx++;
             }
+            // Update the timer for our 30fps
             flake_update.test_and_set(33);
+            // Spawn a snowflake every 900ms
             if (snowflake_spawn.test_and_set(900))
             {
+                // Get speeds
                 float down_speed = getRandom(*snowflake_min_down, *snowflake_max_down);
                 float side_speed = getRandom(*snowflake_min_side, *snowflake_max_side);
-                float start_pos = getRandom(draw::width*0.1f, draw::width*0.9f);
+                // Position, prevent offscreen spawns
+                float start_pos = getRandom(draw::width * 0.1f, draw::width * 0.9f);
                 snowflake new_flake{};
-                new_flake.pos = {start_pos, 0.0f};
-                new_flake.angle = {side_speed, down_speed};
+                new_flake.pos = { start_pos, 0.0f };
+                // x = left right, which is side speed, y = down/up, which is down speed
+                new_flake.angle = { side_speed, down_speed };
+                // Store
                 snowflakes.push_back(new_flake);
             }
         }

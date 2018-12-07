@@ -24,10 +24,7 @@
 //-----------------------------------------------------------------------------
 // constructor, destructor
 //-----------------------------------------------------------------------------
-CMaterialReference::CMaterialReference(char const *pMaterialName,
-                                       const char *pTextureGroupName,
-                                       bool bComplain)
-    : m_pMaterial(0)
+CMaterialReference::CMaterialReference(char const *pMaterialName, const char *pTextureGroupName, bool bComplain) : m_pMaterial(0)
 {
     if (pMaterialName)
     {
@@ -44,19 +41,16 @@ CMaterialReference::~CMaterialReference()
 //-----------------------------------------------------------------------------
 // Attach to a material
 //-----------------------------------------------------------------------------
-void CMaterialReference::Init(char const *pMaterialName,
-                              const char *pTextureGroupName, bool bComplain)
+void CMaterialReference::Init(char const *pMaterialName, const char *pTextureGroupName, bool bComplain)
 {
     IMaterial *pMaterial;
     IF_GAME(IsTF2())
     {
-        pMaterial = g_IMaterialSystem->FindMaterial(
-            pMaterialName, pTextureGroupName, bComplain);
+        pMaterial = g_IMaterialSystem->FindMaterial(pMaterialName, pTextureGroupName, bComplain);
     }
     else
     {
-        pMaterial = g_IMaterialSystemHL->FindMaterial(
-            pMaterialName, pTextureGroupName, bComplain);
+        pMaterial = g_IMaterialSystemHL->FindMaterial(pMaterialName, pTextureGroupName, bComplain);
     }
     if (IsErrorMaterial(pMaterial))
     {
@@ -72,28 +66,21 @@ void CMaterialReference::Init(char const *pMaterialName,
     Init(pMaterial);
 }
 
-void CMaterialReference::Init(const char *pMaterialName,
-                              KeyValues *pVMTKeyValues)
+void CMaterialReference::Init(const char *pMaterialName, KeyValues *pVMTKeyValues)
 {
     // CreateMaterial has a refcount of 1
     Shutdown();
     IF_GAME(IsTF2())
-    m_pMaterial =
-        g_IMaterialSystem->CreateMaterial(pMaterialName, pVMTKeyValues);
-    else m_pMaterial =
-        g_IMaterialSystemHL->CreateMaterial(pMaterialName, pVMTKeyValues);
+    m_pMaterial      = g_IMaterialSystem->CreateMaterial(pMaterialName, pVMTKeyValues);
+    else m_pMaterial = g_IMaterialSystemHL->CreateMaterial(pMaterialName, pVMTKeyValues);
 }
 
-void CMaterialReference::Init(const char *pMaterialName,
-                              const char *pTextureGroupName,
-                              KeyValues *pVMTKeyValues)
+void CMaterialReference::Init(const char *pMaterialName, const char *pTextureGroupName, KeyValues *pVMTKeyValues)
 {
     IMaterial *pMaterial;
     IF_GAME(IsTF2())
-    pMaterial = g_IMaterialSystem->FindProceduralMaterial(
-        pMaterialName, pTextureGroupName, pVMTKeyValues);
-    else pMaterial = g_IMaterialSystemHL->FindProceduralMaterial(
-        pMaterialName, pTextureGroupName, pVMTKeyValues);
+    pMaterial      = g_IMaterialSystem->FindProceduralMaterial(pMaterialName, pTextureGroupName, pVMTKeyValues);
+    else pMaterial = g_IMaterialSystemHL->FindProceduralMaterial(pMaterialName, pTextureGroupName, pVMTKeyValues);
     Assert(pMaterial);
     Init(pMaterial);
 }
@@ -173,15 +160,12 @@ CTextureReference::~CTextureReference()
 //-----------------------------------------------------------------------------
 // Attach to a texture
 //-----------------------------------------------------------------------------
-void CTextureReference::Init(char const *pTextureName,
-                             const char *pTextureGroupName, bool bComplain)
+void CTextureReference::Init(char const *pTextureName, const char *pTextureGroupName, bool bComplain)
 {
     Shutdown();
     IF_GAME(IsTF2())
-    m_pTexture = g_IMaterialSystem->FindTexture(pTextureName, pTextureGroupName,
-                                                bComplain);
-    else m_pTexture = g_IMaterialSystemHL->FindTexture(
-        pTextureName, pTextureGroupName, bComplain);
+    m_pTexture      = g_IMaterialSystem->FindTexture(pTextureName, pTextureGroupName, bComplain);
+    else m_pTexture = g_IMaterialSystemHL->FindTexture(pTextureName, pTextureGroupName, bComplain);
     if (m_pTexture)
     {
         m_pTexture->IncrementReferenceCount();
@@ -199,18 +183,13 @@ void CTextureReference::Init(ITexture *pTexture)
     }
 }
 
-void CTextureReference::InitProceduralTexture(const char *pTextureName,
-                                              const char *pTextureGroupName,
-                                              int w, int h, ImageFormat fmt,
-                                              int nFlags)
+void CTextureReference::InitProceduralTexture(const char *pTextureName, const char *pTextureGroupName, int w, int h, ImageFormat fmt, int nFlags)
 {
     Shutdown();
 
     IF_GAME(IsTF2())
-    m_pTexture = g_IMaterialSystem->CreateProceduralTexture(
-        pTextureName, pTextureGroupName, w, h, fmt, nFlags);
-    else m_pTexture = g_IMaterialSystemHL->CreateProceduralTexture(
-        pTextureName, pTextureGroupName, w, h, fmt, nFlags);
+    m_pTexture      = g_IMaterialSystem->CreateProceduralTexture(pTextureName, pTextureGroupName, w, h, fmt, nFlags);
+    else m_pTexture = g_IMaterialSystemHL->CreateProceduralTexture(pTextureName, pTextureGroupName, w, h, fmt, nFlags);
     // NOTE: The texture reference is already incremented internally above!
     /*
     if ( m_pTexture )
@@ -220,12 +199,7 @@ void CTextureReference::InitProceduralTexture(const char *pTextureName,
     */
 }
 
-void CTextureReference::InitRenderTarget(int w, int h,
-                                         RenderTargetSizeMode_t sizeMode,
-                                         ImageFormat fmt,
-                                         MaterialRenderTargetDepth_t depth,
-                                         bool bHDR,
-                                         char *pStrOptionalName /* = NULL */)
+void CTextureReference::InitRenderTarget(int w, int h, RenderTargetSizeMode_t sizeMode, ImageFormat fmt, MaterialRenderTargetDepth_t depth, bool bHDR, char *pStrOptionalName /* = NULL */)
 {
     Shutdown();
 
@@ -242,15 +216,11 @@ void CTextureReference::InitRenderTarget(int w, int h,
     // textureFlags, renderTargetFlags);
     IF_GAME(IsTF2())
     {
-        m_pTexture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx(
-            pStrOptionalName, w, h, sizeMode, fmt, depth, textureFlags,
-            renderTargetFlags);
+        m_pTexture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx(pStrOptionalName, w, h, sizeMode, fmt, depth, textureFlags, renderTargetFlags);
     }
     else
     {
-        m_pTexture = g_IMaterialSystemHL->CreateNamedRenderTargetTextureEx(
-            pStrOptionalName, w, h, sizeMode, fmt, depth, textureFlags,
-            renderTargetFlags);
+        m_pTexture = g_IMaterialSystemHL->CreateNamedRenderTargetTextureEx(pStrOptionalName, w, h, sizeMode, fmt, depth, textureFlags, renderTargetFlags);
     }
 
     Assert(m_pTexture);
@@ -277,20 +247,15 @@ void CTextureReference::Shutdown(bool bDeleteIfUnReferenced)
 // managing. The paired EDRAM surface can be built in an alternate format.
 //-----------------------------------------------------------------------------
 #if defined(_X360)
-void CTextureReference::InitRenderTargetTexture(
-    int w, int h, RenderTargetSizeMode_t sizeMode, ImageFormat fmt,
-    MaterialRenderTargetDepth_t depth, bool bHDR, char *pStrOptionalName)
+void CTextureReference::InitRenderTargetTexture(int w, int h, RenderTargetSizeMode_t sizeMode, ImageFormat fmt, MaterialRenderTargetDepth_t depth, bool bHDR, char *pStrOptionalName)
 {
     // other variants not implemented yet
-    Assert(depth == MATERIAL_RT_DEPTH_NONE ||
-           depth == MATERIAL_RT_DEPTH_SHARED);
+    Assert(depth == MATERIAL_RT_DEPTH_NONE || depth == MATERIAL_RT_DEPTH_SHARED);
     Assert(!bHDR);
 
     int renderTargetFlags = CREATERENDERTARGETFLAGS_NOEDRAM;
 
-    m_pTexture = materials->CreateNamedRenderTargetTextureEx(
-        pStrOptionalName, w, h, sizeMode, fmt, depth,
-        TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, renderTargetFlags);
+    m_pTexture = materials->CreateNamedRenderTargetTextureEx(pStrOptionalName, w, h, sizeMode, fmt, depth, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, renderTargetFlags);
     Assert(m_pTexture);
 }
 #endif
@@ -301,9 +266,7 @@ void CTextureReference::InitRenderTargetTexture(
 // format.
 //-----------------------------------------------------------------------------
 #if defined(_X360)
-void CTextureReference::InitRenderTargetSurface(int width, int height,
-                                                ImageFormat fmt,
-                                                bool bSameAsTexture)
+void CTextureReference::InitRenderTargetSurface(int width, int height, ImageFormat fmt, bool bSameAsTexture)
 {
     // texture has to be created first
     Assert(m_pTexture && m_pTexture->IsRenderTarget());
