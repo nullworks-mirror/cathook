@@ -104,6 +104,8 @@ void fClampAngle(Vector &qaAng);
 // const char* MakeInfoString(IClientEntity* player);
 bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity);
 bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false);
+Vector GetForwardVector(Vector origin, Vector viewangles, float distance);
+Vector GetForwardVector(float distance);
 bool IsSentryBuster(CachedEntity *ent);
 std::unique_ptr<char[]> strfmt(const char *fmt, ...);
 // TODO move that to weaponid.h
