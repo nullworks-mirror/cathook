@@ -103,9 +103,7 @@ void critical_error_handler(int signum)
     namespace st = boost::stacktrace;
     ::signal(signum, SIG_DFL);
     passwd *pwd = getpwuid(getuid());
-    std::ofstream out(
-        strfmt("/tmp/cathook-%s-%d-segfault.log", pwd->pw_name, getpid())
-            .get());
+    std::ofstream out(strfmt("/tmp/cathook-%s-%d-segfault.log", pwd->pw_name, getpid()).get());
 
     Dl_info info;
     if (!dladdr(reinterpret_cast<void *>(SetCanshootStatus), &info))
@@ -116,7 +114,7 @@ void critical_error_handler(int signum)
     {
         unsigned int offset = (unsigned int) (i.address()) - baseaddr;
         Dl_info info2;
-        out << (void *)offset;
+        out << (void *) offset;
         if (!dladdr(i.address(), &info2))
         {
             out << std::endl;
@@ -125,9 +123,8 @@ void critical_error_handler(int signum)
         out << " " << info2.dli_fname << ": ";
         if (info2.dli_sname)
         {
-            int status = -4;
-            char *realname =
-                abi::__cxa_demangle(info2.dli_sname, nullptr, nullptr, &status);
+            int status     = -4;
+            char *realname = abi::__cxa_demangle(info2.dli_sname, nullptr, nullptr, &status);
             if (status == 0)
             {
                 out << realname << std::endl;
@@ -213,9 +210,7 @@ free(logname);*/
     uintptr_t *clientMode = 0;
     // Bad way to get clientmode.
     // FIXME [MP]?
-    while (!(
-        clientMode = **(
-            uintptr_t ***) ((uintptr_t)((*(void ***) g_IBaseClient)[10]) + 1)))
+    while (!(clientMode = **(uintptr_t ***) ((uintptr_t)((*(void ***) g_IBaseClient)[10]) + 1)))
     {
         usleep(10000);
     }
@@ -246,9 +241,7 @@ free(logname);*/
     hooks::vstd.Apply();
 
     hooks::panel.Set(g_IPanel);
-    hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse,
-                            offsets::PaintTraverse(),
-                            &hooked_methods::original::PaintTraverse);
+    hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse, offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);
     hooks::panel.Apply();
 #endif
 
@@ -287,14 +280,11 @@ free(logname);*/
         hooks::materialsystem.Set((void *) g_IMaterialSystem);
         uintptr_t base = *(uintptr_t *) (g_IMaterialSystem);
         hooks::materialsystem.HookMethod((void *) ReloadTextures_null_hook, 70);
-        hooks::materialsystem.HookMethod((void *) ReloadMaterials_null_hook,
-                                         71);
+        hooks::materialsystem.HookMethod((void *) ReloadMaterials_null_hook, 71);
         hooks::materialsystem.HookMethod((void *) FindMaterial_null_hook, 73);
         hooks::materialsystem.HookMethod((void *) FindTexture_null_hook, 81);
-        hooks::materialsystem.HookMethod((void *) ReloadFilesInList_null_hook,
-                                         121);
-        hooks::materialsystem.HookMethod((void *) FindMaterialEx_null_hook,
-                                         123);
+        hooks::materialsystem.HookMethod((void *) ReloadFilesInList_null_hook, 121);
+        hooks::materialsystem.HookMethod((void *) FindMaterialEx_null_hook, 123);
         hooks::materialsystem.Apply();
         // hooks::materialsystem.HookMethod();
     }
@@ -317,12 +307,10 @@ free(logname);*/
 #ifndef FEATURE_EFFECTS_DISABLED
     if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects)
     {
-        effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration(
-            "_cathook_chams", &effect_chams::g_EffectChams);
+        effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
         g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
         effect_chams::g_EffectChams.Init();
-        effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration(
-            "_cathook_glow", &effect_glow::g_EffectGlow);
+        effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
         g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
     }
     logging::Info("SSE enabled..");

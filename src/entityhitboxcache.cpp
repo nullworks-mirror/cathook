@@ -11,10 +11,7 @@
 namespace hitbox_cache
 {
 
-EntityHitboxCache::EntityHitboxCache()
-    : parent_ref(&entity_cache::Get(
-          ((unsigned) this - (unsigned) &hitbox_cache::array) /
-          sizeof(EntityHitboxCache)))
+EntityHitboxCache::EntityHitboxCache() : parent_ref(&entity_cache::Get(((unsigned) this - (unsigned) &hitbox_cache::array) / sizeof(EntityHitboxCache)))
 {
     Reset();
 }
@@ -101,7 +98,7 @@ bool EntityHitboxCache::VisibilityCheck(int id)
     hitbox = GetHitbox(id);
     if (!hitbox)
         return false;
-    m_VisCheck[id] = (IsEntityVectorVisible(parent_ref, hitbox->center));
+    m_VisCheck[id]                = (IsEntityVectorVisible(parent_ref, hitbox->center));
     m_VisCheckValidationFlags[id] = true;
     return m_VisCheck[id];
 }
@@ -123,8 +120,7 @@ matrix3x4_t *EntityHitboxCache::GetBones()
         break;
     case 2:
         if (CE_GOOD(LOCAL_E))
-            bones_setup_time = g_GlobalVars->interval_per_tick *
-                               CE_INT(LOCAL_E, netvar.nTickBase);
+            bones_setup_time = g_GlobalVars->interval_per_tick * CE_INT(LOCAL_E, netvar.nTickBase);
         break;
     case 3:
         if (CE_GOOD(parent_ref))
@@ -136,9 +132,7 @@ matrix3x4_t *EntityHitboxCache::GetBones()
         if (g_Settings.is_create_move)
         {
             RAW_ENT(parent_ref)->GetModel();
-            bones_setup = RAW_ENT(parent_ref)
-                              ->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00,
-                                           bones_setup_time);
+            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
         }
     }
     return bones;
@@ -172,10 +166,8 @@ CachedHitbox *EntityHitboxCache::GetHitbox(int id)
     if (CE_BAD(parent_ref))
         return 0;
     typedef int (*InvalidateBoneCache_t)(IClientEntity *);
-    static uintptr_t addr =
-        gSignatures.GetClientSignature("55 8B 0D ? ? ? ? 89 E5 8B 45 ? 8D 51");
-    static InvalidateBoneCache_t InvalidateBoneCache =
-        InvalidateBoneCache_t(addr);
+    static uintptr_t addr                            = gSignatures.GetClientSignature("55 8B 0D ? ? ? ? 89 E5 8B 45 ? 8D 51");
+    static InvalidateBoneCache_t InvalidateBoneCache = InvalidateBoneCache_t(addr);
     InvalidateBoneCache(RAW_ENT(parent_ref));
     auto model = (model_t *) RAW_ENT(parent_ref)->GetModel();
     if (!model)
@@ -193,9 +185,8 @@ CachedHitbox *EntityHitboxCache::GetHitbox(int id)
         return 0;
     VectorTransform(box->bbmin, GetBones()[box->bone], m_CacheInternal[id].min);
     VectorTransform(box->bbmax, GetBones()[box->bone], m_CacheInternal[id].max);
-    m_CacheInternal[id].bbox = box;
-    m_CacheInternal[id].center =
-        (m_CacheInternal[id].min + m_CacheInternal[id].max) / 2;
+    m_CacheInternal[id].bbox   = box;
+    m_CacheInternal[id].center = (m_CacheInternal[id].min + m_CacheInternal[id].max) / 2;
     m_CacheValidationFlags[id] = true;
     return &m_CacheInternal[id];
 }

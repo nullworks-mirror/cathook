@@ -19,10 +19,8 @@ class ConVar;
 class CatCommand
 {
 public:
-    CatCommand(std::string name, std::string help,
-               FnCommandCallback_t callback);
-    CatCommand(std::string name, std::string help,
-               FnCommandCallbackVoid_t callback);
+    CatCommand(std::string name, std::string help, FnCommandCallback_t callback);
+    CatCommand(std::string name, std::string help, FnCommandCallbackVoid_t callback);
 
     void Register();
 

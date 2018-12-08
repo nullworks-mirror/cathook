@@ -4,12 +4,9 @@
 
 #include <menu/object/Option.hpp>
 
-static settings::RVariable<glez::rgba> color_hovered{
-    "zk.style.option.color.hover", "ff00aa"
-};
+static settings::RVariable<glez::rgba> color_hovered{ "zk.style.option.color.hover", "ff00aa" };
 
-zerokernel::Option::Option(std::string name, std::string value)
-    : BaseMenuObject{}, name(std::move(name)), value(std::move(value))
+zerokernel::Option::Option(std::string name, std::string value) : BaseMenuObject{}, name(std::move(name)), value(std::move(value))
 {
     bb.width.mode  = BoundingBox::SizeMode::Mode::FILL;
     bb.height.mode = BoundingBox::SizeMode::Mode::CONTENT;

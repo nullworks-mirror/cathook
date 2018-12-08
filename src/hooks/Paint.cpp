@@ -64,16 +64,13 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
             {
                 // logging::Info("executing %s",
                 //              hack::command_stack().top().c_str());
-                g_IEngine->ClientCmd_Unrestricted(
-                    hack::command_stack().top().c_str());
+                g_IEngine->ClientCmd_Unrestricted(hack::command_stack().top().c_str());
                 hack::command_stack().pop();
             }
         }
 #if ENABLE_TEXTMODE_STDIN == 1
         static auto last_stdin = std::chrono::system_clock::from_time_t(0);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                      std::chrono::system_clock::now() - last_stdin)
-                      .count();
+        auto ms                = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_stdin).count();
         if (ms > 500)
         {
             UpdateInput();

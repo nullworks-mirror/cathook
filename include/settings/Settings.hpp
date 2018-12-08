@@ -71,8 +71,7 @@ public:
 
     virtual const T &operator*() = 0;
 
-    void installChangeCallback(
-        std::function<void(VariableBase<T> &var, T after)> callback)
+    void installChangeCallback(std::function<void(VariableBase<T> &var, T after)> callback)
     {
         callbacks.push_back(callback);
     }

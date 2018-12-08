@@ -93,22 +93,13 @@ std::mutex entities_need_repaint_mutex{};
 // be a pain.
 
 // Vars to store what bones connect to what
-const std::string bonenames_leg_r[]  = { "bip_foot_R", "bip_knee_R",
-                                        "bip_hip_R" };
-const std::string bonenames_leg_l[]  = { "bip_foot_L", "bip_knee_L",
-                                        "bip_hip_L" };
-const std::string bonenames_bottom[] = { "bip_hip_R", "bip_pelvis",
-                                         "bip_hip_L" };
-const std::string bonenames_spine[]  = { "bip_pelvis",  "bip_spine_0",
-                                        "bip_spine_1", "bip_spine_2",
-                                        "bip_spine_3", "bip_neck",
-                                        "bip_head" };
-const std::string bonenames_arm_r[]  = { "bip_upperArm_R", "bip_lowerArm_R",
-                                        "bip_hand_R" };
-const std::string bonenames_arm_l[]  = { "bip_upperArm_L", "bip_lowerArm_L",
-                                        "bip_hand_L" };
-const std::string bonenames_up[]     = { "bip_upperArm_R", "bip_spine_3",
-                                     "bip_upperArm_L" };
+const std::string bonenames_leg_r[]  = { "bip_foot_R", "bip_knee_R", "bip_hip_R" };
+const std::string bonenames_leg_l[]  = { "bip_foot_L", "bip_knee_L", "bip_hip_L" };
+const std::string bonenames_bottom[] = { "bip_hip_R", "bip_pelvis", "bip_hip_L" };
+const std::string bonenames_spine[]  = { "bip_pelvis", "bip_spine_0", "bip_spine_1", "bip_spine_2", "bip_spine_3", "bip_neck", "bip_head" };
+const std::string bonenames_arm_r[]  = { "bip_upperArm_R", "bip_lowerArm_R", "bip_hand_R" };
+const std::string bonenames_arm_l[]  = { "bip_upperArm_L", "bip_lowerArm_L", "bip_hand_L" };
+const std::string bonenames_up[]     = { "bip_upperArm_R", "bip_spine_3", "bip_upperArm_L" };
 
 // Dont fully understand struct but a guess is a group of something.
 // I will return once I have enough knowlage to reverse this.
@@ -164,15 +155,13 @@ struct bonelist_s
         setup = true;
     }
 
-    void DrawBoneList(const matrix3x4_t *bones, int *in, int size,
-                      const rgba_t &color, const Vector &displacement)
+    void DrawBoneList(const matrix3x4_t *bones, int *in, int size, const rgba_t &color, const Vector &displacement)
     {
         Vector last_screen;
         Vector current_screen;
         for (int i = 0; i < size; i++)
         {
-            Vector position(bones[in[i]][0][3], bones[in[i]][1][3],
-                            bones[in[i]][2][3]);
+            Vector position(bones[in[i]][0][3], bones[in[i]][1][3], bones[in[i]][2][3]);
             position += displacement;
             if (!draw::WorldToScreen(position, current_screen))
             {
@@ -180,9 +169,7 @@ struct bonelist_s
             }
             if (i > 0)
             {
-                glez::draw::line(last_screen.x, last_screen.y,
-                                 current_screen.x - last_screen.x,
-                                 current_screen.y - last_screen.y, color, 0.5f);
+                glez::draw::line(last_screen.x, last_screen.y, current_screen.x - last_screen.x, current_screen.y - last_screen.y, color, 0.5f);
             }
             last_screen = current_screen;
         }
@@ -247,66 +234,61 @@ void Draw()
 }
 
 // Function called on create move
-static HookedFunction
-    CreateMove(HookedFunctions_types::HF_CreateMove, "ESP", 18, []() {
-        // Check usersettings if enabled
-        if (!*enable)
-            return;
-        if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
-            return;
-        // Something
-        std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
+static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "ESP", 18, []() {
+    // Check usersettings if enabled
+    if (!*enable)
+        return;
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
+        return;
+    // Something
+    std::lock_guard<std::mutex> esp_lock(threadsafe_mutex);
 
-        ResetEntityStrings(); // Clear any strings entities have
-        entities_need_repaint
-            .clear(); // Clear data on entities that need redraw
-        int max_clients = g_IEngine->GetMaxClients();
-        int limit       = HIGHEST_ENTITY;
+    ResetEntityStrings();          // Clear any strings entities have
+    entities_need_repaint.clear(); // Clear data on entities that need redraw
+    int max_clients = g_IEngine->GetMaxClients();
+    int limit       = HIGHEST_ENTITY;
 
-        // If not using any other special esp, we lower the min to the max
-        // clients
-        if (!buildings && !proj_esp && !item_esp)
-            limit = std::min(max_clients, HIGHEST_ENTITY);
+    // If not using any other special esp, we lower the min to the max
+    // clients
+    if (!buildings && !proj_esp && !item_esp)
+        limit = std::min(max_clients, HIGHEST_ENTITY);
 
-        { // Prof section ends when out of scope, these brackets here.
-            PROF_SECTION(CM_ESP_EntityLoop);
-            // Loop through entities
-            for (int i = 0; i < limit; i++)
+    { // Prof section ends when out of scope, these brackets here.
+        PROF_SECTION(CM_ESP_EntityLoop);
+        // Loop through entities
+        for (int i = 0; i < limit; i++)
+        {
+            // Get an entity from the loop tick and process it
+            CachedEntity *ent = ENTITY(i);
+            if (CE_BAD(ent))
+                continue;
+            ProcessEntity(ent);
+            // Update Bones
+            if (i <= 32)
+                ent->hitboxes.GetHitbox(0);
+            // Dont know what this check is for
+            if (data[i].string_count)
             {
-                // Get an entity from the loop tick and process it
-                CachedEntity *ent = ENTITY(i);
-                if (CE_BAD(ent))
-                    continue;
-                ProcessEntity(ent);
-                // Update Bones
-                if (i <= 32)
-                    ent->hitboxes.GetHitbox(0);
-                // Dont know what this check is for
-                if (data[i].string_count)
-                {
 
-                    // Set entity color
-                    SetEntityColor(ent, colors::EntityF(ent));
+                // Set entity color
+                SetEntityColor(ent, colors::EntityF(ent));
 
-                    // If snow distance, add string here
-                    if (show_distance)
-                    {
-                        AddEntityString(
-                            ent, format((int) (ENTITY(i)->m_flDistance() / 64 *
-                                               1.22f),
-                                        'm'));
-                    }
-                }
-                // No idea, this is confusing
-                if (data[ent->m_IDX].needs_paint)
+                // If snow distance, add string here
+                if (show_distance)
                 {
-                    if (vischeck)
-                        data[ent->m_IDX].transparent = !ent->IsVisible();
-                    entities_need_repaint.push_back(ent->m_IDX);
+                    AddEntityString(ent, format((int) (ENTITY(i)->m_flDistance() / 64 * 1.22f), 'm'));
                 }
             }
+            // No idea, this is confusing
+            if (data[ent->m_IDX].needs_paint)
+            {
+                if (vischeck)
+                    data[ent->m_IDX].transparent = !ent->IsVisible();
+                entities_need_repaint.push_back(ent->m_IDX);
+            }
         }
-    });
+    }
+});
 
 static glez::texture atlas{ DATA_PATH "/textures/atlas.png" };
 static glez::texture idspec{ DATA_PATH "/textures/idspec.png" };
@@ -335,14 +317,12 @@ void _FASTCALL emoji(CachedEntity *ent)
         {
             auto hit = ent->hitboxes.GetHitbox(0);
             Vector hbm, hbx;
-            if (draw::WorldToScreen(hit->min, hbm) &&
-                draw::WorldToScreen(hit->max, hbx))
+            if (draw::WorldToScreen(hit->min, hbm) && draw::WorldToScreen(hit->max, hbx))
             {
                 Vector head_scr;
                 if (draw::WorldToScreen(hit->center, head_scr))
                 {
-                    float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y)
-                                                   : *emoji_esp_size;
+                    float size = emoji_esp_scaling ? fabs(hbm.y - hbx.y) : *emoji_esp_size;
                     if (v9mode)
                         size *= 1.4;
                     if (!size || !emoji_min_size)
@@ -360,12 +340,8 @@ void _FASTCALL emoji(CachedEntity *ent)
                     steamidarray[4] = 854198748;
                     if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
                         steamID = info.friendsID;
-                    if (playerlist::AccessData(steamID).state ==
-                        playerlist::k_EState::CAT)
-                        glez::draw::rect_textured(
-                            head_scr.x - size / 2, head_scr.y - size / 2, size,
-                            size, glez::color::white, idspec, 2 * 64, 1 * 64,
-                            64, 64, 0);
+                    if (playerlist::AccessData(steamID).state == playerlist::k_EState::CAT)
+                        glez::draw::rect_textured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, glez::color::white, idspec, 2 * 64, 1 * 64, 64, 64, 0);
                     for (int i = 0; i < 4; i++)
                     {
                         if (steamID == steamidarray[i])
@@ -376,19 +352,12 @@ void _FASTCALL emoji(CachedEntity *ent)
                                 ii++;
                                 i -= 4;
                             }
-                            glez::draw::rect_textured(
-                                head_scr.x - size / 2, head_scr.y - size / 2,
-                                size, size, glez::color::white, idspec, i * 64,
-                                ii * 64, 64, 64, 0);
+                            glez::draw::rect_textured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, glez::color::white, idspec, i * 64, ii * 64, 64, 64, 0);
                             hascall = true;
                         }
                     }
                     if (!hascall)
-                        glez::draw::rect_textured(
-                            head_scr.x - size / 2, head_scr.y - size / 2, size,
-                            size, colors::white, textures::atlas().texture,
-                            (3 + (v9mode ? 3 : (int) emoji_esp)) * 64,
-                            (v9mode ? 3 : 4) * 64, 64, 64, 0);
+                        glez::draw::rect_textured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, colors::white, textures::atlas().texture, (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, (v9mode ? 3 : 4) * 64, 64, 64, 0);
                 }
             }
         }
@@ -416,8 +385,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 
     // Check if entity is on screen, then save screen position if true
     static Vector screen, origin_screen;
-    if (!draw::EntityCenterToScreen(ent, screen) &&
-        !draw::WorldToScreen(ent->m_vecOrigin(), origin_screen))
+    if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin(), origin_screen))
         return;
 
     // Reset the collide cache
@@ -453,14 +421,12 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     {
 
         // Logic for using the enum to sort out snipers
-        if ((int) sightlines == 2 ||
-            ((int) sightlines == 1 && CE_INT(ent, netvar.iClass) == tf_sniper))
+        if ((int) sightlines == 2 || ((int) sightlines == 1 && CE_INT(ent, netvar.iClass) == tf_sniper))
         {
             PROF_SECTION(PT_esp_sightlines);
 
             // Get players angle and head position
-            Vector &eye_angles =
-                NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
+            Vector &eye_angles = NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
             Vector eye_position;
             eye_position = ent->hitboxes.GetHitbox(0)->center;
 
@@ -476,8 +442,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             Ray_t ray;
             ray.Init(eye_position, forward);
             trace_t trace;
-            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player,
-                               &trace);
+            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player, &trace);
 
             // Screen vectors
             Vector scn1, scn2;
@@ -498,8 +463,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 {
                     // Subtract 40 multiplyed by the tick from the end distance
                     // and use that as our length to check
-                    Vector end_vector =
-                        forward_t * (end_distance - (10 * i)) + eye_position;
+                    Vector end_vector = forward_t * (end_distance - (10 * i)) + eye_position;
                     if (end_vector.DistTo(eye_position) < 1)
                         break;
                     if (draw::WorldToScreen(end_vector, scn2))
@@ -528,8 +492,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                     {
                         // Multiply starting distance by 40, multiplyed by the
                         // loop tick
-                        Vector start_vector =
-                            forward_t * (10 * i) + eye_position;
+                        Vector start_vector = forward_t * (10 * i) + eye_position;
                         // We dont want it to go too far
                         if (start_vector.DistTo(trace.endpos) < 1)
                             break;
@@ -545,8 +508,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 // We have both vectors, draw
                 if (found_scn1)
                 {
-                    glez::draw::line(scn1.x, scn1.y, scn2.x - scn1.x,
-                                     scn2.y - scn1.y, fg, 0.5f);
+                    glez::draw::line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg, 0.5f);
                 }
             }
         }
@@ -569,8 +531,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 Draw3DBox(ent, fg);
             break;
         case ENTITY_BUILDING:
-            if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team &&
-                !teammates)
+            if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team && !teammates)
                 break;
             if (!transparent && vischeck && !ent->IsVisible())
                 transparent = true;
@@ -620,19 +581,13 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 }
 
                 // Get Colors
-                rgba_t hp = colors::Transparent(
-                    colors::Health(health, healthmax), fg.a);
-                rgba_t border =
-                    ((classid == RCC_PLAYER) && IsPlayerInvisible(ent))
-                        ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f)
-                        : colors::Transparent(colors::black, fg.a);
+                rgba_t hp     = colors::Transparent(colors::Health(health, healthmax), fg.a);
+                rgba_t border = ((classid == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, fg.a * 255.0f) : colors::Transparent(colors::black, fg.a);
                 // Get bar height
-                int hbh = (max_y - min_y - 2) *
-                          std::min((float) health / (float) healthmax, 1.0f);
+                int hbh = (max_y - min_y - 2) * std::min((float) health / (float) healthmax, 1.0f);
 
                 // Draw
-                glez::draw::rect_outline(min_x - 7, min_y, 7, max_y - min_y,
-                                         border, 0.5f);
+                glez::draw::rect_outline(min_x - 7, min_y, 7, max_y - min_y, border, 0.5f);
                 glez::draw::rect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
             }
         }
@@ -675,26 +630,23 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 break;
                 case 1:
                 { // BOTTOM RIGHT
-                    draw_point = Vector(
-                        max_x + 2,
-                        max_y - data.at(ent->m_IDX).string_count *
-                                    /*((int)fonts::font_main->height)*/ 14,
-                        0);
+                    draw_point = Vector(max_x + 2,
+                                        max_y - data.at(ent->m_IDX).string_count *
+                                                    /*((int)fonts::font_main->height)*/ 14,
+                                        0);
                 }
                 break;
                 case 2:
-                { // CENTER
-                    origin_is_zero =
-                        true; // origin is still zero so we set to true
+                {                          // CENTER
+                    origin_is_zero = true; // origin is still zero so we set to true
                 }
                 break;
                 case 3:
                 { // ABOVE
-                    draw_point = Vector(
-                        min_x,
-                        min_y - data.at(ent->m_IDX).string_count *
-                                    /*((int)fonts::font_main->height)*/ 14,
-                        0);
+                    draw_point = Vector(min_x,
+                                        min_y - data.at(ent->m_IDX).string_count *
+                                                    /*((int)fonts::font_main->height)*/ 14,
+                                        0);
                 }
                 break;
                 case 4:
@@ -721,15 +673,12 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             // entities color
             rgba_t color = string.color ? string.color : ent_data.color;
             if (transparent)
-                color =
-                    colors::Transparent(color); // Apply transparency if needed
+                color = colors::Transparent(color); // Apply transparency if needed
 
             // If the origin is centered, we use one method. if not, the other
             if (!origin_is_zero || true)
             {
-                glez::draw::outlined_string(draw_point.x, draw_point.y,
-                                            string.data, *fonts::esp, color,
-                                            colors::black, nullptr, nullptr);
+                glez::draw::outlined_string(draw_point.x, draw_point.y, string.data, *fonts::esp, color, colors::black, nullptr, nullptr);
             }
             else
             { /*
@@ -806,9 +755,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
     // Entity esp
     if (entity_info)
     {
-        AddEntityString(ent,
-                        format(RAW_ENT(ent)->GetClientClass()->m_pNetworkName,
-                               " [", classid, "]"));
+        AddEntityString(ent, format(RAW_ENT(ent)->GetClientClass()->m_pNetworkName, " [", classid, "]"));
         if (entity_id)
         {
             AddEntityString(ent, std::to_string(ent->m_IDX));
@@ -817,8 +764,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         {
             const model_t *model = RAW_ENT(ent)->GetModel();
             if (model)
-                AddEntityString(ent,
-                                std::string(g_IModelInfo->GetModelName(model)));
+                AddEntityString(ent, std::string(g_IModelInfo->GetModelName(model)));
         }
     }
 
@@ -826,13 +772,11 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
     ESPData &espdata = data[ent->m_IDX];
 
     // Projectile esp
-    if (ent->m_Type() == ENTITY_PROJECTILE && proj_esp &&
-        (ent->m_bEnemy() || (teammates && !proj_enemy)))
+    if (ent->m_Type() == ENTITY_PROJECTILE && proj_esp && (ent->m_bEnemy() || (teammates && !proj_enemy)))
     {
 
         // Rockets
-        if (classid == CL_CLASS(CTFProjectile_Rocket) ||
-            classid == CL_CLASS(CTFProjectile_SentryRocket))
+        if (classid == CL_CLASS(CTFProjectile_Rocket) || classid == CL_CLASS(CTFProjectile_SentryRocket))
         {
             if (proj_rockets)
             {
@@ -921,11 +865,9 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
 
         // Dropped weapon esp
     }
-    else if (classid == CL_CLASS(CTFDroppedWeapon) && item_esp &&
-             item_dropped_weapons)
+    else if (classid == CL_CLASS(CTFDroppedWeapon) && item_esp && item_dropped_weapons)
     {
-        AddEntityString(
-            ent, format("WEAPON ", RAW_ENT(ent)->GetClientClass()->GetName()));
+        AddEntityString(ent, format("WEAPON ", RAW_ENT(ent)->GetClientClass()->GetName()));
 
         // MVM Money esp
     }
@@ -949,9 +891,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
     {
 
         // Health pack esp
-        if (item_health_packs &&
-            (itemtype >= ITEM_HEALTH_SMALL && itemtype <= ITEM_HEALTH_LARGE ||
-             itemtype == ITEM_HL_BATTERY))
+        if (item_health_packs && (itemtype >= ITEM_HEALTH_SMALL && itemtype <= ITEM_HEALTH_LARGE || itemtype == ITEM_HL_BATTERY))
         {
             if (itemtype == ITEM_HEALTH_SMALL)
                 AddEntityString(ent, "[+]");
@@ -970,8 +910,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
 
             // Ammo pack esp
         }
-        else if (item_ammo_packs && itemtype >= ITEM_AMMO_SMALL &&
-                 itemtype <= ITEM_AMMO_LARGE)
+        else if (item_ammo_packs && itemtype >= ITEM_AMMO_SMALL && itemtype <= ITEM_AMMO_LARGE)
         {
             if (itemtype == ITEM_AMMO_SMALL)
                 AddEntityString(ent, "{i}");
@@ -982,27 +921,21 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
 
             // Powerup esp
         }
-        else if (item_powerups && itemtype >= ITEM_POWERUP_FIRST &&
-                 itemtype <= ITEM_POWERUP_LAST)
+        else if (item_powerups && itemtype >= ITEM_POWERUP_FIRST && itemtype <= ITEM_POWERUP_LAST)
         {
-            AddEntityString(ent, format(powerups[itemtype - ITEM_POWERUP_FIRST],
-                                        " PICKUP"));
+            AddEntityString(ent, format(powerups[itemtype - ITEM_POWERUP_FIRST], " PICKUP"));
 
             // TF2C weapon spawner esp
         }
-        else if (item_weapon_spawners && itemtype >= ITEM_TF2C_W_FIRST &&
-                 itemtype <= ITEM_TF2C_W_LAST)
+        else if (item_weapon_spawners && itemtype >= ITEM_TF2C_W_FIRST && itemtype <= ITEM_TF2C_W_LAST)
         {
-            AddEntityString(
-                ent, format(tf2c_weapon_names[itemtype - ITEM_TF2C_W_FIRST],
-                            " SPAWNER"));
+            AddEntityString(ent, format(tf2c_weapon_names[itemtype - ITEM_TF2C_W_FIRST], " SPAWNER"));
             if (CE_BYTE(ent, netvar.bRespawning))
                 AddEntityString(ent, "-- RESPAWNING --");
 
             // Halloween spell esp
         }
-        else if (item_spellbooks &&
-                 (itemtype == ITEM_SPELL || itemtype == ITEM_SPELL_RARE))
+        else if (item_spellbooks && (itemtype == ITEM_SPELL || itemtype == ITEM_SPELL_RARE))
         {
             if (itemtype == ITEM_SPELL)
             {
@@ -1010,8 +943,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             }
             else
             {
-                AddEntityString(ent, "Rare Spell",
-                                colors::FromRGBA8(139, 31, 221, 255));
+                AddEntityString(ent, "Rare Spell", colors::FromRGBA8(139, 31, 221, 255));
             }
         }
 
@@ -1034,14 +966,10 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         // Make a name for the building based on the building type and level
         if (show_name || show_class)
         {
-            const std::string &name =
-                (classid == CL_CLASS(CObjectTeleporter)
-                     ? "Teleporter"
-                     : (classid == CL_CLASS(CObjectSentrygun) ? "Sentry Gun"
-                                                              : "Dispenser"));
-            int level     = CE_INT(ent, netvar.iUpgradeLevel);
-            bool IsMini   = CE_BYTE(ent, netvar.m_bMiniBuilding);
-            bool IsSapped = CE_BYTE(ent, netvar.m_bHasSapper);
+            const std::string &name = (classid == CL_CLASS(CObjectTeleporter) ? "Teleporter" : (classid == CL_CLASS(CObjectSentrygun) ? "Sentry Gun" : "Dispenser"));
+            int level               = CE_INT(ent, netvar.iUpgradeLevel);
+            bool IsMini             = CE_BYTE(ent, netvar.m_bMiniBuilding);
+            bool IsSapped           = CE_BYTE(ent, netvar.m_bHasSapper);
             if (!IsMini)
                 AddEntityString(ent, format("LV ", level, ' ', name));
             else
@@ -1050,26 +978,21 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                 AddEntityString(ent, "*Sapped*");
             if (classid == CL_CLASS(CObjectTeleporter))
             {
-                float next_teleport =
-                    CE_FLOAT(ent, netvar.m_flTeleRechargeTime);
-                float yaw_to_exit = CE_FLOAT(ent, netvar.m_flTeleYawToExit);
+                float next_teleport = CE_FLOAT(ent, netvar.m_flTeleRechargeTime);
+                float yaw_to_exit   = CE_FLOAT(ent, netvar.m_flTeleYawToExit);
                 if (yaw_to_exit)
                 {
                     if (next_teleport < g_GlobalVars->curtime)
                         AddEntityString(ent, "Ready");
                     else
-                        AddEntityString(
-                            ent,
-                            format(next_teleport - g_GlobalVars->curtime, "s"));
+                        AddEntityString(ent, format(next_teleport - g_GlobalVars->curtime, "s"));
                 }
             }
         }
         // If text health is true, then add a string with the health
         if ((int) show_health == 1 || (int) show_health == 3)
         {
-            AddEntityString(
-                ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"),
-                colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
+            AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
         }
         // Set the entity to repaint
         espdata.needs_paint = true;
@@ -1081,8 +1004,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
     {
 
         // Local player handling
-        if (!(local_esp && g_IInput->CAM_IsThirdPerson()) &&
-            ent->m_IDX == g_IEngine->GetLocalPlayer())
+        if (!(local_esp && g_IInput->CAM_IsThirdPerson()) && ent->m_IDX == g_IEngine->GetLocalPlayer())
             return;
 
         // Get player class
@@ -1094,14 +1016,12 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             return;
 
 #if ENABLE_ONLINE
-        online::user_data *data =
-            online_support ? online::getUserData(info.friendsID) : nullptr;
+        online::user_data *data = online_support ? online::getUserData(info.friendsID) : nullptr;
 #endif
 
         // TODO, check if u can just use "ent->m_bEnemy()" instead of m_iTeam
         // Legit mode handling
-        if (legit && ent->m_iTeam() != g_pLocalPlayer->team &&
-            playerlist::IsDefault(info.friendsID)
+        if (legit && ent->m_iTeam() != g_pLocalPlayer->team && playerlist::IsDefault(info.friendsID)
 #if ENABLE_ONLINE
             && !(data)
 #endif
@@ -1131,8 +1051,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                 if (data->is_using_friendly_software)
                     AddEntityString(ent, "Software: " + data->software_name);
                 else
-                    AddEntityString(ent, "Software: " + data->software_name,
-                                    colors::red);
+                    AddEntityString(ent, "Software: " + data->software_name, colors::red);
             }
         }
 #endif
@@ -1146,8 +1065,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         }
 
         // Dont understand reasoning for this check
-        if (ent->m_bEnemy() || teammates ||
-            player_tools::shouldAlwaysRenderEsp(ent))
+        if (ent->m_bEnemy() || teammates || player_tools::shouldAlwaysRenderEsp(ent))
         {
 
             // Playername
@@ -1167,9 +1085,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             {
                 for (unsigned i = 0; i < cat_ipc::max_peers; i++)
                 {
-                    if (!ipc::peer->memory->peer_data[i].free &&
-                        ipc::peer->memory->peer_user_data[i].friendid ==
-                            info.friendsID)
+                    if (!ipc::peer->memory->peer_data[i].free && ipc::peer->memory->peer_user_data[i].friendid == info.friendsID)
                     {
                         AddEntityString(ent, format("BOT #", i));
                         break;
@@ -1180,10 +1096,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             // Health esp
             if ((int) show_health == 1 || (int) show_health == 3)
             {
-                AddEntityString(
-                    ent,
-                    format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"),
-                    colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
+                AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
             }
             IF_GAME(IsTF())
             {
@@ -1192,8 +1105,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                 {
                     if (CE_INT(ent, netvar.iClass) == tf_medic)
                     {
-                        int *weapon_list = (int *) ((unsigned) (RAW_ENT(ent)) +
-                                                    netvar.hMyWeapons);
+                        int *weapon_list = (int *) ((unsigned) (RAW_ENT(ent)) + netvar.hMyWeapons);
                         for (int i = 0; weapon_list[i]; i++)
                         {
                             int handle = weapon_list[i];
@@ -1201,55 +1113,14 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                             if (eid >= 32 && eid <= HIGHEST_ENTITY)
                             {
                                 CachedEntity *weapon = ENTITY(eid);
-                                if (!CE_BAD(weapon) &&
-                                    weapon->m_iClassID() ==
-                                        CL_CLASS(CWeaponMedigun) &&
-                                    weapon)
+                                if (!CE_BAD(weapon) && weapon->m_iClassID() == CL_CLASS(CWeaponMedigun) && weapon)
                                 {
-                                    if (CE_INT(weapon,
-                                               netvar.iItemDefinitionIndex) !=
-                                        998)
+                                    if (CE_INT(weapon, netvar.iItemDefinitionIndex) != 998)
                                     {
-                                        AddEntityString(
-                                            ent,
-                                            format(
-                                                floor(
-                                                    CE_FLOAT(
-                                                        weapon,
-                                                        netvar
-                                                            .m_flChargeLevel) *
-                                                    100),
-                                                '%', " Uber"),
-                                            colors::Health(
-                                                (CE_FLOAT(
-                                                     weapon,
-                                                     netvar.m_flChargeLevel) *
-                                                 100),
-                                                100));
+                                        AddEntityString(ent, format(floor(CE_FLOAT(weapon, netvar.m_flChargeLevel) * 100), '%', " Uber"), colors::Health((CE_FLOAT(weapon, netvar.m_flChargeLevel) * 100), 100));
                                     }
                                     else
-                                        AddEntityString(
-                                            ent,
-                                            format(
-                                                floor(
-                                                    CE_FLOAT(
-                                                        weapon,
-                                                        netvar
-                                                            .m_flChargeLevel) *
-                                                    100),
-                                                '%', " Uber | Charges: ",
-                                                floor(
-                                                    CE_FLOAT(
-                                                        weapon,
-                                                        netvar
-                                                            .m_flChargeLevel) /
-                                                    0.25f)),
-                                            colors::Health(
-                                                (CE_FLOAT(
-                                                     weapon,
-                                                     netvar.m_flChargeLevel) *
-                                                 100),
-                                                100));
+                                        AddEntityString(ent, format(floor(CE_FLOAT(weapon, netvar.m_flChargeLevel) * 100), '%', " Uber | Charges: ", floor(CE_FLOAT(weapon, netvar.m_flChargeLevel) / 0.25f)), colors::Health((CE_FLOAT(weapon, netvar.m_flChargeLevel) * 100), 100));
                                     break;
                                 }
                             }
@@ -1262,9 +1133,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     const auto &clr = colors::EntityF(ent);
                     // Invis
                     if (IsPlayerInvisible(ent))
-                        AddEntityString(
-                            ent, "*CLOAKED*",
-                            colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+                        AddEntityString(ent, "*CLOAKED*", colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
                     // Uber/Bonk
                     if (IsPlayerInvulnerable(ent))
                         AddEntityString(ent, "*INVULNERABLE*");
@@ -1283,16 +1152,12 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     // Zoomed
                     if (HasCondition<TFCond_Zoomed>(ent))
                     {
-                        AddEntityString(
-                            ent, "*ZOOMING*",
-                            colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+                        AddEntityString(ent, "*ZOOMING*", colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
                         // Slowed
                     }
                     else if (HasCondition<TFCond_Slowed>(ent))
                     {
-                        AddEntityString(
-                            ent, "*SLOWED*",
-                            colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+                        AddEntityString(ent, "*SLOWED*", colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
                     }
                     // Jarated
                     if (HasCondition<TFCond_Jarated>(ent))
@@ -1312,9 +1177,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                 {
                     if (show_weapon)
                     {
-                        const char *weapon_name =
-                            re::C_BaseCombatWeapon::GetPrintName(
-                                RAW_ENT(weapon));
+                        const char *weapon_name = re::C_BaseCombatWeapon::GetPrintName(RAW_ENT(weapon));
                         if (weapon_name)
                             AddEntityString(ent, std::string(weapon_name));
                     }
@@ -1379,15 +1242,9 @@ void _FASTCALL Draw3DBox(CachedEntity *ent, const rgba_t &clr)
     // Draw the actual box
     for (int i = 1; i <= 4; i++)
     {
-        glez::draw::line((points[i - 1].x), (points[i - 1].y),
-                         (points[i % 4].x) - (points[i - 1].x),
-                         (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
-        glez::draw::line((points[i - 1].x), (points[i - 1].y),
-                         (points[i + 3].x) - (points[i - 1].x),
-                         (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
-        glez::draw::line((points[i + 3].x), (points[i + 3].y),
-                         (points[i % 4 + 4].x) - (points[i + 3].x),
-                         (points[i % 4 + 4].y) - (points[i + 3].y), clr, 0.5f);
+        glez::draw::line((points[i - 1].x), (points[i - 1].y), (points[i % 4].x) - (points[i - 1].x), (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
+        glez::draw::line((points[i - 1].x), (points[i - 1].y), (points[i + 3].x) - (points[i - 1].x), (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
+        glez::draw::line((points[i + 3].x), (points[i + 3].y), (points[i % 4 + 4].x) - (points[i + 3].x), (points[i % 4 + 4].y) - (points[i + 3].y), clr, 0.5f);
     }
 }
 
@@ -1413,10 +1270,7 @@ void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
 
     // Depending on whether the player is cloaked, we change the color
     // acordingly
-    rgba_t border =
-        ((ent->m_iClassID() == RCC_PLAYER) && IsPlayerInvisible(ent))
-            ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f)
-            : colors::Transparent(colors::black, clr.a);
+    rgba_t border = ((ent->m_iClassID() == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black, clr.a);
 
     // With box corners, we draw differently
     if ((int) box_esp == 2)
@@ -1424,22 +1278,17 @@ void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
     // Otherwise, we just do simple draw funcs
     else
     {
-        glez::draw::rect_outline(min_x, min_y, max_x - min_x, max_y - min_y,
-                                 border, 0.5f);
-        glez::draw::rect_outline(min_x + 1, min_y + 1, max_x - min_x - 2,
-                                 max_y - min_y - 2, clr, 0.5f);
-        glez::draw::rect_outline(min_x + 2, min_y + 2, max_x - min_x - 4,
-                                 max_y - min_y - 4, border, 0.5f);
+        glez::draw::rect_outline(min_x, min_y, max_x - min_x, max_y - min_y, border, 0.5f);
+        glez::draw::rect_outline(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr, 0.5f);
+        glez::draw::rect_outline(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border, 0.5f);
     }
 }
 
 // Function to draw box corners, Used by DrawBox
-void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color,
-                bool transparent)
+void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color, bool transparent)
 {
-    const rgba_t &black =
-        transparent ? colors::Transparent(colors::black) : colors::black;
-    const int size = *box_corner_size;
+    const rgba_t &black = transparent ? colors::Transparent(colors::black) : colors::black;
+    const int size      = *box_corner_size;
 
     // Black corners
     // Top Left
@@ -1487,10 +1336,9 @@ bool GetCollide(CachedEntity *ent)
     {
 
         // Get collision center, max, and mins
-        const Vector &origin =
-            RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
-        Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
-        Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
+        const Vector &origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
+        Vector mins          = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
+        Vector maxs          = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
 
         // Create a array for storing box points
         Vector points_r[8]; // World vectors
@@ -1566,8 +1414,7 @@ bool GetCollide(CachedEntity *ent)
 }
 
 // Use to add a esp string to an entity
-void AddEntityString(CachedEntity *entity, const std::string &string,
-                     const rgba_t &color)
+void AddEntityString(CachedEntity *entity, const std::string &string, const rgba_t &color)
 {
     ESPData &entity_data = data[entity->m_IDX];
     if (entity_data.string_count >= 15)

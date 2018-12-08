@@ -25,8 +25,7 @@ DEFINE_HOOKED_METHOD(LevelShutdown, void, void *this_)
 #if ENABLE_IPC
     if (ipc::peer)
     {
-        ipc::peer->memory->peer_user_data[ipc::peer->client_id]
-            .ts_disconnected = time(nullptr);
+        ipc::peer->memory->peer_user_data[ipc::peer->client_id].ts_disconnected = time(nullptr);
     }
 #endif
     return original::LevelShutdown(this_);

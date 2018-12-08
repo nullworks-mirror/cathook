@@ -11,8 +11,7 @@ static settings::Bool medal_flip{ "visual.medal-flip", "false" };
 namespace hooked_methods
 {
 
-DEFINE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *this_, int min,
-                     int max)
+DEFINE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *this_, int min, int max)
 {
     if (medal_flip && min == 0 && max == 9)
         return 0;

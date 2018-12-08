@@ -42,13 +42,11 @@ void ConnectTier1Libraries(CreateInterfaceFn *pFactoryList, int nFactoryCount)
     {
         if (!g_pCVar)
         {
-            cvar = g_pCVar =
-                (ICvar *) pFactoryList[i](CVAR_INTERFACE_VERSION, NULL);
+            cvar = g_pCVar = (ICvar *) pFactoryList[i](CVAR_INTERFACE_VERSION, NULL);
         }
         if (!g_pProcessUtils)
         {
-            g_pProcessUtils = (IProcessUtils *) pFactoryList[i](
-                PROCESS_UTILS_INTERFACE_VERSION, NULL);
+            g_pProcessUtils = (IProcessUtils *) pFactoryList[i](PROCESS_UTILS_INTERFACE_VERSION, NULL);
         }
     }
 }

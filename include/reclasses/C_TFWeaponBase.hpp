@@ -18,65 +18,47 @@ public:
     inline static IClientEntity *GetOwnerViaInterface(IClientEntity *self)
     {
         typedef IClientEntity *(*fn_t)(IClientEntity *);
-        return vfunc<fn_t>(
-            self, offsets::PlatformOffset(452, offsets::undefined, 452),
-            0)(self);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(452, offsets::undefined, 452), 0)(self);
     }
     inline static bool UsesPrimaryAmmo(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
-        return vfunc<fn_t>(
-            self, offsets::PlatformOffset(448, offsets::undefined, 448),
-            0)(self);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(448, offsets::undefined, 448), 0)(self);
     }
     inline static bool HasPrimaryAmmo(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
-        return vfunc<fn_t>(
-            self, offsets::PlatformOffset(317, offsets::undefined, 317),
-            0)(self);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(317, offsets::undefined, 317), 0)(self);
     }
     inline static bool AreRandomCritsEnabled(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
-        return vfunc<fn_t>(
-            self, offsets::PlatformOffset(467, offsets::undefined, 467),
-            0)(self);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(467, offsets::undefined, 467), 0)(self);
     }
     inline static bool CalcIsAttackCriticalHelper(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
-        return vfunc<fn_t>(
-            self, offsets::PlatformOffset(461, offsets::undefined, 461),
-            0)(self);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(461, offsets::undefined, 461), 0)(self);
     }
     inline static bool CalcIsAttackCriticalHelperNoCrits(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
-        return vfunc<fn_t>(
-            self, offsets::PlatformOffset(462, offsets::undefined, 462),
-            0)(self);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(462, offsets::undefined, 462), 0)(self);
     }
-    inline static bool CanFireCriticalShot(IClientEntity *self, bool unknown1,
-                                           IClientEntity *unknown2)
+    inline static bool CanFireCriticalShot(IClientEntity *self, bool unknown1, IClientEntity *unknown2)
     {
         typedef bool (*fn_t)(IClientEntity *, bool, IClientEntity *);
-        return vfunc<fn_t>(
-            self, offsets::PlatformOffset(490, offsets::undefined, 490),
-            0)(self, unknown1, unknown2);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(490, offsets::undefined, 490), 0)(self, unknown1, unknown2);
     }
     inline static void AddToCritBucket(IClientEntity *self, float value)
     {
         constexpr float max_bucket_capacity = 1000.0f;
-        crit_bucket_(self) =
-            fminf(crit_bucket_(self) + value, max_bucket_capacity);
+        crit_bucket_(self)                  = fminf(crit_bucket_(self) + value, max_bucket_capacity);
     }
-    inline static bool IsAllowedToWithdrawFromCritBucket(IClientEntity *self,
-                                                         float value)
+    inline static bool IsAllowedToWithdrawFromCritBucket(IClientEntity *self, float value)
     {
         uint16_t weapon_info_handle = weapon_info_handle_(self);
-        void *weapon_info =
-            nullptr; // GetFileWeaponInfoFromHandle(weapon_info_handle);
+        void *weapon_info           = nullptr; // GetFileWeaponInfoFromHandle(weapon_info_handle);
         /*
         if (!weapon_info->unk_1736)
         {
@@ -125,8 +107,7 @@ public:
         float mult2 = *(float *) (unk3);
 
         float multiplier = 0.5f;
-        int seed         = C_BaseEntity::m_nPredictionRandomSeed() ^
-                   (owner->entindex() | self->entindex());
+        int seed         = C_BaseEntity::m_nPredictionRandomSeed() ^ (owner->entindex() | self->entindex());
         RandomSeed(seed);
 
         bool result = true;
@@ -153,9 +134,7 @@ public:
                     // *(int *)(self + 2872) = g_GlobalVars->framecount;
                     // *(char *)(self + 2839) = 0;
 
-                    if (g_pGameRules->roundmode == 5 &&
-                        g_pGameRules->winning_team ==
-                            NET_INT(owner, netvar.iTeamNum))
+                    if (g_pGameRules->roundmode == 5 && g_pGameRules->winning_team == NET_INT(owner, netvar.iTeamNum))
                     {
                         // *(char *)(self + 2838) = 1;
                         return 1;

@@ -28,9 +28,7 @@ struct offsets
 {
     static constexpr uint32_t undefined = std::numeric_limits<uint32_t>::max();
 
-    static constexpr uint32_t PlatformOffset(uint32_t offset_linux,
-                                             uint32_t offset_windows,
-                                             uint32_t offset_osx)
+    static constexpr uint32_t PlatformOffset(uint32_t offset_linux, uint32_t offset_windows, uint32_t offset_osx)
     {
         uint32_t result = undefined;
         switch (PLATFORM)

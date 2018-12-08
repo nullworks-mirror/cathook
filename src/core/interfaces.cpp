@@ -51,9 +51,7 @@ CGameRules *g_pGameRules                = nullptr;
 IEngineVGui *g_IEngineVGui              = nullptr;
 IUniformRandomStream *g_pUniformStream  = nullptr;
 
-template <typename T>
-T *BruteforceInterface(std::string name, sharedobj::SharedObject &object,
-                       int start = 0)
+template <typename T> T *BruteforceInterface(std::string name, sharedobj::SharedObject &object, int start = 0)
 {
     T *result = nullptr;
     std::stringstream stream;
@@ -80,38 +78,27 @@ T *BruteforceInterface(std::string name, sharedobj::SharedObject &object,
 
 void CreateInterfaces()
 {
-    g_ICvar   = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
-    g_IEngine = BruteforceInterface<IVEngineClient013>("VEngineClient",
-                                                       sharedobj::engine());
-    g_AppID   = g_IEngine->GetAppID();
-    g_IEntityList  = BruteforceInterface<IClientEntityList>("VClientEntityList",
-                                                           sharedobj::client());
-    g_ISteamClient = BruteforceInterface<ISteamClient>(
-        "SteamClient", sharedobj::steamclient(), 17);
-    g_IEventManager2 = BruteforceInterface<IGameEventManager2>(
-        "GAMEEVENTSMANAGER", sharedobj::engine(), 2);
-    g_IGameEventManager = BruteforceInterface<IGameEventManager>(
-        "GAMEEVENTSMANAGER", sharedobj::engine(), 1);
-    g_IBaseClient =
-        BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
-    g_ITrace       = BruteforceInterface<IEngineTrace>("EngineTraceClient",
-                                                 sharedobj::engine());
-    g_IInputSystem = BruteforceInterface<IInputSystem>(
-        "InputSystemVersion", sharedobj::inputsystem());
-    HSteamPipe sp   = g_ISteamClient->CreateSteamPipe();
-    HSteamUser su   = g_ISteamClient->ConnectToGlobalUser(sp);
-    g_IVModelRender = BruteforceInterface<IVModelRender>(
-        "VEngineModel", sharedobj::engine(), 16);
-    g_ISteamFriends = nullptr;
-    g_IEngineVGui =
-        BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
+    g_ICvar             = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
+    g_IEngine           = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
+    g_AppID             = g_IEngine->GetAppID();
+    g_IEntityList       = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
+    g_ISteamClient      = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);
+    g_IEventManager2    = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine(), 2);
+    g_IGameEventManager = BruteforceInterface<IGameEventManager>("GAMEEVENTSMANAGER", sharedobj::engine(), 1);
+    g_IBaseClient       = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
+    g_ITrace            = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine());
+    g_IInputSystem      = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem());
+    HSteamPipe sp       = g_ISteamClient->CreateSteamPipe();
+    HSteamUser su       = g_ISteamClient->ConnectToGlobalUser(sp);
+    g_IVModelRender     = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine(), 16);
+    g_ISteamFriends     = nullptr;
+    g_IEngineVGui       = BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
     IF_GAME(IsTF2())
     {
-        uintptr_t sig_steamapi = gSignatures.GetEngineSignature(
-            "55 0F 57 C0 89 E5 83 EC 18 F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? "
-            "? F3 0F 10 05 ? ? ? ? C7 04 24 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F "
-            "11 05 ? ? ? ? E8 ? ? ? ? C7 44 24 08 ? ? ? ? C7 44 24 04 ? ? ? ? "
-            "C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3");
+        uintptr_t sig_steamapi = gSignatures.GetEngineSignature("55 0F 57 C0 89 E5 83 EC 18 F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? "
+                                                                "? F3 0F 10 05 ? ? ? ? C7 04 24 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F "
+                                                                "11 05 ? ? ? ? E8 ? ? ? ? C7 44 24 08 ? ? ? ? C7 44 24 04 ? ? ? ? "
+                                                                "C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3");
         logging::Info("SteamAPI: 0x%08x", sig_steamapi);
         void **SteamAPI_engine = *reinterpret_cast<void ***>(sig_steamapi + 36);
         g_ISteamFriends        = (ISteamFriends *) (SteamAPI_engine[2]); //
@@ -119,17 +106,11 @@ void CreateInterfaces()
     if (g_ISteamFriends == nullptr)
     {
         // FIXME SIGNATURE
-        g_ISteamFriends =
-            g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
+        g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
     }
-    g_GlobalVars  = **(reinterpret_cast<CGlobalVarsBase ***>(
-        (uintptr_t) 11 +
-        gSignatures.GetClientSignature(
-            "55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
-    g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction",
-                                                     sharedobj::client());
-    g_IGameMovement =
-        BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
+    g_GlobalVars    = **(reinterpret_cast<CGlobalVarsBase ***>((uintptr_t) 11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
+    g_IPrediction   = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client());
+    g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
     IF_GAME(IsTF2())
     {
         // g_IMoveHelper =
@@ -140,47 +121,34 @@ void CreateInterfaces()
     }
     IF_GAME(IsTF2())
     {
-        g_IInput = **(reinterpret_cast<IInput ***>(
-            (uintptr_t) 1 + gSignatures.GetClientSignature(
-                                "A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF "
-                                "92 B4 00 00 00 A1 ? ? ? ? 8B 10")));
+        g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF "
+                                                                                                  "92 B4 00 00 00 A1 ? ? ? ? 8B 10")));
     }
     else IF_GAME(IsTF2C())
     {
-        g_IInput = **(reinterpret_cast<IInput ***>(
-            (uintptr_t) 1 + gSignatures.GetClientSignature(
-                                "A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF "
-                                "92 A8 00 00 00 A1 ? ? ? ? 8B 10")));
+        g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF "
+                                                                                                  "92 A8 00 00 00 A1 ? ? ? ? 8B 10")));
     }
     else
     {
-        g_IInput = **(reinterpret_cast<IInput ***>(
-            (uintptr_t) 1 +
-            gSignatures.GetClientSignature(
-                "A1 ? ? ? ? 8B 10 89 04 24 FF 52 78 A1 ? ? ? ? 8B 10")));
+        g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? 8B 10 89 04 24 FF 52 78 A1 ? ? ? ? 8B 10")));
     }
-    g_ISteamUser = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
-    g_IModelInfo = BruteforceInterface<IVModelInfoClient>("VModelInfoClient",
-                                                          sharedobj::engine());
-    g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(
-        gSignatures.GetEngineSignature(
-            "55 89 E5 83 EC 18 C7 44 24 04 01 00 00 00 C7 04 24 ? ? ? ? E8 ? ? "
-            "? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ? 85 C0 74 "
-            "15 A1 ? ? ? ? 8B 10 89 04 24 FF 52 38 C9 C3") +
-        17));
+    g_ISteamUser       = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
+    g_IModelInfo       = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine());
+    g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(gSignatures.GetEngineSignature("55 89 E5 83 EC 18 C7 44 24 04 01 00 00 00 C7 04 24 ? ? ? ? E8 ? ? "
+                                                                                                "? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ? 85 C0 74 "
+                                                                                                "15 A1 ? ? ? ? 8B 10 89 04 24 FF 52 38 C9 C3") +
+                                                                 17));
     logging::Info("BaseClientState: 0x%08x", g_IBaseClientState);
     g_IAchievementMgr = g_IEngine->GetAchievementMgr();
-    g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(
-        su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
+    g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
     IF_GAME(IsTF2())
     {
-        uintptr_t sig = gSignatures.GetClientSignature(
-            "A3 ? ? ? ? C3 8D 74 26 00 B8 FF FF FF FF 5D A3 ? ? ? ? C3");
+        uintptr_t sig          = gSignatures.GetClientSignature("A3 ? ? ? ? C3 8D 74 26 00 B8 FF FF FF FF 5D A3 ? ? ? ? C3");
         g_PredictionRandomSeed = *reinterpret_cast<int **>(sig + (uintptr_t) 1);
 
-        uintptr_t g_pGameRules_sig = gSignatures.GetClientSignature(
-            "C7 03 ? ? ? ? 89 1D ? ? ? ? 83 C4 14 5B 5D C3");
-        g_pGameRules = *reinterpret_cast<CGameRules **>(g_pGameRules_sig + 8);
+        uintptr_t g_pGameRules_sig = gSignatures.GetClientSignature("C7 03 ? ? ? ? 89 1D ? ? ? ? 83 C4 14 5B 5D C3");
+        g_pGameRules               = *reinterpret_cast<CGameRules **>(g_pGameRules_sig + 8);
     }
     IF_GAME(IsTF2())
     {
@@ -193,67 +161,47 @@ void CreateInterfaces()
         = 0x%08x", get_gc); g_TFGCClientSystem = get_gc();
         */
     }
-    g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>(
-        "VMaterialSystem", sharedobj::materialsystem());
+    g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());
 
 #if ENABLE_VISUALS
-    g_pUniformStream =
-        **(IUniformRandomStream ***) (gSignatures.GetVstdSignature(
-                                          "A3 ? ? ? ? C3 89 F6") +
-                                      0x1);
-    g_IVDebugOverlay = BruteforceInterface<IVDebugOverlay>("VDebugOverlay",
-                                                           sharedobj::engine());
-    g_IPanel =
-        BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2());
-    g_ISurface = BruteforceInterface<vgui::ISurface>(
-        "VGUI_Surface", sharedobj::vguimatsurface());
-    g_IStudioRender = BruteforceInterface<IStudioRender>(
-        "VStudioRender", sharedobj::studiorender());
-    g_IVRenderView      = BruteforceInterface<IVRenderView>("VEngineRenderView",
-                                                       sharedobj::engine());
+    g_pUniformStream    = **(IUniformRandomStream ***) (gSignatures.GetVstdSignature("A3 ? ? ? ? C3 89 F6") + 0x1);
+    g_IVDebugOverlay    = BruteforceInterface<IVDebugOverlay>("VDebugOverlay", sharedobj::engine());
+    g_IPanel            = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2());
+    g_ISurface          = BruteforceInterface<vgui::ISurface>("VGUI_Surface", sharedobj::vguimatsurface());
+    g_IStudioRender     = BruteforceInterface<IStudioRender>("VStudioRender", sharedobj::studiorender());
+    g_IVRenderView      = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine());
     g_IMaterialSystemHL = (IMaterialSystem *) g_IMaterialSystem;
     IF_GAME(IsTF2())
     {
-        g_pScreenSpaceEffects = **(
-            IScreenSpaceEffectManager **
-                *) (gSignatures.GetClientSignature(
-                        "F3 0F 10 83 40 05 00 00 C7 44 24 04 ? ? ? ? 89 34 24 "
-                        "F3 0F 11 44 24 08 E8 ? ? ? ? A1 ? ? ? ? 8B 10 89 04 "
-                        "24 89 74 24 08 C7 44 24 04 ? ? ? ? FF 52 0C A1 ? ? ? "
-                        "? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 14") +
-                    31);
-        g_ppScreenSpaceRegistrationHead = *(
-            CScreenSpaceEffectRegistration ***) (gSignatures.GetClientSignature(
-                                                     "55 89 E5 53 83 EC 14 8B "
-                                                     "1D ? ? ? ? 85 DB 74 25 "
-                                                     "8D B4 26 00 00 00 00 8B "
-                                                     "43 04 85 C0 74 10") +
-                                                 9);
+        g_pScreenSpaceEffects           = **(IScreenSpaceEffectManager ***) (gSignatures.GetClientSignature("F3 0F 10 83 40 05 00 00 C7 44 24 04 ? ? ? ? 89 34 24 "
+                                                                                                  "F3 0F 11 44 24 08 E8 ? ? ? ? A1 ? ? ? ? 8B 10 89 04 "
+                                                                                                  "24 89 74 24 08 C7 44 24 04 ? ? ? ? FF 52 0C A1 ? ? ? "
+                                                                                                  "? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 14") +
+                                                                   31);
+        g_ppScreenSpaceRegistrationHead = *(CScreenSpaceEffectRegistration ***) (gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 8B "
+                                                                                                                "1D ? ? ? ? 85 DB 74 25 "
+                                                                                                                "8D B4 26 00 00 00 00 8B "
+                                                                                                                "43 04 85 C0 74 10") +
+                                                                                 9);
     }
     else IF_GAME(IsTF2C())
     {
-        logging::Info(
-            "FATAL: Signatures not defined for TF2C - Screen Space Effects");
+        logging::Info("FATAL: Signatures not defined for TF2C - Screen Space Effects");
         g_pScreenSpaceEffects           = nullptr;
         g_ppScreenSpaceRegistrationHead = nullptr;
     }
     else IF_GAME(IsHL2DM())
     {
-        g_pScreenSpaceEffects =
-            **(IScreenSpaceEffectManager ***) (gSignatures.GetClientSignature(
-                                                   "FF 52 14 E9 E0 FE FF FF 8D "
-                                                   "76 00 A1 ? ? ? ? 8B 5D F4 "
-                                                   "8B 75 F8 8B 7D FC 8B 10 C7 "
-                                                   "45 0C ? ? ? ? 89 45 08 8B "
-                                                   "42 1C 89 EC 5D FF E0") +
-                                               12);
-        g_ppScreenSpaceRegistrationHead =
-            *(CScreenSpaceEffectRegistration **
-                  *) (gSignatures.GetClientSignature(
-                          "E8 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 "
-                          "28 85 C0 75 4B 8B 35 ? ? ? ? 85 F6 74 31 90 8B 5E "
-                          "04 85 DB 74 22 8B 03 89 1C 24") +
-                      27);
+        g_pScreenSpaceEffects           = **(IScreenSpaceEffectManager ***) (gSignatures.GetClientSignature("FF 52 14 E9 E0 FE FF FF 8D "
+                                                                                                  "76 00 A1 ? ? ? ? 8B 5D F4 "
+                                                                                                  "8B 75 F8 8B 7D FC 8B 10 C7 "
+                                                                                                  "45 0C ? ? ? ? 89 45 08 8B "
+                                                                                                  "42 1C 89 EC 5D FF E0") +
+                                                                   12);
+        g_ppScreenSpaceRegistrationHead = *(CScreenSpaceEffectRegistration ***) (gSignatures.GetClientSignature("E8 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 "
+                                                                                                                "28 85 C0 75 4B 8B 35 ? ? ? ? 85 F6 74 31 90 8B 5E "
+                                                                                                                "04 85 DB 74 22 8B 03 89 1C 24") +
+                                                                                 27);
     }
     logging::Info("Finding HUD");
     IF_GAME(IsCSS())
@@ -263,13 +211,11 @@ void CreateInterfaces()
     }
     else
     {
-        uintptr_t hud_sig =
-            gSignatures.GetClientSignature(
-                "FF 50 08 D9 9D 24 FE FF FF 89 3C 24 E8 ? ? ? ? C7 44 24 04 ? "
-                "? ? ? C7 04 24 ? ? ? ? D9 9D 20 FE FF FF E8 ? ? ? ? 85 C0 74 "
-                "3B 66 0F 6E C3 C7 44 24 10 00 00 00 00 F3 0F 5C 85 20 FE FF "
-                "FF") +
-            28;
+        uintptr_t hud_sig = gSignatures.GetClientSignature("FF 50 08 D9 9D 24 FE FF FF 89 3C 24 E8 ? ? ? ? C7 44 24 04 ? "
+                                                           "? ? ? C7 04 24 ? ? ? ? D9 9D 20 FE FF FF E8 ? ? ? ? 85 C0 74 "
+                                                           "3B 66 0F 6E C3 C7 44 24 10 00 00 00 00 F3 0F 5C 85 20 FE FF "
+                                                           "FF") +
+                            28;
         g_CHUD = *reinterpret_cast<CHud **>(hud_sig);
         logging::Info("HUD 0x%08x 0x%08x", hud_sig, g_CHUD);
     }

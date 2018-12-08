@@ -10,8 +10,7 @@ zerokernel::ModalSelect::ModalSelect() : ModalContainer{}
     bb.height.setContent();
 }
 
-void zerokernel::ModalSelect::handleMessage(zerokernel::Message &msg,
-                                            bool is_relayed)
+void zerokernel::ModalSelect::handleMessage(zerokernel::Message &msg, bool is_relayed)
 {
     BaseMenuObject::handleMessage(msg, is_relayed);
 
@@ -31,8 +30,7 @@ void zerokernel::ModalSelect::handleMessage(zerokernel::Message &msg,
     }
 }
 
-void zerokernel::ModalSelect::addOption(std::string name, std::string value,
-                                        std::optional<std::string> tooltip)
+void zerokernel::ModalSelect::addOption(std::string name, std::string value, std::optional<std::string> tooltip)
 {
     auto option     = std::make_unique<Option>(name, value);
     option->tooltip = std::move(tooltip);

@@ -34,13 +34,10 @@ void HookTools::PAINT()
 static InitRoutine init([]() {
     auto &HookedFunctions = HookTools::GetHookedFunctions();
     logging::Info("Hooked Functions amount: %i", HookedFunctions.size());
-    std::sort(HookedFunctions.begin(), HookedFunctions.end(),
-              [](HookedFunction *a, HookedFunction *b) { return *a > *b; });
+    std::sort(HookedFunctions.begin(), HookedFunctions.end(), [](HookedFunction *a, HookedFunction *b) { return *a > *b; });
     logging::Info("Sorted Hooked Functions: %i", HookedFunctions.size());
 });
 
-static CatCommand print("debug_print_hookedfunctions",
-                        "Print hooked functions (CreateMove, Draw, Paint)",
-                        []() {
+static CatCommand print("debug_print_hookedfunctions", "Print hooked functions (CreateMove, Draw, Paint)", []() {
 
-                        });
+});

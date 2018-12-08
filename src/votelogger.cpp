@@ -49,16 +49,10 @@ void dispatchUserMessage(bf_read &buffer, int type)
         if (eid == LOCAL_E->m_IDX)
             was_local_player = true;
         if (*vote_kickn)
-            if (playerlist::AccessData(info.friendsID).state !=
-                    playerlist::k_EState::RAGE &&
-                playerlist::AccessData(info.friendsID).state !=
-                    playerlist::k_EState::DEFAULT)
+            if (playerlist::AccessData(info.friendsID).state != playerlist::k_EState::RAGE && playerlist::AccessData(info.friendsID).state != playerlist::k_EState::DEFAULT)
                 g_IEngine->ClientCmd_Unrestricted("vote option2");
         if (*vote_kicky)
-            if (playerlist::AccessData(info.friendsID).state ==
-                    playerlist::k_EState::RAGE ||
-                playerlist::AccessData(info.friendsID).state ==
-                    playerlist::k_EState::DEFAULT)
+            if (playerlist::AccessData(info.friendsID).state == playerlist::k_EState::RAGE || playerlist::AccessData(info.friendsID).state == playerlist::k_EState::DEFAULT)
                 g_IEngine->ClientCmd_Unrestricted("vote option1");
         if (*party_say)
         {
@@ -67,19 +61,10 @@ void dispatchUserMessage(bf_read &buffer, int type)
                 // because tf2 is stupid and doesn't have escape characters,
                 // use the greek question marks instead. big brain.
                 // Clang-format why, TODO: Don't use format func
-                g_IEngine->ExecuteClientCmd(
-                    format("say_party [CAT] votekick called: ",
-                           boost::replace_all_copy((std::string) info2.name,
-                                                   ";", ";"),
-                           " => ",
-                           boost::replace_all_copy((std::string) info.name, ";",
-                                                   ";"),
-                           " (", reason, ")")
-                        .c_str());
+                g_IEngine->ExecuteClientCmd(format("say_party [CAT] votekick called: ", boost::replace_all_copy((std::string) info2.name, ";", ";"), " => ", boost::replace_all_copy((std::string) info.name, ";", ";"), " (", reason, ")").c_str());
             }
         }
-        logging::Info("Vote called to kick %s [U:1:%u] for %s", name, steamID,
-                      reason);
+        logging::Info("Vote called to kick %s [U:1:%u] for %s", name, steamID, reason);
         break;
     }
     case 47:

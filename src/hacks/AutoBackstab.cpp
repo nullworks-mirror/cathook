@@ -42,8 +42,7 @@ Vector rotateVector(Vector center, float radianAngle, Vector p)
 }
 
 // Function to find the closest hitbox to the v_Eye for a given ent
-int ClosestDistanceHitbox(CachedEntity *target,
-                          backtrack::BacktrackData btd = {})
+int ClosestDistanceHitbox(CachedEntity *target, backtrack::BacktrackData btd = {})
 {
     int closest        = -1;
     float closest_dist = 0.0f, dist = 0.0f;
@@ -52,8 +51,7 @@ int ClosestDistanceHitbox(CachedEntity *target,
         if (hacks::shared::backtrack::isBacktrackEnabled)
             dist = g_pLocalPlayer->v_Eye.DistTo(btd.hitboxes.at(i).center);
         else
-            dist = g_pLocalPlayer->v_Eye.DistTo(
-                target->hitboxes.GetHitbox(i)->center);
+            dist = g_pLocalPlayer->v_Eye.DistTo(target->hitboxes.GetHitbox(i)->center);
         if (dist < closest_dist || closest == -1)
         {
             closest      = i;
@@ -63,8 +61,7 @@ int ClosestDistanceHitbox(CachedEntity *target,
     return closest;
 }
 
-bool unifiedCanBackstab(CachedEntity *tar, Vector &vecAngle,
-                        Vector targetOrigin, Vector min, Vector max)
+bool unifiedCanBackstab(CachedEntity *tar, Vector &vecAngle, Vector targetOrigin, Vector min, Vector max)
 {
     // Get melee range
     float meleeRange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
@@ -102,8 +99,7 @@ bool unifiedCanBackstab(CachedEntity *tar, Vector &vecAngle,
 
     Vector hit;
     // Check if we our line is within the targets hitbox
-    if (!hacks::shared::triggerbot::CheckLineBox(minz, maxz, head, forward,
-                                                 hit))
+    if (!hacks::shared::triggerbot::CheckLineBox(minz, maxz, head, forward, hit))
         return false;
 
     if (DotProduct(wsc_spy_to_victim, eye_victim) <= 0.0f)
@@ -134,21 +130,15 @@ void CreateMove()
             CachedEntity *target = ENTITY(i);
             if (CE_BAD(target))
                 continue;
-            if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
-                !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
+            if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() || !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
                 continue;
-            if (player_tools::shouldTarget(target) !=
-                player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (player_tools::shouldTarget(target) != player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
-            if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
-                    g_pLocalPlayer->v_Eye) <= 200.0f)
+            if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(g_pLocalPlayer->v_Eye) <= 200.0f)
             {
                 if (CE_GOOD(besttarget))
                 {
-                    if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(
-                            g_pLocalPlayer->v_Eye) <
-                        besttarget->hitboxes.GetHitbox(spine_3)->center.DistTo(
-                            g_pLocalPlayer->v_Eye))
+                    if (target->hitboxes.GetHitbox(spine_3)->center.DistTo(g_pLocalPlayer->v_Eye) < besttarget->hitboxes.GetHitbox(spine_3)->center.DistTo(g_pLocalPlayer->v_Eye))
                         besttarget = target;
                 }
                 else
@@ -167,16 +157,12 @@ void CreateMove()
         // Various valid entity checks
         if (CE_BAD(target))
             return;
-        if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
-            !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
+        if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() || !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
             return;
-        if (player_tools::shouldTarget(target) !=
-            player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (player_tools::shouldTarget(target) != player_tools::IgnoreReason::DO_NOT_IGNORE)
             return;
         // Check if besttick distance is < 200.0f
-        if (backtrack::headPositions[target->m_IDX][backtrack::BestTick]
-                .hitboxes.at(spine_3)
-                .center.DistTo(g_pLocalPlayer->v_Eye) < 200.0f)
+        if (backtrack::headPositions[target->m_IDX][backtrack::BestTick].hitboxes.at(spine_3).center.DistTo(g_pLocalPlayer->v_Eye) < 200.0f)
             besttarget = target;
     }
 
@@ -214,8 +200,7 @@ void CreateMove()
 
                 for (angle.y = -180.0f; angle.y < 180.0f; angle.y += 20.0f)
                 {
-                    if (unifiedCanBackstab(besttarget, angle, i.entorigin,
-                                           i.collidable.min, i.collidable.max))
+                    if (unifiedCanBackstab(besttarget, angle, i.entorigin, i.collidable.min, i.collidable.max))
                     {
                         current_user_cmd->tick_count = i.tickcount;
                         current_user_cmd->viewangles = angle;
@@ -307,15 +292,13 @@ void testingFunc()
         CachedEntity *target = ENTITY(i);
         if (CE_BAD(target))
             continue;
-        if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() ||
-            !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
+        if (target == LOCAL_E || target->m_iTeam() == LOCAL_E->m_iTeam() || !target->m_bAlivePlayer() || target->m_Type() != ENTITY_PLAYER)
             continue;
         if (target->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye) <= 200.0f)
         {
             if (CE_GOOD(besttarget))
             {
-                if (target->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye) <
-                    besttarget->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye))
+                if (target->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye) < besttarget->m_vecOrigin().DistTo(g_pLocalPlayer->v_Eye))
                     besttarget = target;
             }
             else
@@ -332,9 +315,8 @@ void testingFunc()
 
     logging::Info("Loc: %f; Tar: %f", angle.y, tarAngle.y);
 
-    Vector wsc_spy_to_victim =
-        (besttarget->m_vecOrigin() - LOCAL_E->m_vecOrigin());
-    wsc_spy_to_victim.z = 0;
+    Vector wsc_spy_to_victim = (besttarget->m_vecOrigin() - LOCAL_E->m_vecOrigin());
+    wsc_spy_to_victim.z      = 0;
     wsc_spy_to_victim.NormalizeInPlace();
 
     Vector eye_spy;

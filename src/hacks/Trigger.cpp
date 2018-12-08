@@ -22,14 +22,10 @@ static settings::Float delay{ "trigger.delay", "0" };
 static settings::Button trigger_key{ "trigger.key.button", "<null>" };
 static settings::Int trigger_key_mode{ "trigger.key.mode", "1" };
 // FIXME move these into targeting
-static settings::Bool ignore_cloak{ "trigger.target.ignore-cloaked-spies",
-                                    "true" };
-static settings::Bool ignore_vaccinator{ "trigger.target.ignore-vaccinator",
-                                         "true" };
-static settings::Bool buildings_sentry{ "trigger.target.buildings-sentry",
-                                        "true" };
-static settings::Bool buildings_other{ "trigger.target.buildings-other",
-                                       "true" };
+static settings::Bool ignore_cloak{ "trigger.target.ignore-cloaked-spies", "true" };
+static settings::Bool ignore_vaccinator{ "trigger.target.ignore-vaccinator", "true" };
+static settings::Bool buildings_sentry{ "trigger.target.buildings-sentry", "true" };
+static settings::Bool buildings_other{ "trigger.target.buildings-other", "true" };
 static settings::Bool stickybot{ "trigger.target.stickybombs", "false" };
 static settings::Bool teammates{ "trigger.target.teammates", "false" };
 static settings::Int max_range{ "trigger.target.max-range", "4096" };
@@ -45,9 +41,7 @@ int last_hb_traced = 0;
 Vector forward;
 bool CanBacktrack()
 {
-    CachedEntity *tar = (hacks::shared::backtrack::iBestTarget != -1)
-                            ? ENTITY(hacks::shared::backtrack::iBestTarget)
-                            : nullptr;
+    CachedEntity *tar = (hacks::shared::backtrack::iBestTarget != -1) ? ENTITY(hacks::shared::backtrack::iBestTarget) : nullptr;
     if (CE_BAD(tar))
         return true;
     for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
@@ -60,10 +54,8 @@ bool CanBacktrack()
             continue;
 
         // Get the min and max for the hitbox
-        Vector minz(fminf(min.x, max.x), fminf(min.y, max.y),
-                    fminf(min.z, max.z));
-        Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y),
-                    fmaxf(min.z, max.z));
+        Vector minz(fminf(min.x, max.x), fminf(min.y, max.y), fminf(min.z, max.z));
+        Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y), fmaxf(min.z, max.z));
 
         // Shrink the hitbox here
         Vector size = maxz - minz;
@@ -78,14 +70,13 @@ bool CanBacktrack()
         // return false
         Vector hit;
 
-        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) &&
-            !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
+        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) && !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
             continue;
         if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
         {
-            Vector &angles = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
-            float &simtime = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
-            angles.y       = i.viewangles;
+            Vector &angles               = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
+            float &simtime               = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
+            angles.y                     = i.viewangles;
             current_user_cmd->tick_count = i.tickcount;
             current_user_cmd->buttons |= IN_ATTACK;
             return true;
@@ -185,8 +176,7 @@ bool ShouldShoot()
         // If zoomed only is on, check if zoomed
         if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
         {
-            if (!g_pLocalPlayer->bZoomed &&
-                !(current_user_cmd->buttons & IN_ATTACK))
+            if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
                 return false;
         }
         // Check if player is taunting
@@ -254,8 +244,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             return false;
 
         // Global checks
-        if (player_tools::shouldTarget(entity) !=
-            player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (player_tools::shouldTarget(entity) != player_tools::IgnoreReason::DO_NOT_IGNORE)
             return false;
 
         IF_GAME(IsTF())
@@ -264,8 +253,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             // kill target, dont aim
             if (*wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
             {
-                float bdmg =
-                    CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
+                float bdmg = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargedDamage);
                 if (g_GlobalVars->curtime - g_pLocalPlayer->flZoomBegin <= 1.0f)
                     bdmg = 50.0f;
                 //                if ((bdmg * 3) < (HasDarwins(entity)
@@ -284,10 +272,8 @@ bool IsTargetStateGood(CachedEntity *entity)
             if (ignore_cloak && IsPlayerInvisible(entity))
                 return false;
             // If settings allow, dont target vaccinated players
-            if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan ||
-                LOCAL_W->m_iClassID() == CL_CLASS(CTFCompoundBow))
-                if (ignore_vaccinator &&
-                    HasCondition<TFCond_UberBulletResist>(entity))
+            if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID() == CL_CLASS(CTFCompoundBow))
+                if (ignore_vaccinator && HasCondition<TFCond_UberBulletResist>(entity))
                     return false;
         }
 
@@ -304,18 +290,13 @@ bool IsTargetStateGood(CachedEntity *entity)
         {
 
             // Get a cached hitbox for the one traced
-            hitbox_cache::CachedHitbox *hb =
-                entity->hitboxes.GetHitbox(last_hb_traced);
+            hitbox_cache::CachedHitbox *hb = entity->hitboxes.GetHitbox(last_hb_traced);
             // Check for null
             if (hb)
             {
                 // Get the min and max for the hitbox
-                Vector minz(fminf(hb->min.x, hb->max.x),
-                            fminf(hb->min.y, hb->max.y),
-                            fminf(hb->min.z, hb->max.z));
-                Vector maxz(fmaxf(hb->min.x, hb->max.x),
-                            fmaxf(hb->min.y, hb->max.y),
-                            fmaxf(hb->min.z, hb->max.z));
+                Vector minz(fminf(hb->min.x, hb->max.x), fminf(hb->min.y, hb->max.y), fminf(hb->min.z, hb->max.z));
+                Vector maxz(fmaxf(hb->min.x, hb->max.x), fmaxf(hb->min.y, hb->max.y), fmaxf(hb->min.z, hb->max.z));
 
                 // Shrink the hitbox here
                 Vector size = maxz - minz;
@@ -329,8 +310,7 @@ bool IsTargetStateGood(CachedEntity *entity)
                 // we
                 // return false
                 Vector hit;
-                if (!CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward,
-                                  hit))
+                if (!CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
                     return false;
             }
         }
@@ -507,11 +487,7 @@ bool HeadPreferable(CachedEntity *target)
                 // zoomed, or if the enemy has less than 40, due to darwins, and
                 // only if they have less than 150 health will it try to
                 // bodyshot
-                if (CanHeadshot() &&
-                    (cdmg >= target->m_iHealth() ||
-                     IsPlayerCritBoosted(g_pLocalPlayer->entity) ||
-                     !g_pLocalPlayer->bZoomed || target->m_iHealth() <= bdmg) &&
-                    target->m_iHealth() <= 150)
+                if (CanHeadshot() && (cdmg >= target->m_iHealth() || IsPlayerCritBoosted(g_pLocalPlayer->entity) || !g_pLocalPlayer->bZoomed || target->m_iHealth() <= bdmg) && target->m_iHealth() <= 150)
                 {
                     // We dont need to hit the head as a bodyshot will kill
                     headonly = false;
@@ -587,8 +563,7 @@ float EffectiveTargetingRange()
     if (GetWeaponMode() == weapon_melee)
         return re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     // Pyros only have so much untill their flames hit
-    else if (g_pLocalPlayer->weapon()->m_iClassID() ==
-             CL_CLASS(CTFFlameThrower))
+    else if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
         return 300.0f;
     // If user has set a max range, then use their setting,
     if (max_range)
@@ -602,8 +577,7 @@ float EffectiveTargetingRange()
 
 // TEMPORARY CODE.
 // TODO
-bool GetIntersection(float fDst1, float fDst2, Vector P1, Vector P2,
-                     Vector &Hit)
+bool GetIntersection(float fDst1, float fDst2, Vector P1, Vector P2, Vector &Hit)
 {
     if ((fDst1 * fDst2) >= 0.0f)
         return false;
@@ -615,14 +589,11 @@ bool GetIntersection(float fDst1, float fDst2, Vector P1, Vector P2,
 
 bool InBox(Vector Hit, Vector B1, Vector B2, int Axis)
 {
-    if (Axis == 1 && Hit.z > B1.z && Hit.z < B2.z && Hit.y > B1.y &&
-        Hit.y < B2.y)
+    if (Axis == 1 && Hit.z > B1.z && Hit.z < B2.z && Hit.y > B1.y && Hit.y < B2.y)
         return true;
-    if (Axis == 2 && Hit.z > B1.z && Hit.z < B2.z && Hit.x > B1.x &&
-        Hit.x < B2.x)
+    if (Axis == 2 && Hit.z > B1.z && Hit.z < B2.z && Hit.x > B1.x && Hit.x < B2.x)
         return true;
-    if (Axis == 3 && Hit.x > B1.x && Hit.x < B2.x && Hit.y > B1.y &&
-        Hit.y < B2.y)
+    if (Axis == 3 && Hit.x > B1.x && Hit.x < B2.x && Hit.y > B1.y && Hit.y < B2.y)
         return true;
     return false;
 }
@@ -641,24 +612,12 @@ bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector &Hit)
         return false;
     if (L2.z > B2.z && L1.z > B2.z)
         return false;
-    if (L1.x > B1.x && L1.x < B2.x && L1.y > B1.y && L1.y < B2.y &&
-        L1.z > B1.z && L1.z < B2.z)
+    if (L1.x > B1.x && L1.x < B2.x && L1.y > B1.y && L1.y < B2.y && L1.z > B1.z && L1.z < B2.z)
     {
         Hit = L1;
         return true;
     }
-    if ((GetIntersection(L1.x - B1.x, L2.x - B1.x, L1, L2, Hit) &&
-         InBox(Hit, B1, B2, 1)) ||
-        (GetIntersection(L1.y - B1.y, L2.y - B1.y, L1, L2, Hit) &&
-         InBox(Hit, B1, B2, 2)) ||
-        (GetIntersection(L1.z - B1.z, L2.z - B1.z, L1, L2, Hit) &&
-         InBox(Hit, B1, B2, 3)) ||
-        (GetIntersection(L1.x - B2.x, L2.x - B2.x, L1, L2, Hit) &&
-         InBox(Hit, B1, B2, 1)) ||
-        (GetIntersection(L1.y - B2.y, L2.y - B2.y, L1, L2, Hit) &&
-         InBox(Hit, B1, B2, 2)) ||
-        (GetIntersection(L1.z - B2.z, L2.z - B2.z, L1, L2, Hit) &&
-         InBox(Hit, B1, B2, 3)))
+    if ((GetIntersection(L1.x - B1.x, L2.x - B1.x, L1, L2, Hit) && InBox(Hit, B1, B2, 1)) || (GetIntersection(L1.y - B1.y, L2.y - B1.y, L1, L2, Hit) && InBox(Hit, B1, B2, 2)) || (GetIntersection(L1.z - B1.z, L2.z - B1.z, L1, L2, Hit) && InBox(Hit, B1, B2, 3)) || (GetIntersection(L1.x - B2.x, L2.x - B2.x, L1, L2, Hit) && InBox(Hit, B1, B2, 1)) || (GetIntersection(L1.y - B2.y, L2.y - B2.y, L1, L2, Hit) && InBox(Hit, B1, B2, 2)) || (GetIntersection(L1.z - B2.z, L2.z - B2.z, L1, L2, Hit) && InBox(Hit, B1, B2, 3)))
         return true;
 
     return false;

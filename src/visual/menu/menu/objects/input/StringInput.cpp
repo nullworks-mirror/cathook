@@ -5,10 +5,8 @@
 #include <menu/object/input/StringInput.hpp>
 #include <menu/menu/special/SettingsManagerList.hpp>
 
-static settings::RVariable<int> default_width{ "zk.style.input.string.width",
-                                               "60" };
-static settings::RVariable<int> default_height{ "zk.style.input.string.height",
-                                                "14" };
+static settings::RVariable<int> default_width{ "zk.style.input.string.width", "60" };
+static settings::RVariable<int> default_height{ "zk.style.input.string.height", "14" };
 
 void zerokernel::StringInput::setVariable(settings::IVariable *variable)
 {
@@ -21,8 +19,7 @@ zerokernel::StringInput::StringInput() : TextInput{}
     text_object.bb.setPadding(0, 0, 5, 0);
 }
 
-zerokernel::StringInput::StringInput(settings::IVariable &option)
-    : TextInput(), option(&option)
+zerokernel::StringInput::StringInput(settings::IVariable &option) : TextInput(), option(&option)
 {
     resize(*default_width, *default_height);
     text_object.bb.setPadding(0, 0, 5, 0);

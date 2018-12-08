@@ -78,8 +78,7 @@ bool StolenName()
         return false;
 
     // Get random number that we can use with our array
-    int target_random_num =
-        floor(RandFloatRange(0, potential_targets_length - 0.1F));
+    int target_random_num = floor(RandFloatRange(0, potential_targets_length - 0.1F));
 
     // Get a idx from our random array position
     int new_target = potential_targets[target_random_num];
@@ -138,6 +137,9 @@ const char *GetNamestealName(CSteamID steam_id)
     {
         auto new_name = force_name.toString();
         ReplaceString(new_name, "\\n", "\n");
+        ReplaceString(new_name, "\\015", "\015");
+        ReplaceString(new_name, "\\u200F", "\u200F");
+
         return new_name.c_str();
     }
     return nullptr;
@@ -145,14 +147,13 @@ const char *GetNamestealName(CSteamID steam_id)
 namespace hooked_methods
 {
 
-DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_,
-                     CSteamID steam_id)
+DEFINE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *this_, CSteamID steam_id)
 {
     const char *new_name = GetNamestealName(steam_id);
     return (new_name ? new_name : original::GetFriendPersonaName(this_, steam_id));
 }
-static InitRoutine init([](){
-    namesteal.installChangeCallback([](settings::VariableBase<int> &var, int new_val){
+static InitRoutine init([]() {
+    namesteal.installChangeCallback([](settings::VariableBase<int> &var, int new_val) {
         if (new_val != 0)
         {
             const char *xd = GetNamestealName(g_ISteamUser->GetSteamID());
@@ -170,7 +171,7 @@ static InitRoutine init([](){
     });
 });
 static Timer set_name{};
-static HookedFunction CM(HookedFunctions_types::HF_CreateMove, "namesteal", 2, [](){
+static HookedFunction CM(HookedFunctions_types::HF_CreateMove, "namesteal", 2, []() {
     if (!namesteal)
         return;
     if (!set_name.test_and_set(500000))

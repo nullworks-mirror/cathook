@@ -9,9 +9,7 @@
 #include <menu/special/TreeListCollapsible.hpp>
 #include <menu/menu/special/SettingsManagerList.hpp>
 
-zerokernel::special::SettingsManagerList::SettingsManagerList(
-    zerokernel::Container &list)
-    : list(list)
+zerokernel::special::SettingsManagerList::SettingsManagerList(zerokernel::Container &list) : list(list)
 {
 }
 
@@ -21,14 +19,10 @@ void zerokernel::special::SettingsManagerList::construct()
     std::vector<pair_type> all_registered{};
     for (auto &v : settings::Manager::instance().registered)
     {
-        all_registered.emplace_back(
-            std::make_pair(v.first, &v.second.variable));
+        all_registered.emplace_back(std::make_pair(v.first, &v.second.variable));
     }
 
-    std::sort(all_registered.begin(), all_registered.end(),
-              [](const pair_type &a, const pair_type &b) -> bool {
-                  return a.first.compare(b.first) < 0;
-              });
+    std::sort(all_registered.begin(), all_registered.end(), [](const pair_type &a, const pair_type &b) -> bool { return a.first.compare(b.first) < 0; });
 
     for (auto &v : all_registered)
     {
@@ -48,15 +42,13 @@ void zerokernel::special::SettingsManagerList::construct()
     list.reorder_needed = true;
 }
 
-void zerokernel::special::SettingsManagerList::recursiveWork(
-    zerokernel::special::SettingsManagerList::TreeNode &node, size_t depth)
+void zerokernel::special::SettingsManagerList::recursiveWork(zerokernel::special::SettingsManagerList::TreeNode &node, size_t depth)
 {
     for (auto &n : node.nodes)
     {
         if (n.second.variable)
         {
-            addVariable(n.first, depth, n.second.variable,
-                        isVariableMarked(n.second.full_name));
+            addVariable(n.first, depth, n.second.variable, isVariableMarked(n.second.full_name));
         }
 
         if (!n.second.nodes.empty())
@@ -67,9 +59,7 @@ void zerokernel::special::SettingsManagerList::recursiveWork(
     }
 }
 
-std::vector<std::string>
-zerokernel::special::SettingsManagerList::explodeVariableName(
-    const std::string &name)
+std::vector<std::string> zerokernel::special::SettingsManagerList::explodeVariableName(const std::string &name)
 {
     std::vector<std::string> result{};
     std::ostringstream ss{};
@@ -89,9 +79,7 @@ zerokernel::special::SettingsManagerList::explodeVariableName(
     return result;
 }
 
-zerokernel::special::SettingsManagerList::TreeNode &
-    zerokernel::special::SettingsManagerList::TreeNode::
-    operator[](const std::string &path)
+zerokernel::special::SettingsManagerList::TreeNode &zerokernel::special::SettingsManagerList::TreeNode::operator[](const std::string &path)
 {
     for (auto &v : nodes)
     {
@@ -103,9 +91,7 @@ zerokernel::special::SettingsManagerList::TreeNode &
     return nodes.back().second;
 }
 
-void zerokernel::special::SettingsManagerList::addVariable(
-    std::string name, size_t depth, settings::IVariable *variable,
-    bool registered)
+void zerokernel::special::SettingsManagerList::addVariable(std::string name, size_t depth, settings::IVariable *variable, bool registered)
 {
     auto entry = std::make_unique<VariableListEntry>();
     entry->setText(name);
@@ -116,8 +102,7 @@ void zerokernel::special::SettingsManagerList::addVariable(
     list.addObject(std::move(entry));
 }
 
-void zerokernel::special::SettingsManagerList::addCollapsible(std::string name,
-                                                              size_t depth)
+void zerokernel::special::SettingsManagerList::addCollapsible(std::string name, size_t depth)
 {
     auto entry = std::make_unique<TreeListCollapsible>();
     entry->setText(name);
@@ -137,8 +122,7 @@ void zerokernel::special::SettingsManagerList::resetMarks()
     marks.clear();
 }
 
-bool zerokernel::special::SettingsManagerList::isVariableMarked(
-    std::string name)
+bool zerokernel::special::SettingsManagerList::isVariableMarked(std::string name)
 {
     return marks.find(name) != marks.end();
 }

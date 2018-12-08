@@ -36,8 +36,7 @@ public:
 
     void loadFromXml(const tinyxml2::XMLElement *data) override;
 
-    BaseMenuObject *
-    findElement(const std::function<bool(BaseMenuObject *)> &search) override;
+    BaseMenuObject *findElement(const std::function<bool(BaseMenuObject *)> &search) override;
 
     virtual void addObject(std::unique_ptr<BaseMenuObject> &&object);
 

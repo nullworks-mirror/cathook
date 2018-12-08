@@ -31,10 +31,8 @@ void handleFireBullets(C_TEFireBullets *ent)
     if (g_IEngine->IsInGame())
     {
         INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-        float time = g_GlobalVars->curtime * g_GlobalVars->interval_per_tick -
-                     (ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f);
-        bases.push_back(seedstruct{ g_GlobalVars->tickcount, ent->m_iSeed(),
-                                    time }); // It's circular buffer
+        float time      = g_GlobalVars->curtime * g_GlobalVars->interval_per_tick - (ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f);
+        bases.push_back(seedstruct{ g_GlobalVars->tickcount, ent->m_iSeed(), time }); // It's circular buffer
         selectBase();
     }
 }
@@ -103,15 +101,12 @@ void selectBase()
     for (seedstruct &base : bases)
     {
         float disp = float(base.seed) - float(selected.seed);
-        disp =
-            fmod(disp - predictOffset(selected, base.tickcount, clockRes), 256);
-        disp = (disp > 128.0f ? disp - 256.0f : disp);
+        disp       = fmod(disp - predictOffset(selected, base.tickcount, clockRes), 256);
+        disp       = (disp > 128.0f ? disp - 256.0f : disp);
 
         if (abs(disp) < fmaxf(1.2, maxDisp))
         {
-            intervals.push_back(
-                { 1,
-                  disp - 0.5f }); // Actually "interval ends", not "intervals"
+            intervals.push_back({ 1, disp - 0.5f }); // Actually "interval ends", not "intervals"
             intervals.push_back({ -1, disp + 0.5f });
         }
     }
@@ -131,24 +126,17 @@ void selectBase()
         }
     }
 
-    logging::Info("seedpred-stats",
-                  "Seed prediction: res = %.3f, chance = %d%%\n", clockRes,
-                  bestChance * 100 / total);
+    logging::Info("seedpred-stats", "Seed prediction: res = %.3f, chance = %d%%\n", clockRes, bestChance * 100 / total);
 }
 
 float predictOffset(const seedstruct &entry, int targetTick, float clockRes)
 {
-    return (1000.0f * g_GlobalVars->interval_per_tick / clockRes) *
-           float(targetTick - entry.tickcount);
+    return (1000.0f * g_GlobalVars->interval_per_tick / clockRes) * float(targetTick - entry.tickcount);
 }
 
-int predictSeed(const seedstruct &entry, int targetTick, float clockRes,
-                float SeedOffset)
+int predictSeed(const seedstruct &entry, int targetTick, float clockRes, float SeedOffset)
 {
-    return (entry.seed +
-            int(roundeven(predictOffset(entry, targetTick, clockRes)) +
-                SeedOffset)) %
-           256;
+    return (entry.seed + int(roundeven(predictOffset(entry, targetTick, clockRes)) + SeedOffset)) % 256;
 }
 
 int predictTick(float targetTime)
@@ -156,8 +144,7 @@ int predictTick(float targetTime)
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     float ping      = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
     float deltaTime = targetTime - selected.time + ping;
-    return int(float(selected.tickcount) +
-               deltaTime / g_GlobalVars->interval_per_tick + 0.7);
+    return int(float(selected.tickcount) + deltaTime / g_GlobalVars->interval_per_tick + 0.7);
 }
 
 int predictTick()
@@ -170,14 +157,11 @@ int predictSeed(float targetTime)
     INetChannel *ch  = (INetChannel *) g_IEngine->GetNetChannelInfo();
     float ping       = ch ? ch->GetLatency(MAX_FLOWS) / 2 : 0.0f;
     float deltaTime  = targetTime - selected.time + ping;
-    int tick         = int(float(selected.tickcount) +
-                   deltaTime / g_GlobalVars->interval_per_tick + 0.7);
+    int tick         = int(float(selected.tickcount) + deltaTime / g_GlobalVars->interval_per_tick + 0.7);
     float SeedOffset = predictOffset(selected, tick, clockRes);
     int seed         = predictSeed(selected, tick, clockRes, SeedOffset);
 
-    logging::Info("seedpred-pred",
-                  "Last shot: guessed server tick = %d, guessed seed = %03d\n",
-                  tick, seed);
+    logging::Info("seedpred-pred", "Last shot: guessed server tick = %d, guessed seed = %03d\n", tick, seed);
     return seed;
 }
 

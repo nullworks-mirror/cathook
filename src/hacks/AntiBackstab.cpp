@@ -66,7 +66,7 @@ CachedEntity *ClosestSpy()
             continue;
         if (CE_BYTE(ent, netvar.iLifeState))
             continue;
-        bool ispyro = false;
+        bool ispyro  = false;
         bool isheavy = false;
         if (CE_INT(ent, netvar.iClass) != tf_class::tf_spy)
         {
@@ -95,9 +95,7 @@ CachedEntity *ClosestSpy()
             break;
             // logging::Info("Backstab???");
         }
-        if ((((!ispyro && dist < (float) distance)) ||
-             (ispyro && !isheavy && dist < 314.0f) || (isheavy && dist < 120.0f)) &&
-            (dist < closest_dist || !closest_dist))
+        if ((((!ispyro && dist < (float) distance)) || (ispyro && !isheavy && dist < 314.0f) || (isheavy && dist < 120.0f)) && (dist < closest_dist || !closest_dist))
         {
             closest_dist = dist;
             closest      = ent;

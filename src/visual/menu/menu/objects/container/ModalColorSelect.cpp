@@ -4,9 +4,7 @@
 
 #include <menu/object/container/ModalColorSelect.hpp>
 
-static settings::RVariable<glez::rgba> color_border{
-    "zk.style.color-preview.color.border", "079797"
-};
+static settings::RVariable<glez::rgba> color_border{ "zk.style.color-preview.color.border", "079797" };
 
 namespace zerokernel
 {
@@ -17,17 +15,12 @@ void ModalColorSelect::render()
 
     if (preview_enabled)
     {
-        glez::draw::rect(preview_x + bb.getContentBox().x,
-                         preview_y + bb.getContentBox().y, preview_size,
-                         preview_size, *option);
-        glez::draw::rect_outline(preview_x + bb.getContentBox().x,
-                                 preview_y + bb.getContentBox().y, preview_size,
-                                 preview_size, *color_border, 1);
+        glez::draw::rect(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *option);
+        glez::draw::rect_outline(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *color_border, 1);
     }
 }
 
-ModalColorSelect::ModalColorSelect(settings::Variable<glez::rgba> &option)
-    : option(option), modal(this)
+ModalColorSelect::ModalColorSelect(settings::Variable<glez::rgba> &option) : option(option), modal(this)
 {
     loadFromXml(Menu::instance->getPrefab("color-picker")->FirstChildElement());
 }
@@ -56,12 +49,10 @@ void ModalColorSelect::loadFromXml(const tinyxml2::XMLElement *data)
 
     for (auto i = 0; i < components.size(); ++i)
     {
-        auto c = dynamic_cast<Slider<int> *>(
-            getElementById(*(component_names.begin() + i)));
+        auto c = dynamic_cast<Slider<int> *>(getElementById(*(component_names.begin() + i)));
         if (c == nullptr)
         {
-            printf("ModalColorSelect: component %s is NULL or not Slider!\n",
-                   *(component_names.begin() + i));
+            printf("ModalColorSelect: component %s is NULL or not Slider!\n", *(component_names.begin() + i));
             continue;
         }
         c->addMessageHandler(*this);

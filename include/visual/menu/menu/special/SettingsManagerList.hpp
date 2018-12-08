@@ -35,8 +35,7 @@ public:
 
     void addCollapsible(std::string name, size_t depth);
 
-    void addVariable(std::string name, size_t depth,
-                     settings::IVariable *variable, bool registered);
+    void addVariable(std::string name, size_t depth, settings::IVariable *variable, bool registered);
 
     //
 

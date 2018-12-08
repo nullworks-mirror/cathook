@@ -19,9 +19,7 @@ public:
     inline static bool IsPlayer(IClientEntity *self)
     {
         typedef bool (*fn_t)(IClientEntity *);
-        return vfunc<fn_t>(
-            self, offsets::PlatformOffset(184, offsets::undefined, 184),
-            0)(self);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(184, offsets::undefined, 184), 0)(self);
     }
     inline static int &m_nPredictionRandomSeed()
     {
@@ -31,9 +29,8 @@ public:
     inline static int SetAbsOrigin(IClientEntity *self, Vector const &origin)
     {
         typedef int (*SetAbsOrigin_t)(IClientEntity *, Vector const &);
-        uintptr_t addr = gSignatures.GetClientSignature(
-            "55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 75 ? 89 1C 24 E8 ? ? ? ? F3 "
-            "0F 10 06");
+        uintptr_t addr                 = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 75 ? 89 1C 24 E8 ? ? ? ? F3 "
+                                                        "0F 10 06");
         SetAbsOrigin_t SetAbsOrigin_fn = SetAbsOrigin_t(addr);
 
         return SetAbsOrigin_fn(self, origin);

@@ -9,12 +9,8 @@
   Created on 26.07.18.
 */
 
-static settings::RVariable<glez::rgba> color_border{
-    "zk.style.modal-container.color.border", "079797"
-};
-static settings::RVariable<glez::rgba> color_background{
-    "zk.style.modal-container.color.background", "1d2f40"
-};
+static settings::RVariable<glez::rgba> color_border{ "zk.style.modal-container.color.border", "079797" };
+static settings::RVariable<glez::rgba> color_background{ "zk.style.modal-container.color.background", "1d2f40" };
 
 bool zerokernel::ModalContainer::handleSdlEvent(SDL_Event *event)
 {

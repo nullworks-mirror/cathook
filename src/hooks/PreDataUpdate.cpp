@@ -14,8 +14,7 @@ static void *PreData_Original = nullptr;
 void PreDataUpdate(void *_this, int ok)
 {
     hacks::tf2::seedprediction::handleFireBullets((C_TEFireBullets *) _this);
-    ((bool (*)(C_TEFireBullets *, int)) PreData_Original)(
-        (C_TEFireBullets *) _this, ok);
+    ((bool (*)(C_TEFireBullets *, int)) PreData_Original)((C_TEFireBullets *) _this, ok);
 }
 static void tryPatchLocalPlayerPreData()
 {
@@ -23,9 +22,7 @@ static void tryPatchLocalPlayerPreData()
     void **vtable = *(void ***) (C_TEFireBullets::GTEFireBullets());
     if (vtable[offsets::PreDataUpdate()] != PreDataUpdate)
     {
-        logging::Info("0x%08X, 0x%08X",
-                      unsigned(C_TEFireBullets::GTEFireBullets()),
-                      unsigned(vtable[offsets::PreDataUpdate()]));
+        logging::Info("0x%08X, 0x%08X", unsigned(C_TEFireBullets::GTEFireBullets()), unsigned(vtable[offsets::PreDataUpdate()]));
         PreData_Original = vtable[offsets::PreDataUpdate()];
         void *page       = (void *) ((uintptr_t) vtable & ~0xFFF);
         mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);

@@ -11,8 +11,7 @@
 
 class IClientEntity;
 
-#define NET_VAR(entity, offset, type)                                          \
-    (*(reinterpret_cast<type *>(reinterpret_cast<uint64_t>(entity) + (offset))))
+#define NET_VAR(entity, offset, type) (*(reinterpret_cast<type *>(reinterpret_cast<uint64_t>(entity) + (offset))))
 
 #define NET_INT(entity, offset) NET_VAR(entity, offset, int)
 

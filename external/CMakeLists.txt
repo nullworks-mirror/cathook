@@ -5,4 +5,6 @@ target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/MicroPathe
 target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/ucccccp")
 target_include_directories(cathook PRIVATE "${CMAKE_CURRENT_LIST_DIR}/TF2_NavFile_Reader")
 
-add_subdirectory(chirc)
+if(EnableIRC)
+    add_subdirectory(chirc)
+endif()

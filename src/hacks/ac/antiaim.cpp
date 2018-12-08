@@ -45,8 +45,7 @@ void Update(CachedEntity *player)
         int idx = d.angle_index - 1;
         if (idx < 0)
             idx = d.count - 1;
-        if ((d.angles[idx].x < -89 || d.angles[idx].x > 89) &&
-            (d.angles[idx].x < 89.2941 || d.angles[idx].x > 89.2942))
+        if ((d.angles[idx].x < -89 || d.angles[idx].x > 89) && (d.angles[idx].x < 89.2941 || d.angles[idx].x > 89.2942))
         {
             am++;
             player_info_t info;
@@ -56,8 +55,7 @@ void Update(CachedEntity *player)
                 hacks::shared::anticheat::SetRage(info);
                 am = 0;
             }
-            std::string reason =
-                format("Pitch: ", d.angles[idx].x, " Yaw: ", d.angles[idx].y);
+            std::string reason = format("Pitch: ", d.angles[idx].x, " Yaw: ", d.angles[idx].y);
             if (d.angles[idx].x == -271.0f)
             {
                 reason += " (Fakeup)";

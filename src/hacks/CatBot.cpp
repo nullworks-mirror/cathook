@@ -14,14 +14,10 @@
 static settings::Bool auto_disguise{ "misc.autodisguise", "true" };
 
 static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
-static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte",
-                                              "0" };
-static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte",
-                                            "0" };
-static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte",
-                                             "0" };
-static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills",
-                                           "2" };
+static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte", "0" };
+static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte", "0" };
+static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte", "0" };
+static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills", "2" };
 
 static settings::Bool micspam{ "cat-bot.micspam.enable", "false" };
 static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
@@ -32,11 +28,10 @@ static settings::Bool always_crouch{ "cat-bot.always-crouch", "false" };
 static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
 static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
-
 namespace hacks::shared::catbot
 {
 settings::Bool catbotmode{ "cat-bot.enable", "false" };
-settings::Bool anti_motd{ "cat-bot.anti-motd", "false"};
+settings::Bool anti_motd{ "cat-bot.anti-motd", "false" };
 
 struct catbot_user_state
 {
@@ -76,9 +71,7 @@ void on_killed_by(int userid)
 
     // if (human_detecting_map[steamID].has_bot_name)
     human_detecting_map[steamID].treacherous_kills++;
-    logging::Info("Treacherous kill #%d: %s [U:1:%u]",
-                  human_detecting_map[steamID].treacherous_kills,
-                  player->player_info.name, player->player_info.friendsID);
+    logging::Info("Treacherous kill #%d: %s [U:1:%u]", human_detecting_map[steamID].treacherous_kills, player->player_info.name, player->player_info.friendsID);
 }
 
 void do_random_votekick()
@@ -86,8 +79,7 @@ void do_random_votekick()
     std::vector<int> targets;
     player_info_s local_info;
 
-    if (CE_BAD(LOCAL_E) ||
-        !g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &local_info))
+    if (CE_BAD(LOCAL_E) || !g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &local_info))
         return;
     for (int i = 1; i <= g_GlobalVars->maxClients; ++i)
     {
@@ -100,10 +92,7 @@ void do_random_votekick()
             continue;
         if (info.friendsID == local_info.friendsID)
             continue;
-        if (playerlist::AccessData(info.friendsID).state !=
-                playerlist::k_EState::RAGE &&
-            playerlist::AccessData(info.friendsID).state !=
-                playerlist::k_EState::DEFAULT)
+        if (playerlist::AccessData(info.friendsID).state != playerlist::k_EState::RAGE && playerlist::AccessData(info.friendsID).state != playerlist::k_EState::DEFAULT)
             continue;
 
         targets.push_back(info.userID);
@@ -116,8 +105,7 @@ void do_random_votekick()
     player_info_s info;
     if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(target), &info))
         return;
-    hack::ExecuteCommand("callvote kick " + std::to_string(target) +
-                         " cheating");
+    hack::ExecuteCommand("callvote kick " + std::to_string(target) + " cheating");
 }
 
 void update_catbot_list()
@@ -129,22 +117,12 @@ void update_catbot_list()
             continue;
 
         info.name[31] = 0;
-        if (strcasestr(info.name, "cat-bot") ||
-            strcasestr(info.name, "just disable vac tf") ||
-            strcasestr(info.name, "raul.garcia") ||
-            strcasestr(info.name, "zCat") ||
-            strcasestr(info.name, "lagger bot") ||
-            strcasestr(info.name, "zLag-bot") ||
-            strcasestr(info.name, "crash-bot") ||
-            strcasestr(info.name, "reichstagbot"))
+        if (strcasestr(info.name, "cat-bot") || strcasestr(info.name, "just disable vac tf") || strcasestr(info.name, "raul.garcia") || strcasestr(info.name, "zCat") || strcasestr(info.name, "lagger bot") || strcasestr(info.name, "zLag-bot") || strcasestr(info.name, "crash-bot") || strcasestr(info.name, "reichstagbot"))
         {
-            if (human_detecting_map.find(info.friendsID) ==
-                human_detecting_map.end())
+            if (human_detecting_map.find(info.friendsID) == human_detecting_map.end())
             {
-                logging::Info("Found bot %s [U:1:%u]", info.name,
-                              info.friendsID);
-                human_detecting_map.insert(
-                    std::make_pair(info.friendsID, catbot_user_state{ 0 }));
+                logging::Info("Found bot %s [U:1:%u]", info.name, info.friendsID);
+                human_detecting_map.insert(std::make_pair(info.friendsID, catbot_user_state{ 0 }));
             }
         }
     }
@@ -157,8 +135,7 @@ class CatBotEventListener : public IGameEventListener2
         if (!catbotmode)
             return;
 
-        int killer_id =
-            g_IEngine->GetPlayerForUserID(event->GetInt("attacker"));
+        int killer_id = g_IEngine->GetPlayerForUserID(event->GetInt("attacker"));
         int victim_id = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
 
         if (victim_id == g_IEngine->GetLocalPlayer())
@@ -204,8 +181,7 @@ Timer micspam_off_timer{};
 void reportall()
 {
     typedef uint64_t (*ReportPlayer_t)(uint64_t, int);
-    static uintptr_t addr2 = gSignatures.GetClientSignature(
-        "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+    static uintptr_t addr2         = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
     ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr2);
     if (!addr2)
         return;
@@ -225,11 +201,9 @@ void reportall()
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(i, &info))
         {
-            if (player_tools::shouldTargetSteamId(info.friendsID) !=
-                player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (player_tools::shouldTargetSteamId(info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
-            CSteamID id(info.friendsID, EUniverse::k_EUniversePublic,
-                        EAccountType::k_EAccountTypeIndividual);
+            CSteamID id(info.friendsID, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
             ReportPlayer_fn(id.ConvertToUint64(), 1);
         }
     }
@@ -256,17 +230,11 @@ void smart_crouch()
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER ||
-                ent->m_iTeam() == LOCAL_E->m_iTeam() ||
-                !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) ||
-                player_tools::shouldTarget(ent) !=
-                    player_tools::IgnoreReason::DO_NOT_IGNORE ||
-                should_ignore_player(ent))
+            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() || !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE || should_ignore_player(ent))
                 continue;
             bool failedvis = false;
             for (int j = 0; j < 18; j++)
-                if (IsVectorVisible(g_pLocalPlayer->v_Eye,
-                                    ent->hitboxes.GetHitbox(j)->center))
+                if (IsVectorVisible(g_pLocalPlayer->v_Eye, ent->hitboxes.GetHitbox(j)->center))
                     failedvis = true;
             if (failedvis)
                 continue;
@@ -275,12 +243,7 @@ void smart_crouch()
                 if (!LOCAL_E->hitboxes.GetHitbox(j))
                     continue;
                 // Check if they see my hitboxes
-                if (!IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
-                                     LOCAL_E->hitboxes.GetHitbox(j)->center) &&
-                    !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
-                                     LOCAL_E->hitboxes.GetHitbox(j)->min) &&
-                    !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center,
-                                     LOCAL_E->hitboxes.GetHitbox(j)->max))
+                if (!IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->center) && !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->min) && !IsVectorVisible(ent->hitboxes.GetHitbox(0)->center, LOCAL_E->hitboxes.GetHitbox(j)->max))
                     continue;
                 foundtar = true;
                 crouch   = true;
@@ -293,33 +256,32 @@ void smart_crouch()
         current_user_cmd->buttons |= IN_DUCK;
 }
 
-CatCommand print_ammo("debug_print_ammo", "debug", [](){
-   if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
-       return;
-   for (int i = 0; i < 10; i++)
-       logging::Info("Ammo Table %d: %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + i*4));
+CatCommand print_ammo("debug_print_ammo", "debug", []() {
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        return;
+    for (int i = 0; i < 10; i++)
+        logging::Info("Ammo Table %d: %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + i * 4));
 });
 static Timer disguise{};
 static Timer report_timer{};
 static std::string health = "Health: 0/0";
-static std::string ammo = "Ammo: 0/0";
+static std::string ammo   = "Ammo: 0/0";
 static int max_ammo;
 // TODO: add more stuffs
 static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
-
     if (!*catbotmode)
         return;
 
     if (CE_GOOD(LOCAL_E))
     {
-        float max_hp = g_pPlayerResource->GetMaxHealth(LOCAL_E);
+        float max_hp  = g_pPlayerResource->GetMaxHealth(LOCAL_E);
         float curr_hp = CE_INT(LOCAL_E, netvar.iHealth);
-        int ammo0 = CE_INT(LOCAL_E, netvar.m_iAmmo+4);
-        int ammo2 = CE_INT(LOCAL_E, netvar.m_iAmmo+8);
+        int ammo0     = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
+        int ammo2     = CE_INT(LOCAL_E, netvar.m_iAmmo + 8);
         if (ammo0 + ammo2 > max_ammo)
             max_ammo = ammo0 + ammo2;
         health = format("Health: ", curr_hp, "/", max_hp);
-        ammo = format("Ammo: ", ammo0+ammo2, "/", max_ammo);
+        ammo   = format("Ammo: ", ammo0 + ammo2, "/", max_ammo);
     }
     if (g_Settings.bInvalid)
         return;
@@ -332,14 +294,11 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
 
     //
     static const int classes[3]{ tf_spy, tf_sniper, tf_pyro };
-    if (*auto_disguise && g_pPlayerResource->GetClass(LOCAL_E) == tf_spy &&
-        !HasCondition<TFCond_Disguised>(LOCAL_E) && disguise.test_and_set(3000))
+    if (*auto_disguise && g_pPlayerResource->GetClass(LOCAL_E) == tf_spy && !HasCondition<TFCond_Disguised>(LOCAL_E) && disguise.test_and_set(3000))
     {
-        int teamtodisguise =
-            (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_RED - 1 : TEAM_BLU - 1;
-        int classtojoin = classes[rand() % 3];
-        g_IEngine->ClientCmd_Unrestricted(
-            format("disguise ", classtojoin, " ", teamtodisguise).c_str());
+        int teamtodisguise = (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_RED - 1 : TEAM_BLU - 1;
+        int classtojoin    = classes[rand() % 3];
+        g_IEngine->ClientCmd_Unrestricted(format("disguise ", classtojoin, " ", teamtodisguise).c_str());
     }
     if (*autoReport && report_timer.test_and_set(60000))
         reportall();
@@ -399,8 +358,7 @@ void update()
             if (is_a_catbot(info.friendsID))
                 ++count_bots;
 
-            if (playerlist::AccessData(info.friendsID).state ==
-                playerlist::k_EState::IPC)
+            if (playerlist::AccessData(info.friendsID).state == playerlist::k_EState::IPC)
                 ++count_ipc;
         }
 
@@ -432,8 +390,7 @@ void update()
             {
                 logging::Info("Abandoning because there are %d non-bots in "
                               "game, and abandon_if_humans_lte is %d.",
-                              count_total - count_bots,
-                              int(abandon_if_humans_lte));
+                              count_total - count_bots, int(abandon_if_humans_lte));
                 tfmm::abandon();
                 return;
             }
@@ -461,8 +418,9 @@ void level_init()
 {
     level_init_timer.update();
 }
+
 #if ENABLE_VISUALS
-static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3, [](){
+static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3, []() {
     if (!catbotmode || !anti_motd)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())

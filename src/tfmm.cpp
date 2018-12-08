@@ -11,17 +11,14 @@
 
 settings::Int queue{ "autoqueue.mode", "7" };
 
-CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue",
-                           []() { tfmm::startQueue(); });
+CatCommand cmd_queue_start("mm_queue_casual", "Start casual queue", []() { tfmm::startQueue(); });
 CatCommand queue_party("mm_queue_party", "Queue for Party", []() {
     re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
     client->RequestQueueForStandby();
 });
-CatCommand cmd_abandon("mm_abandon", "Abandon match",
-                       []() { tfmm::abandon(); });
+CatCommand cmd_abandon("mm_abandon", "Abandon match", []() { tfmm::abandon(); });
 
-CatCommand abandoncmd("disconnect_and_abandon", "Disconnect and abandon",
-                      []() { tfmm::disconnectAndAbandon(); });
+CatCommand abandoncmd("disconnect_and_abandon", "Disconnect and abandon", []() { tfmm::disconnectAndAbandon(); });
 
 CatCommand get_state("mm_state", "Get party state", []() {
     re::CTFParty *party = re::CTFParty::GetParty();
@@ -39,9 +36,7 @@ int queuecount = 0;
 bool isMMBanned()
 {
     auto client = re::CTFPartyClient::GTFPartyClient();
-    if (!client ||
-        ((client->BInQueueForMatchGroup(7) || client->BInQueueForStandby()) &&
-         queuecount < 10))
+    if (!client || ((client->BInQueueForMatchGroup(7) || client->BInQueueForStandby()) && queuecount < 10))
     {
         queuecount = 0;
         return false;

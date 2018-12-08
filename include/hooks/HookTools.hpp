@@ -34,8 +34,7 @@ class HookedFunction
 #if ENABLE_PROFILER
     ProfilerSection section = ProfilerSection("UNNAMED_FUNCTIONS");
 #endif
-    void init(HookedFunctions_types type, std::string name, int priority,
-              std::function<void()> func)
+    void init(HookedFunctions_types type, std::string name, int priority, std::function<void()> func)
     {
         switch (type)
         {
@@ -82,19 +81,16 @@ public:
             return true;
         return this->m_priority > other.m_priority;
     }
-    HookedFunction(HookedFunctions_types type, std::string name, int priority,
-                   std::function<void()> func)
+    HookedFunction(HookedFunctions_types type, std::string name, int priority, std::function<void()> func)
     {
         init(type, name, priority, func);
     }
-    HookedFunction(HookedFunctions_types type, int priority,
-                   std::function<void()> func)
+    HookedFunction(HookedFunctions_types type, int priority, std::function<void()> func)
     {
         static const std::string name("UNNAMED_FUNCTIONS");
         init(type, name, priority, func);
     }
-    HookedFunction(HookedFunctions_types type, std::string name,
-                   std::function<void()> func)
+    HookedFunction(HookedFunctions_types type, std::string name, std::function<void()> func)
     {
         int priority = 5;
         init(type, name, priority, func);

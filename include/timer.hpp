@@ -18,9 +18,7 @@ public:
 
     inline bool check(unsigned ms) const
     {
-        return std::chrono::duration_cast<std::chrono::milliseconds>(
-                   clock::now() - last)
-                   .count() >= ms;
+        return std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - last).count() >= ms;
     }
     inline bool test_and_set(unsigned ms)
     {

@@ -15,16 +15,12 @@ std::vector<CatCommand *> &commandRegistrationArray()
     return vector;
 }
 
-CatCommand::CatCommand(std::string _name, std::string _help,
-                       FnCommandCallback_t _callback)
-    : name(_name), help(_help), callback(_callback)
+CatCommand::CatCommand(std::string _name, std::string _help, FnCommandCallback_t _callback) : name(_name), help(_help), callback(_callback)
 {
     commandRegistrationArray().push_back(this);
 }
 
-CatCommand::CatCommand(std::string _name, std::string _help,
-                       FnCommandCallbackVoid_t _callback)
-    : name(_name), help(_help), callback_void(_callback)
+CatCommand::CatCommand(std::string _name, std::string _help, FnCommandCallbackVoid_t _callback) : name(_name), help(_help), callback_void(_callback)
 {
     commandRegistrationArray().push_back(this);
 }

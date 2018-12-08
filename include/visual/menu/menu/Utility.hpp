@@ -13,12 +13,9 @@
 namespace utility
 {
 
-std::string wrapString(const std::string &input, glez::font &font, int width,
-                       int *resultWidth, int *resultLines);
-std::string dotCompactString(const std::string &input, glez::font &font,
-                             int width, bool reverse);
-void drawCenteredString(int x, int y, const std::string &string,
-                        glez::font &font, glez::rgba color);
+std::string wrapString(const std::string &input, glez::font &font, int width, int *resultWidth, int *resultLines);
+std::string dotCompactString(const std::string &input, glez::font &font, int width, bool reverse);
+void drawCenteredString(int x, int y, const std::string &string, glez::font &font, glez::rgba color);
 
 template <typename T> T mod(T first, T second);
 

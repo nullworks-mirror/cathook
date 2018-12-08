@@ -21,8 +21,7 @@ void logging::Initialize()
 {
     // FIXME other method of naming the file?
     passwd *pwd     = getpwuid(getuid());
-    logging::handle = fopen(
-        strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get(), "w");
+    logging::handle = fopen(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get(), "w");
 }
 
 void logging::Info(const char *fmt, ...)

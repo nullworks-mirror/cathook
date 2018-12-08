@@ -17,10 +17,7 @@ bool IsProjectileACrit(CachedEntity *ent)
     return CE_BYTE(ent, netvar.Rocket_bCritical);
 }
 // This method of const'ing the index is weird.
-CachedEntity::CachedEntity()
-    : m_IDX(int(((unsigned) this - (unsigned) &entity_cache::array) /
-                sizeof(CachedEntity))),
-      hitboxes(hitbox_cache::Get(unsigned(m_IDX)))
+CachedEntity::CachedEntity() : m_IDX(int(((unsigned) this - (unsigned) &entity_cache::array) / sizeof(CachedEntity))), hitboxes(hitbox_cache::Get(unsigned(m_IDX)))
 {
 #if PROXY_ENTITY != true
     m_pEntity = nullptr;
@@ -81,9 +78,7 @@ static settings::Bool fast_vischeck{ "debug.fast-vischeck", "true" };
 
 bool CachedEntity::IsVisible()
 {
-    static constexpr int optimal_hitboxes[] = {
-        hitbox_t::head, hitbox_t::foot_L, hitbox_t::hand_R, hitbox_t::spine_1
-    };
+    static constexpr int optimal_hitboxes[] = { hitbox_t::head, hitbox_t::foot_L, hitbox_t::hand_R, hitbox_t::spine_1 };
     static bool vischeck0, vischeck;
 
     PROF_SECTION(CE_IsVisible);

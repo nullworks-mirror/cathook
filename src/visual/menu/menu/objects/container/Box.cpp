@@ -10,9 +10,7 @@
 #include <glez/draw.hpp>
 #include <menu/Menu.hpp>
 
-static settings::RVariable<glez::rgba> color_border{
-    "zk.style.box.color.border", "079797"
-};
+static settings::RVariable<glez::rgba> color_border{ "zk.style.box.color.border", "079797" };
 
 void zerokernel::Box::render()
 {
@@ -31,20 +29,13 @@ void zerokernel::Box::render()
         glez::draw::line(lhl, tht, hl, 0, *color_border, 1);
         // Top right
         int title_width = title.getBoundingBox().getFullBox().width;
-        glez::draw::line(
-            bb.getBorderBox().left() + bb.padding.left + title_width, tht,
-            bb.getBorderBox().width - bb.padding.left - title_width - hr, 0,
-            *color_border, 1);
+        glez::draw::line(bb.getBorderBox().left() + bb.padding.left + title_width, tht, bb.getBorderBox().width - bb.padding.left - title_width - hr, 0, *color_border, 1);
         // Left
-        glez::draw::line(lhl, tht, 0, bb.getBorderBox().height - ht - hb,
-                         *color_border, 1);
+        glez::draw::line(lhl, tht, 0, bb.getBorderBox().height - ht - hb, *color_border, 1);
         // Bottom
-        glez::draw::line(lhl, bb.getBorderBox().bottom() - hb,
-                         bb.getBorderBox().width - hl - hr, 0, *color_border,
-                         1);
+        glez::draw::line(lhl, bb.getBorderBox().bottom() - hb, bb.getBorderBox().width - hl - hr, 0, *color_border, 1);
         // Right
-        glez::draw::line(bb.getBorderBox().right() - hr, tht, 0,
-                         bb.getBorderBox().height - ht - hb, *color_border, 1);
+        glez::draw::line(bb.getBorderBox().right() - hr, tht, 0, bb.getBorderBox().height - ht - hb, *color_border, 1);
     }
     else
     {
@@ -53,10 +44,7 @@ void zerokernel::Box::render()
         int ht = bb.padding.top / 2;
         int hb = bb.padding.bottom / 2;
 
-        glez::draw::rect_outline(
-            bb.getBorderBox().left() + hl, bb.getBorderBox().top() + ht,
-            bb.getBorderBox().width - hl - hr,
-            bb.getBorderBox().height - ht - hb, *color_border, 1);
+        glez::draw::rect_outline(bb.getBorderBox().left() + hl, bb.getBorderBox().top() + ht, bb.getBorderBox().width - hl - hr, bb.getBorderBox().height - ht - hb, *color_border, 1);
     }
 
     // Render the title

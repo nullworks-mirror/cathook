@@ -77,8 +77,7 @@ bool init(bool first_cm)
         for (auto &area : nav::navfile->m_areas)
         {
             for (auto hide : area.m_hidingSpots)
-                if (hide.IsGoodSniperSpot() || hide.IsIdealSniperSpot() ||
-                    hide.IsExposed())
+                if (hide.IsGoodSniperSpot() || hide.IsIdealSniperSpot() || hide.IsExposed())
                     sniper_spots.emplace_back(&area, hide.m_pos);
         }
         inited = true;
@@ -119,10 +118,7 @@ static std::pair<CachedEntity *, float> getNearestPlayerDistance()
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() &&
-            g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance &&
-            player_tools::shouldTarget(ent) ==
-                player_tools::IgnoreReason::DO_NOT_IGNORE && (hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(ent)) && VisCheckEntFromEnt(LOCAL_E, ent))
+        if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) == player_tools::IgnoreReason::DO_NOT_IGNORE && (hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(ent)) && VisCheckEntFromEnt(LOCAL_E, ent))
         {
             distance = g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin());
             best_ent = ent;
@@ -134,8 +130,7 @@ static std::pair<CachedEntity *, float> getNearestPlayerDistance()
 namespace stayNearHelpers
 {
 // Check if the location is close enough/far enough and has a visual to target
-static bool isValidNearPosition(Vector vec, Vector target,
-                                const bot_class_config &config)
+static bool isValidNearPosition(Vector vec, Vector target, const bot_class_config &config)
 {
     vec.z += 40;
     target.z += 40;
@@ -148,8 +143,7 @@ static bool isValidNearPosition(Vector vec, Vector target,
 }
 
 // Returns true if began pathing
-static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config,
-                           CNavArea *&result)
+static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config, CNavArea *&result)
 {
     // Get some valid areas
     std::vector<CNavArea *> areas;
@@ -164,10 +158,7 @@ static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config,
 
     const Vector ent_orig = ent->m_vecOrigin();
     // Area dist to target should be as close as possible to config.preferred
-    std::sort(areas.begin(), areas.end(), [&](CNavArea *a, CNavArea *b) {
-        return std::abs(a->m_center.DistTo(ent_orig) - config.preferred) <
-               std::abs(b->m_center.DistTo(ent_orig) - config.preferred);
-    });
+    std::sort(areas.begin(), areas.end(), [&](CNavArea *a, CNavArea *b) { return std::abs(a->m_center.DistTo(ent_orig) - config.preferred) < std::abs(b->m_center.DistTo(ent_orig) - config.preferred); });
 
     size_t size = 20;
     if (areas.size() < size)
@@ -178,11 +169,7 @@ static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config,
     preferred_areas.resize(size / 2);
     if (preferred_areas.empty())
         return false;
-    std::sort(preferred_areas.begin(), preferred_areas.end(),
-              [](CNavArea *a, CNavArea *b) {
-                  return a->m_center.DistTo(g_pLocalPlayer->v_Origin) <
-                         b->m_center.DistTo(g_pLocalPlayer->v_Origin);
-              });
+    std::sort(preferred_areas.begin(), preferred_areas.end(), [](CNavArea *a, CNavArea *b) { return a->m_center.DistTo(g_pLocalPlayer->v_Origin) < b->m_center.DistTo(g_pLocalPlayer->v_Origin); });
 
     preferred_areas.resize(size / 4);
     if (preferred_areas.empty())
@@ -211,26 +198,19 @@ static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config,
 }
 
 // Loop thru all players and find one we can path to
-static bool stayNearPlayers(const bot_class_config &config,
-                            CachedEntity *&result_ent, CNavArea *&result_area)
+static bool stayNearPlayers(const bot_class_config &config, CachedEntity *&result_ent, CNavArea *&result_area)
 {
     std::vector<CachedEntity *> players;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() ||
-            player_tools::shouldTarget(ent) !=
-                player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
             continue;
         players.push_back(ent);
     }
     if (players.empty())
         return false;
-    std::sort(players.begin(), players.end(),
-              [](CachedEntity *a, CachedEntity *b) {
-                  return a->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin) <
-                         b->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin);
-              });
+    std::sort(players.begin(), players.end(), [](CachedEntity *a, CachedEntity *b) { return a->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin) < b->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin); });
     for (auto player : players)
     {
         if (stayNearPlayer(player, config, result_area))
@@ -262,8 +242,7 @@ static bool stayNear()
 
     // Check if someone is too close to us and then target them instead
     std::pair<CachedEntity *, float> nearest = getNearestPlayerDistance();
-    if (nearest.first && nearest.first != last_target &&
-        nearest.second < config->min)
+    if (nearest.first && nearest.first != last_target && nearest.second < config->min)
         if (stayNearHelpers::stayNearPlayer(nearest.first, *config, last_area))
         {
             last_target = nearest.first;
@@ -280,15 +259,10 @@ static bool stayNear()
         else
             invalid_area_time.update();
         // Check if we still have LOS and are close enough/far enough
-        if (CE_GOOD(last_target) &&
-            stayNearHelpers::isValidNearPosition(
-                last_area->m_center, last_target->m_vecOrigin(), *config))
+        if (CE_GOOD(last_target) && stayNearHelpers::isValidNearPosition(last_area->m_center, last_target->m_vecOrigin(), *config))
             invalid_area_time.update();
 
-        if (CE_GOOD(last_target) &&
-            (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() ||
-             player_tools::shouldTarget(last_target) !=
-                 player_tools::IgnoreReason::DO_NOT_IGNORE  || !(hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(last_target))))
+        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || player_tools::shouldTarget(last_target) != player_tools::IgnoreReason::DO_NOT_IGNORE || !(hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(last_target))))
         {
             nav::clearInstructions();
             current_task = task::none;
@@ -304,11 +278,9 @@ static bool stayNear()
     }
     // Are we doing nothing? Check if our current location can still attack our
     // last target
-    if (current_task == task::none && CE_GOOD(last_target) &&
-        last_target->m_bAlivePlayer() && last_target->m_bEnemy())
+    if (current_task == task::none && CE_GOOD(last_target) && last_target->m_bAlivePlayer() && last_target->m_bEnemy())
     {
-        if (stayNearHelpers::isValidNearPosition(
-                g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
+        if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
             return true;
         // If not, can we try pathing to our last target again?
         if (stayNearHelpers::stayNearPlayer(last_target, *config, last_area))
@@ -324,8 +296,7 @@ static bool stayNear()
     else if (wait_until_stay_near.test_and_set(1000))
     {
         // We're doing nothing? Do something!
-        return stayNearHelpers::stayNearPlayers(*config, last_target,
-                                                last_area);
+        return stayNearHelpers::stayNearPlayers(*config, last_target, last_area);
     }
     return false;
 }
@@ -334,10 +305,8 @@ static inline bool hasLowAmmo()
 {
     if (CE_BAD(LOCAL_W))
         return false;
-    int *weapon_list =
-        (int *) ((uint64_t)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
-    if (g_pLocalPlayer->holding_sniper_rifle &&
-        CE_INT(LOCAL_E, netvar.m_iAmmo + 4) <= 5)
+    int *weapon_list = (int *) ((uint64_t)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
+    if (g_pLocalPlayer->holding_sniper_rifle && CE_INT(LOCAL_E, netvar.m_iAmmo + 4) <= 5)
         return true;
     for (int i = 0; weapon_list[i]; i++)
     {
@@ -346,9 +315,7 @@ static inline bool hasLowAmmo()
         if (eid >= 32 && eid <= HIGHEST_ENTITY)
         {
             IClientEntity *weapon = g_IEntityList->GetClientEntity(eid);
-            if (weapon and re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) &&
-                re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) &&
-                !re::C_TFWeaponBase::HasPrimaryAmmo(weapon))
+            if (weapon and re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) && re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) && !re::C_TFWeaponBase::HasPrimaryAmmo(weapon))
                 return true;
         }
     }
@@ -363,8 +330,7 @@ static bool getHealthAndAmmo()
     if (current_task == task::health)
         return true;
 
-    if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() <
-        0.64f)
+    if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() < 0.64f)
     {
         std::vector<Vector> healthpacks;
         for (int i = 0; i < HIGHEST_ENTITY; i++)
@@ -372,17 +338,11 @@ static bool getHealthAndAmmo()
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CBaseAnimating))
                 continue;
-            if (ent->m_ItemType() != ITEM_HEALTH_SMALL &&
-                ent->m_ItemType() != ITEM_HEALTH_MEDIUM &&
-                ent->m_ItemType() != ITEM_HEALTH_LARGE)
+            if (ent->m_ItemType() != ITEM_HEALTH_SMALL && ent->m_ItemType() != ITEM_HEALTH_MEDIUM && ent->m_ItemType() != ITEM_HEALTH_LARGE)
                 continue;
             healthpacks.push_back(ent->m_vecOrigin());
         }
-        std::sort(healthpacks.begin(), healthpacks.end(),
-                  [](Vector &a, Vector &b) {
-                      return g_pLocalPlayer->v_Origin.DistTo(a) <
-                             g_pLocalPlayer->v_Origin.DistTo(b);
-                  });
+        std::sort(healthpacks.begin(), healthpacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
         for (auto &pack : healthpacks)
         {
             if (nav::navTo(pack, 10, true, true))
@@ -403,16 +363,11 @@ static bool getHealthAndAmmo()
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CBaseAnimating))
                 continue;
-            if (ent->m_ItemType() != ITEM_AMMO_SMALL &&
-                ent->m_ItemType() != ITEM_AMMO_MEDIUM &&
-                ent->m_ItemType() != ITEM_AMMO_LARGE)
+            if (ent->m_ItemType() != ITEM_AMMO_SMALL && ent->m_ItemType() != ITEM_AMMO_MEDIUM && ent->m_ItemType() != ITEM_AMMO_LARGE)
                 continue;
             ammopacks.push_back(ent->m_vecOrigin());
         }
-        std::sort(ammopacks.begin(), ammopacks.end(), [](Vector &a, Vector &b) {
-            return g_pLocalPlayer->v_Origin.DistTo(a) <
-                   g_pLocalPlayer->v_Origin.DistTo(b);
-        });
+        std::sort(ammopacks.begin(), ammopacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
         for (auto &pack : ammopacks)
         {
             if (nav::navTo(pack, 9, true, true))
@@ -449,22 +404,18 @@ static void updateSlot()
             int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
             int newslot = 1;
             if (slot != newslot - 1)
-                g_IEngine->ClientCmd_Unrestricted(
-                    format("slot", newslot).c_str());
+                g_IEngine->ClientCmd_Unrestricted(format("slot", newslot).c_str());
         }
     }
 }
 
-static HookedFunction cm(HookedFunctions_types::HF_CreateMove, "NavBot", 16,
-                         &CreateMove);
+static HookedFunction cm(HookedFunctions_types::HF_CreateMove, "NavBot", 16, &CreateMove);
 
 void change(settings::VariableBase<bool> &, bool)
 {
     nav::clearInstructions();
 }
 
-static InitRoutine routine([](){
-    enabled.installChangeCallback(change);
-});
+static InitRoutine routine([]() { enabled.installChangeCallback(change); });
 
 } // namespace hacks::tf2::NavBot

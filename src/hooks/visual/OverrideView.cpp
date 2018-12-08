@@ -35,13 +35,11 @@ DEFINE_HOOKED_METHOD(OverrideView, void, void *this_, CViewSetup *setup)
         CachedEntity *spec = ENTITY(spectator_target);
         if (CE_GOOD(spec) && !CE_BYTE(spec, netvar.iLifeState))
         {
-            setup->origin =
-                spec->m_vecOrigin() + CE_VECTOR(spec, netvar.vViewOffset);
+            setup->origin = spec->m_vecOrigin() + CE_VECTOR(spec, netvar.vViewOffset);
             // why not spectate yourself
             if (spec == LOCAL_E)
             {
-                setup->angles =
-                    CE_VAR(spec, netvar.m_angEyeAnglesLocal, QAngle);
+                setup->angles = CE_VAR(spec, netvar.m_angEyeAnglesLocal, QAngle);
             }
             else
             {

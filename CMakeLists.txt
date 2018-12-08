@@ -3,6 +3,9 @@
 #   SDL2
 #   GLEW
 
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/cotire/CMake")
+include(cotire)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type")
 endif()
@@ -33,6 +36,7 @@ set(EnableTextmodeStdin 0 CACHE BOOL "Textmode Stdin -> Console bridge (EXPERIME
 set(EnableWarnings 0 CACHE BOOL "Enable compile warnings")
 set(EnableNullGraphics 0 CACHE BOOL "Enable experimental textmode hooks (CRASHES)")
 set(EnableOnlineFeatures 0 CACHE BOOL "Enable online features (WIP)")
+set(EnableIRC 1 CACHE BOOL "Enable IRC for messaging and ignore-cathook")
 
 if(NOT EnableVisuals)
     set(EnableGUI 0)
@@ -131,6 +135,9 @@ set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY
 add_subdirectory(src)
 add_subdirectory(include)
 add_subdirectory(external)
+
+set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp", "${CMAKE_SOURCE_DIR}/include/hacks/hacklist.hpp")
+cotire(cathook)
 
 add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")

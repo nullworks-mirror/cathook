@@ -25,7 +25,6 @@ public:
 
     //
 
-    void addOption(std::string name, std::string value,
-                   std::optional<std::string> tooltip);
+    void addOption(std::string name, std::string value, std::optional<std::string> tooltip);
 };
 } // namespace zerokernel

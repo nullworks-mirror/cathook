@@ -36,13 +36,11 @@ public:
     // Latching button states
     virtual int GetButtonBits(int) = 0;
     // Create movement command
-    virtual void CreateMove(int sequence_number, float input_sample_frametime,
-                            bool active)                         = 0;
-    virtual void ExtraMouseSample(float frametime, bool active)  = 0;
-    virtual bool WriteUsercmdDeltaToBuffer(bf_write *buf, int from, int to,
-                                           bool isnewcommand)    = 0;
-    virtual void EncodeUserCmdToBuffer(bf_write &buf, int slot)  = 0;
-    virtual void DecodeUserCmdFromBuffer(bf_read &buf, int slot) = 0;
+    virtual void CreateMove(int sequence_number, float input_sample_frametime, bool active)    = 0;
+    virtual void ExtraMouseSample(float frametime, bool active)                                = 0;
+    virtual bool WriteUsercmdDeltaToBuffer(bf_write *buf, int from, int to, bool isnewcommand) = 0;
+    virtual void EncodeUserCmdToBuffer(bf_write &buf, int slot)                                = 0;
+    virtual void DecodeUserCmdFromBuffer(bf_read &buf, int slot)                               = 0;
 
     virtual CUserCmd *GetUserCmd(int sequence_number) = 0;
 
@@ -51,8 +49,7 @@ public:
     // Retrieve key state
     virtual float KeyState(kbutton_t *key) = 0;
     // Issue key event
-    virtual int KeyEvent(int eventcode, ButtonCode_t keynum,
-                         const char *pszCurrentBinding) = 0;
+    virtual int KeyEvent(int eventcode, ButtonCode_t keynum, const char *pszCurrentBinding) = 0;
     // Look for key
     virtual kbutton_t *FindKey(const char *name) = 0;
 
@@ -75,15 +72,14 @@ public:
     virtual float GetLookSpring(void) = 0;
 
     // Retrieve mouse position
-    virtual void GetFullscreenMousePos(int *mx, int *my, int *unclampedx = 0,
-                                       int *unclampedy = 0) = 0;
-    virtual void SetFullscreenMousePos(int mx, int my)      = 0;
-    virtual void ResetMouse(void)                           = 0;
-    virtual float GetLastForwardMove(void)                  = 0;
-    virtual float Joystick_GetForward(void)                 = 0;
-    virtual float Joystick_GetSide(void)                    = 0;
-    virtual float Joystick_GetPitch(void)                   = 0;
-    virtual float Joystick_GetYaw(void)                     = 0;
+    virtual void GetFullscreenMousePos(int *mx, int *my, int *unclampedx = 0, int *unclampedy = 0) = 0;
+    virtual void SetFullscreenMousePos(int mx, int my)                                             = 0;
+    virtual void ResetMouse(void)                                                                  = 0;
+    virtual float GetLastForwardMove(void)                                                         = 0;
+    virtual float Joystick_GetForward(void)                                                        = 0;
+    virtual float Joystick_GetSide(void)                                                           = 0;
+    virtual float Joystick_GetPitch(void)                                                          = 0;
+    virtual float Joystick_GetYaw(void)                                                            = 0;
 
     // Third Person camera ( TODO/FIXME:  Move this to a separate interface? )
     virtual void CAM_Think(void)            = 0;
@@ -104,8 +100,7 @@ public:
 
 #if defined(HL2_CLIENT_DLL)
     // IK back channel info
-    virtual void AddIKGroundContactInfo(int entindex, float minheight,
-                                        float maxheight) = 0;
+    virtual void AddIKGroundContactInfo(int entindex, float minheight, float maxheight) = 0;
 #endif
 
     virtual void LevelInit(void) = 0;
@@ -113,9 +108,8 @@ public:
     // Causes an input to have to be re-pressed to become active
     virtual void ClearInputButton(int bits) = 0;
 
-    virtual void CAM_SetCameraThirdData(CameraThirdData_t *pCameraData,
-                                        const QAngle &vecCameraOffset) = 0;
-    virtual void CAM_CameraThirdThink(void)                            = 0;
+    virtual void CAM_SetCameraThirdData(CameraThirdData_t *pCameraData, const QAngle &vecCameraOffset) = 0;
+    virtual void CAM_CameraThirdThink(void)                                                            = 0;
 
     virtual bool EnableJoystickMode() = 0;
 };

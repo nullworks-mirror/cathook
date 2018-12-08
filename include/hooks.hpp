@@ -37,8 +37,7 @@ public:
     ~VMTHook();
     void Set(ptr_t inst, uint32_t offset = 0);
     void Release();
-    template <typename T>
-    inline void HookMethod(T func, uint32_t idx, T *backup)
+    template <typename T> inline void HookMethod(T func, uint32_t idx, T *backup)
     {
         HookMethod(ptr_t(func), idx, (ptr_t *) (backup));
     }

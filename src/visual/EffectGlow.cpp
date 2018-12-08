@@ -19,8 +19,7 @@ static settings::Bool medkits{ "glow.show.medkits", "false" };
 static settings::Bool ammobox{ "glow.show.ammoboxes", "false" };
 static settings::Bool buildings{ "glow.show.buildings", "true" };
 static settings::Bool stickies{ "glow.show.stickies", "true" };
-static settings::Bool teammate_buildings{ "glow.show.teammate-buildings",
-                                          "false" };
+static settings::Bool teammate_buildings{ "glow.show.teammate-buildings", "false" };
 static settings::Bool show_powerups{ "glow.show.powerups", "true" };
 static settings::Bool weapons_white{ "glow.white-weapons", "true" };
 static settings::Bool glowself{ "glow.self", "true" };
@@ -32,13 +31,11 @@ static settings::Int solid_when{ "glow.solid-when", "0" };
 IMaterialSystem *materials = nullptr;
 
 CScreenSpaceEffectRegistration *CScreenSpaceEffectRegistration::s_pHead = NULL;
-IScreenSpaceEffectManager *g_pScreenSpaceEffects                 = nullptr;
-CScreenSpaceEffectRegistration **g_ppScreenSpaceRegistrationHead = nullptr;
-CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration(
-    const char *pName, IScreenSpaceEffect *pEffect)
+IScreenSpaceEffectManager *g_pScreenSpaceEffects                        = nullptr;
+CScreenSpaceEffectRegistration **g_ppScreenSpaceRegistrationHead        = nullptr;
+CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration(const char *pName, IScreenSpaceEffect *pEffect)
 {
-    logging::Info("Creating new effect '%s', head: 0x%08x", pName,
-                  *g_ppScreenSpaceRegistrationHead);
+    logging::Info("Creating new effect '%s', head: 0x%08x", pName, *g_ppScreenSpaceRegistrationHead);
     m_pEffectName                    = pName;
     m_pEffect                        = pEffect;
     m_pNext                          = *g_ppScreenSpaceRegistrationHead;
@@ -95,38 +92,25 @@ ITexture *GetBuffer(int i)
     {
         ITexture *fullframe;
         IF_GAME(IsTF2())
-        fullframe      = g_IMaterialSystem->FindTexture("_rt_FullFrameFB",
-                                                   TEXTURE_GROUP_RENDER_TARGET);
-        else fullframe = g_IMaterialSystemHL->FindTexture(
-            "_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
+        fullframe      = g_IMaterialSystem->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
+        else fullframe = g_IMaterialSystemHL->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
         // char *newname    = new char[32];
         std::unique_ptr<char[]> newname(new char[32]);
         std::string name = format("_cathook_buff", i);
         strncpy(newname.get(), name.c_str(), 30);
-        logging::Info("Creating new buffer %d with size %dx%d %s", i,
-                      fullframe->GetActualWidth(), fullframe->GetActualHeight(),
-                      newname.get());
+        logging::Info("Creating new buffer %d with size %dx%d %s", i, fullframe->GetActualWidth(), fullframe->GetActualHeight(), newname.get());
 
-        int textureFlags = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT |
-                           TEXTUREFLAGS_EIGHTBITALPHA;
+        int textureFlags      = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT | TEXTUREFLAGS_EIGHTBITALPHA;
         int renderTargetFlags = CREATERENDERTARGETFLAGS_HDR;
 
         ITexture *texture;
         IF_GAME(IsTF2())
         {
-            texture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx(
-                newname.get(), fullframe->GetActualWidth(),
-                fullframe->GetActualHeight(), RT_SIZE_LITERAL,
-                IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags,
-                renderTargetFlags);
+            texture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx(newname.get(), fullframe->GetActualWidth(), fullframe->GetActualHeight(), RT_SIZE_LITERAL, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags, renderTargetFlags);
         }
         else
         {
-            texture = g_IMaterialSystemHL->CreateNamedRenderTargetTextureEx(
-                newname.get(), fullframe->GetActualWidth(),
-                fullframe->GetActualHeight(), RT_SIZE_LITERAL,
-                IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags,
-                renderTargetFlags);
+            texture = g_IMaterialSystemHL->CreateNamedRenderTargetTextureEx(newname.get(), fullframe->GetActualWidth(), fullframe->GetActualHeight(), RT_SIZE_LITERAL, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags, renderTargetFlags);
         }
         buffers[i].Init(texture);
     }
@@ -290,8 +274,7 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
     case ENTITY_PROJECTILE:
         if (!ent->m_bEnemy())
             return false;
-        if (stickies &&
-            ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
+        if (stickies && ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
         {
             return true;
         }
@@ -366,8 +349,7 @@ void EffectGlow::StartStenciling()
     }
     g_IVRenderView->SetBlend(0.0f);
     mat_unlit->AlphaModulate(1.0f);
-    g_IVModelRender->ForcedMaterialOverride(*solid_when ? mat_unlit
-                                                        : mat_unlit_z);
+    g_IVModelRender->ForcedMaterialOverride(*solid_when ? mat_unlit : mat_unlit_z);
 }
 
 void EffectGlow::EndStenciling()
@@ -397,15 +379,12 @@ void EffectGlow::DrawEntity(IClientEntity *entity)
     passes = 0;
 
     entity->DrawModel(1);
-    attach = g_IEntityList->GetClientEntity(
-        *(int *) ((uintptr_t) entity + netvar.m_Collision - 24) & 0xFFF);
+    attach = g_IEntityList->GetClientEntity(*(int *) ((uintptr_t) entity + netvar.m_Collision - 24) & 0xFFF);
     while (attach && passes++ < 32)
     {
         if (attach->ShouldDraw())
         {
-            if (weapons_white &&
-                entity->GetClientClass()->m_ClassID == RCC_PLAYER &&
-                re::C_BaseCombatWeapon::IsBaseCombatWeapon(attach))
+            if (weapons_white && entity->GetClientClass()->m_ClassID == RCC_PLAYER && re::C_BaseCombatWeapon::IsBaseCombatWeapon(attach))
             {
                 rgba_t mod_original;
                 g_IVRenderView->GetColorModulation(mod_original.rgba);
@@ -416,8 +395,7 @@ void EffectGlow::DrawEntity(IClientEntity *entity)
             else
                 attach->DrawModel(1);
         }
-        attach = g_IEntityList->GetClientEntity(
-            *(int *) ((uintptr_t) attach + netvar.m_Collision - 20) & 0xFFF);
+        attach = g_IEntityList->GetClientEntity(*(int *) ((uintptr_t) attach + netvar.m_Collision - 20) & 0xFFF);
     }
 }
 
@@ -438,9 +416,7 @@ void EffectGlow::Render(int x, int y, int w, int h)
     static IMaterialVar *blury_bloomamount;
     if (!init)
         Init();
-    if (!isHackActive() ||
-        (g_IEngine->IsTakingScreenshot() && clean_screenshots) ||
-        g_Settings.bInvalid)
+    if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots) || g_Settings.bInvalid)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     orig = ptr->GetRenderTarget();
@@ -471,13 +447,11 @@ void EffectGlow::Render(int x, int y, int w, int h)
     ptr->SetRenderTarget(GetBuffer(2));
     ptr->Viewport(x, y, w, h);
     ptr->ClearBuffers(true, false);
-    ptr->DrawScreenSpaceRectangle(mat_blur_x, x, y, w, h, 0, 0, w - 1, h - 1, w,
-                                  h);
+    ptr->DrawScreenSpaceRectangle(mat_blur_x, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
     ptr->SetRenderTarget(GetBuffer(1));
     blury_bloomamount = mat_blur_y->FindVar("$bloomamount", nullptr);
     blury_bloomamount->SetIntValue((int) blur_scale);
-    ptr->DrawScreenSpaceRectangle(mat_blur_y, x, y, w, h, 0, 0, w - 1, h - 1, w,
-                                  h);
+    ptr->DrawScreenSpaceRectangle(mat_blur_y, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
     ptr->Viewport(x, y, w, h);
     ptr->SetRenderTarget(orig);
     g_IVRenderView->SetBlend(0.0f);
@@ -485,8 +459,7 @@ void EffectGlow::Render(int x, int y, int w, int h)
     {
         SS_Drawing.SetStencilState(ptr);
     }
-    ptr->DrawScreenSpaceRectangle(mat_blit, x, y, w, h, 0, 0, w - 1, h - 1, w,
-                                  h);
+    ptr->DrawScreenSpaceRectangle(mat_blit, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
     if (*solid_when != -1)
     {
         SS_Null.SetStencilState(ptr);

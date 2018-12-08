@@ -15,8 +15,7 @@ static settings::Bool log_sent{ "debug.log-sent-chat", "false" };
 
 namespace hooked_methods
 {
-DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
-                     bool force_reliable, bool voice)
+DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, bool force_reliable, bool voice)
 {
     if (!isHackActive())
         return original::SendNetMsg(this_, msg, force_reliable, voice);
@@ -49,7 +48,9 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
                         if (msg.find("!!!") == 0)
                             sub_val = 3;
                         std::string substrmsg(msg.substr(sub_val));
+#if ENABLE_IRC
                         IRC::sendmsg(substrmsg, true);
+#endif
                         // Do not send message over normal chat.
                         return false;
                     }
@@ -64,22 +65,19 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
             str = str.substr(16, str.length() - 17);
             // if (queue_messages && !chat_stack::CanSend()) {
             stringcmd.m_szCommand = str.c_str();
-            return original::SendNetMsg(this_, stringcmd, force_reliable,
-                                        voice);
+            return original::SendNetMsg(this_, stringcmd, force_reliable, voice);
             //}
         }
     }
-    static ConVar *sv_player_usercommand_timeout =
-        g_ICvar->FindVar("sv_player_usercommand_timeout");
-    static float lastcmd = 0.0f;
+    static ConVar *sv_player_usercommand_timeout = g_ICvar->FindVar("sv_player_usercommand_timeout");
+    static float lastcmd                         = 0.0f;
     if (lastcmd > g_GlobalVars->absoluteframetime)
     {
         lastcmd = g_GlobalVars->absoluteframetime;
     }
     if (log_sent && msg.GetType() != 3 && msg.GetType() != 9)
     {
-        logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(),
-                      msg.ToString());
+        logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(), msg.ToString());
         unsigned char buf[4096];
         bf_write buffer("cathook_debug_buffer", buf, 4096);
         logging::Info("Writing %i", msg.WriteToBuffer(buffer));
@@ -91,8 +89,7 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg,
             // ');
             bytes += format((unsigned short) buf[i], ' ');
         }
-        logging::Info("%i bytes => %s", buffer.GetNumBytesWritten(),
-                      bytes.c_str());
+        logging::Info("%i bytes => %s", buffer.GetNumBytesWritten(), bytes.c_str());
     }
     return original::SendNetMsg(this_, msg, force_reliable, voice);
 }

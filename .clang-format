@@ -11,6 +11,7 @@ AllowShortIfStatementsOnASingleLine: 'false'
 AllowShortLoopsOnASingleLine: 'false'
 BreakBeforeBraces: Allman
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
+ColumnLimit: 9999
 Cpp11BracedListStyle: 'false'
 IndentCaseLabels: 'false'
 IndentWidth: '4'

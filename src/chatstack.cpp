@@ -29,11 +29,9 @@ void OnCreateMove()
         {
             // logging::Info("Saying %s %i", msg.text.c_str(), msg.text.size());
             if (msg.team)
-                g_IEngine->ServerCmd(
-                    format("say_team \"", msg.text.c_str(), '"').c_str());
+                g_IEngine->ServerCmd(format("say_team \"", msg.text.c_str(), '"').c_str());
             else
-                g_IEngine->ServerCmd(
-                    format("say \"", msg.text.c_str(), '"').c_str());
+                g_IEngine->ServerCmd(format("say \"", msg.text.c_str(), '"').c_str());
             last_say = g_GlobalVars->curtime;
         }
     }

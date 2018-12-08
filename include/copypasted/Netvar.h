@@ -38,8 +38,7 @@ public:
 class netvar_tree
 {
     struct node;
-    using map_type = std::unordered_map<const char *, std::shared_ptr<node>,
-                                        hash_char, equal_char>;
+    using map_type = std::unordered_map<const char *, std::shared_ptr<node>, hash_char, equal_char>;
 
     struct node
     {
@@ -91,9 +90,7 @@ private:
      * Perform tail recursion with the nodes of the specified branch of the tree
      * passed for map and the offset of that branch added to acc
      */
-    template <typename... args_t>
-    int get_offset_recursive(map_type &map, int acc, const char *name,
-                             args_t... args)
+    template <typename... args_t> int get_offset_recursive(map_type &map, int acc, const char *name, args_t... args)
     {
         if (!map.count(name))
         {
@@ -109,9 +106,7 @@ private:
         return map[name]->prop;
     }
 
-    template <typename... args_t>
-    RecvProp *get_prop_recursive(map_type &map, const char *name,
-                                 args_t... args)
+    template <typename... args_t> RecvProp *get_prop_recursive(map_type &map, const char *name, args_t... args)
     {
         const auto &node = map[name];
         return get_prop_recursive(node->nodes, args...);
@@ -126,8 +121,7 @@ public:
      * Initiate a recursive search down the branch corresponding to the
      * specified datable name
      */
-    template <typename... args_t>
-    int get_offset(const char *name, args_t... args)
+    template <typename... args_t> int get_offset(const char *name, args_t... args)
     {
         const auto &node = nodes[name];
         if (node == 0)
@@ -139,8 +133,7 @@ public:
         return offset;
     }
 
-    template <typename... args_t>
-    RecvProp *get_prop(const char *name, args_t... args)
+    template <typename... args_t> RecvProp *get_prop(const char *name, args_t... args)
     {
         const auto &node = nodes[name];
         return get_prop_recursive(node->nodes, args...);

@@ -44,10 +44,8 @@ constexpr rgba_t GUIColor()
 
 void InitStrings();
 void ResetStrings();
-void AddCenterString(const std::string &string,
-                     const rgba_t &color = colors::white);
-void AddSideString(const std::string &string,
-                   const rgba_t &color = colors::white);
+void AddCenterString(const std::string &string, const rgba_t &color = colors::white);
+void AddSideString(const std::string &string, const rgba_t &color = colors::white);
 void DrawStrings();
 
 namespace draw

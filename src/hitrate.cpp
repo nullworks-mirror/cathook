@@ -23,8 +23,7 @@ int count_shots{ 0 };
 int count_hits{ 0 };
 int count_hits_head{ 0 };
 
-std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>>
-    shots{};
+std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> shots{};
 
 void OnShot()
 {
@@ -69,8 +68,7 @@ void Update()
     CachedEntity *weapon = LOCAL_W;
     if (CE_GOOD(weapon))
     {
-        if (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
-            LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
+        if (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) || LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
         {
             /*INetChannel *ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
             static int prevhits = count_hits;
@@ -87,16 +85,14 @@ void Update()
             // ONLY tracks primary ammo
             int ammo = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
 
-            INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+            INetChannel *ch       = (INetChannel *) g_IEngine->GetNetChannelInfo();
             static bool firstcall = true;
             for (int i = 0; i < 32; i++)
             {
                 if (firstcall)
                     xd[i].update();
                 firstcall = false;
-                if (ch &&
-                    xd[i].check(ch->GetLatency(MAX_FLOWS) * 1000.0f + 100.0f) &&
-                    brutesoon[i])
+                if (ch && xd[i].check(ch->GetLatency(MAX_FLOWS) * 1000.0f + 100.0f) && brutesoon[i])
                 {
                     if (lasthits == count_hits)
                     {
@@ -114,9 +110,7 @@ void Update()
                 {
                     if (hacks::shared::aimbot::target_eid > -1)
                     {
-                        if (ch &&
-                            xd[hacks::shared::aimbot::target_eid].check(
-                                ch->GetLatency(MAX_FLOWS) * 1000.0f + 110.0f))
+                        if (ch && xd[hacks::shared::aimbot::target_eid].check(ch->GetLatency(MAX_FLOWS) * 1000.0f + 110.0f))
                         {
                             xd[hacks::shared::aimbot::target_eid].update();
                             brutesoon[hacks::shared::aimbot::target_eid] = true;
@@ -167,12 +161,9 @@ public:
     {
         if (strcmp("player_hurt", event->GetName()))
             return;
-        if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) ==
-            g_IEngine->GetLocalPlayer())
+        if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
-            if (CE_GOOD(LOCAL_W) &&
-                (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) ||
-                 LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap)))
+            if (CE_GOOD(LOCAL_W) && (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) || LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap)))
                 OnHit(event->GetBool("crit"));
         }
     }
@@ -184,7 +175,5 @@ HurtListener &listener()
     return l;
 }
 
-InitRoutine init([]() {
-    g_IGameEventManager->AddListener(&listener(), false);
-});
+InitRoutine init([]() { g_IGameEventManager->AddListener(&listener(), false); });
 } // namespace hitrate

@@ -57,8 +57,7 @@ bool IsTarget(CachedEntity *ent)
             return false;
 
         // Global checks
-        if (player_tools::shouldTarget(ent) !=
-            player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
             return false;
 
         IF_GAME(IsTF())
@@ -147,8 +146,7 @@ void CreateMove()
                     if (!legit)
                     {
                         // Aim at bomb
-                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(),
-                              current_user_cmd);
+                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
                         // Use silent
                         g_pLocalPlayer->bUseSilentAngles = true;
 
@@ -165,8 +163,7 @@ void CreateMove()
                     else if (VisCheckEntFromEnt(bomb, LOCAL_E))
                     {
                         // Aim at bomb
-                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(),
-                              current_user_cmd);
+                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
                         // Use silent
                         g_pLocalPlayer->bUseSilentAngles = true;
 

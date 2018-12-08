@@ -17,15 +17,11 @@
 
 static settings::Bool enable_spinner{ "visual.fidget-spinner.enable", "false" };
 static settings::Bool v9mode{ "visual.fidget-spinner.v952-mode", "false" };
-static settings::Float spinner_speed_cap{ "visual.fidget-spinner.speed-cap",
-                                          "30" };
-static settings::Float spinner_speed_scale{ "visual.fidget-spinner.speed-scale",
-                                            "0.03" };
-static settings::Float spinner_decay_speed{ "visual.fidget-spinner.decay-speed",
-                                            "0.1" };
+static settings::Float spinner_speed_cap{ "visual.fidget-spinner.speed-cap", "30" };
+static settings::Float spinner_speed_scale{ "visual.fidget-spinner.speed-scale", "0.03" };
+static settings::Float spinner_decay_speed{ "visual.fidget-spinner.decay-speed", "0.1" };
 static settings::Float spinner_scale{ "visual.fidget-spinner.scale", "32" };
-static settings::Float spinner_min_speed{ "visual.fidget-spinner.min-speed",
-                                          "2" };
+static settings::Float spinner_min_speed{ "visual.fidget-spinner.min-speed", "2" };
 
 static float spinning_speed = 0.0f;
 static float angle          = 0;
@@ -67,9 +63,7 @@ void DrawSpinner()
 {
     if (not enable_spinner)
         return;
-    spinning_speed -= (spinning_speed > 150.0f)
-                          ? float(spinner_decay_speed)
-                          : float(spinner_decay_speed) / 2.0f;
+    spinning_speed -= (spinning_speed > 150.0f) ? float(spinner_decay_speed) : float(spinner_decay_speed) / 2.0f;
     if (spinning_speed < float(spinner_min_speed))
         spinning_speed = float(spinner_min_speed);
     if (spinning_speed > 1000)
@@ -79,23 +73,17 @@ void DrawSpinner()
     if (spinning_speed < 250)
         real_speed = speed_cap * (spinning_speed / 250.0f);
     else if (spinning_speed < 500)
-        real_speed =
-            speed_cap - (speed_cap - 10) * ((spinning_speed - 250.0f) / 250.0f);
+        real_speed = speed_cap - (speed_cap - 10) * ((spinning_speed - 250.0f) / 250.0f);
     else if (spinning_speed < 750)
-        real_speed =
-            10 + (speed_cap - 20) * ((spinning_speed - 500.0f) / 250.0f);
+        real_speed = 10 + (speed_cap - 20) * ((spinning_speed - 500.0f) / 250.0f);
     else
-        real_speed =
-            (speed_cap - 10) + 10 * ((spinning_speed - 750.0f) / 250.0f);
+        real_speed = (speed_cap - 10) + 10 * ((spinning_speed - 750.0f) / 250.0f);
     const float speed_scale(spinner_speed_scale);
     const float size(spinner_scale);
     angle += speed_scale * real_speed;
     int state = min(3, int(spinning_speed / 250));
 
-    glez::draw::rect_textured(
-        draw::width / 2 - size * 0.5f, draw::height / 2 - size * 0.5f, size,
-        size, colors::white, textures::atlas().texture, 64 * state,
-        (3 + (v9mode ? 0 : 1)) * 64, 64, 64, angle);
+    glez::draw::rect_textured(draw::width / 2 - size * 0.5f, draw::height / 2 - size * 0.5f, size, size, colors::white, textures::atlas().texture, 64 * state, (3 + (v9mode ? 0 : 1)) * 64, 64, 64, angle);
     if (angle > PI * 4)
         angle -= PI * 4;
 }

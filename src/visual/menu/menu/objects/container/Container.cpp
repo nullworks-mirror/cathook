@@ -70,8 +70,7 @@ void Container::iterateObjects(std::function<void(BaseMenuObject *)> callback)
         callback(o.get());
 }
 
-BaseMenuObject *
-Container::findElement(const std::function<bool(BaseMenuObject *)> &search)
+BaseMenuObject *Container::findElement(const std::function<bool(BaseMenuObject *)> &search)
 {
     auto result = BaseMenuObject::findElement(search);
     if (result)

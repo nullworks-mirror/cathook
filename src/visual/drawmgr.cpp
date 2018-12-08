@@ -12,13 +12,21 @@
 #include <glez/glez.hpp>
 #include <glez/record.hpp>
 #include <settings/Bool.hpp>
+#include <settings/Float.hpp>
 #include <menu/GuiInterface.hpp>
 #include "common.hpp"
 #include "visual/drawing.hpp"
 #include "hack.hpp"
+#include "menu/menu/Menu.hpp"
+#include <glez/draw.hpp>
 
 static settings::Bool info_text{ "hack-info.enable", "true" };
 static settings::Bool info_text_min{ "hack-info.minimal", "false" };
+static settings::Bool draw_snowflakes{ "visual.snowflakes", "true" };
+static settings::Float snowflake_min_down{ "visual.snowflakes.fall-speed.min", "0.5f" };
+static settings::Float snowflake_max_down{ "visual.snowflakes.fall-speed.max", "2.0f" };
+static settings::Float snowflake_min_side{ "visual.snowflakes.sideways-speed.min", "-0.8f" };
+static settings::Float snowflake_max_side{ "visual.snowflakes.sideways-speed.max", "0.8f" };
 
 void render_cheat_visuals()
 {
@@ -50,6 +58,24 @@ void BeginCheatVisuals()
 
 std::mutex drawing_mutex;
 
+struct snowflake
+{
+    Vector2D pos;
+    Vector2D angle;
+};
+
+double getRandom(double lower_bound, double upper_bound)
+{
+    std::uniform_real_distribution<double> unif(lower_bound, upper_bound);
+    static std::mt19937 rand_engine(std::time(nullptr));
+
+    double x = unif(rand_engine);
+    return x;
+}
+
+static std::vector<snowflake> snowflakes{};
+static Timer snowflake_spawn{};
+static Timer flake_update{};
 void DrawCheatVisuals()
 {
     /*#if RENDERING_ENGINE_OPENGL
@@ -58,6 +84,58 @@ void DrawCheatVisuals()
     {
         PROF_SECTION(DRAW_misc);
         hacks::shared::misc::DrawText();
+    }
+    {
+        PROF_SECTION(DRAW_SNOWFLAKES);
+
+        if (zerokernel::Menu::instance && !zerokernel::Menu::instance->isInGame())
+        {
+            // used to count current vector index
+            int idx = 0;
+            for (snowflake &flake : snowflakes)
+            {
+                // Only cache texture once, saves processing time
+                static textures::sprite snowflake_sprite(256, 0, 16, 16, textures::atlas());
+                // Draw at the pos
+                snowflake_sprite.draw(flake.pos.x, flake.pos.y, 16, 16, colors::white);
+                // about 30fps
+                if (flake_update.check(33))
+                {
+                    flake.pos += flake.angle;
+
+                    // Get a new value so the snowflakes look a bit more natural, don#t dip below min/go above max.
+                    float rand_down_min = fminf(*snowflake_min_down, flake.angle.y - 0.01f);
+                    float rand_down_max = fmaxf(*snowflake_max_down, flake.angle.x + 0.01f);
+                    float rand_side_min = fminf(*snowflake_min_side, flake.angle.x - 0.01f);
+                    float rand_side_max = fmaxf(*snowflake_max_side, flake.angle.x + 0.01f);
+                    float new_down      = getRandom(rand_down_min, rand_down_max);
+                    float new_side      = getRandom(rand_side_min, rand_side_max);
+                    // Store new angle
+                    flake.angle = { new_side, new_down };
+                    // Delet offscreen
+                    if (flake.pos.x > draw::width || flake.pos.x < 0 || flake.pos.y > draw::height)
+                        snowflakes.erase(snowflakes.begin() + idx);
+                }
+                idx++;
+            }
+            // Update the timer for our 30fps
+            flake_update.test_and_set(33);
+            // Spawn a snowflake every 900ms
+            if (snowflake_spawn.test_and_set(900))
+            {
+                // Get speeds
+                float down_speed = getRandom(*snowflake_min_down, *snowflake_max_down);
+                float side_speed = getRandom(*snowflake_min_side, *snowflake_max_side);
+                // Position, prevent offscreen spawns
+                float start_pos = getRandom(draw::width * 0.1f, draw::width * 0.9f);
+                snowflake new_flake{};
+                new_flake.pos = { start_pos, 0.0f };
+                // x = left right, which is side speed, y = down/up, which is down speed
+                new_flake.angle = { side_speed, down_speed };
+                // Store
+                snowflakes.push_back(new_flake);
+            }
+        }
     }
     {
         PROF_SECTION(DRAW_info);
@@ -69,11 +147,10 @@ void DrawCheatVisuals()
             if (!info_text_min)
             {
                 AddSideString(hack::GetVersion(),
-                              GUIColor()); // github commit and date
+                              GUIColor());                  // github commit and date
                 AddSideString(hack::GetType(), GUIColor()); //  Compile type
 #if ENABLE_GUI
-                AddSideString("Press 'INSERT' key to open/close cheat menu.",
-                              GUIColor());
+                AddSideString("Press 'INSERT' key to open/close cheat menu.", GUIColor());
                 AddSideString("Use mouse to navigate in menu.", GUIColor());
 #endif
                 if (!g_IEngine->IsInGame()

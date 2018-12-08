@@ -28,8 +28,7 @@ static HookedFunction cm(HF_CreateMove, "lightesp", 5, []() {
             drawEsp[i] = false;
             continue;
         }
-        if (pEntity->m_iTeam() == LOCAL_E->m_iTeam() &&
-            playerlist::IsDefault(pEntity))
+        if (pEntity->m_iTeam() == LOCAL_E->m_iTeam() && playerlist::IsDefault(pEntity))
         {
             drawEsp[i] = false;
             continue;
@@ -63,20 +62,14 @@ void draw()
         {
             float size = 0.0f;
             Vector pout, pout2;
-            if (draw::WorldToScreen(minp[i], pout) &&
-                draw::WorldToScreen(maxp[i], pout2))
+            if (draw::WorldToScreen(minp[i], pout) && draw::WorldToScreen(maxp[i], pout2))
                 size = fmaxf(fabsf(pout2.x - pout.x), fabsf(pout2.y - pout.y));
 
             float minsize = 20.0f;
             if (size < minsize)
                 size = minsize;
-            glez::draw::rect(out.x - fabsf(pout.x - pout2.x) / 4,
-                             out.y - fabsf(pout.y - pout2.y) / 4,
-                             fabsf(pout.x - pout2.x) / 2,
-                             fabsf(pout.y - pout2.y) / 2,
-                             hacks::shared::lightesp::LightESPColor(pEntity));
-            glez::draw::rect(out.x - size / 8, out.y - size / 8, size / 4,
-                             size / 4, colors::red);
+            glez::draw::rect(out.x - fabsf(pout.x - pout2.x) / 4, out.y - fabsf(pout.y - pout2.y) / 4, fabsf(pout.x - pout2.x) / 2, fabsf(pout.y - pout2.y) / 2, hacks::shared::lightesp::LightESPColor(pEntity));
+            glez::draw::rect(out.x - size / 8, out.y - size / 8, size / 4, size / 4, colors::red);
         }
     }
 #endif

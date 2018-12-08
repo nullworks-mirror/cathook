@@ -88,8 +88,7 @@ public:
         return (enc_len == out->size());
     }
 
-    static bool Encode(const char *input, size_t input_length, char *out,
-                       size_t out_length)
+    static bool Encode(const char *input, size_t input_length, char *out, size_t out_length)
     {
         int i = 0, j = 0;
         char *out_begin = out;
@@ -201,8 +200,7 @@ public:
         return (dec_len == out->size());
     }
 
-    static bool Decode(const char *input, size_t input_length, char *out,
-                       size_t out_length)
+    static bool Decode(const char *input, size_t input_length, char *out, size_t out_length)
     {
         int i = 0, j = 0;
         char *out_begin = out;
@@ -279,8 +277,7 @@ public:
         int numEq = 0;
         int n     = in.size();
 
-        for (std::string::const_reverse_iterator it = in.rbegin(); *it == '=';
-             ++it)
+        for (std::string::const_reverse_iterator it = in.rbegin(); *it == '='; ++it)
         {
             ++numEq;
         }

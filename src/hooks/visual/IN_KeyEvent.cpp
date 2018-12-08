@@ -8,8 +8,7 @@
 namespace hooked_methods
 {
 
-DEFINE_HOOKED_METHOD(IN_KeyEvent, int, void *this_, int eventcode,
-                     ButtonCode_t keynum, const char *binding)
+DEFINE_HOOKED_METHOD(IN_KeyEvent, int, void *this_, int eventcode, ButtonCode_t keynum, const char *binding)
 {
 #if ENABLE_GUI
 /*

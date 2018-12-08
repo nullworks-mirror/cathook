@@ -60,12 +60,10 @@ CNavArea *getNavArea(Vector &vec)
 Vector GetClosestCornerToArea(CNavArea *CornerOf, CNavArea *Target)
 {
     std::array<Vector, 4> corners;
-    corners.at(0) = CornerOf->m_nwCorner; // NW
-    corners.at(1) = CornerOf->m_seCorner; // SE
-    corners.at(2) = Vector{ CornerOf->m_seCorner.x, CornerOf->m_nwCorner.y,
-                            CornerOf->m_nwCorner.z }; // NE
-    corners.at(3) = Vector{ CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y,
-                            CornerOf->m_seCorner.z }; // SW
+    corners.at(0) = CornerOf->m_nwCorner;                                                             // NW
+    corners.at(1) = CornerOf->m_seCorner;                                                             // SE
+    corners.at(2) = Vector{ CornerOf->m_seCorner.x, CornerOf->m_nwCorner.y, CornerOf->m_nwCorner.z }; // NE
+    corners.at(3) = Vector{ CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y, CornerOf->m_seCorner.z }; // SW
 
     Vector bestVec{};
     float bestDist = FLT_MAX;
@@ -107,9 +105,7 @@ float getZBetweenAreas(CNavArea *start, CNavArea *end)
 
 class ignoremanager
 {
-    static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata,
-                              boost::hash<std::pair<CNavArea *, CNavArea *>>>
-        ignores;
+    static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata, boost::hash<std::pair<CNavArea *, CNavArea *>>> ignores;
     static bool vischeck(CNavArea *begin, CNavArea *end)
     {
         Vector first  = begin->m_center;
@@ -155,8 +151,7 @@ class ignoremanager
                     data.ignoreTimeout.update();
                 }
             }
-            else if (ent->m_iClassID() ==
-                     CL_CLASS(CTFGrenadePipebombProjectile))
+            else if (ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
             {
                 if (!ent->m_bEnemy())
                     continue;
@@ -232,10 +227,7 @@ public:
             ignores[{ begin, end }] = {};
         }
         ignoredata &connection = ignores[{ begin, end }];
-        connection.stucktime +=
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now() - time.last)
-                .count();
+        connection.stucktime += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - time.last).count();
         if (connection.stucktime > 3999)
         {
             connection.status = explicit_ignored;
@@ -322,9 +314,7 @@ public:
     }
     ignoremanager() = delete;
 };
-std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata,
-                   boost::hash<std::pair<CNavArea *, CNavArea *>>>
-    ignoremanager::ignores;
+std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata, boost::hash<std::pair<CNavArea *, CNavArea *>>> ignoremanager::ignores;
 
 struct Graph : public micropather::Graph
 {
@@ -332,14 +322,12 @@ struct Graph : public micropather::Graph
 
     Graph()
     {
-        pather =
-            std::make_unique<micropather::MicroPather>(this, 3000, 6, true);
+        pather = std::make_unique<micropather::MicroPather>(this, 3000, 6, true);
     }
     ~Graph() override
     {
     }
-    void AdjacentCost(void *state,
-                      MP_VECTOR<micropather::StateCost> *adjacent) override
+    void AdjacentCost(void *state, MP_VECTOR<micropather::StateCost> *adjacent) override
     {
         CNavArea *center = static_cast<CNavArea *>(state);
         for (auto &i : center->m_connections)
@@ -351,8 +339,7 @@ struct Graph : public micropather::Graph
             float distance = center->m_center.DistTo(i.area->m_center);
             if (isIgnored == 1)
                 distance += 50000;
-            micropather::StateCost cost{ static_cast<void *>(neighbour),
-                                         distance };
+            micropather::StateCost cost{ static_cast<void *>(neighbour), distance };
             adjacent->push_back(cost);
         }
     }
@@ -431,8 +418,7 @@ static std::vector<CNavArea *> findClosestNavSquare_localAreas(6);
 CNavArea *findClosestNavSquare(Vector vec)
 {
     if (findClosestNavSquare_localAreas.size() > 5)
-        findClosestNavSquare_localAreas.erase(
-            findClosestNavSquare_localAreas.begin());
+        findClosestNavSquare_localAreas.erase(findClosestNavSquare_localAreas.begin());
 
     bool is_local = vec == g_pLocalPlayer->v_Origin;
 
@@ -445,8 +431,7 @@ CNavArea *findClosestNavSquare(Vector vec)
         if (i.IsOverlapping(vec))
         {
             // Make sure we're not stuck on the same area for too long
-            if (std::count(findClosestNavSquare_localAreas.begin(),
-                           findClosestNavSquare_localAreas.end(), &i) < 3)
+            if (std::count(findClosestNavSquare_localAreas.begin(), findClosestNavSquare_localAreas.end(), &i) < 3)
             {
                 if (IsVectorVisible(vec, i.m_center, true))
                     overlapping.push_back(&i);
@@ -480,8 +465,7 @@ CNavArea *findClosestNavSquare(Vector vec)
         float dist = i.m_center.DistTo(vec);
         if (dist < bestDist)
         {
-            if (std::count(findClosestNavSquare_localAreas.begin(),
-                           findClosestNavSquare_localAreas.end(), &i) < 3)
+            if (std::count(findClosestNavSquare_localAreas.begin(), findClosestNavSquare_localAreas.end(), &i) < 3)
             {
                 bestDist   = dist;
                 bestSquare = &i;
@@ -504,17 +488,10 @@ std::vector<Vector> findPath(Vector start, Vector end)
         return {};
     micropather::MPVector<void *> pathNodes;
     float cost;
-    std::chrono::time_point begin_pathing =
-        std::chrono::high_resolution_clock::now();
-    int result =
-        Map.pather->Solve(static_cast<void *>(local), static_cast<void *>(dest),
-                          &pathNodes, &cost);
-    long long timetaken =
-        std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::high_resolution_clock::now() - begin_pathing)
-            .count();
-    logging::Info("Pathing: Pather result: %i. Time taken (NS): %lld", result,
-                  timetaken);
+    std::chrono::time_point begin_pathing = std::chrono::high_resolution_clock::now();
+    int result                            = Map.pather->Solve(static_cast<void *>(local), static_cast<void *>(dest), &pathNodes, &cost);
+    long long timetaken                   = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - begin_pathing).count();
+    logging::Info("Pathing: Pather result: %i. Time taken (NS): %lld", result, timetaken);
     // If no result found, return empty Vector
     if (result == micropather::MicroPather::NO_SOLUTION)
         return std::vector<Vector>(0);
@@ -536,8 +513,7 @@ static Timer inactivity{};
 int curr_priority         = 0;
 static bool ensureArrival = false;
 
-bool navTo(Vector destination, int priority, bool should_repath,
-           bool nav_to_local, bool is_repath)
+bool navTo(Vector destination, int priority, bool should_repath, bool nav_to_local, bool is_repath)
 {
     if (!prepare())
         return false;
@@ -587,66 +563,60 @@ void repath()
 
 static Timer last_jump{};
 // Main movement function, gets path from NavTo
-static HookedFunction
-    CreateMove(HookedFunctions_types::HF_CreateMove, "NavParser", 17, []() {
-        if (!enabled || status != on)
-            return;
-        if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
-            return;
-        if (!LOCAL_E->m_bAlivePlayer())
-        {
-            // Clear path if player dead
-            crumbs.clear();
-            return;
-        }
-        ignoremanager::updateIgnores();
-        // Crumbs empty, prepare for next instruction
-        if (crumbs.empty())
-        {
-            curr_priority    = 0;
-            ReadyForCommands = true;
-            ensureArrival    = false;
-            return;
-        }
-        ReadyForCommands = false;
-        // Remove old crumbs
-        if (g_pLocalPlayer->v_Origin.DistTo(Vector{
-                crumbs.at(0).x, crumbs.at(0).y, crumbs.at(0).z }) < 50.0f)
-        {
-            last_area = crumbs.at(0);
-            crumbs.erase(crumbs.begin());
-            inactivity.update();
-        }
-        if (crumbs.empty())
-            return;
+static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "NavParser", 17, []() {
+    if (!enabled || status != on)
+        return;
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
+        return;
+    if (!LOCAL_E->m_bAlivePlayer())
+    {
+        // Clear path if player dead
+        crumbs.clear();
+        return;
+    }
+    ignoremanager::updateIgnores();
+    // Crumbs empty, prepare for next instruction
+    if (crumbs.empty())
+    {
+        curr_priority    = 0;
+        ReadyForCommands = true;
+        ensureArrival    = false;
+        return;
+    }
+    ReadyForCommands = false;
+    // Remove old crumbs
+    if (g_pLocalPlayer->v_Origin.DistTo(Vector{ crumbs.at(0).x, crumbs.at(0).y, crumbs.at(0).z }) < 50.0f)
+    {
+        last_area = crumbs.at(0);
+        crumbs.erase(crumbs.begin());
+        inactivity.update();
+    }
+    if (crumbs.empty())
+        return;
 
-        if (look)
-        {
-            Vector next = crumbs.front();
-            next.z = g_pLocalPlayer->v_Eye.z;
-            Vector angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, next);
-            DoSlowAim(angle);
-            current_user_cmd->viewangles = angle;
-        }
+    if (look)
+    {
+        Vector next  = crumbs.front();
+        next.z       = g_pLocalPlayer->v_Eye.z;
+        Vector angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, next);
+        DoSlowAim(angle);
+        current_user_cmd->viewangles = angle;
+    }
 
-        // Detect when jumping is necessary
-        if ((!(g_pLocalPlayer->holding_sniper_rifle &&
-               g_pLocalPlayer->bZoomed) &&
-             crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 &&
-             last_jump.test_and_set(200)) ||
-            (last_jump.test_and_set(200) && inactivity.check(3000)))
-            current_user_cmd->buttons |= IN_JUMP;
-        // If inactive for too long
-        if (inactivity.check(4000))
-        {
-            // Ignore connection
-            ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
-            repath();
-            return;
-        }
-        // Walk to next crumb
-        WalkTo(crumbs.at(0));
-    });
+    // Detect when jumping is necessary
+    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) || (last_jump.test_and_set(200) && inactivity.check(3000)))
+        current_user_cmd->buttons |= IN_JUMP;
+    // If inactive for too long
+    if (inactivity.check(4000))
+    {
+        // Ignore connection
+        ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
+        repath();
+        return;
+    }
+    // Walk to next crumb
+    WalkTo(crumbs.at(0));
+});
 
 #if ENABLE_VISUALS
 static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []() {
@@ -663,11 +633,9 @@ static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []() {
     for (size_t i = 0; i < crumbs.size() - 1; i++)
     {
         Vector wts1, wts2;
-        if (draw::WorldToScreen(crumbs[i], wts1) &&
-            draw::WorldToScreen(crumbs[i + 1], wts2))
+        if (draw::WorldToScreen(crumbs[i], wts1) && draw::WorldToScreen(crumbs[i + 1], wts2))
         {
-            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y,
-                             colors::white, 0.3f);
+            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y, colors::white, 0.3f);
         }
     }
     Vector wts;
@@ -703,8 +671,7 @@ static CatCommand nav_find("nav_find", "Debug nav find", []() {
     logging::Info(output.c_str());
 });
 
-static CatCommand nav_set("nav_set", "Debug nav find",
-                          []() { loc = g_pLocalPlayer->v_Origin; });
+static CatCommand nav_set("nav_set", "Debug nav find", []() { loc = g_pLocalPlayer->v_Origin; });
 
 static CatCommand nav_init("nav_init", "Debug nav init", []() {
     status = off;
@@ -713,11 +680,9 @@ static CatCommand nav_init("nav_init", "Debug nav init", []() {
 
 static CatCommand nav_path("nav_path", "Debug nav path", []() { navTo(loc); });
 
-static CatCommand nav_path_no_local("nav_path_no_local", "Debug nav path",
-                                    []() { navTo(loc, 5, false, false); });
+static CatCommand nav_path_no_local("nav_path_no_local", "Debug nav path", []() { navTo(loc, 5, false, false); });
 
-static CatCommand nav_reset_ignores("nav_reset_ignores", "Reset all ignores.",
-                                    []() { ignoremanager::reset(); });
+static CatCommand nav_reset_ignores("nav_reset_ignores", "Reset all ignores.", []() { ignoremanager::reset(); });
 
 void DoSlowAim(Vector &input_angle)
 {
@@ -733,8 +698,7 @@ void DoSlowAim(Vector &input_angle)
         // Check if input angle and user angle are on opposing sides of yaw so
         // we can correct for that
         bool slow_opposing = false;
-        if ((input_angle.y < -90 && viewangles.y > 90) ||
-            (input_angle.y > 90 && viewangles.y < -90))
+        if ((input_angle.y < -90 && viewangles.y > 90) || (input_angle.y > 90 && viewangles.y < -90))
             slow_opposing = true;
 
         // Direction

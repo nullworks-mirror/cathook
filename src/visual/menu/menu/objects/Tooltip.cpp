@@ -6,11 +6,8 @@
 #include <glez/glez.hpp>
 #include <menu/Menu.hpp>
 
-static settings::RVariable<glez::rgba> color_background{
-    "zk.style.tooltip.background", "00000055"
-};
-static settings::RVariable<glez::rgba> color_border{ "zk.style.tooltip.border",
-                                                     "079797" };
+static settings::RVariable<glez::rgba> color_background{ "zk.style.tooltip.background", "00000055" };
+static settings::RVariable<glez::rgba> color_border{ "zk.style.tooltip.border", "079797" };
 
 namespace zerokernel
 {
