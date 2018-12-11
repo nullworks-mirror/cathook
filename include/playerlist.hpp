@@ -27,8 +27,8 @@ enum class k_EState
 #if ENABLE_VISUALS
 extern rgba_t k_Colors[];
 #endif
-const std::string k_Names[]    = { "DEFAULT", "FRIEND", "RAGE", "IPC", "DEVELOPER" };
-const char *const k_pszNames[] = { "DEFAULT", "FRIEND", "RAGE", "IPC", "DEVELOPER" };
+const std::string k_Names[]    = { "DEFAULT", "FRIEND", "RAGE", "IPC", "DEVELOPER", "CAT" };
+const char *const k_pszNames[] = { "DEFAULT", "FRIEND", "RAGE", "IPC", "DEVELOPER", "CAT" };
 
 struct userdata
 {
