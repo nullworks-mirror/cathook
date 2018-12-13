@@ -187,7 +187,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         if (crypt_chat && message.find("!!B") == 0 && ucccccp::validate(message))
         {
             std::string msg = ucccccp::decrypt(message);
-#if !LAGBOT_MODE
             CachedEntity *ent = ENTITY(data[0]);
             if (msg != "Attempt at ucccccping and failing" && msg != "Unsupported version" && ent != LOCAL_E)
             {
@@ -197,7 +196,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                     state = playerlist::k_EState::CAT;
                 }
             }
-#endif
             PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), msg.c_str());
         }
         chatlog::LogMessage(data[0], message);

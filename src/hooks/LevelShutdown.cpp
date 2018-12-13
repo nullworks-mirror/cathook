@@ -13,15 +13,11 @@ namespace hooked_methods
 DEFINE_HOOKED_METHOD(LevelShutdown, void, void *this_)
 {
     need_name_change = true;
-#if !LAGBOT_MODE
     playerlist::Save();
-#endif
     g_Settings.bInvalid = true;
-#if !LAGBOT_MODE
     hacks::shared::aimbot::Reset();
     chat_stack::Reset();
     hacks::shared::anticheat::ResetEverything();
-#endif
 #if ENABLE_IPC
     if (ipc::peer)
     {

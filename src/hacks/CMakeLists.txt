@@ -3,7 +3,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/CatBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/SeedPrediction.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Spam.cpp")
-if(NOT LagbotMode)
 	target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/Achievement.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Aimbot.cpp"
@@ -37,7 +36,6 @@ if(NOT LagbotMode)
         "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Radar.cpp")
         add_subdirectory(ac)
-endif()
 if(EnableVisuals)
     target_sources(cathook PRIVATE
             "${CMAKE_CURRENT_LIST_DIR}/ESP.cpp"
