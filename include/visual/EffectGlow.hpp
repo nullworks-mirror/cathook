@@ -15,17 +15,24 @@ namespace effect_glow
 
 class EffectGlow : public IScreenSpaceEffect
 {
+    std::vector<KeyValues *> glow_keyvalues;
+
 public:
     virtual void Init();
     inline virtual void Shutdown()
     {
-        mat_unlit.Shutdown();
-        mat_unlit_z.Shutdown();
-        mat_blit.Shutdown();
-        mat_unlit.Shutdown();
-        mat_unlit_z.Shutdown();
-        mat_blur_x.Shutdown();
-        mat_blur_y.Shutdown();
+        if (init)
+        {
+            mat_unlit.Shutdown();
+            mat_unlit_z.Shutdown();
+            mat_blit.Shutdown();
+            mat_unlit.Shutdown();
+            mat_unlit_z.Shutdown();
+            mat_blur_x.Shutdown();
+            mat_blur_y.Shutdown();
+            for (auto kv : glow_keyvalues)
+                kv->deleteThis();
+        }
     }
 
     inline virtual void SetParameters(KeyValues *params)
