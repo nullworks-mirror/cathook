@@ -289,13 +289,11 @@ free(logname);*/
         // hooks::materialsystem.HookMethod();
     }
 #endif
-#if not LAGBOT_MODE
     // FIXME [MP]
     hacks::shared::killsay::init();
     hacks::shared::dominatesay::init();
     hacks::shared::announcer::init();
     hacks::tf2::killstreak::init();
-#endif
     hacks::shared::catbot::init();
     logging::Info("Hooked!");
     velocity::Init();
@@ -319,9 +317,7 @@ free(logname);*/
     logging::Info("SDL hooking done");
 
 #endif /* TEXTMODE */
-#if not LAGBOT_MODE
     hacks::shared::anticheat::Init();
-#endif
 #if ENABLE_VISUALS
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
     InitSpinner();
@@ -329,9 +325,7 @@ free(logname);*/
 #endif
     hacks::shared::spam::init();
 #endif
-#if not LAGBOT_MODE
     hacks::shared::walkbot::Initialize();
-#endif
 #if ENABLE_VISUALS
     hacks::shared::esp::Init();
 #endif
@@ -380,11 +374,9 @@ void hack::Shutdown()
 #endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
-#if not LAGBOT_MODE
     logging::Info("Shutting down killsay...");
     hacks::shared::killsay::shutdown();
     hacks::shared::dominatesay::shutdown();
     hacks::shared::announcer::shutdown();
-#endif
     logging::Info("Success..");
 }

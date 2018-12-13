@@ -24,9 +24,7 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 
     if (mode & PaintMode_t::PAINT_UIPANELS)
     {
-#if not LAGBOT_MODE
         hacks::tf2::killstreak::apply_killstreaks();
-#endif
         hacks::shared::catbot::update();
         hitrate::Update();
 #if ENABLE_ONLINE

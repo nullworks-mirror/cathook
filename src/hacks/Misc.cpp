@@ -131,7 +131,6 @@ InitRoutine init([]() { teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_
 
 void CreateMove()
 {
-#if !LAGBOT_MODE
     if (current_user_cmd->command_number)
         last_number = current_user_cmd->command_number;
 
@@ -225,7 +224,6 @@ void CreateMove()
         if (*nopush_enabled == teammatesPushaway->GetBool())
             teammatesPushaway->SetValue(!nopush_enabled);
     }
-#endif
 }
 
 #if ENABLE_VISUALS

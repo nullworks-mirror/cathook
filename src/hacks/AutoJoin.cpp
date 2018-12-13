@@ -149,7 +149,6 @@ void updateSearch()
 #endif
 }
 static HookedFunction update(HookedFunctions_types::HF_CreateMove, "Autojoin", 1, []() {
-#if !LAGBOT_MODE
     if (autoteam_timer.test_and_set(500))
     {
         if (autojoin_team and UnassignedTeam())
@@ -162,7 +161,6 @@ static HookedFunction update(HookedFunctions_types::HF_CreateMove, "Autojoin", 1
                 g_IEngine->ExecuteClientCmd(format("join_class ", classnames[int(autojoin_class) - 1]).c_str());
         }
     }
-#endif
 });
 
 void onShutdown()
