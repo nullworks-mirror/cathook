@@ -32,26 +32,38 @@ weaponmode GetWeaponModeloc()
     if (slot == 2)
         return weaponmode::weapon_melee;
     if (slot > 2)
-    {
         return weaponmode::weapon_pda;
-    }
-    else if (classid == CL_CLASS(CTFLunchBox) || classid == CL_CLASS(CTFLunchBox_Drink) || classid == CL_CLASS(CTFBuffItem))
+    switch (classid)
     {
+    case CL_CLASS(CTFLunchBox):
+    case CL_CLASS(CTFLunchBox_Drink):
+    case CL_CLASS(CTFBuffItem):
         return weaponmode::weapon_consumable;
-    }
-    else if (classid == CL_CLASS(CTFRocketLauncher_DirectHit) || classid == CL_CLASS(CTFRocketLauncher) || classid == CL_CLASS(CTFGrenadeLauncher) || classid == CL_CLASS(CTFPipebombLauncher) || classid == CL_CLASS(CTFCompoundBow) || classid == CL_CLASS(CTFBat_Wood) || classid == CL_CLASS(CTFBat_Giftwrap) || classid == CL_CLASS(CTFFlareGun) || classid == CL_CLASS(CTFFlareGun_Revenge) || classid == CL_CLASS(CTFSyringeGun) || classid == CL_CLASS(CTFCrossbow) || classid == CL_CLASS(CTFShotgunBuildingRescue) || classid == CL_CLASS(CTFDRGPomson) || classid == CL_CLASS(CTFWeaponFlameBall) || classid == CL_CLASS(CTFRaygun) || classid == CL_CLASS(CTFGrapplingHook))
-    {
+    case CL_CLASS(CTFRocketLauncher_DirectHit):
+    case CL_CLASS(CTFRocketLauncher):
+    case CL_CLASS(CTFGrenadeLauncher):
+    case CL_CLASS(CTFPipebombLauncher):
+    case CL_CLASS(CTFCompoundBow):
+    case CL_CLASS(CTFBat_Wood):
+    case CL_CLASS(CTFBat_Giftwrap):
+    case CL_CLASS(CTFFlareGun):
+    case CL_CLASS(CTFFlareGun_Revenge):
+    case CL_CLASS(CTFSyringeGun):
+    case CL_CLASS(CTFCrossbow):
+    case CL_CLASS(CTFShotgunBuildingRescue):
+    case CL_CLASS(CTFDRGPomson):
+    case CL_CLASS(CTFWeaponFlameBall):
+    case CL_CLASS(CTFRaygun):
+    case CL_CLASS(CTFGrapplingHook):
         return weaponmode::weapon_projectile;
-    }
-    else if (classid == CL_CLASS(CTFJar) || classid == CL_CLASS(CTFJarMilk))
-    {
+    case CL_CLASS(CTFJar):
+    case CL_CLASS(CTFJarMilk):
         return weaponmode::weapon_throwable;
-    }
-    else if (classid == CL_CLASS(CWeaponMedigun))
-    {
+    case CL_CLASS(CWeaponMedigun):
         return weaponmode::weapon_medigun;
+    default:
+        return weaponmode::weapon_hitscan;
     }
-    return weaponmode::weapon_hitscan;
 }
 void LocalPlayer::Update()
 {

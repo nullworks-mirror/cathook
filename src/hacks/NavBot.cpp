@@ -390,6 +390,39 @@ static void autoJump()
         current_user_cmd->buttons |= IN_JUMP;
 }
 
+enum slots
+{
+    primary = 1,
+    secondary = 2,
+    melee = 3
+};
+static int GetBestSlot()
+{
+
+    switch (g_pLocalPlayer->clazz)
+    {
+    case tf_scout:
+    {
+        float nearest_dist = getNearestPlayerDistance().second;
+        if (nearest_dist < 700)
+            return primary;
+        else
+            return secondary;
+    }
+    case tf_heavy:
+        return primary;
+    default:
+    {
+        float nearest_dist = getNearestPlayerDistance().second;
+        if (nearest_dist > 500)
+            return primary;
+        else
+            return secondary;
+    }
+    }
+    return primary;
+}
+
 static void updateSlot()
 {
     static Timer slot_timer{};
@@ -402,7 +435,7 @@ static void updateSlot()
         if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
         {
             int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
-            int newslot = 1;
+            int newslot = GetBestSlot();
             if (slot != newslot - 1)
                 g_IEngine->ClientCmd_Unrestricted(format("slot", newslot).c_str());
         }
