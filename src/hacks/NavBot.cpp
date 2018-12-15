@@ -404,7 +404,7 @@ static int GetBestSlot()
     case tf_scout:
     {
         float nearest_dist = getNearestPlayerDistance().second;
-        if (nearest_dist < 700)
+        if (nearest_dist < 1000)
             return primary;
         else
             return secondary;
@@ -414,7 +414,7 @@ static int GetBestSlot()
     default:
     {
         float nearest_dist = getNearestPlayerDistance().second;
-        if (nearest_dist > 500)
+        if (nearest_dist > 400)
             return primary;
         else
             return secondary;
@@ -426,7 +426,7 @@ static int GetBestSlot()
 static void updateSlot()
 {
     static Timer slot_timer{};
-    if (!slot_timer.test_and_set(1000))
+    if (!slot_timer.test_and_set(300))
         return;
     if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
     {
