@@ -234,7 +234,7 @@ void Draw()
 }
 
 // Function called on create move
-static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "ESP", 18, []() {
+static void cm() {
     // Check usersettings if enabled
     if (!*enable)
         return;
@@ -288,7 +288,7 @@ static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "ESP", 18
             }
         }
     }
-});
+}
 
 static glez::texture atlas{ DATA_PATH "/textures/atlas.png" };
 static glez::texture idspec{ DATA_PATH "/textures/idspec.png" };
@@ -1443,4 +1443,10 @@ void SetEntityColor(CachedEntity *entity, const rgba_t &color)
         return;
     data[entity->m_IDX].color = color;
 }
+
+static InitRoutine init([](){
+    EC::Register<EC::CreateMove>(cm, "cm_walkbot", EC::average);
+});
+
+
 } // namespace hacks::shared::esp

@@ -270,7 +270,8 @@ static std::string ammo   = "Ammo: 0/0";
 static int max_ammo;
 static CachedEntity *local_w;
 // TODO: add more stuffs
-static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
+static void cm()
+{
     if (!*catbotmode)
         return;
 
@@ -278,7 +279,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
     {
         if (LOCAL_W != local_w)
         {
-            local_w = LOCAL_W;
+            local_w  = LOCAL_W;
             max_ammo = 0;
         }
         float max_hp  = g_pPlayerResource->GetMaxHealth(LOCAL_E);
@@ -309,7 +310,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
     }
     if (*autoReport && report_timer.test_and_set(60000))
         reportall();
-});
+}
 
 static Timer autojointeam{};
 void update()
@@ -427,13 +428,21 @@ void level_init()
 }
 
 #if ENABLE_VISUALS
-static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3, []() {
+static void draw()
+{
     if (!catbotmode || !anti_motd)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
     AddCenterString(health, colors::green);
     AddCenterString(ammo, colors::yellow);
-});
+}
 #endif
+
+static InitRoutine runinit([]() {
+    EC::Register<EC::CreateMove>(cm, "cm_catbot", EC::average);
+#if ENABLE_VISUALS
+    EC::Register<EC::Draw>(cm, "draw_catbot", EC::average);
+#endif
+});
 } // namespace hacks::shared::catbot

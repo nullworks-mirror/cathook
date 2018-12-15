@@ -1,111 +1,93 @@
 #pragma once
-#include <vector>
-#include <functional>
-#include <string>
+
 #include "core/profiler.hpp"
-#include <string>
-#include "config.h"
-#include "memory"
+#include "functional"
+#include <set>
 
-class HookedFunction;
-namespace HookTools
+namespace EC
 {
-std::vector<HookedFunction *> &GetHookedFunctions();
-void CM();
-void DRAW();
-void PAINT();
-} // namespace HookTools
 
-enum HookedFunctions_types
+enum ec_types : int8_t
 {
-    // Use CreateMove to run functions that need to run while ingame.
-    HF_CreateMove = 0,
-    // Use Draw to draw on screen
-    HF_Draw,
-    // Use Paint to run functions everywhere (including main menu)
-    HF_Paint
+    CreateMove = 0,
+#if ENABLE_VISUALS
+    Draw,
+#endif
+    Paint,
+    LevelInit
 };
 
-class HookedFunction
+enum priority : int8_t
 {
-    std::function<void()> m_func;
-    int m_priority;
-    std::string m_name;
-#if ENABLE_PROFILER
-    ProfilerSection section = ProfilerSection("UNNAMED_FUNCTIONS");
-#endif
-    void init(HookedFunctions_types type, std::string name, int priority, std::function<void()> func)
-    {
-        switch (type)
-        {
-        case HF_CreateMove:
-            m_name = "CM_";
-            break;
-        case HF_Draw:
-            m_name = "DRAW_";
-            break;
-        case HF_Paint:
-            m_name = "PAINT_";
-            break;
-        default:
-            m_name = "UNDEFINED_";
-            break;
-        }
-        m_name.append(name);
-        m_priority = priority;
-        m_func     = func;
-        m_type     = type;
-#if ENABLE_PROFILER
-        section.m_name = m_name;
-#endif
-        HookTools::GetHookedFunctions().push_back(this);
-    }
+    very_early = -2,
+    early,
+    average,
+    late,
+    very_late
+};
 
-public:
-    HookedFunctions_types m_type;
-    bool run(HookedFunctions_types type)
+template <ec_types T> struct EventCallbackData
+{
+    explicit EventCallbackData(std::function<void()> function, std::string name, int8_t priority) : function{ function }, priority{ priority }, section{ name }
     {
-        if (m_type == type)
-        {
-#if ENABLE_PROFILER
-            ProfilerNode node(section);
-#endif
-            m_func();
-            return true;
-        }
-        return false;
     }
-    bool operator>(HookedFunction const &other)
+    std::function<void()> function;
+    int8_t priority;
+    mutable ProfilerSection section;
+    bool operator<(const EventCallbackData &other) const
     {
-        if (this->m_type < other.m_type)
-            return true;
-        return this->m_priority > other.m_priority;
-    }
-    HookedFunction(HookedFunctions_types type, std::string name, int priority, std::function<void()> func)
-    {
-        init(type, name, priority, func);
-    }
-    HookedFunction(HookedFunctions_types type, int priority, std::function<void()> func)
-    {
-        static const std::string name("UNNAMED_FUNCTIONS");
-        init(type, name, priority, func);
-    }
-    HookedFunction(HookedFunctions_types type, std::string name, std::function<void()> func)
-    {
-        int priority = 5;
-        init(type, name, priority, func);
-    }
-    HookedFunction(HookedFunctions_types type, std::function<void()> func)
-    {
-        static const std::string name("UNNAMED_FUNCTIONS");
-        int priority = 5;
-        init(type, name, priority, func);
+        return priority < other.priority;
     }
 };
 
-// struct CreateMove
-//{
-//    int priority = 0;
-//    CreateMove(int priority, std::function<void()> func);
-//    CreateMove(std::function<void()> func);
-//};
+extern std::multiset<EventCallbackData<CreateMove>> createmoves;
+#if ENABLE_VISUALS
+extern std::multiset<EventCallbackData<Draw>> draws;
+#endif
+extern std::multiset<EventCallbackData<Paint>> paints;
+extern std::multiset<EventCallbackData<LevelInit>> levelinits;
+
+template <ec_types T> void Register(std::function<void()> function, std::string name, int8_t priority)
+{
+    switch (T)
+    {
+    case CreateMove:
+    {
+        EventCallbackData<CreateMove> data(function, name, priority);
+        createmoves.insert(data);
+        break;
+    }
+#if ENABLE_VISUALS
+    case Draw:
+    {
+        EventCallbackData<Draw> data(function, name, priority);
+        draws.insert(data);
+        break;
+    }
+#endif
+    case Paint:
+    {
+        EventCallbackData<Paint> data(function, name, priority);
+        paints.insert(data);
+        break;
+    }
+    case LevelInit:
+    {
+        EventCallbackData<LevelInit> data(function, name, priority);
+        levelinits.insert(data);
+        break;
+    }
+    default:
+        throw(std::invalid_argument("Unknown event"));
+        break;
+    }
+}
+
+void RunCreateMove();
+#if ENABLE_VISUALS
+void RunDraw();
+#endif
+void RunPaint();
+
+void RunLevelInit();
+} // namespace EC

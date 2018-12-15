@@ -12,7 +12,6 @@
 #if ENABLE_VISUALS
 
 #include "ESP.hpp"
-#include "LightESP.hpp"
 #include "SkinChanger.hpp"
 #include "Radar.hpp"
 #include "SpyAlert.hpp"

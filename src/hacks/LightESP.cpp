@@ -1,21 +1,28 @@
-#include "hacks/LightESP.hpp"
+#include "config.h"
 #if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
-#include <settings/Bool.hpp>
+#include "common.hpp"
+#include "glez/draw.hpp"
 
 static settings::Bool enable{ "lightesp.enable", "false" };
 
 namespace hacks::shared::lightesp
 {
 
-Vector hitp[32];
-Vector minp[32];
-Vector maxp[32];
-bool drawEsp[32];
+static Vector hitp[32];
+static Vector minp[32];
+static Vector maxp[32];
+static bool drawEsp[32];
 
-#if ENABLE_VISUALS
-static HookedFunction cm(HF_CreateMove, "lightesp", 5, []() {
+rgba_t LightESPColor(CachedEntity *ent)
+{
+    if (!playerlist::IsDefault(ent))
+    {
+        return playerlist::Color(ent);
+    }
+    return colors::green;
+}
+
+static void cm() {
     if (!*enable)
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
@@ -40,12 +47,10 @@ static HookedFunction cm(HF_CreateMove, "lightesp", 5, []() {
         maxp[i]    = pEntity->hitboxes.GetHitbox(0)->max;
         drawEsp[i] = true;
     }
-});
-#endif
+}
 
 void draw()
 {
-#if ENABLE_VISUALS
     if (!enable)
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
@@ -72,16 +77,12 @@ void draw()
             glez::draw::rect(out.x - size / 8, out.y - size / 8, size / 4, size / 4, colors::red);
         }
     }
-#endif
 }
-#if ENABLE_VISUALS
-rgba_t LightESPColor(CachedEntity *ent)
-{
-    if (!playerlist::IsDefault(ent))
-    {
-        return playerlist::Color(ent);
-    }
-    return colors::green;
-}
-#endif
+
+static InitRoutine init([](){
+    EC::Register<EC::CreateMove>(cm, "cm_lightesp", EC::average);
+    EC::Register<EC::Draw>(draw, "draw_lightesp", EC::average);
+});
+
 } // namespace hacks::shared::lightesp
+#endif

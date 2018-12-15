@@ -57,6 +57,7 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     hacks::shared::anticheat::ResetEverything();
     original::LevelInit(this_, name);
     hacks::shared::walkbot::OnLevelInit();
+    EC::RunLevelInit();
 #if ENABLE_IPC
     if (ipc::peer)
     {

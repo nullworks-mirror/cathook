@@ -1149,7 +1149,7 @@ void OnLevelInit()
 Timer quit_timer{};
 Timer map_check{};
 int erasedelay = 0;
-static HookedFunction Move(HookedFunctions_types::HF_CreateMove, "Walkbot", 16, []() {
+static void cm() {
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return;
     if (state::state == WB_DISABLED)
@@ -1219,5 +1219,10 @@ static HookedFunction Move(HookedFunctions_types::HF_CreateMove, "Walkbot", 16, 
     }
     break;
     }
+}
+
+static InitRoutine init([](){
+    EC::Register<EC::CreateMove>(cm, "cm_walkbot", EC::average);
 });
+
 } // namespace hacks::shared::walkbot

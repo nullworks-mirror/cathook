@@ -104,7 +104,7 @@ class KillSayEventListener : public IGameEventListener2
     }
 };
 
-static HookedFunction ProcessKillsay(HookedFunctions_types::HF_Paint, "KillSay_send", 1, []() {
+static void ProcessKillsay() {
     if (killsay_storage.empty())
         return;
     for (auto &i : killsay_storage)
@@ -117,6 +117,10 @@ static HookedFunction ProcessKillsay(HookedFunctions_types::HF_Paint, "KillSay_s
             i.second = {};
         }
     }
+}
+
+static InitRoutine runinit([](){
+    EC::Register<EC::Paint>(ProcessKillsay, "paint_killsay", EC::average);
 });
 
 static KillSayEventListener listener{};

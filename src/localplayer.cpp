@@ -91,6 +91,7 @@ void LocalPlayer::Update()
     life_state             = CE_BYTE(entity, netvar.iLifeState);
     v_ViewOffset           = CE_VECTOR(entity, netvar.vViewOffset);
     v_Origin               = entity->m_vecOrigin();
+    v_OrigViewangles = current_user_cmd->viewangles;
     v_Eye                  = v_Origin + v_ViewOffset;
     clazz                  = CE_INT(entity, netvar.iClass);
     health                 = CE_INT(entity, netvar.iHealth);

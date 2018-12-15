@@ -93,11 +93,6 @@ static int attackticks = 0;
 
 namespace hooked_methods
 {
-static HookedFunction viewangs(HookedFunctions_types::HF_CreateMove, "set_ang", 21, []() {
-    if (CE_BAD(LOCAL_E))
-        return;
-    g_pLocalPlayer->v_OrigViewangles = current_user_cmd->viewangles;
-});
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
 {
 #define TICK_INTERVAL (g_GlobalVars->interval_per_tick)
@@ -281,7 +276,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
     {
         PROF_SECTION(CM_WRAPPER);
-        HookTools::CM();
+        EC::RunCreateMove();
     }
     if (CE_GOOD(g_pLocalPlayer->entity))
     {

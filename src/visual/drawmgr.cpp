@@ -183,7 +183,7 @@ void DrawCheatVisuals()
     }
     {
         PROF_SECTION(DRAW_WRAPPER);
-        HookTools::DRAW();
+        EC::RunDraw();
     }
     if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid)
     {
@@ -213,11 +213,6 @@ void DrawCheatVisuals()
         {
             PROF_SECTION(DRAW_backtracc);
             hacks::shared::backtrack::Draw();
-        }
-        IF_GAME(IsTF2())
-        {
-            PROF_SECTION(DRAW_lightesp);
-            hacks::shared::lightesp::draw();
         }
         {
             PROF_SECTION(DRAW_walkbot);

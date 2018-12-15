@@ -37,7 +37,7 @@ bool IsHoovyHelper(CachedEntity *entity)
     return false;
 }
 
-static HookedFunction UpdateHoovyList(HookedFunctions_types::HF_CreateMove, "HoovyList", 19, []() {
+void UpdateHoovyList() {
     if (CE_BAD(LOCAL_E))
         return;
 
@@ -59,7 +59,7 @@ static HookedFunction UpdateHoovyList(HookedFunctions_types::HF_CreateMove, "Hoo
             }
         }
     }
-});
+}
 
 bool IsHoovy(CachedEntity *entity)
 {
@@ -67,3 +67,5 @@ bool IsHoovy(CachedEntity *entity)
         return false;
     return hoovy_list[entity->m_IDX - 1];
 }
+
+static InitRoutine init([](){EC::Register<EC::CreateMove>(UpdateHoovyList, "cm_hoovylist", EC::average);});

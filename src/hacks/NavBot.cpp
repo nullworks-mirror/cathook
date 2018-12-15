@@ -442,7 +442,9 @@ static void updateSlot()
     }
 }
 
-static HookedFunction cm(HookedFunctions_types::HF_CreateMove, "NavBot", 16, &CreateMove);
+static InitRoutine runinit([](){
+    EC::Register<EC::Paint>(CreateMove, "paint_killsay", EC::average);
+});
 
 void change(settings::VariableBase<bool> &, bool)
 {

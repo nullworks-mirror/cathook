@@ -188,7 +188,7 @@ Timer waittime{};
 int lastent = 0;
 
 #if ENABLE_IPC
-static HookedFunction WorldTick(HookedFunctions_types::HF_CreateMove, "followbot", 20, []() {
+static void cm() {
     if (!enable)
     {
         follow_target = 0;
@@ -555,11 +555,11 @@ static HookedFunction WorldTick(HookedFunctions_types::HF_CreateMove, "followbot
     }
     else
         idle_time.update();
-});
+}
 #endif
 
 #if ENABLE_VISUALS
-static HookedFunction func(HF_Draw, "followbot", 10, []() {
+static void draw() {
     if (!enable || !draw_crumb)
         return;
     if (breadcrumbs.size() < 2)
@@ -577,8 +577,18 @@ static HookedFunction func(HF_Draw, "followbot", 10, []() {
         return;
     glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
     glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
-});
+}
 #endif
+
+static InitRoutine runinit([](){
+#if ENABLE_IPC
+    EC::Register<EC::CreateMove>(cm, "cm_followbot", EC::average);
+#endif
+#if ENABLE_VISUALS
+    EC::Register<EC::Draw>(cm, "draw_followbot", EC::average);
+#endif
+});
+
 
 int getTarget()
 {
