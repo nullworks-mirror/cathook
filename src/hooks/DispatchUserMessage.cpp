@@ -58,7 +58,23 @@ template <typename T> void SplitName(std::vector<T> &ret, const T &name, int num
     if (tmp.size() > 2)
         ret.push_back(tmp);
 }
+static int anti_balance_attempts = 0;
+static std::string previous_name = "";
+static Timer reset_it{};
+static Timer wait_timer{};
+static HookedFunction Refresh_anti_auto_balance(HookedFunctions_types::HF_Paint, "Autobalance", 3, [](){
+    if (!wait_timer.test_and_set(1000))
+        return;
+    INetChannel *server = (INetChannel *)g_IEngine->GetNetChannelInfo();
+    if (server)
+        reset_it.update();
+    if (reset_it.test_and_set(20000))
+    {
+        anti_balance_attempts = 0;
+        previous_name = "";
+    }
 
+});
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &buf)
 {
     if (!isHackActive())
@@ -92,13 +108,11 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         if (*anti_votekick && buf.GetNumBytesLeft() > 35)
         {
             INetChannel *server = (INetChannel *)g_IEngine->GetNetChannelInfo();
-            static int anti_balance_attempts = 0;
             data = std::string(buf_data);
             logging::Info("%s", data.c_str());
             if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
             {
                 std::string server_name = server->GetName();
-                static std::string previous_name = "";
                 if (server_name != previous_name)
                 {
                     previous_name = server_name;
