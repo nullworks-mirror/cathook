@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 if [ ! -f ./scripts/updater-preferences ]; then
     while true; do
-        read -p "Do you wan't to enable the cathook auto updater? y/n " yn
+        read -p "Do you want to enable the cathook auto updater? y/n " yn
         case $yn in
             [Yy]* ) echo true > ./scripts/updater-preferences; break;;
             [Nn]* ) echo false > ./scripts/updater-preferences; exit;;
