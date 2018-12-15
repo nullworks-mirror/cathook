@@ -91,10 +91,32 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
     case 5:
         if (*anti_votekick && buf.GetNumBytesLeft() > 35)
         {
+            INetChannel *server = (INetChannel *)g_IEngine->GetNetChannelInfo();
+            static int anti_balance_attempts = 0;
             data = std::string(buf_data);
             logging::Info("%s", data.c_str());
             if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
-                g_IEngine->ClientCmd_Unrestricted("cat_disconnect read if gay;wait 100;cat_mm_join");
+            {
+                std::string server_name = server->GetName();
+                static std::string previous_name = "";
+                if (server_name != previous_name)
+                {
+                    previous_name = server_name;
+                    anti_balance_attempts = 0;
+                }
+                if (anti_balance_attempts < 2)
+                    g_IEngine->ClientCmd_Unrestricted("cat_disconnect read if gay;wait 100;cat_mm_join");
+                else
+                {
+                    std::string autobalance_msg = "tf_party_chat \"autobalanced in 3 seconds";
+                    if (ipc::peer && ipc::peer->connected)
+                        autobalance_msg += format(" IPC ID ", ipc::peer->client_id, "\"");
+                    else
+                        autobalance_msg += "\"";
+                    g_IEngine->ClientCmd_Unrestricted(autobalance_msg.c_str());
+                }
+                anti_balance_attempts++;
+            }
             buf.Seek(0);
         }
         break;
