@@ -60,8 +60,8 @@ std::mutex drawing_mutex;
 
 struct snowflake
 {
-    Vector2D pos;
-    Vector2D angle;
+    Vector2D pos{};
+    Vector2D angle{};
 };
 
 double getRandom(double lower_bound, double upper_bound)
@@ -88,7 +88,7 @@ void DrawCheatVisuals()
     {
         PROF_SECTION(DRAW_SNOWFLAKES);
 
-        if (zerokernel::Menu::instance && !zerokernel::Menu::instance->isInGame())
+        if (zerokernel::Menu::instance && !zerokernel::Menu::instance->isInGame() && *draw_snowflakes)
         {
             // used to count current vector index
             int idx = 0;
@@ -103,7 +103,7 @@ void DrawCheatVisuals()
                 {
                     flake.pos += flake.angle;
 
-                    // Get a new value so the snowflakes look a bit more natural, don#t dip below min/go above max.
+                    // Get a new value so the snowflakes look a bit more natural, don't dip below min/go above max.
                     float rand_down_min = fminf(*snowflake_min_down, flake.angle.y - 0.01f);
                     float rand_down_max = fmaxf(*snowflake_max_down, flake.angle.x + 0.01f);
                     float rand_side_min = fminf(*snowflake_min_side, flake.angle.x - 0.01f);
