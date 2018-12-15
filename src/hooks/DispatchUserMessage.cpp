@@ -94,7 +94,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
             data = std::string(buf_data);
             logging::Info("%s", data.c_str());
             if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
-                g_IEngine->ClientCmd_Unrestricted("cat_disconnect;wait 100;cat_mm_join");
+                g_IEngine->ClientCmd_Unrestricted("cat_disconnect read if gay;wait 100;cat_mm_join");
             buf.Seek(0);
         }
         break;
