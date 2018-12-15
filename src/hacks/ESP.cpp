@@ -219,7 +219,7 @@ struct bonelist_s
 
 std::unordered_map<studiohdr_t *, bonelist_s> bonelist_map{};
 // Function called on draw
-void Draw()
+static void Draw()
 {
     if (!enable)
         return;
@@ -1445,7 +1445,8 @@ void SetEntityColor(CachedEntity *entity, const rgba_t &color)
 }
 
 static InitRoutine init([](){
-    EC::Register<EC::CreateMove>(cm, "cm_walkbot", EC::average);
+    EC::Register<EC::CreateMove>(cm, "cm_esp", EC::average);
+    EC::Register<EC::Draw>(Draw, "draw_esp", EC::average);
 });
 
 

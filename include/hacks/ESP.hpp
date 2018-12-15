@@ -38,8 +38,6 @@ public:
 void Init();
 extern std::array<ESPData, 2048> data;
 
-void Draw();
-
 // Entity Processing
 void __attribute__((fastcall)) ProcessEntity(CachedEntity *ent);
 void __attribute__((fastcall)) ProcessEntityPT(CachedEntity *ent);

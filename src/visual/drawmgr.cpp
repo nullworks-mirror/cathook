@@ -228,10 +228,6 @@ void DrawCheatVisuals()
             PROF_SECTION(PT_spyalert);
             hacks::tf::spyalert::Draw();
         }
-        {
-            PROF_SECTION(DRAW_esp);
-            hacks::shared::esp::Draw();
-        }
         IF_GAME(IsTF2())
         {
             criticals::draw();

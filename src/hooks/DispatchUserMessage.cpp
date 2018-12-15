@@ -62,7 +62,8 @@ static int anti_balance_attempts = 0;
 static std::string previous_name = "";
 static Timer reset_it{};
 static Timer wait_timer{};
-static HookedFunction Refresh_anti_auto_balance(HookedFunctions_types::HF_Paint, "Autobalance", 3, [](){
+void Paint()
+{
     if (!wait_timer.test_and_set(1000))
         return;
     INetChannel *server = (INetChannel *)g_IEngine->GetNetChannelInfo();
@@ -73,7 +74,9 @@ static HookedFunction Refresh_anti_auto_balance(HookedFunctions_types::HF_Paint,
         anti_balance_attempts = 0;
         previous_name = "";
     }
-
+}
+static InitRoutine Autobalance([](){
+    EC::Register<EC::Paint>(Paint, "paint_autobalance", EC::average);
 });
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &buf)
 {
