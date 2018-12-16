@@ -134,6 +134,7 @@ set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY
 add_subdirectory(src)
 add_subdirectory(include)
 add_subdirectory(external)
+add_subdirectory(modules)
 
 set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp", "${CMAKE_SOURCE_DIR}/include/hacks/hacklist.hpp")
 cotire(cathook)
