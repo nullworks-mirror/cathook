@@ -223,7 +223,7 @@ bool SubstituteQueries(std::string &input)
 
 bool FormatSpamMessage(std::string &message)
 {
-    ReplaceString(message, "\\n", "\n");
+    ReplaceSpecials(message);
     bool team       = g_pLocalPlayer->team - 2;
     bool enemy_team = !team;
     IF_GAME(IsTF2())

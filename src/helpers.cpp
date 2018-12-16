@@ -475,6 +475,14 @@ void ReplaceString(std::string &input, const std::string &what, const std::strin
     }
 }
 
+void ReplaceSpecials(std::string &input)
+{
+    ReplaceString(input, "\\015", "\015");
+    ReplaceString(input, "\\n", "\n");
+    ReplaceString(input, "\\r", "\r");
+    ReplaceString(input, "\\u200F", "\u200F");
+}
+
 powerup_type GetPowerupOnPlayer(CachedEntity *player)
 {
     if (CE_BAD(player))

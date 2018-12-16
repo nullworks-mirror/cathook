@@ -458,7 +458,7 @@ CatCommand set_value("set", "Set value", [](const CCommand &args) {
     if (!var)
         return;
     std::string value(args.Arg(2));
-    ReplaceString(value, "\\n", "\n");
+    ReplaceSpecials(value);
     var->m_fMaxVal = 999999999.9f;
     var->m_fMinVal = -999999999.9f;
     var->SetValue(value.c_str());
@@ -466,7 +466,7 @@ CatCommand set_value("set", "Set value", [](const CCommand &args) {
 });
 CatCommand say_lines("say_lines", "Say with newlines (\\n)", [](const CCommand &args) {
     std::string message(args.ArgS());
-    ReplaceString(message, "\\n", "\n");
+    ReplaceSpecials(message);
     std::string cmd = format("say ", message);
     g_IEngine->ServerCmd(cmd.c_str());
 });

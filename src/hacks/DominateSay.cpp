@@ -61,7 +61,7 @@ std::string ComposeDominateSay(IGameEvent *event)
     player_info_s info{};
 
     g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
-    ReplaceString(msg, "%name%", std::string(info.name));
+    ReplaceSpecials(msg);
 
     CachedEntity *ent = ENTITY(g_IEngine->GetPlayerForUserID(vid));
     int clz           = g_pPlayerResource->GetClass(ent);
@@ -75,7 +75,7 @@ std::string ComposeDominateSay(IGameEvent *event)
     ReplaceString(msg, "%team%", tf_teams_dominatesay[ent->m_iTeam() - 2]);
     ReplaceString(msg, "%myteam%", tf_teams_dominatesay[LOCAL_E->m_iTeam() - 2]);
     ReplaceString(msg, "%myclass%", tf_classes_dominatesay[g_pPlayerResource->GetClass(LOCAL_E)]);
-    ReplaceString(msg, "\\n", "\n");
+    ReplaceString(msg, "%name%", std::string(info.name));
     return msg;
 }
 
