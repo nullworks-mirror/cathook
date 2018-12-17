@@ -4,6 +4,7 @@
 #   GLEW
 
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/cotire/CMake")
+cmake_policy(SET CMP0011 NEW)
 include(cotire)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -42,6 +43,7 @@ if(NOT EnableVisuals)
 endif()
 
 find_package(Git REQUIRED)
+find_package(Boost REQUIRED)
 
 # cat packages
 
@@ -128,7 +130,7 @@ add_custom_target(data
         VERBATIM)
 
 # TODO glez_LIBRARIES?
-target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ssl)
+target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib})
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(src)
@@ -136,7 +138,8 @@ add_subdirectory(include)
 add_subdirectory(external)
 add_subdirectory(modules)
 
-set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp", "${CMAKE_SOURCE_DIR}/include/hacks/hacklist.hpp")
+set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp")
+set_target_properties(cathook PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
 cotire(cathook)
 
 add_custom_command(TARGET cathook POST_BUILD
