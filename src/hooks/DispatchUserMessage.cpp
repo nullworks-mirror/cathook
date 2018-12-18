@@ -58,7 +58,26 @@ template <typename T> void SplitName(std::vector<T> &ret, const T &name, int num
     if (tmp.size() > 2)
         ret.push_back(tmp);
 }
-
+static int anti_balance_attempts = 0;
+static std::string previous_name = "";
+static Timer reset_it{};
+static Timer wait_timer{};
+void Paint()
+{
+    if (!wait_timer.test_and_set(1000))
+        return;
+    INetChannel *server = (INetChannel *)g_IEngine->GetNetChannelInfo();
+    if (server)
+        reset_it.update();
+    if (reset_it.test_and_set(20000))
+    {
+        anti_balance_attempts = 0;
+        previous_name = "";
+    }
+}
+static InitRoutine Autobalance([](){
+    EC::Register<EC::Paint>(Paint, "paint_autobalance", EC::average);
+});
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &buf)
 {
     if (!isHackActive())
@@ -91,10 +110,30 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
     case 5:
         if (*anti_votekick && buf.GetNumBytesLeft() > 35)
         {
+            INetChannel *server = (INetChannel *)g_IEngine->GetNetChannelInfo();
             data = std::string(buf_data);
             logging::Info("%s", data.c_str());
             if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
-                g_IEngine->ClientCmd_Unrestricted("cat_disconnect;wait 100;cat_mm_join");
+            {
+                std::string server_name = server->GetName();
+                if (server_name != previous_name)
+                {
+                    previous_name = server_name;
+                    anti_balance_attempts = 0;
+                }
+                if (anti_balance_attempts < 2)
+                    g_IEngine->ClientCmd_Unrestricted("cat_disconnect read if gay;wait 100;cat_mm_join");
+                else
+                {
+                    std::string autobalance_msg = "tf_party_chat \"autobalanced in 3 seconds";
+                    if (ipc::peer && ipc::peer->connected)
+                        autobalance_msg += format(" IPC ID ", ipc::peer->client_id, "\"");
+                    else
+                        autobalance_msg += "\"";
+                    g_IEngine->ClientCmd_Unrestricted(autobalance_msg.c_str());
+                }
+                anti_balance_attempts++;
+            }
             buf.Seek(0);
         }
         break;
@@ -187,7 +226,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         if (crypt_chat && message.find("!!B") == 0 && ucccccp::validate(message))
         {
             std::string msg = ucccccp::decrypt(message);
-#if !LAGBOT_MODE
             CachedEntity *ent = ENTITY(data[0]);
             if (msg != "Attempt at ucccccping and failing" && msg != "Unsupported version" && ent != LOCAL_E)
             {
@@ -197,7 +235,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                     state = playerlist::k_EState::CAT;
                 }
             }
-#endif
             PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), msg.c_str());
         }
         chatlog::LogMessage(data[0], message);

@@ -146,7 +146,7 @@ void DoSlowAim(Vector &input_angle)
     fClampAngle(input_angle);
 }
 
-static HookedFunction SandwichAim(HookedFunctions_types::HF_CreateMove, "SandwichAim", 5, []() {
+static void SandwichAim() {
     if (!*sandwichaim_enabled)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
@@ -186,11 +186,11 @@ static HookedFunction SandwichAim(HookedFunctions_types::HF_CreateMove, "Sandwic
         current_user_cmd->buttons |= IN_ATTACK2;
         g_pLocalPlayer->bUseSilentAngles = true;
     }
-});
+}
 static bool charge_aimbotted = false;
 static settings::Bool charge_aim{ "chargeaim.enable", "false" };
 static settings::Button charge_key{ "chargeaim.key", "<null>" };
-static HookedFunction ChargeAimbot(HookedFunctions_types::HF_CreateMove, "ChargeAim", 2, []() {
+static void ChargeAimbot() {
     charge_aimbotted = false;
     if (!*charge_aim)
         return;
@@ -214,11 +214,11 @@ static HookedFunction ChargeAimbot(HookedFunctions_types::HF_CreateMove, "Charge
         current_user_cmd->viewangles = angles;
         charge_aimbotted             = true;
     }
-});
+}
 
 static settings::Bool charge_control{ "chargecontrol.enable", "false" };
 static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
-static HookedFunction ChargeControl(HookedFunctions_types::HF_CreateMove, "chargecontrol", 5, []() {
+static void ChargeControl() {
     if (!*charge_control || charge_aimbotted)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
@@ -231,12 +231,12 @@ static HookedFunction ChargeControl(HookedFunctions_types::HF_CreateMove, "charg
     if (current_user_cmd->buttons & IN_MOVERIGHT)
         offset = -*charge_float;
     current_user_cmd->viewangles.y += offset;
-});
+}
 
 static settings::Bool autosapper_enabled("autosapper.enabled", "false");
 static settings::Bool autosapper_silent("autosapper.silent", "true");
 
-static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, []() {
+static void SapperAimbot() {
     if (!autosapper_enabled)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !g_pLocalPlayer->holding_sapper)
@@ -272,4 +272,13 @@ static HookedFunction SapperAimbot(HF_CreateMove, "sapperaimbot", 5, []() {
             g_pLocalPlayer->bUseSilentAngles = true;
         current_user_cmd->buttons |= IN_ATTACK;
     }
-});
+}
+
+static void CreateMove(){
+    SandwichAim();
+    ChargeAimbot();
+    ChargeControl();
+    SapperAimbot();
+}
+
+static InitRoutine init([](){EC::Register<EC::CreateMove>(CreateMove, "cm_miscaimbot", EC::late);});

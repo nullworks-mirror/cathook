@@ -6,7 +6,6 @@
 #define GAME_SPECIFIC @GameSpecific@
 #define GAME @Game@
 #define ENABLE_VISUALS @EnableVisuals@
-#define LAGBOT_MODE @LagbotMode@
 #define EXTERNAL_DRAWING @ExternalDrawing@
 #define ENABLE_GUI @EnableGUI@
 #define ENABLE_IPC @EnableIPC@

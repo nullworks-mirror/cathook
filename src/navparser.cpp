@@ -563,7 +563,8 @@ void repath()
 
 static Timer last_jump{};
 // Main movement function, gets path from NavTo
-static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "NavParser", 17, []() {
+static void cm()
+{
     if (!enabled || status != on)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
@@ -616,10 +617,11 @@ static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "NavParse
     }
     // Walk to next crumb
     WalkTo(crumbs.at(0));
-});
+}
 
 #if ENABLE_VISUALS
-static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []() {
+static void drawcrumbs()
+{
     if (!enabled || !draw)
         return;
     if (!enabled)
@@ -643,8 +645,15 @@ static HookedFunction drawcrumbs(HF_Draw, "navparser", 10, []() {
         return;
     glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
     glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
-});
+}
 #endif
+
+static InitRoutine runinit([]() {
+    EC::Register<EC::CreateMove>(cm, "cm_navparser", EC::late);
+#if ENABLE_VISUALS
+    EC::Register<EC::Paint>(cm, "cm_navparser", EC::average);
+#endif
+});
 
 void ResetPather()
 {

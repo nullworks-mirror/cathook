@@ -18,14 +18,14 @@ public:
     inline static bool DoSwingTrace(IClientEntity *self, trace_t *trace)
     {
         typedef bool (*fn_t)(IClientEntity *, trace_t *);
-        return vfunc<fn_t>(self, offsets::PlatformOffset(522, offsets::undefined, 522), 0)(self, trace);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(523, offsets::undefined, 523), 0)(self, trace);
     }
     inline static int GetSwingRange(IClientEntity *self)
     {
-        if (self->GetClientClass()->m_ClassID == CL_CLASS(CTFSword) || self->GetClientClass()->m_ClassID == CL_CLASS(CTFKatana))
-            return 128;
-        else
-            return 72;
+        if (g_pLocalPlayer->holding_sapper)
+            return 48;
+        typedef int (*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(521, offsets::undefined, 521), 0)(self);
     }
 };
 } // namespace re

@@ -11,5 +11,4 @@ namespace hacks::tf2::autobackstab
 {
 
 void CreateMove();
-void Draw();
 } // namespace hacks::tf2::autobackstab

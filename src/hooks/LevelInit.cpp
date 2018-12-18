@@ -22,15 +22,11 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
 {
-#if !LAGBOT_MODE
     hacks::shared::backtrack::lastincomingsequencenumber = 0;
     hacks::shared::backtrack::sequences.clear();
-#endif
     firstcm = true;
     // nav::init = false;
-#if !LAGBOT_MODE
     playerlist::Save();
-#endif
 #if ENABLE_VISUALS
 #if ENABLE_GUI
     gui::onLevelLoad();
@@ -55,14 +51,13 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     for (int i = 0; i < 32; i++)
         g_Settings.brute.brutenum[i] = 0;
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
-#if !LAGBOT_MODE
     hacks::shared::aimbot::Reset();
     hacks::shared::backtrack::Init();
     chat_stack::Reset();
     hacks::shared::anticheat::ResetEverything();
     original::LevelInit(this_, name);
     hacks::shared::walkbot::OnLevelInit();
-#endif
+    EC::RunLevelInit();
 #if ENABLE_IPC
     if (ipc::peer)
     {

@@ -1,8 +1,14 @@
 <Tab name="Auto Backstab" padding="4 4 4 4">
     <Box padding="6 6 6 6" width="content" height="content">
         <List width="170">
-            <AutoVariable width="fill" target="autobackstab.enable" label="Enable Auto Backstab"/>
-            <AutoVariable width="fill" target="autobackstab.silent" label="Silent"/>
+            <AutoVariable width="fill" target="autobackstab.enabled" label="Enable Auto Backstab"/>
+            <LabeledObject width="fill" label="Autobackstab Mode">
+                <Select target="autobackstab.mode">
+                    <Option name="Legit" value="0"/>
+                    <Option name="Rage" value="1"/>
+                    <Option name="Backtrack" value="2"/>
+                </Select>
+            </LabeledObject>
         </List>
     </Box>
 </Tab>
