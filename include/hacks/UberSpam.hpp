@@ -12,8 +12,6 @@
 namespace hacks::tf::uberspam
 {
 
-void CreateMove();
-
 // Ready, Used, Ended, %...
 
 extern const std::vector<std::string> builtin_cathook;

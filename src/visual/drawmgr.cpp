@@ -187,11 +187,6 @@ void DrawCheatVisuals()
     }
     if (CE_GOOD(g_pLocalPlayer->entity) && !g_Settings.bInvalid)
     {
-        PROF_SECTION(PT_total_hacks);
-        {
-            PROF_SECTION(DRAW_aimbot);
-            hacks::shared::aimbot::DrawText();
-        }
         IF_GAME(IsTF2())
         {
             PROF_SECTION(DRAW_skinchanger);
@@ -208,11 +203,6 @@ void DrawCheatVisuals()
         {
             PROF_SECTION(DRAW_autoreflect);
             hacks::tf::autoreflect::Draw();
-        }
-        IF_GAME(IsTF2())
-        {
-            PROF_SECTION(DRAW_backtracc);
-            hacks::shared::backtrack::Draw();
         }
         {
             PROF_SECTION(DRAW_walkbot);

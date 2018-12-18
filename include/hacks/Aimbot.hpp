@@ -40,10 +40,6 @@ extern bool foundTarget;
 extern int target_eid;
 
 // Functions called by other functions for when certian game calls are run
-void CreateMove();
-#if ENABLE_VISUALS
-void DrawText();
-#endif
 void Reset();
 
 // Stuff to make storing functions easy

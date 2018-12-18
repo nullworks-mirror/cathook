@@ -38,8 +38,6 @@ struct BestTickData
     }
 };
 void Init();
-void Run();
-void Draw();
 void AddLatencyToNetchan(INetChannel *, float);
 void UpdateIncomingSequences();
 extern int lastincomingsequencenumber;

@@ -19,8 +19,10 @@ static int ticks_last_jump = 0;
 // static int perfect_jumps = 0;
 
 // Function called by game for movement
-void CreateMove()
+static void CreateMove()
 {
+    if (!CE_GOOD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+        return;
     // Check user settings if bhop is enabled
     if (!enable)
         return;
@@ -50,4 +52,7 @@ void CreateMove()
     if (!jump)
         ticks_last_jump = 0;
 }
+static InitRoutine EC([](){
+    EC::Register<EC::CreateMove>(CreateMove, "Bunnyhop", -4);
+});
 } // namespace hacks::shared::bunnyhop

@@ -288,34 +288,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 g_Settings.is_create_move = false;
                 return ret;
             }
-            IF_GAME(IsTF())
-            {
-                PROF_SECTION(CM_uberspam);
-                hacks::tf::uberspam::CreateMove();
-            }
-            IF_GAME(IsTF2())
-            {
-                PROF_SECTION(CM_noisemaker);
-                hacks::tf2::noisemaker::CreateMove();
-            }
-            {
-                PROF_SECTION(CM_deadringer);
-                hacks::shared::deadringer::CreateMove();
-            }
-            {
-                PROF_SECTION(CM_bunnyhop);
-                hacks::shared::bunnyhop::CreateMove();
-            }
-            if (engine_pred)
-                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
-            {
-                PROF_SECTION(CM_backtracc);
-                hacks::shared::backtrack::Run();
-            }
-            {
-                PROF_SECTION(CM_aimbot);
-                hacks::shared::aimbot::CreateMove();
-            }
             if (current_user_cmd->buttons & IN_ATTACK)
                 ++attackticks;
             else
@@ -370,11 +342,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             {
                 PROF_SECTION(CM_autobackstab);
                 hacks::tf2::autobackstab::CreateMove();
-            }
-            IF_GAME(IsTF2())
-            {
-                PROF_SECTION(CM_autodeadringer);
-                hacks::shared::deadringer::CreateMove();
             }
             if (debug_projectiles)
                 projectile_logging::Update();
@@ -499,6 +466,13 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     g_Settings.is_create_move       = false;
     return ret;
 }
+static InitRoutine EngPred([](){
+    EC::Register<EC::CreateMove>([](){
+        if (engine_pred)
+            engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
+    }, "engine_prediction", -3);
+
+});
 } // namespace hooked_methods
 
 /*float o_curtime;

@@ -100,12 +100,13 @@ Timer zoomTime{};
 // for current frame, to avoid performing them again
 AimbotCalculatedData_s calculated_data_array[2048]{};
 // The main "loop" of the aimbot.
-void CreateMove()
+static void CreateMove()
 {
     PROF_SECTION(PT_aimbot_cm);
     if (!enable)
         return;
-
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+        return;
     // Auto-Unzoom
     if (auto_unzoom)
         if (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed && zoomTime.test_and_set(3000))
@@ -1227,7 +1228,7 @@ void Reset()
 }
 
 #if ENABLE_VISUALS
-void DrawText()
+static void DrawText()
 {
     // Dont draw to screen when aimbot is disabled
     if (!enable)
@@ -1276,4 +1277,10 @@ void DrawText()
     }
 }
 #endif
+static InitRoutine EC([](){
+    EC::Register<EC::CreateMove>(CreateMove, "CM_Aimbot", EC::average);
+#if ENABLE_VISUALS
+    EC::Register<EC::Draw>(DrawText, "DRAW_Aimbot", EC::average);
+#endif
+});
 } // namespace hacks::shared::aimbot

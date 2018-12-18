@@ -36,11 +36,11 @@ int NearbyEntities()
     }
     return ret;
 }
-void CreateMove()
+static void CreateMove()
 {
     if (!enable)
         return;
-    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return;
     if (g_pLocalPlayer->clazz != tf_spy)
         return;
@@ -67,4 +67,7 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
     }
 }
+static InitRoutine EC([](){
+   EC::Register<EC::CreateMove>(CreateMove, "AutoDeadringer", EC::average);
+});
 } // namespace hacks::shared::deadringer
