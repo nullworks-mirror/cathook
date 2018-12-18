@@ -307,7 +307,6 @@ free(logname);*/
     {
         effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
         g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
-        effect_chams::g_EffectChams.Init();
         effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
         g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
     }

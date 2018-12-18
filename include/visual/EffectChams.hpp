@@ -20,7 +20,7 @@ class EffectChams : public IScreenSpaceEffect
 
 public:
     virtual void Init();
-    inline virtual void Shutdown()
+    virtual void Shutdown()
     {
         if (init)
         {
@@ -29,7 +29,8 @@ public:
             mat_lit.Shutdown();
             mat_lit_z.Shutdown();
             for (auto kv : chams_keyvalues)
-                kv->deleteThis();
+                if (kv)
+                    kv->deleteThis();
             init = false;
         }
     }
