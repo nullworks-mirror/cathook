@@ -38,20 +38,20 @@ CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {
 
 void EffectChams::Init()
 {
+    if (init)
+        return;
     logging::Info("Init EffectChams...");
     {
         KeyValues *kv = new KeyValues("UnlitGeneric");
         kv->SetString("$basetexture", "vgui/white_additive");
         kv->SetInt("$ignorez", 0);
         mat_unlit.Init("__cathook_echams_unlit", kv);
-        chams_keyvalues.push_back(kv);
     }
     {
         KeyValues *kv = new KeyValues("UnlitGeneric");
         kv->SetString("$basetexture", "vgui/white_additive");
         kv->SetInt("$ignorez", 1);
         mat_unlit_z.Init("__cathook_echams_unlit_z", kv);
-        chams_keyvalues.push_back(kv);
     }
     {
         KeyValues *kv = new KeyValues("VertexLitGeneric");
@@ -59,7 +59,6 @@ void EffectChams::Init()
         kv->SetInt("$ignorez", 0);
         kv->SetInt("$halflambert", 1);
         mat_lit.Init("__cathook_echams_lit", kv);
-        chams_keyvalues.push_back(kv);
     }
     {
         KeyValues *kv = new KeyValues("VertexLitGeneric");
@@ -67,7 +66,6 @@ void EffectChams::Init()
         kv->SetInt("$ignorez", 1);
         kv->SetInt("$halflambert", 1);
         mat_lit_z.Init("__cathook_echams_lit_z", kv);
-        chams_keyvalues.push_back(kv);
     }
     logging::Info("Init done!");
     init = true;
@@ -334,6 +332,8 @@ void EffectChams::Render(int x, int y, int w, int h)
     if (!isHackActive())
         return;
     if (!enable)
+        return;
+    if (g_Settings.bInvalid)
         return;
     if (!init)
         Init();

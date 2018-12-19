@@ -129,20 +129,20 @@ CatCommand fix_black_glow("fix_black_glow", "Fix Black Glow", []() {
 
 void EffectGlow::Init()
 {
+    if (init)
+        return;
     logging::Info("Init Glow...");
     {
         KeyValues *kv = new KeyValues("UnlitGeneric");
         kv->SetString("$basetexture", "vgui/white_additive");
         kv->SetInt("$ignorez", 0);
         mat_unlit.Init("__cathook_glow_unlit", kv);
-        glow_keyvalues.push_back(kv);
     }
     {
         KeyValues *kv = new KeyValues("UnlitGeneric");
         kv->SetString("$basetexture", "vgui/white_additive");
         kv->SetInt("$ignorez", 1);
         mat_unlit_z.Init("__cathook_glow_unlit_z", kv);
-        glow_keyvalues.push_back(kv);
     }
     // Initialize 2 buffers
     GetBuffer(1);
@@ -153,7 +153,6 @@ void EffectGlow::Init()
         kv->SetInt("$additive", 1);
         mat_blit.Init("__cathook_glow_blit", TEXTURE_GROUP_CLIENT_EFFECTS, kv);
         mat_blit->Refresh();
-        glow_keyvalues.push_back(kv);
     }
     {
         KeyValues *kv = new KeyValues("BlurFilterX");
@@ -163,7 +162,6 @@ void EffectGlow::Init()
         kv->SetInt("$alphatest", 1);
         mat_blur_x.Init("_cathook_blurx", kv);
         mat_blur_x->Refresh();
-        glow_keyvalues.push_back(kv);
     }
     {
         KeyValues *kv = new KeyValues("BlurFilterY");
@@ -174,7 +172,6 @@ void EffectGlow::Init()
         kv->SetInt("$alphatest", 1);
         mat_blur_y.Init("_cathook_blury", kv);
         mat_blur_y->Refresh();
-        glow_keyvalues.push_back(kv);
     }
     {
         SS_NeverSolid.m_bEnable         = true;
