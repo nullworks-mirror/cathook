@@ -25,6 +25,7 @@ extern std::mutex command_stack_mutex;
 std::stack<std::string> &command_stack();
 void ExecuteCommand(const std::string command);
 
+extern bool game_shutdown;
 extern bool shutdown;
 extern bool initialized;
 

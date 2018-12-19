@@ -33,5 +33,6 @@ void applySdlHooks()
 void cleanSdlHooks()
 {
     *pointers::SDL_GL_SwapWindow = hooked_methods::original::SDL_GL_SwapWindow;
+    *pointers::SDL_PollEvent     = hooked_methods::original::SDL_PollEvent;
 }
 } // namespace sdl_hooks
