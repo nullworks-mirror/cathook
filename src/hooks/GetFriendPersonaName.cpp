@@ -176,8 +176,6 @@ static void cm()
     }
 }
 
-static InitRoutine runinit([]() {
-    EC::Register<EC::CreateMove>(cm, "cm_namesteal", EC::late);
-});
+static InitRoutine runinit([]() { EC::Register<EC::CreateMove>(cm, "cm_namesteal", EC::late); });
 
 } // namespace hooked_methods

@@ -858,11 +858,19 @@ float DistToSqr(CachedEntity *entity)
     return g_pLocalPlayer->v_Origin.DistToSqr(entity->m_vecOrigin());
 }
 
-void Patch(void *address, void *patch, size_t length)
+void PatchClass::Patch()
 {
-    void *page = (void *) ((uint64_t) address & ~0xFFF);
+    void *page = (void *) ((uint64_t) this->addr & ~0xFFF);
     logging::Info("mprotect: %d", mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC));
-    memcpy(address, patch, length);
+    memcpy((void *) this->addr, (void *) &this->patch_bytes[0], this->len);
+    logging::Info("mprotect reverse: %d", mprotect(page, 0xFFF, PROT_EXEC));
+}
+
+void PatchClass::Shutdown()
+{
+    void *page = (void *) ((uint64_t) this->addr & ~0xFFF);
+    logging::Info("mprotect: %d", mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC));
+    memcpy((void *) this->addr, (void *) &this->original[0], this->len);
     logging::Info("mprotect reverse: %d", mprotect(page, 0xFFF, PROT_EXEC));
 }
 

@@ -105,7 +105,8 @@ class KillSayEventListener : public IGameEventListener2
     }
 };
 
-static void ProcessKillsay() {
+static void ProcessKillsay()
+{
     if (killsay_storage.empty())
         return;
     for (auto &i : killsay_storage)
@@ -120,9 +121,7 @@ static void ProcessKillsay() {
     }
 }
 
-static InitRoutine runinit([](){
-    EC::Register<EC::Paint>(ProcessKillsay, "paint_killsay", EC::average);
-});
+static InitRoutine runinit([]() { EC::Register<EC::Paint>(ProcessKillsay, "paint_killsay", EC::average); });
 
 static KillSayEventListener listener{};
 

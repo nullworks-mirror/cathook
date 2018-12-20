@@ -34,7 +34,6 @@ void **pure_addr = nullptr;
 
 // static CatVar disable_ban_tf(CV_SWITCH, "disable_mm_ban", "0", "Disable MM
 // ban", "Disable matchmaking ban");
-static settings::Bool party_bypass{ "misc.party_bypass", "false" };
 
 bool replaced = false;
 namespace hooked_methods
@@ -114,7 +113,8 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
         {
             uintptr_t topatch = report_addr + 0x75;
             logging::Info("No Report limit: 0x%08x", report_addr);
-            Patch((void *) topatch, (void *) patch, sizeof(patch));
+            static PatchClass no_report_limit((void *)topatch, (void* )patch, sizeof(patch));
+            no_report_limit.Patch();
             replaced = true;
         }
         else

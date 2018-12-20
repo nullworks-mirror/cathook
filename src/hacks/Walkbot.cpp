@@ -1149,7 +1149,8 @@ void OnLevelInit()
 Timer quit_timer{};
 Timer map_check{};
 int erasedelay = 0;
-static void cm() {
+static void cm()
+{
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return;
     if (state::state == WB_DISABLED)
@@ -1221,8 +1222,6 @@ static void cm() {
     }
 }
 
-static InitRoutine init([](){
-    EC::Register<EC::CreateMove>(cm, "cm_walkbot", EC::average);
-});
+static InitRoutine init([]() { EC::Register<EC::CreateMove>(cm, "cm_walkbot", EC::average); });
 
 } // namespace hacks::shared::walkbot

@@ -363,7 +363,7 @@ std::pair<int, int> getBestEntBestTick()
     }
     return std::make_pair(bestEnt, bestTick);
 }
-static InitRoutine EC([](){
+static InitRoutine EC([]() {
     EC::Register<EC::CreateMove>(Run, "CM_Backtrack", EC::early);
 #if ENABLE_VISUALS
     EC::Register<EC::Draw>(Draw, "DRAW_Backtrack", EC::average);

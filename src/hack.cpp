@@ -34,8 +34,8 @@
 
 // game_shutdown = Is full game shutdown or just detach
 bool hack::game_shutdown = true;
-bool hack::shutdown    = false;
-bool hack::initialized = false;
+bool hack::shutdown      = false;
+bool hack::initialized   = false;
 
 const std::string &hack::GetVersion()
 {

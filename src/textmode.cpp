@@ -24,7 +24,8 @@ void EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG()
     // +0x21 = allowSecureServers
     // logging::Info("1337 VAC bypass: 0x%08x",
     // Host_IsSecureServerAllowed_addr);
-    Patch((void *) Host_IsSecureServerAllowed_addr, (void *) patch, sizeof(patch));
+    static PatchClass HostSecureServer((void *)Host_IsSecureServerAllowed_addr, (void *)patch, sizeof(patch));
+    HostSecureServer.Patch();
     uintptr_t allowSecureServers_addr = Host_IsSecureServerAllowed_addr + 0x21;
     allowSecureServers                = *(bool **) (allowSecureServers_addr);
     logging::Info("Allow Secure Servers: 0x%08x", allowSecureServers);

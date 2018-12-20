@@ -54,7 +54,7 @@ static void doLegitBackstab()
     if (!trace.m_pEnt)
         return;
     int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
-    auto ent = ENTITY(index);
+    auto ent  = ENTITY(index);
     if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
         return;
     if (angleCheck(ENTITY(index), std::nullopt, g_pLocalPlayer->v_OrigViewangles))
@@ -78,7 +78,7 @@ static void doRageBackstab()
         if (trace.m_pEnt)
         {
             int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
-            auto ent = ENTITY(index);
+            auto ent  = ENTITY(index);
             if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             if (angleCheck(ent, std::nullopt, newangle))
@@ -96,9 +96,12 @@ static void doBacktrackStab()
 {
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     CachedEntity *ent;
-    try {
-        ent         = ENTITY(hacks::shared::backtrack::iBestTarget);
-    } catch (std::out_of_range) {
+    try
+    {
+        ent = ENTITY(hacks::shared::backtrack::iBestTarget);
+    }
+    catch (std::out_of_range)
+    {
         return;
     }
     if (!ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)

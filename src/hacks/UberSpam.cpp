@@ -110,9 +110,7 @@ static void CreateMove()
     last_charge        = (int) (100.0f * charge);
 }
 
-static InitRoutine register_EC([](){
-   EC::Register<EC::CreateMove>(CreateMove, "Uberspam", EC::priority::average);
-});
+static InitRoutine register_EC([]() { EC::Register<EC::CreateMove>(CreateMove, "Uberspam", EC::priority::average); });
 // Ready, Used, Ended, %...
 
 const std::vector<std::string> builtin_cathook  = { "-> I am charged!", "-> Not a step back! UBERCHARGE USED!", "-> My Ubercharge comes to an end!", "-> I have %i%% of ubercharge!", "-> I have half of the ubercharge!", "-> Ubercharge almost ready! (%i%%)" };

@@ -466,12 +466,13 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     g_Settings.is_create_move       = false;
     return ret;
 }
-static InitRoutine EngPred([](){
-    EC::Register<EC::CreateMove>([](){
-        if (engine_pred)
-            engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
-    }, "engine_prediction", -3);
-
+static InitRoutine EngPred([]() {
+    EC::Register<EC::CreateMove>(
+        []() {
+            if (engine_pred)
+                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
+        },
+        "engine_prediction", -3);
 });
 } // namespace hooked_methods
 

@@ -26,8 +26,5 @@ static void CreateMove()
         }
     }
 }
-static InitRoutine EC([]()
-{
-   EC::Register<EC::CreateMove>(CreateMove, "Noisemaker", EC::average);
-});
+static InitRoutine EC([]() { EC::Register<EC::CreateMove>(CreateMove, "Noisemaker", EC::average); });
 } // namespace hacks::tf2::noisemaker

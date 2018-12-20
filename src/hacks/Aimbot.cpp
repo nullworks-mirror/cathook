@@ -1277,7 +1277,7 @@ static void DrawText()
     }
 }
 #endif
-static InitRoutine EC([](){
+static InitRoutine EC([]() {
     EC::Register<EC::CreateMove>(CreateMove, "CM_Aimbot", EC::average);
 #if ENABLE_VISUALS
     EC::Register<EC::Draw>(DrawText, "DRAW_Aimbot", EC::average);
