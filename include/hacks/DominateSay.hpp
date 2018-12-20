@@ -16,5 +16,4 @@ void shutdown();
 void reload();
 
 extern const std::vector<std::string> builtin_default;
-extern const std::vector<std::string> jp_anime;
 } // namespace hacks::shared::dominatesay

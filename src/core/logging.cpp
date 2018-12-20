@@ -12,6 +12,7 @@
 #include <settings/Bool.hpp>
 
 #include "common.hpp"
+#include "hack.hpp"
 
 settings::Bool log_to_console{ "hack.log-console", "false" };
 
@@ -45,7 +46,7 @@ void logging::Info(const char *fmt, ...)
     fprintf(logging::handle, "%s", result);
     fflush(logging::handle);
 #if ENABLE_VISUALS
-    if (g_ICvar)
+    if (!hack::game_shutdown && g_ICvar)
     {
         if (*log_to_console)
             g_ICvar->ConsolePrintf("%s", result);

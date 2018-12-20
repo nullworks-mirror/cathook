@@ -32,6 +32,8 @@
  * Linux
  */
 
+// game_shutdown = Is full game shutdown or just detach
+bool hack::game_shutdown = true;
 bool hack::shutdown    = false;
 bool hack::initialized = false;
 
@@ -307,7 +309,6 @@ free(logname);*/
     {
         effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
         g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
-        effect_chams::g_EffectChams.Init();
         effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
         g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
     }
@@ -368,6 +369,8 @@ void hack::Shutdown()
     if (hack::shutdown)
         return;
     hack::shutdown = true;
+    // Stop cathook stuff
+    settings::RVarLock.store(true);
     playerlist::Save();
 #if ENABLE_VISUALS
     sdl_hooks::cleanSdlHooks();
@@ -375,8 +378,15 @@ void hack::Shutdown()
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
     logging::Info("Shutting down killsay...");
-    hacks::shared::killsay::shutdown();
-    hacks::shared::dominatesay::shutdown();
-    hacks::shared::announcer::shutdown();
+    if (!hack::game_shutdown)
+    {
+        hacks::shared::killsay::shutdown();
+        hacks::shared::dominatesay::shutdown();
+        hacks::shared::announcer::shutdown();
+#if ENABLE_VISUALS
+        g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_glow");
+        g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_chams");
+#endif
+    }
     logging::Info("Success..");
 }

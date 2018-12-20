@@ -5,7 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#include <core/logging.hpp>
+#include "common.hpp"
 #include <pthread.h>
 
 #include "hack.hpp"
@@ -40,7 +40,7 @@ void *MainThread(void *arg)
     logging::Info("Shutting down...");
     hack::Shutdown();
     logging::Shutdown();
-    return 0;
+    return nullptr;
 }
 
 void __attribute__((constructor)) attach()
@@ -51,9 +51,19 @@ void __attribute__((constructor)) attach()
     pthread_create(&thread_main, 0, MainThread, &mutex_quit);
 }
 
-void __attribute__((destructor)) detach()
+void detach()
 {
     logging::Info("Detaching");
     pthread_mutex_unlock(&mutex_quit);
     pthread_join(thread_main, 0);
 }
+
+void __attribute__((destructor)) deconstruct()
+{
+    detach();
+}
+
+CatCommand cat_detach("detach", "Detach cathook from TF2", []() {
+    hack::game_shutdown = false;
+    detach();
+});

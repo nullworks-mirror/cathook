@@ -16,11 +16,9 @@ namespace effect_chams
 
 class EffectChams : public IScreenSpaceEffect
 {
-    std::vector<KeyValues *> chams_keyvalues;
-
 public:
     virtual void Init();
-    inline virtual void Shutdown()
+    virtual void Shutdown()
     {
         if (init)
         {
@@ -28,8 +26,6 @@ public:
             mat_unlit_z.Shutdown();
             mat_lit.Shutdown();
             mat_lit_z.Shutdown();
-            for (auto kv : chams_keyvalues)
-                kv->deleteThis();
             init = false;
         }
     }
