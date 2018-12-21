@@ -35,8 +35,11 @@ CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {
     effect_chams::g_EffectChams.Shutdown();
     effect_chams::g_EffectChams.Init();
 });
+
 void EffectChams::Init()
 {
+    if (init)
+        return;
     logging::Info("Init EffectChams...");
     {
         KeyValues *kv = new KeyValues("UnlitGeneric");
@@ -329,6 +332,8 @@ void EffectChams::Render(int x, int y, int w, int h)
     if (!isHackActive())
         return;
     if (!enable)
+        return;
+    if (g_Settings.bInvalid)
         return;
     if (!init)
         Init();

@@ -32,6 +32,8 @@
  * Linux
  */
 
+// game_shutdown = Is full game shutdown or just detach
+bool hack::game_shutdown = true;
 bool hack::shutdown    = false;
 bool hack::initialized = false;
 
@@ -289,13 +291,11 @@ free(logname);*/
         // hooks::materialsystem.HookMethod();
     }
 #endif
-#if not LAGBOT_MODE
     // FIXME [MP]
     hacks::shared::killsay::init();
     hacks::shared::dominatesay::init();
     hacks::shared::announcer::init();
     hacks::tf2::killstreak::init();
-#endif
     hacks::shared::catbot::init();
     logging::Info("Hooked!");
     velocity::Init();
@@ -309,7 +309,6 @@ free(logname);*/
     {
         effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
         g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
-        effect_chams::g_EffectChams.Init();
         effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
         g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
     }
@@ -319,9 +318,7 @@ free(logname);*/
     logging::Info("SDL hooking done");
 
 #endif /* TEXTMODE */
-#if not LAGBOT_MODE
     hacks::shared::anticheat::Init();
-#endif
 #if ENABLE_VISUALS
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
     InitSpinner();
@@ -329,9 +326,7 @@ free(logname);*/
 #endif
     hacks::shared::spam::init();
 #endif
-#if not LAGBOT_MODE
     hacks::shared::walkbot::Initialize();
-#endif
 #if ENABLE_VISUALS
     hacks::shared::esp::Init();
 #endif
@@ -374,17 +369,24 @@ void hack::Shutdown()
     if (hack::shutdown)
         return;
     hack::shutdown = true;
+    // Stop cathook stuff
+    settings::RVarLock.store(true);
     playerlist::Save();
 #if ENABLE_VISUALS
     sdl_hooks::cleanSdlHooks();
 #endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
-#if not LAGBOT_MODE
     logging::Info("Shutting down killsay...");
-    hacks::shared::killsay::shutdown();
-    hacks::shared::dominatesay::shutdown();
-    hacks::shared::announcer::shutdown();
+    if (!hack::game_shutdown)
+    {
+        hacks::shared::killsay::shutdown();
+        hacks::shared::dominatesay::shutdown();
+        hacks::shared::announcer::shutdown();
+#if ENABLE_VISUALS
+        g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_glow");
+        g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_chams");
 #endif
+    }
     logging::Info("Success..");
 }

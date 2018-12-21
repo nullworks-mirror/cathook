@@ -8,9 +8,7 @@
 #include <settings/Bool.hpp>
 #include <hacks/Thirdperson.hpp>
 #include "HookedMethods.hpp"
-#if not LAGBOT_MODE
 #include "hacks/Backtrack.hpp"
-#endif
 
 static settings::Float nightmode{ "visual.night-mode", "0" };
 static settings::Bool no_shake{ "visual.no-shake", "true" };

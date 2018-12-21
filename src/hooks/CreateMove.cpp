@@ -33,19 +33,6 @@ static settings::Bool no_shake{ "visual.no-shake", "true" };
 #endif
 
 class CMoveData;
-#if LAGBOT_MODE
-CatCommand set_value("set", "Set value", [](const CCommand &args) {
-    if (args.ArgC() < 2)
-        return;
-    ConVar *var = g_ICvar->FindVar(args.Arg(1));
-    if (!var)
-        return;
-    std::string value(args.Arg(2));
-    ReplaceString(value, "\\n", "\n");
-    var->SetValue(value.c_str());
-    logging::Info("Set '%s' to '%s'", args.Arg(1), value.c_str());
-});
-#endif
 namespace engine_prediction
 {
 
@@ -101,21 +88,11 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     return;
 }
 } // namespace engine_prediction
-#if not LAGBOT_MODE
-#define antikick_time 35
-#else
-#define antikick_time 90
-#endif
 
 static int attackticks = 0;
 
 namespace hooked_methods
 {
-static HookedFunction viewangs(HookedFunctions_types::HF_CreateMove, "set_ang", 21, []() {
-    if (CE_BAD(LOCAL_E))
-        return;
-    g_pLocalPlayer->v_OrigViewangles = current_user_cmd->viewangles;
-});
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
 {
 #define TICK_INTERVAL (g_GlobalVars->interval_per_tick)
@@ -133,13 +110,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
     tickcount++;
     current_user_cmd = cmd;
-#if !LAGBOT_MODE
     IF_GAME(IsTF2C())
     {
         if (CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun))
             CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
     }
-#endif
     ret = original::CreateMove(this_, input_sample_time, cmd);
 
     PROF_SECTION(CreateMove);
@@ -301,13 +276,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
     {
         PROF_SECTION(CM_WRAPPER);
-        HookTools::CM();
+        EC::RunCreateMove();
     }
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon()))
         {
-#if !LAGBOT_MODE
             // Walkbot can leave game.
             if (!g_IEngine->IsInGame())
             {
@@ -328,12 +302,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 PROF_SECTION(CM_deadringer);
                 hacks::shared::deadringer::CreateMove();
             }
-            if (engine_pred)
-                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
             {
                 PROF_SECTION(CM_bunnyhop);
                 hacks::shared::bunnyhop::CreateMove();
             }
+            if (engine_pred)
+                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
             {
                 PROF_SECTION(CM_backtracc);
                 hacks::shared::backtrack::Run();
@@ -405,9 +379,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             if (debug_projectiles)
                 projectile_logging::Update();
             Prediction_CreateMove();
-#endif
         }
-#if !LAGBOT_MODE
         {
             PROF_SECTION(CM_misc);
             hacks::shared::misc::CreateMove();
@@ -416,27 +388,22 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             PROF_SECTION(CM_crits);
             criticals::create_move();
         }
-#endif
         {
             PROF_SECTION(CM_spam);
             hacks::shared::spam::createMove();
         }
-#if !LAGBOT_MODE
         {
             PROF_SECTION(CM_AC);
             hacks::shared::anticheat::CreateMove();
         }
-#endif
     }
     if (time_replaced)
         g_GlobalVars->curtime = curtime_old;
     g_Settings.bInvalid = false;
-#if !LAGBOT_MODE
     {
         PROF_SECTION(CM_chat_stack);
         chat_stack::OnCreateMove();
     }
-#endif
 
     // TODO Auto Steam Friend
 
@@ -451,7 +418,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         }
     }
 #endif
-#if !LAGBOT_MODE
     hacks::shared::backtrack::UpdateIncomingSequences();
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
@@ -523,7 +489,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 g_Settings.brute.choke[i].pop_front();
         }
     }
-#endif
 
     //	PROF_END("CreateMove");
     if (!(cmd->buttons & IN_ATTACK))

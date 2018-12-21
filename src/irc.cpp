@@ -301,7 +301,7 @@ int GetMaxParty()
 CatCommand debug_maxparty("debug_partysize", "Debug party size", []() { logging::Info("%d", GetMaxParty()); });
 
 static Timer resize_party{};
-static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
+static void run() {
     if (!restarting)
     {
         auto party_client  = re::CTFPartyClient::GTFPartyClient();
@@ -374,7 +374,7 @@ static HookedFunction paint(HookedFunctions_types::HF_Paint, "IRC", 16, []() {
             irc.setState(state);
         }
     }
-});
+}
 
 template <typename T> void rvarCallback(settings::VariableBase<T> &var, T after)
 {
@@ -394,6 +394,7 @@ template <typename T> void rvarCallback(settings::VariableBase<T> &var, T after)
 }
 
 static InitRoutine init([]() {
+    EC::Register<EC::Paint>(run, "PAINT_irc", EC::average);
     updateData();
     enabled.installChangeCallback(rvarCallback<bool>);
     anon.installChangeCallback(rvarCallback<bool>);

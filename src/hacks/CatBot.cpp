@@ -177,14 +177,21 @@ Timer level_init_timer{};
 
 Timer micspam_on_timer{};
 Timer micspam_off_timer{};
-
+static bool patched_report;
 void reportall()
 {
     typedef uint64_t (*ReportPlayer_t)(uint64_t, int);
     static uintptr_t addr2         = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
-    ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr2);
+    static ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr2);
     if (!addr2)
         return;
+    if (!patched_report)
+    {
+        static uintptr_t addr2 = gSignatures.GetClientSignature("73 ? 80 7D ? ? 74 ? F3 0F 10 0D") +0x2F;
+        static unsigned char patch[] = { 0x89, 0xe0 };
+        Patch((void *)addr2, (void *)patch, sizeof(patch));
+        patched_report = true;
+    }
     player_info_s local;
     g_IEngine->GetPlayerInfo(g_pLocalPlayer->entity_idx, &local);
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
@@ -257,8 +264,9 @@ void smart_crouch()
 }
 
 CatCommand print_ammo("debug_print_ammo", "debug", []() {
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return;
+    logging::Info("Current slot: %d", re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)));
     for (int i = 0; i < 10; i++)
         logging::Info("Ammo Table %d: %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + i * 4));
 });
@@ -267,17 +275,24 @@ static Timer report_timer{};
 static std::string health = "Health: 0/0";
 static std::string ammo   = "Ammo: 0/0";
 static int max_ammo;
+static CachedEntity *local_w;
 // TODO: add more stuffs
-static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
+static void cm()
+{
     if (!*catbotmode)
         return;
 
     if (CE_GOOD(LOCAL_E))
     {
+        if (LOCAL_W != local_w)
+        {
+            local_w  = LOCAL_W;
+            max_ammo = 0;
+        }
         float max_hp  = g_pPlayerResource->GetMaxHealth(LOCAL_E);
         float curr_hp = CE_INT(LOCAL_E, netvar.iHealth);
-        int ammo0     = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
-        int ammo2     = CE_INT(LOCAL_E, netvar.m_iAmmo + 8);
+        int ammo0     = CE_INT(LOCAL_E, netvar.m_iClip2);
+        int ammo2     = CE_INT(LOCAL_E, netvar.m_iClip1);
         if (ammo0 + ammo2 > max_ammo)
             max_ammo = ammo0 + ammo2;
         health = format("Health: ", curr_hp, "/", max_hp);
@@ -302,7 +317,7 @@ static HookedFunction cm(HF_CreateMove, "catbot", 5, []() {
     }
     if (*autoReport && report_timer.test_and_set(60000))
         reportall();
-});
+}
 
 static Timer autojointeam{};
 void update()
@@ -420,13 +435,21 @@ void level_init()
 }
 
 #if ENABLE_VISUALS
-static HookedFunction Paint(HookedFunctions_types::HF_Draw, "anti_motd_info", 3, []() {
+static void draw()
+{
     if (!catbotmode || !anti_motd)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
     AddCenterString(health, colors::green);
     AddCenterString(ammo, colors::yellow);
-});
+}
 #endif
+
+static InitRoutine runinit([]() {
+    EC::Register<EC::CreateMove>(cm, "cm_catbot", EC::average);
+#if ENABLE_VISUALS
+    EC::Register<EC::Draw>(cm, "draw_catbot", EC::average);
+#endif
+});
 } // namespace hacks::shared::catbot

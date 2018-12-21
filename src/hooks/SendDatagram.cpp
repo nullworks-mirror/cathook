@@ -12,7 +12,6 @@ DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
 {
     if (!round(hacks::shared::backtrack::getLatency()))
         return original::SendDatagram(ch, buf);
-#if !LAGBOT_MODE
     int in    = 0;
     int state = 0;
     if (CE_GOOD(LOCAL_E) && ch)
@@ -23,17 +22,13 @@ DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
         float latencysend = round((round((hacks::shared::backtrack::getLatency() - 0.5f) / 15.1515151515f) - 0.5f) * 15.1515151515f);
         hacks::shared::backtrack::AddLatencyToNetchan(ch, latencysend);
     }
-#endif
 
     int ret = original::SendDatagram(ch, buf);
-#if !LAGBOT_MODE
     if (CE_GOOD(LOCAL_E) && ch)
     {
         ch->m_nInSequenceNr    = in;
         ch->m_nInReliableState = state;
     }
-
-#endif
     return ret;
 }
 } // namespace hooked_methods

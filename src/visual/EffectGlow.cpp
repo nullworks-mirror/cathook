@@ -129,6 +129,8 @@ CatCommand fix_black_glow("fix_black_glow", "Fix Black Glow", []() {
 
 void EffectGlow::Init()
 {
+    if (init)
+        return;
     logging::Info("Init Glow...");
     {
         KeyValues *kv = new KeyValues("UnlitGeneric");

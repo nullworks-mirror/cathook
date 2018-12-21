@@ -40,8 +40,7 @@ constexpr bool IsTF()
     return IsTF2() || IsTF2C();
 }
 
-// This one is supposed to be `if constexpr` but I have to upgrade to gcc7
-#define IF_GAME(x) if (x)
+#define IF_GAME(x) if constexpr (x)
 
 #else
 

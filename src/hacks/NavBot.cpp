@@ -390,10 +390,43 @@ static void autoJump()
         current_user_cmd->buttons |= IN_JUMP;
 }
 
+enum slots
+{
+    primary = 1,
+    secondary = 2,
+    melee = 3
+};
+static int GetBestSlot()
+{
+
+    switch (g_pLocalPlayer->clazz)
+    {
+    case tf_scout:
+    {
+        float nearest_dist = getNearestPlayerDistance().second;
+        if (nearest_dist < 1000)
+            return primary;
+        else
+            return secondary;
+    }
+    case tf_heavy:
+        return primary;
+    default:
+    {
+        float nearest_dist = getNearestPlayerDistance().second;
+        if (nearest_dist > 400)
+            return primary;
+        else
+            return secondary;
+    }
+    }
+    return primary;
+}
+
 static void updateSlot()
 {
     static Timer slot_timer{};
-    if (!slot_timer.test_and_set(1000))
+    if (!slot_timer.test_and_set(300))
         return;
     if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
     {
@@ -402,14 +435,16 @@ static void updateSlot()
         if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
         {
             int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
-            int newslot = 1;
+            int newslot = GetBestSlot();
             if (slot != newslot - 1)
                 g_IEngine->ClientCmd_Unrestricted(format("slot", newslot).c_str());
         }
     }
 }
 
-static HookedFunction cm(HookedFunctions_types::HF_CreateMove, "NavBot", 16, &CreateMove);
+static InitRoutine runinit([](){
+    EC::Register<EC::Paint>(CreateMove, "paint_killsay", EC::average);
+});
 
 void change(settings::VariableBase<bool> &, bool)
 {

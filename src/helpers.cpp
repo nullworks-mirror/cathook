@@ -1091,6 +1091,29 @@ void WhatIAmLookingAt(int *result_eindex, Vector *result_pos)
         *result_eindex = ((IClientEntity *) (trace.m_pEnt))->entindex();
 }
 
+Vector GetForwardVector(Vector origin, Vector viewangles, float distance)
+{
+    Vector forward;
+    float sp, sy, cp, cy;
+    QAngle angle = VectorToQAngle(viewangles);
+    trace_t trace;
+
+    sy        = sinf(DEG2RAD(angle[1]));
+    cy        = cosf(DEG2RAD(angle[1]));
+    sp        = sinf(DEG2RAD(angle[0]));
+    cp        = cosf(DEG2RAD(angle[0]));
+    forward.x = cp * cy;
+    forward.y = cp * sy;
+    forward.z = -sp;
+    forward   = forward * distance + origin;
+    return forward;
+}
+
+Vector GetForwardVector(float distance)
+{
+    return GetForwardVector(g_pLocalPlayer->v_Eye, g_pLocalPlayer->v_OrigViewangles, distance);
+}
+
 bool IsSentryBuster(CachedEntity *entity)
 {
     return (entity->m_Type() == EntityType::ENTITY_PLAYER && CE_INT(entity, netvar.iClass) == tf_class::tf_demoman && g_pPlayerResource->GetMaxHealth(entity) == 2500);

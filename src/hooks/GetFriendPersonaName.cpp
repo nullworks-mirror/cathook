@@ -128,7 +128,7 @@ const char *GetNamestealName(CSteamID steam_id)
             {
 
                 // Return the name that has changed from the func above
-                return format(stolen_name, "\015").c_str();
+                return format(stolen_name, "\e").c_str();
             }
         }
     }
@@ -171,7 +171,8 @@ static InitRoutine init([]() {
     });
 });
 static Timer set_name{};
-static HookedFunction CM(HookedFunctions_types::HF_CreateMove, "namesteal", 2, []() {
+static void cm()
+{
     if (!namesteal)
         return;
     if (!set_name.test_and_set(500000))
@@ -187,5 +188,10 @@ static HookedFunction CM(HookedFunctions_types::HF_CreateMove, "namesteal", 2, [
         setname.SetReliable(false);
         ch->SendNetMsg(setname, false);
     }
+}
+
+static InitRoutine runinit([]() {
+    EC::Register<EC::CreateMove>(cm, "cm_namesteal", EC::late);
 });
+
 } // namespace hooked_methods

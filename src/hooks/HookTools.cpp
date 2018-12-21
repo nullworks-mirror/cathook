@@ -1,43 +1,45 @@
-#include "HookTools.hpp"
 #include "common.hpp"
+#include "HookTools.hpp"
 
-std::vector<HookedFunction *> &HookTools::GetHookedFunctions()
+namespace EC
 {
-    static std::vector<HookedFunction *> CreateMoves{};
-    return CreateMoves;
+// Ordered set to always keep priorities correct
+std::multiset<EventCallbackData<CreateMove>> createmoves;
+#if ENABLE_VISUALS
+std::multiset<EventCallbackData<Draw>> draws;
+#endif
+std::multiset<EventCallbackData<Paint>> paints;
+std::multiset<EventCallbackData<LevelInit>> levelinits;
+
+template <typename t> inline void run(t &set)
+{
+    for (auto &i : set)
+    {
+#if ENABLE_PROFILER
+        ProfilerNode node(i.section);
+#endif
+        i.function();
+    }
 }
 
-// -----------------------------------------------------------
-
-void RunHookedFunctions(HookedFunctions_types type)
+void RunCreateMove()
 {
-    auto &HookedFunctions = HookTools::GetHookedFunctions();
-    for (auto &i : HookedFunctions)
-        i->run(type);
+    run(createmoves);
+}
+#if ENABLE_VISUALS
+void RunDraw()
+{
+    run(draws);
+}
+#endif
+void RunPaint()
+{
+    run(paints);
 }
 
-void HookTools::CM()
+void RunLevelInit()
 {
-    RunHookedFunctions(HF_CreateMove);
+    run(levelinits);
 }
 
-void HookTools::DRAW()
-{
-    RunHookedFunctions(HF_Draw);
-}
-
-void HookTools::PAINT()
-{
-    RunHookedFunctions(HF_Paint);
-}
-
-static InitRoutine init([]() {
-    auto &HookedFunctions = HookTools::GetHookedFunctions();
-    logging::Info("Hooked Functions amount: %i", HookedFunctions.size());
-    std::sort(HookedFunctions.begin(), HookedFunctions.end(), [](HookedFunction *a, HookedFunction *b) { return *a > *b; });
-    logging::Info("Sorted Hooked Functions: %i", HookedFunctions.size());
-});
-
-static CatCommand print("debug_print_hookedfunctions", "Print hooked functions (CreateMove, Draw, Paint)", []() {
-
-});
+} // namespace EC

@@ -219,7 +219,7 @@ struct bonelist_s
 
 std::unordered_map<studiohdr_t *, bonelist_s> bonelist_map{};
 // Function called on draw
-void Draw()
+static void Draw()
 {
     if (!enable)
         return;
@@ -234,7 +234,7 @@ void Draw()
 }
 
 // Function called on create move
-static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "ESP", 18, []() {
+static void cm() {
     // Check usersettings if enabled
     if (!*enable)
         return;
@@ -288,7 +288,7 @@ static HookedFunction CreateMove(HookedFunctions_types::HF_CreateMove, "ESP", 18
             }
         }
     }
-});
+}
 
 static glez::texture atlas{ DATA_PATH "/textures/atlas.png" };
 static glez::texture idspec{ DATA_PATH "/textures/idspec.png" };
@@ -1443,4 +1443,11 @@ void SetEntityColor(CachedEntity *entity, const rgba_t &color)
         return;
     data[entity->m_IDX].color = color;
 }
+
+static InitRoutine init([](){
+    EC::Register<EC::CreateMove>(cm, "cm_esp", EC::average);
+    EC::Register<EC::Draw>(Draw, "draw_esp", EC::average);
+});
+
+
 } // namespace hacks::shared::esp

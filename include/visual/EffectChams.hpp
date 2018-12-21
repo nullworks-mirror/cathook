@@ -18,13 +18,16 @@ class EffectChams : public IScreenSpaceEffect
 {
 public:
     virtual void Init();
-    inline virtual void Shutdown()
+    virtual void Shutdown()
     {
-        mat_unlit.Shutdown();
-        mat_unlit_z.Shutdown();
-        mat_lit.Shutdown();
-        mat_lit_z.Shutdown();
-        init = false;
+        if (init)
+        {
+            mat_unlit.Shutdown();
+            mat_unlit_z.Shutdown();
+            mat_lit.Shutdown();
+            mat_lit_z.Shutdown();
+            init = false;
+        }
     }
 
     inline virtual void SetParameters(KeyValues *params)
