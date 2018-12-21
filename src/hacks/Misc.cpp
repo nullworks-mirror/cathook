@@ -226,6 +226,8 @@ void CreateMove()
             if (*nopush_enabled == teammatesPushaway->GetBool())
                 teammatesPushaway->SetValue(!nopush_enabled);
         }
+        else
+            teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
     }
 }
 
