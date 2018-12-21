@@ -221,8 +221,11 @@ void CreateMove()
             SendAutoBalanceRequest();
 
         // Simple No-Push through cvars
-        if (*nopush_enabled == teammatesPushaway->GetBool())
-            teammatesPushaway->SetValue(!nopush_enabled);
+        if (teammatesPushaway)
+        {
+            if (*nopush_enabled == teammatesPushaway->GetBool())
+                teammatesPushaway->SetValue(!nopush_enabled);
+        }
     }
 }
 

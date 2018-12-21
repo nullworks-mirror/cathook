@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 if ! [ -d "/opt/cathook/data" ]; then
-	echo "Creating cathook data directory at /opt/cathook/data"
-	mkdir -p "/opt/cathook/data"
-	chown -R $USER "/opt/cathook/data"
-	chmod -R 777 "/opt/cathook/data"
+    echo "Creating cathook data directory at /opt/cathook/data"
+    mkdir -p "/opt/cathook/data"
+    chown -R $USER "/opt/cathook/data"
+    chmod -R 777 "/opt/cathook/data"
 fi
 
 echo "Installing cathook data to /opt/cathook/data"

@@ -12,6 +12,7 @@ public:
     void *GetModuleHandleSafe(const char *pszModuleName);
     uintptr_t GetClientSignature(const char *chPattern);
     uintptr_t GetEngineSignature(const char *chPattern);
+    uintptr_t GetSteamAPISignature(const char *chPattern);
     uintptr_t GetVstdSignature(const char *chPattern);
 };
 
