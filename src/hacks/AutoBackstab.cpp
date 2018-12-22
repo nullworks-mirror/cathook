@@ -113,6 +113,7 @@ static void doBacktrackStab()
         if (!hacks::shared::backtrack::ValidTick(i, ent))
             continue;
         Vector angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, i.hitboxes[spine_1].center);
+        angle.x = current_user_cmd->viewangles.x;
         if (!angleCheck(ent, i.entorigin, angle))
             return;
 

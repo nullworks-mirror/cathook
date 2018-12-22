@@ -1083,6 +1083,11 @@ bool VischeckPredictedEntity(CachedEntity *entity)
 {
     // Retrieve predicted data
     AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
+    if (shouldBacktrack() && !projectile_mode)
+    {
+        cd.visible = hacks::shared::backtrack::Vischeck_Success;
+        return hacks::shared::backtrack::Vischeck_Success;
+    }
     if (cd.vcheck_tick == tickcount)
     {
         if (!shouldBacktrack() || projectile_mode)
@@ -1091,10 +1096,7 @@ bool VischeckPredictedEntity(CachedEntity *entity)
 
     // Update info
     cd.vcheck_tick = tickcount;
-    if (!shouldBacktrack() || projectile_mode)
-        cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
-    else
-        cd.visible = hacks::shared::backtrack::Vischeck_Success;
+    cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
     return cd.visible;
 }
 

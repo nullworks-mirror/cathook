@@ -251,7 +251,10 @@ bool shouldBacktrack()
 
 float getLatency()
 {
-    return *latency;
+    auto ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
+    if (!ch)
+        return 0;
+    return *latency - ch->GetLatency(MAX_FLOWS);
 }
 
 int getTicks()
