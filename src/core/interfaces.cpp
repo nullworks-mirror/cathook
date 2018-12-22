@@ -120,25 +120,17 @@ void CreateInterfaces()
                                                                 "C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3");
         logging::Info("SteamAPI: 0x%08x", sig_steamapi);
         void **SteamAPI_engine = *reinterpret_cast<void ***>(sig_steamapi + 36);
-        logging::Info("A");
         g_ISteamFriends = reinterpret_cast<ISteamFriends *>(SteamAPI_engine[2]);
-        logging::Info("A");
     }
     if (g_ISteamFriends == nullptr)
     {
-        logging::Info("A");
         // FIXME SIGNATURE
         g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
-        logging::Info("A");
     }
-    logging::Info("B");
     //g_GlobalVars = **(reinterpret_cast<CGlobalVarsBase ***>((uintptr_t) 11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
     g_GlobalVars = **reinterpret_cast<CGlobalVarsBase ***>(gSignatures.GetClientSignature("8B 15 ? ? ? ? F3 0F 10 88 D0 08 00 00") + 2);
-    logging::Info("A");
     g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client());
-    logging::Info("A");
     g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
-    logging::Info("A");
     IF_GAME(IsTF2())
     {
         // g_IMoveHelper =

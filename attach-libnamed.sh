@@ -57,7 +57,6 @@ sudo gdb -n -q -batch \
      -ex "call \$dlopen(\"/lib/i386-linux-gnu/$FILENAME\", 1)" \
      -ex "call dlerror()" \
      -ex 'print (char *) $2' \
-     -ex "catch syscall exit exit_group" \
      -ex "detach" \
      -ex "quit"
 
