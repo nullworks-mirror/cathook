@@ -37,7 +37,6 @@ void *MainThread(void *arg)
     {
         hack::Think();
     }
-    logging::Info("Shutting down...");
     hack::Shutdown();
     logging::Shutdown();
     return nullptr;

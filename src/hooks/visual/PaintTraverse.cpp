@@ -107,18 +107,9 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     }*/
     if (no_reportlimit && !replaced)
     {
-        static unsigned char patch[] = { 0xB8, 0x01, 0x00, 0x00, 0x00 };
-        static uintptr_t report_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
-        if (report_addr)
-        {
-            uintptr_t topatch = report_addr + 0x75;
-            logging::Info("No Report limit: 0x%08x", report_addr);
-            static PatchClass no_report_limit((void *)topatch, (void* )patch, sizeof(patch));
-            no_report_limit.Patch();
-            replaced = true;
-        }
-        else
-            report_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+        static BytePatch no_report_limit(gSignatures.GetClientSignature, "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8", 0x75, { 0xB8, 0x01, 0x00, 0x00, 0x00 });
+        no_report_limit.Patch();
+        replaced = true;
     }
     if (pure_bypass)
     {

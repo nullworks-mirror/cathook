@@ -46,7 +46,7 @@ void logging::Info(const char *fmt, ...)
     fprintf(logging::handle, "%s", result);
     fflush(logging::handle);
 #if ENABLE_VISUALS
-    if (!hack::game_shutdown && g_ICvar)
+    if (!hack::shutdown)
     {
         if (*log_to_console)
             g_ICvar->ConsolePrintf("%s", result);

@@ -135,31 +135,6 @@ void PrintChat(const char *fmt, ...);
 
 void WhatIAmLookingAt(int *result_eindex, Vector *result_pos);
 
-class PatchClass
-{
-    uint64_t addr{ 0 };
-    uint64_t len{ 0 };
-    std::vector<unsigned char> patch_bytes;
-    std::vector<unsigned char> original;
-
-public:
-    ~PatchClass()
-    {
-        Shutdown();
-    }
-    PatchClass(void *address, void *patch, size_t length)
-    {
-        patch_bytes.reserve(length);
-        original.reserve(length);
-        memcpy((void *) &patch_bytes[0], patch, length);
-        memcpy((void *) &original[0], (void *) address, length);
-        len  = length;
-        addr = (uint64_t) address;
-    }
-    void Patch();
-    void Shutdown();
-};
-
 inline Vector GetAimAtAngles(Vector origin, Vector target)
 {
     Vector angles, tr;

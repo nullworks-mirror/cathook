@@ -98,6 +98,7 @@
 #include "reclasses/reclasses.hpp"
 #include <CNavFile.h>
 #include "HookTools.hpp"
+#include "bytepatch.hpp"
 
 #include "copypasted/Netvar.h"
 #include "copypasted/CSignature.h"

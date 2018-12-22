@@ -101,7 +101,7 @@ void CreateInterfaces()
         sp = g_ISteamClient->CreateSteamPipe();
     }
     logging::Info("Inited Steam Pipe");
-    GetHSteamUser_t func = (GetHSteamUser_t)(GetHSteamUser_t) dlsym(sharedobj::steamapi().lmap, "SteamAPI_GetHSteamUser");
+    GetHSteamUser_t func = reinterpret_cast<GetHSteamUser_t>(dlsym(sharedobj::steamapi().lmap, "SteamAPI_GetHSteamUser"));
     HSteamUser su        = func();
     if (!su)
     {
@@ -121,7 +121,7 @@ void CreateInterfaces()
         logging::Info("SteamAPI: 0x%08x", sig_steamapi);
         void **SteamAPI_engine = *reinterpret_cast<void ***>(sig_steamapi + 36);
         logging::Info("A");
-        g_ISteamFriends = (ISteamFriends *) (SteamAPI_engine[2]);
+        g_ISteamFriends = reinterpret_cast<ISteamFriends *>(SteamAPI_engine[2]);
         logging::Info("A");
     }
     if (g_ISteamFriends == nullptr)
