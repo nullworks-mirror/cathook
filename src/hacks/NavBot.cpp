@@ -402,13 +402,7 @@ static int GetBestSlot()
     switch (g_pLocalPlayer->clazz)
     {
     case tf_scout:
-    {
-        float nearest_dist = getNearestPlayerDistance().second;
-        if (nearest_dist < 1000)
-            return primary;
-        else
-            return secondary;
-    }
+        return primary;
     case tf_heavy:
         return primary;
     default:
