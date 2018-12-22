@@ -34,9 +34,9 @@ constexpr bot_class_config DIST_SNIPER{ 1000.0f, 1500.0f, 3000.0f };
 
 static void CreateMove()
 {
-    if (!init(false))
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !LOCAL_E->m_bAlivePlayer())
         return;
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+    if (!init(false))
         return;
     if (!nav::ReadyForCommands)
         wait_until_path.update();
@@ -442,7 +442,7 @@ static void updateSlot()
     }
 }
 
-static InitRoutine runinit([]() { EC::Register<EC::Paint>(CreateMove, "paint_killsay", EC::average); });
+static InitRoutine runinit([]() { EC::Register<EC::CreateMove>(CreateMove, "navbot", EC::average); });
 
 void change(settings::VariableBase<bool> &, bool)
 {
