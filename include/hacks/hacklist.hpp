@@ -25,8 +25,6 @@
 #include "AutoSticky.hpp"
 #include "AutoDetonator.hpp"
 #include "AntiCheat.hpp"
-#include "AutoDeadringer.hpp"
-#include "Bunnyhop.hpp"
 #include "SeedPrediction.hpp"
 #if ENABLE_VISUALS
 #include "Radar.hpp"
@@ -45,7 +43,6 @@
 #include "Achievement.hpp"
 #include "Spam.hpp"
 #include "NavBot.hpp"
-#include "Noisemaker.hpp"
 #include "FollowBot.hpp"
 #include "Announcer.hpp"
 #include "Killstreak.hpp"

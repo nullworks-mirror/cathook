@@ -146,7 +146,8 @@ void DoSlowAim(Vector &input_angle)
     fClampAngle(input_angle);
 }
 
-static void SandwichAim() {
+static void SandwichAim()
+{
     if (!*sandwichaim_enabled)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
@@ -190,7 +191,8 @@ static void SandwichAim() {
 static bool charge_aimbotted = false;
 static settings::Bool charge_aim{ "chargeaim.enable", "false" };
 static settings::Button charge_key{ "chargeaim.key", "<null>" };
-static void ChargeAimbot() {
+static void ChargeAimbot()
+{
     charge_aimbotted = false;
     if (!*charge_aim)
         return;
@@ -218,7 +220,8 @@ static void ChargeAimbot() {
 
 static settings::Bool charge_control{ "chargecontrol.enable", "false" };
 static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
-static void ChargeControl() {
+static void ChargeControl()
+{
     if (!*charge_control || charge_aimbotted)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
@@ -236,7 +239,8 @@ static void ChargeControl() {
 static settings::Bool autosapper_enabled("autosapper.enabled", "false");
 static settings::Bool autosapper_silent("autosapper.silent", "true");
 
-static void SapperAimbot() {
+static void SapperAimbot()
+{
     if (!autosapper_enabled)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !g_pLocalPlayer->holding_sapper)
@@ -274,11 +278,12 @@ static void SapperAimbot() {
     }
 }
 
-static void CreateMove(){
+static void CreateMove()
+{
     SandwichAim();
     ChargeAimbot();
     ChargeControl();
     SapperAimbot();
 }
 
-static InitRoutine init([](){EC::Register<EC::CreateMove>(CreateMove, "cm_miscaimbot", EC::late);});
+static InitRoutine init([]() { EC::Register<EC::CreateMove>(CreateMove, "cm_miscaimbot", EC::late); });

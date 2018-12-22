@@ -41,22 +41,12 @@ bool StolenName()
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
         {
-
-            // If our name is the same as current, than change it
-            if (std::string(info.name) == stolen_name)
-            {
-                // Since we found the ent we stole our name from and it is still
-                // good, if user settings are passive, then we return true and
-                // dont alter our name
-                if ((int) namesteal == 1)
-                {
-                    return true;
-                    // Otherwise we continue to change our name to something
-                    // else
-                }
-                else
-                    continue;
-            }
+            // Invisible character won't fit into name with max. length
+            if (std::strlen(info.name) >= 32)
+                continue;
+            // If our name is the same as current, then change it
+            if (stolen_name == info.name && *namesteal == 1)
+                return true;
 
             // a ent without a name is no ent we need, contine for a different
             // one
@@ -105,9 +95,7 @@ const char *GetNamestealName(CSteamID steam_id)
         if (namestr.length() > 3)
         {
             ReplaceString(namestr, "%%", std::to_string(ipc::peer->client_id));
-            ReplaceString(namestr, "\\n", "\n");
-            ReplaceString(namestr, "\\015", "\015");
-            ReplaceString(namestr, "\\u200F", "\u200F");
+            ReplaceSpecials(namestr);
             return namestr.c_str();
         }
     }
@@ -136,9 +124,7 @@ const char *GetNamestealName(CSteamID steam_id)
     if ((*force_name).size() > 1 && steam_id == g_ISteamUser->GetSteamID())
     {
         auto new_name = force_name.toString();
-        ReplaceString(new_name, "\\n", "\n");
-        ReplaceString(new_name, "\\015", "\015");
-        ReplaceString(new_name, "\\u200F", "\u200F");
+        ReplaceSpecials(new_name);
 
         return new_name.c_str();
     }
@@ -190,8 +176,6 @@ static void cm()
     }
 }
 
-static InitRoutine runinit([]() {
-    EC::Register<EC::CreateMove>(cm, "cm_namesteal", EC::late);
-});
+static InitRoutine runinit([]() { EC::Register<EC::CreateMove>(cm, "cm_namesteal", EC::late); });
 
 } // namespace hooked_methods

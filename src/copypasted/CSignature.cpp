@@ -216,6 +216,32 @@ uintptr_t CSignature::GetEngineSignature(const char *chPattern)
     return patr - (uintptr_t)(module) + moduleMap->l_addr;
 }
 //===================================================================================
+uintptr_t CSignature::GetSteamAPISignature(const char *chPattern)
+{
+    // we need to do this becuase (i assume that) under the hood, dlopen only
+    // loads up the sections that it needs into memory, meaning that we cannot
+    // get the string table from the module.
+    static int fd              = open(sharedobj::steamapi().path.c_str(), O_RDONLY);
+    static void *module        = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    static link_map *moduleMap = sharedobj::steamapi().lmap;
+
+    // static void *module = (void *)moduleMap->l_addr;
+
+    static Elf32_Shdr *textHeader = getSectionHeader(module, ".text");
+
+    static int textOffset = textHeader->sh_offset;
+
+    static int textSize = textHeader->sh_size;
+
+    // we need to remap the address that we got from the pattern search from our
+    // mapped file to the actual memory we do this by rebasing the address
+    // (subbing the mmapped one and adding the dlopened one.
+    uintptr_t patr = dwFindPattern(((uintptr_t) module) + textOffset, ((uintptr_t) module) + textOffset + textSize, chPattern);
+    if (!patr)
+        return NULL;
+    return patr - (uintptr_t)(module) + moduleMap->l_addr;
+}
+//===================================================================================
 uintptr_t CSignature::GetVstdSignature(const char *chPattern)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only

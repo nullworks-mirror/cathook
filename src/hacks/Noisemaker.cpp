@@ -13,9 +13,9 @@ static settings::Bool enable{ "noisemaker-spam.enable", "false" };
 namespace hacks::tf2::noisemaker
 {
 
-void CreateMove()
+static void CreateMove()
 {
-    if (enable)
+    if (enable && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
     {
         if (g_GlobalVars->framecount % 100 == 0)
         {
@@ -26,4 +26,5 @@ void CreateMove()
         }
     }
 }
+static InitRoutine EC([]() { EC::Register<EC::CreateMove>(CreateMove, "Noisemaker", EC::average); });
 } // namespace hacks::tf2::noisemaker

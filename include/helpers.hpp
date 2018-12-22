@@ -135,8 +135,6 @@ void PrintChat(const char *fmt, ...);
 
 void WhatIAmLookingAt(int *result_eindex, Vector *result_pos);
 
-void Patch(void *address, void *patch, size_t length);
-
 inline Vector GetAimAtAngles(Vector origin, Vector target)
 {
     Vector angles, tr;
@@ -173,6 +171,7 @@ void MakeVector(Vector ang, Vector &out);
 float GetFov(Vector ang, Vector src, Vector dst);
 
 void ReplaceString(std::string &input, const std::string &what, const std::string &with_what);
+void ReplaceSpecials(std::string &input);
 
 std::pair<float, float> ComputeMove(const Vector &a, const Vector &b);
 void WalkTo(const Vector &vector);

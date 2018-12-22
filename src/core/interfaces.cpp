@@ -7,6 +7,7 @@
 
 #include "common.hpp"
 #include "core/sharedobj.hpp"
+#include <thread>
 
 #include <unistd.h>
 
@@ -76,23 +77,41 @@ template <typename T> T *BruteforceInterface(std::string name, sharedobj::Shared
     return nullptr;
 }
 
+extern "C" typedef HSteamUser (*GetHSteamUser_t)();
+
 void CreateInterfaces()
 {
-    g_ICvar             = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
-    g_IEngine           = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
-    g_AppID             = g_IEngine->GetAppID();
-    g_IEntityList       = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
-    g_ISteamClient      = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);
-    g_IEventManager2    = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine(), 2);
-    g_IGameEventManager = BruteforceInterface<IGameEventManager>("GAMEEVENTSMANAGER", sharedobj::engine(), 1);
-    g_IBaseClient       = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
-    g_ITrace            = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine());
-    g_IInputSystem      = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem());
-    HSteamPipe sp       = g_ISteamClient->CreateSteamPipe();
-    HSteamUser su       = g_ISteamClient->ConnectToGlobalUser(sp);
-    g_IVModelRender     = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine(), 16);
-    g_ISteamFriends     = nullptr;
-    g_IEngineVGui       = BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
+    g_ICvar                 = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
+    g_IEngine               = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
+    g_AppID                 = g_IEngine->GetAppID();
+    g_IEntityList           = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
+    g_ISteamClient          = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);
+    g_IEventManager2        = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine(), 2);
+    g_IGameEventManager     = BruteforceInterface<IGameEventManager>("GAMEEVENTSMANAGER", sharedobj::engine(), 1);
+    g_IBaseClient           = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
+    g_ITrace                = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine());
+    g_IInputSystem          = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem());
+    uintptr_t steampipe_sig = gSignatures.GetSteamAPISignature("8D 83 ? ? ? ? 89 34 24 89 44 24 ? E8 ? ? ? ? 89 C6") + 0xE7;
+    typedef HSteamPipe (*GetSteamPipe)();
+    GetSteamPipe GetSteamPipe_fn = GetSteamPipe(steampipe_sig);
+    HSteamPipe sp                = GetSteamPipe_fn();
+    if (!sp)
+    {
+        logging::Info("Creating new Steam Pipe...");
+        sp = g_ISteamClient->CreateSteamPipe();
+    }
+    logging::Info("Inited Steam Pipe");
+    GetHSteamUser_t func = reinterpret_cast<GetHSteamUser_t>(dlsym(sharedobj::steamapi().lmap, "SteamAPI_GetHSteamUser"));
+    HSteamUser su        = func();
+    if (!su)
+    {
+        logging::Info("Connecting to Steam User");
+        g_ISteamClient->ConnectToGlobalUser(sp);
+    }
+    logging::Info("Inited Steam User");
+    g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine(), 16);
+    g_ISteamFriends = nullptr;
+    g_IEngineVGui   = BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
     IF_GAME(IsTF2())
     {
         uintptr_t sig_steamapi = gSignatures.GetEngineSignature("55 0F 57 C0 89 E5 83 EC 18 F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? "
@@ -101,15 +120,16 @@ void CreateInterfaces()
                                                                 "C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3");
         logging::Info("SteamAPI: 0x%08x", sig_steamapi);
         void **SteamAPI_engine = *reinterpret_cast<void ***>(sig_steamapi + 36);
-        g_ISteamFriends        = (ISteamFriends *) (SteamAPI_engine[2]); //
+        g_ISteamFriends = reinterpret_cast<ISteamFriends *>(SteamAPI_engine[2]);
     }
     if (g_ISteamFriends == nullptr)
     {
         // FIXME SIGNATURE
         g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
     }
-    g_GlobalVars    = **(reinterpret_cast<CGlobalVarsBase ***>((uintptr_t) 11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
-    g_IPrediction   = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client());
+    //g_GlobalVars = **(reinterpret_cast<CGlobalVarsBase ***>((uintptr_t) 11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
+    g_GlobalVars = **reinterpret_cast<CGlobalVarsBase ***>(gSignatures.GetClientSignature("8B 15 ? ? ? ? F3 0F 10 88 D0 08 00 00") + 2);
+    g_IPrediction = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client());
     g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
     IF_GAME(IsTF2())
     {

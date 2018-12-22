@@ -301,7 +301,8 @@ int GetMaxParty()
 CatCommand debug_maxparty("debug_partysize", "Debug party size", []() { logging::Info("%d", GetMaxParty()); });
 
 static Timer resize_party{};
-static void run() {
+static void run()
+{
     if (!restarting)
     {
         auto party_client  = re::CTFPartyClient::GTFPartyClient();

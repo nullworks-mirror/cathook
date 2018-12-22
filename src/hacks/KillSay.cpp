@@ -73,7 +73,8 @@ std::string ComposeKillSay(IGameEvent *event)
     lastmsg = msg;
     player_info_s info{};
     g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
-    ReplaceString(msg, "%name%", std::string(info.name));
+
+    ReplaceSpecials(msg);
     CachedEntity *ent = ENTITY(g_IEngine->GetPlayerForUserID(vid));
     int clz           = g_pPlayerResource->GetClass(ent);
     ReplaceString(msg, "%class%", tf_classes_killsay[clz]);
@@ -83,7 +84,7 @@ std::string ComposeKillSay(IGameEvent *event)
     ReplaceString(msg, "%team%", tf_teams_killsay[ent->m_iTeam() - 2]);
     ReplaceString(msg, "%myteam%", tf_teams_killsay[LOCAL_E->m_iTeam() - 2]);
     ReplaceString(msg, "%myclass%", tf_classes_killsay[g_pPlayerResource->GetClass(LOCAL_E)]);
-    ReplaceString(msg, "\\n", "\n");
+    ReplaceString(msg, "%name%", std::string(info.name));
     return msg;
 }
 
@@ -104,7 +105,8 @@ class KillSayEventListener : public IGameEventListener2
     }
 };
 
-static void ProcessKillsay() {
+static void ProcessKillsay()
+{
     if (killsay_storage.empty())
         return;
     for (auto &i : killsay_storage)
@@ -119,9 +121,7 @@ static void ProcessKillsay() {
     }
 }
 
-static InitRoutine runinit([](){
-    EC::Register<EC::Paint>(ProcessKillsay, "paint_killsay", EC::average);
-});
+static InitRoutine runinit([]() { EC::Register<EC::Paint>(ProcessKillsay, "paint_killsay", EC::average); });
 
 static KillSayEventListener listener{};
 

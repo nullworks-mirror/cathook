@@ -79,7 +79,7 @@ int BestTick    = 0;
 int iBestTarget = -1;
 bool istickvalid[32][66]{};
 bool istickinvalid[32][66]{};
-void Run()
+static void Run()
 {
     if (!shouldBacktrack())
     {
@@ -88,7 +88,7 @@ void Run()
     }
     isBacktrackEnabled = true;
 
-    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return;
     if (g_Settings.bInvalid)
         return;
@@ -167,7 +167,7 @@ void Run()
         }
     }
 }
-void Draw()
+static void Draw()
 {
 #if ENABLE_VISUALS
     if (!isBacktrackEnabled)
@@ -363,5 +363,10 @@ std::pair<int, int> getBestEntBestTick()
     }
     return std::make_pair(bestEnt, bestTick);
 }
-
+static InitRoutine EC([]() {
+    EC::Register<EC::CreateMove>(Run, "CM_Backtrack", EC::early);
+#if ENABLE_VISUALS
+    EC::Register<EC::Draw>(Draw, "DRAW_Backtrack", EC::average);
+#endif
+});
 } // namespace hacks::shared::backtrack

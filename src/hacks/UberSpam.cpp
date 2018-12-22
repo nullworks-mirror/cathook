@@ -56,8 +56,10 @@ int ChargePercentLineIndex(float chargef)
     return 3 + (charge / cpl);
 }
 
-void CreateMove()
+static void CreateMove()
 {
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+        return;
     if (!GetSource())
         return;
     if (LOCAL_W->m_iClassID() != CL_CLASS(CWeaponMedigun))
@@ -108,6 +110,7 @@ void CreateMove()
     last_charge        = (int) (100.0f * charge);
 }
 
+static InitRoutine register_EC([]() { EC::Register<EC::CreateMove>(CreateMove, "Uberspam", EC::priority::average); });
 // Ready, Used, Ended, %...
 
 const std::vector<std::string> builtin_cathook  = { "-> I am charged!", "-> Not a step back! UBERCHARGE USED!", "-> My Ubercharge comes to an end!", "-> I have %i%% of ubercharge!", "-> I have half of the ubercharge!", "-> Ubercharge almost ready! (%i%%)" };

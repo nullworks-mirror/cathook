@@ -22,7 +22,8 @@ rgba_t LightESPColor(CachedEntity *ent)
     return colors::green;
 }
 
-static void cm() {
+static void cm()
+{
     if (!*enable)
         return;
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
@@ -79,9 +80,11 @@ void draw()
     }
 }
 
-static InitRoutine init([](){
+static InitRoutine init([]() {
     EC::Register<EC::CreateMove>(cm, "cm_lightesp", EC::average);
+#if ENABLE_VISUALS
     EC::Register<EC::Draw>(draw, "draw_lightesp", EC::average);
+#endif
 });
 
 } // namespace hacks::shared::lightesp

@@ -8,17 +8,17 @@ line=$(pidof hl2_linux)
 arr=($line)
 inst=$1
 if [ $# == 0 ]; then
-  inst=0
+    inst=0
 fi
 
 if [ ${#arr[@]} == 0 ]; then
-  echo TF2 isn\'t running!
-  exit
+    echo TF2 isn\'t running!
+    exit
 fi
 
 if [ $inst -gt ${#arr[@]} ] || [ $inst == ${#arr[@]} ]; then
-  echo wrong index!
-  exit
+    echo wrong index!
+    exit
 fi
 
 proc=${arr[$inst]}
@@ -37,12 +37,12 @@ FILENAME=$(shuf -n 1 build_names)
 
 # Create directory if it doesn't exist
 if [ ! -d "/lib/i386-linux-gnu/" ]; then
-  sudo mkdir /lib/i386-linux-gnu/
+    sudo mkdir /lib/i386-linux-gnu/
 fi
 
 # In case this file exists, get another one. ( checked it works )
 while [ -f "/lib/i386-linux-gnu/${FILENAME}" ]; do
-  FILENAME=$(shuf -n 1 build_names)
+    FILENAME=$(shuf -n 1 build_names)
 done
 
 # echo $FILENAME > build_id # For detaching
@@ -52,13 +52,12 @@ sudo cp "bin/libcathook.so" "/lib/i386-linux-gnu/${FILENAME}"
 echo loading "$FILENAME" to "$proc"
 
 sudo gdb -n -q -batch \
-  -ex "attach $proc" \
-  -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
-  -ex "call \$dlopen(\"/lib/i386-linux-gnu/$FILENAME\", 1)" \
-  -ex "call dlerror()" \
-  -ex 'print (char *) $2' \
-  -ex "catch syscall exit exit_group" \
-  -ex "detach" \
-  -ex "quit"
+     -ex "attach $proc" \
+     -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
+     -ex "call \$dlopen(\"/lib/i386-linux-gnu/$FILENAME\", 1)" \
+     -ex "call dlerror()" \
+     -ex 'print (char *) $2' \
+     -ex "detach" \
+     -ex "quit"
 
 sudo rm "/lib/i386-linux-gnu/${FILENAME}"

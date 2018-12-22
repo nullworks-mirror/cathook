@@ -392,9 +392,9 @@ static void autoJump()
 
 enum slots
 {
-    primary = 1,
+    primary   = 1,
     secondary = 2,
-    melee = 3
+    melee     = 3
 };
 static int GetBestSlot()
 {
@@ -442,9 +442,7 @@ static void updateSlot()
     }
 }
 
-static InitRoutine runinit([](){
-    EC::Register<EC::Paint>(CreateMove, "paint_killsay", EC::average);
-});
+static InitRoutine runinit([]() { EC::Register<EC::Paint>(CreateMove, "paint_killsay", EC::average); });
 
 void change(settings::VariableBase<bool> &, bool)
 {

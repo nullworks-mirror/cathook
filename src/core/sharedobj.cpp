@@ -91,6 +91,7 @@ void LoadAllSharedObjects()
         steamclient().Load();
         client().Load();
         engine().Load();
+        steamapi().Load();
         vstdlib().Load();
         tier0().Load();
         inputsystem().Load();
@@ -111,6 +112,11 @@ void LoadAllSharedObjects()
 SharedObject &steamclient()
 {
     static SharedObject obj("steamclient.so", true);
+    return obj;
+}
+SharedObject &steamapi()
+{
+    static SharedObject obj("libsteam_api.so", false);
     return obj;
 }
 SharedObject &client()
@@ -164,5 +170,6 @@ SharedObject &libsdl()
     static SharedObject obj("libSDL2-2.0.so.0", false);
     return obj;
 }
+
 #endif
 } // namespace sharedobj

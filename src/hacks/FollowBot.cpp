@@ -188,7 +188,8 @@ Timer waittime{};
 int lastent = 0;
 
 #if ENABLE_IPC
-static void cm() {
+static void cm()
+{
     if (!enable)
     {
         follow_target = 0;
@@ -481,7 +482,7 @@ static void cm() {
         follow_dist += (float) additional_distance * ipc::peer->client_id;
     if (dist_to_target > follow_dist)
 #else
-        if (dist_to_target > (float) follow_distance)
+    if (dist_to_target > (float) follow_distance)
 #endif
     {
         // Check for jump
@@ -559,7 +560,8 @@ static void cm() {
 #endif
 
 #if ENABLE_VISUALS
-static void draw() {
+static void draw()
+{
     if (!enable || !draw_crumb)
         return;
     if (breadcrumbs.size() < 2)
@@ -580,7 +582,7 @@ static void draw() {
 }
 #endif
 
-static InitRoutine runinit([](){
+static InitRoutine runinit([]() {
 #if ENABLE_IPC
     EC::Register<EC::CreateMove>(cm, "cm_followbot", EC::average);
 #endif
@@ -588,7 +590,6 @@ static InitRoutine runinit([](){
     EC::Register<EC::Draw>(cm, "draw_followbot", EC::average);
 #endif
 });
-
 
 int getTarget()
 {

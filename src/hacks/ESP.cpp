@@ -234,7 +234,8 @@ static void Draw()
 }
 
 // Function called on create move
-static void cm() {
+static void cm()
+{
     // Check usersettings if enabled
     if (!*enable)
         return;
@@ -1444,10 +1445,11 @@ void SetEntityColor(CachedEntity *entity, const rgba_t &color)
     data[entity->m_IDX].color = color;
 }
 
-static InitRoutine init([](){
+static InitRoutine init([]() {
     EC::Register<EC::CreateMove>(cm, "cm_esp", EC::average);
+#if ENABLE_VISUALS
     EC::Register<EC::Draw>(Draw, "draw_esp", EC::average);
+#endif
 });
-
 
 } // namespace hacks::shared::esp

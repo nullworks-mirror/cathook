@@ -34,8 +34,8 @@
 
 // game_shutdown = Is full game shutdown or just detach
 bool hack::game_shutdown = true;
-bool hack::shutdown    = false;
-bool hack::initialized = false;
+bool hack::shutdown      = false;
+bool hack::initialized   = false;
 
 const std::string &hack::GetVersion()
 {
@@ -146,7 +146,7 @@ void critical_error_handler(int signum)
 void hack::Initialize()
 {
     ::signal(SIGSEGV, &critical_error_handler);
-    //::signal(SIGABRT, &my_signal_handler);
+    ::signal(SIGABRT, &critical_error_handler);
     time_injected = time(nullptr);
 /*passwd *pwd   = getpwuid(getuid());
 char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name,

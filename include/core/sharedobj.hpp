@@ -40,6 +40,7 @@ public:
 SharedObject &steamclient();
 SharedObject &client();
 SharedObject &engine();
+SharedObject &steamapi();
 SharedObject &vstdlib();
 SharedObject &tier0();
 SharedObject &inputsystem();

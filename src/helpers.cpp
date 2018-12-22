@@ -475,6 +475,14 @@ void ReplaceString(std::string &input, const std::string &what, const std::strin
     }
 }
 
+void ReplaceSpecials(std::string &input)
+{
+    ReplaceString(input, "\\015", "\015");
+    ReplaceString(input, "\\n", "\n");
+    ReplaceString(input, "\\r", "\r");
+    ReplaceString(input, "\\u200F", "\u200F");
+}
+
 powerup_type GetPowerupOnPlayer(CachedEntity *player)
 {
     if (CE_BAD(player))
@@ -848,14 +856,6 @@ float DistToSqr(CachedEntity *entity)
     if (CE_BAD(entity))
         return 0.0f;
     return g_pLocalPlayer->v_Origin.DistToSqr(entity->m_vecOrigin());
-}
-
-void Patch(void *address, void *patch, size_t length)
-{
-    void *page = (void *) ((uint64_t) address & ~0xFFF);
-    logging::Info("mprotect: %d", mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC));
-    memcpy(address, patch, length);
-    logging::Info("mprotect reverse: %d", mprotect(page, 0xFFF, PROT_EXEC));
 }
 
 bool IsProjectileCrit(CachedEntity *ent)

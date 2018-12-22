@@ -66,18 +66,16 @@ void Paint()
 {
     if (!wait_timer.test_and_set(1000))
         return;
-    INetChannel *server = (INetChannel *)g_IEngine->GetNetChannelInfo();
+    INetChannel *server = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (server)
         reset_it.update();
     if (reset_it.test_and_set(20000))
     {
         anti_balance_attempts = 0;
-        previous_name = "";
+        previous_name         = "";
     }
 }
-static InitRoutine Autobalance([](){
-    EC::Register<EC::Paint>(Paint, "paint_autobalance", EC::average);
-});
+static InitRoutine Autobalance([]() { EC::Register<EC::Paint>(Paint, "paint_autobalance", EC::average); });
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &buf)
 {
     if (!isHackActive())
@@ -110,15 +108,15 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
     case 5:
         if (*anti_votekick && buf.GetNumBytesLeft() > 35)
         {
-            INetChannel *server = (INetChannel *)g_IEngine->GetNetChannelInfo();
-            data = std::string(buf_data);
+            INetChannel *server = (INetChannel *) g_IEngine->GetNetChannelInfo();
+            data                = std::string(buf_data);
             logging::Info("%s", data.c_str());
             if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
             {
                 std::string server_name = server->GetName();
                 if (server_name != previous_name)
                 {
-                    previous_name = server_name;
+                    previous_name         = server_name;
                     anti_balance_attempts = 0;
                 }
                 if (anti_balance_attempts < 2)
@@ -225,7 +223,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         }
         if (crypt_chat && message.find("!!B") == 0 && ucccccp::validate(message))
         {
-            std::string msg = ucccccp::decrypt(message);
+            std::string msg   = ucccccp::decrypt(message);
             CachedEntity *ent = ENTITY(data[0]);
             if (msg != "Attempt at ucccccping and failing" && msg != "Unsupported version" && ent != LOCAL_E)
             {
