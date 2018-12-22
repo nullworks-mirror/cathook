@@ -649,9 +649,9 @@ static void drawcrumbs()
 #endif
 
 static InitRoutine runinit([]() {
-    EC::Register<EC::CreateMove>(cm, "cm_navparser", EC::late);
+    EC::Register<EC::CreateMove>(cm, "cm_navparser", EC::average);
 #if ENABLE_VISUALS
-    EC::Register<EC::Draw>(drawcrumbs, "Paint_navparser", EC::average);
+    EC::Register<EC::Draw>(drawcrumbs, "draw_navparser", EC::average);
 #endif
 });
 
