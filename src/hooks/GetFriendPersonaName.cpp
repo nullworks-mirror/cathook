@@ -116,7 +116,7 @@ const char *GetNamestealName(CSteamID steam_id)
             {
 
                 // Return the name that has changed from the func above
-                return format(stolen_name, "\015").c_str();
+                return format(stolen_name, "\e").c_str();
             }
         }
     }

@@ -177,14 +177,21 @@ Timer level_init_timer{};
 
 Timer micspam_on_timer{};
 Timer micspam_off_timer{};
-
+static bool patched_report;
 void reportall()
 {
     typedef uint64_t (*ReportPlayer_t)(uint64_t, int);
     static uintptr_t addr2         = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
-    ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr2);
+    static ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr2);
     if (!addr2)
         return;
+    if (!patched_report)
+    {
+        static uintptr_t addr2 = gSignatures.GetClientSignature("73 ? 80 7D ? ? 74 ? F3 0F 10 0D") +0x2F;
+        static unsigned char patch[] = { 0x89, 0xe0 };
+        Patch((void *)addr2, (void *)patch, sizeof(patch));
+        patched_report = true;
+    }
     player_info_s local;
     g_IEngine->GetPlayerInfo(g_pLocalPlayer->entity_idx, &local);
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
