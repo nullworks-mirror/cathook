@@ -187,7 +187,7 @@ void reportall()
         return;
     if (!patched_report)
     {
-        BytePatch patch(gSignatures.GetClientSignature, "73 ? 80 7D ? ? 74 ? F3 0F 10 0D", 0x2F, { 0x89, 0xe0 });
+        static BytePatch patch(gSignatures.GetClientSignature, "73 ? 80 7D ? ? 74 ? F3 0F 10 0D", 0x2F, { 0x89, 0xe0 });
         patch.Patch();
         patched_report = true;
     }
