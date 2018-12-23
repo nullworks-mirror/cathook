@@ -16,7 +16,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/AutoBackstab.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AutoDeadringer.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AutoDetonator.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/AutoEquip.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AutoHeal.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AutoReflect.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/AutoSticky.cpp"

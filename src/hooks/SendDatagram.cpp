@@ -10,7 +10,7 @@ namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
 {
-    if (!round(hacks::shared::backtrack::getLatency()))
+    if (!round(*hacks::shared::backtrack::latency))
         return original::SendDatagram(ch, buf);
     int in    = 0;
     int state = 0;
@@ -18,9 +18,7 @@ DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
     {
         in    = ch->m_nInSequenceNr;
         state = ch->m_nInReliableState;
-
-        float latencysend = round((round((hacks::shared::backtrack::getLatency() - 0.5f) / 15.1515151515f) - 0.5f) * 15.1515151515f);
-        hacks::shared::backtrack::AddLatencyToNetchan(ch, latencysend);
+        hacks::shared::backtrack::AddLatencyToNetchan(ch);
     }
 
     int ret = original::SendDatagram(ch, buf);
