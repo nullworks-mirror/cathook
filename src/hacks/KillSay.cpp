@@ -5,7 +5,6 @@
  *      Author: nullifiedcat
  */
 
-#include <hacks/KillSay.hpp>
 #include <settings/Int.hpp>
 #include "common.hpp"
 
@@ -22,15 +21,51 @@ struct KillsayStorage
 
 static std::unordered_map<int, KillsayStorage> killsay_storage{};
 
-static CatCommand reload_command("killsay_reload", "Reload killsays", []() { hacks::shared::killsay::reload(); });
-
 namespace hacks::shared::killsay
 {
 
+// Thanks HellJustFroze for linking me http://daviseford.com/shittalk/
+const std::vector<std::string> builtin_default = { "Don't worry guys, I'm a garbage collector. I'm used to carrying trash.",
+                                                   "%name% is the human equivalent of a participation award.",
+                                                   "I would insult %name%, but nature did a better job.",
+                                                   "%name%, perhaps your strategy should include trying.",
+                                                   "Some people get paid to suck, you do it for free, %name%.",
+                                                   "%name%, I'd tell you to commit suicide, but then you'd have a kill.",
+                                                   "You must really like that respawn timer, %name%.",
+
+                                                   "If your main is %class%, you should give up.",
+                                                   "Hey %name%, i see you can't play %class%. Try quitting the game.",
+                                                   "%team% is filled with spergs",
+                                                   "%name%@gmail.com to vacreview@valvesoftware.com\nFOUND CHEATER",
+                                                   "\n☐ Not rekt\n ☑ Rekt\n ☑ Really Rekt\n ☑ Tyrannosaurus Rekt" };
+
+const std::vector<std::string> builtin_nonecore_offensive = { "%name%, you are noob.",
+                                                              "%name%, do you even lift?",
+                                                              "%name%, you're a faggot.",
+                                                              "%name%, stop cheating.",
+                                                              "%name%: Mom, call the police - I've got headshoted again!",
+                                                              "Right into your face, %name%.",
+                                                              "Into your face, pal.",
+                                                              "Keep crying, baby.",
+                                                              "Faggot. Noob.",
+                                                              "You are dead, not big surprise.",
+                                                              "Sit down nerd.",
+                                                              "Fuck you with a rake.",
+                                                              "Eat a man spear, you Jamaican manure salesman.",
+                                                              "Wallow in a river of cocks, you pathetic bitch.",
+                                                              "I will go to heaven and you will be in prison.",
+                                                              "Piss off, you poor, ignorant, mullet-wearing porch monkey.",
+                                                              "Your Mom says your turn-ons consist of butthole licking and scat porn.",
+                                                              "Shut up, you'll never be the man your mother is.",
+                                                              "It looks like your face caught on fire and someone tried to put it out "
+                                                              "with a fork.",
+                                                              "You're so ugly Hello Kitty said goodbye to you.",
+                                                              "Don't you love nature, despite what it did to you?"
+
+};
+const std::vector<std::string> builtin_nonecore_mlg = { "GET REKT U SCRUB", "GET REKT M8", "U GOT NOSCOPED M8", "U GOT QUICKSCOPED M8", "2 FAST 4 U, SCRUB", "U GOT REKT, M8" };
 const std::string tf_classes_killsay[] = { "class", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
-
 const std::string tf_teams_killsay[] = { "RED", "BLU" };
-
 static std::string lastmsg{};
 
 TextFile file{};
@@ -121,14 +156,14 @@ static void ProcessKillsay()
     }
 }
 
-static InitRoutine runinit([]() { EC::Register<EC::Paint>(ProcessKillsay, "paint_killsay", EC::average); });
-
 static KillSayEventListener listener{};
 
 void reload()
 {
     file.Load(*filename);
 }
+
+static CatCommand reload_command("killsay_reload", "Reload killsays", []() { reload(); });
 
 void init()
 {
@@ -140,44 +175,10 @@ void shutdown()
     g_IEventManager2->RemoveListener(&listener);
 }
 
-// Thanks HellJustFroze for linking me http://daviseford.com/shittalk/
-const std::vector<std::string> builtin_default = { "Don't worry guys, I'm a garbage collector. I'm used to carrying trash.",
-                                                   "%name% is the human equivalent of a participation award.",
-                                                   "I would insult %name%, but nature did a better job.",
-                                                   "%name%, perhaps your strategy should include trying.",
-                                                   "Some people get paid to suck, you do it for free, %name%.",
-                                                   "%name%, I'd tell you to commit suicide, but then you'd have a kill.",
-                                                   "You must really like that respawn timer, %name%.",
+static InitRoutine runinit([]() {
+    EC::Register(EC::Paint, ProcessKillsay, "paint_killsay", EC::average);
+    EC::Register(EC::Init, init, "init_killsay", EC::average);
+    EC::Register(EC::Shutdown, shutdown, "shutdown_killsay", EC::average);
+});
 
-                                                   "If your main is %class%, you should give up.",
-                                                   "Hey %name%, i see you can't play %class%. Try quitting the game.",
-                                                   "%team% is filled with spergs",
-                                                   "%name%@gmail.com to vacreview@valvesoftware.com\nFOUND CHEATER",
-                                                   "\n☐ Not rekt\n ☑ Rekt\n ☑ Really Rekt\n ☑ Tyrannosaurus Rekt" };
-
-const std::vector<std::string> builtin_nonecore_offensive = { "%name%, you are noob.",
-                                                              "%name%, do you even lift?",
-                                                              "%name%, you're a faggot.",
-                                                              "%name%, stop cheating.",
-                                                              "%name%: Mom, call the police - I've got headshoted again!",
-                                                              "Right into your face, %name%.",
-                                                              "Into your face, pal.",
-                                                              "Keep crying, baby.",
-                                                              "Faggot. Noob.",
-                                                              "You are dead, not big surprise.",
-                                                              "Sit down nerd.",
-                                                              "Fuck you with a rake.",
-                                                              "Eat a man spear, you Jamaican manure salesman.",
-                                                              "Wallow in a river of cocks, you pathetic bitch.",
-                                                              "I will go to heaven and you will be in prison.",
-                                                              "Piss off, you poor, ignorant, mullet-wearing porch monkey.",
-                                                              "Your Mom says your turn-ons consist of butthole licking and scat porn.",
-                                                              "Shut up, you'll never be the man your mother is.",
-                                                              "It looks like your face caught on fire and someone tried to put it out "
-                                                              "with a fork.",
-                                                              "You're so ugly Hello Kitty said goodbye to you.",
-                                                              "Don't you love nature, despite what it did to you?"
-
-};
-const std::vector<std::string> builtin_nonecore_mlg = { "GET REKT U SCRUB", "GET REKT M8", "U GOT NOSCOPED M8", "U GOT QUICKSCOPED M8", "2 FAST 4 U, SCRUB", "U GOT REKT, M8" };
 } // namespace hacks::shared::killsay

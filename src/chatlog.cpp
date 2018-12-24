@@ -14,7 +14,9 @@
 #include <settings/Bool.hpp>
 
 static settings::Bool enable{ "chat-log.enable", "false" };
+#ifdef SPAM_HACK
 static settings::Bool no_spam{ "chat-log.no-spam", "true" };
+#endif
 static settings::Bool no_ipc{ "chat-log.no-ipc", "true" };
 
 namespace chatlog
@@ -108,8 +110,10 @@ void LogMessage(int eid, std::string message)
     {
         return;
     }
+#ifdef SPAM_HACK
     if (no_spam && hacks::shared::spam::isActive() and eid == g_IEngine->GetLocalPlayer())
         return;
+#endif
     player_info_s info{};
     if (not g_IEngine->GetPlayerInfo(eid, &info))
         return;

@@ -626,4 +626,8 @@ bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector &Hit)
 void Draw()
 {
 }
+
+static InitRoutine EC([]() {
+    EC::Register(EC::CreateMove, CreateMove, "triggerbot", EC::average);
+});
 } // namespace hacks::shared::triggerbot

@@ -14,7 +14,12 @@ enum ec_types : int8_t
     Draw,
 #endif
     Paint,
-    LevelInit
+    LevelInit,
+    /* TO DO: Should we permanently store Init events ? They are used only once */
+    Init,
+    Shutdown,
+    /* Append new event above this line. Line below declares amount of events */
+    EcTypesSize
 };
 
 enum priority : int8_t

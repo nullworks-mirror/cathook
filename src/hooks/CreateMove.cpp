@@ -311,25 +311,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             }
             IF_GAME(IsTF())
             {
-                PROF_SECTION(CM_autosticky);
-                hacks::tf::autosticky::CreateMove();
-            }
-            IF_GAME(IsTF())
-            {
-                PROF_SECTION(CM_autodetonator);
-                hacks::tf::autodetonator::CreateMove();
-            }
-            IF_GAME(IsTF())
-            {
-                PROF_SECTION(CM_autoreflect);
-                hacks::tf::autoreflect::CreateMove();
-            }
-            {
-                PROF_SECTION(CM_triggerbot);
-                hacks::shared::triggerbot::CreateMove();
-            }
-            IF_GAME(IsTF())
-            {
                 PROF_SECTION(CM_autoheal);
                 hacks::tf::autoheal::CreateMove();
             }
@@ -350,14 +331,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         {
             PROF_SECTION(CM_misc);
             hacks::shared::misc::CreateMove();
-        }
-        {
-            PROF_SECTION(CM_crits);
-            criticals::create_move();
-        }
-        {
-            PROF_SECTION(CM_spam);
-            hacks::shared::spam::createMove();
         }
         {
             PROF_SECTION(CM_AC);

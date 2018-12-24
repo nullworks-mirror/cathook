@@ -6,7 +6,6 @@
 #include <settings/Registered.hpp>
 #include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"
-#include "hacks/Radar.hpp"
 #include "CatBot.hpp"
 
 static settings::Bool pure_bypass{ "visual.sv-pure-bypass", "false" };

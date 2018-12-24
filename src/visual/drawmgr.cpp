@@ -192,35 +192,9 @@ void DrawCheatVisuals()
             PROF_SECTION(DRAW_skinchanger);
             hacks::tf2::skinchanger::DrawText();
         }
-#ifndef FEATURE_RADAR_DISABLED
-        IF_GAME(IsTF())
-        {
-            PROF_SECTION(DRAW_radar);
-            hacks::tf::radar::Draw();
-        }
-#endif
-        IF_GAME(IsTF())
-        {
-            PROF_SECTION(DRAW_autoreflect);
-            hacks::tf::autoreflect::Draw();
-        }
         {
             PROF_SECTION(DRAW_walkbot);
             hacks::shared::walkbot::Draw();
-        }
-        IF_GAME(IsTF())
-        {
-            PROF_SECTION(PT_antidisguise);
-            hacks::tf2::antidisguise::Draw();
-        }
-        IF_GAME(IsTF())
-        {
-            PROF_SECTION(PT_spyalert);
-            hacks::tf::spyalert::Draw();
-        }
-        IF_GAME(IsTF2())
-        {
-            criticals::draw();
         }
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
         DrawSpinner();

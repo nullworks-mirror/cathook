@@ -6,7 +6,6 @@
  */
 
 #include "common.hpp"
-#include <hacks/AutoReflect.hpp>
 #if ENABLE_VISUALS
 #include <glez/draw.hpp>
 #endif
@@ -28,6 +27,55 @@ static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity", "0.7" 
 
 namespace hacks::tf::autoreflect
 {
+
+bool IsEntStickyBomb(CachedEntity *ent)
+{
+    // Check if the projectile is a sticky bomb
+    if (ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
+    {
+        if (CE_INT(ent, netvar.iPipeType) == 1)
+        {
+            // Ent passed and should be reflected
+            return true;
+        }
+    }
+    // Ent didnt pass the test so return false
+    return false;
+}
+
+// Function to determine whether an ent is good to reflect
+bool ShouldReflect(CachedEntity *ent)
+{
+    // Check if the entity is a projectile
+    if (ent->m_Type() != ENTITY_PROJECTILE)
+        return false;
+
+    if (!teammates)
+    {
+        // Check if the projectile is your own teams
+        if (!ent->m_bEnemy())
+            return false;
+    }
+
+    // We dont want to do these checks in dodgeball, it breakes if we do
+    if (!dodgeball)
+    {
+        // If projectile is already deflected, don't deflect it again.
+        if (CE_INT(ent, (ent->m_bGrenadeProjectile() ?
+                                                     /* NetVar for grenades */ netvar.Grenade_iDeflected
+                                                     :
+                                                     /* For rockets */ netvar.Rocket_iDeflected)))
+            return false;
+    }
+
+    // Check if the projectile is a sticky bomb and if the user settings allow
+    // it to be reflected
+    if (IsEntStickyBomb(ent) && !stickies)
+        return false;
+
+    // Target passed the test, return true
+    return true;
+}
 
 // Function called by game for movement
 void CreateMove()
@@ -129,54 +177,6 @@ void CreateMove()
     current_user_cmd->buttons |= IN_ATTACK2;
 }
 
-// Function to determine whether an ent is good to reflect
-bool ShouldReflect(CachedEntity *ent)
-{
-    // Check if the entity is a projectile
-    if (ent->m_Type() != ENTITY_PROJECTILE)
-        return false;
-
-    if (!teammates)
-    {
-        // Check if the projectile is your own teams
-        if (!ent->m_bEnemy())
-            return false;
-    }
-
-    // We dont want to do these checks in dodgeball, it breakes if we do
-    if (!dodgeball)
-    {
-        // If projectile is already deflected, don't deflect it again.
-        if (CE_INT(ent, (ent->m_bGrenadeProjectile() ?
-                                                     /* NetVar for grenades */ netvar.Grenade_iDeflected
-                                                     :
-                                                     /* For rockets */ netvar.Rocket_iDeflected)))
-            return false;
-    }
-
-    // Check if the projectile is a sticky bomb and if the user settings allow
-    // it to be reflected
-    if (IsEntStickyBomb(ent) && !stickies)
-        return false;
-
-    // Target passed the test, return true
-    return true;
-}
-
-bool IsEntStickyBomb(CachedEntity *ent)
-{
-    // Check if the projectile is a sticky bomb
-    if (ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
-    {
-        if (CE_INT(ent, netvar.iPipeType) == 1)
-        {
-            // Ent passed and should be reflected
-            return true;
-        }
-    }
-    // Ent didnt pass the test so return false
-    return false;
-}
 void Draw()
 {
 #if ENABLE_VISUALS
@@ -213,4 +213,11 @@ void Draw()
     }
 #endif
 }
+
+static InitRoutine EC([]() {
+    EC::Register(EC::CreateMove, CreateMove, "auto_reflect", EC::average);
+#if ENABLE_VISUALS
+    EC::Register(EC::Draw, Draw, "auto_reflect", EC::average);
+#endif
+});
 } // namespace hacks::tf::autoreflect

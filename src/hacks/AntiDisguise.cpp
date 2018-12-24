@@ -48,4 +48,8 @@ void Draw()
         }
     }
 }
+
+static InitRoutine EC([]() {
+    EC::Register(EC::Draw, Draw, "antidisguise", EC::average);
+});
 } // namespace hacks::tf2::antidisguise

@@ -160,4 +160,9 @@ void shutdown()
 {
     g_IEventManager2->RemoveListener(&listener());
 }
+
+static InitRoutine EC([]() {
+    EC::Register(EC::Init, init, "init_announcer", EC::average);
+    EC::Register(EC::Shutdown, shutdown, "shutdown_announcer", EC::average);
+});
 } // namespace hacks::shared::announcer

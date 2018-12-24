@@ -292,11 +292,7 @@ free(logname);*/
     }
 #endif
     // FIXME [MP]
-    hacks::shared::killsay::init();
-    hacks::shared::dominatesay::init();
-    hacks::shared::announcer::init();
-    hacks::tf2::killstreak::init();
-    hacks::shared::catbot::init();
+    EC::run(EC::Init);
     logging::Info("Hooked!");
     velocity::Init();
     playerlist::Load();
@@ -324,9 +320,7 @@ free(logname);*/
     InitSpinner();
     logging::Info("Initialized Fidget Spinner");
 #endif
-    hacks::shared::spam::init();
 #endif
-    hacks::shared::walkbot::Initialize();
 #if ENABLE_VISUALS
     hacks::shared::esp::Init();
 #endif
@@ -380,9 +374,7 @@ void hack::Shutdown()
     logging::Info("Shutting down killsay...");
     if (!hack::game_shutdown)
     {
-        hacks::shared::killsay::shutdown();
-        hacks::shared::dominatesay::shutdown();
-        hacks::shared::announcer::shutdown();
+        EC::run(EC::Shutdown);
 #if ENABLE_VISUALS
         g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_glow");
         g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_chams");
