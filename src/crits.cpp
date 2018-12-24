@@ -256,3 +256,10 @@ void crithack_saved_state::Save(IClientEntity *entity)
     seed2876    = *(int *) (uintptr_t(entity) + 2876);
     unknown2839 = *(char *) (uintptr_t(entity) + 2839);
 }
+
+static InitRoutine init([](){
+    EC::Register(EC::CreateMove, criticals::create_move, "cm_crits", EC::very_late);
+#if ENABLE_VISUALS
+    EC::Register(EC::Draw, criticals::draw, "draw_crits");
+#endif
+});

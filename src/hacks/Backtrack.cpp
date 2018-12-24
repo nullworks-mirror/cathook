@@ -78,7 +78,7 @@ void Init()
             EmptyBacktrackData(headPositions[i][j]);
 }
 
-int BestTick    = 0;
+int BestTick    = -1;
 int iBestTarget = -1;
 bool istickvalid[32][66]{};
 bool istickinvalid[32][66]{};

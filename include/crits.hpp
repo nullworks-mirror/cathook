@@ -28,8 +28,6 @@ struct crithack_saved_state
 namespace criticals
 {
 
-void create_move();
-void draw();
 bool random_crits_enabled();
 } // namespace criticals
 
