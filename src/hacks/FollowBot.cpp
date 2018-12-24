@@ -587,7 +587,7 @@ static InitRoutine runinit([]() {
     EC::Register<EC::CreateMove>(cm, "cm_followbot", EC::average);
 #endif
 #if ENABLE_VISUALS
-    EC::Register<EC::Draw>(cm, "draw_followbot", EC::average);
+    EC::Register(EC::Draw, draw, "draw_followbot", EC::average);
 #endif
 });
 
