@@ -64,10 +64,6 @@ double getRandom(double lower_bound, double upper_bound)
 void DrawCheatVisuals()
 {
     {
-        PROF_SECTION(DRAW_misc);
-        hacks::shared::misc::DrawText();
-    }
-    {
         PROF_SECTION(DRAW_info);
         std::string name_s, reason_s;
         PROF_SECTION(PT_info_text);

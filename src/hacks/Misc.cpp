@@ -430,7 +430,7 @@ void Schema_Reload()
     logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
 }
 CatCommand schema("schema", "Load custom schema", Schema_Reload);
-
+*/
 CatCommand name("name_set", "Immediate name change", [](const CCommand &args) {
     if (args.ArgC() < 2)
     {

@@ -436,7 +436,7 @@ static void updateSlot()
     }
 }
 
-static InitRoutine runinit([]() { EC::Register<EC::CreateMove>(CreateMove, "navbot", EC::early); });
+static InitRoutine runinit([]() { EC::Register(EC::CreateMove, CreateMove, "navbot", EC::early); });
 
 void change(settings::VariableBase<bool> &, bool)
 {
