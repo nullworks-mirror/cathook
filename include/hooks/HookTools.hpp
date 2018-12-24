@@ -3,13 +3,19 @@
 #include "core/profiler.hpp"
 #include "functional"
 #include <set>
+#include <array>
 
 namespace EC
 {
 
-enum ec_types : int8_t
+enum ec_types
 {
+    /* Note: engine prediction is run on this kind of CreateMove */
     CreateMove = 0,
+    /* This kind of CreateMove will run earlier than all CreateMove events
+     * and guranteed to run before EnginePrediction
+     */
+    CreateMove_NoEnginePred,
 #if ENABLE_VISUALS
     Draw,
 #endif
@@ -21,7 +27,7 @@ enum ec_types : int8_t
     EcTypesSize
 };
 
-enum priority : int8_t
+enum ec_priority
 {
     very_early = -2,
     early,

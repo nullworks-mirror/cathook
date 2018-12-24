@@ -1284,7 +1284,7 @@ static InitRoutine EC([]() {
     EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "CM_Aimbot", EC::average);
 #if ENABLE_VISUALS
-    EC::Register<EC::Draw>(DrawText, "DRAW_Aimbot", EC::average);
+    EC::Register(EC::Draw, DrawText, "DRAW_Aimbot", EC::average);
 #endif
 });
 } // namespace hacks::shared::aimbot

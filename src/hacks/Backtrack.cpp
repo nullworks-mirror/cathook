@@ -358,7 +358,7 @@ static InitRoutine EC([]() {
     EC::Register(EC::LevelInit, Init, "INIT_Backtrack", EC::average);
     EC::Register(EC::CreateMove, Run, "CM_Backtrack", EC::early);
 #if ENABLE_VISUALS
-    EC::Register<EC::Draw>(Draw, "DRAW_Backtrack", EC::average);
+    EC::Register(EC::Draw, Draw, "DRAW_Backtrack", EC::average);
 #endif
 });
 } // namespace hacks::shared::backtrack

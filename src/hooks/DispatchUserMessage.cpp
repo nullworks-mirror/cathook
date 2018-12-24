@@ -75,7 +75,7 @@ void Paint()
         previous_name         = "";
     }
 }
-static InitRoutine Autobalance([]() { EC::Register<EC::Paint>(Paint, "paint_autobalance", EC::average); });
+static InitRoutine Autobalance([]() { EC::Register(EC::Paint, Paint, "paint_autobalance", EC::average); });
 DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &buf)
 {
     if (!isHackActive())

@@ -3,16 +3,43 @@
 
 namespace EC
 {
-// Ordered set to always keep priorities correct
-std::multiset<EventCallbackData<CreateMove>> createmoves;
-#if ENABLE_VISUALS
-std::multiset<EventCallbackData<Draw>> draws;
-#endif
-std::multiset<EventCallbackData<Paint>> paints;
-std::multiset<EventCallbackData<LevelInit>> levelinits;
 
-template <typename t> inline void run(t &set)
+struct EventCallbackData
 {
+    explicit EventCallbackData(const EventFunction &function, std::string name, enum ec_priority priority) : function{ function }, priority{ int(priority) }, event_name{ name }, section{ name }
+    {
+    }
+    EventFunction function;
+    int priority;
+    mutable ProfilerSection section;
+    std::string event_name;
+    bool operator<(const EventCallbackData &other) const
+    {
+        return priority < other.priority;
+    }
+};
+// Ordered set to always keep priorities correct
+static std::multiset<EventCallbackData> events[ec_types::EcTypesSize];
+
+void Register(enum ec_types type, const EventFunction &function, const std::string &name, enum ec_priority priority)
+{
+    events[type].insert(EventCallbackData(function, name, priority));
+}
+
+void Unregister(enum ec_types type, const std::string &name)
+{
+    auto &e = events[type];
+    for (auto it = e.begin(); it != e.end(); ++it)
+        if (it->event_name == name)
+        {
+            e.erase(it);
+            break;
+        }
+}
+
+void run(ec_types type)
+{
+    const auto &set = events[type];
     for (auto &i : set)
     {
 #if ENABLE_PROFILER
@@ -20,26 +47,6 @@ template <typename t> inline void run(t &set)
 #endif
         i.function();
     }
-}
-
-void RunCreateMove()
-{
-    run(createmoves);
-}
-#if ENABLE_VISUALS
-void RunDraw()
-{
-    run(draws);
-}
-#endif
-void RunPaint()
-{
-    run(paints);
-}
-
-void RunLevelInit()
-{
-    run(levelinits);
 }
 
 } // namespace EC

@@ -1446,7 +1446,7 @@ void SetEntityColor(CachedEntity *entity, const rgba_t &color)
 }
 
 static InitRoutine init([]() {
-    EC::Register<EC::CreateMove>(cm, "cm_esp", EC::average);
+    EC::Register(EC::CreateMove, cm, "cm_esp", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, Draw, "draw_esp", EC::average);
     Init();

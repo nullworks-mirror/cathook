@@ -80,7 +80,7 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
         render_cheat_visuals();
 #endif
         // Call all paint functions
-        EC::RunPaint();
+        EC::run(EC::Paint);
     }
 
     return original::Paint(this_, mode);

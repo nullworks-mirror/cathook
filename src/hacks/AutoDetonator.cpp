@@ -126,4 +126,8 @@ void CreateMove()
     // End of function, just return
     return;
 }
+
+static InitRoutine EC([]() {
+   EC::Register(EC::CreateMove, CreateMove, "auto_detonator", EC::average);
+});
 } // namespace hacks::tf::autodetonator

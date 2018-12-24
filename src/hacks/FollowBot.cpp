@@ -584,7 +584,7 @@ static void draw()
 
 static InitRoutine runinit([]() {
 #if ENABLE_IPC
-    EC::Register<EC::CreateMove>(cm, "cm_followbot", EC::average);
+    EC::Register(EC::CreateMove, cm, "cm_followbot", EC::average);
 #endif
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, draw, "draw_followbot", EC::average);

@@ -395,7 +395,7 @@ template <typename T> void rvarCallback(settings::VariableBase<T> &var, T after)
 }
 
 static InitRoutine init([]() {
-    EC::Register<EC::Paint>(run, "PAINT_irc", EC::average);
+    EC::Register(EC::Paint, run, "PAINT_irc", EC::average);
     updateData();
     enabled.installChangeCallback(rvarCallback<bool>);
     anon.installChangeCallback(rvarCallback<bool>);
