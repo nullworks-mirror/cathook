@@ -132,6 +132,7 @@ inline const char *classname(int clazz)
 }
 
 void PrintChat(const char *fmt, ...);
+void ChangeName(std::string name);
 
 void WhatIAmLookingAt(int *result_eindex, Vector *result_pos);
 

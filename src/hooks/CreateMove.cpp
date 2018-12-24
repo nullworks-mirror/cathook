@@ -309,32 +309,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 PROF_SECTION(CM_antiaim);
                 hacks::shared::antiaim::ProcessUserCmd(cmd);
             }
-            IF_GAME(IsTF())
-            {
-                PROF_SECTION(CM_autoheal);
-                hacks::tf::autoheal::CreateMove();
-            }
-            IF_GAME(IsTF2())
-            {
-                PROF_SECTION(CM_antibackstab);
-                hacks::tf2::antibackstab::CreateMove();
-            }
-            IF_GAME(IsTF2())
-            {
-                PROF_SECTION(CM_autobackstab);
-                hacks::tf2::autobackstab::CreateMove();
-            }
             if (debug_projectiles)
                 projectile_logging::Update();
             Prediction_CreateMove();
-        }
-        {
-            PROF_SECTION(CM_misc);
-            hacks::shared::misc::CreateMove();
-        }
-        {
-            PROF_SECTION(CM_AC);
-            hacks::shared::anticheat::CreateMove();
         }
     }
     if (time_replaced)

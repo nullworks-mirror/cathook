@@ -149,4 +149,8 @@ void CreateMove()
         break;
     }
 }
+
+static InitRoutine EC([]() {
+    EC::Register(EC::CreateMove, CreateMove, "autobackstab", EC::average);
+});
 } // namespace hacks::tf2::autobackstab

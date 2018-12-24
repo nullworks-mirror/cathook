@@ -6,7 +6,6 @@
  */
 
 #pragma once
-#define SPAM_HACK
 #include "common.hpp"
 
 class CatCommand;

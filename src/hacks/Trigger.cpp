@@ -91,12 +91,8 @@ void CreateMove()
     float backup_time = target_time;
     target_time       = 0;
 
-    // Check if aimbot is enabled
-    if (!enable)
-        return;
-
-    // Check if player can aim
-    if (!ShouldShoot())
+    // Check if trigerbot is enabled, weapon is valid and if player can aim
+    if (!enable || CE_BAD(LOCAL_W) || !ShouldShoot())
         return;
 
     // Reset our last hitbox traced

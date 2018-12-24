@@ -109,7 +109,7 @@ void CreateMove()
     CachedEntity *spy;
     Vector diff;
 
-    if (!enable)
+    if (!enable || CE_BAD(LOCAL_E))
         return;
     spy = ClosestSpy();
     if (spy)
@@ -130,4 +130,8 @@ void CreateMove()
     else
         noaa = false;
 }
+
+static InitRoutine EC([]() {
+    EC::Register(EC::CreateMove, CreateMove, "antibackstab", EC::average);
+});
 } // namespace hacks::tf2::antibackstab

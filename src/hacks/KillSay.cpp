@@ -177,8 +177,8 @@ void shutdown()
 
 static InitRoutine runinit([]() {
     EC::Register(EC::Paint, ProcessKillsay, "paint_killsay", EC::average);
-    EC::Register(EC::Init, init, "init_killsay", EC::average);
     EC::Register(EC::Shutdown, shutdown, "shutdown_killsay", EC::average);
+    init();
 });
 
 } // namespace hacks::shared::killsay

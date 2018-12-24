@@ -109,8 +109,8 @@ void shutdown()
 static CatCommand reload_command("dominatesay_reload", "Reload dominatesays", []() { reload(); });
 
 static InitRoutine EC([]() {
-    EC::Register(EC::Init, init, "init_dominatesay", EC::average);
     EC::Register(EC::Shutdown, shutdown, "shutdown_dominatesay", EC::average);
+    init();
 });
 
 } // namespace hacks::shared::dominatesay

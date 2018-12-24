@@ -6,7 +6,6 @@
  */
 
 #include <MiscTemporary.hpp>
-#include <hacks/Misc.hpp>
 #include <hacks/Aimbot.hpp>
 #include <hacks/hacklist.hpp>
 #include <glez/glez.hpp>
@@ -191,10 +190,6 @@ void DrawCheatVisuals()
         {
             PROF_SECTION(DRAW_skinchanger);
             hacks::tf2::skinchanger::DrawText();
-        }
-        {
-            PROF_SECTION(DRAW_walkbot);
-            hacks::shared::walkbot::Draw();
         }
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
         DrawSpinner();

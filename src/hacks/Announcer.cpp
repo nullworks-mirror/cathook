@@ -162,7 +162,7 @@ void shutdown()
 }
 
 static InitRoutine EC([]() {
-    EC::Register(EC::Init, init, "init_announcer", EC::average);
     EC::Register(EC::Shutdown, shutdown, "shutdown_announcer", EC::average);
+    init();
 });
 } // namespace hacks::shared::announcer

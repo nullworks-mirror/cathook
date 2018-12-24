@@ -127,7 +127,6 @@ static bool flash_light_spam_switch{ false };
 static Timer auto_balance_timer{};
 
 static ConVar *teammatesPushaway{ nullptr };
-InitRoutine init([]() { teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway"); });
 
 void CreateMove()
 {
@@ -431,7 +430,7 @@ void Schema_Reload()
     logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
 }
 CatCommand schema("schema", "Load custom schema", Schema_Reload);
-*/
+
 CatCommand name("name_set", "Immediate name change", [](const CCommand &args) {
     if (args.ArgC() < 2)
     {
@@ -543,6 +542,14 @@ static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](c
     logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
     const char *ft = (args.ArgC() > 1 ? args[2] : 0);
     DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
+});
+
+InitRoutine init([]() {
+    teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
+    EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
+#if ENABLE_VISUALS
+    EC::Register(EC::Draw, DrawText, "draw_misc_hacks", EC::average);
+#endif
 });
 } // namespace hacks::shared::misc
 

@@ -15,9 +15,8 @@ DEFINE_HOOKED_METHOD(LevelShutdown, void, void *this_)
     need_name_change = true;
     playerlist::Save();
     g_Settings.bInvalid = true;
-    hacks::shared::aimbot::Reset();
     chat_stack::Reset();
-    hacks::shared::anticheat::ResetEverything();
+    EC::run(EC::LevelShutdown);
 #if ENABLE_IPC
     if (ipc::peer)
     {

@@ -81,13 +81,11 @@ bool ShouldReflect(CachedEntity *ent)
 void CreateMove()
 {
     // Check if user settings allow Auto Reflect
-    if (!enable)
-        return;
-    if (blastkey && !blastkey.isKeyDown())
+    if (!enable || CE_BAD(LOCAL_W) || (blastkey && !blastkey.isKeyDown()))
         return;
 
     // Check if player is using a flame thrower
-    if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFFlameThrower) && CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) != 528)
+    if (LOCAL_W->m_iClassID() != CL_CLASS(CTFFlameThrower) && CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) != 528)
         return;
 
     // Check for phlogistinator, which is item 594
@@ -215,9 +213,9 @@ void Draw()
 }
 
 static InitRoutine EC([]() {
-    EC::Register(EC::CreateMove, CreateMove, "auto_reflect", EC::average);
+    EC::Register(EC::CreateMove, CreateMove, "cm_auto_reflect", EC::average);
 #if ENABLE_VISUALS
-    EC::Register(EC::Draw, Draw, "auto_reflect", EC::average);
+    EC::Register(EC::Draw, Draw, "draw_auto_reflect", EC::average);
 #endif
 });
 } // namespace hacks::tf::autoreflect

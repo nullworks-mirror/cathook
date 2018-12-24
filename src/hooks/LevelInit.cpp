@@ -51,13 +51,9 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     for (int i = 0; i < 32; i++)
         g_Settings.brute.brutenum[i] = 0;
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
-    hacks::shared::aimbot::Reset();
-    hacks::shared::backtrack::Init();
     chat_stack::Reset();
-    hacks::shared::anticheat::ResetEverything();
     original::LevelInit(this_, name);
-    hacks::shared::walkbot::OnLevelInit();
-    EC::RunLevelInit();
+    EC::run(EC::LevelInit);
 #if ENABLE_IPC
     if (ipc::peer)
     {

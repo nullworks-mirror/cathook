@@ -1280,7 +1280,9 @@ static void DrawText()
 }
 #endif
 static InitRoutine EC([]() {
-    EC::Register<EC::CreateMove>(CreateMove, "CM_Aimbot", EC::late);
+    EC::Register(EC::LevelInit, Reset, "INIT_Aimbot", EC::average);
+    EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);
+    EC::Register(EC::CreateMove, CreateMove, "CM_Aimbot", EC::average);
 #if ENABLE_VISUALS
     EC::Register<EC::Draw>(DrawText, "DRAW_Aimbot", EC::average);
 #endif

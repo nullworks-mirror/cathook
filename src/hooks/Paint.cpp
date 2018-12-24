@@ -12,8 +12,6 @@
 #include "hitrate.hpp"
 #include "hack.hpp"
 
-static settings::Bool cursor_fix_experimental{ "debug.cursor-fix", "false" };
-
 namespace hooked_methods
 {
 
@@ -29,7 +27,6 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 
     if (mode & PaintMode_t::PAINT_UIPANELS)
     {
-        hacks::shared::catbot::update();
         hitrate::Update();
 #if ENABLE_ONLINE
         online::update();
@@ -77,16 +74,6 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
         {
             UpdateInput();
             last_stdin = std::chrono::system_clock::now();
-        }
-#endif
-#if ENABLE_GUI
-        if (cursor_fix_experimental)
-        {
-            /*			if (gui_visible) {
-                            g_ISurface->SetCursorAlwaysVisible(true);
-                        } else {
-                            g_ISurface->SetCursorAlwaysVisible(false);
-                        }*/
         }
 #endif
 #if ENABLE_VISUALS
