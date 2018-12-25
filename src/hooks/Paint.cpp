@@ -19,7 +19,8 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 {
     if (!isHackActive())
     {
-        return original::Paint(this_, mode);;
+        return original::Paint(this_, mode);
+        ;
     }
 
     if (!g_IEngine->IsInGame())

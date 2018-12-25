@@ -104,7 +104,5 @@ void Draw()
     }
 }
 
-static InitRoutine EC([]() {
-    EC::Register(EC::Draw, Draw, "spyalert", EC::average);
-});
+static InitRoutine EC([]() { EC::Register(EC::Draw, Draw, "spyalert", EC::average); });
 } // namespace hacks::tf::spyalert

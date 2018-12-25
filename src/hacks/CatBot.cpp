@@ -181,7 +181,7 @@ static bool patched_report;
 void reportall()
 {
     typedef uint64_t (*ReportPlayer_t)(uint64_t, int);
-    static uintptr_t addr1         = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+    static uintptr_t addr1                = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
     static ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr1);
     if (!addr1)
         return;

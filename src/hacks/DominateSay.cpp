@@ -19,7 +19,7 @@ const std::vector<std::string> builtin_default = {
     "%killer% is dominating the server with %dominum% dominations!",
 };
 const std::string tf_classes_dominatesay[] = { "class", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
-const std::string tf_teams_dominatesay[] = { "RED", "BLU" };
+const std::string tf_teams_dominatesay[]   = { "RED", "BLU" };
 
 static std::string lastmsg{};
 

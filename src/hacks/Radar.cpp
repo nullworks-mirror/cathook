@@ -214,7 +214,6 @@ void Draw()
     glez::draw::line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f), 0.5f);
 }
 
-
 InitRoutine init([]() {
     // Background circles
     for (int i = 0; i < 2; ++i)

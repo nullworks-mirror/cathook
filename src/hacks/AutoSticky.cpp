@@ -179,7 +179,5 @@ void CreateMove()
     }
 }
 
-static InitRoutine EC([]() {
-    EC::Register(EC::CreateMove, CreateMove, "auto_sticky", EC::average);
-});
+static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "auto_sticky", EC::average); });
 } // namespace hacks::tf::autosticky

@@ -127,7 +127,5 @@ void init()
 {
 }
 
-static InitRoutine EC([]() {
-    EC::Register(EC::Paint, apply_killstreaks, "killstreak", EC::average);
-});
+static InitRoutine EC([]() { EC::Register(EC::Paint, apply_killstreaks, "killstreak", EC::average); });
 } // namespace hacks::tf2::killstreak

@@ -23,8 +23,7 @@ void Draw()
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         ent = ENTITY(i);
-        if (CE_BAD(ent) || ent == LOCAL_E || ent->m_Type() != ENTITY_PLAYER ||
-            CE_INT(ent, netvar.iClass) != tf_class::tf_spy)
+        if (CE_BAD(ent) || ent == LOCAL_E || ent->m_Type() != ENTITY_PLAYER || CE_INT(ent, netvar.iClass) != tf_class::tf_spy)
         {
             continue;
         }
@@ -38,7 +37,5 @@ void Draw()
     }
 }
 
-static InitRoutine EC([]() {
-    EC::Register(EC::Draw, Draw, "antidisguise", EC::average);
-});
+static InitRoutine EC([]() { EC::Register(EC::Draw, Draw, "antidisguise", EC::average); });
 } // namespace hacks::tf2::antidisguise

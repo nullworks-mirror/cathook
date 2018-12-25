@@ -1331,7 +1331,8 @@ std::unique_ptr<char[]> strfmt(const char *fmt, ...)
     return buf;
 }
 
-void ChangeName(std::string name) {
+void ChangeName(std::string name)
+{
     auto custom_name = settings::Manager::instance().lookup("name.custom");
     if (custom_name != nullptr)
         custom_name->fromString(name);
