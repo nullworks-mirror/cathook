@@ -103,6 +103,7 @@ void Draw()
         backstab_triggered = false;
     }
 }
-
+#if ENABLE_VISUALS
 static InitRoutine EC([]() { EC::Register(EC::Draw, Draw, "spyalert", EC::average); });
+#endif
 } // namespace hacks::tf::spyalert
