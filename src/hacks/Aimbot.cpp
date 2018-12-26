@@ -52,6 +52,7 @@ static settings::Bool auto_zoom{ "aimbot.auto.zoom", "0" };
 static settings::Bool auto_unzoom{ "aimbot.auto.unzoom", "0" };
 
 static settings::Bool backtrackAimbot{ "aimbot.backtrack", "0" };
+static settings::Bool backtrackVischeckAll{ "aimbot.backtrack.vischeck-all", "0" };
 
 // TODO maybe these should be moved into "Targeting"
 static settings::Float max_range{ "aimbot.target.max-range", "4096" };
@@ -104,7 +105,6 @@ AimbotCalculatedData_s calculated_data_array[2048]{};
 // The main "loop" of the aimbot.
 static void CreateMove()
 {
-    PROF_SECTION(PT_aimbot_cm);
     if (!enable)
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
@@ -1023,22 +1023,29 @@ int BestHitbox(CachedEntity *target)
                     continue;
                 if (!bt::ValidTick(ticks[i], target))
                     continue;
-                for (int j = 0; j < 18; j++)
-                {
-                    if (IsVectorVisible(g_pLocalPlayer->v_Eye, ticks->hitboxes.at(j).center))
+                if (*backtrackVischeckAll)
+                    for (int j = 0; j < 18; j++)
                     {
-                        good_tick = { i, target->m_IDX };
-                        break;
+                        if (IsVectorVisible(g_pLocalPlayer->v_Eye, ticks->hitboxes.at(j).center))
+                        {
+                            good_tick = { i, target->m_IDX };
+                            break;
+                        }
                     }
+                else if (IsVectorVisible(g_pLocalPlayer->v_Eye, ticks->hitboxes.at(0).center))
+                {
+                    good_tick = { i, target->m_IDX };
+                    break;
                 }
             }
-            if (IsVectorVisible(g_pLocalPlayer->v_Eye, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(preferred).center))
-                return preferred;
+            if (good_tick.first != -1)
+                if (IsVectorVisible(g_pLocalPlayer->v_Eye, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(preferred).center))
+                    return preferred;
         }
-        if (target->hitboxes.VisibilityCheck(preferred))
+        else if (target->hitboxes.VisibilityCheck(preferred))
             return preferred;
         // Else attempt to find a hitbox at all
-        if (IsBacktracking() && !projectile_mode)
+        if (IsBacktracking() && !projectile_mode && good_tick.first != -1)
         {
             for (int i = 0; i < 18; i++)
                 if (IsVectorVisible(g_pLocalPlayer->v_Eye, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(i).center))
@@ -1096,10 +1103,10 @@ bool VischeckPredictedEntity(CachedEntity *entity, bool Backtracking)
 {
     // Retrieve predicted data
     AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
+    if (cd.vcheck_tick == tickcount)
+        return cd.visible;
     if (!Backtracking)
     {
-        if (cd.vcheck_tick == tickcount)
-            return cd.visible;
         // Update info
         cd.vcheck_tick = tickcount;
         cd.visible     = IsEntityVectorVisible(entity, PredictEntity(entity));
@@ -1108,8 +1115,9 @@ bool VischeckPredictedEntity(CachedEntity *entity, bool Backtracking)
     {
         namespace bt = hacks::shared::backtrack;
         auto ticks   = bt::headPositions[entity->m_IDX];
-        if (good_tick.first != -1)
+        if (good_tick.first != -1 && good_tick.second == entity->m_IDX && IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity)))
         {
+            cd.vcheck_tick = tickcount;
             cd.visible                   = true;
             current_user_cmd->tick_count = ticks[good_tick.first].tickcount;
             Vector &angles               = CE_VECTOR(entity, netvar.m_angEyeAngles);
