@@ -262,7 +262,7 @@ static bool stayNear()
         if (CE_GOOD(last_target) && stayNearHelpers::isValidNearPosition(last_area->m_center, last_target->m_vecOrigin(), *config))
             invalid_area_time.update();
 
-        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || player_tools::shouldTarget(last_target) != player_tools::IgnoreReason::DO_NOT_IGNORE || (!hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(last_target))))
+        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || player_tools::shouldTarget(last_target) != player_tools::IgnoreReason::DO_NOT_IGNORE || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
         {
             nav::clearInstructions();
             current_task = task::none;
