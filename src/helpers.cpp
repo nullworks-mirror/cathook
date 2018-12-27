@@ -359,7 +359,10 @@ bool canReachVector(Vector loc, Vector dest)
                 trace_t trace;
                 Ray_t ray;
                 ray.Init(vec, directionalLoc);
-                g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
+                {
+                    PROF_SECTION(IEVV_TraceRay);
+                    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
+                }
                 // distance of trace < than 26
                 if (trace.startpos.DistTo(trace.endpos) < 26.0f)
                     return false;
@@ -399,7 +402,10 @@ bool canReachVector(Vector loc, Vector dest)
             trace_t trace;
             Ray_t ray;
             ray.Init(loc, directionalLoc);
-            g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
+            {
+                PROF_SECTION(IEVV_TraceRay);
+                g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_no_player, &trace);
+            }
             // distance of trace < than 26
             if (trace.startpos.DistTo(trace.endpos) < 26.0f)
                 return false;
@@ -723,9 +729,11 @@ bool IsEntityVisible(CachedEntity *entity, int hb)
 }
 
 std::mutex trace_lock;
-bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos)
+bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, trace_t *trace)
 {
     trace_t trace_object;
+    if (!trace)
+        trace = &trace_object;
     Ray_t ray;
 
     if (g_Settings.bInvalid)
@@ -742,9 +750,9 @@ bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos)
         PROF_SECTION(IEVV_TraceRay);
         std::lock_guard<std::mutex> lock(trace_lock);
         if (!tcm || g_Settings.is_create_move)
-            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace_object);
+            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, trace);
     }
-    return (((IClientEntity *) trace_object.m_pEnt) == RAW_ENT(entity) || trace_object.fraction >= 0.99f);
+    return (((IClientEntity *) trace->m_pEnt) == RAW_ENT(entity) || trace->fraction >= 0.99f);
 }
 
 // For when you need to vis check something that isnt the local player
@@ -1048,6 +1056,7 @@ bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only)
 
         trace::filter_no_player.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
         ray.Init(origin, target);
+        PROF_SECTION(IEVV_TraceRay);
         g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player, &trace_visible);
         return (trace_visible.fraction == 1.0f);
     }
@@ -1058,6 +1067,7 @@ bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only)
 
         trace::filter_no_entity.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
         ray.Init(origin, target);
+        PROF_SECTION(IEVV_TraceRay);
         g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_entity, &trace_visible);
         return (trace_visible.fraction == 1.0f);
     }
@@ -1082,7 +1092,10 @@ void WhatIAmLookingAt(int *result_eindex, Vector *result_pos)
     forward.z = -sp;
     forward   = forward * 8192.0f + g_pLocalPlayer->v_Eye;
     ray.Init(g_pLocalPlayer->v_Eye, forward);
-    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);
+    {
+        PROF_SECTION(IEVV_TraceRay);
+        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);
+    }
     if (result_pos)
         *result_pos = trace.endpos;
     if (result_eindex)
@@ -1250,7 +1263,10 @@ bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)
         return false;
     }
     ray.Init(g_pLocalPlayer->v_Origin + g_pLocalPlayer->v_ViewOffset, hit);
-    g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_penetration, &trace_visible);
+    {
+        PROF_SECTION(IEVV_TraceRay);
+        g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_penetration, &trace_visible);
+    }
     correct_entity = false;
     if (trace_visible.m_pEnt)
     {
@@ -1258,7 +1274,10 @@ bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)
     }
     if (!correct_entity)
         return false;
-    g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace_visible);
+    {
+        PROF_SECTION(IEVV_TraceRay);
+        g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace_visible);
+    }
     if (trace_visible.m_pEnt)
     {
         ent = (IClientEntity *) trace_visible.m_pEnt;

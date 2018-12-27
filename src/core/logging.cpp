@@ -16,48 +16,47 @@
 
 settings::Bool log_to_console{ "hack.log-console", "false" };
 
-FILE *logging::handle{ nullptr };
+std::ofstream logging::handle;
 
 void logging::Initialize()
 {
     // FIXME other method of naming the file?
     passwd *pwd     = getpwuid(getuid());
-    logging::handle = fopen(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get(), "w");
+    logging::handle = std::ofstream(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get());
+    if (!logging::handle.is_open())
+        throw std::runtime_error("Can't open logging file");
 }
 
 void logging::Info(const char *fmt, ...)
 {
-    if (logging::handle == nullptr)
+    if (!logging::handle.is_open())
         logging::Initialize();
-    char *buffer = new char[1024];
+    auto time = std::time(nullptr);
+    auto tm   = *std::localtime(&time);
+
+    // Argument list
     va_list list;
     va_start(list, fmt);
-    vsprintf(buffer, fmt, list);
+    // Allocate buffer
+    auto result = std::make_unique<char[]>(512);
+    // Fill buffer
+    if (vsnprintf(result.get(), 512, fmt, list) < 0)
+        return;
     va_end(list);
-    size_t length = strlen(buffer);
-    char *result  = new char[length + 24];
-    time_t current_time;
-    struct tm *time_info = nullptr;
-    char timeString[10];
-    time(&current_time);
-    time_info = localtime(&current_time);
-    strftime(timeString, sizeof(timeString), "%H:%M:%S", time_info);
-    sprintf(result, "%% [%s] %s\n", timeString, buffer);
-    fprintf(logging::handle, "%s", result);
-    fflush(logging::handle);
+
+    // Print to file
+    logging::handle << std::put_time(&tm, "%H:%M:%S ") << result.get() << std::endl;
+    // Print to console
 #if ENABLE_VISUALS
     if (!hack::shutdown)
     {
         if (*log_to_console)
-            g_ICvar->ConsolePrintf("%s", result);
+            g_ICvar->ConsolePrintf("CAT: %s \n", result.get());
     }
 #endif
-    delete[] buffer;
-    delete[] result;
 }
 
 void logging::Shutdown()
 {
-    fclose(logging::handle);
-    logging::handle = nullptr;
+    logging::handle.close();
 }

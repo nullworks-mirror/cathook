@@ -905,7 +905,7 @@ int BestHitbox(CachedEntity *target)
 {
 
     // Switch based apon the hitbox mode set by the user
-    switch ((int) hitbox_mode)
+    switch (*hitbox_mode)
     {
     case 0:
     { // AUTO-HEAD priority
@@ -1109,7 +1109,10 @@ bool VischeckPredictedEntity(CachedEntity *entity, bool Backtracking)
     {
         // Update info
         cd.vcheck_tick = tickcount;
-        cd.visible     = IsEntityVectorVisible(entity, PredictEntity(entity));
+        trace_t trace;
+        cd.visible     = IsEntityVectorVisible(entity, PredictEntity(entity), &trace);
+        if (cd.visible && cd.hitbox == head && trace.hitbox != head)
+            cd.visible = false;
     }
     else
     {

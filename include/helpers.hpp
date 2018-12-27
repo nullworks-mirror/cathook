@@ -88,7 +88,7 @@ void VectorAngles(Vector &forward, Vector &angles);
 void AngleVectors2(const QAngle &angles, Vector *forward);
 extern std::mutex trace_lock;
 bool IsEntityVisible(CachedEntity *entity, int hb);
-bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos);
+bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, trace_t *trace = nullptr);
 bool VisCheckEntFromEnt(CachedEntity *startEnt, CachedEntity *endEnt);
 bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt, CachedEntity *endEnt);
 Vector VischeckCorner(CachedEntity *player, CachedEntity *target, float maxdist, bool checkWalkable);
