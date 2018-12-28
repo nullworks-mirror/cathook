@@ -220,9 +220,9 @@ static void cm()
             isnaving = false;
             return;
         }
-        if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(2000))
+        if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(500))
         {
-            if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 5, true, false))
+            if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 8, true, false))
             {
                 navtimeout.update();
             }
