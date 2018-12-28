@@ -1026,20 +1026,20 @@ int BestHitbox(CachedEntity *target)
                 if (*backtrackVischeckAll)
                     for (int j = 0; j < 18; j++)
                     {
-                        if (IsVectorVisible(g_pLocalPlayer->v_Eye, ticks->hitboxes.at(j).center))
+                        if (IsEntityVectorVisible(target, ticks->hitboxes.at(j).center))
                         {
                             good_tick = { i, target->m_IDX };
                             break;
                         }
                     }
-                else if (IsVectorVisible(g_pLocalPlayer->v_Eye, ticks->hitboxes.at(0).center))
+                else if (IsEntityVectorVisible(target, ticks->hitboxes.at(0).center))
                 {
                     good_tick = { i, target->m_IDX };
                     break;
                 }
             }
             if (good_tick.first != -1)
-                if (IsVectorVisible(g_pLocalPlayer->v_Eye, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(preferred).center))
+                if (IsEntityVectorVisible(target, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(preferred).center))
                     return preferred;
         }
         else if (target->hitboxes.VisibilityCheck(preferred))
@@ -1048,7 +1048,7 @@ int BestHitbox(CachedEntity *target)
         if (IsBacktracking() && !projectile_mode && good_tick.first != -1)
         {
             for (int i = 0; i < 18; i++)
-                if (IsVectorVisible(g_pLocalPlayer->v_Eye, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(i).center))
+                if (IsEntityVectorVisible(target, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(i).center))
                     return i;
         }
         else
@@ -1109,18 +1109,23 @@ bool VischeckPredictedEntity(CachedEntity *entity, bool Backtracking)
     {
         // Update info
         cd.vcheck_tick = tickcount;
-        trace_t trace;
-        cd.visible     = IsEntityVectorVisible(entity, PredictEntity(entity), &trace);
-        if (cd.visible && cd.hitbox == head && trace.hitbox != head)
-            cd.visible = false;
+        if (extrapolate || projectileAimbotRequired || entity->m_Type() != ENTITY_PLAYER)
+            cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
+        else
+        {
+            trace_t trace;
+            cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity), MASK_SHOT, &trace);
+            if (cd.visible && cd.hitbox == head && trace.hitbox != head)
+                cd.visible = false;
+        }
     }
     else
     {
         namespace bt = hacks::shared::backtrack;
         auto ticks   = bt::headPositions[entity->m_IDX];
-        if (good_tick.first != -1 && good_tick.second == entity->m_IDX && IsVectorVisible(g_pLocalPlayer->v_Eye, PredictEntity(entity)))
+        if (good_tick.first != -1 && good_tick.second == entity->m_IDX && IsEntityVectorVisible(entity, PredictEntity(entity)))
         {
-            cd.vcheck_tick = tickcount;
+            cd.vcheck_tick               = tickcount;
             cd.visible                   = true;
             current_user_cmd->tick_count = ticks[good_tick.first].tickcount;
             Vector &angles               = CE_VECTOR(entity, netvar.m_angEyeAngles);

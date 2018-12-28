@@ -729,7 +729,7 @@ bool IsEntityVisible(CachedEntity *entity, int hb)
 }
 
 std::mutex trace_lock;
-bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, trace_t *trace)
+bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, unsigned int mask, trace_t *trace)
 {
     trace_t trace_object;
     if (!trace)
@@ -750,7 +750,7 @@ bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, trace_t *trace)
         PROF_SECTION(IEVV_TraceRay);
         std::lock_guard<std::mutex> lock(trace_lock);
         if (!tcm || g_Settings.is_create_move)
-            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, trace);
+            g_ITrace->TraceRay(ray, mask, &trace::filter_default, trace);
     }
     return (((IClientEntity *) trace->m_pEnt) == RAW_ENT(entity) || trace->fraction >= 0.99f);
 }
