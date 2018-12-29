@@ -204,7 +204,7 @@ static bool stayNearPlayers(const bot_class_config &config, CachedEntity *&resul
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent)))
             continue;
         players.push_back(ent);
     }
