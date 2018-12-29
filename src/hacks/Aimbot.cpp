@@ -1003,20 +1003,12 @@ int BestHitbox(CachedEntity *target)
         {
             headonly = true;
         }
-        // Head only
-        if (headonly)
-        {
-            IF_GAME(IsTF())
-            return hitbox_t::head;
-            IF_GAME(IsCSS())
-            return 12;
-        }
-        // If the prefered hitbox vis check passes, use it
-        namespace bt = hacks::shared::backtrack;
+
         if (IsBacktracking() && !projectile_mode)
         {
-            good_tick  = { -1, -1 };
-            auto ticks = bt::headPositions[target->m_IDX];
+            namespace bt = hacks::shared::backtrack;
+            good_tick    = { -1, -1 };
+            auto ticks   = bt::headPositions[target->m_IDX];
             for (int i = 0; i < 66; i++)
             {
                 if (!ticks->tickcount)
@@ -1038,6 +1030,20 @@ int BestHitbox(CachedEntity *target)
                     break;
                 }
             }
+        }
+        // Head only
+        if (headonly)
+        {
+            IF_GAME(IsTF())
+            return hitbox_t::head;
+            IF_GAME(IsCSS())
+            return 12;
+        }
+        // If the prefered hitbox vis check passes, use it
+
+        if (IsBacktracking() && !projectile_mode)
+        {
+            namespace bt = hacks::shared::backtrack;
             if (good_tick.first != -1)
                 if (IsEntityVectorVisible(target, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(preferred).center))
                     return preferred;
@@ -1047,6 +1053,7 @@ int BestHitbox(CachedEntity *target)
         // Else attempt to find a hitbox at all
         if (IsBacktracking() && !projectile_mode && good_tick.first != -1)
         {
+            namespace bt = hacks::shared::backtrack;
             for (int i = 0; i < 18; i++)
                 if (IsEntityVectorVisible(target, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(i).center))
                     return i;
