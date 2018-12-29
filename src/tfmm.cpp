@@ -30,6 +30,8 @@ CatCommand get_state("mm_state", "Get party state", []() {
     logging::Info("State: %d", re::CTFParty::state_(party));
 });
 
+static CatCommand mm_stop_queue("mm_stop_queue", "Stop current TF2 MM queue", []() { tfmm::leaveQueue(); });
+
 namespace tfmm
 {
 int queuecount = 0;

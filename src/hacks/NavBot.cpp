@@ -3,6 +3,7 @@
 #include "NavBot.hpp"
 #include "PlayerTools.hpp"
 #include "Aimbot.hpp"
+#include "FollowBot.hpp"
 
 namespace hacks::tf2::NavBot
 {
@@ -22,13 +23,16 @@ static bool stayNear();
 static bool getHealthAndAmmo();
 static void autoJump();
 static void updateSlot();
+using task::current_task;
 
 // -Variables-
 static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
 // How long should the bot wait until pathing again?
 static Timer wait_until_path{};
 // What is the bot currently doing
-static task::task current_task;
+namespace task {
+    task current_task;
+}
 constexpr bot_class_config DIST_OTHER{ 100.0f, 200.0f, 300.0f };
 constexpr bot_class_config DIST_SNIPER{ 1000.0f, 1500.0f, 3000.0f };
 
@@ -38,7 +42,7 @@ static void CreateMove()
         return;
     if (!init(false))
         return;
-    if (!nav::ReadyForCommands)
+    if (!nav::ReadyForCommands || current_task == task::followbot)
         wait_until_path.update();
     else
         current_task = task::none;
@@ -52,7 +56,7 @@ static void CreateMove()
         if (getHealthAndAmmo())
             return;
     // Try to stay near enemies to increase efficiency
-    if (stay_near || heavy_mode)
+    if ((stay_near || heavy_mode) && current_task != task::followbot)
         if (stayNear())
             return;
     // We don't have anything else to do. Just nav to sniper spots.
@@ -88,7 +92,7 @@ bool init(bool first_cm)
 static bool navToSniperSpot()
 {
     // Don't path if you already have commands. But also don't error out.
-    if (!nav::ReadyForCommands)
+    if (!nav::ReadyForCommands || current_task != task::none)
         return true;
     // Wait arround a bit before pathing again
     if (!wait_until_path.check(2000))
@@ -327,6 +331,8 @@ static bool getHealthAndAmmo()
     static Timer health_ammo_timer{};
     if (!health_ammo_timer.check(3000))
         return false;
+    if (current_task == task::health && static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() >= 0.64f)
+        current_task = task::none;
     if (current_task == task::health)
         return true;
 
@@ -353,6 +359,8 @@ static bool getHealthAndAmmo()
         }
     }
 
+    if (current_task == task::ammo && !hasLowAmmo())
+        current_task = task::none;
     if (current_task == task::ammo)
         return true;
     if (hasLowAmmo())
@@ -405,6 +413,8 @@ static int GetBestSlot()
         return primary;
     case tf_heavy:
         return primary;
+    case tf_medic:
+        return secondary;
     default:
     {
         float nearest_dist = getNearestPlayerDistance().second;

@@ -472,7 +472,7 @@ int HealingPriority(int idx)
 #if ENABLE_IPC
     if (ipc::peer)
     {
-        if (hacks::shared::followbot::isEnabled() && hacks::shared::followbot::getTarget() == idx)
+        if (hacks::shared::followbot::isEnabled() && hacks::shared::followbot::follow_target == idx)
         {
             priority *= 6.0f;
         }

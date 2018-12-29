@@ -12,6 +12,7 @@
 #endif
 #include <settings/Bool.hpp>
 #include "navparser.hpp"
+#include "NavBot.hpp"
 
 static settings::Bool enable{ "follow-bot.enable", "false" };
 static settings::Bool roambot{ "follow-bot.roaming", "true" };
@@ -30,6 +31,8 @@ static settings::Bool corneractivate{ "follow-bot.corners", "true" };
 static settings::Int steam_var{ "follow-bot.steamid", "0" };
 namespace hacks::shared::followbot
 {
+namespace nb = hacks::tf2::NavBot;
+
 static Timer navBotInterval{};
 unsigned steamid = 0x0;
 
@@ -62,13 +65,13 @@ CatCommand steam_debug("debug_steamid", "Print steamids", []() {
 
 // Something to store breadcrumbs created by followed players
 static std::vector<Vector> breadcrumbs;
-static const int crumb_limit = 64; // limit
+static constexpr int crumb_limit = 64; // limit
 
 static bool followcart{ false };
 
 // Followed entity, externed for highlight color
-int follow_target = 0;
-static bool inited;
+int follow_target  = 0;
+static bool inited = false;
 
 Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
 Timer lastJump{};
@@ -193,6 +196,8 @@ static void cm()
     if (!enable)
     {
         follow_target = 0;
+        if (nb::task::current_task == nb::task::followbot)
+            nb::task::current_task = nb::task::none;
         return;
     }
     if (!inited)
@@ -202,38 +207,18 @@ static void cm()
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
     {
         follow_target = 0;
+        if (nb::task::current_task == nb::task::followbot)
+            nb::task::current_task = nb::task::none;
+        return;
+    }
+    if (nb::task::current_task == nb::task::health || nb::task::current_task == nb::task::ammo)
+    {
+        follow_target = 0;
         return;
     }
 
     if (afk)
         checkAFK();
-
-    // Naving
-    static bool isnaving = false;
-    static Timer navtime{};
-    static Timer navtimeout{};
-
-    if (isnaving)
-    {
-        if (!follow_target)
-        {
-            isnaving = false;
-            return;
-        }
-        if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(500))
-        {
-            if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 8, true, false))
-            {
-                navtimeout.update();
-            }
-        }
-        if (navtimeout.check(15000) || nav::curr_priority == 0)
-        {
-            isnaving = false;
-            nav::clearInstructions();
-        }
-        return;
-    }
 
     // Still good check
     if (follow_target)
@@ -250,6 +235,8 @@ static void cm()
         breadcrumbs.clear(); // no target == no path
 
     bool isNavBotCM = navBotInterval.test_and_set(3000);
+    static Timer navinactivity{};
+    static int navtarget = 0;
 
     // Target Selection
     {
@@ -301,12 +288,14 @@ static void cm()
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (isNavBotCM && !found)
+                if (!found && isNavBotCM)
                 {
-                    if (!nav::navTo(entity->m_vecOrigin()))
-                        continue;
-                    navtimeout.update();
-                    found = true;
+                    if (nav::navTo(entity->m_vecOrigin(), 8, true, false))
+                    {
+                        navtarget = i;
+                        navinactivity.update();
+                        break;
+                    }
                 }
                 if (!found)
                     continue;
@@ -393,12 +382,14 @@ static void cm()
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (isNavBotCM && !found)
+                if (!found && isNavBotCM)
                 {
-                    if (!nav::navTo(entity->m_vecOrigin()))
-                        continue;
-                    navtimeout.update();
-                    found = true;
+                    if (nav::navTo(entity->m_vecOrigin(), 8, true, false))
+                    {
+                        navtarget = i;
+                        navinactivity.update();
+                        break;
+                    }
                 }
                 if (!found)
                     continue;
@@ -411,9 +402,37 @@ static void cm()
     lastent++;
     if (lastent > g_IEngine->GetMaxClients())
         lastent = 0;
+
+    if (navtarget)
+    {
+        if (follow_target)
+            navtarget = 0;
+        breadcrumbs.clear();
+        auto ent = ENTITY(navtarget);
+        static Timer navtimer{};
+        if (CE_GOOD(ent) && navtimer.test_and_set(800))
+        {
+            if (nav::navTo(ent->m_vecOrigin(), 8, true, false))
+                navinactivity.update();
+        }
+        if (navinactivity.check(15000))
+            navtarget = 0;
+        nb::task::current_task = nb::task::followbot;
+        return;
+    }
+    if (!navtarget && follow_target)
+    {
+        nav::clearInstructions();
+    }
+
     // last check for entity before we continue
     if (!follow_target)
+    {
+        if (nb::task::current_task == nb::task::followbot)
+            nb::task::current_task = nb::task::none;
         return;
+    }
+    nb::task::current_task = nb::task::followbot;
 
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed
@@ -582,20 +601,6 @@ static void draw()
 }
 #endif
 
-static InitRoutine runinit([]() {
-#if ENABLE_IPC
-    EC::Register(EC::CreateMove, cm, "cm_followbot", EC::average);
-#endif
-#if ENABLE_VISUALS
-    EC::Register(EC::Draw, draw, "draw_followbot", EC::average);
-#endif
-});
-
-int getTarget()
-{
-    return follow_target;
-}
-
 bool isEnabled()
 {
     return *enable;
@@ -641,5 +646,14 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
         return;
     steamid = after;
 }
-static InitRoutine Init([]() { steam_var.installChangeCallback(rvarCallback); });
+
+static InitRoutine runinit([]() {
+#if ENABLE_IPC
+    EC::Register(EC::CreateMove, cm, "cm_followbot", EC::average);
+#endif
+#if ENABLE_VISUALS
+    EC::Register(EC::Draw, draw, "draw_followbot", EC::average);
+#endif
+    steam_var.installChangeCallback(rvarCallback);
+});
 } // namespace hacks::shared::followbot
