@@ -39,64 +39,62 @@ float target_time = 0.0f;
 
 int last_hb_traced = 0;
 Vector forward;
-bool CanBacktrack()
+void DoBacktrack()
 {
-    CachedEntity *tar = (hacks::shared::backtrack::iBestTarget != -1) ? ENTITY(hacks::shared::backtrack::iBestTarget) : nullptr;
+    namespace bt = hacks::shared::backtrack;
+
+    CachedEntity *tar = (bt::iBestTarget != -1) ? ENTITY(bt::iBestTarget) : nullptr;
     if (CE_BAD(tar))
-        return true;
-    for (auto i : hacks::shared::backtrack::headPositions[tar->m_IDX])
+        return;
+    if (bt::BestTick == -1)
+        return;
+    if (!IsTargetStateGood(tar, true))
+        return;
+    auto &tick = bt::headPositions[bt::iBestTarget][bt::BestTick];
+
+    if (!ValidTick(tick, tar))
+        return;
+    auto min = tick.hitboxes.at(head).min;
+    auto max = tick.hitboxes.at(head).max;
+    if (!min.x && !max.x)
+        return;
+
+    // Get the min and max for the hitbox
+    Vector minz(fminf(min.x, max.x), fminf(min.y, max.y), fminf(min.z, max.z));
+    Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y), fmaxf(min.z, max.z));
+
+    // Shrink the hitbox here
+    Vector size = maxz - minz;
+    Vector smod = size * 0.05f * (int) accuracy;
+
+    // Save the changes to the vectors
+    minz += smod;
+    maxz -= smod;
+
+    // Trace and test if it hits the smaller hitbox, if it fails
+    // we
+    // return false
+    Vector hit;
+
+    if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) && !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
+        return;
+    if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
     {
-        if (!hacks::shared::backtrack::ValidTick(i, tar))
-            continue;
-        auto min = i.hitboxes.at(head).min;
-        auto max = i.hitboxes.at(head).max;
-        if (!min.x && !max.x)
-            continue;
-
-        // Get the min and max for the hitbox
-        Vector minz(fminf(min.x, max.x), fminf(min.y, max.y), fminf(min.z, max.z));
-        Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y), fmaxf(min.z, max.z));
-
-        // Shrink the hitbox here
-        Vector size = maxz - minz;
-        Vector smod = size * 0.05f * (int) accuracy;
-
-        // Save the changes to the vectors
-        minz += smod;
-        maxz -= smod;
-
-        // Trace and test if it hits the smaller hitbox, if it fails
-        // we
-        // return false
-        Vector hit;
-
-        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) && !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
-            continue;
-        if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
-        {
-            Vector &angles               = NET_VECTOR(RAW_ENT(tar), netvar.m_angEyeAngles);
-            float &simtime               = NET_FLOAT(RAW_ENT(tar), netvar.m_flSimulationTime);
-            angles.y                     = i.viewangles;
-            current_user_cmd->tick_count = i.tickcount;
-            current_user_cmd->buttons |= IN_ATTACK;
-            return true;
-        }
+        current_user_cmd->tick_count = tick.tickcount;
+        current_user_cmd->buttons |= IN_ATTACK;
+        return;
     }
-    return false;
 }
-// The main "loop" of the triggerbot
+
+// The main function of the triggerbot
 void CreateMove()
 {
 
     float backup_time = target_time;
     target_time       = 0;
 
-    // Check if aimbot is enabled
-    if (!enable)
-        return;
-
-    // Check if player can aim
-    if (!ShouldShoot())
+    // Check if trigerbot is enabled, weapon is valid and if player can aim
+    if (!enable || CE_BAD(LOCAL_W) || !ShouldShoot())
         return;
 
     // Reset our last hitbox traced
@@ -110,7 +108,7 @@ void CreateMove()
     {
         // We need to return because we can't hit non backtrackable ticks if we
         // have backtrack latency.
-        CanBacktrack();
+        DoBacktrack();
         return;
     }
 
@@ -227,7 +225,7 @@ bool ShouldShoot()
 }
 
 // A second check to determine whether a target is good enough to be aimed at
-bool IsTargetStateGood(CachedEntity *entity)
+bool IsTargetStateGood(CachedEntity *entity, bool backtrack)
 {
 
     // Check for Players
@@ -278,7 +276,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         }
 
         // Head hitbox detection
-        if (HeadPreferable(entity))
+        if (HeadPreferable(entity) && !backtrack)
         {
             if (last_hb_traced != hitbox_t::head)
                 return false;
@@ -286,7 +284,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // If usersettings tell us to use accuracy improvements and the cached
         // hitbox isnt null, then we check if it hits here
-        if (*accuracy)
+        if (*accuracy && !backtrack)
         {
 
             // Get a cached hitbox for the one traced
@@ -626,4 +624,6 @@ bool CheckLineBox(Vector B1, Vector B2, Vector L1, Vector L2, Vector &Hit)
 void Draw()
 {
 }
+
+static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "triggerbot", EC::average); });
 } // namespace hacks::shared::triggerbot

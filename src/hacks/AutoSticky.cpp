@@ -6,7 +6,6 @@
  */
 
 #include "common.hpp"
-#include <hacks/AutoSticky.hpp>
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 
@@ -179,4 +178,6 @@ void CreateMove()
         }
     }
 }
+
+static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "auto_sticky", EC::average); });
 } // namespace hacks::tf::autosticky

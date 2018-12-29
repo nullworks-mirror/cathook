@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include <stdio.h>
+#include <iostream>
 
 #ifdef __cplusplus
 namespace logging
 {
 #endif
 
-extern FILE *handle;
+extern std::ofstream handle;
 
 void Initialize();
 void Shutdown();

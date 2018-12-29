@@ -276,7 +276,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
     {
         PROF_SECTION(CM_WRAPPER);
-        EC::RunCreateMove();
+        EC::run(EC::CreateMove_NoEnginePred);
+        if (engine_pred)
+            engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
+
+        EC::run(EC::CreateMove);
     }
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
@@ -309,59 +313,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 PROF_SECTION(CM_antiaim);
                 hacks::shared::antiaim::ProcessUserCmd(cmd);
             }
-            IF_GAME(IsTF())
-            {
-                PROF_SECTION(CM_autosticky);
-                hacks::tf::autosticky::CreateMove();
-            }
-            IF_GAME(IsTF())
-            {
-                PROF_SECTION(CM_autodetonator);
-                hacks::tf::autodetonator::CreateMove();
-            }
-            IF_GAME(IsTF())
-            {
-                PROF_SECTION(CM_autoreflect);
-                hacks::tf::autoreflect::CreateMove();
-            }
-            {
-                PROF_SECTION(CM_triggerbot);
-                hacks::shared::triggerbot::CreateMove();
-            }
-            IF_GAME(IsTF())
-            {
-                PROF_SECTION(CM_autoheal);
-                hacks::tf::autoheal::CreateMove();
-            }
-            IF_GAME(IsTF2())
-            {
-                PROF_SECTION(CM_antibackstab);
-                hacks::tf2::antibackstab::CreateMove();
-            }
-            IF_GAME(IsTF2())
-            {
-                PROF_SECTION(CM_autobackstab);
-                hacks::tf2::autobackstab::CreateMove();
-            }
             if (debug_projectiles)
                 projectile_logging::Update();
             Prediction_CreateMove();
-        }
-        {
-            PROF_SECTION(CM_misc);
-            hacks::shared::misc::CreateMove();
-        }
-        {
-            PROF_SECTION(CM_crits);
-            criticals::create_move();
-        }
-        {
-            PROF_SECTION(CM_spam);
-            hacks::shared::spam::createMove();
-        }
-        {
-            PROF_SECTION(CM_AC);
-            hacks::shared::anticheat::CreateMove();
         }
     }
     if (time_replaced)
@@ -466,14 +420,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     g_Settings.is_create_move       = false;
     return ret;
 }
-static InitRoutine EngPred([]() {
-    EC::Register<EC::CreateMove>(
-        []() {
-            if (engine_pred)
-                engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
-        },
-        "engine_prediction", -3);
-});
 } // namespace hooked_methods
 
 /*float o_curtime;

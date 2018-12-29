@@ -76,12 +76,9 @@ bool IsTarget(CachedEntity *ent)
 // Function called by game for movement
 void CreateMove()
 {
-    // Check user settings if auto detonator is enabled
-    if (!enable)
-        return;
-
-    // Check if player is pyro
-    if (g_pLocalPlayer->clazz != tf_pyro)
+    // Check if it enabled in settings, weapon entity exists and current
+    // class is pyro
+    if (!enable || CE_BAD(LOCAL_W) || g_pLocalPlayer->clazz != tf_pyro)
         return;
 
     // Clear the arrays
@@ -129,4 +126,6 @@ void CreateMove()
     // End of function, just return
     return;
 }
+
+static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "auto_detonator", EC::average); });
 } // namespace hacks::tf::autodetonator

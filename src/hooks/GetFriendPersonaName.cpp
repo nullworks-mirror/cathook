@@ -5,6 +5,7 @@
 
 #include <settings/String.hpp>
 #include "HookedMethods.hpp"
+#include "PlayerTools.hpp"
 
 static settings::String ipc_name{ "name.ipc", "" };
 static settings::String force_name{ "name.custom", "" };
@@ -42,7 +43,10 @@ bool StolenName()
         if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
         {
             // Invisible character won't fit into name with max. length
-            if (std::strlen(info.name) >= 32)
+            if (std::strlen(info.name) >= 31)
+                continue;
+            // Ignore Friendly
+            if (player_tools::shouldTargetSteamId(info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE)
                 continue;
             // If our name is the same as current, then change it
             if (stolen_name == info.name && *namesteal == 1)
@@ -143,7 +147,7 @@ static InitRoutine init([]() {
         if (new_val != 0)
         {
             const char *xd = GetNamestealName(g_ISteamUser->GetSteamID());
-            if (CE_BAD(LOCAL_E) || !xd)
+            if (CE_BAD(LOCAL_E) || !xd || !strcmp(LOCAL_E->player_info.name, xd))
                 return;
             NET_SetConVar setname("name", xd);
             INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
@@ -161,11 +165,17 @@ static void cm()
 {
     if (!namesteal)
         return;
-    if (!set_name.test_and_set(500000))
+    if (!set_name.test_and_set(300000))
         return;
     const char *name = GetNamestealName(g_ISteamUser->GetSteamID());
     if (CE_BAD(LOCAL_E) || !name)
         return;
+    // Didn't change name - update timer a bit
+    if (!strcmp(LOCAL_E->player_info.name, name))
+    {
+        set_name.last += std::chrono::seconds(170);
+        return;
+    }
     NET_SetConVar setname("name", name);
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (ch)
@@ -176,6 +186,6 @@ static void cm()
     }
 }
 
-static InitRoutine runinit([]() { EC::Register<EC::CreateMove>(cm, "cm_namesteal", EC::late); });
+static InitRoutine runinit([]() { EC::Register(EC::CreateMove, cm, "cm_namesteal", EC::late); });
 
 } // namespace hooked_methods

@@ -130,5 +130,5 @@ void onShutdown()
         tfmm::startQueue();
 }
 
-static InitRoutine init([]() { EC::Register<EC::CreateMove>(update, "cm_autojoin", EC::average); });
+static InitRoutine init([]() { EC::Register(EC::CreateMove, update, "cm_autojoin", EC::average); });
 } // namespace hacks::shared::autojoin

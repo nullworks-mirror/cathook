@@ -220,9 +220,9 @@ static void cm()
             isnaving = false;
             return;
         }
-        if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(2000))
+        if (CE_GOOD(ENTITY(follow_target)) && navtime.test_and_set(500))
         {
-            if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 5, true, false))
+            if (nav::navTo(ENTITY(follow_target)->m_vecOrigin(), 8, true, false))
             {
                 navtimeout.update();
             }
@@ -584,10 +584,10 @@ static void draw()
 
 static InitRoutine runinit([]() {
 #if ENABLE_IPC
-    EC::Register<EC::CreateMove>(cm, "cm_followbot", EC::average);
+    EC::Register(EC::CreateMove, cm, "cm_followbot", EC::average);
 #endif
 #if ENABLE_VISUALS
-    EC::Register<EC::Draw>(cm, "draw_followbot", EC::average);
+    EC::Register(EC::Draw, draw, "draw_followbot", EC::average);
 #endif
 });
 

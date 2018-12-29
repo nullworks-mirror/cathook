@@ -6,7 +6,6 @@
  */
 
 #include "common.hpp"
-#include <hacks/AutoHeal.hpp>
 #include <hacks/FollowBot.hpp>
 #include <settings/Bool.hpp>
 
@@ -44,6 +43,14 @@ static settings::Int steam_var{ "autoheal.steamid", "0" };
 namespace hacks::tf::autoheal
 {
 
+struct patient_data_s
+{
+    float last_damage{ 0.0f };
+    int last_health{ 0 };
+    int accum_damage{ 0 }; // accumulated damage over X seconds (data stored for AT least 5 seconds)
+    float accum_damage_start{ 0.0f };
+};
+
 int m_iCurrentHealingTarget{ -1 };
 int m_iNewTarget{ 0 };
 
@@ -51,6 +58,16 @@ int vaccinator_change_stage = 0;
 int vaccinator_change_ticks = 0;
 int vaccinator_ideal_resist = 0;
 int vaccinator_change_timer = 0;
+
+std::array<Timer, 32> reset_cd{};
+std::vector<patient_data_s> data(32);
+
+struct proj_data_s
+{
+    int eid;
+    Vector last_pos;
+};
+std::vector<proj_data_s> proj_data_array;
 
 int ChargeCount()
 {
@@ -117,14 +134,6 @@ int FireDangerValue(CachedEntity *patient)
     }
     return 0;
 }
-
-struct proj_data_s
-{
-    int eid;
-    Vector last_pos;
-};
-
-std::vector<proj_data_s> proj_data_array;
 
 int BlastDangerValue(CachedEntity *patient)
 {
@@ -366,8 +375,140 @@ bool IsVaccinator()
     return CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 998;
 }
 
+void UpdateData()
+{
+    for (int i = 1; i < 32; i++)
+    {
+        if (reset_cd[i].test_and_set(10000))
+            data[i] = {};
+        CachedEntity *ent = ENTITY(i);
+        if (CE_GOOD(ent))
+        {
+            int health = ent->m_iHealth();
+            if (data[i].last_damage > g_GlobalVars->curtime)
+            {
+                data[i].last_damage = 0.0f;
+            }
+            if (g_GlobalVars->curtime - data[i].last_damage > 5.0f)
+            {
+                data[i].accum_damage       = 0;
+                data[i].accum_damage_start = 0.0f;
+            }
+            const int last_health = data[i].last_health;
+            if (health != last_health)
+            {
+                reset_cd[i].update();
+                data[i].last_health = health;
+                if (health < last_health)
+                {
+                    data[i].accum_damage += (last_health - health);
+                    if (!data[i].accum_damage_start)
+                        data[i].accum_damage_start = g_GlobalVars->curtime;
+                    data[i].last_damage = g_GlobalVars->curtime;
+                }
+            }
+        }
+    }
+}
+
+bool CanHeal(int idx)
+{
+    CachedEntity *ent = ENTITY(idx);
+    if (!ent)
+        return false;
+    if (CE_BAD(ent))
+        return false;
+    if (ent->m_Type() != ENTITY_PLAYER)
+        return false;
+    if (g_IEngine->GetLocalPlayer() == idx)
+        return false;
+    if (!ent->m_bAlivePlayer())
+        return false;
+    if (ent->m_bEnemy())
+        return false;
+    if (ent->m_flDistance() > 420)
+        return false;
+    // TODO visible any hitbox
+    if (!IsEntityVisible(ent, 7))
+        return false;
+    if (IsPlayerInvisible(ent))
+        return false;
+    return true;
+}
+
+int HealingPriority(int idx)
+{
+    if (!CanHeal(idx))
+        return -1;
+    CachedEntity *ent = ENTITY(idx);
+    if (share_uber && IsPopped())
+    {
+        return !HasCondition<TFCond_Ubercharged>(ent);
+    }
+
+    int priority        = 0;
+    int health          = CE_INT(ent, netvar.iHealth);
+    int maxhealth       = g_pPlayerResource->GetMaxHealth(ent);
+    int maxbuffedhealth = maxhealth * 1.5;
+    int maxoverheal     = maxbuffedhealth - maxhealth;
+    int overheal        = maxoverheal - (maxbuffedhealth - health);
+    float overhealp     = ((float) overheal / (float) maxoverheal);
+    float healthp       = ((float) health / (float) maxhealth);
+    priority += hacks::shared::followbot::ClassPriority(ent) * 1.3;
+    switch (playerlist::AccessData(ent).state)
+    {
+    case playerlist::k_EState::FRIEND:
+        priority += 70 * (1 - healthp);
+        priority += 5 * (1 - overhealp);
+        break;
+    case playerlist::k_EState::IPC:
+        priority += 100 * (1 - healthp);
+        priority += 10 * (1 - overhealp);
+        break;
+    default:
+        priority += 40 * (1 - healthp);
+        priority += 3 * (1 - overhealp);
+    }
+#if ENABLE_IPC
+    if (ipc::peer)
+    {
+        if (hacks::shared::followbot::isEnabled() && hacks::shared::followbot::getTarget() == idx)
+        {
+            priority *= 6.0f;
+        }
+    }
+#endif
+    /*    player_info_s info;
+        g_IEngine->GetPlayerInfo(idx, &info);
+        info.name[31] = 0;
+        if (strcasestr(info.name, ignore.GetString()))
+            priority = 0.0f;*/
+    return priority;
+}
+
+int BestTarget()
+{
+    int best       = -1;
+    int best_score = -65536;
+    for (int i = 0; i < 32 && i < HIGHEST_ENTITY; i++)
+    {
+        if (steamid_only && i != force_healing_target)
+            continue;
+        int score = HealingPriority(i);
+        if (score > best_score && score != -1)
+        {
+            best       = i;
+            best_score = score;
+        }
+    }
+    return best;
+}
+
 void CreateMove()
 {
+    if (CE_BAD(LOCAL_W))
+        return;
+
     bool pop = false;
     if (IsVaccinator() && auto_vacc)
     {
@@ -444,136 +585,6 @@ void CreateMove()
     }
 }
 
-std::array<Timer, 32> reset_cd{};
-std::vector<patient_data_s> data(32);
-void UpdateData()
-{
-    for (int i = 1; i < 32; i++)
-    {
-        if (reset_cd[i].test_and_set(10000))
-            data[i] = {};
-        CachedEntity *ent = ENTITY(i);
-        if (CE_GOOD(ent))
-        {
-            int health = ent->m_iHealth();
-            if (data[i].last_damage > g_GlobalVars->curtime)
-            {
-                data[i].last_damage = 0.0f;
-            }
-            if (g_GlobalVars->curtime - data[i].last_damage > 5.0f)
-            {
-                data[i].accum_damage       = 0;
-                data[i].accum_damage_start = 0.0f;
-            }
-            const int last_health = data[i].last_health;
-            if (health != last_health)
-            {
-                reset_cd[i].update();
-                data[i].last_health = health;
-                if (health < last_health)
-                {
-                    data[i].accum_damage += (last_health - health);
-                    if (!data[i].accum_damage_start)
-                        data[i].accum_damage_start = g_GlobalVars->curtime;
-                    data[i].last_damage = g_GlobalVars->curtime;
-                }
-            }
-        }
-    }
-}
-
-int BestTarget()
-{
-    int best       = -1;
-    int best_score = -65536;
-    for (int i = 0; i < 32 && i < HIGHEST_ENTITY; i++)
-    {
-        if (steamid_only && i != force_healing_target)
-            continue;
-        int score = HealingPriority(i);
-        if (score > best_score && score != -1)
-        {
-            best       = i;
-            best_score = score;
-        }
-    }
-    return best;
-}
-
-int HealingPriority(int idx)
-{
-    if (!CanHeal(idx))
-        return -1;
-    CachedEntity *ent = ENTITY(idx);
-    if (share_uber && IsPopped())
-    {
-        return !HasCondition<TFCond_Ubercharged>(ent);
-    }
-
-    int priority        = 0;
-    int health          = CE_INT(ent, netvar.iHealth);
-    int maxhealth       = g_pPlayerResource->GetMaxHealth(ent);
-    int maxbuffedhealth = maxhealth * 1.5;
-    int maxoverheal     = maxbuffedhealth - maxhealth;
-    int overheal        = maxoverheal - (maxbuffedhealth - health);
-    float overhealp     = ((float) overheal / (float) maxoverheal);
-    float healthp       = ((float) health / (float) maxhealth);
-    priority += hacks::shared::followbot::ClassPriority(ent) * 1.3;
-    switch (playerlist::AccessData(ent).state)
-    {
-    case playerlist::k_EState::FRIEND:
-        priority += 70 * (1 - healthp);
-        priority += 5 * (1 - overhealp);
-        break;
-    case playerlist::k_EState::IPC:
-        priority += 100 * (1 - healthp);
-        priority += 10 * (1 - overhealp);
-        break;
-    default:
-        priority += 40 * (1 - healthp);
-        priority += 3 * (1 - overhealp);
-    }
-#if ENABLE_IPC
-    if (ipc::peer)
-    {
-        if (hacks::shared::followbot::isEnabled() && hacks::shared::followbot::getTarget() == idx)
-        {
-            priority *= 6.0f;
-        }
-    }
-#endif
-    /*    player_info_s info;
-        g_IEngine->GetPlayerInfo(idx, &info);
-        info.name[31] = 0;
-        if (strcasestr(info.name, ignore.GetString()))
-            priority = 0.0f;*/
-    return priority;
-}
-
-bool CanHeal(int idx)
-{
-    CachedEntity *ent = ENTITY(idx);
-    if (!ent)
-        return false;
-    if (CE_BAD(ent))
-        return false;
-    if (ent->m_Type() != ENTITY_PLAYER)
-        return false;
-    if (g_IEngine->GetLocalPlayer() == idx)
-        return false;
-    if (!ent->m_bAlivePlayer())
-        return false;
-    if (ent->m_bEnemy())
-        return false;
-    if (ent->m_flDistance() > 420)
-        return false;
-    // TODO visible any hitbox
-    if (!IsEntityVisible(ent, 7))
-        return false;
-    if (IsPlayerInvisible(ent))
-        return false;
-    return true;
-}
 void rvarCallback(settings::VariableBase<int> &var, int after)
 {
     if (after < 0)
@@ -592,5 +603,8 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
         }
     }
 }
-static InitRoutine Init([]() { steam_var.installChangeCallback(rvarCallback); });
+static InitRoutine Init([]() {
+    steam_var.installChangeCallback(rvarCallback);
+    EC::Register(EC::CreateMove, CreateMove, "autoheal", EC::average);
+});
 } // namespace hacks::tf::autoheal

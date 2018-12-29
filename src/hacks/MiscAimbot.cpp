@@ -286,4 +286,4 @@ static void CreateMove()
     SapperAimbot();
 }
 
-static InitRoutine init([]() { EC::Register<EC::CreateMove>(CreateMove, "cm_miscaimbot", EC::late); });
+static InitRoutine init([]() { EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::late); });

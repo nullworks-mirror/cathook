@@ -9,7 +9,6 @@
 #include <glez/draw.hpp>
 #endif
 #include <settings/Int.hpp>
-#include "hacks/Radar.hpp"
 
 #ifndef FEATURE_RADAR_DISABLED
 #if ENABLE_VISUALS
@@ -72,23 +71,6 @@ bool loaded = false;
 static std::vector<std::vector<textures::sprite>> tx_class{};
 static std::vector<textures::sprite> tx_teams{};
 static std::vector<textures::sprite> tx_items{};
-
-InitRoutine init([]() {
-    // Background circles
-    for (int i = 0; i < 2; ++i)
-        tx_teams.push_back(textures::atlas().create_sprite(704, 384 + i * 64, 64, 64));
-    // Items
-    for (int i = 0; i < 2; ++i)
-        tx_items.push_back(textures::atlas().create_sprite(640, 384 + i * 64, 64, 64));
-    // Classes
-    for (int i = 0; i < 3; ++i)
-    {
-        tx_class.emplace_back();
-        for (int j = 0; j < 9; ++j)
-            tx_class[i].push_back(textures::atlas().create_sprite(j * 64, 320 + i * 64, 64, 64));
-    }
-    logging::Info("Radar sprites loaded");
-});
 
 void DrawEntity(int x, int y, CachedEntity *ent)
 {
@@ -231,6 +213,24 @@ void Draw()
     glez::draw::line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f), 0.5f);
     glez::draw::line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f), 0.5f);
 }
+
+InitRoutine init([]() {
+    // Background circles
+    for (int i = 0; i < 2; ++i)
+        tx_teams.push_back(textures::atlas().create_sprite(704, 384 + i * 64, 64, 64));
+    // Items
+    for (int i = 0; i < 2; ++i)
+        tx_items.push_back(textures::atlas().create_sprite(640, 384 + i * 64, 64, 64));
+    // Classes
+    for (int i = 0; i < 3; ++i)
+    {
+        tx_class.emplace_back();
+        for (int j = 0; j < 9; ++j)
+            tx_class[i].push_back(textures::atlas().create_sprite(j * 64, 320 + i * 64, 64, 64));
+    }
+    logging::Info("Radar sprites loaded");
+    EC::Register(EC::Draw, Draw, "radar", EC::average);
+});
 } // namespace hacks::tf::radar
 
 #endif

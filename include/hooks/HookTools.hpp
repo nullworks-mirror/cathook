@@ -3,21 +3,31 @@
 #include "core/profiler.hpp"
 #include "functional"
 #include <set>
+#include <array>
 
 namespace EC
 {
 
-enum ec_types : int8_t
+enum ec_types
 {
+    /* Note: engine prediction is run on this kind of CreateMove */
     CreateMove = 0,
+    /* This kind of CreateMove will run earlier than all CreateMove events
+     * and guranteed to run before EnginePrediction
+     */
+    CreateMove_NoEnginePred,
 #if ENABLE_VISUALS
     Draw,
 #endif
     Paint,
-    LevelInit
+    LevelInit,
+    LevelShutdown,
+    Shutdown,
+    /* Append new event above this line. Line below declares amount of events */
+    EcTypesSize
 };
 
-enum priority : int8_t
+enum ec_priority
 {
     very_early = -2,
     early,
@@ -26,68 +36,8 @@ enum priority : int8_t
     very_late
 };
 
-template <ec_types T> struct EventCallbackData
-{
-    explicit EventCallbackData(std::function<void()> function, std::string name, int8_t priority) : function{ function }, priority{ priority }, section{ name }
-    {
-    }
-    std::function<void()> function;
-    int8_t priority;
-    mutable ProfilerSection section;
-    bool operator<(const EventCallbackData &other) const
-    {
-        return priority < other.priority;
-    }
-};
-
-extern std::multiset<EventCallbackData<CreateMove>> createmoves;
-#if ENABLE_VISUALS
-extern std::multiset<EventCallbackData<Draw>> draws;
-#endif
-extern std::multiset<EventCallbackData<Paint>> paints;
-extern std::multiset<EventCallbackData<LevelInit>> levelinits;
-
-template <ec_types T> void Register(std::function<void()> function, std::string name, int8_t priority)
-{
-    switch (T)
-    {
-    case CreateMove:
-    {
-        EventCallbackData<CreateMove> data(function, name, priority);
-        createmoves.insert(data);
-        break;
-    }
-#if ENABLE_VISUALS
-    case Draw:
-    {
-        EventCallbackData<Draw> data(function, name, priority);
-        draws.insert(data);
-        break;
-    }
-#endif
-    case Paint:
-    {
-        EventCallbackData<Paint> data(function, name, priority);
-        paints.insert(data);
-        break;
-    }
-    case LevelInit:
-    {
-        EventCallbackData<LevelInit> data(function, name, priority);
-        levelinits.insert(data);
-        break;
-    }
-    default:
-        throw(std::invalid_argument("Unknown event"));
-        break;
-    }
-}
-
-void RunCreateMove();
-#if ENABLE_VISUALS
-void RunDraw();
-#endif
-void RunPaint();
-
-void RunLevelInit();
+typedef std::function<void()> EventFunction;
+void Register(enum ec_types type, const EventFunction &function, const std::string &name, enum ec_priority priority = average);
+void Unregister(enum ec_types type, const std::string &name);
+void run(enum ec_types type);
 } // namespace EC

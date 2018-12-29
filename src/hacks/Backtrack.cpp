@@ -18,12 +18,13 @@
 
 static settings::Bool enable{ "backtrack.enable", "false" };
 static settings::Bool draw_bt{ "backtrack.draw", "false" };
-static settings::Int latency{ "backtrack.latency", "0" };
 static settings::Float mindistance{ "backtrack.min-distance", "60" };
 static settings::Int slots{ "backtrack.slots", "0" };
 
 namespace hacks::shared::backtrack
 {
+settings::Int latency{ "backtrack.latency", "0" };
+
 void EmptyBacktrackData(BacktrackData &i);
 std::pair<int, int> getBestEntBestTick();
 bool shouldBacktrack();
@@ -52,12 +53,14 @@ void UpdateIncomingSequences()
             sequences.pop_back();
     }
 }
-void AddLatencyToNetchan(INetChannel *ch, float Latency)
+void AddLatencyToNetchan(INetChannel *ch)
 {
     if (!isBacktrackEnabled)
         return;
-    if (Latency > 200.0f)
-        Latency -= ch->GetLatency(MAX_FLOWS);
+    float Latency = *latency;
+    Latency -= ch->GetAvgLatency(FLOW_OUTGOING) * 1000.0f;
+    if (Latency < 0.0f)
+        Latency = 0.0f;
     for (auto &seq : sequences)
     {
         if (g_GlobalVars->realtime - seq.curtime > Latency / 1000.0f)
@@ -75,7 +78,7 @@ void Init()
             EmptyBacktrackData(headPositions[i][j]);
 }
 
-int BestTick    = 0;
+int BestTick    = -1;
 int iBestTarget = -1;
 bool istickvalid[32][66]{};
 bool istickinvalid[32][66]{};
@@ -251,10 +254,13 @@ bool shouldBacktrack()
 
 float getLatency()
 {
-    auto ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
+    auto ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
         return 0;
-    return *latency - ch->GetLatency(MAX_FLOWS);
+    float Latency = *latency - ch->GetLatency(FLOW_OUTGOING) * 1000.0f;
+    if (Latency < 0.0f)
+        Latency = 0.0f;
+    return Latency;
 }
 
 int getTicks()
@@ -264,24 +270,6 @@ int getTicks()
 
 bool ValidTick(BacktrackData &i, CachedEntity *ent)
 {
-    // TODO: Fix this func
-
-    //    if (istickvalid[ent->m_IDX][i.index])
-    //        return true;
-    //    if (istickinvalid[ent->m_IDX][i.index])
-    //        return false;
-    //    if (IsVectorVisible(g_pLocalPlayer->v_Eye, i.hitboxes[head].center,
-    //    true))
-    //        if (fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) *
-    //        1000.0f -
-    //                  getLatency() - i.simtime * 1000.0f) <= 200.0f)
-    //        {
-    //            istickvalid[ent->m_IDX][i.index] = true;
-    //            return true;
-    //        }
-    //    istickinvalid[ent->m_IDX][i.index] = true;
-    //    return false;
-
     if (!(fabsf(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) * 1000.0f - getLatency() - i.simtime * 1000.0f) < 200.0f))
         return false;
     return true;
@@ -367,9 +355,10 @@ std::pair<int, int> getBestEntBestTick()
     return std::make_pair(bestEnt, bestTick);
 }
 static InitRoutine EC([]() {
-    EC::Register<EC::CreateMove>(Run, "CM_Backtrack", EC::early);
+    EC::Register(EC::LevelInit, Init, "INIT_Backtrack", EC::average);
+    EC::Register(EC::CreateMove, Run, "CM_Backtrack", EC::early);
 #if ENABLE_VISUALS
-    EC::Register<EC::Draw>(Draw, "DRAW_Backtrack", EC::average);
+    EC::Register(EC::Draw, Draw, "DRAW_Backtrack", EC::average);
 #endif
 });
 } // namespace hacks::shared::backtrack

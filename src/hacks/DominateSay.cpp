@@ -4,21 +4,22 @@
  *	Created on: October 30, 2018
  */
 
-#include <hacks/DominateSay.hpp>
 #include <settings/Int.hpp>
 #include "common.hpp"
 
 static settings::Int dominatesay_mode{ "dominatesay.mode", "0" };
 static settings::String filename{ "dominatesay.file", "dominatesay.txt" };
 
-static CatCommand reload_command("dominatesay_reload", "Reload dominatesays", []() { hacks::shared::dominatesay::reload(); });
-
 namespace hacks::shared::dominatesay
 {
-
+//	a much better default dominatesay would be appreciated.
+const std::vector<std::string> builtin_default = {
+    "dominating %name%! (%dominum% dominations)",
+    "%name%, getting tapped?",
+    "%killer% is dominating the server with %dominum% dominations!",
+};
 const std::string tf_classes_dominatesay[] = { "class", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
-
-const std::string tf_teams_dominatesay[] = { "RED", "BLU" };
+const std::string tf_teams_dominatesay[]   = { "RED", "BLU" };
 
 static std::string lastmsg{};
 
@@ -105,11 +106,11 @@ void shutdown()
     g_IEventManager2->RemoveListener(&listener);
 }
 
-//	a much better default dominatesay would be appreciated.
-const std::vector<std::string> builtin_default = {
-    "dominating %name%! (%dominum% dominations)",
-    "%name%, getting tapped?",
-    "%killer% is dominating the server with %dominum% dominations!",
-};
+static CatCommand reload_command("dominatesay_reload", "Reload dominatesays", []() { reload(); });
+
+static InitRoutine EC([]() {
+    EC::Register(EC::Shutdown, shutdown, "shutdown_dominatesay", EC::average);
+    init();
+});
 
 } // namespace hacks::shared::dominatesay

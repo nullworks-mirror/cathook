@@ -11,6 +11,8 @@
 
 namespace hacks::shared::backtrack
 {
+extern settings::Int latency;
+
 struct hitboxData
 {
     Vector center{ 0.0f, 0.0f, 0.0f };
@@ -38,7 +40,7 @@ struct BestTickData
     }
 };
 void Init();
-void AddLatencyToNetchan(INetChannel *, float);
+void AddLatencyToNetchan(INetChannel *);
 void UpdateIncomingSequences();
 extern int lastincomingsequencenumber;
 extern int BestTick;

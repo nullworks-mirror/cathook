@@ -81,9 +81,9 @@ void draw()
 }
 
 static InitRoutine init([]() {
-    EC::Register<EC::CreateMove>(cm, "cm_lightesp", EC::average);
+    EC::Register(EC::CreateMove, cm, "cm_lightesp", EC::average);
 #if ENABLE_VISUALS
-    EC::Register<EC::Draw>(draw, "draw_lightesp", EC::average);
+    EC::Register(EC::Draw, draw, "draw_lightesp", EC::average);
 #endif
 });
 

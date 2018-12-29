@@ -118,4 +118,11 @@ void Init()
     // FIXME free listener
     g_IGameEventManager->AddListener(&listener, false);
 }
+
+static InitRoutine EC([]() {
+    EC::Register(EC::CreateMove, CreateMove, "cm_AntiCheat", EC::average);
+    EC::Register(EC::LevelInit, ResetEverything, "init_AntiCheat", EC::average);
+    EC::Register(EC::LevelShutdown, ResetEverything, "reset_AntiCheat", EC::average);
+    Init();
+});
 } // namespace hacks::shared::anticheat

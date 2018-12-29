@@ -67,5 +67,5 @@ static void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
     }
 }
-static InitRoutine EC([]() { EC::Register<EC::CreateMove>(CreateMove, "AutoDeadringer", EC::average); });
+static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "AutoDeadringer", EC::average); });
 } // namespace hacks::shared::deadringer

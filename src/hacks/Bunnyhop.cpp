@@ -52,5 +52,5 @@ static void CreateMove()
     if (!jump)
         ticks_last_jump = 0;
 }
-static InitRoutine EC([]() { EC::Register<EC::CreateMove>(CreateMove, "Bunnyhop", -4); });
+static InitRoutine EC([]() { EC::Register(EC::CreateMove_NoEnginePred, CreateMove, "Bunnyhop", EC::average); });
 } // namespace hacks::shared::bunnyhop

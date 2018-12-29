@@ -17,7 +17,7 @@ public:
     {
         Shutdown();
     }
-    BytePatch(std::function<uintptr_t (const char *)> SigScanFunc, const char *pattern, size_t offset, std::vector<unsigned char> patch) : patch_bytes{ patch }
+    BytePatch(std::function<uintptr_t(const char *)> SigScanFunc, const char *pattern, size_t offset, std::vector<unsigned char> patch) : patch_bytes{ patch }
     {
         addr = (void *) SigScanFunc(pattern);
         if (!addr)

@@ -12,8 +12,6 @@
 #include "hitrate.hpp"
 #include "hack.hpp"
 
-static settings::Bool cursor_fix_experimental{ "debug.cursor-fix", "false" };
-
 namespace hooked_methods
 {
 
@@ -21,7 +19,8 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 {
     if (!isHackActive())
     {
-        return original::Paint(this_, mode);;
+        return original::Paint(this_, mode);
+        ;
     }
 
     if (!g_IEngine->IsInGame())
@@ -29,8 +28,6 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 
     if (mode & PaintMode_t::PAINT_UIPANELS)
     {
-        hacks::tf2::killstreak::apply_killstreaks();
-        hacks::shared::catbot::update();
         hitrate::Update();
 #if ENABLE_ONLINE
         online::update();
@@ -80,21 +77,11 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
             last_stdin = std::chrono::system_clock::now();
         }
 #endif
-#if ENABLE_GUI
-        if (cursor_fix_experimental)
-        {
-            /*			if (gui_visible) {
-                            g_ISurface->SetCursorAlwaysVisible(true);
-                        } else {
-                            g_ISurface->SetCursorAlwaysVisible(false);
-                        }*/
-        }
-#endif
 #if ENABLE_VISUALS
         render_cheat_visuals();
 #endif
         // Call all paint functions
-        EC::RunPaint();
+        EC::run(EC::Paint);
     }
 
     return original::Paint(this_, mode);
