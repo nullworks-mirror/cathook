@@ -1068,11 +1068,49 @@ int BestHitbox(CachedEntity *target)
     break;
     case 1:
     { // AUTO-CLOSEST priority, Return closest hitbox to crosshair
-        return ClosestHitbox(target);
+        int hb = ClosestHitbox(target);
+        if (IsBacktracking() && !projectile_mode)
+        {
+            namespace bt = hacks::shared::backtrack;
+            good_tick    = { -1, -1 };
+            auto ticks   = bt::headPositions[target->m_IDX];
+            for (int i = 0; i < 66; i++)
+            {
+                if (!ticks->tickcount)
+                    continue;
+                if (!bt::ValidTick(ticks[i], target))
+                    continue;
+                if (IsEntityVectorVisible(target, ticks->hitboxes.at(hb).center))
+                {
+                    good_tick = { i, target->m_IDX };
+                    break;
+                }
+            }
+        }
+        return hb;
     }
     break;
     case 2:
     { // STATIC priority, Return a user chosen hitbox
+        int hb = *hitbox;
+        if (IsBacktracking() && !projectile_mode)
+        {
+            namespace bt = hacks::shared::backtrack;
+            good_tick    = { -1, -1 };
+            auto ticks   = bt::headPositions[target->m_IDX];
+            for (int i = 0; i < 66; i++)
+            {
+                if (!ticks->tickcount)
+                    continue;
+                if (!bt::ValidTick(ticks[i], target))
+                    continue;
+                if (IsEntityVectorVisible(target, ticks->hitboxes.at(hb).center))
+                {
+                    good_tick = { i, target->m_IDX };
+                    break;
+                }
+            }
+        }
         return (int) hitbox;
     }
     break;
