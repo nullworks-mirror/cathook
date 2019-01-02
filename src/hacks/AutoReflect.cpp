@@ -192,7 +192,7 @@ void Draw()
         if (*fov > 0.0f && *fov < 180)
         {
             // Dont show ring while player is dead
-            if (LOCAL_E->m_bAlivePlayer())
+            if (CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
             {
                 rgba_t color = GUIColor();
                 color.a      = float(fovcircle_opacity);

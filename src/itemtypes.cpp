@@ -167,54 +167,45 @@ void ItemManager::RegisterModelMapping(std::string path, k_EItemType type)
 
 void ItemManager::RegisterSpecialMapping(ItemCheckerFn fn, k_EItemType type)
 {
-    special_map.emplace(fn, type);
+    special_map[fn] = type;
 }
 
 k_EItemType ItemManager::GetItemType(CachedEntity *ent)
 {
-    for (const auto &it : specials)
-    {
-        const auto type = it(ent);
-        if (type != ITEM_NONE)
-            return type;
-    }
-    for (const auto &it : special_map)
-    {
-        if (it.first(ent))
-            return it.second;
-    }
     return mapper.GetItemType(ent);
 }
 
 void ItemModelMapper::RegisterItem(std::string modelpath, k_EItemType type)
 {
-    models.emplace(modelpath, type);
+    models[modelpath] = type;
 }
 
 k_EItemType ItemModelMapper::GetItemType(CachedEntity *entity)
 {
-    const uintptr_t model = (uintptr_t) RAW_ENT(entity)->GetModel();
-    for (const auto &it : map)
+    const uintptr_t model = (uint64_t) RAW_ENT(entity)->GetModel();
+    try
     {
-        if (it.first == model)
-            return it.second;
+        return map.at(model);
+    }
+    // Do Nothing
+    catch (std::out_of_range)
+    {
+
     }
     std::string path(g_IModelInfo->GetModelName((const model_t *) model));
     bool set = false;
-    for (const auto &it : models)
+    // Do Nothing
+    try
     {
-        // logging::Info("comparing [%s] to [%s]", path.c_str(),
-        // it.first.c_str());
-        if (it.first == path)
-        {
-            // logging::Info("Found %s!", path.c_str());
-            map.emplace(model, it.second);
-            set = true;
-            break;
-        }
+        models.at(path);
+        set = true;
+    }
+    catch (std::out_of_range)
+    {
+
     }
     if (!set)
-        map.emplace(model, k_EItemType::ITEM_NONE);
+        map[model] = k_EItemType::ITEM_NONE;
     return k_EItemType::ITEM_NONE;
 }
 
