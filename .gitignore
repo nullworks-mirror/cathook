@@ -285,3 +285,5 @@ scripts/updater-preferences
 /modules/*/
 !/modules/readme.md
 !/modules/CMakeLists.txt
+
+scripts/partybypass-preferences

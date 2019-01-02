@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+if [ ! -f ./scripts/partybypass-preferences ]; then
+    while true; do
+        read -p "Do you want to enable the proprietary partybypass library? y/n " yn
+        case $yn in
+            [Yy]* ) echo true > ./scripts/partybypass-preferences; break;;
+            [Nn]* ) echo false > ./scripts/partybypass-preferences; exit;;
+            * ) echo "Please answer y or n.";;
+        esac
+    done
+fi
+if [ `cat ./scripts/partybypass-preferences` == "true" ]; then
+    line=$(pidof hl2_linux)
+    arr=($line)
+    inst=$1
+    if [ $# == 0 ]; then
+        inst=0
+    fi
+
+    if [ ${#arr[@]} == 0 ]; then
+        echo TF2 isn\'t running!
+        exit
+    fi
+
+    if [ $inst -gt ${#arr[@]} ] || [ $inst == ${#arr[@]} ]; then
+        echo wrong index!
+        exit
+    fi
+
+    proc=${arr[$inst]}
+
+    # pBypass for crash dumps being sent
+    # You may also want to consider using -nobreakpad in your launch options.
+    sudo rm -rf /tmp/dumps # Remove if it exists
+    sudo mkdir /tmp/dumps # Make it as root
+    sudo chmod 000 /tmp/dumps # No permissions
+
+    FILENAME="/tmp/.gl$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)"
+
+    cp "./lib/libpartybypass-linux.so" "$FILENAME"
+
+    gdb -n -q -batch \
+        -ex "attach $proc" \
+        -ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
+        -ex "call \$dlopen(\"$FILENAME\", 1)" \
+        -ex "detach" \
+        -ex "quit" > /dev/null 2>&1
+    
+    rm $FILENAME
+    echo -e "\n\033[1;34mPartybypass injected.\033[0m" && exit 0
+fi

@@ -405,24 +405,26 @@ static void cm()
 
     if (navtarget)
     {
-        if (follow_target)
-            navtarget = 0;
-        breadcrumbs.clear();
-        auto ent = ENTITY(navtarget);
-        static Timer navtimer{};
-        if (CE_GOOD(ent) && navtimer.test_and_set(800))
+        if (!follow_target)
         {
-            if (nav::navTo(ent->m_vecOrigin(), 8, true, false))
-                navinactivity.update();
+            breadcrumbs.clear();
+            auto ent = ENTITY(navtarget);
+            static Timer navtimer{};
+            if (CE_GOOD(ent) && navtimer.test_and_set(800))
+            {
+                if (nav::navTo(ent->m_vecOrigin(), 8, true, false))
+                    navinactivity.update();
+            }
+            if (navinactivity.check(15000))
+                navtarget = 0;
+            nb::task::current_task = nb::task::followbot;
+            return;
         }
-        if (navinactivity.check(15000))
+        else
+        {
             navtarget = 0;
-        nb::task::current_task = nb::task::followbot;
-        return;
-    }
-    if (!navtarget && follow_target)
-    {
-        nav::clearInstructions();
+            nav::clearInstructions();
+        }
     }
 
     // last check for entity before we continue
