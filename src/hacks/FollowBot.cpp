@@ -288,7 +288,7 @@ static void cm()
                     if (VisCheckEntFromEnt(LOCAL_E, entity))
                         found = true;
                 }
-                if (!found && isNavBotCM)
+                if (!found && isNavBotCM && navtarget != i)
                 {
                     if (nav::navTo(entity->m_vecOrigin(), 8, true, false))
                     {
@@ -307,7 +307,7 @@ static void cm()
     // If we dont have a follow target from that, we look again for someone
     // else who is suitable
     {
-        if ((!follow_target || change || (ClassPriority(ENTITY(follow_target)) < 6 && ENTITY(follow_target)->player_info.friendsID != steamid)) && roambot)
+        if ((!follow_target || change || (ClassPriority(ENTITY(follow_target)) < 6 && (ENTITY(follow_target)->player_info.friendsID != steamid || ENTITY(navtarget)->player_info.friendsID != steamid))) && roambot)
         {
             // Try to get a new target
             auto ent_count = followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
