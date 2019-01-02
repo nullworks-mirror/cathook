@@ -190,7 +190,6 @@ k_EItemType ItemModelMapper::GetItemType(CachedEntity *entity)
     // Do Nothing
     catch (std::out_of_range)
     {
-
     }
     std::string path(g_IModelInfo->GetModelName((const model_t *) model));
     bool set = false;
@@ -202,7 +201,6 @@ k_EItemType ItemModelMapper::GetItemType(CachedEntity *entity)
     }
     catch (std::out_of_range)
     {
-
     }
     if (!set)
         map[model] = k_EItemType::ITEM_NONE;

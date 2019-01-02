@@ -100,7 +100,7 @@ void ResetPlayer(int idx)
     g_Settings.brute.choke[idx]       = {};
     g_Settings.brute.brutenum[idx]    = 0;
     g_Settings.brute.last_angles[idx] = {};
-    g_Settings.brute.lastsimtime = 0.0f;
+    g_Settings.brute.lastsimtime      = 0.0f;
 }
 class ResolverListener : public IGameEventListener
 {

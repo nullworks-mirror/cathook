@@ -481,16 +481,19 @@ void ReplaceString(std::string &input, const std::string &what, const std::strin
     }
 }
 
-void ReplaceSpecials(std::string &str) {
+void ReplaceSpecials(std::string &str)
+{
     int val, i;
     size_t c = 0, len = str.size();
-    for (int i = 0; i + c < len; ++i) {
+    for (int i = 0; i + c < len; ++i)
+    {
         str[i] = str[i + c];
         if (str[i] != '\\')
             continue;
         if (i + c + 1 == len)
             break;
-        switch (str[i + c + 1]) {
+        switch (str[i + c + 1])
+        {
         // Several control characters
         case 'b':
             ++c;
@@ -544,15 +547,20 @@ void ReplaceSpecials(std::string &str) {
             std::sscanf(&str[i + c + 2], "%04X", &val);
             c += 5;
             // 2. Convert value to UTF-8
-            if (val <= 0x7F) {
+            if (val <= 0x7F)
+            {
                 str[i] = val;
-            } else if (val <= 0x7FF) {
-                str[i] = 0xC0 | ((val >> 6) & 0x1F);
+            }
+            else if (val <= 0x7FF)
+            {
+                str[i]     = 0xC0 | ((val >> 6) & 0x1F);
                 str[i + 1] = 0x80 | (val & 0x3F);
                 ++i;
                 --c;
-            } else {
-                str[i] = 0xE0 | ((val >> 12) & 0xF);
+            }
+            else
+            {
+                str[i]     = 0xE0 | ((val >> 12) & 0xF);
                 str[i + 1] = 0x80 | ((val >> 6) & 0x3F);
                 str[i + 2] = 0x80 | (val & 0x3F);
                 i += 2;

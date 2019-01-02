@@ -30,8 +30,9 @@ static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
 // How long should the bot wait until pathing again?
 static Timer wait_until_path{};
 // What is the bot currently doing
-namespace task {
-    task current_task;
+namespace task
+{
+task current_task;
 }
 constexpr bot_class_config DIST_OTHER{ 100.0f, 200.0f, 300.0f };
 constexpr bot_class_config DIST_SNIPER{ 1000.0f, 1500.0f, 3000.0f };
