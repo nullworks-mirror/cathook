@@ -183,25 +183,14 @@ void ItemModelMapper::RegisterItem(std::string modelpath, k_EItemType type)
 k_EItemType ItemModelMapper::GetItemType(CachedEntity *entity)
 {
     const uintptr_t model = (uint64_t) RAW_ENT(entity)->GetModel();
-    try
-    {
-        return map.at(model);
-    }
-    // Do Nothing
-    catch (std::out_of_range)
-    {
-    }
+    auto find = map.find(model);
+    if (find != map.end())
+        return find->second;
     std::string path(g_IModelInfo->GetModelName((const model_t *) model));
     bool set = false;
-    // Do Nothing
-    try
-    {
-        models.at(path);
+    auto find2 = models.find(path);
+    if (find2 != models.end())
         set = true;
-    }
-    catch (std::out_of_range)
-    {
-    }
     if (!set)
         map[model] = k_EItemType::ITEM_NONE;
     return k_EItemType::ITEM_NONE;
