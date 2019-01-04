@@ -430,8 +430,26 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Distance
         if (EffectiveTargetingRange())
         {
-            if (entity->m_flDistance() > EffectiveTargetingRange())
-                return false;
+            if (g_pLocalPlayer->weapon_mode != weapon_melee)
+            {
+                if (entity->m_flDistance() > EffectiveTargetingRange())
+                    return false;
+            }
+            else
+            {
+                float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+                int hb           = BestHitbox(entity);
+                if (hb == -1)
+                    return false;
+                Vector newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, entity->hitboxes.GetHitbox(hb)->center);
+                trace_t trace;
+                Ray_t ray;
+                trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+                ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange));
+                g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
+                if ((IClientEntity *) trace.m_pEnt != RAW_ENT(entity))
+                    return false;
+            }
         }
         // Rage only check
         if (rageonly)

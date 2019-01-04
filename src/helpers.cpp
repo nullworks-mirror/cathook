@@ -893,6 +893,8 @@ bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt, Cached
 
 Vector GetBuildingPosition(CachedEntity *ent)
 {
+    if (ent->hitboxes.GetHitbox(0))
+        return ent->hitboxes.GetHitbox(0)->center;
     Vector res;
     res         = ent->m_vecOrigin();
     int classid = ent->m_iClassID();
