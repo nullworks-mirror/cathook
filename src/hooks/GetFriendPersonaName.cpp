@@ -16,7 +16,7 @@ static std::string stolen_name;
 int getRng(int min, int max)
 {
     static std::random_device rd;
-    std::uniform_real_distribution<int> unif(min, max);
+    std::uniform_int_distribution<int> unif(min, max);
     static std::mt19937 rand_engine(rd());
 
     int x = unif(rand_engine);
