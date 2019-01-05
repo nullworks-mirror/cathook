@@ -13,6 +13,16 @@ static settings::Int namesteal{ "name.namesteal", "0" };
 
 static std::string stolen_name;
 
+int getRng(int min, int max)
+{
+    static std::random_device rd;
+    std::uniform_real_distribution<int> unif(min, max);
+    static std::mt19937 rand_engine(rd());
+
+    int x = unif(rand_engine);
+    return x;
+}
+
 // Func to get a new entity to steal name from and returns true if a target has
 // been found
 bool StolenName()
@@ -72,7 +82,7 @@ bool StolenName()
         return false;
 
     // Get random number that we can use with our array
-    int target_random_num = floor(RandFloatRange(0, potential_targets_length - 0.1F));
+    int target_random_num = getRng(0, potential_targets_length - 1);
 
     // Get a idx from our random array position
     int new_target = potential_targets[target_random_num];
