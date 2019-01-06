@@ -5,7 +5,6 @@
 
 #include <menu/GuiInterface.hpp>
 #include "HookedMethods.hpp"
-#include <menu/menu/Menu.hpp>
 namespace hooked_methods
 {
 

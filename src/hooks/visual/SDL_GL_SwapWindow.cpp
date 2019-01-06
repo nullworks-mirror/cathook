@@ -9,6 +9,7 @@
 #include "HookedMethods.hpp"
 #include "timer.hpp"
 #include <SDL2/SDL_syswm.h>
+#include <menu/menu/Menu.hpp>
 
 static bool init{ false };
 static bool init_wminfo{ false };
@@ -51,6 +52,8 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
             prev_width  = draw::width;
             prev_height = draw::height;
             draw::InitGL();
+            if (zerokernel::Menu::instance)
+                zerokernel::Menu::instance->resize(draw::width, draw::height);
             init = true;
         }
         draw::BeginGL();
