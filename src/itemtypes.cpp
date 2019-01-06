@@ -183,11 +183,11 @@ void ItemModelMapper::RegisterItem(std::string modelpath, k_EItemType type)
 k_EItemType ItemModelMapper::GetItemType(CachedEntity *entity)
 {
     const uintptr_t model = (uint64_t) RAW_ENT(entity)->GetModel();
-    auto find = map.find(model);
+    auto find             = map.find(model);
     if (find != map.end())
         return find->second;
     std::string path(g_IModelInfo->GetModelName((const model_t *) model));
-    bool set = false;
+    bool set   = false;
     auto find2 = models.find(path);
     if (find2 != models.end())
         set = true;
