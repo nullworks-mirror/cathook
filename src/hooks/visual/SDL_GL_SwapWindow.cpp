@@ -44,9 +44,12 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
 
     if (isHackActive() && !disable_visuals)
     {
+        static int prev_width, prev_height;
         PROF_SECTION(SWAPWINDOW_cathook);
-        if (not init)
+        if (not init || draw::width != prev_width || draw::height != prev_height)
         {
+            prev_width  = draw::width;
+            prev_height = draw::height;
             draw::InitGL();
             init = true;
         }

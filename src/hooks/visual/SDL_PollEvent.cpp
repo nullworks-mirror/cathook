@@ -5,7 +5,7 @@
 
 #include <menu/GuiInterface.hpp>
 #include "HookedMethods.hpp"
-
+#include <menu/menu/Menu.hpp>
 namespace hooked_methods
 {
 
@@ -18,6 +18,7 @@ DEFINE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *event)
     static Timer waitfirst{};
     if (gui::handleSdlEvent(event))
         return 0;
+    g_IEngine->GetScreenSize(draw::width, draw::height);
 #endif
     return ret;
 }
