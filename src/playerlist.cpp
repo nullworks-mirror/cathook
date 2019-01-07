@@ -113,18 +113,19 @@ void Load()
 #if ENABLE_VISUALS
 rgba_t Color(unsigned steamid)
 {
-    if (AccessData(steamid).state == k_EState::DEVELOPER)
+    const auto &pl = AccessData(steamid);
+    if (pl.state == k_EState::DEVELOPER)
         return colors::RainbowCurrent();
-    if (AccessData(steamid).state == k_EState::CAT)
+    else if (pl.state == k_EState::CAT)
         return colors::RainbowCurrent();
-    if (AccessData(steamid).color.a)
-    {
-        return AccessData(steamid).color;
-    }
-    else
-    {
-        return k_Colors[static_cast<int>(AccessData(steamid).state)];
-    }
+    else if (pl.color.a)
+        return pl.color;
+
+    int state = static_cast<int>(pl.state);
+    if (state < sizeof(k_Colors) / sizeof(*k_Colors))
+        return k_Colors[state];
+
+    return colors::empty;
 }
 
 rgba_t Color(CachedEntity *player)
