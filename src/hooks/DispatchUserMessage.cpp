@@ -120,7 +120,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                     anti_balance_attempts = 0;
                 }
                 if (anti_balance_attempts < 2)
-                    g_IEngine->ClientCmd_Unrestricted("cat_disconnect read if gay;wait 100;cat_mm_join");
+                    g_IEngine->ClientCmd_Unrestricted("killserver;wait 100;cat_mm_join");
                 else
                 {
                     std::string autobalance_msg = "tf_party_chat \"autobalanced in 3 seconds";
@@ -132,7 +132,6 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                 }
                 anti_balance_attempts++;
             }
-            buf.Seek(0);
         }
         break;
     case 4:
@@ -156,13 +155,14 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         std::string event(p), name((p += event.size() + 1)), message(p + name.size() + 1);
         if (chat_filter_enable && data[0] == LOCAL_E->m_IDX && event == "#TF_Name_Change")
         {
-            chat_stack::Say("." + clear, false);
+            chat_stack::Say("\e" + clear, false);
         }
         else if (chat_filter_enable && data[0] != LOCAL_E->m_IDX && event.find("TF_Chat") == 0)
         {
             player_info_s info{};
             g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
-            std::string name1 = info.name, claz;
+            const char *claz = nullptr;
+            std::string name1 = info.name;
 
             switch (g_pLocalPlayer->clazz)
             {
@@ -197,7 +197,10 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                 break;
             }
 
-            std::vector<std::string> res = { "skid", "script", "cheat", "hak", "hac", "f1", "hax", "vac", "ban", "bot", "report", "kick", claz };
+            std::vector<std::string> res = { "skid", "script", "cheat", "hak", "hac", "f1", "hax", "vac", "ban", "bot", "report", "kick" };
+            if (claz)
+                res.emplace_back(claz);
+
             SplitName(res, name1, 2);
             SplitName(res, name1, 3);
 
@@ -213,7 +216,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
             for (auto filter : res)
                 if (boost::contains(message2, filter))
                 {
-                    chat_stack::Say("." + clear, true);
+                    chat_stack::Say("\e" + clear, true);
                     retrun     = true;
                     lastfilter = message;
                     lastname   = format(name);
