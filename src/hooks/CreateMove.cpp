@@ -339,7 +339,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         }
     }
 #endif
-    hacks::shared::backtrack::UpdateIncomingSequences();
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         speedapplied = false;

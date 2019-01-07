@@ -89,6 +89,7 @@ static void Run()
         isBacktrackEnabled = false;
         return;
     }
+    UpdateIncomingSequences();
     isBacktrackEnabled = true;
 
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
