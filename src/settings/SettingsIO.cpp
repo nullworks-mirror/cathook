@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include "core/logging.hpp"
+#include "interfaces.hpp"
+#include "icvar.h"
 
 settings::SettingsWriter::SettingsWriter(settings::Manager &manager) : manager(manager)
 {
@@ -21,6 +23,7 @@ bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
     if (!stream || stream.bad() || !stream.is_open() || stream.fail())
     {
         logging::Info("cat_save: FATAL! FAILED to create stream!");
+        g_ICvar->ConsolePrintf("CAT: cat_save: Can't create config file!\n");
         return false;
     }
 
@@ -42,8 +45,12 @@ bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
             stream.flush();
         }
     if (!stream || stream.bad() || stream.fail())
+    {
+        g_ICvar->ConsolePrintf("CAT: cat_save: Failed to save config!\n");
         logging::Info("cat_save: FATAL! Stream bad!");
-    logging::Info("cat_save: Finished");
+    }
+    else
+        g_ICvar->ConsolePrintf("CAT: cat_save: Successfully saved config!\n");
     stream.close();
     if (stream.fail())
         logging::Info("cat_save: FATAL! Stream bad (2)!");
@@ -92,6 +99,7 @@ bool settings::SettingsReader::loadFrom(std::string path)
     if (stream.fail())
     {
         logging::Info("cat_load: Can't access file!");
+        g_ICvar->ConsolePrintf("CAT: cat_load: File doesn't exist / can't open file!\n");
         return false;
     }
 
@@ -106,10 +114,12 @@ bool settings::SettingsReader::loadFrom(std::string path)
     if (stream.fail() && !stream.eof())
     {
         logging::Info("cat_load: FATAL: Read failed!");
+        g_ICvar->ConsolePrintf("CAT: cat_load: Failed to read config!\n");
         return false;
     }
 
     logging::Info("cat_load: Read Success!");
+    g_ICvar->ConsolePrintf("CAT: cat_load: Successfully loaded config!\n");
     finishString(true);
 
     return true;

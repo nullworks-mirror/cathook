@@ -2,7 +2,7 @@
 if [ ! -f ./scripts/partybypass-preferences ]; then
     while true; do
         echo 'https://github.com/nullworks/cathook/wiki/What-is-Partybypass-and-how-do-I-use-it%3F'
-        read -p "Do you want to enable the proprietary partybypass library? y/n " yn
+        read -p "Do you want to enable the precompiled partybypass library? y/n " yn
         case $yn in
             [Yy]* ) echo true > ./scripts/partybypass-preferences; break;;
             [Nn]* ) echo false > ./scripts/partybypass-preferences; exit;;

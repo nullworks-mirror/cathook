@@ -388,14 +388,13 @@ static void cm()
         else
         {
             breadcrumbs.clear();
+            follow_target = 0;
             static Timer navtimer{};
             if (CE_GOOD(ent))
             {
                 if (!ent->m_bAlivePlayer())
                 {
                     navtarget = 0;
-                    breadcrumbs.clear();
-                    follow_target = 0;
                 }
                 if (navtimer.test_and_set(800))
                 {
@@ -406,8 +405,6 @@ static void cm()
             if (navinactivity.check(15000))
             {
                 navtarget = 0;
-                breadcrumbs.clear();
-                follow_target = 0;
             }
             nb::task::current_task = nb::task::followbot;
             return;
