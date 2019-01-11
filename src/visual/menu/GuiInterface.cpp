@@ -50,32 +50,32 @@ public:
         }
         else if (name == "player_disconnect")
         {
-            //logging::Info("removePlayer %d", userid);
+            // logging::Info("removePlayer %d", userid);
             controller->removePlayer(userid);
         }
         else if (name == "player_team")
         {
-            //logging::Info("updatePlayerTeam %d", userid);
+            // logging::Info("updatePlayerTeam %d", userid);
             controller->updatePlayerTeam(userid, event->GetInt("team") - 1);
         }
         else if (name == "player_changeclass")
         {
-            //logging::Info("updatePlayerClass %d", userid);
+            // logging::Info("updatePlayerClass %d", userid);
             controller->updatePlayerClass(userid, event->GetInt("class"));
         }
         else if (name == "player_changename")
         {
-            //logging::Info("updatePlayerName %d", userid);
+            // logging::Info("updatePlayerName %d", userid);
             controller->updatePlayerName(userid, event->GetString("newname"));
         }
         else if (name == "player_death")
         {
-            //logging::Info("updatePlayerLifeState %d", userid);
+            // logging::Info("updatePlayerLifeState %d", userid);
             controller->updatePlayerLifeState(userid, true);
         }
         else if (name == "player_spawn")
         {
-            //logging::Info("updatePlayerLifeState %d", userid);
+            // logging::Info("updatePlayerLifeState %d", userid);
             controller->updatePlayerLifeState(userid, false);
         }
     }
@@ -148,7 +148,7 @@ bool gui::handleSdlEvent(SDL_Event *event)
     {
         if (event->key.keysym.scancode == (*open_gui_button).scan)
         {
-            //logging::Info("GUI open button pressed");
+            // logging::Info("GUI open button pressed");
             zerokernel::Menu::instance->setInGame(!zerokernel::Menu::instance->isInGame());
             if (!zerokernel::Menu::instance->isInGame())
             {

@@ -12,9 +12,11 @@ enum task : uint8_t
     sniper_spot,
     stay_near,
     health,
-    ammo
+    ammo,
+    followbot
 };
-}
+extern task current_task;
+} // namespace task
 struct bot_class_config
 {
     float min;

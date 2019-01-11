@@ -4,6 +4,7 @@
 # https://github.com/LWSS/Fuzion/commit/a53b6c634cde0ed47b08dd587ba40a3806adf3fe
 
 sudo ./scripts/auto-updater
+sudo ./scripts/attach-partybypass $1
 line=$(pidof hl2_linux)
 arr=($line)
 inst=$1
