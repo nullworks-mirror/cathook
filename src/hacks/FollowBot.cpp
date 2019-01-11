@@ -513,7 +513,7 @@ static void cm()
         static float last_slot_check = 0.0f;
         if (g_GlobalVars->curtime < last_slot_check)
             last_slot_check = 0.0f;
-        if (follow_target && (always_medigun || mimic_slot) && (g_GlobalVars->curtime - last_slot_check > 1.0f) && !g_pLocalPlayer->life_state && !CE_BYTE(ENTITY(follow_target), netvar.iLifeState))
+        if (follow_target && ((always_medigun && g_pPlayerResource->GetClass(LOCAL_E) == tf_medic) || mimic_slot) && (g_GlobalVars->curtime - last_slot_check > 1.0f) && !g_pLocalPlayer->life_state && !CE_BYTE(ENTITY(follow_target), netvar.iLifeState))
         {
 
             // We are checking our slot so reset the timer
