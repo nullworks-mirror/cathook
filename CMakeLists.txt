@@ -3,9 +3,12 @@
 #   SDL2
 #   GLEW
 
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/cotire/CMake")
-cmake_policy(SET CMP0011 NEW)
-include(cotire)
+set(EnableCotire 1 CACHE BOOL "Enable CoTiRe (Compile Time Reducer)")
+if (EnableCotire)
+    set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/cotire/CMake")
+    cmake_policy(SET CMP0011 NEW)
+    include(cotire)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type")
@@ -138,9 +141,11 @@ add_subdirectory(include)
 add_subdirectory(external)
 add_subdirectory(modules)
 
-set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp")
-set_target_properties(cathook PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
-cotire(cathook)
+if (EnableCotire)
+    set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp")
+    set_target_properties(cathook PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+    cotire(cathook)
+endif()
 
 add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")

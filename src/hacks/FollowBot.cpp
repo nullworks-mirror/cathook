@@ -34,9 +34,9 @@ namespace hacks::shared::followbot
 namespace nb = hacks::tf2::NavBot;
 
 static Timer navBotInterval{};
-unsigned steamid = 0x0;
+static unsigned steamid = 0x0;
 
-CatCommand follow_steam("fb_steam", "Follow Steam Id", [](const CCommand &args) {
+static CatCommand follow_steam("fb_steam", "Follow Steam Id", [](const CCommand &args) {
     if (args.ArgC() < 1)
     {
         steam_var = 0;
@@ -55,7 +55,7 @@ CatCommand follow_steam("fb_steam", "Follow Steam Id", [](const CCommand &args) 
     }
 });
 
-CatCommand steam_debug("debug_steamid", "Print steamids", []() {
+static CatCommand steam_debug("debug_steamid", "Print steamids", []() {
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
         auto ent = ENTITY(i);
@@ -73,11 +73,11 @@ static bool followcart{ false };
 int follow_target  = 0;
 static bool inited = false;
 
-Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
-Timer lastJump{};
-std::array<Timer, 32> afkTicks; // for how many ms the player hasn't been moving
+static Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
+static Timer lastJump{};
+static std::array<Timer, 32> afkTicks; // for how many ms the player hasn't been moving
 
-void checkAFK()
+static void checkAFK()
 {
     for (int i = 0; i < g_GlobalVars->maxClients; i++)
     {
@@ -91,7 +91,7 @@ void checkAFK()
     }
 }
 
-void init()
+static void init()
 {
     for (int i = 0; i < afkTicks.size(); i++)
     {
@@ -102,7 +102,7 @@ void init()
 }
 
 // auto add checked crumbs for the walkbot to follow
-void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
+static void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
 {
     breadcrumbs.clear();
     if (g_pLocalPlayer->v_Origin != corner)
@@ -123,7 +123,7 @@ void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Origin)
     }
 }
 
-void addCrumbPair(CachedEntity *player1, CachedEntity *player2, std::pair<Vector, Vector> corners)
+static void addCrumbPair(CachedEntity *player1, CachedEntity *player2, std::pair<Vector, Vector> corners)
 {
     Vector corner1 = corners.first;
     Vector corner2 = corners.second;
@@ -166,7 +166,7 @@ void addCrumbPair(CachedEntity *player1, CachedEntity *player2, std::pair<Vector
  *   tf_engineer = 9
  */
 
-constexpr int priority_list[10][10] = {
+static constexpr int priority_list[10][10] = {
     /*0  1  2  3  4  5  6  7  8  9 */
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, // No class
     { 0, 8, 2, 7, 6, 2, 5, 1, 0, 0 }, // Scout
@@ -187,8 +187,56 @@ int ClassPriority(CachedEntity *ent)
     return priority_list[local_class][ents_class];
 }
 
-Timer waittime{};
-int lastent = 0;
+static int lastent = 0;
+static Timer waittime{};
+static Timer navinactivity{};
+static int navtarget = 0;
+
+static bool startFollow(CachedEntity *entity, bool useNavbot)
+{
+    if (!follow_activation || entity->m_flDistance() <= (float) follow_activation)
+    {
+        if (corneractivate)
+        {
+            Vector indirectOrigin = VischeckCorner(LOCAL_E, entity, *follow_activation / 2,
+                                                   true); // get the corner location that the
+            // future target is visible from
+            std::pair<Vector, Vector> corners;
+            if (!indirectOrigin.z && entity->m_IDX == lastent) // if we couldn't find it, run
+            // wallcheck instead
+            {
+                corners = VischeckWall(LOCAL_E, entity, float(follow_activation) / 2, true);
+                if (!corners.first.z || !corners.second.z)
+                    return false;
+                // addCrumbs(LOCAL_E, corners.first);
+                // addCrumbs(entity, corners.second);
+                addCrumbPair(LOCAL_E, entity, corners);
+                return true;
+            }
+            if (indirectOrigin.z)
+            {
+                addCrumbs(entity, indirectOrigin);
+                return true;
+            }
+        }
+        else
+        {
+            if (VisCheckEntFromEnt(LOCAL_E, entity))
+            {
+                return true;
+            }
+        }
+    }
+    if (useNavbot)
+    {
+        if (nav::navTo(entity->m_vecOrigin(), 8, true, false))
+        {
+            navtarget = entity->m_IDX;
+            return true;
+        }
+    }
+    return false;
+}
 
 #if ENABLE_IPC
 static void cm()
@@ -235,17 +283,15 @@ static void cm()
         breadcrumbs.clear(); // no target == no path
 
     bool isNavBotCM = navBotInterval.test_and_set(3000);
-    static Timer navinactivity{};
-    static int navtarget = 0;
 
     // Target Selection
     {
 
-        if (steamid && ((follow_target && ENTITY(follow_target)->player_info.friendsID != steamid) || !follow_target))
+        if (steamid && !(ENTITY(follow_target)->player_info.friendsID == steamid || ENTITY(navtarget)->player_info.friendsID == steamid))
         {
             // Find a target with the steam id, as it is prioritized
             auto ent_count = g_IEngine->GetMaxClients();
-            for (int i = 0; i < ent_count; i++)
+            for (int i = 1; i < ent_count; i++)
             {
                 auto entity = ENTITY(i);
                 if (CE_BAD(entity)) // Exist + dormant
@@ -259,59 +305,24 @@ static void cm()
 
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
-                bool found = false;
-                if (corneractivate)
+                if (startFollow(entity, isNavBotCM))
                 {
-                    Vector indirectOrigin = VischeckCorner(LOCAL_E, entity, *follow_activation / 2,
-                                                           true); // get the corner location that the
-                    // future target is visible from
-                    std::pair<Vector, Vector> corners;
-                    if (!indirectOrigin.z && entity->m_IDX == lastent) // if we couldn't find it, run
-                    // wallcheck instead
-                    {
-                        corners = VischeckWall(LOCAL_E, entity, float(follow_activation) / 2, true);
-                        if (!corners.first.z || !corners.second.z)
-                            continue;
-                        // addCrumbs(LOCAL_E, corners.first);
-                        // addCrumbs(entity, corners.second);
-                        addCrumbPair(LOCAL_E, entity, corners);
-                        found = true;
-                    }
-                    if (indirectOrigin.z)
-                    {
-                        addCrumbs(entity, indirectOrigin);
-                        found = true;
-                    }
+                    navinactivity.update();
+                    follow_target = entity->m_IDX;
+                    afkTicks[i].update();
+                    break;
                 }
-                else
-                {
-                    if (VisCheckEntFromEnt(LOCAL_E, entity))
-                        found = true;
-                }
-                if (!found && isNavBotCM && navtarget != i)
-                {
-                    if (nav::navTo(entity->m_vecOrigin(), 8, true, false))
-                    {
-                        navtarget = i;
-                        navinactivity.update();
-                        break;
-                    }
-                }
-                if (!found)
-                    continue;
-                follow_target = entity->m_IDX;
-                break;
             }
         }
     }
     // If we dont have a follow target from that, we look again for someone
     // else who is suitable
     {
-        if ((!follow_target || change || (ClassPriority(ENTITY(follow_target)) < 6 && (ENTITY(follow_target)->player_info.friendsID != steamid || ENTITY(navtarget)->player_info.friendsID != steamid))) && roambot)
+        if (roambot && !navtarget && (!follow_target || change || (ClassPriority(ENTITY(follow_target)) < 6 && ENTITY(follow_target)->player_info.friendsID != steamid)))
         {
             // Try to get a new target
             auto ent_count = followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
-            for (int i = 0; i < ent_count; i++)
+            for (int i = 1; i < ent_count; i++)
             {
                 auto entity = ENTITY(i);
                 if (CE_BAD(entity)) // Exist + dormant
@@ -330,9 +341,7 @@ static void cm()
                     continue;
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
-                if (follow_activation && entity->m_flDistance() > (float) follow_activation)
-                    continue;
-                const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
+                // const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
                 // FIXME follow cart/point
                 /*if (followcart && model &&
                     (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
@@ -353,77 +362,55 @@ static void cm()
                 // target
                 if (ClassPriority(ENTITY(follow_target)) >= ClassPriority(ENTITY(i)))
                     continue;
-                bool found = false;
-                if (corneractivate)
+                if (startFollow(entity, isNavBotCM))
                 {
-                    Vector indirectOrigin = VischeckCorner(LOCAL_E, entity, *follow_activation / 2,
-                                                           true); // get the corner location that the
-                    // future target is visible from
-                    std::pair<Vector, Vector> corners;
-                    if (!indirectOrigin.z && entity->m_IDX == lastent) // if we couldn't find it, run
-                    // wallcheck instead
-                    {
-                        corners = VischeckWall(LOCAL_E, entity, float(follow_activation) / 2, true);
-                        if (!corners.first.z || !corners.second.z)
-                            continue;
-                        // addCrumbs(LOCAL_E, corners.first);
-                        // addCrumbs(entity, corners.second);
-                        addCrumbPair(LOCAL_E, entity, corners);
-                        found = true;
-                    }
-                    if (indirectOrigin.z)
-                    {
-                        addCrumbs(entity, indirectOrigin);
-                        found = true;
-                    }
+                    // ooooo, a target
+                    navinactivity.update();
+                    follow_target = i;
+                    afkTicks[i].update(); // set afk time to 03
+                    break;
                 }
-                else
-                {
-                    if (VisCheckEntFromEnt(LOCAL_E, entity))
-                        found = true;
-                }
-                if (!found && isNavBotCM)
-                {
-                    if (nav::navTo(entity->m_vecOrigin(), 8, true, false))
-                    {
-                        navtarget = i;
-                        navinactivity.update();
-                        break;
-                    }
-                }
-                if (!found)
-                    continue;
-                // ooooo, a target
-                follow_target = i;
-                afkTicks[i].update(); // set afk time to 0
             }
         }
     }
     lastent++;
     if (lastent > g_IEngine->GetMaxClients())
-        lastent = 0;
+        lastent = 1;
 
     if (navtarget)
     {
-        if (!follow_target)
+        auto ent = ENTITY(navtarget);
+        if (CE_GOOD(ent) && startFollow(ent, false))
         {
-            breadcrumbs.clear();
-            auto ent = ENTITY(navtarget);
-            static Timer navtimer{};
-            if (CE_GOOD(ent) && navtimer.test_and_set(800))
-            {
-                if (nav::navTo(ent->m_vecOrigin(), 8, true, false))
-                    navinactivity.update();
-            }
-            if (navinactivity.check(15000))
-                navtarget = 0;
-            nb::task::current_task = nb::task::followbot;
-            return;
+            follow_target = navtarget;
+            navtarget     = 0;
         }
         else
         {
-            navtarget = 0;
-            nav::clearInstructions();
+            breadcrumbs.clear();
+            static Timer navtimer{};
+            if (CE_GOOD(ent))
+            {
+                if (!ent->m_bAlivePlayer())
+                {
+                    navtarget = 0;
+                    breadcrumbs.clear();
+                    follow_target = 0;
+                }
+                if (navtimer.test_and_set(800))
+                {
+                    if (nav::navTo(ent->m_vecOrigin(), 8, true, false))
+                        navinactivity.update();
+                }
+            }
+            if (navinactivity.check(15000))
+            {
+                navtarget = 0;
+                breadcrumbs.clear();
+                follow_target = 0;
+            }
+            nb::task::current_task = nb::task::followbot;
+            return;
         }
     }
 
@@ -435,6 +422,7 @@ static void cm()
         return;
     }
     nb::task::current_task = nb::task::followbot;
+    nav::clearInstructions();
 
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed
