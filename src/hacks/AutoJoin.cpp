@@ -16,6 +16,7 @@ static settings::Bool autojoin_team{ "autojoin.team", "false" };
 static settings::Int autojoin_class{ "autojoin.class", "0" };
 static settings::Bool auto_queue{ "autojoin.auto-queue", "false" };
 static settings::Bool auto_requeue{ "autojoin.auto-requeue", "false" };
+static settings::Bool partybypass{ "hack.party-bypass", "true" };
 
 namespace hacks::shared::autojoin
 {
@@ -130,5 +131,18 @@ void onShutdown()
         tfmm::startQueue();
 }
 
-static InitRoutine init([]() { EC::Register(EC::CreateMove, update, "cm_autojoin", EC::average); });
+static CatCommand get_steamid("print_steamid", "Prints your SteamID", []() { g_ICvar->ConsolePrintf("%u\n", g_ISteamUser->GetSteamID().GetAccountID()); });
+
+static InitRoutine init([]() {
+    EC::Register(EC::CreateMove, update, "cm_autojoin", EC::average);
+    static BytePatch p = { gSignatures.GetClientSignature, "55 89 E5 53 83 EC 14 8B 45 08 8B 40 30", 0x00, { 0x31, 0xC0, 0x40, 0xC3 } };
+    if (*partybypass)
+        p.Patch();
+    partybypass.installChangeCallback([](settings::VariableBase<bool> &, bool new_val) {
+        if (new_val)
+            p.Patch();
+        else
+            p.Shutdown();
+    });
+});
 } // namespace hacks::shared::autojoin
