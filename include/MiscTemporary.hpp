@@ -28,6 +28,9 @@ extern settings::Bool crypt_chat;
 extern settings::Bool nolerp;
 extern settings::Bool no_zoom;
 extern settings::Bool disable_visuals;
+extern settings::Int print_r;
+extern settings::Int print_g;
+extern settings::Int print_b;
 
 void SetCanshootStatus();
 extern bool CanShootException;
