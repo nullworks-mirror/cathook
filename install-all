@@ -9,7 +9,7 @@ fi
 # Install base Dependencies
 #
 if [ -x "$(command -v pacman)" ]; then
-    sudo pacman -S --needed --noconfirm boost cmake make gcc gdb lib32-sdl2 lib32-glew freetype2 rsync lib32-libglvnd
+    sudo pacman -S --needed --noconfirm boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd
 else
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     sudo apt update
