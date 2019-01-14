@@ -614,6 +614,8 @@ bool HasWeapon(CachedEntity *ent, int wantedId)
     int *hWeapons;
     // Grab the handle and store it into the var
     hWeapons = (int *) ((unsigned) (RAW_ENT(ent) + netvar.hMyWeapons));
+    if (!hWeapons || !RAW_ENT(ent) || ent->m_Type() != ENTITY_PLAYER)
+        return false;
     // Go through the handle array and search for the item
     for (int i = 0; hWeapons[i]; i++)
     {
