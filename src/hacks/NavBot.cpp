@@ -330,29 +330,34 @@ static inline bool hasLowAmmo()
 static bool getHealthAndAmmo()
 {
     static Timer health_ammo_timer{};
-    if (!health_ammo_timer.check(3000))
+    if (!health_ammo_timer.test_and_set(2000))
         return false;
     if (current_task == task::health && static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() >= 0.64f)
+    {
+        nav::clearInstructions();
         current_task = task::none;
+    }
     if (current_task == task::health)
         return true;
 
     if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() < 0.64f)
     {
         std::vector<Vector> healthpacks;
-        for (int i = 0; i < HIGHEST_ENTITY; i++)
+        for (int i = 1; i < HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CBaseAnimating))
+            if (CE_BAD(ent))
                 continue;
             if (ent->m_ItemType() != ITEM_HEALTH_SMALL && ent->m_ItemType() != ITEM_HEALTH_MEDIUM && ent->m_ItemType() != ITEM_HEALTH_LARGE)
                 continue;
             healthpacks.push_back(ent->m_vecOrigin());
         }
+        if (healthpacks.empty())
+            logging::Info("f");
         std::sort(healthpacks.begin(), healthpacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
         for (auto &pack : healthpacks)
         {
-            if (nav::navTo(pack, 10, true, true))
+            if (nav::navTo(pack, 10, true, false))
             {
                 current_task = task::health;
                 return true;
@@ -361,16 +366,20 @@ static bool getHealthAndAmmo()
     }
 
     if (current_task == task::ammo && !hasLowAmmo())
+    {
+        nav::clearInstructions();
         current_task = task::none;
+        return false;
+    }
     if (current_task == task::ammo)
         return true;
     if (hasLowAmmo())
     {
         std::vector<Vector> ammopacks;
-        for (int i = 0; i < HIGHEST_ENTITY; i++)
+        for (int i = 1; i < HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CBaseAnimating))
+            if (CE_BAD(ent))
                 continue;
             if (ent->m_ItemType() != ITEM_AMMO_SMALL && ent->m_ItemType() != ITEM_AMMO_MEDIUM && ent->m_ItemType() != ITEM_AMMO_LARGE)
                 continue;
@@ -379,7 +388,7 @@ static bool getHealthAndAmmo()
         std::sort(ammopacks.begin(), ammopacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
         for (auto &pack : ammopacks)
         {
-            if (nav::navTo(pack, 9, true, true))
+            if (nav::navTo(pack, 9, true, false))
             {
                 current_task = task::ammo;
                 return true;
