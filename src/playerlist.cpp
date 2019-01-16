@@ -167,6 +167,27 @@ bool IsDefault(CachedEntity *entity)
 CatCommand pl_save("pl_save", "Save playerlist", Save);
 CatCommand pl_load("pl_load", "Load playerlist", Load);
 
+CatCommand pl_add_id("pl_add_id", "Sets state for steamid", [](const CCommand &args) {
+    if (args.ArgC() <= 2)
+        return;
+
+    uint32_t id = std::strtoul(args.Arg(1), nullptr, 10);
+    auto &pl = AccessData(id);
+    const char *state = args.Arg(2);
+    if (k_Names[0] == state)
+        pl.state = k_EState::DEFAULT;
+    else if (k_Names[1] == state)
+        pl.state = k_EState::FRIEND;
+    else if (k_Names[2] == state)
+        pl.state = k_EState::RAGE;
+    else if (k_Names[3] == state)
+        pl.state = k_EState::IPC;
+    else if (k_Names[4] == state)
+        pl.state = k_EState::DEVELOPER;
+    else
+        logging::Info("Unknown State");
+});
+
 CatCommand pl_set_state("pl_set_state", "cat_pl_set_state [playername] [state] (Tab to autocomplete)", [](const CCommand &args) {
     if (args.ArgC() != 3)
     {
@@ -198,16 +219,17 @@ CatCommand pl_set_state("pl_set_state", "cat_pl_set_state [playername] [state] (
     player_info_s info;
     g_IEngine->GetPlayerInfo(id, &info);
 
+    auto &pl = AccessData(info.friendsID);
     if (k_Names[0] == state)
-        AccessData(info.friendsID).state = k_EState::DEFAULT;
+        pl.state = k_EState::DEFAULT;
     else if (k_Names[1] == state)
-        AccessData(info.friendsID).state = k_EState::FRIEND;
+        pl.state = k_EState::FRIEND;
     else if (k_Names[2] == state)
-        AccessData(info.friendsID).state = k_EState::RAGE;
+        pl.state = k_EState::RAGE;
     else if (k_Names[3] == state)
-        AccessData(info.friendsID).state = k_EState::IPC;
+        pl.state = k_EState::IPC;
     else if (k_Names[4] == state)
-        AccessData(info.friendsID).state = k_EState::DEVELOPER;
+        pl.state = k_EState::DEVELOPER;
     else
         logging::Info("Unknown State. (Use tab for autocomplete)");
 });
