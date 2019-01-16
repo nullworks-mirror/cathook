@@ -203,7 +203,7 @@ void reportall()
         if (ent == LOCAL_E)
             continue;
         player_info_s info;
-        if (g_IEngine->GetPlayerInfo(i, &info))
+        if (g_IEngine->GetPlayerInfo(i, &info) && info.friendsID)
         {
             if (!player_tools::shouldTargetSteamId(info.friendsID))
                 continue;
