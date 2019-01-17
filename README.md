@@ -43,7 +43,7 @@ Run in terminal:
 
 * `wget -O - https://raw.githubusercontent.com/nullworks/One-in-all-cathook-install/master/install-all | bash`
 
-## Manual:
+## Manual (Outdated):
 You need CMake to build cathook, CMake should take care of dependencies
 
 Install libglez, libxoverlay and simple-ipc
