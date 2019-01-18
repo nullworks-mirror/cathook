@@ -6,24 +6,23 @@ namespace EC
 
 struct EventCallbackData
 {
-    explicit EventCallbackData(const EventFunction &function, std::string name, enum ec_priority priority) : function{ function }, priority{ int(priority) }, event_name{ name }, section{ name }
+    explicit EventCallbackData(const EventFunction &function, std::string name, enum ec_priority priority) : function{ function }, priority{ int(priority) }, section{ name }, event_name{ name }
     {
+        section.m_name = name;
     }
     EventFunction function;
     int priority;
-    mutable ProfilerSection section;
+    ProfilerSection section;
     std::string event_name;
-    bool operator<(const EventCallbackData &other) const
-    {
-        return priority < other.priority;
-    }
 };
-// Ordered set to always keep priorities correct
-static std::multiset<EventCallbackData> events[ec_types::EcTypesSize];
+
+static std::vector<EventCallbackData> events[ec_types::EcTypesSize];
 
 void Register(enum ec_types type, const EventFunction &function, const std::string &name, enum ec_priority priority)
 {
-    events[type].insert(EventCallbackData(function, name, priority));
+    events[type].emplace_back(function, name, priority);
+    // Order vector to always keep priorities correct
+    std::sort(events[type].begin(), events[type].end(), [](EventCallbackData &a, EventCallbackData &b) { return a.priority < b.priority; });
 }
 
 void Unregister(enum ec_types type, const std::string &name)
@@ -39,11 +38,11 @@ void Unregister(enum ec_types type, const std::string &name)
 
 void run(ec_types type)
 {
-    const auto &set = events[type];
-    for (auto &i : set)
+    auto &vector = events[type];
+    for (auto &i : vector)
     {
 #if ENABLE_PROFILER
-        ProfilerNode node(i.section);
+        volatile ProfilerNode node(i.section);
 #endif
         i.function();
     }
