@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 sudo ./scripts/auto-updater
-sudo ./scripts/attach-partybypass $1
 line=$(pidof hl2_linux)
 arr=($line)
 inst=$1

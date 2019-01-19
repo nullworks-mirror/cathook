@@ -297,6 +297,7 @@ void DoResistSwitching()
 }
 
 int force_healing_target{ 0 };
+unsigned steamid = 0;
 static CatCommand heal_steamid("autoheal_heal_steamid", "Heals a player with SteamID", [](const CCommand &args) {
     if (args.ArgC() < 2)
     {
@@ -382,7 +383,7 @@ void UpdateData()
         if (reset_cd[i].test_and_set(10000))
             data[i] = {};
         CachedEntity *ent = ENTITY(i);
-        if (CE_GOOD(ent))
+        if (CE_GOOD(ent) && ent->m_bAlivePlayer())
         {
             int health = ent->m_iHealth();
             if (data[i].last_damage > g_GlobalVars->curtime)
@@ -395,7 +396,7 @@ void UpdateData()
                 data[i].accum_damage_start = 0.0f;
             }
             const int last_health = data[i].last_health;
-            if (health != last_health)
+            if (health != last_health && health <= g_pPlayerResource->GetMaxHealth(ent))
             {
                 reset_cd[i].update();
                 data[i].last_health = health;
@@ -523,7 +524,7 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
         }
     }
-    if (!force_healing_target && !enable)
+    if (!force_healing_target && !steamid && !enable)
         return;
     if (GetWeaponMode() != weapon_medigun)
         return;
@@ -532,10 +533,27 @@ void CreateMove()
         CachedEntity *target = ENTITY(force_healing_target);
         if (CE_GOOD(target))
         {
-            Vector out;
-            GetHitbox(target, 7, out);
-            AimAt(g_pLocalPlayer->v_Eye, out, current_user_cmd);
-            current_user_cmd->buttons |= IN_ATTACK;
+            if (target->player_info.friendsID != steamid)
+                force_healing_target = 0;
+            else
+            {
+                Vector out;
+                GetHitbox(target, 7, out);
+                AimAt(g_pLocalPlayer->v_Eye, out, current_user_cmd);
+                current_user_cmd->buttons |= IN_ATTACK;
+            }
+        }
+    }
+    else if (steamid)
+    {
+        for (auto i = 0; i < g_IEngine->GetMaxClients(); i++)
+        {
+            CachedEntity *ent = ENTITY(i);
+            if (ent->player_info.friendsID == steamid)
+            {
+                force_healing_target = steamid;
+                break;
+            }
         }
     }
     if (!enable)
@@ -587,8 +605,13 @@ void CreateMove()
 
 void rvarCallback(settings::VariableBase<int> &var, int after)
 {
-    if (after < 0)
+    if (!after)
+    {
+        force_healing_target = 0;
+        steamid              = 0;
         return;
+    }
+    steamid = after;
     for (int i = 1; i <= 32 && i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
@@ -603,8 +626,13 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
         }
     }
 }
+void LevelInit()
+{
+    force_healing_target = 0;
+}
 static InitRoutine Init([]() {
     steam_var.installChangeCallback(rvarCallback);
     EC::Register(EC::CreateMove, CreateMove, "autoheal", EC::average);
+    EC::Register(EC::LevelInit, LevelInit, "autoheal_lvlinit", EC::average);
 });
 } // namespace hacks::tf::autoheal

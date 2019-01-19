@@ -38,5 +38,6 @@ settings::Bool clean_screenshots{ "visual.clean-screenshots", "false" };
 settings::Bool nolerp{ "misc.no-lerp", "false" };
 settings::Bool no_zoom{ "remove.scope", "false" };
 settings::Bool disable_visuals{ "visual.disable", "false" };
-
-static CatCommand identify("print_steamid", "Prints your SteamID", []() { g_ICvar->ConsolePrintf("%u\n", g_ISteamUser->GetSteamID().GetAccountID()); });
+settings::Int print_r{ "print.rgb.r", "183" };
+settings::Int print_g{ "print.rgb.b", "27" };
+settings::Int print_b{ "print.rgb.g", "139" };

@@ -9,6 +9,8 @@
 #include "PlayerTools.hpp"
 #include "hacks/Trigger.hpp"
 
+namespace hacks::tf2::misc_aimbot
+{
 static settings::Bool sandwichaim_enabled{ "sandwichaim.enable", "false" };
 static settings::Button sandwichaim_aimkey{ "sandwichaim.aimkey", "<null>" };
 static settings::Int sandwichaim_aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
@@ -247,8 +249,8 @@ static void SapperAimbot()
         return;
 
     CachedEntity *target = nullptr;
-    float fov            = FLT_MAX;
-    float range          = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+    float distance       = FLT_MAX;
+
     for (int i = 0; i < entity_cache::max; i++)
     {
         CachedEntity *ent = ENTITY(i);
@@ -260,21 +262,29 @@ static void SapperAimbot()
             continue;
         if (CE_BYTE(ent, netvar.m_bHasSapper))
             continue;
-        if (GetBuildingPosition(ent).DistTo(g_pLocalPlayer->v_Eye) > range)
-            continue;
-        float new_fov = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, GetBuildingPosition(ent));
-        if (fov <= new_fov)
+        float new_distance = g_pLocalPlayer->v_Eye.DistTo(GetBuildingPosition(ent));
+        if (distance <= new_distance)
             continue;
 
-        fov    = new_fov;
-        target = ent;
+        distance = new_distance;
+        target   = ent;
     }
     if (target)
     {
-        AimAt(g_pLocalPlayer->v_Eye, GetBuildingPosition(target), current_user_cmd);
-        if (autosapper_silent)
-            g_pLocalPlayer->bUseSilentAngles = true;
-        current_user_cmd->buttons |= IN_ATTACK;
+        float range    = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+        Vector angle   = GetAimAtAngles(g_pLocalPlayer->v_Eye, GetBuildingPosition(target));
+        Vector forward = GetForwardVector(g_pLocalPlayer->v_Eye, angle, range);
+        trace_t trace;
+        if (IsEntityVectorVisible(target, forward, MASK_SHOT, &trace))
+        {
+            if (trace.DidHit() && (IClientEntity *) trace.m_pEnt == RAW_ENT(target))
+            {
+                current_user_cmd->viewangles = angle;
+                if (autosapper_silent)
+                    g_pLocalPlayer->bUseSilentAngles = true;
+                current_user_cmd->buttons |= IN_ATTACK;
+            }
+        }
     }
 }
 
@@ -287,3 +297,4 @@ static void CreateMove()
 }
 
 static InitRoutine init([]() { EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::late); });
+} // namespace hacks::tf2::misc_aimbot

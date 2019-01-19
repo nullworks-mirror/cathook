@@ -23,7 +23,7 @@ public:
     inline static int GetSwingRange(IClientEntity *self)
     {
         if (g_pLocalPlayer->holding_sapper)
-            return 48;
+            return 115;
         typedef int (*fn_t)(IClientEntity *);
         return vfunc<fn_t>(self, offsets::PlatformOffset(521, offsets::undefined, 521), 0)(self);
     }

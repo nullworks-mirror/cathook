@@ -117,8 +117,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     }
     ret = original::CreateMove(this_, input_sample_time, cmd);
 
-    PROF_SECTION(CreateMove);
-
     if (!cmd)
     {
         g_Settings.is_create_move = false;
@@ -146,7 +144,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         return true;
     }
 
-    //	PROF_BEGIN();
+    PROF_SECTION(CreateMove);
 
     if (current_user_cmd && current_user_cmd->command_number)
         last_cmd_number = current_user_cmd->command_number;
@@ -339,7 +337,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         }
     }
 #endif
-    hacks::shared::backtrack::UpdateIncomingSequences();
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         speedapplied = false;

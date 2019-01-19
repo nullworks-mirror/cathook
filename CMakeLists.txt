@@ -47,6 +47,7 @@ endif()
 
 find_package(Git REQUIRED)
 find_package(Boost REQUIRED)
+find_package(SDL2 REQUIRED)
 
 # cat packages
 

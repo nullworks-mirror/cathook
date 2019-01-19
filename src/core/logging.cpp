@@ -13,6 +13,7 @@
 
 #include "common.hpp"
 #include "hack.hpp"
+#include "MiscTemporary.hpp"
 
 settings::Bool log_to_console{ "hack.log-console", "false" };
 
@@ -51,7 +52,7 @@ void logging::Info(const char *fmt, ...)
     if (!hack::shutdown)
     {
         if (*log_to_console)
-            g_ICvar->ConsolePrintf("CAT: %s \n", result.get());
+            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "CAT: %s \n", result.get());
     }
 #endif
 }

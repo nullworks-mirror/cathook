@@ -544,8 +544,23 @@ static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](c
     DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
 });
 
+void Shutdown()
+{
+    if (CE_BAD(LOCAL_E))
+        return;
+    // unpatching local player
+    void **vtable = *(void ***) (g_pLocalPlayer->entity->InternalEntity());
+    if (vtable[offsets::ShouldDraw()] == C_TFPlayer__ShouldDraw_hook)
+    {
+        void *page = (void *) ((uintptr_t) vtable & ~0xFFF);
+        mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
+        vtable[offsets::ShouldDraw()] = (void *) C_TFPlayer__ShouldDraw_original;
+        mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
+    }
+}
 InitRoutine init([]() {
     teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
+    EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, DrawText, "draw_misc_hacks", EC::average);

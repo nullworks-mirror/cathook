@@ -191,8 +191,6 @@ void reportall()
         patch.Patch();
         patched_report = true;
     }
-    player_info_s local;
-    g_IEngine->GetPlayerInfo(g_pLocalPlayer->entity_idx, &local);
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);

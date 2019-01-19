@@ -44,9 +44,6 @@ void EntityHitboxCache::InvalidateCache()
 void EntityHitboxCache::Update()
 {
     InvalidateCache();
-    if (CE_BAD(parent_ref))
-        if (GetHitbox(0))
-            return;
 }
 
 void EntityHitboxCache::Init()
@@ -103,7 +100,7 @@ bool EntityHitboxCache::VisibilityCheck(int id)
     return m_VisCheck[id];
 }
 
-static settings::Int setupbones_time{ "source.setupbones-time", "0" };
+static settings::Int setupbones_time{ "source.setupbones-time", "1" };
 
 static std::mutex setupbones_mutex;
 
@@ -131,8 +128,16 @@ matrix3x4_t *EntityHitboxCache::GetBones()
         // std::lock_guard<std::mutex> lock(setupbones_mutex);
         if (g_Settings.is_create_move)
         {
-            RAW_ENT(parent_ref)->GetModel();
-            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+            PROF_SECTION(bone_test);
+            auto to_copy = CE_VAR(parent_ref, 0x838, matrix3x4_t *);
+            if (to_copy)
+            {
+                bones->Invalidate();
+                memcpy((matrix3x4_t *) bones, to_copy, 48 * (CE_INT(parent_ref, 0x844)));
+                bones_setup = true;
+            }
+            else
+                bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
         }
     }
     return bones;
@@ -155,34 +160,32 @@ void EntityHitboxCache::Reset()
 
 CachedHitbox *EntityHitboxCache::GetHitbox(int id)
 {
+    if (m_CacheValidationFlags[id])
+        return &m_CacheInternal[id];
     mstudiobbox_t *box;
 
     if (!m_bInit)
         Init();
     if (id < 0 || id >= m_nNumHitboxes)
-        return 0;
+        return nullptr;
     if (!m_bSuccess)
-        return 0;
+        return nullptr;
     if (CE_BAD(parent_ref))
-        return 0;
-    typedef int (*InvalidateBoneCache_t)(IClientEntity *);
-    static uintptr_t addr                            = gSignatures.GetClientSignature("55 8B 0D ? ? ? ? 89 E5 8B 45 ? 8D 51");
-    static InvalidateBoneCache_t InvalidateBoneCache = InvalidateBoneCache_t(addr);
-    InvalidateBoneCache(RAW_ENT(parent_ref));
-    auto model = (model_t *) RAW_ENT(parent_ref)->GetModel();
+        return nullptr;
+    auto model = (const model_t *) RAW_ENT(parent_ref)->GetModel();
     if (!model)
-        return 0;
+        return nullptr;
     auto shdr = g_IModelInfo->GetStudiomodel(model);
     if (!shdr)
-        return 0;
+        return nullptr;
     auto set = shdr->pHitboxSet(CE_INT(parent_ref, netvar.iHitboxSet));
     if (!dynamic_cast<mstudiohitboxset_t *>(set))
-        return 0;
+        return nullptr;
     box = set->pHitbox(id);
     if (!box)
-        return 0;
+        return nullptr;
     if (box->bone < 0 || box->bone >= MAXSTUDIOBONES)
-        return 0;
+        return nullptr;
     VectorTransform(box->bbmin, GetBones()[box->bone], m_CacheInternal[id].min);
     VectorTransform(box->bbmax, GetBones()[box->bone], m_CacheInternal[id].max);
     m_CacheInternal[id].bbox   = box;

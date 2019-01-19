@@ -75,7 +75,7 @@ void Init()
 {
     for (int i = 0; i < 32; i++)
         for (int j = 0; j < 66; j++)
-            EmptyBacktrackData(headPositions[i][j]);
+            headPositions[i][j] = {};
 }
 
 int BestTick    = -1;
@@ -89,6 +89,7 @@ static void Run()
         isBacktrackEnabled = false;
         return;
     }
+    UpdateIncomingSequences();
     isBacktrackEnabled = true;
 
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
@@ -106,50 +107,49 @@ static void Run()
     CUserCmd *cmd = current_user_cmd;
     float bestFov = 99999;
 
-    float prev_distance = 9999;
-
-    auto bestEntBestTick = getBestEntBestTick();
-    BestTick             = bestEntBestTick.second;
-    iBestTarget          = bestEntBestTick.first;
-
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    float prev_distance                 = 9999;
+    std::pair<int, int> bestEntBestTick = getBestEntBestTick();
+    BestTick                            = bestEntBestTick.second;
+    iBestTarget                         = bestEntBestTick.first;
+    // Fill backtrack data (stored in headPositions)
     {
-        CachedEntity *pEntity = ENTITY(i);
+        PROF_SECTION(cm_bt_ent_loop)
+        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+        {
+            CachedEntity *pEntity = ENTITY(i);
+            if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
+            {
+                for (BacktrackData &btd : headPositions[i])
+                    btd.simtime = FLT_MAX;
+                continue;
+            }
+            if (!pEntity->m_bEnemy())
+                continue;
+            if (pEntity->m_Type() != ENTITY_PLAYER)
+                continue;
+            if (!pEntity->hitboxes.GetHitbox(0))
+                continue;
+            if (HasCondition<TFCond_HalloweenGhostMode>(pEntity))
+                continue;
+            auto &hbd         = headPositions[i][cmd->command_number % getTicks()];
+            float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
+            hbd.viewangles    = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
+            hbd.simtime       = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
+            hbd.entorigin     = pEntity->InternalEntity()->GetAbsOrigin();
+            hbd.tickcount     = cmd->tick_count;
 
-        if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
-        {
-            for (BacktrackData &btd : headPositions[i])
-                EmptyBacktrackData(btd);
-            continue;
+            for (size_t i = 0; i < 18; i++)
+            {
+                hbd.hitboxes[i].center = pEntity->hitboxes.GetHitbox(i)->center;
+                hbd.hitboxes[i].min    = pEntity->hitboxes.GetHitbox(i)->min;
+                hbd.hitboxes[i].max    = pEntity->hitboxes.GetHitbox(i)->max;
+            }
+            hbd.collidable.min    = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + hbd.entorigin;
+            hbd.collidable.max    = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + hbd.entorigin;
+            hbd.collidable.center = (hbd.collidable.min + hbd.collidable.max) / 2;
         }
-        if (pEntity->m_iTeam() == LOCAL_E->m_iTeam())
-            continue;
-        if (pEntity->m_Type() != ENTITY_PLAYER)
-            continue;
-        if (!pEntity->hitboxes.GetHitbox(0))
-            continue;
-        if (HasCondition<TFCond_HalloweenGhostMode>(pEntity))
-            continue;
-        float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
-        float viewangles  = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
-        float simtime     = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
-        Vector ent_orig   = pEntity->InternalEntity()->GetAbsOrigin();
-        std::array<hitboxData, 18> hbdArray;
-        for (size_t i = 0; i < hbdArray.max_size(); i++)
-        {
-            hbdArray.at(i).center = pEntity->hitboxes.GetHitbox(i)->center;
-            hbdArray.at(i).min    = pEntity->hitboxes.GetHitbox(i)->min;
-            hbdArray.at(i).max    = pEntity->hitboxes.GetHitbox(i)->max;
-        }
-        hitboxData collidable{};
-        {
-            collidable.min    = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + ent_orig;
-            collidable.max    = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + ent_orig;
-            collidable.center = (collidable.min + collidable.max) / 2;
-        }
-        auto hdr                                           = g_IModelInfo->GetStudiomodel(RAW_ENT(pEntity)->GetModel());
-        headPositions[i][cmd->command_number % getTicks()] = BacktrackData{ cmd->tick_count, hbdArray, collidable, viewangles, simtime, ent_orig, cmd->command_number % getTicks() };
     }
+
     if (iBestTarget != -1 && CanShoot())
     {
         CachedEntity *tar = ENTITY(iBestTarget);

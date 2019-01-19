@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <thread>
-
+#include <MiscTemporary.hpp>
 /*
   Created on 29.07.18.
 */
@@ -17,14 +17,14 @@ static void getAndSortAllConfigs();
 static CatCommand cat("cat", "", [](const CCommand &args) {
     if (args.ArgC() < 3)
     {
-        g_ICvar->ConsolePrintf("Usage: cat <set/get> <variable> [value]\n");
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Usage: cat <set/get> <variable> [value]\n");
         return;
     }
 
     auto variable = settings::Manager::instance().lookup(args.Arg(2));
     if (variable == nullptr)
     {
-        g_ICvar->ConsolePrintf("Variable not found: %s\n", args.Arg(2));
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Variable not found: %s\n", args.Arg(2));
         return;
     }
 
@@ -32,21 +32,21 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
     {
         if (args.ArgC() < 4)
         {
-            g_ICvar->ConsolePrintf("Usage: cat <set> <variable> <value>\n");
+            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Usage: cat <set> <variable> <value>\n");
             return;
         }
         variable->fromString(args.Arg(3));
-        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
         return;
     }
     else if (!strcmp(args.Arg(1), "get"))
     {
-        g_ICvar->ConsolePrintf("%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
         return;
     }
     else
     {
-        g_ICvar->ConsolePrintf("Usage: cat <set/get> <variable> <value>\n");
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Usage: cat <set/get> <variable> <value>\n");
         return;
     }
 });
