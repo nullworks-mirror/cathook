@@ -112,39 +112,42 @@ static void Run()
     BestTick                            = bestEntBestTick.second;
     iBestTarget                         = bestEntBestTick.first;
     // Fill backtrack data (stored in headPositions)
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
-        CachedEntity *pEntity = ENTITY(i);
-        if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
+        PROF_SECTION(cm_bt_ent_loop)
+        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
         {
-            for (BacktrackData &btd : headPositions[i])
-                btd.simtime = FLT_MAX;
-            continue;
-        }
-        if (!pEntity->m_bEnemy())
-            continue;
-        if (pEntity->m_Type() != ENTITY_PLAYER)
-            continue;
-        if (!pEntity->hitboxes.GetHitbox(0))
-            continue;
-        if (HasCondition<TFCond_HalloweenGhostMode>(pEntity))
-            continue;
-        auto &hbd         = headPositions[i][cmd->command_number % getTicks()];
-        float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
-        hbd.viewangles    = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
-        hbd.simtime       = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
-        hbd.entorigin     = pEntity->InternalEntity()->GetAbsOrigin();
-        hbd.tickcount     = cmd->tick_count;
+            CachedEntity *pEntity = ENTITY(i);
+            if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
+            {
+                for (BacktrackData &btd : headPositions[i])
+                    btd.simtime = FLT_MAX;
+                continue;
+            }
+            if (!pEntity->m_bEnemy())
+                continue;
+            if (pEntity->m_Type() != ENTITY_PLAYER)
+                continue;
+            if (!pEntity->hitboxes.GetHitbox(0))
+                continue;
+            if (HasCondition<TFCond_HalloweenGhostMode>(pEntity))
+                continue;
+            auto &hbd         = headPositions[i][cmd->command_number % getTicks()];
+            float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
+            hbd.viewangles    = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
+            hbd.simtime       = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
+            hbd.entorigin     = pEntity->InternalEntity()->GetAbsOrigin();
+            hbd.tickcount     = cmd->tick_count;
 
-        for (size_t i = 0; i < 18; i++)
-        {
-            hbd.hitboxes[i].center = pEntity->hitboxes.GetHitbox(i)->center;
-            hbd.hitboxes[i].min    = pEntity->hitboxes.GetHitbox(i)->min;
-            hbd.hitboxes[i].max    = pEntity->hitboxes.GetHitbox(i)->max;
+            for (size_t i = 0; i < 18; i++)
+            {
+                hbd.hitboxes[i].center = pEntity->hitboxes.GetHitbox(i)->center;
+                hbd.hitboxes[i].min    = pEntity->hitboxes.GetHitbox(i)->min;
+                hbd.hitboxes[i].max    = pEntity->hitboxes.GetHitbox(i)->max;
+            }
+            hbd.collidable.min    = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + hbd.entorigin;
+            hbd.collidable.max    = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + hbd.entorigin;
+            hbd.collidable.center = (hbd.collidable.min + hbd.collidable.max) / 2;
         }
-        hbd.collidable.min    = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + hbd.entorigin;
-        hbd.collidable.max    = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + hbd.entorigin;
-        hbd.collidable.center = (hbd.collidable.min + hbd.collidable.max) / 2;
     }
 
     if (iBestTarget != -1 && CanShoot())

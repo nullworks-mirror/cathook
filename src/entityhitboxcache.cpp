@@ -128,8 +128,16 @@ matrix3x4_t *EntityHitboxCache::GetBones()
         // std::lock_guard<std::mutex> lock(setupbones_mutex);
         if (g_Settings.is_create_move)
         {
-            RAW_ENT(parent_ref)->GetModel();
-            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+            PROF_SECTION(bone_test);
+            auto to_copy = CE_VAR(parent_ref, 0x838, matrix3x4_t *);
+            if (to_copy)
+            {
+                bones->Invalidate();
+                memcpy((matrix3x4_t *) bones, to_copy, 48 * (CE_INT(parent_ref, 0x844)));
+                bones_setup = true;
+            }
+            else
+                bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
         }
     }
     return bones;
