@@ -20,22 +20,10 @@ int *g_PredictionRandomSeed = nullptr;
 
 namespace criticals
 {
-CatCommand test("crit_debug_print", "debug", []() {
-    if (CE_BAD(LOCAL_E))
-        return;
-    if (CE_BAD(LOCAL_W))
-        return;
-    unsigned unk1           = *(unsigned *) (RAW_ENT(LOCAL_W) + 2832);
-    unsigned unk2           = *(unsigned *) (RAW_ENT(LOCAL_W) + 2820);
-    unsigned char CritSlots = *(unsigned char *) (unk1 + (unk2 << 6) + 1844);
-    int CritSlots2          = *(unsigned *) (unk1 + (unk2 << 6) + 1788);
-    unsigned CritSlots3     = *(unsigned *) (unk1 + (unk2 << 6) + 1788);
-    int CritSlots4          = *(int *) (unk1 + (unk2 << 6) + 1788);
-    logging::Info("%u %d %d %u %d", unk1, int(CritSlots), CritSlots2, CritSlots3, CritSlots4);
-});
+
 int find_next_random_crit_for_weapon(IClientEntity *weapon)
 {
-    int tries = 0, number = current_user_cmd->command_number, found = 0, seed, seed_md5, seed_backup;
+    int tries = 0, number = current_user_cmd->command_number, found = 0, seed_backup;
 
     crithack_saved_state state{};
     state.Save(weapon);
@@ -43,9 +31,7 @@ int find_next_random_crit_for_weapon(IClientEntity *weapon)
     seed_backup = *g_PredictionRandomSeed;
     while (!found && tries < 4096)
     {
-        seed_md5                = MD5_PseudoRandom(number) & 0x7FFFFFFF;
-        *g_PredictionRandomSeed = seed_md5;
-        seed                    = seed_md5 ^ (LOCAL_E->m_IDX | (LOCAL_W->m_IDX << 8));
+        *g_PredictionRandomSeed = MD5_PseudoRandom(number) & 0x7FFFFFFF;
         found                   = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
         if (found)
             break;
@@ -54,7 +40,8 @@ int find_next_random_crit_for_weapon(IClientEntity *weapon)
     }
 
     *g_PredictionRandomSeed = seed_backup;
-    state.Load(weapon);
+    if (!crit_experimental || g_pLocalPlayer->weapon_mode == weaponmode::weapon_melee)
+        state.Load(weapon);
     if (found)
         return number;
     return 0;
@@ -90,7 +77,7 @@ struct cached_calculation_s
     int weapon_entity;
 };
 
-cached_calculation_s cached_calculation{};
+static cached_calculation_s cached_calculation{};
 
 static int number                = 0;
 static int lastnumber            = 0;
@@ -103,37 +90,30 @@ bool force_crit(IClientEntity *weapon)
 
     if (lastnumber < command_number || lastweapon != weapon->GetModel() || lastnumber - command_number > 1000)
     {
-        if (cached_calculation.init_command > command_number || command_number - cached_calculation.init_command > 4096 || (command_number && (cached_calculation.command_number < command_number)))
-            cached_calculation.weapon_entity = 0;
-        if (cached_calculation.weapon_entity == weapon->entindex())
-            return bool(cached_calculation.command_number);
-
+        if (!*crit_experimental || g_pLocalPlayer->weapon_mode == weapon_melee)
+        {
+            if (cached_calculation.init_command > command_number || command_number - cached_calculation.init_command > 4096 || (command_number && (cached_calculation.command_number < command_number)))
+                cached_calculation.weapon_entity = 0;
+            if (cached_calculation.weapon_entity == weapon->entindex())
+                return bool(cached_calculation.command_number);
+        }
         number = find_next_random_crit_for_weapon(weapon);
     }
     else
         number = lastnumber;
     // logging::Info("Found critical: %d -> %d", command_number,
     //              number);
-    lastweapon = weapon->GetModel();
-    lastnumber = number;
     if (crit_experimental && GetWeaponMode() != weapon_melee)
     {
+        cached_calculation.command_number = number;
+        cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
         if (!crit_legiter)
         {
             if (number && number != command_number)
                 command_number_mod[command_number] = number;
-
-            cached_calculation.command_number = number;
-            cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
         }
-        else
-        {
-            if (number && number - 30 < command_number)
-                command_number_mod[command_number] = number;
-
-            cached_calculation.command_number = number;
-            cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
-        }
+        else if (number && number - 30 < command_number)
+            command_number_mod[command_number] = number;
     }
     else
     {
@@ -152,6 +132,8 @@ bool force_crit(IClientEntity *weapon)
                 current_user_cmd->buttons |= IN_ATTACK;
         }
     }
+    lastweapon = weapon->GetModel();
+    lastnumber = number;
     return number != 0;
 }
 
