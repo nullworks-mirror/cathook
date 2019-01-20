@@ -14,6 +14,10 @@
 #include <SDLHooks.hpp>
 #include <menu/GuiInterface.hpp>
 
+// String -> Wstring
+#include <locale>
+#include <codecvt>
+
 #if EXTERNAL_DRAWING
 #include "xoverlay.h"
 #endif
@@ -46,9 +50,10 @@ void AddSideString(const std::string &string, const rgba_t &color)
 void DrawStrings()
 {
     int y{ 8 };
+
     for (size_t i = 0; i < side_strings_count; ++i)
     {
-        glez::draw::outlined_string(8, y, side_strings[i], *fonts::menu, side_strings_colors[i], colors::black, nullptr, nullptr);
+        draw::String(8, y, side_strings_colors[i], side_strings[i].c_str());
         y += fonts::menu->size + 1;
     }
     y = draw::height / 2;
@@ -56,7 +61,7 @@ void DrawStrings()
     {
         float sx, sy;
         fonts::menu->stringSize(center_strings[i], &sx, &sy);
-        glez::draw::outlined_string((draw::width - sx) / 2, y, center_strings[i].c_str(), *fonts::menu, center_strings_colors[i], colors::black, nullptr, nullptr);
+        draw::String((draw::width - sx) / 2, y, center_strings_colors[i], center_strings[i].c_str());
         y += fonts::menu->size + 1;
     }
 }
@@ -78,9 +83,15 @@ namespace fonts
 
 std::unique_ptr<glez::font> menu{ nullptr };
 std::unique_ptr<glez::font> esp{ nullptr };
+unsigned long surface_font{ 0 };
 } // namespace fonts
 
-void draw::Initialize()
+namespace draw
+{
+
+int texture_white = 0;
+
+void Initialize()
 {
     if (!draw::width || !draw::height)
     {
@@ -89,9 +100,80 @@ void draw::Initialize()
     glez::preInit();
     fonts::menu.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
     fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
+    fonts::surface_font = g_ISurface->CreateFont();
+    g_ISurface->SetFontGlyphSet(fonts::surface_font, "TF2 Build", 14, 500, 0, 0, vgui::ISurface::FONTFLAG_NONE);
+
+    texture_white                = g_ISurface->CreateNewTextureID();
+    unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
+    g_ISurface->DrawSetTextureRGBA(texture_white, colorBuffer, 1, 1, false, true);
 }
 
-bool draw::EntityCenterToScreen(CachedEntity *entity, Vector &out)
+void String(int x, int y, rgba_t rgba, const char *text)
+{
+#if !ENABLE_ENGINE_DRAWING
+    glez::draw::outlined_string(x, y, text, *fonts::menu, rgba, colors::black, nullptr, nullptr);
+#else
+    rgba = rgba * 255.0f;
+    g_ISurface->DrawSetTextPos(x, y);
+    g_ISurface->DrawSetTextFont(fonts::surface_font);
+    g_ISurface->DrawSetTextColor(rgba.r, rgba.g, rgba.b, rgba.a);
+
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
+    std::wstring ws = converter.from_bytes(text);
+
+    g_ISurface->DrawPrintText(ws.c_str(), ws.size() + 1);
+#endif
+}
+
+void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness)
+{
+#if !ENABLE_ENGINE_DRAWING
+    glez::draw::line(x1, y1, x2, y2, color, thickness);
+#else
+    color = color * 255.0f;
+    g_ISurface->DrawSetTexture(texture_white);
+    g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
+
+    // Dirty
+    x1 += 0.5f;
+    y1 += 0.5f;
+
+    float length = sqrtf(x2 * x2 + y2 * y2);
+    x2 *= (length - 1.0f) / length;
+    y2 *= (length - 1.0f) / length;
+
+    float nx = x2;
+    float ny = y2;
+
+    float ex = x1 + x2;
+    float ey = y1 + y2;
+
+    if (length <= 1.0f)
+        return;
+
+    nx /= length;
+    ny /= length;
+
+    float th = thickness;
+
+    nx *= th * 0.5f;
+    ny *= th * 0.5f;
+
+    float px = ny;
+    float py = -nx;
+
+    vgui::Vertex_t vertices[4];
+
+    vertices[2].m_Position = { float(x1) - nx + px, float(y1) - ny + py };
+    vertices[1].m_Position = { float(x1) - nx - px, float(y1) - ny - py };
+    vertices[3].m_Position = { ex + nx + px, ey + ny + py };
+    vertices[0].m_Position = { ex + nx - px, ey + ny - py };
+
+    g_ISurface->DrawTexturedPolygon(4, vertices);
+#endif
+}
+
+bool EntityCenterToScreen(CachedEntity *entity, Vector &out)
 {
     Vector world, min, max;
     bool succ;
@@ -105,21 +187,21 @@ bool draw::EntityCenterToScreen(CachedEntity *entity, Vector &out)
     return succ;
 }
 
-VMatrix draw::wts{};
+VMatrix wts{};
 
-void draw::UpdateWTS()
+void UpdateWTS()
 {
-    memcpy(&draw::wts, &g_IEngine->WorldToScreenMatrix(), sizeof(VMatrix));
+    memcpy(&wts, &g_IEngine->WorldToScreenMatrix(), sizeof(VMatrix));
 }
 
-bool draw::WorldToScreen(const Vector &origin, Vector &screen)
+bool WorldToScreen(const Vector &origin, Vector &screen)
 {
     return g_IVDebugOverlay->ScreenPosition(origin, screen) == 0;
 }
 
 SDL_GLContext context = nullptr;
 
-void draw::InitGL()
+void InitGL()
 {
     logging::Info("InitGL: %d, %d", draw::width, draw::height);
 #if EXTERNAL_DRAWING
@@ -149,7 +231,7 @@ void draw::InitGL()
 #endif
 }
 
-void draw::BeginGL()
+void BeginGL()
 {
     glColor3f(1, 1, 1);
 #if EXTERNAL_DRAWING
@@ -168,7 +250,7 @@ void draw::BeginGL()
     }
 }
 
-void draw::EndGL()
+void EndGL()
 {
     PROF_SECTION(DRAWEX_draw_end);
     {
@@ -184,3 +266,4 @@ void draw::EndGL()
     }
 #endif
 }
+} // namespace draw

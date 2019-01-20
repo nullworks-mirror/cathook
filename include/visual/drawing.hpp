@@ -21,6 +21,7 @@ namespace fonts
 
 extern std::unique_ptr<glez::font> esp;
 extern std::unique_ptr<glez::font> menu;
+extern unsigned long surface_font;
 } // namespace fonts
 
 namespace fonts
@@ -59,6 +60,9 @@ extern int height;
 extern float fov;
 
 void Initialize();
+
+void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness);
+void String(int x, int y, rgba_t rgba, const char *text);
 
 void UpdateWTS();
 bool WorldToScreen(const Vector &origin, Vector &screen);
