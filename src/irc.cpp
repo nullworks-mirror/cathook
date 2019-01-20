@@ -7,6 +7,7 @@
 #include "hack.hpp"
 #include "ucccccp.hpp"
 
+static bool can_accept = false;
 namespace IRC
 {
 static settings::Bool enabled("irc.enabled", "true");
@@ -113,6 +114,7 @@ void authreq(std::string &msg)
         }
     }
 }
+
 void cc_party(std::string &msg)
 {
     auto party_client = re::CTFPartyClient::GTFPartyClient();
@@ -133,13 +135,29 @@ void cc_party(std::string &msg)
         {
             return;
         }
-        steamidvec.push_back(steamid);
-        last_steamid_received.update();
+        if (std::find(steamidvec.begin(), steamidvec.end(), steamid) == steamidvec.end())
+        {
+            steamidvec.push_back(steamid);
+            last_steamid_received.update();
+        }
     }
     else if (answer_steam && msg.find("cc_partysteam") == 0 && ((online_members < *party_size && online_members != 6) || online_members < members))
     {
         irc.privmsg(format("cc_partysteamrep", g_ISteamUser->GetSteamID().GetAccountID()), true);
+        unsigned steamid;
+        try
+        {
+            steamid = std::stoul(msg.substr(13));
+        }
+        catch (std::invalid_argument)
+        {
+            return;
+        }
+        if (std::find(steamidvec.begin(), steamidvec.end(), steamid) == steamidvec.end())
+            steamidvec.push_back(steamid);
     }
+    else if (answer_steam && msg.find("cc_partyready") == 0 && ((online_members < *party_size && online_members != 6) || online_members < members))
+        can_accept = true;
 }
 void cc_cmd(std::string &msg)
 {
@@ -309,7 +327,7 @@ static void run()
         int online_members = party_client->GetNumOnlineMembers();
         int members        = party_client->GetNumMembers();
 
-        if (resize_party.test_and_set(10000) && party_client && (online_members > *party_size || online_members < members))
+        if (irc_party && resize_party.test_and_set(10000) && party_client && (online_members > *party_size || online_members < members))
         {
             int lowest_id = INT_MAX;
             for (auto peer : irc.getPeers())
@@ -326,7 +344,7 @@ static void run()
         }
         if (last_sent_steamid.check(8000) && calledonce.test_and_set(2000) && online_members < *party_size)
         {
-            if (!steamidvec.empty() && party_client && ((online_members != 6 && online_members < GetMaxParty()) || online_members != members))
+            if (irc_party && !steamidvec.empty() && party_client && ((online_members != 6 && online_members < GetMaxParty()) || online_members != members))
             {
                 steamidvec.push_back(g_ISteamUser->GetSteamID().GetAccountID());
                 int idx         = -1;
@@ -355,9 +373,24 @@ static void run()
                             lowest = steamidvec[i];
                             idx    = i;
                         }
-                    if (idx != -1 && steamidvec[idx] != g_ISteamUser->GetSteamID().GetAccountID())
+                    if (idx != -1 && steamidvec[idx] != g_ISteamUser->GetSteamID().GetAccountID() && can_accept)
+                    {
                         hack::command_stack().push(format("tf_party_request_join_user ", steamidvec[idx]));
-                    steamidvec.clear();
+                    }
+                    else if (idx != -1 && steamidvec[idx] == g_ISteamUser->GetSteamID().GetAccountID())
+                    {
+                        irc.privmsg(format("cc_partyready"), true);
+                        for (auto i : steamidvec)
+                            if (i != g_ISteamUser->GetSteamID().GetAccountID())
+                            {
+                                hack::command_stack().push(format("tf_party_invite_user ", i));
+                            }
+                    }
+                    if (can_accept || (idx == -1 || steamidvec[idx] == g_ISteamUser->GetSteamID().GetAccountID()))
+                    {
+                        can_accept = false;
+                        steamidvec.clear();
+                    }
                 }
         }
         if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000) && ((online_members < *party_size && online_members != 6) || online_members < members))
