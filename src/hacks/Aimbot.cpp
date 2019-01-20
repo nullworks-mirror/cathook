@@ -437,18 +437,49 @@ bool IsTargetStateGood(CachedEntity *entity)
             }
             else
             {
-                float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
-                int hb           = BestHitbox(entity);
-                if (hb == -1)
+                float swingrange = EffectiveTargetingRange();
+                if (!IsBacktracking() || entity->m_Type() != ENTITY_PLAYER)
+                {
+                    int hb = BestHitbox(entity);
+                    if (hb == -1)
+                        return false;
+                    Vector newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, entity->hitboxes.GetHitbox(hb)->center);
+                    trace_t trace;
+                    Ray_t ray;
+                    trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+                    ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange));
+                    g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
+                    if ((IClientEntity *) trace.m_pEnt != RAW_ENT(entity))
+                        return false;
+                }
+                else
+                {
+                    namespace bt = hacks::shared::backtrack;
+                    for (int i = 0; i < 66; i++)
+                    {
+                        if (!bt::ValidTick(bt::headPositions[entity->m_IDX][i], entity))
+                            continue;
+                        Vector bbox_min = bt::headPositions[entity->m_IDX][i].collidable.min;
+                        Vector bbox_max = bt::headPositions[entity->m_IDX][i].collidable.max;
+                        for (int j = 17; j >= 0; j--)
+                        {
+                            Vector aim_at   = bt::headPositions[entity->m_IDX][i].hitboxes[j].center;
+                            Vector newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, aim_at);
+                            Vector new_vec  = GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange);
+                            if (new_vec.x > bbox_min.x && new_vec.x < bbox_max.x && new_vec.y > bbox_min.y && new_vec.y < bbox_max.y && new_vec.z > bbox_min.z && new_vec.z < bbox_max.z)
+                            {
+                                /*auto it                      = bt::headPositions[entity->m_IDX][i];
+                                current_user_cmd->tick_count = it.tickcount;
+                                Vector &angles               = NET_VECTOR(RAW_ENT(entity), netvar.m_angEyeAngles);
+                                float &simtime               = NET_FLOAT(RAW_ENT(entity), netvar.m_flSimulationTime);
+                                angles.y                     = it.viewangles;
+                                simtime                      = it.simtime;*/
+                                return true;
+                            }
+                        }
+                    }
                     return false;
-                Vector newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, entity->hitboxes.GetHitbox(hb)->center);
-                trace_t trace;
-                Ray_t ray;
-                trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-                ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange));
-                g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
-                if ((IClientEntity *) trace.m_pEnt != RAW_ENT(entity))
-                    return false;
+                }
             }
         }
         // Rage only check
@@ -907,11 +938,42 @@ const Vector &PredictEntity(CachedEntity *entity)
         // Players only
         if ((entity->m_Type() == ENTITY_PLAYER))
         {
-            namespace bt    = hacks::shared::backtrack;
-            auto hb         = bt::headPositions[entity->m_IDX][good_tick.first];
-            cd.predict_tick = tickcount;
-            result          = hb.hitboxes[cd.hitbox].center;
-            cd.fov          = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, result);
+            if (GetWeaponMode() != weapon_melee)
+            {
+                namespace bt    = hacks::shared::backtrack;
+                auto hb         = bt::headPositions[entity->m_IDX][good_tick.first];
+                cd.predict_tick = tickcount;
+                result          = hb.hitboxes[cd.hitbox].center;
+                cd.fov          = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, result);
+            }
+            else
+            {
+                namespace bt = hacks::shared::backtrack;
+                for (int i = 0; i < 66; i++)
+                {
+                    if (!bt::ValidTick(bt::headPositions[entity->m_IDX][i], entity))
+                        continue;
+                    Vector bbox_min = bt::headPositions[entity->m_IDX][i].collidable.min;
+                    Vector bbox_max = bt::headPositions[entity->m_IDX][i].collidable.max;
+                    for (int j = 17; j >= 0; j--)
+                    {
+                        float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+                        Vector aim_at    = bt::headPositions[entity->m_IDX][i].hitboxes[j].center;
+                        Vector newangle  = GetAimAtAngles(g_pLocalPlayer->v_Eye, aim_at);
+                        Vector new_vec   = GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange);
+                        if (new_vec.x > bbox_min.x && new_vec.x < bbox_max.x && new_vec.y > bbox_min.y && new_vec.y < bbox_max.y && new_vec.z > bbox_min.z && new_vec.z < bbox_max.z)
+                        {
+                            result                       = new_vec;
+                            auto it                      = bt::headPositions[entity->m_IDX][i];
+                            current_user_cmd->tick_count = it.tickcount;
+                            Vector &angles               = NET_VECTOR(RAW_ENT(entity), netvar.m_angEyeAngles);
+                            float &simtime               = NET_FLOAT(RAW_ENT(entity), netvar.m_flSimulationTime);
+                            angles.y                     = it.viewangles;
+                            simtime                      = it.simtime;
+                        }
+                    }
+                }
+            }
         }
     }
     // Return the found vector
@@ -1188,13 +1250,16 @@ bool VischeckPredictedEntity(CachedEntity *entity, bool Backtracking)
         auto ticks   = bt::headPositions[entity->m_IDX];
         if (good_tick.first != -1 && good_tick.second == entity->m_IDX && IsEntityVectorVisible(entity, PredictEntity(entity)))
         {
-            cd.vcheck_tick               = tickcount;
-            cd.visible                   = true;
-            current_user_cmd->tick_count = ticks[good_tick.first].tickcount;
-            Vector &angles               = CE_VECTOR(entity, netvar.m_angEyeAngles);
-            float &simtime               = CE_FLOAT(entity, netvar.m_flSimulationTime);
-            angles.y                     = ticks[good_tick.first].viewangles;
-            simtime                      = ticks[good_tick.first].simtime;
+            cd.vcheck_tick = tickcount;
+            cd.visible     = true;
+            if (g_pLocalPlayer->weapon_mode != weapon_melee)
+            {
+                current_user_cmd->tick_count = ticks[good_tick.first].tickcount;
+                Vector &angles               = CE_VECTOR(entity, netvar.m_angEyeAngles);
+                float &simtime               = CE_FLOAT(entity, netvar.m_flSimulationTime);
+                angles.y                     = ticks[good_tick.first].viewangles;
+                simtime                      = ticks[good_tick.first].simtime;
+            }
         }
         else
             cd.visible = false;
