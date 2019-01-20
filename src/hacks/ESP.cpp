@@ -169,7 +169,7 @@ struct bonelist_s
             }
             if (i > 0)
             {
-                glez::draw::line(last_screen.x, last_screen.y, current_screen.x - last_screen.x, current_screen.y - last_screen.y, color, 0.5f);
+                draw::Line(last_screen.x, last_screen.y, current_screen.x - last_screen.x, current_screen.y - last_screen.y, color, 0.5f);
             }
             last_screen = current_screen;
         }
@@ -414,7 +414,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         draw::WorldToScreen(ent->m_vecOrigin(), scn);
 
         // Draw a line
-        glez::draw::line(scn.x, scn.y, width - scn.x, height - scn.y, fg, 0.5f);
+        draw::Line(scn.x, scn.y, width - scn.x, height - scn.y, fg, 0.5f);
     }
 
     // Sightline esp
@@ -509,7 +509,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 // We have both vectors, draw
                 if (found_scn1)
                 {
-                    glez::draw::line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg, 0.5f);
+                    draw::Line(scn1.x, scn1.y, scn2.x - scn1.x, scn2.y - scn1.y, fg, 0.5f);
                 }
             }
         }
@@ -588,8 +588,8 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 int hbh = (max_y - min_y - 2) * std::min((float) health / (float) healthmax, 1.0f);
 
                 // Draw
-                glez::draw::rect_outline(min_x - 7, min_y, 7, max_y - min_y, border, 0.5f);
-                glez::draw::rect(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
+                draw::RectangleOutlined(min_x - 7, min_y, 7, max_y - min_y, border, 0.5f);
+                draw::Rectangle(min_x - 6, max_y - hbh - 1, 5, hbh, hp);
             }
         }
     }
@@ -679,7 +679,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             // If the origin is centered, we use one method. if not, the other
             if (!origin_is_zero || true)
             {
-                glez::draw::outlined_string(draw_point.x, draw_point.y, string.data, *fonts::esp, color, colors::black, nullptr, nullptr);
+                draw::String(draw_point.x, draw_point.y, color, string.data.c_str());
             }
             else
             { /*
@@ -1243,9 +1243,10 @@ void _FASTCALL Draw3DBox(CachedEntity *ent, const rgba_t &clr)
     // Draw the actual box
     for (int i = 1; i <= 4; i++)
     {
-        glez::draw::line((points[i - 1].x), (points[i - 1].y), (points[i % 4].x) - (points[i - 1].x), (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
-        glez::draw::line((points[i - 1].x), (points[i - 1].y), (points[i + 3].x) - (points[i - 1].x), (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
-        glez::draw::line((points[i + 3].x), (points[i + 3].y), (points[i % 4 + 4].x) - (points[i + 3].x), (points[i % 4 + 4].y) - (points[i + 3].y), clr, 0.5f);
+    draw:
+        draw::Line((points[i - 1].x), (points[i - 1].y), (points[i % 4].x) - (points[i - 1].x), (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
+        draw::Line((points[i - 1].x), (points[i - 1].y), (points[i + 3].x) - (points[i - 1].x), (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
+        draw::Line((points[i + 3].x), (points[i + 3].y), (points[i % 4 + 4].x) - (points[i + 3].x), (points[i % 4 + 4].y) - (points[i + 3].y), clr, 0.5f);
     }
 }
 
@@ -1279,9 +1280,9 @@ void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
     // Otherwise, we just do simple draw funcs
     else
     {
-        glez::draw::rect_outline(min_x, min_y, max_x - min_x, max_y - min_y, border, 0.5f);
-        glez::draw::rect_outline(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr, 0.5f);
-        glez::draw::rect_outline(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border, 0.5f);
+        draw::RectangleOutlined(min_x, min_y, max_x - min_x, max_y - min_y, border, 0.5f);
+        draw::RectangleOutlined(min_x + 1, min_y + 1, max_x - min_x - 2, max_y - min_y - 2, clr, 0.5f);
+        draw::RectangleOutlined(min_x + 2, min_y + 2, max_x - min_x - 4, max_y - min_y - 4, border, 0.5f);
     }
 }
 
@@ -1293,31 +1294,31 @@ void BoxCorners(int minx, int miny, int maxx, int maxy, const rgba_t &color, boo
 
     // Black corners
     // Top Left
-    glez::draw::rect(minx, miny, size, 3, black);
-    glez::draw::rect(minx, miny + 3, 3, size - 3, black);
+    draw::Rectangle(minx, miny, size, 3, black);
+    draw::Rectangle(minx, miny + 3, 3, size - 3, black);
     // Top Right
-    glez::draw::rect(maxx - size + 1, miny, size, 3, black);
-    glez::draw::rect(maxx - 3 + 1, miny + 3, 3, size - 3, black);
+    draw::Rectangle(maxx - size + 1, miny, size, 3, black);
+    draw::Rectangle(maxx - 3 + 1, miny + 3, 3, size - 3, black);
     // Bottom Left
-    glez::draw::rect(minx, maxy - 3, size, 3, black);
-    glez::draw::rect(minx, maxy - size, 3, size - 3, black);
+    draw::Rectangle(minx, maxy - 3, size, 3, black);
+    draw::Rectangle(minx, maxy - size, 3, size - 3, black);
     // Bottom Right
-    glez::draw::rect(maxx - size + 1, maxy - 3, size, 3, black);
-    glez::draw::rect(maxx - 2, maxy - size, 3, size - 3, black);
+    draw::Rectangle(maxx - size + 1, maxy - 3, size, 3, black);
+    draw::Rectangle(maxx - 2, maxy - size, 3, size - 3, black);
 
     // Colored corners
     // Top Left
-    glez::draw::line(minx + 1, miny + 1, size - 2, 0, color, 0.5f);
-    glez::draw::line(minx + 1, miny + 1, 0, size - 2, color, 0.5f);
+    draw::Line(minx + 1, miny + 1, size - 2, 0, color, 0.5f);
+    draw::Line(minx + 1, miny + 1, 0, size - 2, color, 0.5f);
     // Top Right
-    glez::draw::line(maxx - 1, miny + 1, -(size - 2), 0, color, 0.5f);
-    glez::draw::line(maxx - 1, miny + 1, 0, size - 2, color, 0.5f);
+    draw::Line(maxx - 1, miny + 1, -(size - 2), 0, color, 0.5f);
+    draw::Line(maxx - 1, miny + 1, 0, size - 2, color, 0.5f);
     // Bottom Left
-    glez::draw::line(minx + 1, maxy - 2, size - 2, 0, color, 0.5f);
-    glez::draw::line(minx + 1, maxy - 2, 0, -(size - 2), color, 0.5f);
+    draw::Line(minx + 1, maxy - 2, size - 2, 0, color, 0.5f);
+    draw::Line(minx + 1, maxy - 2, 0, -(size - 2), color, 0.5f);
     // Bottom Right
-    glez::draw::line(maxx - 1, maxy - 2, -(size - 2), 0, color, 0.5f);
-    glez::draw::line(maxx - 1, maxy - 2, 0, -(size - 2), color, 0.5f);
+    draw::Line(maxx - 1, maxy - 2, -(size - 2), 0, color, 0.5f);
+    draw::Line(maxx - 1, maxy - 2, 0, -(size - 2), color, 0.5f);
 }
 
 // Used for caching collidable bounds

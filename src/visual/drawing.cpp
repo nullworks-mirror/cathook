@@ -173,6 +173,33 @@ void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness)
 #endif
 }
 
+void Rectangle(float x, float y, float w, float h, rgba_t color)
+{
+#if !ENABLE_ENGINE_DRAWING
+    glez::draw::rect(x, y, w, h, color);
+#else
+    color = color * 255.0f;
+    g_ISurface->DrawSetTexture(texture_white);
+    g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
+
+    vgui::Vertex_t vertices[4];
+    vertices[0].m_Position = { x, y };
+    vertices[1].m_Position = { x, y + h };
+    vertices[2].m_Position = { x + w, y + h };
+    vertices[3].m_Position = { x + w, y };
+
+    g_ISurface->DrawTexturedPolygon(4, vertices);
+#endif
+}
+
+void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness)
+{
+    Rectangle(x, y, w, 1, color);
+    Rectangle(x, y, 1, h, color);
+    Rectangle(x + w - 1, y, 1, h, color);
+    Rectangle(x, y + h - 1, w, 1, color);
+}
+
 bool EntityCenterToScreen(CachedEntity *entity, Vector &out)
 {
     Vector world, min, max;

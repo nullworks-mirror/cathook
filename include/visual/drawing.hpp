@@ -63,6 +63,8 @@ void Initialize();
 
 void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness);
 void String(int x, int y, rgba_t rgba, const char *text);
+void Rectangle(float x, float y, float w, float h, rgba_t color);
+void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness);
 
 void UpdateWTS();
 bool WorldToScreen(const Vector &origin, Vector &screen);
