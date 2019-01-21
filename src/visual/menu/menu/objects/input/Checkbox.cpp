@@ -38,9 +38,9 @@ void zerokernel::Checkbox::render()
         renderBorder(*color_border);
         auto cb = bb.getContentBox();
         if (**option)
-            glez::draw::rect(cb.x, cb.y, cb.width, cb.height, *color_checked);
+            draw::Rectangle(cb.x, cb.y, cb.width, cb.height, *color_checked);
         else if (isHovered())
-            glez::draw::rect(cb.x, cb.y, cb.width, cb.height, *color_hover);
+            draw::Rectangle(cb.x, cb.y, cb.width, cb.height, *color_hover);
     }
     else
     {

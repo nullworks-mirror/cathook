@@ -16,7 +16,7 @@ void zerokernel::WindowCloseButton::render()
 {
     auto cb = bb.getBorderBox();
     if (isHovered())
-        glez::draw::rect(cb.left(), cb.top(), cb.width, cb.height - 1, *background_hover);
+        draw::Rectangle(cb.left(), cb.top(), cb.width, cb.height - 1, *background_hover);
     // glez::draw::line(cb.left(), cb.top(), 0, cb.height, *color_border, 1);
     renderBorder(*color_border);
     glez::draw::rect_textured(cb.x + 1, cb.y, cb.width, cb.height, glez::color::white, cross, 0, 0, cb.width, cb.height, 0);

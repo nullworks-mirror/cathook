@@ -9,6 +9,7 @@
 #include <sstream>
 #include <glez/draw.hpp>
 #include <settings/Settings.hpp>
+#include <drawing.hpp>
 
 namespace zerokernel
 {
@@ -210,12 +211,12 @@ bool BaseMenuObject::containsMouse()
 
 void BaseMenuObject::renderBackground(glez::rgba color)
 {
-    glez::draw::rect(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, color);
+    draw::Rectangle(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, color);
 }
 
 void BaseMenuObject::renderBorder(glez::rgba color)
 {
-    glez::draw::rect_outline(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, color, 1.0f);
+    draw::RectangleOutlined(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, color, 1.0f);
 }
 
 void BaseMenuObject::onParentSizeUpdate()
@@ -295,7 +296,7 @@ void BaseMenuObject::renderDebugOverlay()
     {
         int t = int(this);
         t *= 13737373 + 487128758242;
-        glez::draw::rect(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, glez::rgba(t & 0xFF, (t >> 8) & 0xFF, (t >> 16) & 0xFF, 80));
+        draw::Rectangle(bb.getBorderBox().x, bb.getBorderBox().y, bb.getBorderBox().width, bb.getBorderBox().height, glez::rgba(t & 0xFF, (t >> 8) & 0xFF, (t >> 16) & 0xFF, 80));
     }
     // Container classes should call renderDebugOverlay() on children
 }

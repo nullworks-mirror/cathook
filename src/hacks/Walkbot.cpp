@@ -1011,7 +1011,7 @@ void DrawConnection(index_t a, connection_s &b)
     else if ((a_.flags & b_.flags) & NF_DUCK)
         color = &colors::green;
 
-    glez::draw::line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, *color, 0.5f);
+    draw::Line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, *color, 0.5f);
 
     if (draw_connection_flags && b.flags != CF_GOOD)
     {
@@ -1060,7 +1060,7 @@ void DrawNode(index_t node, bool draw_back)
         if (node == state::active_node)
             color = &colors::red;
 
-        glez::draw::rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, *color);
+        draw::Rectangle(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, *color);
     }
 
     if (draw_indices)

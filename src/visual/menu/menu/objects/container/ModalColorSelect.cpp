@@ -15,8 +15,8 @@ void ModalColorSelect::render()
 
     if (preview_enabled)
     {
-        glez::draw::rect(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *option);
-        glez::draw::rect_outline(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *color_border, 1);
+        draw::Rectangle(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *option);
+        draw::RectangleOutlined(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *color_border, 1);
     }
 }
 

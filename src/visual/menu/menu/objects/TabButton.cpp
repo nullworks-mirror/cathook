@@ -37,14 +37,14 @@ void TabButton::render()
     {
         renderBackground(*color_selected);
         // TODO magic numbers?
-        glez::draw::line(bb.getBorderBox().x + 6, bb.getBorderBox().bottom() - 3, bb.getBorderBox().width - 12, 0, *color_selected_underline, 1);
+        draw::Line(bb.getBorderBox().x + 6, bb.getBorderBox().bottom() - 3, bb.getBorderBox().width - 12, 0, *color_selected_underline, 1);
     }
     else if (isHovered())
     {
-        glez::draw::line(bb.getBorderBox().x + 6, bb.getBorderBox().bottom() - 3, bb.getBorderBox().width - 12, 0, *color_hover_underline, 1);
+        draw::Line(bb.getBorderBox().x + 6, bb.getBorderBox().bottom() - 3, bb.getBorderBox().width - 12, 0, *color_hover_underline, 1);
     }
 
-    glez::draw::line(bb.getBorderBox().right(), bb.getBorderBox().top(), 0, bb.getBorderBox().height, *color_separator, 1);
+    draw::Line(bb.getBorderBox().right(), bb.getBorderBox().top(), 0, bb.getBorderBox().height, *color_separator, 1);
 
     text.setColorText(selected ? &*color_text_selected : &*color_text);
     text.render();

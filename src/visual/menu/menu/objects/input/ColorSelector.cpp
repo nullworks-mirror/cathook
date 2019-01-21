@@ -33,7 +33,7 @@ void ColorSelector::render()
     if (variable)
     {
         auto pb = bb.getContentBox();
-        glez::draw::rect(pb.left(), pb.top(), pb.width, pb.height, **variable);
+        draw::Rectangle(pb.left(), pb.top(), pb.width, pb.height, **variable);
     }
 }
 

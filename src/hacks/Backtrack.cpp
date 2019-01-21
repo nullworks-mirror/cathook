@@ -201,9 +201,9 @@ static void Draw()
                     size = abs(max.y - min.y);
 
                 if (i == iBestTarget && j == BestTick)
-                    glez::draw::rect(out.x, out.y, size / 2, size / 2, colors::red);
+                    draw::Rectangle(out.x, out.y, size / 2, size / 2, colors::red);
                 else
-                    glez::draw::rect(out.x, out.y, size / 4, size / 4, colors::green);
+                    draw::Rectangle(out.x, out.y, size / 4, size / 4, colors::green);
             }
         }
     }

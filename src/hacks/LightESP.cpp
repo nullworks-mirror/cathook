@@ -74,8 +74,8 @@ void draw()
             float minsize = 20.0f;
             if (size < minsize)
                 size = minsize;
-            glez::draw::rect(out.x - fabsf(pout.x - pout2.x) / 4, out.y - fabsf(pout.y - pout2.y) / 4, fabsf(pout.x - pout2.x) / 2, fabsf(pout.y - pout2.y) / 2, hacks::shared::lightesp::LightESPColor(pEntity));
-            glez::draw::rect(out.x - size / 8, out.y - size / 8, size / 4, size / 4, colors::red);
+            draw::Rectangle(out.x - fabsf(pout.x - pout2.x) / 4, out.y - fabsf(pout.y - pout2.y) / 4, fabsf(pout.x - pout2.x) / 2, fabsf(pout.y - pout2.y) / 2, hacks::shared::lightesp::LightESPColor(pEntity));
+            draw::Rectangle(out.x - size / 8, out.y - size / 8, size / 4, size / 4, colors::red);
         }
     }
 }

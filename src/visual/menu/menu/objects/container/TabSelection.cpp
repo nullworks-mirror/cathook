@@ -14,7 +14,7 @@ namespace zerokernel
 void TabSelection::render()
 {
     Container::render();
-    glez::draw::line(bb.getBorderBox().left(), bb.getBorderBox().bottom() - 1, bb.getBorderBox().width, 0, *color_border, 1);
+    draw::Line(bb.getBorderBox().left(), bb.getBorderBox().bottom() - 1, bb.getBorderBox().width, 0, *color_border, 1);
 }
 
 void TabSelection::add(const std::string &option)

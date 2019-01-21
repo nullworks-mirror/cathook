@@ -1439,8 +1439,8 @@ static void DrawText()
             Vector oscreen;
             if (draw::WorldToScreen(calculated_data_array[i].aim_position, screen) && draw::WorldToScreen(ent->m_vecOrigin(), oscreen))
             {
-                glez::draw::rect(screen.x - 2, screen.y - 2, 4, 4, colors::white);
-                glez::draw::line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y, colors::EntityF(ent), 0.5f);
+                draw::Rectangle(screen.x - 2, screen.y - 2, 4, 4, colors::white);
+                draw::Line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y, colors::EntityF(ent), 0.5f);
             }
         }
     }

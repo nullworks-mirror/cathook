@@ -49,6 +49,8 @@ struct rgba_t
     constexpr rgba_t(float _r, float _g, float _b, float _a = 1.0f) : r(_r), g(_g), b(_b), a(_a){};
 
     explicit rgba_t(const char hex[6]);
+    rgba_t(const glez::rgba &other) : r(other.r), g(other.g), b(other.b), a(other.a){};
+
 #if __clang__
     operator glez::rgba() const
     {

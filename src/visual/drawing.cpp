@@ -101,7 +101,8 @@ void Initialize()
     fonts::menu.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
     fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
     fonts::surface_font = g_ISurface->CreateFont();
-    g_ISurface->SetFontGlyphSet(fonts::surface_font, "TF2 Build", 14, 500, 0, 0, vgui::ISurface::FONTFLAG_NONE);
+    g_ISurface->SetFontGlyphSet(fonts::surface_font, "Verasans", 15, 500, 0, 0, vgui::ISurface::FONTFLAG_ANTIALIAS | vgui::ISurface::FONTFLAG_ADDITIVE);
+    g_ISurface->AddCustomFontFile("Verasans", DATA_PATH "/fonts/verasans.ttf");
 
     texture_white                = g_ISurface->CreateNewTextureID();
     unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
