@@ -39,41 +39,41 @@ void dispatchUserMessage(bf_read &buffer, int type)
         buffer.Seek(0);
         eid >>= 1;
 
-        unsigned steamID = 0;
         // info is the person getting kicked,
         // info2 is the person calling the kick.
         player_info_s info{}, info2{};
-        if (!g_IEngine->GetPlayerInfo(eid, &info))
+        if (!g_IEngine->GetPlayerInfo(eid, &info) || !g_IEngine->GetPlayerInfo(caller, &info2))
             break;
-        steamID = info.friendsID;
+
+        logging::Info("Vote called to kick %s [U:1:%u] for %s by %s [U:1:%u]",
+            info.name, info.friendsID, reason, info2.name, info2.friendsID);
         if (eid == LOCAL_E->m_IDX)
             was_local_player = true;
+
         if (*vote_kickn || *vote_kicky)
         {
-            auto &pl = playerlist::AccessData(info.friendsID);
-            if (*vote_kickn && pl.state != playerlist::k_EState::RAGE && pl.state != playerlist::k_EState::DEFAULT)
+            using namespace playerlist;
+
+            auto &pl = AccessData(info.friendsID);
+            auto &pl_caller = AccessData(info2.friendsID);
+            bool friendly_kicked = pl.state != k_EState::RAGE && pl.state != k_EState::DEFAULT;
+            bool friendly_caller = pl_caller.state != k_EState::RAGE && pl_caller.state != k_EState::DEFAULT;
+
+            if (*vote_kickn && friendly_kicked)
+            {
                 g_IEngine->ClientCmd_Unrestricted("vote option2");
-            else if (*vote_kicky && (pl.state == playerlist::k_EState::RAGE || pl.state == playerlist::k_EState::DEFAULT))
+            }
+            else if (*vote_kicky && !friendly_kicked)
                 g_IEngine->ClientCmd_Unrestricted("vote option1");
         }
-        if (*party_say && g_IEngine->GetPlayerInfo(caller, &info2))
+        if (*party_say)
         {
-            char formated_string[512];
-            // because tf2 is stupid and doesn't have escape characters,
-            // use the greek question marks instead. big brain.
-            std::string kicked_name(info.name), caller_name(info2.name);
-            /* ';' (0x3B) regular replaced with unicode analog ';' (0xCD 0xBE)
-             * to prevent exploits (by crafting name such that it executes command)
-             * and output message properly
-             * TO DO: Saner way to accomplish same */
-            ReplaceString(kicked_name, ";", ";");
-            ReplaceString(caller_name, ";", ";");
+            char formated_string[256];
             std::snprintf(formated_string, sizeof(formated_string),
-                "say_party [CAT] votekick called: %s => %s (%s)",
-                caller_name.c_str(), kicked_name.c_str(), reason);
-            g_IEngine->ExecuteClientCmd(formated_string);
+                "[CAT] votekick called: %s => %s (%s)",
+                info2.name, info.name, reason);
+            re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
         }
-        logging::Info("Vote called to kick %s [U:1:%u] for %s", name, steamID, reason);
         break;
     }
     case 47:
