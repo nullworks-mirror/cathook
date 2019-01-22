@@ -12,7 +12,8 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_video.h>
 #include <SDLHooks.hpp>
-#include <menu/GuiInterface.hpp>
+#include "menu/GuiInterface.hpp"
+#include "picopng.hpp"
 
 // String -> Wstring
 #include <locale>
@@ -201,6 +202,50 @@ void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float t
     Rectangle(x, y + h - 1, w, 1, color);
 }
 
+void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture &texture, float tx, float ty, float tw, float th, float angle)
+{
+#if !ENABLE_ENGINE_DRAWING
+    glez::draw::rect_textured(x, y, w, h, color, texture, tx, ty, tw, th, angle);
+#else
+    color = color * 255.0f;
+    vgui::Vertex_t vertices[4];
+    g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
+    g_ISurface->DrawSetTexture(texture.get());
+
+    vertices[0].m_Position = { x, y };
+    vertices[1].m_Position = { x, y + h };
+    vertices[2].m_Position = { x + w, y + h };
+    vertices[3].m_Position = { x + w, y };
+
+    if (angle != 0.0f)
+    {
+        float cx = x + float(w) / 2.0f;
+        float cy = y + float(h) / 2.0f;
+
+        for (auto &v : vertices)
+        {
+            float ox = v.m_Position.x;
+            float oy = v.m_Position.y;
+
+            v.m_Position.x = cx + cosf(angle) * (ox - cx) - sinf(angle) * (oy - cy);
+            v.m_Position.y = cy + sinf(angle) * (ox - cx) + cosf(angle) * (oy - cy);
+        }
+    }
+
+    float s0 = float(tx) / texture.getWidth();
+    float s1 = float(tx + tw) / texture.getWidth();
+    float t0 = float(ty) / texture.getHeight();
+    float t1 = float(ty + th) / texture.getHeight();
+
+    vertices[0].m_TexCoord = { s0, t0 };
+    vertices[1].m_TexCoord = { s0, t1 };
+    vertices[2].m_TexCoord = { s1, t1 };
+    vertices[3].m_TexCoord = { s1, t0 };
+
+    g_ISurface->DrawTexturedPolygon(4, vertices);
+#endif
+}
+
 bool EntityCenterToScreen(CachedEntity *entity, Vector &out)
 {
     Vector world, min, max;
@@ -225,6 +270,53 @@ void UpdateWTS()
 bool WorldToScreen(const Vector &origin, Vector &screen)
 {
     return g_IVDebugOverlay->ScreenPosition(origin, screen) == 0;
+}
+
+bool Texture::load()
+{
+    std::ifstream file(path.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+
+    std::streamsize size = 0;
+    if (file.seekg(0, std::ios::end).good())
+        size = file.tellg();
+    if (file.seekg(0, std::ios::beg).good())
+        size -= file.tellg();
+
+    if (size < 1)
+        return false;
+
+    unsigned char *buffer = new unsigned char[(size_t) size + 1];
+    file.read((char *) buffer, size);
+    file.close();
+    int error = decodePNG(data, m_width, m_height, buffer, size);
+
+    // if there's an error, display it and return false to indicate failure
+    if (error != 0)
+    {
+        logging::Info("Error loading texture, error code %i\n", error);
+        return false;
+    }
+    texture_id = g_ISurface->CreateNewTextureID();
+    g_ISurface->DrawSetTextureRGBA(texture_id, data, m_width, m_height, false, false);
+    if (!g_ISurface->IsTextureIDValid(texture_id))
+        return false;
+    init = true;
+    return true;
+}
+
+Texture::~Texture()
+{
+    g_ISurface->DeleteTextureByID(texture_id);
+}
+
+unsigned int Texture::get()
+{
+    if (!g_ISurface->IsTextureIDValid(texture_id))
+    {
+        if (!load() || !g_ISurface->IsTextureIDValid(texture_id))
+            throw std::runtime_error("Couldn't init texture!");
+    }
+    return texture_id;
 }
 
 SDL_GLContext context = nullptr;

@@ -3,6 +3,7 @@
 #include <glez/draw.hpp>
 #include <menu/wm/WMWindow.hpp>
 #include <config.h>
+#include "drawing.hpp"
 
 /*
   Created on 07.07.18.

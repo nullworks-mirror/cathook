@@ -291,8 +291,8 @@ static void cm()
     }
 }
 
-static glez::texture atlas{ DATA_PATH "/textures/atlas.png" };
-static glez::texture idspec{ DATA_PATH "/textures/idspec.png" };
+static draw::Texture atlas{ DATA_PATH "/textures/atlas.png" };
+static draw::Texture idspec{ DATA_PATH "/textures/idspec.png" };
 
 Timer retry{};
 void Init()
@@ -342,7 +342,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                     if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
                         steamID = info.friendsID;
                     if (playerlist::AccessData(steamID).state == playerlist::k_EState::CAT)
-                        glez::draw::rect_textured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, glez::color::white, idspec, 2 * 64, 1 * 64, 64, 64, 0);
+                        draw::RectangleTextured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, glez::color::white, idspec, 2 * 64, 1 * 64, 64, 64, 0);
                     for (int i = 0; i < 4; i++)
                     {
                         if (steamID == steamidarray[i])
@@ -353,12 +353,12 @@ void _FASTCALL emoji(CachedEntity *ent)
                                 ii++;
                                 i -= 4;
                             }
-                            glez::draw::rect_textured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, glez::color::white, idspec, i * 64, ii * 64, 64, 64, 0);
+                            draw::RectangleTextured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, glez::color::white, idspec, i * 64, ii * 64, 64, 64, 0);
                             hascall = true;
                         }
                     }
                     if (!hascall)
-                        glez::draw::rect_textured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, colors::white, textures::atlas().texture, (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, (v9mode ? 3 : 4) * 64, 64, 64, 0);
+                        draw::RectangleTextured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, colors::white, atlas, (3 + (v9mode ? 3 : (int) emoji_esp)) * 64, (v9mode ? 3 : 4) * 64, 64, 64, 0);
                 }
             }
         }
