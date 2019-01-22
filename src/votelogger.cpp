@@ -11,12 +11,44 @@
 
 static settings::Bool vote_kicky{ "votelogger.autovote.yes", "false" };
 static settings::Bool vote_kickn{ "votelogger.autovote.no", "false" };
+static settings::Bool vote_rage_vote{ "votelogger.autovote.no.rage", "false" };
 static settings::Bool party_say{ "votelogger.partysay", "true" };
 
 namespace votelogger
 {
 
 static bool was_local_player{ false };
+
+static void vote_rage_back()
+{
+    static Timer attempt_vote_time;
+    char cmd[36];
+    player_info_s info;
+    std::vector<int> targets;
+
+    if (!g_IEngine->IsInGame() || !attempt_vote_time.test_and_set(1000))
+        return;
+
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    {
+        auto ent = ENTITY(i);
+        // TO DO: m_bEnemy check only when you can't vote off players from the opposite team
+        if (CE_BAD(ent) || ent == LOCAL_E || ent->m_Type() != ENTITY_PLAYER || ent->m_bEnemy())
+            continue;
+
+        if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
+            continue;
+
+        auto &pl = playerlist::AccessData(info.friendsID);
+        if (pl.state == playerlist::k_EState::RAGE)
+            targets.emplace_back(info.userID);
+    }
+    if (targets.empty())
+        return;
+
+    std::snprintf(cmd, sizeof(cmd), "callvote kick %d cheating", targets[UniformRandomInt(0, targets.size() - 1)]);
+    g_IEngine->ExecuteClientCmd(cmd);
+}
 
 void dispatchUserMessage(bf_read &buffer, int type)
 {
@@ -62,6 +94,8 @@ void dispatchUserMessage(bf_read &buffer, int type)
             if (*vote_kickn && friendly_kicked)
             {
                 g_IEngine->ClientCmd_Unrestricted("vote option2");
+                if (*vote_rage_vote && !friendly_caller)
+                    pl_caller.state = k_EState::RAGE;
             }
             else if (*vote_kicky && !friendly_kicked)
                 g_IEngine->ClientCmd_Unrestricted("vote option1");
@@ -91,4 +125,26 @@ void dispatchUserMessage(bf_read &buffer, int type)
         break;
     }
 }
+
+static void setup_vote_rage()
+{
+    EC::Register(EC::CreateMove, vote_rage_back, "vote_rage_back");
+}
+
+static void reset_vote_rage()
+{
+    EC::Unregister(EC::CreateMove, "vote_rage_back");
+}
+
+static InitRoutine init([]() {
+    if (*vote_rage_vote)
+        setup_vote_rage();
+
+    vote_rage_vote.installChangeCallback([](settings::VariableBase<bool> &var, bool new_val) {
+        if (new_val)
+            setup_vote_rage();
+        else
+            reset_vote_rage();
+    });
+});
 } // namespace votelogger
