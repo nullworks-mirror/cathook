@@ -106,7 +106,7 @@ void do_random_votekick()
     player_info_s info;
     if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(target), &info))
         return;
-    hack::ExecuteCommand("callvote kick " + std::to_string(target) + " cheating");
+    hack::ExecuteCommand("callvote kick \"" + std::to_string(target) + " cheating\"");
 }
 
 void update_catbot_list()

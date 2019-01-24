@@ -22,7 +22,7 @@ static bool was_local_player{ false };
 static void vote_rage_back()
 {
     static Timer attempt_vote_time;
-    char cmd[36];
+    char cmd[40];
     player_info_s info;
     std::vector<int> targets;
 
@@ -46,8 +46,8 @@ static void vote_rage_back()
     if (targets.empty())
         return;
 
-    std::snprintf(cmd, sizeof(cmd), "callvote kick %d cheating", targets[UniformRandomInt(0, targets.size() - 1)]);
-    g_IEngine->ExecuteClientCmd(cmd);
+    std::snprintf(cmd, sizeof(cmd), "callvote kick \"%d cheating\"", targets[UniformRandomInt(0, targets.size() - 1)]);
+    g_IEngine->ClientCmd_Unrestricted(cmd);
 }
 
 void dispatchUserMessage(bf_read &buffer, int type)
