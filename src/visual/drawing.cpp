@@ -212,35 +212,39 @@ void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture
     g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
     g_ISurface->DrawSetTexture(texture.get());
 
-    vertices[0].m_Position = { x, y };
-    vertices[1].m_Position = { x, y + h };
-    vertices[2].m_Position = { x + w, y + h };
-    vertices[3].m_Position = { x + w, y };
+    float tex_width  = texture.getWidth();
+    float tex_height = texture.getHeight();
+
+    Vector2D scr_top_left     = { x, y };
+    Vector2D scr_top_right    = { x + w, y };
+    Vector2D scr_bottom_right = { x + w, y + h };
+    Vector2D scr_botton_left  = { x, y + w };
 
     if (angle != 0.0f)
     {
         float cx = x + float(w) / 2.0f;
         float cy = y + float(h) / 2.0f;
 
-        for (auto &v : vertices)
-        {
-            float ox = v.m_Position.x;
-            float oy = v.m_Position.y;
-
-            v.m_Position.x = cx + cosf(angle) * (ox - cx) - sinf(angle) * (oy - cy);
-            v.m_Position.y = cy + sinf(angle) * (ox - cx) + cosf(angle) * (oy - cy);
-        }
+        auto f = [&](Vector2D &v) {
+            v.x = cx + cosf(angle) * (v.x - cx) - sinf(angle) * (v.y - cy);
+            v.y = cy + sinf(angle) * (v.x - cx) + cosf(angle) * (v.y - cy);
+        };
+        f(scr_top_left);
+        f(scr_top_right);
+        f(scr_bottom_right);
+        f(scr_bottom_right);
     }
 
-    float s0 = float(tx) / texture.getWidth();
-    float s1 = float(tx + tw) / texture.getWidth();
-    float t0 = float(ty) / texture.getHeight();
-    float t1 = float(ty + th) / texture.getHeight();
+    Vector2D tex_top_left     = { tx / tex_width, ty / tex_height };
+    Vector2D tex_top_right    = { (tx + tw) / tex_width, ty / tex_height };
+    Vector2D tex_bottom_right = { (tx + tw) / tex_width, (ty + th) / tex_height };
+    Vector2D tex_botton_left  = { tx / tex_width, (ty + th) / tex_height };
+    // logging::Info("%f,%f %f,%f", tex_top_left.x, tex_top_left.y, tex_top_right.x, tex_top_right.y);
 
-    vertices[0].m_TexCoord = { s0, t0 };
-    vertices[1].m_TexCoord = { s0, t1 };
-    vertices[2].m_TexCoord = { s1, t1 };
-    vertices[3].m_TexCoord = { s1, t0 };
+    vertices[0].Init(scr_top_left, tex_top_left);
+    vertices[1].Init(scr_top_right, tex_top_right);
+    vertices[2].Init(scr_bottom_right, tex_bottom_right);
+    vertices[3].Init(scr_botton_left, tex_botton_left);
 
     g_ISurface->DrawTexturedPolygon(4, vertices);
 #endif
@@ -296,8 +300,9 @@ bool Texture::load()
         logging::Info("Error loading texture, error code %i\n", error);
         return false;
     }
-    texture_id = g_ISurface->CreateNewTextureID();
-    g_ISurface->DrawSetTextureRGBA(texture_id, data, m_width, m_height, false, false);
+    texture_id = g_ISurface->CreateNewTextureID(true);
+    // g_ISurface->DrawSetTextureRGBA(texture_id, data, m_width, m_height, false, false);
+    g_ISurface->DrawSetTextureRGBAEx(texture_id, data, m_width, m_height, ImageFormat::IMAGE_FORMAT_RGBA8888);
     if (!g_ISurface->IsTextureIDValid(texture_id))
         return false;
     init = true;
@@ -311,9 +316,9 @@ Texture::~Texture()
 
 unsigned int Texture::get()
 {
-    if (!g_ISurface->IsTextureIDValid(texture_id))
+    if (texture_id == 0)
     {
-        if (!load() || !g_ISurface->IsTextureIDValid(texture_id))
+        if (!load())
             throw std::runtime_error("Couldn't init texture!");
     }
     return texture_id;
