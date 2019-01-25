@@ -1,11 +1,5 @@
-replace this file with actual dominatesay.
-usable macros: 
-%team% %class% %killer% %name% %myteam% %myclass% %dominum% \n
-
-examples:
-
 %name% is getting dominated. no big surprise.
-%team% actually sucks i already have %dominum% dominations wtf?
+%team% sucks giant dick, already have %dominum% dominations.
 %name%, quit playing %class% dude. i'm already dominating you.
 lmao adding %name% to my list of idiots
 %dominum% dominations lol

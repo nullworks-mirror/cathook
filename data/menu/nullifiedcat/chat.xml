@@ -71,6 +71,15 @@
                     <Option name="Lithium" value="7"/>
                 </Select>
             </LabeledObject>
+            <AutoVariable width="fill" target="critsay.file" label="Critsay file"/>
+            <LabeledObject width="fill" label="Critsay Mode">
+                <Select target="critsay.mode">
+                    <Option name="Disable" value="0"/>
+                    <Option name="Custom" value="1"/>
+                    <Option name="Default" value="2"/>
+                </Select>
+            </LabeledObject>
+            <AutoVariable width="fill" target="critsay.delay" label="Critsay Delay"/>
         </List>
     </Box>
 </Tab>

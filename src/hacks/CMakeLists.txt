@@ -22,6 +22,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/AutoTaunt.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Bunnyhop.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Backtrack.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/CritSay.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/FollowBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/KillSay.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/DominateSay.cpp"
