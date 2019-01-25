@@ -1,7 +1,7 @@
 #include <menu/BaseMenuObject.hpp>
 #include <menu/object/Text.hpp>
 #include <menu/Menu.hpp>
-#include <glez/draw.hpp>
+#include <drawing.hpp>
 
 /*
   Created on 08.07.18.
@@ -9,7 +9,7 @@
 
 void zerokernel::Text::render()
 {
-    glez::draw::outlined_string(bb.getContentBox().left() + text_x, bb.getContentBox().top() + text_y, data, *font, *color_text, *color_outline, nullptr, nullptr);
+    draw::String(bb.getContentBox().left() + text_x, bb.getContentBox().top() + text_y, *color_text, data.c_str());
 
     BaseMenuObject::render();
 }

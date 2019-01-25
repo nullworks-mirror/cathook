@@ -45,7 +45,7 @@ public:
     const float width;
     const float height;
 
-    glez::texture texture;
+    draw::Texture texture;
 };
 
 texture_atlas &atlas();

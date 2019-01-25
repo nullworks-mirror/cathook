@@ -16,7 +16,7 @@ sprite::sprite(float x, float y, float w, float h, texture_atlas &atlas) : nx(x)
 }
 void sprite::draw(float scrx, float scry, float scrw, float scrh, const rgba_t &rgba)
 {
-    glez::draw::rect_textured(scrx, scry, scrw, scrh, rgba, atlas.texture, nx, ny, nw, nh, 0);
+    draw::RectangleTextured(scrx, scry, scrw, scrh, rgba, atlas.texture, nx, ny, nw, nh, 0);
 }
 
 texture_atlas::texture_atlas(std::string filename, float width, float height) : width(width), height(height), texture(filename)

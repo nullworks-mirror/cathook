@@ -1075,7 +1075,7 @@ void DrawNode(index_t node, bool draw_back)
         if (not draw::WorldToScreen(n.xyz(), wts))
             return;
 
-        glez::draw::outlined_string(wts.x, wts.y, std::to_string(node).c_str(), *fonts::menu, *color, colors::black, nullptr, nullptr);
+        draw::String(wts.x, wts.y, *color, std::to_string(node).c_str());
     }
 }
 

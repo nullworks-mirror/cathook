@@ -5,7 +5,7 @@
 #include <glez/font.hpp>
 #include <sstream>
 #include <glez/color.hpp>
-#include <glez/draw.hpp>
+#include <drawing.hpp>
 #include <menu/Menu.hpp>
 
 namespace utility
@@ -114,6 +114,6 @@ void drawCenteredString(int x, int y, const std::string &string, glez::font &fon
 {
     float width;
     font.stringSize(string, &width, nullptr);
-    glez::draw::outlined_string(x - width / 2, y, string, font, color, *zerokernel::style::colors::text_shadow, nullptr, nullptr);
+    draw::String(x - width / 2, y, color, string.c_str());
 }
 } // namespace utility
