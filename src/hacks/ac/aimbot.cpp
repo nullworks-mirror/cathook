@@ -111,8 +111,10 @@ void Event(KeyValues *event)
         {
             CachedEntity *victim   = ENTITY(vid);
             CachedEntity *attacker = ENTITY(eid);
-            if (Player_origs[vid].z != 0 && Player_origs[eid].z != 0)
-                if (Player_origs[vid].DistTo(Player_origs[eid]) > 250)
+            auto &Po_v = Player_origs[vid];
+            auto &Po_e = Player_origs[eid];
+            if (Po_v.z != 0 && Po_e.z != 0)
+                if (Po_v.DistTo(Po_e) > 250)
                 {
                     data_table[eid - 1].check_timer = 1;
                     data_table[eid - 1].last_weapon = event->GetInt("weaponid");
