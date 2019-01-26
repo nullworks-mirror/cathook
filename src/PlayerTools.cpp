@@ -31,9 +31,6 @@ namespace player_tools
 
 bool shouldTargetSteamId(unsigned id)
 {
-    if (id == 0)
-        return false;
-
     if (betrayal_limit)
     {
         if (betrayal_list[id] > int(betrayal_limit))

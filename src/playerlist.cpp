@@ -143,7 +143,7 @@ userdata &AccessData(unsigned steamid)
 // Assume player is non-null
 userdata &AccessData(CachedEntity *player)
 {
-    if (CE_GOOD(player))
+    if (player && player->player_info.friendsID)
         return AccessData(player->player_info.friendsID);
     return AccessData(0U);
 }
@@ -159,7 +159,7 @@ bool IsDefault(unsigned steamid)
 
 bool IsDefault(CachedEntity *entity)
 {
-    if (CE_GOOD(entity))
+    if (entity && entity->player_info.friendsID)
         return IsDefault(entity->player_info.friendsID);
     return true;
 }
@@ -171,8 +171,8 @@ CatCommand pl_add_id("pl_add_id", "Sets state for steamid", [](const CCommand &a
     if (args.ArgC() <= 2)
         return;
 
-    uint32_t id = std::strtoul(args.Arg(1), nullptr, 10);
-    auto &pl = AccessData(id);
+    uint32_t id       = std::strtoul(args.Arg(1), nullptr, 10);
+    auto &pl          = AccessData(id);
     const char *state = args.Arg(2);
     if (k_Names[0] == state)
         pl.state = k_EState::DEFAULT;
