@@ -19,7 +19,7 @@ class ModalColorSelect : public ModalContainer
 public:
     ~ModalColorSelect() override = default;
 
-    explicit ModalColorSelect(settings::Variable<glez::rgba> &option);
+    explicit ModalColorSelect(settings::Variable<rgba_t> &option);
 
     void render() override;
 
@@ -47,7 +47,7 @@ public:
     settings::Variable<int> blue{};
     settings::Variable<int> alpha{};
 
-    settings::Variable<glez::rgba> &option;
+    settings::Variable<rgba_t> &option;
     size_t hex_input_uid{ 0 };
 
     ModalBehavior modal;

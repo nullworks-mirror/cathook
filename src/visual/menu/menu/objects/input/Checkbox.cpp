@@ -6,9 +6,9 @@
 #include <menu/menu/special/SettingsManagerList.hpp>
 
 static settings::RVariable<int> checkbox_size{ "zk.style.checkbox.size", "12" };
-static settings::RVariable<glez::rgba> color_border{ "zk.style.checkbox.color.border", "079797" };
-static settings::RVariable<glez::rgba> color_checked{ "zk.style.checkbox.color.checked", "079797" };
-static settings::RVariable<glez::rgba> color_hover{ "zk.style.checkbox.color.hover", "07979777" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.checkbox.color.border", "079797" };
+static settings::RVariable<rgba_t> color_checked{ "zk.style.checkbox.color.checked", "079797" };
+static settings::RVariable<rgba_t> color_hover{ "zk.style.checkbox.color.hover", "07979777" };
 
 bool zerokernel::Checkbox::onLeftMouseClick()
 {
@@ -38,9 +38,9 @@ void zerokernel::Checkbox::render()
         renderBorder(*color_border);
         auto cb = bb.getContentBox();
         if (**option)
-            glez::draw::rect(cb.x, cb.y, cb.width, cb.height, *color_checked);
+            draw::Rectangle(cb.x, cb.y, cb.width, cb.height, *color_checked);
         else if (isHovered())
-            glez::draw::rect(cb.x, cb.y, cb.width, cb.height, *color_hover);
+            draw::Rectangle(cb.x, cb.y, cb.width, cb.height, *color_hover);
     }
     else
     {

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <glez/texture.hpp>
 #include <settings/Registered.hpp>
 #include <menu/BaseMenuObject.hpp>
 

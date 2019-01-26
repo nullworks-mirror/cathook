@@ -5,9 +5,6 @@
  *      Author: nullifiedcat
  */
 #include "common.hpp"
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Int.hpp>
 
 #ifndef FEATURE_RADAR_DISABLED
@@ -101,7 +98,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
             else
             {
                 tx_class[2 - idx][clazz - 1].draw(x + wtr.first, y + wtr.second, (int) icon_size, (int) icon_size, colors::white);
-                glez::draw::rect_outline(x + wtr.first, y + wtr.second, (int) icon_size, (int) icon_size, idx ? colors::blu_v : colors::red_v, 1.0f);
+                draw::RectangleOutlined(x + wtr.first, y + wtr.second, (int) icon_size, (int) icon_size, idx ? colors::blu_v : colors::red_v, 1.0f);
             }
 
             if (ent->m_iMaxHealth() && healthbar)
@@ -110,8 +107,8 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                 clr     = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
                 if (healthp > 1.0f)
                     healthp = 1.0f;
-                glez::draw::rect_outline(x + wtr.first, y + wtr.second + (int) icon_size, (int) icon_size, 4, colors::black, 0.5f);
-                glez::draw::rect(x + wtr.first + 1, y + wtr.second + (int) icon_size + 1, (*icon_size - 2.0f) * healthp, 2, clr);
+                draw::RectangleOutlined(x + wtr.first, y + wtr.second + (int) icon_size, (int) icon_size, 4, colors::black, 0.5f);
+                draw::Rectangle(x + wtr.first + 1, y + wtr.second + (int) icon_size + 1, (*icon_size - 2.0f) * healthp, 2, clr);
             }
         }
         else if (ent->m_Type() == ENTITY_BUILDING)
@@ -176,8 +173,8 @@ void Draw()
 
     outlineclr = GUIColor();
 
-    glez::draw::rect(x, y, radar_size, radar_size, colors::Transparent(colors::black, 0.4f));
-    glez::draw::rect_outline(x, y, radar_size, radar_size, outlineclr, 0.5f);
+    draw::Rectangle(x, y, radar_size, radar_size, colors::Transparent(colors::black, 0.4f));
+    draw::RectangleOutlined(x, y, radar_size, radar_size, outlineclr, 0.5f);
 
     if (enemies_over_teammates)
         enemies.clear();
@@ -207,11 +204,11 @@ void Draw()
         DrawEntity(x, y, LOCAL_E);
         const auto &wtr = WorldToRadar(g_pLocalPlayer->v_Origin.x, g_pLocalPlayer->v_Origin.y);
         if (!use_icons)
-            glez::draw::rect_outline(x + wtr.first, y + wtr.second, int(icon_size), int(icon_size), GUIColor(), 0.5f);
+            draw::RectangleOutlined(x + wtr.first, y + wtr.second, int(icon_size), int(icon_size), GUIColor(), 0.5f);
     }
 
-    glez::draw::line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f), 0.5f);
-    glez::draw::line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f), 0.5f);
+    draw::Line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f), 0.5f);
+    draw::Line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f), 0.5f);
 }
 
 InitRoutine init([]() {

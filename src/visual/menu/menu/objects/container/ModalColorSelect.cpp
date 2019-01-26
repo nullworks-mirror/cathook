@@ -4,7 +4,7 @@
 
 #include <menu/object/container/ModalColorSelect.hpp>
 
-static settings::RVariable<glez::rgba> color_border{ "zk.style.color-preview.color.border", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.color-preview.color.border", "079797" };
 
 namespace zerokernel
 {
@@ -15,12 +15,12 @@ void ModalColorSelect::render()
 
     if (preview_enabled)
     {
-        glez::draw::rect(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *option);
-        glez::draw::rect_outline(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *color_border, 1);
+        draw::Rectangle(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *option);
+        draw::RectangleOutlined(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *color_border, 1);
     }
 }
 
-ModalColorSelect::ModalColorSelect(settings::Variable<glez::rgba> &option) : option(option), modal(this)
+ModalColorSelect::ModalColorSelect(settings::Variable<rgba_t> &option) : option(option), modal(this)
 {
     loadFromXml(Menu::instance->getPrefab("color-picker")->FirstChildElement());
 }
@@ -70,7 +70,7 @@ void ModalColorSelect::loadFromXml(const tinyxml2::XMLElement *data)
 
 void ModalColorSelect::updateColorFromSliders()
 {
-    glez::rgba rgba{};
+    rgba_t rgba{};
     rgba.r = *red / 255.f;
     rgba.g = *green / 255.f;
     rgba.b = *blue / 255.f;

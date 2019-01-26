@@ -176,7 +176,7 @@ std::unique_ptr<BaseMenuObject> ObjectFactory::createAutoVariable(const tinyxml2
     case settings::VariableType::COLOR:
     {
         // Create a color selector
-        auto obj = dynamic_cast<settings::Variable<glez::rgba> *>(var);
+        auto obj = dynamic_cast<settings::Variable<rgba_t> *>(var);
         if (obj == nullptr)
         {
             printf("error: could not cast settings '%s' to rgba\n", name);

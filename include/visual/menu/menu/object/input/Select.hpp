@@ -8,7 +8,6 @@
 #include <map>
 #include <optional>
 #include <string>
-#include <glez/draw.hpp>
 #include <menu/Menu.hpp>
 #include <menu/object/container/ModalSelect.hpp>
 
