@@ -10,7 +10,6 @@
 #include "../../external/libglez/ftgl/freetype-gl.h"
 
 #include <math.h>
-#include <glez/draw.hpp>
 #include <settings/Bool.hpp>
 
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED

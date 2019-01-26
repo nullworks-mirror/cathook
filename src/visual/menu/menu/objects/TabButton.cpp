@@ -3,15 +3,15 @@
 */
 
 #include <menu/object/TabButton.hpp>
-#include <glez/draw.hpp>
 
-static settings::RVariable<glez::rgba> color_selected{ "zk.style.tab-button.color.selected.background", "079797" };
-static settings::RVariable<glez::rgba> color_separator{ "zk.style.tab-button.color.separator", "079797" };
-static settings::RVariable<glez::rgba> color_hover_underline{ "zk.style.tab-button.color.hover.underline", "079797" };
-static settings::RVariable<glez::rgba> color_selected_underline{ "zk.style.tab-button.color.selected.underline", "079797" };
 
-static settings::RVariable<glez::rgba> color_text_selected{ "zk.style.tab-button.color.text.selected", "ffffff" };
-static settings::RVariable<glez::rgba> color_text{ "zk.style.tab-button.color.text.inactive", "cccccc" };
+static settings::RVariable<rgba_t> color_selected{ "zk.style.tab-button.color.selected.background", "079797" };
+static settings::RVariable<rgba_t> color_separator{ "zk.style.tab-button.color.separator", "079797" };
+static settings::RVariable<rgba_t> color_hover_underline{ "zk.style.tab-button.color.hover.underline", "079797" };
+static settings::RVariable<rgba_t> color_selected_underline{ "zk.style.tab-button.color.selected.underline", "079797" };
+
+static settings::RVariable<rgba_t> color_text_selected{ "zk.style.tab-button.color.text.selected", "ffffff" };
+static settings::RVariable<rgba_t> color_text{ "zk.style.tab-button.color.text.inactive", "cccccc" };
 
 namespace zerokernel
 {

@@ -6,16 +6,14 @@
 #pragma once
 
 #include <string>
-#include <glez/font.hpp>
-#include <glez/glez.hpp>
-#include <glez/color.hpp>
+#include <drawing.hpp>
 
 namespace utility
 {
 
-std::string wrapString(const std::string &input, glez::font &font, int width, int *resultWidth, int *resultLines);
-std::string dotCompactString(const std::string &input, glez::font &font, int width, bool reverse);
-void drawCenteredString(int x, int y, const std::string &string, glez::font &font, glez::rgba color);
+std::string wrapString(const std::string &input, fonts::font &font, int width, int *resultWidth, int *resultLines);
+std::string dotCompactString(const std::string &input, fonts::font &font, int width, bool reverse);
+void drawCenteredString(int x, int y, const std::string &string, fonts::font &font, rgba_t color);
 
 template <typename T> T mod(T first, T second);
 

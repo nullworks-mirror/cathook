@@ -13,9 +13,6 @@
 #include <fcntl.h>
 #include <link.h>
 #include <hacks/AntiAim.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 
 #include "core/sharedobj.hpp"
@@ -384,7 +381,7 @@ void DrawText()
         //draw::DrawString(10, y, draw::white, draw::black, false,
         "VecPunchAngleVel: %f %f %f", pav.x, pav.y, pav.z);
         //y += 14;
-        //AddCenterString(draw::font_handle,
+        //AddCenterString(fonts::font_handle,
         input->GetAnalogValue(AnalogCode_t::MOUSE_X),
         input->GetAnalogValue(AnalogCode_t::MOUSE_Y), draw::white,
         L"S\u0FD5");*/

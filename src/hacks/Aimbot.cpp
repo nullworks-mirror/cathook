@@ -10,9 +10,6 @@
 #include <hacks/AntiAim.hpp>
 #include <hacks/ESP.hpp>
 #include <hacks/Backtrack.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
@@ -1423,7 +1420,7 @@ static void DrawText()
                 float fov_real = RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
                 float radius   = tan(DEG2RAD(float(fov)) / 2) / tan(DEG2RAD(fov_real) / 2) * (width);
 
-                glez::draw::circle(width / 2, height / 2, radius, color, 1, 100);
+                draw::Circle(width / 2, height / 2, radius, color, 1, 100);
             }
         }
     }

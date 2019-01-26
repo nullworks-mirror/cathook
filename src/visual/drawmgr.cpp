@@ -8,8 +8,11 @@
 #include <MiscTemporary.hpp>
 #include <hacks/Aimbot.hpp>
 #include <hacks/hacklist.hpp>
+#if !ENABLE_ENGINE_DRAWING
 #include <glez/glez.hpp>
 #include <glez/record.hpp>
+#include <glez/draw.hpp>
+#endif
 #include <settings/Bool.hpp>
 #include <settings/Float.hpp>
 #include <menu/GuiInterface.hpp>
@@ -17,7 +20,6 @@
 #include "visual/drawing.hpp"
 #include "hack.hpp"
 #include "menu/menu/Menu.hpp"
-#include <glez/draw.hpp>
 
 static settings::Bool info_text{ "hack-info.enable", "true" };
 static settings::Bool info_text_min{ "hack-info.minimal", "false" };
@@ -37,16 +39,19 @@ void render_cheat_visuals()
         EndCheatVisuals();
     }
 }
-
+#if !ENABLE_ENGINE_DRAWING
 glez::record::Record bufferA{};
 glez::record::Record bufferB{};
 
 glez::record::Record *buffers[] = { &bufferA, &bufferB };
-int currentBuffer               = 0;
+#endif
+int currentBuffer = 0;
 
 void BeginCheatVisuals()
 {
+#if !ENABLE_ENGINE_DRAWING
     buffers[currentBuffer]->begin();
+#endif
     ResetStrings();
 }
 
@@ -116,11 +121,15 @@ void DrawCheatVisuals()
 
 void EndCheatVisuals()
 {
+#if !ENABLE_ENGINE_DRAWING
     buffers[currentBuffer]->end();
     currentBuffer = !currentBuffer;
+#endif
 }
 
 void DrawCache()
 {
+#if !ENABLE_ENGINE_DRAWING
     buffers[!currentBuffer]->replay();
+#endif
 }

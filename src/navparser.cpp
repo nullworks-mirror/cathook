@@ -5,9 +5,7 @@
 #include <pwd.h>
 #include <boost/functional/hash.hpp>
 #include <boost/container/flat_set.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
+#include <chrono>
 
 namespace nav
 {

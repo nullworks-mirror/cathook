@@ -10,7 +10,7 @@
 static settings::RVariable<int> default_width{ "zk.style.input.color.width", "36" };
 static settings::RVariable<int> default_height{ "zk.style.input.color.height", "14" };
 
-static settings::RVariable<glez::rgba> border{ "zk.style.input.color.border", "079797" };
+static settings::RVariable<rgba_t> border{ "zk.style.input.color.border", "079797" };
 
 namespace zerokernel
 {
@@ -21,7 +21,7 @@ ColorSelector::ColorSelector() : BaseMenuObject{}
     bb.setPadding(3, 3, 3, 3);
 }
 
-ColorSelector::ColorSelector(settings::Variable<glez::rgba> &variable) : BaseMenuObject{}, variable(&variable)
+ColorSelector::ColorSelector(settings::Variable<rgba_t> &variable) : BaseMenuObject{}, variable(&variable)
 {
     resize(*default_width, *default_height);
     bb.setPadding(3, 3, 3, 3);
@@ -60,7 +60,7 @@ void ColorSelector::loadFromXml(const tinyxml2::XMLElement *data)
         auto opt = settings::Manager::instance().lookup(str);
         if (opt)
         {
-            variable = dynamic_cast<settings::Variable<glez::rgba> *>(opt);
+            variable = dynamic_cast<settings::Variable<rgba_t> *>(opt);
             zerokernel::special::SettingsManagerList::markVariable(target);
         }
     }

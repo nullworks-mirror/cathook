@@ -13,9 +13,9 @@ namespace zerokernel
 class TextComponent
 {
 public:
-    TextComponent(glez::font &font);
+    TextComponent(fonts::font &font);
 
-    void render(const std::string &string, glez::rgba color, glez::rgba outline);
+    void render(const std::string &string, rgba_t color, rgba_t outline);
     // Uses default colors
     void render(const std::string &string);
 
@@ -28,8 +28,8 @@ public:
     int size_x{};
     int size_y{};
 
-    glez::font &font;
-    const glez::rgba &default_text;
-    const glez::rgba &default_outline;
+    fonts::font &font;
+    const rgba_t &default_text;
+    const rgba_t &default_outline;
 };
 } // namespace zerokernel

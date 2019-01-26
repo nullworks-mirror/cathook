@@ -7,10 +7,10 @@
 #include <menu/tinyxml2.hpp>
 #include <menu/object/container/Box.hpp>
 #include <menu/ObjectFactory.hpp>
-#include <glez/draw.hpp>
+
 #include <menu/Menu.hpp>
 
-static settings::RVariable<glez::rgba> color_border{ "zk.style.box.color.border", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.box.color.border", "079797" };
 
 void zerokernel::Box::render()
 {

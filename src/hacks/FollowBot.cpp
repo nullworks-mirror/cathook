@@ -7,9 +7,6 @@
 
 #include "common.hpp"
 #include <hacks/FollowBot.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 #include "navparser.hpp"
 #include "NavBot.hpp"

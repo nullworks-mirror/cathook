@@ -1,7 +1,7 @@
 #include <SDL2/SDL_events.h>
 #include <menu/BaseMenuObject.hpp>
 #include <menu/special/TreeListBaseEntry.hpp>
-#include <glez/draw.hpp>
+
 #include <menu/Menu.hpp>
 #include <settings/Registered.hpp>
 
@@ -9,8 +9,8 @@
   Created on 26.07.18.
 */
 
-static settings::RVariable<glez::rgba> background_hover{ "zk.style.tree-list-entry.color.hover", "38b28f66" };
-static settings::RVariable<glez::rgba> lines{ "zk.style.tree-list-entry.color.lines", "38b28f" };
+static settings::RVariable<rgba_t> background_hover{ "zk.style.tree-list-entry.color.hover", "38b28f66" };
+static settings::RVariable<rgba_t> lines{ "zk.style.tree-list-entry.color.lines", "38b28f" };
 
 bool zerokernel::TreeListBaseEntry::handleSdlEvent(SDL_Event *event)
 {

@@ -7,8 +7,16 @@
 
 #pragma once
 
+#include "config.h"
+#if !ENABLE_ENGINE_DRAWING
 #include <glez/font.hpp>
-#include "common.hpp"
+#include <glez/draw.hpp>
+#endif
+
+#include "colors.hpp"
+#include <string>
+#include <memory>
+#include <vector>
 
 class CachedEntity;
 class Vector;
@@ -18,15 +26,28 @@ class VMatrix;
 
 namespace fonts
 {
+#if ENABLE_ENGINE_DRAWING
+struct font
+{
+    font(std::string path, int fontsize);
+    unsigned int id;
+    int size;
+    operator unsigned int()
+    {
+        return id;
+    }
+    void stringSize(std::string string, float *x, float *y);
+};
+#else
+typedef glez::font font;
+#endif
 
-extern std::unique_ptr<glez::font> esp;
-extern std::unique_ptr<glez::font> menu;
-extern unsigned long surface_font;
+extern std::unique_ptr<font> esp;
+extern std::unique_ptr<font> menu;
 
 void Update();
 
 extern const std::vector<std::string> fonts;
-extern CatEnum family_enum;
 } // namespace fonts
 
 constexpr rgba_t GUIColor()
@@ -43,7 +64,6 @@ void DrawStrings();
 namespace draw
 {
 
-extern std::mutex draw_mutex;
 extern VMatrix wts;
 
 extern int width;
@@ -87,6 +107,7 @@ void String(int x, int y, rgba_t rgba, const char *text);
 void Rectangle(float x, float y, float w, float h, rgba_t color);
 void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness);
 void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture &texture, float tx, float ty, float tw, float th, float angle);
+void Circle(float x, float y, float radius, rgba_t color, float thickness, int steps);
 
 void UpdateWTS();
 bool WorldToScreen(const Vector &origin, Vector &screen);

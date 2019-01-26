@@ -6,7 +6,6 @@
  */
 
 #include <hacks/ESP.hpp>
-#include <glez/draw.hpp>
 #include <online/Online.hpp>
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
@@ -301,7 +300,7 @@ void Init()
         [](IConVar *var, const char *pszOldValue, float flOldValue) {
             logging::Info("current font: %p %s %d", fonts::esp.get(),
        fonts::esp->path.c_str(), fonts::esp->isLoaded());
-            fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf",
+            fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf",
        esp_font_scale));
         });*/
 }
@@ -342,7 +341,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                     if (g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
                         steamID = info.friendsID;
                     if (playerlist::AccessData(steamID).state == playerlist::k_EState::CAT)
-                        draw::RectangleTextured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, glez::color::white, idspec, 2 * 64, 1 * 64, 64, 64, 0);
+                        draw::RectangleTextured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, colors::white, idspec, 2 * 64, 1 * 64, 64, 64, 0);
                     for (int i = 0; i < 4; i++)
                     {
                         if (steamID == steamidarray[i])
@@ -353,7 +352,7 @@ void _FASTCALL emoji(CachedEntity *ent)
                                 ii++;
                                 i -= 4;
                             }
-                            draw::RectangleTextured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, glez::color::white, idspec, i * 64, ii * 64, 64, 64, 0);
+                            draw::RectangleTextured(head_scr.x - size / 2, head_scr.y - size / 2, size, size, colors::white, idspec, i * 64, ii * 64, 64, 64, 0);
                             hascall = true;
                         }
                     }

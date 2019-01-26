@@ -94,7 +94,7 @@ void zerokernel::Text::loadFromXml(const tinyxml2::XMLElement *data)
     set(data->GetText());
 }
 
-void zerokernel::Text::setColorText(const glez::rgba *color)
+void zerokernel::Text::setColorText(const rgba_t *color)
 {
     color_text = color;
 }
@@ -106,7 +106,7 @@ void zerokernel::Text::emitSizeUpdate()
     BaseMenuObject::emitSizeUpdate();
 }
 
-void zerokernel::Text::setOwnColor(glez::rgba color)
+void zerokernel::Text::setOwnColor(rgba_t color)
 {
     own_color  = color;
     color_text = &own_color;

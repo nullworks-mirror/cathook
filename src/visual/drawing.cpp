@@ -4,11 +4,12 @@
  *  Created on: Oct 5, 2016
  *      Author: nullifiedcat
  */
-
 #include "common.hpp"
 
+#if !ENABLE_ENGINE_DRAWING
 #include <glez/glez.hpp>
 #include <glez/draw.hpp>
+#endif
 #include <GL/glew.h>
 #include <SDL2/SDL_video.h>
 #include <SDLHooks.hpp>
@@ -77,14 +78,28 @@ void AddCenterString(const std::string &string, const rgba_t &color)
 int draw::width  = 0;
 int draw::height = 0;
 float draw::fov  = 90.0f;
-std::mutex draw::draw_mutex;
 
 namespace fonts
 {
-
-std::unique_ptr<glez::font> menu{ nullptr };
-std::unique_ptr<glez::font> esp{ nullptr };
-unsigned long surface_font{ 0 };
+#if ENABLE_ENGINE_DRAWING
+font::font(std::string path, int fontsize) : size{ fontsize }
+{
+    id = g_ISurface->CreateFont();
+    g_ISurface->SetFontGlyphSet(id, path.c_str(), fontsize, 500, 0, 0, vgui::ISurface::FONTFLAG_ANTIALIAS | vgui::ISurface::FONTFLAG_ADDITIVE);
+    g_ISurface->AddCustomFontFile(path.c_str(), path.c_str());
+}
+void font::stringSize(std::string string, float *x, float *y)
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
+    std::wstring ws = converter.from_bytes(string.c_str());
+    int w, h;
+    g_ISurface->GetTextSize(id, ws.c_str(), w, h);
+    *x = w;
+    *y = h;
+}
+#endif
+std::unique_ptr<font> menu{ nullptr };
+std::unique_ptr<font> esp{ nullptr };
 } // namespace fonts
 
 namespace draw
@@ -98,26 +113,25 @@ void Initialize()
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
+#if !ENABLE_ENGINE_DRAWING
     glez::preInit();
-    fonts::menu.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
-    fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
-    fonts::surface_font = g_ISurface->CreateFont();
-    g_ISurface->SetFontGlyphSet(fonts::surface_font, "Verasans", 15, 500, 0, 0, vgui::ISurface::FONTFLAG_ANTIALIAS | vgui::ISurface::FONTFLAG_ADDITIVE);
-    g_ISurface->AddCustomFontFile("Verasans", DATA_PATH "/fonts/verasans.ttf");
+#endif
+    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14));
+    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14));
 
     texture_white                = g_ISurface->CreateNewTextureID();
     unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
     g_ISurface->DrawSetTextureRGBA(texture_white, colorBuffer, 1, 1, false, true);
 }
 
-void String(int x, int y, rgba_t rgba, const char *text)
+void String(int x, int y, rgba_t rgba, const char *text, fonts::font font)
 {
 #if !ENABLE_ENGINE_DRAWING
-    glez::draw::outlined_string(x, y, text, *fonts::menu, rgba, colors::black, nullptr, nullptr);
+    glez::draw::outlined_string(x, y, text, font, rgba, colors::black, nullptr, nullptr);
 #else
     rgba = rgba * 255.0f;
     g_ISurface->DrawSetTextPos(x, y);
-    g_ISurface->DrawSetTextFont(fonts::surface_font);
+    g_ISurface->DrawSetTextFont(font);
     g_ISurface->DrawSetTextColor(rgba.r, rgba.g, rgba.b, rgba.a);
 
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
@@ -192,6 +206,22 @@ void Rectangle(float x, float y, float w, float h, rgba_t color)
 
     g_ISurface->DrawTexturedPolygon(4, vertices);
 #endif
+}
+
+void Circle(float x, float y, float radius, rgba_t color, float thickness, int steps)
+{
+    float px = 0;
+    float py = 0;
+    for (int i = 0; i <= steps; i++)
+    {
+        float ang = 2 * float(M_PI) * (float(i) / steps);
+        if (!i)
+            ang = 2 * float(M_PI);
+        if (i)
+            draw::Line(px, py, x - px + radius * cos(ang), y - py + radius * sin(ang), color, thickness);
+        px = x + radius * cos(ang);
+        py = y + radius * sin(ang);
+    }
 }
 
 void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness)
@@ -275,7 +305,7 @@ bool WorldToScreen(const Vector &origin, Vector &screen)
 {
     return g_IVDebugOverlay->ScreenPosition(origin, screen) == 0;
 }
-
+#if ENABLE_ENGINE_DRAWING
 bool Texture::load()
 {
     std::ifstream file(path.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -323,7 +353,7 @@ unsigned int Texture::get()
     }
     return texture_id;
 }
-
+#endif
 SDL_GLContext context = nullptr;
 
 void InitGL()
@@ -345,10 +375,12 @@ void InitGL()
     xoverlay_show();
     context = SDL_GL_CreateContext(sdl_hooks::window);
 #else
+#if !ENABLE_ENGINE_DRAWING
     glClearColor(1.0, 0.0, 0.0, 0.5);
     glewExperimental = GL_TRUE;
     glewInit();
     glez::init(draw::width, draw::height);
+#endif
 #endif
 
 #if ENABLE_GUI
@@ -358,6 +390,7 @@ void InitGL()
 
 void BeginGL()
 {
+#if !ENABLE_ENGINE_DRAWING
     glColor3f(1, 1, 1);
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
@@ -373,10 +406,12 @@ void BeginGL()
         glDisable(GL_FRAMEBUFFER_SRGB);
         PROF_SECTION(DRAWEX_draw_begin);
     }
+#endif
 }
 
 void EndGL()
 {
+#if !ENABLE_ENGINE_DRAWING
     PROF_SECTION(DRAWEX_draw_end);
     {
         PROF_SECTION(draw_end__glez_end);
@@ -389,6 +424,7 @@ void EndGL()
         PROF_SECTION(draw_end__SDL_GL_MakeCurrent);
         SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
     }
+#endif
 #endif
 }
 } // namespace draw

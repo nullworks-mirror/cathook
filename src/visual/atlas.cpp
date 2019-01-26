@@ -5,7 +5,6 @@
  *      Author: nullifiedcat
  */
 
-#include <glez/draw.hpp>
 #include "common.hpp"
 
 namespace textures

@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <glez/texture.hpp>
 #include "common.hpp"
 
 namespace textures

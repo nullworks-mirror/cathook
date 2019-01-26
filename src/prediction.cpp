@@ -5,9 +5,6 @@
  *      Author: nullifiedcat
  */
 #include "common.hpp"
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 
 static settings::Bool debug_enginepred{ "debug.engine-pred-others", "false" };

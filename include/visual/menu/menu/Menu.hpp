@@ -6,7 +6,6 @@
 #pragma once
 
 #include <SDL2/SDL_events.h>
-#include <glez/glez.hpp>
 #include <settings/Registered.hpp>
 #include <menu/wm/WindowManager.hpp>
 #include <menu/object/container/Container.hpp>
@@ -18,13 +17,13 @@ namespace zerokernel
 
 namespace resource::font
 {
-extern glez::font base;
-extern glez::font bold;
+extern fonts::font base;
+extern fonts::font bold;
 } // namespace resource::font
 
 namespace style::colors
 {
-using color_type = settings::RVariable<glez::rgba>;
+using color_type = settings::RVariable<rgba_t>;
 
 extern color_type text;
 extern color_type text_shadow;

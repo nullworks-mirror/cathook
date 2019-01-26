@@ -4,9 +4,9 @@
 
 #include <menu/object/container/Table.hpp>
 #include <menu/Menu.hpp>
-#include <glez/draw.hpp>
 
-static settings::RVariable<glez::rgba> color_border{ "zk.style.table.color.border", "079797" };
+
+static settings::RVariable<rgba_t> color_border{ "zk.style.table.color.border", "079797" };
 
 void zerokernel::Table::render()
 {

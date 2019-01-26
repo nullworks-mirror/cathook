@@ -24,9 +24,9 @@ public:
     static settings::RVariable<int> handle_width;
     static settings::RVariable<int> bar_width;
 
-    static settings::RVariable<glez::rgba> handle_body;
-    static settings::RVariable<glez::rgba> handle_border;
-    static settings::RVariable<glez::rgba> bar_color;
+    static settings::RVariable<rgba_t> handle_body;
+    static settings::RVariable<rgba_t> handle_border;
+    static settings::RVariable<rgba_t> bar_color;
 };
 
 template <typename T> class Slider : public BaseMenuObject

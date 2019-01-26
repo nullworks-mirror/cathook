@@ -5,9 +5,6 @@
  *      Author: nullifiedcat
  */
 #include "common.hpp"
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Int.hpp>
 
 #ifndef FEATURE_RADAR_DISABLED

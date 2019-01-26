@@ -4,9 +4,9 @@
 
 #include <menu/object/container/TabSelection.hpp>
 #include <menu/object/TabButton.hpp>
-#include <glez/draw.hpp>
 
-static settings::RVariable<glez::rgba> color_border{ "zk.style.tab-selection.color.border", "079797" };
+
+static settings::RVariable<rgba_t> color_border{ "zk.style.tab-selection.color.border", "079797" };
 
 namespace zerokernel
 {

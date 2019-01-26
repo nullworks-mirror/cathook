@@ -7,7 +7,6 @@
 
 #include <menu/object/container/TabContainer.hpp>
 #include <string>
-#include <glez/glez.hpp>
 
 namespace zerokernel
 {

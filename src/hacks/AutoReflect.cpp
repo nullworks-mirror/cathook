@@ -6,9 +6,6 @@
  */
 
 #include "common.hpp"
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 
 static settings::Bool enable{ "autoreflect.enable", "false" };
@@ -205,7 +202,7 @@ void Draw()
                 float fov_real = RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
                 float radius   = tan(DEG2RAD(float(fov)) / 2) / tan(DEG2RAD(fov_real) / 2) * (width);
 
-                glez::draw::circle(width / 2, height / 2, radius, color, 1, 100);
+                draw::Circle(width / 2, height / 2, radius, color, 1, 100);
             }
         }
     }

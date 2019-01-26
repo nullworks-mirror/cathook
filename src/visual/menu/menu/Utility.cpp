@@ -2,9 +2,7 @@
   Copyright (c) 2018 nullworks. All rights reserved.
 */
 
-#include <glez/font.hpp>
 #include <sstream>
-#include <glez/color.hpp>
 #include <drawing.hpp>
 #include <menu/Menu.hpp>
 
@@ -13,7 +11,7 @@ namespace utility
 
 const std::string empty_string{};
 
-std::string wrapString(const std::string &input, glez::font &font, int width, int *resultWidth, int *resultLines)
+std::string wrapString(const std::string &input, fonts::font &font, int width, int *resultWidth, int *resultLines)
 {
     int lineWidth{ 0 };
     float wordWidth{ 0 };
@@ -79,7 +77,7 @@ std::string wrapString(const std::string &input, glez::font &font, int width, in
     return resultStream.str();
 }
 
-std::string dotCompactString(const std::string &input, glez::font &font, int width, bool reverse)
+std::string dotCompactString(const std::string &input, fonts::font &font, int width, bool reverse)
 {
     float dotsWidth;
     unsigned charCount = 0;
@@ -110,7 +108,7 @@ std::string dotCompactString(const std::string &input, glez::font &font, int wid
         return input.substr(0, charCount) + "...";
 }
 
-void drawCenteredString(int x, int y, const std::string &string, glez::font &font, glez::rgba color)
+void drawCenteredString(int x, int y, const std::string &string, fonts::font &font, rgba_t color)
 {
     float width;
     font.stringSize(string, &width, nullptr);

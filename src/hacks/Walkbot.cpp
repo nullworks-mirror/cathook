@@ -12,9 +12,6 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <hacks/hacklist.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 
 static settings::Button recording_key{ "walkbot.recording-key", "<null>" };
@@ -1022,7 +1019,7 @@ void DrawConnection(index_t a, connection_s &b)
             flags += "H";
         // int size_x = 0, size_y = 0;
         // FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-        glez::draw::string(wts_cc.x, wts_cc.y - 4, flags, *fonts::menu, colors::white, nullptr, nullptr);
+        draw::String(wts_cc.x, wts_cc.y - 4, colors::white, flags.c_str());
     }
 }
 

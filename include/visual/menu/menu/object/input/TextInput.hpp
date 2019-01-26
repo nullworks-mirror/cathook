@@ -5,7 +5,7 @@
 #pragma once
 
 #include <menu/BaseMenuObject.hpp>
-#include <glez/draw.hpp>
+
 #include <menu/Menu.hpp>
 #include <menu/Message.hpp>
 

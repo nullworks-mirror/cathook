@@ -1,7 +1,6 @@
 #include "config.h"
 #if ENABLE_VISUALS
 #include "common.hpp"
-#include "glez/draw.hpp"
 
 static settings::Bool enable{ "lightesp.enable", "false" };
 
