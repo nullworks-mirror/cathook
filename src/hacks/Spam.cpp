@@ -259,8 +259,8 @@ void createMove()
 
         if (voicecommand_spam)
         {
-            static float last_voice_spam = 0.0f;
-            if (g_GlobalVars->curtime - 4.0F > last_voice_spam)
+            static Timer last_voice_spam;
+            if (last_voice_spam.test_and_set(4000))
             {
                 switch (*voicecommand_spam)
                 {
@@ -282,7 +282,6 @@ void createMove()
                 case 6: // JEERS
                     g_IEngine->ServerCmd("voicemenu 2 3");
                 }
-                last_voice_spam = g_GlobalVars->curtime;
             }
         }
     }
