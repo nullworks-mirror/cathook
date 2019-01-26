@@ -80,6 +80,7 @@ void settings::SettingsWriter::writeEscaped(std::string str)
         case '#':
         case '\n':
         case '=':
+        case '\\':
             stream << '\\';
             break;
         default:

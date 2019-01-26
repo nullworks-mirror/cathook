@@ -11,12 +11,44 @@
 
 static settings::Bool vote_kicky{ "votelogger.autovote.yes", "false" };
 static settings::Bool vote_kickn{ "votelogger.autovote.no", "false" };
+static settings::Bool vote_rage_vote{ "votelogger.autovote.no.rage", "false" };
 static settings::Bool party_say{ "votelogger.partysay", "true" };
 
 namespace votelogger
 {
 
 static bool was_local_player{ false };
+
+static void vote_rage_back()
+{
+    static Timer attempt_vote_time;
+    char cmd[40];
+    player_info_s info;
+    std::vector<int> targets;
+
+    if (!g_IEngine->IsInGame() || !attempt_vote_time.test_and_set(1000))
+        return;
+
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    {
+        auto ent = ENTITY(i);
+        // TO DO: m_bEnemy check only when you can't vote off players from the opposite team
+        if (CE_BAD(ent) || ent == LOCAL_E || ent->m_Type() != ENTITY_PLAYER || ent->m_bEnemy())
+            continue;
+
+        if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
+            continue;
+
+        auto &pl = playerlist::AccessData(info.friendsID);
+        if (pl.state == playerlist::k_EState::RAGE)
+            targets.emplace_back(info.userID);
+    }
+    if (targets.empty())
+        return;
+
+    std::snprintf(cmd, sizeof(cmd), "callvote kick \"%d cheating\"", targets[UniformRandomInt(0, targets.size() - 1)]);
+    g_IEngine->ClientCmd_Unrestricted(cmd);
+}
 
 void dispatchUserMessage(bf_read &buffer, int type)
 {
@@ -39,41 +71,43 @@ void dispatchUserMessage(bf_read &buffer, int type)
         buffer.Seek(0);
         eid >>= 1;
 
-        unsigned steamID = 0;
         // info is the person getting kicked,
         // info2 is the person calling the kick.
         player_info_s info{}, info2{};
-        if (!g_IEngine->GetPlayerInfo(eid, &info))
+        if (!g_IEngine->GetPlayerInfo(eid, &info) || !g_IEngine->GetPlayerInfo(caller, &info2))
             break;
-        steamID = info.friendsID;
+
+        logging::Info("Vote called to kick %s [U:1:%u] for %s by %s [U:1:%u]",
+            info.name, info.friendsID, reason, info2.name, info2.friendsID);
         if (eid == LOCAL_E->m_IDX)
             was_local_player = true;
+
         if (*vote_kickn || *vote_kicky)
         {
-            auto &pl = playerlist::AccessData(info.friendsID);
-            if (*vote_kickn && pl.state != playerlist::k_EState::RAGE && pl.state != playerlist::k_EState::DEFAULT)
+            using namespace playerlist;
+
+            auto &pl = AccessData(info.friendsID);
+            auto &pl_caller = AccessData(info2.friendsID);
+            bool friendly_kicked = pl.state != k_EState::RAGE && pl.state != k_EState::DEFAULT;
+            bool friendly_caller = pl_caller.state != k_EState::RAGE && pl_caller.state != k_EState::DEFAULT;
+
+            if (*vote_kickn && friendly_kicked)
+            {
                 g_IEngine->ClientCmd_Unrestricted("vote option2");
-            else if (*vote_kicky && (pl.state == playerlist::k_EState::RAGE || pl.state == playerlist::k_EState::DEFAULT))
+                if (*vote_rage_vote && !friendly_caller)
+                    pl_caller.state = k_EState::RAGE;
+            }
+            else if (*vote_kicky && !friendly_kicked)
                 g_IEngine->ClientCmd_Unrestricted("vote option1");
         }
-        if (*party_say && g_IEngine->GetPlayerInfo(caller, &info2))
+        if (*party_say)
         {
-            char formated_string[512];
-            // because tf2 is stupid and doesn't have escape characters,
-            // use the greek question marks instead. big brain.
-            std::string kicked_name(info.name), caller_name(info2.name);
-            /* ';' (0x3B) regular replaced with unicode analog ';' (0xCD 0xBE)
-             * to prevent exploits (by crafting name such that it executes command)
-             * and output message properly
-             * TO DO: Saner way to accomplish same */
-            ReplaceString(kicked_name, ";", ";");
-            ReplaceString(caller_name, ";", ";");
+            char formated_string[256];
             std::snprintf(formated_string, sizeof(formated_string),
-                "say_party [CAT] votekick called: %s => %s (%s)",
-                caller_name.c_str(), kicked_name.c_str(), reason);
-            g_IEngine->ExecuteClientCmd(formated_string);
+                "[CAT] votekick called: %s => %s (%s)",
+                info2.name, info.name, reason);
+            re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
         }
-        logging::Info("Vote called to kick %s [U:1:%u] for %s", name, steamID, reason);
         break;
     }
     case 47:
@@ -91,4 +125,26 @@ void dispatchUserMessage(bf_read &buffer, int type)
         break;
     }
 }
+
+static void setup_vote_rage()
+{
+    EC::Register(EC::CreateMove, vote_rage_back, "vote_rage_back");
+}
+
+static void reset_vote_rage()
+{
+    EC::Unregister(EC::CreateMove, "vote_rage_back");
+}
+
+static InitRoutine init([]() {
+    if (*vote_rage_vote)
+        setup_vote_rage();
+
+    vote_rage_vote.installChangeCallback([](settings::VariableBase<bool> &var, bool new_val) {
+        if (new_val)
+            setup_vote_rage();
+        else
+            reset_vote_rage();
+    });
+});
 } // namespace votelogger

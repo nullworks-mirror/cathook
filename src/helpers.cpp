@@ -608,13 +608,11 @@ powerup_type GetPowerupOnPlayer(CachedEntity *player)
 // A function to tell if a player is using a specific weapon
 bool HasWeapon(CachedEntity *ent, int wantedId)
 {
-    if (CE_BAD(ent))
+    if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
         return false;
-    // Create a var to store the handle
-    int *hWeapons;
     // Grab the handle and store it into the var
-    hWeapons = (int *) ((unsigned) (RAW_ENT(ent) + netvar.hMyWeapons));
-    if (!hWeapons || !RAW_ENT(ent) || ent->m_Type() != ENTITY_PLAYER)
+    int *hWeapons = (int *) ((unsigned) (RAW_ENT(ent) + netvar.hMyWeapons));
+    if (!hWeapons)
         return false;
     // Go through the handle array and search for the item
     for (int i = 0; hWeapons[i]; i++)
@@ -799,6 +797,30 @@ bool AmbassadorCanHeadshot()
 float RandFloatRange(float min, float max)
 {
     return (min + 1) + (((float) rand()) / (float) RAND_MAX) * (max - (min + 1));
+}
+
+int UniformRandomInt(int min, int max)
+{
+    uint32_t bound, len, r, result = 0;
+    /* Protect from random stupidity */
+    if (min > max)
+        std::swap(min, max);
+
+    len = max - min + 1;
+    /* RAND_MAX is implementation dependent.
+     * It's guaranteed that this value is at least 32767.
+     * glibc's RAND_MAX is 2^31 - 1 exactly. Since source games hard
+     * depend on glibc, we will do so as well
+     */
+    while (len)
+    {
+        bound = (1U + RAND_MAX) % len;
+        while ((r = rand()) < bound);
+        result *= 1U + RAND_MAX;
+        result += r % len;
+        len -= len > RAND_MAX ? RAND_MAX : len;
+    }
+    return int(result) + min;
 }
 
 bool IsEntityVisible(CachedEntity *entity, int hb)

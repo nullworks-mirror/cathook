@@ -27,8 +27,8 @@ enum class IgnoreReason
     OTHER
 };
 
-IgnoreReason shouldTargetSteamId(unsigned id);
-IgnoreReason shouldTarget(CachedEntity *player);
+bool shouldTargetSteamId(unsigned id);
+bool shouldTarget(CachedEntity *player);
 
 bool shouldAlwaysRenderEspSteamId(unsigned id);
 bool shouldAlwaysRenderEsp(CachedEntity *entity);

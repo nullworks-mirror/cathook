@@ -161,7 +161,8 @@ struct bonelist_s
         Vector current_screen;
         for (int i = 0; i < size; i++)
         {
-            Vector position(bones[in[i]][0][3], bones[in[i]][1][3], bones[in[i]][2][3]);
+            const auto &bone = bones[in[i]];
+            Vector position(bone[0][3], bone[1][3], bone[2][3]);
             position += displacement;
             if (!draw::WorldToScreen(position, current_screen))
             {

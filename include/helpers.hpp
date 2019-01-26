@@ -164,6 +164,7 @@ bool IsEntityVisiblePenetration(CachedEntity *entity, int hb);
 // void EndPrediction();
 
 float RandFloatRange(float min, float max);
+int UniformRandomInt(int min, int max);
 
 bool Developer(CachedEntity *ent);
 

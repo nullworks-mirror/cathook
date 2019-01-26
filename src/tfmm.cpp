@@ -31,6 +31,40 @@ CatCommand get_state("mm_state", "Get party state", []() {
 });
 
 static CatCommand mm_stop_queue("mm_stop_queue", "Stop current TF2 MM queue", []() { tfmm::leaveQueue(); });
+static CatCommand mm_debug_leader("mm_debug_leader", "Get party's leader", []() {
+    CSteamID id;
+    bool success = re::CTFPartyClient::GTFPartyClient()->GetCurrentPartyLeader(id);
+    if (success)
+        logging::Info("%u", id.GetAccountID());
+    else
+        logging::Info("Failed to get party leader");
+});
+static CatCommand mm_debug_promote("mm_debug_promote", "Promote player to leader", [](const CCommand &args) {
+    if (args.ArgC() < 2)
+        return;
+
+    uint32_t id32 = std::strtoul(args.Arg(1), nullptr, 10);
+    CSteamID id(id32, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+    logging::Info("Attempting to promote %u", id);
+    int succ = re::CTFPartyClient::GTFPartyClient()->PromotePlayerToLeader(id);
+    logging::Info("Success ? %d", succ);
+});
+static CatCommand mm_debug_kick("mm_debug_kick", "Kick player from party", [](const CCommand &args) {
+    if (args.ArgC() < 2)
+        return;
+
+    uint32_t id32 = std::strtoul(args.Arg(1), nullptr, 10);
+    CSteamID id(id32, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+    logging::Info("Attempting to kick %u", id);
+    int succ = re::CTFPartyClient::GTFPartyClient()->KickPlayer(id);
+    logging::Info("Success ? %d", succ);
+});
+static CatCommand mm_debug_chat("mm_debug_chat", "Debug party chat", [](const CCommand &args) {
+    if (args.ArgC() <= 1)
+        return;
+
+    re::CTFPartyClient::GTFPartyClient()->SendPartyChat(args.ArgS());
+});
 
 namespace tfmm
 {
@@ -83,20 +117,8 @@ void leaveQueue()
 
 void disconnectAndAbandon()
 {
-    re::CTFPartyClient *client = re::CTFPartyClient::GTFPartyClient();
-    re::CTFGCClientSystem *gc  = re::CTFGCClientSystem::GTFGCClientSystem();
-    if (client)
-        abandon();
-    else
-    {
-        logging::Info("your party client is gay!");
-        if (gc)
-            leaveQueue();
-        else
-            logging::Info("your gc is gay!");
-    }
-    if (gc && client)
-        leaveQueue();
+    abandon();
+    leaveQueue();
 }
 
 void abandon()

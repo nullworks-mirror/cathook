@@ -143,6 +143,22 @@ void critical_error_handler(int signum)
     ::raise(SIGABRT);
 }
 
+static void InitRandom()
+{
+    int rand_seed;
+    FILE *rnd = fopen("/dev/urandom", "rb");
+    if (!rnd || fread(&rand_seed, sizeof(rand_seed), 1, rnd) < 1)
+    {
+        logging::Info("Warning!!! Failed read from /dev/urandom (%s). Randomness is going to be weak", strerror(errno));
+        timespec t;
+        clock_gettime(CLOCK_MONOTONIC, &t);
+        rand_seed = t.tv_nsec ^ t.tv_sec & getpid();
+    }
+    srand(rand_seed);
+    if (rnd)
+        fclose(rnd);
+}
+
 void hack::Initialize()
 {
     ::signal(SIGSEGV, &critical_error_handler);
@@ -178,9 +194,8 @@ free(logname);*/
     }
 
 #endif /* TEXTMODE */
-
     logging::Info("Initializing...");
-    srand(time(0));
+    InitRandom();
     sharedobj::LoadAllSharedObjects();
     CreateInterfaces();
     CDumper dumper;

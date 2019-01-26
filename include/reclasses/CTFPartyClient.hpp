@@ -15,7 +15,7 @@ class CTFPartyClient
 public:
     static CTFPartyClient *GTFPartyClient();
 
-    static int SendPartyChat(CTFPartyClient *client, const char *message);
+    void SendPartyChat(const char *message);
     int LoadSavedCasualCriteria();
     static ITFGroupMatchCriteria *MutLocalGroupCriteria(CTFPartyClient *client);
     static bool BCanQueueForStandby(CTFPartyClient *this_);
@@ -29,6 +29,9 @@ public:
     static bool BInQueue(CTFPartyClient *this_);
     int GetNumOnlineMembers();
     int GetNumMembers();
+    int PromotePlayerToLeader(CSteamID steamid);
+    int KickPlayer(CSteamID steamid);
+    bool GetCurrentPartyLeader(CSteamID &id);
 };
 class ITFMatchGroupDescription
 {

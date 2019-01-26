@@ -123,7 +123,7 @@ static std::pair<CachedEntity *, float> getNearestPlayerDistance()
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) == player_tools::IgnoreReason::DO_NOT_IGNORE && (!hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(ent)) && VisCheckEntFromEnt(LOCAL_E, ent))
+        if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) && (!hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(ent)) && VisCheckEntFromEnt(LOCAL_E, ent))
         {
             distance = g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin());
             best_ent = ent;
@@ -209,7 +209,7 @@ static bool stayNearPlayers(const bot_class_config &config, CachedEntity *&resul
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent)))
+        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent)))
             continue;
         players.push_back(ent);
     }
@@ -267,7 +267,7 @@ static bool stayNear()
         if (CE_GOOD(last_target) && stayNearHelpers::isValidNearPosition(last_area->m_center, last_target->m_vecOrigin(), *config))
             invalid_area_time.update();
 
-        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || player_tools::shouldTarget(last_target) != player_tools::IgnoreReason::DO_NOT_IGNORE || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
+        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || !player_tools::shouldTarget(last_target) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
         {
             nav::clearInstructions();
             current_task = task::none;

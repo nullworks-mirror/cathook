@@ -540,7 +540,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             }
 
             // Some global checks
-            if (player_tools::shouldTarget(entity) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (!player_tools::shouldTarget(entity))
                 return false;
             if (hacks::shared::catbot::should_ignore_player(entity))
                 return false;

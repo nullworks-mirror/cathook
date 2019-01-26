@@ -92,7 +92,8 @@ void do_random_votekick()
             continue;
         if (info.friendsID == local_info.friendsID)
             continue;
-        if (playerlist::AccessData(info.friendsID).state != playerlist::k_EState::RAGE && playerlist::AccessData(info.friendsID).state != playerlist::k_EState::DEFAULT)
+        auto &pl = playerlist::AccessData(info.friendsID);
+        if (pl.state != playerlist::k_EState::RAGE && pl.state != playerlist::k_EState::DEFAULT)
             continue;
 
         targets.push_back(info.userID);
@@ -105,7 +106,7 @@ void do_random_votekick()
     player_info_s info;
     if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(target), &info))
         return;
-    hack::ExecuteCommand("callvote kick " + std::to_string(target) + " cheating");
+    hack::ExecuteCommand("callvote kick \"" + std::to_string(target) + " cheating\"");
 }
 
 void update_catbot_list()
@@ -203,9 +204,9 @@ void reportall()
         if (ent == LOCAL_E)
             continue;
         player_info_s info;
-        if (g_IEngine->GetPlayerInfo(i, &info))
+        if (g_IEngine->GetPlayerInfo(i, &info) && info.friendsID)
         {
-            if (player_tools::shouldTargetSteamId(info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (!player_tools::shouldTargetSteamId(info.friendsID))
                 continue;
             CSteamID id(info.friendsID, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
             ReportPlayer_fn(id.ConvertToUint64(), 1);
@@ -234,7 +235,7 @@ void smart_crouch()
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() || !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE || should_ignore_player(ent))
+            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() || !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) || !player_tools::shouldTarget(ent) || should_ignore_player(ent))
                 continue;
             bool failedvis = false;
             for (int j = 0; j < 18; j++)
