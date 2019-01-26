@@ -54,7 +54,6 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
             }
         }
 #endif
-        hacks::shared::autojoin::updateSearch();
         if (!hack::command_stack().empty())
         {
             PROF_SECTION(PT_command_stack);
