@@ -1019,7 +1019,7 @@ void DrawConnection(index_t a, connection_s &b)
             flags += "H";
         // int size_x = 0, size_y = 0;
         // FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-        draw::String(wts_cc.x, wts_cc.y - 4, colors::white, flags.c_str());
+        draw::String(wts_cc.x, wts_cc.y - 4, colors::white, flags.c_str(), *fonts::esp);
     }
 }
 
@@ -1072,7 +1072,7 @@ void DrawNode(index_t node, bool draw_back)
         if (not draw::WorldToScreen(n.xyz(), wts))
             return;
 
-        draw::String(wts.x, wts.y, *color, std::to_string(node).c_str());
+        draw::String(wts.x, wts.y, *color, std::to_string(node).c_str(), *fonts::esp);
     }
 }
 

@@ -15,6 +15,7 @@
 #include <SDLHooks.hpp>
 #include "menu/GuiInterface.hpp"
 #include "picopng.hpp"
+#include <boost/filesystem.hpp>
 
 // String -> Wstring
 #include <locale>
@@ -55,7 +56,7 @@ void DrawStrings()
 
     for (size_t i = 0; i < side_strings_count; ++i)
     {
-        draw::String(8, y, side_strings_colors[i], side_strings[i].c_str());
+        draw::String(8, y, side_strings_colors[i], side_strings[i].c_str(), *fonts::esp);
         y += fonts::menu->size + 1;
     }
     y = draw::height / 2;
@@ -63,7 +64,7 @@ void DrawStrings()
     {
         float sx, sy;
         fonts::menu->stringSize(center_strings[i], &sx, &sy);
-        draw::String((draw::width - sx) / 2, y, center_strings_colors[i], center_strings[i].c_str());
+        draw::String((draw::width - sx) / 2, y, center_strings_colors[i], center_strings[i].c_str(), *fonts::esp);
         y += fonts::menu->size + 1;
     }
 }
@@ -82,20 +83,34 @@ float draw::fov  = 90.0f;
 namespace fonts
 {
 #if ENABLE_ENGINE_DRAWING
-font::font(std::string path, int fontsize) : size{ fontsize }
+font::operator unsigned int()
 {
+    if (!init)
+        Init();
+    return id;
+}
+void font::Init()
+{
+    size += 1;
+    static std::string filename;
+    filename.append("ab");
     id = g_ISurface->CreateFont();
-    g_ISurface->SetFontGlyphSet(id, path.c_str(), fontsize, 500, 0, 0, vgui::ISurface::FONTFLAG_ANTIALIAS | vgui::ISurface::FONTFLAG_ADDITIVE);
-    g_ISurface->AddCustomFontFile(path.c_str(), path.c_str());
+    g_ISurface->SetFontGlyphSet(id, filename.c_str(), size, 500, 0, 0, vgui::ISurface::FONTFLAG_ANTIALIAS | vgui::ISurface::FONTFLAG_ADDITIVE);
+    g_ISurface->AddCustomFontFile(filename.c_str(), path.c_str());
+    init = true;
 }
 void font::stringSize(std::string string, float *x, float *y)
 {
+    if (!init)
+        Init();
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
     std::wstring ws = converter.from_bytes(string.c_str());
     int w, h;
     g_ISurface->GetTextSize(id, ws.c_str(), w, h);
-    *x = w;
-    *y = h;
+    if (x)
+        *x = w;
+    if (y)
+        *y = h;
 }
 #endif
 std::unique_ptr<font> menu{ nullptr };
@@ -124,7 +139,7 @@ void Initialize()
     g_ISurface->DrawSetTextureRGBA(texture_white, colorBuffer, 1, 1, false, true);
 }
 
-void String(int x, int y, rgba_t rgba, const char *text, fonts::font font)
+void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
 {
 #if !ENABLE_ENGINE_DRAWING
     glez::draw::outlined_string(x, y, text, font, rgba, colors::black, nullptr, nullptr);

@@ -112,6 +112,6 @@ void drawCenteredString(int x, int y, const std::string &string, fonts::font &fo
 {
     float width;
     font.stringSize(string, &width, nullptr);
-    draw::String(x - width / 2, y, color, string.c_str());
+    draw::String(x - width / 2, y, color, string.c_str(), font);
 }
 } // namespace utility

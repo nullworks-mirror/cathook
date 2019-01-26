@@ -678,7 +678,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             // If the origin is centered, we use one method. if not, the other
             if (!origin_is_zero || true)
             {
-                draw::String(draw_point.x, draw_point.y, color, string.data.c_str());
+                draw::String(draw_point.x, draw_point.y, color, string.data.c_str(), *fonts::esp);
             }
             else
             { /*

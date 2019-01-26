@@ -9,7 +9,7 @@
 
 void zerokernel::Text::render()
 {
-    draw::String(bb.getContentBox().left() + text_x, bb.getContentBox().top() + text_y, *color_text, data.c_str());
+    draw::String(bb.getContentBox().left() + text_x, bb.getContentBox().top() + text_y, *color_text, data.c_str(), resource::font::base);
 
     BaseMenuObject::render();
 }

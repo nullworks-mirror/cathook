@@ -29,14 +29,16 @@ namespace fonts
 #if ENABLE_ENGINE_DRAWING
 struct font
 {
-    font(std::string path, int fontsize);
-    unsigned int id;
-    int size;
-    operator unsigned int()
+    font(std::string path, int fontsize) : size{ fontsize }, path{ path }
     {
-        return id;
     }
+    unsigned int id;
+    std::string path;
+    int size;
+    bool init = false;
+    operator unsigned int();
     void stringSize(std::string string, float *x, float *y);
+    void Init();
 };
 #else
 typedef glez::font font;
@@ -103,7 +105,7 @@ typedef glez::texture Texture;
 #endif
 
 void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness);
-void String(int x, int y, rgba_t rgba, const char *text);
+void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font);
 void Rectangle(float x, float y, float w, float h, rgba_t color);
 void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness);
 void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture &texture, float tx, float ty, float tw, float th, float angle);
