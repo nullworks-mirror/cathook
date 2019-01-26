@@ -242,7 +242,7 @@ bool IsTargetStateGood(CachedEntity *entity, bool backtrack)
             return false;
 
         // Global checks
-        if (player_tools::shouldTarget(entity) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+        if (!player_tools::shouldTarget(entity))
             return false;
 
         IF_GAME(IsTF())

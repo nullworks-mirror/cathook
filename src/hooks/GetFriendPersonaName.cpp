@@ -56,7 +56,7 @@ bool StolenName()
             if (std::strlen(info.name) >= 31)
                 continue;
             // Ignore Friendly
-            if (player_tools::shouldTargetSteamId(info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (!player_tools::shouldTargetSteamId(info.friendsID))
                 continue;
             // If our name is the same as current, then change it
             if (stolen_name == info.name && *namesteal == 1)

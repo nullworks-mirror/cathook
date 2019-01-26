@@ -205,7 +205,7 @@ void reportall()
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(i, &info))
         {
-            if (player_tools::shouldTargetSteamId(info.friendsID) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (!player_tools::shouldTargetSteamId(info.friendsID))
                 continue;
             CSteamID id(info.friendsID, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
             ReportPlayer_fn(id.ConvertToUint64(), 1);
@@ -234,7 +234,7 @@ void smart_crouch()
         for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() || !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE || should_ignore_player(ent))
+            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() || !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) || !player_tools::shouldTarget(ent) || should_ignore_player(ent))
                 continue;
             bool failedvis = false;
             for (int j = 0; j < 18; j++)

@@ -55,7 +55,7 @@ static void doLegitBackstab()
         return;
     int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
     auto ent  = ENTITY(index);
-    if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+    if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
         return;
     if (angleCheck(ENTITY(index), std::nullopt, g_pLocalPlayer->v_OrigViewangles))
     {
@@ -79,7 +79,7 @@ static void doRageBackstab()
         {
             int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
             auto ent  = ENTITY(index);
-            if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
                 continue;
             if (angleCheck(ent, std::nullopt, newangle))
             {
@@ -104,7 +104,7 @@ static void doBacktrackStab()
     {
         return;
     }
-    if (!ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+    if (!ent->m_bEnemy() || !player_tools::shouldTarget(ent))
         return;
 
     auto &btd = hacks::shared::backtrack::headPositions[ent->m_IDX];
