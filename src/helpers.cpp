@@ -815,7 +815,8 @@ int UniformRandomInt(int min, int max)
     while (len)
     {
         bound = (1U + RAND_MAX) % len;
-        while ((r = rand()) < bound);
+        while ((r = rand()) < bound)
+            ;
         result *= 1U + RAND_MAX;
         result += r % len;
         len -= len > RAND_MAX ? RAND_MAX : len;

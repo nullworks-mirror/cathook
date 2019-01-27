@@ -111,8 +111,8 @@ void Event(KeyValues *event)
         {
             CachedEntity *victim   = ENTITY(vid);
             CachedEntity *attacker = ENTITY(eid);
-            auto &Po_v = Player_origs[vid];
-            auto &Po_e = Player_origs[eid];
+            auto &Po_v             = Player_origs[vid];
+            auto &Po_e             = Player_origs[eid];
             if (Po_v.z != 0 && Po_e.z != 0)
                 if (Po_v.DistTo(Po_e) > 250)
                 {
