@@ -29,13 +29,14 @@ namespace fonts
 #if ENABLE_ENGINE_DRAWING
 struct font
 {
-    font(std::string path, int fontsize) : size{ fontsize }, path{ path }
+    font(std::string path, int fontsize, bool outline = false) : size{ fontsize }, path{ path }, outline{ outline }
     {
     }
     unsigned int id;
     std::string path;
     int size;
-    bool init = false;
+    bool init    = false;
+    bool outline = false;
     operator unsigned int();
     void stringSize(std::string string, float *x, float *y);
     void Init();
