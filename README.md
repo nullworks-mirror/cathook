@@ -7,7 +7,7 @@
 The software could be detected by VAC in the future. Only use it on accounts you won't regret getting VAC banned.
 
 ## Community
-You can chat with other cathook users in [our official telegram group](https://t.me/cathook_tg) and the [cathook announcements channel](https://t.me/cathook_cheat).
+You can chat with other cathook users in [our official telegram group](https://t.me/nullworks) and the [cathook announcements channel](https://t.me/cathook_cheat).
 
 ## Reporting Issues
 
