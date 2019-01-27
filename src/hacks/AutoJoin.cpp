@@ -137,14 +137,24 @@ static CatCommand get_steamid("print_steamid", "Prints your SteamID", []() { g_I
 static InitRoutine init([]() {
     EC::Register(EC::CreateMove, update, "cm_autojoin", EC::average);
     EC::Register(EC::Paint, updateSearch, "paint_autojoin", EC::average);
-    static BytePatch p = { gSignatures.GetClientSignature, "55 89 E5 53 83 EC 14 8B 45 08 8B 40 30", 0x00, { 0x31, 0xC0, 0x40, 0xC3 } };
+    static BytePatch p{ gSignatures.GetClientSignature, "55 89 E5 53 83 EC 14 8B 45 08 8B 40 30", 0x00, { 0x31, 0xC0, 0x40, 0xC3 } };
+    static BytePatch p2{ gSignatures.GetClientSignature, "55 89 E5 57 56 53 83 EC ? 8B 45 0C 8B 5D 08 8B 55 10 89 45 ? 8B 43 ?", 0x00, { 0x31, 0xC0, 0x40, 0xC3 } };
     if (*partybypass)
+    {
         p.Patch();
+        p2.Patch();
+    }
     partybypass.installChangeCallback([](settings::VariableBase<bool> &, bool new_val) {
         if (new_val)
+        {
             p.Patch();
+            p2.Patch();
+        }
         else
+        {
             p.Shutdown();
+            p2.Patch();
+        }
     });
 });
 } // namespace hacks::shared::autojoin

@@ -236,6 +236,7 @@ bool FormatSpamMessage(std::string &message)
 
 void init()
 {
+    spam_source.installChangeCallback([](settings::VariableBase<int> &var, int after) { file.Load(*filename); });
     filename.installChangeCallback([](settings::VariableBase<std::string> &var, std::string after) { file.TryLoad(after); });
 }
 

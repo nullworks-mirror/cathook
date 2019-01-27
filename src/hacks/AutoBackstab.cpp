@@ -68,7 +68,7 @@ static void doRageBackstab()
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     Vector newangle  = g_pLocalPlayer->v_OrigViewangles;
     std::vector<float> yangles;
-    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 15.0f)
+    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 2.0f)
     {
         trace_t trace;
         Ray_t ray;
@@ -112,7 +112,7 @@ static void doBacktrackStab()
     for (auto &i : btd)
     {
         std::vector<float> yangles;
-        for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 15.0f)
+        for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 2.0f)
         {
             if (!hacks::shared::backtrack::ValidTick(i, ent))
                 continue;

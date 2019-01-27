@@ -23,7 +23,7 @@ static settings::Bool micspam{ "cat-bot.micspam.enable", "false" };
 static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
 static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
 
-static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "true" };
+static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "false" };
 static settings::Bool always_crouch{ "cat-bot.always-crouch", "false" };
 static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
 static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
