@@ -74,7 +74,9 @@ void DrawCheatVisuals()
         PROF_SECTION(PT_info_text);
         if (info_text)
         {
-            AddSideString("cathook by nullworks", colors::RainbowCurrent());
+            auto color = colors::RainbowCurrent();
+            color.a    = 255.0f;
+            AddSideString("cathook by nullworks", color);
             if (!info_text_min)
             {
                 AddSideString(hack::GetVersion(),
