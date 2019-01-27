@@ -4,7 +4,6 @@
 #include <menu/Menu.hpp>
 #include <menu/Message.hpp>
 
-
 /*
   Created on 06.07.18.
 */

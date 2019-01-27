@@ -4,7 +4,6 @@
 
 #include <menu/object/TabButton.hpp>
 
-
 static settings::RVariable<rgba_t> color_selected{ "zk.style.tab-button.color.selected.background", "079797" };
 static settings::RVariable<rgba_t> color_separator{ "zk.style.tab-button.color.separator", "079797" };
 static settings::RVariable<rgba_t> color_hover_underline{ "zk.style.tab-button.color.hover.underline", "079797" };

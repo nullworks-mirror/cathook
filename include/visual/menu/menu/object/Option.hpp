@@ -4,7 +4,6 @@
 
 #pragma once
 
-
 #include <menu/Menu.hpp>
 
 namespace zerokernel

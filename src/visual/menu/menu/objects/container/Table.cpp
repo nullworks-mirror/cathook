@@ -5,7 +5,6 @@
 #include <menu/object/container/Table.hpp>
 #include <menu/Menu.hpp>
 
-
 static settings::RVariable<rgba_t> color_border{ "zk.style.table.color.border", "079797" };
 
 void zerokernel::Table::render()
