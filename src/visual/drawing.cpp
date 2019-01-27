@@ -15,7 +15,6 @@
 #include <SDLHooks.hpp>
 #include "menu/GuiInterface.hpp"
 #include "picopng.hpp"
-#include <boost/filesystem.hpp>
 
 // String -> Wstring
 #include <locale>
