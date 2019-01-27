@@ -90,11 +90,12 @@ font::operator unsigned int()
 }
 void font::Init()
 {
-    size += 1;
+    size += 3;
     static std::string filename;
     filename.append("ab");
-    id = g_ISurface->CreateFont();
-    g_ISurface->SetFontGlyphSet(id, filename.c_str(), size, 500, 0, 0, vgui::ISurface::FONTFLAG_ANTIALIAS | vgui::ISurface::FONTFLAG_ADDITIVE);
+    id        = g_ISurface->CreateFont();
+    auto flag = outline ? vgui::ISurface::FONTFLAG_OUTLINE | vgui::ISurface::FONTFLAG_ANTIALIAS : vgui::ISurface::FONTFLAG_ANTIALIAS;
+    g_ISurface->SetFontGlyphSet(id, filename.c_str(), size, 500, 0, 0, flag);
     g_ISurface->AddCustomFontFile(filename.c_str(), path.c_str());
     init = true;
 }
@@ -130,8 +131,8 @@ void Initialize()
 #if !ENABLE_ENGINE_DRAWING
     glez::preInit();
 #endif
-    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14));
-    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14));
+    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
+    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
 
     texture_white                = g_ISurface->CreateNewTextureID();
     unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
@@ -144,7 +145,7 @@ void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
     glez::draw::outlined_string(x, y, text, font, rgba, colors::black, nullptr, nullptr);
 #else
     rgba = rgba * 255.0f;
-    g_ISurface->DrawSetTextPos(x, y);
+    g_ISurface->DrawSetTextPos(x, y - 2);
     g_ISurface->DrawSetTextFont(font);
     g_ISurface->DrawSetTextColor(rgba.r, rgba.g, rgba.b, rgba.a);
 
