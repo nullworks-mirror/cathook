@@ -17,7 +17,7 @@ public:
     ~ColorSelector() override = default;
 
     ColorSelector();
-    explicit ColorSelector(settings::Variable<glez::rgba> &variable);
+    explicit ColorSelector(settings::Variable<rgba_t> &variable);
 
     void render() override;
 
@@ -26,6 +26,6 @@ public:
     void loadFromXml(const tinyxml2::XMLElement *data) override;
 
 protected:
-    settings::Variable<glez::rgba> *variable{ nullptr };
+    settings::Variable<rgba_t> *variable{ nullptr };
 };
 } // namespace zerokernel

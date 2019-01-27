@@ -9,9 +9,6 @@
 #include "hacks/Aimbot.hpp"
 #include "hacks/Backtrack.hpp"
 #include <boost/circular_buffer.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 #include "PlayerTools.hpp"
 #include <hacks/Backtrack.hpp>
@@ -201,9 +198,9 @@ static void Draw()
                     size = abs(max.y - min.y);
 
                 if (i == iBestTarget && j == BestTick)
-                    glez::draw::rect(out.x, out.y, size / 2, size / 2, colors::red);
+                    draw::Rectangle(out.x, out.y, size / 2, size / 2, colors::red);
                 else
-                    glez::draw::rect(out.x, out.y, size / 4, size / 4, colors::green);
+                    draw::Rectangle(out.x, out.y, size / 4, size / 4, colors::green);
             }
         }
     }

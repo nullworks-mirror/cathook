@@ -10,7 +10,7 @@
 #include <atomic>
 
 #if ENABLE_VISUALS
-#include <glez/color.hpp>
+#include <drawing.hpp>
 #endif
 
 /*

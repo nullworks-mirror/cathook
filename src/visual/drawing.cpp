@@ -4,15 +4,22 @@
  *  Created on: Oct 5, 2016
  *      Author: nullifiedcat
  */
-
 #include "common.hpp"
 
+#if !ENABLE_ENGINE_DRAWING
 #include <glez/glez.hpp>
 #include <glez/draw.hpp>
+#endif
 #include <GL/glew.h>
 #include <SDL2/SDL_video.h>
 #include <SDLHooks.hpp>
-#include <menu/GuiInterface.hpp>
+#include "menu/GuiInterface.hpp"
+#include "picopng.hpp"
+#include <boost/filesystem.hpp>
+
+// String -> Wstring
+#include <locale>
+#include <codecvt>
 
 #if EXTERNAL_DRAWING
 #include "xoverlay.h"
@@ -46,9 +53,10 @@ void AddSideString(const std::string &string, const rgba_t &color)
 void DrawStrings()
 {
     int y{ 8 };
+
     for (size_t i = 0; i < side_strings_count; ++i)
     {
-        glez::draw::outlined_string(8, y, side_strings[i], *fonts::menu, side_strings_colors[i], colors::black, nullptr, nullptr);
+        draw::String(8, y, side_strings_colors[i], side_strings[i].c_str(), *fonts::esp);
         y += fonts::menu->size + 1;
     }
     y = draw::height / 2;
@@ -56,7 +64,7 @@ void DrawStrings()
     {
         float sx, sy;
         fonts::menu->stringSize(center_strings[i], &sx, &sy);
-        glez::draw::outlined_string((draw::width - sx) / 2, y, center_strings[i].c_str(), *fonts::menu, center_strings_colors[i], colors::black, nullptr, nullptr);
+        draw::String((draw::width - sx) / 2, y, center_strings_colors[i], center_strings[i].c_str(), *fonts::esp);
         y += fonts::menu->size + 1;
     }
 }
@@ -71,27 +79,223 @@ void AddCenterString(const std::string &string, const rgba_t &color)
 int draw::width  = 0;
 int draw::height = 0;
 float draw::fov  = 90.0f;
-std::mutex draw::draw_mutex;
 
 namespace fonts
 {
-
-std::unique_ptr<glez::font> menu{ nullptr };
-std::unique_ptr<glez::font> esp{ nullptr };
+#if ENABLE_ENGINE_DRAWING
+font::operator unsigned int()
+{
+    if (!init)
+        Init();
+    return id;
+}
+void font::Init()
+{
+    size += 1;
+    static std::string filename;
+    filename.append("ab");
+    id = g_ISurface->CreateFont();
+    g_ISurface->SetFontGlyphSet(id, filename.c_str(), size, 500, 0, 0, vgui::ISurface::FONTFLAG_ANTIALIAS | vgui::ISurface::FONTFLAG_ADDITIVE);
+    g_ISurface->AddCustomFontFile(filename.c_str(), path.c_str());
+    init = true;
+}
+void font::stringSize(std::string string, float *x, float *y)
+{
+    if (!init)
+        Init();
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
+    std::wstring ws = converter.from_bytes(string.c_str());
+    int w, h;
+    g_ISurface->GetTextSize(id, ws.c_str(), w, h);
+    if (x)
+        *x = w;
+    if (y)
+        *y = h;
+}
+#endif
+std::unique_ptr<font> menu{ nullptr };
+std::unique_ptr<font> esp{ nullptr };
 } // namespace fonts
 
-void draw::Initialize()
+namespace draw
+{
+
+int texture_white = 0;
+
+void Initialize()
 {
     if (!draw::width || !draw::height)
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
+#if !ENABLE_ENGINE_DRAWING
     glez::preInit();
-    fonts::menu.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
-    fonts::esp.reset(new glez::font(DATA_PATH "/fonts/verasans.ttf", 14));
+#endif
+    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14));
+    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14));
+
+    texture_white                = g_ISurface->CreateNewTextureID();
+    unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
+    g_ISurface->DrawSetTextureRGBA(texture_white, colorBuffer, 1, 1, false, true);
 }
 
-bool draw::EntityCenterToScreen(CachedEntity *entity, Vector &out)
+void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
+{
+#if !ENABLE_ENGINE_DRAWING
+    glez::draw::outlined_string(x, y, text, font, rgba, colors::black, nullptr, nullptr);
+#else
+    rgba = rgba * 255.0f;
+    g_ISurface->DrawSetTextPos(x, y);
+    g_ISurface->DrawSetTextFont(font);
+    g_ISurface->DrawSetTextColor(rgba.r, rgba.g, rgba.b, rgba.a);
+
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
+    std::wstring ws = converter.from_bytes(text);
+
+    g_ISurface->DrawPrintText(ws.c_str(), ws.size() + 1);
+#endif
+}
+
+void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness)
+{
+#if !ENABLE_ENGINE_DRAWING
+    glez::draw::line(x1, y1, x2, y2, color, thickness);
+#else
+    color = color * 255.0f;
+    g_ISurface->DrawSetTexture(texture_white);
+    g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
+
+    // Dirty
+    x1 += 0.5f;
+    y1 += 0.5f;
+
+    float length = sqrtf(x2 * x2 + y2 * y2);
+    x2 *= (length - 1.0f) / length;
+    y2 *= (length - 1.0f) / length;
+
+    float nx = x2;
+    float ny = y2;
+
+    float ex = x1 + x2;
+    float ey = y1 + y2;
+
+    if (length <= 1.0f)
+        return;
+
+    nx /= length;
+    ny /= length;
+
+    float th = thickness;
+
+    nx *= th * 0.5f;
+    ny *= th * 0.5f;
+
+    float px = ny;
+    float py = -nx;
+
+    vgui::Vertex_t vertices[4];
+
+    vertices[2].m_Position = { float(x1) - nx + px, float(y1) - ny + py };
+    vertices[1].m_Position = { float(x1) - nx - px, float(y1) - ny - py };
+    vertices[3].m_Position = { ex + nx + px, ey + ny + py };
+    vertices[0].m_Position = { ex + nx - px, ey + ny - py };
+
+    g_ISurface->DrawTexturedPolygon(4, vertices);
+#endif
+}
+
+void Rectangle(float x, float y, float w, float h, rgba_t color)
+{
+#if !ENABLE_ENGINE_DRAWING
+    glez::draw::rect(x, y, w, h, color);
+#else
+    color = color * 255.0f;
+    g_ISurface->DrawSetTexture(texture_white);
+    g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
+
+    vgui::Vertex_t vertices[4];
+    vertices[0].m_Position = { x, y };
+    vertices[1].m_Position = { x, y + h };
+    vertices[2].m_Position = { x + w, y + h };
+    vertices[3].m_Position = { x + w, y };
+
+    g_ISurface->DrawTexturedPolygon(4, vertices);
+#endif
+}
+
+void Circle(float x, float y, float radius, rgba_t color, float thickness, int steps)
+{
+    float px = 0;
+    float py = 0;
+    for (int i = 0; i <= steps; i++)
+    {
+        float ang = 2 * float(M_PI) * (float(i) / steps);
+        if (!i)
+            ang = 2 * float(M_PI);
+        if (i)
+            draw::Line(px, py, x - px + radius * cos(ang), y - py + radius * sin(ang), color, thickness);
+        px = x + radius * cos(ang);
+        py = y + radius * sin(ang);
+    }
+}
+
+void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness)
+{
+    Rectangle(x, y, w, 1, color);
+    Rectangle(x, y, 1, h, color);
+    Rectangle(x + w - 1, y, 1, h, color);
+    Rectangle(x, y + h - 1, w, 1, color);
+}
+
+void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture &texture, float tx, float ty, float tw, float th, float angle)
+{
+#if !ENABLE_ENGINE_DRAWING
+    glez::draw::rect_textured(x, y, w, h, color, texture, tx, ty, tw, th, angle);
+#else
+    color = color * 255.0f;
+    vgui::Vertex_t vertices[4];
+    g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
+    g_ISurface->DrawSetTexture(texture.get());
+
+    float tex_width  = texture.getWidth();
+    float tex_height = texture.getHeight();
+
+    Vector2D scr_top_left     = { x, y };
+    Vector2D scr_top_right    = { x + w, y };
+    Vector2D scr_bottom_right = { x + w, y + h };
+    Vector2D scr_botton_left  = { x, y + w };
+
+    if (angle != 0.0f)
+    {
+        float cx = x + float(w) / 2.0f;
+        float cy = y + float(h) / 2.0f;
+
+        auto f = [&](Vector2D &v) {
+            v.x = cx + cosf(angle) * (v.x - cx) - sinf(angle) * (v.y - cy);
+            v.y = cy + sinf(angle) * (v.x - cx) + cosf(angle) * (v.y - cy);
+        };
+        f(scr_top_left);
+        f(scr_top_right);
+        f(scr_bottom_right);
+        f(scr_bottom_right);
+    }
+
+    Vector2D tex_top_left     = { tx / tex_width, ty / tex_height };
+    Vector2D tex_top_right    = { (tx + tw) / tex_width, ty / tex_height };
+    Vector2D tex_bottom_right = { (tx + tw) / tex_width, (ty + th) / tex_height };
+    Vector2D tex_botton_left  = { tx / tex_width, (ty + th) / tex_height };
+    // logging::Info("%f,%f %f,%f", tex_top_left.x, tex_top_left.y, tex_top_right.x, tex_top_right.y);
+
+    vertices[0].Init(scr_top_left, tex_top_left);
+    vertices[1].Init(scr_top_right, tex_top_right);
+    vertices[2].Init(scr_bottom_right, tex_bottom_right);
+    vertices[3].Init(scr_botton_left, tex_botton_left);
+
+    g_ISurface->DrawTexturedPolygon(4, vertices);
+#endif
+}
+
+bool EntityCenterToScreen(CachedEntity *entity, Vector &out)
 {
     Vector world, min, max;
     bool succ;
@@ -105,21 +309,69 @@ bool draw::EntityCenterToScreen(CachedEntity *entity, Vector &out)
     return succ;
 }
 
-VMatrix draw::wts{};
+VMatrix wts{};
 
-void draw::UpdateWTS()
+void UpdateWTS()
 {
-    memcpy(&draw::wts, &g_IEngine->WorldToScreenMatrix(), sizeof(VMatrix));
+    memcpy(&wts, &g_IEngine->WorldToScreenMatrix(), sizeof(VMatrix));
 }
 
-bool draw::WorldToScreen(const Vector &origin, Vector &screen)
+bool WorldToScreen(const Vector &origin, Vector &screen)
 {
     return g_IVDebugOverlay->ScreenPosition(origin, screen) == 0;
 }
+#if ENABLE_ENGINE_DRAWING
+bool Texture::load()
+{
+    std::ifstream file(path.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
+    std::streamsize size = 0;
+    if (file.seekg(0, std::ios::end).good())
+        size = file.tellg();
+    if (file.seekg(0, std::ios::beg).good())
+        size -= file.tellg();
+
+    if (size < 1)
+        return false;
+
+    unsigned char *buffer = new unsigned char[(size_t) size + 1];
+    file.read((char *) buffer, size);
+    file.close();
+    int error = decodePNG(data, m_width, m_height, buffer, size);
+
+    // if there's an error, display it and return false to indicate failure
+    if (error != 0)
+    {
+        logging::Info("Error loading texture, error code %i\n", error);
+        return false;
+    }
+    texture_id = g_ISurface->CreateNewTextureID(true);
+    // g_ISurface->DrawSetTextureRGBA(texture_id, data, m_width, m_height, false, false);
+    g_ISurface->DrawSetTextureRGBAEx(texture_id, data, m_width, m_height, ImageFormat::IMAGE_FORMAT_RGBA8888);
+    if (!g_ISurface->IsTextureIDValid(texture_id))
+        return false;
+    init = true;
+    return true;
+}
+
+Texture::~Texture()
+{
+    g_ISurface->DeleteTextureByID(texture_id);
+}
+
+unsigned int Texture::get()
+{
+    if (texture_id == 0)
+    {
+        if (!load())
+            throw std::runtime_error("Couldn't init texture!");
+    }
+    return texture_id;
+}
+#endif
 SDL_GLContext context = nullptr;
 
-void draw::InitGL()
+void InitGL()
 {
     logging::Info("InitGL: %d, %d", draw::width, draw::height);
 #if EXTERNAL_DRAWING
@@ -138,10 +390,12 @@ void draw::InitGL()
     xoverlay_show();
     context = SDL_GL_CreateContext(sdl_hooks::window);
 #else
+#if !ENABLE_ENGINE_DRAWING
     glClearColor(1.0, 0.0, 0.0, 0.5);
     glewExperimental = GL_TRUE;
     glewInit();
     glez::init(draw::width, draw::height);
+#endif
 #endif
 
 #if ENABLE_GUI
@@ -149,8 +403,9 @@ void draw::InitGL()
 #endif
 }
 
-void draw::BeginGL()
+void BeginGL()
 {
+#if !ENABLE_ENGINE_DRAWING
     glColor3f(1, 1, 1);
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
@@ -166,10 +421,12 @@ void draw::BeginGL()
         glDisable(GL_FRAMEBUFFER_SRGB);
         PROF_SECTION(DRAWEX_draw_begin);
     }
+#endif
 }
 
-void draw::EndGL()
+void EndGL()
 {
+#if !ENABLE_ENGINE_DRAWING
     PROF_SECTION(DRAWEX_draw_end);
     {
         PROF_SECTION(draw_end__glez_end);
@@ -183,4 +440,6 @@ void draw::EndGL()
         SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
     }
 #endif
+#endif
 }
+} // namespace draw

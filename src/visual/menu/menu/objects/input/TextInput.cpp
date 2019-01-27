@@ -4,11 +4,11 @@
 
 #include <menu/object/input/TextInput.hpp>
 
-static settings::RVariable<glez::rgba> color_border_active{ "zk.style.input.text.color.border.active", "38b28f" };
-static settings::RVariable<glez::rgba> color_border{ "zk.style.input.text.color.border.inactive", "079797" };
+static settings::RVariable<rgba_t> color_border_active{ "zk.style.input.text.color.border.active", "38b28f" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.input.text.color.border.inactive", "079797" };
 
-static settings::RVariable<glez::rgba> color_text_active{ "zk.style.input.text.color.text.active", "ffffff" };
-static settings::RVariable<glez::rgba> color_text{ "zk.style.input.text.color.text.inactive", "aaaaaa" };
+static settings::RVariable<rgba_t> color_text_active{ "zk.style.input.text.color.text.active", "ffffff" };
+static settings::RVariable<rgba_t> color_text{ "zk.style.input.text.color.text.inactive", "aaaaaa" };
 
 zerokernel::TextInput::TextInput() : BaseMenuObject{}
 {

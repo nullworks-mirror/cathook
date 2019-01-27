@@ -3,16 +3,16 @@
 #include <menu/wm/WMWindow.hpp>
 #include <menu/Menu.hpp>
 #include <menu/Message.hpp>
-#include <glez/draw.hpp>
+
 
 /*
   Created on 06.07.18.
 */
 
-static settings::RVariable<glez::rgba> color_background{ "zk.style.window-header.color.background.inactive", "00000000" };
-static settings::RVariable<glez::rgba> color_background_focused{ "zk.style.window-header.color.background.active", "079797" };
-static settings::RVariable<glez::rgba> color_border{ "zk.style.window-header.color.border.inactive", "079797" };
-static settings::RVariable<glez::rgba> color_border_focused{ "zk.style.window-header.color.border.active", "079797" };
+static settings::RVariable<rgba_t> color_background{ "zk.style.window-header.color.background.inactive", "00000000" };
+static settings::RVariable<rgba_t> color_background_focused{ "zk.style.window-header.color.background.active", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.window-header.color.border.inactive", "079797" };
+static settings::RVariable<rgba_t> color_border_focused{ "zk.style.window-header.color.border.active", "079797" };
 
 zerokernel::WindowHeader::WindowHeader(WMWindow &window) : BaseMenuObject(), window(window), close()
 {

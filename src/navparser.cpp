@@ -5,9 +5,7 @@
 #include <pwd.h>
 #include <boost/functional/hash.hpp>
 #include <boost/container/flat_set.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
+#include <chrono>
 
 namespace nav
 {
@@ -637,14 +635,14 @@ static void drawcrumbs()
         Vector wts1, wts2;
         if (draw::WorldToScreen(crumbs[i], wts1) && draw::WorldToScreen(crumbs[i + 1], wts2))
         {
-            glez::draw::line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y, colors::white, 0.3f);
+            draw::Line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y, colors::white, 0.3f);
         }
     }
     Vector wts;
     if (!draw::WorldToScreen(crumbs[0], wts))
         return;
-    glez::draw::rect(wts.x - 4, wts.y - 4, 8, 8, colors::white);
-    glez::draw::rect_outline(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
+    draw::Rectangle(wts.x - 4, wts.y - 4, 8, 8, colors::white);
+    draw::RectangleOutlined(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
 }
 #endif
 

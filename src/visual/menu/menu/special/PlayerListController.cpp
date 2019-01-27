@@ -12,12 +12,12 @@
   Created on 26.07.18.
 */
 
-static settings::RVariable<glez::rgba> color_team_red{ "zk.style.player-list.team.red", "ff0000" };
-static settings::RVariable<glez::rgba> color_team_red_dead{ "zk.style.player-list.team.red-dead", "660000" };
-static settings::RVariable<glez::rgba> color_team_blue{ "zk.style.player-list.team.blue", "0000ff" };
-static settings::RVariable<glez::rgba> color_team_blue_dead{ "zk.style.player-list.team.blue-dead", "000066" };
-static settings::RVariable<glez::rgba> color_team_other{ "zk.style.player-list.team.other", "ffffff" };
-static settings::RVariable<glez::rgba> color_team_other_dead{ "zk.style.player-list.team.other-dead", "666666" };
+static settings::RVariable<rgba_t> color_team_red{ "zk.style.player-list.team.red", "ff0000" };
+static settings::RVariable<rgba_t> color_team_red_dead{ "zk.style.player-list.team.red-dead", "660000" };
+static settings::RVariable<rgba_t> color_team_blue{ "zk.style.player-list.team.blue", "0000ff" };
+static settings::RVariable<rgba_t> color_team_blue_dead{ "zk.style.player-list.team.blue-dead", "000066" };
+static settings::RVariable<rgba_t> color_team_other{ "zk.style.player-list.team.other", "ffffff" };
+static settings::RVariable<rgba_t> color_team_other_dead{ "zk.style.player-list.team.other-dead", "666666" };
 
 static const char *class_names[] = { "Unknown", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy", "Pyro", "Spy", "Engineer" };
 
@@ -186,7 +186,7 @@ void zerokernel::special::PlayerListController::addPlayer(int id, zerokernel::sp
     }
 }
 
-void zerokernel::special::PlayerListController::changeRowColor(zerokernel::TRow *row, const glez::rgba &color)
+void zerokernel::special::PlayerListController::changeRowColor(zerokernel::TRow *row, const rgba_t &color)
 {
     row->iterateObjects([&color](BaseMenuObject *object) -> void {
         auto tdata = dynamic_cast<TData *>(object);

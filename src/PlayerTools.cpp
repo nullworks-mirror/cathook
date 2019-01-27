@@ -2,7 +2,7 @@
   Created on 23.06.18.
 */
 
-#include <core/cvwrapper.hpp>
+#include "common.hpp"
 #include <unordered_map>
 #include <hoovy.hpp>
 #include <playerlist.hpp>
