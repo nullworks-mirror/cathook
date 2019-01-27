@@ -75,7 +75,7 @@ void DrawCheatVisuals()
         if (info_text)
         {
             auto color = colors::RainbowCurrent();
-            color.a    = 255.0f;
+            color.a    = 1.0f;
             AddSideString("cathook by nullworks", color);
             if (!info_text_min)
             {
