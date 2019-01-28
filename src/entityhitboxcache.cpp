@@ -128,7 +128,11 @@ matrix3x4_t *EntityHitboxCache::GetBones()
         // std::lock_guard<std::mutex> lock(setupbones_mutex);
         if (g_Settings.is_create_move)
         {
-            PROF_SECTION(bone_test);
+            if (IsPlayerInvisible(parent_ref))
+            {
+                parent_ref->InternalEntity()->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+            }
+            PROF_SECTION(bone_cache);
             auto to_copy = CE_VAR(parent_ref, 0x838, matrix3x4_t *);
             if (to_copy)
             {
