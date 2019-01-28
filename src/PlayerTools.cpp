@@ -11,7 +11,7 @@
 #include "entitycache.hpp"
 #include "settings/Bool.hpp"
 
-static settings::Int betrayal_limit{ "player-tools.betrayal-limit", "true" };
+static settings::Int betrayal_limit{ "player-tools.betrayal-limit", "2" };
 
 static settings::Bool taunting{ "player-tools.ignore.taunting", "true" };
 static settings::Bool hoovy{ "player-tools.ignore.hoovy", "true" };
