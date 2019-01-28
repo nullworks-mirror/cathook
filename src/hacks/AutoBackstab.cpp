@@ -68,7 +68,7 @@ static void doRageBackstab()
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     Vector newangle  = g_pLocalPlayer->v_OrigViewangles;
     std::vector<float> yangles;
-    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 5.0f)
+    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 1.0f)
     {
         trace_t trace;
         Ray_t ray;
@@ -101,7 +101,6 @@ static float bestdist = FLT_MAX;
 static hacks::shared::backtrack::BacktrackData besttick;
 static void getClosestTick(CachedEntity *ent, std::vector<int> blacklisted_tickcount)
 {
-    besttick  = {};
     bestdist  = FLT_MAX;
     auto &btd = hacks::shared::backtrack::headPositions[ent->m_IDX];
     for (auto &i : btd)
@@ -126,11 +125,12 @@ static void doBacktrackStab()
         return;
     Vector newangle = g_pLocalPlayer->v_OrigViewangles;
     static std::vector<int> blacklisted_ticks;
+    besttick = {};
     getClosestTick(ent, blacklisted_ticks);
     if (besttick.simtime <= 0.0f)
         return;
     std::vector<float> yangles;
-    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 5.0f)
+    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 1.0f)
     {
         if (!hacks::shared::backtrack::ValidTick(besttick, ent))
             continue;
@@ -150,7 +150,7 @@ static void doBacktrackStab()
         getClosestTick(ent, blacklisted_ticks);
         if (besttick.simtime <= 0.0f)
             return;
-        for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 5.0f)
+        for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 1.0f)
         {
             if (!hacks::shared::backtrack::ValidTick(besttick, ent))
                 continue;
