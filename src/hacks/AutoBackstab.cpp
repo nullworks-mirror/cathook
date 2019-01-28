@@ -68,7 +68,7 @@ static void doRageBackstab()
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     Vector newangle  = g_pLocalPlayer->v_OrigViewangles;
     std::vector<float> yangles;
-    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 1.0f)
+    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 2.0f)
     {
         trace_t trace;
         Ray_t ray;
@@ -89,31 +89,14 @@ static void doRageBackstab()
     }
     if (!yangles.empty())
     {
-        std::sort(yangles.begin(), yangles.end(), [](float &a, float &b) { return a < b; });
-        newangle.y = (yangles.at(0) + yangles.at(yangles.size() - 1)) / 2.0f;
+        newangle.y = yangles.at(std::floor((float) yangles.size() / 2));
         current_user_cmd->buttons |= IN_ATTACK;
         current_user_cmd->viewangles     = newangle;
         g_pLocalPlayer->bUseSilentAngles = true;
         return;
     }
 }
-static float bestdist = FLT_MAX;
-static hacks::shared::backtrack::BacktrackData besttick;
-static void getClosestTick(CachedEntity *ent, std::vector<int> blacklisted_tickcount)
-{
-    bestdist  = FLT_MAX;
-    auto &btd = hacks::shared::backtrack::headPositions[ent->m_IDX];
-    for (auto &i : btd)
-    {
-        if (!blacklisted_tickcount.empty() && std::find(blacklisted_tickcount.begin(), blacklisted_tickcount.end(), i.tickcount) != blacklisted_tickcount.end())
-            continue;
-        if (i.entorigin.DistTo(g_pLocalPlayer->v_Eye) < bestdist)
-        {
-            besttick = i;
-            bestdist = i.entorigin.DistTo(g_pLocalPlayer->v_Eye);
-        }
-    }
-}
+
 static void doBacktrackStab()
 {
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
@@ -123,55 +106,33 @@ static void doBacktrackStab()
     ent = ENTITY(hacks::shared::backtrack::iBestTarget);
     if (!ent->m_bEnemy() || !player_tools::shouldTarget(ent))
         return;
+
+    auto &btd       = hacks::shared::backtrack::headPositions[ent->m_IDX];
     Vector newangle = g_pLocalPlayer->v_OrigViewangles;
-    static std::vector<int> blacklisted_ticks;
-    besttick = {};
-    getClosestTick(ent, blacklisted_ticks);
-    if (besttick.simtime <= 0.0f)
-        return;
-    std::vector<float> yangles;
-    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 1.0f)
+    for (auto &i : btd)
     {
-        if (!hacks::shared::backtrack::ValidTick(besttick, ent))
-            continue;
-        if (!angleCheck(ent, besttick.entorigin, newangle))
-            continue;
-        Vector hit;
-        if (hacks::shared::triggerbot::CheckLineBox(besttick.collidable.min, besttick.collidable.max, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
+        std::vector<float> yangles;
+        for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 2.0f)
         {
-            yangles.push_back(newangle.y);
-        }
-    }
-    int tries = 0;
-    while (yangles.empty() && tries < 10)
-    {
-        tries++;
-        blacklisted_ticks.push_back(besttick.tickcount);
-        getClosestTick(ent, blacklisted_ticks);
-        if (besttick.simtime <= 0.0f)
-            return;
-        for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 1.0f)
-        {
-            if (!hacks::shared::backtrack::ValidTick(besttick, ent))
+            if (!hacks::shared::backtrack::ValidTick(i, ent))
                 continue;
-            if (!angleCheck(ent, besttick.entorigin, newangle))
+            if (!angleCheck(ent, i.entorigin, newangle))
                 continue;
             Vector hit;
-            if (hacks::shared::triggerbot::CheckLineBox(besttick.collidable.min, besttick.collidable.max, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
+            if (hacks::shared::triggerbot::CheckLineBox(i.collidable.min, i.collidable.max, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
             {
                 yangles.push_back(newangle.y);
             }
         }
-    }
-    if (!yangles.empty())
-    {
-        std::sort(yangles.begin(), yangles.end(), [](float &a, float &b) { return a < b; });
-        newangle.y                   = (yangles.at(0) + yangles.at(yangles.size() - 1)) / 2.0f;
-        current_user_cmd->tick_count = besttick.tickcount;
-        current_user_cmd->viewangles = newangle;
-        current_user_cmd->buttons |= IN_ATTACK;
-        g_pLocalPlayer->bUseSilentAngles = true;
-        return;
+        if (!yangles.empty())
+        {
+            newangle.y                   = yangles.at(std::floor((float) yangles.size() / 2));
+            current_user_cmd->tick_count = i.tickcount;
+            current_user_cmd->viewangles = newangle;
+            current_user_cmd->buttons |= IN_ATTACK;
+            g_pLocalPlayer->bUseSilentAngles = true;
+            return;
+        }
     }
 }
 
