@@ -101,6 +101,7 @@ bool EntityHitboxCache::VisibilityCheck(int id)
 }
 
 static settings::Int setupbones_time{ "source.setupbones-time", "1" };
+static settings::Bool bonecache_enabled{ "source.use-bone-cache", "true" };
 
 static std::mutex setupbones_mutex;
 
@@ -127,10 +128,11 @@ matrix3x4_t *EntityHitboxCache::GetBones()
     {
         if (g_Settings.is_create_move)
         {
-            if (IsPlayerInvisible(parent_ref))
+#if ENABLE_VISUALS
+            if (!*bonecache_enabled || IsPlayerInvisible(parent_ref))
             {
                 PROF_SECTION(bone_setup);
-                parent_ref->InternalEntity()->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+                bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
             }
             else
             {
@@ -148,6 +150,11 @@ matrix3x4_t *EntityHitboxCache::GetBones()
                     bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
                 }
             }
+#else
+            // Textmode bots miss/shoot at nothing when the tf2 bonecache is used
+            PROF_SECTION(bone_setup);
+            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+#endif
         }
     }
     return bones;

@@ -299,7 +299,8 @@ static void cm()
                     continue;
                 if (steamid != entity->player_info.friendsID) // steamid check
                     continue;
-
+                if (entity == LOCAL_E)
+                    continue;
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
                 if (startFollow(entity, isNavBotCM))
