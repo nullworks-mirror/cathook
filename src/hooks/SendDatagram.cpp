@@ -10,7 +10,7 @@ namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(SendDatagram, int, INetChannel *ch, bf_write *buf)
 {
-    if (!round(*hacks::shared::backtrack::latency))
+    if (!round(*hacks::shared::backtrack::latency) || !isHackActive())
         return original::SendDatagram(ch, buf);
     int in    = 0;
     int state = 0;

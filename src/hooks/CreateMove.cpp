@@ -115,6 +115,20 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         if (CE_GOOD(LOCAL_W) && minigun_jump && LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun))
             CE_INT(LOCAL_W, netvar.iWeaponState) = 0;
     }
+    {
+        PROF_SECTION(ResetInternalBonecache)
+        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+        {
+            auto ent = ENTITY(i);
+            if (CE_BAD(ent))
+                continue;
+            typedef int (*InvalidateBoneCache_t)(IClientEntity *);
+            static uintptr_t addr                            = gSignatures.GetClientSignature("55 8B 0D ? ? ? ? 89 E5 8B 45 ? 8D 51");
+            static InvalidateBoneCache_t InvalidateBoneCache = InvalidateBoneCache_t(addr);
+            InvalidateBoneCache(RAW_ENT(ent));
+        }
+    }
+
     ret = original::CreateMove(this_, input_sample_time, cmd);
 
     if (!cmd)
