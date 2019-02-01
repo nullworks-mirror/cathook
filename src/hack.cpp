@@ -108,7 +108,7 @@ void critical_error_handler(int signum)
     std::ofstream out(strfmt("/tmp/cathook-%s-%d-segfault.log", pwd->pw_name, getpid()).get());
 
     Dl_info info;
-    if (!dladdr(reinterpret_cast<void *>(SetCanshootStatus), &info))
+    if (!dladdr(reinterpret_cast<void *>(hack::ExecuteCommand), &info))
         return;
     unsigned int baseaddr = (unsigned int) info.dli_fbase - 1;
 

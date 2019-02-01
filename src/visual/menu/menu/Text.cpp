@@ -74,7 +74,13 @@ void zerokernel::Text::recalculateSize()
     BaseMenuObject::recalculateSize();
 
     float w, h;
-    font->stringSize(data, &w, &h);
+    if (data.empty() || !font)
+    {
+        w = 0.0f;
+        h = 0.0f;
+    }
+    else
+        font->stringSize(data, &w, &h);
     text_size_x = int(w);
     text_size_y = int(h);
 
