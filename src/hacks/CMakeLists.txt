@@ -3,7 +3,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/CatBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/SeedPrediction.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Spam.cpp")
-	target_sources(cathook PRIVATE
+target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/Achievement.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Aimbot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/MiscAimbot.cpp"
@@ -30,7 +30,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/LightESP.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Misc.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/MiscPlayerInfo.cpp"
-	"${CMAKE_CURRENT_LIST_DIR}/NavBot.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/NavBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Noisemaker.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/UberSpam.cpp"
