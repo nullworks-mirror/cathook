@@ -1,4 +1,4 @@
-/*
+﻿/*
  * entity.h
  *
  *  Created on: Oct 6, 2016
@@ -150,8 +150,24 @@ public:
     offset_t m_angEyeAnglesLocal;
     offset_t m_nSequence;
     offset_t m_flSimulationTime;
+
     offset_t m_nStreaks_Player;
     offset_t m_nStreaks_Resource;
+    offset_t m_iPing_Resource;
+    offset_t m_iKills_Resource;
+    offset_t m_iDeaths_Resource;
+    offset_t m_iHealth_Resource;
+    offset_t m_iTotalScore_Resource;
+    offset_t m_iMaxHealth_Resource;
+    offset_t m_iMaxBuffedHealth_Resource;
+    offset_t m_iPlayerClass_Resource;
+    offset_t m_iActiveDominations_Resource;
+    offset_t m_flNextRespawnTime_Resource;
+    offset_t m_iDamage_Resource;
+    offset_t m_iDamageAssist_Resource;
+    offset_t m_iHealing_Resource;
+    offset_t m_iHealingAssist_Resource;
+    offset_t m_iPlayerLevel_Resource;
 };
 
 extern NetVars netvar;

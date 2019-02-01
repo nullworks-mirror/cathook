@@ -505,24 +505,24 @@ void DumpRecvTable(CachedEntity *ent, RecvTable *table, int depth, const char *f
         switch (prop->GetType())
         {
         case SendPropType::DPT_Float:
-            logging::Info("%s [0x%04x] = %f", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = %f", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()));
             break;
         case SendPropType::DPT_Int:
-            logging::Info("%s [0x%04x] = %i | %u | %hd | %hu", prop->GetName(), prop->GetOffset(), CE_INT(ent, acc_offset + prop->GetOffset()), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned int), CE_VAR(ent, acc_offset + prop->GetOffset(), short), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned short));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = %i | %u | %hd | %hu", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_INT(ent, acc_offset + prop->GetOffset()), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned int), CE_VAR(ent, acc_offset + prop->GetOffset(), short), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned short));
             break;
         case SendPropType::DPT_String:
-            logging::Info("%s [0x%04x] = %s", prop->GetName(), prop->GetOffset(), CE_VAR(ent, prop->GetOffset(), char *));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = %s", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_VAR(ent, prop->GetOffset(), char *));
             break;
         case SendPropType::DPT_Vector:
-            logging::Info("%s [0x%04x] = (%f, %f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 8));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = (%f, %f, %f)", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 8));
             break;
         case SendPropType::DPT_VectorXY:
-            logging::Info("%s [0x%04x] = (%f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = (%f, %f)", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4));
             break;
         }
     }
     if (!ft || !strcmp(ft, table->GetName()))
-        logging::Info("==== END OF TABLE: %s", table->GetName());
+        logging::Info("==== END OF TABLE: %s IN DEAPTH %d", table->GetName(), depth);
 }
 
 // CatCommand to dumb netvar info
@@ -539,6 +539,26 @@ static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](c
     logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
     const char *ft = (args.ArgC() > 1 ? args[2] : 0);
     DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
+});
+static CatCommand dump_vars_by_name("debug_dump_netvars_name", "Dump netvars of entity with target name", [](const CCommand &args) {
+    if (args.ArgC() < 1)
+        return;
+    std::string name(args.Arg(1));
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        ClientClass *clz = RAW_ENT(ent)->GetClientClass();
+        if (!clz)
+            continue;
+        std::string clazz_name(clz->GetName());
+        if (clazz_name.find(name) == clazz_name.npos)
+            continue;
+        logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
+        const char *ft = (args.ArgC() > 1 ? args[2] : 0);
+        DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
+    }
 });
 
 void Shutdown()

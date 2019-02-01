@@ -22,8 +22,12 @@ std::ofstream logging::handle;
 void logging::Initialize()
 {
     // FIXME other method of naming the file?
-    passwd *pwd     = getpwuid(getuid());
-    logging::handle = std::ofstream(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get());
+    passwd *pwd          = getpwuid(getuid());
+    std::string filename = strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get();
+    struct stat buf;
+    if (stat(filename.c_str(), &buf) != -1)
+        std::remove(filename.c_str());
+    logging::handle = std::ofstream(filename);
     if (!logging::handle.is_open())
         throw std::runtime_error("Can't open logging file");
 }

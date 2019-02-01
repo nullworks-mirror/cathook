@@ -68,7 +68,7 @@ static void doRageBackstab()
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     Vector newangle  = g_pLocalPlayer->v_OrigViewangles;
     std::vector<float> yangles;
-    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 2.0f)
+    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 5.0f)
     {
         trace_t trace;
         Ray_t ray;
@@ -89,7 +89,8 @@ static void doRageBackstab()
     }
     if (!yangles.empty())
     {
-        newangle.y = yangles.at(std::floor((float) yangles.size() / 2));
+        std::sort(yangles.begin(), yangles.end());
+        newangle.y = (yangles.at(0) + yangles.at(yangles.size() - 1)) / 2.0f;
         current_user_cmd->buttons |= IN_ATTACK;
         current_user_cmd->viewangles     = newangle;
         g_pLocalPlayer->bUseSilentAngles = true;
@@ -97,40 +98,97 @@ static void doRageBackstab()
     }
 }
 
+// Checks if point a in box with two corner points
+bool in_box(Vector a, Vector min, Vector max)
+{
+    return (a.x > min.x && a.y > min.y && a.z > min.z && a.x < max.x && a.y < max.y && a.z < max.z);
+}
+
+std::pair<int, float> ReturnBestTickAndAimAng(CachedEntity *ent)
+{
+    auto &btd      = hacks::shared::backtrack::headPositions[ent->m_IDX];
+    int best_tick  = -1;
+    float aim_ang  = -360.0f;
+    float best_scr = FLT_MAX;
+    std::vector<float> yangles;
+    for (int ii = 0; ii < 66; ii++)
+    {
+        auto &i         = btd[ii];
+        Vector newangle = g_pLocalPlayer->v_OrigViewangles;
+        if (!hacks::shared::backtrack::ValidTick(i, ent))
+            continue;
+        Vector distcheck = i.entorigin;
+        if (distcheck.DistTo(g_pLocalPlayer->v_Eye) < best_scr)
+        {
+            Vector bbx_min = i.collidable.min;
+            Vector bbx_max = i.collidable.max;
+            // Shrink Bounding box for better hitrate
+            bbx_min += (bbx_max - bbx_min) * 0.05f;
+            bbx_max -= (bbx_max - bbx_min) * 0.05f;
+            Vector hit;
+
+            std::vector<float> yangles_tmp;
+            for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 5.0f)
+            {
+                Vector aim_at = GetForwardVector(g_pLocalPlayer->v_Eye, GetAimAtAngles(g_pLocalPlayer->v_Eye, distcheck), re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)));
+                if (hacks::shared::triggerbot::CheckLineBox(bbx_min, bbx_max, g_pLocalPlayer->v_Eye, aim_at, hit))
+                {
+                    if (!angleCheck(ent, i.entorigin, newangle))
+                        continue;
+                    yangles_tmp.push_back(newangle.y);
+                }
+            }
+            if (yangles_tmp.size())
+            {
+                yangles.clear();
+                best_scr  = distcheck.DistTo(g_pLocalPlayer->v_Eye);
+                best_tick = ii;
+                yangles   = yangles_tmp;
+            }
+        }
+    }
+    if (best_tick != -1)
+    {
+        std::sort(yangles.begin(), yangles.end());
+        aim_ang = (yangles.at(0) + 180.0f + yangles.at(yangles.size() - 1) + 180.0f) / 2.0f - 180.0f;
+    }
+    return { best_tick, aim_ang };
+}
+
 static void doBacktrackStab()
 {
-    float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     CachedEntity *ent;
     if (hacks::shared::backtrack::iBestTarget < 1)
         return;
     ent = ENTITY(hacks::shared::backtrack::iBestTarget);
-    if (!ent->m_bEnemy() || !player_tools::shouldTarget(ent))
+    if (!ent || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
         return;
 
-    auto &btd       = hacks::shared::backtrack::headPositions[ent->m_IDX];
-    Vector newangle = g_pLocalPlayer->v_OrigViewangles;
-    for (auto &i : btd)
+    std::pair<int, float> Aim_Data = ReturnBestTickAndAimAng(ent);
+    if (Aim_Data.first != -1)
     {
-        std::vector<float> yangles;
-        for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 2.0f)
+        Vector newangle              = g_pLocalPlayer->v_OrigViewangles;
+        newangle.y                   = Aim_Data.second;
+        current_user_cmd->tick_count = hacks::shared::backtrack::headPositions[ent->m_IDX][Aim_Data.first].tickcount;
+        current_user_cmd->viewangles = newangle;
+        current_user_cmd->buttons |= IN_ATTACK;
+        // g_pLocalPlayer->bUseSilentAngles = true;
+        return;
+    }
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    {
+        ent = ENTITY(i);
+        if (CE_BAD(ent) || !ent->m_bAlivePlayer())
+            continue;
+        std::pair<int, float> Aim_Data = ReturnBestTickAndAimAng(ent);
+        if (Aim_Data.first != -1)
         {
-            if (!hacks::shared::backtrack::ValidTick(i, ent))
-                continue;
-            if (!angleCheck(ent, i.entorigin, newangle))
-                continue;
-            Vector hit;
-            if (hacks::shared::triggerbot::CheckLineBox(i.collidable.min, i.collidable.max, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
-            {
-                yangles.push_back(newangle.y);
-            }
-        }
-        if (!yangles.empty())
-        {
-            newangle.y                   = yangles.at(std::floor((float) yangles.size() / 2));
-            current_user_cmd->tick_count = i.tickcount;
+            Vector newangle              = g_pLocalPlayer->v_OrigViewangles;
+            newangle.y                   = Aim_Data.second;
+            current_user_cmd->tick_count = hacks::shared::backtrack::headPositions[ent->m_IDX][Aim_Data.first].tickcount;
             current_user_cmd->viewangles = newangle;
             current_user_cmd->buttons |= IN_ATTACK;
-            g_pLocalPlayer->bUseSilentAngles = true;
+            // g_pLocalPlayer->bUseSilentAngles = true;
             return;
         }
     }
