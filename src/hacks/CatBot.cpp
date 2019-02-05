@@ -179,13 +179,11 @@ Timer level_init_timer{};
 Timer micspam_on_timer{};
 Timer micspam_off_timer{};
 static bool patched_report;
+static std::atomic_bool can_report = false;
+static std::vector<unsigned> to_report;
 void reportall()
 {
-    typedef uint64_t (*ReportPlayer_t)(uint64_t, int);
-    static uintptr_t addr1                = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
-    static ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr1);
-    if (!addr1)
-        return;
+    can_report = false;
     if (!patched_report)
     {
         static BytePatch patch(gSignatures.GetClientSignature, "73 ? 80 7D ? ? 74 ? F3 0F 10 0D", 0x2F, { 0x89, 0xe0 });
@@ -208,12 +206,40 @@ void reportall()
         {
             if (!player_tools::shouldTargetSteamId(info.friendsID))
                 continue;
-            CSteamID id(info.friendsID, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
-            ReportPlayer_fn(id.ConvertToUint64(), 1);
+            to_report.push_back(info.friendsID);
         }
     }
+    can_report = true;
 }
-CatCommand report("report_debug", "debug", []() { reportall(); });
+
+CatCommand report("report_all", "Report all players", []() { reportall(); });
+CatCommand report_uid("report_steamid", "Report with steamid", [](const CCommand &args) {
+    if (args.ArgC() < 1)
+        return;
+    unsigned steamid = 0;
+    try
+    {
+        steamid = std::stoi(args.Arg(1));
+    }
+    catch (std::invalid_argument)
+    {
+        logging::Info("Report machine broke");
+        return;
+    }
+    if (!steamid)
+    {
+        logging::Info("Report machine broke");
+        return;
+    }
+    typedef uint64_t (*ReportPlayer_t)(uint64_t, int);
+    static uintptr_t addr1                = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+    static ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr1);
+    if (!addr1)
+        return;
+    CSteamID id(steamid, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+    ReportPlayer_fn(id.ConvertToUint64(), 1);
+});
+
 Timer crouchcdr{};
 void smart_crouch()
 {
@@ -318,12 +344,33 @@ static void cm()
 }
 
 static Timer autojointeam{};
+static Timer report_timer2{};
 void update()
 {
-    if (!catbotmode)
+    if (g_Settings.bInvalid)
         return;
 
-    if (g_Settings.bInvalid)
+    if (can_report)
+    {
+        typedef uint64_t (*ReportPlayer_t)(uint64_t, int);
+        static uintptr_t addr1                = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8");
+        static ReportPlayer_t ReportPlayer_fn = ReportPlayer_t(addr1);
+        if (!addr1)
+            return;
+        if (report_timer2.test_and_set(400))
+        {
+            if (to_report.empty())
+                can_report = false;
+            else
+            {
+                auto rep = to_report.back();
+                to_report.pop_back();
+                CSteamID id(rep, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+                ReportPlayer_fn(id.ConvertToUint64(), 1);
+            }
+        }
+    }
+    if (!catbotmode)
         return;
 
     if (CE_BAD(LOCAL_E))
