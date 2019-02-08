@@ -11,6 +11,7 @@
 #include <functional>
 #include <menu/tinyxml2.hpp>
 #include <menu/KeyValue.hpp>
+#include <drawing.hpp>
 #include "BoundingBox.hpp"
 
 namespace zerokernel

@@ -8,6 +8,7 @@
 #include <menu/menu/special/SettingsManagerList.hpp>
 #include <menu/menu/special/PlayerListController.hpp>
 #include <hack.hpp>
+#include <common.hpp>
 
 static settings::Button open_gui_button{ "visual.open-gui-button", "Insert" };
 
