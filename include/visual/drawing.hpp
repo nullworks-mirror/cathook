@@ -47,6 +47,7 @@ typedef glez::font font;
 
 extern std::unique_ptr<font> esp;
 extern std::unique_ptr<font> menu;
+extern std::unique_ptr<font> center_screen;
 
 void Update();
 

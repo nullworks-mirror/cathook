@@ -55,7 +55,7 @@ void DrawStrings()
 
     for (size_t i = 0; i < side_strings_count; ++i)
     {
-        draw::String(8, y, side_strings_colors[i], side_strings[i].c_str(), *fonts::esp);
+        draw::String(8, y, side_strings_colors[i], side_strings[i].c_str(), *fonts::center_screen);
         y += fonts::menu->size + 1;
     }
     y = draw::height / 2;
@@ -63,7 +63,7 @@ void DrawStrings()
     {
         float sx, sy;
         fonts::menu->stringSize(center_strings[i], &sx, &sy);
-        draw::String((draw::width - sx) / 2, y, center_strings_colors[i], center_strings[i].c_str(), *fonts::esp);
+        draw::String((draw::width - sx) / 2, y, center_strings_colors[i], center_strings[i].c_str(), *fonts::center_screen);
         y += fonts::menu->size + 1;
     }
 }
@@ -115,6 +115,7 @@ void font::stringSize(std::string string, float *x, float *y)
 #endif
 std::unique_ptr<font> menu{ nullptr };
 std::unique_ptr<font> esp{ nullptr };
+std::unique_ptr<font> center_screen{ nullptr };
 } // namespace fonts
 
 namespace draw
@@ -133,6 +134,7 @@ void Initialize()
 #endif
     fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
     fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
+    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 18, true));
 
     texture_white                = g_ISurface->CreateNewTextureID();
     unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
