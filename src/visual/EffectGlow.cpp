@@ -79,39 +79,6 @@ struct ShaderStencilState_t
     }
 };
 
-static CTextureReference buffers[4]{};
-
-ITexture *GetBuffer(int i)
-{
-    if (!buffers[i])
-    {
-        ITexture *fullframe;
-        IF_GAME(IsTF2())
-        fullframe      = g_IMaterialSystem->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
-        else fullframe = g_IMaterialSystemHL->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
-        // char *newname    = new char[32];
-        std::unique_ptr<char[]> newname(new char[32]);
-        std::string name = format("_cathook_buff", i);
-        strncpy(newname.get(), name.c_str(), 30);
-        logging::Info("Creating new buffer %d with size %dx%d %s", i, fullframe->GetActualWidth(), fullframe->GetActualHeight(), newname.get());
-
-        int textureFlags      = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT | TEXTUREFLAGS_EIGHTBITALPHA;
-        int renderTargetFlags = CREATERENDERTARGETFLAGS_HDR;
-
-        ITexture *texture;
-        IF_GAME(IsTF2())
-        {
-            texture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx(newname.get(), fullframe->GetActualWidth(), fullframe->GetActualHeight(), RT_SIZE_LITERAL, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags, renderTargetFlags);
-        }
-        else
-        {
-            texture = g_IMaterialSystemHL->CreateNamedRenderTargetTextureEx(newname.get(), fullframe->GetActualWidth(), fullframe->GetActualHeight(), RT_SIZE_LITERAL, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags, renderTargetFlags);
-        }
-        buffers[i].Init(texture);
-    }
-    return buffers[i];
-}
-
 static ShaderStencilState_t SS_First{};
 static ShaderStencilState_t SS_Last{};
 
