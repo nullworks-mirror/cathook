@@ -24,11 +24,6 @@ static settings::Bool show_powerups{ "glow.show.powerups", "true" };
 static settings::Bool weapons_white{ "glow.white-weapons", "true" };
 static settings::Bool glowself{ "glow.self", "true" };
 static settings::Bool rainbow{ "glow.self-rainbow", "true" };
-static settings::Int blur_scale{ "glow.blur-scale", "5" };
-// https://puu.sh/vobH4/5da8367aef.png
-static settings::Int solid_when{ "glow.solid-when", "0" };
-
-IMaterialSystem *materials = nullptr;
 
 CScreenSpaceEffectRegistration *CScreenSpaceEffectRegistration::s_pHead = NULL;
 IScreenSpaceEffectManager *g_pScreenSpaceEffects                        = nullptr;
@@ -84,43 +79,8 @@ struct ShaderStencilState_t
     }
 };
 
-static CTextureReference buffers[4]{};
-
-ITexture *GetBuffer(int i)
-{
-    if (!buffers[i])
-    {
-        ITexture *fullframe;
-        IF_GAME(IsTF2())
-        fullframe      = g_IMaterialSystem->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
-        else fullframe = g_IMaterialSystemHL->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
-        // char *newname    = new char[32];
-        std::unique_ptr<char[]> newname(new char[32]);
-        std::string name = format("_cathook_buff", i);
-        strncpy(newname.get(), name.c_str(), 30);
-        logging::Info("Creating new buffer %d with size %dx%d %s", i, fullframe->GetActualWidth(), fullframe->GetActualHeight(), newname.get());
-
-        int textureFlags      = TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT | TEXTUREFLAGS_EIGHTBITALPHA;
-        int renderTargetFlags = CREATERENDERTARGETFLAGS_HDR;
-
-        ITexture *texture;
-        IF_GAME(IsTF2())
-        {
-            texture = g_IMaterialSystem->CreateNamedRenderTargetTextureEx(newname.get(), fullframe->GetActualWidth(), fullframe->GetActualHeight(), RT_SIZE_LITERAL, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags, renderTargetFlags);
-        }
-        else
-        {
-            texture = g_IMaterialSystemHL->CreateNamedRenderTargetTextureEx(newname.get(), fullframe->GetActualWidth(), fullframe->GetActualHeight(), RT_SIZE_LITERAL, IMAGE_FORMAT_RGBA8888, MATERIAL_RT_DEPTH_SEPARATE, textureFlags, renderTargetFlags);
-        }
-        buffers[i].Init(texture);
-    }
-    return buffers[i];
-}
-
-static ShaderStencilState_t SS_NeverSolid{};
-static ShaderStencilState_t SS_SolidInvisible{};
-static ShaderStencilState_t SS_Null{};
-static ShaderStencilState_t SS_Drawing{};
+static ShaderStencilState_t SS_First{};
+static ShaderStencilState_t SS_Last{};
 
 CatCommand fix_black_glow("fix_black_glow", "Fix Black Glow", []() {
     effect_glow::g_EffectGlow.Shutdown();
@@ -133,10 +93,16 @@ void EffectGlow::Init()
         return;
     logging::Info("Init Glow...");
     {
-        KeyValues *kv = new KeyValues("UnlitGeneric");
-        kv->SetString("$basetexture", "vgui/white_additive");
-        kv->SetInt("$ignorez", 0);
-        mat_unlit.Init("__cathook_glow_unlit", kv);
+        SS_First.m_bEnable         = true;
+        SS_First.m_PassOp          = STENCILOPERATION_REPLACE;
+        SS_First.m_nWriteMask      = 1;
+        SS_First.m_nReferenceValue = 1;
+    }
+    {
+        SS_Last.m_bEnable     = true;
+        SS_Last.m_nWriteMask  = 0; // We're not changing stencil
+        SS_Last.m_nTestMask   = 255;
+        SS_Last.m_CompareFunc = STENCILCOMPARISONFUNCTION_EQUAL;
     }
     {
         KeyValues *kv = new KeyValues("UnlitGeneric");
@@ -144,62 +110,20 @@ void EffectGlow::Init()
         kv->SetInt("$ignorez", 1);
         mat_unlit_z.Init("__cathook_glow_unlit_z", kv);
     }
-    // Initialize 2 buffers
-    GetBuffer(1);
-    GetBuffer(2);
+    IF_GAME(IsTF2())
     {
-        KeyValues *kv = new KeyValues("UnlitGeneric");
-        kv->SetString("$basetexture", "_cathook_buff1");
-        kv->SetInt("$additive", 1);
-        mat_blit.Init("__cathook_glow_blit", TEXTURE_GROUP_CLIENT_EFFECTS, kv);
-        mat_blit->Refresh();
+        mat_halo = g_IMaterialSystem->FindMaterial("dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, false);
+        mat_halo->FindVar("$C0_X", NULL, false)->SetFloatValue(1.0f);
+        mat_glow      = g_IMaterialSystem->FindMaterial("dev/glow_color", TEXTURE_GROUP_OTHER, false);
+        mat_fullframe = g_IMaterialSystem->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
     }
+    else
     {
-        KeyValues *kv = new KeyValues("BlurFilterX");
-        kv->SetString("$basetexture", "_cathook_buff1");
-        kv->SetInt("$ignorez", 1);
-        kv->SetInt("$translucent", 1);
-        kv->SetInt("$alphatest", 1);
-        mat_blur_x.Init("_cathook_blurx", kv);
-        mat_blur_x->Refresh();
+        mat_halo = g_IMaterialSystemHL->FindMaterial("dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, false);
+        mat_halo->FindVar("$C0_X", NULL, false)->SetFloatValue(1.0f);
+        mat_glow      = g_IMaterialSystemHL->FindMaterial("dev/glow_color", TEXTURE_GROUP_OTHER, false);
+        mat_fullframe = g_IMaterialSystemHL->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
     }
-    {
-        KeyValues *kv = new KeyValues("BlurFilterY");
-        kv->SetString("$basetexture", "_cathook_buff2");
-        kv->SetInt("$bloomamount", 5);
-        kv->SetInt("$ignorez", 1);
-        kv->SetInt("$translucent", 1);
-        kv->SetInt("$alphatest", 1);
-        mat_blur_y.Init("_cathook_blury", kv);
-        mat_blur_y->Refresh();
-    }
-    {
-        SS_NeverSolid.m_bEnable         = true;
-        SS_NeverSolid.m_PassOp          = STENCILOPERATION_REPLACE;
-        SS_NeverSolid.m_FailOp          = STENCILOPERATION_KEEP;
-        SS_NeverSolid.m_ZFailOp         = STENCILOPERATION_KEEP;
-        SS_NeverSolid.m_CompareFunc     = STENCILCOMPARISONFUNCTION_ALWAYS;
-        SS_NeverSolid.m_nWriteMask      = 1;
-        SS_NeverSolid.m_nReferenceValue = 1;
-    }
-    {
-        SS_SolidInvisible.m_bEnable         = true;
-        SS_SolidInvisible.m_PassOp          = STENCILOPERATION_REPLACE;
-        SS_SolidInvisible.m_FailOp          = STENCILOPERATION_KEEP;
-        SS_SolidInvisible.m_ZFailOp         = STENCILOPERATION_KEEP;
-        SS_SolidInvisible.m_CompareFunc     = STENCILCOMPARISONFUNCTION_ALWAYS;
-        SS_SolidInvisible.m_nWriteMask      = 1;
-        SS_SolidInvisible.m_nReferenceValue = 1;
-    }
-    /*case 3: https://puu.sh/vobH4/5da8367aef.png*/
-    {
-        SS_Drawing.m_bEnable         = true;
-        SS_Drawing.m_nReferenceValue = 0;
-        SS_Drawing.m_nTestMask       = 1;
-        SS_Drawing.m_CompareFunc     = STENCILCOMPARISONFUNCTION_EQUAL;
-        SS_Drawing.m_PassOp          = STENCILOPERATION_ZERO;
-    }
-
     logging::Info("Init done!");
     init = true;
 }
@@ -232,10 +156,14 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
         break;
     case ENTITY_PLAYER:
         if (ent->m_IDX == LOCAL_E->m_IDX)
-            if (LOCAL_E->m_iTeam() == TEAM_BLU)
+        {
+            if (rainbow)
+                return colors::RainbowCurrent();
+            else if (LOCAL_E->m_iTeam() == TEAM_BLU)
                 return colors::blu;
             else
                 return colors::red;
+        }
         if (health && playerlist::IsDefault(ent))
         {
             return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
@@ -293,85 +221,11 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
         }
         else if (type >= ITEM_POWERUP_FIRST && type <= ITEM_POWERUP_LAST)
         {
-            return powerups;
+            return *show_powerups; // lol? whoever made it return const char *powerups is psmart
         }
         break;
     }
     return false;
-}
-
-void EffectGlow::BeginRenderGlow()
-{
-    drawing = true;
-    CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-    ptr->ClearColor4ub(0, 0, 0, 0);
-    ptr->PushRenderTargetAndViewport();
-    ptr->SetRenderTarget(GetBuffer(1));
-    ptr->OverrideAlphaWriteEnable(true, true);
-    g_IVRenderView->SetBlend(0.99f);
-    ptr->ClearBuffers(true, false);
-    mat_unlit_z->AlphaModulate(1.0f);
-    ptr->DepthRange(0.0f, 0.01f);
-}
-
-void EffectGlow::EndRenderGlow()
-{
-    drawing = false;
-    CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-    ptr->DepthRange(0.0f, 1.0f);
-    g_IVModelRender->ForcedMaterialOverride(nullptr);
-    ptr->PopRenderTargetAndViewport();
-}
-
-void EffectGlow::StartStenciling()
-{
-    static ShaderStencilState_t state;
-    state.Reset();
-    state.m_bEnable = true;
-    CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-    switch (*solid_when)
-    {
-    case 0:
-        SS_NeverSolid.SetStencilState(ptr);
-        break;
-    case 2:
-        SS_SolidInvisible.SetStencilState(ptr);
-        break;
-        /*case 3: https://puu.sh/vobH4/5da8367aef.png*/
-    default:
-        break;
-    }
-    if (!*solid_when)
-    {
-        ptr->DepthRange(0.0f, 0.01f);
-    }
-    else
-    {
-        ptr->DepthRange(0.0f, 1.0f);
-    }
-    g_IVRenderView->SetBlend(0.0f);
-    mat_unlit->AlphaModulate(1.0f);
-    g_IVModelRender->ForcedMaterialOverride(*solid_when ? mat_unlit : mat_unlit_z);
-}
-
-void EffectGlow::EndStenciling()
-{
-    static ShaderStencilState_t state;
-    state.Reset();
-    g_IVModelRender->ForcedMaterialOverride(nullptr);
-    CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-    state.SetStencilState(ptr);
-    ptr->DepthRange(0.0f, 1.0f);
-    g_IVRenderView->SetBlend(1.0f);
-}
-
-void EffectGlow::DrawToStencil(IClientEntity *entity)
-{
-    DrawEntity(entity);
-}
-
-void EffectGlow::DrawToBuffer(IClientEntity *entity)
-{
 }
 
 void EffectGlow::DrawEntity(IClientEntity *entity)
@@ -401,71 +255,53 @@ void EffectGlow::DrawEntity(IClientEntity *entity)
     }
 }
 
-void EffectGlow::RenderGlow(IClientEntity *entity)
-{
-    CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-    g_IVRenderView->SetColorModulation(GlowColor(entity));
-    g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
-    DrawEntity(entity);
-}
-
 void EffectGlow::Render(int x, int y, int w, int h)
 {
     if (!enable)
         return;
-    static ITexture *orig;
-    static IClientEntity *ent;
-    static IMaterialVar *blury_bloomamount;
     if (!init)
         Init();
     if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots) || g_Settings.bInvalid)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
-    orig = ptr->GetRenderTarget();
-    BeginRenderGlow();
-    for (int i = 1; i < HIGHEST_ENTITY; i++)
+
+    ptr->ClearColor4ub(0, 0, 0, 255);
+    ptr->PushRenderTargetAndViewport(mat_fullframe);
+    ptr->ClearBuffers(true, true);
+    ptr->OverrideAlphaWriteEnable(true, true);
+    ptr->PopRenderTargetAndViewport();
+    ptr->ClearStencilBufferRectangle(0, 0, w, h, 0);
+    ptr->DepthRange(0.0f, 0.01f);
+
+    SS_First.SetStencilState(ptr);
+
+    drawing = true;
+    for (int i = 1; i <= HIGHEST_ENTITY; i++)
     {
-        ent = g_IEntityList->GetClientEntity(i);
+        IClientEntity *ent = g_IEntityList->GetClientEntity(i);
         if (ent && !ent->IsDormant() && ShouldRenderGlow(ent))
         {
-            RenderGlow(ent);
+            ptr->PushRenderTargetAndViewport(mat_fullframe);
+            g_IVRenderView->SetColorModulation(GlowColor(ent));
+            g_IVModelRender->ForcedMaterialOverride(mat_glow);
+            DrawEntity(ent);
+            ptr->PopRenderTargetAndViewport();
+
+            g_IVRenderView->SetBlend(0.0f);
+            g_IVModelRender->ForcedMaterialOverride(mat_unlit_z);
+            DrawEntity(ent);
+            g_IVRenderView->SetBlend(1.0f);
         }
     }
-    EndRenderGlow();
-    if (*solid_when != 1)
-    {
-        ptr->ClearStencilBufferRectangle(x, y, w, h, 0);
-        StartStenciling();
-        for (int i = 1; i < HIGHEST_ENTITY; i++)
-        {
-            ent = g_IEntityList->GetClientEntity(i);
-            if (ent && !ent->IsDormant() && ShouldRenderGlow(ent))
-            {
-                DrawToStencil(ent);
-            }
-        }
-        EndStenciling();
-    }
-    ptr->SetRenderTarget(GetBuffer(2));
-    ptr->Viewport(x, y, w, h);
-    ptr->ClearBuffers(true, false);
-    ptr->DrawScreenSpaceRectangle(mat_blur_x, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
-    ptr->SetRenderTarget(GetBuffer(1));
-    blury_bloomamount = mat_blur_y->FindVar("$bloomamount", nullptr);
-    blury_bloomamount->SetIntValue((int) blur_scale);
-    ptr->DrawScreenSpaceRectangle(mat_blur_y, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
-    ptr->Viewport(x, y, w, h);
-    ptr->SetRenderTarget(orig);
-    g_IVRenderView->SetBlend(0.0f);
-    if (*solid_when != 1)
-    {
-        SS_Drawing.SetStencilState(ptr);
-    }
-    ptr->DrawScreenSpaceRectangle(mat_blit, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
-    if (*solid_when != -1)
-    {
-        SS_Null.SetStencilState(ptr);
-    }
+    drawing = false;
+
+    SS_Last.SetStencilState(ptr);
+
+    g_IVModelRender->ForcedMaterialOverride(NULL);
+
+    ptr->DepthRange(0.0f, 1.0f);
+    ptr->DrawScreenSpaceRectangle(mat_halo, x, y, w, h, 0, 0, w, h, w, h);
+    ptr->SetStencilEnable(false);
 }
 
 EffectGlow g_EffectGlow;
