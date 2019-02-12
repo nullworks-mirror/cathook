@@ -525,15 +525,17 @@ bool navTo(Vector destination, int priority, bool should_repath, bool nav_to_loc
         crumbs.clear();
         return false;
     }
-    if (!crumbs.empty())
+    auto crumb = crumbs.begin();
+    if (crumb != crumbs.end())
     {
-        if (ignoremanager::addTime(last_area, crumbs.at(0), inactivity))
+        if (ignoremanager::addTime(last_area, *crumb, inactivity))
             ResetPather();
     }
-    last_area = path.at(0);
+    auto path_it = path.begin();
+    last_area    = *path_it;
     if (!nav_to_local)
     {
-        path.erase(path.begin());
+        path.erase(path_it);
         if (path.empty())
             return false;
     }
@@ -545,8 +547,7 @@ bool navTo(Vector destination, int priority, bool should_repath, bool nav_to_loc
     ensureArrival    = should_repath;
     ReadyForCommands = false;
     curr_priority    = priority;
-    crumbs.clear();
-    crumbs = std::move(path);
+    crumbs           = std::move(path);
     return true;
 }
 
@@ -576,8 +577,9 @@ static void cm()
         return;
     }
     ignoremanager::updateIgnores();
+    auto crumb = crumbs.begin();
     // Crumbs empty, prepare for next instruction
-    if (crumbs.empty())
+    if (crumb == crumbs.end())
     {
         curr_priority    = 0;
         ReadyForCommands = true;
@@ -586,45 +588,42 @@ static void cm()
     }
     ReadyForCommands = false;
     // Remove old crumbs
-    if (g_pLocalPlayer->v_Origin.DistTo(Vector{ crumbs.at(0).x, crumbs.at(0).y, crumbs.at(0).z }) < 50.0f)
+    if (g_pLocalPlayer->v_Origin.DistTo(Vector{ crumb->x, crumb->y, crumb->z }) < 50.0f)
     {
-        last_area = crumbs.at(0);
-        crumbs.erase(crumbs.begin());
+        last_area = *crumb;
+        crumbs.erase(crumb);
         inactivity.update();
+        crumb = crumbs.begin();
+        if (crumb == crumbs.end())
+            return;
     }
-    if (crumbs.empty())
-        return;
-
     if (look)
     {
-        Vector next  = crumbs.front();
+        Vector next  = *crumb;
         next.z       = g_pLocalPlayer->v_Eye.z;
         Vector angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, next);
         DoSlowAim(angle);
         current_user_cmd->viewangles = angle;
     }
-
     // Detect when jumping is necessary
-    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumbs.at(0).z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) || (last_jump.test_and_set(200) && inactivity.check(3000)))
+    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumb->z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) || (last_jump.test_and_set(200) && inactivity.check(3000)))
         current_user_cmd->buttons |= IN_JUMP;
     // If inactive for too long
-    if (inactivity.check(4000))
+    if (inactivity.check(*stuck_time))
     {
         // Ignore connection
-        ignoremanager::addTime(last_area, crumbs.at(0), inactivity);
+        ignoremanager::addTime(last_area, *crumb, inactivity);
         repath();
         return;
     }
     // Walk to next crumb
-    WalkTo(crumbs.at(0));
+    WalkTo(*crumb);
 }
 
 #if ENABLE_VISUALS
 static void drawcrumbs()
 {
     if (!enabled || !draw)
-        return;
-    if (!enabled)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
