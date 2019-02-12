@@ -4,6 +4,8 @@
 
 #pragma once
 
+#if ENABLE_VISUALS
+
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_system.h>
 #include <SDL2/SDL_mouse.h>
@@ -140,3 +142,64 @@ protected:
     Key value{};
 };
 } // namespace settings
+
+#else
+
+#include "Settings.hpp"
+
+namespace settings
+{
+
+struct Key
+{
+    int mouse{ 0 };
+};
+
+template <> class Variable<Key> : public VariableBase<Key>
+{
+public:
+    ~Variable() override = default;
+    VariableType getType() override
+    {
+        return VariableType::KEY;
+    }
+    // Valid inputs: "Mouse1", "Mouse5", "Key 6", "Key 10", "Key 2", "Space".
+    void fromString(const std::string &string) override
+    {
+    }
+    // Variable & causes segfault with gcc optimizations + these dont even
+    // return anything
+    void operator=(const std::string &string)
+    {
+        fromString(string);
+    }
+    inline const Key &operator*() override
+    {
+        return value;
+    }
+    inline const std::string &toString() override
+    {
+        return string;
+    }
+
+    inline explicit operator bool() const
+    {
+        return false;
+    }
+
+    inline bool isKeyDown() const
+    {
+        return false;
+    }
+
+protected:
+    void setInternal(Key next)
+    {
+        fireCallbacks(next);
+    }
+    Key value{};
+    std::string string{};
+};
+} // namespace settings
+
+#endif
