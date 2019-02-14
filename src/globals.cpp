@@ -29,12 +29,17 @@ int last_cmd_number       = 0;
 
 void GlobalSettings::Init()
 {
-    sv_client_min_interp_ratio = g_ICvar->FindVar("sv_client_min_interp_ratio");
-    sv_client_max_interp_ratio = g_ICvar->FindVar("sv_client_max_interp_ratio");
-    cl_interp_ratio            = g_ICvar->FindVar("cl_interp_ratio");
-    cl_interp                  = g_ICvar->FindVar("cl_interp");
-    cl_interpolate             = g_ICvar->FindVar("cl_interpolate");
-
+    do
+    {
+        sv_client_min_interp_ratio = g_ICvar->FindVar("sv_client_min_interp_ratio");
+        sv_client_max_interp_ratio = g_ICvar->FindVar("sv_client_max_interp_ratio");
+        cl_interp_ratio            = g_ICvar->FindVar("cl_interp_ratio");
+        cl_interp                  = g_ICvar->FindVar("cl_interp");
+        cl_interpolate             = g_ICvar->FindVar("cl_interpolate");
+    }
+    while ((!cl_interp || !cl_interpolate || !cl_interp_ratio ||
+        !sv_client_max_interp_ratio || !sv_client_min_interp_ratio) && (sleep(1) | 1));
+    logging::Info("GlobalSettings::Init()");
     bInvalid = true;
 }
 
