@@ -31,7 +31,7 @@ IBaseClientDLL *g_IBaseClient           = nullptr;
 IEngineTrace *g_ITrace                  = nullptr;
 IVModelInfoClient *g_IModelInfo         = nullptr;
 IInputSystem *g_IInputSystem            = nullptr;
-CGlobalVarsBase *g_GlobalVars           = nullptr;
+CGlobalVarsBase **rg_GlobalVars         = nullptr;
 IPrediction *g_IPrediction              = nullptr;
 IGameMovement *g_IGameMovement          = nullptr;
 IInput *g_IInput                        = nullptr;
@@ -127,8 +127,7 @@ void CreateInterfaces()
         // FIXME SIGNATURE
         g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
     }
-    // g_GlobalVars = **(reinterpret_cast<CGlobalVarsBase ***>((uintptr_t) 11 + gSignatures.GetClientSignature("55 89 E5 83 EC ? 8B 45 08 8B 15 ? ? ? ? F3 0F 10")));
-    g_GlobalVars    = **reinterpret_cast<CGlobalVarsBase ***>(gSignatures.GetClientSignature("8B 15 ? ? ? ? F3 0F 10 88 D0 08 00 00") + 2);
+    rg_GlobalVars    = *reinterpret_cast<CGlobalVarsBase ***>(gSignatures.GetClientSignature("8B 15 ? ? ? ? F3 0F 10 88 D0 08 00 00") + 2);
     g_IPrediction   = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client());
     g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
     IF_GAME(IsTF2())

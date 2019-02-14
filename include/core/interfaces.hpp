@@ -67,7 +67,8 @@ extern IBaseClientDLL *g_IBaseClient;
 extern IEngineTrace *g_ITrace;
 extern IVModelInfoClient *g_IModelInfo;
 extern IInputSystem *g_IInputSystem;
-extern CGlobalVarsBase *g_GlobalVars;
+extern CGlobalVarsBase **rg_GlobalVars;
+#define g_GlobalVars (*rg_GlobalVars)
 extern IPrediction *g_IPrediction;
 extern IGameMovement *g_IGameMovement;
 extern IInput *g_IInput;
