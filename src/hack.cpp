@@ -345,6 +345,9 @@ free(logname);*/
     hack::command_stack().push("exec cat_autoexec_textmode");
 #endif
     hack::command_stack().push("exec cat_autoexec");
+    auto extra_exec = std::getenv("CH_EXEC");
+    if (extra_exec)
+        hack::command_stack().push(extra_exec);
     hack::command_stack().push("cat_killsay_reload");
     hack::command_stack().push("cat_spam_reload");
 
