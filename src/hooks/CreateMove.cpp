@@ -177,6 +177,13 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
     PROF_SECTION(CreateMove);
 
+    stored_buttons = current_user_cmd->buttons;
+    if (freecam_is_toggled)
+    {
+        current_user_cmd->sidemove    = 0.0f;
+        current_user_cmd->forwardmove = 0.0f;
+    }
+
     if (current_user_cmd && current_user_cmd->command_number)
         last_cmd_number = current_user_cmd->command_number;
 

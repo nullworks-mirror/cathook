@@ -9,7 +9,10 @@
 
 static settings::Float override_fov_zoomed{ "visual.fov-zoomed", "0" };
 static settings::Float override_fov{ "visual.fov", "0" };
+static settings::Float freecam_speed{ "visual.freecam-speed", "800.0f" };
 static settings::Button freecam{ "visual.freecam-button", "<none>" };
+bool freecam_is_toggled{ false };
+static Timer update{};
 
 namespace hooked_methods
 {
@@ -18,7 +21,7 @@ DEFINE_HOOKED_METHOD(OverrideView, void, void *this_, CViewSetup *setup)
 {
     original::OverrideView(this_, setup);
 
-    if (!isHackActive())
+    if (!isHackActive() || g_Settings.bInvalid || CE_BAD(LOCAL_E))
         return;
 
     if (g_pLocalPlayer->bZoomed && override_fov_zoomed)
@@ -52,33 +55,52 @@ DEFINE_HOOKED_METHOD(OverrideView, void, void *this_, CViewSetup *setup)
         }
     }
 
-    if (freecam)
+    if (freecam && current_user_cmd)
     {
         static Vector freecam_origin{ 0 };
         static bool freecam_last{ false };
-        if (freecam.isKeyDown())
+        static bool first_toggle{ true };
+
+        if (freecam.isKeyDown() && !freecam_last)
         {
-            if (not freecam_last)
+            freecam_is_toggled = !freecam_is_toggled;
+            first_toggle       = true;
+        }
+        if (freecam_is_toggled)
+        {
+            if (first_toggle)
             {
                 freecam_origin = setup->origin;
+                first_toggle   = false;
             }
-            float sp, sy, cp, cy;
-            QAngle angle;
-            Vector forward;
-            g_IEngine->GetViewAngles(angle);
-            sy        = sinf(DEG2RAD(angle[1]));
-            cy        = cosf(DEG2RAD(angle[1]));
-            sp        = sinf(DEG2RAD(angle[0]));
-            cp        = cosf(DEG2RAD(angle[0]));
-            forward.x = cp * cy;
-            forward.y = cp * sy;
-            forward.z = -sp;
-            forward *= 4;
-            freecam_origin += forward;
+            QAngle ang;
+            Vector angle;
+
+            float speed = *freecam_speed * g_GlobalVars->absoluteframetime;
+            g_IEngine->GetViewAngles(ang);
+            angle = QAngleToVector(ang);
+            if (stored_buttons & IN_FORWARD)
+                freecam_origin += GetForwardVector({ 0.0f, 0.0f, 0.0f }, angle, speed);
+            if (stored_buttons & IN_BACK)
+                freecam_origin -= GetForwardVector({ 0.0f, 0.0f, 0.0f }, angle, speed);
+            if (stored_buttons & IN_MOVELEFT || stored_buttons & IN_MOVERIGHT)
+            {
+                Vector new_angle = angle;
+                new_angle.y += 90.0f;
+                new_angle.x = 0.0f;
+                fClampAngle(new_angle);
+                Vector touse = GetForwardVector({ 0.0f, 0.0f, 0.0f }, new_angle, speed);
+                if (stored_buttons & IN_MOVELEFT)
+                    freecam_origin += touse;
+                if (stored_buttons & IN_MOVERIGHT)
+                    freecam_origin -= touse;
+            }
             setup->origin = freecam_origin;
         }
         freecam_last = freecam.isKeyDown();
     }
+    else if (current_user_cmd)
+        freecam_is_toggled = false;
 
     draw::fov = setup->fov;
 }
