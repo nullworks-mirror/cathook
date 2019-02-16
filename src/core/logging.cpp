@@ -17,27 +17,19 @@
 
 settings::Bool log_to_console{ "hack.log-console", "false" };
 
-std::ofstream logging::handle;
+FILE *logging::handle{ nullptr };
 
 void logging::Initialize()
 {
     // FIXME other method of naming the file?
-    passwd *pwd          = getpwuid(getuid());
-    std::string filename = strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get();
-    struct stat buf;
-    if (stat(filename.c_str(), &buf) != -1)
-        std::remove(filename.c_str());
-    logging::handle = std::ofstream(filename);
-    if (!logging::handle.is_open())
-        throw std::runtime_error("Can't open logging file");
+    passwd *pwd     = getpwuid(getuid());
+    logging::handle = fopen(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get(), "w");
 }
 
 void logging::Info(const char *fmt, ...)
 {
-    if (!logging::handle.is_open())
+    if (logging::handle == nullptr)
         logging::Initialize();
-    auto time = std::time(nullptr);
-    auto tm   = *std::localtime(&time);
 
     // Argument list
     va_list list;
@@ -49,19 +41,30 @@ void logging::Info(const char *fmt, ...)
         return;
     va_end(list);
 
-    // Print to file
-    logging::handle << std::put_time(&tm, "%H:%M:%S ") << result.get() << std::endl;
-    // Print to console
+    std::string print_file(result.get());
+
+    time_t current_time;
+    struct tm *time_info = nullptr;
+    char timeString[10];
+    time(&current_time);
+    time_info = localtime(&current_time);
+    strftime(timeString, sizeof(timeString), "%H:%M:%S", time_info);
+
+    std::string to_log = result.get();
+    to_log             = strfmt("[%s] ", timeString).get() + to_log + "\n";
+    fprintf(logging::handle, "%s", to_log.c_str());
+    fflush(logging::handle);
 #if ENABLE_VISUALS
     if (!hack::shutdown)
     {
         if (*log_to_console)
-            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "CAT: %s \n", result.get());
+            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "CAT: %s\n", result.get());
     }
 #endif
 }
 
 void logging::Shutdown()
 {
-    logging::handle.close();
+    fclose(logging::handle);
+    logging::handle = nullptr;
 }

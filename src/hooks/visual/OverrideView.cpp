@@ -12,7 +12,6 @@ static settings::Float override_fov{ "visual.fov", "0" };
 static settings::Float freecam_speed{ "visual.freecam-speed", "800.0f" };
 static settings::Button freecam{ "visual.freecam-button", "<none>" };
 bool freecam_is_toggled{ false };
-static Timer update{};
 
 namespace hooked_methods
 {
