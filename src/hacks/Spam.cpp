@@ -234,12 +234,6 @@ bool FormatSpamMessage(std::string &message)
     return SubstituteQueries(message);
 }
 
-void init()
-{
-    spam_source.installChangeCallback([](settings::VariableBase<int> &var, int after) { file.Load(*filename); });
-    filename.installChangeCallback([](settings::VariableBase<std::string> &var, std::string after) { file.TryLoad(after); });
-}
-
 void createMove()
 {
     IF_GAME(IsTF2())
@@ -375,6 +369,13 @@ void reloadSpamFile()
 bool isActive()
 {
     return bool(spam_source);
+}
+
+void init()
+{
+    spam_source.installChangeCallback([](settings::VariableBase<int> &var, int after) { file.Load(*filename); });
+    filename.installChangeCallback([](settings::VariableBase<std::string> &var, std::string after) { file.TryLoad(after); });
+    reloadSpamFile();
 }
 
 const std::vector<std::string> builtin_default    = { "Cathook - more fun than a ball of yarn!", "GNU/Linux is the best OS!", "Visit https://github.com/nullworks/cathook for more information!", "Cathook - Free and Open-Source tf2 cheat!", "Cathook - ca(n)t stop me meow!" };

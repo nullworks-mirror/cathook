@@ -348,8 +348,6 @@ free(logname);*/
     auto extra_exec = std::getenv("CH_EXEC");
     if (extra_exec)
         hack::command_stack().push(extra_exec);
-    hack::command_stack().push("cat_killsay_reload");
-    hack::command_stack().push("cat_spam_reload");
 
     hack::initialized = true;
     for (int i = 0; i < 12; i++)

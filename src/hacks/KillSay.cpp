@@ -167,6 +167,7 @@ static CatCommand reload_command("killsay_reload", "Reload killsays", []() { rel
 
 void init()
 {
+    reload();
     g_IEventManager2->AddListener(&listener, (const char *) "player_death", false);
 }
 
