@@ -181,13 +181,14 @@ void CreateMove()
     case 0:
         doLegitBackstab();
         break;
-    case 1:
-        doRageBackstab();
-        break;
     case 2:
         if (hacks::shared::backtrack::isBacktrackEnabled)
+        {
             doBacktrackStab();
-    default:
+            break;
+        }
+    case 1:
+        doRageBackstab();
         break;
     }
 }
