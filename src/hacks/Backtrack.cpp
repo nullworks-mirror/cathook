@@ -30,7 +30,6 @@ std::pair<int, int> getBestEntBestTick();
 bool shouldBacktrack();
 
 BacktrackData headPositions[32][66]{};
-int highesttick[32]{};
 int lastincomingsequencenumber = 0;
 bool isBacktrackEnabled        = false;
 bool Vischeck_Success          = false;
@@ -75,6 +74,8 @@ void Init()
     for (int i = 0; i < 32; i++)
         for (int j = 0; j < 66; j++)
             headPositions[i][j] = {};
+
+    BestTick = iBestTarget = -1;
 }
 
 int BestTick    = -1;
@@ -287,12 +288,11 @@ bool shouldBacktrack()
     CachedEntity *wep = g_pLocalPlayer->weapon();
     if (CE_BAD(wep))
         return false;
+    if (*slots == 0)
+        return true;
     int slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(wep));
     switch ((int) slots)
     {
-    case 0:
-        return true;
-        break;
     case 1:
         if (slot == 0)
             return true;
