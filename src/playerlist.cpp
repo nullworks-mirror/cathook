@@ -167,6 +167,29 @@ bool IsDefault(CachedEntity *entity)
 CatCommand pl_save("pl_save", "Save playerlist", Save);
 CatCommand pl_load("pl_load", "Load playerlist", Load);
 
+CatCommand pl_print("pl_print", "Print current player list",
+[](const CCommand &args) {
+    userdata empty{};
+    bool include_all = args.ArgC() >= 2 && *args.Arg(1) == '1';
+
+    logging::InfoConsole("Known entries: %lu", data.size());
+    for (auto it = data.begin(); it != data.end(); ++it)
+    {
+        if (!include_all && !std::memcmp(&it->second, &empty, sizeof(empty)))
+            continue;
+
+        const auto &ent = it->second;
+#if ENABLE_VISUALS
+        logging::InfoConsole("%u -> %d (%f,%f,%f,%f) %f %u %u", it->first,
+            ent.state, ent.color.r, ent.color.g, ent.color.b, ent.color.a,
+            ent.inventory_value, ent.deaths_to, ent.kills);
+#else
+        logging::InfoConsole("%u -> %d %f %u %u", it->first, ent.state,
+            ent.inventory_value, ent.deaths_to, ent.kills);
+#endif
+    }
+});
+
 CatCommand pl_add_id("pl_add_id", "Sets state for steamid", [](const CCommand &args) {
     if (args.ArgC() <= 2)
         return;
