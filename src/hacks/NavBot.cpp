@@ -352,8 +352,6 @@ static bool getHealthAndAmmo()
                 continue;
             healthpacks.push_back(ent->m_vecOrigin());
         }
-        if (healthpacks.empty())
-            logging::Info("f");
         std::sort(healthpacks.begin(), healthpacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
         for (auto &pack : healthpacks)
         {
