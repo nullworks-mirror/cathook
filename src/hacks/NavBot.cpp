@@ -311,6 +311,8 @@ static inline bool hasLowAmmo()
     if (CE_BAD(LOCAL_W))
         return false;
     int *weapon_list = (int *) ((uint64_t)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
+    if (!weapon_list)
+        return false;
     if (g_pLocalPlayer->holding_sniper_rifle && CE_INT(LOCAL_E, netvar.m_iAmmo + 4) <= 5)
         return true;
     for (int i = 0; weapon_list[i]; i++)
