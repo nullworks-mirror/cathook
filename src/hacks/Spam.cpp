@@ -265,7 +265,7 @@ void createMove()
                 switch (*voicecommand_spam)
                 {
                 case 1: // RANDOM
-                    g_IEngine->ServerCmd(format("voicemenu ", floor(RandFloatRange(0, 2.9)), " ", floor(RandFloatRange(0, 8.9))).c_str());
+                    g_IEngine->ServerCmd(format("voicemenu ", UniformRandomInt(0, 2), " ", UniformRandomInt(0, 8)).c_str());
                     break;
                 case 2: // MEDIC
                     g_IEngine->ServerCmd("voicemenu 0 0");
