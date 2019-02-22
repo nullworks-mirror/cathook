@@ -211,6 +211,25 @@ CatCommand pl_add_id("pl_add_id", "Sets state for steamid", [](const CCommand &a
         logging::Info("Unknown State");
 });
 
+static void pl_cleanup()
+{
+    userdata empty{};
+    size_t counter = 0;
+    for (auto it = data.begin(); it != data.end(); ++it)
+    {
+        if (std::memcmp(&it->second, &empty, sizeof(empty)))
+            continue;
+
+        ++counter;
+        data.erase(it);
+        /* Start all over again. Iterator is invalidated once erased. */
+        it = data.begin();
+    }
+    logging::InfoConsole("%lu elements were removed", counter);
+}
+
+CatCommand pl_clean("pl_clean", "Removes empty entries to reduce RAM usage", pl_cleanup);
+
 CatCommand pl_set_state("pl_set_state", "cat_pl_set_state [playername] [state] (Tab to autocomplete)", [](const CCommand &args) {
     if (args.ArgC() != 3)
     {
