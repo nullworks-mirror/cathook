@@ -94,7 +94,7 @@ std::stack<std::string> &hack::command_stack()
     return stack;
 }
 
-void hack::ExecuteCommand(const std::string command)
+void hack::ExecuteCommand(const std::string &command)
 {
     std::lock_guard<std::mutex> guard(hack::command_stack_mutex);
     hack::command_stack().push(command);
