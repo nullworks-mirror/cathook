@@ -379,10 +379,8 @@ void update()
     if (LOCAL_E->m_bAlivePlayer())
         autojointeam.update();
     if (autojointeam.test_and_set(60000) && !LOCAL_E->m_bAlivePlayer())
-    {
-        hack::command_stack().push("autoteam");
-        hack::command_stack().push("join_class sniper");
-    }
+        hack::command_stack().push("autoteam; join_class sniper");
+
     if (micspam)
     {
         if (micspam_on && micspam_on_timer.test_and_set(*micspam_on * 1000))
