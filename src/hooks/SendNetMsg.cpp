@@ -75,6 +75,28 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, boo
     {
         lastcmd = g_GlobalVars->absoluteframetime;
     }
+    // SoonTM
+    /*
+    if (msg.GetType() == 16)
+    {
+        std::string message(msg.GetName());
+        if (message.find("MVM_Upgrade"))
+        {
+            CLC_CmdKeyValues keyval = *(CLC_CmdKeyValues *) (&msg);
+            KeyValues *kv           = keyval.kv;
+            while (kv)
+            {
+                if (kv->GetInt("count", 1333) != 1333)
+                {
+                    logging::Info("Upgrade: %d", kv->GetInt("upgrade"));
+                    logging::Info("Itemslot: %d", kv->GetInt("itemslot"));
+                    logging::Info("Count: %d", kv->GetInt("count"));
+                    kv->SetInt("free", 1);
+                }
+                kv = kv->GetNextKey();
+            }
+        }
+    }*/
     if (log_sent && msg.GetType() != 3 && msg.GetType() != 9)
     {
         logging::Info("=> %s [%i] %s", msg.GetName(), msg.GetType(), msg.ToString());

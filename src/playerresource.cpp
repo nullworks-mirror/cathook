@@ -103,6 +103,29 @@ int TFPlayerResource::GetDeaths(int idx)
     return *(int *) ((unsigned) ent + netvar.m_iDeaths_Resource + 4 * idx);
 }
 
+int TFPlayerResource::GetLevel(int idx)
+{
+    IClientEntity *ent;
+
+    if (idx >= 32 || idx < 1)
+        return 0;
+    ent = g_IEntityList->GetClientEntity(entity);
+    if (!ent || ent->GetClientClass()->m_ClassID != RCC_PLAYERRESOURCE)
+        return 0;
+    return *(int *) ((unsigned) ent + netvar.m_iPlayerLevel_Resource + 4 * idx);
+}
+
+int TFPlayerResource::GetDamage(int idx)
+{
+    IClientEntity *ent;
+
+    if (idx >= 32 || idx < 1)
+        return 0;
+    ent = g_IEntityList->GetClientEntity(entity);
+    if (!ent || ent->GetClientClass()->m_ClassID != RCC_PLAYERRESOURCE)
+        return 0;
+    return *(int *) ((unsigned) ent + netvar.m_iDamage_Resource + 4 * idx);
+}
 int TFPlayerResource::GetPing(int idx)
 {
     IClientEntity *ent;

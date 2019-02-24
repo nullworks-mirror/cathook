@@ -56,7 +56,7 @@ void DrawStrings()
     for (size_t i = 0; i < side_strings_count; ++i)
     {
         draw::String(8, y, side_strings_colors[i], side_strings[i].c_str(), *fonts::center_screen);
-        y += fonts::menu->size + 1;
+        y += fonts::center_screen->size + 1;
     }
     y = draw::height / 2;
     for (size_t i = 0; i < center_strings_count; ++i)
@@ -64,7 +64,7 @@ void DrawStrings()
         float sx, sy;
         fonts::menu->stringSize(center_strings[i], &sx, &sy);
         draw::String((draw::width - sx) / 2, y, center_strings_colors[i], center_strings[i].c_str(), *fonts::center_screen);
-        y += fonts::menu->size + 1;
+        y += fonts::center_screen->size + 1;
     }
 }
 
