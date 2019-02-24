@@ -136,7 +136,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         break;
     case 4:
         s = buf.GetNumBytesLeft();
-        if (s >= 256)
+        if (s >= 256 || CE_BAD(LOCAL_E))
             break;
 
         for (i = 0; i < s; i++)
