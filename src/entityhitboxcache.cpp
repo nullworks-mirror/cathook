@@ -129,7 +129,7 @@ matrix3x4_t *EntityHitboxCache::GetBones()
         if (g_Settings.is_create_move)
         {
 #if ENABLE_VISUALS
-            if (!*bonecache_enabled || IsPlayerInvisible(parent_ref))
+            if (!*bonecache_enabled || parent_ref->m_Type() != ENTITY_PLAYER || IsPlayerInvisible(parent_ref))
             {
                 PROF_SECTION(bone_setup);
                 bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
