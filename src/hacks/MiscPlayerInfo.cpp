@@ -115,6 +115,12 @@ void Paint()
 
             // Base Color
             rgba_t color = colors::white;
+            // tint LOCAL_E name slightly
+            if (i == g_IEngine->GetLocalPlayer())
+                color.b += 100.0f;
+            // tint CAT status people's names too
+            if (playerlist::AccessData(ent->player_info.friendsID).state == playerlist::k_EState::CAT)
+                color.g = 200.0f;
 
             // Calculate Player Level
             int death_score  = g_pPlayerResource->GetDeaths(i) * 7;
