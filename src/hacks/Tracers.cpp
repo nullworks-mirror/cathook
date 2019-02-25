@@ -6,6 +6,7 @@ namespace hacks::shared::tracers
 
 settings::Bool enabled("tracers.enabled", "false");
 settings::Float green_dist("tracers.green-distance", "1500");
+settings::Float max_dist("tracers.max_dist", "0");
 
 // 0 = don't, 1 = yes but only in enemy team, 2 = always
 settings::Int draw_friendlies("tracers.draw-friends", "1");
@@ -47,12 +48,9 @@ inline std::optional<rgba_t> getColor(CachedEntity *ent)
         if (!ent->m_bEnemy())
             return std::nullopt;
         float dist = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
-        //        if (dist < *red_alert)
-        //            return colors::red;
-        //        if (dist < *yellow_alert)
-        //            return colors::orange;
+        if (*max_dist && dist > *max_dist)
+            return std::nullopt;
         return colors::Health(std::min(dist, *green_dist), *green_dist);
-        // return colors::white;
     }
     if (!player_tools::shouldTargetSteamId(ent->player_info.friendsID))
     {
