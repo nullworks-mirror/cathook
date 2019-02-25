@@ -158,10 +158,11 @@ void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
 #endif
 }
 
-void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness)
+// x2_offset and y2_offset are an OFFSET, meaning you need to pass coordinate 2 - coordinate 1 for it to work, x2_offset is aded to x1
+void Line(float x1, float y1, float x2_offset, float y2_offset, rgba_t color, float thickness)
 {
 #if !ENABLE_ENGINE_DRAWING
-    glez::draw::line(x1, y1, x2, y2, color, thickness);
+    glez::draw::line(x1, y1, x2_offset, y2_offset, color, thickness);
 #else
     color = color * 255.0f;
     g_ISurface->DrawSetTexture(texture_white);
@@ -171,15 +172,15 @@ void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness)
     x1 += 0.5f;
     y1 += 0.5f;
 
-    float length = sqrtf(x2 * x2 + y2 * y2);
-    x2 *= (length - 1.0f) / length;
-    y2 *= (length - 1.0f) / length;
+    float length = sqrtf(x2_offset * x2_offset + y2_offset * y2_offset);
+    x2_offset *= (length - 1.0f) / length;
+    y2_offset *= (length - 1.0f) / length;
 
-    float nx = x2;
-    float ny = y2;
+    float nx = x2_offset;
+    float ny = y2_offset;
 
-    float ex = x1 + x2;
-    float ey = y1 + y2;
+    float ex = x1 + x2_offset;
+    float ey = y1 + y2_offset;
 
     if (length <= 1.0f)
         return;
@@ -316,37 +317,24 @@ VMatrix wts{};
 void UpdateWTS()
 {
     CViewSetup gay;
-	VMatrix _, __, ___;
+    VMatrix _, __, ___;
     g_IBaseClient->GetPlayerView(gay);
     g_IVRenderView->GetMatricesForView(gay, &_, &__, &wts, &___);
 }
 
 bool WorldToScreen(const Vector &origin, Vector &screen)
 {
-	float w;
-	screen.z = 0;
-	w = wts[3][0] * origin[0] + wts[3][1] * origin[1] + wts[3][2] * origin[2] +
-		wts[3][3];
-	if (w > 0.001)
-	{
-		float odw = 1.0f / w;
-		screen.x  = (draw::width / 2) +
-				   (0.5 *
-						((wts[0][0] * origin[0] + wts[0][1] * origin[1] +
-						  wts[0][2] * origin[2] + wts[0][3]) *
-						 odw) *
-						draw::width +
-					0.5);
-		screen.y = (draw::height / 2) -
-				   (0.5 *
-						((wts[1][0] * origin[0] + wts[1][1] * origin[1] +
-						  wts[1][2] * origin[2] + wts[1][3]) *
-						 odw) *
-						draw::height +
-					0.5);
-		return true;
-	}
-	return false;
+    float w;
+    screen.z = 0;
+    w        = wts[3][0] * origin[0] + wts[3][1] * origin[1] + wts[3][2] * origin[2] + wts[3][3];
+    if (w > 0.001)
+    {
+        float odw = 1.0f / w;
+        screen.x  = (draw::width / 2) + (0.5 * ((wts[0][0] * origin[0] + wts[0][1] * origin[1] + wts[0][2] * origin[2] + wts[0][3]) * odw) * draw::width + 0.5);
+        screen.y  = (draw::height / 2) - (0.5 * ((wts[1][0] * origin[0] + wts[1][1] * origin[1] + wts[1][2] * origin[2] + wts[1][3]) * odw) * draw::height + 0.5);
+        return true;
+    }
+    return false;
 }
 #if ENABLE_ENGINE_DRAWING
 bool Texture::load()
