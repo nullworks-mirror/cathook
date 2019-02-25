@@ -121,7 +121,7 @@ std::unique_ptr<font> center_screen{ nullptr };
 namespace draw
 {
 
-int texture_white = 0;
+unsigned int texture_white = 0;
 
 void Initialize()
 {
@@ -147,7 +147,7 @@ void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
     glez::draw::outlined_string(x, y, text, font, rgba, colors::black, nullptr, nullptr);
 #else
     rgba = rgba * 255.0f;
-    g_ISurface->DrawSetTextPos(x, y - 2);
+    g_ISurface->DrawSetTextPos(x, y);
     g_ISurface->DrawSetTextFont(font);
     g_ISurface->DrawSetTextColor(rgba.r, rgba.g, rgba.b, rgba.a);
 
@@ -165,45 +165,51 @@ void Line(float x1, float y1, float x2_offset, float y2_offset, rgba_t color, fl
     glez::draw::line(x1, y1, x2_offset, y2_offset, color, thickness);
 #else
     color = color * 255.0f;
-    g_ISurface->DrawSetTexture(texture_white);
     g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
+    if (thickness > 1.0f)
+    {
+        g_ISurface->DrawSetTexture(texture_white);
+        // Dirty
+        x1 += 0.5f;
+        y1 += 0.5f;
 
-    // Dirty
-    x1 += 0.5f;
-    y1 += 0.5f;
+        float length = sqrtf(x2_offset * x2_offset + y2_offset * y2_offset);
+        x2_offset *= (length - 1.0f) / length;
+        y2_offset *= (length - 1.0f) / length;
 
-    float length = sqrtf(x2_offset * x2_offset + y2_offset * y2_offset);
-    x2_offset *= (length - 1.0f) / length;
-    y2_offset *= (length - 1.0f) / length;
+        float nx = x2_offset;
+        float ny = y2_offset;
 
-    float nx = x2_offset;
-    float ny = y2_offset;
+        float ex = x1 + x2_offset;
+        float ey = y1 + y2_offset;
 
-    float ex = x1 + x2_offset;
-    float ey = y1 + y2_offset;
+        if (length <= 1.0f)
+            return;
 
-    if (length <= 1.0f)
-        return;
+        nx /= length;
+        ny /= length;
 
-    nx /= length;
-    ny /= length;
+        float th = thickness;
 
-    float th = thickness;
+        nx *= th * 0.5f;
+        ny *= th * 0.5f;
 
-    nx *= th * 0.5f;
-    ny *= th * 0.5f;
+        float px = ny;
+        float py = -nx;
 
-    float px = ny;
-    float py = -nx;
+        vgui::Vertex_t vertices[4];
 
-    vgui::Vertex_t vertices[4];
+        vertices[2].m_Position = { float(x1) - nx + px, float(y1) - ny + py };
+        vertices[1].m_Position = { float(x1) - nx - px, float(y1) - ny - py };
+        vertices[3].m_Position = { ex + nx + px, ey + ny + py };
+        vertices[0].m_Position = { ex + nx - px, ey + ny - py };
 
-    vertices[2].m_Position = { float(x1) - nx + px, float(y1) - ny + py };
-    vertices[1].m_Position = { float(x1) - nx - px, float(y1) - ny - py };
-    vertices[3].m_Position = { ex + nx + px, ey + ny + py };
-    vertices[0].m_Position = { ex + nx - px, ey + ny - py };
-
-    g_ISurface->DrawTexturedPolygon(4, vertices);
+        g_ISurface->DrawTexturedPolygon(4, vertices);
+    }
+    else
+    {
+        g_ISurface->DrawLine(x1, y1, x1 + x2_offset, y1 + y2_offset);
+    }
 #endif
 }
 
@@ -325,15 +331,13 @@ void UpdateWTS()
 bool WorldToScreen(const Vector &origin, Vector &screen)
 {
     float w;
-    screen.z = 0;
-    w        = wts[3][0] * origin[0] + wts[3][1] * origin[1] + wts[3][2] * origin[2] + wts[3][3];
+    screen.z  = 0;
+    w         = wts[3][0] * origin[0] + wts[3][1] * origin[1] + wts[3][2] * origin[2] + wts[3][3];
+    float odw = 1.0f / w;
+    screen.x  = (draw::width / 2) + (0.5 * ((wts[0][0] * origin[0] + wts[0][1] * origin[1] + wts[0][2] * origin[2] + wts[0][3]) * odw) * draw::width + 0.5);
+    screen.y  = (draw::height / 2) - (0.5 * ((wts[1][0] * origin[0] + wts[1][1] * origin[1] + wts[1][2] * origin[2] + wts[1][3]) * odw) * draw::height + 0.5);
     if (w > 0.001)
-    {
-        float odw = 1.0f / w;
-        screen.x  = (draw::width / 2) + (0.5 * ((wts[0][0] * origin[0] + wts[0][1] * origin[1] + wts[0][2] * origin[2] + wts[0][3]) * odw) * draw::width + 0.5);
-        screen.y  = (draw::height / 2) - (0.5 * ((wts[1][0] * origin[0] + wts[1][1] * origin[1] + wts[1][2] * origin[2] + wts[1][3]) * odw) * draw::height + 0.5);
         return true;
-    }
     return false;
 }
 #if ENABLE_ENGINE_DRAWING
@@ -373,6 +377,11 @@ bool Texture::load()
 Texture::~Texture()
 {
     g_ISurface->DeleteTextureByID(texture_id);
+}
+
+Texture::Texture(unsigned int id, unsigned int height, unsigned int width) : texture_id{ id }, m_width{ width }, m_height{ height }
+{
+    init = true;
 }
 
 unsigned int Texture::get()

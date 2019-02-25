@@ -83,6 +83,7 @@ public:
     explicit Texture(std::string path) : path{ path }
     {
     }
+    Texture(unsigned int id, unsigned int height, unsigned int width);
     bool load();
     unsigned int get();
     ~Texture();
