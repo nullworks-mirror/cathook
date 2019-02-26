@@ -1443,7 +1443,12 @@ static void DrawText()
     }
 }
 #endif
+void rvarCallback(settings::VariableBase<int> &var, int after)
+{
+    backtrackAimbot = after > 190.0f;
+}
 static InitRoutine EC([]() {
+    hacks::shared::backtrack::latency.installChangeCallback(rvarCallback);
     EC::Register(EC::LevelInit, Reset, "INIT_Aimbot", EC::average);
     EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "CM_Aimbot", EC::late);

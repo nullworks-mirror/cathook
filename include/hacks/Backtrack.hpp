@@ -29,6 +29,7 @@ struct BacktrackData
     float simtime{ 0.0f };
     Vector entorigin{ 0.0f, 0.0f, 0.0f };
     int index{ 0 };
+    matrix3x4_t bones[128]{};
 };
 struct BestTickData
 {

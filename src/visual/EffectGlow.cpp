@@ -11,7 +11,6 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "glow.enable", "false" };
 static settings::Bool health{ "glow.health", "false" };
 static settings::Bool teammates{ "glow.show.teammates", "false" };
 static settings::Bool players{ "glow.show.players", "true" };
@@ -40,6 +39,7 @@ CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration(const char *pName
 
 namespace effect_glow
 {
+settings::Bool enable{ "glow.enable", "false" };
 
 struct ShaderStencilState_t
 {
@@ -257,7 +257,7 @@ void EffectGlow::DrawEntity(IClientEntity *entity)
 
 void EffectGlow::Render(int x, int y, int w, int h)
 {
-    if (!enable)
+    if (!effect_glow::enable)
         return;
     if (!init)
         Init();
