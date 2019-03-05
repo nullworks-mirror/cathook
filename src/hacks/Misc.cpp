@@ -395,12 +395,10 @@ static CatCommand generateschema("schema_generate", "Generate custom schema", []
     std::ifstream in("tf/scripts/items/items_game.txt");
     std::string outS((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     std::ofstream out("/opt/cathook/data/items_game.txt");
-    std::regex a("\"equip_regions\".*?\".*?\"");
-    std::regex b("\"equip_region\".*?\".*?\"");
-    std::regex c("\"equip_regions\"[\\s\\S\\n]*?}");
+    std::regex a("\"equip_regions?\".*?\".*?\"");
+    std::regex b("\"equip_regions?\"\\s*?\\n\\s*?\\{[\\s\\S\\n]*?\\}");
     outS = std::regex_replace(outS, a, "");
-    outS = std::regex_replace(outS, b, "");
-    out << std::regex_replace(outS, c, "");
+    out << std::regex_replace(outS, b, "");
     out.close();
 });
 
