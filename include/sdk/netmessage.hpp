@@ -294,6 +294,27 @@ public:
     uint64 m_xuid;
 };
 
+class CLC_BaselineAck : public CNetMessage
+{
+    DECLARE_CLC_MESSAGE(BaselineAck);
+
+    CLC_BaselineAck(){};
+    CLC_BaselineAck(int tick, int baseline)
+    {
+        m_nBaselineTick = tick;
+        m_nBaselineNr   = baseline;
+    }
+
+    int GetGroup() const
+    {
+        return INetChannelInfo::ENTITIES;
+    }
+
+public:
+    int m_nBaselineTick; // sequence number of baseline
+    int m_nBaselineNr;   // 0 or 1
+};
+
 class CLC_CmdKeyValues : public CNetMessage
 {
     DECLARE_CLC_MESSAGE(CmdKeyValues);

@@ -32,7 +32,6 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/MiscPlayerInfo.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/NavBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Noisemaker.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Tracers.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/UberSpam.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp"
@@ -41,6 +40,7 @@ target_sources(cathook PRIVATE
 if(EnableVisuals)
     target_sources(cathook PRIVATE
             "${CMAKE_CURRENT_LIST_DIR}/ESP.cpp"
+            "${CMAKE_CURRENT_LIST_DIR}/Tracers.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Radar.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/SkinChanger.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/SpyAlert.cpp"

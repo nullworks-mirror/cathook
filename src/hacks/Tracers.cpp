@@ -4,12 +4,12 @@
 namespace hacks::shared::tracers
 {
 
-settings::Bool enabled("tracers.enabled", "false");
-settings::Float green_dist("tracers.green-distance", "1500");
-settings::Float max_dist("tracers.max_dist", "0");
+static settings::Bool enabled("tracers.enabled", "false");
+static settings::Float green_dist("tracers.green-distance", "1500");
+static settings::Float max_dist("tracers.max_dist", "0");
 
 // 0 = don't, 1 = yes but only in enemy team, 2 = always
-settings::Int draw_friendlies("tracers.draw-friends", "1");
+static settings::Int draw_friendlies("tracers.draw-friends", "1");
 
 // Extend a line to a certain border
 // https://stackoverflow.com/a/45056039
@@ -100,5 +100,5 @@ void draw()
     }
 }
 
-InitRoutine init([]() { EC::Register(EC::Draw, draw, "DRAW_tracers"); });
+static InitRoutine init([]() { EC::Register(EC::Draw, draw, "DRAW_tracers"); });
 } // namespace hacks::shared::tracers

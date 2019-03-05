@@ -137,6 +137,7 @@ static void Run()
             hbd.entorigin     = pEntity->InternalEntity()->GetAbsOrigin();
             hbd.tickcount     = cmd->tick_count;
 
+            pEntity->hitboxes.InvalidateCache();
             for (size_t i = 0; i < 18; i++)
             {
                 hbd.hitboxes[i].center = pEntity->hitboxes.GetHitbox(i)->center;
@@ -193,6 +194,7 @@ static std::vector<int> bones_arm_r  = { 9, 10, 11 };
 static std::vector<int> bones_arm_l  = { 6, 7, 8 };
 static std::vector<int> bones_up     = { 9, 5, 6 };
 
+#if ENABLE_VISUALS
 void DrawBone(std::vector<int> hitbox, std::array<hitboxData, 18> hitboxes)
 {
     for (int i = 0; i < hitbox.size() - 1; i++)
@@ -204,6 +206,7 @@ void DrawBone(std::vector<int> hitbox, std::array<hitboxData, 18> hitboxes)
             draw::Line(draw_position1.x, draw_position1.y, draw_position2.x - draw_position1.x, draw_position2.y - draw_position1.y, colors::white, 1.0f);
     }
 }
+#endif
 static void Draw()
 {
 #if ENABLE_VISUALS

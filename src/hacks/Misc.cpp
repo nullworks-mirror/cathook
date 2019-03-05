@@ -7,6 +7,7 @@
 
 #include "common.hpp"
 #include <unistd.h>
+#include <regex>
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -390,6 +391,19 @@ void DrawText()
 
 #endif
 
+static CatCommand generateschema("schema_generate", "Generate custom schema", []() {
+    std::ifstream in("tf/scripts/items/items_game.txt");
+    std::string outS((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::ofstream out("/opt/cathook/data/items_game.txt");
+    std::regex a("\"equip_regions\".*?\".*?\"");
+    std::regex b("\"equip_region\".*?\".*?\"");
+    std::regex c("\"equip_regions\"[\\s\\S\\n]*?}");
+    outS = std::regex_replace(outS, a, "");
+    outS = std::regex_replace(outS, b, "");
+    out << std::regex_replace(outS, c, "");
+    out.close();
+});
+
 void Schema_Reload()
 {
     static auto GetItemSchema = reinterpret_cast<void *(*) (void)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 1D ? ? ? ? 85 DB 89 D8"));
@@ -413,7 +427,7 @@ void Schema_Reload()
 
     fclose(file);
     logging::Info("Loading item schema...");
-    bool ret = BInitTextBuffer(schema, buf, 0);
+    bool ret = BInitTextBuffer(schema, buf, 0xDEADCA7);
     logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
 
     delete[] text_buffer;
