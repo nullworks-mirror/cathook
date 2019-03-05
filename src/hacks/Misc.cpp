@@ -392,10 +392,10 @@ void DrawText()
 
 void Schema_Reload()
 {
-    static auto GetItemSchema = reinterpret_cast<void*(*)(void)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 1D ? ? ? ? 85 DB 89 D8"));
+    static auto GetItemSchema = reinterpret_cast<void *(*) (void)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 1D ? ? ? ? 85 DB 89 D8"));
 
-    static auto BInitTextBuffer = reinterpret_cast<bool(*)(void*, CUtlBuffer&, int)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 9D ? ? ? ? 81 EC ? ? ? ? 8B 7D ? 89 1C 24 "));
-    void* schema = GetItemSchema() + 0x4;
+    static auto BInitTextBuffer = reinterpret_cast<bool (*)(void *, CUtlBuffer &, int)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 9D ? ? ? ? 81 EC ? ? ? ? 8B 7D ? 89 1C 24 "));
+    void *schema                = GetItemSchema() + 0x4;
 
     FILE *file = fopen("/opt/cathook/data/items_game.txt", "r");
     if (ferror(file) != 0)
@@ -406,11 +406,11 @@ void Schema_Reload()
     }
 
     // CUtlBuffer
-    char* text_buffer = new char[1000 * 1000 * 5];
+    char *text_buffer  = new char[1000 * 1000 * 5];
     size_t buffer_size = fread(text_buffer, sizeof(char), 1000 * 1000 * 5, file);
 
     CUtlBuffer buf(text_buffer, buffer_size, 9);
-    
+
     fclose(file);
     logging::Info("Loading item schema...");
     bool ret = BInitTextBuffer(schema, buf, 0);
