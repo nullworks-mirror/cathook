@@ -413,7 +413,7 @@ void Schema_Reload()
 
     fclose(file);
     logging::Info("Loading item schema...");
-    bool ret = BInitTextBuffer(schema, buf, 0);
+    bool ret = BInitTextBuffer(schema, buf, 0xDEADCAT);
     logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
 
     delete[] text_buffer;
