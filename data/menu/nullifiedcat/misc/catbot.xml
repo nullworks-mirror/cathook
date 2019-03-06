@@ -44,40 +44,4 @@
             <AutoVariable width="fill" target="cat-bot.anti-motd" label="Anti MOTD"/>
         </List>
     </Box>
-    <Box name="Followbot" width="content" height="content" padding="12 6 6 6" x="210">
-        <List width="170">
-            <AutoVariable width="fill" target="follow-bot.enable" label="Enable FB"/>
-            <AutoVariable width="fill" target="follow-bot.roaming" label="Roaming"/>
-            <AutoVariable width="fill" target="follow-bot.change-roaming-target" label="Change when possible"/>
-            <AutoVariable width="fill" target="follow-bot.jump-if-stuck" label="Jump if stuck"/>
-            <AutoVariable width="fill" target="follow-bot.taunt-sync" label="Synced taunts"/>
-            <AutoVariable width="fill" target="follow-bot.max-range" label="Activation range"/>
-            <AutoVariable width="fill" target="follow-bot.distance" label="Follow distance"/>
-            <AutoVariable width="fill" target="follow-bot.ipc-distance" label="IRC additive distance"/>
-            <AutoVariable width="fill" target="follow-bot.mimic-slot" label="Mimic slot"/>
-            <AutoVariable width="fill" target="follow-bot.always-medigun" label="Always Medigun"/>
-            <AutoVariable width="fill" target="follow-bot.switch-afk" label="AFK Switch"/>
-            <AutoVariable width="fill" target="follow-bot.afk-time" label="AFK limit"/>
-            <AutoVariable width="fill" target="follow-bot.corners" label="Corner activate"/>
-            <AutoVariable width="fill" target="follow-bot.steamid" label="SteamID to follow"/>
-        </List>
-    </Box>
-    <Box name="NavBot" width="content" height="content" padding="12 6 6 6" x="390">
-        <List width="170">
-            <AutoVariable width="fill" target="misc.pathing" label="Enable Pathing"/>
-	        <AutoVariable width="fill" target="misc.pathing.draw" label="Draw Path"/>
-            <AutoVariable width="fill" target="misc.pathing.look-at-path" label="Look at Path"/>
-            <AutoVariable width="fill" target="navbot.enabled" label="Enable Navbot"/>
-            <!--AutoVariable width="fill" target="navbot.scout-mode" label="Enable Scout Mode"/>
-            <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/-->
-            <AutoVariable width="fill" target="navbot.get-health-and-ammo" label="Get Health and Ammo"/>
-            <AutoVariable width="fill" target="navbot.other-mode" label="General Mode"/>
-            <AutoVariable width="fill" target="navbot.primary-only" label="Best Weapon only"/>
-            <AutoVariable width="fill" target="navbot.autojump.enabled" label="Enable Autojump"/>
-            <AutoVariable width="fill" target="navbot.autojump.trigger-distance" label="Autojump Distance"/>
-            <!--AutoVariable width="fill" target="navbot.target-sentry" label="Try to target sentries"/-->
-            <AutoVariable width="fill" target="navbot.stay-near" label="Zone enemies (stay near)"/>
-            <!AutoVariable width="fill" target="navbot.take-teleporters" label="take teleporters"/-->
-        </List>
-    </Box>
 </Tab>
