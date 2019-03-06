@@ -10,7 +10,6 @@
             <Include path="nullifiedcat/movement.xml"/>
             <Include path="nullifiedcat/spyalert.xml"/>
             <Include path="nullifiedcat/misc.xml"/>
-            <Include path="nullifiedcat/irc.xml"/>
             <Include path="nullifiedcat/hackinfo.xml"/>
             <Include path="nullifiedcat/debug.xml"/>
         </TabContainer>

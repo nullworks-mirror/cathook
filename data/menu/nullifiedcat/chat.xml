@@ -88,4 +88,24 @@
             <AutoVariable width="fill" target="chat.identify.answer" label="Counter Identify"/>
         </List>
     </Box>
+    <Box name="IRC" width="content" height="content" padding="12 6 6 6" x="170" y="185">
+        <List width="150">
+            <AutoVariable width="fill" target="irc.enabled" label="Enabled"/>
+            <AutoVariable width="fill" target="irc.anon" label="Hide real name"/>
+            <AutoVariable width="fill" target="irc.auth" label="Reveal to cathook users"/>
+            <AutoVariable width="fill" target="irc.address" label="Address"/>
+            <AutoVariable width="fill" target="irc.port" label="Port"/>
+            <AutoVariable width="fill" target="irc.channel" label="Channel"/>
+        </List>
+    </Box>
+    <Box name="Command & Control" width="content" height="content" padding="12 6 6 6" y="185">
+        <List width="150">
+            <AutoVariable width="fill" target="irc.cc.channel" label="Channel"/>
+            <AutoVariable width="fill" target="irc.cc.password" label="Password"/>
+            <AutoVariable width="fill" target="irc.cc.party" label="Autoparty"/>
+            <AutoVariable width="fill" target="irc.cc.respondparty" label="Respond Autoparty"/>
+            <AutoVariable width="fill" target="irc.cc.party-cooldown" label="Party cooldown"/>
+            <AutoVariable width="fill" target="irc.cc.party-size" label="Party maxsize"/>
+        </List>
+    </Box>
 </Tab>
