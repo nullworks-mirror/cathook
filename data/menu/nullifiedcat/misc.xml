@@ -5,7 +5,6 @@
         <Include path="nullifiedcat/misc/announcer.xml"/>
         <Include path="nullifiedcat/misc/bptf.xml"/>
         <Include path="nullifiedcat/misc/collective.xml"/>
-        <Include path="nullifiedcat/misc/Misc2.xml"/>
         <Include path="nullifiedcat/misc/catbot.xml"/>
     </TabContainer>
 </Tab>
