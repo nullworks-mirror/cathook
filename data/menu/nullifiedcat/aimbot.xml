@@ -97,7 +97,7 @@
             <AutoVariable width="fill" target="aimbot.target.ignore-deadringer" label="Ignore Dead Ringer Spies"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Projectile Aimbot" y="200">
+    <Box padding="12 6 6 6" width="content" height="content" name="Projectile Aimbot" y="180">
         <List width="150">
             <AutoVariable width="fill" target="aimbot.projectile.enable" label="Enable Projectile Aimbot"/>
             <AutoVariable width="fill" target="aimbot.projectile.gravity" label="Gravity Override"/>
