@@ -41,4 +41,13 @@
             <!-- <!AutoVariable width="fill" target="navbot.take-teleporters" label="take teleporters"/> -->
         </List>
     </Box>
+    <Box padding="12 6 6 6" width="content" height="content" name="Anti-Backstab" x="370">
+        <List width="180">
+            <AutoVariable width="fill" target="antibackstab.enable" label="Enable Anti-Backstab"/>
+            <AutoVariable width="fill" target="antibackstab.angle" label="Detection Angle"/>
+            <AutoVariable width="fill" target="antibackstab.distance" label="Detection Distance"/>
+            <AutoVariable width="fill" target="antibackstab.silent" label="Silent"/>
+            <AutoVariable width="fill" target="antibackstab.nope" label="Nope!"/>
+        </List>
+    </Box>
 </Tab>
