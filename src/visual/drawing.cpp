@@ -132,9 +132,9 @@ void Initialize()
 #if !ENABLE_ENGINE_DRAWING
     glez::preInit();
 #endif
-    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 10, true));
-    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 10, true));
-    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 12, true));
+    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13, true));
+    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13, true));
+    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
 
     texture_white                = g_ISurface->CreateNewTextureID();
     unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
