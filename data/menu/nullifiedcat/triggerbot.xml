@@ -43,5 +43,6 @@
         <Include path="nullifiedcat/trigger/autobackstab.xml"/>
         <Include path="nullifiedcat/trigger/autoreflect.xml"/>
         <Include path="nullifiedcat/trigger/autosticky.xml"/>
+        <Include path="nullifiedcat/trigger/autodeadringer.xml"/>
     </TabContainer>
 </Tab>
