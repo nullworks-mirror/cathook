@@ -15,7 +15,6 @@
             <AutoVariable width="fill" target="aimbot.fov" label="FOV"/>
             <AutoVariable width="fill" target="aimbot.slow" label="Slow Aimbot"/> 
             <AutoVariable width="fill" target="aimbot.can-shoot-only" label="Only Shoot When Able"/>
-            <AutoVariable width="fill" target="aimbot.target.max-range" label="Max Range"/>
             <AutoVariable width="fill" target="aimbot.miss-chance" label="Miss chance"/>
             <AutoVariable width="fill" target="aimbot.extrapolate" label="Extrapolate"/>
             <AutoVariable width="fill" target="aimbot.zoomed-only" label="Zoomed only"/>
@@ -86,6 +85,7 @@
                     <Option name="Right Foot" value="17"/>
                 </Select>
             </LabeledObject>
+            <AutoVariable width="fill" target="aimbot.target.max-range" label="Max Range"/>
             <AutoVariable width="fill" target="aimbot.multipoint" label="Multipoint"/>
             <AutoVariable width="fill" target="aimbot.lock-target" label="Lock Target"/>
             <AutoVariable width="fill" target="aimbot.target.ignore-non-rage" label="Rage only"/>
