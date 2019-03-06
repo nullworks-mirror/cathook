@@ -18,13 +18,6 @@
             <AutoVariable width="fill" target="aimbot.miss-chance" label="Miss chance"/>
             <AutoVariable width="fill" target="aimbot.extrapolate" label="Extrapolate"/>
             <AutoVariable width="fill" target="aimbot.zoomed-only" label="Zoomed only"/>
-            <!--
-            
-            <AutoVariable width="fill" target="aimbot.fov-circle.enable" label="FOV Circle"/>
-            <AutoVariable width="fill" target="aimbot.fov-circle.opacity" label="FOV Opacity"/>
-            <AutoVariable width="fill" target="aimbot.debug" label="Debug"/>
-            <AutoVariable width="fill" target="aimbot.debug.engine-pp" label="Debug Engine PP"/>
-            -->
         </List>
     </Box>
     <Box padding="12 6 6 6" width="content" height="content" name="Autoshoot" x="340">
