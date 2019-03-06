@@ -1,6 +1,6 @@
 <Tab name="Spy alert" padding="4 4 4 4">
-    <Box padding="12 6 6 6" width="content" height="content">
-        <List width="250">
+    <Box padding="12 6 6 6" width="content" height="content" name="Spy Alert">
+        <List width="200">
             <AutoVariable width="fill" target="spy-alert.enable" label="Enable"/>
             <AutoVariable width="fill" target="spy-alert.voicemenu" label="Call out spy"/>
             <AutoVariable width="fill" target="spy-alert.sound" label="Sound"/>
