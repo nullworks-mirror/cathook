@@ -1,6 +1,5 @@
 <Tab name="Misc">
     <TabContainer width="fill" height="fill">
-        <Include path="nullifiedcat/misc/achievement.xml"/>
         <Include path="nullifiedcat/misc/anticheat.xml"/>
         <Include path="nullifiedcat/misc/announcer.xml"/>
         <Include path="nullifiedcat/misc/collective.xml"/>
