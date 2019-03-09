@@ -5,6 +5,7 @@ namespace hacks::shared::tracers
 {
 
 static settings::Bool enabled("tracers.enabled", "false");
+static settings::Bool buildings("tracers.buildings", "true");
 static settings::Float green_dist("tracers.green-distance", "1500");
 static settings::Float max_dist("tracers.max_dist", "0");
 
@@ -39,33 +40,60 @@ static inline Vector2D toBorder(float x1, float y1, float x2, float y2, float le
     }
     return { dx, dy };
 }
+struct color_determine
+{
+    float pct;
+    rgba_t color;
+    color_determine(float _pct, rgba_t _color)
+    {
+        pct   = _pct;
+        color = _color;
+    }
+};
 
 inline std::optional<rgba_t> getColor(CachedEntity *ent)
 {
-    auto state = playerlist::AccessData(ent->player_info.friendsID);
-    if (state.state == playerlist::k_EState::DEFAULT)
+    if (ent->m_Type() == ENTITY_BUILDING)
     {
         if (!ent->m_bEnemy())
             return std::nullopt;
         float dist = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
         if (*max_dist && dist > *max_dist)
             return std::nullopt;
-        return colors::Health(std::min(dist, *green_dist), *green_dist);
+        float hf = float(std::min(dist, *green_dist)) / float(*green_dist);
+        rgba_t color(0.0f, 2.0f * hf, 2.0f * (1.0f - hf));
+        color.g = std::min(1.0f, color.g);
+        color.b = std::min(1.0f, color.b);
+        return color;
     }
-    if (!player_tools::shouldTargetSteamId(ent->player_info.friendsID))
+    else
     {
-        if (*draw_friendlies == 1)
+
+        auto state = playerlist::AccessData(ent->player_info.friendsID);
+        if (state.state == playerlist::k_EState::DEFAULT)
         {
-            if (ent->m_bEnemy())
-                return colors::blu;
+            if (!ent->m_bEnemy())
+                return std::nullopt;
+            float dist = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+            if (*max_dist && dist > *max_dist)
+                return std::nullopt;
+            return colors::Health(std::min(dist, *green_dist), *green_dist);
         }
-        else if (*draw_friendlies == 2)
-            return colors::blu;
-        return std::nullopt;
+        if (!player_tools::shouldTargetSteamId(ent->player_info.friendsID))
+        {
+            if (*draw_friendlies == 1)
+            {
+                if (ent->m_bEnemy())
+                    return colors::blu;
+            }
+            else if (*draw_friendlies == 2)
+                return colors::blu;
+            return std::nullopt;
+        }
+        if (!ent->m_bEnemy())
+            return std::nullopt;
+        return playerlist::Color(ent->player_info.friendsID);
     }
-    if (!ent->m_bEnemy())
-        return std::nullopt;
-    return playerlist::Color(ent->player_info.friendsID);
 }
 
 void draw()
@@ -73,12 +101,15 @@ void draw()
     if (!enabled || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
     // Loop all players
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i < (*buildings ? MAX_ENTITIES : g_IEngine->GetMaxClients()); i++)
     {
         // Get and check player
         auto ent = ENTITY(i);
         if (CE_BAD(ent) || !ent->m_bAlivePlayer())
             continue;
+        if (*buildings)
+            if (ent->m_Type() != ENTITY_PLAYER && ent->m_Type() != ENTITY_BUILDING)
+                continue;
         if (ent == LOCAL_E)
             continue;
         auto color = getColor(ent);
