@@ -4,9 +4,12 @@
 namespace hacks::shared::tracers
 {
 
-settings::Bool enabled("tracers.enabled", "false");
-settings::Float green_dist("tracers.green-distance", "1500");
-settings::Float max_dist("tracers.max_dist", "0");
+static settings::Bool enabled("tracers.enabled", "false");
+static settings::Float green_dist("tracers.green-distance", "1500");
+static settings::Float max_dist("tracers.max-dist", "0");
+static settings::Float min_fov("tracers.min-fov", "0");
+static settings::Float line_thickness("tracers.line-thickness", "2");
+static settings::Float opaque("tracers.line-opaqueness", "255");
 
 // 0 = don't, 1 = yes but only in enemy team, 2 = always
 settings::Int draw_friendlies("tracers.draw-friends", "1");
@@ -50,6 +53,8 @@ inline std::optional<rgba_t> getColor(CachedEntity *ent)
         float dist = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
         if (*max_dist && dist > *max_dist)
             return std::nullopt;
+        if (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin()) < *min_fov)
+            return std::nullopt;
         return colors::Health(std::min(dist, *green_dist), *green_dist);
     }
     if (!player_tools::shouldTargetSteamId(ent->player_info.friendsID))
@@ -84,6 +89,7 @@ void draw()
         auto color = getColor(ent);
         if (!color)
             continue;
+        color->a = *opaque;
 
         Vector out;
         if (!draw::WorldToScreen(ent->m_vecOrigin(), out))
@@ -96,7 +102,7 @@ void draw()
             out.x         = extended.x;
             out.y         = extended.y;
         }
-        draw::Line(draw::width / 2, draw::height / 2, out.x - draw::width / 2, out.y - draw::height / 2, *color, 2);
+        draw::Line(draw::width / 2, draw::height / 2, out.x - draw::width / 2, out.y - draw::height / 2, *color, *line_thickness);
     }
 }
 

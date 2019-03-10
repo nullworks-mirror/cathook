@@ -1,11 +1,14 @@
 <Tab name="Tracers" padding="4 4 4 4">
     <Box padding="12 6 6 6" width="content" height="content">
-        <List width="200">
+        <List width="250">
             <AutoVariable width="fill" target="tracers.enabled" label="Enabled"/>
             <AutoVariable width="fill" target="tracers.green-distance" label="Green distance"/>
-            <AutoVariable width="fill" target="tracers.max_dist" label="Max distance"/>
+            <AutoVariable width="fill" target="tracers.line-thickness" label="Line thickness"/>
+            <AutoVariable width="fill" target="tracers.line-opaqueness" label="Line opaqueness"/>
+            <AutoVariable width="fill" target="tracers.min-fov" label="Min fov"/>
+            <AutoVariable width="fill" target="tracers.max-dist" label="Max distance"/>
             <LabeledObject width="fill" label="Show friends">
-                <Select target="tracers.draw-friends">
+                <Select width="150" target="tracers.draw-friends">
                     <Option name="Don't show friends" value="0"/>
                     <Option name="Show friends in enemy team" value="1"/>
                     <Option name="Always show friends" value="2"/>
