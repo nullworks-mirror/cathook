@@ -8,7 +8,9 @@
 #include <MiscTemporary.hpp>
 #include <hacks/Aimbot.hpp>
 #include <hacks/hacklist.hpp>
-#if !ENABLE_ENGINE_DRAWING
+#if ENABLE_IMGUI_DRAWING
+#include "imgui/imrenderer.hpp"
+#elif !ENABLE_ENGINE_DRAWING
 #include <glez/glez.hpp>
 #include <glez/record.hpp>
 #include <glez/draw.hpp>
@@ -39,7 +41,7 @@ void render_cheat_visuals()
         EndCheatVisuals();
     }
 }
-#if !ENABLE_ENGINE_DRAWING
+#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
 glez::record::Record bufferA{};
 glez::record::Record bufferB{};
 
@@ -49,7 +51,9 @@ int currentBuffer = 0;
 
 void BeginCheatVisuals()
 {
-#if !ENABLE_ENGINE_DRAWING
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::bufferBegin();
+#elif !ENABLE_ENGINE_DRAWING
     buffers[currentBuffer]->begin();
 #endif
     ResetStrings();
@@ -123,15 +127,17 @@ void DrawCheatVisuals()
 
 void EndCheatVisuals()
 {
-#if !ENABLE_ENGINE_DRAWING
+#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
     buffers[currentBuffer]->end();
+#endif
+#if !ENABLE_ENGINE_DRAWING || ENABLE_IMGUI_DRAWING
     currentBuffer = !currentBuffer;
 #endif
 }
 
 void DrawCache()
 {
-#if !ENABLE_ENGINE_DRAWING
+#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
     buffers[!currentBuffer]->replay();
 #endif
 }

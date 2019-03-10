@@ -13,3 +13,7 @@ target_sources(cathook PRIVATE
 if(EnableGUI)
     add_subdirectory(menu)
 endif()
+
+if (EnableImGuiDrawing)
+    add_subdirectory(imgui)
+endif()

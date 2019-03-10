@@ -9,7 +9,11 @@
 
 void zerokernel::Text::render()
 {
+#if ENABLE_IMGUI_DRAWING // needed, sorry
+    draw::String(bb.getContentBox().left() + text_x, bb.getContentBox().top() + text_y - 1, *color_text, data.c_str(), resource::font::base);
+#else
     draw::String(bb.getContentBox().left() + text_x, bb.getContentBox().top() + text_y + 1, *color_text, data.c_str(), resource::font::base);
+#endif
 
     BaseMenuObject::render();
 }

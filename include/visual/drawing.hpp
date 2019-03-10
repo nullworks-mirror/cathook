@@ -8,7 +8,9 @@
 #pragma once
 
 #include "config.h"
-#if !ENABLE_ENGINE_DRAWING
+#if ENABLE_IMGUI_DRAWING
+#include "imgui/imrenderer.hpp"
+#elif !ENABLE_ENGINE_DRAWING
 #include <glez/font.hpp>
 #include <glez/draw.hpp>
 #endif
@@ -41,6 +43,8 @@ struct font
     void stringSize(std::string string, float *x, float *y);
     void Init();
 };
+#elif ENABLE_IMGUI_DRAWING
+typedef im_renderer::font font;
 #else
 typedef glez::font font;
 #endif
@@ -103,6 +107,8 @@ private:
     bool init               = false;
     int m_width, m_height;
 };
+#elif ENABLE_IMGUI_DRAWING
+typedef im_renderer::Texture Texture;
 #else
 typedef glez::texture Texture;
 #endif
