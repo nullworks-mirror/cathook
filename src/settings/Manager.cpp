@@ -2,6 +2,7 @@
   Created on 02.07.18.
 */
 
+#include "logging.hpp"
 #include <settings/Manager.hpp>
 
 namespace settings
@@ -17,6 +18,7 @@ void Manager::add(IVariable &me, std::string name)
 {
     if (registered.find(name) != registered.end())
     {
+        logging::Info(("Double registering variable: " + name).c_str());
         throw std::runtime_error("Double registering variable: " + name);
     }
     registered.emplace(name, me);

@@ -1,7 +1,8 @@
 <Tab name="Tracers" padding="4 4 4 4">
-    <Box padding="12 6 6 6" width="content" height="content">
-        <List width="250">
+    <Box padding="12 6 6 6" width="content" height="content" name="Tracers">
+        <List width="150">
             <AutoVariable width="fill" target="tracers.enabled" label="Enabled"/>
+            <AutoVariable width="fill" target="tracers.buildings" label="Enable Building Tracers"/>
             <AutoVariable width="fill" target="tracers.green-distance" label="Green distance"/>
             <AutoVariable width="fill" target="tracers.line-thickness" label="Line thickness"/>
             <AutoVariable width="fill" target="tracers.line-opaqueness" label="Line opaqueness"/>

@@ -333,6 +333,10 @@ void bf_write::WriteLong(long val)
 {
     WriteSBitLong(val, sizeof(long) << 3);
 }
+void bf_write::WriteWord(int val)
+{
+    WriteUBitLong(val, sizeof(unsigned short) << 3);
+}
 
 bool CLC_RespondCvarValue::WriteToBuffer(bf_write &buffer)
 {
@@ -365,7 +369,7 @@ bool CLC_RespondCvarValue::ReadFromBuffer(bf_read &buffer)
 
 const char *CLC_RespondCvarValue::ToString(void) const
 {
-    return strfmt("%s: status: %d, value: %s, cookie: %d", GetName(), m_eStatusCode, m_szCvarValue, m_iCookie).get();
+    return strfmt("%s: status: %d, value: %s, cookie: %d", GetName(), m_eStatusCode, m_szCvarValue, m_iCookie).release();
 }
 
 bool NET_NOP::WriteToBuffer(bf_write &buffer)
@@ -403,20 +407,24 @@ bool NET_SignonState::ReadFromBuffer(bf_read &buffer)
 
 const char *NET_SignonState::ToString(void) const
 {
-    return strfmt("net_SignonState: state %i, count %i", m_nSignonState, m_nSpawnCount).get();
+    return strfmt("net_SignonState: state %i, count %i", m_nSignonState, m_nSpawnCount).release();
 }
+
+#define NUM_NEW_COMMAND_BITS 4
+#define MAX_NEW_COMMANDS ((1 << NUM_NEW_COMMAND_BITS) - 1)
+#define Bits2Bytes(b) ((b + 7) >> 3)
+#define NUM_BACKUP_COMMAND_BITS 3
+#define MAX_BACKUP_COMMANDS ((1 << NUM_BACKUP_COMMAND_BITS) - 1)
 
 const char *CLC_VoiceData::ToString(void) const
 {
-    return strfmt("%s: %i bytes", GetName(), m_nLength).get();
+    return strfmt("%s: %i bytes", GetName(), Bits2Bytes(m_nLength)).release();
 }
 
 bool CLC_VoiceData::WriteToBuffer(bf_write &buffer)
 {
     buffer.WriteUBitLong(GetType(), NETMSG_TYPE_BITS);
-
     m_nLength = m_DataOut.GetNumBitsWritten();
-
     buffer.WriteWord(m_nLength); // length in bits
 
     return buffer.WriteBits(m_DataOut.GetBasePointer(), m_nLength);
@@ -429,14 +437,31 @@ bool CLC_VoiceData::ReadFromBuffer(bf_read &buffer)
 
     return buffer.SeekRelative(m_nLength);
 }
-#define NUM_NEW_COMMAND_BITS 4
-#define MAX_NEW_COMMANDS ((1 << NUM_NEW_COMMAND_BITS) - 1)
-#define Bits2Bytes(b) ((b + 7) >> 3)
-#define NUM_BACKUP_COMMAND_BITS 3
-#define MAX_BACKUP_COMMANDS ((1 << NUM_BACKUP_COMMAND_BITS) - 1)
+
+bool CLC_BaselineAck::WriteToBuffer(bf_write &buffer)
+{
+    buffer.WriteUBitLong(GetType(), NETMSG_TYPE_BITS);
+    buffer.WriteLong(m_nBaselineTick);
+    buffer.WriteUBitLong(m_nBaselineNr, 1);
+    return !buffer.IsOverflowed();
+}
+
+bool CLC_BaselineAck::ReadFromBuffer(bf_read &buffer)
+{
+
+    m_nBaselineTick = buffer.ReadLong();
+    m_nBaselineNr   = buffer.ReadUBitLong(1);
+    return !buffer.IsOverflowed();
+}
+
+const char *CLC_BaselineAck::ToString(void) const
+{
+    return strfmt("%s: tick %i", GetName(), m_nBaselineTick).release();
+}
+
 const char *CLC_Move::ToString(void) const
 {
-    return strfmt("%s: backup %i, new %i, bytes %i", GetName(), m_nNewCommands, m_nBackupCommands, Bits2Bytes(m_nLength)).get();
+    return strfmt("%s: backup %i, new %i, bytes %i", GetName(), m_nNewCommands, m_nBackupCommands, Bits2Bytes(m_nLength)).release();
 }
 
 bool CLC_Move::WriteToBuffer(bf_write &buffer)

@@ -1,13 +1,9 @@
 <Tab name="Misc">
     <TabContainer width="fill" height="fill">
-        <Include path="nullifiedcat/misc/antibackstab.xml"/>
-        <Include path="nullifiedcat/misc/achievement.xml"/>
-        <Include path="nullifiedcat/misc/autodeadringer.xml"/>
         <Include path="nullifiedcat/misc/anticheat.xml"/>
         <Include path="nullifiedcat/misc/announcer.xml"/>
-        <Include path="nullifiedcat/misc/bhop.xml"/>
-        <Include path="nullifiedcat/misc/bptf.xml"/>
+        <Include path="nullifiedcat/misc/spyalert.xml"/>
         <Include path="nullifiedcat/misc/collective.xml"/>
-        <Include path="nullifiedcat/misc/Misc2.xml"/>
+        <Include path="nullifiedcat/misc/catbot.xml"/>
     </TabContainer>
 </Tab>

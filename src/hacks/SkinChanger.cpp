@@ -19,8 +19,7 @@ namespace hacks::tf2::skinchanger
 {
 
 // Because fuck you, that's why.
-const char *sig_GetAttributeDefinition = "55 89 E5 57 56 53 83 EC 6C C7 45 9C 00 00 00 00 8B 75 08 C7 45 A4 00 00 "
-                                         "00 00 8B 45 0C C6 45 A8 00 C6 45 A9 00 C6";
+const char *sig_GetAttributeDefinition   = "55 89 E5 57 56 53 83 EC 6C C7 45 9C 00 00 00 00";
 const char *sig_SetRuntimeAttributeValue = "55 89 E5 57 56 53 83 EC 3C 8B 5D 08 8B 4B 10 85 C9 7E 33";
 const char *sig_GetItemSchema            = "55 89 E5 57 56 53 83 EC 1C 8B 1D ? ? ? ? 85 "
                                 "DB 89 D8 74 0B 83 C4 1C 5B 5E 5F 5D C3";

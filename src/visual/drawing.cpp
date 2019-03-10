@@ -94,7 +94,7 @@ void font::Init()
     static std::string filename;
     filename.append("ab");
     id        = g_ISurface->CreateFont();
-    auto flag = outline ? vgui::ISurface::FONTFLAG_OUTLINE | vgui::ISurface::FONTFLAG_ANTIALIAS : vgui::ISurface::FONTFLAG_ANTIALIAS;
+    auto flag = vgui::ISurface::FONTFLAG_ANTIALIAS;
     g_ISurface->SetFontGlyphSet(id, filename.c_str(), size, 500, 0, 0, flag);
     g_ISurface->AddCustomFontFile(filename.c_str(), path.c_str());
     init = true;
@@ -132,9 +132,9 @@ void Initialize()
 #if !ENABLE_ENGINE_DRAWING
     glez::preInit();
 #endif
-    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
-    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
-    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 18, true));
+    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13, true));
+    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13, true));
+    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
 
     texture_white                = g_ISurface->CreateNewTextureID();
     unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
@@ -147,6 +147,32 @@ void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
     glez::draw::outlined_string(x, y, text, font, rgba, colors::black, nullptr, nullptr);
 #else
     rgba = rgba * 255.0f;
+    // Outline magic
+    if (font.outline)
+    {
+        // Save Space
+        for (int i = -1; i < 2; i += 2)
+        {
+            // All needed for one draw
+
+            // X Shift draw
+            g_ISurface->DrawSetTextPos(x + i, y);
+            g_ISurface->DrawSetTextFont(font);
+            g_ISurface->DrawSetTextColor(0, 0, 0, rgba.a);
+
+            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
+            std::wstring ws = converter.from_bytes(text);
+            g_ISurface->DrawPrintText(ws.c_str(), ws.size() + 1);
+
+            // Y Shift draw
+            g_ISurface->DrawSetTextPos(x, y + i);
+            g_ISurface->DrawSetTextFont(font);
+            g_ISurface->DrawSetTextColor(0, 0, 0, rgba.a);
+
+            ws = converter.from_bytes(text);
+            g_ISurface->DrawPrintText(ws.c_str(), ws.size() + 1);
+        }
+    }
     g_ISurface->DrawSetTextPos(x, y);
     g_ISurface->DrawSetTextFont(font);
     g_ISurface->DrawSetTextColor(rgba.r, rgba.g, rgba.b, rgba.a);

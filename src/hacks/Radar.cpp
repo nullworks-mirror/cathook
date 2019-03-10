@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Radar.cpp
  *
  *  Created on: Mar 28, 2017
@@ -12,7 +12,7 @@
 
 static settings::Bool radar_enabled{ "radar.enable", "false" };
 static settings::Int size{ "radar.size", "300" };
-static settings::Float zoom{ "radar.zoom", "20" };
+static settings::Float zoom{ "radar.zoom", "10" };
 static settings::Bool healthbar{ "radar.healthbar", "true" };
 static settings::Bool enemies_over_teammates{ "radar.enemies-over-teammates", "true" };
 static settings::Int icon_size{ "radar.icon-size", "20" };
@@ -68,6 +68,7 @@ bool loaded = false;
 static std::vector<std::vector<textures::sprite>> tx_class{};
 static std::vector<textures::sprite> tx_teams{};
 static std::vector<textures::sprite> tx_items{};
+static std::vector<textures::sprite> tx_buildings{};
 
 void DrawEntity(int x, int y, CachedEntity *ent)
 {
@@ -113,25 +114,38 @@ void DrawEntity(int x, int y, CachedEntity *ent)
         }
         else if (ent->m_Type() == ENTITY_BUILDING)
         {
-            /*if (ent->m_iClassID() == CL_CLASS(CObjectDispenser)) {
-                const int& team = CE_INT(ent, netvar.iTeamNum);
-                int idx = team - 2;
-                if (idx < 0 || idx > 1) return;
-                const auto& wtr = WorldToRadar(ent->m_vecOrigin().x,
-            ent->m_vecOrigin().y); buildings[0].Draw(x + wtr.first, y +
-            wtr.second, (int)icon_size, (int)icon_size, idx ? colors::blu :
-            colors::red	); draw::OutlineRect(x + wtr.first, y + wtr.second,
-            (int)icon_size, (int)icon_size, idx ? colors::blu_v :
-            colors::red_v); if (ent->m_iMaxHealth() && healthbar) { float
-            healthp
-            = (float)ent->m_iHealth() / (float)ent->m_iMaxHealth(); int clr =
-            colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()); if (healthp
-            > 1.0f) healthp = 1.0f; draw::OutlineRect(x + wtr.first, y +
-            wtr.second + (int)icon_size, (int)icon_size, 4, colors::black);
-                    draw::DrawRect(x + wtr.first + 1, y + wtr.second +
-            (int)icon_size + 1, ((float)icon_size - 2.0f) * healthp, 2, clr);
+            if (ent->m_iClassID() == CL_CLASS(CObjectDispenser) || ent->m_iClassID() == CL_CLASS(CObjectSentrygun) || ent->m_iClassID() == CL_CLASS(CObjectTeleporter))
+            {
+                const auto &wtr = WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
+                tx_teams[CE_INT(ent, netvar.iTeamNum) - 2].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
+                switch (ent->m_iClassID())
+                {
+                case CL_CLASS(CObjectDispenser):
+                {
+                    tx_buildings[0].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
+                    break;
                 }
-            }*/
+                case CL_CLASS(CObjectSentrygun):
+                {
+                    tx_buildings[1].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
+                    break;
+                }
+                case CL_CLASS(CObjectTeleporter):
+                {
+                    tx_buildings[2].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
+                    break;
+                }
+                }
+                if (ent->m_iMaxHealth() && healthbar)
+                {
+                    healthp = (float) ent->m_iHealth() / (float) ent->m_iMaxHealth();
+                    clr     = colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+                    if (healthp > 1.0f)
+                        healthp = 1.0f;
+                    draw::RectangleOutlined(x + wtr.first, y + wtr.second + (int) icon_size * 1.5f, (int) icon_size * 1.5f, 4, colors::black, 0.5f);
+                    draw::Rectangle(x + wtr.first + 1, y + wtr.second + ((int) icon_size + 1) * 1.5f, (*icon_size * 1.5f - 2.0f) * healthp, 2, clr);
+                }
+            }
         }
         else if (ent->m_Type() == ENTITY_GENERIC)
         {
@@ -178,6 +192,7 @@ void Draw()
 
     if (enemies_over_teammates)
         enemies.clear();
+    std::vector<CachedEntity *> sentries;
     for (int i = 1; i < HIGHEST_ENTITY; i++)
     {
         ent = ENTITY(i);
@@ -189,7 +204,9 @@ void Draw()
             continue;
         if (!show_teammates && ent->m_Type() == ENTITY_PLAYER && !ent->m_bEnemy())
             continue;
-        if (!enemies_over_teammates || !show_teammates || ent->m_Type() != ENTITY_PLAYER)
+        if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
+            sentries.push_back(ent);
+        else if (!enemies_over_teammates || !show_teammates || ent->m_Type() != ENTITY_PLAYER)
             DrawEntity(x, y, ent);
         else if (ent->m_bEnemy())
             enemies.push_back(ent);
@@ -199,6 +216,8 @@ void Draw()
     if (enemies_over_teammates && show_teammates)
         for (auto enemy : enemies)
             DrawEntity(x, y, enemy);
+    for (auto Sentry : sentries)
+        DrawEntity(x, y, Sentry);
     if (CE_GOOD(LOCAL_E))
     {
         DrawEntity(x, y, LOCAL_E);
@@ -211,7 +230,7 @@ void Draw()
     draw::Line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f), 0.5f);
 }
 
-InitRoutine init([]() {
+static InitRoutine init([]() {
     // Background circles
     for (int i = 0; i < 2; ++i)
         tx_teams.push_back(textures::atlas().create_sprite(704, 384 + i * 64, 64, 64));
@@ -225,6 +244,8 @@ InitRoutine init([]() {
         for (int j = 0; j < 9; ++j)
             tx_class[i].push_back(textures::atlas().create_sprite(j * 64, 320 + i * 64, 64, 64));
     }
+    for (int i = 0; i < 3; i++)
+        tx_buildings.push_back(textures::atlas().create_sprite(576 + i * 64, 320, 64, 64));
     logging::Info("Radar sprites loaded");
     EC::Register(EC::Draw, Draw, "radar", EC::average);
 });

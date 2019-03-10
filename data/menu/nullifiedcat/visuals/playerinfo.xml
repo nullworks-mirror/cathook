@@ -1,6 +1,8 @@
 <Tab name="Player Info" padding="4 4 4 4">
-    <List width="400">
-        <AutoVariable width="fill" target="misc.playerinfo.draw-kda" label="Draw KD over Head"/>
-        <AutoVariable width="fill" target="misc.playerinfo.draw-level" label="that's how mafia works"/>
-    </List>
+    <Box padding="12 6 6 6" width="content" height="content" name="Player Info">
+        <List width="150">
+            <AutoVariable width="fill" target="misc.playerinfo.draw-kda" label="Draw KD over Head"/>
+            <AutoVariable width="fill" target="misc.playerinfo.draw-level" label="that's how mafia works"/>
+        </List>
+    </Box>
 </Tab>

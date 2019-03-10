@@ -21,7 +21,10 @@ public:
     {
         addr = (void *) SigScanFunc(pattern);
         if (!addr)
+        {
+            logging::Info("Signature not found");
             throw std::runtime_error("Signature not found");
+        }
         addr = static_cast<void *>(static_cast<char *>(addr) + offset);
         size = patch.size();
         original.resize(size);
