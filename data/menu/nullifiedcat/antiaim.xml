@@ -1,9 +1,9 @@
 <Tab name="HvH" padding="4 4 4 4">
-    <Box padding="12 6 6 6" name="Anti-Aim" width="content" height="content">
+    <Box padding="12 6 6 6" width="content" height="content" name="Anti-Aim">
         <List width="150">
             <AutoVariable width="fill" target="antiaim.enable" label="Enable"/>
             <AutoVariable width="fill" target="antiaim.draw-fakes" label="Draw fakes"/>
-            <AutoVariable width="fill" target="antiaim.fake-crouch" label="Fake crouch"/>
+            <AutoVariable width="fill" target="antiaim.crouch" label="Fake crouch"/>
             <AutoVariable width="fill" target="antiaim.no-clamp" label="No clamping"/>
             <AutoVariable width="fill" target="antiaim.spin-speed" label="Spin speed"/>
             <AutoVariable width="fill" target="antiaim.roll" label="Roll"/>
@@ -55,12 +55,12 @@
             </LabeledObject>
         </List>
     </Box>
-    <Box padding="12 6 6 6" name="Anti-Anti-Aim" width="content" height="content" x="170" y="162">
+    <Box padding="12 6 6 6" width="content" height="content" name="Anti-Anti-Aim" x="170">
         <List width="150">
             <AutoVariable width="fill" target="anti-anti-aim.enable" label="Enable"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" name="Anti-Anti-Anti-Aim" width="content" height="content" x="170">
+    <Box padding="12 6 6 6" name="Anti-Anti-Anti-Aim" width="content" height="content" x="340">
         <List width="150">
             <AutoVariable width="fill" target="antiaim.aaaa.enable" label="Enable"/>
             <AutoVariable width="fill" target="antiaim.aaaa.flip-key" label="Flip key"/>

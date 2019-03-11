@@ -7,7 +7,6 @@
 #include "hack.hpp"
 #include "ucccccp.hpp"
 
-static bool can_accept = false;
 namespace IRC
 {
 static settings::Bool enabled("irc.enabled", "true");
@@ -156,8 +155,6 @@ void cc_party(std::string &msg)
         if (std::find(steamidvec.begin(), steamidvec.end(), steamid) == steamidvec.end())
             steamidvec.push_back(steamid);
     }
-    else if (answer_steam && msg.find("cc_partyready") == 0 && ((online_members < *party_size && online_members != 6) || online_members < members))
-        can_accept = true;
 }
 void cc_cmd(std::string &msg)
 {
@@ -373,24 +370,11 @@ static void run()
                             lowest = steamidvec[i];
                             idx    = i;
                         }
-                    if (idx != -1 && steamidvec[idx] != g_ISteamUser->GetSteamID().GetAccountID() && can_accept)
+                    if (idx != -1 && steamidvec[idx] != g_ISteamUser->GetSteamID().GetAccountID())
                     {
                         hack::command_stack().push(format("tf_party_request_join_user ", steamidvec[idx]));
                     }
-                    else if (idx != -1 && steamidvec[idx] == g_ISteamUser->GetSteamID().GetAccountID())
-                    {
-                        irc.privmsg(format("cc_partyready"), true);
-                        for (auto i : steamidvec)
-                            if (i != g_ISteamUser->GetSteamID().GetAccountID())
-                            {
-                                hack::command_stack().push(format("tf_party_invite_user ", i));
-                            }
-                    }
-                    if (can_accept || (idx == -1 || steamidvec[idx] == g_ISteamUser->GetSteamID().GetAccountID()))
-                    {
-                        can_accept = false;
-                        steamidvec.clear();
-                    }
+                    steamidvec.clear();
                 }
         }
         if (irc_party && last_sent_steamid.test_and_set(*party_cooldown * 1000) && ((online_members < *party_size && online_members != 6) || online_members < members))

@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <glez/draw.hpp>
 #include <settings/Settings.hpp>
 #include <menu/Menu.hpp>
 

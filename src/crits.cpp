@@ -110,10 +110,19 @@ bool force_crit(IClientEntity *weapon)
         if (!crit_legiter)
         {
             if (number && number != command_number)
-                command_number_mod[command_number] = number;
+            {
+                command_number_mod[command_number]                     = number;
+                auto ch                                                = (INetChannel *) g_IEngine->GetNetChannelInfo();
+                *(int *) ((uint64_t) ch + offsets::m_nOutSequenceNr()) = number - 1;
+            }
         }
-        else if (number && number - 30 < command_number)
-            command_number_mod[command_number] = number;
+        else if (number && number != command_number && number - 30 < command_number)
+        {
+
+            command_number_mod[command_number]                     = number;
+            auto ch                                                = (INetChannel *) g_IEngine->GetNetChannelInfo();
+            *(int *) ((uint64_t) ch + offsets::m_nOutSequenceNr()) = number - 1;
+        }
     }
     else
     {
@@ -151,6 +160,8 @@ void create_move()
     if (!re::C_TFWeaponBase::IsBaseCombatWeapon(weapon))
         return;
     if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon))
+        return;
+    if (!CanShoot())
         return;
     unfuck_bucket(weapon);
     if ((current_user_cmd->buttons & IN_ATTACK) && crit_key && crit_key.isKeyDown() && current_user_cmd->command_number)

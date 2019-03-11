@@ -11,9 +11,9 @@
 #include <menu/object/input/Select.hpp>
 #include <menu/object/input/Checkbox.hpp>
 
-static settings::RVariable<glez::rgba> color_border{ "zk.style.window.color.border", "079797" };
-static settings::RVariable<glez::rgba> color_background{ "zk.style.window.color.background.active", "1d2f40" };
-static settings::RVariable<glez::rgba> color_background_inactive{ "zk.style.window.color.background.inactive", "1d2f4088" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.window.color.border", "079797" };
+static settings::RVariable<rgba_t> color_background{ "zk.style.window.color.background.active", "1d2f40" };
+static settings::RVariable<rgba_t> color_background_inactive{ "zk.style.window.color.background.inactive", "1d2f4088" };
 
 namespace zerokernel
 {

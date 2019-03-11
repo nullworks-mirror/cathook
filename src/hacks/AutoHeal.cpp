@@ -549,6 +549,8 @@ void CreateMove()
         for (auto i = 0; i < g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *ent = ENTITY(i);
+            if (!ent || !ent->player_info.friendsID)
+                continue;
             if (ent->player_info.friendsID == steamid)
             {
                 force_healing_target = steamid;
@@ -619,7 +621,7 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
             continue;
         if (ent->m_Type() != ENTITY_PLAYER)
             continue;
-        if (ent->player_info.friendsID == after)
+        if (ent->player_info.friendsID && ent->player_info.friendsID == after)
         {
             force_healing_target = i;
             return;

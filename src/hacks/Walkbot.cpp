@@ -12,9 +12,6 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <hacks/hacklist.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 
 static settings::Button recording_key{ "walkbot.recording-key", "<null>" };
@@ -1011,7 +1008,7 @@ void DrawConnection(index_t a, connection_s &b)
     else if ((a_.flags & b_.flags) & NF_DUCK)
         color = &colors::green;
 
-    glez::draw::line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, *color, 0.5f);
+    draw::Line(wts_a.x, wts_a.y, wts_c.x - wts_a.x, wts_c.y - wts_a.y, *color, 0.5f);
 
     if (draw_connection_flags && b.flags != CF_GOOD)
     {
@@ -1022,7 +1019,7 @@ void DrawConnection(index_t a, connection_s &b)
             flags += "H";
         // int size_x = 0, size_y = 0;
         // FTGL_StringLength(flags, fonts::font_main, &size_x, &size_y);
-        glez::draw::string(wts_cc.x, wts_cc.y - 4, flags, *fonts::menu, colors::white, nullptr, nullptr);
+        draw::String(wts_cc.x, wts_cc.y - 4, colors::white, flags.c_str(), *fonts::esp);
     }
 }
 
@@ -1060,7 +1057,7 @@ void DrawNode(index_t node, bool draw_back)
         if (node == state::active_node)
             color = &colors::red;
 
-        glez::draw::rect(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, *color);
+        draw::Rectangle(wts.x - node_size, wts.y - node_size, 2 * node_size, 2 * node_size, *color);
     }
 
     if (draw_indices)
@@ -1075,7 +1072,7 @@ void DrawNode(index_t node, bool draw_back)
         if (not draw::WorldToScreen(n.xyz(), wts))
             return;
 
-        glez::draw::outlined_string(wts.x, wts.y, std::to_string(node).c_str(), *fonts::menu, *color, colors::black, nullptr, nullptr);
+        draw::String(wts.x, wts.y, *color, std::to_string(node).c_str(), *fonts::esp);
     }
 }
 

@@ -4,9 +4,8 @@
 
 #include <menu/object/container/Table.hpp>
 #include <menu/Menu.hpp>
-#include <glez/draw.hpp>
 
-static settings::RVariable<glez::rgba> color_border{ "zk.style.table.color.border", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.table.color.border", "079797" };
 
 void zerokernel::Table::render()
 {
@@ -18,13 +17,13 @@ void zerokernel::Table::render()
     int acc{ 1 };
     for (size_t i = 0; i < columns.size() - 1; ++i)
     {
-        glez::draw::line(bb.getBorderBox().left() + columns[i].width + acc, bb.getBorderBox().top(), 0, bb.getBorderBox().height, *color_border, 1);
+        draw::Line(bb.getBorderBox().left() + columns[i].width + acc, bb.getBorderBox().top(), 0, bb.getBorderBox().height, *color_border, 1);
         acc += columns[i].width + 1;
     }
     // Horizontal separators
     for (size_t i = 1; i < objects.size(); ++i)
     {
-        glez::draw::line(bb.getBorderBox().left(), objects[i]->getBoundingBox().getBorderBox().top() - 1, bb.getBorderBox().width, 0, *color_border, 1);
+        draw::Line(bb.getBorderBox().left(), objects[i]->getBoundingBox().getBorderBox().top() - 1, bb.getBorderBox().width, 0, *color_border, 1);
     }
 }
 

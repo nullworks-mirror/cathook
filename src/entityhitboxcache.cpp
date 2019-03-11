@@ -101,6 +101,7 @@ bool EntityHitboxCache::VisibilityCheck(int id)
 }
 
 static settings::Int setupbones_time{ "source.setupbones-time", "1" };
+static settings::Bool bonecache_enabled{ "source.use-bone-cache", "false" };
 
 static std::mutex setupbones_mutex;
 
@@ -125,19 +126,35 @@ matrix3x4_t *EntityHitboxCache::GetBones()
     }
     if (!bones_setup)
     {
-        // std::lock_guard<std::mutex> lock(setupbones_mutex);
         if (g_Settings.is_create_move)
         {
-            PROF_SECTION(bone_test);
-            auto to_copy = CE_VAR(parent_ref, 0x838, matrix3x4_t *);
-            if (to_copy)
+#if ENABLE_VISUALS
+            if (!*bonecache_enabled || parent_ref->m_Type() != ENTITY_PLAYER || IsPlayerInvisible(parent_ref))
             {
-                bones->Invalidate();
-                memcpy((matrix3x4_t *) bones, to_copy, 48 * (CE_INT(parent_ref, 0x844)));
-                bones_setup = true;
+                PROF_SECTION(bone_setup);
+                bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
             }
             else
-                bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+            {
+                PROF_SECTION(bone_cache);
+                auto to_copy = CE_VAR(parent_ref, 0x838, matrix3x4_t *);
+                if (to_copy)
+                {
+                    bones->Invalidate();
+                    memcpy((matrix3x4_t *) bones, to_copy, 48 * (CE_INT(parent_ref, 0x844)));
+                    bones_setup = true;
+                }
+                else
+                {
+                    PROF_SECTION(bone_setup);
+                    bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+                }
+            }
+#else
+            // Textmode bots miss/shoot at nothing when the tf2 bonecache is used
+            PROF_SECTION(bone_setup);
+            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+#endif
         }
     }
     return bones;

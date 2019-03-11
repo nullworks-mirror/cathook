@@ -7,15 +7,13 @@
 
 #include "common.hpp"
 #include <unistd.h>
+#include <regex>
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <link.h>
 #include <hacks/AntiAim.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 
 #include "core/sharedobj.hpp"
@@ -259,7 +257,7 @@ void DrawText()
             colors::rgba_t gaybow = colors::FromHSL(fabs(sin((g_GlobalVars->curtime / 2.0f) + (i / 1.41241f))) * 360.0f, 0.85f, 0.9f);
             gaybow.a              = .5;
             // Draw next step
-            glez::draw::rect(0, step * (i - 1), width, (step * i) - (step * (i - 1)), gaybow);
+            draw::Rectangle(0, step * (i - 1), width, (step * i) - (step * (i - 1)), gaybow);
         }
 
         // int size_x;
@@ -384,7 +382,7 @@ void DrawText()
         //draw::DrawString(10, y, draw::white, draw::black, false,
         "VecPunchAngleVel: %f %f %f", pav.x, pav.y, pav.z);
         //y += 14;
-        //AddCenterString(draw::font_handle,
+        //AddCenterString(fonts::font_handle,
         input->GetAnalogValue(AnalogCode_t::MOUSE_X),
         input->GetAnalogValue(AnalogCode_t::MOUSE_Y), draw::white,
         L"S\u0FD5");*/
@@ -392,45 +390,48 @@ void DrawText()
 }
 
 #endif
-/*
+
+static CatCommand generateschema("schema_generate", "Generate custom schema", []() {
+    std::ifstream in("tf/scripts/items/items_game.txt");
+    std::string outS((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::ofstream out("/opt/cathook/data/items_game.txt");
+    std::regex a("\"equip_regions?\".*?\".*?\"");
+    std::regex b("\"equip_regions?\"\\s*?\\n\\s*?\\{[\\s\\S\\n]*?\\}");
+    outS = std::regex_replace(outS, a, "");
+    out << std::regex_replace(outS, b, "");
+    out.close();
+});
+
 void Schema_Reload()
 {
-    logging::Info("Custom schema loading is not supported right now.");
+    static auto GetItemSchema = reinterpret_cast<void *(*) (void)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 1D ? ? ? ? 85 DB 89 D8"));
 
-    static uintptr_t InitSchema_s = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 7D ? 8B 03 89 1C 24 FF 50 ? C7 "
-                                                                   "04 24 ? ? ? ?");
-    typedef bool (*InitSchema_t)(void *, CUtlBuffer &, int);
-    static InitSchema_t InitSchema   = (InitSchema_t) InitSchema_s;
-    static uintptr_t GetItemSchema_s = gSignatures.GetClientSignature("55 89 E5 83 EC ? E8 ? ? ? ? C9 83 C0 ? C3 55 89 E5 8B 45 ?");
-    typedef void *(*GetItemSchema_t)(void);
-    static GetItemSchema_t GetItemSchema = (GetItemSchema_t) GetItemSchema_s; //(*(uintptr_t*)GetItemSchema_s +GetItemSchema_s + 4);
+    static auto BInitTextBuffer = reinterpret_cast<bool (*)(void *, CUtlBuffer &, int)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 9D ? ? ? ? 81 EC ? ? ? ? 8B 7D ? 89 1C 24 "));
+    void *schema                = GetItemSchema() + 0x4;
 
-    logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-    void *itemschema = (void *) ((unsigned) GetItemSchema() + 4);
-    void *data;
-    char *path = strfmt("/opt/cathook/data/items_game.txt").get();
-    FILE *file = fopen(path, "r");
-    delete[] path;
-    fseek(file, 0L, SEEK_END);
-    char buffer[5 * 1000 * 1000];
-    size_t len = ftell(file);
-    rewind(file);
-    buffer[len + 1] = 0;
-    fread(&buffer, sizeof(char), len, file);
-    CUtlBuffer buf(&buffer, 5 * 1000 * 1000, 9);
+    FILE *file = fopen("/opt/cathook/data/items_game.txt", "r");
     if (ferror(file) != 0)
     {
         logging::Info("Error loading file");
         fclose(file);
         return;
     }
+
+    // CUtlBuffer
+    char *text_buffer  = new char[1000 * 1000 * 5];
+    size_t buffer_size = fread(text_buffer, sizeof(char), 1000 * 1000 * 5, file);
+
+    CUtlBuffer buf(text_buffer, buffer_size, 9);
+
     fclose(file);
-    logging::Info("0x%08x 0x%08x", InitSchema, GetItemSchema);
-    bool ret = InitSchema(GetItemSchema(), buf, 133769);
+    logging::Info("Loading item schema...");
+    bool ret = BInitTextBuffer(schema, buf, 0xDEADCA7);
     logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
+
+    delete[] text_buffer;
 }
 CatCommand schema("schema", "Load custom schema", Schema_Reload);
-*/
+
 CatCommand name("name_set", "Immediate name change", [](const CCommand &args) {
     if (args.ArgC() < 2)
     {
@@ -508,24 +509,24 @@ void DumpRecvTable(CachedEntity *ent, RecvTable *table, int depth, const char *f
         switch (prop->GetType())
         {
         case SendPropType::DPT_Float:
-            logging::Info("%s [0x%04x] = %f", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = %f", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()));
             break;
         case SendPropType::DPT_Int:
-            logging::Info("%s [0x%04x] = %i | %u | %hd | %hu", prop->GetName(), prop->GetOffset(), CE_INT(ent, acc_offset + prop->GetOffset()), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned int), CE_VAR(ent, acc_offset + prop->GetOffset(), short), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned short));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = %i | %u | %hd | %hu", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_INT(ent, acc_offset + prop->GetOffset()), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned int), CE_VAR(ent, acc_offset + prop->GetOffset(), short), CE_VAR(ent, acc_offset + prop->GetOffset(), unsigned short));
             break;
         case SendPropType::DPT_String:
-            logging::Info("%s [0x%04x] = %s", prop->GetName(), prop->GetOffset(), CE_VAR(ent, prop->GetOffset(), char *));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = %s", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_VAR(ent, prop->GetOffset(), char *));
             break;
         case SendPropType::DPT_Vector:
-            logging::Info("%s [0x%04x] = (%f, %f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 8));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = (%f, %f, %f)", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 8));
             break;
         case SendPropType::DPT_VectorXY:
-            logging::Info("%s [0x%04x] = (%f, %f)", prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4));
+            logging::Info("TABLE %s IN DEPTH %d: %s [0x%04x] = (%f, %f)", table ? table->GetName() : "none", depth, prop->GetName(), prop->GetOffset(), CE_FLOAT(ent, acc_offset + prop->GetOffset()), CE_FLOAT(ent, acc_offset + prop->GetOffset() + 4));
             break;
         }
     }
     if (!ft || !strcmp(ft, table->GetName()))
-        logging::Info("==== END OF TABLE: %s", table->GetName());
+        logging::Info("==== END OF TABLE: %s IN DEAPTH %d", table->GetName(), depth);
 }
 
 // CatCommand to dumb netvar info
@@ -542,6 +543,26 @@ static CatCommand dump_vars("debug_dump_netvars", "Dump netvars of entity", [](c
     logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
     const char *ft = (args.ArgC() > 1 ? args[2] : 0);
     DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
+});
+static CatCommand dump_vars_by_name("debug_dump_netvars_name", "Dump netvars of entity with target name", [](const CCommand &args) {
+    if (args.ArgC() < 1)
+        return;
+    std::string name(args.Arg(1));
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        ClientClass *clz = RAW_ENT(ent)->GetClientClass();
+        if (!clz)
+            continue;
+        std::string clazz_name(clz->GetName());
+        if (clazz_name.find(name) == clazz_name.npos)
+            continue;
+        logging::Info("Entity %i: %s", ent->m_IDX, clz->GetName());
+        const char *ft = (args.ArgC() > 1 ? args[2] : 0);
+        DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
+    }
 });
 
 void Shutdown()

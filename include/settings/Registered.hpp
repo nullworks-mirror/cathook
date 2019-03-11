@@ -37,6 +37,6 @@ using String = RegisteredVariableProxy<std::string>;
 using Button = RegisteredVariableProxy<settings::Key>;
 
 #if ENABLE_VISUALS
-using Rgba = RegisteredVariableProxy<glez::rgba>;
+using Rgba = RegisteredVariableProxy<rgba_t>;
 #endif
 } // namespace settings

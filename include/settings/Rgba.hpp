@@ -20,10 +20,10 @@ constexpr uint8_t hexToInt(char c)
 namespace settings
 {
 
-template <> class Variable<glez::rgba> : public VariableBase<glez::rgba>
+template <> class Variable<rgba_t> : public VariableBase<rgba_t>
 {
 public:
-    ~Variable<glez::rgba>() override = default;
+    ~Variable<rgba_t>() override = default;
 
     VariableType getType() override
     {
@@ -41,7 +41,7 @@ public:
             rgba[i / 2] |= (hexToInt(string[i]) << ((i % 2) ? 0 : 4));
         }
 
-        glez::rgba next{};
+        rgba_t next{};
         next.r = float(rgba[0]) / 255.f;
         next.g = float(rgba[1]) / 255.f;
         next.b = float(rgba[2]) / 255.f;
@@ -49,7 +49,7 @@ public:
         setInternal(next);
     }
 
-    inline void operator=(const glez::rgba &rgba)
+    inline void operator=(const rgba_t &rgba)
     {
         setInternal(rgba);
     }
@@ -63,13 +63,13 @@ public:
     {
         return string;
     }
-    inline const glez::rgba &operator*() override
+    inline const rgba_t &operator*() override
     {
         return value;
     }
 
 protected:
-    void setInternal(glez::rgba next)
+    void setInternal(rgba_t next)
     {
         fireCallbacks(next);
         value               = next;
@@ -81,7 +81,7 @@ protected:
         }
     }
 
-    glez::rgba value{};
+    rgba_t value{};
     std::string string{ "00000000" };
 };
 } // namespace settings

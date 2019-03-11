@@ -40,11 +40,15 @@ namespace hooked_methods
 Timer checkmmban{};
 DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int panel, bool force, bool allow_force)
 {
-    static bool textures_loaded        = false;
-    static unsigned long panel_scope   = 0;
-    static unsigned long motd_panel    = 0;
-    static unsigned long motd_panel_sd = 0;
-    static bool call_default           = true;
+    if (!isHackActive())
+        return original::PaintTraverse(this_, panel, force, allow_force);
+
+    static bool textures_loaded            = false;
+    static unsigned long panel_scope       = 0;
+    static unsigned long FocusOverlayPanel = 0;
+    static unsigned long motd_panel        = 0;
+    static unsigned long motd_panel_sd     = 0;
+    static bool call_default               = true;
     static bool cur;
     static ConVar *software_cursor = g_ICvar->FindVar("cl_software_cursor");
     static const char *name;
@@ -171,6 +175,22 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     if (!motd_panel_sd)
         if (!strcmp(g_IPanel->GetName(panel), "ok"))
             motd_panel_sd = panel;
+#if ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+    if (!FocusOverlayPanel)
+    {
+        const char *szName = g_IPanel->GetName(panel);
+        if (szName[0] == 'F' && szName[5] == 'O' && szName[12] == 'P')
+        {
+            FocusOverlayPanel = panel;
+        }
+    }
+    if (FocusOverlayPanel == panel)
+    {
+        g_IPanel->SetTopmostPopup(FocusOverlayPanel, true);
+        render_cheat_visuals();
+    }
+#endif
+
     if (!g_IEngine->IsInGame())
     {
         g_Settings.bInvalid = true;

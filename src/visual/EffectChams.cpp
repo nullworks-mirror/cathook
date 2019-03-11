@@ -11,7 +11,6 @@
 #include "common.hpp"
 #include "Backtrack.hpp"
 
-static settings::Bool enable{ "chams.enable", "false" };
 static settings::Bool flat{ "chams.flat", "false" };
 static settings::Bool health{ "chams.health", "false" };
 static settings::Bool teammates{ "chams.show.teammates", "false" };
@@ -31,6 +30,7 @@ static settings::Bool disco_chams{ "chams.disco", "false" };
 
 namespace effect_chams
 {
+settings::Bool enable{ "chams.enable", "false" };
 CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {
     effect_chams::g_EffectChams.Shutdown();
     effect_chams::g_EffectChams.Init();
@@ -95,7 +95,7 @@ static Timer t{};
 static int prevcolor = -1;
 rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
-    if (!isHackActive() || !*enable)
+    if (!isHackActive() || !*effect_chams::enable)
         return colors::empty;
     ;
     CachedEntity *ent = ENTITY(entity->entindex());
@@ -200,9 +200,9 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 
 bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 {
-    if (!isHackActive() || !*enable)
+    if (!isHackActive() || !*effect_chams::enable)
         return false;
-    if (!enable)
+    if (!effect_chams::enable)
         return false;
     if (entity->entindex() < 0)
         return false;
@@ -261,7 +261,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 
 void EffectChams::RenderChamsRecursive(IClientEntity *entity)
 {
-    if (!isHackActive() || !*enable)
+    if (!isHackActive() || !*effect_chams::enable)
         return;
     entity->DrawModel(1);
 
@@ -300,7 +300,7 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
 
 void EffectChams::RenderChams(IClientEntity *entity)
 {
-    if (!isHackActive() || !*enable)
+    if (!isHackActive() || !*effect_chams::enable)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     if (ShouldRenderChams(entity))
@@ -331,7 +331,7 @@ void EffectChams::Render(int x, int y, int w, int h)
     PROF_SECTION(DRAW_chams);
     if (!isHackActive())
         return;
-    if (!enable)
+    if (!effect_chams::enable)
         return;
     if (g_Settings.bInvalid)
         return;

@@ -8,7 +8,6 @@
 #include <SDL2/SDL_events.h>
 #include <vector>
 #include <menu/interface/IMessageHandler.hpp>
-#include <glez/color.hpp>
 #include <functional>
 #include <menu/tinyxml2.hpp>
 #include <menu/KeyValue.hpp>
@@ -110,8 +109,8 @@ public:
      */
 
     virtual void renderDebugOverlay();
-    void renderBackground(glez::rgba color);
-    void renderBorder(glez::rgba color);
+    void renderBackground(rgba_t color);
+    void renderBorder(rgba_t color);
 
     int xOffset{ 0 };
     int yOffset{ 0 };

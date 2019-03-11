@@ -10,9 +10,6 @@
 #include <hacks/AntiAim.hpp>
 #include <hacks/ESP.hpp>
 #include <hacks/Backtrack.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
@@ -540,7 +537,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             }
 
             // Some global checks
-            if (player_tools::shouldTarget(entity) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (!player_tools::shouldTarget(entity))
                 return false;
             if (hacks::shared::catbot::should_ignore_player(entity))
                 return false;
@@ -1423,7 +1420,7 @@ static void DrawText()
                 float fov_real = RAD2DEG(2 * atanf(mon_fov * tanf(DEG2RAD(draw::fov / 2))));
                 float radius   = tan(DEG2RAD(float(fov)) / 2) / tan(DEG2RAD(fov_real) / 2) * (width);
 
-                glez::draw::circle(width / 2, height / 2, radius, color, 1, 100);
+                draw::Circle(width / 2, height / 2, radius, color, 1, 100);
             }
         }
     }
@@ -1439,14 +1436,19 @@ static void DrawText()
             Vector oscreen;
             if (draw::WorldToScreen(calculated_data_array[i].aim_position, screen) && draw::WorldToScreen(ent->m_vecOrigin(), oscreen))
             {
-                glez::draw::rect(screen.x - 2, screen.y - 2, 4, 4, colors::white);
-                glez::draw::line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y, colors::EntityF(ent), 0.5f);
+                draw::Rectangle(screen.x - 2, screen.y - 2, 4, 4, colors::white);
+                draw::Line(oscreen.x, oscreen.y, screen.x - oscreen.x, screen.y - oscreen.y, colors::EntityF(ent), 0.5f);
             }
         }
     }
 }
 #endif
+void rvarCallback(settings::VariableBase<int> &var, int after)
+{
+    backtrackAimbot = after > 190.0f;
+}
 static InitRoutine EC([]() {
+    hacks::shared::backtrack::latency.installChangeCallback(rvarCallback);
     EC::Register(EC::LevelInit, Reset, "INIT_Aimbot", EC::average);
     EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "CM_Aimbot", EC::late);

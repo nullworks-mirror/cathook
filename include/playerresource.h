@@ -18,7 +18,12 @@ public:
     int GetClass(CachedEntity *player);
     int GetTeam(int idx);
     int GetScore(int idx);
+    int GetKills(int idx);
+    int GetDeaths(int idx);
+    int GetLevel(int idx);
+    int GetDamage(int idx);
 
+    int GetPing(int idx);
     int getClass(int idx);
     int getTeam(int idx);
     bool isAlive(int idx);

@@ -34,7 +34,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
                 continue;
             if (!ent->hitboxes.GetHitbox(1))
                 continue;
-            if (!teammate && player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (!teammate && !player_tools::shouldTarget(ent))
                 continue;
             Vector target{};
             if (Predict)

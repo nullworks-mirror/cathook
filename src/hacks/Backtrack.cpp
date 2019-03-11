@@ -9,20 +9,20 @@
 #include "hacks/Aimbot.hpp"
 #include "hacks/Backtrack.hpp"
 #include <boost/circular_buffer.hpp>
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 #include "PlayerTools.hpp"
 #include <hacks/Backtrack.hpp>
 
 static settings::Bool enable{ "backtrack.enable", "false" };
 static settings::Bool draw_bt{ "backtrack.draw", "false" };
+static settings::Bool draw_skeleton{ "backtrack.draw-skeleton", "false" };
 static settings::Float mindistance{ "backtrack.min-distance", "60" };
+
 static settings::Int slots{ "backtrack.slots", "0" };
 
 namespace hacks::shared::backtrack
 {
+settings::Bool backtrack_chams_glow{ "backtrack.chams_glow", "true" };
 settings::Int latency{ "backtrack.latency", "0" };
 
 void EmptyBacktrackData(BacktrackData &i);
@@ -48,7 +48,6 @@ void UpdateIncomingSequences()
             lastincomingsequencenumber = m_nInSequenceNr;
             sequences.push_front(CIncomingSequence(instate, m_nInSequenceNr, g_GlobalVars->realtime));
         }
-
         if (sequences.size() > 2048)
             sequences.pop_back();
     }
@@ -138,6 +137,7 @@ static void Run()
             hbd.entorigin     = pEntity->InternalEntity()->GetAbsOrigin();
             hbd.tickcount     = cmd->tick_count;
 
+            pEntity->hitboxes.InvalidateCache();
             for (size_t i = 0; i < 18; i++)
             {
                 hbd.hitboxes[i].center = pEntity->hitboxes.GetHitbox(i)->center;
@@ -147,6 +147,7 @@ static void Run()
             hbd.collidable.min    = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + hbd.entorigin;
             hbd.collidable.max    = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + hbd.entorigin;
             hbd.collidable.center = (hbd.collidable.min + hbd.collidable.max) / 2;
+            memcpy((void *) hbd.bones, (void *) pEntity->hitboxes.bones, sizeof(matrix3x4_t) * 128);
         }
     }
 
@@ -170,11 +171,74 @@ static void Run()
         }
     }
 }
+CatCommand print_bones("debug_print_bones", "debug print bone id + name", []() {
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        return;
+    // Get player model
+    const model_t *model = RAW_ENT(LOCAL_E)->GetModel();
+    if (not model)
+        return;
+    // Get Studio models (for bones)
+    studiohdr_t *hdr = g_IModelInfo->GetStudiomodel(model);
+    if (not hdr)
+        return;
+    // Get the name of the bones
+    for (int i = 0; i < hdr->numbones; i++)
+        logging::Info(format(std::string(hdr->pBone(i)->pszName()), " ", i).c_str());
+});
+static std::vector<int> bones_leg_r  = { 17, 16, 15 };
+static std::vector<int> bones_leg_l  = { 14, 13, 12 };
+static std::vector<int> bones_bottom = { 15, 1, 12 };
+static std::vector<int> bones_spine  = { 1, 2, 3, 4, 5, 0 };
+static std::vector<int> bones_arm_r  = { 9, 10, 11 };
+static std::vector<int> bones_arm_l  = { 6, 7, 8 };
+static std::vector<int> bones_up     = { 9, 5, 6 };
+
+#if ENABLE_VISUALS
+void DrawBone(std::vector<int> hitbox, std::array<hitboxData, 18> hitboxes)
+{
+    for (int i = 0; i < hitbox.size() - 1; i++)
+    {
+        Vector bone1 = hitboxes.at(hitbox.at(i)).center;
+        Vector bone2 = hitboxes.at(hitbox.at(i + 1)).center;
+        Vector draw_position1, draw_position2;
+        if (draw::WorldToScreen(bone1, draw_position1) && draw::WorldToScreen(bone2, draw_position2))
+            draw::Line(draw_position1.x, draw_position1.y, draw_position2.x - draw_position1.x, draw_position2.y - draw_position1.y, colors::white, 1.0f);
+    }
+}
+#endif
 static void Draw()
 {
 #if ENABLE_VISUALS
     if (!isBacktrackEnabled)
         return;
+    // :b:ones for non drawable ents
+    if (draw_skeleton)
+        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        {
+            CachedEntity *ent = ENTITY(i);
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer() || i == g_IEngine->GetLocalPlayer())
+                continue;
+            auto head_pos = headPositions[i];
+            // Usable vector instead of ptr to c style array, also used to filter valid and invalid ticks
+            std::vector<BacktrackData> usable;
+            for (int i = 0; i < 66; i++)
+            {
+                if (ValidTick(head_pos[i], ent))
+                    usable.push_back(head_pos[i]);
+            }
+            // Crash much?
+            if (usable.size())
+            {
+                DrawBone(bones_leg_l, usable[0].hitboxes);
+                DrawBone(bones_leg_r, usable[0].hitboxes);
+                DrawBone(bones_bottom, usable[0].hitboxes);
+                DrawBone(bones_spine, usable[0].hitboxes);
+                DrawBone(bones_arm_l, usable[0].hitboxes);
+                DrawBone(bones_arm_r, usable[0].hitboxes);
+                DrawBone(bones_up, usable[0].hitboxes);
+            }
+        }
     if (!draw_bt)
         return;
     for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
@@ -201,9 +265,9 @@ static void Draw()
                     size = abs(max.y - min.y);
 
                 if (i == iBestTarget && j == BestTick)
-                    glez::draw::rect(out.x, out.y, size / 2, size / 2, colors::red);
+                    draw::Rectangle(out.x, out.y, size / 2, size / 2, colors::red);
                 else
-                    glez::draw::rect(out.x, out.y, size / 4, size / 4, colors::green);
+                    draw::Rectangle(out.x, out.y, size / 4, size / 4, colors::green);
             }
         }
     }

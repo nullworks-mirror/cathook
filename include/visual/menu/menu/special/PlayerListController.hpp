@@ -58,7 +58,7 @@ public:
 
     void updateRow(TRow *row);
 
-    void changeRowColor(TRow *row, const glez::rgba &color);
+    void changeRowColor(TRow *row, const rgba_t &color);
 
     void handleMessage(Message &msg, bool is_relayed) override;
 

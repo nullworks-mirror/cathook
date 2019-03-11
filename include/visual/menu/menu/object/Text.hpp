@@ -5,7 +5,6 @@
 #pragma once
 
 #include <menu/BaseMenuObject.hpp>
-#include <glez/font.hpp>
 
 namespace zerokernel
 {
@@ -42,9 +41,9 @@ public:
 
     //
 
-    void setColorText(const glez::rgba *color);
+    void setColorText(const rgba_t *color);
 
-    void setOwnColor(glez::rgba color);
+    void setOwnColor(rgba_t color);
 
     void set(std::string text);
 
@@ -63,11 +62,11 @@ public:
     HAlign align_x{ HAlign::LEFT };
     VAlign align_y{ VAlign::CENTER };
 
-    glez::font *font{ nullptr };
-    const glez::rgba *color_text{ nullptr };
-    const glez::rgba *color_outline{ nullptr };
+    fonts::font *font{ nullptr };
+    const rgba_t *color_text{ nullptr };
+    const rgba_t *color_outline{ nullptr };
 
-    glez::rgba own_color{};
+    rgba_t own_color{};
 
 protected:
     std::string data{};

@@ -1,5 +1,5 @@
 <Tab name="Debug" padding="4 4 4 4">
-    <Box padding="12 6 6 6" width="content" height="content">
+    <Box padding="12 6 6 6" width="content" height="content" name="Debug">
         <List width="200">
             <AutoVariable width="fill" target="debug.cursor-fix" label="Cursofix"/>
             <AutoVariable width="fill" target="debug.engine-pred-others" label="Engine pred others"/>
@@ -14,6 +14,8 @@
             <AutoVariable width="fill" target="debug.ve.averaging" label="VE Averaging"/>
             <AutoVariable width="fill" target="debug.ve.smooth" label="VE Smooth"/>
             <AutoVariable width="fill" target="debug.ve.window" label="VE Window"/>
+            <AutoVariable width="fill" target="aimbot.debug" label="Debug Aimbot"/>
+            <AutoVariable width="fill" target="aimbot.debug.engine-pp" label="Debug Engine PP"/>
         </List>
     </Box>
 </Tab>

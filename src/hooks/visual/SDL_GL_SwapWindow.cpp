@@ -5,7 +5,6 @@
 
 #include <MiscTemporary.hpp>
 #include <visual/SDLHooks.hpp>
-#include <glez/draw.hpp>
 #include "HookedMethods.hpp"
 #include "timer.hpp"
 #include <SDL2/SDL_syswm.h>
@@ -20,6 +19,7 @@ int static_init_wminfo = (wminfo.version.major = 2, wminfo.version.minor = 0, 1)
 typedef SDL_bool (*SDL_GetWindowWMInfo_t)(SDL_Window *window, SDL_SysWMinfo *info);
 static SDL_GetWindowWMInfo_t GetWindowWMInfo = nullptr;
 static SDL_GLContext tf2_sdl                 = nullptr;
+static SDL_GLContext imgui_sdl                 = nullptr;
 Timer delay{};
 namespace hooked_methods
 {
@@ -43,8 +43,16 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
     if (!tf2_sdl)
         tf2_sdl = SDL_GL_GetCurrentContext();
 
+#if ENABLE_IMGUI_DRAWING
+    if (!imgui_sdl)
+        imgui_sdl = SDL_GL_CreateContext(window);
+#endif
+
     if (isHackActive() && !disable_visuals)
     {
+#if ENABLE_IMGUI_DRAWING
+        SDL_GL_MakeCurrent(window, imgui_sdl);
+#endif
         static int prev_width, prev_height;
         PROF_SECTION(SWAPWINDOW_cathook);
         if (not init || draw::width != prev_width || draw::height != prev_height)
@@ -62,7 +70,7 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
     }
     {
         PROF_SECTION(SWAPWINDOW_tf2);
-#if EXTERNAL_DRAWING
+#if EXTERNAL_DRAWING || ENABLE_IMGUI_DRAWING
         SDL_GL_MakeCurrent(window, tf2_sdl);
 #endif
         original::SDL_GL_SwapWindow(window);

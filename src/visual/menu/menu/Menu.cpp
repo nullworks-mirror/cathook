@@ -77,8 +77,8 @@ Menu *Menu::instance{ nullptr };
 namespace resource::font
 {
 // FIXME dynamic font change..
-glez::font base{ DATA_PATH "/menu/Verdana.ttf", 10 };
-glez::font bold{ DATA_PATH "/menu/VerdanaBold.ttf", 9 };
+fonts::font base{ DATA_PATH "/menu/Verdana.ttf", 10 };
+fonts::font bold{ DATA_PATH "/menu/VerdanaBold.ttf", 9 };
 } // namespace resource::font
 
 namespace style::colors

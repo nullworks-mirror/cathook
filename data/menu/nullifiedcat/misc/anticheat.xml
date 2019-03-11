@@ -1,7 +1,7 @@
-<Tab name="Anticheat" padding="4 4 4 4">
-    <Box height="content" width="content" padding="12 6 6 6">
+<Tab name="Anti-Cheat" padding="4 4 4 4">
+    <Box height="content" width="content" padding="12 6 6 6" name="Anti-Cheat">
         <List width="220">
-            <AutoVariable width="fill" target="find-cheaters.enable" label="Enable AntiCheat"/>
+            <AutoVariable width="fill" target="find-cheaters.enable" label="Enable Anti-Cheat"/>
             <AutoVariable width="fill" target="find-cheaters.accuse-in-chat" label="Accuse in chat"/>
             <AutoVariable width="fill" target="find-cheaters.ignore-local" label="Ignore Local"/>
             <AutoVariable width="fill" target="find-cheaters.auto-rage" label="Auto rage"/>

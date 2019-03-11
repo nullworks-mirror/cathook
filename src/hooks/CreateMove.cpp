@@ -89,8 +89,38 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 }
 } // namespace engine_prediction
 
-static int attackticks = 0;
+void PrecalculateCanShoot()
+{
+    auto weapon = g_pLocalPlayer->weapon();
+    // Check if player and weapon are good
+    if (CE_BAD(g_pLocalPlayer->entity) || CE_BAD(weapon))
+    {
+        calculated_can_shoot = false;
+        return;
+    }
 
+    // flNextPrimaryAttack without reload
+    static float next_attack = 0.0f;
+    // Last shot fired using weapon
+    static float last_attack = 0.0f;
+    // Last weapon used
+    static CachedEntity *last_weapon = nullptr;
+    float server_time                = (float) (CE_INT(g_pLocalPlayer->entity, netvar.nTickBase)) * g_GlobalVars->interval_per_tick;
+    float new_next_attack            = CE_FLOAT(weapon, netvar.flNextPrimaryAttack);
+    float new_last_attack            = CE_FLOAT(weapon, netvar.flLastFireTime);
+
+    // Reset everything if using a new weapon/shot fired
+    if (new_last_attack != last_attack || last_weapon != weapon)
+    {
+        next_attack = new_next_attack;
+        last_attack = new_last_attack;
+        last_weapon = weapon;
+    }
+    // Check if can shoot
+    calculated_can_shoot = next_attack <= server_time;
+}
+
+static int attackticks = 0;
 namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
@@ -145,7 +175,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     }
 
     PROF_SECTION(CreateMove);
-
+#if ENABLE_VISUALS
+    stored_buttons = current_user_cmd->buttons;
+    if (freecam_is_toggled)
+    {
+        current_user_cmd->sidemove    = 0.0f;
+        current_user_cmd->forwardmove = 0.0f;
+    }
+#endif
     if (current_user_cmd && current_user_cmd->command_number)
         last_cmd_number = current_user_cmd->command_number;
 
@@ -252,8 +289,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         PROF_SECTION(CM_LocalPlayer);
         g_pLocalPlayer->Update();
     }
-    if (CE_GOOD(LOCAL_E) && !g_pLocalPlayer->life_state && CE_GOOD(LOCAL_W))
-        SetCanshootStatus();
+    PrecalculateCanShoot();
     if (firstcm)
     {
         DelayTimer.update();

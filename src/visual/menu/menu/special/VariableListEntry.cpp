@@ -8,7 +8,7 @@
 #include <menu/menu/special/SettingsManagerList.hpp>
 #include <menu/menu/special/VariableListEntry.hpp>
 
-static settings::RVariable<glez::rgba> marked_color{ "zk.color.variable-list.color.registered", "ffff00" };
+static settings::RVariable<rgba_t> marked_color{ "zk.color.variable-list.color.registered", "ffff00" };
 
 /*
   Created on 26.07.18.
@@ -134,7 +134,7 @@ std::unique_ptr<zerokernel::BaseMenuObject> zerokernel::VariableListEntry::creat
 
 std::unique_ptr<zerokernel::BaseMenuObject> zerokernel::VariableListEntry::createColorPicker(settings::IVariable *variable)
 {
-    auto v = dynamic_cast<settings::Variable<glez::rgba> *>(variable);
+    auto v = dynamic_cast<settings::Variable<rgba_t> *>(variable);
     if (!v)
     {
         printf("WARNING: Could not cast to color\n");

@@ -55,7 +55,7 @@ static void doLegitBackstab()
         return;
     int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
     auto ent  = ENTITY(index);
-    if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+    if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
         return;
     if (angleCheck(ENTITY(index), std::nullopt, g_pLocalPlayer->v_OrigViewangles))
     {
@@ -67,8 +67,8 @@ static void doRageBackstab()
 {
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     Vector newangle  = g_pLocalPlayer->v_OrigViewangles;
-
-    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 10.0f)
+    std::vector<float> yangles;
+    for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 5.0f)
     {
         trace_t trace;
         Ray_t ray;
@@ -79,16 +79,21 @@ static void doRageBackstab()
         {
             int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
             auto ent  = ENTITY(index);
-            if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+            if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
                 continue;
             if (angleCheck(ent, std::nullopt, newangle))
             {
-                current_user_cmd->buttons |= IN_ATTACK;
-                current_user_cmd->viewangles     = newangle;
-                g_pLocalPlayer->bUseSilentAngles = true;
-                return;
+                yangles.push_back(newangle.y);
             }
         }
+    }
+    if (!yangles.empty())
+    {
+        newangle.y = yangles.at(std::floor((float) yangles.size() / 2));
+        current_user_cmd->buttons |= IN_ATTACK;
+        current_user_cmd->viewangles     = newangle;
+        g_pLocalPlayer->bUseSilentAngles = true;
+        return;
     }
 }
 
@@ -96,35 +101,70 @@ static void doBacktrackStab()
 {
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     CachedEntity *ent;
-    try
-    {
-        ent = ENTITY(hacks::shared::backtrack::iBestTarget);
-    }
-    catch (std::out_of_range)
-    {
+    if (hacks::shared::backtrack::iBestTarget < 1)
         return;
-    }
-    if (!ent->m_bEnemy() || player_tools::shouldTarget(ent) != player_tools::IgnoreReason::DO_NOT_IGNORE)
+    ent = ENTITY(hacks::shared::backtrack::iBestTarget);
+    if (!ent->m_bEnemy() || !player_tools::shouldTarget(ent))
         return;
 
-    auto &btd = hacks::shared::backtrack::headPositions[ent->m_IDX];
-    for (auto &i : btd)
+    auto &btd       = hacks::shared::backtrack::headPositions[ent->m_IDX];
+    Vector newangle = g_pLocalPlayer->v_OrigViewangles;
+    std::vector<float> yangles;
+    float best_scr = FLT_MAX;
+    hacks::shared::backtrack::BacktrackData *best_tick;
+    for (int ii = 0; ii < 66; ii++)
     {
-        if (!hacks::shared::backtrack::ValidTick(i, ent))
-            continue;
-        Vector angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, i.hitboxes[spine_1].center);
-        angle.x      = current_user_cmd->viewangles.x;
-        if (!angleCheck(ent, i.entorigin, angle))
-            return;
+        std::vector<float> yangles_tmp;
+        auto &i = btd[ii];
 
-        Vector hit;
-        if (hacks::shared::triggerbot::CheckLineBox(i.collidable.min, i.collidable.max, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, angle, swingrange), hit))
+        Vector distcheck = i.entorigin;
+        distcheck.z      = g_pLocalPlayer->v_Eye.z;
+        if (distcheck.DistTo(g_pLocalPlayer->v_Eye) < best_scr && distcheck.DistTo(g_pLocalPlayer->v_Eye) > 20.0f)
         {
-            current_user_cmd->tick_count = i.tickcount;
-            current_user_cmd->viewangles = angle;
-            current_user_cmd->buttons |= IN_ATTACK;
-            g_pLocalPlayer->bUseSilentAngles = true;
+            for (newangle.y = -180.0f; newangle.y < 180.0f; newangle.y += 5.0f)
+            {
+                if (!hacks::shared::backtrack::ValidTick(i, ent))
+                    continue;
+                if (!angleCheck(ent, i.entorigin, newangle))
+                    continue;
+
+                Vector &min = i.collidable.min;
+                Vector &max = i.collidable.max;
+
+                // Get the min and max for the hitbox
+                Vector minz(fminf(min.x, max.x), fminf(min.y, max.y), fminf(min.z, max.z));
+                Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y), fmaxf(min.z, max.z));
+
+                // Shrink the hitbox here
+                Vector size = maxz - minz;
+                Vector smod = { size.x * 0.20f, size.y * 0.20f, 0 };
+
+                // Save the changes to the vectors
+                minz += smod;
+                maxz -= smod;
+                maxz.z += 20.0f;
+
+                Vector hit;
+                if (hacks::shared::triggerbot::CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
+                    yangles_tmp.push_back(newangle.y);
+            }
+            if (!yangles_tmp.empty())
+            {
+                yangles.clear();
+                best_scr  = distcheck.DistTo(g_pLocalPlayer->v_Eye);
+                best_tick = &i;
+                yangles   = yangles_tmp;
+            }
         }
+    }
+    if (!yangles.empty() && best_tick)
+    {
+        newangle.y                   = yangles.at(std::floor((float) yangles.size() / 2));
+        current_user_cmd->tick_count = best_tick->tickcount;
+        current_user_cmd->viewangles = newangle;
+        current_user_cmd->buttons |= IN_ATTACK;
+        g_pLocalPlayer->bUseSilentAngles = true;
+        return;
     }
 }
 
@@ -133,6 +173,8 @@ void CreateMove()
     if (!enabled)
         return;
     if (CE_BAD(LOCAL_E) || g_pLocalPlayer->life_state || g_pLocalPlayer->clazz != tf_spy || CE_BAD(LOCAL_W) || GetWeaponMode() != weapon_melee || !CanShoot())
+        return;
+    if (!CanShoot())
         return;
     switch (*mode)
     {

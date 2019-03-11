@@ -113,7 +113,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
             logging::Info("%s", data.c_str());
             if (data.find("TeamChangeP") != data.npos && CE_GOOD(LOCAL_E))
             {
-                std::string server_name = server->GetName();
+                std::string server_name(server->GetAddress());
                 if (server_name != previous_name)
                 {
                     previous_name         = server_name;
@@ -136,7 +136,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         break;
     case 4:
         s = buf.GetNumBytesLeft();
-        if (s >= 256)
+        if (s >= 256 || CE_BAD(LOCAL_E))
             break;
 
         for (i = 0; i < s; i++)
@@ -161,7 +161,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         {
             player_info_s info{};
             g_IEngine->GetPlayerInfo(LOCAL_E->m_IDX, &info);
-            const char *claz = nullptr;
+            const char *claz  = nullptr;
             std::string name1 = info.name;
 
             switch (g_pLocalPlayer->clazz)

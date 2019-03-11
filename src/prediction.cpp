@@ -5,9 +5,6 @@
  *      Author: nullifiedcat
  */
 #include "common.hpp"
-#if ENABLE_VISUALS
-#include <glez/draw.hpp>
-#endif
 #include <settings/Bool.hpp>
 
 static settings::Bool debug_enginepred{ "debug.engine-pred-others", "false" };
@@ -101,7 +98,7 @@ void Prediction_PaintTraverse()
                 Vector screen;
                 if (draw::WorldToScreen(predicted_players[i][j], screen))
                 {
-                    glez::draw::line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 0.5f);
+                    draw::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 0.5f);
                     previous_screen = screen;
                 }
                 else

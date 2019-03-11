@@ -15,8 +15,9 @@ namespace hacks::shared::dominatesay
 //	a much better default dominatesay would be appreciated.
 const std::vector<std::string> builtin_default = {
     "dominating %name%! (%dominum% dominations)",
-    "%name%, getting tapped?",
-    "%killer% is dominating the server with %dominum% dominations!",
+    "%name%, nice skill, you sell?",
+    "%name%, umad?",
+    "smh i have %dominum% dominations",
 };
 const std::string tf_classes_dominatesay[] = { "class", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
 const std::string tf_teams_dominatesay[]   = { "RED", "BLU" };

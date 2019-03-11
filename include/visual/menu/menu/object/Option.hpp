@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <glez/draw.hpp>
 #include <menu/Menu.hpp>
 
 namespace zerokernel

@@ -35,6 +35,8 @@ struct userdata
     k_EState state{ k_EState::DEFAULT };
 #if ENABLE_VISUALS
     rgba_t color{ 0, 0, 0, 0 };
+#else
+    char color[16]{};
 #endif
     float inventory_value{ 0 };
     unsigned deaths_to{ 0 };

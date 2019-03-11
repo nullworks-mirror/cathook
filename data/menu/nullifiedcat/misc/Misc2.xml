@@ -1,6 +1,0 @@
-<Tab name="Misc2">
-    <TabContainer width="fill" height="fill">
-        <Include path="nullifiedcat/misc/remove.xml"/>
-        <Include path="nullifiedcat/misc/sandwich.xml"/>
-    </TabContainer>
-</Tab>

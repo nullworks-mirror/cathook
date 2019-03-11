@@ -1,10 +1,12 @@
 <Tab name="Visuals">
     <TabContainer width="fill" height="fill">
         <Include path="nullifiedcat/visuals/esp.xml"/>
-        <Include path="nullifiedcat/visuals/lightesp.xml"/>
         <Include path="nullifiedcat/visuals/glow.xml"/>
         <Include path="nullifiedcat/visuals/chams.xml"/>
+        <Include path="nullifiedcat/visuals/tracers.xml"/>
         <Include path="nullifiedcat/visuals/radar.xml"/>
-        <Include path="nullifiedcat/visuals/misc.xml"/>
+        <Include path="nullifiedcat/visuals/playerinfo.xml"/>
+        <Include path="nullifiedcat/visuals/ui.xml"/>
+        <Include path="nullifiedcat/visuals/world.xml"/>
     </TabContainer>
 </Tab>
