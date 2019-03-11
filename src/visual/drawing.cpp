@@ -1,4 +1,4 @@
-/*
+﻿/*
  * drawing.cpp
  *
  *  Created on: Mar 10, 2019
@@ -38,6 +38,8 @@ std::array<rgba_t, 32> side_strings_colors{ colors::empty };
 std::array<rgba_t, 32> center_strings_colors{ colors::empty };
 size_t side_strings_count{ 0 };
 size_t center_strings_count{ 0 };
+static settings::Int esp_font_size{ "visual.font_size.esp", "13" };
+static settings::Int center_font_size{ "visual.font_size.center_size", "14" };
 
 void InitStrings()
 {
@@ -92,33 +94,38 @@ namespace fonts
 #if ENABLE_ENGINE_DRAWING
 font::operator unsigned int()
 {
-    if (!init)
+    if (!size_map[size])
         Init();
-    return id;
+    return size_map[size];
 }
 void font::Init()
 {
     size += 3;
     static std::string filename;
     filename.append("ab");
-    id        = g_ISurface->CreateFont();
-    auto flag = vgui::ISurface::FONTFLAG_ANTIALIAS;
-    g_ISurface->SetFontGlyphSet(id, filename.c_str(), size, 500, 0, 0, flag);
+    size_map[size] = g_ISurface->CreateFont();
+    auto flag      = vgui::ISurface::FONTFLAG_ANTIALIAS;
+    g_ISurface->SetFontGlyphSet(size_map[size], filename.c_str(), size, 500, 0, 0, flag);
     g_ISurface->AddCustomFontFile(filename.c_str(), path.c_str());
-    init = true;
 }
 void font::stringSize(std::string string, float *x, float *y)
 {
-    if (!init)
+    if (!size_map[size])
         Init();
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
     std::wstring ws = converter.from_bytes(string.c_str());
     int w, h;
-    g_ISurface->GetTextSize(id, ws.c_str(), w, h);
+    g_ISurface->GetTextSize(size_map[size], ws.c_str(), w, h);
     if (x)
         *x = w;
     if (y)
         *y = h;
+}
+void font::changeSize(int new_font_size)
+{
+    size = new_font_size;
+    if (!size_map[size])
+        Init();
 }
 #endif
 std::unique_ptr<font> menu{ nullptr };
@@ -126,6 +133,32 @@ std::unique_ptr<font> esp{ nullptr };
 std::unique_ptr<font> center_screen{ nullptr };
 } // namespace fonts
 
+static InitRoutine font_size([]() {
+    esp_font_size.installChangeCallback([](settings::VariableBase<int> &var, int after) {
+        if (after > 0 && after < 100)
+        {
+#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+            fonts::esp_font_size->unload();
+            fonts::esp_font_size.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
+#else
+            logging::Info("test");
+            fonts::esp->changeSize(after);
+#endif
+        }
+    });
+    center_font_size.installChangeCallback([](settings::VariableBase<int> &var, int after) {
+        if (after > 0 && after < 100)
+        {
+#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+            fonts::center_screen->unload();
+            fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
+#else
+            logging::Info("test");
+            fonts::center_screen->changeSize(after);
+#endif
+        }
+    });
+});
 namespace draw
 {
 
@@ -319,13 +352,13 @@ void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture
     g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
     g_ISurface->DrawSetTexture(texture.get());
 
-    float tex_width  = texture.getWidth();
+    float tex_width = texture.getWidth();
     float tex_height = texture.getHeight();
 
-    Vector2D scr_top_left     = { x, y };
-    Vector2D scr_top_right    = { x + w, y };
+    Vector2D scr_top_left = { x, y };
+    Vector2D scr_top_right = { x + w, y };
     Vector2D scr_bottom_right = { x + w, y + h };
-    Vector2D scr_botton_left  = { x, y + w };
+    Vector2D scr_botton_left = { x, y + w };
 
     if (angle != 0.0f)
     {
@@ -342,10 +375,10 @@ void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture
         f(scr_bottom_right);
     }
 
-    Vector2D tex_top_left     = { tx / tex_width, ty / tex_height };
-    Vector2D tex_top_right    = { (tx + tw) / tex_width, ty / tex_height };
+    Vector2D tex_top_left = { tx / tex_width, ty / tex_height };
+    Vector2D tex_top_right = { (tx + tw) / tex_width, ty / tex_height };
     Vector2D tex_bottom_right = { (tx + tw) / tex_width, (ty + th) / tex_height };
-    Vector2D tex_botton_left  = { tx / tex_width, (ty + th) / tex_height };
+    Vector2D tex_botton_left = { tx / tex_width, (ty + th) / tex_height };
     // logging::Info("%f,%f %f,%f", tex_top_left.x, tex_top_left.y, tex_top_right.x, tex_top_right.y);
 
     vertices[0].Init(scr_top_left, tex_top_left);

@@ -18,6 +18,8 @@
             <AutoVariable width="fill" target="visual.snowflakes.fall-speed.max" label="Maximum fall speed"/>
             <AutoVariable width="fill" target="visual.snowflakes.sideways-speed.min" label="Minimum sidemove speed"/>
             <AutoVariable width="fill" target="visual.snowflakes.sideways-speed.max" label="Maximum sidemove speed"/>
+            <AutoVariable width="fill" target="visual.font_size.esp" label="Main font size"/>
+            <AutoVariable width="fill" target="visual.font_size.center_size" label="Center string font size"/>
         </List>
     </Box>
 </Tab>

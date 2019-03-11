@@ -286,19 +286,19 @@ bool ImGui_ImplSdl_Init()
 
     ImGuiStyle *style = &ImGui::GetStyle();
 
-    style->WindowPadding = ImVec2(15, 15);
+    style->WindowPadding  = ImVec2(15, 15);
     style->WindowRounding = 1.0f;
 
-    style->FramePadding = ImVec2(5, 5);
+    style->FramePadding  = ImVec2(5, 5);
     style->FrameRounding = 1.0f;
 
-    style->ItemSpacing = ImVec2(12, 8);
-    style->ItemInnerSpacing = ImVec2(6, 6);
-    style->IndentSpacing    = 25.0f;
-    style->ScrollbarSize    = 15.0f;
+    style->ItemSpacing       = ImVec2(12, 8);
+    style->ItemInnerSpacing  = ImVec2(6, 6);
+    style->IndentSpacing     = 25.0f;
+    style->ScrollbarSize     = 15.0f;
     style->ScrollbarRounding = 1.0f;
 
-    style->GrabMinSize = 5.0f;
+    style->GrabMinSize  = 5.0f;
     style->GrabRounding = 1.0f;
 
     style->Colors[ImGuiCol_Text]                 = ImVec4(0.80f, 0.80f, 0.83f, 1.00f);
@@ -319,21 +319,21 @@ bool ImGui_ImplSdl_Init()
     style->Colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
     style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
     style->Colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_CheckMark]         = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
-    style->Colors[ImGuiCol_SliderGrab]        = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
-    style->Colors[ImGuiCol_SliderGrabActive]  = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_Button]            = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_ButtonHovered]     = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_ButtonActive]      = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_Header]            = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-    style->Colors[ImGuiCol_HeaderHovered]     = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_HeaderActive]      = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style->Colors[ImGuiCol_Column]            = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_ColumnHovered]     = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
-    style->Colors[ImGuiCol_ColumnActive]      = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_ResizeGrip]        = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-    style->Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
-    style->Colors[ImGuiCol_ResizeGripActive]  = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style->Colors[ImGuiCol_CheckMark]            = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+    style->Colors[ImGuiCol_SliderGrab]           = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+    style->Colors[ImGuiCol_SliderGrabActive]     = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style->Colors[ImGuiCol_Button]               = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_ButtonHovered]        = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style->Colors[ImGuiCol_ButtonActive]         = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style->Colors[ImGuiCol_Header]               = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style->Colors[ImGuiCol_HeaderHovered]        = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style->Colors[ImGuiCol_HeaderActive]         = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style->Colors[ImGuiCol_Column]               = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style->Colors[ImGuiCol_ColumnHovered]        = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style->Colors[ImGuiCol_ColumnActive]         = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style->Colors[ImGuiCol_ResizeGrip]           = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style->Colors[ImGuiCol_ResizeGripHovered]    = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style->Colors[ImGuiCol_ResizeGripActive]     = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
     style->Colors[ImGuiCol_PlotLines]            = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
     style->Colors[ImGuiCol_PlotLinesHovered]     = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
     style->Colors[ImGuiCol_PlotHistogram]        = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
@@ -388,7 +388,7 @@ void ImGui_ImplSdl_NewFrame(SDL_Window *window)
     if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
         return;
 
-    ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+    /*ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
     if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None)
     {
         // Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
@@ -399,7 +399,7 @@ void ImGui_ImplSdl_NewFrame(SDL_Window *window)
         // Show OS mouse cursor
         SDL_SetCursor(g_MouseCursors[imgui_cursor] ? g_MouseCursors[imgui_cursor] : g_MouseCursors[ImGuiMouseCursor_Arrow]);
         SDL_ShowCursor(SDL_TRUE);
-    }
+    }*/
 
     ImGui::NewFrame();
 }

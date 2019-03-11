@@ -19,6 +19,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <map>
 
 class CachedEntity;
 class Vector;
@@ -34,14 +35,14 @@ struct font
     font(std::string path, int fontsize, bool outline = false) : size{ fontsize }, path{ path }, outline{ outline }
     {
     }
-    unsigned int id;
     std::string path;
     int size;
-    bool init    = false;
     bool outline = false;
     operator unsigned int();
     void stringSize(std::string string, float *x, float *y);
+    void changeSize(int new_font_size);
     void Init();
+    std::map<int, unsigned int> size_map;
 };
 #elif ENABLE_IMGUI_DRAWING
 typedef im_renderer::font font;

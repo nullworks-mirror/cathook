@@ -73,12 +73,12 @@ void font::changeSize(int new_font_size)
 void font::rebuild()
 {
     ImGui_Impl_DestroyFontsTexture(font_atlas);
-    if (!size_map[size])
+    if (!size_map[new_size])
     {
-        size_map[size] = font_atlas->AddFontFromFileTTF(path.c_str(), new_size, NULL, font_atlas->GetGlyphRangesDefault());
+        size_map[new_size] = font_atlas->AddFontFromFileTTF(path.c_str(), new_size, NULL, font_atlas->GetGlyphRangesDefault());
         font_atlas->Build();
     }
-    ImFont *font_new = size_map[size];
+    ImFont *font_new = size_map[new_size];
     if (!font_new || !font_new->ContainerAtlas)
         return; // what?
     ImFontConfig *font_config       = (ImFontConfig *) font_new->ConfigData;
@@ -87,6 +87,7 @@ void font::rebuild()
     ImGuiFreeType::BuildFontAtlas(font_new->ContainerAtlas, 0);
     ImGui_Impl_CreateFontsTexture(font_new->ContainerAtlas);
     needs_rebuild = false;
+    size          = new_size;
 }
 
 Texture::Texture(std::string path) : path{ path }
