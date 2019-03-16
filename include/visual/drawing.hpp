@@ -8,7 +8,9 @@
 #pragma once
 
 #include "config.h"
-#if !ENABLE_ENGINE_DRAWING
+#if ENABLE_IMGUI_DRAWING
+#include "imgui/imrenderer.hpp"
+#elif !ENABLE_ENGINE_DRAWING
 #include <glez/font.hpp>
 #include <glez/draw.hpp>
 #endif
@@ -17,6 +19,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <map>
 
 class CachedEntity;
 class Vector;
@@ -32,15 +35,17 @@ struct font
     font(std::string path, int fontsize, bool outline = false) : size{ fontsize }, path{ path }, outline{ outline }
     {
     }
-    unsigned int id;
     std::string path;
     int size;
-    bool init    = false;
     bool outline = false;
     operator unsigned int();
     void stringSize(std::string string, float *x, float *y);
+    void changeSize(int new_font_size);
     void Init();
+    std::map<int, unsigned int> size_map;
 };
+#elif ENABLE_IMGUI_DRAWING
+typedef im_renderer::font font;
 #else
 typedef glez::font font;
 #endif
@@ -103,6 +108,8 @@ private:
     bool init               = false;
     int m_width, m_height;
 };
+#elif ENABLE_IMGUI_DRAWING
+typedef im_renderer::Texture Texture;
 #else
 typedef glez::texture Texture;
 #endif

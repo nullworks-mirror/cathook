@@ -175,6 +175,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     if (!motd_panel_sd)
         if (!strcmp(g_IPanel->GetName(panel), "ok"))
             motd_panel_sd = panel;
+#if ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
     if (!FocusOverlayPanel)
     {
         const char *szName = g_IPanel->GetName(panel);
@@ -188,6 +189,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
         g_IPanel->SetTopmostPopup(FocusOverlayPanel, true);
         render_cheat_visuals();
     }
+#endif
 
     if (!g_IEngine->IsInGame())
     {

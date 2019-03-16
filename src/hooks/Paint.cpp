@@ -75,10 +75,10 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
             last_stdin = std::chrono::system_clock::now();
         }
 #endif
-        // render_cheat_visuals moved to PaintTraverse.cpp
-        //#if ENABLE_VISUALS
-        // render_cheat_visuals();
-        //#endif
+        // MOVED BACK because glez and imgui flicker in painttraveerse
+#if ENABLE_VISUALS && (ENABLE_IMGUI_DRAWING || !ENABLE_ENGINE_DRAWING)
+        render_cheat_visuals();
+#endif
 
         // Call all paint functions
         EC::run(EC::Paint);

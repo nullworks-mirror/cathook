@@ -1,3 +1,9 @@
+﻿/*
+ * drawing.cpp
+ *
+ *  Created on: Mar 10, 2019
+ *      Author: Lighty
+ */
 /*
  * drawing.cpp
  *
@@ -5,20 +11,22 @@
  *      Author: nullifiedcat
  */
 #include "common.hpp"
-
-#if !ENABLE_ENGINE_DRAWING
-#include <glez/glez.hpp>
+#if ENABLE_IMGUI_DRAWING
+#include "imgui/imrenderer.hpp"
+#elif !ENABLE_ENGINE_DRAWING
 #include <glez/draw.hpp>
+#include <glez/glez.hpp>
+#else
+#include "picopng.hpp"
 #endif
+#include "menu/GuiInterface.hpp"
 #include <GL/glew.h>
 #include <SDL2/SDL_video.h>
 #include <SDLHooks.hpp>
-#include "menu/GuiInterface.hpp"
-#include "picopng.hpp"
 
 // String -> Wstring
-#include <locale>
 #include <codecvt>
+#include <locale>
 
 #if EXTERNAL_DRAWING
 #include "xoverlay.h"
@@ -30,6 +38,8 @@ std::array<rgba_t, 32> side_strings_colors{ colors::empty };
 std::array<rgba_t, 32> center_strings_colors{ colors::empty };
 size_t side_strings_count{ 0 };
 size_t center_strings_count{ 0 };
+static settings::Int esp_font_size{ "visual.font_size.esp", "13" };
+static settings::Int center_font_size{ "visual.font_size.center_size", "14" };
 
 void InitStrings()
 {
@@ -84,33 +94,38 @@ namespace fonts
 #if ENABLE_ENGINE_DRAWING
 font::operator unsigned int()
 {
-    if (!init)
+    if (!size_map[size])
         Init();
-    return id;
+    return size_map[size];
 }
 void font::Init()
 {
     size += 3;
     static std::string filename;
     filename.append("ab");
-    id        = g_ISurface->CreateFont();
-    auto flag = vgui::ISurface::FONTFLAG_ANTIALIAS;
-    g_ISurface->SetFontGlyphSet(id, filename.c_str(), size, 500, 0, 0, flag);
+    size_map[size] = g_ISurface->CreateFont();
+    auto flag      = vgui::ISurface::FONTFLAG_ANTIALIAS;
+    g_ISurface->SetFontGlyphSet(size_map[size], filename.c_str(), size, 500, 0, 0, flag);
     g_ISurface->AddCustomFontFile(filename.c_str(), path.c_str());
-    init = true;
 }
 void font::stringSize(std::string string, float *x, float *y)
 {
-    if (!init)
+    if (!size_map[size])
         Init();
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
     std::wstring ws = converter.from_bytes(string.c_str());
     int w, h;
-    g_ISurface->GetTextSize(id, ws.c_str(), w, h);
+    g_ISurface->GetTextSize(size_map[size], ws.c_str(), w, h);
     if (x)
         *x = w;
     if (y)
         *y = h;
+}
+void font::changeSize(int new_font_size)
+{
+    size = new_font_size;
+    if (!size_map[size])
+        Init();
 }
 #endif
 std::unique_ptr<font> menu{ nullptr };
@@ -118,6 +133,32 @@ std::unique_ptr<font> esp{ nullptr };
 std::unique_ptr<font> center_screen{ nullptr };
 } // namespace fonts
 
+static InitRoutine font_size([]() {
+    esp_font_size.installChangeCallback([](settings::VariableBase<int> &var, int after) {
+        if (after > 0 && after < 100)
+        {
+#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+            fonts::esp_font_size->unload();
+            fonts::esp_font_size.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
+#else
+            logging::Info("test");
+            fonts::esp->changeSize(after);
+#endif
+        }
+    });
+    center_font_size.installChangeCallback([](settings::VariableBase<int> &var, int after) {
+        if (after > 0 && after < 100)
+        {
+#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+            fonts::center_screen->unload();
+            fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
+#else
+            logging::Info("test");
+            fonts::center_screen->changeSize(after);
+#endif
+        }
+    });
+});
 namespace draw
 {
 
@@ -129,23 +170,28 @@ void Initialize()
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
-#if !ENABLE_ENGINE_DRAWING
+#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING // add proper glez support tf
     glez::preInit();
-#endif
+    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13));
+    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13));
+    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14));
+#else
     fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13, true));
     fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13, true));
     fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 14, true));
-
+#endif
+#if ENABLE_ENGINE_DRAWING
     texture_white                = g_ISurface->CreateNewTextureID();
     unsigned char colorBuffer[4] = { 255, 255, 255, 255 };
     g_ISurface->DrawSetTextureRGBA(texture_white, colorBuffer, 1, 1, false, true);
+#endif
 }
 
 void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
 {
-#if !ENABLE_ENGINE_DRAWING
-    glez::draw::outlined_string(x, y, text, font, rgba, colors::black, nullptr, nullptr);
-#else
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::draw::string(x, y, rgba, text, font);
+#elif ENABLE_ENGINE_DRAWING
     rgba = rgba * 255.0f;
     // Outline magic
     if (font.outline)
@@ -181,15 +227,17 @@ void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
     std::wstring ws = converter.from_bytes(text);
 
     g_ISurface->DrawPrintText(ws.c_str(), ws.size() + 1);
+#else
+    glez::draw::outlined_string(x, y, text, font, rgba, colors::black, nullptr, nullptr);
 #endif
 }
 
 // x2_offset and y2_offset are an OFFSET, meaning you need to pass coordinate 2 - coordinate 1 for it to work, x2_offset is aded to x1
 void Line(float x1, float y1, float x2_offset, float y2_offset, rgba_t color, float thickness)
 {
-#if !ENABLE_ENGINE_DRAWING
-    glez::draw::line(x1, y1, x2_offset, y2_offset, color, thickness);
-#else
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::draw::line(x1, y1, x2_offset, y2_offset, color, thickness);
+#elif ENABLE_ENGINE_DRAWING
     color = color * 255.0f;
     g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
     if (thickness > 1.0f)
@@ -236,14 +284,16 @@ void Line(float x1, float y1, float x2_offset, float y2_offset, rgba_t color, fl
     {
         g_ISurface->DrawLine(x1, y1, x1 + x2_offset, y1 + y2_offset);
     }
+#else
+    glez::draw::line(x1, y1, x2_offset, y2_offset, color, thickness);
 #endif
 }
 
 void Rectangle(float x, float y, float w, float h, rgba_t color)
 {
-#if !ENABLE_ENGINE_DRAWING
-    glez::draw::rect(x, y, w, h, color);
-#else
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::draw::rectangle(x, y, w, h, color);
+#elif ENABLE_ENGINE_DRAWING
     color = color * 255.0f;
     g_ISurface->DrawSetTexture(texture_white);
     g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
@@ -255,11 +305,16 @@ void Rectangle(float x, float y, float w, float h, rgba_t color)
     vertices[3].m_Position = { x + w, y };
 
     g_ISurface->DrawTexturedPolygon(4, vertices);
+#else
+    glez::draw::rect(x, y, w, h, color);
 #endif
 }
 
 void Circle(float x, float y, float radius, rgba_t color, float thickness, int steps)
 {
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::draw::circle(x, y, radius, color, thickness, steps);
+#else
     float px = 0;
     float py = 0;
     for (int i = 0; i <= steps; i++)
@@ -272,33 +327,38 @@ void Circle(float x, float y, float radius, rgba_t color, float thickness, int s
         px = x + radius * cos(ang);
         py = y + radius * sin(ang);
     }
+#endif
 }
 
 void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness)
 {
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::draw::rectangleOutlined(x, y, w, h, color, thickness);
+#else
     Rectangle(x, y, w, 1, color);
     Rectangle(x, y, 1, h, color);
     Rectangle(x + w - 1, y, 1, h, color);
     Rectangle(x, y + h - 1, w, 1, color);
+#endif
 }
 
 void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture &texture, float tx, float ty, float tw, float th, float angle)
 {
-#if !ENABLE_ENGINE_DRAWING
-    glez::draw::rect_textured(x, y, w, h, color, texture, tx, ty, tw, th, angle);
-#else
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::draw::rectangleTextured(x, y, w, h, color, texture, tx, ty, tw, th, angle);
+#elif ENABLE_ENGINE_DRAWING
     color = color * 255.0f;
     vgui::Vertex_t vertices[4];
     g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
     g_ISurface->DrawSetTexture(texture.get());
 
-    float tex_width  = texture.getWidth();
+    float tex_width = texture.getWidth();
     float tex_height = texture.getHeight();
 
-    Vector2D scr_top_left     = { x, y };
-    Vector2D scr_top_right    = { x + w, y };
+    Vector2D scr_top_left = { x, y };
+    Vector2D scr_top_right = { x + w, y };
     Vector2D scr_bottom_right = { x + w, y + h };
-    Vector2D scr_botton_left  = { x, y + w };
+    Vector2D scr_botton_left = { x, y + w };
 
     if (angle != 0.0f)
     {
@@ -315,10 +375,10 @@ void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture
         f(scr_bottom_right);
     }
 
-    Vector2D tex_top_left     = { tx / tex_width, ty / tex_height };
-    Vector2D tex_top_right    = { (tx + tw) / tex_width, ty / tex_height };
+    Vector2D tex_top_left = { tx / tex_width, ty / tex_height };
+    Vector2D tex_top_right = { (tx + tw) / tex_width, ty / tex_height };
     Vector2D tex_bottom_right = { (tx + tw) / tex_width, (ty + th) / tex_height };
-    Vector2D tex_botton_left  = { tx / tex_width, (ty + th) / tex_height };
+    Vector2D tex_botton_left = { tx / tex_width, (ty + th) / tex_height };
     // logging::Info("%f,%f %f,%f", tex_top_left.x, tex_top_left.y, tex_top_right.x, tex_top_right.y);
 
     vertices[0].Init(scr_top_left, tex_top_left);
@@ -327,6 +387,8 @@ void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture
     vertices[3].Init(scr_botton_left, tex_botton_left);
 
     g_ISurface->DrawTexturedPolygon(4, vertices);
+#else
+    glez::draw::rect_textured(x, y, w, h, color, texture, tx, ty, tw, th, angle);
 #endif
 }
 
@@ -441,7 +503,9 @@ void InitGL()
     xoverlay_show();
     context = SDL_GL_CreateContext(sdl_hooks::window);
 #else
-#if !ENABLE_ENGINE_DRAWING
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::init();
+#elif !ENABLE_ENGINE_DRAWING
     glClearColor(1.0, 0.0, 0.0, 0.5);
     glewExperimental = GL_TRUE;
     glewInit();
@@ -456,7 +520,9 @@ void InitGL()
 
 void BeginGL()
 {
-#if !ENABLE_ENGINE_DRAWING
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::renderStart();
+#elif !ENABLE_ENGINE_DRAWING
     glColor3f(1, 1, 1);
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
@@ -477,7 +543,9 @@ void BeginGL()
 
 void EndGL()
 {
-#if !ENABLE_ENGINE_DRAWING
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::renderEnd();
+#elif !ENABLE_ENGINE_DRAWING
     PROF_SECTION(DRAWEX_draw_end);
     {
         PROF_SECTION(draw_end__glez_end);
