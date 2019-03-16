@@ -141,7 +141,6 @@ static InitRoutine font_size([]() {
             fonts::esp_font_size->unload();
             fonts::esp_font_size.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
 #else
-            logging::Info("test");
             fonts::esp->changeSize(after);
 #endif
         }
@@ -153,7 +152,6 @@ static InitRoutine font_size([]() {
             fonts::center_screen->unload();
             fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
 #else
-            logging::Info("test");
             fonts::center_screen->changeSize(after);
 #endif
         }
