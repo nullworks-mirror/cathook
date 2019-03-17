@@ -136,6 +136,22 @@ int re::CTFPartyClient::PromotePlayerToLeader(CSteamID steamid)
 
     return PromotePlayerToLeader_fn(this, steamid);
 }
+std::vector<unsigned> re::CTFPartyClient::GetPartySteamIDs()
+{
+    typedef bool (*SteamIDOfSlot_t)(int slot, CSteamID *our);
+    static uintptr_t addr                   = gSignatures.GetClientSignature("55 89 E5 56 53 31 DB 83 EC ? 8B 75 ? E8");
+    static SteamIDOfSlot_t SteamIDOfSlot_fn = SteamIDOfSlot_t(addr);
+    std::vector<unsigned> party_members;
+    for (int i = 0; i < GetNumMembers(); i++)
+    {
+        CSteamID out;
+        SteamIDOfSlot_fn(i, &out);
+        if (out.GetAccountID())
+            party_members.push_back(out.GetAccountID());
+    }
+    return party_members;
+}
+
 int re::CTFPartyClient::KickPlayer(CSteamID steamid)
 {
     typedef int (*KickPlayer_t)(re::CTFPartyClient *, CSteamID);

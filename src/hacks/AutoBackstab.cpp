@@ -106,7 +106,6 @@ static void doBacktrackStab()
     ent = ENTITY(hacks::shared::backtrack::iBestTarget);
     if (!ent->m_bEnemy() || !player_tools::shouldTarget(ent))
         return;
-
     auto &btd       = hacks::shared::backtrack::headPositions[ent->m_IDX];
     Vector newangle = g_pLocalPlayer->v_OrigViewangles;
     std::vector<float> yangles;
@@ -164,8 +163,9 @@ static void doBacktrackStab()
         current_user_cmd->viewangles = newangle;
         current_user_cmd->buttons |= IN_ATTACK;
         g_pLocalPlayer->bUseSilentAngles = true;
-        return;
     }
+    if (!*bSendPackets)
+        *bSendPackets = true;
 }
 
 void CreateMove()

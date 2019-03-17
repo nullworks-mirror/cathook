@@ -30,6 +30,7 @@ public:
     int GetNumOnlineMembers();
     int GetNumMembers();
     int PromotePlayerToLeader(CSteamID steamid);
+    std::vector<unsigned> GetPartySteamIDs();
     int KickPlayer(CSteamID steamid);
     bool GetCurrentPartyLeader(CSteamID &id);
 };

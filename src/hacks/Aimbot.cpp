@@ -66,6 +66,22 @@ static settings::Bool fov_draw{ "aimbot.fov-circle.enable", "0" };
 static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 #endif
 
+int GetSentry()
+{
+    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        if (ent->m_Type() != ENTITY_BUILDING || ent->m_iClassID() != CL_CLASS(CObjectSentrygun))
+            continue;
+        if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) != g_pLocalPlayer->entity_idx)
+            continue;
+        return i;
+    }
+    return -1;
+}
+
 namespace hacks::shared::aimbot
 {
 settings::Bool ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
@@ -576,6 +592,17 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Vis check + fov check
         if (!VischeckPredictedEntity(entity, IsBacktracking() && !projectile_mode))
             return false;
+        if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
+        {
+            int sentry = GetSentry();
+            if (sentry == -1)
+                return false;
+            Vector pos = GetBuildingPosition(ENTITY(sentry));
+            if (hitbox == -1 || !entity->hitboxes.GetHitbox(cd.hitbox))
+                return false;
+            if (!IsVectorVisible(pos, entity->hitboxes.GetHitbox(cd.hitbox)->center, false, ENTITY(sentry)))
+                return false;
+        }
         if (*fov > 0.0f && cd.fov > *fov)
             return false;
 
@@ -625,6 +652,15 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Vis and fov checks
         if (!VischeckPredictedEntity(entity, false))
             return false;
+        if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
+        {
+            int sentry = GetSentry();
+            if (sentry == -1)
+                return false;
+            Vector pos = GetBuildingPosition(ENTITY(sentry));
+            if (!IsVectorVisible(pos, GetBuildingPosition(entity), false, ENTITY(sentry)))
+                return false;
+        }
         if (*fov > 0.0f && cd.fov > *fov)
             return false;
 
@@ -668,6 +704,15 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Vis and fov check
         if (!VischeckPredictedEntity(entity, false))
             return false;
+        if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
+        {
+            int sentry = GetSentry();
+            if (sentry == -1)
+                return false;
+            Vector pos = GetBuildingPosition(ENTITY(sentry));
+            if (!IsVectorVisible(pos, entity->m_vecOrigin(), false))
+                return false;
+        }
         if (*fov > 0.0f && cd.fov > *fov)
             return false;
 

@@ -103,7 +103,7 @@ float DistToSqr(CachedEntity *entity);
 void fClampAngle(Vector &qaAng);
 // const char* MakeInfoString(IClientEntity* player);
 bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity);
-bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false);
+bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false, CachedEntity *self = LOCAL_E);
 Vector GetForwardVector(Vector origin, Vector viewangles, float distance);
 Vector GetForwardVector(float distance);
 bool IsSentryBuster(CachedEntity *ent);

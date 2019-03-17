@@ -308,14 +308,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         hacks::shared::anti_anti_aim::createMove();
     }
 
-    {
-        PROF_SECTION(CM_WRAPPER);
-        EC::run(EC::CreateMove_NoEnginePred);
-        if (engine_pred)
-            engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
-
-        EC::run(EC::CreateMove);
-    }
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         if (!g_pLocalPlayer->life_state && CE_GOOD(g_pLocalPlayer->weapon()))
@@ -351,6 +343,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 projectile_logging::Update();
             Prediction_CreateMove();
         }
+    }
+    {
+        PROF_SECTION(CM_WRAPPER);
+        EC::run(EC::CreateMove_NoEnginePred);
+        if (engine_pred)
+            engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
+
+        EC::run(EC::CreateMove);
     }
     if (time_replaced)
         g_GlobalVars->curtime = curtime_old;

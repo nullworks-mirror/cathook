@@ -130,24 +130,29 @@ static void Run()
                 continue;
             if (HasCondition<TFCond_HalloweenGhostMode>(pEntity))
                 continue;
-            auto &hbd         = headPositions[i][cmd->command_number % getTicks()];
-            float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
-            hbd.viewangles    = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
-            hbd.simtime       = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
-            hbd.entorigin     = pEntity->InternalEntity()->GetAbsOrigin();
-            hbd.tickcount     = cmd->tick_count;
-
-            pEntity->hitboxes.InvalidateCache();
-            for (size_t i = 0; i < 18; i++)
+            if (!*bSendPackets)
+                headPositions[i][cmd->command_number % getTicks()] = {};
+            else
             {
-                hbd.hitboxes[i].center = pEntity->hitboxes.GetHitbox(i)->center;
-                hbd.hitboxes[i].min    = pEntity->hitboxes.GetHitbox(i)->min;
-                hbd.hitboxes[i].max    = pEntity->hitboxes.GetHitbox(i)->max;
+                auto &hbd         = headPositions[i][cmd->command_number % getTicks()];
+                float _viewangles = CE_VECTOR(pEntity, netvar.m_angEyeAngles).y;
+                hbd.viewangles    = (_viewangles > 180) ? _viewangles - 360 : _viewangles;
+                hbd.simtime       = CE_FLOAT(pEntity, netvar.m_flSimulationTime);
+                hbd.entorigin     = pEntity->InternalEntity()->GetAbsOrigin();
+                hbd.tickcount     = cmd->tick_count;
+
+                pEntity->hitboxes.InvalidateCache();
+                for (size_t i = 0; i < 18; i++)
+                {
+                    hbd.hitboxes[i].center = pEntity->hitboxes.GetHitbox(i)->center;
+                    hbd.hitboxes[i].min    = pEntity->hitboxes.GetHitbox(i)->min;
+                    hbd.hitboxes[i].max    = pEntity->hitboxes.GetHitbox(i)->max;
+                }
+                hbd.collidable.min    = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + hbd.entorigin;
+                hbd.collidable.max    = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + hbd.entorigin;
+                hbd.collidable.center = (hbd.collidable.min + hbd.collidable.max) / 2;
+                memcpy((void *) hbd.bones, (void *) pEntity->hitboxes.bones, sizeof(matrix3x4_t) * 128);
             }
-            hbd.collidable.min    = RAW_ENT(pEntity)->GetCollideable()->OBBMins() + hbd.entorigin;
-            hbd.collidable.max    = RAW_ENT(pEntity)->GetCollideable()->OBBMaxs() + hbd.entorigin;
-            hbd.collidable.center = (hbd.collidable.min + hbd.collidable.max) / 2;
-            memcpy((void *) hbd.bones, (void *) pEntity->hitboxes.bones, sizeof(matrix3x4_t) * 128);
         }
     }
 

@@ -8,7 +8,7 @@
 #include "PlayerTools.hpp"
 
 static settings::String ipc_name{ "name.ipc", "" };
-static settings::String force_name{ "name.custom", "" };
+settings::String force_name{ "name.custom", "" };
 static settings::Int namesteal{ "name.namesteal", "0" };
 
 static std::string stolen_name;

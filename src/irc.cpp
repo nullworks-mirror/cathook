@@ -389,6 +389,7 @@ static void run()
             else
                 size = -1;
             state.party_size = size;
+            state.is_ingame  = true;
             irc.setState(state);
         }
     }

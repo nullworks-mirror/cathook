@@ -65,6 +65,7 @@
                     <Option name="Active" value="2"/>
                 </Select>
             </LabeledObject>
+            <AutoVariable width="fill" target="misc.random-name" label="Random Name"/>
         </List>
         <List width="220" x="232">
             <AutoVariable width="fill" target="noisemaker-spam.enable" label="Noisemaker spam"/>
