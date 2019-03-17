@@ -12,9 +12,6 @@
 #include "common.hpp"
 
 static settings::Bool enable{ "antiaim.enable", "0" };
-static settings::Bool crouch{ "antiaim.crouch", "0" };
-static settings::Int dur{ "antiaim.crouch.dur", "15" };
-static settings::Int dursneak{ "antiaim.crouch.dursneak", "15" };
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
 
@@ -356,41 +353,6 @@ float useEdge(float edgeViewAngle)
     // return with the angle choosen
     return edgeYaw;
 }
-
-Timer delay{};
-int val       = 0;
-int value[32] = { 0 };
-void FakeCrouch(CUserCmd *cmd)
-{
-    if (!crouch || !(cmd->buttons & IN_DUCK))
-        return;
-    static bool bDoCrouch   = false;
-    static int iCrouchCount = 0;
-
-    if (iCrouchCount == *dur)
-    {
-        iCrouchCount = 0;
-        bDoCrouch    = !bDoCrouch;
-    }
-    else
-    {
-        iCrouchCount++;
-    }
-    if (bDoCrouch)
-    {
-        cmd->buttons |= IN_DUCK;
-        *bSendPackets = true;
-    }
-    else
-    {
-        if (iCrouchCount + *dursneak < *dur)
-            cmd->buttons &= ~IN_DUCK;
-        *bSendPackets = false;
-    }
-
-    if ((cmd->buttons & IN_ATTACK))
-        *bSendPackets = true;
-}
 static float randyaw = 0.0f;
 void ProcessUserCmd(CUserCmd *cmd)
 {
@@ -518,14 +480,12 @@ void ProcessUserCmd(CUserCmd *cmd)
             clamp = false;
         }
         break;
+    case 20:
     case 18: // Fake sideways
         y += *bSendPackets ? 90.0f : -90.0f;
         break;
     case 19: // Fake left
-        y += !*bSendPackets ? 0.0f : -90.0f;
-        break;
-    case 20: // Fake right
-        y += !*bSendPackets ? 0.0f : 90.0f;
+        y += !*bSendPackets ? -90.0f : -90.0f;
         break;
     case 21: // Fake reverse edge
         if (*bSendPackets)
@@ -602,7 +562,6 @@ void ProcessUserCmd(CUserCmd *cmd)
         p = GetAAAAPitch();
     }
     g_pLocalPlayer->bUseSilentAngles = true;
-    FakeCrouch(cmd);
 }
 
 bool isEnabled()
