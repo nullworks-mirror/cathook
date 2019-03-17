@@ -454,29 +454,3 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     return ret;
 }
 } // namespace hooked_methods
-
-/*float o_curtime;
-float o_frametime;
-
-void Start() {
-    g_IGameMovement->StartTrackPredictionErrors((CBasePlayer*)(RAW_ENT(LOCAL_E)));
-
-    IClientEntity* player = RAW_ENT(LOCAL_E);
-    // CPredictableId::ResetInstanceCounters();
-    *(reinterpret_cast<CUserCmd*>(reinterpret_cast<uintptr_t>(player) + 1047)) =
-current_user_cmd; o_curtime = g_GlobalVars->curtime; o_frametime =
-g_GlobalVars->frametime; *g_PredictionRandomSeed =
-MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF;
-g_GlobalVars->curtime
-= CE_INT(LOCAL_E, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
-    g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
-
-    CMoveData data;
-
-}
-
-void End() {
-    *g_PredictionRandomSeed = -1;
-    g_GlobalVars->curtime = o_curtime;
-    g_GlobalVars->frametime = o_frametime;
-}*/

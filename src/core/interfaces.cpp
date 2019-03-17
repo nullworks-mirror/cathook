@@ -132,14 +132,6 @@ void CreateInterfaces()
     g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
     IF_GAME(IsTF2())
     {
-        // g_IMoveHelper =
-        // *(reinterpret_cast<IMoveHelper**>(gSignatures.GetClientSignature("? ?
-        // ? ? 8B 10 89 04 24 FF 52 28 0F B7 CF 8B 10 89 4C 24 04 89 04 24 FF 52
-        // 1C 8B 13 89 1C 24 89 44 24 04 FF 92 74 05 00 00 8D 95 C8 FE FF FF C7
-        // 44 24 08 00 00 00 00")));
-    }
-    IF_GAME(IsTF2())
-    {
         g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF "
                                                                                                   "92 B4 00 00 00 A1 ? ? ? ? 8B 10")));
     }
@@ -168,17 +160,6 @@ void CreateInterfaces()
 
         uintptr_t g_pGameRules_sig = gSignatures.GetClientSignature("C7 03 ? ? ? ? 89 1D ? ? ? ? 83 C4 14 5B 5D C3");
         g_pGameRules               = *reinterpret_cast<CGameRules **>(g_pGameRules_sig + 8);
-    }
-    IF_GAME(IsTF2())
-    {
-        /*
-        uintptr_t gcsystem_sig = gSignatures.GetClientSignature("E8 ? ? ? ? C7
-        44 24 04 04 00 00 00 89 04 24 E8 ? ? ? ? E9 17 FF FF FF") + 1; typedef
-        TFGCClientSystem*(*func_t)(void); logging::Info("GCSystem = 0x%08x",
-        gcsystem_sig); uintptr_t gcc_p = *(uintptr_t*)(gcsystem_sig); func_t
-        get_gc = (gcc_p + gcsystem_sig + 4); logging::Info("GTFGCClientSystem()
-        = 0x%08x", get_gc); g_TFGCClientSystem = get_gc();
-        */
     }
     g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());
 

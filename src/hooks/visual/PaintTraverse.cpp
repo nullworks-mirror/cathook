@@ -31,9 +31,6 @@ CatCommand join("mm_join", "Join mm Match", []() {
 void *pure_orig  = nullptr;
 void **pure_addr = nullptr;
 
-// static CatVar disable_ban_tf(CV_SWITCH, "disable_mm_ban", "0", "Disable MM
-// ban", "Disable matchmaking ban");
-
 bool replaced = false;
 namespace hooked_methods
 {
@@ -80,34 +77,13 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
 #if not ENABLE_VISUALS
     if (checkmmban.test_and_set(1000))
     {
-        if (tfmm::isMMBanned())
         {
-            *(int *) nullptr = 0;
+        if (tfmm::isMMBanned())
             exit(1);
         }
+            *(int *) nullptr = 0;
     }
 #endif
-    /*
-    static bool replacedban = false;
-    if (disable_ban_tf && !replacedban)
-    {
-        static unsigned char patch[] = { 0x31, 0xe0 };
-        static unsigned char patch2[] = { 0xb0, 0x01, 0x90 };
-        uintptr_t addr = gSignatures.GetClientSignature("31 C0 5B 5E 5F 5D C3 8D
-    B6 00 00 00 00 BA");
-        uintptr_t addr2 = gSignatures.GetClientSignature("0F 92 C0 83 C4 ? 5B 5E
-    5F 5D C3 8D B4 26 00 00 00 00 83 C4");
-        if (addr && addr2)
-        {
-            logging::Info("MM Banned: 0x%08x, 0x%08x", addr, addr2);
-            Patch((void*) addr, (void *) patch, sizeof(patch));
-            Patch((void*) addr2, (void *) patch2, sizeof(patch2));
-            replacedban = true;
-        }
-        else
-            logging::Info("No disable ban Signature");
-
-    }*/
     if (no_reportlimit && !replaced)
     {
         static BytePatch no_report_limit(gSignatures.GetClientSignature, "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8", 0x75, { 0xB8, 0x01, 0x00, 0x00, 0x00 });
@@ -146,19 +122,6 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
             if (software_cursor->GetBool())
                 software_cursor->SetValue(0);
             break;
-#if ENABLE_GUI
-/*
-        case 3:
-            if (cur != g_pGUI->Visible()) {
-                software_cursor->SetValue(g_pGUI->Visible());
-            }
-            break;
-        case 4:
-            if (cur == g_pGUI->Visible()) {
-                software_cursor->SetValue(!g_pGUI->Visible());
-            }
-*/
-#endif
         }
     }
     if (call_default)
@@ -201,9 +164,6 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
 
     if (clean_screenshots && g_IEngine->IsTakingScreenshot())
         return;
-#if ENABLE_GUI
-// FIXME
-#endif
     draw::UpdateWTS();
 }
 } // namespace hooked_methods
