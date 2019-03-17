@@ -256,7 +256,7 @@ void updateData()
     std::string nick("Anon");
     if (!*anon)
         nick = g_ISteamFriends->GetPersonaName();
-    irc.UpdateData(nick, nick, *channel, *commandandcontrol_channel, *commandandcontrol_password, *address, *port, *hacks::shared::catbot::catbotmode);
+    irc.UpdateData(nick, nick, *channel, *commandandcontrol_channel, *commandandcontrol_password, *address, *port, *hacks::shared::catbot::catbotmode, g_ISteamUser->GetSteamID().GetAccountID());
 }
 
 bool sendmsg(std::string &msg, bool loopback)
