@@ -140,15 +140,6 @@ void CreateInterfaces()
         g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF "
                                                                                                   "92 B4 00 00 00 A1 ? ? ? ? 8B 10")));
     }
-    else IF_GAME(IsTF2C())
-    {
-        g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF "
-                                                                                                  "92 A8 00 00 00 A1 ? ? ? ? 8B 10")));
-    }
-    else
-    {
-        g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? 8B 10 89 04 24 FF 52 78 A1 ? ? ? ? 8B 10")));
-    }
     g_ISteamUser       = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
     g_IModelInfo       = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine());
     g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(gSignatures.GetEngineSignature("55 89 E5 83 EC 18 C7 44 24 04 01 00 00 00 C7 04 24 ? ? ? ? E8 ? ? "
@@ -192,25 +183,6 @@ void CreateInterfaces()
                                                                                                                 "8D B4 26 00 00 00 00 8B "
                                                                                                                 "43 04 85 C0 74 10") +
                                                                                  9);
-    }
-    else IF_GAME(IsTF2C())
-    {
-        logging::Info("FATAL: Signatures not defined for TF2C - Screen Space Effects");
-        g_pScreenSpaceEffects           = nullptr;
-        g_ppScreenSpaceRegistrationHead = nullptr;
-    }
-    else IF_GAME(IsHL2DM())
-    {
-        g_pScreenSpaceEffects           = **(IScreenSpaceEffectManager ***) (gSignatures.GetClientSignature("FF 52 14 E9 E0 FE FF FF 8D "
-                                                                                                  "76 00 A1 ? ? ? ? 8B 5D F4 "
-                                                                                                  "8B 75 F8 8B 7D FC 8B 10 C7 "
-                                                                                                  "45 0C ? ? ? ? 89 45 08 8B "
-                                                                                                  "42 1C 89 EC 5D FF E0") +
-                                                                   12);
-        g_ppScreenSpaceRegistrationHead = *(CScreenSpaceEffectRegistration ***) (gSignatures.GetClientSignature("E8 ? ? ? ? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 "
-                                                                                                                "28 85 C0 75 4B 8B 35 ? ? ? ? 85 F6 74 31 90 8B 5E "
-                                                                                                                "04 85 DB 74 22 8B 03 89 1C 24") +
-                                                                                 27);
     }
     logging::Info("Finding HUD");
     IF_GAME(IsCSS())
