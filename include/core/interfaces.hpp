@@ -52,6 +52,8 @@ class TFGCClientSystem;
 class CGameRules;
 class IEngineVGui;
 class IUniformRandomStream;
+class IFileSystem;
+class IMDLCache;
 
 extern TFGCClientSystem *g_TFGCClientSystem;
 extern CHud *g_CHUD;
@@ -87,5 +89,10 @@ extern IGameEventManager *g_IGameEventManager;
 extern CGameRules *g_pGameRules;
 extern IEngineVGui *g_IEngineVGui;
 extern IUniformRandomStream *g_pUniformStream;
+extern int *g_PredictionRandomSeed;
+#if ENABLE_NULL_GRAPHICS
+extern IFileSystem *g_IFileSystem;
+extern IMDLCache *g_IMDLCache;
+#endif
 
 void CreateInterfaces();

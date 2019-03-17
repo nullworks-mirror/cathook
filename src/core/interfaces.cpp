@@ -51,6 +51,11 @@ CHud *g_CHUD                            = nullptr;
 CGameRules *g_pGameRules                = nullptr;
 IEngineVGui *g_IEngineVGui              = nullptr;
 IUniformRandomStream *g_pUniformStream  = nullptr;
+int *g_PredictionRandomSeed             = nullptr;
+#if ENABLE_NULL_GRAPHICS
+IFileSystem *g_IFileSystem              = nullptr;
+IMDLCache *g_IMDLCache                  = nullptr;
+#endif
 
 template <typename T> T *BruteforceInterface(std::string name, sharedobj::SharedObject &object, int start = 0)
 {
@@ -162,6 +167,10 @@ void CreateInterfaces()
         g_pGameRules               = *reinterpret_cast<CGameRules **>(g_pGameRules_sig + 8);
     }
     g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());
+#if ENABLE_NULL_GRAPHICS
+    g_IFileSystem = BruteforceInterface<IFileSystem>("VFileSystem", sharedobj::filesystem_stdio());
+    g_IMDLCache = BruteforceInterface<IMDLCache>("MDLCache", sharedobj::datacache());
+#endif
 
 #if ENABLE_VISUALS
     g_pUniformStream    = **(IUniformRandomStream ***) (gSignatures.GetVstdSignature("A3 ? ? ? ? C3 89 F6") + 0x1);

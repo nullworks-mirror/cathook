@@ -96,6 +96,8 @@ void LoadAllSharedObjects()
         tier0().Load();
         inputsystem().Load();
         materialsystem().Load();
+        filesystem_stdio().Load();
+        datacache().Load();
 #if ENABLE_VISUALS
         vguimatsurface().Load();
         vgui2().Load();
@@ -147,6 +149,17 @@ SharedObject &inputsystem()
 SharedObject &materialsystem()
 {
     static SharedObject obj("materialsystem.so", true);
+    return obj;
+}
+
+SharedObject &filesystem_stdio()
+{
+    static SharedObject obj("filesystem_stdio.so", true);
+    return obj;
+}
+SharedObject &datacache()
+{
+    static SharedObject obj("datacache.so", true);
     return obj;
 }
 #if ENABLE_VISUALS

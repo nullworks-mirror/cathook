@@ -45,6 +45,8 @@ SharedObject &vstdlib();
 SharedObject &tier0();
 SharedObject &inputsystem();
 SharedObject &materialsystem();
+SharedObject &filesystem_stdio();
+SharedObject &datacache();
 #if ENABLE_VISUALS
 SharedObject &vguimatsurface();
 SharedObject &vgui2();
