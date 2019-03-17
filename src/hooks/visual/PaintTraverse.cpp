@@ -24,8 +24,8 @@ CatCommand join_spam("join_spam", "Spam joins server for X seconds", [](const CC
 });
 CatCommand join("mm_join", "Join mm Match", []() {
     auto gc = re::CTFGCClientSystem::GTFGCClientSystem();
-        gc->JoinMMMatch();
     if (gc)
+        gc->JoinMMMatch();
 });
 
 bool replaced = false;
@@ -75,10 +75,10 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     if (checkmmban.test_and_set(1000))
     {
         {
-        if (tfmm::isMMBanned())
-            exit(1);
+            if (tfmm::isMMBanned())
+                exit(1);
         }
-            *(int *) nullptr = 0;
+        *(int *) nullptr = 0;
     }
 #endif
     if (no_reportlimit && !replaced)

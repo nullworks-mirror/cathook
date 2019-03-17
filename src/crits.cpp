@@ -16,8 +16,6 @@ static settings::Bool crit_experimental{ "crit.experimental", "false" };
 
 std::unordered_map<int, int> command_number_mod{};
 
-int *g_PredictionRandomSeed = nullptr;
-
 namespace criticals
 {
 

@@ -13,7 +13,7 @@ static void toggle(bool on)
             pure_addr = *reinterpret_cast<void ***>(gSignatures.GetEngineSignature("A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") + 1);
             if (!pure_addr)
             {
-                logging::InfoConsole("Pure bypass broken, failed to find signature");
+                logging::Info("Pure bypass broken, failed to find signature");
                 return;
             }
         }

@@ -167,12 +167,11 @@ bool IsDefault(CachedEntity *entity)
 CatCommand pl_save("pl_save", "Save playerlist", Save);
 CatCommand pl_load("pl_load", "Load playerlist", Load);
 
-CatCommand pl_print("pl_print", "Print current player list",
-[](const CCommand &args) {
+CatCommand pl_print("pl_print", "Print current player list", [](const CCommand &args) {
     userdata empty{};
     bool include_all = args.ArgC() >= 2 && *args.Arg(1) == '1';
 
-    logging::InfoConsole("Known entries: %lu", data.size());
+    logging::Info("Known entries: %lu", data.size());
     for (auto it = data.begin(); it != data.end(); ++it)
     {
         if (!include_all && !std::memcmp(&it->second, &empty, sizeof(empty)))
@@ -180,11 +179,9 @@ CatCommand pl_print("pl_print", "Print current player list",
 
         const auto &ent = it->second;
 #if ENABLE_VISUALS
-        logging::InfoConsole("%u -> %d (%f,%f,%f,%f) %f %u %u", it->first,
-            ent.state, ent.color.r, ent.color.g, ent.color.b, ent.color.a,
-            ent.inventory_value, ent.deaths_to, ent.kills);
+        logging::Info("%u -> %d (%f,%f,%f,%f) %f %u %u", it->first, ent.state, ent.color.r, ent.color.g, ent.color.b, ent.color.a, ent.inventory_value, ent.deaths_to, ent.kills);
 #else
-        logging::InfoConsole("%u -> %d %f %u %u", it->first, ent.state,
+        logging::Info("%u -> %d %f %u %u", it->first, ent.state,
             ent.inventory_value, ent.deaths_to, ent.kills);
 #endif
     }
@@ -225,7 +222,7 @@ static void pl_cleanup()
         /* Start all over again. Iterator is invalidated once erased. */
         it = data.begin();
     }
-    logging::InfoConsole("%lu elements were removed", counter);
+    logging::Info("%lu elements were removed", counter);
 }
 
 CatCommand pl_clean("pl_clean", "Removes empty entries to reduce RAM usage", pl_cleanup);
