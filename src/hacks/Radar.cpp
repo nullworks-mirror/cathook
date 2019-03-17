@@ -69,6 +69,7 @@ static std::vector<std::vector<textures::sprite>> tx_class{};
 static std::vector<textures::sprite> tx_teams{};
 static std::vector<textures::sprite> tx_items{};
 static std::vector<textures::sprite> tx_buildings{};
+static std::vector<textures::sprite> tx_sentry{};
 
 void DrawEntity(int x, int y, CachedEntity *ent)
 {
@@ -127,12 +128,16 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                 }
                 case CL_CLASS(CObjectSentrygun):
                 {
-                    tx_buildings[1].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
+                    int level   = CE_INT(ent, netvar.iUpgradeLevel);
+                    bool IsMini = CE_BYTE(ent, netvar.m_bMiniBuilding);
+                    if (IsMini)
+                        level = 4;
+                    tx_sentry[level - 1].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
                     break;
                 }
                 case CL_CLASS(CObjectTeleporter):
                 {
-                    tx_buildings[2].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
+                    tx_buildings[1].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
                     break;
                 }
                 }
@@ -244,8 +249,10 @@ static InitRoutine init([]() {
         for (int j = 0; j < 9; ++j)
             tx_class[i].push_back(textures::atlas().create_sprite(j * 64, 320 + i * 64, 64, 64));
     }
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 2; i++)
         tx_buildings.push_back(textures::atlas().create_sprite(576 + i * 64, 320, 64, 64));
+    for (int i = 0; i < 4; i++)
+        tx_sentry.push_back(textures::atlas().create_sprite(640 + i * 64, 256, 64, 64));
     logging::Info("Radar sprites loaded");
     EC::Register(EC::Draw, Draw, "radar", EC::average);
 });

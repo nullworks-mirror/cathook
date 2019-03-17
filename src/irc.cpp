@@ -18,6 +18,7 @@ static settings::Int port("irc.port", "8080");
 static settings::String commandandcontrol_channel("irc.cc.channel", "");
 static settings::String commandandcontrol_password("irc.cc.password", "");
 
+static settings::Bool transfer_leader_on_kick("irc.cc.leader-transfer", "true");
 static settings::Bool botonly("irc.cc.command-bot-only", "true");
 static settings::Bool irc_party{ "irc.cc.party", "false" };
 static settings::Bool answer_steam{ "irc.cc.respondparty", "false" };
@@ -314,8 +315,44 @@ int GetMaxParty()
     return partyable;
 }
 CatCommand debug_maxparty("debug_partysize", "Debug party size", []() { logging::Info("%d", GetMaxParty()); });
-
+CatCommand debug_steamids("debug_steamids", "Debug steamids", []() {
+    for (auto &i : irc.getPeers())
+        logging::Info("%u", i.second.steamid);
+});
 static Timer resize_party{};
+
+void party_leader_pass()
+{
+    re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
+    re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
+    if (gc && !gc->BHaveLiveMatch() && pc->GetNumMembers() > 1)
+    {
+        CSteamID steamid;
+        pc->GetCurrentPartyLeader(steamid);
+        if (steamid.GetAccountID() == g_ISteamUser->GetSteamID().GetAccountID())
+        {
+            std::vector<unsigned> valid_steam_ids = pc->GetPartySteamIDs();
+            bool found                            = false;
+            for (auto &peer : irc.getPeers())
+            {
+                if (found)
+                    break;
+                if (peer.second.is_ingame)
+                {
+                    for (auto &id : valid_steam_ids)
+                        if (id == peer.second.steamid)
+                        {
+                            CSteamID steam(id, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+                            pc->PromotePlayerToLeader(steam);
+                            found = true;
+                            break;
+                        }
+                }
+            }
+        }
+    }
+}
+
 static void run()
 {
     if (!restarting)
@@ -388,10 +425,13 @@ static void run()
                 size = online_members;
             else
                 size = -1;
-            state.party_size = size;
-            state.is_ingame  = true;
+            state.party_size          = size;
+            re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
+            state.is_ingame           = gc && gc->BHaveLiveMatch();
             irc.setState(state);
         }
+        if (transfer_leader_on_kick)
+            party_leader_pass();
     }
 }
 
