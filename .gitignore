@@ -274,6 +274,7 @@ build
 # idk where it comes from
 cathook.cbp
 
+*.geany
 .project
 .cproject
 .settings
