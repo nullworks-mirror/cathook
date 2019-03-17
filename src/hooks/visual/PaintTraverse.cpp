@@ -8,7 +8,6 @@
 #include "HookedMethods.hpp"
 #include "CatBot.hpp"
 
-static settings::Bool pure_bypass{ "visual.sv-pure-bypass", "false" };
 static settings::Int software_cursor_mode{ "visual.software-cursor-mode", "0" };
 
 static settings::Int waittime{ "debug.join-wait-time", "2500" };
@@ -25,11 +24,9 @@ CatCommand join_spam("join_spam", "Spam joins server for X seconds", [](const CC
 });
 CatCommand join("mm_join", "Join mm Match", []() {
     auto gc = re::CTFGCClientSystem::GTFGCClientSystem();
-    if (gc)
         gc->JoinMMMatch();
+    if (gc)
 });
-void *pure_orig  = nullptr;
-void **pure_addr = nullptr;
 
 bool replaced = false;
 namespace hooked_methods
@@ -89,21 +86,6 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
         static BytePatch no_report_limit(gSignatures.GetClientSignature, "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8", 0x75, { 0xB8, 0x01, 0x00, 0x00, 0x00 });
         no_report_limit.Patch();
         replaced = true;
-    }
-    if (pure_bypass)
-    {
-        if (!pure_addr)
-        {
-            pure_addr = *reinterpret_cast<void ***>(gSignatures.GetEngineSignature("A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") + 1);
-        }
-        if (*pure_addr)
-            pure_orig = *pure_addr;
-        *pure_addr = (void *) 0;
-    }
-    else if (pure_orig)
-    {
-        *pure_addr = pure_orig;
-        pure_orig  = (void *) 0;
     }
     call_default = true;
     if (isHackActive() && (panel_scope || motd_panel || motd_panel_sd) && ((no_zoom && panel == panel_scope) || (hacks::shared::catbot::catbotmode && hacks::shared::catbot::anti_motd && (panel == motd_panel || panel == motd_panel_sd))))

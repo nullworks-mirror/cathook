@@ -32,6 +32,7 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/MiscPlayerInfo.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/NavBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Noisemaker.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/PureBypass.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/UberSpam.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp"
