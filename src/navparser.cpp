@@ -15,6 +15,7 @@ static settings::Bool enabled{ "misc.pathing", "true" };
 static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "true" };
 static settings::Bool draw{ "misc.pathing.draw", "false" };
 static settings::Bool look{ "misc.pathing.look-at-path", "false" };
+static settings::Int stuck_time{ "misc.pathing.stuck-time", "4000" };
 
 static std::vector<Vector> crumbs;
 
@@ -219,14 +220,15 @@ public:
     }
     static bool addTime(CNavArea *begin, CNavArea *end, Timer &time)
     {
+        using namespace std::chrono;
         // Check if connection is already known
         if (ignores.find({ begin, end }) == ignores.end())
         {
             ignores[{ begin, end }] = {};
         }
         ignoredata &connection = ignores[{ begin, end }];
-        connection.stucktime += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - time.last).count();
-        if (connection.stucktime > 3999)
+        connection.stucktime += duration_cast<milliseconds>(system_clock::now() - time.last).count();
+        if (connection.stucktime >= *stuck_time)
         {
             connection.status = explicit_ignored;
             connection.ignoreTimeout.update();
