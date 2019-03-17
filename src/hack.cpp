@@ -143,6 +143,54 @@ void critical_error_handler(int signum)
     ::raise(SIGABRT);
 }
 
+#if ENABLE_NULL_GRAPHICS
+static bool blacklist_file(const char *filename)
+{
+    const static char *blacklist[] = { ".vtx", ".vtf", ".pcf", ".mdl" };
+    if (!filename || !std::strcmp(filename, "models/error.mdl") ||
+        !std::strcmp(filename, "models/vgui/competitive_badge.mdl") ||
+        !std::strcmp(filename, "models/vgui/12v12_badge.mdl") ||
+        !std::strncmp(filename, "models/player/", 14))
+        return false;
+
+    std::size_t len = std::strlen(filename);
+    if (len > 3)
+    {
+        auto ext_p = filename + len - 4;
+        for (int i = 0; i < sizeof(blacklist) / sizeof(blacklist[0]); ++i)
+            if (!std::strcmp(ext_p, blacklist[i]))
+                return true;
+    }
+    return false;
+}
+
+static bool (*FSorig_ReadFile)(void*, const char *, const char *, void *, int, int, void *);
+static bool FSHook_ReadFile(void *this_, const char *pFileName, const char *pPath,
+    void *buf, int nMaxBytes, int nStartingByte, void *pfnAlloc)
+{
+    //fprintf(stderr, "ReadFile: %s\n", pFileName);
+    if (blacklist_file(pFileName))
+        return false;
+
+    return FSorig_ReadFile(this_, pFileName, pPath, buf, nMaxBytes, nStartingByte, pfnAlloc);
+}
+
+#endif
+
+static void ReduceRamUsage()
+{
+#if ENABLE_NULL_GRAPHICS
+    static hooks::VMTHook /*fs_hook,*/ fs_hook2;
+    fs_hook2.Set(reinterpret_cast<void *>(g_IFileSystem), 4);
+    fs_hook2.HookMethod(FSHook_ReadFile, 14, &FSorig_ReadFile);
+    fs_hook2.Apply();
+
+    /* ERROR: Must be called from texture thread */
+    //g_IMaterialSystem->ReloadTextures();
+    g_IBaseClient->InvalidateMdlCache();
+#endif
+}
+
 static void InitRandom()
 {
     int rand_seed;
@@ -198,6 +246,7 @@ free(logname);*/
     InitRandom();
     sharedobj::LoadAllSharedObjects();
     CreateInterfaces();
+    ReduceRamUsage();
     CDumper dumper;
     dumper.SaveDump();
     logging::Info("Is TF2? %d", IsTF2());
@@ -287,25 +336,6 @@ free(logname);*/
     hooks::steamfriends.HookMethod(HOOK_ARGS(GetFriendPersonaName));
     hooks::steamfriends.Apply();
 
-#if ENABLE_NULL_GRAPHICS
-    g_IMaterialSystem->SetInStubMode(true);
-    IF_GAME(IsTF2())
-    {
-        logging::Info("Graphics Nullified");
-        logging::Info("The game will crash");
-        // TODO offsets::()?
-        hooks::materialsystem.Set((void *) g_IMaterialSystem);
-        uintptr_t base = *(uintptr_t *) (g_IMaterialSystem);
-        hooks::materialsystem.HookMethod((void *) ReloadTextures_null_hook, 70);
-        hooks::materialsystem.HookMethod((void *) ReloadMaterials_null_hook, 71);
-        hooks::materialsystem.HookMethod((void *) FindMaterial_null_hook, 73);
-        hooks::materialsystem.HookMethod((void *) FindTexture_null_hook, 81);
-        hooks::materialsystem.HookMethod((void *) ReloadFilesInList_null_hook, 121);
-        hooks::materialsystem.HookMethod((void *) FindMaterialEx_null_hook, 123);
-        hooks::materialsystem.Apply();
-        // hooks::materialsystem.HookMethod();
-    }
-#endif
     // FIXME [MP]
     logging::Info("Hooked!");
     velocity::Init();
