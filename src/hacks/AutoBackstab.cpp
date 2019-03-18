@@ -168,6 +168,75 @@ static void doBacktrackStab()
         *bSendPackets = true;
 }
 
+static void doLegitBacktrackStab() //lol
+{
+    float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+    CachedEntity *ent;
+    if (hacks::shared::backtrack::iBestTarget < 1)
+        return;
+    ent = ENTITY(hacks::shared::backtrack::iBestTarget);
+    if (!ent->m_bEnemy() || !player_tools::shouldTarget(ent))
+        return;
+    auto &btd       = hacks::shared::backtrack::headPositions[ent->m_IDX];
+    Vector newangle = g_pLocalPlayer->v_OrigViewangles;
+    std::vector<float> yangles;
+    float best_scr = FLT_MAX;
+    hacks::shared::backtrack::BacktrackData *best_tick;
+    for (int ii = 0; ii < 66; ii++)
+    {
+        std::vector<float> yangles_tmp;
+        auto &i = btd[ii];
+
+        Vector distcheck = i.entorigin;
+        distcheck.z      = g_pLocalPlayer->v_Eye.z;
+        if (distcheck.DistTo(g_pLocalPlayer->v_Eye) < best_scr && distcheck.DistTo(g_pLocalPlayer->v_Eye) > 20.0f)
+        {
+            if (!hacks::shared::backtrack::ValidTick(i, ent))
+                continue;
+            if (!angleCheck(ent, i.entorigin, newangle))
+                continue;
+
+            Vector &min = i.collidable.min;
+            Vector &max = i.collidable.max;
+
+            // Get the min and max for the hitbox
+            Vector minz(fminf(min.x, max.x), fminf(min.y, max.y), fminf(min.z, max.z));
+            Vector maxz(fmaxf(min.x, max.x), fmaxf(min.y, max.y), fmaxf(min.z, max.z));
+
+            // Shrink the hitbox here
+            Vector size = maxz - minz;
+            Vector smod = { size.x * 0.20f, size.y * 0.20f, 0 };
+
+            // Save the changes to the vectors
+            minz += smod;
+            maxz -= smod;
+            maxz.z += 20.0f;
+
+            Vector hit;
+            if (hacks::shared::triggerbot::CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
+                yangles_tmp.push_back(newangle.y);
+        if (!yangles_tmp.empty())
+        {
+            yangles.clear();
+            best_scr  = distcheck.DistTo(g_pLocalPlayer->v_Eye);
+            best_tick = &i;
+            yangles   = yangles_tmp;
+        }
+    }
+}
+if (!yangles.empty() && best_tick)
+{
+    newangle.y                   = yangles.at(std::floor((float) yangles.size() / 2));
+    current_user_cmd->tick_count = best_tick->tickcount;
+    current_user_cmd->viewangles = newangle;
+    current_user_cmd->buttons |= IN_ATTACK;
+    g_pLocalPlayer->bUseSilentAngles = true;
+}
+if (!*bSendPackets)
+    *bSendPackets = true;
+}
+
+
 void CreateMove()
 {
     if (!enabled)
@@ -181,15 +250,21 @@ void CreateMove()
     case 0:
         doLegitBackstab();
         break;
+    case 1:
+        doRageBackstab();
+        break;
     case 2:
         if (hacks::shared::backtrack::isBacktrackEnabled)
         {
             doBacktrackStab();
             break;
         }
-    case 1:
-        doRageBackstab();
-        break;
+    case 3:
+        if (hacks::shared::backtrack::isBacktrackEnabled)
+        {
+            doLegitBacktrackStab();
+            break;
+        }
     }
 }
 

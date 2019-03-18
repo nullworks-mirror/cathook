@@ -7,6 +7,7 @@
                     <Option name="Legit" value="0"/>
                     <Option name="Rage" value="1"/>
                     <Option name="Backtrack" value="2"/>
+                    <Option name="Legit Backtrack" value="3"/>
                 </Select>
             </LabeledObject>
         </List>
