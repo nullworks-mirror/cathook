@@ -31,7 +31,5 @@ static void toggle(bool on)
 
 static InitRoutine init([] {
     toggle(*enabled);
-    enabled.installChangeCallback([](settings::VariableBase<bool> &, bool on) {
-        toggle(on);
-    });
+    enabled.installChangeCallback([](settings::VariableBase<bool> &, bool on) { toggle(on); });
 });

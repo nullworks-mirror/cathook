@@ -168,7 +168,7 @@ static void doBacktrackStab()
         *bSendPackets = true;
 }
 
-static void doLegitBacktrackStab() //lol
+static void doLegitBacktrackStab() // lol
 {
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     CachedEntity *ent;
@@ -236,7 +236,6 @@ static void doLegitBacktrackStab() //lol
     if (!*bSendPackets)
         *bSendPackets = true;
 }
-
 
 void CreateMove()
 {

@@ -19,7 +19,7 @@ int static_init_wminfo = (wminfo.version.major = 2, wminfo.version.minor = 0, 1)
 typedef SDL_bool (*SDL_GetWindowWMInfo_t)(SDL_Window *window, SDL_SysWMinfo *info);
 static SDL_GetWindowWMInfo_t GetWindowWMInfo = nullptr;
 static SDL_GLContext tf2_sdl                 = nullptr;
-static SDL_GLContext imgui_sdl                 = nullptr;
+static SDL_GLContext imgui_sdl               = nullptr;
 Timer delay{};
 namespace hooked_methods
 {
