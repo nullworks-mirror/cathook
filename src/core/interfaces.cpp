@@ -52,10 +52,8 @@ CGameRules *g_pGameRules                = nullptr;
 IEngineVGui *g_IEngineVGui              = nullptr;
 IUniformRandomStream *g_pUniformStream  = nullptr;
 int *g_PredictionRandomSeed             = nullptr;
-#if ENABLE_NULL_GRAPHICS
 IFileSystem *g_IFileSystem              = nullptr;
 IMDLCache *g_IMDLCache                  = nullptr;
-#endif
 
 template <typename T> T *BruteforceInterface(std::string name, sharedobj::SharedObject &object, int start = 0)
 {
@@ -132,7 +130,7 @@ void CreateInterfaces()
         // FIXME SIGNATURE
         g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
     }
-    rg_GlobalVars    = *reinterpret_cast<CGlobalVarsBase ***>(gSignatures.GetClientSignature("8B 15 ? ? ? ? F3 0F 10 88 D0 08 00 00") + 2);
+    rg_GlobalVars   = *reinterpret_cast<CGlobalVarsBase ***>(gSignatures.GetClientSignature("8B 15 ? ? ? ? F3 0F 10 88 D0 08 00 00") + 2);
     g_IPrediction   = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client());
     g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
     IF_GAME(IsTF2())
@@ -158,10 +156,8 @@ void CreateInterfaces()
         g_pGameRules               = *reinterpret_cast<CGameRules **>(g_pGameRules_sig + 8);
     }
     g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());
-#if ENABLE_NULL_GRAPHICS
-    g_IFileSystem = BruteforceInterface<IFileSystem>("VFileSystem", sharedobj::filesystem_stdio());
-    g_IMDLCache = BruteforceInterface<IMDLCache>("MDLCache", sharedobj::datacache());
-#endif
+    g_IFileSystem     = BruteforceInterface<IFileSystem>("VFileSystem", sharedobj::filesystem_stdio());
+    g_IMDLCache       = BruteforceInterface<IMDLCache>("MDLCache", sharedobj::datacache());
 
 #if ENABLE_VISUALS
     g_pUniformStream    = **(IUniformRandomStream ***) (gSignatures.GetVstdSignature("A3 ? ? ? ? C3 89 F6") + 0x1);

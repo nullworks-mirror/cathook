@@ -14,7 +14,6 @@
 #define DATA_PATH "@DataPath@"
 #define ENABLE_VAC_BYPASS @VACBypass@
 #define ENABLE_TEXTMODE_STDIN @EnableTextmodeStdin@
-#define ENABLE_NULL_GRAPHICS @EnableNullGraphics@
 #define TEXTMODE @Textmode@
 #define ENABLE_PROFILER @EnableProfiler@
 #define ENABLE_ONLINE @EnableOnlineFeatures@

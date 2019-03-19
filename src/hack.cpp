@@ -143,14 +143,10 @@ void critical_error_handler(int signum)
     ::raise(SIGABRT);
 }
 
-#if ENABLE_NULL_GRAPHICS
 static bool blacklist_file(const char *filename)
 {
     const static char *blacklist[] = { ".vtx", ".vtf", ".pcf", ".mdl" };
-    if (!filename || !std::strcmp(filename, "models/error.mdl") ||
-        !std::strcmp(filename, "models/vgui/competitive_badge.mdl") ||
-        !std::strcmp(filename, "models/vgui/12v12_badge.mdl") ||
-        !std::strncmp(filename, "models/player/", 14))
+    if (!filename || !std::strcmp(filename, "models/error.mdl") || !std::strcmp(filename, "models/vgui/competitive_badge.mdl") || !std::strcmp(filename, "models/vgui/12v12_badge.mdl") || !std::strncmp(filename, "models/player/", 14))
         return false;
 
     std::size_t len = std::strlen(filename);
@@ -164,33 +160,33 @@ static bool blacklist_file(const char *filename)
     return false;
 }
 
-static bool (*FSorig_ReadFile)(void*, const char *, const char *, void *, int, int, void *);
-static bool FSHook_ReadFile(void *this_, const char *pFileName, const char *pPath,
-    void *buf, int nMaxBytes, int nStartingByte, void *pfnAlloc)
+static bool (*FSorig_ReadFile)(void *, const char *, const char *, void *, int, int, void *);
+static bool FSHook_ReadFile(void *this_, const char *pFileName, const char *pPath, void *buf, int nMaxBytes, int nStartingByte, void *pfnAlloc)
 {
-    //fprintf(stderr, "ReadFile: %s\n", pFileName);
+    // fprintf(stderr, "ReadFile: %s\n", pFileName);
     if (blacklist_file(pFileName))
         return false;
 
     return FSorig_ReadFile(this_, pFileName, pPath, buf, nMaxBytes, nStartingByte, pfnAlloc);
 }
 
-#endif
-
+static hooks::VMTHook /*fs_hook,*/ fs_hook2;
 static void ReduceRamUsage()
 {
-#if ENABLE_NULL_GRAPHICS
-    static hooks::VMTHook /*fs_hook,*/ fs_hook2;
     fs_hook2.Set(reinterpret_cast<void *>(g_IFileSystem), 4);
     fs_hook2.HookMethod(FSHook_ReadFile, 14, &FSorig_ReadFile);
     fs_hook2.Apply();
 
     /* ERROR: Must be called from texture thread */
-    //g_IMaterialSystem->ReloadTextures();
+    // g_IMaterialSystem->ReloadTextures();
     g_IBaseClient->InvalidateMdlCache();
-#endif
 }
-
+static void UnHookFs()
+{
+    fs_hook2.Release();
+    g_IBaseClient->InvalidateMdlCache();
+}
+static settings::Bool null_graphics("hack.nullgraphics", "false");
 static void InitRandom()
 {
     int rand_seed;
@@ -246,8 +242,13 @@ free(logname);*/
     InitRandom();
     sharedobj::LoadAllSharedObjects();
     CreateInterfaces();
-    ReduceRamUsage();
     CDumper dumper;
+    null_graphics.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (after)
+            ReduceRamUsage();
+        else
+            UnHookFs();
+    });
     dumper.SaveDump();
     logging::Info("Is TF2? %d", IsTF2());
     logging::Info("Is TF2C? %d", IsTF2C());

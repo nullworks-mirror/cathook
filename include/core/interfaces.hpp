@@ -90,9 +90,7 @@ extern CGameRules *g_pGameRules;
 extern IEngineVGui *g_IEngineVGui;
 extern IUniformRandomStream *g_pUniformStream;
 extern int *g_PredictionRandomSeed;
-#if ENABLE_NULL_GRAPHICS
 extern IFileSystem *g_IFileSystem;
 extern IMDLCache *g_IMDLCache;
-#endif
 
 void CreateInterfaces();

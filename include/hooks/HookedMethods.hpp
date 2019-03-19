@@ -82,7 +82,6 @@ DECLARE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *, int, int);
 // wontfix.club
 #if 0
 
-#if ENABLE_NULL_GRAPHICS
 typedef ITexture *(*FindTexture_t)(void *, const char *, const char *, bool,
                                    int);
 typedef IMaterial *(*FindMaterialEx_t)(void *, const char *, const char *, int,
@@ -108,6 +107,5 @@ typedef IMaterial *(*FindMaterial_t)(void *, const char *, const char *, bool,
                                               const char *pTextureGroupName,
                                               int nContext, bool complain,
                                               const char *pComplainPrefix);
-#endif
 
 #endif
