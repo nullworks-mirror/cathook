@@ -215,25 +215,26 @@ static void doLegitBacktrackStab() //lol
             Vector hit;
             if (hacks::shared::triggerbot::CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
                 yangles_tmp.push_back(newangle.y);
-        if (!yangles_tmp.empty())
-        {
-            yangles.clear();
-            best_scr  = distcheck.DistTo(g_pLocalPlayer->v_Eye);
-            best_tick = &i;
-            yangles   = yangles_tmp;
+
+            if (!yangles_tmp.empty())
+            {
+                yangles.clear();
+                best_scr  = distcheck.DistTo(g_pLocalPlayer->v_Eye);
+                best_tick = &i;
+                yangles   = yangles_tmp;
+            }
         }
     }
-}
-if (!yangles.empty() && best_tick)
-{
-    newangle.y                   = yangles.at(std::floor((float) yangles.size() / 2));
-    current_user_cmd->tick_count = best_tick->tickcount;
-    current_user_cmd->viewangles = newangle;
-    current_user_cmd->buttons |= IN_ATTACK;
-    g_pLocalPlayer->bUseSilentAngles = true;
-}
-if (!*bSendPackets)
-    *bSendPackets = true;
+    if (!yangles.empty() && best_tick)
+    {
+        newangle.y                   = yangles.at(std::floor((float) yangles.size() / 2));
+        current_user_cmd->tick_count = best_tick->tickcount;
+        current_user_cmd->viewangles = newangle;
+        current_user_cmd->buttons |= IN_ATTACK;
+        g_pLocalPlayer->bUseSilentAngles = true;
+    }
+    if (!*bSendPackets)
+        *bSendPackets = true;
 }
 
 
