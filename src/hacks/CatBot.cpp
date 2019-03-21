@@ -108,7 +108,7 @@ void do_random_votekick()
         return;
     hack::ExecuteCommand("callvote kick \"" + std::to_string(target) + " cheating\"");
 }
-
+static const std::string catbot_names[] = { "K4T-B0T", "cat-bot", "btarrant", "cat-scout", "just disable vac tf", "raul.garcia", "zCat", "lagger bot" };
 void update_catbot_list()
 {
     for (int i = 1; i < g_GlobalVars->maxClients; ++i)
@@ -118,14 +118,16 @@ void update_catbot_list()
             continue;
 
         info.name[31] = 0;
-        if (strcasestr(info.name, "cat-bot") || strcasestr(info.name, "just disable vac tf") || strcasestr(info.name, "raul.garcia") || strcasestr(info.name, "zCat") || strcasestr(info.name, "lagger bot") || strcasestr(info.name, "zLag-bot") || strcasestr(info.name, "crash-bot") || strcasestr(info.name, "reichstagbot"))
-        {
-            if (human_detecting_map.find(info.friendsID) == human_detecting_map.end())
+        std::string pl_name(info.name);
+        for (auto name : catbot_names)
+            if (pl_name.find(name) != pl_name.npos)
             {
-                logging::Info("Found bot %s [U:1:%u]", info.name, info.friendsID);
-                human_detecting_map.insert(std::make_pair(info.friendsID, catbot_user_state{ 0 }));
+                if (human_detecting_map.find(info.friendsID) == human_detecting_map.end())
+                {
+                    logging::Info("Found bot %s [U:1:%u]", info.name, info.friendsID);
+                    human_detecting_map.insert(std::make_pair(info.friendsID, catbot_user_state{ 0 }));
+                }
             }
-        }
     }
 }
 
@@ -333,7 +335,7 @@ static void cm()
 
     //
     static const int classes[3]{ tf_spy, tf_sniper, tf_pyro };
-    if (*auto_disguise && g_pPlayerResource->GetClass(LOCAL_E) == tf_spy && !HasCondition<TFCond_Disguised>(LOCAL_E) && disguise.test_and_set(3000))
+    if (*auto_disguise && g_pPlayerResource->GetClass(LOCAL_E) == tf_spy && !IsPlayerDisguised(LOCAL_E) && disguise.test_and_set(3000))
     {
         int teamtodisguise = (LOCAL_E->m_iTeam() == TEAM_RED) ? TEAM_RED - 1 : TEAM_BLU - 1;
         int classtojoin    = classes[rand() % 3];

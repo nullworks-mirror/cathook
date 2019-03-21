@@ -11,6 +11,7 @@ namespace hacks::tf2::NavBot
 static settings::Bool enabled("navbot.enabled", "false");
 static settings::Bool stay_near("navbot.stay-near", "true");
 static settings::Bool heavy_mode("navbot.other-mode", "false");
+static settings::Bool spy_mode("navbot.spy-mode", "false");
 static settings::Bool get_health("navbot.get-health-and-ammo", "true");
 static settings::Float jump_distance("navbot.autojump.trigger-distance", "300");
 static settings::Bool autojump("navbot.autojump.enabled", "false");
@@ -34,6 +35,7 @@ namespace task
 {
 task current_task;
 }
+constexpr bot_class_config DIST_SPY{ 300.0f, 500.0f, 1000.0f };
 constexpr bot_class_config DIST_OTHER{ 100.0f, 200.0f, 300.0f };
 constexpr bot_class_config DIST_SNIPER{ 1000.0f, 1500.0f, 3000.0f };
 
@@ -57,13 +59,13 @@ static void CreateMove()
         if (getHealthAndAmmo())
             return;
     // Try to stay near enemies to increase efficiency
-    if ((stay_near || heavy_mode) && current_task != task::followbot)
+    if ((stay_near || heavy_mode || spy_mode) && current_task != task::followbot)
         if (stayNear())
             return;
     // We don't have anything else to do. Just nav to sniper spots.
     if (navToSniperSpot())
         return;
-    // Uhh... Just stand arround I guess?
+    // Uhh... Just stand around I guess?
 }
 
 bool init(bool first_cm)
@@ -236,7 +238,11 @@ static bool stayNear()
 
     // What distances do we have to use?
     const bot_class_config *config;
-    if (heavy_mode)
+    if (spy_mode)
+    {
+        config = &DIST_SPY;
+    }
+    else if (heavy_mode)
     {
         config = &DIST_OTHER;
     }
@@ -425,6 +431,8 @@ static int GetBestSlot()
         return primary;
     case tf_medic:
         return secondary;
+    case tf_spy:
+        return primary;
     default:
     {
         float nearest_dist = getNearestPlayerDistance().second;
