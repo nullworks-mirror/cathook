@@ -6,6 +6,7 @@
 #include "ChIRC.hpp"
 #include "hack.hpp"
 #include "ucccccp.hpp"
+#include "PlayerTools.hpp"
 
 namespace IRC
 {
@@ -320,33 +321,51 @@ CatCommand debug_steamids("debug_steamids", "Debug steamids", []() {
         logging::Info("%u", i.second.steamid);
 });
 static Timer resize_party{};
-
-void party_leader_pass()
+static Timer pass_leader{};
+static Timer friend_party_t{};
+void friend_party()
 {
-    re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
-    re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
-    if (gc && !gc->BHaveLiveMatch() && pc->GetNumMembers() > 1)
+    if (friend_party_t.test_and_set(10000))
     {
-        CSteamID steamid;
-        pc->GetCurrentPartyLeader(steamid);
-        if (steamid.GetAccountID() == g_ISteamUser->GetSteamID().GetAccountID())
+        re::CTFPartyClient *pc = re::CTFPartyClient::GTFPartyClient();
+        if (pc)
         {
             std::vector<unsigned> valid_steam_ids = pc->GetPartySteamIDs();
-            bool found                            = false;
-            for (auto &peer : irc.getPeers())
+            for (auto steamid : valid_steam_ids)
+                if (steamid && player_tools::shouldTargetSteamId(steamid))
+                    playerlist::AccessData(steamid).state = playerlist::k_EState::CAT;
+        }
+    }
+}
+void party_leader_pass()
+{
+    if (pass_leader.test_and_set(10000))
+    {
+        re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
+        re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
+        if (gc && !gc->BHaveLiveMatch() && pc->GetNumMembers() > 1)
+        {
+            CSteamID steamid;
+            pc->GetCurrentPartyLeader(steamid);
+            if (steamid.GetAccountID() == g_ISteamUser->GetSteamID().GetAccountID())
             {
-                if (found)
-                    break;
-                if (peer.second.is_ingame)
+                std::vector<unsigned> valid_steam_ids = pc->GetPartySteamIDs();
+                bool found                            = false;
+                for (auto &peer : irc.getPeers())
                 {
-                    for (auto &id : valid_steam_ids)
-                        if (id == peer.second.steamid)
-                        {
-                            CSteamID steam(id, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
-                            pc->PromotePlayerToLeader(steam);
-                            found = true;
-                            break;
-                        }
+                    if (found)
+                        break;
+                    if (peer.second.is_ingame)
+                    {
+                        for (auto &id : valid_steam_ids)
+                            if (id == peer.second.steamid)
+                            {
+                                CSteamID steam(id, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+                                pc->PromotePlayerToLeader(steam);
+                                found = true;
+                                break;
+                            }
+                    }
                 }
             }
         }
