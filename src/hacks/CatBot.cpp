@@ -117,6 +117,8 @@ void update_catbot_list()
         if (!g_IEngine->GetPlayerInfo(i, &info))
             continue;
 
+        if (!info.friendsID || player_tools::shouldTargetSteamId(info.friendsID))
+            continue;
         info.name[31] = 0;
         std::string pl_name(info.name);
         for (auto name : catbot_names)
