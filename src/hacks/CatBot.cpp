@@ -108,7 +108,7 @@ void do_random_votekick()
         return;
     hack::ExecuteCommand("callvote kick \"" + std::to_string(target) + " cheating\"");
 }
-static const std::string catbot_names[] = { "K4T-B0T", "cat-bot", "btarrant", "cat-scout", "just disable vac tf", "raul.garcia", "zCat", "lagger bot" };
+static const std::string catbot_names[] = { "K4T-B0T", "cat-", "btarrant", "just disable vac tf", "raul.garcia", "zCat", "lagger bot" };
 void update_catbot_list()
 {
     for (int i = 1; i < g_GlobalVars->maxClients; ++i)
