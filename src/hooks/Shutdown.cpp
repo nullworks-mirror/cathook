@@ -7,7 +7,7 @@
 #include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
 
-static settings::Bool die_if_vac{ "misc.die-if-vac", "false" };
+settings::Bool die_if_vac{ "misc.die-if-vac", "false" };
 static settings::Bool autoabandon{ "misc.auto-abandon", "false" };
 static settings::String custom_disconnect_reason{ "misc.disconnect-reason", "" };
 settings::Bool random_name{ "misc.random-name", "false" };
@@ -15,12 +15,12 @@ extern settings::String force_name;
 
 namespace hooked_methods
 {
-Timer t{};
+
 DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
 {
     g_Settings.bInvalid = true;
     logging::Info("Disconnect: %s", reason);
-    if (strstr(reason, "banned") || strstr(reason, "Generic_Kicked"))
+    if (strstr(reason, "banned") || (strstr(reason, "Generic_Kicked") && tfmm::isMMBanned()))
     {
         if (*die_if_vac)
         {
@@ -40,12 +40,8 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
     {
         original::Shutdown(this_, reason);
     }
-
     if (autoabandon)
-    {
-        t.update();
         tfmm::disconnectAndAbandon();
-    }
     hacks::shared::autojoin::onShutdown();
     if (*random_name)
     {

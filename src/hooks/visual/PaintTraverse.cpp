@@ -31,7 +31,6 @@ CatCommand join("mm_join", "Join mm Match", []() {
 bool replaced = false;
 namespace hooked_methods
 {
-Timer checkmmban{};
 DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int panel, bool force, bool allow_force)
 {
     if (!isHackActive())
@@ -71,16 +70,6 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     }
     scndwait++;
     switcherido = !switcherido;
-#if not ENABLE_VISUALS
-    if (checkmmban.test_and_set(1000))
-    {
-        {
-            if (tfmm::isMMBanned())
-                exit(1);
-        }
-        *(int *) nullptr = 0;
-    }
-#endif
     if (no_reportlimit && !replaced)
     {
         static BytePatch no_report_limit(gSignatures.GetClientSignature, "55 89 E5 57 56 53 81 EC ? ? ? ? 8B 5D ? 8B 7D ? 89 D8", 0x75, { 0xB8, 0x01, 0x00, 0x00, 0x00 });
