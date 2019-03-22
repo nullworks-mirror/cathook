@@ -200,14 +200,12 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 
 bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 {
-    if (!isHackActive() || !*effect_chams::enable)
-        return false;
-    if (!effect_chams::enable)
+    if (!isHackActive() || !*effect_chams::enable || CE_BAD(LOCAL_E))
         return false;
     if (entity->entindex() < 0)
         return false;
     CachedEntity *ent = ENTITY(entity->entindex());
-    if (ent->m_IDX == LOCAL_E->m_IDX && !chamsself)
+    if (!chamsself && ent->m_IDX == LOCAL_E->m_IDX)
         return false;
     switch (ent->m_Type())
     {
