@@ -7,6 +7,7 @@
             <AutoVariable width="fill" target="hack.requeue-on-kick" label="Requeue on kick"/>
             <AutoVariable width="fill" target="autotaunt.enable" label="Autotaunt enabled"/>
             <AutoVariable width="fill" target="autotaunt.chance" label="Autotaunt chance" min="0" max="100"/>
+            <AutoVariable width="fill" target="autotaunt.safety-distance" label="Autotaunt safety distance"/>
             <LabeledObject width="fill" label="Autojoin Class">
                 <Select target="autojoin.class">
                     <Option name="None" value="0"/>

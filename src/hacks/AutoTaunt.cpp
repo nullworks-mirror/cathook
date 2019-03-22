@@ -11,6 +11,7 @@
 
 static settings::Bool enable{ "autotaunt.enable", "false" };
 static settings::Float chance{ "autotaunt.chance", "8" };
+static settings::Float safety{ "autotaunt.safety-distance", "0" };
 
 namespace hacks::tf::autotaunt
 {
@@ -26,7 +27,17 @@ public:
         }
         if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
-            if (RandomFloat(0, 100) <= float(chance))
+            bool nearby = false;
+            for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+            {
+                auto ent = ENTITY(i);
+                if (CE_GOOD(ent) && ent->m_flDistance() < *safety)
+                {
+                    nearby = true;
+                    break;
+                }
+            }
+            if (!nearby && RandomFloat(0, 100) <= float(chance))
             {
                 hack::ExecuteCommand("taunt");
             }
@@ -36,6 +47,8 @@ public:
 
 AutoTauntListener listener;
 
-// TODO remove event listener when uninjecting?
-InitRoutine init([]() { g_IEventManager2->AddListener(&listener, "player_death", false); });
+InitRoutine init([]() {
+    g_IEventManager2->AddListener(&listener, "player_death", false);
+    EC::Register(EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener); }, "Shutdown_Autotaunt");
+});
 } // namespace hacks::tf::autotaunt
