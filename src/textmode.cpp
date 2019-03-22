@@ -13,6 +13,8 @@ bool *allowSecureServers{ nullptr };
 
 void EXPOSED_Epic_VACBypass_1337_DoNotSteal_xXx_$1_xXx_MLG()
 {
+    ((ICommandLine * (*) (void) ) dlsym(sharedobj::tier0().lmap, "CommandLine_Tier0"))()->RemoveParm("-textmode");
+    ((ICommandLine * (*) (void) ) dlsym(sharedobj::tier0().lmap, "CommandLine_Tier0"))()->RemoveParm("-insecure");
     uintptr_t Host_IsSecureServerAllowed_addr = gSignatures.GetEngineSignature("55 89 E5 83 EC ? E8 ? ? ? ? 8B 10 C7 44 24 ? ? ? ? ? 89 04 24 FF 52 ? 85 C0 74 ? C6 05");
     // +0x21 = allowSecureServers
     // logging::Info("1337 VAC bypass: 0x%08x",
