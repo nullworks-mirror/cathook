@@ -19,7 +19,7 @@ fi
 # Update cathook
 #
 
-git fetch --depth 1 origin && git reset --hard @{upstream} # pull changes from github
+git fetch --depth 1 origin && git reset --hard latest # pull changes from github
 git submodule update --depth 1 --init --recursive # update/init submodules
 
 #
