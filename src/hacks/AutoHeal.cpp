@@ -533,7 +533,7 @@ void CreateMove()
         CachedEntity *target = ENTITY(force_healing_target);
         if (CE_GOOD(target))
         {
-            if (target->player_info.friendsID != steamid)
+            if (target->player_info.friendsID != steamid || !CanHeal(force_healing_target))
                 force_healing_target = 0;
             else
             {
@@ -543,15 +543,17 @@ void CreateMove()
                 current_user_cmd->buttons |= IN_ATTACK;
             }
         }
+        else
+            force_healing_target = 0;
     }
     else if (steamid)
     {
-        for (auto i = 0; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *ent = ENTITY(i);
-            if (!ent || !ent->player_info.friendsID)
+            if (CE_BAD(ent) || !ent->player_info.friendsID)
                 continue;
-            if (ent->player_info.friendsID == steamid)
+            if (ent->player_info.friendsID == steamid && CanHeal(i))
             {
                 force_healing_target = steamid;
                 break;
