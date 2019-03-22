@@ -133,6 +133,10 @@ public:
         else
             return 0.0f;
     };
+    Vector &m_vecAngle()
+    {
+        return CE_VECTOR(this, netvar.m_angEyeAngles);
+    };
 
     // Entity fields start here
     EntityType m_Type()

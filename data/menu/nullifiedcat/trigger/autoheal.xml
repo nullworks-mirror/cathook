@@ -25,8 +25,6 @@
         </List>
         <Box padding="12 6 6 6" name="Bullet" width="content" height="content" x="170">
             <List width="150">
-                <AutoVariable width="fill" target="autoheal.vacc.bullet.enable" label="Enable"/>
-                <AutoVariable width="fill" target="autoheal.vacc.bullet.min-charges" label="Min. charges" min="0" max="4"/>
                 <LabeledObject width="fill" label="Sniper pop">
                     <Select target="autoheal.vacc.bullet.sniper-pop">
                         <Option name="Never" value="0"/>
@@ -34,6 +32,8 @@
                         <Option name="Any zoomed" value="2"/>
                     </Select>
                 </LabeledObject>
+                <AutoVariable width="fill" target="autoheal.vacc.bullet.min-charges" label="Min. charges" min="0" max="4"/>
+                <AutoVariable width="fill" target="autoheal.vacc.bullet.max-fov" label="Max enemy FOV" min="0" max="180"/>
             </List>
         </Box>
         <Box padding="12 6 6 6" name="Blast" width="content" height="content" y="75">

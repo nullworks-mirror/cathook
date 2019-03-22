@@ -6,8 +6,8 @@
  */
 
 #include "common.hpp"
-#include <hacks/FollowBot.hpp>
-#include <settings/Bool.hpp>
+#include "hacks/FollowBot.hpp"
+#include "settings/Bool.hpp"
 
 static settings::Bool enable{ "autoheal.enable", "false" };
 static settings::Bool steamid_only{ "autoheal.steam-only", "false" };
@@ -18,8 +18,8 @@ static settings::Bool share_uber{ "autoheal.uber.share", "true" };
 
 static settings::Bool auto_vacc{ "autoheal.vacc.enable", "false" };
 
-static settings::Bool auto_vacc_bullets{ "autoheal.vacc.bullet.enable", "true" };
-static settings::Int vacc_sniper{ "autoheal.vacc.bullet.sniper-pop", "true" };
+static settings::Int vacc_sniper{ "autoheal.vacc.bullet.sniper-pop", "1" };
+static settings::Int vacc_sniper_fov{ "autoheal.vacc.bullet.sniper-fov", "20" };
 
 static settings::Bool auto_vacc_fire_checking{ "autoheal.vacc.fire.enable", "true" };
 static settings::Int auto_vacc_pop_if_pyro{ "autoheal.vacc.fire.pyro-pop", "1" };
@@ -77,29 +77,44 @@ int ChargeCount()
 // TODO Angle Checking
 int BulletDangerValue(CachedEntity *patient)
 {
-    // Find zoomed in snipers in other team
+    if (!vacc_sniper)
+        return 0;
     bool any_zoomed_snipers = false;
-    for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
+    // Find dangerous snipers in other team
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
             continue;
-        if (!ent->m_bEnemy())
+        if (!ent->m_bAlivePlayer() || !ent->m_bEnemy())
             continue;
         if (g_pPlayerResource->GetClass(ent) != tf_sniper)
-            continue;
-        if (CE_BYTE(ent, netvar.iLifeState))
             continue;
         if (!HasCondition<TFCond_Zoomed>(ent))
             continue;
         any_zoomed_snipers = true;
-        // TODO VisCheck from patient.
-        if ((int) vacc_sniper == 1)
-            if (!IsEntityVisible(ent, head) && !IsVectorVisible(ENTITY(m_iCurrentHealingTarget)->hitboxes.GetHitbox(head)->center, ent->hitboxes.GetHitbox(head)->center, true))
-                continue;
+        if (*vacc_sniper == 2)
+        {
+            // If vacc_sniper == 2 ("Any zoomed") then return 2
+            // Why would you want this?????
+            return 2;
+        }
+        else
+        {
+            if (IsEntityVisible(ent, head))
+            {
+                if (playerlist::AccessData(ent).state == playerlist::k_EState::RAGE)
+                    return 2;
+                else
+                {
+                    if (GetFov(ent->m_vecAngle(), ent->hitboxes.GetHitbox(head)->center, patient->hitboxes.GetHitbox(head)->center) < *vacc_sniper_fov)
+                        return 2;
+                }
+            }
+        }
         return vacc_sniper ? 2 : 1;
     }
-    return any_zoomed_snipers;
+    return any_zoomed_snipers ? 1 : 0;
 }
 
 int FireDangerValue(CachedEntity *patient)
