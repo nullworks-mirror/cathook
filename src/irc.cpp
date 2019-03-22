@@ -322,21 +322,7 @@ CatCommand debug_steamids("debug_steamids", "Debug steamids", []() {
 });
 static Timer resize_party{};
 static Timer pass_leader{};
-static Timer friend_party_t{};
-void friend_party()
-{
-    if (friend_party_t.test_and_set(10000))
-    {
-        re::CTFPartyClient *pc = re::CTFPartyClient::GTFPartyClient();
-        if (pc)
-        {
-            std::vector<unsigned> valid_steam_ids = pc->GetPartySteamIDs();
-            for (auto steamid : valid_steam_ids)
-                if (steamid && player_tools::shouldTargetSteamId(steamid))
-                    playerlist::AccessData(steamid).state = playerlist::k_EState::CAT;
-        }
-    }
-}
+
 void party_leader_pass()
 {
     if (pass_leader.test_and_set(10000))

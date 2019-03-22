@@ -82,8 +82,8 @@ static bool old_isMMBanned()
 }
 static bool getMMBanData(int type, int *time, int *time2)
 {
-    typedef bool (*GetMMBanData_t)(int, int*, int*);
-    static uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 5D 08 8B 75 0C 8B 7D 10 83 FB FF");
+    typedef bool (*GetMMBanData_t)(int, int *, int *);
+    static uintptr_t addr                 = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 5D 08 8B 75 0C 8B 7D 10 83 FB FF");
     static GetMMBanData_t GetMMBanData_fn = GetMMBanData_t(addr);
 
     if (!addr)
@@ -96,14 +96,12 @@ static bool getMMBanData(int type, int *time, int *time2)
     return GetMMBanData_fn(type, time, time2);
 }
 
-static CatCommand mm_debug_banned("mm_debug_banned",
-    "Prints if your are MM banned and extra data if you are banned",
-[]() {
+static CatCommand mm_debug_banned("mm_debug_banned", "Prints if your are MM banned and extra data if you are banned", []() {
     int i, time, left, banned;
     for (i = 0; i < 1; ++i)
     {
         time = left = 0;
-        banned = getMMBanData(0, &time, &left);
+        banned      = getMMBanData(0, &time, &left);
         logging::Info("%d: banned %d, time %d, left %d", banned, time, left);
     }
 });
@@ -163,4 +161,23 @@ void abandon()
     else
         logging::Info("abandon: CTFGCClientSystem == null!");
 }
+
+static Timer friend_party_t{};
+void friend_party()
+{
+    if (friend_party_t.test_and_set(10000))
+    {
+        re::CTFPartyClient *pc = re::CTFPartyClient::GTFPartyClient();
+        if (pc)
+        {
+            std::vector<unsigned> valid_steam_ids = pc->GetPartySteamIDs();
+            for (auto steamid : valid_steam_ids)
+                if (steamid && playerlist::IsDefault(steamid))
+                    playerlist::AccessData(steamid).state = playerlist::k_EState::FRIEND;
+        }
+    }
+}
+
+static InitRoutine init([]() { EC::Register(EC::Paint, friend_party, "paint_friendparty"); });
+
 } // namespace tfmm
