@@ -110,6 +110,7 @@ void load_thread(const int ArgC, const std::string ArgS)
         std::string backup = ArgS;
         std::string ArgS   = backup;
         ArgS.erase(std::remove(ArgS.begin(), ArgS.end(), '\n'), ArgS.end());
+        ArgS.erase(std::remove(ArgS.begin(), ArgS.end(), '\r'), ArgS.end());
 #if ENABLE_VISUALS
         loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS + ".conf");
 #else
