@@ -374,8 +374,9 @@ free(logname);*/
     logging::Info("Initializer stack done");
 #if not ENABLE_VISUALS
     hack::command_stack().push("exec cat_autoexec_textmode");
-#endif
+#else
     hack::command_stack().push("exec cat_autoexec");
+#endif
     auto extra_exec = std::getenv("CH_EXEC");
     if (extra_exec)
         hack::command_stack().push(extra_exec);
