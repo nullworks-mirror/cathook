@@ -10,6 +10,15 @@
 #include <init.hpp>
 
 static settings::Bool enable{ "chat.log-events", "false" };
+static settings::Bool event_hurt{ "chat.log-events.hurt", "false" };
+static settings::Bool event_connect{ "chat.log-events.joining", "true" };
+static settings::Bool event_activate{ "chat.log-events.connect", "true" };
+static settings::Bool event_disconnect{ "chat.log-events.disconnect", "true" };
+static settings::Bool event_team{ "chat.log-events.team", "true" };
+static settings::Bool event_death{ "chat.log-events.death", "true" };
+static settings::Bool event_spawn{ "chat.log-events.spawn", "true" };
+static settings::Bool event_changeclass{ "chat.log-events.changeclass", "true" };
+static settings::Bool event_vote{ "chat.log-events.vote", "false" };
 
 static void handlePlayerConnectClient(KeyValues *kv)
 {
@@ -28,7 +37,7 @@ static void handlePlayerActivate(KeyValues *kv)
 static void handlePlayerDisconnect(KeyValues *kv)
 {
     CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(kv->GetInt("userid")));
-    if (player == nullptr)
+    if (player == nullptr || RAW_ENT(player) == nullptr)
         return;
     PrintChat("\x07%06X%s\x01 \x07%06X%s\x01 disconnected", colors::chat::team(player->m_iTeam()), kv->GetString("name"), 0x914e65, kv->GetString("networkid"));
 }
@@ -54,12 +63,12 @@ static void handlePlayerHurt(KeyValues *kv)
     int health   = kv->GetInt("health");
     player_info_s kinfo{};
     player_info_s vinfo{};
-    g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim), &vinfo);
-    g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker), &kinfo);
+    if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim), &vinfo) || !g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker), &kinfo))
+        return;
     CachedEntity *vic = ENTITY(g_IEngine->GetPlayerForUserID(victim));
     CachedEntity *att = ENTITY(g_IEngine->GetPlayerForUserID(attacker));
 
-    if (vic == nullptr || att == nullptr)
+    if (vic == nullptr || att == nullptr || RAW_ENT(vic) == nullptr || RAW_ENT(att) == nullptr)
         return;
 
     PrintChat("\x07%06X%s\x01 hurt \x07%06X%s\x01 down to \x07%06X%d\x01hp", colors::chat::team(att->m_iTeam()), kinfo.name, colors::chat::team(vic->m_iTeam()), vinfo.name, 0x2aaf18, health);
@@ -71,12 +80,12 @@ static void handlePlayerDeath(KeyValues *kv)
     int attacker = kv->GetInt("attacker");
     player_info_s kinfo{};
     player_info_s vinfo{};
-    g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim), &vinfo);
-    g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker), &kinfo);
+    if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim), &vinfo) || !g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker), &kinfo))
+        return;
     CachedEntity *vic = ENTITY(g_IEngine->GetPlayerForUserID(victim));
     CachedEntity *att = ENTITY(g_IEngine->GetPlayerForUserID(attacker));
 
-    if (vic == nullptr || att == nullptr)
+    if (vic == nullptr || att == nullptr || RAW_ENT(vic) == nullptr || RAW_ENT(att) == nullptr)
         return;
 
     PrintChat("\x07%06X%s\x01 killed \x07%06X%s\x01", colors::chat::team(att->m_iTeam()), kinfo.name, colors::chat::team(vic->m_iTeam()), vinfo.name);
@@ -86,9 +95,10 @@ static void handlePlayerSpawn(KeyValues *kv)
 {
     int id = kv->GetInt("userid");
     player_info_s info{};
-    g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
+    if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info))
+        return;
     CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(id));
-    if (player == nullptr)
+    if (player == nullptr || RAW_ENT(player) == nullptr)
         return;
     PrintChat("\x07%06X%s\x01 (re)spawned", colors::chat::team(player->m_iTeam()), info.name);
 }
@@ -96,10 +106,13 @@ static void handlePlayerSpawn(KeyValues *kv)
 static void handlePlayerChangeClass(KeyValues *kv)
 {
     int id = kv->GetInt("userid");
+    if (id > 33 || id < 0)
+        return;
     player_info_s info{};
-    g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info);
+    if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info))
+        return;
     CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(id));
-    if (player == nullptr)
+    if (player == nullptr || RAW_ENT(player) == nullptr)
         return;
     PrintChat("\x07%06X%s\x01 changed to \x07%06X%s\x01", colors::chat::team(player->m_iTeam()), info.name, 0xa06ba0, classname(kv->GetInt("class")));
 }
@@ -124,23 +137,23 @@ public:
             return;
 
         const char *name = event->GetName();
-        if (!strcmp(name, "player_connect_client"))
+        if (!strcmp(name, "player_connect_client") && event_connect)
             handlePlayerConnectClient(event);
-        else if (!strcmp(name, "player_activate"))
+        else if (!strcmp(name, "player_activate") && event_activate)
             handlePlayerActivate(event);
-        else if (!strcmp(name, "player_disconnect"))
+        else if (!strcmp(name, "player_disconnect") && event_disconnect)
             handlePlayerDisconnect(event);
-        else if (!strcmp(name, "player_team"))
+        else if (!strcmp(name, "player_team") && event_team)
             handlePlayerTeam(event);
-        else if (!strcmp(name, "player_hurt"))
+        else if (!strcmp(name, "player_hurt") && event_hurt)
             handlePlayerHurt(event);
-        else if (!strcmp(name, "player_death"))
+        else if (!strcmp(name, "player_death") && event_death)
             handlePlayerDeath(event);
-        else if (!strcmp(name, "player_spawn"))
+        else if (!strcmp(name, "player_spawn") && event_spawn)
             handlePlayerSpawn(event);
-        else if (!strcmp(name, "player_changeclass"))
+        else if (!strcmp(name, "player_changeclass") && event_changeclass)
             handlePlayerChangeClass(event);
-        else if (!strcmp(name, "vote_cast"))
+        else if (!strcmp(name, "vote_cast") && event_vote)
             handleVoteCast(event);
     }
 };

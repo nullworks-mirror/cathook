@@ -45,17 +45,17 @@
             <AutoVariable width="fill" target="killsay.file" label="Custom Killsay"/>
             <AutoVariable width="fill" target="killsay.delay" label="Killsay Delay"/>
             <Box name="Critsay" width="165" height="content" padding="12 6 6 6">
-            <List width="150">
-                <LabeledObject width="fill" label="Critsay Mode">
-                    <Select target="critsay.mode">
-                        <Option name="Disable" value="0"/>
-                        <Option name="Custom" value="1"/>
-                        <Option name="Default" value="2"/>
-                    </Select>
-                </LabeledObject>
-                <AutoVariable width="fill" target="critsay.file" label="Custom Critsay"/>
-                <AutoVariable width="fill" target="critsay.delay" label="Critsay Delay"/>
-            </List>
+                <List width="150">
+                    <LabeledObject width="fill" label="Critsay Mode">
+                        <Select target="critsay.mode">
+                            <Option name="Disable" value="0"/>
+                            <Option name="Custom" value="1"/>
+                            <Option name="Default" value="2"/>
+                        </Select>
+                    </LabeledObject>
+                    <AutoVariable width="fill" target="critsay.file" label="Custom Critsay"/>
+                    <AutoVariable width="fill" target="critsay.delay" label="Critsay Delay"/>
+                </List>
             </Box>
         </List>
     </Box>
@@ -83,7 +83,16 @@
             <AutoVariable width="fill" target="chat.clean" label="Clean Chat"/>
             <AutoVariable width="fill" target="chat.crypto" label="Crypto Chat"/>
             <AutoVariable width="fill" target="chat.prefix-newlines" label="Newlines"/>
-            <AutoVariable width="fill" target="chat.log-events" label="Log Events"/>
+            <AutoVariable width="fill" target="chat.log-events" label="Event Logger"/>
+            <AutoVariable width="fill" target="chat.log-events.hurt" label="Log Hurt Events"/>
+            <AutoVariable width="fill" target="chat.log-events.joining" label="Log Join Events"/>
+            <AutoVariable width="fill" target="chat.log-events.connect" label="Log Connect Events"/>
+            <AutoVariable width="fill" target="chat.log-events.disconnect" label="Log Disconnect Events"/>
+            <AutoVariable width="fill" target="chat.log-events.team" label="Log Team join Events"/>
+            <AutoVariable width="fill" target="chat.log-events.death" label="Log Death Events"/>
+            <AutoVariable width="fill" target="chat.log-events.spawn" label="Log (re)Spawn Events"/>
+            <AutoVariable width="fill" target="chat.log-events.changeclass" label="Log Class Change Events"/>
+            <AutoVariable width="fill" target="chat.log-events.vote" label="Log Vote Events"/>
             <AutoVariable width="fill" target="chat.identify" label="Identify"/>
             <AutoVariable width="fill" target="chat.identify.answer" label="Counter Identify"/>
         </List>
