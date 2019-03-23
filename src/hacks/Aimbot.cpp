@@ -38,7 +38,7 @@ static settings::Float miss_chance{ "aimbot.miss-chance", "0" };
 static settings::Bool projectile_aimbot{ "aimbot.projectile.enable", "true" };
 static settings::Float proj_gravity{ "aimbot.projectile.gravity", "0" };
 static settings::Float proj_speed{ "aimbot.projectile.speed", "0" };
-static settings::Float huntsman_autoshoot{ "aimbot.projectile.huntsman-autoshoot", "0.5" };
+
 static settings::Float sticky_autoshoot{ "aimbot.projectile.sticky-autoshoot", "0.5" };
 
 static settings::Bool aimbot_debug{ "aimbot.debug", "0" };
@@ -220,7 +220,17 @@ static void CreateMove()
         // Handle Compound bow
         if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
         {
-            DoAutoshoot();
+            bool release = false;
+            // Grab time when charge began
+            current_user_cmd->buttons |= IN_ATTACK;
+            float begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
+            float charge      = g_GlobalVars->curtime - begincharge;
+            int damage        = std::floor(50.0f + 70.0f * fminf(1.0f, charge));
+            int charge_damage = std::floor(50.0f + 70.0f * fminf(1.0f, charge)) * 3.0f;
+            if (!wait_for_charge || (damage >= target_entity->m_iHealth() || charge_damage >= target_entity->m_iHealth()))
+                release = true;
+            if (release)
+                DoAutoshoot();
             static bool currently_charging_huntsman = false;
 
             // Hunstman started charging
@@ -833,12 +843,8 @@ void DoAutoshoot()
     // Handle Compound bow
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
     {
-
-        // Grab time when charge began
-        float begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
-
         // Release hunstman if over huntsmans limit
-        if ((g_GlobalVars->curtime - begincharge >= (float) huntsman_autoshoot) && begancharge)
+        if (begancharge)
         {
             current_user_cmd->buttons &= ~IN_ATTACK;
             hacks::shared::antiaim::SetSafeSpace(5);
@@ -1046,8 +1052,14 @@ int BestHitbox(CachedEntity *target)
             }
             else if (ci == CL_CLASS(CTFCompoundBow))
             {
-                headonly = true;
-                // Ambassador
+                float begincharge = CE_FLOAT(g_pLocalPlayer->weapon(), netvar.flChargeBeginTime);
+                float charge      = g_GlobalVars->curtime - begincharge;
+                int damage        = std::floor(50.0f + 70.0f * fminf(1.0f, charge));
+                int charge_damage = std::floor(50.0f + 70.0f * fminf(1.0f, charge)) * 3.0f;
+                if (damage >= target->m_iHealth())
+                    preferred = hitbox_t::spine_3;
+                else
+                    preferred = hitbox_t::head;
             }
             else if (IsAmbassador(g_pLocalPlayer->weapon()))
             {
@@ -1066,13 +1078,11 @@ int BestHitbox(CachedEntity *target)
             // Airborn projectile
             if (GetWeaponMode() == weaponmode::weapon_projectile)
             {
-                bool ground = CE_INT(target, netvar.iFlags) & (1 << 0);
-                if (!ground)
+                if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFCompoundBow))
                 {
-                    if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFCompoundBow))
-                    {
+                    bool ground = CE_INT(target, netvar.iFlags) & (1 << 0);
+                    if (!ground)
                         preferred = hitbox_t::spine_3;
-                    }
                 }
             }
 
