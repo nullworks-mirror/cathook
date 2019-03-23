@@ -38,6 +38,7 @@
             <AutoVariable width="fill" target="navbot.autojump.trigger-distance" label="Jump Distance"/>
             <!--AutoVariable width="fill" target="navbot.target-sentry" label="Try to target sentries"/-->
             <AutoVariable width="fill" target="navbot.stay-near" label="Zone enemies (stay near)"/>
+            <AutoVariable width="fill" target="navbot.spy-ignore-time" label="Spy ignore time"/>
             <!-- <!AutoVariable width="fill" target="navbot.take-teleporters" label="take teleporters"/> -->
         </List>
     </Box>

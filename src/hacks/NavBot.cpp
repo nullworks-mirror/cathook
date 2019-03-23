@@ -16,6 +16,7 @@ static settings::Bool get_health("navbot.get-health-and-ammo", "true");
 static settings::Float jump_distance("navbot.autojump.trigger-distance", "300");
 static settings::Bool autojump("navbot.autojump.enabled", "false");
 static settings::Bool primary_only("navbot.primary-only", "true");
+static settings::Int spy_ignore_time("navbot.spy-ignore-time", "5000");
 
 // -Forward declarations-
 bool init(bool first_cm);
@@ -30,6 +31,8 @@ using task::current_task;
 static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
 // How long should the bot wait until pathing again?
 static Timer wait_until_path{};
+// Time before following target cloaked spy again
+static std::array<Timer, 33> spy_cloak{};
 // What is the bot currently doing
 namespace task
 {
@@ -125,8 +128,15 @@ static std::pair<CachedEntity *, float> getNearestPlayerDistance()
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) && (!hacks::shared::aimbot::ignore_cloak || !IsPlayerInvisible(ent)) && VisCheckEntFromEnt(LOCAL_E, ent))
+        if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) && VisCheckEntFromEnt(LOCAL_E, ent))
         {
+            if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent))
+            {
+                spy_cloak[i].update();
+                continue;
+            }
+            if (!spy_cloak[i].check(*spy_ignore_time))
+                continue;
             distance = g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin());
             best_ent = ent;
         }
@@ -211,7 +221,14 @@ static bool stayNearPlayers(const bot_class_config &config, CachedEntity *&resul
     for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent)))
+        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
+            continue;
+        if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent))
+        {
+            spy_cloak[i].update();
+            continue;
+        }
+        if (!spy_cloak[i].check(*spy_ignore_time))
             continue;
         players.push_back(ent);
     }
@@ -273,8 +290,10 @@ static bool stayNear()
         if (CE_GOOD(last_target) && stayNearHelpers::isValidNearPosition(last_area->m_center, last_target->m_vecOrigin(), *config))
             invalid_area_time.update();
 
-        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || !player_tools::shouldTarget(last_target) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
+        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || !player_tools::shouldTarget(last_target) || !spy_cloak[last_target->m_IDX].check(*spy_ignore_time) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
         {
+            if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))
+                spy_cloak[last_target->m_IDX].update();
             nav::clearInstructions();
             current_task = task::none;
         }
@@ -291,11 +310,16 @@ static bool stayNear()
     // last target
     if (current_task == task::none && CE_GOOD(last_target) && last_target->m_bAlivePlayer() && last_target->m_bEnemy())
     {
-        if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
-            return true;
-        // If not, can we try pathing to our last target again?
-        if (stayNearHelpers::stayNearPlayer(last_target, *config, last_area))
-            return true;
+        if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))
+            spy_cloak[last_target->m_IDX].update();
+        if (spy_cloak[last_target->m_IDX].check(*spy_ignore_time))
+        {
+            if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
+                return true;
+            // If not, can we try pathing to our last target again?
+            if (stayNearHelpers::stayNearPlayer(last_target, *config, last_area))
+                return true;
+        }
         last_target = nullptr;
     }
 
