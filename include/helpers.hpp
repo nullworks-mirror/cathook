@@ -113,6 +113,9 @@ bool HasWeapon(CachedEntity *ent, int wantedId);
 bool IsAmbassador(CachedEntity *ent);
 bool AmbassadorCanHeadshot();
 
+// Convert a TF2 handle into an IDX -> ENTITY(IDX)
+int HandleToIDX(int handle);
+
 inline const char *teamname(int team)
 {
     if (team == 2)

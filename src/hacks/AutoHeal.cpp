@@ -8,6 +8,7 @@
 #include "common.hpp"
 #include "hacks/FollowBot.hpp"
 #include "settings/Bool.hpp"
+#include "PlayerTools.hpp"
 
 static settings::Bool enable{ "autoheal.enable", "false" };
 static settings::Bool steamid_only{ "autoheal.steam-only", "false" };
@@ -51,8 +52,7 @@ struct patient_data_s
     float accum_damage_start{ 0.0f };
 };
 
-int m_iCurrentHealingTarget{ -1 };
-int m_iNewTarget{ 0 };
+int CurrentHealingTargetIDX{ 0 };
 
 int vaccinator_change_stage = 0;
 int vaccinator_change_ticks = 0;
@@ -92,6 +92,8 @@ int BulletDangerValue(CachedEntity *patient)
             continue;
         if (!HasCondition<TFCond_Zoomed>(ent))
             continue;
+        if (!player_tools::shouldTarget(ent))
+            continue;
         any_zoomed_snipers = true;
         if (*vacc_sniper == 2)
         {
@@ -112,7 +114,6 @@ int BulletDangerValue(CachedEntity *patient)
                 }
             }
         }
-        return vacc_sniper ? 2 : 1;
     }
     return any_zoomed_snipers ? 1 : 0;
 }
@@ -277,9 +278,9 @@ void DoResistSwitching()
 {
     if (vaccinator_change_timer > 0)
     {
-        if (vaccinator_change_timer == 1)
+        if (vaccinator_change_timer == 1 && *default_resistance)
         {
-            SetResistance((int) default_resistance);
+            SetResistance(*default_resistance + 1);
         }
         vaccinator_change_timer--;
     }
@@ -311,8 +312,8 @@ void DoResistSwitching()
     }
 }
 
-int force_healing_target{ 0 };
-unsigned steamid = 0;
+unsigned int steamid = 0;
+
 static CatCommand heal_steamid("autoheal_heal_steamid", "Heals a player with SteamID", [](const CCommand &args) {
     if (args.ArgC() < 2)
     {
@@ -373,12 +374,12 @@ bool ShouldPop()
 {
     if (IsPopped())
         return false;
-    if (m_iCurrentHealingTarget != -1)
+    if (CurrentHealingTargetIDX != -1)
     {
-        CachedEntity *target = ENTITY(m_iCurrentHealingTarget);
+        CachedEntity *target = ENTITY(CurrentHealingTargetIDX);
         if (CE_GOOD(target))
         {
-            if (ShouldChargePlayer(m_iCurrentHealingTarget))
+            if (ShouldChargePlayer(CurrentHealingTargetIDX))
                 return true;
         }
     }
@@ -504,12 +505,12 @@ int HealingPriority(int idx)
 
 int BestTarget()
 {
-    int best       = -1;
-    int best_score = -65536;
-    for (int i = 0; i < 32 && i < HIGHEST_ENTITY; i++)
+    int best       = 0;
+    int best_score = INT_MIN;
+    if (steamid_only)
+        return best;
+    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
     {
-        if (steamid_only && i != force_healing_target)
-            continue;
         int score = HealingPriority(i);
         if (score > best_score && score != -1)
         {
@@ -539,11 +540,11 @@ void CreateMove()
             current_user_cmd->buttons |= IN_ATTACK2;
         }
     }
-    if (!force_healing_target && !steamid && !enable)
+    if (!steamid && !enable)
         return;
     if (GetWeaponMode() != weapon_medigun)
         return;
-    if (force_healing_target)
+    /*if (force_healing_target)
     {
         CachedEntity *target = ENTITY(force_healing_target);
         if (CE_GOOD(target))
@@ -552,10 +553,7 @@ void CreateMove()
                 force_healing_target = 0;
             else
             {
-                Vector out;
-                GetHitbox(target, 7, out);
-                AimAt(g_pLocalPlayer->v_Eye, out, current_user_cmd);
-                current_user_cmd->buttons |= IN_ATTACK;
+
             }
         }
         else
@@ -574,37 +572,70 @@ void CreateMove()
                 break;
             }
         }
-    }
-    if (!enable)
-        return;
-    UpdateData();
-    int old_target          = m_iCurrentHealingTarget;
-    m_iCurrentHealingTarget = BestTarget();
-    if (m_iNewTarget > 0 && m_iNewTarget < 10)
-        m_iNewTarget++;
-    else
-        m_iNewTarget = 0;
-    bool new_target = (old_target != m_iCurrentHealingTarget);
-    if (new_target)
-    {
-        m_iNewTarget = 1;
-    }
-    if (m_iCurrentHealingTarget == -1)
-        return;
-    CachedEntity *target = ENTITY(m_iCurrentHealingTarget);
-    Vector out;
-    GetHitbox(target, 7, out);
-
-    AimAt(g_pLocalPlayer->v_Eye, out, current_user_cmd);
-    if (silent)
-        g_pLocalPlayer->bUseSilentAngles = true;
-    if (!m_iNewTarget && (g_GlobalVars->tickcount % 300))
-        current_user_cmd->buttons |= IN_ATTACK;
-    /*if (m_iNewTarget || !(g_GlobalVars->tickcount % 300)) {
-        if (silent) g_pLocalPlayer->bUseSilentAngles = true;
-        AimAt(g_pLocalPlayer->v_Eye, out, current_user_cmd);
-        current_user_cmd->buttons |= IN_ATTACK;
     }*/
+    bool healing_steamid = false;
+    if (steamid)
+    {
+        unsigned int current_id = 0;
+        if (CurrentHealingTargetIDX)
+        {
+            CachedEntity *current_ent = ENTITY(CurrentHealingTargetIDX);
+            if (CE_GOOD(current_ent))
+                current_id = current_ent->player_info.friendsID;
+        }
+        if (current_id != steamid)
+        {
+            for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+            {
+                CachedEntity *ent = ENTITY(i);
+                if (CE_BAD(ent) || !ent->player_info.friendsID)
+                    continue;
+                if (ent->player_info.friendsID == steamid && CanHeal(i))
+                {
+                    CurrentHealingTargetIDX = i;
+                    healing_steamid         = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            healing_steamid = true;
+        }
+    }
+
+    if (CurrentHealingTargetIDX && (CE_BAD(ENTITY(CurrentHealingTargetIDX)) || !CanHeal(CurrentHealingTargetIDX)))
+        CurrentHealingTargetIDX = 0;
+
+    if (enable)
+    {
+        // if no target or after 2 seconds, pick new target
+        if (!CurrentHealingTargetIDX || ((g_GlobalVars->tickcount % 132) == 0 && !healing_steamid))
+        {
+            CurrentHealingTargetIDX = BestTarget();
+        }
+    }
+
+    UpdateData();
+
+    if (!CurrentHealingTargetIDX)
+        return;
+
+    CachedEntity *target = ENTITY(CurrentHealingTargetIDX);
+
+    if (HandleToIDX(CE_INT(LOCAL_W, netvar.m_hHealingTarget)) != CurrentHealingTargetIDX)
+    {
+        auto out = target->hitboxes.GetHitbox(spine_2);
+        if (out)
+        {
+            if (silent)
+                g_pLocalPlayer->bUseSilentAngles = true;
+            AimAt(g_pLocalPlayer->v_Eye, out->center, current_user_cmd);
+            if ((g_GlobalVars->tickcount % 2) == 0)
+                current_user_cmd->buttons |= IN_ATTACK;
+        }
+    }
+
     if (IsVaccinator() && CE_GOOD(target) && auto_vacc)
     {
         int opt = OptimalResistance(target, &pop);
@@ -626,8 +657,7 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
 {
     if (!after)
     {
-        force_healing_target = 0;
-        steamid              = 0;
+        steamid = 0;
         return;
     }
     steamid = after;
@@ -640,18 +670,16 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
             continue;
         if (ent->player_info.friendsID && ent->player_info.friendsID == after)
         {
-            force_healing_target = i;
             return;
         }
     }
 }
-void LevelInit()
-{
-    force_healing_target = 0;
-}
+
+// void LevelInit(){}
+
 static InitRoutine Init([]() {
     steam_var.installChangeCallback(rvarCallback);
     EC::Register(EC::CreateMove, CreateMove, "autoheal", EC::average);
-    EC::Register(EC::LevelInit, LevelInit, "autoheal_lvlinit", EC::average);
+    // EC::Register(EC::LevelInit, LevelInit, "autoheal_lvlinit", EC::average);
 });
 } // namespace hacks::tf::autoheal

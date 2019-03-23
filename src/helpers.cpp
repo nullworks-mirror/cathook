@@ -954,6 +954,11 @@ bool IsBuildingVisible(CachedEntity *ent)
     return IsEntityVectorVisible(ent, GetBuildingPosition(ent));
 }
 
+int HandleToIDX(int handle)
+{
+    return handle & 0x777;
+}
+
 void fClampAngle(Vector &qaAng)
 {
     while (qaAng[0] > 89)
