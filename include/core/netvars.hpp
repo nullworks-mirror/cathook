@@ -139,6 +139,7 @@ public:
     offset_t res_iScore;
     offset_t res_bAlive;
     offset_t m_nChargeResistType;
+    offset_t m_hHealingTarget;
     offset_t m_flChargeLevel;
 
     offset_t m_rgflCoordinateFrame;

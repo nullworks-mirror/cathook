@@ -52,6 +52,7 @@ void NetVars::Init()
         this->_condition_bits           = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_ConditionList", "_condition_bits");
         this->m_flStealthNoAttackExpire = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "tfsharedlocaldata", "m_flStealthNoAttackExpire");
         this->m_nChargeResistType       = gNetvars.get_offset("DT_WeaponMedigun", "m_nChargeResistType");
+        this->m_hHealingTarget          = gNetvars.get_offset("DT_WeaponMedigun", "m_hHealingTarget");
         this->m_flChargeLevel           = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
         m_bFeignDeathReady              = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bFeignDeathReady");
         m_bCarryingObject               = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bCarryingObject");
