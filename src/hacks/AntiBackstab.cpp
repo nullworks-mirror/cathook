@@ -131,5 +131,5 @@ void CreateMove()
         noaa = false;
 }
 
-static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "antibackstab", EC::average); });
+static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "antibackstab", EC::late); });
 } // namespace hacks::tf2::antibackstab
