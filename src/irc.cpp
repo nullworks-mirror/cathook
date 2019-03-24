@@ -335,7 +335,7 @@ void party_leader_pass()
             pc->GetCurrentPartyLeader(steamid);
             if (steamid.GetAccountID() == g_ISteamUser->GetSteamID().GetAccountID())
             {
-                std::vector<unsigned> valid_steam_ids = pc->GetPartySteamIDs();
+                std::vector<unsigned int> valid_steam_ids = pc->GetPartySteamIDs();
                 bool found                            = false;
                 for (auto &peer : irc.getPeers())
                 {

@@ -19,15 +19,18 @@ static settings::Bool log_to_console{ "hack.log-console", "false" };
 
 FILE *logging::handle{ nullptr };
 
+#if ENABLE_LOGGING
 void logging::Initialize()
 {
     // FIXME other method of naming the file?
     passwd *pwd     = getpwuid(getuid());
     logging::handle = fopen(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get(), "w");
 }
+#endif
 
 void logging::Info(const char *fmt, ...)
 {
+#if ENABLE_LOGGING
     if (logging::handle == nullptr)
         logging::Initialize();
 
@@ -61,10 +64,13 @@ void logging::Info(const char *fmt, ...)
             g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "CAT: %s\n", result.get());
     }
 #endif
+#endif
 }
 
 void logging::Shutdown()
 {
+#if ENABLE_LOGGING
     fclose(logging::handle);
     logging::handle = nullptr;
+#endif
 }

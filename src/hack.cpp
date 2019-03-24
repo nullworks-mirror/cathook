@@ -100,6 +100,7 @@ void hack::ExecuteCommand(const std::string &command)
     hack::command_stack().push(command);
 }
 
+#if ENABLE_LOGGING
 void critical_error_handler(int signum)
 {
     namespace st = boost::stacktrace;
@@ -142,6 +143,7 @@ void critical_error_handler(int signum)
     out.close();
     ::raise(SIGABRT);
 }
+#endif
 
 static bool blacklist_file(const char *filename)
 {
@@ -205,8 +207,10 @@ static void InitRandom()
 
 void hack::Initialize()
 {
+#if ENABLE_LOGGING
     ::signal(SIGSEGV, &critical_error_handler);
     ::signal(SIGABRT, &critical_error_handler);
+#endif
     time_injected = time(nullptr);
 /*passwd *pwd   = getpwuid(getuid());
 char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name,
