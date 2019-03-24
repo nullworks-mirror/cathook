@@ -123,32 +123,44 @@ int FireDangerValue(CachedEntity *patient)
     // Find nearby pyros
     if (!auto_vacc_fire_checking)
         return 0;
+    uint8_t should_switch = 0;
     if (auto_vacc_pop_if_pyro)
     {
-        for (int i = 1; i < 32 && i < HIGHEST_ENTITY; i++)
+        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent))
                 continue;
             if (!ent->m_bEnemy())
                 continue;
-            if (g_pPlayerResource->GetClass(ent) != tf_pyro)
+            if (!ent->m_bAlivePlayer())
                 continue;
-            if (CE_BYTE(ent, netvar.iLifeState))
+            if (!player_tools::shouldTarget(ent))
+                continue;
+            if (g_pPlayerResource->GetClass(ent) != tf_pyro)
                 continue;
             if (patient->m_vecOrigin().DistTo(ent->m_vecOrigin()) > (int) auto_vacc_pyro_range)
                 continue;
-            if ((int) auto_vacc_pop_if_pyro == 2)
+            if (*auto_vacc_pop_if_pyro == 2)
                 return 2;
-            IClientEntity *pyro_weapon = g_IEntityList->GetClientEntity(CE_INT(ent, netvar.hActiveWeapon) & 0xFFF);
-            return (pyro_weapon && pyro_weapon->GetClientClass()->m_ClassID == CL_CLASS(CTFFlameThrower)) ? 2 : 0;
+            CachedEntity *weapon = ENTITY(HandleToIDX(CE_INT(ent, netvar.hActiveWeapon)));
+            if (CE_GOOD(weapon) && weapon->m_iClassID() == CL_CLASS(CTFFlameThrower))
+            {
+                if (HasCondition<TFCond_OnFire>(patient))
+                    return 2;
+                else
+                    should_switch = 1;
+            }
         }
     }
-    if (HasCondition<TFCond_OnFire>(patient))
+    if (*auto_vacc_check_on_fire && HasCondition<TFCond_OnFire>(patient))
     {
-        return (bool) auto_vacc_check_on_fire;
+        if (patient->m_iHealth() < 35)
+            return 2;
+        else
+            should_switch = 1;
     }
-    return 0;
+    return should_switch;
 }
 
 int BlastDangerValue(CachedEntity *patient)
@@ -186,7 +198,7 @@ int BlastDangerValue(CachedEntity *patient)
         }
         return 1;
     }
-    // Find crit rockets/pipes nearby
+    // Find rockets/pipes nearby
     for (int i = 32; i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
@@ -195,6 +207,8 @@ int BlastDangerValue(CachedEntity *patient)
         if (!ent->m_bEnemy())
             continue;
         if (ent->m_Type() != ENTITY_PROJECTILE)
+            continue;
+        if (ent->m_iClassID() == CL_CLASS(CTFProjectile_Flare))
             continue;
         if (patient->m_vecOrigin().DistTo(ent->m_vecOrigin()) > (int) auto_vacc_proj_danger_range)
             continue;
@@ -280,10 +294,12 @@ void DoResistSwitching()
     {
         if (vaccinator_change_timer == 1 && *default_resistance)
         {
-            SetResistance(*default_resistance + 1);
+            SetResistance(*default_resistance - 1);
         }
         vaccinator_change_timer--;
     }
+    else
+        vaccinator_change_timer = *change_timer;
     if (!vaccinator_change_stage)
         return;
     if (CurrentResistance() == vaccinator_ideal_resist)

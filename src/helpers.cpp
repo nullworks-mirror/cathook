@@ -956,7 +956,7 @@ bool IsBuildingVisible(CachedEntity *ent)
 
 int HandleToIDX(int handle)
 {
-    return handle & 0x777;
+    return handle & 0xFFF;
 }
 
 void fClampAngle(Vector &qaAng)

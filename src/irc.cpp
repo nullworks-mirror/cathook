@@ -19,7 +19,7 @@ static settings::Int port("irc.port", "8080");
 static settings::String commandandcontrol_channel("irc.cc.channel", "");
 static settings::String commandandcontrol_password("irc.cc.password", "");
 
-static settings::Bool transfer_leader_on_kick("irc.cc.leader-transfer", "true");
+static settings::Bool transfer_leader_on_kick("irc.cc.leader-transfer", "false");
 static settings::Bool botonly("irc.cc.command-bot-only", "true");
 static settings::Bool irc_party{ "irc.cc.party", "false" };
 static settings::Bool answer_steam{ "irc.cc.respondparty", "false" };
