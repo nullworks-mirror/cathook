@@ -1,5 +1,6 @@
 #include "common.hpp"
 #include "playerlist.hpp"
+#include <boost/format.hpp>
 
 static settings::Bool draw_kda{ "misc.playerinfo.draw-kda", "false" };
 static settings::Bool mafia_city{ "misc.playerinfo.draw-level", "false" };
@@ -78,7 +79,7 @@ void Paint()
             int kills    = g_pPlayerResource->GetKills(i);
             int deaths   = g_pPlayerResource->GetDeaths(i);
             // Calculate KD
-            float KDA = deaths ? (float) kills / (float) deaths : 0;
+            float KDA = deaths ? (float) kills / (float) deaths : kills;
             // Green == 1+ KD
             if (KDA > 1.0f)
                 color = colors::green;
@@ -97,7 +98,7 @@ void Paint()
             if (color.b > 0.0f || color.g > 0.0f)
                 if (draw::WorldToScreen(draw_at_kd, out_kd))
                 {
-                    std::string to_use = format("KD: ", KDA, " (", kills, "/", deaths, ")");
+                    std::string to_use = format("KD: ", boost::format("%.2f") % KDA, " (", kills, "/", deaths, ")");
                     float w, h;
                     fonts::center_screen->stringSize(to_use, &w, &h);
                     // Center the string
