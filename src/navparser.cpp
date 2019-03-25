@@ -607,7 +607,7 @@ static void cm()
     }
     // Detect when jumping is necessary
     if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumb->z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) || (last_jump.test_and_set(200) && inactivity.check(3000)))
-        current_user_cmd->buttons |= IN_JUMP;
+        current_user_cmd->buttons |= IN_JUMP | IN_DUCK;
     // If inactive for too long
     if (inactivity.check(*stuck_time))
     {

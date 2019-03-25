@@ -435,7 +435,7 @@ static void autoJump()
         return;
 
     if (getNearestPlayerDistance().second <= *jump_distance)
-        current_user_cmd->buttons |= IN_JUMP;
+        current_user_cmd->buttons |= IN_JUMP | IN_DUCK;
 }
 
 enum slots
