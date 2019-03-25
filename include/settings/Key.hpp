@@ -1,8 +1,9 @@
 /*
   Created on 01.07.18.
 */
-
 #pragma once
+
+#include "config.h"
 
 #if ENABLE_VISUALS
 
