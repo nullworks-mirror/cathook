@@ -4,7 +4,7 @@
 # https://github.com/LWSS/Fuzion/commit/a53b6c634cde0ed47b08dd587ba40a3806adf3fe
 
 sudo ./scripts/auto-updater
-line=$(pidof hl2_linux)
+line=$(pgrep -u $SUDO_USER hl2_linux)
 arr=($line)
 inst=$1
 if [ $# == 0 ]; then
