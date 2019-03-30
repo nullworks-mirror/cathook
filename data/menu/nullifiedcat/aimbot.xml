@@ -12,9 +12,10 @@
             </LabeledObject>
             <AutoVariable width="fill" target="aimbot.aimkey.button" label="Aim Key"/>
             <AutoVariable width="fill" target="aimbot.silent" label="Silent"/>
+            <AutoVariable width="fill" target="aimbot.fov-circle.enable" label="FOV Circle"/>
             <AutoVariable width="fill" target="aimbot.fov" label="FOV"/>
             <AutoVariable width="fill" target="aimbot.fov-circle.opacity" label="FOV Opacity"/>
-            <AutoVariable width="fill" target="aimbot.slow" label="Slow Aimbot"/> 
+            <AutoVariable width="fill" target="aimbot.slow" label="Slow Aimbot"/>
             <AutoVariable width="fill" target="aimbot.can-shoot-only" label="Only Shoot When Able"/>
             <AutoVariable width="fill" target="aimbot.miss-chance" label="Miss chance"/>
             <AutoVariable width="fill" target="aimbot.extrapolate" label="Extrapolate"/>
@@ -91,7 +92,7 @@
             <AutoVariable width="fill" target="aimbot.target.ignore-deadringer" label="Ignore Dead Ringer Spies"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Projectile Aimbot" y="195">
+    <Box padding="12 6 6 6" width="content" height="content" name="Projectile Aimbot" y="210">
         <List width="150">
             <AutoVariable width="fill" target="aimbot.projectile.enable" label="Enable Projectile Aimbot"/>
             <AutoVariable width="fill" target="aimbot.projectile.gravity" label="Gravity Override"/>
