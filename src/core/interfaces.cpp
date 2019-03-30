@@ -109,7 +109,7 @@ void CreateInterfaces()
     if (!su)
     {
         logging::Info("Connecting to Steam User");
-        g_ISteamClient->ConnectToGlobalUser(sp);
+        su = g_ISteamClient->ConnectToGlobalUser(sp);
     }
     logging::Info("Inited Steam User");
     g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine(), 16);

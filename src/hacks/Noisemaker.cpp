@@ -5,8 +5,8 @@
  *      Author: nullifiedcat
  */
 
-#include <settings/Bool.hpp>
 #include "common.hpp"
+#include <settings/Bool.hpp>
 
 static settings::Bool enable{ "noisemaker-spam.enable", "false" };
 
@@ -26,5 +26,45 @@ static void CreateMove()
         }
     }
 }
-static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "Noisemaker", EC::average); });
+
+FnCommandCallbackVoid_t plus_use_action_slot_item_original;
+FnCommandCallbackVoid_t minus_use_action_slot_item_original;
+
+void plus_use_action_slot_item_hook()
+{
+    KeyValues *kv = new KeyValues("+use_action_slot_item_server");
+    g_IEngine->ServerCmdKeyValues(kv);
+}
+
+void minus_use_action_slot_item_hook()
+{
+    KeyValues *kv = new KeyValues("-use_action_slot_item_server");
+    g_IEngine->ServerCmdKeyValues(kv);
+}
+
+static void init()
+{
+    auto plus  = g_ICvar->FindCommand("+use_action_slot_item");
+    auto minus = g_ICvar->FindCommand("-use_action_slot_item");
+    if (!plus || !minus)
+        return ConColorMsg({ 255, 0, 0, 255 }, "Could not find +use_action_slot_item! INFINITE NOISE MAKER WILL NOT WORK!!!\n");
+    plus_use_action_slot_item_original  = plus->m_fnCommandCallbackV1;
+    minus_use_action_slot_item_original = minus->m_fnCommandCallbackV1;
+    plus->m_fnCommandCallbackV1         = plus_use_action_slot_item_hook;
+    minus->m_fnCommandCallbackV1        = minus_use_action_slot_item_hook;
+}
+static void shutdown()
+{
+    auto plus  = g_ICvar->FindCommand("+use_action_slot_item");
+    auto minus = g_ICvar->FindCommand("-use_action_slot_item");
+    if (!plus || !minus)
+        return ConColorMsg({ 255, 0, 0, 255 }, "Could not find +use_action_slot_item! INFINITE NOISE MAKER WILL NOT WORK!!!\n");
+    plus->m_fnCommandCallbackV1  = plus_use_action_slot_item_original;
+    minus->m_fnCommandCallbackV1 = minus_use_action_slot_item_original;
+}
+static InitRoutine EC([]() {
+    init();
+    EC::Register(EC::CreateMove, CreateMove, "Noisemaker", EC::average);
+    EC::Register(EC::Shutdown, shutdown, "Noisemaker", EC::average);
+});
 } // namespace hacks::tf2::noisemaker

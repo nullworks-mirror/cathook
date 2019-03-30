@@ -56,7 +56,7 @@ void AddLatencyToNetchan(INetChannel *ch)
     if (!isBacktrackEnabled)
         return;
     float Latency = *latency;
-    Latency -= ch->GetAvgLatency(FLOW_OUTGOING) * 1000.0f;
+    Latency -= (ch->GetAvgLatency(FLOW_OUTGOING) + ch->GetAvgLatency(FLOW_INCOMING)) * 1000.0f;
     if (Latency < 0.0f)
         Latency = 0.0f;
     for (auto &seq : sequences)
@@ -326,7 +326,7 @@ float getLatency()
     auto ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
         return 0;
-    float Latency = *latency - ch->GetLatency(FLOW_OUTGOING) * 1000.0f;
+    float Latency = *latency - (ch->GetAvgLatency(FLOW_OUTGOING) + ch->GetAvgLatency(FLOW_INCOMING)) * 1000.0f;
     if (Latency < 0.0f)
         Latency = 0.0f;
     return Latency;
@@ -429,5 +429,9 @@ static InitRoutine EC([]() {
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, Draw, "DRAW_Backtrack", EC::average);
 #endif
+});
+CatCommand debug_richpresence("debug_presence", "Debug stuff", []() {
+    g_ISteamFriends->SetRichPresence("steam_display", "#TF_RichPresence_State_PlayingGeneric");
+    g_ISteamFriends->SetRichPresence("currentmap", "Cathooking");
 });
 } // namespace hacks::shared::backtrack
