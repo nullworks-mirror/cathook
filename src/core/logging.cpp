@@ -17,6 +17,7 @@
 
 static settings::Bool log_to_console{ "hack.log-console", "false" };
 
+static bool shut_down = false;
 FILE *logging::handle{ nullptr };
 
 #if ENABLE_LOGGING
@@ -31,6 +32,8 @@ void logging::Initialize()
 void logging::Info(const char *fmt, ...)
 {
 #if ENABLE_LOGGING
+    if (shut_down)
+        return;
     if (logging::handle == nullptr)
         logging::Initialize();
 
@@ -72,5 +75,6 @@ void logging::Shutdown()
 #if ENABLE_LOGGING
     fclose(logging::handle);
     logging::handle = nullptr;
+    shut_down       = true;
 #endif
 }
