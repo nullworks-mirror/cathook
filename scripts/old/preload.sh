@@ -3,7 +3,7 @@
 # Credit to LWSS for doing this shit in Fuzion, looked and pasted a stuff from his preload meme
 
 # This assumes the presence of the ~/.steam symlink
-GAMEROOT=$(realpath $HOME/.local/share/Steam/steamapps/common/Team\ Fortress\ 2)
+GAMEROOT=$(realpath $HOME/.steam/steam/steamapps/common/Team\ Fortress\ 2)
 GAMEEXE="hl2_linux"
 
 if [ ! -d "$GAMEROOT" ]; then
@@ -14,44 +14,49 @@ fi
 export LD_LIBRARY_PATH="$GAMEROOT"\
 ":$GAMEROOT/bin"\
 ":$GAMEROOT/bin/linux32"\
-":$HOME/.steam/steam/ubuntu12_32"\
-":$HOME/.steam/steam/ubuntu12_32/panorama"\
+":$GAMEROOT/tf/bin"\
+":$HOME/.steam/ubuntu12_32"\
+":$HOME/.steam/ubuntu12_32/linux32"\
+":$HOME/.steam/ubuntu12_32/panorama"\
 ":/lib/i386-linux-gnu"\
+":/usr/lib/i386-linux-gnu/"\
 ":/usr/lib64/atlas"\
 ":/usr/lib64/bind99"\
 ":/usr/lib64/iscsi"\
 ":/usr/lib64/nx"\
 ":/usr/lib64/qt-3.3/lib"\
 ":/usr/lib"\
+":/usr/lib32"\
 ":/lib64"\
+":/lib32"\
 ":/usr/lib/i686"\
 ":/usr/lib/sse2"\
 ":/lib64/tls"\
 ":/lib64/sse2"\
 ":/usr/lib/steam"\
 ":/usr/lib32/steam"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/usr/lib/i386-linux-gnu"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/lib/i386-linux-gnu"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/amd64/lib/x86_64-linux-gnu"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/amd64/lib"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/amd64/usr/lib/x86_64-linux-gnu"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/amd64/usr/lib"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/lib/i386-linux-gnu"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/lib"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/usr/lib/i386-linux-gnu"\
-":$HOME/.steam/steam/ubuntu12_32/steam-runtime/i386/usr/lib"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/i386/usr/lib/i386-linux-gnu"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/i386/lib/i386-linux-gnu"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/lib/x86_64-linux-gnu"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/lib"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/usr/lib/x86_64-linux-gnu"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/usr/lib"\
-":$HOME/.steam/steam/ubuntu12_32"\
-":$HOME/.steam/steam/ubuntu12_64"
+":$HOME/.steam/ubuntu12_32/steam-runtime/i386/lib/i386-linux-gnu"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/i386/lib"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/i386/usr/lib/i386-linux-gnu"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/i386/usr/lib"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/lib/x86_64-linux-gnu"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/lib"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/usr/lib/x86_64-linux-gnu"\
+":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/usr/lib"\
+":$HOME/.steam/ubuntu12_32"\
+":$HOME/.steam/ubuntu12_64"
 
 # Set file descriptor limit
 ulimit -n 2048
 
 export LD_PRELOAD
-LD_PRELOAD="$(pwd)/bin/libcathook.so:/usr/lib/i386-linux-gnu/libstdc++.so.6"
+LD_PRELOAD="$(realpath .)/bin/libcathook.so:/usr/lib/i386-linux-gnu/libstdc++.so.6"
 
 # Enable nVidia threaded optimizations
 export __GL_THREADED_OPTIMIZATIONS=1
@@ -76,11 +81,11 @@ while [ $STATUS -eq 42 ]; do
 
 		echo run $@ >> "$ARGSFILE"
 		echo show args >> "$ARGSFILE"
-		${DEBUGGER} "${GAMEROOT}"/${GAMEEXE} -x "$ARGSFILE"
+		${DEBUGGER} "${GAMEROOT}"/${GAMEEXE} -x -game "tf" "$ARGSFILE"
 		rm "$ARGSFILE"
 	else
 	    echo -e "\e[92mSuccess! Launching TF2.\e[39m"
-		${DEBUGGER} "${GAMEROOT}"/${GAMEEXE} "$@"
+		${DEBUGGER} "${GAMEROOT}"/${GAMEEXE} -game "tf" "$@"
 	fi
 	STATUS=$?
 done
