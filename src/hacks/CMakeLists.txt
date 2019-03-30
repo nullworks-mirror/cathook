@@ -40,6 +40,7 @@ target_sources(cathook PRIVATE
         add_subdirectory(ac)
 if(EnableVisuals)
     target_sources(cathook PRIVATE
+            "${CMAKE_CURRENT_LIST_DIR}/DominateMark.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/ESP.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Tracers.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Radar.cpp"
