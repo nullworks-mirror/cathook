@@ -329,19 +329,19 @@ void party_leader_pass()
     {
         re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
         re::CTFPartyClient *pc    = re::CTFPartyClient::GTFPartyClient();
-        if (gc && !gc->BHaveLiveMatch() && pc->GetNumMembers() > 1)
+        if (gc && gc->BHaveLiveMatch() && pc->GetNumMembers() > 1)
         {
             CSteamID steamid;
             pc->GetCurrentPartyLeader(steamid);
             if (steamid.GetAccountID() == g_ISteamUser->GetSteamID().GetAccountID())
             {
                 std::vector<unsigned int> valid_steam_ids = pc->GetPartySteamIDs();
-                bool found                            = false;
+                bool found                                = false;
                 for (auto &peer : irc.getPeers())
                 {
                     if (found)
                         break;
-                    if (peer.second.is_ingame)
+                    if (!peer.second.is_ingame)
                     {
                         for (auto &id : valid_steam_ids)
                             if (id == peer.second.steamid)
