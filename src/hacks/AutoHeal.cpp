@@ -677,18 +677,6 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
         return;
     }
     steamid = after;
-    for (int i = 1; i <= 32 && i < HIGHEST_ENTITY; i++)
-    {
-        CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent))
-            continue;
-        if (ent->m_Type() != ENTITY_PLAYER)
-            continue;
-        if (ent->player_info.friendsID && ent->player_info.friendsID == after)
-        {
-            return;
-        }
-    }
 }
 
 // void LevelInit(){}
