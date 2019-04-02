@@ -20,11 +20,7 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
 {
     if (!isHackActive())
     {
-#if !ENABLE_NULL_GRAPHICS
         return original::Paint(this_, mode);
-#else
-        return;
-#endif
     }
 
     if (!g_IEngine->IsInGame())
@@ -93,8 +89,7 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
         // Call all paint functions
         EC::run(EC::Paint);
     }
-#if !ENABLE_NULL_GRAPHICS
+
     return original::Paint(this_, mode);
-#endif
 }
 } // namespace hooked_methods
