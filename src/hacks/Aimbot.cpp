@@ -1498,11 +1498,17 @@ static void DrawText()
     }
 }
 #endif
-void rvarCallback(settings::VariableBase<int> &var, int after)
+void rvarCallback(settings::VariableBase<int> &var, float after)
 {
-    backtrackAimbot = after > 190.0f;
+    if (hacks::shared::backtrack::enable)
+        backtrackAimbot = after > 190.0f;
+}
+void rvarCallback2(settings::VariableBase<bool> &var, bool after)
+{
+    backtrackAimbot = (*hacks::shared::backtrack::latency > 190.0f) && after;
 }
 static InitRoutine EC([]() {
+    hacks::shared::backtrack::enable.installChangeCallback(rvarCallback2);
     hacks::shared::backtrack::latency.installChangeCallback(rvarCallback);
     EC::Register(EC::LevelInit, Reset, "INIT_Aimbot", EC::average);
     EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);
@@ -1511,4 +1517,5 @@ static InitRoutine EC([]() {
     EC::Register(EC::Draw, DrawText, "DRAW_Aimbot", EC::average);
 #endif
 });
+
 } // namespace hacks::shared::aimbot

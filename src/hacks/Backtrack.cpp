@@ -13,7 +13,6 @@
 #include "PlayerTools.hpp"
 #include <hacks/Backtrack.hpp>
 
-static settings::Bool enable{ "backtrack.enable", "false" };
 static settings::Bool draw_bt{ "backtrack.draw", "false" };
 static settings::Bool draw_skeleton{ "backtrack.draw-skeleton", "false" };
 static settings::Float mindistance{ "backtrack.min-distance", "60" };
@@ -22,6 +21,7 @@ static settings::Int slots{ "backtrack.slots", "0" };
 
 namespace hacks::shared::backtrack
 {
+settings::Bool enable{ "backtrack.enable", "false" };
 settings::Bool backtrack_chams_glow{ "backtrack.chams_glow", "true" };
 settings::Int latency{ "backtrack.latency", "0" };
 
@@ -56,7 +56,7 @@ void AddLatencyToNetchan(INetChannel *ch)
     if (!isBacktrackEnabled)
         return;
     float Latency = *latency;
-    Latency -= (ch->GetAvgLatency(FLOW_OUTGOING) + ch->GetAvgLatency(FLOW_INCOMING)) * 1000.0f;
+    Latency -= ch->GetAvgLatency(FLOW_OUTGOING) * 1000.0f - 20.0f;
     if (Latency < 0.0f)
         Latency = 0.0f;
     for (auto &seq : sequences)
@@ -326,7 +326,7 @@ float getLatency()
     auto ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
         return 0;
-    float Latency = *latency - (ch->GetAvgLatency(FLOW_OUTGOING) + ch->GetAvgLatency(FLOW_INCOMING)) * 1000.0f;
+    float Latency = *latency - ch->GetAvgLatency(FLOW_OUTGOING) * 1000.0f - 20.0f;
     if (Latency < 0.0f)
         Latency = 0.0f;
     return Latency;
@@ -430,7 +430,11 @@ static InitRoutine EC([]() {
     EC::Register(EC::Draw, Draw, "DRAW_Backtrack", EC::average);
 #endif
 });
-CatCommand debug_richpresence("debug_presence", "Debug stuff", []() {
+static CatCommand debug_flowout("debug_flowout", "test", []() {
+    auto ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    logging::Info("Out Avg: %f In Avg: %f Out current: %f In Current: %f", 1000.0f * ch->GetAvgLatency(FLOW_OUTGOING), 1000.0f * ch->GetAvgLatency(FLOW_INCOMING), 1000.0f * ch->GetLatency(FLOW_OUTGOING), 1000.0f * ch->GetLatency(FLOW_INCOMING));
+});
+static CatCommand debug_richpresence("debug_presence", "Debug stuff", []() {
     g_ISteamFriends->SetRichPresence("steam_display", "#TF_RichPresence_State_PlayingGeneric");
     g_ISteamFriends->SetRichPresence("currentmap", "Cathooking");
 });

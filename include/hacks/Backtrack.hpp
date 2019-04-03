@@ -12,6 +12,7 @@
 namespace hacks::shared::backtrack
 {
 extern settings::Int latency;
+extern settings::Bool enable;
 
 struct hitboxData
 {
