@@ -431,7 +431,7 @@ std::string GetLevelName()
 std::pair<float, float> ComputeMove(const Vector &a, const Vector &b)
 {
     Vector diff = (b - a);
-    if (diff.Length() == 0)
+    if (diff.Length() == 0.0f)
         return { 0, 0 };
     const float x = diff.x;
     const float y = diff.y;
@@ -440,7 +440,9 @@ std::pair<float, float> ComputeMove(const Vector &a, const Vector &b)
     Vector ang;
     VectorAngles(vsilent, ang);
     float yaw = DEG2RAD(ang.y - current_user_cmd->viewangles.y);
-    return { cos(yaw) * 450, -sin(yaw) * 450 };
+    if (g_pLocalPlayer->bUseSilentAngles)
+        yaw = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y);
+    return { cos(yaw) * 450.0f, -sin(yaw) * 450.0f };
 }
 
 ConCommand *CreateConCommand(const char *name, FnCommandCallback_t callback, const char *help)
