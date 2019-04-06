@@ -6,6 +6,17 @@
             <AutoVariable width="fill" target="autoqueue.mode" label="Autoqueue Mode" min="0" max="12"/>
             <AutoVariable width="fill" target="hack.requeue-on-kick" label="Requeue on kick"/>
             <AutoVariable width="fill" target="autotaunt.enable" label="Autotaunt enabled"/>
+            <LabeledObject width="fill" label="Autotaunt weapon">
+                <Select target="autotaunt.auto-weapon">
+                    <Option name="None" value="0"/>
+                    <Option name="Primary" value="1"/>
+                    <Option name="Secondary" value="2"/>
+                    <Option name="Melee" value="3"/>
+                    <Option name="Disguise Kit" value="4"/>
+                    <Option name="PDA" value="4"/>
+                    <Option name="Destruction PDA" value="5"/>
+                </Select>
+            </LabeledObject>
             <AutoVariable width="fill" target="autotaunt.chance" label="Autotaunt chance" min="0" max="100"/>
             <AutoVariable width="fill" target="autotaunt.safety-distance" label="Autotaunt safety distance"/>
             <LabeledObject width="fill" label="Autojoin Class">

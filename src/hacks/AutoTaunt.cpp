@@ -10,12 +10,25 @@
 #include "hack.hpp"
 
 static settings::Bool enable{ "autotaunt.enable", "false" };
-static settings::Float chance{ "autotaunt.chance", "8" };
-static settings::Float safety{ "autotaunt.safety-distance", "0" };
+static settings::Float chance{ "autotaunt.chance", "100" };
+static settings::Float safety{ "autotaunt.safety-distance", "1000" };
+static settings::Int switch_weapon{ "autotaunt.auto-weapon", "0" };
 
 namespace hacks::tf::autotaunt
 {
 
+enum slots
+{
+    primary      = 1,
+    secondary    = 2,
+    melee        = 3,
+    pda          = 4,
+    disguise     = 4,
+    destruct_pda = 5
+};
+static bool in_taunt = false;
+static int prev_slot = -1;
+static Timer taunt_t{};
 class AutoTauntListener : public IGameEventListener2
 {
 public:
@@ -28,10 +41,10 @@ public:
         if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
             bool nearby = false;
-            for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+            for (int i = 1; i < HIGHEST_ENTITY; i++)
             {
                 auto ent = ENTITY(i);
-                if (CE_GOOD(ent) && ent->m_flDistance() < *safety)
+                if (CE_GOOD(ent) && (ent->m_Type() == ENTITY_PLAYER || ent->m_iClassID() == CL_CLASS(CObjectSentrygun)) && ent->m_bEnemy() && ent->m_bAlivePlayer() && ent->m_flDistance() < *safety)
                 {
                     nearby = true;
                     break;
@@ -39,7 +52,23 @@ public:
             }
             if (!nearby && RandomFloat(0, 100) <= float(chance))
             {
-                hack::ExecuteCommand("taunt");
+                if (switch_weapon)
+                {
+                    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W))
+                    {
+                        IClientEntity *weapon = RAW_ENT(LOCAL_W);
+                        // IsBaseCombatWeapon()
+                        if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
+                            prev_slot = re::C_BaseCombatWeapon::GetSlot(weapon);
+                        int new_slot = *switch_weapon;
+                        if (new_slot == disguise && g_pLocalPlayer->clazz != tf_spy && g_pLocalPlayer->clazz != tf_engineer)
+                            new_slot = primary;
+                        if (new_slot == destruct_pda && g_pLocalPlayer->clazz != tf_engineer)
+                            new_slot = primary;
+                        hack::ExecuteCommand(format("slot", new_slot));
+                        taunt_t.update();
+                    }
+                }
             }
         }
     }
@@ -50,5 +79,29 @@ AutoTauntListener listener;
 InitRoutine init([]() {
     g_IEventManager2->AddListener(&listener, "player_death", false);
     EC::Register(EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener); }, "Shutdown_Autotaunt");
+    EC::Register(EC::CreateMove,
+                 []() {
+                     if (prev_slot != -1 && CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && LOCAL_E->m_bAlivePlayer() && taunt_t.test_and_set(100))
+                     {
+                         if (in_taunt)
+                         {
+                             if (!HasCondition<TFCond_Taunting>(LOCAL_E))
+                             {
+                                 hack::ExecuteCommand(format("slot", prev_slot + 1));
+                                 prev_slot = -1;
+                                 in_taunt  = false;
+                             }
+                             else
+                                 taunt_t.update();
+                         }
+                         else
+                         {
+                             hack::ExecuteCommand("taunt");
+                             in_taunt = true;
+                             taunt_t.update();
+                         }
+                     }
+                 },
+                 "Autotaunt_CM");
 });
 } // namespace hacks::tf::autotaunt
