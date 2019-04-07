@@ -16,11 +16,11 @@ static settings::Bool no_hats{ "remove.hats", "false" };
 namespace effect_glow
 {
 extern settings::Bool enable;
-}
+} // namespace effect_glow
 namespace effect_chams
 {
 extern settings::Bool enable;
-}
+} // namespace effect_chams
 namespace hacks::shared::backtrack
 {
 extern settings::Bool backtrack_chams_glow;
@@ -37,6 +37,8 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
     {
         return original::DrawModelExecute(this_, state, info, bone);
     }
+    if (effect_glow::g_EffectGlow.drawing || effect_chams::g_EffectChams.drawing)
+        return original::DrawModelExecute(this_, state, info, bone);
 
     PROF_SECTION(DrawModelExecute);
 
@@ -60,7 +62,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
         }
     }
 
-    if (hacks::shared::backtrack::isBacktrackEnabled && hacks::shared::backtrack::backtrack_chams_glow && (effect_glow::enable || effect_chams::enable))
+    if (hacks::shared::backtrack::isBacktrackEnabled && hacks::shared::backtrack::backtrack_chams_glow)
     {
         const char *name = g_IModelInfo->GetModelName(info.pModel);
         if (name)
@@ -77,7 +79,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                         // Backup Blend
                         float orig_blend = g_IVRenderView->GetBlend();
                         // Make Backtrack stuff seethrough
-                        g_IVRenderView->SetBlend(0.999f);
+                        g_IVRenderView->SetBlend(1.0f);
                         // Get Backtrack data for target entity
                         auto head_pos = hacks::shared::backtrack::headPositions[info.entity_index];
                         // Usable vector instead of ptr to c style array, also used to filter valid and invalid ticks
@@ -90,9 +92,35 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                         // Crash much?
                         if (usable.size())
                         {
+
                             // Sort
                             std::sort(usable.begin(), usable.end(), [](hacks::shared::backtrack::BacktrackData &a, hacks::shared::backtrack::BacktrackData &b) { return a.tickcount < b.tickcount; });
+                            // Make our own Chamsish Material
+                            static CMaterialReference mat_lit;
+                            static bool init = false;
+                            if (!init)
+                            {
+                                KeyValues *kv = new KeyValues("VertexLitGeneric");
+                                kv->SetString("$basetexture", "vgui/white_additive");
+                                kv->SetInt("$ignorez", 0);
+                                mat_lit.Init("__cathook_dme_lit", kv);
+                                init = true;
+                            }
+                            // Render Chams/Glow stuff
+                            CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
+                            rgba_t mod_original;
+                            // Save color just in case, then set to white
+                            g_IVRenderView->GetColorModulation(mod_original.rgba);
+                            g_IVRenderView->SetColorModulation(colors::white);
+                            // Important for Depth
+                            ptr->DepthRange(0.0f, 1.0f);
+                            // Apply our material
+                            g_IVModelRender->ForcedMaterialOverride(mat_lit);
+                            // Run Original
                             original::DrawModelExecute(this_, state, info, usable[0].bones);
+                            // Revert
+                            g_IVRenderView->SetColorModulation(mod_original.rgba);
+                            g_IVModelRender->ForcedMaterialOverride(nullptr);
                         }
                         g_IVRenderView->SetBlend(orig_blend);
                     }

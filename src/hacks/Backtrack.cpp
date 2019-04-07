@@ -56,7 +56,9 @@ void AddLatencyToNetchan(INetChannel *ch)
     if (!isBacktrackEnabled)
         return;
     float Latency = *latency;
-    Latency -= ch->GetAvgLatency(FLOW_OUTGOING) * 1000.0f - 20.0f;
+    if (Latency > 1000.0f)
+        Latency = 800.0f;
+    Latency -= getRealLatency();
     if (Latency < 0.0f)
         Latency = 0.0f;
     for (auto &seq : sequences)
@@ -320,13 +322,28 @@ bool shouldBacktrack()
     }
     return false;
 }
-
+float getRealLatency()
+{
+    auto ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    if (!ch)
+        return 0.0f;
+    float Latency             = ch->GetLatency(FLOW_OUTGOING);
+    static auto cl_updaterate = g_ICvar->FindVar("cl_updaterate");
+    if (cl_updaterate && cl_updaterate->GetFloat() > 0.001f)
+        Latency += -0.5f / cl_updaterate->GetFloat();
+    else if (!cl_updaterate)
+        cl_updaterate = g_ICvar->FindVar("cl_updaterate");
+    return MAX(0.0f, Latency) * 1000.f;
+}
 float getLatency()
 {
     auto ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
         return 0;
-    float Latency = *latency - ch->GetAvgLatency(FLOW_OUTGOING) * 1000.0f - 20.0f;
+    float Latency = *latency;
+    if (Latency > 1000.0f)
+        Latency = 800.0f;
+    Latency -= getRealLatency();
     if (Latency < 0.0f)
         Latency = 0.0f;
     return Latency;
@@ -334,7 +351,7 @@ float getLatency()
 
 int getTicks()
 {
-    return max(min(int(*latency / 200.0f * 13.0f) + 12, 65), 12);
+    return max(min(int(getLatency() / 200.0f * 13.0f) + 12, 65), 12);
 }
 
 bool ValidTick(BacktrackData &i, CachedEntity *ent)

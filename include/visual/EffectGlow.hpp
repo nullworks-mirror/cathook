@@ -21,7 +21,13 @@ public:
     {
         if (init)
         {
+            mat_unlit.Shutdown();
             mat_unlit_z.Shutdown();
+            mat_blit.Shutdown();
+            mat_unlit.Shutdown();
+            mat_unlit_z.Shutdown();
+            mat_blur_x.Shutdown();
+            mat_blur_y.Shutdown();
             init = false;
         }
     }
@@ -41,18 +47,27 @@ public:
         return enabled;
     }
 
+    void StartStenciling();
+    void EndStenciling();
     void DrawEntity(IClientEntity *entity);
+    void DrawToStencil(IClientEntity *entity);
+    void DrawToBuffer(IClientEntity *entity);
     rgba_t GlowColor(IClientEntity *entity);
     bool ShouldRenderGlow(IClientEntity *entity);
+    void RenderGlow(IClientEntity *entity);
+    void BeginRenderGlow();
+    void EndRenderGlow();
 
 public:
     bool init{ false };
     bool drawing{ false };
     bool enabled;
+    float orig_modulation[3];
+    CMaterialReference mat_blit;
+    CMaterialReference mat_blur_x;
+    CMaterialReference mat_blur_y;
+    CMaterialReference mat_unlit;
     CMaterialReference mat_unlit_z;
-    IMaterial *mat_halo;
-    IMaterial *mat_glow;
-    ITexture *mat_fullframe;
 };
 
 extern EffectGlow g_EffectGlow;

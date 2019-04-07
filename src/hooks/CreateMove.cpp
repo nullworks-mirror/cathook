@@ -436,7 +436,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
             if (NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) <= 1.5f)
                 continue;
-            float latency = ch->GetAvgLatency(MAX_FLOWS);
+            float latency = hacks::shared::backtrack::getRealLatency();
             g_Settings.brute.choke[i].push_back(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) == g_Settings.brute.lastsimtime);
             g_Settings.brute.last_angles[ent->m_IDX] = NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
             if (!g_Settings.brute.choke[i].empty() && g_Settings.brute.choke[i].size() > 20)

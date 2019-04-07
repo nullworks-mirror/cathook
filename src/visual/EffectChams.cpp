@@ -30,6 +30,7 @@ static settings::Bool disco_chams{ "chams.disco", "false" };
 
 namespace effect_chams
 {
+
 settings::Bool enable{ "chams.enable", "false" };
 CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {
     effect_chams::g_EffectChams.Shutdown();

@@ -2,7 +2,15 @@
     <Box padding="12 6 6 6" width="content" height="content" name="Glow">
         <List width="150">
             <AutoVariable width="fill" target="glow.enable" label="Enable Glow"/>
+            <AutoVariable width="fill" target="glow.blur-scale" label="Blur Scale" min="1" max="20"/>
             <AutoVariable width="fill" target="glow.health" label="Health"/>
+            <LabeledObject width="fill" label="Solid when">
+                <Select target="glow.solid-when">
+                    <Option name="Never" value="0"/>
+                    <Option name="Always" value="1"/>
+                    <Option name="Not visible" value="2"/>
+                </Select>
+            </LabeledObject>
             <AutoVariable width="fill" target="glow.self-rainbow" label="Self Rainbow"/>
         </List>
     </Box>
