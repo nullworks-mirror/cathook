@@ -108,8 +108,8 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
-set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -fno-gnu-unique")
-set(CMAKE_CXX_FLAGS_DEBUG "-DNDEBUG -Og -rdynamic -ggdb")
+set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -fno-gnu-unique -rdynamic")
+set(CMAKE_CXX_FLAGS_DEBUG "-DNDEBUG -Og -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O1")
 
 set(CMAKE_CXX_FLAGS_LVL1 "-O1 -fcaller-saves -fcode-hoisting -fcrossjumping -fcse-follow-jumps -fcse-skip-blocks -fdelete-null-pointer-checks -fdevirtualize -fdevirtualize-speculatively -fexpensive-optimizations -fgcse -fgcse-lm -fhoist-adjacent-loads -finline-small-functions -findirect-inlining -fipa-bit-cp -fipa-icf -fipa-ra -fipa-vrp -fisolate-erroneous-paths-dereference -flra-remat -foptimize-sibling-calls -foptimize-strlen -fpartial-inlining -fpeephole2 -freorder-blocks-algorithm=stc -freorder-blocks-and-partition -freorder-functions -frerun-cse-after-loop -fschedule-insns -fschedule-insns2 -fsched-interblock -fsched-spec -fstore-merging -fstrict-aliasing -fthread-jumps -ftree-builtin-call-dce -ftree-pre -ftree-switch-conversion -ftree-tail-merge -ftree-vrp")
