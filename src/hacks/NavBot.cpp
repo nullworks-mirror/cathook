@@ -497,4 +497,85 @@ void change(settings::VariableBase<bool> &, bool)
 
 static InitRoutine routine([]() { enabled.installChangeCallback(change); });
 
+struct Posinfo
+{
+    float x;
+    float y;
+    float yaw;
+    float pitch;
+    bool usepitch;
+    bool active;
+};
+static Posinfo to_path{};
+void OutOfBoundsrun(const CCommand &args)
+{
+    // Need atleast 3 arguments (x, y, yaw)
+    if (args.ArgC() < 4)
+    {
+        logging::Info("Usage:");
+        logging::Info("cat_outofbounds x y Yaw (example: cat_outofbounds 511.943848 2783.968750 7.6229) or");
+        logging::Info("cat_outofbounds x y Yaw Pitch (example: cat_outofbounds 511.943848 2783.968750 7.6229 89.936729)");
+        return;
+    }
+    bool usepitch = false;
+    // Use pitch too
+    if (args.ArgC() > 4)
+        usepitch = true;
+    float x, y, yaw, pitch;
+    // Failsafe
+    try
+    {
+        x   = std::stof(args.Arg(1));
+        y   = std::stof(args.Arg(2));
+        yaw = std::stof(args.Arg(4));
+        if (usepitch)
+            pitch = std::stof(args.Arg(3));
+    }
+    catch (std::invalid_argument)
+    {
+        logging::Info("Invalid argument! (Malformed input?)\n");
+        logging::Info("Usage:");
+        logging::Info("cat_outofbounds x y Yaw (example: cat_outofbounds 511.943848 2783.968750 7.6229) or");
+        logging::Info("cat_outofbounds x y Yaw Pitch (example: cat_outofbounds 511.943848 2783.968750 7.6229 89.936729)");
+        return;
+    }
+    // Assign all the values
+    to_path.x        = x;
+    to_path.y        = y;
+    to_path.yaw      = yaw;
+    to_path.pitch    = pitch;
+    to_path.usepitch = usepitch;
+    to_path.active   = true;
+}
+static CatCommand Outofbounds{ "outofbounds", "Out of bounds", OutOfBoundsrun };
+
+static Timer timeout{};
+void oobcm()
+{
+    if (to_path.active)
+    {
+        if (CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
+        {
+            Vector topath = { to_path.x, to_path.y, LOCAL_E->m_vecOrigin().z };
+            if (LOCAL_E->m_vecOrigin().AsVector2D().DistTo(topath.AsVector2D()) <= 0.01f || timeout.test_and_set(10000))
+            {
+                to_path.active = false;
+                if (to_path.usepitch)
+                    current_user_cmd->viewangles.x = to_path.pitch;
+                current_user_cmd->viewangles.y = to_path.yaw;
+                if (LOCAL_E->m_vecOrigin().AsVector2D().DistTo(topath.AsVector2D()) <= 0.01f)
+                    logging::Info("Arrived at the destination!");
+                else
+                    logging::Info("Timed out trying to get to spot");
+            }
+            auto move                     = ComputeMovePrecise(LOCAL_E->m_vecOrigin(), topath);
+            current_user_cmd->forwardmove = move.first;
+            current_user_cmd->sidemove    = move.second;
+        }
+    }
+    else
+        timeout.update();
+}
+
+static InitRoutine oob([]() { EC::Register(EC::CreateMove, oobcm, "OOB_CM"); });
 } // namespace hacks::tf2::NavBot

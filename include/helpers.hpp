@@ -179,6 +179,7 @@ void ReplaceString(std::string &input, const std::string &what, const std::strin
 void ReplaceSpecials(std::string &input);
 
 std::pair<float, float> ComputeMove(const Vector &a, const Vector &b);
+std::pair<float, float> ComputeMovePrecise(const Vector &a, const Vector &b);
 void WalkTo(const Vector &vector);
 
 std::string GetLevelName();
