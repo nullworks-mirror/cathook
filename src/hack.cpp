@@ -148,7 +148,7 @@ void critical_error_handler(int signum)
 static bool blacklist_file(const char *filename)
 {
     const static char *blacklist[] = { ".vtx", ".vtf", ".pcf", ".mdl" };
-    if (!filename || !std::strcmp(filename, "models/error.mdl") || !std::strcmp(filename, "models/vgui/competitive_badge.mdl") || !std::strcmp(filename, "models/vgui/12v12_badge.mdl") || !std::strncmp(filename, "models/player/", 14))
+    if (!filename || !std::strcmp(filename, "models/error.mdl") || !std::strcmp(filename, "models/vgui/competitive_badge.mdl") || !std::strcmp(filename, "models/vgui/12v12_badge.mdl") || !std::strncmp(filename, "models/player/", 14) || !std::strncmp(filename, "models/weapons/", 15))
         return false;
 
     std::size_t len = std::strlen(filename);
