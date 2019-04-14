@@ -564,7 +564,7 @@ void oobcm()
                     current_user_cmd->viewangles.x = to_path.pitch;
                 current_user_cmd->viewangles.y = to_path.yaw;
                 if (LOCAL_E->m_vecOrigin().AsVector2D().DistTo(topath.AsVector2D()) <= 0.01f)
-                    logging::Info("Arrived at the destination!");
+                    logging::Info("Arrived at the destination! offset: %f %f", fabsf(LOCAL_E->m_vecOrigin().x - topath.x), fabsf(LOCAL_E->m_vecOrigin().y - topath.y));
                 else
                     logging::Info("Timed out trying to get to spot");
             }
