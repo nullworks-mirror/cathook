@@ -501,20 +501,58 @@ struct Posinfo
 {
     float x;
     float y;
-    float yaw;
     float pitch;
+    float yaw;
     bool usepitch;
     bool active;
 };
+struct MapPosinfo
+{
+    Posinfo spot;
+    std::string lvlname;
+};
+
 static Posinfo to_path{};
+static std::vector<MapPosinfo> oob_list;
 void OutOfBoundsrun(const CCommand &args)
 {
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        return;
     // Need atleast 3 arguments (x, y, yaw)
+    if (args.ArgC() < 2)
+    {
+        std::string lvlname = g_IEngine->GetLevelName();
+        std::vector<Posinfo> potential_spots{};
+        for (auto &i : oob_list)
+        {
+            if (lvlname.find(i.lvlname) != lvlname.npos)
+                potential_spots.push_back(i.spot);
+        }
+        Posinfo best_spot{};
+        float best_score = FLT_MAX;
+        for (auto &i : potential_spots)
+        {
+            Vector pos  = { i.x, i.y, 0.0f };
+            float score = pos.AsVector2D().DistTo(LOCAL_E->m_vecOrigin().AsVector2D());
+            if (score < best_score)
+            {
+                if (IsVectorVisible(g_pLocalPlayer->v_Eye, { pos.x, pos.y, g_pLocalPlayer->v_Eye.z }, true))
+                {
+                    best_spot  = i;
+                    best_score = score;
+                }
+            }
+        }
+        to_path = best_spot;
+        if (!to_path.active)
+            logging::Info("No valid spots found nearby!");
+        return;
+    }
     if (args.ArgC() < 4)
     {
         logging::Info("Usage:");
         logging::Info("cat_outofbounds x y Yaw (example: cat_outofbounds 511.943848 2783.968750 7.6229) or");
-        logging::Info("cat_outofbounds x y Yaw Pitch (example: cat_outofbounds 511.943848 2783.968750 7.6229 89.936729)");
+        logging::Info("cat_outofbounds x y Pitch Yaw (example: cat_outofbounds 511.943848 2783.968750 7.6229 89.936729)");
         return;
     }
     bool usepitch = false;
@@ -527,9 +565,12 @@ void OutOfBoundsrun(const CCommand &args)
     {
         x   = std::stof(args.Arg(1));
         y   = std::stof(args.Arg(2));
-        yaw = std::stof(args.Arg(4));
+        yaw = std::stof(args.Arg(3));
         if (usepitch)
+        {
             pitch = std::stof(args.Arg(3));
+            yaw   = std::stof(args.Arg(4));
+        }
     }
     catch (std::invalid_argument)
     {
@@ -576,6 +617,41 @@ void oobcm()
     else
         timeout.update();
 }
+#define OOB_ADD(x, y, yaw, pitch, name) (oob_list.push_back({ { x, y, yaw, pitch, true, true }, name }))
+static InitRoutine oob([]() {
+    // Badwater
+    OOB_ADD(511.943848f, 2783.968750f, 7.622991f, 89.936729f, "pl_badwater");
 
-static InitRoutine oob([]() { EC::Register(EC::CreateMove, oobcm, "OOB_CM"); });
+    // Borneo
+    OOB_ADD(-467.939911f, -6056.031250f, 9.259290f, 90.082581f, "pl_borneo");
+
+    // Doublecross
+    OOB_ADD(-1016.030029f, -2580.031982f, 9.347898f, 0.041826f, "ctf_doublecross");
+    OOB_ADD(1016.001953f, 2580.053223f, 7.275527f, -179.931656f, "ctf_doublecross");
+
+    // Egypt
+    // Stage 1
+    OOB_ADD(-1754.280f, -3344.04f, 39.20f, 0.04f, "cp_egypt");
+    // Stage 2
+    OOB_ADD(2919.968750f, 1999.951416f, 11.952104f, 0.053882f, "cp_egypt");
+    OOB_ADD(87.946884f, 1885.851685f, 34.806473f, 89.951176f, "cp_egypt");
+    // Stage 3
+    OOB_ADD(1263.968750f, 4495.946289f, 7.465197f, 0.074329f, "cp_egypt");
+
+    // Turbine
+    // Red
+    OOB_ADD(1992.028442f, 936.019775f, 0.272817f, -179.983673f, "ctf_turbine");
+    OOB_ADD(1696.029175f, 1008.293091f, 35.000000f, -90.038498f, "ctf_turbine");
+    OOB_ADD(1927.989624f, 936.019775f, 0.432120f, -0.026141f, "ctf_turbine");
+    // Blue
+    OOB_ADD(-1992.051514f, -936.055908f, -0.768594f, 0.064962f, "ctf_turbine");
+    OOB_ADD(-1696.021606f, -1008.698181f, 35.000000f, 89.979446f, "ctf_turbine");
+    OOB_ADD(-1927.023193f, -936.055847f, 2.673917f, 179.936523f, "ctf_turbine");
+
+    // Swiftwater
+    OOB_ADD(5543.948730f, -1527.988037f, 23.115799f, -0.012952f, "pl_swiftwater_final1");
+    OOB_ADD(2636.031250f, -1126.089478f, 13.124457f, 179.843811f, "pl_swiftwater_final1");
+
+    EC::Register(EC::CreateMove, oobcm, "OOB_CM");
+});
 } // namespace hacks::tf2::NavBot
