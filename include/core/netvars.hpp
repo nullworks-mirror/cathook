@@ -56,9 +56,11 @@ public:
     offset_t flChargedDamage;
     offset_t iUpgradeLevel;
     offset_t m_hBuilder;
+    offset_t m_bCanPlace;
     offset_t m_iObjectType;
     offset_t m_bMiniBuilding;
     offset_t m_bHasSapper;
+    offset_t m_bPlacing;
     offset_t m_bBuilding;
     offset_t m_iTeleState;
     offset_t m_flTeleRechargeTime;
@@ -145,6 +147,7 @@ public:
     offset_t m_rgflCoordinateFrame;
     offset_t m_bFeignDeathReady;
     offset_t m_bCarryingObject;
+    offset_t m_hCarriedObject;
 
     offset_t m_iTauntConcept;
     offset_t m_iTauntIndex;

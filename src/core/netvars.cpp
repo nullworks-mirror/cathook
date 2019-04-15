@@ -56,6 +56,7 @@ void NetVars::Init()
         this->m_flChargeLevel           = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
         m_bFeignDeathReady              = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bFeignDeathReady");
         m_bCarryingObject               = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bCarryingObject");
+        m_hCarriedObject                = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_hCarriedObject");
         m_nSequence                     = gNetvars.get_offset("DT_BaseAnimating", "m_nSequence");
         m_iTauntIndex                   = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntIndex");
         m_iTauntConcept                 = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntConcept");
@@ -76,9 +77,11 @@ void NetVars::Init()
         this->flChargedDamage                 = gNetvars.get_offset("DT_TFSniperRifle", "SniperRifleLocalData", "m_flChargedDamage");
         this->iUpgradeLevel                   = gNetvars.get_offset("DT_BaseObject", "m_iUpgradeLevel");
         this->m_hBuilder                      = gNetvars.get_offset("DT_BaseObject", "m_hBuilder");
+        this->m_bCanPlace                     = gNetvars.get_offset("DT_BaseObject", "m_bServerOverridePlacement");
         this->m_bBuilding                     = gNetvars.get_offset("DT_BaseObject", "m_bBuilding");
         this->m_iObjectType                   = gNetvars.get_offset("DT_BaseObject", "m_iObjectType");
         this->m_bHasSapper                    = gNetvars.get_offset("DT_BaseObject", "m_bHasSapper");
+        this->m_bPlacing                      = gNetvars.get_offset("DT_BaseObject", "m_bPlacing");
         this->m_bMiniBuilding                 = gNetvars.get_offset("DT_BaseObject", "m_bMiniBuilding");
         this->m_iTeleState                    = gNetvars.get_offset("DT_ObjectTeleporter", "m_iState");
         this->m_flTeleRechargeTime            = gNetvars.get_offset("DT_ObjectTeleporter", "m_flRechargeTime");

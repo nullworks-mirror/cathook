@@ -588,9 +588,29 @@ void OutOfBoundsrun(const CCommand &args)
     to_path.usepitch = usepitch;
     to_path.active   = true;
 }
+
+int getCarriedBuilding()
+{
+    if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject))
+        return HandleToIDX(CE_INT(LOCAL_E, netvar.m_hCarriedObject));
+    for (int i = 1; i < MAX_ENTITIES; i++)
+    {
+        auto ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_Type() != ENTITY_BUILDING)
+            continue;
+        if (HandleToIDX(CE_INT(ent, netvar.m_hBuilder)) != LOCAL_E->m_IDX)
+            continue;
+        if (!CE_BYTE(ent, netvar.m_bPlacing))
+            continue;
+        return i;
+    }
+    return -1;
+}
+
 static CatCommand Outofbounds{ "outofbounds", "Out of bounds", OutOfBoundsrun };
 
 static Timer timeout{};
+static float yaw_offset = 0.0f;
 void oobcm()
 {
     if (to_path.active)
@@ -600,18 +620,69 @@ void oobcm()
             Vector topath = { to_path.x, to_path.y, LOCAL_E->m_vecOrigin().z };
             if (LOCAL_E->m_vecOrigin().AsVector2D().DistTo(topath.AsVector2D()) <= 0.01f || timeout.test_and_set(10000))
             {
-                to_path.active = false;
-                if (to_path.usepitch)
-                    current_user_cmd->viewangles.x = to_path.pitch;
-                current_user_cmd->viewangles.y = to_path.yaw;
                 if (LOCAL_E->m_vecOrigin().AsVector2D().DistTo(topath.AsVector2D()) <= 0.01f)
-                    logging::Info("Arrived at the destination! offset: %f %f", fabsf(LOCAL_E->m_vecOrigin().x - topath.x), fabsf(LOCAL_E->m_vecOrigin().y - topath.y));
+                {
+                    if (re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)) != 5)
+                    {
+                        yaw_offset     = 0.0f;
+                        to_path.active = false;
+                        if (to_path.usepitch)
+                            current_user_cmd->viewangles.x = to_path.pitch;
+                        current_user_cmd->viewangles.y = to_path.yaw;
+                        logging::Info("Arrived at the destination! offset: %f %f", fabsf(LOCAL_E->m_vecOrigin().x - topath.x), fabsf(LOCAL_E->m_vecOrigin().y - topath.y));
+                    }
+                    else
+                    {
+                        timeout.update();
+                        if (to_path.usepitch)
+                            current_user_cmd->viewangles.x = to_path.pitch;
+                        current_user_cmd->viewangles.y = to_path.yaw;
+                        int carried_build              = getCarriedBuilding();
+                        if (carried_build == -1)
+                        {
+                            logging::Info("No building held");
+                            return;
+                        }
+                        auto ent = ENTITY(carried_build);
+                        if (CE_BAD(ent))
+                        {
+                            logging::Info("No Building held");
+                            to_path.active = false;
+                            return;
+                        }
+                        else
+                        {
+                            if (CE_BYTE(ent, netvar.m_bCanPlace))
+                                current_user_cmd->buttons |= IN_ATTACK;
+                            if (yaw_offset >= 0.1f)
+                            {
+                                logging::Info("Failed getting out of bounds, Yaw offset too large");
+                                to_path.active = false;
+                                return;
+                            }
+                            yaw_offset = -yaw_offset;
+                            if (yaw_offset >= 0.0f)
+                                yaw_offset += 0.0001f;
+                            current_user_cmd->viewangles.y = to_path.yaw + yaw_offset;
+                        }
+                    }
+                }
                 else
+                {
+                    yaw_offset     = 0.0f;
+                    to_path.active = false;
+                    if (to_path.usepitch)
+                        current_user_cmd->viewangles.x = to_path.pitch;
+                    current_user_cmd->viewangles.y = to_path.yaw;
                     logging::Info("Timed out trying to get to spot");
+                }
             }
-            auto move                     = ComputeMovePrecise(LOCAL_E->m_vecOrigin(), topath);
-            current_user_cmd->forwardmove = move.first;
-            current_user_cmd->sidemove    = move.second;
+            if (yaw_offset == 0.0f)
+            {
+                auto move                     = ComputeMovePrecise(LOCAL_E->m_vecOrigin(), topath);
+                current_user_cmd->forwardmove = move.first;
+                current_user_cmd->sidemove    = move.second;
+            }
         }
     }
     else
