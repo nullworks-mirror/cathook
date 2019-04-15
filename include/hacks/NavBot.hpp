@@ -13,8 +13,10 @@ enum task : uint8_t
     stay_near,
     health,
     ammo,
-    followbot
+    followbot,
+    outofbounds
 };
+constexpr std::array<task, 2> blocking_tasks{ followbot, outofbounds };
 extern task current_task;
 } // namespace task
 struct bot_class_config
