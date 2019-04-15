@@ -1,6 +1,8 @@
 #include "common.hpp"
 #include "NavBot.hpp"
 #include "navparser.hpp"
+#include "MiscTemporary.hpp"
+#include "hack.hpp"
 
 namespace hacks::tf2::OutOfBounds
 {
@@ -50,19 +52,100 @@ Posinfo AutoOOB()
     return best_spot;
 }
 
+int getCarriedBuilding()
+{
+    if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject))
+        return HandleToIDX(CE_INT(LOCAL_E, netvar.m_hCarriedObject));
+    for (int i = 1; i < MAX_ENTITIES; i++)
+    {
+        auto ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_Type() != ENTITY_BUILDING)
+            continue;
+        if (HandleToIDX(CE_INT(ent, netvar.m_hBuilder)) != LOCAL_E->m_IDX)
+            continue;
+        if (!CE_BYTE(ent, netvar.m_bPlacing))
+            continue;
+        return i;
+    }
+    return -1;
+}
+
+void EquipTele()
+{
+    if (re::C_BaseCombatWeapon::GetSlot(RAW_ENT(LOCAL_W)) != 5)
+        hack::command_stack().push("build 3");
+}
+
+void NavOOB()
+{
+    std::string lvlname = g_IEngine->GetLevelName();
+    logging::Info("Going out of bounds on %s!", lvlname.c_str());
+    std::vector<Posinfo> potential_spots{};
+    for (auto &i : oob_list)
+    {
+        if (lvlname.find(i.lvlname) != lvlname.npos)
+            potential_spots.push_back(i.spot);
+    }
+    Posinfo best_spot{};
+    float best_score = FLT_MAX;
+    for (auto &i : potential_spots)
+    {
+        Vector pos  = { i.x, i.y, 0.0f };
+        float score = pos.DistTo(LOCAL_E->m_vecOrigin());
+        if (score < best_score)
+        {
+            best_spot  = i;
+            best_score = score;
+        }
+    }
+    if (!best_spot.active)
+    {
+        logging::Info("No valid spots found nearby!");
+        return;
+    }
+    to_path                    = best_spot;
+    NavBot::task::current_task = NavBot::task::outofbounds;
+    bool success               = nav::navTo(Vector{ to_path.x, to_path.y, to_path.z }, 8, true, true);
+    if (!success)
+    {
+        logging::Info("No valid spots found nearby!");
+        return;
+    }
+    else
+        EquipTele();
+}
+
 void OutOfBoundsCommand(const CCommand &args)
 {
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
+    if (g_pLocalPlayer->clazz != tf_engineer)
+    {
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "CAT: You are not playing as Engineer.");
+        return;
+    }
+
     // Need atleast 3 arguments (x, y, yaw)
     if (args.ArgC() < 2)
     {
-        auto loc = AutoOOB();
-        if (!loc.active)
-            logging::Info("No valid spots found nearby!");
+        if (nav::prepare())
+        {
+            // TODO: Make navoob work with custom locations
+            NavOOB();
+            return;
+        }
         else
-            to_path = loc;
-        return;
+        {
+            auto loc = AutoOOB();
+            if (!loc.active)
+                logging::Info("No valid spots found nearby!");
+            else
+            {
+                to_path = loc;
+                EquipTele();
+            }
+            return;
+        }
     }
     if (args.ArgC() < 4)
     {
@@ -105,78 +188,46 @@ void OutOfBoundsCommand(const CCommand &args)
     to_path.active   = true;
 }
 
-int getCarriedBuilding()
-{
-    if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject))
-        return HandleToIDX(CE_INT(LOCAL_E, netvar.m_hCarriedObject));
-    for (int i = 1; i < MAX_ENTITIES; i++)
-    {
-        auto ent = ENTITY(i);
-        if (CE_BAD(ent) || ent->m_Type() != ENTITY_BUILDING)
-            continue;
-        if (HandleToIDX(CE_INT(ent, netvar.m_hBuilder)) != LOCAL_E->m_IDX)
-            continue;
-        if (!CE_BYTE(ent, netvar.m_bPlacing))
-            continue;
-        return i;
-    }
-    return -1;
-}
-
-void AutoOutOfBounds()
-{
-    std::string lvlname = g_IEngine->GetLevelName();
-    std::vector<Posinfo> potential_spots{};
-    for (auto &i : oob_list)
-    {
-        if (lvlname.find(i.lvlname) != lvlname.npos)
-            potential_spots.push_back(i.spot);
-    }
-    Posinfo best_spot{};
-    float best_score = FLT_MAX;
-    for (auto &i : potential_spots)
-    {
-        Vector pos  = { i.x, i.y, 0.0f };
-        float score = pos.DistTo(LOCAL_E->m_vecOrigin());
-        if (score < best_score)
-        {
-            best_spot  = i;
-            best_score = score;
-        }
-    }
-    if (!best_spot.active)
-    {
-        logging::Info("No valid spots found nearby!");
-        return;
-    }
-    to_path                    = best_spot;
-    NavBot::task::current_task = NavBot::task::outofbounds;
-    bool success               = nav::navTo(Vector{ to_path.x, to_path.y, to_path.z }, 8, true, true);
-    if (!success)
-    {
-        logging::Info("No valid spots found nearby!");
-        return;
-    }
-}
-
-static CatCommand Outofbounds{ "outofbounds", "Out of bounds", OutOfBoundsCommand };
-static CatCommand auto_outofbounds{ "nav_outofbounds", "Out of bounds", AutoOutOfBounds };
+static CatCommand auto_outofbounds{ "outofbounds", "Out of bounds", OutOfBoundsCommand };
 
 static Timer timeout{};
 static float yaw_offset = 0.0f;
+bool failed             = false;
+uint8_t fails           = 0;
 void oobcm()
 {
-    if (NavBot::task::current_task == NavBot::task::outofbounds)
+    if (CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
     {
+        if (NavBot::task::current_task == NavBot::task::outofbounds)
+        {
+            if (!to_path.active)
+            {
+                if (failed)
+                {
+                    failed = false;
+                    fails++;
+                    if (fails > 2)
+                        return;
+                    to_path.active = true;
+                    nav::navTo(GetForwardVector(g_pLocalPlayer->v_Origin, g_pLocalPlayer->v_OrigViewangles, -100.0f));
+                }
+                else
+                {
+                    NavBot::task::current_task = NavBot::task::none;
+                    return;
+                }
+            }
+            if (!nav::ReadyForCommands)
+            {
+                timeout.update();
+                return;
+            }
+        }
 
-    }
-
-    if (to_path.active)
-    {
-        if (CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
+        if (to_path.active)
         {
             Vector topath = { to_path.x, to_path.y, LOCAL_E->m_vecOrigin().z };
-            if (LOCAL_E->m_vecOrigin().AsVector2D().DistTo(topath.AsVector2D()) <= 0.01f || timeout.test_and_set(10000))
+            if (LOCAL_E->m_vecOrigin().AsVector2D().DistTo(topath.AsVector2D()) <= 0.01f || timeout.test_and_set(4000))
             {
                 if (LOCAL_E->m_vecOrigin().AsVector2D().DistTo(topath.AsVector2D()) <= 0.01f)
                 {
@@ -187,6 +238,7 @@ void oobcm()
                         if (to_path.usepitch)
                             current_user_cmd->viewangles.x = to_path.pitch;
                         current_user_cmd->viewangles.y = to_path.yaw;
+                        fails                          = 0;
                         logging::Info("Arrived at the destination! offset: %f %f", fabsf(LOCAL_E->m_vecOrigin().x - topath.x), fabsf(LOCAL_E->m_vecOrigin().y - topath.y));
                     }
                     else
@@ -199,6 +251,7 @@ void oobcm()
                         if (carried_build == -1)
                         {
                             logging::Info("No building held");
+                            to_path.active = false;
                             return;
                         }
                         auto ent = ENTITY(carried_build);
@@ -210,12 +263,13 @@ void oobcm()
                         }
                         else
                         {
-                            if (CE_BYTE(ent, netvar.m_bCanPlace))
-                                current_user_cmd->buttons |= IN_ATTACK;
+                            current_user_cmd->buttons |= IN_ATTACK;
+                            failed = false;
                             if (yaw_offset >= 0.01f)
                             {
                                 logging::Info("Failed getting out of bounds, Yaw offset too large");
                                 to_path.active = false;
+                                failed         = true;
                                 yaw_offset     = 0.0f;
                                 return;
                             }
@@ -230,22 +284,19 @@ void oobcm()
                 {
                     yaw_offset     = 0.0f;
                     to_path.active = false;
-                    if (to_path.usepitch)
-                        current_user_cmd->viewangles.x = to_path.pitch;
-                    current_user_cmd->viewangles.y = to_path.yaw;
                     logging::Info("Timed out trying to get to spot");
                 }
             }
-            if (yaw_offset == 0.0f)
+            else
             {
                 auto move                     = ComputeMovePrecise(LOCAL_E->m_vecOrigin(), topath);
                 current_user_cmd->forwardmove = move.first;
                 current_user_cmd->sidemove    = move.second;
             }
         }
+        else
+            timeout.update();
     }
-    else
-        timeout.update();
 }
 #define OOB_ADD(x, y, z, yaw, pitch, name) (oob_list.push_back({ { x, y, z, yaw, pitch, true, true }, name }))
 static InitRoutine oob([]() {
@@ -281,6 +332,9 @@ static InitRoutine oob([]() {
     // Swiftwater
     OOB_ADD(5543.948730f, -1527.988037f, -1023.96875f, 23.115799f, -0.012952f, "pl_swiftwater_final1");
     OOB_ADD(2636.031250f, -1126.089478f, 13.124457f, -1130.14154f, 179.843811f, "pl_swiftwater_final1");
+
+    // Mossrock
+    OOB_ADD(1519.956543f, -1311.202271f, 110.028976f, 29.606899f, -89.951279f, "cp_mossrock");
 
     EC::Register(EC::CreateMove, oobcm, "OOB_CM");
 });

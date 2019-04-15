@@ -441,13 +441,7 @@ std::pair<float, float> ComputeMovePrecise(const Vector &a, const Vector &b)
     float yaw = DEG2RAD(ang.y - current_user_cmd->viewangles.y);
     if (g_pLocalPlayer->bUseSilentAngles)
         yaw = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y);
-    float speed = 450.0f;
-    if (diff.Length() <= 5.0f)
-        speed = 1.05f;
-    else if (diff.Length() <= 20.0f)
-        speed = 10.0f;
-    else if (diff.Length() <= 100.0f)
-        speed = 225.0f;
+    float speed = MAX(MIN(diff.Length() * 33.0f, 450.0f), 1.0001f);
     return { cos(yaw) * speed, -sin(yaw) * speed };
 }
 
