@@ -48,11 +48,6 @@ gdb -n -q -batch \
   -ex "call \$dlopen(\"$FILENAME\", 1)" \
   -ex "call dlerror()" \
   -ex 'print (char *) $2' \
-  -ex "detach" \
-  -ex "quit"
-
-gdb -n -q -batch \
-  -ex "attach $proc" \
   -ex "continue" \
   -ex "backtrace"
 
