@@ -108,9 +108,9 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
-set(CMAKE_CXX_FLAGS "-m32 -msse -msse2 -msse3 -fexceptions -fno-gnu-unique -DNDEBUG -Og -rdynamic -ggdb")
-set(CMAKE_CXX_FLAGS_DEBUG "")
-set(CMAKE_CXX_FLAGS_RELEASE "")
+set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -fno-gnu-unique -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-rdynamic -ggdb -Og")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 target_compile_definitions(cathook PRIVATE
         _GLIBCXX_USE_CXX11_ABI=0
@@ -164,10 +164,3 @@ endif()
 
 add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
-
-# Strip
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    message("Stripping info from library")
-    add_custom_command(TARGET cathook POST_BUILD
-    COMMAND strip --strip-all "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
-endif()
