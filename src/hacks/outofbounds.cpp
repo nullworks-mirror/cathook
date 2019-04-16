@@ -28,15 +28,20 @@ TextFile clip_file;
 static std::vector<MapPosinfo> oob_list;
 static std::vector<MapPosinfo> throughwall_list;
 
-Posinfo AutoOOB()
+Posinfo AutoOOB(bool oob)
 {
     std::string lvlname = g_IEngine->GetLevelName();
     std::vector<Posinfo> potential_spots{};
-    for (auto &i : oob_list)
-    {
-        if (lvlname.find(i.lvlname) != lvlname.npos)
-            potential_spots.push_back(i.spot);
-    }
+    if (oob)
+        for (auto &i : oob_list)
+        {
+            if (lvlname.find(i.lvlname) != lvlname.npos)
+                potential_spots.push_back(i.spot);
+        }
+    else
+        for (auto &i : throughwall_list)
+            if (lvlname.find(i.lvlname) != lvlname.npos)
+                potential_spots.push_back(i.spot);
     Posinfo best_spot{};
     float best_score = FLT_MAX;
     for (auto &i : potential_spots)
@@ -143,7 +148,7 @@ void OutOfBounds_func(const CCommand &args, bool oob)
         }
         else
         {
-            auto loc = AutoOOB();
+            auto loc = AutoOOB(oob);
             if (!loc.active)
                 logging::Info("No valid spots found nearby!");
             else
