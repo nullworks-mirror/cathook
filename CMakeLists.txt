@@ -108,9 +108,9 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
-set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -fno-gnu-unique -rdynamic")
-set(CMAKE_CXX_FLAGS_DEBUG "-DNDEBUG -Og -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "-O1")
+set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -fno-gnu-unique -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-rdynamic -ggdb -Og")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(CMAKE_CXX_FLAGS_LVL1 "-O1 -fcaller-saves -fcode-hoisting -fcrossjumping -fcse-follow-jumps -fcse-skip-blocks -fdelete-null-pointer-checks -fdevirtualize -fdevirtualize-speculatively -fexpensive-optimizations -fgcse -fgcse-lm -fhoist-adjacent-loads -finline-small-functions -findirect-inlining -fipa-bit-cp -fipa-icf -fipa-ra -fipa-vrp -fisolate-erroneous-paths-dereference -flra-remat -foptimize-sibling-calls -foptimize-strlen -fpartial-inlining -fpeephole2 -freorder-blocks-algorithm=stc -freorder-blocks-and-partition -freorder-functions -frerun-cse-after-loop -fschedule-insns -fsched-interblock -fsched-spec -fstore-merging -fstrict-aliasing -fthread-jumps -ftree-builtin-call-dce -ftree-pre -ftree-switch-conversion -ftree-tail-merge -ftree-vrp")
 
@@ -176,10 +176,3 @@ endif()
 
 add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
-
-# Strip
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message("Stripping info from library")
-    add_custom_command(TARGET cathook POST_BUILD
-    COMMAND strip --strip-all "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
-endif()
