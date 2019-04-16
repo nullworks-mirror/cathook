@@ -336,6 +336,18 @@ static InitRoutine oob([]() {
     // Mossrock
     OOB_ADD(1519.956543f, -1311.202271f, 110.028976f, 29.606899f, -89.951279f, "cp_mossrock");
 
+    // Thundermountain
+    // Phase 1
+    OOB_ADD(-1068.001587f, -3724.079834f, 132.000061f - 68.000061f, 17.606197f, 0.118330f, "pl_thundermountain");
+    OOB_ADD(-655.932190f, -3820.002930f, 132.031311f - 68.000061f, 35.448536f, 90.085930f, "pl_thundermountain");
+    // Phase 2
+    OOB_ADD(-5088.036133f, 2212.007568f, 516.031311f - 68.000061f, 15.974121f, -89.956055f, "pl_thundermountain");
+    // OOB stuff
+    OOB_ADD(-2456.001465f, 1055.965454f, 512.031250f, -62.966915f, 0.056807f, "pl_thundermountain");
+    OOB_ADD(-2144.050537f, 927.939697f, 512.031250f, -65.708885f, 0.084181f, "pl_thundermountain");
+    // Phase 3
+    OOB_ADD(2191.972900f, 3353.798340f, 452.031311f - 68.000061f, 12.601318f, 89.972534f, "pl_thundermountain");
+
     EC::Register(EC::CreateMove, oobcm, "OOB_CM");
 });
 } // namespace hacks::tf2::OutOfBounds

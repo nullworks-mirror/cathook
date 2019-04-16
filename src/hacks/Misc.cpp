@@ -126,8 +126,46 @@ static Timer auto_balance_timer{};
 
 static ConVar *teammatesPushaway{ nullptr };
 
+int getCarriedBuilding()
+{
+    if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject))
+        return HandleToIDX(CE_INT(LOCAL_E, netvar.m_hCarriedObject));
+    for (int i = 1; i < MAX_ENTITIES; i++)
+    {
+        auto ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_Type() != ENTITY_BUILDING)
+            continue;
+        if (HandleToIDX(CE_INT(ent, netvar.m_hBuilder)) != LOCAL_E->m_IDX)
+            continue;
+        if (!CE_BYTE(ent, netvar.m_bPlacing))
+            continue;
+        return i;
+    }
+    return -1;
+}
+static settings::Button oob_helper{ "oob_helper", "<null>" };
 void CreateMove()
 {
+    if (oob_helper && oob_helper.isKeyDown())
+    {
+        if (CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
+        {
+            if (current_user_cmd->sidemove)
+                current_user_cmd->sidemove = current_user_cmd->sidemove < 0.0f ? -1.0001f : 1.0001f;
+            if (current_user_cmd->forwardmove)
+                current_user_cmd->forwardmove = current_user_cmd->forwardmove < 0.0f ? -1.0001f : 1.0001f;
+            int building_idx = getCarriedBuilding();
+            if (building_idx != -1)
+            {
+                auto building = ENTITY(building_idx);
+                if (CE_GOOD(building))
+                {
+                    if (CE_BYTE(building, netvar.m_bCanPlace))
+                        logging::Info("Spot found at x: %f, y: %f, z: %f, pitch: %f, yaw: %f", LOCAL_E->m_vecOrigin().x, LOCAL_E->m_vecOrigin().y, LOCAL_E->m_vecOrigin().z, current_user_cmd->viewangles.x, current_user_cmd->viewangles.y);
+                }
+            }
+        }
+    }
     if (current_user_cmd->command_number)
         last_number = current_user_cmd->command_number;
 
@@ -565,6 +603,7 @@ static CatCommand dump_vars_by_name("debug_dump_netvars_name", "Dump netvars of 
     }
 });
 
+static CatCommand print_eye_diff("debug_print_eye_diff", "debug", []() { logging::Info("%f", g_pLocalPlayer->v_Eye.z - LOCAL_E->m_vecOrigin().z); });
 void Shutdown()
 {
     if (CE_BAD(LOCAL_E))
