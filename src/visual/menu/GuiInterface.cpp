@@ -26,7 +26,6 @@ static zerokernel::special::PlayerListData createPlayerListData(int userid)
     data.teamId  = g_pPlayerResource->getTeam(idx) - 1;
     data.dead    = !g_pPlayerResource->isAlive(idx);
     data.steam   = info.friendsID;
-    logging::Info("Player name: %s", info.name);
     snprintf(data.name, 31, "%s", info.name);
     return data;
 }
@@ -140,11 +139,23 @@ void gui::draw()
     zerokernel::Menu::instance->update();
     zerokernel::Menu::instance->render();
 }
-
+static Timer update_players{};
 bool gui::handleSdlEvent(SDL_Event *event)
 {
     if (!zerokernel::Menu::instance)
         return false;
+    if (controller && CE_GOOD(LOCAL_E) && update_players.test_and_set(10000))
+    {
+        controller->removeAll();
+        for (auto i = 1; i < 32; ++i)
+        {
+            player_info_s info{};
+            if (g_IEngine->GetPlayerInfo(i, &info))
+            {
+                controller->addPlayer(info.userID, createPlayerListData(info.userID));
+            }
+        }
+    }
     if (event->type == SDL_KEYDOWN)
     {
         if (event->key.keysym.scancode == (*open_gui_button).scan)

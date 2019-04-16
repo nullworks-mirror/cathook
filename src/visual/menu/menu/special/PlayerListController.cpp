@@ -177,7 +177,6 @@ void zerokernel::special::PlayerListController::addPlayer(int id, zerokernel::sp
         }
         updateRow(trow);
         table.addObject(std::move(row));
-        printf("Table %u\n", table.objects.size());
     }
     else
     {

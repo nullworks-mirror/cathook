@@ -284,7 +284,8 @@ void oobcm()
                         }
                         else
                         {
-                            current_user_cmd->buttons |= IN_ATTACK;
+                            if (CE_BYTE(ent, netvar.m_bCanPlace))
+                                current_user_cmd->buttons |= IN_ATTACK;
                             failed = false;
                             if (yaw_offset >= 0.01f)
                             {
