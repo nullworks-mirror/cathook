@@ -1201,6 +1201,9 @@ int BestHitbox(CachedEntity *target)
     case 1:
     { // AUTO-CLOSEST priority, Return closest hitbox to crosshair
         int hb = ClosestHitbox(target);
+        if (hb > 17)
+            hb = 17;
+
         if (IsBacktracking() && !projectile_mode)
         {
             namespace bt = hacks::shared::backtrack;
@@ -1225,6 +1228,9 @@ int BestHitbox(CachedEntity *target)
     case 2:
     { // STATIC priority, Return a user chosen hitbox
         int hb = *hitbox;
+        if (hb > 17)
+            hb = 17;
+
         if (IsBacktracking() && !projectile_mode)
         {
             namespace bt = hacks::shared::backtrack;
