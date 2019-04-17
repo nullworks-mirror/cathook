@@ -344,7 +344,7 @@ void EffectChams::Render(int x, int y, int w, int h)
     {
         IClientEntity *entity = g_IEntityList->GetClientEntity(i);
         if (!entity || entity->IsDormant() || CE_BAD(ENTITY(i)))
-            return;
+            continue;
         RenderChams(entity);
     }
     EndRenderChams();

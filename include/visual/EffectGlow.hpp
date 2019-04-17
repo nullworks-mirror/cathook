@@ -17,20 +17,7 @@ class EffectGlow : public IScreenSpaceEffect
 {
 public:
     virtual void Init();
-    virtual void Shutdown()
-    {
-        if (init)
-        {
-            mat_unlit.Shutdown();
-            mat_unlit_z.Shutdown();
-            mat_blit.Shutdown();
-            mat_unlit.Shutdown();
-            mat_unlit_z.Shutdown();
-            mat_blur_x.Shutdown();
-            mat_blur_y.Shutdown();
-            init = false;
-        }
-    }
+    virtual void Shutdown();
 
     inline virtual void SetParameters(KeyValues *params)
     {

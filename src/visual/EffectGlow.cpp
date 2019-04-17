@@ -204,6 +204,25 @@ void EffectGlow::Init()
     init = true;
 }
 
+void EffectGlow::Shutdown()
+{
+    if (init)
+    {
+        mat_unlit.Shutdown();
+        mat_unlit_z.Shutdown();
+        mat_blit.Shutdown();
+        mat_blur_x.Shutdown();
+        mat_blur_y.Shutdown();
+        SS_NeverSolid.Reset();
+        SS_SolidInvisible.Reset();
+        SS_Drawing.Reset();
+        GetBuffer(1)->Release();
+        GetBuffer(2)->Release();
+        init = false;
+        logging::Info("Shutdown glow");
+    }
+}
+
 rgba_t EffectGlow::GlowColor(IClientEntity *entity)
 {
     static CachedEntity *ent;
@@ -415,13 +434,13 @@ void EffectGlow::Render(int x, int y, int w, int h)
 {
     if (!enable)
         return;
+    if (!isHackActive() || (clean_screenshots && g_IEngine->IsTakingScreenshot()) || g_Settings.bInvalid)
+        return;
     static ITexture *orig;
     static IClientEntity *ent;
     static IMaterialVar *blury_bloomamount;
     if (!init)
         Init();
-    if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots) || g_Settings.bInvalid)
-        return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     orig = ptr->GetRenderTarget();
     BeginRenderGlow();
@@ -454,7 +473,7 @@ void EffectGlow::Render(int x, int y, int w, int h)
     ptr->DrawScreenSpaceRectangle(mat_blur_x, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
     ptr->SetRenderTarget(GetBuffer(1));
     blury_bloomamount = mat_blur_y->FindVar("$bloomamount", nullptr);
-    blury_bloomamount->SetIntValue((int) blur_scale);
+    blury_bloomamount->SetIntValue(*blur_scale);
     ptr->DrawScreenSpaceRectangle(mat_blur_y, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
     ptr->Viewport(x, y, w, h);
     ptr->SetRenderTarget(orig);
