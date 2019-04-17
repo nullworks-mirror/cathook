@@ -44,7 +44,6 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
         logging::Info("Loaded Skybox: %s", succ ? "true" : "false");
     }
     ConVar *holiday = g_ICvar->FindVar("tf_forced_holiday");
-    effect_chams::g_EffectChams.Init();
     if (halloween_mode)
         holiday->SetValue(2);
     else if (holiday->m_nValue == 2)
