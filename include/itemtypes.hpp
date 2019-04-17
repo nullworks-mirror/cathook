@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -139,8 +139,8 @@ public:
     void RegisterItem(std::string modelpath, k_EItemType type);
     k_EItemType GetItemType(CachedEntity *entity);
 
-    std::map<std::string, k_EItemType> models;
-    std::map<uintptr_t, k_EItemType> map;
+    std::unordered_map<std::string, k_EItemType> models;
+    std::unordered_map<uintptr_t, k_EItemType> map;
 };
 
 class ItemManager
@@ -151,7 +151,7 @@ public:
     void RegisterSpecialMapping(ItemCheckerFn fn, k_EItemType type);
     k_EItemType GetItemType(CachedEntity *ent);
 
-    std::map<ItemCheckerFn, k_EItemType> special_map;
+    std::unordered_map<ItemCheckerFn, k_EItemType> special_map;
     std::vector<ItemSpecialMapperFn> specials;
     ItemModelMapper mapper_special;
     ItemModelMapper mapper;

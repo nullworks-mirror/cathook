@@ -219,3 +219,4 @@ k_EItemType ItemModelMapper::GetItemType(CachedEntity *entity)
 }
 
 ItemManager g_ItemManager;
+static InitRoutine init([]() { EC::Register(EC::LevelInit, []() { g_ItemManager = ItemManager{}; }, "clear_itemtypes"); });

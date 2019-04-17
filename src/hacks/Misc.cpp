@@ -144,16 +144,20 @@ int getCarriedBuilding()
     return -1;
 }
 static settings::Button oob_helper{ "oob_helper", "<null>" };
+static settings::Bool oob_helper_slow{ "oob_helper_slow", "true" };
 void CreateMove()
 {
     if (oob_helper && oob_helper.isKeyDown())
     {
         if (CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
         {
-            if (current_user_cmd->sidemove)
-                current_user_cmd->sidemove = current_user_cmd->sidemove < 0.0f ? -1.0001f : 1.0001f;
-            if (current_user_cmd->forwardmove)
-                current_user_cmd->forwardmove = current_user_cmd->forwardmove < 0.0f ? -1.0001f : 1.0001f;
+            if (oob_helper_slow)
+            {
+                if (current_user_cmd->sidemove)
+                    current_user_cmd->sidemove = current_user_cmd->sidemove < 0.0f ? -1.0001f : 1.0001f;
+                if (current_user_cmd->forwardmove)
+                    current_user_cmd->forwardmove = current_user_cmd->forwardmove < 0.0f ? -1.0001f : 1.0001f;
+            }
             int building_idx = getCarriedBuilding();
             if (building_idx != -1)
             {
