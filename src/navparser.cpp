@@ -754,5 +754,5 @@ void clearInstructions()
     crumbs.clear();
     curr_priority = 0;
 }
-
+static CatCommand nav_stop("nav_cancel", "Cancel Navigation", []() { clearInstructions(); });
 } // namespace nav

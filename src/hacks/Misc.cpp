@@ -143,33 +143,9 @@ int getCarriedBuilding()
     }
     return -1;
 }
-static settings::Button oob_helper{ "oob_helper", "<null>" };
-static settings::Bool oob_helper_slow{ "oob_helper_slow", "true" };
+
 void CreateMove()
 {
-    if (oob_helper && oob_helper.isKeyDown())
-    {
-        if (CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
-        {
-            if (oob_helper_slow)
-            {
-                if (current_user_cmd->sidemove)
-                    current_user_cmd->sidemove = current_user_cmd->sidemove < 0.0f ? -1.0001f : 1.0001f;
-                if (current_user_cmd->forwardmove)
-                    current_user_cmd->forwardmove = current_user_cmd->forwardmove < 0.0f ? -1.0001f : 1.0001f;
-            }
-            int building_idx = getCarriedBuilding();
-            if (building_idx != -1)
-            {
-                auto building = ENTITY(building_idx);
-                if (CE_GOOD(building))
-                {
-                    if (CE_BYTE(building, netvar.m_bCanPlace))
-                        logging::Info("Spot found at x: %f, y: %f, z: %f, pitch: %f, yaw: %f", LOCAL_E->m_vecOrigin().x, LOCAL_E->m_vecOrigin().y, LOCAL_E->m_vecOrigin().z, current_user_cmd->viewangles.x, current_user_cmd->viewangles.y);
-                }
-            }
-        }
-    }
     if (current_user_cmd->command_number)
         last_number = current_user_cmd->command_number;
 
