@@ -16,6 +16,8 @@ DEFINE_HOOKED_METHOD(LevelShutdown, void, void *this_)
     playerlist::Save();
     g_Settings.bInvalid = true;
     chat_stack::Reset();
+    effect_glow::g_EffectGlow.Shutdown();
+    effect_chams::g_EffectChams.Shutdown();
     EC::run(EC::LevelShutdown);
 #if ENABLE_IPC
     if (ipc::peer)

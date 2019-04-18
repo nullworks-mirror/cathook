@@ -213,11 +213,6 @@ void EffectGlow::Shutdown()
         mat_blit.Shutdown();
         mat_blur_x.Shutdown();
         mat_blur_y.Shutdown();
-        SS_NeverSolid.Reset();
-        SS_SolidInvisible.Reset();
-        SS_Drawing.Reset();
-        GetBuffer(1)->Release();
-        GetBuffer(2)->Release();
         init = false;
         logging::Info("Shutdown glow");
     }

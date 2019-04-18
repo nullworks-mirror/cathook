@@ -43,8 +43,6 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
     if (autoabandon)
         tfmm::disconnectAndAbandon();
     hacks::shared::autojoin::onShutdown();
-    effect_glow::g_EffectGlow.Shutdown();
-    effect_chams::g_EffectChams.Shutdown();
     if (*random_name)
     {
         static TextFile file;
