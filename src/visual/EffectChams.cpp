@@ -85,10 +85,10 @@ void EffectChams::EndRenderChams()
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
-static rgba_t data[32] = { colors::empty };
+static rgba_t data[33] = { colors::empty };
 void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
 {
-    if (ent->m_IDX > 31 || ent->m_IDX < 0)
+    if (ent->m_IDX > 32 || ent->m_IDX < 0)
         return;
     data[ent->m_IDX] = color;
 }
@@ -98,7 +98,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
     if (!isHackActive() || !*effect_chams::enable)
         return colors::empty;
-    ;
+
     CachedEntity *ent = ENTITY(entity->entindex());
     if (disco_chams)
     {
@@ -157,11 +157,14 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
         }
         return disco;
     }
-    if (data[entity->entindex()] != colors::empty)
+    if (ent->m_IDX <= 32 && ent->m_IDX >= 0)
     {
-        auto toret               = data[entity->entindex()];
-        data[entity->entindex()] = colors::empty;
-        return toret;
+        if (data[entity->entindex()] != colors::empty)
+        {
+            auto toret               = data[entity->entindex()];
+            data[entity->entindex()] = colors::empty;
+            return toret;
+        }
     }
     if (CE_BAD(ent))
         return colors::white;
