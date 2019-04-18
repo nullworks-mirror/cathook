@@ -9,6 +9,7 @@
 
 static settings::String ipc_name{ "name.ipc", "" };
 settings::String force_name{ "name.custom", "" };
+std::string name_forced = "";
 static settings::Int namesteal{ "name.namesteal", "0" };
 
 static std::string stolen_name;
@@ -138,6 +139,13 @@ const char *GetNamestealName(CSteamID steam_id)
     if ((*force_name).size() > 1 && steam_id == g_ISteamUser->GetSteamID())
     {
         auto new_name = force_name.toString();
+        ReplaceSpecials(new_name);
+
+        return new_name.c_str();
+    }
+    if (name_forced.size() > 1 && steam_id == g_ISteamUser->GetSteamID())
+    {
+        auto new_name = name_forced;
         ReplaceSpecials(new_name);
 
         return new_name.c_str();

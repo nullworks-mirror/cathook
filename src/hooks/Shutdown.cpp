@@ -12,6 +12,7 @@ static settings::Bool autoabandon{ "misc.auto-abandon", "false" };
 static settings::String custom_disconnect_reason{ "misc.disconnect-reason", "" };
 settings::Bool random_name{ "misc.random-name", "false" };
 extern settings::String force_name;
+extern std::string name_forced;
 
 namespace hooked_methods
 {
@@ -48,8 +49,10 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
         static TextFile file;
         if (file.TryLoad("names.txt"))
         {
-            force_name = file.lines.at(rand() % file.lines.size());
+            name_forced = file.lines.at(rand() % file.lines.size());
         }
     }
+    else
+        name_forced = "";
 }
 } // namespace hooked_methods
