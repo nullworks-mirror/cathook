@@ -16,6 +16,7 @@ static settings::String filename{ "spam.filename", "spam.txt" };
 static settings::Int spam_delay{ "spam.delay", "800" };
 static settings::Int voicecommand_spam{ "spam.voicecommand", "0" };
 static settings::Bool teamname_spam{ "spam.teamname", "0" };
+static settings::Bool team_only{ "spam.teamchat", "false" };
 
 namespace hacks::shared::spam
 {
@@ -353,7 +354,7 @@ void createMove()
             last_index             = current_index;
             std::string spamString = source->at(current_index);
             if (FormatSpamMessage(spamString))
-                chat_stack::Say(spamString, false);
+                chat_stack::Say(spamString, *team_only);
             current_index++;
         }
         last_spam_point = std::chrono::system_clock::now();
