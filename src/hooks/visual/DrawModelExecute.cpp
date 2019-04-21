@@ -96,15 +96,15 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                             // Sort
                             std::sort(usable.begin(), usable.end(), [](hacks::shared::backtrack::BacktrackData &a, hacks::shared::backtrack::BacktrackData &b) { return a.tickcount < b.tickcount; });
                             // Make our own Chamsish Material
-                            static CMaterialReference mat_unlit;
+                            static CMaterialReference mat_lit;
                             static bool init = false;
                             if (!init)
                             {
-                                KeyValues *kv = new KeyValues("UnlitGeneric");
+                                KeyValues *kv = new KeyValues("VertexLitGeneric");
                                 kv->SetString("$basetexture", "vgui/white_additive");
                                 kv->SetInt("$ignorez", 0);
-                                mat_unlit.Init("__cathook_dme_unlit", kv);
-                                init = true;
+                                kv->SetInt("$halflambert", 1);
+                                mat_lit.Init("__cathook_echams_lit", kv);
                             }
                             // Render Chams/Glow stuff
                             CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
@@ -115,7 +115,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                             // Important for Depth
                             ptr->DepthRange(0.0f, 1.0f);
                             // Apply our material
-                            g_IVModelRender->ForcedMaterialOverride(mat_unlit);
+                            g_IVModelRender->ForcedMaterialOverride(mat_lit);
                             // Run Original
                             original::DrawModelExecute(this_, state, info, usable[0].bones);
                             // Revert
