@@ -462,9 +462,7 @@ CatCommand name("name_set", "Immediate name change", [](const CCommand &args) {
         return;
     }
     std::string new_name(args.ArgS());
-    ReplaceString(new_name, "\\n", "\n");
-    ReplaceString(new_name, "\\015", "\015");
-    ReplaceString(new_name, "\\u200F", "\u200F");
+    ReplaceSpecials(new_name);
     NET_SetConVar setname("name", new_name.c_str());
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (ch)
