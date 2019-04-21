@@ -375,7 +375,7 @@ void initThread()
     lvldir.append("/.steam/steam/steamapps/common/Team Fortress 2/tf/");
     lvldir.append(lvlname);
     lvldir.append(".nav");
-    logging::Info(format("Pathing: Nav File location: ", lvldir).c_str());
+    logging::Info("Pathing: Nav File location: %s", lvldir.c_str());
 
     navfile = std::make_unique<CNavFile>(lvldir.c_str());
 
