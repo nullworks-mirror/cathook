@@ -14,7 +14,7 @@ static settings::Bool no_invisibility{ "remove.cloak", "0" };
 namespace hacks::tf2::antidisguise
 {
 
-void Draw()
+void cm()
 {
     CachedEntity *ent;
     if (!*enable && !*no_invisibility)
@@ -36,7 +36,5 @@ void Draw()
         }
     }
 }
-#if ENABLE_VISUALS
-static InitRoutine EC([]() { EC::Register(EC::Draw, Draw, "antidisguise", EC::average); });
-#endif
+static InitRoutine EC([]() { EC::Register(EC::CreateMove, cm, "antidisguise", EC::average); });
 } // namespace hacks::tf2::antidisguise
