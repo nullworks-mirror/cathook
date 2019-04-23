@@ -105,6 +105,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                                 kv->SetInt("$ignorez", 0);
                                 kv->SetInt("$halflambert", 1);
                                 mat_lit.Init("__cathook_echams_lit", kv);
+                                init = true;
                             }
                             // Render Chams/Glow stuff
                             CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
