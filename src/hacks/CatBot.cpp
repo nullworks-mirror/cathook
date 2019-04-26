@@ -492,7 +492,7 @@ static void draw()
 
 static InitRoutine runinit([]() {
     EC::Register(EC::CreateMove, cm, "cm_catbot", EC::average);
-    EC::Register(EC::Paint, update, "paint_catbot", EC::average);
+    EC::Register(EC::CreateMove, update, "cm2_catbot", EC::average);
     EC::Register(EC::LevelInit, level_init, "levelinit_catbot", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, draw, "draw_catbot", EC::average);
