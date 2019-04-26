@@ -33,7 +33,7 @@ static settings::Bool only_can_shoot{ "aimbot.can-shoot-only", "1" };
 
 static settings::Bool extrapolate{ "aimbot.extrapolate", "0" };
 static settings::Int slow_aim{ "aimbot.slow", "0" };
-static settings::Float miss_chance{ "aimbot.miss-chance", "0" };
+static settings::Int miss_chance{ "aimbot.miss-chance", "0" };
 
 static settings::Bool projectile_aimbot{ "aimbot.projectile.enable", "true" };
 static settings::Float proj_gravity{ "aimbot.projectile.gravity", "0" };
@@ -740,13 +740,8 @@ bool IsTargetStateGood(CachedEntity *entity)
 void Aim(CachedEntity *entity)
 {
     namespace bt = hacks::shared::backtrack;
-    if (float(miss_chance) > 0.0f)
-    {
-        if ((rand() % 100) < float(miss_chance) * 100.0f)
-        {
-            return;
-        }
-    }
+    if (*miss_chance > 0 && UniformRandomInt(0, 99) < *miss_chance)
+        return;
 
     // Dont aim at a bad entity
     if (CE_BAD(entity))
