@@ -35,7 +35,7 @@ bool StolenName()
     int potential_targets_length = 0;
 
     // Go through entities looking for potential targets
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
 

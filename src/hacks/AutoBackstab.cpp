@@ -126,6 +126,11 @@ static void doBacktrackStab()
             continue;
         Vector &min = btp.collidable.min;
         Vector &max = btp.collidable.max;
+        // Shrink by 5%
+        min.x += (max.x - min.x) / 100.0f * 5.0f;
+        max.x -= (max.x - min.x) / 100.0f * 5.0f;
+        min.y += (max.y - min.y) / 100.0f * 5.0f;
+        max.y -= (max.y - min.y) / 100.0f * 5.0f;
         Vector hit;
         if (hacks::shared::triggerbot::CheckLineBox(min, max, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
         {

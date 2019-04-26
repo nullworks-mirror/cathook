@@ -15,7 +15,7 @@ void hacks::shared::anti_anti_aim::createMove()
         return;
 
     IClientEntity *entity{ nullptr };
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
         resolveEnt(i, entity);
     }

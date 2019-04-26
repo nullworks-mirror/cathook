@@ -29,7 +29,7 @@ static void vote_rage_back()
     if (!g_IEngine->IsInGame() || !attempt_vote_time.test_and_set(1000))
         return;
 
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         auto ent = ENTITY(i);
         // TO DO: m_bEnemy check only when you can't vote off players from the opposite team

@@ -74,7 +74,7 @@ void authreq(std::string &msg)
     else
         steamidhash = msg.substr(4);
 
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
         if (i == g_pLocalPlayer->entity_idx)
             continue;

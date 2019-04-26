@@ -180,4 +180,8 @@ struct offsets
     {
         return PlatformOffset(77, undefined, 77);
     }
+    static constexpr uint32_t RegisterFileWhitelist()
+    {
+        return PlatformOffset(94, undefined, undefined);
+    }
 };

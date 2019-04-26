@@ -71,7 +71,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
             if (sname.find("models/player") || sname.find("models/weapons") || sname.find("models/workshop/player") || sname.find("models/workshop/weapons"))
             {
 
-                if (IDX_GOOD(info.entity_index) && info.entity_index < g_IEngine->GetMaxClients() && info.entity_index != g_IEngine->GetLocalPlayer())
+                if (IDX_GOOD(info.entity_index) && info.entity_index <= g_IEngine->GetMaxClients() && info.entity_index != g_IEngine->GetLocalPlayer())
                 {
                     CachedEntity *ent = ENTITY(info.entity_index);
                     if (CE_GOOD(ent) && ent->m_bAlivePlayer())
@@ -96,15 +96,14 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                             // Sort
                             std::sort(usable.begin(), usable.end(), [](hacks::shared::backtrack::BacktrackData &a, hacks::shared::backtrack::BacktrackData &b) { return a.tickcount < b.tickcount; });
                             // Make our own Chamsish Material
-                            static CMaterialReference mat_lit;
+                            static CMaterialReference mat_unlit;
                             static bool init = false;
                             if (!init)
                             {
-                                KeyValues *kv = new KeyValues("VertexLitGeneric");
+                                KeyValues *kv = new KeyValues("UnlitGeneric");
                                 kv->SetString("$basetexture", "vgui/white_additive");
                                 kv->SetInt("$ignorez", 0);
-                                kv->SetInt("$halflambert", 1);
-                                mat_lit.Init("__cathook_echams_lit", kv);
+                                mat_unlit.Init("__cathook_glow_unlit", kv);
                                 init = true;
                             }
                             // Render Chams/Glow stuff
@@ -116,7 +115,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                             // Important for Depth
                             ptr->DepthRange(0.0f, 1.0f);
                             // Apply our material
-                            g_IVModelRender->ForcedMaterialOverride(mat_lit);
+                            g_IVModelRender->ForcedMaterialOverride(mat_unlit);
                             // Run Original
                             original::DrawModelExecute(this_, state, info, usable[0].bones);
                             // Revert

@@ -116,7 +116,7 @@ static void Run()
     // Fill backtrack data (stored in headPositions)
     {
         PROF_SECTION(cm_bt_ent_loop)
-        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *pEntity = ENTITY(i);
             if (CE_BAD(pEntity) || !pEntity->m_bAlivePlayer())
@@ -222,7 +222,7 @@ static void Draw()
         return;
     // :b:ones for non drawable ents
     if (draw_skeleton)
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) || !ent->m_bAlivePlayer() || i == g_IEngine->GetLocalPlayer())
@@ -249,7 +249,7 @@ static void Draw()
         }
     if (!draw_bt)
         return;
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -376,7 +376,7 @@ std::pair<int, int> getBestEntBestTick()
     if (GetWeaponMode() == weapon_melee)
     {
         float bestDist = 9999.0f;
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *tar = ENTITY(i);
             if (CE_GOOD(tar))
@@ -406,7 +406,7 @@ std::pair<int, int> getBestEntBestTick()
     else
     {
         float bestFov = 180.0f;
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *tar = ENTITY(i);
             if (CE_GOOD(tar))
