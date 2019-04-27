@@ -237,7 +237,7 @@ static bool startFollow(CachedEntity *entity, bool useNavbot)
 
 static void cm()
 {
-    if (!enable)
+    if (!enable || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
     {
         follow_target = 0;
         if (nb::task::current_task == nb::task::followbot)
@@ -247,14 +247,6 @@ static void cm()
     if (!inited)
         init();
 
-    // We need a local player to control
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
-    {
-        follow_target = 0;
-        if (nb::task::current_task == nb::task::followbot)
-            nb::task::current_task = nb::task::none;
-        return;
-    }
     if (nb::task::current_task == nb::task::health || nb::task::current_task == nb::task::ammo)
     {
         follow_target = 0;
