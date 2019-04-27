@@ -87,7 +87,7 @@ static void updateAntiAfk()
             current_user_cmd->forwardmove = RandFloatRange(-450.0, 450.0);
             current_user_cmd->buttons     = rand();
             // Prevent attack command
-            current_user_cmd->buttons &= ~IN_ATTACK;
+            current_user_cmd->buttons &= ~(IN_ATTACK | IN_ATTACK2);
             if (anti_afk_timer.check(61000))
             {
                 anti_afk_timer.update();
