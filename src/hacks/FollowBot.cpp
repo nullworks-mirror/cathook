@@ -235,7 +235,6 @@ static bool startFollow(CachedEntity *entity, bool useNavbot)
     return false;
 }
 
-#if ENABLE_IPC
 static void cm()
 {
     if (!enable)
@@ -561,7 +560,6 @@ static void cm()
     else
         idle_time.update();
 }
-#endif
 
 #if ENABLE_VISUALS
 static void draw()
@@ -633,9 +631,7 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
 }
 
 static InitRoutine runinit([]() {
-#if ENABLE_IPC
     EC::Register(EC::CreateMove, cm, "cm_followbot", EC::average);
-#endif
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, draw, "draw_followbot", EC::average);
 #endif
