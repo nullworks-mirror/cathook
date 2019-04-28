@@ -118,6 +118,7 @@ static void doBacktrackStab()
             continue;
         Vector distcheck = btp.entorigin;
         distcheck.z      = g_pLocalPlayer->v_Eye.z;
+        // dont stab while inside the enemy
         if (distcheck.DistTo(g_pLocalPlayer->v_Eye) < 20.0f)
             continue;
         // Get and calculate an  angle to use to backstab the ent
@@ -126,13 +127,9 @@ static void doBacktrackStab()
             continue;
         Vector &min = btp.collidable.min;
         Vector &max = btp.collidable.max;
-        // Shrink by 5%
-        min.x += (max.x - min.x) / 100.0f * 5.0f;
-        max.x -= (max.x - min.x) / 100.0f * 5.0f;
-        min.y += (max.y - min.y) / 100.0f * 5.0f;
-        max.y -= (max.y - min.y) / 100.0f * 5.0f;
         Vector hit;
-        if (hacks::shared::triggerbot::CheckLineBox(min, max, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange), hit))
+        // Check if we can hit the enemies hitbox
+        if (hacks::shared::triggerbot::CheckLineBox(min, max, g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange * 0.95f), hit))
         {
             current_user_cmd->tick_count = btp.tickcount;
             current_user_cmd->viewangles = newangle;
