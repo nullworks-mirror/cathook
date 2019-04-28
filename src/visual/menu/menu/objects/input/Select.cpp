@@ -34,7 +34,28 @@ void zerokernel::Select::render()
         }
 
         renderBorder(*color_border);
-        text.set(found ? found->name : "<?>");
+        std::string t;
+        if (found)
+        {
+            float x, y;
+            t = found->name;
+            resource::font::base.stringSize(t, &x, &y);
+            if (x + 5 > bb.getBorderBox().width)
+            {
+                while (true)
+                {
+                    resource::font::base.stringSize(t, &x, &y);
+                    if (x + 13 > bb.getBorderBox().width)
+                    {
+                        t = t.substr(0, t.size() - 1);
+                    }
+                    else
+                        break;
+                }
+                t.append("..");
+            }
+        }
+        text.set(found ? t : "<?>");
         text.render();
     }
     else
@@ -67,11 +88,17 @@ void zerokernel::Select::openModal()
     object->setParent(Menu::instance->wm.get());
     object->move(bb.getBorderBox().x, bb.getBorderBox().y);
     object->addMessageHandler(*this);
-    object->resize(bb.getBorderBox().width, -1);
+    int size = bb.getBorderBox().width;
     for (auto &p : options)
     {
         object->addOption(p.name, p.value, p.tooltip);
+        float x, y;
+        resource::font::base.stringSize(p.name, &x, &y);
+        x += 10;
+        if (x > size)
+            size = x;
     }
+    object->resize(size, -1);
     debug::UiTreeGraph(object.get(), 0);
     Menu::instance->addModalObject(std::move(object));
 }
@@ -118,7 +145,7 @@ void zerokernel::Select::loadFromXml(const tinyxml2::XMLElement *data)
             printf("adding %s: %s\n", name, value);
             auto has_tooltip = !(child->QueryStringAttribute("tooltip", &tooltip));
             options.push_back(option{ name, value, has_tooltip ? std::optional<std::string>(tooltip) : std::nullopt });
-        };
+        }
         child = child->NextSiblingElement(nullptr);
     }
 }
