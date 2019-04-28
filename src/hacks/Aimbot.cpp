@@ -87,7 +87,7 @@ namespace hacks::shared::aimbot
 settings::Bool ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
 bool shouldBacktrack()
 {
-    return *enable && *backtrackAimbot;
+    return *enable && *backtrackAimbot && hacks::shared::backtrack::isBacktrackEnabled;
 }
 
 bool IsBacktracking()
@@ -1500,15 +1500,16 @@ static void DrawText()
 #endif
 void rvarCallback(settings::VariableBase<int> &var, float after)
 {
-    if (hacks::shared::backtrack::enable)
+    if (backtrackAimbot)
+    {
+        backtrackAimbot = after > 0.0f;
+    }
+    else
+    {
         backtrackAimbot = after > 190.0f;
-}
-void rvarCallback2(settings::VariableBase<bool> &var, bool after)
-{
-    backtrackAimbot = (*hacks::shared::backtrack::latency > 190.0f) && after;
+    }
 }
 static InitRoutine EC([]() {
-    hacks::shared::backtrack::enable.installChangeCallback(rvarCallback2);
     hacks::shared::backtrack::latency.installChangeCallback(rvarCallback);
     EC::Register(EC::LevelInit, Reset, "INIT_Aimbot", EC::average);
     EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);
