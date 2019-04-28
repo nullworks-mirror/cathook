@@ -15,6 +15,10 @@ static settings::Bool silent{ "antibackstab.silent", "1" };
 static settings::Float angle{ "antibackstab.angle", "107.5" };
 static settings::Bool sayno{ "antibackstab.nope", "0" };
 
+namespace hacks::tf2::autobackstab
+{
+extern bool angleCheck(CachedEntity *from, CachedEntity *to, std::optional<Vector> target_pos, Vector from_angle);
+}
 namespace hacks::tf2::antibackstab
 {
 bool noaa = false;
@@ -117,11 +121,12 @@ void CreateMove()
         noaa = true;
         if (current_user_cmd->buttons & IN_ATTACK)
             return;
-        const Vector &A = LOCAL_E->m_vecOrigin();
-        const Vector &B = spy->m_vecOrigin();
-        diff            = (A - B);
-        if (diff.y < 0 || CE_INT(spy, netvar.iClass) == tf_class::tf_heavy)
-            current_user_cmd->viewangles.x = 180.0f;
+        Vector spy_angle;
+        spy_angle = CE_VECTOR(spy, netvar.m_angEyeAngles);
+        fClampAngle(spy_angle);
+        bool couldbebackstabbed = hacks::tf2::autobackstab::angleCheck(spy, LOCAL_E, std::nullopt, spy_angle);
+        if (couldbebackstabbed || CE_INT(spy, netvar.iClass) == tf_class::tf_heavy)
+            current_user_cmd->viewangles.x = 150.0f;
         if (silent)
             g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)

@@ -15,6 +15,37 @@ namespace hacks::tf2::autobackstab
 static settings::Bool enabled("autobackstab.enabled", "false");
 static settings::Int mode("autobackstab.mode", "0");
 
+bool angleCheck(CachedEntity *from, CachedEntity *to, std::optional<Vector> target_pos, Vector from_angle)
+{
+    Vector tarAngle = CE_VECTOR(to, netvar.m_angEyeAngles);
+
+    Vector wsc_spy_to_victim;
+    if (target_pos)
+        wsc_spy_to_victim = *target_pos - from->m_vecOrigin();
+    else
+        wsc_spy_to_victim = to->m_vecOrigin() - from->m_vecOrigin();
+    wsc_spy_to_victim.z = 0;
+    wsc_spy_to_victim.NormalizeInPlace();
+
+    Vector eye_spy;
+    AngleVectors2(VectorToQAngle(from_angle), &eye_spy);
+    eye_spy.z = 0;
+    eye_spy.NormalizeInPlace();
+
+    Vector eye_victim;
+    AngleVectors2(VectorToQAngle(tarAngle), &eye_victim);
+    eye_victim.z = 0;
+    eye_victim.NormalizeInPlace();
+
+    if (DotProduct(wsc_spy_to_victim, eye_victim) <= 0.0f)
+        return false;
+    if (DotProduct(wsc_spy_to_victim, eye_spy) <= 0.5f)
+        return false;
+    if (DotProduct(eye_spy, eye_victim) <= -0.3f)
+        return false;
+    return true;
+}
+
 static bool angleCheck(CachedEntity *target, std::optional<Vector> target_pos, Vector local_angle)
 {
     Vector tarAngle = CE_VECTOR(target, netvar.m_angEyeAngles);
