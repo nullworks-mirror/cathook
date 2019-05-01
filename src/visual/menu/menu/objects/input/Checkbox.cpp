@@ -33,7 +33,7 @@ zerokernel::Checkbox::Checkbox(settings::Variable<bool> &option) : option(&optio
 
 void zerokernel::Checkbox::render()
 {
-    if (option && *option)
+    if (nullptr != option)
     {
         renderBorder(*color_border);
         auto cb = bb.getContentBox();

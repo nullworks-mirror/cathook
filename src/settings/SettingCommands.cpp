@@ -190,6 +190,39 @@ static void getAndSortAllConfigs()
     logging::Info("Sorted %u config files\n", sortedConfigs.size());
 }
 
+static CatCommand cat_find("find", "Find a command by name", [](const CCommand &args){
+    // We need arguments
+    if (args.ArgC() < 2)
+        return logging::Info("Usage: cat_find (name)");
+    // Store all found rvars
+    std::vector<std::string> found_rvars;
+    for (const auto &s : sortedVariables)
+    {
+        // Store std::tolower'd rvar
+        std::string lowered_str;
+        for (auto &i : s)
+            lowered_str += std::tolower(i);
+        std::string to_find = args.Arg(1);
+        // store rvar to find in lowercase too
+        std::string to_find_lower;
+        for (auto &s : to_find)
+            to_find_lower += std::tolower(s);
+        // If it matches then add to vector
+        if (lowered_str.find(to_find_lower) != lowered_str.npos)
+            found_rvars.push_back(s);
+    }
+    // Yes
+    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255),"Found rvars:\n");
+    // Nothing found :C
+    if (found_rvars.empty())
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255),"No rvars found.\n");
+    // Found rvars
+    else
+        for (auto &s : found_rvars)
+            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255),"%s\n",s.c_str());
+
+});
+
 static int cat_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
     std::string partial = c_partial;
