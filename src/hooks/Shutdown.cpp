@@ -44,6 +44,8 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
     if (autoabandon)
         tfmm::disconnectAndAbandon();
     hacks::shared::autojoin::onShutdown();
+    std::string message = reason;
+    votelogger::onShutdown(message);
     if (*random_name)
     {
         static TextFile file;

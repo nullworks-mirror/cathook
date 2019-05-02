@@ -80,15 +80,18 @@ static void updateAntiAfk()
     }
     else
     {
-        if (anti_afk_timer.check(60000))
+        static auto afk_timer = g_ICvar->FindVar("mp_idlemaxtime");
+        if (!afk_timer)
+            afk_timer = g_ICvar->FindVar("mp_idlemaxtime");
+        // Trigger 10 seconds before kick
+        else if (afk_timer->m_nValue != 0 && anti_afk_timer.check(afk_timer->m_nValue*60*1000-10000))
         {
-            // Send random commands
-            current_user_cmd->sidemove    = RandFloatRange(-450.0, 450.0);
-            current_user_cmd->forwardmove = RandFloatRange(-450.0, 450.0);
-            current_user_cmd->buttons     = rand();
-            // Prevent attack command
-            current_user_cmd->buttons &= ~(IN_ATTACK | IN_ATTACK2);
-            if (anti_afk_timer.check(61000))
+            // Just duck tf
+            if (current_user_cmd->buttons & IN_DUCK)
+                current_user_cmd->buttons &= ~IN_DUCK;
+            else
+                current_user_cmd->buttons     = IN_DUCK;
+            if (anti_afk_timer.check(afk_timer->m_nValue*60*1000+1000))
             {
                 anti_afk_timer.update();
             }

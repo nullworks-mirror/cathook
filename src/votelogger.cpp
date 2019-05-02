@@ -13,11 +13,13 @@ static settings::Bool vote_kicky{ "votelogger.autovote.yes", "false" };
 static settings::Bool vote_kickn{ "votelogger.autovote.no", "false" };
 static settings::Bool vote_rage_vote{ "votelogger.autovote.no.rage", "false" };
 static settings::Bool party_say{ "votelogger.partysay", "true" };
+static settings::Bool abandon_and_crash_on_kick{ "votelogger.restart-on-kick", "false" };
 
 namespace votelogger
 {
 
 static bool was_local_player{ false };
+static Timer local_kick_timer{};
 
 static void vote_rage_back()
 {
@@ -79,7 +81,10 @@ void dispatchUserMessage(bf_read &buffer, int type)
 
         logging::Info("Vote called to kick %s [U:1:%u] for %s by %s [U:1:%u]", info.name, info.friendsID, reason, info2.name, info2.friendsID);
         if (eid == LOCAL_E->m_IDX)
+        {
             was_local_player = true;
+            local_kick_timer.update();
+        }
 
         if (*vote_kickn || *vote_kicky)
         {
@@ -108,10 +113,12 @@ void dispatchUserMessage(bf_read &buffer, int type)
         break;
     }
     case 47:
+    {
         logging::Info("Vote passed");
         // if (was_local_player && requeue)
         //    tfmm::startQueue();
         break;
+    }
     case 48:
         logging::Info("Vote failed");
         break;
@@ -121,6 +128,43 @@ void dispatchUserMessage(bf_read &buffer, int type)
     default:
         break;
     }
+}
+static bool found_message = false;
+void onShutdown(std::string message)
+{
+    if (message.find("Generic_Kicked") == message.npos)
+    {
+        found_message = false;
+        return;
+    }
+    if (local_kick_timer.check(60000) || !was_local_player)
+    {
+        found_message = false;
+        return;
+    }
+    if (abandon_and_crash_on_kick)
+    {
+        found_message = true;
+        g_IEngine->ClientCmd_Unrestricted("tf_party_leave");
+        local_kick_timer.update();
+    }
+    else
+        found_message = false;
+}
+
+static void setup_paint_abandon()
+{
+    EC::Register(
+        EC::Paint,
+        []() {
+            if (!found_message)
+                return;
+            if (local_kick_timer.check(60000) || !local_kick_timer.test_and_set(10000) || !was_local_player)
+                return;
+            if (abandon_and_crash_on_kick)
+                *(int *) 0 = 0;
+        },
+        "vote_abandon_restart");
 }
 
 static void setup_vote_rage()
@@ -136,6 +180,7 @@ static void reset_vote_rage()
 static InitRoutine init([]() {
     if (*vote_rage_vote)
         setup_vote_rage();
+    setup_paint_abandon();
 
     vote_rage_vote.installChangeCallback([](settings::VariableBase<bool> &var, bool new_val) {
         if (new_val)
