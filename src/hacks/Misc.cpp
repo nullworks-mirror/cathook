@@ -84,14 +84,14 @@ static void updateAntiAfk()
         if (!afk_timer)
             afk_timer = g_ICvar->FindVar("mp_idlemaxtime");
         // Trigger 10 seconds before kick
-        else if (afk_timer->m_nValue != 0 && anti_afk_timer.check(afk_timer->m_nValue*60*1000-10000))
+        else if (afk_timer->m_nValue != 0 && anti_afk_timer.check(afk_timer->m_nValue * 60 * 1000 - 10000))
         {
             // Just duck tf
             if (current_user_cmd->buttons & IN_DUCK)
                 current_user_cmd->buttons &= ~IN_DUCK;
             else
-                current_user_cmd->buttons     = IN_DUCK;
-            if (anti_afk_timer.check(afk_timer->m_nValue*60*1000+1000))
+                current_user_cmd->buttons = IN_DUCK;
+            if (anti_afk_timer.check(afk_timer->m_nValue * 60 * 1000 + 1000))
             {
                 anti_afk_timer.update();
             }
@@ -412,7 +412,8 @@ void DrawText()
 
 #endif
 
-static CatCommand generateschema("schema_generate", "Generate custom schema", []() {
+void generate_schema()
+{
     std::ifstream in("tf/scripts/items/items_game.txt");
     std::string outS((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     std::ofstream out("/opt/cathook/data/items_game.txt");
@@ -421,7 +422,8 @@ static CatCommand generateschema("schema_generate", "Generate custom schema", []
     outS = std::regex_replace(outS, a, "");
     out << std::regex_replace(outS, b, "");
     out.close();
-});
+}
+static CatCommand generateschema("schema_generate", "Generate custom schema", generate_schema);
 
 void Schema_Reload()
 {
@@ -431,10 +433,11 @@ void Schema_Reload()
     void *schema                = GetItemSchema() + 0x4;
 
     FILE *file = fopen("/opt/cathook/data/items_game.txt", "r");
-    if (ferror(file) != 0)
+    if (!file || ferror(file) != 0)
     {
         logging::Info("Error loading file");
-        fclose(file);
+        if (file)
+            fclose(file);
         return;
     }
 

@@ -6,6 +6,7 @@
  */
 
 #include <settings/Bool.hpp>
+#include "Misc.hpp"
 #include "common.hpp"
 
 static settings::Bool safety{ "achievement.safety", "true" };
@@ -112,4 +113,88 @@ CatCommand lock_single("achievement_lock_single", "Locks single achievement by I
 });
 CatCommand lock("achievement_lock", "Lock all achievements", Lock);
 CatCommand unlock("achievement_unlock", "Unlock all achievements", Unlock);
+
+static bool accept_notifs;
+static bool equip;
+
+void unlock_achievements_and_accept(std::vector<int> items)
+{
+    for (auto id : items)
+    {
+        IAchievement *ach = reinterpret_cast<IAchievement *>(g_IAchievementMgr->GetAchievementByID(id));
+        if (ach)
+        {
+            g_IAchievementMgr->AwardAchievement(id);
+        }
+    }
+    accept_notifs = true;
+}
+static CatCommand get_sniper_items("achievement_sniper", "Get all sniper achievement items", []() {
+    static std::vector<int> sniper_items = { 1136, 1137, 1138 };
+    unlock_achievements_and_accept(sniper_items);
+});
+static Timer accept_time{};
+static Timer cooldowm{};
+static CatCommand get_best_hats("achievement_cathats", "Get and equip the bencat hats", []() {
+    static std::vector<int> bencat_hats = { 1902, 1912, 2006 };
+    unlock_achievements_and_accept(bencat_hats);
+    hacks::shared::misc::Schema_Reload();
+    equip = true;
+});
+bool equip_on_all(int hat1, int hat2, int hat3)
+{
+    auto invmng     = re::CTFInventoryManager::GTFInventoryManager();
+    auto inv        = invmng->GTFPlayerInventory();
+    auto item_view1 = inv->GetFirstItemOfItemDef(hat1);
+    auto item_view2 = inv->GetFirstItemOfItemDef(hat2);
+    auto item_view3 = inv->GetFirstItemOfItemDef(hat3);
+    for (int i = tf_scout; i < tf_engineer; i++)
+    {
+        bool success1 = invmng->EquipItemInLoadout(i, 7, item_view1->UUID());
+        bool success2 = invmng->EquipItemInLoadout(i, 8, item_view2->UUID());
+        bool success3 = invmng->EquipItemInLoadout(i, 10, item_view3->UUID());
+        if (!(success1 && success2 && success3))
+            return false;
+    }
+    return true;
+}
+static InitRoutine init([]() {
+    EC::Register(
+        EC::Paint,
+        []() {
+            if (accept_notifs)
+            {
+                accept_time.update();
+                accept_notifs = false;
+            }
+            if (!accept_time.check(5000) && cooldowm.test_and_set(500))
+                g_IEngine->ClientCmd_Unrestricted("cl_trigger_first_notification");
+            if (equip)
+            {
+                if (accept_time.check(5000) && !accept_time.check(10000) && cooldowm.test_and_set(500))
+                {
+                    auto invmng = re::CTFInventoryManager::GTFInventoryManager();
+                    auto inv    = invmng->GTFPlayerInventory();
+                    // Frontline field recorder
+                    auto item_view1 = inv->GetFirstItemOfItemDef(302);
+                    // Gibus
+                    auto item_view2 = inv->GetFirstItemOfItemDef(940);
+                    // Skull Island Tropper
+                    auto item_view3 = inv->GetFirstItemOfItemDef(941);
+                    if (item_view1 && item_view2 && item_view3)
+                    {
+                        bool success = equip_on_all(302, 940, 941);
+                        if (success)
+                        {
+                            logging::Info("Equipped hats");
+                            equip = false;
+                        }
+                    }
+                }
+                else if (accept_time.check(20000))
+                    equip = false;
+            }
+        },
+        "achievement_autounlock");
+});
 } // namespace hacks::tf2::achievement

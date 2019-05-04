@@ -5,37 +5,55 @@
  *      Author: bencat07
  */
 #include "common.hpp"
+#include "e8call.hpp"
 using namespace re;
 
 CTFInventoryManager *CTFInventoryManager::GTFInventoryManager()
 {
     typedef CTFInventoryManager *(*GTFInventoryManager_t)();
-    uintptr_t address                            = gSignatures.GetClientSignature("55 A1 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 55 89 E5 56 53 83 EC ? 8B "
-                                                       "5D ? C7 44 24");
-    GTFInventoryManager_t GTFInventoryManager_fn = GTFInventoryManager_t(address);
+    static uintptr_t address                            = (unsigned) e8call((void *) (gSignatures.GetClientSignature("E8 ? ? ? ? 0F B6 55 0C") + 1));
+    static GTFInventoryManager_t GTFInventoryManager_fn = GTFInventoryManager_t(address);
     return GTFInventoryManager_fn();
 }
-bool CTFInventoryManager::EquipItemInLoadout(int slot, int classid, unsigned long long uniqueid)
+bool CTFInventoryManager::EquipItemInLoadout(int classid, int slot, unsigned long long uniqueid)
 {
     typedef bool (*fn_t)(void *, int, int, unsigned long long);
-    return vfunc<fn_t>(this, offsets::PlatformOffset(19, offsets::undefined, 19), 0)(this, slot, classid, uniqueid);
+    return vfunc<fn_t>(this, offsets::PlatformOffset(20, offsets::undefined, 20), 0)(this, classid, slot, uniqueid);
 }
 unsigned long long int CEconItem::uniqueid()
 {
     return *((unsigned long long int *) this + 36);
 }
-CTFPlayerInventory *CTFPlayerInventory::GTFPlayerInventory()
+CTFPlayerInventory *CTFInventoryManager::GTFPlayerInventory()
 {
-    typedef CTFPlayerInventory *(*GTFPlayerInventory_t)();
-    uintptr_t address                          = gSignatures.GetClientSignature("55 B8 ? ? ? ? 89 E5 5D C3 8D B6 00 00 00 00 55 B8 ? ? ? ? 89 E5 5D C3 "
-                                                       "8D B6 00 00 00 00 55 89 E5 57 56 53 83 EC ? 8B 45 ? 8B 5D");
-    GTFPlayerInventory_t GTFPlayerInventory_fn = GTFPlayerInventory_t(address);
-    return GTFPlayerInventory_fn();
+    return (CTFPlayerInventory *) (this + 268);
+    /*typedef CTFPlayerInventory *(*fn_t)(void *);
+    return vfunc<fn_t>(this, offsets::PlatformOffset(21, offsets::undefined, 22), 0)(this);*/
 }
-CEconItem *CTFPlayerInventory::GetFirstItemOfItemDef(int id)
+
+CEconItemView *CTFPlayerInventory::GetFirstItemOfItemDef(int id)
 {
-    typedef CEconItem *(*GetFirstItemOfItemDef_t)(CTFPlayerInventory *, int);
-    uintptr_t address                                = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 4D ? 0F B7 45");
-    GetFirstItemOfItemDef_t GetFirstItemOfItemDef_fn = GetFirstItemOfItemDef_t(address);
-    return GetFirstItemOfItemDef_fn(this, id);
+    typedef CEconItemView *(*GetFirstItemOfItemDef_t)(int16_t, void *);
+    static uintptr_t address                                = (unsigned) e8call((void *) (gSignatures.GetClientSignature("E8 ? ? ? ? 85 C0 74 35 8B 55 C0") + 1));
+    static GetFirstItemOfItemDef_t GetFirstItemOfItemDef_fn = GetFirstItemOfItemDef_t(address);
+    return GetFirstItemOfItemDef_fn(id, this);
 }
+
+unsigned long long CEconItemView::UUID()
+{
+    unsigned long long value = *(unsigned long long *) ((char *) this + 56);
+    auto a                   = value >> 32;
+    auto b                   = value << 32;
+    return b | a;
+}
+
+static CatCommand equip_debug("equip_debug", "Debug auto equip stuff", []() {
+    auto invmng    = CTFInventoryManager::GTFInventoryManager();
+    auto inv       = invmng->GTFPlayerInventory();
+    auto item_view = inv->GetFirstItemOfItemDef(56);
+    if (item_view)
+    {
+        logging::Info("%llu %llu", item_view->UUID());
+        logging::Info("Equip item: %d", invmng->EquipItemInLoadout(tf_sniper, 0, item_view->UUID()));
+    }
+});

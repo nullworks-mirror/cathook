@@ -9,27 +9,36 @@
 #include "common.hpp"
 namespace re
 {
-class CTFInventoryManager
-{
-public:
-    CTFInventoryManager() = delete;
-    static CTFInventoryManager *GTFInventoryManager();
 
-public:
-    bool EquipItemInLoadout(int, int, unsigned long long);
-};
 class CEconItem
 {
 public:
     unsigned long long uniqueid();
 };
+
+class CEconItemView
+{
+public:
+    unsigned long long UUID();
+};
+
 class CTFPlayerInventory
 {
 public:
     CTFPlayerInventory() = delete;
-    static CTFPlayerInventory *GTFPlayerInventory();
 
 public:
-    CEconItem *GetFirstItemOfItemDef(int id);
+    CEconItemView *GetFirstItemOfItemDef(int id);
+};
+
+class CTFInventoryManager
+{
+public:
+    CTFInventoryManager() = delete;
+    static CTFInventoryManager *GTFInventoryManager();
+    CTFPlayerInventory *GTFPlayerInventory();
+
+public:
+    bool EquipItemInLoadout(int, int, unsigned long long);
 };
 } // namespace re
