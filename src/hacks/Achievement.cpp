@@ -138,6 +138,7 @@ static Timer cooldowm{};
 static CatCommand get_best_hats("achievement_cathats", "Get and equip the bencat hats", []() {
     static std::vector<int> bencat_hats = { 1902, 1912, 2006 };
     unlock_achievements_and_accept(bencat_hats);
+    hacks::shared::misc::generate_schema();
     hacks::shared::misc::Schema_Reload();
     equip = true;
 });
