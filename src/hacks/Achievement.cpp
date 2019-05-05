@@ -11,6 +11,28 @@
 
 static settings::Bool safety{ "achievement.safety", "true" };
 
+struct Autoequip_unlock_list
+{
+    std::string name;
+    int achievement_id;
+    int item_id;
+    tf_class player_class;
+    int slot;
+    Autoequip_unlock_list(std::string _name, int _ach_id, int _item_id, tf_class _player_class, int _slot)
+    {
+        name           = _name;
+        achievement_id = _ach_id;
+        item_id        = _item_id;
+        player_class   = _player_class;
+        slot           = _slot;
+    }
+};
+static std::vector<Autoequip_unlock_list> primary, secondary, melee, pda2;
+static settings::Int equip_primary{ "achievement.equip-primary", "0" };
+static settings::Int equip_secondary{ "achievement.equip-secondary", "0" };
+static settings::Int equip_melee{ "achievement.equip-melee", "0" };
+static settings::Int equip_pda2{ "achievement.equip-pda2", "0" };
+
 namespace hacks::tf2::achievement
 {
 
@@ -115,7 +137,10 @@ CatCommand lock("achievement_lock", "Lock all achievements", Lock);
 CatCommand unlock("achievement_unlock", "Unlock all achievements", Unlock);
 
 static bool accept_notifs;
+static bool equip_hats;
 static bool equip;
+static bool equip_first_half;
+std::vector<Autoequip_unlock_list> equip_queue;
 
 void unlock_achievements_and_accept(std::vector<int> items)
 {
@@ -129,27 +154,42 @@ void unlock_achievements_and_accept(std::vector<int> items)
     }
     accept_notifs = true;
 }
+
 static CatCommand get_sniper_items("achievement_sniper", "Get all sniper achievement items", []() {
     static std::vector<int> sniper_items = { 1136, 1137, 1138 };
     unlock_achievements_and_accept(sniper_items);
 });
+
 static Timer accept_time{};
 static Timer cooldowm{};
+static Timer cooldown_2{};
 static CatCommand get_best_hats("achievement_cathats", "Get and equip the bencat hats", []() {
     static std::vector<int> bencat_hats = { 1902, 1912, 2006 };
     unlock_achievements_and_accept(bencat_hats);
     hacks::shared::misc::generate_schema();
     hacks::shared::misc::Schema_Reload();
-    equip = true;
+    equip_hats       = true;
+    equip_first_half = true;
 });
-bool equip_on_all(int hat1, int hat2, int hat3)
+
+bool equip_item(int clazz, int slot, int id)
+{
+    auto invmng    = re::CTFInventoryManager::GTFInventoryManager();
+    auto inv       = invmng->GTFPlayerInventory();
+    auto item_view = inv->GetFirstItemOfItemDef(id);
+    if (item_view)
+        return invmng->EquipItemInLoadout(clazz, slot, item_view->UUID());
+    return false;
+}
+
+bool equip_on_first_half(int hat1, int hat2, int hat3)
 {
     auto invmng     = re::CTFInventoryManager::GTFInventoryManager();
     auto inv        = invmng->GTFPlayerInventory();
     auto item_view1 = inv->GetFirstItemOfItemDef(hat1);
     auto item_view2 = inv->GetFirstItemOfItemDef(hat2);
     auto item_view3 = inv->GetFirstItemOfItemDef(hat3);
-    for (int i = tf_scout; i < tf_engineer; i++)
+    for (int i = tf_scout; i < tf_medic; i++)
     {
         bool success1 = invmng->EquipItemInLoadout(i, 7, item_view1->UUID());
         bool success2 = invmng->EquipItemInLoadout(i, 8, item_view2->UUID());
@@ -159,23 +199,134 @@ bool equip_on_all(int hat1, int hat2, int hat3)
     }
     return true;
 }
+bool equip_on_second_half(int hat1, int hat2, int hat3)
+{
+    auto invmng     = re::CTFInventoryManager::GTFInventoryManager();
+    auto inv        = invmng->GTFPlayerInventory();
+    auto item_view1 = inv->GetFirstItemOfItemDef(hat1);
+    auto item_view2 = inv->GetFirstItemOfItemDef(hat2);
+    auto item_view3 = inv->GetFirstItemOfItemDef(hat3);
+    for (int i = tf_medic; i <= tf_engineer; i++)
+    {
+        bool success1 = invmng->EquipItemInLoadout(i, 7, item_view1->UUID());
+        bool success2 = invmng->EquipItemInLoadout(i, 8, item_view2->UUID());
+        bool success3 = invmng->EquipItemInLoadout(i, 10, item_view3->UUID());
+        if (!(success1 && success2 && success3))
+            return false;
+    }
+    return true;
+}
+
+void Callback(int after, int type)
+{
+    if (!after)
+        return;
+    std::vector<Autoequip_unlock_list> equip_from;
+    // Store the needed array
+    switch (type)
+    {
+    case 0:
+        if (after > primary.size())
+            return;
+        equip_from = primary;
+        // primary
+        break;
+    case 1:
+        if (after > secondary.size())
+            return;
+        equip_from = secondary;
+        // secondary
+        break;
+    case 2:
+        if (after > melee.size())
+            return;
+        equip_from = melee;
+        // melee
+        break;
+    case 3:
+        if (after > pda2.size())
+            return;
+        equip_from = pda2;
+        // PDA 2
+        break;
+    }
+    if (equip_from.size())
+    {
+        // Needs to get passed std vector of ints
+        std::vector<int> pass = { equip_from.at(after - 1).achievement_id };
+        // Unlock achievements and start accepting
+        unlock_achievements_and_accept(pass);
+        // equip queue
+        equip_queue.push_back(equip_from.at(after - 1));
+        // Start equip process
+        equip = true;
+    }
+}
+
 static InitRoutine init([]() {
+    // Primary list
+    primary.push_back(Autoequip_unlock_list("Force-A-Nature", 1036, 45, tf_scout, 0));
+    primary.push_back(Autoequip_unlock_list("Backburner", 1638, 40, tf_pyro, 0));
+    primary.push_back(Autoequip_unlock_list("Natascha", 1538, 41, tf_heavy, 0));
+    primary.push_back(Autoequip_unlock_list("Frontier Justice", 1801, 141, tf_engineer, 0));
+    primary.push_back(Autoequip_unlock_list("Blutsauger", 1437, 36, tf_medic, 0));
+    primary.push_back(Autoequip_unlock_list("Huntsman", 1136, 56, tf_sniper, 0));
+    primary.push_back(Autoequip_unlock_list("Ambassador", 1735, 61, tf_spy, 1));
+
+    // Secondary list
+    secondary.push_back(Autoequip_unlock_list("Bonk!", 1038, 46, tf_scout, 1));
+    secondary.push_back(Autoequip_unlock_list("Buff Banner", 1238, 129, tf_soldier, 1));
+    secondary.push_back(Autoequip_unlock_list("Flare gun", 1637, 39, tf_pyro, 1));
+    secondary.push_back(Autoequip_unlock_list("Chargin' Targe", 1336, 131, tf_demoman, 1));
+    secondary.push_back(Autoequip_unlock_list("Scottish Resistance", 1638, 130, tf_demoman, 1));
+    secondary.push_back(Autoequip_unlock_list("Sandvich", 1537, 42, tf_heavy, 1));
+    secondary.push_back(Autoequip_unlock_list("Wrangler", 1803, 140, tf_engineer, 1));
+    secondary.push_back(Autoequip_unlock_list("Kritzkrieg", 1438, 35, tf_medic, 1));
+    secondary.push_back(Autoequip_unlock_list("Jarate", 1137, 58, tf_sniper, 1));
+    secondary.push_back(Autoequip_unlock_list("Razorback", 1138, 57, tf_sniper, 1));
+
+    // Melee list
+    melee.push_back(Autoequip_unlock_list("Sandman", 1037, 44, tf_scout, 2));
+    melee.push_back(Autoequip_unlock_list("Equalizer", 1236, 128, tf_soldier, 2));
+    melee.push_back(Autoequip_unlock_list("Axtinguisher", 1639, 38, tf_pyro, 2));
+    melee.push_back(Autoequip_unlock_list("Eyelander", 1337, 132, tf_demoman, 2));
+    melee.push_back(Autoequip_unlock_list("Killing Gloves of Boxing", 1539, 43, tf_heavy, 2));
+    melee.push_back(Autoequip_unlock_list("Gunslinger", 1802, 142, tf_engineer, 2));
+    melee.push_back(Autoequip_unlock_list("Ubersaw", 1439, 37, tf_medic, 2));
+
+    // PDA 2
+    pda2.push_back(Autoequip_unlock_list("Cloak and dagger", 1736, 60, tf_spy, 6));
+    pda2.push_back(Autoequip_unlock_list("Deadringer", 1737, 59, tf_spy, 6));
+
+    // Callbacks
+    equip_primary.installChangeCallback([](settings::VariableBase<int> &, int after) { Callback(after, 0); });
+    equip_secondary.installChangeCallback([](settings::VariableBase<int> &, int after) { Callback(after, 1); });
+    equip_melee.installChangeCallback([](settings::VariableBase<int> &, int after) { Callback(after, 2); });
+    equip_pda2.installChangeCallback([](settings::VariableBase<int> &, int after) { Callback(after, 3); });
+
     EC::Register(
         EC::Paint,
         []() {
+            // Start accepting
             if (accept_notifs)
             {
                 accept_time.update();
                 accept_notifs = false;
             }
+            // "Trigger/Accept first notification" aka Achievement items
             if (!accept_time.check(5000) && cooldowm.test_and_set(500))
                 g_IEngine->ClientCmd_Unrestricted("cl_trigger_first_notification");
-            if (equip)
+
+            // Hat equip code
+            if (equip_hats)
             {
+                // If done start accepting notifications, also time out after a while
                 if (accept_time.check(5000) && !accept_time.check(10000) && cooldowm.test_and_set(500))
                 {
+                    // Inventory Manager
                     auto invmng = re::CTFInventoryManager::GTFInventoryManager();
-                    auto inv    = invmng->GTFPlayerInventory();
+                    // Inventory
+                    auto inv = invmng->GTFPlayerInventory();
                     // Frontline field recorder
                     auto item_view1 = inv->GetFirstItemOfItemDef(302);
                     // Gibus
@@ -184,16 +335,52 @@ static InitRoutine init([]() {
                     auto item_view3 = inv->GetFirstItemOfItemDef(941);
                     if (item_view1 && item_view2 && item_view3)
                     {
-                        bool success = equip_on_all(302, 940, 941);
-                        if (success)
+                        if (!accept_time.check(7500) && equip_first_half)
                         {
-                            logging::Info("Equipped hats");
-                            equip = false;
+                            // Equip these hats on all classes
+                            bool success = equip_on_first_half(302, 940, 941);
+                            if (success)
+                            {
+                                logging::Info("Equipped hats on first half!");
+                                equip_first_half = false;
+                            }
+                        }
+                        else if (accept_time.check(7500))
+                        {
+                            bool success = equip_on_second_half(302, 940, 941);
+                            if (success)
+                            {
+                                logging::Info("Equipped hats on second half!");
+                                equip_hats = false;
+                            }
                         }
                     }
                 }
-                else if (accept_time.check(20000))
-                    equip = false;
+                else if (accept_time.check(10000))
+                    equip_hats = false;
+            }
+            // Equip weapons
+            if (equip)
+            {
+                // After 5 seconds of accept time, start
+                if (accept_time.check(5000) && !accept_time.check(10000) && cooldown_2.test_and_set(500))
+                {
+                    // Watch for each item and equip it
+                    for (int i = 0; i < equip_queue.size(); i++)
+                    {
+                        auto equip   = equip_queue.at(i);
+                        bool success = equip_item(equip.player_class, equip.slot, equip.item_id);
+
+                        if (success)
+                        {
+                            logging::Info("Equipped Item!");
+                            equip_queue.erase(equip_queue.begin() + i);
+                        }
+                    }
+                    // We did it
+                    if (!equip_queue.size())
+                        equip = false;
+                }
             }
         },
         "achievement_autounlock");
