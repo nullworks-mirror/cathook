@@ -19,3 +19,4 @@
 #define ENABLE_ONLINE @EnableOnlineFeatures@
 #define ENABLE_IRC @EnableIRC@
 #define ENABLE_LOGGING @EnableLogging@
+#define ENABLE_CLIP @EnableClip@

@@ -24,12 +24,13 @@ static SDL_GLContext imgui_sdl               = nullptr;
 Timer delay{};
 namespace hooked_methods
 {
-
+#if ENABLE_CLIP
 DEFINE_HOOKED_METHOD(SDL_SetClipboardText, int, const char *text)
 {
     clip::set_text(text);
     return 0;
 }
+#endif
 
 DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
 {
