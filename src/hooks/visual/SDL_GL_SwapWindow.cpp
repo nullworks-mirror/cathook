@@ -9,6 +9,7 @@
 #include "timer.hpp"
 #include <SDL2/SDL_syswm.h>
 #include <menu/menu/Menu.hpp>
+#include "clip.h"
 
 static bool init{ false };
 static bool init_wminfo{ false };
@@ -23,6 +24,12 @@ static SDL_GLContext imgui_sdl               = nullptr;
 Timer delay{};
 namespace hooked_methods
 {
+
+DEFINE_HOOKED_METHOD(SDL_SetClipboardText, int, const char *text)
+{
+    clip::set_text(text);
+    return 0;
+}
 
 DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
 {

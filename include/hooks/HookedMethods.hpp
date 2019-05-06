@@ -73,6 +73,7 @@ DECLARE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *, unsigned int, bool, b
 // SDL
 DECLARE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *);
 DECLARE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *);
+DECLARE_HOOKED_METHOD(SDL_SetClipboardText, int, const char *);
 // IUniformRandomStream
 DECLARE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *, int, int);
 #endif
