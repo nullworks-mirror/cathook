@@ -9,7 +9,7 @@ fi
 # Install base Dependencies
 #
 if [ -x "$(command -v pacman)" ]; then
-    sudo pacman -S --needed --noconfirm boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd
+    sudo pacman -S --needed --noconfirm git boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd
 else
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     sudo apt update
@@ -18,6 +18,12 @@ fi
 #
 # Update cathook
 #
+
+
+if [ ! -d "./.git" ]; then
+    git init
+    git remote add origin https://github.com/nullworks/cathook
+fi
 
 git fetch --force --depth 1 origin refs/tags/latest:refs/tags/latest && git reset --hard latest # pull changes from github
 git submodule update --depth 1 --init --recursive # update/init submodules
