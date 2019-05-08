@@ -31,6 +31,36 @@ void zerokernel::Text::set(std::string text)
         BaseMenuObject::emitSizeUpdate();
 }
 
+bool zerokernel::Text::isHovered()
+{
+    int mx{ 0 };
+    int my{ 0 };
+
+    if (Menu::instance)
+    {
+        mx = Menu::instance->mouseX;
+        my = Menu::instance->mouseY;
+    }
+
+    return bb.contains(mx, my);
+}
+
+bool zerokernel::Text::handleSdlEvent(SDL_Event *event)
+{
+    if (!isHidden())
+    {
+        if (event->type == SDL_MOUSEBUTTONDOWN && event->button.button == SDL_BUTTON_LEFT)
+        {
+            if (isHovered())
+            {
+                if (onLeftMouseClick())
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
 const std::string &zerokernel::Text::get() const
 {
     return data;

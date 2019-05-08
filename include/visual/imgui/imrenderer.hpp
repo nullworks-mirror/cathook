@@ -15,6 +15,7 @@
  */
 
 #include <map>
+#include "colors.hpp"
 
 class SDL_Window;
 class ImFontAtlas;

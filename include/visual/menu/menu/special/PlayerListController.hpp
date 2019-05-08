@@ -62,8 +62,6 @@ public:
 
     void handleMessage(Message &msg, bool is_relayed) override;
 
-    //
-
     Table &table;
 
     kick_callback_type cb_kick;
