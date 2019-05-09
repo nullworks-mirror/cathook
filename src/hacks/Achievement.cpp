@@ -272,6 +272,7 @@ static InitRoutine init([]() {
     primary.push_back(Autoequip_unlock_list("Blutsauger", 1437, 36, tf_medic, 0));
     primary.push_back(Autoequip_unlock_list("Huntsman", 1136, 56, tf_sniper, 0));
     primary.push_back(Autoequip_unlock_list("Ambassador", 1735, 61, tf_spy, 1));
+    primary.push_back(Autoequip_unlock_list("Direct hit", 1237, 127, tf_soldier, 0));
 
     // Secondary list
     secondary.push_back(Autoequip_unlock_list("Bonk!", 1038, 46, tf_scout, 1));

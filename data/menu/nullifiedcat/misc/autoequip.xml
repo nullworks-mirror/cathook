@@ -11,6 +11,7 @@
                     <Option name="Blutsauger" value="5"/>
                     <Option name="Huntsman" value="6"/>
                     <Option name="Ambassador" value="7"/>
+                    <Option name="Direct Hit" value="8"/>
                 </Select>
             </LabeledObject>
             <LabeledObject width="fill" label="Autoequip Secondary">
