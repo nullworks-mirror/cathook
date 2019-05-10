@@ -1195,11 +1195,9 @@ int BestHitbox(CachedEntity *target)
     case 1:
     { // AUTO-CLOSEST priority, Return closest hitbox to crosshair
         int hb = ClosestHitbox(target);
-        if (hb > 17)
-            hb = 17;
-
         if (IsBacktracking() && !projectile_mode)
         {
+            hb = std::min(hb, 17);
             namespace bt = hacks::shared::backtrack;
             good_tick    = { -1, -1 };
             auto ticks   = bt::headPositions[target->m_IDX];
@@ -1222,11 +1220,9 @@ int BestHitbox(CachedEntity *target)
     case 2:
     { // STATIC priority, Return a user chosen hitbox
         int hb = *hitbox;
-        if (hb > 17)
-            hb = 17;
-
         if (IsBacktracking() && !projectile_mode)
         {
+            hb = std::min(hb, 17);
             namespace bt = hacks::shared::backtrack;
             good_tick    = { -1, -1 };
             auto ticks   = bt::headPositions[target->m_IDX];
@@ -1243,7 +1239,7 @@ int BestHitbox(CachedEntity *target)
                 }
             }
         }
-        return (int) hitbox;
+        return hb;
     }
     break;
     default:
