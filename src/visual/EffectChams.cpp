@@ -185,7 +185,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
         }
         if (health)
         {
-            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+            return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     case ENTITY_PLAYER:
@@ -193,7 +193,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
             return colors::empty;
         if (health)
         {
-            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+            return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     default:

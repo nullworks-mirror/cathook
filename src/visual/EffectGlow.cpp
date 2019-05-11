@@ -241,7 +241,7 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
     case ENTITY_BUILDING:
         if (health)
         {
-            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+            return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     case ENTITY_PLAYER:
@@ -252,7 +252,7 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
                 return colors::red;
         if (health && playerlist::IsDefault(ent))
         {
-            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+            return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     }

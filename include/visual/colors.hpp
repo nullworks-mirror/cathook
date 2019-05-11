@@ -182,6 +182,29 @@ constexpr rgba_t Health(int health, int max)
         to_return.g = 1.0f;
     return to_return;
 }
+constexpr rgba_t Health_dimgreen(int health, int max)
+{
+    float hf = float(health) / float(max);
+    if (hf > 1)
+    {
+        return colors::FromRGBA8(0, 128, 0, 255);
+    }
+    rgba_t to_return{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+    // If More than 50% Health Set Red to 100% (Yes the <= 0.5f is "More than 50%" in this case)
+    if (hf <= 0.5f)
+        to_return.r = 1.0f;
+    // Else if Less than 50% health Make red get reduced based on Percentage
+    else
+        to_return.r = 1.0f - (2.0f * (hf - 0.5f));
+    // If More than 50% Health Make the green get increased based on percentage
+    if (hf <= 0.5f)
+        to_return.g = 2.0f * hf * 0.9f;
+    // Else set Green to 100%
+    else
+        to_return.g = 1.0f;
+    return to_return;
+}
 rgba_t RainbowCurrent();
 rgba_t EntityF(CachedEntity *ent);
 } // namespace colors

@@ -9,10 +9,14 @@
 #include "CatBot.hpp"
 
 static settings::Int software_cursor_mode{ "visual.software-cursor-mode", "0" };
+static settings::Bool debug_log_panel_names{ "debug.log-panels", "false" };
 
 static settings::Int waittime{ "debug.join-wait-time", "2500" };
 static settings::Bool no_reportlimit{ "misc.no-report-limit", "false" };
-
+namespace mchealthbar
+{
+extern settings::Bool minecraftHP;
+}
 int spamdur = 0;
 Timer joinspam{};
 CatCommand join_spam("join_spam", "Spam joins server for X seconds", [](const CCommand &args) {
@@ -41,6 +45,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     static unsigned long FocusOverlayPanel = 0;
     static unsigned long motd_panel        = 0;
     static unsigned long motd_panel_sd     = 0;
+    static unsigned long health_panel      = 0;
     static bool call_default               = true;
     static bool cur;
     static ConVar *software_cursor = g_ICvar->FindVar("cl_software_cursor");
@@ -77,7 +82,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
         replaced = true;
     }
     call_default = true;
-    if (isHackActive() && (panel_scope || motd_panel || motd_panel_sd) && ((no_zoom && panel == panel_scope) || (hacks::shared::catbot::catbotmode && hacks::shared::catbot::anti_motd && (panel == motd_panel || panel == motd_panel_sd))))
+    if (isHackActive() && (health_panel || panel_scope || motd_panel || motd_panel_sd) && ((panel == health_panel && mchealthbar::minecraftHP) || (no_zoom && panel == panel_scope) || (hacks::shared::catbot::catbotmode && hacks::shared::catbot::anti_motd && (panel == motd_panel || panel == motd_panel_sd))))
         call_default = false;
 
     if (software_cursor_mode)
@@ -97,9 +102,9 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     }
     if (call_default)
         original::PaintTraverse(this_, panel, force, allow_force);
-    // To avoid threading problems.
 
-    // logging::Info("Panel name: %s", g_IPanel->GetName(panel));
+    if (debug_log_panel_names)
+        logging::Info("Panel name: %s %lu", g_IPanel->GetName(panel), panel);
     if (!panel_scope)
         if (!strcmp(g_IPanel->GetName(panel), "HudScope"))
             panel_scope = panel;
@@ -109,6 +114,9 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     if (!motd_panel_sd)
         if (!strcmp(g_IPanel->GetName(panel), "ok"))
             motd_panel_sd = panel;
+    if (!health_panel)
+        if (!strcmp(g_IPanel->GetName(panel), "HudPlayerHealth"))
+            health_panel = panel;
 #if ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
     if (!FocusOverlayPanel)
     {
