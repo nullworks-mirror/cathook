@@ -8,6 +8,7 @@
 #if ENABLE_VISUALS
 #include <colors.hpp>
 #include <init.hpp>
+#include "KeyValues.h"
 
 static settings::Bool enable{ "chat.log-events", "false" };
 static settings::Bool event_hurt{ "chat.log-events.hurt", "false" };
@@ -19,6 +20,7 @@ static settings::Bool event_death{ "chat.log-events.death", "true" };
 static settings::Bool event_spawn{ "chat.log-events.spawn", "true" };
 static settings::Bool event_changeclass{ "chat.log-events.changeclass", "true" };
 static settings::Bool event_vote{ "chat.log-events.vote", "false" };
+static settings::Bool debug_events{ "debug.log-events", "false" };
 
 static void handlePlayerConnectClient(KeyValues *kv)
 {
@@ -133,9 +135,76 @@ class LoggingEventListener : public IGameEventListener
 public:
     void FireGameEvent(KeyValues *event) override
     {
+        if (debug_events)
+        {
+            // loop through all our peers
+            for (KeyValues *dat2 = event; dat2 != NULL; dat2 = dat2->m_pPeer)
+            {
+                for (KeyValues *dat = dat; dat != NULL; dat = dat->m_pSub)
+                {
+                    auto data_type = dat->m_iDataType;
+                    auto name      = dat->GetName();
+                    logging::Info("%s: %u", name, data_type);
+                    switch (dat->m_iDataType)
+                    {
+                    case KeyValues::types_t::TYPE_NONE:
+                    {
+                        logging::Info("KeyValue is typeless");
+                        break;
+                    }
+                    case KeyValues::types_t::TYPE_STRING:
+                    {
+                        if (dat->m_sValue && *(dat->m_sValue))
+                        {
+                            logging::Info("KeyValue is String: %s", dat->m_sValue);
+                        }
+                        else
+                        {
+                            logging::Info("KeyValue is String: %s", "");
+                        }
+                        break;
+                    }
+                    case KeyValues::types_t::TYPE_WSTRING:
+                    {
+                        Assert(!"TYPE_WSTRING");
+                        break;
+                    }
+
+                    case KeyValues::types_t::TYPE_INT:
+                    {
+                        logging::Info("KeyValue is int:", dat->m_iValue);
+                        break;
+                    }
+
+                    case KeyValues::types_t::TYPE_UINT64:
+                    {
+                        logging::Info("KeyValue is double: %d", *(double *) dat->m_sValue);
+                        break;
+                    }
+
+                    case KeyValues::types_t::TYPE_FLOAT:
+                    {
+                        logging::Info("KeyValue is float: %f", dat->m_flValue);
+                        break;
+                    }
+                    case KeyValues::types_t::TYPE_COLOR:
+                    {
+                        logging::Info("KeyValue is Color: { %u %u %u %u}", dat->m_Color[0], dat->m_Color[1], dat->m_Color[2], dat->m_Color[3]);
+                        break;
+                    }
+                    case KeyValues::types_t::TYPE_PTR:
+                    {
+                        logging::Info("KeyValue is Pointer: %x", dat->m_pValue);
+                    }
+
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
         if (!enable)
             return;
-
         const char *name = event->GetName();
         if (!strcmp(name, "player_connect_client") && event_connect)
             handlePlayerConnectClient(event);
