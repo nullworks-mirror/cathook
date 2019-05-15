@@ -140,7 +140,7 @@ public:
             // loop through all our peers
             for (KeyValues *dat2 = event; dat2 != NULL; dat2 = dat2->m_pPeer)
             {
-                for (KeyValues *dat = dat; dat != NULL; dat = dat->m_pSub)
+                for (KeyValues *dat = dat2; dat != NULL; dat = dat->m_pSub)
                 {
                     auto data_type = dat->m_iDataType;
                     auto name      = dat->GetName();
@@ -172,13 +172,13 @@ public:
 
                     case KeyValues::types_t::TYPE_INT:
                     {
-                        logging::Info("KeyValue is int:", dat->m_iValue);
+                        logging::Info("KeyValue is int: %d", dat->m_iValue);
                         break;
                     }
 
                     case KeyValues::types_t::TYPE_UINT64:
                     {
-                        logging::Info("KeyValue is double: %d", *(double *) dat->m_sValue);
+                        logging::Info("KeyValue is double: %f", *(double *) dat->m_sValue);
                         break;
                     }
 
@@ -195,6 +195,7 @@ public:
                     case KeyValues::types_t::TYPE_PTR:
                     {
                         logging::Info("KeyValue is Pointer: %x", dat->m_pValue);
+                        break;
                     }
 
                     default:
