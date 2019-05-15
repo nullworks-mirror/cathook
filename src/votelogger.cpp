@@ -13,6 +13,8 @@ static settings::Bool vote_kicky{ "votelogger.autovote.yes", "false" };
 static settings::Bool vote_kickn{ "votelogger.autovote.no", "false" };
 static settings::Bool vote_rage_vote{ "votelogger.autovote.no.rage", "false" };
 static settings::Bool party_say{ "votelogger.partysay", "true" };
+static settings::Bool party_say_casts{ "votelogger.partysay-casts", "true" };
+static settings::Bool party_say_f1_only{ "votelogger.partysay-casts.f1-only", "true" };
 static settings::Bool abandon_and_crash_on_kick{ "votelogger.restart-on-kick", "false" };
 
 namespace votelogger
@@ -20,6 +22,7 @@ namespace votelogger
 
 static bool was_local_player{ false };
 static Timer local_kick_timer{};
+static int kicked_player;
 
 static void vote_rage_back()
 {
@@ -79,6 +82,7 @@ void dispatchUserMessage(bf_read &buffer, int type)
         if (!g_IEngine->GetPlayerInfo(eid, &info) || !g_IEngine->GetPlayerInfo(caller, &info2))
             break;
 
+        kicked_player = eid;
         logging::Info("Vote called to kick %s [U:1:%u] for %s by %s [U:1:%u]", info.name, info.friendsID, reason, info2.name, info2.friendsID);
         if (eid == LOCAL_E->m_IDX)
         {
@@ -177,6 +181,35 @@ static void reset_vote_rage()
     EC::Unregister(EC::CreateMove, "vote_rage_back");
 }
 
+class VoteEventListener : public IGameEventListener
+{
+public:
+    void FireGameEvent(KeyValues *event) override
+    {
+        if (!*party_say_casts || !*party_say)
+            return;
+        const char *name = event->GetName();
+        if (!strcmp(name, "vote_cast"))
+        {
+            bool vote_option = event->GetInt("vote_option");
+            if (*party_say_f1_only && vote_option)
+                return;
+            int team = event->GetInt("team");
+            int eid  = event->GetInt("entityid");
+
+            player_info_s info{}, info2{};
+            if (!g_IEngine->GetPlayerInfo(eid, &info))
+                return;
+            char formated_string[256];
+            if (!g_IEngine->GetPlayerInfo(kicked_player, &info2))
+                std::snprintf(formated_string, sizeof(formated_string), "[CAT] %s [U:1:%u] %s", info.name, info.friendsID, vote_option ? "F2" : "F1");
+            else
+                std::snprintf(formated_string, sizeof(formated_string), "[CAT] %s [U:1:%u] %s => %s [U:1:%u] ", info.name, info.friendsID, vote_option ? "F1" : "F2", info2.name, info2.friendsID);
+            re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
+        }
+    }
+};
+static VoteEventListener listener{};
 static InitRoutine init([]() {
     if (*vote_rage_vote)
         setup_vote_rage();
@@ -188,5 +221,6 @@ static InitRoutine init([]() {
         else
             reset_vote_rage();
     });
+    g_IGameEventManager->AddListener(&listener, false);
 });
 } // namespace votelogger
