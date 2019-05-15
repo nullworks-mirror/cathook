@@ -1134,7 +1134,14 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     const auto &clr = colors::EntityF(ent);
                     // Invis
                     if (IsPlayerInvisible(ent))
-                        AddEntityString(ent, "*CLOAKED*", colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+                    {
+                        if (HasCondition<TFCond_DeadRingered>(ent))
+                            AddEntityString(ent, "*DEADRINGERED*", colors::FromRGBA8(178.0f, 0.0f, 255.0f, 255.0f));
+                        else
+                            AddEntityString(ent, "*CLOAKED*", colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+                    }
+                    if (CE_BYTE(ent, netvar.m_bFeignDeathReady))
+                        AddEntityString(ent, "*DEADRINGER OUT*", colors::FromRGBA8(178.0f, 0.0f, 255.0f, 255.0f));
                     // Uber/Bonk
                     if (IsPlayerInvulnerable(ent))
                         AddEntityString(ent, "*INVULNERABLE*");

@@ -63,7 +63,7 @@ static void CreateMove()
             continue;
         if (ent->m_bCritProjectile() && ent->m_flDistance() <= 1000.0f)
             current_user_cmd->buttons |= IN_ATTACK2;
-        if (ent->m_flDistance() < 300.0f)
+        else if (ent->m_flDistance() < 300.0f)
             current_user_cmd->buttons |= IN_ATTACK2;
     }
 }

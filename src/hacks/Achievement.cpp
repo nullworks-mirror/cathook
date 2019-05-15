@@ -382,6 +382,14 @@ static InitRoutine init([]() {
                     if (!equip_queue.size())
                         equip = false;
                 }
+                else if (accept_time.check(10000) && cooldown_2.test_and_set(500))
+                {
+                    if (equip_queue.size())
+                    {
+                        logging::Info("Equipping failed!");
+                        equip_queue.clear();
+                    }
+                }
             }
         },
         "achievement_autounlock");
