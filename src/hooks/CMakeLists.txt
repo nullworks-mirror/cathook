@@ -22,3 +22,6 @@ target_sources(cathook PRIVATE
 if(EnableVisuals)
     add_subdirectory(visual)
 endif()
+if(NOT EnableVisuals)
+    add_subdirectory(textmode)
+endif()

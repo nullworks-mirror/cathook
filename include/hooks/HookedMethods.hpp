@@ -62,8 +62,6 @@ DECLARE_HOOKED_METHOD(IsPlayingTimeDemo, bool);
 // ClientMode
 DECLARE_HOOKED_METHOD(OverrideView, void, void *, CViewSetup *);
 // g_IEngine
-// IVModelRender
-DECLARE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *, const DrawModelState_t &, const ModelRenderInfo_t &, matrix3x4_t *);
 // IStudioRender
 DECLARE_HOOKED_METHOD(BeginFrame, void, IStudioRender *);
 // IBaseClient
@@ -79,6 +77,7 @@ DECLARE_HOOKED_METHOD(SDL_SetClipboardText, int, const char *);
 // IUniformRandomStream
 DECLARE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *, int, int);
 #endif
+DECLARE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *, const DrawModelState_t &, const ModelRenderInfo_t &, matrix3x4_t *);
 } // namespace hooked_methods
 
 // TODO

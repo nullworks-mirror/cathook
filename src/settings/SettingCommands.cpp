@@ -53,7 +53,6 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
 
 void save_thread(const int ArgC, const std::string ArgS)
 {
-    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsWriter writer{ settings::Manager::instance() };
 
     DIR *config_directory = opendir(DATA_PATH "/configs");
@@ -99,7 +98,6 @@ static CatCommand save("save", "", [](const CCommand &args) {
 
 void load_thread(const int ArgC, const std::string ArgS)
 {
-    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
     settings::SettingsReader loader{ settings::Manager::instance() };
     if (ArgC == 1)
     {
@@ -123,7 +121,6 @@ void load_thread(const int ArgC, const std::string ArgS)
                 logging::Info("cat_load: Force crash. Couldn't load config!");
                 std::terminate();
             }
-            std::this_thread::sleep_for(std::chrono_literals::operator""s(3));
         }
 #endif
     }
@@ -190,7 +187,7 @@ static void getAndSortAllConfigs()
     logging::Info("Sorted %u config files\n", sortedConfigs.size());
 }
 
-static CatCommand cat_find("find", "Find a command by name", [](const CCommand &args){
+static CatCommand cat_find("find", "Find a command by name", [](const CCommand &args) {
     // We need arguments
     if (args.ArgC() < 2)
         return logging::Info("Usage: cat_find (name)");
@@ -212,15 +209,14 @@ static CatCommand cat_find("find", "Find a command by name", [](const CCommand &
             found_rvars.push_back(s);
     }
     // Yes
-    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255),"Found rvars:\n");
+    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Found rvars:\n");
     // Nothing found :C
     if (found_rvars.empty())
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255),"No rvars found.\n");
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "No rvars found.\n");
     // Found rvars
     else
         for (auto &s : found_rvars)
-            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255),"%s\n",s.c_str());
-
+            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s\n", s.c_str());
 });
 
 static int cat_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
