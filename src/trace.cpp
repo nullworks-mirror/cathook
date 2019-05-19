@@ -42,9 +42,9 @@ bool trace::FilterDefault::ShouldHitEntity(IHandleEntity *handle, int mask)
     switch (clazz->m_ClassID)
     {
     // TODO magic numbers: invisible entity ids
-    case 64:
-    case 225:
-    case 55:
+    case CL_CLASS(CFuncRespawnRoomVisualizer):
+    case CL_CLASS(CTFKnife):
+    case CL_CLASS(CFuncAreaPortalWindow):
         return false;
     }
     /* Do not hit yourself. Idiot. */
