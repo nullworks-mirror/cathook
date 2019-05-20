@@ -85,27 +85,27 @@ extern "C" typedef HSteamUser (*GetHSteamUser_t)();
 
 void CreateInterfaces()
 {
-    g_ICvar                 = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
-    g_IEngine               = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
-    g_AppID                 = g_IEngine->GetAppID();
-    g_IEntityList           = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
-    g_ISteamClient          = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);
-    g_IEventManager2        = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine(), 2);
-    g_IGameEventManager     = BruteforceInterface<IGameEventManager>("GAMEEVENTSMANAGER", sharedobj::engine(), 1);
-    g_IBaseClient           = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
-    g_ITrace                = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine());
-    g_IInputSystem          = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem());
+    g_ICvar             = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
+    g_IEngine           = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
+    g_AppID             = g_IEngine->GetAppID();
+    g_IEntityList       = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
+    g_ISteamClient      = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);
+    g_IEventManager2    = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine(), 2);
+    g_IGameEventManager = BruteforceInterface<IGameEventManager>("GAMEEVENTSMANAGER", sharedobj::engine(), 1);
+    g_IBaseClient       = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
+    g_ITrace            = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine());
+    g_IInputSystem      = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem());
 
     logging::Info("Initing SteamAPI");
     GetHSteamPipe_t GetHSteamPipe = reinterpret_cast<GetHSteamPipe_t>(dlsym(sharedobj::steamapi().lmap, "SteamAPI_GetHSteamPipe"));
-    HSteamPipe sp        = GetHSteamPipe();
+    HSteamPipe sp                 = GetHSteamPipe();
     if (!sp)
     {
         logging::Info("Connecting to Steam User");
         sp = g_ISteamClient->CreateSteamPipe();
     }
     GetHSteamUser_t GetHSteamUser = reinterpret_cast<GetHSteamUser_t>(dlsym(sharedobj::steamapi().lmap, "SteamAPI_GetHSteamUser"));
-    HSteamUser su        = GetHSteamUser();
+    HSteamUser su                 = GetHSteamUser();
     if (!su)
     {
         logging::Info("Connecting to Steam User");

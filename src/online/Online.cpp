@@ -213,23 +213,24 @@ void sendIdentifyRequest()
     logging::Info("[CO] Sending identify request for %u players", steamIds.size());
     try
     {
-        cathookOnlineService.userIdentify(steamIds, (std::function<void(co::ApiCallResult, std::optional<co::identified_user_group>)>) [steamIds](co::ApiCallResult result, std::optional<co::identified_user_group> group) {
-            if (result == co::ApiCallResult::OK)
-            {
-                processIdentifyResponse(steamIds, *group);
-            }
-            else
-            {
-                logging::Info("[CO] Something went wrong while identifying "
-                              "%u players: code %d",
-                              steamIds.size(), result);
-                for (auto i : steamIds)
+        cathookOnlineService.userIdentify(
+            steamIds, (std::function<void(co::ApiCallResult, std::optional<co::identified_user_group>)>) [steamIds](co::ApiCallResult result, std::optional<co::identified_user_group> group) {
+                if (result == co::ApiCallResult::OK)
                 {
-                    identify_queue[i] = false;
+                    processIdentifyResponse(steamIds, *group);
                 }
-                identify_stale = true;
-            }
-        });
+                else
+                {
+                    logging::Info("[CO] Something went wrong while identifying "
+                                  "%u players: code %d",
+                                  steamIds.size(), result);
+                    for (auto i : steamIds)
+                    {
+                        identify_queue[i] = false;
+                    }
+                    identify_stale = true;
+                }
+            });
     }
     catch (std::exception &ex)
     {

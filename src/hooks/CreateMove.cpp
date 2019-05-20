@@ -130,7 +130,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 #define TICKS_TO_TIME(t) (TICK_INTERVAL * (t))
 #define ROUND_TO_TICKS(t) (TICK_INTERVAL * TIME_TO_TICKS(t))
     volatile uintptr_t **fp;
-    __asm__ volatile ("mov %%ebp, %0" : "=r"(fp));
+    __asm__ volatile("mov %%ebp, %0" : "=r"(fp));
     bSendPackets = reinterpret_cast<bool *>(**fp - 8);
 
     g_Settings.is_create_move = true;
