@@ -21,6 +21,7 @@ static settings::Bool event_spawn{ "chat.log-events.spawn", "true" };
 static settings::Bool event_changeclass{ "chat.log-events.changeclass", "true" };
 static settings::Bool event_vote{ "chat.log-events.vote", "false" };
 static settings::Bool debug_events{ "debug.log-events", "false" };
+static settings::String debug_name{ "debug.log-events.name", "" };
 
 static void handlePlayerConnectClient(KeyValues *kv)
 {
@@ -129,6 +130,22 @@ static void handleVoteCast(KeyValues *kv)
     if (g_IEngine->GetPlayerInfo(idx, &info))
         PrintChat("\x07%06X%s\x01 Voted \x07%06X%d\x01 on team \x07%06X%s\x01", colors::chat::team(team), info.name, colors::chat::team(team), vote_option, colors::chat::team(team), team_s);
 }
+std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
+{
+    std::vector<KeyValues *> peer_list = { event };
+    for (int i = 0; i < depth; i++)
+    {
+        for (auto ev : peer_list)
+            for (KeyValues *dat2 = ev; dat2 != NULL; dat2 = dat2->m_pPeer)
+                if (std::find(peer_list.begin(), peer_list.end(), dat2) == peer_list.end())
+                    peer_list.push_back(dat2);
+        for (auto ev : peer_list)
+            for (KeyValues *dat2 = ev; dat2 != NULL; dat2 = dat2->m_pSub)
+                if (std::find(peer_list.begin(), peer_list.end(), dat2) == peer_list.end())
+                    peer_list.push_back(dat2);
+    }
+    return peer_list;
+}
 
 class LoggingEventListener : public IGameEventListener
 {
@@ -137,64 +154,67 @@ public:
     {
         if (debug_events)
         {
-            // loop through all our peers
-            for (KeyValues *dat2 = event; dat2 != NULL; dat2 = dat2->m_pPeer)
+            if (*debug_name != "" && (*debug_name).find(event->GetName()) != (*debug_name).npos)
             {
-                for (KeyValues *dat = dat2; dat != NULL; dat = dat->m_pSub)
+            }
+            else
+            {
+                auto peer_list = Iterate(event, 10);
+                // loop through all our peers
+                for (KeyValues *dat : peer_list)
                 {
                     auto data_type = dat->m_iDataType;
                     auto name      = dat->GetName();
-                    logging::Info("%s: %u", name, data_type);
+                    logging::Info("%s", name, data_type);
                     switch (dat->m_iDataType)
                     {
                     case KeyValues::types_t::TYPE_NONE:
                     {
-                        logging::Info("KeyValue is typeless");
+                        logging::Info("%s is typeless", name);
                         break;
                     }
                     case KeyValues::types_t::TYPE_STRING:
                     {
                         if (dat->m_sValue && *(dat->m_sValue))
                         {
-                            logging::Info("KeyValue is String: %s", dat->m_sValue);
+                            logging::Info("%s is String: %s", name, dat->m_sValue);
                         }
                         else
                         {
-                            logging::Info("KeyValue is String: %s", "");
+                            logging::Info("%s is String: %s", name, "");
                         }
                         break;
                     }
                     case KeyValues::types_t::TYPE_WSTRING:
                     {
-                        Assert(!"TYPE_WSTRING");
                         break;
                     }
 
                     case KeyValues::types_t::TYPE_INT:
                     {
-                        logging::Info("KeyValue is int: %d", dat->m_iValue);
+                        logging::Info("%s is int: %d", name, dat->m_iValue);
                         break;
                     }
 
                     case KeyValues::types_t::TYPE_UINT64:
                     {
-                        logging::Info("KeyValue is double: %f", *(double *) dat->m_sValue);
+                        logging::Info("%s is double: %f", name, *(double *) dat->m_sValue);
                         break;
                     }
 
                     case KeyValues::types_t::TYPE_FLOAT:
                     {
-                        logging::Info("KeyValue is float: %f", dat->m_flValue);
+                        logging::Info("%s is float: %f", name, dat->m_flValue);
                         break;
                     }
                     case KeyValues::types_t::TYPE_COLOR:
                     {
-                        logging::Info("KeyValue is Color: { %u %u %u %u}", dat->m_Color[0], dat->m_Color[1], dat->m_Color[2], dat->m_Color[3]);
+                        logging::Info("%s is Color: { %u %u %u %u}", name, dat->m_Color[0], dat->m_Color[1], dat->m_Color[2], dat->m_Color[3]);
                         break;
                     }
                     case KeyValues::types_t::TYPE_PTR:
                     {
-                        logging::Info("KeyValue is Pointer: %x", dat->m_pValue);
+                        logging::Info("%s is Pointer: %x", name, dat->m_pValue);
                         break;
                     }
 
