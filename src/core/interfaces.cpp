@@ -181,6 +181,7 @@ void CreateInterfaces()
                                                                                                                 "43 04 85 C0 74 10") +
                                                                                  9);
     }
+#endif
     logging::Info("Finding HUD");
     IF_GAME(IsCSS())
     {
@@ -197,5 +198,4 @@ void CreateInterfaces()
         g_CHUD = *reinterpret_cast<CHud **>(hud_sig);
         logging::Info("HUD 0x%08x 0x%08x", hud_sig, g_CHUD);
     }
-#endif
 }
