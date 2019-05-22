@@ -6,9 +6,9 @@
 #include <menu/menu/special/SettingsManagerList.hpp>
 
 static settings::RVariable<int> checkbox_size{ "zk.style.checkbox.size", "12" };
-static settings::RVariable<rgba_t> color_border{ "zk.style.checkbox.color.border", "079797" };
-static settings::RVariable<rgba_t> color_checked{ "zk.style.checkbox.color.checked", "079797" };
-static settings::RVariable<rgba_t> color_hover{ "zk.style.checkbox.color.hover", "07979777" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.checkbox.color.border", "446498ff" };
+static settings::RVariable<rgba_t> color_checked{ "zk.style.checkbox.color.checked", "446498ff" };
+static settings::RVariable<rgba_t> color_hover{ "zk.style.checkbox.color.hover", "446498ff77" };
 
 bool zerokernel::Checkbox::onLeftMouseClick()
 {

@@ -12,8 +12,8 @@ static settings::RVariable<rgba_t> color_closed{ "zk.style.task.color.text.close
 static settings::RVariable<rgba_t> color_focused{ "zk.style.task.color.text.focused", "ffffff" };
 static settings::RVariable<rgba_t> color_open{ "zk.style.task.color.text.open", "cccccc" };
 
-static settings::RVariable<rgba_t> color_hovered{ "zk.style.task.color.background.hover", "079797" };
-static settings::RVariable<rgba_t> color_border{ "zk.style.task.color.border", "079797" };
+static settings::RVariable<rgba_t> color_hovered{ "zk.style.task.color.background.hover", "446498ff" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.task.color.border", "446498ff" };
 
 void zerokernel::Task::render()
 {

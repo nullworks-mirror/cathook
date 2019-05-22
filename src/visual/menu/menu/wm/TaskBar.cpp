@@ -8,7 +8,7 @@
 #include <menu/Menu.hpp>
 
 static settings::RVariable<rgba_t> color_background{ "zk.style.taskbar.color.background", "1d2f40" };
-static settings::RVariable<rgba_t> color_border{ "zk.style.taskbar.color.border", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.taskbar.color.border", "446498ff" };
 
 void zerokernel::TaskBar::reorderElements()
 {

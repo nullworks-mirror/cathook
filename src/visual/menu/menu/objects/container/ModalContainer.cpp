@@ -9,7 +9,7 @@
   Created on 26.07.18.
 */
 
-static settings::RVariable<rgba_t> color_border{ "zk.style.modal-container.color.border", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.modal-container.color.border", "446498ff" };
 static settings::RVariable<rgba_t> color_background{ "zk.style.modal-container.color.background", "1d2f40" };
 
 bool zerokernel::ModalContainer::handleSdlEvent(SDL_Event *event)

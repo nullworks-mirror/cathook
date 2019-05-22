@@ -4,8 +4,8 @@
 
 #include <menu/object/input/TextInput.hpp>
 
-static settings::RVariable<rgba_t> color_border_active{ "zk.style.input.text.color.border.active", "38b28f" };
-static settings::RVariable<rgba_t> color_border{ "zk.style.input.text.color.border.inactive", "079797" };
+static settings::RVariable<rgba_t> color_border_active{ "zk.style.input.text.color.border.active", "42BC99ff" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.input.text.color.border.inactive", "446498ff" };
 
 static settings::RVariable<rgba_t> color_text_active{ "zk.style.input.text.color.text.active", "ffffff" };
 static settings::RVariable<rgba_t> color_text{ "zk.style.input.text.color.text.inactive", "aaaaaa" };
