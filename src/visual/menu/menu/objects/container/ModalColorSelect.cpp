@@ -4,7 +4,7 @@
 
 #include <menu/object/container/ModalColorSelect.hpp>
 
-static settings::RVariable<rgba_t> color_border{ "zk.style.color-preview.color.border", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.color-preview.color.border", "446498ff" };
 
 namespace zerokernel
 {

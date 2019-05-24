@@ -7,7 +7,7 @@
 #include <menu/Debug.hpp>
 #include <menu/menu/special/SettingsManagerList.hpp>
 
-static settings::RVariable<rgba_t> color_border{ "zk.style.input.select.border", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.input.select.border", "446498ff" };
 
 static settings::RVariable<int> default_width{ "zk.style.input.select.width", "60" };
 static settings::RVariable<int> default_height{ "zk.style.input.select.height", "14" };
