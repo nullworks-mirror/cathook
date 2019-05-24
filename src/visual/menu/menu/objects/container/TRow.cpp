@@ -6,6 +6,16 @@
   Created on 08.07.18.
 */
 
+void zerokernel::TRow::updateIsHovered()
+{
+    BaseMenuObject::updateIsHovered();
+
+    for (auto it = objects.rbegin(); it != objects.rend(); ++it)
+    {
+        (*it)->updateIsHovered();
+    }
+}
+
 void zerokernel::TRow::reorderElements()
 {
     Container::reorderElements();

@@ -31,20 +31,6 @@ void zerokernel::Text::set(std::string text)
         BaseMenuObject::emitSizeUpdate();
 }
 
-bool zerokernel::Text::isHovered()
-{
-    int mx{ 0 };
-    int my{ 0 };
-
-    if (Menu::instance)
-    {
-        mx = Menu::instance->mouseX;
-        my = Menu::instance->mouseY;
-    }
-
-    return bb.contains(mx, my);
-}
-
 bool zerokernel::Text::handleSdlEvent(SDL_Event *event)
 {
     if (!isHidden())

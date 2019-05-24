@@ -20,6 +20,8 @@ public:
 
     void setParent(BaseMenuObject *parent) override;
 
+    void updateIsHovered() override;
+
     //
 
     //

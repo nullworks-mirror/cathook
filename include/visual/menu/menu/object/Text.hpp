@@ -41,8 +41,6 @@ public:
 
     void emitSizeUpdate() override;
 
-    bool isHovered();
-
     //
 
     void setColorText(const rgba_t *color);
