@@ -10,7 +10,7 @@
 static settings::Bool debug_enginepred{ "debug.engine-pred-others", "false" };
 static settings::Bool debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
 static settings::Bool debug_pp_rockettimeping{ "debug.pp-rocket-time-ping", "false" };
-
+static settings::Int projpred_ticks{ "debug.prediction-ticks", "1" };
 // TODO there is a Vector() object created each call.
 
 Vector SimpleLatencyPrediction(CachedEntity *ent, int hb)
@@ -45,7 +45,7 @@ bool PerformProjectilePrediction(CachedEntity *target, int hitbox)
 }
 
 std::vector<std::vector<Vector>> predicted_players{};
-
+std::vector<std::vector<Vector>> player_vel{};
 int predicted_player_count = 0;
 
 void Prediction_CreateMove()
@@ -54,11 +54,31 @@ void Prediction_CreateMove()
     if (!setup)
     {
         setup = true;
-        predicted_players.resize(32);
+        predicted_players.resize(33);
+        player_vel.resize(33);
+    }
+    for (int i = 1; i <= g_GlobalVars->maxClients; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_GOOD(ent) && ent->m_bAlivePlayer())
+        {
+            Vector vel;
+            if (velocity::EstimateAbsVelocity)
+                velocity::EstimateAbsVelocity(RAW_ENT(ent), vel);
+            else
+                vel = CE_VECTOR(ent, netvar.vVelocity);
+            player_vel[i].push_back(vel);
+            while (player_vel[i].size() && player_vel[i].size() > *projpred_ticks)
+                player_vel[i].erase(player_vel[i].begin());
+        }
+        else
+        {
+            player_vel[i] = {};
+        }
     }
     if (!debug_enginepred)
         return;
-    for (int i = 1; i < g_GlobalVars->maxClients; i++)
+    for (int i = 1; i <= g_GlobalVars->maxClients; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent))
@@ -135,9 +155,13 @@ Vector EnginePrediction(CachedEntity *entity, float time)
 
     memset(&fakecmd, 0, sizeof(CUserCmd));
 
-    Vector vel;
-    if (velocity::EstimateAbsVelocity)
-        velocity::EstimateAbsVelocity(RAW_ENT(entity), vel);
+    Vector vel(0.0f);
+    if (entity->m_IDX <= 33 && player_vel[entity->m_IDX].size())
+    {
+        for (auto entry : player_vel[entity->m_IDX])
+            vel += entry;
+        vel /= player_vel[entity->m_IDX].size();
+    }
     else
         vel = CE_VECTOR(entity, netvar.vVelocity);
     fakecmd.command_number = last_cmd_number;
@@ -186,9 +210,13 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
 
     if (speed == 0.0f)
         return Vector();
-    Vector velocity;
-    if (velocity::EstimateAbsVelocity)
-        velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
+    Vector velocity(0.0f);
+    if (ent->m_IDX <= 33 && player_vel[ent->m_IDX].size())
+    {
+        for (auto entry : player_vel[ent->m_IDX])
+            velocity += entry;
+        velocity /= player_vel[ent->m_IDX].size();
+    }
     else
         velocity = CE_VECTOR(ent, netvar.vVelocity);
     // TODO ProjAim
