@@ -8,10 +8,9 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "bunnyhop.enable", "false" };
-
 namespace hacks::shared::bunnyhop
 {
+static settings::Bool enable{ "bunnyhop.enable", "false" };
 
 // Var for user settings
 

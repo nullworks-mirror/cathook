@@ -10,6 +10,8 @@
 #ifndef FEATURE_RADAR_DISABLED
 #if ENABLE_VISUALS
 
+namespace hacks::tf::radar
+{
 static settings::Bool radar_enabled{ "radar.enable", "false" };
 static settings::Int size{ "radar.size", "300" };
 static settings::Float zoom{ "radar.zoom", "10" };
@@ -22,9 +24,6 @@ static settings::Bool use_icons{ "radar.use-icons", "true" };
 static settings::Bool show_teammates{ "radar.show.teammates", "true" };
 static settings::Bool show_healthpacks{ "radar.show.health", "true" };
 static settings::Bool show_ammopacks{ "radar.show.ammo", "true" };
-
-namespace hacks::tf::radar
-{
 
 Timer invalid{};
 

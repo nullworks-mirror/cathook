@@ -1,9 +1,7 @@
-target_sources(cathook PRIVATE
-        "${CMAKE_CURRENT_LIST_DIR}/AutoJoin.cpp"
+set(files "${CMAKE_CURRENT_LIST_DIR}/AutoJoin.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/CatBot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/SeedPrediction.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Spam.cpp")
-target_sources(cathook PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/Spam.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Achievement.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Aimbot.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/MiscAimbot.cpp"
@@ -35,9 +33,12 @@ target_sources(cathook PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/PureBypass.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/UberSpam.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Radar.cpp")
-        add_subdirectory(ac)
+        "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp")
+target_sources(cathook PRIVATE ${files})
+list(REMOVE_ITEM ignore_files ${files})
+set(ignore_files ${ignore_files} CACHE INTERNAL "")
+
+add_subdirectory(ac)
 if(EnableVisuals)
     target_sources(cathook PRIVATE
             "${CMAKE_CURRENT_LIST_DIR}/DominateMark.cpp"

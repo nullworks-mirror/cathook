@@ -2,6 +2,8 @@
 #include "playerlist.hpp"
 #include <boost/format.hpp>
 
+namespace hacks::tf2::miscplayerinfo
+{
 static settings::Bool draw_kda{ "misc.playerinfo.draw-kda", "false" };
 static settings::Bool mafia_city{ "misc.playerinfo.draw-level", "false" };
 struct LevelInfo
@@ -18,8 +20,7 @@ struct LevelInfo
 };
 // Source: https://www.youtube.com/watch?v=Yke9BhP1uks
 static std::array<LevelInfo, 10> mafia_levels{ LevelInfo(0, 9, "Crook"), LevelInfo(50, 50, "Crook"), LevelInfo(10, 10, "Bad Cop"), LevelInfo(0, 10, "Hoody"), LevelInfo(0, 5, "Gangster"), LevelInfo(1, 1, "Poor Man"), LevelInfo(10, 10, "Rich Man"), LevelInfo(10, 34, "Hitman"), LevelInfo(15, 99, "Boss"), LevelInfo(60, 100, "God Father") };
-namespace hacks::tf2::miscplayerinfo
-{
+
 #if ENABLE_VISUALS
 std::unordered_map<unsigned, std::pair<std::string, int>> choosen_entry{};
 std::unordered_map<unsigned, int> previous_entry_amount{};

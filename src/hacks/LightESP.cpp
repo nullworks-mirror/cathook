@@ -2,10 +2,9 @@
 #if ENABLE_VISUALS
 #include "common.hpp"
 
-static settings::Bool enable{ "lightesp.enable", "false" };
-
 namespace hacks::shared::lightesp
 {
+static settings::Bool enable{ "lightesp.enable", "false" };
 
 static Vector hitp[32];
 static Vector minp[32];

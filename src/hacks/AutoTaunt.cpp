@@ -9,13 +9,12 @@
 #include "common.hpp"
 #include "hack.hpp"
 
+namespace hacks::tf::autotaunt
+{
 static settings::Bool enable{ "autotaunt.enable", "false" };
 static settings::Float chance{ "autotaunt.chance", "100" };
 static settings::Float safety{ "autotaunt.safety-distance", "1000" };
 static settings::Int switch_weapon{ "autotaunt.auto-weapon", "0" };
-
-namespace hacks::tf::autotaunt
-{
 
 enum slots
 {

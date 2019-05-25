@@ -8,6 +8,8 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
+namespace hacks::tf::spyalert
+{
 static settings::Bool enable{ "spy-alert.enable", "false" };
 static settings::Float distance_warning{ "spy-alert.distance.warning", "500" };
 static settings::Float distance_alert{ "spy-alert.distance.alert", "200" };
@@ -15,9 +17,6 @@ static settings::Bool sound_alert{ "spy-alert.sound", "true" };
 static settings::Float sound_alert_interval{ "spy-alert.alert-interval", "3" };
 static settings::Bool voicemenu{ "spy-alert.voicemenu", "false" };
 static settings::Bool invisible{ "spy-alert.alert-for-invisible", "false" };
-
-namespace hacks::tf::spyalert
-{
 
 bool warning_triggered  = false;
 bool backstab_triggered = false;

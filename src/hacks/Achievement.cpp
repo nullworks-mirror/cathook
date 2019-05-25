@@ -9,6 +9,8 @@
 #include "Misc.hpp"
 #include "common.hpp"
 
+namespace hacks::tf2::achievement
+{
 static settings::Bool safety{ "achievement.safety", "true" };
 
 struct Autoequip_unlock_list
@@ -32,9 +34,6 @@ static settings::Int equip_primary{ "achievement.equip-primary", "0" };
 static settings::Int equip_secondary{ "achievement.equip-secondary", "0" };
 static settings::Int equip_melee{ "achievement.equip-melee", "0" };
 static settings::Int equip_pda2{ "achievement.equip-pda2", "0" };
-
-namespace hacks::tf2::achievement
-{
 
 void Lock()
 {

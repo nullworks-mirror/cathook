@@ -8,10 +8,9 @@
 #include <settings/Registered.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "announcer", "false" };
-
 namespace hacks::shared::announcer
 {
+static settings::Bool enable{ "announcer", "false" };
 
 struct announcer_entry_s
 {

@@ -9,18 +9,17 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-static settings::Bool enable{ "antibackstab.enable", "0" };
-static settings::Float distance{ "antibackstab.distance", "200" };
-static settings::Bool silent{ "antibackstab.silent", "1" };
-static settings::Float angle{ "antibackstab.angle", "107.5" };
-static settings::Bool sayno{ "antibackstab.nope", "0" };
-
 namespace hacks::tf2::autobackstab
 {
 extern bool angleCheck(CachedEntity *from, CachedEntity *to, std::optional<Vector> target_pos, Vector from_angle);
 }
 namespace hacks::tf2::antibackstab
 {
+static settings::Bool enable{ "antibackstab.enable", "0" };
+static settings::Float distance{ "antibackstab.distance", "200" };
+static settings::Bool silent{ "antibackstab.silent", "1" };
+static settings::Float angle{ "antibackstab.angle", "107.5" };
+static settings::Bool sayno{ "antibackstab.nope", "0" };
 bool noaa = false;
 
 void SayNope()

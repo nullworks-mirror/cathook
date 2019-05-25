@@ -7,11 +7,11 @@
 #include <settings/Int.hpp>
 #include "common.hpp"
 
+namespace hacks::shared::dominatesay
+{
 static settings::Int dominatesay_mode{ "dominatesay.mode", "0" };
 static settings::String filename{ "dominatesay.file", "dominatesay.txt" };
 
-namespace hacks::shared::dominatesay
-{
 //	a much better default dominatesay would be appreciated.
 const std::vector<std::string> builtin_default = {
     "dominating %name%! (%dominum% dominations)",

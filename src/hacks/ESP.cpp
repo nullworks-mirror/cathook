@@ -11,6 +11,8 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
+namespace hacks::shared::esp
+{
 static settings::Bool enable{ "esp.enable", "false" };
 static settings::Int max_dist{ "esp.range", "4096" };
 
@@ -76,9 +78,6 @@ static settings::Bool online_groups{ "esp.online.groups", "true" };
 static settings::Bool online_software{ "esp.online.software", "true" };
 
 static settings::Bool v9mode{ "esp.v952-mode", "false" };
-
-namespace hacks::shared::esp
-{
 
 // Unknown
 std::mutex threadsafe_mutex;

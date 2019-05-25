@@ -10,6 +10,8 @@
 #include "settings/Bool.hpp"
 #include "PlayerTools.hpp"
 
+namespace hacks::tf::autoheal
+{
 static settings::Bool enable{ "autoheal.enable", "false" };
 static settings::Bool steamid_only{ "autoheal.steam-only", "false" };
 static settings::Bool silent{ "autoheal.silent", "true" };
@@ -40,9 +42,6 @@ static settings::Int auto_vacc_blast_pop_ubers{ "autoheal.vacc.blast.min-charges
 
 static settings::Int default_resistance{ "autoheal.vacc.default-resistance", "0" };
 static settings::Int steam_var{ "autoheal.steamid", "0" };
-
-namespace hacks::tf::autoheal
-{
 
 struct patient_data_s
 {

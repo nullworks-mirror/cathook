@@ -13,14 +13,13 @@
 #include "hack.hpp"
 #include "MiscTemporary.hpp"
 
+namespace hacks::shared::autojoin
+{
 static settings::Bool autojoin_team{ "autojoin.team", "false" };
 static settings::Int autojoin_class{ "autojoin.class", "0" };
 static settings::Bool auto_queue{ "autojoin.auto-queue", "false" };
 static settings::Bool auto_requeue{ "autojoin.auto-requeue", "false" };
 static settings::Bool partybypass{ "hack.party-bypass", "true" };
-
-namespace hacks::shared::autojoin
-{
 
 /*
  * Credits to Blackfire for helping me with auto-requeue!

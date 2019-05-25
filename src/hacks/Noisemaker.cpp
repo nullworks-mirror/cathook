@@ -8,10 +8,9 @@
 #include "common.hpp"
 #include <settings/Bool.hpp>
 
-static settings::Bool enable{ "noisemaker-spam.enable", "false" };
-
 namespace hacks::tf2::noisemaker
 {
+static settings::Bool enable{ "noisemaker-spam.enable", "false" };
 
 static void CreateMove()
 {

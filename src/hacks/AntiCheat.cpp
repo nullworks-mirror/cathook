@@ -13,13 +13,12 @@
 #include "PlayerTools.hpp"
 #include "hack.hpp"
 
+namespace hacks::shared::anticheat
+{
 static settings::Bool enable{ "find-cheaters.enable", "0" };
 static settings::Bool accuse_chat{ "find-cheaters.accuse-in-chat", "0" };
 static settings::Bool autorage{ "find-cheaters.auto-rage", "0" };
 static settings::Bool skip_local{ "find-cheaters.ignore-local", "1" };
-
-namespace hacks::shared::anticheat
-{
 
 void Accuse(int eid, const std::string &hack, const std::string &details)
 {

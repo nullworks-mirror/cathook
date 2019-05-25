@@ -20,6 +20,8 @@
 
 #include "hack.hpp"
 
+namespace hacks::shared::misc
+{
 static settings::Bool render_zoomed{ "visual.render-local-zoomed", "false" };
 static settings::Bool anti_afk{ "misc.anti-afk", "false" };
 static settings::Bool auto_strafe{ "misc.autostrafe", "false" };
@@ -104,9 +106,6 @@ CatCommand fix_cursor("fix_cursor", "Fix the GUI cursor being visible", []() {
     g_ISurface->SetCursorAlwaysVisible(false);
 });
 
-namespace hacks::shared::misc
-{
-
 // Use to send a autobalance request to the server that doesnt prevent you from
 // using it again, Allowing infinite use of it.
 void SendAutoBalanceRequest()
@@ -121,7 +120,7 @@ void SendAutoBalanceRequest()
 // Catcommand for above
 CatCommand SendAutoBlRqCatCom("request_balance", "Request Infinite Auto-Balance", [](const CCommand &args) { SendAutoBalanceRequest(); });
 
-static int last_number{ 0 };
+int last_number{ 0 };
 static int last_checked_command_number{ 0 };
 static IClientEntity *last_checked_weapon{ nullptr };
 static bool flash_light_spam_switch{ false };

@@ -12,6 +12,8 @@
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 
+namespace hacks::shared::triggerbot
+{
 static settings::Bool enable{ "trigger.enable", "false" };
 static settings::Int hitbox_mode{ "trigger.hitbox-mode", "0" };
 static settings::Int accuracy{ "trigger.accuracy", "1" };
@@ -29,9 +31,6 @@ static settings::Bool buildings_other{ "trigger.target.buildings-other", "true" 
 static settings::Bool stickybot{ "trigger.target.stickybombs", "false" };
 static settings::Bool teammates{ "trigger.target.teammates", "false" };
 static settings::Int max_range{ "trigger.target.max-range", "4096" };
-
-namespace hacks::shared::triggerbot
-{
 
 // Vars for usersettings
 

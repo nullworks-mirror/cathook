@@ -8,12 +8,14 @@
 #include "common.hpp"
 #include "SeedPrediction.hpp"
 #include "reclasses.hpp"
+
+namespace hacks::tf2::seedprediction
+{
 constexpr float MIN_CLOCKRES = 0.25;
 constexpr float MAX_CLOCKRES = 8192.5;
 float clockRes;
 float seedFraction = 0.0f;
-namespace hacks::tf2::seedprediction
-{
+
 static settings::Bool prediction{ "seed-prediction.enable", "false" };
 bool predon()
 {

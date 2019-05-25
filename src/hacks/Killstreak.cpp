@@ -9,10 +9,9 @@
 #include "common.hpp"
 #include "hooks.hpp"
 
-static settings::Bool enable{ "killstreak.enable", "false" };
-
 namespace hacks::tf2::killstreak
 {
+static settings::Bool enable{ "killstreak.enable", "false" };
 
 int killstreak{ 0 };
 

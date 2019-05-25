@@ -11,6 +11,8 @@
 #include "navparser.hpp"
 #include "NavBot.hpp"
 
+namespace hacks::shared::followbot
+{
 static settings::Bool enable{ "follow-bot.enable", "false" };
 static settings::Bool roambot{ "follow-bot.roaming", "true" };
 static settings::Bool draw_crumb{ "follow-bot.draw-crumbs", "false" };
@@ -26,8 +28,7 @@ static settings::Bool afk{ "follow-bot.switch-afk", "true" };
 static settings::Int afktime{ "follow-bot.afk-time", "15000" };
 static settings::Bool corneractivate{ "follow-bot.corners", "true" };
 static settings::Int steam_var{ "follow-bot.steamid", "0" };
-namespace hacks::shared::followbot
-{
+
 namespace nb = hacks::tf2::NavBot;
 
 static Timer navBotInterval{};

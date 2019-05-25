@@ -11,6 +11,8 @@
 
 #include "common.hpp"
 
+namespace hacks::shared::antiaim
+{
 static settings::Bool enable{ "antiaim.enable", "0" };
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
@@ -28,9 +30,6 @@ static settings::Float aaaa_interval_random_high{ "antiaim.aaaa.interval.random-
 static settings::Float aaaa_interval_random_low{ "antiaim.aaaa.interval.random-low", "2" };
 static settings::Int aaaa_mode{ "antiaim.aaaa.mode", "0" };
 static settings::Button aaaa_flip_key{ "antiaim.aaaa.flip-key", "<null>" };
-
-namespace hacks::shared::antiaim
-{
 
 float cur_yaw  = 0.0f;
 int safe_space = 0;

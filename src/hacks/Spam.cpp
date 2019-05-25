@@ -10,6 +10,8 @@
 #include "common.hpp"
 #include "MiscTemporary.hpp"
 
+namespace hacks::shared::spam
+{
 static settings::Int spam_source{ "spam.source", "0" };
 static settings::Bool random_order{ "spam.random", "0" };
 static settings::String filename{ "spam.filename", "spam.txt" };
@@ -17,9 +19,6 @@ static settings::Int spam_delay{ "spam.delay", "800" };
 static settings::Int voicecommand_spam{ "spam.voicecommand", "0" };
 static settings::Bool teamname_spam{ "spam.teamname", "0" };
 static settings::Bool team_only{ "spam.teamchat", "false" };
-
-namespace hacks::shared::spam
-{
 
 static int last_index;
 
@@ -397,6 +396,6 @@ static InitRoutine EC([]() {
     EC::Register(EC::CreateMove, createMove, "spam", EC::average);
     init();
 });
-} // namespace hacks::shared::spam
 
-static CatCommand reload("spam_reload", "Reload spam file", hacks::shared::spam::reloadSpamFile);
+static CatCommand reload_cc("spam_reload", "Reload spam file", hacks::shared::spam::reloadSpamFile);
+} // namespace hacks::shared::spam

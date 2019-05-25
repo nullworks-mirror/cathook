@@ -14,6 +14,8 @@
 #include "NavBot.hpp"
 #include "navparser.hpp"
 
+namespace hacks::shared::catbot
+{
 static settings::Bool auto_disguise{ "misc.autodisguise", "true" };
 
 static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
@@ -33,8 +35,6 @@ static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
 
 static settings::Bool mvm_autoupgrade{ "mvm.autoupgrade", "false" };
 
-namespace hacks::shared::catbot
-{
 settings::Bool catbotmode{ "cat-bot.enable", "false" };
 settings::Bool anti_motd{ "cat-bot.anti-motd", "false" };
 

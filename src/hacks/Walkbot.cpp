@@ -14,6 +14,8 @@
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
 
+namespace hacks::shared::walkbot
+{
 static settings::Button recording_key{ "walkbot.recording-key", "<null>" };
 
 static settings::Bool draw_info{ "walkbot.draw.info", "true" };
@@ -28,9 +30,6 @@ static settings::Int max_distance{ "walkbot.node-max-distance", "100" };
 static settings::Int reach_distance{ "walkbot.node-reach-distance", "32" };
 static settings::Int force_slot{ "walkbot.force-slot", "0" };
 static settings::Bool leave_if_empty{ "walkbot.leave-if-empty", "false" };
-
-namespace hacks::shared::walkbot
-{
 
 using index_t    = unsigned;
 using connection = uint8_t;

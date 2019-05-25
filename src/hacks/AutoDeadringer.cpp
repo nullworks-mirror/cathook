@@ -7,11 +7,10 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "auto-deadringer.enable", "0" };
-static settings::Int trigger_health{ "auto-deadringer.health", "30" };
-
 namespace hacks::shared::deadringer
 {
+static settings::Bool enable{ "auto-deadringer.enable", "0" };
+static settings::Int trigger_health{ "auto-deadringer.health", "30" };
 
 bool IsProjectile(CachedEntity *ent)
 {

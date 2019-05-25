@@ -5,9 +5,11 @@
 #include <common.hpp>
 #include <hacks/AntiAntiAim.hpp>
 
+namespace hacks::shared::anti_anti_aim
+{
 static settings::Bool enable{ "anti-anti-aim.enable", "false" };
 
-void hacks::shared::anti_anti_aim::createMove()
+void createMove()
 {
     if (!enable)
         return;
@@ -21,7 +23,7 @@ void hacks::shared::anti_anti_aim::createMove()
     }
 }
 
-void hacks::shared::anti_anti_aim::resolveEnt(int IDX, IClientEntity *entity)
+void resolveEnt(int IDX, IClientEntity *entity)
 {
     if (IDX == g_IEngine->GetLocalPlayer())
         return;
@@ -127,3 +129,4 @@ public:
 
 static ResolverListener listener;
 static InitRoutine init([]() { g_IGameEventManager->AddListener(&listener, false); });
+} // namespace hacks::shared::anti_anti_aim

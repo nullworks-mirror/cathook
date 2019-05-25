@@ -14,6 +14,8 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
+namespace hacks::shared::aimbot
+{
 static settings::Bool enable{ "aimbot.enable", "false" };
 static settings::Button aimkey{ "aimbot.aimkey.button", "<null>" };
 static settings::Int aimkey_mode{ "aimbot.aimkey.mode", "1" };
@@ -82,8 +84,6 @@ int GetSentry()
     return -1;
 }
 
-namespace hacks::shared::aimbot
-{
 settings::Bool ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
 bool shouldBacktrack()
 {

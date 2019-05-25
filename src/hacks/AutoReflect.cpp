@@ -8,6 +8,8 @@
 #include "common.hpp"
 #include <settings/Bool.hpp>
 
+namespace hacks::tf::autoreflect
+{
 static settings::Bool enable{ "autoreflect.enable", "false" };
 static settings::Bool idle_only{ "autoreflect.idle-only", "false" };
 static settings::Bool legit{ "autoreflect.legit", "false" };
@@ -21,9 +23,6 @@ static settings::Float fov{ "autoreflect.fov", "85" };
 static settings::Bool fov_draw{ "autoreflect.draw-fov", "false" };
 static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity", "0.7" };
 #endif
-
-namespace hacks::tf::autoreflect
-{
 
 bool IsEntStickyBomb(CachedEntity *ent)
 {

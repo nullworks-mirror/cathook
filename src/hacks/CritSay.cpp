@@ -5,6 +5,9 @@
  */
 #include <settings/Int.hpp>
 #include "common.hpp"
+
+namespace hacks::shared::critsay
+{
 static settings::Int critsay_mode{ "critsay.mode", "0" };
 static settings::String filename{ "critsay.file", "critsay.txt" };
 static settings::Int delay{ "critsay.delay", "100" };
@@ -17,9 +20,6 @@ struct CritsayStorage
 };
 
 static std::unordered_map<int, CritsayStorage> critsay_storage{};
-
-namespace hacks::shared::critsay
-{
 
 // Thanks HellJustFroze for linking me http://daviseford.com/shittalk/
 const std::vector<std::string> builtin_default = { "Woops, i slipped", "*critical hit* -> %name%", "ok now let's do it again, %name%", "nice" };
