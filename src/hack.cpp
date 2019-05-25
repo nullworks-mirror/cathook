@@ -182,12 +182,13 @@ static void ReduceRamUsage()
     // g_IMaterialSystem->ReloadTextures();
     g_IBaseClient->InvalidateMdlCache();
 }
+
 static void UnHookFs()
 {
     fs_hook2.Release();
     g_IBaseClient->InvalidateMdlCache();
 }
-static settings::Bool null_graphics("hack.nullgraphics", "false");
+
 static void InitRandom()
 {
     int rand_seed;
