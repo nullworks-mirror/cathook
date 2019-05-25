@@ -9,8 +9,9 @@
 
 namespace mchealthbar
 {
+// qtcreator marks no extern declared but there is, so don't make it static thanks
 settings::Bool minecraftHP("mc_health.enable", "false");
-static settings::Float size("mc_health.size", "64");
+static settings::Float size("mc_health.size", "32");
 static std::vector<textures::sprite> absorption;
 static std::vector<textures::sprite> hearts;
 
@@ -26,8 +27,8 @@ void draw_func()
     if (!minecraftHP || CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
     float iconSize  = *size;
-    float startPosX = draw::width / 2 - iconSize * 5.0f;
-    float startPosY = draw::height - iconSize;
+    float startPosX = draw::width * 0.2f - iconSize * 5.0f;
+    float startPosY = draw::height - iconSize - 1.0f;
 
     float halfHeart  = LOCAL_E->m_iMaxHealth() / 20;     // HP per half heart
     float halfHearts = LOCAL_E->m_iHealth() / halfHeart; // health in half hearts
