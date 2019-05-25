@@ -98,7 +98,7 @@
             <AutoVariable width="fill" target="chat.identify.answer" label="Counter Identify"/>
         </List>
     </Box>
-    <Box name="IRC" width="content" height="content" padding="12 6 6 6" x="170" y="185">
+    <Box name="IRC" width="content" height="content" padding="12 6 6 6" x="170" y="140">
         <List width="150">
             <AutoVariable width="fill" target="irc.enabled" label="Enabled"/>
             <AutoVariable width="fill" target="irc.anon" label="Hide real name"/>
@@ -106,6 +106,17 @@
             <AutoVariable width="fill" target="irc.address" label="Address"/>
             <AutoVariable width="fill" target="irc.port" label="Port"/>
             <AutoVariable width="fill" target="irc.channel" label="Channel"/>
+        </List>
+    </Box>
+    <Box name="Votelogger" width="content" height="content" padding="12 6 6 6" x="170" y="250">
+        <List width="150">
+            <AutoVariable width="fill" target="votelogger.autovote.yes" label="Autovote yes"/>
+            <AutoVariable width="fill" target="votelogger.autovote.no" label="Autovote no"/>
+            <AutoVariable width="fill" target="votelogger.autovote.no.rage" label="Kick RAGE status"/>
+            <AutoVariable width="fill" target="votelogger.partysay" label="Log votes to party"/>
+            <AutoVariable width="fill" target="votelogger.partysay-casts" label="Log casts to party"/>
+            <AutoVariable width="fill" target="votelogger.partysay-casts.f1-only" label="F1 cast log only"/>
+            <AutoVariable width="fill" target="votelogger.restart-on-kick" label="Crash when kicked"/>
         </List>
     </Box>
     <Box name="Command & Control" width="content" height="content" padding="12 6 6 6" y="205">
