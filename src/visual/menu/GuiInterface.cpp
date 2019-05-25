@@ -101,7 +101,6 @@ static void initPlayerlist()
             pl.state = playerlist::k_EState((int) pl.state + 1);
             if ((int) pl.state > (int) playerlist::k_EState::STATE_LAST)
                 pl.state = playerlist::k_EState(0);
-            logging::Info("%s", std::to_string(steam).c_str());
             controller->updatePlayerState(userid, playerlist::k_Names[(int) pl.state]);
         });
     }

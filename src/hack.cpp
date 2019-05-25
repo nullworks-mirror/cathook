@@ -409,7 +409,7 @@ void hack::Shutdown()
         return;
     hack::shutdown = true;
     // Stop cathook stuff
-    settings::RVarLock.store(true);
+    settings::cathook_disabled.store(true);
     playerlist::Save();
 #if ENABLE_VISUALS
     sdl_hooks::cleanSdlHooks();

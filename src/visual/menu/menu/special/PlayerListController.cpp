@@ -12,10 +12,10 @@
   Created on 26.07.18.
 */
 
-static settings::RVariable<rgba_t> color_team_red{ "zk.style.player-list.team.red", "ce1015" };
+static settings::RVariable<rgba_t> color_team_red{ "zk.style.player-list.team.red", "d10e25" };
 static settings::RVariable<rgba_t> color_team_red_dead{ "zk.style.player-list.team.red-dead", "660000" };
 static settings::RVariable<rgba_t> color_team_blue{ "zk.style.player-list.team.blue", "0000ff" };
-static settings::RVariable<rgba_t> color_team_blue_dead{ "zk.style.player-list.team.blue-dead", "000066" };
+static settings::RVariable<rgba_t> color_team_blue_dead{ "zk.style.player-list.team.blue-dead", "6f6fce" };
 static settings::RVariable<rgba_t> color_team_other{ "zk.style.player-list.team.other", "E6E6E6" };
 static settings::RVariable<rgba_t> color_team_other_dead{ "zk.style.player-list.team.other-dead", "E6E6E6" };
 
