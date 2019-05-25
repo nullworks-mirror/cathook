@@ -24,7 +24,7 @@ if [ $(id -u) -eq 0 ]; then
     cmake --build . --target data >/dev/null || { echo -e "\033[1;31m \n \nAuto Updater:Failed to update /opt/cathook/data directory\n\033[0m"; exit 1; }
 fi
 
-sudo -u $LOGNAME bash -c  'cmake .. >/dev/null && nice -n 10 cmake --build . --target cathook -- -j 1 >/dev/null' || { echo -e "\033[1;31m \n \nAuto Updater: Failed to compile cathook\n\033[0m"; exit 1; }
+sudo -u $LOGNAME bash -c  'cmake .. >/dev/null && nice -n 10 cmake --build . --target cathook_unity -- -j 1 >/dev/null' || { echo -e "\033[1;31m \n \nAuto Updater: Failed to compile cathook\n\033[0m"; exit 1; }
 
 rm -f ${LOCKFILE}
 
