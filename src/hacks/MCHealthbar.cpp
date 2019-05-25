@@ -33,9 +33,9 @@ void draw_func()
     float halfHearts = LOCAL_E->m_iHealth() / halfHeart; // health in half hearts
     int fullHearts   = (halfHearts / 20) * 10;           // HP in full hearts
 
-    float maxBuffHealth       = g_pPlayerResource->GetMaxHealth(LOCAL_E) * 1.5f; // max buffed Health
-    float maxAdditionalHealth = maxBuffHealth - LOCAL_E->m_iMaxHealth();         // How much additional health can one have at max
-    float absorption_health   = LOCAL_E->m_iHealth() - LOCAL_E->m_iMaxHealth();  // Extra health
+    float maxBuffHealth       = floorf((g_pPlayerResource->GetMaxHealth(LOCAL_E) * 1.5f) / 10.0f) * 10.0f - 10.0f; // max buffed Health
+    float maxAdditionalHealth = maxBuffHealth - LOCAL_E->m_iMaxHealth();                                           // How much additional health can one have at max
+    float absorption_health   = LOCAL_E->m_iHealth() - LOCAL_E->m_iMaxHealth();                                    // Extra health
     int absorb_halfh          = ((float) absorption_health / (float) maxAdditionalHealth) * 20.0f;
     int absorb_fullh          = (absorb_halfh - 1) / 2;
     float iconPixel           = (iconSize / 8);
