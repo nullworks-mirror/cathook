@@ -26,6 +26,7 @@ static zerokernel::special::PlayerListData createPlayerListData(int userid)
     data.teamId  = g_pPlayerResource->getTeam(idx) - 1;
     data.dead    = !g_pPlayerResource->isAlive(idx);
     data.steam   = info.friendsID;
+    data.state   = playerlist::k_pszNames[static_cast<int>(playerlist::AccessData(info.friendsID).state)];
     snprintf(data.name, 31, "%s", info.name);
     return data;
 }
@@ -94,6 +95,14 @@ static void initPlayerlist()
             CSteamID id{};
             id.Set(steam, EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
             g_ISteamFriends->ActivateGameOverlayToUser("steamid", id);
+        });
+        controller->setChangeStateCallback([](unsigned steam, int userid) {
+            auto &pl = playerlist::AccessData(steam);
+            pl.state = playerlist::k_EState((int) pl.state + 1);
+            if ((int) pl.state > (int) playerlist::k_EState::STATE_LAST)
+                pl.state = playerlist::k_EState(0);
+            logging::Info("%s", std::to_string(steam).c_str());
+            controller->updatePlayerState(userid, playerlist::k_Names[(int) pl.state]);
         });
     }
     else

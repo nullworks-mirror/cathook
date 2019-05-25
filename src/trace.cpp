@@ -43,7 +43,7 @@ bool trace::FilterDefault::ShouldHitEntity(IHandleEntity *handle, int mask)
     {
     // TODO magic numbers: invisible entity ids
     case CL_CLASS(CFuncRespawnRoomVisualizer):
-    case CL_CLASS(CTFKnife):
+    case CL_CLASS(CTFMedigunShield):
     case CL_CLASS(CFuncAreaPortalWindow):
         return false;
     }

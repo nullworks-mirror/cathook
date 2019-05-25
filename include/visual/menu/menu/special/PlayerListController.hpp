@@ -20,6 +20,7 @@ public:
     int classId;
     int teamId;
     bool dead;
+    std::string state;
 };
 
 class PlayerListController : public IMessageHandler
@@ -27,6 +28,7 @@ class PlayerListController : public IMessageHandler
 public:
     typedef std::function<void(int)> kick_callback_type;
     typedef std::function<void(unsigned)> open_steam_callback_type;
+    typedef std::function<void(unsigned /*steamid*/, int /*userid*/)> change_state_callback_type;
 
     explicit PlayerListController(Table &table);
 
@@ -45,7 +47,7 @@ public:
 
     void updatePlayerLifeState(int id, bool dead);
 
-    void updatePlayerCO(int id);
+    void updatePlayerState(int id, std::string state);
 
     void removePlayer(int id);
 
@@ -55,6 +57,8 @@ public:
     void setKickButtonCallback(kick_callback_type callback);
 
     void setOpenSteamCallback(open_steam_callback_type callback);
+
+    void setChangeStateCallback(change_state_callback_type callback);
 
     void updateRow(TRow *row);
 
@@ -66,5 +70,6 @@ public:
 
     kick_callback_type cb_kick;
     open_steam_callback_type cb_open_steam;
+    change_state_callback_type cb_change_state;
 };
 } // namespace zerokernel::special

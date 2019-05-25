@@ -346,12 +346,8 @@ void CreateMove()
         if (hacks::shared::backtrack::isBacktrackEnabled)
         {
             if (*hacks::shared::backtrack::latency <= 190 && doRageBackstab())
-            {
-                logging::Info("Ragebackstab");
                 break;
-            }
-            if (doBacktrackStab())
-                logging::Info("Backtrackstab");
+            doBacktrackStab();
         }
         else
         {
