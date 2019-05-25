@@ -11,7 +11,7 @@
 #include <menu/menu/Menu.hpp>
 #include "clip.h"
 
-static bool init{ false };
+static bool swapwindow_init{ false };
 static bool init_wminfo{ false };
 static SDL_SysWMinfo wminfo{};
 
@@ -63,14 +63,14 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
 #endif
         static int prev_width, prev_height;
         PROF_SECTION(SWAPWINDOW_cathook);
-        if (not init || draw::width != prev_width || draw::height != prev_height)
+        if (not swapwindow_init || draw::width != prev_width || draw::height != prev_height)
         {
             prev_width  = draw::width;
             prev_height = draw::height;
             draw::InitGL();
             if (zerokernel::Menu::instance)
                 zerokernel::Menu::instance->resize(draw::width, draw::height);
-            init = true;
+            swapwindow_init = true;
         }
         draw::BeginGL();
         DrawCache();
