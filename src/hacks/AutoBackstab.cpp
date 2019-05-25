@@ -330,7 +330,7 @@ void CreateMove()
 {
     if (!enabled)
         return;
-    if (CE_BAD(LOCAL_E) || g_pLocalPlayer->life_state || g_pLocalPlayer->clazz != tf_spy || CE_BAD(LOCAL_W) || GetWeaponMode() != weapon_melee || !CanShoot())
+    if (CE_BAD(LOCAL_E) || g_pLocalPlayer->life_state || g_pLocalPlayer->clazz != tf_spy || CE_BAD(LOCAL_W) || GetWeaponMode() != weapon_melee || IsPlayerInvisible(LOCAL_E) || CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
         return;
     if (!CanShoot())
         return;
