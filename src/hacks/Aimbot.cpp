@@ -73,7 +73,7 @@ int GetSentry()
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
             continue;
-        if (ent->m_Type() != ENTITY_BUILDING || ent->m_iClassID() != CL_CLASS(CObjectSentrygun))
+        if ((ent->m_Type() != ENTITY_BUILDING && ent->m_iClassID() != CL_CLASS(CTFTankBoss)) || ent->m_iClassID() != CL_CLASS(CObjectSentrygun))
             continue;
         if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) != g_pLocalPlayer->entity_idx)
             continue;
@@ -619,7 +619,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // Check for buildings
     }
-    else if (entity->m_Type() == ENTITY_BUILDING)
+    else if (entity->m_Type() == ENTITY_BUILDING || entity->m_iClassID() == CL_CLASS(CTFTankBoss))
     {
         // Don't aim if holding sapper
         if (g_pLocalPlayer->holding_sapper)
@@ -958,7 +958,7 @@ const Vector &PredictEntity(CachedEntity *entity)
             }
             // Buildings
         }
-        else if (entity->m_Type() == ENTITY_BUILDING)
+        else if (entity->m_Type() == ENTITY_BUILDING || entity->m_iClassID() != CL_CLASS(CTFTankBoss))
         {
             if (cur_proj_grav || cur_proj_grav)
                 result = BuildingPrediction(entity, GetBuildingPosition(entity), cur_proj_speed, cur_proj_grav);
