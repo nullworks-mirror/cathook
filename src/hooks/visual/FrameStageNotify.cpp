@@ -11,7 +11,7 @@
 #include "hacks/Backtrack.hpp"
 
 static settings::Float nightmode{ "visual.night-mode", "0" };
-static settings::Bool no_shake{ "visual.no-shake", "true" };
+static settings::Boolean no_shake{ "visual.no-shake", "true" };
 
 static float old_nightmode{ 0.0f };
 

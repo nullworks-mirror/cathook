@@ -10,17 +10,17 @@
 #include <init.hpp>
 #include "KeyValues.h"
 
-static settings::Bool enable{ "chat.log-events", "false" };
-static settings::Bool event_hurt{ "chat.log-events.hurt", "false" };
-static settings::Bool event_connect{ "chat.log-events.joining", "true" };
-static settings::Bool event_activate{ "chat.log-events.connect", "true" };
-static settings::Bool event_disconnect{ "chat.log-events.disconnect", "true" };
-static settings::Bool event_team{ "chat.log-events.team", "true" };
-static settings::Bool event_death{ "chat.log-events.death", "true" };
-static settings::Bool event_spawn{ "chat.log-events.spawn", "true" };
-static settings::Bool event_changeclass{ "chat.log-events.changeclass", "true" };
-static settings::Bool event_vote{ "chat.log-events.vote", "false" };
-static settings::Bool debug_events{ "debug.log-events", "false" };
+static settings::Boolean enable{ "chat.log-events", "false" };
+static settings::Boolean event_hurt{ "chat.log-events.hurt", "false" };
+static settings::Boolean event_connect{ "chat.log-events.joining", "true" };
+static settings::Boolean event_activate{ "chat.log-events.connect", "true" };
+static settings::Boolean event_disconnect{ "chat.log-events.disconnect", "true" };
+static settings::Boolean event_team{ "chat.log-events.team", "true" };
+static settings::Boolean event_death{ "chat.log-events.death", "true" };
+static settings::Boolean event_spawn{ "chat.log-events.spawn", "true" };
+static settings::Boolean event_changeclass{ "chat.log-events.changeclass", "true" };
+static settings::Boolean event_vote{ "chat.log-events.vote", "false" };
+static settings::Boolean debug_events{ "debug.log-events", "false" };
 static settings::String debug_name{ "debug.log-events.name", "" };
 
 static void handlePlayerConnectClient(KeyValues *kv)
@@ -248,9 +248,9 @@ public:
     }
 };
 
-static LoggingEventListener listener{};
+static LoggingEventListener event_listener{};
 
-InitRoutine init([]() { g_IGameEventManager->AddListener(&listener, false); });
+InitRoutine init([]() { g_IGameEventManager->AddListener(&event_listener, false); });
 
 bool event_logging::isEnabled()
 {

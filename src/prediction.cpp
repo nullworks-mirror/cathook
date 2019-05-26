@@ -7,9 +7,9 @@
 #include "common.hpp"
 #include <settings/Bool.hpp>
 
-static settings::Bool debug_enginepred{ "debug.engine-pred-others", "false" };
-static settings::Bool debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
-static settings::Bool debug_pp_rockettimeping{ "debug.pp-rocket-time-ping", "false" };
+static settings::Boolean debug_enginepred{ "debug.engine-pred-others", "false" };
+static settings::Boolean debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
+static settings::Boolean debug_pp_rockettimeping{ "debug.pp-rocket-time-ping", "false" };
 static settings::Int projpred_ticks{ "debug.prediction-ticks", "1" };
 // TODO there is a Vector() object created each call.
 

@@ -13,20 +13,20 @@
 
 namespace hacks::shared::followbot
 {
-static settings::Bool enable{ "follow-bot.enable", "false" };
-static settings::Bool roambot{ "follow-bot.roaming", "true" };
-static settings::Bool draw_crumb{ "follow-bot.draw-crumbs", "false" };
+static settings::Boolean enable{ "follow-bot.enable", "false" };
+static settings::Boolean roambot{ "follow-bot.roaming", "true" };
+static settings::Boolean draw_crumb{ "follow-bot.draw-crumbs", "false" };
 static settings::Float follow_distance{ "follow-bot.distance", "175" };
 static settings::Float additional_distance{ "follow-bot.ipc-distance", "100" };
 static settings::Float follow_activation{ "follow-bot.max-range", "1000" };
-static settings::Bool mimic_slot{ "follow-bot.mimic-slot", "false" };
-static settings::Bool always_medigun{ "follow-bot.always-medigun", "false" };
-static settings::Bool sync_taunt{ "follow-bot.taunt-sync", "false" };
-static settings::Bool change{ "follow-bot.change-roaming-target", "false" };
-static settings::Bool autojump{ "follow-bot.jump-if-stuck", "true" };
-static settings::Bool afk{ "follow-bot.switch-afk", "true" };
+static settings::Boolean mimic_slot{ "follow-bot.mimic-slot", "false" };
+static settings::Boolean always_medigun{ "follow-bot.always-medigun", "false" };
+static settings::Boolean sync_taunt{ "follow-bot.taunt-sync", "false" };
+static settings::Boolean change{ "follow-bot.change-roaming-target", "false" };
+static settings::Boolean autojump{ "follow-bot.jump-if-stuck", "true" };
+static settings::Boolean afk{ "follow-bot.switch-afk", "true" };
 static settings::Int afktime{ "follow-bot.afk-time", "15000" };
-static settings::Bool corneractivate{ "follow-bot.corners", "true" };
+static settings::Boolean corneractivate{ "follow-bot.corners", "true" };
 static settings::Int steam_var{ "follow-bot.steamid", "0" };
 
 namespace nb = hacks::tf2::NavBot;

@@ -16,55 +16,55 @@
 
 namespace hacks::shared::aimbot
 {
-static settings::Bool enable{ "aimbot.enable", "false" };
+static settings::Boolean enable{ "aimbot.enable", "false" };
 static settings::Button aimkey{ "aimbot.aimkey.button", "<null>" };
 static settings::Int aimkey_mode{ "aimbot.aimkey.mode", "1" };
-static settings::Bool autoshoot{ "aimbot.autoshoot", "1" };
-static settings::Bool autoshoot_disguised{ "aimbot.autoshoot-disguised", "1" };
-static settings::Bool multipoint{ "aimbot.multipoint", "false" };
+static settings::Boolean autoshoot{ "aimbot.autoshoot", "1" };
+static settings::Boolean autoshoot_disguised{ "aimbot.autoshoot-disguised", "1" };
+static settings::Boolean multipoint{ "aimbot.multipoint", "false" };
 static settings::Int hitbox_mode{ "aimbot.hitbox-mode", "0" };
 static settings::Float fov{ "aimbot.fov", "0" };
 static settings::Int priority_mode{ "aimbot.priority-mode", "0" };
-static settings::Bool wait_for_charge{ "aimbot.wait-for-charge", "0" };
+static settings::Boolean wait_for_charge{ "aimbot.wait-for-charge", "0" };
 
-static settings::Bool silent{ "aimbot.silent", "1" };
-static settings::Bool target_lock{ "aimbot.lock-target", "0" };
+static settings::Boolean silent{ "aimbot.silent", "1" };
+static settings::Boolean target_lock{ "aimbot.lock-target", "0" };
 static settings::Int hitbox{ "aimbot.hitbox", "0" };
-static settings::Bool zoomed_only{ "aimbot.zoomed-only", "1" };
-static settings::Bool only_can_shoot{ "aimbot.can-shoot-only", "1" };
+static settings::Boolean zoomed_only{ "aimbot.zoomed-only", "1" };
+static settings::Boolean only_can_shoot{ "aimbot.can-shoot-only", "1" };
 
-static settings::Bool extrapolate{ "aimbot.extrapolate", "0" };
+static settings::Boolean extrapolate{ "aimbot.extrapolate", "0" };
 static settings::Int slow_aim{ "aimbot.slow", "0" };
 static settings::Int miss_chance{ "aimbot.miss-chance", "0" };
 
-static settings::Bool projectile_aimbot{ "aimbot.projectile.enable", "true" };
+static settings::Boolean projectile_aimbot{ "aimbot.projectile.enable", "true" };
 static settings::Float proj_gravity{ "aimbot.projectile.gravity", "0" };
 static settings::Float proj_speed{ "aimbot.projectile.speed", "0" };
 
 static settings::Float sticky_autoshoot{ "aimbot.projectile.sticky-autoshoot", "0.5" };
 
-static settings::Bool aimbot_debug{ "aimbot.debug", "0" };
-static settings::Bool engine_projpred{ "aimbot.debug.engine-pp", "0" };
+static settings::Boolean aimbot_debug{ "aimbot.debug", "0" };
+static settings::Boolean engine_projpred{ "aimbot.debug.engine-pp", "0" };
 
-static settings::Bool auto_spin_up{ "aimbot.auto.spin-up", "0" };
-static settings::Bool auto_zoom{ "aimbot.auto.zoom", "0" };
-static settings::Bool auto_unzoom{ "aimbot.auto.unzoom", "0" };
+static settings::Boolean auto_spin_up{ "aimbot.auto.spin-up", "0" };
+static settings::Boolean auto_zoom{ "aimbot.auto.zoom", "0" };
+static settings::Boolean auto_unzoom{ "aimbot.auto.unzoom", "0" };
 
-static settings::Bool backtrackAimbot{ "aimbot.backtrack", "0" };
-static settings::Bool backtrackVischeckAll{ "aimbot.backtrack.vischeck-all", "0" };
+static settings::Boolean backtrackAimbot{ "aimbot.backtrack", "0" };
+static settings::Boolean backtrackVischeckAll{ "aimbot.backtrack.vischeck-all", "0" };
 
 // TODO maybe these should be moved into "Targeting"
 static settings::Float max_range{ "aimbot.target.max-range", "4096" };
-static settings::Bool ignore_vaccinator{ "aimbot.target.ignore-vaccinator", "1" };
-static settings::Bool ignore_deadringer{ "aimbot.target.ignore-deadringer", "1" };
-static settings::Bool buildings_sentry{ "aimbot.target.sentry", "1" };
-static settings::Bool buildings_other{ "aimbot.target.other-buildings", "1" };
-static settings::Bool stickybot{ "aimbot.target.stickybomb", "0" };
-static settings::Bool rageonly{ "aimbot.target.ignore-non-rage", "0" };
+static settings::Boolean ignore_vaccinator{ "aimbot.target.ignore-vaccinator", "1" };
+static settings::Boolean ignore_deadringer{ "aimbot.target.ignore-deadringer", "1" };
+static settings::Boolean buildings_sentry{ "aimbot.target.sentry", "1" };
+static settings::Boolean buildings_other{ "aimbot.target.other-buildings", "1" };
+static settings::Boolean stickybot{ "aimbot.target.stickybomb", "0" };
+static settings::Boolean rageonly{ "aimbot.target.ignore-non-rage", "0" };
 static settings::Int teammates{ "aimbot.target.teammates", "0" };
 
 #if ENABLE_VISUALS
-static settings::Bool fov_draw{ "aimbot.fov-circle.enable", "0" };
+static settings::Boolean fov_draw{ "aimbot.fov-circle.enable", "0" };
 static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 #endif
 
@@ -84,7 +84,7 @@ int GetSentry()
     return -1;
 }
 
-settings::Bool ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
+settings::Boolean ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
 bool shouldBacktrack()
 {
     return *enable && *backtrackAimbot && hacks::shared::backtrack::isBacktrackEnabled;

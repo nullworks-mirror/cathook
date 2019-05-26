@@ -10,20 +10,20 @@
 #include <visual/EffectChams.hpp>
 #include <visual/EffectGlow.hpp>
 
-static settings::Bool no_arms{ "remove.arms", "false" };
-static settings::Bool no_hats{ "remove.hats", "false" };
+static settings::Boolean no_arms{ "remove.arms", "false" };
+static settings::Boolean no_hats{ "remove.hats", "false" };
 
 namespace effect_glow
 {
-extern settings::Bool enable;
+extern settings::Boolean enable;
 } // namespace effect_glow
 namespace effect_chams
 {
-extern settings::Bool enable;
+extern settings::Boolean enable;
 } // namespace effect_chams
 namespace hacks::shared::backtrack
 {
-extern settings::Bool backtrack_chams_glow;
+extern settings::Boolean backtrack_chams_glow;
 }
 namespace hooked_methods
 {

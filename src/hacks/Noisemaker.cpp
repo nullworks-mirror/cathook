@@ -10,7 +10,7 @@
 
 namespace hacks::tf2::noisemaker
 {
-static settings::Bool enable{ "noisemaker-spam.enable", "false" };
+static settings::Boolean enable{ "noisemaker-spam.enable", "false" };
 
 static void CreateMove()
 {

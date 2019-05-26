@@ -9,13 +9,13 @@
 #include "CatBot.hpp"
 
 static settings::Int software_cursor_mode{ "visual.software-cursor-mode", "0" };
-static settings::Bool debug_log_panel_names{ "debug.log-panels", "false" };
+static settings::Boolean debug_log_panel_names{ "debug.log-panels", "false" };
 
 static settings::Int waittime{ "debug.join-wait-time", "2500" };
-static settings::Bool no_reportlimit{ "misc.no-report-limit", "false" };
+static settings::Boolean no_reportlimit{ "misc.no-report-limit", "false" };
 namespace mchealthbar
 {
-extern settings::Bool minecraftHP;
+extern settings::Boolean minecraftHP;
 }
 int spamdur = 0;
 Timer joinspam{};

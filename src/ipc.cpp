@@ -15,7 +15,7 @@
 
 #if ENABLE_IPC
 
-static settings::Bool ipc_update_list{ "ipc.update-player-list", "true" };
+static settings::Boolean ipc_update_list{ "ipc.update-player-list", "true" };
 
 namespace ipc
 {

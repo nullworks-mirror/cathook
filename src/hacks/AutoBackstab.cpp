@@ -12,7 +12,7 @@
 
 namespace hacks::tf2::autobackstab
 {
-static settings::Bool enabled("autobackstab.enabled", "false");
+static settings::Boolean enabled("autobackstab.enabled", "false");
 static settings::Int mode("autobackstab.mode", "0");
 
 // Function to find the closest hitbox to the v_Eye for a given ent

@@ -10,7 +10,7 @@
 namespace mchealthbar
 {
 // qtcreator marks no extern declared but there is, so don't make it static thanks
-settings::Bool minecraftHP("mc_health.enable", "false");
+settings::Boolean minecraftHP("mc_health.enable", "false");
 static settings::Float size("mc_health.size", "32");
 static std::vector<textures::sprite> absorption;
 static std::vector<textures::sprite> hearts;

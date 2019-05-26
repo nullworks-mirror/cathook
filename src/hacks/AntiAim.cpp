@@ -13,7 +13,7 @@
 
 namespace hacks::shared::antiaim
 {
-static settings::Bool enable{ "antiaim.enable", "0" };
+static settings::Boolean enable{ "antiaim.enable", "0" };
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
 
@@ -21,10 +21,10 @@ static settings::Float pitch{ "antiaim.pitch.static", "0" };
 static settings::Int pitch_mode{ "antiaim.pitch.mode", "0" };
 
 static settings::Float roll{ "antiaim.roll", "0" };
-static settings::Bool no_clamping{ "antiaim.no-clamp", "0" };
+static settings::Boolean no_clamping{ "antiaim.no-clamp", "0" };
 static settings::Float spin{ "antiaim.spin-speed", "10" };
 
-static settings::Bool aaaa_enable{ "antiaim.aaaa.enable", "0" };
+static settings::Boolean aaaa_enable{ "antiaim.aaaa.enable", "0" };
 static settings::Float aaaa_interval{ "antiaim.aaaa.interval.seconds", "0" };
 static settings::Float aaaa_interval_random_high{ "antiaim.aaaa.interval.random-high", "10" };
 static settings::Float aaaa_interval_random_low{ "antiaim.aaaa.interval.random-low", "2" };

@@ -9,13 +9,13 @@
 #include <boost/algorithm/string.hpp>
 #include <settings/Bool.hpp>
 
-static settings::Bool vote_kicky{ "votelogger.autovote.yes", "false" };
-static settings::Bool vote_kickn{ "votelogger.autovote.no", "false" };
-static settings::Bool vote_rage_vote{ "votelogger.autovote.no.rage", "false" };
-static settings::Bool party_say{ "votelogger.partysay", "true" };
-static settings::Bool party_say_casts{ "votelogger.partysay-casts", "false" };
-static settings::Bool party_say_f1_only{ "votelogger.partysay-casts.f1-only", "true" };
-static settings::Bool abandon_and_crash_on_kick{ "votelogger.restart-on-kick", "false" };
+static settings::Boolean vote_kicky{ "votelogger.autovote.yes", "false" };
+static settings::Boolean vote_kickn{ "votelogger.autovote.no", "false" };
+static settings::Boolean vote_rage_vote{ "votelogger.autovote.no.rage", "false" };
+static settings::Boolean party_say{ "votelogger.partysay", "true" };
+static settings::Boolean party_say_casts{ "votelogger.partysay-casts", "false" };
+static settings::Boolean party_say_f1_only{ "votelogger.partysay-casts.f1-only", "true" };
+static settings::Boolean abandon_and_crash_on_kick{ "votelogger.restart-on-kick", "false" };
 
 namespace votelogger
 {

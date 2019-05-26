@@ -12,12 +12,12 @@
 namespace hacks::tf::uberspam
 {
 static settings::Int source{ "uberspam.source", "0" };
-static settings::Bool team_chat{ "uberspam.team-chat", "true" };
+static settings::Boolean team_chat{ "uberspam.team-chat", "true" };
 static settings::String custom_file{ "uberspam.file", "uberspam.txt" };
 
-static settings::Bool on_ready{ "uberspam.triggers.ready", "true" };
-static settings::Bool on_used{ "uberspam.triggers.used", "true" };
-static settings::Bool on_ended{ "uberspam.triggers.ended", "true" };
+static settings::Boolean on_ready{ "uberspam.triggers.ready", "true" };
+static settings::Boolean on_used{ "uberspam.triggers.used", "true" };
+static settings::Boolean on_ended{ "uberspam.triggers.ended", "true" };
 static settings::Int on_build{ "uberspam.triggers.every-n-percent", "25" };
 
 TextFile custom_lines;

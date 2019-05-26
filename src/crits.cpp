@@ -13,11 +13,11 @@ std::unordered_map<int, int> command_number_mod{};
 namespace criticals
 {
 
-static settings::Bool crit_info{ "crit.info", "false" };
+static settings::Boolean crit_info{ "crit.info", "false" };
 static settings::Button crit_key{ "crit.key", "<null>" };
-static settings::Bool crit_melee{ "crit.melee", "false" };
-static settings::Bool crit_legiter{ "crit.force-gameplay", "false" };
-static settings::Bool crit_experimental{ "crit.experimental", "false" };
+static settings::Boolean crit_melee{ "crit.melee", "false" };
+static settings::Boolean crit_legiter{ "crit.force-gameplay", "false" };
+static settings::Boolean crit_experimental{ "crit.experimental", "false" };
 
 int find_next_random_crit_for_weapon(IClientEntity *weapon)
 {

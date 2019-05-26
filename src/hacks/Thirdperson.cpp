@@ -10,8 +10,8 @@
 
 namespace hacks::tf::thirdperson
 {
-static settings::Bool enable{ "visual.thirdperson.enable", "false" };
-static settings::Bool real_angles{ "visual.thirdperson.real-angles", "false" };
+static settings::Boolean enable{ "visual.thirdperson.enable", "false" };
+static settings::Boolean real_angles{ "visual.thirdperson.real-angles", "false" };
 static bool was_enabled{ false };
 
 void frameStageNotify()

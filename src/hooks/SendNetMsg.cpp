@@ -12,7 +12,7 @@
 #include "e8call.hpp"
 
 static settings::Int newlines_msg{ "chat.prefix-newlines", "0" };
-static settings::Bool log_sent{ "debug.log-sent-chat", "false" };
+static settings::Boolean log_sent{ "debug.log-sent-chat", "false" };
 
 namespace hacks::shared::catbot
 {

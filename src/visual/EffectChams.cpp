@@ -11,27 +11,27 @@
 #include "common.hpp"
 #include "Backtrack.hpp"
 
-static settings::Bool flat{ "chams.flat", "false" };
-static settings::Bool health{ "chams.health", "false" };
-static settings::Bool teammates{ "chams.show.teammates", "false" };
-static settings::Bool players{ "chams.show.players", "true" };
-static settings::Bool medkits{ "chams.show.medkits", "false" };
-static settings::Bool ammobox{ "chams.show.ammoboxes", "false" };
-static settings::Bool buildings{ "chams.show.buildings", "true" };
-static settings::Bool stickies{ "chams.show.stickies", "true" };
-static settings::Bool teammate_buildings{ "chams.show.teammate-buildings", "false" };
-static settings::Bool recursive{ "chams.recursive", "true" };
-static settings::Bool weapons_white{ "chams.white-weapons", "true" };
-static settings::Bool legit{ "chams.legit", "false" };
-static settings::Bool singlepass{ "chams.single-pass", "false" };
-static settings::Bool chamsself{ "chams.self", "true" };
-static settings::Bool rainbow{ "chams.self-rainbow", "true" };
-static settings::Bool disco_chams{ "chams.disco", "false" };
+static settings::Boolean flat{ "chams.flat", "false" };
+static settings::Boolean health{ "chams.health", "false" };
+static settings::Boolean teammates{ "chams.show.teammates", "false" };
+static settings::Boolean players{ "chams.show.players", "true" };
+static settings::Boolean medkits{ "chams.show.medkits", "false" };
+static settings::Boolean ammobox{ "chams.show.ammoboxes", "false" };
+static settings::Boolean buildings{ "chams.show.buildings", "true" };
+static settings::Boolean stickies{ "chams.show.stickies", "true" };
+static settings::Boolean teammate_buildings{ "chams.show.teammate-buildings", "false" };
+static settings::Boolean recursive{ "chams.recursive", "true" };
+static settings::Boolean weapons_white{ "chams.white-weapons", "true" };
+static settings::Boolean legit{ "chams.legit", "false" };
+static settings::Boolean singlepass{ "chams.single-pass", "false" };
+static settings::Boolean chamsself{ "chams.self", "true" };
+static settings::Boolean rainbow{ "chams.self-rainbow", "true" };
+static settings::Boolean disco_chams{ "chams.disco", "false" };
 
 namespace effect_chams
 {
 
-settings::Bool enable{ "chams.enable", "false" };
+settings::Boolean enable{ "chams.enable", "false" };
 CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {
     effect_chams::g_EffectChams.Shutdown();
     effect_chams::g_EffectChams.Init();

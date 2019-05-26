@@ -15,14 +15,14 @@
 
 namespace hacks::shared::backtrack
 {
-static settings::Bool draw_bt{ "backtrack.draw", "false" };
-static settings::Bool draw_skeleton{ "backtrack.draw-skeleton", "false" };
+static settings::Boolean draw_bt{ "backtrack.draw", "false" };
+static settings::Boolean draw_skeleton{ "backtrack.draw-skeleton", "false" };
 static settings::Float mindistance{ "backtrack.min-distance", "60" };
 
 static settings::Int slots{ "backtrack.slots", "0" };
 
-settings::Bool enable{ "backtrack.enable", "false" };
-settings::Bool backtrack_chams_glow{ "backtrack.chams_glow", "true" };
+settings::Boolean enable{ "backtrack.enable", "false" };
+settings::Boolean backtrack_chams_glow{ "backtrack.chams_glow", "true" };
 settings::Int latency{ "backtrack.latency", "0" };
 
 void EmptyBacktrackData(BacktrackData &i);

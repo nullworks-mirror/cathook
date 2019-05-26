@@ -11,8 +11,8 @@
 
 namespace hacks::tf::autodetonator
 {
-static settings::Bool enable{ "auto-detonator.enable", "0" };
-static settings::Bool legit{ "auto-detonator.ignore-cloaked", "0" };
+static settings::Boolean enable{ "auto-detonator.enable", "0" };
+static settings::Boolean legit{ "auto-detonator.ignore-cloaked", "0" };
 
 // A storage array for ents
 std::vector<CachedEntity *> flares;

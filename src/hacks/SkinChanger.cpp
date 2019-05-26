@@ -15,8 +15,8 @@
 
 namespace hacks::tf2::skinchanger
 {
-static settings::Bool enable{ "skinchanger.enable", "false" };
-static settings::Bool debug{ "skinchanger.debug", "false" };
+static settings::Boolean enable{ "skinchanger.enable", "false" };
+static settings::Boolean debug{ "skinchanger.debug", "false" };
 
 // Because fuck you, that's why.
 const char *sig_GetAttributeDefinition   = "55 89 E5 57 56 53 83 EC 6C C7 45 9C 00 00 00 00";

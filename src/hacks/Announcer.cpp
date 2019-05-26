@@ -10,7 +10,7 @@
 
 namespace hacks::shared::announcer
 {
-static settings::Bool enable{ "announcer", "false" };
+static settings::Boolean enable{ "announcer", "false" };
 
 struct announcer_entry_s
 {

@@ -12,7 +12,7 @@
 
 namespace ac::aimbot
 {
-static settings::Bool enable{ "find-cheaters.aimbot.enable", "true" };
+static settings::Boolean enable{ "find-cheaters.aimbot.enable", "true" };
 static settings::Float detect_angle{ "find-cheaters.aimbot.angle", "30" };
 static settings::Int detections_warning{ "find-cheaters.aimbot.detections", "3" };
 

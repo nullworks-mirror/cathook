@@ -11,7 +11,7 @@
 
 namespace hacks::tf2::achievement
 {
-static settings::Bool safety{ "achievement.safety", "true" };
+static settings::Boolean safety{ "achievement.safety", "true" };
 
 struct Autoequip_unlock_list
 {

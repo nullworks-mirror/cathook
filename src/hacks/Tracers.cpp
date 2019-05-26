@@ -4,13 +4,13 @@
 namespace hacks::shared::tracers
 {
 
-static settings::Bool enabled("tracers.enabled", "false");
+static settings::Boolean enabled("tracers.enabled", "false");
 static settings::Float green_dist("tracers.green-distance", "1500");
 static settings::Float max_dist("tracers.max-dist", "0");
 static settings::Float min_fov("tracers.min-fov", "0");
 static settings::Float line_thickness("tracers.line-thickness", "2");
 static settings::Float opaque("tracers.line-opaqueness", "255");
-static settings::Bool buildings("tracers.buildings", "true");
+static settings::Boolean buildings("tracers.buildings", "true");
 
 // 0 = don't, 1 = yes but only in enemy team, 2 = always
 static settings::Int draw_friendlies("tracers.draw-friends", "1");

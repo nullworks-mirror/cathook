@@ -4,7 +4,7 @@
 
 namespace hacks::shared::lightesp
 {
-static settings::Bool enable{ "lightesp.enable", "false" };
+static settings::Boolean enable{ "lightesp.enable", "false" };
 
 static Vector hitp[32];
 static Vector minp[32];

@@ -4,8 +4,8 @@
 
 namespace hacks::tf2::miscplayerinfo
 {
-static settings::Bool draw_kda{ "misc.playerinfo.draw-kda", "false" };
-static settings::Bool mafia_city{ "misc.playerinfo.draw-level", "false" };
+static settings::Boolean draw_kda{ "misc.playerinfo.draw-kda", "false" };
+static settings::Boolean mafia_city{ "misc.playerinfo.draw-level", "false" };
 struct LevelInfo
 {
     int min;

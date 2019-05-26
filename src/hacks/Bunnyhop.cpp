@@ -10,7 +10,7 @@
 
 namespace hacks::shared::bunnyhop
 {
-static settings::Bool enable{ "bunnyhop.enable", "false" };
+static settings::Boolean enable{ "bunnyhop.enable", "false" };
 
 // Var for user settings
 

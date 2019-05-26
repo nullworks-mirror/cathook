@@ -7,7 +7,7 @@
 
 namespace hacks::shared::anti_anti_aim
 {
-static settings::Bool enable{ "anti-anti-aim.enable", "false" };
+static settings::Boolean enable{ "anti-anti-aim.enable", "false" };
 
 void createMove()
 {

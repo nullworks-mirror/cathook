@@ -16,7 +16,7 @@ constexpr float MAX_CLOCKRES = 8192.5;
 float clockRes;
 float seedFraction = 0.0f;
 
-static settings::Bool prediction{ "seed-prediction.enable", "false" };
+static settings::Boolean prediction{ "seed-prediction.enable", "false" };
 bool predon()
 {
     return *prediction;

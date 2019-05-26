@@ -10,17 +10,17 @@
 
 namespace hacks::tf::autoreflect
 {
-static settings::Bool enable{ "autoreflect.enable", "false" };
-static settings::Bool idle_only{ "autoreflect.idle-only", "false" };
-static settings::Bool legit{ "autoreflect.legit", "false" };
-static settings::Bool dodgeball{ "autoreflect.dodgeball", "false" };
+static settings::Boolean enable{ "autoreflect.enable", "false" };
+static settings::Boolean idle_only{ "autoreflect.idle-only", "false" };
+static settings::Boolean legit{ "autoreflect.legit", "false" };
+static settings::Boolean dodgeball{ "autoreflect.dodgeball", "false" };
 static settings::Button blastkey{ "autoreflect.button", "<null>" };
-static settings::Bool stickies{ "autoreflect.stickies", "false" };
-static settings::Bool teammates{ "autoreflect.teammate", "false" };
+static settings::Boolean stickies{ "autoreflect.stickies", "false" };
+static settings::Boolean teammates{ "autoreflect.teammate", "false" };
 static settings::Float fov{ "autoreflect.fov", "85" };
 
 #if ENABLE_VISUALS
-static settings::Bool fov_draw{ "autoreflect.draw-fov", "false" };
+static settings::Boolean fov_draw{ "autoreflect.draw-fov", "false" };
 static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity", "0.7" };
 #endif
 

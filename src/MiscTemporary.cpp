@@ -18,12 +18,12 @@ bool calculated_can_shoot = false;
 
 bool *bSendPackets{ nullptr };
 
-settings::Bool crypt_chat{ "chat.crypto", "true" };
-settings::Bool clean_screenshots{ "visual.clean-screenshots", "false" };
-settings::Bool nolerp{ "misc.no-lerp", "false" };
-settings::Bool no_zoom{ "remove.scope", "false" };
-settings::Bool disable_visuals{ "visual.disable", "false" };
+settings::Boolean crypt_chat{ "chat.crypto", "true" };
+settings::Boolean clean_screenshots{ "visual.clean-screenshots", "false" };
+settings::Boolean nolerp{ "misc.no-lerp", "false" };
+settings::Boolean no_zoom{ "remove.scope", "false" };
+settings::Boolean disable_visuals{ "visual.disable", "false" };
 settings::Int print_r{ "print.rgb.r", "183" };
 settings::Int print_g{ "print.rgb.b", "27" };
 settings::Int print_b{ "print.rgb.g", "139" };
-settings::Bool null_graphics("hack.nullgraphics", "false");
+settings::Boolean null_graphics("hack.nullgraphics", "false");

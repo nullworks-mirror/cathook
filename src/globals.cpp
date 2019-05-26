@@ -10,7 +10,7 @@
 
 #include "common.hpp"
 
-static settings::Bool global_enable{ "hack.enable", "true" };
+static settings::Boolean global_enable{ "hack.enable", "true" };
 
 time_t time_injected{ 0 };
 

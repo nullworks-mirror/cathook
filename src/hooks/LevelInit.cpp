@@ -12,9 +12,9 @@
 #include "MiscTemporary.hpp"
 #include "navparser.hpp"
 
-static settings::Bool halloween_mode{ "misc.force-halloween", "false" };
+static settings::Boolean halloween_mode{ "misc.force-halloween", "false" };
 static settings::Int skybox_changer{ "misc.skybox-override", "0" };
-extern settings::Bool random_name;
+extern settings::Boolean random_name;
 extern settings::String force_name;
 extern std::string name_forced;
 

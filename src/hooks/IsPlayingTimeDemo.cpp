@@ -7,7 +7,7 @@
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
 
-static settings::Bool enable_debug_servercmd{ "debug.servercmdkeyvalues", "false" };
+static settings::Boolean enable_debug_servercmd{ "debug.servercmdkeyvalues", "false" };
 namespace hooked_methods
 {
 std::vector<KeyValues *> Iterate(KeyValues *event, int depth);

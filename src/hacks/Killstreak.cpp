@@ -11,7 +11,7 @@
 
 namespace hacks::tf2::killstreak
 {
-static settings::Bool enable{ "killstreak.enable", "false" };
+static settings::Boolean enable{ "killstreak.enable", "false" };
 
 int killstreak{ 0 };
 

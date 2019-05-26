@@ -11,7 +11,7 @@
 
 namespace ac::antiaim
 {
-static settings::Bool enable{ "find-cheaters.antiaim.enable", "true" };
+static settings::Boolean enable{ "find-cheaters.antiaim.enable", "true" };
 
 unsigned long last_accusation[32]{ 0 };
 

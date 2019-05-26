@@ -13,12 +13,12 @@
 namespace hacks::shared::spam
 {
 static settings::Int spam_source{ "spam.source", "0" };
-static settings::Bool random_order{ "spam.random", "0" };
+static settings::Boolean random_order{ "spam.random", "0" };
 static settings::String filename{ "spam.filename", "spam.txt" };
 static settings::Int spam_delay{ "spam.delay", "800" };
 static settings::Int voicecommand_spam{ "spam.voicecommand", "0" };
-static settings::Bool teamname_spam{ "spam.teamname", "0" };
-static settings::Bool team_only{ "spam.teamchat", "false" };
+static settings::Boolean teamname_spam{ "spam.teamname", "0" };
+static settings::Boolean team_only{ "spam.teamchat", "false" };
 
 static int last_index;
 

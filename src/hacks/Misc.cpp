@@ -22,20 +22,20 @@
 
 namespace hacks::shared::misc
 {
-static settings::Bool render_zoomed{ "visual.render-local-zoomed", "false" };
-static settings::Bool anti_afk{ "misc.anti-afk", "false" };
-static settings::Bool auto_strafe{ "misc.autostrafe", "false" };
-static settings::Bool tauntslide{ "misc.tauntslide-tf2c", "false" };
-static settings::Bool tauntslide_tf2{ "misc.tauntslide", "false" };
-static settings::Bool flashlight_spam{ "misc.flashlight-spam", "false" };
-static settings::Bool auto_balance_spam{ "misc.auto-balance-spam", "false" };
-static settings::Bool nopush_enabled{ "misc.no-push", "false" };
+static settings::Boolean render_zoomed{ "visual.render-local-zoomed", "false" };
+static settings::Boolean anti_afk{ "misc.anti-afk", "false" };
+static settings::Boolean auto_strafe{ "misc.autostrafe", "false" };
+static settings::Boolean tauntslide{ "misc.tauntslide-tf2c", "false" };
+static settings::Boolean tauntslide_tf2{ "misc.tauntslide", "false" };
+static settings::Boolean flashlight_spam{ "misc.flashlight-spam", "false" };
+static settings::Boolean auto_balance_spam{ "misc.auto-balance-spam", "false" };
+static settings::Boolean nopush_enabled{ "misc.no-push", "false" };
 
 #if ENABLE_VISUALS
-static settings::Bool god_mode{ "misc.god-mode", "false" };
-static settings::Bool debug_info{ "misc.debug-info", "false" };
-static settings::Bool no_homo{ "misc.no-homo", "true" };
-static settings::Bool show_spectators{ "misc.show-spectators", "false" };
+static settings::Boolean god_mode{ "misc.god-mode", "false" };
+static settings::Boolean debug_info{ "misc.debug-info", "false" };
+static settings::Boolean no_homo{ "misc.no-homo", "true" };
+static settings::Boolean show_spectators{ "misc.show-spectators", "false" };
 #endif
 
 static void *C_TFPlayer__ShouldDraw_original = nullptr;

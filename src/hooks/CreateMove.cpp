@@ -20,16 +20,16 @@
 #include "HookedMethods.hpp"
 #include "PreDataUpdate.hpp"
 
-static settings::Bool minigun_jump{ "misc.minigun-jump-tf2c", "false" };
-static settings::Bool roll_speedhack{ "misc.roll-speedhack", "false" };
-static settings::Bool engine_pred{ "misc.engine-prediction", "true" };
-static settings::Bool debug_projectiles{ "debug.projectiles", "false" };
+static settings::Boolean minigun_jump{ "misc.minigun-jump-tf2c", "false" };
+static settings::Boolean roll_speedhack{ "misc.roll-speedhack", "false" };
+static settings::Boolean engine_pred{ "misc.engine-prediction", "true" };
+static settings::Boolean debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int semiauto{ "misc.semi-auto", "0" };
 static settings::Int fakelag_amount{ "misc.fakelag", "0" };
-static settings::Bool fuckmode{ "misc.fuckmode", "false" };
+static settings::Boolean fuckmode{ "misc.fuckmode", "false" };
 
 #if !ENABLE_VISUALS
-static settings::Bool no_shake{ "visual.no-shake", "true" };
+static settings::Boolean no_shake{ "visual.no-shake", "true" };
 #endif
 
 class CMoveData;

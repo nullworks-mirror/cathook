@@ -14,22 +14,22 @@
 
 namespace hacks::shared::triggerbot
 {
-static settings::Bool enable{ "trigger.enable", "false" };
+static settings::Boolean enable{ "trigger.enable", "false" };
 static settings::Int hitbox_mode{ "trigger.hitbox-mode", "0" };
 static settings::Int accuracy{ "trigger.accuracy", "1" };
-static settings::Bool wait_for_charge{ "trigger.wait-for-charge", "false" };
-static settings::Bool zoomed_only{ "trigger.zoomed-only", "true" };
+static settings::Boolean wait_for_charge{ "trigger.wait-for-charge", "false" };
+static settings::Boolean zoomed_only{ "trigger.zoomed-only", "true" };
 static settings::Float delay{ "trigger.delay", "0" };
 
 static settings::Button trigger_key{ "trigger.key.button", "<null>" };
 static settings::Int trigger_key_mode{ "trigger.key.mode", "1" };
 // FIXME move these into targeting
-static settings::Bool ignore_cloak{ "trigger.target.ignore-cloaked-spies", "true" };
-static settings::Bool ignore_vaccinator{ "trigger.target.ignore-vaccinator", "true" };
-static settings::Bool buildings_sentry{ "trigger.target.buildings-sentry", "true" };
-static settings::Bool buildings_other{ "trigger.target.buildings-other", "true" };
-static settings::Bool stickybot{ "trigger.target.stickybombs", "false" };
-static settings::Bool teammates{ "trigger.target.teammates", "false" };
+static settings::Boolean ignore_cloak{ "trigger.target.ignore-cloaked-spies", "true" };
+static settings::Boolean ignore_vaccinator{ "trigger.target.ignore-vaccinator", "true" };
+static settings::Boolean buildings_sentry{ "trigger.target.buildings-sentry", "true" };
+static settings::Boolean buildings_other{ "trigger.target.buildings-other", "true" };
+static settings::Boolean stickybot{ "trigger.target.stickybombs", "false" };
+static settings::Boolean teammates{ "trigger.target.teammates", "false" };
 static settings::Int max_range{ "trigger.target.max-range", "4096" };
 
 // Vars for usersettings

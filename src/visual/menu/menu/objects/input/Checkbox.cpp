@@ -5,10 +5,13 @@
 #include <menu/object/input/Checkbox.hpp>
 #include <menu/menu/special/SettingsManagerList.hpp>
 
+namespace zerokernel_checkbox
+{
 static settings::RVariable<int> checkbox_size{ "zk.style.checkbox.size", "12" };
 static settings::RVariable<rgba_t> color_border{ "zk.style.checkbox.color.border", "446498ff" };
 static settings::RVariable<rgba_t> color_checked{ "zk.style.checkbox.color.checked", "446498ff" };
 static settings::RVariable<rgba_t> color_hover{ "zk.style.checkbox.color.hover", "446498ff77" };
+} // namespace zerokernel_checkbox
 
 bool zerokernel::Checkbox::onLeftMouseClick()
 {
@@ -21,13 +24,13 @@ bool zerokernel::Checkbox::onLeftMouseClick()
 
 zerokernel::Checkbox::Checkbox() : BaseMenuObject{}
 {
-    bb.resize(*checkbox_size, *checkbox_size);
+    bb.resize(*zerokernel_checkbox::checkbox_size, *zerokernel_checkbox::checkbox_size);
     bb.setPadding(3, 3, 3, 3);
 }
 
 zerokernel::Checkbox::Checkbox(settings::Variable<bool> &option) : option(&option)
 {
-    bb.resize(*checkbox_size, *checkbox_size);
+    bb.resize(*zerokernel_checkbox::checkbox_size, *zerokernel_checkbox::checkbox_size);
     bb.setPadding(3, 3, 3, 3);
 }
 
@@ -35,12 +38,12 @@ void zerokernel::Checkbox::render()
 {
     if (nullptr != option)
     {
-        renderBorder(*color_border);
+        renderBorder(*zerokernel_checkbox::color_border);
         auto cb = bb.getContentBox();
         if (**option)
-            draw::Rectangle(cb.x, cb.y, cb.width, cb.height, *color_checked);
+            draw::Rectangle(cb.x, cb.y, cb.width, cb.height, *zerokernel_checkbox::color_checked);
         else if (isHovered())
-            draw::Rectangle(cb.x, cb.y, cb.width, cb.height, *color_hover);
+            draw::Rectangle(cb.x, cb.y, cb.width, cb.height, *zerokernel_checkbox::color_hover);
     }
     else
     {

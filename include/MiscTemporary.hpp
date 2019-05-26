@@ -24,16 +24,16 @@ extern int spectator_target;
 extern CLC_VoiceData *voicecrash;
 #endif
 
-extern settings::Bool clean_screenshots;
-extern settings::Bool crypt_chat;
-extern settings::Bool nolerp;
-extern settings::Bool no_zoom;
-extern settings::Bool disable_visuals;
+extern settings::Boolean clean_screenshots;
+extern settings::Boolean crypt_chat;
+extern settings::Boolean nolerp;
+extern settings::Boolean no_zoom;
+extern settings::Boolean disable_visuals;
 extern settings::Int print_r;
 extern settings::Int print_g;
 extern settings::Int print_b;
 extern int stored_buttons;
-extern settings::Bool null_graphics;
+extern settings::Boolean null_graphics;
 #if ENABLE_VISUALS
 extern bool freecam_is_toggled;
 #endif

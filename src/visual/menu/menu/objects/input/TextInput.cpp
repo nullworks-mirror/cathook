@@ -4,12 +4,14 @@
 
 #include <menu/object/input/TextInput.hpp>
 
+namespace zerokernel_textinput
+{
 static settings::RVariable<rgba_t> color_border_active{ "zk.style.input.text.color.border.active", "42BC99ff" };
 static settings::RVariable<rgba_t> color_border{ "zk.style.input.text.color.border.inactive", "446498ff" };
 
 static settings::RVariable<rgba_t> color_text_active{ "zk.style.input.text.color.text.active", "ffffff" };
 static settings::RVariable<rgba_t> color_text{ "zk.style.input.text.color.text.inactive", "aaaaaa" };
-
+} // namespace zerokernel_textinput
 zerokernel::TextInput::TextInput() : BaseMenuObject{}
 {
     text_object.setParent(this);
@@ -84,16 +86,16 @@ bool zerokernel::TextInput::handleSdlEvent(SDL_Event *event)
 void zerokernel::TextInput::render()
 {
     if (draw_border)
-        renderBorder(is_input_active ? *color_border_active : *color_border);
+        renderBorder(is_input_active ? *zerokernel_textinput::color_border_active : *zerokernel_textinput::color_border);
 
     if (is_input_active)
     {
-        text_object.setColorText(&*color_text_active);
+        text_object.setColorText(&*zerokernel_textinput::color_text_active);
         text_object.set(current_text);
     }
     else
     {
-        text_object.setColorText(&*color_text);
+        text_object.setColorText(&*zerokernel_textinput::color_text);
         float x, y;
         std::string t = getValue();
         resource::font::base.stringSize(t, &x, &y);

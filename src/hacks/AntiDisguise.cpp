@@ -8,8 +8,8 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "remove.disguise", "0" };
-static settings::Bool no_invisibility{ "remove.cloak", "0" };
+static settings::Boolean enable{ "remove.disguise", "0" };
+static settings::Boolean no_invisibility{ "remove.cloak", "0" };
 
 namespace hacks::tf2::antidisguise
 {

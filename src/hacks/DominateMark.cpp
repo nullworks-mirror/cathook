@@ -8,7 +8,7 @@
 
 namespace hacks::tf2::dominatemark
 {
-static settings::Bool draw_dominate{ "dominatemark.enable", "false" };
+static settings::Boolean draw_dominate{ "dominatemark.enable", "false" };
 static settings::Float min_size{ "dominatemark.min-size", "15.0f" };
 static settings::Float max_size{ "dominatemark.max-size", "40.0f" };
 

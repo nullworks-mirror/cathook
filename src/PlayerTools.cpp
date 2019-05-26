@@ -16,14 +16,14 @@ namespace player_tools
 
 static settings::Int betrayal_limit{ "player-tools.betrayal-limit", "2" };
 
-static settings::Bool taunting{ "player-tools.ignore.taunting", "true" };
-static settings::Bool hoovy{ "player-tools.ignore.hoovy", "true" };
-static settings::Bool ignoreCathook{ "player-tools.ignore.cathook", "true" };
+static settings::Boolean taunting{ "player-tools.ignore.taunting", "true" };
+static settings::Boolean hoovy{ "player-tools.ignore.hoovy", "true" };
+static settings::Boolean ignoreCathook{ "player-tools.ignore.cathook", "true" };
 
-static settings::Bool online_notarget{ "player-tools.ignore.online.notarget", "true" };
-static settings::Bool online_friendly_software{ "player-tools.ignore.online.friendly-software", "true" };
-static settings::Bool online_only_verified{ "player-tools.ignore.online.only-verified-accounts", "true" };
-static settings::Bool online_anonymous{ "player-tools.ignore.online.anonymous", "true" };
+static settings::Boolean online_notarget{ "player-tools.ignore.online.notarget", "true" };
+static settings::Boolean online_friendly_software{ "player-tools.ignore.online.friendly-software", "true" };
+static settings::Boolean online_only_verified{ "player-tools.ignore.online.only-verified-accounts", "true" };
+static settings::Boolean online_anonymous{ "player-tools.ignore.online.anonymous", "true" };
 
 static std::unordered_map<unsigned, unsigned> betrayal_list{};
 

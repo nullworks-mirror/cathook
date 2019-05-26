@@ -54,7 +54,7 @@ void RemoveNullHook()
 }
 static CatCommand ApplyNullhook("debug_material_hook", "Debug", []() { NullHook(); });
 static CatCommand RemoveNullhook("debug_material_hook_clear", "Debug", []() { RemoveNullHook(); });
-static settings::Bool debug_framerate("debug.framerate", "false");
+static settings::Boolean debug_framerate("debug.framerate", "false");
 static float framerate = 0.0f;
 static Timer send_timer{};
 static InitRoutine init_nographics([]() {

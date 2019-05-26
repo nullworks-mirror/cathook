@@ -11,7 +11,7 @@
 #include "settings/Bool.hpp"
 #include "MiscTemporary.hpp"
 
-static settings::Bool tcm{ "debug.tcm", "true" };
+static settings::Boolean tcm{ "debug.tcm", "true" };
 
 std::vector<ConVar *> &RegisteredVarsList()
 {

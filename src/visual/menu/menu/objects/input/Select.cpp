@@ -7,10 +7,13 @@
 #include <menu/Debug.hpp>
 #include <menu/menu/special/SettingsManagerList.hpp>
 
+namespace zerokernel_select
+{
 static settings::RVariable<rgba_t> color_border{ "zk.style.input.select.border", "446498ff" };
 
 static settings::RVariable<int> default_width{ "zk.style.input.select.width", "60" };
 static settings::RVariable<int> default_height{ "zk.style.input.select.height", "14" };
+} // namespace zerokernel_select
 
 bool zerokernel::Select::onLeftMouseClick()
 {
@@ -33,7 +36,7 @@ void zerokernel::Select::render()
             }
         }
 
-        renderBorder(*color_border);
+        renderBorder(*zerokernel_select::color_border);
         std::string t;
         if (found)
         {
@@ -66,7 +69,7 @@ void zerokernel::Select::render()
 
 zerokernel::Select::Select(settings::IVariable &variable) : BaseMenuObject(), variable(&variable)
 {
-    resize(*default_width, *default_height);
+    resize(*zerokernel_select::default_width, *zerokernel_select::default_height);
     text.setParent(this);
     text.bb.width.setFill();
     text.bb.height.setFill();
@@ -75,7 +78,7 @@ zerokernel::Select::Select(settings::IVariable &variable) : BaseMenuObject(), va
 
 zerokernel::Select::Select() : BaseMenuObject{}
 {
-    resize(*default_width, *default_height);
+    resize(*zerokernel_select::default_width, *zerokernel_select::default_height);
     text.setParent(this);
     text.bb.width.setFill();
     text.bb.height.setFill();

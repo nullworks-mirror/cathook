@@ -8,14 +8,14 @@
 namespace hacks::tf2::NavBot
 {
 // -Rvars-
-static settings::Bool enabled("navbot.enabled", "false");
-static settings::Bool stay_near("navbot.stay-near", "true");
-static settings::Bool heavy_mode("navbot.other-mode", "false");
-static settings::Bool spy_mode("navbot.spy-mode", "false");
-static settings::Bool get_health("navbot.get-health-and-ammo", "true");
+static settings::Boolean enabled("navbot.enabled", "false");
+static settings::Boolean stay_near("navbot.stay-near", "true");
+static settings::Boolean heavy_mode("navbot.other-mode", "false");
+static settings::Boolean spy_mode("navbot.spy-mode", "false");
+static settings::Boolean get_health("navbot.get-health-and-ammo", "true");
 static settings::Float jump_distance("navbot.autojump.trigger-distance", "300");
-static settings::Bool autojump("navbot.autojump.enabled", "false");
-static settings::Bool primary_only("navbot.primary-only", "true");
+static settings::Boolean autojump("navbot.autojump.enabled", "false");
+static settings::Boolean primary_only("navbot.primary-only", "true");
 static settings::Int spy_ignore_time("navbot.spy-ignore-time", "5000");
 
 // -Forward declarations-

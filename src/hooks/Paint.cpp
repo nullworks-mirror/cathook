@@ -11,7 +11,7 @@
 #include "common.hpp"
 #include "hitrate.hpp"
 #include "hack.hpp"
-extern settings::Bool die_if_vac;
+extern settings::Boolean die_if_vac;
 static Timer checkmmban{};
 namespace hooked_methods
 {

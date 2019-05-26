@@ -16,7 +16,7 @@
 
 namespace hacks::shared::catbot
 {
-static settings::Bool auto_disguise{ "misc.autodisguise", "true" };
+static settings::Boolean auto_disguise{ "misc.autodisguise", "true" };
 
 static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
 static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte", "0" };
@@ -24,19 +24,19 @@ static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte", "0"
 static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte", "0" };
 static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills", "2" };
 
-static settings::Bool micspam{ "cat-bot.micspam.enable", "false" };
+static settings::Boolean micspam{ "cat-bot.micspam.enable", "false" };
 static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
 static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
 
-static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "false" };
-static settings::Bool always_crouch{ "cat-bot.always-crouch", "false" };
-static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
-static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
+static settings::Boolean auto_crouch{ "cat-bot.auto-crouch", "false" };
+static settings::Boolean always_crouch{ "cat-bot.always-crouch", "false" };
+static settings::Boolean random_votekicks{ "cat-bot.votekicks", "false" };
+static settings::Boolean autoReport{ "cat-bot.autoreport", "true" };
 
-static settings::Bool mvm_autoupgrade{ "mvm.autoupgrade", "false" };
+static settings::Boolean mvm_autoupgrade{ "mvm.autoupgrade", "false" };
 
-settings::Bool catbotmode{ "cat-bot.enable", "false" };
-settings::Bool anti_motd{ "cat-bot.anti-motd", "false" };
+settings::Boolean catbotmode{ "cat-bot.enable", "false" };
+settings::Boolean anti_motd{ "cat-bot.anti-motd", "false" };
 
 struct catbot_user_state
 {

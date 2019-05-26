@@ -19,7 +19,7 @@
 #include <thread>
 #include <settings/Bool.hpp>
 
-static settings::Bool enable{ "online.enable", "false" };
+static settings::Boolean enable{ "online.enable", "false" };
 
 namespace online
 {

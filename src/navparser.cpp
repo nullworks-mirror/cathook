@@ -10,11 +10,11 @@
 namespace nav
 {
 
-static settings::Bool enabled{ "misc.pathing", "true" };
+static settings::Boolean enabled{ "misc.pathing", "true" };
 // Whether or not to run vischecks at pathtime
-static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "true" };
-static settings::Bool draw{ "misc.pathing.draw", "false" };
-static settings::Bool look{ "misc.pathing.look-at-path", "false" };
+static settings::Boolean vischecks{ "misc.pathing.pathtime-vischecks", "true" };
+static settings::Boolean draw{ "misc.pathing.draw", "false" };
+static settings::Boolean look{ "misc.pathing.look-at-path", "false" };
 static settings::Int stuck_time{ "misc.pathing.stuck-time", "4000" };
 
 static std::vector<Vector> crumbs;
