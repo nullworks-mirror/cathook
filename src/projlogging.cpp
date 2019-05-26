@@ -8,9 +8,10 @@
 #include "projlogging.hpp"
 #include "common.hpp"
 
-Vector prevloc[2048]{};
 namespace projectile_logging
 {
+Vector prevloc[2048]{};
+
 void Update()
 {
     for (int i = 1; i < HIGHEST_ENTITY; i++)

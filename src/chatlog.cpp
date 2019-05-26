@@ -13,12 +13,11 @@
 #include <hacks/Spam.hpp>
 #include <settings/Bool.hpp>
 
+namespace chatlog
+{
 static settings::Bool enable{ "chat-log.enable", "false" };
 static settings::Bool no_spam{ "chat-log.no-spam", "true" };
 static settings::Bool no_ipc{ "chat-log.no-ipc", "true" };
-
-namespace chatlog
-{
 
 class csv_stream
 {

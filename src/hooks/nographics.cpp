@@ -57,7 +57,7 @@ static CatCommand RemoveNullhook("debug_material_hook_clear", "Debug", []() { Re
 static settings::Bool debug_framerate("debug.framerate", "false");
 static float framerate = 0.0f;
 static Timer send_timer{};
-static InitRoutine init([]() {
+static InitRoutine init_nographics([]() {
 #if !ENABLE_VISUALS
     NullHook();
 #endif

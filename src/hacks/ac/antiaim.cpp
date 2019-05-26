@@ -9,10 +9,9 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "find-cheaters.antiaim.enable", "true" };
-
 namespace ac::antiaim
 {
+static settings::Bool enable{ "find-cheaters.antiaim.enable", "true" };
 
 unsigned long last_accusation[32]{ 0 };
 

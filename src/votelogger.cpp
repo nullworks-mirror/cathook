@@ -194,17 +194,13 @@ public:
             bool vote_option = event->GetInt("vote_option");
             if (*party_say_f1_only && vote_option)
                 return;
-            int team = event->GetInt("team");
-            int eid  = event->GetInt("entityid");
+            int eid = event->GetInt("entityid");
 
-            player_info_s info{}, info2{};
+            player_info_s info{};
             if (!g_IEngine->GetPlayerInfo(eid, &info))
                 return;
             char formated_string[256];
-            if (!g_IEngine->GetPlayerInfo(kicked_player, &info2))
-                std::snprintf(formated_string, sizeof(formated_string), "[CAT] %s [U:1:%u] %s", info.name, info.friendsID, vote_option ? "F2" : "F1");
-            else
-                std::snprintf(formated_string, sizeof(formated_string), "[CAT] %s [U:1:%u] %s => %s [U:1:%u] ", info.name, info.friendsID, vote_option ? "F1" : "F2", info2.name, info2.friendsID);
+            std::snprintf(formated_string, sizeof(formated_string), "[CAT] %s [U:1:%u] %s", info.name, info.friendsID, vote_option ? "F2" : "F1");
             re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
         }
     }

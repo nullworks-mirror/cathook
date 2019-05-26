@@ -11,6 +11,9 @@
 #include "entitycache.hpp"
 #include "settings/Bool.hpp"
 
+namespace player_tools
+{
+
 static settings::Int betrayal_limit{ "player-tools.betrayal-limit", "2" };
 
 static settings::Bool taunting{ "player-tools.ignore.taunting", "true" };
@@ -25,9 +28,6 @@ static settings::Bool online_anonymous{ "player-tools.ignore.online.anonymous", 
 static std::unordered_map<unsigned, unsigned> betrayal_list{};
 
 static CatCommand forgive_all("pt_forgive_all", "Clear betrayal list", []() { betrayal_list.clear(); });
-
-namespace player_tools
-{
 
 bool shouldTargetSteamId(unsigned id)
 {

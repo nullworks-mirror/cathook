@@ -69,4 +69,4 @@ bool IsHoovy(CachedEntity *entity)
     return hoovy_list[entity->m_IDX - 1];
 }
 
-static InitRoutine init([]() { EC::Register(EC::CreateMove, UpdateHoovyList, "cm_hoovylist", EC::average); });
+static InitRoutine init_heavy([]() { EC::Register(EC::CreateMove, UpdateHoovyList, "cm_hoovylist", EC::average); });

@@ -40,8 +40,7 @@ set(ignore_files ${ignore_files} CACHE INTERNAL "")
 
 add_subdirectory(ac)
 if(EnableVisuals)
-    target_sources(cathook PRIVATE
-            "${CMAKE_CURRENT_LIST_DIR}/DominateMark.cpp"
+    set(files "${CMAKE_CURRENT_LIST_DIR}/DominateMark.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/ESP.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Tracers.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Radar.cpp"
@@ -49,4 +48,7 @@ if(EnableVisuals)
             "${CMAKE_CURRENT_LIST_DIR}/SpyAlert.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Thirdperson.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/MCHealthbar.cpp")
+    target_sources(cathook PRIVATE ${files})
+    list(REMOVE_ITEM ignore_files ${files})
+    set(ignore_files ${ignore_files} CACHE INTERNAL "")
 endif()

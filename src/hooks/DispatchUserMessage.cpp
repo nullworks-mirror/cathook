@@ -20,7 +20,6 @@ static settings::Bool answerIdentify{ "chat.identify.answer", "false" };
 static settings::Bool anti_votekick{ "cat-bot.anti-autobalance", "false" };
 
 static bool retrun = false;
-static Timer sendmsg{};
 static Timer gitgud{};
 
 // Using repeated char causes crash on some systems. Suboptimal solution.
@@ -36,7 +35,7 @@ std::string lastname{};
 
 namespace hooked_methods
 {
-
+static Timer sendmsg{};
 template <typename T> void SplitName(std::vector<T> &ret, const T &name, int num)
 {
     T tmp;

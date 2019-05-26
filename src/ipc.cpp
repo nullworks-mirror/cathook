@@ -16,10 +16,11 @@
 #if ENABLE_IPC
 
 static settings::Bool ipc_update_list{ "ipc.update-player-list", "true" };
-static settings::String server_name{ "ipc.server", "cathook_followbot_server" };
 
 namespace ipc
 {
+
+static settings::String server_name{ "ipc.server", "cathook_followbot_server" };
 
 CatCommand fix_deadlock("ipc_fix_deadlock", "Fix deadlock", []() {
     if (peer)

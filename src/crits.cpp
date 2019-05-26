@@ -8,16 +8,16 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
+std::unordered_map<int, int> command_number_mod{};
+
+namespace criticals
+{
+
 static settings::Bool crit_info{ "crit.info", "false" };
 static settings::Button crit_key{ "crit.key", "<null>" };
 static settings::Bool crit_melee{ "crit.melee", "false" };
 static settings::Bool crit_legiter{ "crit.force-gameplay", "false" };
 static settings::Bool crit_experimental{ "crit.experimental", "false" };
-
-std::unordered_map<int, int> command_number_mod{};
-
-namespace criticals
-{
 
 int find_next_random_crit_for_weapon(IClientEntity *weapon)
 {
@@ -224,6 +224,12 @@ void draw()
     }
 }
 #endif
+static InitRoutine init([]() {
+    EC::Register(EC::CreateMove, criticals::create_move, "cm_crits", EC::very_late);
+#if ENABLE_VISUALS
+    EC::Register(EC::Draw, criticals::draw, "draw_crits");
+#endif
+});
 } // namespace criticals
 
 void crithack_saved_state::Load(IClientEntity *entity)
@@ -247,10 +253,3 @@ void crithack_saved_state::Save(IClientEntity *entity)
     seed2876    = *(int *) (uintptr_t(entity) + 2876);
     unknown2839 = *(char *) (uintptr_t(entity) + 2839);
 }
-
-static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, criticals::create_move, "cm_crits", EC::very_late);
-#if ENABLE_VISUALS
-    EC::Register(EC::Draw, criticals::draw, "draw_crits");
-#endif
-});
