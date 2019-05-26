@@ -10,6 +10,9 @@
 #include <init.hpp>
 #include "KeyValues.h"
 
+
+namespace event_logging
+{
 static settings::Boolean enable{ "chat.log-events", "false" };
 static settings::Boolean event_hurt{ "chat.log-events.hurt", "false" };
 static settings::Boolean event_connect{ "chat.log-events.joining", "true" };
@@ -252,8 +255,9 @@ static LoggingEventListener event_listener{};
 
 InitRoutine init([]() { g_IGameEventManager->AddListener(&event_listener, false); });
 
-bool event_logging::isEnabled()
+bool isEnabled()
 {
     return *enable;
+}
 }
 #endif

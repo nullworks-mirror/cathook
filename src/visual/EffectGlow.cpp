@@ -11,22 +11,6 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Boolean health{ "glow.health", "false" };
-static settings::Boolean teammates{ "glow.show.teammates", "false" };
-static settings::Boolean players{ "glow.show.players", "true" };
-static settings::Boolean medkits{ "glow.show.medkits", "false" };
-static settings::Boolean ammobox{ "glow.show.ammoboxes", "false" };
-static settings::Boolean buildings{ "glow.show.buildings", "true" };
-static settings::Boolean stickies{ "glow.show.stickies", "true" };
-static settings::Boolean teammate_buildings{ "glow.show.teammate-buildings", "false" };
-static settings::Boolean show_powerups{ "glow.show.powerups", "true" };
-static settings::Boolean weapons_white{ "glow.white-weapons", "true" };
-static settings::Boolean glowself{ "glow.self", "true" };
-static settings::Boolean rainbow{ "glow.self-rainbow", "true" };
-static settings::Int blur_scale{ "glow.blur-scale", "5" };
-// https://puu.sh/vobH4/5da8367aef.png
-static settings::Int solid_when{ "glow.solid-when", "0" };
-
 IMaterialSystem *materials = nullptr;
 
 CScreenSpaceEffectRegistration *CScreenSpaceEffectRegistration::s_pHead = NULL;
@@ -44,6 +28,22 @@ CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration(const char *pName
 
 namespace effect_glow
 {
+
+static settings::Boolean health{ "glow.health", "false" };
+static settings::Boolean teammates{ "glow.show.teammates", "false" };
+static settings::Boolean players{ "glow.show.players", "true" };
+static settings::Boolean medkits{ "glow.show.medkits", "false" };
+static settings::Boolean ammobox{ "glow.show.ammoboxes", "false" };
+static settings::Boolean buildings{ "glow.show.buildings", "true" };
+static settings::Boolean stickies{ "glow.show.stickies", "true" };
+static settings::Boolean teammate_buildings{ "glow.show.teammate-buildings", "false" };
+static settings::Boolean show_powerups{ "glow.show.powerups", "true" };
+static settings::Boolean weapons_white{ "glow.white-weapons", "true" };
+static settings::Boolean glowself{ "glow.self", "true" };
+static settings::Boolean rainbow{ "glow.self-rainbow", "true" };
+static settings::Int blur_scale{ "glow.blur-scale", "5" };
+// https://puu.sh/vobH4/5da8367aef.png
+static settings::Int solid_when{ "glow.solid-when", "0" };
 settings::Boolean enable{ "glow.enable", "false" };
 
 struct ShaderStencilState_t

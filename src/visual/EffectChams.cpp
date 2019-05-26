@@ -11,6 +11,8 @@
 #include "common.hpp"
 #include "Backtrack.hpp"
 
+namespace effect_chams
+{
 static settings::Boolean flat{ "chams.flat", "false" };
 static settings::Boolean health{ "chams.health", "false" };
 static settings::Boolean teammates{ "chams.show.teammates", "false" };
@@ -27,9 +29,6 @@ static settings::Boolean singlepass{ "chams.single-pass", "false" };
 static settings::Boolean chamsself{ "chams.self", "true" };
 static settings::Boolean rainbow{ "chams.self-rainbow", "true" };
 static settings::Boolean disco_chams{ "chams.disco", "false" };
-
-namespace effect_chams
-{
 
 settings::Boolean enable{ "chams.enable", "false" };
 CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {

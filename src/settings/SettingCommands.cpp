@@ -12,6 +12,8 @@
   Created on 29.07.18.
 */
 
+namespace settings::commands {
+
 static void getAndSortAllConfigs();
 
 static CatCommand cat("cat", "", [](const CCommand &args) {
@@ -311,3 +313,4 @@ static InitRoutine init([]() {
     save.cmd->m_bHasCompletionCallback = true;
     save.cmd->m_fnCompletionCallback   = save_CompletionCallback;
 });
+}
