@@ -127,6 +127,7 @@ void CreateMove()
         g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)
             SayNope();
+        *bSendPackets = true;
     }
     else
         noaa = false;
