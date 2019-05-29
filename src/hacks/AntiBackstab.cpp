@@ -18,7 +18,6 @@ namespace hacks::tf2::antibackstab
 static settings::Boolean enable{ "antibackstab.enable", "0" };
 static settings::Float distance{ "antibackstab.distance", "200" };
 static settings::Boolean silent{ "antibackstab.silent", "1" };
-static settings::Float angle{ "antibackstab.angle", "107.5" };
 static settings::Boolean sayno{ "antibackstab.nope", "0" };
 bool noaa = false;
 
@@ -93,7 +92,7 @@ CachedEntity *ClosestSpy()
         if (IsPlayerInvisible(ent))
             continue;
         dist = ent->m_flDistance();
-        if (fabs(GetAngle(ent)) > (float) angle || (ispyro && !isheavy && fabs(GetAngle(ent)) > 90.0f) || (isheavy && fabs(GetAngle(ent)) > 132.0f))
+        if ((ispyro && !isheavy && fabs(GetAngle(ent)) > 90.0f) || (isheavy && fabs(GetAngle(ent)) > 132.0f))
         {
             break;
             // logging::Info("Backstab???");
