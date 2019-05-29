@@ -17,7 +17,6 @@ namespace hacks::tf2::antibackstab
 {
 static settings::Boolean enable{ "antibackstab.enable", "0" };
 static settings::Float distance{ "antibackstab.distance", "200" };
-static settings::Boolean silent{ "antibackstab.silent", "1" };
 static settings::Boolean sayno{ "antibackstab.nope", "0" };
 bool noaa = false;
 
@@ -125,8 +124,7 @@ void CreateMove()
         bool couldbebackstabbed = hacks::tf2::autobackstab::angleCheck(spy, LOCAL_E, std::nullopt, spy_angle);
         if (couldbebackstabbed || CE_INT(spy, netvar.iClass) == tf_class::tf_heavy)
             current_user_cmd->viewangles.x = 150.0f;
-        if (silent)
-            g_pLocalPlayer->bUseSilentAngles = true;
+        g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)
             SayNope();
     }
