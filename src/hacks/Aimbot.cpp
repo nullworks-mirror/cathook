@@ -70,7 +70,7 @@ static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 
 int GetSentry()
 {
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -149,7 +149,7 @@ static void CreateMove()
     // Refresh projectile info
     if (projectileAimbotRequired)
     {
-        projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
+        projectile_mode = GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav);
         if (!projectile_mode)
             return;
         if (proj_speed)
@@ -378,7 +378,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state, bool Backtracking)
     CachedEntity *ent;
     CachedEntity *target_highest_ent = 0;
     target_highest_score             = -256;
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i < HIGHEST_ENTITY; i++)
     {
         ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -732,8 +732,6 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Target not valid
         return false;
     }
-    // An impossible error so just return false
-    return false;
 }
 
 // A function to aim at a specific entitiy
@@ -1061,7 +1059,7 @@ int BestHitbox(CachedEntity *target)
                 // 18 health is a good number to use as thats the usual minimum
                 // damage it can do with a bodyshot, but damage could
                 // potentially be higher
-                if (target->m_iHealth() <= 18 || IsPlayerCritBoosted(g_pLocalPlayer->entity))
+                if (target->m_iHealth() <= 18 || IsPlayerCritBoosted(g_pLocalPlayer->entity) || target->m_flDistance() > 1200)
                     headonly = false;
                 // Rocket launcher
             }
