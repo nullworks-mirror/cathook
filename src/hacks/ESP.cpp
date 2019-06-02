@@ -1117,10 +1117,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             // Health esp
             if ((int) show_health == 1 || (int) show_health == 3)
             {
-                if (RAW_ENT(ent)->IsDormant())
-                    AddEntityString(ent, "?/? HP", colors::black);
-                else
-                    AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
+                AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
             }
             IF_GAME(IsTF())
             {

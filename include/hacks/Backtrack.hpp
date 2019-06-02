@@ -61,7 +61,7 @@ struct CIncomingSequence
 };
 typedef boost::circular_buffer_space_optimized<CIncomingSequence> circular_buf;
 extern circular_buf sequences;
-extern BacktrackData headPositions[32][66];
+extern BacktrackData headPositions[33][66];
 
 extern bool isBacktrackEnabled;
 extern bool Vischeck_Success;

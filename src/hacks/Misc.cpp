@@ -429,7 +429,7 @@ void Schema_Reload()
     static auto GetItemSchema = reinterpret_cast<void *(*) (void)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 1D ? ? ? ? 85 DB 89 D8"));
 
     static auto BInitTextBuffer = reinterpret_cast<bool (*)(void *, CUtlBuffer &, int)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 9D ? ? ? ? 81 EC ? ? ? ? 8B 7D ? 89 1C 24 "));
-    void *schema                = GetItemSchema() + 0x4;
+    void *schema                = (void *) ((unsigned) GetItemSchema() + 0x4);
 
     FILE *file = fopen("/opt/cathook/data/items_game.txt", "r");
     if (!file || ferror(file) != 0)
