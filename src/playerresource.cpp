@@ -25,6 +25,21 @@ void TFPlayerResource::Update()
     }
 }
 
+int TFPlayerResource::GetHealth(CachedEntity *player)
+{
+    IClientEntity *ent;
+    int idx;
+    /* :thinking */
+    IF_GAME(!IsTF()) return 100;
+    ent = g_IEntityList->GetClientEntity(entity);
+    if (!ent || ent->GetClientClass()->m_ClassID != RCC_PLAYERRESOURCE)
+        return 0;
+    idx = player->m_IDX;
+    if (idx >= 64 || idx < 0)
+        return 0;
+    return *(int *) ((unsigned) ent + netvar.m_iHealth_Resource + 4 * idx);
+}
+
 int TFPlayerResource::GetMaxHealth(CachedEntity *player)
 {
     IClientEntity *ent;

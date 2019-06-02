@@ -23,6 +23,7 @@
 #include <GL/glew.h>
 #include <SDL2/SDL_video.h>
 #include <SDLHooks.hpp>
+#include "soundcache.hpp"
 
 // String -> Wstring
 #include <codecvt>
@@ -395,10 +396,20 @@ bool EntityCenterToScreen(CachedEntity *entity, Vector &out)
     Vector world, min, max;
     bool succ;
 
-    if (CE_BAD(entity))
+    if (CE_INVALID(entity))
         return false;
     RAW_ENT(entity)->GetRenderBounds(min, max);
     world = RAW_ENT(entity)->GetAbsOrigin();
+
+    // Dormant
+    if (RAW_ENT(entity)->IsDormant())
+    {
+        auto ent_cache = sound_cache[entity->m_IDX];
+        if (!ent_cache.last_update.check(10000) && ent_cache.sound.m_pOrigin.IsZero())
+            world = ent_cache.sound.m_pOrigin;
+        else
+            return false;
+    }
     world.z += (min.z + max.z) / 2;
     succ = draw::WorldToScreen(world, out);
     return succ;

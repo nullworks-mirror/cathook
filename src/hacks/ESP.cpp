@@ -10,6 +10,7 @@
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
+#include "soundcache.hpp"
 
 namespace hacks::shared::esp
 {
@@ -192,7 +193,7 @@ struct bonelist_s
             return;
 
         // ent->m_bBonesSetup = false;
-        Vector displacement = RAW_ENT(ent)->GetAbsOrigin() - ent->m_vecOrigin();
+        Vector displacement = {};
         const auto &bones   = ent->hitboxes.GetBones();
         DrawBoneList(bones, leg_r, 3, color, displacement);
         DrawBoneList(bones, leg_l, 3, color, displacement);
@@ -260,7 +261,7 @@ static void cm()
         {
             // Get an entity from the loop tick and process it
             CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent))
+            if (CE_INVALID(ent) || !ent->m_bAlivePlayer())
                 continue;
             ProcessEntity(ent);
             // Update Bones
@@ -369,8 +370,17 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     PROF_SECTION(PT_esp_process_entity);
 
     // Check to prevent crashes
-    if (CE_BAD(ent))
+    if (CE_INVALID(ent) || !ent->m_bAlivePlayer())
         return;
+    // Dormant
+    bool dormant = false;
+    if (RAW_ENT(ent)->IsDormant())
+    {
+        auto ent_cache = sound_cache[ent->m_IDX];
+        if (ent_cache.last_update.check(10000) || ent_cache.sound.m_pOrigin.IsZero())
+            return;
+        dormant = true;
+    }
 
     int classid     = ent->m_iClassID();
     EntityType type = ent->m_Type();
@@ -384,8 +394,12 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         fg = ent_data.color = colors::EntityF(ent);
 
     // Check if entity is on screen, then save screen position if true
+    Vector position = ent->m_vecOrigin();
+    // Dormant
+    if (dormant)
+        position = sound_cache[ent->m_IDX].sound.m_pOrigin;
     static Vector screen, origin_screen;
-    if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(ent->m_vecOrigin(), origin_screen))
+    if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(position, origin_screen))
         return;
 
     // Reset the collide cache
@@ -410,7 +424,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 
         // Get world to screen
         Vector scn;
-        draw::WorldToScreen(ent->m_vecOrigin(), scn);
+        draw::WorldToScreen(position, scn);
 
         // Draw a line
         draw::Line(scn.x, scn.y, width - scn.x, height - scn.y, fg, 0.5f);
@@ -747,8 +761,15 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
 {
     if (!enable)
         return; // Esp enable check
-    if (CE_BAD(ent))
-        return; // CE_BAD check to prevent crashes
+    if (CE_INVALID(ent) || !ent->m_bAlivePlayer())
+        return; // CE_INVALID check to prevent crashes
+    // Dormant
+    if (RAW_ENT(ent)->IsDormant())
+    {
+        auto ent_cache = sound_cache[ent->m_IDX];
+        if (ent_cache.last_update.check(10000) || ent_cache.sound.m_pOrigin.IsZero())
+            return;
+    }
     if (max_dist && ent->m_flDistance() > *max_dist)
         return;
     int classid = ent->m_iClassID();
@@ -1096,7 +1117,10 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             // Health esp
             if ((int) show_health == 1 || (int) show_health == 3)
             {
-                AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
+                if (RAW_ENT(ent)->IsDormant())
+                    AddEntityString(ent, "?/? HP", colors::black);
+                else
+                    AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
             }
             IF_GAME(IsTF())
             {
@@ -1113,7 +1137,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                             if (eid >= 32 && eid <= HIGHEST_ENTITY)
                             {
                                 CachedEntity *weapon = ENTITY(eid);
-                                if (!CE_BAD(weapon) && weapon->m_iClassID() == CL_CLASS(CWeaponMedigun) && weapon)
+                                if (!CE_INVALID(weapon) && weapon->m_iClassID() == CL_CLASS(CWeaponMedigun) && weapon)
                                 {
                                     if (CE_INT(weapon, netvar.iItemDefinitionIndex) != 998)
                                     {
@@ -1169,6 +1193,9 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     // Jarated
                     if (HasCondition<TFCond_Jarated>(ent))
                         AddEntityString(ent, "*JARATED*", colors::yellow);
+                    // Dormant
+                    if (CE_VALID(ent) && RAW_ENT(ent)->IsDormant())
+                        AddEntityString(ent, "*DORMANT*", colors::red);
                 }
             }
             // Hoovy Esp
@@ -1180,7 +1207,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             if (IDX_GOOD(widx))
             {
                 CachedEntity *weapon = ENTITY(widx);
-                if (CE_GOOD(weapon))
+                if (CE_VALID(weapon))
                 {
                     if (show_weapon)
                     {
@@ -1201,12 +1228,21 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
 // Draw 3D box around player/building
 void _FASTCALL Draw3DBox(CachedEntity *ent, const rgba_t &clr)
 {
-    if (CE_BAD(ent))
+    if (CE_INVALID(ent) || !ent->m_bAlivePlayer())
         return;
 
-    const Vector &origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
-    Vector mins          = RAW_ENT(ent)->GetCollideable()->OBBMins();
-    Vector maxs          = RAW_ENT(ent)->GetCollideable()->OBBMaxs();
+    Vector origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
+    Vector mins   = RAW_ENT(ent)->GetCollideable()->OBBMins();
+    Vector maxs   = RAW_ENT(ent)->GetCollideable()->OBBMaxs();
+    // Dormant
+    if (RAW_ENT(ent)->IsDormant())
+    {
+        auto ent_cache = sound_cache[ent->m_IDX];
+        if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
+            origin = ent_cache.sound.m_pOrigin;
+        else
+            return;
+    }
 
     // Create a array for storing box points
     Vector corners[8]; // World vectors
@@ -1262,7 +1298,7 @@ void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
     PROF_SECTION(PT_esp_drawbox);
 
     // Check if ent is bad to prevent crashes
-    if (CE_BAD(ent))
+    if (CE_INVALID(ent) || !ent->m_bAlivePlayer())
         return;
 
     // Get our collidable bounds
@@ -1332,8 +1368,8 @@ bool GetCollide(CachedEntity *ent)
 {
     PROF_SECTION(PT_esp_getcollide);
 
-    // Null + Dormant check to prevent crashing
-    if (CE_BAD(ent))
+    // Null check to prevent crashing
+    if (CE_INVALID(ent) || !ent->m_bAlivePlayer())
         return false;
 
     // Grab esp data
@@ -1344,9 +1380,18 @@ bool GetCollide(CachedEntity *ent)
     {
 
         // Get collision center, max, and mins
-        const Vector &origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
-        Vector mins          = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
-        Vector maxs          = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
+        Vector origin = RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
+        // Dormant
+        if (RAW_ENT(ent)->IsDormant())
+        {
+            auto ent_cache = sound_cache[ent->m_IDX];
+            if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
+                origin = ent_cache.sound.m_pOrigin;
+            else
+                return false;
+        }
+        Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
+        Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;
 
         // Create a array for storing box points
         Vector points_r[8]; // World vectors

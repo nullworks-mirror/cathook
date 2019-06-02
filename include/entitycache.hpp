@@ -53,6 +53,8 @@ struct mstudiobbox_t;
 
 #define CE_GOOD(entity) (entity && !g_Settings.bInvalid && entity->Good())
 #define CE_BAD(entity) (!CE_GOOD(entity))
+#define CE_VALID(entity) (entity && !g_Settings.bInvalid && entity->Valid())
+#define CE_INVALID(entity) (!CE_VALID(entity))
 
 #define IDX_GOOD(idx) (idx >= 0 && idx <= HIGHEST_ENTITY && idx < MAX_ENTITIES)
 #define IDX_BAD(idx) !IDX_GOOD(idx)
@@ -81,6 +83,13 @@ public:
             return false;
         IClientEntity *const entity = InternalEntity();
         return entity && !entity->IsDormant();
+    }
+    __attribute__((always_inline, hot, const)) inline bool Valid() const
+    {
+        if (!RAW_ENT(this) || !RAW_ENT(this)->GetClientClass()->m_ClassID)
+            return false;
+        IClientEntity *const entity = InternalEntity();
+        return entity;
     }
     template <typename T> __attribute__((always_inline, hot, const)) inline T &var(uintptr_t offset) const
     {
