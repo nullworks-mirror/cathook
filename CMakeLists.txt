@@ -114,7 +114,7 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
-set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -fno-gnu-unique -DNDEBUG")
+set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-rdynamic -ggdb -Og")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 

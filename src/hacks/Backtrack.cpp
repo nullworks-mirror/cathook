@@ -29,7 +29,7 @@ void EmptyBacktrackData(BacktrackData &i);
 std::pair<int, int> getBestEntBestTick();
 bool shouldBacktrack();
 
-BacktrackData headPositions[32][66]{};
+BacktrackData headPositions[33][66]{};
 int lastincomingsequencenumber = 0;
 bool isBacktrackEnabled        = false;
 bool Vischeck_Success          = false;
@@ -73,7 +73,7 @@ void AddLatencyToNetchan(INetChannel *ch)
 }
 void Init()
 {
-    for (int i = 0; i < 32; i++)
+    for (int i = 0; i < 33; i++)
         for (int j = 0; j < 66; j++)
             headPositions[i][j] = {};
 

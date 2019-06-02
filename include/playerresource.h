@@ -14,6 +14,7 @@ class TFPlayerResource
 public:
     void Update();
     int GetMaxHealth(CachedEntity *player);
+    int GetHealth(CachedEntity *player);
     int GetMaxBuffedHealth(CachedEntity *player);
     int GetClass(CachedEntity *player);
     int GetTeam(int idx);

@@ -22,6 +22,7 @@ IVModelRender *g_IVModelRender          = nullptr;
 ISteamClient *g_ISteamClient            = nullptr;
 ISteamFriends *g_ISteamFriends          = nullptr;
 IVEngineClient013 *g_IEngine            = nullptr;
+IEngineSound *g_ISoundEngine            = nullptr;
 vgui::ISurface *g_ISurface              = nullptr;
 vgui::IPanel *g_IPanel                  = nullptr;
 IClientEntityList *g_IEntityList        = nullptr;
@@ -87,6 +88,7 @@ void CreateInterfaces()
 {
     g_ICvar             = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
     g_IEngine           = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
+    g_ISoundEngine      = BruteforceInterface<IEngineSound>("IEngineSoundClient", sharedobj::engine());
     g_AppID             = g_IEngine->GetAppID();
     g_IEntityList       = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
     g_ISteamClient      = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);

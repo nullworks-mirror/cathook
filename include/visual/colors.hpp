@@ -187,7 +187,7 @@ constexpr rgba_t Health_dimgreen(int health, int max)
     float hf = float(health) / float(max);
     if (hf > 1)
     {
-        return colors::FromRGBA8(0, 128, 0, 255);
+        return colors::FromRGBA8(0, 128, 255, 255);
     }
     rgba_t to_return{ 0.0f, 0.0f, 0.0f, 1.0f };
 
