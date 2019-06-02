@@ -288,3 +288,5 @@ scripts/updater-preferences
 !/modules/CMakeLists.txt
 
 scripts/partybypass-preferences
+
+*.autosave

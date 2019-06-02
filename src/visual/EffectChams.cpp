@@ -11,27 +11,26 @@
 #include "common.hpp"
 #include "Backtrack.hpp"
 
-static settings::Bool flat{ "chams.flat", "false" };
-static settings::Bool health{ "chams.health", "false" };
-static settings::Bool teammates{ "chams.show.teammates", "false" };
-static settings::Bool players{ "chams.show.players", "true" };
-static settings::Bool medkits{ "chams.show.medkits", "false" };
-static settings::Bool ammobox{ "chams.show.ammoboxes", "false" };
-static settings::Bool buildings{ "chams.show.buildings", "true" };
-static settings::Bool stickies{ "chams.show.stickies", "true" };
-static settings::Bool teammate_buildings{ "chams.show.teammate-buildings", "false" };
-static settings::Bool recursive{ "chams.recursive", "true" };
-static settings::Bool weapons_white{ "chams.white-weapons", "true" };
-static settings::Bool legit{ "chams.legit", "false" };
-static settings::Bool singlepass{ "chams.single-pass", "false" };
-static settings::Bool chamsself{ "chams.self", "true" };
-static settings::Bool rainbow{ "chams.self-rainbow", "true" };
-static settings::Bool disco_chams{ "chams.disco", "false" };
-
 namespace effect_chams
 {
+static settings::Boolean flat{ "chams.flat", "false" };
+static settings::Boolean health{ "chams.health", "false" };
+static settings::Boolean teammates{ "chams.show.teammates", "false" };
+static settings::Boolean players{ "chams.show.players", "true" };
+static settings::Boolean medkits{ "chams.show.medkits", "false" };
+static settings::Boolean ammobox{ "chams.show.ammoboxes", "false" };
+static settings::Boolean buildings{ "chams.show.buildings", "true" };
+static settings::Boolean stickies{ "chams.show.stickies", "true" };
+static settings::Boolean teammate_buildings{ "chams.show.teammate-buildings", "false" };
+static settings::Boolean recursive{ "chams.recursive", "true" };
+static settings::Boolean weapons_white{ "chams.white-weapons", "true" };
+static settings::Boolean legit{ "chams.legit", "false" };
+static settings::Boolean singlepass{ "chams.single-pass", "false" };
+static settings::Boolean chamsself{ "chams.self", "true" };
+static settings::Boolean rainbow{ "chams.self-rainbow", "true" };
+static settings::Boolean disco_chams{ "chams.disco", "false" };
 
-settings::Bool enable{ "chams.enable", "false" };
+settings::Boolean enable{ "chams.enable", "false" };
 CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {
     effect_chams::g_EffectChams.Shutdown();
     effect_chams::g_EffectChams.Init();
@@ -85,10 +84,10 @@ void EffectChams::EndRenderChams()
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVModelRender->ForcedMaterialOverride(nullptr);
 }
-static rgba_t data[32] = { colors::empty };
+static rgba_t data[33] = { colors::empty };
 void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
 {
-    if (ent->m_IDX > 31 || ent->m_IDX < 0)
+    if (ent->m_IDX > 32 || ent->m_IDX < 0)
         return;
     data[ent->m_IDX] = color;
 }
@@ -98,7 +97,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 {
     if (!isHackActive() || !*effect_chams::enable)
         return colors::empty;
-    ;
+
     CachedEntity *ent = ENTITY(entity->entindex());
     if (disco_chams)
     {
@@ -157,11 +156,14 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
         }
         return disco;
     }
-    if (data[entity->entindex()] != colors::empty)
+    if (ent->m_IDX <= 32 && ent->m_IDX >= 0)
     {
-        auto toret               = data[entity->entindex()];
-        data[entity->entindex()] = colors::empty;
-        return toret;
+        if (data[entity->entindex()] != colors::empty)
+        {
+            auto toret               = data[entity->entindex()];
+            data[entity->entindex()] = colors::empty;
+            return toret;
+        }
     }
     if (CE_BAD(ent))
         return colors::white;
@@ -182,7 +184,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
         }
         if (health)
         {
-            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+            return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     case ENTITY_PLAYER:
@@ -190,7 +192,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
             return colors::empty;
         if (health)
         {
-            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+            return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     default:
@@ -344,7 +346,7 @@ void EffectChams::Render(int x, int y, int w, int h)
     {
         IClientEntity *entity = g_IEntityList->GetClientEntity(i);
         if (!entity || entity->IsDormant() || CE_BAD(ENTITY(i)))
-            return;
+            continue;
         RenderChams(entity);
     }
     EndRenderChams();

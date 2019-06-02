@@ -13,14 +13,13 @@
 #include "hack.hpp"
 #include "MiscTemporary.hpp"
 
-static settings::Bool autojoin_team{ "autojoin.team", "false" };
-static settings::Int autojoin_class{ "autojoin.class", "0" };
-static settings::Bool auto_queue{ "autojoin.auto-queue", "false" };
-static settings::Bool auto_requeue{ "autojoin.auto-requeue", "false" };
-static settings::Bool partybypass{ "hack.party-bypass", "true" };
-
 namespace hacks::shared::autojoin
 {
+static settings::Boolean autojoin_team{ "autojoin.team", "false" };
+static settings::Int autojoin_class{ "autojoin.class", "0" };
+static settings::Boolean auto_queue{ "autojoin.auto-queue", "false" };
+static settings::Boolean auto_requeue{ "autojoin.auto-requeue", "false" };
+static settings::Boolean partybypass{ "hack.party-bypass", "true" };
 
 /*
  * Credits to Blackfire for helping me with auto-requeue!
@@ -138,7 +137,7 @@ static InitRoutine init([]() {
     EC::Register(EC::CreateMove, update, "cm_autojoin", EC::average);
     EC::Register(EC::Paint, updateSearch, "paint_autojoin", EC::average);
     static BytePatch p{ gSignatures.GetClientSignature, "55 89 E5 53 83 EC 14 8B 45 08 8B 40 30", 0x00, { 0x31, 0xC0, 0x40, 0xC3 } };
-    static BytePatch p2{ gSignatures.GetClientSignature, "55 89 E5 57 56 53 83 EC ? 8B 45 0C 8B 5D 08 8B 55 10 89 45 ? 8B 43 ?", 0x00, { 0x31, 0xC0, 0x40, 0xC3 } };
+    static BytePatch p2{ gSignatures.GetClientSignature, "55 89 E5 57 56 53 83 EC ? 8B 45 0C 8B 5D 08 8B 55 10 89 45 ? 8B 43", 0x00, { 0x31, 0xC0, 0x40, 0xC3 } };
     if (*partybypass)
     {
         p.Patch();

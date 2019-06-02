@@ -11,7 +11,7 @@
 
 namespace hacks::tf2::misc_aimbot
 {
-static settings::Bool sandwichaim_enabled{ "sandwichaim.enable", "false" };
+static settings::Boolean sandwichaim_enabled{ "sandwichaim.enable", "false" };
 static settings::Button sandwichaim_aimkey{ "sandwichaim.aimkey", "<null>" };
 static settings::Int sandwichaim_aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
 
@@ -60,7 +60,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             return { bestent, predicted };
     }
     prevent = -1;
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent) || !(ent->m_bAlivePlayer()) || (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) || ent == LOCAL_E)
@@ -191,7 +191,7 @@ static void SandwichAim()
     }
 }
 static bool charge_aimbotted = false;
-static settings::Bool charge_aim{ "chargeaim.enable", "false" };
+static settings::Boolean charge_aim{ "chargeaim.enable", "false" };
 static settings::Button charge_key{ "chargeaim.key", "<null>" };
 static void ChargeAimbot()
 {
@@ -220,7 +220,7 @@ static void ChargeAimbot()
     }
 }
 
-static settings::Bool charge_control{ "chargecontrol.enable", "false" };
+static settings::Boolean charge_control{ "chargecontrol.enable", "false" };
 static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
 static void ChargeControl()
 {
@@ -238,8 +238,8 @@ static void ChargeControl()
     current_user_cmd->viewangles.y += offset;
 }
 
-static settings::Bool autosapper_enabled("autosapper.enabled", "false");
-static settings::Bool autosapper_silent("autosapper.silent", "true");
+static settings::Boolean autosapper_enabled("autosapper.enabled", "false");
+static settings::Boolean autosapper_silent("autosapper.silent", "true");
 
 static void SapperAimbot()
 {

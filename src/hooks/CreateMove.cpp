@@ -20,16 +20,16 @@
 #include "HookedMethods.hpp"
 #include "PreDataUpdate.hpp"
 
-static settings::Bool minigun_jump{ "misc.minigun-jump-tf2c", "false" };
-static settings::Bool roll_speedhack{ "misc.roll-speedhack", "false" };
-static settings::Bool engine_pred{ "misc.engine-prediction", "true" };
-static settings::Bool debug_projectiles{ "debug.projectiles", "false" };
+static settings::Boolean minigun_jump{ "misc.minigun-jump-tf2c", "false" };
+static settings::Boolean roll_speedhack{ "misc.roll-speedhack", "false" };
+static settings::Boolean engine_pred{ "misc.engine-prediction", "true" };
+static settings::Boolean debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int semiauto{ "misc.semi-auto", "0" };
 static settings::Int fakelag_amount{ "misc.fakelag", "0" };
-static settings::Bool fuckmode{ "misc.fuckmode", "false" };
+static settings::Boolean fuckmode{ "misc.fuckmode", "false" };
 
 #if !ENABLE_VISUALS
-static settings::Bool no_shake{ "visual.no-shake", "true" };
+static settings::Boolean no_shake{ "visual.no-shake", "true" };
 #endif
 
 class CMoveData;
@@ -129,8 +129,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 #define TIME_TO_TICKS(dt) ((int) (0.5f + (float) (dt) / TICK_INTERVAL))
 #define TICKS_TO_TIME(t) (TICK_INTERVAL * (t))
 #define ROUND_TO_TICKS(t) (TICK_INTERVAL * TIME_TO_TICKS(t))
-    uintptr_t **fp;
-    __asm__("mov %%ebp, %0" : "=r"(fp));
+    volatile uintptr_t **fp;
+    __asm__ volatile("mov %%ebp, %0" : "=r"(fp));
     bSendPackets = reinterpret_cast<bool *>(**fp - 8);
 
     g_Settings.is_create_move = true;
@@ -424,7 +424,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         }
         if (cmd && (cmd->buttons & IN_ATTACK || !(hacks::shared::antiaim::isEnabled() && *fakelag_amount && *bSendPackets)))
             g_Settings.brute.last_angles[LOCAL_E->m_IDX] = cmd->viewangles;
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
         {
 
             CachedEntity *ent = ENTITY(i);

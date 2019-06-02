@@ -80,38 +80,39 @@ template <typename T> T *BruteforceInterface(std::string name, sharedobj::Shared
     return nullptr;
 }
 
+extern "C" typedef HSteamPipe (*GetHSteamPipe_t)();
 extern "C" typedef HSteamUser (*GetHSteamUser_t)();
 
 void CreateInterfaces()
 {
-    g_ICvar                 = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
-    g_IEngine               = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
-    g_AppID                 = g_IEngine->GetAppID();
-    g_IEntityList           = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
-    g_ISteamClient          = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);
-    g_IEventManager2        = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine(), 2);
-    g_IGameEventManager     = BruteforceInterface<IGameEventManager>("GAMEEVENTSMANAGER", sharedobj::engine(), 1);
-    g_IBaseClient           = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
-    g_ITrace                = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine());
-    g_IInputSystem          = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem());
-    uintptr_t steampipe_sig = gSignatures.GetSteamAPISignature("8D 83 ? ? ? ? 89 34 24 89 44 24 ? E8 ? ? ? ? 89 C6") + 0xE7;
-    typedef HSteamPipe (*GetSteamPipe)();
-    GetSteamPipe GetSteamPipe_fn = GetSteamPipe(steampipe_sig);
-    HSteamPipe sp                = GetSteamPipe_fn();
+    g_ICvar             = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
+    g_IEngine           = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
+    g_AppID             = g_IEngine->GetAppID();
+    g_IEntityList       = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
+    g_ISteamClient      = BruteforceInterface<ISteamClient>("SteamClient", sharedobj::steamclient(), 17);
+    g_IEventManager2    = BruteforceInterface<IGameEventManager2>("GAMEEVENTSMANAGER", sharedobj::engine(), 2);
+    g_IGameEventManager = BruteforceInterface<IGameEventManager>("GAMEEVENTSMANAGER", sharedobj::engine(), 1);
+    g_IBaseClient       = BruteforceInterface<IBaseClientDLL>("VClient", sharedobj::client());
+    g_ITrace            = BruteforceInterface<IEngineTrace>("EngineTraceClient", sharedobj::engine());
+    g_IInputSystem      = BruteforceInterface<IInputSystem>("InputSystemVersion", sharedobj::inputsystem());
+
+    logging::Info("Initing SteamAPI");
+    GetHSteamPipe_t GetHSteamPipe = reinterpret_cast<GetHSteamPipe_t>(dlsym(sharedobj::steamapi().lmap, "SteamAPI_GetHSteamPipe"));
+    HSteamPipe sp                 = GetHSteamPipe();
     if (!sp)
     {
-        logging::Info("Creating new Steam Pipe...");
+        logging::Info("Connecting to Steam User");
         sp = g_ISteamClient->CreateSteamPipe();
     }
-    logging::Info("Inited Steam Pipe");
-    GetHSteamUser_t func = reinterpret_cast<GetHSteamUser_t>(dlsym(sharedobj::steamapi().lmap, "SteamAPI_GetHSteamUser"));
-    HSteamUser su        = func();
+    GetHSteamUser_t GetHSteamUser = reinterpret_cast<GetHSteamUser_t>(dlsym(sharedobj::steamapi().lmap, "SteamAPI_GetHSteamUser"));
+    HSteamUser su                 = GetHSteamUser();
     if (!su)
     {
         logging::Info("Connecting to Steam User");
         su = g_ISteamClient->ConnectToGlobalUser(sp);
     }
-    logging::Info("Inited Steam User");
+    logging::Info("Inited SteamAPI");
+
     g_IVModelRender = BruteforceInterface<IVModelRender>("VEngineModel", sharedobj::engine(), 16);
     g_ISteamFriends = nullptr;
     g_IEngineVGui   = BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
@@ -180,6 +181,7 @@ void CreateInterfaces()
                                                                                                                 "43 04 85 C0 74 10") +
                                                                                  9);
     }
+#endif
     logging::Info("Finding HUD");
     IF_GAME(IsCSS())
     {
@@ -196,5 +198,4 @@ void CreateInterfaces()
         g_CHUD = *reinterpret_cast<CHud **>(hud_sig);
         logging::Info("HUD 0x%08x 0x%08x", hud_sig, g_CHUD);
     }
-#endif
 }

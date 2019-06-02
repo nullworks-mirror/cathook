@@ -8,11 +8,13 @@
 #include <entitycache.hpp>
 #include <core/sdk.hpp>
 
-static settings::Bool enable{ "visual.thirdperson.enable", "false" };
-static settings::Bool real_angles{ "visual.thirdperson.real-angles", "false" };
+namespace hacks::tf::thirdperson
+{
+static settings::Boolean enable{ "visual.thirdperson.enable", "false" };
+static settings::Boolean real_angles{ "visual.thirdperson.real-angles", "false" };
 static bool was_enabled{ false };
 
-void hacks::tf::thirdperson::frameStageNotify()
+void frameStageNotify()
 {
     if (CE_BAD(LOCAL_E))
         return;
@@ -36,3 +38,4 @@ void hacks::tf::thirdperson::frameStageNotify()
         CE_FLOAT(LOCAL_E, netvar.deadflag + 8) = g_Settings.brute.last_angles[LOCAL_E->m_IDX].y;
     }
 }
+} // namespace hacks::tf::thirdperson

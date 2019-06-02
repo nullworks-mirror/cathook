@@ -30,11 +30,11 @@ public:
 
 template <typename T> using RVariable = RegisteredVariableProxy<T>;
 
-using Bool   = RegisteredVariableProxy<bool>;
-using Int    = RegisteredVariableProxy<int>;
-using Float  = RegisteredVariableProxy<float>;
-using String = RegisteredVariableProxy<std::string>;
-using Button = RegisteredVariableProxy<settings::Key>;
+using Boolean = RegisteredVariableProxy<bool>;
+using Int     = RegisteredVariableProxy<int>;
+using Float   = RegisteredVariableProxy<float>;
+using String  = RegisteredVariableProxy<std::string>;
+using Button  = RegisteredVariableProxy<settings::Key>;
 
 #if ENABLE_VISUALS
 using Rgba = RegisteredVariableProxy<rgba_t>;

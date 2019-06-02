@@ -15,7 +15,7 @@ class IClientEntity;
 namespace hacks::shared::aimbot
 {
 bool IsBacktracking();
-extern settings::Bool ignore_cloak;
+extern settings::Boolean ignore_cloak;
 
 // Used to store aimbot data to prevent calculating it again
 struct AimbotCalculatedData_s

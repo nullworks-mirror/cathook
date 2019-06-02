@@ -70,7 +70,7 @@ public:
 
         for (int j = 0; j < iLevel; j++)
         {
-            m_file << "\t";
+            m_file << "  ";
         }
 
         m_file << pTable->GetName() << "\n";
@@ -96,7 +96,7 @@ public:
             }
 
             for (int j = 0; j < iLevel; j++)
-                m_file << "\t";
+                m_file << "  ";
 
             int offset        = pProp->GetOffset();
             SendPropType type = pProp->GetType();

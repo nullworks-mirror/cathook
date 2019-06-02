@@ -10,20 +10,20 @@
 #include <visual/EffectChams.hpp>
 #include <visual/EffectGlow.hpp>
 
-static settings::Bool no_arms{ "remove.arms", "false" };
-static settings::Bool no_hats{ "remove.hats", "false" };
+static settings::Boolean no_arms{ "remove.arms", "false" };
+static settings::Boolean no_hats{ "remove.hats", "false" };
 
 namespace effect_glow
 {
-extern settings::Bool enable;
+extern settings::Boolean enable;
 } // namespace effect_glow
 namespace effect_chams
 {
-extern settings::Bool enable;
+extern settings::Boolean enable;
 } // namespace effect_chams
 namespace hacks::shared::backtrack
 {
-extern settings::Bool backtrack_chams_glow;
+extern settings::Boolean backtrack_chams_glow;
 }
 namespace hooked_methods
 {
@@ -71,7 +71,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
             if (sname.find("models/player") || sname.find("models/weapons") || sname.find("models/workshop/player") || sname.find("models/workshop/weapons"))
             {
 
-                if (IDX_GOOD(info.entity_index) && info.entity_index < g_IEngine->GetMaxClients() && info.entity_index != g_IEngine->GetLocalPlayer())
+                if (IDX_GOOD(info.entity_index) && info.entity_index <= g_IEngine->GetMaxClients() && info.entity_index != g_IEngine->GetLocalPlayer())
                 {
                     CachedEntity *ent = ENTITY(info.entity_index);
                     if (CE_GOOD(ent) && ent->m_bAlivePlayer())
@@ -103,7 +103,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                                 KeyValues *kv = new KeyValues("UnlitGeneric");
                                 kv->SetString("$basetexture", "vgui/white_additive");
                                 kv->SetInt("$ignorez", 0);
-                                mat_unlit.Init("__cathook_dme_unlit", kv);
+                                mat_unlit.Init("__cathook_glow_unlit", kv);
                                 init = true;
                             }
                             // Render Chams/Glow stuff
@@ -135,8 +135,6 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
         if (ent)
             if (ent->entindex() == spectator_target)
                 return;
-        if (ent && !effect_chams::g_EffectChams.drawing && effect_chams::g_EffectChams.ShouldRenderChams(ent))
-            return;
     }
 
     return original::DrawModelExecute(this_, state, info, bone);

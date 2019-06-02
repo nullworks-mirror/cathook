@@ -4,19 +4,21 @@
 #include <menu/object/input/InputKey.hpp>
 #include <menu/menu/special/SettingsManagerList.hpp>
 
+namespace zerokernel_inputkey
+{
 static settings::RVariable<int> default_width{ "zk.style.input.key.width", "60" };
 static settings::RVariable<int> default_height{ "zk.style.input.key.height", "14" };
 
-static settings::RVariable<rgba_t> color_border{ "zk.style.input.key.color.border", "079797" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.input.key.color.border", "446498ff" };
 static settings::RVariable<rgba_t> color_background_capturing{ "zk.style.input.key.color.background.capturing", "38b28f88" };
-
+} // namespace zerokernel_inputkey
 zerokernel::InputKey::InputKey() : BaseMenuObject{}
 {
     text.setParent(this);
     text.bb.width.setFill();
     text.bb.height.setFill();
     text.bb.setPadding(0, 0, 5, 0);
-    bb.resize(*default_width, *default_height);
+    bb.resize(*zerokernel_inputkey::default_width, *zerokernel_inputkey::default_height);
 }
 
 zerokernel::InputKey::InputKey(settings::Variable<settings::Key> &key) : BaseMenuObject{}, key(&key)
@@ -25,7 +27,7 @@ zerokernel::InputKey::InputKey(settings::Variable<settings::Key> &key) : BaseMen
     text.bb.width.setFill();
     text.bb.height.setFill();
     text.bb.setPadding(0, 0, 5, 0);
-    bb.resize(*default_width, *default_height);
+    bb.resize(*zerokernel_inputkey::default_width, *zerokernel_inputkey::default_height);
 }
 
 bool zerokernel::InputKey::handleSdlEvent(SDL_Event *event)
@@ -70,8 +72,8 @@ void zerokernel::InputKey::render()
     if (key)
     {
         if (capturing)
-            renderBackground(*color_background_capturing);
-        renderBorder(*color_border);
+            renderBackground(*zerokernel_inputkey::color_background_capturing);
+        renderBorder(*zerokernel_inputkey::color_border);
         if (capturing)
         {
             text.set("<...>");

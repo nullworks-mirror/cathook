@@ -1,3 +1,4 @@
+#pragma once
 #include "config.h"
 #if ENABLE_IRC
 #include <string>

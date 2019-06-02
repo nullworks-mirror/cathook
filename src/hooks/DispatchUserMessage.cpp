@@ -12,15 +12,14 @@
 #include "HookedMethods.hpp"
 #include "CatBot.hpp"
 
-static settings::Bool clean_chat{ "chat.clean", "false" };
-static settings::Bool dispatch_log{ "debug.log-dispatch-user-msg", "false" };
-static settings::Bool chat_filter_enable{ "chat.censor.enable", "false" };
-static settings::Bool identify{ "chat.identify", "false" };
-static settings::Bool answerIdentify{ "chat.identify.answer", "false" };
-static settings::Bool anti_votekick{ "cat-bot.anti-autobalance", "false" };
+static settings::Boolean clean_chat{ "chat.clean", "false" };
+static settings::Boolean dispatch_log{ "debug.log-dispatch-user-msg", "false" };
+static settings::Boolean chat_filter_enable{ "chat.censor.enable", "false" };
+static settings::Boolean identify{ "chat.identify", "false" };
+static settings::Boolean answerIdentify{ "chat.identify.answer", "false" };
+static settings::Boolean anti_votekick{ "cat-bot.anti-autobalance", "false" };
 
 static bool retrun = false;
-static Timer sendmsg{};
 static Timer gitgud{};
 
 // Using repeated char causes crash on some systems. Suboptimal solution.
@@ -36,7 +35,7 @@ std::string lastname{};
 
 namespace hooked_methods
 {
-
+static Timer sendmsg{};
 template <typename T> void SplitName(std::vector<T> &ret, const T &name, int num)
 {
     T tmp;

@@ -11,22 +11,6 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool health{ "glow.health", "false" };
-static settings::Bool teammates{ "glow.show.teammates", "false" };
-static settings::Bool players{ "glow.show.players", "true" };
-static settings::Bool medkits{ "glow.show.medkits", "false" };
-static settings::Bool ammobox{ "glow.show.ammoboxes", "false" };
-static settings::Bool buildings{ "glow.show.buildings", "true" };
-static settings::Bool stickies{ "glow.show.stickies", "true" };
-static settings::Bool teammate_buildings{ "glow.show.teammate-buildings", "false" };
-static settings::Bool show_powerups{ "glow.show.powerups", "true" };
-static settings::Bool weapons_white{ "glow.white-weapons", "true" };
-static settings::Bool glowself{ "glow.self", "true" };
-static settings::Bool rainbow{ "glow.self-rainbow", "true" };
-static settings::Int blur_scale{ "glow.blur-scale", "5" };
-// https://puu.sh/vobH4/5da8367aef.png
-static settings::Int solid_when{ "glow.solid-when", "0" };
-
 IMaterialSystem *materials = nullptr;
 
 CScreenSpaceEffectRegistration *CScreenSpaceEffectRegistration::s_pHead = NULL;
@@ -44,7 +28,23 @@ CScreenSpaceEffectRegistration::CScreenSpaceEffectRegistration(const char *pName
 
 namespace effect_glow
 {
-settings::Bool enable{ "glow.enable", "false" };
+
+static settings::Boolean health{ "glow.health", "false" };
+static settings::Boolean teammates{ "glow.show.teammates", "false" };
+static settings::Boolean players{ "glow.show.players", "true" };
+static settings::Boolean medkits{ "glow.show.medkits", "false" };
+static settings::Boolean ammobox{ "glow.show.ammoboxes", "false" };
+static settings::Boolean buildings{ "glow.show.buildings", "true" };
+static settings::Boolean stickies{ "glow.show.stickies", "true" };
+static settings::Boolean teammate_buildings{ "glow.show.teammate-buildings", "false" };
+static settings::Boolean show_powerups{ "glow.show.powerups", "true" };
+static settings::Boolean weapons_white{ "glow.white-weapons", "true" };
+static settings::Boolean glowself{ "glow.self", "true" };
+static settings::Boolean rainbow{ "glow.self-rainbow", "true" };
+static settings::Int blur_scale{ "glow.blur-scale", "5" };
+// https://puu.sh/vobH4/5da8367aef.png
+static settings::Int solid_when{ "glow.solid-when", "0" };
+settings::Boolean enable{ "glow.enable", "false" };
 
 struct ShaderStencilState_t
 {
@@ -204,6 +204,20 @@ void EffectGlow::Init()
     init = true;
 }
 
+void EffectGlow::Shutdown()
+{
+    if (init)
+    {
+        mat_unlit.Shutdown();
+        mat_unlit_z.Shutdown();
+        mat_blit.Shutdown();
+        mat_blur_x.Shutdown();
+        mat_blur_y.Shutdown();
+        init = false;
+        logging::Info("Shutdown glow");
+    }
+}
+
 rgba_t EffectGlow::GlowColor(IClientEntity *entity)
 {
     static CachedEntity *ent;
@@ -227,7 +241,7 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
     case ENTITY_BUILDING:
         if (health)
         {
-            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+            return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     case ENTITY_PLAYER:
@@ -238,7 +252,7 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
                 return colors::red;
         if (health && playerlist::IsDefault(ent))
         {
-            return colors::Health(ent->m_iHealth(), ent->m_iMaxHealth());
+            return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
         break;
     }
@@ -415,13 +429,13 @@ void EffectGlow::Render(int x, int y, int w, int h)
 {
     if (!enable)
         return;
+    if (!isHackActive() || (clean_screenshots && g_IEngine->IsTakingScreenshot()) || g_Settings.bInvalid)
+        return;
     static ITexture *orig;
     static IClientEntity *ent;
     static IMaterialVar *blury_bloomamount;
     if (!init)
         Init();
-    if (!isHackActive() || (g_IEngine->IsTakingScreenshot() && clean_screenshots) || g_Settings.bInvalid)
-        return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     orig = ptr->GetRenderTarget();
     BeginRenderGlow();
@@ -454,7 +468,7 @@ void EffectGlow::Render(int x, int y, int w, int h)
     ptr->DrawScreenSpaceRectangle(mat_blur_x, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
     ptr->SetRenderTarget(GetBuffer(1));
     blury_bloomamount = mat_blur_y->FindVar("$bloomamount", nullptr);
-    blury_bloomamount->SetIntValue((int) blur_scale);
+    blury_bloomamount->SetIntValue(*blur_scale);
     ptr->DrawScreenSpaceRectangle(mat_blur_y, x, y, w, h, 0, 0, w - 1, h - 1, w, h);
     ptr->Viewport(x, y, w, h);
     ptr->SetRenderTarget(orig);

@@ -10,19 +10,19 @@
 
 namespace IRC
 {
-static settings::Bool enabled("irc.enabled", "true");
-static settings::Bool anon("irc.anon", "true");
-static settings::Bool authenticate("irc.auth", "true");
+static settings::Boolean enabled("irc.enabled", "true");
+static settings::Boolean anon("irc.anon", "true");
+static settings::Boolean authenticate("irc.auth", "true");
 static settings::String channel("irc.channel", "#cat_comms");
 static settings::String address("irc.address", "cathook.irc.inkcat.net");
 static settings::Int port("irc.port", "8080");
 static settings::String commandandcontrol_channel("irc.cc.channel", "");
 static settings::String commandandcontrol_password("irc.cc.password", "");
 
-static settings::Bool transfer_leader_on_kick("irc.cc.leader-transfer", "false");
-static settings::Bool botonly("irc.cc.command-bot-only", "true");
-static settings::Bool irc_party{ "irc.cc.party", "false" };
-static settings::Bool answer_steam{ "irc.cc.respondparty", "false" };
+static settings::Boolean transfer_leader_on_kick("irc.cc.leader-transfer", "false");
+static settings::Boolean botonly("irc.cc.command-bot-only", "true");
+static settings::Boolean irc_party{ "irc.cc.party", "false" };
+static settings::Boolean answer_steam{ "irc.cc.respondparty", "false" };
 static settings::Int party_cooldown{ "irc.cc.party-cooldown", "60" };
 static settings::Int party_size{ "irc.cc.party-size", "6" };
 static Timer last_sent_steamid{};
@@ -74,7 +74,7 @@ void authreq(std::string &msg)
     else
         steamidhash = msg.substr(4);
 
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
         if (i == g_pLocalPlayer->entity_idx)
             continue;

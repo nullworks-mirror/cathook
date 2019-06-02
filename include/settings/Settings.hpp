@@ -38,7 +38,7 @@
 
 namespace settings
 {
-extern std::atomic<bool> RVarLock;
+extern std::atomic<bool> cathook_disabled;
 enum class VariableType
 {
     BOOL,

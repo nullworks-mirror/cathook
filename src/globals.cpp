@@ -10,7 +10,7 @@
 
 #include "common.hpp"
 
-static settings::Bool global_enable{ "hack.enable", "true" };
+static settings::Boolean global_enable{ "hack.enable", "true" };
 
 time_t time_injected{ 0 };
 
@@ -45,7 +45,7 @@ CUserCmd *current_user_cmd{ nullptr };
 
 bool isHackActive()
 {
-    return !settings::RVarLock.load() && *global_enable;
+    return !settings::cathook_disabled.load() && *global_enable;
 }
 
 GlobalSettings g_Settings{};

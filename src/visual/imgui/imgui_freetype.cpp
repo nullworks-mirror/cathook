@@ -87,7 +87,8 @@ struct FontInfo
     uint32_t PixelHeight;  // Size this font was generated with.
     float Ascender;        // The pixel extents above the baseline in pixels (typically positive).
     float Descender;       // The extents below the baseline in pixels (typically negative).
-    float LineSpacing;     // The baseline-to-baseline distance. Note that it usually is larger than the sum of the ascender and descender taken as absolute values. There is also no guarantee that no glyphs extend above or below subsequent baselines when using this distance. Think of it as a value the designer of the font finds appropriate.
+    float LineSpacing;     // The baseline-to-baseline distance. Note that it usually is larger than the sum of the ascender and descender taken as absolute values. There is also no guarantee that no
+                           // glyphs extend above or below subsequent baselines when using this distance. Think of it as a value the designer of the font finds appropriate.
     float LineGap;         // The spacing in pixels between one row's descent and the next row's ascent.
     float MaxAdvanceWidth; // This field gives the maximum horizontal cursor advance for all glyphs in the font.
 };
@@ -96,7 +97,8 @@ struct FontInfo
 // NB: No ctor/dtor, explicitly call Init()/Shutdown()
 struct FreeTypeFont
 {
-    bool InitFont(FT_Library ft_library, const ImFontConfig &cfg, unsigned int extra_user_flags); // Initialize from an external data buffer. Doesn't copy data, and you must ensure it stays valid up to this object lifetime.
+    bool InitFont(FT_Library ft_library, const ImFontConfig &cfg,
+                  unsigned int extra_user_flags); // Initialize from an external data buffer. Doesn't copy data, and you must ensure it stays valid up to this object lifetime.
     void CloseFont();
     void SetPixelHeight(int pixel_height); // Change font pixel size. All following calls to RasterizeGlyph() will use this size
     const FT_Glyph_Metrics *LoadGlyph(uint32_t in_codepoint);

@@ -6,9 +6,11 @@
 
 #include <menu/Menu.hpp>
 
+namespace zerokernel_tooltip
+{
 static settings::RVariable<rgba_t> color_background{ "zk.style.tooltip.background", "00000055" };
-static settings::RVariable<rgba_t> color_border{ "zk.style.tooltip.border", "079797" };
-
+static settings::RVariable<rgba_t> color_border{ "zk.style.tooltip.border", "446498ff" };
+} // namespace zerokernel_tooltip
 namespace zerokernel
 {
 
@@ -26,8 +28,8 @@ void Tooltip::render()
     x += 6;
     move(x, y);
 
-    renderBackground(*color_background);
-    renderBorder(*color_border);
+    renderBackground(*zerokernel_tooltip::color_background);
+    renderBorder(*zerokernel_tooltip::color_border);
 
     text.render();
 

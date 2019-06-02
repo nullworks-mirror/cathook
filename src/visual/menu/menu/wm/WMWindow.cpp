@@ -11,10 +11,12 @@
 #include <menu/object/input/Select.hpp>
 #include <menu/object/input/Checkbox.hpp>
 
-static settings::RVariable<rgba_t> color_border{ "zk.style.window.color.border", "079797" };
+namespace zerokernel_wmwindow
+{
+static settings::RVariable<rgba_t> color_border{ "zk.style.window.color.border", "446498ff" };
 static settings::RVariable<rgba_t> color_background{ "zk.style.window.color.background.active", "1d2f40" };
 static settings::RVariable<rgba_t> color_background_inactive{ "zk.style.window.color.background.inactive", "1d2f4088" };
-
+}
 namespace zerokernel
 {
 
@@ -44,10 +46,10 @@ void WMWindow::render()
         return;
 
     if (isFocused())
-        renderBackground(*color_background);
+        renderBackground(*zerokernel_wmwindow::color_background);
     else
-        renderBackground(*color_background_inactive);
-    renderBorder(*color_border);
+        renderBackground(*zerokernel_wmwindow::color_background_inactive);
+    renderBorder(*zerokernel_wmwindow::color_border);
 
     Container::render();
 }

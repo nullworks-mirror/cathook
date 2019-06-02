@@ -4,7 +4,10 @@
 
 #include <menu/object/container/ModalColorSelect.hpp>
 
-static settings::RVariable<rgba_t> color_border{ "zk.style.color-preview.color.border", "079797" };
+namespace zerokernel_modalcolorselect
+{
+static settings::RVariable<rgba_t> color_border{ "zk.style.color-preview.color.border", "446498ff" };
+}
 
 namespace zerokernel
 {
@@ -16,7 +19,7 @@ void ModalColorSelect::render()
     if (preview_enabled)
     {
         draw::Rectangle(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *option);
-        draw::RectangleOutlined(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *color_border, 1);
+        draw::RectangleOutlined(preview_x + bb.getContentBox().x, preview_y + bb.getContentBox().y, preview_size, preview_size, *zerokernel_modalcolorselect::color_border, 1);
     }
 }
 

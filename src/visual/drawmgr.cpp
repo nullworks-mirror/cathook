@@ -23,8 +23,8 @@
 #include "hack.hpp"
 #include "menu/menu/Menu.hpp"
 
-static settings::Bool info_text{ "hack-info.enable", "true" };
-static settings::Bool info_text_min{ "hack-info.minimal", "false" };
+static settings::Boolean info_text{ "hack-info.enable", "true" };
+static settings::Boolean info_text_min{ "hack-info.minimal", "false" };
 
 void render_cheat_visuals()
 {

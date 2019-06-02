@@ -9,12 +9,11 @@
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 
-static settings::Bool enable{ "autosticky.enable", "false" };
-static settings::Bool buildings{ "autosticky.buildings", "true" };
-static settings::Bool legit{ "autosticky.legit", "false" };
-
 namespace hacks::tf::autosticky
 {
+static settings::Boolean enable{ "autosticky.enable", "false" };
+static settings::Boolean buildings{ "autosticky.buildings", "true" };
+static settings::Boolean legit{ "autosticky.legit", "false" };
 
 // A storage array for ents
 std::vector<CachedEntity *> bombs;

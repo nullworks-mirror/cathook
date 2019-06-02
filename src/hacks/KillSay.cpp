@@ -8,6 +8,8 @@
 #include <settings/Int.hpp>
 #include "common.hpp"
 
+namespace hacks::shared::killsay
+{
 static settings::Int killsay_mode{ "killsay.mode", "0" };
 static settings::String filename{ "killsay.file", "killsays.txt" };
 static settings::Int delay{ "killsay.delay", "100" };
@@ -20,9 +22,6 @@ struct KillsayStorage
 };
 
 static std::unordered_map<int, KillsayStorage> killsay_storage{};
-
-namespace hacks::shared::killsay
-{
 
 // Thanks HellJustFroze for linking me http://daviseford.com/shittalk/
 const std::vector<std::string> builtin_default = { "Don't worry guys, I'm a garbage collector. I'm used to carrying trash.",

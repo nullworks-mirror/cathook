@@ -2,10 +2,9 @@
 #if ENABLE_VISUALS
 #include "common.hpp"
 
-static settings::Bool enable{ "lightesp.enable", "false" };
-
 namespace hacks::shared::lightesp
 {
+static settings::Boolean enable{ "lightesp.enable", "false" };
 
 static Vector hitp[32];
 static Vector minp[32];
@@ -25,7 +24,7 @@ static void cm()
 {
     if (!*enable)
         return;
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         if (g_pLocalPlayer->entity_idx == i)
             continue;
@@ -53,7 +52,7 @@ void draw()
 {
     if (!enable)
         return;
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         if (!drawEsp[i])
             continue;

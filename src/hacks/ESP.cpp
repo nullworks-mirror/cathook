@@ -11,74 +11,73 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "esp.enable", "false" };
+namespace hacks::shared::esp
+{
+static settings::Boolean enable{ "esp.enable", "false" };
 static settings::Int max_dist{ "esp.range", "4096" };
 
 static settings::Int box_esp{ "esp.box.mode", "2" };
 static settings::Int box_corner_size{ "esp.box.corner-size", "10" };
-static settings::Bool box_3d_player{ "esp.box.player-3d", "false" };
-static settings::Bool box_3d_building{ "esp.box.building-3d", "false" };
+static settings::Boolean box_3d_player{ "esp.box.player-3d", "false" };
+static settings::Boolean box_3d_building{ "esp.box.building-3d", "false" };
 
 static settings::Int tracers{ "esp.tracers-mode", "0" };
 
 static settings::Int emoji_esp{ "esp.emoji.mode", "0" };
 static settings::Int emoji_esp_size{ "esp.emoji.size", "32" };
-static settings::Bool emoji_esp_scaling{ "esp.emoji.scaling", "true" };
+static settings::Boolean emoji_esp_scaling{ "esp.emoji.scaling", "true" };
 static settings::Int emoji_min_size{ "esp.emoji.min-size", "20" };
 
 static settings::Int show_health{ "esp.health-mode", "3" };
-static settings::Bool draw_bones{ "esp.bones", "false" };
+static settings::Boolean draw_bones{ "esp.bones", "false" };
 static settings::Int sightlines{ "esp.sightlines", "0" };
 static settings::Int esp_text_position{ "esp.text-position", "0" };
 static settings::Int esp_expand{ "esp.expand", "0" };
-static settings::Bool vischeck{ "esp.vischeck", "true" };
-static settings::Bool legit{ "esp.legit", "false" };
+static settings::Boolean vischeck{ "esp.vischeck", "true" };
+static settings::Boolean legit{ "esp.legit", "false" };
 
-static settings::Bool local_esp{ "esp.show.local", "true" };
-static settings::Bool buildings{ "esp.show.buildings", "true" };
-static settings::Bool teammates{ "esp.show.teammates", "true" };
-static settings::Bool tank{ "esp.show.tank", "true" };
+static settings::Boolean local_esp{ "esp.show.local", "true" };
+static settings::Boolean buildings{ "esp.show.buildings", "true" };
+static settings::Boolean teammates{ "esp.show.teammates", "true" };
+static settings::Boolean tank{ "esp.show.tank", "true" };
 
-static settings::Bool show_weapon{ "esp.info.weapon", "false" };
-static settings::Bool show_distance{ "esp.info.distance", "true" };
-static settings::Bool show_name{ "esp.info.name", "true" };
-static settings::Bool show_class{ "esp.info.class", "true" };
-static settings::Bool show_conditions{ "esp.info.conditions", "true" };
-static settings::Bool show_ubercharge{ "esp.info.ubercharge", "true" };
-static settings::Bool show_bot_id{ "esp.info.bot-id", "true" };
-static settings::Bool powerup_esp{ "esp.info.powerup", "true" };
+static settings::Boolean show_weapon{ "esp.info.weapon", "false" };
+static settings::Boolean show_distance{ "esp.info.distance", "true" };
+static settings::Boolean show_name{ "esp.info.name", "true" };
+static settings::Boolean show_class{ "esp.info.class", "true" };
+static settings::Boolean show_conditions{ "esp.info.conditions", "true" };
+static settings::Boolean show_ubercharge{ "esp.info.ubercharge", "true" };
+static settings::Boolean show_bot_id{ "esp.info.bot-id", "true" };
+static settings::Boolean powerup_esp{ "esp.info.powerup", "true" };
 
-static settings::Bool item_esp{ "esp.item.enable", "true" };
-static settings::Bool item_dropped_weapons{ "esp.item.weapons", "false" };
-static settings::Bool item_ammo_packs{ "esp.item.ammo", "false" };
-static settings::Bool item_health_packs{ "esp.item.health", "true" };
-static settings::Bool item_powerups{ "esp.item.powerup", "true" };
-static settings::Bool item_money{ "esp.item.money", "true" };
-static settings::Bool item_money_red{ "esp.item.money-red", "false" };
-static settings::Bool item_spellbooks{ "esp.item.spellbook", "true" };
+static settings::Boolean item_esp{ "esp.item.enable", "true" };
+static settings::Boolean item_dropped_weapons{ "esp.item.weapons", "false" };
+static settings::Boolean item_ammo_packs{ "esp.item.ammo", "false" };
+static settings::Boolean item_health_packs{ "esp.item.health", "true" };
+static settings::Boolean item_powerups{ "esp.item.powerup", "true" };
+static settings::Boolean item_money{ "esp.item.money", "true" };
+static settings::Boolean item_money_red{ "esp.item.money-red", "false" };
+static settings::Boolean item_spellbooks{ "esp.item.spellbook", "true" };
 // TF2C
-static settings::Bool item_weapon_spawners{ "esp.item.weapon-spawner", "true" };
-static settings::Bool item_adrenaline{ "esp.item.adrenaline", "true" };
+static settings::Boolean item_weapon_spawners{ "esp.item.weapon-spawner", "true" };
+static settings::Boolean item_adrenaline{ "esp.item.adrenaline", "true" };
 
-static settings::Bool proj_esp{ "esp.projectile.enable", "false" };
+static settings::Boolean proj_esp{ "esp.projectile.enable", "false" };
 static settings::Int proj_rockets{ "esp.projectile.rockets", "1" };
 static settings::Int proj_arrows{ "esp.projectile.arrows", "1" };
 static settings::Int proj_pipes{ "esp.projectile.pipes", "1" };
 static settings::Int proj_stickies{ "esp.projectile.stickies", "1" };
-static settings::Bool proj_enemy{ "esp.projectile.enemy-only", "true" };
+static settings::Boolean proj_enemy{ "esp.projectile.enemy-only", "true" };
 
-static settings::Bool entity_info{ "esp.debug.entity", "false" };
-static settings::Bool entity_model{ "esp.debug.model", "false" };
-static settings::Bool entity_id{ "esp.debug.id", "true" };
+static settings::Boolean entity_info{ "esp.debug.entity", "false" };
+static settings::Boolean entity_model{ "esp.debug.model", "false" };
+static settings::Boolean entity_id{ "esp.debug.id", "true" };
 
-static settings::Bool online_support{ "esp.online.enable", "true" };
-static settings::Bool online_groups{ "esp.online.groups", "true" };
-static settings::Bool online_software{ "esp.online.software", "true" };
+static settings::Boolean online_support{ "esp.online.enable", "true" };
+static settings::Boolean online_groups{ "esp.online.groups", "true" };
+static settings::Boolean online_software{ "esp.online.software", "true" };
 
-static settings::Bool v9mode{ "esp.v952-mode", "false" };
-
-namespace hacks::shared::esp
-{
+static settings::Boolean v9mode{ "esp.v952-mode", "false" };
 
 // Unknown
 std::mutex threadsafe_mutex;
@@ -1134,7 +1133,14 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     const auto &clr = colors::EntityF(ent);
                     // Invis
                     if (IsPlayerInvisible(ent))
-                        AddEntityString(ent, "*CLOAKED*", colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+                    {
+                        if (HasCondition<TFCond_DeadRingered>(ent))
+                            AddEntityString(ent, "*DEADRINGERED*", colors::FromRGBA8(178.0f, 0.0f, 255.0f, 255.0f));
+                        else
+                            AddEntityString(ent, "*CLOAKED*", colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+                    }
+                    if (CE_BYTE(ent, netvar.m_bFeignDeathReady))
+                        AddEntityString(ent, "*DEADRINGER OUT*", colors::FromRGBA8(178.0f, 0.0f, 255.0f, 255.0f));
                     // Uber/Bonk
                     if (IsPlayerInvulnerable(ent))
                         AddEntityString(ent, "*INVULNERABLE*");

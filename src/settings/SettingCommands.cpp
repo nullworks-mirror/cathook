@@ -12,6 +12,8 @@
   Created on 29.07.18.
 */
 
+namespace settings::commands {
+
 static void getAndSortAllConfigs();
 
 static CatCommand cat("cat", "", [](const CCommand &args) {
@@ -51,9 +53,7 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
     }
 });
 
-void save_thread(const int ArgC, const std::string ArgS)
-{
-    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
+static CatCommand save("save", "", [](const CCommand &args) {
     settings::SettingsWriter writer{ settings::Manager::instance() };
 
     DIR *config_directory = opendir(DATA_PATH "/configs");
@@ -63,88 +63,33 @@ void save_thread(const int ArgC, const std::string ArgS)
         mkdir(DATA_PATH "/configs", S_IRWXU | S_IRWXG);
     }
 
-    if (ArgC == 1)
+    if (args.ArgC() == 1)
     {
-        writer.saveTo(DATA_PATH "/configs/default.conf", false);
+        writer.saveTo(DATA_PATH "/configs/default.conf");
     }
     else
     {
-        writer.saveTo(std::string(DATA_PATH "/configs/") + ArgS + ".conf", false);
+        writer.saveTo(std::string(DATA_PATH "/configs/") + args.ArgS() + ".conf");
     }
     logging::Info("cat_save: Sorting configs...");
     getAndSortAllConfigs();
     logging::Info("cat_save: Closing dir...");
     closedir(config_directory);
-    logging::Info("cat_save: Enabeling cathook...");
-    settings::RVarLock.store(false);
-}
-
-static CatCommand save("save", "", [](const CCommand &args) {
-    if (!settings::RVarLock.load())
-    {
-        settings::RVarLock.store(true);
-        std::thread loader;
-        if (args.ArgC() == 1)
-        {
-            std::string string;
-            loader = std::thread(save_thread, 1, string);
-        }
-        else
-        {
-            loader = std::thread(save_thread, args.ArgC(), args.Arg(1));
-        }
-        loader.detach();
-    }
 });
 
-void load_thread(const int ArgC, const std::string ArgS)
-{
-    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
+static CatCommand load("load", "", [](const CCommand &args) {
     settings::SettingsReader loader{ settings::Manager::instance() };
-    if (ArgC == 1)
+    if (args.ArgC() == 1)
     {
         loader.loadFrom(DATA_PATH "/configs/default.conf");
     }
     else
     {
-        std::string backup = ArgS;
+        std::string backup = args.ArgS();
         std::string ArgS   = backup;
         ArgS.erase(std::remove(ArgS.begin(), ArgS.end(), '\n'), ArgS.end());
         ArgS.erase(std::remove(ArgS.begin(), ArgS.end(), '\r'), ArgS.end());
-#if ENABLE_VISUALS
         loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS + ".conf");
-#else
-        for (int i = 0;; i++)
-        {
-            if (loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS + ".conf"))
-                break;
-            if (i > 5)
-            {
-                logging::Info("cat_load: Force crash. Couldn't load config!");
-                std::terminate();
-            }
-            std::this_thread::sleep_for(std::chrono_literals::operator""s(3));
-        }
-#endif
-    }
-    settings::RVarLock.store(false);
-}
-
-static CatCommand load("load", "", [](const CCommand &args) {
-    if (!settings::RVarLock.load())
-    {
-        settings::RVarLock.store(true);
-        std::thread saver;
-        if (args.ArgC() == 1)
-        {
-            std::string string;
-            saver = std::thread(load_thread, 1, string);
-        }
-        else
-        {
-            saver = std::thread(load_thread, args.ArgC(), args.Arg(1));
-        }
-        saver.detach();
     }
 });
 
@@ -189,6 +134,38 @@ static void getAndSortAllConfigs()
     closedir(config_directory);
     logging::Info("Sorted %u config files\n", sortedConfigs.size());
 }
+
+static CatCommand cat_find("find", "Find a command by name", [](const CCommand &args) {
+    // We need arguments
+    if (args.ArgC() < 2)
+        return logging::Info("Usage: cat_find (name)");
+    // Store all found rvars
+    std::vector<std::string> found_rvars;
+    for (const auto &s : sortedVariables)
+    {
+        // Store std::tolower'd rvar
+        std::string lowered_str;
+        for (auto &i : s)
+            lowered_str += std::tolower(i);
+        std::string to_find = args.Arg(1);
+        // store rvar to find in lowercase too
+        std::string to_find_lower;
+        for (auto &s : to_find)
+            to_find_lower += std::tolower(s);
+        // If it matches then add to vector
+        if (lowered_str.find(to_find_lower) != lowered_str.npos)
+            found_rvars.push_back(s);
+    }
+    // Yes
+    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Found rvars:\n");
+    // Nothing found :C
+    if (found_rvars.empty())
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "No rvars found.\n");
+    // Found rvars
+    else
+        for (auto &s : found_rvars)
+            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s\n", s.c_str());
+});
 
 static int cat_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
@@ -336,3 +313,4 @@ static InitRoutine init([]() {
     save.cmd->m_bHasCompletionCallback = true;
     save.cmd->m_fnCompletionCallback   = save_CompletionCallback;
 });
+}

@@ -11,7 +11,7 @@
 #include "settings/Bool.hpp"
 #include "MiscTemporary.hpp"
 
-static settings::Bool tcm{ "debug.tcm", "true" };
+static settings::Boolean tcm{ "debug.tcm", "true" };
 
 std::vector<ConVar *> &RegisteredVarsList()
 {
@@ -937,35 +937,10 @@ bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt, Cached
 
 Vector GetBuildingPosition(CachedEntity *ent)
 {
-    if (ent->hitboxes.GetHitbox(1))
-        return ent->hitboxes.GetHitbox(1)->center;
-    if (ent->hitboxes.GetHitbox(0))
-        return ent->hitboxes.GetHitbox(0)->center;
-    Vector res;
-    res         = ent->m_vecOrigin();
-    int classid = ent->m_iClassID();
-    if (classid == CL_CLASS(CObjectDispenser))
-        res.z += 30;
-    if (classid == CL_CLASS(CObjectTeleporter))
-        res.z += 8;
-    if (classid == CL_CLASS(CObjectSentrygun))
-    {
-        if (CE_BYTE(ent, netvar.m_bMiniBuilding))
-            res.z += 10.0f;
-        switch (CE_INT(ent, netvar.iUpgradeLevel))
-        {
-        case 1:
-            res.z += 30;
-            break;
-        case 2:
-            res.z += 50;
-            break;
-        case 3:
-            res.z += 60;
-            break;
-        }
-    }
-    return res;
+    // Get the collideable origin of ent and get min and max of collideable
+    // OBBMins and OBBMaxs are offsets from origin
+    auto raw = RAW_ENT(ent);
+    return (raw->GetCollideable()->OBBMins() + raw->GetCollideable()->OBBMaxs()) / 2 + raw->GetCollideable()->GetCollisionOrigin();
 }
 
 bool IsBuildingVisible(CachedEntity *ent)

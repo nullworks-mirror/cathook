@@ -7,29 +7,32 @@
 #include <menu/object/container/ModalColorSelect.hpp>
 #include <menu/menu/special/SettingsManagerList.hpp>
 
+namespace zerokernel_colorselector
+{
 static settings::RVariable<int> default_width{ "zk.style.input.color.width", "36" };
 static settings::RVariable<int> default_height{ "zk.style.input.color.height", "14" };
 
-static settings::RVariable<rgba_t> border{ "zk.style.input.color.border", "079797" };
+static settings::RVariable<rgba_t> border{ "zk.style.input.color.border", "446498ff" };
+} // namespace zerokernel_colorselector
 
 namespace zerokernel
 {
 
 ColorSelector::ColorSelector() : BaseMenuObject{}
 {
-    resize(*default_width, *default_height);
+    resize(*zerokernel_colorselector::default_width, *zerokernel_colorselector::default_height);
     bb.setPadding(3, 3, 3, 3);
 }
 
 ColorSelector::ColorSelector(settings::Variable<rgba_t> &variable) : BaseMenuObject{}, variable(&variable)
 {
-    resize(*default_width, *default_height);
+    resize(*zerokernel_colorselector::default_width, *zerokernel_colorselector::default_height);
     bb.setPadding(3, 3, 3, 3);
 }
 
 void ColorSelector::render()
 {
-    renderBorder(variable ? *border : *style::colors::error);
+    renderBorder(variable ? *zerokernel_colorselector::border : *style::colors::error);
     if (variable)
     {
         auto pb = bb.getContentBox();

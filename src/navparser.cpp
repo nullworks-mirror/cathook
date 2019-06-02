@@ -10,11 +10,11 @@
 namespace nav
 {
 
-static settings::Bool enabled{ "misc.pathing", "true" };
+static settings::Boolean enabled{ "misc.pathing", "true" };
 // Whether or not to run vischecks at pathtime
-static settings::Bool vischecks{ "misc.pathing.pathtime-vischecks", "true" };
-static settings::Bool draw{ "misc.pathing.draw", "false" };
-static settings::Bool look{ "misc.pathing.look-at-path", "false" };
+static settings::Boolean vischecks{ "misc.pathing.pathtime-vischecks", "true" };
+static settings::Boolean draw{ "misc.pathing.draw", "false" };
+static settings::Boolean look{ "misc.pathing.look-at-path", "false" };
 static settings::Int stuck_time{ "misc.pathing.stuck-time", "4000" };
 
 static std::vector<Vector> crumbs;
@@ -375,7 +375,7 @@ void initThread()
     lvldir.append("/.steam/steam/steamapps/common/Team Fortress 2/tf/");
     lvldir.append(lvlname);
     lvldir.append(".nav");
-    logging::Info(format("Pathing: Nav File location: ", lvldir).c_str());
+    logging::Info("Pathing: Nav File location: %s", lvldir.c_str());
 
     navfile = std::make_unique<CNavFile>(lvldir.c_str());
 
@@ -754,5 +754,5 @@ void clearInstructions()
     crumbs.clear();
     curr_priority = 0;
 }
-
+static CatCommand nav_stop("nav_cancel", "Cancel Navigation", []() { clearInstructions(); });
 } // namespace nav

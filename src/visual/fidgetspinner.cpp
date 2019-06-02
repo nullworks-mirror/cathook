@@ -14,8 +14,8 @@
 
 #ifndef FEATURE_FIDGET_SPINNER_ENABLED
 
-static settings::Bool enable_spinner{ "visual.fidget-spinner.enable", "false" };
-static settings::Bool v9mode{ "visual.fidget-spinner.v952-mode", "false" };
+static settings::Boolean enable_spinner{ "visual.fidget-spinner.enable", "false" };
+static settings::Boolean v9mode{ "visual.fidget-spinner.v952-mode", "false" };
 static settings::Float spinner_speed_cap{ "visual.fidget-spinner.speed-cap", "30" };
 static settings::Float spinner_speed_scale{ "visual.fidget-spinner.speed-scale", "0.03" };
 static settings::Float spinner_decay_speed{ "visual.fidget-spinner.decay-speed", "0.1" };
@@ -49,11 +49,11 @@ public:
     }
 };
 
-static SpinnerListener listener;
+static SpinnerListener spinner_listener;
 
 void InitSpinner()
 {
-    g_IGameEventManager->AddListener(&listener, false);
+    g_IGameEventManager->AddListener(&spinner_listener, false);
 }
 
 static Timer retrytimer{};

@@ -4,12 +4,14 @@
 
 #include <menu/object/input/TextInput.hpp>
 
-static settings::RVariable<rgba_t> color_border_active{ "zk.style.input.text.color.border.active", "38b28f" };
-static settings::RVariable<rgba_t> color_border{ "zk.style.input.text.color.border.inactive", "079797" };
+namespace zerokernel_textinput
+{
+static settings::RVariable<rgba_t> color_border_active{ "zk.style.input.text.color.border.active", "42BC99ff" };
+static settings::RVariable<rgba_t> color_border{ "zk.style.input.text.color.border.inactive", "446498ff" };
 
 static settings::RVariable<rgba_t> color_text_active{ "zk.style.input.text.color.text.active", "ffffff" };
 static settings::RVariable<rgba_t> color_text{ "zk.style.input.text.color.text.inactive", "aaaaaa" };
-
+} // namespace zerokernel_textinput
 zerokernel::TextInput::TextInput() : BaseMenuObject{}
 {
     text_object.setParent(this);
@@ -84,17 +86,34 @@ bool zerokernel::TextInput::handleSdlEvent(SDL_Event *event)
 void zerokernel::TextInput::render()
 {
     if (draw_border)
-        renderBorder(is_input_active ? *color_border_active : *color_border);
+        renderBorder(is_input_active ? *zerokernel_textinput::color_border_active : *zerokernel_textinput::color_border);
 
     if (is_input_active)
     {
-        text_object.setColorText(&*color_text_active);
+        text_object.setColorText(&*zerokernel_textinput::color_text_active);
         text_object.set(current_text);
     }
     else
     {
-        text_object.setColorText(&*color_text);
-        text_object.set(getValue());
+        text_object.setColorText(&*zerokernel_textinput::color_text);
+        float x, y;
+        std::string t = getValue();
+        resource::font::base.stringSize(t, &x, &y);
+        if (x + 5 > bb.getBorderBox().width)
+        {
+            while (true)
+            {
+                resource::font::base.stringSize(t, &x, &y);
+                if (x + 13 > bb.getBorderBox().width)
+                {
+                    t = t.substr(0, t.size() - 1);
+                }
+                else
+                    break;
+            }
+            t.append("..");
+        }
+        text_object.set(t);
     }
     text_object.render();
 }

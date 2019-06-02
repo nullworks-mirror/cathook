@@ -16,16 +16,17 @@
             <AutoVariable width="fill" target="spam.filename" label="Custom Spam"/>
             <AutoVariable width="fill" target="spam.random" label="Randomize"/>
             <AutoVariable width="fill" target="spam.delay" label="Spam Delay"/>
+            <AutoVariable width="fill" target="spam.teamchat" label="Spam in teamchat"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Chat Log" y="85">
+    <Box padding="12 6 6 6" width="content" height="content" name="Chat Log" y="105">
         <List width="150">
             <AutoVariable width="fill" target="chat-log.enable" label="Enable Chat Log"/>
             <AutoVariable width="fill" target="chat-log.no-ipc" label="Ignore IPC"/>
             <AutoVariable width="fill" target="chat-log.no-spam" label="Anti Spam"/>
         </List>
     </Box>
-    <Box name="Chat Censor" width="content" height="content" padding="12 6 6 6" y="150">
+    <Box name="Chat Censor" width="content" height="content" padding="12 6 6 6" y="170">
         <List width="150">
             <AutoVariable width="fill" target="chat.censor.enable" label="Enable Chat Censor"/>
             <AutoVariable width="fill" target="chat.censor.filter" label="Filter"/>
@@ -97,7 +98,7 @@
             <AutoVariable width="fill" target="chat.identify.answer" label="Counter Identify"/>
         </List>
     </Box>
-    <Box name="IRC" width="content" height="content" padding="12 6 6 6" x="170" y="185">
+    <Box name="IRC" width="content" height="content" padding="12 6 6 6" x="170" y="140">
         <List width="150">
             <AutoVariable width="fill" target="irc.enabled" label="Enabled"/>
             <AutoVariable width="fill" target="irc.anon" label="Hide real name"/>
@@ -107,7 +108,18 @@
             <AutoVariable width="fill" target="irc.channel" label="Channel"/>
         </List>
     </Box>
-    <Box name="Command & Control" width="content" height="content" padding="12 6 6 6" y="185">
+    <Box name="Votelogger" width="content" height="content" padding="12 6 6 6" x="170" y="250">
+        <List width="150">
+            <AutoVariable width="fill" target="votelogger.autovote.yes" label="Autovote yes"/>
+            <AutoVariable width="fill" target="votelogger.autovote.no" label="Autovote no"/>
+            <AutoVariable width="fill" target="votelogger.autovote.no.rage" label="Kick RAGE status"/>
+            <AutoVariable width="fill" target="votelogger.partysay" label="Log votes to party"/>
+            <AutoVariable width="fill" target="votelogger.partysay-casts" label="Log casts to party"/>
+            <AutoVariable width="fill" target="votelogger.partysay-casts.f1-only" label="F1 cast log only"/>
+            <AutoVariable width="fill" target="votelogger.restart-on-kick" label="Crash when kicked"/>
+        </List>
+    </Box>
+    <Box name="Command & Control" width="content" height="content" padding="12 6 6 6" y="205">
         <List width="150">
             <AutoVariable width="fill" target="irc.cc.channel" label="Channel"/>
             <AutoVariable width="fill" target="irc.cc.password" label="Password"/>

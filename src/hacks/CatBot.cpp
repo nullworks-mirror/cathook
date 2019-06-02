@@ -10,8 +10,13 @@
 #include "common.hpp"
 #include "hack.hpp"
 #include "PlayerTools.hpp"
+#include "e8call.hpp"
+#include "NavBot.hpp"
+#include "navparser.hpp"
 
-static settings::Bool auto_disguise{ "misc.autodisguise", "true" };
+namespace hacks::shared::catbot
+{
+static settings::Boolean auto_disguise{ "misc.autodisguise", "true" };
 
 static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
 static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte", "0" };
@@ -19,19 +24,19 @@ static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte", "0"
 static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte", "0" };
 static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills", "2" };
 
-static settings::Bool micspam{ "cat-bot.micspam.enable", "false" };
+static settings::Boolean micspam{ "cat-bot.micspam.enable", "false" };
 static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
 static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
 
-static settings::Bool auto_crouch{ "cat-bot.auto-crouch", "false" };
-static settings::Bool always_crouch{ "cat-bot.always-crouch", "false" };
-static settings::Bool random_votekicks{ "cat-bot.votekicks", "false" };
-static settings::Bool autoReport{ "cat-bot.autoreport", "true" };
+static settings::Boolean auto_crouch{ "cat-bot.auto-crouch", "false" };
+static settings::Boolean always_crouch{ "cat-bot.always-crouch", "false" };
+static settings::Boolean random_votekicks{ "cat-bot.votekicks", "false" };
+static settings::Boolean autoReport{ "cat-bot.autoreport", "true" };
 
-namespace hacks::shared::catbot
-{
-settings::Bool catbotmode{ "cat-bot.enable", "false" };
-settings::Bool anti_motd{ "cat-bot.anti-motd", "false" };
+static settings::Boolean mvm_autoupgrade{ "mvm.autoupgrade", "false" };
+
+settings::Boolean catbotmode{ "cat-bot.enable", "false" };
+settings::Boolean anti_motd{ "cat-bot.anti-motd", "false" };
 
 struct catbot_user_state
 {
@@ -133,6 +138,267 @@ void update_catbot_list()
     }
 }
 
+// Get Muh money
+int GetMvmCredits()
+{
+    if (CE_GOOD(LOCAL_E))
+        return NET_INT(RAW_ENT(LOCAL_E), 0x2f50);
+    return 0;
+}
+
+static CatCommand debug_money("debug_mvmmoney", "Print MVM Money", []() { logging::Info("%d", GetMvmCredits()); });
+// Store information
+struct Posinfo
+{
+    float x;
+    float y;
+    float z;
+    std::string lvlname;
+    Posinfo(float _x, float _y, float _z, std::string _lvlname)
+    {
+        x       = _x;
+        y       = _y;
+        z       = _z;
+        lvlname = _lvlname;
+    }
+    Posinfo(){};
+};
+struct Upgradeinfo
+{
+    int id;
+    int cost;
+    int clazz;
+    // Higher = better
+    int priority;
+    int priority_falloff;
+    Upgradeinfo(){};
+    Upgradeinfo(int _id, int _cost, int _clazz, int _priority, int _priority_falloff)
+    {
+        id               = _id;
+        cost             = _cost;
+        clazz            = _clazz;
+        priority         = _priority;
+        priority_falloff = _priority_falloff;
+    }
+};
+static std::vector<Upgradeinfo> upgrade_list;
+
+static bool inited_upgrades = false;
+// Pick a upgrade
+Upgradeinfo PickUpgrade()
+{
+    if (!inited_upgrades)
+    {
+        // Damage ( Important )
+        upgrade_list.push_back({ 0, 400, tf_sniper, 4, 1 });
+        // Projectile Penetration ( Good )
+        upgrade_list.push_back({ 12, 400, tf_sniper, 5, 500 });
+        // Explosive Headshot
+        upgrade_list.push_back({ 40, 350, tf_sniper, 6, 2 });
+        // +50% Ammo ( Basically least valuable upgrade for primary )
+        upgrade_list.push_back({ 6, 250, tf_sniper, 3, 1 });
+        // +20% Reload Speed ( Pretty important )
+        upgrade_list.push_back({ 35, 250, tf_sniper, 6, 1 });
+        // +25 Health on kill ( It's meh yet you need it to not die )
+        upgrade_list.push_back({ 11, 200, tf_sniper, 3, 2 });
+        // +25% Faster charge ( Good for "Wait for charge" catbots )
+        upgrade_list.push_back({ 17, 200, tf_sniper, 4, 1 });
+        inited_upgrades = true;
+    }
+    int highest_priority = INT_MIN;
+    std::vector<Upgradeinfo *> potential_upgrades;
+    for (auto &i : upgrade_list)
+    {
+        // Don't want wrong class
+        if (i.clazz != g_pLocalPlayer->clazz)
+            continue;
+        // Can't buy something we can't afford lol
+        if (i.cost > GetMvmCredits())
+            continue;
+        // Not a Priority right now
+        if (i.priority < highest_priority)
+            continue;
+        // Clear out everything incase a higher priority is found
+        if (i.priority > highest_priority)
+            potential_upgrades.clear();
+        highest_priority = i.priority;
+        potential_upgrades.push_back(&i);
+    }
+    int vec_size = potential_upgrades.size();
+    if (!vec_size)
+        return { -1, -1, -1, -1, -1 };
+    else
+    {
+        auto choosen_element = potential_upgrades[rand() % vec_size];
+        // Less important after an upgrade
+        choosen_element->priority -= choosen_element->priority_falloff;
+        return *choosen_element;
+    }
+}
+static std::vector<Posinfo> spot_list;
+// Upgrade Navigation
+void NavUpgrade()
+{
+    std::string lvlname = g_IEngine->GetLevelName();
+    std::vector<Posinfo> potential_spots{};
+
+    for (auto &i : spot_list)
+    {
+        if (lvlname.find(i.lvlname) != lvlname.npos)
+            potential_spots.push_back({ i.x, i.y, i.z, lvlname });
+    }
+    Posinfo best_spot{};
+    float best_score = FLT_MAX;
+    for (auto &i : potential_spots)
+    {
+        Vector pos  = { i.x, i.y, 0.0f };
+        float score = pos.DistTo(LOCAL_E->m_vecOrigin());
+        if (score < best_score)
+        {
+            best_spot  = i;
+            best_score = score;
+        }
+    }
+    Posinfo to_path                        = best_spot;
+    hacks::tf2::NavBot::task::current_task = hacks::tf2::NavBot::task::outofbounds;
+    bool success                           = nav::navTo(Vector{ to_path.x, to_path.y, to_path.z }, 8, true, true);
+    if (!success)
+    {
+        logging::Info("No valid spots found!");
+        hacks::tf2::NavBot::task::current_task = hacks::tf2::NavBot::task::none;
+        return;
+    }
+}
+static bool run = false;
+static Timer run_delay;
+static Timer buy_upgrade;
+static InitRoutine init_routine([]() {
+    EC::Register(
+        EC::Paint,
+        []() {
+            if (run && run_delay.test_and_set(200))
+            {
+                run                = false;
+                auto upgrade_panel = g_CHUD->FindElement("CHudUpgradePanel");
+                typedef int (*CancelUpgrade_t)(CHudElement *);
+                static uintptr_t addr = (unsigned) e8call((void *) (gSignatures.GetClientSignature("E8 ? ? ? ? 8B 3D ? ? ? ? 8D 4B 28 ") + 1));
+                if (upgrade_panel)
+                {
+                    static CancelUpgrade_t CancelUpgrade_fn = CancelUpgrade_t(addr);
+                    CancelUpgrade_fn(upgrade_panel);
+                }
+            }
+        },
+        "mvmupgrade_paint");
+    EC::Register(
+        EC::CreateMove,
+        []() {
+            if (!*mvm_autoupgrade)
+                return;
+            std::string lvlname = g_IEngine->GetLevelName();
+            if (lvlname.find("mvm_") == lvlname.npos)
+                return;
+            if (hacks::tf2::NavBot::task::current_task == hacks::tf2::NavBot::task::outofbounds)
+            {
+                if (nav::ReadyForCommands)
+                    hacks::tf2::NavBot::task::current_task = hacks::tf2::NavBot::task::none;
+                else
+                    return;
+            }
+            if (GetMvmCredits() <= 250)
+                return;
+            if (CE_BAD(LOCAL_E))
+                return;
+            if (!buy_upgrade.check(5000))
+                return;
+            std::vector<Posinfo> potential_spots{};
+
+            for (auto &i : spot_list)
+            {
+                if (lvlname.find(i.lvlname) != lvlname.npos)
+                    potential_spots.push_back({ i.x, i.y, i.z, lvlname });
+            }
+            Posinfo best_spot{};
+            float best_score = FLT_MAX;
+            for (auto &i : potential_spots)
+            {
+                Vector pos  = { i.x, i.y, 0.0f };
+                float score = pos.DistTo(LOCAL_E->m_vecOrigin());
+                if (score < best_score)
+                {
+                    best_spot  = i;
+                    best_score = score;
+                }
+            }
+            if (GetMvmCredits() >= 400 || Vector{ best_spot.x, best_spot.y, best_spot.z }.DistTo(LOCAL_E->m_vecOrigin()) <= 500.0f)
+            {
+                NavUpgrade();
+                buy_upgrade.update();
+            }
+        },
+        "mvm_upgrade_createmove");
+    EC::Register(
+        EC::LevelShutdown, []() { inited_upgrades = false; }, "mvmupgrades_levelshutdown");
+    spot_list.push_back(Posinfo(851.0f, -2509.0f, 577.0f, "mvm_coaltown"));
+    spot_list.push_back(Posinfo(935.0f, -2626.0f, 577.0f, "mvm_bigrock"));
+    spot_list.push_back(Posinfo(-885, -2229, 545, "mvm_decoy"));
+    spot_list.push_back(Posinfo(851, -2509, 577, "mvm_ghost_town"));
+    spot_list.push_back(Posinfo(-625, 2273, -95, "mvm_mannhatten"));
+    spot_list.push_back(Posinfo(517, -2599, 450, "mvm_mannworks"));
+    spot_list.push_back(Posinfo(-1346, 625, -102, "mvm_rottenburg"));
+});
+
+void MvM_Autoupgrade(KeyValues *event)
+{
+    if (!isHackActive())
+        return;
+    if (!*mvm_autoupgrade)
+        return;
+    std::string name = std::string(event->GetName());
+    if (!name.compare("MVM_Upgrade"))
+    {
+        KeyValues *new_key = new KeyValues("upgrade");
+        KeyValues *key     = event->FindKey("upgrade", false);
+        if (!key)
+        {
+            new_key->SetInt("itemslot", 0);
+            new_key->SetInt("upgrade", 0);
+            new_key->SetInt("count", 1);
+            event->AddSubKey(new_key);
+            key = event->FindKey("upgrade", false);
+        }
+        else
+            delete new_key;
+        if (key)
+        {
+
+            auto upgrade = PickUpgrade();
+            if (upgrade.id == -1)
+                return;
+            key->SetInt("itemslot", 0);
+            key->SetInt("upgrade", upgrade.id);
+            key->SetInt("count", 1);
+        }
+        else
+            logging::Info("Key process failed!");
+    }
+    if (!name.compare("MvM_UpgradesBegin"))
+    {
+        logging::Info("Sent Upgrades");
+        run = true;
+        run_delay.update();
+    }
+}
+
+void SendNetMsg(INetMessage &msg)
+{
+    if (!strcmp(msg.GetName(), "clc_CmdKeyValues"))
+    {
+        if ((KeyValues *) (((unsigned *) &msg)[4]))
+            MvM_Autoupgrade((KeyValues *) (((unsigned *) &msg)[4]));
+    }
+}
+
 class CatBotEventListener : public IGameEventListener2
 {
     void FireGameEvent(IGameEvent *event) override
@@ -194,7 +460,7 @@ void reportall()
         patch.Patch();
         patched_report = true;
     }
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
         // We only want a nullptr check since dormant entities are still on the
@@ -262,7 +528,7 @@ void smart_crouch()
     static bool crouch = false;
     if (crouchcdr.test_and_set(2000))
     {
-        for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
             if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() || !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) || !player_tools::shouldTarget(ent) || should_ignore_player(ent))
@@ -492,7 +758,8 @@ static void draw()
 
 static InitRoutine runinit([]() {
     EC::Register(EC::CreateMove, cm, "cm_catbot", EC::average);
-    EC::Register(EC::Paint, update, "paint_catbot", EC::average);
+    EC::Register(EC::CreateMove, update, "cm2_catbot", EC::average);
+    EC::Register(EC::LevelInit, level_init, "levelinit_catbot", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, draw, "draw_catbot", EC::average);
 #endif

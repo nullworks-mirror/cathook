@@ -9,14 +9,15 @@
 #include "common.hpp"
 #include "hack.hpp"
 
-static settings::Bool enable{ "antibackstab.enable", "0" };
-static settings::Float distance{ "antibackstab.distance", "200" };
-static settings::Bool silent{ "antibackstab.silent", "1" };
-static settings::Float angle{ "antibackstab.angle", "107.5" };
-static settings::Bool sayno{ "antibackstab.nope", "0" };
-
+namespace hacks::tf2::autobackstab
+{
+extern bool angleCheck(CachedEntity *from, CachedEntity *to, std::optional<Vector> target_pos, Vector from_angle);
+}
 namespace hacks::tf2::antibackstab
 {
+static settings::Boolean enable{ "antibackstab.enable", "0" };
+static settings::Float distance{ "antibackstab.distance", "200" };
+static settings::Boolean sayno{ "antibackstab.nope", "0" };
 bool noaa = false;
 
 void SayNope()
@@ -90,7 +91,7 @@ CachedEntity *ClosestSpy()
         if (IsPlayerInvisible(ent))
             continue;
         dist = ent->m_flDistance();
-        if (fabs(GetAngle(ent)) > (float) angle || (ispyro && !isheavy && fabs(GetAngle(ent)) > 90.0f) || (isheavy && fabs(GetAngle(ent)) > 132.0f))
+        if ((ispyro && !isheavy && fabs(GetAngle(ent)) > 90.0f) || (isheavy && fabs(GetAngle(ent)) > 132.0f))
         {
             break;
             // logging::Info("Backstab???");
@@ -117,15 +118,16 @@ void CreateMove()
         noaa = true;
         if (current_user_cmd->buttons & IN_ATTACK)
             return;
-        const Vector &A = LOCAL_E->m_vecOrigin();
-        const Vector &B = spy->m_vecOrigin();
-        diff            = (A - B);
-        if (diff.y < 0 || CE_INT(spy, netvar.iClass) == tf_class::tf_heavy)
-            current_user_cmd->viewangles.x = 180.0f;
-        if (silent)
-            g_pLocalPlayer->bUseSilentAngles = true;
+        Vector spy_angle;
+        spy_angle = CE_VECTOR(spy, netvar.m_angEyeAngles);
+        fClampAngle(spy_angle);
+        bool couldbebackstabbed = hacks::tf2::autobackstab::angleCheck(spy, LOCAL_E, std::nullopt, spy_angle);
+        if (couldbebackstabbed || CE_INT(spy, netvar.iClass) == tf_class::tf_heavy)
+            current_user_cmd->viewangles.x = 150.0f;
+        g_pLocalPlayer->bUseSilentAngles = true;
         if (sayno)
             SayNope();
+        *bSendPackets = true;
     }
     else
         noaa = false;

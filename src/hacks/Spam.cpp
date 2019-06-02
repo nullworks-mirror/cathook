@@ -10,15 +10,15 @@
 #include "common.hpp"
 #include "MiscTemporary.hpp"
 
+namespace hacks::shared::spam
+{
 static settings::Int spam_source{ "spam.source", "0" };
-static settings::Bool random_order{ "spam.random", "0" };
+static settings::Boolean random_order{ "spam.random", "0" };
 static settings::String filename{ "spam.filename", "spam.txt" };
 static settings::Int spam_delay{ "spam.delay", "800" };
 static settings::Int voicecommand_spam{ "spam.voicecommand", "0" };
-static settings::Bool teamname_spam{ "spam.teamname", "0" };
-
-namespace hacks::shared::spam
-{
+static settings::Boolean teamname_spam{ "spam.teamname", "0" };
+static settings::Boolean team_only{ "spam.teamchat", "false" };
 
 static int last_index;
 
@@ -180,7 +180,7 @@ int QueryPlayer(Query query)
     }
     std::vector<int> candidates{};
     int index_result = 0;
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         if (PlayerPassesQuery(query, i))
         {
@@ -353,7 +353,7 @@ void createMove()
             last_index             = current_index;
             std::string spamString = source->at(current_index);
             if (FormatSpamMessage(spamString))
-                chat_stack::Say(spamString, false);
+                chat_stack::Say(spamString, *team_only);
             current_index++;
         }
         last_spam_point = std::chrono::system_clock::now();
@@ -396,6 +396,6 @@ static InitRoutine EC([]() {
     EC::Register(EC::CreateMove, createMove, "spam", EC::average);
     init();
 });
-} // namespace hacks::shared::spam
 
-static CatCommand reload("spam_reload", "Reload spam file", hacks::shared::spam::reloadSpamFile);
+static CatCommand reload_cc("spam_reload", "Reload spam file", hacks::shared::spam::reloadSpamFile);
+} // namespace hacks::shared::spam

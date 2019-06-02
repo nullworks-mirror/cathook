@@ -10,12 +10,11 @@
 #include <settings/Float.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "find-cheaters.aimbot.enable", "true" };
-static settings::Float detect_angle{ "find-cheaters.aimbot.angle", "30" };
-static settings::Int detections_warning{ "find-cheaters.aimbot.detections", "3" };
-
 namespace ac::aimbot
 {
+static settings::Boolean enable{ "find-cheaters.aimbot.enable", "true" };
+static settings::Float detect_angle{ "find-cheaters.aimbot.angle", "30" };
+static settings::Int detections_warning{ "find-cheaters.aimbot.detections", "3" };
 
 ac_data data_table[32];
 int amount[32];

@@ -43,8 +43,8 @@ const std::string &hack::GetVersion()
     static bool version_set = false;
     if (version_set)
         return version;
-#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMIT_DATE)
-    version = "Version: #" GIT_COMMIT_HASH " " GIT_COMMIT_DATE;
+#if defined(GIT_COMMIT_HASH) && defined(GIT_COMMITTER_DATE)
+    version = "Version: #" GIT_COMMIT_HASH " " GIT_COMMITTER_DATE;
 #endif
     version_set = true;
     return version;
@@ -148,7 +148,7 @@ void critical_error_handler(int signum)
 static bool blacklist_file(const char *filename)
 {
     const static char *blacklist[] = { ".vtx", ".vtf", ".pcf", ".mdl" };
-    if (!filename || !std::strcmp(filename, "models/error.mdl") || !std::strcmp(filename, "models/vgui/competitive_badge.mdl") || !std::strcmp(filename, "models/vgui/12v12_badge.mdl") || !std::strncmp(filename, "models/player/", 14) || !std::strncmp(filename, "models/weapons/", 15))
+    if (!filename || !std::strcmp(filename, "models/error.mdl") || !std::strncmp(filename, "models/buildables", 17) || !std::strcmp(filename, "models/vgui/competitive_badge.mdl") || !std::strcmp(filename, "models/vgui/12v12_badge.mdl") || !std::strncmp(filename, "models/player/", 14) || !std::strncmp(filename, "models/weapons/", 15))
         return false;
 
     std::size_t len = std::strlen(filename);
@@ -168,7 +168,6 @@ static bool FSHook_ReadFile(void *this_, const char *pFileName, const char *pPat
     // fprintf(stderr, "ReadFile: %s\n", pFileName);
     if (blacklist_file(pFileName))
         return false;
-
     return FSorig_ReadFile(this_, pFileName, pPath, buf, nMaxBytes, nStartingByte, pfnAlloc);
 }
 
@@ -183,12 +182,13 @@ static void ReduceRamUsage()
     // g_IMaterialSystem->ReloadTextures();
     g_IBaseClient->InvalidateMdlCache();
 }
+
 static void UnHookFs()
 {
     fs_hook2.Release();
     g_IBaseClient->InvalidateMdlCache();
 }
-static settings::Bool null_graphics("hack.nullgraphics", "false");
+
 static void InitRandom()
 {
     int rand_seed;
@@ -319,11 +319,11 @@ free(logname);*/
     hooks::input.Set(g_IInput);
     hooks::input.HookMethod(HOOK_ARGS(GetUserCmd));
     hooks::input.Apply();
-#if ENABLE_VISUALS
+
     hooks::modelrender.Set(g_IVModelRender);
     hooks::modelrender.HookMethod(HOOK_ARGS(DrawModelExecute));
     hooks::modelrender.Apply();
-#endif
+
     hooks::enginevgui.Set(g_IEngineVGui);
     hooks::enginevgui.HookMethod(HOOK_ARGS(Paint));
     hooks::enginevgui.Apply();
@@ -410,7 +410,7 @@ void hack::Shutdown()
         return;
     hack::shutdown = true;
     // Stop cathook stuff
-    settings::RVarLock.store(true);
+    settings::cathook_disabled.store(true);
     playerlist::Save();
 #if ENABLE_VISUALS
     sdl_hooks::cleanSdlHooks();

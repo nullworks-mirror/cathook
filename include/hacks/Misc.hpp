@@ -12,7 +12,8 @@
 
 namespace hacks::shared::misc
 {
-
+void generate_schema();
+void Schema_Reload();
 void CreateMove();
 #if ENABLE_VISUALS
 void DrawText();

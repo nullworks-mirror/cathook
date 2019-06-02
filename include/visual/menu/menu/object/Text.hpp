@@ -35,6 +35,8 @@ public:
 
     void recalculateSize() override;
 
+    bool handleSdlEvent(SDL_Event *event) override;
+
     void loadFromXml(const tinyxml2::XMLElement *data) override;
 
     void emitSizeUpdate() override;

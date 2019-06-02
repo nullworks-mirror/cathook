@@ -10,7 +10,7 @@
 */
 
 static settings::RVariable<rgba_t> background_hover{ "zk.style.tree-list-entry.color.hover", "38b28f66" };
-static settings::RVariable<rgba_t> lines{ "zk.style.tree-list-entry.color.lines", "38b28f" };
+static settings::RVariable<rgba_t> lines{ "zk.style.tree-list-entry.color.lines", "42BC99ff" };
 
 bool zerokernel::TreeListBaseEntry::handleSdlEvent(SDL_Event *event)
 {

@@ -10,25 +10,27 @@
 #include "settings/Bool.hpp"
 #include "PlayerTools.hpp"
 
-static settings::Bool enable{ "autoheal.enable", "false" };
-static settings::Bool steamid_only{ "autoheal.steam-only", "false" };
-static settings::Bool silent{ "autoheal.silent", "true" };
-static settings::Bool pop_uber_auto{ "autoheal.uber.enable", "true" };
+namespace hacks::tf::autoheal
+{
+static settings::Boolean enable{ "autoheal.enable", "false" };
+static settings::Boolean steamid_only{ "autoheal.steam-only", "false" };
+static settings::Boolean silent{ "autoheal.silent", "true" };
+static settings::Boolean pop_uber_auto{ "autoheal.uber.enable", "true" };
 static settings::Float pop_uber_percent{ "autoheal.uber.health-below-ratio", "0" };
-static settings::Bool share_uber{ "autoheal.uber.share", "true" };
+static settings::Boolean share_uber{ "autoheal.uber.share", "true" };
 
-static settings::Bool auto_vacc{ "autoheal.vacc.enable", "false" };
+static settings::Boolean auto_vacc{ "autoheal.vacc.enable", "false" };
 
 static settings::Int vacc_sniper{ "autoheal.vacc.bullet.sniper-pop", "1" };
 static settings::Int vacc_sniper_fov{ "autoheal.vacc.bullet.sniper-fov", "20" };
 
-static settings::Bool auto_vacc_fire_checking{ "autoheal.vacc.fire.enable", "true" };
+static settings::Boolean auto_vacc_fire_checking{ "autoheal.vacc.fire.enable", "true" };
 static settings::Int auto_vacc_pop_if_pyro{ "autoheal.vacc.fire.pyro-pop", "1" };
-static settings::Bool auto_vacc_check_on_fire{ "autoheal.vacc.fire.prevent-afterburn", "true" };
+static settings::Boolean auto_vacc_check_on_fire{ "autoheal.vacc.fire.prevent-afterburn", "true" };
 static settings::Int auto_vacc_pyro_range{ "autoheal.vacc.fire.pyro-range", "450" };
 
-static settings::Bool auto_vacc_blast_checking{ "autoheal.vacc.blast.enable", "true" };
-static settings::Bool auto_vacc_blast_crit_pop{ "autoheal.vacc.blast.crit-pop", "true" };
+static settings::Boolean auto_vacc_blast_checking{ "autoheal.vacc.blast.enable", "true" };
+static settings::Boolean auto_vacc_blast_crit_pop{ "autoheal.vacc.blast.crit-pop", "true" };
 static settings::Int auto_vacc_blast_health{ "autoheal.vacc.blast.pop-near-rocket-health", "80" };
 static settings::Int auto_vacc_proj_danger_range{ "autoheal.vacc.blast.danger-range", "650" };
 
@@ -40,9 +42,6 @@ static settings::Int auto_vacc_blast_pop_ubers{ "autoheal.vacc.blast.min-charges
 
 static settings::Int default_resistance{ "autoheal.vacc.default-resistance", "0" };
 static settings::Int steam_var{ "autoheal.steamid", "0" };
-
-namespace hacks::tf::autoheal
-{
 
 struct patient_data_s
 {
@@ -81,7 +80,7 @@ int BulletDangerValue(CachedEntity *patient)
         return 0;
     bool any_zoomed_snipers = false;
     // Find dangerous snipers in other team
-    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -126,7 +125,7 @@ int FireDangerValue(CachedEntity *patient)
     uint8_t should_switch = 0;
     if (auto_vacc_pop_if_pyro)
     {
-        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent))
@@ -525,7 +524,7 @@ int BestTarget()
     int best_score = INT_MIN;
     if (steamid_only)
         return best;
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
         int score = HealingPriority(i);
         if (score > best_score && score != -1)
@@ -577,7 +576,7 @@ void CreateMove()
     }
     else if (steamid)
     {
-        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent) || !ent->player_info.friendsID)
@@ -601,7 +600,7 @@ void CreateMove()
         }
         if (current_id != steamid)
         {
-            for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+            for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
             {
                 CachedEntity *ent = ENTITY(i);
                 if (CE_BAD(ent) || !ent->player_info.friendsID)

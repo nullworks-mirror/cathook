@@ -20,20 +20,22 @@
 
 #include "hack.hpp"
 
-static settings::Bool render_zoomed{ "visual.render-local-zoomed", "false" };
-static settings::Bool anti_afk{ "misc.anti-afk", "false" };
-static settings::Bool auto_strafe{ "misc.autostrafe", "false" };
-static settings::Bool tauntslide{ "misc.tauntslide-tf2c", "false" };
-static settings::Bool tauntslide_tf2{ "misc.tauntslide", "false" };
-static settings::Bool flashlight_spam{ "misc.flashlight-spam", "false" };
-static settings::Bool auto_balance_spam{ "misc.auto-balance-spam", "false" };
-static settings::Bool nopush_enabled{ "misc.no-push", "false" };
+namespace hacks::shared::misc
+{
+static settings::Boolean render_zoomed{ "visual.render-local-zoomed", "false" };
+static settings::Boolean anti_afk{ "misc.anti-afk", "false" };
+static settings::Boolean auto_strafe{ "misc.autostrafe", "false" };
+static settings::Boolean tauntslide{ "misc.tauntslide-tf2c", "false" };
+static settings::Boolean tauntslide_tf2{ "misc.tauntslide", "false" };
+static settings::Boolean flashlight_spam{ "misc.flashlight-spam", "false" };
+static settings::Boolean auto_balance_spam{ "misc.auto-balance-spam", "false" };
+static settings::Boolean nopush_enabled{ "misc.no-push", "false" };
 
 #if ENABLE_VISUALS
-static settings::Bool god_mode{ "misc.god-mode", "false" };
-static settings::Bool debug_info{ "misc.debug-info", "false" };
-static settings::Bool no_homo{ "misc.no-homo", "true" };
-static settings::Bool show_spectators{ "misc.show-spectators", "false" };
+static settings::Boolean god_mode{ "misc.god-mode", "false" };
+static settings::Boolean debug_info{ "misc.debug-info", "false" };
+static settings::Boolean no_homo{ "misc.no-homo", "true" };
+static settings::Boolean show_spectators{ "misc.show-spectators", "false" };
 #endif
 
 static void *C_TFPlayer__ShouldDraw_original = nullptr;
@@ -80,15 +82,18 @@ static void updateAntiAfk()
     }
     else
     {
-        if (anti_afk_timer.check(60000))
+        static auto afk_timer = g_ICvar->FindVar("mp_idlemaxtime");
+        if (!afk_timer)
+            afk_timer = g_ICvar->FindVar("mp_idlemaxtime");
+        // Trigger 10 seconds before kick
+        else if (afk_timer->m_nValue != 0 && anti_afk_timer.check(afk_timer->m_nValue * 60 * 1000 - 10000))
         {
-            // Send random commands
-            current_user_cmd->sidemove    = RandFloatRange(-450.0, 450.0);
-            current_user_cmd->forwardmove = RandFloatRange(-450.0, 450.0);
-            current_user_cmd->buttons     = rand();
-            // Prevent attack command
-            current_user_cmd->buttons &= ~IN_ATTACK;
-            if (anti_afk_timer.check(61000))
+            // Just duck tf
+            if (current_user_cmd->buttons & IN_DUCK)
+                current_user_cmd->buttons &= ~IN_DUCK;
+            else
+                current_user_cmd->buttons = IN_DUCK;
+            if (anti_afk_timer.check(afk_timer->m_nValue * 60 * 1000 + 1000))
             {
                 anti_afk_timer.update();
             }
@@ -100,9 +105,6 @@ CatCommand fix_cursor("fix_cursor", "Fix the GUI cursor being visible", []() {
     g_ISurface->LockCursor();
     g_ISurface->SetCursorAlwaysVisible(false);
 });
-
-namespace hacks::shared::misc
-{
 
 // Use to send a autobalance request to the server that doesnt prevent you from
 // using it again, Allowing infinite use of it.
@@ -118,13 +120,31 @@ void SendAutoBalanceRequest()
 // Catcommand for above
 CatCommand SendAutoBlRqCatCom("request_balance", "Request Infinite Auto-Balance", [](const CCommand &args) { SendAutoBalanceRequest(); });
 
-static int last_number{ 0 };
+int last_number{ 0 };
 static int last_checked_command_number{ 0 };
 static IClientEntity *last_checked_weapon{ nullptr };
 static bool flash_light_spam_switch{ false };
 static Timer auto_balance_timer{};
 
 static ConVar *teammatesPushaway{ nullptr };
+
+int getCarriedBuilding()
+{
+    if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject))
+        return HandleToIDX(CE_INT(LOCAL_E, netvar.m_hCarriedObject));
+    for (int i = 1; i < MAX_ENTITIES; i++)
+    {
+        auto ent = ENTITY(i);
+        if (CE_BAD(ent) || ent->m_Type() != ENTITY_BUILDING)
+            continue;
+        if (HandleToIDX(CE_INT(ent, netvar.m_hBuilder)) != LOCAL_E->m_IDX)
+            continue;
+        if (!CE_BYTE(ent, netvar.m_bPlacing))
+            continue;
+        return i;
+    }
+    return -1;
+}
 
 void CreateMove()
 {
@@ -391,7 +411,8 @@ void DrawText()
 
 #endif
 
-static CatCommand generateschema("schema_generate", "Generate custom schema", []() {
+void generate_schema()
+{
     std::ifstream in("tf/scripts/items/items_game.txt");
     std::string outS((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     std::ofstream out("/opt/cathook/data/items_game.txt");
@@ -400,7 +421,8 @@ static CatCommand generateschema("schema_generate", "Generate custom schema", []
     outS = std::regex_replace(outS, a, "");
     out << std::regex_replace(outS, b, "");
     out.close();
-});
+}
+static CatCommand generateschema("schema_generate", "Generate custom schema", generate_schema);
 
 void Schema_Reload()
 {
@@ -410,10 +432,11 @@ void Schema_Reload()
     void *schema                = GetItemSchema() + 0x4;
 
     FILE *file = fopen("/opt/cathook/data/items_game.txt", "r");
-    if (ferror(file) != 0)
+    if (!file || ferror(file) != 0)
     {
         logging::Info("Error loading file");
-        fclose(file);
+        if (file)
+            fclose(file);
         return;
     }
 
@@ -432,6 +455,11 @@ void Schema_Reload()
 }
 CatCommand schema("schema", "Load custom schema", Schema_Reload);
 
+CatCommand update_gui_color("gui_color_update", "Update the GUI Color", []() {
+    hack::command_stack().push("cat set zk.style.tab-button.color.selected.background 446498ff;cat set zk.style.tab-button.color.separator 446498ff;cat set zk.style.tab-button.color.hover.underline 446498ff;cat set zk.style.tab-button.color.selected.underline 446498ff;cat set zk.style.tooltip.border 446498ff;cat set zk.style.box.color.border 446498ff;cat set zk.style.color-preview.color.border 446498ff;cat set zk.style.modal-container.color.border 446498ff;cat set zk.style.tab-selection.color.border 446498ff;cat set zk.style.table.color.border 446498ff;cat set zk.style.checkbox.color.border 446498ff;cat set zk.style.checkbox.color.checked 446498ff;cat set zk.style.checkbox.color.hover 446498ff;cat set zk.style.input.color.border 446498ff;cat set zk.style.input.key.color.border 446498ff;cat set zk.style.input.select.border 446498ff;cat set zk.style.input.slider.color.handle_border 446498ff;cat set zk.style.input.slider.color.bar 446498ff;cat set zk.style.input.text.color.border.active 42BC99ff");
+    hack::command_stack().push("cat set zk.style.input.text.color.border.inactive 446498ff;cat set zk.style.tree-list-entry.color.lines 42BC99ff;cat set zk.style.task.color.background.hover 446498ff;cat set zk.style.task.color.border 446498ff;cat set zk.style.taskbar.color.border 446498ff;cat set zk.style.window.color.border 446498ff;cat set zk.style.window-close-button.color.border 446498ff;cat set zk.style.window-header.color.background.active 446498ff;cat set zk.style.window-header.color.border.inactive 446498ff;cat set zk.style.window-header.color.border.active 446498ff");
+});
+
 CatCommand name("name_set", "Immediate name change", [](const CCommand &args) {
     if (args.ArgC() < 2)
     {
@@ -444,9 +472,7 @@ CatCommand name("name_set", "Immediate name change", [](const CCommand &args) {
         return;
     }
     std::string new_name(args.ArgS());
-    ReplaceString(new_name, "\\n", "\n");
-    ReplaceString(new_name, "\\015", "\015");
-    ReplaceString(new_name, "\\u200F", "\u200F");
+    ReplaceSpecials(new_name);
     NET_SetConVar setname("name", new_name.c_str());
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (ch)
@@ -565,6 +591,7 @@ static CatCommand dump_vars_by_name("debug_dump_netvars_name", "Dump netvars of 
     }
 });
 
+static CatCommand print_eye_diff("debug_print_eye_diff", "debug", []() { logging::Info("%f", g_pLocalPlayer->v_Eye.z - LOCAL_E->m_vecOrigin().z); });
 void Shutdown()
 {
     if (CE_BAD(LOCAL_E))

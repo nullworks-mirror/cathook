@@ -11,23 +11,24 @@
 #include "navparser.hpp"
 #include "NavBot.hpp"
 
-static settings::Bool enable{ "follow-bot.enable", "false" };
-static settings::Bool roambot{ "follow-bot.roaming", "true" };
-static settings::Bool draw_crumb{ "follow-bot.draw-crumbs", "false" };
+namespace hacks::shared::followbot
+{
+static settings::Boolean enable{ "follow-bot.enable", "false" };
+static settings::Boolean roambot{ "follow-bot.roaming", "true" };
+static settings::Boolean draw_crumb{ "follow-bot.draw-crumbs", "false" };
 static settings::Float follow_distance{ "follow-bot.distance", "175" };
 static settings::Float additional_distance{ "follow-bot.ipc-distance", "100" };
 static settings::Float follow_activation{ "follow-bot.max-range", "1000" };
-static settings::Bool mimic_slot{ "follow-bot.mimic-slot", "false" };
-static settings::Bool always_medigun{ "follow-bot.always-medigun", "false" };
-static settings::Bool sync_taunt{ "follow-bot.taunt-sync", "false" };
-static settings::Bool change{ "follow-bot.change-roaming-target", "false" };
-static settings::Bool autojump{ "follow-bot.jump-if-stuck", "true" };
-static settings::Bool afk{ "follow-bot.switch-afk", "true" };
+static settings::Boolean mimic_slot{ "follow-bot.mimic-slot", "false" };
+static settings::Boolean always_medigun{ "follow-bot.always-medigun", "false" };
+static settings::Boolean sync_taunt{ "follow-bot.taunt-sync", "false" };
+static settings::Boolean change{ "follow-bot.change-roaming-target", "false" };
+static settings::Boolean autojump{ "follow-bot.jump-if-stuck", "true" };
+static settings::Boolean afk{ "follow-bot.switch-afk", "true" };
 static settings::Int afktime{ "follow-bot.afk-time", "15000" };
-static settings::Bool corneractivate{ "follow-bot.corners", "true" };
+static settings::Boolean corneractivate{ "follow-bot.corners", "true" };
 static settings::Int steam_var{ "follow-bot.steamid", "0" };
-namespace hacks::shared::followbot
-{
+
 namespace nb = hacks::tf2::NavBot;
 
 static Timer navBotInterval{};
@@ -53,7 +54,7 @@ static CatCommand follow_steam("fb_steam", "Follow Steam Id", [](const CCommand 
 });
 
 static CatCommand steam_debug("debug_steamid", "Print steamids", []() {
-    for (int i = 0; i < g_IEngine->GetMaxClients(); i++)
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
         auto ent = ENTITY(i);
         logging::Info("%u", ent->player_info.friendsID);
@@ -235,10 +236,9 @@ static bool startFollow(CachedEntity *entity, bool useNavbot)
     return false;
 }
 
-#if ENABLE_IPC
 static void cm()
 {
-    if (!enable)
+    if (!enable || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
     {
         follow_target = 0;
         if (nb::task::current_task == nb::task::followbot)
@@ -248,14 +248,6 @@ static void cm()
     if (!inited)
         init();
 
-    // We need a local player to control
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
-    {
-        follow_target = 0;
-        if (nb::task::current_task == nb::task::followbot)
-            nb::task::current_task = nb::task::none;
-        return;
-    }
     if (nb::task::current_task == nb::task::health || nb::task::current_task == nb::task::ammo)
     {
         follow_target = 0;
@@ -561,7 +553,6 @@ static void cm()
     else
         idle_time.update();
 }
-#endif
 
 #if ENABLE_VISUALS
 static void draw()
@@ -633,9 +624,7 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
 }
 
 static InitRoutine runinit([]() {
-#if ENABLE_IPC
     EC::Register(EC::CreateMove, cm, "cm_followbot", EC::average);
-#endif
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, draw, "draw_followbot", EC::average);
 #endif

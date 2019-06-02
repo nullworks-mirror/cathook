@@ -7,11 +7,10 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "auto-deadringer.enable", "0" };
-static settings::Int trigger_health{ "auto-deadringer.health", "30" };
-
 namespace hacks::shared::deadringer
 {
+static settings::Boolean enable{ "auto-deadringer.enable", "0" };
+static settings::Int trigger_health{ "auto-deadringer.health", "30" };
 
 bool IsProjectile(CachedEntity *ent)
 {
@@ -61,9 +60,9 @@ static void CreateMove()
             continue;
         if (ent->m_Type() != ENTITY_PROJECTILE)
             continue;
-        if (ent->m_bCritProjectile() && ent->m_flDistance() <= 1000.0f)
+        if (ent->m_bCritProjectile() && ent->m_flDistance() <= 500.0f)
             current_user_cmd->buttons |= IN_ATTACK2;
-        if (ent->m_flDistance() < 300.0f)
+        else if (ent->m_flDistance() < 100.0f)
             current_user_cmd->buttons |= IN_ATTACK2;
     }
 }

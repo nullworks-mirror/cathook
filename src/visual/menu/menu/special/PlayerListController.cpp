@@ -12,12 +12,12 @@
   Created on 26.07.18.
 */
 
-static settings::RVariable<rgba_t> color_team_red{ "zk.style.player-list.team.red", "ff0000" };
+static settings::RVariable<rgba_t> color_team_red{ "zk.style.player-list.team.red", "d10e25" };
 static settings::RVariable<rgba_t> color_team_red_dead{ "zk.style.player-list.team.red-dead", "660000" };
 static settings::RVariable<rgba_t> color_team_blue{ "zk.style.player-list.team.blue", "0000ff" };
-static settings::RVariable<rgba_t> color_team_blue_dead{ "zk.style.player-list.team.blue-dead", "000066" };
-static settings::RVariable<rgba_t> color_team_other{ "zk.style.player-list.team.other", "ffffff" };
-static settings::RVariable<rgba_t> color_team_other_dead{ "zk.style.player-list.team.other-dead", "666666" };
+static settings::RVariable<rgba_t> color_team_blue_dead{ "zk.style.player-list.team.blue-dead", "6f6fce" };
+static settings::RVariable<rgba_t> color_team_other{ "zk.style.player-list.team.other", "E6E6E6" };
+static settings::RVariable<rgba_t> color_team_other_dead{ "zk.style.player-list.team.other-dead", "E6E6E6" };
 
 static const char *class_names[] = { "Unknown", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy", "Pyro", "Spy", "Engineer" };
 
@@ -33,6 +33,11 @@ void zerokernel::special::PlayerListController::setKickButtonCallback(zerokernel
 void zerokernel::special::PlayerListController::setOpenSteamCallback(zerokernel::special::PlayerListController::open_steam_callback_type callback)
 {
     cb_open_steam = std::move(callback);
+}
+
+void zerokernel::special::PlayerListController::setChangeStateCallback(zerokernel::special::PlayerListController::change_state_callback_type callback)
+{
+    cb_change_state = std::move(callback);
 }
 
 void zerokernel::special::PlayerListController::handleMessage(zerokernel::Message &msg, bool is_relayed)
@@ -61,6 +66,17 @@ void zerokernel::special::PlayerListController::handleMessage(zerokernel::Messag
         if (cb_kick)
         {
             cb_kick((int) msg.sender->kv["user_id"]);
+        }
+    }
+    if (action == "change_state")
+    {
+        auto steamId = (std::string) msg.sender->kv["steam_id"];
+        errno        = 0;
+        auto id      = std::strtoul(steamId.c_str(), nullptr, 10);
+        if (!errno)
+        {
+            if (cb_change_state)
+                cb_change_state(id, (int) msg.sender->kv["user_id"]);
         }
     }
 }
@@ -143,6 +159,24 @@ void zerokernel::special::PlayerListController::updatePlayerClass(int id, int cl
     });
 }
 
+void zerokernel::special::PlayerListController::updatePlayerState(int id, std::string state_string)
+{
+    table.iterateObjects([this, id, state_string](BaseMenuObject *a) {
+        auto row = dynamic_cast<TRow *>(a);
+        // Shouldn't happen
+        if (row == nullptr)
+            return;
+        if ((int) row->kv["player_id"] == id)
+        {
+            auto state = dynamic_cast<Text *>(row->getElementById("state"));
+            if (state)
+                state->kv["state"] = state_string;
+            updateRow(row);
+            return;
+        }
+    });
+}
+
 void zerokernel::special::PlayerListController::addPlayer(int id, zerokernel::special::PlayerListData data)
 {
     auto row  = ObjectFactory::createFromPrefab("player-list-row");
@@ -158,6 +192,7 @@ void zerokernel::special::PlayerListController::addPlayer(int id, zerokernel::sp
         auto steam               = dynamic_cast<Text *>(trow->getElementById("steam"));
         auto username            = dynamic_cast<Text *>(trow->getElementById("username"));
         auto kick                = dynamic_cast<Text *>(trow->getElementById("kick"));
+        auto state               = dynamic_cast<Text *>(trow->getElementById("state"));
         if (uid)
             uid->set(std::to_string(id));
         if (steam)
@@ -175,9 +210,21 @@ void zerokernel::special::PlayerListController::addPlayer(int id, zerokernel::sp
             kick->kv["action"]  = "kick";
             kick->addMessageHandler(*this);
         }
+        if (state)
+        {
+            state->parent->bb.resize(70, 15);
+            state->bb.width.setFill();
+            state->bb.height.setFill();
+            state->bb.updateFillSize();
+
+            state->kv["state"]    = data.state;
+            state->kv["user_id"]  = id;
+            state->kv["steam_id"] = std::to_string(data.steam);
+            state->kv["action"]   = "change_state";
+            state->addMessageHandler(*this);
+        }
         updateRow(trow);
         table.addObject(std::move(row));
-        printf("Table %u\n", table.objects.size());
     }
     else
     {
@@ -225,9 +272,15 @@ void zerokernel::special::PlayerListController::updateRow(zerokernel::TRow *row)
         changeRowColor(row, dead ? *color_team_other_dead : *color_team_other);
     }
 
-    auto el = dynamic_cast<Text *>(row->getElementById("class"));
+    auto el         = dynamic_cast<Text *>(row->getElementById("class"));
+    auto alivestate = dynamic_cast<Text *>(row->getElementById("alivestate"));
+    auto state      = dynamic_cast<Text *>(row->getElementById("state"));
     if (el)
     {
         el->set(class_names[classId]);
     }
+    if (alivestate)
+        alivestate->set(dead ? "Dead" : "Alive");
+    if (state)
+        state->set(static_cast<std::string>(state->kv["state"]));
 }

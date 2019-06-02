@@ -8,9 +8,11 @@
 /*
   Created on 26.07.18.
 */
-
-static settings::RVariable<rgba_t> color_border{ "zk.style.modal-container.color.border", "079797" };
+namespace zerokernel_modalcontainer
+{
+static settings::RVariable<rgba_t> color_border{ "zk.style.modal-container.color.border", "446498ff" };
 static settings::RVariable<rgba_t> color_background{ "zk.style.modal-container.color.background", "1d2f40" };
+}
 
 bool zerokernel::ModalContainer::handleSdlEvent(SDL_Event *event)
 {
@@ -22,8 +24,8 @@ bool zerokernel::ModalContainer::handleSdlEvent(SDL_Event *event)
 
 void zerokernel::ModalContainer::render()
 {
-    renderBackground(*color_background);
-    renderBorder(*color_border);
+    renderBackground(*zerokernel_modalcontainer::color_background);
+    renderBorder(*zerokernel_modalcontainer::color_border);
 
     Container::render();
 }

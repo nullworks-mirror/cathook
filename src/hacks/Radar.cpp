@@ -10,21 +10,20 @@
 #ifndef FEATURE_RADAR_DISABLED
 #if ENABLE_VISUALS
 
-static settings::Bool radar_enabled{ "radar.enable", "false" };
+namespace hacks::tf::radar
+{
+static settings::Boolean radar_enabled{ "radar.enable", "false" };
 static settings::Int size{ "radar.size", "300" };
 static settings::Float zoom{ "radar.zoom", "10" };
-static settings::Bool healthbar{ "radar.healthbar", "true" };
-static settings::Bool enemies_over_teammates{ "radar.enemies-over-teammates", "true" };
+static settings::Boolean healthbar{ "radar.healthbar", "true" };
+static settings::Boolean enemies_over_teammates{ "radar.enemies-over-teammates", "true" };
 static settings::Int icon_size{ "radar.icon-size", "20" };
 static settings::Int radar_x{ "radar.x", "100" };
 static settings::Int radar_y{ "radar.y", "100" };
-static settings::Bool use_icons{ "radar.use-icons", "true" };
-static settings::Bool show_teammates{ "radar.show.teammates", "true" };
-static settings::Bool show_healthpacks{ "radar.show.health", "true" };
-static settings::Bool show_ammopacks{ "radar.show.ammo", "true" };
-
-namespace hacks::tf::radar
-{
+static settings::Boolean use_icons{ "radar.use-icons", "true" };
+static settings::Boolean show_teammates{ "radar.show.teammates", "true" };
+static settings::Boolean show_healthpacks{ "radar.show.health", "true" };
+static settings::Boolean show_ammopacks{ "radar.show.ammo", "true" };
 
 Timer invalid{};
 

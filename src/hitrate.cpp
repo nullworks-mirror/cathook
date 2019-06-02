@@ -11,7 +11,7 @@
 #include "MiscTemporary.hpp"
 #include "init.hpp"
 
-static settings::Bool hitrate_check{ "hitrate.enable", "true" };
+static settings::Boolean hitrate_check{ "hitrate.enable", "true" };
 
 namespace hitrate
 {

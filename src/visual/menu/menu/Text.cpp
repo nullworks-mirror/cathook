@@ -31,6 +31,22 @@ void zerokernel::Text::set(std::string text)
         BaseMenuObject::emitSizeUpdate();
 }
 
+bool zerokernel::Text::handleSdlEvent(SDL_Event *event)
+{
+    if (!isHidden())
+    {
+        if (event->type == SDL_MOUSEBUTTONDOWN && event->button.button == SDL_BUTTON_LEFT)
+        {
+            if (isHovered())
+            {
+                if (onLeftMouseClick())
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
 const std::string &zerokernel::Text::get() const
 {
     return data;

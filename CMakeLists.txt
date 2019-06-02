@@ -8,6 +8,8 @@ if (EnableCotire)
     set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/cotire/CMake")
     cmake_policy(SET CMP0011 NEW)
     include(cotire)
+    file(GLOB_RECURSE ignore_files *.cpp)
+    set(ignore_files ${ignore_files} CACHE INTERNAL "")
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -27,6 +29,7 @@ set(Game "tf2" CACHE STRING "Target game")
 set(GameValues "tf2;hl2dm;dab;tf2c;css;dynamic" CACHE INTERNAL "List of supported game types")
 set_property(CACHE Game PROPERTY STRINGS ${GameValues})
 
+set(EnableUnityBuilds 1 CACHE BOOL "Enable Profiler")
 set(EnableProfiler 0 CACHE BOOL "Enable Profiler")
 set(EnableVisuals 1 CACHE BOOL "Enable Visuals")
 set(ExternalDrawing 0 CACHE BOOL "External Visuals")
@@ -42,16 +45,19 @@ set(EnableWarnings 0 CACHE BOOL "Enable compile warnings")
 set(EnableOnlineFeatures 0 CACHE BOOL "Enable online features (WIP)")
 set(EnableIRC 1 CACHE BOOL "Enable IRC for messaging and ignore-cathook")
 set(EnableLogging 1 CACHE BOOL "Enable logging to /tmp/")
+set(EnableClip 1 CACHE BOOL "Enable anti electron/chromium freezing")
 
 if(NOT EnableVisuals)
     set(EnableGUI 0)
 endif()
 
-if (EnableImGuiDrawing)
-    set(EnableEngineDrawing 0)
-    find_package(Freetype REQUIRED)
-    target_include_directories(cathook PRIVATE "${FREETYPE_INCLUDE_DIRS}")
-    target_link_libraries(cathook ${FREETYPE_LIBRARIES})
+if (EnableVisuals)
+    if (EnableImGuiDrawing)
+        set(EnableEngineDrawing 0)
+        find_package(Freetype REQUIRED)
+        target_include_directories(cathook PRIVATE "${FREETYPE_INCLUDE_DIRS}")
+        target_link_libraries(cathook ${FREETYPE_LIBRARIES})
+    endif()
 endif()
 
 find_package(Git REQUIRED)
@@ -69,7 +75,7 @@ execute_process(COMMAND
 execute_process(COMMAND
         "${GIT_EXECUTABLE}" log -1 --pretty=\"%ai\"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        OUTPUT_VARIABLE GIT_COMMIT_TIME
+        OUTPUT_VARIABLE GIT_COMMITTER_DATE
         ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 find_library(ValveLibrarySDL2    NAMES libSDL2-2.0.so.0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
@@ -158,9 +164,15 @@ add_subdirectory(modules)
 
 if (EnableCotire)
     set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp")
-    set_target_properties(cathook PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+    set_target_properties(cathook PROPERTIES COTIRE_ADD_UNITY_BUILD true)
+    set_target_properties(cathook PROPERTIES COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES 30)
+    set_source_files_properties(${ignore_files} PROPERTIES COTIRE_EXCLUDED true)
     cotire(cathook)
 endif()
 
 add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
+if (EnableCotire)
+    add_custom_command(TARGET cathook_unity POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook_unity> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook_unity>")
+endif()

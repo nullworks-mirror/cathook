@@ -43,7 +43,7 @@ CachedEntity::~CachedEntity()
 }
 
 static settings::Float ve_window{ "debug.ve.window", "0" };
-static settings::Bool ve_smooth{ "debug.ve.smooth", "true" };
+static settings::Boolean ve_smooth{ "debug.ve.smooth", "true" };
 static settings::Int ve_averager_size{ "debug.ve.averaging", "0" };
 
 void CachedEntity::Update()
@@ -74,7 +74,7 @@ void CachedEntity::Update()
 }
 
 // FIXME maybe disable this by default
-static settings::Bool fast_vischeck{ "debug.fast-vischeck", "true" };
+static settings::Boolean fast_vischeck{ "debug.fast-vischeck", "true" };
 
 bool CachedEntity::IsVisible()
 {

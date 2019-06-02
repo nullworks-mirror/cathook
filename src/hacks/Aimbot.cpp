@@ -14,66 +14,68 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enable{ "aimbot.enable", "false" };
+namespace hacks::shared::aimbot
+{
+static settings::Boolean enable{ "aimbot.enable", "false" };
 static settings::Button aimkey{ "aimbot.aimkey.button", "<null>" };
 static settings::Int aimkey_mode{ "aimbot.aimkey.mode", "1" };
-static settings::Bool autoshoot{ "aimbot.autoshoot", "1" };
-static settings::Bool autoshoot_disguised{ "aimbot.autoshoot-disguised", "1" };
-static settings::Bool multipoint{ "aimbot.multipoint", "false" };
+static settings::Boolean autoshoot{ "aimbot.autoshoot", "1" };
+static settings::Boolean autoshoot_disguised{ "aimbot.autoshoot-disguised", "1" };
+static settings::Boolean multipoint{ "aimbot.multipoint", "false" };
 static settings::Int hitbox_mode{ "aimbot.hitbox-mode", "0" };
 static settings::Float fov{ "aimbot.fov", "0" };
 static settings::Int priority_mode{ "aimbot.priority-mode", "0" };
-static settings::Bool wait_for_charge{ "aimbot.wait-for-charge", "0" };
+static settings::Boolean wait_for_charge{ "aimbot.wait-for-charge", "0" };
 
-static settings::Bool silent{ "aimbot.silent", "1" };
-static settings::Bool target_lock{ "aimbot.lock-target", "0" };
+static settings::Boolean silent{ "aimbot.silent", "1" };
+static settings::Boolean target_lock{ "aimbot.lock-target", "0" };
 static settings::Int hitbox{ "aimbot.hitbox", "0" };
-static settings::Bool zoomed_only{ "aimbot.zoomed-only", "1" };
-static settings::Bool only_can_shoot{ "aimbot.can-shoot-only", "1" };
+static settings::Boolean zoomed_only{ "aimbot.zoomed-only", "1" };
+static settings::Boolean only_can_shoot{ "aimbot.can-shoot-only", "1" };
 
-static settings::Bool extrapolate{ "aimbot.extrapolate", "0" };
+static settings::Boolean extrapolate{ "aimbot.extrapolate", "0" };
 static settings::Int slow_aim{ "aimbot.slow", "0" };
-static settings::Float miss_chance{ "aimbot.miss-chance", "0" };
+static settings::Int miss_chance{ "aimbot.miss-chance", "0" };
 
-static settings::Bool projectile_aimbot{ "aimbot.projectile.enable", "true" };
+static settings::Boolean projectile_aimbot{ "aimbot.projectile.enable", "true" };
 static settings::Float proj_gravity{ "aimbot.projectile.gravity", "0" };
 static settings::Float proj_speed{ "aimbot.projectile.speed", "0" };
 
 static settings::Float sticky_autoshoot{ "aimbot.projectile.sticky-autoshoot", "0.5" };
 
-static settings::Bool aimbot_debug{ "aimbot.debug", "0" };
-static settings::Bool engine_projpred{ "aimbot.debug.engine-pp", "0" };
+static settings::Boolean aimbot_debug{ "aimbot.debug", "0" };
+static settings::Boolean engine_projpred{ "aimbot.debug.engine-pp", "0" };
 
-static settings::Bool auto_spin_up{ "aimbot.auto.spin-up", "0" };
-static settings::Bool auto_zoom{ "aimbot.auto.zoom", "0" };
-static settings::Bool auto_unzoom{ "aimbot.auto.unzoom", "0" };
+static settings::Boolean auto_spin_up{ "aimbot.auto.spin-up", "0" };
+static settings::Boolean auto_zoom{ "aimbot.auto.zoom", "0" };
+static settings::Boolean auto_unzoom{ "aimbot.auto.unzoom", "0" };
 
-static settings::Bool backtrackAimbot{ "aimbot.backtrack", "0" };
-static settings::Bool backtrackVischeckAll{ "aimbot.backtrack.vischeck-all", "0" };
+static settings::Boolean backtrackAimbot{ "aimbot.backtrack", "0" };
+static settings::Boolean backtrackVischeckAll{ "aimbot.backtrack.vischeck-all", "0" };
 
 // TODO maybe these should be moved into "Targeting"
 static settings::Float max_range{ "aimbot.target.max-range", "4096" };
-static settings::Bool ignore_vaccinator{ "aimbot.target.ignore-vaccinator", "1" };
-static settings::Bool ignore_deadringer{ "aimbot.target.ignore-deadringer", "1" };
-static settings::Bool buildings_sentry{ "aimbot.target.sentry", "1" };
-static settings::Bool buildings_other{ "aimbot.target.other-buildings", "1" };
-static settings::Bool stickybot{ "aimbot.target.stickybomb", "0" };
-static settings::Bool rageonly{ "aimbot.target.ignore-non-rage", "0" };
+static settings::Boolean ignore_vaccinator{ "aimbot.target.ignore-vaccinator", "1" };
+static settings::Boolean ignore_deadringer{ "aimbot.target.ignore-deadringer", "1" };
+static settings::Boolean buildings_sentry{ "aimbot.target.sentry", "1" };
+static settings::Boolean buildings_other{ "aimbot.target.other-buildings", "1" };
+static settings::Boolean stickybot{ "aimbot.target.stickybomb", "0" };
+static settings::Boolean rageonly{ "aimbot.target.ignore-non-rage", "0" };
 static settings::Int teammates{ "aimbot.target.teammates", "0" };
 
 #if ENABLE_VISUALS
-static settings::Bool fov_draw{ "aimbot.fov-circle.enable", "0" };
+static settings::Boolean fov_draw{ "aimbot.fov-circle.enable", "0" };
 static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 #endif
 
 int GetSentry()
 {
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i < HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
             continue;
-        if (ent->m_Type() != ENTITY_BUILDING || ent->m_iClassID() != CL_CLASS(CObjectSentrygun))
+        if ((ent->m_Type() != ENTITY_BUILDING && ent->m_iClassID() != CL_CLASS(CTFTankBoss)) || ent->m_iClassID() != CL_CLASS(CObjectSentrygun))
             continue;
         if ((CE_INT(ent, netvar.m_hBuilder) & 0xFFF) != g_pLocalPlayer->entity_idx)
             continue;
@@ -82,12 +84,10 @@ int GetSentry()
     return -1;
 }
 
-namespace hacks::shared::aimbot
-{
-settings::Bool ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
+settings::Boolean ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
 bool shouldBacktrack()
 {
-    return *enable && *backtrackAimbot;
+    return *enable && *backtrackAimbot && hacks::shared::backtrack::isBacktrackEnabled;
 }
 
 bool IsBacktracking()
@@ -149,7 +149,7 @@ static void CreateMove()
     // Refresh projectile info
     if (projectileAimbotRequired)
     {
-        projectile_mode = (GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav));
+        projectile_mode = GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav);
         if (!projectile_mode)
             return;
         if (proj_speed)
@@ -204,9 +204,8 @@ static void CreateMove()
 #if ENABLE_VISUALS
     if (target_entity->m_Type() == ENTITY_PLAYER)
     {
-        static effect_chams::EffectChams Effectchams;
         hacks::shared::esp::SetEntityColor(target_entity, colors::pink);
-        Effectchams.SetEntityColor(target_entity, colors::pink);
+        effect_chams::g_EffectChams.SetEntityColor(target_entity, colors::pink);
     }
 #endif
 
@@ -379,7 +378,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state, bool Backtracking)
     CachedEntity *ent;
     CachedEntity *target_highest_ent = 0;
     target_highest_score             = -256;
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i < HIGHEST_ENTITY; i++)
     {
         ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -620,7 +619,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         // Check for buildings
     }
-    else if (entity->m_Type() == ENTITY_BUILDING)
+    else if (entity->m_Type() == ENTITY_BUILDING || entity->m_iClassID() == CL_CLASS(CTFTankBoss))
     {
         // Don't aim if holding sapper
         if (g_pLocalPlayer->holding_sapper)
@@ -733,21 +732,14 @@ bool IsTargetStateGood(CachedEntity *entity)
         // Target not valid
         return false;
     }
-    // An impossible error so just return false
-    return false;
 }
 
 // A function to aim at a specific entitiy
 void Aim(CachedEntity *entity)
 {
     namespace bt = hacks::shared::backtrack;
-    if (float(miss_chance) > 0.0f)
-    {
-        if ((rand() % 100) < float(miss_chance) * 100.0f)
-        {
-            return;
-        }
-    }
+    if (*miss_chance > 0 && UniformRandomInt(0, 99) < *miss_chance)
+        return;
 
     // Dont aim at a bad entity
     if (CE_BAD(entity))
@@ -964,7 +956,7 @@ const Vector &PredictEntity(CachedEntity *entity)
             }
             // Buildings
         }
-        else if (entity->m_Type() == ENTITY_BUILDING)
+        else if (entity->m_Type() == ENTITY_BUILDING || entity->m_iClassID() != CL_CLASS(CTFTankBoss))
         {
             if (cur_proj_grav || cur_proj_grav)
                 result = BuildingPrediction(entity, GetBuildingPosition(entity), cur_proj_speed, cur_proj_grav);
@@ -1067,7 +1059,7 @@ int BestHitbox(CachedEntity *target)
                 // 18 health is a good number to use as thats the usual minimum
                 // damage it can do with a bodyshot, but damage could
                 // potentially be higher
-                if (target->m_iHealth() <= 18 || IsPlayerCritBoosted(g_pLocalPlayer->entity))
+                if (target->m_iHealth() <= 18 || IsPlayerCritBoosted(g_pLocalPlayer->entity) || target->m_flDistance() > 1200)
                     headonly = false;
                 // Rocket launcher
             }
@@ -1506,15 +1498,16 @@ static void DrawText()
 #endif
 void rvarCallback(settings::VariableBase<int> &var, float after)
 {
-    if (hacks::shared::backtrack::enable)
+    if (backtrackAimbot)
+    {
+        backtrackAimbot = after > 0.0f;
+    }
+    else
+    {
         backtrackAimbot = after > 190.0f;
-}
-void rvarCallback2(settings::VariableBase<bool> &var, bool after)
-{
-    backtrackAimbot = (*hacks::shared::backtrack::latency > 190.0f) && after;
+    }
 }
 static InitRoutine EC([]() {
-    hacks::shared::backtrack::enable.installChangeCallback(rvarCallback2);
     hacks::shared::backtrack::latency.installChangeCallback(rvarCallback);
     EC::Register(EC::LevelInit, Reset, "INIT_Aimbot", EC::average);
     EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);

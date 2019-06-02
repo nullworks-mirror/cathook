@@ -1,35 +1,18 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-static settings::Bool enabled{ "pure-bypass.enable", "false" };
-static void *pure_orig, **pure_addr;
-
-static void toggle(bool on)
+namespace hacks::shared::purebypass
 {
-    if (on)
-    {
-        if (!pure_addr)
-        {
-            pure_addr = *reinterpret_cast<void ***>(gSignatures.GetEngineSignature("A1 ? ? ? ? 85 C0 74 ? C7 44 24 ? ? ? ? ? 89 04 24") + 1);
-            if (!pure_addr)
-            {
-                logging::Info("Pure bypass broken, failed to find signature");
-                return;
-            }
-        }
-        if (*pure_addr)
-            pure_orig = *pure_addr;
-
-        *pure_addr = nullptr;
-    }
-    else if (pure_orig)
-    {
-        *pure_addr = pure_orig;
-        pure_orig  = nullptr;
-    }
+hooks::VMTHook svpurehook{};
+static void (*orig_RegisterFileWhilelist)(void *, void *, void *);
+static void RegisterFileWhitelist(void *_this, void *a, void *b)
+{
+    logging::Info("git gud sv_pure !");
 }
 
 static InitRoutine init([] {
-    toggle(*enabled);
-    enabled.installChangeCallback([](settings::VariableBase<bool> &, bool on) { toggle(on); });
+    svpurehook.Set(g_IFileSystem);
+    svpurehook.HookMethod(RegisterFileWhitelist, offsets::RegisterFileWhitelist(), &orig_RegisterFileWhilelist);
+    svpurehook.Apply();
 });
+} // namespace hacks::shared::purebypass

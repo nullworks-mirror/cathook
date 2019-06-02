@@ -1,6 +1,6 @@
 # Cathook Training Software
 ![banner](http://i.imgur.com/w96wdtE.png)
-[![CircleCI](https://circleci.com/gh/nullworks/cathook.svg?style=svg)](https://circleci.com/gh/nullworks/cathook) (Cathook developement takes place on `testing` branch)
+[![CircleCI](https://circleci.com/gh/nullworks/cathook.svg?style=svg)](https://circleci.com/gh/nullworks/cathook)
 
 ## Risk of VAC detection
 

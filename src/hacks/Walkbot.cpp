@@ -14,23 +14,22 @@
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
 
+namespace hacks::shared::walkbot
+{
 static settings::Button recording_key{ "walkbot.recording-key", "<null>" };
 
-static settings::Bool draw_info{ "walkbot.draw.info", "true" };
-static settings::Bool draw_path{ "walkbot.draw.path", "true" };
-static settings::Bool draw_nodes{ "walkbot.draw.nodes", "true" };
-static settings::Bool draw_indices{ "walkbot.draw.indices", "false" };
-static settings::Bool draw_connection_flags{ "walkbot.draw.connection-flags", "true" };
+static settings::Boolean draw_info{ "walkbot.draw.info", "true" };
+static settings::Boolean draw_path{ "walkbot.draw.path", "true" };
+static settings::Boolean draw_nodes{ "walkbot.draw.nodes", "true" };
+static settings::Boolean draw_indices{ "walkbot.draw.indices", "false" };
+static settings::Boolean draw_connection_flags{ "walkbot.draw.connection-flags", "true" };
 
-static settings::Bool free_move{ "walkbot.free-move", "true" };
+static settings::Boolean free_move{ "walkbot.free-move", "true" };
 static settings::Int spawn_distance{ "walkbot.edit.node-spawn-distance", "54" };
 static settings::Int max_distance{ "walkbot.node-max-distance", "100" };
 static settings::Int reach_distance{ "walkbot.node-reach-distance", "32" };
 static settings::Int force_slot{ "walkbot.force-slot", "0" };
-static settings::Bool leave_if_empty{ "walkbot.leave-if-empty", "false" };
-
-namespace hacks::shared::walkbot
-{
+static settings::Boolean leave_if_empty{ "walkbot.leave-if-empty", "false" };
 
 using index_t    = unsigned;
 using connection = uint8_t;

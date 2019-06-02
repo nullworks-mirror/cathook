@@ -60,7 +60,8 @@ Index of this file:
 #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant" // warning : zero as null pointer constant              // some standard header variations use #define NULL 0
 #endif
 #if __has_warning("-Wdouble-promotion")
-#pragma clang diagnostic ignored "-Wdouble-promotion" // warning: implicit conversion from 'float' to 'double' when passing argument to function  // using printf() is a misery with this as C++ va_arg ellipsis changes float to double.
+#pragma clang diagnostic ignored "-Wdouble-promotion" // warning: implicit conversion from 'float' to 'double' when passing argument to function  // using printf() is a misery with this as C++ va_arg
+                                                      // ellipsis changes float to double.
 #endif
 #elif defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wformat-nonliteral" // warning: format not a string literal, format string not checked
@@ -435,7 +436,8 @@ bool ImGui::ButtonBehavior(const ImRect &bb, ImGuiID id, bool *out_hovered, bool
         {
             hovered = true;
             SetHoveredID(id);
-            if (CalcTypematicPressedRepeatAmount(g.HoveredIdTimer + 0.0001f, g.HoveredIdTimer + 0.0001f - g.IO.DeltaTime, 0.01f, 0.70f)) // FIXME: Our formula for CalcTypematicPressedRepeatAmount() is fishy
+            if (CalcTypematicPressedRepeatAmount(g.HoveredIdTimer + 0.0001f, g.HoveredIdTimer + 0.0001f - g.IO.DeltaTime, 0.01f,
+                                                 0.70f)) // FIXME: Our formula for CalcTypematicPressedRepeatAmount() is fishy
             {
                 pressed = true;
                 FocusWindow(window);
@@ -1925,7 +1927,8 @@ template <typename TYPE, typename SIGNEDTYPE, typename FLOATTYPE> bool ImGui::Dr
         adjust_delta = -adjust_delta;
 
     // Clear current value on activation
-    // Avoid altering values and clamping when we are _already_ past the limits and heading in the same direction, so e.g. if range is 0..255, current value is 300 and we are pushing to the right side, keep the 300.
+    // Avoid altering values and clamping when we are _already_ past the limits and heading in the same direction, so e.g. if range is 0..255, current value is 300 and we are pushing to the right
+    // side, keep the 300.
     bool is_just_activated                          = g.ActiveIdIsJustActivated;
     bool is_already_past_limits_and_pushing_outward = has_min_max && ((*v >= v_max && adjust_delta > 0.0f) || (*v <= v_min && adjust_delta < 0.0f));
     bool is_drag_direction_change_with_power        = is_power && ((adjust_delta < 0 && g.DragCurrentAccum > 0) || (adjust_delta > 0 && g.DragCurrentAccum < 0));
@@ -3817,8 +3820,9 @@ bool ImGui::InputTextEx(const char *label, char *buf, int buf_size, const ImVec2
             }
         }
 
-        // When using 'ImGuiInputTextFlags_EnterReturnsTrue' as a special case we reapply the live buffer back to the input buffer before clearing ActiveId, even though strictly speaking it wasn't modified on this frame.
-        // If we didn't do that, code like InputInt() with ImGuiInputTextFlags_EnterReturnsTrue would fail. Also this allows the user to use InputText() with ImGuiInputTextFlags_EnterReturnsTrue without maintaining any user-side storage.
+        // When using 'ImGuiInputTextFlags_EnterReturnsTrue' as a special case we reapply the live buffer back to the input buffer before clearing ActiveId, even though strictly speaking it wasn't
+        // modified on this frame. If we didn't do that, code like InputInt() with ImGuiInputTextFlags_EnterReturnsTrue would fail. Also this allows the user to use InputText() with
+        // ImGuiInputTextFlags_EnterReturnsTrue without maintaining any user-side storage.
         bool apply_edit_back_to_user_buffer = !cancel_edit || (enter_pressed && (flags & ImGuiInputTextFlags_EnterReturnsTrue) != 0);
         if (apply_edit_back_to_user_buffer)
         {
@@ -3983,7 +3987,8 @@ bool ImGui::InputTextEx(const char *label, char *buf, int buf_size, const ImVec2
         // - Display the text (this alone can be more easily clipped)
         // - Handle scrolling, highlight selection, display cursor (those all requires some form of 1d->2d cursor position calculation)
         // - Measure text height (for scrollbar)
-        // We are attempting to do most of that in **one main pass** to minimize the computation cost (non-negligible for large amount of text) + 2nd pass for selection rendering (we could merge them by an extra refactoring effort)
+        // We are attempting to do most of that in **one main pass** to minimize the computation cost (non-negligible for large amount of text) + 2nd pass for selection rendering (we could merge them
+        // by an extra refactoring effort)
         // FIXME: This should occur on buf_display but we'd need to maintain cursor/select_start/select_end for UTF-8.
         IM_ASSERT(state != NULL);
         const ImWchar *text_begin = state->TextW.Data;
@@ -4089,8 +4094,9 @@ bool ImGui::InputTextEx(const char *label, char *buf, int buf_size, const ImVec2
             const ImWchar *text_selected_begin = text_begin + ImMin(state->Stb.select_start, state->Stb.select_end);
             const ImWchar *text_selected_end   = text_begin + ImMax(state->Stb.select_start, state->Stb.select_end);
 
-            ImU32 bg_color   = GetColorU32(ImGuiCol_TextSelectedBg, render_cursor ? 1.0f : 0.6f); // FIXME: current code flow mandate that render_cursor is always true here, we are leaving the transparent one for tests.
-            float bg_offy_up = is_multiline ? 0.0f : -1.0f;                                       // FIXME: those offsets should be part of the style? they don't play so well with multi-line selection.
+            ImU32 bg_color   = GetColorU32(ImGuiCol_TextSelectedBg,
+                                         render_cursor ? 1.0f : 0.6f); // FIXME: current code flow mandate that render_cursor is always true here, we are leaving the transparent one for tests.
+            float bg_offy_up = is_multiline ? 0.0f : -1.0f;              // FIXME: those offsets should be part of the style? they don't play so well with multi-line selection.
             float bg_offy_dn = is_multiline ? 0.0f : 2.0f;
             ImVec2 rect_pos  = draw_pos + select_start_offset - draw_scroll;
             for (const ImWchar *p = text_selected_begin; p < text_selected_end;)
@@ -4433,7 +4439,8 @@ static inline ImU32 ImAlphaBlendColor(ImU32 col_a, ImU32 col_b)
 
 // Helper for ColorPicker4()
 // NB: This is rather brittle and will show artifact when rounding this enabled if rounded corners overlap multiple cells. Caller currently responsible for avoiding that.
-// I spent a non reasonable amount of time trying to getting this right for ColorButton with rounding+anti-aliasing+ImGuiColorEditFlags_HalfAlphaPreview flag + various grid sizes and offsets, and eventually gave up... probably more reasonable to disable rounding alltogether.
+// I spent a non reasonable amount of time trying to getting this right for ColorButton with rounding+anti-aliasing+ImGuiColorEditFlags_HalfAlphaPreview flag + various grid sizes and offsets, and
+// eventually gave up... probably more reasonable to disable rounding alltogether.
 void ImGui::RenderColorRectWithAlphaCheckerboard(ImVec2 p_min, ImVec2 p_max, ImU32 col, float grid_step, ImVec2 grid_off, float rounding, int rounding_corners_flags)
 {
     ImGuiWindow *window = GetCurrentWindow();
@@ -6078,7 +6085,8 @@ bool ImGui::BeginMenu(const char *label, bool enabled)
                 tb.y                          = ta.y + ImMax((tb.y - extra) - ta.y, -100.0f); // triangle is maximum 200 high to limit the slope and the bias toward large sub-menus // FIXME: Multiply by fb_scale?
                 tc.y                          = ta.y + ImMin((tc.y + extra) - ta.y, +100.0f);
                 moving_within_opened_triangle = ImTriangleContainsPoint(ta, tb, tc, g.IO.MousePos);
-                // window->DrawList->PushClipRectFullScreen(); window->DrawList->AddTriangleFilled(ta, tb, tc, moving_within_opened_triangle ? IM_COL32(0,128,0,128) : IM_COL32(128,0,0,128)); window->DrawList->PopClipRect(); // Debug
+                // window->DrawList->PushClipRectFullScreen(); window->DrawList->AddTriangleFilled(ta, tb, tc, moving_within_opened_triangle ? IM_COL32(0,128,0,128) : IM_COL32(128,0,0,128));
+                // window->DrawList->PopClipRect(); // Debug
             }
         }
 
@@ -6811,7 +6819,8 @@ bool ImGui::TabItemEx(ImGuiTabBar *tab_bar, const char *label, bool *p_open, ImG
     const ImGuiStyle &style = g.Style;
     const ImGuiID id        = TabBarCalcTabID(tab_bar, label);
 
-    // If the user called us with *p_open == false, we early out and don't render. We make a dummy call to ItemAdd() so that attempts to use a contextual popup menu with an implicit ID won't use an older ID.
+    // If the user called us with *p_open == false, we early out and don't render. We make a dummy call to ItemAdd() so that attempts to use a contextual popup menu with an implicit ID won't use an
+    // older ID.
     if (p_open && !*p_open)
     {
         PushItemFlag(ImGuiItemFlags_NoNav | ImGuiItemFlags_NoNavDefaultFocus, true);

@@ -15,7 +15,7 @@
 #include "hack.hpp"
 #include "MiscTemporary.hpp"
 
-static settings::Bool log_to_console{ "hack.log-console", "false" };
+static settings::Boolean log_to_console{ "hack.log-console", "false" };
 
 static bool shut_down = false;
 FILE *logging::handle{ nullptr };

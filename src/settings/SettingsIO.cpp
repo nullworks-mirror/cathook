@@ -14,10 +14,10 @@ settings::SettingsWriter::SettingsWriter(settings::Manager &manager) : manager(m
 {
 }
 
-bool settings::SettingsWriter::saveTo(std::string path, bool only_changed)
+bool settings::SettingsWriter::saveTo(std::string path)
 {
     logging::Info("cat_save: started");
-    this->only_changed = only_changed;
+    this->only_changed = true;
 
     stream.open(path, std::ios::out);
 
@@ -103,6 +103,11 @@ bool settings::SettingsReader::loadFrom(std::string path)
         logging::Info("cat_load: Can't access file!");
         g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "CAT: cat_load: File doesn't exist / can't open file!\n");
         return false;
+    }
+
+    for (auto &v : settings::Manager::instance().registered)
+    {
+        v.second.variable.fromString(v.second.defaults);
     }
 
     while (!stream.fail())

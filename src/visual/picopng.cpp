@@ -1,4 +1,5 @@
 #include <vector>
+#include "picopng.hpp"
 
 /*
 decodePNG: The picoPNG function, decodes a PNG file buffer in memory, into a raw pixel buffer.
@@ -20,7 +21,7 @@ convert_to_rgba32: optional parameter, true by default.
   works for trusted PNG files. Use LodePNG instead of picoPNG if you need this information.
 return: 0 if success, not 0 if some error occured.
 */
-int decodePNG(unsigned char *&out_image, int &image_width, int &image_height, const unsigned char *in_png, size_t in_size, bool convert_to_rgba32 = true)
+int decodePNG(unsigned char *&out_image, int &image_width, int &image_height, const unsigned char *in_png, size_t in_size, bool convert_to_rgba32)
 {
     // picoPNG version 20101224
     // Copyright (c) 2005-2010 Lode Vandevenne
