@@ -67,7 +67,7 @@ bool shouldTarget(CachedEntity *entity)
     {
         if (hoovy && IsHoovy(entity))
             return false;
-        if (taunting && HasCondition<TFCond_Taunting>(entity))
+        if (taunting && HasCondition<TFCond_Taunting>(entity) && CE_INT(entity, netvar.m_iTauntIndex) == 3)
             return false;
         if (HasCondition<TFCond_HalloweenGhostMode>(entity))
             return false;
