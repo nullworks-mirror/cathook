@@ -191,7 +191,7 @@ static void cm()
     // Didn't change name - update timer a bit
     if (!strcmp(LOCAL_E->player_info.name, name))
     {
-        set_name.last += std::chrono::seconds(170);
+        set_name.last -= std::chrono::seconds(170);
         return;
     }
     NET_SetConVar setname("name", name);

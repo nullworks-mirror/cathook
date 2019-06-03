@@ -6,6 +6,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/container/flat_set.hpp>
 #include <chrono>
+#include "soundcache.hpp"
 
 namespace nav
 {
@@ -129,13 +130,22 @@ class ignoremanager
         for (size_t i = 0; i < HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
-            if (CE_BAD(ent))
+            if (CE_INVALID(ent))
                 continue;
             if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
             {
                 if (!ent->m_bEnemy())
                     continue;
                 Vector loc = GetBuildingPosition(ent);
+                if (RAW_ENT(ent)->IsDormant())
+                {
+                    auto ent_cache = sound_cache[ent->m_IDX];
+                    if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
+                    {
+                        loc -= RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
+                        loc += ent_cache.sound.m_pOrigin;
+                    }
+                }
                 for (auto &i : navfile->m_areas)
                 {
                     Vector area = i.m_center;
@@ -148,6 +158,7 @@ class ignoremanager
                     ignoredata &data = ignores[{ &i, nullptr }];
                     data.status      = danger_found;
                     data.ignoreTimeout.update();
+                    data.ignoreTimeout.last -= std::chrono::seconds(17);
                 }
             }
             else if (ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
@@ -163,12 +174,13 @@ class ignoremanager
                     if (loc.DistTo(area) > 130)
                         continue;
                     area.z += 41.5f;
-                    // Check if sentry can see us
+                    // Check if We can see stickies
                     if (!IsVectorVisible(loc, area, true))
                         continue;
                     ignoredata &data = ignores[{ &i, nullptr }];
                     data.status      = danger_found;
                     data.ignoreTimeout.update();
+                    data.ignoreTimeout.last -= std::chrono::seconds(17);
                 }
             }
         }

@@ -4,6 +4,7 @@
 #include "PlayerTools.hpp"
 #include "Aimbot.hpp"
 #include "FollowBot.hpp"
+#include "soundcache.hpp"
 
 namespace hacks::tf2::NavBot
 {
@@ -168,18 +169,30 @@ static bool isValidNearPosition(Vector vec, Vector target, const bot_class_confi
 // Returns true if began pathing
 static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config, CNavArea *&result)
 {
+    bool valid_dormant = false;
+    if (CE_VALID(ent) && RAW_ENT(ent)->IsDormant())
+    {
+        auto ent_cache = sound_cache[ent->m_IDX];
+        if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
+            valid_dormant = true;
+    }
+    Vector position;
+    if (valid_dormant)
+        position = sound_cache[ent->m_IDX].sound.m_pOrigin;
+    else
+        position = ent->m_vecOrigin();
     // Get some valid areas
     std::vector<CNavArea *> areas;
     for (auto &area : nav::navfile->m_areas)
     {
-        if (!isValidNearPosition(area.m_center, ent->m_vecOrigin(), config))
+        if (!isValidNearPosition(area.m_center, position, config))
             continue;
         areas.push_back(&area);
     }
     if (areas.empty())
         return false;
 
-    const Vector ent_orig = ent->m_vecOrigin();
+    const Vector ent_orig = position;
     // Area dist to target should be as close as possible to config.preferred
     std::sort(areas.begin(), areas.end(), [&](CNavArea *a, CNavArea *b) { return std::abs(a->m_center.DistTo(ent_orig) - config.preferred) < std::abs(b->m_center.DistTo(ent_orig) - config.preferred); });
 
@@ -227,7 +240,7 @@ static bool stayNearPlayers(const bot_class_config &config, CachedEntity *&resul
     for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
+        if (CE_INVALID(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
             continue;
         if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent))
         {
@@ -236,11 +249,46 @@ static bool stayNearPlayers(const bot_class_config &config, CachedEntity *&resul
         }
         if (!spy_cloak[i].check(*spy_ignore_time))
             continue;
+        if (RAW_ENT(ent)->IsDormant())
+        {
+            auto ent_cache = sound_cache[ent->m_IDX];
+            if (ent_cache.last_update.check(10000) || ent_cache.sound.m_pOrigin.IsZero())
+                continue;
+        }
         players.push_back(ent);
     }
     if (players.empty())
         return false;
-    std::sort(players.begin(), players.end(), [](CachedEntity *a, CachedEntity *b) { return a->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin) < b->m_vecOrigin().DistTo(g_pLocalPlayer->v_Origin); });
+    std::sort(players.begin(), players.end(), [](CachedEntity *a, CachedEntity *b) {
+        // Decide if to use sound cache or just normal origin for ent a
+        bool valid_dormant_a = false;
+        if (RAW_ENT(a)->IsDormant())
+        {
+            auto ent_cache = sound_cache[a->m_IDX];
+            if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
+                valid_dormant_a = true;
+        }
+        Vector position_a;
+        if (valid_dormant_a)
+            position_a = sound_cache[a->m_IDX].sound.m_pOrigin;
+        else
+            position_a = a->m_vecOrigin();
+
+        // Decide if to use sound cache or just normal origin for ent b
+        bool valid_dormant_b = false;
+        if (RAW_ENT(b)->IsDormant())
+        {
+            auto ent_cache = sound_cache[b->m_IDX];
+            if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
+                valid_dormant_b = true;
+        }
+        Vector position_b;
+        if (valid_dormant_b)
+            position_b = sound_cache[b->m_IDX].sound.m_pOrigin;
+        else
+            position_b = b->m_vecOrigin();
+        return position_a.DistTo(g_pLocalPlayer->v_Origin) < position_b.DistTo(g_pLocalPlayer->v_Origin);
+    });
     for (auto player : players)
     {
         if (stayNearPlayer(player, config, result_area))
@@ -282,21 +330,35 @@ static bool stayNear()
             last_target = nearest.first;
             return true;
         }
-
+    bool valid_dormant = false;
+    if (CE_VALID(last_target) && RAW_ENT(last_target)->IsDormant())
+    {
+        auto ent_cache = sound_cache[last_target->m_IDX];
+        if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
+            valid_dormant = true;
+    }
     if (current_task == task::stay_near)
     {
         static Timer invalid_area_time{};
         static Timer invalid_target_time{};
         // Do we already have a stay near target? Check if its still good.
-        if (CE_GOOD(last_target))
+        if (CE_GOOD(last_target) || valid_dormant)
             invalid_target_time.update();
         else
             invalid_area_time.update();
         // Check if we still have LOS and are close enough/far enough
-        if (CE_GOOD(last_target) && stayNearHelpers::isValidNearPosition(last_area->m_center, last_target->m_vecOrigin(), *config))
+        Vector position;
+        if (CE_VALID(last_target))
+        {
+            if (valid_dormant)
+                position = sound_cache[last_target->m_IDX].sound.m_pOrigin;
+            else
+                position = last_target->m_vecOrigin();
+        }
+        if ((CE_GOOD(last_target) || valid_dormant) && stayNearHelpers::isValidNearPosition(last_area->m_center, position, *config))
             invalid_area_time.update();
 
-        if (CE_GOOD(last_target) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || !player_tools::shouldTarget(last_target) || !spy_cloak[last_target->m_IDX].check(*spy_ignore_time) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
+        if ((CE_GOOD(last_target) || valid_dormant) && (!last_target->m_bAlivePlayer() || !last_target->m_bEnemy() || !player_tools::shouldTarget(last_target) || !spy_cloak[last_target->m_IDX].check(*spy_ignore_time) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
         {
             if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))
                 spy_cloak[last_target->m_IDX].update();
@@ -314,13 +376,19 @@ static bool stayNear()
     }
     // Are we doing nothing? Check if our current location can still attack our
     // last target
-    if (current_task == task::none && CE_GOOD(last_target) && last_target->m_bAlivePlayer() && last_target->m_bEnemy())
+    if (current_task == task::none && (CE_GOOD(last_target) || valid_dormant) && last_target->m_bAlivePlayer() && last_target->m_bEnemy())
     {
         if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))
             spy_cloak[last_target->m_IDX].update();
         if (spy_cloak[last_target->m_IDX].check(*spy_ignore_time))
         {
-            if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, last_target->m_vecOrigin(), *config))
+            Vector position;
+            if (valid_dormant)
+                position = sound_cache[last_target->m_IDX].sound.m_pOrigin;
+            else
+                position = last_target->m_vecOrigin();
+
+            if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, position, *config))
                 return true;
             // If not, can we try pathing to our last target again?
             if (stayNearHelpers::stayNearPlayer(last_target, *config, last_area))
