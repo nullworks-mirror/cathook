@@ -272,7 +272,14 @@ static void cm()
             {
 
                 // Set entity color
-                SetEntityColor(ent, colors::EntityF(ent));
+                rgba_t color = colors::EntityF(ent);
+                if (RAW_ENT(ent)->IsDormant())
+                {
+                    color.r *= 0.5f;
+                    color.g *= 0.5f;
+                    color.b *= 0.5f;
+                }
+                SetEntityColor(ent, color);
 
                 // If snow distance, add string here
                 if (show_distance)
@@ -391,7 +398,16 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     // TODO, check if we can move this after world to screen check
     rgba_t fg = ent_data.color;
     if (!fg || fg.a == 0.0f)
-        fg = ent_data.color = colors::EntityF(ent);
+    {
+        fg = colors::EntityF(ent);
+        if (RAW_ENT(ent)->IsDormant())
+        {
+            fg.r *= 0.5f;
+            fg.g *= 0.5f;
+            fg.b *= 0.5f;
+        }
+        ent_data.color = fg;
+    }
 
     // Check if entity is on screen, then save screen position if true
     Vector position = ent->m_vecOrigin();
@@ -539,6 +555,12 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 fg = colors::EntityF(ent);
             if (transparent)
                 fg = colors::Transparent(fg);
+            if (RAW_ENT(ent)->IsDormant())
+            {
+                fg.r *= 0.5f;
+                fg.g *= 0.5f;
+                fg.b *= 0.5f;
+            }
             if (!box_3d_player && box_esp)
                 DrawBox(ent, fg);
             else if (box_3d_player)
@@ -553,6 +575,12 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 fg = colors::EntityF(ent);
             if (transparent)
                 fg = colors::Transparent(fg);
+            if (RAW_ENT(ent)->IsDormant())
+            {
+                fg.r *= 0.5f;
+                fg.g *= 0.5f;
+                fg.b *= 0.5f;
+            }
             if (!box_3d_building && box_esp)
                 DrawBox(ent, fg);
             else if (box_3d_building)
@@ -1151,7 +1179,13 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                 // Conditions esp
                 if (show_conditions)
                 {
-                    const auto &clr = colors::EntityF(ent);
+                    auto clr = colors::EntityF(ent);
+                    if (RAW_ENT(ent)->IsDormant())
+                    {
+                        clr.r *= 0.5f;
+                        clr.g *= 0.5f;
+                        clr.b *= 0.5f;
+                    }
                     // Invis
                     if (IsPlayerInvisible(ent))
                     {
@@ -1279,13 +1313,13 @@ void _FASTCALL Draw3DBox(CachedEntity *ent, const rgba_t &clr)
     if (!success)
         return;
 
+    rgba_t draw_clr = clr;
     // Draw the actual box
     for (int i = 1; i <= 4; i++)
     {
-    draw:
-        draw::Line((points[i - 1].x), (points[i - 1].y), (points[i % 4].x) - (points[i - 1].x), (points[i % 4].y) - (points[i - 1].y), clr, 0.5f);
-        draw::Line((points[i - 1].x), (points[i - 1].y), (points[i + 3].x) - (points[i - 1].x), (points[i + 3].y) - (points[i - 1].y), clr, 0.5f);
-        draw::Line((points[i + 3].x), (points[i + 3].y), (points[i % 4 + 4].x) - (points[i + 3].x), (points[i % 4 + 4].y) - (points[i + 3].y), clr, 0.5f);
+        draw::Line((points[i - 1].x), (points[i - 1].y), (points[i % 4].x) - (points[i - 1].x), (points[i % 4].y) - (points[i - 1].y), draw_clr, 0.5f);
+        draw::Line((points[i - 1].x), (points[i - 1].y), (points[i + 3].x) - (points[i - 1].x), (points[i + 3].y) - (points[i - 1].y), draw_clr, 0.5f);
+        draw::Line((points[i + 3].x), (points[i + 3].y), (points[i % 4 + 4].x) - (points[i + 3].x), (points[i % 4 + 4].y) - (points[i + 3].y), draw_clr, 0.5f);
     }
 }
 
@@ -1312,7 +1346,6 @@ void _FASTCALL DrawBox(CachedEntity *ent, const rgba_t &clr)
     // Depending on whether the player is cloaked, we change the color
     // acordingly
     rgba_t border = ((ent->m_iClassID() == RCC_PLAYER) && IsPlayerInvisible(ent)) ? colors::FromRGBA8(160, 160, 160, clr.a * 255.0f) : colors::Transparent(colors::black, clr.a);
-
     // With box corners, we draw differently
     if ((int) box_esp == 2)
         BoxCorners(min_x, min_y, max_x, max_y, clr, (clr.a != 1.0f));

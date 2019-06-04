@@ -60,10 +60,10 @@ inline std::optional<rgba_t> getColor(CachedEntity *ent)
     {
         if (!ent->m_bEnemy())
             return std::nullopt;
-        float dist = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+        float dist = ent->m_vecDormantOrigin().DistTo(LOCAL_E->m_vecOrigin());
         if (*max_dist && dist > *max_dist)
             return std::nullopt;
-        if (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin()) < *min_fov)
+        if (GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecDormantOrigin()) < *min_fov)
             return std::nullopt;
         float hf = float(std::min(dist, *green_dist)) / float(*green_dist);
         rgba_t color(0.0f, 2.0f * hf, 2.0f * (1.0f - hf));
@@ -79,7 +79,7 @@ inline std::optional<rgba_t> getColor(CachedEntity *ent)
         {
             if (!ent->m_bEnemy())
                 return std::nullopt;
-            float dist = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+            float dist = ent->m_vecDormantOrigin().DistTo(LOCAL_E->m_vecOrigin());
             if (*max_dist && dist > *max_dist)
                 return std::nullopt;
             return colors::Health(std::min(dist, *green_dist), *green_dist);
@@ -110,7 +110,10 @@ void draw()
     {
         // Get and check player
         auto ent = ENTITY(i);
-        if (CE_BAD(ent) || !ent->m_bAlivePlayer())
+        if (CE_INVALID(ent) || !ent->m_bAlivePlayer())
+            continue;
+        Vector origin = ent->m_vecDormantOrigin();
+        if (origin == Vector(0.0f, 0.0f, 0.0f))
             continue;
         if (*buildings)
             if (ent->m_Type() != ENTITY_PLAYER && ent->m_Type() != ENTITY_BUILDING)
@@ -120,10 +123,12 @@ void draw()
         auto color = getColor(ent);
         if (!color)
             continue;
+        if (RAW_ENT(ent)->IsDormant())
+            color = colors::FromRGBA8(160, 160, 160, 255);
         color->a = *opaque;
 
         Vector out;
-        if (!draw::WorldToScreen(ent->m_vecOrigin(), out))
+        if (!draw::WorldToScreen(origin, out))
         {
             // We need to flip on both x and y axis in case m_vecOrigin its not actually on screen
             out.x = draw::width - out.x;

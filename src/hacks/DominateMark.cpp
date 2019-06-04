@@ -5,6 +5,7 @@
  *
  */
 #include "common.hpp"
+#include "soundcache.hpp"
 
 namespace hacks::tf2::dominatemark
 {
@@ -24,7 +25,7 @@ static InitRoutine init([]() {
             for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
             {
                 CachedEntity *ent = ENTITY(i);
-                if (CE_GOOD(ent) && ent->m_bAlivePlayer() && re::CTFPlayerShared::IsDominatingPlayer(shared_player, i))
+                if (CE_VALID(ent) && ent->m_bAlivePlayer() && re::CTFPlayerShared::IsDominatingPlayer(shared_player, i))
                 {
                     Vector draw_pos;
                     float size;
@@ -33,6 +34,13 @@ static InitRoutine init([]() {
                     // Calculate draw pos
                     auto c   = ent->InternalEntity()->GetCollideable();
                     draw_pos = ent->m_vecOrigin();
+                    if (RAW_ENT(ent)->IsDormant())
+                    {
+                        if (!sound_cache[ent->m_IDX].last_update.check(10000) && !sound_cache[ent->m_IDX].sound.m_pOrigin.IsZero())
+                            draw_pos = sound_cache[ent->m_IDX].sound.m_pOrigin;
+                        else
+                            continue;
+                    }
                     draw_pos.z += c->OBBMaxs().z;
                     // Calculate draw size
                     size = *max_size * 1.5f - ent->m_flDistance() / 20.0f;

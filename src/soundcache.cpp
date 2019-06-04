@@ -1,16 +1,5 @@
 #include "common.hpp"
-
-struct CSndInfo_t
-{
-    Vector m_pOrigin;
-    int m_nSoundSource;
-};
-
-struct SoundStruct
-{
-    CSndInfo_t sound;
-    Timer last_update;
-};
+#include "soundcache.hpp"
 std::map<int, SoundStruct> sound_cache;
 
 void CreateMove()
@@ -21,8 +10,7 @@ void CreateMove()
     g_ISoundEngine->GetActiveSounds(sound_list);
     for (auto i : sound_list)
     {
-        sound_cache[i.m_nSoundSource].sound.m_pOrigin      = *i.m_pOrigin;
-        sound_cache[i.m_nSoundSource].sound.m_nSoundSource = sound_cache[i.m_nSoundSource].sound.m_nSoundSource;
+        sound_cache[i.m_nSoundSource].sound.m_pOrigin = *i.m_pOrigin;
         sound_cache[i.m_nSoundSource].last_update.update();
     }
 }

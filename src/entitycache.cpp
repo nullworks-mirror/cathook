@@ -9,6 +9,7 @@
 
 #include <time.h>
 #include <settings/Float.hpp>
+#include "soundcache.hpp"
 
 bool IsProjectileACrit(CachedEntity *ent)
 {
@@ -125,6 +126,15 @@ bool CachedEntity::IsVisible()
     m_bVisCheckComplete = true;
 
     return false;
+}
+
+Vector CachedEntity::m_vecDormantOrigin()
+{
+    if (!RAW_ENT(this)->IsDormant())
+        return m_vecOrigin();
+    else if (!sound_cache[m_IDX].last_update.check(10000) && !sound_cache[m_IDX].sound.m_pOrigin.IsZero())
+        return sound_cache[m_IDX].sound.m_pOrigin;
+    return Vector(0.0f);
 }
 
 namespace entity_cache

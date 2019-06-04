@@ -10,6 +10,7 @@
 #include <settings/Bool.hpp>
 #include "navparser.hpp"
 #include "NavBot.hpp"
+#include "soundcache.hpp"
 
 namespace hacks::shared::followbot
 {
@@ -80,9 +81,9 @@ static void checkAFK()
     for (int i = 0; i < g_GlobalVars->maxClients; i++)
     {
         auto entity = ENTITY(i);
-        if (CE_BAD(entity))
+        if (CE_INVALID(entity))
             continue;
-        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(60.0f))
+        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(60.0f) || (RAW_ENT(entity)->IsDormant() && !sound_cache[i].last_update.check(10000) && !sound_cache[i].sound.m_pOrigin.IsZero()))
         {
             afkTicks[i].update();
         }
@@ -113,8 +114,16 @@ static void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Or
         }
     }
 
-    Vector dist       = target->m_vecOrigin() - corner;
-    int maxiterations = floor(corner.DistTo(target->m_vecOrigin())) / 40;
+    Vector position = target->m_vecOrigin();
+    if (RAW_ENT(target)->IsDormant())
+    {
+        if (!sound_cache[target->m_IDX].last_update.check(10000) && !sound_cache[target->m_IDX].sound.m_pOrigin.IsZero())
+            position = sound_cache[target->m_IDX].sound.m_pOrigin;
+        else
+            return;
+    }
+    Vector dist       = position - corner;
+    int maxiterations = floor(corner.DistTo(position)) / 40;
     for (int i = 0; i < maxiterations; i++)
     {
         breadcrumbs.push_back(corner + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
@@ -126,12 +135,30 @@ static void addCrumbPair(CachedEntity *player1, CachedEntity *player2, std::pair
     Vector corner1 = corners.first;
     Vector corner2 = corners.second;
 
+    Vector position1 = player1->m_vecOrigin();
+    if (RAW_ENT(player1)->IsDormant())
     {
-        Vector dist       = corner1 - player1->m_vecOrigin();
-        int maxiterations = floor(corner1.DistTo(player1->m_vecOrigin())) / 40;
+        if (!sound_cache[player1->m_IDX].last_update.check(10000) && !sound_cache[player1->m_IDX].sound.m_pOrigin.IsZero())
+            position1 = sound_cache[player1->m_IDX].sound.m_pOrigin;
+        else
+            return;
+    }
+
+    Vector position2 = player2->m_vecOrigin();
+    if (RAW_ENT(player1)->IsDormant())
+    {
+        if (!sound_cache[player2->m_IDX].last_update.check(10000) && !sound_cache[player2->m_IDX].sound.m_pOrigin.IsZero())
+            position2 = sound_cache[player2->m_IDX].sound.m_pOrigin;
+        else
+            return;
+    }
+
+    {
+        Vector dist       = corner1 - position1;
+        int maxiterations = floor(corner1.DistTo(position1)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            breadcrumbs.push_back(player1->m_vecOrigin() + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+            breadcrumbs.push_back(position1 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
         }
     }
     {
@@ -143,8 +170,8 @@ static void addCrumbPair(CachedEntity *player1, CachedEntity *player2, std::pair
         }
     }
     {
-        Vector dist       = player2->m_vecOrigin() - corner2;
-        int maxiterations = floor(corner2.DistTo(player2->m_vecOrigin())) / 40;
+        Vector dist       = position2 - corner2;
+        int maxiterations = floor(corner2.DistTo(position2)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
             breadcrumbs.push_back(corner2 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
@@ -227,7 +254,13 @@ static bool startFollow(CachedEntity *entity, bool useNavbot)
     }
     if (useNavbot)
     {
-        if (nav::navTo(entity->m_vecOrigin(), 8, true, false))
+        Vector position = entity->m_vecOrigin();
+        if (RAW_ENT(entity)->IsDormant())
+        {
+            if (!sound_cache[entity->m_IDX].last_update.check(10000) && !sound_cache[entity->m_IDX].sound.m_pOrigin.IsZero())
+                position = sound_cache[entity->m_IDX].sound.m_pOrigin;
+        }
+        if (nav::navTo(position, 8, true, false))
         {
             navtarget = entity->m_IDX;
             return true;
@@ -264,7 +297,9 @@ static void cm()
         if (breadcrumbs.size() > crumb_limit)
             follow_target = 0;
         // Still good check
-        else if (CE_BAD(ENTITY(follow_target)) || IsPlayerInvisible(ENTITY(follow_target)))
+        else if (CE_INVALID(ENTITY(follow_target)) || IsPlayerInvisible(ENTITY(follow_target)))
+            follow_target = 0;
+        else if (RAW_ENT(ENTITY(follow_target))->IsDormant() && (sound_cache[follow_target].last_update.check(1000) || sound_cache[follow_target].sound.m_pOrigin.IsZero()))
             follow_target = 0;
     }
 
@@ -283,7 +318,7 @@ static void cm()
             for (int i = 1; i < ent_count; i++)
             {
                 auto entity = ENTITY(i);
-                if (CE_BAD(entity)) // Exist + dormant
+                if (CE_INVALID(entity)) // Exist + dormant
                     continue;
                 if (i == follow_target)
                     continue;
@@ -294,6 +329,8 @@ static void cm()
                 if (entity == LOCAL_E)
                     continue;
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
+                    continue;
+                if (RAW_ENT(entity)->IsDormant() && (sound_cache[i].last_update.check(10000) || sound_cache[i].sound.m_pOrigin.IsZero()))
                     continue;
                 if (startFollow(entity, isNavBotCM))
                 {
@@ -315,7 +352,7 @@ static void cm()
             for (int i = 1; i < ent_count; i++)
             {
                 auto entity = ENTITY(i);
-                if (CE_BAD(entity)) // Exist + dormant
+                if (CE_INVALID(entity)) // Exist + dormant
                     continue;
                 if (!followcart)
                     if (entity->m_Type() != ENTITY_PLAYER)
@@ -330,6 +367,8 @@ static void cm()
                 if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
                     continue;
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
+                    continue;
+                if (RAW_ENT(entity)->IsDormant() && (sound_cache[i].last_update.check(10000) || sound_cache[i].sound.m_pOrigin.IsZero()))
                     continue;
                 // const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
                 // FIXME follow cart/point
@@ -370,7 +409,7 @@ static void cm()
     if (navtarget)
     {
         auto ent = ENTITY(navtarget);
-        if (CE_GOOD(ent) && startFollow(ent, false))
+        if (CE_VALID(ent) && startFollow(ent, false))
         {
             follow_target = navtarget;
             navtarget     = 0;
@@ -380,14 +419,19 @@ static void cm()
             breadcrumbs.clear();
             follow_target = 0;
             static Timer navtimer{};
-            if (CE_GOOD(ent))
+            if (CE_VALID(ent))
             {
                 if (!ent->m_bAlivePlayer())
                 {
                     navtarget = 0;
                 }
+                if (RAW_ENT(ent)->IsDormant() && (sound_cache[ent->m_IDX].last_update.check(10000) || sound_cache[ent->m_IDX].sound.m_pOrigin.IsZero()))
+                    navtarget = 0;
                 if (navtimer.test_and_set(800))
                 {
+                    Vector position = ent->m_vecOrigin();
+                    if (RAW_ENT(ent)->IsDormant() && !sound_cache[ent->m_IDX].last_update.check(10000) && !sound_cache[ent->m_IDX].sound.m_pOrigin.IsZero())
+                        position = sound_cache[ent->m_IDX].sound.m_pOrigin;
                     if (nav::navTo(ent->m_vecOrigin(), 8, true, false))
                         navinactivity.update();
                 }
@@ -413,7 +457,7 @@ static void cm()
 
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed
-    if (CE_BAD(followtar) || !followtar->m_bAlivePlayer())
+    if (CE_INVALID(followtar) || !followtar->m_bAlivePlayer())
     {
         follow_target = 0;
         return;

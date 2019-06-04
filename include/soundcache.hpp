@@ -1,9 +1,10 @@
 #pragma once
-#include "common.hpp"
+#include "timer.hpp"
+#include "map"
+#include "public/mathlib/vector.h"
 struct CSndInfo_t
 {
     Vector m_pOrigin;
-    int m_nSoundSource;
 };
 
 struct SoundStruct
