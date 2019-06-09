@@ -1419,9 +1419,7 @@ CatCommand print_classnames("debug_print_classnames", "Lists classnames currentl
 
 void PrintChat(const char *fmt, ...)
 {
-#if not ENABLE_VISUALS
-    return;
-#endif
+#if ENABLE_VISUALS
     CHudBaseChat *chat = (CHudBaseChat *) g_CHUD->FindElement("CHudChat");
     if (chat)
     {
@@ -1435,6 +1433,7 @@ void PrintChat(const char *fmt, ...)
         logging::Info("%s", str.get());
         chat->Printf(str.get());
     }
+#endif
 }
 
 // You shouldn't delete[] this unique_ptr since it
