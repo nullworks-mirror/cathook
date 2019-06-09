@@ -39,7 +39,7 @@ void Lock()
 {
     if (safety)
     {
-        ConColorMsg({ 255, 0, 0, 255 }, "Switch `cat set achievement.safety` to true before using any achievement commands!\n");
+        ConColorMsg({ 255, 0, 0, 255 }, "Switch `cat set achievement.safety` to false before using any achievement commands!\n");
         return;
     }
     g_ISteamUserStats->RequestCurrentStats();
@@ -60,7 +60,7 @@ void Unlock()
     int)Item->uniqueid());*/
     if (safety)
     {
-        ConColorMsg({ 255, 0, 0, 255 }, "Switch `cat set achievement.safety` to true before using any achievement commands!\n");
+        ConColorMsg({ 255, 0, 0, 255 }, "Switch `cat set achievement.safety` to false before using any achievement commands!\n");
         return;
     }
     for (int i = 0; i < g_IAchievementMgr->GetAchievementCount(); i++)
