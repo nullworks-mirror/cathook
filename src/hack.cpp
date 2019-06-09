@@ -19,7 +19,9 @@
 #include "MiscTemporary.hpp"
 
 #include <hacks/hacklist.hpp>
-
+#if EXTERNAL_DRAWING
+#include "xoverlay.h"
+#endif
 #define STRINGIFY(x) #x
 #define TO_STRING(x) STRINGIFY(x)
 
@@ -424,6 +426,9 @@ void hack::Shutdown()
 #if ENABLE_VISUALS
         g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_glow");
         g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_chams");
+#if EXTERNAL_DRAWING
+        xoverlay_destroy();
+#endif
 #endif
     }
     logging::Info("Success..");

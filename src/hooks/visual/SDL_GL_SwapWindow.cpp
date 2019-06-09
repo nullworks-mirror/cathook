@@ -51,14 +51,14 @@ DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
     if (!tf2_sdl)
         tf2_sdl = SDL_GL_GetCurrentContext();
 
-#if ENABLE_IMGUI_DRAWING
+#if ENABLE_IMGUI_DRAWING && !EXTERNAL_DRAWING
     if (!imgui_sdl)
         imgui_sdl = SDL_GL_CreateContext(window);
 #endif
 
     if (isHackActive() && !disable_visuals)
     {
-#if ENABLE_IMGUI_DRAWING
+#if ENABLE_IMGUI_DRAWING && !EXTERNAL_DRAWING
         SDL_GL_MakeCurrent(window, imgui_sdl);
 #endif
         static int prev_width, prev_height;

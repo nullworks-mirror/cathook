@@ -52,6 +52,10 @@ if(NOT EnableVisuals)
 endif()
 
 if (EnableVisuals)
+# Bruh moment
+    if (ExternalDrawing AND EnableEngineDrawing)
+        set(ExternalDrawing 0)
+    endif()
     if (EnableImGuiDrawing)
         set(EnableEngineDrawing 0)
         find_package(Freetype REQUIRED)

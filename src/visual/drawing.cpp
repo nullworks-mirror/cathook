@@ -139,8 +139,8 @@ static InitRoutine font_size([]() {
         if (after > 0 && after < 100)
         {
 #if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
-            fonts::esp_font_size->unload();
-            fonts::esp_font_size.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
+            fonts::esp->unload();
+            fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
 #else
             fonts::esp->changeSize(after);
 #endif
@@ -491,16 +491,12 @@ unsigned int Texture::get()
     return texture_id;
 }
 #endif
-SDL_GLContext context = nullptr;
 
 void InitGL()
 {
     logging::Info("InitGL: %d, %d", draw::width, draw::height);
 #if EXTERNAL_DRAWING
     int status = xoverlay_init();
-    xoverlay_draw_begin();
-    glez::init(xoverlay_library.width, xoverlay_library.height);
-    xoverlay_draw_end();
     if (status < 0)
     {
         logging::Info("ERROR: could not initialize Xoverlay: %d", status);
@@ -510,9 +506,16 @@ void InitGL()
         logging::Info("Xoverlay initialized");
     }
     xoverlay_show();
-    context = SDL_GL_CreateContext(sdl_hooks::window);
+    xoverlay_draw_begin();
+#if !ENABLE_IMGUI_DRAWING && !ENABLE_ENGINE_DRAWING
+    glez::init(xoverlay_library.width, xoverlay_library.height);
+#elif ENABLE_IMGUI_DRAWING
+    im_renderer::init();
+#endif
+    xoverlay_draw_end();
 #else
 #if ENABLE_IMGUI_DRAWING
+    glewInit();
     im_renderer::init();
 #elif !ENABLE_ENGINE_DRAWING
     glClearColor(1.0, 0.0, 0.0, 0.5);
@@ -530,6 +533,9 @@ void InitGL()
 void BeginGL()
 {
 #if ENABLE_IMGUI_DRAWING
+#if EXTERNAL_DRAWING
+    xoverlay_draw_begin();
+#endif
     im_renderer::renderStart();
 #elif !ENABLE_ENGINE_DRAWING
     glColor3f(1, 1, 1);
@@ -554,6 +560,10 @@ void EndGL()
 {
 #if ENABLE_IMGUI_DRAWING
     im_renderer::renderEnd();
+#if EXTERNAL_DRAWING
+    xoverlay_draw_end();
+    SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
+#endif
 #elif !ENABLE_ENGINE_DRAWING
     PROF_SECTION(DRAWEX_draw_end);
     {
