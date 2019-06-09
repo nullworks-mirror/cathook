@@ -431,7 +431,7 @@ int count_bots{ 0 };
 
 bool should_ignore_player(CachedEntity *player)
 {
-    if (CE_BAD(player))
+    if (CE_INVALID(player))
         return false;
 
     return is_a_catbot(player->player_info.friendsID);

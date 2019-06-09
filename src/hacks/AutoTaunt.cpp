@@ -40,13 +40,16 @@ public:
         if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
             bool nearby = false;
-            for (int i = 1; i < HIGHEST_ENTITY; i++)
+            for (int i = 1; i <= HIGHEST_ENTITY; i++)
             {
                 auto ent = ENTITY(i);
-                if (CE_GOOD(ent) && (ent->m_Type() == ENTITY_PLAYER || ent->m_iClassID() == CL_CLASS(CObjectSentrygun)) && ent->m_bEnemy() && ent->m_bAlivePlayer() && ent->m_flDistance() < *safety)
+                if (CE_VALID(ent) && (ent->m_Type() == ENTITY_PLAYER || ent->m_iClassID() == CL_CLASS(CObjectSentrygun)) && ent->m_bEnemy() && ent->m_bAlivePlayer())
                 {
-                    nearby = true;
-                    break;
+                    if (ent->m_vecDormantOrigin() != Vector(0.0f) && ent->m_vecDormantOrigin().DistTo(LOCAL_E->m_vecOrigin()) < *safety)
+                    {
+                        nearby = true;
+                        break;
+                    }
                 }
             }
             if (!nearby && RandomFloat(0, 100) <= float(chance))

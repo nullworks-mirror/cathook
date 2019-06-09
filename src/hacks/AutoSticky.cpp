@@ -8,6 +8,7 @@
 #include "common.hpp"
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
+#include "soundcache.hpp"
 
 namespace hacks::tf::autosticky
 {
@@ -16,8 +17,8 @@ static settings::Boolean buildings{ "autosticky.buildings", "true" };
 static settings::Boolean legit{ "autosticky.legit", "false" };
 
 // A storage array for ents
-std::vector<CachedEntity *> bombs;
-std::vector<CachedEntity *> targets;
+static std::vector<CachedEntity *> bombs;
+static std::vector<CachedEntity *> targets;
 
 // Function to tell when an ent is the local players own bomb
 bool IsBomb(CachedEntity *ent)
@@ -86,6 +87,7 @@ bool IsTarget(CachedEntity *ent)
     // Target isnt a good type
     return false;
 }
+
 // Function called by game for movement
 void CreateMove()
 {
@@ -108,12 +110,12 @@ void CreateMove()
     targets.clear();
 
     // Cycle through the ents and search for valid ents
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
         // Assign the for loops tick number to an ent
         CachedEntity *ent = ENTITY(i);
         // Check for dormancy and if valid
-        if (CE_BAD(ent))
+        if (CE_INVALID(ent))
             continue;
         // Check if ent is a bomb or suitable target and push to respective
         // arrays
@@ -134,10 +136,22 @@ void CreateMove()
         for (auto target : targets)
         {
             // Check distance to the target to see if the sticky will hit
-            if (bomb->m_vecOrigin().DistToSqr(target->m_vecOrigin()) < 16900)
+            Vector position = target->m_vecOrigin();
+            if (RAW_ENT(target)->IsDormant())
+            {
+                if (!sound_cache[target->m_IDX].last_update.check(10000) && sound_cache[target->m_IDX].sound.m_pOrigin != Vector(0.0f))
+                    position = sound_cache[target->m_IDX].sound.m_pOrigin;
+                else
+                    continue;
+            }
+            auto collideable = RAW_ENT(target)->GetCollideable();
+
+            position = position + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
+
+            if (bomb->m_vecOrigin().DistToSqr(position) < 16900)
             {
                 // Vis check the target from the bomb
-                if (VisCheckEntFromEnt(bomb, target))
+                if (IsVectorVisible(bomb->m_vecOrigin(), target->m_vecDormantOrigin(), true))
                 {
                     // Check user settings if legit mode is off, if legit mode
                     // is off then detonate
