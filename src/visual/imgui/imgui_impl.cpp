@@ -1,4 +1,5 @@
 
+#include <GL/glew.h>
 #include "visual/imgui/imgui_impl.h"
 #include "visual/drawing.hpp"
 #include "visual/imgui/imgui.h"
@@ -35,6 +36,7 @@ void ImGui_Impl_Render(ImDrawData *draw_data)
     glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);

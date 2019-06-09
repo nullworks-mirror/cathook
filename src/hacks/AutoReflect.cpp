@@ -96,7 +96,7 @@ void CreateMove()
     float closest_dist = 0.0f;
     Vector closest_vec;
     // Loop to find the closest entity
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
 
         // Find an ent from the for loops current tick

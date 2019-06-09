@@ -198,7 +198,7 @@ int BlastDangerValue(CachedEntity *patient)
         return 1;
     }
     // Find rockets/pipes nearby
-    for (int i = 32; i < HIGHEST_ENTITY; i++)
+    for (int i = 32; i <= HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -233,7 +233,7 @@ int NearbyEntities()
     int ret = 0;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return ret;
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))

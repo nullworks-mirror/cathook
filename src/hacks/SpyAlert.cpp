@@ -38,7 +38,7 @@ void Draw()
     spy_count            = 0;
     if (last_say > g_GlobalVars->curtime)
         last_say = 0;
-    for (int i = 0; i < HIGHEST_ENTITY && i < 32; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY && i < 32; i++)
     {
         ent = ENTITY(i);
         if (CE_BAD(ent))

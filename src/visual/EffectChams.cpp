@@ -342,7 +342,7 @@ void EffectChams::Render(int x, int y, int w, int h)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     BeginRenderChams();
-    for (int i = 1; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i <= HIGHEST_ENTITY; i++)
     {
         IClientEntity *entity = g_IEntityList->GetClientEntity(i);
         if (!entity || entity->IsDormant() || CE_BAD(ENTITY(i)))

@@ -25,7 +25,7 @@ static settings::Boolean show_teammates{ "radar.show.teammates", "true" };
 static settings::Boolean show_healthpacks{ "radar.show.health", "true" };
 static settings::Boolean show_ammopacks{ "radar.show.ammo", "true" };
 
-Timer invalid{};
+static Timer invalid{};
 
 std::pair<int, int> WorldToRadar(int x, int y)
 {
@@ -76,7 +76,7 @@ void DrawEntity(int x, int y, CachedEntity *ent)
     rgba_t clr;
     float healthp = 0.0f;
 
-    if (CE_GOOD(ent))
+    if (CE_VALID(ent))
     {
         if (ent->m_Type() == ENTITY_PLAYER)
         {
@@ -89,7 +89,9 @@ void DrawEntity(int x, int y, CachedEntity *ent)
                 return;
             if (clazz <= 0 || clazz > 9)
                 return;
-            const auto &wtr = WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
+            if (ent->m_vecDormantOrigin() == Vector(0.0f))
+                return;
+            const auto &wtr = WorldToRadar(ent->m_vecDormantOrigin().x, ent->m_vecDormantOrigin().y);
 
             if (use_icons)
             {
@@ -116,7 +118,9 @@ void DrawEntity(int x, int y, CachedEntity *ent)
         {
             if (ent->m_iClassID() == CL_CLASS(CObjectDispenser) || ent->m_iClassID() == CL_CLASS(CObjectSentrygun) || ent->m_iClassID() == CL_CLASS(CObjectTeleporter))
             {
-                const auto &wtr = WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
+                if (ent->m_vecDormantOrigin() == Vector(0.0f))
+                    return;
+                const auto &wtr = WorldToRadar(ent->m_vecDormantOrigin().x, ent->m_vecDormantOrigin().y);
                 tx_teams[CE_INT(ent, netvar.iTeamNum) - 2].draw(x + wtr.first, y + wtr.second, *icon_size * 1.5f, *icon_size * 1.5f, colors::white);
                 switch (ent->m_iClassID())
                 {
@@ -153,16 +157,18 @@ void DrawEntity(int x, int y, CachedEntity *ent)
         }
         else if (ent->m_Type() == ENTITY_GENERIC)
         {
+            if (ent->m_vecDormantOrigin() == Vector(0.0f))
+                return;
             if (show_healthpacks && (ent->m_ItemType() == ITEM_HEALTH_LARGE || ent->m_ItemType() == ITEM_HEALTH_MEDIUM || ent->m_ItemType() == ITEM_HEALTH_SMALL))
             {
-                const auto &wtr = WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
+                const auto &wtr = WorldToRadar(ent->m_vecDormantOrigin().x, ent->m_vecDormantOrigin().y);
                 float sz        = *icon_size * 0.15f * 0.5f;
                 float sz2       = *icon_size * 0.85;
                 tx_items[0].draw(x + wtr.first + sz, y + wtr.second + sz, sz2, sz2, colors::white);
             }
             else if (show_ammopacks && (ent->m_ItemType() == ITEM_AMMO_LARGE || ent->m_ItemType() == ITEM_AMMO_MEDIUM || ent->m_ItemType() == ITEM_AMMO_SMALL))
             {
-                const auto &wtr = WorldToRadar(ent->m_vecOrigin().x, ent->m_vecOrigin().y);
+                const auto &wtr = WorldToRadar(ent->m_vecDormantOrigin().x, ent->m_vecDormantOrigin().y);
                 float sz        = *icon_size * 0.15f * 0.5f;
                 float sz2       = *icon_size * 0.85;
                 tx_items[1].draw(x + wtr.first + sz, y + wtr.second + sz, sz2, sz2, colors::white);
@@ -197,10 +203,10 @@ void Draw()
     if (enemies_over_teammates)
         enemies.clear();
     std::vector<CachedEntity *> sentries;
-    for (int i = 1; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i <= HIGHEST_ENTITY; i++)
     {
         ent = ENTITY(i);
-        if (CE_BAD(ent))
+        if (CE_INVALID(ent))
             continue;
         if (!ent->m_bAlivePlayer())
             continue;

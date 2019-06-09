@@ -40,6 +40,7 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 {
     if (!ent)
         return;
+
     typedef void (*SetupMoveFn)(IPrediction *, IClientEntity *, CUserCmd *, class IMoveHelper *, CMoveData *);
     typedef void (*FinishMoveFn)(IPrediction *, IClientEntity *, CUserCmd *, CMoveData *);
 

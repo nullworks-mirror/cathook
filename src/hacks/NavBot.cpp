@@ -449,7 +449,7 @@ static bool getHealthAndAmmo()
     if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() < 0.64f)
     {
         std::vector<Vector> healthpacks;
-        for (int i = 1; i < HIGHEST_ENTITY; i++)
+        for (int i = 1; i <= HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent))
@@ -480,7 +480,7 @@ static bool getHealthAndAmmo()
     if (hasLowAmmo())
     {
         std::vector<Vector> ammopacks;
-        for (int i = 1; i < HIGHEST_ENTITY; i++)
+        for (int i = 1; i <= HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_BAD(ent))

@@ -21,7 +21,7 @@ int NearbyEntities()
     int ret = 0;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return ret;
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -49,7 +49,7 @@ static void CreateMove()
         return;
     if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health && NearbyEntities() > 1)
         current_user_cmd->buttons |= IN_ATTACK2;
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))

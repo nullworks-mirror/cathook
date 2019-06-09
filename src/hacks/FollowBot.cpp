@@ -349,7 +349,7 @@ static void cm()
         {
             // Try to get a new target
             auto ent_count = followcart ? HIGHEST_ENTITY : g_IEngine->GetMaxClients();
-            for (int i = 1; i < ent_count; i++)
+            for (int i = 1; i <= ent_count; i++)
             {
                 auto entity = ENTITY(i);
                 if (CE_INVALID(entity)) // Exist + dormant

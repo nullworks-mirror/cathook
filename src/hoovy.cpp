@@ -17,7 +17,7 @@ bool HasSandvichOut(CachedEntity *entity)
     CachedEntity *weapon;
 
     weapon_idx = CE_INT(entity, netvar.hActiveWeapon) & 0xFFF;
-    if (!(weapon_idx > 0 && weapon_idx < HIGHEST_ENTITY))
+    if (!(weapon_idx > 0 && weapon_idx <= HIGHEST_ENTITY))
         return false;
     weapon = ENTITY(weapon_idx);
     if (CE_GOOD(weapon))

@@ -14,7 +14,7 @@ void TFPlayerResource::Update()
     IClientEntity *ent;
 
     entity = 0;
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
         ent = g_IEntityList->GetClientEntity(i);
         if (ent && ent->GetClientClass()->m_ClassID == RCC_PLAYERRESOURCE)

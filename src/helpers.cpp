@@ -1403,7 +1403,7 @@ CatCommand print_classnames("debug_print_classnames", "Lists classnames currentl
     CachedEntity *ent;
 
     // Go through all the entities
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
 
         // Get an entity

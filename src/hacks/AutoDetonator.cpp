@@ -85,7 +85,7 @@ void CreateMove()
     targets.clear();
 
     // Cycle through the ents and search for valid ents
-    for (int i = 0; i < HIGHEST_ENTITY; i++)
+    for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
         // Assign the for loops tick number to an ent
         CachedEntity *ent = ENTITY(i);

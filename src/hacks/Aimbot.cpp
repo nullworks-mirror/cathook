@@ -70,7 +70,7 @@ static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 
 int GetSentry()
 {
-    for (int i = 1; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i <= HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -378,7 +378,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state, bool Backtracking)
     CachedEntity *ent;
     CachedEntity *target_highest_ent = 0;
     target_highest_score             = -256;
-    for (int i = 1; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i <= HIGHEST_ENTITY; i++)
     {
         ent = ENTITY(i);
         if (CE_BAD(ent))

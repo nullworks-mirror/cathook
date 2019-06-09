@@ -14,7 +14,7 @@ Vector prevloc[2048]{};
 
 void Update()
 {
-    for (int i = 1; i < HIGHEST_ENTITY; i++)
+    for (int i = 1; i <= HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))

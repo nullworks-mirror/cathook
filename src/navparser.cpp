@@ -127,7 +127,7 @@ class ignoremanager
     }
     static void updateDanger()
     {
-        for (size_t i = 0; i < HIGHEST_ENTITY; i++)
+        for (size_t i = 0; i <= HIGHEST_ENTITY; i++)
         {
             CachedEntity *ent = ENTITY(i);
             if (CE_INVALID(ent))
