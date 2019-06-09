@@ -151,7 +151,7 @@ void CreateMove()
             if (bomb->m_vecOrigin().DistToSqr(position) < 16900)
             {
                 // Vis check the target from the bomb
-                if (IsVectorVisible(bomb->m_vecOrigin(), target->m_vecDormantOrigin(), true))
+                if (IsVectorVisible(bomb->m_vecOrigin(), position, true))
                 {
                     // Check user settings if legit mode is off, if legit mode
                     // is off then detonate
