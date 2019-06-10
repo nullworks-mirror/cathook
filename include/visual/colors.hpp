@@ -7,7 +7,7 @@
 
 #pragma once
 #include "config.h"
-#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+#if ENABLE_GLEZ_DRAWING
 #include "glez/color.hpp"
 #endif
 
@@ -50,11 +50,11 @@ struct rgba_t
     constexpr rgba_t(float _r, float _g, float _b, float _a = 1.0f) : r(_r), g(_g), b(_b), a(_a){};
 
     explicit rgba_t(const char hex[6]);
-#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+#if ENABLE_GLEZ_DRAWING
     constexpr rgba_t(const glez::rgba &other) : r(other.r), g(other.g), b(other.b), a(other.a){};
 #endif
 
-#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+#if ENABLE_GLEZ_DRAWING
 #if __clang__
     operator glez::rgba() const
     {

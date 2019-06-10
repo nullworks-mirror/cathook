@@ -117,7 +117,7 @@ DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int pane
     if (!health_panel)
         if (!strcmp(g_IPanel->GetName(panel), "HudPlayerHealth"))
             health_panel = panel;
-#if ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+#if ENABLE_ENGINE_DRAWING
     if (!FocusOverlayPanel)
     {
         const char *szName = g_IPanel->GetName(panel);
