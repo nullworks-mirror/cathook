@@ -54,10 +54,8 @@ elseif(Visuals_DrawType STREQUAL "IMGUI Streamproof")
     set(ExternalDrawing 1)
 endif()
 if (NOT ExternalDrawing)
-    set(Visuals_ForceStreamSafety 0)
+    set(Visuals_EnforceStreamSafety 0)
 endif()
-
-message(${Visuals_ForceStreamSafety})
 
 
 set(EnableUnityBuilds 1 CACHE BOOL "Enable Profiler")
