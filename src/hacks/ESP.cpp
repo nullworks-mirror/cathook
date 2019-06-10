@@ -1041,7 +1041,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         // If text health is true, then add a string with the health
         if ((int) show_health == 1 || (int) show_health == 3)
         {
-            AddEntityString(ent, format(g_pPlayerResource->GetHealth(ent), '/', g_pPlayerResource->GetMaxHealth(ent), " HP"), colors::Health(g_pPlayerResource->GetHealth(ent), g_pPlayerResource->GetMaxHealth(ent)));
+            AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
         }
         // Set the entity to repaint
         espdata.needs_paint = true;
@@ -1145,7 +1145,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             // Health esp
             if ((int) show_health == 1 || (int) show_health == 3)
             {
-                AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
+                AddEntityString(ent, format(g_pPlayerResource->GetHealth(ent), '/', g_pPlayerResource->GetMaxHealth(ent), " HP"), colors::Health(g_pPlayerResource->GetHealth(ent), g_pPlayerResource->GetMaxHealth(ent)));
             }
             IF_GAME(IsTF())
             {
