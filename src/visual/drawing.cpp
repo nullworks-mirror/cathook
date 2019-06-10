@@ -13,10 +13,10 @@
 #include "common.hpp"
 #if ENABLE_IMGUI_DRAWING
 #include "imgui/imrenderer.hpp"
-#elif !ENABLE_ENGINE_DRAWING
+#elif ENABLE_GLEZ_DRAWING
 #include <glez/draw.hpp>
 #include <glez/glez.hpp>
-#else
+#elif ENABLE_ENGINE_DRAWING
 #include "picopng.hpp"
 #endif
 #include "menu/GuiInterface.hpp"
@@ -138,7 +138,7 @@ static InitRoutine font_size([]() {
     esp_font_size.installChangeCallback([](settings::VariableBase<int> &var, int after) {
         if (after > 0 && after < 100)
         {
-#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+#if ENABLE_GLEZ_DRAWING
             fonts::esp->unload();
             fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
 #else
@@ -149,7 +149,7 @@ static InitRoutine font_size([]() {
     center_font_size.installChangeCallback([](settings::VariableBase<int> &var, int after) {
         if (after > 0 && after < 100)
         {
-#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING
+#if ENABLE_GLEZ_DRAWING
             fonts::center_screen->unload();
             fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", after));
 #else
@@ -169,7 +169,7 @@ void Initialize()
     {
         g_IEngine->GetScreenSize(draw::width, draw::height);
     }
-#if !ENABLE_ENGINE_DRAWING && !ENABLE_IMGUI_DRAWING // add proper glez support tf
+#if ENABLE_GLEZ_DRAWING
     glez::preInit();
     fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13));
     fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf", 13));
@@ -283,7 +283,7 @@ void Line(float x1, float y1, float x2_offset, float y2_offset, rgba_t color, fl
     {
         g_ISurface->DrawLine(x1, y1, x1 + x2_offset, y1 + y2_offset);
     }
-#else
+#elif ENABLE_GLEZ_DRAWING
     glez::draw::line(x1, y1, x2_offset, y2_offset, color, thickness);
 #endif
 }
@@ -304,7 +304,7 @@ void Rectangle(float x, float y, float w, float h, rgba_t color)
     vertices[3].m_Position = { x + w, y };
 
     g_ISurface->DrawTexturedPolygon(4, vertices);
-#else
+#elif ENABLE_GLEZ_DRAWING
     glez::draw::rect(x, y, w, h, color);
 #endif
 }
@@ -386,7 +386,7 @@ void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture
     vertices[3].Init(scr_botton_left, tex_botton_left);
 
     g_ISurface->DrawTexturedPolygon(4, vertices);
-#else
+#elif ENABLE_GLEZ_DRAWING
     glez::draw::rect_textured(x, y, w, h, color, texture, tx, ty, tw, th, angle);
 #endif
 }
@@ -507,7 +507,7 @@ void InitGL()
     }
     xoverlay_show();
     xoverlay_draw_begin();
-#if !ENABLE_IMGUI_DRAWING && !ENABLE_ENGINE_DRAWING
+#if ENABLE_GLEZ_DRAWING
     glez::init(xoverlay_library.width, xoverlay_library.height);
 #elif ENABLE_IMGUI_DRAWING
     im_renderer::init();
@@ -517,7 +517,7 @@ void InitGL()
 #if ENABLE_IMGUI_DRAWING
     glewInit();
     im_renderer::init();
-#elif !ENABLE_ENGINE_DRAWING
+#elif ENABLE_GLEZ_DRAWING || ENABLE_IMGUI_DRAWING
     glClearColor(1.0, 0.0, 0.0, 0.5);
     glewExperimental = GL_TRUE;
     glewInit();
@@ -537,7 +537,7 @@ void BeginGL()
     xoverlay_draw_begin();
 #endif
     im_renderer::renderStart();
-#elif !ENABLE_ENGINE_DRAWING
+#elif ENABLE_GLEZ_DRAWING
     glColor3f(1, 1, 1);
 #if EXTERNAL_DRAWING
     xoverlay_draw_begin();
@@ -564,7 +564,7 @@ void EndGL()
     xoverlay_draw_end();
     SDL_GL_MakeCurrent(sdl_hooks::window, nullptr);
 #endif
-#elif !ENABLE_ENGINE_DRAWING
+#elif ENABLE_GLEZ_DRAWING
     PROF_SECTION(DRAWEX_draw_end);
     {
         PROF_SECTION(draw_end__glez_end);

@@ -5,10 +5,6 @@
 
 #define GAME_SPECIFIC @GameSpecific@
 #define GAME @Game@
-#define ENABLE_VISUALS @EnableVisuals@
-#define EXTERNAL_DRAWING @ExternalDrawing@
-#define ENABLE_ENGINE_DRAWING @EnableEngineDrawing@
-#define ENABLE_IMGUI_DRAWING @EnableImGuiDrawing@
 #define ENABLE_GUI @EnableGUI@
 #define ENABLE_IPC @EnableIPC@
 #define DATA_PATH "@DataPath@"
@@ -20,3 +16,9 @@
 #define ENABLE_IRC @EnableIRC@
 #define ENABLE_LOGGING @EnableLogging@
 #define ENABLE_CLIP @EnableClip@
+
+#define ENABLE_VISUALS @EnableVisuals@
+#define ENABLE_GLEZ_DRAWING @EnableGlezDrawing@
+#define ENABLE_ENGINE_DRAWING @EnableEngineDrawing@
+#define ENABLE_IMGUI_DRAWING @EnableImGuiDrawing@
+#define EXTERNAL_DRAWING @ExternalDrawing@

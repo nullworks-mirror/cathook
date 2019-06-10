@@ -10,7 +10,7 @@
 #include "config.h"
 #if ENABLE_IMGUI_DRAWING
 #include "imgui/imrenderer.hpp"
-#elif !ENABLE_ENGINE_DRAWING
+#elif ENABLE_GLEZ_DRAWING
 #include <glez/font.hpp>
 #include <glez/draw.hpp>
 #endif
@@ -46,7 +46,7 @@ struct font
 };
 #elif ENABLE_IMGUI_DRAWING
 typedef im_renderer::font font;
-#else
+#elif ENABLE_GLEZ_DRAWING
 typedef glez::font font;
 #endif
 
