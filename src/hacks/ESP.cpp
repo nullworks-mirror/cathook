@@ -613,8 +613,8 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 switch (type)
                 {
                 case ENTITY_PLAYER:
-                    health    = CE_INT(ent, netvar.iHealth);
-                    healthmax = ent->m_iMaxHealth();
+                    health    = g_pPlayerResource->GetHealth(ent);
+                    healthmax = g_pPlayerResource->GetMaxHealth(ent);
                     break;
                 case ENTITY_BUILDING:
                     health    = CE_INT(ent, netvar.iBuildingHealth);
@@ -1041,7 +1041,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         // If text health is true, then add a string with the health
         if ((int) show_health == 1 || (int) show_health == 3)
         {
-            AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
+            AddEntityString(ent, format(g_pPlayerResource->GetHealth(ent), '/', g_pPlayerResource->GetMaxHealth(ent), " HP"), colors::Health(g_pPlayerResource->GetHealth(ent), g_pPlayerResource->GetMaxHealth(ent)));
         }
         // Set the entity to repaint
         espdata.needs_paint = true;
