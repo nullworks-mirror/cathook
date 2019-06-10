@@ -22,3 +22,4 @@
 #define ENABLE_ENGINE_DRAWING @EnableEngineDrawing@
 #define ENABLE_IMGUI_DRAWING @EnableImGuiDrawing@
 #define EXTERNAL_DRAWING @ExternalDrawing@
+#define ENFORCE_STREAM_SAFETY @Visuals_EnforceStreamSafety@

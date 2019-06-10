@@ -38,6 +38,7 @@ CatCommand fix_black_chams("fix_black_chams", "Fix Black Chams", []() {
 
 void EffectChams::Init()
 {
+#if !ENFORCE_STREAM_SAFETY
     if (init)
         return;
     logging::Info("Init EffectChams...");
@@ -69,20 +70,25 @@ void EffectChams::Init()
     }
     logging::Info("Init done!");
     init = true;
+#endif
 }
 
 void EffectChams::BeginRenderChams()
 {
+#if !ENFORCE_STREAM_SAFETY
     drawing = true;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVRenderView->SetBlend(1.0f);
+#endif
 }
 
 void EffectChams::EndRenderChams()
 {
+#if !ENFORCE_STREAM_SAFETY
     drawing = false;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
     g_IVModelRender->ForcedMaterialOverride(nullptr);
+#endif
 }
 static rgba_t data[33] = { colors::empty };
 void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
@@ -203,6 +209,9 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
 
 bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 {
+#if ENFORCE_STREAM_SAFETY
+    return false;
+#endif
     if (!isHackActive() || !*effect_chams::enable || CE_BAD(LOCAL_E))
         return false;
     if (entity->entindex() < 0)
@@ -262,6 +271,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
 
 void EffectChams::RenderChamsRecursive(IClientEntity *entity)
 {
+#if !ENFORCE_STREAM_SAFETY
     if (!isHackActive() || !*effect_chams::enable)
         return;
     entity->DrawModel(1);
@@ -297,10 +307,12 @@ void EffectChams::RenderChamsRecursive(IClientEntity *entity)
         }
         attach = g_IEntityList->GetClientEntity(*(int *) ((uintptr_t) attach + netvar.m_Collision - 20) & 0xFFF);
     }
+#endif
 }
 
 void EffectChams::RenderChams(IClientEntity *entity)
 {
+#if !ENFORCE_STREAM_SAFETY
     if (!isHackActive() || !*effect_chams::enable)
         return;
     CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
@@ -326,9 +338,11 @@ void EffectChams::RenderChams(IClientEntity *entity)
             RenderChamsRecursive(entity);
         }
     }
+#endif
 }
 void EffectChams::Render(int x, int y, int w, int h)
 {
+#if !ENFORCE_STREAM_SAFETY
     PROF_SECTION(DRAW_chams);
     if (!isHackActive())
         return;
@@ -350,6 +364,7 @@ void EffectChams::Render(int x, int y, int w, int h)
         RenderChams(entity);
     }
     EndRenderChams();
+#endif
 }
 EffectChams g_EffectChams;
 CScreenSpaceEffectRegistration *g_pEffectChams = nullptr;

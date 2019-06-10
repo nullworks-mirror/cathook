@@ -33,6 +33,7 @@ static ChIRC::ChIRC irc;
 
 void printmsg(std::string &usr, std::string &msg)
 {
+#if !ENFORCE_STREAM_SAFETY
     if (msg.size() > 256 || usr.size() > 256)
     {
         logging::Info("IRC: Message too large.");
@@ -42,6 +43,7 @@ void printmsg(std::string &usr, std::string &msg)
         logging::Info("[IRC] %s: %s", usr.c_str(), msg.c_str());
     else
         PrintChat("\x07%06X[IRC] %s\x01: %s", 0xe05938, usr.c_str(), msg.c_str());
+#endif
 }
 void printmsgcopy(std::string usr, std::string msg)
 {
