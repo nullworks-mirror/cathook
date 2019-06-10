@@ -110,7 +110,7 @@ public:
     {
         return RAW_ENT(this)->GetAbsOrigin();
     };
-    Vector m_vecDormantOrigin();
+    std::optional<Vector> m_vecDormantOrigin();
     int m_iTeam()
     {
         return NET_INT(RAW_ENT(this), netvar.iTeamNum);

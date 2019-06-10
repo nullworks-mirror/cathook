@@ -45,7 +45,7 @@ public:
                 auto ent = ENTITY(i);
                 if (CE_VALID(ent) && (ent->m_Type() == ENTITY_PLAYER || ent->m_iClassID() == CL_CLASS(CObjectSentrygun)) && ent->m_bEnemy() && ent->m_bAlivePlayer())
                 {
-                    if (ent->m_vecDormantOrigin() != Vector(0.0f) && ent->m_vecDormantOrigin().DistTo(LOCAL_E->m_vecOrigin()) < *safety)
+                    if (ent->m_vecDormantOrigin() && ent->m_vecDormantOrigin()->DistTo(LOCAL_E->m_vecOrigin()) < *safety)
                     {
                         nearby = true;
                         break;

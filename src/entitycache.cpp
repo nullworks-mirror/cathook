@@ -128,13 +128,14 @@ bool CachedEntity::IsVisible()
     return false;
 }
 
-Vector CachedEntity::m_vecDormantOrigin()
+std::optional<Vector> CachedEntity::m_vecDormantOrigin()
 {
     if (!RAW_ENT(this)->IsDormant())
         return m_vecOrigin();
-    else if (!sound_cache[m_IDX].last_update.check(10000) && !sound_cache[m_IDX].sound.m_pOrigin.IsZero())
-        return sound_cache[m_IDX].sound.m_pOrigin;
-    return Vector(0.0f);
+    auto vec = soundcache::GetSoundLocation(this->m_IDX);
+    if (vec)
+        return *vec;
+    return std::nullopt;
 }
 
 namespace entity_cache

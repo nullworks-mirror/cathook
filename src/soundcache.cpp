@@ -4,8 +4,9 @@ std::map<int, SoundStruct> sound_cache;
 
 namespace soundcache
 {
+constexpr unsigned int EXPIRETIME = 10000;
 
-void CreateMove()
+static void CreateMove()
 {
     if (CE_BAD(LOCAL_E))
         return;
@@ -16,6 +17,23 @@ void CreateMove()
         sound_cache[i.m_nSoundSource].sound.m_pOrigin = *i.m_pOrigin;
         sound_cache[i.m_nSoundSource].last_update.update();
     }
+
+    for (auto it = sound_cache.cbegin(); it != sound_cache.cend();)
+    {
+        if (it->second.last_update.check(EXPIRETIME))
+
+            it = sound_cache.erase(it);
+        else
+            ++it;
+    }
+}
+
+std::optional<Vector> GetSoundLocation(int entid)
+{
+    auto it = sound_cache.find(entid);
+    if (it == sound_cache.end())
+        return std::nullopt;
+    return it->second.sound.m_pOrigin;
 }
 
 class SoundCacheEventListener : public IGameEventListener2
@@ -24,7 +42,13 @@ class SoundCacheEventListener : public IGameEventListener2
     {
         if (!isHackActive())
             return;
-        sound_cache[event->GetInt("userid")].sound.m_pOrigin = Vector(0.0f);
+        // Find userid in map
+        auto it = sound_cache.find(event->GetInt("userid"));
+        // No action if it doesn't exist
+        if (it == sound_cache.end())
+            return;
+        // Erase it from the map
+        sound_cache.erase(it);
     }
 };
 

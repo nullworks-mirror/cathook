@@ -88,7 +88,6 @@ bool IsTarget(CachedEntity *ent)
     return false;
 }
 
-// Function called by game for movement
 void CreateMove()
 {
     // Check user settings if auto-sticky is enabled
@@ -112,7 +111,7 @@ void CreateMove()
     // Cycle through the ents and search for valid ents
     for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
-        // Assign the for loops tick number to an ent
+        // Assign the for loops index to an ent
         CachedEntity *ent = ENTITY(i);
         // Check for dormancy and if valid
         if (CE_INVALID(ent))
