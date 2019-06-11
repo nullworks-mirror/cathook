@@ -117,15 +117,17 @@ void draw()
 
         if (CE_INVALID(ent))
         {
-            if (i > 32)
+            if (i > g_IEngine->GetMaxClients())
                 continue;
             if (g_pPlayerResource->GetTeam(i) == g_pLocalPlayer->team || !g_pPlayerResource->isAlive(i))
                 continue;
             auto vec = soundcache::GetSoundLocation(i);
             if (!vec)
                 continue;
+            if (*max_dist && vec->DistTo(g_pLocalPlayer->v_Origin) > *max_dist)
+                continue;
             origin = *vec;
-            color = colors::FromRGBA8(160, 160, 160, *opaque);
+            color  = colors::FromRGBA8(160, 160, 160, *opaque);
         }
         else
         {
