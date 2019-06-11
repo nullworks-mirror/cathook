@@ -131,7 +131,9 @@ void draw()
         }
         else
         {
-            if (!ent->m_bAlivePlayer() || !ent->m_vecDormantOrigin())
+            if ((!RAW_ENT(ent)->IsDormant() && !ent->m_bAlivePlayer()) || !ent->m_vecDormantOrigin())
+                continue;
+            if (i <= g_IEngine->GetMaxClients() && !g_pPlayerResource->isAlive(i))
                 continue;
             origin = *ent->m_vecDormantOrigin();
             if (*buildings)

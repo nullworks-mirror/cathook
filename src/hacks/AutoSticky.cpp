@@ -135,22 +135,17 @@ void CreateMove()
         for (auto target : targets)
         {
             // Check distance to the target to see if the sticky will hit
-            Vector position = target->m_vecOrigin();
-            if (RAW_ENT(target)->IsDormant())
-            {
-                if (!sound_cache[target->m_IDX].last_update.check(10000) && sound_cache[target->m_IDX].sound.m_pOrigin != Vector(0.0f))
-                    position = sound_cache[target->m_IDX].sound.m_pOrigin;
-                else
-                    continue;
-            }
+            auto position = target->m_vecDormantOrigin();
+            if (!position)
+                return;
             auto collideable = RAW_ENT(target)->GetCollideable();
 
-            position = position + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
+            position = *position + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
 
-            if (bomb->m_vecOrigin().DistToSqr(position) < 16900)
+            if (bomb->m_vecOrigin().DistToSqr(*position) < 16900)
             {
                 // Vis check the target from the bomb
-                if (IsVectorVisible(bomb->m_vecOrigin(), position, true))
+                if (IsVectorVisible(bomb->m_vecOrigin(), *position, true))
                 {
                     // Check user settings if legit mode is off, if legit mode
                     // is off then detonate

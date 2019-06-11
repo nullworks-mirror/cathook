@@ -20,8 +20,7 @@ static void CreateMove()
 
     for (auto it = sound_cache.cbegin(); it != sound_cache.cend();)
     {
-        if (it->second.last_update.check(EXPIRETIME))
-
+        if (it->second.last_update.check(EXPIRETIME) || (it->first <= g_IEngine->GetMaxClients() && !g_pPlayerResource->isAlive(it->first)))
             it = sound_cache.erase(it);
         else
             ++it;
@@ -36,34 +35,9 @@ std::optional<Vector> GetSoundLocation(int entid)
     return it->second.sound.m_pOrigin;
 }
 
-class SoundCacheEventListener : public IGameEventListener2
-{
-    virtual void FireGameEvent(IGameEvent *event)
-    {
-        if (!isHackActive())
-            return;
-        // Find userid in map
-        auto it = sound_cache.find(event->GetInt("userid"));
-        // No action if it doesn't exist
-        if (it == sound_cache.end())
-            return;
-        // Erase it from the map
-        sound_cache.erase(it);
-    }
-};
-
-SoundCacheEventListener &listener()
-{
-    static SoundCacheEventListener object{};
-    return object;
-}
-
 static InitRoutine init([]() {
     EC::Register(EC::CreateMove, CreateMove, "CM_SoundCache");
     EC::Register(
         EC::LevelInit, []() { sound_cache.clear(); }, "soundcache_levelinit");
-    g_IEventManager2->AddListener(&listener(), "player_death", false);
-    EC::Register(
-        EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener()); }, "event_shutdown");
 });
 } // namespace soundcache

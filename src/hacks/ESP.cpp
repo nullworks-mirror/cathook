@@ -383,8 +383,8 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     bool dormant = false;
     if (RAW_ENT(ent)->IsDormant())
     {
-        auto ent_cache = sound_cache[ent->m_IDX];
-        if (ent_cache.last_update.check(10000) || ent_cache.sound.m_pOrigin.IsZero())
+        auto vec = ent->m_vecDormantOrigin();
+        if (!vec)
             return;
         dormant = true;
     }
@@ -400,22 +400,21 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     if (!fg || fg.a == 0.0f)
     {
         fg = colors::EntityF(ent);
-        if (RAW_ENT(ent)->IsDormant())
+        if (dormant)
         {
-            fg.r *= 0.5f;
-            fg.g *= 0.5f;
-            fg.b *= 0.5f;
+            fg.r *= 0.75f;
+            fg.g *= 0.75f;
+            fg.b *= 0.75f;
         }
         ent_data.color = fg;
     }
 
     // Check if entity is on screen, then save screen position if true
-    Vector position = ent->m_vecOrigin();
-    // Dormant
-    if (dormant)
-        position = sound_cache[ent->m_IDX].sound.m_pOrigin;
+    auto position = ent->m_vecDormantOrigin();
+    if (!position)
+        return;
     static Vector screen, origin_screen;
-    if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(position, origin_screen))
+    if (!draw::EntityCenterToScreen(ent, screen) && !draw::WorldToScreen(*position, origin_screen))
         return;
 
     // Reset the collide cache
@@ -440,7 +439,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 
         // Get world to screen
         Vector scn;
-        draw::WorldToScreen(position, scn);
+        draw::WorldToScreen(*position, scn);
 
         // Draw a line
         draw::Line(scn.x, scn.y, width - scn.x, height - scn.y, fg, 0.5f);
@@ -794,8 +793,8 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
     // Dormant
     if (RAW_ENT(ent)->IsDormant())
     {
-        auto ent_cache = sound_cache[ent->m_IDX];
-        if (ent_cache.last_update.check(10000) || ent_cache.sound.m_pOrigin.IsZero())
+        auto vec = ent->m_vecDormantOrigin();
+        if (!vec)
             return;
     }
     if (max_dist && ent->m_flDistance() > *max_dist)
@@ -1268,9 +1267,9 @@ void _FASTCALL Draw3DBox(CachedEntity *ent, const rgba_t &clr)
     // Dormant
     if (RAW_ENT(ent)->IsDormant())
     {
-        auto ent_cache = sound_cache[ent->m_IDX];
-        if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
-            origin = ent_cache.sound.m_pOrigin;
+        auto vec = ent->m_vecDormantOrigin();
+        if (!vec)
+            origin = *vec;
         else
             return;
     }
@@ -1414,9 +1413,9 @@ bool GetCollide(CachedEntity *ent)
         // Dormant
         if (RAW_ENT(ent)->IsDormant())
         {
-            auto ent_cache = sound_cache[ent->m_IDX];
-            if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
-                origin = ent_cache.sound.m_pOrigin;
+            auto vec = ent->m_vecDormantOrigin();
+            if (!vec)
+                origin = *vec;
             else
                 return false;
         }

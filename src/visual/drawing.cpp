@@ -404,9 +404,8 @@ bool EntityCenterToScreen(CachedEntity *entity, Vector &out)
     // Dormant
     if (RAW_ENT(entity)->IsDormant())
     {
-        auto ent_cache = sound_cache[entity->m_IDX];
-        if (!ent_cache.last_update.check(10000) && ent_cache.sound.m_pOrigin.IsZero())
-            world = ent_cache.sound.m_pOrigin;
+        if (entity->m_vecDormantOrigin())
+            world = *entity->m_vecDormantOrigin();
         else
             return false;
     }

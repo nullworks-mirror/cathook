@@ -27,28 +27,22 @@ static InitRoutine init([]() {
                 CachedEntity *ent = ENTITY(i);
                 if (CE_VALID(ent) && ent->m_bAlivePlayer() && re::CTFPlayerShared::IsDominatingPlayer(shared_player, i))
                 {
-                    Vector draw_pos;
                     float size;
                     if (!ent->hitboxes.GetHitbox(0))
                         continue;
                     // Calculate draw pos
-                    auto c   = ent->InternalEntity()->GetCollideable();
-                    draw_pos = ent->m_vecOrigin();
-                    if (RAW_ENT(ent)->IsDormant())
-                    {
-                        if (!sound_cache[ent->m_IDX].last_update.check(10000) && !sound_cache[ent->m_IDX].sound.m_pOrigin.IsZero())
-                            draw_pos = sound_cache[ent->m_IDX].sound.m_pOrigin;
-                        else
-                            continue;
-                    }
-                    draw_pos.z += c->OBBMaxs().z;
+                    auto c        = ent->InternalEntity()->GetCollideable();
+                    auto draw_pos = ent->m_vecDormantOrigin();
+                    if (!draw_pos)
+                        continue;
+                    draw_pos->z += c->OBBMaxs().z;
                     // Calculate draw size
                     size = *max_size * 1.5f - ent->m_flDistance() / 20.0f;
                     size = fminf(*max_size, size);
                     size = fmaxf(*min_size, size);
 
                     Vector out;
-                    if (draw::WorldToScreen(draw_pos, out))
+                    if (draw::WorldToScreen(*draw_pos, out))
                     {
                         static textures::sprite sprite = textures::atlas().create_sprite(447, 257, 64, 64);
                         sprite.draw(int(out.x - size / 2.0f), int(out.y - size), int(size), int(size), colors::white);

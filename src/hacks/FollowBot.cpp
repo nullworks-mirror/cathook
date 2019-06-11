@@ -83,7 +83,7 @@ static void checkAFK()
         auto entity = ENTITY(i);
         if (CE_INVALID(entity))
             continue;
-        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(60.0f) || (RAW_ENT(entity)->IsDormant() && !sound_cache[i].last_update.check(10000) && !sound_cache[i].sound.m_pOrigin.IsZero()))
+        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(60.0f) || (RAW_ENT(entity)->IsDormant() && entity->m_vecDormantOrigin()))
         {
             afkTicks[i].update();
         }
@@ -114,14 +114,7 @@ static void addCrumbs(CachedEntity *target, Vector corner = g_pLocalPlayer->v_Or
         }
     }
 
-    Vector position = target->m_vecOrigin();
-    if (RAW_ENT(target)->IsDormant())
-    {
-        if (!sound_cache[target->m_IDX].last_update.check(10000) && !sound_cache[target->m_IDX].sound.m_pOrigin.IsZero())
-            position = sound_cache[target->m_IDX].sound.m_pOrigin;
-        else
-            return;
-    }
+    Vector position   = target->m_vecOrigin();
     Vector dist       = position - corner;
     int maxiterations = floor(corner.DistTo(position)) / 40;
     for (int i = 0; i < maxiterations; i++)
@@ -135,30 +128,19 @@ static void addCrumbPair(CachedEntity *player1, CachedEntity *player2, std::pair
     Vector corner1 = corners.first;
     Vector corner2 = corners.second;
 
-    Vector position1 = player1->m_vecOrigin();
-    if (RAW_ENT(player1)->IsDormant())
-    {
-        if (!sound_cache[player1->m_IDX].last_update.check(10000) && !sound_cache[player1->m_IDX].sound.m_pOrigin.IsZero())
-            position1 = sound_cache[player1->m_IDX].sound.m_pOrigin;
-        else
-            return;
-    }
-
-    Vector position2 = player2->m_vecOrigin();
-    if (RAW_ENT(player1)->IsDormant())
-    {
-        if (!sound_cache[player2->m_IDX].last_update.check(10000) && !sound_cache[player2->m_IDX].sound.m_pOrigin.IsZero())
-            position2 = sound_cache[player2->m_IDX].sound.m_pOrigin;
-        else
-            return;
-    }
+    auto position1 = player1->m_vecDormantOrigin();
+    if (!position1)
+        return;
+    auto position2 = player2->m_vecDormantOrigin();
+    if (!position2)
+        return;
 
     {
-        Vector dist       = corner1 - position1;
-        int maxiterations = floor(corner1.DistTo(position1)) / 40;
+        Vector dist       = corner1 - *position1;
+        int maxiterations = floor(corner1.DistTo(*position1)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
-            breadcrumbs.push_back(position1 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
+            breadcrumbs.push_back(*position1 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
         }
     }
     {
@@ -170,8 +152,8 @@ static void addCrumbPair(CachedEntity *player1, CachedEntity *player2, std::pair
         }
     }
     {
-        Vector dist       = position2 - corner2;
-        int maxiterations = floor(corner2.DistTo(position2)) / 40;
+        Vector dist       = *position2 - corner2;
+        int maxiterations = floor(corner2.DistTo(*position2)) / 40;
         for (int i = 0; i < maxiterations; i++)
         {
             breadcrumbs.push_back(corner2 + dist / vectorMax(vectorAbs(dist)) * 40.0f * (i + 1));
@@ -254,13 +236,10 @@ static bool startFollow(CachedEntity *entity, bool useNavbot)
     }
     if (useNavbot)
     {
-        Vector position = entity->m_vecOrigin();
-        if (RAW_ENT(entity)->IsDormant())
-        {
-            if (!sound_cache[entity->m_IDX].last_update.check(10000) && !sound_cache[entity->m_IDX].sound.m_pOrigin.IsZero())
-                position = sound_cache[entity->m_IDX].sound.m_pOrigin;
-        }
-        if (nav::navTo(position, 8, true, false))
+        auto position = entity->m_vecDormantOrigin();
+        if (!position)
+            return false;
+        if (nav::navTo(*position, 8, true, false))
         {
             navtarget = entity->m_IDX;
             return true;
@@ -299,7 +278,7 @@ static void cm()
         // Still good check
         else if (CE_INVALID(ENTITY(follow_target)) || IsPlayerInvisible(ENTITY(follow_target)))
             follow_target = 0;
-        else if (RAW_ENT(ENTITY(follow_target))->IsDormant() && (sound_cache[follow_target].last_update.check(1000) || sound_cache[follow_target].sound.m_pOrigin.IsZero()))
+        else if (!ENTITY(follow_target)->m_vecDormantOrigin())
             follow_target = 0;
     }
 
@@ -330,7 +309,7 @@ static void cm()
                     continue;
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
-                if (RAW_ENT(entity)->IsDormant() && (sound_cache[i].last_update.check(10000) || sound_cache[i].sound.m_pOrigin.IsZero()))
+                if (!entity->m_vecDormantOrigin())
                     continue;
                 if (startFollow(entity, isNavBotCM))
                 {
@@ -368,7 +347,7 @@ static void cm()
                     continue;
                 if (!entity->m_bAlivePlayer()) // Dont follow dead players
                     continue;
-                if (RAW_ENT(entity)->IsDormant() && (sound_cache[i].last_update.check(10000) || sound_cache[i].sound.m_pOrigin.IsZero()))
+                if (!entity->m_vecDormantOrigin())
                     continue;
                 // const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
                 // FIXME follow cart/point
@@ -425,14 +404,12 @@ static void cm()
                 {
                     navtarget = 0;
                 }
-                if (RAW_ENT(ent)->IsDormant() && (sound_cache[ent->m_IDX].last_update.check(10000) || sound_cache[ent->m_IDX].sound.m_pOrigin.IsZero()))
+                if (!ent->m_vecDormantOrigin())
                     navtarget = 0;
                 if (navtimer.test_and_set(800))
                 {
-                    Vector position = ent->m_vecOrigin();
-                    if (RAW_ENT(ent)->IsDormant() && !sound_cache[ent->m_IDX].last_update.check(10000) && !sound_cache[ent->m_IDX].sound.m_pOrigin.IsZero())
-                        position = sound_cache[ent->m_IDX].sound.m_pOrigin;
-                    if (nav::navTo(ent->m_vecOrigin(), 8, true, false))
+                    auto position = ent->m_vecDormantOrigin();
+                    if (nav::navTo(*position, 8, true, false))
                         navinactivity.update();
                 }
             }

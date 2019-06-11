@@ -139,12 +139,14 @@ class ignoremanager
                 Vector loc = GetBuildingPosition(ent);
                 if (RAW_ENT(ent)->IsDormant())
                 {
-                    auto ent_cache = sound_cache[ent->m_IDX];
-                    if (!ent_cache.last_update.check(10000) && !ent_cache.sound.m_pOrigin.IsZero())
+                    auto vec = ent->m_vecDormantOrigin();
+                    if (vec)
                     {
                         loc -= RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
-                        loc += ent_cache.sound.m_pOrigin;
+                        loc += *vec;
                     }
+                    else
+                        continue;
                 }
                 for (auto &i : navfile->m_areas)
                 {
