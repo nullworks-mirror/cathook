@@ -1,9 +1,16 @@
-# Current dependencies:
-#   Git
-#   SDL2
-#   GLEW
-
 set(EnableCotire 1 CACHE BOOL "Enable CoTiRe (Compile Time Reducer)")
+
+# Don't enable cotire when running in QtCreator
+execute_process(COMMAND "printenv" OUTPUT_VARIABLE contents)
+STRING(REGEX REPLACE ";" "\\\\;" contents "${contents}")
+STRING(REGEX REPLACE "\n" ";" contents "${contents}")
+foreach(text ${contents})
+    if ("${text}"  STREQUAL "CC=")
+        message("qtcreator running")
+        set(EnableCotire 0)
+    endif()
+endforeach()
+
 if (EnableCotire)
     set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/cotire/CMake")
     cmake_policy(SET CMP0011 NEW)
