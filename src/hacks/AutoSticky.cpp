@@ -15,6 +15,7 @@ namespace hacks::tf::autosticky
 static settings::Boolean enable{ "autosticky.enable", "false" };
 static settings::Boolean buildings{ "autosticky.buildings", "true" };
 static settings::Boolean legit{ "autosticky.legit", "false" };
+static settings::Boolean dontblowmeup{ "autosticky.dontblowmeup", "false" };
 
 // A storage array for ents
 static std::vector<CachedEntity *> bombs;
@@ -137,12 +138,25 @@ void CreateMove()
             // Check distance to the target to see if the sticky will hit
             auto position = target->m_vecDormantOrigin();
             if (!position)
-                return;
+                continue;
             auto collideable = RAW_ENT(target)->GetCollideable();
 
             position = *position + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
 
-            if (bomb->m_vecOrigin().DistToSqr(*position) < 16900)
+            // Don't blow yourself up
+            if (dontblowmeup)
+            {
+                auto collideable = RAW_ENT(target)->GetCollideable();
+
+                auto position = LOCAL_E->m_vecOrigin() + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
+                if (bomb->m_vecOrigin().DistTo(position) < 130)
+                {
+                    // Vis check the target from the bomb
+                    if (IsVectorVisible(bomb->m_vecOrigin(), position, true))
+                        return;
+                }
+            }
+            if (bomb->m_vecOrigin().DistTo(*position) < 130)
             {
                 // Vis check the target from the bomb
                 if (IsVectorVisible(bomb->m_vecOrigin(), *position, true))

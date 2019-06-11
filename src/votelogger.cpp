@@ -218,5 +218,7 @@ static InitRoutine init([]() {
             reset_vote_rage();
     });
     g_IGameEventManager->AddListener(&listener, false);
+    EC::Register(
+        EC::Shutdown, []() { g_IGameEventManager->RemoveListener(&listener); }, "event_shutdown_vote");
 });
 } // namespace votelogger
