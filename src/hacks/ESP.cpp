@@ -556,9 +556,9 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 fg = colors::Transparent(fg);
             if (RAW_ENT(ent)->IsDormant())
             {
-                fg.r *= 0.5f;
-                fg.g *= 0.5f;
-                fg.b *= 0.5f;
+                fg.r *= 0.75f;
+                fg.g *= 0.75f;
+                fg.b *= 0.75f;
             }
             if (!box_3d_player && box_esp)
                 DrawBox(ent, fg);
@@ -576,9 +576,9 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 fg = colors::Transparent(fg);
             if (RAW_ENT(ent)->IsDormant())
             {
-                fg.r *= 0.5f;
-                fg.g *= 0.5f;
-                fg.b *= 0.5f;
+                fg.r *= 0.75f;
+                fg.g *= 0.75f;
+                fg.b *= 0.75f;
             }
             if (!box_3d_building && box_esp)
                 DrawBox(ent, fg);
@@ -1415,9 +1415,8 @@ bool GetCollide(CachedEntity *ent)
         {
             auto vec = ent->m_vecDormantOrigin();
             if (!vec)
-                origin = *vec;
-            else
                 return false;
+            origin = *vec;
         }
         Vector mins = RAW_ENT(ent)->GetCollideable()->OBBMins() + origin;
         Vector maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs() + origin;

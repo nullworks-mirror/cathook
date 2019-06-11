@@ -146,7 +146,7 @@ void CreateMove()
             // Don't blow yourself up
             if (dontblowmeup)
             {
-                auto collideable = RAW_ENT(target)->GetCollideable();
+                auto collideable = RAW_ENT(LOCAL_E)->GetCollideable();
 
                 auto position = LOCAL_E->m_vecOrigin() + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
                 if (bomb->m_vecOrigin().DistTo(position) < 130)
