@@ -129,10 +129,11 @@ void CreateMove()
         }
     }
 
+    // Loop through every target for a given bomb
+    bool found = false;
     // Loop once for every bomb in the array
     for (auto bomb : bombs)
     {
-        // Loop through every target for a given bomb
         for (auto target : targets)
         {
             // Check distance to the target to see if the sticky will hit
@@ -156,48 +157,47 @@ void CreateMove()
                         return;
                 }
             }
-            if (bomb->m_vecOrigin().DistTo(*position) < 130)
-            {
-                // Vis check the target from the bomb
-                if (IsVectorVisible(bomb->m_vecOrigin(), *position, true))
+            if (!found)
+                if (bomb->m_vecOrigin().DistTo(*position) < 130)
                 {
-                    // Check user settings if legit mode is off, if legit mode
-                    // is off then detonate
-                    if (!legit)
+                    // Vis check the target from the bomb
+                    if (IsVectorVisible(bomb->m_vecOrigin(), *position, true))
                     {
-                        // Aim at bomb
-                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
-                        // Use silent
-                        g_pLocalPlayer->bUseSilentAngles = true;
+                        // Check user settings if legit mode is off, if legit mode
+                        // is off then detonate
+                        if (!legit)
+                        {
+                            // Aim at bomb
+                            AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
+                            // Use silent
+                            g_pLocalPlayer->bUseSilentAngles = true;
 
-                        // Detonate
-                        current_user_cmd->buttons |= IN_ATTACK2;
+                            found = true;
+                            continue;
 
-                        // Return as its a waste to check anymore, we detonated
-                        // and all the rest of the stickys are gone
-                        return;
+                            // Since legit mode is on, check if the sticky can see
+                            // the local player
+                        }
+                        else if (VisCheckEntFromEnt(bomb, LOCAL_E))
+                        {
+                            // Aim at bomb
+                            AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
+                            // Use silent
+                            g_pLocalPlayer->bUseSilentAngles = true;
 
-                        // Since legit mode is on, check if the sticky can see
-                        // the local player
-                    }
-                    else if (VisCheckEntFromEnt(bomb, LOCAL_E))
-                    {
-                        // Aim at bomb
-                        AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
-                        // Use silent
-                        g_pLocalPlayer->bUseSilentAngles = true;
+                            // Detonate
+                            current_user_cmd->buttons |= IN_ATTACK2;
 
-                        // Detonate
-                        current_user_cmd->buttons |= IN_ATTACK2;
-
-                        // Return as its a waste to check anymore, we detonated
-                        // and all the rest of the stickys are gone
-                        return;
+                            // Return as its a waste to check anymore, we detonated
+                            // and all the rest of the stickys are gone
+                            return;
+                        }
                     }
                 }
-            }
         }
     }
+    if (found)
+        current_user_cmd->buttons |= IN_ATTACK2;
 }
 
 static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "auto_sticky", EC::average); });
