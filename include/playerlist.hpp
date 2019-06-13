@@ -16,7 +16,8 @@ constexpr int SERIALIZE_VERSION = 3;
 
 enum class k_EState
 {
-    DEFAULT = 0,
+    STATE_FIRST = 0,
+    DEFAULT = STATE_FIRST,
     FRIEND,
     RAGE,
     IPC,
