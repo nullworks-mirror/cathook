@@ -261,7 +261,7 @@ CatCommand pl_set_state("pl_set_state", "cat_pl_set_state [playername] [state] (
             return;
         }
 
-    logging::InfoConsole("Unknown State %s. (Use tab for autocomplete)", state);
+    logging::Info("Unknown State %s. (Use tab for autocomplete)", state);
 });
 
 static int cat_pl_set_state_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
@@ -369,8 +369,8 @@ CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand &args) {
     else
         str_state = k_pszNames[int(pl.state)];
 
-    logging::InfoConsole("Data for %i: ", steamid);
-    logging::InfoConsole("State: %i %s", pl.state, str_state);
+    logging::Info("Data for %i: ", steamid);
+    logging::Info("State: %i %s", pl.state, str_state);
     /*int clr = AccessData(steamid).color;
     if (clr) {
         ConColorMsg(*reinterpret_cast<::Color*>(&clr), "[CUSTOM COLOR]\n");
