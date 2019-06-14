@@ -83,16 +83,17 @@ void Prediction_CreateMove()
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent))
         {
-            Vector o = ent->m_vecOrigin();
+            Vector original = ent->m_vecOrigin();
             predicted_players[i].clear();
-            for (int j = 0; j < 20; j++)
+            for (int j = 0; j < 32; j++)
             {
-                Vector r           = EnginePrediction(ent, 0.05f);
-                ent->m_vecOrigin() = r;
+                Vector r                                           = EnginePrediction(ent, g_GlobalVars->interval_per_tick);
+                const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = r;
+                CE_VECTOR(ent, 0x354)                              = r;
                 predicted_players[i].push_back(std::move(r));
             }
-            ent->m_vecOrigin()    = o;
-            CE_VECTOR(ent, 0x354) = o;
+            const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = original;
+            CE_VECTOR(ent, 0x354)                              = original;
             // logging::Info("Predicted %d to be at [%.2f, %.2f, %.2f] vs [%.2f,
             // %.2f, %.2f]", i, r.x,r.y,r.z, o.x, o.y, o.z);
             predicted_player_count = i;
@@ -118,7 +119,7 @@ void Prediction_PaintTraverse()
                 Vector screen;
                 if (draw::WorldToScreen(predicted_players[i][j], screen))
                 {
-                    draw::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 0.5f);
+                    draw::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 2);
                     previous_screen = screen;
                 }
                 else
@@ -145,14 +146,12 @@ Vector EnginePrediction(CachedEntity *entity, float time)
 
     // CMoveData *pMoveData = (CMoveData*)(sharedobj::client->lmap->l_addr +
     // 0x1F69C0C);  CMoveData movedata {};
-    auto object          = std::make_unique<char[]>(165);
-    CMoveData *pMoveData = (CMoveData *) object.get();
+    auto pMoveData = std::make_unique<CMoveData>();
 
     float frameTime = g_GlobalVars->frametime;
     float curTime   = g_GlobalVars->curtime;
 
     CUserCmd fakecmd{};
-
     memset(&fakecmd, 0, sizeof(CUserCmd));
 
     Vector vel(0.0f);
@@ -181,13 +180,11 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     Vector old_origin      = entity->m_vecOrigin();
     NET_VECTOR(ent, 0x354) = entity->m_vecOrigin();
 
-    //*g_PredictionRandomSeed =
-    // MD5_PseudoRandom(current_user_cmd->command_number) &
-    // 0x7FFFFFFF;
+    *g_PredictionRandomSeed = MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF;
     g_IGameMovement->StartTrackPredictionErrors(reinterpret_cast<CBasePlayer *>(ent));
-    oSetupMove(g_IPrediction, ent, &fakecmd, NULL, pMoveData);
-    g_IGameMovement->ProcessMovement(reinterpret_cast<CBasePlayer *>(ent), pMoveData);
-    oFinishMove(g_IPrediction, ent, &fakecmd, pMoveData);
+    oSetupMove(g_IPrediction, ent, &fakecmd, nullptr, pMoveData.get());
+    g_IGameMovement->ProcessMovement(reinterpret_cast<CBasePlayer *>(ent), pMoveData.get());
+    oFinishMove(g_IPrediction, ent, &fakecmd, pMoveData.get());
     g_IGameMovement->FinishTrackPredictionErrors(reinterpret_cast<CBasePlayer *>(ent));
 
     NET_VAR(entity, 4188, CUserCmd *) = original_cmd;
@@ -195,9 +192,12 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     g_GlobalVars->frametime = frameTime;
     g_GlobalVars->curtime   = curTime;
 
-    result                                   = ent->GetAbsOrigin();
-    NET_VECTOR(ent, 0x354)                   = old_origin;
-    CE_VECTOR(entity, netvar.m_angEyeAngles) = oldangles;
+    result                                    = ent->GetAbsOrigin();
+    NET_VECTOR(ent, 0x354)                    = old_origin;
+    CE_VECTOR(entity, netvar.m_angEyeAngles)  = oldangles;
+    const_cast<Vector &>(ent->GetAbsOrigin()) = old_origin;
+    const_cast<QAngle &>(ent->GetAbsAngles()) = VectorToQAngle(oldangles);
+
     return result;
 }
 
@@ -256,8 +256,8 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
             mindelta = fabs(rockettime - currenttime);
         }
     }
-    ent->m_vecOrigin()    = origin;
-    CE_VECTOR(ent, 0x354) = origin;
+    const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = origin;
+    CE_VECTOR(ent, 0x354)                              = origin;
     bestpos.z += (400 * besttime * besttime * gravitymod);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result = bestpos + hitbox_offset;
