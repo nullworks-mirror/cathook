@@ -400,7 +400,7 @@ float DistanceToGround(Vector origin, Vector mins, Vector maxs)
     endpos.z -= 8192;
     ray.Init(origin, endpos, mins, maxs);
     g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &ground_trace);
-    return 8192.0f * ground_trace.fraction;
+    return std::fabs(origin.z - ground_trace.endpos.z);
 }
 
 float DistanceToGround(Vector origin)
