@@ -31,3 +31,4 @@ void Prediction_PaintTraverse();
 
 float DistanceToGround(CachedEntity *ent);
 float DistanceToGround(Vector origin);
+float DistanceToGround(Vector origin, Vector mins, Vector maxs);

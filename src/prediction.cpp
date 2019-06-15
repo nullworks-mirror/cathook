@@ -237,6 +237,8 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
             onground = true;
     }
     float steplength = ((float) (2 * range) / (float) maxsteps);
+    Vector ent_mins  = RAW_ENT(ent)->GetCollideable()->OBBMins();
+    Vector ent_maxs  = RAW_ENT(ent)->GetCollideable()->OBBMaxs();
     for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
     {
         ent->m_vecOrigin() = current;
@@ -244,7 +246,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
 
         if (onground)
         {
-            float toground = DistanceToGround(current);
+            float toground = DistanceToGround(current, ent_mins, ent_maxs);
             current.z -= toground;
         }
 
@@ -279,7 +281,7 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float
     if (speed == 0.0f)
         return Vector();
     trace::filter_no_player.SetSelf(RAW_ENT(building));
-    float dtg = DistanceToGround(vec);
+    float dtg = DistanceToGround(vec, RAW_ENT(building)->GetCollideable()->OBBMins(), RAW_ENT(building)->GetCollideable()->OBBMaxs());
     // TODO ProjAim
     float medianTime  = g_pLocalPlayer->v_Eye.DistTo(result) / speed;
     float range       = 1.5f;
@@ -385,11 +387,20 @@ float DistanceToGround(CachedEntity *ent)
             return 0;
     }
     Vector origin = ent->m_vecOrigin();
-    float v1      = DistanceToGround(origin + Vector(10.0f, 10.0f, 0.0f));
-    float v2      = DistanceToGround(origin + Vector(-10.0f, 10.0f, 0.0f));
-    float v3      = DistanceToGround(origin + Vector(10.0f, -10.0f, 0.0f));
-    float v4      = DistanceToGround(origin + Vector(-10.0f, -10.0f, 0.0f));
-    return MIN(v1, MIN(v2, MIN(v3, v4)));
+    Vector mins   = RAW_ENT(ent)->GetCollideable()->OBBMins();
+    Vector maxs   = RAW_ENT(ent)->GetCollideable()->OBBMins();
+    return DistanceToGround(origin, mins, maxs);
+}
+
+float DistanceToGround(Vector origin, Vector mins, Vector maxs)
+{
+    trace_t ground_trace;
+    Ray_t ray;
+    Vector endpos = origin;
+    endpos.z -= 8192;
+    ray.Init(origin, endpos, mins, maxs);
+    g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &ground_trace);
+    return 8192.0f * ground_trace.fraction;
 }
 
 float DistanceToGround(Vector origin)
