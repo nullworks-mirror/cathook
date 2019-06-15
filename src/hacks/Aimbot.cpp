@@ -754,14 +754,16 @@ void Aim(CachedEntity *entity)
         // Get hitbox num
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
         float minx, maxx, miny, maxy, minz, maxz, centerx, centery, centerz;
-        auto hitboxmin    = entity->hitboxes.GetHitbox(cd.hitbox)->min;
-        auto hitboxmax    = entity->hitboxes.GetHitbox(cd.hitbox)->max;
-        auto hitboxcenter = entity->hitboxes.GetHitbox(cd.hitbox)->center;
+        auto hb = entity->hitboxes.GetHitbox(cd.hitbox);
+        auto hitboxmin    = hb->min;
+        auto hitboxmax    = hb->max;
+        auto hitboxcenter = hb->center;
         if (shouldBacktrack() && entity->m_Type() == ENTITY_PLAYER)
         {
-            hitboxcenter = bt::headPositions[entity->m_IDX][good_tick.first].hitboxes[cd.hitbox].center;
-            hitboxmin    = bt::headPositions[entity->m_IDX][good_tick.first].hitboxes[cd.hitbox].min;
-            hitboxmax    = bt::headPositions[entity->m_IDX][good_tick.first].hitboxes[cd.hitbox].max;
+            const auto &bt_hb = bt::headPositions[entity->m_IDX][good_tick.first].hitboxes[cd.hitbox];
+            hitboxcenter = bt_hb.center;
+            hitboxmin    = bt_hb.min;
+            hitboxmax    = bt_hb.max;
         }
         // get positions
         minx    = hitboxmin.x;
@@ -775,32 +777,32 @@ void Aim(CachedEntity *entity)
         centerz = hitboxcenter.z;
 
         // Shrink positions
-        std::vector<Vector> positions;
         minx += (maxx - minx) / 6;
         maxx -= (maxx - minx) / 6;
         maxy -= (maxy - miny) / 6;
         miny += (maxy - miny) / 6;
         maxz -= (maxz - minz) / 6;
         minz += (maxz - minz) / 6;
-
         // Create Vectors
-        positions.push_back({ minx, centery, minz });
-        positions.push_back({ maxx, centery, minz });
-        positions.push_back({ minx, centery, maxz });
-        positions.push_back({ maxx, centery, maxz });
-        positions.push_back({ centerx, miny, minz });
-        positions.push_back({ centerx, maxy, minz });
-        positions.push_back({ centerx, miny, maxz });
-        positions.push_back({ centerx, maxy, maxz });
-        positions.push_back({ minx, miny, centerz });
-        positions.push_back({ maxx, maxy, centerz });
-        positions.push_back({ minx, miny, centerz });
-        positions.push_back({ maxx, maxy, centerz });
-        positions.push_back(hitboxcenter);
-        for (auto pos : positions)
-            if (IsVectorVisible(g_pLocalPlayer->v_Eye, pos))
+        const Vector positions[13] = {
+            { minx, centery, minz },
+            { maxx, centery, minz },
+            { minx, centery, maxz },
+            { maxx, centery, maxz },
+            { centerx, miny, minz },
+            { centerx, maxy, minz },
+            { centerx, miny, maxz },
+            { centerx, maxy, maxz },
+            { minx, miny, centerz },
+            { maxx, maxy, centerz },
+            { minx, miny, centerz },
+            { maxx, maxy, centerz },
+            hitboxcenter
+        };
+        for (int i = 0; i < 14; ++i)
+            if (IsVectorVisible(g_pLocalPlayer->v_Eye, positions[i]))
             {
-                tr = (pos - g_pLocalPlayer->v_Eye);
+                tr = (positions[i] - g_pLocalPlayer->v_Eye);
                 break;
             }
     }
@@ -1193,11 +1195,9 @@ int BestHitbox(CachedEntity *target)
     case 1:
     { // AUTO-CLOSEST priority, Return closest hitbox to crosshair
         int hb = ClosestHitbox(target);
-        if (hb > 17)
-            hb = 17;
-
         if (IsBacktracking() && !projectile_mode)
         {
+            hb = std::min(hb, 17);
             namespace bt = hacks::shared::backtrack;
             good_tick    = { -1, -1 };
             auto ticks   = bt::headPositions[target->m_IDX];
@@ -1220,11 +1220,9 @@ int BestHitbox(CachedEntity *target)
     case 2:
     { // STATIC priority, Return a user chosen hitbox
         int hb = *hitbox;
-        if (hb > 17)
-            hb = 17;
-
         if (IsBacktracking() && !projectile_mode)
         {
+            hb = std::min(hb, 17);
             namespace bt = hacks::shared::backtrack;
             good_tick    = { -1, -1 };
             auto ticks   = bt::headPositions[target->m_IDX];
@@ -1241,7 +1239,7 @@ int BestHitbox(CachedEntity *target)
                 }
             }
         }
-        return (int) hitbox;
+        return hb;
     }
     break;
     default:

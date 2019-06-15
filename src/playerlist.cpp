@@ -192,20 +192,15 @@ CatCommand pl_add_id("pl_add_id", "Sets state for steamid", [](const CCommand &a
         return;
 
     uint32_t id       = std::strtoul(args.Arg(1), nullptr, 10);
-    auto &pl          = AccessData(id);
     const char *state = args.Arg(2);
-    if (k_Names[0] == state)
-        pl.state = k_EState::DEFAULT;
-    else if (k_Names[1] == state)
-        pl.state = k_EState::FRIEND;
-    else if (k_Names[2] == state)
-        pl.state = k_EState::RAGE;
-    else if (k_Names[3] == state)
-        pl.state = k_EState::IPC;
-    else if (k_Names[4] == state)
-        pl.state = k_EState::DEVELOPER;
-    else
-        logging::Info("Unknown State");
+    for (int i = 0; i <= int(k_EState::STATE_LAST); ++i)
+        if (k_Names[i] == state)
+        {
+            AccessData(id).state = k_EState(i);
+            return;
+        }
+
+    logging::Info("Unknown State");
 });
 
 static void pl_cleanup()
@@ -259,19 +254,14 @@ CatCommand pl_set_state("pl_set_state", "cat_pl_set_state [playername] [state] (
     player_info_s info;
     g_IEngine->GetPlayerInfo(id, &info);
 
-    auto &pl = AccessData(info.friendsID);
-    if (k_Names[0] == state)
-        pl.state = k_EState::DEFAULT;
-    else if (k_Names[1] == state)
-        pl.state = k_EState::FRIEND;
-    else if (k_Names[2] == state)
-        pl.state = k_EState::RAGE;
-    else if (k_Names[3] == state)
-        pl.state = k_EState::IPC;
-    else if (k_Names[4] == state)
-        pl.state = k_EState::DEVELOPER;
-    else
-        logging::Info("Unknown State. (Use tab for autocomplete)");
+    for (int i = 0; i <= int(k_EState::STATE_LAST); ++i)
+        if (k_Names[i] == state)
+        {
+            AccessData(info.friendsID).state = k_EState(i);
+            return;
+        }
+
+    logging::Info("Unknown State %s. (Use tab for autocomplete)", state);
 });
 
 static int cat_pl_set_state_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
@@ -372,8 +362,15 @@ CatCommand pl_info("pl_info", "pl_info uniqueid", [](const CCommand &args) {
     {
         return;
     }
+    auto &pl = AccessData(steamid);
+    const char *str_state;
+    if (pl.state < k_EState::STATE_FIRST || pl.state > k_EState::STATE_LAST)
+        str_state = "UNKNOWN";
+    else
+        str_state = k_pszNames[int(pl.state)];
+
     logging::Info("Data for %i: ", steamid);
-    logging::Info("   State: %i", AccessData(steamid).state);
+    logging::Info("State: %i %s", pl.state, str_state);
     /*int clr = AccessData(steamid).color;
     if (clr) {
         ConColorMsg(*reinterpret_cast<::Color*>(&clr), "[CUSTOM COLOR]\n");

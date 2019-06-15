@@ -379,20 +379,26 @@ static Graph Map;
 
 void initThread()
 {
-    // Get NavFile location
-    std::string lvlname(g_IEngine->GetLevelName());
-    size_t dotpos = lvlname.find('.');
-    lvlname       = lvlname.substr(0, dotpos);
-    std::string lvldir("/home/");
-    passwd *pwd = getpwuid(getuid());
-    lvldir.append(pwd->pw_name);
-    lvldir.append("/.steam/steam/steamapps/common/Team Fortress 2/tf/");
-    lvldir.append(lvlname);
-    lvldir.append(".nav");
-    logging::Info("Pathing: Nav File location: %s", lvldir.c_str());
+    char *p, cwd[PATH_MAX + 1], nav_path[PATH_MAX + 1], lvl_name[256];
 
-    navfile = std::make_unique<CNavFile>(lvldir.c_str());
-
+    std::strncpy(lvl_name, g_IEngine->GetLevelName(), 255);
+    lvl_name[255] = 0;
+    p = std::strrchr(lvl_name, '.');
+    if (!p)
+    {
+        logging::Info("Failed to find dot in level name");
+        return;
+    }
+    *p = 0;
+    p = getcwd(cwd, sizeof(cwd));
+    if (!p)
+    {
+        logging::Info("Failed to get current working directory: %s", strerror(errno));
+        return;
+    }
+    std::snprintf(nav_path, sizeof(nav_path), "%s/tf/%s.nav", cwd, lvl_name);
+    logging::Info("Pathing: Nav File location: %s", nav_path);
+    navfile = std::make_unique<CNavFile>(nav_path);
     if (!navfile->m_isOK)
     {
         navfile.reset();
