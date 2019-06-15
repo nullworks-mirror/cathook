@@ -385,12 +385,6 @@ float DistanceToGround(CachedEntity *ent)
     {
         if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
             return 0;
-        trace_t trace;
-        Ray_t ray;
-        Vector startpos = ent->m_vecOrigin(), endpos = { startpos.x, startpos.y, startpos.z - 8192.0f };
-        ray.Init(startpos, endpos, RAW_ENT(ent)->GetCollideable()->OBBMins() + startpos, RAW_ENT(ent)->GetCollideable()->OBBMaxs() + startpos);
-        g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &trace);
-        return std::fabs(startpos.z - trace.endpos.z);
     }
     Vector origin = ent->m_vecOrigin();
     Vector mins   = RAW_ENT(ent)->GetCollideable()->OBBMins();
