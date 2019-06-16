@@ -461,7 +461,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
 
     for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
     {
-        current = Predict(origin, velocity, { 0, 0, -(sv_gravity->GetFloat() / 2.0f) }, std::nullopt, current, minmax, currenttime, true);
+        current = Predict(origin, velocity, { 0, 0, -(sv_gravity->GetFloat() / 2.0f) * entgmod }, std::nullopt, current, minmax, currenttime, true);
 
         if (onground)
         {
