@@ -138,7 +138,7 @@ Vector PredictStep(Vector pos, Vector &vel, Vector acceleration, std::pair<Vecto
             g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &trace);
 
             float dist = pos.z - trace.endpos.z;
-            if (trace.m_pEnt && std::fabs(dist) < 83.0f)
+            if (trace.m_pEnt && std::fabs(dist) < 63.0f)
                 grounddistance = dist;
         }
     }
