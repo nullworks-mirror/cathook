@@ -101,28 +101,45 @@ void Prediction_CreateMove()
         }
 }
 
-Vector Predict(Vector &pos, Vector &vel, Vector acceleration, std::optional<float> grounddistance, std::optional<Vector> previous, std::pair<Vector, Vector> &minmax, float &time, bool vischeck)
+Vector Predict(Vector &pos, Vector &vel, Vector acceleration, std::optional<float> grounddistance, float &time)
 {
     PROF_SECTION(PredictNew);
     Vector result = pos;
-    // Quadratic + linear function to map position to time
-    result += vel * time + acceleration * time * time;
-    if (vischeck && previous)
+    // Quadratic + linear function to map position to time (v+a*t)*t
+    vel += acceleration * time;
+    result += vel * time;
+    if (grounddistance)
+        if (result.z < pos.z - *grounddistance)
+            result.z = pos.z - *grounddistance;
+    return result;
+}
+
+Vector PredictStep(Vector pos, Vector &vel, Vector acceleration, std::pair<Vector, Vector> &minmax, float time, float steplength = g_GlobalVars->interval_per_tick, bool vischeck = true, std::optional<float> grounddistance = std::nullopt)
+{
+    PROF_SECTION(PredictNew)
+    Vector result = pos;
+    // Quadratic + linear function to go one step into the future
+
+    vel += acceleration * steplength;
+    result += vel * steplength;
+    if (vischeck)
     {
         Vector modify = result;
         // Standing Player height is 83
-        modify.z   = previous->z + 83.0f;
+        modify.z   = pos.z + 83.0f;
         Vector low = modify;
         low.z -= 8912.0f;
 
         {
-            PROF_SECTION(PredictTraces);
+            PROF_SECTION(PredictTraces)
             Ray_t ray;
             trace_t trace;
             ray.Init(modify, low, minmax.first, minmax.second);
             g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &trace);
 
-            grounddistance = pos.z - trace.endpos.z;
+            float dist = pos.z - trace.endpos.z;
+            if (trace.m_pEnt && std::fabs(dist) < 83.0f)
+                grounddistance = dist;
         }
     }
     if (grounddistance)
@@ -131,16 +148,16 @@ Vector Predict(Vector &pos, Vector &vel, Vector acceleration, std::optional<floa
     return result;
 }
 
-std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceleration, std::pair<Vector, Vector> minmax, float time, int count, bool vischeck = false)
+std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceleration, std::pair<Vector, Vector> minmax, float time, int count, bool vischeck = true)
 {
     std::vector<Vector> positions;
     positions.reserve(count);
     Vector prev;
 
-    Vector adjustedpos = pos;
     pos.z -= offset;
 
     float dist = DistanceToGround(pos, minmax.first, minmax.second);
+    Vector prediction;
 
     for (int i = 0; i < count; i++)
     {
@@ -148,17 +165,15 @@ std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceler
         if (positions.size() > 0)
         {
             prev = positions.back();
-            Vector prediction;
             if (vischeck)
-                prediction = Predict(pos, vel, acceleration, std::nullopt, prev, minmax, time, vischeck);
+                prediction = PredictStep(prediction, vel, acceleration, minmax, time);
             else
-                prediction = Predict(pos, vel, acceleration, dist, std::nullopt, minmax, time, vischeck);
-            prediction.z += offset;
-            positions.push_back(prediction);
+                prediction = PredictStep(prediction, vel, acceleration, minmax, time, g_GlobalVars->interval_per_tick, false, dist);
+            positions.push_back({prediction.x, prediction.y, prediction.z + offset});
         }
         else
         {
-            Vector prediction = Predict(pos, vel, acceleration, dist, std::nullopt, minmax, time, vischeck);
+            prediction = Predict(pos, vel, acceleration, dist, time);
             prediction.z += offset;
             positions.push_back(prediction);
         }
@@ -211,7 +226,7 @@ void Prediction_PaintTraverse()
             auto ent = ENTITY(i);
             if (CE_BAD(ent) || !ent->m_bAlivePlayer())
                 continue;
-            auto data = Predict(ent->m_vecOrigin(), 0.0f, CE_VECTOR(ent, netvar.vVelocity), Vector(0, 0, -sv_gravity->GetFloat() / 2), std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs()), 0.0f, 32, true);
+            auto data = Predict(ent->m_vecOrigin(), 0.0f, CE_VECTOR(ent, netvar.vVelocity), Vector(0, 0, -sv_gravity->GetFloat()), std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs()), 0.0f, 32);
             Vector previous_screen;
             if (!draw::WorldToScreen(ent->m_vecOrigin(), previous_screen))
                 continue;
@@ -459,10 +474,19 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
     float steplength          = ((float) (2 * range) / (float) maxsteps);
     auto minmax               = std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs());
 
+    float dist_to_ground = DistanceToGround(origin, minmax.first, minmax.second);
+    Vector acceleration  = { 0, 0, -(sv_gravity->GetFloat()) };
+
+    Vector last = origin; 
+
     for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
     {
-        current = Predict(origin, velocity, { 0, 0, -(sv_gravity->GetFloat() / 2.0f) * entgmod }, std::nullopt, current, minmax, currenttime, true);
+        if (steps == 0)
+            last = Predict(last, velocity, acceleration, dist_to_ground, currenttime);
+        else
+            last = PredictStep(last, velocity, acceleration, minmax, currenttime, steplength);
 
+        current = last;
         if (onground)
         {
             float toground = DistanceToGround(current, minmax.first, minmax.second);
