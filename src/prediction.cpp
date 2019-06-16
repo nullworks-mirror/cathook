@@ -10,6 +10,7 @@
 static settings::Boolean debug_enginepred{ "debug.engine-pred-others", "false" };
 static settings::Boolean debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
 static settings::Boolean debug_pp_rockettimeping{ "debug.pp-rocket-time-ping", "false" };
+static settings::Boolean debug_pp_draw{ "debug.pp-draw", "false" };
 static settings::Int projpred_ticks{ "debug.prediction-ticks", "1" };
 // TODO there is a Vector() object created each call.
 
@@ -44,7 +45,7 @@ bool PerformProjectilePrediction(CachedEntity *target, int hitbox)
     return true;
 }
 
-std::vector<std::vector<Vector>> predicted_players{};
+std::vector<std::vector<Vector>> predicted_players_engine{};
 std::vector<std::vector<Vector>> player_vel{};
 int predicted_player_count = 0;
 
@@ -54,7 +55,7 @@ void Prediction_CreateMove()
     if (!setup)
     {
         setup = true;
-        predicted_players.resize(33);
+        predicted_players_engine.resize(33);
         player_vel.resize(33);
     }
     for (int i = 1; i <= g_GlobalVars->maxClients; i++)
@@ -76,48 +77,149 @@ void Prediction_CreateMove()
             player_vel[i] = {};
         }
     }
-    if (!debug_enginepred)
-        return;
-    for (int i = 1; i <= g_GlobalVars->maxClients; i++)
-    {
-        CachedEntity *ent = ENTITY(i);
-        if (CE_GOOD(ent))
+    if (debug_enginepred)
+        for (int i = 1; i <= g_GlobalVars->maxClients; i++)
         {
-            Vector original = ent->m_vecOrigin();
-            predicted_players[i].clear();
-            for (int j = 0; j < 32; j++)
+            CachedEntity *ent = ENTITY(i);
+            if (CE_GOOD(ent))
             {
-                Vector r                                           = EnginePrediction(ent, g_GlobalVars->interval_per_tick);
-                const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = r;
-                CE_VECTOR(ent, 0x354)                              = r;
-                predicted_players[i].push_back(std::move(r));
+                Vector original = ent->m_vecOrigin();
+                predicted_players_engine[i].clear();
+                for (int j = 0; j < 32; j++)
+                {
+                    Vector r                                           = EnginePrediction(ent, g_GlobalVars->interval_per_tick);
+                    const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = r;
+                    CE_VECTOR(ent, 0x354)                              = r;
+                    predicted_players_engine[i].push_back(std::move(r));
+                }
+                const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = original;
+                CE_VECTOR(ent, 0x354)                              = original;
+                // logging::Info("Predicted %d to be at [%.2f, %.2f, %.2f] vs [%.2f,
+                // %.2f, %.2f]", i, r.x,r.y,r.z, o.x, o.y, o.z);
+                predicted_player_count = i;
             }
-            const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = original;
-            CE_VECTOR(ent, 0x354)                              = original;
-            // logging::Info("Predicted %d to be at [%.2f, %.2f, %.2f] vs [%.2f,
-            // %.2f, %.2f]", i, r.x,r.y,r.z, o.x, o.y, o.z);
-            predicted_player_count = i;
+        }
+}
+
+Vector Predict(Vector &pos, Vector &vel, Vector acceleration, std::optional<float> grounddistance, std::optional<Vector> previous, std::pair<Vector, Vector> &minmax, float &time, bool vischeck)
+{
+    PROF_SECTION(PredictNew);
+    Vector result = pos;
+    // Quadratic + linear function to map position to time
+    result += vel * time + acceleration * time * time;
+    if (vischeck && previous)
+    {
+        Vector modify = result;
+        // Standing Player height is 83
+        modify.z   = previous->z + 83.0f;
+        Vector low = modify;
+        low.z -= 8912.0f;
+
+        {
+            PROF_SECTION(PredictTraces);
+            Ray_t ray;
+            trace_t trace;
+            ray.Init(modify, low, minmax.first, minmax.second);
+            g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &trace);
+
+            grounddistance = pos.z - trace.endpos.z;
         }
     }
+    if (grounddistance)
+        if (result.z < pos.z - *grounddistance)
+            result.z = pos.z - *grounddistance;
+    return result;
 }
+
+std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceleration, std::pair<Vector, Vector> minmax, float time, int count, bool vischeck = false)
+{
+    std::vector<Vector> positions;
+    positions.reserve(count);
+    Vector prev;
+
+    Vector adjustedpos = pos;
+    pos.z -= offset;
+
+    float dist = DistanceToGround(pos, minmax.first, minmax.second);
+
+    for (int i = 0; i < count; i++)
+    {
+        time += 1.0f * g_GlobalVars->interval_per_tick;
+        if (positions.size() > 0)
+        {
+            prev = positions.back();
+            Vector prediction;
+            if (vischeck)
+                prediction = Predict(pos, vel, acceleration, std::nullopt, prev, minmax, time, vischeck);
+            else
+                prediction = Predict(pos, vel, acceleration, dist, std::nullopt, minmax, time, vischeck);
+            prediction.z += offset;
+            positions.push_back(prediction);
+        }
+        else
+        {
+            Vector prediction = Predict(pos, vel, acceleration, dist, std::nullopt, minmax, time, vischeck);
+            prediction.z += offset;
+            positions.push_back(prediction);
+        }
+    }
+    return positions;
+}
+
 #if ENABLE_VISUALS
 void Prediction_PaintTraverse()
 {
-    if (!debug_enginepred)
+    if (g_Settings.bInvalid)
         return;
-    for (int i = 1; i < predicted_player_count; i++)
-    {
-        CachedEntity *ent = ENTITY(i);
-        if (CE_GOOD(ent))
+    if (debug_enginepred)
+        for (int i = 1; i < predicted_player_count; i++)
         {
+            CachedEntity *ent = ENTITY(i);
+            if (CE_GOOD(ent))
+            {
+                Vector previous_screen;
+                if (!draw::WorldToScreen(ent->m_vecOrigin(), previous_screen))
+                    continue;
+                rgba_t color = colors::FromRGBA8(255, 0, 0, 255);
+                for (int j = 0; j < predicted_players_engine[i].size(); j++)
+                {
+                    Vector screen;
+                    if (draw::WorldToScreen(predicted_players_engine[i][j], screen))
+                    {
+                        draw::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 2);
+                        previous_screen = screen;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    color.r -= 1.0f / 20.0f;
+                }
+            }
+        }
+    if (debug_pp_draw)
+    {
+        static ConVar *sv_gravity = g_ICvar->FindVar("sv_gravity");
+        if (!sv_gravity)
+        {
+            sv_gravity = g_ICvar->FindVar("sv_gravity");
+            if (!sv_gravity)
+                return;
+        }
+        for (int i = 1; i <= g_GlobalVars->maxClients; i++)
+        {
+            auto ent = ENTITY(i);
+            if (CE_BAD(ent) || !ent->m_bAlivePlayer())
+                continue;
+            auto data = Predict(ent->m_vecOrigin(), 0.0f, CE_VECTOR(ent, netvar.vVelocity), Vector(0, 0, -sv_gravity->GetFloat() / 2), std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs()), 0.0f, 32, true);
             Vector previous_screen;
             if (!draw::WorldToScreen(ent->m_vecOrigin(), previous_screen))
                 continue;
             rgba_t color = colors::FromRGBA8(255, 0, 0, 255);
-            for (int j = 0; j < predicted_players[i].size(); j++)
+            for (int j = 0; j < data.size(); j++)
             {
                 Vector screen;
-                if (draw::WorldToScreen(predicted_players[i][j], screen))
+                if (draw::WorldToScreen(data[j], screen))
                 {
                     draw::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 2);
                     previous_screen = screen;
@@ -316,76 +418,75 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float
     // S = at^2/2 ; t = sqrt(2S/a)*/
     return bestpos;
 }
+
 Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravitymod, float entgmod)
 {
-    if (!ent)
-        return Vector();
-    Vector result;
-    // if (not debug_pp_extrapolate) {
-    GetHitbox(ent, hb, result);
-    //} else {
-    //        result = SimpleLatencyPrediction(ent, hb);
-    //
-    //}
-    float latency = g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING);
+    Vector origin = ent->m_vecOrigin();
+    Vector hitbox;
+    GetHitbox(ent, hb, hitbox);
+    Vector hitbox_offset = hitbox - origin;
 
     if (speed == 0.0f)
         return Vector();
-    trace::filter_no_player.SetSelf(RAW_ENT(ent));
-    float dtg = DistanceToGround(ent);
-    Vector vel;
-    if (velocity::EstimateAbsVelocity)
-        velocity::EstimateAbsVelocity(RAW_ENT(ent), vel);
+    Vector velocity(0.0f);
+    if (ent->m_IDX <= 33 && player_vel[ent->m_IDX].size())
+    {
+        for (auto entry : player_vel[ent->m_IDX])
+            velocity += entry;
+        velocity /= player_vel[ent->m_IDX].size();
+    }
     else
-        vel = CE_VECTOR(ent, netvar.vVelocity);
+        velocity = CE_VECTOR(ent, netvar.vVelocity);
     // TODO ProjAim
-    float medianTime  = g_pLocalPlayer->v_Eye.DistTo(result) / speed;
+    float medianTime  = g_pLocalPlayer->v_Eye.DistTo(hitbox) / speed;
     float range       = 1.5f;
     float currenttime = medianTime - range;
     if (currenttime <= 0.0f)
         currenttime = 0.01f;
     float besttime = currenttime;
     float mindelta = 65536.0f;
-    Vector bestpos = result;
-    int maxsteps   = 300;
-    for (int steps = 0; steps < maxsteps; steps++, currenttime += ((float) (2 * range) / (float) maxsteps))
+    Vector bestpos = origin;
+    Vector current = origin;
+    int maxsteps   = 40;
+    bool onground  = false;
+    if (ent->m_Type() == ENTITY_PLAYER)
     {
-        Vector curpos = result;
-        curpos += vel * currenttime;
-        if (debug_pp_extrapolate)
+        if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
+            onground = true;
+    }
+
+    static ConVar *sv_gravity = g_ICvar->FindVar("sv_gravity");
+    float steplength          = ((float) (2 * range) / (float) maxsteps);
+    auto minmax               = std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs());
+
+    for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
+    {
+        current = Predict(origin, velocity, { 0, 0, -(sv_gravity->GetFloat() / 2.0f) }, std::nullopt, current, minmax, currenttime, true);
+
+        if (onground)
         {
-            curpos += vel * currenttime * latency;
+            float toground = DistanceToGround(current, minmax.first, minmax.second);
+            current.z -= toground;
         }
-        if (dtg > 0.0f)
-        {
-            curpos.z -= currenttime * currenttime * 400.0f * entgmod;
-            if (curpos.z < result.z - dtg)
-                curpos.z = result.z - dtg;
-        }
-        float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
-        if (debug_pp_rockettimeping)
-            rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+
+        float rockettime = g_pLocalPlayer->v_Eye.DistTo(current) / speed;
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;
-            bestpos  = curpos;
+            bestpos  = current;
             mindelta = fabs(rockettime - currenttime);
         }
     }
-    if (debug_pp_rockettimeping)
-        besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
-    bestpos.z += (400 * besttime * besttime * gravitymod);
+    bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravitymod);
     // S = at^2/2 ; t = sqrt(2S/a)*/
-    return bestpos;
+    Vector result = bestpos + hitbox_offset;
+    /*logging::Info("[Pred][%d] delta: %.2f   %.2f   %.2f", result.x - origin.x,
+                  result.y - origin.y, result.z - origin.z);*/
+    return result;
 }
 
 float DistanceToGround(CachedEntity *ent)
 {
-    if (ent->m_Type() == ENTITY_PLAYER)
-    {
-        if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
-            return 0;
-    }
     Vector origin = ent->m_vecOrigin();
     Vector mins   = RAW_ENT(ent)->GetCollideable()->OBBMins();
     Vector maxs   = RAW_ENT(ent)->GetCollideable()->OBBMins();
