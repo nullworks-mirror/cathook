@@ -11,7 +11,7 @@ namespace zerokernel_taskbar
 {
 static settings::RVariable<rgba_t> color_background{ "zk.style.taskbar.color.background", "1d2f40" };
 static settings::RVariable<rgba_t> color_border{ "zk.style.taskbar.color.border", "446498ff" };
-}
+} // namespace zerokernel_taskbar
 
 void zerokernel::TaskBar::reorderElements()
 {

@@ -754,16 +754,16 @@ void Aim(CachedEntity *entity)
         // Get hitbox num
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
         float minx, maxx, miny, maxy, minz, maxz, centerx, centery, centerz;
-        auto hb = entity->hitboxes.GetHitbox(cd.hitbox);
+        auto hb           = entity->hitboxes.GetHitbox(cd.hitbox);
         auto hitboxmin    = hb->min;
         auto hitboxmax    = hb->max;
         auto hitboxcenter = hb->center;
         if (shouldBacktrack() && entity->m_Type() == ENTITY_PLAYER)
         {
             const auto &bt_hb = bt::headPositions[entity->m_IDX][good_tick.first].hitboxes[cd.hitbox];
-            hitboxcenter = bt_hb.center;
-            hitboxmin    = bt_hb.min;
-            hitboxmax    = bt_hb.max;
+            hitboxcenter      = bt_hb.center;
+            hitboxmin         = bt_hb.min;
+            hitboxmax         = bt_hb.max;
         }
         // get positions
         minx    = hitboxmin.x;
@@ -784,21 +784,7 @@ void Aim(CachedEntity *entity)
         maxz -= (maxz - minz) / 6;
         minz += (maxz - minz) / 6;
         // Create Vectors
-        const Vector positions[13] = {
-            { minx, centery, minz },
-            { maxx, centery, minz },
-            { minx, centery, maxz },
-            { maxx, centery, maxz },
-            { centerx, miny, minz },
-            { centerx, maxy, minz },
-            { centerx, miny, maxz },
-            { centerx, maxy, maxz },
-            { minx, miny, centerz },
-            { maxx, maxy, centerz },
-            { minx, miny, centerz },
-            { maxx, maxy, centerz },
-            hitboxcenter
-        };
+        const Vector positions[13] = { { minx, centery, minz }, { maxx, centery, minz }, { minx, centery, maxz }, { maxx, centery, maxz }, { centerx, miny, minz }, { centerx, maxy, minz }, { centerx, miny, maxz }, { centerx, maxy, maxz }, { minx, miny, centerz }, { maxx, maxy, centerz }, { minx, miny, centerz }, { maxx, maxy, centerz }, hitboxcenter };
         for (int i = 0; i < 14; ++i)
             if (IsVectorVisible(g_pLocalPlayer->v_Eye, positions[i]))
             {
@@ -1197,7 +1183,7 @@ int BestHitbox(CachedEntity *target)
         int hb = ClosestHitbox(target);
         if (IsBacktracking() && !projectile_mode)
         {
-            hb = std::min(hb, 17);
+            hb           = std::min(hb, 17);
             namespace bt = hacks::shared::backtrack;
             good_tick    = { -1, -1 };
             auto ticks   = bt::headPositions[target->m_IDX];
@@ -1222,7 +1208,7 @@ int BestHitbox(CachedEntity *target)
         int hb = *hitbox;
         if (IsBacktracking() && !projectile_mode)
         {
-            hb = std::min(hb, 17);
+            hb           = std::min(hb, 17);
             namespace bt = hacks::shared::backtrack;
             good_tick    = { -1, -1 };
             auto ticks   = bt::headPositions[target->m_IDX];

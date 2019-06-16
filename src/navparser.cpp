@@ -383,14 +383,14 @@ void initThread()
 
     std::strncpy(lvl_name, g_IEngine->GetLevelName(), 255);
     lvl_name[255] = 0;
-    p = std::strrchr(lvl_name, '.');
+    p             = std::strrchr(lvl_name, '.');
     if (!p)
     {
         logging::Info("Failed to find dot in level name");
         return;
     }
     *p = 0;
-    p = getcwd(cwd, sizeof(cwd));
+    p  = getcwd(cwd, sizeof(cwd));
     if (!p)
     {
         logging::Info("Failed to get current working directory: %s", strerror(errno));

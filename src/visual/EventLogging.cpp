@@ -10,7 +10,6 @@
 #include <init.hpp>
 #include "KeyValues.h"
 
-
 namespace event_logging
 {
 static settings::Boolean enable{ "chat.log-events", "false" };
@@ -259,5 +258,5 @@ bool isEnabled()
 {
     return *enable;
 }
-}
+} // namespace event_logging
 #endif

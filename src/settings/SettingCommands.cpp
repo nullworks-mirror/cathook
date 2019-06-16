@@ -12,7 +12,8 @@
   Created on 29.07.18.
 */
 
-namespace settings::commands {
+namespace settings::commands
+{
 
 static void getAndSortAllConfigs();
 
@@ -313,4 +314,4 @@ static InitRoutine init([]() {
     save.cmd->m_bHasCompletionCallback = true;
     save.cmd->m_fnCompletionCallback   = save_CompletionCallback;
 });
-}
+} // namespace settings::commands

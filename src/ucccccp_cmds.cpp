@@ -12,11 +12,7 @@ CatCommand utfccp_encrypt("ucccccp_encrypt", "Encrypt a message", [](const CComm
 
 CatCommand utfccp_decrypt("ucccccp_decrypt", "Decrypt a message", [](const CCommand &args) {
     if (ucccccp::validate(std::string(args.ArgS())))
-    {
         logging::Info("%s", ucccccp::decrypt(std::string(args.ArgS())).c_str());
-    }
     else
-    {
         logging::Info("Invalid input data!");
-    }
 });
