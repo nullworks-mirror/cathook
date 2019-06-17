@@ -14,7 +14,7 @@ static settings::Boolean enabled("irc.enabled", "true");
 static settings::Boolean anon("irc.anon", "true");
 static settings::Boolean authenticate("irc.auth", "true");
 static settings::String channel("irc.channel", "#cat_comms");
-static settings::String address("irc.address", "cathook.irc.inkcat.net");
+static settings::String address("irc.address", "irc.cathook.club");
 static settings::Int port("irc.port", "8080");
 static settings::String commandandcontrol_channel("irc.cc.channel", "");
 static settings::String commandandcontrol_password("irc.cc.password", "");
