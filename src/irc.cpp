@@ -472,7 +472,8 @@ static InitRoutine init([]() {
     commandandcontrol_password.installChangeCallback(rvarCallback<std::string>);
 
     irc.installCallback("PRIVMSG", handleIRC);
-    irc.Connect();
+    if (enabled)
+        irc.Connect();
 });
 
 static CatCommand irc_send_cmd("irc_send_cmd", "Send cmd to IRC", [](const CCommand &args) { irc.sendraw(args.ArgS()); });
