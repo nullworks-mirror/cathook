@@ -10,6 +10,8 @@
 #include <settings/Bool.hpp>
 #include "navparser.hpp"
 #include "NavBot.hpp"
+#include "soundcache.hpp"
+#include "playerresource.h"
 
 namespace hacks::shared::followbot
 {
@@ -77,12 +79,9 @@ static std::array<Timer, 32> afkTicks; // for how many ms the player hasn't been
 
 static void checkAFK()
 {
-    for (int i = 0; i < g_GlobalVars->maxClients; i++)
+    for (int i = 1; i < g_GlobalVars->maxClients; i++)
     {
-        auto entity = ENTITY(i);
-        if (CE_BAD(entity))
-            continue;
-        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(60.0f))
+        if (soundcache::GetSoundLocation(i))
         {
             afkTicks[i].update();
         }
@@ -192,7 +191,7 @@ static int navtarget = 0;
 
 static bool startFollow(CachedEntity *entity, bool useNavbot)
 {
-    if (!follow_activation || entity->m_flDistance() <= (float) follow_activation)
+    if (CE_GOOD(entity) && !follow_activation || entity->m_flDistance() <= (float) follow_activation)
     {
         if (corneractivate)
         {
@@ -283,7 +282,7 @@ static void cm()
             for (int i = 1; i < ent_count; i++)
             {
                 auto entity = ENTITY(i);
-                if (CE_BAD(entity)) // Exist + dormant
+                if (CE_INVALID(entity)) // Exist + dormant
                     continue;
                 if (i == follow_target)
                     continue;
@@ -293,7 +292,7 @@ static void cm()
                     continue;
                 if (entity == LOCAL_E)
                     continue;
-                if (!entity->m_bAlivePlayer()) // Dont follow dead players
+                if (!g_pPlayerResource->isAlive(entity->m_IDX)) // Dont follow dead players
                     continue;
                 if (startFollow(entity, isNavBotCM))
                 {
@@ -315,21 +314,25 @@ static void cm()
             for (int i = 1; i <= ent_count; i++)
             {
                 auto entity = ENTITY(i);
-                if (CE_BAD(entity)) // Exist + dormant
-                    continue;
-                if (!followcart)
-                    if (entity->m_Type() != ENTITY_PLAYER)
+                if (!follow_target)
+                {
+                    if (CE_INVALID(entity))
                         continue;
+                }
+                else
+                {
+                    if (CE_BAD(entity))
+                        continue;
+                }
+                if (entity->m_Type() != ENTITY_PLAYER)
+                    continue;
                 if (entity == LOCAL_E) // Follow self lol
                     continue;
                 if (entity->m_bEnemy())
                     continue;
-                if (afk && afkTicks[i].check(int(afktime))) // don't follow target that
-                                                            // was determined afk
+                if (afk && afkTicks[i].check(*afktime)) // don't follow target that was determined afk
                     continue;
-                if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
-                    continue;
-                if (!entity->m_bAlivePlayer()) // Dont follow dead players
+                if (!g_pPlayerResource->isAlive(entity->m_IDX)) // Dont follow dead players
                     continue;
                 // const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
                 // FIXME follow cart/point
@@ -343,15 +346,18 @@ static void cm()
                      model == lagexploit::pointarr[3] ||
                      model == lagexploit::pointarr[4]))
                     follow_target = entity->m_IDX;*/
-                if (entity->m_Type() != ENTITY_PLAYER)
-                    continue;
                 // favor closer entitys
-                if (follow_target && ENTITY(follow_target)->m_flDistance() < entity->m_flDistance()) // favor closer entitys
-                    continue;
-                // check if new target has a higher priority than current
-                // target
-                if (ClassPriority(ENTITY(follow_target)) >= ClassPriority(ENTITY(i)))
-                    continue;
+                if (CE_GOOD(entity))
+                {
+                    if (follow_target && ENTITY(follow_target)->m_flDistance() < entity->m_flDistance()) // favor closer entitys
+                        continue;
+                    if (IsPlayerDisguised(entity) || IsPlayerInvisible(entity))
+                        continue;
+                    // check if new target has a higher priority than current
+                    // target
+                    if (ClassPriority(ENTITY(follow_target)) >= ClassPriority(ENTITY(i)))
+                        continue;
+                }
                 if (startFollow(entity, isNavBotCM))
                 {
                     // ooooo, a target
@@ -380,19 +386,20 @@ static void cm()
             breadcrumbs.clear();
             follow_target = 0;
             static Timer navtimer{};
-            if (CE_GOOD(ent))
+            if (CE_VALID(ent))
             {
-                if (!ent->m_bAlivePlayer())
+                auto pos = ent->m_vecDormantOrigin();
+                if (!g_pPlayerResource->isAlive(ent->m_IDX))
                 {
                     navtarget = 0;
                 }
-                if (navtimer.test_and_set(800))
+                if (pos && navtimer.test_and_set(800))
                 {
-                    if (nav::navTo(ent->m_vecOrigin(), 8, true, false))
+                    if (nav::navTo(*pos, 8, true, false))
                         navinactivity.update();
                 }
             }
-            if (navinactivity.check(15000))
+            if (navinactivity.check(5000))
             {
                 navtarget = 0;
             }
@@ -449,10 +456,6 @@ static void cm()
         idle_time.update();
     }
 
-    // New crumbs, we add one if its empty so we have something to follow
-    if ((breadcrumbs.empty() || tar_orig.DistTo(breadcrumbs.at(breadcrumbs.size() - 1)) > 40.0F) && DistanceToGround(ENTITY(follow_target)) < 45)
-        breadcrumbs.push_back(tar_orig);
-
     // Prune old and close crumbs that we wont need anymore, update idle
     // timer too
     for (int i = 0; i < breadcrumbs.size(); i++)
@@ -464,6 +467,10 @@ static void cm()
                 breadcrumbs.erase(breadcrumbs.begin());
         }
     }
+
+    // New crumbs, we add one if its empty so we have something to follow
+    if (breadcrumbs.empty() || (tar_orig.DistTo(breadcrumbs.at(breadcrumbs.size() - 1)) > 40.0F && DistanceToGround(ENTITY(follow_target)) < 45))
+        breadcrumbs.push_back(tar_orig);
 
     // Tauntsync
     if (sync_taunt && HasCondition<TFCond_Taunting>(followtar) && lastTaunt.test_and_set(1000))

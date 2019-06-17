@@ -1,5 +1,17 @@
 #include "common.hpp"
 #include "soundcache.hpp"
+
+struct CSndInfo_t
+{
+    Vector m_pOrigin;
+};
+
+struct SoundStruct
+{
+    CSndInfo_t sound;
+    Timer last_update;
+};
+
 std::map<int, SoundStruct> sound_cache;
 
 namespace soundcache
