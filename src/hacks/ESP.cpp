@@ -316,7 +316,7 @@ void Init()
 void _FASTCALL emoji(CachedEntity *ent)
 {
     // Check to prevent crashes
-    if (CE_BAD(ent))
+    if (CE_BAD(ent) || !ent->m_bAlivePlayer())
         return;
     // Emoji esp
     if (emoji_esp)
@@ -324,6 +324,8 @@ void _FASTCALL emoji(CachedEntity *ent)
         if (ent->m_Type() == ENTITY_PLAYER)
         {
             auto hit = ent->hitboxes.GetHitbox(0);
+            if (!hit)
+                return;
             Vector hbm, hbx;
             if (draw::WorldToScreen(hit->min, hbm) && draw::WorldToScreen(hit->max, hbx))
             {
@@ -383,8 +385,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
     bool dormant = false;
     if (RAW_ENT(ent)->IsDormant())
     {
-        auto vec = ent->m_vecDormantOrigin();
-        if (!vec)
+        if (!ent->m_vecDormantOrigin())
             return;
         dormant = true;
     }
@@ -793,8 +794,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
     // Dormant
     if (RAW_ENT(ent)->IsDormant())
     {
-        auto vec = ent->m_vecDormantOrigin();
-        if (!vec)
+        if (!ent->m_vecDormantOrigin())
             return;
     }
     if (max_dist && ent->m_flDistance() > *max_dist)
