@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+if [ $(id -u) -eq 0 ]; then
+    echo -e "\033[1;33m \n \nThis script must'nt be run as root!\n\033[0m"
+    exit 1
+fi
+
+configfile="./scripts/updater-preferences"
+. ./scripts/config.shlib
+
+if [ ! -x "$(command -v dialog)" ]; then
+    echo -e "\033[1;31mTerminal UI NOT supported! Install \"dialog\"! \033[0m"
+    exit 1
+fi
+
+response=$(dialog --keep-tite --title "Config" --menu "Select a config submenu:" 0 0 0 1 "Update channel" --output-fd 1)
+
+if [ "$response" == 1 ]; then
+    response=$(dialog --keep-tite --title "Config" --menu "Select a config submenu:" 0 0 0 1 "Stable (Recommended)" 2 "Master (Bleeding Edge)" 3 "Developer (Possible git issues, doesn't wipe modified files)" --output-fd 1)
+    if [ "$response" == 1 ]; then
+        cfg_write $configfile update_channel stable
+    elif [ "$response" == 2 ]; then
+        cfg_write $configfile update_channel master
+    elif [ "$response" == 3 ]; then
+        cfg_write $configfile update_channel developer
+    else
+        exit 0
+    fi
+    ./update
+fi

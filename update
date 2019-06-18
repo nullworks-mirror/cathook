@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 if [ $SUDO_USER ]; then
     sudo -u $SUDO_USER ./scripts/updater
 else

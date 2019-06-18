@@ -46,7 +46,7 @@ fi
 tui=true
 if [ ! -x "$(command -v dialog)" ]; then
     tui=false
-    echo Terminal UI NOT supported!
+    echo -e "\033[1;31mTerminal UI NOT supported! Install \"dialog\"! \033[0m"
 fi
 
 exists=true
@@ -75,6 +75,7 @@ if [ "$1" == "--autoupdater" ]; then
         exit 0;
     fi
     AUTOUPDATER=true
+    tui=false
     echo -e "\033[1;34m \n \nAuto Updater: Updating cathook in the background\n\033[0m"
 fi
 
@@ -96,6 +97,7 @@ function performupdate() {
                 cfg_write $configfile update_channel stable
             fi
         fi
+        exit 1
     fi
     
     proccount=$(grep -c '^processor' /proc/cpuinfo)
