@@ -1,19 +1,5 @@
-#!/usr/bin/env bash
-if [ $EUID == 0 ]; then
-    echo -e "\033[1;31m\nThis script must not be run as root\n\033[0m"
-    exit 1
-fi
-
-# Get updated source code
-if [ "$(git rev-parse --is-shallow-repository)" == "true" ]; then
-    git fetch --force --depth 1 origin refs/tags/latest:refs/tags/latest && git reset --hard latest && git submodule update --depth 1 --init --recursive || { echo -e "\033[1;33m\nFailed to pull from github! Trying alternative pull (legacy)\n\033[0m"; git fetch --depth 1 && git reset --hard @{upstream} && git submodule update --depth 1 --init --recursive || { echo -e "\033[1;31m\nFailed to pull from github! A reinstall is recommended. https://github.com/nullworks/cathook\n\033[0m"; exit 1; } }
+if [ $SUDO_USER ]; then
+    sudo -u $SUDO_USER ./scripts/updater
 else
-    echo -e "\033[1;33m\nWarning! Running in developer mode! Expect issues!\n\033[0m" && git pull origin && git submodule update --init --recursive || { echo -e "\033[1;31m\n\nFailed to pull from github!\n\033[0m"; exit 1; }
+    ./scripts/updater
 fi
-#Create build folder in case it doesn't exist
-mkdir -p ./build
-# Update cathook
-cd build && cmake .. && cmake --build . --target cathook -- -j$(grep -c '^processor' /proc/cpuinfo) || { echo -e "\033[1;31m \n \nFailed to compile cathook\n\033[0m"; exit 1; }
-# Update data
-sudo cmake --build . --target data || { echo -e "\033[1;31m\nFailed to update /opt/cathook/data directory\n\033[0m"; exit 1; }
-echo -e "\n\033[1;34mCathook updated successfully\n\033[0m"

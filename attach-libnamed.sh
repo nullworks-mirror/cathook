@@ -3,7 +3,11 @@
 # Thank you LWSS
 # https://github.com/LWSS/Fuzion/commit/a53b6c634cde0ed47b08dd587ba40a3806adf3fe
 
-sudo ./scripts/auto-updater
+if [ $SUDO_USER ]; then
+    sudo -u $SUDO_USER ./scripts/updater --autoupdater
+else
+    ./scripts/updater
+fi
 line=$(pgrep -u $SUDO_USER hl2_linux)
 arr=($line)
 inst=$1

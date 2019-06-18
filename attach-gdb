@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-sudo ./scripts/auto-updater
+if [ $SUDO_USER ]; then
+    sudo -u $SUDO_USER ./scripts/updater --autoupdater
+else
+    ./scripts/updater
+fi
 line=$(pgrep -u $SUDO_USER hl2_linux)
 arr=($line)
 inst=$1
