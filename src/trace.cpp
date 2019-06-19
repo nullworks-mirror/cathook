@@ -91,12 +91,11 @@ bool trace::FilterNoPlayer::ShouldHitEntity(IHandleEntity *handle, int mask)
     switch (clazz->m_ClassID)
     {
     // TODO magic numbers: invisible entity ids
-    case 248:
-    case 246:
-    case 64:
-    case 225:
-    case 55:
-    case 241:
+    case CL_CLASS(CTFPlayerResource):
+    case CL_CLASS(CTFPlayer):
+    case CL_CLASS(CFuncRespawnRoomVisualizer):
+    case CL_CLASS(CTFMedigunShield):
+    case CL_CLASS(CFuncAreaPortalWindow):
         return false;
     }
     /* Do not hit yourself. Idiot. */
@@ -141,8 +140,8 @@ bool trace::FilterNoEntity::ShouldHitEntity(IHandleEntity *handle, int mask)
     // Hit doors, carts, etc
     switch (clazz->m_ClassID)
     {
-    case 6:
-    case 7:
+    case CL_CLASS(CBaseDoor):
+    case CL_CLASS(CBaseEntity):
         return true;
     }
     return false;
@@ -183,11 +182,11 @@ bool trace::FilterPenetration::ShouldHitEntity(IHandleEntity *handle, int mask)
     switch (clazz->m_ClassID)
     {
     // TODO magic numbers: invisible entity ids
-    case 64:
-    case 225:
-    case 55:
+    case CL_CLASS(CFuncRespawnRoomVisualizer):
+    case CL_CLASS(CTFMedigunShield):
+    case CL_CLASS(CFuncAreaPortalWindow):
         return false;
-    case 241:
+    case CL_CLASS(CTFPlayer):
         if (!m_pIgnoreFirst && (entity != m_pSelf))
         {
             m_pIgnoreFirst = entity;
