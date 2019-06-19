@@ -20,18 +20,51 @@ if [ "$exists" == false ]; then
     ./update
 fi
 
-response=$(dialog --keep-tite --title "Config" --menu "Select a config submenu:" 0 0 0 1 "Update channel" --output-fd 1)
 
-if [ "$response" == 1 ]; then
-    response=$(dialog --keep-tite --title "Config" --menu "Select a config submenu:" 0 0 0 1 "Stable (Recommended)" 2 "Master (Bleeding Edge)" 3 "Developer (Possible git issues, doesn't wipe modified files)" --output-fd 1)
-    if [ "$response" == 1 ]; then
-        cfg_write $configfile update_channel stable
-    elif [ "$response" == 2 ]; then
-        cfg_write $configfile update_channel master
-    elif [ "$response" == 3 ]; then
-        cfg_write $configfile update_channel developer
-    else
-        exit 0
+while true
+do
+    response=$(dialog --keep-tite --title "Config" --menu "Select a config submenu:" 0 0 0 1 "Update channel" 2 "Build mode" 3 "CMake-GUI" --output-fd 1)
+    if [ "$response" == "" ]; then
+        break;
     fi
-    ./update
-fi
+
+    if [ "$response" == 1 ]; then
+        response=$(dialog --keep-tite --title "Config" --menu "Select update channel" 0 0 0 1 "Stable (Recommended)" 2 "Master (Bleeding Edge)" 3 "Developer (Possible git issues, doesn't wipe modified files)" --output-fd 1)
+        if [ "$response" == 1 ]; then
+            cfg_write $configfile update_channel stable
+        elif [ "$response" == 2 ]; then
+            cfg_write $configfile update_channel master
+        elif [ "$response" == 3 ]; then
+            cfg_write $configfile update_channel developer
+        else
+            continue
+        fi
+        ./update
+    elif [ "$response" == 2 ]; then
+        if [ ! -x "$(command -v cmake)" ]; then
+            dialog --keep-tite --title "Config" --msgbox "CMake is not installed!" 0 0
+            continue
+        fi
+        response=$(dialog --keep-tite --title "Config" --menu "Select build mode" 0 0 0 1 "Release (Performance)" 2 "Debug (Debug Symbols)" --output-fd 1)
+        if [ "$response" == 1 ]; then
+            pushd build
+            cmake -DCMAKE_BUILD_TYPE=Release ..
+            popd
+        elif [ "$response" == 2 ]; then
+            pushd build
+            cmake -DCMAKE_BUILD_TYPE=Debug ..
+            popd
+        else
+            continue
+        fi
+        ./update
+    elif [ "$response" == 3 ]; then
+        if [ ! -x "$(command -v cmake-gui)" ]; then
+            dialog --keep-tite --title "Config" --msgbox "CMake-GUI is not installed!" 0 0
+            continue
+        fi
+        pushd build
+        cmake-gui ..
+        popd
+    fi
+done
