@@ -84,6 +84,7 @@ if(NOT EnableVisuals)
 endif()
 
 if (EnableVisuals)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
     if (EnableImGuiDrawing)
         find_package(Freetype REQUIRED)
         target_include_directories(cathook PRIVATE "${FREETYPE_INCLUDE_DIRS}")
