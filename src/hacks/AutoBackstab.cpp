@@ -50,6 +50,11 @@ int ClosestDistanceHitbox(hacks::shared::backtrack::BacktrackData btd)
     return closest;
 }
 
+bool canFaceStab(CachedEntity *ent)
+{
+    return ent->m_iHealth() <= 40.0f;
+}
+
 bool angleCheck(CachedEntity *from, CachedEntity *to, std::optional<Vector> target_pos, Vector from_angle)
 {
     Vector tarAngle = CE_VECTOR(to, netvar.m_angEyeAngles);
@@ -123,7 +128,7 @@ static bool doLegitBackstab()
     auto ent  = ENTITY(index);
     if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
         return false;
-    if (angleCheck(ENTITY(index), std::nullopt, g_pLocalPlayer->v_OrigViewangles))
+    if (angleCheck(ENTITY(index), std::nullopt, g_pLocalPlayer->v_OrigViewangles) || canFaceStab(ENTITY(index)))
     {
         current_user_cmd->buttons |= IN_ATTACK;
         return true;
@@ -148,7 +153,7 @@ static bool doRageBackstab()
             if (hitbox == -1)
                 continue;
             auto angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, ent->hitboxes.GetHitbox(hitbox)->center);
-            if (!angleCheck(ent, std::nullopt, angle))
+            if (!angleCheck(ent, std::nullopt, angle) && !canFaceStab(ent))
                 continue;
 
             trace_t trace;
@@ -236,7 +241,7 @@ static bool doBacktrackStab()
         if (hitbox == -1)
             continue;
         Vector newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, btp.hitboxes.at(hitbox).center);
-        if (!angleCheck(ent, btp.entorigin, newangle))
+        if (!angleCheck(ent, btp.entorigin, newangle) && !canFaceStab(ent))
             continue;
         Vector &min = btp.collidable.min;
         Vector &max = btp.collidable.max;
@@ -281,7 +286,7 @@ static bool doLegitBacktrackStab() // lol
         {
             if (!hacks::shared::backtrack::ValidTick(i, ent))
                 continue;
-            if (!angleCheck(ent, i.entorigin, newangle))
+            if (!angleCheck(ent, i.entorigin, newangle) && !canFaceStab(ent))
                 continue;
 
             Vector &min = i.collidable.min;
