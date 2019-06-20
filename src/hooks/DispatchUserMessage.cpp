@@ -11,6 +11,7 @@
 #include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
 #include "CatBot.hpp"
+#include "ChatCommands.hpp"
 
 static settings::Boolean clean_chat{ "chat.clean", "false" };
 static settings::Boolean dispatch_log{ "debug.log-dispatch-user-msg", "false" };
@@ -222,6 +223,10 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                     gitgud.update();
                     break;
                 }
+        }
+        if (event.find("TF_Chat") == 0)
+        {
+            hacks::shared::ChatCommands::handleChatMessage(message, data[0]);
         }
         if (crypt_chat && message.find("!!B") == 0 && ucccccp::validate(message))
         {
