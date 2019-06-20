@@ -94,6 +94,7 @@ endif()
 
 find_package(Git REQUIRED)
 find_package(Boost REQUIRED)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/external")
 find_package(SDL2 REQUIRED)
 
 # cat packages
@@ -110,7 +111,6 @@ execute_process(COMMAND
         OUTPUT_VARIABLE GIT_COMMITTER_DATE
         ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-find_library(ValveLibrarySDL2    NAMES libSDL2-2.0.so.0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 find_library(ValveLibraryTier0   NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 find_library(ValveLibraryVStdLib NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 
@@ -136,11 +136,11 @@ if(EnableVisuals)
         target_link_libraries(cathook xoverlay)
         target_include_directories(cathook PRIVATE external/libxoverlay/include)
     endif()
-    target_include_directories(cathook PRIVATE "${SDL2_INCLUDE_DIRS}")
+    target_include_directories(cathook PRIVATE "${SDL2_INCLUDE_DIR}")
     if (EnableGlezDrawing)
         target_link_libraries(cathook glez)
     endif()
-    target_link_libraries(cathook ${ValveLibrarySDL2} ${GLEW_LIBRARIES})
+    target_link_libraries(cathook ${SDL2_LIBRARY} ${GLEW_LIBRARIES})
 endif()
 
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
