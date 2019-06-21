@@ -308,7 +308,7 @@ void Init()
         [](IConVar *var, const char *pszOldValue, float flOldValue) {
             logging::Info("current font: %p %s %d", fonts::esp.get(),
        fonts::esp->path.c_str(), fonts::esp->isLoaded());
-            fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/verasans.ttf",
+            fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf",
        esp_font_scale));
         });*/
 }
