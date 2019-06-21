@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 arch_packages=(git boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd dialog)
-ubuntu_packages=(software-properties-common build-essential git g++ g++-multilib libboost-all-dev gdb libsdl2-dev:i386 libglew-dev:i386 libfreetype6-dev:i386 cmake dialog)
+ubuntu_packages=(software-properties-common build-essential git g++ g++-multilib libboost-all-dev gdb libsdl2-dev:i386 libglew-dev:i386 libfreetype6-dev:i386 cmake dialog rsync)
 
 if [ -x "$(command -v pacman)" ]; then
     pacman -Qi "${arch_packages[@]}" > /dev/null
