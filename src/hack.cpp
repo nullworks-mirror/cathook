@@ -103,6 +103,20 @@ void hack::ExecuteCommand(const std::string &command)
 }
 
 #if ENABLE_LOGGING
+
+std::string getFileName(std::string filePath)
+{
+    // Get last dot position
+    std::size_t dotPos = filePath.rfind('.');
+    std::size_t sepPos = filePath.rfind('/');
+
+    if (sepPos != std::string::npos)
+    {
+        return filePath.substr(sepPos + 1, filePath.size() - (dotPos != std::string::npos ? 1 : dotPos));
+    }
+    return filePath;
+}
+
 void critical_error_handler(int signum)
 {
     namespace st = boost::stacktrace;
@@ -124,6 +138,14 @@ void critical_error_handler(int signum)
         {
             out << std::endl;
             continue;
+        }
+        auto file_name = getFileName(info2.dli_fname);
+        std::string path;
+        if (sharedobj::LocateSharedObject(file_name, path))
+        {
+            link_map *lmap = nullptr;
+            if ((lmap = static_cast<link_map *>(dlopen(path.c_str(), RTLD_NOLOAD))))
+                out << " " << (void *) ((unsigned int) i.address() - lmap->l_addr - 1);
         }
         out << " " << info2.dli_fname << ": ";
         if (info2.dli_sname)
