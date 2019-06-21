@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+arch_packages=(git boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd dialog)
+ubuntu_packages=(software-properties-common build-essential git g++ g++-multilib libboost-all-dev gdb libsdl2-dev:i386 libglew-dev:i386 libfreetype6-dev:i386 cmake dialog rsync)
+
+if [ -x "$(command -v pacman)" ]; then
+    pacman -Qi "${arch_packages[@]}" > /dev/null
+    out=$?
+    if [ "$out" == 1 ]; then
+        sudo pacman -S --needed "${arch_packages[@]}"
+    fi
+elif [ -x "$(command -v apt-get)" ]; then
+    dpkg -s "${ubuntu_packages[@]}" > /dev/null 2>&1
+    out=$?
+    if [ "$out" == 1 ]; then
+        string=${ubuntu_packages[@]}
+        read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
+        echo    # (optional) move to a new line
+        if [[ $REPLY =~ ^[Yy]$ ]]
+        then
+            sudo apt-get update
+            sudo apt-get install -y software-properties-common
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+            sudo dpkg --add-architecture i386
+            sudo apt update
+            sudo apt install -y "${ubuntu_packages[@]}"
+        fi
+    fi
+else
+    echo -e "\033[1;33m\nWarning! Automatic package installation is not supported!\n\033[0m"
+fi
