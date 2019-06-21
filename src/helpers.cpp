@@ -28,6 +28,22 @@ std::vector<ConCommand *> &RegisteredCommandsList()
 void BeginConVars()
 {
     logging::Info("Begin ConVars");
+    if (!std::ifstream("tf/cfg/cat_autoexec_textmode.cfg"))
+    {
+        std::ofstream cfg_autoexec_textmode("tf/cfg/cat_autoexec_textmode.cfg", std::ios::out | std::ios::trunc);
+        if (cfg_autoexec_textmode.good())
+        {
+            cfg_autoexec_textmode << "// Put your custom cathook settings in this "
+                                     "file\n// This script will be executed EACH TIME "
+                                     "YOU INJECT TEXTMODE CATHOOK\n"
+                                     "\n"
+                                     "engine_no_focus_sleep 0\n"
+                                     "hud_fastswitch\n"
+                                     "tf_medigun_autoheal 1\n"
+                                     "fps_max 67\n"
+                                     "cat_ipc_connect";
+        }
+    }
     if (!std::ifstream("tf/cfg/cat_autoexec.cfg"))
     {
         std::ofstream cfg_autoexec("tf/cfg/cat_autoexec.cfg", std::ios::out | std::ios::trunc);
