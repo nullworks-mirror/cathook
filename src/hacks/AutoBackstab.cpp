@@ -148,7 +148,8 @@ static bool doRageBackstab()
             auto ent = ENTITY(i);
             if (CE_BAD(ent) || ent->m_flDistance() > swingrange * 4 || !ent->m_bEnemy() || !ent->m_bAlivePlayer() || g_pLocalPlayer->entity_idx == ent->m_IDX)
                 continue;
-
+            if (!player_tools::shouldTarget(ent))
+                continue;
             auto hitbox = ClosestDistanceHitbox(ent);
             if (hitbox == -1)
                 continue;
