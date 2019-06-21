@@ -139,7 +139,6 @@ Cathook requires a special data folder (contains shaders, font files, walkbot pa
 ## Followbots (outdated)
 `cathook-ipc-server` allows you to run and control Followbots to do your evil bidding in-game. The installation for Followbots is quite complex, and will not be covered on this page. Obviously, you must have several user accounts ready to run TF2.  
 A guide for Followbots can be found here: [How to setup and use followbots.](https://www.youtube.com/watch?v=kns5-nw7xUg)  
-You may also ask someone in our discord server to help you out.
 
 The installation script is as followed:
 ```bash
