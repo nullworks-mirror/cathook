@@ -54,7 +54,14 @@ static void vote_rage_back()
     std::snprintf(cmd, sizeof(cmd), "callvote kick \"%d cheating\"", targets[UniformRandomInt(0, targets.size() - 1)]);
     g_IEngine->ClientCmd_Unrestricted(cmd);
 }
-
+// Call Vote RNG
+struct CVRNG
+{
+    std::string content;
+    unsigned time;
+    Timer timer{};
+};
+static CVRNG vote_command;
 void dispatchUserMessage(bf_read &buffer, int type)
 {
     switch (type)
@@ -101,12 +108,12 @@ void dispatchUserMessage(bf_read &buffer, int type)
 
             if (*vote_kickn && friendly_kicked)
             {
-                g_IEngine->ClientCmd_Unrestricted("vote option2");
+                vote_command = { "vote option2", 1000u + (rand() % 5000) };
                 if (*vote_rage_vote && !friendly_caller)
                     pl_caller.state = k_EState::RAGE;
             }
             else if (*vote_kicky && !friendly_kicked)
-                g_IEngine->ClientCmd_Unrestricted("vote option1");
+                vote_command = { "vote option1", 1000u + (rand() % 5000) };
         }
         if (*party_say)
         {
@@ -161,6 +168,11 @@ static void setup_paint_abandon()
     EC::Register(
         EC::Paint,
         []() {
+            if (vote_command.content != "" && vote_command.timer.test_and_set(vote_command.time))
+            {
+                g_IEngine->ClientCmd_Unrestricted(vote_command.content.c_str());
+                vote_command.content = "";
+            }
             if (!found_message)
                 return;
             if (local_kick_timer.check(60000) || !local_kick_timer.test_and_set(10000) || !was_local_player)
