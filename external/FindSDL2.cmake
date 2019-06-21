@@ -70,6 +70,7 @@ SET(SDL2_SEARCH_PATHS
 	/Library/Frameworks
 	/usr/local
 	/usr
+	/usr/lib
 	/sw # Fink
 	/opt/local # DarwinPorts
 	/opt/csw # Blastwave
