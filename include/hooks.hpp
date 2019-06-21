@@ -26,9 +26,6 @@ constexpr size_t ptr_size = sizeof(ptr_t);
 
 unsigned CountMethods(method_table_t table);
 table_ref_t GetVMT(ptr_t inst, uint32_t offset = 0);
-bool IsHooked(ptr_t inst, uint32_t offset = 0);
-
-constexpr uint32_t GUARD = 0xD34DC477;
 
 class VMTHook
 {
@@ -44,6 +41,7 @@ public:
     void HookMethod(ptr_t func, uint32_t idx, ptr_t *backup);
     void *GetMethod(uint32_t idx) const;
     void Apply();
+    bool IsHooked(ptr_t inst);
 
 public:
     ptr_t object{ nullptr };

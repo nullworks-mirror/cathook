@@ -201,7 +201,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
     INetChannel *ch;
     ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-    if (ch && !hooks::IsHooked((void *) ch))
+    if (ch && !hooks::netchannel.IsHooked((void *) ch))
     {
         hooks::netchannel.Set(ch);
         hooks::netchannel.HookMethod(HOOK_ARGS(SendDatagram));
