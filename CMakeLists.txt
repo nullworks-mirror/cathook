@@ -1,4 +1,6 @@
 set(EnableCotire 1 CACHE BOOL "Enable CoTiRe (Compile Time Reducer)")
+# Ensure that only 32 bit libraries are used.
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/Toolchain-cross-m32.cmake")
 
 # Don't enable cotire when running in QtCreator
 execute_process(COMMAND "printenv" OUTPUT_VARIABLE contents)
