@@ -23,6 +23,7 @@ static settings::Int spy_ignore_time("navbot.spy-ignore-time", "5000");
 bool init(bool first_cm);
 static bool navToSniperSpot();
 static bool stayNear();
+static bool getDispenserHealthAndAmmo();
 static bool getHealthAndAmmo();
 static void autoJump();
 static void updateSlot();
@@ -62,6 +63,9 @@ static void CreateMove()
     if (primary_only)
         updateSlot();
 
+    if (get_health)
+        if (getDispenserHealthAndAmmo())
+            return;
     if (get_health)
         if (getHealthAndAmmo())
             return;
@@ -387,6 +391,84 @@ static inline bool hasLowAmmo()
     return false;
 }
 
+static std::vector<Vector> getDispensers()
+{
+    std::vector<Vector> dispensers;
+    for (int i = 1; i <= HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_INVALID(ent))
+            continue;
+        if (!ent->m_vecDormantOrigin())
+            continue;
+        if (ent->m_iClassID() != CL_CLASS(CObjectDispenser) || ent->m_bEnemy())
+            continue;
+        dispensers.push_back(*ent->m_vecDormantOrigin());
+    }
+    std::sort(dispensers.begin(), dispensers.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
+    return dispensers;
+}
+
+static bool getDispenserHealthAndAmmo()
+{
+    // Timeout for standing next to dispenser
+    static Timer dispenser_timeout{};
+    // Cooldown after standing next to one for too long
+    static Timer dispenser_cooldown{};
+    // Will return in GetHealthAndAmmo() anyways
+    if (current_task == task::health || current_task == task::ammo)
+        return true;
+    // On Cooldown
+    if (!dispenser_cooldown.check(10000))
+        return false;
+
+    // Heal and get ammo
+    if (current_task == task::none)
+        // If Health/AMmo Low enough
+        if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() < 0.64f || hasLowAmmo())
+            // If near enough to dispenser
+            if (getDispensers().size() && getDispensers()[0].DistTo(g_pLocalPlayer->v_Origin) < 60.0f)
+            {
+                // You've been standing next to this bloddy dispenser for 10 seconds, move!
+                if (dispenser_timeout.check(10000))
+                {
+                    dispenser_cooldown.update();
+                    return false;
+                }
+                return true;
+            }
+
+    // Already pathing
+    if (current_task == task::dispenser)
+    {
+        std::vector<Vector> dispensers = getDispensers();
+        // Update standing next to timeout thing while pathing
+        if (dispensers.size())
+            if (g_pLocalPlayer->v_Origin.DistTo(dispensers[0]) > 60.0f)
+                dispenser_timeout.update();
+        return true;
+    }
+
+    // If Low ammo/Health
+    if (static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth() < 0.64f || hasLowAmmo())
+    {
+        std::vector<Vector> dispensers = getDispensers();
+
+        for (auto &pack : dispensers)
+        {
+            // Nav To Dispenser
+            if (nav::navTo(pack, 11, true, false))
+            {
+                // On Success, update task and timeout for pathing
+                current_task = task::dispenser;
+                if (g_pLocalPlayer->v_Origin.DistTo(pack) > 60.0f)
+                    dispenser_timeout.update();
+                return true;
+            }
+        }
+    }
+    return false;
+}
 static bool getHealthAndAmmo()
 {
     static Timer health_ammo_timer{};

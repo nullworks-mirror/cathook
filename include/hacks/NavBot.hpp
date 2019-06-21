@@ -13,6 +13,7 @@ enum task : uint8_t
     stay_near,
     health,
     ammo,
+    dispenser,
     followbot,
     outofbounds
 };
