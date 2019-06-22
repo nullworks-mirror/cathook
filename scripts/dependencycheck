@@ -3,14 +3,19 @@
 arch_packages=(git boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd dialog)
 ubuntu_packages=(software-properties-common build-essential git g++ g++-multilib libboost-all-dev gdb libsdl2-dev:i386 libglew-dev:i386 libfreetype6-dev:i386 cmake dialog rsync)
 
+if [ "$1" == true ]; then
+    allow_non_interactive=true
+else
+    allow_non_interactive=false
+fi
+
 if [ -x "$(command -v pacman)" ]; then
     pacman -Qi "${arch_packages[@]}" > /dev/null 2>&1
     out=$?
     if [ "$out" == 1 ]; then
         string=${arch_packages[@]}
-        read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
-        out=$?
-        if [ "$out" == 0 ]; then
+        if [ -t 0 ]; then
+            read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
             if ! [[ $REPLY =~ ^[Yy]$ ]]
             then
                 exit
@@ -31,9 +36,8 @@ elif [ -x "$(command -v apt-get)" ]; then
     out=$?
     if [ "$out" == 1 ]; then
         string=${ubuntu_packages[@]}
-        read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
-        out=$?
-        if [ "$out" == 0 ]; then
+        if [ -t 0 ]; then
+            read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
             if ! [[ $REPLY =~ ^[Yy]$ ]]
             then
                 exit
