@@ -17,42 +17,83 @@
 #include "common.hpp"
 #include "ChatCommands.hpp"
 #include "MiscTemporary.hpp"
+#include <iostream>
+
+namespace hacks::shared::ChatCommands
+{
 
 static settings::Boolean enabled("chatcommands.enabled", "false");
 
 struct ChatCommand
 {
-    std::string prefix;
+    void addcommand(std::string cmd)
+    {
+        commands.push_back(cmd);
+    }
+    bool readFile(std::string filename)
+    {
+        auto stream = std::ifstream(DATA_PATH "/chatcommands/" + filename);
+        if (!stream)
+            return false;
+        for (std::string line; getline(stream, line);)
+        {
+            commands.push_back(line);
+        }
+        return true;
+    }
+    const std::vector<std::string> &getCommands()
+    {
+        return commands;
+    }
+
+private:
     std::vector<std::string> commands;
 };
 
-std::vector<ChatCommand> commands;
+static std::unordered_map<std::string, ChatCommand> commands;
 
-namespace hacks::shared::ChatCommands
-{
-void handleChatMessage(std::string message, int userid)
+void handleChatMessage(std::string message, int senderid)
 {
     if (!enabled)
         return;
-    logging::Info("%s, %d", message.c_str(), userid);
+    logging::Info("%s, %d", message.c_str(), senderid);
 
     std::string prefix;
+    std::string all_params;
     std::string::size_type space_pos = message.find_first_of(" ");
     if (space_pos == message.npos)
-        prefix = message;
+    {
+        prefix     = message;
+        all_params = "";
+    }
     else
-        prefix = message.substr(0, space_pos);
+    {
+        prefix     = message.substr(0, space_pos);
+        all_params = message.substr(space_pos + 1);
+        ReplaceString(all_params, "'", "`");
+        ReplaceString(all_params, "\"", "`");
+        ReplaceString(all_params, ";", ",");
+    }
     logging::Info("Prefix: %s", prefix.c_str());
 
-    for (auto var : commands)
+    auto ccmd = commands.find(prefix);
+    // Check if its a registered command
+    if (ccmd == commands.end())
+        return;
+    for (auto cmd : ccmd->second.getCommands())
     {
-        logging::Info("%s : %s", var.prefix.c_str(), prefix.c_str());
-        if (prefix != var.prefix)
-            continue;
-        logging::Info("MATCH!");
-        for (auto cmd : var.commands)
-            g_IEngine->ClientCmd_Unrestricted(cmd.c_str());
-        break;
+        player_info_s localinfo{};
+        if (!g_IEngine->GetPlayerInfo(g_pLocalPlayer->entity_idx, &localinfo))
+            return;
+        player_info_s senderinfo{};
+        if (!g_IEngine->GetPlayerInfo(senderid, &senderinfo))
+            return;
+
+        ReplaceString(cmd, "%myname%", std::string(localinfo.name));
+        ReplaceString(cmd, "%name%", std::string(senderinfo.name));
+        ReplaceString(cmd, "%steamid%", std::to_string(senderinfo.friendsID));
+        ReplaceString(cmd, "%all_params%", all_params);
+        g_IEngine->ClientCmd_Unrestricted(cmd.c_str());
     }
 }
 
@@ -62,29 +103,47 @@ static CatCommand chatcommands_add("chatcommands_add", "chatcommands_add <chat c
         g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "usage: chatcommands_add <chat command> <command>\n");
         return;
     }
-    ChatCommand *cmd    = nullptr;
-    std::string prefix  = args.Arg(1);
+    std::string prefix = args.Arg(1);
+    if (prefix.find(' ') != prefix.npos)
+    {
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "The chat command mustn't contain spaces!\n");
+        return;
+    }
     std::string command = args.Arg(2);
 
-    for (auto &var : commands)
-    {
-        if (var.prefix == prefix)
-        {
-            cmd = &var;
-            break;
-        }
-    }
-
-    if (!cmd)
-    {
-        commands.push_back({});
-        cmd = &commands.back();
-    }
+    auto &chatcomamnd = commands[prefix];
 
     logging::Info("%s: %s", prefix.c_str(), command.c_str());
+    chatcomamnd.addcommand(command);
+});
 
-    cmd->prefix = std::move(prefix);
-    cmd->commands.push_back(std::move(command));
+static CatCommand chatcommands_file("chatcommands_file", "chatcommands_add <chat command> <filename in /opt/cathook/data/chatcommands>", [](const CCommand &args) {
+    if (args.ArgC() != 3)
+    {
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "usage: chatcommands_add <chat command> <filename in /opt/cathook/data/chatcommands>\n");
+        return;
+    }
+    std::string prefix = args.Arg(1);
+    if (prefix.find(' ') != prefix.npos)
+    {
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "The chat command mustn't contain spaces!\n");
+        return;
+    }
+    std::string file = args.Arg(2);
+
+    auto &chatcomamnd = commands[prefix];
+
+    if (!chatcomamnd.readFile(file))
+    {
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Could'nt open the file!\n");
+        return;
+    }
+    logging::Info("%s: %s", prefix.c_str(), file.c_str());
+});
+
+static CatCommand chatcommands_reset_all("chatcommands_reset_all", "Clears all chatcommands", [](const CCommand &args) {
+    commands.clear();
+    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Chat commands cleared!\n");
 });
 
 } // namespace hacks::shared::ChatCommands
