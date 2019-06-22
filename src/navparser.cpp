@@ -7,6 +7,7 @@
 #include <boost/container/flat_set.hpp>
 #include <chrono>
 #include "soundcache.hpp"
+#include "MiscTemporary.hpp"
 
 namespace nav
 {
@@ -135,6 +136,8 @@ class ignoremanager
             if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
             {
                 if (!ent->m_bEnemy())
+                    continue;
+                if (HasCondition<TFCond_Disguised>(LOCAL_E))
                     continue;
                 Vector loc = GetBuildingPosition(ent);
                 if (RAW_ENT(ent)->IsDormant())
@@ -617,7 +620,7 @@ static void cm()
         if (crumb == crumbs.end())
             return;
     }
-    if (look)
+    if (look && LookAtPathTimer.check(1000))
     {
         Vector next  = *crumb;
         next.z       = g_pLocalPlayer->v_Eye.z;
