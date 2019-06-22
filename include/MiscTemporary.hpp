@@ -14,7 +14,9 @@ extern std::array<int, 32> bruteint;
 extern std::array<Timer, 32> timers;
 
 extern Timer DelayTimer;
+extern Timer LookAtPathTimer;
 extern bool firstcm;
+extern bool ignoredc;
 
 extern bool calculated_can_shoot;
 extern float prevflow;
