@@ -597,6 +597,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
 
                 // 24 = teleporter width and height
                 // 16 = arrow size
+                pseudo[0].x = 0.0f; // Undefined behaviour bruh
                 pseudo[0].y = 16.0f + 24.0f;
                 pseudo[1].x = -16.0f;
                 pseudo[1].y = 24.0f;
