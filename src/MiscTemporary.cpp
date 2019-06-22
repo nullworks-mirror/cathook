@@ -11,10 +11,12 @@ int spectator_target;
 CLC_VoiceData *voicecrash{};
 bool firstcm = false;
 Timer DelayTimer{};
+Timer LookAtPathTimer{};
 float prevflow            = 0.0f;
 int prevflowticks         = 0;
 int stored_buttons        = 0;
 bool calculated_can_shoot = false;
+bool ignoredc             = false;
 
 bool *bSendPackets{ nullptr };
 

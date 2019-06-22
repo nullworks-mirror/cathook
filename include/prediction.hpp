@@ -9,6 +9,7 @@
 
 #include <enums.hpp>
 #include "config.h"
+#include "vector"
 
 class CachedEntity;
 class Vector;
@@ -21,6 +22,7 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float
 Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravitymod, float entgmod);
 Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float gravitymod, float entgmod /* ignored */);
 
+std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceleration, std::pair<Vector, Vector> minmax, float time, int count, bool vischeck = true);
 float PlayerGravityMod(CachedEntity *player);
 
 Vector EnginePrediction(CachedEntity *player, float time);

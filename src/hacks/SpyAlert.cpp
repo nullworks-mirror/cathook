@@ -7,6 +7,7 @@
 
 #include <settings/Bool.hpp>
 #include "common.hpp"
+#include "PlayerTools.hpp"
 
 namespace hacks::tf::spyalert
 {
@@ -50,6 +51,8 @@ void Draw()
         if (CE_INT(ent, netvar.iTeamNum) == g_pLocalPlayer->team)
             continue;
         if (IsPlayerInvisible(ent) && !invisible)
+            continue;
+        if (!player_tools::shouldTarget(ent))
             continue;
         distance = ent->m_flDistance();
         if (distance < closest_spy_distance || !closest_spy_distance)

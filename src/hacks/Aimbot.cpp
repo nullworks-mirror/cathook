@@ -13,6 +13,7 @@
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
+#include "MiscTemporary.hpp"
 
 namespace hacks::shared::aimbot
 {
@@ -1308,7 +1309,7 @@ static float slow_change_dist_y = 0;
 // angle, effectively slowing the aiming process
 void DoSlowAim(Vector &input_angle)
 {
-
+    LookAtPathTimer.update();
     auto viewangles = current_user_cmd->viewangles;
 
     // Yaw

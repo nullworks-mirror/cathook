@@ -117,6 +117,7 @@ typedef glez::texture Texture;
 void Line(float x1, float y1, float x2, float y2, rgba_t color, float thickness);
 void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font);
 void Rectangle(float x, float y, float w, float h, rgba_t color);
+void Triangle(float x, float y, float x2, float y2, float x3, float y3, rgba_t color);
 void RectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness);
 void RectangleTextured(float x, float y, float w, float h, rgba_t color, Texture &texture, float tx, float ty, float tw, float th, float angle);
 void Circle(float x, float y, float radius, rgba_t color, float thickness, int steps);

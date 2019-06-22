@@ -12,6 +12,7 @@
 #include "HookedMethods.hpp"
 #include "CatBot.hpp"
 #include "ChatCommands.hpp"
+#include "MiscTemporary.hpp"
 
 static settings::Boolean clean_chat{ "chat.clean", "false" };
 static settings::Boolean dispatch_log{ "debug.log-dispatch-user-msg", "false" };
@@ -120,7 +121,10 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                     anti_balance_attempts = 0;
                 }
                 if (anti_balance_attempts < 2)
+                {
+                    ignoredc = true;
                     g_IEngine->ClientCmd_Unrestricted("killserver;wait 100;cat_mm_join");
+                }
                 else
                 {
                     std::string autobalance_msg = "tf_party_chat \"autobalanced in 3 seconds";

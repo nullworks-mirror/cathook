@@ -8,6 +8,7 @@
 #include <settings/Float.hpp>
 #include "common.hpp"
 #include "hack.hpp"
+#include "PlayerTools.hpp"
 
 namespace hacks::tf::autotaunt
 {
@@ -45,6 +46,8 @@ public:
                 auto ent = ENTITY(i);
                 if (CE_VALID(ent) && (ent->m_Type() == ENTITY_PLAYER || ent->m_iClassID() == CL_CLASS(CObjectSentrygun)) && ent->m_bEnemy() && ent->m_bAlivePlayer())
                 {
+                    if (!player_tools::shouldTarget(ent))
+                        continue;
                     if (ent->m_vecDormantOrigin() && ent->m_vecDormantOrigin()->DistTo(LOCAL_E->m_vecOrigin()) < *safety)
                     {
                         nearby = true;

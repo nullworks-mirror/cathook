@@ -6,6 +6,7 @@
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
+#include "MiscTemporary.hpp"
 
 settings::Boolean die_if_vac{ "misc.die-if-vac", "false" };
 static settings::Boolean autoabandon{ "misc.auto-abandon", "false" };
@@ -41,8 +42,9 @@ DEFINE_HOOKED_METHOD(Shutdown, void, INetChannel *this_, const char *reason)
     {
         original::Shutdown(this_, reason);
     }
-    if (autoabandon)
+    if (autoabandon && !ignoredc)
         tfmm::disconnectAndAbandon();
+    ignoredc = false;
     hacks::shared::autojoin::onShutdown();
     std::string message = reason;
     votelogger::onShutdown(message);

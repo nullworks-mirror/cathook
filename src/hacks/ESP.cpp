@@ -581,6 +581,45 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
                 fg.g *= 0.75f;
                 fg.b *= 0.75f;
             }
+            // Draw exit arrow
+            // YawToExit is 0.0f on exit and on newly placed still disabled entrances
+            // m_iState is 0 when the TP is disabled
+            if (ent->m_iClassID() == CL_CLASS(CObjectTeleporter) && CE_FLOAT(ent, netvar.m_flTeleYawToExit) == 0.0f && CE_INT(ent, netvar.m_iTeleState) > 1)
+            {
+                float sin_a, cos_a;
+                // for some reason vAngRotation yaw differs from exit direction, unsure why
+                SinCos(DEG2RAD(CE_VECTOR(ent, netvar.m_angRotation).y - 90.0f), &sin_a, &cos_a);
+
+                // pseudo used to rotate properly
+                // screen is passed to filledpolygon
+                Vector pseudo[3];
+                Vector screen[3];
+
+                // 24 = teleporter width and height
+                // 16 = arrow size
+                pseudo[0].y = 16.0f + 24.0f;
+                pseudo[1].x = -16.0f;
+                pseudo[1].y = 24.0f;
+                pseudo[2].x = 16.0f;
+                pseudo[2].y = 24.0f;
+
+                // pass vector, get vector
+                // 12 is teleporter height, arrow is 12 HU off the ground
+                // sin and cos are already passed in captures
+                auto rotateVector = [sin_a = sin_a, cos_a = cos_a](Vector &in) { return Vector(in.x * cos_a - in.y * sin_a, in.x * sin_a + in.y * cos_a, 12.0f); };
+
+                // fail check
+                bool visible = true;
+
+                // rotate, add vecorigin AND check worldtoscreen at the same time in single loop
+                for (int p = 0; p < 3; p++)
+                    if (!(visible = draw::WorldToScreen(rotateVector(pseudo[p]) + ent->m_vecOrigin(), screen[p])))
+                        break;
+
+                // if visible, pass it and draw the whole thing, ez pz
+                if (visible)
+                    draw::Triangle(screen[0].x, screen[0].y, screen[1].x, screen[1].y, screen[2].x, screen[2].y, fg);
+            }
             if (!box_3d_building && box_esp)
                 DrawBox(ent, fg);
             else if (box_3d_building)
