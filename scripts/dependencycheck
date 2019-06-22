@@ -29,7 +29,7 @@ if [ -x "$(command -v pacman)" ]; then
         elif [ "$allow_non_interactive" == false ]; then
             exit
         fi
-        sudo pacman -S --noconfirm --needed "${string}"
+        sudo pacman -S --noconfirm --needed "${arch_packages[@]}"
     fi
 elif [ -x "$(command -v apt-get)" ]; then
     dpkg -s "${ubuntu_packages[@]}" > /dev/null 2>&1
