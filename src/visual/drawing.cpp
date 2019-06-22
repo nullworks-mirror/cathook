@@ -309,6 +309,26 @@ void Rectangle(float x, float y, float w, float h, rgba_t color)
 #endif
 }
 
+void Triangle(float x, float y, float x2, float y2, float x3, float y3, rgba_t color)
+{
+#if ENABLE_IMGUI_DRAWING
+    im_renderer::draw::triangle(x, y, x2, y2, x3, y3, color);
+#elif ENABLE_ENGINE_DRAWING
+    color = color * 255.0f;
+    g_ISurface->DrawSetTexture(texture_white);
+    g_ISurface->DrawSetColor(color.r, color.g, color.b, color.a);
+
+    vgui::Vertex_t vertices[3];
+    vertices[0].m_Position = { x, y };
+    vertices[1].m_Position = { x2, y2 };
+    vertices[1].m_Position = { x3, y3 };
+
+    g_ISurface->DrawTexturedPolygon(3, vertices);
+#elif ENABLE_GLEZ_DRAWING
+    glez::draw::triangle(x, y, x2, y2, x3, y3, color);
+#endif
+}
+
 void Circle(float x, float y, float radius, rgba_t color, float thickness, int steps)
 {
 #if ENABLE_IMGUI_DRAWING

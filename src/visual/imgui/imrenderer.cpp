@@ -242,6 +242,10 @@ void rectangle(float x, float y, float w, float h, rgba_t color)
 {
     buffers[currentBuffer]->AddRectFilled(ImVec2(x, y), ImVec2(x + w, y + h), ImGui::GetColorU32(ImVec4(color.r, color.g, color.b, color.a)), 0.0f, -1);
 }
+void triangle(float x, float y, float x2, float y2, float x3, float y3, rgba_t color)
+{
+    buffers[currentBuffer]->AddTriangleFilled(ImVec2(x, y), ImVec2(x2, y2), ImVec2(x3, y3), ImGui::GetColorU32(ImVec4(color.r, color.g, color.b, color.a)));
+}
 void rectangleOutlined(float x, float y, float w, float h, rgba_t color, float thickness)
 {
     buffers[currentBuffer]->AddRect(ImVec2(x, y), ImVec2(x + w, y + h), ImGui::GetColorU32(ImVec4(color.r, color.g, color.b, color.a)), 0.0f, -1, thickness);
