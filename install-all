@@ -10,7 +10,7 @@ fi
 #
 if [ -x "$(command -v pacman)" ]; then
     sudo pacman -S --needed --noconfirm git
-elif [ -x "$(command -v apt)" ]; then
+elif [ -x "$(command -v apt-get)" ]; then
     sudo apt-get install -y git
 else
     echo -e "\033[1;31m\nCathook autoinstall is not supported on this system! Please install the following packages before continuing: Git, 32 Bit Boost + Headers, CMake, Gcc with 32 bit support, Gdb, 32 Bit SDL + Headers, 32 Bit Glew + Headers, 32 Bit Freetype 2 + Headers, Rsync, 32 Bit libglvnd\n\033[0m"
