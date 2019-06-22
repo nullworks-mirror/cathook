@@ -27,6 +27,7 @@ static bool getDispenserHealthAndAmmo();
 static bool getHealthAndAmmo();
 static void autoJump();
 static void updateSlot();
+static std::pair<CachedEntity *, float> getNearestPlayerDistance(bool vischeck = true);
 using task::current_task;
 
 // -Variables-
@@ -35,12 +36,14 @@ static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
 static Timer wait_until_path{};
 // Time before following target cloaked spy again
 static std::array<Timer, 33> spy_cloak{};
+// Don't spam spy path thanks
+static Timer spy_path{};
 // What is the bot currently doing
 namespace task
 {
 task current_task;
 }
-constexpr bot_class_config DIST_SPY{ 300.0f, 500.0f, 1000.0f };
+constexpr bot_class_config DIST_SPY{ 10.0f, 50.0f, 1000.0f };
 constexpr bot_class_config DIST_OTHER{ 100.0f, 200.0f, 300.0f };
 constexpr bot_class_config DIST_SNIPER{ 1000.0f, 1500.0f, 3000.0f };
 
@@ -72,8 +75,38 @@ static void CreateMove()
     if (blocking)
         return;
 
+    // Spy can just walk into the enemy
+    if (spy_mode)
+    {
+        if (spy_path.check(1000))
+        {
+            auto nearest = getNearestPlayerDistance(false);
+            if (CE_VALID(nearest.first) && nearest.first->m_vecDormantOrigin())
+            {
+                if (current_task != task::stay_near)
+                {
+                    if (nav::navTo(*nearest.first->m_vecDormantOrigin(), 6, true, false))
+                    {
+                        spy_path.update();
+                        current_task = task::stay_near;
+                        return;
+                    }
+                }
+                else
+                {
+                    if (nav::navTo(*nearest.first->m_vecDormantOrigin(), 6, false, false))
+                    {
+                        spy_path.update();
+                        return;
+                    }
+                }
+            }
+        }
+        if (current_task == task::stay_near)
+            return;
+    }
     // Try to stay near enemies to increase efficiency
-    if (stay_near || heavy_mode || spy_mode)
+    if ((stay_near || heavy_mode) && !spy_mode)
         if (stayNear())
             return;
     // We don't have anything else to do. Just nav to sniper spots.
@@ -132,14 +165,14 @@ static bool navToSniperSpot()
     return false;
 }
 
-static std::pair<CachedEntity *, float> getNearestPlayerDistance()
+static std::pair<CachedEntity *, float> getNearestPlayerDistance(bool vischeck)
 {
     float distance         = FLT_MAX;
     CachedEntity *best_ent = nullptr;
     for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_GOOD(ent) && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) && VisCheckEntFromEnt(LOCAL_E, ent))
+        if (CE_VALID(ent) && ent->m_vecDormantOrigin() && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) && (!vischeck || VisCheckEntFromEnt(LOCAL_E, ent)))
         {
             if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent))
             {
@@ -148,7 +181,7 @@ static std::pair<CachedEntity *, float> getNearestPlayerDistance()
             }
             if (!spy_cloak[i].check(*spy_ignore_time))
                 continue;
-            distance = g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin());
+            distance = g_pLocalPlayer->v_Origin.DistTo(*ent->m_vecDormantOrigin());
             best_ent = ent;
         }
     }
@@ -365,6 +398,7 @@ static bool stayNear()
         // We're doing nothing? Do something!
         return stayNearHelpers::stayNearPlayers(*config, last_target, last_area);
     }
+
     return false;
 }
 
@@ -402,6 +436,8 @@ static std::vector<Vector> getDispensers()
         if (!ent->m_vecDormantOrigin())
             continue;
         if (ent->m_iClassID() != CL_CLASS(CObjectDispenser) || ent->m_bEnemy())
+            continue;
+        if (CE_BYTE(ent, netvar.m_bHasSapper))
             continue;
         dispensers.push_back(*ent->m_vecDormantOrigin());
     }
@@ -566,10 +602,24 @@ static int GetBestSlot()
     case tf_medic:
         return secondary;
     case tf_spy:
-        return primary;
+    {
+        float nearest_dist = getNearestPlayerDistance(false).second;
+        if (nearest_dist > 600)
+            return primary;
+        else
+            return melee;
+    }
+    case tf_sniper:
+    {
+        float nearest_dist = getNearestPlayerDistance(false).second;
+        if (nearest_dist > 100)
+            return primary;
+        else
+            return secondary;
+    }
     default:
     {
-        float nearest_dist = getNearestPlayerDistance().second;
+        float nearest_dist = getNearestPlayerDistance(false).second;
         if (nearest_dist > 400)
             return primary;
         else
