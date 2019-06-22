@@ -35,6 +35,8 @@ int NearbyEntities()
     }
     return ret;
 }
+static Timer deadringer{};
+static bool previouslyringered;
 static void CreateMove()
 {
     if (!enable)
@@ -43,12 +45,15 @@ static void CreateMove()
         return;
     if (g_pLocalPlayer->clazz != tf_spy)
         return;
-    if (CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
-        return;
+    previouslyringered = false;
     if (HasCondition<TFCond_Cloaked>(LOCAL_E) || HasCondition<TFCond_CloakFlicker>(LOCAL_E))
         return;
-    if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health && NearbyEntities() > 1)
+    bool shouldm2 = true;
+    if (CE_INT(LOCAL_E, netvar.iHealth) < (int) trigger_health && NearbyEntities() > 1 && !CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
         current_user_cmd->buttons |= IN_ATTACK2;
+    else
+        shouldm2 = false;
+
     for (int i = 0; i <= HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
@@ -60,11 +65,32 @@ static void CreateMove()
             continue;
         if (ent->m_Type() != ENTITY_PROJECTILE)
             continue;
+        Vector velocity;
+        if (velocity::EstimateAbsVelocity)
+            velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
+        else
+            velocity = CE_VECTOR(ent, netvar.vVelocity);
+        if ((ent->m_vecOrigin() + velocity).DistTo(LOCAL_E->m_vecOrigin()) < (ent->m_vecOrigin()).DistTo(LOCAL_E->m_vecOrigin()))
+            continue;
+        if (!IsVectorVisible(g_pLocalPlayer->v_Eye, ent->m_vecOrigin()))
+            continue;
         if (ent->m_bCritProjectile() && ent->m_flDistance() <= 500.0f)
-            current_user_cmd->buttons |= IN_ATTACK2;
-        else if (ent->m_flDistance() < 100.0f)
-            current_user_cmd->buttons |= IN_ATTACK2;
+        {
+            shouldm2 = true;
+            if (!CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
+                current_user_cmd->buttons |= IN_ATTACK2;
+        }
+        else if (ent->m_flDistance() < 200.0f)
+        {
+            shouldm2 = true;
+            if (!CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
+                current_user_cmd->buttons |= IN_ATTACK2;
+        }
+        else
+            shouldm2 = false;
     }
+    if (!shouldm2 && CE_BYTE(LOCAL_E, netvar.m_bFeignDeathReady))
+        current_user_cmd->buttons |= IN_ATTACK2;
 }
 static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "AutoDeadringer", EC::average); });
 } // namespace hacks::shared::deadringer
