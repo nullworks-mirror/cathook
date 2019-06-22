@@ -148,7 +148,7 @@ Vector PredictStep(Vector pos, Vector &vel, Vector acceleration, std::pair<Vecto
     return result;
 }
 
-std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceleration, std::pair<Vector, Vector> minmax, float time, int count, bool vischeck = true)
+std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceleration, std::pair<Vector, Vector> minmax, float time, int count, bool vischeck)
 {
     std::vector<Vector> positions;
     positions.reserve(count);
@@ -169,7 +169,7 @@ std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceler
                 prediction = PredictStep(prediction, vel, acceleration, minmax, time);
             else
                 prediction = PredictStep(prediction, vel, acceleration, minmax, time, g_GlobalVars->interval_per_tick, false, dist);
-            positions.push_back({prediction.x, prediction.y, prediction.z + offset});
+            positions.push_back({ prediction.x, prediction.y, prediction.z + offset });
         }
         else
         {
@@ -477,7 +477,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
     float dist_to_ground = DistanceToGround(origin, minmax.first, minmax.second);
     Vector acceleration  = { 0, 0, -(sv_gravity->GetFloat()) };
 
-    Vector last = origin; 
+    Vector last = origin;
 
     for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
     {
