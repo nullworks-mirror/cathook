@@ -253,7 +253,7 @@ void UpdatePlayerlist()
             if (!peer->memory->peer_data[i].free)
             {
                 playerlist::userdata &info = playerlist::AccessData(peer->memory->peer_user_data[i].friendid);
-                if (info.state == playerlist::k_EState::DEFAULT)
+                if (info.state == playerlist::k_EState::DEFAULT || info.state == playerlist::k_EState::FRIEND || info.state == playerlist::k_EState::CAT)
                     info.state = playerlist::k_EState::IPC;
             }
         }
