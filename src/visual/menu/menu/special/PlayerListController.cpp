@@ -7,6 +7,7 @@
 #include <menu/object/container/TData.hpp>
 #include <menu/Message.hpp>
 #include <menu/menu/special/PlayerListController.hpp>
+#include "drawing.hpp"
 
 /*
   Created on 26.07.18.
@@ -202,8 +203,8 @@ void zerokernel::special::PlayerListController::addPlayer(int id, zerokernel::sp
             steam->addMessageHandler(*this);
             steam->set(std::to_string(data.steam));
         }
-        if (username)
-            username->set(data.name);
+        if (username && username->font)
+            username->set(ShrinkString(data.name, username->bb.getParentBox().getContentBox().width, *username->font));
         if (kick)
         {
             kick->kv["user_id"] = id;
@@ -212,11 +213,6 @@ void zerokernel::special::PlayerListController::addPlayer(int id, zerokernel::sp
         }
         if (state)
         {
-            state->parent->bb.resize(70, 15);
-            state->bb.width.setFill();
-            state->bb.height.setFill();
-            state->bb.updateFillSize();
-
             state->kv["state"]    = data.state;
             state->kv["user_id"]  = id;
             state->kv["steam_id"] = std::to_string(data.steam);

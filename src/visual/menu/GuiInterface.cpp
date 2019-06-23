@@ -27,7 +27,7 @@ static zerokernel::special::PlayerListData createPlayerListData(int userid)
     data.dead    = !g_pPlayerResource->isAlive(idx);
     data.steam   = info.friendsID;
     data.state   = playerlist::k_pszNames[static_cast<int>(playerlist::AccessData(info.friendsID).state)];
-    snprintf(data.name, 31, "%s", info.name);
+    data.name    = info.name;
     return data;
 }
 

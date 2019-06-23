@@ -86,6 +86,38 @@ void AddCenterString(const std::string &string, const rgba_t &color)
     ++center_strings_count;
 }
 
+std::string ShrinkString(std::string data, int max_x, fonts::font &font)
+{
+    int padding = 5;
+    float x, y;
+    font.stringSize("..", &x, &y);
+    int dotdot_with = x;
+
+    if (padding + dotdot_with > max_x)
+        return std::string();
+
+    if (!data.empty())
+    {
+        font.stringSize(data, &x, &y);
+        if (x + padding > max_x)
+        {
+            while (true)
+            {
+                font.stringSize(data, &x, &y);
+                if (x + padding + dotdot_with > max_x)
+                {
+                    data = data.substr(0, data.size() - 1);
+                }
+                else
+                    break;
+            }
+            data.append("..");
+            return data;
+        }
+    }
+    return data;
+}
+
 int draw::width  = 0;
 int draw::height = 0;
 float draw::fov  = 90.0f;
@@ -171,10 +203,14 @@ void Initialize()
     }
 #if ENABLE_GLEZ_DRAWING
     glez::preInit();
-    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 13));
-    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 13));
-    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 14));
-#else
+    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 10));
+    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 10));
+    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 12));
+#elif ENABLE_ENGINE_DRAWING
+    fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 10, true));
+    fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 10, true));
+    fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 12, true));
+#elif ENABLE_IMGUI_DRAWING
     fonts::menu.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 13, true));
     fonts::esp.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 13, true));
     fonts::center_screen.reset(new fonts::font(DATA_PATH "/fonts/megasans.ttf", 14, true));
@@ -192,6 +228,8 @@ void String(int x, int y, rgba_t rgba, const char *text, fonts::font &font)
     im_renderer::draw::string(x, y, rgba, text, font);
 #elif ENABLE_ENGINE_DRAWING
     rgba = rgba * 255.0f;
+    // Fix text being too low
+    y -= 2;
     // Outline magic
     if (font.outline)
     {

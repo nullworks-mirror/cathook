@@ -70,6 +70,8 @@ void AddCenterString(const std::string &string, const rgba_t &color = colors::wh
 void AddSideString(const std::string &string, const rgba_t &color = colors::white);
 void DrawStrings();
 
+std::string ShrinkString(std::string data, int max_x, fonts::font &font);
+
 namespace draw
 {
 

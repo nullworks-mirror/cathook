@@ -77,8 +77,13 @@ Menu *Menu::instance{ nullptr };
 namespace resource::font
 {
 // FIXME dynamic font change..
+#if ENABLE_IMGUI_DRAWING
 fonts::font base{ DATA_PATH "/menu/Verdana.ttf", 12 };
 fonts::font bold{ DATA_PATH "/menu/VerdanaBold.ttf", 11 };
+#else
+fonts::font base{ DATA_PATH "/menu/Verdana.ttf", 10 };
+fonts::font bold{ DATA_PATH "/menu/VerdanaBold.ttf", 9 };
+#endif
 } // namespace resource::font
 
 namespace style::colors

@@ -14,7 +14,7 @@ namespace zerokernel::special
 class PlayerListData
 {
 public:
-    char name[32];
+    std::string name;
     unsigned steam;
     // TF2-specific
     int classId;

@@ -96,24 +96,8 @@ void zerokernel::TextInput::render()
     else
     {
         text_object.setColorText(&*zerokernel_textinput::color_text);
-        float x, y;
-        std::string t = getValue();
-        resource::font::base.stringSize(t, &x, &y);
-        if (x + 5 > bb.getBorderBox().width)
-        {
-            while (true)
-            {
-                resource::font::base.stringSize(t, &x, &y);
-                if (x + 13 > bb.getBorderBox().width)
-                {
-                    t = t.substr(0, t.size() - 1);
-                }
-                else
-                    break;
-            }
-            t.append("..");
-        }
-        text_object.set(t);
+        if (text_object.font)
+            text_object.set(ShrinkString(getValue(), bb.getBorderBox().width, *text_object.font));
     }
     text_object.render();
 }
