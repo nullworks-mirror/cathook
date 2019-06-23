@@ -112,6 +112,7 @@ public:
     offset_t Grenade_iDeflected;
     offset_t Rocket_bCritical;
     offset_t Grenade_bCritical;
+    offset_t m_DmgRadius;
 
     offset_t bDistributed;
 

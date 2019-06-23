@@ -43,6 +43,7 @@ add_subdirectory(ac)
 if(EnableVisuals)
     set(files "${CMAKE_CURRENT_LIST_DIR}/DominateMark.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/ESP.cpp"
+            "${CMAKE_CURRENT_LIST_DIR}/ExplosionCircles.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Tracers.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/Radar.cpp"
             "${CMAKE_CURRENT_LIST_DIR}/SkinChanger.cpp"

@@ -90,6 +90,7 @@ void NetVars::Init()
         this->m_iTeleTimesUsed                = gNetvars.get_offset("DT_ObjectTeleporter", "m_iTimesUsed");
         this->m_flTeleYawToExit               = gNetvars.get_offset("DT_ObjectTeleporter", "m_flYawToExit");
         this->m_bMatchBuilding                = gNetvars.get_offset("DT_ObjectTeleporter", "m_bMatchBuilding");
+        this->m_DmgRadius                     = gNetvars.get_offset("DT_BaseGrenade", "m_DmgRadius");
 
         this->iPipeType                     = gNetvars.get_offset("DT_TFProjectile_Pipebomb", "m_iType");
         this->iBuildingHealth               = gNetvars.get_offset("DT_BaseObject", "m_iHealth");
