@@ -70,5 +70,5 @@ void draw()
     }
 }
 
-static InitRoutine init([]() { EC::Register(EC::Draw, draw, "darw_explosioncircles"); });
+static InitRoutine init([]() { EC::Register(EC::Draw, draw, "draw_explosioncircles"); });
 } // namespace hacks::tf2::explosioncircles

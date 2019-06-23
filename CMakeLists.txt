@@ -142,7 +142,7 @@ if(EnableVisuals)
     if (EnableGlezDrawing)
         target_link_libraries(cathook glez)
     endif()
-    target_link_libraries(cathook ${SDL2_LIBRARY} ${GLEW_LIBRARIES})
+    target_link_libraries(cathook ${GLEW_LIBRARIES})
 endif()
 
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
@@ -187,8 +187,8 @@ add_custom_target(data
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         VERBATIM)
 
-# TODO glez_LIBRARIES?
-target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib})
+# SDL included because of https://github.com/nullworks/cathook/issues/689
+target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ${SDL2_LIBRARY})
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(src)
