@@ -169,8 +169,10 @@ uintptr_t CSignature::GetClientSignature(const char *chPattern)
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
     // get the string table from the module.
-    static int fd              = open(sharedobj::client().path.c_str(), O_RDONLY);
-    static void *module        = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    static int fd       = open(sharedobj::client().path.c_str(), O_RDONLY);
+    static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    if ((unsigned) module == 0xffffffff)
+        return NULL;
     static link_map *moduleMap = sharedobj::client().lmap;
 
     // static void *module = (void *)moduleMap->l_addr;
@@ -195,8 +197,10 @@ uintptr_t CSignature::GetEngineSignature(const char *chPattern)
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
     // get the string table from the module.
-    static int fd              = open(sharedobj::engine().path.c_str(), O_RDONLY);
-    static void *module        = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    static int fd       = open(sharedobj::engine().path.c_str(), O_RDONLY);
+    static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    if ((unsigned) module == 0xffffffff)
+        return NULL;
     static link_map *moduleMap = sharedobj::engine().lmap;
 
     // static void *module = (void *)moduleMap->l_addr;
@@ -221,8 +225,10 @@ uintptr_t CSignature::GetSteamAPISignature(const char *chPattern)
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
     // get the string table from the module.
-    static int fd              = open(sharedobj::steamapi().path.c_str(), O_RDONLY);
-    static void *module        = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    static int fd       = open(sharedobj::steamapi().path.c_str(), O_RDONLY);
+    static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    if ((unsigned) module == 0xffffffff)
+        return NULL;
     static link_map *moduleMap = sharedobj::steamapi().lmap;
 
     // static void *module = (void *)moduleMap->l_addr;
@@ -247,8 +253,10 @@ uintptr_t CSignature::GetVstdSignature(const char *chPattern)
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
     // get the string table from the module.
-    static int fd              = open(sharedobj::vstdlib().path.c_str(), O_RDONLY);
-    static void *module        = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    static int fd       = open(sharedobj::vstdlib().path.c_str(), O_RDONLY);
+    static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+    if ((unsigned) module == 0xffffffff)
+        return NULL;
     static link_map *moduleMap = sharedobj::vstdlib().lmap;
 
     // static void *module = (void *)moduleMap->l_addr;
