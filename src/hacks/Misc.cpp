@@ -590,6 +590,11 @@ static CatCommand dump_vars_by_name("debug_dump_netvars_name", "Dump netvars of 
         DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
     }
 });
+#if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
+// This makes us able to see enemy class and status in scoreboard and player panel
+static std::unique_ptr<BytePatch> patch_playerpanel;
+static std::unique_ptr<BytePatch> patch_scoreboard;
+#endif
 
 static CatCommand print_eye_diff("debug_print_eye_diff", "debug", []() { logging::Info("%f", g_pLocalPlayer->v_Eye.z - LOCAL_E->m_vecOrigin().z); });
 void Shutdown()
@@ -605,13 +610,24 @@ void Shutdown()
         vtable[offsets::ShouldDraw()] = (void *) C_TFPlayer__ShouldDraw_original;
         mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
     }
+#if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
+    patch_playerpanel->Shutdown();
+    patch_scoreboard->Shutdown();
+#endif
 }
-InitRoutine init([]() {
+
+static InitRoutine init([]() {
     teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, DrawText, "draw_misc_hacks", EC::average);
+#if !ENFORCE_STREAM_SAFETY
+    patch_playerpanel = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "0F 94 45 DF", 0x0, std::vector<unsigned char>{ 0xC6, 0x45, 0xDF, 0x01 });
+    patch_scoreboard  = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "83 F8 02 75 09", 0x0, std::vector<unsigned char>{ 0xE9, 0xC1, 0x06, 0x00, 0x00 });
+    patch_playerpanel->Patch();
+    patch_scoreboard->Patch();
+#endif
 #endif
 });
 } // namespace hacks::shared::misc
