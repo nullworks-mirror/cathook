@@ -163,117 +163,63 @@ void *CSignature::GetModuleHandleSafe(const char *pszModuleName)
 
     return moduleHandle;
 }
-//===================================================================================
-uintptr_t CSignature::GetClientSignature(const char *chPattern)
+
+static CSignature_space::SharedObjStorage objects[CSignature_space::entry_count];
+
+uintptr_t CSignature::GetSignature(const char *chPattern, sharedobj::SharedObject &obj, int idx)
 {
     // we need to do this becuase (i assume that) under the hood, dlopen only
     // loads up the sections that it needs into memory, meaning that we cannot
     // get the string table from the module.
-    static int fd       = open(sharedobj::client().path.c_str(), O_RDONLY);
-    static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
-    if ((unsigned) module == 0xffffffff)
-        return NULL;
-    static link_map *moduleMap = sharedobj::client().lmap;
 
-    // static void *module = (void *)moduleMap->l_addr;
+    auto &object = objects[idx];
+    if (!object.inited)
+    {
+        int fd       = open(obj.path.c_str(), O_RDONLY);
+        void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
+        if ((unsigned) module == 0xffffffff)
+            return NULL;
+        link_map *moduleMap = obj.lmap;
 
-    static Elf32_Shdr *textHeader = getSectionHeader(module, ".text");
+        // static void *module = (void *)moduleMap->l_addr;
 
-    static int textOffset = textHeader->sh_offset;
+        Elf32_Shdr *textHeader = getSectionHeader(module, ".text");
 
-    static int textSize = textHeader->sh_size;
+        int textOffset = textHeader->sh_offset;
+
+        int textSize = textHeader->sh_size;
+
+        object        = CSignature_space::SharedObjStorage(module, moduleMap, textOffset, textSize);
+        object.inited = true;
+    }
 
     // we need to remap the address that we got from the pattern search from our
     // mapped file to the actual memory we do this by rebasing the address
     // (subbing the mmapped one and replacing it with the dlopened one.
-    uintptr_t patr = dwFindPattern(((uintptr_t) module) + textOffset, ((uintptr_t) module) + textOffset + textSize, chPattern);
+    uintptr_t patr = dwFindPattern(((uintptr_t) object.module) + object.textOffset, ((uintptr_t) object.module) + object.textOffset + object.textSize, chPattern);
     if (!patr)
         return NULL;
-    return patr - (uintptr_t)(module) + moduleMap->l_addr;
+    return patr - (uintptr_t)(object.module) + object.moduleMap->l_addr;
+}
+//===================================================================================
+uintptr_t CSignature::GetClientSignature(const char *chPattern)
+{
+    return GetSignature(chPattern, sharedobj::client(), CSignature_space::client);
 }
 //===================================================================================
 uintptr_t CSignature::GetEngineSignature(const char *chPattern)
 {
-    // we need to do this becuase (i assume that) under the hood, dlopen only
-    // loads up the sections that it needs into memory, meaning that we cannot
-    // get the string table from the module.
-    static int fd       = open(sharedobj::engine().path.c_str(), O_RDONLY);
-    static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
-    if ((unsigned) module == 0xffffffff)
-        return NULL;
-    static link_map *moduleMap = sharedobj::engine().lmap;
-
-    // static void *module = (void *)moduleMap->l_addr;
-
-    static Elf32_Shdr *textHeader = getSectionHeader(module, ".text");
-
-    static int textOffset = textHeader->sh_offset;
-
-    static int textSize = textHeader->sh_size;
-
-    // we need to remap the address that we got from the pattern search from our
-    // mapped file to the actual memory we do this by rebasing the address
-    // (subbing the mmapped one and adding the dlopened one.
-    uintptr_t patr = dwFindPattern(((uintptr_t) module) + textOffset, ((uintptr_t) module) + textOffset + textSize, chPattern);
-    if (!patr)
-        return NULL;
-    return patr - (uintptr_t)(module) + moduleMap->l_addr;
+    return GetSignature(chPattern, sharedobj::engine(), CSignature_space::engine);
 }
 //===================================================================================
 uintptr_t CSignature::GetSteamAPISignature(const char *chPattern)
 {
-    // we need to do this becuase (i assume that) under the hood, dlopen only
-    // loads up the sections that it needs into memory, meaning that we cannot
-    // get the string table from the module.
-    static int fd       = open(sharedobj::steamapi().path.c_str(), O_RDONLY);
-    static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
-    if ((unsigned) module == 0xffffffff)
-        return NULL;
-    static link_map *moduleMap = sharedobj::steamapi().lmap;
-
-    // static void *module = (void *)moduleMap->l_addr;
-
-    static Elf32_Shdr *textHeader = getSectionHeader(module, ".text");
-
-    static int textOffset = textHeader->sh_offset;
-
-    static int textSize = textHeader->sh_size;
-
-    // we need to remap the address that we got from the pattern search from our
-    // mapped file to the actual memory we do this by rebasing the address
-    // (subbing the mmapped one and adding the dlopened one.
-    uintptr_t patr = dwFindPattern(((uintptr_t) module) + textOffset, ((uintptr_t) module) + textOffset + textSize, chPattern);
-    if (!patr)
-        return NULL;
-    return patr - (uintptr_t)(module) + moduleMap->l_addr;
+    return GetSignature(chPattern, sharedobj::steamapi(), CSignature_space::steamapi);
 }
 //===================================================================================
 uintptr_t CSignature::GetVstdSignature(const char *chPattern)
 {
-    // we need to do this becuase (i assume that) under the hood, dlopen only
-    // loads up the sections that it needs into memory, meaning that we cannot
-    // get the string table from the module.
-    static int fd       = open(sharedobj::vstdlib().path.c_str(), O_RDONLY);
-    static void *module = mmap(NULL, lseek(fd, 0, SEEK_END), PROT_READ, MAP_SHARED, fd, 0);
-    if ((unsigned) module == 0xffffffff)
-        return NULL;
-    static link_map *moduleMap = sharedobj::vstdlib().lmap;
-
-    // static void *module = (void *)moduleMap->l_addr;
-
-    static Elf32_Shdr *textHeader = getSectionHeader(module, ".text");
-
-    static int textOffset = textHeader->sh_offset;
-
-    static int textSize = textHeader->sh_size;
-
-    // we need to remap the address that we got from the pattern search from our
-    // mapped file to the actual memory we do this by rebasing the address
-    // (subbing the mmapped one and adding the dlopened one.
-    uintptr_t patr = dwFindPattern(((uintptr_t) module) + textOffset, ((uintptr_t) module) + textOffset + textSize, chPattern);
-    if (!patr)
-        return NULL;
-    return patr - (uintptr_t)(module) + moduleMap->l_addr;
+    return GetSignature(chPattern, sharedobj::vstdlib(), CSignature_space::vstd);
 }
 
 CSignature gSignatures;
