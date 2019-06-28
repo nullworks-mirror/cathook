@@ -15,7 +15,7 @@ namespace hacks::tf::autosticky
 static settings::Boolean enable{ "autosticky.enable", "false" };
 static settings::Boolean buildings{ "autosticky.buildings", "true" };
 static settings::Boolean legit{ "autosticky.legit", "false" };
-static settings::Boolean dontblowmeup{ "autosticky.dontblowmeup", "false" };
+static settings::Boolean dontblowmeup{ "autosticky.dontblowmeup", "true" };
 
 // A storage array for ents
 static std::vector<CachedEntity *> bombs;
@@ -172,25 +172,22 @@ void CreateMove()
                             // Use silent
                             g_pLocalPlayer->bUseSilentAngles = true;
 
+                            // Continue the loop in case local player is within the explosion radius
                             found = true;
                             continue;
-
-                            // Since legit mode is on, check if the sticky can see
-                            // the local player
                         }
-                        else if (VisCheckEntFromEnt(bomb, LOCAL_E))
+                        // Since legit mode is on, check if the sticky can see
+                        // the local player
+                        else if (CE_GOOD(target) && VisCheckEntFromEnt(bomb, LOCAL_E))
                         {
                             // Aim at bomb
                             AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
                             // Use silent
                             g_pLocalPlayer->bUseSilentAngles = true;
 
-                            // Detonate
-                            current_user_cmd->buttons |= IN_ATTACK2;
-
-                            // Return as its a waste to check anymore, we detonated
-                            // and all the rest of the stickys are gone
-                            return;
+                            // Continue the loop in case local player is within the explosion radius
+                            found = true;
+                            continue;
                         }
                     }
                 }
