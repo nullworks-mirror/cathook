@@ -10,6 +10,7 @@
 
 // This is a temporary file to put code that needs moving/refactoring in.
 extern bool *bSendPackets;
+extern bool ignoreKeys;
 extern std::array<int, 32> bruteint;
 extern std::array<Timer, 32> timers;
 

@@ -19,6 +19,7 @@ bool calculated_can_shoot = false;
 bool ignoredc             = false;
 
 bool *bSendPackets{ nullptr };
+bool ignoreKeys{ false };
 
 settings::Boolean crypt_chat{ "chat.crypto", "true" };
 settings::Boolean clean_screenshots{ "visual.clean-screenshots", "false" };

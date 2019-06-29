@@ -338,6 +338,11 @@ free(logname);*/
     hooks::panel.Set(g_IPanel);
     hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse, offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);
     hooks::panel.Apply();
+
+    hooks::chathud.Set(g_CHUD->FindElement("CHudChat"));
+    hooks::chathud.HookMethod(HOOK_ARGS(StartMessageMode));
+    hooks::chathud.HookMethod(HOOK_ARGS(StopMessageMode));
+    hooks::chathud.Apply();
 #endif
 
     hooks::input.Set(g_IInput);

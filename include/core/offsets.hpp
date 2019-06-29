@@ -184,4 +184,12 @@ struct offsets
     {
         return PlatformOffset(94, undefined, undefined);
     }
+    static constexpr uint32_t StartMessageMode()
+    {
+        return PlatformOffset(23, undefined, undefined);
+    }
+    static constexpr uint32_t StopMessageMode()
+    {
+        return PlatformOffset(24, undefined, undefined);
+    }
 };
