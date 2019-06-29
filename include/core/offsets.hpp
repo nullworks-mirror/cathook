@@ -192,4 +192,8 @@ struct offsets
     {
         return PlatformOffset(24, undefined, undefined);
     }
+    static const uint32_t ChatPrintf()
+    {
+        return PlatformOffset(22, undefined, undefined);
+    }
 };

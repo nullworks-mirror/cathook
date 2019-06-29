@@ -63,7 +63,8 @@ DECLARE_HOOKED_METHOD(ServerCmdKeyValues, void, KeyValues *);
 #if ENABLE_VISUALS
 // CHudChat
 DECLARE_HOOKED_METHOD(StartMessageMode, int, CHudBaseChat *, int);
-DECLARE_HOOKED_METHOD(StopMessageMode, void *, CHudBaseChat *_this)
+DECLARE_HOOKED_METHOD(StopMessageMode, void *, CHudBaseChat *_this);
+DECLARE_HOOKED_METHOD(ChatPrintf, void, CHudBaseChat *, int, int, const char *, ...);
 // ClientMode
 DECLARE_HOOKED_METHOD(OverrideView, void, void *, CViewSetup *);
 // IStudioRender

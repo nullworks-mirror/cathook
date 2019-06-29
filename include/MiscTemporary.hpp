@@ -26,6 +26,7 @@ extern int prevflowticks;
 extern int spectator_target;
 extern CLC_VoiceData *voicecrash;
 #endif
+extern settings::Boolean clean_chat;
 
 extern settings::Boolean clean_screenshots;
 extern settings::Boolean crypt_chat;

@@ -342,6 +342,7 @@ free(logname);*/
     hooks::chathud.Set(g_CHUD->FindElement("CHudChat"));
     hooks::chathud.HookMethod(HOOK_ARGS(StartMessageMode));
     hooks::chathud.HookMethod(HOOK_ARGS(StopMessageMode));
+    hooks::chathud.HookMethod(HOOK_ARGS(ChatPrintf));
     hooks::chathud.Apply();
 #endif
 

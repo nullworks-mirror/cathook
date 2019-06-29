@@ -14,7 +14,6 @@
 #include "ChatCommands.hpp"
 #include "MiscTemporary.hpp"
 
-static settings::Boolean clean_chat{ "chat.clean", "false" };
 static settings::Boolean dispatch_log{ "debug.log-dispatch-user-msg", "false" };
 static settings::Boolean chat_filter_enable{ "chat.censor.enable", "false" };
 static settings::Boolean identify{ "chat.identify", "false" };
@@ -144,14 +143,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
             break;
 
         for (i = 0; i < s; i++)
-        {
-            c = buf_data[i];
-            if (clean_chat && i > 1)
-                if (c == '\n' || c == '\r')
-                    continue;
-
-            data.push_back(c);
-        }
+            data.push_back(buf_data[i]);
         /* First byte is player ENT index
          * Second byte is unindentified (equals to 0x01)
          */
