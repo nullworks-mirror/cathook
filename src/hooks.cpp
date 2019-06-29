@@ -50,8 +50,7 @@ void VMTHook::Set(ptr_t inst, uint32_t offset)
     int mc          = CountMethods(vtable_original);
     logging::Info("Hooking vtable 0x%08x with %d methods", vtable_original, mc);
     vtable_hooked = static_cast<method_table_t>(calloc(mc + 1, sizeof(ptr_t)));
-    memcpy(&vtable_hooked[1], vtable_original, sizeof(ptr_t) * mc);
-    vtable_hooked[0] = (*vtable_ptr)[-1];
+    memcpy(&vtable_hooked[0], &vtable_original[-1], sizeof(ptr_t) * (mc + 1));
 }
 
 void VMTHook::Release()
@@ -93,6 +92,7 @@ VMTHook baseclientstate8{};
 VMTHook clientmode{};
 VMTHook panel{};
 VMTHook client{};
+VMTHook chathud{};
 VMTHook engine{};
 VMTHook ctfpartyclient;
 VMTHook netchannel{};
