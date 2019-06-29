@@ -131,9 +131,24 @@ void CreateMove()
 
     // Loop through every target for a given bomb
     bool found = false;
+    // Is Scottish resistance
+    bool IsScottishResistance = HasWeapon(LOCAL_E, 130);
     // Loop once for every bomb in the array
     for (auto bomb : bombs)
     {
+        // Don't blow yourself up
+        if (dontblowmeup)
+        {
+            auto collideable = RAW_ENT(LOCAL_E)->GetCollideable();
+
+            auto position = LOCAL_E->m_vecOrigin() + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
+            if (bomb->m_vecOrigin().DistTo(position) < 130)
+            {
+                // Vis check the target from the bomb
+                if (IsVectorVisible(bomb->m_vecOrigin(), position, true))
+                    return;
+            }
+        }
         for (auto target : targets)
         {
             // Check distance to the target to see if the sticky will hit
@@ -144,19 +159,6 @@ void CreateMove()
 
             position = *position + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
 
-            // Don't blow yourself up
-            if (dontblowmeup)
-            {
-                auto collideable = RAW_ENT(LOCAL_E)->GetCollideable();
-
-                auto position = LOCAL_E->m_vecOrigin() + (collideable->OBBMins() + collideable->OBBMaxs()) / 2;
-                if (bomb->m_vecOrigin().DistTo(position) < 130)
-                {
-                    // Vis check the target from the bomb
-                    if (IsVectorVisible(bomb->m_vecOrigin(), position, true))
-                        return;
-                }
-            }
             if (!found)
                 if (bomb->m_vecOrigin().DistTo(*position) < 130)
                 {
@@ -168,7 +170,8 @@ void CreateMove()
                         if (!legit)
                         {
                             // Aim at bomb
-                            AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
+                            if (IsScottishResistance)
+                                AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
                             // Use silent
                             g_pLocalPlayer->bUseSilentAngles = true;
 
@@ -178,10 +181,11 @@ void CreateMove()
                         }
                         // Since legit mode is on, check if the sticky can see
                         // the local player
-                        else if (CE_GOOD(target) && VisCheckEntFromEnt(bomb, LOCAL_E))
+                        else if (CE_GOOD(target) && IsVectorVisible(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), true))
                         {
                             // Aim at bomb
-                            AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
+                            if (IsScottishResistance)
+                                AimAt(g_pLocalPlayer->v_Eye, bomb->m_vecOrigin(), current_user_cmd);
                             // Use silent
                             g_pLocalPlayer->bUseSilentAngles = true;
 
