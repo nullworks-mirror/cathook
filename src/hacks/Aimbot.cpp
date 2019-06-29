@@ -1411,6 +1411,8 @@ float EffectiveTargetingRange()
         return (float) re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFFlameThrower))
         return 310.0f; // Pyros only have so much until their flames hit
+    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFWeaponFlameBall))
+        return 512.0f; // Dragons Fury is fast but short range
 
     return (float) max_range;
 }
