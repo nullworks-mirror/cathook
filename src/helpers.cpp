@@ -646,16 +646,18 @@ bool HasWeapon(CachedEntity *ent, int wantedId)
     if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
         return false;
     // Grab the handle and store it into the var
-    int *hWeapons = (int *) ((unsigned) (RAW_ENT(ent) + netvar.hMyWeapons));
+    int *hWeapons = (int *) ((unsigned) (RAW_ENT(ent)) + netvar.hMyWeapons);
     if (!hWeapons)
         return false;
     // Go through the handle array and search for the item
     for (int i = 0; hWeapons[i]; i++)
     {
-        // Get the weapon id from the handle array
-        IClientEntity *weapon = g_IEntityList->GetClientEntityFromHandle(hWeapons[i]);
+        if (IDX_BAD(HandleToIDX(hWeapons[i])))
+            continue;
+        // Get the weapon
+        CachedEntity *weapon = ENTITY(HandleToIDX(hWeapons[i]));
         // if weapon is what we are looking for, return true
-        if (weapon && NET_INT(weapon, netvar.iItemDefinitionIndex) == wantedId)
+        if (weapon && CE_VALID(weapon) && CE_INT(weapon, netvar.iItemDefinitionIndex) == wantedId)
             return true;
     }
     // We didnt find the weapon we needed, return false
