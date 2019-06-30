@@ -81,7 +81,8 @@
     </Box>
     <Box name="Misc" width="content" height="content" padding="12 6 6 6" x="352" y="130">
         <List width="150">
-            <AutoVariable width="fill" target="chat.clean" label="Clean Chat"/>
+            <AutoVariable width="fill" target="chat.clean" label="Remove Newlines"/>
+            <AutoVariable width="fill" target="chat.anti-spam" label="Anti-Spam"/>
             <AutoVariable width="fill" target="chat.crypto" label="Crypto Chat"/>
             <AutoVariable width="fill" target="chat.prefix-newlines" label="Newlines"/>
             <AutoVariable width="fill" target="chat.log-events" label="Event Logger"/>
@@ -93,7 +94,6 @@
             <AutoVariable width="fill" target="chat.log-events.death" label="Log Death Events"/>
             <AutoVariable width="fill" target="chat.log-events.spawn" label="Log (re)Spawn Events"/>
             <AutoVariable width="fill" target="chat.log-events.changeclass" label="Log Class Change Events"/>
-            <AutoVariable width="fill" target="chat.log-events.vote" label="Log Vote Events"/>
             <AutoVariable width="fill" target="chat.identify" label="Identify"/>
             <AutoVariable width="fill" target="chat.identify.answer" label="Counter Identify"/>
         </List>
