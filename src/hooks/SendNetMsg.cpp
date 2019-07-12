@@ -13,6 +13,8 @@
 
 static settings::Int newlines_msg{ "chat.prefix-newlines", "0" };
 static settings::Boolean log_sent{ "debug.log-sent-chat", "false" };
+extern settings::Boolean identify;
+static Timer identify_timer{};
 
 namespace hacks::shared::catbot
 {
@@ -104,6 +106,18 @@ void ParseKeyValue(KeyValues *event)
     }
 }
 
+static InitRoutine run_identify([]() {
+    EC::Register(
+        EC::CreateMove,
+        []() {
+            // 5 minutes between each identify seems ok?
+            if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(1000 * 60 * 5))
+                return;
+            chat_stack::Say(ucccccp::encrypt("meow", 'B'));
+        },
+        "sendnetmsg_createmove");
+});
+
 DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, bool force_reliable, bool voice)
 {
     if (!isHackActive())
@@ -132,16 +146,19 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, boo
                     msg = msg.substr(0, msg.length() - 2);
                     if (msg.find("!!!") == 0 || msg.find("!!") == 0)
                     {
-                        // Message is sent over IRC.
-                        int sub_val = 2;
-                        if (msg.find("!!!") == 0)
-                            sub_val = 3;
-                        std::string substrmsg(msg.substr(sub_val));
+                        if (ucccccp::decrypt(msg) != "Unsupported version" && ucccccp::decrypt(msg) != "Attempt at ucccccping and failing")
+                        {
+                            // Message is sent over IRC.
+                            int sub_val = 2;
+                            if (msg.find("!!!") == 0)
+                                sub_val = 3;
+                            std::string substrmsg(msg.substr(sub_val));
 #if ENABLE_IRC
-                        IRC::sendmsg(substrmsg, true);
+                            IRC::sendmsg(substrmsg, true);
 #endif
-                        // Do not send message over normal chat.
-                        return false;
+                            // Do not send message over normal chat.
+                            return false;
+                        }
                     }
                 }
             }

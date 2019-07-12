@@ -16,7 +16,7 @@
 
 static settings::Boolean dispatch_log{ "debug.log-dispatch-user-msg", "false" };
 static settings::Boolean chat_filter_enable{ "chat.censor.enable", "false" };
-static settings::Boolean identify{ "chat.identify", "false" };
+settings::Boolean identify{ "chat.identify", "false" };
 static settings::Boolean answerIdentify{ "chat.identify.answer", "false" };
 static settings::Boolean anti_votekick{ "cat-bot.anti-autobalance", "false" };
 
@@ -224,7 +224,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         {
             hacks::shared::ChatCommands::handleChatMessage(message, data[0]);
         }
-        if (crypt_chat && message.find("!!B") == 0 && ucccccp::validate(message))
+        if (crypt_chat && *answerIdentify && message.find("!!B") == 0 && ucccccp::validate(message))
         {
             std::string msg   = ucccccp::decrypt(message);
             CachedEntity *ent = ENTITY(data[0]);
@@ -234,6 +234,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                 if (state == playerlist::k_EState::DEFAULT)
                 {
                     state = playerlist::k_EState::CAT;
+                    chat_stack::Say(ucccccp::encrypt("meow", 'B'));
                 }
             }
             PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), msg.c_str());
