@@ -475,7 +475,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
     auto minmax               = std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs());
 
     float dist_to_ground = DistanceToGround(origin, minmax.first, minmax.second);
-    Vector acceleration  = { 0, 0, -(sv_gravity->GetFloat()) };
+    Vector acceleration  = { 0, 0, -(sv_gravity->GetFloat() * entgmod) };
 
     Vector last = origin;
 
@@ -501,7 +501,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
             mindelta = fabs(rockettime - currenttime);
         }
     }
-    bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravitymod);
+    bestpos.z += (sv_gravity->GetFloat() * entgmod / 2.0f * besttime * besttime * gravitymod);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result = bestpos + hitbox_offset;
     /*logging::Info("[Pred][%d] delta: %.2f   %.2f   %.2f", result.x - origin.x,
