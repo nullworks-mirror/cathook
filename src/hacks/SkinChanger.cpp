@@ -110,17 +110,20 @@ static CatCommand australize("australize", "Make everything australium", []() {
     InvalidateCookie();
 });
 static CatCommand set_attr("skinchanger_set", "Set Attribute", [](const CCommand &args) {
+    enable          = true;
     unsigned attrid = strtoul(args.Arg(1), nullptr, 10);
     float attrv     = strtof(args.Arg(2), nullptr);
     GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).Set(attrid, attrv);
     InvalidateCookie();
 });
 static CatCommand remove_attr("skinchanger_remove", "Remove attribute", [](const CCommand &args) {
+    enable          = true;
     unsigned attrid = strtoul(args.Arg(1), nullptr, 10);
     GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).Remove(attrid);
     InvalidateCookie();
 });
 static CatCommand set_redirect("skinchanger_redirect", "Set Redirect", [](const CCommand &args) {
+    enable                                                                    = true;
     unsigned redirect                                                         = strtoul(args.Arg(1), nullptr, 10);
     GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).defidx_redirect = redirect;
     InvalidateCookie();
@@ -152,6 +155,7 @@ static CatCommand save("skinchanger_save", "Save", [](const CCommand &args) {
     Save(filename);
 });
 static CatCommand load("skinchanger_load", "Load", [](const CCommand &args) {
+    enable               = true;
     std::string filename = "skinchanger";
     if (args.ArgC() > 1)
     {
@@ -160,6 +164,7 @@ static CatCommand load("skinchanger_load", "Load", [](const CCommand &args) {
     Load(filename);
 });
 static CatCommand load_merge("skinchanger_load_merge", "Load with merge", [](const CCommand &args) {
+    enable               = true;
     std::string filename = "skinchanger";
     if (args.ArgC() > 1)
     {
@@ -168,6 +173,7 @@ static CatCommand load_merge("skinchanger_load_merge", "Load with merge", [](con
     Load(filename, true);
 });
 static CatCommand remove_redirect("skinchanger_remove_redirect", "Remove redirect", [](const CCommand &args) {
+    enable                                  = true;
     unsigned redirectid                     = strtoul(args.Arg(1), nullptr, 10);
     GetModifier(redirectid).defidx_redirect = 0;
     logging::Info("Redirect removed");
