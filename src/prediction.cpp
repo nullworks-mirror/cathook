@@ -501,7 +501,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
             mindelta = fabs(rockettime - currenttime);
         }
     }
-    bestpos.z += (sv_gravity->GetFloat() * entgmod / 2.0f * besttime * besttime * gravitymod);
+    bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravitymod);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result = bestpos + hitbox_offset;
     /*logging::Info("[Pred][%d] delta: %.2f   %.2f   %.2f", result.x - origin.x,
