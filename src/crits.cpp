@@ -7,6 +7,8 @@
 
 #include <settings/Bool.hpp>
 #include "common.hpp"
+#include "Backtrack.hpp"
+#include "PlayerTools.hpp"
 
 std::unordered_map<int, int> command_number_mod{};
 
@@ -15,6 +17,7 @@ namespace criticals
 
 static settings::Boolean crit_info{ "crit.info", "false" };
 static settings::Button crit_key{ "crit.key", "<null>" };
+static settings::Boolean auto_crit{ "crit.auto", "false" };
 static settings::Boolean crit_melee{ "crit.melee", "false" };
 static settings::Boolean crit_legiter{ "crit.force-gameplay", "false" };
 static settings::Boolean crit_experimental{ "crit.experimental", "false" };
@@ -144,9 +147,67 @@ bool force_crit(IClientEntity *weapon)
     return number != 0;
 }
 
+void handle_melee_crit(IClientEntity *weapon)
+{
+    // Should i crit or save my crits?
+    bool in_range = false;
+    for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+    {
+        // We already found out we should crit
+        if (in_range)
+            break;
+        CachedEntity *target = ENTITY(i);
+
+        // Various ignores
+        if (CE_BAD(target) || !target->m_bAlivePlayer() || !player_tools::shouldTarget(target))
+            continue;
+
+        // Shorten code
+        namespace bt = hacks::shared::backtrack;
+
+        // If backtracking, use the backtrack ticks
+        if (bt::isBacktrackEnabled)
+        {
+            // Loop all ticks
+            for (int j = 0; j < 66; j++)
+            {
+                auto bt_data = bt::headPositions[i][j];
+                // Invalid tick
+                if (!bt::ValidTick(bt_data, target))
+                    continue;
+                // If within 400 HU range then crit, else just farm crits
+                if (bt_data.collidable.center.DistTo(g_pLocalPlayer->v_Eye) < 400.0f)
+                {
+                    in_range = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            Vector ent_orig = target->m_vecOrigin();
+            // Center ent origin
+            ent_orig += (RAW_ENT(target)->GetCollideable()->OBBMaxs() + RAW_ENT(target)->GetCollideable()->OBBMins()) / 2;
+            // In range, crit!
+            if (ent_orig.DistTo(g_pLocalPlayer->v_Eye) < 400.0f)
+            {
+                in_range = true;
+                break;
+            }
+        }
+    }
+    if (in_range)
+        force_crit(weapon);
+    else
+    {
+        // Please don't crit thanks
+        if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
+            current_user_cmd->buttons &= ~IN_ATTACK;
+    }
+}
 void create_move()
 {
-    if (!crit_key && !crit_melee)
+    if (!crit_key && !crit_melee && !auto_crit)
         return;
     if (!random_crits_enabled())
         return;
@@ -162,13 +223,22 @@ void create_move()
     if (!CanShoot())
         return;
     unfuck_bucket(weapon);
-    if ((current_user_cmd->buttons & IN_ATTACK) && crit_key && crit_key.isKeyDown() && current_user_cmd->command_number)
+    if ((current_user_cmd->buttons & IN_ATTACK) && ((crit_key && crit_key.isKeyDown()) || auto_crit) && current_user_cmd->command_number)
     {
-        force_crit(weapon);
+        if (GetWeaponMode() == weapon_melee)
+            handle_melee_crit(weapon);
+        else
+            force_crit(weapon);
     }
-    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number && GetWeaponMode() == weapon_melee && crit_melee && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
+    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number && GetWeaponMode() == weapon_melee && (crit_melee || auto_crit) && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
     {
-        force_crit(weapon);
+        handle_melee_crit(weapon);
+    }
+    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number && GetWeaponMode() != weapon_melee)
+    {
+        // Save crits!
+        if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
+            current_user_cmd->buttons &= ~IN_ATTACK;
     }
 }
 
@@ -192,7 +262,7 @@ void draw()
         return;
     if (crit_info && CE_GOOD(LOCAL_W))
     {
-        if (crit_key.isKeyDown())
+        if (crit_key.isKeyDown() || auto_crit)
         {
             AddCenterString("FORCED CRITS!", colors::red);
         }
