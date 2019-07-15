@@ -64,7 +64,7 @@ void logging::Info(const char *fmt, ...)
     if (!hack::shutdown)
     {
         if (*log_to_console)
-            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "CAT: %s\n", result.get());
+            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: %s\n", result.get());
     }
 #endif
 #endif

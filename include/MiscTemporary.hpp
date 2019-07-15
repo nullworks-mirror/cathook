@@ -8,6 +8,8 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
+#define MENU_COLOR (Color(*print_r, *print_g, *print_b, 255))
+
 // This is a temporary file to put code that needs moving/refactoring in.
 extern bool *bSendPackets;
 extern bool ignoreKeys;

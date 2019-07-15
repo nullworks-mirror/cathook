@@ -20,14 +20,14 @@ static void getAndSortAllConfigs();
 static CatCommand cat("cat", "", [](const CCommand &args) {
     if (args.ArgC() < 3)
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Usage: cat <set/get> <variable> [value]\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Usage: cat <set/get> <variable> [value]\n");
         return;
     }
 
     auto variable = settings::Manager::instance().lookup(args.Arg(2));
     if (variable == nullptr)
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Variable not found: %s\n", args.Arg(2));
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Variable not found: %s\n", args.Arg(2));
         return;
     }
 
@@ -35,21 +35,21 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
     {
         if (args.ArgC() < 4)
         {
-            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Usage: cat <set> <variable> <value>\n");
+            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Usage: cat <set> <variable> <value>\n");
             return;
         }
         variable->fromString(args.Arg(3));
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
         return;
     }
     else if (!strcmp(args.Arg(1), "get"))
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
         return;
     }
     else
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Usage: cat <set/get> <variable> <value>\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Usage: cat <set/get> <variable> <value>\n");
         return;
     }
 });
@@ -57,7 +57,7 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
 static CatCommand toggle("toggle", "", [](const CCommand &args) {
     if (args.ArgC() < 4)
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Usage: cat_toggle <variable> <value 1> <value 2>\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Usage: cat_toggle <variable> <value 1> <value 2>\n");
         return;
     }
 
@@ -66,7 +66,7 @@ static CatCommand toggle("toggle", "", [](const CCommand &args) {
 
     if (variable == nullptr)
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Variable not found: %s\n", rvar.c_str());
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Variable not found: %s\n", rvar.c_str());
         return;
     }
 
@@ -77,7 +77,7 @@ static CatCommand toggle("toggle", "", [](const CCommand &args) {
         variable->fromString(Value2);
     else
         variable->fromString(Value1);
-    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s = \"%s\"\n", rvar.c_str(), variable->toString().c_str());
+    g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%s = \"%s\"\n", rvar.c_str(), variable->toString().c_str());
 });
 
 static CatCommand save("save", "", [](const CCommand &args) {
@@ -184,14 +184,14 @@ static CatCommand cat_find("find", "Find a command by name", [](const CCommand &
             found_rvars.push_back(s);
     }
     // Yes
-    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Found rvars:\n");
+    g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Found rvars:\n");
     // Nothing found :C
     if (found_rvars.empty())
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "No rvars found.\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "No rvars found.\n");
     // Found rvars
     else
         for (auto &s : found_rvars)
-            g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s\n", s.c_str());
+            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%s\n", s.c_str());
 });
 
 static int cat_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])

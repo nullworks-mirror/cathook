@@ -131,7 +131,7 @@ void onShutdown()
         tfmm::startQueue();
 }
 
-static CatCommand get_steamid("print_steamid", "Prints your SteamID", []() { g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%u\n", g_ISteamUser->GetSteamID().GetAccountID()); });
+static CatCommand get_steamid("print_steamid", "Prints your SteamID", []() { g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%u\n", g_ISteamUser->GetSteamID().GetAccountID()); });
 
 static InitRoutine init([]() {
     EC::Register(EC::CreateMove, update, "cm_autojoin", EC::average);

@@ -100,13 +100,13 @@ void handleChatMessage(std::string message, int senderid)
 static CatCommand chatcommands_add("chatcommands_add", "chatcommands_add <chat command> <command>", [](const CCommand &args) {
     if (args.ArgC() != 3)
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "usage: chatcommands_add <chat command> <command>\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "usage: chatcommands_add <chat command> <command>\n");
         return;
     }
     std::string prefix = args.Arg(1);
     if (prefix.find(' ') != prefix.npos)
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "The chat command mustn't contain spaces!\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "The chat command mustn't contain spaces!\n");
         return;
     }
     std::string command = args.Arg(2);
@@ -120,13 +120,13 @@ static CatCommand chatcommands_add("chatcommands_add", "chatcommands_add <chat c
 static CatCommand chatcommands_file("chatcommands_file", "chatcommands_add <chat command> <filename in /opt/cathook/data/chatcommands>", [](const CCommand &args) {
     if (args.ArgC() != 3)
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "usage: chatcommands_add <chat command> <filename in /opt/cathook/data/chatcommands>\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "usage: chatcommands_add <chat command> <filename in /opt/cathook/data/chatcommands>\n");
         return;
     }
     std::string prefix = args.Arg(1);
     if (prefix.find(' ') != prefix.npos)
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "The chat command mustn't contain spaces!\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "The chat command mustn't contain spaces!\n");
         return;
     }
     std::string file = args.Arg(2);
@@ -135,7 +135,7 @@ static CatCommand chatcommands_file("chatcommands_file", "chatcommands_add <chat
 
     if (!chatcomamnd.readFile(file))
     {
-        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Could'nt open the file!\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Could'nt open the file!\n");
         return;
     }
     logging::Info("%s: %s", prefix.c_str(), file.c_str());
@@ -143,7 +143,7 @@ static CatCommand chatcommands_file("chatcommands_file", "chatcommands_add <chat
 
 static CatCommand chatcommands_reset_all("chatcommands_reset_all", "Clears all chatcommands", [](const CCommand &args) {
     commands.clear();
-    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Chat commands cleared!\n");
+    g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Chat commands cleared!\n");
 });
 
 } // namespace hacks::shared::ChatCommands
