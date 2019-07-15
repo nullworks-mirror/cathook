@@ -30,4 +30,15 @@ settings::Boolean disable_visuals{ "visual.disable", "false" };
 settings::Int print_r{ "print.rgb.r", "183" };
 settings::Int print_g{ "print.rgb.b", "27" };
 settings::Int print_b{ "print.rgb.g", "139" };
+Color menu_color{ *print_r, *print_g, *print_b };
 settings::Boolean null_graphics("hack.nullgraphics", "false");
+
+void color_callback(settings::VariableBase<int> &, int)
+{
+    menu_color = Color(*print_r, *print_g, *print_b);
+}
+static InitRoutine color_init([]() {
+    print_r.installChangeCallback(color_callback);
+    print_g.installChangeCallback(color_callback);
+    print_b.installChangeCallback(color_callback);
+});

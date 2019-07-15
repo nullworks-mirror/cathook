@@ -8,7 +8,7 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 
-#define MENU_COLOR (Color(*print_r, *print_g, *print_b, 255))
+#define MENU_COLOR (menu_color)
 
 // This is a temporary file to put code that needs moving/refactoring in.
 extern bool *bSendPackets;
@@ -38,6 +38,7 @@ extern settings::Boolean disable_visuals;
 extern settings::Int print_r;
 extern settings::Int print_g;
 extern settings::Int print_b;
+extern Color menu_color;
 extern int stored_buttons;
 extern settings::Boolean null_graphics;
 #if ENABLE_VISUALS
