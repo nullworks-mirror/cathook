@@ -202,7 +202,23 @@ void handle_melee_crit(IClientEntity *weapon)
     {
         // Please don't crit thanks
         if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
-            current_user_cmd->buttons &= ~IN_ATTACK;
+        {
+            // Backup
+            int original_cmd = current_user_cmd->command_number;
+            // How many crits in a row?
+            int found = 0;
+            // Ensure not to cockblock when critboosted, 5 should be plently
+            for (int i = 0; i < 10; i++)
+            {
+                current_user_cmd->command_number++;
+                if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
+                    found++;
+            }
+            // If we found less than 10 crits in a row, please don't crit thanks
+            if (found < 10)
+                current_user_cmd->buttons &= ~IN_ATTACK;
+            current_user_cmd->command_number = original_cmd;
+        }
     }
 }
 void create_move()
@@ -234,11 +250,27 @@ void create_move()
     {
         handle_melee_crit(weapon);
     }
-    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number && GetWeaponMode() != weapon_melee)
+    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number && GetWeaponMode() != weapon_melee && crit_key)
     {
         // Save crits!
         if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
-            current_user_cmd->buttons &= ~IN_ATTACK;
+        {
+            // Backup
+            int original_cmd = current_user_cmd->command_number;
+            // How many crits in a row?
+            int found = 0;
+            // Ensure not to cockblock when critboosted, 5 should be plently
+            for (int i = 0; i < 6; i++)
+            {
+                current_user_cmd->command_number++;
+                if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
+                    found++;
+            }
+            // If we found less than 5 crits in a row, please don't crit thanks
+            if (found < 5)
+                current_user_cmd->buttons &= ~IN_ATTACK;
+            current_user_cmd->command_number = original_cmd;
+        }
     }
 }
 
