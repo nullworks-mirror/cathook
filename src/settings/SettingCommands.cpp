@@ -54,6 +54,32 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
     }
 });
 
+static CatCommand toggle("toggle", "", [](const CCommand &args) {
+    if (args.ArgC() < 4)
+    {
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Usage: cat_toggle <variable> <value 1> <value 2>\n");
+        return;
+    }
+
+    std::string rvar = args.Arg(1);
+    auto variable    = settings::Manager::instance().lookup(rvar);
+
+    if (variable == nullptr)
+    {
+        g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "Variable not found: %s\n", rvar.c_str());
+        return;
+    }
+
+    std::string Value1 = args.Arg(2);
+    std::string Value2 = args.Arg(3);
+
+    if (variable->toString() == Value1)
+        variable->fromString(Value2);
+    else
+        variable->fromString(Value1);
+    g_ICvar->ConsoleColorPrintf(Color(*print_r, *print_g, *print_b, 255), "%s = \"%s\"\n", rvar.c_str(), variable->toString().c_str());
+});
+
 static CatCommand save("save", "", [](const CCommand &args) {
     settings::SettingsWriter writer{ settings::Manager::instance() };
 
@@ -304,14 +330,61 @@ static int save_CompletionCallback(const char *c_partial, char commands[COMMAND_
     return count;
 }
 
+static int toggle_CompletionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::string partial = c_partial;
+    std::array<std::string, 3> parts{};
+    auto j    = 0u;
+    auto f    = false;
+    int count = 0;
+
+    for (auto i = 0u; i < partial.size() && j < 4; ++i)
+    {
+        auto space = (bool) isspace(partial.at(i));
+        if (!space)
+        {
+            if (j)
+                parts.at(j - 1).push_back(partial[i]);
+            f = true;
+        }
+
+        if (i == partial.size() - 1 || (f && space))
+        {
+            if (space)
+                ++j;
+            f = false;
+        }
+    }
+
+    for (const auto &s : sortedVariables)
+    {
+        if (s.find(parts.at(0)) == 0)
+        {
+            if (parts.at(1) == "")
+                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat_toggle %s", s.c_str());
+            else if (parts.at(2) == "")
+                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat_toggle %s %s", s.c_str(), parts.at(1).c_str());
+            else
+                snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat_toggle %s %s %s", s.c_str(), parts.at(1).c_str(), parts.at(2).c_str());
+
+            if (count == COMMAND_COMPLETION_MAXITEMS)
+                break;
+        }
+    }
+
+    return count;
+}
+
 static InitRoutine init([]() {
     getAndSortAllVariables();
     getAndSortAllConfigs();
-    cat.cmd->m_bHasCompletionCallback  = true;
-    cat.cmd->m_fnCompletionCallback    = cat_completionCallback;
-    load.cmd->m_bHasCompletionCallback = true;
-    load.cmd->m_fnCompletionCallback   = load_CompletionCallback;
-    save.cmd->m_bHasCompletionCallback = true;
-    save.cmd->m_fnCompletionCallback   = save_CompletionCallback;
+    cat.cmd->m_bHasCompletionCallback    = true;
+    cat.cmd->m_fnCompletionCallback      = cat_completionCallback;
+    load.cmd->m_bHasCompletionCallback   = true;
+    load.cmd->m_fnCompletionCallback     = load_CompletionCallback;
+    save.cmd->m_bHasCompletionCallback   = true;
+    save.cmd->m_fnCompletionCallback     = save_CompletionCallback;
+    toggle.cmd->m_bHasCompletionCallback = true;
+    toggle.cmd->m_fnCompletionCallback   = toggle_CompletionCallback;
 });
 } // namespace settings::commands
