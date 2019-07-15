@@ -593,7 +593,9 @@ static CatCommand dump_vars_by_name("debug_dump_netvars_name", "Dump netvars of 
 #if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
 // This makes us able to see enemy class and status in scoreboard and player panel
 static std::unique_ptr<BytePatch> patch_playerpanel;
-static std::unique_ptr<BytePatch> patch_scoreboard;
+static std::unique_ptr<BytePatch> patch_scoreboard1;
+static std::unique_ptr<BytePatch> patch_scoreboard2;
+static std::unique_ptr<BytePatch> patch_scoreboard3;
 #endif
 
 static CatCommand print_eye_diff("debug_print_eye_diff", "debug", []() { logging::Info("%f", g_pLocalPlayer->v_Eye.z - LOCAL_E->m_vecOrigin().z); });
@@ -612,7 +614,9 @@ void Shutdown()
     }
 #if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
     patch_playerpanel->Shutdown();
-    patch_scoreboard->Shutdown();
+    patch_scoreboard1->Shutdown();
+    patch_scoreboard2->Shutdown();
+    patch_scoreboard3->Shutdown();
 #endif
 }
 
@@ -624,9 +628,14 @@ static InitRoutine init([]() {
     EC::Register(EC::Draw, DrawText, "draw_misc_hacks", EC::average);
 #if !ENFORCE_STREAM_SAFETY
     patch_playerpanel = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "0F 94 45 DF", 0x0, std::vector<unsigned char>{ 0xC6, 0x45, 0xDF, 0x01 });
-    patch_scoreboard  = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "83 F8 02 75 09", 0x0, std::vector<unsigned char>{ 0xE9, 0xC1, 0x06, 0x00, 0x00 });
+    uintptr_t addr    = gSignatures.GetClientSignature("8B 10 89 74 24 04 89 04 24 FF 92 ? ? ? ? 83 F8 02 75 09");
+    patch_scoreboard1 = std::make_unique<BytePatch>(addr, std::vector<unsigned char>{ 0xEB, 0x31, 0xE8, 0x08, 0x46, 0x10, 0x00, 0xE9, 0xC9, 0x06, 0x00, 0x00 });
+    patch_scoreboard2 = std::make_unique<BytePatch>(addr + 0xA0, std::vector<unsigned char>{ 0xE9, 0x5D, 0xFF, 0xFF, 0xFF });
+    patch_scoreboard3 = std::make_unique<BytePatch>(addr + 0x84A, std::vector<unsigned char>{ 0x87, 0xFE });
     patch_playerpanel->Patch();
-    patch_scoreboard->Patch();
+    patch_scoreboard1->Patch();
+    patch_scoreboard2->Patch();
+    patch_scoreboard3->Patch();
 #endif
 #endif
 });
