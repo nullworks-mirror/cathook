@@ -484,7 +484,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         y += *bSendPackets ? 90.0f : -90.0f;
         break;
     case 19: // Fake left
-        y += *bSendPackets ? -90.0f : -90.0f;
+        y += *bSendPackets ? -90.0f : 90.0f;
         break;
     case 21: // Fake reverse edge
         if (*bSendPackets)
