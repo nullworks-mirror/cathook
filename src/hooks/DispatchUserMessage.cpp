@@ -34,6 +34,10 @@ const static std::string clear("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n
 std::string lastfilter{};
 std::string lastname{};
 
+namespace hacks::tf::autoheal
+{
+extern std::vector<int> called_medic;
+}
 namespace hooked_methods
 {
 static Timer sendmsg{};
@@ -97,6 +101,22 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
     switch (type)
     {
 
+    case 25:
+    {
+        // DATA = [ 01 01 06  ] For "Charge me Doctor!"
+        // First Byte represents entityid
+        int ent_id = buf.ReadByte();
+        // Second Byte represents the voicemenu used for it
+        int voice_menu = buf.ReadByte();
+        // Third Byte represents the command in that voicemenu (starting from 0)
+        int command_id = buf.ReadByte();
+
+        if (voice_menu == 1 && command_id == 6)
+            hacks::tf::autoheal::called_medic.push_back(ent_id);
+        // If we don't .Seek(0) the game will have a bad  time reading
+        buf.Seek(0);
+        break;
+    }
     case 12:
         if (hacks::shared::catbot::anti_motd && hacks::shared::catbot::catbotmode)
         {
@@ -106,6 +126,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         }
         break;
     case 5:
+    {
         if (*anti_votekick && buf.GetNumBytesLeft() > 35)
         {
             INetChannel *server = (INetChannel *) g_IEngine->GetNetChannelInfo();
@@ -137,7 +158,9 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
             }
         }
         break;
+    }
     case 4:
+    {
         s = buf.GetNumBytesLeft();
         if (s >= 256 || CE_BAD(LOCAL_E))
             break;
@@ -244,6 +267,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
         buf.Seek(0);
         break;
     }
+    }
+
     if (dispatch_log)
     {
         logging::Info("D> %i", type);

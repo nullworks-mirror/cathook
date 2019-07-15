@@ -12,12 +12,15 @@
 
 namespace hacks::tf::autoheal
 {
+std::vector<int> called_medic{};
 static settings::Boolean enable{ "autoheal.enable", "false" };
 static settings::Boolean steamid_only{ "autoheal.steam-only", "false" };
 static settings::Boolean silent{ "autoheal.silent", "true" };
+static settings::Boolean friendsonly{ "autoheal.friends-only", "false" };
 static settings::Boolean pop_uber_auto{ "autoheal.uber.enable", "true" };
+static settings::Boolean pop_uber_voice{ "autoheal.popvoice", "true" };
 static settings::Float pop_uber_percent{ "autoheal.uber.health-below-ratio", "0" };
-static settings::Boolean share_uber{ "autoheal.uber.share", "true" };
+static settings::Boolean share_uber{ "autoheal.uber.share", "false" };
 
 static settings::Boolean auto_vacc{ "autoheal.vacc.enable", "false" };
 
@@ -369,6 +372,16 @@ bool ShouldChargePlayer(int idx)
     CachedEntity *target              = ENTITY(idx);
     const float damage_accum_duration = g_GlobalVars->curtime - data[idx].accum_damage_start;
     const int health                  = target->m_iHealth();
+
+    // Uber on "CHARGE ME DOCTOR!"
+    if (pop_uber_voice)
+    {
+        // Hey you wanna get deleted?
+        auto uber_array = std::move(called_medic);
+        for (auto i : uber_array)
+            if (i == idx)
+                return true;
+    }
     if (health > g_pPlayerResource->GetMaxHealth(target))
         return false;
     if (!data[idx].accum_damage_start)
@@ -464,6 +477,8 @@ bool CanHeal(int idx)
     if (!IsEntityVisible(ent, 7))
         return false;
     if (IsPlayerInvisible(ent))
+        return false;
+    if (friendsonly && player_tools::shouldTarget(ent))
         return false;
     return true;
 }

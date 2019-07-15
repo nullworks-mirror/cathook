@@ -12,11 +12,13 @@
 #include "NavBot.hpp"
 #include "soundcache.hpp"
 #include "playerresource.h"
+#include "PlayerTools.hpp"
 
 namespace hacks::shared::followbot
 {
 static settings::Boolean enable{ "follow-bot.enable", "false" };
 static settings::Boolean roambot{ "follow-bot.roaming", "true" };
+static settings::Boolean follow_friends{ "follow-bot.friendsonly", "false" };
 static settings::Boolean draw_crumb{ "follow-bot.draw-crumbs", "false" };
 static settings::Float follow_distance{ "follow-bot.distance", "175" };
 static settings::Float additional_distance{ "follow-bot.ipc-distance", "100" };
@@ -265,6 +267,8 @@ static void cm()
         // Still good check
         else if (CE_BAD(ENTITY(follow_target)) || IsPlayerInvisible(ENTITY(follow_target)))
             follow_target = 0;
+        else if (follow_friends && player_tools::shouldTarget(ENTITY(follow_target)))
+            follow_target = 0;
     }
 
     if (!follow_target)
@@ -293,6 +297,8 @@ static void cm()
                 if (entity == LOCAL_E)
                     continue;
                 if (!g_pPlayerResource->isAlive(entity->m_IDX)) // Dont follow dead players
+                    continue;
+                if (follow_friends && player_tools::shouldTarget(entity))
                     continue;
                 if (startFollow(entity, isNavBotCM))
                 {
@@ -333,6 +339,8 @@ static void cm()
                 if (afk && afkTicks[i].check(*afktime)) // don't follow target that was determined afk
                     continue;
                 if (!g_pPlayerResource->isAlive(entity->m_IDX)) // Dont follow dead players
+                    continue;
+                if (follow_friends && player_tools::shouldTarget(entity))
                     continue;
                 // const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
                 // FIXME follow cart/point
