@@ -146,12 +146,12 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, boo
                     msg = msg.substr(0, msg.length() - 2);
                     if (msg.find("!!!") == 0 || msg.find("!!") == 0)
                     {
-                        if (ucccccp::decrypt(msg) != "Unsupported version" && ucccccp::decrypt(msg) != "Attempt at ucccccping and failing")
+                        int sub_val = 2;
+                        if (msg.find("!!!") == 0)
+                            sub_val = 3;
+                        if (ucccccp::decrypt(msg.substr(sub_val)) != "Unsupported version" && ucccccp::decrypt(msg.substr(sub_val)) != "Attempt at ucccccping and failing")
                         {
                             // Message is sent over IRC.
-                            int sub_val = 2;
-                            if (msg.find("!!!") == 0)
-                                sub_val = 3;
                             std::string substrmsg(msg.substr(sub_val));
 #if ENABLE_IRC
                             IRC::sendmsg(substrmsg, true);
