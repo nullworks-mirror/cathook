@@ -505,7 +505,9 @@ CatCommand disconnect("disconnect", "Disconnect with custom reason", [](const CC
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
         return;
-    ch->Shutdown(args.ArgS());
+    std::string string = args.ArgS();
+    ReplaceSpecials(string);
+    ch->Shutdown(string.c_str());
 });
 
 CatCommand disconnect_vac("disconnect_vac", "Disconnect (fake VAC)", []() {

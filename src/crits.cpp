@@ -159,7 +159,7 @@ void handle_melee_crit(IClientEntity *weapon)
         CachedEntity *target = ENTITY(i);
 
         // Various ignores
-        if (CE_BAD(target) || !target->m_bAlivePlayer() || !player_tools::shouldTarget(target))
+        if (CE_BAD(target) || !target->m_bAlivePlayer() || !player_tools::shouldTarget(target) || !target->m_bEnemy())
             continue;
 
         // Shorten code
