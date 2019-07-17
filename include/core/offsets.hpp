@@ -176,10 +176,6 @@ struct offsets
     {
         return PlatformOffset(47, undefined, 47);
     }
-    static constexpr uint32_t IsPlayingTimeDemo()
-    {
-        return PlatformOffset(77, undefined, 77);
-    }
     static constexpr uint32_t RegisterFileWhitelist()
     {
         return PlatformOffset(94, undefined, undefined);

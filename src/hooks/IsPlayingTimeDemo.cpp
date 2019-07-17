@@ -11,13 +11,6 @@ static settings::Boolean enable_debug_servercmd{ "debug.servercmdkeyvalues", "fa
 namespace hooked_methods
 {
 std::vector<KeyValues *> Iterate(KeyValues *event, int depth);
-DEFINE_HOOKED_METHOD(IsPlayingTimeDemo, bool)
-{
-    if (nolerp)
-        return true;
-    else
-        return original::IsPlayingTimeDemo();
-}
 DEFINE_HOOKED_METHOD(ServerCmdKeyValues, void, KeyValues *kv)
 {
     if (!enable_debug_servercmd)

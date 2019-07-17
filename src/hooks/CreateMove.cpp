@@ -221,43 +221,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     }
     hooked_methods::CreateMove();
 
-    static bool firstcall = false;
-    static float interp_f = 0.0f;
-    static int min_interp = 0;
-    static float ratio    = 0;
-    if (nolerp)
-    {
-        // current_user_cmd->tick_count += 1;
-        if (!firstcall)
-            min_interp = sv_client_min_interp_ratio->GetInt();
-        if (sv_client_min_interp_ratio->GetInt() != -1)
-        {
-            // sv_client_min_interp_ratio->m_nFlags = 0;
-            sv_client_min_interp_ratio->SetValue(-1);
-        }
-        if (!firstcall)
-            interp_f = cl_interp->m_fValue;
-        if (cl_interp->m_fValue != 0)
-        {
-            cl_interp->SetValue(0);
-            cl_interp->m_fValue = 0.0f;
-            cl_interp->m_nValue = 0;
-        }
-        if (!firstcall)
-            ratio = cl_interp_ratio->GetInt();
-        if (cl_interp_ratio->GetInt() != 0)
-            cl_interp_ratio->SetValue(0);
-        // if (cl_interpolate->GetInt() != 0) cl_interpolate->SetValue(0);
-        firstcall = true;
-    }
-    else if (firstcall)
-    {
-        sv_client_min_interp_ratio->SetValue(min_interp);
-        cl_interp->SetValue(interp_f);
-        cl_interp_ratio->SetValue(ratio);
-        firstcall = false;
-    }
-
     if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity))
     {
         servertime            = (float) CE_INT(g_pLocalPlayer->entity, netvar.nTickBase) * g_GlobalVars->interval_per_tick;
