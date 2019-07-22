@@ -46,6 +46,17 @@ static settings::Int auto_vacc_blast_pop_ubers{ "autoheal.vacc.blast.min-charges
 static settings::Int default_resistance{ "autoheal.vacc.default-resistance", "0" };
 static settings::Int steam_var{ "autoheal.steamid", "0" };
 
+// Per class Heal Priorities, You should heal low hp classes earlier because they have an overall smaller healthpool
+static settings::Int healp_scout{ "autoheal.priority-scout", "60" };
+static settings::Int healp_soldier{ "autoheal.priority-soldier", "50" };
+static settings::Int healp_pyro{ "autoheal.priority-pyro", "40" };
+static settings::Int healp_demoman{ "autoheal.priority-demoman", "40" };
+static settings::Int healp_heavy{ "autoheal.priority-heavy", "20" };
+static settings::Int healp_engineer{ "autoheal.priority-engineer", "40" };
+static settings::Int healp_medic{ "autoheal.priority-medic", "50" };
+static settings::Int healp_sniper{ "autoheal.priority-sniper", "60" };
+static settings::Int healp_spy{ "autoheal.priority-spy", "40" };
+
 struct patient_data_s
 {
     float last_damage{ 0.0f };
@@ -483,10 +494,27 @@ bool CanHeal(int idx)
     return true;
 }
 
+static bool inited_class;
+// we'll use this to shrink the code down immensely
+static std::array<settings::Int *, 9> class_list;
 int HealingPriority(int idx)
 {
     if (!CanHeal(idx))
         return -1;
+    if (!inited_class)
+    {
+        class_list[tf_scout - 1]    = &healp_scout;
+        class_list[tf_soldier - 1]  = &healp_soldier;
+        class_list[tf_pyro - 1]     = &healp_pyro;
+        class_list[tf_demoman - 1]  = &healp_demoman;
+        class_list[tf_heavy - 1]    = &healp_heavy;
+        class_list[tf_engineer - 1] = &healp_engineer;
+        class_list[tf_medic - 1]    = &healp_medic;
+        class_list[tf_sniper - 1]   = &healp_sniper;
+        class_list[tf_spy - 1]      = &healp_spy;
+        inited_class                = true;
+    }
+
     CachedEntity *ent = ENTITY(idx);
     if (share_uber && IsPopped())
     {
@@ -501,20 +529,32 @@ int HealingPriority(int idx)
     int overheal        = maxoverheal - (maxbuffedhealth - health);
     float overhealp     = ((float) overheal / (float) maxoverheal);
     float healthp       = ((float) health / (float) maxhealth);
+    // Base Class priority
     priority += hacks::shared::followbot::ClassPriority(ent) * 1.3;
+
+    // wait that's illegal
+    if (g_pPlayerResource->GetClass(ent) == 0)
+        return 0.0f;
+    // Healthpoint priority
+    float healpp = **class_list[g_pPlayerResource->GetClass(ent) - 1];
     switch (playerlist::AccessData(ent).state)
     {
     case playerlist::k_EState::FRIEND:
-        priority += 70 * (1 - healthp);
-        priority += 5 * (1 - overhealp);
+        // "Normal" default is 40 while friend default is 70, 70 = 40 * (1 + 3/4)
+        priority += healpp * (1 + 3 / 4) * (1 - healthp);
+        // 5 is default here, in this case just /8
+        priority += healpp / 8 * (1 - overhealp);
         break;
     case playerlist::k_EState::IPC:
-        priority += 100 * (1 - healthp);
-        priority += 10 * (1 - overhealp);
+        // "Normal" default is 40 while IPC default is 100, 100 = 40 * 2.5
+        priority += healpp * 2.5f * (1 - healthp);
+        // 10 is default here, so it's simply /4
+        priority += healpp / 4 * (1 - overhealp);
         break;
     default:
-        priority += 40 * (1 - healthp);
-        priority += 3 * (1 - overhealp);
+        priority += healpp * (1 - healthp);
+        // 3 is default here, in this case it's ~40/13
+        priority += healpp / 3 * (1 - overhealp);
     }
 #if ENABLE_IPC
     if (ipc::peer)
