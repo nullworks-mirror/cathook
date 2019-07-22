@@ -21,6 +21,8 @@
             <AutoVariable width="fill" target="follow-bot.afk-time" label="AFK limit"/>
             <AutoVariable width="fill" target="follow-bot.corners" label="Corner activate"/>
             <AutoVariable width="fill" target="follow-bot.steamid" label="SteamID to follow"/>
+            <AutoVariable width="fill" target="follow-bot.friendsonly" label="Follow Only Friends"/>
+            <AutoVariable width="fill" target="follow-bot.draw-crumbs" label="Draw Crumbs"/>
         </List>
     </Box>
     <Box padding="12 6 6 6" width="content" height="content" name="NavBot" y="50">
