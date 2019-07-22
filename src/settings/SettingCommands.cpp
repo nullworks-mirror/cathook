@@ -10,8 +10,8 @@
 #include <MiscTemporary.hpp>
 #if ENABLE_VISUALS
 #include "Menu.hpp"
-#endif
 #include "special/SettingsManagerList.hpp"
+#endif
 /*
   Created on 29.07.18.
 */
