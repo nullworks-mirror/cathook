@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <thread>
 #include <MiscTemporary.hpp>
+#include "Menu.hpp"
+#include "special/SettingsManagerList.hpp"
 /*
   Created on 29.07.18.
 */
@@ -96,7 +98,7 @@ static CatCommand save("save", "", [](const CCommand &args) {
     }
     else
     {
-        writer.saveTo(std::string(DATA_PATH "/configs/") + args.ArgS() + ".conf");
+        writer.saveTo(std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf");
     }
     logging::Info("cat_save: Sorting configs...");
     getAndSortAllConfigs();
@@ -112,15 +114,23 @@ static CatCommand load("load", "", [](const CCommand &args) {
     }
     else
     {
-        std::string backup = args.ArgS();
-        std::string ArgS   = backup;
-        ArgS.erase(std::remove(ArgS.begin(), ArgS.end(), '\n'), ArgS.end());
-        ArgS.erase(std::remove(ArgS.begin(), ArgS.end(), '\r'), ArgS.end());
-        loader.loadFrom(std::string(DATA_PATH "/configs/") + ArgS + ".conf");
+        loader.loadFrom(std::string(DATA_PATH "/configs/") + args.Arg(1) + ".conf");
     }
 });
 
 static std::vector<std::string> sortedVariables{};
+
+static CatCommand list_missing("list_missing", "List rvars missing in menu", []() {
+    auto *sv = zerokernel::Menu::instance->wm->getElementById("special-variables");
+    if (!sv)
+    {
+        logging::Info("Special Variables tab missing!");
+        return;
+    }
+    for (auto &var : sortedVariables)
+        if (!zerokernel::special::SettingsManagerList::isVariableMarked(var))
+            logging::Info("%s", var.c_str());
+});
 
 static void getAndSortAllVariables()
 {
