@@ -8,7 +8,9 @@
 #include <sys/stat.h>
 #include <thread>
 #include <MiscTemporary.hpp>
+#if ENABLE_VISUALS
 #include "Menu.hpp"
+#endif
 #include "special/SettingsManagerList.hpp"
 /*
   Created on 29.07.18.
@@ -119,7 +121,7 @@ static CatCommand load("load", "", [](const CCommand &args) {
 });
 
 static std::vector<std::string> sortedVariables{};
-
+#if ENABLE_VISUALS
 static CatCommand list_missing("list_missing", "List rvars missing in menu", []() {
     auto *sv = zerokernel::Menu::instance->wm->getElementById("special-variables");
     if (!sv)
@@ -131,6 +133,7 @@ static CatCommand list_missing("list_missing", "List rvars missing in menu", [](
         if (!zerokernel::special::SettingsManagerList::isVariableMarked(var))
             logging::Info("%s", var.c_str());
 });
+#endif
 
 static void getAndSortAllVariables()
 {
