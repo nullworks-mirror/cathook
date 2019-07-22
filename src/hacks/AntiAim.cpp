@@ -13,6 +13,7 @@
 
 namespace hacks::shared::antiaim
 {
+bool force_fakelag = false;
 static settings::Boolean enable{ "antiaim.enable", "0" };
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
@@ -567,4 +568,11 @@ bool isEnabled()
 {
     return *enable;
 }
+
+static InitRoutine fakelag_check([]() {
+    yaw_mode.installChangeCallback([](settings::VariableBase<int> &, int after) {
+        if (after >= 9)
+            force_fakelag = true;
+    });
+});
 } // namespace hacks::shared::antiaim

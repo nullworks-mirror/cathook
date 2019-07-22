@@ -292,11 +292,12 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                         current_user_cmd->buttons &= ~IN_ATTACK;
             static int fakelag_queue = 0;
             if (CE_GOOD(LOCAL_E))
-                if (fakelag_amount)
+                if (fakelag_amount || hacks::shared::antiaim::force_fakelag)
                 {
-                    *bSendPackets = *fakelag_amount == fakelag_queue;
+                    int fakelag_amnt = (*fakelag_amount > 1) ? *fakelag_amount : 1;
+                    *bSendPackets    = fakelag_amnt == fakelag_queue;
                     fakelag_queue++;
-                    if (fakelag_queue > *fakelag_amount)
+                    if (fakelag_queue > fakelag_amnt)
                         fakelag_queue = 0;
                 }
             {
@@ -386,7 +387,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
             ret = false;
         }
-        if (cmd && (cmd->buttons & IN_ATTACK || !(hacks::shared::antiaim::isEnabled() && *fakelag_amount && *bSendPackets)))
+        if (cmd && (cmd->buttons & IN_ATTACK || !(hacks::shared::antiaim::isEnabled() && (*fakelag_amount || hacks::shared::antiaim::force_fakelag) && *bSendPackets)))
             g_Settings.brute.last_angles[LOCAL_E->m_IDX] = cmd->viewangles;
         for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
         {

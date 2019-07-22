@@ -52,6 +52,7 @@ static settings::Boolean auto_zoom{ "aimbot.auto.zoom", "0" };
 static settings::Boolean auto_unzoom{ "aimbot.auto.unzoom", "0" };
 
 static settings::Boolean backtrackAimbot{ "aimbot.backtrack", "0" };
+static bool force_backtrack_aimbot = false;
 static settings::Boolean backtrackVischeckAll{ "aimbot.backtrack.vischeck-all", "0" };
 
 // TODO maybe these should be moved into "Targeting"
@@ -88,7 +89,7 @@ int GetSentry()
 settings::Boolean ignore_cloak{ "aimbot.target.ignore-cloaked-spies", "1" };
 bool shouldBacktrack()
 {
-    return *enable && *backtrackAimbot && hacks::shared::backtrack::isBacktrackEnabled;
+    return *enable && (*backtrackAimbot || force_backtrack_aimbot) && hacks::shared::backtrack::isBacktrackEnabled;
 }
 
 bool IsBacktracking()
@@ -1483,16 +1484,9 @@ static void DrawText()
     }
 }
 #endif
-void rvarCallback(settings::VariableBase<int> &var, float after)
+void rvarCallback(settings::VariableBase<int> &, float after)
 {
-    if (backtrackAimbot)
-    {
-        backtrackAimbot = after > 0.0f;
-    }
-    else
-    {
-        backtrackAimbot = after > 190.0f;
-    }
+    force_backtrack_aimbot = after > 200.0f;
 }
 static InitRoutine EC([]() {
     hacks::shared::backtrack::latency.installChangeCallback(rvarCallback);

@@ -11,7 +11,7 @@ class CUserCmd;
 
 namespace hacks::shared::antiaim
 {
-
+extern bool force_fakelag;
 void SetSafeSpace(int safespace);
 bool ShouldAA(CUserCmd *cmd);
 void ProcessUserCmd(CUserCmd *cmd);
