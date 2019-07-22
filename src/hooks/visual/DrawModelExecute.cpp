@@ -9,6 +9,7 @@
 #include "Backtrack.hpp"
 #include <visual/EffectChams.hpp>
 #include <visual/EffectGlow.hpp>
+#include "AntiAim.hpp"
 
 static settings::Boolean no_arms{ "remove.arms", "false" };
 static settings::Boolean no_hats{ "remove.hats", "false" };
@@ -28,12 +29,13 @@ extern settings::Boolean backtrack_chams_glow;
 namespace hooked_methods
 {
 
+bool aa_draw = false;
 DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawModelState_t &state, const ModelRenderInfo_t &info, matrix3x4_t *bone)
 {
     if (!isHackActive())
         return original::DrawModelExecute(this_, state, info, bone);
 
-    if (!(hacks::shared::backtrack::isBacktrackEnabled || spectator_target || no_arms || no_hats || (*clean_screenshots && g_IEngine->IsTakingScreenshot()) || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer()))
+    if (!(hacks::shared::backtrack::isBacktrackEnabled /*|| (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled())*/ || spectator_target || no_arms || no_hats || (*clean_screenshots && g_IEngine->IsTakingScreenshot()) || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer()))
     {
         return original::DrawModelExecute(this_, state, info, bone);
     }
@@ -62,6 +64,48 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
         }
     }
 
+    // Used for fakes and for backtrack chams/glow
+    static CMaterialReference mat_unlit;
+    static bool init = false;
+    if (!init)
+    {
+        KeyValues *kv = new KeyValues("UnlitGeneric");
+        kv->SetString("$basetexture", "vgui/white_additive");
+        kv->SetInt("$ignorez", 0);
+        mat_unlit.Init("__cathook_glow_unlit", kv);
+        init = true;
+    }
+
+    // Maybe one day i'll get this working
+    /*if (aa_draw && info.entity_index == g_pLocalPlayer->entity_idx)
+    {
+        CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
+        rgba_t mod_original;
+        // Save color just in case, then set to white
+        g_IVRenderView->GetColorModulation(mod_original.rgba);
+        g_IVRenderView->SetColorModulation(colors::white);
+        // Important for Depth
+        ptr->DepthRange(0.0f, 1.0f);
+        // Apply our material
+        g_IVModelRender->ForcedMaterialOverride(mat_unlit);
+        // Run Original
+        original::DrawModelExecute(this_, state, info, bone);
+        // Revert
+        g_IVRenderView->SetColorModulation(mod_original.rgba);
+        g_IVModelRender->ForcedMaterialOverride(nullptr);
+        return;
+    }
+    if (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled() && info.entity_index == g_pLocalPlayer->entity_idx)
+    {
+        float fake     = hacks::shared::antiaim::used_yaw;
+        Vector &angles = CE_VECTOR(LOCAL_E, netvar.m_angEyeAngles);
+        float backup   = angles.y;
+        angles.y       = fake;
+        aa_draw        = true;
+        RAW_ENT(LOCAL_E)->DrawModel(1);
+        aa_draw  = false;
+        angles.y = backup;
+    }*/
     if (hacks::shared::backtrack::isBacktrackEnabled && hacks::shared::backtrack::backtrack_chams_glow)
     {
         const char *name = g_IModelInfo->GetModelName(info.pModel);
@@ -96,16 +140,6 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                             // Sort
                             std::sort(usable.begin(), usable.end(), [](hacks::shared::backtrack::BacktrackData &a, hacks::shared::backtrack::BacktrackData &b) { return a.tickcount < b.tickcount; });
                             // Make our own Chamsish Material
-                            static CMaterialReference mat_unlit;
-                            static bool init = false;
-                            if (!init)
-                            {
-                                KeyValues *kv = new KeyValues("UnlitGeneric");
-                                kv->SetString("$basetexture", "vgui/white_additive");
-                                kv->SetInt("$ignorez", 0);
-                                mat_unlit.Init("__cathook_glow_unlit", kv);
-                                init = true;
-                            }
                             // Render Chams/Glow stuff
                             CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
                             rgba_t mod_original;
