@@ -14,6 +14,7 @@
 namespace hacks::shared::antiaim
 {
 bool force_fakelag = false;
+float used_yaw     = 0.0f;
 static settings::Boolean enable{ "antiaim.enable", "0" };
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
@@ -388,10 +389,10 @@ void ProcessUserCmd(CUserCmd *cmd)
         break;
     case 5: // SPIN
         cur_yaw += (float) spin;
-        if (cur_yaw > 180)
-            cur_yaw += -180;
-        if (cur_yaw < -180)
-            cur_yaw += 180;
+        while (cur_yaw > 180)
+            cur_yaw += -360;
+        while (cur_yaw < -180)
+            cur_yaw += 360;
         y = cur_yaw;
         break;
     case 6: // OFFSETKEEP
@@ -410,10 +411,10 @@ void ProcessUserCmd(CUserCmd *cmd)
         if (keepmode && !*bSendPackets)
         {
             cur_yaw += (float) spin;
-            if (cur_yaw > 180)
-                cur_yaw += -180;
-            if (cur_yaw < -180)
-                cur_yaw += 180;
+            while (cur_yaw > 180)
+                cur_yaw -= 360;
+            while (cur_yaw < -180)
+                cur_yaw += 360;
             y = cur_yaw;
         }
         else if (!keepmode && !*bSendPackets)
@@ -454,10 +455,10 @@ void ProcessUserCmd(CUserCmd *cmd)
         if (*bSendPackets)
         {
             cur_yaw += (float) spin;
-            if (cur_yaw > 180)
-                cur_yaw += -180;
-            if (cur_yaw < -180)
-                cur_yaw += 180;
+            while (cur_yaw > 180)
+                cur_yaw -= 360;
+            while (cur_yaw < -180)
+                cur_yaw += 360;
             y = cur_yaw;
         }
         break;
@@ -561,6 +562,8 @@ void ProcessUserCmd(CUserCmd *cmd)
         UpdateAAAATimer();
         p = GetAAAAPitch();
     }
+    if (!*bSendPackets)
+        used_yaw = y;
     g_pLocalPlayer->bUseSilentAngles = true;
 }
 
@@ -569,10 +572,5 @@ bool isEnabled()
     return *enable;
 }
 
-static InitRoutine fakelag_check([]() {
-    yaw_mode.installChangeCallback([](settings::VariableBase<int> &, int after) {
-        if (after >= 9)
-            force_fakelag = true;
-    });
-});
+static InitRoutine fakelag_check([]() { yaw_mode.installChangeCallback([](settings::VariableBase<int> &, int after) { force_fakelag = after >= 9 ? true : false; }); });
 } // namespace hacks::shared::antiaim
