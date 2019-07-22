@@ -82,8 +82,8 @@ void Init()
 
 int BestTick    = -1;
 int iBestTarget = -1;
-bool istickvalid[32][66]{};
-bool istickinvalid[32][66]{};
+bool istickvalid[33][66]{};
+bool istickinvalid[33][66]{};
 static void Run()
 {
     if (!shouldBacktrack())

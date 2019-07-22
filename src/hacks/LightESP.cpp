@@ -6,10 +6,10 @@ namespace hacks::shared::lightesp
 {
 static settings::Boolean enable{ "lightesp.enable", "false" };
 
-static Vector hitp[32];
-static Vector minp[32];
-static Vector maxp[32];
-static bool drawEsp[32];
+static Vector hitp[33];
+static Vector minp[33];
+static Vector maxp[33];
+static bool drawEsp[33];
 
 rgba_t LightESPColor(CachedEntity *ent)
 {

@@ -7,7 +7,7 @@
 
 #include "common.hpp"
 
-static bool hoovy_list[32] = { 0 };
+static bool hoovy_list[33] = { 0 };
 
 bool HasSandvichOut(CachedEntity *entity)
 {
@@ -43,7 +43,7 @@ void UpdateHoovyList()
         return;
 
     static CachedEntity *ent;
-    for (int i = 1; i < 32 && i < g_IEntityList->GetHighestEntityIndex(); i++)
+    for (int i = 1; i <= 32 && i < g_IEntityList->GetHighestEntityIndex(); i++)
     {
         ent = ENTITY(i);
         if (CE_GOOD(ent) && CE_BYTE(ent, netvar.iLifeState) == LIFE_ALIVE)

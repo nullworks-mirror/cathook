@@ -388,7 +388,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         }
         if (cmd && (cmd->buttons & IN_ATTACK || !(hacks::shared::antiaim::isEnabled() && *fakelag_amount && *bSendPackets)))
             g_Settings.brute.last_angles[LOCAL_E->m_IDX] = cmd->viewangles;
-        for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
+        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
         {
 
             CachedEntity *ent = ENTITY(i);

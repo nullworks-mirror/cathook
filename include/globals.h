@@ -29,9 +29,9 @@ extern int last_cmd_number;
 extern time_t time_injected;
 struct brutestruct
 {
-    int brutenum[32];
-    Vector last_angles[32];
-    std::deque<bool> choke[32];
+    int brutenum[33];
+    Vector last_angles[33];
+    std::deque<bool> choke[33];
     float lastsimtime;
 };
 class GlobalSettings
