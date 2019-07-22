@@ -51,6 +51,8 @@ void draw()
 {
     if (!enabled)
         return;
+    if (!CE_GOOD(LOCAL_E))
+        return;
     std::vector<Vector> points;
     Vector screen;
     for (int i = 0; i <= HIGHEST_ENTITY; i++)
