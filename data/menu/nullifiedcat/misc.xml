@@ -6,5 +6,6 @@
         <Include path="nullifiedcat/misc/spyalert.xml"/>
         <Include path="nullifiedcat/misc/collective.xml"/>
         <Include path="nullifiedcat/misc/catbot.xml"/>
+        <Include path="nullifiedcat/misc/autoload.xml"/>
     </TabContainer>
 </Tab>

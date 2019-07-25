@@ -13,6 +13,8 @@
 #include "e8call.hpp"
 #include "NavBot.hpp"
 #include "navparser.hpp"
+#include "SettingCommands.hpp"
+#include "glob.h"
 
 namespace hacks::shared::catbot
 {
@@ -38,6 +40,26 @@ static settings::Boolean mvm_autoupgrade{ "mvm.autoupgrade", "false" };
 settings::Boolean catbotmode{ "cat-bot.enable", "false" };
 settings::Boolean anti_motd{ "cat-bot.anti-motd", "false" };
 
+// These are used for randomly loading a config on respawn for the bots
+
+// Master switch
+static settings::Boolean enable_reload{ "cat-bot.autoload.enable", "false" };
+
+// Misc Settings
+static settings::Float reload_chance{ "cat-bot.autoload.chance", "100" };
+static settings::Int reload_deaths{ "cat-bot.autoload.deaths", "0" };
+static settings::Boolean load_same_config{ "cat-bot.autoload.load-same-config", "true" };
+
+// Config to load
+static settings::String conf1{ "cat-bot.autoload.conf1", "bot_*" };
+static settings::String conf2{ "cat-bot.autoload.conf2", "" };
+static settings::String conf3{ "cat-bot.autoload.conf3", "" };
+
+// Should that config get loaded?
+static settings::Boolean conf1_enable{ "cat-bot.autoload.conf1.enable", "false" };
+static settings::Boolean conf2_enable{ "cat-bot.autoload.conf2.enable", "false" };
+static settings::Boolean conf3_enable{ "cat-bot.autoload.conf3.enable", "false" };
+
 struct catbot_user_state
 {
     int treacherous_kills{ 0 };
@@ -62,8 +84,132 @@ bool is_a_catbot(unsigned steamID)
     return false;
 }
 
+int globerr(const char *path, int eerrno)
+{
+    logging::Info("%s: %s\n", path, strerror(eerrno));
+    // let glob() keep going
+    return 0;
+}
+bool hasEnding(std::string const &fullString, std::string const &ending)
+{
+    if (fullString.length() >= ending.length())
+        return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+    else
+        return false;
+}
+
+std::vector<std::string> config_list(std::string in)
+{
+    std::string complete_in = format(DATA_PATH, "/configs/", in);
+    if (!hasEnding(complete_in, ".conf"))
+        complete_in = complete_in + ".conf";
+    std::vector<std::string> config_vec;
+    int i;
+    int flags = 0;
+    glob_t results;
+    int ret;
+
+    flags |= 0;
+    ret = glob(complete_in.c_str(), flags, globerr, &results);
+    if (ret != 0)
+    {
+        std::string ret_str;
+        switch (ret)
+        {
+        case GLOB_ABORTED:
+            ret_str = "filesystem problem";
+            break;
+        case GLOB_NOMATCH:
+            ret_str = "no match of pattern";
+            break;
+        case GLOB_NOSPACE:
+            ret_str = "out of memory";
+            break;
+        default:
+            ret_str = "Unknown problem";
+            break;
+        }
+
+        logging::Info("problem with %s (%s), stopping early\n", in.c_str(), ret_str.c_str());
+        return config_vec;
+    }
+
+    for (i = 0; i < results.gl_pathc; i++)
+        // /configs/ is 9 extra chars i have to remove
+        config_vec.push_back(std::string(results.gl_pathv[i]).substr(std::string(DATA_PATH).length() + 9));
+
+    globfree(&results);
+    return config_vec;
+}
+std::string blacklist;
 void on_killed_by(int userid)
 {
+    if (enable_reload)
+    {
+        static int deaths = 0;
+        // Should we load yet?
+        bool should_load = false;
+
+        // Default to chance if no deaths are set
+        if (!reload_deaths)
+        {
+            // RNG
+            if (UniformRandomInt(0, 99) < *reload_chance)
+                should_load = true;
+        }
+        // You died more than the specified amount of times
+        else if (deaths++ >= *reload_deaths)
+        {
+            should_load = true;
+            deaths      = 0;
+        }
+        if (should_load)
+        {
+            // Candidates for loading
+            std::vector<std::string> temp_candidates;
+            std::vector<std::string> load_candidates;
+            if (conf1_enable)
+            {
+                temp_candidates = config_list(*conf1);
+                for (auto &i : temp_candidates)
+                    load_candidates.push_back(i);
+            }
+            if (conf2_enable)
+            {
+                temp_candidates = config_list(*conf2);
+                for (auto &i : temp_candidates)
+                    load_candidates.push_back(i);
+            }
+            if (conf3_enable)
+            {
+                temp_candidates = config_list(*conf3);
+                for (auto &i : temp_candidates)
+                    load_candidates.push_back(i);
+            }
+            // Remove blacklisted
+            if (!load_same_config)
+                for (auto it = load_candidates.begin(); it != load_candidates.end();)
+                {
+                    if (*it == blacklist)
+                        load_candidates.erase(it);
+                    else
+                        it++;
+                }
+            if (!load_candidates.empty())
+            {
+                // Load the config
+                std::string to_load  = load_candidates.at(UniformRandomInt(0, load_candidates.size() - 1));
+                to_load              = to_load.substr(0, to_load.size() - 6);
+                std::string load_cmd = "cat_load " + to_load;
+                g_IEngine->ClientCmd_Unrestricted(load_cmd.c_str());
+                if (!load_same_config)
+                    blacklist = to_load;
+            }
+        }
+    }
+
+    if (!catbotmode)
+        return;
     CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(userid));
 
     if (CE_BAD(player))
@@ -403,8 +549,6 @@ class CatBotEventListener : public IGameEventListener2
 {
     void FireGameEvent(IGameEvent *event) override
     {
-        if (!catbotmode)
-            return;
 
         int killer_id = g_IEngine->GetPlayerForUserID(event->GetInt("attacker"));
         int victim_id = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
