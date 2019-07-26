@@ -141,12 +141,12 @@ std::vector<std::string> config_list(std::string in)
     globfree(&results);
     return config_vec;
 }
-std::string blacklist;
+static std::string blacklist;
+static int deaths = 0;
 void on_killed_by(int userid)
 {
     if (enable_reload)
     {
-        static int deaths = 0;
         // Should we load yet?
         bool should_load = false;
 
@@ -885,6 +885,7 @@ void init()
 
 void level_init()
 {
+    deaths = 0;
     level_init_timer.update();
 }
 
