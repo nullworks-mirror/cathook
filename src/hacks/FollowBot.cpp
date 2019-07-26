@@ -19,6 +19,7 @@ namespace hacks::shared::followbot
 static settings::Boolean enable{ "follow-bot.enable", "false" };
 static settings::Boolean roambot{ "follow-bot.roaming", "true" };
 static settings::Boolean follow_friends{ "follow-bot.friendsonly", "false" };
+static settings::Boolean follow_party_leader{ "follow-bot.follow-party-leader-only", "false" };
 static settings::Boolean draw_crumb{ "follow-bot.draw-crumbs", "false" };
 static settings::Float follow_distance{ "follow-bot.distance", "175" };
 static settings::Float additional_distance{ "follow-bot.ipc-distance", "100" };
@@ -269,6 +270,19 @@ static void cm()
             follow_target = 0;
         else if (follow_friends && player_tools::shouldTarget(ENTITY(follow_target)))
             follow_target = 0;
+        else if (follow_party_leader)
+        {
+            re::CTFPartyClient *pc = re::CTFPartyClient::GTFPartyClient();
+            if (pc)
+            {
+                CSteamID steamid;
+                pc->GetCurrentPartyLeader(steamid);
+                if (steamid.GetAccountID() != ENTITY(follow_target)->player_info.friendsID)
+                    follow_target = 0;
+            }
+            else
+                follow_target = 0;
+        }
     }
 
     if (!follow_target)
@@ -300,6 +314,19 @@ static void cm()
                     continue;
                 if (follow_friends && player_tools::shouldTarget(entity))
                     continue;
+                if (follow_party_leader)
+                {
+                    re::CTFPartyClient *pc = re::CTFPartyClient::GTFPartyClient();
+                    if (pc)
+                    {
+                        CSteamID steamid;
+                        pc->GetCurrentPartyLeader(steamid);
+                        if (steamid.GetAccountID() != ENTITY(follow_target)->player_info.friendsID)
+                            continue;
+                    }
+                    else
+                        continue;
+                }
                 if (startFollow(entity, isNavBotCM))
                 {
                     navinactivity.update();
@@ -342,6 +369,19 @@ static void cm()
                     continue;
                 if (follow_friends && player_tools::shouldTarget(entity))
                     continue;
+                if (follow_party_leader)
+                {
+                    re::CTFPartyClient *pc = re::CTFPartyClient::GTFPartyClient();
+                    if (pc)
+                    {
+                        CSteamID steamid;
+                        pc->GetCurrentPartyLeader(steamid);
+                        if (steamid.GetAccountID() != ENTITY(follow_target)->player_info.friendsID)
+                            continue;
+                    }
+                    else
+                        continue;
+                }
                 // const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
                 // FIXME follow cart/point
                 /*if (followcart && model &&
