@@ -199,7 +199,7 @@ void on_killed_by(int userid)
             {
                 // Load the config
                 std::string to_load  = load_candidates.at(UniformRandomInt(0, load_candidates.size() - 1));
-                to_load              = to_load.substr(0, to_load.size() - 6);
+                to_load              = to_load.substr(0, to_load.size() - 5);
                 std::string load_cmd = "cat_load " + to_load;
                 g_IEngine->ClientCmd_Unrestricted(load_cmd.c_str());
                 if (!load_same_config)
