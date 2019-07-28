@@ -228,7 +228,7 @@ bool EffectChams::ShouldRenderChams(IClientEntity *entity)
             return false;
         if (ent->m_iHealth() == 0 || !ent->m_iHealth())
             return false;
-        if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject) && ent->m_IDX == HandleToIDX(CE_BYTE(LOCAL_E, netvar.m_hCarriedObject)))
+        if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject) && ent->m_IDX == HandleToIDX(CE_INT(LOCAL_E, netvar.m_hCarriedObject)))
             return false;
         return true;
     case ENTITY_PLAYER:
