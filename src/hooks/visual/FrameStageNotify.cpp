@@ -87,8 +87,6 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_, ClientFrameStage_t sta
     {
         IF_GAME(IsTF())
         {
-            if (no_zoom && CE_GOOD(LOCAL_E))
-                RemoveCondition<TFCond_Zoomed>(LOCAL_E);
             if (no_shake && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
             {
                 NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle)    = { 0.0f, 0.0f, 0.0f };

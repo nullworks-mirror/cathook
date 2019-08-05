@@ -24,7 +24,7 @@ settings::Boolean clean_chat{ "chat.clean", "false" };
 
 settings::Boolean crypt_chat{ "chat.crypto", "true" };
 settings::Boolean clean_screenshots{ "visual.clean-screenshots", "false" };
-settings::Boolean no_zoom{ "remove.scope", "false" };
+static settings::Boolean no_zoom{ "remove.scope", "false" };
 settings::Boolean disable_visuals{ "visual.disable", "false" };
 settings::Int print_r{ "print.rgb.r", "183" };
 settings::Int print_g{ "print.rgb.b", "27" };
@@ -40,4 +40,8 @@ static InitRoutine color_init([]() {
     print_r.installChangeCallback(color_callback);
     print_g.installChangeCallback(color_callback);
     print_b.installChangeCallback(color_callback);
+    no_zoom.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        static BytePatch patch(gSignatures.GetClientSignature, "81 EC ? ? ? ? A1 ? ? ? ? 8B 7D 08 8B 10 89 04 24 FF 92", 0x0, { 0x5B, 0x5E, 0x5F, 0x5D, 0xC3 });
+        after ? patch.Patch() : patch.Shutdown();
+    });
 });
