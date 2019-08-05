@@ -38,36 +38,10 @@ static settings::Boolean no_homo{ "misc.no-homo", "true" };
 static settings::Boolean show_spectators{ "misc.show-spectators", "false" };
 #endif
 
-static void *C_TFPlayer__ShouldDraw_original = nullptr;
-
-static bool C_TFPlayer__ShouldDraw_hook(IClientEntity *thisptr)
+static void tryPatchLocalPlayerShouldDraw(settings::VariableBase<bool> &, bool after)
 {
-    if (thisptr == g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer()) && g_pLocalPlayer->bZoomed && thisptr)
-    {
-        // NET_INT(thisptr, netvar.iCond) &= ~(1 << TFCond_Zoomed);
-        // bool result =
-        // ((bool(*)(IClientEntity*))C_TFPlayer__ShouldDraw_original)(thisptr);
-        // NET_INT(thisptr, netvar.iCond) |=  (1 << TFCond_Zoomed);
-        return true;
-    }
-    else
-    {
-        return ((bool (*)(IClientEntity *)) C_TFPlayer__ShouldDraw_original)(thisptr);
-    }
-}
-
-static void tryPatchLocalPlayerShouldDraw()
-{
-    // Patching local player
-    void **vtable = *(void ***) (g_pLocalPlayer->entity->InternalEntity());
-    if (vtable[offsets::ShouldDraw()] != C_TFPlayer__ShouldDraw_hook)
-    {
-        C_TFPlayer__ShouldDraw_original = vtable[offsets::ShouldDraw()];
-        void *page                      = (void *) ((uintptr_t) vtable & ~0xFFF);
-        mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-        vtable[offsets::ShouldDraw()] = (void *) C_TFPlayer__ShouldDraw_hook;
-        mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
-    }
+    static BytePatch patch_shoulddraw{ gSignatures.GetClientSignature, "80 BB ? ? ? ? ? 75 DE", 0xD, { 0xE0 } };
+    after ? patch_shoulddraw.Patch() : patch_shoulddraw.Shutdown();
 }
 
 static Timer anti_afk_timer{};
