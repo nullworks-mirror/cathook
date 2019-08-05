@@ -124,13 +124,6 @@ void CreateMove()
 {
     if (current_user_cmd->command_number)
         last_number = current_user_cmd->command_number;
-
-    // TODO FIXME this should be moved out of here
-    IF_GAME(IsTF2())
-    {
-        if (render_zoomed && CE_GOOD(LOCAL_E))
-            tryPatchLocalPlayerShouldDraw();
-    }
     // AntiAfk That after a certian time without movement keys depressed, causes
     // random keys to be spammed for 1 second
     if (anti_afk)
@@ -676,14 +669,7 @@ void Shutdown()
     if (CE_BAD(LOCAL_E))
         return;
     // unpatching local player
-    void **vtable = *(void ***) (g_pLocalPlayer->entity->InternalEntity());
-    if (vtable[offsets::ShouldDraw()] == C_TFPlayer__ShouldDraw_hook)
-    {
-        void *page = (void *) ((uintptr_t) vtable & ~0xFFF);
-        mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC);
-        vtable[offsets::ShouldDraw()] = (void *) C_TFPlayer__ShouldDraw_original;
-        mprotect(page, 0xFFF, PROT_READ | PROT_EXEC);
-    }
+    render_zoomed = false;
 #if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
     patch_playerpanel->Shutdown();
     patch_scoreboard1->Shutdown();
@@ -702,6 +688,7 @@ static InitRoutine init([]() {
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
 #if ENABLE_VISUALS
+    render_zoomed.installChangeCallback(tryPatchLocalPlayerShouldDraw);
     EC::Register(EC::Draw, DrawText, "draw_misc_hacks", EC::average);
 #if !ENFORCE_STREAM_SAFETY
     patch_playerpanel = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "0F 94 45 DF", 0x0, std::vector<unsigned char>{ 0xC6, 0x45, 0xDF, 0x01 });
