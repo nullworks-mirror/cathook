@@ -598,6 +598,102 @@ static std::unique_ptr<BytePatch> patch_playerpanel;
 static std::unique_ptr<BytePatch> patch_scoreboard1;
 static std::unique_ptr<BytePatch> patch_scoreboard2;
 static std::unique_ptr<BytePatch> patch_scoreboard3;
+
+// Credits to UNKN0WN
+namespace ScoreboardColoring
+{
+static std::unique_ptr<BytePatch> patch_scoreboardcolor1;
+static std::unique_ptr<BytePatch> patch_scoreboardcolor2;
+uintptr_t addr1 = 0;
+uintptr_t addr2 = 0;
+
+// Colors taken from client.so
+Color &GetPlayerColor(int idx, int team, bool dead = false)
+{
+    static Color returnColor(0, 0, 0, 0);
+
+    switch (team)
+    {
+    case TEAM_RED:
+        returnColor.SetColor(255, 64, 64, 255);
+        break;
+    case TEAM_BLU:
+        returnColor.SetColor(153, 204, 255, 255);
+        break;
+    default:
+        returnColor.SetColor(245, 229, 196, 255);
+    }
+
+    player_info_s pinfo;
+    if (g_IEngine->GetPlayerInfo(idx, &pinfo))
+    {
+        rgba_t cust = playerlist::Color(pinfo.friendsID);
+        if (cust != colors::empty)
+            returnColor.SetColor(cust.r * 255, cust.g * 255, cust.b * 255, 255);
+    }
+
+    if (dead)
+        for (int i = 0; i < 3; i++)
+            returnColor[i] /= 1.5f;
+
+    return returnColor;
+}
+
+// This gets playerIndex with assembly magic, then sets a Color for the scoreboard entries
+Color &GetTeamColor(void *, int team)
+{
+    int playerIndex;
+    __asm__("mov %%esi, %0" : "=r"(playerIndex));
+    return GetPlayerColor(playerIndex, team);
+}
+
+// This is some assembly magic in order to get playerIndex and team from already existing variables and then set scoreboard entries
+Color &GetDeadPlayerColor()
+{
+    int playerIndex;
+    int team;
+    __asm__("mov %%esi, %0" : "=r"(playerIndex));
+    __asm__("mov %%ebx, %0" : "=r"(team));
+    return GetPlayerColor(playerIndex, team, true);
+}
+
+static InitRoutine init([]() {
+    // 012BA7E4
+    addr1 = gSignatures.GetClientSignature("89 04 24 FF 92 ? ? ? ? 8B 00") + 3;
+    // 012BA105
+    addr2 = gSignatures.GetClientSignature("75 1B 83 FB 02") + 2;
+    if (!addr1 || !addr2)
+        return;
+    logging::Info("Patching scoreboard colors");
+
+    // Used to Detour, we need to detour at two parts in order to do this properly
+    auto relAddr1 = ((uintptr_t) GetTeamColor - (uintptr_t) addr1) - 5;
+    auto relAddr2 = ((uintptr_t) GetDeadPlayerColor - (uintptr_t) addr2) - 5;
+
+    // Construct BytePatch1
+    std::vector<unsigned char> patch1 = { 0xE8 };
+    for (int i = 0; i < sizeof(uintptr_t); i++)
+        patch1.push_back(((unsigned char *) &relAddr1)[i]);
+    for (int i = patch1.size(); i < 6; i++)
+        patch1.push_back(0x90);
+
+    // Construct BytePatch2
+    std::vector<unsigned char> patch2 = { 0xE8 };
+    for (int i = 0; i < sizeof(uintptr_t); i++)
+        patch2.push_back(((unsigned char *) &relAddr2)[i]);
+    patch2.push_back(0x8B);
+    patch2.push_back(0x00);
+    for (int i = patch2.size(); i < 27; i++)
+        patch2.push_back(0x90);
+
+    patch_scoreboardcolor1 = std::make_unique<BytePatch>(addr1, patch1);
+    patch_scoreboardcolor2 = std::make_unique<BytePatch>(addr2, patch2);
+
+    // Patch!
+    patch_scoreboardcolor1->Patch();
+    patch_scoreboardcolor2->Patch();
+});
+} // namespace ScoreboardColoring
 #endif
 
 static CatCommand print_eye_diff("debug_print_eye_diff", "debug", []() { logging::Info("%f", g_pLocalPlayer->v_Eye.z - LOCAL_E->m_vecOrigin().z); });
@@ -619,6 +715,11 @@ void Shutdown()
     patch_scoreboard1->Shutdown();
     patch_scoreboard2->Shutdown();
     patch_scoreboard3->Shutdown();
+    if (!ScoreboardColoring::addr1 || !ScoreboardColoring::addr2)
+        return;
+
+    ScoreboardColoring::patch_scoreboardcolor1->Shutdown();
+    ScoreboardColoring::patch_scoreboardcolor2->Shutdown();
 #endif
 }
 
