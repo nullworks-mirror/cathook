@@ -662,7 +662,7 @@ static InitRoutine init([]() {
     addr1 = gSignatures.GetClientSignature("89 04 24 FF 92 ? ? ? ? 8B 00") + 3;
     // 012BA105
     addr2 = gSignatures.GetClientSignature("75 1B 83 FB 02") + 2;
-    if (!addr1 || !addr2)
+    if (addr1 == 3 || addr2 == 2)
         return;
     logging::Info("Patching scoreboard colors");
 
@@ -715,7 +715,7 @@ void Shutdown()
     patch_scoreboard1->Shutdown();
     patch_scoreboard2->Shutdown();
     patch_scoreboard3->Shutdown();
-    if (!ScoreboardColoring::addr1 || !ScoreboardColoring::addr2)
+    if (ScoreboardColoring::addr1 == 3 || ScoreboardColoring::addr2 == 2)
         return;
 
     ScoreboardColoring::patch_scoreboardcolor1->Shutdown();
