@@ -18,14 +18,14 @@
 static settings::Boolean log_to_console{ "hack.log-console", "false" };
 
 static bool shut_down = false;
-FILE *logging::handle{ nullptr };
+std::ofstream logging::handle{ nullptr };
 
 #if ENABLE_LOGGING
 void logging::Initialize()
 {
     // FIXME other method of naming the file?
-    passwd *pwd     = getpwuid(getuid());
-    logging::handle = fopen(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get(), "w");
+    static passwd *pwd = getpwuid(getuid());
+    logging::handle.open(strfmt("/tmp/cathook-%s-%d.log", pwd->pw_name, getpid()).get(), std::ios::out | std::ios::app);
 }
 #endif
 
@@ -34,8 +34,7 @@ void logging::Info(const char *fmt, ...)
 #if ENABLE_LOGGING
     if (shut_down)
         return;
-    if (logging::handle == nullptr)
-        logging::Initialize();
+    logging::Initialize();
 
     // Argument list
     va_list list;
@@ -58,8 +57,8 @@ void logging::Info(const char *fmt, ...)
 
     std::string to_log = result.get();
     to_log             = strfmt("[%s] ", timeString).get() + to_log + "\n";
-    fprintf(logging::handle, "%s", to_log.c_str());
-    fflush(logging::handle);
+    logging::handle << to_log;
+    logging::handle.close();
 #if ENABLE_VISUALS
     if (!hack::shutdown)
     {
@@ -73,8 +72,7 @@ void logging::Info(const char *fmt, ...)
 void logging::Shutdown()
 {
 #if ENABLE_LOGGING
-    fclose(logging::handle);
-    logging::handle = nullptr;
-    shut_down       = true;
+    logging::handle.close();
+    shut_down = true;
 #endif
 }
