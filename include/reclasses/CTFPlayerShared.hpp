@@ -1,4 +1,5 @@
 #include "reclasses.hpp"
+#include "e8call.hpp"
 
 namespace re
 {
@@ -8,7 +9,7 @@ class CTFPlayerShared
 public:
     inline static bool IsDominatingPlayer(CTFPlayerShared *self, int ent_idx)
     {
-        static auto signature = gSignatures.GetClientSignature("55 89 E5 56 53 83 EC ? 8B 5D ? E8 ? ? ? ? 89 C6 31 C0");
+        static auto signature = e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 84 C0 74 8F"));
         typedef bool (*IsDominatingPlayer_t)(CTFPlayerShared *, int);
         static IsDominatingPlayer_t IsDominatingPlayer_fn = IsDominatingPlayer_t(signature);
         return IsDominatingPlayer_fn(self, ent_idx);

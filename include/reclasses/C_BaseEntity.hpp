@@ -9,6 +9,7 @@
 
 #include "reclasses.hpp"
 #include "copypasted/CSignature.h"
+#include "e8call.hpp"
 
 namespace re
 {
@@ -29,8 +30,7 @@ public:
     inline static int SetAbsOrigin(IClientEntity *self, Vector const &origin)
     {
         typedef int (*SetAbsOrigin_t)(IClientEntity *, Vector const &);
-        uintptr_t addr                 = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 5D ? 8B 75 ? 89 1C 24 E8 ? ? ? ? F3 "
-                                                        "0F 10 06");
+        uintptr_t addr                 = e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? EB 7D 8B 42 04"));
         SetAbsOrigin_t SetAbsOrigin_fn = SetAbsOrigin_t(addr);
 
         return SetAbsOrigin_fn(self, origin);

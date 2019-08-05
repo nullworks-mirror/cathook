@@ -120,10 +120,7 @@ void CreateInterfaces()
     g_IEngineVGui   = BruteforceInterface<IEngineVGui>("VEngineVGui", sharedobj::engine());
     IF_GAME(IsTF2())
     {
-        uintptr_t sig_steamapi = gSignatures.GetEngineSignature("55 0F 57 C0 89 E5 83 EC 18 F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? "
-                                                                "? F3 0F 10 05 ? ? ? ? C7 04 24 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F "
-                                                                "11 05 ? ? ? ? E8 ? ? ? ? C7 44 24 08 ? ? ? ? C7 44 24 04 ? ? ? ? "
-                                                                "C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3");
+        uintptr_t sig_steamapi = gSignatures.GetEngineSignature("55 0F 57 C0 89 E5 83 EC 18 F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F 10 05 ? ? ? ? C7 04 24 ? ? ? ? F3 0F 11 05 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? C7 44 24 ? ? ? ? ? C7 44 24 ? ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? C9 C3 90 90 90 90 90 55 0F 57 C0 89 E5 83 EC 28");
         logging::Info("SteamAPI: 0x%08x", sig_steamapi);
         void **SteamAPI_engine = *reinterpret_cast<void ***>(sig_steamapi + 36);
         g_ISteamFriends        = reinterpret_cast<ISteamFriends *>(SteamAPI_engine[2]);
@@ -133,20 +130,16 @@ void CreateInterfaces()
         // FIXME SIGNATURE
         g_ISteamFriends = g_ISteamClient->GetISteamFriends(su, sp, "SteamFriends002");
     }
-    rg_GlobalVars   = *reinterpret_cast<CGlobalVarsBase ***>(gSignatures.GetClientSignature("8B 15 ? ? ? ? F3 0F 10 88 D0 08 00 00") + 2);
+    rg_GlobalVars   = *reinterpret_cast<CGlobalVarsBase ***>(gSignatures.GetClientSignature("8B 45 08 8B 15 ? ? ? ? F3 0F 10 88 ? ? ? ?") + 5);
     g_IPrediction   = BruteforceInterface<IPrediction>("VClientPrediction", sharedobj::client());
     g_IGameMovement = BruteforceInterface<IGameMovement>("GameMovement", sharedobj::client());
     IF_GAME(IsTF2())
     {
-        g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? 01 8B 10 89 04 24 FF "
-                                                                                                  "92 B4 00 00 00 A1 ? ? ? ? 8B 10")));
+        g_IInput = **(reinterpret_cast<IInput ***>((uintptr_t) 1 + gSignatures.GetClientSignature("A1 ? ? ? ? C6 05 ? ? ? ? ? 8B 10 89 04 24 FF 92 ? ? ? ? A1")));
     }
     g_ISteamUser       = g_ISteamClient->GetISteamUser(su, sp, "SteamUser018");
     g_IModelInfo       = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine());
-    g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(gSignatures.GetEngineSignature("55 89 E5 83 EC 18 C7 44 24 04 01 00 00 00 C7 04 24 ? ? ? ? E8 ? ? "
-                                                                                                "? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ? 85 C0 74 "
-                                                                                                "15 A1 ? ? ? ? 8B 10 89 04 24 FF 52 38 C9 C3") +
-                                                                 17));
+    g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(gSignatures.GetEngineSignature("C7 04 24 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ?") + 3));
     logging::Info("BaseClientState: 0x%08x", g_IBaseClientState);
     g_IAchievementMgr = g_IEngine->GetAchievementMgr();
     g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
@@ -172,16 +165,8 @@ void CreateInterfaces()
     g_IMaterialSystemHL = (IMaterialSystem *) g_IMaterialSystem;
     IF_GAME(IsTF2())
     {
-        g_pScreenSpaceEffects           = **(IScreenSpaceEffectManager ***) (gSignatures.GetClientSignature("F3 0F 10 83 40 05 00 00 C7 44 24 04 ? ? ? ? 89 34 24 "
-                                                                                                  "F3 0F 11 44 24 08 E8 ? ? ? ? A1 ? ? ? ? 8B 10 89 04 "
-                                                                                                  "24 89 74 24 08 C7 44 24 04 ? ? ? ? FF 52 0C A1 ? ? ? "
-                                                                                                  "? 8B 10 C7 44 24 04 ? ? ? ? 89 04 24 FF 52 14") +
-                                                                   31);
-        g_ppScreenSpaceRegistrationHead = *(CScreenSpaceEffectRegistration ***) (gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 8B "
-                                                                                                                "1D ? ? ? ? 85 DB 74 25 "
-                                                                                                                "8D B4 26 00 00 00 00 8B "
-                                                                                                                "43 04 85 C0 74 10") +
-                                                                                 9);
+        g_pScreenSpaceEffects           = **(IScreenSpaceEffectManager ***) (gSignatures.GetClientSignature("8D 74 26 00 55 89 E5 57 56 53 83 EC 1C 8B 5D 08 8B 7D 0C 8B 75 10 ") + 0x1c3);
+        g_ppScreenSpaceRegistrationHead = *(CScreenSpaceEffectRegistration ***) (gSignatures.GetClientSignature("8B 1D ? ? ? ? 85 DB 74 25 ") + 2);
     }
 #endif
     logging::Info("Finding HUD");
@@ -192,12 +177,8 @@ void CreateInterfaces()
     }
     else
     {
-        uintptr_t hud_sig = gSignatures.GetClientSignature("FF 50 08 D9 9D 24 FE FF FF 89 3C 24 E8 ? ? ? ? C7 44 24 04 ? "
-                                                           "? ? ? C7 04 24 ? ? ? ? D9 9D 20 FE FF FF E8 ? ? ? ? 85 C0 74 "
-                                                           "3B 66 0F 6E C3 C7 44 24 10 00 00 00 00 F3 0F 5C 85 20 FE FF "
-                                                           "FF") +
-                            28;
-        g_CHUD = *reinterpret_cast<CHud **>(hud_sig);
+        uintptr_t hud_sig = gSignatures.GetClientSignature("C7 04 24 ? ? ? ? D9 9D ? ? ? ? E8 ? ? ? ? 85 C0 74 3B") + 3;
+        g_CHUD            = *reinterpret_cast<CHud **>(hud_sig);
         logging::Info("HUD 0x%08x 0x%08x", hud_sig, g_CHUD);
     }
 }
