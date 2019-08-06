@@ -620,7 +620,7 @@ Color &GetDeadPlayerColor()
     int playerIndex;
     int team;
     __asm__("mov %%esi, %0" : "=r"(playerIndex));
-    __asm__("mov %%ebx, %0" : "=r"(team));
+    team = g_pPlayerResource->GetTeam(playerIndex);
     return GetPlayerColor(playerIndex, team, true);
 }
 
