@@ -274,7 +274,6 @@ static void CreateMove()
 {
     SandwichAim();
     ChargeAimbot();
-    ChargeControl();
     SapperAimbot();
 }
 
