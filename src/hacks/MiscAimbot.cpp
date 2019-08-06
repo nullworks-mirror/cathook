@@ -220,24 +220,6 @@ static void ChargeAimbot()
     }
 }
 
-static settings::Boolean charge_control{ "chargecontrol.enable", "false" };
-static settings::Float charge_float{ "chargecontrol.strength", "3.0f" };
-static void ChargeControl()
-{
-    if (!*charge_control || charge_aimbotted)
-        return;
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
-        return;
-    if (!HasCondition<TFCond_Charging>(LOCAL_E))
-        return;
-    float offset = 0.0f;
-    if (current_user_cmd->buttons & IN_MOVELEFT)
-        offset = *charge_float;
-    if (current_user_cmd->buttons & IN_MOVERIGHT)
-        offset = -*charge_float;
-    current_user_cmd->viewangles.y += offset;
-}
-
 static settings::Boolean autosapper_enabled("autosapper.enabled", "false");
 static settings::Boolean autosapper_silent("autosapper.silent", "true");
 
@@ -296,5 +278,9 @@ static void CreateMove()
     SapperAimbot();
 }
 
-static InitRoutine init([]() { EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::late); });
+static InitRoutine init([]() {
+    EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::late);
+    static BytePatch patch(gSignatures.GetClientSignature, "75 16 F3 0F 10 45", 0x0, { 0x90, 0x90 });
+    patch.Patch();
+});
 } // namespace hacks::tf2::misc_aimbot
