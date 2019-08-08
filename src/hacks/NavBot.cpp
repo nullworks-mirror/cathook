@@ -593,6 +593,7 @@ enum slots
 static int GetBestSlot()
 {
 
+    float nearest_dist = getNearestPlayerDistance(false).second;
     switch (g_pLocalPlayer->clazz)
     {
     case tf_scout:
@@ -603,7 +604,6 @@ static int GetBestSlot()
         return secondary;
     case tf_spy:
     {
-        float nearest_dist = getNearestPlayerDistance(false).second;
         if (nearest_dist > 600)
             return primary;
         else
@@ -611,22 +611,26 @@ static int GetBestSlot()
     }
     case tf_sniper:
     {
-        float nearest_dist = getNearestPlayerDistance(false).second;
         if (nearest_dist > 100)
             return primary;
         else
             return secondary;
     }
+    case tf_pyro:
+    {
+        if (nearest_dist > 550)
+            return secondary;
+        else
+            return primary;
+    }
     default:
     {
-        float nearest_dist = getNearestPlayerDistance(false).second;
         if (nearest_dist > 400)
             return primary;
         else
             return secondary;
     }
     }
-    return primary;
 }
 
 static void updateSlot()
