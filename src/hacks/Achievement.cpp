@@ -181,38 +181,12 @@ bool equip_item(int clazz, int slot, int id)
     return false;
 }
 
-bool equip_on_first_half(int hat1, int hat2, int hat3)
+bool equip_hats_fn(std::vector<int> hats, std::pair<int, int> classes)
 {
-    auto invmng     = re::CTFInventoryManager::GTFInventoryManager();
-    auto inv        = invmng->GTFPlayerInventory();
-    auto item_view1 = inv->GetFirstItemOfItemDef(hat1);
-    auto item_view2 = inv->GetFirstItemOfItemDef(hat2);
-    auto item_view3 = inv->GetFirstItemOfItemDef(hat3);
-    for (int i = tf_scout; i < tf_medic; i++)
-    {
-        bool success1 = invmng->EquipItemInLoadout(i, 7, item_view1->UUID());
-        bool success2 = invmng->EquipItemInLoadout(i, 8, item_view2->UUID());
-        bool success3 = invmng->EquipItemInLoadout(i, 10, item_view3->UUID());
-        if (!(success1 && success2 && success3))
+    for (int i = classes.first; i <= classes.second; i++)
+        // 7...8...10. Wait why is it 10 tf2? you make no sense
+        if (equip_item(i, 7, hats[0]) && equip_item(i, 8, hats[1]) && equip_item(i, 10, hats[2]))
             return false;
-    }
-    return true;
-}
-bool equip_on_second_half(int hat1, int hat2, int hat3)
-{
-    auto invmng     = re::CTFInventoryManager::GTFInventoryManager();
-    auto inv        = invmng->GTFPlayerInventory();
-    auto item_view1 = inv->GetFirstItemOfItemDef(hat1);
-    auto item_view2 = inv->GetFirstItemOfItemDef(hat2);
-    auto item_view3 = inv->GetFirstItemOfItemDef(hat3);
-    for (int i = tf_medic; i <= tf_engineer; i++)
-    {
-        bool success1 = invmng->EquipItemInLoadout(i, 7, item_view1->UUID());
-        bool success2 = invmng->EquipItemInLoadout(i, 8, item_view2->UUID());
-        bool success3 = invmng->EquipItemInLoadout(i, 10, item_view3->UUID());
-        if (!(success1 && success2 && success3))
-            return false;
-    }
     return true;
 }
 
@@ -338,7 +312,7 @@ static InitRoutine init([]() {
                         if (!accept_time.check(7500) && equip_first_half)
                         {
                             // Equip these hats on all classes
-                            bool success = equip_on_first_half(302, 940, 941);
+                            bool success = equip_hats_fn({ 302, 940, 941 }, { tf_scout, tf_medic });
                             if (success)
                             {
                                 logging::Info("Equipped hats on first half!");
@@ -347,7 +321,7 @@ static InitRoutine init([]() {
                         }
                         else if (accept_time.check(7500))
                         {
-                            bool success = equip_on_second_half(302, 940, 941);
+                            bool success = equip_hats_fn({ 302, 940, 941 }, { tf_heavy, tf_engineer });
                             if (success)
                             {
                                 logging::Info("Equipped hats on second half!");
