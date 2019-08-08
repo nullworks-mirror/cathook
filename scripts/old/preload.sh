@@ -18,6 +18,9 @@ export LD_LIBRARY_PATH="$GAMEROOT"\
 ":$HOME/.steam/ubuntu12_32"\
 ":$HOME/.steam/ubuntu12_32/linux32"\
 ":$HOME/.steam/ubuntu12_32/panorama"\
+":$HOME/.steam/bin32"\
+":$HOME/.steam/bin32/linux32"\
+":$HOME/.steam/bin32/panorama"\
 ":/lib/i386-linux-gnu"\
 ":/usr/lib/i386-linux-gnu/"\
 ":/usr/lib64/atlas"\
@@ -49,14 +52,29 @@ export LD_LIBRARY_PATH="$GAMEROOT"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/lib"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/usr/lib/x86_64-linux-gnu"\
 ":$HOME/.steam/ubuntu12_32/steam-runtime/amd64/usr/lib"\
-":$HOME/.steam/ubuntu12_32"\
-":$HOME/.steam/ubuntu12_64"
+":$HOME/.steam/ubuntu12_64"\
+":$HOME/.steam/bin32/steam-runtime/i386/usr/lib/i386-linux-gnu"\
+":$HOME/.steam/bin32/steam-runtime/i386/lib/i386-linux-gnu"\
+":$HOME/.steam/bin32/steam-runtime/amd64/lib/x86_64-linux-gnu"\
+":$HOME/.steam/bin32/steam-runtime/amd64/lib"\
+":$HOME/.steam/bin32/steam-runtime/amd64/usr/lib/x86_64-linux-gnu"\
+":$HOME/.steam/bin32/steam-runtime/amd64/usr/lib"\
+":$HOME/.steam/bin32/steam-runtime/i386/lib/i386-linux-gnu"\
+":$HOME/.steam/bin32/steam-runtime/i386/lib"\
+":$HOME/.steam/bin32/steam-runtime/i386/usr/lib/i386-linux-gnu"\
+":$HOME/.steam/bin32/steam-runtime/i386/usr/lib"\
+":$HOME/.steam/bin32/steam-runtime/amd64/lib/x86_64-linux-gnu"\
+":$HOME/.steam/bin32/steam-runtime/amd64/lib"\
+":$HOME/.steam/bin32/steam-runtime/amd64/usr/lib/x86_64-linux-gnu"\
+":$HOME/.steam/bin32/steam-runtime/amd64/usr/lib"\
+":$HOME/.steam/bin64"\
+":$HOME/.steam/bin"
 
 # Set file descriptor limit
 ulimit -n 2048
 
 export LD_PRELOAD
-LD_PRELOAD="$(realpath .)/bin/libcathook.so:/usr/lib/i386-linux-gnu/libstdc++.so.6"
+LD_PRELOAD="$(realpath .)/bin/libcathook.so:/usr/lib/i386-linux-gnu/libstdc++.so.6:/usr/lib32/libstdc++.so.6:launcher.so"
 
 # Enable nVidia threaded optimizations
 export __GL_THREADED_OPTIMIZATIONS=1
@@ -81,11 +99,11 @@ while [ $STATUS -eq 42 ]; do
 
 		echo run $@ >> "$ARGSFILE"
 		echo show args >> "$ARGSFILE"
-		${DEBUGGER} "${GAMEROOT}"/${GAMEEXE} -x -game "tf" "$ARGSFILE"
+		${DEBUGGER} "${GAMEROOT}"/${GAMEEXE} -x -steam -game "tf" "$ARGSFILE"
 		rm "$ARGSFILE"
 	else
 	    echo -e "\e[92mSuccess! Launching TF2.\e[39m"
-		${DEBUGGER} "${GAMEROOT}"/${GAMEEXE} -game "tf" "$@"
+		${DEBUGGER} "${GAMEROOT}"/${GAMEEXE} -steam -game "tf" "$@"
 	fi
 	STATUS=$?
 done
