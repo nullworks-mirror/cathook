@@ -5,8 +5,7 @@
  *      Author: nullifiedcat
  */
 
-#ifndef CH_TIMER_HPP
-#define CH_TIMER_HPP
+#pragma once
 #include <chrono>
 
 class Timer
@@ -37,4 +36,3 @@ public:
 public:
     std::chrono::time_point<clock> last{};
 };
-#endif
