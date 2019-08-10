@@ -156,7 +156,8 @@ public:
     {
         if (debug_events)
         {
-            if (*debug_name != "" && (*debug_name).find(event->GetName()) != (*debug_name).npos)
+            std::string event_name = event->GetName();
+            if (*debug_name != "" && event_name.find(*debug_name) == event_name.npos)
             {
             }
             else
