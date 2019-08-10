@@ -16,8 +16,6 @@
 
 static settings::Boolean dispatch_log{ "debug.log-dispatch-user-msg", "false" };
 static settings::Boolean chat_filter_enable{ "chat.censor.enable", "false" };
-settings::Boolean identify{ "chat.identify", "false" };
-static settings::Boolean answerIdentify{ "chat.identify.answer", "false" };
 static settings::Boolean anti_votekick{ "cat-bot.anti-autobalance", "false" };
 
 static bool retrun = false;
@@ -244,24 +242,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                 }
         }
         if (event.find("TF_Chat") == 0)
-        {
             hacks::shared::ChatCommands::handleChatMessage(message, data[0]);
-        }
-        if (crypt_chat && *answerIdentify && message.find("!!B") == 0 && ucccccp::validate(message))
-        {
-            std::string msg   = ucccccp::decrypt(message);
-            CachedEntity *ent = ENTITY(data[0]);
-            if (msg != "Attempt at ucccccping and failing" && msg != "Unsupported version" && ent != LOCAL_E)
-            {
-                auto &state = playerlist::AccessData(ent).state;
-                if (state == playerlist::k_EState::DEFAULT)
-                {
-                    state = playerlist::k_EState::CAT;
-                    chat_stack::Say(ucccccp::encrypt("meow", 'B'));
-                }
-            }
-            PrintChat("\x07%06X%s\x01: %s", 0xe05938, name.c_str(), msg.c_str());
-        }
         chatlog::LogMessage(data[0], message);
         buf = bf_read(data.c_str(), data.size());
         buf.Seek(0);

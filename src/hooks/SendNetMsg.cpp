@@ -13,7 +13,8 @@
 
 static settings::Int newlines_msg{ "chat.prefix-newlines", "0" };
 static settings::Boolean log_sent{ "debug.log-sent-chat", "false" };
-extern settings::Boolean identify;
+static settings::Boolean identify{ "chat.identify", "true" };
+static settings::Boolean answerIdentify{ "chat.identify.answer", "true" };
 static Timer identify_timer{};
 
 namespace hacks::shared::catbot
@@ -39,6 +40,26 @@ std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
     return peer_list;
 }
 
+void ProcessAchievement(IGameEvent *ach)
+{
+    int player_idx  = ach->GetInt("player", 0xDEAD);
+    int achievement = ach->GetInt("achievement", 0xDEAD);
+    if (player_idx != 0xDEAD && achievement == 0xCA7)
+    {
+        player_info_s info;
+        if (!g_IEngine->GetPlayerInfo(player_idx, &info))
+            return;
+        auto &state = playerlist::AccessData(info.friendsID).state;
+        if (state == playerlist::k_EState::DEFAULT)
+        {
+            state         = playerlist::k_EState::CAT;
+            KeyValues *kv = new KeyValues("AchievementEarned");
+            kv->SetInt("achievementID", 0xCA7);
+            g_IEngine->ServerCmdKeyValues(kv);
+            PrintChat("\x07%06X%s\x01 Marked as CAT", 0xe05938, info.name);
+        }
+    }
+}
 void ParseKeyValue(KeyValues *event)
 {
     // loop through all our peers
@@ -106,6 +127,23 @@ void ParseKeyValue(KeyValues *event)
     }
 }
 
+class AchievementListener : public IGameEventListener2
+{
+    virtual void FireGameEvent(IGameEvent *event)
+    {
+        if (*answerIdentify)
+            ProcessAchievement(event);
+    }
+};
+
+static CatCommand send_identify("debug_send_identify", "debug", []() {
+    KeyValues *kv = new KeyValues("AchievementEarned");
+    kv->SetInt("achievementID", 0xCA7);
+    g_IEngine->ServerCmdKeyValues(kv);
+});
+
+static AchievementListener event_listener{};
+
 static InitRoutine run_identify([]() {
     EC::Register(
         EC::CreateMove,
@@ -113,9 +151,14 @@ static InitRoutine run_identify([]() {
             // 5 minutes between each identify seems ok?
             if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(1000 * 60 * 5))
                 return;
-            chat_stack::Say(ucccccp::encrypt("meow", 'B'));
+            KeyValues *kv = new KeyValues("AchievementEarned");
+            kv->SetInt("achievementID", 0xCA7);
+            g_IEngine->ServerCmdKeyValues(kv);
         },
         "sendnetmsg_createmove");
+    g_IEventManager2->AddListener(&event_listener, "achievement_earned", false);
+    EC::Register(
+        EC::Shutdown, []() { g_IEventManager2->RemoveListener(&event_listener); }, "shutdown_event");
 });
 
 DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, bool force_reliable, bool voice)
