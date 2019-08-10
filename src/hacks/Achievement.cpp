@@ -185,7 +185,7 @@ bool equip_hats_fn(std::vector<int> hats, std::pair<int, int> classes)
 {
     for (int i = classes.first; i <= classes.second; i++)
         // 7...8...10. Wait why is it 10 tf2? you make no sense
-        if (equip_item(i, 7, hats[0]) && equip_item(i, 8, hats[1]) && equip_item(i, 10, hats[2]))
+        if (!(equip_item(i, 7, hats[0]) && equip_item(i, 8, hats[1]) && equip_item(i, 10, hats[2])))
             return false;
     return true;
 }

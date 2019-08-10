@@ -379,65 +379,48 @@ void DrawText()
 
 #endif
 
-static std::atomic_bool processed = true;
 void generate_schema()
 {
-    std::thread gen_schema([] {
-        logging::Info("Generating schema...");
-        while (!processed)
-            std::this_thread::sleep_for(std::chrono_literals::operator""ms(500));
-        processed = false;
-        std::ifstream in("tf/scripts/items/items_game.txt");
-        std::string outS((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-        std::ofstream out("/opt/cathook/data/items_game.txt");
-        std::regex a("\"equip_regions?\".*?\".*?\"");
-        std::regex b("\"equip_regions?\"\\s*?\\n\\s*?\\{[\\s\\S\\n]*?\\}");
-        outS = std::regex_replace(outS, a, "");
-        out << std::regex_replace(outS, b, "");
-        out.close();
-        logging::Info("Generating complete!");
-        processed = true;
-    });
-    gen_schema.detach();
+    std::ifstream in("tf/scripts/items/items_game.txt");
+    std::string outS((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::ofstream out("/opt/cathook/data/items_game.txt");
+    std::regex a("\"equip_regions?\".*?\".*?\"");
+    std::regex b("\"equip_regions?\"\\s*?\\n\\s*?\\{[\\s\\S\\n]*?\\}");
+    outS = std::regex_replace(outS, a, "");
+    out << std::regex_replace(outS, b, "");
+    out.close();
+    logging::Info("Generating complete!");
 }
 static CatCommand generateschema("schema_generate", "Generate custom schema", generate_schema);
 
 void Schema_Reload()
 {
-    std::thread reload_schema([]() {
-        logging::Info("Reloading schema...");
-        while (!processed)
-            std::this_thread::sleep_for(std::chrono_literals::operator""ms(500));
-        processed                 = false;
-        static auto GetItemSchema = reinterpret_cast<void *(*) (void)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 1D ? ? ? ? 85 DB 89 D8"));
+    static auto GetItemSchema = reinterpret_cast<void *(*) (void)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 1D ? ? ? ? 85 DB 89 D8"));
 
-        static auto BInitTextBuffer = reinterpret_cast<bool (*)(void *, CUtlBuffer &, int)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 9D ? ? ? ? 81 EC ? ? ? ? 8B 7D ? 89 1C 24 "));
-        void *schema                = (void *) ((unsigned) GetItemSchema() + 0x4);
+    static auto BInitTextBuffer = reinterpret_cast<bool (*)(void *, CUtlBuffer &, int)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 9D ? ? ? ? 81 EC ? ? ? ? 8B 7D ? 89 1C 24 "));
+    void *schema                = (void *) ((unsigned) GetItemSchema() + 0x4);
 
-        FILE *file = fopen("/opt/cathook/data/items_game.txt", "r");
-        if (!file || ferror(file) != 0)
-        {
-            logging::Info("Error loading file");
-            if (file)
-                fclose(file);
-            return;
-        }
+    FILE *file = fopen("/opt/cathook/data/items_game.txt", "r");
+    if (!file || ferror(file) != 0)
+    {
+        logging::Info("Error loading file");
+        if (file)
+            fclose(file);
+        return;
+    }
 
-        // CUtlBuffer
-        char *text_buffer  = new char[1000 * 1000 * 5];
-        size_t buffer_size = fread(text_buffer, sizeof(char), 1000 * 1000 * 5, file);
+    // CUtlBuffer
+    char *text_buffer  = new char[1000 * 1000 * 5];
+    size_t buffer_size = fread(text_buffer, sizeof(char), 1000 * 1000 * 5, file);
 
-        CUtlBuffer buf(text_buffer, buffer_size, 9);
+    CUtlBuffer buf(text_buffer, buffer_size, 9);
 
-        fclose(file);
-        logging::Info("Loading item schema...");
-        bool ret = BInitTextBuffer(schema, buf, 0xDEADCA7);
-        logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
+    fclose(file);
+    logging::Info("Loading item schema...");
+    bool ret = BInitTextBuffer(schema, buf, 0xDEADCA7);
+    logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
 
-        delete[] text_buffer;
-        processed = true;
-    });
-    reload_schema.detach();
+    delete[] text_buffer;
 }
 CatCommand schema("schema", "Load custom schema", Schema_Reload);
 

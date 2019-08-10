@@ -23,6 +23,18 @@ void SendNetMsg(INetMessage &msg);
 }
 namespace hooked_methods
 {
+
+static bool queue_ca8{};
+static Timer queue_ca8_timer{};
+static Timer reply_timer{};
+
+void sendAchievementKv(int value)
+{
+    KeyValues *kv = new KeyValues("AchievementEarned");
+    kv->SetInt("achievementID", value);
+    g_IEngine->ServerCmdKeyValues(kv);
+}
+
 std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
 {
     std::vector<KeyValues *> peer_list = { event };
@@ -42,33 +54,41 @@ std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
 
 void ProcessAchievement(IGameEvent *ach)
 {
+    if (CE_BAD(LOCAL_E))
+        return;
     int player_idx  = ach->GetInt("player", 0xDEAD);
     int achievement = ach->GetInt("achievement", 0xDEAD);
-    if (player_idx != 0xDEAD && achievement == 0xCA7)
+    if (player_idx != 0xDEAD && (achievement == 0xCA7 || achievement == 0xCA8))
     {
+        // Always reply and set on CA7 and only set on CA8
+        bool reply = achievement == 0xCA7;
         player_info_s info;
         if (!g_IEngine->GetPlayerInfo(player_idx, &info))
             return;
+        if (reply && *answerIdentify && player_idx != g_pLocalPlayer->entity_idx)
+        {
+            queue_ca8_timer.update();
+            queue_ca8 = true;
+        }
         auto &state = playerlist::AccessData(info.friendsID).state;
         if (state == playerlist::k_EState::DEFAULT)
         {
-            state         = playerlist::k_EState::CAT;
-            KeyValues *kv = new KeyValues("AchievementEarned");
-            kv->SetInt("achievementID", 0xCA7);
-            g_IEngine->ServerCmdKeyValues(kv);
+            state = playerlist::k_EState::CAT;
             PrintChat("\x07%06X%s\x01 Marked as CAT", 0xe05938, info.name);
         }
     }
 }
+
 void ParseKeyValue(KeyValues *event)
 {
+    std::string event_name = event->GetName();
+    auto peer_list         = Iterate(event, 10);
     // loop through all our peers
-    std::vector<KeyValues *> peer_list = Iterate(event, 10);
-    logging::Info("Data for %s:", event->GetName());
-    for (auto dat : peer_list)
+    for (KeyValues *dat : peer_list)
     {
-        auto name = dat->GetName();
-        logging::Info("%s", name);
+        auto data_type = dat->m_iDataType;
+        auto name      = dat->GetName();
+        logging::Info("%s", name, data_type);
         switch (dat->m_iDataType)
         {
         case KeyValues::types_t::TYPE_NONE:
@@ -131,16 +151,12 @@ class AchievementListener : public IGameEventListener2
 {
     virtual void FireGameEvent(IGameEvent *event)
     {
-        if (*answerIdentify)
+        if (*identify)
             ProcessAchievement(event);
     }
 };
 
-static CatCommand send_identify("debug_send_identify", "debug", []() {
-    KeyValues *kv = new KeyValues("AchievementEarned");
-    kv->SetInt("achievementID", 0xCA7);
-    g_IEngine->ServerCmdKeyValues(kv);
-});
+static CatCommand send_identify("debug_send_identify", "debug", []() { sendAchievementKv(0xCA7); });
 
 static AchievementListener event_listener{};
 
@@ -148,17 +164,26 @@ static InitRoutine run_identify([]() {
     EC::Register(
         EC::CreateMove,
         []() {
+            if (queue_ca8 && queue_ca8_timer.check(10000))
+            {
+                sendAchievementKv(0xCA8);
+                queue_ca8 = false;
+            }
             // 5 minutes between each identify seems ok?
             if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(1000 * 60 * 5))
                 return;
-            KeyValues *kv = new KeyValues("AchievementEarned");
-            kv->SetInt("achievementID", 0xCA7);
-            g_IEngine->ServerCmdKeyValues(kv);
+            sendAchievementKv(0xCA7);
         },
         "sendnetmsg_createmove");
     g_IEventManager2->AddListener(&event_listener, "achievement_earned", false);
     EC::Register(
         EC::Shutdown, []() { g_IEventManager2->RemoveListener(&event_listener); }, "shutdown_event");
+    EC::Register(
+        EC::LevelInit,
+        []() { // This will make the timer get triggered next test_and_set call
+            identify_timer.last -= std::chrono::minutes(5);
+        },
+        "reset_timer");
 });
 
 DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, bool force_reliable, bool voice)
