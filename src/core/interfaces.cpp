@@ -141,7 +141,8 @@ void CreateInterfaces()
     g_IModelInfo       = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine());
     g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(gSignatures.GetEngineSignature("C7 04 24 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ?") + 3));
     logging::Info("BaseClientState: 0x%08x", g_IBaseClientState);
-    g_IAchievementMgr = g_IEngine->GetAchievementMgr();
+    while (!g_IAchievementMgr)
+        g_IAchievementMgr = g_IEngine->GetAchievementMgr();
     g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
     IF_GAME(IsTF2())
     {
