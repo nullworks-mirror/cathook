@@ -4,6 +4,9 @@
 #include "common.hpp"
 
 #if !ENFORCE_STREAM_SAFETY
+namespace hacks::tf2::killfeed
+{
+static settings::Boolean enable{ "visual.killfeedcolor.enable", "true" };
 typedef void (*GetTeamColor_t)(Color *, void *, int, int);
 
 static GetTeamColor_t GetTeamColor_fn;
@@ -108,7 +111,7 @@ mov [esp], ecx
         if (i == 1)
             patches[i][6] = 0x40, patches[i][29] = 0xF7;
     }
-    /* clang-format off */
+
     PATCH_COLORS(0); // GetTeamColor call patch victim
     PATCH_COLORS(1); // GetTeamColor call patch killer
     PATCH_COLORS(2); // GetTeam call patch victim
@@ -129,12 +132,32 @@ mov [esp], ecx
         i.Patch();
     for (auto &i : no_stack_smash)
         i.Patch();
-    EC::Register(EC::Shutdown, [](){
-        for (auto &i : color_patches)
-            i.Shutdown();
-        for (auto &i : no_stack_smash)
-            i.Shutdown();
-    }, "shutdown_kfc");
+    EC::Register(
+        EC::Shutdown,
+        []() {
+            for (auto &i : color_patches)
+                i.Shutdown();
+            for (auto &i : no_stack_smash)
+                i.Shutdown();
+        },
+        "shutdown_kfc");
+    enable.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (!after)
+        {
+            for (auto &i : color_patches)
+                i.Shutdown();
+            for (auto &i : no_stack_smash)
+                i.Shutdown();
+        }
+        else
+        {
+            for (auto &i : color_patches)
+                i.Patch();
+            for (auto &i : no_stack_smash)
+                i.Patch();
+        }
+    });
 });
 
 #endif
+}
