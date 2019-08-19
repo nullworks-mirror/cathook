@@ -40,5 +40,5 @@ $RUNUSER bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferen
 
 $RUNUSER mkdir -p ./build; pushd build #create a directory for building cathook
 $RUNUSER cmake ..;$RUNUSER make -j$(grep -c '^processor' /proc/cpuinfo) # create makefile and build using all available threads
-$RUNUSER sudo make data # create /opt/cathook/data
+sudo make data # create /opt/cathook/data
 popd; cd ..
