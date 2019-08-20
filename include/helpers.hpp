@@ -108,7 +108,6 @@ Vector GetForwardVector(Vector origin, Vector viewangles, float distance);
 Vector GetForwardVector(float distance);
 bool IsSentryBuster(CachedEntity *ent);
 std::unique_ptr<char[]> strfmt(const char *fmt, ...);
-Vector VischeckStartPosition();
 // TODO move that to weaponid.h
 bool HasWeapon(CachedEntity *ent, int wantedId);
 bool IsAmbassador(CachedEntity *ent);

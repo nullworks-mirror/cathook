@@ -162,10 +162,7 @@ static void CreateMove()
     // Refresh our best target
     CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
     if (CE_BAD(target_entity) || !foundTarget)
-    {
-        logging::Info("Failed to find target");
         return;
-    }
     // Auto-zoom
     IF_GAME(IsTF())
     {
@@ -408,7 +405,7 @@ CachedEntity *RetrieveBestTarget(bool aimkey_state, bool Backtracking)
                 case 3: // Health Priority (Lowest)
                     scr = 450.0f - ent->m_iHealth();
                     break;
-                case 4: // Distance Priority (Farthest Away)
+                case 4: // Distance Priority (Furthest Away)
                     scr = calculated_data_array[i].aim_position.DistTo(g_pLocalPlayer->v_Eye);
                     break;
                 case 6: // Health Priority (Highest)
@@ -470,11 +467,11 @@ bool IsTargetStateGood(CachedEntity *entity)
                     int hb = BestHitbox(entity);
                     if (hb == -1)
                         return false;
-                    Vector newangle = GetAimAtAngles(VischeckStartPosition(), entity->hitboxes.GetHitbox(hb)->center);
+                    Vector newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, entity->hitboxes.GetHitbox(hb)->center);
                     trace_t trace;
                     Ray_t ray;
                     trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-                    ray.Init(VischeckStartPosition(), GetForwardVector(VischeckStartPosition(), newangle, swingrange));
+                    ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange));
                     g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
                     if ((IClientEntity *) trace.m_pEnt != RAW_ENT(entity))
                         return false;
@@ -751,7 +748,7 @@ void Aim(CachedEntity *entity)
         return;
 
     // Get angles
-    Vector tr = (PredictEntity(entity) - VischeckStartPosition());
+    Vector tr = (PredictEntity(entity) - g_pLocalPlayer->v_Eye);
 
     // Multipoint
     if (multipoint && !projectile_mode)
@@ -791,9 +788,9 @@ void Aim(CachedEntity *entity)
         // Create Vectors
         const Vector positions[13] = { { minx, centery, minz }, { maxx, centery, minz }, { minx, centery, maxz }, { maxx, centery, maxz }, { centerx, miny, minz }, { centerx, maxy, minz }, { centerx, miny, maxz }, { centerx, maxy, maxz }, { minx, miny, centerz }, { maxx, maxy, centerz }, { minx, miny, centerz }, { maxx, maxy, centerz }, hitboxcenter };
         for (int i = 0; i < 14; ++i)
-            if (IsVectorVisible(VischeckStartPosition(), positions[i]))
+            if (IsVectorVisible(g_pLocalPlayer->v_Eye, positions[i]))
             {
-                tr = (positions[i] - VischeckStartPosition());
+                tr = (positions[i] - g_pLocalPlayer->v_Eye);
                 break;
             }
     }
@@ -934,7 +931,7 @@ const Vector &PredictEntity(CachedEntity *entity)
             {
                 // Use prediction engine if user settings allow
                 if (engine_projpred)
-                    result = ProjectilePrediction_Engine(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
+                    result = ProjectilePrediction_Engine(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, 0);
                 else
                     result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity));
             }
