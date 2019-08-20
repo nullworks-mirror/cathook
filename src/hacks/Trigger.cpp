@@ -75,9 +75,9 @@ void DoBacktrack()
     // return false
     Vector hit;
 
-    if (!IsVectorVisible(g_pLocalPlayer->v_Eye, minz) && !IsVectorVisible(g_pLocalPlayer->v_Eye, maxz))
+    if (!IsVectorVisible(VischeckStartPosition(), minz) && !IsVectorVisible(VischeckStartPosition(), maxz))
         return;
-    if (CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
+    if (CheckLineBox(minz, maxz, VischeckStartPosition(), forward, hit))
     {
         current_user_cmd->tick_count = tick.tickcount;
         current_user_cmd->buttons |= IN_ATTACK;
@@ -307,7 +307,7 @@ bool IsTargetStateGood(CachedEntity *entity, bool backtrack)
                 // we
                 // return false
                 Vector hit;
-                if (!CheckLineBox(minz, maxz, g_pLocalPlayer->v_Eye, forward, hit))
+                if (!CheckLineBox(minz, maxz, VischeckStartPosition(), forward, hit))
                     return false;
             }
         }
@@ -395,12 +395,12 @@ CachedEntity *FindEntInSight(float range)
     forward.x = cp * cy;
     forward.y = cp * sy;
     forward.z = -sp;
-    forward   = forward * range + g_pLocalPlayer->v_Eye;
+    forward   = forward * range + VischeckStartPosition();
 
     // Setup the trace starting with the origin of the local players eyes
     // attemting to hit the end vector we determined
     Ray_t ray;
-    ray.Init(g_pLocalPlayer->v_Eye, forward);
+    ray.Init(VischeckStartPosition(), forward);
 
     // Ray trace
     g_ITrace->TraceRay(ray, 0x4200400B, &trace::filter_default, &trace);

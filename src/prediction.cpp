@@ -337,7 +337,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
     else
         velocity = CE_VECTOR(ent, netvar.vVelocity);
     // TODO ProjAim
-    float medianTime  = g_pLocalPlayer->v_Eye.DistTo(hitbox) / speed;
+    float medianTime  = VischeckStartPosition().DistTo(hitbox) / speed;
     float range       = 1.5f;
     float currenttime = medianTime - range;
     if (currenttime <= 0.0f)
@@ -367,7 +367,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
             current.z -= toground;
         }
 
-        float rockettime = g_pLocalPlayer->v_Eye.DistTo(current) / speed;
+        float rockettime = VischeckStartPosition().DistTo(current) / speed;
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;
@@ -400,7 +400,7 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float
     trace::filter_no_player.SetSelf(RAW_ENT(building));
     float dtg = DistanceToGround(vec, RAW_ENT(building)->GetCollideable()->OBBMins(), RAW_ENT(building)->GetCollideable()->OBBMaxs());
     // TODO ProjAim
-    float medianTime  = g_pLocalPlayer->v_Eye.DistTo(result) / speed;
+    float medianTime  = VischeckStartPosition().DistTo(result) / speed;
     float range       = 1.5f;
     float currenttime = medianTime - range;
     if (currenttime <= 0.0f)
@@ -417,7 +417,7 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float
             if (curpos.z < result.z - dtg)
                 curpos.z = result.z - dtg;
         }
-        float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
+        float rockettime = VischeckStartPosition().DistTo(curpos) / speed;
         if (debug_pp_rockettimeping)
             rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
         if (fabs(rockettime - currenttime) < mindelta)
@@ -453,7 +453,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
     else
         velocity = CE_VECTOR(ent, netvar.vVelocity);
     // TODO ProjAim
-    float medianTime  = g_pLocalPlayer->v_Eye.DistTo(hitbox) / speed;
+    float medianTime  = VischeckStartPosition().DistTo(hitbox) / speed;
     float range       = 1.5f;
     float currenttime = medianTime - range;
     if (currenttime <= 0.0f)
@@ -493,7 +493,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
             current.z -= toground;
         }
 
-        float rockettime = g_pLocalPlayer->v_Eye.DistTo(current) / speed;
+        float rockettime = VischeckStartPosition().DistTo(current) / speed;
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;

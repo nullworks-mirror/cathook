@@ -890,7 +890,7 @@ bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, unsigned int mas
     if (CE_BAD(entity))
         return false;
     trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-    ray.Init(g_pLocalPlayer->v_Eye, endpos);
+    ray.Init(VischeckStartPosition(), endpos);
     {
         PROF_SECTION(IEVV_TraceRay);
         std::lock_guard<std::mutex> lock(trace_lock);
@@ -1364,7 +1364,7 @@ void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd)
     Vector r;
     r = ent->m_vecOrigin();
     GetHitbox(ent, hitbox, r);
-    AimAt(g_pLocalPlayer->v_Eye, r, cmd);
+    AimAt(VischeckStartPosition(), r, cmd);
 }
 
 bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)
@@ -1468,6 +1468,35 @@ std::unique_ptr<char[]> strfmt(const char *fmt, ...)
     va_end(list);
     return buf;
 }
+
+Vector VischeckStartPosition()
+{
+    Vector return_vec = g_pLocalPlayer->v_Eye;
+    if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_projectile)
+    {
+        typedef int (*LookupAttachment_t)(IClientEntity *, const char *);
+        typedef void (*GetAttachment_t)(IClientEntity *, int, Vector &);
+
+        IClientEntity *weapon = RAW_ENT(LOCAL_W);
+        int attachment        = vfunc<LookupAttachment_t>(weapon, 111, 0)(weapon, "weapon_bone");
+        vfunc<GetAttachment_t>(weapon, 113, 0)(weapon, attachment, return_vec);
+    }
+    return return_vec;
+}
+static CatCommand debug_attachments("debug_attachments", "Debug", []() {
+    auto weapon       = RAW_ENT(LOCAL_W);
+    auto studio_model = g_IModelInfo->GetStudiomodel(weapon->GetModel());
+    typedef const mstudioattachment_t &(*pAttachment_decl)(studiohdr_t *, int);
+    static uintptr_t pAttachment_addr      = e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 8B 4F 04 85 C9 74 15"));
+    static pAttachment_decl pAttachment_fn = pAttachment_decl(pAttachment_addr);
+    for (int i = 0; i < studio_model->numlocalattachments; i++)
+    {
+        static Vector return_vec;
+        typedef void (*GetAttachment_t)(IClientEntity *, int, Vector &);
+        vfunc<GetAttachment_t>(weapon, 113, 0)(weapon, i, return_vec);
+        logging::Info("%d: %s, %f %f %f", i, pAttachment_fn(studio_model, i).pszName(), return_vec.x, return_vec.y, return_vec.z);
+    }
+});
 
 void ChangeName(std::string name)
 {
