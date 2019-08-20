@@ -14,6 +14,7 @@ static settings::Boolean local_only{ "visual.bullet-tracers.local-only", "false"
 static settings::Boolean draw_local{ "visual.bullet-tracers.draw-local", "true" };
 static settings::Int team_mode{ "visual.bullet-tracers.teammode", "0" };
 static settings::Boolean one_trace_only{ "visual.bullet-tracers.one-trace-only", "false" };
+static settings::Boolean sentry_tracers{ "visual.bullet-tracers.sentry", "true" };
 
 class CEffectData
 {
@@ -41,10 +42,16 @@ GetActiveTFWeapon_t GetActiveTFWeapon_fn;
 DispatchEffect_t DispatchEffect_fn;
 CalcZoomedMuzzleLocation_t CalcZoomedMuzzleLocation_fn;
 
+const char *AppropiateBeam(int team)
+{
+    if (team == TEAM_RED)
+        return "dxhr_sniper_rail_red";
+    else
+        return "dxhr_sniper_rail_blue";
+}
+
 const char *GetParticleSystemNameFromIndex__detour(CEffectData &data)
 {
-    static const char *tracer_blu = "dxhr_sniper_rail_blue";
-    static const char *tracer_red = "dxhr_sniper_rail_red";
 
     auto player       = g_IEntityList->GetClientEntityFromHandle(data.m_hEntity);
     auto wantedEffect = GetParticleSystemNameFromIndex_fn(data.m_iEffectId);
@@ -53,6 +60,10 @@ const char *GetParticleSystemNameFromIndex__detour(CEffectData &data)
 
     if (!strstr(wantedEffect, "bullet_") && data.m_iEffectId != 0xDEADCA7)
         return wantedEffect;
+
+    // that player is a spy!
+    if (*sentry_tracers && player->GetClientClass()->m_ClassID == CL_CLASS(CObjectSentrygun))
+        return AppropiateBeam(NET_INT(player, netvar.iTeamNum));
 
     auto weapon = ENTITY(HandleToIDX(NET_INT(player, netvar.hActiveWeapon)));
 
@@ -91,11 +102,7 @@ const char *GetParticleSystemNameFromIndex__detour(CEffectData &data)
                 return wantedEffect;
             break;
         }
-
-    if (team == TEAM_RED)
-        return tracer_red;
-    else
-        return tracer_blu;
+    return AppropiateBeam(team);
 }
 
 IClientEntity *GetActiveTFWeapon_detour(IClientEntity *this_ /* C_TFPlayer * */)
@@ -173,6 +180,40 @@ IClientEntity *GetActiveTFWeapon_detour(IClientEntity *this_ /* C_TFPlayer * */)
     return weapon;
 }
 
+typedef void (*FX_Tracer_t)(Vector &, Vector &, int, bool);
+
+FX_Tracer_t FX_Tracer_fn;
+
+char SentryTracerParity[MAX_ENTITIES + 1]{ 0 };
+void FX_Tracer_detour(Vector &start, CEffectData &data, int velocity, bool makeWhiz)
+{
+    // start and end are reversed, justvalvethings.club
+    if (!sentry_tracers)
+        return FX_Tracer_fn(start, data.m_vStart, velocity, makeWhiz);
+    auto sentry = g_IEntityList->GetClientEntityFromHandle(data.m_hEntity);
+    if (!sentry || sentry->entindex() == -1 || sentry->GetClientClass()->m_ClassID != CL_CLASS(CObjectSentrygun))
+        return;
+    int muzzle   = 4; // level 1
+    int muzzle_l = 1; // level 2 & 3
+    int muzzle_r = 2; // level 2 & 3
+    CEffectData dataTracer;
+    if (NET_INT(sentry, netvar.iUpgradeLevel) > 1)
+    {
+        auto &parity = SentryTracerParity[sentry->entindex()];
+        parity       = !parity;
+        vfunc<GetAttachment_t>(sentry, 113, 0)(sentry, parity ? muzzle_l : muzzle_r, dataTracer.m_vStart);
+    }
+    else
+        vfunc<GetAttachment_t>(sentry, 113, 0)(sentry, muzzle, dataTracer.m_vStart);
+
+    dataTracer.m_hEntity = sentry->GetRefEHandle();
+    // we don't have accurate sentry angles, use bullet tracer end point which is start for some reason,
+    // justvalvethings.club
+    dataTracer.m_vEnd      = data.m_vStart;
+    dataTracer.m_iEffectId = 0xDEADCA7; // handled in other detour
+    DispatchEffect_fn("ParticleEffect", dataTracer);
+}
+
 #define foffset(p, i) ((unsigned char *) &p)[i]
 
 static InitRoutine init([]() {
@@ -181,25 +222,36 @@ static InitRoutine init([]() {
     auto addr2 = gSignatures.GetClientSignature("E8 ? ? ? ? 85 C0 89 C3 0F 84 ? ? ? ? 8B 00 89 1C 24 FF 90 ? ? ? ? 80 BB"); // GetActiveTFWeapon detour
     auto addr3 = gSignatures.GetClientSignature("E8 ? ? ? ? 89 F8 84 C0 75 7A");
     auto addr4 = gSignatures.GetClientSignature("E8 ? ? ? ? 8D 85 ? ? ? ? 89 7C 24 0C 89 44 24 10");
+    auto addr5 = gSignatures.GetClientSignature("E8 ? ? ? ? 8D 65 F4 5B 5E 5F 5D C3 8D 76 00 8B 43 0C"); // FX_Tracer detour
+
     /* clang-format on */
-    if (!addr1 || !addr2 || !addr3 || !addr4)
+    if (!addr1 || !addr2 || !addr3 || !addr4 || !addr4)
         return;
     GetParticleSystemNameFromIndex_fn = GetParticleSystemNameFromIndex_t(e8call(addr1 + 7));
     GetActiveTFWeapon_fn              = GetActiveTFWeapon_t(e8call_direct(addr2));
     DispatchEffect_fn                 = DispatchEffect_t(e8call_direct(addr3));
     CalcZoomedMuzzleLocation_fn       = CalcZoomedMuzzleLocation_t(e8call_direct(addr4));
+    FX_Tracer_fn                      = FX_Tracer_t(e8call_direct(addr5));
 
     /* clang-format off */
     auto relAddr1 = ((uintptr_t) GetParticleSystemNameFromIndex__detour - ((uintptr_t) addr1 + 3)) - 5;
     auto relAddr2 = ((uintptr_t) GetActiveTFWeapon_detour - ((uintptr_t) addr2)) - 5;
+    auto relAddr3 = ((uintptr_t) FX_Tracer_detour - ((uintptr_t) addr5)) - 5;
     static BytePatch patch(addr1, { 0x89, 0x1C, 0x24, 0xE8, foffset(relAddr1, 0), foffset(relAddr1, 1), foffset(relAddr1, 2), foffset(relAddr1, 3), 0x90, 0x90, 0x90 });
     static BytePatch patch2(addr2, { 0xE8, foffset(relAddr2, 0), foffset(relAddr2, 1), foffset(relAddr2, 2), foffset(relAddr2, 3) });
+    static BytePatch patch3(addr5, { 0xE8, foffset(relAddr3, 0), foffset(relAddr3, 1), foffset(relAddr3, 2), foffset(relAddr3, 3) });
+
     patch.Patch();
     patch2.Patch();
-    EC::Register(EC::Shutdown, [](){
-        patch.Shutdown();
-        patch2.Shutdown();
-    }, "shutdown_bullettrace");
+    patch3.Patch();
     /* clang-format on */
+    EC::Register(
+        EC::Shutdown,
+        []() {
+            patch.Shutdown();
+            patch2.Shutdown();
+            patch3.Shutdown();
+        },
+        "shutdown_bullettrace");
 });
 } // namespace hacks::tf2::bullettracers
