@@ -93,7 +93,6 @@ VMTHook panel{};
 VMTHook client{};
 VMTHook chathud{};
 VMTHook engine{};
-VMTHook ctfpartyclient;
 VMTHook netchannel{};
 VMTHook firebullets{};
 VMTHook clientdll{};

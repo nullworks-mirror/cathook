@@ -361,6 +361,10 @@ free(logname);*/
     hooks::enginevgui.HookMethod(HOOK_ARGS(Paint));
     hooks::enginevgui.Apply();
 
+    hooks::engine.Set(g_IEngine);
+    hooks::engine.HookMethod(HOOK_ARGS(ServerCmdKeyValues));
+    hooks::engine.Apply();
+
     hooks::eventmanager2.Set(g_IEventManager2);
     hooks::eventmanager2.HookMethod(HOOK_ARGS(FireEvent));
     hooks::eventmanager2.HookMethod(HOOK_ARGS(FireEventClientSide));
