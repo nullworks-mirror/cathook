@@ -98,6 +98,7 @@ void LoadAllSharedObjects()
         materialsystem().Load();
         filesystem_stdio().Load();
         datacache().Load();
+        gameui().Load();
 #if ENABLE_VISUALS
         vguimatsurface().Load();
         vgui2().Load();
@@ -162,6 +163,12 @@ SharedObject &datacache()
     static SharedObject obj("datacache.so", true);
     return obj;
 }
+SharedObject &gameui()
+{
+    static SharedObject obj("GameUI.so", true);
+    return obj;
+}
+
 #if ENABLE_VISUALS
 SharedObject &vguimatsurface()
 {
