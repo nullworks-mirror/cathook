@@ -169,21 +169,50 @@ void critical_error_handler(int signum)
 }
 #endif
 
-static bool blacklist_file(const char *filename)
+static bool blacklist_file(const char *&filename)
 {
-    const static char *blacklist[] = { ".vtx", ".vtf", ".pcf", ".mdl" };
-    if (!filename || !std::strcmp(filename, "models/error.mdl") || !std::strncmp(filename, "models/buildables", 17) || !std::strcmp(filename, "models/vgui/competitive_badge.mdl") || !std::strcmp(filename, "models/vgui/12v12_badge.mdl") || !std::strncmp(filename, "models/player/", 14) || !std::strncmp(filename, "models/weapons/", 15))
+    const static char *blacklist[] = { ".ani", ".wav", ".mp3", ".vvd", ".vtx", ".vtf", ".vfe", ".cache" /*, ".pcf"*/ };
+    if (!filename || !std::strncmp(filename, "materials/console/", 18))
         return false;
 
     std::size_t len = std::strlen(filename);
-    if (len > 3)
+    if (len <= 3)
+        return false;
+
+    auto ext_p = filename + len - 4;
+    if (!std::strcmp(ext_p, ".vmt"))
     {
-        auto ext_p = filename + len - 4;
-        for (int i = 0; i < sizeof(blacklist) / sizeof(blacklist[0]); ++i)
-            if (!std::strcmp(ext_p, blacklist[i]))
-                return true;
+        /* Not loading it causes extreme console spam */
+        if (std::strstr(filename, "corner"))
+            return false;
+        /* minor console spam */
+        if (std::strstr(filename, "hud") || std::strstr(filename, "vgui"))
+            return false;
+
+        return true;
     }
+    if (!std::strcmp(ext_p, ".mdl"))
+    {
+        return false;
+    }
+    if (!std::strncmp(filename, "/decal", 6))
+        return true;
+
+    for (int i = 0; i < sizeof(blacklist) / sizeof(blacklist[0]); ++i)
+        if (!std::strcmp(ext_p, blacklist[i]))
+            return true;
+
     return false;
+}
+
+static void *(*FSorig_Open)(void *, const char *, const char *, const char *);
+static void *FSHook_Open(void *this_, const char *pFileName, const char *pOptions, const char *pathID)
+{
+    // fprintf(stderr, "Open: %s\n", pFileName);
+    if (blacklist_file(pFileName))
+        return nullptr;
+
+    return FSorig_Open(this_, pFileName, pOptions, pathID);
 }
 
 static bool (*FSorig_ReadFile)(void *, const char *, const char *, void *, int, int, void *);
@@ -192,23 +221,139 @@ static bool FSHook_ReadFile(void *this_, const char *pFileName, const char *pPat
     // fprintf(stderr, "ReadFile: %s\n", pFileName);
     if (blacklist_file(pFileName))
         return false;
+
     return FSorig_ReadFile(this_, pFileName, pPath, buf, nMaxBytes, nStartingByte, pfnAlloc);
 }
 
-static hooks::VMTHook /*fs_hook,*/ fs_hook2;
+static void *(*FSorig_OpenEx)(void *, const char *, const char *, unsigned, const char *, char **);
+static void *FSHook_OpenEx(void *this_, const char *pFileName, const char *pOptions, unsigned flags, const char *pathID, char **ppszResolvedFilename)
+{
+    // fprintf(stderr, "OpenEx: %s\n", pFileName);
+    if (pFileName && blacklist_file(pFileName))
+        return nullptr;
+
+    return FSorig_OpenEx(this_, pFileName, pOptions, flags, pathID, ppszResolvedFilename);
+}
+
+static int (*FSorig_ReadFileEx)(void *, const char *, const char *, void **, bool, bool, int, int, void *);
+static int FSHook_ReadFileEx(void *this_, const char *pFileName, const char *pPath, void **ppBuf, bool bNullTerminate, bool bOptimalAlloc, int nMaxBytes, int nStartingByte, void *pfnAlloc)
+{
+    // fprintf(stderr, "ReadFileEx: %s\n", pFileName);
+    if (blacklist_file(pFileName))
+        return 0;
+
+    return FSorig_ReadFileEx(this_, pFileName, pPath, ppBuf, bNullTerminate, bOptimalAlloc, nMaxBytes, nStartingByte, pfnAlloc);
+}
+
+static void (*FSorig_AddFilesToFileCache)(void *, void *, const char **, int, const char *);
+static void FSHook_AddFilesToFileCache(void *this_, void *cacheId, const char **ppFileNames, int nFileNames, const char *pPathID)
+{
+    int i, j;
+
+    fprintf(stderr, "AddFilesToFileCache: %d\n", nFileNames);
+    for (i = 0; i < nFileNames; ++i)
+        fprintf(stderr, "%s\n", ppFileNames[i]);
+}
+
+static int (*FSorig_AsyncReadMultiple)(void *, const char **, int, void *);
+static int FSHook_AsyncReadMultiple(void *this_, const char **pRequests, int nRequests, void *phControls)
+{
+    for (int i = 0; pRequests && i < nRequests; ++i)
+    {
+        // fprintf(stderr, "AsyncReadMultiple %d %s\n", nRequests, pRequests[i]);
+        if (blacklist_file(pRequests[i]))
+        {
+            if (nRequests > 1)
+                fprintf(stderr, "FIXME: blocked AsyncReadMultiple for %d requests due to some filename being blacklisted\n", nRequests);
+            /* FSASYNC_ERR_FILEOPEN */
+            return -1;
+        }
+    }
+    return FSorig_AsyncReadMultiple(this_, pRequests, nRequests, phControls);
+}
+
+static const char *(*FSorig_FindNext)(void *, void *);
+static const char *FSHook_FindNext(void *this_, void *handle)
+{
+    const char *p;
+    do
+        p = FSorig_FindNext(this_, handle);
+    while (p && blacklist_file(p));
+
+    return p;
+}
+
+static const char *(*FSorig_FindFirst)(void *, const char *, void **);
+static const char *FSHook_FindFirst(void *this_, const char *pWildCard, void **pHandle)
+{
+    auto p = FSorig_FindFirst(this_, pWildCard, pHandle);
+    while (p && blacklist_file(p))
+        p = FSorig_FindNext(this_, *pHandle);
+
+    return p;
+}
+
+static bool (*FSorig_Precache)(const char *, const char *);
+static bool FSHook_Precache(const char *pFileName, const char *pPathID)
+{
+    return true;
+}
+
+static CatCommand debug_invalidate("invalidate_mdl_cache", "Invalidates MDL cache", []() { g_IBaseClient->InvalidateMdlCache(); });
+
+static hooks::VMTHook fs_hook, fs_hook2;
+
 static void ReduceRamUsage()
 {
+    /* TO DO: Improves load speeds but doesn't reduce memory usage a lot
+     * It seems engine still allocates significant parts without them
+     * being really used
+     * Plan B: null subsystems (Particle, Material, Model partially, Sound and etc.)
+     */
+
+    fs_hook.Set(reinterpret_cast<void *>(g_IFileSystem));
+    fs_hook.HookMethod(FSHook_FindFirst, 27, &FSorig_FindFirst);
+    fs_hook.HookMethod(FSHook_FindNext, 28, &FSorig_FindNext);
+    fs_hook.HookMethod(FSHook_AsyncReadMultiple, 37, &FSorig_AsyncReadMultiple);
+    fs_hook.HookMethod(FSHook_OpenEx, 69, &FSorig_OpenEx);
+    fs_hook.HookMethod(FSHook_ReadFileEx, 71, &FSorig_ReadFileEx);
+    fs_hook.HookMethod(FSHook_AddFilesToFileCache, 103, &FSorig_AddFilesToFileCache);
+    fs_hook.Apply();
+
     fs_hook2.Set(reinterpret_cast<void *>(g_IFileSystem), 4);
+    fs_hook2.HookMethod(FSHook_Open, 2, &FSorig_Open);
+    fs_hook2.HookMethod(FSHook_Precache, 9, &FSorig_Precache);
     fs_hook2.HookMethod(FSHook_ReadFile, 14, &FSorig_ReadFile);
     fs_hook2.Apply();
-
-    /* ERROR: Must be called from texture thread */
-    // g_IMaterialSystem->ReloadTextures();
-    g_IBaseClient->InvalidateMdlCache();
+    /* Might give performance benefit, but mostly fixes annoying console
+     * spam related to mdl not being able to play sequence that it
+     * cannot play on error.mdl
+     */
+    static BytePatch playSequence{ gSignatures.GetClientSignature, "55 89 E5 57 56 53 83 EC ? 8B 75 0C 8B 5D 08 85 F6 74 ? 83 BB", 0x00, { 0xC3 } };
+#if 0
+    /* Same explanation as above, but spams about certain particles not loaded */
+    static BytePatch particleCreate{ gSignatures.GetClientSignature,
+        "55 89 E5 56 53 83 EC ? 8B 5D 0C 8B 75 08 85 DB 74 ? A1",
+        0x00, { 0x31, 0xC0, 0xC3 }
+    };
+    static BytePatch particlePrecache{ gSignatures.GetClientSignature,
+        "55 89 E5 53 83 EC ? 8B 5D 0C 8B 45 08 85 DB 74 ? 80 3B 00 75 ? 83 C4 ? 5B 5D C3 ? ? ? ? 89 5C 24",
+        0x00, { 0x31, 0xC0, 0xC3 }
+    };
+    static BytePatch particleCreating{ gSignatures.GetClientSignature,
+        "55 89 E5 57 56 53 83 EC ? A1 ? ? ? ? 8B 75 08 85 C0 74 ? 8B 4D",
+        0x00, { 0x31, 0xC0, 0xC3 }
+    };
+    particleCreate.Patch();
+    particlePrecache.Patch();
+    particleCreating.Patch();
+#endif
+    playSequence.Patch();
 }
 
 static void UnHookFs()
 {
+    fs_hook.Release();
     fs_hook2.Release();
     g_IBaseClient->InvalidateMdlCache();
 }
