@@ -341,17 +341,16 @@ void createMove()
         {
             if (current_index >= source->size())
                 current_index = 0;
-            if (random_order && source->size())
+            if (random_order && source->size() > 1)
             {
-                current_index = rand() % source->size();
-                int tries     = 0;
-                while (current_index == last_index && tries++ < 1000)
+                current_index = UniformRandomInt(0, source->size() - 1);
+                while (current_index == last_index)
                 {
-                    current_index = rand() % source->size();
+                    current_index = UniformRandomInt(0, source->size() - 1);
                 }
             }
             last_index             = current_index;
-            std::string spamString = source->at(current_index);
+            std::string spamString = (*source)[current_index];
             if (FormatSpamMessage(spamString))
                 chat_stack::Say(spamString, *team_only);
             current_index++;
