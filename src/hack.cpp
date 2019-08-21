@@ -330,14 +330,14 @@ free(logname);*/
 #endif
     hooks::client.Apply();
 
+    hooks::panel.Set(g_IPanel);
+    hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse, offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);
+    hooks::panel.Apply();
+
 #if ENABLE_VISUALS
     hooks::vstd.Set((void *) g_pUniformStream);
     hooks::vstd.HookMethod(HOOK_ARGS(RandomInt));
     hooks::vstd.Apply();
-
-    hooks::panel.Set(g_IPanel);
-    hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse, offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);
-    hooks::panel.Apply();
 
     auto chat_hud = g_CHUD->FindElement("CHudChat");
     while (!(chat_hud = g_CHUD->FindElement("CHudChat")))

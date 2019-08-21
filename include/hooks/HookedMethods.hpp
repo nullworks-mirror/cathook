@@ -59,6 +59,8 @@ DECLARE_HOOKED_METHOD(FireEvent, bool, IGameEventManager2 *, IGameEvent *, bool)
 DECLARE_HOOKED_METHOD(FireEventClientSide, bool, IGameEventManager2 *, IGameEvent *);
 // g_IEngine
 DECLARE_HOOKED_METHOD(ServerCmdKeyValues, void, IVEngineClient013 *, KeyValues *);
+// vgui::IPanel
+DECLARE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *, unsigned int, bool, bool);
 #if ENABLE_VISUALS
 // CHudChat
 DECLARE_HOOKED_METHOD(StartMessageMode, int, CHudBaseChat *, int);
@@ -70,8 +72,6 @@ DECLARE_HOOKED_METHOD(OverrideView, void, void *, CViewSetup *);
 DECLARE_HOOKED_METHOD(BeginFrame, void, IStudioRender *);
 // IBaseClient
 DECLARE_HOOKED_METHOD(FrameStageNotify, void, void *, ClientFrameStage_t);
-// vgui::IPanel
-DECLARE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *, unsigned int, bool, bool);
 // SDL
 DECLARE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *);
 DECLARE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *);

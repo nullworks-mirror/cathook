@@ -156,10 +156,10 @@ void CreateInterfaces()
     g_IFileSystem     = BruteforceInterface<IFileSystem>("VFileSystem", sharedobj::filesystem_stdio());
     g_IMDLCache       = BruteforceInterface<IMDLCache>("MDLCache", sharedobj::datacache());
 
+    g_IPanel = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2());
 #if ENABLE_VISUALS
     g_pUniformStream    = **(IUniformRandomStream ***) (gSignatures.GetVstdSignature("A3 ? ? ? ? C3 89 F6") + 0x1);
     g_IVDebugOverlay    = BruteforceInterface<IVDebugOverlay>("VDebugOverlay", sharedobj::engine());
-    g_IPanel            = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2());
     g_ISurface          = BruteforceInterface<vgui::ISurface>("VGUI_Surface", sharedobj::vguimatsurface());
     g_IStudioRender     = BruteforceInterface<IStudioRender>("VStudioRender", sharedobj::studiorender());
     g_IVRenderView      = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine());

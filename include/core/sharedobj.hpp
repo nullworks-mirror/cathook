@@ -48,9 +48,9 @@ SharedObject &materialsystem();
 SharedObject &filesystem_stdio();
 SharedObject &datacache();
 SharedObject &gameui();
+SharedObject &vgui2();
 #if ENABLE_VISUALS
 SharedObject &vguimatsurface();
-SharedObject &vgui2();
 SharedObject &studiorender();
 SharedObject &libsdl();
 #endif

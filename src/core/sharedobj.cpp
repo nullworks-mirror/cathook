@@ -99,9 +99,9 @@ void LoadAllSharedObjects()
         filesystem_stdio().Load();
         datacache().Load();
         gameui().Load();
+        vgui2().Load();
 #if ENABLE_VISUALS
         vguimatsurface().Load();
-        vgui2().Load();
         studiorender().Load();
         libsdl().Load();
 #endif
@@ -169,15 +169,16 @@ SharedObject &gameui()
     return obj;
 }
 
+SharedObject &vgui2()
+{
+    static SharedObject obj("vgui2.so", true);
+    return obj;
+}
+
 #if ENABLE_VISUALS
 SharedObject &vguimatsurface()
 {
     static SharedObject obj("vguimatsurface.so", true);
-    return obj;
-}
-SharedObject &vgui2()
-{
-    static SharedObject obj("vgui2.so", true);
     return obj;
 }
 SharedObject &studiorender()
