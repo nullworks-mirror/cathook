@@ -13,7 +13,7 @@ TextFile::TextFile() : lines{}
 {
 }
 
-bool TextFile::TryLoad(std::string name)
+bool TextFile::TryLoad(const std::string &name)
 {
     if (name.length() == 0)
         return false;
@@ -33,9 +33,9 @@ bool TextFile::TryLoad(std::string name)
     return true;
 }
 
-void TextFile::Load(std::string name)
+void TextFile::Load(const std::string &name)
 {
-    std::string filename = format(DATA_PATH "/", name);
+    std::string filename = DATA_PATH "/" + name;
     std::ifstream file(filename, std::ios::in);
     if (file.bad())
     {
