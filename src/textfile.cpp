@@ -30,6 +30,9 @@ bool TextFile::TryLoad(const std::string &name)
             line.erase(line.length() - 1, 1);
         lines.push_back(line);
     }
+    if (lines.size() > 0 && *lines.rbegin() == "\n")
+        lines.pop_back();
+
     return true;
 }
 
