@@ -206,10 +206,6 @@ uintptr_t CSignature::GetClientSignature(const char *chPattern)
 {
     return GetSignature(chPattern, sharedobj::client(), CSignature_space::client);
 }
-uintptr_t CSignature::GetGameUISIgnature(const char *chPattern)
-{
-    return GetSignature(chPattern, sharedobj::gameui(), CSignature_space::gameui);
-}
 //===================================================================================
 uintptr_t CSignature::GetEngineSignature(const char *chPattern)
 {

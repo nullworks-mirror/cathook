@@ -47,7 +47,6 @@ SharedObject &inputsystem();
 SharedObject &materialsystem();
 SharedObject &filesystem_stdio();
 SharedObject &datacache();
-SharedObject &gameui();
 SharedObject &vgui2();
 #if ENABLE_VISUALS
 SharedObject &vguimatsurface();
