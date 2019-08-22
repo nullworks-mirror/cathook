@@ -54,5 +54,6 @@ SharedObject &studiorender();
 SharedObject &libsdl();
 #endif
 
+void LoadEarlyObjects();
 void LoadAllSharedObjects();
 } // namespace sharedobj

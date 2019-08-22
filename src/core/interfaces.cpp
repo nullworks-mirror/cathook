@@ -84,6 +84,11 @@ template <typename T> T *BruteforceInterface(std::string name, sharedobj::Shared
 extern "C" typedef HSteamPipe (*GetHSteamPipe_t)();
 extern "C" typedef HSteamUser (*GetHSteamUser_t)();
 
+void CreateEarlyInterfaces()
+{
+    g_IFileSystem = BruteforceInterface<IFileSystem>("VFileSystem", sharedobj::filesystem_stdio());
+}
+
 void CreateInterfaces()
 {
     g_ICvar             = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
@@ -141,8 +146,7 @@ void CreateInterfaces()
     g_IModelInfo       = BruteforceInterface<IVModelInfoClient>("VModelInfoClient", sharedobj::engine());
     g_IBaseClientState = *(reinterpret_cast<CBaseClientState **>(gSignatures.GetEngineSignature("C7 04 24 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? 89 44 24 04 E8 ? ? ? ? A1 ? ? ? ?") + 3));
     logging::Info("BaseClientState: 0x%08x", g_IBaseClientState);
-    while (!g_IAchievementMgr)
-        g_IAchievementMgr = g_IEngine->GetAchievementMgr();
+    g_IAchievementMgr = g_IEngine->GetAchievementMgr();
     g_ISteamUserStats = g_ISteamClient->GetISteamUserStats(su, sp, "STEAMUSERSTATS_INTERFACE_VERSION011");
     IF_GAME(IsTF2())
     {
@@ -153,7 +157,6 @@ void CreateInterfaces()
         g_pGameRules               = *reinterpret_cast<CGameRules **>(g_pGameRules_sig + 8);
     }
     g_IMaterialSystem = BruteforceInterface<IMaterialSystemFixed>("VMaterialSystem", sharedobj::materialsystem());
-    g_IFileSystem     = BruteforceInterface<IFileSystem>("VFileSystem", sharedobj::filesystem_stdio());
     g_IMDLCache       = BruteforceInterface<IMDLCache>("MDLCache", sharedobj::datacache());
 
     g_IPanel = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2());

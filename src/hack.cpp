@@ -301,10 +301,12 @@ static bool FSHook_Precache(const char *pFileName, const char *pPathID)
 
 static CatCommand debug_invalidate("invalidate_mdl_cache", "Invalidates MDL cache", []() { g_IBaseClient->InvalidateMdlCache(); });
 
-static hooks::VMTHook fs_hook, fs_hook2;
+static hooks::VMTHook fs_hook{}, fs_hook2{};
 
 static void ReduceRamUsage()
 {
+    if (fs_hook.IsHooked(reinterpret_cast<void *>(g_IFileSystem)))
+        return;
     /* TO DO: Improves load speeds but doesn't reduce memory usage a lot
      * It seems engine still allocates significant parts without them
      * being really used
@@ -329,7 +331,11 @@ static void ReduceRamUsage()
      * spam related to mdl not being able to play sequence that it
      * cannot play on error.mdl
      */
-    static BytePatch playSequence{ gSignatures.GetClientSignature, "55 89 E5 57 56 53 83 EC ? 8B 75 0C 8B 5D 08 85 F6 74 ? 83 BB", 0x00, { 0xC3 } };
+    if (g_IBaseClient)
+    {
+        static BytePatch playSequence{ gSignatures.GetClientSignature, "55 89 E5 57 56 53 83 EC ? 8B 75 0C 8B 5D 08 85 F6 74 ? 83 BB", 0x00, { 0xC3 } };
+        playSequence.Patch();
+    }
 #if 0
     /* Same explanation as above, but spams about certain particles not loaded */
     static BytePatch particleCreate{ gSignatures.GetClientSignature,
@@ -348,15 +354,28 @@ static void ReduceRamUsage()
     particlePrecache.Patch();
     particleCreating.Patch();
 #endif
-    playSequence.Patch();
 }
 
 static void UnHookFs()
 {
     fs_hook.Release();
     fs_hook2.Release();
-    g_IBaseClient->InvalidateMdlCache();
+    if (g_IBaseClient)
+        g_IBaseClient->InvalidateMdlCache();
 }
+#if !ENABLE_VISUALS
+static InitRoutineEarly nullify_textmode([]() {
+    ReduceRamUsage();
+    static auto addr1 = e8call_direct(gSignatures.GetEngineSignature("E8 ? ? ? ? 8B 93 ? ? ? ? 85 D2 0F 84 ? ? ? ?")) + 0x18;
+    static auto addr2 = sharedobj::materialsystem().Pointer(0x3EC08);
+
+    static BytePatch patch1(addr1, { 0x81, 0xC4, 0x6C, 0x20, 0x00, 0x00, 0x5B, 0x5E, 0x5F, 0x5D, 0xC3 });
+    static BytePatch patch2(addr2, { 0x83, 0xC4, 0x50, 0x5B, 0x5E, 0x5D, 0xC3 });
+
+    patch1.Patch();
+    patch2.Patch();
+});
+#endif
 
 static void InitRandom()
 {
@@ -413,15 +432,24 @@ free(logname);*/
 #endif /* TEXTMODE */
     logging::Info("Initializing...");
     InitRandom();
-    sharedobj::LoadAllSharedObjects();
-    CreateInterfaces();
-    CDumper dumper;
+    sharedobj::LoadEarlyObjects();
+    CreateEarlyInterfaces();
+    logging::Info("Clearing Early initializer stack");
     null_graphics.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
         if (after)
             ReduceRamUsage();
         else
             UnHookFs();
     });
+    while (!init_stack_early().empty())
+    {
+        init_stack_early().top()();
+        init_stack_early().pop();
+    }
+    logging::Info("Early Initializer stack done");
+    sharedobj::LoadAllSharedObjects();
+    CreateInterfaces();
+    CDumper dumper;
     dumper.SaveDump();
     logging::Info("Is TF2? %d", IsTF2());
     logging::Info("Is TF2C? %d", IsTF2C());

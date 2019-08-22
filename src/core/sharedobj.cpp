@@ -84,19 +84,30 @@ void *SharedObject::CreateInterface(const std::string &interface)
     return (void *) (fptr(interface.c_str(), nullptr));
 }
 
+void LoadEarlyObjects()
+{
+    try
+    {
+        engine().Load();
+        filesystem_stdio().Load();
+        tier0().Load();
+        materialsystem().Load();
+    }
+    catch (std::exception &ex)
+    {
+        logging::Info("Exception: %s", ex.what());
+    }
+}
+
 void LoadAllSharedObjects()
 {
     try
     {
         steamclient().Load();
         client().Load();
-        engine().Load();
         steamapi().Load();
         vstdlib().Load();
-        tier0().Load();
         inputsystem().Load();
-        materialsystem().Load();
-        filesystem_stdio().Load();
         datacache().Load();
         vgui2().Load();
 #if ENABLE_VISUALS
