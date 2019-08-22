@@ -188,7 +188,7 @@ char SentryTracerParity[MAX_ENTITIES + 1]{ 0 };
 void FX_Tracer_detour(Vector &start, CEffectData &data, int velocity, bool makeWhiz)
 {
     // start and end are reversed, justvalvethings.club
-    if (!sentry_tracers)
+    if (!sentry_tracers || !enable)
         return FX_Tracer_fn(start, data.m_vStart, velocity, makeWhiz);
     auto sentry = g_IEntityList->GetClientEntityFromHandle(data.m_hEntity);
     if (!sentry || sentry->entindex() == -1 || sentry->GetClientClass()->m_ClassID != CL_CLASS(CObjectSentrygun))
