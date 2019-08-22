@@ -105,7 +105,7 @@ bool StolenName()
 std::string GetNamestealName(CSteamID steam_id)
 {
     if (steam_id != g_ISteamUser->GetSteamID())
-        return;
+        return std::string();
 
     // Check User settings if namesteal is allowed
     if (namesteal)
