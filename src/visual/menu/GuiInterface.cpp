@@ -166,7 +166,7 @@ bool gui::handleSdlEvent(SDL_Event *event)
     }
     if (event->type == SDL_KEYDOWN)
     {
-        if (event->key.keysym.scancode == (*open_gui_button).scan)
+        if (event->key.keysym.scancode == SDL_GetScancodeFromKey((*open_gui_button).keycode))
         {
             // logging::Info("GUI open button pressed");
             zerokernel::Menu::instance->setInGame(!zerokernel::Menu::instance->isInGame());
