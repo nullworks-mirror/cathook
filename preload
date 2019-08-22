@@ -1,0 +1,29 @@
+if [ $EUID == 0 ]; then
+    echo "This script must not be run as root"
+    exit
+fi
+line=$(pgrep -u $(logname) hl2_linux)
+arr=($line)
+
+if [ ${#arr[@]} != 0 ]; then
+    echo TF2 Already Running!
+    exit
+fi
+
+line=$(pgrep -u $(logname) steam)
+arr=($line)
+
+if [ ${#arr[@]} == 0 ]; then
+    echo Steam not running! Starting it.
+    steam > /dev/null 2>&1 &
+    sleep 30
+    echo Done starting Steam
+fi
+
+original_wd=$(pwd)
+echo "Preloading cathook!"
+TF2_PATH=$(realpath ~/.steam/steam/steamapps/common/Team\ Fortress\ 2/)
+pushd "$TF2_PATH"
+LD_PRELOAD="$(realpath $original_wd/bin/libcathook.so)" LD_LIBRARY_PATH="$TF2_PATH/bin" "$TF2_PATH/hl2_linux" -game tf > /dev/null 2>&1 &
+echo "Game preloading!"
+popd;
