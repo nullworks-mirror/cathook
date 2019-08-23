@@ -29,12 +29,21 @@ void GetTeamColor(Color *clr, void *this_, int data, int local)
     if (data < 1000 || !playerIdx)
         return GetTeamColor_fn(clr, this_, data, local);
     // No Color change
-    if (!g_IEngine->GetPlayerInfo(playerIdx, &pinfo) || playerlist::IsDefault(pinfo.friendsID))
+    /*if (!g_IEngine->GetPlayerInfo(playerIdx, &pinfo) || playerlist::IsDefault(pinfo.friendsID))
+    {
         return GetTeamColor_fn(clr, this_, team, local);
+    }*/
 
     // Get new color
+    g_IEngine->GetPlayerInfo(playerIdx, &pinfo);
     auto wc = playerlist::Color(pinfo.friendsID);
-
+    if (!g_IEngine->GetPlayerInfo(playerIdx, &pinfo) || playerlist::IsDefault(pinfo.friendsID))
+    {
+        if (team != TEAM_SPEC && team != TEAM_SPEC)
+            wc = team == TEAM_BLU ? colors::blu : colors::red;
+        else
+            wc = colors::white;
+    }
     // Local player needs slightly different coloring in killfeed
     if (local)
         for (int i = 0; i < 3; i++)
