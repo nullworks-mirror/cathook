@@ -18,6 +18,9 @@ namespace playerlist
 
 std::unordered_map<unsigned, userdata> data{};
 
+const std::string k_Names[]                                       = { "DEFAULT", "FRIEND", "RAGE", "IPC", "INVALID", "CAT" };
+const char *const k_pszNames[]                                    = { "DEFAULT", "FRIEND", "RAGE", "IPC", "INVALID", "CAT" };
+const std::array<std::pair<k_EState, size_t>, 5> k_arrValidStates = { std::pair(k_EState::DEFAULT, 0), { k_EState::FRIEND, 1 }, { k_EState::RAGE, 2 }, { k_EState::IPC, 3 }, { k_EState::CAT, 5 } };
 const userdata null_data{};
 #if ENABLE_VISUALS
 rgba_t k_Colors[] = { colors::empty, colors::FromRGBA8(99, 226, 161, 255), colors::FromRGBA8(226, 204, 99, 255), colors::FromRGBA8(232, 134, 6, 255), colors::empty };
@@ -114,9 +117,7 @@ void Load()
 rgba_t Color(unsigned steamid)
 {
     const auto &pl = AccessData(steamid);
-    if (pl.state == k_EState::DEVELOPER)
-        return colors::RainbowCurrent();
-    else if (pl.state == k_EState::CAT)
+    if (pl.state == k_EState::CAT)
         return colors::RainbowCurrent();
     else if (pl.color.a)
         return pl.color;
@@ -162,6 +163,55 @@ bool IsDefault(CachedEntity *entity)
     if (entity && entity->player_info.friendsID)
         return IsDefault(entity->player_info.friendsID);
     return true;
+}
+
+bool ChangeState(unsigned int steamid, k_EState state, bool force)
+{
+    auto &data = AccessData(steamid);
+    if (force)
+    {
+        data.state = state;
+        return true;
+    }
+    switch (data.state)
+    {
+    case k_EState::FRIEND:
+        return false;
+    case k_EState::IPC:
+        if (state == k_EState::FRIEND)
+        {
+            ChangeState(steamid, state, true);
+            return true;
+        }
+        else
+            return false;
+    case k_EState::CAT:
+        if (state == k_EState::FRIEND || state == k_EState::IPC)
+        {
+            ChangeState(steamid, state, true);
+            return true;
+        }
+        else
+            return false;
+    case k_EState::DEFAULT:
+        if (state != k_EState::DEFAULT)
+        {
+            ChangeState(steamid, state, true);
+            return true;
+        }
+        else
+            return false;
+    case k_EState::RAGE:
+        return false;
+    }
+    return true;
+}
+
+bool ChangeState(CachedEntity *entity, k_EState state, bool force)
+{
+    if (entity && entity->player_info.friendsID)
+        return ChangeState(entity->player_info.friendsID, state, force);
+    return false;
 }
 
 CatCommand pl_save("pl_save", "Save playerlist", Save);
