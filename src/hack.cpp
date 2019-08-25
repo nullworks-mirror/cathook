@@ -623,9 +623,11 @@ void hack::Shutdown()
 #endif
     logging::Info("Unregistering convars..");
     ConVar_Unregister();
-    logging::Info("Shutting down killsay...");
+    logging::Info("Unloading sharedobjects..");
+    sharedobj::UnloadAllSharedObjects();
     if (!hack::game_shutdown)
     {
+        logging::Info("Running shutdown handlers");
         EC::run(EC::Shutdown);
 #if ENABLE_VISUALS
         g_pScreenSpaceEffects->DisableScreenSpaceEffect("_cathook_glow");

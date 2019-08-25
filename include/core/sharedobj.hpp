@@ -24,6 +24,7 @@ class SharedObject
 public:
     SharedObject(const char *_file, bool _factory);
     void Load();
+    void Unload();
     char *Pointer(uintptr_t offset) const;
     void *CreateInterface(const std::string &interface);
 
@@ -37,6 +38,7 @@ public:
     link_map *lmap{ nullptr };
 };
 
+SharedObject &serverbrowser();
 SharedObject &steamclient();
 SharedObject &client();
 SharedObject &engine();
@@ -56,4 +58,5 @@ SharedObject &libsdl();
 
 void LoadEarlyObjects();
 void LoadAllSharedObjects();
+void UnloadAllSharedObjects();
 } // namespace sharedobj

@@ -67,6 +67,16 @@ void SharedObject::Load()
     }
 }
 
+void SharedObject::Unload()
+{
+    if (lmap)
+    {
+        dlclose(lmap);
+        lmap = nullptr;
+    }
+    fptr = nullptr;
+}
+
 char *SharedObject::Pointer(uintptr_t offset) const
 {
     if (this->lmap != nullptr)
@@ -120,6 +130,26 @@ void LoadAllSharedObjects()
     {
         logging::Info("Exception: %s", ex.what());
     }
+}
+
+void UnloadAllSharedObjects()
+{
+    steamclient().Unload();
+    client().Unload();
+    steamapi().Unload();
+    vstdlib().Unload();
+    inputsystem().Unload();
+    datacache().Unload();
+    vgui2().Unload();
+#if ENABLE_VISUALS
+    vguimatsurface().Unload();
+    studiorender().Unload();
+    libsdl().Unload();
+#endif
+    engine().Unload();
+    filesystem_stdio().Unload();
+    tier0().Unload();
+    materialsystem().Unload();
 }
 
 SharedObject &steamclient()
