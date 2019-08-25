@@ -113,7 +113,7 @@ execute_process(COMMAND
         OUTPUT_VARIABLE GIT_COMMITTER_DATE
         ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-find_library(ValveLibraryTier0   NAMES tier0 PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
+set( CMAKE_SKIP_RPATH true )
 find_library(ValveLibraryVStdLib NAMES vstdlib PATHS "${PROJECT_SOURCE_DIR}/lib" NO_DEFAULT_PATH)
 
 if(EnableIPC)
@@ -188,7 +188,7 @@ add_custom_target(data
         VERBATIM)
 
 # SDL included because of https://github.com/nullworks/cathook/issues/689
-target_link_libraries(cathook ${ValveLibraryTier0} ${ValveLibraryVStdLib} ${SDL2_LIBRARY})
+target_link_libraries(cathook ${ValveLibraryVStdLib} ${SDL2_LIBRARY})
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(src)
