@@ -637,5 +637,7 @@ void hack::Shutdown()
 #endif
 #endif
     }
+    logging::Info("Releasing VMT hooks..");
+    hooks::ReleaseAllHooks();
     logging::Info("Success..");
 }
