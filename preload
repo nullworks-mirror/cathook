@@ -21,11 +21,20 @@ if [ ${#arr[@]} == 0 ]; then
     sleep 30
     echo Done starting Steam
 fi
+# pBypass for crash dumps being sent
+# You may also want to consider using -nobreakpad in your launch options.
+sudo mkdir -p /tmp/dumps # Make it as root if it doesnt exist
+sudo chown root:root /tmp/dumps # Claim it as root
+sudo chmod 000 /tmp/dumps # No permissions
 
-original_wd=$(pwd)
-echo "Preloading cathook!"
+FILENAME="/tmp/.gl$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 6)"
+
+cp "bin/libcathook.so" "$FILENAME"
+
+echo "Preloading cathook as $FILENAME!"
 TF2_PATH=$(realpath ~/.steam/steam/steamapps/common/Team\ Fortress\ 2/)
 pushd "$TF2_PATH"
-LD_PRELOAD="$(realpath $original_wd/bin/libcathook.so)" LD_LIBRARY_PATH="$TF2_PATH/bin" "$TF2_PATH/hl2_linux" -game tf > /dev/null 2>&1 &
+LD_PRELOAD="$FILENAME" LD_LIBRARY_PATH="$TF2_PATH/bin" "$TF2_PATH/hl2_linux" -game tf > /dev/null 2>&1 &
 echo "Game preloading!"
 popd;
+rm "$FILENAME"
