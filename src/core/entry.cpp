@@ -6,22 +6,36 @@
  */
 
 #include "common.hpp"
-#include <thread>
-#include <atomic>
+#include <pthread.h>
 
 #include "hack.hpp"
 
-static std::atomic isStopping = false;
-static std::thread thread_main;
+pthread_mutex_t mutex_quit;
+pthread_t thread_main;
 
-void *MainThread()
+bool IsStopping(pthread_mutex_t *mutex_quit_l)
 {
-    std::this_thread::sleep_for(std::chrono_literals::operator""s(50));
+    if (!pthread_mutex_trylock(mutex_quit_l))
+    {
+        logging::Info("Shutting down, unlocking mutex");
+        pthread_mutex_unlock(mutex_quit_l);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
+void *MainThread(void *arg)
+{
+    pthread_mutex_t *mutex_quit_l = (pthread_mutex_t *) arg;
     hack::Initialize();
     logging::Info("Init done...");
-    while (!isStopping)
+    while (!IsStopping(mutex_quit_l))
     {
-        std::this_thread::sleep_for(std::chrono_literals::operator""ms(500));
+        hack::Think();
     }
     hack::Shutdown();
     logging::Shutdown();
@@ -30,14 +44,17 @@ void *MainThread()
 
 void __attribute__((constructor)) attach()
 {
-    thread_main = std::thread(MainThread);
+    // std::string test_str = "test";
+    pthread_mutex_init(&mutex_quit, 0);
+    pthread_mutex_lock(&mutex_quit);
+    pthread_create(&thread_main, 0, MainThread, &mutex_quit);
 }
 
 void detach()
 {
     logging::Info("Detaching");
-    isStopping = true;
-    thread_main.join();
+    pthread_mutex_unlock(&mutex_quit);
+    pthread_join(thread_main, 0);
 }
 
 void __attribute__((destructor)) deconstruct()

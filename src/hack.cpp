@@ -605,6 +605,11 @@ free(logname);*/
     }
 }
 
+void hack::Think()
+{
+    usleep(250000);
+}
+
 void hack::Shutdown()
 {
     if (hack::shutdown)
