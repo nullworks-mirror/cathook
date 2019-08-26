@@ -32,6 +32,5 @@ extern bool initialized;
 const std::string &GetVersion();
 const std::string &GetType();
 void Initialize();
-void Think();
 void Shutdown();
 } // namespace hack
