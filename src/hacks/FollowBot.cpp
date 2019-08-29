@@ -316,6 +316,7 @@ static void cm()
                     auto entity = ENTITY(i);
                     if (!isValidTarget(entity))
                         continue;
+                    // No enemy check, since steamid is very specific
                     if (steamid != entity->player_info.friendsID) // steamid check
                         continue;
                     if (startFollow(entity, isNavBotCM))
@@ -421,6 +422,8 @@ static void cm()
                 if (CE_BAD(entity))
                     continue;
             }
+            if (entity->m_bEnemy())
+                continue;
             // const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
             // FIXME follow cart/point
             /*if (followcart && model &&
