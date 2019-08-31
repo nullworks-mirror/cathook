@@ -503,9 +503,11 @@ free(logname);*/
 #endif
     hooks::client.Apply();
 
+#if ENABLE_VISUALS || TEXTMODE
     hooks::panel.Set(g_IPanel);
     hooks::panel.HookMethod(hooked_methods::methods::PaintTraverse, offsets::PaintTraverse(), &hooked_methods::original::PaintTraverse);
     hooks::panel.Apply();
+#endif
 
 #if ENABLE_VISUALS
     hooks::vstd.Set((void *) g_pUniformStream);
@@ -526,6 +528,7 @@ free(logname);*/
     hooks::input.HookMethod(HOOK_ARGS(GetUserCmd));
     hooks::input.Apply();
 
+#if ENABLE_VISUALS || TEXTMODE
     hooks::modelrender.Set(g_IVModelRender);
     hooks::modelrender.HookMethod(HOOK_ARGS(DrawModelExecute));
     hooks::modelrender.Apply();
@@ -533,6 +536,7 @@ free(logname);*/
     hooks::enginevgui.Set(g_IEngineVGui);
     hooks::enginevgui.HookMethod(HOOK_ARGS(Paint));
     hooks::enginevgui.Apply();
+#endif
 
     hooks::engine.Set(g_IEngine);
     hooks::engine.HookMethod(HOOK_ARGS(ServerCmdKeyValues));
