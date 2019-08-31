@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+
 set(EnableCotire 1 CACHE BOOL "Enable CoTiRe (Compile Time Reducer)")
 # Ensure that only 32 bit libraries are used.
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/Toolchain-cross-m32.cmake")
@@ -15,7 +17,6 @@ endforeach()
 
 if (EnableCotire)
     set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/cotire/CMake")
-    cmake_policy(SET CMP0011 NEW)
     include(cotire)
     file(GLOB_RECURSE ignore_files *.cpp)
     set(ignore_files ${ignore_files} CACHE INTERNAL "")
@@ -27,7 +28,6 @@ endif()
 set(CMAKE_BUILD_TYPE_VALUES "Debug;Release" CACHE INTERNAL "List of supported build")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_BUILD_TYPE_VALUES})
 
-cmake_minimum_required(VERSION 3.0)
 project(cathook VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 17)
