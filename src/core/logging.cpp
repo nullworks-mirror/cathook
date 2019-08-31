@@ -14,7 +14,6 @@
 #include "common.hpp"
 #include "hack.hpp"
 #include "MiscTemporary.hpp"
-#include "thread"
 
 static settings::Boolean log_to_console{ "hack.log-console", "false" };
 
@@ -37,7 +36,6 @@ void logging::Info(const char *fmt, ...)
         return;
     if (!handle.is_open())
         logging::Initialize();
-    handle.flush();
     // Argument list
     va_list list;
     va_start(list, fmt);
@@ -60,7 +58,7 @@ void logging::Info(const char *fmt, ...)
     std::string to_log = result.get();
     to_log             = strfmt("[%s] ", timeString).get() + to_log + "\n";
     logging::handle << to_log;
-    logging::handle.close();
+    logging::handle.flush();
 #if ENABLE_VISUALS
     if (!hack::shutdown)
     {
