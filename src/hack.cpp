@@ -585,7 +585,7 @@ free(logname);*/
         init_stack().pop();
     }
     logging::Info("Initializer stack done");
-#if not ENABLE_VISUALS
+#if TEXTMODE
     hack::command_stack().push("exec cat_autoexec_textmode");
 #else
     hack::command_stack().push("exec cat_autoexec");
