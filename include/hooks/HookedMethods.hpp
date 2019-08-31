@@ -52,10 +52,8 @@ DECLARE_HOOKED_METHOD(Shutdown, void, INetChannel *, const char *);
 DECLARE_HOOKED_METHOD(SendDatagram, int, INetChannel *, bf_write *);
 // ISteamFriends
 DECLARE_HOOKED_METHOD(GetFriendPersonaName, const char *, ISteamFriends *, CSteamID);
-#if ENABLE_VISUALS || TEXTMODE
 // IEngineVGui
 DECLARE_HOOKED_METHOD(Paint, void, IEngineVGui *, PaintMode_t);
-#endif
 // IGameEventManager2
 DECLARE_HOOKED_METHOD(FireEvent, bool, IGameEventManager2 *, IGameEvent *, bool);
 DECLARE_HOOKED_METHOD(FireEventClientSide, bool, IGameEventManager2 *, IGameEvent *);

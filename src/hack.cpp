@@ -532,11 +532,10 @@ free(logname);*/
     hooks::modelrender.Set(g_IVModelRender);
     hooks::modelrender.HookMethod(HOOK_ARGS(DrawModelExecute));
     hooks::modelrender.Apply();
-
+#endif
     hooks::enginevgui.Set(g_IEngineVGui);
     hooks::enginevgui.HookMethod(HOOK_ARGS(Paint));
     hooks::enginevgui.Apply();
-#endif
 
     hooks::engine.Set(g_IEngine);
     hooks::engine.HookMethod(HOOK_ARGS(ServerCmdKeyValues));
