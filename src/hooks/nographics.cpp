@@ -6,8 +6,12 @@
  */
 
 #include "common.hpp"
-#include "MiscTemporary.hpp"
 
+#if !TEXTMODE
+static settings::Boolean null_graphics("hack.nullgraphics", "false");
+#else
+static settings::Boolean null_graphics("hack.nullgraphics", "true");
+#endif
 typedef ITexture *(*FindTexture_t)(void *, const char *, const char *, bool, int);
 typedef IMaterial *(*FindMaterialEx_t)(void *, const char *, const char *, int, bool, const char *);
 typedef IMaterial *(*FindMaterial_t)(void *, const char *, const char *, bool, const char *);
