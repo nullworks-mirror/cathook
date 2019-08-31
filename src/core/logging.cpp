@@ -14,6 +14,7 @@
 #include "common.hpp"
 #include "hack.hpp"
 #include "MiscTemporary.hpp"
+#include "thread"
 
 static settings::Boolean log_to_console{ "hack.log-console", "false" };
 
@@ -34,8 +35,9 @@ void logging::Info(const char *fmt, ...)
 #if ENABLE_LOGGING
     if (shut_down)
         return;
-    logging::Initialize();
-
+    if (!handle.is_open())
+        logging::Initialize();
+    handle.flush();
     // Argument list
     va_list list;
     va_start(list, fmt);
@@ -76,3 +78,13 @@ void logging::Shutdown()
     shut_down = true;
 #endif
 }
+static std::thread debug_thread;
+static CatCommand debug_log_leak{ "log.leak-debug", "Debug", []() {
+                                     debug_thread = std::thread([]() {
+                                         while (true)
+                                         {
+                                             g_ICvar->ConsoleColorPrintf(MENU_COLOR, "bruh\n");
+                                             usleep(100);
+                                         }
+                                     });
+                                 } };

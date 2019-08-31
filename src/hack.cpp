@@ -305,55 +305,46 @@ static hooks::VMTHook fs_hook{}, fs_hook2{};
 
 static void ReduceRamUsage()
 {
-    if (fs_hook.IsHooked(reinterpret_cast<void *>(g_IFileSystem)))
-        return;
-    /* TO DO: Improves load speeds but doesn't reduce memory usage a lot
-     * It seems engine still allocates significant parts without them
-     * being really used
-     * Plan B: null subsystems (Particle, Material, Model partially, Sound and etc.)
-     */
+    if (!fs_hook.IsHooked(reinterpret_cast<void *>(g_IFileSystem)))
+    {
+        /* TO DO: Improves load speeds but doesn't reduce memory usage a lot
+         * It seems engine still allocates significant parts without them
+         * being really used
+         * Plan B: null subsystems (Particle, Material, Model partially, Sound and etc.)
+         */
 
-    fs_hook.Set(reinterpret_cast<void *>(g_IFileSystem));
-    fs_hook.HookMethod(FSHook_FindFirst, 27, &FSorig_FindFirst);
-    fs_hook.HookMethod(FSHook_FindNext, 28, &FSorig_FindNext);
-    fs_hook.HookMethod(FSHook_AsyncReadMultiple, 37, &FSorig_AsyncReadMultiple);
-    fs_hook.HookMethod(FSHook_OpenEx, 69, &FSorig_OpenEx);
-    fs_hook.HookMethod(FSHook_ReadFileEx, 71, &FSorig_ReadFileEx);
-    fs_hook.HookMethod(FSHook_AddFilesToFileCache, 103, &FSorig_AddFilesToFileCache);
-    fs_hook.Apply();
+        fs_hook.Set(reinterpret_cast<void *>(g_IFileSystem));
+        fs_hook.HookMethod(FSHook_FindFirst, 27, &FSorig_FindFirst);
+        fs_hook.HookMethod(FSHook_FindNext, 28, &FSorig_FindNext);
+        fs_hook.HookMethod(FSHook_AsyncReadMultiple, 37, &FSorig_AsyncReadMultiple);
+        fs_hook.HookMethod(FSHook_OpenEx, 69, &FSorig_OpenEx);
+        fs_hook.HookMethod(FSHook_ReadFileEx, 71, &FSorig_ReadFileEx);
+        fs_hook.HookMethod(FSHook_AddFilesToFileCache, 103, &FSorig_AddFilesToFileCache);
+        fs_hook.Apply();
 
-    fs_hook2.Set(reinterpret_cast<void *>(g_IFileSystem), 4);
-    fs_hook2.HookMethod(FSHook_Open, 2, &FSorig_Open);
-    fs_hook2.HookMethod(FSHook_Precache, 9, &FSorig_Precache);
-    fs_hook2.HookMethod(FSHook_ReadFile, 14, &FSorig_ReadFile);
-    fs_hook2.Apply();
-    /* Might give performance benefit, but mostly fixes annoying console
-     * spam related to mdl not being able to play sequence that it
-     * cannot play on error.mdl
-     */
+        fs_hook2.Set(reinterpret_cast<void *>(g_IFileSystem), 4);
+        fs_hook2.HookMethod(FSHook_Open, 2, &FSorig_Open);
+        fs_hook2.HookMethod(FSHook_Precache, 9, &FSorig_Precache);
+        fs_hook2.HookMethod(FSHook_ReadFile, 14, &FSorig_ReadFile);
+        fs_hook2.Apply();
+        /* Might give performance benefit, but mostly fixes annoying console
+         * spam related to mdl not being able to play sequence that it
+         * cannot play on error.mdl
+         */
+    }
     if (g_IBaseClient)
     {
         static BytePatch playSequence{ gSignatures.GetClientSignature, "55 89 E5 57 56 53 83 EC ? 8B 75 0C 8B 5D 08 85 F6 74 ? 83 BB", 0x00, { 0xC3 } };
         playSequence.Patch();
+
+        /* Same explanation as above, but spams about certain particles not loaded */
+        static BytePatch particleCreate{ gSignatures.GetClientSignature, "55 89 E5 56 53 83 EC ? 8B 5D 0C 8B 75 08 85 DB 74 ? A1", 0x00, { 0x31, 0xC0, 0xC3 } };
+        static BytePatch particlePrecache{ gSignatures.GetClientSignature, "55 89 E5 53 83 EC ? 8B 5D 0C 8B 45 08 85 DB 74 ? 80 3B 00 75 ? 83 C4 ? 5B 5D C3 ? ? ? ? 89 5C 24", 0x00, { 0x31, 0xC0, 0xC3 } };
+        static BytePatch particleCreating{ gSignatures.GetClientSignature, "55 89 E5 57 56 53 83 EC ? A1 ? ? ? ? 8B 75 08 85 C0 74 ? 8B 4D", 0x00, { 0x31, 0xC0, 0xC3 } };
+        particleCreate.Patch();
+        particlePrecache.Patch();
+        particleCreating.Patch();
     }
-#if 0
-    /* Same explanation as above, but spams about certain particles not loaded */
-    static BytePatch particleCreate{ gSignatures.GetClientSignature,
-        "55 89 E5 56 53 83 EC ? 8B 5D 0C 8B 75 08 85 DB 74 ? A1",
-        0x00, { 0x31, 0xC0, 0xC3 }
-    };
-    static BytePatch particlePrecache{ gSignatures.GetClientSignature,
-        "55 89 E5 53 83 EC ? 8B 5D 0C 8B 45 08 85 DB 74 ? 80 3B 00 75 ? 83 C4 ? 5B 5D C3 ? ? ? ? 89 5C 24",
-        0x00, { 0x31, 0xC0, 0xC3 }
-    };
-    static BytePatch particleCreating{ gSignatures.GetClientSignature,
-        "55 89 E5 57 56 53 83 EC ? A1 ? ? ? ? 8B 75 08 85 C0 74 ? 8B 4D",
-        0x00, { 0x31, 0xC0, 0xC3 }
-    };
-    particleCreate.Patch();
-    particlePrecache.Patch();
-    particleCreating.Patch();
-#endif
 }
 
 static void UnHookFs()
@@ -375,6 +366,7 @@ static InitRoutineEarly nullify_textmode([]() {
     patch1.Patch();
     patch2.Patch();
 });
+static InitRoutine nullifiy_textmode2([]() { ReduceRamUsage(); });
 #endif
 
 static void InitRandom()
