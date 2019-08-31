@@ -78,13 +78,3 @@ void logging::Shutdown()
     shut_down = true;
 #endif
 }
-static std::thread debug_thread;
-static CatCommand debug_log_leak{ "log.leak-debug", "Debug", []() {
-                                     debug_thread = std::thread([]() {
-                                         while (true)
-                                         {
-                                             g_ICvar->ConsoleColorPrintf(MENU_COLOR, "bruh\n");
-                                             usleep(100);
-                                         }
-                                     });
-                                 } };
