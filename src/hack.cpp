@@ -341,6 +341,7 @@ free(logname);*/
     hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound2));
     hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound3));
     hooks::soundclient.Apply();
+
     // FIXME [MP]
     logging::Info("Hooked!");
     velocity::Init();
