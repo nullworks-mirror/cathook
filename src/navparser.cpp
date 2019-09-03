@@ -630,10 +630,11 @@ static void cm()
      * Or if inactive for too long
      */
     if (inactivity.check(*stuck_time) || (inactivity.check(*unreachable_time) &&
-        !IsVectorVisible(g_pLocalPlayer->v_Origin, *crumb_vec, false, MASK_PLAYERSOLID)))
+        !IsVectorVisible(g_pLocalPlayer->v_Origin, *crumb_vec + Vector(.0f, .0f, 41.5f),
+        false, MASK_PLAYERSOLID)))
     {
         /* crumb is invalid if endPoint is used */
-        if (*crumb_vec != endPoint)
+        if (crumb_vec != &endPoint)
             ignoremanager::addTime(last_area, *crumb, inactivity);
 
         repath();
