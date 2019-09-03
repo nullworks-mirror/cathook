@@ -440,8 +440,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
         {
             continue;
         }
-        Vector corner = GetClosestCornerToArea(&i ,vec);
-        float dist = corner.DistTo(vec);
+        float dist = i.m_center.DistTo(vec);
         if (dist < bestDist)
         {
             bestDist   = dist;
@@ -449,7 +448,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
         }
         // Check if we are within x and y bounds of an area
         if (ovBestDist >= dist || !i.IsOverlapping(vec) ||
-            !IsVectorVisible(vec, corner, true, MASK_PLAYERSOLID))
+            !IsVectorVisible(vec, i.m_center, true, MASK_PLAYERSOLID))
         {
             continue;
         }
@@ -459,7 +458,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
     if (bestSquare)
         ovBestSquare = bestSquare;
 
-    if (isLocal && vec == g_pLocalPlayer->v_Origin)
+    if (isLocal)
         findClosestNavSquare_localAreas.push_back(bestSquare);
 
     return ovBestSquare;
