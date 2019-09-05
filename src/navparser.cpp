@@ -455,11 +455,11 @@ CNavArea *findClosestNavSquare(const Vector &vec)
         ovBestDist   = dist;
         ovBestSquare = &i;
     }
-    if (bestSquare)
+    if (!ovBestSquare)
         ovBestSquare = bestSquare;
 
     if (isLocal)
-        findClosestNavSquare_localAreas.push_back(bestSquare);
+        findClosestNavSquare_localAreas.push_back(ovBestSquare);
 
     return ovBestSquare;
 }
