@@ -33,6 +33,7 @@ static settings::Int micspam_off{ "cat-bot.micspam.interval-off", "60" };
 static settings::Boolean auto_crouch{ "cat-bot.auto-crouch", "false" };
 static settings::Boolean always_crouch{ "cat-bot.always-crouch", "false" };
 static settings::Boolean random_votekicks{ "cat-bot.votekicks", "false" };
+static settings::Boolean votekick_rage_only{ "cat-bot.votekicks.rage-only", "false" };
 static settings::Boolean autoReport{ "cat-bot.autoreport", "true" };
 
 static settings::Boolean mvm_autoupgrade{ "mvm.autoupgrade", "false" };
@@ -244,6 +245,8 @@ void do_random_votekick()
         if (info.friendsID == local_info.friendsID)
             continue;
         auto &pl = playerlist::AccessData(info.friendsID);
+        if (votekick_rage_only && pl.state != playerlist::k_EState::RAGE)
+            continue;
         if (pl.state != playerlist::k_EState::RAGE && pl.state != playerlist::k_EState::DEFAULT)
             continue;
 
@@ -567,7 +570,7 @@ CatBotEventListener &listener()
     return object;
 }
 
-static Timer timer_votekicks{};
+Timer timer_votekicks{};
 static Timer timer_catbot_list{};
 static Timer timer_abandon{};
 

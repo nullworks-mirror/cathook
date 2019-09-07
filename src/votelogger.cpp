@@ -8,6 +8,7 @@
 #include "common.hpp"
 #include <boost/algorithm/string.hpp>
 #include <settings/Bool.hpp>
+#include "CatBot.hpp"
 
 static settings::Boolean vote_kicky{ "votelogger.autovote.yes", "false" };
 static settings::Boolean vote_kickn{ "votelogger.autovote.no", "false" };
@@ -67,7 +68,8 @@ void dispatchUserMessage(bf_read &buffer, int type)
     switch (type)
     {
     case 45:
-        // Call Vote Failed
+        // Call Vote Failed, Refresh vote timer for catbot so it can try again
+        hacks::shared::catbot::timer_votekicks.last -= std::chrono::seconds(4);
         break;
     case 46:
     {
