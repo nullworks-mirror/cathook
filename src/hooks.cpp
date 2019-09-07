@@ -112,6 +112,7 @@ VMTHook studiorender{};
 VMTHook modelrender{};
 VMTHook clientmode4{};
 VMTHook materialsystem{};
+VMTHook soundclient{};
 VMTHook enginevgui{};
 VMTHook vstd{};
 VMTHook eventmanager2{};

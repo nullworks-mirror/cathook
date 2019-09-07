@@ -276,6 +276,8 @@ static InitRoutineEarly nullify_textmode([]() {
     patch2.Patch();
 });
 #endif
+
+static Timer signon_timer;
 static InitRoutine nullifiy_textmode2([]() {
 #if ENABLE_TEXTMODE
     ReduceRamUsage();
@@ -286,4 +288,23 @@ static InitRoutine nullifiy_textmode2([]() {
         else
             UnHookFs();
     });
+#if ENABLE_TEXTMODE
+    auto addr = gSignatures.GetEngineSignature("E8 ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? C7 04 24 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ?");
+    addr      = e8call_direct(addr);
+    static BytePatch patch(addr, { 0x31, 0xc0, 0xc3 });
+    patch.Patch();
+    EC::Register(
+        EC::Paint,
+        []() {
+            if (!signon_timer.test_and_set(5000))
+                return;
+            if (CE_GOOD(LOCAL_E))
+                return;
+            static auto addr = e8call_direct(gSignatures.GetEngineSignature("E8 ? ? ? ? 8B 85 ? ? ? ? 89 C7 E9 ? ? ? ? "));
+            typedef void (*SendFinishedSync_t)(CBaseClientState *);
+            static SendFinishedSync_t SendFinishedSync_fn = SendFinishedSync_t(addr);
+            SendFinishedSync_fn(g_IBaseClientState);
+        },
+        "nographics_cm");
+#endif
 });

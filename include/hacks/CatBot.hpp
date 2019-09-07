@@ -13,6 +13,7 @@ namespace hacks::shared::catbot
 {
 
 bool is_a_catbot(unsigned steamID);
+extern Timer timer_votekicks;
 bool should_ignore_player(CachedEntity *player);
 void update();
 void init();

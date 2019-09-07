@@ -1,6 +1,7 @@
 set(files "${CMAKE_CURRENT_LIST_DIR}/CanPacket.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/CreateMove.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/DispatchUserMessage.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/EmitSound.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/FireGameEvent.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/GetFriendPersonaName.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/GetUserCmd.cpp"

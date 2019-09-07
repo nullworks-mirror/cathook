@@ -12,11 +12,20 @@ struct SoundStruct
     Timer last_update;
 };
 
-std::map<int, SoundStruct> sound_cache;
+static std::map<int, SoundStruct> sound_cache;
 
 namespace soundcache
 {
 constexpr unsigned int EXPIRETIME = 10000;
+
+void cache_sound(const Vector *Origin, int source)
+{
+    // Just in case
+    if (!Origin)
+        return;
+    sound_cache[source].sound.m_pOrigin = *Origin;
+    sound_cache[source].last_update.update();
+}
 
 static void CreateMove()
 {
@@ -25,10 +34,7 @@ static void CreateMove()
     CUtlVector<SndInfo_t> sound_list;
     g_ISoundEngine->GetActiveSounds(sound_list);
     for (auto i : sound_list)
-    {
-        sound_cache[i.m_nSoundSource].sound.m_pOrigin = *i.m_pOrigin;
-        sound_cache[i.m_nSoundSource].last_update.update();
-    }
+        cache_sound(i.m_pOrigin, i.m_nSoundSource);
 
     for (auto it = sound_cache.cbegin(); it != sound_cache.cend();)
     {

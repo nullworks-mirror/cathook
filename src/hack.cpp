@@ -336,6 +336,12 @@ free(logname);*/
     hooks::steamfriends.HookMethod(HOOK_ARGS(GetFriendPersonaName));
     hooks::steamfriends.Apply();
 
+    hooks::soundclient.Set(g_ISoundEngine);
+    hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound1));
+    hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound2));
+    hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound3));
+    hooks::soundclient.Apply();
+
     // FIXME [MP]
     logging::Info("Hooked!");
     velocity::Init();

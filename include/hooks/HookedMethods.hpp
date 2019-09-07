@@ -86,6 +86,11 @@ DECLARE_HOOKED_METHOD(RandomInt, int, IUniformRandomStream *, int, int);
 #if ENABLE_VISUALS || ENABLE_TEXTMODE
 DECLARE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *, const DrawModelState_t &, const ModelRenderInfo_t &, matrix3x4_t *);
 #endif
+// g_ISoundEngine
+DECLARE_HOOKED_METHOD(EmitSound1, void, void *, IRecipientFilter &, int, int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
+DECLARE_HOOKED_METHOD(EmitSound2, void, void *, IRecipientFilter &, int, int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
+DECLARE_HOOKED_METHOD(EmitSound3, void, void *, IRecipientFilter &, int, int, int, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
+
 } // namespace hooked_methods
 
 // TODO
