@@ -68,7 +68,7 @@ void dispatchUserMessage(bf_read &buffer, int type)
     switch (type)
     {
     case 45:
-        // Call Vote Failed, Refresh vote timer for catbot so it can try again
+        // Vote setup Failed, Refresh vote timer for catbot so it can try again
         hacks::shared::catbot::timer_votekicks.last -= std::chrono::seconds(4);
         break;
     case 46:
