@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-RUNUSER="sudo -u $(logname)"
-$RUNUSER bash ./scripts/updater --autoupdater
+[[ ! -z "$SUDO_USER" ]] && RUNUSER="$SUDO_USER" || RUNUSER="$LOGNAME"
+RUNCMD="sudo -u $RUNUSER"
 
-line=$(pgrep -u $(logname) hl2_linux)
+$RUNCMD bash ./scripts/updater --autoupdater
+
+line=$(pgrep -u $RUNUSER hl2_linux)
 arr=($line)
 inst=$1
 if [ $# == 0 ]; then

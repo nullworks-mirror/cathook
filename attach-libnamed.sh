@@ -3,8 +3,10 @@
 # Thank you LWSS
 # https://github.com/LWSS/Fuzion/commit/a53b6c634cde0ed47b08dd587ba40a3806adf3fe
 
-RUNUSER="sudo -u $(logname)"
-$RUNUSER bash ./scripts/updater --autoupdater
+[[ ! -z "$SUDO_USER" ]] && RUNUSER="$SUDO_USER" || RUNUSER="$LOGNAME"
+RUNCMD="sudo -u $RUNUSER"
+
+$RUNCMD bash ./scripts/updater --autoupdater
 
 line=$(pgrep -u $SUDO_USER hl2_linux)
 arr=($line)
