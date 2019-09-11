@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-RUNUSER="sudo -u $(logname)"
+RUNUSER="sudo -u $SUDO_USER"
+
+if [ -z "$SUDO_USER" ]; then
+    echo This script may not be run without sudo!
+    exit
+fi
+
 $RUNUSER bash ./scripts/updater --autoupdater
 
 line=$(pgrep -u $SUDO_USER hl2_linux)

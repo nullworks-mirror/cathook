@@ -4,7 +4,7 @@ if [ $EUID == 0 ]; then
     echo "This script must not be run as root"
     exit
 fi
-line=$(pgrep -u $(logname) hl2_linux)
+line=$(pgrep -u $LOGNAME hl2_linux)
 arr=($line)
 
 if [ ${#arr[@]} != 0 ]; then
@@ -12,7 +12,7 @@ if [ ${#arr[@]} != 0 ]; then
     exit
 fi
 
-line=$(pgrep -u $(logname) steam)
+line=$(pgrep -u $LOGNAME steam)
 arr=($line)
 
 if [ ${#arr[@]} == 0 ]; then

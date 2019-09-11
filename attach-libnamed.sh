@@ -3,7 +3,13 @@
 # Thank you LWSS
 # https://github.com/LWSS/Fuzion/commit/a53b6c634cde0ed47b08dd587ba40a3806adf3fe
 
-RUNUSER="sudo -u $(logname)"
+RUNUSER="sudo -u $SUDO_USER"
+
+if [ -z "$SUDO_USER" ]; then
+    echo This script may not be run without sudo!
+    exit
+fi
+
 $RUNUSER bash ./scripts/updater --autoupdater
 
 line=$(pgrep -u $SUDO_USER hl2_linux)
