@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
 
-RUNUSER="sudo -u $SUDO_USER"
+[[ ! -z "$SUDO_USER" ]] && RUNUSER="$SUDO_USER" || RUNUSER="$LOGNAME"
+RUNCMD="sudo -u $RUNUSER"
 
-if [ -z "$SUDO_USER" ]; then
-    echo This script may not be run without sudo!
-    exit
-fi
+$RUNCMD bash ./scripts/updater --autoupdater
 
-$RUNUSER bash ./scripts/updater --autoupdater
-
-line=$(pgrep -u $SUDO_USER hl2_linux)
+line=$(pgrep -u $RUNUSER hl2_linux)
 arr=($line)
 inst=$1
 if [ $# == 0 ]; then
