@@ -27,7 +27,11 @@ void GetTeamColor(Color *clr, void *this_, int data, int local)
 
     // Our encoding uses quite a few bits, so let's just check for < 1000 and !playerIdx
     if (data < 1000 || !playerIdx)
+    {
+        auto wc = colors::white;
+        clr->SetColor(wc.r * 255, wc.g * 255, wc.b * 255, 255);
         return GetTeamColor_fn(clr, this_, data, local);
+    }
     // No Color change
     /*if (!g_IEngine->GetPlayerInfo(playerIdx, &pinfo) || playerlist::IsDefault(pinfo.friendsID))
     {
@@ -39,8 +43,9 @@ void GetTeamColor(Color *clr, void *this_, int data, int local)
     auto wc = playerlist::Color(pinfo.friendsID);
     if (!g_IEngine->GetPlayerInfo(playerIdx, &pinfo) || playerlist::IsDefault(pinfo.friendsID))
     {
-        if (team != TEAM_SPEC && team != TEAM_SPEC)
-            wc = team == TEAM_BLU ? colors::blu : colors::red;
+        if (team != TEAM_SPEC && team != TEAM_UNK)
+            // Colors taken from game
+            wc = team == TEAM_BLU ? colors::FromRGBA8(153, 204, 255, 255) : colors::FromRGBA8(255, 64, 64, 255);
         else
             wc = colors::white;
     }
@@ -55,8 +60,8 @@ void GetTeamColor(Color *clr, void *this_, int data, int local)
 static std::vector<BytePatch> no_stack_smash{};
 static std::vector<BytePatch> color_patches{};
 // Defines to make our lives easier
-#define DONT_SMASH_SMACK(offset) no_stack_smash.push_back(BytePatch{ addr, std::vector<unsigned char>{ 0xC3, 0x90, 0x90 } });
-#define PATCH_COLORS(patchNum) color_patches.push_back(BytePatch{ addrs[patchNum], patches[patchNum] });
+#define DONT_SMASH_SMACK(offset) no_stack_smash.push_back(BytePatch{ addr, std::vector<unsigned char>{ 0xC3, 0x90, 0x90 } })
+#define PATCH_COLORS(patchNum) color_patches.push_back(BytePatch{ addrs[patchNum], patches[patchNum] })
 
 static InitRoutine init([] {
     uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 53 8B 55 10 8B 45 08 8B 4D 0C 8B 5D 14");
