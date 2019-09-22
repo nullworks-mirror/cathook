@@ -8,24 +8,18 @@ RUNCMD="sudo -u $RUNUSER"
 
 $RUNCMD bash ./scripts/updater --autoupdater
 
-line=$(pgrep -u $SUDO_USER hl2_linux)
+line=$(pgrep -u $(logname) hl2_linux)
 arr=($line)
-inst=$1
-if [ $# == 0 ]; then
-    inst=0
-fi
 
-if [ ${#arr[@]} == 0 ]; then
-    echo TF2 isn\'t running!
-    exit
+if [ $# == 1 ]; then
+    proc=$1
+else
+    if [ ${#arr[@]} == 0 ]; then
+        echo TF2 isn\'t running!
+        exit
+    fi
+    proc=${arr[0]}
 fi
-
-if [ $inst -gt ${#arr[@]} ] || [ $inst == ${#arr[@]} ]; then
-    echo wrong index!
-    exit
-fi
-
-proc=${arr[$inst]}
 
 echo Running instances: "${arr[@]}"
 echo Attaching to "$proc"
