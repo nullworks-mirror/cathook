@@ -626,6 +626,7 @@ Color &GetDeadPlayerColor()
     return GetPlayerColor(playerIndex, team, true);
 }
 
+/*
 static InitRoutine init([]() {
     // 012BA7E4
     addr1 = gSignatures.GetClientSignature("89 04 24 FF 92 ? ? ? ? 8B 00") + 3;
@@ -661,7 +662,7 @@ static InitRoutine init([]() {
     // Patch!
     patch_scoreboardcolor1->Patch();
     patch_scoreboardcolor2->Patch();
-});
+});*/
 } // namespace ScoreboardColoring
 
 typedef void (*UpdateLocalPlayerVisionFlags_t)();
