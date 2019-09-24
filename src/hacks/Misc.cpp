@@ -562,11 +562,11 @@ static CatCommand dump_vars_by_name("debug_dump_netvars_name", "Dump netvars of 
     }
 });
 #if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
-// This makes us able to see enemy class and status in scoreboard and player panel
+/*// This makes us able to see enemy class and status in scoreboard and player panel
 static std::unique_ptr<BytePatch> patch_playerpanel;
 static std::unique_ptr<BytePatch> patch_scoreboard1;
 static std::unique_ptr<BytePatch> patch_scoreboard2;
-static std::unique_ptr<BytePatch> patch_scoreboard3;
+static std::unique_ptr<BytePatch> patch_scoreboard3;*/
 
 // Credits to UNKN0WN
 namespace ScoreboardColoring
@@ -626,7 +626,6 @@ Color &GetDeadPlayerColor()
     return GetPlayerColor(playerIndex, team, true);
 }
 
-/*
 static InitRoutine init([]() {
     // 012BA7E4
     addr1 = gSignatures.GetClientSignature("89 04 24 FF 92 ? ? ? ? 8B 00") + 3;
@@ -662,7 +661,7 @@ static InitRoutine init([]() {
     // Patch!
     patch_scoreboardcolor1->Patch();
     patch_scoreboardcolor2->Patch();
-});*/
+});
 } // namespace ScoreboardColoring
 
 typedef void (*UpdateLocalPlayerVisionFlags_t)();
@@ -720,10 +719,10 @@ void Shutdown()
     // unpatching local player
     render_zoomed = false;
 #if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
-    patch_playerpanel->Shutdown();
+    /*patch_playerpanel->Shutdown();
     patch_scoreboard1->Shutdown();
     patch_scoreboard2->Shutdown();
-    patch_scoreboard3->Shutdown();
+    patch_scoreboard3->Shutdown();*/
     if (ScoreboardColoring::addr1 == 3 || ScoreboardColoring::addr2 == 2)
         return;
 
@@ -740,7 +739,7 @@ static InitRoutine init([]() {
     render_zoomed.installChangeCallback(tryPatchLocalPlayerShouldDraw);
     EC::Register(EC::Draw, DrawText, "draw_misc_hacks", EC::average);
 #if !ENFORCE_STREAM_SAFETY
-    patch_playerpanel     = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "0F 94 45 DF", 0x0, std::vector<unsigned char>{ 0xC6, 0x45, 0xDF, 0x01 });
+    /*patch_playerpanel     = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "0F 94 45 DF", 0x0, std::vector<unsigned char>{ 0xC6, 0x45, 0xDF, 0x01 });
     uintptr_t addr_scrbrd = gSignatures.GetClientSignature("8B 10 89 74 24 04 89 04 24 FF 92 ? ? ? ? 83 F8 02 75 09");
     patch_scoreboard1     = std::make_unique<BytePatch>(addr_scrbrd, std::vector<unsigned char>{ 0xEB, 0x31, 0xE8, 0x08, 0x46, 0x10, 0x00, 0xE9, 0xC9, 0x06, 0x00, 0x00 });
     patch_scoreboard2     = std::make_unique<BytePatch>(addr_scrbrd + 0xA0, std::vector<unsigned char>{ 0xE9, 0x5D, 0xFF, 0xFF, 0xFF });
@@ -748,7 +747,7 @@ static InitRoutine init([]() {
     patch_playerpanel->Patch();
     patch_scoreboard1->Patch();
     patch_scoreboard2->Patch();
-    patch_scoreboard3->Patch();
+    patch_scoreboard3->Patch();*/
 
     static BytePatch stealth_kill{ gSignatures.GetClientSignature, "84 C0 75 28 A1", 2, { 0x90, 0x90 } }; // stealth kill patch
     stealth_kill.Patch();
