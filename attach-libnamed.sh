@@ -26,16 +26,16 @@ echo Attaching to "$proc"
 
 # pBypass for crash dumps being sent
 # You may also want to consider using -nobreakpad in your launch options.
-sudo mkdir -p /tmp/dumps # Make it as root if it doesnt exist
-sudo chown root:root /tmp/dumps # Claim it as root
-sudo chmod 000 /tmp/dumps # No permissions
+mkdir -p /tmp/dumps # Make it as root if it doesnt exist
+chown root:root /tmp/dumps # Claim it as root
+chmod 000 /tmp/dumps # No permissions
 
 # Get a Random name from the build_names file.
 FILENAME=$(shuf -n 1 build_names)
 
 # Create directory if it doesn't exist
 if [ ! -d "/lib/i386-linux-gnu/" ]; then
-    sudo mkdir /lib/i386-linux-gnu/
+    mkdir /lib/i386-linux-gnu/
 fi
 
 # In case this file exists, get another one. ( checked it works )
