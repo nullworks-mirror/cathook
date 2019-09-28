@@ -35,6 +35,7 @@ static settings::Boolean always_crouch{ "cat-bot.always-crouch", "false" };
 static settings::Boolean random_votekicks{ "cat-bot.votekicks", "false" };
 static settings::Boolean votekick_rage_only{ "cat-bot.votekicks.rage-only", "false" };
 static settings::Boolean autoReport{ "cat-bot.autoreport", "true" };
+static settings::Boolean autovote_map{ "cat-bot.autovote-map", "true" };
 
 static settings::Boolean mvm_autoupgrade{ "mvm.autoupgrade", "false" };
 
@@ -570,6 +571,22 @@ CatBotEventListener &listener()
     return object;
 }
 
+class CatBotEventListener2 : public IGameEventListener2
+{
+    void FireGameEvent(IGameEvent *event) override
+    {
+        // vote for current map if catbot mode and autovote is on
+        if (catbotmode && autovote_map)
+            g_IEngine->ServerCmd("next_map_vote 0");
+    }
+};
+
+CatBotEventListener2 &listener2()
+{
+    static CatBotEventListener2 object{};
+    return object;
+}
+
 Timer timer_votekicks{};
 static Timer timer_catbot_list{};
 static Timer timer_abandon{};
@@ -886,6 +903,7 @@ void update()
 void init()
 {
     g_IEventManager2->AddListener(&listener(), "player_death", false);
+    g_IEventManager2->AddListener(&listener2(), "vote_maps_changed", false);
 }
 
 void level_init()
