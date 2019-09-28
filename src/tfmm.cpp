@@ -170,9 +170,10 @@ void friend_party()
         re::CTFPartyClient *pc = re::CTFPartyClient::GTFPartyClient();
         if (pc)
         {
+            unsigned steamid_local                = g_ISteamUser->GetSteamID().GetAccountID();
             std::vector<unsigned> valid_steam_ids = pc->GetPartySteamIDs();
             for (auto steamid : valid_steam_ids)
-                if (steamid)
+                if (steamid && steamid != steamid_local)
                     playerlist::ChangeState(steamid, playerlist::k_EState::PARTY);
         }
     }
