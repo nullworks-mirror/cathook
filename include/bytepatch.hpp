@@ -11,6 +11,7 @@ class BytePatch
     size_t size;
     std::vector<unsigned char> patch_bytes;
     std::vector<unsigned char> original;
+    bool patched{ false };
 
 public:
     ~BytePatch()
@@ -45,16 +46,30 @@ public:
 
     void Patch()
     {
-        void *page = (void *) ((uint64_t) addr & ~0xFFF);
-        logging::Info("mprotect: %d", mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC));
-        memcpy(addr, &patch_bytes[0], size);
-        logging::Info("mprotect reverse: %d", mprotect(page, 0xFFF, PROT_EXEC));
+        if (!patched)
+        {
+            void *page          = (void *) ((uint64_t) addr & ~0xFFF);
+            void *end_page      = (void *) (((uint64_t)(addr) + size) & ~0xFFF);
+            uintptr_t mprot_len = (uint64_t) end_page - (uint64_t) page + 0xFFF;
+
+            logging::Info("mprotect: %d", mprotect(page, mprot_len, PROT_READ | PROT_WRITE | PROT_EXEC));
+            memcpy(addr, &patch_bytes[0], size);
+            logging::Info("mprotect reverse: %d", mprotect(page, mprot_len, PROT_EXEC));
+            patched = true;
+        }
     }
     void Shutdown()
     {
-        void *page = (void *) ((uint64_t) addr & ~0xFFF);
-        logging::Info("mprotect: %d", mprotect(page, 0xFFF, PROT_READ | PROT_WRITE | PROT_EXEC));
-        memcpy(addr, &original[0], size);
-        logging::Info("mprotect reverse: %d", mprotect(page, 0xFFF, PROT_EXEC));
+        if (patched)
+        {
+            void *page          = (void *) ((uint64_t) addr & ~0xFFF);
+            void *end_page      = (void *) (((uint64_t)(addr) + size) & ~0xFFF);
+            uintptr_t mprot_len = (uint64_t) end_page - (uint64_t) page + 0xFFF;
+
+            logging::Info("mprotect: %d", mprotect(page, mprot_len, PROT_READ | PROT_WRITE | PROT_EXEC));
+            memcpy(addr, &original[0], size);
+            logging::Info("mprotect reverse: %d", mprotect(page, mprot_len, PROT_EXEC));
+            patched = false;
+        }
     }
 };
