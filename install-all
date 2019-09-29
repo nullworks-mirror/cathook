@@ -2,17 +2,10 @@
 
 RUNUSER="sudo -u $LOGNAME"
 
-#
-# Install git in case this is a install-all only install
-#
-if [ -x "$(command -v pacman)" ]; then
-    sudo pacman -S --needed --noconfirm git
-elif [ -x "$(command -v apt-get)" ]; then
-    sudo apt-get install -y git
-else
-    echo -e "\033[1;31m\nCathook autoinstall is not supported on this system! Please install the following packages before continuing: Git, Boost + Headers, CMake, Gcc with 32 bit support, Gdb, 32 Bit SDL + Headers, 32 Bit Glew + Headers, 32 Bit Freetype 2 + Headers, Rsync, 32 Bit libglvnd\n\033[0m"
-    read -p "Press enter to continue or CTRL+C to cancel."
-fi
+set -e
+
+# install all dependencies
+./scripts/dependencycheck
 
 #
 # Update cathook
@@ -25,9 +18,6 @@ fi
 $RUNUSER git fetch --force --depth 1 origin refs/tags/latest:refs/tags/latest && $RUNUSER git reset --hard latest # pull changes from github
 $RUNUSER git submodule update --depth 1 --init --recursive # update/init submodules
 
-# install all dependencies and allow non interactive install
-./scripts/dependencycheck true
-
 #
 # Set config version for update script
 #
@@ -38,7 +28,4 @@ $RUNUSER bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferen
 # Build cathook
 #
 
-$RUNUSER mkdir -p ./build; pushd build #create a directory for building cathook
-$RUNUSER cmake ..;$RUNUSER make -j$(grep -c '^processor' /proc/cpuinfo) # create makefile and build using all available threads
-sudo make data # create /opt/cathook/data
-popd; cd ..
+$RUNUSER ./update
