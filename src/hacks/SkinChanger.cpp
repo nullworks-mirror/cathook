@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include "MiscTemporary.hpp"
 
 #include <sys/dir.h>
 #include <sys/stat.h>
@@ -133,7 +134,7 @@ static CatCommand set_attr("skinchanger_set", "Set Attribute", [](const CCommand
 static CatCommand remove_attr("skinchanger_remove", "Remove attribute", [](const CCommand &args) {
     if (args.ArgC() < 1)
     {
-        logging::Info("Please Provide an Argument");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an Argument");
         return;
     }
     try
@@ -147,13 +148,13 @@ static CatCommand remove_attr("skinchanger_remove", "Remove attribute", [](const
     }
     catch (std::invalid_argument)
     {
-        logging::Info("Please pass a valid int");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please pass a valid int");
     }
 });
 static CatCommand set_redirect("skinchanger_redirect", "Set Redirect", [](const CCommand &args) {
     if (args.ArgC() < 1)
     {
-        logging::Info("Please Provide an Argument");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an Argument");
         return;
     }
     try
@@ -167,7 +168,7 @@ static CatCommand set_redirect("skinchanger_redirect", "Set Redirect", [](const 
     }
     catch (std::invalid_argument)
     {
-        logging::Info("Please pass a valid int");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please pass a valid int");
     }
 });
 static CatCommand dump_attrs("skinchanger_debug_attrs", "Dump attributes", []() {
@@ -215,8 +216,14 @@ static CatCommand load_merge("skinchanger_load_merge", "Load with merge", [](con
     Load(filename, true);
 });
 static CatCommand remove_redirect("skinchanger_remove_redirect", "Remove redirect", [](const CCommand &args) {
+    if (args.ArgC() < 1)
+    {
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an argument");
+    }
     try
     {
+        if (CE_BAD(LOCAL_W))
+            return;
         enable                                  = true;
         unsigned redirectid                     = std::strtoul(args.Arg(1), nullptr, 10);
         GetModifier(redirectid).defidx_redirect = 0;
@@ -225,7 +232,7 @@ static CatCommand remove_redirect("skinchanger_remove_redirect", "Remove redirec
     }
     catch (std::invalid_argument)
     {
-        logging::Info("Please supply a valid int");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please supply a valid int");
     }
 });
 static CatCommand reset("skinchanger_reset", "Reset", []() { modifier_map.clear(); });
