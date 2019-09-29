@@ -489,7 +489,7 @@ bool CanHeal(int idx)
         return false;
     if (IsPlayerInvisible(ent))
         return false;
-    if (friendsonly && player_tools::shouldTarget(ent))
+    if (friendsonly && !playerlist::IsFriend(ent))
         return false;
     return true;
 }
