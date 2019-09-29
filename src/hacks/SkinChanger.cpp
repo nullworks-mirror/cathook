@@ -110,23 +110,65 @@ static CatCommand australize("australize", "Make everything australium", []() {
     InvalidateCookie();
 });
 static CatCommand set_attr("skinchanger_set", "Set Attribute", [](const CCommand &args) {
-    enable          = true;
-    unsigned attrid = strtoul(args.Arg(1), nullptr, 10);
-    float attrv     = strtof(args.Arg(2), nullptr);
-    GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).Set(attrid, attrv);
-    InvalidateCookie();
+    if (args.ArgC() < 1)
+    {
+        logging::Info("Please Provide an Argument");
+        return;
+    }
+    enable = true;
+    try
+    {
+        if (CE_BAD(LOCAL_W))
+            return;
+        unsigned attrid = std::strtoul(args.Arg(1), nullptr, 10);
+        float attrv     = std::strtof(args.Arg(2), nullptr);
+        GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).Set(attrid, attrv);
+        InvalidateCookie();
+    }
+    catch (std::invalid_argument)
+    {
+        logging::Info("Please pass a valid int");
+    }
 });
 static CatCommand remove_attr("skinchanger_remove", "Remove attribute", [](const CCommand &args) {
-    enable          = true;
-    unsigned attrid = strtoul(args.Arg(1), nullptr, 10);
-    GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).Remove(attrid);
-    InvalidateCookie();
+    if (args.ArgC() < 1)
+    {
+        logging::Info("Please Provide an Argument");
+        return;
+    }
+    try
+    {
+        if (CE_BAD(LOCAL_W))
+            return;
+        enable          = true;
+        unsigned attrid = std::strtoul(args.Arg(1), nullptr, 10);
+        GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).Remove(attrid);
+        InvalidateCookie();
+    }
+    catch (std::invalid_argument)
+    {
+        logging::Info("Please pass a valid int");
+    }
 });
 static CatCommand set_redirect("skinchanger_redirect", "Set Redirect", [](const CCommand &args) {
-    enable                                                                    = true;
-    unsigned redirect                                                         = strtoul(args.Arg(1), nullptr, 10);
-    GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).defidx_redirect = redirect;
-    InvalidateCookie();
+    if (args.ArgC() < 1)
+    {
+        logging::Info("Please Provide an Argument");
+        return;
+    }
+    try
+    {
+        if (CE_BAD(LOCAL_W))
+            return;
+        enable                                                                    = true;
+        unsigned redirect                                                         = std::strtoul(args.Arg(1), nullptr, 10);
+        GetModifier(CE_INT(LOCAL_W, netvar.iItemDefinitionIndex)).defidx_redirect = redirect;
+        InvalidateCookie();
+    }
+    catch (std::invalid_argument)
+    {
+        logging::Info("Please pass a valid int");
+    }
 });
 static CatCommand dump_attrs("skinchanger_debug_attrs", "Dump attributes", []() {
     CAttributeList *list = (CAttributeList *) ((uintptr_t)(RAW_ENT(LOCAL_W)) + netvar.AttributeList);
@@ -173,11 +215,18 @@ static CatCommand load_merge("skinchanger_load_merge", "Load with merge", [](con
     Load(filename, true);
 });
 static CatCommand remove_redirect("skinchanger_remove_redirect", "Remove redirect", [](const CCommand &args) {
-    enable                                  = true;
-    unsigned redirectid                     = strtoul(args.Arg(1), nullptr, 10);
-    GetModifier(redirectid).defidx_redirect = 0;
-    logging::Info("Redirect removed");
-    InvalidateCookie();
+    try
+    {
+        enable                                  = true;
+        unsigned redirectid                     = std::strtoul(args.Arg(1), nullptr, 10);
+        GetModifier(redirectid).defidx_redirect = 0;
+        logging::Info("Redirect removed");
+        InvalidateCookie();
+    }
+    catch (std::invalid_argument)
+    {
+        logging::Info("Please supply a valid int");
+    }
 });
 static CatCommand reset("skinchanger_reset", "Reset", []() { modifier_map.clear(); });
 
