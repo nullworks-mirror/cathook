@@ -22,6 +22,7 @@
 
 static settings::Boolean minigun_jump{ "misc.minigun-jump-tf2c", "false" };
 static settings::Boolean roll_speedhack{ "misc.roll-speedhack", "false" };
+static settings::Boolean forward_speedhack{ "misc.roll-speedhack.forward", "false" };
 static settings::Boolean engine_pred{ "misc.engine-prediction", "true" };
 static settings::Boolean debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int semiauto{ "misc.semi-auto", "0" };
@@ -348,7 +349,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             if (fabs(speed) > 0.0f)
             {
 
+                if (forward_speedhack)
+                {
+                    cmd->forwardmove *= -1.0f;
+                    cmd->sidemove *= -1.0f;
+                    cmd->viewangles.x = 91;
+                }
                 Vector vecMove(cmd->forwardmove, cmd->sidemove, 0.0f);
+
                 vecMove *= -1;
                 float flLength = vecMove.Length();
                 Vector angMoveReverse{};
