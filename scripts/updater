@@ -19,29 +19,13 @@ fi
 trap "rm -f ${LOCKFILE}; exit" INT TERM EXIT
 echo $$ > ${LOCKFILE}
 
-. ./scripts/config.shlib
+#Check if all required packages are installed
+./scripts/dependencycheck
 
-# Migrate existing configs
-exists=true
-cfg_haskey $configfile version || exists=false
-if [ "$exists" == false ]; then
-    if [ -f $configfile ]; then
-        value=$(cat $configfile)
-        rm $configfile
-    fi  
-    echo "" > $configfile
-    cfg_write $configfile version 1
-    if [ "$(git rev-parse --is-shallow-repository)" == "true" ]; then
-        cfg_write $configfile update_channel stable
-    else
-        cfg_write $configfile update_channel developer
-    fi
-    if [ -f $configfile ]; then
-        if [ "$value" == true ] || [ "$value" == false ]; then 
-            cfg_write $configfile autoupdater $value
-        fi
-    fi
-fi
+# Run migrations 
+./scripts/migrations || exit 0
+
+. ./scripts/config.shlib
 
 tui=true
 if [ ! -x "$(command -v dialog)" ]; then
@@ -68,12 +52,6 @@ if [ "$tui" == true ] && [ "$exists" == false ]; then
 fi
 
 exists=true
-cfg_haskey $configfile update_channel || exists=false
-if [ "$exists" == false ]; then
-    cfg_write $configfile update_channel stable
-fi
-
-exists=true
 cfg_haskey $configfile autoupdater || exists=false
 if [ "$1" == "--autoupdater" ]; then
     if [ $exists == false ] || [ "$(cfg_read $configfile autoupdater)" == false ]; then
@@ -83,9 +61,6 @@ if [ "$1" == "--autoupdater" ]; then
     tui=false
     echo -e "\033[1;34m \n \nAuto Updater: Updating cathook in the background\n\033[0m"
 fi
-
-#Check if all required packages are installed
-./scripts/dependencycheck
 
 function performupdate() {
     #get update channel from config
@@ -107,6 +82,9 @@ function performupdate() {
         fi
         exit 1
     fi
+    
+    # Run migrations 
+    ./scripts/migrations || exit 0
     
     proccount=$(grep -c '^processor' /proc/cpuinfo)
     if [ "$AUTOUPDATER" == true ]; then
