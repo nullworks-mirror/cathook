@@ -31,6 +31,7 @@ static settings::Boolean tauntslide_tf2{ "misc.tauntslide", "false" };
 static settings::Boolean flashlight_spam{ "misc.flashlight-spam", "false" };
 static settings::Boolean auto_balance_spam{ "misc.auto-balance-spam", "false" };
 static settings::Boolean nopush_enabled{ "misc.no-push", "false" };
+static settings::Boolean dont_hide_stealth_kills{ "misc.dont-hide-stealth-kills", "true" };
 
 #if ENABLE_VISUALS
 static settings::Boolean god_mode{ "misc.god-mode", "false" };
@@ -760,6 +761,12 @@ static InitRoutine init([]() {
             cyoa_patch.Shutdown();
         },
         "shutdown_stealthkill");
+    dont_hide_stealth_kills.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (after)
+            stealth_kill.Patch();
+        else
+            stealth_kill.Shutdown();
+    });
 #endif
 #endif
 });
