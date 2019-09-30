@@ -8,18 +8,23 @@ if [ -x "$(command -v pacman)" ]; then
     out=$?
     if [ "$out" == 1 ]; then
         string=${arch_packages[@]}
-        if [ -t 0 ]; then
-            read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
-            if ! [[ $REPLY =~ ^[Yy]$ ]]
-            then
-                exit
-            fi
-        elif [ -x "$(command -v zenity)" ]; then
+        # Prefer GUI question
+        if [ -x "$(command -v zenity)" ] && xset q &>/dev/null; then
             zenity --no-wrap --question --text="Do you want to install the following packages required for cathook?\n${string}?"
             out=$?
             if [ "$out" != 0 ]; then
                 exit
             fi
+        # Fall back to terminal
+        elif [ -t 0 ]; then
+            read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
+            if ! [[ $REPLY =~ ^[Yy]$ ]]
+            then
+                exit
+            fi
+        else
+            echo -e "\033[1;33m\nWarning! Automatic package installation is not supported! Zenity+XOrg or interactive terminal required!\n\033[0m"
+            exit
         fi
         sudo pacman -S --noconfirm --needed "${arch_packages[@]}"
     fi
@@ -28,18 +33,23 @@ elif [ -x "$(command -v apt-get)" ]; then
     out=$?
     if [ "$out" == 1 ]; then
         string=${ubuntu_packages[@]}
-        if [ -t 0 ]; then
-            read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
-            if ! [[ $REPLY =~ ^[Yy]$ ]]
-            then
-                exit
-            fi
-        elif [ -x "$(command -v zenity)" ]; then
+        # Prefer GUI question
+        if [ -x "$(command -v zenity)" ] && xset q &>/dev/null; then
             zenity --no-wrap --question --text="Do you want to install the following packages required for cathook?\n${string}?"
             out=$?
             if [ "$out" != 0 ]; then
                 exit
             fi
+        # Fall back to terminal
+        elif [ -t 0 ]; then
+            read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
+            if ! [[ $REPLY =~ ^[Yy]$ ]]
+            then
+                exit
+            fi
+        else
+            echo -e "\033[1;33m\nWarning! Automatic package installation is not supported! Zenity+XOrg or interactive terminal required!\n\033[0m"
+            exit
         fi
         sudo apt-get update
         sudo apt-get install -y software-properties-common
