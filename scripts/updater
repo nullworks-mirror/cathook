@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# $1 Auto updater
+# $2 Disable TUI
+
 set -e
 
 configfile="./scripts/updater-preferences"
@@ -23,17 +26,20 @@ echo $$ > ${LOCKFILE}
 ./scripts/dependencycheck
 
 # Run migrations 
-./scripts/migrations || exit 0
+./scripts/migrations "$@" || exit 0
 
 . ./scripts/config.shlib
 
 tui=true
-if [ ! -x "$(command -v dialog)" ]; then
-    tui=false
-    echo -e "\033[1;31mTerminal UI NOT supported! Install \"dialog\"! \033[0m"
-fi
 if [ ! -t 0 ]; then
     tui=false
+fi
+if [ "$2" == "true" ]; then
+    tui=false
+fi
+if [ ! -x "$(command -v dialog)" ] && [ "$tui" == true ]; then
+    tui=false
+    echo -e "\033[1;31mTerminal UI NOT supported! Install \"dialog\"! \033[0m"
 fi
 
 exists=true
@@ -53,7 +59,7 @@ fi
 
 exists=true
 cfg_haskey $configfile autoupdater || exists=false
-if [ "$1" == "--autoupdater" ]; then
+if [ "$1" == "true" ]; then
     if [ $exists == false ] || [ "$(cfg_read $configfile autoupdater)" == false ]; then
         exit 0;
     fi
@@ -84,7 +90,7 @@ function performupdate() {
     fi
     
     # Run migrations 
-    ./scripts/migrations || exit 0
+    ./scripts/migrations "$@" || exit 0
     
     proccount=$(grep -c '^processor' /proc/cpuinfo)
     if [ "$AUTOUPDATER" == true ]; then
