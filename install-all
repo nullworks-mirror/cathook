@@ -28,4 +28,4 @@ $RUNUSER bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferen
 # Build cathook
 #
 
-$RUNUSER ./update false true
+$RUNUSER ./scripts/updater false true
