@@ -6,7 +6,7 @@
 [[ ! -z "$SUDO_USER" ]] && RUNUSER="$SUDO_USER" || RUNUSER="$LOGNAME"
 RUNCMD="sudo -u $RUNUSER"
 
-$RUNCMD bash ./scripts/updater --autoupdater
+$RUNCMD bash ./scripts/updater true
 
 line=$(pgrep -u $(logname) hl2_linux)
 arr=($line)
