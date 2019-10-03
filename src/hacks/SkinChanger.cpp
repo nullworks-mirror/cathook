@@ -113,7 +113,7 @@ static CatCommand australize("australize", "Make everything australium", []() {
 static CatCommand set_attr("skinchanger_set", "Set Attribute", [](const CCommand &args) {
     if (args.ArgC() < 1)
     {
-        logging::Info("Please Provide an Argument");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an Argument\n");
         return;
     }
     enable = true;
@@ -128,13 +128,13 @@ static CatCommand set_attr("skinchanger_set", "Set Attribute", [](const CCommand
     }
     catch (std::invalid_argument)
     {
-        logging::Info("Please pass a valid int");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please pass a valid int\n");
     }
 });
 static CatCommand remove_attr("skinchanger_remove", "Remove attribute", [](const CCommand &args) {
     if (args.ArgC() < 1)
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an Argument");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an Argument\n");
         return;
     }
     try
@@ -148,13 +148,13 @@ static CatCommand remove_attr("skinchanger_remove", "Remove attribute", [](const
     }
     catch (std::invalid_argument)
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please pass a valid int");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please pass a valid int\n");
     }
 });
 static CatCommand set_redirect("skinchanger_redirect", "Set Redirect", [](const CCommand &args) {
     if (args.ArgC() < 1)
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an Argument");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an Argument\n");
         return;
     }
     try
@@ -168,7 +168,7 @@ static CatCommand set_redirect("skinchanger_redirect", "Set Redirect", [](const 
     }
     catch (std::invalid_argument)
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please pass a valid int");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please pass a valid int\n");
     }
 });
 static CatCommand dump_attrs("skinchanger_debug_attrs", "Dump attributes", []() {
@@ -185,7 +185,7 @@ static CatCommand list_redirects("skinchanger_redirect_list", "Dump redirects", 
     {
         if (mod.second.defidx_redirect)
         {
-            logging::Info("%d -> %d", mod.first, mod.second.defidx_redirect);
+            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%d -> %d\n", mod.first, mod.second.defidx_redirect);
         }
     }
 });
@@ -218,7 +218,7 @@ static CatCommand load_merge("skinchanger_load_merge", "Load with merge", [](con
 static CatCommand remove_redirect("skinchanger_remove_redirect", "Remove redirect", [](const CCommand &args) {
     if (args.ArgC() < 1)
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an argument");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please Provide an argument\n");
     }
     try
     {
@@ -232,7 +232,7 @@ static CatCommand remove_redirect("skinchanger_remove_redirect", "Remove redirec
     }
     catch (std::invalid_argument)
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please supply a valid int");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please supply a valid int\n");
     }
 });
 static CatCommand reset("skinchanger_reset", "Reset", []() { modifier_map.clear(); });
