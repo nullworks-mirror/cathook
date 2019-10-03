@@ -16,7 +16,7 @@
             <AutoVariable width="fill" target="misc.no-lerp" label="nolerp"/>
             <AutoVariable width="fill" target="misc.no-push" label="nopush"/>
             <AutoVariable width="fill" target="misc.roll-speedhack" label="Moonwalk"/>
-            <AutoVariable width="fill" target="misc.semi-auto" label="Semiauto Fire"/>
+            <AutoVariable width="fill" target="misc.full-auto" label="Fully Automated Firing"/>
             <AutoVariable width="fill" target="misc.show-spectators" label="Show spectators"/>
             <LabeledObject width="fill" label="Skybox Override">
                 <Select target="misc.skybox-override">

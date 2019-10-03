@@ -148,7 +148,6 @@ void settings::SettingsReader::pushChar(char c)
     }
     else
     {
-
         was_non_space = true;
     }
 
@@ -186,6 +185,17 @@ void settings::SettingsReader::pushChar(char c)
     }
 }
 
+struct migration_struct
+{
+    const std::string from;
+    const std::string to;
+};
+/* clang-format off */
+// Use one per line, from -> to
+static std::array<migration_struct, 1> migrations = {
+    { "misc.semi-auto", "misc.full-auto" }
+};
+/* clang-format on */
 void settings::SettingsReader::finishString(bool complete)
 {
     if (complete && reading_key)
@@ -199,6 +209,11 @@ void settings::SettingsReader::finishString(bool complete)
     if (reading_key)
     {
         stored_key = std::move(str);
+        for (auto &migration : migrations)
+        {
+            if (stored_key == migration.from)
+                stored_key = migration.to;
+        }
     }
     else
     {

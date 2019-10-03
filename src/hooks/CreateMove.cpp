@@ -22,9 +22,10 @@
 
 static settings::Boolean minigun_jump{ "misc.minigun-jump-tf2c", "false" };
 static settings::Boolean roll_speedhack{ "misc.roll-speedhack", "false" };
+static settings::Boolean forward_speedhack{ "misc.roll-speedhack.forward", "false" };
 static settings::Boolean engine_pred{ "misc.engine-prediction", "true" };
 static settings::Boolean debug_projectiles{ "debug.projectiles", "false" };
-static settings::Int semiauto{ "misc.semi-auto", "0" };
+static settings::Int fullauto{ "misc.full-auto", "0" };
 static settings::Int fakelag_amount{ "misc.fakelag", "0" };
 static settings::Boolean fuckmode{ "misc.fuckmode", "false" };
 
@@ -286,9 +287,9 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 ++attackticks;
             else
                 attackticks = 0;
-            if (semiauto)
+            if (fullauto)
                 if (current_user_cmd->buttons & IN_ATTACK)
-                    if (attackticks % *semiauto < *semiauto - 1)
+                    if (attackticks % *fullauto + 1 < *fullauto)
                         current_user_cmd->buttons &= ~IN_ATTACK;
             static int fakelag_queue = 0;
             if (CE_GOOD(LOCAL_E))
@@ -348,7 +349,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             if (fabs(speed) > 0.0f)
             {
 
+                if (forward_speedhack)
+                {
+                    cmd->forwardmove *= -1.0f;
+                    cmd->sidemove *= -1.0f;
+                    cmd->viewangles.x = 91;
+                }
                 Vector vecMove(cmd->forwardmove, cmd->sidemove, 0.0f);
+
                 vecMove *= -1;
                 float flLength = vecMove.Length();
                 Vector angMoveReverse{};

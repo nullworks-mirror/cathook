@@ -31,6 +31,7 @@ static settings::Boolean tauntslide_tf2{ "misc.tauntslide", "false" };
 static settings::Boolean flashlight_spam{ "misc.flashlight-spam", "false" };
 static settings::Boolean auto_balance_spam{ "misc.auto-balance-spam", "false" };
 static settings::Boolean nopush_enabled{ "misc.no-push", "false" };
+static settings::Boolean dont_hide_stealth_kills{ "misc.dont-hide-stealth-kills", "true" };
 
 #if ENABLE_VISUALS
 static settings::Boolean god_mode{ "misc.god-mode", "false" };
@@ -751,8 +752,21 @@ static InitRoutine init([]() {
 
     static BytePatch stealth_kill{ gSignatures.GetClientSignature, "84 C0 75 28 A1", 2, { 0x90, 0x90 } }; // stealth kill patch
     stealth_kill.Patch();
+    static BytePatch cyoa_patch{ gSignatures.GetClientSignature, "74 20 A1 ? ? ? ? 8B 10 C7 44 24 ? ? ? ? ? 89 04 24", 0, { 0xEB } };
+    cyoa_patch.Patch();
     EC::Register(
-        EC::Shutdown, []() { stealth_kill.Shutdown(); }, "shutdown_stealthkill");
+        EC::Shutdown,
+        []() {
+            stealth_kill.Shutdown();
+            cyoa_patch.Shutdown();
+        },
+        "shutdown_stealthkill");
+    dont_hide_stealth_kills.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (after)
+            stealth_kill.Patch();
+        else
+            stealth_kill.Shutdown();
+    });
 #endif
 #endif
 });
