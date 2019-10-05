@@ -21,6 +21,7 @@ static settings::Boolean enable{ "aimbot.enable", "false" };
 static settings::Button aimkey{ "aimbot.aimkey.button", "<null>" };
 static settings::Int aimkey_mode{ "aimbot.aimkey.mode", "1" };
 static settings::Boolean autoshoot{ "aimbot.autoshoot", "1" };
+static settings::Boolean autoreload{ "aimbot.autoshoot.activate-headmaker", "false" };
 static settings::Boolean autoshoot_disguised{ "aimbot.autoshoot-disguised", "1" };
 static settings::Boolean multipoint{ "aimbot.multipoint", "false" };
 static settings::Int hitbox_mode{ "aimbot.hitbox-mode", "0" };
@@ -95,6 +96,12 @@ bool shouldBacktrack()
 bool IsBacktracking()
 {
     return (aimkey ? aimkey.isKeyDown() : true) && shouldBacktrack();
+}
+
+// Am I holding Hitman's Heatmaker ?
+static bool CarryingHeadmaker()
+{
+    return CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 752;
 }
 
 // Current Entity
@@ -919,7 +926,10 @@ void DoAutoshoot()
         attack = false;
 
     if (attack)
-        current_user_cmd->buttons |= IN_ATTACK;
+        // TO DO: Sending both reload and attack will activate headmakin'
+        // Don't activate it only on first kill (or somehow activate it before shoot)
+        current_user_cmd->buttons |= IN_ATTACK | (*autoreload && CarryingHeadmaker() ? IN_RELOAD : 0);
+
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
         current_user_cmd->buttons |= IN_ATTACK2;
     hacks::shared::antiaim::SetSafeSpace(1);
@@ -1087,7 +1097,7 @@ int BestHitbox(CachedEntity *target)
             {
 
                 float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
-                float bdmg = 50;
+                float bdmg = CarryingHeadmaker() ? 40 : 50;
                 // Darwins damage correction, protects against 15% of damage
                 //                if (HasDarwins(target))
                 //                {
