@@ -24,7 +24,7 @@ static settings::Int slots{ "backtrack.slots", "0" };
 settings::Boolean enable{ "backtrack.enable", "false" };
 settings::Boolean backtrack_chams_glow{ "backtrack.chams_glow", "true" };
 settings::Int latency{ "backtrack.latency", "0" };
-settings::Int enable_latency_rampup{ "backtrack.latency.rampup", "true" };
+settings::Bool enable_latency_rampup{ "backtrack.latency.rampup", "true" };
 
 void EmptyBacktrackData(BacktrackData &i);
 std::pair<int, int> getBestEntBestTick();
