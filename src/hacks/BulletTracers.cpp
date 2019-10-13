@@ -164,7 +164,7 @@ IClientEntity *GetActiveTFWeapon_detour(IClientEntity *this_ /* C_TFPlayer * */)
         QAngle angle = *(QAngle *) &NET_VECTOR(this_, netvar.angEyeAngles);
         if (isLocal)
         {
-            g_IEngine->GetViewAngles(angle);
+            angle  = VectorToQAngle(current_user_cmd->viewangles);
             eyePos = g_pLocalPlayer->v_Eye;
         }
         Vector forward;
