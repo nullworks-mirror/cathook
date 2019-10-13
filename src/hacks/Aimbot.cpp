@@ -786,8 +786,22 @@ void Aim(CachedEntity *entity)
         maxz -= (maxz - minz) / 6;
         minz += (maxz - minz) / 6;
         // Create Vectors
-        const Vector positions[13] = { { minx, centery, minz }, { maxx, centery, minz }, { minx, centery, maxz }, { maxx, centery, maxz }, { centerx, miny, minz }, { centerx, maxy, minz }, { centerx, miny, maxz }, { centerx, maxy, maxz }, { minx, miny, centerz }, { maxx, maxy, centerz }, { minx, miny, centerz }, { maxx, maxy, centerz }, hitboxcenter };
-        for (int i = 0; i < 14; ++i)
+        const Vector positions[13] = {
+            { minx, centery, minz },
+            { maxx, centery, minz },
+            { minx, centery, maxz },
+            { maxx, centery, maxz },
+            { centerx, miny, minz },
+            { centerx, maxy, minz },
+            { centerx, miny, maxz },
+            { centerx, maxy, maxz },
+            { minx, miny, centerz },
+            { maxx, maxy, centerz },
+            { minx, miny, centerz },
+            { maxx, maxy, centerz },
+            hitboxcenter
+        };
+        for (int i = 0; i < 13; ++i)
             if (IsVectorVisible(g_pLocalPlayer->v_Eye, positions[i]))
             {
                 tr = (positions[i] - g_pLocalPlayer->v_Eye);
@@ -1125,20 +1139,20 @@ int BestHitbox(CachedEntity *target)
             auto ticks   = bt::headPositions[target->m_IDX];
             for (int i = 0; i < 66; i++)
             {
-                if (!ticks->tickcount)
+                if (!ticks[i].tickcount)
                     continue;
                 if (!bt::ValidTick(ticks[i], target))
                     continue;
                 if (*backtrackVischeckAll)
                     for (int j = 0; j < 18; j++)
                     {
-                        if (IsEntityVectorVisible(target, ticks->hitboxes.at(j).center))
+                        if (IsEntityVectorVisible(target, ticks[i].hitboxes[j].center))
                         {
                             good_tick = { i, target->m_IDX };
                             break;
                         }
                     }
-                else if (IsEntityVectorVisible(target, ticks->hitboxes.at(0).center))
+                else if (IsEntityVectorVisible(target, ticks[i].hitboxes[0].center))
                 {
                     good_tick = { i, target->m_IDX };
                     break;
@@ -1159,7 +1173,7 @@ int BestHitbox(CachedEntity *target)
         {
             namespace bt = hacks::shared::backtrack;
             if (good_tick.first != -1)
-                if (IsEntityVectorVisible(target, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(preferred).center))
+                if (IsEntityVectorVisible(target, bt::headPositions[target->m_IDX - 1][good_tick.first].hitboxes[preferred].center))
                     return preferred;
         }
         else if (target->hitboxes.VisibilityCheck(preferred))
@@ -1191,11 +1205,11 @@ int BestHitbox(CachedEntity *target)
             auto ticks   = bt::headPositions[target->m_IDX];
             for (int i = 0; i < 66; i++)
             {
-                if (!ticks->tickcount)
+                if (!ticks[i].tickcount)
                     continue;
                 if (!bt::ValidTick(ticks[i], target))
                     continue;
-                if (IsEntityVectorVisible(target, ticks->hitboxes.at(hb).center))
+                if (IsEntityVectorVisible(target, ticks[i].hitboxes[hb].center))
                 {
                     good_tick = { i, target->m_IDX };
                     break;
@@ -1216,11 +1230,11 @@ int BestHitbox(CachedEntity *target)
             auto ticks   = bt::headPositions[target->m_IDX];
             for (int i = 0; i < 66; i++)
             {
-                if (!ticks->tickcount)
+                if (!ticks[i].tickcount)
                     continue;
                 if (!bt::ValidTick(ticks[i], target))
                     continue;
-                if (IsEntityVectorVisible(target, ticks->hitboxes.at(hb).center))
+                if (IsEntityVectorVisible(target, ticks[i].hitboxes[hb].center))
                 {
                     good_tick = { i, target->m_IDX };
                     break;
