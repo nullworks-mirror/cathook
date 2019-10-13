@@ -350,7 +350,7 @@ void createMove()
                 }
             }
             last_index             = current_index;
-            std::string spamString = (*source)[current_index];
+            std::string spamString = source->at(current_index);
             if (FormatSpamMessage(spamString))
                 chat_stack::Say(spamString, *team_only);
             current_index++;
