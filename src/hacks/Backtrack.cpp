@@ -92,7 +92,7 @@ static void Run()
     }
 
     // Limit to 2 ticks
-    latency_rampup += 1.0f / 132.0f;
+    latency_rampup += 1.0f / 66.0f;
     latency_rampup = std::min(latency_rampup, 1.0f);
 
     UpdateIncomingSequences();
