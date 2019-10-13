@@ -793,21 +793,7 @@ void Aim(CachedEntity *entity)
         maxz -= (maxz - minz) / 6;
         minz += (maxz - minz) / 6;
         // Create Vectors
-        const Vector positions[13] = {
-            { minx, centery, minz },
-            { maxx, centery, minz },
-            { minx, centery, maxz },
-            { maxx, centery, maxz },
-            { centerx, miny, minz },
-            { centerx, maxy, minz },
-            { centerx, miny, maxz },
-            { centerx, maxy, maxz },
-            { minx, miny, centerz },
-            { maxx, maxy, centerz },
-            { minx, miny, centerz },
-            { maxx, maxy, centerz },
-            hitboxcenter
-        };
+        const Vector positions[13] = { { minx, centery, minz }, { maxx, centery, minz }, { minx, centery, maxz }, { maxx, centery, maxz }, { centerx, miny, minz }, { centerx, maxy, minz }, { centerx, miny, maxz }, { centerx, maxy, maxz }, { minx, miny, centerz }, { maxx, maxy, centerz }, { minx, miny, centerz }, { maxx, maxy, centerz }, hitboxcenter };
         for (int i = 0; i < 13; ++i)
             if (IsVectorVisible(g_pLocalPlayer->v_Eye, positions[i]))
             {
@@ -1049,7 +1035,7 @@ int BestHitbox(CachedEntity *target)
         IF_GAME(IsTF())
         {
             int ci    = g_pLocalPlayer->weapon()->m_iClassID();
-            preferred = hitbox_t::pelvis;
+            preferred = hitbox_t::spine_2;
             // Sniper rifle
             if (g_pLocalPlayer->holding_sniper_rifle)
             {
