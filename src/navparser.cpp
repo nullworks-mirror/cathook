@@ -15,11 +15,14 @@ namespace nav
 static settings::Boolean enabled{ "misc.pathing", "true" };
 // Whether or not to run vischecks at pathtime
 static settings::Boolean vischecks{ "misc.pathing.pathtime-vischecks", "true" };
+static settings::Boolean vischeckBlock{ "misc.pathing.pathtime-vischeck-block", "false" };
 static settings::Boolean draw{ "misc.pathing.draw", "false" };
 static settings::Boolean look{ "misc.pathing.look-at-path", "false" };
 static settings::Int stuck_time{ "misc.pathing.stuck-time", "4000" };
+static settings::Int unreachable_time{ "misc.pathing.unreachable-time", "1000" };
 
-static std::vector<Vector> crumbs;
+static std::vector<CNavArea*> crumbs;
+static Vector startPoint, endPoint;
 
 enum ignore_status : uint8_t
 {
@@ -48,72 +51,57 @@ struct ignoredata
     Timer ignoreTimeout{};
 };
 
-CNavArea *getNavArea(Vector &vec)
+Vector GetClosestCornerToArea(CNavArea *CornerOf, const Vector &target)
 {
-    for (auto &i : navfile->m_areas)
+    std::array<Vector, 4> corners{
+        CornerOf->m_nwCorner,                                                      // NW
+        CornerOf->m_seCorner,                                                      // SE
+        { CornerOf->m_seCorner.x, CornerOf->m_nwCorner.y, CornerOf->m_nwCorner.z },// NE
+        { CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y, CornerOf->m_seCorner.z } // SW
+    };
+
+    Vector *bestVec = &corners[0], *bestVec2 = bestVec;
+    float bestDist = corners[0].DistTo(target), bestDist2 = bestDist;
+
+    for (size_t i = 1; i < corners.size(); i++)
     {
-        if (vec == i.m_center)
-            return &i;
-    }
-    return nullptr;
-}
-
-Vector GetClosestCornerToArea(CNavArea *CornerOf, CNavArea *Target)
-{
-    std::array<Vector, 4> corners;
-    corners.at(0) = CornerOf->m_nwCorner;                                                             // NW
-    corners.at(1) = CornerOf->m_seCorner;                                                             // SE
-    corners.at(2) = Vector{ CornerOf->m_seCorner.x, CornerOf->m_nwCorner.y, CornerOf->m_nwCorner.z }; // NE
-    corners.at(3) = Vector{ CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y, CornerOf->m_seCorner.z }; // SW
-
-    Vector bestVec{};
-    float bestDist = FLT_MAX;
-
-    for (size_t i = 0; i < corners.size(); i++)
-    {
-        float dist = corners.at(i).DistTo(Target->m_center);
+        float dist = corners[i].DistTo(target);
         if (dist < bestDist)
         {
-            bestVec  = corners.at(i);
+            bestVec  = &corners[i];
             bestDist = dist;
         }
-    }
-
-    Vector bestVec2{};
-    float bestDist2 = FLT_MAX;
-
-    for (size_t i = 0; i < corners.size(); i++)
-    {
-        if (corners.at(i) == bestVec2)
+        if (corners[i] == *bestVec2)
             continue;
-        float dist = corners.at(i).DistTo(Target->m_center);
+
         if (dist < bestDist2)
         {
-            bestVec2  = corners.at(i);
+            bestVec2  = &corners[i];
             bestDist2 = dist;
         }
     }
-    return (bestVec + bestVec2) / 2;
+    return (*bestVec + *bestVec2) / 2;
 }
 
 float getZBetweenAreas(CNavArea *start, CNavArea *end)
 {
-    float z1 = GetClosestCornerToArea(start, end).z;
-    float z2 = GetClosestCornerToArea(end, start).z;
+    float z1 = GetClosestCornerToArea(start, end->m_center).z;
+    float z2 = GetClosestCornerToArea(end, start->m_center).z;
 
     return z2 - z1;
 }
 
-class ignoremanager
+
+static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata, boost::hash<std::pair<CNavArea *, CNavArea *>>> ignores;
+namespace ignoremanager
 {
-    static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata, boost::hash<std::pair<CNavArea *, CNavArea *>>> ignores;
     static bool vischeck(CNavArea *begin, CNavArea *end)
     {
         Vector first  = begin->m_center;
         Vector second = end->m_center;
         first.z += 42;
         second.z += 42;
-        return IsVectorVisible(first, second, true);
+        return IsVectorVisible(first, second, true, MASK_PLAYERSOLID);
     }
     static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
     {
@@ -197,8 +185,8 @@ class ignoremanager
         // Vischecks
         for (size_t i = 0; i < crumbs.size() - 1; i++)
         {
-            CNavArea *begin = getNavArea(crumbs.at(i));
-            CNavArea *end   = getNavArea(crumbs.at(i + 1));
+            CNavArea *begin = crumbs[i];
+            CNavArea *end   = crumbs[i + 1];
             if (!begin || !end)
                 continue;
             ignoredata &data = ignores[{ begin, end }];
@@ -218,14 +206,12 @@ class ignoremanager
         if (perform_repath)
             repath();
     }
-
-public:
     // 0 = Not ignored, 1 = low priority, 2 = ignored
     static int isIgnored(CNavArea *begin, CNavArea *end)
     {
         if (ignores[{ end, nullptr }].status == danger_found)
             return 2;
-        ignore_status &status = ignores[{ begin, end }].status;
+        ignore_status status = ignores[{ begin, end }].status;
         if (status == unknown)
             status = runIgnoreChecks(begin, end);
         if (status == vischeck_success)
@@ -235,8 +221,27 @@ public:
         else
             return 2;
     }
+    static bool addTime(ignoredata &connection, ignore_status status)
+    {
+        connection.status = status;
+        connection.ignoreTimeout.update();
+
+        return true;
+    }
+    static bool addTime(CNavArea *begin, CNavArea *end, ignore_status status)
+    {
+        logging::Info("Ignored Connection %i-%i", begin->m_id, end->m_id);
+        return addTime(ignores[{ begin, end }], status);
+    }
     static bool addTime(CNavArea *begin, CNavArea *end, Timer &time)
     {
+        if (!begin || !end)
+        {
+            // We can't reach the destination vector. Destination vector might
+            // be out of bounds/reach.
+            clearInstructions();
+            return true;
+        }
         using namespace std::chrono;
         // Check if connection is already known
         if (ignores.find({ begin, end }) == ignores.end())
@@ -247,26 +252,10 @@ public:
         connection.stucktime += duration_cast<milliseconds>(system_clock::now() - time.last).count();
         if (connection.stucktime >= *stuck_time)
         {
-            connection.status = explicit_ignored;
-            connection.ignoreTimeout.update();
             logging::Info("Ignored Connection %i-%i", begin->m_id, end->m_id);
-            return true;
+            return addTime(connection, explicit_ignored);
         }
         return false;
-    }
-    static bool addTime(Vector &begin, Vector &end, Timer &time)
-    {
-        // todo: check nullptr
-        CNavArea *begin_area = getNavArea(begin);
-        CNavArea *end_area   = getNavArea(end);
-        if (!begin_area || !end_area)
-        {
-            // We can't reach the destination vector. Destination vector might
-            // be out of bounds/reach.
-            crumbs.clear();
-            return true;
-        }
-        return addTime(begin_area, end_area, time);
     }
     static void reset()
     {
@@ -329,21 +318,16 @@ public:
     {
         return !(ignores[{ area, nullptr }].status == danger_found);
     }
-    ignoremanager() = delete;
 };
-std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata, boost::hash<std::pair<CNavArea *, CNavArea *>>> ignoremanager::ignores;
 
 struct Graph : public micropather::Graph
 {
     std::unique_ptr<micropather::MicroPather> pather;
 
-    Graph()
-    {
+    Graph() {
         pather = std::make_unique<micropather::MicroPather>(this, 3000, 6, true);
     }
-    ~Graph() override
-    {
-    }
+    ~Graph() override {}
     void AdjacentCost(void *state, MP_VECTOR<micropather::StateCost> *adjacent) override
     {
         CNavArea *center = static_cast<CNavArea *>(state);
@@ -354,22 +338,21 @@ struct Graph : public micropather::Graph
             if (isIgnored == 2)
                 continue;
             float distance = center->m_center.DistTo(i.area->m_center);
-            if (isIgnored == 1)
+            if (isIgnored == 1) {
+                if (*vischeckBlock)
+                    continue;
                 distance += 50000;
-            micropather::StateCost cost{ static_cast<void *>(neighbour), distance };
-            adjacent->push_back(cost);
+            }
+            adjacent->emplace_back(micropather::StateCost{ reinterpret_cast<void *>(neighbour), distance });
         }
     }
     float LeastCostEstimate(void *stateStart, void *stateEnd) override
     {
-        CNavArea *start = static_cast<CNavArea *>(stateStart);
-        CNavArea *end   = static_cast<CNavArea *>(stateEnd);
+        CNavArea *start = reinterpret_cast<CNavArea *>(stateStart);
+        CNavArea *end   = reinterpret_cast<CNavArea *>(stateEnd);
         return start->m_center.DistTo(end->m_center);
     }
-    void PrintStateInfo(void *) override
-    {
-        // Uhh no
-    }
+    void PrintStateInfo(void *) override {}
 };
 
 // Navfile containing areas
@@ -414,6 +397,7 @@ void initThread()
 
 void init()
 {
+    endPoint.Invalidate();
     ignoremanager::reset();
     status = initing;
     std::thread thread;
@@ -437,123 +421,101 @@ bool prepare()
 
 // This prevents the bot from gettings completely stuck in some cases
 static std::vector<CNavArea *> findClosestNavSquare_localAreas(6);
+
 // Function for getting closest Area to player, aka "LocalNav"
-CNavArea *findClosestNavSquare(Vector vec)
+CNavArea *findClosestNavSquare(const Vector &vec)
 {
-    if (findClosestNavSquare_localAreas.size() > 5)
+    bool isLocal = vec == g_pLocalPlayer->v_Origin;
+    if (isLocal && findClosestNavSquare_localAreas.size() > 5)
         findClosestNavSquare_localAreas.erase(findClosestNavSquare_localAreas.begin());
 
-    bool is_local = vec == g_pLocalPlayer->v_Origin;
-
-    auto &areas = navfile->m_areas;
-    std::vector<CNavArea *> overlapping;
-
-    for (auto &i : areas)
-    {
-        // Check if we are within x and y bounds of an area
-        if (i.IsOverlapping(vec))
-        {
-            // Make sure we're not stuck on the same area for too long
-            if (std::count(findClosestNavSquare_localAreas.begin(), findClosestNavSquare_localAreas.end(), &i) < 3)
-            {
-                if (IsVectorVisible(vec, i.m_center, true))
-                    overlapping.push_back(&i);
-            }
-        }
-    }
-
+    float ovBestDist = FLT_MAX, bestDist = FLT_MAX;
     // If multiple candidates for LocalNav have been found, pick the closest
-    float bestDist       = FLT_MAX;
-    CNavArea *bestSquare = nullptr;
-    for (auto &i : overlapping)
+    CNavArea *ovBestSquare = nullptr, *bestSquare = nullptr;
+    for (auto &i : navfile->m_areas)
     {
-        float dist = i->m_center.DistTo(vec);
+        // Make sure we're not stuck on the same area for too long
+        if (isLocal && std::count(findClosestNavSquare_localAreas.begin(),
+            findClosestNavSquare_localAreas.end(), &i) >= 3)
+        {
+            continue;
+        }
+        Vector corner = GetClosestCornerToArea(&i ,vec);
+        float dist = corner.DistTo(vec);
         if (dist < bestDist)
         {
             bestDist   = dist;
-            bestSquare = i;
+            bestSquare = &i;
         }
-    }
-
-    if (bestSquare != nullptr)
-    {
-        if (is_local)
-            findClosestNavSquare_localAreas.push_back(bestSquare);
-        return bestSquare;
-    }
-    // If no LocalNav was found, pick the closest available Area
-    bestDist = FLT_MAX;
-    for (auto &i : areas)
-    {
-        float dist = i.m_center.DistTo(vec);
-        if (dist < bestDist)
+        // Check if we are within x and y bounds of an area
+        if (ovBestDist >= dist || !i.IsOverlapping(vec) ||
+            !IsVectorVisible(vec, corner, true, MASK_PLAYERSOLID))
         {
-            if (std::count(findClosestNavSquare_localAreas.begin(), findClosestNavSquare_localAreas.end(), &i) < 3)
-            {
-                bestDist   = dist;
-                bestSquare = &i;
-            }
+            continue;
         }
+        ovBestDist   = dist;
+        ovBestSquare = &i;
     }
-    if (is_local)
+    if (bestSquare)
+        ovBestSquare = bestSquare;
+
+    if (isLocal && vec == g_pLocalPlayer->v_Origin)
         findClosestNavSquare_localAreas.push_back(bestSquare);
-    return bestSquare;
+
+    return ovBestSquare;
 }
 
-std::vector<Vector> findPath(Vector start, Vector end)
+std::vector<CNavArea*> findPath(const Vector &start, const Vector &end)
 {
+    using namespace std::chrono;
+
     if (status != on)
         return {};
-    CNavArea *local = findClosestNavSquare(start);
-    CNavArea *dest  = findClosestNavSquare(end);
 
-    if (!local || !dest)
+    CNavArea *local, *dest;
+    if (!(local = findClosestNavSquare(start)) || !(dest = findClosestNavSquare(end)))
         return {};
-    micropather::MPVector<void *> pathNodes;
+
+    logging::Info("Start: (%f,%f,%f)", local->m_center.x, local->m_center.y, local->m_center.z);
+    logging::Info("End: (%f,%f,%f)", dest->m_center.x, dest->m_center.y, dest->m_center.z);
     float cost;
-    std::chrono::time_point begin_pathing = std::chrono::high_resolution_clock::now();
-    int result                            = Map.pather->Solve(static_cast<void *>(local), static_cast<void *>(dest), &pathNodes, &cost);
-    long long timetaken                   = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - begin_pathing).count();
+    std::vector<CNavArea*> pathNodes;
+
+    time_point begin_pathing = high_resolution_clock::now();
+    int result = Map.pather->Solve(reinterpret_cast<void *>(local),
+        reinterpret_cast<void*>(dest),
+        reinterpret_cast<std::vector<void*>*>(&pathNodes), &cost);
+    long long timetaken = duration_cast<nanoseconds>(high_resolution_clock::now() - begin_pathing).count();
     logging::Info("Pathing: Pather result: %i. Time taken (NS): %lld", result, timetaken);
     // If no result found, return empty Vector
     if (result == micropather::MicroPather::NO_SOLUTION)
-        return std::vector<Vector>(0);
-    // Convert (void *) CNavArea * to Vector
-    std::vector<Vector> path;
-    for (size_t i = 0; i < pathNodes.size(); i++)
-    {
-        path.push_back(static_cast<CNavArea *>(pathNodes[i])->m_center);
-    }
-    // Add our destination to the std::vector
-    path.push_back(end);
-    return path;
+        return {};
+
+    return pathNodes;
 }
 
 static Vector loc(0.0f, 0.0f, 0.0f);
-static Vector last_area(0.0f, 0.0f, 0.0f);
+static CNavArea *last_area = nullptr;
 bool ReadyForCommands = true;
 static Timer inactivity{};
 int curr_priority         = 0;
 static bool ensureArrival = false;
 
-bool navTo(Vector destination, int priority, bool should_repath, bool nav_to_local, bool is_repath)
+bool navTo(const Vector &destination, int priority, bool should_repath, bool nav_to_local, bool is_repath)
 {
-    if (!prepare())
+    if (!prepare() || priority < curr_priority)
         return false;
-    if (priority < curr_priority)
-        return false;
-    std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, destination);
+
+    auto path = findPath(g_pLocalPlayer->v_Origin, destination);
     if (path.empty())
     {
-        crumbs.clear();
+        clearInstructions();
         return false;
     }
     auto crumb = crumbs.begin();
-    if (crumb != crumbs.end())
-    {
-        if (ignoremanager::addTime(last_area, *crumb, inactivity))
-            ResetPather();
-    }
+    if (crumb != crumbs.end() && ignoremanager::addTime(last_area, *crumb, inactivity))
+        ResetPather();
+
     auto path_it = path.begin();
     last_area    = *path_it;
     if (!nav_to_local)
@@ -564,25 +526,32 @@ bool navTo(Vector destination, int priority, bool should_repath, bool nav_to_loc
     }
     inactivity.update();
     if (!is_repath)
-    {
         findClosestNavSquare_localAreas.clear();
-    }
+
     ensureArrival    = should_repath;
     ReadyForCommands = false;
     curr_priority    = priority;
     crumbs           = std::move(path);
+    endPoint         = destination;
     return true;
 }
 
 void repath()
 {
-    if (ensureArrival)
-    {
-        Vector last = crumbs.back();
-        crumbs.clear();
-        ResetPather();
-        navTo(last, curr_priority, true, true, true);
-    }
+    if (!ensureArrival)
+        return;
+
+    Vector last;
+    if (!crumbs.empty())
+        last = crumbs.back()->m_center;
+    else if (endPoint.IsValid())
+        last = endPoint;
+    else
+        return;
+
+    clearInstructions();
+    ResetPather();
+    navTo(last, curr_priority, true, true, true);
 }
 
 static Timer last_jump{};
@@ -596,51 +565,81 @@ static void cm()
     if (!LOCAL_E->m_bAlivePlayer())
     {
         // Clear path if player dead
-        crumbs.clear();
+        clearInstructions();
         return;
     }
     ignoremanager::updateIgnores();
     auto crumb = crumbs.begin();
+    const Vector *crumb_vec;
     // Crumbs empty, prepare for next instruction
     if (crumb == crumbs.end())
     {
-        curr_priority    = 0;
-        ReadyForCommands = true;
-        ensureArrival    = false;
-        return;
+        if (endPoint.IsValid())
+            crumb_vec = &endPoint;
+        else
+        {
+            curr_priority    = 0;
+            ReadyForCommands = true;
+            ensureArrival    = false;
+            return;
+        }
     }
+    else
+        crumb_vec = &(*crumb)->m_center;
+
     ReadyForCommands = false;
     // Remove old crumbs
-    if (g_pLocalPlayer->v_Origin.DistTo(Vector{ crumb->x, crumb->y, crumb->z }) < 50.0f)
+    if (g_pLocalPlayer->v_Origin.DistTo(*crumb_vec) < 50.0f)
     {
+        inactivity.update();
+        if (crumb_vec == &endPoint)
+        {
+            endPoint.Invalidate();
+            return;
+        }
         last_area = *crumb;
         crumbs.erase(crumb);
-        inactivity.update();
         crumb = crumbs.begin();
         if (crumb == crumbs.end())
-            return;
+        {
+            if (!endPoint.IsValid())
+            {
+                logging::Info("navparser.cpp cm -> endPoint.IsValid() == false");
+                return;
+            }
+            crumb_vec = &endPoint;
+        }
     }
     if (look && LookAtPathTimer.check(1000))
     {
-        Vector next  = *crumb;
-        next.z       = g_pLocalPlayer->v_Eye.z;
-        Vector angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, next);
-        DoSlowAim(angle);
-        current_user_cmd->viewangles = angle;
+        Vector next{crumb_vec->x, crumb_vec->y, g_pLocalPlayer->v_Eye.z};
+        next = GetAimAtAngles(g_pLocalPlayer->v_Eye, next);
+        DoSlowAim(next);
+        current_user_cmd->viewangles = next;
     }
     // Detect when jumping is necessary
-    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumb->z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) || (last_jump.test_and_set(200) && inactivity.check(3000)))
-        current_user_cmd->buttons |= IN_JUMP | IN_DUCK;
-    // If inactive for too long
-    if (inactivity.check(*stuck_time))
+    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) &&
+        crumb_vec->z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) ||
+        (last_jump.test_and_set(200) && inactivity.check(*stuck_time / 2)))
     {
-        // Ignore connection
-        ignoremanager::addTime(last_area, *crumb, inactivity);
+        current_user_cmd->buttons |= IN_JUMP;
+    }
+    // Walk to next crumb
+    WalkTo(*crumb_vec);
+    /* If can't go through for some time (doors aren't instantly opening)
+     * ignore that connection
+     * Or if inactive for too long
+     */
+    if (inactivity.check(*stuck_time) || (inactivity.check(*unreachable_time) &&
+        !IsVectorVisible(g_pLocalPlayer->v_Origin, *crumb_vec, false, MASK_PLAYERSOLID)))
+    {
+        /* crumb is invalid if endPoint is used */
+        if (*crumb_vec != endPoint)
+            ignoremanager::addTime(last_area, *crumb, inactivity);
+
         repath();
         return;
     }
-    // Walk to next crumb
-    WalkTo(*crumb);
 }
 
 #if ENABLE_VISUALS
@@ -654,16 +653,25 @@ static void drawcrumbs()
         return;
     if (crumbs.size() < 2)
         return;
-    for (size_t i = 0; i < crumbs.size() - 1; i++)
+    for (size_t i = 0; i < crumbs.size(); i++)
     {
-        Vector wts1, wts2;
-        if (draw::WorldToScreen(crumbs[i], wts1) && draw::WorldToScreen(crumbs[i + 1], wts2))
+        Vector wts1, wts2, *o1, *o2;
+        if (crumbs.size() - 1 == i) {
+            if (!endPoint.IsValid())
+                break;
+
+            o2 = &endPoint;
+        } else
+            o2 = &crumbs[i + 1]->m_center;
+
+        o1 = &crumbs[i]->m_center;
+        if (draw::WorldToScreen(*o1, wts1) && draw::WorldToScreen(*o2, wts2))
         {
             draw::Line(wts1.x, wts1.y, wts2.x - wts1.x, wts2.y - wts1.y, colors::white, 0.3f);
         }
     }
     Vector wts;
-    if (!draw::WorldToScreen(crumbs[0], wts))
+    if (!draw::WorldToScreen(crumbs[0]->m_center, wts))
         return;
     draw::Rectangle(wts.x - 4, wts.y - 4, 8, 8, colors::white);
     draw::RectangleOutlined(wts.x - 4, wts.y - 4, 7, 7, colors::white, 1.0f);
@@ -688,7 +696,7 @@ bool isSafe(CNavArea *area)
 }
 
 static CatCommand nav_find("nav_find", "Debug nav find", []() {
-    std::vector<Vector> path = findPath(g_pLocalPlayer->v_Origin, loc);
+    auto path = findPath(g_pLocalPlayer->v_Origin, loc);
     if (path.empty())
     {
         logging::Info("Pathing: No path found");
@@ -697,7 +705,7 @@ static CatCommand nav_find("nav_find", "Debug nav find", []() {
     std::string output = "Pathing: Path found! Path: ";
     for (int i = 0; i < path.size(); i++)
     {
-        output.append(format(path.at(i).x, ",", format(path.at(i).y), " "));
+        output.append(format(path[i]->m_center.x, ",", format(path[i]->m_center.y), " "));
     }
     logging::Info(output.c_str());
 });
@@ -775,6 +783,7 @@ void DoSlowAim(Vector &input_angle)
 void clearInstructions()
 {
     crumbs.clear();
+    endPoint.Invalidate();
     curr_priority = 0;
 }
 static CatCommand nav_stop("nav_cancel", "Cancel Navigation", []() { clearInstructions(); });

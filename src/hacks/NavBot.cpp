@@ -198,7 +198,7 @@ static bool isValidNearPosition(Vector vec, Vector target, const bot_class_confi
     float dist = vec.DistTo(target);
     if (dist < config.min || dist > config.max)
         return false;
-    if (!IsVectorVisible(vec, target, true))
+    if (!IsVectorVisible(vec, target, true, MASK_PLAYERSOLID))
         return false;
     return true;
 }
