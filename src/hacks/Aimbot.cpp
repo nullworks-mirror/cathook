@@ -21,6 +21,7 @@ static settings::Boolean enable{ "aimbot.enable", "false" };
 static settings::Button aimkey{ "aimbot.aimkey.button", "<null>" };
 static settings::Int aimkey_mode{ "aimbot.aimkey.mode", "1" };
 static settings::Boolean autoshoot{ "aimbot.autoshoot", "1" };
+static settings::Boolean autoreload{ "aimbot.autoshoot.activate-heatmaker", "false" };
 static settings::Boolean autoshoot_disguised{ "aimbot.autoshoot-disguised", "1" };
 static settings::Boolean multipoint{ "aimbot.multipoint", "false" };
 static settings::Int hitbox_mode{ "aimbot.hitbox-mode", "0" };
@@ -95,6 +96,12 @@ bool shouldBacktrack()
 bool IsBacktracking()
 {
     return (aimkey ? aimkey.isKeyDown() : true) && shouldBacktrack();
+}
+
+// Am I holding Hitman's Heatmaker ?
+static bool CarryingHeatmaker()
+{
+    return CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 752;
 }
 
 // Current Entity
@@ -787,7 +794,7 @@ void Aim(CachedEntity *entity)
         minz += (maxz - minz) / 6;
         // Create Vectors
         const Vector positions[13] = { { minx, centery, minz }, { maxx, centery, minz }, { minx, centery, maxz }, { maxx, centery, maxz }, { centerx, miny, minz }, { centerx, maxy, minz }, { centerx, miny, maxz }, { centerx, maxy, maxz }, { minx, miny, centerz }, { maxx, maxy, centerz }, { minx, miny, centerz }, { maxx, maxy, centerz }, hitboxcenter };
-        for (int i = 0; i < 14; ++i)
+        for (int i = 0; i < 13; ++i)
             if (IsVectorVisible(g_pLocalPlayer->v_Eye, positions[i]))
             {
                 tr = (positions[i] - g_pLocalPlayer->v_Eye);
@@ -905,7 +912,10 @@ void DoAutoshoot()
         attack = false;
 
     if (attack)
-        current_user_cmd->buttons |= IN_ATTACK;
+        // TO DO: Sending both reload and attack will activate the hitmans heatmaker ability
+        // Don't activate it only on first kill (or somehow activate it before shoot)
+        current_user_cmd->buttons |= IN_ATTACK | (*autoreload && CarryingHeatmaker() ? IN_RELOAD : 0);
+
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
         current_user_cmd->buttons |= IN_ATTACK2;
     hacks::shared::antiaim::SetSafeSpace(1);
@@ -1025,7 +1035,7 @@ int BestHitbox(CachedEntity *target)
         IF_GAME(IsTF())
         {
             int ci    = g_pLocalPlayer->weapon()->m_iClassID();
-            preferred = hitbox_t::pelvis;
+            preferred = hitbox_t::spine_2;
             // Sniper rifle
             if (g_pLocalPlayer->holding_sniper_rifle)
             {
@@ -1073,7 +1083,7 @@ int BestHitbox(CachedEntity *target)
             {
 
                 float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
-                float bdmg = 50;
+                float bdmg = CarryingHeatmaker() ? 40 : 50;
                 // Darwins damage correction, protects against 15% of damage
                 //                if (HasDarwins(target))
                 //                {
@@ -1125,20 +1135,20 @@ int BestHitbox(CachedEntity *target)
             auto ticks   = bt::headPositions[target->m_IDX];
             for (int i = 0; i < 66; i++)
             {
-                if (!ticks->tickcount)
+                if (!ticks[i].tickcount)
                     continue;
                 if (!bt::ValidTick(ticks[i], target))
                     continue;
                 if (*backtrackVischeckAll)
                     for (int j = 0; j < 18; j++)
                     {
-                        if (IsEntityVectorVisible(target, ticks->hitboxes.at(j).center))
+                        if (IsEntityVectorVisible(target, ticks[i].hitboxes[j].center))
                         {
                             good_tick = { i, target->m_IDX };
                             break;
                         }
                     }
-                else if (IsEntityVectorVisible(target, ticks->hitboxes.at(0).center))
+                else if (IsEntityVectorVisible(target, ticks[i].hitboxes[0].center))
                 {
                     good_tick = { i, target->m_IDX };
                     break;
@@ -1159,7 +1169,7 @@ int BestHitbox(CachedEntity *target)
         {
             namespace bt = hacks::shared::backtrack;
             if (good_tick.first != -1)
-                if (IsEntityVectorVisible(target, bt::headPositions[target->m_IDX][good_tick.first].hitboxes.at(preferred).center))
+                if (IsEntityVectorVisible(target, bt::headPositions[target->m_IDX - 1][good_tick.first].hitboxes[preferred].center))
                     return preferred;
         }
         else if (target->hitboxes.VisibilityCheck(preferred))
@@ -1191,11 +1201,11 @@ int BestHitbox(CachedEntity *target)
             auto ticks   = bt::headPositions[target->m_IDX];
             for (int i = 0; i < 66; i++)
             {
-                if (!ticks->tickcount)
+                if (!ticks[i].tickcount)
                     continue;
                 if (!bt::ValidTick(ticks[i], target))
                     continue;
-                if (IsEntityVectorVisible(target, ticks->hitboxes.at(hb).center))
+                if (IsEntityVectorVisible(target, ticks[i].hitboxes[hb].center))
                 {
                     good_tick = { i, target->m_IDX };
                     break;
@@ -1216,11 +1226,11 @@ int BestHitbox(CachedEntity *target)
             auto ticks   = bt::headPositions[target->m_IDX];
             for (int i = 0; i < 66; i++)
             {
-                if (!ticks->tickcount)
+                if (!ticks[i].tickcount)
                     continue;
                 if (!bt::ValidTick(ticks[i], target))
                     continue;
-                if (IsEntityVectorVisible(target, ticks->hitboxes.at(hb).center))
+                if (IsEntityVectorVisible(target, ticks[i].hitboxes[hb].center))
                 {
                     good_tick = { i, target->m_IDX };
                     break;

@@ -26,7 +26,9 @@ extern bool ReadyForCommands;
 extern std::atomic<init_status> status;
 
 // Nav to vector
-bool navTo(Vector destination, int priority = 5, bool should_repath = true, bool nav_to_local = true, bool is_repath = false);
+bool navTo(const Vector &destination, int priority = 5, bool should_repath = true, bool nav_to_local = true, bool is_repath = false);
+// Find closest to vector area
+CNavArea *findClosestNavSquare(const Vector &vec);
 // Check and init navparser
 bool prepare();
 // Clear current path

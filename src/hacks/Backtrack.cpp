@@ -24,6 +24,7 @@ static settings::Int slots{ "backtrack.slots", "0" };
 settings::Boolean enable{ "backtrack.enable", "false" };
 settings::Boolean backtrack_chams_glow{ "backtrack.chams_glow", "true" };
 settings::Int latency{ "backtrack.latency", "0" };
+settings::Boolean enable_latency_rampup{ "backtrack.latency.rampup", "true" };
 
 void EmptyBacktrackData(BacktrackData &i);
 std::pair<int, int> getBestEntBestTick();
@@ -51,19 +52,14 @@ void UpdateIncomingSequences()
             sequences.pop_back();
     }
 }
+
 void AddLatencyToNetchan(INetChannel *ch)
 {
     if (!isBacktrackEnabled)
         return;
-    float Latency = *latency;
-    if (Latency > 1000.0f)
-        Latency = 800.0f;
-    Latency -= getRealLatency();
-    if (Latency < 0.0f)
-        Latency = 0.0f;
     for (auto &seq : sequences)
     {
-        if (g_GlobalVars->realtime - seq.curtime > Latency / 1000.0f)
+        if (g_GlobalVars->realtime - seq.curtime > getLatency() / 1000.0f)
         {
             ch->m_nInReliableState = seq.inreliablestate;
             ch->m_nInSequenceNr    = seq.sequencenr;
@@ -84,13 +80,21 @@ int BestTick    = -1;
 int iBestTarget = -1;
 bool istickvalid[33][66]{};
 bool istickinvalid[33][66]{};
+static float latency_rampup = 0.0f;
+
 static void Run()
 {
     if (!shouldBacktrack())
     {
         isBacktrackEnabled = false;
+        latency_rampup     = 0;
         return;
     }
+
+    // Limit to 2 ticks
+    latency_rampup += 1.0f / 66.0f;
+    latency_rampup = std::min(latency_rampup, 1.0f);
+
     UpdateIncomingSequences();
     isBacktrackEnabled = true;
 
@@ -341,11 +345,11 @@ float getLatency()
     if (!ch)
         return 0;
     float Latency = *latency;
-    if (Latency > 1000.0f)
-        Latency = 800.0f;
+    Latency       = std::min(Latency, 800.0f);
     Latency -= getRealLatency();
-    if (Latency < 0.0f)
-        Latency = 0.0f;
+    Latency = std::max(Latency, 0.0f);
+    if (enable_latency_rampup)
+        Latency = Latency * latency_rampup;
     return Latency;
 }
 

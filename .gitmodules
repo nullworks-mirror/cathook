@@ -18,7 +18,7 @@
 	url = https://github.com/nullworks/co-library.git
 [submodule "external/MicroPather"]
 	path = external/MicroPather
-	url = https://github.com/leethomason/MicroPather
+	url = https://github.com/nullworks/MicroPather
 [submodule "external/TF2_NavFile_Reader"]
 	path = external/TF2_NavFile_Reader
 	url = https://github.com/nullworks/TF2_NavFile_Reader

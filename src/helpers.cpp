@@ -1177,7 +1177,7 @@ netvar.iHealth));
     return buf;
 }*/
 
-bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only, CachedEntity *self)
+bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only, CachedEntity *self, unsigned int mask)
 {
 
     if (!enviroment_only)
@@ -1188,7 +1188,7 @@ bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only, CachedE
         trace::filter_no_player.SetSelf(RAW_ENT(self));
         ray.Init(origin, target);
         PROF_SECTION(IEVV_TraceRay);
-        g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player, &trace_visible);
+        g_ITrace->TraceRay(ray, mask, &trace::filter_no_player, &trace_visible);
         return (trace_visible.fraction == 1.0f);
     }
     else
@@ -1199,7 +1199,7 @@ bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only, CachedE
         trace::filter_no_entity.SetSelf(RAW_ENT(self));
         ray.Init(origin, target);
         PROF_SECTION(IEVV_TraceRay);
-        g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_entity, &trace_visible);
+        g_ITrace->TraceRay(ray, mask, &trace::filter_no_entity, &trace_visible);
         return (trace_visible.fraction == 1.0f);
     }
 }

@@ -46,6 +46,7 @@
                     <Option name="FakeOffset" value="15"/>
                     <Option name="FakeEdge" value="16"/>
                     <Option name="FakeHeck" value="17"/>
+                    <Option name="FakeSideways" value="18"/>
                     <Option name="FakeLeft" value="19"/>
                     <Option name="FakeRight" value="20"/>
                     <Option name="FakeREdge" value="21"/>

@@ -18,6 +18,8 @@ float used_yaw     = 0.0f;
 static settings::Boolean enable{ "antiaim.enable", "0" };
 static settings::Float yaw{ "antiaim.yaw.static", "0" };
 static settings::Int yaw_mode{ "antiaim.yaw.mode", "0" };
+static settings::Int yaw_sideways_min{ "antiaim.yaw.sideways.min", "0" };
+static settings::Int yaw_sideways_max{ "antiaim.yaw.sideways.max", "4" };
 
 static settings::Float pitch{ "antiaim.pitch.static", "0" };
 static settings::Int pitch_mode{ "antiaim.pitch.mode", "0" };
@@ -369,6 +371,14 @@ void ProcessUserCmd(CUserCmd *cmd)
     static bool bsendflip = true;
     static float rngyaw   = 0.0f;
     bool clamp            = !no_clamping;
+
+    static int ticksUntilSwap = 0;
+    static bool swap = true;
+
+    if (ticksUntilSwap > 0 && *yaw_mode != 18) {
+        swap = true;
+        ticksUntilSwap = 0;
+    }
     switch ((int) yaw_mode)
     {
     case 1: // FIXED
@@ -481,8 +491,14 @@ void ProcessUserCmd(CUserCmd *cmd)
             clamp = false;
         }
         break;
-    case 20:
     case 18: // Fake sideways
+        if (*bSendPackets && ticksUntilSwap--) {
+            ticksUntilSwap = UniformRandomInt(*yaw_sideways_min, *yaw_sideways_max);
+            swap = !swap;
+        }
+        y += *bSendPackets ^ swap ? 90.0f : -90.0f;
+        break;
+    case 20: // Fake right
         y += *bSendPackets ? 90.0f : -90.0f;
         break;
     case 19: // Fake left

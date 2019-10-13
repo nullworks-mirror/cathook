@@ -34,6 +34,7 @@ static settings::Int equip_primary{ "achievement.equip-primary", "0" };
 static settings::Int equip_secondary{ "achievement.equip-secondary", "0" };
 static settings::Int equip_melee{ "achievement.equip-melee", "0" };
 static settings::Int equip_pda2{ "achievement.equip-pda2", "0" };
+static settings::Boolean hat_troll{ "misc.nohatsforyou", "false" };
 
 bool checkachmngr()
 {
@@ -158,7 +159,6 @@ CatCommand unlock("achievement_unlock", "Unlock all achievements", Unlock);
 static bool accept_notifs;
 static bool equip_hats;
 static bool equip;
-static bool equip_first_half;
 std::vector<Autoequip_unlock_list> equip_queue;
 
 void unlock_achievements_and_accept(std::vector<int> items)
@@ -189,9 +189,16 @@ static CatCommand get_best_hats("achievement_cathats", "Get and equip the bencat
     unlock_achievements_and_accept(bencat_hats);
     hacks::shared::misc::generate_schema();
     hacks::shared::misc::Schema_Reload();
-    equip_hats       = true;
-    equip_first_half = true;
+    equip_hats = true;
 });
+
+struct queue_struct
+{
+    int clazz;
+    int slot;
+    unsigned long long uuid;
+};
+static std::deque<queue_struct> gc_queue;
 
 bool equip_item(int clazz, int slot, int id)
 {
@@ -199,7 +206,10 @@ bool equip_item(int clazz, int slot, int id)
     auto inv       = invmng->GTFPlayerInventory();
     auto item_view = inv->GetFirstItemOfItemDef(id);
     if (item_view)
-        return invmng->EquipItemInLoadout(clazz, slot, item_view->UUID());
+    {
+        gc_queue.push_front({ clazz, slot, item_view->UUID() });
+        return true;
+    }
     return false;
 }
 
@@ -210,6 +220,33 @@ bool equip_hats_fn(std::vector<int> hats, std::pair<int, int> classes)
         if (!(equip_item(i, 7, hats[0]) && equip_item(i, 8, hats[1]) && equip_item(i, 10, hats[2])))
             return false;
     return true;
+}
+
+static std::vector<int> hat_list = { 302, 940, 941 };
+// TNE didn't want me to put "epic_" infront of it :(
+static Timer hat_steal_timer{};
+static Timer gc_timer{};
+
+void CreateMove()
+{
+    if (gc_queue.size() && gc_timer.test_and_set(3000))
+    {
+        queue_struct item = gc_queue.at(gc_queue.size() - 1);
+        auto invmng       = re::CTFInventoryManager::GTFInventoryManager();
+        invmng->EquipItemInLoadout(item.clazz, item.slot, item.uuid);
+        gc_queue.pop_back();
+    }
+    if (!hat_troll)
+        return;
+
+    if (CE_BAD(LOCAL_E))
+        return;
+
+    if (hat_steal_timer.test_and_set(15000))
+    {
+        std::rotate(hat_list.begin(), hat_list.begin() + 1, hat_list.end());
+        equip_hats_fn(hat_list, { g_pLocalPlayer->clazz, g_pLocalPlayer->clazz });
+    }
 }
 
 void Callback(int after, int type)
@@ -258,6 +295,84 @@ void Callback(int after, int type)
     }
 }
 
+void Paint()
+{
+    // Start accepting
+    if (accept_notifs)
+    {
+        accept_time.update();
+        accept_notifs = false;
+    }
+    // "Trigger/Accept first notification" aka Achievement items
+    if (!accept_time.check(5000) && cooldowm.test_and_set(500))
+        g_IEngine->ClientCmd_Unrestricted("cl_trigger_first_notification");
+
+    // Hat equip code
+    if (equip_hats)
+    {
+        // If done start accepting notifications, also time out after a while
+        if (accept_time.check(5000) && !accept_time.check(10000) && cooldowm.test_and_set(500))
+        {
+            // Inventory Manager
+            auto invmng = re::CTFInventoryManager::GTFInventoryManager();
+            // Inventory
+            auto inv = invmng->GTFPlayerInventory();
+            // Frontline field recorder
+            auto item_view1 = inv->GetFirstItemOfItemDef(302);
+            // Gibus
+            auto item_view2 = inv->GetFirstItemOfItemDef(940);
+            // Skull Island Tropper
+            auto item_view3 = inv->GetFirstItemOfItemDef(941);
+            if (item_view1 && item_view2 && item_view3)
+            {
+                if (!accept_time.check(7500))
+                {
+                    // Equip these hats on all classes
+                    bool success = equip_hats_fn({ 302, 940, 941 }, { tf_scout, tf_engineer });
+                    if (success)
+                    {
+                        logging::Info("Equipping hats!");
+                        equip_hats = false;
+                    }
+                }
+            }
+        }
+        else if (accept_time.check(10000))
+            equip_hats = false;
+    }
+    // Equip weapons
+    if (equip)
+    {
+        // After 5 seconds of accept time, start
+        if (accept_time.check(5000) && !accept_time.check(10000) && cooldown_2.test_and_set(500))
+        {
+            // Watch for each item and equip it
+            for (int i = 0; i < equip_queue.size(); i++)
+            {
+                auto equip   = equip_queue.at(i);
+                bool success = equip_item(equip.player_class, equip.slot, equip.item_id);
+
+                if (success)
+                {
+                    logging::Info("Equipped Item!");
+                    equip_queue.erase(equip_queue.begin() + i);
+                }
+            }
+            // We did it
+            if (!equip_queue.size())
+                equip = false;
+        }
+        else if (accept_time.check(10000) && cooldown_2.test_and_set(500))
+        {
+            if (equip_queue.size())
+            {
+                logging::Info("Equipping failed!");
+                equip_queue.clear();
+            }
+        }
+    }
+};
+
 static InitRoutine init([]() {
     // Primary list
     primary.push_back(Autoequip_unlock_list("Force-A-Nature", 1036, 45, tf_scout, 0));
@@ -300,93 +415,16 @@ static InitRoutine init([]() {
     equip_melee.installChangeCallback([](settings::VariableBase<int> &, int after) { Callback(after, 2); });
     equip_pda2.installChangeCallback([](settings::VariableBase<int> &, int after) { Callback(after, 3); });
 
-    EC::Register(
-        EC::Paint,
-        []() {
-            // Start accepting
-            if (accept_notifs)
-            {
-                accept_time.update();
-                accept_notifs = false;
-            }
-            // "Trigger/Accept first notification" aka Achievement items
-            if (!accept_time.check(5000) && cooldowm.test_and_set(500))
-                g_IEngine->ClientCmd_Unrestricted("cl_trigger_first_notification");
-
-            // Hat equip code
-            if (equip_hats)
-            {
-                // If done start accepting notifications, also time out after a while
-                if (accept_time.check(5000) && !accept_time.check(10000) && cooldowm.test_and_set(500))
-                {
-                    // Inventory Manager
-                    auto invmng = re::CTFInventoryManager::GTFInventoryManager();
-                    // Inventory
-                    auto inv = invmng->GTFPlayerInventory();
-                    // Frontline field recorder
-                    auto item_view1 = inv->GetFirstItemOfItemDef(302);
-                    // Gibus
-                    auto item_view2 = inv->GetFirstItemOfItemDef(940);
-                    // Skull Island Tropper
-                    auto item_view3 = inv->GetFirstItemOfItemDef(941);
-                    if (item_view1 && item_view2 && item_view3)
-                    {
-                        if (!accept_time.check(7500) && equip_first_half)
-                        {
-                            // Equip these hats on all classes
-                            bool success = equip_hats_fn({ 302, 940, 941 }, { tf_scout, tf_medic });
-                            if (success)
-                            {
-                                logging::Info("Equipped hats on first half!");
-                                equip_first_half = false;
-                            }
-                        }
-                        else if (accept_time.check(7500))
-                        {
-                            bool success = equip_hats_fn({ 302, 940, 941 }, { tf_heavy, tf_engineer });
-                            if (success)
-                            {
-                                logging::Info("Equipped hats on second half!");
-                                equip_hats = false;
-                            }
-                        }
-                    }
-                }
-                else if (accept_time.check(10000))
-                    equip_hats = false;
-            }
-            // Equip weapons
-            if (equip)
-            {
-                // After 5 seconds of accept time, start
-                if (accept_time.check(5000) && !accept_time.check(10000) && cooldown_2.test_and_set(500))
-                {
-                    // Watch for each item and equip it
-                    for (int i = 0; i < equip_queue.size(); i++)
-                    {
-                        auto equip   = equip_queue.at(i);
-                        bool success = equip_item(equip.player_class, equip.slot, equip.item_id);
-
-                        if (success)
-                        {
-                            logging::Info("Equipped Item!");
-                            equip_queue.erase(equip_queue.begin() + i);
-                        }
-                    }
-                    // We did it
-                    if (!equip_queue.size())
-                        equip = false;
-                }
-                else if (accept_time.check(10000) && cooldown_2.test_and_set(500))
-                {
-                    if (equip_queue.size())
-                    {
-                        logging::Info("Equipping failed!");
-                        equip_queue.clear();
-                    }
-                }
-            }
-        },
-        "achievement_autounlock");
+    EC::Register(EC::CreateMove, CreateMove, "cm_nohatsforyou");
+    EC::Register(EC::Paint, Paint, "achievement_autounlock");
+    hat_troll.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        static bool init = false;
+        if (after && !init)
+        {
+            hacks::shared::misc::generate_schema();
+            hacks::shared::misc::Schema_Reload();
+            init = true;
+        }
+    });
 });
 } // namespace hacks::tf2::achievement

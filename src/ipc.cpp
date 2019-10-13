@@ -231,6 +231,9 @@ void UpdateTemporaryData()
 
 void StoreClientData()
 {
+    if (!peer)
+        return;
+
     UpdateServerAddress();
     user_data_s &data = peer->memory->peer_user_data[peer->client_id];
     data.friendid     = g_ISteamUser->GetSteamID().GetAccountID();

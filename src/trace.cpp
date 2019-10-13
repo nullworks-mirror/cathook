@@ -140,6 +140,9 @@ bool trace::FilterNoEntity::ShouldHitEntity(IHandleEntity *handle, int mask)
     // Hit doors, carts, etc
     switch (clazz->m_ClassID)
     {
+    case CL_CLASS(CWorld):
+    case CL_CLASS(CPhysicsProp):
+    case CL_CLASS(CDynamicProp):
     case CL_CLASS(CBaseDoor):
     case CL_CLASS(CBaseEntity):
         return true;
