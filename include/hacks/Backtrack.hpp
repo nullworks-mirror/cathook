@@ -32,15 +32,6 @@ struct BacktrackData
     int index{ 0 };
     matrix3x4_t bones[128]{};
 };
-struct BestTickData
-{
-    int tickcount{ 0 };
-    int tick{ 0 };
-    bool operator<(const BestTickData &rhs) const
-    {
-        return tickcount < rhs.tickcount;
-    }
-};
 void Init();
 void AddLatencyToNetchan(INetChannel *);
 void UpdateIncomingSequences();
