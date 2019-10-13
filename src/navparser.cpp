@@ -101,7 +101,7 @@ namespace ignoremanager
         Vector second = end->m_center;
         first.z += 42;
         second.z += 42;
-        return IsVectorVisible(first, second, true, MASK_PLAYERSOLID);
+        return IsVectorVisible(first, second, true, LOCAL_E, MASK_PLAYERSOLID);
     }
     static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
     {
@@ -448,7 +448,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
         }
         // Check if we are within x and y bounds of an area
         if (ovBestDist >= dist || !i.IsOverlapping(vec) ||
-            !IsVectorVisible(vec, i.m_center, true, MASK_PLAYERSOLID))
+            !IsVectorVisible(vec, i.m_center, true, LOCAL_E, MASK_PLAYERSOLID))
         {
             continue;
         }
@@ -631,7 +631,7 @@ static void cm()
      */
     if (inactivity.check(*stuck_time) || (inactivity.check(*unreachable_time) &&
         !IsVectorVisible(g_pLocalPlayer->v_Origin, *crumb_vec + Vector(.0f, .0f, 41.5f),
-        false, MASK_PLAYERSOLID)))
+        false, LOCAL_E, MASK_PLAYERSOLID)))
     {
         /* crumb is invalid if endPoint is used */
         if (crumb_vec != &endPoint)

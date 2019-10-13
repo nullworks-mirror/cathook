@@ -1177,7 +1177,7 @@ netvar.iHealth));
     return buf;
 }*/
 
-bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only, CachedEntity *self)
+bool IsVectorVisible(Vector origin, Vector target, bool enviroment_only, CachedEntity *self, unsigned int mask)
 {
 
     if (!enviroment_only)
