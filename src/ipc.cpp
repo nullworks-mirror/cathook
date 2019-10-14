@@ -183,17 +183,16 @@ void UpdateTemporaryData()
 
     if (data.connected)
     {
-        if (CE_GOOD(LOCAL_E))
+        IClientEntity *player = g_IEntityList->GetClientEntity(g_IEngine->GetLocalPlayer());
+        if (player)
         {
-            IClientEntity *player = RAW_ENT(LOCAL_E);
-            int m_IDX = LOCAL_E->m_IDX;
             data.ingame.good = true;
             // TODO kills, deaths, shots, hits, headshots
 
             int score_saved = data.ingame.score;
 
-            data.ingame.score      = g_pPlayerResource->GetScore(m_IDX);
-            data.ingame.team       = g_pPlayerResource->GetTeam(m_IDX);
+            data.ingame.score      = g_pPlayerResource->GetScore(g_IEngine->GetLocalPlayer());
+            data.ingame.team       = g_pPlayerResource->GetTeam(g_IEngine->GetLocalPlayer());
             data.ingame.role       = g_pPlayerResource->GetClass(LOCAL_E);
             data.ingame.life_state = NET_BYTE(player, netvar.iLifeState);
             data.ingame.health     = NET_INT(player, netvar.iHealth);
