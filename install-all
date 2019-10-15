@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-RUNUSER="sudo -u $LOGNAME"
+[[ ! -z "$SUDO_USER" ]] && RUNUSER="$SUDO_USER" || RUNUSER="$LOGNAME"
+RUNCMD="sudo -u $RUNUSER"
 
 set -e
 
