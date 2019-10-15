@@ -13,7 +13,6 @@
 
 static settings::Int newlines_msg{ "chat.prefix-newlines", "0" };
 static settings::Boolean log_sent{ "debug.log-sent-chat", "false" };
-static settings::Boolean identify{ "chat.identify", "true" };
 static settings::Boolean answerIdentify{ "chat.identify.answer", "true" };
 static Timer identify_timer{};
 
@@ -34,6 +33,7 @@ void sendAchievementKv(int value)
     kv->SetInt("achievementID", value);
     g_IEngine->ServerCmdKeyValues(kv);
 }
+settings::Boolean identify{ "chat.identify", "true" };
 
 std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
 {

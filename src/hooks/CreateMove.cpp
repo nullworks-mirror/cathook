@@ -125,6 +125,8 @@ void PrecalculateCanShoot()
 static int attackticks = 0;
 namespace hooked_methods
 {
+void sendAchievementKv(int value);
+extern settings::Boolean identify;
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
 {
 #define TICK_INTERVAL (g_GlobalVars->interval_per_tick)
@@ -265,6 +267,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         IRC::auth();
 #endif
         hacks::tf2::NavBot::init(true);
+        if (identify)
+            sendAchievementKv(0xCA7);
         firstcm = false;
     }
     g_Settings.bInvalid = false;
