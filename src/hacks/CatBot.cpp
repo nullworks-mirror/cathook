@@ -841,7 +841,7 @@ void update()
                         {
                             // Check against blacklist
                             if (std::find(ipc_blacklist.begin(), ipc_blacklist.end(), i) != ipc_blacklist.end())
-                                break;
+                                continue;
 
                             // Found someone with a lower ipc id
                             if (i < local_ipcid)
