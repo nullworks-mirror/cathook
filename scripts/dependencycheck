@@ -2,7 +2,7 @@
 
 arch_packages=(git boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd dialog)
 ubuntu_packages=(software-properties-common build-essential git g++ g++-multilib libboost-all-dev gdb libsdl2-dev:i386 libglew-dev:i386 libfreetype6-dev:i386 cmake dialog rsync)
-fedora_packages=(cmake dialog make g++ glibc-devel.i686 libstdc++-devel.i686 freetype-devel.i686 SDL2-devel.i686 glew-devel.i686 boost-devel.i686 rsync gdb git)
+fedora_packages=(cmake dialog make gcc-c++ glibc-devel.i686 freetype-devel.i686 SDL2-devel.i686 glew-devel.i686 boost-devel.i686 rsync gdb git)
 
 function requestPermissions {
     string=$@
@@ -62,12 +62,11 @@ elif [ "$OS" == "ubuntu" ]; then
         sudo apt-get install -y "${ubuntu_packages[@]}"
     fi
 elif [ "$OS" == "fedora" ]; then
-    string=${fedora_packages[@]}
-    rpm -q "${string}" > /dev/null 2>&1
+    rpm -q "${fedora_packages[@]}" > /dev/null 2>&1
     out=$?
-    if [ "$out" == 1 ]; then
+    if [ "$out" != 0 ]; then
         requestPermissions "${fedora_packages[@]}"
-        sudo dnf install -y "${string}"
+        sudo dnf install -y ${fedora_packages[@]}
     fi
 else
     echo -e "\033[1;33m\nWarning! Automatic package installation is not supported!\n\033[0m"
