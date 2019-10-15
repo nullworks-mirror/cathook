@@ -22,11 +22,11 @@ fi
 trap "rm -f ${LOCKFILE}; exit" INT TERM EXIT
 echo $$ > ${LOCKFILE}
 
-#Check if all required packages are installed
-./scripts/dependencycheck
-
 # Run migrations 
 ./scripts/migrations "$@" || exit 0
+
+#Check if all required packages are installed
+./scripts/dependencycheck
 
 . ./scripts/config.shlib
 
