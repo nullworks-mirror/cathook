@@ -826,7 +826,7 @@ void update()
                 // Iterate all the players marked as bot
                 for (auto &id : ipc_list)
                 {
-                    // We already know we should quit, so just break out of the loop
+                    // We already know we shouldn't quit, so just break out of the loop
                     if (quit_id < local_ipcid)
                         break;
 
