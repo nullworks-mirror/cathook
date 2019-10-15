@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-RUNUSER="sudo -u $LOGNAME"
+[[ ! -z "$SUDO_USER" ]] && RUNUSER="$SUDO_USER" || RUNUSER="$LOGNAME"
+RUNCMD="sudo -u $RUNUSER"
 
 set -e
 
@@ -11,21 +12,18 @@ set -e
 # Update cathook
 #
 if [ ! -d "./.git" ]; then
-    $RUNUSER git init
-    $RUNUSER git remote add origin https://github.com/nullworks/cathook
+    $RUNCMD git init
+    $RUNCMD git remote add origin https://github.com/nullworks/cathook
 fi
-
-$RUNUSER git fetch --force --depth 1 origin refs/tags/latest:refs/tags/latest && $RUNUSER git reset --hard latest # pull changes from github
-$RUNUSER git submodule update --depth 1 --init --recursive # update/init submodules
 
 #
 # Set config version for update script
 #
 
-$RUNUSER bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferences version 1"
+$RUNCMD bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferences version 1"
 
 #
 # Build cathook
 #
 
-$RUNUSER ./scripts/updater false true
+$RUNCMD ./scripts/updater false true
