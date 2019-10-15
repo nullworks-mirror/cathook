@@ -192,9 +192,10 @@ struct migration_struct
 };
 /* clang-format off */
 // Use one per line, from -> to
-static std::array<migration_struct, 1> migrations = {
-    { "misc.semi-auto", "misc.full-auto" }
-};
+static std::array<migration_struct, 2> migrations({
+    migration_struct{ "misc.semi-auto", "misc.full-auto" },
+    migration_struct{ "cat-bot.abandon-if.bots-gte", "cat-bot.abandon-if.ipc-bots-gte" }
+});
 /* clang-format on */
 void settings::SettingsReader::finishString(bool complete)
 {
