@@ -166,7 +166,7 @@ void abandon()
         logging::Info("Not connected to a Match server. Cutting Netchannel instead.");
         auto nc = (INetChannel *) g_IEngine->GetNetChannelInfo();
         if (nc)
-            hack::command_stack().push("disconnect");
+            hack::ExecuteCommand("disconnect");
         else
             logging::Info("No Netchannel found, something is wrong.");
     }
