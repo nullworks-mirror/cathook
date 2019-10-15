@@ -5,9 +5,9 @@ namespace hacks::shared::purebypass
 {
 hooks::VMTHook svpurehook{};
 static void (*orig_RegisterFileWhilelist)(void *, void *, void *);
-static void RegisterFileWhitelist(void *_this, void *a, void *b)
+// epic hook
+static void RegisterFileWhitelist(void *, void *, void *)
 {
-    logging::Info("git gud sv_pure !");
 }
 
 static InitRoutine init([] {
