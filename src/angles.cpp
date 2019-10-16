@@ -9,7 +9,7 @@
 namespace angles
 {
 
-angle_data_s data_[MAX_PLAYERS];
+angle_data_s data_[PLAYER_ARRAY_SIZE];
 
 void Update()
 {
