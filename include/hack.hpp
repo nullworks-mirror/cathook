@@ -34,4 +34,5 @@ const std::string &GetType();
 void Initialize();
 void Think();
 void Shutdown();
+void Hook();
 } // namespace hack

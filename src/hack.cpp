@@ -185,82 +185,8 @@ static void InitRandom()
         fclose(rnd);
 }
 
-void hack::Initialize()
+void hack::Hook()
 {
-#if ENABLE_LOGGING
-    ::signal(SIGSEGV, &critical_error_handler);
-    ::signal(SIGABRT, &critical_error_handler);
-#endif
-    time_injected = time(nullptr);
-/*passwd *pwd   = getpwuid(getuid());
-char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name,
-time_injected);
-freopen(logname, "w", stdout);
-free(logname);
-logname = strfmt("/tmp/cathook-game-stderr-%s-%u.log", pwd->pw_name,
-time_injected);
-freopen(logname, "w", stderr);
-free(logname);*/
-// Essential files must always exist, except when the game is running in text
-// mode.
-#if ENABLE_VISUALS
-
-    {
-        std::vector<std::string> essential = { "fonts/tf2build.ttf" };
-        for (const auto &s : essential)
-        {
-            std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
-            if (not exists)
-            {
-                Error(("Missing essential file: " + s +
-                       "/%s\nYou MUST run install-data script to finish "
-                       "installation")
-                          .c_str(),
-                      s.c_str());
-            }
-        }
-    }
-
-#endif /* TEXTMODE */
-    logging::Info("Initializing...");
-    InitRandom();
-    sharedobj::LoadEarlyObjects();
-    CreateEarlyInterfaces();
-    logging::Info("Clearing Early initializer stack");
-    while (!init_stack_early().empty())
-    {
-        init_stack_early().top()();
-        init_stack_early().pop();
-    }
-    logging::Info("Early Initializer stack done");
-    sharedobj::LoadAllSharedObjects();
-    CreateInterfaces();
-    CDumper dumper;
-    dumper.SaveDump();
-    logging::Info("Is TF2? %d", IsTF2());
-    logging::Info("Is TF2C? %d", IsTF2C());
-    logging::Info("Is HL2DM? %d", IsHL2DM());
-    logging::Info("Is CSS? %d", IsCSS());
-    logging::Info("Is TF? %d", IsTF());
-    InitClassTable();
-
-    BeginConVars();
-    g_Settings.Init();
-    EndConVars();
-
-#if ENABLE_VISUALS
-    draw::Initialize();
-#if ENABLE_GUI
-// FIXME put gui here
-#endif
-
-#endif /* TEXTMODE */
-
-    gNetvars.init();
-    InitNetVars();
-    g_pLocalPlayer    = new LocalPlayer();
-    g_pPlayerResource = new TFPlayerResource();
-
     uintptr_t *clientMode = 0;
     // Bad way to get clientmode.
     // FIXME [MP]?
@@ -342,8 +268,88 @@ free(logname);*/
     hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound3));
     hooks::soundclient.Apply();
 
+    sdl_hooks::applySdlHooks();
+
     // FIXME [MP]
     logging::Info("Hooked!");
+}
+
+void hack::Initialize()
+{
+#if ENABLE_LOGGING
+    ::signal(SIGSEGV, &critical_error_handler);
+    ::signal(SIGABRT, &critical_error_handler);
+#endif
+    time_injected = time(nullptr);
+/*passwd *pwd   = getpwuid(getuid());
+char *logname = strfmt("/tmp/cathook-game-stdout-%s-%u.log", pwd->pw_name,
+time_injected);
+freopen(logname, "w", stdout);
+free(logname);
+logname = strfmt("/tmp/cathook-game-stderr-%s-%u.log", pwd->pw_name,
+time_injected);
+freopen(logname, "w", stderr);
+free(logname);*/
+// Essential files must always exist, except when the game is running in text
+// mode.
+#if ENABLE_VISUALS
+
+    {
+        std::vector<std::string> essential = { "fonts/tf2build.ttf" };
+        for (const auto &s : essential)
+        {
+            std::ifstream exists(DATA_PATH "/" + s, std::ios::in);
+            if (not exists)
+            {
+                Error(("Missing essential file: " + s +
+                       "/%s\nYou MUST run install-data script to finish "
+                       "installation")
+                          .c_str(),
+                      s.c_str());
+            }
+        }
+    }
+
+#endif /* TEXTMODE */
+    logging::Info("Initializing...");
+    InitRandom();
+    sharedobj::LoadEarlyObjects();
+    CreateEarlyInterfaces();
+    logging::Info("Clearing Early initializer stack");
+    while (!init_stack_early().empty())
+    {
+        init_stack_early().top()();
+        init_stack_early().pop();
+    }
+    logging::Info("Early Initializer stack done");
+    sharedobj::LoadAllSharedObjects();
+    CreateInterfaces();
+    CDumper dumper;
+    dumper.SaveDump();
+    logging::Info("Is TF2? %d", IsTF2());
+    logging::Info("Is TF2C? %d", IsTF2C());
+    logging::Info("Is HL2DM? %d", IsHL2DM());
+    logging::Info("Is CSS? %d", IsCSS());
+    logging::Info("Is TF? %d", IsTF());
+    InitClassTable();
+
+    BeginConVars();
+    g_Settings.Init();
+    EndConVars();
+
+#if ENABLE_VISUALS
+    draw::Initialize();
+#if ENABLE_GUI
+// FIXME put gui here
+#endif
+
+#endif /* TEXTMODE */
+
+    gNetvars.init();
+    InitNetVars();
+    g_pLocalPlayer    = new LocalPlayer();
+    g_pPlayerResource = new TFPlayerResource();
+
     velocity::Init();
     playerlist::Load();
 
@@ -360,8 +366,6 @@ free(logname);*/
     }
     logging::Info("SSE enabled..");
 #endif
-    sdl_hooks::applySdlHooks();
-    logging::Info("SDL hooking done");
 
 #endif /* TEXTMODE */
 #if ENABLE_VISUALS
@@ -398,6 +402,7 @@ free(logname);*/
             logging::Info("Bypassed force competitive cvars!");
         }
     }
+    hack::Hook();
 }
 
 void hack::Think()
