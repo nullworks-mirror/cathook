@@ -31,7 +31,7 @@ bool StolenName()
 
     // Array to store potential namestealer targets with a bookkeeper to tell
     // how full it is
-    int potential_targets[32];
+    int potential_targets[MAX_PLAYERS];
     int potential_targets_length = 0;
 
     // Go through entities looking for potential targets

@@ -47,6 +47,7 @@
 #include "averager.hpp"
 
 #include "core/macros.hpp"
+#include "Constants.hpp"
 #if ENABLE_VISUALS
 #include <visual/colors.hpp>
 #include <visual/drawing.hpp>
@@ -120,9 +121,6 @@ template <typename T> constexpr T _clamp(T _min, T _max, T _val)
 #include "gameinfo.hpp"
 
 #define SQR(x) (x) * (x)
-
-#define CON_NAME "cat"
-#define CON_PREFIX CON_NAME "_"
 
 #define SUPER_VERBOSE_DEBUG false
 #if SUPER_VERBOSE_DEBUG == true

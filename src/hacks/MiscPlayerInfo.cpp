@@ -47,7 +47,7 @@ std::string random_mafia_entry(int level, unsigned steamid)
     else
         return store.at(rand() % store.size());
 }
-static std::array<float, 32> death_timer;
+static std::array<float, PLAYER_ARRAY_SIZE> death_timer;
 void Paint()
 {
     if (!*draw_kda && !*mafia_city)

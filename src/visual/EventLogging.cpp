@@ -111,7 +111,7 @@ static void handlePlayerSpawn(KeyValues *kv)
 static void handlePlayerChangeClass(KeyValues *kv)
 {
     int id = kv->GetInt("userid");
-    if (id > 33 || id < 0)
+    if (id > PLAYER_ARRAY_SIZE || id < 0)
         return;
     player_info_s info{};
     if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(id), &info))

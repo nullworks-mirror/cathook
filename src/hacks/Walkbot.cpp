@@ -243,7 +243,7 @@ bool HasLowAmmo()
     {
         int handle = weapon_list[i];
         int eid    = handle & 0xFFF;
-        if (eid >= 32 && eid <= HIGHEST_ENTITY)
+        if (eid > MAX_PLAYERS && eid <= HIGHEST_ENTITY)
         {
             IClientEntity *weapon = g_IEntityList->GetClientEntity(eid);
             if (weapon and re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) and re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) and not re::C_TFWeaponBase::HasPrimaryAmmo(weapon))

@@ -162,7 +162,7 @@ bool gui::handleSdlEvent(SDL_Event *event)
     if (controller && CE_GOOD(LOCAL_E) && update_players.test_and_set(10000))
     {
         controller->removeAll();
-        for (auto i = 1; i < 32; ++i)
+        for (auto i = 1; i <= MAX_PLAYERS; ++i)
         {
             player_info_s info{};
             if (g_IEngine->GetPlayerInfo(i, &info))
@@ -202,7 +202,7 @@ void gui::onLevelLoad()
     if (controller)
     {
         controller->removeAll();
-        for (auto i = 1; i < 32; ++i)
+        for (auto i = 1; i < MAX_PLAYERS; ++i)
         {
             player_info_s info{};
             if (g_IEngine->GetPlayerInfo(i, &info))

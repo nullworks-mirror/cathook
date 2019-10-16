@@ -23,7 +23,7 @@ struct ac_data
     int check_timer;
     int last_weapon;
 };
-extern int amount[32];
+extern int amount[MAX_PLAYERS];
 
 void ResetEverything();
 std::unordered_map<int, Vector> &player_orgs();

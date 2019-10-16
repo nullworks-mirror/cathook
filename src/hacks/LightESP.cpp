@@ -6,10 +6,10 @@ namespace hacks::shared::lightesp
 {
 static settings::Boolean enable{ "lightesp.enable", "false" };
 
-static Vector hitp[33];
-static Vector minp[33];
-static Vector maxp[33];
-static bool drawEsp[33];
+static Vector hitp[PLAYER_ARRAY_SIZE];
+static Vector minp[PLAYER_ARRAY_SIZE];
+static Vector maxp[PLAYER_ARRAY_SIZE];
+static bool drawEsp[PLAYER_ARRAY_SIZE];
 
 rgba_t LightESPColor(CachedEntity *ent)
 {

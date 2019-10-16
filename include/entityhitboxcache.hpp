@@ -15,7 +15,7 @@
 #include <stdexcept>
 
 class CachedEntity;
-#define CACHE_MAX_HITBOXES 64
+constexpr int CACHE_MAX_HITBOXES = 64;
 
 namespace hitbox_cache
 {

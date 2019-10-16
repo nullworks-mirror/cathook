@@ -116,7 +116,7 @@ peer_t *peer{ nullptr };
 
 CatCommand debug_get_ingame_ipc("ipc_debug_dump_server", "Show other bots on server", []() {
     std::vector<unsigned> players{};
-    for (int j = 1; j < 32; j++)
+    for (int j = 1; j <= MAX_PLAYERS; j++)
     {
         player_info_s info;
         if (g_IEngine->GetPlayerInfo(j, &info))

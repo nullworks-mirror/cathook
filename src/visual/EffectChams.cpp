@@ -90,10 +90,10 @@ void EffectChams::EndRenderChams()
     g_IVModelRender->ForcedMaterialOverride(nullptr);
 #endif
 }
-static rgba_t data[33] = { colors::empty };
+static rgba_t data[PLAYER_ARRAY_SIZE] = { colors::empty };
 void EffectChams::SetEntityColor(CachedEntity *ent, rgba_t color)
 {
-    if (ent->m_IDX > 32 || ent->m_IDX < 0)
+    if (ent->m_IDX > MAX_PLAYERS || ent->m_IDX < 0)
         return;
     data[ent->m_IDX] = color;
 }
@@ -162,7 +162,7 @@ rgba_t EffectChams::ChamsColor(IClientEntity *entity)
         }
         return disco;
     }
-    if (ent->m_IDX <= 32 && ent->m_IDX >= 0)
+    if (ent->m_IDX <= MAX_PLAYERS && ent->m_IDX >= 0)
     {
         if (data[entity->entindex()] != colors::empty)
         {

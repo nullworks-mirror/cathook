@@ -1478,7 +1478,7 @@ static void DrawText()
     // Debug stuff
     if (!aimbot_debug)
         return;
-    for (int i = 1; i < 32; i++)
+    for (int i = 1; i < PLAYER_ARRAY_SIZE; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent))

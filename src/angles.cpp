@@ -9,11 +9,11 @@
 namespace angles
 {
 
-angle_data_s data_[32];
+angle_data_s data_[MAX_PLAYERS];
 
 void Update()
 {
-    for (int i = 1; i < 33; i++)
+    for (int i = 1; i <= MAX_PLAYERS; i++)
     {
         auto &d           = data_idx(i);
         CachedEntity *ent = ENTITY(i);

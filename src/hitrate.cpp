@@ -60,9 +60,9 @@ CatCommand debug_ammo("debug_ammo", "Debug ammo", []() {
         logging::Info("%d %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + i * 4));
     }
 });
-bool brutesoon[33];
+bool brutesoon[PLAYER_ARRAY_SIZE];
 int lasthits = 0;
-std::array<Timer, 33> xd{};
+std::array<Timer, PLAYER_ARRAY_SIZE> xd{};
 void Update()
 {
     CachedEntity *weapon = LOCAL_W;
@@ -87,7 +87,7 @@ void Update()
 
             INetChannel *ch       = (INetChannel *) g_IEngine->GetNetChannelInfo();
             static bool firstcall = true;
-            for (int i = 0; i < 33; i++)
+            for (int i = 0; i < PLAYER_ARRAY_SIZE; i++)
             {
                 if (firstcall)
                     xd[i].update();

@@ -77,13 +77,13 @@ struct angle_data_s
     int angle_count{ 0 };
 };
 
-extern angle_data_s data_[32];
+extern angle_data_s data_[MAX_PLAYERS];
 
 void Update();
 
 inline angle_data_s &data_idx(int index)
 {
-    if (index < 1 || index > 32)
+    if (index < 1 || index > MAX_PLAYERS)
     {
         throw std::out_of_range("Angle table entity index out of range");
     }
