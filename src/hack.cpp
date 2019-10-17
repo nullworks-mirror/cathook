@@ -17,6 +17,8 @@
 #include "hack.hpp"
 #include "common.hpp"
 #include "MiscTemporary.hpp"
+#include <link.h>
+#include <pwd.h>
 
 #include <hacks/hacklist.hpp>
 #if EXTERNAL_DRAWING
@@ -354,26 +356,8 @@ free(logname);*/
     playerlist::Load();
 
 #if ENABLE_VISUALS
-
     InitStrings();
-#ifndef FEATURE_EFFECTS_DISABLED
-    if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects)
-    {
-        effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
-        g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
-        effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
-        g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
-    }
-    logging::Info("SSE enabled..");
-#endif
-
 #endif /* TEXTMODE */
-#if ENABLE_VISUALS
-#ifndef FEATURE_FIDGET_SPINNER_ENABLED
-    InitSpinner();
-    logging::Info("Initialized Fidget Spinner");
-#endif
-#endif
     logging::Info("Clearing initializer stack");
     while (!init_stack().empty())
     {

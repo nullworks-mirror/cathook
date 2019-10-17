@@ -22,6 +22,7 @@
 #include "visual/drawing.hpp"
 #include "hack.hpp"
 #include "menu/menu/Menu.hpp"
+#include "drawmgr.hpp"
 
 static settings::Boolean info_text{ "hack-info.enable", "true" };
 static settings::Boolean info_text_min{ "hack-info.minimal", "false" };
@@ -108,9 +109,6 @@ void DrawCheatVisuals()
             PROF_SECTION(DRAW_skinchanger);
             hacks::tf2::skinchanger::DrawText();
         }
-#ifndef FEATURE_FIDGET_SPINNER_ENABLED
-        DrawSpinner();
-#endif
         Prediction_PaintTraverse();
     }
     {

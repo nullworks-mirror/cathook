@@ -8,6 +8,7 @@
 #include <chrono>
 #include "soundcache.hpp"
 #include "MiscTemporary.hpp"
+#include <CNavFile.h>
 
 namespace nav
 {
@@ -21,7 +22,7 @@ static settings::Boolean look{ "misc.pathing.look-at-path", "false" };
 static settings::Int stuck_time{ "misc.pathing.stuck-time", "4000" };
 static settings::Int unreachable_time{ "misc.pathing.unreachable-time", "1000" };
 
-static std::vector<CNavArea*> crumbs;
+static std::vector<CNavArea *> crumbs;
 static Vector startPoint, endPoint;
 
 enum ignore_status : uint8_t
@@ -54,10 +55,10 @@ struct ignoredata
 Vector GetClosestCornerToArea(CNavArea *CornerOf, const Vector &target)
 {
     std::array<Vector, 4> corners{
-        CornerOf->m_nwCorner,                                                      // NW
-        CornerOf->m_seCorner,                                                      // SE
-        { CornerOf->m_seCorner.x, CornerOf->m_nwCorner.y, CornerOf->m_nwCorner.z },// NE
-        { CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y, CornerOf->m_seCorner.z } // SW
+        CornerOf->m_nwCorner,                                                       // NW
+        CornerOf->m_seCorner,                                                       // SE
+        { CornerOf->m_seCorner.x, CornerOf->m_nwCorner.y, CornerOf->m_nwCorner.z }, // NE
+        { CornerOf->m_nwCorner.x, CornerOf->m_seCorner.y, CornerOf->m_seCorner.z }  // SW
     };
 
     Vector *bestVec = &corners[0], *bestVec2 = bestVec;
@@ -91,243 +92,245 @@ float getZBetweenAreas(CNavArea *start, CNavArea *end)
     return z2 - z1;
 }
 
-
 static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata, boost::hash<std::pair<CNavArea *, CNavArea *>>> ignores;
 namespace ignoremanager
 {
-    static bool vischeck(CNavArea *begin, CNavArea *end)
+static bool vischeck(CNavArea *begin, CNavArea *end)
+{
+    Vector first  = begin->m_center;
+    Vector second = end->m_center;
+    first.z += 42;
+    second.z += 42;
+    return IsVectorVisible(first, second, true, LOCAL_E, MASK_PLAYERSOLID);
+}
+static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
+{
+    if (getZBetweenAreas(begin, end) > 42)
+        return const_ignored;
+    if (!vischecks)
+        return vischeck_success;
+    if (vischeck(begin, end))
+        return vischeck_success;
+    else
+        return vischeck_failed;
+}
+static void updateDanger()
+{
+    for (size_t i = 0; i <= HIGHEST_ENTITY; i++)
     {
-        Vector first  = begin->m_center;
-        Vector second = end->m_center;
-        first.z += 42;
-        second.z += 42;
-        return IsVectorVisible(first, second, true, LOCAL_E, MASK_PLAYERSOLID);
-    }
-    static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
-    {
-        if (getZBetweenAreas(begin, end) > 42)
-            return const_ignored;
-        if (!vischecks)
-            return vischeck_success;
-        if (vischeck(begin, end))
-            return vischeck_success;
-        else
-            return vischeck_failed;
-    }
-    static void updateDanger()
-    {
-        for (size_t i = 0; i <= HIGHEST_ENTITY; i++)
+        CachedEntity *ent = ENTITY(i);
+        if (CE_INVALID(ent))
+            continue;
+        if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
         {
-            CachedEntity *ent = ENTITY(i);
-            if (CE_INVALID(ent))
+            if (!ent->m_bEnemy())
                 continue;
-            if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
-            {
-                if (!ent->m_bEnemy())
-                    continue;
-                if (HasCondition<TFCond_Disguised>(LOCAL_E))
-                    continue;
-                Vector loc = GetBuildingPosition(ent);
-                if (RAW_ENT(ent)->IsDormant())
-                {
-                    auto vec = ent->m_vecDormantOrigin();
-                    if (vec)
-                    {
-                        loc -= RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
-                        loc += *vec;
-                    }
-                    else
-                        continue;
-                }
-                for (auto &i : navfile->m_areas)
-                {
-                    Vector area = i.m_center;
-                    area.z += 41.5f;
-                    if (loc.DistTo(area) > 1100)
-                        continue;
-                    // Check if sentry can see us
-                    if (!IsVectorVisible(loc, area, true))
-                        continue;
-                    ignoredata &data = ignores[{ &i, nullptr }];
-                    data.status      = danger_found;
-                    data.ignoreTimeout.update();
-                    data.ignoreTimeout.last -= std::chrono::seconds(17);
-                }
-            }
-            else if (ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
-            {
-                if (!ent->m_bEnemy())
-                    continue;
-                if (CE_INT(ent, netvar.iPipeType) == 1)
-                    continue;
-                Vector loc = ent->m_vecOrigin();
-                for (auto &i : navfile->m_areas)
-                {
-                    Vector area = i.m_center;
-                    if (loc.DistTo(area) > 130)
-                        continue;
-                    area.z += 41.5f;
-                    // Check if We can see stickies
-                    if (!IsVectorVisible(loc, area, true))
-                        continue;
-                    ignoredata &data = ignores[{ &i, nullptr }];
-                    data.status      = danger_found;
-                    data.ignoreTimeout.update();
-                    data.ignoreTimeout.last -= std::chrono::seconds(17);
-                }
-            }
-        }
-    }
-
-    static void checkPath()
-    {
-        bool perform_repath = false;
-        // Vischecks
-        for (size_t i = 0; i < crumbs.size() - 1; i++)
-        {
-            CNavArea *begin = crumbs[i];
-            CNavArea *end   = crumbs[i + 1];
-            if (!begin || !end)
+            if (HasCondition<TFCond_Disguised>(LOCAL_E))
                 continue;
-            ignoredata &data = ignores[{ begin, end }];
-            if (data.status == vischeck_failed)
-                return;
-            if (!vischeck(begin, end))
+            Vector loc = GetBuildingPosition(ent);
+            if (RAW_ENT(ent)->IsDormant())
             {
-                data.status = vischeck_failed;
+                auto vec = ent->m_vecDormantOrigin();
+                if (vec)
+                {
+                    loc -= RAW_ENT(ent)->GetCollideable()->GetCollisionOrigin();
+                    loc += *vec;
+                }
+                else
+                    continue;
+            }
+            for (auto &i : navfile->m_areas)
+            {
+                Vector area = i.m_center;
+                area.z += 41.5f;
+                if (loc.DistTo(area) > 1100)
+                    continue;
+                // Check if sentry can see us
+                if (!IsVectorVisible(loc, area, true))
+                    continue;
+                ignoredata &data = ignores[{ &i, nullptr }];
+                data.status      = danger_found;
                 data.ignoreTimeout.update();
-                perform_repath = true;
-            }
-            else if (ignores[{ end, nullptr }].status == danger_found)
-            {
-                perform_repath = true;
+                data.ignoreTimeout.last -= std::chrono::seconds(17);
             }
         }
-        if (perform_repath)
-            repath();
+        else if (ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
+        {
+            if (!ent->m_bEnemy())
+                continue;
+            if (CE_INT(ent, netvar.iPipeType) == 1)
+                continue;
+            Vector loc = ent->m_vecOrigin();
+            for (auto &i : navfile->m_areas)
+            {
+                Vector area = i.m_center;
+                if (loc.DistTo(area) > 130)
+                    continue;
+                area.z += 41.5f;
+                // Check if We can see stickies
+                if (!IsVectorVisible(loc, area, true))
+                    continue;
+                ignoredata &data = ignores[{ &i, nullptr }];
+                data.status      = danger_found;
+                data.ignoreTimeout.update();
+                data.ignoreTimeout.last -= std::chrono::seconds(17);
+            }
+        }
     }
-    // 0 = Not ignored, 1 = low priority, 2 = ignored
-    static int isIgnored(CNavArea *begin, CNavArea *end)
-    {
-        if (ignores[{ end, nullptr }].status == danger_found)
-            return 2;
-        ignore_status status = ignores[{ begin, end }].status;
-        if (status == unknown)
-            status = runIgnoreChecks(begin, end);
-        if (status == vischeck_success)
-            return 0;
-        else if (status == vischeck_failed)
-            return 1;
-        else
-            return 2;
-    }
-    static bool addTime(ignoredata &connection, ignore_status status)
-    {
-        connection.status = status;
-        connection.ignoreTimeout.update();
+}
 
+static void checkPath()
+{
+    bool perform_repath = false;
+    // Vischecks
+    for (size_t i = 0; i < crumbs.size() - 1; i++)
+    {
+        CNavArea *begin = crumbs[i];
+        CNavArea *end   = crumbs[i + 1];
+        if (!begin || !end)
+            continue;
+        ignoredata &data = ignores[{ begin, end }];
+        if (data.status == vischeck_failed)
+            return;
+        if (!vischeck(begin, end))
+        {
+            data.status = vischeck_failed;
+            data.ignoreTimeout.update();
+            perform_repath = true;
+        }
+        else if (ignores[{ end, nullptr }].status == danger_found)
+        {
+            perform_repath = true;
+        }
+    }
+    if (perform_repath)
+        repath();
+}
+// 0 = Not ignored, 1 = low priority, 2 = ignored
+static int isIgnored(CNavArea *begin, CNavArea *end)
+{
+    if (ignores[{ end, nullptr }].status == danger_found)
+        return 2;
+    ignore_status status = ignores[{ begin, end }].status;
+    if (status == unknown)
+        status = runIgnoreChecks(begin, end);
+    if (status == vischeck_success)
+        return 0;
+    else if (status == vischeck_failed)
+        return 1;
+    else
+        return 2;
+}
+static bool addTime(ignoredata &connection, ignore_status status)
+{
+    connection.status = status;
+    connection.ignoreTimeout.update();
+
+    return true;
+}
+static bool addTime(CNavArea *begin, CNavArea *end, ignore_status status)
+{
+    logging::Info("Ignored Connection %i-%i", begin->m_id, end->m_id);
+    return addTime(ignores[{ begin, end }], status);
+}
+static bool addTime(CNavArea *begin, CNavArea *end, Timer &time)
+{
+    if (!begin || !end)
+    {
+        // We can't reach the destination vector. Destination vector might
+        // be out of bounds/reach.
+        clearInstructions();
         return true;
     }
-    static bool addTime(CNavArea *begin, CNavArea *end, ignore_status status)
+    using namespace std::chrono;
+    // Check if connection is already known
+    if (ignores.find({ begin, end }) == ignores.end())
+    {
+        ignores[{ begin, end }] = {};
+    }
+    ignoredata &connection = ignores[{ begin, end }];
+    connection.stucktime += duration_cast<milliseconds>(system_clock::now() - time.last).count();
+    if (connection.stucktime >= *stuck_time)
     {
         logging::Info("Ignored Connection %i-%i", begin->m_id, end->m_id);
-        return addTime(ignores[{ begin, end }], status);
+        return addTime(connection, explicit_ignored);
     }
-    static bool addTime(CNavArea *begin, CNavArea *end, Timer &time)
+    return false;
+}
+static void reset()
+{
+    ignores.clear();
+    ResetPather();
+}
+static void updateIgnores()
+{
+    static Timer update{};
+    static Timer last_pather_reset{};
+    static bool reset_pather = false;
+    if (!update.test_and_set(500))
+        return;
+    updateDanger();
+    if (crumbs.empty())
     {
-        if (!begin || !end)
+        for (auto &i : ignores)
         {
-            // We can't reach the destination vector. Destination vector might
-            // be out of bounds/reach.
-            clearInstructions();
-            return true;
-        }
-        using namespace std::chrono;
-        // Check if connection is already known
-        if (ignores.find({ begin, end }) == ignores.end())
-        {
-            ignores[{ begin, end }] = {};
-        }
-        ignoredata &connection = ignores[{ begin, end }];
-        connection.stucktime += duration_cast<milliseconds>(system_clock::now() - time.last).count();
-        if (connection.stucktime >= *stuck_time)
-        {
-            logging::Info("Ignored Connection %i-%i", begin->m_id, end->m_id);
-            return addTime(connection, explicit_ignored);
-        }
-        return false;
-    }
-    static void reset()
-    {
-        ignores.clear();
-        ResetPather();
-    }
-    static void updateIgnores()
-    {
-        static Timer update{};
-        static Timer last_pather_reset{};
-        static bool reset_pather = false;
-        if (!update.test_and_set(500))
-            return;
-        updateDanger();
-        if (crumbs.empty())
-        {
-            for (auto &i : ignores)
+            switch (i.second.status)
             {
-                switch (i.second.status)
+            case explicit_ignored:
+                if (i.second.ignoreTimeout.check(60000))
                 {
-                case explicit_ignored:
-                    if (i.second.ignoreTimeout.check(60000))
-                    {
-                        i.second.status    = unknown;
-                        i.second.stucktime = 0;
-                        reset_pather       = true;
-                    }
-                    break;
-                case unknown:
-                    break;
-                case danger_found:
-                    if (i.second.ignoreTimeout.check(20000))
-                    {
-                        i.second.status = unknown;
-                        reset_pather    = true;
-                    }
-                    break;
-                case vischeck_failed:
-                case vischeck_success:
-                default:
-                    if (i.second.ignoreTimeout.check(30000))
-                    {
-                        i.second.status    = unknown;
-                        i.second.stucktime = 0;
-                        reset_pather       = true;
-                    }
-                    break;
+                    i.second.status    = unknown;
+                    i.second.stucktime = 0;
+                    reset_pather       = true;
                 }
+                break;
+            case unknown:
+                break;
+            case danger_found:
+                if (i.second.ignoreTimeout.check(20000))
+                {
+                    i.second.status = unknown;
+                    reset_pather    = true;
+                }
+                break;
+            case vischeck_failed:
+            case vischeck_success:
+            default:
+                if (i.second.ignoreTimeout.check(30000))
+                {
+                    i.second.status    = unknown;
+                    i.second.stucktime = 0;
+                    reset_pather       = true;
+                }
+                break;
             }
         }
-        else
-            checkPath();
-        if (reset_pather && last_pather_reset.test_and_set(10000))
-        {
-            reset_pather = false;
-            ResetPather();
-        }
     }
-    static bool isSafe(CNavArea *area)
+    else
+        checkPath();
+    if (reset_pather && last_pather_reset.test_and_set(10000))
     {
-        return !(ignores[{ area, nullptr }].status == danger_found);
+        reset_pather = false;
+        ResetPather();
     }
-};
+}
+static bool isSafe(CNavArea *area)
+{
+    return !(ignores[{ area, nullptr }].status == danger_found);
+}
+}; // namespace ignoremanager
 
 struct Graph : public micropather::Graph
 {
     std::unique_ptr<micropather::MicroPather> pather;
 
-    Graph() {
+    Graph()
+    {
         pather = std::make_unique<micropather::MicroPather>(this, 3000, 6, true);
     }
-    ~Graph() override {}
+    ~Graph() override
+    {
+    }
     void AdjacentCost(void *state, MP_VECTOR<micropather::StateCost> *adjacent) override
     {
         CNavArea *center = static_cast<CNavArea *>(state);
@@ -338,7 +341,8 @@ struct Graph : public micropather::Graph
             if (isIgnored == 2)
                 continue;
             float distance = center->m_center.DistTo(i.area->m_center);
-            if (isIgnored == 1) {
+            if (isIgnored == 1)
+            {
                 if (*vischeckBlock)
                     continue;
                 distance += 50000;
@@ -352,7 +356,9 @@ struct Graph : public micropather::Graph
         CNavArea *end   = reinterpret_cast<CNavArea *>(stateEnd);
         return start->m_center.DistTo(end->m_center);
     }
-    void PrintStateInfo(void *) override {}
+    void PrintStateInfo(void *) override
+    {
+    }
 };
 
 // Navfile containing areas
@@ -435,8 +441,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
     for (auto &i : navfile->m_areas)
     {
         // Make sure we're not stuck on the same area for too long
-        if (isLocal && std::count(findClosestNavSquare_localAreas.begin(),
-            findClosestNavSquare_localAreas.end(), &i) >= 3)
+        if (isLocal && std::count(findClosestNavSquare_localAreas.begin(), findClosestNavSquare_localAreas.end(), &i) >= 3)
         {
             continue;
         }
@@ -447,8 +452,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
             bestSquare = &i;
         }
         // Check if we are within x and y bounds of an area
-        if (ovBestDist >= dist || !i.IsOverlapping(vec) ||
-            !IsVectorVisible(vec, i.m_center, true, LOCAL_E, MASK_PLAYERSOLID))
+        if (ovBestDist >= dist || !i.IsOverlapping(vec) || !IsVectorVisible(vec, i.m_center, true, LOCAL_E, MASK_PLAYERSOLID))
         {
             continue;
         }
@@ -464,7 +468,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
     return ovBestSquare;
 }
 
-std::vector<CNavArea*> findPath(const Vector &start, const Vector &end)
+std::vector<CNavArea *> findPath(const Vector &start, const Vector &end)
 {
     using namespace std::chrono;
 
@@ -478,13 +482,11 @@ std::vector<CNavArea*> findPath(const Vector &start, const Vector &end)
     logging::Info("Start: (%f,%f,%f)", local->m_center.x, local->m_center.y, local->m_center.z);
     logging::Info("End: (%f,%f,%f)", dest->m_center.x, dest->m_center.y, dest->m_center.z);
     float cost;
-    std::vector<CNavArea*> pathNodes;
+    std::vector<CNavArea *> pathNodes;
 
     time_point begin_pathing = high_resolution_clock::now();
-    int result = Map.pather->Solve(reinterpret_cast<void *>(local),
-        reinterpret_cast<void*>(dest),
-        reinterpret_cast<std::vector<void*>*>(&pathNodes), &cost);
-    long long timetaken = duration_cast<nanoseconds>(high_resolution_clock::now() - begin_pathing).count();
+    int result               = Map.pather->Solve(reinterpret_cast<void *>(local), reinterpret_cast<void *>(dest), reinterpret_cast<std::vector<void *> *>(&pathNodes), &cost);
+    long long timetaken      = duration_cast<nanoseconds>(high_resolution_clock::now() - begin_pathing).count();
     logging::Info("Pathing: Pather result: %i. Time taken (NS): %lld", result, timetaken);
     // If no result found, return empty Vector
     if (result == micropather::MicroPather::NO_SOLUTION)
@@ -495,7 +497,7 @@ std::vector<CNavArea*> findPath(const Vector &start, const Vector &end)
 
 static Vector loc(0.0f, 0.0f, 0.0f);
 static CNavArea *last_area = nullptr;
-bool ReadyForCommands = true;
+bool ReadyForCommands      = true;
 static Timer inactivity{};
 int curr_priority         = 0;
 static bool ensureArrival = false;
@@ -611,15 +613,13 @@ static void cm()
     }
     if (look && LookAtPathTimer.check(1000))
     {
-        Vector next{crumb_vec->x, crumb_vec->y, g_pLocalPlayer->v_Eye.z};
+        Vector next{ crumb_vec->x, crumb_vec->y, g_pLocalPlayer->v_Eye.z };
         next = GetAimAtAngles(g_pLocalPlayer->v_Eye, next);
         DoSlowAim(next);
         current_user_cmd->viewangles = next;
     }
     // Detect when jumping is necessary
-    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) &&
-        crumb_vec->z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) ||
-        (last_jump.test_and_set(200) && inactivity.check(*stuck_time / 2)))
+    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumb_vec->z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) || (last_jump.test_and_set(200) && inactivity.check(*stuck_time / 2)))
     {
         current_user_cmd->buttons |= IN_JUMP;
     }
@@ -629,9 +629,7 @@ static void cm()
      * ignore that connection
      * Or if inactive for too long
      */
-    if (inactivity.check(*stuck_time) || (inactivity.check(*unreachable_time) &&
-        !IsVectorVisible(g_pLocalPlayer->v_Origin, *crumb_vec + Vector(.0f, .0f, 41.5f),
-        false, LOCAL_E, MASK_PLAYERSOLID)))
+    if (inactivity.check(*stuck_time) || (inactivity.check(*unreachable_time) && !IsVectorVisible(g_pLocalPlayer->v_Origin, *crumb_vec + Vector(.0f, .0f, 41.5f), false, LOCAL_E, MASK_PLAYERSOLID)))
     {
         /* crumb is invalid if endPoint is used */
         if (crumb_vec != &endPoint)
@@ -656,12 +654,14 @@ static void drawcrumbs()
     for (size_t i = 0; i < crumbs.size(); i++)
     {
         Vector wts1, wts2, *o1, *o2;
-        if (crumbs.size() - 1 == i) {
+        if (crumbs.size() - 1 == i)
+        {
             if (!endPoint.IsValid())
                 break;
 
             o2 = &endPoint;
-        } else
+        }
+        else
             o2 = &crumbs[i + 1]->m_center;
 
         o1 = &crumbs[i]->m_center;

@@ -7,13 +7,11 @@
 
 #pragma once
 
-#include <mathlib/vector.h>
-#include <mathlib/mathlib.h>
 #include <cdll_int.h>
-#include <entitycache.hpp>
 #include <studio.h>
 #include <stdexcept>
 
+// Forward declaration from entitycache.hpp
 class CachedEntity;
 #define CACHE_MAX_HITBOXES 64
 

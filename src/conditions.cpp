@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include <bitset>
 
 static CatCommand dump_conditions("debug_conditions", "Shows conditions for entity #", [](const CCommand &args) {
     int id = atoi(args.Arg(1));

@@ -1,7 +1,10 @@
 #pragma once
 
 #include <memory>
-#include <CNavFile.h>
+#include "mathlib/vector.h"
+
+class CNavFile;
+class CNavArea;
 
 namespace nav
 {

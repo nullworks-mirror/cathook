@@ -8,6 +8,7 @@
 #include <hacks/AntiCheat.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
+#include "angles.hpp"
 
 namespace ac::antiaim
 {
