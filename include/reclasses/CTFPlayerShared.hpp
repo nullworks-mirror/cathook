@@ -1,3 +1,5 @@
+#pragma once
+
 #include "reclasses.hpp"
 #include "e8call.hpp"
 
