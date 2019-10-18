@@ -70,7 +70,7 @@ if (NOT ExternalDrawing)
 endif()
 
 
-set(EnableUnityBuilds 1 CACHE BOOL "Enable Profiler")
+set(EnableUnityBuilds 1 CACHE BOOL "Add support for CoTiRe unity builds")
 set(EnableProfiler 0 CACHE BOOL "Enable Profiler")
 set(EnableGUI 1 CACHE BOOL "Enable GUI")
 set(EnableIPC 1 CACHE BOOL "Enable IPC")
@@ -82,6 +82,7 @@ set(EnableOnlineFeatures 0 CACHE BOOL "Enable online features (WIP)")
 set(EnableIRC 1 CACHE BOOL "Enable IRC for messaging and ignore-cathook")
 set(EnableLogging 1 CACHE BOOL "Enable logging to /tmp/")
 set(EnableClip 1 CACHE BOOL "Enable anti electron/chromium freezing")
+set(Unity_ZeroKernel 1 CACHE BOOL "Use a unity build for zerokernel files")
 
 if(NOT EnableVisuals)
     set(EnableGUI 0)

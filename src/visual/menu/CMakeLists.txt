@@ -1,6 +1,7 @@
-add_subdirectory(menu)
-
-set(files "${CMAKE_CURRENT_LIST_DIR}/GuiInterface.cpp")
+if (NOT Unity_ZeroKernel)
+    add_subdirectory(menu)
+endif()
+set(files "${CMAKE_CURRENT_LIST_DIR}/GuiInterface.cpp" "${CMAKE_CURRENT_LIST_DIR}/ZeroKernelUnity.cpp")
 target_sources(cathook PRIVATE ${files})
 list(REMOVE_ITEM ignore_files ${files})
 set(ignore_files ${ignore_files} CACHE INTERNAL "")
