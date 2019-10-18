@@ -11,6 +11,7 @@
 #include "common.hpp"
 #include "hitrate.hpp"
 #include "hack.hpp"
+#include "drawmgr.hpp"
 extern settings::Boolean die_if_vac;
 static Timer checkmmban{};
 namespace hooked_methods

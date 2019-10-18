@@ -10,7 +10,6 @@
 #include "entityhitboxcache.hpp"
 #include "averager.hpp"
 #include <mathlib/vector.h>
-#include <mathlib/mathlib.h>
 #include <icliententity.h>
 #include <icliententitylist.h>
 #include <cdll_int.h>
@@ -22,7 +21,6 @@
 #include "playerresource.h"
 #include "globals.h"
 #include "classinfo/classinfo.hpp"
-#include "classinfo/tf2.gen.hpp"
 #include "client_class.h"
 #include "Constants.hpp"
 

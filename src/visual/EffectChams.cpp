@@ -368,4 +368,14 @@ void EffectChams::Render(int x, int y, int w, int h)
 }
 EffectChams g_EffectChams;
 CScreenSpaceEffectRegistration *g_pEffectChams = nullptr;
+
+static InitRoutine init([]() {
+    EC::Register(
+        EC::LevelShutdown, []() { g_EffectChams.Shutdown(); }, "chams");
+    if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects)
+    {
+        effect_chams::g_pEffectChams = new CScreenSpaceEffectRegistration("_cathook_chams", &effect_chams::g_EffectChams);
+        g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_chams");
+    }
+});
 } // namespace effect_chams

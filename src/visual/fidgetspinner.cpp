@@ -5,7 +5,6 @@
  *      Author: nullifiedcat
  */
 
-#include "visual/fidgetspinner.hpp"
 #include "common.hpp"
 #include "../../external/libglez/ftgl/freetype-gl.h"
 
@@ -86,5 +85,10 @@ void DrawSpinner()
     if (angle > PI * 4)
         angle -= PI * 4;
 }
+
+static InitRoutine init([]() {
+    InitSpinner();
+    EC::Register(EC::Draw, DrawSpinner, "spinner");
+});
 
 #endif

@@ -13,6 +13,8 @@
 #include "CatBot.hpp"
 #include "ChatCommands.hpp"
 #include "MiscTemporary.hpp"
+#include <iomanip>
+#include "votelogger.hpp"
 
 static settings::Boolean dispatch_log{ "debug.log-dispatch-user-msg", "false" };
 static settings::Boolean chat_filter_enable{ "chat.censor.enable", "false" };

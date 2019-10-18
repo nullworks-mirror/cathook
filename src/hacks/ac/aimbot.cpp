@@ -9,6 +9,7 @@
 #include <hacks/AntiCheat.hpp>
 #include <settings/Float.hpp>
 #include "common.hpp"
+#include "angles.hpp"
 
 namespace ac::aimbot
 {

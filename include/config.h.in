@@ -23,3 +23,5 @@
 #define ENABLE_IMGUI_DRAWING @EnableImGuiDrawing@
 #define EXTERNAL_DRAWING @ExternalDrawing@
 #define ENFORCE_STREAM_SAFETY @Visuals_EnforceStreamSafety@
+
+#define UNITY_ZEROKERNEL @Unity_ZeroKernel@

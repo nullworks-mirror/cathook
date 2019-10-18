@@ -31,7 +31,6 @@ set(files "${CMAKE_CURRENT_LIST_DIR}/angles.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/votelogger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/MiscTemporary.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/navparser.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Options.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/irc.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/PlayerTools.cpp")
 

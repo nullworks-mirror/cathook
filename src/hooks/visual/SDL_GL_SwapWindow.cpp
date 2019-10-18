@@ -10,6 +10,7 @@
 #include <SDL2/SDL_syswm.h>
 #include <menu/menu/Menu.hpp>
 #include "clip.h"
+#include "drawmgr.hpp"
 
 static bool swapwindow_init{ false };
 static bool init_wminfo{ false };
@@ -34,11 +35,6 @@ DEFINE_HOOKED_METHOD(SDL_SetClipboardText, int, const char *text)
 
 DEFINE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *window)
 {
-    if (!delay.check(2000))
-    {
-        original::SDL_GL_SwapWindow(window);
-        return;
-    }
     if (!init_wminfo)
     {
         GetWindowWMInfo = *reinterpret_cast<SDL_GetWindowWMInfo_t *>(sharedobj::libsdl().Pointer(0xFD4D8));

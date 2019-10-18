@@ -6,56 +6,37 @@
  */
 
 #pragma once
+#ifndef __CATHOOK_COMMON_HPP
+#define __CATHOOK_COMMON_HPP
 
 #include "config.h"
 
-#include <emmintrin.h>
 #include <vector>
-#include <bitset>
 #include <string>
 #include <array>
-#include <cassert>
-#include <functional>
 #include <mutex>
-#include <atomic>
 #include <cmath>
 #include <memory>
-#include <iomanip>
-#include <list>
 #include <fstream>
-#include <set>
 #include <unordered_map>
 #include <algorithm>
-#include <csignal>
 
-#include <sys/prctl.h>
 #include <unistd.h>
 #include <link.h>
 #include <sys/sysinfo.h>
-#include <dlfcn.h>
-#include <elf.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <pwd.h>
 #include <cstring>
-#include <cstdio>
-#include <cassert>
 
 #include "timer.hpp"
-#include "averager.hpp"
 
 #include "core/macros.hpp"
 #include "Constants.hpp"
 #if ENABLE_VISUALS
 #include <visual/colors.hpp>
 #include <visual/drawing.hpp>
-#include "visual/fidgetspinner.hpp"
-#include <visual/EffectGlow.hpp>
 #include <visual/atlas.hpp>
-#include <visual/EffectChams.hpp>
-#include <visual/drawmgr.hpp>
 #endif
 
 #include "core/profiler.hpp"
@@ -65,8 +46,6 @@
 #include <enums.hpp>
 #include "projlogging.hpp"
 #include "velocity.hpp"
-#include "angles.hpp"
-#include "entityhitboxcache.hpp"
 #include "globals.h"
 #include <helpers.hpp>
 #include "playerlist.hpp"
@@ -74,7 +53,6 @@
 #include <localplayer.hpp>
 #include <conditions.hpp>
 #include <core/logging.hpp>
-#include <targethelper.hpp>
 #include "playerresource.h"
 #include "sdk/usercmd.hpp"
 #include "trace.hpp"
@@ -83,7 +61,6 @@
 #include "core/vfunc.hpp"
 #include "hooks.hpp"
 #include <prediction.hpp>
-#include <conditions.hpp>
 #include <itemtypes.hpp>
 #include <chatstack.hpp>
 #include "textfile.hpp"
@@ -91,7 +68,6 @@
 #include "tfmm.hpp"
 #include "hooks/HookedMethods.hpp"
 #include "classinfo/classinfo.hpp"
-#include "votelogger.hpp"
 #include "crits.hpp"
 #include "textmode.hpp"
 #include "core/sharedobj.hpp"
@@ -136,3 +112,4 @@ template <typename T> constexpr T _clamp(T _min, T _max, T _val)
 #define STR(c) #c
 
 #define GET_RENDER_CONTEXT (IsTF2() ? g_IMaterialSystem->GetRenderContext() : g_IMaterialSystemHL->GetRenderContext())
+#endif
