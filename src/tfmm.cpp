@@ -163,12 +163,8 @@ void abandon()
         logging::Info("abandon: CTFGCClientSystem == null!");
     else
     {
-        logging::Info("Not connected to a Match server. Cutting Netchannel instead.");
-        auto nc = (INetChannel *) g_IEngine->GetNetChannelInfo();
-        if (nc)
-            hack::ExecuteCommand("disconnect");
-        else
-            logging::Info("No Netchannel found, something is wrong.");
+        logging::Info("Not connected to a Match server. Disconnecting normally");
+        hack::ExecuteCommand("disconnect");
     }
 }
 

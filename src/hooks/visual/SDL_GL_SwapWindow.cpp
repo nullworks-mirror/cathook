@@ -10,7 +10,9 @@
 #include <SDL2/SDL_syswm.h>
 #include <menu/menu/Menu.hpp>
 #include "clip.h"
+#if ENABLE_VISUALS
 #include "drawmgr.hpp"
+#endif
 
 static bool swapwindow_init{ false };
 static bool init_wminfo{ false };
