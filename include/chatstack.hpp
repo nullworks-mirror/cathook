@@ -7,7 +7,7 @@
 
 #pragma once
 
-#define CHATSTACK_INTERVAL 0.8f
+constexpr float CHATSTACK_INTERVAL = 0.8f;
 
 #include "config.h"
 #include <string>

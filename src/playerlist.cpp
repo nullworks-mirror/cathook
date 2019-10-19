@@ -340,7 +340,7 @@ CatCommand pl_set_state("pl_set_state", "cat_pl_set_state [playername] [state] (
             return;
         }
 
-    logging::Info("Unknown State %s. (Use tab for autocomplete)", state);
+    logging::Info("Unknown State %s. (Use tab for autocomplete)", state.c_str());
 });
 
 static int cat_pl_set_state_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])

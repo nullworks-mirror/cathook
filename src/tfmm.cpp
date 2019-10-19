@@ -8,6 +8,7 @@
 #include <settings/Int.hpp>
 #include "common.hpp"
 #include "hacks/AutoJoin.hpp"
+#include "hack.hpp"
 
 settings::Int queue{ "autoqueue.mode", "7" };
 
@@ -156,10 +157,19 @@ void disconnectAndAbandon()
 void abandon()
 {
     re::CTFGCClientSystem *gc = re::CTFGCClientSystem::GTFGCClientSystem();
-    if (gc != nullptr && gc->BConnectedToMatchServer(false))
+    if (gc && gc->BConnectedToMatchServer(false))
         gc->AbandonCurrentMatch();
-    else
+    else if (!gc)
         logging::Info("abandon: CTFGCClientSystem == null!");
+    else
+    {
+        logging::Info("Not connected to a Match server. Cutting Netchannel instead.");
+        auto nc = (INetChannel *) g_IEngine->GetNetChannelInfo();
+        if (nc)
+            hack::ExecuteCommand("disconnect");
+        else
+            logging::Info("No Netchannel found, something is wrong.");
+    }
 }
 
 static Timer friend_party_t{};

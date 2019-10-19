@@ -9,6 +9,7 @@
 #include <hacks/AntiCheat.hpp>
 #include <settings/Float.hpp>
 #include "common.hpp"
+#include "angles.hpp"
 
 namespace ac::aimbot
 {
@@ -16,8 +17,8 @@ static settings::Boolean enable{ "find-cheaters.aimbot.enable", "true" };
 static settings::Float detect_angle{ "find-cheaters.aimbot.angle", "30" };
 static settings::Int detections_warning{ "find-cheaters.aimbot.detections", "3" };
 
-ac_data data_table[32];
-int amount[32];
+ac_data data_table[MAX_PLAYERS];
+int amount[MAX_PLAYERS];
 std::unordered_map<int, Vector> Player_origs{};
 
 std::unordered_map<int, Vector> &player_orgs()
@@ -26,7 +27,7 @@ std::unordered_map<int, Vector> &player_orgs()
 }
 void ResetEverything()
 {
-    memset(&data_table, 0, sizeof(ac_data) * 32);
+    memset(&data_table, 0, sizeof(ac_data) * MAX_PLAYERS);
     Player_origs.clear();
 }
 
@@ -106,7 +107,7 @@ void Event(KeyValues *event)
         int victim   = event->GetInt("userid");
         int eid      = g_IEngine->GetPlayerForUserID(attacker);
         int vid      = g_IEngine->GetPlayerForUserID(victim);
-        if (eid > 0 && eid < 33 && vid > 0 && vid < 33)
+        if (eid > 0 && eid <= MAX_PLAYERS && vid > 0 && vid <= MAX_PLAYERS)
         {
             CachedEntity *victim   = ENTITY(vid);
             CachedEntity *attacker = ENTITY(eid);

@@ -12,6 +12,7 @@
 #include "common.hpp"
 #include "PlayerTools.hpp"
 #include "hack.hpp"
+#include "angles.hpp"
 
 namespace hacks::shared::anticheat
 {

@@ -265,7 +265,7 @@ static void cm()
                 continue;
             ProcessEntity(ent);
             // Update Bones
-            if (i <= 32)
+            if (i <= MAX_PLAYERS)
                 ent->hitboxes.GetHitbox(0);
             // Dont know what this check is for
             if (data[i].string_count)
@@ -1198,7 +1198,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                         {
                             int handle = weapon_list[i];
                             int eid    = handle & 0xFFF;
-                            if (eid >= 32 && eid <= HIGHEST_ENTITY)
+                            if (eid > MAX_PLAYERS && eid <= HIGHEST_ENTITY)
                             {
                                 CachedEntity *weapon = ENTITY(eid);
                                 if (!CE_INVALID(weapon) && weapon->m_iClassID() == CL_CLASS(CWeaponMedigun) && weapon)

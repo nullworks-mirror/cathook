@@ -274,7 +274,7 @@ void FrameStageNotify(int stage)
     {
         handle = weapon_list[i];
         eid    = handle & 0xFFF;
-        if (eid < 32 || eid > HIGHEST_ENTITY)
+        if (eid <= MAX_PLAYERS || eid > HIGHEST_ENTITY)
             continue;
         // logging::Info("eid, %i", eid);
         entity = g_IEntityList->GetClientEntity(eid);

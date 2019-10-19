@@ -13,11 +13,11 @@ namespace ac::bhop
 {
 static settings::Int bhop_detect_count{ "find-cheaters.bunnyhop.detections", "4" };
 
-ac_data data_table[32]{};
+ac_data data_table[MAX_PLAYERS]{};
 
 void ResetEverything()
 {
-    memset(data_table, 0, sizeof(ac_data) * 32);
+    memset(data_table, 0, sizeof(ac_data) * MAX_PLAYERS);
 }
 
 void ResetPlayer(int idx)

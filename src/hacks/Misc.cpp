@@ -9,10 +9,8 @@
 #include <unistd.h>
 #include <regex>
 #include <sys/types.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <link.h>
 #include <hacks/AntiAim.hpp>
 #include <settings/Bool.hpp>
 
@@ -256,7 +254,7 @@ void DrawText()
     }
     if (show_spectators)
     {
-        for (int i = 0; i < 32; i++)
+        for (int i = 0; i < PLAYER_ARRAY_SIZE; i++)
         {
             // Assign the for loops tick number to an ent
             CachedEntity *ent = ENTITY(i);
@@ -671,7 +669,7 @@ UpdateLocalPlayerVisionFlags_t UpdateLocalPlayerVisionFlags_fn;
 int *g_nLocalPlayerVisionFlags;
 int *g_nLocalPlayerVisionFlagsWeaponsCheck;
 // If you wish then change this to some other flag you want to apply/remove
-#define PYROVISION 1
+constexpr int PYROVISION = 1;
 
 static settings::Int force_pyrovision("visual.force-pyrovision", "0");
 

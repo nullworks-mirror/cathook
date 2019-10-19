@@ -2,7 +2,6 @@
 
 #include "core/profiler.hpp"
 #include "functional"
-#include <set>
 #include <array>
 
 namespace EC

@@ -20,7 +20,6 @@ namespace hacks::shared::catbot
 {
 static settings::Boolean auto_disguise{ "misc.autodisguise", "true" };
 
-static settings::Int abandon_if_bots_gte{ "cat-bot.abandon-if.bots-gte", "0" };
 static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte", "0" };
 static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte", "0" };
 static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte", "0" };
@@ -68,23 +67,6 @@ struct catbot_user_state
 };
 
 static std::unordered_map<unsigned, catbot_user_state> human_detecting_map{};
-
-bool is_a_catbot(unsigned steamID)
-{
-    auto it = human_detecting_map.find(steamID);
-    if (it == human_detecting_map.end())
-        return false;
-
-    // if (!(*it).second.has_bot_name)
-    //	return false;
-
-    if ((*it).second.treacherous_kills <= int(mark_human_threshold))
-    {
-        return true;
-    }
-
-    return false;
-}
 
 int globerr(const char *path, int eerrno)
 {
@@ -219,12 +201,14 @@ void on_killed_by(int userid)
 
     unsigned steamID = player->player_info.friendsID;
 
-    if (human_detecting_map.find(steamID) == human_detecting_map.end())
+    if (playerlist::AccessData(steamID).state != playerlist::k_EState::CAT)
         return;
 
     // if (human_detecting_map[steamID].has_bot_name)
     human_detecting_map[steamID].treacherous_kills++;
     logging::Info("Treacherous kill #%d: %s [U:1:%u]", human_detecting_map[steamID].treacherous_kills, player->player_info.name, player->player_info.friendsID);
+    if (human_detecting_map[steamID].treacherous_kills >= *mark_human_threshold)
+        playerlist::ChangeState(steamID, playerlist::k_EState::RAGE, true);
 }
 
 void do_random_votekick()
@@ -240,8 +224,6 @@ void do_random_votekick()
         if (!g_IEngine->GetPlayerInfo(i, &info) || !info.friendsID)
             continue;
         if (g_pPlayerResource->GetTeam(i) != g_pLocalPlayer->team)
-            continue;
-        if (is_a_catbot(info.friendsID))
             continue;
         if (info.friendsID == local_info.friendsID)
             continue;
@@ -262,30 +244,6 @@ void do_random_votekick()
     if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(target), &info))
         return;
     hack::ExecuteCommand("callvote kick \"" + std::to_string(target) + " cheating\"");
-}
-static const std::string catbot_names[] = { "K4T-B0T", "cat-", "btarrant", "just disable vac tf", "raul.garcia", "zCat", "lagger bot" };
-void update_catbot_list()
-{
-    for (int i = 1; i < g_GlobalVars->maxClients; ++i)
-    {
-        player_info_s info;
-        if (!g_IEngine->GetPlayerInfo(i, &info))
-            continue;
-
-        if (!info.friendsID || player_tools::shouldTargetSteamId(info.friendsID))
-            continue;
-        info.name[31] = 0;
-        std::string pl_name(info.name);
-        for (auto name : catbot_names)
-            if (pl_name.find(name) != pl_name.npos)
-            {
-                if (human_detecting_map.find(info.friendsID) == human_detecting_map.end())
-                {
-                    logging::Info("Found bot %s [U:1:%u]", info.name, info.friendsID);
-                    human_detecting_map.insert(std::make_pair(info.friendsID, catbot_user_state{ 0 }));
-                }
-            }
-    }
 }
 
 // Get Muh money
@@ -591,20 +549,26 @@ Timer timer_votekicks{};
 static Timer timer_catbot_list{};
 static Timer timer_abandon{};
 
-int count_bots{ 0 };
+static int count_ipc = 0;
+static std::vector<unsigned> ipc_list{ 0 };
+
+static bool waiting_for_quit_bool{ false };
+static Timer waiting_for_quit_timer{};
+
+static std::vector<unsigned> ipc_blacklist{};
 
 bool should_ignore_player(CachedEntity *player)
 {
     if (CE_INVALID(player))
         return false;
 
-    return is_a_catbot(player->player_info.friendsID);
+    return playerlist::IsFriend(player);
 }
 
 #if ENABLE_IPC
 void update_ipc_data(ipc::user_data_s &data)
 {
-    data.ingame.bot_count = count_bots;
+    data.ingame.bot_count = count_ipc;
 }
 #endif
 
@@ -825,12 +789,10 @@ void update()
 
     if (random_votekicks && timer_votekicks.test_and_set(5000))
         do_random_votekick();
-    if (timer_catbot_list.test_and_set(3000))
-        update_catbot_list();
     if (timer_abandon.test_and_set(2000) && level_init_timer.check(13000))
     {
-        count_bots      = 0;
-        int count_ipc   = 0;
+        count_ipc = 0;
+        ipc_list.clear();
         int count_total = 0;
 
         for (int i = 1; i <= g_IEngine->GetMaxClients(); ++i)
@@ -846,42 +808,97 @@ void update()
             if (playerlist::AccessData(info.friendsID).state == playerlist::k_EState::CAT)
                 --count_total;
 
-            if (is_a_catbot(info.friendsID) || playerlist::AccessData(info.friendsID).state == playerlist::k_EState::IPC)
-                ++count_bots;
-
-            if (playerlist::AccessData(info.friendsID).state == playerlist::k_EState::IPC)
-                ++count_ipc;
-        }
-
-        if (abandon_if_bots_gte)
-        {
-            if (count_bots >= int(abandon_if_bots_gte))
+            if (playerlist::AccessData(info.friendsID).state == playerlist::k_EState::IPC || playerlist::AccessData(info.friendsID).state == playerlist::k_EState::TEXTMODE)
             {
-                logging::Info("Abandoning because there are %d bots in game, "
-                              "and abandon_if_bots_gte is %d.",
-                              count_bots, int(abandon_if_bots_gte));
-                tfmm::abandon();
-                return;
+                ipc_list.push_back(info.friendsID);
+                ++count_ipc;
             }
         }
+
         if (abandon_if_ipc_bots_gte)
         {
             if (count_ipc >= int(abandon_if_ipc_bots_gte))
             {
-                logging::Info("Abandoning because there are %d local players "
-                              "in game, and abandon_if_ipc_bots_gte is %d.",
-                              count_ipc, int(abandon_if_ipc_bots_gte));
-                tfmm::abandon();
-                return;
+                // Store local IPC Id and assign to the quit_id variable for later comparisions
+                unsigned local_ipcid = ipc::peer->client_id;
+                unsigned quit_id     = local_ipcid;
+
+                // Iterate all the players marked as bot
+                for (auto &id : ipc_list)
+                {
+                    // We already know we shouldn't quit, so just break out of the loop
+                    if (quit_id < local_ipcid)
+                        break;
+
+                    // Reduce code size
+                    auto &peer_mem = ipc::peer->memory;
+
+                    // Iterate all ipc peers
+                    for (unsigned i = 0; i < cat_ipc::max_peers; i++)
+                    {
+                        // If that ipc peer is alive and in has the steamid of that player
+                        if (!peer_mem->peer_data[i].free && peer_mem->peer_user_data[i].friendid == id)
+                        {
+                            // Check against blacklist
+                            if (std::find(ipc_blacklist.begin(), ipc_blacklist.end(), i) != ipc_blacklist.end())
+                                continue;
+
+                            // Found someone with a lower ipc id
+                            if (i < local_ipcid)
+                            {
+                                quit_id = i;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Only quit if you are the player with the lowest ipc id
+                if (quit_id == local_ipcid)
+                {
+                    // Clear blacklist related stuff
+                    waiting_for_quit_bool = false;
+                    ipc_blacklist.clear();
+
+                    logging::Info("Abandoning because there are %d local players "
+                                  "in game, and abandon_if_ipc_bots_gte is %d.",
+                                  count_ipc, int(abandon_if_ipc_bots_gte));
+                    tfmm::abandon();
+                    return;
+                }
+                else
+                {
+                    if (!waiting_for_quit_bool)
+                    {
+                        // Waiting for that ipc id to quit, we use this timer in order to blacklist
+                        // ipc peers which refuse to quit for some reason
+                        waiting_for_quit_bool = true;
+                        waiting_for_quit_timer.update();
+                    }
+                    else
+                    {
+                        // IPC peer isn't leaving, blacklist for now
+                        if (waiting_for_quit_timer.test_and_set(10000))
+                        {
+                            ipc_blacklist.push_back(quit_id);
+                            waiting_for_quit_bool = false;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Reset Bool because no reason to quit
+                waiting_for_quit_bool = false;
+                ipc_blacklist.clear();
             }
         }
         if (abandon_if_humans_lte)
         {
-            if (count_total - count_bots <= int(abandon_if_humans_lte))
+            if (count_total - count_ipc <= int(abandon_if_humans_lte))
             {
                 logging::Info("Abandoning because there are %d non-bots in "
                               "game, and abandon_if_humans_lte is %d.",
-                              count_total - count_bots, int(abandon_if_humans_lte));
+                              count_total - count_ipc, int(abandon_if_humans_lte));
                 tfmm::abandon();
                 return;
             }

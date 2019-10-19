@@ -19,8 +19,8 @@ class Vector;
 class ICvar;
 void SetCVarInterface(ICvar *iface);
 
-#define PI 3.14159265358979323846f
-#define RADPI 57.295779513082f
+constexpr float PI    = 3.14159265358979323846f;
+constexpr float RADPI = 57.295779513082f;
 //#define DEG2RAD(x) (float)(x) * (float)(PI / 180.0f)
 
 #include <enums.hpp>

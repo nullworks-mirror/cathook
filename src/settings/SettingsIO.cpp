@@ -192,9 +192,10 @@ struct migration_struct
 };
 /* clang-format off */
 // Use one per line, from -> to
-static std::array<migration_struct, 1> migrations = {
-    { "misc.semi-auto", "misc.full-auto" }
-};
+static std::array<migration_struct, 2> migrations({
+    migration_struct{ "misc.semi-auto", "misc.full-auto" },
+    migration_struct{ "cat-bot.abandon-if.bots-gte", "cat-bot.abandon-if.ipc-bots-gte" }
+});
 /* clang-format on */
 void settings::SettingsReader::finishString(bool complete)
 {
@@ -210,10 +211,14 @@ void settings::SettingsReader::finishString(bool complete)
     {
         stored_key = std::move(str);
         for (auto &migration : migrations)
-        {
             if (stored_key == migration.from)
-                stored_key = migration.to;
-        }
+                for (auto &var : settings::Manager::instance().registered)
+                    if (var.first == migration.to)
+                    {
+                        if (var.second.isChanged())
+                            break;
+                        stored_key = migration.to;
+                    }
     }
     else
     {

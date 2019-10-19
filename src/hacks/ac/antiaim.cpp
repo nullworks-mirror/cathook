@@ -8,16 +8,17 @@
 #include <hacks/AntiCheat.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
+#include "angles.hpp"
 
 namespace ac::antiaim
 {
 static settings::Boolean enable{ "find-cheaters.antiaim.enable", "true" };
 
-unsigned long last_accusation[32]{ 0 };
+unsigned long last_accusation[MAX_PLAYERS]{ 0 };
 
 void ResetEverything()
 {
-    memset(last_accusation, 0, sizeof(unsigned long) * 32);
+    memset(last_accusation, 0, sizeof(unsigned long) * MAX_PLAYERS);
 }
 
 void ResetPlayer(int idx)
@@ -34,7 +35,7 @@ void Update(CachedEntity *player)
 {
     if (!enable)
         return;
-    int amount[32];
+    int amount[MAX_PLAYERS];
     auto &am = amount[player->m_IDX - 1];
     if (tickcount - last_accusation[player->m_IDX - 1] < 60 * 60)
         return;

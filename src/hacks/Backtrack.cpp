@@ -30,7 +30,7 @@ void EmptyBacktrackData(BacktrackData &i);
 std::pair<int, int> getBestEntBestTick();
 bool shouldBacktrack();
 
-BacktrackData headPositions[33][66]{};
+BacktrackData headPositions[PLAYER_ARRAY_SIZE][66]{};
 int lastincomingsequencenumber = 0;
 bool isBacktrackEnabled        = false;
 bool Vischeck_Success          = false;
@@ -69,7 +69,7 @@ void AddLatencyToNetchan(INetChannel *ch)
 }
 void Init()
 {
-    for (int i = 0; i < 33; i++)
+    for (int i = 0; i < PLAYER_ARRAY_SIZE; i++)
         for (int j = 0; j < 66; j++)
             headPositions[i][j] = {};
 
@@ -78,8 +78,8 @@ void Init()
 
 int BestTick    = -1;
 int iBestTarget = -1;
-bool istickvalid[33][66]{};
-bool istickinvalid[33][66]{};
+bool istickvalid[PLAYER_ARRAY_SIZE][66]{};
+bool istickinvalid[PLAYER_ARRAY_SIZE][66]{};
 static float latency_rampup = 0.0f;
 
 static void Run()

@@ -14,6 +14,13 @@
 #include <settings/Bool.hpp>
 #include "common.hpp"
 #include "MiscTemporary.hpp"
+#include <targethelper.hpp>
+
+#if ENABLE_VISUALS
+#ifndef FEATURE_EFFECTS_DISABLED
+#include "EffectChams.hpp"
+#endif
+#endif
 
 namespace hacks::shared::aimbot
 {
@@ -1478,7 +1485,7 @@ static void DrawText()
     // Debug stuff
     if (!aimbot_debug)
         return;
-    for (int i = 1; i < 32; i++)
+    for (int i = 1; i < PLAYER_ARRAY_SIZE; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_GOOD(ent))

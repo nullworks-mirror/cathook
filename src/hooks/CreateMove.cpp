@@ -265,6 +265,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         IRC::auth();
 #endif
         hacks::tf2::NavBot::init(true);
+        if (identify)
+            sendIdentifyMessage(false);
         firstcm = false;
     }
     g_Settings.bInvalid = false;

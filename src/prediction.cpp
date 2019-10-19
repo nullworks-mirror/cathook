@@ -55,8 +55,8 @@ void Prediction_CreateMove()
     if (!setup)
     {
         setup = true;
-        predicted_players_engine.resize(33);
-        player_vel.resize(33);
+        predicted_players_engine.resize(PLAYER_ARRAY_SIZE);
+        player_vel.resize(PLAYER_ARRAY_SIZE);
     }
     for (int i = 1; i <= g_GlobalVars->maxClients; i++)
     {
@@ -272,7 +272,7 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     memset(&fakecmd, 0, sizeof(CUserCmd));
 
     Vector vel(0.0f);
-    if (entity->m_IDX <= 33 && player_vel[entity->m_IDX].size())
+    if (entity->m_IDX <= MAX_PLAYERS && player_vel[entity->m_IDX].size())
     {
         for (auto entry : player_vel[entity->m_IDX])
             vel += entry;
@@ -328,7 +328,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
     if (speed == 0.0f)
         return Vector();
     Vector velocity(0.0f);
-    if (ent->m_IDX <= 33 && player_vel[ent->m_IDX].size())
+    if (ent->m_IDX <= MAX_PLAYERS && player_vel[ent->m_IDX].size())
     {
         for (auto entry : player_vel[ent->m_IDX])
             velocity += entry;
@@ -444,7 +444,7 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
     if (speed == 0.0f)
         return Vector();
     Vector velocity(0.0f);
-    if (ent->m_IDX <= 33 && player_vel[ent->m_IDX].size())
+    if (ent->m_IDX <= MAX_PLAYERS && player_vel[ent->m_IDX].size())
     {
         for (auto entry : player_vel[ent->m_IDX])
             velocity += entry;

@@ -509,4 +509,15 @@ void EffectGlow::Render(int x, int y, int w, int h)
 
 EffectGlow g_EffectGlow;
 CScreenSpaceEffectRegistration *g_pEffectGlow = nullptr;
+
+static InitRoutine init([]() {
+    EC::Register(
+        EC::LevelShutdown, []() { g_EffectGlow.Shutdown(); }, "glow");
+    if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects)
+    {
+        effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
+        g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
+    }
+} // namespace effect_glow
+);
 } // namespace effect_glow

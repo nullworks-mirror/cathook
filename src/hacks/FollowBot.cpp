@@ -79,7 +79,7 @@ static bool inited = false;
 
 static Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
 static Timer lastJump{};
-static std::array<Timer, 32> afkTicks; // for how many ms the player hasn't been moving
+static std::array<Timer, PLAYER_ARRAY_SIZE> afkTicks; // for how many ms the player hasn't been moving
 
 static void checkAFK()
 {

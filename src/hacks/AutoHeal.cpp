@@ -72,8 +72,8 @@ int vaccinator_change_ticks = 0;
 int vaccinator_ideal_resist = 0;
 int vaccinator_change_timer = 0;
 
-std::array<Timer, 32> reset_cd{};
-std::vector<patient_data_s> data(32);
+std::array<Timer, PLAYER_ARRAY_SIZE> reset_cd{};
+std::vector<patient_data_s> data(PLAYER_ARRAY_SIZE);
 
 struct proj_data_s
 {
@@ -212,7 +212,7 @@ int BlastDangerValue(CachedEntity *patient)
         return 1;
     }
     // Find rockets/pipes nearby
-    for (int i = 32; i <= HIGHEST_ENTITY; i++)
+    for (int i = PLAYER_ARRAY_SIZE; i <= HIGHEST_ENTITY; i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_BAD(ent))
@@ -433,7 +433,7 @@ bool IsVaccinator()
 
 void UpdateData()
 {
-    for (int i = 1; i < 32; i++)
+    for (int i = 1; i <= MAX_PLAYERS; i++)
     {
         if (reset_cd[i].test_and_set(10000))
             data[i] = {};

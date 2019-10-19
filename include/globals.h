@@ -9,6 +9,7 @@
 #include <boost/circular_buffer.hpp>
 #include <time.h>
 #include <mathlib/vector.h>
+#include "Constants.hpp"
 
 class Vector;
 class CUserCmd;
@@ -29,9 +30,9 @@ extern int last_cmd_number;
 extern time_t time_injected;
 struct brutestruct
 {
-    int brutenum[33];
-    Vector last_angles[33];
-    std::deque<bool> choke[33];
+    int brutenum[PLAYER_ARRAY_SIZE];
+    Vector last_angles[PLAYER_ARRAY_SIZE];
+    std::deque<bool> choke[PLAYER_ARRAY_SIZE];
     float lastsimtime;
 };
 class GlobalSettings

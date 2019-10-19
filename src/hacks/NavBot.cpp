@@ -35,7 +35,7 @@ static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
 // How long should the bot wait until pathing again?
 static Timer wait_until_path{};
 // Time before following target cloaked spy again
-static std::array<Timer, 33> spy_cloak{};
+static std::array<Timer, PLAYER_ARRAY_SIZE> spy_cloak{};
 // Don't spam spy path thanks
 static Timer spy_path{};
 // What is the bot currently doing
@@ -415,7 +415,7 @@ static inline bool hasLowAmmo()
     {
         int handle = weapon_list[i];
         int eid    = handle & 0xFFF;
-        if (eid >= 32 && eid <= HIGHEST_ENTITY)
+        if (eid > MAX_PLAYERS && eid <= HIGHEST_ENTITY)
         {
             IClientEntity *weapon = g_IEntityList->GetClientEntity(eid);
             if (weapon and re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon) && re::C_TFWeaponBase::UsesPrimaryAmmo(weapon) && !re::C_TFWeaponBase::HasPrimaryAmmo(weapon))

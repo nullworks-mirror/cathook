@@ -7,6 +7,7 @@
 #include <settings/Bool.hpp>
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
+#include "votelogger.hpp"
 
 settings::Boolean die_if_vac{ "misc.die-if-vac", "false" };
 static settings::Boolean autoabandon{ "misc.auto-abandon", "false" };

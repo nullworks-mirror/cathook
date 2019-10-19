@@ -7,7 +7,9 @@
 
 #pragma once
 
-#include "common.hpp"
+#include <functional>
+class IClientEntity;
+class Vector;
 
 namespace velocity
 {

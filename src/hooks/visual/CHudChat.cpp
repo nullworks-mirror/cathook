@@ -32,7 +32,7 @@ struct SpamClass
 };
 
 // Storage for the spam messages
-std::array<std::vector<SpamClass>, 32> spam_storage;
+std::array<std::vector<SpamClass>, MAX_PLAYERS> spam_storage;
 DEFINE_HOOKED_METHOD(ChatPrintf, void, CHudBaseChat *_this, int player_idx, int iFilter, const char *str, ...)
 {
     auto buf = std::make_unique<char[]>(1024);
