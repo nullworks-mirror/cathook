@@ -50,7 +50,7 @@ fi
 
 if [ "$version" == 1 ]; then
     cfg_write $configfile version 2
-    if [ -d "./build/cotire" ]; then
-        rm -r ./build/cotire
+    if [ -d "./build/CMakeFiles/cathook.dir" ]; then
+        rm -r ./build/CMakeFiles/cathook.dir
     fi
 fi

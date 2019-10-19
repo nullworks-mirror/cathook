@@ -25,7 +25,11 @@ echo $$ > ${LOCKFILE}
 . ./scripts/config.shlib
 
 # Run migrations 
-update_channel="$(cfg_read $configfile update_channel)"
+exists=true
+cfg_haskey $configfile update_channel || exists=false
+if [ "$exists" == true ]; then
+    update_channel="$(cfg_read $configfile update_channel)"
+fi
 if [ "$update_channel" != "developer" ]; then
     ./scripts/migrations "$@" || exit 0
 fi
