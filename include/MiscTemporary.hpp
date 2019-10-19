@@ -41,3 +41,9 @@ extern int stored_buttons;
 #if ENABLE_VISUALS
 extern bool freecam_is_toggled;
 #endif
+namespace hooked_methods
+{
+void sendAchievementKv(int value);
+void sendIdentifyMessage(bool reply);
+extern settings::Boolean identify;
+} // namespace hooked_methods

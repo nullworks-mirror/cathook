@@ -33,6 +33,12 @@ void sendAchievementKv(int value)
     kv->SetInt("achievementID", value);
     g_IEngine->ServerCmdKeyValues(kv);
 }
+
+void sendIdentifyMessage(bool reply)
+{
+    reply ? sendAchievementKv(CAT_REPLY) : sendAchievementKv(CAT_IDENTIFY);
+}
+
 settings::Boolean identify{ "chat.identify", "true" };
 
 std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
@@ -58,10 +64,10 @@ void ProcessAchievement(IGameEvent *ach)
         return;
     int player_idx  = ach->GetInt("player", 0xDEAD);
     int achievement = ach->GetInt("achievement", 0xDEAD);
-    if (player_idx != 0xDEAD && (achievement == 0xCA7 || achievement == 0xCA8))
+    if (player_idx != 0xDEAD && (achievement == CAT_IDENTIFY || achievement == CAT_REPLY))
     {
         // Always reply and set on CA7 and only set on CA8
-        bool reply = achievement == 0xCA7;
+        bool reply = achievement == CAT_IDENTIFY;
         player_info_s info;
         if (!g_IEngine->GetPlayerInfo(player_idx, &info))
             return;
@@ -152,7 +158,7 @@ class AchievementListener : public IGameEventListener2
     }
 };
 
-static CatCommand send_identify("debug_send_identify", "debug", []() { sendAchievementKv(0xCA7); });
+static CatCommand send_identify("debug_send_identify", "debug", []() { sendIdentifyMessage(false); });
 
 static AchievementListener event_listener{};
 
@@ -162,13 +168,13 @@ static InitRoutine run_identify([]() {
         []() {
             if (queue_ca8 && queue_ca8_timer.check(10000))
             {
-                sendAchievementKv(0xCA8);
+                sendIdentifyMessage(true);
                 queue_ca8 = false;
             }
             // 5 minutes between each identify seems ok?
             if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(1000 * 60 * 5))
                 return;
-            sendAchievementKv(0xCA7);
+            sendIdentifyMessage(false);
         },
         "sendnetmsg_createmove");
     g_IEventManager2->AddListener(&event_listener, "achievement_earned", false);

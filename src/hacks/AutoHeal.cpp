@@ -72,8 +72,8 @@ int vaccinator_change_ticks = 0;
 int vaccinator_ideal_resist = 0;
 int vaccinator_change_timer = 0;
 
-std::array<Timer, MAX_PLAYERS> reset_cd{};
-std::vector<patient_data_s> data(MAX_PLAYERS);
+std::array<Timer, PLAYER_ARRAY_SIZE> reset_cd{};
+std::vector<patient_data_s> data(PLAYER_ARRAY_SIZE);
 
 struct proj_data_s
 {
@@ -433,7 +433,7 @@ bool IsVaccinator()
 
 void UpdateData()
 {
-    for (int i = 1; i < MAX_PLAYERS; i++)
+    for (int i = 1; i <= MAX_PLAYERS; i++)
     {
         if (reset_cd[i].test_and_set(10000))
             data[i] = {};

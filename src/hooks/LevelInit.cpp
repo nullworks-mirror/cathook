@@ -50,7 +50,7 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     else if (holiday->m_nValue == 2)
         holiday->SetValue(0);
 #endif
-    for (int i = 0; i < MAX_PLAYERS; i++)
+    for (int i = 0; i <= MAX_PLAYERS; i++)
         g_Settings.brute.brutenum[i] = 0;
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
     chat_stack::Reset();
