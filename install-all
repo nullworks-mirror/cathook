@@ -20,7 +20,7 @@ fi
 # Set config version for update script
 #
 
-$RUNCMD bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferences version 1"
+$RUNCMD bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferences version 2"
 
 #
 # Build cathook

@@ -47,3 +47,10 @@ cfg_haskey $configfile update_channel || exists=false
 if [ "$exists" == false ]; then
     cfg_write $configfile update_channel stable
 fi
+
+if [ "$version" == 1 ]; then
+    cfg_write $configfile version 2
+    if [ -d "./build/cotire" ]; then
+        rm -r ./build/cotire
+    fi
+fi
