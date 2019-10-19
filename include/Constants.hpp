@@ -15,6 +15,3 @@ constexpr int MAX_ENTITIES = 2048;
 constexpr int MAX_PLAYERS  = 32;
 // 0 is "World" but we still can have MAX_PLAYERS players, so consider that
 constexpr int PLAYER_ARRAY_SIZE = 1 + MAX_PLAYERS;
-
-constexpr int CAT_IDENTIFY = 0xCA7;
-constexpr int CAT_REPLY    = 0xCA8;
