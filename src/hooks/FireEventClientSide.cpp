@@ -21,44 +21,46 @@ static settings::Boolean enable_antispam{ "chat.party.anticrash.enabled", "false
 // max messages in 5 seconds before being flagged
 static settings::Int spam_rate{ "chat.party.anticrash.limit-rate", "12" };
 
-int messages_since_reset{ 0 };
-Timer spam_timer{};
+static int spam_messages_since_reset{ 0 };
+static Timer spam_timer{};
+static bool spam_blocked = true;
 
 DEFINE_HOOKED_METHOD(FireEventClientSide, bool, IGameEventManager2 *this_, IGameEvent *event)
 {
-    if (enable_antispam)
-        if (!strcmp(event->GetName(), "party_chat"))
+    if (enable_antispam && strcmp(event->GetName(), "party_chat") == 0)
+    {
+        // Increase total count
+        spam_messages_since_reset++;
+        // Limit reached
+        if (spam_messages_since_reset > *spam_rate)
         {
-            // You have violated the law, please sit in timeout for your sins
-            if (messages_since_reset >= *spam_rate)
-            {
-                // Way to reuse same timer
-                if (messages_since_reset == *spam_rate)
-                {
-                    spam_timer.test_and_set(0);
-                    messages_since_reset++;
-                }
-                // You're free, now flee
-                if (spam_timer.check(15000))
-                    messages_since_reset = 0;
-                // How about we don't send that anywhere m'lad
-                else
-                    return true;
-            }
-
-            // Not banned yet
-            if (messages_since_reset < 12)
-            {
-                // Way to reset timer every 5 seconds
-                if (spam_timer.check(5000))
-                {
-                    spam_timer.test_and_set(0);
-                    messages_since_reset = 0;
-                }
-                // Increment spam counter
-                messages_since_reset++;
-            }
+            spam_blocked = true;
+            spam_timer.update();
+            spam_messages_since_reset = 0;
         }
+
+        if (spam_blocked)
+        {
+            // Check if we can lift the ban again
+            if (spam_timer.test_and_set(10000))
+            {
+                spam_messages_since_reset = 0;
+                // Need to readd 1 to the timer since the current message counts towards the next "epoch"
+                spam_messages_since_reset++;
+                spam_blocked = false;
+            }
+            else
+                // Void messages to avoid crash
+                return true;
+        }
+        // We havent reached the limit yet. Reset the limit if last reset is 5 seconds in the past
+        else if (spam_timer.test_and_set(5000))
+        {
+            spam_messages_since_reset = 0;
+            // Need to readd 1 to the timer since the current message counts towards the next "epoch"
+            spam_messages_since_reset++;
+        }
+    }
     hacks::tf2::killstreak::fire_event(event);
     return original::FireEventClientSide(this_, event);
 }
