@@ -11,4 +11,7 @@ namespace hacks::shared::autojoin
 {
 void updateSearch();
 void onShutdown();
+#if !ENABLE_VISUALS
+extern Timer queue_time;
+#endif
 } // namespace hacks::shared::autojoin
