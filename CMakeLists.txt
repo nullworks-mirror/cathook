@@ -1,21 +1,29 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(EnableCotire 1 CACHE BOOL "Enable CoTiRe (Compile Time Reducer)")
+set(EnablePrecompiledHeaders 1 CACHE BOOL "Enable Precompiled Headers to reduce compile time")
+if(${CMAKE_VERSION} VERSION_LESS "3.16.0")
+    set(EnableCotire 1 CACHE BOOL "Enable CoTiRe (Compile Time Reducer)")
+else()
+    set(EnableCotire 0)
+endif()
+
 # Ensure that only 32 bit libraries are used.
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/Toolchain-cross-m32.cmake")
 
-# Don't enable cotire when running in QtCreator
-execute_process(COMMAND "printenv" OUTPUT_VARIABLE contents)
-STRING(REGEX REPLACE ";" "\\\\;" contents "${contents}")
-STRING(REGEX REPLACE "\n" ";" contents "${contents}")
-foreach(text ${contents})
-    if ("${text}"  STREQUAL "CC=")
-        message("qtcreator running")
-        set(EnableCotire 0)
-    endif()
-endforeach()
+if (EnablePrecompiledHeaders AND EnableCotire)
+    # Don't enable cotire when running in QtCreator
+    execute_process(COMMAND "printenv" OUTPUT_VARIABLE contents)
+    STRING(REGEX REPLACE ";" "\\\\;" contents "${contents}")
+    STRING(REGEX REPLACE "\n" ";" contents "${contents}")
+    foreach(text ${contents})
+        if ("${text}"  STREQUAL "CC=")
+            message("qtcreator running")
+            set(EnableCotire 0)
+        endif()
+    endforeach()
+endif()
 
-if (EnableCotire)
+if (EnablePrecompiledHeaders AND EnableCotire)
     set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/cotire/CMake")
     include(cotire)
     file(GLOB_RECURSE ignore_files *.cpp)
@@ -199,17 +207,19 @@ add_subdirectory(include)
 add_subdirectory(external)
 add_subdirectory(modules)
 
-if (EnableCotire)
+if (EnablePrecompiledHeaders AND EnableCotire)
     set_target_properties(cathook PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${CMAKE_SOURCE_DIR}/include/common.hpp")
     set_target_properties(cathook PROPERTIES COTIRE_ADD_UNITY_BUILD true)
     set_target_properties(cathook PROPERTIES COTIRE_UNITY_SOURCE_MAXIMUM_NUMBER_OF_INCLUDES 30)
     set_source_files_properties(${ignore_files} PROPERTIES COTIRE_EXCLUDED true)
     cotire(cathook)
+elseif(EnablePrecompiledHeaders)
+    target_precompile_headers(cathook PRIVATE "${CMAKE_SOURCE_DIR}/include/common.hpp")
 endif()
 
 add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
-if (EnableCotire)
+if (EnablePrecompiledHeaders AND EnableCotire)
     add_custom_command(TARGET cathook_unity POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook_unity> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook_unity>")
 endif()
