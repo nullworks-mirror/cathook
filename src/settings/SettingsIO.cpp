@@ -132,6 +132,33 @@ bool settings::SettingsReader::loadFrom(std::string path)
     return true;
 }
 
+bool settings::SettingsReader::loadFromString(std::string stream)
+{
+    settings::SettingsReader loader{ settings::Manager::instance() };
+    if (stream == "")
+    {
+        logging::Info("cat_load: Can't access file!");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_load: File doesn't exist / can't open file!\n");
+        return false;
+    }
+
+    for (auto &v : settings::Manager::instance().registered)
+    {
+        v.second.variable.fromString(v.second.defaults);
+    }
+
+    for (auto &c : stream)
+    {
+        loader.pushChar(c);
+    }
+
+    logging::Info("cat_load: Read Success!");
+    g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_load: Successfully loaded config!\n");
+    loader.finishString(true);
+
+    return true;
+}
+
 void settings::SettingsReader::pushChar(char c)
 {
     if (comment)
