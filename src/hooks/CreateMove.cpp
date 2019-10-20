@@ -270,10 +270,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         firstcm = false;
     }
     g_Settings.bInvalid = false;
-    {
-        PROF_SECTION(CM_AAA);
-        hacks::shared::anti_anti_aim::createMove();
-    }
 
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
@@ -397,8 +393,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
             ret = false;
         }
-        if (cmd && (cmd->buttons & IN_ATTACK || !(hacks::shared::antiaim::isEnabled() && (*fakelag_amount || (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled())) && *bSendPackets)))
-            g_Settings.brute.last_angles[LOCAL_E->m_IDX] = cmd->viewangles;
         for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
         {
 
@@ -411,11 +405,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
             if (NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) <= 1.5f)
                 continue;
-            float latency = hacks::shared::backtrack::getRealLatency();
-            g_Settings.brute.choke[i].push_back(NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) == g_Settings.brute.lastsimtime);
-            g_Settings.brute.last_angles[ent->m_IDX] = NET_VECTOR(RAW_ENT(ent), netvar.m_angEyeAngles);
-            if (!g_Settings.brute.choke[i].empty() && g_Settings.brute.choke[i].size() > 20)
-                g_Settings.brute.choke[i].pop_front();
         }
     }
 

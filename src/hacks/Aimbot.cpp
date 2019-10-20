@@ -15,6 +15,7 @@
 #include "common.hpp"
 #include "MiscTemporary.hpp"
 #include <targethelper.hpp>
+#include "hitrate.hpp"
 
 #if ENABLE_VISUALS
 #ifndef FEATURE_EFFECTS_DISABLED
@@ -294,12 +295,12 @@ static void CreateMove()
         else if (CanShoot() && CE_INT(g_pLocalPlayer->weapon(), netvar.m_iClip1) != 0)
         {
             Aim(target_entity);
-            DoAutoshoot();
+            DoAutoshoot(target_entity);
         }
     }
     else
     {
-        DoAutoshoot();
+        DoAutoshoot(target_entity);
         Aim(target_entity);
     }
 }
@@ -829,7 +830,7 @@ void Aim(CachedEntity *entity)
 // A function to check whether player can autoshoot
 bool begancharge = false;
 int begansticky  = 0;
-void DoAutoshoot()
+void DoAutoshoot(CachedEntity *target_entity)
 {
     // Enable check
     if (!autoshoot)
@@ -919,10 +920,16 @@ void DoAutoshoot()
         attack = false;
 
     if (attack)
+    {
         // TO DO: Sending both reload and attack will activate the hitmans heatmaker ability
         // Don't activate it only on first kill (or somehow activate it before shoot)
         current_user_cmd->buttons |= IN_ATTACK | (*autoreload && CarryingHeatmaker() ? IN_RELOAD : 0);
-
+        if (target_entity)
+        {
+            auto hitbox = calculated_data_array[target_entity->m_IDX].hitbox;
+            hitrate::AimbotShot(target_entity->m_IDX, hitbox != head);
+        }
+    }
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
         current_user_cmd->buttons |= IN_ATTACK2;
     hacks::shared::antiaim::SetSafeSpace(1);

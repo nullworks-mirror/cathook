@@ -28,20 +28,13 @@ extern bool need_name_change;
 extern int last_cmd_number;
 
 extern time_t time_injected;
-struct brutestruct
-{
-    int brutenum[PLAYER_ARRAY_SIZE];
-    Vector last_angles[PLAYER_ARRAY_SIZE];
-    std::deque<bool> choke[PLAYER_ARRAY_SIZE];
-    float lastsimtime;
-};
+
 class GlobalSettings
 {
 public:
     void Init();
     bool bInvalid{ true };
     bool is_create_move{ false };
-    brutestruct brute;
 };
 
 bool isHackActive();

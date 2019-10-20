@@ -34,8 +34,8 @@ void frameStageNotify()
     }
     if (real_angles && g_IInput->CAM_IsThirdPerson())
     {
-        CE_FLOAT(LOCAL_E, netvar.deadflag + 4) = g_Settings.brute.last_angles[LOCAL_E->m_IDX].x;
-        CE_FLOAT(LOCAL_E, netvar.deadflag + 8) = g_Settings.brute.last_angles[LOCAL_E->m_IDX].y;
+        CE_FLOAT(LOCAL_E, netvar.deadflag + 4) = LOCAL_E->m_vecAngle().x;
+        CE_FLOAT(LOCAL_E, netvar.deadflag + 8) = LOCAL_E->m_vecAngle().y;
     }
 }
 } // namespace hacks::tf::thirdperson
