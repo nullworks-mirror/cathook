@@ -9,6 +9,7 @@
 #include <hacks/Thirdperson.hpp>
 #include "HookedMethods.hpp"
 #include "hacks/Backtrack.hpp"
+#include "AntiAntiAim.hpp"
 
 static settings::Float nightmode{ "visual.night-mode", "0" };
 static settings::Boolean no_shake{ "visual.no-shake", "true" };
@@ -59,6 +60,10 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_, ClientFrameStage_t sta
 
     if (!g_IEngine->IsInGame())
         g_Settings.bInvalid = true;
+    {
+        PROF_SECTION(FSN_antiantiaim);
+        hacks::shared::anti_anti_aim::frameStageNotify(stage);
+    }
     {
         PROF_SECTION(FSN_skinchanger);
         hacks::tf2::skinchanger::FrameStageNotify(stage);

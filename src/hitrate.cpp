@@ -10,34 +10,16 @@
 #include <settings/Bool.hpp>
 #include "MiscTemporary.hpp"
 #include "init.hpp"
-
-static settings::Boolean hitrate_check{ "hitrate.enable", "true" };
+#include "AntiAntiAim.hpp"
+#include "hitrate.hpp"
 
 namespace hitrate
 {
-
-int lastweapon{ 0 };
 int lastammo{ 0 };
 
 int count_shots{ 0 };
 int count_hits{ 0 };
 int count_hits_head{ 0 };
-
-std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> shots{};
-
-void OnShot()
-{
-    ++count_shots;
-}
-
-void OnHit(bool crit)
-{
-    count_hits++;
-    if (crit)
-    {
-        count_hits_head++;
-    }
-}
 
 CatCommand debug_hitrate("debug_hitrate", "Debug hitrate", []() {
     int p1 = 0;
@@ -60,9 +42,49 @@ CatCommand debug_ammo("debug_ammo", "Debug ammo", []() {
         logging::Info("%d %d", i, CE_INT(LOCAL_E, netvar.m_iAmmo + i * 4));
     }
 });
-bool brutesoon[PLAYER_ARRAY_SIZE];
-int lasthits = 0;
-std::array<Timer, PLAYER_ARRAY_SIZE> xd{};
+
+// If this is true, Update() will consider increasing the brutenum soon if the shot was a miss
+bool resolve_soon[PLAYER_ARRAY_SIZE];
+std::array<Timer, PLAYER_ARRAY_SIZE> resolve_timer{};
+
+static int aimbot_target_idx   = -1;
+static bool aimbot_target_body = false;
+static Timer aimbot_shot{};
+
+void OnShot()
+{
+    ++count_shots;
+    resolve_soon[aimbot_target_idx] = true;
+    resolve_timer[aimbot_target_idx].update();
+}
+
+void OnHit(bool crit, int idx)
+{
+    idx = g_IEngine->GetPlayerForUserID(idx);
+    count_hits++;
+    if (crit)
+        count_hits_head++;
+    if (crit || aimbot_target_body)
+    {
+        if (idx == aimbot_target_idx)
+        {
+            auto ent = ENTITY(idx);
+            if (CE_GOOD(ent))
+            {
+                hacks::shared::anti_anti_aim::resolver_map[ent->player_info.friendsID].hits_in_a_row++;
+                resolve_soon[idx] = false;
+            }
+        }
+    }
+}
+
+void AimbotShot(int idx, bool target_body)
+{
+    aimbot_shot.update();
+    aimbot_target_idx  = idx;
+    aimbot_target_body = target_body;
+}
+
 void Update()
 {
     CachedEntity *weapon = LOCAL_W;
@@ -70,87 +92,25 @@ void Update()
     {
         if (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) || LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
         {
-            /*INetChannel *ch = (INetChannel *)g_IEngine->GetNetChannelInfo();
-            static int prevhits = count_hits;
-            int latency = ch->GetAvgLatency(MAX_FLOWS) * 1000 + 0.5f;
-            if (hacks::shared::aimbot::target_eid != -1 &&
-            !timers[hacks::shared::aimbot::target_eid].check(latency))
-            {
-                if (count_hits > prevhits)
-                {
-                    prevhits = count_hits;
-                    timers[hacks::shared::aimbot::target_eid].update();
-                }
-            }*/
-            // ONLY tracks primary ammo
             int ammo = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
-
-            INetChannel *ch       = (INetChannel *) g_IEngine->GetNetChannelInfo();
-            static bool firstcall = true;
-            for (int i = 0; i < PLAYER_ARRAY_SIZE; i++)
-            {
-                if (firstcall)
-                    xd[i].update();
-                firstcall = false;
-                if (ch && xd[i].check(ch->GetLatency(MAX_FLOWS) * 1000.0f + 100.0f) && brutesoon[i])
+            if (ammo < lastammo && !aimbot_shot.check(500) && aimbot_target_idx != -1)
+                OnShot();
+            lastammo = ammo;
+            auto ch  = (INetChannel *) g_IEngine->GetNetChannelInfo();
+            if (ch)
+                for (int i = 1; i < PLAYER_ARRAY_SIZE; i++)
                 {
-                    if (lasthits == count_hits)
+                    if (!resolve_soon[i])
+                        continue;
+                    // *2 since FLOW_INCOMING is unreliable due to fakelatency, * 1000.0f for seconds, and + 100.0f as insurance
+                    unsigned int delay = (ch->GetLatency(FLOW_OUTGOING) * 2) * 1000.0f + 100.0f;
+                    if (resolve_timer[i].check(delay))
                     {
-                        logging::Info("Increased Brutenum of ent %d", i);
-                        g_Settings.brute.brutenum[i]++;
+                        resolve_soon[i] = false;
+                        hacks::shared::anti_anti_aim::increaseBruteNum(i);
                     }
-                    brutesoon[i] = false;
-                    lasthits     = count_hits;
                 }
-            }
-            if (lastweapon)
-            {
-
-                if (ammo < lastammo)
-                {
-                    if (hacks::shared::aimbot::target_eid > -1)
-                    {
-                        if (ch && xd[hacks::shared::aimbot::target_eid].check(ch->GetLatency(MAX_FLOWS) * 1000.0f + 110.0f))
-                        {
-                            xd[hacks::shared::aimbot::target_eid].update();
-                            brutesoon[hacks::shared::aimbot::target_eid] = true;
-                        }
-                    }
-                    // for (auto i : entstocheck)
-                    //{
-                    OnShot();
-                    /*static int prevent = 0;
-
-                    if (hacks::shared::aimbot::target_eid != prevent)
-                    {
-                        entstocheck.push_back(hacks::shared::aimbot::target_eid);
-                        prevent = hacks::shared::aimbot::target_eid;
-                        timers[hacks::shared::aimbot::target_eid].update();
-                    }
-                    if (i != -1)
-                        {
-                            if (timers[i].test_and_set(latency))
-                            {
-                                bruteint[i]++;
-                                entstocheck[];
-                            }
-                        }
-                    }
-                }*/
-                }
-                /*else if
-                (timers[hacks::shared::aimbot::target_eid].check(latency / 2))
-                {
-
-                }*/
-            }
-            lastweapon = weapon->m_IDX;
-            lastammo   = ammo;
         }
-    }
-    else
-    {
-        lastweapon = 0;
     }
 }
 
@@ -164,7 +124,7 @@ public:
         if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
             if (CE_GOOD(LOCAL_W) && (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) || LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap)))
-                OnHit(event->GetBool("crit"));
+                OnHit(event->GetBool("crit"), event->GetInt("userid"));
         }
     }
 };

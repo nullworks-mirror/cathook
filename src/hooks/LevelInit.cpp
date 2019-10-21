@@ -11,6 +11,7 @@
 #include "HookedMethods.hpp"
 #include "MiscTemporary.hpp"
 #include "navparser.hpp"
+#include "AntiAntiAim.hpp"
 
 static settings::Boolean halloween_mode{ "misc.force-halloween", "false" };
 static settings::Int skybox_changer{ "misc.skybox-override", "0" };
@@ -50,8 +51,7 @@ DEFINE_HOOKED_METHOD(LevelInit, void, void *this_, const char *name)
     else if (holiday->m_nValue == 2)
         holiday->SetValue(0);
 #endif
-    for (int i = 0; i <= MAX_PLAYERS; i++)
-        g_Settings.brute.brutenum[i] = 0;
+    hacks::shared::anti_anti_aim::resolver_map.clear();
     g_IEngine->ClientCmd_Unrestricted("exec cat_matchexec");
     chat_stack::Reset();
     original::LevelInit(this_, name);

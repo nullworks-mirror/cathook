@@ -48,7 +48,7 @@ bool ShouldAim();
 CachedEntity *RetrieveBestTarget(bool aimkey_state, bool Backtracking = false);
 bool IsTargetStateGood(CachedEntity *entity);
 void Aim(CachedEntity *entity);
-void DoAutoshoot();
+void DoAutoshoot(CachedEntity *target = nullptr);
 int BestHitbox(CachedEntity *target);
 int ClosestHitbox(CachedEntity *target);
 void DoSlowAim(Vector &inputAngle);

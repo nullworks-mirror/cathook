@@ -2,17 +2,25 @@
   Created on 29.07.18.
 */
 
+#include <optional>
+#include "mathlib/vector.h"
+#include "cdll_int.h"
+
 #pragma once
-#include <core/interfaces.hpp>
-#include <core/sdk.hpp>
-#include <globals.h>
-#include <core/netvars.hpp>
-#include <settings/Bool.hpp>
-#include <localplayer.hpp>
-#include <entitycache.hpp>
+class IClientEntity;
+
+struct brutedata
+{
+    int brutenum{ 0 };
+    int hits_in_a_row{ 0 };
+    Vector original_angle{};
+    Vector new_angle{};
+};
 
 namespace hacks::shared::anti_anti_aim
 {
-void createMove();
-void resolveEnt(int IDX, IClientEntity *entity = nullptr);
+extern std::unordered_map<unsigned, brutedata> resolver_map;
+void increaseBruteNum(int idx);
+void frameStageNotify(ClientFrameStage_t stage);
+// void resolveEnt(int IDX, IClientEntity *entity = nullptr);
 } // namespace hacks::shared::anti_anti_aim

@@ -418,7 +418,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         clamp = false;
         break;
     case 9: // Fake keep (basically just spam random angles)
-        if (keepmode && !*bSendPackets)
+        if (keepmode && !g_pLocalPlayer->isFakeAngleCM)
         {
             cur_yaw += (float) spin;
             while (cur_yaw > 180)
@@ -427,7 +427,7 @@ void ProcessUserCmd(CUserCmd *cmd)
                 cur_yaw += 360;
             y = cur_yaw;
         }
-        else if (!keepmode && !*bSendPackets)
+        else if (!keepmode && !g_pLocalPlayer->isFakeAngleCM)
         {
             if (flip)
                 y += 90;
@@ -438,11 +438,11 @@ void ProcessUserCmd(CUserCmd *cmd)
         clamp = false;
         break;
     case 10: // Fake Static
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
             y = (float) yaw;
         break;
     case 11: // Fake jitter
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
         {
             if (flip)
                 y += 90;
@@ -451,18 +451,18 @@ void ProcessUserCmd(CUserCmd *cmd)
         }
         break;
     case 12: // Fake bigrandom
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
         {
             y     = RandFloatRange(-65536.0f, 65536.0f);
             clamp = false;
         }
         break;
     case 13: // Fake random
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
             y = RandFloatRange(-180.0f, 180.0f);
         break;
     case 14: // Fake spin
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
         {
             cur_yaw += (float) spin;
             while (cur_yaw > 180)
@@ -473,11 +473,11 @@ void ProcessUserCmd(CUserCmd *cmd)
         }
         break;
     case 15: // Fake offsetkeep
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
             y += (float) yaw;
         break;
     case 16: // Fake edge
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
         {
             // Attemt to find an edge and if found, edge
             if (findEdge(y))
@@ -485,27 +485,27 @@ void ProcessUserCmd(CUserCmd *cmd)
         }
         break;
     case 17: // Fake heck
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
         {
             FuckYaw(y);
             clamp = false;
         }
         break;
     case 18: // Fake sideways
-        if (*bSendPackets && ticksUntilSwap--) {
+        if (g_pLocalPlayer->isFakeAngleCM && ticksUntilSwap--) {
             ticksUntilSwap = UniformRandomInt(*yaw_sideways_min, *yaw_sideways_max);
             swap = !swap;
         }
-        y += *bSendPackets ^ swap ? 90.0f : -90.0f;
+        y += g_pLocalPlayer->isFakeAngleCM ^ swap ? 90.0f : -90.0f;
         break;
     case 20: // Fake right
-        y += *bSendPackets ? 90.0f : -90.0f;
+        y += g_pLocalPlayer->isFakeAngleCM ? -90.0f : 90.0f;
         break;
     case 19: // Fake left
-        y += *bSendPackets ? -90.0f : 90.0f;
+        y += g_pLocalPlayer->isFakeAngleCM ? 90.0f : -90.0f;
         break;
     case 21: // Fake reverse edge
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
         {
             // Attemt to find an edge and if found, edge
             if (findEdge(y))
@@ -513,7 +513,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         }
         break;
     case 22: // Omegayaw
-        if (*bSendPackets)
+        if (g_pLocalPlayer->isFakeAngleCM)
         {
             randyaw += RandFloatRange(-30.0f, 30.0f);
             y = randyaw;
@@ -566,7 +566,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         FuckPitch(p);
         clamp = false;
     }
-    if (*bSendPackets)
+    if (g_pLocalPlayer->isFakeAngleCM)
         flip = !flip;
     if (clamp)
         fClampAngle(cmd->viewangles);
@@ -578,7 +578,7 @@ void ProcessUserCmd(CUserCmd *cmd)
         UpdateAAAATimer();
         p = GetAAAAPitch();
     }
-    if (!*bSendPackets)
+    if (!g_pLocalPlayer->isFakeAngleCM)
         used_yaw = y;
     g_pLocalPlayer->bUseSilentAngles = true;
 }

@@ -119,7 +119,6 @@ void CreateMove()
         velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
         // Predict a vector for where the projectile will be
         Vector predicted_proj = ent->m_vecOrigin() + (velocity * latency);
-        ;
 
         // Dont vischeck if ent is stickybomb or if dodgeball mode is enabled
         if (!IsEntStickyBomb(ent) && !dodgeball)

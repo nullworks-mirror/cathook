@@ -2,134 +2,184 @@
  * Created on 29.07.18.
  */
 
-#include <common.hpp>
-#include <hacks/AntiAntiAim.hpp>
+#include "common.hpp"
+#include "hacks/AntiAntiAim.hpp"
+#include "sdk/dt_recv_redef.h"
 
 namespace hacks::shared::anti_anti_aim
 {
 static settings::Boolean enable{ "anti-anti-aim.enable", "false" };
+static settings::Boolean debug{ "anti-anti-aim.debug.enable", "false" };
 
-void createMove()
+std::unordered_map<unsigned, brutedata> resolver_map;
+
+void frameStageNotify(ClientFrameStage_t stage)
 {
-    if (!enable)
+    if (!enable || !g_IEngine->IsInGame())
         return;
-    if (CE_BAD(LOCAL_E))
-        return;
-
-    IClientEntity *entity{ nullptr };
-    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
+    if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
     {
-        resolveEnt(i, entity);
+        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+        {
+            auto player = ENTITY(i);
+            if (CE_BAD(player) || !player->m_bAlivePlayer() || !player->m_bEnemy() || !player->player_info.friendsID)
+                continue;
+            auto &data  = resolver_map[player->player_info.friendsID];
+            auto &angle = CE_VECTOR(player, netvar.m_angEyeAngles);
+            angle.x     = data.new_angle.x;
+            angle.y     = data.new_angle.y;
+        }
     }
 }
 
-void resolveEnt(int IDX, IClientEntity *entity)
+static std::array<float, 5> yaw_resolves{ 0.0f, 180.0f, 90.0f, -90.0f, -180.0f };
+
+static float resolveAngleYaw(float angle, brutedata &brute)
 {
-    if (IDX == g_IEngine->GetLocalPlayer())
+    brute.original_angle.y = angle;
+    while (angle > 180)
+        angle -= 360;
+
+    while (angle < -180)
+        angle += 360;
+
+    // Yaw Resolving
+    // Find out which angle we should try
+    int entry = (int) std::floor((brute.brutenum / 2.0f)) % yaw_resolves.size();
+    angle += yaw_resolves[entry];
+
+    while (angle > 180)
+        angle -= 360;
+
+    while (angle < -180)
+        angle += 360;
+    brute.new_angle.y = angle;
+    return angle;
+}
+
+static float resolveAnglePitch(float angle, brutedata &brute)
+{
+    brute.original_angle.x = angle;
+    if (brute.brutenum % 2)
+    {
+        // Pitch resolver
+        if (angle >= 90)
+            angle = -89;
+        if (angle <= -90)
+            angle = 89;
+    }
+    brute.new_angle.x = angle;
+    return angle;
+}
+
+void increaseBruteNum(int idx)
+{
+    auto ent = ENTITY(idx);
+    if (CE_BAD(ent) || !ent->player_info.friendsID)
         return;
-    entity = g_IEntityList->GetClientEntity(IDX);
-    if (entity && !entity->IsDormant() && !NET_BYTE(entity, netvar.iLifeState))
+    auto &data = hacks::shared::anti_anti_aim::resolver_map[ent->player_info.friendsID];
+    if (data.hits_in_a_row >= 4)
+        data.hits_in_a_row = 2;
+    else if (data.hits_in_a_row >= 2)
+        data.hits_in_a_row = 0;
+    else
     {
-        float quotat = 0;
-        float quotaf = 0;
-        if (!g_Settings.brute.choke[IDX].empty())
-            for (auto it : g_Settings.brute.choke[IDX])
-            {
-                if (it)
-                    quotat++;
-                else
-                    quotaf++;
-            }
-        float quota            = quotat / quotaf;
-        Vector &netangles      = NET_VECTOR(entity, netvar.m_angEyeAngles);
-        Vector angles          = QAngleToVector(entity->GetAbsAngles());
-        static bool brutepitch = false;
-        if (g_Settings.brute.brutenum[IDX] > 5)
-        {
-            g_Settings.brute.brutenum[IDX] = 0;
-            brutepitch                     = !brutepitch;
-        }
-        if (quota > 0.8f)
-            brutepitch = true;
-        angles.y = fmod(angles.y + 180.0f, 360.0f);
-        if (angles.y < 0)
-            angles.y += 360.0f;
-        angles.y -= 180.0f;
-        if (angles.x >= 90)
-            angles.x = -89;
-        if (angles.x <= -90)
-            angles.x = 89;
-        if (quota < 0.8f)
-            switch (g_Settings.brute.brutenum[IDX])
-            {
-            case 0:
-                break;
-            case 1:
-                angles.y += 180.0f;
-                break;
-            case 2:
-                angles.y -= 90.0f;
-                break;
-            case 3:
-                angles.y += 90.0f;
-                break;
-            case 4:
-                angles.y -= 180.0f;
-                break;
-            case 5:
-                angles.y = 0.0f;
-                break;
-            }
-        if (brutepitch)
-            switch (g_Settings.brute.brutenum[IDX] % 4)
-            {
-            case 0:
-                break;
-            case 1:
-                angles.x = -89.0f;
-                break;
-            case 2:
-                angles.x = 89.0f;
-                break;
-            case 3:
-                angles.x = 0.0f;
-                break;
-            }
-        const_cast<QAngle &>(entity->GetAbsAngles()) = VectorToQAngle(angles);
-        netangles                                    = angles;
+        data.brutenum++;
+        if (debug)
+            logging::Info("AAA: Brutenum for entity %i increased to %i", idx, data.brutenum);
+        data.hits_in_a_row = 0;
+        auto &angle        = CE_VECTOR(ent, netvar.m_angEyeAngles);
+        angle.x            = resolveAnglePitch(data.original_angle.x, data);
+        angle.y            = resolveAngleYaw(data.original_angle.y, data);
+        data.new_angle.x   = angle.x;
+        data.new_angle.y   = angle.y;
     }
 }
 
-void ResetPlayer(int idx)
+static void pitchHook(const CRecvProxyData *pData, void *pStruct, void *pOut)
 {
-    g_Settings.brute.choke[idx]       = {};
-    g_Settings.brute.brutenum[idx]    = 0;
-    g_Settings.brute.last_angles[idx] = {};
-    g_Settings.brute.lastsimtime      = 0.0f;
-}
-class ResolverListener : public IGameEventListener
-{
-public:
-    virtual void FireGameEvent(KeyValues *event)
-    {
-        if (!enable)
-            return;
-        std::string name(event->GetName());
-        if (name == "player_activate")
-        {
-            int uid    = event->GetInt("userid");
-            int entity = g_IEngine->GetPlayerForUserID(uid);
-            ResetPlayer(entity);
-        }
-        else if (name == "player_disconnect")
-        {
-            int uid    = event->GetInt("userid");
-            int entity = g_IEngine->GetPlayerForUserID(uid);
-            ResetPlayer(entity);
-        }
-    }
-};
+    float *ang = (float *) pOut;
+    *ang       = pData->m_Value.m_Float;
 
-static ResolverListener listener;
-static InitRoutine init([]() { g_IGameEventManager->AddListener(&listener, false); });
+    auto client_ent   = (IClientEntity *) (pStruct);
+    CachedEntity *ent = ENTITY(client_ent->entindex());
+    if (CE_GOOD(ent))
+        *ang = resolveAnglePitch(pData->m_Value.m_Float, resolver_map[ent->player_info.friendsID]);
+}
+
+static void yawHook(const CRecvProxyData *pData, void *pStruct, void *pOut)
+{
+    float flYaw = pData->m_Value.m_Float;
+
+    float *flYaw_out = (float *) pOut;
+
+    auto client_ent = (IClientEntity *) (pStruct);
+
+    CachedEntity *ent = ENTITY(client_ent->entindex());
+    if (CE_GOOD(ent))
+        *flYaw_out = resolveAngleYaw(flYaw, resolver_map[ent->player_info.friendsID]);
+}
+
+// *_ptr points to what we need to modify while *_ProxyFn holds the old value
+static RecvVarProxyFn *original_ptrX;
+static RecvVarProxyFn original_ProxyFnX;
+static RecvVarProxyFn *original_ptrY;
+static RecvVarProxyFn original_ProxyFnY;
+
+static void hook()
+{
+    auto pClass = g_IBaseClient->GetAllClasses();
+    while (pClass)
+    {
+        const char *pszName = pClass->m_pRecvTable->m_pNetTableName;
+        // "DT_TFPlayer", "tfnonlocaldata"
+        if (!strcmp(pszName, "DT_TFPlayer"))
+        {
+            for (int i = 0; i < pClass->m_pRecvTable->m_nProps; i++)
+            {
+                RecvPropRedef *pProp1 = (RecvPropRedef *) &(pClass->m_pRecvTable->m_pProps[i]);
+                if (!pProp1)
+                    continue;
+                const char *pszName2 = pProp1->m_pVarName;
+                if (!strcmp(pszName2, "tfnonlocaldata"))
+                    for (int j = 0; j < pProp1->m_pDataTable->m_nProps; j++)
+                    {
+                        RecvPropRedef *pProp2 = (RecvPropRedef *) &(pProp1->m_pDataTable->m_pProps[j]);
+                        if (!pProp2)
+                            continue;
+                        const char *name = pProp2->m_pVarName;
+
+                        // Pitch Fix
+                        if (!strcmp(name, "m_angEyeAngles[0]"))
+                        {
+                            original_ptrX = &pProp2->m_ProxyFn;
+                            original_ProxyFnX = pProp2->m_ProxyFn;
+                            pProp2->m_ProxyFn = pitchHook;
+                        }
+
+                        // Yaw Fix
+                        if (!strcmp(name, "m_angEyeAngles[1]"))
+                        {
+                            original_ptrY = &pProp2->m_ProxyFn;
+                            logging::Info("Yaw Fix Applied");
+                            original_ProxyFnY = pProp2->m_ProxyFn;
+                            pProp2->m_ProxyFn = yawHook;
+                        }
+                    }
+            }
+        }
+        pClass = pClass->m_pNext;
+    }
+}
+
+static void shutdown()
+{
+    *original_ptrX = original_ProxyFnX;
+    *original_ptrY = original_ProxyFnY;
+}
+
+static InitRoutine init([]() {
+    hook();
+    EC::Register(EC::Shutdown, shutdown, "antiantiaim_shutdown");
+});
 } // namespace hacks::shared::anti_anti_aim
