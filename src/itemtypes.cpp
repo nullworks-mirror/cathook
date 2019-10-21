@@ -67,6 +67,7 @@ ItemManager::ItemManager() : mapper()
 
     // Spellbooks
     RegisterModelMapping("models/props_halloween/hwn_spellbook_upright.mdl", ITEM_SPELL);
+    RegisterModelMapping("models/items/crystal_ball_pickup.mdl", ITEM_SPELL);
     RegisterModelMapping("models/props_halloween/hwn_spellbook_upright_major.mdl", ITEM_SPELL_RARE);
 
     RegisterSpecialMapping([](CachedEntity *ent) -> bool { return ent->m_iClassID() == CL_CLASS(CTFAmmoPack); }, ITEM_AMMO_MEDIUM);
