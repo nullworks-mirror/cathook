@@ -6,6 +6,7 @@
  */
 
 #include "common.hpp"
+#include "AntiAim.hpp"
 
 CatCommand printfov("fov_print", "Dump achievements to file (development)", []() {
     if (CE_GOOD(LOCAL_E))
@@ -106,6 +107,12 @@ void LocalPlayer::Update()
     {
         flZoomBegin = 0.0f;
     }
+}
+
+void LocalPlayer::UpdateEnd()
+{
+    if (!isFakeAngleCM)
+        realAngles = current_user_cmd->viewangles;
 }
 
 CachedEntity *LocalPlayer::weapon()

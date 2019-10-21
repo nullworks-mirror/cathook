@@ -15,7 +15,10 @@ class CachedEntity;
 class LocalPlayer
 {
 public:
+    // Start of CM
     void Update();
+    // End of CM
+    void UpdateEnd();
     int team;
     int health;
     int flags;
@@ -38,6 +41,9 @@ public:
     Vector v_SilentAngles;
     bool bUseSilentAngles;
     bool bAttackLastTick;
+
+    bool isFakeAngleCM = false;
+    Vector realAngles{0.0f, 0.0f, 0.0f};
 };
 
 #define LOCAL_E g_pLocalPlayer->entity

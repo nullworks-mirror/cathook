@@ -7,6 +7,7 @@
 #include <localplayer.hpp>
 #include <entitycache.hpp>
 #include <core/sdk.hpp>
+#include "AntiAntiAim.hpp"
 
 namespace hacks::tf::thirdperson
 {
@@ -34,8 +35,8 @@ void frameStageNotify()
     }
     if (real_angles && g_IInput->CAM_IsThirdPerson())
     {
-        CE_FLOAT(LOCAL_E, netvar.deadflag + 4) = LOCAL_E->m_vecAngle().x;
-        CE_FLOAT(LOCAL_E, netvar.deadflag + 8) = LOCAL_E->m_vecAngle().y;
+        CE_FLOAT(LOCAL_E, netvar.deadflag + 4) = g_pLocalPlayer->realAngles.x;
+        CE_FLOAT(LOCAL_E, netvar.deadflag + 8) = g_pLocalPlayer->realAngles.y;
     }
 }
 } // namespace hacks::tf::thirdperson

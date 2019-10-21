@@ -290,11 +290,14 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                     if (attackticks % *fullauto + 1 < *fullauto)
                         current_user_cmd->buttons &= ~IN_ATTACK;
             static int fakelag_queue = 0;
+            g_pLocalPlayer->isFakeAngleCM = false;
             if (CE_GOOD(LOCAL_E))
                 if (fakelag_amount || (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled()))
                 {
                     int fakelag_amnt = (*fakelag_amount > 1) ? *fakelag_amount : 1;
                     *bSendPackets    = fakelag_amnt == fakelag_queue;
+                    if (*bSendPackets)
+                        g_pLocalPlayer->isFakeAngleCM = true;
                     fakelag_queue++;
                     if (fakelag_queue > fakelag_amnt)
                         fakelag_queue = 0;
@@ -406,6 +409,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             if (NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) <= 1.5f)
                 continue;
         }
+        g_pLocalPlayer->UpdateEnd();
     }
 
     //	PROF_END("CreateMove");

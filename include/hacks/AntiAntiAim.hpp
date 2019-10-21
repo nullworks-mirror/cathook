@@ -13,8 +13,8 @@ struct brutedata
 {
     int brutenum{ 0 };
     int hits_in_a_row{ 0 };
-    Vector original_angle;
-    Vector new_angle;
+    Vector original_angle{};
+    Vector new_angle{};
 };
 
 namespace hacks::shared::anti_anti_aim
@@ -22,8 +22,5 @@ namespace hacks::shared::anti_anti_aim
 extern std::unordered_map<unsigned, brutedata> resolver_map;
 void increaseBruteNum(int idx);
 void frameStageNotify(ClientFrameStage_t stage);
-Vector resolveAngle(Vector angles, brutedata &brute);
-void ResetPlayer(unsigned steamid);
-void ResetPlayer(int idx);
 // void resolveEnt(int IDX, IClientEntity *entity = nullptr);
 } // namespace hacks::shared::anti_anti_aim
