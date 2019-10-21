@@ -707,6 +707,24 @@ static InitRoutine init_pyrovision([]() {
     patch.Patch();
     EC::Register(
         EC::Shutdown, []() { patch.Shutdown(); }, "shutdown_pyrovis");
+#if !ENFORCE_STREAM_SAFETY
+    EC::Register(
+        EC::Paint,
+        []() {
+            if (CE_GOOD(LOCAL_E))
+            {
+                if (HasCondition<TFCond_HalloweenKartNoTurn>(LOCAL_E))
+                    RemoveCondition<TFCond_HalloweenKartNoTurn>(LOCAL_E);
+                if (HasCondition<TFCond_FreezeInput>(LOCAL_E))
+                    RemoveCondition<TFCond_FreezeInput>(LOCAL_E);
+            }
+        },
+        "remove_cart_cond");
+    static BytePatch cart_patch1(gSignatures.GetClientSignature, "0F 84 ? ? ? ? F3 0F 10 A2", 0x0, { 0x90, 0xE9 });
+    static BytePatch cart_patch2(gSignatures.GetClientSignature, "0F 85 ? ? ? ? 89 F8 84 C0 75 72", 0x0, { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+    cart_patch1.Patch();
+    cart_patch2.Patch();
+#endif
 });
 #endif
 
