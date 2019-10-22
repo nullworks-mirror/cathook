@@ -71,7 +71,7 @@ public:
         setInternal(Key{});
     }
 
-    void key(int key)
+    void key(SDL_Keycode key)
     {
         Key k{};
         k.keycode = SDL_GetScancodeFromKey(key);
