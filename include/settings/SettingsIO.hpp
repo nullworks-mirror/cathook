@@ -19,6 +19,8 @@ public:
 
     bool loadFrom(std::string path);
 
+    bool loadFromString(std::string stream);
+
 protected:
     void pushChar(char c);
     void finishString(bool complete);

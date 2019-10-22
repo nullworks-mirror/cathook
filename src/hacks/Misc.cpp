@@ -30,6 +30,7 @@ static settings::Boolean flashlight_spam{ "misc.flashlight-spam", "false" };
 static settings::Boolean auto_balance_spam{ "misc.auto-balance-spam", "false" };
 static settings::Boolean nopush_enabled{ "misc.no-push", "false" };
 static settings::Boolean dont_hide_stealth_kills{ "misc.dont-hide-stealth-kills", "true" };
+static settings::Boolean unlimit_bumpercart_movement{ "misc.bumpercarthax.enable", "true" };
 
 #if ENABLE_VISUALS
 static settings::Boolean god_mode{ "misc.god-mode", "false" };
@@ -707,6 +708,39 @@ static InitRoutine init_pyrovision([]() {
     patch.Patch();
     EC::Register(
         EC::Shutdown, []() { patch.Shutdown(); }, "shutdown_pyrovis");
+#if !ENFORCE_STREAM_SAFETY
+    EC::Register(
+        EC::Paint,
+        []() {
+            if (CE_GOOD(LOCAL_E))
+            {
+                if (HasCondition<TFCond_HalloweenKartNoTurn>(LOCAL_E))
+                    RemoveCondition<TFCond_HalloweenKartNoTurn>(LOCAL_E);
+                if (HasCondition<TFCond_FreezeInput>(LOCAL_E))
+                    RemoveCondition<TFCond_FreezeInput>(LOCAL_E);
+            }
+        },
+        "remove_cart_cond");
+    static BytePatch cart_patch1(gSignatures.GetClientSignature, "0F 84 ? ? ? ? F3 0F 10 A2", 0x0, { 0x90, 0xE9 });
+    static BytePatch cart_patch2(gSignatures.GetClientSignature, "0F 85 ? ? ? ? 89 F8 84 C0 75 72", 0x0, { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+    if (unlimit_bumpercart_movement)
+    {
+        cart_patch1.Patch();
+        cart_patch2.Patch();
+    }
+    unlimit_bumpercart_movement.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (after)
+        {
+            cart_patch1.Patch();
+            cart_patch2.Patch();
+        }
+        else
+        {
+            cart_patch1.Shutdown();
+            cart_patch2.Shutdown();
+        }
+    });
+#endif
 });
 #endif
 

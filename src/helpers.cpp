@@ -959,7 +959,7 @@ Vector GetBuildingPosition(CachedEntity *ent)
     // OBBMins and OBBMaxs are offsets from origin
     auto raw = RAW_ENT(ent);
     Vector min, max;
-    RAW_ENT(ent)->GetRenderBounds(min, max);
+    raw->GetRenderBounds(min, max);
     return (min + max) / 2 + raw->GetCollideable()->GetCollisionOrigin();
 }
 

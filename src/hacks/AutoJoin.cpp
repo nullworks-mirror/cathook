@@ -40,7 +40,7 @@ bool UnassignedClass()
 static Timer autoteam_timer{};
 static Timer startqueue_timer{};
 #if not ENABLE_VISUALS
-static Timer queue_time{};
+Timer queue_time{};
 #endif
 void updateSearch()
 {
