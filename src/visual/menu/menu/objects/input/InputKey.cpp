@@ -38,7 +38,7 @@ bool zerokernel::InputKey::handleSdlEvent(SDL_Event *event)
         {
             if (event->key.keysym.sym != SDLK_ESCAPE)
             {
-                key->key(event->key.keysym.scancode);
+                key->key(SDL_GetKeyFromScancode(event->key.keysym.scancode));
             }
             else
             {
