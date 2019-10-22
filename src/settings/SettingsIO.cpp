@@ -137,8 +137,8 @@ bool settings::SettingsReader::loadFromString(std::string stream)
     settings::SettingsReader loader{ settings::Manager::instance() };
     if (stream == "")
     {
-        logging::Info("cat_load: Can't access file!");
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_load: File doesn't exist / can't open file!\n");
+        logging::Info("cat_load: Empty String!");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_load: Empty String!\n");
         return false;
     }
 
