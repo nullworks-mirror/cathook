@@ -110,7 +110,7 @@ void ImGui_Impl_Render(ImDrawData *draw_data)
 
                     // Bind texture, Draw
                     glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t) pcmd->TextureId);
-                    glDrawElements(GL_TRIANGLES, (GLsizei) pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer);
+                    glDrawElements(GL_TRIANGLES, (GLsizei) pcmd->ElemCount, GL_UNSIGNED_INT, idx_buffer);
                 }
             }
             idx_buffer += pcmd->ElemCount;
