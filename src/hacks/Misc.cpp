@@ -21,7 +21,9 @@
 
 namespace hacks::shared::misc
 {
-static settings::Boolean render_zoomed{ "visual.render-local-zoomed", "false" };
+#if !ENFORCE_STREAM_SAFETY && ENABLE_VISUALS
+static settings::Boolean render_zoomed{ "visual.render-local-zoomed", "true" };
+#endif
 static settings::Boolean anti_afk{ "misc.anti-afk", "false" };
 static settings::Boolean auto_strafe{ "misc.autostrafe", "false" };
 static settings::Boolean tauntslide{ "misc.tauntslide-tf2c", "false" };
@@ -39,11 +41,18 @@ static settings::Boolean no_homo{ "misc.no-homo", "true" };
 static settings::Boolean show_spectators{ "misc.show-spectators", "false" };
 #endif
 
-static void tryPatchLocalPlayerShouldDraw(settings::VariableBase<bool> &, bool after)
+#if !ENFORCE_STREAM_SAFETY && ENABLE_VISUALS
+static void tryPatchLocalPlayerShouldDraw(bool after)
 {
     static BytePatch patch_shoulddraw{ gSignatures.GetClientSignature, "80 BB ? ? ? ? ? 75 DE", 0xD, { 0xE0 } };
     after ? patch_shoulddraw.Patch() : patch_shoulddraw.Shutdown();
 }
+
+static void tryPatchLocalPlayerShouldDraw_callback(settings::VariableBase<bool> &, bool after)
+{
+    tryPatchLocalPlayerShouldDraw(after);
+}
+#endif
 
 static Timer anti_afk_timer{};
 static int last_buttons{ 0 };
@@ -749,9 +758,9 @@ void Shutdown()
 {
     if (CE_BAD(LOCAL_E))
         return;
+#if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
     // unpatching local player
     render_zoomed = false;
-#if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
     patch_playerpanel->Shutdown();
     patch_scoreboard1->Shutdown();
     patch_scoreboard2->Shutdown();
@@ -769,9 +778,11 @@ static InitRoutine init([]() {
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
 #if ENABLE_VISUALS
-    render_zoomed.installChangeCallback(tryPatchLocalPlayerShouldDraw);
     EC::Register(EC::Draw, DrawText, "draw_misc_hacks", EC::average);
 #if !ENFORCE_STREAM_SAFETY
+    if (render_zoomed)
+        tryPatchLocalPlayerShouldDraw(true);
+    render_zoomed.installChangeCallback(tryPatchLocalPlayerShouldDraw_callback);
     patch_playerpanel     = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "0F 94 45 DF", 0x0, std::vector<unsigned char>{ 0xC6, 0x45, 0xDF, 0x01 });
     uintptr_t addr_scrbrd = gSignatures.GetClientSignature("8B 10 89 74 24 04 89 04 24 FF 92 ? ? ? ? 83 F8 02 75 09");
     patch_scoreboard1     = std::make_unique<BytePatch>(addr_scrbrd, std::vector<unsigned char>{ 0xEB, 0x31, 0xE8, 0x78, 0x46, 0x10, 0x00, 0xE9, 0xC9, 0x06, 0x00, 0x00 });
