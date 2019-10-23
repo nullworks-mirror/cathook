@@ -79,6 +79,7 @@ static bool inited = false;
 
 static Timer lastTaunt{}; // time since taunt was last executed, used to avoid kicks
 static Timer lastJump{};
+static Timer crouch_timer{};                          // Mimic crouch
 static std::array<Timer, PLAYER_ARRAY_SIZE> afkTicks; // for how many ms the player hasn't been moving
 
 static void checkAFK()
@@ -311,7 +312,10 @@ static void cm()
     }
 
     if (!follow_target)
+    {
         breadcrumbs.clear(); // no target == no path
+        crouch_timer.update();
+    }
 
     bool isNavBotCM           = navBotInterval.test_and_set(3000) && nav::prepare();
     bool foundPreferredTarget = false;
@@ -475,7 +479,10 @@ static void cm()
         lastent = 1;
 
     if (!follow_target)
+    {
+        crouch_timer.update();
         navtarget = false;
+    }
     if (navtarget)
     {
         auto ent = ENTITY(follow_target);
@@ -535,6 +542,11 @@ static void cm()
         follow_target = 0;
         return;
     }
+    // Crouch logic
+    if (!(CE_INT(followtar, netvar.iFlags) & FL_DUCKING))
+        crouch_timer.update();
+    else if (crouch_timer.check(500))
+        current_user_cmd->buttons |= IN_DUCK;
     // check if target is afk
     if (afk)
     {

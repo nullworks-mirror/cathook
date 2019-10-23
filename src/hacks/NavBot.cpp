@@ -605,10 +605,9 @@ enum slots
     secondary = 2,
     melee     = 3
 };
-static int GetBestSlot()
+static slots GetBestSlot(slots active_slot)
 {
-
-    float nearest_dist = getNearestPlayerDistance(false).second;
+    auto nearest = getNearestPlayerDistance(false);
     switch (g_pLocalPlayer->clazz)
     {
     case tf_scout:
@@ -619,31 +618,39 @@ static int GetBestSlot()
         return secondary;
     case tf_spy:
     {
-        if (nearest_dist > 600)
+        if (nearest.second > 100 && active_slot == primary)
+            return active_slot;
+        else if (nearest.second >= 250)
             return primary;
         else
             return melee;
     }
     case tf_sniper:
     {
-        if (nearest_dist > 100)
-            return primary;
-        else
+        if (nearest.second <= 300 && nearest.first->m_iHealth() < 75)
             return secondary;
+        else if (nearest.second <= 400 && nearest.first->m_iHealth() < 75)
+            return active_slot;
+        else
+            return primary;
     }
     case tf_pyro:
     {
-        if (nearest_dist > 550)
-            return secondary;
-        else
+        if (nearest.second > 450 && active_slot == secondary)
+            return active_slot;
+        else if (nearest.second <= 550)
             return primary;
+        else
+            return secondary;
     }
     default:
     {
-        if (nearest_dist > 400)
-            return primary;
-        else
+        if (nearest.second <= 400)
             return secondary;
+        else if (nearest.second <= 700)
+            return active_slot;
+        else
+            return primary;
     }
     }
 }
@@ -659,9 +666,9 @@ static void updateSlot()
         // IsBaseCombatWeapon()
         if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
         {
-            int slot    = re::C_BaseCombatWeapon::GetSlot(weapon);
-            int newslot = GetBestSlot();
-            if (slot != newslot - 1)
+            int slot    = re::C_BaseCombatWeapon::GetSlot(weapon) + 1;
+            int newslot = GetBestSlot(static_cast<slots>(slot));
+            if (slot != newslot)
                 g_IEngine->ClientCmd_Unrestricted(format("slot", newslot).c_str());
         }
     }
