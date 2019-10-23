@@ -247,11 +247,6 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
         }
         break;
     case ENTITY_PLAYER:
-        if (ent->m_IDX == LOCAL_E->m_IDX)
-            if (LOCAL_E->m_iTeam() == TEAM_BLU)
-                return colors::blu;
-            else
-                return colors::red;
         if (health && playerlist::IsDefault(ent))
         {
             return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());

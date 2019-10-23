@@ -11,7 +11,6 @@
                     <Option name="Not visible" value="2"/>
                 </Select>
             </LabeledObject>
-            <AutoVariable width="fill" target="glow.self-rainbow" label="Self Rainbow"/>
         </List>
     </Box>
     <Box padding="12 6 6 6" width="content" height="content" name="Targets" x="170">
