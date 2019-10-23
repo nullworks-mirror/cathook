@@ -4,6 +4,7 @@
             <AutoVariable width="fill" target="glow.enable" label="Enable Glow"/>
             <AutoVariable width="fill" target="glow.blur-scale" label="Blur Scale" min="1" max="20"/>
             <AutoVariable width="fill" target="glow.health" label="Health"/>
+            <AutoVariable width="fill" target="glow.self-rainbow" label="Self Rainbow"/>
             <LabeledObject width="fill" label="Solid when">
                 <Select target="glow.solid-when">
                     <Option name="Never" value="0"/>

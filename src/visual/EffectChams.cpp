@@ -27,6 +27,7 @@ static settings::Boolean weapons_white{ "chams.white-weapons", "true" };
 static settings::Boolean legit{ "chams.legit", "false" };
 static settings::Boolean singlepass{ "chams.single-pass", "false" };
 static settings::Boolean chamsself{ "chams.self", "true" };
+static settings::Boolean rainbow{ "chams.self-rainbow", "true" };
 static settings::Boolean disco_chams{ "chams.disco", "false" };
 
 settings::Boolean enable{ "chams.enable", "false" };
