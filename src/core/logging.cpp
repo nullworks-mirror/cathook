@@ -6,14 +6,14 @@
  */
 
 #include <stdarg.h>
-#include <string.h>
+#include <string>
 
 #include <pwd.h>
 #include <settings/Bool.hpp>
-
-#include "common.hpp"
-#include "hack.hpp"
+#include "logging.hpp"
+#include "helpers.hpp"
 #include "MiscTemporary.hpp"
+#include "hack.hpp"
 
 static settings::Boolean log_to_console{ "hack.log-console", "false" };
 
@@ -29,25 +29,11 @@ void logging::Initialize()
 }
 #endif
 
-void logging::Info(const char *fmt, ...)
+void Log(std::unique_ptr<char[]> &result, bool file_only)
 {
 #if ENABLE_LOGGING
-    if (shut_down)
-        return;
-    if (!handle.is_open())
+    if (!logging::handle.is_open())
         logging::Initialize();
-    // Argument list
-    va_list list;
-    va_start(list, fmt);
-    // Allocate buffer
-    auto result = std::make_unique<char[]>(512);
-    // Fill buffer
-    if (vsnprintf(result.get(), 512, fmt, list) < 0)
-        return;
-    va_end(list);
-
-    std::string print_file(result.get());
-
     time_t current_time;
     struct tm *time_info = nullptr;
     char timeString[10];
@@ -62,10 +48,48 @@ void logging::Info(const char *fmt, ...)
 #if ENABLE_VISUALS
     if (!hack::shutdown)
     {
-        if (*log_to_console)
+        if (!file_only && *log_to_console)
             g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: %s\n", result.get());
     }
 #endif
+#endif
+}
+
+void logging::Info(const char *fmt, ...)
+{
+#if ENABLE_LOGGING
+    if (shut_down)
+        return;
+    // Argument list
+    va_list list;
+    va_start(list, fmt);
+    // Allocate buffer
+    auto result = std::make_unique<char[]>(512);
+    // Fill buffer
+    if (vsnprintf(result.get(), 512, fmt, list) < 0)
+        return;
+    va_end(list);
+
+    Log(result, false);
+#endif
+}
+
+void logging::File(const char *fmt, ...)
+{
+#if ENABLE_LOGGING
+    if (shut_down)
+        return;
+    // Argument list
+    va_list list;
+    va_start(list, fmt);
+    // Allocate buffer
+    auto result = std::make_unique<char[]>(512);
+    // Fill buffer
+    if (vsnprintf(result.get(), 512, fmt, list) < 0)
+        return;
+    va_end(list);
+
+    Log(result, true);
 #endif
 }
 
