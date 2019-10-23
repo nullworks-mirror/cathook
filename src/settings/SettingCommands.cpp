@@ -1,12 +1,59 @@
-#include "SettingCommands.hpp"
+#include <core/sdk.hpp>
+#include <core/cvwrapper.hpp>
+#include <settings/Manager.hpp>
+#include <init.hpp>
+#include <settings/SettingsIO.hpp>
+#include <dirent.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <thread>
+#include <MiscTemporary.hpp>
+#if ENABLE_VISUALS
+#include "Menu.hpp"
+#include "special/SettingsManagerList.hpp"
+#include "settings/Bool.hpp"
+#endif
 /*
   Created on 29.07.18.
 */
 
 namespace settings::commands
 {
+static settings::Boolean autosave{ "settings.autosave", "true" };
 
 static void getAndSortAllConfigs();
+static std::string getAutoSaveConfigPath()
+{
+    static std::string path;
+    if (!path.empty())
+        return path;
+    time_t current_time;
+    struct tm *time_info = nullptr;
+    char timeString[100];
+    time(&current_time);
+    time_info = localtime(&current_time);
+    strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M", time_info);
+
+    DIR *config_directory = opendir(DATA_PATH "/configs");
+    if (!config_directory)
+    {
+        logging::Info("Configs directory doesn't exist, creating one!");
+        mkdir(DATA_PATH "/configs", S_IRWXU | S_IRWXG);
+    }
+    else
+        closedir(config_directory);
+
+    config_directory = opendir(DATA_PATH "/configs/autosaves");
+    if (!config_directory)
+    {
+        logging::Info("Autosave directory doesn't exist, creating one!");
+        mkdir(DATA_PATH "/configs/autosaves", S_IRWXU | S_IRWXG);
+    }
+    else
+        closedir(config_directory);
+
+    return path = std::string(DATA_PATH "/configs/autosaves/") + timeString + ".conf";
+}
 
 static CatCommand cat("cat", "", [](const CCommand &args) {
     if (args.ArgC() < 3)
@@ -31,6 +78,11 @@ static CatCommand cat("cat", "", [](const CCommand &args) {
         }
         variable->fromString(args.Arg(3));
         g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%s = \"%s\"\n", args.Arg(2), variable->toString().c_str());
+        if (autosave)
+        {
+            settings::SettingsWriter writer{ settings::Manager::instance() };
+            writer.saveTo(getAutoSaveConfigPath(), true);
+        }
         return;
     }
     else if (!strcmp(args.Arg(1), "get"))
@@ -152,7 +204,8 @@ static void getAndSortAllConfigs()
     {
         std::string s(ent->d_name);
         s = s.substr(0, s.find_last_of("."));
-        sortedConfigs.push_back(s);
+        if (s != "autosaves")
+            sortedConfigs.push_back(s);
     }
     std::sort(sortedConfigs.begin(), sortedConfigs.end());
     sortedConfigs.erase(sortedConfigs.begin());
