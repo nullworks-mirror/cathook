@@ -14,31 +14,38 @@ settings::SettingsWriter::SettingsWriter(settings::Manager &manager) : manager(m
 {
 }
 
-bool settings::SettingsWriter::saveTo(std::string path)
+bool settings::SettingsWriter::saveTo(std::string path, bool autosave)
 {
-    logging::Info("cat_save: started");
+    if (autosave)
+        logging::File("cat_save: Saving to %s", path.c_str());
+    else
+    {
+        logging::Info("cat_save: Saving to %s", path.c_str());
+    }
+    
     this->only_changed = true;
 
     stream.open(path, std::ios::out);
 
     if (!stream || stream.bad() || !stream.is_open() || stream.fail())
     {
-        logging::Info("cat_save: FATAL! FAILED to create stream!");
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_save: Can't create config file!\n");
+        logging::File("cat_save: FATAL! FAILED to create stream!");
+        if (!autosave)
+            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_save: Can't create config file!\n");
         return false;
     }
 
     using pair_type = std::pair<std::string, settings::IVariable *>;
     std::vector<pair_type> all_registered{};
-    logging::Info("cat_save: Getting variable references...");
+    logging::File("cat_save: Getting variable references...");
     for (auto &v : settings::Manager::instance().registered)
     {
         if (!only_changed || v.second.isChanged())
             all_registered.emplace_back(std::make_pair(v.first, &v.second.variable));
     }
-    logging::Info("cat_save: Sorting...");
+    logging::File("cat_save: Sorting...");
     std::sort(all_registered.begin(), all_registered.end(), [](const pair_type &a, const pair_type &b) -> bool { return a.first.compare(b.first) < 0; });
-    logging::Info("cat_save: Writing...");
+    logging::File("cat_save: Writing...");
     for (auto &v : all_registered)
         if (!v.first.empty())
         {
@@ -47,14 +54,15 @@ bool settings::SettingsWriter::saveTo(std::string path)
         }
     if (!stream || stream.bad() || stream.fail())
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_save: Failed to save config!\n");
-        logging::Info("cat_save: FATAL! Stream bad!");
+        if (!autosave)
+            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_save: Failed to save config!\n");
+        logging::File("cat_save: FATAL! Stream bad!");
     }
-    else
+    else if (!autosave)
         g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: cat_save: Successfully saved config!\n");
     stream.close();
     if (stream.fail())
-        logging::Info("cat_save: FATAL! Stream bad (2)!");
+        logging::File("cat_save: FATAL! Stream bad (2)!");
     return true;
 }
 

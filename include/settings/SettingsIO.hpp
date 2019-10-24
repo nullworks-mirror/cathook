@@ -44,7 +44,7 @@ class SettingsWriter
 public:
     explicit SettingsWriter(Manager &manager);
 
-    bool saveTo(std::string path);
+    bool saveTo(std::string path, bool autosave = false);
 
 protected:
     void write(std::string name, IVariable *variable);

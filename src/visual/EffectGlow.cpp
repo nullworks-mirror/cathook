@@ -251,6 +251,8 @@ rgba_t EffectGlow::GlowColor(IClientEntity *entity)
         {
             return colors::Health_dimgreen(ent->m_iHealth(), ent->m_iMaxHealth());
         }
+        else if (!playerlist::IsDefault(ent))
+            return playerlist::Color(ent);
         break;
     }
 

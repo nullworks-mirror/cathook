@@ -10,17 +10,12 @@
 #include <stdio.h>
 #include <fstream>
 
-#ifdef __cplusplus
 namespace logging
 {
-#endif
-
 extern std::ofstream handle;
 
 void Initialize();
 void Shutdown();
 void Info(const char *fmt, ...);
-
-#ifdef __cplusplus
+void File(const char *fmt, ...);
 }
-#endif
