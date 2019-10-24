@@ -1097,7 +1097,12 @@ int BestHitbox(CachedEntity *target)
             {
 
                 float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
-                float bdmg = CarryingHeatmaker() ? 40 : 50;
+                float bdmg = 50;
+                if (CarryingHeatmaker())
+                {
+                    bdmg = (bdmg * .80) - 1;
+                    cdmg = (cdmg * .80) - 1;
+                }
                 // Darwins damage correction, protects against 15% of damage
                 //                if (HasDarwins(target))
                 //                {
