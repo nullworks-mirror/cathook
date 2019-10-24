@@ -605,7 +605,7 @@ enum slots
     secondary = 2,
     melee     = 3
 };
-static slots GetBestSlot(slots active_slot)
+static slots getBestSlot(slots active_slot)
 {
     auto nearest = getNearestPlayerDistance(false);
     switch (g_pLocalPlayer->clazz)
@@ -667,7 +667,7 @@ static void updateSlot()
         if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
         {
             int slot    = re::C_BaseCombatWeapon::GetSlot(weapon) + 1;
-            int newslot = GetBestSlot(static_cast<slots>(slot));
+            int newslot = getBestSlot(static_cast<slots>(slot));
             if (slot != newslot)
                 g_IEngine->ClientCmd_Unrestricted(format("slot", newslot).c_str());
         }

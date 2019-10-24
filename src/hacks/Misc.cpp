@@ -47,11 +47,6 @@ static void tryPatchLocalPlayerShouldDraw(bool after)
     static BytePatch patch_shoulddraw{ gSignatures.GetClientSignature, "80 BB ? ? ? ? ? 75 DE", 0xD, { 0xE0 } };
     after ? patch_shoulddraw.Patch() : patch_shoulddraw.Shutdown();
 }
-
-static void tryPatchLocalPlayerShouldDraw_callback(settings::VariableBase<bool> &, bool after)
-{
-    tryPatchLocalPlayerShouldDraw(after);
-}
 #endif
 
 static Timer anti_afk_timer{};
@@ -782,7 +777,7 @@ static InitRoutine init([]() {
 #if !ENFORCE_STREAM_SAFETY
     if (render_zoomed)
         tryPatchLocalPlayerShouldDraw(true);
-    render_zoomed.installChangeCallback(tryPatchLocalPlayerShouldDraw_callback);
+    render_zoomed.installChangeCallback([](settings::VariableBase<bool> &, bool after) { tryPatchLocalPlayerShouldDraw(after); });
     patch_playerpanel     = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "0F 94 45 DF", 0x0, std::vector<unsigned char>{ 0xC6, 0x45, 0xDF, 0x01 });
     uintptr_t addr_scrbrd = gSignatures.GetClientSignature("8B 10 89 74 24 04 89 04 24 FF 92 ? ? ? ? 83 F8 02 75 09");
     patch_scoreboard1     = std::make_unique<BytePatch>(addr_scrbrd, std::vector<unsigned char>{ 0xEB, 0x31, 0xE8, 0x78, 0x46, 0x10, 0x00, 0xE9, 0xC9, 0x06, 0x00, 0x00 });

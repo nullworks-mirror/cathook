@@ -29,7 +29,7 @@ void logging::Initialize()
 }
 #endif
 
-void Log(std::unique_ptr<char[]> &result, bool file_only)
+static inline void Log(std::unique_ptr<char[]> &result, bool file_only)
 {
 #if ENABLE_LOGGING
     if (!logging::handle.is_open())
@@ -64,9 +64,9 @@ void logging::Info(const char *fmt, ...)
     va_list list;
     va_start(list, fmt);
     // Allocate buffer
-    auto result = std::make_unique<char[]>(512);
+    char result[512];
     // Fill buffer
-    if (vsnprintf(result.get(), 512, fmt, list) < 0)
+    if (vsnprintf(result, 512, fmt, list) < 0)
         return;
     va_end(list);
 
@@ -83,9 +83,9 @@ void logging::File(const char *fmt, ...)
     va_list list;
     va_start(list, fmt);
     // Allocate buffer
-    auto result = std::make_unique<char[]>(512);
+    char result[512];
     // Fill buffer
-    if (vsnprintf(result.get(), 512, fmt, list) < 0)
+    if (vsnprintf(result, 512, fmt, list) < 0)
         return;
     va_end(list);
 
