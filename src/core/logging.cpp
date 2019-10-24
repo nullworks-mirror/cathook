@@ -96,7 +96,8 @@ void logging::File(const char *fmt, ...)
 void logging::Shutdown()
 {
 #if ENABLE_LOGGING
-    logging::handle.close();
+    if (logging::handle.is_open())
+        logging::handle.close();
     shut_down = true;
 #endif
 }
