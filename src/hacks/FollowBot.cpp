@@ -34,6 +34,7 @@ static settings::Int afktime{ "follow-bot.afk-time", "15000" };
 static settings::Boolean corneractivate{ "follow-bot.corners", "true" };
 static settings::Int steam_var{ "follow-bot.steamid", "0" };
 static settings::Boolean ignore_textmode{ "follow-bot.ignore-textmode", "true" };
+static settings::Boolean mimic_crouch{ "follow-bot.mimic-crouch", "true" };
 
 namespace nb = hacks::tf2::NavBot;
 
@@ -543,9 +544,10 @@ static void cm()
         return;
     }
     // Crouch logic
-    if (!(CE_INT(followtar, netvar.iFlags) & FL_DUCKING))
+    auto flags = CE_INT(followtar, netvar.iFlags);
+    if (!(flags & FL_DUCKING) || !(flags & FL_ONGROUND))
         crouch_timer.update();
-    else if (crouch_timer.check(500))
+    else if (crouch_timer.check(500) && *mimic_crouch)
         current_user_cmd->buttons |= IN_DUCK;
     // check if target is afk
     if (afk)

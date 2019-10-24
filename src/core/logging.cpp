@@ -29,7 +29,7 @@ void logging::Initialize()
 }
 #endif
 
-static inline void Log(std::unique_ptr<char[]> &result, bool file_only)
+static inline void Log(const char *result, bool file_only)
 {
 #if ENABLE_LOGGING
     if (!logging::handle.is_open())
@@ -41,7 +41,7 @@ static inline void Log(std::unique_ptr<char[]> &result, bool file_only)
     time_info = localtime(&current_time);
     strftime(timeString, sizeof(timeString), "%H:%M:%S", time_info);
 
-    std::string to_log = result.get();
+    std::string to_log = result;
     to_log             = strfmt("[%s] ", timeString).get() + to_log + "\n";
     logging::handle << to_log;
     logging::handle.flush();
@@ -49,7 +49,7 @@ static inline void Log(std::unique_ptr<char[]> &result, bool file_only)
     if (!hack::shutdown)
     {
         if (!file_only && *log_to_console)
-            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: %s\n", result.get());
+            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "CAT: %s\n", result);
     }
 #endif
 #endif

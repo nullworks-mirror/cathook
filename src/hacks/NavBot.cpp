@@ -618,7 +618,7 @@ static slots getBestSlot(slots active_slot)
         return secondary;
     case tf_spy:
     {
-        if (nearest.second > 100 && active_slot == primary)
+        if (nearest.second > 200 && active_slot == primary)
             return active_slot;
         else if (nearest.second >= 250)
             return primary;
@@ -647,7 +647,7 @@ static slots getBestSlot(slots active_slot)
     {
         if (nearest.second <= 400)
             return secondary;
-        else if (nearest.second <= 700)
+        else if (nearest.second <= 500)
             return active_slot;
         else
             return primary;
