@@ -5,7 +5,7 @@
 - A working up-to-date cathook installation
 - C++ knowledge
 - Git knowledge
-- Ability to ask for help (Feel free to create empty pull-request or PM a maintainer in [Telegram](https://t.me/nullifiedcat))
+- Ability to ask for help (Feel free to create empty pull-request or PM a maintainer in [Telegram](https://t.me/nullworks))
 
 ### Setting up cathook
 
@@ -17,7 +17,7 @@ The easiest way to undo this is by running the `developer` script located in `sc
 
 In order to send code back to the official cathook repository, you must first create a copy of cathook on your github account ([fork](https://help.github.com/articles/creating-a-pull-request-from-a-fork/)) and then [create a pull request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/) back to cathook.
 
-All cathook developement is usually performed on the `testing` branch. Please make sure to submit your pull request to that branch. 
+Cathook developement is performed on multiple branches. Changes are then pull requested into master. By default, changes merged into master will not roll out to stable build users unless the `stable` tag is updated.
 
 ### Code-Style
 
