@@ -6,7 +6,6 @@
  */
 
 #include <hacks/hacklist.hpp>
-#include <online/Online.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
 #include "hitrate.hpp"
@@ -32,9 +31,6 @@ DEFINE_HOOKED_METHOD(Paint, void, IEngineVGui *this_, PaintMode_t mode)
     if (mode & PaintMode_t::PAINT_UIPANELS)
     {
         hitrate::Update();
-#if ENABLE_ONLINE
-        online::update();
-#endif
 #if ENABLE_IPC
         static Timer nametimer{};
         if (nametimer.test_and_set(1000 * 10))

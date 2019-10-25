@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <hoovy.hpp>
 #include <playerlist.hpp>
-#include <online/Online.hpp>
 #include "PlayerTools.hpp"
 #include "entitycache.hpp"
 #include "settings/Bool.hpp"
@@ -40,25 +39,6 @@ bool shouldTargetSteamId(unsigned id)
     auto &pl = playerlist::AccessData(id);
     if (playerlist::IsFriendly(pl.state) || (pl.state == playerlist::k_EState::CAT && *ignoreCathook))
         return false;
-#if ENABLE_ONLINE
-    auto *co = online::getUserData(id);
-    if (co)
-    {
-        bool check_verified  = !online_only_verified || co->is_steamid_verified;
-        bool check_anonymous = online_anonymous || !co->is_anonymous;
-
-        if (check_verified && check_anonymous)
-        {
-            if (online_notarget && co->no_target)
-                return false;
-            if (online_friendly_software && co->is_using_friendly_software)
-                return false;
-        }
-        // Always check developer status, no exceptions
-        if (co->is_developer)
-            return false;
-    }
-#endif
     return true;
 }
 bool shouldTarget(CachedEntity *entity)
@@ -85,11 +65,6 @@ bool shouldAlwaysRenderEspSteamId(unsigned id)
     auto &pl = playerlist::AccessData(id);
     if (pl.state != playerlist::k_EState::DEFAULT)
         return true;
-#if ENABLE_ONLINE
-    auto *co = online::getUserData(id);
-    if (co)
-        return true;
-#endif
     return false;
 }
 bool shouldAlwaysRenderEsp(CachedEntity *entity)
@@ -111,17 +86,6 @@ std::optional<colors::rgba_t> forceEspColorSteamId(unsigned id)
     auto pl = playerlist::Color(id);
     if (pl != colors::empty)
         return std::optional<colors::rgba_t>{ pl };
-
-#if ENABLE_ONLINE
-    auto *co = online::getUserData(id);
-    if (co)
-    {
-        if (co->has_color)
-            return std::optional<colors::rgba_t>{ co->color };
-        if (co->rainbow)
-            return std::optional<colors::rgba_t>{ colors::RainbowCurrent() };
-    }
-#endif
 
     return std::nullopt;
 }
