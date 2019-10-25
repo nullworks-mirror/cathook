@@ -5,14 +5,15 @@
             <AutoVariable width="fill" target="antiaim.draw-fakes" label="Draw fakes"/>
             <AutoVariable width="fill" target="antiaim.crouch" label="Fake crouch"/>
             <AutoVariable width="fill" target="antiaim.no-clamp" label="No clamping"/>
-            <AutoVariable width="fill" target="antiaim.spin-speed" label="Spin speed"/>
+            <AutoVariable width="fill" target="misc.fakelag" label="Fakelag" min="0" max="14"/>
+            <AutoVariable width="fill" target="antiaim.spin-speed" label="Spin speed" min="-45" max="45"/>
             <AutoVariable width="fill" target="antiaim.roll" label="Roll"/>
-            <AutoVariable width="fill" target="antiaim.pitch.static" label="Static pitch"/>
-	    <AutoVariable width="fill" target="misc.fakelag" label="Fakelag"/>
+            <AutoVariable width="fill" target="antiaim.pitch.static" label="Custom Pitch"/>
+            <AutoVariable width="fill" target="antiaim.yaw.static" label="Custom Yaw"/>
             <LabeledObject width="fill" label="Pitch mode">
                 <Select target="antiaim.pitch.mode">
                     <Option name="Disable" value="0"/>
-                    <Option name="Static" value="1"/>
+                    <Option name="Custom" value="1"/>
                     <Option name="Jitter" value="2"/>
                     <Option name="Random" value="3"/>
                     <Option name="Flip" value="4"/>
@@ -25,16 +26,15 @@
                     <Option name="Heck" value="11"/>
                 </Select>
             </LabeledObject>
-            <AutoVariable width="fill" target="antiaim.yaw.static" label="Static yaw"/>
             <LabeledObject width="fill" label="Yaw mode">
                 <Select target="antiaim.yaw.mode">
                     <Option name="Disable" value="0"/>
-                    <Option name="Static" value="1"/>
+                    <Option name="Custom" value="1"/>
+                    <Option name="Custom Offset" value="6"/>
                     <Option name="Jitter" value="2"/>
                     <Option name="BigRandom" value="3"/>
                     <Option name="Random" value="4"/>
                     <Option name="Spin" value="5"/>
-                    <Option name="Offset" value="6"/>
                     <Option name="Edge" value="7"/>
                     <Option name="Heck" value="8"/>
                     <Option name="Fake" value="9"/>
