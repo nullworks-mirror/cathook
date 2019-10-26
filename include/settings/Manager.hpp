@@ -30,6 +30,7 @@ public:
     struct VariableDescriptor
     {
         explicit VariableDescriptor(IVariable &variable);
+        VariableDescriptor(IVariable &variable, std::string value);
 
         bool isChanged();
 
@@ -42,6 +43,7 @@ public:
 
 public:
     void add(IVariable &me, std::string name);
+    void add(IVariable &me, std::string name, std::string value);
     IVariable *lookup(const std::string &string);
 
     std::unordered_map<std::string, VariableDescriptor> registered{};
