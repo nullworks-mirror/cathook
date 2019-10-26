@@ -26,4 +26,4 @@ $RUNCMD bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferenc
 # Build cathook
 #
 
-$RUNCMD ./scripts/updater false true
+$RUNCMD ./scripts/updater false true true

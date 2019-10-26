@@ -13,23 +13,30 @@ static settings::Boolean debug{ "anti-anti-aim.debug.enable", "false" };
 
 std::unordered_map<unsigned, brutedata> resolver_map;
 
+static inline void modifyAnlges()
+{
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        auto player = ENTITY(i);
+        if (CE_BAD(player) || !player->m_bAlivePlayer() || !player->m_bEnemy() || !player->player_info.friendsID)
+            continue;
+        auto &data  = resolver_map[player->player_info.friendsID];
+        auto &angle = CE_VECTOR(player, netvar.m_angEyeAngles);
+        angle.x     = data.new_angle.x;
+        angle.y     = data.new_angle.y;
+    }
+}
+
 void frameStageNotify(ClientFrameStage_t stage)
 {
+#if !ENABLE_TEXTMODE
     if (!enable || !g_IEngine->IsInGame())
         return;
     if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
     {
-        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
-        {
-            auto player = ENTITY(i);
-            if (CE_BAD(player) || !player->m_bAlivePlayer() || !player->m_bEnemy() || !player->player_info.friendsID)
-                continue;
-            auto &data  = resolver_map[player->player_info.friendsID];
-            auto &angle = CE_VECTOR(player, netvar.m_angEyeAngles);
-            angle.x     = data.new_angle.x;
-            angle.y     = data.new_angle.y;
-        }
+        modifyAnlges();
     }
+#endif
 }
 
 static std::array<float, 5> yaw_resolves{ 0.0f, 180.0f, 90.0f, -90.0f, -180.0f };
@@ -152,7 +159,7 @@ static void hook()
                         // Pitch Fix
                         if (!strcmp(name, "m_angEyeAngles[0]"))
                         {
-                            original_ptrX = &pProp2->m_ProxyFn;
+                            original_ptrX     = &pProp2->m_ProxyFn;
                             original_ProxyFnX = pProp2->m_ProxyFn;
                             pProp2->m_ProxyFn = pitchHook;
                         }
@@ -181,5 +188,8 @@ static void shutdown()
 static InitRoutine init([]() {
     hook();
     EC::Register(EC::Shutdown, shutdown, "antiantiaim_shutdown");
+#if ENABLE_TEXTMODE
+    EC::Register(EC::CreateMove, modifyAnlges, "cm_antiantiaim");
+#endif
 });
 } // namespace hacks::shared::anti_anti_aim

@@ -1,33 +1,11 @@
 #!/usr/bin/env bash
 
+# $3 Init
+
 set -e
 
 configfile="./scripts/updater-preferences"
 . ./scripts/config.shlib
-
-# Migrate pre config lib configs
-exists=true
-cfg_haskey $configfile version || exists=false
-if [ "$exists" == false ]; then
-    if [ -f $configfile ]; then
-        value=$(cat $configfile)
-        rm $configfile
-    fi  
-    echo "" > $configfile
-    cfg_write $configfile version 1
-    if [ "$(git rev-parse --is-shallow-repository)" == "true" ]; then
-        cfg_write $configfile update_channel stable
-    else
-        cfg_write $configfile update_channel developer
-    fi
-    if [ -f $configfile ]; then
-        if [ "$value" == true ] || [ "$value" == false ]; then 
-            cfg_write $configfile autoupdater $value
-        fi
-    fi
-fi
-
-version="$(cfg_read $configfile version)"
 
 tui=true
 if [ ! -x "$(command -v dialog)" ]; then
@@ -39,17 +17,25 @@ if [ ! -t 0 ]; then
 fi
 
 #
+# Init goes here
+#
+
+if [ "$3" == true ]; then
+    cfg_write $configfile update_channel stable
+    cfg_write $configfile version 3
+fi
+
+version="$(cfg_read $configfile version)"
+
+
+#
 # Migrations go here
 #
 
 exists=true
-cfg_haskey $configfile update_channel || exists=false
-if [ "$exists" == false ]; then
-    cfg_write $configfile update_channel stable
-fi
 
-if [ "$version" == 1 ]; then
-    cfg_write $configfile version 2
+if [ "$version" == 1 ] || [ "$version" == 2 ]; then
+    cfg_write $configfile version 3
     if [ -d "./build/CMakeFiles/cathook.dir" ]; then
         rm -r ./build/CMakeFiles/cathook.dir
     fi

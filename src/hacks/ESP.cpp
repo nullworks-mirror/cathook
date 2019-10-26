@@ -6,7 +6,6 @@
  */
 
 #include <hacks/ESP.hpp>
-#include <online/Online.hpp>
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
 #include "common.hpp"
@@ -73,10 +72,6 @@ static settings::Boolean proj_enemy{ "esp.projectile.enemy-only", "true" };
 static settings::Boolean entity_info{ "esp.debug.entity", "false" };
 static settings::Boolean entity_model{ "esp.debug.model", "false" };
 static settings::Boolean entity_id{ "esp.debug.id", "true" };
-
-static settings::Boolean online_support{ "esp.online.enable", "true" };
-static settings::Boolean online_groups{ "esp.online.groups", "true" };
-static settings::Boolean online_software{ "esp.online.software", "true" };
 
 static settings::Boolean v9mode{ "esp.v952-mode", "false" };
 
@@ -1103,17 +1098,9 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
         if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
             return;
 
-#if ENABLE_ONLINE
-        online::user_data *data = online_support ? online::getUserData(info.friendsID) : nullptr;
-#endif
-
         // TODO, check if u can just use "ent->m_bEnemy()" instead of m_iTeam
         // Legit mode handling
-        if (legit && ent->m_iTeam() != g_pLocalPlayer->team && playerlist::IsDefault(info.friendsID)
-#if ENABLE_ONLINE
-            && !(data)
-#endif
-        )
+        if (legit && ent->m_iTeam() != g_pLocalPlayer->team && playerlist::IsDefault(info.friendsID))
         {
             if (IsPlayerInvisible(ent))
                 return; // Invis check
@@ -1124,25 +1111,6 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                         // (unsigned)v_iLegitSeenTicks->GetInt())
             // return;
         }
-
-#if ENABLE_ONLINE
-        if (data)
-        {
-            AddEntityString(ent, "CO: " + data->username, colors::yellow);
-            if (data->is_steamid_verified)
-                AddEntityString(ent, "Verified SteamID", colors::green);
-            if (online_groups)
-                for (auto &s : data->shown_groups)
-                    AddEntityString(ent, s, colors::orange);
-            if (online_software && data->has_software)
-            {
-                if (data->is_using_friendly_software)
-                    AddEntityString(ent, "Software: " + data->software_name);
-                else
-                    AddEntityString(ent, "Software: " + data->software_name, colors::red);
-            }
-        }
-#endif
 
         // Powerup handling
         if (powerup_esp)

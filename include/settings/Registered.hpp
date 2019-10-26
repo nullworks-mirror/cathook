@@ -10,6 +10,7 @@ namespace settings
 {
 
 void registerVariable(IVariable &variable, std::string name);
+void registerVariable(IVariable &variable, std::string name, std::string value);
 
 template <typename T> class RegisteredVariableProxy : public Variable<T>
 {
@@ -24,7 +25,7 @@ public:
     RegisteredVariableProxy(std::string name, std::string value)
     {
         this->fromString(value);
-        registerVariable(*this, name);
+        registerVariable(*this, name, value);
     }
 };
 

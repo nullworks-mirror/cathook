@@ -7,6 +7,7 @@
 #include <MiscTemporary.hpp>
 #include "HookedMethods.hpp"
 #include "CatBot.hpp"
+#include "drawmgr.hpp"
 
 static settings::Int software_cursor_mode{ "visual.software-cursor-mode", "0" };
 static settings::Boolean debug_log_panel_names{ "debug.log-panels", "false" };

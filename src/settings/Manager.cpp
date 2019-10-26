@@ -24,6 +24,16 @@ void Manager::add(IVariable &me, std::string name)
     registered.emplace(name, me);
 }
 
+void Manager::add(IVariable &me, std::string name, std::string value)
+{
+    if (registered.find(name) != registered.end())
+    {
+        logging::Info(("Double registering variable: " + name).c_str());
+        throw std::runtime_error("Double registering variable: " + name);
+    }
+    registered.emplace(name, Manager::VariableDescriptor{ me, value });
+}
+
 IVariable *Manager::lookup(const std::string &string)
 {
     auto it = registered.find(string);
@@ -36,6 +46,12 @@ Manager::VariableDescriptor::VariableDescriptor(IVariable &variable) : variable(
 {
     type     = variable.getType();
     defaults = variable.toString();
+}
+
+Manager::VariableDescriptor::VariableDescriptor(IVariable &variable, std::string value) : variable(variable)
+{
+    type     = variable.getType();
+    defaults = value;
 }
 
 bool Manager::VariableDescriptor::isChanged()

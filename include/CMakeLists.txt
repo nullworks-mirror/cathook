@@ -7,7 +7,6 @@ add_subdirectory(hacks)
 add_subdirectory(hooks)
 add_subdirectory(reclasses)
 add_subdirectory(sdk)
-add_subdirectory(online)
 add_subdirectory(settings)
 
 if(EnableVisuals)
