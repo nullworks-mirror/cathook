@@ -2,6 +2,7 @@
     <Box padding="12 6 6 6" width="content" height="content" name="Aimbot">
         <List width="150">
             <AutoVariable width="fill" target="aimbot.enable" label="Enable Aimbot"/>
+            <AutoVariable width="fill" target="aimbot.aimkey.button" label="Aim Key"/>
             <LabeledObject width="fill" label="Aim Key Mode">
                 <Select target="aimbot.aimkey.mode">
                     <Option name="Disable" value="0"/>
@@ -10,12 +11,11 @@
                     <Option name="Toggle" value="3"/>
                 </Select>
             </LabeledObject>
-            <AutoVariable width="fill" target="aimbot.aimkey.button" label="Aim Key"/>
             <AutoVariable width="fill" target="aimbot.silent" label="Silent"/>
-            <AutoVariable width="fill" target="aimbot.fov-circle.enable" label="FOV Circle"/>
+            <AutoVariable width="fill" target="aimbot.slow" label="Slow Aimbot" min="0" max="30"/>
             <AutoVariable width="fill" target="aimbot.fov" label="FOV"/>
-            <AutoVariable width="fill" target="aimbot.fov-circle.opacity" label="FOV Opacity"/>
-            <AutoVariable width="fill" target="aimbot.slow" label="Slow Aimbot"/>
+            <AutoVariable width="fill" target="aimbot.fov-circle.enable" label="FOV Circle"/>
+            <AutoVariable width="fill" target="aimbot.fov-circle.opacity" label="FOV Opacity" min="0" max="1"/>
             <AutoVariable width="fill" target="aimbot.can-shoot-only" label="Only Shoot When Able"/>
             <AutoVariable width="fill" target="aimbot.miss-chance" label="Miss chance"/>
             <AutoVariable width="fill" target="aimbot.extrapolate" label="Extrapolate"/>
