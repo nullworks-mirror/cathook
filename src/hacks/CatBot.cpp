@@ -741,7 +741,8 @@ static void cm()
         reportall();
 }
 
-static Timer autojointeam{};
+static Timer unstuck{};
+static int unstucks;
 static Timer report_timer2{};
 void update()
 {
@@ -775,9 +776,19 @@ void update()
         return;
 
     if (LOCAL_E->m_bAlivePlayer())
-        autojointeam.update();
-    if (autojointeam.test_and_set(60000) && !LOCAL_E->m_bAlivePlayer())
-        hack::command_stack().push("autoteam; join_class sniper");
+    {
+        unstuck.update();
+        unstucks = 0;
+    }
+    if (unstuck.test_and_set(10000))
+    {
+        unstucks++;
+        // Send menuclosed to tell the server that we want to respawn
+        hack::command_stack().push("menuclosed");
+        // If that didnt work, force pick a team and class
+        if (unstucks > 3)
+            hack::command_stack().push("autoteam; join_class sniper");
+    }
 
     if (micspam)
     {
