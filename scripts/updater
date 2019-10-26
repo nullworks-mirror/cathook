@@ -2,6 +2,11 @@
 
 # $1 Auto updater
 # $2 Disable TUI
+# $3 Init
+
+ARG1=${1:-false}
+ARG2=${2:-false}
+ARG3=${3:-false}
 
 set -e
 
@@ -31,7 +36,7 @@ if [ "$exists" == true ]; then
     update_channel="$(cfg_read $configfile update_channel)"
 fi
 if [ "$update_channel" != "developer" ]; then
-    ./scripts/migrations "$@" || exit 0
+    ./scripts/migrations $ARG1 $ARG2 false || exit 0
 fi
 
 # Check if all required packages are installed
@@ -41,7 +46,7 @@ tui=true
 if [ ! -t 0 ]; then
     tui=false
 fi
-if [ "$2" == "true" ]; then
+if [ "$ARG2" == "true" ]; then
     tui=false
 fi
 if [ ! -x "$(command -v dialog)" ] && [ "$tui" == true ]; then
@@ -66,7 +71,7 @@ fi
 
 exists=true
 cfg_haskey $configfile autoupdater || exists=false
-if [ "$1" == "true" ]; then
+if [ "$ARG1" == "true" ]; then
     if [ $exists == false ] || [ "$(cfg_read $configfile autoupdater)" == false ]; then
         exit 0;
     fi
@@ -98,7 +103,7 @@ function performupdate() {
     
     # Run migrations 
     if [ "$update_channel" != "developer" ]; then
-        ./scripts/migrations "$@" || exit 0
+        ./scripts/migrations $ARG1 $ARG2 $ARG3 || exit 0
     fi
     
     #submodules
