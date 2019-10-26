@@ -36,18 +36,18 @@ CatCommand join("mm_join", "Join mm Match", []() {
 bool replaced = false;
 namespace hooked_methods
 {
-DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, unsigned int panel, bool force, bool allow_force)
+DEFINE_HOOKED_METHOD(PaintTraverse, void, vgui::IPanel *this_, vgui::VPANEL panel, bool force, bool allow_force)
 {
     if (!isHackActive())
         return original::PaintTraverse(this_, panel, force, allow_force);
 
-    static bool textures_loaded            = false;
-    static unsigned long panel_scope       = 0;
-    static unsigned long FocusOverlayPanel = 0;
-    static unsigned long motd_panel        = 0;
-    static unsigned long motd_panel_sd     = 0;
-    static unsigned long health_panel      = 0;
-    static bool call_default               = true;
+    static bool textures_loaded           = false;
+    static vgui::VPANEL panel_scope       = 0;
+    static vgui::VPANEL FocusOverlayPanel = 0;
+    static vgui::VPANEL motd_panel        = 0;
+    static vgui::VPANEL motd_panel_sd     = 0;
+    static vgui::VPANEL health_panel      = 0;
+    static bool call_default              = true;
     static bool cur;
     static ConVar *software_cursor = g_ICvar->FindVar("cl_software_cursor");
     static const char *name;
