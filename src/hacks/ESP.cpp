@@ -73,10 +73,6 @@ static settings::Boolean entity_info{ "esp.debug.entity", "false" };
 static settings::Boolean entity_model{ "esp.debug.model", "false" };
 static settings::Boolean entity_id{ "esp.debug.id", "true" };
 
-static settings::Boolean online_support{ "esp.online.enable", "true" };
-static settings::Boolean online_groups{ "esp.online.groups", "true" };
-static settings::Boolean online_software{ "esp.online.software", "true" };
-
 static settings::Boolean v9mode{ "esp.v952-mode", "false" };
 
 // Unknown

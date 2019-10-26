@@ -21,8 +21,6 @@ enum class IgnoreReason
     IS_HOOVY,
     IS_TAUNTING,
     LOCAL_PLAYER_LIST,
-    ONLINE_NO_TARGET,
-    ONLINE_FRIENDLY_SOFTWARE,
     OTHER
 };
 

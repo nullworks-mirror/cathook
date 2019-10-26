@@ -19,11 +19,6 @@ static settings::Boolean taunting{ "player-tools.ignore.taunting", "true" };
 static settings::Boolean hoovy{ "player-tools.ignore.hoovy", "true" };
 static settings::Boolean ignoreCathook{ "player-tools.ignore.cathook", "true" };
 
-static settings::Boolean online_notarget{ "player-tools.ignore.online.notarget", "true" };
-static settings::Boolean online_friendly_software{ "player-tools.ignore.online.friendly-software", "true" };
-static settings::Boolean online_only_verified{ "player-tools.ignore.online.only-verified-accounts", "true" };
-static settings::Boolean online_anonymous{ "player-tools.ignore.online.anonymous", "true" };
-
 static std::unordered_map<unsigned, unsigned> betrayal_list{};
 
 static CatCommand forgive_all("pt_forgive_all", "Clear betrayal list", []() { betrayal_list.clear(); });
