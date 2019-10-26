@@ -231,10 +231,15 @@ void CreateMove()
 {
     if (gc_queue.size() && gc_timer.test_and_set(3000))
     {
-        queue_struct item = gc_queue.at(gc_queue.size() - 1);
-        auto invmng       = re::CTFInventoryManager::GTFInventoryManager();
-        invmng->EquipItemInLoadout(item.clazz, item.slot, item.uuid);
-        gc_queue.pop_back();
+        int i = 0;
+        while (gc_queue.size() && i < 10)
+        {
+            queue_struct item = gc_queue.at(gc_queue.size() - 1);
+            auto invmng       = re::CTFInventoryManager::GTFInventoryManager();
+            invmng->EquipItemInLoadout(item.clazz, item.slot, item.uuid);
+            gc_queue.pop_back();
+            i++;
+        }
     }
     if (!hat_troll)
         return;
