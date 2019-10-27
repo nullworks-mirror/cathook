@@ -5,23 +5,6 @@ RUNCMD="sudo -u $RUNUSER"
 
 set -e
 
-# install all dependencies
-./scripts/dependencycheck
-
-#
-# Update cathook
-#
-if [ ! -d "./.git" ]; then
-    $RUNCMD git init
-    $RUNCMD git remote add origin https://github.com/nullworks/cathook
-fi
-
-#
-# Set config version for update script
-#
-
-$RUNCMD bash -c ". ./scripts/config.shlib; cfg_write ./scripts/updater-preferences version 2"
-
 #
 # Build cathook
 #
