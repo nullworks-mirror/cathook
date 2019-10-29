@@ -62,8 +62,6 @@ std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
 
 void ProcessAchievement(IGameEvent *ach)
 {
-    if (CE_BAD(LOCAL_E))
-        return;
     int player_idx  = ach->GetInt("player", 0xDEAD);
     int achievement = ach->GetInt("achievement", 0xDEAD);
     if (player_idx != 0xDEAD && (achievement == CAT_IDENTIFY || achievement == CAT_REPLY))
@@ -173,8 +171,8 @@ static InitRoutine run_identify([]() {
                 sendIdentifyMessage(true);
                 queue_ca8 = false;
             }
-            // 5 minutes between each identify seems ok?
-            if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(1000 * 60 * 5))
+            // 2 minutes between each identify seems ok?
+            if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(1000 * 60 * 2))
                 return;
             sendIdentifyMessage(false);
         },
