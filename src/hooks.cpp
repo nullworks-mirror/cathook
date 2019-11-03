@@ -102,6 +102,7 @@ VMTHook baseclientstate8{};
 VMTHook clientmode{};
 VMTHook panel{};
 VMTHook client{};
+VMTHook inventory{};
 VMTHook chathud{};
 VMTHook engine{};
 VMTHook netchannel{};
