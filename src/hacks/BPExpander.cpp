@@ -5,14 +5,15 @@
 #include "reclasses.hpp"
 #include "HookedMethods.hpp"
 
+static settings::Boolean enabled{ "misc.backpack-expander.enabled", "false" };
+static settings::Int slot_count{ "misc.backpack-expander.slot-count", "3000" };
 namespace hooked_methods
 {
-
 // Note that this is of the type CTFPlayerInventory *
 DEFINE_HOOKED_METHOD(GetMaxItemCount, int, int *)
 {
     // Max backpack slots ez gg
-    return 3000;
+    return *slot_count;
 }
 } // namespace hooked_methods
 
@@ -22,6 +23,8 @@ namespace hacks::tf2::backpack_expander
 
 void Paint()
 {
+    if (!enabled)
+        return;
     if (hook_cooldown.test_and_set(1000))
     {
         static auto invmng = re::CTFInventoryManager::GTFInventoryManager();
@@ -43,6 +46,10 @@ static InitRoutine init([]() {
     EC::Register(EC::Paint, Paint, "bpexpander_paint");
     EC::Register(
         EC::Shutdown, []() { hooks::inventory.Release(); }, "backpack_expander_shutdown");
+    enabled.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (!after)
+            hooks::inventory.Release();
+    });
 #endif
 });
 } // namespace hacks::tf2::backpack_expander
