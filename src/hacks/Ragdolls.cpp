@@ -103,7 +103,7 @@ bool ragdollKillByLocal(void *ragdoll)
 void overrideGib(const CRecvProxyData *data, void *structure, void *out)
 {
     auto gib = reinterpret_cast<bool *>(out);
-    if (static_cast<int>(mode) == RagdollOverride_t::GIB && (!static_cast<bool>(only_local) || ragdollKillByLocal(structure)))
+    if (*mode == RagdollOverride_t::GIB && (!*only_local || ragdollKillByLocal(structure)))
         *gib = true;
     else
         *gib = data->m_Value.m_Int;
@@ -115,7 +115,7 @@ void overrideGib(const CRecvProxyData *data, void *structure, void *out)
 void overrideBurning(const CRecvProxyData *data, void *structure, void *out)
 {
     auto burning = reinterpret_cast<bool *>(out);
-    if (static_cast<int>(mode) == RagdollOverride_t::BURNING && (!static_cast<bool>(only_local) || ragdollKillByLocal(structure)))
+    if (*mode == RagdollOverride_t::BURNING && (!*only_local || ragdollKillByLocal(structure)))
         *burning = true;
     else
         *burning = data->m_Value.m_Int;
@@ -127,7 +127,7 @@ void overrideBurning(const CRecvProxyData *data, void *structure, void *out)
 void overrideElectrocuted(const CRecvProxyData *data, void *structure, void *out)
 {
     auto electrocuted = reinterpret_cast<bool *>(out);
-    if (static_cast<int>(mode) == RagdollOverride_t::ELECTROCUTED && (!static_cast<bool>(only_local) || ragdollKillByLocal(structure)))
+    if (*mode == RagdollOverride_t::ELECTROCUTED && (!*only_local || ragdollKillByLocal(structure)))
         *electrocuted = true;
     else
         *electrocuted = data->m_Value.m_Int;
@@ -139,7 +139,7 @@ void overrideElectrocuted(const CRecvProxyData *data, void *structure, void *out
 void overrideAsh(const CRecvProxyData *data, void *structure, void *out)
 {
     auto ash = reinterpret_cast<bool *>(out);
-    if (static_cast<int>(mode) == RagdollOverride_t::ASH && (!static_cast<bool>(only_local) || ragdollKillByLocal(structure)))
+    if (*mode == RagdollOverride_t::ASH && (!*only_local || ragdollKillByLocal(structure)))
         *ash = true;
     else
         *ash = data->m_Value.m_Int;
@@ -151,7 +151,7 @@ void overrideAsh(const CRecvProxyData *data, void *structure, void *out)
 void overrideGold(const CRecvProxyData *data, void *structure, void *out)
 {
     auto gold = reinterpret_cast<bool *>(out);
-    if (static_cast<int>(mode) == RagdollOverride_t::GOLD && (!static_cast<bool>(only_local) || ragdollKillByLocal(structure)))
+    if (*mode == RagdollOverride_t::GOLD && (!*only_local || ragdollKillByLocal(structure)))
         *gold = true;
     else
         *gold = data->m_Value.m_Int;
@@ -163,7 +163,7 @@ void overrideGold(const CRecvProxyData *data, void *structure, void *out)
 void overrideIce(const CRecvProxyData *data, void *structure, void *out)
 {
     auto ice = reinterpret_cast<bool *>(out);
-    if (static_cast<int>(mode) == RagdollOverride_t::ICE && (!static_cast<bool>(only_local) || ragdollKillByLocal(structure)))
+    if (*mode == RagdollOverride_t::ICE && (!*only_local || ragdollKillByLocal(structure)))
         *ice = true;
     else
         *ice = data->m_Value.m_Int;
