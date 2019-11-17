@@ -38,7 +38,7 @@ void BeginConVars()
                                      "YOU INJECT TEXTMODE CATHOOK\n"
                                      "\n"
                                      "engine_no_focus_sleep 0\n"
-                                     "hud_fastswitch\n"
+                                     "hud_fastswitch 1\n"
                                      "tf_medigun_autoheal 1\n"
                                      "fps_max 67\n"
                                      "cat_ipc_connect";
