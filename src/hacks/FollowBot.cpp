@@ -35,6 +35,7 @@ static settings::Boolean corneractivate{ "follow-bot.corners", "true" };
 static settings::Int steam_var{ "follow-bot.steamid", "0" };
 static settings::Boolean ignore_textmode{ "follow-bot.ignore-textmode", "true" };
 static settings::Boolean mimic_crouch{ "follow-bot.mimic-crouch", "true" };
+static settings::Boolean autozoom_if_idle{ "follow-bot.autozoom-if-idle", "true" };
 
 namespace nb = hacks::tf2::NavBot;
 
@@ -82,6 +83,30 @@ static Timer lastTaunt{}; // time since taunt was last executed, used to avoid k
 static Timer lastJump{};
 static Timer crouch_timer{};                          // Mimic crouch
 static std::array<Timer, PLAYER_ARRAY_SIZE> afkTicks; // for how many ms the player hasn't been moving
+
+bool isIdle()
+{
+    if (!enable || !autozoom_if_idle || !follow_target)
+        return false;
+    float follow_dist = *follow_distance;
+#if ENABLE_IPC
+    if (ipc::peer)
+        follow_dist += *additional_distance * ipc::peer->client_id;
+#endif
+
+    auto target = ENTITY(follow_target);
+    if (CE_BAD(target))
+        return false;
+    auto tar_orig        = target->m_vecOrigin();
+    auto loc_orig        = LOCAL_E->m_vecOrigin();
+    float dist_to_target = loc_orig.DistTo(tar_orig);
+
+    // If we are zoomed, we should stop zooming a bit later to avoid zooming in again in a few CMs
+    float multiplier = (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) ? 1.05f : 0.95f;
+    follow_dist      = std::clamp(follow_dist * 1.5f * multiplier, 200.0f * multiplier, std::max(500.0f * multiplier, follow_dist));
+
+    return dist_to_target <= follow_dist;
+}
 
 static void checkAFK()
 {
@@ -598,12 +623,12 @@ static void cm()
 
     // Follow the crumbs when too far away, or just starting to follow
 #if ENABLE_IPC
-    float follow_dist = (float) follow_distance;
+    float follow_dist = *follow_distance;
     if (ipc::peer)
-        follow_dist += (float) additional_distance * ipc::peer->client_id;
+        follow_dist += *additional_distance * ipc::peer->client_id;
     if (dist_to_target > follow_dist)
 #else
-    if (dist_to_target > (float) follow_distance)
+    if (dist_to_target > *follow_distance)
 #endif
     {
         // Check for jump

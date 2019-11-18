@@ -16,6 +16,7 @@
 #include "MiscTemporary.hpp"
 #include <targethelper.hpp>
 #include "hitrate.hpp"
+#include "FollowBot.hpp"
 
 #if ENABLE_VISUALS
 #ifndef FEATURE_EFFECTS_DISABLED
@@ -112,6 +113,41 @@ static bool CarryingHeatmaker()
     return CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 752;
 }
 
+static void doAutoZoom(bool target_found)
+{
+    bool isIdle = target_found ? false : hacks::shared::followbot::isIdle();
+
+    // Keep track of our zoom time
+    static Timer zoomTime{};
+
+    // Minigun spun up handler
+    if (auto_spin_up && g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
+    {
+        if (target_found)
+            zoomTime.update();
+        if (isIdle || !zoomTime.check(5000))
+        {
+            current_user_cmd->buttons |= IN_ATTACK2;
+        }
+        return;
+    }
+
+    if (auto_zoom && g_pLocalPlayer->holding_sniper_rifle && (target_found || isIdle))
+    {
+        if (target_found)
+            zoomTime.update();
+        if (not g_pLocalPlayer->bZoomed)
+            current_user_cmd->buttons |= IN_ATTACK2;
+    }
+    else if (!target_found)
+    {
+        // Auto-Unzoom
+        if (auto_unzoom)
+            if (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed && zoomTime.check(3000))
+                current_user_cmd->buttons |= IN_ATTACK2;
+    }
+}
+
 // Current Entity
 int target_eid{ 0 };
 CachedEntity *target      = 0;
@@ -124,8 +160,6 @@ float cur_proj_grav{ 0.0f };
 // If slow aimbot allows autoshoot
 bool slow_can_shoot = false;
 bool projectileAimbotRequired;
-// Keep track of our zoom time
-Timer zoomTime{};
 // Track Backtrack tick for Entity
 static std::pair<int, int> good_tick = { -1, -1 };
 
@@ -139,14 +173,8 @@ static void CreateMove()
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return;
-    // Auto-Unzoom
-    if (auto_unzoom)
-        if (g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed && zoomTime.test_and_set(3000))
-            current_user_cmd->buttons |= IN_ATTACK2;
 
-    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-        if (auto_spin_up && CE_INT(LOCAL_E, netvar.m_iAmmo + 4) != 0 && !zoomTime.check(1000))
-            current_user_cmd->buttons |= IN_ATTACK2;
+    doAutoZoom(false);
 
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun) && CE_INT(LOCAL_E, netvar.m_iAmmo + 4) == 0)
         return;
@@ -178,39 +206,14 @@ static void CreateMove()
     CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
     if (CE_BAD(target_entity) || !foundTarget)
         return;
+
     // Auto-zoom
-    IF_GAME(IsTF())
-    {
-        if (auto_zoom)
-        {
-            if (g_pLocalPlayer->holding_sniper_rifle)
-            {
-                zoomTime.update();
-                if (not g_pLocalPlayer->bZoomed)
-                    current_user_cmd->buttons |= IN_ATTACK2;
-            }
-        }
-    }
+    doAutoZoom(true);
+
     // If zoomed only is on, check if zoomed
     if (zoomed_only && g_pLocalPlayer->holding_sniper_rifle)
     {
         if (!g_pLocalPlayer->bZoomed && !(current_user_cmd->buttons & IN_ATTACK))
-            return;
-    }
-    // Minigun spun up handler
-    if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFMinigun))
-    {
-        int weapon_state = CE_INT(g_pLocalPlayer->weapon(), netvar.iWeaponState);
-        // If user setting for autospin isnt true, then we check if minigun
-        // is already zoomed
-        if ((weapon_state == MinigunState_t::AC_STATE_IDLE || weapon_state == MinigunState_t::AC_STATE_STARTFIRING) && !auto_spin_up)
-            return;
-        if (auto_spin_up)
-        {
-            zoomTime.update();
-            current_user_cmd->buttons |= IN_ATTACK2;
-        }
-        if (!(current_user_cmd->buttons & (IN_ATTACK2 | IN_ATTACK)))
             return;
     }
     if (!g_IEntityList->GetClientEntity(target_entity->m_IDX))
