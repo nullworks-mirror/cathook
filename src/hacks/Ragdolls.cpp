@@ -31,7 +31,7 @@ public:
     }
     void setHook(RecvVarProxyFn new_fn)
     {
-        if (hooked)
+        if (!prop || hooked)
             return;
         hooked          = true;
         original_fn     = prop->m_ProxyFn;
@@ -39,7 +39,7 @@ public:
     }
     void restore()
     {
-        if (hooked)
+        if (prop && hooked)
         {
             prop->m_ProxyFn = original_fn;
             hooked          = false;
