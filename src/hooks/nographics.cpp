@@ -102,6 +102,8 @@ static bool blacklist_file(const char *&filename)
 
         return true;
     }
+    if (std::strstr(filename, "sound.cache") || std::strstr(filename, "tf2_sound") || std::strstr(filename, "game_sounds"))
+        return false;
     if (!std::strncmp(filename, "sound/player/footsteps", 22))
         return false;
     if (!std::strcmp(ext_p, ".mdl"))
