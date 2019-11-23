@@ -122,6 +122,7 @@ void NetVars::Init()
         this->m_iHealing_Resource           = gNetvars.get_offset("DT_TFPlayerResource", "m_iHealing");
         this->m_iHealingAssist_Resource     = gNetvars.get_offset("DT_TFPlayerResource", "m_iHealingAssist");
         this->m_iPlayerLevel_Resource       = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerLevel");
+        this->m_iPlayerIndex                = gNetvars.get_offset("DT_TFRagdoll", "m_iPlayerIndex");
     }
     IF_GAME(IsTF2C())
     {
