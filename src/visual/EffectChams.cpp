@@ -343,7 +343,7 @@ void EffectChams::Render(int x, int y, int w, int h)
 {
 #if !ENFORCE_STREAM_SAFETY
     PROF_SECTION(DRAW_chams);
-    if (!isHackActive())
+    if (!isHackActive() || disable_visuals)
         return;
     if (!effect_chams::enable)
         return;

@@ -448,7 +448,7 @@ void EffectGlow::Render(int x, int y, int w, int h)
 #if !ENFORCE_STREAM_SAFETY
     if (!enable)
         return;
-    if (!isHackActive() || (clean_screenshots && g_IEngine->IsTakingScreenshot()) || g_Settings.bInvalid)
+    if (!isHackActive() || (clean_screenshots && g_IEngine->IsTakingScreenshot()) || g_Settings.bInvalid || disable_visuals)
         return;
     static ITexture *orig;
     static IClientEntity *ent;
