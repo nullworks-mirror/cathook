@@ -56,6 +56,8 @@
             <AutoVariable width="fill" target="misc.autodisguise" label="Autodisguise"/>
             <AutoVariable width="fill" target="cat-bot.anti-motd" label="Anti MOTD"/>
             <AutoVariable width="fill" target="cat-bot.autovote-map" label="Autovote for current map"/>
+            <AutoVariable width="fill" target="noisemaker-spam.enable" label="Noisemaker Spam"/>
+            <AutoVariable width="fill" target="misc.auto-noisemaker" label="Auto Equip and Unlock Noisemakers"/>
         </List>
     </Box>
 </Tab>
