@@ -125,7 +125,7 @@ static void doAutoZoom(bool target_found)
     {
         if (target_found)
             zoomTime.update();
-        if (isIdle || !zoomTime.check(5000))
+        if (isIdle || !zoomTime.check(3000))
         {
             current_user_cmd->buttons |= IN_ATTACK2;
         }
