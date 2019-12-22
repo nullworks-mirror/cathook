@@ -105,23 +105,33 @@ void increaseBruteNum(int idx)
 
 static void pitchHook(const CRecvProxyData *pData, void *pStruct, void *pOut)
 {
-    float *ang = (float *) pOut;
-    *ang       = pData->m_Value.m_Float;
+    float flPitch      = pData->m_Value.m_Float;
+    float *flPitch_out = (float *) pOut;
+
+    if (!enable)
+    {
+        *flPitch_out = flPitch;
+        return;
+    }
 
     auto client_ent   = (IClientEntity *) (pStruct);
     CachedEntity *ent = ENTITY(client_ent->entindex());
     if (CE_GOOD(ent))
-        *ang = resolveAnglePitch(pData->m_Value.m_Float, resolver_map[ent->player_info.friendsID]);
+        *flPitch_out = resolveAnglePitch(flPitch, resolver_map[ent->player_info.friendsID]);
 }
 
 static void yawHook(const CRecvProxyData *pData, void *pStruct, void *pOut)
 {
-    float flYaw = pData->m_Value.m_Float;
-
+    float flYaw      = pData->m_Value.m_Float;
     float *flYaw_out = (float *) pOut;
 
-    auto client_ent = (IClientEntity *) (pStruct);
+    if (!enable)
+    {
+        *flYaw_out = flYaw;
+        return;
+    }
 
+    auto client_ent   = (IClientEntity *) (pStruct);
     CachedEntity *ent = ENTITY(client_ent->entindex());
     if (CE_GOOD(ent))
         *flYaw_out = resolveAngleYaw(flYaw, resolver_map[ent->player_info.friendsID]);
