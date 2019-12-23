@@ -35,6 +35,11 @@ static settings::Int equip_secondary{ "achievement.equip-secondary", "0" };
 static settings::Int equip_melee{ "achievement.equip-melee", "0" };
 static settings::Int equip_pda2{ "achievement.equip-pda2", "0" };
 static settings::Boolean hat_troll{ "misc.nohatsforyou", "false" };
+#if ENABLE_TEXTMODE
+static settings::Boolean auto_noisemaker{ "misc.auto-noisemaker", "false" };
+#else
+static settings::Boolean auto_noisemaker{ "misc.auto-noisemaker", "true" };
+#endif
 
 bool checkachmngr()
 {
@@ -182,6 +187,7 @@ static CatCommand get_sniper_items("achievement_sniper", "Get all sniper achieve
 });
 
 static Timer accept_time{};
+static Timer equip_noisemaker{};
 static Timer cooldowm{};
 static Timer cooldown_2{};
 static CatCommand get_best_hats("achievement_cathats", "Get and equip the bencat hats", []() {
@@ -211,6 +217,13 @@ bool equip_item(int clazz, int slot, int id)
         return true;
     }
     return false;
+}
+bool equip_action_item(int action_item, std::pair<int, int> classes)
+{
+    for (int i = classes.first; i <= classes.second; i++)
+        if (!equip_item(i, 9, action_item))
+            return false;
+    return true;
 }
 
 bool equip_hats_fn(std::vector<int> hats, std::pair<int, int> classes)
@@ -310,6 +323,28 @@ void Paint()
     if (!accept_time.check(5000) && cooldowm.test_and_set(500))
         g_IEngine->ClientCmd_Unrestricted("cl_trigger_first_notification");
 
+    // Noisemaker code
+    if (auto_noisemaker && equip_noisemaker.test_and_set(60000))
+    {
+        // Inventory Manager
+        auto invmng = re::CTFInventoryManager::GTFInventoryManager();
+        // Inventory
+        auto inv = invmng->GTFPlayerInventory();
+
+        // No Noisemaker in inventory?
+        if (!inv->GetFirstItemOfItemDef(673) && !inv->GetFirstItemOfItemDef(536))
+            accept_time.update();
+        else
+        {
+            bool success = equip_action_item(673, { tf_scout, tf_engineer });
+            if (!success)
+            {
+                success = equip_action_item(536, { tf_scout, tf_engineer });
+                if (!success)
+                    logging::Info("Bruh moment while equipping noisemaker");
+            }
+        }
+    }
     // Hat equip code
     if (equip_hats)
     {
