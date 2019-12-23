@@ -12,7 +12,7 @@ namespace hacks::tf2::noisemaker
 {
 
 // Merry Christmas
-#if ENABLE_VISUALS
+#if ENABLE_TEXTMODE
 static settings::Boolean enable{ "noisemaker-spam.enable", "false" };
 #else
 static settings::Boolean enable{ "noisemaker-spam.enable", "true" };

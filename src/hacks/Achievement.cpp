@@ -35,7 +35,7 @@ static settings::Int equip_secondary{ "achievement.equip-secondary", "0" };
 static settings::Int equip_melee{ "achievement.equip-melee", "0" };
 static settings::Int equip_pda2{ "achievement.equip-pda2", "0" };
 static settings::Boolean hat_troll{ "misc.nohatsforyou", "false" };
-#if ENABLE_VISUALS
+#if ENABLE_TEXTMODE
 static settings::Boolean auto_noisemaker{ "misc.auto-noisemaker", "false" };
 #else
 static settings::Boolean auto_noisemaker{ "misc.auto-noisemaker", "true" };
