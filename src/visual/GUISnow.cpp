@@ -175,8 +175,8 @@ template <typename T> void rvarCallback(settings::VariableBase<T> &, T)
 }
 
 static InitRoutine init([]() {
-    time_t theTime   = time(nullptr);
-    struct tm *aTime = localtime(&theTime);
+    std::time_t theTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm *aTime      = std::localtime(&theTime);
 
     int day   = aTime->tm_mday;
     int month = aTime->tm_mon + 1; // Month is 0 - 11, add 1 to get a jan-dec 1-12 concept

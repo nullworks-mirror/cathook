@@ -8,17 +8,15 @@ set(files "${CMAKE_CURRENT_LIST_DIR}/atlas.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/fidgetspinner.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/picopng.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/SDLHooks.cpp")
-target_sources(cathook PRIVATE ${files})
-list(REMOVE_ITEM ignore_files ${files})
-set(ignore_files ${ignore_files} CACHE INTERNAL "")
 
 if(EnableGUI)
     add_subdirectory(menu)
-    set(files "${CMAKE_CURRENT_LIST_DIR}/GUISnow.cpp")
-    target_sources(cathook PRIVATE ${files})
-    list(REMOVE_ITEM ignore_files ${files})
-    set(ignore_files ${ignore_files} CACHE INTERNAL "")
+    list(APPEND files "${CMAKE_CURRENT_LIST_DIR}/GUISnow.cpp")
 endif()
+
+target_sources(cathook PRIVATE ${files})
+list(REMOVE_ITEM ignore_files ${files})
+set(ignore_files ${ignore_files} CACHE INTERNAL "")
 
 if (EnableImGuiDrawing)
     add_subdirectory(imgui)
