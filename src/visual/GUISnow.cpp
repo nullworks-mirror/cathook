@@ -73,20 +73,24 @@ public:
         // Every snowflake has it's own one of these, so use it.
         current_time -= start_ms;
         auto cur_time = current_time.count() / 1000.0f;
-        float variation_x, variation_y;
+        // Ignore update after 5 seconds timeout
+        if (cur_time - this->last_update_time <= 5.0f)
+        {
+            float variation_x, variation_y;
 
-        // Update speed
+            // Update speed
 
-        // We want a smooth variation, so let's use sine/cosine
-        variation_x = (sin(DEG2RAD(cur_time * 180.0f)) * x_speed_variation);
-        // The +1 and /2.0f is so snowflakes don't just freeze and stop moving
-        variation_y = (cos(DEG2RAD(cur_time * 180.0f) + 1) * y_speed_variation / 2.0f);
+            // We want a smooth variation, so let's use sine/cosine
+            variation_x = (sin(DEG2RAD(cur_time * 180.0f)) * x_speed_variation);
+            // The +1 and /2.0f is so snowflakes don't just freeze and stop moving
+            variation_y = (cos(DEG2RAD(cur_time * 180.0f) + 1) * y_speed_variation / 2.0f);
 
-        // Move this speed in pixels/s
-        this->x += (x_speed + variation_x) * (cur_time - this->last_update_time);
-        this->y += (y_speed + variation_y) * (cur_time - this->last_update_time);
+            // Move this speed in pixels/s
+            this->x += (x_speed + variation_x) * (cur_time - this->last_update_time);
+            this->y += (y_speed + variation_y) * (cur_time - this->last_update_time);
 
-        // Update last draw time accordingly
+            // Update last draw time accordingly
+        }
         this->last_update_time = cur_time;
     }
     // Draw the Snowflake
@@ -139,15 +143,14 @@ public:
     {
         std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
-        // We want to update snowflakes regardless if we're in the menu or not
+        // Update loop
         for (auto &flake : snowflakes)
         {
             flake.Update(ms);
             // Remove offscreen flakes
             if (flake.IsOffScreen())
                 RemoveSnowflake(flake);
-            // Invalid menu/Not in Menu
-            else if (zerokernel::Menu::instance && !zerokernel::Menu::instance->isInGame())
+            else
                 flake.Draw();
         }
         if (snowflakes.size() < static_cast<unsigned>(*snowflake_amount))
@@ -163,7 +166,8 @@ public:
 static SnowflakeManager snow_manager;
 void DrawSnowflakes()
 {
-    snow_manager.UpdateAndDraw();
+    if (zerokernel::Menu::instance && !zerokernel::Menu::instance->isInGame())
+        snow_manager.UpdateAndDraw();
 }
 
 template <typename T> void rvarCallback(settings::VariableBase<T> &, T)
