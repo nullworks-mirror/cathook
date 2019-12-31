@@ -24,9 +24,6 @@ static settings::Float snowflake_size{ "visual.snowflakes.size", "16.0f" };
 // Snowflake Amount
 static settings::Int snowflake_amount{ "visual.snowflakes.count", "150" };
 
-// Static timer to mark start of starting cathook. We use this to avoid a high floating point inprecision on timers
-static std::chrono::milliseconds start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-
 // Snowflake class
 class Snowflake
 {
@@ -41,7 +38,7 @@ class Snowflake
     float y_speed_variation{};
     // Neccessary to make snowflakes not depend on frames
     float last_update_time{};
-    // Static timer to mark start of spawning the flake. We use this to avoid a high floating point inprecision on timers
+    // Makes Snowflakes chaotic because they all run on their own timer
     std::chrono::milliseconds start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
 public:
