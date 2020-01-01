@@ -106,8 +106,7 @@ bool re::CTFPartyClient::BInQueueForStandby()
 char re::CTFPartyClient::RequestLeaveForMatch(int type)
 {
     typedef char (*RequestLeaveForMatch_t)(re::CTFPartyClient *, int);
-    static uintptr_t addr                                 = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 45 ? 89 44 24 ? 8B 45 ? 89 04 24 E8"
-                                                           "? ? 84 C0 89 C6 75");
+    static uintptr_t addr                                 = e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 90 8B 45 E4"));
     static RequestLeaveForMatch_t RequestLeaveForMatch_fn = RequestLeaveForMatch_t(addr);
 
     return RequestLeaveForMatch_fn(this, type);
@@ -122,7 +121,6 @@ int re::CTFPartyClient::BInvitePlayerToParty(CSteamID steamid)
 }
 int re::CTFPartyClient::BRequestJoinPlayer(CSteamID steamid)
 {
-    // 55 89 E5 57 56 53 81 EC 8C 00 00 00 8B 45 14 8B 55 10 89 45 A4 8B 45 0C
     typedef int (*BRequestJoinPlayer_t)(re::CTFPartyClient *, CSteamID, bool);
     static uintptr_t addr                             = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 14 8B 55 ? 89 45 ? 8B");
     static BRequestJoinPlayer_t BRequestJoinPlayer_fn = BRequestJoinPlayer_t(addr);

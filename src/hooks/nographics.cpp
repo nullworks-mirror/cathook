@@ -297,6 +297,9 @@ static InitRoutine nullifiy_textmode2([]() {
             UnHookFs();
     });
 #if ENABLE_TEXTMODE
+    // Catbots still hit properly, this just makes it easier to Stub stuff not needed in textmode
+    bool *g_bTextMode_ptr = *((bool **) (gSignatures.GetEngineSignature("A2 ? ? ? ? 8B 43 04") + 0x1));
+    *g_bTextMode_ptr      = true;
     /*auto addr = gSignatures.GetEngineSignature("55 89 E5 57 56 53 81 EC ? ? ? ? C7 45 ? ? ? ? ? A1 ? ? ? ? C7 45 ? ? ? ? ? 8B 75 08 85 C0 0F 84 ? ? ? ? 8D 55 88 89 04 24 31 DB 89 54 24 04");
     static BytePatch patch(addr, { 0x31, 0xc0, 0xc3 });
     patch.Patch();
