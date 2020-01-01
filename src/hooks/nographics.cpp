@@ -274,7 +274,7 @@ static void UnHookFs()
 #if ENABLE_TEXTMODE
 static InitRoutineEarly nullify_textmode([]() {
     ReduceRamUsage();
-    static auto addr1 = e8call_direct(gSignatures.GetEngineSignature("E8 ? ? ? ? 8B 93 ? ? ? ? 85 D2 0F 84 ? ? ? ?")) + 0x18;
+    static auto addr1 = e8call_direct(gSignatures.GetEngineSignature("E8 ? ? ? ? 8B 93 ? ? ? ? 85 D2 0F 84")) + 0x18;
     static auto addr2 = sharedobj::materialsystem().Pointer(0x3EC08);
 
     static BytePatch patch1(addr1, { 0x81, 0xC4, 0x6C, 0x20, 0x00, 0x00, 0x5B, 0x5E, 0x5F, 0x5D, 0xC3 });
@@ -307,7 +307,7 @@ static InitRoutine nullifiy_textmode2([]() {
                 return;
             if (CE_GOOD(LOCAL_E))
                 return;
-            static auto addr = e8call_direct(gSignatures.GetEngineSignature("E8 ? ? ? ? 8B 85 ? ? ? ? 89 C7 E9 ? ? ? ? "));
+            static auto addr = e8call_direct(gSignatures.GetEngineSignature("E8 ? ? ? ? 8B 85 ? ? ? ? 89 C7 E9"));
             typedef void (*SendFinishedSync_t)(CBaseClientState *);
             static SendFinishedSync_t SendFinishedSync_fn = SendFinishedSync_t(addr);
             SendFinishedSync_fn(g_IBaseClientState);
