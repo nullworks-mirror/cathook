@@ -297,7 +297,7 @@ static InitRoutine nullifiy_textmode2([]() {
             UnHookFs();
     });
 #if ENABLE_TEXTMODE
-    auto addr = gSignatures.GetEngineSignature("55 89 E5 57 56 53 81 EC ? ? ? ? C7 45 ? ? ? ? ? A1 ? ? ? ? C7 45 ? ? ? ? ? 8B 75 08 85 C0 0F 84 ? ? ? ? 8D 55 88 89 04 24 31 DB 89 54 24 04");
+    /*auto addr = gSignatures.GetEngineSignature("55 89 E5 57 56 53 81 EC ? ? ? ? C7 45 ? ? ? ? ? A1 ? ? ? ? C7 45 ? ? ? ? ? 8B 75 08 85 C0 0F 84 ? ? ? ? 8D 55 88 89 04 24 31 DB 89 54 24 04");
     static BytePatch patch(addr, { 0x31, 0xc0, 0xc3 });
     patch.Patch();
     EC::Register(
@@ -312,6 +312,6 @@ static InitRoutine nullifiy_textmode2([]() {
             static SendFinishedSync_t SendFinishedSync_fn = SendFinishedSync_t(addr);
             SendFinishedSync_fn(g_IBaseClientState);
         },
-        "nographics_cm");
+        "nographics_cm");*/
 #endif
 });
