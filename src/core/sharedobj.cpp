@@ -99,6 +99,7 @@ void LoadEarlyObjects()
     try
     {
         engine().Load();
+        launcher().Load();
         filesystem_stdio().Load();
         tier0().Load();
         materialsystem().Load();
@@ -146,6 +147,7 @@ void UnloadAllSharedObjects()
     studiorender().Unload();
     libsdl().Unload();
 #endif
+    launcher().Unload();
     engine().Unload();
     filesystem_stdio().Unload();
     tier0().Unload();
@@ -170,6 +172,11 @@ SharedObject &client()
 SharedObject &engine()
 {
     static SharedObject obj("engine.so", true);
+    return obj;
+}
+SharedObject &launcher()
+{
+    static SharedObject obj("launcher.so", true);
     return obj;
 }
 SharedObject &vstdlib()

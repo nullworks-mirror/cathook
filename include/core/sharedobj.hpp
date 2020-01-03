@@ -42,6 +42,7 @@ SharedObject &serverbrowser();
 SharedObject &steamclient();
 SharedObject &client();
 SharedObject &engine();
+SharedObject &launcher();
 SharedObject &steamapi();
 SharedObject &vstdlib();
 SharedObject &tier0();
