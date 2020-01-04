@@ -30,6 +30,7 @@ enum SharedObjects
     engine,
     steamapi,
     vstd,
+    launcher,
     // Whatever you do, keep this one last
     entry_count
 };
@@ -43,6 +44,7 @@ public:
     static uintptr_t GetSignature(const char *chPattern, sharedobj::SharedObject &obj, int idx);
     static uintptr_t GetClientSignature(const char *chPattern);
     static uintptr_t GetEngineSignature(const char *chPattern);
+    static uintptr_t GetLauncherSignature(const char *chaPattern);
     static uintptr_t GetSteamAPISignature(const char *chPattern);
     static uintptr_t GetVstdSignature(const char *chPattern);
 };

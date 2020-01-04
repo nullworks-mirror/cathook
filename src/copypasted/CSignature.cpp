@@ -212,6 +212,11 @@ uintptr_t CSignature::GetEngineSignature(const char *chPattern)
     return GetSignature(chPattern, sharedobj::engine(), CSignature_space::engine);
 }
 //===================================================================================
+uintptr_t CSignature::GetLauncherSignature(const char *chPattern)
+{
+    return GetSignature(chPattern, sharedobj::launcher(), CSignature_space::launcher);
+}
+//===================================================================================
 uintptr_t CSignature::GetSteamAPISignature(const char *chPattern)
 {
     return GetSignature(chPattern, sharedobj::steamapi(), CSignature_space::steamapi);
