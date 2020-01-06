@@ -385,9 +385,9 @@ static bool navToBuildingSpot()
         if (!nav::isSafe(area.first))
             continue;
         // Try to nav there
-        if (nav::navTo(area.second, 1, true, true, false))
+        if (nav::navTo(area.second, 5, true, true, false))
         {
-            current_task          = { task::engineer, 1 };
+            current_task          = { task::engineer, 5 };
             current_build_area    = area.first;
             current_engineer_task = task::engineer_task::goto_build_spot;
             return true;
@@ -496,18 +496,18 @@ static bool navToBuilding(CachedEntity *target = nullptr)
             priority = 7;
         // Just grab target and nav there
         if (target)
-            if (nav::navTo(target->m_vecOrigin(), priority))
+            if (nav::navTo(target->m_vecOrigin(), priority, true))
             {
-                current_task          = { task::engineer, 4 };
+                current_task          = { task::engineer, priority };
                 current_engineer_task = task::engineer_task::goto_building;
                 return true;
             }
         // Nav to random building
         for (auto &building : local_buildings)
         {
-            if (nav::navTo(building->m_vecOrigin(), priority))
+            if (nav::navTo(building->m_vecOrigin(), priority, true))
             {
-                current_task          = { task::engineer, 4 };
+                current_task          = { task::engineer, priority };
                 current_engineer_task = task::engineer_task::goto_building;
                 return true;
             }
