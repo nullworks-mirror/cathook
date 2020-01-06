@@ -6,6 +6,7 @@ namespace hacks::tf2::NavBot
 bool init(bool first_cm);
 namespace task
 {
+
 enum task : uint8_t
 {
     none = 0,
@@ -15,28 +16,49 @@ enum task : uint8_t
     ammo,
     dispenser,
     followbot,
-    outofbounds
+    outofbounds,
+    engineer
 };
+
+enum engineer_task : uint8_t
+{
+    nothing = 0,
+    // Build a new building
+    goto_build_spot,
+    // Go to an existing building
+    goto_building,
+    build_building,
+    // Originally were going to be added seperately, but we already have autorepair and upgrade seperately
+    // upgrade_building,
+    // repair_building,
+    upgradeorrepair_building,
+    // Well time to just run at people and gun them (Rip old name: YEEEEEEEEEEEEEEHAW)
+    staynear_engineer
+};
+
+extern engineer_task current_engineer_task;
+
 struct Task
 {
     task id;
     int priority;
-    Task(task _id)
+    Task(task id)
     {
-        id       = _id;
-        priority = _id == none ? 0 : 5;
+        this->id = id;
+        priority = id == none ? 0 : 5;
     }
-    Task(task _id, int _priority)
+    Task(task id, int priority)
     {
-        id       = _id;
-        priority = _priority;
+        this->id       = id;
+        this->priority = priority;
     }
     operator task()
     {
         return id;
     }
 };
-constexpr std::array<task, 2> blocking_tasks{ followbot, outofbounds };
+
+constexpr std::array<task, 3> blocking_tasks{ followbot, outofbounds, engineer };
 extern Task current_task;
 } // namespace task
 struct bot_class_config

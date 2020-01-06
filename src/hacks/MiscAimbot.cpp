@@ -290,7 +290,7 @@ static settings::Int autoupgrade_sentry_level("autoupgrade.sentry.level", "3");
 static settings::Int autoupgrade_dispenser_level("autoupgrade.dispenser.level", "3");
 static settings::Int autoupgrade_teleport_level("autoupgrade.teleport.level", "2");
 
-static bool ShouldHitBuilding(CachedEntity *ent)
+bool ShouldHitBuilding(CachedEntity *ent)
 {
     if (!autoupgrade_enabled && !autorepair_enabled)
         return false;
@@ -386,7 +386,7 @@ static void BuildingAimbot()
     int cur_ammo       = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
     float wrench_range = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     // Center is further away than actual hit range for buildings, so add some more
-    wrench_range += (float) 50.f;
+    wrench_range += 50.f;
 
     if (cur_ammo == 0)
         return;

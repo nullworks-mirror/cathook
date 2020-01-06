@@ -18,7 +18,7 @@ void CreateMove();
 #if ENABLE_VISUALS
 void DrawText();
 #endif
-
+int getCarriedBuilding();
 extern int last_number;
 
 extern float last_bucket;

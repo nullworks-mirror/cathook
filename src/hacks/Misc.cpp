@@ -109,7 +109,7 @@ static ConVar *teammatesPushaway{ nullptr };
 
 int getCarriedBuilding()
 {
-    if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject))
+    if (CE_INT(LOCAL_E, netvar.m_bCarryingObject))
         return HandleToIDX(CE_INT(LOCAL_E, netvar.m_hCarriedObject));
     for (int i = 1; i < MAX_ENTITIES; i++)
     {
@@ -118,7 +118,7 @@ int getCarriedBuilding()
             continue;
         if (HandleToIDX(CE_INT(ent, netvar.m_hBuilder)) != LOCAL_E->m_IDX)
             continue;
-        if (!CE_BYTE(ent, netvar.m_bPlacing))
+        if (!CE_INT(ent, netvar.m_bPlacing))
             continue;
         return i;
     }

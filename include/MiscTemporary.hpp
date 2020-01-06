@@ -41,6 +41,10 @@ extern int stored_buttons;
 #if ENABLE_VISUALS
 extern bool freecam_is_toggled;
 #endif
+namespace hacks::tf2::misc_aimbot
+{
+bool ShouldHitBuilding(CachedEntity *ent);
+}
 namespace hooked_methods
 {
 void sendAchievementKv(int value);
