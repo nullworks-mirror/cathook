@@ -518,7 +518,7 @@ void ReplaceString(std::string &input, const std::string &what, const std::strin
 
 void ReplaceSpecials(std::string &str)
 {
-    int val, i;
+    int val;
     size_t c = 0, len = str.size();
     for (int i = 0; i + c < len; ++i)
     {
