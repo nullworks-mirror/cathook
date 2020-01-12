@@ -685,6 +685,13 @@ bool GetHitbox(CachedEntity *entity, int hb, Vector &out)
     return true;
 }
 
+void MatrixGetColumn(const matrix3x4_t &in, int column, Vector &out)
+{
+    out.x = in[0][column];
+    out.y = in[1][column];
+    out.z = in[2][column];
+}
+
 void VectorAngles(Vector &forward, Vector &angles)
 {
     float tmp, yaw, pitch;

@@ -13,12 +13,14 @@ namespace hooked_methods
 std::vector<KeyValues *> Iterate(KeyValues *event, int depth);
 DEFINE_HOOKED_METHOD(IsPlayingTimeDemo, bool, void *_this)
 {
-    uintptr_t ret_addr      = (uintptr_t) __builtin_return_address(1);
-    static auto wanted_addr = gSignatures.GetClientSignature("84 C0 0F 85 ? ? ? ? E9 ? ? ? ? 8D 76 00 C6 05");
-    if (ret_addr == wanted_addr && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer() && nolerp)
-        return true;
-    else
-        return original::IsPlayingTimeDemo(_this);
+    if (nolerp)
+    {
+        uintptr_t ret_addr      = (uintptr_t) __builtin_return_address(1);
+        static auto wanted_addr = gSignatures.GetClientSignature("84 C0 0F 85 ? ? ? ? E9 ? ? ? ? 8D 76 00 C6 05");
+        if (ret_addr == wanted_addr && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
+            return true;
+    }
+    return original::IsPlayingTimeDemo(_this);
 }
 
 DEFINE_HOOKED_METHOD(ServerCmdKeyValues, void, IVEngineClient013 *_this, KeyValues *kv)
