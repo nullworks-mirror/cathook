@@ -826,6 +826,9 @@ void Aim(CachedEntity *entity)
 
     if (silent && !slow_aim)
         g_pLocalPlayer->bUseSilentAngles = true;
+    // Set tick count to target's (backtrack messes with this)
+    if (!bt::isBacktrackEnabled && nolerp)
+        current_user_cmd->tick_count = TIME_TO_TICKS(CE_FLOAT(entity, netvar.m_flSimulationTime));
     // Finish function
     return;
 }

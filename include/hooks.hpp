@@ -59,6 +59,7 @@ extern VMTHook client;
 extern VMTHook inventory;
 extern VMTHook chathud;
 extern VMTHook engine;
+extern VMTHook demoplayer;
 extern VMTHook netchannel;
 extern VMTHook firebullets;
 extern VMTHook clientdll;

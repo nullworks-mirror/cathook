@@ -61,6 +61,7 @@ extern CHud *g_CHUD;
 extern ISteamClient *g_ISteamClient;
 extern ISteamFriends *g_ISteamFriends;
 extern IVEngineClient013 *g_IEngine;
+extern void *demoplayer;
 extern IEngineSound *g_ISoundEngine;
 extern vgui::ISurface *g_ISurface;
 extern vgui::IPanel *g_IPanel;

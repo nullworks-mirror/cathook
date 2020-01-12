@@ -24,6 +24,11 @@ settings::Boolean clean_chat{ "chat.clean", "false" };
 
 settings::Boolean crypt_chat{ "chat.crypto", "true" };
 settings::Boolean clean_screenshots{ "visual.clean-screenshots", "false" };
+#if !ENABLE_TEXTMODE
+settings::Boolean nolerp{ "misc.no-lerp", "false" };
+#else
+settings::Boolean nolerp{ "misc.no-lerp", "true" };
+#endif
 static settings::Boolean no_zoom{ "remove.scope", "false" };
 settings::Boolean disable_visuals{ "visual.disable", "false" };
 settings::Int print_r{ "print.rgb.r", "183" };

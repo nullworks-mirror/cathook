@@ -32,6 +32,7 @@ extern settings::Boolean clean_chat;
 
 extern settings::Boolean clean_screenshots;
 extern settings::Boolean crypt_chat;
+extern settings::Boolean nolerp;
 extern settings::Boolean disable_visuals;
 extern settings::Int print_r;
 extern settings::Int print_g;
