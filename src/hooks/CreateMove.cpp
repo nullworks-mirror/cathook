@@ -127,9 +127,7 @@ namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
 {
-    volatile uintptr_t **fp;
-    __asm__ volatile("mov %%ebp, %0" : "=r"(fp));
-    bSendPackets = reinterpret_cast<bool *>(**fp - 8);
+    bSendPackets = reinterpret_cast<bool *>((uintptr_t) __builtin_frame_address(2) - 8);
 
     g_Settings.is_create_move = true;
     bool time_replaced, ret, speedapplied;
@@ -391,19 +389,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             }
 
             ret = false;
-        }
-        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
-        {
-
-            CachedEntity *ent = ENTITY(i);
-            if (CE_GOOD(LOCAL_E))
-                if (ent == LOCAL_E)
-                    continue;
-            if (CE_BAD(ent) || !ent->m_bAlivePlayer())
-                continue;
-            INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-            if (NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) <= 1.5f)
-                continue;
         }
         g_pLocalPlayer->UpdateEnd();
     }

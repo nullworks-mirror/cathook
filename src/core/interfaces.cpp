@@ -94,7 +94,7 @@ void CreateInterfaces()
 {
     g_ICvar             = BruteforceInterface<ICvar>("VEngineCvar", sharedobj::vstdlib());
     g_IEngine           = BruteforceInterface<IVEngineClient013>("VEngineClient", sharedobj::engine());
-    demoplayer          = *(unsigned **) (gSignatures.GetEngineSignature("A1 ? ? ? ? A3 ? ? ? ? 8B 10 C7 44 24 ? ? ? ? ? 89 5C 24 04 89 04 24 FF 52 18 84 C0 74 36") + 1);
+    demoplayer          = **(unsigned ***) (gSignatures.GetEngineSignature("89 15 ? ? ? ? BA ? ? ? ? 83 38 01") + 2);
     g_ISoundEngine      = BruteforceInterface<IEngineSound>("IEngineSoundClient", sharedobj::engine());
     g_AppID             = g_IEngine->GetAppID();
     g_IEntityList       = BruteforceInterface<IClientEntityList>("VClientEntityList", sharedobj::client());
