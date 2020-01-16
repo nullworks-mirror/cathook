@@ -531,7 +531,7 @@ CatBotEventListener &listener()
 
 class CatBotEventListener2 : public IGameEventListener2
 {
-    void FireGameEvent(IGameEvent *event) override
+    void FireGameEvent(IGameEvent *) override
     {
         // vote for current map if catbot mode and autovote is on
         if (catbotmode && autovote_map)
