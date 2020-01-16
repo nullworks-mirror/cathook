@@ -97,7 +97,8 @@ std::optional<colors::rgba_t> forceEspColor(CachedEntity *entity)
 
 void onKilledBy(unsigned id)
 {
-    if (!shouldTargetSteamId(id))
+    auto &pl = playerlist::AccessData(id);
+    if (!shouldTargetSteamId(id) && !playerlist::IsFriendly(pl.state))
     {
         // We ignored the gamer, but they still shot us
         if (betrayal_list.find(id) == betrayal_list.end())
