@@ -40,6 +40,8 @@ static settings::Boolean debug_info{ "misc.debug-info", "false" };
 static settings::Boolean no_homo{ "misc.no-homo", "true" };
 static settings::Boolean show_spectators{ "misc.show-spectators", "false" };
 static settings::Boolean misc_drawhitboxes{ "misc.draw-hitboxes", "false" };
+// Useful for debugging with showlagcompensation
+static settings::Boolean misc_drawhitboxes_dead{ "misc.draw-hitboxes.dead-players", "false" };
 #endif
 
 #if !ENFORCE_STREAM_SAFETY && ENABLE_VISUALS
@@ -177,7 +179,16 @@ inline void matrix_angles(const matrix3x4_t &matrix, Vector &angles, Vector &pos
     matrix_angles(matrix, &angles.x);
 }
 
-void DrawWireframeHitboxes(hitbox_cache::EntityHitboxCache &hb_cache)
+struct wireframe_data
+{
+    Vector raw_min;
+    Vector raw_max;
+    Vector rotation;
+    Vector origin;
+};
+
+std::vector<wireframe_data> wireframe_queue;
+void QueueWireframeHitboxes(hitbox_cache::EntityHitboxCache &hb_cache)
 {
     for (int i = 0; i < hb_cache.GetNumHitboxes(); i++)
     {
@@ -189,8 +200,12 @@ void DrawWireframeHitboxes(hitbox_cache::EntityHitboxCache &hb_cache)
         Vector origin;
 
         matrix_angles(transform, rotation, origin);
-        g_IVDebugOverlay->AddBoxOverlay2(origin, raw_min, raw_max, VectorToQAngle(rotation), Color(0, 0, 0, 0), Color(255, 0, 0, 255), g_GlobalVars->interval_per_tick * 2);
+        wireframe_queue.push_back(wireframe_data{ raw_min, raw_max, rotation, origin });
     }
+}
+void DrawWireframeHitbox(wireframe_data data)
+{
+    g_IVDebugOverlay->AddBoxOverlay2(data.origin, data.raw_min, data.raw_max, VectorToQAngle(data.rotation), Color(0, 0, 0, 0), Color(255, 0, 0, 255), g_GlobalVars->interval_per_tick * 2);
 }
 #endif
 void CreateMove()
@@ -201,9 +216,9 @@ void CreateMove()
         for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
-            if (CE_INVALID(ent) || ent == LOCAL_E)
+            if (CE_INVALID(ent) || ent == LOCAL_E || (!misc_drawhitboxes_dead && !ent->m_bAlivePlayer()))
                 continue;
-            DrawWireframeHitboxes(ent->hitboxes);
+            QueueWireframeHitboxes(ent->hitboxes);
         }
     }
 #endif
@@ -304,6 +319,12 @@ void CreateMove()
 // Timer ussr{};
 void DrawText()
 {
+    if (misc_drawhitboxes)
+    {
+        for (auto &entry : wireframe_queue)
+            DrawWireframeHitbox(entry);
+        wireframe_queue.clear();
+    }
     /*if (ussr.test_and_set(207000))
     {
         g_ISurface->PlaySound()
