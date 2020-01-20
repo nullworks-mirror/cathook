@@ -1489,6 +1489,29 @@ CatCommand print_classnames("debug_print_classnames", "Lists classnames currentl
     }
 });
 
+void PrintChat(bool cat, const char *fmt, ...)
+{
+#if ENABLE_VISUALS
+    CHudBaseChat *chat = (CHudBaseChat *) g_CHUD->FindElement("CHudChat");
+    if (chat)
+    {
+        std::unique_ptr<char[]> buf(new char[1024]);
+        va_list list;
+        va_start(list, fmt);
+        vsprintf(buf.get(), fmt, list);
+        va_end(list);
+        std::unique_ptr<char[]> str;
+        if (cat)
+            str = std::move(strfmt("\x07%06X[\x07%06XCAT\x07%06X]\x01 %s", 0x5e3252, 0xba3d9a, 0x5e3252, buf.get()));
+        else
+            str = std::move(strfmt("%s", buf.get()));
+        // FIXME DEBUG LOG
+        logging::Info("%s", str.get());
+        chat->Printf(str.get());
+    }
+#endif
+}
+
 void PrintChat(const char *fmt, ...)
 {
 #if ENABLE_VISUALS

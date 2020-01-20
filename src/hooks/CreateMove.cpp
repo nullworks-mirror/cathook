@@ -15,7 +15,6 @@
 #include <hacks/AntiAntiAim.hpp>
 #include "NavBot.hpp"
 #include "HookTools.hpp"
-#include "irc.hpp"
 
 #include "HookedMethods.hpp"
 #include "PreDataUpdate.hpp"
@@ -255,9 +254,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         //        hacks::tf2::NavBot::Init();
         //        hacks::tf2::NavBot::initonce();
         nav::status = nav::off;
-#if ENABLE_IRC
-        IRC::auth();
-#endif
         hacks::tf2::NavBot::init(true);
         if (identify)
             sendIdentifyMessage(false);
