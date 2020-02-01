@@ -28,5 +28,3 @@
 [submodule "external/clip"]
 	path = external/clip
 	url = https://github.com/nullworks/clip
-[submodule "external/simple-ipc"]
-	branch = temp
