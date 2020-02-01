@@ -407,9 +407,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             pUpdateRate = g_pCVar->FindVar("cl_updaterate");
         else
         {
-            // We should adjust cl_interp to be as low as possible
-            if (cl_interp->GetFloat() > 0.152f)
-                cl_interp->SetValue(0.152f);
+
             float interp = MAX(cl_interp->GetFloat(), cl_interp_ratio->GetFloat() / pUpdateRate->GetFloat());
             cmd->tick_count += TIME_TO_TICKS(interp);
         }

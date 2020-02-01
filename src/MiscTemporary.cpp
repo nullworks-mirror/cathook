@@ -29,6 +29,7 @@ settings::Boolean nolerp{ "misc.no-lerp", "true" };
 #else
 settings::Boolean nolerp{ "misc.no-lerp", "false" };
 #endif
+float backup_lerp = 0.0f;
 static settings::Boolean no_zoom{ "remove.scope", "false" };
 settings::Boolean disable_visuals{ "visual.disable", "false" };
 settings::Int print_r{ "print.rgb.r", "183" };
@@ -40,7 +41,7 @@ void color_callback(settings::VariableBase<int> &, int)
 {
     menu_color = Color(*print_r, *print_g, *print_b, 255);
 }
-static InitRoutine color_init([]() {
+static InitRoutine misc_init([]() {
     print_r.installChangeCallback(color_callback);
     print_g.installChangeCallback(color_callback);
     print_b.installChangeCallback(color_callback);
@@ -48,4 +49,25 @@ static InitRoutine color_init([]() {
         static BytePatch patch(gSignatures.GetClientSignature, "81 EC ? ? ? ? A1 ? ? ? ? 8B 7D 08 8B 10 89 04 24 FF 92", 0x0, { 0x5B, 0x5E, 0x5F, 0x5D, 0xC3 });
         after ? patch.Patch() : patch.Shutdown();
     });
+    nolerp.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (!after && backup_lerp)
+        {
+            cl_interp->SetValue(backup_lerp);
+            backup_lerp = 0.0f;
+        }
+        else
+        {
+            backup_lerp = cl_interp->GetFloat();
+            // We should adjust cl_interp to be as low as possible
+            if (cl_interp->GetFloat() > 0.152f)
+                cl_interp->SetValue(0.152f);
+        }
+    });
+    EC::Register(
+        EC::Shutdown,
+        []() {
+            cl_interp->SetValue(backup_lerp);
+            backup_lerp = 0.0f;
+        },
+        "misctemp_shutdown");
 });
