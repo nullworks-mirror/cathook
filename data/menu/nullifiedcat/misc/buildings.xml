@@ -3,7 +3,6 @@
         <List width="200">
             <AutoVariable width="fill" target="autorepair.enabled" label="Enable Auto Repair"/> 
             <AutoVariable width="fill" target="autorepair.silent" label="Silent"/> 
-            <AutoVariable width="fill" target="autorepair.autoequip" label="Automatic wrench"/> 
             <AutoVariable width="fill" target="autorepair.sentry" label="Repair Sentry"/> 
             <AutoVariable width="fill" target="autorepair.dispenser" label="Repair Dispenser"/> 
             <AutoVariable width="fill" target="autorepair.teleport" label="Repair Teleporter"/> 

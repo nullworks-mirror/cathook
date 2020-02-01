@@ -398,7 +398,7 @@ const std::vector<std::string> builtin_lithium  = { "CHECK OUT www.YouTube.com/c
 
 void teamspam_reload(std::string after)
 {
-    // Clear sp am vector
+    // Clear spam vector
     teamspam_text.clear();
     // Reset Spam idx
     current_teamspam_idx = 0;

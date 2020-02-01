@@ -99,9 +99,14 @@ constexpr bot_class_config DIST_SPY{ 10.0f, 50.0f, 1000.0f };
 constexpr bot_class_config DIST_OTHER{ 100.0f, 200.0f, 300.0f };
 constexpr bot_class_config DIST_SNIPER{ 1000.0f, 1500.0f, 3000.0f };
 constexpr bot_class_config DIST_ENGINEER{ 600.0f, 1000.0f, 2500.0f };
-// Gunslinger Engineers really don't cate at all
+
+// Gunslinger Engineers really don't care at all
 constexpr bot_class_config DIST_GUNSLINGER_ENGINEER{ 100.0f, 300.0f, 500.0f };
 
+inline bool HasGunslinger(CachedEntity *ent)
+{
+    return HasWeapon(ent, 142);
+}
 static void CreateMove()
 {
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !LOCAL_E->m_bAlivePlayer())
@@ -122,7 +127,7 @@ static void CreateMove()
         updateSlot();
     if (engineer_mode)
     {
-        if (LOCAL_E && CE_GOOD(LOCAL_E))
+        if (CE_GOOD(LOCAL_E))
         {
             for (int i = g_IEngine->GetMaxClients() + 1; i < MAX_ENTITIES; i++)
             {
@@ -140,8 +145,8 @@ static void CreateMove()
 
     if (get_health)
     {
-        int metal = 0;
-        if (engineer_mode)
+        int metal = -1;
+        if (engineer_mode && g_pLocalPlayer->clazz == tf_engineer)
             metal = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
         if ((dispenser_nav_timer.test_and_set(1000) && getDispenserHealthAndAmmo(metal)))
             return;
@@ -149,7 +154,8 @@ static void CreateMove()
             return;
     }
 
-    if (engineer_mode)
+    // Engineer stuff
+    if (engineer_mode && g_pLocalPlayer->clazz == tf_engineer)
         if (engineerLogic())
             return;
 
@@ -224,24 +230,11 @@ bool init(bool first_cm)
 struct area_struct
 {
     // The Area
-    CNavArea *area;
+    CNavArea *navarea;
     // Distance away from enemies
     float min_distance;
     // Valid enemies to area
     std::vector<Vector *> enemy_list;
-
-    CNavArea *first()
-    {
-        return area;
-    }
-    float second()
-    {
-        return min_distance;
-    }
-    std::vector<Vector *> third()
-    {
-        return enemy_list;
-    }
 };
 
 void update_building_spots()
@@ -264,7 +257,7 @@ void update_building_spots()
                 enemy_positions.push_back(*ent->m_vecDormantOrigin());
         }
         auto config = &DIST_ENGINEER;
-        if (HasWeapon(LOCAL_E, 142))
+        if (HasGunslinger(LOCAL_E))
             config = &DIST_GUNSLINGER_ENGINEER;
         for (auto &area : nav::navfile->m_areas)
         {
@@ -314,7 +307,7 @@ void update_building_spots()
         }
 
         // Sort, be as close to preferred as possible
-        std::sort(areas.begin(), areas.end(), [&](area_struct a, area_struct b) { return std::abs(a.second() - config->preferred) < std::abs(b.second() - config->preferred); });
+        std::sort(areas.begin(), areas.end(), [&](area_struct a, area_struct b) { return std::abs(a.min_distance - config->preferred) < std::abs(b.min_distance - config->preferred); });
 
         // Still need to do vischeck stuff
         for (auto &area : areas)
@@ -322,11 +315,11 @@ void update_building_spots()
             // Is the enemy able to see the area?
             bool can_see_area = false;
             // Area Center
-            auto area_pos = area.first()->m_center;
+            auto area_pos = area.navarea->m_center;
             // Don't want to instantly hit the floor
             area_pos.z += 42.0f;
             // Loop all valid enemies
-            for (auto pos : area.third())
+            for (auto pos : area.enemy_list)
             {
                 if (IsVectorVisible(area_pos, *pos))
                 {
@@ -335,10 +328,10 @@ void update_building_spots()
                 }
             }
             // Someone can see the area. Abort! (Gunslinger Engineer does not care)
-            if (can_see_area && !HasWeapon(LOCAL_E, 142))
+            if (can_see_area && !HasGunslinger(LOCAL_E))
                 continue;
             // All good!
-            building_spots.push_back(std::pair<CNavArea *, Vector>(area.first(), area.first()->m_center));
+            building_spots.push_back(std::pair<CNavArea *, Vector>(area.navarea, area.navarea->m_center));
         }
     }
 }
@@ -402,7 +395,7 @@ static Building selectBuilding()
     int metal_sentry = 130;
 
     // We have a mini sentry, costs less
-    if (HasWeapon(LOCAL_E, 142))
+    if (HasGunslinger(LOCAL_E))
         metal_sentry = 100;
 
     // Do we already have these?
@@ -534,14 +527,14 @@ static bool engineerLogic()
             if (metal)
                 for (auto &building : local_buildings)
                     // Hey hit the building thanks (gunslinger engineer shouldn't care)
-                    if (hacks::tf2::misc_aimbot::ShouldHitBuilding(building) && !HasWeapon(LOCAL_E, 142))
+                    if (hacks::tf2::misc_aimbot::ShouldHitBuilding(building) && !HasGunslinger(LOCAL_E))
                     {
                         if (navToBuilding(building))
                             return true;
                     }
 
             // Let's terrify some people (gunslinger engineer)
-            if (HasWeapon(LOCAL_E, 142))
+            if (HasGunslinger(LOCAL_E))
                 stayNearEngineer();
 
             else if (selectBuilding() != None)
@@ -559,11 +552,11 @@ static bool engineerLogic()
                         return true;
             }
             // If it's metal we're missing, get some metal
-            else if (metal < 100)
+            /*else if (metal < 100)
             {
                 if ((dispenser_nav_timer.test_and_set(1000) && getDispenserHealthAndAmmo(metal)) || getHealthAndAmmo(metal))
                     return true;
-            }
+            }*/
             // Else just Roam around the map and kill people
             else if (stayNearEngineer())
                 return true;
@@ -577,8 +570,8 @@ static bool engineerLogic()
     }
     // Metal
     int metal = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
-    if ((dispenser_nav_timer.test_and_set(1000) && getDispenserHealthAndAmmo(metal)) || getHealthAndAmmo(metal))
-        return true;
+    /*if ((dispenser_nav_timer.test_and_set(1000) && getDispenserHealthAndAmmo(metal)) || getHealthAndAmmo(metal))
+        return true;*/
     switch (current_engineer_task)
     {
     // Upgrade/repair
@@ -831,12 +824,14 @@ static bool stayNearEngineer()
     static CNavArea *last_area       = nullptr;
 
     // What distances do we have to use?
-    const bot_class_config *config = &DIST_OTHER;
+    bot_class_config config = DIST_ENGINEER;
+    if (HasGunslinger(LOCAL_E))
+        config = DIST_GUNSLINGER_ENGINEER;
 
     // Check if someone is too close to us and then target them instead
     std::pair<CachedEntity *, float> nearest = getNearestPlayerDistance();
-    if (nearest.first && nearest.first != last_target && nearest.second < config->min)
-        if (stayNearHelpers::stayNearPlayer(nearest.first, *config, last_area, true))
+    if (nearest.first && nearest.first != last_target && nearest.second < config.min)
+        if (stayNearHelpers::stayNearPlayer(nearest.first, config, last_area, true))
         {
             last_target = nearest.first;
             return true;
@@ -862,7 +857,7 @@ static bool stayNearEngineer()
         {
             position = *last_target->m_vecDormantOrigin();
         }
-        if ((CE_GOOD(last_target) || valid_dormant) && stayNearHelpers::isValidNearPosition(last_area->m_center, position, *config))
+        if ((CE_GOOD(last_target) || valid_dormant) && stayNearHelpers::isValidNearPosition(last_area->m_center, position, config))
             invalid_area_time.update();
 
         if ((CE_GOOD(last_target) || valid_dormant) && (!g_pPlayerResource->isAlive(last_target->m_IDX) || !last_target->m_bEnemy() || !player_tools::shouldTarget(last_target) || !spy_cloak[last_target->m_IDX].check(*spy_ignore_time) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
@@ -891,10 +886,10 @@ static bool stayNearEngineer()
         {
             Vector position = *last_target->m_vecDormantOrigin();
 
-            if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, position, *config))
+            if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, position, config))
                 return true;
             // If not, can we try pathing to our last target again?
-            if (stayNearHelpers::stayNearPlayer(last_target, *config, last_area, true))
+            if (stayNearHelpers::stayNearPlayer(last_target, config, last_area, true))
                 return true;
         }
         last_target = nullptr;
@@ -905,10 +900,10 @@ static bool stayNearEngineer()
     {
         return true;
     }
-    else if (wait_until_stay_near.test_and_set(1000))
+    else if (wait_until_stay_near.test_and_set(4000))
     {
         // We're doing nothing? Do something!
-        return stayNearHelpers::stayNearPlayers(*config, last_target, last_area);
+        return stayNearHelpers::stayNearPlayers(config, last_target, last_area);
     }
 
     return false;
@@ -1052,6 +1047,10 @@ static std::vector<Vector> getDispensers()
             continue;
         if (CE_BYTE(ent, netvar.m_bHasSapper))
             continue;
+        if (CE_BYTE(ent, netvar.m_bBuilding))
+            continue;
+        if (CE_BYTE(ent, netvar.m_bPlacing))
+            continue;
         dispensers.push_back(*ent->m_vecDormantOrigin());
     }
     std::sort(dispensers.begin(), dispensers.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
@@ -1176,7 +1175,7 @@ static bool getHealthAndAmmo(int metal)
                         continue;
                     healthpacks.push_back(ent->m_vecOrigin());
                 }
-                std::sort(healthpacks.begin(), healthpacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) > g_pLocalPlayer->v_Origin.DistTo(b); });
+                std::sort(healthpacks.begin(), healthpacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
                 for (auto &pack : healthpacks)
                 {
                     if (nav::navTo(pack, health < 0.64f || lowAmmo ? 10 : 3, true, false))
@@ -1197,7 +1196,7 @@ static bool getHealthAndAmmo(int metal)
                         continue;
                     ammopacks.push_back(ent->m_vecOrigin());
                 }
-                std::sort(ammopacks.begin(), ammopacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) > g_pLocalPlayer->v_Origin.DistTo(b); });
+                std::sort(ammopacks.begin(), ammopacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
                 for (auto &pack : ammopacks)
                 {
                     if (nav::navTo(pack, health < 0.64f || lowAmmo ? 9 : 3, true, false))
@@ -1270,11 +1269,12 @@ static slots getBestSlot(slots active_slot)
     }
     case tf_engineer:
     {
-        // Use wrench, because we are trying to build
         if (current_task == task::engineer)
         {
+            // We cannot build the building if we keep switching away from the PDA
             if (current_engineer_task == task::engineer_task::build_building)
                 return active_slot;
+            // Use wrench to repair/upgrade
             if (current_engineer_task == task::engineer_task::upgradeorrepair_building)
                 return melee;
         }
