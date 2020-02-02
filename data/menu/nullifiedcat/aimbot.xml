@@ -28,6 +28,7 @@
             <AutoVariable width="fill" target="aimbot.wait-for-charge" label="Wait for Charge"/>
             <AutoVariable width="fill" target="aimbot.autoshoot-disguised" label="Autoshoot Disguised"/>
             <AutoVariable width="fill" target="aimbot.auto.spin-up" label="Auto Spin-up"/>
+            <AutoVariable width="fill" target="aimbot.auto.tapfire" label="Tapfire minigun"/>
             <AutoVariable width="fill" target="aimbot.auto.zoom" label="Auto Zoom"/>
             <AutoVariable width="fill" target="aimbot.auto.unzoom" label="Auto Unzoom"/>
         </List>
@@ -101,7 +102,7 @@
             <AutoVariable width="fill" target="aimbot.projectile.sticky-autoshoot" label="Sticky Threshold"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Backtracking" x="340" y="110">
+    <Box padding="12 6 6 6" width="content" height="content" name="Backtracking" x="340" y="125">
         <List width="150">
             <AutoVariable width="fill" target="backtrack.enable" label="Enable Backtracking"/>
             <AutoVariable width="fill" target="aimbot.backtrack" label="Aim at Backtracking"/>
