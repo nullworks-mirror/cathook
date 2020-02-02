@@ -10,7 +10,6 @@
 #include <settings/String.hpp>
 #include "common.hpp"
 #include "MiscTemporary.hpp"
-#include <boost/algorithm/string.hpp>
 
 namespace hacks::shared::spam
 {

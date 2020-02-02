@@ -50,10 +50,13 @@ static InitRoutine misc_init([]() {
         after ? patch.Patch() : patch.Shutdown();
     });
     nolerp.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
-        if (!after && backup_lerp)
+        if (!after)
         {
-            cl_interp->SetValue(backup_lerp);
-            backup_lerp = 0.0f;
+            if (backup_lerp)
+            {
+                cl_interp->SetValue(backup_lerp);
+                backup_lerp = 0.0f;
+            }
         }
         else
         {
@@ -66,8 +69,16 @@ static InitRoutine misc_init([]() {
     EC::Register(
         EC::Shutdown,
         []() {
-            cl_interp->SetValue(backup_lerp);
-            backup_lerp = 0.0f;
+            if (backup_lerp)
+            {
+                cl_interp->SetValue(backup_lerp);
+                backup_lerp = 0.0f;
+            }
         },
         "misctemp_shutdown");
+#if ENABLE_TEXTMODE
+    // Ensure that we trigger the callback for textmode builds
+    nolerp = false;
+    nolerp = true;
+#endif
 });
