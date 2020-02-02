@@ -30,6 +30,7 @@ void NetVars::Init()
     this->m_Collision          = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
     this->m_flSimulationTime   = gNetvars.get_offset("DT_BaseEntity", "m_flSimulationTime");
     this->m_angRotation        = gNetvars.get_offset("DT_BaseEntity", "m_angRotation");
+
     IF_GAME(IsTF2())
     {
         res_iTeam                  = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
@@ -65,33 +66,49 @@ void NetVars::Init()
     this->res_iScore = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iScore");
     IF_GAME(IsTF())
     {
-        this->res_iMaxHealth                  = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");
-        this->res_iPlayerClass                = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerClass");
-        this->m_bReadyToBackstab              = gNetvars.get_offset("DT_TFWeaponKnife", "m_bReadyToBackstab");
-        this->m_bDucked                       = gNetvars.get_offset("DT_TFPlayer", "localdata", "m_Local", "m_bDucked");
-        this->m_flDuckTimer                   = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_flDuckTimer");
-        this->iCond                           = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCond");
-        this->iCond1                          = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCondEx");
-        this->iCond2                          = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCondEx2");
-        this->iCond3                          = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCondEx3");
-        this->iClass                          = gNetvars.get_offset("DT_TFPlayer", "m_PlayerClass", "m_iClass");
-        this->flChargedDamage                 = gNetvars.get_offset("DT_TFSniperRifle", "SniperRifleLocalData", "m_flChargedDamage");
-        this->iUpgradeLevel                   = gNetvars.get_offset("DT_BaseObject", "m_iUpgradeLevel");
-        this->m_hBuilder                      = gNetvars.get_offset("DT_BaseObject", "m_hBuilder");
-        this->m_bCanPlace                     = gNetvars.get_offset("DT_BaseObject", "m_bServerOverridePlacement");
-        this->m_bBuilding                     = gNetvars.get_offset("DT_BaseObject", "m_bBuilding");
-        this->m_iObjectType                   = gNetvars.get_offset("DT_BaseObject", "m_iObjectType");
-        this->m_bHasSapper                    = gNetvars.get_offset("DT_BaseObject", "m_bHasSapper");
-        this->m_bPlacing                      = gNetvars.get_offset("DT_BaseObject", "m_bPlacing");
-        this->m_bMiniBuilding                 = gNetvars.get_offset("DT_BaseObject", "m_bMiniBuilding");
+        this->res_iMaxHealth     = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");
+        this->res_iPlayerClass   = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerClass");
+        this->m_bReadyToBackstab = gNetvars.get_offset("DT_TFWeaponKnife", "m_bReadyToBackstab");
+        this->m_bDucked          = gNetvars.get_offset("DT_TFPlayer", "localdata", "m_Local", "m_bDucked");
+        this->m_flDuckTimer      = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_flDuckTimer");
+        this->iCond              = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCond");
+        this->iCond1             = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCondEx");
+        this->iCond2             = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCondEx2");
+        this->iCond3             = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCondEx3");
+        this->iClass             = gNetvars.get_offset("DT_TFPlayer", "m_PlayerClass", "m_iClass");
+        this->flChargedDamage    = gNetvars.get_offset("DT_TFSniperRifle", "SniperRifleLocalData", "m_flChargedDamage");
+
+        // sentry
+        this->m_iAmmoShells  = gNetvars.get_offset("DT_ObjectSentrygun", "m_iAmmoShells");
+        this->m_iAmmoRockets = gNetvars.get_offset("DT_ObjectSentrygun", "m_iAmmoRockets");
+        this->m_iSentryState = gNetvars.get_offset("DT_ObjectSentrygun", "m_iState");
+
+        // dispenser
+        this->m_iAmmoMetal = gNetvars.get_offset("DT_ObjectDispenser", "m_iAmmoMetal");
+
+        // any building
+        this->m_iUpgradeMetal           = gNetvars.get_offset("DT_BaseObject", "m_iUpgradeMetal");
+        this->m_flPercentageConstructed = gNetvars.get_offset("DT_BaseObject", "m_flPercentageConstructed");
+
+        // any building
+        this->iUpgradeLevel   = gNetvars.get_offset("DT_BaseObject", "m_iUpgradeLevel");
+        this->m_hBuilder      = gNetvars.get_offset("DT_BaseObject", "m_hBuilder");
+        this->m_bCanPlace     = gNetvars.get_offset("DT_BaseObject", "m_bServerOverridePlacement");
+        this->m_bBuilding     = gNetvars.get_offset("DT_BaseObject", "m_bBuilding");
+        this->m_iObjectType   = gNetvars.get_offset("DT_BaseObject", "m_iObjectType");
+        this->m_bHasSapper    = gNetvars.get_offset("DT_BaseObject", "m_bHasSapper");
+        this->m_bPlacing      = gNetvars.get_offset("DT_BaseObject", "m_bPlacing");
+        this->m_bMiniBuilding = gNetvars.get_offset("DT_BaseObject", "m_bMiniBuilding");
+
+        // teleporter
         this->m_iTeleState                    = gNetvars.get_offset("DT_ObjectTeleporter", "m_iState");
         this->m_flTeleRechargeTime            = gNetvars.get_offset("DT_ObjectTeleporter", "m_flRechargeTime");
         this->m_flTeleCurrentRechargeDuration = gNetvars.get_offset("DT_ObjectTeleporter", "m_flCurrentRechargeDuration");
         this->m_iTeleTimesUsed                = gNetvars.get_offset("DT_ObjectTeleporter", "m_iTimesUsed");
         this->m_flTeleYawToExit               = gNetvars.get_offset("DT_ObjectTeleporter", "m_flYawToExit");
         this->m_bMatchBuilding                = gNetvars.get_offset("DT_ObjectTeleporter", "m_bMatchBuilding");
-        this->m_DmgRadius                     = gNetvars.get_offset("DT_BaseGrenade", "m_DmgRadius");
 
+        this->m_DmgRadius                   = gNetvars.get_offset("DT_BaseGrenade", "m_DmgRadius");
         this->iPipeType                     = gNetvars.get_offset("DT_TFProjectile_Pipebomb", "m_iType");
         this->iBuildingHealth               = gNetvars.get_offset("DT_BaseObject", "m_iHealth");
         this->iBuildingMaxHealth            = gNetvars.get_offset("DT_BaseObject", "m_iMaxHealth");

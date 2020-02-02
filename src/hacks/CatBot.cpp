@@ -23,7 +23,6 @@ static settings::Boolean auto_disguise{ "misc.autodisguise", "true" };
 static settings::Int abandon_if_ipc_bots_gte{ "cat-bot.abandon-if.ipc-bots-gte", "0" };
 static settings::Int abandon_if_humans_lte{ "cat-bot.abandon-if.humans-lte", "0" };
 static settings::Int abandon_if_players_lte{ "cat-bot.abandon-if.players-lte", "0" };
-static settings::Int mark_human_threshold{ "cat-bot.mark-human-after-kills", "2" };
 
 static settings::Boolean micspam{ "cat-bot.micspam.enable", "false" };
 static settings::Int micspam_on{ "cat-bot.micspam.interval-on", "3" };
@@ -74,6 +73,7 @@ int globerr(const char *path, int eerrno)
     // let glob() keep going
     return 0;
 }
+
 bool hasEnding(std::string const &fullString, std::string const &ending)
 {
     if (fullString.length() >= ending.length())
@@ -191,24 +191,6 @@ void on_killed_by(int userid)
             }
         }
     }
-
-    if (!catbotmode)
-        return;
-    CachedEntity *player = ENTITY(g_IEngine->GetPlayerForUserID(userid));
-
-    if (CE_BAD(player))
-        return;
-
-    unsigned steamID = player->player_info.friendsID;
-
-    if (playerlist::AccessData(steamID).state != playerlist::k_EState::CAT)
-        return;
-
-    // if (human_detecting_map[steamID].has_bot_name)
-    human_detecting_map[steamID].treacherous_kills++;
-    logging::Info("Treacherous kill #%d: %s [U:1:%u]", human_detecting_map[steamID].treacherous_kills, player->player_info.name, player->player_info.friendsID);
-    if (human_detecting_map[steamID].treacherous_kills >= *mark_human_threshold)
-        playerlist::ChangeState(steamID, playerlist::k_EState::RAGE, true);
 }
 
 void do_random_votekick()
@@ -531,7 +513,7 @@ CatBotEventListener &listener()
 
 class CatBotEventListener2 : public IGameEventListener2
 {
-    void FireGameEvent(IGameEvent *event) override
+    void FireGameEvent(IGameEvent *) override
     {
         // vote for current map if catbot mode and autovote is on
         if (catbotmode && autovote_map)

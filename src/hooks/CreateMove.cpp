@@ -127,13 +127,7 @@ namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
 {
-#define TICK_INTERVAL (g_GlobalVars->interval_per_tick)
-#define TIME_TO_TICKS(dt) ((int) (0.5f + (float) (dt) / TICK_INTERVAL))
-#define TICKS_TO_TIME(t) (TICK_INTERVAL * (t))
-#define ROUND_TO_TICKS(t) (TICK_INTERVAL * TIME_TO_TICKS(t))
-    volatile uintptr_t **fp;
-    __asm__ volatile("mov %%ebp, %0" : "=r"(fp));
-    bSendPackets = reinterpret_cast<bool *>(**fp - 8);
+    bSendPackets = reinterpret_cast<bool *>((uintptr_t) __builtin_frame_address(2) - 8);
 
     g_Settings.is_create_move = true;
     bool time_replaced, ret, speedapplied;
@@ -289,7 +283,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 if (current_user_cmd->buttons & IN_ATTACK)
                     if (attackticks % *fullauto + 1 < *fullauto)
                         current_user_cmd->buttons &= ~IN_ATTACK;
-            static int fakelag_queue = 0;
+            static int fakelag_queue      = 0;
             g_pLocalPlayer->isFakeAngleCM = false;
             if (CE_GOOD(LOCAL_E))
                 if (fakelag_amount || (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled()))
@@ -396,19 +390,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
 
             ret = false;
         }
-        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
-        {
-
-            CachedEntity *ent = ENTITY(i);
-            if (CE_GOOD(LOCAL_E))
-                if (ent == LOCAL_E)
-                    continue;
-            if (CE_BAD(ent) || !ent->m_bAlivePlayer())
-                continue;
-            INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
-            if (NET_FLOAT(RAW_ENT(ent), netvar.m_flSimulationTime) <= 1.5f)
-                continue;
-        }
         g_pLocalPlayer->UpdateEnd();
     }
 
@@ -419,6 +400,18 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     }
     g_pLocalPlayer->bAttackLastTick = (cmd->buttons & IN_ATTACK);
     g_Settings.is_create_move       = false;
+    if (nolerp && !hacks::shared::backtrack::isBacktrackEnabled)
+    {
+        static const ConVar *pUpdateRate = g_pCVar->FindVar("cl_updaterate");
+        if (!pUpdateRate)
+            pUpdateRate = g_pCVar->FindVar("cl_updaterate");
+        else
+        {
+
+            float interp = MAX(cl_interp->GetFloat(), cl_interp_ratio->GetFloat() / pUpdateRate->GetFloat());
+            cmd->tick_count += TIME_TO_TICKS(interp);
+        }
+    }
     return ret;
 }
 } // namespace hooked_methods

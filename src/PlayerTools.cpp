@@ -97,7 +97,8 @@ std::optional<colors::rgba_t> forceEspColor(CachedEntity *entity)
 
 void onKilledBy(unsigned id)
 {
-    if (!shouldTargetSteamId(id))
+    auto &pl = playerlist::AccessData(id);
+    if (!shouldTargetSteamId(id) && !playerlist::IsFriendly(pl.state))
     {
         // We ignored the gamer, but they still shot us
         if (betrayal_list.find(id) == betrayal_list.end())
@@ -110,4 +111,32 @@ void onKilledBy(CachedEntity *entity)
 {
     onKilledBy(entity->player_info.friendsID);
 }
+
+class PlayerToolsEventListener : public IGameEventListener2
+{
+    void FireGameEvent(IGameEvent *event) override
+    {
+
+        int killer_id = g_IEngine->GetPlayerForUserID(event->GetInt("attacker"));
+        int victim_id = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+
+        if (victim_id == g_IEngine->GetLocalPlayer())
+        {
+            onKilledBy(ENTITY(killer_id));
+            return;
+        }
+    }
+};
+
+PlayerToolsEventListener &listener()
+{
+    static PlayerToolsEventListener object{};
+    return object;
+}
+
+static InitRoutine register_event([]() {
+    g_IEventManager2->AddListener(&listener(), "player_death", false);
+    EC::Register(
+        EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener()); }, "playerlist_shutdown");
+});
 } // namespace player_tools

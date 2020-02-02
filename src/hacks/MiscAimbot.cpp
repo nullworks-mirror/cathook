@@ -18,6 +18,7 @@ static settings::Int sandwichaim_aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
 float sandwich_speed = 350.0f;
 float grav           = 0.25f;
 int prevent          = -1;
+
 std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck)
 {
     CachedEntity *bestent = nullptr;
@@ -190,9 +191,11 @@ static void SandwichAim()
         g_pLocalPlayer->bUseSilentAngles = true;
     }
 }
+
 static bool charge_aimbotted = false;
 static settings::Boolean charge_aim{ "chargeaim.enable", "false" };
 static settings::Button charge_key{ "chargeaim.key", "<null>" };
+
 static void ChargeAimbot()
 {
     charge_aimbotted = false;
@@ -269,12 +272,243 @@ static void SapperAimbot()
         }
     }
 }
+// auto repair
+static settings::Int autorepair_priority{ "autorepair.priority", "0" };
+static settings::Boolean autorepair_enabled("autorepair.enabled", "false");
+static settings::Boolean autorepair_silent("autorepair.silent", "true");
+static settings::Boolean autorepair_repair_sentry("autorepair.sentry", "false");
+static settings::Boolean autorepair_repair_dispenser("autorepair.dispenser", "false");
+static settings::Boolean autorepair_repair_teleport("autorepair.teleport", "false");
+
+// auto upgrade
+static settings::Boolean autoupgrade_enabled("autoupgrade.enabled", "false");
+static settings::Boolean autoupgrade_sentry("autoupgrade.sentry", "false");
+static settings::Boolean autoupgrade_dispenser("autoupgrade.dispenser", "false");
+static settings::Boolean autoupgrade_teleport("autoupgrade.teleport", "false");
+static settings::Int autoupgrade_sentry_level("autoupgrade.sentry.level", "3");
+static settings::Int autoupgrade_dispenser_level("autoupgrade.dispenser.level", "3");
+static settings::Int autoupgrade_teleport_level("autoupgrade.teleport.level", "2");
+
+bool ShouldHitBuilding(CachedEntity *ent)
+{
+    if (!autoupgrade_enabled && !autorepair_enabled)
+        return false;
+    // Current Metal
+    int cur_ammo = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
+    // Autorepair is on
+    if (autorepair_enabled)
+    {
+        // Special Sentry logic
+        if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
+        {
+            // Current sentry ammo
+            int sentry_ammo = CE_INT(ent, netvar.m_iAmmoShells);
+            // Max Sentry ammo
+            int max_ammo = 0;
+
+            // Set Ammo depending on level
+            switch (CE_INT(ent, netvar.iUpgradeLevel))
+            {
+            case 1:
+                max_ammo = 150;
+                break;
+            case 2:
+            case 3:
+                max_ammo = 200;
+            }
+
+            // Sentry needs ammo
+            if (sentry_ammo < max_ammo)
+                return true;
+        }
+        // Buildings needs to be repaired
+        if (cur_ammo && ent->m_iHealth() != ent->m_iMaxHealth())
+            return true;
+    }
+    // Autoupgrade is on
+    if (autoupgrade_enabled)
+    {
+        // Upgrade lvel
+        int upgrade_level = CE_INT(ent, netvar.iUpgradeLevel);
+
+        // Don't upgrade mini sentries
+        if (CE_BYTE(ent, netvar.m_bMiniBuilding))
+            return false;
+
+        // Rvar to check
+        int level = 0;
+
+        // Pick The right rvar to check depending on building type
+        switch (ent->m_iClassID())
+        {
+
+        case CL_CLASS(CObjectSentrygun):
+            // Enabled check
+            if (!autoupgrade_sentry)
+                return false;
+            level = *autoupgrade_sentry_level;
+            break;
+
+        case CL_CLASS(CObjectDispenser):
+            // Enabled check
+            if (!autoupgrade_dispenser)
+                return false;
+            level = *autoupgrade_dispenser_level;
+            break;
+
+        case CL_CLASS(CObjectTeleporter):
+            // Enabled check
+            if (!autoupgrade_teleport)
+                return false;
+            level = *autoupgrade_teleport_level;
+            break;
+        }
+
+        // Can be upgraded
+        if (upgrade_level < level && cur_ammo)
+            return true;
+    }
+    return false;
+}
+
+CachedEntity *targetBuilding(bool priority)
+{
+    float wrench_range   = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+    CachedEntity *target = nullptr;
+    float distance       = FLT_MAX;
+    for (int i = 0; i < entity_cache::max; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+
+        if (CE_BAD(ent))
+            continue;
+
+        // can't exactly repair Merasmus
+        if (ent->m_Type() != ENTITY_BUILDING)
+            continue;
+
+        // yes, repair enemy buildings
+        if (ent->m_bEnemy())
+            continue;
+
+        float new_distance = g_pLocalPlayer->v_Eye.DistTo(GetBuildingPosition(ent));
+
+        // Further away than old one
+        if (new_distance >= distance)
+            continue;
+
+        auto id = ent->m_iClassID();
+
+        switch (id)
+        {
+
+        case CL_CLASS(CObjectSentrygun):
+        {
+            if (priority && *autorepair_priority != 1)
+                continue;
+            // Don't repair sentries
+            if (!autorepair_repair_sentry && !autoupgrade_sentry)
+                continue;
+            break;
+        }
+
+        case CL_CLASS(CObjectDispenser):
+        {
+            if (priority && *autorepair_priority != 2)
+                continue;
+            // Repair Dispensers check
+            if (!autorepair_repair_dispenser && !autoupgrade_dispenser)
+                continue;
+            break;
+        }
+
+        case CL_CLASS(CObjectTeleporter):
+        {
+            if (priority && *autorepair_priority != 3)
+                continue;
+            // Repair Teleporters check
+            if (!autorepair_repair_teleport && !autoupgrade_teleport)
+                continue;
+            break;
+        }
+
+        default:
+            continue;
+        }
+
+        float s_distance = ent->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin());
+
+        if (!ShouldHitBuilding(ent))
+            continue;
+
+        if (s_distance > wrench_range)
+            continue;
+
+        target = ent;
+
+        distance = new_distance;
+    }
+    return target;
+};
+
+static void BuildingAimbot()
+{
+    if (!autorepair_enabled && !autoupgrade_enabled)
+        return;
+
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
+        return;
+
+    CachedEntity *target = nullptr;
+    // Metal
+    int cur_ammo       = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
+    float wrench_range = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
+    // Center is further away than actual hit range for buildings, so add some more
+    wrench_range += 50.f;
+
+    if (cur_ammo == 0)
+        return;
+
+    if (g_pLocalPlayer->clazz != tf_engineer)
+        return;
+
+    if (GetWeaponMode() != weaponmode::weapon_melee)
+        return;
+
+    // Get priority buildings
+    if (autorepair_priority)
+        target = targetBuilding(true);
+    // No building found
+    if (!target)
+        targetBuilding(false);
+
+    // We have a target
+    if (target)
+    {
+        Vector angle   = GetAimAtAngles(g_pLocalPlayer->v_Eye, GetBuildingPosition(target));
+        Vector forward = GetForwardVector(g_pLocalPlayer->v_Eye, angle, wrench_range);
+
+        trace_t trace;
+
+        if (IsEntityVectorVisible(target, forward, MASK_SHOT, &trace))
+        {
+            if (trace.DidHit() && (IClientEntity *) trace.m_pEnt == RAW_ENT(target))
+            {
+                current_user_cmd->viewangles = angle;
+                if (autorepair_silent)
+                    g_pLocalPlayer->bUseSilentAngles = true;
+                current_user_cmd->buttons |= IN_ATTACK;
+            }
+        }
+    }
+}
 
 static void CreateMove()
 {
     SandwichAim();
     ChargeAimbot();
     SapperAimbot();
+    BuildingAimbot();
 }
 
 static InitRoutine init([]() {

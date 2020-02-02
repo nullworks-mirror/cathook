@@ -255,6 +255,10 @@ void hack::Hook()
     hooks::engine.HookMethod(HOOK_ARGS(ServerCmdKeyValues));
     hooks::engine.Apply();
 
+    hooks::demoplayer.Set(demoplayer);
+    hooks::demoplayer.HookMethod(HOOK_ARGS(IsPlayingTimeDemo));
+    hooks::demoplayer.Apply();
+
     hooks::eventmanager2.Set(g_IEventManager2);
     hooks::eventmanager2.HookMethod(HOOK_ARGS(FireEvent));
     hooks::eventmanager2.HookMethod(HOOK_ARGS(FireEventClientSide));

@@ -39,6 +39,9 @@ static settings::Boolean god_mode{ "misc.god-mode", "false" };
 static settings::Boolean debug_info{ "misc.debug-info", "false" };
 static settings::Boolean no_homo{ "misc.no-homo", "true" };
 static settings::Boolean show_spectators{ "misc.show-spectators", "false" };
+static settings::Boolean misc_drawhitboxes{ "misc.draw-hitboxes", "false" };
+// Useful for debugging with showlagcompensation
+static settings::Boolean misc_drawhitboxes_dead{ "misc.draw-hitboxes.dead-players", "false" };
 #endif
 
 #if !ENFORCE_STREAM_SAFETY && ENABLE_VISUALS
@@ -109,7 +112,7 @@ static ConVar *teammatesPushaway{ nullptr };
 
 int getCarriedBuilding()
 {
-    if (CE_BYTE(LOCAL_E, netvar.m_bCarryingObject))
+    if (CE_INT(LOCAL_E, netvar.m_bCarryingObject))
         return HandleToIDX(CE_INT(LOCAL_E, netvar.m_hCarriedObject));
     for (int i = 1; i < MAX_ENTITIES; i++)
     {
@@ -118,15 +121,57 @@ int getCarriedBuilding()
             continue;
         if (HandleToIDX(CE_INT(ent, netvar.m_hBuilder)) != LOCAL_E->m_IDX)
             continue;
-        if (!CE_BYTE(ent, netvar.m_bPlacing))
+        if (!CE_INT(ent, netvar.m_bPlacing))
             continue;
         return i;
     }
     return -1;
 }
+#if ENABLE_VISUALS
 
+struct wireframe_data
+{
+    Vector raw_min;
+    Vector raw_max;
+    Vector rotation;
+    Vector origin;
+};
+
+std::vector<wireframe_data> wireframe_queue;
+void QueueWireframeHitboxes(hitbox_cache::EntityHitboxCache &hb_cache)
+{
+    for (int i = 0; i < hb_cache.GetNumHitboxes(); i++)
+    {
+        auto hb        = hb_cache.GetHitbox(i);
+        Vector raw_min = hb->bbox->bbmin;
+        Vector raw_max = hb->bbox->bbmax;
+        auto transform = hb_cache.GetBones()[hb->bbox->bone];
+        Vector rotation;
+        Vector origin;
+
+        MatrixAngles(transform, *(QAngle *) &rotation, origin);
+        wireframe_queue.push_back(wireframe_data{ raw_min, raw_max, rotation, origin });
+    }
+}
+void DrawWireframeHitbox(wireframe_data data)
+{
+    g_IVDebugOverlay->AddBoxOverlay2(data.origin, data.raw_min, data.raw_max, VectorToQAngle(data.rotation), Color(0, 0, 0, 0), Color(255, 0, 0, 255), g_GlobalVars->interval_per_tick * 2);
+}
+#endif
 void CreateMove()
 {
+#if ENABLE_VISUALS
+    if (misc_drawhitboxes)
+    {
+        for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
+        {
+            auto ent = ENTITY(i);
+            if (CE_INVALID(ent) || ent == LOCAL_E || (!misc_drawhitboxes_dead && !ent->m_bAlivePlayer()))
+                continue;
+            QueueWireframeHitboxes(ent->hitboxes);
+        }
+    }
+#endif
     if (current_user_cmd->command_number)
         last_number = current_user_cmd->command_number;
     // AntiAfk That after a certian time without movement keys depressed, causes
@@ -222,8 +267,14 @@ void CreateMove()
 
 #if ENABLE_VISUALS
 // Timer ussr{};
-void DrawText()
+void Draw()
 {
+    if (misc_drawhitboxes)
+    {
+        for (auto &entry : wireframe_queue)
+            DrawWireframeHitbox(entry);
+        wireframe_queue.clear();
+    }
     /*if (ussr.test_and_set(207000))
     {
         g_ISurface->PlaySound()
@@ -773,7 +824,7 @@ static InitRoutine init([]() {
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
 #if ENABLE_VISUALS
-    EC::Register(EC::Draw, DrawText, "draw_misc_hacks", EC::average);
+    EC::Register(EC::Draw, Draw, "draw_misc_hacks", EC::average);
 #if !ENFORCE_STREAM_SAFETY
     if (render_zoomed)
         tryPatchLocalPlayerShouldDraw(true);

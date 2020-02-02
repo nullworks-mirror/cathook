@@ -32,6 +32,8 @@ extern settings::Boolean clean_chat;
 
 extern settings::Boolean clean_screenshots;
 extern settings::Boolean crypt_chat;
+extern settings::Boolean nolerp;
+extern float backup_lerp;
 extern settings::Boolean disable_visuals;
 extern settings::Int print_r;
 extern settings::Int print_g;
@@ -41,6 +43,10 @@ extern int stored_buttons;
 #if ENABLE_VISUALS
 extern bool freecam_is_toggled;
 #endif
+namespace hacks::tf2::misc_aimbot
+{
+bool ShouldHitBuilding(CachedEntity *ent);
+}
 namespace hooked_methods
 {
 void sendAchievementKv(int value);
