@@ -35,7 +35,7 @@
 float last_say = 0.0f;
 
 CatCommand spectate("spectate", "Spectate", [](const CCommand &args) {
-    if (args.ArgC() < 1)
+    if (args.ArgC() < 2)
     {
         spectator_target = 0;
         return;

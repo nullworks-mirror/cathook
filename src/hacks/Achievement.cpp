@@ -126,7 +126,7 @@ CatCommand unlock_single("achievement_unlock_single", "Unlocks single achievemen
 CatCommand lock_single("achievement_lock_single", "Locks single achievement by INDEX!", [](const CCommand &args) {
     if (!checkachmngr())
         return;
-    if (args.ArgC() < 1)
+    if (args.ArgC() < 2)
     {
         logging::Info("Actually provide an index");
         return;
