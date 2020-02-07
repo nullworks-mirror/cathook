@@ -33,7 +33,7 @@
 	        <AutoVariable width="fill" target="misc.pathing.draw" label="Draw Path"/>
             <AutoVariable width="fill" target="misc.pathing.look-at-path" label="Look at Path"/>
             <AutoVariable width="fill" target="navbot.enabled" label="Enable Navbot"/>
-            <AutoVariable width="fill" target="navbot.engineer-mode" label="Enable Engineer mode">
+            <AutoVariable width="fill" target="navbot.engineer-mode" label="Enable Engineer mode"/>
             <AutoVariable width="fill" target="navbot.get-health-and-ammo" label="Get Health and Ammo"/>
             <AutoVariable width="fill" target="navbot.spy-mode" label="Enable Spy Mode"/>
             <AutoVariable width="fill" target="navbot.other-mode" label="General Mode"/>
