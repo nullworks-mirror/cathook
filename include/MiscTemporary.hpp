@@ -43,6 +43,7 @@ extern int stored_buttons;
 #if ENABLE_VISUALS
 extern bool freecam_is_toggled;
 #endif
+std::string GetNamestealName(CSteamID steam_id);
 namespace hacks::tf2::misc_aimbot
 {
 bool ShouldHitBuilding(CachedEntity *ent);
