@@ -1,3 +1,2 @@
 #!/usr/bin/env bash
-RUNUSER="sudo -u $LOGNAME"
-$RUNUSER bash ./scripts/updater
+./scripts/updater

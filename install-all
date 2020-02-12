@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 
-[[ ! -z "$SUDO_USER" ]] && RUNUSER="$SUDO_USER" || RUNUSER="$LOGNAME"
-RUNCMD="sudo -u $RUNUSER"
-
 set -e
 
 #
 # Build cathook
 #
 
-$RUNCMD ./scripts/updater false true true
+./scripts/updater false true true
