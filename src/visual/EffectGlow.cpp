@@ -31,6 +31,7 @@ namespace effect_glow
 
 static settings::Boolean health{ "glow.health", "false" };
 static settings::Boolean teammates{ "glow.show.teammates", "false" };
+static settings::Boolean disguised{ "glow.show.disguised", "true" };
 static settings::Boolean players{ "glow.show.players", "true" };
 static settings::Boolean medkits{ "glow.show.medkits", "false" };
 static settings::Boolean ammobox{ "glow.show.ammoboxes", "false" };
@@ -284,6 +285,8 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
         return true;
     case ENTITY_PLAYER:
         if (!players)
+            return false;
+        if (!disguised && (IsPlayerDisguised(ent)))
             return false;
         if (!teammates && !ent->m_bEnemy() && playerlist::IsDefault(ent))
             return false;
