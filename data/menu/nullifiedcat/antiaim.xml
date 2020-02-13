@@ -2,15 +2,15 @@
     <Box padding="12 6 6 6" width="content" height="content" name="Anti-Aim">
         <List width="150">
             <AutoVariable width="fill" target="antiaim.enable" label="Enable"/>
-            <AutoVariable width="fill" target="antiaim.draw-fakes" label="Draw fakes"/>
-            <AutoVariable width="fill" target="antiaim.crouch" label="Fake crouch"/>
-            <AutoVariable width="fill" target="antiaim.no-clamp" label="No clamping"/>
+            <AutoVariable width="fill" target="antiaim.draw-fakes" label="Draw Fakes"/>
+            <AutoVariable width="fill" target="antiaim.crouch" label="Fake Crouch"/>
+            <AutoVariable width="fill" target="antiaim.no-clamp" label="No Clamping"/>
             <AutoVariable width="fill" target="misc.fakelag" label="Fakelag" min="0" max="15"/>
             <AutoVariable width="fill" target="antiaim.spin-speed" label="Spin speed" min="-45" max="45"/>
             <AutoVariable width="fill" target="antiaim.roll" label="Roll"/>
             <AutoVariable width="fill" target="antiaim.pitch.static" label="Custom Pitch"/>
             <AutoVariable width="fill" target="antiaim.yaw.static" label="Custom Yaw"/>
-            <LabeledObject width="fill" label="Pitch mode">
+            <LabeledObject width="fill" label="Pitch Mode">
                 <Select target="antiaim.pitch.mode">
                     <Option name="Disable" value="0"/>
                     <Option name="Custom" value="1"/>
@@ -26,7 +26,7 @@
                     <Option name="Heck" value="11"/>
                 </Select>
             </LabeledObject>
-            <LabeledObject width="fill" label="Yaw mode">
+            <LabeledObject width="fill" label="Yaw Mode">
                 <Select target="antiaim.yaw.mode">
                     <Option name="Disable" value="0"/>
                     <Option name="Custom" value="1"/>
@@ -63,10 +63,10 @@
     <Box padding="12 6 6 6" name="Anti-Anti-Anti-Aim" width="content" height="content" x="340">
         <List width="150">
             <AutoVariable width="fill" target="antiaim.aaaa.enable" label="Enable"/>
-            <AutoVariable width="fill" target="antiaim.aaaa.flip-key" label="Flip key"/>
+            <AutoVariable width="fill" target="antiaim.aaaa.flip-key" label="Flip Key"/>
             <AutoVariable width="fill" target="antiaim.aaaa.interval.seconds" label="Enable"/>
-            <AutoVariable width="fill" target="antiaim.aaaa.interval.random-low" label="Random low"/>
-            <AutoVariable width="fill" target="antiaim.aaaa.interval.random-high" label="Random high"/>
+            <AutoVariable width="fill" target="antiaim.aaaa.interval.random-low" label="Random Low"/>
+            <AutoVariable width="fill" target="antiaim.aaaa.interval.random-high" label="Random High"/>
             <LabeledObject width="fill" label="Mode">
                 <Select target="antiaim.aaaa.mode">
                     <Option name="(Fake)up" value="0"/>
