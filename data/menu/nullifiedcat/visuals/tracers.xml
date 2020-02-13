@@ -3,16 +3,16 @@
         <List width="150">
             <AutoVariable width="fill" target="tracers.enabled" label="Enabled"/>
             <AutoVariable width="fill" target="tracers.buildings" label="Enable Building Tracers"/>
-            <AutoVariable width="fill" target="tracers.green-distance" label="Green distance"/>
-            <AutoVariable width="fill" target="tracers.line-thickness" label="Line thickness"/>
-            <AutoVariable width="fill" target="tracers.line-opaqueness" label="Line opaqueness"/>
-            <AutoVariable width="fill" target="tracers.min-fov" label="Min fov"/>
-            <AutoVariable width="fill" target="tracers.max-dist" label="Max distance"/>
-            <LabeledObject width="fill" label="Show friends">
+            <AutoVariable width="fill" target="tracers.green-distance" label="Green Distance"/>
+            <AutoVariable width="fill" target="tracers.line-thickness" label="Line Thickness"/>
+            <AutoVariable width="fill" target="tracers.line-opaqueness" label="Line Opaqueness"/>
+            <AutoVariable width="fill" target="tracers.min-fov" label="Min FOV"/>
+            <AutoVariable width="fill" target="tracers.max-dist" label="Max Distance"/>
+            <LabeledObject width="fill" label="Show Friends">
                 <Select width="150" target="tracers.draw-friends">
-                    <Option name="Don't show friends" value="0"/>
-                    <Option name="Show friends in enemy team" value="1"/>
-                    <Option name="Always show friends" value="2"/>
+                    <Option name="Don't Show Friends" value="0"/>
+                    <Option name="Friends in Enemy Team" value="1"/>
+                    <Option name="Always Show Friends" value="2"/>
                 </Select>
             </LabeledObject>
         </List>
