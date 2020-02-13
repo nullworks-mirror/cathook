@@ -156,8 +156,16 @@ static void CreateMove()
 
     // Engineer stuff
     if (engineer_mode && g_pLocalPlayer->clazz == tf_engineer)
+    {
         if (engineerLogic())
             return;
+    }
+    // Reset Engi task stzff if not engineer
+    else if (!engineer_mode && task::current_task == task::engineer)
+    {
+        task::current_task          = task::none;
+        task::current_engineer_task = task::nothing;
+    }
 
     if (blocking)
         return;
