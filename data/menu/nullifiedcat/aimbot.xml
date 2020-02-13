@@ -17,19 +17,19 @@
             <AutoVariable width="fill" target="aimbot.fov-circle.enable" label="FOV Circle"/>
             <AutoVariable width="fill" target="aimbot.fov-circle.opacity" label="FOV Opacity" min="0" max="1"/>
             <AutoVariable width="fill" target="aimbot.can-shoot-only" label="Only Shoot When Able"/>
-            <AutoVariable width="fill" target="aimbot.miss-chance" label="Miss chance"/>
+            <AutoVariable width="fill" target="aimbot.miss-chance" label="Miss Chance"/>
             <AutoVariable width="fill" target="aimbot.extrapolate" label="Extrapolate"/>
-            <AutoVariable width="fill" target="aimbot.zoomed-only" label="Zoomed only"/>
+            <AutoVariable width="fill" target="aimbot.zoomed-only" label="Zoomed Only"/>
         </List>
     </Box>
     <Box padding="12 6 6 6" width="content" height="content" name="Autoshoot" x="340">
         <List width="150">
             <AutoVariable width="fill" target="aimbot.autoshoot" label="Enable Autoshoot"/>
-            <AutoVariable width="fill" target="aimbot.wait-for-charge" label="Wait For Charge"/>
+            <AutoVariable width="fill" target="aimbot.wait-for-charge" label="Wait for Charge"/>
             <AutoVariable width="fill" target="aimbot.autoshoot-disguised" label="Autoshoot Disguised"/>
-            <AutoVariable width="fill" target="aimbot.auto.spin-up" label="Auto spin-up"/>
-            <AutoVariable width="fill" target="aimbot.auto.zoom" label="Auto zoom"/>
-            <AutoVariable width="fill" target="aimbot.auto.unzoom" label="Auto unzoom"/>
+            <AutoVariable width="fill" target="aimbot.auto.spin-up" label="Auto Spin-up"/>
+            <AutoVariable width="fill" target="aimbot.auto.zoom" label="Auto Zoom"/>
+            <AutoVariable width="fill" target="aimbot.auto.unzoom" label="Auto Unzoom"/>
         </List>
     </Box>
     <Box padding="12 6 6 6" width="content" height="content" name="Target Selection" x="170">
@@ -83,10 +83,10 @@
             <AutoVariable width="fill" target="aimbot.target.max-range" label="Max Range"/>
             <AutoVariable width="fill" target="aimbot.multipoint" label="Multipoint"/>
             <AutoVariable width="fill" target="aimbot.lock-target" label="Lock Target"/>
-            <AutoVariable width="fill" target="aimbot.target.ignore-non-rage" label="Rage only"/>
-            <AutoVariable width="fill" target="aimbot.target.stickybomb" label="Aim At Stickybombs"/>
-            <AutoVariable width="fill" target="aimbot.target.sentry" label="Aim At Sentry Guns"/>
-            <AutoVariable width="fill" target="aimbot.target.other-buildings" label="Aim At Other Buildings"/>
+            <AutoVariable width="fill" target="aimbot.target.ignore-non-rage" label="Rage Only"/>
+            <AutoVariable width="fill" target="aimbot.target.stickybomb" label="Aim at Stickybombs"/>
+            <AutoVariable width="fill" target="aimbot.target.sentry" label="Aim at Sentry Guns"/>
+            <AutoVariable width="fill" target="aimbot.target.other-buildings" label="Aim at Other Buildings"/>
             <AutoVariable width="fill" target="aimbot.target.ignore-cloaked-spies" label="Ignore Cloaked Spies"/>
             <AutoVariable width="fill" target="aimbot.target.ignore-vaccinator" label="Ignore Vaccinator Uber"/>
             <AutoVariable width="fill" target="aimbot.target.ignore-deadringer" label="Ignore Dead Ringer Spies"/>
@@ -96,7 +96,7 @@
         <List width="150">
             <AutoVariable width="fill" target="aimbot.projectile.enable" label="Enable Projectile Aimbot"/>
             <AutoVariable width="fill" target="aimbot.projectile.gravity" label="Gravity Override"/>
-            <AutoVariable width="fill" target="aimbot.projectile.speed" label="Velocity override"/>
+            <AutoVariable width="fill" target="aimbot.projectile.speed" label="Velocity Override"/>
             <AutoVariable width="fill" target="aimbot.projectile.huntsman-autoshoot" label="Bow Threshold"/>
             <AutoVariable width="fill" target="aimbot.projectile.sticky-autoshoot" label="Sticky Threshold"/>
         </List>
@@ -104,7 +104,7 @@
     <Box padding="12 6 6 6" width="content" height="content" name="Backtracking" x="340" y="110">
         <List width="150">
             <AutoVariable width="fill" target="backtrack.enable" label="Enable Backtracking"/>
-            <AutoVariable width="fill" target="aimbot.backtrack" label="Aim At Backtracking"/>
+            <AutoVariable width="fill" target="aimbot.backtrack" label="Aim at Backtracking"/>
             <AutoVariable width="fill" target="backtrack.latency" label="Fake Latency" min="0" max="1000" step="25"/>
             <AutoVariable width="fill" target="backtrack.draw" label="Draw Backtrack"/>
             <AutoVariable width="fill" target="backtrack.draw-skeleton" label="Draw Skeleton"/>
@@ -126,7 +126,7 @@
         <List width="150">
             <AutoVariable width="fill" target="sandwichaim.enable" label="Enable Sandvich Aimbot"/>
             <AutoVariable width="fill" target="sandwichaim.aimkey" label="Aimkey"/>
-            <LabeledObject width="fill" label="Aimkey mode">
+            <LabeledObject width="fill" label="Aimkey Mode">
                 <Select target="sandwichaim.aimkey-mode">
                     <Option name="Disable" value="0"/>
                     <Option name="Pressed" value="1"/>
