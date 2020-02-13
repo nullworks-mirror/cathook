@@ -10,7 +10,7 @@
     <Box padding="12 6 6 6" width="content" height="content" name="Targets" y="81">
         <List width="150">
             <AutoVariable width="fill" target="esp.show.teammates" label="Teammate ESP"/>
-            <AutoVariable width="fill" target="esp.show.local" label="ESP on local player"/>
+            <AutoVariable width="fill" target="esp.show.local" label="ESP on Local Player"/>
             <AutoVariable width="fill" target="esp.show.buildings" label="Building ESP"/>
             <AutoVariable width="fill" target="esp.item.health" label="Health Packs"/>
             <AutoVariable width="fill" target="esp.item.ammo" label="Ammo Packs"/>
@@ -76,21 +76,21 @@
                     <Option name="Below" value="4"/>
                 </Select>
             </LabeledObject>
-            <LabeledObject width="fill" label="Box mode">
+            <LabeledObject width="fill" label="Box Mode">
                 <Select target="esp.box.mode">
                     <Option name="None" value="0"/>
                     <Option name="Normal" value="1"/>
                     <Option name="Corners" value="2"/>
                 </Select>
             </LabeledObject>
-            <LabeledObject width="fill" label="Tracer mode">
+            <LabeledObject width="fill" label="Tracer Mode">
                 <Select target="esp.tracers-mode">
                     <Option name="Off" value="0"/>
                     <Option name="Center" value="1"/>
                     <Option name="bottom" value="2"/>
                 </Select>
             </LabeledObject>
-            <LabeledObject width="fill" label="Health mode">
+            <LabeledObject width="fill" label="Health Mode">
                 <Select target="esp.health-mode">
                     <Option name="None" value="0"/>
                     <Option name="Text" value="1"/>
