@@ -4,7 +4,7 @@
             <Box name="Trigger Bot" padding="12 6 6 6" width="content" height="content">
                 <List width="150">
                     <AutoVariable width="fill" target="trigger.enable" label="Enable Trigger Bot"/>
-                    <LabeledObject width="fill" label="Trigger Key mode">
+                    <LabeledObject width="fill" label="Trigger Key Mode">
                         <Select target="trigger.key.mode">
                             <Option name="Disable" value="0"/>
                             <Option name="Pressed" value="1"/>
@@ -14,14 +14,14 @@
                     </LabeledObject>
                     <AutoVariable width="fill" target="trigger.key.button" label="Aim Key"/>
                     <AutoVariable width="fill" target="trigger.wait-for-charge" label="Wait for charge"/>
-                    <AutoVariable width="fill" target="trigger.zoomed-only" label="Zoomed only"/>
-                    <AutoVariable width="fill" target="trigger.accuracy" label="Accuracy mode" min="0" max="10"/>
+                    <AutoVariable width="fill" target="trigger.zoomed-only" label="Zoomed Only"/>
+                    <AutoVariable width="fill" target="trigger.accuracy" label="Accuracy Mode" min="0" max="10"/>
                     <AutoVariable width="fill" target="trigger.delay" label="Delay" min="0" max="1"/>
                 </List>
             </Box>
             <Box padding="12 6 6 6" width="content" height="content" name="Target Selection" x="170">
                 <List width="150">
-                    <LabeledObject width="fill" label="Hitbox mode">
+                    <LabeledObject width="fill" label="Hitbox Mode">
                         <Select target="trigger.hitbox-mode">
                             <Option name="Auto Head" value="0"/>
                             <Option name="Auto Closest" value="1"/>
