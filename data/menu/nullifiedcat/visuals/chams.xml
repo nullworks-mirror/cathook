@@ -7,9 +7,9 @@
             <AutoVariable width="fill" target="chams.disco" label="Disco"/>
             <AutoVariable width="fill" target="chams.health" label="Health"/>
             <AutoVariable width="fill" target="chams.recursive" label="Recursive"/>
-            <AutoVariable width="fill" target="chams.single-pass" label="Single pass"/>
+            <AutoVariable width="fill" target="chams.single-pass" label="Single Pass"/>
             <AutoVariable width="fill" target="chams.white-weapons" label="White Weapons"/>
-            <LabeledObject width="fill" label="Solid when">
+            <LabeledObject width="fill" label="Solid When">
                 <Select target="glow.solid-when">
                     <Option name="Never" value="0"/>
                     <Option name="Always" value="1"/>
