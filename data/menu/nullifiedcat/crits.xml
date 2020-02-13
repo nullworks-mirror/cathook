@@ -6,8 +6,8 @@
             <AutoVariable width="fill" target="crit.experimental" label="Instant Crits"/>
             <AutoVariable width="fill" target="crit.melee" label="Melee Crits"/>
             <AutoVariable width="fill" target="crit.experimental.melee" label="Experimental Melee Crits"/>
-            <AutoVariable width="fill" target="crit.force-gameplay" label="Do not hinder gameplay"/>
-            <AutoVariable width="fill" target="crit.auto" label="Always Crit (ignores crit key)"/>
+            <AutoVariable width="fill" target="crit.force-gameplay" label="Do Not Hinder Gameplay"/>
+            <AutoVariable width="fill" target="crit.auto" label="Always Crit (Ignores Crit Key)"/>
         </List>
     </Box>
 </Tab>
