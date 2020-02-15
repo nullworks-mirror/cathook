@@ -66,7 +66,8 @@ elif [ "$OS" == "ubuntu" ]; then
     out=$?
     if [ "$out" == 1 ]; then
         requestPermissions "${ubuntu_packages[@]}"
-        $SUDO bash -c "apt-get update;apt-get install -y software-properties-common;add-apt-repository ppa:ubuntu-toolchain-r/test -y;dpkg --add-architecture i386;apt-get update;apt-get install -y "${ubuntu_packages[@]}""
+        pkgs="${ubuntu_packages[@]}"
+        $SUDO bash -c "apt-get update;apt-get install -y software-properties-common;add-apt-repository ppa:ubuntu-toolchain-r/test -y;dpkg --add-architecture i386;apt-get update;apt-get install -y $pkgs"
     fi
 elif [ "$OS" == "fedora" ]; then
     rpm -q "${fedora_packages[@]}" > /dev/null 2>&1

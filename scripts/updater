@@ -98,8 +98,7 @@ function performupdate() {
     else
         #get update channel from config
         exists=true
-        cfg_haskey $configfile autoupdater || exists=false
-        cfg_haskey $configfile version || exists=false
+        cfg_haskey $configfile update_channel || exists=false
         if [ "$exists" ==  true ]; then
             update_channel="$(cfg_read $configfile update_channel)"
         else
