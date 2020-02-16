@@ -101,8 +101,8 @@
     <Box name="IRC" width="content" height="content" padding="12 6 6 6" x="170" y="140">
         <List width="150">
             <AutoVariable width="fill" target="irc.enabled" label="Enabled"/>
-            <AutoVariable width="fill" target="irc.anon" label="Hide real name"/>
-            <AutoVariable width="fill" target="irc.auth" label="Reveal to cathook users"/>
+            <AutoVariable width="fill" target="irc.anon" label="Hide Real Name"/>
+            <AutoVariable width="fill" target="irc.auth" label="Reveal to Cathook Users"/>
             <AutoVariable width="fill" target="irc.address" label="Address"/>
             <AutoVariable width="fill" target="irc.port" label="Port"/>
             <AutoVariable width="fill" target="irc.channel" label="Channel"/>
@@ -110,13 +110,13 @@
     </Box>
     <Box name="Votelogger" width="content" height="content" padding="12 6 6 6" x="170" y="250">
         <List width="150">
-            <AutoVariable width="fill" target="votelogger.autovote.yes" label="Autovote yes"/>
-            <AutoVariable width="fill" target="votelogger.autovote.no" label="Autovote no"/>
+            <AutoVariable width="fill" target="votelogger.autovote.yes" label="Autovote Yes"/>
+            <AutoVariable width="fill" target="votelogger.autovote.no" label="Autovote No"/>
             <AutoVariable width="fill" target="votelogger.autovote.no.rage" label="Kick RAGE status"/>
-            <AutoVariable width="fill" target="votelogger.partysay" label="Log votes to party"/>
-            <AutoVariable width="fill" target="votelogger.partysay-casts" label="Log casts to party"/>
-            <AutoVariable width="fill" target="votelogger.partysay-casts.f1-only" label="F1 cast log only"/>
-            <AutoVariable width="fill" target="votelogger.restart-on-kick" label="Crash when kicked"/>
+            <AutoVariable width="fill" target="votelogger.partysay" label="Log Votes to Party"/>
+            <AutoVariable width="fill" target="votelogger.partysay-casts" label="Log Casts to Party"/>
+            <AutoVariable width="fill" target="votelogger.partysay-casts.f1-only" label="F1 Cast Log Only"/>
+            <AutoVariable width="fill" target="votelogger.restart-on-kick" label="Crash When Kicked"/>
         </List>
     </Box>
     <Box name="Command & Control" width="content" height="content" padding="12 6 6 6" y="205">
@@ -125,8 +125,8 @@
             <AutoVariable width="fill" target="irc.cc.password" label="Password"/>
             <AutoVariable width="fill" target="irc.cc.party" label="Autoparty"/>
             <AutoVariable width="fill" target="irc.cc.respondparty" label="Respond Autoparty"/>
-            <AutoVariable width="fill" target="irc.cc.party-cooldown" label="Party cooldown"/>
-            <AutoVariable width="fill" target="irc.cc.party-size" label="Party maxsize"/>
+            <AutoVariable width="fill" target="irc.cc.party-cooldown" label="Party Cooldown"/>
+            <AutoVariable width="fill" target="irc.cc.party-size" label="Party Maxsize"/>
         </List>
     </Box>
 </Tab>

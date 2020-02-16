@@ -68,9 +68,9 @@
     <Box padding="12 6 6 6" width="content" height="content" name="Playerlist" x="340">
         <List width="150">
             <AutoVariable width="fill" target="zk.style.player-list.team.red" label="RED Team"/>
-            <AutoVariable width="fill" target="zk.style.player-list.team.red-dead" label="RED Team dead"/>
+            <AutoVariable width="fill" target="zk.style.player-list.team.red-dead" label="RED Team Dead"/>
             <AutoVariable width="fill" target="zk.style.player-list.team.blue" label="BLU Team"/>
-            <AutoVariable width="fill" target="zk.style.player-list.team.blue-dead" label="BLU Team dead"/>
+            <AutoVariable width="fill" target="zk.style.player-list.team.blue-dead" label="BLU Team Dead"/>
         </List>
     </Box>
     <Box padding="12 6 6 6" width="content" height="content" name="Taskbar" x="340" y="91">

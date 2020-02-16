@@ -2,22 +2,22 @@
     <Box height="content" width="content" padding="12 6 6 6">
         <List width="220">
             <AutoVariable width="fill" target="misc.anti-afk" label="Enable Antiafk"/>
-            <AutoVariable width="fill" target="misc.auto-abandon" label="Enable Auto abandon"/>
-            <AutoVariable width="fill" target="misc.auto-balance-spam" label="Enable Auto balance spam"/>
-            <AutoVariable width="fill" target="misc.debug-info" label="debug"/>
+            <AutoVariable width="fill" target="misc.auto-abandon" label="Enable Auto Abandon"/>
+            <AutoVariable width="fill" target="misc.auto-balance-spam" label="Enable Auto Balance Spam"/>
+            <AutoVariable width="fill" target="misc.debug-info" label="Debug"/>
             <AutoVariable width="fill" target="misc.die-if-vac" label="Crash on VAC"/>
-            <AutoVariable width="fill" target="misc.disconnect-reason" label="Disconnect reason"/>
+            <AutoVariable width="fill" target="misc.disconnect-reason" label="Disconnect Reason"/>
             <AutoVariable width="fill" target="misc.engine-prediction" label="Engine Prediction"/>
-            <AutoVariable width="fill" target="misc.flashlight-spam" label="Flashlight spam"/>
+            <AutoVariable width="fill" target="misc.flashlight-spam" label="Flashlight Spam"/>
             <AutoVariable width="fill" target="misc.force-halloween" label="Force Halloween"/>
             <AutoVariable width="fill" target="misc.god-mode" label="xd"/>
             <AutoVariable width="fill" target="misc.minigun-jump-tf2c" label="TF2C Minigun Jump"/>
             <AutoVariable width="fill" target="misc.no-homo" label="#nohomo"/>
-            <AutoVariable width="fill" target="misc.no-lerp" label="nolerp"/>
-            <AutoVariable width="fill" target="misc.no-push" label="nopush"/>
+            <AutoVariable width="fill" target="misc.no-lerp" label="Nolerp"/>
+            <AutoVariable width="fill" target="misc.no-push" label="Nopush"/>
             <AutoVariable width="fill" target="misc.roll-speedhack" label="Moonwalk"/>
             <AutoVariable width="fill" target="misc.full-auto" label="Fully Automated Firing"/>
-            <AutoVariable width="fill" target="misc.show-spectators" label="Show spectators"/>
+            <AutoVariable width="fill" target="misc.show-spectators" label="Show Spectators"/>
             <LabeledObject width="fill" label="Skybox Override">
                 <Select target="misc.skybox-override">
                     <Option name="none" value="0"/>
@@ -56,8 +56,8 @@
             </LabeledObject>
             <AutoVariable width="fill" target="misc.tauntslide" label="Tauntslide"/>
             <AutoVariable width="fill" target="misc.tauntslide-tf2c" label="TF2C Tauntslide"/>
-            <AutoVariable width="fill" target="name.custom" label="Custom name"/>
-            <AutoVariable width="fill" target="name.custom.ipc" label="IPC name"/>
+            <AutoVariable width="fill" target="name.custom" label="Custom Name"/>
+            <AutoVariable width="fill" target="name.custom.ipc" label="IPC Name"/>
             <LabeledObject width="fill" label="Namesteal">
                 <Select target="name.namesteal">
                     <Option name="Disabled" value="0"/>
@@ -68,10 +68,10 @@
             <AutoVariable width="fill" target="misc.random-name" label="Random Name"/>
         </List>
         <List width="220" x="232">
-            <AutoVariable width="fill" target="noisemaker-spam.enable" label="Noisemaker spam"/>
-            <AutoVariable width="fill" target="online.enable" label="Enable cathook online"/>
+            <AutoVariable width="fill" target="noisemaker-spam.enable" label="Noisemaker Spam"/>
+            <AutoVariable width="fill" target="online.enable" label="Enable Cathook Online"/>
             <AutoVariable width="fill" target="player-tools.betrayal-limit" label="Betrayal Limit"/>
-            <AutoVariable width="fill" target="player-tools.ignore.online.notarget" label="Don't target Users"/>
+            <AutoVariable width="fill" target="player-tools.ignore.online.notarget" label="Don't Target Users"/>
             <AutoVariable width="fill" target="player-tools.ignore.hoovy" label="Ignore Hoovies"/>
             <AutoVariable width="fill" target="player-tools.ignore.online.anonymous" label="Ignore Anonymous"/>
             <AutoVariable width="fill" target="player-tools.ignore.online.friendly-software" label="Ignore Friendly software"/>
@@ -79,7 +79,7 @@
             <AutoVariable width="fill" target="player-tools.ignore.taunting" label="Ignore Taunting Players"/>
             <AutoVariable width="fill" target="killstreak.enable" label="Enable Killstreak"/>
             <AutoVariable width="fill" target="misc.backpack-expander.enabled" label="Expand Backpack"/>
-            <AutoVariable width="fill" target="misc.backpack-expander.slot-count" label="Backpack slots" min="1" max="3000"/>
+            <AutoVariable width="fill" target="misc.backpack-expander.slot-count" label="Backpack Slots" min="1" max="3000"/>
         </List>
     </Box>
 </Tab>
