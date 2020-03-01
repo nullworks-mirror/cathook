@@ -572,7 +572,7 @@ void InitGL()
     xoverlay_draw_end();
 #else
 #if ENABLE_IMGUI_DRAWING
-    glewInit();
+    // glewInit();
     im_renderer::init();
 #elif ENABLE_GLEZ_DRAWING || ENABLE_IMGUI_DRAWING
     glClearColor(1.0, 0.0, 0.0, 0.5);
