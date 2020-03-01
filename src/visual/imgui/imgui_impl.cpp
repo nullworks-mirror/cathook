@@ -6,6 +6,8 @@
 #include "visual/imgui/imgui_freetype.h"
 #include <GL/gl.h>
 
+#include "pathio.hpp"
+
 static Uint64 g_Time                                      = 0;
 static bool g_MousePressed[3]                             = { false, false, false };
 static SDL_Cursor *g_MouseCursors[ImGuiMouseCursor_COUNT] = { 0 };
@@ -282,7 +284,7 @@ bool ImGui_ImplSdl_Init()
     g_MouseCursors[ImGuiMouseCursor_ResizeNWSE] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
     g_MouseCursors[ImGuiMouseCursor_Hand]       = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
 
-    io.Fonts->AddFontFromFileTTF(DATA_PATH "/fonts/tf2build.ttf", 13, NULL, io.Fonts->GetGlyphRangesDefault());
+    io.Fonts->AddFontFromFileTTF(paths::getDataPath("/fonts/tf2build.ttf").c_str(), 13, NULL, io.Fonts->GetGlyphRangesDefault());
     ImGuiFreeType::BuildFontAtlas(io.Fonts, 0x0);
     ImGui_Impl_CreateFontsTexture(io.Fonts);
 
