@@ -8,7 +8,6 @@
 #include "common.hpp"
 
 #include <stdio.h>
-#include <filesystem>
 
 // Cached data path
 std::optional<std::string> cached_data_path;
@@ -20,13 +19,15 @@ std::string getDataPath(std::string subpath)
 {
     if (!cached_data_path)
     {
+        DIR *dir;
         if (std::getenv("CH_DATA_PATH"))
         {
             cached_data_path = std::getenv("CH_DATA_PATH");
         }
-        else if (std::filesystem::exists(DATA_PATH))
+        else if ((dir = opendir("mydir")))
         {
             cached_data_path = DATA_PATH;
+            closedir(dir);
         }
         else
         {
