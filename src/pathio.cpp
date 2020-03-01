@@ -24,7 +24,7 @@ std::string getDataPath(std::string subpath)
         {
             cached_data_path = std::getenv("CH_DATA_PATH");
         }
-        else if ((dir = opendir("mydir")))
+        else if ((dir = opendir(DATA_PATH)))
         {
             cached_data_path = DATA_PATH;
             closedir(dir);
