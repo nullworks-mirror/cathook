@@ -368,7 +368,7 @@ float getLatency()
         return 0;
     float Latency = *latency;
     Latency       = std::min(Latency, 800.0f);
-    Latency += getRealLatency();
+    Latency -= getRealLatency();
     Latency = std::max(Latency, 0.0f);
     if (enable_latency_rampup)
         Latency = Latency * latency_rampup;
