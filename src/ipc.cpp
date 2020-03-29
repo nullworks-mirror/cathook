@@ -13,6 +13,7 @@
 #include "hack.hpp"
 #include "hitrate.hpp"
 #include "MiscTemporary.hpp"
+#include "GetFriendPersonaName.hpp"
 
 #if ENABLE_IPC
 
