@@ -60,7 +60,7 @@ void AddLatencyToNetchan(INetChannel *ch)
         return;
     for (auto &seq : sequences)
     {
-        if (g_GlobalVars->realtime - seq.curtime > std::max(std::min((float) *latency, 800.0f), 200.0f) / 1000.0f)
+        if (g_GlobalVars->realtime - seq.curtime > getLatency() / 1000.0f)
         {
             ch->m_nInReliableState = seq.inreliablestate;
             ch->m_nInSequenceNr    = seq.sequencenr;

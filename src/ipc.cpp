@@ -230,7 +230,6 @@ void UpdateTemporaryData()
     }
 }
 
-std::string name = "";
 void StoreClientData()
 {
     if (!peer)
@@ -243,8 +242,7 @@ void StoreClientData()
     data.textmode     = ENABLE_TEXTMODE;
     if (g_ISteamUser)
     {
-        name = GetNamestealName(g_ISteamUser->GetSteamID());
-        strncpy(data.name, name.c_str(), sizeof(data.name));
+        strncpy(data.name, GetNamestealName(g_ISteamUser->GetSteamID()).c_str(), sizeof(data.name));
     }
 }
 
