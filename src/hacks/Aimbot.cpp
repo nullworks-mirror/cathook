@@ -58,6 +58,7 @@ static settings::Boolean aimbot_debug{ "aimbot.debug", "0" };
 static settings::Boolean engine_projpred{ "aimbot.debug.engine-pp", "0" };
 
 static settings::Boolean auto_spin_up{ "aimbot.auto.spin-up", "0" };
+static settings::Boolean minigun_tapfire{ "aimbot.auto.tapfire", "false" };
 static settings::Boolean auto_zoom{ "aimbot.auto.zoom", "0" };
 static settings::Boolean auto_unzoom{ "aimbot.auto.unzoom", "0" };
 
@@ -269,7 +270,7 @@ static void CreateMove()
         }
         else if (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
         {
-            float chargebegin = *((float *) ((unsigned) RAW_ENT(LOCAL_W) + 3152));
+            float chargebegin = *((float *) ((uintptr_t) RAW_ENT(LOCAL_W) + 3152));
             float chargetime  = g_GlobalVars->curtime - chargebegin;
 
             DoAutoshoot();
@@ -303,8 +304,23 @@ static void CreateMove()
     }
     else
     {
-        DoAutoshoot(target_entity);
         Aim(target_entity);
+        // We should tap fire with the minigun on Bigger ranges to maximize damage, else just shoot normally
+        if (!minigun_tapfire || g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFMinigun))
+            DoAutoshoot(target_entity);
+        else if (minigun_tapfire)
+        {
+            // Used to keep track of what tick we're in right now
+            static int tapfire_delay = 0;
+            tapfire_delay++;
+
+            // This is the exact delay needed to hit
+            if (tapfire_delay == 17 || target_entity->m_flDistance() <= 1250.0f)
+            {
+                DoAutoshoot(target_entity);
+                tapfire_delay = 0;
+            }
+        }
     }
 }
 

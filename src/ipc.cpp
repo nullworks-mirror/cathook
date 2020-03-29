@@ -12,6 +12,8 @@
 #include "common.hpp"
 #include "hack.hpp"
 #include "hitrate.hpp"
+#include "MiscTemporary.hpp"
+#include "GetFriendPersonaName.hpp"
 
 #if ENABLE_IPC
 
@@ -239,7 +241,10 @@ void StoreClientData()
     data.friendid     = g_ISteamUser->GetSteamID().GetAccountID();
     data.ts_injected  = time_injected;
     data.textmode     = ENABLE_TEXTMODE;
-    strncpy(data.name, hooked_methods::methods::GetFriendPersonaName(g_ISteamFriends, g_ISteamUser->GetSteamID()), sizeof(data.name));
+    if (g_ISteamUser)
+    {
+        strncpy(data.name, GetNamestealName(g_ISteamUser->GetSteamID()).c_str(), sizeof(data.name));
+    }
 }
 
 void Heartbeat()
