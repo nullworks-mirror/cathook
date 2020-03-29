@@ -7,16 +7,15 @@
 #if ENABLE_VISUALS
 #include "colors.hpp"
 #include "MiscTemporary.hpp"
-#include "boost/beast/core/detail/base64.hpp"
 #endif
 
 namespace nullnexus
 {
 static settings::Boolean enabled("nullnexus.enabled", "true");
 static settings::Boolean anon("nullnexus.user.anon", "false");
-static settings::String address("nullnexus.host", "localhost");
+static settings::String address("nullnexus.host", "nullnexus.cathook.club");
 static settings::String port("nullnexus.port", "3000");
-static settings::String endpoint("nullnexus.endpoint", "/client/v1");
+static settings::String endpoint("nullnexus.endpoint", "/api/v1/client");
 static settings::Boolean authenticate("nullnexus.auth", "true");
 #if ENABLE_VISUALS
 static settings::Rgba colour("nullnexus.user.colour");
@@ -56,8 +55,6 @@ void authedplayers(std::vector<std::string> steamids)
         return;
     for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
-        // if (i == g_pLocalPlayer->entity_idx)
-        //    continue;
         player_info_s pinfo{};
         if (g_IEngine->GetPlayerInfo(i, &pinfo))
         {
@@ -66,14 +63,12 @@ void authedplayers(std::vector<std::string> steamids)
             MD5Value_t result;
             std::string steamidhash = std::to_string(pinfo.friendsID) + pinfo.name;
             MD5_ProcessSingleBuffer(steamidhash.c_str(), strlen(steamidhash.c_str()), result);
-            steamidhash.clear();
+            std::stringstream ss;
+            ss << std::hex;
             for (auto i : result.bits)
-            {
-                for (int j = 0; j < 8; j++)
-                    steamidhash.append(std::to_string((i >> j) & 1));
-            }
+                ss << std::setw(2) << std::setfill('0') << (int) i;
+            steamidhash = ss.str();
             std::remove_if(steamids.begin(), steamids.end(), [&steamidhash, &pinfo](std::string &steamid) {
-                std::cout << "Comparing hashes: " << steamid << " and " << steamidhash << std::endl;
                 if (steamid == steamidhash)
                 {
                     // Use actual steamid to set cat status
@@ -104,12 +99,11 @@ void updateServer(NullNexus::UserSettings &settings)
                 MD5Value_t result;
                 std::string steamidhash = std::to_string(pinfo.friendsID) + pinfo.name;
                 MD5_ProcessSingleBuffer(steamidhash.c_str(), strlen(steamidhash.c_str()), result);
-                steamidhash.clear();
+                std::stringstream ss;
+                ss << std::hex;
                 for (auto i : result.bits)
-                {
-                    for (int j = 0; j < 8; j++)
-                        steamidhash.append(std::to_string((i >> j) & 1));
-                }
+                    ss << std::setw(2) << std::setfill('0') << (int) i;
+                steamidhash        = ss.str();
                 settings.tf2server = { true, addr.ToString(true), std::to_string(addr.port), steamidhash };
                 return;
             }
