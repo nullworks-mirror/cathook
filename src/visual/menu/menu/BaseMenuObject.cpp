@@ -109,8 +109,6 @@ void BaseMenuObject::emit(Message &msg, bool is_relayed)
 
 void BaseMenuObject::loadFromXml(const tinyxml2::XMLElement *data)
 {
-    std::cout << "Loading object " << data->Name() << "\n";
-
     data->QueryIntAttribute("x", &xOffset);
     data->QueryIntAttribute("y", &yOffset);
 

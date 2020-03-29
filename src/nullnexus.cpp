@@ -3,9 +3,11 @@
 #include "common.hpp"
 #include "libnullnexus/nullnexus.hpp"
 #include "nullnexus.hpp"
+#include "netadr.h"
 #if ENABLE_VISUALS
 #include "colors.hpp"
 #include "MiscTemporary.hpp"
+#include "boost/beast/core/detail/base64.hpp"
 #endif
 
 namespace nullnexus
@@ -15,6 +17,7 @@ static settings::Boolean anon("nullnexus.user.anon", "false");
 static settings::String address("nullnexus.host", "localhost");
 static settings::String port("nullnexus.port", "3000");
 static settings::String endpoint("nullnexus.endpoint", "/client/v1");
+static settings::Boolean authenticate("nullnexus.auth", "true");
 #if ENABLE_VISUALS
 static settings::Rgba colour("nullnexus.user.colour");
 #endif
@@ -46,14 +49,89 @@ void message(std::string usr, std::string msg, int colour)
 {
     printmsg(usr, msg, colour);
 }
+void authedplayers(std::vector<std::string> steamids)
+{
+    // Check if we are in a game
+    if (g_Settings.bInvalid)
+        return;
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        // if (i == g_pLocalPlayer->entity_idx)
+        //    continue;
+        player_info_s pinfo{};
+        if (g_IEngine->GetPlayerInfo(i, &pinfo))
+        {
+            if (pinfo.friendsID == 0)
+                continue;
+            MD5Value_t result;
+            std::string steamidhash = std::to_string(pinfo.friendsID) + pinfo.name;
+            MD5_ProcessSingleBuffer(steamidhash.c_str(), strlen(steamidhash.c_str()), result);
+            steamidhash.clear();
+            for (auto i : result.bits)
+            {
+                for (int j = 0; j < 8; j++)
+                    steamidhash.append(std::to_string((i >> j) & 1));
+            }
+            std::remove_if(steamids.begin(), steamids.end(), [&steamidhash, &pinfo](std::string &steamid) {
+                std::cout << "Comparing hashes: " << steamid << " and " << steamidhash << std::endl;
+                if (steamid == steamidhash)
+                {
+                    // Use actual steamid to set cat status
+                    if (playerlist::ChangeState(pinfo.friendsID, playerlist::k_EState::CAT))
+                        PrintChat("\x07%06X%s\x01 Marked as CAT (Nullnexus user)", 0xe05938, pinfo.name);
+                    return true;
+                }
+                return false;
+            });
+        }
+    }
+}
 } // namespace handlers
+
+// Update info about the current server we are on.
+void updateServer(NullNexus::UserSettings &settings)
+{
+    INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    if (ch && *authenticate)
+    {
+        auto addr = ch->GetRemoteAddress();
+        // Local address! Don't send that to nullnexus.
+        if (!addr.IsReservedAdr())
+        {
+            player_info_s pinfo{};
+            if (g_IEngine->GetPlayerInfo(g_pLocalPlayer->entity_idx, &pinfo))
+            {
+                MD5Value_t result;
+                std::string steamidhash = std::to_string(pinfo.friendsID) + pinfo.name;
+                MD5_ProcessSingleBuffer(steamidhash.c_str(), strlen(steamidhash.c_str()), result);
+                steamidhash.clear();
+                for (auto i : result.bits)
+                {
+                    for (int j = 0; j < 8; j++)
+                        steamidhash.append(std::to_string((i >> j) & 1));
+                }
+                settings.tf2server = { true, addr.ToString(true), std::to_string(addr.port), steamidhash };
+                return;
+            }
+        }
+    }
+    // Not connected
+    settings.tf2server = { false };
+}
+
+// Update info about the current server we are on.
+void updateServer()
+{
+    NullNexus::UserSettings settings;
+    updateServer(settings);
+    nexus.changeData(settings);
+}
 
 void updateData()
 {
     std::optional<std::string> username = std::nullopt;
     std::optional<int> newcolour        = std::nullopt;
-    if (!*anon)
-        username = g_ISteamFriends->GetPersonaName();
+    username                            = *anon ? "anon" : g_ISteamFriends->GetPersonaName();
     if ((*colour).r || (*colour).g || (*colour).b)
     {
         int r     = (*colour).r * 255;
@@ -61,7 +139,13 @@ void updateData()
         int b     = (*colour).b * 255;
         newcolour = (r << 16) + (g << 8) + b;
     }
-    nexus.changeSettings(username, newcolour);
+    NullNexus::UserSettings settings;
+    settings.username = *username;
+    settings.colour   = newcolour;
+    // Tell nullnexus about the current server we are connected to.
+    updateServer(settings);
+
+    nexus.changeData(settings);
 }
 
 bool sendmsg(std::string &msg)
@@ -77,7 +161,10 @@ template <typename T> void rvarCallback(settings::VariableBase<T> &, T)
     std::thread reload([]() {
         std::this_thread::sleep_for(std::chrono_literals::operator""ms(500));
         updateData();
-        nexus.connect(*enabled, *address, *port, *endpoint);
+        if (*enabled)
+            nexus.connect(*address, *port, *endpoint);
+        else
+            nexus.disconnect();
     });
     reload.detach();
 }
@@ -98,15 +185,23 @@ static InitRoutine init([]() {
     port.installChangeCallback(rvarCallback<std::string>);
     endpoint.installChangeCallback(rvarCallback<std::string>);
 
-    anon.installChangeCallback(rvarDataCallback<bool>);
+#if ENABLE_VISUALS
     colour.installChangeCallback(rvarDataCallback<rgba_t>);
+#endif
+    anon.installChangeCallback(rvarDataCallback<bool>);
+    authenticate.installChangeCallback(rvarDataCallback<bool>);
 
-    updateData();
     nexus.setHandlerChat(handlers::message);
-    nexus.connect(*enabled, *address, *port, *endpoint);
+    nexus.setHandlerAuthedplayers(handlers::authedplayers);
+    if (*connect)
+        nexus.connect(*address, *port, *endpoint);
 
     EC::Register(
-        EC::Shutdown, []() { nexus.connect(false); }, "shutdown_nullnexus");
+        EC::Shutdown, []() { nexus.disconnect(); }, "shutdown_nullnexus");
+    EC::Register(
+        EC::FirstCM, []() { updateServer(); }, "firstcm_nullnexus");
+    EC::Register(
+        EC::LevelShutdown, []() { updateServer(); }, "firstcm_nullnexus");
 });
 static CatCommand nullnexus_send("nullnexus_send", "Send message to IRC", [](const CCommand &args) {
     std::string msg(args.ArgS());
