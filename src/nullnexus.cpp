@@ -34,7 +34,7 @@ void printmsg(std::string &usr, std::string &msg, int colour = 0xff9340)
     if (g_Settings.bInvalid)
         g_ICvar->ConsoleColorPrintf(MENU_COLOR, "[Nullnexus] %s: %s\n", usr.c_str(), msg.c_str());
     else
-        PrintChat(false, "\x07%06X[\x07%06XNullnexus\x07%06X] \x07%06X%s\x01: %s", 0x5e3252, 0xba3d9a, 0x5e3252, colour, usr.c_str(), msg.c_str());
+        PrintChat("\x07%06X[\x07%06XNullnexus\x07%06X] \x07%06X%s\x01: %s", 0x5e3252, 0xba3d9a, 0x5e3252, colour, usr.c_str(), msg.c_str());
 #endif
 }
 void printmsgcopy(std::string usr, std::string msg)
