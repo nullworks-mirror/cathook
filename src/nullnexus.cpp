@@ -16,6 +16,12 @@ static settings::Boolean anon("nullnexus.user.anon", "false");
 static settings::String address("nullnexus.host", "nullnexus.cathook.club");
 static settings::String port("nullnexus.port", "3000");
 static settings::String endpoint("nullnexus.endpoint", "/api/v1/client");
+#if ENABLE_TEXTMODE
+static settings::Boolean proxyenabled("nullnexus.proxy.enabled", "true");
+#else
+static settings::Boolean proxyenabled("nullnexus.proxy.enabled", "false");
+#endif
+static settings::String proxysocket("nullnexus.relay.socket", "/tmp/nullnexus.sock");
 static settings::Boolean authenticate("nullnexus.auth", "true");
 #if ENABLE_VISUALS
 static settings::Rgba colour("nullnexus.user.colour");
@@ -156,7 +162,12 @@ template <typename T> void rvarCallback(settings::VariableBase<T> &, T)
         std::this_thread::sleep_for(std::chrono_literals::operator""ms(500));
         updateData();
         if (*enabled)
-            nexus.connect(*address, *port, *endpoint);
+        {
+            if (*proxyenabled)
+                nexus.connectunix(*proxysocket, *endpoint);
+            else
+                nexus.connect(*address, *port, *endpoint);
+        }
         else
             nexus.disconnect();
     });
@@ -179,6 +190,9 @@ static InitRoutine init([]() {
     port.installChangeCallback(rvarCallback<std::string>);
     endpoint.installChangeCallback(rvarCallback<std::string>);
 
+    proxyenabled.installChangeCallback(rvarCallback<bool>);
+    proxysocket.installChangeCallback(rvarCallback<std::string>);
+
 #if ENABLE_VISUALS
     colour.installChangeCallback(rvarDataCallback<rgba_t>);
 #endif
@@ -188,7 +202,12 @@ static InitRoutine init([]() {
     nexus.setHandlerChat(handlers::message);
     nexus.setHandlerAuthedplayers(handlers::authedplayers);
     if (*connect)
-        nexus.connect(*address, *port, *endpoint);
+    {
+        if (*proxyenabled)
+            nexus.connectunix(*proxysocket, *endpoint);
+        else
+            nexus.connect(*address, *port, *endpoint);
+    }
 
     EC::Register(
         EC::Shutdown, []() { nexus.disconnect(); }, "shutdown_nullnexus");
