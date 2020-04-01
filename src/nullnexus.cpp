@@ -132,6 +132,7 @@ void updateData()
     std::optional<std::string> username = std::nullopt;
     std::optional<int> newcolour        = std::nullopt;
     username                            = *anon ? "anon" : g_ISteamFriends->GetPersonaName();
+#if ENABLE_VISUALS
     if ((*colour).r || (*colour).g || (*colour).b)
     {
         int r     = (*colour).r * 255;
@@ -139,6 +140,7 @@ void updateData()
         int b     = (*colour).b * 255;
         newcolour = (r << 16) + (g << 8) + b;
     }
+#endif
     NullNexus::UserSettings settings;
     settings.username = *username;
     settings.colour   = newcolour;
