@@ -7,7 +7,6 @@
  */
 
 #include "common.hpp"
-#include "ucccccp.hpp"
 #include "hack.hpp"
 #include "hitrate.hpp"
 #include "chatlog.hpp"
