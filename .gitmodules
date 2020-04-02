@@ -25,3 +25,6 @@
 [submodule "external/libnullnexus"]
 	path = external/libnullnexus
 	url = https://github.com/nullworks/libnullnexus
+[submodule "external/boost-cmake"]
+	path = external/boost-cmake
+	url = https://github.com/Orphis/boost-cmake.git
