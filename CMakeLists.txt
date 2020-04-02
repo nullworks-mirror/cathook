@@ -105,11 +105,13 @@ if (EnableVisuals)
 endif()
 
 find_package(Git REQUIRED)
-find_package(Boost REQUIRED)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/external")
 find_package(SDL2 REQUIRED)
-
-# cat packages
+find_package(Boost 1.70.0)
+if (NOT ${Boost_FOUND})
+    add_subdirectory(external/boost-cmake)
+    target_link_libraries(cathook Boost::boost)
+endif()
 
 execute_process(COMMAND
         "${GIT_EXECUTABLE}" log -1 --pretty=\"%h\"
