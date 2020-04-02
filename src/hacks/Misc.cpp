@@ -71,10 +71,10 @@ static void updateAntiAfk()
         else if (afk_timer->m_nValue != 0 && anti_afk_timer.check(afk_timer->m_nValue * 60 * 1000 - 10000))
         {
             // Just duck tf
-            if (current_user_cmd->buttons & IN_DUCK)
-                current_user_cmd->buttons &= ~IN_DUCK;
+            if (current_user_cmd->buttons & (IN_DUCK | IN_JUMP))
+                current_user_cmd->buttons &= ~(IN_DUCK | IN_JUMP);
             else
-                current_user_cmd->buttons = IN_DUCK;
+                current_user_cmd->buttons = IN_DUCK | IN_JUMP;
             if (anti_afk_timer.check(afk_timer->m_nValue * 60 * 1000 + 1000))
             {
                 anti_afk_timer.update();
