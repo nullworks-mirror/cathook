@@ -35,8 +35,11 @@ static InitRoutine init_dme([]() {
     EC::Register(
         EC::LevelShutdown,
         []() {
-            mat_dme_chams.Shutdown();
-            init_mat = false;
+            if (init_mat)
+            {
+                mat_dme_chams.Shutdown();
+                init_mat = false;
+            }
         },
         "dme_lvl_shutdown");
 });
