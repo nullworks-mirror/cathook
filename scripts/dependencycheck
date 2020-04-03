@@ -76,9 +76,7 @@ elif [ "$OS" == "ubuntu" ]; then
         dpkg --compare-versions "$(dpkg-query --show --showformat '${Version}' cmake)" ge 3.12
         out=$?
         if [ "$out" == 1 ]; then
-            wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | $SUDO apt-key add -
-            $SUDO apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main'
-            $SUDO apt-get install -y cmake
+            $SUDO bash -c "wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add -; apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main'; apt-get install -y cmake"
         fi
     fi
 elif [ "$OS" == "fedora" ]; then
