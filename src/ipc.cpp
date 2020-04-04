@@ -18,6 +18,7 @@
 #if ENABLE_IPC
 
 static settings::Boolean ipc_update_list{ "ipc.update-player-list", "true" };
+static settings::Int bot_chunks("ipc.bot-chunks", "1");
 
 namespace ipc
 {
@@ -56,6 +57,8 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
 
         StoreClientData();
         Heartbeat();
+        // Load a config depending on id
+        hack::command_stack().push("exec cat_autoexec_ipc_" + std::to_string(peer->client_id % std::max(1, *bot_chunks)));
     }
     catch (std::exception &error)
     {
