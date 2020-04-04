@@ -7,7 +7,7 @@ SUDO=${CH_SUDO:-sudo}
 
 arch_packages=(git boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd dialog)
 ubuntu_packages=(software-properties-common build-essential git g++ g++-multilib libboost-dev gdb libsdl2-dev:i386 libglew-dev:i386 libfreetype6-dev:i386 cmake dialog rsync)
-fedora_packages=(cmake dialog make gcc-c++ glibc-devel.i686 freetype-devel.i686 SDL2-devel.i686 glew-devel.i686 boost-devel.i686 rsync gdb git)
+fedora_packages=(cmake dialog make gcc-c++ glibc-devel.i686 freetype-devel.i686 SDL2-devel.i686 glew-devel.i686 boost-devel rsync gdb git)
 
 # Check if we should only install git
 if [ "$GIT" == true ]; then
