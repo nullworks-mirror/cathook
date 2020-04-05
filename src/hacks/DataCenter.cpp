@@ -1,3 +1,9 @@
+/*
+ * Credits to the Hoster Alex for making this and giving us the permission
+ * To add it to Cathook.
+ *
+ * Refined and fixed by BenCat07
+ */
 /* License: GPLv3 */
 #include <common.hpp>
 /* For MENU_COLOR definition */
