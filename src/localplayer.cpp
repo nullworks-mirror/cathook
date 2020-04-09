@@ -98,7 +98,7 @@ void LocalPlayer::Update()
             }
             else if (bAttackLastTick && (long long) melee_damagetick - (long long) tickcount < 0)
                 // Thirteen ticks after attack detection = damage tick
-                melee_damagetick = tickcount + 13;
+                melee_damagetick = tickcount + TIME_TO_TICKS(0.195f);
         }
         else
             melee_damagetick = 0;
