@@ -218,18 +218,21 @@ void manageRegions(std::vector<std::string> regions_vec, bool add)
 
 static void Init()
 {
-    enable.installChangeCallback([](settings::VariableBase<bool> &, bool on) { Hook(on); });
+    enable.installChangeCallback([](settings::VariableBase<bool> &, bool on) {
+        static auto create = (void *(*) ()) e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 85 C0 89 ? ? ? ? ? 74 ? 8B ? ? ? ? ? 80 ? ? ? ? ? 00"));
+        if (!g_ISteamNetworkingUtils)
+        {
+            g_ISteamNetworkingUtils = create();
+            if (!g_ISteamNetworkingUtils)
+            {
+                logging::Info("DataCenter.cpp: Failed to create ISteamNetworkingUtils!");
+                return;
+            }
+        }
+        Hook(on);
+    });
     regions.installChangeCallback([](settings::VariableBase<std::string> &, std::string regions) { OnRegionsUpdate(regions); });
     restrict.installChangeCallback([](settings::VariableBase<bool> &, bool) { Refresh(); });
-    auto create             = (void *(*) ()) e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 85 C0 89 ? ? ? ? ? 74 ? 8B ? ? ? ? ? 80 ? ? ? ? ? 00"));
-    g_ISteamNetworkingUtils = create();
-    if (!g_ISteamNetworkingUtils)
-    {
-        logging::Info("DataCenter.cpp: Failed to create ISteamNetworkingUtils!");
-        return;
-    }
-    if (*enable)
-        Hook(true);
     enable_eu.installChangeCallback([](settings::VariableBase<bool> &, bool after) { manageRegions(eu_datacenters, after); });
     enable_north_america.installChangeCallback([](settings::VariableBase<bool> &, bool after) { manageRegions(north_america_datacenters, after); });
     enable_south_america.installChangeCallback([](settings::VariableBase<bool> &, bool after) { manageRegions(south_america_datacenters, after); });
