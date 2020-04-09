@@ -112,7 +112,7 @@ void LocalPlayer::Update()
     clazz                  = CE_INT(entity, netvar.iClass);
     health                 = CE_INT(entity, netvar.iHealth);
     this->bUseSilentAngles = false;
-    bZoomed                = CE_INT(entity, netvar.iFOV) == 20.0f; //!= NET_INT(entity, netvar.iDefaultFOV);
+    bZoomed                = HasCondition<TFCond_Zoomed>(entity);
     if (bZoomed)
     {
         if (flZoomBegin == 0.0f)
