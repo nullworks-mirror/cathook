@@ -300,7 +300,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             }
             if (debug_projectiles)
                 projectile_logging::Update();
-            Prediction_CreateMove();
         }
     }
     {
@@ -335,7 +334,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     if (CE_GOOD(g_pLocalPlayer->entity))
     {
         speedapplied = false;
-        if (roll_speedhack && cmd->buttons & IN_DUCK && !(cmd->buttons & IN_ATTACK) && !HasCondition<TFCond_Charging>(LOCAL_E))
+        if (roll_speedhack && cmd->buttons & IN_DUCK && (CE_INT(g_pLocalPlayer->entity, netvar.iFlags) & FL_ONGROUND) && !(cmd->buttons & IN_ATTACK) && !HasCondition<TFCond_Charging>(LOCAL_E))
         {
             speed                     = Vector{ cmd->forwardmove, cmd->sidemove, 0.0f }.Length();
             static float prevspeedang = 0.0f;
@@ -379,10 +378,11 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 vsilent.z = cmd->upmove;
                 speed     = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
                 VectorAngles(vsilent, ang);
-                yaw              = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y + cmd->viewangles.y);
-                cmd->forwardmove = cos(yaw) * speed;
-                cmd->sidemove    = sin(yaw) * speed;
-                if (cmd->viewangles.x >= 90 && cmd->viewangles.x <= 270)
+                yaw                 = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y + cmd->viewangles.y);
+                cmd->forwardmove    = cos(yaw) * speed;
+                cmd->sidemove       = sin(yaw) * speed;
+                float clamped_pitch = fabsf(fmodf(cmd->viewangles.x, 360.0f));
+                if (clamped_pitch >= 90 && clamped_pitch <= 270)
                     cmd->forwardmove = -cmd->forwardmove;
             }
 
