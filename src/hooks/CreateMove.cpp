@@ -133,7 +133,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     float curtime_old, servertime, speed, yaw;
     Vector vsilent, ang;
 
-    tickcount++;
     current_user_cmd = cmd;
     IF_GAME(IsTF2C())
     {
@@ -155,6 +154,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         g_Settings.is_create_move = false;
         return ret;
     }
+
+    tickcount++;
 
     if (!isHackActive())
     {
@@ -395,8 +396,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     {
         // LoadSavedState();
     }
-    g_pLocalPlayer->bAttackLastTick = (cmd->buttons & IN_ATTACK);
-    g_Settings.is_create_move       = false;
+    g_Settings.is_create_move = false;
     if (nolerp && !hacks::shared::backtrack::isBacktrackEnabled)
     {
         static const ConVar *pUpdateRate = g_pCVar->FindVar("cl_updaterate");
