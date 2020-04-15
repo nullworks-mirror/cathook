@@ -119,6 +119,9 @@ std::unique_ptr<char[]> strfmt(const char *fmt, ...);
 bool HasWeapon(CachedEntity *ent, int wantedId);
 bool IsAmbassador(CachedEntity *ent);
 bool AmbassadorCanHeadshot();
+// Validate a UserCmd
+#define VERIFIED_CMD_SIZE 90
+void ValidateUserCmd(CUserCmd *cmd, int sequence_nr);
 
 // Convert a TF2 handle into an IDX -> ENTITY(IDX)
 int HandleToIDX(int handle);

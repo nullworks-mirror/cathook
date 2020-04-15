@@ -42,6 +42,7 @@ void GlobalSettings::Init()
 }
 
 CUserCmd *current_user_cmd{ nullptr };
+CUserCmd *current_late_user_cmd{ nullptr };
 
 bool isHackActive()
 {

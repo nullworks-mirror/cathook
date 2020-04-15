@@ -41,6 +41,7 @@ DECLARE_HOOKED_METHOD(LevelShutdown, void, void *);
 // ClientMode + 4
 DECLARE_HOOKED_METHOD(FireGameEvent, void, void *, IGameEvent *);
 // IBaseClient
+DECLARE_HOOKED_METHOD(CreateMoveLate, void, void *this_, int sequence_nr, float input_sample_time, bool arg3)
 DECLARE_HOOKED_METHOD(DispatchUserMessage, bool, void *, int, bf_read &);
 DECLARE_HOOKED_METHOD(IN_KeyEvent, int, void *, int, ButtonCode_t, const char *);
 DECLARE_HOOKED_METHOD(FrameStageNotify, void, void *, ClientFrameStage_t);

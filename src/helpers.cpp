@@ -1575,6 +1575,15 @@ bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)
     return false;
 }
 
+void ValidateUserCmd(CUserCmd *cmd, int sequence_nr)
+{
+    CRC32_t crc = GetChecksum(cmd);
+    if (crc != GetVerifiedCmds(g_IInput)[sequence_nr % VERIFIED_CMD_SIZE].m_crc)
+    {
+        *cmd = GetVerifiedCmds(g_IInput)[sequence_nr % VERIFIED_CMD_SIZE].m_cmd;
+    }
+}
+
 // Used for getting class names
 CatCommand print_classnames("debug_print_classnames", "Lists classnames currently available in console", []() {
     // Create a tmp ent for the loop

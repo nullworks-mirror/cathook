@@ -121,6 +121,7 @@ public:
 
     offset_t flChargeBeginTime;
     offset_t flLastFireTime;
+    offset_t flObservedCritChance;
     offset_t hThrower;
     offset_t hMyWeapons;
 

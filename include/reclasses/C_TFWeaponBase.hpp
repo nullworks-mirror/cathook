@@ -129,7 +129,7 @@ public:
         float mult2 = *(float *) (unk3);
 
         float multiplier = 0.5f;
-        int seed         = C_BaseEntity::m_nPredictionRandomSeed() ^ (owner->entindex() | self->entindex());
+        int seed         = C_BaseEntity::m_nPredictionRandomSeed() ^ (owner->entindex() | (self->entindex() << 8));
         RandomSeed(seed);
 
         bool result = true;

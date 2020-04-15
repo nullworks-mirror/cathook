@@ -40,5 +40,7 @@ public:
 bool isHackActive();
 
 extern CUserCmd *current_user_cmd;
+// Seperate user cmd used in the late createmove
+extern CUserCmd *current_late_user_cmd;
 
 extern GlobalSettings g_Settings;

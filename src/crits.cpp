@@ -1,357 +1,571 @@
-/*
- * crits.cpp
- *
- *  Created on: Feb 25, 2017
- *      Author: nullifiedcat
- */
-
-#include <settings/Bool.hpp>
 #include "common.hpp"
-#include "Backtrack.hpp"
-#include "PlayerTools.hpp"
+#include "crits.hpp"
+#include "netadr.h"
 
 std::unordered_map<int, int> command_number_mod{};
 
 namespace criticals
 {
-
-static settings::Boolean crit_info{ "crit.info", "false" };
+settings::Boolean enabled{ "crit.enabled", "false" };
+static settings::Boolean draw{ "crit.draw-info", "false" };
+settings::Boolean melee{ "crit.melee", "false" };
 static settings::Button crit_key{ "crit.key", "<null>" };
-static settings::Boolean auto_crit{ "crit.auto", "false" };
-static settings::Boolean crit_melee{ "crit.melee", "false" };
-static settings::Boolean crit_legiter{ "crit.force-gameplay", "false" };
-static settings::Boolean crit_experimental{ "crit.experimental", "false" };
+static settings::Boolean old_mode{ "crit.old-mode", "false" };
 
-int find_next_random_crit_for_weapon(IClientEntity *weapon)
+// How much is added to bucket per shot?
+float added_per_shot = 0.0f;
+class weapon_info
 {
-    int tries = 0, number = current_user_cmd->command_number, found = 0, seed_backup;
-
-    crithack_saved_state state{};
-    state.Save(weapon);
-
-    seed_backup = *g_PredictionRandomSeed;
-    while (!found && tries < 4096)
+public:
+    float crit_bucket{};
+    unsigned int weapon_seed{};
+    unsigned unknown1{};
+    unsigned unknown2{};
+    bool unknown3{};
+    float unknown4{};
+    int crit_attempts{};
+    int crit_count{};
+    float observed_crit_chance{};
+    bool unknown7{};
+    weapon_info()
     {
-        *g_PredictionRandomSeed = MD5_PseudoRandom(number) & 0x7FFFFFFF;
-        found                   = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
-        if (found)
-            break;
-        ++tries;
-        ++number;
+    }
+    void Load(IClientEntity *weapon)
+    {
+        crit_bucket          = *(float *) ((uintptr_t) weapon + 0xa38);
+        weapon_seed          = *(unsigned int *) ((uintptr_t) weapon + 0xb3c);
+        unknown1             = *(unsigned int *) ((uintptr_t) weapon + 0xb30);
+        unknown2             = *(unsigned int *) ((uintptr_t) weapon + 0xb34);
+        unknown3             = *(bool *) ((uintptr_t) weapon + 0xb17);
+        unknown4             = *(float *) ((uintptr_t) weapon + 0xb40);
+        crit_attempts        = *(int *) ((uintptr_t) weapon + 0xa3c);
+        crit_count           = *(int *) ((uintptr_t) weapon + 0xa40);
+        observed_crit_chance = *(float *) ((uintptr_t) weapon + 0xbfc);
+        unknown7             = *(bool *) ((uintptr_t) weapon + 0xb18);
+    }
+    weapon_info(IClientEntity *weapon)
+    {
+        Load(weapon);
+    }
+    void restore_data(IClientEntity *weapon)
+    {
+        *(float *) ((uintptr_t) weapon + 0xa38)        = crit_bucket;
+        *(unsigned int *) ((uintptr_t) weapon + 0xb3c) = weapon_seed;
+        *(unsigned int *) ((uintptr_t) weapon + 0xb30) = unknown1;
+        *(unsigned int *) ((uintptr_t) weapon + 0xb34) = unknown2;
+        *(bool *) ((uintptr_t) weapon + 0xb17)         = unknown3;
+        *(float *) ((uintptr_t) weapon + 0xb40)        = unknown4;
+        *(int *) ((uintptr_t) weapon + 0xa3c)          = crit_attempts;
+        *(int *) ((uintptr_t) weapon + 0xa40)          = crit_count;
+        *(float *) ((uintptr_t) weapon + 0xbfc)        = observed_crit_chance;
+        *(bool *) ((uintptr_t) weapon + 0xb18)         = unknown7;
+    }
+};
+
+float GetWithdrawMult(IClientEntity *wep)
+{
+    weapon_info info(wep);
+    // Increment call count
+    int call_count = info.crit_count + 1;
+    // How many times there was a check for crits
+    int crit_checks  = info.crit_attempts + 1;
+    float flMultiply = 0.5;
+
+    if (g_pLocalPlayer->weapon_mode != weapon_melee)
+    {
+        float flTmp = min(max((((float) call_count / (float) crit_checks) - 0.1) * 1.111, 0.0), 1.0);
+        flMultiply  = (flTmp * 2.0) + 1.0;
     }
 
-    *g_PredictionRandomSeed = seed_backup;
-    if (!crit_experimental || g_pLocalPlayer->weapon_mode == weaponmode::weapon_melee)
-        state.Load(weapon);
-    if (found)
-        return number;
-    return 0;
+    float flToRemove = flMultiply * 3.0;
+    return flToRemove;
 }
 
-void unfuck_bucket(IClientEntity *weapon)
+static CatCommand debug_print_mult("debug_print_mult", "print Withdraw multiplier", []() {
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
+        return;
+    logging::Info("Multiplier: %f", GetWithdrawMult(RAW_ENT(LOCAL_W)));
+});
+
+static Timer bucket_cap_refresh{};
+float GetBucketCap()
 {
-    static bool changed;
+    static float return_value;
+    static ConVar *tf_weapon_criticals = g_ICvar->FindVar("tf_weapon_criticals_bucket_cap");
+    if (bucket_cap_refresh.test_and_set(5000))
+        return_value = tf_weapon_criticals->GetFloat();
+    return return_value;
+}
+
+// Add damage parameter adds the same value that AddToCritbucket would add
+bool IsAllowedToWithdrawFromCritBucket(IClientEntity *wep, float flDamage, bool add_damage = true)
+{
+    weapon_info info(wep);
+    if (add_damage)
+    {
+        info.crit_bucket += flDamage;
+        if (info.crit_bucket > GetBucketCap())
+            info.crit_bucket = GetBucketCap();
+    }
+    float flToRemove = GetWithdrawMult(wep) * flDamage;
+    // Can remove
+    if (flToRemove <= info.crit_bucket)
+        return true;
+
+    return false;
+}
+
+// As opposed to the function above this does actual writing
+void SimulateNormalShot(IClientEntity *wep, float flDamage)
+{
+    weapon_info info(wep);
+    info.crit_bucket += flDamage;
+    if (info.crit_bucket > GetBucketCap())
+        info.crit_bucket = GetBucketCap();
+    // Write other values important for iteration
+    info.crit_attempts++;
+    info.restore_data(wep);
+}
+
+bool CanWeaponCrit(IClientEntity *wep)
+{
+    // Are we allowed to even use that much?
+    if (g_pLocalPlayer->weapon_mode != weapon_melee && !IsAllowedToWithdrawFromCritBucket(wep, added_per_shot))
+        return false;
+    return true;
+}
+
+// Calculate shots until crit
+int ShotsUntilCrit(IClientEntity *wep)
+{
+    weapon_info info(wep);
+    // How many shots until we can crit
+    int shots = 0;
+    // Predicting 100 shots should be fine
+    for (shots = 0; shots < 100; shots++)
+    {
+        if (IsAllowedToWithdrawFromCritBucket(wep, added_per_shot, true))
+            break;
+        // Do calculations
+        SimulateNormalShot(wep, added_per_shot);
+    }
+    // Restore variables
+    info.restore_data(wep);
+    return shots;
+}
+
+typedef float (*AttribHookFloat_t)(float, const char *, IClientEntity *, void *, bool);
+
+// Calculate Crit penalty
+float CalcCritPenalty(IClientEntity *wep)
+{
+    // Need this to get crit chance from weapon
+    static uintptr_t AttribHookFloat            = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C C7 45 ? 00 00 00 00 A1 ? ? ? ? C7 45 ? 00 00 00 00 8B 75 ? 85 C0 0F 84 ? ? ? ? 8D 55 ? 89 04 24 31 DB 89 54 24");
+    static AttribHookFloat_t AttribHookFloat_fn = AttribHookFloat_t(AttribHookFloat);
+
+    // Player specific Multiplier
+    float crit_mult = re::CTFPlayerShared::GetCritMult((re::CTFPlayerShared *) (((uintptr_t) RAW_ENT(LOCAL_E)) + 0x5f3));
+
+    // Weapon specific Multiplier
+    static std::string query = "mult_crit_chance";
+    float flMultCritChance   = AttribHookFloat_fn(crit_mult * 0.02, query.c_str(), wep, 0, 1);
+
+    return flMultCritChance;
+}
+
+std::pair<float, float> CritMultInfo(IClientEntity *wep)
+{
+    float cur_crit        = CalcCritPenalty(wep);
+    float observed_chance = CE_FLOAT(LOCAL_W, netvar.flObservedCritChance);
+    float needed_chance   = cur_crit + 0.1f;
+    return std::pair<float, float>(observed_chance, needed_chance);
+}
+
+CatCommand debug_observed("debug_observed_crit", "debug", []() {
+    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W))
+        logging::Info("%f", CE_FLOAT(LOCAL_W, netvar.flObservedCritChance));
+});
+
+CatCommand debug_damage("debug_print_damage_until_crit", "debug", []() {
+    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W))
+    {
+        float penalty = CalcCritPenalty(RAW_ENT(LOCAL_W));
+
+        float observed_chance = CE_FLOAT(LOCAL_W, netvar.flObservedCritChance);
+
+        rgba_t color = colors::green;
+        if (penalty + 0.1f < observed_chance)
+            color = colors::red;
+
+        Color valve_color(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f);
+        g_ICvar->ConsoleColorPrintf(valve_color, "%f\n", observed_chance);
+    }
+});
+
+CatCommand debug_shots("debug_print_shots_until_crit", "debug", []() {
+    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W))
+        logging::Info("%d", ShotsUntilCrit(RAW_ENT(LOCAL_W)));
+});
+
+int next_crit_tick()
+{
+    auto wep = RAW_ENT(LOCAL_W);
+
+    int old_seed = MD5_PseudoRandom(current_late_user_cmd->command_number) & 0x7FFFFFFF;
+    // Try 4096 times
+    for (int i = 0; i < 4096; i++)
+    {
+        int cmd_number = current_late_user_cmd->command_number + i;
+        // Set random seed
+        *g_PredictionRandomSeed = MD5_PseudoRandom(cmd_number) & 0x7FFFFFFF;
+        // Save weapon state to not break anything
+        weapon_info info(wep);
+        bool is_crit = re::C_TFWeaponBase::CalcIsAttackCritical(wep);
+        // Restore state
+        info.restore_data(wep);
+        // Is a crit
+        if (is_crit)
+        {
+            *g_PredictionRandomSeed = old_seed;
+            return cmd_number;
+        }
+    }
+    *g_PredictionRandomSeed = old_seed;
+    return -1;
+}
+
+static Timer random_crit_refresh{};
+bool random_crits_enabled()
+{
+    static bool return_value;
+    static ConVar *tf_weapon_criticals = g_ICvar->FindVar("tf_weapon_criticals");
+    if (random_crit_refresh.test_and_set(3000))
+        return_value = tf_weapon_criticals->GetBool();
+    return return_value;
+}
+
+static int force_ticks = 0;
+
+bool IsEnabled()
+{
+    // Random crits on
+    if (!random_crits_enabled())
+        return false;
+    // Weapon specific checks
+    if (force_ticks || ((melee && g_pLocalPlayer->weapon_mode == weapon_melee) || (enabled && g_pLocalPlayer->weapon_mode != weapon_melee && (!crit_key || crit_key.isKeyDown()))))
+        return true;
+    return false;
+}
+// clang-format on
+
+static int idx = 0;
+static std::vector<int> crit_cmds;
+
+void force_crit()
+{
+    if (!IsEnabled())
+        return;
+    if (!old_mode && g_pLocalPlayer->weapon_mode != weapon_melee && LOCAL_W->m_iClassID() != CL_CLASS(CTFPipebombLauncher))
+    {
+        if (crit_cmds.size())
+        {
+            if (idx > crit_cmds.size())
+                idx = 0;
+            // Magic crit cmds
+            current_late_user_cmd->command_number = crit_cmds[idx];
+            current_late_user_cmd->random_seed    = MD5_PseudoRandom(current_late_user_cmd->command_number) & 0x7FFFFFFF;
+            idx++;
+        }
+    }
+    else
+    {
+        int next_crit = next_crit_tick();
+        if (next_crit != -1)
+        {
+            // We can just force to nearest crit for melee, and sticky launchers apparently
+            if (g_pLocalPlayer->weapon_mode == weapon_melee || LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
+            {
+                if (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
+                {
+                    if (!force_ticks)
+                        force_ticks = 3;
+                    force_ticks--;
+                }
+                current_late_user_cmd->command_number = next_crit;
+                current_late_user_cmd->random_seed    = MD5_PseudoRandom(next_crit) & 0x7FFFFFFF;
+            }
+            // No crit, don't attack
+            else if (current_late_user_cmd->command_number != next_crit)
+                current_user_cmd->buttons &= ~IN_ATTACK;
+        }
+    }
+}
+
+void update_cmds()
+{
+    // Melee weapons do not matter
+    if (g_pLocalPlayer->weapon_mode == weapon_melee)
+        return;
+    auto weapon = RAW_ENT(LOCAL_W);
     static float last_bucket;
     static int last_weapon;
 
-    if (current_user_cmd->command_number)
-        changed = false;
-
     float &bucket = re::C_TFWeaponBase::crit_bucket_(weapon);
 
-    if (bucket != last_bucket)
+    int lowest_value = INT_MAX;
+    int cur_cmdnum   = current_late_user_cmd->command_number;
+    bool old_cmds    = false;
+    for (auto &cmd : crit_cmds)
+        if (cmd < cur_cmdnum)
+            old_cmds = true;
+    if (weapon->entindex() != last_weapon || old_cmds)
     {
-        if (changed && weapon->entindex() == last_weapon)
+        // Used later
+        int xor_dat = (weapon->entindex() << 8 | LOCAL_E->m_IDX);
+        // Clear old data
+        crit_cmds.clear();
+        added_per_shot = 0.0f;
+
+        // 30.000.000 seems like a good cap
+        for (int i = cur_cmdnum, j = 5; i <= cur_cmdnum + 30000000 + 200 && j > 0; i++)
         {
-            bucket = last_bucket;
+            // Reverse seed
+            int iSeed    = MD5_PseudoRandom(i) & 0x7fffffff;
+            int tempSeed = iSeed ^ (xor_dat);
+            RandomSeed(tempSeed);
+            int iResult = RandomInt(0, 9999);
+            // Returns something low? Store it.
+            if (iResult <= lowest_value)
+            {
+                if (i > cur_cmdnum + 200)
+                {
+                    // Found lower value
+                    if (iResult < lowest_value)
+                    {
+                        crit_cmds.clear();
+                        lowest_value = iResult;
+                        j            = 5;
+                    }
+                    crit_cmds.push_back(i);
+                    if (added_per_shot == 0.0f)
+                    {
+                        int backup_seed = *g_PredictionRandomSeed;
+                        // Set random seed
+                        *g_PredictionRandomSeed = MD5_PseudoRandom(i) & 0x7FFFFFFF;
+                        // Save weapon state to not break anything
+                        weapon_info info(weapon);
+                        // We modify and write using this
+                        weapon_info write(weapon);
+
+                        // Set Values so they don't get in the way
+                        write.crit_bucket          = GetBucketCap();
+                        write.crit_attempts        = 100000000;
+                        write.crit_count           = 0;
+                        write.observed_crit_chance = 0.0f;
+
+                        // Write onto weapon
+                        write.restore_data(weapon);
+
+                        bool is_crit = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
+
+                        if (is_crit)
+                        {
+                            weapon_info new_info(weapon);
+                            // How much is Subtracted per shot
+                            added_per_shot = (GetBucketCap() - new_info.crit_bucket) / 3.0f;
+                        }
+
+                        // Restore original state
+                        info.restore_data(weapon);
+                        // Adjust with multiplier
+
+                        *g_PredictionRandomSeed = backup_seed;
+                    }
+                    j--;
+                }
+            }
         }
-        changed = true;
     }
     last_weapon = weapon->entindex();
     last_bucket = bucket;
 }
 
-struct cached_calculation_s
+// Fix bucket on non-local servers
+void unfuck_bucket(IClientEntity *weapon)
 {
-    int command_number;
-    int init_command;
-    int weapon_entity;
-};
+    INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
+    if (!ch)
+        return;
+    auto addr = ch->GetRemoteAddress();
+    // Local server needs no fixing
+    if (addr.type == NA_LOOPBACK)
+        return;
+    // Melee doesn't either
+    if (g_pLocalPlayer->weapon_mode == weapon_melee)
+        return;
 
-static cached_calculation_s cached_calculation{};
+    static float last_bucket;
+    static int last_weapon;
+    static unsigned last_tick;
+    static float last_fire_time;
 
-static int number                = 0;
-static int lastnumber            = 0;
-static int lastusercmd           = 0;
-static const model_t *lastweapon = nullptr;
-
-bool force_crit(IClientEntity *weapon)
-{
-    auto command_number = current_user_cmd->command_number;
-
-    if (lastnumber < command_number || lastweapon != weapon->GetModel() || lastnumber - command_number > 1000)
+    weapon_info info(weapon);
+    float bucket    = info.crit_bucket;
+    float fire_time = NET_FLOAT(weapon, netvar.flLastFireTime);
+    if (weapon->entindex() == last_weapon)
     {
-        if (!*crit_experimental || g_pLocalPlayer->weapon_mode == weapon_melee)
+        if (bucket != last_bucket && last_bucket != 0)
         {
-            if (cached_calculation.init_command > command_number || command_number - cached_calculation.init_command > 4096 || (command_number && (cached_calculation.command_number < command_number)))
-                cached_calculation.weapon_entity = 0;
-            if (cached_calculation.weapon_entity == weapon->entindex())
-                return bool(cached_calculation.command_number);
-        }
-        number = find_next_random_crit_for_weapon(weapon);
-    }
-    else
-        number = lastnumber;
-    // logging::Info("Found critical: %d -> %d", command_number,
-    //              number);
-    if (crit_experimental && GetWeaponMode() != weapon_melee)
-    {
-        cached_calculation.command_number = number;
-        cached_calculation.weapon_entity  = LOCAL_W->m_IDX;
-        if (!crit_legiter)
-        {
-            if (number && number != command_number)
+            if (last_tick == tickcount)
             {
-                command_number_mod[command_number]                     = number;
-                auto ch                                                = (INetChannel *) g_IEngine->GetNetChannelInfo();
-                *(int *) ((uint64_t) ch + offsets::m_nOutSequenceNr()) = number - 1;
+                bucket           = last_bucket;
+                info.crit_bucket = bucket;
+                info.restore_data(weapon);
+                return;
             }
-        }
-        else if (number && number != command_number && number - 30 < command_number)
-        {
 
-            command_number_mod[command_number]                     = number;
-            auto ch                                                = (INetChannel *) g_IEngine->GetNetChannelInfo();
-            *(int *) ((uint64_t) ch + offsets::m_nOutSequenceNr()) = number - 1;
+            // We want to adjust it ourselves
+            if (bucket > last_bucket)
+                bucket = last_bucket;
+        }
+
+        // We shot, add to bucket
+        if (last_fire_time != fire_time)
+        {
+            bucket += added_per_shot;
+            // Don't overshoot
+            if (bucket > GetBucketCap())
+                bucket = GetBucketCap();
         }
     }
-    else
-    {
-        if (!crit_legiter)
-        {
-            if (command_number != number && number && number != command_number)
-                current_user_cmd->buttons &= ~IN_ATTACK;
-            else
-                current_user_cmd->buttons |= IN_ATTACK;
-        }
-        else
-        {
-            if (command_number + 30 > number && number && number != command_number)
-                current_user_cmd->buttons &= ~IN_ATTACK;
-            else
-                current_user_cmd->buttons |= IN_ATTACK;
-        }
-    }
-    lastweapon = weapon->GetModel();
-    lastnumber = number;
-    return number != 0;
+
+    last_fire_time = fire_time;
+    last_tick      = tickcount;
+    last_weapon    = weapon->entindex();
+    last_bucket    = bucket;
+
+    info.crit_bucket = bucket;
+    info.restore_data(weapon);
 }
 
-void handle_melee_crit(IClientEntity *weapon)
+void CreateMove()
 {
-    // Should i crit or save my crits?
-    bool in_range = false;
-    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
-    {
-        // We already found out we should crit
-        if (in_range)
-            break;
-        CachedEntity *target = ENTITY(i);
-
-        // Various ignores
-        if (CE_BAD(target) || !target->m_bAlivePlayer() || !player_tools::shouldTarget(target) || !target->m_bEnemy())
-            continue;
-
-        // Shorten code
-        namespace bt = hacks::shared::backtrack;
-
-        // If backtracking, use the backtrack ticks
-        if (bt::isBacktrackEnabled)
-        {
-            // Loop all ticks
-            for (int j = 0; j < 66; j++)
-            {
-                auto bt_data = bt::headPositions[i][j];
-                // Invalid tick
-                if (!bt::ValidTick(bt_data, target))
-                    continue;
-                // If within 400 HU range then crit, else just farm crits
-                if (bt_data.collidable.center.DistTo(g_pLocalPlayer->v_Eye) < 400.0f)
-                {
-                    in_range = true;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            Vector ent_orig = target->m_vecOrigin();
-            // Center ent origin
-            ent_orig += (RAW_ENT(target)->GetCollideable()->OBBMaxs() + RAW_ENT(target)->GetCollideable()->OBBMins()) / 2;
-            // In range, crit!
-            if (ent_orig.DistTo(g_pLocalPlayer->v_Eye) < 400.0f)
-            {
-                in_range = true;
-                break;
-            }
-        }
-    }
-    if (in_range)
-        force_crit(weapon);
-    else
-    {
-        // Please don't crit thanks
-        if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
-        {
-            // Backup
-            int original_cmd = current_user_cmd->command_number;
-            // How many crits in a row?
-            int found = 0;
-            // Ensure not to cockblock when critboosted, 5 should be plently
-            for (int i = 0; i < 10; i++)
-            {
-                current_user_cmd->command_number++;
-                if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
-                    found++;
-            }
-            // If we found less than 10 crits in a row, please don't crit thanks
-            if (found < 10)
-                current_user_cmd->buttons &= ~IN_ATTACK;
-            current_user_cmd->command_number = original_cmd;
-        }
-    }
-}
-void create_move()
-{
-    if (!crit_key && !crit_melee && !auto_crit)
+    if (!enabled && !melee && !draw)
         return;
-    if (!random_crits_enabled())
+    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
-    if (CE_BAD(LOCAL_W))
+
+    unfuck_bucket(RAW_ENT(LOCAL_W));
+    // Update cmds
+    update_cmds();
+    if (!enabled && !melee)
         return;
-    if (current_user_cmd->command_number)
-        lastusercmd = current_user_cmd->command_number;
+    if (!force_ticks && (!(melee && g_pLocalPlayer->weapon_mode == weapon_melee) && crit_key && !crit_key.isKeyDown()))
+        return;
+    if (!current_late_user_cmd->command_number)
+        return;
+
     IClientEntity *weapon = RAW_ENT(LOCAL_W);
     if (!re::C_TFWeaponBase::IsBaseCombatWeapon(weapon))
         return;
     if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon))
         return;
-    if (!CanShoot())
+    if (!re::C_TFWeaponBase::CanFireCriticalShot(weapon, false, nullptr))
         return;
-    unfuck_bucket(weapon);
-    if ((current_user_cmd->buttons & IN_ATTACK) && ((crit_key && crit_key.isKeyDown()) || auto_crit) && current_user_cmd->command_number)
+
+    if (force_ticks || (CanShoot() && current_late_user_cmd->buttons & IN_ATTACK))
     {
-        if (GetWeaponMode() == weapon_melee)
-            handle_melee_crit(weapon);
+        // Are we even allowed to crit?
+        if (CanWeaponCrit(RAW_ENT(LOCAL_W)))
+            force_crit();
+    }
+}
+
+// Storage
+static int last_crit_tick   = -1;
+static int last_bucket      = 0;
+static int shots_until_crit = 0;
+static int last_wep         = 0;
+static std::pair<float, float> crit_mult_info;
+void Draw()
+{
+    if (!draw)
+        return;
+    if (!g_IEngine->GetNetChannelInfo())
+        last_crit_tick = -1;
+    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W))
+    {
+        auto wep     = RAW_ENT(LOCAL_W);
+        float bucket = weapon_info(wep).crit_bucket;
+
+        // Reset because too old
+        if (wep->entindex() != last_wep || last_crit_tick - current_late_user_cmd->command_number < 0 || (last_crit_tick - current_late_user_cmd->command_number) * g_GlobalVars->interval_per_tick > 30)
+            last_crit_tick = next_crit_tick();
+
+        // Used by multiple things
+        bool can_crit = CanWeaponCrit(wep);
+
+        if (bucket != last_bucket || wep->entindex() != last_wep)
+        {
+            // Recalculate shots until crit
+            if (!can_crit)
+                shots_until_crit = ShotsUntilCrit(wep);
+            // Recalc crit multiplier info
+            crit_mult_info = CritMultInfo(wep);
+        }
+
+        // Display for when crithack is active/can't be active
+        if (IsEnabled() && last_crit_tick != -1)
+            AddCenterString("Forcing Crits!", colors::red);
+
+        // Mark if the weapon can randomly crit or not
+        if (!re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr))
+        {
+            AddCenterString("Weapon cannot randomly crit.", colors::red);
+            return;
+        }
+
+        if (!can_crit)
+            AddCenterString("Shots until crit: " + std::to_string(shots_until_crit), colors::orange);
+
+        // Mark bucket as ready/not ready
+        auto color = colors::red;
+        if (can_crit)
+            color = colors::green;
+        AddCenterString("Crit Bucket: " + std::to_string(bucket), color);
+
+        // Print crit Multiplier information
+
+        // Crit chance is low enough
+        if (crit_mult_info.first < crit_mult_info.second)
+            color = colors::green;
+        // Cannot crit
         else
-            force_crit(weapon);
-    }
-    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number && GetWeaponMode() == weapon_melee && (crit_melee || auto_crit) && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFKnife))
-    {
-        handle_melee_crit(weapon);
-    }
-    else if ((current_user_cmd->buttons & IN_ATTACK) && current_user_cmd->command_number && GetWeaponMode() != weapon_melee && crit_key)
-    {
-        // Save crits!
-        if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
+            color = colors::red;
+        AddCenterString("Crit Penalty: " + std::to_string(crit_mult_info.first), color);
+
+        // Time until crit
+        if (old_mode && can_crit && last_crit_tick != -1)
         {
-            // Backup
-            int original_cmd = current_user_cmd->command_number;
-            // How many crits in a row?
-            int found = 0;
-            // Ensure not to cockblock when critboosted, 5 should be plently
-            for (int i = 0; i < 6; i++)
-            {
-                current_user_cmd->command_number++;
-                if (find_next_random_crit_for_weapon(weapon) == current_user_cmd->command_number)
-                    found++;
-            }
-            // If we found less than 5 crits in a row, please don't crit thanks
-            if (found < 5)
-                current_user_cmd->buttons &= ~IN_ATTACK;
-            current_user_cmd->command_number = original_cmd;
+            // Ticks / Ticks per second
+            float time = (last_crit_tick - current_late_user_cmd->command_number) * g_GlobalVars->interval_per_tick;
+            AddCenterString("Crit in " + std::to_string(time) + "s", colors::orange);
         }
+
+        // Update
+        last_bucket = bucket;
+        last_wep    = wep->entindex();
     }
 }
 
-bool random_crits_enabled()
+void LevelShutdown()
 {
-    static ConVar *tf_weapon_criticals = g_ICvar->FindVar("tf_weapon_criticals");
-    return tf_weapon_criticals->GetBool();
+    last_crit_tick = -1;
 }
 
-#if ENABLE_VISUALS
-void draw()
-{
-    if (CE_BAD(LOCAL_W))
-        return;
-    IClientEntity *weapon = RAW_ENT(LOCAL_W);
-    if (!weapon)
-        return;
-    if (!re::C_TFWeaponBase::IsBaseCombatWeapon(weapon))
-        return;
-    if (!re::C_TFWeaponBase::AreRandomCritsEnabled(weapon))
-        return;
-    if (crit_info && CE_GOOD(LOCAL_W))
-    {
-        if (crit_key.isKeyDown() || auto_crit)
-        {
-            AddCenterString("FORCED CRITS!", colors::red);
-        }
-        IF_GAME(IsTF2())
-        {
-            if (!random_crits_enabled())
-                AddCenterString("Random crits are disabled", colors::yellow);
-            else
-            {
-                if (!re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr))
-                    AddCenterString("Weapon can't randomly crit", colors::yellow);
-                else if (lastusercmd)
-                {
-                    if (number > lastusercmd)
-                    {
-                        float nextcrit = ((float) number - (float) lastusercmd) / (float) 90;
-                        if (nextcrit > 0.0f)
-                        {
-                            AddCenterString(format("Time to next crit: ", nextcrit, "s"), colors::orange);
-                        }
-                    }
-                    AddCenterString("Weapon can randomly crit");
-                }
-            }
-            AddCenterString(format("Bucket: ", re::C_TFWeaponBase::crit_bucket_(RAW_ENT(LOCAL_W))));
-        }
-        // AddCenterString(format("Time: ",
-        // *(float*)((uintptr_t)RAW_ENT(LOCAL_W) + 2872u)));
-    }
-}
-#endif
 static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, criticals::create_move, "cm_crits", EC::very_late);
-#if ENABLE_VISUALS
-    EC::Register(EC::Draw, criticals::draw, "draw_crits");
-#endif
+    EC::Register(EC::CreateMoveLate, CreateMove, "crit_cm");
+    EC::Register(EC::Draw, Draw, "crit_draw");
+    EC::Register(EC::LevelShutdown, LevelShutdown, "crit_lvlshutdown");
 });
 } // namespace criticals
-
-void crithack_saved_state::Load(IClientEntity *entity)
-{
-    *(float *) (uintptr_t(entity) + 2868) = unknown2868;
-    *(float *) (uintptr_t(entity) + 2864) = unknown2864;
-    *(float *) (uintptr_t(entity) + 2880) = unknown2880;
-    *(float *) (uintptr_t(entity) + 2616) = bucket2616;
-    *(int *) (uintptr_t(entity) + 2620)   = unknown2620;
-    *(int *) (uintptr_t(entity) + 2876)   = seed2876;
-    *(char *) (uintptr_t(entity) + 2839)  = unknown2839;
-}
-
-void crithack_saved_state::Save(IClientEntity *entity)
-{
-    unknown2868 = *(float *) (uintptr_t(entity) + 2868);
-    unknown2864 = *(float *) (uintptr_t(entity) + 2864);
-    unknown2880 = *(float *) (uintptr_t(entity) + 2880);
-    bucket2616  = *(float *) (uintptr_t(entity) + 2616);
-    unknown2620 = *(int *) (uintptr_t(entity) + 2620);
-    seed2876    = *(int *) (uintptr_t(entity) + 2876);
-    unknown2839 = *(char *) (uintptr_t(entity) + 2839);
-}
