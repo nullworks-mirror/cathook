@@ -10,7 +10,7 @@
 #include "SeedPrediction.hpp"
 #if ENABLE_VISUALS
 union SDL_Event;
-struct SDL_Window;
+class SDL_Window;
 #endif
 
 #define DECLARE_HOOKED_METHOD(name, rtype, ...) \
@@ -43,6 +43,7 @@ DECLARE_HOOKED_METHOD(FireGameEvent, void, void *, IGameEvent *);
 // IBaseClient
 DECLARE_HOOKED_METHOD(DispatchUserMessage, bool, void *, int, bf_read &);
 DECLARE_HOOKED_METHOD(IN_KeyEvent, int, void *, int, ButtonCode_t, const char *);
+DECLARE_HOOKED_METHOD(FrameStageNotify, void, void *, ClientFrameStage_t);
 // IInput
 DECLARE_HOOKED_METHOD(GetUserCmd, CUserCmd *, IInput *, int);
 // INetChannel
@@ -73,8 +74,6 @@ DECLARE_HOOKED_METHOD(ChatPrintf, void, CHudBaseChat *, int, int, const char *, 
 DECLARE_HOOKED_METHOD(OverrideView, void, void *, CViewSetup *);
 // IStudioRender
 DECLARE_HOOKED_METHOD(BeginFrame, void, IStudioRender *);
-// IBaseClient
-DECLARE_HOOKED_METHOD(FrameStageNotify, void, void *, ClientFrameStage_t);
 // SDL
 DECLARE_HOOKED_METHOD(SDL_GL_SwapWindow, void, SDL_Window *);
 DECLARE_HOOKED_METHOD(SDL_PollEvent, int, SDL_Event *);
