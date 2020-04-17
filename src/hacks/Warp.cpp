@@ -147,22 +147,21 @@ void CreateMove()
     if (!warp_key.isKeyDown())
     {
         warp_last_tick = false;
+        Vector velocity{};
+        velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), velocity);
+
         // Bunch of checks, if they all pass we are standing still
-        if (!HasCondition<TFCond_Charging>(LOCAL_E) && !current_user_cmd->forwardmove && !current_user_cmd->sidemove && !current_user_cmd->upmove && (CE_INT(LOCAL_E, netvar.iFlags) & FL_ONGROUND) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+        if (velocity.IsZero() && !HasCondition<TFCond_Charging>(LOCAL_E) && !current_user_cmd->forwardmove && !current_user_cmd->sidemove && !current_user_cmd->upmove && (CE_INT(LOCAL_E, netvar.iFlags) & FL_ONGROUND) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
         {
-            Vector velocity{};
-            velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), velocity);
-            if (velocity.IsZero())
-            {
-                if (!move_last_tick)
-                    should_charge = true;
-                move_last_tick = false;
-            }
+
+            if (!move_last_tick)
+                should_charge = true;
+            move_last_tick = false;
+
             return;
         }
-        else
+        else if (!(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
         {
-            should_charge = false;
             // Use everxy xth tick for charging
             if (!(tickcount % *warp_movement_ratio))
                 should_charge = true;
