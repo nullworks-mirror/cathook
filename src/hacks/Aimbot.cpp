@@ -634,8 +634,9 @@ bool IsTargetStateGood(CachedEntity *entity)
                 {
                 case CL_CLASS(CTFRocketLauncher_DirectHit):
                 case CL_CLASS(CTFRocketLauncher_AirStrike):
-                case CL_CLASS(CTFRocketLauncher_Mortar):
+                case CL_CLASS(CTFRocketLauncher_Mortar):    // doesn't exist yet
                 case CL_CLASS(CTFRocketLauncher):
+                case CL_CLASS(CTFParticleCannon):
                 case CL_CLASS(CTFGrenadeLauncher):
                 case CL_CLASS(CTFPipebombLauncher):
                     if (HasCondition<TFCond_UberBlastResist>(entity))
@@ -645,8 +646,8 @@ bool IsTargetStateGood(CachedEntity *entity)
                 case CL_CLASS(CTFSyringeGun):
                 case CL_CLASS(CTFCrossbow):
                 case CL_CLASS(CTFShotgunBuildingRescue):
-                case CL_CLASS(CTFDRGPomson): // was this bullet? i don't have the item to test.
-                case CL_CLASS(CTFRaygun):    // was this bullet? i don't have the item to test.
+                case CL_CLASS(CTFDRGPomson): 
+                case CL_CLASS(CTFRaygun):
                     if (HasCondition<TFCond_UberBulletResist>(entity))
                         return false;
                     break;
