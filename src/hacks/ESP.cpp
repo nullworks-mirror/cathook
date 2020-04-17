@@ -1207,7 +1207,6 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     if (IsPlayerInvulnerable(ent))
                         AddEntityString(ent, "*INVULNERABLE*");
                     // Vaccinator
-                    // Vaccinator
                     if (HasCondition<TFCond_UberBulletResist>(ent))
                     {
                         AddEntityString(ent, "*BULLET VACCINATOR*", colors::FromRGBA8(220, 220, 220, 255));
