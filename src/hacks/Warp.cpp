@@ -60,10 +60,7 @@ public:
 int GetWarpAmount()
 {
     static auto sv_max_dropped_packets_to_process = g_ICvar->FindVar("sv_max_dropped_packets_to_process");
-    if (!warp_override)
-        return sv_max_dropped_packets_to_process->GetInt();
-    else
-        return warp_override;
+    return warp_override ? *warp_override : sv_max_dropped_packets_to_process->GetInt();
 }
 bool should_warp = true;
 
