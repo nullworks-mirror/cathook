@@ -60,7 +60,7 @@ public:
 int GetWarpAmount()
 {
     static auto sv_max_dropped_packets_to_process = g_ICvar->FindVar("sv_max_dropped_packets_to_process");
-    return warp_override ? *warp_override : sv_max_dropped_packets_to_process->GetInt();
+    return warp_override ? warp_override : sv_max_dropped_packets_to_process->GetInt();
 }
 bool should_warp = true;
 
@@ -126,7 +126,7 @@ void SendNetMessage(INetMessage &msg)
         if (warp_key.isKeyDown() && warp_amount)
         {
             Warp();
-            if (warp_amount < GetWarpAmount())
+            if (warp_amount < GetMaxWarpTicks())
                 charged = false;
         }
     }
@@ -168,13 +168,13 @@ void CreateMove()
     // Warp peaking
     else if (warp_peek)
     {
-        // We Have warp
+        // We have Warp
         if (warp_amount)
         {
             // Warped last tick, time to reverse
             if (warp_last_tick)
             {
-                // Wait 1 tick before tping back
+                // Wait 1 tick before warping back
                 if (should_warp && !should_warp_last_tick)
                 {
                     should_warp_last_tick = true;
