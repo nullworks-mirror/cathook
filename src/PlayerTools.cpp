@@ -38,6 +38,7 @@ bool shouldTargetSteamId(unsigned id)
         return false;
     return true;
 }
+
 bool shouldTarget(CachedEntity *entity)
 {
     if (entity->m_Type() == ENTITY_PLAYER)
@@ -53,7 +54,6 @@ bool shouldTarget(CachedEntity *entity)
 
     return true;
 }
-
 bool shouldAlwaysRenderEspSteamId(unsigned id)
 {
     if (id == 0)

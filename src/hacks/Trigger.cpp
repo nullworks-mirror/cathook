@@ -269,41 +269,8 @@ bool IsTargetStateGood(CachedEntity *entity, bool backtrack)
             if (ignore_cloak && IsPlayerInvisible(entity))
                 return false;
             // If settings allow, dont target vaccinated players
-            if (ignore_vaccinator)
-            {
-                switch (LOCAL_W->m_iClassID())
-                {
-                case CL_CLASS(CTFRocketLauncher_DirectHit):
-                case CL_CLASS(CTFRocketLauncher_AirStrike):
-                case CL_CLASS(CTFRocketLauncher_Mortar):
-                case CL_CLASS(CTFRocketLauncher):
-                case CL_CLASS(CTFGrenadeLauncher):
-                case CL_CLASS(CTFPipebombLauncher):
-                    if (HasCondition<TFCond_UberBlastResist>(entity))
-                        return false;
-                    break;
-                case CL_CLASS(CTFCompoundBow):
-                case CL_CLASS(CTFSyringeGun):
-                case CL_CLASS(CTFCrossbow):
-                case CL_CLASS(CTFShotgunBuildingRescue):
-                case CL_CLASS(CTFDRGPomson): // was this bullet? i don't have the item to test.
-                case CL_CLASS(CTFRaygun):    // was this bullet? i don't have the item to test.
-                    if (HasCondition<TFCond_UberBulletResist>(entity))
-                        return false;
-                    break;
-                case CL_CLASS(CTFWeaponFlameBall):
-                case CL_CLASS(CTFFlareGun):
-                case CL_CLASS(CTFFlareGun_Revenge):
-                case CL_CLASS(CTFFlameRocket):
-                case CL_CLASS(CTFFlameThrower):
-                    if (HasCondition<TFCond_UberFireResist>(entity))
-                        return false;
-                    break;
-                default:
-                    if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan && HasCondition<TFCond_UberBulletResist>(entity))
-                        return false;
-                }
-            }
+            if (ignore_vaccinator && IsPlayerResistantToCurrentWeapon(entity))
+                return false;
         }
 
         // Head hitbox detection
