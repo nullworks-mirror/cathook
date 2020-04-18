@@ -143,7 +143,7 @@ static bool doRageBackstab()
     float swingrange = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
     // AimAt Autobackstab
     {
-        for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
             if (CE_BAD(ent) || ent->m_flDistance() > swingrange * 4 || !ent->m_bEnemy() || !ent->m_bAlivePlayer() || g_pLocalPlayer->entity_idx == ent->m_IDX)
@@ -192,7 +192,7 @@ static bool doRageBackstab()
             {
                 int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
                 auto ent  = ENTITY(index);
-                if (index == 0 || index > g_IEngine->GetMaxClients() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
+                if (index == 0 || index > PLAYER_ARRAY_SIZE || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
                     continue;
                 if (angleCheck(ent, std::nullopt, newangle))
                 {
