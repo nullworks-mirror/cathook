@@ -13,7 +13,12 @@ static settings::Button crit_key{ "crit.key", "<null>" };
 static settings::Boolean old_mode{ "crit.old-mode", "false" };
 
 // How much is added to bucket per shot?
-float added_per_shot = 0.0f;
+static float added_per_shot = 0.0f;
+// Needed to calculate observed crit chance properly
+static int cached_damage    = 0;
+static int crit_damage      = 0;
+static int shot_weapon_mode = 0;
+
 class weapon_info
 {
 public:
@@ -157,7 +162,7 @@ int ShotsUntilCrit(IClientEntity *wep)
 typedef float (*AttribHookFloat_t)(float, const char *, IClientEntity *, void *, bool);
 
 // Calculate Crit penalty
-float CalcCritPenalty(IClientEntity *wep)
+float GetCritPenalty(IClientEntity *wep)
 {
     // Need this to get crit chance from weapon
     static uintptr_t AttribHookFloat            = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C C7 45 ? 00 00 00 00 A1 ? ? ? ? C7 45 ? 00 00 00 00 8B 75 ? 85 C0 0F 84 ? ? ? ? 8D 55 ? 89 04 24 31 DB 89 54 24");
@@ -167,46 +172,42 @@ float CalcCritPenalty(IClientEntity *wep)
     float crit_mult = re::CTFPlayerShared::GetCritMult((re::CTFPlayerShared *) (((uintptr_t) RAW_ENT(LOCAL_E)) + 0x5f3));
 
     // Weapon specific Multiplier
-    static std::string query = "mult_crit_chance";
-    float flMultCritChance   = AttribHookFloat_fn(crit_mult * 0.02, query.c_str(), wep, 0, 1);
+    float flMultCritChance = AttribHookFloat_fn(crit_mult * 0.02, "mult_crit_chance", wep, 0, 1);
 
     return flMultCritChance;
 }
 
+// Server gives us garbage so let's just calc our own
+float GetObservedCritChane()
+{
+    int normal_damage = cached_damage;
+    if (!normal_damage)
+        return 0.0f;
+    // Same is used by server
+    return ((float) crit_damage / 3.0) / (float) ((normal_damage - crit_damage) + ((float) crit_damage / 3.0));
+}
+
 std::pair<float, float> CritMultInfo(IClientEntity *wep)
 {
-    float cur_crit        = CalcCritPenalty(wep);
+    float cur_crit        = GetCritPenalty(wep);
     float observed_chance = CE_FLOAT(LOCAL_W, netvar.flObservedCritChance);
     float needed_chance   = cur_crit + 0.1f;
     return std::pair<float, float>(observed_chance, needed_chance);
 }
 
-CatCommand debug_observed("debug_observed_crit", "debug", []() {
-    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W))
-        logging::Info("%f", CE_FLOAT(LOCAL_W, netvar.flObservedCritChance));
-});
+// How much damage we need until we can crit
+int DamageToCrit(IClientEntity *wep)
+{
+    auto crit_info = CritMultInfo(wep);
+    if (crit_info.first <= crit_info.second || g_pLocalPlayer->weapon_mode == weapon_melee)
+        return 0;
 
-CatCommand debug_damage("debug_print_damage_until_crit", "debug", []() {
-    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W))
-    {
-        float penalty = CalcCritPenalty(RAW_ENT(LOCAL_W));
+    float target_chance = CritMultInfo(wep).second;
+    int damage          = std::ceil(crit_damage * (2.0f * target_chance + 1.0f) / (3.0f * target_chance));
+    return damage - cached_damage;
+}
 
-        float observed_chance = CE_FLOAT(LOCAL_W, netvar.flObservedCritChance);
-
-        rgba_t color = colors::green;
-        if (penalty + 0.1f < observed_chance)
-            color = colors::red;
-
-        Color valve_color(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f);
-        g_ICvar->ConsoleColorPrintf(valve_color, "%f\n", observed_chance);
-    }
-});
-
-CatCommand debug_shots("debug_print_shots_until_crit", "debug", []() {
-    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W))
-        logging::Info("%d", ShotsUntilCrit(RAW_ENT(LOCAL_W)));
-});
-
+// Calculate next crit tick
 int next_crit_tick()
 {
     auto wep = RAW_ENT(LOCAL_W);
@@ -256,10 +257,18 @@ bool IsEnabled()
         return true;
     return false;
 }
-// clang-format on
 
 static int idx = 0;
 static std::vector<int> crit_cmds;
+
+// We need to store a bunch of data for when we kill someone with a crit
+struct player_status
+{
+    int health{};
+    bool was_jarated{};
+    bool was_markedfordeath{};
+};
+static std::array<player_status, 33> player_status_list{};
 
 void force_crit()
 {
@@ -390,6 +399,15 @@ void update_cmds()
     last_bucket = bucket;
 }
 
+// Fix observed crit chance
+void fix_observed_critchance(IClientEntity *weapon)
+{
+    weapon_info info(weapon);
+    // Fix crit chance
+    info.observed_crit_chance = GetObservedCritChane();
+    info.restore_data(weapon);
+}
+
 // Fix bucket on non-local servers
 void unfuck_bucket(IClientEntity *weapon)
 {
@@ -410,6 +428,8 @@ void unfuck_bucket(IClientEntity *weapon)
     static float last_fire_time;
 
     weapon_info info(weapon);
+    fix_observed_critchance(weapon);
+
     float bucket    = info.crit_bucket;
     float fire_time = NET_FLOAT(weapon, netvar.flLastFireTime);
     if (weapon->entindex() == last_weapon)
@@ -430,9 +450,10 @@ void unfuck_bucket(IClientEntity *weapon)
         }
 
         // We shot, add to bucket
-        if (last_fire_time != fire_time)
+        if (last_fire_time < fire_time)
         {
             bucket += added_per_shot;
+            shot_weapon_mode = g_pLocalPlayer->weapon_mode;
             // Don't overshoot
             if (bucket > GetBucketCap())
                 bucket = GetBucketCap();
@@ -450,6 +471,19 @@ void unfuck_bucket(IClientEntity *weapon)
 
 void CreateMove()
 {
+    // Need to do regardless
+    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_VALID(ent) && g_pPlayerResource->GetHealth(ent))
+        {
+            auto &status              = player_status_list[i];
+            status.health             = g_pPlayerResource->GetHealth(ent);
+            status.was_jarated        = HasCondition<TFCond_Jarated>(ent);
+            status.was_markedfordeath = HasCondition<TFCond_MarkedForDeath>(ent) || HasCondition<TFCond_MarkedForDeathSilent>(ent);
+        }
+    }
+
     if (!enabled && !melee && !draw)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
@@ -498,6 +532,9 @@ void Draw()
         auto wep     = RAW_ENT(LOCAL_W);
         float bucket = weapon_info(wep).crit_bucket;
 
+        // Fix observed crit chance
+        fix_observed_critchance(wep);
+
         // Reset because too old
         if (wep->entindex() != last_wep || last_crit_tick - current_late_user_cmd->command_number < 0 || (last_crit_tick - current_late_user_cmd->command_number) * g_GlobalVars->interval_per_tick > 30)
             last_crit_tick = next_crit_tick();
@@ -510,9 +547,9 @@ void Draw()
             // Recalculate shots until crit
             if (!can_crit)
                 shots_until_crit = ShotsUntilCrit(wep);
-            // Recalc crit multiplier info
-            crit_mult_info = CritMultInfo(wep);
         }
+        // Recalc crit multiplier info
+        crit_mult_info = CritMultInfo(wep);
 
         // Display for when crithack is active/can't be active
         if (IsEnabled() && last_crit_tick != -1)
@@ -525,7 +562,10 @@ void Draw()
             return;
         }
 
-        if (!can_crit)
+        // Crit chance is not low enough
+        if (crit_mult_info.first > crit_mult_info.second)
+            AddCenterString("Damage Until crit: " + std::to_string(DamageToCrit(wep)), colors::orange);
+        else if (!can_crit)
             AddCenterString("Shots until crit: " + std::to_string(shots_until_crit), colors::orange);
 
         // Mark bucket as ready/not ready
@@ -533,16 +573,6 @@ void Draw()
         if (can_crit)
             color = colors::green;
         AddCenterString("Crit Bucket: " + std::to_string(bucket), color);
-
-        // Print crit Multiplier information
-
-        // Crit chance is low enough
-        if (crit_mult_info.first < crit_mult_info.second)
-            color = colors::green;
-        // Cannot crit
-        else
-            color = colors::red;
-        AddCenterString("Crit Penalty: " + std::to_string(crit_mult_info.first), color);
 
         // Time until crit
         if (old_mode && can_crit && last_crit_tick != -1)
@@ -561,11 +591,65 @@ void Draw()
 void LevelShutdown()
 {
     last_crit_tick = -1;
+    cached_damage  = 0;
+    crit_damage    = 0;
 }
+
+class CritEventListener : public IGameEventListener
+{
+public:
+    void FireGameEvent(KeyValues *event) override
+    {
+        // Reset cached Damage
+        if (!strcmp(event->GetName(), "teamplay_round_start"))
+        {
+            crit_damage   = 0;
+            cached_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx);
+        }
+        // Dealt damage
+        else if (!strcmp(event->GetName(), "player_hurt"))
+        {
+            if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_pLocalPlayer->entity_idx)
+            {
+                // Don't count self damage bruh
+                int victim = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+                if (victim != g_pLocalPlayer->entity_idx)
+                {
+                    // Melee weapons don't count
+                    if (shot_weapon_mode != weapon_melee)
+                    {
+                        // General damage counter
+                        int damage = event->GetInt("damageamount");
+                        if (damage > player_status_list[victim].health)
+                        {
+                            logging::Info("%d", player_status_list[victim].health);
+                            damage = player_status_list[victim].health;
+                        }
+
+                        // Crit damage counter
+                        if (event->GetBool("crit"))
+                            crit_damage += damage;
+
+                        // Mini crit case
+                        if (event->GetBool("minicrit"))
+                        {
+                            if (!player_status_list[victim].was_jarated && !player_status_list[victim].was_markedfordeath)
+                                crit_damage += damage;
+                        }
+                        cached_damage += damage;
+                    }
+                }
+            }
+        }
+    }
+};
+
+static CritEventListener listener{};
 
 static InitRoutine init([]() {
     EC::Register(EC::CreateMoveLate, CreateMove, "crit_cm");
     EC::Register(EC::Draw, Draw, "crit_draw");
     EC::Register(EC::LevelShutdown, LevelShutdown, "crit_lvlshutdown");
+    g_IGameEventManager->AddListener(&listener, false);
 });
 } // namespace criticals
