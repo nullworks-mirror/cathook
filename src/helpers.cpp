@@ -1356,7 +1356,7 @@ bool IsPlayerResistantToCurrentWeapon(CachedEntity *player)
     case CL_CLASS(CTFGrenadeLauncher):
     case CL_CLASS(CTFPipebombLauncher):
         if (HasCondition<TFCond_UberBlastResist>(player))
-            return false;
+            return true;
         break;
     case CL_CLASS(CTFCompoundBow):
     case CL_CLASS(CTFSyringeGun):
@@ -1365,7 +1365,7 @@ bool IsPlayerResistantToCurrentWeapon(CachedEntity *player)
     case CL_CLASS(CTFDRGPomson):
     case CL_CLASS(CTFRaygun):
         if (HasCondition<TFCond_UberBulletResist>(player))
-            return false;
+            return true;
         break;
     case CL_CLASS(CTFWeaponFlameBall):
     case CL_CLASS(CTFFlareGun):
@@ -1373,12 +1373,13 @@ bool IsPlayerResistantToCurrentWeapon(CachedEntity *player)
     case CL_CLASS(CTFFlameRocket):
     case CL_CLASS(CTFFlameThrower):
         if (HasCondition<TFCond_UberFireResist>(player))
-            return false;
+            return true;
         break;
     default:
         if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan && HasCondition<TFCond_UberBulletResist>(player))
-            return false;
+            return true;
     }
+    return false;
 }
 
 // F1 c&p
