@@ -626,7 +626,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         }
     }
 
-    // Healthbar
+    // Top horizontal health bar
     if (*healthbar == 1)
     {
 
@@ -672,6 +672,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         }
     }
 
+    // Bottom horizontal health bar
     else if (*healthbar == 2)
     {
 
@@ -717,6 +718,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         }
     }
 
+    // Vertical health bar
     else if (*healthbar == 3)
     {
 
