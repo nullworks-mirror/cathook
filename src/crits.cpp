@@ -562,7 +562,7 @@ void Draw()
             return;
         }
 
-        // Crit chance is not low enough
+        // Observed crit chance is not low enough
         if (crit_mult_info.first > crit_mult_info.second)
             AddCenterString("Damage Until crit: " + std::to_string(DamageToCrit(wep)), colors::orange);
         else if (!can_crit)
