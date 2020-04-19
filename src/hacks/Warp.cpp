@@ -5,20 +5,7 @@
  * Copyright Nullworks 2020
  */
 
-#include "init.hpp"
-#include "sdk.hpp"
-#include "interfaces.hpp"
-#include "settings/Bool.hpp"
-#include "offsets.hpp"
-#include "globals.h"
-#include "Warp.hpp"
-#include "HookTools.hpp"
-#include "usercmd.hpp"
-#include "localplayer.hpp"
-#include "netvars.hpp"
-#include "entitycache.hpp"
-#include "conditions.hpp"
-#include "velocity.hpp"
+#include "common.hpp"
 #if ENABLE_VISUALS
 #include "drawing.hpp"
 #endif
@@ -28,8 +15,16 @@ namespace hacks::tf2::warp
 static settings::Boolean enabled{ "warp.enabled", "false" };
 static settings::Boolean draw{ "warp.draw", "false" };
 static settings::Button warp_key{ "warp.key", "<null>" };
+static settings::Boolean charge_passively{ "warp.charge-passively", "true" };
+static settings::Boolean charge_in_jump{ "warp.charge-passively.jump", "true" };
+static settings::Boolean charge_no_input{ "warp.charge-passively.no-inputs", "false" };
 static settings::Int warp_movement_ratio{ "warp.movement-ratio", "6" };
 static settings::Boolean warp_peek{ "warp.peek", "false" };
+static settings::Boolean warp_on_damage{ "warp.on-hit", "false" };
+static settings::Boolean warp_forward{ "warp.on-hit.forward", "false" };
+static settings::Boolean warp_backwards{ "warp.on-hit.backwards", "false" };
+static settings::Boolean warp_left{ "warp.on-hit.left", "true" };
+static settings::Boolean warp_right{ "warp.on-hit.right", "true" };
 
 // Draw control
 static settings::Int size{ "warp.bar-size", "100" };
@@ -62,7 +57,9 @@ int GetWarpAmount()
     static auto sv_max_dropped_packets_to_process = g_ICvar->FindVar("sv_max_dropped_packets_to_process");
     return warp_override ? warp_override : sv_max_dropped_packets_to_process->GetInt();
 }
-bool should_warp = true;
+
+static bool should_warp = true;
+static bool was_hurt    = false;
 
 // Warping part
 void Warp()
@@ -80,8 +77,11 @@ void Warp()
     // Has to be from the cvar
     m_nOutSequenceNr += GetWarpAmount();
     warp_amount -= GetWarpAmount();
-    if (warp_amount < 0)
+    if (warp_amount <= 0)
+    {
+        was_hurt    = false;
         warp_amount = 0;
+    }
 }
 
 int GetMaxWarpTicks()
@@ -123,7 +123,7 @@ void SendNetMessage(INetMessage &msg)
             }
         }
         // Warp
-        if (warp_key.isKeyDown() && warp_amount)
+        if ((warp_key.isKeyDown() || was_hurt) && warp_amount)
         {
             Warp();
             if (warp_amount < GetMaxWarpTicks())
@@ -136,34 +136,69 @@ void SendNetMessage(INetMessage &msg)
 static bool move_last_tick        = true;
 static bool warp_last_tick        = false;
 static bool should_warp_last_tick = false;
+static bool was_hurt_last_tick    = false;
+static int ground_ticks           = 0;
+// Left and right by default
+static std::vector<float> yaw_selections{ 90.0f, -90.0f };
+
 void CreateMove()
 {
     if (!enabled)
         return;
     warp_override = 0;
-    if (!warp_key.isKeyDown())
+    if (!warp_key.isKeyDown() && !was_hurt)
     {
         warp_last_tick = false;
         Vector velocity{};
         velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), velocity);
 
-        // Bunch of checks, if they all pass we are standing still
-        if (velocity.IsZero() && !HasCondition<TFCond_Charging>(LOCAL_E) && !current_user_cmd->forwardmove && !current_user_cmd->sidemove && !current_user_cmd->upmove && (CE_INT(LOCAL_E, netvar.iFlags) & FL_ONGROUND) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+        if (!charge_in_jump)
         {
+            if (CE_INT(LOCAL_E, netvar.iFlags) & FL_ONGROUND)
+                ground_ticks++;
+            else
+                ground_ticks = 0;
+        }
 
+        // Bunch of checks, if they all pass we are standing still
+        if (ground_ticks > 1 && (charge_no_input || velocity.IsZero()) && !HasCondition<TFCond_Charging>(LOCAL_E) && !current_user_cmd->forwardmove && !current_user_cmd->sidemove && !current_user_cmd->upmove && !(current_user_cmd->buttons & IN_JUMP) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+        {
             if (!move_last_tick)
                 should_charge = true;
             move_last_tick = false;
 
             return;
         }
-        else if (!(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+        else if ((charge_in_jump || ground_ticks > 1) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
         {
             // Use everxy xth tick for charging
-            if (!(tickcount % *warp_movement_ratio))
+            if (*warp_movement_ratio > 0 && !(tickcount % *warp_movement_ratio))
                 should_charge = true;
             move_last_tick = true;
         }
+    }
+    // Warp when hurt
+    else if (was_hurt)
+    {
+        // Store direction
+        static float yaw = 0.0f;
+        // Select yaw
+        if (!was_hurt_last_tick)
+        {
+            yaw = 0.0f;
+            if (yaw_selections.empty())
+                return;
+            // Select randomly
+            yaw = yaw_selections[UniformRandomInt(0, yaw_selections.size() - 1)];
+        }
+        // The yaw we want to achieve
+        float actual_yaw = DEG2RAD(yaw);
+        if (g_pLocalPlayer->bUseSilentAngles)
+            actual_yaw = DEG2RAD(yaw);
+
+        // Set forward/sidemove
+        current_user_cmd->forwardmove = cos(actual_yaw) * 450.0f;
+        current_user_cmd->sidemove    = -sin(actual_yaw) * 450.0f;
     }
     // Warp peaking
     else if (warp_peek)
@@ -198,6 +233,7 @@ void CreateMove()
             current_user_cmd->sidemove    = 0.0f;
         }
     }
+    was_hurt_last_tick = was_hurt;
 }
 
 #if ENABLE_VISUALS
@@ -231,9 +267,63 @@ void LevelShutdown()
     warp_amount = 0;
 }
 
+class WarpHurtListener : public IGameEventListener2
+{
+public:
+    virtual void FireGameEvent(IGameEvent *event)
+    {
+        // Not enabled
+        if (!enabled || !warp_on_damage)
+            return;
+        // We have no warp
+        if (!warp_amount)
+            return;
+        // Store userids
+        int victim   = event->GetInt("userid");
+        int attacker = event->GetInt("attacker");
+        player_info_s kinfo{};
+        player_info_s vinfo{};
+
+        // Check if both are valid (Attacker & victim)
+        if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim), &vinfo) || !g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker), &kinfo))
+            return;
+        // Check if victim is local player
+        if (g_IEngine->GetPlayerForUserID(victim) != g_pLocalPlayer->entity_idx)
+            return;
+        // Ignore projectiles for now
+        if (GetWeaponMode(ENTITY(attacker)) == weapon_projectile)
+            return;
+        // We got hurt
+        was_hurt = true;
+    }
+};
+
+static WarpHurtListener listener;
+
+void rvarCallback(settings::VariableBase<bool> &, bool)
+{
+    yaw_selections.clear();
+    if (warp_forward)
+        yaw_selections.push_back(0.0f);
+    if (warp_backwards)
+        yaw_selections.push_back(-180.0f);
+    if (warp_left)
+        yaw_selections.push_back(-90.0f);
+    if (warp_right)
+        yaw_selections.push_back(90.0f);
+}
+
 static InitRoutine init([]() {
     EC::Register(EC::LevelShutdown, LevelShutdown, "warp_levelshutdown");
-    EC::Register(EC::CreateMove, CreateMove, "warp_createmove", EC::late);
+    EC::Register(EC::CreateMove, CreateMove, "warp_createmove", EC::very_late);
+    g_IEventManager2->AddListener(&listener, "player_hurt", false);
+    EC::Register(
+        EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener); }, "warp_shutdown");
+    warp_forward.installChangeCallback(rvarCallback);
+    warp_backwards.installChangeCallback(rvarCallback);
+    warp_left.installChangeCallback(rvarCallback);
+    warp_right.installChangeCallback(rvarCallback);
+
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, Draw, "warp_draw");
 #endif

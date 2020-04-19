@@ -1056,6 +1056,74 @@ bool IsProjectileCrit(CachedEntity *ent)
     return CE_BYTE(ent, netvar.Rocket_bCritical);
 }
 
+CachedEntity *weapon_get(CachedEntity *entity)
+{
+    int handle, eid;
+
+    if (CE_BAD(entity))
+        return 0;
+    handle = CE_INT(entity, netvar.hActiveWeapon);
+    eid    = handle & 0xFFF;
+    if (IDX_BAD(eid))
+        return 0;
+    return ENTITY(eid);
+}
+
+weaponmode GetWeaponMode(CachedEntity *ent)
+{
+    int weapon_handle, slot;
+    CachedEntity *weapon;
+
+    if (CE_BAD(ent) || CE_BAD(weapon_get(ent)))
+        return weapon_invalid;
+    weapon_handle = CE_INT(ent, netvar.hActiveWeapon);
+    if (IDX_BAD((weapon_handle & 0xFFF)))
+    {
+        // logging::Info("IDX_BAD: %i", weapon_handle & 0xFFF);
+        return weaponmode::weapon_invalid;
+    }
+    weapon = (ENTITY(weapon_handle & 0xFFF));
+    if (CE_BAD(weapon))
+        return weaponmode::weapon_invalid;
+    int classid = weapon->m_iClassID();
+    slot        = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(weapon));
+    if (slot == 2)
+        return weaponmode::weapon_melee;
+    if (slot > 2)
+        return weaponmode::weapon_pda;
+    switch (classid)
+    {
+    case CL_CLASS(CTFLunchBox):
+    case CL_CLASS(CTFLunchBox_Drink):
+    case CL_CLASS(CTFBuffItem):
+        return weaponmode::weapon_consumable;
+    case CL_CLASS(CTFRocketLauncher_DirectHit):
+    case CL_CLASS(CTFRocketLauncher):
+    case CL_CLASS(CTFGrenadeLauncher):
+    case CL_CLASS(CTFPipebombLauncher):
+    case CL_CLASS(CTFCompoundBow):
+    case CL_CLASS(CTFBat_Wood):
+    case CL_CLASS(CTFBat_Giftwrap):
+    case CL_CLASS(CTFFlareGun):
+    case CL_CLASS(CTFFlareGun_Revenge):
+    case CL_CLASS(CTFSyringeGun):
+    case CL_CLASS(CTFCrossbow):
+    case CL_CLASS(CTFShotgunBuildingRescue):
+    case CL_CLASS(CTFDRGPomson):
+    case CL_CLASS(CTFWeaponFlameBall):
+    case CL_CLASS(CTFRaygun):
+    case CL_CLASS(CTFGrapplingHook):
+        return weaponmode::weapon_projectile;
+    case CL_CLASS(CTFJar):
+    case CL_CLASS(CTFJarMilk):
+        return weaponmode::weapon_throwable;
+    case CL_CLASS(CWeaponMedigun):
+        return weaponmode::weapon_medigun;
+    default:
+        return weaponmode::weapon_hitscan;
+    }
+}
+
 weaponmode GetWeaponMode()
 {
     return g_pLocalPlayer->weapon_mode;

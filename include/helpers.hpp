@@ -88,6 +88,7 @@ powerup_type GetPowerupOnPlayer(CachedEntity *player);
 // So it returns a success state, and the values are stored in out reference.
 bool GetHitbox(CachedEntity *entity, int hb, Vector &out);
 weaponmode GetWeaponMode();
+weaponmode GetWeaponMode(CachedEntity *ent);
 
 void FixMovement(CUserCmd &cmd, Vector &viewangles);
 void VectorAngles(Vector &forward, Vector &angles);

@@ -10,7 +10,7 @@
 #include "SeedPrediction.hpp"
 #if ENABLE_VISUALS
 union SDL_Event;
-class SDL_Window;
+struct SDL_Window;
 #endif
 
 #define DECLARE_HOOKED_METHOD(name, rtype, ...) \
