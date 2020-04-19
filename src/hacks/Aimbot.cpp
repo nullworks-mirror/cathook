@@ -628,9 +628,8 @@ bool IsTargetStateGood(CachedEntity *entity)
                 }
             }
             // Vaccinator
-            if (g_pLocalPlayer->weapon_mode == weaponmode::weapon_hitscan || LOCAL_W->m_iClassID() == CL_CLASS(CTFCompoundBow))
-                if (ignore_vaccinator && HasCondition<TFCond_UberBulletResist>(entity))
-                    return false;
+            if (ignore_vaccinator && IsPlayerResistantToCurrentWeapon(entity))
+                return false;
         }
 
         // Preform hitbox prediction

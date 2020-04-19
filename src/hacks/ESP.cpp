@@ -1209,11 +1209,27 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
                     // Vaccinator
                     if (HasCondition<TFCond_UberBulletResist>(ent))
                     {
-                        AddEntityString(ent, "*VACCINATOR*");
+                        AddEntityString(ent, "*BULLET VACCINATOR*", colors::FromRGBA8(220, 220, 220, 255));
                     }
                     else if (HasCondition<TFCond_SmallBulletResist>(ent))
                     {
-                        AddEntityString(ent, "*PASSIVE RESIST*");
+                        AddEntityString(ent, "*BULLET PASSIVE*");
+                    }
+                    if (HasCondition<TFCond_UberFireResist>(ent))
+                    {
+                        AddEntityString(ent, "*FIRE VACCINATOR*", colors::FromRGBA8(220, 220, 220, 255));
+                    }
+                    else if (HasCondition<TFCond_SmallFireResist>(ent))
+                    {
+                        AddEntityString(ent, "*FIRE PASSIVE*");
+                    }
+                    if (HasCondition<TFCond_UberBlastResist>(ent))
+                    {
+                        AddEntityString(ent, "*BLAST VACCINATOR*", colors::FromRGBA8(220, 220, 220, 255));
+                    }
+                    else if (HasCondition<TFCond_SmallBlastResist>(ent))
+                    {
+                        AddEntityString(ent, "*BLAST PASSIVE*");
                     }
                     // Crit
                     if (IsPlayerCritBoosted(ent))
