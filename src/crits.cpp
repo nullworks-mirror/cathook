@@ -78,7 +78,8 @@ static float getWithdrawMult(IClientEntity *wep)
 
     if (g_pLocalPlayer->weapon_mode != weapon_melee)
     {
-        float flTmp = min(max((((float) call_count / (float) crit_checks) - 0.1) * 1.111, 0.0), 1.0);
+
+        float flTmp = std::clamp((((float) call_count / (float) crit_checks) - 0.1f) * 1.111f, 0.0f, 1.0f);
         flMultiply  = (flTmp * 2.0) + 1.0;
     }
 
@@ -88,14 +89,14 @@ static float getWithdrawMult(IClientEntity *wep)
 
 static float getBucketCap()
 {
-    static ConVar *tf_weapon_criticals = g_ICvar->FindVar("tf_weapon_criticals_bucket_cap");
-    return tf_weapon_criticals->GetFloat();
+    static ConVar *tf_weapon_criticals_bucket_cap = g_ICvar->FindVar("tf_weapon_criticals_bucket_cap");
+    return tf_weapon_criticals_bucket_cap->GetFloat();
 }
 
 // This simply checks if we can withdraw the specified damage from the bucket or not.
 // add_damage parameter simply specifies if we also kind of simulate the damage that gets added before
 // the function gets ran in the game.
-bool isAllowedToWithdrawFromBucket(IClientEntity *wep, float flDamage, bool add_damage = true)
+static bool isAllowedToWithdrawFromBucket(IClientEntity *wep, float flDamage, bool add_damage = true)
 {
     weapon_info info(wep);
     if (add_damage)
@@ -113,7 +114,7 @@ bool isAllowedToWithdrawFromBucket(IClientEntity *wep, float flDamage, bool add_
 }
 
 // This simulates a shot in all the important aspects, like increating crit attempts, bucket, etc
-void simulateNormalShot(IClientEntity *wep, float flDamage)
+static void simulateNormalShot(IClientEntity *wep, float flDamage)
 {
     weapon_info info(wep);
     info.crit_bucket += flDamage;
@@ -134,7 +135,7 @@ static bool canWeaponWithdraw(IClientEntity *wep)
 }
 
 // Calculate shots until crit
-int shotsUntilCrit(IClientEntity *wep)
+static int shotsUntilCrit(IClientEntity *wep)
 {
     weapon_info info(wep);
     // How many shots until we can crit
@@ -155,7 +156,7 @@ int shotsUntilCrit(IClientEntity *wep)
 // Calculate a weapon and player specific variable that determines how
 // High your observed crit chance is allowed to be
 // (this + 0.1f >= observed_chance)
-float getCritCap(IClientEntity *wep)
+static float getCritCap(IClientEntity *wep)
 {
     typedef float (*AttribHookFloat_t)(float, const char *, IClientEntity *, void *, bool);
 
@@ -173,17 +174,16 @@ float getCritCap(IClientEntity *wep)
 }
 
 // Server gives us garbage so let's just calc our own
-float getObservedCritChane()
+static float getObservedCritChane()
 {
-    int normal_damage = cached_damage;
-    if (!normal_damage)
+    if (!cached_damage)
         return 0.0f;
     // Same is used by server
-    return ((float) crit_damage / 3.0) / (float) ((normal_damage - crit_damage) + ((float) crit_damage / 3.0));
+    return ((float) crit_damage / 3.0) / (float) ((cached_damage - crit_damage) + ((float) crit_damage / 3.0));
 }
 
 // This returns two floats, first one being our current crit chance, second is what we need to be at/be lower than
-std::pair<float, float> critMultInfo(IClientEntity *wep)
+static std::pair<float, float> critMultInfo(IClientEntity *wep)
 {
     float cur_crit        = getCritCap(wep);
     float observed_chance = CE_FLOAT(LOCAL_W, netvar.flObservedCritChance);
@@ -192,7 +192,7 @@ std::pair<float, float> critMultInfo(IClientEntity *wep)
 }
 
 // How much damage we need until we can crit
-int damageUntilToCrit(IClientEntity *wep)
+static int damageUntilToCrit(IClientEntity *wep)
 {
     // First check if we even need to deal damage at all
     auto crit_info = critMultInfo(wep);
@@ -206,7 +206,7 @@ int damageUntilToCrit(IClientEntity *wep)
 }
 
 // Calculate next tick we can crit at
-int nextCritTick()
+static int nextCritTick()
 {
     auto wep = RAW_ENT(LOCAL_W);
 
@@ -234,7 +234,7 @@ int nextCritTick()
     return -1;
 }
 
-bool randomCritEnabled()
+static bool randomCritEnabled()
 {
     static ConVar *tf_weapon_criticals = g_ICvar->FindVar("tf_weapon_criticals");
     return tf_weapon_criticals->GetBool();
@@ -244,7 +244,7 @@ bool randomCritEnabled()
 static int force_ticks = 0;
 
 // Is the hack enabled?
-bool isEnabled()
+static bool isEnabled()
 {
     // No crits without random crits
     if (!randomCritEnabled())
@@ -327,7 +327,7 @@ void force_crit()
 // The answer is, ones that make RandomInt return 0, or something very low, as that will have the highest
 // Chance of working.
 
-void updateCmds()
+static void updateCmds()
 {
     // Melee weapons don't use this, return
     if (g_pLocalPlayer->weapon_mode == weapon_melee)
@@ -335,8 +335,6 @@ void updateCmds()
 
     auto weapon = RAW_ENT(LOCAL_W);
     static int last_weapon;
-
-    int lowest_value = INT_MAX;
 
     // Current command number
     int cur_cmdnum = current_late_user_cmd->command_number;
@@ -357,8 +355,9 @@ void updateCmds()
         crit_cmds.clear();
         added_per_shot = 0.0f;
 
-        // 30 Million ticks into the future should be a good cap
-        for (int i = cur_cmdnum, j = 5; i <= cur_cmdnum + 30000000 + 200 && j > 0; i++)
+        // 100000 should be fine performance wise, as they are very spread out
+        // j indicates the amount to store at max
+        for (int i = cur_cmdnum + 200, j = 3; i <= cur_cmdnum + 100000 + 200 && j > 0; i++)
         {
             // Manually make seed
             int iSeed = MD5_PseudoRandom(i) & 0x7fffffff;
@@ -366,20 +365,13 @@ void updateCmds()
             int tempSeed = iSeed ^ (xor_dat);
             RandomSeed(tempSeed);
 
-            // The result of the crithack, lower = better for us
+            // The result of the crithack, 0 == best chance
             int iResult = RandomInt(0, 9999);
 
-            // If it's the lowest we can find, store it, also do not take too close cmds as they will
+            // If it's 0, store it. Also do not take too close cmds as they will
             // have to be replaced very soon anyways.
-            if (iResult <= lowest_value && i > cur_cmdnum + 200)
+            if (iResult == 0 && i > cur_cmdnum + 200)
             {
-                // Found lower value, clear cmds and mark as new low
-                if (iResult < lowest_value)
-                {
-                    crit_cmds.clear();
-                    lowest_value = iResult;
-                    j            = 5;
-                }
                 // Add to magic crit array
                 crit_cmds.push_back(i);
 
@@ -432,7 +424,7 @@ void updateCmds()
 }
 
 // Fix observed crit chance
-void fixObservedCritchance(IClientEntity *weapon)
+static void fixObservedCritchance(IClientEntity *weapon)
 {
     weapon_info info(weapon);
     info.observed_crit_chance = getObservedCritChane();
@@ -440,7 +432,7 @@ void fixObservedCritchance(IClientEntity *weapon)
 }
 
 // Fix bucket on non-local servers
-void fixBucket(IClientEntity *weapon)
+static void fixBucket(IClientEntity *weapon)
 {
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
