@@ -29,8 +29,8 @@ bool shouldTargetSteamId(unsigned id)
 {
     if (betrayal_limit)
     {
-        if (betrayal_list[id] > int(betrayal_limit))
-            return false;
+        if (betrayal_list[id] > (unsigned) *betrayal_limit)
+            return true;
     }
 
     auto &pl = playerlist::AccessData(id);
