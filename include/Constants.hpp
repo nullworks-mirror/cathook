@@ -7,7 +7,6 @@
 
 // This file will include global constant expressions
 #pragma once
-#include <string>
 
 constexpr const char *CON_PREFIX = "cat_";
 
