@@ -56,34 +56,34 @@ std::pair<int, int> WorldToRadar(int x, int y)
 
     if (*shape == 0)
     {
-	if (nx < -halfsize)
-	    nx = -halfsize;
-	if (nx > halfsize)
-	    nx = halfsize;
-	if (ny < -halfsize)
-	    ny = -halfsize;
-	if (ny > halfsize)
-	    ny = halfsize;
+        if (nx < -halfsize)
+            nx = -halfsize;
+        if (nx > halfsize)
+            nx = halfsize;
+        if (ny < -halfsize)
+            ny = -halfsize;
+        if (ny > halfsize)
+            ny = halfsize;
 
-	return { nx + halfsize - (int) icon_size / 2, ny + halfsize - (int) icon_size / 2 };
+        return { nx + halfsize - (int) icon_size / 2, ny + halfsize - (int) icon_size / 2 };
     }
 
     else if (*shape == 1)
     {
-	float PI = 3.14159265;
+        float PI = 3.14159265;
 
-	float theta = atan2(ny,nx);
+        float theta = atan2(ny, nx);
 
-	if (nx > halfsize * std::cos(theta) && nx > 0)
-	    nx = halfsize * std::cos(theta);
-	if (nx < halfsize * std::cos(theta) && nx < 0)
-	    nx = halfsize * std::cos(theta);
-	if (ny > halfsize * std::sin(theta) && ny > 0)
-	    ny = halfsize * std::sin(theta);
-	if (ny < halfsize * std::sin(theta) && ny < 0)
-	    ny = halfsize * std::sin(theta);
-	
-	return { nx + halfsize - (int) icon_size / 2, ny + halfsize - (int) icon_size / 2 };
+        if (nx > halfsize * std::cos(theta) && nx > 0)
+            nx = halfsize * std::cos(theta);
+        if (nx < halfsize * std::cos(theta) && nx < 0)
+            nx = halfsize * std::cos(theta);
+        if (ny > halfsize * std::sin(theta) && ny > 0)
+            ny = halfsize * std::sin(theta);
+        if (ny < halfsize * std::sin(theta) && ny < 0)
+            ny = halfsize * std::sin(theta);
+
+        return { nx + halfsize - (int) icon_size / 2, ny + halfsize - (int) icon_size / 2 };
     }
 }
 bool loaded = false;
@@ -214,24 +214,24 @@ void Draw()
     std::vector<CachedEntity *> enemies{};
     CachedEntity *ent;
 
-    x = (int) radar_x;
-    y = (int) radar_y;
+    x              = (int) radar_x;
+    y              = (int) radar_y;
     int radar_size = *size;
-    int half_size = radar_size / 2;
+    int half_size  = radar_size / 2;
 
     outlineclr = GUIColor();
 
     if (*shape == 0)
     {
-    	draw::Rectangle(x, y, radar_size, radar_size, colors::Transparent(colors::black, *opacity));
-    	draw::RectangleOutlined(x, y, radar_size, radar_size, outlineclr, 0.5f);
+        draw::Rectangle(x, y, radar_size, radar_size, colors::Transparent(colors::black, *opacity));
+        draw::RectangleOutlined(x, y, radar_size, radar_size, outlineclr, 0.5f);
     }
     else if (*shape == 1)
     {
-	int center_x = x + half_size;
-	int center_y = y + half_size;
-    	draw::Circle(center_x, center_y, half_size, outlineclr, 1, 100);
-	draw::Circle(center_x, center_y, half_size / 2, colors::Transparent(colors::black, *opacity), half_size, 100);
+        int center_x = x + half_size;
+        int center_y = y + half_size;
+        draw::Circle(center_x, center_y, half_size, outlineclr, 1, 100);
+        draw::Circle(center_x, center_y, half_size / 2, colors::Transparent(colors::black, *opacity), half_size, 100);
     }
 
     if (enemies_over_teammates)
@@ -272,8 +272,8 @@ void Draw()
 
     if (show_cross)
     {
-    	draw::Line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f), 0.5f);
-    	draw::Line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f), 0.5f);
+        draw::Line(x + half_size, y + half_size / 2, 0, half_size, colors::Transparent(GUIColor(), 0.4f), 0.5f);
+        draw::Line(x + half_size / 2, y + half_size, half_size, 0, colors::Transparent(GUIColor(), 0.4f), 0.5f);
     }
 }
 

@@ -172,5 +172,5 @@ mov [esp], ecx
         }
     });
 });
-}
+} // namespace hacks::tf2::killfeed
 #endif

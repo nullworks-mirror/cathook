@@ -36,7 +36,8 @@ set(files "${CMAKE_CURRENT_LIST_DIR}/AutoJoin.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/PureBypass.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Trigger.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/UberSpam.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/Walkbot.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/Warp.cpp")
 target_sources(cathook PRIVATE ${files})
 list(REMOVE_ITEM ignore_files ${files})
 set(ignore_files ${ignore_files} CACHE INTERNAL "")
