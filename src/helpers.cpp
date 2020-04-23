@@ -1646,3 +1646,26 @@ void ChangeName(std::string name)
 const char *powerups[] = { "STRENGTH", "RESISTANCE", "VAMPIRE", "REFLECT", "HASTE", "REGENERATION", "PRECISION", "AGILITY", "KNOCKOUT", "KING", "PLAGUE", "SUPERNOVA", "CRITS" };
 
 const std::string classes[] = { "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy", "Pyro", "Spy", "Engineer" };
+
+// This and below taken from leaks
+static int SeedFileLineHash(int seedvalue, const char *sharedname, int additionalSeed)
+{
+    CRC32_t retval;
+
+    CRC32_Init(&retval);
+
+    CRC32_ProcessBuffer(&retval, (void *) &seedvalue, sizeof(int));
+    CRC32_ProcessBuffer(&retval, (void *) &additionalSeed, sizeof(int));
+    CRC32_ProcessBuffer(&retval, (void *) sharedname, Q_strlen(sharedname));
+
+    CRC32_Final(&retval);
+
+    return (int) (retval);
+}
+
+int SharedRandomInt(unsigned iseed, const char *sharedname, int iMinVal, int iMaxVal, int additionalSeed /*=0*/)
+{
+    int seed = SeedFileLineHash(iseed, sharedname, additionalSeed);
+    g_pUniformStream->SetSeed(seed);
+    return g_pUniformStream->RandomInt(iMinVal, iMaxVal);
+}

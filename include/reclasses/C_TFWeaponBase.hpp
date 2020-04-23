@@ -15,6 +15,28 @@ namespace re
 class C_TFWeaponBase : public re::C_BaseCombatWeapon
 {
 public:
+    inline static void GetProjectileFireSetup(IClientEntity *weapon, IClientEntity *pPlayer, Vector vecOffset, Vector *vecSrc, Vector *angForward, bool bHitTeammates, float flEndDist)
+    {
+        typedef void (*GetProjectileFireSetup_t)(IClientEntity * weapon, IClientEntity * pPlayer, Vector vecOffset, Vector * vecSrc, Vector * angForward, bool bHitTeammates, float flEndDist);
+        static auto signature                                     = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC 9C 01 00 00 8B 75");
+        static GetProjectileFireSetup_t GetProjectileFireSetup_fn = (GetProjectileFireSetup_t) signature;
+        GetProjectileFireSetup_fn(weapon, pPlayer, vecOffset, vecSrc, angForward, bHitTeammates, flEndDist);
+    }
+    // Need a seperate one for the Huntsman
+    inline static void GetProjectileFireSetupHuntsman(IClientEntity *weapon, IClientEntity *pPlayer, Vector vecOffset, Vector *vecSrc, Vector *angForward, bool bHitTeammates, float flEndDist)
+    {
+        typedef void (*GetProjectileFireSetupHuntsman_t)(IClientEntity * weapon, IClientEntity * pPlayer, Vector vecOffset, Vector * vecSrc, Vector * angForward, bool bHitTeammates, float flEndDist);
+        static auto signature                                                     = gSignatures.GetClientSignature("55 89 E5 56 53 83 EC 30 0F B6 45");
+        static GetProjectileFireSetupHuntsman_t GetProjectileFireSetupHuntsman_fn = (GetProjectileFireSetupHuntsman_t) signature;
+        GetProjectileFireSetupHuntsman_fn(weapon, pPlayer, vecOffset, vecSrc, angForward, bHitTeammates, flEndDist);
+    }
+    inline static Vector GetSpreadAngles(IClientEntity *self)
+    {
+        typedef Vector (*GetSpreadAngles_t)(IClientEntity *);
+        static auto signature                       = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 7C 8B 7D ? 8B 5D ? 89 3C 24");
+        static GetSpreadAngles_t GetSpreadAngles_fn = (GetSpreadAngles_t) signature;
+        return GetSpreadAngles_fn(self);
+    }
     inline static IClientEntity *GetOwnerViaInterface(IClientEntity *self)
     {
         typedef IClientEntity *(*fn_t)(IClientEntity *);

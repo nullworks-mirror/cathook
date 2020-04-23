@@ -191,6 +191,8 @@ void WalkTo(const Vector &vector);
 
 std::string GetLevelName();
 
+int SharedRandomInt(unsigned iseed, const char *sharedname, int iMinVal, int iMaxVal, int additionalSeed /*=0*/);
+
 void format_internal(std::stringstream &stream);
 template <typename T, typename... Targs> void format_internal(std::stringstream &stream, T value, Targs... args)
 {
