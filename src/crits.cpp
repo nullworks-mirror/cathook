@@ -165,7 +165,7 @@ static float getCritCap(IClientEntity *wep)
     static auto AttribHookFloat_fn   = AttribHookFloat_t(AttribHookFloat);
 
     // Player specific Multiplier
-    float crit_mult = re::CTFPlayerShared::GetCritMult((re::CTFPlayerShared *) (((uintptr_t) RAW_ENT(LOCAL_E)) + 0x5f3));
+    float crit_mult = re::CTFPlayerShared::GetCritMult(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E)));
 
     // Weapon specific Multiplier
     float flMultCritChance = AttribHookFloat_fn(crit_mult * 0.02, "mult_crit_chance", wep, 0, 1);
@@ -179,7 +179,8 @@ static float getObservedCritChane()
     if (!cached_damage)
         return 0.0f;
     // Same is used by server
-    return ((float) crit_damage / 3.0) / (float) ((cached_damage - crit_damage) + ((float) crit_damage / 3.0));
+    float normalized_damage = (float) crit_damage / 3.0f;
+    return normalized_damage / (normalized_damage + (float) (cached_damage - crit_damage));
 }
 
 // This returns two floats, first one being our current crit chance, second is what we need to be at/be lower than
@@ -652,8 +653,8 @@ public:
                 int victim = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
                 if (victim != g_pLocalPlayer->entity_idx)
                 {
-                    // Melee weapons do not count towards this for some reason
-                    if (shot_weapon_mode != weapon_melee)
+                    // This is only ranged damage and crit boost does not count towards it either
+                    if (shot_weapon_mode != weapon_melee && !re::CTFPlayerShared::IsCritBoosted(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E))))
                     {
                         // General damage counter
                         int damage = event->GetInt("damageamount");

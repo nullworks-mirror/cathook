@@ -9,21 +9,29 @@ namespace re
 class CTFPlayerShared
 {
 public:
+    // Convert IClientEntity to CTFPlayerShared
+    inline static CTFPlayerShared *GetPlayerShared(IClientEntity *ent)
+    {
+        return (CTFPlayerShared *) ((uintptr_t) ent + 0x5f3);
+    }
     inline static bool IsDominatingPlayer(CTFPlayerShared *self, int ent_idx)
     {
         static auto signature = e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 84 C0 74 8F"));
         typedef bool (*IsDominatingPlayer_t)(CTFPlayerShared *, int);
-        static IsDominatingPlayer_t IsDominatingPlayer_fn = IsDominatingPlayer_t(signature);
+        static IsDominatingPlayer_t IsDominatingPlayer_fn = (IsDominatingPlayer_t) signature;
         return IsDominatingPlayer_fn(self, ent_idx);
     }
     inline static float GetCritMult(CTFPlayerShared *self)
     {
-        return ((fminf(fmaxf(*(float *) (unsigned(self) + 672) * 0.0039215689f, 0.0f), 1.0f) * 3.0f) + 1.0f);
+        float flRemapCritMul = RemapValClamped(*(int *) ((uintptr_t) self + 672), 0, 255, 1.0, 4.0);
+        return flRemapCritMul;
     }
     inline static bool IsCritBoosted(CTFPlayerShared *self)
     {
-        // TODO signature
-        return false;
+        static auto signature = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C 8B 7D ? C7 44 24 ? 0B 00 00 00");
+        typedef bool (*IsCritBoosted_t)(CTFPlayerShared *);
+        IsCritBoosted_t IsCritBoosted_fn = (IsCritBoosted_t) signature;
+        return IsCritBoosted_fn(self);
     }
 };
 } // namespace re
