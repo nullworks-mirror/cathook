@@ -1,4 +1,5 @@
-set(files "${CMAKE_CURRENT_LIST_DIR}/checksum_md5.cpp"
+set(files "${CMAKE_CURRENT_LIST_DIR}/checksum_crc.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/checksum_md5.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/convar.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/HUD.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/KeyValues.cpp"
