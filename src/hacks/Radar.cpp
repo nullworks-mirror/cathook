@@ -24,7 +24,9 @@ static settings::Int icon_size{ "radar.icon-size", "20" };
 static settings::Int radar_x{ "radar.x", "100" };
 static settings::Int radar_y{ "radar.y", "100" };
 static settings::Boolean use_icons{ "radar.use-icons", "true" };
+static settings::Boolean show_self{ "radar.show.self", "true" };
 static settings::Boolean show_teammates{ "radar.show.teammates", "true" };
+static settings::Boolean show_teambuildings{ "radar.show.team.buildings", "true" };
 static settings::Boolean show_healthpacks{ "radar.show.health", "true" };
 static settings::Boolean show_ammopacks{ "radar.show.ammo", "true" };
 
@@ -247,6 +249,10 @@ void Draw()
         if (i == g_IEngine->GetLocalPlayer())
             continue;
         if (!show_teammates && ent->m_Type() == ENTITY_PLAYER && !ent->m_bEnemy())
+            continue;
+        if (!show_teambuildings && ent->m_Type() == ENTITY_BUILDING && !ent->m_bEnemy())
+            continue;
+        if (!show_self && ent->m_IDX == LOCAL_E->m_IDX)
             continue;
         if (ent->m_iClassID() == CL_CLASS(CObjectSentrygun))
             sentries.push_back(ent);
