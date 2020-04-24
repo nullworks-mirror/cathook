@@ -10,7 +10,7 @@ settings::Boolean enabled{ "crit.enabled", "false" };
 static settings::Boolean draw{ "crit.draw-info", "false" };
 settings::Boolean melee{ "crit.melee", "false" };
 static settings::Button crit_key{ "crit.key", "<null>" };
-static settings::Boolean old_mode{ "crit.old-mode", "false" };
+settings::Boolean old_mode{ "crit.old-mode", "false" };
 
 // How much is added to bucket per shot?
 static float added_per_shot = 0.0f;
@@ -245,7 +245,7 @@ static bool randomCritEnabled()
 static int force_ticks = 0;
 
 // Is the hack enabled?
-static bool isEnabled()
+bool isEnabled()
 {
     // No crits without random crits
     if (!randomCritEnabled())
@@ -260,7 +260,7 @@ static bool isEnabled()
 }
 
 // We cycle between the crit cmds so we want to store where we are currently at
-static std::vector<int> crit_cmds;
+std::vector<int> crit_cmds;
 
 // We need to store a bunch of data for when we kill someone with a crit
 struct player_status
@@ -269,6 +269,7 @@ struct player_status
     bool was_jarated{};
     bool was_markedfordeath{};
 };
+int current_index = 0;
 static std::array<player_status, 33> player_status_list{};
 
 // Main function that forces a crit
@@ -284,8 +285,7 @@ void force_crit()
         // We have valid crit command numbers
         if (crit_cmds.size())
         {
-            static int current_index = 0;
-            if (current_index > crit_cmds.size())
+            if (current_index >= crit_cmds.size())
                 current_index = 0;
 
             // Magic crit cmds get used to force a crit
@@ -315,7 +315,7 @@ void force_crit()
             }
             // For everything else, wait for the crit cmd
             else if (current_late_user_cmd->command_number != next_crit)
-                current_user_cmd->buttons &= ~IN_ATTACK;
+                current_late_user_cmd->buttons &= ~IN_ATTACK;
         }
     }
 }
@@ -442,9 +442,14 @@ static void fixBucket(IClientEntity *weapon)
     // Local server needs no fixing
     if (addr.type == NA_LOOPBACK)
         return;
-    // Melee doesn't either
+
+    // Melee doesn't Need fixing either, still needs firetime though
     if (g_pLocalPlayer->weapon_mode == weapon_melee)
+    {
+        if (g_pLocalPlayer->weapon_melee_damage_tick)
+            shot_weapon_mode = weapon_melee;
         return;
+    }
 
     static float last_bucket;
     static int last_weapon;
@@ -500,6 +505,9 @@ static void fixBucket(IClientEntity *weapon)
     info.restore_data(weapon);
 }
 
+// Beggars
+static bool should_crit_beggars = false;
+static bool attacked_last_tick  = false;
 void CreateMove()
 {
     // We need to update player states regardless, else we can't sync the observed crit chance
@@ -541,8 +549,22 @@ void CreateMove()
     if (!re::C_TFWeaponBase::CanFireCriticalShot(weapon, false, nullptr))
         return;
 
+    // Beggars check
+    if (CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 730)
+    {
+        // Check if we released the barrage by releasing m1, also lock bool so people don't just release m1 and tap it again
+        if (!should_crit_beggars)
+            should_crit_beggars = !(current_late_user_cmd->buttons & IN_ATTACK) && attacked_last_tick;
+        // Update
+        attacked_last_tick = current_user_cmd->buttons & IN_ATTACK;
+        if (!CE_INT(LOCAL_W, netvar.m_iClip1))
+        {
+            // Reset
+            should_crit_beggars = false;
+        }
+    }
     // Should we force crits?
-    if (force_ticks || (CanShoot() && current_late_user_cmd->buttons & IN_ATTACK))
+    if (force_ticks || should_crit_beggars || (CanShoot() && current_late_user_cmd->buttons & IN_ATTACK))
     {
         // Can we crit?
         if (canWeaponWithdraw(RAW_ENT(LOCAL_W)))
@@ -653,23 +675,27 @@ public:
                 int victim = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
                 if (victim != g_pLocalPlayer->entity_idx)
                 {
-                    // This is only ranged damage and crit boost does not count towards it either
-                    if (shot_weapon_mode != weapon_melee && !re::CTFPlayerShared::IsCritBoosted(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E))))
+                    // This is only ranged damage
+                    if (shot_weapon_mode != weapon_melee)
                     {
                         // General damage counter
                         int damage = event->GetInt("damageamount");
                         if (damage > player_status_list[victim].health)
                             damage = player_status_list[victim].health;
 
-                        // Crit damage counter
-                        if (event->GetBool("crit"))
-                            crit_damage += damage;
-
-                        // Mini crit case
-                        if (event->GetBool("minicrit"))
+                        // Crit handling
+                        if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !re::CTFPlayerShared::IsCritBoosted(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E))))
                         {
-                            if (!player_status_list[victim].was_jarated && !player_status_list[victim].was_markedfordeath)
+                            // Crit damage counter
+                            if (event->GetBool("crit"))
                                 crit_damage += damage;
+
+                            // Mini crit case
+                            if (event->GetBool("minicrit"))
+                            {
+                                if (!player_status_list[victim].was_jarated && !player_status_list[victim].was_markedfordeath)
+                                    crit_damage += damage;
+                            }
                         }
                         cached_damage += damage;
                     }
@@ -686,5 +712,7 @@ static InitRoutine init([]() {
     EC::Register(EC::Draw, Draw, "crit_draw");
     EC::Register(EC::LevelShutdown, LevelShutdown, "crit_lvlshutdown");
     g_IGameEventManager->AddListener(&listener, false);
+    EC::Register(
+        EC::Shutdown, []() { g_IGameEventManager->RemoveListener(&listener); }, "crit_shutdown");
 });
 } // namespace criticals
