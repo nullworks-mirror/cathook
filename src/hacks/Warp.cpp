@@ -169,7 +169,7 @@ void CreateMove()
 
             return;
         }
-        else if ((charge_in_jump || ground_ticks > 1) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+        else if (charge_passively && (charge_in_jump || ground_ticks > 1) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
         {
             // Use everxy xth tick for charging
             if (*warp_movement_ratio > 0 && !(tickcount % *warp_movement_ratio))
