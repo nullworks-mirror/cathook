@@ -154,6 +154,11 @@ void updateData()
 
 bool sendmsg(std::string &msg)
 {
+    if (!enabled)
+    {
+        printmsgcopy("Cathook", "Error! Nullnexus is disabled!");
+        return false;
+    }
     if (nexus.sendChat(msg))
         return true;
     printmsgcopy("Cathook", "Error! Couldn't send message.");

@@ -43,7 +43,7 @@ void TabButton::render()
         draw::Line(bb.getBorderBox().x + 6, bb.getBorderBox().bottom() - 3, bb.getBorderBox().width - 12, 0, *color_hover_underline, 1);
     }
 
-    draw::Line(bb.getBorderBox().right(), bb.getBorderBox().top(), 0, bb.getBorderBox().height, *color_separator, 1);
+    draw::Line(bb.getBorderBox().right(), bb.getBorderBox().top() - 1, 0, bb.getBorderBox().height, *color_separator, 1);
 
     text.setColorText(selected ? &*color_text_selected : &*color_text);
     text.render();
