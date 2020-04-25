@@ -3,9 +3,15 @@
         <List width="200">
             <AutoVariable width="fill" target="crit.enabled" label="Enable Crithack" tooltip="Note that melee crits will not be enabled"/>
             <AutoVariable width="fill" target="crit.key" label="Crit Key" tooltip="Key used for non-melee crits"/>
-            <AutoVariable width="fill" target="crit.draw-info" label="Crit Info" tooltip="Draw Useful information on screen"/>
             <AutoVariable width="fill" target="crit.melee" label="Melee Crits" tooltip="Enable Melee crits (Not bound to key)"/>
             <AutoVariable width="fill" target="crit.old-mode" label="Old mode" tooltip="Use the old method for crits"/>
+            <AutoVariable width="fill" target="crit.draw-info" label="Crit Text" tooltip="Draw Useful Text on screen"/>
+            <AutoVariable width="fill" target="crit.draw-info.x" label="Text x Position"/>
+            <AutoVariable width="fill" target="crit.draw-info.y" label="Text y Position"/>
+            <AutoVariable width="fill" target="crit.draw-meter" label="Crit Bar" tooltip="Instead of text, draw a Bar"/>
+            <AutoVariable width="fill" target="crit.bar-x" label="Bar x Position"/>
+            <AutoVariable width="fill" target="crit.bar-y" label="Bar y Position"/>
+            <AutoVariable width="fill" target="crit.bar-size" label="Bar Size"/>
         </List>
     </Box>
 </Tab>

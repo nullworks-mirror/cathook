@@ -7,10 +7,18 @@ std::unordered_map<int, int> command_number_mod{};
 namespace criticals
 {
 settings::Boolean enabled{ "crit.enabled", "false" };
-static settings::Boolean draw{ "crit.draw-info", "false" };
 settings::Boolean melee{ "crit.melee", "false" };
 static settings::Button crit_key{ "crit.key", "<null>" };
 settings::Boolean old_mode{ "crit.old-mode", "false" };
+
+static settings::Boolean draw{ "crit.draw-info", "false" };
+static settings::Boolean draw_meter{ "crit.draw-meter", "false" };
+// Draw control
+static settings::Int draw_string_x{ "crit.draw-info.x", "8" };
+static settings::Int draw_string_y{ "crit.draw-info.y", "800" };
+static settings::Int size{ "crit.bar-size", "100" };
+static settings::Int bar_x{ "crit.bar-x", "50" };
+static settings::Int bar_y{ "crit.bar-y", "500" };
 
 // How much is added to bucket per shot?
 static float added_per_shot = 0.0f;
@@ -78,9 +86,7 @@ static float getWithdrawMult(IClientEntity *wep)
 
     if (g_pLocalPlayer->weapon_mode != weapon_melee)
     {
-
-        float flTmp = std::clamp((((float) call_count / (float) crit_checks) - 0.1f) * 1.111f, 0.0f, 1.0f);
-        flMultiply  = (flTmp * 2.0) + 1.0;
+        flMultiply = RemapValClamped(((float) call_count / (float) crit_checks), 0.1f, 1.f, 1.f, 3.f);
     }
 
     float flToRemove = flMultiply * 3.0;
@@ -455,13 +461,16 @@ static void fixBucket(IClientEntity *weapon)
     static int last_weapon;
     static unsigned last_tick;
     static float last_fire_time;
+    static int last_crits;
+    static float last_crit_mult;
 
     weapon_info info(weapon);
     // We also need to fix the observed crit chance in here
     fixObservedCritchance(weapon);
 
-    float bucket    = info.crit_bucket;
-    float fire_time = NET_FLOAT(weapon, netvar.flLastFireTime);
+    float bucket      = info.crit_bucket;
+    float fire_time   = NET_FLOAT(weapon, netvar.flLastFireTime);
+    int current_crits = CE_INT(LOCAL_E, netvar.m_iCrits);
 
     // Same weapon as last time
     if (weapon->entindex() == last_weapon)
@@ -478,9 +487,15 @@ static void fixBucket(IClientEntity *weapon)
                 return;
             }
 
-            // If increased, reset it so we can modify it ourselves
-            if (bucket > last_bucket)
-                bucket = last_bucket;
+            // We want full control over the bucket
+            if (bucket != last_bucket)
+            {
+                if (bucket > last_bucket)
+                    bucket = last_bucket;
+                // First crit does not count, not sure why
+                if (current_crits != 0)
+                    bucket = last_bucket;
+            }
         }
 
         // We shot, add to bucket
@@ -494,9 +509,21 @@ static void fixBucket(IClientEntity *weapon)
             if (bucket > getBucketCap())
                 bucket = getBucketCap();
         }
+        // We shot a crit, remove from bucket, also try to avoid the crit boosted ones
+        if (last_crits < current_crits && !re::CTFPlayerShared::IsCritBoosted(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E))))
+        {
+            if (!last_crit_mult)
+                last_crit_mult = getWithdrawMult(weapon);
+            bucket -= added_per_shot * last_crit_mult;
+            // Do not overshoot
+            if (bucket < 0.0f)
+                bucket = 0.0f;
+        }
+        last_crit_mult = getWithdrawMult(weapon);
     }
 
     last_fire_time = fire_time;
+    last_crits     = current_crits;
     last_tick      = tickcount;
     last_weapon    = weapon->entindex();
     last_bucket    = bucket;
@@ -523,7 +550,7 @@ void CreateMove()
         }
     }
 
-    if (!enabled && !melee && !draw)
+    if (!enabled && !melee && !draw && !draw_meter)
         return;
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
@@ -578,9 +605,55 @@ static int last_bucket      = 0;
 static int shots_until_crit = 0;
 static int last_wep         = 0;
 
+#if ENABLE_VISUALS
+
+// Need our own Text drawing
+static std::array<std::string, 32> crit_strings;
+static size_t crit_strings_count{ 0 };
+static std::array<rgba_t, 32> crit_strings_colors{ colors::empty };
+
+static std::string bar_string = "";
+
+void AddCritString(const std::string &string, const rgba_t &color)
+{
+    crit_strings[crit_strings_count]        = string;
+    crit_strings_colors[crit_strings_count] = color;
+    ++crit_strings_count;
+}
+
+void DrawCritStrings()
+{
+    // Positions
+    float x = *bar_x + *size * 2.0f;
+    float y = *bar_y + *size / 5.0f;
+
+    if (bar_string != "")
+    {
+        float sx, sy;
+        fonts::menu->stringSize(bar_string, &sx, &sy);
+        // Center and draw below
+        draw::String((x - sx) / 2, (y + sy), colors::red, bar_string.c_str(), *fonts::center_screen);
+        y += fonts::center_screen->size + 1;
+    }
+
+    x = *draw_string_x;
+    y = *draw_string_y;
+    for (size_t i = 0; i < crit_strings_count; ++i)
+    {
+        float sx, sy;
+        fonts::menu->stringSize(crit_strings[i], &sx, &sy);
+        draw::String(x, y, crit_strings_colors[i], crit_strings[i].c_str(), *fonts::center_screen);
+        y += fonts::center_screen->size + 1;
+    }
+    crit_strings_count = 0;
+    bar_string         = "";
+}
+
+static Timer update_shots{};
+
 void Draw()
 {
-    if (!draw)
+    if (!draw && !draw_meter)
         return;
     if (!g_IEngine->GetNetChannelInfo())
         last_crit_tick = -1;
@@ -599,7 +672,7 @@ void Draw()
         // Used by multiple things
         bool can_crit = canWeaponWithdraw(wep);
 
-        if (bucket != last_bucket || wep->entindex() != last_wep)
+        if (bucket != last_bucket || wep->entindex() != last_wep || update_shots.test_and_set(500))
         {
             // Recalculate shots until crit
             if (!can_crit)
@@ -608,42 +681,128 @@ void Draw()
         // Get Crit multiplier info
         std::pair<float, float> crit_mult_info = critMultInfo(wep);
 
-        // Display for when crithack is active
-        if (isEnabled() && last_crit_tick != -1)
-            AddCenterString("Forcing Crits!", colors::red);
-
-        // Weapon can't randomly crit
-        if (!re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr))
+        // Draw Text
+        if (draw)
         {
-            AddCenterString("Weapon cannot randomly crit.", colors::red);
-            return;
+            // Display for when crithack is active
+            if (isEnabled() && last_crit_tick != -1)
+                AddCritString("Forcing Crits!", colors::red);
+
+            // Weapon can't randomly crit
+            if (!re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr))
+            {
+                AddCritString("Weapon cannot randomly crit.", colors::red);
+                DrawCritStrings();
+                return;
+            }
+
+            // Observed crit chance is not low enough, display how much damage is needed until we can crit again
+            if (crit_mult_info.first > crit_mult_info.second)
+                AddCritString("Damage Until crit: " + std::to_string(damageUntilToCrit(wep)), colors::orange);
+            else if (!can_crit)
+                AddCritString("Shots until crit: " + std::to_string(shots_until_crit), colors::orange);
+
+            // Mark bucket as ready/not ready
+            auto color = colors::red;
+            if (can_crit)
+                color = colors::green;
+            AddCritString("Crit Bucket: " + std::to_string(bucket), color);
+
+            // Time until crit (for old mode)
+            if (old_mode && can_crit && last_crit_tick != -1)
+            {
+                // Ticks / Ticks per second
+                float time = (last_crit_tick - current_late_user_cmd->command_number) * g_GlobalVars->interval_per_tick;
+                AddCritString("Crit in " + std::to_string(time) + "s", colors::orange);
+            }
         }
 
-        // Observed crit chance is not low enough, display how much damage is needed until we can crit again
-        if (crit_mult_info.first > crit_mult_info.second)
-            AddCenterString("Damage Until crit: " + std::to_string(damageUntilToCrit(wep)), colors::orange);
-        else if (!can_crit)
-            AddCenterString("Shots until crit: " + std::to_string(shots_until_crit), colors::orange);
-
-        // Mark bucket as ready/not ready
-        auto color = colors::red;
-        if (can_crit)
-            color = colors::green;
-        AddCenterString("Crit Bucket: " + std::to_string(bucket), color);
-
-        // Time until crit (for old mode)
-        if (old_mode && can_crit && last_crit_tick != -1)
+        // Draw Bar
+        if (draw_meter)
         {
-            // Ticks / Ticks per second
-            float time = (last_crit_tick - current_late_user_cmd->command_number) * g_GlobalVars->interval_per_tick;
-            AddCenterString("Crit in " + std::to_string(time) + "s", colors::orange);
+            // Can crit?
+            if (re::C_TFWeaponBase::CanFireCriticalShot(RAW_ENT(LOCAL_W), false, nullptr))
+            {
+                rgba_t bucket_color = colors::FromRGBA8(0x53, 0xbc, 0x31, 255);
+                // Forcing crits, change crit bucket color to a nice azure blue
+                if (isEnabled())
+                    bucket_color = colors::FromRGBA8(0x34, 0xeb, 0xae, 255);
+                // Color everything red
+                if (crit_mult_info.first > crit_mult_info.second || !can_crit)
+                    bucket_color = colors::red;
+
+                // Get the percentage the bucket will take up
+                float bucket_percentage = bucket / getBucketCap();
+
+                // Get the percentage of the bucket after a crit
+                float bucket_percentage_post_crit = bucket;
+
+                // First run the add and subtract calculations
+                bucket_percentage_post_crit += added_per_shot;
+                if (bucket_percentage_post_crit > getBucketCap())
+                    bucket_percentage_post_crit = getBucketCap();
+                bucket_percentage_post_crit -= added_per_shot * getWithdrawMult(wep);
+                if (bucket_percentage_post_crit < 0.0f)
+                    bucket_percentage_post_crit = 0.0f;
+
+                // Now convert to percentage
+                bucket_percentage_post_crit /= getBucketCap();
+
+                // Colors for all the different cases
+                static rgba_t reduction_color_base = colors::FromRGBA8(0xe4, 0x63, 0x35, 255);
+                rgba_t reduction_color             = colors::Fade(reduction_color_base, colors::white, g_GlobalVars->curtime, 2.0f);
+
+                // Time to draw
+
+                // Draw background
+                static rgba_t background_color = colors::FromRGBA8(96, 96, 96, 150);
+                float bar_bg_x_size            = *size * 2.0f;
+                float bar_bg_y_size            = *size / 5.0f;
+                draw::Rectangle(*bar_x - 5.0f, *bar_y - 5.0f, bar_bg_x_size + 10.0f, bar_bg_y_size + 10.0f, background_color);
+
+                // Need special draw logic here
+                if (crit_mult_info.first > crit_mult_info.second || !can_crit)
+                {
+                    draw::Rectangle(*bar_x, *bar_y, bar_bg_x_size * bucket_percentage, bar_bg_y_size, bucket_color);
+
+                    if (crit_mult_info.first > crit_mult_info.second)
+                        bar_string = std::to_string(damageUntilToCrit(wep)) + " Damage until Crit!";
+                    else
+                    {
+                        if (shots_until_crit != 1)
+                            bar_string = std::to_string(shots_until_crit) + " Shots until Crit!";
+                        else
+                            bar_string = std::to_string(shots_until_crit) + " Shot until Crit!";
+                    }
+                }
+                else
+                {
+
+                    // Calculate how big the green part needs to be
+                    float bucket_draw_percentage = bucket_percentage_post_crit;
+
+                    // Are we subtracting more than we have in the buffer?
+                    float x_offset_bucket = bucket_draw_percentage * bar_bg_x_size;
+                    if (x_offset_bucket > 0.0f)
+                        draw::Rectangle(*bar_x, *bar_y, x_offset_bucket, bar_bg_y_size, bucket_color);
+                    else
+                        x_offset_bucket = 0.0f;
+                    // Calculate how big the Reduction part needs to be
+                    float reduction_draw_percentage = bucket_percentage - bucket_percentage_post_crit;
+                    if (bucket_draw_percentage < 0.0f)
+                        reduction_draw_percentage += bucket_draw_percentage;
+                    draw::Rectangle(*bar_x + x_offset_bucket, *bar_y, bar_bg_x_size * reduction_draw_percentage, bar_bg_y_size, reduction_color);
+                }
+            }
         }
 
         // Update
         last_bucket = bucket;
         last_wep    = wep->entindex();
+        DrawCritStrings();
     }
 }
+#endif
 
 // Reset everything
 void LevelShutdown()
@@ -709,7 +868,9 @@ static CritEventListener listener{};
 
 static InitRoutine init([]() {
     EC::Register(EC::CreateMoveLate, CreateMove, "crit_cm");
+#if ENABLE_VISUALS
     EC::Register(EC::Draw, Draw, "crit_draw");
+#endif
     EC::Register(EC::LevelShutdown, LevelShutdown, "crit_lvlshutdown");
     g_IGameEventManager->AddListener(&listener, false);
     EC::Register(
