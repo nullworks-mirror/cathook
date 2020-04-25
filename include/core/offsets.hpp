@@ -220,4 +220,8 @@ struct offsets
     {
         return PlatformOffset(10, undefined, undefined);
     }
+    static constexpr uint32_t RunCommand()
+    {
+        return PlatformOffset(18, undefined, undefined);
+    }
 };
