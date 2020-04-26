@@ -424,7 +424,10 @@ DEFINE_HOOKED_METHOD(CreateMoveLate, void, void *this_, int sequence_nr, float i
 {
     // Call original function, includes Early CreateMove
     original::CreateMoveLate(this_, sequence_nr, input_sample_time, arg3);
-    CUserCmd *cmd = g_IInput->GetUserCmd(sequence_nr);
+
+    CUserCmd *cmd = nullptr;
+    if (sequence_nr > 0)
+        cmd = g_IInput->GetUserCmd(sequence_nr);
 
     if (!cmd)
         return;

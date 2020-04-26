@@ -9,6 +9,7 @@ namespace criticals
 settings::Boolean enabled{ "crit.enabled", "false" };
 settings::Boolean melee{ "crit.melee", "false" };
 static settings::Button crit_key{ "crit.key", "<null>" };
+static settings::Boolean force_no_crit{ "crit.anti-crit", "true" };
 settings::Boolean old_mode{ "crit.old-mode", "false" };
 
 static settings::Boolean draw{ "crit.draw-info", "false" };
@@ -216,6 +217,16 @@ bool isEnabled()
         return true;
     return false;
 }
+// Should we Prevent crits?
+bool preventCrits()
+{
+    // Can't randomly crit
+    if (!randomCritEnabled())
+        return false;
+    if (g_pLocalPlayer->weapon_mode != weapon_melee && (force_no_crit && crit_key && !crit_key.isKeyDown()))
+        return true;
+    return false;
+}
 
 // We cycle between the crit cmds so we want to store where we are currently at
 std::vector<int> crit_cmds;
@@ -234,14 +245,30 @@ static std::array<player_status, 33> player_status_list{};
 void force_crit()
 {
     // Crithack should not run
-    if (!isEnabled())
+    if (!isEnabled() || preventCrits())
         return;
 
     // New mode stuff (well when not using melee nor using pipe launcher)
     if (!old_mode && g_pLocalPlayer->weapon_mode != weapon_melee && LOCAL_W->m_iClassID() != CL_CLASS(CTFPipebombLauncher))
     {
+        // Force to not crit
+        if (crit_key && !crit_key.isKeyDown())
+        {
+            // Ignore if we are crit boosted
+            if (!re::CTFPlayerShared::IsCritBoosted(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E))))
+            {
+                // Try only 5 times, give up after
+                int tries = 0;
+                while (nextCritTick() == current_late_user_cmd->command_number && tries < 5)
+                {
+                    current_late_user_cmd->command_number++;
+                    current_late_user_cmd->random_seed = MD5_PseudoRandom(current_late_user_cmd->command_number) & 0x7FFFFFFF;
+                    tries++;
+                }
+            }
+        }
         // We have valid crit command numbers
-        if (crit_cmds.size())
+        else if (crit_cmds.size())
         {
             if (current_index >= crit_cmds.size())
                 current_index = 0;
@@ -390,6 +417,9 @@ static void fixObservedCritchance(IClientEntity *weapon)
     info.restore_data(weapon);
 }
 
+static std::vector<float> crit_mult_storage;
+static int last_crits;
+
 // Fix bucket on non-local servers
 static void fixBucket(IClientEntity *weapon)
 {
@@ -401,11 +431,16 @@ static void fixBucket(IClientEntity *weapon)
     if (addr.type == NA_LOOPBACK)
         return;
 
-    // Melee doesn't Need fixing either, still needs firetime though
+    // Needs to be updated in melee too
+    int current_crits = CE_INT(LOCAL_E, netvar.m_iCrits);
+    // Melee doesn't Need fixing either, still needs crits though
     if (g_pLocalPlayer->weapon_mode == weapon_melee)
     {
-        if (g_pLocalPlayer->weapon_melee_damage_tick)
+        if (!CanShoot() || g_pLocalPlayer->weapon_melee_damage_tick)
+        {
             shot_weapon_mode = weapon_melee;
+            last_crits       = current_crits;
+        }
         return;
     }
 
@@ -413,20 +448,18 @@ static void fixBucket(IClientEntity *weapon)
     static int last_weapon;
     static unsigned last_tick;
     static float last_fire_time;
-    static int last_crits;
-    static float last_crit_mult;
 
     weapon_info info(weapon);
     // We also need to fix the observed crit chance in here
     fixObservedCritchance(weapon);
 
-    float bucket      = info.crit_bucket;
-    float fire_time   = NET_FLOAT(weapon, netvar.flLastFireTime);
-    int current_crits = CE_INT(LOCAL_E, netvar.m_iCrits);
+    float bucket    = info.crit_bucket;
+    float fire_time = NET_FLOAT(weapon, netvar.flLastFireTime);
 
     // Same weapon as last time
     if (weapon->entindex() == last_weapon)
     {
+        bool bucket_decreased = false;
         // Amount in bucket changed
         if (bucket != last_bucket && last_bucket != 0)
         {
@@ -439,19 +472,22 @@ static void fixBucket(IClientEntity *weapon)
                 return;
             }
 
-            // We want full control over the bucket
-            if (bucket != last_bucket)
+            // We want to prevent any increase in bucket
+            if (bucket > last_bucket)
+                bucket = last_bucket;
+
+            // First crit does not count, not sure why
+            else
             {
-                if (bucket > last_bucket)
-                    bucket = last_bucket;
-                // First crit does not count, not sure why
                 if (current_crits != 0)
                     bucket = last_bucket;
+                else
+                    bucket_decreased = true;
             }
         }
 
         // We shot, add to bucket
-        if (last_fire_time < fire_time)
+        if (last_fire_time < fire_time && !bucket_decreased)
         {
             bucket += added_per_shot;
 
@@ -461,18 +497,26 @@ static void fixBucket(IClientEntity *weapon)
             if (bucket > getBucketCap())
                 bucket = getBucketCap();
         }
-        // We shot a crit, remove from bucket, also try to avoid the crit boosted ones
-        if (last_crits < current_crits && !re::CTFPlayerShared::IsCritBoosted(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E))))
+        // We shot a crit, remove from bucket, also try to avoid the crit boosted ones, + don't take crits from other weapons
+        if (g_pLocalPlayer->weapon_mode == shot_weapon_mode && last_crits < current_crits && !re::CTFPlayerShared::IsCritBoosted(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E))))
         {
-            if (!last_crit_mult)
-                last_crit_mult = getWithdrawMult(weapon);
-            bucket -= added_per_shot * last_crit_mult;
+            if (!crit_mult_storage.size())
+                crit_mult_storage.push_back(getWithdrawMult(weapon));
+            bucket -= added_per_shot * crit_mult_storage[0];
             // Do not overshoot
             if (bucket < 0.0f)
                 bucket = 0.0f;
         }
-        last_crit_mult = getWithdrawMult(weapon);
+        // Store last two crit mults
+        if (std::find(crit_mult_storage.begin(), crit_mult_storage.end(), getWithdrawMult(weapon)) == crit_mult_storage.end())
+        {
+            crit_mult_storage.push_back(getWithdrawMult(weapon));
+            if (crit_mult_storage.size() > 2)
+                crit_mult_storage.erase(crit_mult_storage.begin());
+        }
     }
+    else
+        crit_mult_storage.clear();
 
     last_fire_time = fire_time;
     last_crits     = current_crits;
@@ -514,7 +558,7 @@ void CreateMove()
     updateCmds();
     if (!enabled && !melee)
         return;
-    if (!force_ticks && (!(melee && g_pLocalPlayer->weapon_mode == weapon_melee) && crit_key && !crit_key.isKeyDown()))
+    if (!force_ticks && (!(melee && g_pLocalPlayer->weapon_mode == weapon_melee) && !force_no_crit && crit_key && !crit_key.isKeyDown()))
         return;
     if (!current_late_user_cmd->command_number)
         return;
@@ -713,7 +757,7 @@ void Draw()
                 draw::Rectangle(*bar_x - 5.0f, *bar_y - 5.0f, bar_bg_x_size + 10.0f, bar_bg_y_size + 10.0f, background_color);
 
                 // Need special draw logic here
-                if (crit_mult_info.first > crit_mult_info.second || !can_crit)
+                if ((crit_mult_info.first > crit_mult_info.second || !can_crit) && !(g_pLocalPlayer->weapon_mode == weapon_melee))
                 {
                     draw::Rectangle(*bar_x, *bar_y, bar_bg_x_size * bucket_percentage, bar_bg_y_size, bucket_color);
 
@@ -739,6 +783,7 @@ void Draw()
                         draw::Rectangle(*bar_x, *bar_y, x_offset_bucket, bar_bg_y_size, bucket_color);
                     else
                         x_offset_bucket = 0.0f;
+
                     // Calculate how big the Reduction part needs to be
                     float reduction_draw_percentage = bucket_percentage - bucket_percentage_post_crit;
                     if (bucket_draw_percentage < 0.0f)

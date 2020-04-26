@@ -56,7 +56,6 @@ extern VMTHook localbaseent;
 extern VMTHook clientmode;
 extern VMTHook clientmode4;
 extern VMTHook client;
-extern VMTHook prediction;
 extern VMTHook inventory;
 extern VMTHook chathud;
 extern VMTHook engine;

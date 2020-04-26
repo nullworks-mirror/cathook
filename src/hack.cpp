@@ -249,10 +249,6 @@ void hack::Hook()
     hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound3));
     hooks::soundclient.Apply();
 
-    hooks::prediction.Set(g_IPrediction);
-    hooks::prediction.HookMethod(HOOK_ARGS(RunCommand));
-    hooks::prediction.Apply();
-
 #if ENABLE_VISUALS
     sdl_hooks::applySdlHooks();
 #endif

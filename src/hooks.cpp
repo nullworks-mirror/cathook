@@ -101,7 +101,6 @@ VMTHook baseclientstate{};
 VMTHook baseclientstate8{};
 VMTHook clientmode{};
 VMTHook panel{};
-VMTHook prediction{};
 VMTHook client{};
 VMTHook inventory{};
 VMTHook chathud{};
