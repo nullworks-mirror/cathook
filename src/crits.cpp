@@ -742,7 +742,8 @@ void Draw()
                             bar_string = std::to_string(shots_until_crit) + " Shot until Crit!";
                     }
                 }
-                else
+                // Still run when out of sync
+                if (!((crit_mult_info.first > crit_mult_info.second && g_pLocalPlayer->weapon_mode != weapon_melee) || !can_crit))
                 {
 
                     // Calculate how big the green part needs to be
