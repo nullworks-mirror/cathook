@@ -815,7 +815,7 @@ public:
 
                     // General damage counter
                     int damage = event->GetInt("damageamount");
-                    if (damage > player_status_list[victim].health)
+                    if (damage > player_status_list[victim].health && !event->GetInt("health"))
                         damage = player_status_list[victim].health;
 
                     // Not a melee weapon
