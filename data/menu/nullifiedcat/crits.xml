@@ -5,7 +5,7 @@
             <AutoVariable width="fill" target="crit.anti-crit" label="Save Bucket" tooltip="Don't crit when not active or noone is nearby"/>
             <AutoVariable width="fill" target="crit.key" label="Crit Key" tooltip="Key used for non-melee crits"/>
             <AutoVariable width="fill" target="crit.melee" label="Melee Crits" tooltip="Enable Melee crits (Not bound to key)"/>
-            <AutoVariable width="fill" target="crit.draw-info" label="Crit Text" tooltip="Draw Useful Text on screen"/>
+            <AutoVariable width="fill" target="crit.info" label="Crit Text" tooltip="Draw Useful Text on screen"/>
             <AutoVariable width="fill" target="crit.draw-info.x" label="Text x Position"/>
             <AutoVariable width="fill" target="crit.draw-info.y" label="Text y Position"/>
             <AutoVariable width="fill" target="crit.draw-meter" label="Crit Bar" tooltip="Instead of text, draw a Bar"/>

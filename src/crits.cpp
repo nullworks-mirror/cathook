@@ -13,7 +13,7 @@ static settings::Button crit_key{ "crit.key", "<null>" };
 static settings::Boolean force_no_crit{ "crit.anti-crit", "true" };
 settings::Boolean old_mode{ "crit.old-mode", "false" };
 
-static settings::Boolean draw{ "crit.draw-info", "false" };
+static settings::Boolean draw{ "crit.info", "false" };
 static settings::Boolean draw_meter{ "crit.draw-meter", "false" };
 // Draw control
 static settings::Int draw_string_x{ "crit.draw-info.x", "8" };
@@ -22,11 +22,15 @@ static settings::Int size{ "crit.bar-size", "100" };
 static settings::Int bar_x{ "crit.bar-x", "50" };
 static settings::Int bar_y{ "crit.bar-y", "500" };
 
+// Debug rvar
+static settings::Boolean debug_desync{ "crit.desync-debug", "false" };
+
 // How much is added to bucket per shot?
 static float added_per_shot = 0.0f;
 // Needed to calculate observed crit chance properly
 static int cached_damage   = 0;
 static int crit_damage     = 0;
+static int melee_damage    = 0;
 static bool is_out_of_sync = false;
 
 static float getWithdrawMult(IClientEntity *wep)
@@ -316,7 +320,7 @@ void force_crit()
                             // Closest tick for melee
                             int besttick = hacks::shared::backtrack::BestTick;
                             // Out of range, don't crit
-                            if (hacks::shared::backtrack::headPositions[target][besttick].entorigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 50.0f)
+                            if (hacks::shared::backtrack::headPositions[target][besttick].entorigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
                             {
                                 prevent_crit();
                                 return;
@@ -332,7 +336,7 @@ void force_crit()
                     else
                     {
                         auto ent = getClosestEntity(LOCAL_E->m_vecOrigin());
-                        if (!ent || ent->m_flDistance() >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 50.0f)
+                        if (!ent || ent->m_flDistance() >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
                         {
                             prevent_crit();
                             return;
@@ -809,29 +813,27 @@ public:
 
                     // Iterate all the weapons of the local palyer for weaponid
 
+                    // General damage counter
+                    int damage = event->GetInt("damageamount");
+                    if (damage > player_status_list[victim].health)
+                        damage = player_status_list[victim].health;
+
                     // Not a melee weapon
                     if (!isMelee)
                     {
-                        // General damage counter
-                        int damage = event->GetInt("damageamount");
-                        if (damage > player_status_list[victim].health)
-                            damage = player_status_list[victim].health;
-
                         // Crit handling
                         if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !re::CTFPlayerShared::IsCritBoosted(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E))))
                         {
                             // Crit damage counter
                             if (event->GetBool("crit"))
                                 crit_damage += damage;
-
-                            //                            // Mini crit case
-                            //                            else if (event->GetBool("minicrit"))
-                            //                            {
-                            //                                if (!player_status_list[victim].was_jarated && !player_status_list[victim].was_markedfordeath)
-                            //                                    crit_damage += damage;
-                            //                            }
                         }
                         cached_damage += damage;
+                    }
+                    else
+                    {
+                        // Melee damage
+                        melee_damage += damage;
                     }
                 }
             }
@@ -841,18 +843,39 @@ public:
 
 static CritEventListener listener{};
 
-void observedcritchance_nethook(const CRecvProxyData *data, void *structure, void *out)
+void observedcritchance_nethook(const CRecvProxyData *data, void *pWeapon, void *out)
 {
-    if (CE_BAD(LOCAL_W))
-        return;
+    // Do default action by default
     auto fl_observed_crit_chance = reinterpret_cast<float *>(out);
-    if (data->m_Value.m_Float)
+    *fl_observed_crit_chance     = data->m_Value.m_Float;
+    if (CE_BAD(LOCAL_W) || !enabled)
+        return;
+    if (pWeapon != LOCAL_W->InternalEntity())
+        return;
+
+    float sent_chance = data->m_Value.m_Float;
+    if (sent_chance)
     {
-        // We are out of sync with the server
-        if (data->m_Value.m_Float < getObservedCritChance() || fabsf(data->m_Value.m_Float - getObservedCritChance()) > 0.05f)
-            is_out_of_sync = true;
+        // Before fix
+        float old_observed_chance;
+        if (debug_desync)
+            old_observed_chance = getObservedCritChance();
+        // Sync our chance, Player ressource is guranteed to be working, melee damage not, but it's fairly reliable
+        int ranged_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx) - melee_damage;
+
+        // We need to do some checks for our sync process
+        if (ranged_damage != 0 && 2.0f * sent_chance + 1 != 0.0f)
+        {
+            cached_damage = ranged_damage;
+            // Powered by math
+            crit_damage = (3.0f * ranged_damage * sent_chance) / (2.0f * sent_chance + 1);
+        }
+        // We Were out of sync with the server
+        if (debug_desync && sent_chance > old_observed_chance && fabsf(sent_chance - old_observed_chance) > 0.01f)
+        {
+            logging::Info("Out of sync! Observed crit chance is %f, but client expected: %f, fixed to %f", data->m_Value.m_Float, old_observed_chance, getObservedCritChance());
+        }
     }
-    *fl_observed_crit_chance = data->m_Value.m_Float;
 }
 
 static ProxyFnHook observed_crit_chance_hook{};
@@ -863,6 +886,7 @@ void LevelShutdown()
     last_crit_tick  = -1;
     cached_damage   = 0;
     crit_damage     = 0;
+    melee_damage    = 0;
     last_bucket_fix = -1;
     is_out_of_sync  = false;
 }
