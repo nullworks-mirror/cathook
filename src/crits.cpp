@@ -893,19 +893,26 @@ void LevelShutdown()
 
 // Prints basically everything you need to know about crits
 static CatCommand debug_print_crit_info("debug_print_crit_info", "Print a bunch of useful crit info", []() {
-    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
+    if (CE_BAD(LOCAL_E))
         return;
-    IClientEntity *wep = RAW_ENT(LOCAL_W);
-    weapon_info info(wep);
-    logging::Info("Crit bucket: %f", info.crit_bucket);
+
+    logging::Info("Player specific information:");
     logging::Info("Damage this round: %d", cached_damage);
+    logging::Info("Melee Damage this round: %d", melee_damage);
     logging::Info("Crit Damage this round: %d", crit_damage);
-    logging::Info("Observed crit chance: %f", info.observed_crit_chance);
-    logging::Info("Needed Crit chance: %f", critMultInfo(wep).second);
-    logging::Info("Added per shot: %f", added_per_shot);
-    logging::Info("Subtracted per crit: %f", added_per_shot * getWithdrawMult(wep));
-    logging::Info("Damage Until crit: %d", damageUntilToCrit(wep));
-    logging::Info("Shots until crit: %d", shotsUntilCrit(wep));
+    logging::Info("Observed crit chance: %f", getObservedCritChance());
+    if (CE_GOOD(LOCAL_W))
+    {
+        IClientEntity *wep = RAW_ENT(LOCAL_W);
+        weapon_info info(wep);
+        logging::Info("Weapon specific information:");
+        logging::Info("Crit bucket: %f", info.crit_bucket);
+        logging::Info("Needed Crit chance: %f", critMultInfo(wep).second);
+        logging::Info("Added per shot: %f", added_per_shot);
+        logging::Info("Subtracted per crit: %f", added_per_shot * getWithdrawMult(wep));
+        logging::Info("Damage Until crit: %d", damageUntilToCrit(wep));
+        logging::Info("Shots until crit: %d", shotsUntilCrit(wep));
+    }
 });
 
 static InitRoutine init([]() {
