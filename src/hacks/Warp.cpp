@@ -161,7 +161,7 @@ void CreateMove()
         }
 
         // Bunch of checks, if they all pass we are standing still
-        if ((ground_ticks > 1 && !charge_in_jump) && (charge_no_input || velocity.IsZero()) && !HasCondition<TFCond_Charging>(LOCAL_E) && !current_user_cmd->forwardmove && !current_user_cmd->sidemove && !current_user_cmd->upmove && !(current_user_cmd->buttons & IN_JUMP) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
+        if ((ground_ticks > 1 || charge_in_jump) && (charge_no_input || velocity.IsZero()) && !HasCondition<TFCond_Charging>(LOCAL_E) && !current_user_cmd->forwardmove && !current_user_cmd->sidemove && !current_user_cmd->upmove && !(current_user_cmd->buttons & IN_JUMP) && !(current_user_cmd->buttons & (IN_ATTACK | IN_ATTACK2)))
         {
             if (!move_last_tick)
                 should_charge = true;
