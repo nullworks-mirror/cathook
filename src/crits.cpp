@@ -31,6 +31,7 @@ static float added_per_shot = 0.0f;
 static int cached_damage   = 0;
 static int crit_damage     = 0;
 static int melee_damage    = 0;
+static int round_damage    = 0;
 static bool is_out_of_sync = false;
 
 static float getWithdrawMult(IClientEntity *wep)
@@ -143,11 +144,11 @@ static float getCritCap(IClientEntity *wep)
 // Server gives us garbage so let's just calc our own
 static float getObservedCritChance()
 {
-    if (!cached_damage)
+    if (!(cached_damage - round_damage))
         return 0.0f;
     // Same is used by server
     float normalized_damage = (float) crit_damage / 3.0f;
-    return normalized_damage / (normalized_damage + (float) (cached_damage - crit_damage));
+    return normalized_damage / (normalized_damage + (float) ((cached_damage - round_damage) - crit_damage));
 }
 
 // This returns two floats, first one being our current crit chance, second is what we need to be at/be lower than
@@ -170,7 +171,7 @@ static int damageUntilToCrit(IClientEntity *wep)
     float target_chance = critMultInfo(wep).second;
     // Formula taken from TotallyNotElite
     int damage = std::ceil(crit_damage * (2.0f * target_chance + 1.0f) / (3.0f * target_chance));
-    return damage - cached_damage;
+    return damage - (cached_damage - round_damage);
 }
 
 // Calculate next tick we can crit at
@@ -506,16 +507,28 @@ void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
 // Beggars
 static bool should_crit_beggars = false;
 static bool attacked_last_tick  = false;
+
+// Damage this round
+static Timer round_damage_update_timer{};
 void CreateMove()
 {
+    // Need to wait a bit due to it being glitchy at the start of the round
+    if (!round_damage && round_damage_update_timer.check(500) && !round_damage_update_timer.check(1000))
+    {
+        round_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx);
+        // Ensure we don't immediately desync
+        cached_damage = round_damage;
+    }
     // We need to update player states regardless, else we can't sync the observed crit chance
     for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
         if (CE_VALID(ent) && ent->m_bAlivePlayer() && g_pPlayerResource->GetHealth(ent))
         {
-            auto &status  = player_status_list[i];
-            status.health = g_pPlayerResource->GetHealth(ent);
+            auto &status = player_status_list[i];
+            // Only sync if new health is bigger, We do the rest in player_hurt
+            if (status.health < g_pPlayerResource->GetHealth(ent))
+                status.health = g_pPlayerResource->GetHealth(ent);
         }
     }
 
@@ -787,16 +800,32 @@ public:
         if (!strcmp(event->GetName(), "teamplay_round_start"))
         {
             crit_damage   = 0;
-            cached_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx);
+            cached_damage = 0;
+            // Need to handle later due to buggy behaviour at round start
+            round_damage = 0;
+            round_damage_update_timer.update();
         }
         // Something took damage
         else if (!strcmp(event->GetName(), "player_hurt"))
         {
+            int victim        = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+            CachedEntity *ent = ENTITY(g_IEngine->GetPlayerForUserID(victim));
+            int health        = event->GetInt("health");
+
+            // Or Basically, Actual damage dealt
+            int health_difference = 0;
+            if (CE_VALID(ent))
+            {
+                auto &status      = player_status_list[victim];
+                health_difference = status.health - health;
+                status.health     = health;
+            }
+
             // That something was hurt by us
             if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_pLocalPlayer->entity_idx)
             {
                 // Don't count self damage
-                int victim = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+
                 if (victim != g_pLocalPlayer->entity_idx)
                 {
                     // The weapon we damaged with
@@ -815,8 +844,8 @@ public:
 
                     // General damage counter
                     int damage = event->GetInt("damageamount");
-                    if (damage > player_status_list[victim].health && !event->GetInt("health"))
-                        damage = player_status_list[victim].health;
+                    if (damage > health_difference && !health)
+                        damage = health_difference;
 
                     // Not a melee weapon
                     if (!isMelee)
@@ -866,7 +895,7 @@ void observedcritchance_nethook(const CRecvProxyData *data, void *pWeapon, void 
         // We need to do some checks for our sync process
         if (ranged_damage != 0 && 2.0f * sent_chance + 1 != 0.0f)
         {
-            cached_damage = ranged_damage;
+            cached_damage = ranged_damage - round_damage;
             // Powered by math
             crit_damage = (3.0f * ranged_damage * sent_chance) / (2.0f * sent_chance + 1);
         }
@@ -888,6 +917,7 @@ void LevelShutdown()
     crit_damage     = 0;
     melee_damage    = 0;
     last_bucket_fix = -1;
+    round_damage    = 0;
     is_out_of_sync  = false;
 }
 
@@ -897,7 +927,7 @@ static CatCommand debug_print_crit_info("debug_print_crit_info", "Print a bunch 
         return;
 
     logging::Info("Player specific information:");
-    logging::Info("Damage this round: %d", cached_damage);
+    logging::Info("Damage this round: %d", cached_damage - round_damage);
     logging::Info("Melee Damage this round: %d", melee_damage);
     logging::Info("Crit Damage this round: %d", crit_damage);
     logging::Info("Observed crit chance: %f", getObservedCritChance());
@@ -930,5 +960,8 @@ static InitRoutine init([]() {
             observed_crit_chance_hook.restore();
         },
         "crit_shutdown");
+    // Attached in game, out of sync
+    if (g_IEngine->IsInGame())
+        is_out_of_sync = true;
 });
 } // namespace criticals
