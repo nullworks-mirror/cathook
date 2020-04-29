@@ -27,12 +27,27 @@ static settings::Boolean debug_desync{ "crit.desync-debug", "false" };
 
 // How much is added to bucket per shot?
 static float added_per_shot = 0.0f;
+// How much is taken in the case of a fastfire weapon?
+static float taken_per_crit = 0.0f;
 // Needed to calculate observed crit chance properly
 static int cached_damage   = 0;
 static int crit_damage     = 0;
 static int melee_damage    = 0;
 static int round_damage    = 0;
 static bool is_out_of_sync = false;
+
+static bool isRapidFire(IClientEntity *wep)
+{
+    weapon_info info(wep);
+    // Taken from game, m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_bUseRapidFireCrits;
+    return *(bool *) (info.weapon_data + 0x734 + info.weapon_mode * 0x40);
+}
+
+static float getBucketCap()
+{
+    static ConVar *tf_weapon_criticals_bucket_cap = g_ICvar->FindVar("tf_weapon_criticals_bucket_cap");
+    return tf_weapon_criticals_bucket_cap->GetFloat();
+}
 
 static float getWithdrawMult(IClientEntity *wep)
 {
@@ -44,18 +59,10 @@ static float getWithdrawMult(IClientEntity *wep)
     float flMultiply = 0.5;
 
     if (g_pLocalPlayer->weapon_mode != weapon_melee)
-    {
         flMultiply = RemapValClamped(((float) call_count / (float) crit_checks), 0.1f, 1.f, 1.f, 3.f);
-    }
 
     float flToRemove = flMultiply * 3.0;
     return flToRemove;
-}
-
-static float getBucketCap()
-{
-    static ConVar *tf_weapon_criticals_bucket_cap = g_ICvar->FindVar("tf_weapon_criticals_bucket_cap");
-    return tf_weapon_criticals_bucket_cap->GetFloat();
 }
 
 // This simply checks if we can withdraw the specified damage from the bucket or not.
@@ -71,6 +78,8 @@ static bool isAllowedToWithdrawFromBucket(IClientEntity *wep, float flDamage, bo
             info.crit_bucket = getBucketCap();
     }
     float flToRemove = getWithdrawMult(wep) * flDamage;
+    if (isRapidFire(wep))
+        flToRemove = taken_per_crit * getWithdrawMult(wep);
     // Can remove
     if (flToRemove <= info.crit_bucket)
         return true;
@@ -137,6 +146,19 @@ static float getCritCap(IClientEntity *wep)
     if (g_pLocalPlayer->weapon_mode == weapon_melee)
         chance = 0.15f;
     float flMultCritChance = AttribHookFloat_fn(crit_mult * chance, "mult_crit_chance", wep, 0, 1);
+
+    if (isRapidFire(wep))
+    {
+        // get the total crit chance (ratio of total shots fired we want to be crits)
+        float flTotalCritChance = clamp(0.02f * crit_mult, 0.01f, 0.99f);
+        // get the fixed amount of time that we start firing crit shots for
+        float flCritDuration = 2.0f;
+        // calculate the amount of time, on average, that we want to NOT fire crit shots for in order to achieve the total crit chance we want
+        float flNonCritDuration = (flCritDuration / flTotalCritChance) - flCritDuration;
+        // calculate the chance per second of non-crit fire that we should transition into critting such that on average we achieve the total crit chance we want
+        float flStartCritChance = 1 / flNonCritDuration;
+        flMultCritChance        = AttribHookFloat_fn(flStartCritChance, "mult_crit_chance", wep, 0, 1);
+    }
 
     return flMultCritChance;
 }
@@ -364,7 +386,11 @@ void force_crit()
 
 static void updateCmds()
 {
+    if (CE_BAD(LOCAL_E))
+        return;
     auto weapon = RAW_ENT(LOCAL_W);
+    if (CE_BAD(LOCAL_W))
+        return;
     static int last_weapon;
 
     // Current command number
@@ -411,42 +437,40 @@ static void updateCmds()
                 // We haven't calculated the amount added to the bucket yet
                 if (added_per_shot == 0.0f)
                 {
-                    int backup_seed = *g_PredictionRandomSeed;
-                    // Set random seed ( client only )
-                    *g_PredictionRandomSeed = MD5_PseudoRandom(i) & 0x7FFFFFFF;
-
-                    // Save weapon state to not break anything
                     weapon_info info(weapon);
+                    typedef float (*AttribHookFloat_t)(float, const char *, IClientEntity *, void *, bool);
 
-                    // We modify and write using this
-                    weapon_info write(weapon);
+                    // Need this to get some stats from weapon
+                    static uintptr_t AttribHookFloat = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C C7 45 ? 00 00 00 00 A1 ? ? ? ? C7 45 ? 00 00 00 00 8B 75 ? 85 C0 0F 84 ? ? ? ? 8D 55 ? 89 04 24 31 DB 89 54 24");
+                    static auto AttribHookFloat_fn   = AttribHookFloat_t(AttribHookFloat);
 
-                    // Set Values so they don't get in the way and always subtract damage * 3.0f
-                    write.crit_bucket          = getBucketCap();
-                    write.crit_attempts        = 100000000;
-                    write.crit_count           = 0;
-                    write.observed_crit_chance = 0.0f;
+                    // m_pWeaponInfo->GetWeaponData(m_iWeaponMode).m_nBulletsPerShot;
 
-                    // Write onto weapon
-                    write.restore_data(weapon);
+                    int WeaponData = info.weapon_data;
+                    int WeaponMode = info.weapon_mode;
+                    // Size of one WeaponMode_t is 0x40, 0x6fc is the offset to projectiles per shot
+                    int nProjectilesPerShot = *(int *) (WeaponData + 0x6fc + WeaponMode * 0x40);
+                    if (nProjectilesPerShot >= 1)
+                        nProjectilesPerShot = AttribHookFloat_fn(nProjectilesPerShot, "mult_bullets_per_shot", weapon, 0x0, true);
+                    else
+                        nProjectilesPerShot = 1;
 
-                    // Is it a crit?
-                    bool is_crit = re::C_TFWeaponBase::CalcIsAttackCritical(weapon);
+                    // Size of one WeaponMode_t is 0x40, 0x6f8 is the offset to damage
+                    added_per_shot = *(int *) (WeaponData + 0x6f8 + WeaponMode * 0x40);
+                    added_per_shot = AttribHookFloat_fn(added_per_shot, "mult_dmg", weapon, 0x0, true);
+                    added_per_shot *= nProjectilesPerShot;
 
-                    // If so, store it
-                    if (is_crit)
+                    // Special boi
+                    if (isRapidFire(weapon))
                     {
-                        weapon_info new_info(weapon);
+                        taken_per_crit = added_per_shot;
+                        // Size of one WeaponMode_t is 0x40, 0x70c is the offset to Fire delay
+                        taken_per_crit *= 2.0f / *(float *) (WeaponData + 0x70c + WeaponMode * 0x40);
 
-                        // (old - new) / damage_multiplier = damage
-                        added_per_shot = (getBucketCap() - new_info.crit_bucket) / (g_pLocalPlayer->weapon_mode == weapon_melee ? 1.5f : 3.0f);
+                        // Never try to drain more than cap
+                        if (taken_per_crit * 3.0f > getBucketCap())
+                            taken_per_crit = getBucketCap() / 3.0f;
                     }
-
-                    // Restore original state
-                    info.restore_data(weapon);
-
-                    // Reset seed
-                    *g_PredictionRandomSeed = backup_seed;
                 }
                 // We found a cmd, store it
                 j--;
@@ -465,8 +489,7 @@ static void fixObservedCritchance(IClientEntity *weapon)
 }
 
 static std::vector<float> crit_mult_storage;
-static float last_bucket_fix                      = -1;
-static float previous_server_observed_crit_chance = 0.0f;
+static float last_bucket_fix = -1;
 // Fix bucket on non-local servers
 void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
 {
@@ -481,15 +504,13 @@ void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
     static int last_weapon;
     // This tracks only when bucket is updated
     static int last_update_command;
-    // This always tracks
-    static int last_call_command;
 
     fixObservedCritchance(weapon);
     weapon_info info(weapon);
 
     float bucket = info.crit_bucket;
 
-    // Changed bucket more than once this tick
+    // Changed bucket more than once this tick, or fastfire weapon. Note that we check if it is within 20 tick range just in case.
     if (weapon->entindex() == last_weapon && bucket != last_bucket_fix && last_update_command == cmd->command_number)
         bucket = last_bucket_fix;
 
@@ -497,9 +518,8 @@ void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
     // Bucket changed, update
     if (last_bucket_fix != bucket)
         last_update_command = cmd->command_number;
-    last_call_command = cmd->command_number;
-    last_bucket_fix   = bucket;
 
+    last_bucket_fix  = bucket;
     info.crit_bucket = bucket;
     info.restore_data(weapon);
 }
@@ -570,7 +590,7 @@ void CreateMove()
         }
     }
     // Should we run crit logic?
-    if (force_no_crit || force_ticks || should_crit_beggars || (CanShoot() && current_late_user_cmd->buttons & IN_ATTACK))
+    if (force_no_crit || force_ticks || should_crit_beggars || ((CanShoot() || isRapidFire(RAW_ENT(LOCAL_W))) && current_late_user_cmd->buttons & IN_ATTACK))
     {
         // Can we crit?
         if (canWeaponWithdraw(RAW_ENT(LOCAL_W)))
@@ -682,7 +702,12 @@ void Draw()
             else if (crit_mult_info.first > crit_mult_info.second && g_pLocalPlayer->weapon_mode != weapon_melee)
                 AddCritString("Damage Until crit: " + std::to_string(damageUntilToCrit(wep)), colors::orange);
             else if (!can_crit)
-                AddCritString("Shots until crit: " + std::to_string(shots_until_crit), colors::orange);
+            {
+                if (isRapidFire(wep))
+                    AddCritString("Crit multiplier: " + std::to_string(getWithdrawMult(wep)), colors::orange);
+                else
+                    AddCritString("Shots until crit: " + std::to_string(shots_until_crit), colors::orange);
+            }
 
             // Mark bucket as ready/not ready
             auto color = colors::red;
@@ -723,7 +748,11 @@ void Draw()
                 bucket_percentage_post_crit += added_per_shot;
                 if (bucket_percentage_post_crit > getBucketCap())
                     bucket_percentage_post_crit = getBucketCap();
-                bucket_percentage_post_crit -= added_per_shot * getWithdrawMult(wep);
+
+                if (isRapidFire(wep))
+                    bucket_percentage_post_crit -= taken_per_crit * getWithdrawMult(wep);
+                else
+                    bucket_percentage_post_crit -= added_per_shot * getWithdrawMult(wep);
                 if (bucket_percentage_post_crit < 0.0f)
                     bucket_percentage_post_crit = 0.0f;
 
@@ -731,8 +760,8 @@ void Draw()
                 bucket_percentage_post_crit /= getBucketCap();
 
                 // Colors for all the different cases
-                static rgba_t reduction_color_base = colors::FromRGBA8(0xe4, 0x63, 0x35, 255);
-                rgba_t reduction_color             = colors::Fade(reduction_color_base, colors::white, g_GlobalVars->curtime, 2.0f);
+                rgba_t reduction_color_base = bucket_color;
+                rgba_t reduction_color      = colors::Fade(reduction_color_base, colors::white, g_GlobalVars->curtime, 2.0f);
 
                 // Time to draw
 
@@ -753,10 +782,15 @@ void Draw()
                         bar_string = std::to_string(damageUntilToCrit(wep)) + " Damage until Crit!";
                     else
                     {
-                        if (shots_until_crit != 1)
-                            bar_string = std::to_string(shots_until_crit) + " Shots until Crit!";
+                        if (!isRapidFire(wep))
+                        {
+                            if (shots_until_crit != 1)
+                                bar_string = std::to_string(shots_until_crit) + " Shots until Crit!";
+                            else
+                                bar_string = std::to_string(shots_until_crit) + " Shot until Crit!";
+                        }
                         else
-                            bar_string = std::to_string(shots_until_crit) + " Shot until Crit!";
+                            bar_string = "Crit multiplier: " + std::to_string(getWithdrawMult(wep));
                     }
                 }
                 // Still run when out of sync
@@ -938,7 +972,10 @@ static CatCommand debug_print_crit_info("debug_print_crit_info", "Print a bunch 
         logging::Info("Crit bucket: %f", info.crit_bucket);
         logging::Info("Needed Crit chance: %f", critMultInfo(wep).second);
         logging::Info("Added per shot: %f", added_per_shot);
-        logging::Info("Subtracted per crit: %f", added_per_shot * getWithdrawMult(wep));
+        if (isRapidFire(wep))
+            logging::Info("Subtracted per Rapidfire crit: %f", taken_per_crit * getWithdrawMult(wep));
+        else
+            logging::Info("Subtracted per crit: %f", added_per_shot * getWithdrawMult(wep));
         logging::Info("Damage Until crit: %d", damageUntilToCrit(wep));
         logging::Info("Shots until crit: %d", shotsUntilCrit(wep));
     }

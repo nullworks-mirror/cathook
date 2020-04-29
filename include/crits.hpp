@@ -24,6 +24,8 @@ public:
     int crit_count{};
     float observed_crit_chance{};
     bool unknown7{};
+    int weapon_mode{};
+    int weapon_data{};
     weapon_info()
     {
     }
@@ -39,6 +41,9 @@ public:
         crit_count           = *(int *) ((uintptr_t) weapon + 0xa40);
         observed_crit_chance = *(float *) ((uintptr_t) weapon + 0xbfc);
         unknown7             = *(bool *) ((uintptr_t) weapon + 0xb18);
+        // No need to restore
+        weapon_mode = *(int *) ((uintptr_t) weapon + 0xb04);
+        weapon_data = *(int *) ((uintptr_t) weapon + 0xb10);
     }
     weapon_info(IClientEntity *weapon)
     {
