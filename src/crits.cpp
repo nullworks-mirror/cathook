@@ -554,7 +554,7 @@ static Timer round_damage_update_timer{};
 void CreateMove()
 {
     // Need to wait a bit due to it being glitchy at the start of the round
-    if (!round_damage && round_damage_update_timer.check(500) && !round_damage_update_timer.check(1000))
+    if (round_damage_update_timer.check(3000) && !round_damage_update_timer.check(4000))
         round_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx);
 
     // Base on melee damage and server networked one rather than anything else
