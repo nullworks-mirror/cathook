@@ -35,6 +35,8 @@ static int crit_damage     = 0;
 static int melee_damage    = 0;
 static int round_damage    = 0;
 static bool is_out_of_sync = false;
+// Optimization
+static int shots_to_fill_bucket = 0;
 
 static bool isRapidFire(IClientEntity *wep)
 {
@@ -114,8 +116,8 @@ static int shotsUntilCrit(IClientEntity *wep)
     weapon_info info(wep);
     // How many shots until we can crit
     int shots = 0;
-    // Predicting 100 shots should be fine
-    for (shots = 0; shots < 100; shots++)
+    // Use shots til bucket is full for reference
+    for (shots = 0; shots < shots_to_fill_bucket + 1; shots++)
     {
         if (isAllowedToWithdrawFromBucket(wep, added_per_shot, true))
             break;
@@ -197,13 +199,21 @@ static int damageUntilToCrit(IClientEntity *wep)
 }
 
 // Calculate next tick we can crit at
-static int nextCritTick()
+static int nextCritTick(int loops = 4096)
 {
+    // Previous crit tick stuff
+    static int previous_crit   = -1;
+    static int previous_weapon = -1;
+
     auto wep = RAW_ENT(LOCAL_W);
+
+    // Already have a tick, use it
+    if (previous_weapon == wep->entindex() && previous_crit >= current_late_user_cmd->command_number)
+        return previous_crit;
 
     int old_seed = MD5_PseudoRandom(current_late_user_cmd->command_number) & 0x7FFFFFFF;
     // Try 4096 times
-    for (int i = 0; i < 4096; i++)
+    for (int i = 0; i < loops; i++)
     {
         int cmd_number = current_late_user_cmd->command_number + i;
         // Set random seed
@@ -217,6 +227,8 @@ static int nextCritTick()
         if (is_crit)
         {
             *g_PredictionRandomSeed = old_seed;
+            previous_crit           = cmd_number;
+            previous_weapon         = wep->entindex();
             return cmd_number;
         }
     }
@@ -274,15 +286,18 @@ static std::array<player_status, 33> player_status_list{};
 bool prevent_crit()
 {
     int tries = 0;
-    while (nextCritTick() == current_late_user_cmd->command_number && tries < 5)
+    // Only check one tick
+    while (nextCritTick(1) == current_late_user_cmd->command_number && tries < 5)
     {
         current_late_user_cmd->command_number++;
-        current_late_user_cmd->random_seed = MD5_PseudoRandom(current_late_user_cmd->command_number);
         tries++;
     }
     // Failed
-    if (nextCritTick() == current_late_user_cmd->command_number)
+    if (nextCritTick(1) == current_late_user_cmd->command_number)
         return false;
+    // Success, fix rand seed
+    else
+        current_late_user_cmd->random_seed = MD5_PseudoRandom(current_late_user_cmd->command_number);
     // Suceeded
     return true;
 }
@@ -292,6 +307,9 @@ void force_crit()
 {
     // Crithack should not run
     if (!isEnabled() && !preventCrits())
+        return;
+    // Can't crit
+    if (!added_per_shot)
         return;
 
     // New mode stuff (well when not using melee nor using pipe launcher)
@@ -319,11 +337,12 @@ void force_crit()
     else
     {
         // get the next tick we can crit at
-        int next_crit = nextCritTick();
-        if (next_crit != -1)
+
+        // We can just force to nearest crit for melee, and sticky launchers apparently
+        if ((g_pLocalPlayer->weapon_mode == weapon_melee && melee) || (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher) && enabled))
         {
-            // We can just force to nearest crit for melee, and sticky launchers apparently
-            if (g_pLocalPlayer->weapon_mode == weapon_melee || LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
+            int next_crit = nextCritTick();
+            if (next_crit != -1)
             {
                 if (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
                 {
@@ -369,10 +388,10 @@ void force_crit()
                 current_late_user_cmd->command_number = next_crit;
                 current_late_user_cmd->random_seed    = MD5_PseudoRandom(next_crit) & 0x7FFFFFFF;
             }
-            // For everything else, wait for the crit cmd
-            else if (current_late_user_cmd->command_number != next_crit)
-                current_late_user_cmd->buttons &= ~IN_ATTACK;
         }
+        // For everything else, wait for the crit cmd
+        else if (current_late_user_cmd->command_number != nextCritTick())
+            current_late_user_cmd->buttons &= ~IN_ATTACK;
     }
 }
 
@@ -459,7 +478,7 @@ static void updateCmds()
                     added_per_shot = *(int *) (WeaponData + 0x6f8 + WeaponMode * 0x40);
                     added_per_shot = AttribHookFloat_fn(added_per_shot, "mult_dmg", weapon, 0x0, true);
                     added_per_shot *= nProjectilesPerShot;
-
+                    shots_to_fill_bucket = getBucketCap() / added_per_shot;
                     // Special boi
                     if (isRapidFire(weapon))
                     {
@@ -590,7 +609,7 @@ void CreateMove()
         }
     }
     // Should we run crit logic?
-    if (force_no_crit || force_ticks || should_crit_beggars || ((CanShoot() || isRapidFire(RAW_ENT(LOCAL_W))) && current_late_user_cmd->buttons & IN_ATTACK))
+    if ((force_no_crit && isAllowedToWithdrawFromBucket(RAW_ENT(LOCAL_W), added_per_shot)) || force_ticks || should_crit_beggars || ((CanShoot() || isRapidFire(RAW_ENT(LOCAL_W))) && current_late_user_cmd->buttons & IN_ATTACK))
     {
         // Can we crit?
         if (canWeaponWithdraw(RAW_ENT(LOCAL_W)))
@@ -664,10 +683,6 @@ void Draw()
         // Fix observed crit chance
         // fixObservedCritchance(wep);
 
-        // Reset because too old
-        if (wep->entindex() != last_wep || last_crit_tick - current_late_user_cmd->command_number < 0 || (last_crit_tick - current_late_user_cmd->command_number) * g_GlobalVars->interval_per_tick > 30)
-            last_crit_tick = nextCritTick();
-
         // Used by multiple things
         bool can_crit = canWeaponWithdraw(wep);
 
@@ -677,6 +692,11 @@ void Draw()
             if (!can_crit)
                 shots_until_crit = shotsUntilCrit(wep);
         }
+
+        // Reset because too old
+        if (!shots_until_crit && added_per_shot && (wep->entindex() != last_wep || last_crit_tick - current_late_user_cmd->command_number < 0 || (last_crit_tick - current_late_user_cmd->command_number) * g_GlobalVars->interval_per_tick > 30))
+            last_crit_tick = nextCritTick();
+
         // Get Crit multiplier info
         std::pair<float, float> crit_mult_info = critMultInfo(wep);
 
