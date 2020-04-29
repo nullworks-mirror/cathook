@@ -42,7 +42,9 @@ static bool isRapidFire(IClientEntity *wep)
 {
     weapon_info info(wep);
     // Taken from game, m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_bUseRapidFireCrits;
-    return *(bool *) (info.weapon_data + 0x734 + info.weapon_mode * 0x40);
+    bool ret = *(bool *) (info.weapon_data + 0x734 + info.weapon_mode * 0x40);
+    // Minigun changes mode once revved, so fix that
+    return ret || wep->GetClientClass()->m_ClassID == CL_CLASS(CTFMinigun);
 }
 
 static float getBucketCap()
