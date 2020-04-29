@@ -6,7 +6,7 @@
 #if !ENFORCE_STREAM_SAFETY
 namespace hacks::tf2::killfeed
 {
-static settings::Boolean enable{ "visual.killfeedcolor.enable", "true" };
+static settings::Boolean enable{ "visual.killfeedcolor.enable", "false" };
 typedef void (*GetTeamColor_t)(Color *, void *, int, int);
 
 static GetTeamColor_t GetTeamColor_fn;
@@ -142,10 +142,6 @@ mov [esp], ecx
     DONT_SMASH_SMACK(138);
     DONT_SMASH_SMACK(154);
 
-    for (auto &i : color_patches)
-        i.Patch();
-    for (auto &i : no_stack_smash)
-        i.Patch();
     EC::Register(
         EC::Shutdown,
         []() {

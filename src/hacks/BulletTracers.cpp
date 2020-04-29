@@ -111,7 +111,13 @@ IClientEntity *GetActiveTFWeapon_detour(IClientEntity *this_ /* C_TFPlayer * */)
     if (!weapon || !enable)
         return weapon;
 
+    if (CE_BAD(LOCAL_E) || IDX_BAD(this_->entindex()) || CE_BAD(ENTITY(this_->entindex())))
+        return weapon;
+
     bool isLocal = this_->entindex() == g_pLocalPlayer->entity_idx;
+
+    if (IDX_BAD(weapon->entindex()))
+        return weapon;
 
     auto cweapon = ENTITY(weapon->entindex());
     if (CE_BAD(cweapon))
@@ -217,40 +223,57 @@ void FX_Tracer_detour(Vector &start, CEffectData &data, int velocity, bool makeW
 #define foffset(p, i) ((unsigned char *) &p)[i]
 
 static InitRoutine init([]() {
-    /* clang-format off */
-    auto addr1 = gSignatures.GetClientSignature("8B 43 54 89 04 24 E8 ? ? ? ? F6 43 30 01 89 C7"); // GetParticleSystemNameFromIndex detour
-    auto addr2 = gSignatures.GetClientSignature("E8 ? ? ? ? 85 C0 89 C3 0F 84 ? ? ? ? 8B 00 89 1C 24 FF 90 ? ? ? ? 80 BB"); // GetActiveTFWeapon detour
-    auto addr3 = gSignatures.GetClientSignature("E8 ? ? ? ? 89 F8 84 C0 75 7A");
-    auto addr4 = gSignatures.GetClientSignature("E8 ? ? ? ? 8D 85 ? ? ? ? 89 7C 24 0C 89 44 24 10");
-    auto addr5 = gSignatures.GetClientSignature("E8 ? ? ? ? 8D 65 F4 5B 5E 5F 5D C3 8D 76 00 8B 43 0C"); // FX_Tracer detour
+    // Init up here, do NOT patch these, only patch them after setting
+    static std::optional<BytePatch> patch;
+    static std::optional<BytePatch> patch2;
+    static std::optional<BytePatch> patch3;
+    enable.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (!patch)
+        {
+            static auto addr1 = gSignatures.GetClientSignature("8B 43 54 89 04 24 E8 ? ? ? ? F6 43 30 01 89 C7");                          // GetParticleSystemNameFromIndex detour
+            static auto addr2 = gSignatures.GetClientSignature("E8 ? ? ? ? 85 C0 89 C3 0F 84 ? ? ? ? 8B 00 89 1C 24 FF 90 ? ? ? ? 80 BB"); // GetActiveTFWeapon detour
+            static auto addr3 = gSignatures.GetClientSignature("E8 ? ? ? ? 89 F8 84 C0 75 7A");
+            static auto addr4 = gSignatures.GetClientSignature("E8 ? ? ? ? 8D 85 ? ? ? ? 89 7C 24 0C 89 44 24 10");
+            static auto addr5 = gSignatures.GetClientSignature("E8 ? ? ? ? 8D 65 F4 5B 5E 5F 5D C3 8D 76 00 8B 43 0C"); // FX_Tracer detour
 
-    /* clang-format on */
-    if (!addr1 || !addr2 || !addr3 || !addr4 || !addr4)
-        return;
-    GetParticleSystemNameFromIndex_fn = GetParticleSystemNameFromIndex_t(e8call(addr1 + 7));
-    GetActiveTFWeapon_fn              = GetActiveTFWeapon_t(e8call_direct(addr2));
-    DispatchEffect_fn                 = DispatchEffect_t(e8call_direct(addr3));
-    CalcZoomedMuzzleLocation_fn       = CalcZoomedMuzzleLocation_t(e8call_direct(addr4));
-    FX_Tracer_fn                      = FX_Tracer_t(e8call_direct(addr5));
+            GetParticleSystemNameFromIndex_fn = GetParticleSystemNameFromIndex_t(e8call(addr1 + 7));
+            GetActiveTFWeapon_fn              = GetActiveTFWeapon_t(e8call_direct(addr2));
+            DispatchEffect_fn                 = DispatchEffect_t(e8call_direct(addr3));
+            CalcZoomedMuzzleLocation_fn       = CalcZoomedMuzzleLocation_t(e8call_direct(addr4));
+            FX_Tracer_fn                      = FX_Tracer_t(e8call_direct(addr5));
 
-    /* clang-format off */
-    auto relAddr1 = ((uintptr_t) GetParticleSystemNameFromIndex__detour - ((uintptr_t) addr1 + 3)) - 5;
-    auto relAddr2 = ((uintptr_t) GetActiveTFWeapon_detour - ((uintptr_t) addr2)) - 5;
-    auto relAddr3 = ((uintptr_t) FX_Tracer_detour - ((uintptr_t) addr5)) - 5;
-    static BytePatch patch(addr1, { 0x89, 0x1C, 0x24, 0xE8, foffset(relAddr1, 0), foffset(relAddr1, 1), foffset(relAddr1, 2), foffset(relAddr1, 3), 0x90, 0x90, 0x90 });
-    static BytePatch patch2(addr2, { 0xE8, foffset(relAddr2, 0), foffset(relAddr2, 1), foffset(relAddr2, 2), foffset(relAddr2, 3) });
-    static BytePatch patch3(addr5, { 0xE8, foffset(relAddr3, 0), foffset(relAddr3, 1), foffset(relAddr3, 2), foffset(relAddr3, 3) });
+            static auto relAddr1 = ((uintptr_t) GetParticleSystemNameFromIndex__detour - ((uintptr_t) addr1 + 3)) - 5;
+            static auto relAddr2 = ((uintptr_t) GetActiveTFWeapon_detour - ((uintptr_t) addr2)) - 5;
+            static auto relAddr3 = ((uintptr_t) FX_Tracer_detour - ((uintptr_t) addr5)) - 5;
 
-    patch.Patch();
-    patch2.Patch();
-    patch3.Patch();
+            patch  = BytePatch((void *) addr1, { 0x89, 0x1C, 0x24, 0xE8, foffset(relAddr1, 0), foffset(relAddr1, 1), foffset(relAddr1, 2), foffset(relAddr1, 3), 0x90, 0x90, 0x90 });
+            patch2 = BytePatch((void *) addr2, { 0xE8, foffset(relAddr2, 0), foffset(relAddr2, 1), foffset(relAddr2, 2), foffset(relAddr2, 3) });
+            patch3 = BytePatch((void *) addr5, { 0xE8, foffset(relAddr3, 0), foffset(relAddr3, 1), foffset(relAddr3, 2), foffset(relAddr3, 3) });
+        }
+
+        if (after)
+        {
+            (*patch).Patch();
+            (*patch2).Patch();
+            (*patch3).Patch();
+        }
+        else
+        {
+            (*patch).Shutdown();
+            (*patch2).Shutdown();
+            (*patch3).Shutdown();
+        }
+    });
     /* clang-format on */
     EC::Register(
         EC::Shutdown,
         []() {
-            patch.Shutdown();
-            patch2.Shutdown();
-            patch3.Shutdown();
+            if (patch)
+            {
+                (*patch).Shutdown();
+                (*patch2).Shutdown();
+                (*patch3).Shutdown();
+            }
         },
         "shutdown_bullettrace");
 });
