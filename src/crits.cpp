@@ -514,11 +514,11 @@ void CreateMove()
 {
     // Need to wait a bit due to it being glitchy at the start of the round
     if (!round_damage && round_damage_update_timer.check(500) && !round_damage_update_timer.check(1000))
-    {
         round_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx);
-        // Ensure we don't immediately desync
-        cached_damage = round_damage;
-    }
+
+    // Base on melee damage and server networked one rather than anything else
+    cached_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx) - melee_damage;
+
     // We need to update player states regardless, else we can't sync the observed crit chance
     for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
     {
@@ -857,7 +857,6 @@ public:
                             if (event->GetBool("crit"))
                                 crit_damage += damage;
                         }
-                        cached_damage += damage;
                     }
                     else
                     {
@@ -927,7 +926,7 @@ static CatCommand debug_print_crit_info("debug_print_crit_info", "Print a bunch 
         return;
 
     logging::Info("Player specific information:");
-    logging::Info("Damage this round: %d", cached_damage - round_damage);
+    logging::Info("Ranged Damage this round: %d", cached_damage - round_damage);
     logging::Info("Melee Damage this round: %d", melee_damage);
     logging::Info("Crit Damage this round: %d", crit_damage);
     logging::Info("Observed crit chance: %f", getObservedCritChance());
