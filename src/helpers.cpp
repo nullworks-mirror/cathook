@@ -644,6 +644,9 @@ powerup_type GetPowerupOnPlayer(CachedEntity *player)
 // A function to find a weapon by WeaponID
 int getWeaponByID(CachedEntity *player, int weaponid)
 {
+    // Invalid player
+    if (CE_BAD(player))
+        return -1;
     int *hWeapons = &CE_INT(player, netvar.hMyWeapons);
     // Go through the handle array and search for the item
     for (int i = 0; hWeapons[i]; i++)
