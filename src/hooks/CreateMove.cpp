@@ -426,7 +426,7 @@ DEFINE_HOOKED_METHOD(CreateMoveLate, void, void *this_, int sequence_nr, float i
     original::CreateMoveLate(this_, sequence_nr, input_sample_time, arg3);
 
     CUserCmd *cmd = nullptr;
-    if (sequence_nr > 0)
+    if (GetCmds(g_IInput) && sequence_nr > 0)
         cmd = g_IInput->GetUserCmd(sequence_nr);
 
     if (!cmd)

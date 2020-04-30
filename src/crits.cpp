@@ -246,7 +246,8 @@ static bool randomCritEnabled()
 }
 
 // These are used when we want to force a crit regardless of states (e.g. for delayed weapons like sticky launchers)
-static int force_ticks = 0;
+static int force_ticks   = 0;
+static int prevent_ticks = 0;
 
 // Is the hack enabled?
 bool isEnabled()
@@ -312,6 +313,9 @@ void force_crit()
     if (!added_per_shot)
         return;
 
+    // Reset force ticks
+    if (force_ticks && LOCAL_W->m_iClassID() != CL_CLASS(CTFPipebombLauncher))
+        force_ticks = 0;
     // New mode stuff (well when not using melee nor using pipe launcher)
     if (!old_mode && g_pLocalPlayer->weapon_mode != weapon_melee && LOCAL_W->m_iClassID() != CL_CLASS(CTFPipebombLauncher))
     {
@@ -346,9 +350,19 @@ void force_crit()
             {
                 if (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
                 {
-                    if (!force_ticks)
+                    if (!force_ticks && isEnabled())
                         force_ticks = 3;
-                    force_ticks--;
+                    if (force_ticks)
+                        force_ticks--;
+                    // Prevent crits
+                    if (!prevent_ticks && !force_ticks && preventCrits())
+                        prevent_ticks = 3;
+                    if (prevent_ticks)
+                    {
+                        prevent_crit();
+                        prevent_ticks--;
+                        return;
+                    }
                 }
                 // Code for handling when to not crit with melee weapons
                 else if (force_no_crit)
