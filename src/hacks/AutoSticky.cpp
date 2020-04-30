@@ -90,6 +90,7 @@ bool IsTarget(CachedEntity *ent)
     return false;
 }
 
+static int wait_ticks = 0;
 void CreateMove()
 {
     // Check user settings if auto-sticky is enabled
@@ -106,6 +107,16 @@ void CreateMove()
     // Check for sticky jumper, which is item 265, if true, return
     if (HasWeapon(LOCAL_E, 265))
         return;
+
+    // Can't detonate while attacking
+    if (current_user_cmd->buttons & IN_ATTACK || wait_ticks)
+    {
+        if (!wait_ticks)
+            wait_ticks = 3;
+        wait_ticks--;
+        return;
+    }
+
     // Clear the arrays
     bombs.clear();
     targets.clear();
