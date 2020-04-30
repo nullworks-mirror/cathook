@@ -171,9 +171,9 @@ struct bonelist_s
         }
     }
 
-    void _FASTCALL Draw(CachedEntity *enti, const rgba_t &color)
+    void _FASTCALL Draw(CachedEntity *ent, const rgba_t &color)
     {
-        const model_t *model = RAW_ENT(enti)->GetModel();
+        const model_t *model = RAW_ENT(ent)->GetModel();
         if (not model)
         {
             return;
@@ -189,7 +189,7 @@ struct bonelist_s
             return;
 
         // ent->m_bBonesSetup = false;
-        const auto &bones   = enti->hitboxes.GetBones();
+        const auto &bones   = ent->hitboxes.GetBones();
         DrawBoneList(bones, leg_r, 3, color);
         DrawBoneList(bones, leg_l, 3, color);
         DrawBoneList(bones, bottom, 3, color);
