@@ -289,17 +289,15 @@ bool prevent_crit()
 {
     int tries = 0;
     // Only check one tick
-    while (nextCritTick(1) == current_late_user_cmd->command_number && tries < 5)
+    while (nextCritTick(5) == current_late_user_cmd->command_number && tries < 5)
     {
         current_late_user_cmd->command_number++;
+        current_late_user_cmd->random_seed = MD5_PseudoRandom(current_late_user_cmd->command_number);
         tries++;
     }
     // Failed
-    if (nextCritTick(1) == current_late_user_cmd->command_number)
+    if (nextCritTick(5) == current_late_user_cmd->command_number)
         return false;
-    // Success, fix rand seed
-    else
-        current_late_user_cmd->random_seed = MD5_PseudoRandom(current_late_user_cmd->command_number);
     // Suceeded
     return true;
 }
