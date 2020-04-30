@@ -548,13 +548,11 @@ static bool should_crit_beggars = false;
 static bool attacked_last_tick  = false;
 
 // Damage this round
-static Timer round_damage_update_timer{};
 void CreateMove()
 {
-    // Need to wait a bit due to it being glitchy at the start of the round
-    if (round_damage_update_timer.check(3000) && !round_damage_update_timer.check(4000))
+    // It should never go down, if it does we need to compensate for it
+    if (g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx) < round_damage)
         round_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx);
-
     // Base on melee damage and server networked one rather than anything else
     cached_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx) - melee_damage;
 
@@ -854,10 +852,9 @@ public:
         if (!strcmp(event->GetName(), "teamplay_round_start"))
         {
             crit_damage   = 0;
-            cached_damage = 0;
-            // Need to handle later due to buggy behaviour at round start
-            round_damage = 0;
-            round_damage_update_timer.update();
+            melee_damage  = 0;
+            round_damage  = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx);
+            cached_damage = round_damage - melee_damage;
         }
         // Something took damage
         else if (!strcmp(event->GetName(), "player_hurt"))
