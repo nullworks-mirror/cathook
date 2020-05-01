@@ -9,6 +9,11 @@ namespace re
 class CTFPlayerShared
 {
 public:
+    // Convert IClientEntity to CTFPlayerShared
+    inline static CTFPlayerShared *GetPlayerShared(IClientEntity *ent)
+    {
+        return (CTFPlayerShared *) (((uintptr_t) ent) + 0x17cc);
+    }
     inline static bool IsDominatingPlayer(CTFPlayerShared *self, int ent_idx)
     {
         static auto signature = e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 84 C0 74 8F"));
