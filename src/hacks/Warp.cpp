@@ -19,6 +19,7 @@ static settings::Boolean charge_passively{ "warp.charge-passively", "true" };
 static settings::Boolean charge_in_jump{ "warp.charge-passively.jump", "true" };
 static settings::Boolean charge_no_input{ "warp.charge-passively.no-inputs", "false" };
 static settings::Int warp_movement_ratio{ "warp.movement-ratio", "6" };
+static settings::Boolean warp_demoknight{ "warp.demoknight", "false" };
 static settings::Boolean warp_peek{ "warp.peek", "false" };
 static settings::Boolean warp_on_damage{ "warp.on-hit", "false" };
 static settings::Boolean warp_forward{ "warp.on-hit.forward", "false" };
@@ -141,6 +142,15 @@ static int ground_ticks           = 0;
 // Left and right by default
 static std::vector<float> yaw_selections{ 90.0f, -90.0f };
 
+enum charge_state
+{
+    ATTACK = 0,
+    CHARGE,
+    WARP,
+    DONE
+};
+
+charge_state current_state = ATTACK;
 void CreateMove()
 {
     if (!enabled)
@@ -149,6 +159,8 @@ void CreateMove()
     if (!warp_key.isKeyDown() && !was_hurt)
     {
         warp_last_tick = false;
+        current_state  = ATTACK;
+
         Vector velocity{};
         velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), velocity);
 
@@ -199,6 +211,35 @@ void CreateMove()
         // Set forward/sidemove
         current_user_cmd->forwardmove = cos(actual_yaw) * 450.0f;
         current_user_cmd->sidemove    = -sin(actual_yaw) * 450.0f;
+    }
+    // Demoknight Warp
+    else if (warp_demoknight)
+    {
+        switch (current_state)
+        {
+        case ATTACK:
+        {
+            current_user_cmd->buttons |= IN_ATTACK;
+            current_state = CHARGE;
+            should_warp   = false;
+            break;
+        }
+        case CHARGE:
+        {
+            current_user_cmd->buttons |= IN_ATTACK2;
+            current_state = WARP;
+            should_warp   = false;
+            break;
+        }
+        case WARP:
+        {
+            should_warp   = true;
+            current_state = DONE;
+            break;
+        }
+        default:
+            break;
+        }
     }
     // Warp peaking
     else if (warp_peek)
@@ -271,8 +312,7 @@ class WarpHurtListener : public IGameEventListener2
 {
 public:
     virtual void FireGameEvent(IGameEvent *event)
-    {
-        // Not enabled
+    { // Not enabled
         if (!enabled || !warp_on_damage)
             return;
         // We have no warp
