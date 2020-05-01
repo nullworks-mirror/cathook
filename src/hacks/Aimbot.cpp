@@ -40,6 +40,7 @@ static settings::Boolean wait_for_charge{ "aimbot.wait-for-charge", "0" };
 
 static settings::Boolean silent{ "aimbot.silent", "1" };
 static settings::Boolean target_lock{ "aimbot.lock-target", "0" };
+static settings::Boolean assistance_only{ "aimbot.assistance.only", "0" };
 static settings::Int hitbox{ "aimbot.hitbox", "0" };
 static settings::Boolean zoomed_only{ "aimbot.zoomed-only", "1" };
 static settings::Boolean only_can_shoot{ "aimbot.can-shoot-only", "1" };
@@ -80,6 +81,12 @@ static settings::Int teammates{ "aimbot.target.teammates", "0" };
 static settings::Boolean fov_draw{ "aimbot.fov-circle.enable", "0" };
 static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
 #endif
+
+int PreviousX, PreviousY;
+int CurrentX, CurrentY;
+
+float last_mouse_check = 0;
+float stop_moving_time = 0;
 
 int GetSentry()
 {
@@ -325,6 +332,33 @@ static void CreateMove()
     }
 }
 
+bool MouseMoving()
+{
+	if ((g_GlobalVars->curtime - last_mouse_check) < 0.02)
+	{
+		auto previous = SDL_GetMouseState(&PreviousX, &PreviousY);
+	}
+	else
+	{
+		auto current = SDL_GetMouseState(&CurrentX, &CurrentY);
+		last_mouse_check = g_GlobalVars->curtime;
+	}
+
+	if (PreviousX != CurrentX || PreviousY != CurrentY)
+	{
+		stop_moving_time = g_GlobalVars->curtime + 0.5;
+		return true;
+	}
+	else if (g_GlobalVars->curtime <= stop_moving_time)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 // The first check to see if the player should aim in the first place
 bool ShouldAim()
 {
@@ -355,6 +389,9 @@ bool ShouldAim()
         if (IsPlayerInvisible(g_pLocalPlayer->entity))
             return false;
     }
+
+	if (assistance_only && !MouseMoving())
+		return false;
 
     IF_GAME(IsTF2())
     {

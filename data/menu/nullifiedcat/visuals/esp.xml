@@ -65,6 +65,7 @@
             <AutoVariable width="fill" target="esp.box.building-3d" label="3D Buildings"/>
             <AutoVariable width="fill" target="esp.box.corner-size" label="Corner Size"/>
             <AutoVariable width="fill" target="esp.bones" label="Bone ESP"/>
+            <AutoVariable width="fill" target="esp.bones.color" label="Bone Color"/>
             <AutoVariable width="fill" target="esp.sightlines" label="Sightlines"/>
             <AutoVariable width="fill" target="esp.expand" label="Expand"/>
             <LabeledObject width="fill" label="Text Position">

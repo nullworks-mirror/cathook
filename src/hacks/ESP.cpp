@@ -30,6 +30,7 @@ static settings::Int emoji_min_size{ "esp.emoji.min-size", "20" };
 
 static settings::Int healthbar{ "esp.health-bar", "3" };
 static settings::Boolean draw_bones{ "esp.bones", "false" };
+static settings::Boolean bones_color{ "esp.bones.color", "false" };
 static settings::Int sightlines{ "esp.sightlines", "0" };
 static settings::Int esp_text_position{ "esp.text-position", "0" };
 static settings::Int esp_expand{ "esp.expand", "0" };
@@ -150,7 +151,7 @@ struct bonelist_s
         setup = true;
     }
 
-    void DrawBoneList(const matrix3x4_t *bones, int *in, int size, const rgba_t &color, const Vector &displacement)
+    void _FASTCALL DrawBoneList(const matrix3x4_t *bones, int *in, int size, const rgba_t &color)
     {
         Vector last_screen;
         Vector current_screen;
@@ -158,7 +159,6 @@ struct bonelist_s
         {
             const auto &bone = bones[in[i]];
             Vector position(bone[0][3], bone[1][3], bone[2][3]);
-            position += displacement;
             if (!draw::WorldToScreen(position, current_screen))
             {
                 return;
@@ -171,7 +171,7 @@ struct bonelist_s
         }
     }
 
-    void Draw(CachedEntity *ent, const rgba_t &color)
+    void _FASTCALL Draw(CachedEntity *ent, const rgba_t &color)
     {
         const model_t *model = RAW_ENT(ent)->GetModel();
         if (not model)
@@ -189,15 +189,14 @@ struct bonelist_s
             return;
 
         // ent->m_bBonesSetup = false;
-        Vector displacement = {};
         const auto &bones   = ent->hitboxes.GetBones();
-        DrawBoneList(bones, leg_r, 3, color, displacement);
-        DrawBoneList(bones, leg_l, 3, color, displacement);
-        DrawBoneList(bones, bottom, 3, color, displacement);
-        DrawBoneList(bones, spine, 7, color, displacement);
-        DrawBoneList(bones, arm_r, 3, color, displacement);
-        DrawBoneList(bones, arm_l, 3, color, displacement);
-        DrawBoneList(bones, up, 3, color, displacement);
+        DrawBoneList(bones, leg_r, 3, color);
+        DrawBoneList(bones, leg_l, 3, color);
+        DrawBoneList(bones, bottom, 3, color);
+        DrawBoneList(bones, spine, 7, color);
+        DrawBoneList(bones, arm_r, 3, color);
+        DrawBoneList(bones, arm_l, 3, color);
+        DrawBoneList(bones, up, 3, color);
         /*for (int i = 0; i < hdr->numbones; i++) {
             const auto& bone = ent->GetBones()[i];
             Vector pos(bone[0][3], bone[1][3], bone[2][3]);
@@ -625,6 +624,24 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             break;
         }
     }
+
+	if (draw_bones)
+	{
+        if (vischeck && !ent->IsVisible())
+            transparent = true;
+		rgba_t bone_color = colors::EntityF(ent);
+        if (transparent)
+            bone_color = colors::Transparent(bone_color);
+
+		bonelist_s bl;
+		if (!CE_INVALID(ent) && ent->m_bAlivePlayer() && !RAW_ENT(ent)->IsDormant() && LOCAL_E->m_bAlivePlayer())
+		{
+			if (bones_color)
+				bl.Draw(ent, bone_color);
+			else
+				bl.Draw(ent, colors::white);
+		}
+	}
 
     // Top horizontal health bar
     if (*healthbar == 1)

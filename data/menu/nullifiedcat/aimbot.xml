@@ -83,6 +83,7 @@
             </LabeledObject>
             <AutoVariable width="fill" target="aimbot.target.max-range" label="Max Range"/>
             <AutoVariable width="fill" target="aimbot.multipoint" label="Multipoint"/>
+            <AutoVariable width="fill" target="aimbot.assistance.only" label="Assistance Only" tooltip="Aimbot is only active if your mouse has moved in the last half second."/>
             <AutoVariable width="fill" target="aimbot.lock-target" label="Lock Target" tooltip="Lock onto a target until they die or leave your fov."/>
             <AutoVariable width="fill" target="aimbot.target.ignore-non-rage" label="Rage Only"/>
             <AutoVariable width="fill" target="aimbot.target.stickybomb" label="Aim at Stickybombs"/>
@@ -124,7 +125,7 @@
             </LabeledObject>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Sandvich Aimbot" x="170" y="240">
+    <Box padding="12 6 6 6" width="content" height="content" name="Sandvich Aimbot" x="170" y="255">
         <List width="150">
             <AutoVariable width="fill" target="sandwichaim.enable" label="Enable Sandvich Aimbot"/>
             <AutoVariable width="fill" target="sandwichaim.aimkey" label="Aimkey"/>
