@@ -40,7 +40,9 @@ static settings::Boolean wait_for_charge{ "aimbot.wait-for-charge", "0" };
 
 static settings::Boolean silent{ "aimbot.silent", "1" };
 static settings::Boolean target_lock{ "aimbot.lock-target", "0" };
+#if ENABLE_VISUALS
 static settings::Boolean assistance_only{ "aimbot.assistance.only", "0" };
+#endif
 static settings::Int hitbox{ "aimbot.hitbox", "0" };
 static settings::Boolean zoomed_only{ "aimbot.zoomed-only", "1" };
 static settings::Boolean only_can_shoot{ "aimbot.can-shoot-only", "1" };
@@ -331,33 +333,34 @@ static void CreateMove()
         }
     }
 }
-
+#if ENABLE_VISUALS
 bool MouseMoving()
 {
-	if ((g_GlobalVars->curtime - last_mouse_check) < 0.02)
-	{
-		auto previous = SDL_GetMouseState(&PreviousX, &PreviousY);
-	}
-	else
-	{
-		auto current = SDL_GetMouseState(&CurrentX, &CurrentY);
-		last_mouse_check = g_GlobalVars->curtime;
-	}
+    if ((g_GlobalVars->curtime - last_mouse_check) < 0.02)
+    {
+        auto previous = SDL_GetMouseState(&PreviousX, &PreviousY);
+    }
+    else
+    {
+        auto current     = SDL_GetMouseState(&CurrentX, &CurrentY);
+        last_mouse_check = g_GlobalVars->curtime;
+    }
 
-	if (PreviousX != CurrentX || PreviousY != CurrentY)
-	{
-		stop_moving_time = g_GlobalVars->curtime + 0.5;
-		return true;
-	}
-	else if (g_GlobalVars->curtime <= stop_moving_time)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+    if (PreviousX != CurrentX || PreviousY != CurrentY)
+    {
+        stop_moving_time = g_GlobalVars->curtime + 0.5;
+        return true;
+    }
+    else if (g_GlobalVars->curtime <= stop_moving_time)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
+#endif
 
 // The first check to see if the player should aim in the first place
 bool ShouldAim()
@@ -389,9 +392,10 @@ bool ShouldAim()
         if (IsPlayerInvisible(g_pLocalPlayer->entity))
             return false;
     }
-
-	if (assistance_only && !MouseMoving())
-		return false;
+#if ENABLE_VISUALS
+    if (assistance_only && !MouseMoving())
+        return false;
+#endif
 
     IF_GAME(IsTF2())
     {
