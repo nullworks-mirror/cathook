@@ -4,6 +4,7 @@
  */
 
 #include "common.hpp"
+#include "crits.hpp"
 
 namespace hacks::tf2::nospread
 {
@@ -20,8 +21,18 @@ void CreateMove()
     // Credits to https://www.unknowncheats.me/forum/team-fortress-2-a/139094-projectile-nospread.html
 
     // Set up Random Seed
-    RandomSeed(MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF);
-    SharedRandomInt(MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF, "SelectWeightedSequence", 0, 0, 0);
+    int cmd_num = current_user_cmd->command_number;
+    // Crithack uses different things
+    if (criticals::isEnabled() && g_pLocalPlayer->weapon_mode != weapon_melee && !criticals::old_mode && criticals::crit_cmds.size())
+    {
+        int array_index = criticals::current_index;
+        if (array_index >= criticals::crit_cmds.size())
+            array_index = 0;
+        // Adjust for nospread
+        cmd_num = criticals::crit_cmds[array_index];
+    }
+    RandomSeed(MD5_PseudoRandom(cmd_num) & 0x7FFFFFFF);
+    SharedRandomInt(MD5_PseudoRandom(cmd_num) & 0x7FFFFFFF, "SelectWeightedSequence", 0, 0, 0);
     for (int i = 0; i < 6; ++i)
         RandomFloat();
 

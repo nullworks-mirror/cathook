@@ -80,6 +80,10 @@ struct offsets
     {
         return PlatformOffset(7, undefined, undefined);
     }
+    static constexpr uint32_t CreateMoveLate()
+    {
+        return PlatformOffset(21, undefined, undefined);
+    }
     static constexpr uint32_t CreateMove()
     {
         return PlatformOffset(22, undefined, undefined);
@@ -215,5 +219,9 @@ struct offsets
     static constexpr uint32_t GetMaxItemCount()
     {
         return PlatformOffset(10, undefined, undefined);
+    }
+    static constexpr uint32_t RunCommand()
+    {
+        return PlatformOffset(18, undefined, undefined);
     }
 };

@@ -1,3 +1,4 @@
+#pragma once
 #include "dt_common.h"
 #include "tier0/dbg.h"
 #include "dt_recv.h"

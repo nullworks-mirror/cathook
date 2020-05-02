@@ -103,6 +103,19 @@ rgba_t colors::EntityF(CachedEntity *ent)
     return result;
 }
 
+// Timescale determines how fast it changes
+rgba_t colors::Fade(rgba_t color_a, rgba_t color_b, float time, float timescale)
+{
+    // Determine how much percent should be used from color_a, also remap sin to be 0.0f -> 1.0f
+    float percentage_a = fabsf(sin(time * timescale));
+    rgba_t new_color;
+    new_color.r = (color_b.r - color_a.r) * percentage_a + color_a.r;
+    new_color.g = (color_b.g - color_a.g) * percentage_a + color_a.g;
+    new_color.b = (color_b.b - color_a.b) * percentage_a + color_a.b;
+    new_color.a = (color_b.a - color_a.a) * percentage_a + color_a.a;
+    return new_color;
+}
+
 rgba_t colors::RainbowCurrent()
 {
     return colors::FromHSL(fabs(sin(g_GlobalVars->curtime / 2.0f)) * 360.0f, 0.85f, 0.9f);

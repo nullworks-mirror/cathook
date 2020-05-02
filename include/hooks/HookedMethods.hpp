@@ -41,6 +41,7 @@ DECLARE_HOOKED_METHOD(LevelShutdown, void, void *);
 // ClientMode + 4
 DECLARE_HOOKED_METHOD(FireGameEvent, void, void *, IGameEvent *);
 // IBaseClient
+DECLARE_HOOKED_METHOD(CreateMoveLate, void, void *this_, int sequence_nr, float input_sample_time, bool arg3)
 DECLARE_HOOKED_METHOD(DispatchUserMessage, bool, void *, int, bf_read &);
 DECLARE_HOOKED_METHOD(IN_KeyEvent, int, void *, int, ButtonCode_t, const char *);
 DECLARE_HOOKED_METHOD(FrameStageNotify, void, void *, ClientFrameStage_t);
@@ -92,7 +93,8 @@ DECLARE_HOOKED_METHOD(GetMaxItemCount, int, int *);
 DECLARE_HOOKED_METHOD(EmitSound1, void, void *, IRecipientFilter &, int, int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 DECLARE_HOOKED_METHOD(EmitSound2, void, void *, IRecipientFilter &, int, int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 DECLARE_HOOKED_METHOD(EmitSound3, void, void *, IRecipientFilter &, int, int, int, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
-
+// g_IPrediction
+DECLARE_HOOKED_METHOD(RunCommand, void, IPrediction *, IClientEntity *, CUserCmd *, IMoveHelper *);
 } // namespace hooked_methods
 
 // TODO

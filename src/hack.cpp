@@ -185,6 +185,7 @@ void hack::Hook()
 
     hooks::client.Set(g_IBaseClient);
     hooks::client.HookMethod(HOOK_ARGS(DispatchUserMessage));
+    hooks::client.HookMethod(HOOK_ARGS(CreateMoveLate));
 #if ENABLE_VISUALS
     hooks::client.HookMethod(HOOK_ARGS(FrameStageNotify));
     hooks::client.HookMethod(HOOK_ARGS(IN_KeyEvent));
@@ -247,6 +248,10 @@ void hack::Hook()
     hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound2));
     hooks::soundclient.HookMethod(HOOK_ARGS(EmitSound3));
     hooks::soundclient.Apply();
+
+    hooks::prediction.Set(g_IPrediction);
+    hooks::prediction.HookMethod(HOOK_ARGS(RunCommand));
+    hooks::prediction.Apply();
 
 #if ENABLE_VISUALS
     sdl_hooks::applySdlHooks();

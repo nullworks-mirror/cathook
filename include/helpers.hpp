@@ -35,6 +35,8 @@ constexpr float RADPI = 57.295779513082f;
 #include <random>
 
 #include <core/sdk.hpp>
+#include "sdk/dt_recv_redef.h"
+#include "Ragdolls.hpp"
 
 #define TICK_INTERVAL (g_GlobalVars->interval_per_tick)
 #define TIME_TO_TICKS(dt) ((int) (0.5f + (float) (dt) / TICK_INTERVAL))
@@ -113,12 +115,17 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity);
 bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false, CachedEntity *self = LOCAL_E, unsigned int mask = MASK_SHOT_HULL);
 Vector GetForwardVector(Vector origin, Vector viewangles, float distance);
 Vector GetForwardVector(float distance);
+CachedEntity *getClosestEntity(Vector vec);
 bool IsSentryBuster(CachedEntity *ent);
 std::unique_ptr<char[]> strfmt(const char *fmt, ...);
 // TODO move that to weaponid.h
+int getWeaponByID(CachedEntity *player, int weaponid);
 bool HasWeapon(CachedEntity *ent, int wantedId);
 bool IsAmbassador(CachedEntity *ent);
 bool AmbassadorCanHeadshot();
+// Validate a UserCmd
+#define VERIFIED_CMD_SIZE 90
+void ValidateUserCmd(CUserCmd *cmd, int sequence_nr);
 
 // Convert a TF2 handle into an IDX -> ENTITY(IDX)
 int HandleToIDX(int handle);
@@ -192,6 +199,7 @@ void WalkTo(const Vector &vector);
 std::string GetLevelName();
 
 int SharedRandomInt(unsigned iseed, const char *sharedname, int iMinVal, int iMaxVal, int additionalSeed /*=0*/);
+bool HookNetvar(std::vector<std::string> path, ProxyFnHook &hook, RecvVarProxyFn function);
 
 void format_internal(std::stringstream &stream);
 template <typename T, typename... Targs> void format_internal(std::stringstream &stream, T value, Targs... args)

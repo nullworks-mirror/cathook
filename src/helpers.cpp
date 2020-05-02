@@ -10,6 +10,8 @@
 #include <sys/mman.h>
 #include "settings/Bool.hpp"
 #include "MiscTemporary.hpp"
+#include "PlayerTools.hpp"
+#include "Ragdolls.hpp"
 
 static settings::Boolean tcm{ "debug.tcm", "true" };
 
@@ -639,6 +641,27 @@ powerup_type GetPowerupOnPlayer(CachedEntity *player)
         return powerup_type::supernova;
     return powerup_type::not_powerup;
 }
+// A function to find a weapon by WeaponID
+int getWeaponByID(CachedEntity *player, int weaponid)
+{
+    // Invalid player
+    if (CE_BAD(player))
+        return -1;
+    int *hWeapons = &CE_INT(player, netvar.hMyWeapons);
+    // Go through the handle array and search for the item
+    for (int i = 0; hWeapons[i]; i++)
+    {
+        if (IDX_BAD(HandleToIDX(hWeapons[i])))
+            continue;
+        // Get the weapon
+        CachedEntity *weapon = ENTITY(HandleToIDX(hWeapons[i]));
+        // if weapon is what we are looking for, return true
+        if (CE_VALID(weapon) && re::C_TFWeaponBase::GetWeaponID(RAW_ENT(weapon)) == weaponid)
+            return weapon->m_IDX;
+    }
+    // Nothing found
+    return -1;
+}
 
 // A function to tell if a player is using a specific weapon
 bool HasWeapon(CachedEntity *ent, int wantedId)
@@ -646,7 +669,7 @@ bool HasWeapon(CachedEntity *ent, int wantedId)
     if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER)
         return false;
     // Grab the handle and store it into the var
-    int *hWeapons = (int *) ((unsigned) (RAW_ENT(ent)) + netvar.hMyWeapons);
+    int *hWeapons = &CE_INT(ent, netvar.hMyWeapons);
     if (!hWeapons)
         return false;
     // Go through the handle array and search for the item
@@ -657,11 +680,27 @@ bool HasWeapon(CachedEntity *ent, int wantedId)
         // Get the weapon
         CachedEntity *weapon = ENTITY(HandleToIDX(hWeapons[i]));
         // if weapon is what we are looking for, return true
-        if (weapon && CE_VALID(weapon) && CE_INT(weapon, netvar.iItemDefinitionIndex) == wantedId)
+        if (CE_VALID(weapon) && CE_INT(weapon, netvar.iItemDefinitionIndex) == wantedId)
             return true;
     }
     // We didnt find the weapon we needed, return false
     return false;
+}
+
+CachedEntity *getClosestEntity(Vector vec)
+{
+    float distance         = FLT_MAX;
+    CachedEntity *best_ent = nullptr;
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_VALID(ent) && ent->m_vecDormantOrigin() && ent->m_bAlivePlayer() && ent->m_bEnemy() && vec.DistTo(ent->m_vecOrigin()) < distance)
+        {
+            distance = vec.DistTo(*ent->m_vecDormantOrigin());
+            best_ent = ent;
+        }
+    }
+    return best_ent;
 }
 
 void VectorTransform(const float *in1, const matrix3x4_t &in2, float *out)
@@ -1575,6 +1614,15 @@ bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)
     return false;
 }
 
+void ValidateUserCmd(CUserCmd *cmd, int sequence_nr)
+{
+    CRC32_t crc = GetChecksum(cmd);
+    if (crc != GetVerifiedCmds(g_IInput)[sequence_nr % VERIFIED_CMD_SIZE].m_crc)
+    {
+        *cmd = GetVerifiedCmds(g_IInput)[sequence_nr % VERIFIED_CMD_SIZE].m_cmd;
+    }
+}
+
 // Used for getting class names
 CatCommand print_classnames("debug_print_classnames", "Lists classnames currently available in console", []() {
     // Create a tmp ent for the loop
@@ -1668,4 +1716,52 @@ int SharedRandomInt(unsigned iseed, const char *sharedname, int iMinVal, int iMa
     int seed = SeedFileLineHash(iseed, sharedname, additionalSeed);
     g_pUniformStream->SetSeed(seed);
     return g_pUniformStream->RandomInt(iMinVal, iMaxVal);
+}
+
+bool HookNetvar(std::vector<std::string> path, ProxyFnHook &hook, RecvVarProxyFn function)
+{
+    auto pClass = g_IBaseClient->GetAllClasses();
+    if (path.size() < 2)
+        return false;
+    while (pClass)
+    {
+        // Main class found
+        if (!strcmp(pClass->m_pRecvTable->m_pNetTableName, path[0].c_str()))
+        {
+            RecvTable *curr_table = pClass->m_pRecvTable;
+            for (size_t i = 1; i < path.size(); i++)
+            {
+                bool found = false;
+                for (int j = 0; j < curr_table->m_nProps; j++)
+                {
+                    RecvPropRedef *pProp = (RecvPropRedef *) &(curr_table->m_pProps[j]);
+                    if (!pProp)
+                        continue;
+                    if (!strcmp(path[i].c_str(), pProp->m_pVarName))
+                    {
+                        // Detect last iteration
+                        if (i == path.size() - 1)
+                        {
+                            hook.init(pProp);
+                            hook.setHook(function);
+                            return true;
+                        }
+                        curr_table = pProp->m_pDataTable;
+                        found      = true;
+                    }
+                }
+                // We tried searching the netvar but found nothing
+                if (!found)
+                {
+                    std::string full_path;
+                    for (auto &s : path)
+                        full_path += s + "";
+                    logging::Info("Hooking netvar with path \"%s\" failed. Required member not found.");
+                    return false;
+                }
+            }
+        }
+        pClass = pClass->m_pNext;
+    }
+    return false;
 }

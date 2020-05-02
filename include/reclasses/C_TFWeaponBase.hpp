@@ -37,6 +37,11 @@ public:
         static GetSpreadAngles_t GetSpreadAngles_fn = (GetSpreadAngles_t) signature;
         return GetSpreadAngles_fn(self);
     }
+    inline static int GetWeaponID(IClientEntity *self)
+    {
+        typedef int (*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(445, offsets::undefined, 445), 0)(self);
+    }
     inline static IClientEntity *GetOwnerViaInterface(IClientEntity *self)
     {
         typedef IClientEntity *(*fn_t)(IClientEntity *);
@@ -129,7 +134,7 @@ public:
         float mult2 = *(float *) (unk3);
 
         float multiplier = 0.5f;
-        int seed         = C_BaseEntity::m_nPredictionRandomSeed() ^ (owner->entindex() | self->entindex());
+        int seed         = C_BaseEntity::m_nPredictionRandomSeed() ^ (owner->entindex() | (self->entindex() << 8));
         RandomSeed(seed);
 
         bool result = true;

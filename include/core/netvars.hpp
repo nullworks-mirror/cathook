@@ -121,6 +121,7 @@ public:
 
     offset_t flChargeBeginTime;
     offset_t flLastFireTime;
+    offset_t flObservedCritChance;
     offset_t hThrower;
     offset_t hMyWeapons;
 
@@ -149,6 +150,7 @@ public:
     offset_t bChargeRelease;
 
     offset_t m_flStealthNoAttackExpire;
+    offset_t m_iCrits;
     offset_t m_flDuckTimer;
     offset_t m_bDucked;
     offset_t m_angEyeAngles;

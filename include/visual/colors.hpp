@@ -38,7 +38,8 @@ constexpr unsigned team(int team)
 
 struct rgba_t
 {
-    union {
+    union
+    {
         struct
         {
             float r, g, b, a;
@@ -206,6 +207,7 @@ constexpr rgba_t Health_dimgreen(int health, int max)
     return to_return;
 }
 rgba_t RainbowCurrent();
+rgba_t Fade(rgba_t color_a, rgba_t color_b, float time, float time_scale = 1.0f);
 rgba_t EntityF(CachedEntity *ent);
 } // namespace colors
 

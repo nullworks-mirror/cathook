@@ -7,50 +7,13 @@
 
 #include "common.hpp"
 #include "sdk/dt_recv_redef.h"
+#include "Ragdolls.hpp"
 
 namespace hacks::shared::ragdolls
 {
 
 static settings::Int mode{ "visual.ragdoll-mode", "0" };
 static settings::Boolean only_local{ "visual.ragdoll-only-local", "1" };
-
-/**
- * Simple helper class for swapping out a RecvVarProxyFn
- * and restoring it later on.
- * You MUST call init(...) before calling setHook() or restore()
- */
-class ProxyFnHook
-{
-public:
-    ProxyFnHook() : hooked(false)
-    {
-    }
-    void init(RecvPropRedef *prop)
-    {
-        this->prop = prop;
-    }
-    void setHook(RecvVarProxyFn new_fn)
-    {
-        if (!prop || hooked)
-            return;
-        hooked          = true;
-        original_fn     = prop->m_ProxyFn;
-        prop->m_ProxyFn = new_fn;
-    }
-    void restore()
-    {
-        if (prop && hooked)
-        {
-            prop->m_ProxyFn = original_fn;
-            hooked          = false;
-        }
-    }
-
-private:
-    bool hooked;
-    RecvPropRedef *prop;
-    RecvVarProxyFn original_fn;
-};
 
 // Ragdoll override style
 enum RagdollOverride_t
