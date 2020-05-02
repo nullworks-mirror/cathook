@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+BACKTRACEFILE=$(ls -t1 /tmp | grep "cathook-$USER-.*-segfault.log" |  head -n 1)
+CATHOOK="./build/bin/libcathook.so"
+echo "$BACKTRACEFILE"
+
+# Test whether debug information is available for a given binary
+has_debug_info() {
+    readelf -S "$1" | grep -q " \(.debug_info\)\|\(.gnu_debuglink\) "
+}
+
+cathookcrash=true
+while read p; do
+    lib="$(echo "$p" | cut -f 1)"
+    if [ "$lib" = "cathook" ]; then
+        cathookcrash=true
+    fi
+done < <(sed 1d "/tmp/$BACKTRACEFILE")
+
+if [ ! $cathookcrash ]; then
+    echo "Crash was not a cathook crash!"
+    exit 0
+fi
+
+echo "Cathook crash detected!"
+
+SYMBOLS=false
+has_debug_info "$CATHOOK"
+if [ "$?" -eq 0 ]; then
+   SYMBOLS=true
+fi
+
+if [ $SYMBOLS == false ]; then
+   echo "No debug symbols detected!"
+   proccount=$(grep -c '^processor' /proc/cpuinfo)
+   \cp ./build/CMakeCache.txt ./scripts/CMakeCacheBackup.txt
+   pushd build
+   cmake -Dsymbolize=true .. && cmake --build . --target cathook -- -j$proccount
+   popd
+fi
+
+SENTRY_DATA='{"release":"%s","exception":{"values":[{"type":"Crash report","value":"Crash on %s","stacktrace":{"frames":[%s]}}]}}'
+BREADCRUMBS=''
+
+append_crumb() {
+   if [ "$BREADCRUMBS" != "" ]; then
+       BREADCRUMBS=",$BREADCRUMBS"
+   fi
+   BREADCRUMBS="$1$BREADCRUMBS"
+}
+
+while read p; do
+    lib="$(echo "$p" | cut -f 1)"
+    addr="$(echo $p | cut -f 2 -d " ")"
+    if [ "$lib" = "cathook" ]; then
+        out=$(addr2line "$addr" -pCe $CATHOOK)
+        echo "cathook $out"
+        FILE="$(realpath --relative-base="${PWD}" "$(echo $out | cut -f 1 -d ":")")"
+        LINE="$(echo $out | cut -f 2 -d ":")"
+        PREFIX="filename"
+        IN_APP=true
+        if [ "${FILE:0:1}" = "/" ]; then
+            PREFIX="abs_path"
+            IN_APP=false
+        fi
+        append_crumb "$(printf '{"%s":"%s","lineno":%s,"package":"cathook","in_app":%s}' "$PREFIX" "$FILE" "$LINE" "$IN_APP")"
+    else
+        echo $p
+        ADDR=
+        append_crumb "$(printf '{"package":"%s","instruction_addr":"%s","in_app":false}' "$lib" "$addr")"
+    fi
+done <"/tmp/$BACKTRACEFILE"
+
+COMMIT="$(git log -1 --pretty="%h")"
+FULL_COMMIT="$(git rev-parse HEAD)"
+
+read -p "Do you want to submit this crash? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    curl -i --data "$(printf "$SENTRY_DATA" "$FULL_COMMIT" "$COMMIT" "$BREADCRUMBS")" \
+        -H 'Content-Type: application/json' \
+        "https://sentry.io/api/5220907/store/?sentry_version=7&sentry_key=44330b6a8c6b481c9fe02e261ca1d761&sentry_client=raven-bash/0.1"
+    echo
+    echo Thank you!
+fi
