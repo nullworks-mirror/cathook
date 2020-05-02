@@ -96,12 +96,13 @@ static float slow_change_dist_y{};
 static float slow_change_dist_p{};
 void DoSlowAim(Vector &input_angle)
 {
-
     auto viewangles = current_user_cmd->viewangles;
 
     // Yaw
     if (viewangles.y != input_angle.y)
     {
+        float flChargeYawCap = re::CTFPlayerShared::CalculateChargeCap(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E)));
+        flChargeYawCap *= 2.5f;
 
         // Check if input angle and user angle are on opposing sides of yaw so
         // we can correct for that
@@ -123,7 +124,7 @@ void DoSlowAim(Vector &input_angle)
         // opposing sides making the distance spike, so just cheap out and reuse
         // our last one.
         if (!slow_opposing)
-            slow_change_dist_y = std::abs(viewangles.y - input_angle.y) / 5;
+            slow_change_dist_y = fminf(std::abs(viewangles.y - input_angle.y), flChargeYawCap);
 
         // Move in the direction of the input angle
         if (slow_dir)
@@ -511,9 +512,45 @@ static void CreateMove()
     BuildingAimbot();
 }
 
+// Fix client side limit being applied weirdly, Note that most of this is taken from the source leak directly
+float CAM_CapYaw_Hook(IInput *, float fVal)
+{
+    if (CE_INVALID(LOCAL_E))
+        return fVal;
+
+    if (HasCondition<TFCond_Charging>(LOCAL_E))
+    {
+        float flChargeYawCap = re::CTFPlayerShared::CalculateChargeCap(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E)));
+
+        // Our only change
+        flChargeYawCap *= 2.5f;
+
+        if (fVal > flChargeYawCap)
+            return flChargeYawCap;
+        else if (fVal < -flChargeYawCap)
+            return -flChargeYawCap;
+    }
+
+    return fVal;
+}
+
+#define foffset(p, i) ((unsigned char *) &p)[i]
 static InitRoutine init([]() {
     EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::late);
-    static BytePatch patch(gSignatures.GetClientSignature, "75 16 F3 0F 10 45", 0x0, { 0x90, 0x90 });
+
+    static auto signature = gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 E8 ? ? ? ? 85 C0 74 ? 8D 98 ? ? ? ? C7 44 24 ? 11 00 00 00");
+    static auto rel_addr  = ((uintptr_t) CAM_CapYaw_Hook - ((uintptr_t) signature)) - 5;
+
+    // Length of function
+    int function_length = 0x7F;
+
+    // Detour (JMP Hook)
+    static std::vector<unsigned char> patch_arr{ 0xE9, foffset(rel_addr, 0), foffset(rel_addr, 1), foffset(rel_addr, 2), foffset(rel_addr, 3) };
+    // Nop the rest
+    for (int i = patch_arr.size(); i < function_length; i++)
+        patch_arr.push_back(0x90);
+    static BytePatch patch(signature, patch_arr);
+
     patch.Patch();
 });
 } // namespace hacks::tf2::misc_aimbot

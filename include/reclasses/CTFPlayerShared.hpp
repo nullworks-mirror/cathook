@@ -33,5 +33,13 @@ public:
         static IsCritBoosted_t IsCritBoosted_fn = (IsCritBoosted_t) signature;
         return IsCritBoosted_fn(self);
     }
+    // Get max charge turning (yaw) to prevent glitchy movement
+    inline static float CalculateChargeCap(CTFPlayerShared *self)
+    {
+        static auto signature = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C C7 45 ? 00 00 00 00 8B 45 ? C7 45 ? 00 00 00 00 8B 98");
+        typedef float (*CalculateChargeCap_t)(re::CTFPlayerShared *);
+        static CalculateChargeCap_t CalculateChargeCap_fn = CalculateChargeCap_t(signature);
+        return CalculateChargeCap_fn(self);
+    }
 };
 } // namespace re
