@@ -78,6 +78,8 @@ void Warp()
     // Has to be from the cvar
     m_nOutSequenceNr += GetWarpAmount();
     warp_amount -= GetWarpAmount();
+    // Don't attack while warping
+    current_user_cmd->buttons &= ~IN_ATTACK;
     if (warp_amount <= 0)
     {
         was_hurt    = false;
