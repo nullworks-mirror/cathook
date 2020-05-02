@@ -129,41 +129,15 @@ void critical_error_handler(int signum)
     Dl_info info;
     if (!dladdr(reinterpret_cast<void *>(hack::ExecuteCommand), &info))
         return;
-    unsigned int baseaddr = (unsigned int) info.dli_fbase - 1;
 
     for (auto i : st::stacktrace())
     {
-        unsigned int offset = (unsigned int) (i.address()) - baseaddr;
         Dl_info info2;
-        out << (void *) offset;
-        if (!dladdr(i.address(), &info2))
+        if (dladdr(i.address(), &info2))
         {
-            out << std::endl;
-            continue;
+            unsigned int offset = (unsigned int) i.address() - (unsigned int) info2.dli_fbase;
+            out << (!strcmp(info2.dli_fname, info.dli_fname) ? "cathook" : info2.dli_fname) << '\t' << (void *) offset << std::endl;
         }
-        auto file_name = getFileName(info2.dli_fname);
-        std::string path;
-        if (sharedobj::LocateSharedObject(file_name, path))
-        {
-            link_map *lmap = nullptr;
-            if ((lmap = static_cast<link_map *>(dlopen(path.c_str(), RTLD_NOLOAD))))
-                out << " " << (void *) ((unsigned int) i.address() - lmap->l_addr - 1);
-        }
-        out << " " << info2.dli_fname << ": ";
-        if (info2.dli_sname)
-        {
-            int status     = -4;
-            char *realname = abi::__cxa_demangle(info2.dli_sname, nullptr, nullptr, &status);
-            if (status == 0)
-            {
-                out << realname << std::endl;
-                free(realname);
-            }
-            else
-                out << info2.dli_sname << std::endl;
-        }
-        else
-            out << "No Symbol" << std ::endl;
     }
 
     out.close();

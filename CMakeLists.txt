@@ -167,7 +167,11 @@ configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
 set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -fno-gnu-unique -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-rdynamic -ggdb -Og")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s -fvisibility=hidden -fvisibility-inlines-hidden")
+if (symbolize)
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ggdb -fvisibility=hidden -fvisibility-inlines-hidden")
+else()
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s -fvisibility=hidden -fvisibility-inlines-hidden")
+endif()
 
 target_compile_definitions(cathook PRIVATE
         _GLIBCXX_USE_CXX11_ABI=0
@@ -227,8 +231,13 @@ elseif(EnablePrecompiledHeaders AND NativePrecompiledHeaders)
     target_precompile_headers(cathook PRIVATE "${CMAKE_SOURCE_DIR}/include/common.hpp")
 endif()
 
-add_custom_command(TARGET cathook POST_BUILD
+if (NOT symbolize)
+    add_custom_command(TARGET cathook POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook>")
+else()
+    message("Symbolized build")
+    unset(symbolize CACHE)
+endif()
 if (EnableCotire)
     add_custom_command(TARGET cathook_unity POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cathook_unity> "${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:cathook_unity>")
