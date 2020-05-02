@@ -96,7 +96,7 @@ append_crumb() {
 
 while read p; do
     lib="$(echo "$p" | cut -f 1)"
-    addr="$(echo $p | cut -f 2 -d " ")"
+    addr="$(echo "$p" | cut -f 2)"
     if [ "$lib" = "cathook" ]; then
         while read function; do
             read addrandline
@@ -116,8 +116,7 @@ while read p; do
         done < <(addr2line "$addr" -iCfe $CATHOOK)
     else
         echo $p
-        ADDR=
-        append_crumb "$(printf '{"package":"%s","instruction_addr":"%s","in_app":false}' "$lib" "$addr")"
+        append_crumb "$(printf '{"package":"%s","instruction_addr":"%s","in_app":false,"function":"%s"}' "$lib" "$addr" "$addr")"
     fi
 done <"/tmp/$BACKTRACEFILE"
 
