@@ -30,6 +30,7 @@ public:
         // TODO signature
         return false;
     }
+    // Get max charge turning (yaw) to prevent glitchy movement
     inline static float CalculateChargeCap(CTFPlayerShared *self)
     {
         static auto signature = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C C7 45 ? 00 00 00 00 8B 45 ? C7 45 ? 00 00 00 00 8B 98");
