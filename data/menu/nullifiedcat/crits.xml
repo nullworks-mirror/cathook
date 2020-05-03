@@ -12,7 +12,6 @@
             <AutoVariable width="fill" target="crit.bar-x" label="Bar x Position"/>
             <AutoVariable width="fill" target="crit.bar-y" label="Bar y Position"/>
             <AutoVariable width="fill" target="crit.bar-size" label="Bar Size"/>
-            <AutoVariable width="fill" target="crit.old-mode" label="Old mode" tooltip="Use the old method for crits"/>
         </List>
     </Box>
 </Tab>
