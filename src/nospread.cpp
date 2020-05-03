@@ -23,7 +23,7 @@ void CreateMove()
     // Set up Random Seed
     int cmd_num = current_user_cmd->command_number;
     // Crithack uses different things
-    if (criticals::isEnabled() && g_pLocalPlayer->weapon_mode != weapon_melee && !criticals::old_mode && criticals::crit_cmds.size())
+    if (criticals::isEnabled() && g_pLocalPlayer->weapon_mode != weapon_melee && criticals::crit_cmds.size())
     {
         int array_index = criticals::current_index;
         if (array_index >= criticals::crit_cmds.size())

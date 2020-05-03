@@ -8,7 +8,6 @@ extern settings::Boolean melee;
 extern std::vector<int> crit_cmds;
 extern int current_index;
 extern bool isEnabled();
-extern settings::Boolean old_mode;
 void fixBucket(IClientEntity *weapon, CUserCmd *cmd);
 
 class weapon_info

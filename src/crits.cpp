@@ -11,7 +11,6 @@ settings::Boolean enabled{ "crit.enabled", "false" };
 settings::Boolean melee{ "crit.melee", "false" };
 static settings::Button crit_key{ "crit.key", "<null>" };
 static settings::Boolean force_no_crit{ "crit.anti-crit", "true" };
-settings::Boolean old_mode{ "crit.old-mode", "false" };
 
 static settings::Boolean draw{ "crit.info", "false" };
 static settings::Boolean draw_meter{ "crit.draw-meter", "false" };
@@ -317,7 +316,7 @@ void force_crit()
     if (force_ticks && LOCAL_W->m_iClassID() != CL_CLASS(CTFPipebombLauncher))
         force_ticks = 0;
     // New mode stuff (well when not using melee nor using pipe launcher)
-    if (!old_mode && g_pLocalPlayer->weapon_mode != weapon_melee && LOCAL_W->m_iClassID() != CL_CLASS(CTFPipebombLauncher))
+    if (g_pLocalPlayer->weapon_mode != weapon_melee && LOCAL_W->m_iClassID() != CL_CLASS(CTFPipebombLauncher))
     {
         // Force to not crit
         if (crit_key && !crit_key.isKeyDown())
@@ -337,75 +336,66 @@ void force_crit()
             current_index++;
         }
     }
-    // Old mode stuff (and melee/sticky launcher)
-    else
+    // We can just force to nearest crit for melee, and sticky launchers apparently
+    else if ((g_pLocalPlayer->weapon_mode == weapon_melee && melee) || (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher) && enabled))
     {
-        // get the next tick we can crit at
-
-        // We can just force to nearest crit for melee, and sticky launchers apparently
-        if ((g_pLocalPlayer->weapon_mode == weapon_melee && melee) || (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher) && enabled))
+        int next_crit = nextCritTick();
+        if (next_crit != -1)
         {
-            int next_crit = nextCritTick();
-            if (next_crit != -1)
+            if (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
             {
-                if (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher))
+                if (!force_ticks && isEnabled())
+                    force_ticks = 3;
+                if (force_ticks)
+                    force_ticks--;
+                // Prevent crits
+                if (!prevent_ticks && !force_ticks && preventCrits())
+                    prevent_ticks = 3;
+                if (prevent_ticks)
                 {
-                    if (!force_ticks && isEnabled())
-                        force_ticks = 3;
-                    if (force_ticks)
-                        force_ticks--;
-                    // Prevent crits
-                    if (!prevent_ticks && !force_ticks && preventCrits())
-                        prevent_ticks = 3;
-                    if (prevent_ticks)
+                    prevent_crit();
+                    prevent_ticks--;
+                    return;
+                }
+            }
+            // Code for handling when to not crit with melee weapons
+            else if (force_no_crit)
+            {
+                if (hacks::shared::backtrack::isBacktrackEnabled)
+                {
+                    int target = hacks::shared::backtrack::iBestTarget;
+                    // Valid backtrack target
+                    if (target > 1)
+                    {
+                        // Closest tick for melee
+                        int besttick = hacks::shared::backtrack::BestTick;
+                        // Out of range, don't crit
+                        if (hacks::shared::backtrack::headPositions[target][besttick].entorigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
+                        {
+                            prevent_crit();
+                            return;
+                        }
+                    }
+                    else
                     {
                         prevent_crit();
-                        prevent_ticks--;
                         return;
                     }
                 }
-                // Code for handling when to not crit with melee weapons
-                else if (force_no_crit)
+                // Normal check, get closest entity and check distance
+                else
                 {
-                    if (hacks::shared::backtrack::isBacktrackEnabled)
+                    auto ent = getClosestEntity(LOCAL_E->m_vecOrigin());
+                    if (!ent || ent->m_flDistance() >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
                     {
-                        int target = hacks::shared::backtrack::iBestTarget;
-                        // Valid backtrack target
-                        if (target > 1)
-                        {
-                            // Closest tick for melee
-                            int besttick = hacks::shared::backtrack::BestTick;
-                            // Out of range, don't crit
-                            if (hacks::shared::backtrack::headPositions[target][besttick].entorigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
-                            {
-                                prevent_crit();
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            prevent_crit();
-                            return;
-                        }
-                    }
-                    // Normal check, get closest entity and check distance
-                    else
-                    {
-                        auto ent = getClosestEntity(LOCAL_E->m_vecOrigin());
-                        if (!ent || ent->m_flDistance() >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
-                        {
-                            prevent_crit();
-                            return;
-                        }
+                        prevent_crit();
+                        return;
                     }
                 }
-                current_late_user_cmd->command_number = next_crit;
-                current_late_user_cmd->random_seed    = MD5_PseudoRandom(next_crit) & 0x7FFFFFFF;
             }
+            current_late_user_cmd->command_number = next_crit;
+            current_late_user_cmd->random_seed    = MD5_PseudoRandom(next_crit) & 0x7FFFFFFF;
         }
-        // For everything else, wait for the crit cmd
-        else if (current_late_user_cmd->command_number != nextCritTick())
-            current_late_user_cmd->buttons &= ~IN_ATTACK;
     }
 }
 
@@ -746,14 +736,6 @@ void Draw()
             if (can_crit && (crit_mult_info.first <= crit_mult_info.second || g_pLocalPlayer->weapon_mode != weapon_melee))
                 color = colors::green;
             AddCritString("Crit Bucket: " + std::to_string(bucket), color);
-
-            // Time until crit (for old mode)
-            if (old_mode && can_crit && last_crit_tick != -1)
-            {
-                // Ticks / Ticks per second
-                float time = (last_crit_tick - current_late_user_cmd->command_number) * g_GlobalVars->interval_per_tick;
-                AddCritString("Crit in " + std::to_string(time) + "s", colors::orange);
-            }
         }
 
         // Draw Bar
