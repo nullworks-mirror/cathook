@@ -185,7 +185,6 @@ void hack::Hook()
 
     hooks::client.Set(g_IBaseClient);
     hooks::client.HookMethod(HOOK_ARGS(DispatchUserMessage));
-    hooks::client.HookMethod(HOOK_ARGS(CreateMoveLate));
 #if ENABLE_VISUALS
     hooks::client.HookMethod(HOOK_ARGS(FrameStageNotify));
     hooks::client.HookMethod(HOOK_ARGS(IN_KeyEvent));
@@ -215,6 +214,7 @@ void hack::Hook()
 
     hooks::input.Set(g_IInput);
     hooks::input.HookMethod(HOOK_ARGS(GetUserCmd));
+    hooks::input.HookMethod(HOOK_ARGS(CreateMoveEarly));
     hooks::input.Apply();
 
 #if ENABLE_VISUALS || ENABLE_TEXTMODE

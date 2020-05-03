@@ -189,7 +189,7 @@ struct bonelist_s
             return;
 
         // ent->m_bBonesSetup = false;
-        const auto &bones   = ent->hitboxes.GetBones();
+        const auto &bones = ent->hitboxes.GetBones();
         DrawBoneList(bones, leg_r, 3, color);
         DrawBoneList(bones, leg_l, 3, color);
         DrawBoneList(bones, bottom, 3, color);
@@ -295,8 +295,7 @@ static void cm()
 
 static draw::Texture atlas{ paths::getDataPath("/textures/atlas.png") };
 static draw::Texture idspec{ paths::getDataPath("/textures/idspec.png") };
-    
-    
+
 Timer retry{};
 void Init()
 {
@@ -625,23 +624,23 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
         }
     }
 
-	if (draw_bones)
-	{
+    if (draw_bones)
+    {
         if (vischeck && !ent->IsVisible())
             transparent = true;
-		rgba_t bone_color = colors::EntityF(ent);
+        rgba_t bone_color = colors::EntityF(ent);
         if (transparent)
             bone_color = colors::Transparent(bone_color);
 
-		bonelist_s bl;
-		if (!CE_INVALID(ent) && ent->m_bAlivePlayer() && !RAW_ENT(ent)->IsDormant() && LOCAL_E->m_bAlivePlayer())
-		{
-			if (bones_color)
-				bl.Draw(ent, bone_color);
-			else
-				bl.Draw(ent, colors::white);
-		}
-	}
+        bonelist_s bl;
+        if (!CE_INVALID(ent) && ent->m_bAlivePlayer() && !RAW_ENT(ent)->IsDormant() && LOCAL_E->m_bAlivePlayer())
+        {
+            if (bones_color)
+                bl.Draw(ent, bone_color);
+            else
+                bl.Draw(ent, colors::white);
+        }
+    }
 
     // Top horizontal health bar
     if (*healthbar == 1)
@@ -1372,7 +1371,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             if (IDX_GOOD(widx))
             {
                 CachedEntity *weapon = ENTITY(widx);
-                if (CE_VALID(weapon))
+                if (CE_VALID(weapon) && re::C_BaseCombatWeapon::IsBaseCombatWeapon(RAW_ENT(weapon)))
                 {
                     if (show_weapon)
                     {

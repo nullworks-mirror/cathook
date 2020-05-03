@@ -420,14 +420,15 @@ void WriteCmd(IInput *input, CUserCmd *cmd, int sequence_nr)
     GetCmds(input)[sequence_nr % VERIFIED_CMD_SIZE]               = *cmd;
 }
 
-DEFINE_HOOKED_METHOD(CreateMoveLate, void, void *this_, int sequence_nr, float input_sample_time, bool arg3)
+// This gets called before the other CreateMove, but since we run original first in here all the stuff gets called after normal CreateMove is done
+DEFINE_HOOKED_METHOD(CreateMoveEarly, void, IInput *this_, int sequence_nr, float input_sample_time, bool arg3)
 {
-    // Call original function, includes Early CreateMove
-    original::CreateMoveLate(this_, sequence_nr, input_sample_time, arg3);
+    // Call original function, includes Normal CreateMove
+    original::CreateMoveEarly(this_, sequence_nr, input_sample_time, arg3);
 
     CUserCmd *cmd = nullptr;
-    if (g_IInput && GetCmds(g_IInput) && sequence_nr > 0)
-        cmd = g_IInput->GetUserCmd(sequence_nr);
+    if (this_ && GetCmds(this_) && sequence_nr > 0)
+        cmd = this_->GetUserCmd(sequence_nr);
 
     if (!cmd)
         return;
@@ -436,22 +437,22 @@ DEFINE_HOOKED_METHOD(CreateMoveLate, void, void *this_, int sequence_nr, float i
 
     if (!isHackActive())
     {
-        WriteCmd(g_IInput, current_late_user_cmd, sequence_nr);
+        WriteCmd(this_, current_late_user_cmd, sequence_nr);
         return;
     }
 
     if (!g_IEngine->IsInGame())
     {
-        WriteCmd(g_IInput, current_late_user_cmd, sequence_nr);
+        WriteCmd(this_, current_late_user_cmd, sequence_nr);
         return;
     }
 
-    PROF_SECTION(CreateMoveLate);
+    PROF_SECTION(CreateMoveEarly);
 
     // Run EC
-    EC::run(EC::CreateMoveLate);
+    EC::run(EC::CreateMoveEarly);
 
     // Write the usercmd
-    WriteCmd(g_IInput, current_late_user_cmd, sequence_nr);
+    WriteCmd(this_, current_late_user_cmd, sequence_nr);
 }
 } // namespace hooked_methods
