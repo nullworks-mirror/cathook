@@ -435,6 +435,7 @@ void force_crit()
             current_late_user_cmd->random_seed    = MD5_PseudoRandom(next_crit) & 0x7FFFFFFF;
         }
     }
+    force_crit_this_tick = false;
 }
 
 // Update the magic crit commands numbers
