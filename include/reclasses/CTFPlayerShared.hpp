@@ -41,5 +41,10 @@ public:
         static CalculateChargeCap_t CalculateChargeCap_fn = CalculateChargeCap_t(signature);
         return CalculateChargeCap_fn(self);
     }
+    // Get Charge meter (for demoknight things)
+    inline static float GetChargeMeter(CTFPlayerShared *self)
+    {
+        return *(float *) (((uintptr_t) self) + 0x204);
+    }
 };
 } // namespace re

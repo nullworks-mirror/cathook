@@ -8,6 +8,7 @@
 #include "settings/Key.hpp"
 #include "PlayerTools.hpp"
 #include "hacks/Trigger.hpp"
+#include "MiscAimbot.hpp"
 
 namespace hacks::tf2::misc_aimbot
 {
@@ -19,7 +20,7 @@ float sandwich_speed = 350.0f;
 float grav           = 0.25f;
 int prevent          = -1;
 
-std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck, bool fov_check)
+std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck, bool fov_check, float range)
 {
     CachedEntity *bestent = nullptr;
     float bestscr         = FLT_MAX;
@@ -47,8 +48,16 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
                 continue;
             float scr = ent->m_flDistance();
+            // Demoknight
             if (fov_check)
+            {
+                if (scr >= range)
+                    continue;
                 scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin());
+                // Don't turn too harshly
+                if (scr >= 140.0f)
+                    continue;
+            }
             if (g_pPlayerResource->GetClass(ent) == tf_medic)
                 scr *= 0.5f;
             if (scr < bestscr)
@@ -82,8 +91,16 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
         if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
             continue;
         float scr = ent->m_flDistance();
+        // Demoknight
         if (fov_check)
+        {
+            if (scr >= range)
+                continue;
             scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin());
+            // Don't turn too harshly
+            if (scr >= 140.0f)
+                continue;
+        }
         if (g_pPlayerResource->GetClass(ent) == tf_medic)
             scr *= 0.5f;
         if (scr < bestscr)

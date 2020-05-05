@@ -9,6 +9,7 @@
 #if ENABLE_VISUALS
 #include "drawing.hpp"
 #endif
+#include "MiscAimbot.hpp"
 
 namespace hacks::tf2::warp
 {
@@ -157,6 +158,8 @@ void CreateMove()
 {
     if (!enabled)
         return;
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        return;
     warp_override = 0;
     if (!warp_key.isKeyDown() && !was_hurt)
     {
@@ -221,11 +224,33 @@ void CreateMove()
         {
         case ATTACK:
         {
-            // Force a crit
-            criticals::force_crit_this_tick = true;
-            current_user_cmd->buttons |= IN_ATTACK;
-            current_state = CHARGE;
-            should_warp   = false;
+            // Get charge meter (0 - 100 range)
+            float charge_meter = re::CTFPlayerShared::GetChargeMeter(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E)));
+
+            // If our charge meter is full
+            if (charge_meter == 100.0f)
+            {
+                // Shield is 750 HU/s with no acceleration at all, convert to HU/tick
+                float range = 750.0f * g_GlobalVars->interval_per_tick;
+                // Then multiply by our warp ticks to get actual range
+                range *= warp_amount;
+                // Now add a bit of melee range aswell
+                range += 100.0f;
+
+                // Find an entity meeting the shield aim criteria in range
+                std::pair<CachedEntity *, Vector> result = hacks::tf2::misc_aimbot::FindBestEnt(false, false, true, true, range);
+
+                // We found a good entity within range
+                if (result.first)
+                {
+                    // Force a crit
+                    criticals::force_crit_this_tick = true;
+                    current_user_cmd->buttons |= IN_ATTACK;
+                    current_state = CHARGE;
+                }
+            }
+            should_warp = false;
+
             break;
         }
         case CHARGE:
