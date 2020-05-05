@@ -19,7 +19,7 @@ float sandwich_speed = 350.0f;
 float grav           = 0.25f;
 int prevent          = -1;
 
-std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck)
+std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck, bool fov_check)
 {
     CachedEntity *bestent = nullptr;
     float bestscr         = FLT_MAX;
@@ -47,8 +47,10 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
                 continue;
             float scr = ent->m_flDistance();
+            if (fov_check)
+                scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin());
             if (g_pPlayerResource->GetClass(ent) == tf_medic)
-                scr *= 0.1f;
+                scr *= 0.5f;
             if (scr < bestscr)
             {
                 bestent   = ent;
@@ -80,8 +82,10 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
         if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
             continue;
         float scr = ent->m_flDistance();
+        if (fov_check)
+            scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin());
         if (g_pPlayerResource->GetClass(ent) == tf_medic)
-            scr *= 0.1f;
+            scr *= 0.5f;
         if (scr < bestscr)
         {
             bestent   = ent;
@@ -177,7 +181,7 @@ static void SandwichAim()
     Vector Predict;
     CachedEntity *bestent = nullptr;
     std::pair<CachedEntity *, Vector> result{};
-    result  = FindBestEnt(true, true, false);
+    result  = FindBestEnt(true, true, false, false);
     bestent = result.first;
     Predict = result.second;
     if (bestent)
@@ -209,7 +213,7 @@ static void ChargeAimbot()
     if (!HasCondition<TFCond_Charging>(LOCAL_E))
         return;
     std::pair<CachedEntity *, Vector> result{};
-    result                = FindBestEnt(false, false, true);
+    result                = FindBestEnt(false, false, true, true);
     CachedEntity *bestent = result.first;
     if (bestent && result.second.IsValid())
     {

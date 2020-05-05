@@ -221,6 +221,8 @@ void CreateMove()
         {
         case ATTACK:
         {
+            // Force a crit
+            criticals::force_crit_this_tick = true;
             current_user_cmd->buttons |= IN_ATTACK;
             current_state = CHARGE;
             should_warp   = false;

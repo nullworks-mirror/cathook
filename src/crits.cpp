@@ -46,10 +46,10 @@ static bool isRapidFire(IClientEntity *wep)
     return ret || wep->GetClientClass()->m_ClassID == CL_CLASS(CTFMinigun);
 }
 
-static float getBucketCap()
+static int getBucketCap()
 {
     static ConVar *tf_weapon_criticals_bucket_cap = g_ICvar->FindVar("tf_weapon_criticals_bucket_cap");
-    return tf_weapon_criticals_bucket_cap->GetFloat();
+    return tf_weapon_criticals_bucket_cap->GetInt();
 }
 
 static float getWithdrawMult(IClientEntity *wep)
@@ -64,7 +64,7 @@ static float getWithdrawMult(IClientEntity *wep)
     if (g_pLocalPlayer->weapon_mode != weapon_melee)
         flMultiply = RemapValClamped(((float) call_count / (float) crit_checks), 0.1f, 1.f, 1.f, 3.f);
 
-    float flToRemove = flMultiply * 3.0;
+    float flToRemove = flMultiply * 3.0f;
     return flToRemove;
 }
 
@@ -84,10 +84,10 @@ static bool isAllowedToWithdrawFromBucket(IClientEntity *wep, float flDamage, bo
     if (isRapidFire(wep))
         flToRemove = taken_per_crit * getWithdrawMult(wep);
     // Can remove
-    if (flToRemove <= info.crit_bucket)
-        return true;
+    if (flToRemove > info.crit_bucket)
+        return false;
 
-    return false;
+    return true;
 }
 
 // This simulates a shot in all the important aspects, like increating crit attempts, bucket, etc
@@ -245,8 +245,9 @@ static bool randomCritEnabled()
 }
 
 // These are used when we want to force a crit regardless of states (e.g. for delayed weapons like sticky launchers)
-static int force_ticks   = 0;
-static int prevent_ticks = 0;
+static int force_ticks    = 0;
+static int prevent_ticks  = 0;
+bool force_crit_this_tick = false;
 
 // Is the hack enabled?
 bool isEnabled()
@@ -306,7 +307,7 @@ bool prevent_crit()
 void force_crit()
 {
     // Crithack should not run
-    if (!isEnabled() && !preventCrits())
+    if (!isEnabled() && !force_crit_this_tick && !preventCrits())
         return;
     // Can't crit
     if (!added_per_shot)
@@ -319,7 +320,7 @@ void force_crit()
     if (g_pLocalPlayer->weapon_mode != weapon_melee && LOCAL_W->m_iClassID() != CL_CLASS(CTFPipebombLauncher))
     {
         // Force to not crit
-        if (crit_key && !crit_key.isKeyDown())
+        if (!force_crit_this_tick && crit_key && !crit_key.isKeyDown())
         {
             // Prevent Crit
             prevent_crit();
@@ -337,7 +338,7 @@ void force_crit()
         }
     }
     // We can just force to nearest crit for melee, and sticky launchers apparently
-    else if ((g_pLocalPlayer->weapon_mode == weapon_melee && melee) || (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher) && enabled))
+    else if ((g_pLocalPlayer->weapon_mode == weapon_melee && (melee || force_crit_this_tick)) || (LOCAL_W->m_iClassID() == CL_CLASS(CTFPipebombLauncher) && (force_crit_this_tick || enabled)))
     {
         int next_crit = nextCritTick();
         if (next_crit != -1)
@@ -349,7 +350,7 @@ void force_crit()
                 if (force_ticks)
                     force_ticks--;
                 // Prevent crits
-                if (!prevent_ticks && !force_ticks && preventCrits())
+                if (!force_crit_this_tick && !prevent_ticks && !force_ticks && preventCrits())
                     prevent_ticks = 3;
                 if (prevent_ticks)
                 {
@@ -359,7 +360,7 @@ void force_crit()
                 }
             }
             // Code for handling when to not crit with melee weapons
-            else if (force_no_crit)
+            else if (force_no_crit && !force_crit_this_tick)
             {
                 if (hacks::shared::backtrack::isBacktrackEnabled)
                 {
@@ -397,6 +398,7 @@ void force_crit()
             current_late_user_cmd->random_seed    = MD5_PseudoRandom(next_crit) & 0x7FFFFFFF;
         }
     }
+    force_crit_this_tick = false;
 }
 
 // Update the magic crit commands numbers
@@ -492,7 +494,7 @@ static void updateCmds()
 
                         // Never try to drain more than cap
                         if (taken_per_crit * 3.0f > getBucketCap())
-                            taken_per_crit = getBucketCap() / 3.0f;
+                            taken_per_crit = (float) getBucketCap() / 3.0f;
                     }
                 }
                 // We found a cmd, store it
@@ -580,9 +582,9 @@ void CreateMove()
 
     // Update magic crit commands
     updateCmds();
-    if (!enabled && !melee)
+    if (!enabled && !force_crit_this_tick && !melee)
         return;
-    if (!force_ticks && (!(melee && g_pLocalPlayer->weapon_mode == weapon_melee) && !force_no_crit && crit_key && !crit_key.isKeyDown()))
+    if (!force_ticks && !force_crit_this_tick && (!(melee && g_pLocalPlayer->weapon_mode == weapon_melee) && !force_no_crit && crit_key && !crit_key.isKeyDown()))
         return;
     if (!current_late_user_cmd->command_number)
         return;

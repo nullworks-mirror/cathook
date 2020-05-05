@@ -8,6 +8,7 @@ extern settings::Boolean melee;
 extern std::vector<int> crit_cmds;
 extern int current_index;
 extern bool isEnabled();
+extern bool force_crit_this_tick;
 void fixBucket(IClientEntity *weapon, CUserCmd *cmd);
 
 class weapon_info
