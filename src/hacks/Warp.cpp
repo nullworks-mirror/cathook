@@ -232,13 +232,13 @@ void CreateMove()
             {
                 // Shield is 750 HU/s with no acceleration at all, convert to HU/tick
                 float range = 750.0f * g_GlobalVars->interval_per_tick;
-                // Then multiply by our warp ticks to get actual range
-                range *= warp_amount;
+                // Then multiply by our warp ticks to get actual range (note that every 10 ticks is another extra tick)
+                range *= warp_amount + std::ceil((warp_amount / 10.0f));
                 // Now add a bit of melee range aswell
-                range += 100.0f;
+                range += 130.0f;
 
                 // Find an entity meeting the shield aim criteria in range
-                std::pair<CachedEntity *, Vector> result = hacks::tf2::misc_aimbot::FindBestEnt(false, false, true, true, range);
+                std::pair<CachedEntity *, Vector> result = hacks::tf2::misc_aimbot::FindBestEnt(false, false, false, true, range);
 
                 // We found a good entity within range
                 if (result.first)
@@ -249,6 +249,9 @@ void CreateMove()
                     current_state = CHARGE;
                 }
             }
+            // Just warp if we are already charging
+            else if (HasCondition<TFCond_Charging>(LOCAL_E))
+                current_state = WARP;
             should_warp = false;
 
             break;

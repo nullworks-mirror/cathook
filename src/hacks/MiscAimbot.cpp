@@ -230,7 +230,7 @@ static void ChargeAimbot()
     if (!HasCondition<TFCond_Charging>(LOCAL_E))
         return;
     std::pair<CachedEntity *, Vector> result{};
-    result                = FindBestEnt(false, false, true, true);
+    result                = FindBestEnt(false, false, false, true);
     CachedEntity *bestent = result.first;
     if (bestent && result.second.IsValid())
     {
