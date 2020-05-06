@@ -135,7 +135,7 @@ static CatCommand chatcommands_file("chatcommands_file", "chatcommands_add <chat
 
     if (!chatcomamnd.readFile(file))
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Could'nt open the file!\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Couldn't open the file!\n");
         return;
     }
     logging::Info("%s: %s", prefix.c_str(), file.c_str());
