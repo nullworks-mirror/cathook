@@ -556,10 +556,6 @@ void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
         return;
-    auto addr = ch->GetRemoteAddress();
-    // Local server needs no fixing
-    if (addr.type == NA_LOOPBACK)
-        return;
 
     static int last_weapon;
     // This tracks only when bucket is updated

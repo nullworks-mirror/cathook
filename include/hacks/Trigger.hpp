@@ -8,15 +8,15 @@
 #pragma once
 
 #include "common.hpp"
+#include "Backtrack.hpp"
 
 namespace hacks::shared::triggerbot
 {
 
 void CreateMove();
-CachedEntity *FindEntInSight(float range);
 bool ShouldShoot();
-bool IsTargetStateGood(CachedEntity *entity, bool backtrack = false);
-CachedEntity *FindEntInSight(float range);
+bool IsTargetStateGood(CachedEntity *entity, std::optional<hacks::tf2::backtrack::BacktrackData> bt_data = {});
+CachedEntity *FindEntInSight(float range, bool no_players = false);
 bool HeadPreferable(CachedEntity *target);
 bool UpdateAimkey();
 float EffectiveTargetingRange();

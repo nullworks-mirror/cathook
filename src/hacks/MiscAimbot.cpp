@@ -54,8 +54,17 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
                 continue;
             float scr = ent->m_flDistance();
+            if (g_IBacktrack.isBacktrackEnabled && demoknight_mode)
+            {
+                auto data = g_IBacktrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                // No entity
+                if (!data)
+                    scr = FLT_MAX;
+                else
+                    scr = (*data).m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin());
+            }
             // Demoknight
-            if (fov_check)
+            if (demoknight_mode)
             {
                 if (scr >= range)
                     continue;
@@ -100,8 +109,17 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
         if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
             continue;
         float scr = ent->m_flDistance();
+        if (g_IBacktrack.isBacktrackEnabled && demoknight_mode)
+        {
+            auto data = g_IBacktrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+            // No entity
+            if (!data)
+                scr = FLT_MAX;
+            else
+                scr = (*data).m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin());
+        }
         // Demoknight
-        if (fov_check)
+        if (demoknight_mode)
         {
             if (scr >= range)
                 continue;
