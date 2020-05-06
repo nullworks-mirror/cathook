@@ -280,7 +280,7 @@ static bool doBacktrackStab(bool legit = false)
             continue;
 
         // Get the best tick for that ent
-        auto tick_data = g_IBacktrack.getBestTick(ent, backtrackFilter);
+        auto tick_data = hacks::tf2::backtrack::backtrack.getBestTick(ent, backtrackFilter);
 
         // We found something matching the criterias, break out
         if (tick_data)
@@ -294,7 +294,7 @@ static bool doBacktrackStab(bool legit = false)
     // We found a good ent
     if (stab_ent)
     {
-        g_IBacktrack.SetBacktrackData(stab_ent, stab_data);
+        hacks::tf2::backtrack::backtrack.SetBacktrackData(stab_ent, stab_data);
         current_user_cmd->buttons |= IN_ATTACK;
         current_user_cmd->viewangles     = newangle_apply;
         g_pLocalPlayer->bUseSilentAngles = true;
@@ -321,9 +321,9 @@ void CreateMove()
         doRageBackstab();
         break;
     case 2:
-        if (g_IBacktrack.isBacktrackEnabled)
+        if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled)
         {
-            if (*g_IBacktrack.latency <= 190 && doRageBackstab())
+            if (*hacks::tf2::backtrack::backtrack.latency <= 190 && doRageBackstab())
                 break;
             doBacktrackStab(false);
         }
@@ -333,9 +333,9 @@ void CreateMove()
         }
         break;
     case 3:
-        if (g_IBacktrack.isBacktrackEnabled)
+        if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled)
         {
-            if (*g_IBacktrack.latency <= 190 && doLegitBackstab())
+            if (*hacks::tf2::backtrack::backtrack.latency <= 190 && doLegitBackstab())
                 break;
             doBacktrackStab(true);
         }

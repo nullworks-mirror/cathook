@@ -101,5 +101,5 @@ public:
 
     void SetBacktrackData(CachedEntity *ent, BacktrackData);
 };
+extern hacks::tf2::backtrack::Backtrack backtrack;
 } // namespace hacks::tf2::backtrack
-extern hacks::tf2::backtrack::Backtrack g_IBacktrack;

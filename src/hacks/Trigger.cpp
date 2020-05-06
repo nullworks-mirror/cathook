@@ -96,7 +96,7 @@ void CreateMove()
     CachedEntity *ent = nullptr;
     std::optional<hacks::tf2::backtrack::BacktrackData> bt_data;
 
-    if (!g_IBacktrack.isBacktrackEnabled)
+    if (!hacks::tf2::backtrack::backtrack.isBacktrackEnabled)
         ent = FindEntInSight(EffectiveTargetingRange());
     // Backtrack, use custom filter to check if tick is in crosshair
     else
@@ -115,7 +115,7 @@ void CreateMove()
         forward   = forward * EffectiveTargetingRange() + g_pLocalPlayer->v_Eye;
 
         // Call closest tick with our Tick filter func
-        auto closest_data = g_IBacktrack.getClosestTick(g_pLocalPlayer->v_Eye, std::bind(&hacks::tf2::backtrack::Backtrack::defaultEntFilter, &g_IBacktrack, std::placeholders::_1), tick_filter);
+        auto closest_data = hacks::tf2::backtrack::backtrack.getClosestTick(g_pLocalPlayer->v_Eye, std::bind(&hacks::tf2::backtrack::Backtrack::defaultEntFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1), tick_filter);
 
         // No results, try to grab a building
         if (!closest_data)
@@ -127,7 +127,7 @@ void CreateMove()
             // Assign entity
             ent     = (*closest_data).first;
             bt_data = (*closest_data).second;
-            g_IBacktrack.SetBacktrackData(ent, *bt_data);
+            hacks::tf2::backtrack::backtrack.SetBacktrackData(ent, *bt_data);
         }
     }
 

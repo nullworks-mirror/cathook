@@ -471,13 +471,13 @@ std::optional<std::pair<CachedEntity *, BacktrackData>> Backtrack::getClosestTic
 }
 
 static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, std::bind(&Backtrack::CreateMove, &g_IBacktrack), "backtrack_cm", EC::early);
-    EC::Register(EC::CreateMove, std::bind(&Backtrack::CreateMoveLate, &g_IBacktrack), "backtrack_cmlate", EC::very_late);
+    EC::Register(EC::CreateMove, std::bind(&Backtrack::CreateMove, &hacks::tf2::backtrack::backtrack), "backtrack_cm", EC::early);
+    EC::Register(EC::CreateMove, std::bind(&Backtrack::CreateMoveLate, &hacks::tf2::backtrack::backtrack), "backtrack_cmlate", EC::very_late);
 #if ENABLE_VISUALS
-    EC::Register(EC::Draw, std::bind(&Backtrack::Draw, &g_IBacktrack), "backtrack_draw");
+    EC::Register(EC::Draw, std::bind(&Backtrack::Draw, &hacks::tf2::backtrack::backtrack), "backtrack_draw");
 #endif
-    EC::Register(EC::LevelShutdown, std::bind(&Backtrack::LevelShutdown, &g_IBacktrack), "backtrack_levelshutdown");
+    EC::Register(EC::LevelShutdown, std::bind(&Backtrack::LevelShutdown, &hacks::tf2::backtrack::backtrack), "backtrack_levelshutdown");
 });
+Backtrack backtrack;
 } // namespace hacks::tf2::backtrack
 // Global interface
-hacks::tf2::backtrack::Backtrack g_IBacktrack;

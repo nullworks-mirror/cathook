@@ -54,9 +54,9 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
                 continue;
             float scr = ent->m_flDistance();
-            if (g_IBacktrack.isBacktrackEnabled && demoknight_mode)
+            if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled && demoknight_mode)
             {
-                auto data = g_IBacktrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
                 // No entity
                 if (!data)
                     scr = FLT_MAX;
@@ -109,9 +109,9 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
         if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
             continue;
         float scr = ent->m_flDistance();
-        if (g_IBacktrack.isBacktrackEnabled && demoknight_mode)
+        if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled && demoknight_mode)
         {
-            auto data = g_IBacktrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &g_IBacktrack, std::placeholders::_1, std::placeholders::_2));
+            auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), std::bind(&hacks::tf2::backtrack::Backtrack::defaultTickFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1, std::placeholders::_2));
             // No entity
             if (!data)
                 scr = FLT_MAX;
