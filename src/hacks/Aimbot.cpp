@@ -144,9 +144,7 @@ bool aimbotTickFilter(CachedEntity *ent, hacks::tf2::backtrack::BacktrackData ti
     // FOV check
     if (*fov > 0.0f)
     {
-        Vector to_check = tick.m_vecOrigin;
-        to_check.z      = g_pLocalPlayer->v_Eye.z;
-        float fov_scr   = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, to_check);
+        float fov_scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, tick.hitboxes.at(0).center);
         // Failed FOV check
         if (fov_scr > *fov)
             return false;
