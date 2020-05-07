@@ -72,9 +72,12 @@ class Backtrack
 public:
     settings::Float latency{ "backtrack.latency", "0" };
     settings::Int bt_slots{ "backtrack.slots", "0" };
+#if ENABLE_VISUALS
     settings::Boolean chams{ "backtrack.chams", "false" };
     settings::Int chams_ticks{ "backtrack.chams.ticks", "1" };
-    settings::Boolean team_color{ "backtrack.chams.team-color", "true" };
+    settings::Rgba chams_color{ "backtrack.chams.color", "646464FF" };
+    settings::Boolean chams_solid{ "backtrack.chams.color.solid", "false" };
+#endif
 
     // Check if backtrack is enabled
     bool isBacktrackEnabled;

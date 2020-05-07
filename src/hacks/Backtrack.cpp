@@ -110,7 +110,8 @@ void Backtrack::CreateMove()
         return;
     }
 
-    if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W) || !LOCAL_E->m_bAlivePlayer())
+    // Only return here if the local player hasn't spawned in yet (so ping does not go down when dead)
+    if (CE_BAD(LOCAL_E))
     {
         latency_rampup = 0.0f;
         return;
@@ -121,6 +122,10 @@ void Backtrack::CreateMove()
     latency_rampup = std::min(latency_rampup, 1.0f);
 
     updateDatagram();
+
+    // Don't run rest
+    if (CE_BAD(LOCAL_W) || !LOCAL_E->m_bAlivePlayer())
+        return;
 
     // Clear data
     bt_ent = nullptr;

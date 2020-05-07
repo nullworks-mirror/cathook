@@ -114,7 +114,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
         aa_draw  = false;
         angles.y = backup;
     }*/
-    if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled && hacks::tf2::backtrack::backtrack.chams)
+    if (hacks::tf2::backtrack::backtrack.chams && hacks::tf2::backtrack::backtrack.isBacktrackEnabled)
     {
         const char *name = g_IModelInfo->GetModelName(info.pModel);
         if (name)
@@ -127,6 +127,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                     CachedEntity *ent = ENTITY(info.entity_index);
                     if (CE_GOOD(ent) && ent->m_bAlivePlayer())
                     {
+
                         // Get Backtrack data for target entity
                         auto good_ticks = hacks::tf2::backtrack::backtrack.getGoodTicks(info.entity_index);
 
@@ -144,11 +145,11 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                             rgba_t mod_original;
                             // Save color just in case, then set to team color
                             g_IVRenderView->GetColorModulation(mod_original.rgba);
-                            g_IVRenderView->SetColorModulation(hacks::tf2::backtrack::backtrack.team_color ? colors::EntityF(ent) : colors::FromRGBA8(100, 100, 100, 255));
+                            g_IVRenderView->SetColorModulation(*hacks::tf2::backtrack::backtrack.chams_color);
                             // Important for Depth
                             ptr->DepthRange(0.0f, 1.0f);
                             // Apply our material
-                            if (!hacks::tf2::backtrack::backtrack.team_color)
+                            if (hacks::tf2::backtrack::backtrack.chams_solid)
                                 g_IVModelRender->ForcedMaterialOverride(mat_dme_chams);
 
                             // Draw as many ticks as desired
