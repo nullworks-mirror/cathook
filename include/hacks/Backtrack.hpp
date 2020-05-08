@@ -81,6 +81,10 @@ public:
 
     // Check if backtrack is enabled
     bool isBacktrackEnabled;
+#if ENABLE_VISUALS
+    // Drawing Backtrack chams
+    bool isDrawing;
+#endif
     // Event callbacks
     void CreateMove();
     void CreateMoveLate();

@@ -179,6 +179,8 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                 return;
     }
 
-    return original::DrawModelExecute(this_, state, info, bone);
+    // Don't do it when we are trying to enforce backtrack chams
+    if (!hacks::tf2::backtrack::backtrack.isDrawing)
+        return original::DrawModelExecute(this_, state, info, bone);
 } // namespace hooked_methods
 } // namespace hooked_methods
