@@ -66,9 +66,10 @@ void logging::Info(const char *fmt, ...)
     // Allocate buffer
     char result[512];
     // Fill buffer
-    if (vsnprintf(result, 512, fmt, list) < 0)
-        return;
+    int size = vsnprintf(result, 512, fmt, list);
     va_end(list);
+    if(size < 0)
+        return;
 
     Log(result, false);
 #endif
@@ -85,9 +86,10 @@ void logging::File(const char *fmt, ...)
     // Allocate buffer
     char result[512];
     // Fill buffer
-    if (vsnprintf(result, 512, fmt, list) < 0)
-        return;
+    int size = vsnprintf(result, 512, fmt, list);
     va_end(list);
+    if(size < 0)
+        return;
 
     Log(result, true);
 #endif
