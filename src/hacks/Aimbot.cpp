@@ -1342,7 +1342,7 @@ bool VischeckPredictedEntity(CachedEntity *entity)
     else
     {
         auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
-        if (data && IsEntityVectorVisible(entity, data->hitboxes.at(cd.hitbox == -1 ? 0 : cd.hitbox).center, MASK_SHOT))
+        if (data && IsEntityVectorVisible(entity, data->hitboxes.at((cd.hitbox == -1 || cd.hitbox >= 18) ? 0 : cd.hitbox).center, MASK_SHOT))
             cd.visible = true;
         else
             cd.visible = false;
