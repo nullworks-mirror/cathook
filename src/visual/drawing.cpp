@@ -20,7 +20,6 @@
 #include "picopng.hpp"
 #endif
 #include "menu/GuiInterface.hpp"
-#include <GL/glew.h>
 #include <SDL2/SDL_video.h>
 #include <SDLHooks.hpp>
 #include "soundcache.hpp"
