@@ -6,7 +6,6 @@
  */
 
 #include "common.hpp"
-#include "../../external/libglez/ftgl/freetype-gl.h"
 
 #include <math.h>
 #include <settings/Bool.hpp>
