@@ -4,6 +4,7 @@
 
 GIT=${1:-false}
 SUDO=${CH_SUDO:-sudo}
+FORCEYES=${CH_DEPENDENCYCHECK_FORCEYES:-false}
 
 arch_packages=(git boost cmake make gcc gdb lib32-sdl2 lib32-glew lib32-freetype2 rsync lib32-libglvnd dialog)
 ubuntu_packages=(build-essential git g++ g++-multilib libboost-dev gdb libsdl2-dev:i386 libfreetype6-dev:i386 cmake dialog rsync)
@@ -18,8 +19,11 @@ fi
 
 function requestPermissions {
     string=$@
+    if [ "$FORCEYES" == "true" ]; then
+        # Ayy
+        return
     # Prefer GUI question
-    if [ -x "$(command -v zenity)" ] && xset q &>/dev/null; then
+    elif [ -x "$(command -v zenity)" ] && xset q &>/dev/null; then
         zenity --no-wrap --question --text="Do you want to install the following packages required for cathook?\n${string}?"
         out=$?
         if [ "$out" != 0 ]; then
