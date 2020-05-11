@@ -56,10 +56,10 @@
             </LabeledObject>
             <AutoVariable width="fill" target="misc.tauntslide" label="Tauntslide"/>
             <AutoVariable width="fill" target="misc.tauntslide-tf2c" label="TF2C Tauntslide"/>
-	    <AutoVariable width="fill" target="announcer" label="Enable Announcer"/>
+            <AutoVariable width="fill" target="announcer" label="Enable Announcer"/>
         </List>
         <List width="220" x="232">
-	    <AutoVariable width="fill" target="name.custom" label="Custom Name"/>
+            <AutoVariable width="fill" target="name.custom" label="Custom Name"/>
             <AutoVariable width="fill" target="name.custom.ipc" label="IPC Name"/>
             <LabeledObject width="fill" label="Namesteal">
                 <Select target="name.namesteal">

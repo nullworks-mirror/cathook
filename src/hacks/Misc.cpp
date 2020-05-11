@@ -33,6 +33,9 @@ static settings::Boolean auto_balance_spam{ "misc.auto-balance-spam", "false" };
 static settings::Boolean nopush_enabled{ "misc.no-push", "false" };
 static settings::Boolean dont_hide_stealth_kills{ "misc.dont-hide-stealth-kills", "true" };
 static settings::Boolean unlimit_bumpercart_movement{ "misc.bumpercarthax.enable", "true" };
+static settings::Boolean ping_reducer{ "misc.ping-reducer.enable", "false" };
+
+static settings::Int force_ping{ "misc.ping-reducer.target", "0" };
 
 #if ENABLE_VISUALS
 static settings::Boolean god_mode{ "misc.god-mode", "false" };
@@ -54,6 +57,7 @@ static void tryPatchLocalPlayerShouldDraw(bool after)
 
 static Timer anti_afk_timer{};
 static int last_buttons{ 0 };
+static int oldCmdRate = 0;
 
 static void updateAntiAfk()
 {
@@ -157,6 +161,7 @@ void DrawWireframeHitbox(wireframe_data data)
 {
     g_IVDebugOverlay->AddBoxOverlay2(data.origin, data.raw_min, data.raw_max, VectorToQAngle(data.rotation), Color(0, 0, 0, 0), Color(255, 0, 0, 255), g_GlobalVars->interval_per_tick * 2);
 }
+
 #endif
 void CreateMove()
 {
@@ -262,6 +267,27 @@ void CreateMove()
         }
         else
             teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
+
+        // Ping Reducer
+        if (ping_reducer)
+        {
+            static ConVar *cmdrate = g_ICvar->FindVar("cl_cmdrate");
+            if (cmdrate == nullptr)
+            {
+                cmdrate = g_ICvar->FindVar("cl_cmdrate");
+                return;
+            }
+            int ping        = g_pPlayerResource->GetPing(g_IEngine->GetLocalPlayer());
+            if (*force_ping <= ping && cmdrate->GetInt() != -1)
+            {
+                oldCmdRate = cmdrate->GetInt();
+                cmdrate->m_fMaxVal = 999999999.9f;
+                cmdrate->m_fMinVal = -999999999.9f;
+                cmdrate->SetValue(-1);
+            }
+            else if (*force_ping > ping)
+                cmdrate->SetValue(oldCmdRate);
+        }
     }
 }
 
@@ -795,6 +821,16 @@ static InitRoutine init_pyrovision([]() {
             cart_patch2.Shutdown();
         }
     });
+    ping_reducer.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        static ConVar *cmdrate = g_ICvar->FindVar("cl_cmdrate");
+        if (cmdrate == nullptr)
+        {
+          cmdrate = g_ICvar->FindVar("cl_cmdrate");
+          return;
+        }
+        if (!after && cmdrate->GetInt() != oldCmdRate)
+            cmdrate->SetValue(oldCmdRate);
+    });;
 #endif
 });
 #endif
@@ -821,6 +857,7 @@ void Shutdown()
 
 static InitRoutine init([]() {
     teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
+    oldCmdRate        = g_ICvar->FindVar("cl_cmdrate")->GetInt();
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
 #if ENABLE_VISUALS
