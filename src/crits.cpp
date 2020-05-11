@@ -84,7 +84,7 @@ static bool isAllowedToWithdrawFromBucket(IClientEntity *wep, float flDamage, bo
     if (isRapidFire(wep))
         flToRemove = taken_per_crit * getWithdrawMult(wep);
     // Can remove
-    if (flToRemove > info.crit_bucket)
+    if (std::floor(flToRemove) > info.crit_bucket)
         return false;
 
     return true;
