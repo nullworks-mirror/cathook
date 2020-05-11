@@ -19,12 +19,17 @@ static settings::Int sandwichaim_aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
 float sandwich_speed = 350.0f;
 float grav           = 0.25f;
 int prevent          = -1;
+static Timer previous_entity_delay{};
 
+// TODO: Refactor this jank
 std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck, bool fov_check, float range)
 {
     CachedEntity *bestent = nullptr;
     float bestscr         = FLT_MAX;
     Vector predicted{};
+    // Too long since we focused it
+    if (previous_entity_delay.check(100))
+        prevent = -1;
     for (int i = 0; i < 1; i++)
     {
         if (prevent != -1)
@@ -32,7 +37,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             auto ent = ENTITY(prevent);
             if (CE_BAD(ent) || !ent->m_bAlivePlayer() || (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) || ent == LOCAL_E)
                 continue;
-            if (!teammate && ent->m_iTeam() == LOCAL_E->m_ItemType())
+            if (!teammate && ent->m_iTeam() == LOCAL_E->m_iTeam())
                 continue;
             if (!ent->hitboxes.GetHitbox(1))
                 continue;
@@ -69,7 +74,10 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             }
         }
         if (bestent && predicted.z)
+        {
+            previous_entity_delay.update();
             return { bestent, predicted };
+        }
     }
     prevent = -1;
     for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
