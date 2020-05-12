@@ -96,7 +96,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             target = ent->hitboxes.GetHitbox(1)->center;
         if (!IsEntityVectorVisible(ent, target))
             continue;
-        if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
+        if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
             continue;
         float scr = ent->m_flDistance();
         // Demoknight
