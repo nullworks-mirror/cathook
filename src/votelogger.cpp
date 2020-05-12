@@ -14,9 +14,11 @@
 static settings::Boolean vote_kicky{ "votelogger.autovote.yes", "false" };
 static settings::Boolean vote_kickn{ "votelogger.autovote.no", "false" };
 static settings::Boolean vote_rage_vote{ "votelogger.autovote.no.rage", "false" };
-static settings::Boolean party_say{ "votelogger.partysay", "true" };
-static settings::Boolean party_say_casts{ "votelogger.partysay-casts", "false" };
-static settings::Boolean party_say_f1_only{ "votelogger.partysay-casts.f1-only", "true" };
+static settings::Boolean chat{ "votelogger.chat", "true" };
+static settings::Boolean chat_partysay{ "votelogger.chat.partysay", "false" };
+static settings::Boolean chat_casts{ "votelogger.chat.casts", "false" };
+static settings::Boolean chat_casts_f1_only{ "votelogger.chat.casts.f1-only", "true" };
+// Leave party and crash, useful for personal party bots
 static settings::Boolean abandon_and_crash_on_kick{ "votelogger.restart-on-kick", "false" };
 
 namespace votelogger
@@ -82,19 +84,19 @@ void dispatchUserMessage(bf_read &buffer, int type)
         char name[64];
         buffer.ReadString(reason, 64, false, nullptr);
         buffer.ReadString(name, 64, false, nullptr);
-        auto eid = (unsigned char) buffer.ReadByte();
+        auto target = (unsigned char) buffer.ReadByte();
         buffer.Seek(0);
-        eid >>= 1;
+        target >>= 1;
 
         // info is the person getting kicked,
         // info2 is the person calling the kick.
         player_info_s info{}, info2{};
-        if (!g_IEngine->GetPlayerInfo(eid, &info) || !g_IEngine->GetPlayerInfo(caller, &info2))
+        if (!g_IEngine->GetPlayerInfo(target, &info) || !g_IEngine->GetPlayerInfo(caller, &info2))
             break;
 
-        kicked_player = eid;
+        kicked_player = target;
         logging::Info("Vote called to kick %s [U:1:%u] for %s by %s [U:1:%u]", info.name, info.friendsID, reason, info2.name, info2.friendsID);
-        if (eid == LOCAL_E->m_IDX)
+        if (target == LOCAL_E->m_IDX)
         {
             was_local_player = true;
             local_kick_timer.update();
@@ -122,12 +124,15 @@ void dispatchUserMessage(bf_read &buffer, int type)
                 vote_command.timer.update();
             }
         }
-        if (*party_say)
+        if (*chat_partysay)
         {
             char formated_string[256];
             std::snprintf(formated_string, sizeof(formated_string), "[CAT] votekick called: %s => %s (%s)", info2.name, info.name, reason);
-            re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
+            if (chat_partysay)
+                re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
         }
+        if (chat)
+            PrintChat("Votekick called: \x07%06X%s\x01 => \x07%06X%s\x01 (%s)", colors::chat::team(g_pPlayerResource->getTeam(caller)), info2.name, colors::chat::team(g_pPlayerResource->getTeam(target)), info.name, reason);
         break;
     }
     case 47:
@@ -205,22 +210,28 @@ class VoteEventListener : public IGameEventListener
 public:
     void FireGameEvent(KeyValues *event) override
     {
-        if (!*party_say_casts || !*party_say)
+        if (!*chat_casts || (!*chat_partysay && !chat))
             return;
         const char *name = event->GetName();
         if (!strcmp(name, "vote_cast"))
         {
             bool vote_option = event->GetInt("vote_option");
-            if (*party_say_f1_only && vote_option)
+            if (*chat_casts_f1_only && vote_option)
                 return;
             int eid = event->GetInt("entityid");
 
             player_info_s info{};
             if (!g_IEngine->GetPlayerInfo(eid, &info))
                 return;
-            char formated_string[256];
-            std::snprintf(formated_string, sizeof(formated_string), "[CAT] %s [U:1:%u] %s", info.name, info.friendsID, vote_option ? "F2" : "F1");
-            re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
+            if (chat_partysay)
+            {
+                char formated_string[256];
+                std::snprintf(formated_string, sizeof(formated_string), "[CAT] %s [U:1:%u] %s", info.name, info.friendsID, vote_option ? "F2" : "F1");
+
+                re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
+            }
+            if (chat)
+                PrintChat("\x07%06X%s\x01 [U:1:%u] %s", colors::chat::team(g_pPlayerResource->getTeam(eid)), info.name, info.friendsID, vote_option ? "F2" : "F1");
         }
     }
 };
