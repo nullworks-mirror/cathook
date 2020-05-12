@@ -50,7 +50,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
                 target = ent->hitboxes.GetHitbox(1)->center;
             if (!IsEntityVectorVisible(ent, target))
                 continue;
-            if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
+            if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
                 continue;
             float scr = ent->m_flDistance();
             // Demoknight
@@ -60,7 +60,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
                     continue;
                 scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin());
                 // Don't turn too harshly
-                if (scr >= 140.0f)
+                if (scr >= 90.0f)
                     continue;
             }
             if (g_pPlayerResource->GetClass(ent) == tf_medic)
@@ -222,13 +222,11 @@ static void SandwichAim()
     }
 }
 
-static bool charge_aimbotted = false;
 static settings::Boolean charge_aim{ "chargeaim.enable", "false" };
 static settings::Button charge_key{ "chargeaim.key", "<null>" };
 
 static void ChargeAimbot()
 {
-    charge_aimbotted = false;
     if (!*charge_aim)
         return;
     if (charge_key && !charge_key.isKeyDown())
@@ -238,18 +236,14 @@ static void ChargeAimbot()
     if (!HasCondition<TFCond_Charging>(LOCAL_E))
         return;
     std::pair<CachedEntity *, Vector> result{};
-    result                = FindBestEnt(false, false, false, true);
+    result                = FindBestEnt(false, false, true, true, 1000.0f);
     CachedEntity *bestent = result.first;
     if (bestent && result.second.IsValid())
     {
-        Vector tr = result.second - g_pLocalPlayer->v_Eye;
-        Vector angles;
-        VectorAngles(tr, angles);
-        // Clamping is important
-        fClampAngle(angles);
+        auto angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, result.second);
+        angles.x    = current_user_cmd->viewangles.x;
         DoSlowAim(angles);
         current_user_cmd->viewangles = angles;
-        charge_aimbotted             = true;
     }
 }
 
@@ -565,7 +559,7 @@ float CAM_CapYaw_Hook(IInput *, float fVal)
 
 #define foffset(p, i) ((unsigned char *) &p)[i]
 static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::late);
+    EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::average);
 
     static auto signature = gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 E8 ? ? ? ? 85 C0 74 ? 8D 98 ? ? ? ? C7 44 24 ? 11 00 00 00");
     static auto rel_addr  = ((uintptr_t) CAM_CapYaw_Hook - ((uintptr_t) signature)) - 5;
