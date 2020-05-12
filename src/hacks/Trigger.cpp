@@ -115,7 +115,7 @@ void CreateMove()
         forward   = forward * EffectiveTargetingRange() + g_pLocalPlayer->v_Eye;
 
         // Call closest tick with our Tick filter func
-        auto closest_data = hacks::tf2::backtrack::backtrack.getClosestTick(g_pLocalPlayer->v_Eye, std::bind(&hacks::tf2::backtrack::Backtrack::defaultEntFilter, &hacks::tf2::backtrack::backtrack, std::placeholders::_1), tick_filter);
+        auto closest_data = hacks::tf2::backtrack::backtrack.getClosestTick(g_pLocalPlayer->v_Eye, hacks::tf2::backtrack::backtrack.defaultEntFilter, tick_filter);
 
         // No results, try to grab a building
         if (!closest_data)

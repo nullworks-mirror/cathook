@@ -97,8 +97,8 @@ public:
     void updateDatagram();
     void resetData(int);
     bool isGoodTick(BacktrackData &);
-    bool defaultTickFilter(CachedEntity *, BacktrackData);
-    bool defaultEntFilter(CachedEntity *);
+    static bool defaultTickFilter(CachedEntity *, BacktrackData);
+    static bool defaultEntFilter(CachedEntity *);
 
     // Various functions for getting backtrack ticks
     std::vector<BacktrackData> getGoodTicks(int);

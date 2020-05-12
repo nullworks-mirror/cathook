@@ -275,34 +275,26 @@ bool shouldMeleeCrit()
 {
     if (!melee || g_pLocalPlayer->weapon_mode != weapon_melee)
         return false;
-    namespace bt = hacks::shared::backtrack;
-    if (bt::isBacktrackEnabled)
+    if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled)
     {
-        int target = bt::iBestTarget;
+        // Closest tick for melee (default filter carry)
+        auto closest_tick = hacks::tf2::backtrack::backtrack.getClosestTick(LOCAL_E->m_vecOrigin(), hacks::tf2::backtrack::backtrack.defaultEntFilter, hacks::tf2::backtrack::backtrack.defaultTickFilter);
         // Valid backtrack target
-        if (target > 1)
+        if (closest_tick)
         {
-            // Closest tick for melee
-            int besttick = bt::BestTick;
             // Out of range, don't crit
-            if (bt::headPositions[target][besttick].entorigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
-            {
+            if ((*closest_tick).second.m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
                 return false;
-            }
         }
         else
-        {
             return false;
-        }
     }
     // Normal check, get closest entity and check distance
     else
     {
         auto ent = getClosestEntity(LOCAL_E->m_vecOrigin());
         if (!ent || ent->m_flDistance() >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
-        {
             return false;
-        }
     }
     return true;
 }
