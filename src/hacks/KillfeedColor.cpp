@@ -142,6 +142,11 @@ mov [esp], ecx
     DONT_SMASH_SMACK(138);
     DONT_SMASH_SMACK(154);
 
+    for (auto &i : color_patches)
+        i.Patch();
+    for (auto &i : no_stack_smash)
+        i.Patch();
+
     EC::Register(
         EC::Shutdown,
         []() {

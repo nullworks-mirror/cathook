@@ -8,6 +8,7 @@
 #include "settings/Key.hpp"
 #include "PlayerTools.hpp"
 #include "hacks/Trigger.hpp"
+#include "MiscAimbot.hpp"
 
 namespace hacks::tf2::misc_aimbot
 {
@@ -18,12 +19,17 @@ static settings::Int sandwichaim_aimkey_mode{ "sandwichaim.aimkey-mode", "0" };
 float sandwich_speed = 350.0f;
 float grav           = 0.25f;
 int prevent          = -1;
+static Timer previous_entity_delay{};
 
-std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck)
+// TODO: Refactor this jank
+std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool zcheck, bool fov_check, float range)
 {
     CachedEntity *bestent = nullptr;
     float bestscr         = FLT_MAX;
     Vector predicted{};
+    // Too long since we focused it
+    if (previous_entity_delay.check(100))
+        prevent = -1;
     for (int i = 0; i < 1; i++)
     {
         if (prevent != -1)
@@ -31,7 +37,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             auto ent = ENTITY(prevent);
             if (CE_BAD(ent) || !ent->m_bAlivePlayer() || (teammate && ent->m_iTeam() != LOCAL_E->m_iTeam()) || ent == LOCAL_E)
                 continue;
-            if (!teammate && ent->m_iTeam() == LOCAL_E->m_ItemType())
+            if (!teammate && ent->m_iTeam() == LOCAL_E->m_iTeam())
                 continue;
             if (!ent->hitboxes.GetHitbox(1))
                 continue;
@@ -44,11 +50,21 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
                 target = ent->hitboxes.GetHitbox(1)->center;
             if (!IsEntityVectorVisible(ent, target))
                 continue;
-            if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
+            if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
                 continue;
             float scr = ent->m_flDistance();
+            // Demoknight
+            if (fov_check)
+            {
+                if (scr >= range)
+                    continue;
+                scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin());
+                // Don't turn too harshly
+                if (scr >= 90.0f)
+                    continue;
+            }
             if (g_pPlayerResource->GetClass(ent) == tf_medic)
-                scr *= 0.1f;
+                scr *= 0.5f;
             if (scr < bestscr)
             {
                 bestent   = ent;
@@ -58,7 +74,10 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             }
         }
         if (bestent && predicted.z)
+        {
+            previous_entity_delay.update();
             return { bestent, predicted };
+        }
     }
     prevent = -1;
     for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
@@ -77,11 +96,21 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             target = ent->hitboxes.GetHitbox(1)->center;
         if (!IsEntityVectorVisible(ent, target))
             continue;
-        if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 80.0f)
+        if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
             continue;
         float scr = ent->m_flDistance();
+        // Demoknight
+        if (fov_check)
+        {
+            if (scr >= range)
+                continue;
+            scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->m_vecOrigin());
+            // Don't turn too harshly
+            if (scr >= 140.0f)
+                continue;
+        }
         if (g_pPlayerResource->GetClass(ent) == tf_medic)
-            scr *= 0.1f;
+            scr *= 0.5f;
         if (scr < bestscr)
         {
             bestent   = ent;
@@ -177,7 +206,7 @@ static void SandwichAim()
     Vector Predict;
     CachedEntity *bestent = nullptr;
     std::pair<CachedEntity *, Vector> result{};
-    result  = FindBestEnt(true, true, false);
+    result  = FindBestEnt(true, true, false, false);
     bestent = result.first;
     Predict = result.second;
     if (bestent)
@@ -193,13 +222,11 @@ static void SandwichAim()
     }
 }
 
-static bool charge_aimbotted = false;
 static settings::Boolean charge_aim{ "chargeaim.enable", "false" };
 static settings::Button charge_key{ "chargeaim.key", "<null>" };
 
 static void ChargeAimbot()
 {
-    charge_aimbotted = false;
     if (!*charge_aim)
         return;
     if (charge_key && !charge_key.isKeyDown())
@@ -209,18 +236,14 @@ static void ChargeAimbot()
     if (!HasCondition<TFCond_Charging>(LOCAL_E))
         return;
     std::pair<CachedEntity *, Vector> result{};
-    result                = FindBestEnt(false, false, true);
+    result                = FindBestEnt(false, false, true, true, 1000.0f);
     CachedEntity *bestent = result.first;
     if (bestent && result.second.IsValid())
     {
-        Vector tr = result.second - g_pLocalPlayer->v_Eye;
-        Vector angles;
-        VectorAngles(tr, angles);
-        // Clamping is important
-        fClampAngle(angles);
+        auto angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, result.second);
+        angles.x    = current_user_cmd->viewangles.x;
         DoSlowAim(angles);
         current_user_cmd->viewangles = angles;
-        charge_aimbotted             = true;
     }
 }
 
@@ -536,7 +559,7 @@ float CAM_CapYaw_Hook(IInput *, float fVal)
 
 #define foffset(p, i) ((unsigned char *) &p)[i]
 static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::late);
+    EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::average);
 
     static auto signature = gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 E8 ? ? ? ? 85 C0 74 ? 8D 98 ? ? ? ? C7 44 24 ? 11 00 00 00");
     static auto rel_addr  = ((uintptr_t) CAM_CapYaw_Hook - ((uintptr_t) signature)) - 5;

@@ -9,6 +9,8 @@
 #if ENABLE_VISUALS
 #include "drawing.hpp"
 #endif
+#include "MiscAimbot.hpp"
+#include "PlayerTools.hpp"
 
 namespace hacks::tf2::warp
 {
@@ -32,10 +34,11 @@ static settings::Int size{ "warp.bar-size", "100" };
 static settings::Int bar_x{ "warp.bar-x", "50" };
 static settings::Int bar_y{ "warp.bar-y", "200" };
 
-static bool should_charge = false;
-static int warp_amount    = 0;
-static int warp_override  = 0;
-static bool charged       = false;
+static bool should_charge         = false;
+static int warp_amount            = 0;
+static int warp_amount_override   = 0;
+static int warp_override_one_tick = 0;
+static bool charged               = false;
 
 // Taken from MrSteyk
 class clc_move_proto
@@ -56,7 +59,7 @@ public:
 int GetWarpAmount()
 {
     static auto sv_max_dropped_packets_to_process = g_ICvar->FindVar("sv_max_dropped_packets_to_process");
-    return warp_override ? warp_override : sv_max_dropped_packets_to_process->GetInt();
+    return warp_override_one_tick ? warp_override_one_tick : sv_max_dropped_packets_to_process->GetInt();
 }
 
 static bool should_warp = true;
@@ -75,15 +78,25 @@ void Warp()
     }
     int &m_nOutSequenceNr = *(int *) ((uintptr_t) ch + offsets::m_nOutSequenceNr());
 
-    // Has to be from the cvar
-    m_nOutSequenceNr += GetWarpAmount();
-    warp_amount -= GetWarpAmount();
+    int warp_ticks = warp_amount;
+    if (warp_amount_override)
+        warp_ticks = warp_amount_override;
+
+    // Don' add more than the warp_ticks
+    m_nOutSequenceNr += std::min(warp_ticks, GetWarpAmount());
+    warp_amount -= std::min(warp_ticks, GetWarpAmount());
+    warp_ticks -= std::min(warp_ticks, GetWarpAmount());
+    if (warp_amount_override)
+        warp_amount_override = warp_ticks;
+
     // Don't attack while warping
     current_user_cmd->buttons &= ~IN_ATTACK;
-    if (warp_amount <= 0)
+    if (warp_ticks <= 0)
     {
-        was_hurt    = false;
-        warp_amount = 0;
+        was_hurt   = false;
+        warp_ticks = 0;
+        if (warp_amount_override)
+            warp_amount_override = 0;
     }
 }
 
@@ -153,11 +166,16 @@ enum charge_state
 };
 
 charge_state current_state = ATTACK;
+
+// Used to determine when demoknight warp should be over
+static bool was_overriden = false;
 void CreateMove()
 {
     if (!enabled)
         return;
-    warp_override = 0;
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
+        return;
+    warp_override_one_tick = 0;
     if (!warp_key.isKeyDown() && !was_hurt)
     {
         warp_last_tick = false;
@@ -221,9 +239,64 @@ void CreateMove()
         {
         case ATTACK:
         {
-            current_user_cmd->buttons |= IN_ATTACK;
-            current_state = CHARGE;
-            should_warp   = false;
+            // Get charge meter (0 - 100 range)
+            float charge_meter = re::CTFPlayerShared::GetChargeMeter(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E)));
+
+            // If our charge meter is full
+            if (charge_meter == 100.0f)
+            {
+                // Find an entity meeting the Criteria and closest to crosshair
+                std::pair<CachedEntity *, float> result{ nullptr, FLT_MAX };
+
+                for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+                {
+                    CachedEntity *ent = ENTITY(i);
+                    if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
+                        continue;
+                    // No hitboxes
+                    if (!ent->hitboxes.GetHitbox(2))
+                        continue;
+                    float FOVScore = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, ent->hitboxes.GetHitbox(spine_1)->center);
+                    if (FOVScore < result.second)
+                    {
+                        result.second = FOVScore;
+                        result.first  = ent;
+                    }
+                }
+                // We found a good entity within range, Set needed warp amount
+                if (result.first)
+                {
+                    float distance = LOCAL_E->m_vecOrigin().DistTo(result.first->m_vecOrigin());
+                    // Subtract melee range
+                    distance -= 130.0f;
+
+                    // Divide by the amount we travel per tick to get how much of our charge we'll need
+                    int charge_ticks = distance / (750.0f * g_GlobalVars->interval_per_tick);
+
+                    // For every started 10 ticks We can subtract 1 because we'll get an extra CreateMove call.
+                    charge_ticks -= std::ceil(charge_ticks / 10.0f);
+
+                    // Use these ticks
+                    warp_amount_override = std::clamp(charge_ticks, 0, warp_amount);
+                    was_overriden        = true;
+                }
+                else
+                    was_overriden = false;
+
+                // Force a crit
+                criticals::force_crit_this_tick = true;
+                current_user_cmd->buttons |= IN_ATTACK;
+                current_state = CHARGE;
+            }
+            // Just warp normally if meter isn't full
+            else
+            {
+                was_overriden = false;
+                current_state = WARP;
+            }
+
+            should_warp = false;
+
             break;
         }
         case CHARGE:
@@ -235,8 +308,18 @@ void CreateMove()
         }
         case WARP:
         {
-            should_warp   = true;
-            current_state = DONE;
+            should_warp = true;
+            if ((was_overriden && !warp_amount_override) || !warp_amount)
+            {
+                should_warp   = false;
+                current_state = DONE;
+            }
+            break;
+        }
+        case DONE:
+        {
+            // Since we are done Warping we should stop trying to use any more
+            should_warp = false;
             break;
         }
         default:
@@ -266,7 +349,7 @@ void CreateMove()
                 current_user_cmd->sidemove    = -current_user_cmd->sidemove;
             }
             else
-                warp_override = warp_amount / 2;
+                warp_override_one_tick = warp_amount / 2;
             warp_last_tick = true;
         }
         // Prevent movement so you don't overshoot when you don't want to
