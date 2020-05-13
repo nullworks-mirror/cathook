@@ -12,6 +12,13 @@
                 </Select>
             </LabeledObject>
             <AutoVariable width="fill" target="aimbot.silent" label="Silent" tooltip="Stops your crosshair from moving on your screen."/>
+            <LabeledObject width="fill" label="Spectator mode" tooltip="How should aimbot react to spectators?">
+                <Select target="aimbot.spectator-mode">
+                    <Option name="Always on" value="0"/>
+                    <Option name="Firstperson" value="1" tooltip="Disable if at least one spectator is in firstperson."/>
+                    <Option name="Spectated" value="2" tooltip="Disable if you are being spectated in first- or thirdperson."/>
+                </Select>
+            </LabeledObject>
             <AutoVariable width="fill" target="aimbot.slow" label="Slow Aimbot" min="0" max="30"/>
             <AutoVariable width="fill" target="aimbot.fov" label="FOV" tooltip="Restricts the Aimbot to a certain FOV from the crosshair."/>
             <AutoVariable width="fill" target="aimbot.fov-circle.enable" label="FOV Circle" tooltip="Shows the Aimbot's FOV."/>
@@ -94,7 +101,7 @@
             <AutoVariable width="fill" target="aimbot.target.ignore-deadringer" label="Ignore Dead Ringer Spies"/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Projectile Aimbot" y="210">
+    <Box padding="12 6 6 6" width="content" height="content" name="Projectile Aimbot" y="225">
         <List width="150">
             <AutoVariable width="fill" target="aimbot.no-spread" label="No Spread" tooltip="Projectiles won't have any spread. Independant of aimbot."/>
             <AutoVariable width="fill" target="aimbot.projectile.enable" label="Enable Projectile Aimbot"/>

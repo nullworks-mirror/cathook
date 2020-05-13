@@ -17,6 +17,13 @@ class LocalPlayer
     unsigned long melee_damagetick = 0;
 
 public:
+    enum SpectatorState
+    {
+        NONE,
+        THIRDPERSON,
+        FIRSTPERSON
+    };
+
     // Start of CM
     void Update();
     // End of CM
@@ -44,6 +51,7 @@ public:
     Vector v_SilentAngles;
     bool bUseSilentAngles;
     bool bAttackLastTick;
+    SpectatorState spectator_state;
 
     bool isFakeAngleCM = false;
     Vector realAngles{ 0.0f, 0.0f, 0.0f };
