@@ -541,11 +541,23 @@ typedef float (*CAM_CapYaw_t)(IInput *, float);
 // Fix client side limit being applied weirdly, Note that most of this is taken from the source leak directly
 float CAM_CapYaw_Hook(IInput *this_, float fVal)
 {
-    CAM_CapYaw_t original = (CAM_CapYaw_t) CAM_CapYaw_detour.GetOriginalFunc();
-    float ret_val         = original(this_, fVal);
-    CAM_CapYaw_detour.RestorePatch();
-    // Server uses 2.5 what client has
-    return ret_val * 2.5f;
+    if (CE_INVALID(LOCAL_E))
+        return fVal;
+
+    if (HasCondition<TFCond_Charging>(LOCAL_E))
+    {
+        float flChargeYawCap = re::CTFPlayerShared::CalculateChargeCap(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E)));
+
+        // Our only change
+        flChargeYawCap *= 2.5f;
+
+        if (fVal > flChargeYawCap)
+            return flChargeYawCap;
+        else if (fVal < -flChargeYawCap)
+            return -flChargeYawCap;
+    }
+
+    return fVal;
 }
 
 #define foffset(p, i) ((unsigned char *) &p)[i]
