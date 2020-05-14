@@ -177,7 +177,7 @@ void CreateMove()
     std::optional<BacktrackData> best_data;
     CachedEntity *best_ent = nullptr;
 
-    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         if (i == g_pLocalPlayer->entity_idx)
         {
@@ -195,7 +195,7 @@ void CreateMove()
             resetData(i);
             continue;
         }
-        auto &backtrack_ent = backtrack_data.at(i);
+        auto &backtrack_ent = backtrack_data.at(i - 1);
 
         // Have no data, create it
         if (!backtrack_ent)
@@ -235,11 +235,23 @@ void CreateMove()
         }
 
         // Copy bones (for chams/glow)
-        int numbones = CE_INT(ent, 0x844);
-        if (numbones != current_tick.bones.size())
-            current_tick.bones.resize(numbones);
+        auto model = (const model_t *) RAW_ENT(ent)->GetModel();
+        if (model)
+        {
+            auto shdr = g_IModelInfo->GetStudiomodel(model);
+            if (shdr)
+            {
+                int numbones = shdr->numbones;
+                if (numbones != current_tick.bones.size())
+                    current_tick.bones.resize(numbones);
 
-        memcpy((void *) &current_tick.bones[0], (void *) &ent->hitboxes.bones[0], sizeof(matrix3x4_t) * numbones);
+                memcpy((void *) &current_tick.bones[0], (void *) &ent->hitboxes.bones[0], sizeof(matrix3x4_t) * numbones);
+            }
+            else
+                current_tick.bones.resize(0);
+        }
+        else
+            current_tick.bones.resize(0);
 
         // Check if tick updated or not (fakelag)
         current_tick.has_updated = !previous_tick.m_flSimulationTime || previous_tick.m_flSimulationTime != current_tick.m_flSimulationTime;
@@ -409,7 +421,7 @@ std::vector<BacktrackData> getGoodTicks(int entidx)
 {
     std::vector<BacktrackData> to_return;
     // Invalid
-    if (!backtrack_data.at(entidx - 1))
+    if (entidx <= 1 || (int) backtrack_data.size() < entidx || !backtrack_data.at(entidx - 1))
         return to_return;
 
     // Check all ticks
@@ -429,7 +441,7 @@ std::optional<BacktrackData> getBestTick(CachedEntity *ent, std::function<bool(C
     std::optional<BacktrackData> best_tick;
 
     // No data recorded
-    if (!backtrack_data.at(ent->m_IDX - 1))
+    if (backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
         return best_tick;
 
     // Let the callback do the lifting
@@ -468,7 +480,7 @@ std::optional<BacktrackData> getClosestEntTick(CachedEntity *ent, Vector vec, st
 {
     std::optional<BacktrackData> return_value;
     // No entry
-    if (!backtrack_data.at(ent->m_IDX - 1))
+    if (backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
         return return_value;
 
     float distance = FLT_MAX;

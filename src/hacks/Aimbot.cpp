@@ -121,7 +121,7 @@ float cur_proj_grav{ 0.0f };
 
 bool shouldBacktrack()
 {
-    return *enable && !projectile_mode && (*backtrackAimbot || force_backtrack_aimbot) && hacks::tf2::backtrack::isBacktrackEnabled;
+    return !projectile_mode && (*backtrackAimbot || force_backtrack_aimbot) && hacks::tf2::backtrack::isBacktrackEnabled;
 }
 
 bool IsBacktracking()
@@ -937,7 +937,7 @@ void Aim(CachedEntity *entity)
 
     if (silent && !slow_aim)
         g_pLocalPlayer->bUseSilentAngles = true;
-    // Set tick count to target's (backtrack messes with this)
+    // Set tick count to targets (backtrack messes with this)
     if (!shouldBacktrack() && nolerp && entity->m_IDX <= g_IEngine->GetMaxClients())
         current_user_cmd->tick_count = TIME_TO_TICKS(CE_FLOAT(entity, netvar.m_flSimulationTime));
     // Set Backtrack data
@@ -1258,7 +1258,7 @@ int BestHitbox(CachedEntity *target)
         }
         else if (target->hitboxes.VisibilityCheck(preferred))
             return preferred;
-        // Else attempt to find a hitbox at all
+        // Else attempt to find any hitbox at all
         if (IsBacktracking())
         {
             // We already vischecked
