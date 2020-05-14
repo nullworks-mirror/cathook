@@ -79,6 +79,13 @@ static settings::Boolean stickybot{ "aimbot.target.stickybomb", "0" };
 static settings::Boolean rageonly{ "aimbot.target.ignore-non-rage", "0" };
 static settings::Int teammates{ "aimbot.target.teammates", "0" };
 
+/*
+ * 0 Always on
+ * 1 Disable if being spectated in first person
+ * 2 Disable if being spectated
+ */
+static settings::Int specmode("aimbot.spectator-mode", "0");
+
 #if ENABLE_VISUALS
 static settings::Boolean fov_draw{ "aimbot.fov-circle.enable", "0" };
 static settings::Float fovcircle_opacity{ "aimbot.fov-circle.opacity", "0.7" };
@@ -362,6 +369,28 @@ bool MouseMoving()
 }
 #endif
 
+// Check if we are allowed to aim based on the current spectator state
+static bool ShouldAimSpectator()
+{
+    switch (*specmode)
+    {
+    // Always on
+    default:
+    case 0:
+        break;
+        // Disable if being spectated in first person
+    case 1:
+        if (g_pLocalPlayer->spectator_state == g_pLocalPlayer->FIRSTPERSON)
+            return false;
+        break;
+        // Disable if being spectated
+    case 2:
+        if (g_pLocalPlayer->spectator_state != g_pLocalPlayer->NONE)
+            return false;
+    };
+    return true;
+}
+
 // The first check to see if the player should aim in the first place
 bool ShouldAim()
 {
@@ -428,6 +457,9 @@ bool ShouldAim()
             }
         }
     }
+    // Check if we are allowed to aim based on the current spectator state
+    if (!ShouldAimSpectator())
+        return false;
     return true;
 }
 

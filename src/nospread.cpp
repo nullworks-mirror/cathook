@@ -47,7 +47,7 @@ void CreateMove()
         if (!should_nospread)
             should_nospread = !(current_user_cmd->buttons & IN_ATTACK) && g_pLocalPlayer->bAttackLastTick;
 
-        if (!CE_INT(LOCAL_W, netvar.m_iClip1))
+        if (!CE_INT(LOCAL_W, netvar.m_iClip1) && CE_INT(LOCAL_W, netvar.iReloadMode) == 0)
         {
             // Reset
             should_nospread = false;

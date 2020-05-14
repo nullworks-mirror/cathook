@@ -122,6 +122,30 @@ void LocalPlayer::Update()
     {
         flZoomBegin = 0.0f;
     }
+    // Alive
+    if (!life_state)
+    {
+        spectator_state = NONE;
+        for (int i = 0; i < PLAYER_ARRAY_SIZE; i++)
+        {
+            // Assign the for loops tick number to an ent
+            CachedEntity *ent = ENTITY(i);
+            if (!CE_BAD(ent) && (CE_INT(ent, netvar.hObserverTarget) & 0xFFF) == LOCAL_E->m_IDX)
+            {
+                auto mode = CE_INT(ent, netvar.iObserverMode);
+                if (mode == 4)
+                {
+                    spectator_state = FIRSTPERSON;
+                    // FIRSTPERSON is the "worst" state, exit
+                    return;
+                }
+                if (mode == 5)
+                {
+                    spectator_state = THIRDPERSON;
+                }
+            }
+        }
+    }
 }
 
 void LocalPlayer::UpdateEnd()
