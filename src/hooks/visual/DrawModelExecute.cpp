@@ -45,7 +45,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
     if (!isHackActive())
         return original::DrawModelExecute(this_, state, info, bone);
 
-    if (!(hacks::tf2::backtrack::backtrack.isBacktrackEnabled /*|| (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled())*/ || spectator_target || no_arms || no_hats || (*clean_screenshots && g_IEngine->IsTakingScreenshot()) || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer()))
+    if (!(hacks::tf2::backtrack::isBacktrackEnabled /*|| (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled())*/ || spectator_target || no_arms || no_hats || (*clean_screenshots && g_IEngine->IsTakingScreenshot()) || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer()))
     {
         return original::DrawModelExecute(this_, state, info, bone);
     }
@@ -114,7 +114,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
         aa_draw  = false;
         angles.y = backup;
     }*/
-    if (hacks::tf2::backtrack::backtrack.chams && hacks::tf2::backtrack::backtrack.isBacktrackEnabled)
+    if (hacks::tf2::backtrack::chams && hacks::tf2::backtrack::isBacktrackEnabled)
     {
         const char *name = g_IModelInfo->GetModelName(info.pModel);
         if (name)
@@ -129,7 +129,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                     {
 
                         // Get Backtrack data for target entity
-                        auto good_ticks = hacks::tf2::backtrack::backtrack.getGoodTicks(info.entity_index);
+                        auto good_ticks = hacks::tf2::backtrack::getGoodTicks(info.entity_index);
 
                         // Check if valid
                         if (!good_ticks.empty())
@@ -145,15 +145,15 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                             rgba_t mod_original;
                             // Save color just in case, then set to team color
                             g_IVRenderView->GetColorModulation(mod_original.rgba);
-                            g_IVRenderView->SetColorModulation(*hacks::tf2::backtrack::backtrack.chams_color);
+                            g_IVRenderView->SetColorModulation(*hacks::tf2::backtrack::chams_color);
                             // Important for Depth
                             ptr->DepthRange(0.0f, 1.0f);
                             // Apply our material
-                            if (hacks::tf2::backtrack::backtrack.chams_solid)
+                            if (hacks::tf2::backtrack::chams_solid)
                                 g_IVModelRender->ForcedMaterialOverride(mat_dme_chams);
 
                             // Draw as many ticks as desired
-                            for (unsigned i = 0; i <= (unsigned) std::max(*hacks::tf2::backtrack::backtrack.chams_ticks, 1); i++)
+                            for (unsigned i = 0; i <= (unsigned) std::max(*hacks::tf2::backtrack::chams_ticks, 1); i++)
                             {
                                 // Can't draw more than we have
                                 if (i >= good_ticks.size())
@@ -180,7 +180,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
     }
 
     // Don't do it when we are trying to enforce backtrack chams
-    if (!hacks::tf2::backtrack::backtrack.isDrawing)
+    if (!hacks::tf2::backtrack::isDrawing)
         return original::DrawModelExecute(this_, state, info, bone);
 } // namespace hooked_methods
 } // namespace hooked_methods

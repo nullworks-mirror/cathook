@@ -275,10 +275,10 @@ bool shouldMeleeCrit()
 {
     if (!melee || g_pLocalPlayer->weapon_mode != weapon_melee)
         return false;
-    if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled)
+    if (hacks::tf2::backtrack::isBacktrackEnabled)
     {
         // Closest tick for melee (default filter carry)
-        auto closest_tick = hacks::tf2::backtrack::backtrack.getClosestTick(LOCAL_E->m_vecOrigin(), hacks::tf2::backtrack::backtrack.defaultEntFilter, hacks::tf2::backtrack::backtrack.defaultTickFilter);
+        auto closest_tick = hacks::tf2::backtrack::getClosestTick(LOCAL_E->m_vecOrigin(), hacks::tf2::backtrack::defaultEntFilter, hacks::tf2::backtrack::defaultTickFilter);
         // Valid backtrack target
         if (closest_tick)
         {

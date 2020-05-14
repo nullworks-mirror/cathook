@@ -44,69 +44,43 @@ public:
     matrix3x4_t bones[128]{};
 };
 
-// Let's try OOP for once
-class Backtrack
-{
-    // Internal rvars
-    settings::Boolean enabled{ "backtrack.enabled", "false" };
-    settings::Boolean draw{ "backtrack.draw", "false" };
+// Stuff that has to be accessible from outside, mostly functions
 
-    std::vector<CIncomingSequence> sequences;
-    int current_tickcount;
-    std::array<std::unique_ptr<std::array<BacktrackData, 67>>, PLAYER_ARRAY_SIZE> backtrack_data;
-    int lastincomingsequence{ 0 };
-    // Used to make transition smooth(er)
-    float latency_rampup = 0.0f;
-
-    // Which data to apply in the late CreateMove
-    CachedEntity *bt_ent;
-    std::optional<BacktrackData> bt_data;
-
-    bool isEnabled();
-    float getLatency();
-    int getTicks();
-    bool getBestInternalTick(CachedEntity *, BacktrackData &, std::optional<BacktrackData> &);
-    void ApplyBacktrack();
-
-    // Stuff that has to be accessible from outside, mostly functions
-public:
-    settings::Float latency{ "backtrack.latency", "0" };
-    settings::Int bt_slots{ "backtrack.slots", "0" };
+extern settings::Float latency;
+extern settings::Int bt_slots;
 #if ENABLE_VISUALS
-    settings::Boolean chams{ "backtrack.chams", "false" };
-    settings::Int chams_ticks{ "backtrack.chams.ticks", "1" };
-    settings::Rgba chams_color{ "backtrack.chams.color", "646464FF" };
-    settings::Boolean chams_solid{ "backtrack.chams.color.solid", "false" };
+extern settings::Boolean chams;
+extern settings::Int chams_ticks;
+extern settings::Rgba chams_color;
+extern settings::Boolean chams_solid;
 #endif
 
-    // Check if backtrack is enabled
-    bool isBacktrackEnabled;
+// Check if backtrack is enabled
+extern bool isBacktrackEnabled;
 #if ENABLE_VISUALS
-    // Drawing Backtrack chams
-    bool isDrawing;
+// Drawing Backtrack chams
+extern bool isDrawing;
 #endif
-    // Event callbacks
-    void CreateMove();
-    void CreateMoveLate();
+// Event callbacks
+void CreateMove();
+void CreateMoveLate();
 #if ENABLE_VISUALS
-    void Draw();
+void Draw();
 #endif
-    void LevelShutdown();
+void LevelShutdown();
 
-    void adjustPing(INetChannel *);
-    void updateDatagram();
-    void resetData(int);
-    bool isGoodTick(BacktrackData &);
-    static bool defaultTickFilter(CachedEntity *, BacktrackData);
-    static bool defaultEntFilter(CachedEntity *);
+void adjustPing(INetChannel *);
+void updateDatagram();
+void resetData(int);
+bool isGoodTick(BacktrackData &);
+bool defaultTickFilter(CachedEntity *, BacktrackData);
+bool defaultEntFilter(CachedEntity *);
 
-    // Various functions for getting backtrack ticks
-    std::vector<BacktrackData> getGoodTicks(int);
-    std::optional<BacktrackData> getBestTick(CachedEntity *, std::function<bool(CachedEntity *, BacktrackData &, std::optional<BacktrackData> &)>);
-    std::optional<BacktrackData> getClosestEntTick(CachedEntity *, Vector, std::function<bool(CachedEntity *, BacktrackData)>);
-    std::optional<std::pair<CachedEntity *, BacktrackData>> getClosestTick(Vector, std::function<bool(CachedEntity *)>, std::function<bool(CachedEntity *, BacktrackData)>);
+// Various functions for getting backtrack ticks
+std::vector<BacktrackData> getGoodTicks(int);
+std::optional<BacktrackData> getBestTick(CachedEntity *, std::function<bool(CachedEntity *, BacktrackData &, std::optional<BacktrackData> &)>);
+std::optional<BacktrackData> getClosestEntTick(CachedEntity *, Vector, std::function<bool(CachedEntity *, BacktrackData)>);
+std::optional<std::pair<CachedEntity *, BacktrackData>> getClosestTick(Vector, std::function<bool(CachedEntity *)>, std::function<bool(CachedEntity *, BacktrackData)>);
 
-    void SetBacktrackData(CachedEntity *ent, BacktrackData);
-};
-extern hacks::tf2::backtrack::Backtrack backtrack;
+void SetBacktrackData(CachedEntity *ent, BacktrackData);
 } // namespace hacks::tf2::backtrack

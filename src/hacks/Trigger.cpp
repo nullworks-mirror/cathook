@@ -11,6 +11,7 @@
 #include <hacks/Backtrack.hpp>
 #include <PlayerTools.hpp>
 #include <settings/Bool.hpp>
+#include "Backtrack.hpp"
 
 namespace hacks::shared::triggerbot
 {
@@ -96,7 +97,7 @@ void CreateMove()
     CachedEntity *ent = nullptr;
     std::optional<hacks::tf2::backtrack::BacktrackData> bt_data;
 
-    if (!hacks::tf2::backtrack::backtrack.isBacktrackEnabled)
+    if (!hacks::tf2::backtrack::isBacktrackEnabled)
         ent = FindEntInSight(EffectiveTargetingRange());
     // Backtrack, use custom filter to check if tick is in crosshair
     else
@@ -115,7 +116,7 @@ void CreateMove()
         forward   = forward * EffectiveTargetingRange() + g_pLocalPlayer->v_Eye;
 
         // Call closest tick with our Tick filter func
-        auto closest_data = hacks::tf2::backtrack::backtrack.getClosestTick(g_pLocalPlayer->v_Eye, hacks::tf2::backtrack::backtrack.defaultEntFilter, tick_filter);
+        auto closest_data = hacks::tf2::backtrack::getClosestTick(g_pLocalPlayer->v_Eye, hacks::tf2::backtrack::defaultEntFilter, tick_filter);
 
         // No results, try to grab a building
         if (!closest_data)
@@ -127,7 +128,7 @@ void CreateMove()
             // Assign entity
             ent     = (*closest_data).first;
             bt_data = (*closest_data).second;
-            hacks::tf2::backtrack::backtrack.SetBacktrackData(ent, *bt_data);
+            hacks::tf2::backtrack::SetBacktrackData(ent, *bt_data);
         }
     }
 
@@ -136,7 +137,7 @@ void CreateMove()
         return;
 
     // Determine whether the triggerbot should shoot, then act accordingly
-    if (IsTargetStateGood(ent, bt_data))
+    if (IsTargetStateGood(ent, bt_data ? &*bt_data : nullptr))
     {
         target_time = backup_time;
         if (delay)
@@ -242,7 +243,7 @@ bool ShouldShoot()
 }
 
 // A second check to determine whether a target is good enough to be aimed at
-bool IsTargetStateGood(CachedEntity *entity, std::optional<hacks::tf2::backtrack::BacktrackData> tick)
+bool IsTargetStateGood(CachedEntity *entity, hacks::tf2::backtrack::BacktrackData *tick)
 {
     // Check for Players
     if (entity->m_Type() == ENTITY_PLAYER)

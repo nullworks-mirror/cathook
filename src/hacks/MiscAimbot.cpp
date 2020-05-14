@@ -10,6 +10,7 @@
 #include "hacks/Trigger.hpp"
 #include "MiscAimbot.hpp"
 #include "DetourHook.hpp"
+#include "Backtrack.hpp"
 
 namespace hacks::tf2::misc_aimbot
 {
@@ -49,14 +50,14 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
                 target = ProjectilePrediction(ent, 1, sandwich_speed, grav, PlayerGravityMod(ent));
             else
                 target = ent->hitboxes.GetHitbox(1)->center;
-            if (!hacks::tf2::backtrack::backtrack.isBacktrackEnabled && !IsEntityVectorVisible(ent, target))
+            if (!hacks::tf2::backtrack::isBacktrackEnabled && !IsEntityVectorVisible(ent, target))
                 continue;
             if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
                 continue;
             float scr = ent->m_flDistance();
-            if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled && demoknight_mode)
+            if (hacks::tf2::backtrack::isBacktrackEnabled && demoknight_mode)
             {
-                auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), hacks::tf2::backtrack::Backtrack::defaultTickFilter);
+                auto data = hacks::tf2::backtrack::getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), hacks::tf2::backtrack::defaultTickFilter);
                 // No entity
                 if (!data)
                     scr = FLT_MAX;
@@ -107,14 +108,14 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
             target = ProjectilePrediction(ent, 1, sandwich_speed, grav, PlayerGravityMod(ent));
         else
             target = ent->hitboxes.GetHitbox(1)->center;
-        if (!hacks::tf2::backtrack::backtrack.isBacktrackEnabled && !IsEntityVectorVisible(ent, target))
+        if (!hacks::tf2::backtrack::isBacktrackEnabled && !IsEntityVectorVisible(ent, target))
             continue;
         if (zcheck && (ent->m_vecOrigin().z - LOCAL_E->m_vecOrigin().z) > 200.0f)
             continue;
         float scr = ent->m_flDistance();
-        if (hacks::tf2::backtrack::backtrack.isBacktrackEnabled && demoknight_mode)
+        if (hacks::tf2::backtrack::isBacktrackEnabled && demoknight_mode)
         {
-            auto data = hacks::tf2::backtrack::backtrack.getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), hacks::tf2::backtrack::Backtrack::defaultTickFilter);
+            auto data = hacks::tf2::backtrack::getClosestEntTick(ent, LOCAL_E->m_vecOrigin(), hacks::tf2::backtrack::defaultTickFilter);
             // No entity
             if (!data)
                 scr = FLT_MAX;

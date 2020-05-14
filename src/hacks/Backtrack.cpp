@@ -4,11 +4,49 @@
  *
  */
 #include "Backtrack.hpp"
+#include "memory"
 
 namespace hacks::tf2::backtrack
 {
+// Internal rvars
+static settings::Boolean enabled{ "backtrack.enabled", "false" };
+static settings::Boolean draw{ "backtrack.draw", "false" };
+
+static std::vector<CIncomingSequence> sequences;
+static int current_tickcount;
+static std::array<std::unique_ptr<std::array<BacktrackData, 67>>, PLAYER_ARRAY_SIZE> backtrack_data;
+static int lastincomingsequence{ 0 };
+// Used to make transition smooth(er)
+static float latency_rampup = 0.0f;
+
+// Which data to apply in the late CreateMove
+static CachedEntity *bt_ent;
+static std::optional<BacktrackData> bt_data;
+
+static bool isEnabled();
+static float getLatency();
+static int getTicks();
+static bool getBestInternalTick(CachedEntity *, BacktrackData &, std::optional<BacktrackData> &);
+static void ApplyBacktrack();
+
+settings::Float latency{ "backtrack.latency", "0" };
+settings::Int bt_slots{ "backtrack.slots", "0" };
+#if ENABLE_VISUALS
+settings::Boolean chams{ "backtrack.chams", "false" };
+settings::Int chams_ticks{ "backtrack.chams.ticks", "1" };
+settings::Rgba chams_color{ "backtrack.chams.color", "646464FF" };
+settings::Boolean chams_solid{ "backtrack.chams.color.solid", "false" };
+#endif
+
+// Check if backtrack is enabled
+bool isBacktrackEnabled;
+#if ENABLE_VISUALS
+// Drawing Backtrack chams
+bool isDrawing;
+#endif
+
 // Apply Backtrack
-void Backtrack::ApplyBacktrack()
+void ApplyBacktrack()
 {
     if (!isBacktrackEnabled)
         return;
@@ -22,14 +60,14 @@ void Backtrack::ApplyBacktrack()
 }
 
 // Update tick to apply
-void Backtrack::SetBacktrackData(CachedEntity *ent, BacktrackData tick)
+void SetBacktrackData(CachedEntity *ent, BacktrackData tick)
 {
     bt_ent  = ent;
     bt_data = tick;
 }
 
 // Get Best tick for Backtrack (crosshair/fov based)
-bool Backtrack::getBestInternalTick(CachedEntity *, BacktrackData &data, std::optional<BacktrackData> &best_tick)
+bool getBestInternalTick(CachedEntity *, BacktrackData &data, std::optional<BacktrackData> &best_tick)
 {
     // Best Score
     float bestScore = FLT_MAX;
@@ -58,19 +96,21 @@ bool Backtrack::getBestInternalTick(CachedEntity *, BacktrackData &data, std::op
     // Should never be called but gcc likes to complain anyways
     return false;
 }
+
 // Is backtrack enabled?
-bool Backtrack::isEnabled()
+bool isEnabled()
 {
     if (!*enabled)
         return false;
     CachedEntity *wep = LOCAL_W;
     if (CE_BAD(wep))
         return false;
-    if (*bt_slots == 0)
-        return true;
     int slot = re::C_BaseCombatWeapon::GetSlot(RAW_ENT(wep));
-    switch ((int) bt_slots)
+    switch (*bt_slots)
     {
+    // Not set
+    case 0:
+        return true;
     case 1:
         if (slot == 0)
             return true;
@@ -100,7 +140,7 @@ bool Backtrack::isEnabled()
 }
 
 // Main Tracking logic
-void Backtrack::CreateMove()
+void CreateMove()
 {
     // Update enabled status
     isBacktrackEnabled = isEnabled();
@@ -201,7 +241,7 @@ void Backtrack::CreateMove()
         current_tick.has_updated = !previous_tick.m_flSimulationTime || previous_tick.m_flSimulationTime != current_tick.m_flSimulationTime;
 
         // Get best tick for this ent
-        std::optional<BacktrackData> data = getBestTick(ent, std::bind(&Backtrack::getBestInternalTick, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        std::optional<BacktrackData> data = getBestTick(ent, getBestInternalTick);
         // Check if actually the best tick we have in total
         if (data && (!best_data || getBestInternalTick(ent, *data, best_data)))
         {
@@ -212,15 +252,14 @@ void Backtrack::CreateMove()
     if (best_data && best_ent)
         SetBacktrackData(best_ent, *best_data);
 }
-
-void Backtrack::CreateMoveLate()
+void CreateMoveLate()
 {
     ApplyBacktrack();
 }
 
 #if ENABLE_VISUALS
 // Drawing
-void Backtrack::Draw()
+void Draw()
 {
     if (!isBacktrackEnabled || !draw)
         return;
@@ -261,7 +300,7 @@ void Backtrack::Draw()
 #endif
 
 // Reset things
-void Backtrack::LevelShutdown()
+void LevelShutdown()
 {
     lastincomingsequence = 0;
     sequences.clear();
@@ -270,7 +309,7 @@ void Backtrack::LevelShutdown()
 }
 
 // Change Datagram data
-void Backtrack::adjustPing(INetChannel *ch)
+void adjustPing(INetChannel *ch)
 {
     if (!isBacktrackEnabled)
         return;
@@ -286,7 +325,7 @@ void Backtrack::adjustPing(INetChannel *ch)
 }
 
 // Latency to add for backtrack
-float Backtrack::getLatency()
+float getLatency()
 {
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     // Track what actual latency we have
@@ -306,7 +345,7 @@ float Backtrack::getLatency()
 }
 
 // Update our sequences
-void Backtrack::updateDatagram()
+void updateDatagram()
 {
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (ch)
@@ -324,7 +363,7 @@ void Backtrack::updateDatagram()
 }
 
 // Get How many ticks we should Store and use
-int Backtrack::getTicks()
+int getTicks()
 {
     float max_lat = getLatency() + 200.0f;
 
@@ -336,13 +375,13 @@ int Backtrack::getTicks()
     return ticks;
 };
 
-void Backtrack::resetData(int entidx)
+void resetData(int entidx)
 {
     // Clear everything
     backtrack_data[entidx].reset();
 }
 
-bool Backtrack::isGoodTick(BacktrackData &tick)
+bool isGoodTick(BacktrackData &tick)
 {
     // This tick hasn't updated since the last one, Entity might be dropping packets
     if (!tick.has_updated)
@@ -358,7 +397,7 @@ bool Backtrack::isGoodTick(BacktrackData &tick)
 }
 
 // Read only vector of good ticks
-std::vector<BacktrackData> Backtrack::getGoodTicks(int entidx)
+std::vector<BacktrackData> getGoodTicks(int entidx)
 {
     std::vector<BacktrackData> to_return;
     // Invalid
@@ -377,7 +416,7 @@ std::vector<BacktrackData> Backtrack::getGoodTicks(int entidx)
 }
 
 // This function is so other files can Easily get the best tick matching their criteria
-std::optional<BacktrackData> Backtrack::getBestTick(CachedEntity *ent, std::function<bool(CachedEntity *ent, BacktrackData &data, std::optional<BacktrackData> &best_tick)> callback)
+std::optional<BacktrackData> getBestTick(CachedEntity *ent, std::function<bool(CachedEntity *ent, BacktrackData &data, std::optional<BacktrackData> &best_tick)> callback)
 {
     std::optional<BacktrackData> best_tick;
 
@@ -396,7 +435,7 @@ std::optional<BacktrackData> Backtrack::getBestTick(CachedEntity *ent, std::func
 }
 
 // Default filter method. Checks for vischeck on Hitscan weapons.
-bool Backtrack::defaultTickFilter(CachedEntity *ent, BacktrackData tick)
+bool defaultTickFilter(CachedEntity *ent, BacktrackData tick)
 {
     // Not hitscan, no vischeck needed
     if (g_pLocalPlayer->weapon_mode != weapon_hitscan)
@@ -405,7 +444,7 @@ bool Backtrack::defaultTickFilter(CachedEntity *ent, BacktrackData tick)
     return IsEntityVectorVisible(ent, tick.hitboxes.at(head).center, MASK_SHOT);
 }
 
-bool Backtrack::defaultEntFilter(CachedEntity *ent)
+bool defaultEntFilter(CachedEntity *ent)
 {
     // Dormant
     if (CE_BAD(ent))
@@ -417,7 +456,7 @@ bool Backtrack::defaultEntFilter(CachedEntity *ent)
 }
 
 // Get Closest tick of a specific entity
-std::optional<BacktrackData> Backtrack::getClosestEntTick(CachedEntity *ent, Vector vec, std::function<bool(CachedEntity *, BacktrackData)> tick_filter)
+std::optional<BacktrackData> getClosestEntTick(CachedEntity *ent, Vector vec, std::function<bool(CachedEntity *, BacktrackData)> tick_filter)
 {
     std::optional<BacktrackData> return_value;
     // No entry
@@ -444,7 +483,7 @@ std::optional<BacktrackData> Backtrack::getClosestEntTick(CachedEntity *ent, Vec
 }
 
 // Get Closest tick of any (enemy) entity, Second Parameter is to allow custom filters for entity criteria, third for ticks. We provide defaults for vischecks + melee for the second one
-std::optional<std::pair<CachedEntity *, BacktrackData>> Backtrack::getClosestTick(Vector vec, std::function<bool(CachedEntity *)> ent_filter, std::function<bool(CachedEntity *, BacktrackData)> tick_filter)
+std::optional<std::pair<CachedEntity *, BacktrackData>> getClosestTick(Vector vec, std::function<bool(CachedEntity *)> ent_filter, std::function<bool(CachedEntity *, BacktrackData)> tick_filter)
 {
     float distance         = FLT_MAX;
     CachedEntity *best_ent = nullptr;
@@ -476,13 +515,12 @@ std::optional<std::pair<CachedEntity *, BacktrackData>> Backtrack::getClosestTic
 }
 
 static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, std::bind(&Backtrack::CreateMove, &hacks::tf2::backtrack::backtrack), "backtrack_cm", EC::early);
-    EC::Register(EC::CreateMove, std::bind(&Backtrack::CreateMoveLate, &hacks::tf2::backtrack::backtrack), "backtrack_cmlate", EC::very_late);
+    EC::Register(EC::CreateMove, CreateMove, "backtrack_cm", EC::early);
+    EC::Register(EC::CreateMove, CreateMoveLate, "backtrack_cmlate", EC::very_late);
 #if ENABLE_VISUALS
-    EC::Register(EC::Draw, std::bind(&Backtrack::Draw, &hacks::tf2::backtrack::backtrack), "backtrack_draw");
+    EC::Register(EC::Draw, Draw, "backtrack_draw");
 #endif
-    EC::Register(EC::LevelShutdown, std::bind(&Backtrack::LevelShutdown, &hacks::tf2::backtrack::backtrack), "backtrack_levelshutdown");
+    EC::Register(EC::LevelShutdown, LevelShutdown, "backtrack_levelshutdown");
 });
-Backtrack backtrack;
+
 } // namespace hacks::tf2::backtrack
-// Global interface
