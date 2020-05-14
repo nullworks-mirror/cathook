@@ -168,7 +168,7 @@ enum charge_state
 charge_state current_state = ATTACK;
 
 // Used to determine when demoknight warp should be over
-static bool was_overriden = false;
+static bool was_overridden = false;
 void CreateMove()
 {
     if (!enabled)
@@ -278,10 +278,10 @@ void CreateMove()
 
                     // Use these ticks
                     warp_amount_override = std::clamp(charge_ticks, 0, warp_amount);
-                    was_overriden        = true;
+                    was_overridden       = true;
                 }
                 else
-                    was_overriden = false;
+                    was_overridden = false;
 
                 // Force a crit
                 criticals::force_crit_this_tick = true;
@@ -291,8 +291,8 @@ void CreateMove()
             // Just warp normally if meter isn't full
             else
             {
-                was_overriden = false;
-                current_state = WARP;
+                was_overridden = false;
+                current_state  = WARP;
             }
 
             should_warp = false;
@@ -309,7 +309,7 @@ void CreateMove()
         case WARP:
         {
             should_warp = true;
-            if ((was_overriden && !warp_amount_override) || !warp_amount)
+            if ((was_overridden && !warp_amount_override) || !warp_amount)
             {
                 should_warp   = false;
                 current_state = DONE;
