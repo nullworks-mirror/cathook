@@ -14,7 +14,7 @@ static settings::Boolean draw{ "backtrack.draw", "false" };
 
 static std::vector<CIncomingSequence> sequences;
 static int current_tickcount;
-static std::array<std::unique_ptr<std::array<BacktrackData, 67>>, PLAYER_ARRAY_SIZE> backtrack_data;
+static std::vector<std::unique_ptr<std::array<BacktrackData, 67>>> backtrack_data;
 static int lastincomingsequence{ 0 };
 // Used to make transition smooth(er)
 static float latency_rampup = 0.0f;
@@ -235,7 +235,11 @@ void CreateMove()
         }
 
         // Copy bones (for chams/glow)
-        memcpy((void *) current_tick.bones, (void *) ent->hitboxes.bones, sizeof(matrix3x4_t) * 128);
+        int numbones = CE_INT(ent, 0x844);
+        if (numbones != current_tick.bones.size())
+            current_tick.bones.resize(numbones);
+
+        memcpy((void *) &current_tick.bones[0], (void *) &ent->hitboxes.bones[0], sizeof(matrix3x4_t) * numbones);
 
         // Check if tick updated or not (fakelag)
         current_tick.has_updated = !previous_tick.m_flSimulationTime || previous_tick.m_flSimulationTime != current_tick.m_flSimulationTime;
@@ -299,13 +303,17 @@ void Draw()
 }
 #endif
 
+// Resize our backtrackdata
+void LevelInit()
+{
+    backtrack_data.resize(g_IEngine->GetMaxClients());
+}
+
 // Reset things
 void LevelShutdown()
 {
     lastincomingsequence = 0;
     sequences.clear();
-    for (int i = 0; i < PLAYER_ARRAY_SIZE; i++)
-        resetData(i);
 }
 
 // Change Datagram data
@@ -378,7 +386,7 @@ int getTicks()
 void resetData(int entidx)
 {
     // Clear everything
-    backtrack_data[entidx].reset();
+    backtrack_data[entidx - 1].reset();
 }
 
 bool isGoodTick(BacktrackData &tick)
@@ -401,11 +409,11 @@ std::vector<BacktrackData> getGoodTicks(int entidx)
 {
     std::vector<BacktrackData> to_return;
     // Invalid
-    if (!backtrack_data.at(entidx))
+    if (!backtrack_data.at(entidx - 1))
         return to_return;
 
     // Check all ticks
-    for (auto &tick : *backtrack_data.at(entidx))
+    for (auto &tick : *backtrack_data.at(entidx - 1))
         if (isGoodTick(tick))
             to_return.push_back(tick);
 
@@ -421,7 +429,7 @@ std::optional<BacktrackData> getBestTick(CachedEntity *ent, std::function<bool(C
     std::optional<BacktrackData> best_tick;
 
     // No data recorded
-    if (!backtrack_data.at(ent->m_IDX))
+    if (!backtrack_data.at(ent->m_IDX - 1))
         return best_tick;
 
     // Let the callback do the lifting
@@ -460,7 +468,7 @@ std::optional<BacktrackData> getClosestEntTick(CachedEntity *ent, Vector vec, st
 {
     std::optional<BacktrackData> return_value;
     // No entry
-    if (!backtrack_data.at(ent->m_IDX))
+    if (!backtrack_data.at(ent->m_IDX - 1))
         return return_value;
 
     float distance = FLT_MAX;
@@ -521,6 +529,7 @@ static InitRoutine init([]() {
     EC::Register(EC::Draw, Draw, "backtrack_draw");
 #endif
     EC::Register(EC::LevelShutdown, LevelShutdown, "backtrack_levelshutdown");
+    EC::Register(EC::LevelInit, LevelInit, "backtrack_levelinit");
 });
 
 } // namespace hacks::tf2::backtrack

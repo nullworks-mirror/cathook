@@ -158,7 +158,8 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                                 // Can't draw more than we have
                                 if (i >= good_ticks.size())
                                     break;
-                                original::DrawModelExecute(this_, state, info, good_ticks[i].bones);
+                                if (!good_ticks[i].bones.empty())
+                                    original::DrawModelExecute(this_, state, info, &good_ticks[i].bones[0]);
                             }
                             // Revert
                             g_IVRenderView->SetColorModulation(mod_original.rgba);

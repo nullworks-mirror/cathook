@@ -41,7 +41,7 @@ public:
     float m_flSimulationTime{};
     bool has_updated{};
 
-    matrix3x4_t bones[128]{};
+    std::vector<matrix3x4_t> bones{};
 };
 
 // Stuff that has to be accessible from outside, mostly functions
