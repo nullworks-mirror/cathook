@@ -124,11 +124,6 @@ bool shouldBacktrack()
     return !projectile_mode && (*backtrackAimbot || force_backtrack_aimbot) && hacks::tf2::backtrack::isBacktrackEnabled;
 }
 
-bool IsBacktracking()
-{
-    return (!aimkey_mode || (aimkey ? aimkey.isKeyDown() : true)) && shouldBacktrack();
-}
-
 // Am I holding Hitman's Heatmaker ?
 static bool CarryingHeatmaker()
 {
@@ -589,7 +584,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             else
             {
                 float swingrange = EffectiveTargetingRange();
-                if (!IsBacktracking() || entity->m_Type() != ENTITY_PLAYER)
+                if (!shouldBacktrack() || entity->m_Type() != ENTITY_PLAYER)
                 {
                     int hb = BestHitbox(entity);
                     if (hb == -1)
@@ -1239,7 +1234,7 @@ int BestHitbox(CachedEntity *target)
         }
 
         // Backtracking and preferred hitbox
-        if (IsBacktracking())
+        if (shouldBacktrack())
         {
             auto data = hacks::tf2::backtrack::getClosestEntTick(target, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
 
@@ -1259,7 +1254,7 @@ int BestHitbox(CachedEntity *target)
         else if (target->hitboxes.VisibilityCheck(preferred))
             return preferred;
         // Else attempt to find any hitbox at all
-        if (IsBacktracking())
+        if (shouldBacktrack())
         {
             // We already vischecked
             if (!*backtrackVischeckAll)
