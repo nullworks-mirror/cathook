@@ -126,7 +126,7 @@ bool shouldBacktrack()
 
 bool IsBacktracking()
 {
-    return (aimkey ? aimkey.isKeyDown() : true) && shouldBacktrack();
+    return (!aimkey_mode || (aimkey ? aimkey.isKeyDown() : true)) && shouldBacktrack();
 }
 
 // Am I holding Hitman's Heatmaker ?
@@ -138,9 +138,6 @@ static bool CarryingHeatmaker()
 // Backtrack filter for aimbot
 bool aimbotTickFilter(CachedEntity *ent, hacks::tf2::backtrack::BacktrackData tick)
 {
-    // Not hitscan, no vischeck needed
-    if (g_pLocalPlayer->weapon_mode != weapon_hitscan)
-        return true;
     // FOV check
     if (*fov > 0.0f)
     {
@@ -149,6 +146,9 @@ bool aimbotTickFilter(CachedEntity *ent, hacks::tf2::backtrack::BacktrackData ti
         if (fov_scr > *fov)
             return false;
     }
+    // Not hitscan, no vischeck needed
+    if (g_pLocalPlayer->weapon_mode != weapon_hitscan)
+        return true;
     // Return visibility
     return IsEntityVectorVisible(ent, tick.hitboxes.at(head).center, MASK_SHOT);
 }
