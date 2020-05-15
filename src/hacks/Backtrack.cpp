@@ -441,7 +441,7 @@ std::optional<BacktrackData> getBestTick(CachedEntity *ent, std::function<bool(C
     std::optional<BacktrackData> best_tick;
 
     // No data recorded
-    if (backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
+    if (ent->m_IDX <= 1 || backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
         return best_tick;
 
     // Let the callback do the lifting
@@ -480,7 +480,7 @@ std::optional<BacktrackData> getClosestEntTick(CachedEntity *ent, Vector vec, st
 {
     std::optional<BacktrackData> return_value;
     // No entry
-    if (backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
+    if (ent->m_IDX <= 1 || backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
         return return_value;
 
     float distance = FLT_MAX;
