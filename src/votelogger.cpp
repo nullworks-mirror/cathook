@@ -131,8 +131,10 @@ void dispatchUserMessage(bf_read &buffer, int type)
             if (chat_partysay)
                 re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
         }
+#if ENABLE_VISUALS
         if (chat)
             PrintChat("Votekick called: \x07%06X%s\x01 => \x07%06X%s\x01 (%s)", colors::chat::team(g_pPlayerResource->getTeam(caller)), info2.name, colors::chat::team(g_pPlayerResource->getTeam(target)), info.name, reason);
+#endif
         break;
     }
     case 47:
@@ -230,8 +232,10 @@ public:
 
                 re::CTFPartyClient::GTFPartyClient()->SendPartyChat(formated_string);
             }
+#if ENABLE_VISUALS
             if (chat)
                 PrintChat("\x07%06X%s\x01 [U:1:%u] %s", colors::chat::team(g_pPlayerResource->getTeam(eid)), info.name, info.friendsID, vote_option ? "F2" : "F1");
+#endif
         }
     }
 };
