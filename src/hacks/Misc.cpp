@@ -79,6 +79,12 @@ static void updateAntiAfk()
                 current_user_cmd->buttons &= ~(IN_DUCK | IN_JUMP);
             else
                 current_user_cmd->buttons = IN_DUCK | IN_JUMP;
+
+            // Game also checks if you move if you are in spawn, so spam movement keys alternatingly
+            bool flip = false;
+            current_late_user_cmd->buttons |= flip ? IN_FORWARD : IN_BACK;
+            // Flip flip
+            flip = !flip;
             if (anti_afk_timer.check(afk_timer->m_nValue * 60 * 1000 + 1000))
             {
                 anti_afk_timer.update();
@@ -277,10 +283,10 @@ void CreateMove()
                 cmdrate = g_ICvar->FindVar("cl_cmdrate");
                 return;
             }
-            int ping        = g_pPlayerResource->GetPing(g_IEngine->GetLocalPlayer());
+            int ping = g_pPlayerResource->GetPing(g_IEngine->GetLocalPlayer());
             if (*force_ping <= ping && cmdrate->GetInt() != -1)
             {
-                oldCmdRate = cmdrate->GetInt();
+                oldCmdRate         = cmdrate->GetInt();
                 cmdrate->m_fMaxVal = 999999999.9f;
                 cmdrate->m_fMinVal = -999999999.9f;
                 cmdrate->SetValue(-1);
@@ -825,12 +831,12 @@ static InitRoutine init_pyrovision([]() {
         static ConVar *cmdrate = g_ICvar->FindVar("cl_cmdrate");
         if (cmdrate == nullptr)
         {
-          cmdrate = g_ICvar->FindVar("cl_cmdrate");
-          return;
+            cmdrate = g_ICvar->FindVar("cl_cmdrate");
+            return;
         }
         if (!after && cmdrate->GetInt() != oldCmdRate)
             cmdrate->SetValue(oldCmdRate);
-    });;
+    });
 #endif
 });
 #endif
