@@ -126,7 +126,7 @@ namespace hooked_methods
 {
 DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUserCmd *cmd)
 {
-    bSendPackets = reinterpret_cast<bool *>((uintptr_t) __builtin_frame_address(2) - 8);
+    bSendPackets = reinterpret_cast<bool *>((uintptr_t) __builtin_frame_address(3) - 8);
 
     g_Settings.is_create_move = true;
     bool time_replaced, ret, speedapplied;
