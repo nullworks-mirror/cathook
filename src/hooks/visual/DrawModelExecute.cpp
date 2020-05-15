@@ -139,8 +139,8 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
                             CMatRenderContextPtr ptr(GET_RENDER_CONTEXT);
                             // Backup Blend
                             float orig_blend = g_IVRenderView->GetBlend();
-                            // Make Backtrack stuff Solid color
-                            g_IVRenderView->SetBlend(1.0f);
+                            // Make Backtrack stuff Use chams alpha
+                            g_IVRenderView->SetBlend((*hacks::tf2::backtrack::chams_color).a);
 
                             rgba_t mod_original;
                             // Save color just in case, then set to team color

@@ -421,7 +421,7 @@ std::vector<BacktrackData> getGoodTicks(int entidx)
 {
     std::vector<BacktrackData> to_return;
     // Invalid
-    if (entidx <= 1 || (int) backtrack_data.size() < entidx || !backtrack_data.at(entidx - 1))
+    if (entidx <= 0 || (int) backtrack_data.size() < entidx || !backtrack_data.at(entidx - 1))
         return to_return;
 
     // Check all ticks
@@ -441,7 +441,7 @@ std::optional<BacktrackData> getBestTick(CachedEntity *ent, std::function<bool(C
     std::optional<BacktrackData> best_tick;
 
     // No data recorded
-    if (ent->m_IDX <= 1 || backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
+    if (ent->m_IDX <= 0 || backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
         return best_tick;
 
     // Let the callback do the lifting
@@ -480,7 +480,7 @@ std::optional<BacktrackData> getClosestEntTick(CachedEntity *ent, Vector vec, st
 {
     std::optional<BacktrackData> return_value;
     // No entry
-    if (ent->m_IDX <= 1 || backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
+    if (ent->m_IDX <= 0 || backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
         return return_value;
 
     float distance = FLT_MAX;
