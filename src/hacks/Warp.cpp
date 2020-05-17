@@ -47,7 +47,7 @@ float excess_ticks = 0.0f;
 int GetWarpAmount()
 {
     static auto sv_max_dropped_packets_to_process = g_ICvar->FindVar("sv_max_dropped_packets_to_process");
-    float warp_amount_preprocessed                = *speed;
+    float warp_amount_preprocessed                = std::min(*speed, 0.05f);
     // Store excess
     excess_ticks += warp_amount_preprocessed - std::floor(warp_amount_preprocessed);
 
@@ -88,18 +88,21 @@ void Warp(float accumulated_extra_samples, bool finalTick)
 
     // Call CL_Move once for every warp tick
     int warp_amnt = GetWarpAmount();
-    for (int i = 0; i <= std::min(warp_ticks, warp_amnt); i++)
+    if (warp_amnt)
     {
-        original(accumulated_extra_samples, finalTick);
-        // Only decrease ticks for the final CL_Move tick
-        if (finalTick)
+        for (int i = 0; i <= std::min(warp_ticks, warp_amnt); i++)
         {
-            warp_amount--;
-            warp_ticks--;
+            original(accumulated_extra_samples, finalTick);
+            // Only decrease ticks for the final CL_Move tick
+            if (finalTick)
+            {
+                warp_amount--;
+                warp_ticks--;
+            }
         }
-    }
 
-    cl_move_detour.RestorePatch();
+        cl_move_detour.RestorePatch();
+    }
 
     if (warp_amount_override)
         warp_amount_override = warp_ticks;
