@@ -39,6 +39,7 @@ static settings::Int bar_y{ "warp.bar-y", "200" };
 static bool should_charge       = false;
 static int warp_amount          = 0;
 static int warp_amount_override = 0;
+static bool should_melee        = false;
 static bool charged             = false;
 
 // How many ticks of excess we have (for decimal speeds)
@@ -135,6 +136,7 @@ void SendNetMessage(INetMessage &msg)
         {
             int ticks    = GetMaxWarpTicks();
             auto movemsg = (CLC_Move *) &msg;
+
             // Just null it :shrug:
             movemsg->m_nBackupCommands = 0;
             movemsg->m_nNewCommands    = 0;
@@ -154,11 +156,34 @@ void SendNetMessage(INetMessage &msg)
     should_charge = false;
 }
 
-static bool move_last_tick        = true;
-static bool warp_last_tick        = false;
-static bool should_warp_last_tick = false;
-static bool was_hurt_last_tick    = false;
-static int ground_ticks           = 0;
+// Approximate demoknight shield speed at a given tick
+float approximateSpeedAtTick(int ticks_since_start, float initial_speed)
+{
+    // Formula only holds up until like 20 ticks
+    float speed = ticks_since_start >= 20 ? 750.0f : (ticks_since_start * (113.8f - 2.8f * ticks_since_start) + 1.0f);
+    return std::min(750.0f * g_GlobalVars->interval_per_tick, initial_speed * g_GlobalVars->interval_per_tick + speed * g_GlobalVars->interval_per_tick);
+}
+
+// Approximate the amount of ticks needed for a given distance as demoknight
+int approximateTicksForDist(float distance, float initial_speed, int max_ticks)
+{
+    float travelled_dist = 0.0f;
+    for (int i = 0; i <= max_ticks; i++)
+    {
+        travelled_dist += approximateSpeedAtTick(i, initial_speed);
+
+        // We hit the needed range
+        if (travelled_dist >= distance)
+            return i;
+    }
+    // Not within Max range
+    return -1;
+}
+
+static bool move_last_tick     = true;
+static bool warp_last_tick     = false;
+static bool was_hurt_last_tick = false;
+static int ground_ticks        = 0;
 // Left and right by default
 static std::vector<float> yaw_selections{ 90.0f, -90.0f };
 
@@ -284,25 +309,47 @@ void CreateMove()
                 if (result.first)
                 {
                     float distance = LOCAL_E->m_vecOrigin().DistTo(result.first->m_vecOrigin());
-                    // Subtract melee range
-                    distance -= 130.0f;
 
-                    // Divide by the amount we travel per tick to get how much of our charge we'll need
-                    int charge_ticks = distance / (750.0f * g_GlobalVars->interval_per_tick);
+                    // We want to hit their bounding box, not their center
+                    distance -= 40.0f;
 
-                    // For every started 10 ticks We can subtract 1 because we'll get an extra CreateMove call.
-                    charge_ticks -= std::ceil(charge_ticks / 10.0f);
+                    // This approximates the ticks needed for the distance
+                    Vector vel;
+                    velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), vel);
+                    // +11 to account for the melee delay
+                    int charge_ticks = approximateTicksForDist(distance, vel.Length(), GetMaxWarpTicks() + 11);
 
+                    // Not in range, try again with melee range taken into compensation
+                    if (charge_ticks <= 0)
+                        charge_ticks = approximateTicksForDist(distance - 128.0f, vel.Length(), GetMaxWarpTicks() + 11);
+                    // Out of range
+                    if (charge_ticks <= 0)
+                    {
+                        charge_ticks = warp_amount;
+                        should_melee = false;
+                    }
+                    else
+                    {
+                        charge_ticks = std::clamp(charge_ticks, 0, warp_amount);
+                        // For every started 10 ticks We can subtract 1 because we'll get an extra CreateMove call.
+                        charge_ticks -= std::ceil(charge_ticks / 10.0f);
+                        should_melee = true;
+                    }
                     // Use these ticks
-                    warp_amount_override = std::clamp(charge_ticks, 0, warp_amount);
-                    was_overridden       = true;
+                    warp_amount_override = charge_ticks;
+
+                    was_overridden = true;
                 }
                 else
+                {
+                    should_melee   = false;
                     was_overridden = false;
+                }
 
                 // Force a crit
                 criticals::force_crit_this_tick = true;
-                current_user_cmd->buttons |= IN_ATTACK;
+                if (should_melee)
+                    current_user_cmd->buttons |= IN_ATTACK;
                 current_state = CHARGE;
             }
             // Just warp normally if meter isn't full
