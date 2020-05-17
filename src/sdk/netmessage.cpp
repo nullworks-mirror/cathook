@@ -20,6 +20,8 @@ bf_write::bf_write()
     m_pDebugName        = NULL;
 }
 
+static char s_text[1024];
+
 unsigned long g_LittleBits[32];
 
 // Precalculated bit masks for WriteUBitLong. Using these tables instead of
@@ -498,7 +500,8 @@ const char *CLC_ListenEvents::ToString(void) const
 
 const char *CLC_Move::ToString(void) const
 {
-    return strfmt("%s: backup %i, new %i, bytes %i", GetName(), m_nNewCommands, m_nBackupCommands, Bits2Bytes(m_nLength)).release();
+    Q_snprintf(s_text, sizeof(s_text), "%s: backup %i, new %i, bytes %i", GetName(), m_nNewCommands, m_nBackupCommands, Bits2Bytes(m_nLength));
+    return s_text;
 }
 
 bool CLC_Move::WriteToBuffer(bf_write &buffer)
