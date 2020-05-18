@@ -256,6 +256,18 @@ void CreateMove()
         // Check if tick updated or not (fakelag)
         current_tick.has_updated = !previous_tick.m_flSimulationTime || previous_tick.m_flSimulationTime != current_tick.m_flSimulationTime;
 
+        // Special Case that invalidates all the previous ticks
+        // if the new tick is too far away all the other ones get marked as not updated and thus invalid
+        if (current_tick.m_vecOrigin.AsVector2D().DistTo(previous_tick.m_vecOrigin.AsVector2D()) > 64)
+        {
+            for (auto &tick : *backtrack_ent)
+            {
+                // Older than current tick, mark invalid
+                if (tick.tickcount < current_tick.tickcount)
+                    tick.has_updated = false;
+            }
+        }
+
         // Get best tick for this ent
         std::optional<BacktrackData> data = getBestTick(ent, getBestInternalTick);
         // Check if actually the best tick we have in total
@@ -398,7 +410,7 @@ int getTicks()
 void resetData(int entidx)
 {
     // Clear everything
-    backtrack_data[entidx - 1].reset();
+    backtrack_data.at(entidx - 1).reset();
 }
 
 bool isGoodTick(BacktrackData &tick)
@@ -542,6 +554,7 @@ static InitRoutine init([]() {
 #endif
     EC::Register(EC::LevelShutdown, LevelShutdown, "backtrack_levelshutdown");
     EC::Register(EC::LevelInit, LevelInit, "backtrack_levelinit");
+    LevelInit();
 });
 
 } // namespace hacks::tf2::backtrack
