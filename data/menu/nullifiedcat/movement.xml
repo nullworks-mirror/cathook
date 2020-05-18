@@ -59,7 +59,7 @@
         <Box padding="12 6 6 6" width="content" height="content" name="Warp" x="370" y="65">
         <List width="180">
             <AutoVariable width="fill" target="warp.enabled" label="Enable Warp" tooltip="Allows you to charge a burst of speed"/>
-            <AutoVariable width="fill" target="warp.speed" label="Warp speed" tooltip="The Discharge speed (0.5 = +50%, 2 = +200%, +1000% is the maximum possible)"/>
+            <AutoVariable width="fill" target="warp.speed" label="Warp speed" tooltip="The Discharge speed (0.5 = +50%, 2 = +200%, +2300% is the maximum possible)"/>
             <AutoVariable width="fill" target="warp.key" label="Warp Key" tooltip="Pressing this key will use all stored ticks to accelerate you"/>
             <AutoVariable width="fill" target="warp.draw" label="Draw Warp" tooltip="Draws a bar indicating your warp readyness"/>
             <AutoVariable width="fill" target="warp.bar-size" label="Bar Size"/>

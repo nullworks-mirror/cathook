@@ -16,7 +16,7 @@
 namespace hacks::tf2::warp
 {
 static settings::Boolean enabled{ "warp.enabled", "false" };
-static settings::Float speed{ "warp.speed", "10" };
+static settings::Float speed{ "warp.speed", "23" };
 static settings::Boolean draw{ "warp.draw", "false" };
 static settings::Button warp_key{ "warp.key", "<null>" };
 static settings::Boolean charge_passively{ "warp.charge-passively", "true" };
@@ -31,6 +31,9 @@ static settings::Boolean warp_backwards{ "warp.on-hit.backwards", "false" };
 static settings::Boolean warp_left{ "warp.on-hit.left", "true" };
 static settings::Boolean warp_right{ "warp.on-hit.right", "true" };
 
+// Hidden control rvars for communtiy servers
+static settings::Int maxusrcmdprocessticks("warp.maxusrcmdprocessticks", "24");
+
 // Draw control
 static settings::Int size{ "warp.bar-size", "100" };
 static settings::Int bar_x{ "warp.bar-x", "50" };
@@ -44,21 +47,27 @@ static bool charged             = false;
 
 // How many ticks of excess we have (for decimal speeds)
 float excess_ticks = 0.0f;
-int GetWarpAmount()
+int GetWarpAmount(bool finalTick)
 {
-    static auto sv_max_dropped_packets_to_process = g_ICvar->FindVar("sv_max_dropped_packets_to_process");
-    float warp_amount_preprocessed                = std::max(*speed, 0.05f);
-    // Store excess
-    excess_ticks += warp_amount_preprocessed - std::floor(warp_amount_preprocessed);
+    int max_extra_ticks = *maxusrcmdprocessticks - 1;
+    // No limit set
+    if (!*maxusrcmdprocessticks)
+        max_extra_ticks = INT_MAX;
+    float warp_amount_preprocessed = std::max(*speed, 0.05f);
 
     // How many ticks to warp, add excess too
     int warp_amount_processed = std::floor(warp_amount_preprocessed) + std::floor(excess_ticks);
 
     // Remove the used amount from excess
-    excess_ticks -= std::floor(excess_ticks);
+    if (finalTick)
+        excess_ticks -= std::floor(excess_ticks);
+
+    // Store excess
+    if (finalTick)
+        excess_ticks += warp_amount_preprocessed - std::floor(warp_amount_preprocessed);
 
     // Return smallest of the two
-    return std::min(warp_amount_processed, sv_max_dropped_packets_to_process->GetInt());
+    return std::min(warp_amount_processed, max_extra_ticks);
 }
 
 static bool should_warp = true;
@@ -87,10 +96,11 @@ void Warp(float accumulated_extra_samples, bool finalTick)
     CL_Move_t original = (CL_Move_t) cl_move_detour.GetOriginalFunc();
 
     // Call CL_Move once for every warp tick
-    int warp_amnt = GetWarpAmount();
+    int warp_amnt = GetWarpAmount(finalTick);
     if (warp_amnt)
     {
-        for (int i = 0; i <= std::min(warp_ticks, warp_amnt); i++)
+        int calls = std::min(warp_ticks, warp_amnt);
+        for (int i = 0; i < calls; i++)
         {
             original(accumulated_extra_samples, finalTick);
             // Only decrease ticks for the final CL_Move tick
@@ -117,8 +127,7 @@ void Warp(float accumulated_extra_samples, bool finalTick)
 
 int GetMaxWarpTicks()
 {
-    static auto usercmd_cvar = g_ICvar->FindVar("sv_maxusrcmdprocessticks");
-    int ticks                = usercmd_cvar->GetInt();
+    int ticks = *maxusrcmdprocessticks;
     // No limit set
     if (!ticks)
         ticks = INT_MAX;
@@ -333,8 +342,8 @@ void CreateMove()
                     else
                     {
                         charge_ticks = std::clamp(charge_ticks, 0, warp_amount);
-                        // For every started 10 ticks We can subtract 1 because we'll get an extra CreateMove call.
-                        charge_ticks -= std::ceil(charge_ticks / 10.0f);
+                        // For every started batch We can subtract 1 because we'll get an extra CreateMove call.
+                        charge_ticks -= std::ceil(charge_ticks / *speed);
                         should_melee = true;
                     }
                     // Use these ticks
@@ -419,8 +428,8 @@ void CreateMove()
         }
         case MOVE_TOWARDS:
         {
-            // Just wait until we used about half of our warp, then we can start going back
-            if (warp_amount <= charge_at_start / 2.0f)
+            // Just wait until we used about a third of our warp, the rest has to be used for moving back
+            if (warp_amount <= charge_at_start * (2.0f / 3.0f))
                 current_peek_state = MOVE_BACK;
             break;
         }
