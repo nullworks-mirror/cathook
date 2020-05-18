@@ -405,8 +405,8 @@ void CreateMove()
             Vector vel;
             velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), vel);
 
-            // if we move more than 1.0 HU/s , go to move towards statement...
-            if (!vel.IsZero(1.0f))
+            // if we move more than 1.0 HU/s and buttons are pressed, and we are grounded, go to move towards statement...
+            if (CE_INT(LOCAL_E, netvar.iFlags) & FL_ONGROUND && !vel.IsZero(1.0f) && current_user_cmd->buttons & (IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT))
                 current_peek_state = MOVE_TOWARDS;
             // ...else don't warp
             else
