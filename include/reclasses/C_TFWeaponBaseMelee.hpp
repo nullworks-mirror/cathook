@@ -31,7 +31,7 @@ public:
             CachedEntity *owner_ce = ENTITY(owner->entindex());
             if (HasCondition<TFCond_Charging>(owner_ce))
             {
-                RemoveCondition<TFCond_Charging>(owner_ce);
+                CondBitSet<TFCond_Charging, false>(CE_VAR(owner_ce, netvar.iCond, condition_data_s));
                 add_charging = true;
             }
         }
@@ -41,7 +41,7 @@ public:
         if (add_charging)
         {
             CachedEntity *owner_ce = ENTITY(owner->entindex());
-            AddCondition<TFCond_Charging>(owner_ce);
+            CondBitSet<TFCond_Charging, true>(CE_VAR(owner_ce, netvar.iCond, condition_data_s));
         }
         return return_value;
     }
