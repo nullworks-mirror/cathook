@@ -106,7 +106,7 @@ static bool vischeck(CNavArea *begin, CNavArea *end)
 static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
 {
     // No z check Should be done for stairs as they can go very far up
-    if (getZBetweenAreas(begin, end) > 70 && !(end->m_attributeFlags & NAV_MESH_STAIRS))
+    if (getZBetweenAreas(begin, end) > 70)
         return const_ignored;
     if (!vischecks)
         return vischeck_success;
@@ -677,12 +677,21 @@ static void cm()
         current_user_cmd->viewangles = next;
     }
     // Detect when jumping is necessary
-    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumb_vec->z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.test_and_set(200)) || (last_jump.test_and_set(200) && inactivity.check(*stuck_time / 2)))
+    if ((!(g_pLocalPlayer->holding_sniper_rifle && g_pLocalPlayer->bZoomed) && crumb_vec->z - g_pLocalPlayer->v_Origin.z > 18 && last_jump.check(200)) || (last_jump.check(200) && inactivity.check(*stuck_time / 2)))
     {
         auto local = findClosestNavSquare(g_pLocalPlayer->v_Origin);
         // Check if current area allows jumping
         if (!local || !(local->m_attributeFlags & (NAV_MESH_NO_JUMP | NAV_MESH_STAIRS)))
-            current_user_cmd->buttons |= (IN_JUMP | IN_DUCK);
+        {
+            static bool flip_action = false;
+            // Make it crouch the second tick
+            current_user_cmd->buttons |= flip_action ? IN_DUCK : IN_JUMP;
+
+            // Update jump timer now
+            if (flip_action)
+                last_jump.test_and_set(200);
+            flip_action = !flip_action;
+        }
     }
     // Walk to next crumb
     WalkTo(*crumb_vec);
