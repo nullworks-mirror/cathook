@@ -164,5 +164,14 @@ void Invalidate()
     }
 }
 
+void Shutdown()
+{
+    for (auto &ent : array)
+    {
+        ent.Reset();
+        ent.hitboxes.Reset();
+    }
+}
+
 int max = 0;
 } // namespace entity_cache

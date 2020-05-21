@@ -326,7 +326,7 @@ bool shouldCrit()
 static bool can_beggars_crit   = false;
 static bool attacked_last_tick = false;
 
-bool canWeaponCrit(bool canShootCheck = true)
+bool canWeaponCrit(bool draw = false)
 {
     // Is weapon elligible for crits?
     IClientEntity *weapon = RAW_ENT(LOCAL_W);
@@ -344,9 +344,9 @@ bool canWeaponCrit(bool canShootCheck = true)
     // Misc checks
     if (!isAllowedToWithdrawFromBucket(weapon))
         return false;
-    if (canShootCheck && !CanShoot() && !isRapidFire(weapon))
+    if (!draw && !CanShoot() && !isRapidFire(weapon))
         return false;
-    if (CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 730 && !can_beggars_crit)
+    if (!draw && CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) == 730 && !can_beggars_crit)
         return false;
     // Check if we have done enough damage to crit
     auto crit_mult_info = critMultInfo(weapon);
@@ -752,7 +752,7 @@ void Draw()
         // fixObservedCritchance(wep);
 
         // Used by multiple things
-        bool can_crit = canWeaponCrit(false);
+        bool can_crit = canWeaponCrit(true);
 
         if (bucket != last_bucket || wep->entindex() != last_wep || update_shots.test_and_set(500))
         {

@@ -105,7 +105,7 @@ static settings::Boolean bonecache_enabled{ "source.use-bone-cache", "false" };
 
 static std::mutex setupbones_mutex;
 
-matrix3x4_t *EntityHitboxCache::GetBones()
+matrix3x4_t *EntityHitboxCache::GetBones(int numbones)
 {
     static float bones_setup_time = 0.0f;
     switch (*setupbones_time)
@@ -126,13 +126,24 @@ matrix3x4_t *EntityHitboxCache::GetBones()
     }
     if (!bones_setup)
     {
+        // If numbones is not set, get it from some terrible and unnamed variable
+        if (numbones == -1)
+        {
+            if (parent_ref->m_Type() == ENTITY_PLAYER)
+                numbones = CE_INT(parent_ref, 0x844);
+            else
+                numbones = MAXSTUDIOBONES;
+        }
+
+        if (bones.size() < (size_t) numbones)
+            bones.resize(numbones);
         if (g_Settings.is_create_move)
         {
 #if !ENABLE_TEXTMODE
             if (!*bonecache_enabled || parent_ref->m_Type() != ENTITY_PLAYER || IsPlayerInvisible(parent_ref))
             {
                 PROF_SECTION(bone_setup);
-                bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+                bones_setup = RAW_ENT(parent_ref)->SetupBones(bones.data(), numbones, 0x7FF00, bones_setup_time);
             }
             else
             {
@@ -140,24 +151,24 @@ matrix3x4_t *EntityHitboxCache::GetBones()
                 auto to_copy = CE_VAR(parent_ref, 0x838, matrix3x4_t *);
                 if (to_copy)
                 {
-                    bones->Invalidate();
-                    memcpy((matrix3x4_t *) bones, to_copy, 48 * (CE_INT(parent_ref, 0x844)));
+                    // This is catastrophically bad, don't do this. Someone needs to fix this.
+                    memcpy(bones.data(), to_copy, sizeof(matrix3x4_t) * numbones);
                     bones_setup = true;
                 }
                 else
                 {
                     PROF_SECTION(bone_setup);
-                    bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+                    bones_setup = RAW_ENT(parent_ref)->SetupBones(bones.data(), numbones, 0x7FF00, bones_setup_time);
                 }
             }
 #else
             // Textmode bots miss/shoot at nothing when the tf2 bonecache is used
             PROF_SECTION(bone_setup);
-            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, MAXSTUDIOBONES, 0x7FF00, bones_setup_time);
+            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, numbones, 0x7FF00, bones_setup_time);
 #endif
         }
     }
-    return bones;
+    return bones.data();
 }
 
 void EntityHitboxCache::Reset()
@@ -165,8 +176,10 @@ void EntityHitboxCache::Reset()
     memset(m_VisCheck, 0, sizeof(bool) * CACHE_MAX_HITBOXES);
     memset(m_VisCheckValidationFlags, 0, sizeof(bool) * CACHE_MAX_HITBOXES);
     memset(m_CacheValidationFlags, 0, sizeof(bool) * CACHE_MAX_HITBOXES);
-    memset(m_CacheInternal, 0, sizeof(CachedHitbox) * CACHE_MAX_HITBOXES);
-    memset(&bones, 0, sizeof(matrix3x4_t) * 128);
+    m_CacheInternal.clear();
+    m_CacheInternal.shrink_to_fit();
+    bones.clear();
+    bones.shrink_to_fit();
     m_nNumHitboxes = 0;
     m_bInit        = false;
     m_bModelSet    = false;
@@ -198,13 +211,15 @@ CachedHitbox *EntityHitboxCache::GetHitbox(int id)
     auto set = shdr->pHitboxSet(CE_INT(parent_ref, netvar.iHitboxSet));
     if (!dynamic_cast<mstudiohitboxset_t *>(set))
         return nullptr;
+    if (m_nNumHitboxes > m_CacheInternal.size())
+        m_CacheInternal.resize(m_nNumHitboxes);
     box = set->pHitbox(id);
     if (!box)
         return nullptr;
     if (box->bone < 0 || box->bone >= MAXSTUDIOBONES)
         return nullptr;
-    VectorTransform(box->bbmin, GetBones()[box->bone], m_CacheInternal[id].min);
-    VectorTransform(box->bbmax, GetBones()[box->bone], m_CacheInternal[id].max);
+    VectorTransform(box->bbmin, GetBones(shdr->numbones)[box->bone], m_CacheInternal[id].min);
+    VectorTransform(box->bbmax, GetBones(shdr->numbones)[box->bone], m_CacheInternal[id].max);
     m_CacheInternal[id].bbox   = box;
     m_CacheInternal[id].center = (m_CacheInternal[id].min + m_CacheInternal[id].max) / 2;
     m_CacheValidationFlags[id] = true;
