@@ -99,13 +99,14 @@ static bool vischeck(CNavArea *begin, CNavArea *end)
 {
     Vector first  = begin->m_center;
     Vector second = end->m_center;
-    first.z += 42;
-    second.z += 42;
+    first.z += 70;
+    second.z += 70;
     return IsVectorVisible(first, second, true, LOCAL_E, MASK_PLAYERSOLID);
 }
 static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
 {
-    if (getZBetweenAreas(begin, end) > 42)
+    // No z check Should be done for stairs as they can go very far up
+    if (getZBetweenAreas(begin, end) > 70 && !(end->m_attributeFlags & NAV_MESH_STAIRS))
         return const_ignored;
     if (!vischecks)
         return vischeck_success;
@@ -680,7 +681,7 @@ static void cm()
     {
         auto local = findClosestNavSquare(g_pLocalPlayer->v_Origin);
         // Check if current area allows jumping
-        if (!local || !(local->m_attributeFlags & NAV_MESH_NO_JUMP))
+        if (!local || !(local->m_attributeFlags & (NAV_MESH_NO_JUMP | NAV_MESH_STAIRS)))
             current_user_cmd->buttons |= (IN_JUMP | IN_DUCK);
     }
     // Walk to next crumb
