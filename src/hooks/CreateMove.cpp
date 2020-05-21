@@ -15,6 +15,7 @@
 #include <hacks/AntiAntiAim.hpp>
 #include "NavBot.hpp"
 #include "HookTools.hpp"
+#include "teamroundtimer.hpp"
 
 #include "HookedMethods.hpp"
 #include "PreDataUpdate.hpp"
@@ -241,6 +242,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     {
         PROF_SECTION(CM_PlayerResource);
         g_pPlayerResource->Update();
+    }
+    {
+        PROF_SECTION(CM_TeamTimer);
+        g_pTeamRoundTimer->Update();
     }
     {
         PROF_SECTION(CM_LocalPlayer);

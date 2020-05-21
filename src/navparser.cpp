@@ -33,6 +33,8 @@ enum ignore_status : uint8_t
     const_ignored,
     // LOS between areas is given
     vischeck_success,
+    // LOS if we ignore entities
+    vischeck_blockedentity,
     // No LOS between areas
     vischeck_failed,
     // Failed to actually walk thru connection
@@ -95,13 +97,22 @@ float getZBetweenAreas(CNavArea *start, CNavArea *end)
 static std::unordered_map<std::pair<CNavArea *, CNavArea *>, ignoredata, boost::hash<std::pair<CNavArea *, CNavArea *>>> ignores;
 namespace ignoremanager
 {
-static bool vischeck(CNavArea *begin, CNavArea *end)
+static ignore_status vischeck(CNavArea *begin, CNavArea *end)
 {
     Vector first  = begin->m_center;
     Vector second = end->m_center;
     first.z += 70;
     second.z += 70;
-    return IsVectorVisible(first, second, true, LOCAL_E, MASK_PLAYERSOLID);
+    ignore_status status = vischeck_failed;
+    // Is world blocking it?
+    if (IsVectorVisibleNavigation(first, second, LOCAL_E, MASK_PLAYERSOLID))
+    {
+        status = vischeck_success;
+        // Is something else blocking it?
+        if (!IsVectorVisible(first, second, true, LOCAL_E, MASK_PLAYERSOLID))
+            status = vischeck_blockedentity;
+    }
+    return status;
 }
 static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
 {
@@ -110,10 +121,7 @@ static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
         return const_ignored;
     if (!vischecks)
         return vischeck_success;
-    if (vischeck(begin, end))
-        return vischeck_success;
-    else
-        return vischeck_failed;
+    return vischeck(begin, end);
 }
 static void updateDanger()
 {
@@ -250,9 +258,18 @@ static void checkPath()
         ignoredata &data = ignores[{ begin, end }];
         if (data.status == vischeck_failed)
             return;
-        if (!vischeck(begin, end))
+        if (data.status == vischeck_blockedentity && vischeckBlock)
+            return;
+        auto vis_status = vischeck(begin, end);
+        if (vis_status == vischeck_failed)
         {
             data.status = vischeck_failed;
+            data.ignoreTimeout.update();
+            perform_repath = true;
+        }
+        else if (vis_status == vischeck_blockedentity && vischeckBlock)
+        {
+            data.status = vischeck_blockedentity;
             data.ignoreTimeout.update();
             perform_repath = true;
         }
@@ -274,7 +291,7 @@ static int isIgnored(CNavArea *begin, CNavArea *end)
         status = runIgnoreChecks(begin, end);
     if (status == vischeck_success)
         return 0;
-    else if (status == vischeck_failed)
+    else if (status == vischeck_blockedentity && !vischeckBlock)
         return 1;
     else
         return 2;
@@ -352,6 +369,7 @@ static void updateIgnores()
                 }
                 break;
             case vischeck_failed:
+            case vischeck_blockedentity:
             case vischeck_success:
             default:
                 if (i.second.ignoreTimeout.check(30000))
@@ -510,7 +528,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
             bestSquare = &i;
         }
         // Check if we are within x and y bounds of an area
-        if (ovBestDist >= dist || !i.IsOverlapping(vec) || !IsVectorVisible(vec, i.m_center, true, LOCAL_E, MASK_PLAYERSOLID))
+        if (ovBestDist >= dist || !i.IsOverlapping(vec) || !IsVectorVisibleNavigation(vec, i.m_center, LOCAL_E, MASK_PLAYERSOLID))
         {
             continue;
         }
@@ -628,6 +646,7 @@ static void cm()
         return;
     }
     ignoremanager::updateIgnores();
+
     auto crumb = crumbs.begin();
     const Vector *crumb_vec;
     // Crumbs empty, prepare for next instruction

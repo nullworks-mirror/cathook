@@ -7,6 +7,7 @@
 #include "soundcache.hpp"
 #include "Misc.hpp"
 #include "MiscTemporary.hpp"
+#include "teamroundtimer.hpp"
 
 namespace hacks::tf2::NavBot
 {
@@ -120,6 +121,19 @@ static void CreateMove()
         wait_until_path.update();
     else
         current_task = task::none;
+    // Check if we should path at all
+    if (!blocking)
+    {
+        round_states round_state = g_pTeamRoundTimer->GetRoundState();
+        // Still in setuptime, if on fitting team, then do not path yet
+        if (round_state == RT_STATE_SETUP && g_pLocalPlayer->team == TEAM_BLU)
+        {
+            // Clear instructions
+            if (!nav::ReadyForCommands)
+                nav::clearInstructions();
+            return;
+        }
+    }
 
     if (autojump)
         autoJump();

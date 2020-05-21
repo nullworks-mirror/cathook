@@ -41,6 +41,18 @@ public:
     void SetSelf(IClientEntity *self);
     virtual TraceType_t GetTraceType() const;
 };
+class FilterNavigation : public ITraceFilter
+{
+public:
+    IClientEntity *m_pSelf;
+
+public:
+    virtual ~FilterNavigation();
+    FilterNavigation();
+    virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);
+    void SetSelf(IClientEntity *self);
+    virtual TraceType_t GetTraceType() const;
+};
 
 class FilterNoEntity : public ITraceFilter
 {
@@ -72,6 +84,7 @@ public:
 
 extern FilterDefault filter_default;
 extern FilterNoPlayer filter_no_player;
+extern FilterNavigation filter_navigation;
 extern FilterNoEntity filter_no_entity;
 extern FilterPenetration filter_penetration;
 } // namespace trace
