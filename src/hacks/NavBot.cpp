@@ -255,7 +255,7 @@ void update_building_spots()
         // Stores valid areas, the float is the minimum distance away from enemies, needed for sorting later
         std::vector<area_struct> areas;
 
-        for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
+        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
         {
             CachedEntity *ent = ENTITY(i);
             // Grab only Enemies and only if they are in soundcache

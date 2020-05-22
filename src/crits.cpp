@@ -275,34 +275,26 @@ bool shouldMeleeCrit()
 {
     if (!melee || g_pLocalPlayer->weapon_mode != weapon_melee)
         return false;
-    namespace bt = hacks::shared::backtrack;
-    if (bt::isBacktrackEnabled)
+    if (hacks::tf2::backtrack::isBacktrackEnabled)
     {
-        int target = bt::iBestTarget;
+        // Closest tick for melee (default filter carry)
+        auto closest_tick = hacks::tf2::backtrack::getClosestTick(LOCAL_E->m_vecOrigin(), hacks::tf2::backtrack::defaultEntFilter, hacks::tf2::backtrack::defaultTickFilter);
         // Valid backtrack target
-        if (target > 1)
+        if (closest_tick)
         {
-            // Closest tick for melee
-            int besttick = bt::BestTick;
             // Out of range, don't crit
-            if (bt::headPositions[target][besttick].entorigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
-            {
+            if ((*closest_tick).second.m_vecOrigin.DistTo(LOCAL_E->m_vecOrigin()) >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
                 return false;
-            }
         }
         else
-        {
             return false;
-        }
     }
     // Normal check, get closest entity and check distance
     else
     {
         auto ent = getClosestEntity(LOCAL_E->m_vecOrigin());
         if (!ent || ent->m_flDistance() >= re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W)) + 150.0f)
-        {
             return false;
-        }
     }
     return true;
 }
@@ -436,6 +428,7 @@ void force_crit()
             current_late_user_cmd->random_seed    = MD5_PseudoRandom(next_crit) & 0x7FFFFFFF;
         }
     }
+    force_crit_this_tick = false;
 }
 
 // Update the magic crit commands numbers
@@ -567,10 +560,6 @@ void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
 {
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     if (!ch)
-        return;
-    auto addr = ch->GetRemoteAddress();
-    // Local server needs no fixing
-    if (addr.type == NA_LOOPBACK)
         return;
 
     static int last_weapon;
