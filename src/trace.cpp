@@ -111,22 +111,9 @@ TraceType_t trace::FilterNoPlayer::GetTraceType() const
 
 /* Navigation filter */
 
-trace::FilterNavigation::FilterNavigation()
-{
-    m_pSelf = nullptr;
-}
+trace::FilterNavigation::FilterNavigation(){};
 
 trace::FilterNavigation::~FilterNavigation(){};
-
-void trace::FilterNavigation::SetSelf(IClientEntity *self)
-{
-    if (self == nullptr)
-    {
-        logging::Info("nullptr in FilterNavigation::SetSelf");
-        return;
-    }
-    m_pSelf = self;
-}
 
 #define MOVEMENT_COLLISION_GROUP 8
 #define RED_CONTENTS_MASK 0x800

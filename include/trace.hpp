@@ -43,14 +43,11 @@ public:
 };
 class FilterNavigation : public ITraceFilter
 {
-public:
-    IClientEntity *m_pSelf;
 
 public:
     virtual ~FilterNavigation();
     FilterNavigation();
     virtual bool ShouldHitEntity(IHandleEntity *entity, int mask);
-    void SetSelf(IClientEntity *self);
     virtual TraceType_t GetTraceType() const;
 };
 

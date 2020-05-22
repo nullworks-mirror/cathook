@@ -104,7 +104,7 @@ static ignore_status vischeck(CNavArea *begin, CNavArea *end)
     first.z += 70;
     second.z += 70;
     // Is world blocking it?
-    if (IsVectorVisibleNavigation(first, second, LOCAL_E, MASK_PLAYERSOLID))
+    if (IsVectorVisibleNavigation(first, second, MASK_PLAYERSOLID))
     {
         // Is something else blocking it?
         if (!IsVectorVisible(first, second, true, LOCAL_E, MASK_PLAYERSOLID))
@@ -418,11 +418,7 @@ struct Graph : public micropather::Graph
                 continue;
             float distance = center->m_center.DistTo(i.area->m_center);
             if (isIgnored == 1)
-            {
-                if (*vischeckBlock)
-                    continue;
-                distance += 50000;
-            }
+                distance += 1000;
             adjacent->emplace_back(micropather::StateCost{ reinterpret_cast<void *>(neighbour), distance });
         }
     }
@@ -528,7 +524,7 @@ CNavArea *findClosestNavSquare(const Vector &vec)
             bestSquare = &i;
         }
         // Check if we are within x and y bounds of an area
-        if (ovBestDist >= dist || !i.IsOverlapping(vec) || !IsVectorVisibleNavigation(vec, i.m_center, LOCAL_E, MASK_PLAYERSOLID))
+        if (ovBestDist >= dist || !i.IsOverlapping(vec) || !IsVectorVisibleNavigation(vec, i.m_center, MASK_PLAYERSOLID))
         {
             continue;
         }
@@ -708,7 +704,7 @@ static void cm()
 
             // Update jump timer now
             if (flip_action)
-                last_jump.test_and_set(200);
+                last_jump.update();
             flip_action = !flip_action;
         }
     }
