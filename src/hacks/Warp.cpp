@@ -45,6 +45,15 @@ static int warp_amount_override = 0;
 static bool should_melee        = false;
 static bool charged             = false;
 
+static bool should_warp = true;
+static bool was_hurt    = false;
+
+// Should we warp?
+bool shouldWarp(bool check_amount)
+{
+    return ((warp_key && warp_key.isKeyDown()) || was_hurt) && (!check_amount || warp_amount);
+}
+
 // How many ticks of excess we have (for decimal speeds)
 float excess_ticks = 0.0f;
 int GetWarpAmount(bool finalTick)
@@ -69,9 +78,6 @@ int GetWarpAmount(bool finalTick)
     // Return smallest of the two
     return std::min(warp_amount_processed, max_extra_ticks);
 }
-
-static bool should_warp = true;
-static bool was_hurt    = false;
 
 DetourHook cl_move_detour;
 typedef void (*CL_Move_t)(float accumulated_extra_samples, bool bFinalTick);
@@ -228,7 +234,7 @@ void CreateMove()
         return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
         return;
-    if (!warp_key.isKeyDown() && !was_hurt)
+    if (!shouldWarp(false))
     {
         warp_last_tick     = false;
         current_state      = ATTACK;
@@ -601,7 +607,7 @@ void CL_Move_hook(float accumulated_extra_samples, bool bFinalTick)
     cl_move_detour.RestorePatch();
 
     // Should we warp?
-    if ((warp_key.isKeyDown() || was_hurt) && warp_amount)
+    if (shouldWarp(true))
     {
         Warp(accumulated_extra_samples, bFinalTick);
         if (warp_amount < GetMaxWarpTicks())
@@ -623,6 +629,7 @@ static InitRoutine init([]() {
         []() {
             g_IEventManager2->RemoveListener(&listener);
             cl_sendmove_detour.Shutdown();
+            cl_move_detour.Shutdown();
         },
         "warp_shutdown");
     warp_forward.installChangeCallback(rvarCallback);
