@@ -79,6 +79,12 @@ static void updateAntiAfk()
                 current_user_cmd->buttons &= ~(IN_DUCK | IN_JUMP);
             else
                 current_user_cmd->buttons = IN_DUCK | IN_JUMP;
+
+            // Game also checks if you move if you are in spawn, so spam movement keys alternatingly
+            bool flip = false;
+            current_late_user_cmd->buttons |= flip ? IN_FORWARD : IN_BACK;
+            // Flip flip
+            flip = !flip;
             if (anti_afk_timer.check(afk_timer->m_nValue * 60 * 1000 + 1000))
             {
                 anti_afk_timer.update();
@@ -838,7 +844,6 @@ static InitRoutine init_pyrovision([]() {
         if (!after && cmdrate->GetInt() != oldCmdRate)
             cmdrate->SetValue(oldCmdRate);
     });
-    ;
 #endif
 });
 #endif
