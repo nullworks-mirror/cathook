@@ -430,7 +430,7 @@ void CreateMove()
                 break;
             }
 
-            // No "break;" here is intentional :)
+            [[fallthrough]];
         }
         case MOVE_TOWARDS:
         {
@@ -452,7 +452,7 @@ void CreateMove()
             else
                 current_peek_state = STOP;
 
-            // Once again, intentionally missing "break;"
+            [[fallthrough]];
         }
         case STOP:
         {
