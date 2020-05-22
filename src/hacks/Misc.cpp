@@ -827,6 +827,13 @@ static InitRoutine init_pyrovision([]() {
             cart_patch2.Shutdown();
         }
     });
+    EC::Register(
+        EC::Shutdown,
+        []() {
+            cart_patch1.Shutdown();
+            cart_patch2.Shutdown();
+        },
+        "cartpatch_shutdown");
     ping_reducer.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
         static ConVar *cmdrate = g_ICvar->FindVar("cl_cmdrate");
         if (cmdrate == nullptr)
@@ -844,8 +851,6 @@ static InitRoutine init_pyrovision([]() {
 static CatCommand print_eye_diff("debug_print_eye_diff", "debug", []() { logging::Info("%f", g_pLocalPlayer->v_Eye.z - LOCAL_E->m_vecOrigin().z); });
 void Shutdown()
 {
-    if (CE_BAD(LOCAL_E))
-        return;
 #if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
     // unpatching local player
     render_zoomed = false;
@@ -891,6 +896,7 @@ static InitRoutine init([]() {
         []() {
             stealth_kill.Shutdown();
             cyoa_patch.Shutdown();
+            tryPatchLocalPlayerShouldDraw(false);
         },
         "shutdown_stealthkill");
     dont_hide_stealth_kills.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
