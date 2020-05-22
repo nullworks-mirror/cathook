@@ -4,6 +4,7 @@
  *
  */
 #include "Backtrack.hpp"
+#include "PlayerTools.hpp"
 #include "memory"
 
 namespace hacks::tf2::backtrack
@@ -150,7 +151,7 @@ void CreateMove()
         return;
     }
 
-    // Only return here if the local player hasn't spawned in yet (so ping does not go down when dead)
+    // Return if local entity is bad (Still have backtrack run while dead so ping does not fluctuate heavily)
     if (CE_BAD(LOCAL_E))
     {
         latency_rampup = 0.0f;
@@ -454,7 +455,7 @@ std::optional<BacktrackData> getBestTick(CachedEntity *ent, std::function<bool(C
 
     // No data recorded
     if (ent->m_IDX <= 0 || backtrack_data.size() < ent->m_IDX || !backtrack_data.at(ent->m_IDX - 1))
-        return best_tick;
+        return std::nullopt;
 
     // Let the callback do the lifting
     for (auto &tick : getGoodTicks(ent->m_IDX))
@@ -481,8 +482,8 @@ bool defaultEntFilter(CachedEntity *ent)
     // Dormant
     if (CE_BAD(ent))
         return false;
-    // Friend check
-    if (playerlist::IsFriend(ent))
+    // Should we even target them
+    if (!player_tools::shouldTarget(ent))
         return false;
     return true;
 }

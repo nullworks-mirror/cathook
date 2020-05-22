@@ -1241,12 +1241,12 @@ int BestHitbox(CachedEntity *target)
             if (data)
             {
                 if (*backtrackVischeckAll)
-                    for (int j = 0; j < 18; j++)
+                    for (int j = head; j < foot_R + 1; j++)
                     {
                         if (IsEntityVectorVisible(target, (*data).hitboxes[j].center))
                             return j;
                     }
-                else if (IsEntityVectorVisible(target, (*data).hitboxes[0].center))
+                else if (IsEntityVectorVisible(target, (*data).hitboxes.at(head).center))
                     return 0;
             }
             // Nothing found, falling through to further below
@@ -1254,19 +1254,7 @@ int BestHitbox(CachedEntity *target)
         else if (target->hitboxes.VisibilityCheck(preferred))
             return preferred;
         // Else attempt to find any hitbox at all
-        if (shouldBacktrack())
-        {
-            // We already vischecked
-            if (!*backtrackVischeckAll)
-            {
-                auto data = hacks::tf2::backtrack::getClosestEntTick(target, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
-
-                for (int i = 0; i < 18; i++)
-                    if (IsEntityVectorVisible(target, (*data).hitboxes.at(i).center))
-                        return i;
-            }
-        }
-        else
+        if (!shouldBacktrack())
             for (int i = projectile_mode ? 1 : 0; i < target->hitboxes.GetNumHitboxes() && i < 6; i++)
             {
                 if (target->hitboxes.VisibilityCheck(i))
