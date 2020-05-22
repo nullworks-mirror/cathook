@@ -197,10 +197,10 @@ void hack::Hook()
     hooks::panel.Apply();
 #endif
 
-#if ENABLE_VISUALS
     hooks::vstd.Set((void *) g_pUniformStream);
     hooks::vstd.HookMethod(HOOK_ARGS(RandomInt));
     hooks::vstd.Apply();
+#if ENABLE_VISUALS
 
     auto chat_hud = g_CHUD->FindElement("CHudChat");
     while (!(chat_hud = g_CHUD->FindElement("CHudChat")))
