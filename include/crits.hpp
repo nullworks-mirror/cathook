@@ -1,6 +1,7 @@
 #pragma once
 #include "settings/Bool.hpp"
 #include "usercmd.hpp"
+#include <map>
 namespace criticals
 {
 extern settings::Boolean enabled;
