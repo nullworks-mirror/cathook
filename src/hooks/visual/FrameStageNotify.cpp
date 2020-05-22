@@ -17,11 +17,8 @@ static settings::Rgba nightmode_gui_color{ "visual.night-mode.gui-color", "00000
 static settings::Rgba nightmode_world_color{ "visual.night-mode.world-color", "000000FF" };
 static settings::Boolean no_shake{ "visual.no-shake", "true" };
 
-// Previous values
-static float old_nightmode_world{ 0.0f };
-static float old_nightmode_gui{ 0.0f };
-static rgba_t old_nightmode_world_color(0.0f, 0.0f, 0.0f, 1.0f);
-static rgba_t old_nightmode_gui_color(0.0f, 0.0f, 0.0f, 1.0f);
+// Should we update nightmode?
+static bool update_nightmode = false;
 
 // Which strings trigger this nightmode option
 std::vector<std::string> world_strings = { "SkyBox", "World" };
@@ -37,7 +34,7 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_, ClientFrameStage_t sta
 
     PROF_SECTION(FrameStageNotify_TOTAL);
 
-    if (old_nightmode_gui != *nightmode_gui || old_nightmode_world != *nightmode_world || old_nightmode_world_color != *nightmode_world_color || old_nightmode_gui_color != *nightmode_gui_color)
+    if (update_nightmode)
     {
         static ConVar *r_DrawSpecificStaticProp = g_ICvar->FindVar("r_DrawSpecificStaticProp");
         if (!r_DrawSpecificStaticProp)
@@ -91,10 +88,7 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_, ClientFrameStage_t sta
                 }
             }
         }
-        old_nightmode_gui         = *nightmode_gui;
-        old_nightmode_gui_color   = *nightmode_gui_color;
-        old_nightmode_world       = *nightmode_world;
-        old_nightmode_world_color = *nightmode_world_color;
+        update_nightmode = false;
     }
 
     if (!g_IEngine->IsInGame())
@@ -141,4 +135,14 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_, ClientFrameStage_t sta
     }
     return original::FrameStageNotify(this_, stage);
 }
+template <typename T> void rvarCallback(settings::VariableBase<T> &, T)
+{
+    update_nightmode = true;
+}
+static InitRoutine init_fsn([]() {
+    nightmode_gui.installChangeCallback(rvarCallback<float>);
+    nightmode_world.installChangeCallback(rvarCallback<float>);
+    nightmode_gui_color.installChangeCallback(rvarCallback<rgba_t>);
+    nightmode_world_color.installChangeCallback(rvarCallback<rgba_t>);
+});
 } // namespace hooked_methods
