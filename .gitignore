@@ -248,6 +248,8 @@ ModelManifest.xml
 *.d
 
 .settings/*
+
+CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
@@ -288,4 +290,3 @@ scripts/updater-preferences
 
 *.autosave
 
-CMakeCacheBackup.txt
