@@ -103,16 +103,16 @@ static ignore_status vischeck(CNavArea *begin, CNavArea *end)
     Vector second = end->m_center;
     first.z += 70;
     second.z += 70;
-    ignore_status status = vischeck_failed;
     // Is world blocking it?
     if (IsVectorVisibleNavigation(first, second, LOCAL_E, MASK_PLAYERSOLID))
     {
-        status = vischeck_success;
         // Is something else blocking it?
         if (!IsVectorVisible(first, second, true, LOCAL_E, MASK_PLAYERSOLID))
-            status = vischeck_blockedentity;
+            return vischeck_blockedentity;
+        else
+            return vischeck_success;
     }
-    return status;
+    return vischeck_failed;
 }
 static ignore_status runIgnoreChecks(CNavArea *begin, CNavArea *end)
 {
