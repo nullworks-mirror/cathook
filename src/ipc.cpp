@@ -80,7 +80,7 @@ CatCommand exec("ipc_exec", "Execute command (first argument = bot ID)", [](cons
         logging::Info("Target id is NaN!");
         return;
     }
-    if (target_id == 0 || target_id > 31)
+    if (target_id < 0 || target_id > 255)
     {
         logging::Info("Invalid target id: %u", target_id);
         return;
@@ -133,7 +133,7 @@ CatCommand debug_get_ingame_ipc("ipc_debug_dump_server", "Show other bots on ser
     int count        = 0;
     unsigned highest = 0;
     std::vector<unsigned> botlist{};
-    for (unsigned i = 1; i < cat_ipc::max_peers; i++)
+    for (unsigned i = 0; i < cat_ipc::max_peers; i++)
     {
         if (!ipc::peer->memory->peer_data[i].free)
         {
