@@ -758,11 +758,11 @@ static CatCommand follow_me("fb_follow_me", "IPC connected bots will follow you"
     std::string tmp = CON_PREFIX + follow_steam.name + " " + std::to_string(steam_id);
     if (tmp.length() >= 63)
     {
-        ipc::peer->SendMessage(0, 0, ipc::commands::execute_client_cmd_long, tmp.c_str(), tmp.length() + 1);
+        ipc::peer->SendMessage(0, -1, ipc::commands::execute_client_cmd_long, tmp.c_str(), tmp.length() + 1);
     }
     else
     {
-        ipc::peer->SendMessage(tmp.c_str(), 0, ipc::commands::execute_client_cmd, 0, 0);
+        ipc::peer->SendMessage(tmp.c_str(), -1, ipc::commands::execute_client_cmd, 0, 0);
     }
 });
 #endif

@@ -113,9 +113,9 @@ void onKilledBy(unsigned id)
             {
                 std::string command = "cat_ipc_exec_all cat_pl_mark_betrayal " + std::to_string(id);
                 if (command.length() >= 63)
-                    ipc::peer->SendMessage(0, 0, ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
+                    ipc::peer->SendMessage(0, -1, ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
                 else
-                    ipc::peer->SendMessage(command.c_str(), 0, ipc::commands::execute_client_cmd, 0, 0);
+                    ipc::peer->SendMessage(command.c_str(), -1, ipc::commands::execute_client_cmd, 0, 0);
             }
         }
     }

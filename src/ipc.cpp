@@ -97,11 +97,11 @@ CatCommand exec("ipc_exec", "Execute command (first argument = bot ID)", [](cons
     ReplaceString(command, " && ", " ; ");
     if (command.length() >= 63)
     {
-        peer->SendMessage(0, (1 << target_id), ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
+        peer->SendMessage(0, target_id, ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
     }
     else
     {
-        peer->SendMessage(command.c_str(), (1 << target_id), ipc::commands::execute_client_cmd, 0, 0);
+        peer->SendMessage(command.c_str(), target_id, ipc::commands::execute_client_cmd, 0, 0);
     }
 });
 CatCommand exec_all("ipc_exec_all", "Execute command (on every peer)", [](const CCommand &args) {
@@ -109,11 +109,11 @@ CatCommand exec_all("ipc_exec_all", "Execute command (on every peer)", [](const 
     ReplaceString(command, " && ", " ; ");
     if (command.length() >= 63)
     {
-        peer->SendMessage(0, 0, ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
+        peer->SendMessage(0, -1, ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
     }
     else
     {
-        peer->SendMessage(command.c_str(), 0, ipc::commands::execute_client_cmd, 0, 0);
+        peer->SendMessage(command.c_str(), -1, ipc::commands::execute_client_cmd, 0, 0);
     }
 });
 
