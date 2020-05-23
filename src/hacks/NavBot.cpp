@@ -762,6 +762,9 @@ static bool isValidNearPosition(Vector vec, Vector target, const bot_class_confi
         return false;
     if (!IsVectorVisible(vec, target, true, LOCAL_E, MASK_PLAYERSOLID))
         return false;
+    // Check if safe
+    if (!nav::isSafe(nav::findClosestNavSquare(target)))
+        return false;
     return true;
 }
 
@@ -1236,6 +1239,7 @@ static bool getHealthAndAmmo(int metal)
                     if (nav::navTo(pack, health < 0.64f || lowAmmo ? 10 : 3, true, false))
                     {
                         current_task = { task::health, health < 0.64f ? 10 : 3 };
+                        return true;
                     }
                 }
             }

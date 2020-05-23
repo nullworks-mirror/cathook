@@ -21,7 +21,10 @@ static settings::Boolean draw{ "misc.pathing.draw", "false" };
 static settings::Boolean look{ "misc.pathing.look-at-path", "false" };
 static settings::Int stuck_time{ "misc.pathing.stuck-time", "4000" };
 static settings::Int unreachable_time{ "misc.pathing.unreachable-time", "1000" };
+static settings::Boolean log_pathing{ "misc.pathing.log", "false" };
 
+// Score based on how much the area was used by other players, in seconds
+static std::unordered_map<int, float> area_score;
 static std::vector<CNavArea *> crumbs;
 static Vector startPoint, endPoint;
 
@@ -418,7 +421,16 @@ struct Graph : public micropather::Graph
                 continue;
             float distance = center->m_center.DistTo(i.area->m_center);
             if (isIgnored == 1)
-                distance += 1000;
+                distance += 2000;
+            // Check priority based on usage
+            else
+            {
+                float score = area_score[neighbour->m_id];
+                // Formula to calculate by how much % to reduce the distance by (https://xaktly.com/LogisticFunctions.html)
+                float multiplier = 2.0f * ((0.9f) / (1.0f + exp(-0.8f * score)) - 0.45f);
+                distance *= 1.0f - multiplier;
+            }
+
             adjacent->emplace_back(micropather::StateCost{ reinterpret_cast<void *>(neighbour), distance });
         }
     }
@@ -475,6 +487,7 @@ void initThread()
 
 void init()
 {
+    area_score.clear();
     endPoint.Invalidate();
     ignoremanager::reset();
     status = initing;
@@ -551,15 +564,19 @@ std::vector<CNavArea *> findPath(const Vector &start, const Vector &end)
     if (!(local = findClosestNavSquare(start)) || !(dest = findClosestNavSquare(end)))
         return {};
 
-    logging::Info("Start: (%f,%f,%f)", local->m_center.x, local->m_center.y, local->m_center.z);
-    logging::Info("End: (%f,%f,%f)", dest->m_center.x, dest->m_center.y, dest->m_center.z);
+    if (log_pathing)
+    {
+        logging::Info("Start: (%f,%f,%f)", local->m_center.x, local->m_center.y, local->m_center.z);
+        logging::Info("End: (%f,%f,%f)", dest->m_center.x, dest->m_center.y, dest->m_center.z);
+    }
     float cost;
     std::vector<CNavArea *> pathNodes;
 
     time_point begin_pathing = high_resolution_clock::now();
     int result               = Map.pather->Solve(reinterpret_cast<void *>(local), reinterpret_cast<void *>(dest), reinterpret_cast<std::vector<void *> *>(&pathNodes), &cost);
     long long timetaken      = duration_cast<nanoseconds>(high_resolution_clock::now() - begin_pathing).count();
-    logging::Info("Pathing: Pather result: %i. Time taken (NS): %lld", result, timetaken);
+    if (log_pathing)
+        logging::Info("Pathing: Pather result: %i. Time taken (NS): %lld", result, timetaken);
     // If no result found, return empty Vector
     if (result == micropather::MicroPather::NO_SOLUTION)
         return {};
@@ -627,12 +644,39 @@ void repath()
     navTo(last, curr_priority, true, true, true);
 }
 
+// Track pather resets
+static Timer reset_pather_timer{};
+// Update area score to prefer paths used by actual players a bit more
+void updateAreaScore()
+{
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (i == g_pLocalPlayer->entity_idx || CE_INVALID(ent) || !g_pPlayerResource->isAlive(i))
+            continue;
+
+        // Get area
+        CNavArea *closest_area = nullptr;
+        if (ent->m_vecDormantOrigin())
+            findClosestNavSquare(*ent->m_vecDormantOrigin());
+
+        // Add usage to area if valid
+        if (closest_area)
+            area_score[closest_area->m_id] += g_GlobalVars->interval_per_tick;
+    }
+    if (reset_pather_timer.test_and_set(10000))
+        ResetPather();
+}
+
 static Timer last_jump{};
 // Main movement function, gets path from NavTo
 static void cm()
 {
     if (!enabled || status != on)
         return;
+    // Run the logic for Nav area score
+    updateAreaScore();
+
     if (CE_BAD(LOCAL_E) || CE_BAD(LOCAL_W))
         return;
     if (!LOCAL_E->m_bAlivePlayer())
