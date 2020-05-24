@@ -10,7 +10,7 @@ stages:
 pages:
   script:
     # Build cathook
-    - mkdir build_cathook && pushd build_cathook && cmake .. && make && popd
+    - mkdir build_cathook && pushd build_cathook && cmake -DInternal_Binarymode=true .. && make && popd
     # Create the "package" containing everything needed
     - mkdir package && mv ./bin/libcathook.so ./package/libcathook.so && mv ./data ./package/data && mv ./config_data ./package/config_data && mv ./scripts/binarypackage/install ./package/install && mv ./scripts/binarypackage/attach ./package/attach
     # Build a static gdb
