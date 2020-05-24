@@ -68,6 +68,16 @@ static void updateAntiAfk()
     }
     else
     {
+        Vector vel(0.0f);
+        if (CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
+            velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), vel);
+        // We are moving, make the timer a bit longer (only a bit to avoid issues with random movement)
+        if (!vel.IsZero(1.0f))
+        {
+            anti_afk_timer.last += std::chrono::milliseconds(400);
+            if (anti_afk_timer.last > std::chrono::system_clock::now())
+                anti_afk_timer.update();
+        }
         static auto afk_timer = g_ICvar->FindVar("mp_idlemaxtime");
         if (!afk_timer)
             afk_timer = g_ICvar->FindVar("mp_idlemaxtime");
