@@ -3,6 +3,7 @@
 # $1 Git only
 
 GIT=${1:-false}
+SUDO=${CH_SUDO:-sudo}
 FORCEYES=${CH_DEPENDENCYCHECK_FORCEYES:-false}
 
 gentoo_packages=(dev-vcs/git dev-libs/boost dev-util/cmake sys-devel/gcc sys-devel/gdb media-libs/libsdl2 media-libs/glew media-libs/freetype net-misc/rsync media-libs/libglvnd dev-util/dialog)
@@ -32,9 +33,8 @@ requestPermissions()
         if [ "$out" != 0 ]; then
             exit
         fi
-    fi
     # Fall back to terminal
-    if [ -t 0 ]; then
+    elif [ -t 0 ]; then
         read -p "Do you want to install the following packages required for cathook? ${string} y/n " -r
         if ! [[ $REPLY =~ ^[Yy]$ ]]
         then
@@ -78,14 +78,14 @@ case "$OS" in
     "gentoo")
         requestPermissions "${gentoo_packages[@]}"
         # -U (--newuse): Installed packages that have no changes are excluded.
-        USE=abi_x86_32 $ESCALATE emerge -avU "${gentoo_packages[@]}"
+        USE=abi_x86_32 $SUDO emerge -avU "${gentoo_packages[@]}"
     ;;
     "arch")
         pacman -Qi "${arch_packages[@]}" > /dev/null 2>&1
         out=$?
         if [ "$out" = 1 ]; then
             requestPermissions "${arch_packages[@]}"
-            $ESCALATE pacman -S --noconfirm --needed "${arch_packages[@]}"
+            $SUDO pacman -S --noconfirm --needed "${arch_packages[@]}"
         fi
     ;;
     "ubuntu")
@@ -98,12 +98,12 @@ case "$OS" in
         if [ "$out" = 1 ]; then
             requestPermissions "${ubuntu_packages[@]}"
             pkgs="${ubuntu_packages[*]}"
-            $ESCALATE bash -c "apt-get update;dpkg --add-architecture i386;apt-get update;apt-get install -y $pkgs"
+            $SUDO bash -c "apt-get update;dpkg --add-architecture i386;apt-get update;apt-get install -y $pkgs"
             # Check if cmake is up to date enough
             dpkg --compare-versions "$(dpkg-query --show --showformat '${Version}' cmake)" ge 3.12
             out=$?
             if [ "$out" = 1 ]; then
-                $ESCALATE bash -c "apt install -y software-properties-common && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main' && apt-get install -y cmake"
+                $SUDO bash -c "apt install -y software-properties-common && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ bionic main' && apt-get install -y cmake"
             fi
         fi
     ;;
