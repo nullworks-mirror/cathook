@@ -36,3 +36,8 @@ void CTeamRoundTimer::Update()
     }
 }
 CTeamRoundTimer *g_pTeamRoundTimer{ nullptr };
+
+static InitRoutine init_trt([]() {
+    EC::Register(
+        EC::CreateMove, []() { g_pTeamRoundTimer->Update(); }, "update_teamroundtimer", EC::early);
+});

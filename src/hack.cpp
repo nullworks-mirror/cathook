@@ -396,6 +396,10 @@ void hack::Shutdown()
     ConVar_Unregister();
     logging::Info("Unloading sharedobjects..");
     sharedobj::UnloadAllSharedObjects();
+    logging::Info("Deleting global interfaces...");
+    delete g_pLocalPlayer;
+    delete g_pTeamRoundTimer;
+    delete g_pPlayerResource;
     if (!hack::game_shutdown)
     {
         logging::Info("Running shutdown handlers");

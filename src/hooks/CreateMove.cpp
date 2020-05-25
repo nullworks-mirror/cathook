@@ -244,10 +244,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         g_pPlayerResource->Update();
     }
     {
-        PROF_SECTION(CM_TeamTimer);
-        g_pTeamRoundTimer->Update();
-    }
-    {
         PROF_SECTION(CM_LocalPlayer);
         g_pLocalPlayer->Update();
     }
