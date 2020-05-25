@@ -92,7 +92,7 @@ static void updateAntiAfk()
 
             // Game also checks if you move if you are in spawn, so spam movement keys alternatingly
             bool flip = false;
-            current_late_user_cmd->buttons |= flip ? IN_FORWARD : IN_BACK;
+            current_user_cmd->buttons |= flip ? IN_FORWARD : IN_BACK;
             // Flip flip
             flip = !flip;
             if (anti_afk_timer.check(afk_timer->GetInt() * 60 * 1000 + 1000))
