@@ -112,7 +112,7 @@ case "$OS" in
         out=$?
         if [ "$out" != 0 ]; then
             requestPermissions "${fedora_packages[@]}"
-            $ESCALATE dnf install -y "${fedora_packages[@]}"
+            $SUDO dnf install -y "${fedora_packages[@]}"
         fi
     ;;
     "*")
