@@ -10,6 +10,7 @@
 #include <cdll_int.h>
 #include <studio.h>
 #include <stdexcept>
+#include <memory>
 
 // Forward declaration from entitycache.hpp
 class CachedEntity;
@@ -39,7 +40,7 @@ public:
     void Init();
     int GetNumHitboxes();
     void Reset();
-    matrix3x4_t *GetBones();
+    matrix3x4_t *GetBones(int numbones = -1);
 
     int m_nNumHitboxes;
     bool m_bModelSet;
@@ -52,9 +53,9 @@ public:
     bool m_VisCheckValidationFlags[CACHE_MAX_HITBOXES]{ false };
     bool m_VisCheck[CACHE_MAX_HITBOXES]{ false };
     bool m_CacheValidationFlags[CACHE_MAX_HITBOXES]{ false };
-    CachedHitbox m_CacheInternal[CACHE_MAX_HITBOXES]{};
+    std::vector<CachedHitbox> m_CacheInternal;
 
-    matrix3x4_t bones[128];
+    std::vector<matrix3x4_t> bones;
     bool bones_setup{ false };
 };
 

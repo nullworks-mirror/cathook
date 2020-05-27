@@ -6,9 +6,8 @@ namespace EC
 
 struct EventCallbackData
 {
-    explicit EventCallbackData(const EventFunction &function, std::string name, enum ec_priority priority) : function{ function }, priority{ int(priority) }, section{ name }, event_name{ name }
+    explicit EventCallbackData(const EventFunction &function, std::string name, enum ec_priority priority) : function{ function }, priority{ int(priority) }, section(name), event_name{ name }
     {
-        section.m_name = name;
     }
     EventFunction function;
     int priority;
