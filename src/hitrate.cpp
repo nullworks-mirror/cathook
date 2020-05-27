@@ -135,5 +135,9 @@ HurtListener &listener()
     return l;
 }
 
-InitRoutine init([]() { g_IGameEventManager->AddListener(&listener(), false); });
+InitRoutine init([]() {
+    g_IGameEventManager->AddListener(&listener(), false);
+    EC::Register(
+        EC::Shutdown, []() {}, "shutdown_hitrate");
+});
 } // namespace hitrate

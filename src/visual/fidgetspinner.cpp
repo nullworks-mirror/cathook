@@ -88,6 +88,8 @@ void DrawSpinner()
 static InitRoutine init([]() {
     InitSpinner();
     EC::Register(EC::Draw, DrawSpinner, "spinner");
+    EC::Register(
+        EC::Shutdown, []() { g_IGameEventManager->RemoveListener(&spinner_listener); }, "shutdown_spinner");
 });
 
 #endif

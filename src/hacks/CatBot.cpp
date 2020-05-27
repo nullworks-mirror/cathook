@@ -922,6 +922,12 @@ void level_init()
     level_init_timer.update();
 }
 
+void shutdown()
+{
+    g_IEventManager2->RemoveListener(&listener());
+    g_IEventManager2->RemoveListener(&listener2());
+}
+
 #if ENABLE_VISUALS
 static void draw()
 {
@@ -938,6 +944,7 @@ static InitRoutine runinit([]() {
     EC::Register(EC::CreateMove, cm, "cm_catbot", EC::average);
     EC::Register(EC::CreateMove, update, "cm2_catbot", EC::average);
     EC::Register(EC::LevelInit, level_init, "levelinit_catbot", EC::average);
+    EC::Register(EC::Shutdown, shutdown, "shutdown_catbot", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, draw, "draw_catbot", EC::average);
 #endif
