@@ -707,16 +707,16 @@ void AddCritString(const std::string &string, const rgba_t &color)
 
 void DrawCritStrings()
 {
-    // Positions
-    float x = *bar_x + *size * 2.0f;
+    // Positions, base on crit meter itself and draw Centered
+    float x = *bar_x + *size * 2.0f / 2.0f;
     float y = *bar_y + *size / 5.0f;
 
     if (bar_string != "")
     {
         float sx, sy;
-        fonts::menu->stringSize(bar_string, &sx, &sy);
+        fonts::center_screen->stringSize(bar_string, &sx, &sy);
         // Center and draw below
-        draw::String((x - sx) / 2, (y + sy), colors::red, bar_string.c_str(), *fonts::center_screen);
+        draw::String(x - sx / 2, (y + sy), colors::red, bar_string.c_str(), *fonts::center_screen);
         y += fonts::center_screen->size + 1;
     }
 
