@@ -17,6 +17,7 @@
 #include "hack.hpp"
 #include "common.hpp"
 #include "MiscTemporary.hpp"
+#include "menu/GuiInterface.hpp"
 #include <link.h>
 #include <pwd.h>
 
@@ -400,6 +401,10 @@ void hack::Shutdown()
     delete g_pLocalPlayer;
     delete g_pTeamRoundTimer;
     delete g_pPlayerResource;
+#if ENABLE_GUI
+    logging::Info("Shutting down GUI");
+    gui::shutdown();
+#endif
     if (!hack::game_shutdown)
     {
         logging::Info("Running shutdown handlers");

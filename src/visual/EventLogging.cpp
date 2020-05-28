@@ -9,6 +9,7 @@
 #include <colors.hpp>
 #include <init.hpp>
 #include "KeyValues.h"
+#include "HookTools.hpp"
 
 namespace event_logging
 {
@@ -253,7 +254,11 @@ public:
 
 static LoggingEventListener event_listener{};
 
-InitRoutine init([]() { g_IGameEventManager->AddListener(&event_listener, false); });
+InitRoutine init([]() {
+    g_IGameEventManager->AddListener(&event_listener, false);
+    EC::Register(
+        EC::Shutdown, []() { g_IGameEventManager->RemoveListener(&event_listener); }, "shutdown_eventlogger");
+});
 
 bool isEnabled()
 {
