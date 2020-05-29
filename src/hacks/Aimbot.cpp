@@ -105,18 +105,18 @@ static void spectatorUpdate()
     case 1:
         if (g_pLocalPlayer->spectator_state == g_pLocalPlayer->FIRSTPERSON)
         {
-            enable = *specenable;
+            enable   = *specenable;
             slow_aim = *specslow;
-            fov = *specfov;
+            fov      = *specfov;
         }
         break;
         // Disable if being spectated
     case 2:
         if (g_pLocalPlayer->spectator_state != g_pLocalPlayer->NONE)
         {
-            enable = *specenable;
+            enable   = *specenable;
             slow_aim = *specslow;
-            fov = *specfov;
+            fov      = *specfov;
         }
     };
 }
@@ -235,13 +235,13 @@ static void CreateMove()
 {
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return;
-    
-    enable = *normal_enable;
+
+    enable   = *normal_enable;
     slow_aim = *normal_slow_aim;
-    fov = *normal_fov;
-    
+    fov      = *normal_fov;
+
     spectatorUpdate();
-    
+
     if (!enable)
         return;
 
@@ -1378,7 +1378,7 @@ void DoSlowAim(Vector &input_angle)
     bool flip_yaw   = delta_y < 0.0f;
 
     // Set the step distance based on slow_aim variable
-    float step_amount = 40.0f / std::max(1, *slow_aim);
+    float step_amount = 40.0f / std::max(1, slow_aim);
 
     if (input_angle.x != viewangles.x)
     {
@@ -1388,7 +1388,7 @@ void DoSlowAim(Vector &input_angle)
         {
             float pitch_amount = step_amount;
             // Smoothen attempts scale anti-proportional to slow_aim aswell
-            for (int i = 0; i <= 5.0f / *slow_aim; i++)
+            for (int i = 0; i <= 5.0f / slow_aim; i++)
             {
                 pitch_amount /= 2.0f;
                 if (fabsf(delta_x) <= pitch_amount)
@@ -1414,7 +1414,7 @@ void DoSlowAim(Vector &input_angle)
         {
             float yaw_amount = step_amount;
             // Smoothen attempts scale anti-proportional to slow_aim aswell
-            for (int i = 0; i <= 5.0f / *slow_aim; i++)
+            for (int i = 0; i <= 5.0f / slow_aim; i++)
             {
                 yaw_amount /= 2.0f;
                 if (fabsf(delta_y) <= yaw_amount)
