@@ -100,7 +100,7 @@ bool EntityHitboxCache::VisibilityCheck(int id)
     return m_VisCheck[id];
 }
 
-static settings::Int setupbones_time{ "source.setupbones-time", "1" };
+static settings::Int setupbones_time{ "source.setupbones-time", "2" };
 static settings::Boolean bonecache_enabled{ "source.use-bone-cache", "false" };
 
 static std::mutex setupbones_mutex;
