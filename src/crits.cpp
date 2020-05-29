@@ -922,7 +922,7 @@ public:
         else if (!strcmp(event->GetName(), "player_hurt"))
         {
             int victim        = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
-            CachedEntity *ent = ENTITY(g_IEngine->GetPlayerForUserID(victim));
+            CachedEntity *ent = ENTITY(victim);
             int health        = event->GetInt("health");
 
             // Or Basically, Actual damage dealt
