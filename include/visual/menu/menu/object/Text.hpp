@@ -62,7 +62,7 @@ public:
     // Properties
 
     HAlign align_x{ HAlign::LEFT };
-    VAlign align_y{ VAlign::CENTER };
+    VAlign align_y{ VAlign::TOP };
 
     fonts::font *font{ nullptr };
     const rgba_t *color_text{ nullptr };

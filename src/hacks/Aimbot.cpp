@@ -26,7 +26,7 @@
 
 namespace hacks::shared::aimbot
 {
-static settings::Boolean enable{ "aimbot.enable", "false" };
+static settings::Boolean normal_enable{ "aimbot.enable", "false" };
 static settings::Button aimkey{ "aimbot.aimkey.button", "<null>" };
 static settings::Int aimkey_mode{ "aimbot.aimkey.mode", "1" };
 static settings::Boolean autoshoot{ "aimbot.autoshoot", "1" };
@@ -34,7 +34,7 @@ static settings::Boolean autoreload{ "aimbot.autoshoot.activate-heatmaker", "fal
 static settings::Boolean autoshoot_disguised{ "aimbot.autoshoot-disguised", "1" };
 static settings::Boolean multipoint{ "aimbot.multipoint", "false" };
 static settings::Int hitbox_mode{ "aimbot.hitbox-mode", "0" };
-static settings::Float fov{ "aimbot.fov", "0" };
+static settings::Float normal_fov{ "aimbot.fov", "0" };
 static settings::Int priority_mode{ "aimbot.priority-mode", "0" };
 static settings::Boolean wait_for_charge{ "aimbot.wait-for-charge", "0" };
 
@@ -48,7 +48,7 @@ static settings::Boolean zoomed_only{ "aimbot.zoomed-only", "1" };
 static settings::Boolean only_can_shoot{ "aimbot.can-shoot-only", "1" };
 
 static settings::Boolean extrapolate{ "aimbot.extrapolate", "0" };
-static settings::Int slow_aim{ "aimbot.slow", "0" };
+static settings::Int normal_slow_aim{ "aimbot.slow", "0" };
 static settings::Int miss_chance{ "aimbot.miss-chance", "0" };
 
 static settings::Boolean projectile_aimbot{ "aimbot.projectile.enable", "true" };
@@ -85,6 +85,41 @@ static settings::Int teammates{ "aimbot.target.teammates", "0" };
  * 2 Disable if being spectated
  */
 static settings::Int specmode("aimbot.spectator-mode", "0");
+static settings::Boolean specenable("aimbot.spectator.enable", "0");
+static settings::Float specfov("aimbot.spectator.fov", "0");
+static settings::Int specslow("aimbot.spectator.slow", "0");
+
+int slow_aim;
+float fov;
+bool enable;
+
+static void spectatorUpdate()
+{
+    switch (*specmode)
+    {
+    // Always on
+    default:
+    case 0:
+        break;
+        // Disable if being spectated in first person
+    case 1:
+        if (g_pLocalPlayer->spectator_state == g_pLocalPlayer->FIRSTPERSON)
+        {
+            enable = *specenable;
+            slow_aim = *specslow;
+            fov = *specfov;
+        }
+        break;
+        // Disable if being spectated
+    case 2:
+        if (g_pLocalPlayer->spectator_state != g_pLocalPlayer->NONE)
+        {
+            enable = *specenable;
+            slow_aim = *specslow;
+            fov = *specfov;
+        }
+    };
+}
 
 #if ENABLE_VISUALS
 static settings::Boolean fov_draw{ "aimbot.fov-circle.enable", "0" };
@@ -134,11 +169,11 @@ static bool CarryingHeatmaker()
 bool aimbotTickFilter(CachedEntity *ent, hacks::tf2::backtrack::BacktrackData tick)
 {
     // FOV check
-    if (*fov > 0.0f)
+    if (fov > 0.0f)
     {
         float fov_scr = GetFov(g_pLocalPlayer->v_OrigViewangles, g_pLocalPlayer->v_Eye, tick.hitboxes.at(0).center);
         // Failed FOV check
-        if (fov_scr > *fov)
+        if (fov_scr > fov)
             return false;
     }
     // Not hitscan, no vischeck needed
@@ -198,9 +233,16 @@ AimbotCalculatedData_s calculated_data_array[2048]{};
 // The main "loop" of the aimbot.
 static void CreateMove()
 {
-    if (!enable)
-        return;
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
+        return;
+    
+    enable = *normal_enable;
+    slow_aim = *normal_slow_aim;
+    fov = *normal_fov;
+    
+    spectatorUpdate();
+    
+    if (!enable)
         return;
 
     doAutoZoom(false);
@@ -382,28 +424,6 @@ bool MouseMoving()
 }
 #endif
 
-// Check if we are allowed to aim based on the current spectator state
-static bool ShouldAimSpectator()
-{
-    switch (*specmode)
-    {
-    // Always on
-    default:
-    case 0:
-        break;
-        // Disable if being spectated in first person
-    case 1:
-        if (g_pLocalPlayer->spectator_state == g_pLocalPlayer->FIRSTPERSON)
-            return false;
-        break;
-        // Disable if being spectated
-    case 2:
-        if (g_pLocalPlayer->spectator_state != g_pLocalPlayer->NONE)
-            return false;
-    };
-    return true;
-}
-
 // The first check to see if the player should aim in the first place
 bool ShouldAim()
 {
@@ -470,9 +490,6 @@ bool ShouldAim()
             }
         }
     }
-    // Check if we are allowed to aim based on the current spectator state
-    if (!ShouldAimSpectator())
-        return false;
     return true;
 }
 
@@ -729,7 +746,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             else if (!IsVectorVisible(pos, entity->hitboxes.GetHitbox(cd.hitbox)->center, false, ENTITY(sentry)))
                 return false;
         }
-        if (*fov > 0.0f && cd.fov > *fov)
+        if (fov > 0.0f && cd.fov > fov)
             return false;
 
         return true;
@@ -787,7 +804,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             if (!IsVectorVisible(pos, GetBuildingPosition(entity), false, ENTITY(sentry)))
                 return false;
         }
-        if (*fov > 0.0f && cd.fov > *fov)
+        if (fov > 0.0f && cd.fov > fov)
             return false;
 
         return true;
@@ -847,7 +864,7 @@ bool IsTargetStateGood(CachedEntity *entity)
             else if (!IsVectorVisible(pos, entity->m_vecOrigin(), false))
                 return false;
         }
-        if (*fov > 0.0f && cd.fov > *fov)
+        if (fov > 0.0f && cd.fov > fov)
             return false;
 
         return true;
