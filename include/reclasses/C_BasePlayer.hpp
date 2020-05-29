@@ -12,5 +12,10 @@ public:
     {
         return *((CTFPlayerShared *) (unsigned(self) + 6092));
     }
+    inline static Vector GetEyePosition(IClientEntity *self)
+    {
+        typedef Vector (*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(194, offsets::undefined, 194), 0)(self);
+    }
 };
 } // namespace re

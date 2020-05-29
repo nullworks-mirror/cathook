@@ -64,17 +64,64 @@ static float resolveAngleYaw(float angle, brutedata &brute)
     return angle;
 }
 
-static float resolveAnglePitch(float angle, brutedata &brute)
+static float resolveAnglePitch(float angle, brutedata &brute, CachedEntity *ent)
 {
     brute.original_angle.x = angle;
-    if (brute.brutenum % 2)
+
+    // Get SniperDot associated with entity if not already found
+    CachedEntity *sniper_dot = nullptr;
+
+    // Get Weapon id
+    auto weapon_id = HandleToIDX(CE_INT(ent, netvar.hActiveWeapon));
+
+    // Check IDX for validity
+    if (IDX_GOOD(weapon_id))
     {
-        // Pitch resolver
-        if (angle >= 90)
-            angle = -89;
-        if (angle <= -90)
-            angle = 89;
+        auto weapon_ent = ENTITY(weapon_id);
+        // Check weapon for validity
+        if (CE_GOOD(weapon_ent) && (weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifle) || weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifleDecap) || weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifleClassic)))
+        {
+            // Find sniper dot for this weapon
+            for (int i = g_IEngine->GetMaxClients() + 1; i <= HIGHEST_ENTITY; i++)
+            {
+                CachedEntity *dot_ent = ENTITY(i);
+                // Not a sniper dot
+                if (CE_BAD(dot_ent) || dot_ent->m_iClassID() != CL_CLASS(CSniperDot))
+                    continue;
+                // Not the sniperdot of that entity
+                if (HandleToIDX(CE_INT(dot_ent, netvar.m_hOwnerEntity)) != ent->m_IDX)
+                    continue;
+                // Found sniper dot
+                sniper_dot = dot_ent;
+            }
+        }
     }
+    // No sniper dot/not using a sniperrifle.
+    if (sniper_dot == nullptr)
+    {
+        if (brute.brutenum % 2)
+        {
+            // Pitch resolver
+            if (angle >= 90)
+                angle = -89;
+            if (angle <= -90)
+                angle = 89;
+        }
+    }
+    // Sniper dot found, use it.
+    else
+    {
+        // Get End and start point
+        auto dot_origin = sniper_dot->m_vecOrigin();
+        auto eye_origin = re::C_BasePlayer::GetEyePosition(RAW_ENT(ent));
+        // Get Angle from eye to dot
+        Vector diff = dot_origin - eye_origin;
+        Vector angles;
+        VectorAngles(diff, angles);
+        // Use the pitch (yaw is not useable because sadly the sniper dot does not represent it with fake yaw)
+        angle = angles.x;
+    }
+
     brute.new_angle.x = angle;
     return angle;
 }
@@ -96,7 +143,7 @@ void increaseBruteNum(int idx)
             logging::Info("AAA: Brutenum for entity %i increased to %i", idx, data.brutenum);
         data.hits_in_a_row = 0;
         auto &angle        = CE_VECTOR(ent, netvar.m_angEyeAngles);
-        angle.x            = resolveAnglePitch(data.original_angle.x, data);
+        angle.x            = resolveAnglePitch(data.original_angle.x, data, ent);
         angle.y            = resolveAngleYaw(data.original_angle.y, data);
         data.new_angle.x   = angle.x;
         data.new_angle.y   = angle.y;
@@ -117,7 +164,7 @@ static void pitchHook(const CRecvProxyData *pData, void *pStruct, void *pOut)
     auto client_ent   = (IClientEntity *) (pStruct);
     CachedEntity *ent = ENTITY(client_ent->entindex());
     if (CE_GOOD(ent))
-        *flPitch_out = resolveAnglePitch(flPitch, resolver_map[ent->player_info.friendsID]);
+        *flPitch_out = resolveAnglePitch(flPitch, resolver_map[ent->player_info.friendsID], ent);
 }
 
 static void yawHook(const CRecvProxyData *pData, void *pStruct, void *pOut)

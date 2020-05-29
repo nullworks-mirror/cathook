@@ -179,6 +179,8 @@ public:
     offset_t m_flSimulationTime;
     offset_t m_angRotation;
 
+    offset_t m_hOwnerEntity;
+
     offset_t m_nStreaks_Player;
     offset_t m_nStreaks_Resource;
     offset_t m_iPing_Resource;
