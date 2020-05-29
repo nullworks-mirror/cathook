@@ -126,6 +126,13 @@ matrix3x4_t *EntityHitboxCache::GetBones(int numbones)
     }
     if (!bones_setup)
     {
+        // Reset game cache
+        if (!bonecache_enabled)
+        {
+            re::C_BaseAnimating::InvalidateBoneCache(RAW_ENT(parent_ref));
+            re::C_BaseAnimating::Interpolate(RAW_ENT(parent_ref), bones_setup_time);
+        }
+
         // If numbones is not set, get it from some terrible and unnamed variable
         if (numbones == -1)
         {
