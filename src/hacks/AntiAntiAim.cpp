@@ -12,6 +12,7 @@ static settings::Boolean enable{ "anti-anti-aim.enable", "false" };
 static settings::Boolean debug{ "anti-anti-aim.debug.enable", "false" };
 
 std::unordered_map<unsigned, brutedata> resolver_map;
+std::array<CachedEntity *, 32> sniperdot_array;
 
 static inline void modifyAnlges()
 {
@@ -24,6 +25,26 @@ static inline void modifyAnlges()
         auto &angle = CE_VECTOR(player, netvar.m_angEyeAngles);
         angle.x     = data.new_angle.x;
         angle.y     = data.new_angle.y;
+    }
+}
+static inline void CreateMove()
+{
+    // Empty the array
+    sniperdot_array.fill(0);
+    // Find sniper dots
+    for (int i = g_IEngine->GetMaxClients() + 1; i <= HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *dot_ent = ENTITY(i);
+        // Not a sniper dot
+        if (CE_BAD(dot_ent) || dot_ent->m_iClassID() != CL_CLASS(CSniperDot))
+            continue;
+        // Get the player it belongs to
+        auto ent_idx = HandleToIDX(CE_INT(dot_ent, netvar.m_hOwnerEntity));
+        // IDX check
+        if (IDX_BAD(ent_idx) || ent_idx > sniperdot_array.size() || ent_idx <= 0)
+            continue;
+        // Good sniper dot, add to array
+        sniperdot_array.at(ent_idx - 1) = dot_ent;
     }
 }
 
@@ -68,7 +89,7 @@ static float resolveAnglePitch(float angle, brutedata &brute, CachedEntity *ent)
 {
     brute.original_angle.x = angle;
 
-    // Get SniperDot associated with entity if not already found
+    // Get CSniperDot associated with entity
     CachedEntity *sniper_dot = nullptr;
 
     // Get Weapon id
@@ -81,19 +102,8 @@ static float resolveAnglePitch(float angle, brutedata &brute, CachedEntity *ent)
         // Check weapon for validity
         if (CE_GOOD(weapon_ent) && (weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifle) || weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifleDecap) || weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifleClassic)))
         {
-            // Find sniper dot for this weapon
-            for (int i = g_IEngine->GetMaxClients() + 1; i <= HIGHEST_ENTITY; i++)
-            {
-                CachedEntity *dot_ent = ENTITY(i);
-                // Not a sniper dot
-                if (CE_BAD(dot_ent) || dot_ent->m_iClassID() != CL_CLASS(CSniperDot))
-                    continue;
-                // Not the sniperdot of that entity
-                if (HandleToIDX(CE_INT(dot_ent, netvar.m_hOwnerEntity)) != ent->m_IDX)
-                    continue;
-                // Found sniper dot
-                sniper_dot = dot_ent;
-            }
+            // Get Sniperdot
+            sniper_dot = sniperdot_array.at(ent->m_IDX - 1);
         }
     }
     // No sniper dot/not using a sniperrifle.
@@ -245,8 +255,9 @@ static void shutdown()
 static InitRoutine init([]() {
     hook();
     EC::Register(EC::Shutdown, shutdown, "antiantiaim_shutdown");
+    EC::Register(EC::CreateMove, CreateMove, "cm_antiantiaim");
 #if ENABLE_TEXTMODE
-    EC::Register(EC::CreateMove, modifyAnlges, "cm_antiantiaim");
+    EC::Register(EC::CreateMove, modifyAnlges, "cm_textmodeantiantiaim");
 #endif
 });
 } // namespace hacks::shared::anti_anti_aim

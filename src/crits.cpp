@@ -718,7 +718,7 @@ void AddCritString(const std::string &string, const rgba_t &color)
 void DrawCritStrings()
 {
     // Positions, base on crit meter itself and draw Centered
-    float x = *bar_x + *size * 2.0f / 2.0f;
+    float x = *bar_x + *size;
     float y = *bar_y + *size / 5.0f;
 
     if (bar_string != "")
