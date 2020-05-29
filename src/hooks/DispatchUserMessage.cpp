@@ -225,8 +225,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
             std::string message2(message);
             boost::to_lower(message2);
 
-            const char *toreplace[]   = { " ", "4", "3", "0", "6", "5", "7", "@", ".", "," };
-            const char *replacewith[] = { "", "a", "e", "o", "g", "s", "t", "a", "", "" };
+            const char *toreplace[]   = { " ", "4", "3", "0", "6", "5", "7", "@", ".", ",", "-" };
+            const char *replacewith[] = { "", "a", "e", "o", "g", "s", "t", "a", "", "", "" };
 
             for (int i = 0; i < 7; i++)
                 boost::replace_all(message2, toreplace[i], replacewith[i]);
