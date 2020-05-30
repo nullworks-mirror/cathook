@@ -12,6 +12,7 @@ static settings::Boolean enable{ "anti-anti-aim.enable", "false" };
 static settings::Boolean debug{ "anti-anti-aim.debug.enable", "false" };
 
 std::unordered_map<unsigned, brutedata> resolver_map;
+std::array<CachedEntity *, 32> sniperdot_array;
 
 static inline void modifyAnlges()
 {
@@ -24,6 +25,26 @@ static inline void modifyAnlges()
         auto &angle = CE_VECTOR(player, netvar.m_angEyeAngles);
         angle.x     = data.new_angle.x;
         angle.y     = data.new_angle.y;
+    }
+}
+static inline void CreateMove()
+{
+    // Empty the array
+    sniperdot_array.fill(0);
+    // Find sniper dots
+    for (int i = g_IEngine->GetMaxClients() + 1; i <= HIGHEST_ENTITY; i++)
+    {
+        CachedEntity *dot_ent = ENTITY(i);
+        // Not a sniper dot
+        if (CE_BAD(dot_ent) || dot_ent->m_iClassID() != CL_CLASS(CSniperDot))
+            continue;
+        // Get the player it belongs to
+        auto ent_idx = HandleToIDX(CE_INT(dot_ent, netvar.m_hOwnerEntity));
+        // IDX check
+        if (IDX_BAD(ent_idx) || ent_idx > sniperdot_array.size() || ent_idx <= 0)
+            continue;
+        // Good sniper dot, add to array
+        sniperdot_array.at(ent_idx - 1) = dot_ent;
     }
 }
 
@@ -64,17 +85,56 @@ static float resolveAngleYaw(float angle, brutedata &brute)
     return angle;
 }
 
-static float resolveAnglePitch(float angle, brutedata &brute)
+static float resolveAnglePitch(float angle, brutedata &brute, CachedEntity *ent)
 {
     brute.original_angle.x = angle;
-    if (brute.brutenum % 2)
+
+    // Get CSniperDot associated with entity
+    CachedEntity *sniper_dot = nullptr;
+
+    // Get Weapon id
+    auto weapon_id = HandleToIDX(CE_INT(ent, netvar.hActiveWeapon));
+
+    // Check IDX for validity
+    if (IDX_GOOD(weapon_id))
     {
-        // Pitch resolver
-        if (angle >= 90)
-            angle = -89;
-        if (angle <= -90)
-            angle = 89;
+        auto weapon_ent = ENTITY(weapon_id);
+        // Check weapon for validity
+        if (CE_GOOD(weapon_ent) && (weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifle) || weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifleDecap) || weapon_ent->m_iClassID() == CL_CLASS(CTFSniperRifleClassic)))
+        {
+            // Get Sniperdot
+            sniper_dot = sniperdot_array.at(ent->m_IDX - 1);
+            // Check if the dot is still good, if not then set to nullptr
+            if (CE_BAD(sniper_dot) || sniper_dot->m_iClassID() != CL_CLASS(CSniperDot))
+                sniper_dot = nullptr;
+        }
     }
+    // No sniper dot/not using a sniperrifle.
+    if (sniper_dot == nullptr)
+    {
+        if (brute.brutenum % 2)
+        {
+            // Pitch resolver
+            if (angle >= 90)
+                angle = -89;
+            if (angle <= -90)
+                angle = 89;
+        }
+    }
+    // Sniper dot found, use it.
+    else
+    {
+        // Get End and start point
+        auto dot_origin = sniper_dot->m_vecOrigin();
+        auto eye_origin = re::C_BasePlayer::GetEyePosition(RAW_ENT(ent));
+        // Get Angle from eye to dot
+        Vector diff = dot_origin - eye_origin;
+        Vector angles;
+        VectorAngles(diff, angles);
+        // Use the pitch (yaw is not useable because sadly the sniper dot does not represent it with fake yaw)
+        angle = angles.x;
+    }
+
     brute.new_angle.x = angle;
     return angle;
 }
@@ -96,7 +156,7 @@ void increaseBruteNum(int idx)
             logging::Info("AAA: Brutenum for entity %i increased to %i", idx, data.brutenum);
         data.hits_in_a_row = 0;
         auto &angle        = CE_VECTOR(ent, netvar.m_angEyeAngles);
-        angle.x            = resolveAnglePitch(data.original_angle.x, data);
+        angle.x            = resolveAnglePitch(data.original_angle.x, data, ent);
         angle.y            = resolveAngleYaw(data.original_angle.y, data);
         data.new_angle.x   = angle.x;
         data.new_angle.y   = angle.y;
@@ -117,7 +177,7 @@ static void pitchHook(const CRecvProxyData *pData, void *pStruct, void *pOut)
     auto client_ent   = (IClientEntity *) (pStruct);
     CachedEntity *ent = ENTITY(client_ent->entindex());
     if (CE_GOOD(ent))
-        *flPitch_out = resolveAnglePitch(flPitch, resolver_map[ent->player_info.friendsID]);
+        *flPitch_out = resolveAnglePitch(flPitch, resolver_map[ent->player_info.friendsID], ent);
 }
 
 static void yawHook(const CRecvProxyData *pData, void *pStruct, void *pOut)
@@ -198,8 +258,9 @@ static void shutdown()
 static InitRoutine init([]() {
     hook();
     EC::Register(EC::Shutdown, shutdown, "antiantiaim_shutdown");
+    EC::Register(EC::CreateMove, CreateMove, "cm_antiantiaim");
 #if ENABLE_TEXTMODE
-    EC::Register(EC::CreateMove, modifyAnlges, "cm_antiantiaim");
+    EC::Register(EC::CreateMove, modifyAnlges, "cm_textmodeantiantiaim");
 #endif
 });
 } // namespace hacks::shared::anti_anti_aim

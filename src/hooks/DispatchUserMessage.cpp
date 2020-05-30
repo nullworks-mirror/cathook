@@ -215,7 +215,7 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
                 break;
             }
 
-            std::vector<std::string> res = { "skid", "script", "cheat", "hak", "hac", "f1", "hax", "vac", "ban", "bot", "report", "kick" };
+            std::vector<std::string> res = { "skid", "script", "cheat", "hak", "hac", "f1", "hax", "vac", "ban", "bot", "report", "kick", "hcak", "chaet", "one" };
             if (claz)
                 res.emplace_back(claz);
 
@@ -225,8 +225,8 @@ DEFINE_HOOKED_METHOD(DispatchUserMessage, bool, void *this_, int type, bf_read &
             std::string message2(message);
             boost::to_lower(message2);
 
-            const char *toreplace[]   = { " ", "4", "3", "0", "6", "5", "7" };
-            const char *replacewith[] = { "", "a", "e", "o", "g", "s", "t" };
+            const char *toreplace[]   = { " ", "4", "3", "0", "6", "5", "7", "@", ".", ",", "-" };
+            const char *replacewith[] = { "", "a", "e", "o", "g", "s", "t", "a", "", "", "" };
 
             for (int i = 0; i < 7; i++)
                 boost::replace_all(message2, toreplace[i], replacewith[i]);

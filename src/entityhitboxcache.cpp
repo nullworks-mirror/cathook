@@ -100,7 +100,7 @@ bool EntityHitboxCache::VisibilityCheck(int id)
     return m_VisCheck[id];
 }
 
-static settings::Int setupbones_time{ "source.setupbones-time", "1" };
+static settings::Int setupbones_time{ "source.setupbones-time", "2" };
 static settings::Boolean bonecache_enabled{ "source.use-bone-cache", "false" };
 
 static std::mutex setupbones_mutex;
@@ -126,6 +126,13 @@ matrix3x4_t *EntityHitboxCache::GetBones(int numbones)
     }
     if (!bones_setup)
     {
+        // Reset game cache
+        if (!bonecache_enabled)
+        {
+            re::C_BaseAnimating::InvalidateBoneCache(RAW_ENT(parent_ref));
+            re::C_BaseAnimating::Interpolate(RAW_ENT(parent_ref), bones_setup_time);
+        }
+
         // If numbones is not set, get it from some terrible and unnamed variable
         if (numbones == -1)
         {

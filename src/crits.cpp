@@ -364,8 +364,11 @@ std::map<int, std::vector<int>> crit_cmds;
 struct player_status
 {
     int health{};
+    int clazz{};
+    // To make Player resource not be a hindrance
+    bool just_updated{};
 };
-static std::array<player_status, 33> player_status_list{};
+static std::array<player_status, 32> player_status_list{};
 
 // Function for preventing a crit
 bool prevent_crit()
@@ -595,15 +598,22 @@ void CreateMove()
     cached_damage = g_pPlayerResource->GetDamage(g_pLocalPlayer->entity_idx) - melee_damage;
 
     // We need to update player states regardless, else we can't sync the observed crit chance
-    for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_VALID(ent) && ent->m_bAlivePlayer() && g_pPlayerResource->GetHealth(ent))
+        // no valid check needed, GetHealth only uses m_IDX
+        if (g_pPlayerResource->GetHealth(ent))
         {
-            auto &status = player_status_list[i];
-            // Only sync if new health is bigger, We do the rest in player_hurt
-            if (status.health < g_pPlayerResource->GetHealth(ent))
+            auto &status = player_status_list[i - 1];
+            // Only sync if not updated recently in player_hurt
+            // new health is bigger,
+            // or they changed classes. We do the rest in player_hurt
+            if (!status.just_updated && (status.clazz != g_pPlayerResource->GetClass(ent) || status.health < g_pPlayerResource->GetHealth(ent)))
+            {
+                status.clazz  = g_pPlayerResource->GetClass(ent);
                 status.health = g_pPlayerResource->GetHealth(ent);
+            }
+            status.just_updated = false;
         }
     }
 
@@ -707,16 +717,16 @@ void AddCritString(const std::string &string, const rgba_t &color)
 
 void DrawCritStrings()
 {
-    // Positions
-    float x = *bar_x + *size * 2.0f;
+    // Positions, base on crit meter itself and draw Centered
+    float x = *bar_x + *size;
     float y = *bar_y + *size / 5.0f;
 
     if (bar_string != "")
     {
         float sx, sy;
-        fonts::menu->stringSize(bar_string, &sx, &sy);
+        fonts::center_screen->stringSize(bar_string, &sx, &sy);
         // Center and draw below
-        draw::String((x - sx) / 2, (y + sy), colors::red, bar_string.c_str(), *fonts::center_screen);
+        draw::String(x - sx / 2, (y + sy), colors::red, bar_string.c_str(), *fonts::center_screen);
         y += fonts::center_screen->size + 1;
     }
 
@@ -921,24 +931,18 @@ public:
         // Something took damage
         else if (!strcmp(event->GetName(), "player_hurt"))
         {
-            int victim        = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
-            CachedEntity *ent = ENTITY(g_IEngine->GetPlayerForUserID(victim));
-            int health        = event->GetInt("health");
+            int victim = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+            int health = event->GetInt("health");
 
-            // Or Basically, Actual damage dealt
-            int health_difference = 0;
-            if (CE_VALID(ent))
-            {
-                auto &status      = player_status_list[victim];
-                health_difference = status.health - health;
-                status.health     = health;
-            }
+            auto &status          = player_status_list[victim - 1];
+            int health_difference = status.health - health;
+            status.health         = health;
+            status.just_updated   = true;
 
             // That something was hurt by us
             if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_pLocalPlayer->entity_idx)
             {
                 // Don't count self damage
-
                 if (victim != g_pLocalPlayer->entity_idx)
                 {
                     // The weapon we damaged with

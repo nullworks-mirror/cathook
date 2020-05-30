@@ -9,6 +9,7 @@
 
 #include "common.hpp"
 
+#include "C_BaseAnimating.hpp"
 #include "C_BaseEntity.hpp"
 #include "ITFGroupMatchCriteria.hpp"
 #include "CTFPlayerShared.hpp"

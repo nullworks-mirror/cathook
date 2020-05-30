@@ -95,6 +95,7 @@ weaponmode GetWeaponMode(CachedEntity *ent);
 void FixMovement(CUserCmd &cmd, Vector &viewangles);
 void VectorAngles(Vector &forward, Vector &angles);
 void AngleVectors2(const QAngle &angles, Vector *forward);
+void AngleVectors3(const QAngle &angles, Vector *forward, Vector *right, Vector *up);
 extern std::mutex trace_lock;
 bool IsEntityVisible(CachedEntity *entity, int hb);
 bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, unsigned int mask = MASK_SHOT_HULL, trace_t *trace = nullptr);

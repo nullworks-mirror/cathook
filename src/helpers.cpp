@@ -731,7 +731,7 @@ void MatrixGetColumn(const matrix3x4_t &in, int column, Vector &out)
     out.z = in[2][column];
 }
 
-inline void MatrixAngles(const matrix3x4_t &matrix, float *angles)
+void MatrixAngles(const matrix3x4_t &matrix, float *angles)
 {
     float forward[3];
     float left[3];

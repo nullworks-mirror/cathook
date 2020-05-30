@@ -68,6 +68,7 @@ void NetVars::Init()
     this->res_iScore = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iScore");
     IF_GAME(IsTF())
     {
+        this->m_hOwnerEntity     = gNetvars.get_offset("DT_BaseEntity", "m_hOwnerEntity");
         this->res_iMaxHealth     = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxHealth");
         this->res_iPlayerClass   = gNetvars.get_offset("DT_TFPlayerResource", "m_iPlayerClass");
         this->m_bReadyToBackstab = gNetvars.get_offset("DT_TFWeaponKnife", "m_bReadyToBackstab");
