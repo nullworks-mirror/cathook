@@ -17,7 +17,9 @@
 #include "hack.hpp"
 #include "common.hpp"
 #include "MiscTemporary.hpp"
+#if ENABLE_GUI
 #include "menu/GuiInterface.hpp"
+#endif
 #include <link.h>
 #include <pwd.h>
 
