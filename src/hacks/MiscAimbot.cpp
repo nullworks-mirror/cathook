@@ -308,7 +308,7 @@ static void SapperAimbot()
     {
         float range    = re::C_TFWeaponBaseMelee::GetSwingRange(RAW_ENT(LOCAL_W));
         Vector angle   = GetAimAtAngles(g_pLocalPlayer->v_Eye, GetBuildingPosition(target));
-        Vector forward = GetForwardVector(g_pLocalPlayer->v_Eye, angle, range);
+        Vector forward = GetForwardVector(g_pLocalPlayer->v_Eye, angle, range, LOCAL_E);
         trace_t trace;
         if (IsEntityVectorVisible(target, forward, MASK_SHOT, &trace))
         {
@@ -536,7 +536,7 @@ static void BuildingAimbot()
     if (target)
     {
         Vector angle   = GetAimAtAngles(g_pLocalPlayer->v_Eye, GetBuildingPosition(target));
-        Vector forward = GetForwardVector(g_pLocalPlayer->v_Eye, angle, wrench_range);
+        Vector forward = GetForwardVector(g_pLocalPlayer->v_Eye, angle, wrench_range, LOCAL_E);
 
         trace_t trace;
 

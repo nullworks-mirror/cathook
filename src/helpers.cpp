@@ -1404,11 +1404,14 @@ void WhatIAmLookingAt(int *result_eindex, Vector *result_pos)
         *result_eindex = ((IClientEntity *) (trace.m_pEnt))->entindex();
 }
 
-Vector GetForwardVector(Vector origin, Vector viewangles, float distance)
+Vector GetForwardVector(Vector origin, Vector viewangles, float distance, CachedEntity *punch_entity)
 {
     Vector forward;
     float sp, sy, cp, cy;
     QAngle angle = VectorToQAngle(viewangles);
+    // Compensate for punch angle
+    if (punch_entity)
+        angle += VectorToQAngle(CE_VECTOR(punch_entity, netvar.vecPunchAngle));
     trace_t trace;
 
     sy        = sinf(DEG2RAD(angle[1]));
@@ -1422,9 +1425,9 @@ Vector GetForwardVector(Vector origin, Vector viewangles, float distance)
     return forward;
 }
 
-Vector GetForwardVector(float distance)
+Vector GetForwardVector(float distance, CachedEntity *punch_entity)
 {
-    return GetForwardVector(g_pLocalPlayer->v_Eye, g_pLocalPlayer->v_OrigViewangles, distance);
+    return GetForwardVector(g_pLocalPlayer->v_Eye, g_pLocalPlayer->v_OrigViewangles, distance, punch_entity);
 }
 
 bool IsSentryBuster(CachedEntity *entity)
@@ -1561,17 +1564,17 @@ Vector QAngleToVector(QAngle in)
     return *(Vector *) &in;
 }
 
-void AimAt(Vector origin, Vector target, CUserCmd *cmd)
+void AimAt(Vector origin, Vector target, CUserCmd *cmd, bool compensate_punch)
 {
-    cmd->viewangles = GetAimAtAngles(origin, target);
+    cmd->viewangles = GetAimAtAngles(origin, target, compensate_punch ? LOCAL_E : nullptr);
 }
 
-void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd)
+void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd, bool compensate_punch)
 {
     Vector r;
     r = ent->m_vecOrigin();
     GetHitbox(ent, hitbox, r);
-    AimAt(g_pLocalPlayer->v_Eye, r, cmd);
+    AimAt(g_pLocalPlayer->v_Eye, r, cmd, compensate_punch);
 }
 
 bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)

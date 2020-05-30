@@ -29,10 +29,6 @@ static settings::Int fullauto{ "misc.full-auto", "0" };
 static settings::Int fakelag_amount{ "misc.fakelag", "0" };
 static settings::Boolean fuckmode{ "misc.fuckmode", "false" };
 
-#if !ENABLE_VISUALS
-static settings::Boolean no_shake{ "visual.no-shake", "true" };
-#endif
-
 class CMoveData;
 namespace engine_prediction
 {
@@ -231,13 +227,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         PROF_SECTION(EntityCache);
         entity_cache::Update();
     }
-#if !ENABLE_VISUALS
-    if (no_shake && CE_GOOD(LOCAL_E) && LOCAL_E->m_bAlivePlayer())
-    {
-        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngle)    = { 0.0f, 0.0f, 0.0f };
-        NET_VECTOR(RAW_ENT(LOCAL_E), netvar.vecPunchAngleVel) = { 0.0f, 0.0f, 0.0f };
-    }
-#endif
     //	PROF_END("Entity Cache updating");
     {
         PROF_SECTION(CM_PlayerResource);

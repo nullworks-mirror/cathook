@@ -606,11 +606,11 @@ bool IsTargetStateGood(CachedEntity *entity)
                     int hb = BestHitbox(entity);
                     if (hb == -1)
                         return false;
-                    Vector newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, entity->hitboxes.GetHitbox(hb)->center);
+                    Vector newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, entity->hitboxes.GetHitbox(hb)->center, LOCAL_E);
                     trace_t trace;
                     Ray_t ray;
                     trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-                    ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange));
+                    ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange, LOCAL_E));
                     g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
                     if ((IClientEntity *) trace.m_pEnt != RAW_ENT(entity))
                         return false;
@@ -887,7 +887,7 @@ void Aim(CachedEntity *entity)
         return;
 
     // Get angles
-    Vector tr = (PredictEntity(entity) - g_pLocalPlayer->v_Eye);
+    Vector angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, PredictEntity(entity), LOCAL_E);
 
     // Multipoint
     if (multipoint && !projectile_mode)
@@ -931,14 +931,10 @@ void Aim(CachedEntity *entity)
         for (int i = 0; i < 13; ++i)
             if (IsEntityVectorVisible(entity, positions[i]))
             {
-                tr = (positions[i] - g_pLocalPlayer->v_Eye);
+                angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, positions[i], LOCAL_E);
                 break;
             }
     }
-    Vector angles;
-    VectorAngles(tr, angles);
-    // Clamping is important
-    fClampAngle(angles);
 
     // Slow aim
     if (slow_aim)

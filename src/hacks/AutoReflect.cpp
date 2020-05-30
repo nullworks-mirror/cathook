@@ -190,7 +190,7 @@ void CreateMove()
     if (!legit)
     {
         // Aim at predicted projectile
-        AimAt(g_pLocalPlayer->v_Eye, closest_vec, current_user_cmd);
+        AimAt(g_pLocalPlayer->v_Eye, closest_vec, current_user_cmd, false);
         // Use silent angles
         g_pLocalPlayer->bUseSilentAngles = true;
     }
