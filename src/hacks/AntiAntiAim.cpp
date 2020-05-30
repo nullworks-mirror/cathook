@@ -104,6 +104,9 @@ static float resolveAnglePitch(float angle, brutedata &brute, CachedEntity *ent)
         {
             // Get Sniperdot
             sniper_dot = sniperdot_array.at(ent->m_IDX - 1);
+            // Check if the dot is still good, if not then set to nullptr
+            if (CE_BAD(sniper_dot) || sniper_dot->m_iClassID() != CL_CLASS(CSniperDot))
+                sniper_dot = nullptr;
         }
     }
     // No sniper dot/not using a sniperrifle.
