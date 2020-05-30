@@ -103,17 +103,7 @@ void CreateMove()
     else
     {
         // Set up forward Vector
-        float sp, sy, cp, cy;
-        QAngle angle;
-        g_IEngine->GetViewAngles(angle);
-        sy        = sinf(DEG2RAD(angle[1]));
-        cy        = cosf(DEG2RAD(angle[1]));
-        sp        = sinf(DEG2RAD(angle[0]));
-        cp        = cosf(DEG2RAD(angle[0]));
-        forward.x = cp * cy;
-        forward.y = cp * sy;
-        forward.z = -sp;
-        forward   = forward * EffectiveTargetingRange() + g_pLocalPlayer->v_Eye;
+        forward = GetForwardVector(EffectiveTargetingRange(), LOCAL_E);
 
         // Call closest tick with our Tick filter func
         auto closest_data = hacks::tf2::backtrack::getClosestTick(g_pLocalPlayer->v_Eye, hacks::tf2::backtrack::defaultEntFilter, tick_filter);
@@ -403,18 +393,8 @@ CachedEntity *FindEntInSight(float range, bool no_players)
     trace_t trace;
     trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
 
-    // Use math to get a vector in front of the player
-    float sp, sy, cp, cy;
-    QAngle angle;
-    g_IEngine->GetViewAngles(angle);
-    sy        = sinf(DEG2RAD(angle[1]));
-    cy        = cosf(DEG2RAD(angle[1]));
-    sp        = sinf(DEG2RAD(angle[0]));
-    cp        = cosf(DEG2RAD(angle[0]));
-    forward.x = cp * cy;
-    forward.y = cp * sy;
-    forward.z = -sp;
-    forward   = forward * range + g_pLocalPlayer->v_Eye;
+    // Get Forward vector
+    forward = GetForwardVector(range, LOCAL_E);
 
     // Setup the trace starting with the origin of the local players eyes
     // attemting to hit the end vector we determined

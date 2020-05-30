@@ -116,8 +116,8 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity);
 bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false, CachedEntity *self = LOCAL_E, unsigned int mask = MASK_SHOT_HULL);
 // A Special function for navparser to check if a Vector is visible.
 bool IsVectorVisibleNavigation(Vector a, Vector b, unsigned int mask = MASK_SHOT_HULL);
-Vector GetForwardVector(Vector origin, Vector viewangles, float distance);
-Vector GetForwardVector(float distance);
+Vector GetForwardVector(Vector origin, Vector viewangles, float distance, CachedEntity *punch_entity = nullptr);
+Vector GetForwardVector(float distance, CachedEntity *punch_entity = nullptr);
 CachedEntity *getClosestEntity(Vector vec);
 bool IsSentryBuster(CachedEntity *ent);
 std::unique_ptr<char[]> strfmt(const char *fmt, ...);
@@ -156,16 +156,20 @@ void ChangeName(std::string name);
 
 void WhatIAmLookingAt(int *result_eindex, Vector *result_pos);
 
-inline Vector GetAimAtAngles(Vector origin, Vector target)
+inline Vector GetAimAtAngles(Vector origin, Vector target, CachedEntity *punch_correct = nullptr)
 {
     Vector angles, tr;
     tr = (target - origin);
     VectorAngles(tr, angles);
+    // Apply punchangle correction
+    if (punch_correct)
+        angles -= CE_VECTOR(punch_correct, netvar.vecPunchAngle);
     fClampAngle(angles);
     return angles;
 }
-void AimAt(Vector origin, Vector target, CUserCmd *cmd);
-void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd);
+
+void AimAt(Vector origin, Vector target, CUserCmd *cmd, bool compensate_punch = true);
+void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd, bool compensate_punch = true);
 bool IsProjectileCrit(CachedEntity *ent);
 
 QAngle VectorToQAngle(Vector in);

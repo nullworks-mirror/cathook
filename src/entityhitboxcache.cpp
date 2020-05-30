@@ -7,6 +7,7 @@
 
 #include <settings/Int.hpp>
 #include "common.hpp"
+#include "MiscTemporary.hpp"
 
 namespace hitbox_cache
 {
@@ -127,10 +128,12 @@ matrix3x4_t *EntityHitboxCache::GetBones(int numbones)
     if (!bones_setup)
     {
         // Reset game cache
-        if (!bonecache_enabled)
+        if (!bonecache_enabled && CE_GOOD(parent_ref))
         {
             re::C_BaseAnimating::InvalidateBoneCache(RAW_ENT(parent_ref));
-            re::C_BaseAnimating::Interpolate(RAW_ENT(parent_ref), bones_setup_time);
+            // Only use when nolerp is on as this breaks game visuals a tad
+            if (nolerp)
+                re::C_BaseAnimating::Interpolate(RAW_ENT(parent_ref), bones_setup_time);
         }
 
         // If numbones is not set, get it from some terrible and unnamed variable

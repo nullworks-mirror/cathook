@@ -165,14 +165,14 @@ static bool doRageBackstab()
             auto hitbox = ClosestDistanceHitbox(ent);
             if (hitbox == -1)
                 continue;
-            auto angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, ent->hitboxes.GetHitbox(hitbox)->center);
+            auto angle = GetAimAtAngles(g_pLocalPlayer->v_Eye, ent->hitboxes.GetHitbox(hitbox)->center, LOCAL_E);
             if (!angleCheck(ent, std::nullopt, angle) && !canFaceStab(ent))
                 continue;
 
             trace_t trace;
             Ray_t ray;
             trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-            ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, angle, swingrange));
+            ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, angle, swingrange, LOCAL_E));
             g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
             if (trace.m_pEnt)
             {
@@ -198,7 +198,7 @@ static bool doRageBackstab()
             trace_t trace;
             Ray_t ray;
             trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-            ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange));
+            ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange, LOCAL_E));
             g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
             if (trace.m_pEnt)
             {
@@ -243,7 +243,7 @@ bool backtrackFilter(CachedEntity *ent, hacks::tf2::backtrack::BacktrackData tic
     if (legit_stab)
         newangle = g_pLocalPlayer->v_OrigViewangles;
     else
-        newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, distcheck);
+        newangle = GetAimAtAngles(g_pLocalPlayer->v_Eye, distcheck, LOCAL_E);
     if (!angleCheck(ent, target_worldspace, newangle) && !canFaceStab(ent))
         return false;
 
