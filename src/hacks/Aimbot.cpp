@@ -1253,6 +1253,11 @@ int BestHitbox(CachedEntity *target)
 
             if (data)
             {
+                // First check preferred hitbox
+                if (IsEntityVectorVisible(target, (*data).hitboxes[preferred].center))
+                    return preferred;
+
+                // Then check the rest
                 if (*backtrackVischeckAll)
                     for (int j = head; j < foot_R + 1; j++)
                     {
