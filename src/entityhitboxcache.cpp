@@ -174,7 +174,7 @@ matrix3x4_t *EntityHitboxCache::GetBones(int numbones)
 #else
             // Textmode bots miss/shoot at nothing when the tf2 bonecache is used
             PROF_SECTION(bone_setup);
-            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones, numbones, 0x7FF00, bones_setup_time);
+            bones_setup = RAW_ENT(parent_ref)->SetupBones(bones.data(), numbones, 0x7FF00, bones_setup_time);
 #endif
         }
     }
