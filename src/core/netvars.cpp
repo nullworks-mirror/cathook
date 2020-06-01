@@ -29,6 +29,7 @@ void NetVars::Init()
     this->m_iClip2             = gNetvars.get_offset("DT_BaseCombatWeapon", "LocalWeaponData", "m_iClip2");
     this->m_Collision          = gNetvars.get_offset("DT_BaseEntity", "m_Collision");
     this->m_flSimulationTime   = gNetvars.get_offset("DT_BaseEntity", "m_flSimulationTime");
+    this->m_flAnimTime         = gNetvars.get_offset("DT_BaseEntity", "AnimTimeMustBeFirst", "m_flAnimTime");
     this->m_angRotation        = gNetvars.get_offset("DT_BaseEntity", "m_angRotation");
 
     IF_GAME(IsTF2())
