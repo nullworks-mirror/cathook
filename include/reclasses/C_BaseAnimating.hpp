@@ -17,6 +17,7 @@ public:
         static InvalidateBoneCache_t InvalidateBoneCache = InvalidateBoneCache_t(addr);
         InvalidateBoneCache(self);
     }
+    // Currently unused, might be useful in the near future though
     inline static bool Interpolate(IClientEntity *self, float time)
     {
         typedef bool (*fn_t)(IClientEntity *, float);
