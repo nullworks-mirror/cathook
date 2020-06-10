@@ -3,8 +3,10 @@
 */
 
 #pragma once
-
+#include "settings/Registered.hpp"
 union SDL_Event;
+
+extern settings::Button open_gui_button;
 
 namespace gui
 {

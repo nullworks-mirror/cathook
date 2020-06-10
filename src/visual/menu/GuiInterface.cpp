@@ -10,7 +10,7 @@
 #include <hack.hpp>
 #include <common.hpp>
 
-static settings::Button open_gui_button{ "visual.open-gui-button", "Insert" };
+settings::Button open_gui_button{ "visual.open-gui-button", "Insert" };
 
 static bool init_done{ false };
 
