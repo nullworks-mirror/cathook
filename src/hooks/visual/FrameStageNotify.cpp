@@ -101,26 +101,6 @@ DEFINE_HOOKED_METHOD(FrameStageNotify, void, void *this_, ClientFrameStage_t sta
         PROF_SECTION(FSN_skinchanger);
         hacks::tf2::skinchanger::FrameStageNotify(stage);
     }
-    /*if (hacks::tf2::seedprediction::prediction && CE_GOOD(LOCAL_E)) {
-        C_BaseTempEntity *fire = C_TEFireBullets::GTEFireBullets();
-        while (fire) {
-            logging::Info("0x%08X", (uintptr_t) fire);
-            C_TEFireBullets *fire2 = nullptr;
-            if (!fire->IsDormant() &&
-    fire->GetClientNetworkable()->GetClientClass() &&
-    fire->GetClientNetworkable()->GetClientClass()->m_ClassID ==
-    CL_CLASS(CTEFireBullets))
-                fire2 = (C_TEFireBullets *) fire;
-            if (fire2 && !hooks::IsHooked((void *) fire2)) {
-                hooks::firebullets.Set(fire2);
-                hooks::firebullets.HookMethod(HOOK_ARGS(PreDataUpdate));
-                hooks::firebullets.Apply();
-            }
-            if (fire2)
-                logging::Info("%d", fire2->m_iSeed());
-            fire = fire->m_pNext;
-        }
-    }*/
     std::optional<Vector> backup_punch;
     if (isHackActive() && !g_Settings.bInvalid && stage == FRAME_RENDER_START)
     {

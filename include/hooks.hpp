@@ -62,7 +62,6 @@ extern VMTHook chathud;
 extern VMTHook engine;
 extern VMTHook demoplayer;
 extern VMTHook netchannel;
-extern VMTHook firebullets;
 extern VMTHook clientdll;
 extern VMTHook matsurface;
 extern VMTHook studiorender;

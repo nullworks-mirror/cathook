@@ -37,15 +37,6 @@ static bool is_out_of_sync = false;
 // Optimization
 static int shots_to_fill_bucket = 0;
 
-static bool isRapidFire(IClientEntity *wep)
-{
-    weapon_info info(wep);
-    // Taken from game, m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_bUseRapidFireCrits;
-    bool ret = *(bool *) (info.weapon_data + 0x734 + info.weapon_mode * 0x40);
-    // Minigun changes mode once revved, so fix that
-    return ret || wep->GetClientClass()->m_ClassID == CL_CLASS(CTFMinigun);
-}
-
 static float getBucketCap()
 {
     static ConVar *tf_weapon_criticals_bucket_cap = g_ICvar->FindVar("tf_weapon_criticals_bucket_cap");
@@ -146,12 +137,6 @@ static int shotsUntilCrit(IClientEntity *wep)
 // (this + 0.1f >= observed_chance)
 static float getCritCap(IClientEntity *wep)
 {
-    typedef float (*AttribHookFloat_t)(float, const char *, IClientEntity *, void *, bool);
-
-    // Need this to get crit Multiplier from weapon
-    static uintptr_t AttribHookFloat = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C C7 45 ? 00 00 00 00 A1 ? ? ? ? C7 45 ? 00 00 00 00 8B 75 ? 85 C0 0F 84 ? ? ? ? 8D 55 ? 89 04 24 31 DB 89 54 24");
-    static auto AttribHookFloat_fn   = AttribHookFloat_t(AttribHookFloat);
-
     // Player specific Multiplier
     float crit_mult = re::CTFPlayerShared::GetCritMult(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E)));
 
@@ -159,7 +144,7 @@ static float getCritCap(IClientEntity *wep)
     float chance = 0.02f;
     if (g_pLocalPlayer->weapon_mode == weapon_melee)
         chance = 0.15f;
-    float flMultCritChance = AttribHookFloat_fn(crit_mult * chance, "mult_crit_chance", wep, 0, 1);
+    float flMultCritChance = ATTRIB_HOOK_FLOAT(crit_mult * chance, "mult_crit_chance", wep, 0, 1);
 
     if (isRapidFire(wep))
     {
@@ -171,7 +156,7 @@ static float getCritCap(IClientEntity *wep)
         float flNonCritDuration = (flCritDuration / flTotalCritChance) - flCritDuration;
         // calculate the chance per second of non-crit fire that we should transition into critting such that on average we achieve the total crit chance we want
         float flStartCritChance = 1 / flNonCritDuration;
-        flMultCritChance        = AttribHookFloat_fn(flStartCritChance, "mult_crit_chance", wep, 0, 1);
+        flMultCritChance        = ATTRIB_HOOK_FLOAT(flStartCritChance, "mult_crit_chance", wep, 0, 1);
     }
 
     return flMultCritChance;
@@ -508,11 +493,6 @@ static void updateCmds()
     if (added_per_shot == 0.0f || previous_weapon != weapon->entindex())
     {
         weapon_info info(weapon);
-        typedef float (*AttribHookFloat_t)(float, const char *, IClientEntity *, void *, bool);
-
-        // Need this to get some stats from weapon
-        static uintptr_t AttribHookFloat = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C C7 45 ? 00 00 00 00 A1 ? ? ? ? C7 45 ? 00 00 00 00 8B 75 ? 85 C0 0F 84 ? ? ? ? 8D 55 ? 89 04 24 31 DB 89 54 24");
-        static auto AttribHookFloat_fn   = AttribHookFloat_t(AttribHookFloat);
 
         // m_pWeaponInfo->GetWeaponData(m_iWeaponMode).m_nBulletsPerShot;
 
@@ -521,13 +501,13 @@ static void updateCmds()
         // Size of one WeaponMode_t is 0x40, 0x6fc is the offset to projectiles per shot
         int nProjectilesPerShot = *(int *) (WeaponData + 0x6fc + WeaponMode * 0x40);
         if (nProjectilesPerShot >= 1)
-            nProjectilesPerShot = AttribHookFloat_fn(nProjectilesPerShot, "mult_bullets_per_shot", weapon, 0x0, true);
+            nProjectilesPerShot = ATTRIB_HOOK_FLOAT(nProjectilesPerShot, "mult_bullets_per_shot", weapon, 0x0, true);
         else
             nProjectilesPerShot = 1;
 
         // Size of one WeaponMode_t is 0x40, 0x6f8 is the offset to damage
         added_per_shot = *(int *) (WeaponData + 0x6f8 + WeaponMode * 0x40);
-        added_per_shot = AttribHookFloat_fn(added_per_shot, "mult_dmg", weapon, 0x0, true);
+        added_per_shot = ATTRIB_HOOK_FLOAT(added_per_shot, "mult_dmg", weapon, 0x0, true);
         added_per_shot *= nProjectilesPerShot;
         shots_to_fill_bucket = getBucketCap() / added_per_shot;
         // Special boi

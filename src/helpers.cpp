@@ -805,6 +805,45 @@ void VectorAngles(Vector &forward, Vector &angles)
     angles[2] = 0;
 }
 
+// Forward, right, and up
+void AngleVectors3(const QAngle &angles, Vector *forward, Vector *right, Vector *up)
+{
+    float sr, sp, sy, cr, cp, cy;
+    SinCos(DEG2RAD(angles[YAW]), &sy, &cy);
+    SinCos(DEG2RAD(angles[PITCH]), &sp, &cp);
+    SinCos(DEG2RAD(angles[ROLL]), &sr, &cr);
+
+    if (forward)
+    {
+        forward->x = cp * cy;
+        forward->y = cp * sy;
+        forward->z = -sp;
+    }
+
+    if (right)
+    {
+        right->x = (-1 * sr * sp * cy + -1 * cr * -sy);
+        right->y = (-1 * sr * sp * sy + -1 * cr * cy);
+        right->z = -1 * sr * cp;
+    }
+
+    if (up)
+    {
+        up->x = (cr * sp * cy + -sr * -sy);
+        up->y = (cr * sp * sy + -sr * cy);
+        up->z = cr * cp;
+    }
+}
+
+bool isRapidFire(IClientEntity *wep)
+{
+    criticals::weapon_info info(wep);
+    // Taken from game, m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_bUseRapidFireCrits;
+    bool ret = *(bool *) (info.weapon_data + 0x734 + info.weapon_mode * 0x40);
+    // Minigun changes mode once revved, so fix that
+    return ret || wep->GetClientClass()->m_ClassID == CL_CLASS(CTFMinigun);
+}
+
 // Get forward vector
 void AngleVectors2(const QAngle &angles, Vector *forward)
 {
@@ -1552,6 +1591,16 @@ bool CanShoot()
 {
     // PrecalculateCanShoot() CreateMove.cpp
     return calculated_can_shoot;
+}
+
+float ATTRIB_HOOK_FLOAT(float base_value, const char *search_string, IClientEntity *ent, void *buffer, bool is_global_const_string)
+{
+    typedef float (*AttribHookFloat_t)(float, const char *, IClientEntity *, void *, bool);
+
+    static uintptr_t AttribHookFloat = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 6C C7 45 ? 00 00 00 00 A1 ? ? ? ? C7 45 ? 00 00 00 00 8B 75 ? 85 C0 0F 84 ? ? ? ? 8D 55 ? 89 04 24 31 DB 89 54 24");
+    static auto AttribHookFloat_fn   = AttribHookFloat_t(AttribHookFloat);
+
+    return AttribHookFloat_fn(base_value, search_string, ent, buffer, is_global_const_string);
 }
 
 QAngle VectorToQAngle(Vector in)

@@ -35,6 +35,7 @@ extern settings::Boolean clean_screenshots;
 extern settings::Boolean crypt_chat;
 extern settings::Boolean nolerp;
 extern float backup_lerp;
+extern settings::Int fakelag_amount;
 extern settings::Boolean no_zoom;
 extern settings::Boolean disable_visuals;
 extern settings::Int print_r;
@@ -47,6 +48,7 @@ extern bool freecam_is_toggled;
 #endif
 typedef void (*CL_SendMove_t)();
 extern DetourHook cl_warp_sendmovedetour;
+extern DetourHook cl_nospread_sendmovedetour;
 namespace hacks::tf2::misc_aimbot
 {
 bool ShouldHitBuilding(CachedEntity *ent);

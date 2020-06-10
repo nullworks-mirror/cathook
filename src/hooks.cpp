@@ -108,7 +108,6 @@ VMTHook chathud{};
 VMTHook engine{};
 VMTHook demoplayer{};
 VMTHook netchannel{};
-VMTHook firebullets{};
 VMTHook clientdll{};
 VMTHook matsurface{};
 VMTHook studiorender{};

@@ -96,7 +96,6 @@
     </Box>
     <Box padding="12 6 6 6" width="content" height="content" name="Projectile Aimbot" x="170" y="255">
         <List width="150">
-            <AutoVariable width="fill" target="aimbot.no-spread" label="No Spread" tooltip="Projectiles won't have any spread. Independant of aimbot."/>
             <AutoVariable width="fill" target="aimbot.projectile.enable" label="Enable projectile aimbot"/>
             <AutoVariable width="fill" target="aimbot.projectile.gravity" label="Gravity override"/>
             <AutoVariable width="fill" target="aimbot.projectile.speed" label="Velocity override"/>
