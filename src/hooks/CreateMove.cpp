@@ -8,7 +8,6 @@
 #include "common.hpp"
 #include "hack.hpp"
 #include "MiscTemporary.hpp"
-#include "SeedPrediction.hpp"
 #include <link.h>
 #include <hacks/hacklist.hpp>
 #include <settings/Bool.hpp>
@@ -18,7 +17,7 @@
 #include "teamroundtimer.hpp"
 
 #include "HookedMethods.hpp"
-#include "PreDataUpdate.hpp"
+#include "nospread.hpp"
 
 static settings::Boolean minigun_jump{ "misc.minigun-jump-tf2c", "false" };
 static settings::Boolean roll_speedhack{ "misc.roll-speedhack", "false" };
@@ -26,7 +25,6 @@ static settings::Boolean forward_speedhack{ "misc.roll-speedhack.forward", "fals
 static settings::Boolean engine_pred{ "misc.engine-prediction", "true" };
 static settings::Boolean debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int fullauto{ "misc.full-auto", "0" };
-static settings::Int fakelag_amount{ "misc.fakelag", "0" };
 static settings::Boolean fuckmode{ "misc.fuckmode", "false" };
 
 class CMoveData;
@@ -209,7 +207,6 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         current_user_cmd->buttons |= prevbuttons;
         prevbuttons |= current_user_cmd->buttons;
     }
-    hooked_methods::CreateMove();
 
     if (!g_Settings.bInvalid && CE_GOOD(g_pLocalPlayer->entity))
     {
@@ -269,18 +266,41 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
                 if (current_user_cmd->buttons & IN_ATTACK)
                     if (attackticks % *fullauto + 1 < *fullauto)
                         current_user_cmd->buttons &= ~IN_ATTACK;
-            static int fakelag_queue      = 0;
             g_pLocalPlayer->isFakeAngleCM = false;
+            static int fakelag_queue      = 0;
             if (CE_GOOD(LOCAL_E))
-                if (fakelag_amount || (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled()))
+                if (!hacks::tf2::nospread::is_syncing && (fakelag_amount || (hacks::shared::antiaim::force_fakelag && hacks::shared::antiaim::isEnabled())))
                 {
-                    int fakelag_amnt = (*fakelag_amount > 1) ? *fakelag_amount : 1;
-                    *bSendPackets    = fakelag_amnt == fakelag_queue;
-                    if (*bSendPackets)
-                        g_pLocalPlayer->isFakeAngleCM = true;
-                    fakelag_queue++;
-                    if (fakelag_queue > fakelag_amnt)
-                        fakelag_queue = 0;
+                    // Do not fakelag when trying to attack
+                    bool do_fakelag = true;
+                    switch (g_pLocalPlayer->weapon_mode)
+                    {
+                    case weapon_melee:
+                    {
+                        if (g_pLocalPlayer->weapon_melee_damage_tick)
+                            do_fakelag = false;
+                        break;
+                    }
+                    case weapon_hitscan:
+                    {
+                        if ((CanShoot() || isRapidFire(RAW_ENT(LOCAL_W))) && current_user_cmd->buttons & IN_ATTACK)
+                            do_fakelag = false;
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+
+                    if (do_fakelag)
+                    {
+                        int fakelag_amnt = (*fakelag_amount > 1) ? *fakelag_amount : 1;
+                        *bSendPackets    = fakelag_amnt == fakelag_queue;
+                        if (*bSendPackets)
+                            g_pLocalPlayer->isFakeAngleCM = true;
+                        fakelag_queue++;
+                        if (fakelag_queue > fakelag_amnt)
+                            fakelag_queue = 0;
+                    }
                 }
             {
                 PROF_SECTION(CM_antiaim);

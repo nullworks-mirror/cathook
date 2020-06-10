@@ -24,6 +24,5 @@
 #include "ITFGroupMatchCriteria.hpp"
 #include "CTFPartyClient.hpp"
 
-#include "C_TEFireBullets.hpp"
 #include "C_MannVsMachineStats.hpp"
 #include "CTFInventoryManager.hpp"

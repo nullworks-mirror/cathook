@@ -4,6 +4,9 @@
 */
 
 #include "MiscTemporary.hpp"
+#include "Warp.hpp"
+#include "nospread.hpp"
+
 std::array<Timer, 32> timers{};
 std::array<int, 32> bruteint{};
 
@@ -30,6 +33,7 @@ settings::Boolean nolerp{ "misc.no-lerp", "true" };
 settings::Boolean nolerp{ "misc.no-lerp", "false" };
 #endif
 float backup_lerp = 0.0f;
+settings::Int fakelag_amount{ "misc.fakelag", "0" };
 settings::Boolean no_zoom{ "remove.zoom", "false" };
 settings::Boolean no_scope{ "remove.scope", "false" };
 settings::Boolean disable_visuals{ "visual.disable", "false" };
@@ -42,7 +46,15 @@ void color_callback(settings::VariableBase<int> &, int)
 {
     menu_color = Color(*print_r, *print_g, *print_b, 255);
 }
+DetourHook cl_warp_sendmovedetour;
+DetourHook cl_nospread_sendmovedetour;
+
 static InitRoutine misc_init([]() {
+    static auto cl_sendmove_addr = gSignatures.GetEngineSignature("55 89 E5 57 56 53 81 EC 2C 10 00 00 C6 85 ? ? ? ? 01");
+    // Order matters!
+    cl_warp_sendmovedetour.Init(cl_sendmove_addr, (void *) hacks::tf2::warp::CL_SendMove_hook);
+    cl_nospread_sendmovedetour.Init(cl_sendmove_addr, (void *) hacks::tf2::nospread::CL_SendMove_hook);
+
     static std::optional<BytePatch> patch;
     static std::optional<BytePatch> patch2;
     print_r.installChangeCallback(color_callback);
@@ -104,6 +116,8 @@ static InitRoutine misc_init([]() {
     EC::Register(
         EC::Shutdown,
         []() {
+            cl_warp_sendmovedetour.Shutdown();
+            cl_nospread_sendmovedetour.Shutdown();
             if (backup_lerp)
             {
                 cl_interp->SetValue(backup_lerp);

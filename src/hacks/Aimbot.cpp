@@ -307,7 +307,6 @@ static void CreateMove()
     // target_eid = target_entity->m_IDX;
     if (only_can_shoot && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFMinigun) && g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFLaserPointer))
     {
-
         // Handle Compound bow
         if (g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow))
         {
@@ -1060,6 +1059,7 @@ void DoAutoshoot(CachedEntity *target_entity)
             auto hitbox = calculated_data_array[target_entity->m_IDX].hitbox;
             hitrate::AimbotShot(target_entity->m_IDX, hitbox != head);
         }
+        *bSendPackets = true;
     }
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFLaserPointer))
         current_user_cmd->buttons |= IN_ATTACK2;

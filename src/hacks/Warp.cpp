@@ -552,8 +552,6 @@ void rvarCallback(settings::VariableBase<bool> &, bool)
         yaw_selections.push_back(90.0f);
 }
 
-DetourHook cl_sendmove_detour;
-typedef void (*CL_SendMove_t)();
 void CL_SendMove_hook()
 {
     byte data[4000];
@@ -624,8 +622,6 @@ void CL_Move_hook(float accumulated_extra_samples, bool bFinalTick)
 }
 
 static InitRoutine init([]() {
-    static auto cl_sendmove_addr = gSignatures.GetEngineSignature("55 89 E5 57 56 53 81 EC 2C 10 00 00 C6 85 ? ? ? ? 01");
-    cl_sendmove_detour.Init(cl_sendmove_addr, (void *) CL_SendMove_hook);
     static auto cl_move_addr = gSignatures.GetEngineSignature("55 89 E5 57 56 53 81 EC 9C 00 00 00 83 3D ? ? ? ? 01");
     cl_move_detour.Init(cl_move_addr, (void *) CL_Move_hook);
 
@@ -636,7 +632,6 @@ static InitRoutine init([]() {
         EC::Shutdown,
         []() {
             g_IEventManager2->RemoveListener(&listener);
-            cl_sendmove_detour.Shutdown();
             cl_move_detour.Shutdown();
         },
         "warp_shutdown");

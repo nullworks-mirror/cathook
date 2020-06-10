@@ -7,7 +7,6 @@
 #pragma once
 
 #include "common.hpp"
-#include "SeedPrediction.hpp"
 #if ENABLE_VISUALS
 union SDL_Event;
 struct SDL_Window;

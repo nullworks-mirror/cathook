@@ -1,6 +1,5 @@
 set(files "${CMAKE_CURRENT_LIST_DIR}/AutoJoin.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/CatBot.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/SeedPrediction.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Spam.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Achievement.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/Aimbot.cpp"

@@ -96,6 +96,7 @@ void FixMovement(CUserCmd &cmd, Vector &viewangles);
 void VectorAngles(Vector &forward, Vector &angles);
 void AngleVectors2(const QAngle &angles, Vector *forward);
 void AngleVectors3(const QAngle &angles, Vector *forward, Vector *right, Vector *up);
+bool isRapidFire(IClientEntity *wep);
 extern std::mutex trace_lock;
 bool IsEntityVisible(CachedEntity *entity, int hb);
 bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, unsigned int mask = MASK_SHOT_HULL, trace_t *trace = nullptr);
@@ -207,6 +208,7 @@ std::string GetLevelName();
 
 int SharedRandomInt(unsigned iseed, const char *sharedname, int iMinVal, int iMaxVal, int additionalSeed /*=0*/);
 bool HookNetvar(std::vector<std::string> path, ProxyFnHook &hook, RecvVarProxyFn function);
+float ATTRIB_HOOK_FLOAT(float base_value, const char *search_string, IClientEntity *ent, void *buffer, bool is_global_const_string);
 
 void format_internal(std::stringstream &stream);
 template <typename T, typename... Targs> void format_internal(std::stringstream &stream, T value, Targs... args)

@@ -18,8 +18,16 @@ namespace hitrate
 int lastammo{ 0 };
 
 int count_shots{ 0 };
+int count_hits_sniper{ 0 };
 int count_hits{ 0 };
 int count_hits_head{ 0 };
+
+CatCommand clear_hirate("debug_hitrate_clear", "Clear hitrate", []() {
+    count_shots       = 0;
+    count_hits        = 0;
+    count_hits_sniper = 0;
+    count_hits_head   = 0;
+});
 
 CatCommand debug_hitrate("debug_hitrate", "Debug hitrate", []() {
     int p1 = 0;
@@ -33,7 +41,7 @@ CatCommand debug_hitrate("debug_hitrate", "Debug hitrate", []() {
         p2 = float(count_hits_head) / float(count_hits) * 100.0f;
     }
     logging::Info("%d / %d (%d%%)", count_hits, count_shots, p1);
-    logging::Info("%d / %d (%d%%)", count_hits_head, count_hits, p2);
+    logging::Info("%d / %d (%d%%)", count_hits_head, count_hits_sniper, p2);
 });
 
 CatCommand debug_ammo("debug_ammo", "Debug ammo", []() {
@@ -58,10 +66,12 @@ void OnShot()
     resolve_timer[aimbot_target_idx].update();
 }
 
-void OnHit(bool crit, int idx)
+void OnHit(bool crit, int idx, bool is_sniper)
 {
     idx = g_IEngine->GetPlayerForUserID(idx);
     count_hits++;
+    if (is_sniper)
+        count_hits_sniper++;
     if (crit)
         count_hits_head++;
     if (crit || aimbot_target_body)
@@ -88,22 +98,25 @@ void AimbotShot(int idx, bool target_body)
 void Update()
 {
     CachedEntity *weapon = LOCAL_W;
-    if (CE_GOOD(weapon))
+    // Hitscan only
+    if (CE_GOOD(weapon) && g_pLocalPlayer->weapon_mode == weapon_hitscan)
     {
+
+        int ammo = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
+        if (ammo < lastammo && !aimbot_shot.check(500) && aimbot_target_idx != -1)
+            OnShot();
+        lastammo = ammo;
+        // Resolver
         if (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) || LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
         {
-            int ammo = CE_INT(LOCAL_E, netvar.m_iAmmo + 4);
-            if (ammo < lastammo && !aimbot_shot.check(500) && aimbot_target_idx != -1)
-                OnShot();
-            lastammo = ammo;
-            auto ch  = (INetChannel *) g_IEngine->GetNetChannelInfo();
+            auto ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
             if (ch)
                 for (int i = 1; i < PLAYER_ARRAY_SIZE; i++)
                 {
                     if (!resolve_soon[i])
                         continue;
-                    // *2 since FLOW_INCOMING is unreliable due to fakelatency, * 1000.0f for seconds, and + 100.0f as insurance
-                    unsigned int delay = (ch->GetLatency(FLOW_OUTGOING) * 2) * 1000.0f + 100.0f;
+                    // Get general latency and add a safety net
+                    unsigned int delay = (ch->GetLatency(FLOW_OUTGOING) + ch->GetLatency(FLOW_INCOMING)) * 1000.0f + 100.0f;
                     if (resolve_timer[i].check(delay))
                     {
                         resolve_soon[i] = false;
@@ -124,7 +137,9 @@ public:
         if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
             if (CE_GOOD(LOCAL_W) && (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) || LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap)))
-                OnHit(event->GetBool("crit"), event->GetInt("userid"));
+                OnHit(event->GetBool("crit"), event->GetInt("userid"), true);
+            else if (CE_GOOD(LOCAL_W) && g_pLocalPlayer->weapon_mode == weapon_hitscan)
+                OnHit(false, event->GetInt("userid"), false);
         }
     }
 };
