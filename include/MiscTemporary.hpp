@@ -7,6 +7,7 @@
 
 #include <settings/Bool.hpp>
 #include "common.hpp"
+#include "DetourHook.hpp"
 
 #define MENU_COLOR (menu_color)
 
@@ -44,6 +45,8 @@ extern int stored_buttons;
 #if ENABLE_VISUALS
 extern bool freecam_is_toggled;
 #endif
+typedef void (*CL_SendMove_t)();
+extern DetourHook cl_warp_sendmovedetour;
 namespace hacks::tf2::misc_aimbot
 {
 bool ShouldHitBuilding(CachedEntity *ent);
