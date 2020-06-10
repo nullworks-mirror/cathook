@@ -145,12 +145,14 @@ void CreateMove()
                 if (g_GlobalVars->curtime - float(delay) >= target_time)
                 {
                     current_user_cmd->buttons |= IN_ATTACK;
+                    *bSendPackets = true;
                 }
             }
         }
         else
         {
             current_user_cmd->buttons |= IN_ATTACK;
+            *bSendPackets = true;
         }
     }
 }
