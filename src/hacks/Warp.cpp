@@ -530,7 +530,7 @@ public:
         if (g_IEngine->GetPlayerForUserID(victim) != g_pLocalPlayer->entity_idx)
             return;
         // Ignore projectiles for now
-        if (GetWeaponMode(ENTITY(attacker)) == weapon_projectile)
+        if (CE_VALID(ENTITY(attacker)) && GetWeaponMode(ENTITY(attacker)) == weapon_projectile)
             return;
         // We got hurt
         was_hurt = true;
