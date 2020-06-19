@@ -15,6 +15,7 @@
 #include <settings/Bool.hpp>
 
 #include "core/sharedobj.hpp"
+#include "DetourHook.hpp"
 
 #include "hack.hpp"
 #include <thread>
@@ -889,9 +890,14 @@ static InitRoutine init([]() {
     render_zoomed.installChangeCallback([](settings::VariableBase<bool> &, bool after) { tryPatchLocalPlayerShouldDraw(after); });
     patch_playerpanel     = std::make_unique<BytePatch>(gSignatures.GetClientSignature, "0F 94 45 DF", 0x0, std::vector<unsigned char>{ 0xC6, 0x45, 0xDF, 0x01 });
     uintptr_t addr_scrbrd = gSignatures.GetClientSignature("8B 10 89 74 24 04 89 04 24 FF 92 ? ? ? ? 83 F8 02 75 09");
-    patch_scoreboard1     = std::make_unique<BytePatch>(addr_scrbrd, std::vector<unsigned char>{ 0xEB, 0x31, 0xE8, 0x78, 0x46, 0x10, 0x00, 0xE9, 0xC9, 0x06, 0x00, 0x00 });
-    patch_scoreboard2     = std::make_unique<BytePatch>(addr_scrbrd + 0xA0, std::vector<unsigned char>{ 0xE9, 0x5D, 0xFF, 0xFF, 0xFF });
-    patch_scoreboard3     = std::make_unique<BytePatch>(addr_scrbrd + 0x84A, std::vector<unsigned char>{ 0x87, 0xFE });
+
+    // Address to the function we need to jump to
+    uintptr_t target_addr = e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 83 FE 2D"));
+    uintptr_t rel_addr    = ((uintptr_t) target_addr - ((uintptr_t) addr_scrbrd + 2)) - 5;
+
+    patch_scoreboard1 = std::make_unique<BytePatch>(addr_scrbrd, std::vector<unsigned char>{ 0xEB, 0x31, 0xE8, foffset(rel_addr, 0), foffset(rel_addr, 1), foffset(rel_addr, 2), foffset(rel_addr, 3), 0xE9, 0xC9, 0x06, 0x00, 0x00 });
+    patch_scoreboard2 = std::make_unique<BytePatch>(addr_scrbrd + 0xA0, std::vector<unsigned char>{ 0xE9, 0x5D, 0xFF, 0xFF, 0xFF });
+    patch_scoreboard3 = std::make_unique<BytePatch>(addr_scrbrd + 0x84A, std::vector<unsigned char>{ 0x87, 0xFE });
     patch_playerpanel->Patch();
     patch_scoreboard1->Patch();
     patch_scoreboard2->Patch();
