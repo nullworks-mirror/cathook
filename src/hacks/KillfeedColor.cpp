@@ -60,7 +60,7 @@ void GetTeamColor(Color *clr, void *this_, int data, int local)
 static std::vector<BytePatch> no_stack_smash{};
 static std::vector<BytePatch> color_patches{};
 // Defines to make our lives easier
-#define DONT_SMASH_SMACK(offset) no_stack_smash.push_back(BytePatch{ addr, std::vector<unsigned char>{ 0xC3, 0x90, 0x90 } })
+#define DONT_SMASH_SMACK(offset) no_stack_smash.push_back(BytePatch{ addr + offset, std::vector<unsigned char>{ 0xC3, 0x90, 0x90 } })
 #define PATCH_COLORS(patchNum) color_patches.push_back(BytePatch{ addrs[patchNum], patches[patchNum] })
 
 static InitRoutine init([] {
