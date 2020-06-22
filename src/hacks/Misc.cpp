@@ -295,15 +295,21 @@ void CreateMove()
                 return;
             }
             int ping = g_pPlayerResource->GetPing(g_IEngine->GetLocalPlayer());
-            if (*force_ping <= ping && cmdrate->GetInt() != -1)
+            static Timer updateratetimer{};
+            if (updateratetimer.test_and_set(500))
             {
-                oldCmdRate         = cmdrate->GetInt();
-                cmdrate->m_fMaxVal = 999999999.9f;
-                cmdrate->m_fMinVal = -999999999.9f;
-                cmdrate->SetValue(-1);
+                if (*force_ping <= ping)
+                {
+                    oldCmdRate = cmdrate->GetInt();
+                    NET_SetConVar command("cl_cmdrate", "-1");
+                    ((INetChannel *) g_IEngine->GetNetChannelInfo())->SendNetMsg(command);
+                }
+                else if (*force_ping > ping)
+                {
+                    NET_SetConVar command("cl_cmdrate", std::to_string(oldCmdRate).c_str());
+                    ((INetChannel *) g_IEngine->GetNetChannelInfo())->SendNetMsg(command);
+                }
             }
-            else if (*force_ping > ping)
-                cmdrate->SetValue(oldCmdRate);
         }
     }
 }
