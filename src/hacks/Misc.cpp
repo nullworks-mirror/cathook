@@ -58,7 +58,6 @@ static void tryPatchLocalPlayerShouldDraw(bool after)
 
 static Timer anti_afk_timer{};
 static int last_buttons{ 0 };
-static int oldCmdRate = 0;
 
 static void updateAntiAfk()
 {
@@ -295,15 +294,20 @@ void CreateMove()
                 return;
             }
             int ping = g_pPlayerResource->GetPing(g_IEngine->GetLocalPlayer());
-            if (*force_ping <= ping && cmdrate->GetInt() != -1)
+            static Timer updateratetimer{};
+            if (updateratetimer.test_and_set(500))
             {
-                oldCmdRate         = cmdrate->GetInt();
-                cmdrate->m_fMaxVal = 999999999.9f;
-                cmdrate->m_fMinVal = -999999999.9f;
-                cmdrate->SetValue(-1);
+                if (*force_ping <= ping)
+                {
+                    NET_SetConVar command("cl_cmdrate", "-1");
+                    ((INetChannel *) g_IEngine->GetNetChannelInfo())->SendNetMsg(command);
+                }
+                else if (*force_ping > ping)
+                {
+                    NET_SetConVar command("cl_cmdrate", std::to_string(cmdrate->GetInt()).c_str());
+                    ((INetChannel *) g_IEngine->GetNetChannelInfo())->SendNetMsg(command);
+                }
             }
-            else if (*force_ping > ping)
-                cmdrate->SetValue(oldCmdRate);
         }
     }
 }
@@ -845,15 +849,13 @@ static InitRoutine init_pyrovision([]() {
             cart_patch2.Shutdown();
         },
         "cartpatch_shutdown");
-    ping_reducer.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+    ping_reducer.installChangeCallback([](settings::VariableBase<bool> &, bool) {
         static ConVar *cmdrate = g_ICvar->FindVar("cl_cmdrate");
         if (cmdrate == nullptr)
         {
             cmdrate = g_ICvar->FindVar("cl_cmdrate");
             return;
         }
-        if (!after && cmdrate->GetInt() != oldCmdRate)
-            cmdrate->SetValue(oldCmdRate);
     });
 #endif
 });
@@ -879,7 +881,6 @@ void Shutdown()
 
 static InitRoutine init([]() {
     teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
-    oldCmdRate        = g_ICvar->FindVar("cl_cmdrate")->GetInt();
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
 #if ENABLE_VISUALS
