@@ -58,7 +58,6 @@ static void tryPatchLocalPlayerShouldDraw(bool after)
 
 static Timer anti_afk_timer{};
 static int last_buttons{ 0 };
-static int oldCmdRate = 0;
 
 static void updateAntiAfk()
 {
@@ -300,13 +299,12 @@ void CreateMove()
             {
                 if (*force_ping <= ping)
                 {
-                    oldCmdRate = cmdrate->GetInt();
                     NET_SetConVar command("cl_cmdrate", "-1");
                     ((INetChannel *) g_IEngine->GetNetChannelInfo())->SendNetMsg(command);
                 }
                 else if (*force_ping > ping)
                 {
-                    NET_SetConVar command("cl_cmdrate", std::to_string(oldCmdRate).c_str());
+                    NET_SetConVar command("cl_cmdrate", std::to_string(cmdrate->GetInt()).c_str());
                     ((INetChannel *) g_IEngine->GetNetChannelInfo())->SendNetMsg(command);
                 }
             }
@@ -851,15 +849,13 @@ static InitRoutine init_pyrovision([]() {
             cart_patch2.Shutdown();
         },
         "cartpatch_shutdown");
-    ping_reducer.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+    ping_reducer.installChangeCallback([](settings::VariableBase<bool> &, bool) {
         static ConVar *cmdrate = g_ICvar->FindVar("cl_cmdrate");
         if (cmdrate == nullptr)
         {
             cmdrate = g_ICvar->FindVar("cl_cmdrate");
             return;
         }
-        if (!after && cmdrate->GetInt() != oldCmdRate)
-            cmdrate->SetValue(oldCmdRate);
     });
 #endif
 });
@@ -885,7 +881,6 @@ void Shutdown()
 
 static InitRoutine init([]() {
     teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
-    oldCmdRate        = g_ICvar->FindVar("cl_cmdrate")->GetInt();
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
 #if ENABLE_VISUALS
