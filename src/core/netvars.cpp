@@ -59,12 +59,13 @@ void NetVars::Init()
         this->m_nChargeResistType       = gNetvars.get_offset("DT_WeaponMedigun", "m_nChargeResistType");
         this->m_hHealingTarget          = gNetvars.get_offset("DT_WeaponMedigun", "m_hHealingTarget");
         this->m_flChargeLevel           = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
-        m_bFeignDeathReady              = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bFeignDeathReady");
-        m_bCarryingObject               = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bCarryingObject");
-        m_hCarriedObject                = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_hCarriedObject");
-        m_nSequence                     = gNetvars.get_offset("DT_BaseAnimating", "m_nSequence");
-        m_iTauntIndex                   = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntIndex");
-        m_iTauntConcept                 = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntConcept");
+        this->m_bFeignDeathReady        = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bFeignDeathReady");
+        this->m_bCarryingObject         = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bCarryingObject");
+        this->m_hCarriedObject          = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_hCarriedObject");
+        this->m_nSequence               = gNetvars.get_offset("DT_BaseAnimating", "m_nSequence");
+        this->m_iTauntIndex             = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntIndex");
+        this->m_iTauntConcept           = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_iTauntConcept");
+        this->m_bViewingCYOAPDA         = gNetvars.get_offset("DT_TFPlayer", "m_bViewingCYOAPDA");
     }
     this->res_iScore = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iScore");
     IF_GAME(IsTF())

@@ -174,6 +174,7 @@ public:
 
     offset_t m_iTauntConcept;
     offset_t m_iTauntIndex;
+    offset_t m_bViewingCYOAPDA;
     offset_t m_angEyeAnglesLocal;
     offset_t m_nSequence;
     offset_t m_flSimulationTime;

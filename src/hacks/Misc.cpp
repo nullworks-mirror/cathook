@@ -48,6 +48,12 @@ static settings::Boolean misc_drawhitboxes{ "misc.draw-hitboxes", "false" };
 static settings::Boolean misc_drawhitboxes_dead{ "misc.draw-hitboxes.dead-players", "false" };
 #endif
 
+#if ENABLE_TEXTMODE
+static settings::Boolean fix_cyoaanim{ "remove.contracker", "true" };
+#else
+static settings::Boolean fix_cyoaanim{ "remove.contracker", "false" };
+#endif
+
 #if !ENFORCE_STREAM_SAFETY && ENABLE_VISUALS
 static void tryPatchLocalPlayerShouldDraw(bool after)
 {
@@ -879,7 +885,24 @@ void Shutdown()
 #endif
 }
 
+static ProxyFnHook cyoa_anim_hook{};
+
+void cyoaview_nethook(const CRecvProxyData *data, void *pPlayer, void *out)
+{
+    int value      = data->m_Value.m_Int;
+    int *value_out = (int *) out;
+    if (!fix_cyoaanim)
+    {
+        *value_out = value;
+        return;
+    }
+    // Mark as not doing cyoa thing
+    if (CE_BAD(LOCAL_E) || pPlayer != RAW_ENT(LOCAL_E))
+        *value_out = false;
+}
+
 static InitRoutine init([]() {
+    HookNetvar({ "DT_TFPlayer", "m_bViewingCYOAPDA" }, cyoa_anim_hook, cyoaview_nethook);
     teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);

@@ -46,6 +46,32 @@ bool trace::FilterDefault::ShouldHitEntity(IHandleEntity *handle, int mask)
     case CL_CLASS(CTFMedigunShield):
     case CL_CLASS(CFuncAreaPortalWindow):
         return false;
+    // Sniper rifles can shoot through teammates!
+    case CL_CLASS(CTFPlayer):
+    {
+        if (m_pSelf)
+        {
+            // If what we hit is an enemy it does not matter
+            if (entity && CE_VALID(ENTITY(entity->entindex())) && ENTITY(entity->entindex())->m_iTeam() == ENTITY(m_pSelf->entindex())->m_iTeam())
+            {
+                auto ent = ENTITY(m_pSelf->entindex());
+                if (CE_GOOD(ent) && ent->m_bAlivePlayer())
+                {
+                    // Get held weapon
+                    auto weapon_idx = CE_INT(ent, netvar.hActiveWeapon) & 0xFFF;
+                    // Check if weapon is valid
+                    if (IDX_GOOD(weapon_idx))
+                    {
+                        auto weapon = ENTITY(weapon_idx);
+                        // If holding sniper rifle
+                        if (weapon->m_iClassID() == CL_CLASS(CTFSniperRifle) || weapon->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
+                            return false;
+                    }
+                }
+            }
+        }
+        break;
+    }
     }
     /* Do not hit yourself. Idiot. */
     if (entity == m_pSelf)
