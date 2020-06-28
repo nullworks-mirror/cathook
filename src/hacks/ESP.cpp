@@ -467,7 +467,7 @@ void _FASTCALL ProcessEntityPT(CachedEntity *ent)
             Ray_t ray;
             ray.Init(eye_position, forward);
             trace_t trace;
-            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_no_player, &trace);
+            g_ITrace->TraceRay(ray, MASK_SOLID, &trace::filter_no_player, &trace);
 
             // Screen vectors
             Vector scn1, scn2;

@@ -173,7 +173,7 @@ static bool doRageBackstab()
             Ray_t ray;
             trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
             ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, angle, swingrange, LOCAL_E));
-            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
+            g_ITrace->TraceRay(ray, MASK_SOLID, &trace::filter_default, &trace);
             if (trace.m_pEnt)
             {
                 int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
@@ -199,7 +199,7 @@ static bool doRageBackstab()
             Ray_t ray;
             trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
             ray.Init(g_pLocalPlayer->v_Eye, GetForwardVector(g_pLocalPlayer->v_Eye, newangle, swingrange, LOCAL_E));
-            g_ITrace->TraceRay(ray, MASK_SHOT_HULL, &trace::filter_default, &trace);
+            g_ITrace->TraceRay(ray, MASK_SOLID, &trace::filter_default, &trace);
             if (trace.m_pEnt)
             {
                 int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
