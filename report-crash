@@ -19,7 +19,7 @@ has_debug_info() {
 function requestPermissions {
     # Prefer CLI
     if [ -t 0 ]; then
-        read -p "New Cathook crash report detected. Submit? y/n " -n 1 -r
+        read -p "New (possible) cathook crash report detected. Submit? y/n " -n 1 -r
         echo
         if ! [[ $REPLY =~ ^[Yy]$ ]]
         then
@@ -27,7 +27,7 @@ function requestPermissions {
         fi
         # Fall back to gui
     elif [ -x "$(command -v zenity)" ] && xset q &>/dev/null; then
-        zenity --no-wrap --question --text="New Cathook crash report detected. Submit?"
+        zenity --no-wrap --question --text="New cathook crash report detected. Submit?"
         out=$?
         if [ "$out" != 0 ]; then
             exit
@@ -70,7 +70,7 @@ if [ "$cathookcrash" == "false" ]; then
     exit 0
 fi
 
-echo "Cathook crash detected!"
+echo "(Possible) cathook crash detected!"
 
 SYMBOLS=true
 has_debug_info "$CATHOOK" || SYMBOLS=false
@@ -136,6 +136,6 @@ then
          "https://sentry.io/api/5220907/store/?sentry_version=7&sentry_key=44330b6a8c6b481c9fe02e261ca1d761&sentry_client=curl-bash/0.1"
     echo -e "\n"
     echo Thank you!
-    echo 'Contact us about this and send us the id above: https://t.me/nullworks https://github.com/nullworks/cathook/issues'
+    echo 'Contact us about this and send us the id above: https://t.me/nullworks https://cathook.club/-/issues'
     echo
 fi

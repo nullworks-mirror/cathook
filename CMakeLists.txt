@@ -224,7 +224,7 @@ add_custom_target(data
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         VERBATIM)
 
-# SDL included because of https://github.com/nullworks/cathook/issues/689
+# SDL included because of https://cathook.club/-/issues/689
 target_link_libraries(cathook ${ValveLibraryVStdLib} ${SDL2_LIBRARY})
 set_target_properties(cathook PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
