@@ -136,6 +136,6 @@ then
          "https://sentry.io/api/5220907/store/?sentry_version=7&sentry_key=44330b6a8c6b481c9fe02e261ca1d761&sentry_client=curl-bash/0.1"
     echo -e "\n"
     echo Thank you!
-    echo 'Contact us about this and send us the id above: https://t.me/nullworks https://cathook.club/-/issues'
+    echo 'Contact us about this and send us the id above: https://t.me/nullworks https://cathook.club/issues'
     echo
 fi
