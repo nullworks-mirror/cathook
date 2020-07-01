@@ -2,6 +2,10 @@
 ![banner](http://i.imgur.com/w96wdtE.png)
 [![CircleCI](https://circleci.com/gh/nullworks/cathook.svg?style=svg)](https://circleci.com/gh/nullworks/cathook)
 
+## Repo disabled by Github
+
+GitHub has disabled our Repository and we have therefore moved to GitLab (for now). [How to fix your cathook install](https://t.me/cathook_cheat/81)
+
 ## Risk of VAC detection
 
 The software could be detected by VAC in the future. Only use it on accounts you won't regret getting VAC banned.
