@@ -39,7 +39,6 @@ static settings::Int equip_primary{ "achievement.equip-primary", "0" };
 static settings::Int equip_secondary{ "achievement.equip-secondary", "0" };
 static settings::Int equip_melee{ "achievement.equip-melee", "0" };
 static settings::Int equip_pda2{ "achievement.equip-pda2", "0" };
-static settings::Boolean hat_troll{ "misc.nohatsforyou", "false" };
 #if ENABLE_TEXTMODE
 static settings::Boolean auto_noisemaker{ "misc.auto-noisemaker", "true" };
 #else
@@ -309,14 +308,6 @@ void CreateMove()
                 equip_item(player_class, slot, -1);
             }
         }
-    if (!hat_troll)
-        return;
-
-    if (hat_steal_timer.test_and_set(15000))
-    {
-        std::rotate(hat_list.begin(), hat_list.begin() + 1, hat_list.end());
-        equip_hats_fn(hat_list, { g_pLocalPlayer->clazz, g_pLocalPlayer->clazz });
-    }
 }
 
 void Callback(int after, int type)
@@ -510,16 +501,7 @@ static InitRoutine init([]() {
     equip_melee.installChangeCallback([](settings::VariableBase<int> &, int after) { Callback(after, 2); });
     equip_pda2.installChangeCallback([](settings::VariableBase<int> &, int after) { Callback(after, 3); });
 
-    EC::Register(EC::CreateMove, CreateMove, "cm_nohatsforyou");
-    EC::Register(EC::Paint, Paint, "achievement_autounlock");
-    hat_troll.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
-        static bool init = false;
-        if (after && !init)
-        {
-            hacks::shared::misc::generate_schema();
-            hacks::shared::misc::Schema_Reload();
-            init = true;
-        }
-    });
+    EC::Register(EC::CreateMove, CreateMove, "cm_achivement");
+    EC::Register(EC::Paint, Paint, "paint_achivement");
 });
 } // namespace hacks::tf2::achievement
