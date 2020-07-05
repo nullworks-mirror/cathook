@@ -102,7 +102,7 @@ static bool angleCheck(CachedEntity *target, std::optional<Vector> target_pos, V
     {
         Vector target_worldspace;
         VectorLerp(RAW_ENT(target)->GetCollideable()->OBBMins(), RAW_ENT(target)->GetCollideable()->OBBMaxs(), 0.5f, target_worldspace);
-        target_worldspace += LOCAL_E->m_vecOrigin();
+        target_worldspace += target->m_vecOrigin();
         vecToTarget = target_worldspace - local_worldspace;
     }
 
