@@ -148,7 +148,8 @@ void gui::init()
 
 void gui::shutdown()
 {
-    g_IGameEventManager->RemoveListener(&listener);
+    if (init_done)
+        g_IGameEventManager->RemoveListener(&listener);
 }
 
 void gui::draw()

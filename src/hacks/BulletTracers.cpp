@@ -161,7 +161,7 @@ IClientEntity *GetActiveTFWeapon_detour(IClientEntity *this_ /* C_TFPlayer * */)
     {
         // trace and find where player is aiming
         auto cent = ENTITY(this_->entindex());
-        if (CE_BAD(cent))
+        if (CE_BAD(cent) || !cent->hitboxes.GetHitbox(0))
             return weapon;
         Vector eyePos = cent->hitboxes.GetHitbox(0)->center;
         trace::filter_default.SetSelf(this_);
