@@ -15,6 +15,7 @@
 #include <settings/Bool.hpp>
 
 #include "core/sharedobj.hpp"
+#include "filesystem.h"
 #include "DetourHook.hpp"
 
 #include "hack.hpp"
@@ -501,35 +502,41 @@ void generate_schema()
 }
 static CatCommand generateschema("schema_generate", "Generate custom schema", generate_schema);
 
-void Schema_Reload()
+bool InitSchema(const char *fileName, const char *pathID, CUtlVector<CUtlString> *pVecErrors /* = NULL */)
 {
     static auto GetItemSchema = reinterpret_cast<void *(*) (void)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC ? 8B 1D ? ? ? ? 85 DB 89 D8"));
 
-    static auto BInitTextBuffer = reinterpret_cast<bool (*)(void *, CUtlBuffer &, int)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 9D ? ? ? ? 81 EC ? ? ? ? 8B 7D ? 89 1C 24 "));
-    void *schema                = (void *) ((unsigned) GetItemSchema() + 0x4);
+    static auto BInitTextBuffer = reinterpret_cast<bool (*)(void *, CUtlBuffer &, CUtlVector<CUtlString> *)>(gSignatures.GetClientSignature("55 89 E5 57 56 53 8D 9D ? ? ? ? 81 EC ? ? ? ? 8B 7D ? 89 1C 24 "));
+    void *schema                = (void *) ((uintptr_t) GetItemSchema() + 0x4);
 
-    FILE *file = fopen(paths::getDataPath("/items_game.txt").c_str(), "r");
-    if (!file || ferror(file) != 0)
+    // Read the raw data
+    CUtlBuffer bufRawData;
+    bool bReadFileOK = g_IFileSystem->ReadFile(fileName, pathID, bufRawData);
+    // Log something here if bReadFileOK is false
+
+    if (!bReadFileOK)
     {
-        logging::Info("Error loading file");
-        if (file)
-            fclose(file);
-        return;
+        logging::Info(("Failed reading item schema from " + std::string(fileName)).c_str());
+        return false;
     }
 
-    // CUtlBuffer
-    char *text_buffer  = new char[1000 * 1000 * 5];
-    size_t buffer_size = fread(text_buffer, sizeof(char), 1000 * 1000 * 5, file);
+    else
+        logging::Info(("Read item schema from " + std::string(fileName)).c_str());
 
-    CUtlBuffer buf(text_buffer, buffer_size, 9);
+    // Wrap it with a text buffer reader
+    CUtlBuffer bufText(bufRawData.Base(), bufRawData.TellPut(), CUtlBuffer::READ_ONLY | CUtlBuffer::TEXT_BUFFER);
 
-    fclose(file);
-    logging::Info("Loading item schema...");
-    bool ret = BInitTextBuffer(schema, buf, 0xDEADCA7);
-    logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
-
-    delete[] text_buffer;
+    // Use the standard init path
+    return BInitTextBuffer(schema, bufText, pVecErrors);
 }
+
+void Schema_Reload()
+{
+    logging::Info("Loading item schema...");
+    bool ret = InitSchema(paths::getDataPath("/items_game.txt").c_str(), nullptr, nullptr);
+    logging::Info("Loading %s", ret ? "Successful" : "Unsuccessful");
+}
+
 CatCommand schema("schema", "Load custom schema", Schema_Reload);
 
 CatCommand update_gui_color("gui_color_update", "Update the GUI Color", []() {
