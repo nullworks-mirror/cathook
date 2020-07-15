@@ -54,7 +54,6 @@
                     <Option name="Disable" value="0"/>
                     <Option name="Custom" value="1"/>
                     <Option name="Default" value="2"/>
-                    <Option name="NCC - offensive" value="3"/>
                     <Option name="NCC - MLG" value="4"/>
                 </Select>
             </LabeledObject>
