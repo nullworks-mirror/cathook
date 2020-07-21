@@ -88,7 +88,7 @@ void DrawCheatVisuals()
                               GUIColor());                  // github commit and date
                 AddSideString(hack::GetType(), GUIColor()); //  Compile type
 #if ENABLE_GUI
-                AddSideString("Press 'INSERT' key to open/close cheat menu.", GUIColor());
+                AddSideString("Press '" + open_gui_button.toString() + "' key to open/close cheat menu.", GUIColor());
                 AddSideString("Use mouse to navigate in menu.", GUIColor());
 #endif
             }
