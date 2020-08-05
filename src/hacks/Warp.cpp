@@ -511,8 +511,9 @@ class WarpHurtListener : public IGameEventListener2
 {
 public:
     virtual void FireGameEvent(IGameEvent *event)
-    { // Not enabled
-        if (!enabled || !warp_on_damage)
+    {
+        // Not enabled
+        if (!isHackActive() || !enabled || !warp_on_damage)
             return;
         // We have no warp
         if (!warp_amount)
@@ -529,9 +530,19 @@ public:
         // Check if victim is local player
         if (g_IEngine->GetPlayerForUserID(victim) != g_pLocalPlayer->entity_idx)
             return;
-        // Ignore projectiles for now
-        if (CE_VALID(ENTITY(attacker)) && GetWeaponMode(ENTITY(attacker)) == weapon_projectile)
+
+        // Check if the entities are alive and valid
+        CachedEntity *att = ENTITY(attacker);
+
+        // Don't run if we (the victim) are invalid
+        if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
             return;
+        // Don't check weapon mode if the attacker is invalid
+        if (!CE_INVALID(att) && att->m_bAlivePlayer())
+            // Ignore projectiles for now
+            if (CE_VALID(ENTITY(attacker)) && GetWeaponMode(ENTITY(attacker)) == weapon_projectile)
+                return;
+
         // We got hurt
         was_hurt = true;
     }
