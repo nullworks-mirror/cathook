@@ -210,7 +210,7 @@ static InitRoutine init([]() {
 
     nexus.setHandlerChat(handlers::message);
     nexus.setHandlerAuthedplayers(handlers::authedplayers);
-    if (*connect)
+    if (*enabled)
     {
         if (*proxyenabled)
             nexus.connectunix(*proxysocket, *endpoint, true);
