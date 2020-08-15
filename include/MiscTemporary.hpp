@@ -56,6 +56,6 @@ bool ShouldHitBuilding(CachedEntity *ent);
 namespace hooked_methods
 {
 void sendAchievementKv(int value);
-void sendIdentifyMessage(bool reply);
+void sendIdentifyMessage(bool reply, bool achievement_based);
 extern settings::Boolean identify;
 } // namespace hooked_methods

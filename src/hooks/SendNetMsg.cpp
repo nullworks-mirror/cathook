@@ -16,8 +16,9 @@ static settings::Int newlines_msg{ "chat.prefix-newlines", "0" };
 static settings::Boolean log_sent{ "debug.log-sent-chat", "false" };
 static settings::Boolean answerIdentify{ "chat.identify.answer", "true" };
 static Timer identify_timer{};
-constexpr int CAT_IDENTIFY = 0xCA7;
-constexpr int CAT_REPLY    = 0xCA8;
+constexpr int CAT_IDENTIFY   = 0xCA7;
+constexpr int CAT_REPLY      = 0xCA8;
+constexpr float AUTH_MESSAGE = 1234567.0f;
 
 namespace hacks::shared::catbot
 {
@@ -26,8 +27,9 @@ void SendNetMsg(INetMessage &msg);
 namespace hooked_methods
 {
 
-static bool queue_ca8{};
-static Timer queue_ca8_timer{};
+static bool send_achievement_reply{};
+static bool send_drawline_reply{};
+static Timer send_achievement_reply_timer{};
 static Timer reply_timer{};
 
 void sendAchievementKv(int value)
@@ -37,9 +39,59 @@ void sendAchievementKv(int value)
     g_IEngine->ServerCmdKeyValues(kv);
 }
 
-void sendIdentifyMessage(bool reply)
+void sendDrawlineKv(float x_value, float y_value)
 {
-    reply ? sendAchievementKv(CAT_REPLY) : sendAchievementKv(CAT_IDENTIFY);
+    KeyValues *kv = new KeyValues("cl_drawline");
+    kv->SetInt("panel", 0);
+    kv->SetInt("line", 0);
+    kv->SetFloat("x", x_value);
+    kv->SetFloat("y", y_value);
+    g_IEngine->ServerCmdKeyValues(kv);
+}
+
+void sendIdentifyMessage(bool reply, bool achievement_based)
+{
+    // Old method
+    if (achievement_based)
+        reply ? sendAchievementKv(CAT_REPLY) : sendAchievementKv(CAT_IDENTIFY);
+    else
+        reply ? sendDrawlineKv(CAT_REPLY, AUTH_MESSAGE) : sendDrawlineKv(CAT_IDENTIFY, AUTH_MESSAGE);
+}
+
+static CatCommand debug_drawpanel("debug_drawline", "debug", []() {
+    KeyValues *kv = new KeyValues("cl_drawline");
+    // Has to be this to get broadcasted
+    kv->SetInt("panel", 2);
+    // "New" line
+    kv->SetInt("line", 0);
+
+    kv->SetFloat("x", CAT_IDENTIFY);
+    kv->SetFloat("y", AUTH_MESSAGE);
+    g_IEngine->ServerCmdKeyValues(kv);
+});
+
+void ProcessSendline(IGameEvent *kv)
+{
+    int player_idx = kv->GetInt("player", 0xDEAD);
+
+    auto id            = kv->GetFloat("x");
+    float message_type = kv->GetFloat("y");
+    auto panel_type    = kv->GetInt("panel");
+    auto line_type     = kv->GetInt("line");
+
+    // Verify all the data matches
+    if (player_idx != 0xDEAD && panel_type == 2 && line_type == 0 && message_type == AUTH_MESSAGE && (id == CAT_IDENTIFY || id == CAT_REPLY))
+    {
+        player_info_s info;
+        if (!g_IEngine->GetPlayerInfo(player_idx, &info))
+            return;
+        // CA7 = Reply and change state
+        // CA8 = Change state
+        if (id == CAT_IDENTIFY && *answerIdentify && player_idx != g_pLocalPlayer->entity_idx)
+            send_drawline_reply = true;
+        if (playerlist::ChangeState(info.friendsID, playerlist::k_EState::CAT))
+            PrintChat("\x07%06X%s\x01 Marked as CAT (Cathook user)", 0xe05938, info.name);
+    }
 }
 
 settings::Boolean identify{ "chat.identify", "true" };
@@ -74,8 +126,8 @@ void ProcessAchievement(IGameEvent *ach)
             return;
         if (reply && *answerIdentify && player_idx != g_pLocalPlayer->entity_idx)
         {
-            queue_ca8_timer.update();
-            queue_ca8 = true;
+            send_achievement_reply_timer.update();
+            send_achievement_reply = true;
         }
         if (playerlist::ChangeState(info.friendsID, playerlist::k_EState::CAT))
             PrintChat("\x07%06X%s\x01 Marked as CAT (Cathook user)", 0xe05938, info.name);
@@ -155,11 +207,16 @@ class AchievementListener : public IGameEventListener2
     virtual void FireGameEvent(IGameEvent *event)
     {
         if (*identify)
-            ProcessAchievement(event);
+        {
+            if (!strcmp(event->GetName(), "cl_drawline"))
+                ProcessSendline(event);
+            else
+                ProcessAchievement(event);
+        }
     }
 };
 
-static CatCommand send_identify("debug_send_identify", "debug", []() { sendIdentifyMessage(false); });
+static CatCommand send_identify("debug_send_identify", "debug", []() { sendIdentifyMessage(false, true); });
 
 static AchievementListener event_listener{};
 
@@ -167,26 +224,27 @@ static InitRoutine run_identify([]() {
     EC::Register(
         EC::CreateMove,
         []() {
-            if (queue_ca8 && queue_ca8_timer.check(10000))
+            // Legacy support
+            if (send_achievement_reply && send_achievement_reply_timer.check(10000))
             {
-                sendIdentifyMessage(true);
-                queue_ca8 = false;
+                sendIdentifyMessage(true, true);
+                send_achievement_reply = false;
             }
-            // 2 minutes between each identify seems ok?
-            if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(1000 * 60 * 2))
+            if (send_drawline_reply && reply_timer.test_and_set(2000))
+            {
+                sendIdentifyMessage(true, false);
+                send_drawline_reply = false;
+            }
+            // Wait 30 seconds between identifies
+            if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(1000 * 30))
                 return;
-            sendIdentifyMessage(false);
+            sendIdentifyMessage(false, false);
         },
         "sendnetmsg_createmove");
     g_IEventManager2->AddListener(&event_listener, "achievement_earned", false);
+    g_IEventManager2->AddListener(&event_listener, "cl_drawline", false);
     EC::Register(
         EC::Shutdown, []() { g_IEventManager2->RemoveListener(&event_listener); }, "shutdown_event");
-    EC::Register(
-        EC::LevelInit,
-        []() { // This will make the timer get triggered next test_and_set call
-            identify_timer.last -= std::chrono::minutes(5);
-        },
-        "reset_timer");
 });
 
 DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, bool force_reliable, bool voice)
