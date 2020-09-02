@@ -192,6 +192,10 @@ bool gui::handleSdlEvent(SDL_Event *event)
             {
                 g_ISurface->LockCursor();
                 g_ISurface->SetCursorAlwaysVisible(false);
+                // Ensure we don't snap after closing the menu by deactivating and
+                // reactivating the mouse, which causes it to fully reset
+                g_IInput->DeactivateMouse();
+                g_IInput->ActivateMouse();
             }
             return true;
         }
