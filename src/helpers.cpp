@@ -14,6 +14,7 @@
 #include "Ragdolls.hpp"
 
 static settings::Boolean tcm{ "debug.tcm", "true" };
+static settings::Boolean should_correct_punch{ "debug.correct-punch", "true" };
 
 std::vector<ConVar *> &RegisteredVarsList()
 {
@@ -1248,6 +1249,9 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     case CL_CLASS(CTFRocketLauncher):
     {
         rspeed = 1100.0f;
+        // Libery Launcher
+        if (CE_INT(weapon, netvar.iItemDefinitionIndex) == 414)
+            rspeed *= 1.4f;
         break;
     }
     case CL_CLASS(CTFCannon):
@@ -1257,31 +1261,32 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity)
     }
     case CL_CLASS(CTFGrenadeLauncher):
     {
+        rspeed = 1200.0f;
+        rgrav  = 0.4f;
         IF_GAME(IsTF2())
         {
-            rspeed = 1200.0f;
-            rgrav  = 0.4f;
+            // Loch'n Load
+            if (CE_INT(weapon, netvar.iItemDefinitionIndex) == 308)
+                rspeed *= 1.25f;
         }
-        else IF_GAME(IsTF2C())
+        IF_GAME(IsTF2C())
         {
-            rspeed = 1100.0f;
-            rgrav  = 0.5f;
+            rgrav = 0.5f;
         }
         break;
     }
     case CL_CLASS(CTFPipebombLauncher):
     {
-        float chargebegin = *((float *) ((uint64_t) RAW_ENT(LOCAL_W) + 3152));
-        float chargetime  = g_GlobalVars->curtime - chargebegin;
-        rspeed            = (fminf(fmaxf(chargetime / 4.0f, 0.0f), 1.0f) * 1500.0f) + 900.0f;
-        rgrav             = (fminf(fmaxf(chargetime / 4.0f, 0.0f), 1.0f) * -0.70000001f) + 0.5f;
+        float chargetime = g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
+        rspeed           = RemapValClamped(chargetime, 0.0f, 4.0f, 900, 2400);
+        rgrav            = 0.4f;
         break;
     }
     case CL_CLASS(CTFCompoundBow):
     {
         float chargetime = g_GlobalVars->curtime - CE_FLOAT(weapon, netvar.flChargeBeginTime);
-        rspeed           = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) * 800.0) + 1800.0);
-        rgrav            = (float) ((float) (fminf(fmaxf(chargetime, 0.0), 1.0) * -0.40000001) + 0.5);
+        rspeed           = RemapValClamped(chargetime, 0.0f, 1.f, 1800, 2600);
+        rgrav            = RemapValClamped(chargetime, 0.0f, 1.f, 0.5, 0.1);
         break;
     }
     case CL_CLASS(CTFBat_Giftwrap):
@@ -1449,7 +1454,7 @@ Vector GetForwardVector(Vector origin, Vector viewangles, float distance, Cached
     float sp, sy, cp, cy;
     QAngle angle = VectorToQAngle(viewangles);
     // Compensate for punch angle
-    if (punch_entity)
+    if (punch_entity && should_correct_punch)
         angle += VectorToQAngle(CE_VECTOR(punch_entity, netvar.vecPunchAngle));
     trace_t trace;
 

@@ -1171,11 +1171,18 @@ int BestHitbox(CachedEntity *target)
                     headonly = false;
                 // Rocket launcher
             }
-            else if (ci == CL_CLASS(CTFRocketLauncher) || ci == CL_CLASS(CTFRocketLauncher_AirStrike) || ci == CL_CLASS(CTFRocketLauncher_DirectHit) || ci == CL_CLASS(CTFRocketLauncher_Mortar) || ci == CL_CLASS(CTFPipebombLauncher))
+            // These weapons should aim at the foot if the target is grounded
+            else if (ci == CL_CLASS(CTFRocketLauncher) || ci == CL_CLASS(CTFRocketLauncher_AirStrike) || ci == CL_CLASS(CTFRocketLauncher_Mortar))
             {
-                preferred = hitbox_t::hip_L;
+                preferred = hitbox_t::foot_L;
             }
-            // Airborn projectile
+            // These weapons should aim at the center of mass due to little/no splash
+            else if (ci == CL_CLASS(CTFPipebombLauncher) || ci == CL_CLASS(CTFRocketLauncher_DirectHit) || ci == CL_CLASS(CTFGrenadeLauncher))
+            {
+                preferred = hitbox_t::spine_3;
+            }
+
+            // Airborn targets should always get hit in center
             if (GetWeaponMode() == weaponmode::weapon_projectile)
             {
                 if (g_pLocalPlayer->weapon()->m_iClassID() != CL_CLASS(CTFCompoundBow))

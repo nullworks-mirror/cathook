@@ -8,7 +8,6 @@
 #include <settings/Bool.hpp>
 
 static settings::Boolean debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
-static settings::Boolean debug_pp_rockettimeping{ "debug.pp-rocket-time-ping", "false" };
 static settings::Boolean debug_pp_draw{ "debug.pp-draw", "false" };
 // TODO there is a Vector() object created each call.
 
@@ -271,8 +270,8 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
         }
 
         float rockettime = g_pLocalPlayer->v_Eye.DistTo(current) / speed;
-        if (debug_pp_rockettimeping)
-            rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+        // Compensate for ping
+        rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;
@@ -282,8 +281,8 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
     }
     const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = origin;
     CE_VECTOR(ent, 0x354)                              = origin;
-    if (debug_pp_rockettimeping)
-        besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+    // Compensate for ping
+    besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
     bestpos.z += (400 * besttime * besttime * gravitymod);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result = bestpos + hitbox_offset;
@@ -325,8 +324,8 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float
                 curpos.z = result.z - dtg;
         }
         float rockettime = g_pLocalPlayer->v_Eye.DistTo(curpos) / speed;
-        if (debug_pp_rockettimeping)
-            rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+        // Compensate for ping
+        rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;
@@ -334,8 +333,8 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float
             mindelta = fabs(rockettime - currenttime);
         }
     }
-    if (debug_pp_rockettimeping)
-        besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+    // Compensate for ping
+    besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
     bestpos.z += (400 * besttime * besttime * gravity);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     return bestpos;
@@ -395,8 +394,8 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
         }
 
         float rockettime = g_pLocalPlayer->v_Eye.DistTo(current) / speed;
-        if (debug_pp_rockettimeping)
-            rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+        // Compensate for ping
+        rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;
@@ -404,8 +403,8 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
             mindelta = fabs(rockettime - currenttime);
         }
     }
-    if (debug_pp_rockettimeping)
-        besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
+    // Compensate for ping
+    besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
     bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravitymod);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result = bestpos + hitbox_offset;
