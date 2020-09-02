@@ -474,7 +474,7 @@ bool defaultTickFilter(CachedEntity *ent, BacktrackData tick)
     if (g_pLocalPlayer->weapon_mode != weapon_hitscan)
         return true;
     // Return visibility
-    return IsEntityVectorVisible(ent, tick.hitboxes.at(head).center, MASK_SHOT);
+    return IsEntityVectorVisible(ent, tick.hitboxes.at(head).center, true, MASK_SHOT);
 }
 
 bool defaultEntFilter(CachedEntity *ent)

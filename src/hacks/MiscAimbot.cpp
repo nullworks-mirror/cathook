@@ -310,7 +310,7 @@ static void SapperAimbot()
         Vector angle   = GetAimAtAngles(g_pLocalPlayer->v_Eye, GetBuildingPosition(target));
         Vector forward = GetForwardVector(g_pLocalPlayer->v_Eye, angle, range, LOCAL_E);
         trace_t trace;
-        if (IsEntityVectorVisible(target, forward, MASK_SHOT, &trace))
+        if (IsEntityVectorVisible(target, forward, false, MASK_SHOT, &trace))
         {
             if (trace.DidHit() && (IClientEntity *) trace.m_pEnt == RAW_ENT(target))
             {
@@ -540,7 +540,7 @@ static void BuildingAimbot()
 
         trace_t trace;
 
-        if (IsEntityVectorVisible(target, forward, MASK_SHOT, &trace))
+        if (IsEntityVectorVisible(target, forward, false, MASK_SHOT, &trace))
         {
             if (trace.DidHit() && (IClientEntity *) trace.m_pEnt == RAW_ENT(target))
             {

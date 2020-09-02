@@ -99,7 +99,7 @@ void AngleVectors3(const QAngle &angles, Vector *forward, Vector *right, Vector 
 bool isRapidFire(IClientEntity *wep);
 extern std::mutex trace_lock;
 bool IsEntityVisible(CachedEntity *entity, int hb);
-bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, unsigned int mask = MASK_SHOT_HULL, trace_t *trace = nullptr);
+bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, bool use_weapon_offset = false, unsigned int mask = MASK_SHOT_HULL, trace_t *trace = nullptr);
 bool VisCheckEntFromEnt(CachedEntity *startEnt, CachedEntity *endEnt);
 bool VisCheckEntFromEntVector(Vector startVector, CachedEntity *startEnt, CachedEntity *endEnt);
 Vector VischeckCorner(CachedEntity *player, CachedEntity *target, float maxdist, bool checkWalkable);
@@ -117,6 +117,7 @@ bool GetProjectileData(CachedEntity *weapon, float &speed, float &gravity);
 bool IsVectorVisible(Vector a, Vector b, bool enviroment_only = false, CachedEntity *self = LOCAL_E, unsigned int mask = MASK_SHOT_HULL);
 // A Special function for navparser to check if a Vector is visible.
 bool IsVectorVisibleNavigation(Vector a, Vector b, unsigned int mask = MASK_SHOT_HULL);
+Vector getShootPos(Vector angle);
 Vector GetForwardVector(Vector origin, Vector viewangles, float distance, CachedEntity *punch_entity = nullptr);
 Vector GetForwardVector(float distance, CachedEntity *punch_entity = nullptr);
 CachedEntity *getClosestEntity(Vector vec);

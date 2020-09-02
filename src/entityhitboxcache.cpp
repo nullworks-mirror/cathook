@@ -96,7 +96,7 @@ bool EntityHitboxCache::VisibilityCheck(int id)
     hitbox = GetHitbox(id);
     if (!hitbox)
         return false;
-    m_VisCheck[id]                = (IsEntityVectorVisible(parent_ref, hitbox->center));
+    m_VisCheck[id]                = (IsEntityVectorVisible(parent_ref, hitbox->center, true));
     m_VisCheckValidationFlags[id] = true;
     return m_VisCheck[id];
 }

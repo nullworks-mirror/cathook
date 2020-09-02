@@ -86,7 +86,7 @@ bool CachedEntity::IsVisible()
     if (m_bVisCheckComplete)
         return m_bAnyHitboxVisible;
 
-    vischeck0 = IsEntityVectorVisible(this, m_vecOrigin());
+    vischeck0 = IsEntityVectorVisible(this, m_vecOrigin(), true);
 
     if (vischeck0)
     {

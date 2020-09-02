@@ -180,7 +180,7 @@ bool aimbotTickFilter(CachedEntity *ent, hacks::tf2::backtrack::BacktrackData ti
     if (g_pLocalPlayer->weapon_mode != weapon_hitscan)
         return true;
     // Return visibility
-    return IsEntityVectorVisible(ent, tick.hitboxes.at(head).center, MASK_SHOT);
+    return IsEntityVectorVisible(ent, tick.hitboxes.at(head).center, true, MASK_SHOT);
 }
 static void doAutoZoom(bool target_found)
 {
@@ -888,8 +888,8 @@ void Aim(CachedEntity *entity)
     if (CE_BAD(entity))
         return;
 
-    // Get angles
-    Vector angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, PredictEntity(entity), LOCAL_E);
+    // Get angles from eye to target
+    Vector angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, PredictEntity(entity));
 
     // Multipoint
     if (multipoint && !projectile_mode)
@@ -931,9 +931,9 @@ void Aim(CachedEntity *entity)
         // Create Vectors
         const Vector positions[13] = { { minx, centery, minz }, { maxx, centery, minz }, { minx, centery, maxz }, { maxx, centery, maxz }, { centerx, miny, minz }, { centerx, maxy, minz }, { centerx, miny, maxz }, { centerx, maxy, maxz }, { minx, miny, centerz }, { maxx, maxy, centerz }, { minx, miny, centerz }, { maxx, maxy, centerz }, hitboxcenter };
         for (int i = 0; i < 13; ++i)
-            if (IsEntityVectorVisible(entity, positions[i]))
+            if (IsEntityVectorVisible(entity, positions[i], true))
             {
-                angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, positions[i], LOCAL_E);
+                angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, positions[i]);
                 break;
             }
     }
@@ -1264,17 +1264,17 @@ int BestHitbox(CachedEntity *target)
             if (data)
             {
                 // First check preferred hitbox
-                if (IsEntityVectorVisible(target, (*data).hitboxes[preferred].center))
+                if (IsEntityVectorVisible(target, (*data).hitboxes[preferred].center, false))
                     return preferred;
 
                 // Then check the rest
                 if (*backtrackVischeckAll)
                     for (int j = head; j < foot_R; j++)
                     {
-                        if (IsEntityVectorVisible(target, (*data).hitboxes[j].center))
+                        if (IsEntityVectorVisible(target, (*data).hitboxes[j].center, false))
                             return j;
                     }
-                else if (IsEntityVectorVisible(target, (*data).hitboxes.at(head).center))
+                else if (IsEntityVectorVisible(target, (*data).hitboxes.at(head).center, false))
                     return 0;
             }
             // Nothing found, falling through to further below
@@ -1341,11 +1341,11 @@ bool VischeckPredictedEntity(CachedEntity *entity)
         // Update info
         cd.vcheck_tick = tickcount;
         if (extrapolate || projectileAimbotRequired || entity->m_Type() != ENTITY_PLAYER)
-            cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity));
+            cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity), true);
         else
         {
             trace_t trace;
-            cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity), MASK_SHOT, &trace);
+            cd.visible = IsEntityVectorVisible(entity, PredictEntity(entity), false, MASK_SHOT, &trace);
             if (cd.visible && cd.hitbox == head && trace.hitbox != head)
                 cd.visible = false;
         }
@@ -1353,7 +1353,7 @@ bool VischeckPredictedEntity(CachedEntity *entity)
     else
     {
         auto data = hacks::tf2::backtrack::getClosestEntTick(entity, LOCAL_E->m_vecOrigin(), aimbotTickFilter);
-        if (data && IsEntityVectorVisible(entity, data->hitboxes.at((cd.hitbox == -1 || cd.hitbox >= 18) ? 0 : cd.hitbox).center, MASK_SHOT))
+        if (data && IsEntityVectorVisible(entity, data->hitboxes.at((cd.hitbox == -1 || cd.hitbox >= 18) ? 0 : cd.hitbox).center, false, MASK_SHOT))
             cd.visible = true;
         else
             cd.visible = false;

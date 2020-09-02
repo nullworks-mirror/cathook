@@ -1005,7 +1005,7 @@ bool IsEntityVisible(CachedEntity *entity, int hb)
 }
 
 std::mutex trace_lock;
-bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, unsigned int mask, trace_t *trace)
+bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, bool use_weapon_offset, unsigned int mask, trace_t *trace)
 {
     trace_t trace_object;
     if (!trace)
@@ -1021,14 +1021,18 @@ bool IsEntityVectorVisible(CachedEntity *entity, Vector endpos, unsigned int mas
     if (CE_BAD(entity))
         return false;
     trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
-    ray.Init(g_pLocalPlayer->v_Eye, endpos);
+    Vector eye = g_pLocalPlayer->v_Eye;
+    // Adjust for weapon offsets if needed
+    if (use_weapon_offset)
+        eye = getShootPos(GetAimAtAngles(eye, endpos, LOCAL_E));
+    ray.Init(eye, endpos);
     {
         PROF_SECTION(IEVV_TraceRay);
         std::lock_guard<std::mutex> lock(trace_lock);
         if (!tcm || g_Settings.is_create_move)
             g_ITrace->TraceRay(ray, mask, &trace::filter_default, trace);
     }
-    return (((IClientEntity *) trace->m_pEnt) == RAW_ENT(entity) || trace->fraction >= 0.99f);
+    return (((IClientEntity *) trace->m_pEnt) == RAW_ENT(entity) || !trace->DidHit());
 }
 
 // For when you need to vis check something that isnt the local player
@@ -1727,6 +1731,90 @@ void PrintChat(const char *fmt, ...)
         chat->Printf(str.get());
     }
 #endif
+}
+
+// Get the point Your shots originate from
+Vector getShootPos(Vector angle)
+{
+    Vector eye = g_pLocalPlayer->v_Eye;
+    if (g_pLocalPlayer->weapon_mode != weapon_projectile || CE_BAD(LOCAL_W))
+        return eye;
+
+    Vector forward, right, up;
+    AngleVectors3(VectorToQAngle(angle), &forward, &right, &up);
+
+    std::optional<Vector> vecOffset(0.0f);
+    switch (LOCAL_W->m_iClassID())
+    {
+    // Rocket launchers and flare guns/Pomson
+    case CL_CLASS(CTFRocketLauncher):
+    case CL_CLASS(CTFRocketLauncher_Mortar):
+    case CL_CLASS(CTFRocketLauncher_AirStrike):
+    case CL_CLASS(CTFRocketLauncher_DirectHit):
+    case CL_CLASS(CTFFlareGun):
+    case CL_CLASS(CTFFlareGun_Revenge):
+    case CL_CLASS(CTFDRGPomson):
+        // The original shoots centered, rest doesn't
+        if (CE_INT(LOCAL_W, netvar.iItemDefinitionIndex) != 513)
+        {
+            vecOffset = Vector(23.5f, 12.0f, -3.0f);
+            // Ducking changes offset
+            if (CE_INT(LOCAL_E, netvar.iFlags) & FL_DUCKING)
+                vecOffset->z = 8.0f;
+        }
+        break;
+
+    // Pill/Pipebomb launchers
+    case CL_CLASS(CTFPipebombLauncher):
+    case CL_CLASS(CTFGrenadeLauncher):
+    case CL_CLASS(CTFCannon):
+        vecOffset = Vector(16.0f, 8.0f, -6.0f);
+        break;
+
+    case CL_CLASS(CTFSyringeGun):
+        vecOffset = Vector(16.0f, 6.0f, -8.0f);
+        break;
+
+    // Huntsman
+    case CL_CLASS(CTFCompoundBow):
+        vecOffset = Vector(23.5f, -8.0f, -3.0f);
+        break;
+
+    default:
+        break;
+    }
+
+    // We have an offset for the weapon that may or may not need to be applied
+    if (vecOffset)
+    {
+
+        // Game checks 2000 HU infront of eye for a hit
+        static const float distance = 2000.0f;
+
+        Vector endpos = eye + (forward * distance);
+
+        trace_t tr;
+        Ray_t ray;
+
+        trace::filter_default.SetSelf(RAW_ENT(g_pLocalPlayer->entity));
+        ray.Init(eye, endpos);
+        if (!tcm || g_Settings.is_create_move)
+            g_ITrace->TraceRay(ray, MASK_SOLID, &trace::filter_default, &tr);
+
+        // Replicate game behaviour, only use the offset if our trace has a big enough fraction
+        if (tr.fraction <= 0.1)
+        {
+            // Flipped viewmodels flip the y
+            if (re::C_TFWeaponBase::IsViewModelFlipped(RAW_ENT(LOCAL_W)))
+                vecOffset->y *= -1.0f;
+            eye = eye + (forward * vecOffset->x) + (right * vecOffset->y) + (up * vecOffset->z);
+            // They decided to do this weird stuff for the pomson instead of fixing their offset
+            if (LOCAL_W->m_iClassID() == CL_CLASS(CTFDRGPomson))
+                eye.z -= 13.0f;
+        }
+    }
+
+    return eye;
 }
 
 // You shouldn't delete[] this unique_ptr since it
