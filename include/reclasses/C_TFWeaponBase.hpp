@@ -42,6 +42,11 @@ public:
         typedef int (*fn_t)(IClientEntity *);
         return vfunc<fn_t>(self, offsets::PlatformOffset(445, offsets::undefined, 445), 0)(self);
     }
+    inline static bool IsViewModelFlipped(IClientEntity *self)
+    {
+        typedef bool (*fn_t)(IClientEntity *);
+        return vfunc<fn_t>(self, offsets::PlatformOffset(494, offsets::undefined, 494), 0)(self);
+    }
     inline static IClientEntity *GetOwnerViaInterface(IClientEntity *self)
     {
         typedef IClientEntity *(*fn_t)(IClientEntity *);
