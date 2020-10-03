@@ -42,6 +42,7 @@ weaponmode GetWeaponModeloc()
         return weaponmode::weapon_consumable;
     case CL_CLASS(CTFRocketLauncher_DirectHit):
     case CL_CLASS(CTFRocketLauncher):
+    case CL_CLASS(CTFParticleCannon):
     case CL_CLASS(CTFGrenadeLauncher):
     case CL_CLASS(CTFPipebombLauncher):
     case CL_CLASS(CTFCompoundBow):
