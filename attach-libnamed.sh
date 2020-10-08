@@ -25,12 +25,6 @@ fi
 echo Running instances: "${arr[@]}"
 echo Attaching to "$proc"
 
-# pBypass for crash dumps being sent
-# You may also want to consider using -nobreakpad in your launch options.
-mkdir -p /tmp/dumps # Make it as root if it doesnt exist
-chown root:root /tmp/dumps # Claim it as root
-chmod 000 /tmp/dumps # No permissions
-
 # Get a Random name from the build_names file.
 FILENAME=$(shuf -n 1 build_names)
 

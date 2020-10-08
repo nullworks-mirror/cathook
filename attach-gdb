@@ -29,12 +29,6 @@ echo Attaching to "$proc"
 #  exit
 #fi
 
-# pBypass for crash dumps being sent
-# You may also want to consider using -nobreakpad in your launch options.
-mkdir -p /tmp/dumps # Make it as root if it doesnt exist
-chown root:root /tmp/dumps # Claim it as root
-chmod 000 /tmp/dumps # No permissions
-
 FILENAME="/tmp/.gl$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 6)"
 
 cp "bin/libcathook.so" "$FILENAME"
