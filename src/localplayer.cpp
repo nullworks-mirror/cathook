@@ -68,6 +68,7 @@ weaponmode GetWeaponModeloc()
     case CL_CLASS(CTFWeaponPDA_Spy):
     case CL_CLASS(CTFWeaponPDA_Engineer_Build):
     case CL_CLASS(CTFWeaponPDA_Engineer_Destroy):
+    case CL_CLASS(CTFWeaponBuilder):
         return weaponmode::weapon_pda;
     default:
         return weaponmode::weapon_hitscan;
