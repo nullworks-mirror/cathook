@@ -237,10 +237,10 @@ static void CreateMove()
     slow_aim = *normal_slow_aim;
     fov      = *normal_fov;
 
+    spectatorUpdate();
+
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         enable = false;
-
-    spectatorUpdate();
 
     if (!enable)
     {
