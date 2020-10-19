@@ -55,7 +55,15 @@ static settings::Boolean autoNoisemaker{ "misc.auto-noisemaker", "false" };
 // 673 is Christmas noisemaker
 static int noisemaker_id = 536;
 
-std::vector<std::tuple<int, int, std::string>> ach_items;
+struct AchivementItem
+{
+    int achievement_id;
+    std::string name;
+};
+
+// A map that allows us to map item ids to achievement names and achievement ids
+std::unordered_map<int /*item_id*/, AchivementItem> ach_items;
+
 std::vector<std::vector<std::string>> craft_groups;
 
 bool checkAchMgr()
@@ -103,23 +111,19 @@ void unlockSingle(int achID)
     }
 }
 
-std::pair<int, std::string> isAchItem(int id)
+AchivementItem *isAchItem(int id)
 {
-    for (auto &i : ach_items)
-    {
-        if (std::get<0>(i) == id)
-            return std::make_pair(std::get<1>(i), std::get<2>(i));
-    }
-    return std::make_pair(0, "");
+    auto val = ach_items.find(id);
+    return val != ach_items.end() ? &val->second : nullptr;
 }
 
 void getItem(int id, bool rent = true)
 {
     Debug("Trying to get item, %i", id);
     auto index = isAchItem(id);
-    if (index.first != 0)
+    if (index)
     {
-        unlockSingle(index.first);
+        unlockSingle(index->achievement_id);
         g_IEngine->ClientCmd_Unrestricted("cl_trigger_first_notification");
     }
     else if (rent)
@@ -303,11 +307,11 @@ void getAndEquipWeapon(std::string str, int clazz, int slot)
                     else
                     {
                         auto index = isAchItem(id);
-                        if (index.first != 0)
+                        if (index)
                         {
                             if (!checkAchMgr())
                                 return;
-                            if (g_IAchievementMgr->HasAchieved(index.second.c_str()))
+                            if (g_IAchievementMgr->HasAchieved(index->name.c_str()))
                             {
                                 Debug("Cant get specified ach item %i because it has already been unlocked! moving to next item.", id);
                                 // User's fault if they put a ach item they unlocked and have used for crafting already/deleted.
@@ -476,48 +480,48 @@ static InitRoutine init([]() {
     if ((month == 12 && day >= 12) || (month == 1 && day <= 12))
         noisemaker_id = 673;
 
-    /* haha emplace_back go brrrrrr */
-    ach_items.emplace_back(45, 1036, "TF_SCOUT_ACHIEVE_PROGRESS1");          // Force-A-Nature - Scout Milestone 1
-    ach_items.emplace_back(44, 1037, "TF_SCOUT_ACHIEVE_PROGRESS2");          // Sandman - Scout Milestone 2
-    ach_items.emplace_back(46, 1038, "TF_SCOUT_ACHIEVE_PROGRESS3");          // Bonk! Atomic Punch - Scout Milestone 3
-    ach_items.emplace_back(128, 1236, "TF_SOLDIER_ACHIEVE_PROGRESS1");       // Equalizer - Soldier Milestone 1
-    ach_items.emplace_back(127, 1237, "TF_SOLDIER_ACHIEVE_PROGRESS2");       // Direct Hit - Soldier Milestone 2
-    ach_items.emplace_back(129, 1238, "TF_SOLDIER_ACHIEVE_PROGRESS3");       // Buff Banner - Soldier Milestone 3
-    ach_items.emplace_back(39, 1637, "TF_PYRO_ACHIEVE_PROGRESS1");           // Flare Gun - Pyro Milestone 1
-    ach_items.emplace_back(40, 1638, "TF_PYRO_ACHIEVE_PROGRESS2");           // Backburner - Pyro Milestone 2
-    ach_items.emplace_back(38, 1639, "TF_PYRO_ACHIEVE_PROGRESS3");           // Axtinguisher - Pyro Milestone 3
-    ach_items.emplace_back(131, 1336, "TF_DEMOMAN_ACHIEVE_PROGRESS1");       // Chargin' Targe - Demoman Milestone 1
-    ach_items.emplace_back(132, 1337, "TF_DEMOMAN_ACHIEVE_PROGRESS2");       // Eyelander - Demoman Milestone 2
-    ach_items.emplace_back(130, 1338, "TF_DEMOMAN_ACHIEVE_PROGRESS3");       // Scottish Resistance - Demoman Milestone 3
-    ach_items.emplace_back(42, 1537, "TF_HEAVY_ACHIEVE_PROGRESS1");          // Sandvich - Heavy Milestone 1
-    ach_items.emplace_back(41, 1538, "TF_HEAVY_ACHIEVE_PROGRESS2");          // Natascha - Heavy Milestone 2
-    ach_items.emplace_back(43, 1539, "TF_HEAVY_ACHIEVE_PROGRESS3");          // Killing Gloves of Boxing - Heavy Milestone 3
-    ach_items.emplace_back(141, 1801, "TF_ENGINEER_ACHIEVE_PROGRESS1");      // Frontier Justice - Engineer Milestone 1
-    ach_items.emplace_back(142, 1802, "TF_ENGINEER_ACHIEVE_PROGRESS2");      // Gunslinger - Engineer Milestone 2
-    ach_items.emplace_back(140, 1803, "TF_ENGINEER_ACHIEVE_PROGRESS3");      // Wrangler - Engineer Milestone 3
-    ach_items.emplace_back(36, 1437, "TF_MEDIC_ACHIEVE_PROGRESS1");          // Blutsauger - Medic Milestone 1
-    ach_items.emplace_back(35, 1438, "TF_MEDIC_ACHIEVE_PROGRESS2");          // Kritzkrieg - Medic Milestone 2
-    ach_items.emplace_back(37, 1439, "TF_MEDIC_ACHIEVE_PROGRESS3");          // Ubersaw - Medic Milestone 3
-    ach_items.emplace_back(56, 1136, "TF_SNIPER_ACHIEVE_PROGRESS1");         // Huntsman - Sniper Milestone 1
-    ach_items.emplace_back(58, 1137, "TF_SNIPER_ACHIEVE_PROGRESS2");         // Jarate - Sniper Milestone 2
-    ach_items.emplace_back(57, 1138, "TF_SNIPER_ACHIEVE_PROGRESS3");         // Razorback - Sniper Milestone 3
-    ach_items.emplace_back(61, 1735, "TF_SPY_ACHIEVE_PROGRESS1");            // Ambassador - Spy Milestone 1
-    ach_items.emplace_back(60, 1736, "TF_SPY_ACHIEVE_PROGRESS2");            // Cloak and Dagger - Spy Milestone 2
-    ach_items.emplace_back(59, 1737, "TF_SPY_ACHIEVE_PROGRESS3");            // Dead Ringer - Spy Milestone 3
-    ach_items.emplace_back(1123, 1928, "TF_HALLOWEEN_DOOMSDAY_MILESTONE");   // Necro Smasher - Carnival of Carnage: Step Right Up
-    ach_items.emplace_back(940, 1902, "TF_HALLOWEEN_DOMINATE_FOR_HAT");      // Ghostly Gibus - Ghastly Gibus Grab
-    ach_items.emplace_back(115, 1901, "TF_HALLOWEEN_COLLECT_PUMPKINS");      // Mildly Disturbing Halloween Mask - Candy Coroner
-    ach_items.emplace_back(278, 1906, "TF_HALLOWEEN_BOSS_KILL");             // Horseless Headless Horsemann's Head - Sleepy Holl0WND
-    ach_items.emplace_back(302, 2006, "TF_REPLAY_YOUTUBE_VIEWS_TIER2");      // Frontline Field Recorder - Local Cinema Star
-    ach_items.emplace_back(581, 1910, "TF_HALLOWEEN_EYEBOSS_KILL");          // MONOCULUS! - Optical Defusion
-    ach_items.emplace_back(668, 2212, "TF_MAPS_FOUNDRY_ACHIEVE_PROGRESS1");  // Full Head Of Steam - Foundry Milestone
-    ach_items.emplace_back(756, 2412, "TF_MAPS_DOOMSDAY_ACHIEVE_PROGRESS1"); // Gentle Munitionne of Leisure - Doomsday Milestone
-    ach_items.emplace_back(941, 1912, "TF_HALLOWEEN_MERASMUS_COLLECT_LOOT"); // Skull Island Topper - A Lovely Vacation Spot
-    ach_items.emplace_back(581, 1911, "TF_HALLOWEEN_LOOT_ISLAND");           // Bombinomicon - Dive Into a Good Book
-    ach_items.emplace_back(744, 156, "TF_DOMINATE_FOR_GOGGLES");             // Pyrovision Goggles - A Fresh Pair of Eyes
-    ach_items.emplace_back(1164, 167, "TF_PASS_TIME_GRIND");                 // Civilian Grade JACK Hat - Jackpot!
-    ach_items.emplace_back(1169, 166, "TF_PASS_TIME_HAT");                   // Military Grade JACK Hat - Tune Merasmus's Multi-Dimensional Television
-    ach_items.emplace_back(1170, 166, "TF_PASS_TIME_HAT");                   // PASS Time Miniature Half JACK - Tune Merasmus's Multi-Dimensional Television
-    ach_items.emplace_back(267, 1909, "TF_HALLOWEEN_BOSS_KILL_MELEE");       // Haunted Metal Scrap - Gored!
+    /* haha operator[] go brrrrrr */
+    ach_items[45]   = { 1036, "TF_SCOUT_ACHIEVE_PROGRESS1" };         // Force-A-Nature - Scout Milestone 1
+    ach_items[44]   = { 1037, "TF_SCOUT_ACHIEVE_PROGRESS2" };         // Sandman - Scout Milestone 2
+    ach_items[46]   = { 1038, "TF_SCOUT_ACHIEVE_PROGRESS3" };         // Bonk! Atomic Punch - Scout Milestone 3
+    ach_items[128]  = { 1236, "TF_SOLDIER_ACHIEVE_PROGRESS1" };       // Equalizer - Soldier Milestone 1
+    ach_items[127]  = { 1237, "TF_SOLDIER_ACHIEVE_PROGRESS2" };       // Direct Hit - Soldier Milestone 2
+    ach_items[129]  = { 1238, "TF_SOLDIER_ACHIEVE_PROGRESS3" };       // Buff Banner - Soldier Milestone 3
+    ach_items[39]   = { 1637, "TF_PYRO_ACHIEVE_PROGRESS1" };          // Flare Gun - Pyro Milestone 1
+    ach_items[40]   = { 1638, "TF_PYRO_ACHIEVE_PROGRESS2" };          // Backburner - Pyro Milestone 2
+    ach_items[38]   = { 1639, "TF_PYRO_ACHIEVE_PROGRESS3" };          // Axtinguisher - Pyro Milestone 3
+    ach_items[131]  = { 1336, "TF_DEMOMAN_ACHIEVE_PROGRESS1" };       // Chargin' Targe - Demoman Milestone 1
+    ach_items[132]  = { 1337, "TF_DEMOMAN_ACHIEVE_PROGRESS2" };       // Eyelander - Demoman Milestone 2
+    ach_items[130]  = { 1338, "TF_DEMOMAN_ACHIEVE_PROGRESS3" };       // Scottish Resistance - Demoman Milestone 3
+    ach_items[42]   = { 1537, "TF_HEAVY_ACHIEVE_PROGRESS1" };         // Sandvich - Heavy Milestone 1
+    ach_items[41]   = { 1538, "TF_HEAVY_ACHIEVE_PROGRESS2" };         // Natascha - Heavy Milestone 2
+    ach_items[43]   = { 1539, "TF_HEAVY_ACHIEVE_PROGRESS3" };         // Killing Gloves of Boxing - Heavy Milestone 3
+    ach_items[141]  = { 1801, "TF_ENGINEER_ACHIEVE_PROGRESS1" };      // Frontier Justice - Engineer Milestone 1
+    ach_items[142]  = { 1802, "TF_ENGINEER_ACHIEVE_PROGRESS2" };      // Gunslinger - Engineer Milestone 2
+    ach_items[140]  = { 1803, "TF_ENGINEER_ACHIEVE_PROGRESS3" };      // Wrangler - Engineer Milestone 3
+    ach_items[36]   = { 1437, "TF_MEDIC_ACHIEVE_PROGRESS1" };         // Blutsauger - Medic Milestone 1
+    ach_items[35]   = { 1438, "TF_MEDIC_ACHIEVE_PROGRESS2" };         // Kritzkrieg - Medic Milestone 2
+    ach_items[37]   = { 1439, "TF_MEDIC_ACHIEVE_PROGRESS3" };         // Ubersaw - Medic Milestone 3
+    ach_items[56]   = { 1136, "TF_SNIPER_ACHIEVE_PROGRESS1" };        // Huntsman - Sniper Milestone 1
+    ach_items[58]   = { 1137, "TF_SNIPER_ACHIEVE_PROGRESS2" };        // Jarate - Sniper Milestone 2
+    ach_items[57]   = { 1138, "TF_SNIPER_ACHIEVE_PROGRESS3" };        // Razorback - Sniper Milestone 3
+    ach_items[61]   = { 1735, "TF_SPY_ACHIEVE_PROGRESS1" };           // Ambassador - Spy Milestone 1
+    ach_items[60]   = { 1736, "TF_SPY_ACHIEVE_PROGRESS2" };           // Cloak and Dagger - Spy Milestone 2
+    ach_items[59]   = { 1737, "TF_SPY_ACHIEVE_PROGRESS3" };           // Dead Ringer - Spy Milestone 3
+    ach_items[1123] = { 1928, "TF_HALLOWEEN_DOOMSDAY_MILESTONE" };    // Necro Smasher - Carnival of Carnage: Step Right Up
+    ach_items[940]  = { 1902, "TF_HALLOWEEN_DOMINATE_FOR_HAT" };      // Ghostly Gibus - Ghastly Gibus Grab
+    ach_items[115]  = { 1901, "TF_HALLOWEEN_COLLECT_PUMPKINS" };      // Mildly Disturbing Halloween Mask - Candy Coroner
+    ach_items[278]  = { 1906, "TF_HALLOWEEN_BOSS_KILL" };             // Horseless Headless Horsemann's Head - Sleepy Holl0WND
+    ach_items[302]  = { 2006, "TF_REPLAY_YOUTUBE_VIEWS_TIER2" };      // Frontline Field Recorder - Local Cinema Star
+    ach_items[581]  = { 1910, "TF_HALLOWEEN_EYEBOSS_KILL" };          // MONOCULUS! - Optical Defusion
+    ach_items[668]  = { 2212, "TF_MAPS_FOUNDRY_ACHIEVE_PROGRESS1" };  // Full Head Of Steam - Foundry Milestone
+    ach_items[756]  = { 2412, "TF_MAPS_DOOMSDAY_ACHIEVE_PROGRESS1" }; // Gentle Munitionne of Leisure - Doomsday Milestone
+    ach_items[941]  = { 1912, "TF_HALLOWEEN_MERASMUS_COLLECT_LOOT" }; // Skull Island Topper - A Lovely Vacation Spot
+    ach_items[581]  = { 1911, "TF_HALLOWEEN_LOOT_ISLAND" };           // Bombinomicon - Dive Into a Good Book
+    ach_items[744]  = { 156, "TF_DOMINATE_FOR_GOGGLES" };             // Pyrovision Goggles - A Fresh Pair of Eyes
+    ach_items[1164] = { 167, "TF_PASS_TIME_GRIND" };                  // Civilian Grade JACK Hat - Jackpot!
+    ach_items[1169] = { 166, "TF_PASS_TIME_HAT" };                    // Military Grade JACK Hat - Tune Merasmus's Multi-Dimensional Television
+    ach_items[1170] = { 166, "TF_PASS_TIME_HAT" };                    // PASS Time Miniature Half JACK - Tune Merasmus's Multi-Dimensional Television
+    ach_items[267]  = { 1909, "TF_HALLOWEEN_BOSS_KILL_MELEE" };       // Haunted Metal Scrap - Gored!
 });
 } // namespace hacks::tf2::autoitem

@@ -243,9 +243,7 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
         hacks::tf2::NavBot::init(true);
         if (identify)
         {
-            sendIdentifyMessage(false, false);
-            // Remove this in a month or two
-            sendIdentifyMessage(false, true);
+            sendIdentifyMessage(false);
         }
         EC::run(EC::FirstCM);
         firstcm = false;

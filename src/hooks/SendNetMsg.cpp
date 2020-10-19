@@ -27,17 +27,8 @@ void SendNetMsg(INetMessage &msg);
 namespace hooked_methods
 {
 
-static bool send_achievement_reply{};
 static bool send_drawline_reply{};
-static Timer send_achievement_reply_timer{};
 static Timer reply_timer{};
-
-void sendAchievementKv(int value)
-{
-    KeyValues *kv = new KeyValues("AchievementEarned");
-    kv->SetInt("achievementID", value);
-    g_IEngine->ServerCmdKeyValues(kv);
-}
 
 void sendDrawlineKv(float x_value, float y_value)
 {
@@ -49,13 +40,9 @@ void sendDrawlineKv(float x_value, float y_value)
     g_IEngine->ServerCmdKeyValues(kv);
 }
 
-void sendIdentifyMessage(bool reply, bool achievement_based)
+void sendIdentifyMessage(bool reply)
 {
-    // Old method
-    if (achievement_based)
-        reply ? sendAchievementKv(CAT_REPLY) : sendAchievementKv(CAT_IDENTIFY);
-    else
-        reply ? sendDrawlineKv(CAT_REPLY, AUTH_MESSAGE) : sendDrawlineKv(CAT_IDENTIFY, AUTH_MESSAGE);
+    reply ? sendDrawlineKv(CAT_REPLY, AUTH_MESSAGE) : sendDrawlineKv(CAT_IDENTIFY, AUTH_MESSAGE);
 }
 
 static CatCommand debug_drawpanel("debug_drawline", "debug", []() {
@@ -111,27 +98,6 @@ std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
                     peer_list.push_back(dat2);
     }
     return peer_list;
-}
-
-void ProcessAchievement(IGameEvent *ach)
-{
-    int player_idx  = ach->GetInt("player", 0xDEAD);
-    int achievement = ach->GetInt("achievement", 0xDEAD);
-    if (player_idx != 0xDEAD && (achievement == CAT_IDENTIFY || achievement == CAT_REPLY))
-    {
-        // Always reply and set on CA7 and only set on CA8
-        bool reply = achievement == CAT_IDENTIFY;
-        player_info_s info;
-        if (!g_IEngine->GetPlayerInfo(player_idx, &info))
-            return;
-        if (reply && *answerIdentify && player_idx != g_pLocalPlayer->entity_idx)
-        {
-            send_achievement_reply_timer.update();
-            send_achievement_reply = true;
-        }
-        if (playerlist::ChangeState(info.friendsID, playerlist::k_EState::CAT))
-            PrintChat("\x07%06X%s\x01 Marked as CAT (Cathook user)", 0xe05938, info.name);
-    }
 }
 
 void ParseKeyValue(KeyValues *event)
@@ -202,46 +168,34 @@ void ParseKeyValue(KeyValues *event)
     }
 }
 
-class AchievementListener : public IGameEventListener2
+class IdentifyListener : public IGameEventListener2
 {
     virtual void FireGameEvent(IGameEvent *event)
     {
         if (*identify)
-        {
-            if (!strcmp(event->GetName(), "cl_drawline"))
-                ProcessSendline(event);
-            else
-                ProcessAchievement(event);
-        }
+            ProcessSendline(event);
     }
-};
+}; // namespace hooked_methods
 
-static CatCommand send_identify("debug_send_identify", "debug", []() { sendIdentifyMessage(false, true); });
+static CatCommand send_identify("debug_send_identify", "debug", []() { sendIdentifyMessage(false); });
 
-static AchievementListener event_listener{};
+static IdentifyListener event_listener{};
 
 static InitRoutine run_identify([]() {
     EC::Register(
         EC::CreateMove,
         []() {
-            // Legacy support
-            if (send_achievement_reply && send_achievement_reply_timer.check(10000))
-            {
-                sendIdentifyMessage(true, true);
-                send_achievement_reply = false;
-            }
             if (send_drawline_reply && reply_timer.test_and_set(1000))
             {
-                sendIdentifyMessage(true, false);
+                sendIdentifyMessage(true);
                 send_drawline_reply = false;
             }
             // It is safe to send every 15ish seconds, small packet
             if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(15000))
                 return;
-            sendIdentifyMessage(false, false);
+            sendIdentifyMessage(false);
         },
         "sendnetmsg_createmove");
-    g_IEventManager2->AddListener(&event_listener, "achievement_earned", false);
     g_IEventManager2->AddListener(&event_listener, "cl_drawline", false);
     EC::Register(
         EC::Shutdown, []() { g_IEventManager2->RemoveListener(&event_listener); }, "shutdown_event");
