@@ -1,4 +1,4 @@
-﻿/*
+/*
  * entity.h
  *
  *  Created on: Oct 6, 2016
@@ -50,6 +50,8 @@ public:
     offset_t m_iAmmoShells;  // sentry shells
     offset_t m_iAmmoRockets; // use only with if (GetLevel() == 3)
     offset_t m_iSentryState; // sentry state
+    offset_t m_bPlayerControlled; // controlled via wrangler and sort
+    offset_t m_bDisabled; // this should be sentry only, not sure
 
     // dispenser
     offset_t m_iAmmoMetal; // dispenser metal reserve
@@ -72,6 +74,7 @@ public:
     offset_t m_iUpgradeMetal;           // upgrade metal on any building
     offset_t m_flPercentageConstructed; // use only with        if (IsBuilding())
     offset_t iUpgradeLevel;             // any building
+    offset_t m_iUpgradeMetalRequired;
     offset_t m_hBuilder;
     offset_t m_bCanPlace;
     offset_t m_iObjectType;
@@ -79,6 +82,7 @@ public:
     offset_t m_bHasSapper;
     offset_t m_bPlacing;
     offset_t m_bBuilding;
+    offset_t m_bPlasmaDisable;
 
     // teleporter
     offset_t m_iTeleState; // teleport state [1 = idle, 2 = active, 3 = teleporting, 4 = charging]

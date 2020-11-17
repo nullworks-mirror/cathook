@@ -236,6 +236,8 @@ const std::string in_ringer_str            = "*Dead Ringer*";
 const std::string botname_str              = "Bot #";
 const std::string tp_ready_str             = "Ready";
 const std::string sapped_str               = "*Sapped*";
+const std::string controlled_str           = "*Controlled*";
+const std::string disabled_str             = "*Disabled*";
 const std::string teleporter_str           = "Teleporter";
 const std::string sentry_str               = "Sentry Gun";
 const std::string dispenser_str            = "Dispenser";
@@ -1294,31 +1296,93 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
             const std::string &name = (classid == CL_CLASS(CObjectTeleporter) ? teleporter_str : (classid == CL_CLASS(CObjectSentrygun) ? sentry_str : dispenser_str));
             int level               = CE_INT(ent, netvar.iUpgradeLevel);
             bool IsMini             = CE_BYTE(ent, netvar.m_bMiniBuilding);
-            bool IsSapped           = CE_BYTE(ent, netvar.m_bHasSapper);
             if (!IsMini)
                 AddEntityString(ent, format("Level ", level, ' ', name));
             else
                 AddEntityString(ent, std::string("Mini ") + name);
-            if (IsSapped)
-                AddEntityString(ent, sapped_str);
-            if (classid == CL_CLASS(CObjectTeleporter))
-            {
-                float next_teleport = CE_FLOAT(ent, netvar.m_flTeleRechargeTime);
-                float yaw_to_exit   = CE_FLOAT(ent, netvar.m_flTeleYawToExit);
-                if (yaw_to_exit)
-                {
-                    if (next_teleport < g_GlobalVars->curtime)
-                        AddEntityString(ent, tp_ready_str);
-                    else
-                        AddEntityString(ent, std::to_string(next_teleport - g_GlobalVars->curtime) + "s");
-                }
-            }
         }
+
         // If text health is true, then add a string with the health
         if (show_health)
         {
             AddEntityString(ent, format(ent->m_iHealth(), '/', ent->m_iMaxHealth(), " HP"), colors::Health(ent->m_iHealth(), ent->m_iMaxHealth()));
         }
+
+        if (show_conditions)
+        {
+            bool IsSapped         = CE_BYTE(ent, netvar.m_bHasSapper);
+            bool IsDisabled       = CE_BYTE(ent, netvar.m_bDisabled);
+            bool IsPlasmaDisabled = CE_BYTE(ent, netvar.m_bPlasmaDisable);
+            bool IsMini           = CE_BYTE(ent, netvar.m_bMiniBuilding);
+            int required_metal    = CE_INT(ent, netvar.m_iUpgradeMetalRequired);
+            int metal             = CE_INT(ent, netvar.m_iUpgradeMetal);
+
+            if (!IsMini && CE_INT(ent, netvar.iUpgradeLevel) != 3)
+                AddEntityString(ent, format("Upgrade: " + std::to_string(required_metal - metal), '/', std::to_string(required_metal)));
+
+            switch (classid)
+            {
+            case CL_CLASS(CObjectSentrygun):
+            {
+                bool IsControlled  = CE_BYTE(ent, netvar.m_bPlayerControlled);
+                int sentry_ammo    = CE_INT(ent, netvar.m_iAmmoShells);
+                int sentry_rockets = CE_INT(ent, netvar.m_iAmmoRockets);
+                int max_ammo = 0;
+
+                switch (CE_INT(ent, netvar.iUpgradeLevel))
+                {
+                case 1:
+                    max_ammo = 150;
+                    break;
+                case 2:
+                case 3:
+                    max_ammo = 200;
+                    break;
+                }
+
+                AddEntityString(ent, format(std::to_string(sentry_ammo), '/', max_ammo, " Ammo"));
+
+                if (CE_INT(ent, netvar.iUpgradeLevel) == 3)
+                    AddEntityString(ent, format(std::to_string(sentry_rockets), '/', "20 Rockets"));
+
+                if (IsControlled) // Dispensers are also "controlled" when they're in use
+                    AddEntityString(ent, controlled_str, colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+                break;
+            }
+            case CL_CLASS(CObjectDispenser):
+            {
+                int AmmoMetal = CE_INT(ent, netvar.m_iAmmoMetal);
+
+                AddEntityString(ent, format(std::to_string(AmmoMetal), '/', "400 Metal"));
+                break;
+            }
+            case CL_CLASS(CObjectTeleporter):
+            {
+                if (CE_INT(ent, netvar.m_iTeleState) > 1)
+                {
+                    float next_teleport = CE_FLOAT(ent, netvar.m_flTeleRechargeTime);
+                    float yaw_to_exit   = CE_FLOAT(ent, netvar.m_flTeleYawToExit);
+                    std::string time = std::to_string((int) floor((next_teleport - g_GlobalVars->curtime) * 100) / 100);
+
+                    if (yaw_to_exit)
+                    {
+                        if (next_teleport < g_GlobalVars->curtime)
+                            AddEntityString(ent, tp_ready_str);
+                        else
+                            AddEntityString(ent, time + "s");
+                    }
+                }
+                break;
+            }
+            }
+
+            if (IsSapped)
+                AddEntityString(ent, sapped_str, colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+
+            else if (classid == CL_CLASS(CObjectTeleporter) && CE_INT(ent, netvar.m_iTeleState) <= 1 || (IsDisabled || IsPlasmaDisabled))
+                AddEntityString(ent, disabled_str, colors::FromRGBA8(220.0f, 220.0f, 220.0f, 255.0f));
+        }
+
         // Set the entity to repaint
         espdata.needs_paint = true;
         return;
