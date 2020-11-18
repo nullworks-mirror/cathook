@@ -464,7 +464,7 @@ void CreateMoveFixPrediction()
             auto mins = RAW_ENT(LOCAL_E)->GetCollideable()->OBBMins();
             auto maxs = RAW_ENT(LOCAL_E)->GetCollideable()->OBBMaxs();
             std::pair<Vector, Vector> minmax{ mins, maxs };
-            PredictStep(original_origin, original_velocity, gravity, minmax, 0.0f);
+            PredictStep(original_origin, original_velocity, gravity, &minmax);
             // Restore from the engine prediction
             const_cast<Vector &>(RAW_ENT(LOCAL_E)->GetAbsOrigin()) = original_origin;
         }
