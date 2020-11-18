@@ -251,8 +251,12 @@ static void CreateMove()
 
     doAutoZoom(false);
 
+    // TODO: Investigate this hack. Why is this necessary?
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun) && CE_INT(LOCAL_E, netvar.m_iAmmo + 4) == 0)
+    {
+        target_last = nullptr;
         return;
+    }
     // We do this as we need to pass whether the aimkey allows aiming to both
     // the find target and aiming system. If we just call the func than toggle
     // aimkey would break so we save it to a var to use it twice
@@ -265,14 +269,20 @@ static void CreateMove()
 
     // Local player check + Aimkey
     if (!aimkey_status || !ShouldAim())
+    {
+        target_last = nullptr;
         return;
+    }
 
     // Refresh projectile info
     if (projectileAimbotRequired)
     {
         projectile_mode = GetProjectileData(g_pLocalPlayer->weapon(), cur_proj_speed, cur_proj_grav, cur_proj_start_vel);
         if (!projectile_mode)
+        {
+            target_last = nullptr;
             return;
+        }
         if (proj_speed)
             cur_proj_speed = *proj_speed;
         if (proj_gravity)
@@ -281,8 +291,7 @@ static void CreateMove()
             cur_proj_start_vel = *proj_start_vel;
     }
     // Refresh our best target
-    CachedEntity *target_entity = RetrieveBestTarget(aimkey_status);
-    target_last                 = target_entity;
+    CachedEntity *target_entity = target_last = RetrieveBestTarget(aimkey_status);
     if (CE_BAD(target_entity))
         return;
 

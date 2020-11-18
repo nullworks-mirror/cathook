@@ -6,9 +6,12 @@
  */
 #include "common.hpp"
 #include <settings/Bool.hpp>
+#include <boost/circular_buffer.hpp>
 
 static settings::Boolean debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
 static settings::Boolean debug_pp_draw{ "debug.pp-draw", "false" };
+// The higher the sample size, the more previous positions we will take into account to calculate the next position. Lower = Faster reaction Higher = Stability
+static settings::Int sample_size("debug.strafepred.samplesize", "10");
 // TODO there is a Vector() object created each call.
 
 Vector SimpleLatencyPrediction(CachedEntity *ent, int hb)
@@ -34,35 +37,123 @@ float PlayerGravityMod(CachedEntity *player)
     return 1.0f;
 }
 
-bool PerformProjectilePrediction(CachedEntity *target, int hitbox)
+struct StrafePredictionData
 {
-    Vector src, vel, hit;
-    ;
-    // src = vfunc<Vector(*)(IClientEntity*)>(RAW_ENT(target),
-    // 299)(RAW_ENT(target));
+    bool strafing_dir;
+    float radius;
+    Vector2D center;
+};
 
-    return true;
+// StrafePredictionData strafepred_data;
+static std::array<boost::circular_buffer<Vector2D>, MAX_PLAYERS> previous_positions;
+static ConVar *sv_gravity = nullptr;
+
+// Function for calculating the center and radius of a circle that is supposed to represent a players starfing pattern
+static std::optional<StrafePredictionData> findCircle(const Vector2D &current, const Vector2D &past1, const Vector2D &past2)
+{
+    float yDelta_a = past1.y - current.y;
+    float xDelta_a = past1.x - current.x;
+    float yDelta_b = past2.y - past1.y;
+    float xDelta_b = past2.x - past1.x;
+    Vector2D Center{};
+
+    float aSlope = yDelta_a / xDelta_a;
+    float bSlope = yDelta_b / xDelta_b;
+
+    Vector2D AB_Mid = Vector2D((current.x + past1.x) / 2, (current.y + past1.y) / 2);
+    Vector2D BC_Mid = Vector2D((past1.x + past2.x) / 2, (past1.y + past2.y) / 2);
+
+    if (yDelta_a == 0)
+    {
+        Center.x = AB_Mid.x;
+
+        if (xDelta_b == 0)
+            return std::nullopt;
+        else
+        {
+            Center.y = BC_Mid.y + (BC_Mid.x - Center.x) / bSlope;
+        }
+    }
+    else if (yDelta_b == 0)
+    {
+        Center.x = BC_Mid.x;
+        if (xDelta_a == 0)
+            return std::nullopt;
+        else
+            Center.y = AB_Mid.y + (AB_Mid.x - Center.x) / aSlope;
+    }
+    else if (xDelta_a == 0)
+        return std::nullopt;
+    else if (xDelta_b == 0)
+        return std::nullopt;
+    else
+    {
+        Center.x = (aSlope * bSlope * (AB_Mid.y - BC_Mid.y) - aSlope * BC_Mid.x + bSlope * AB_Mid.x) / (bSlope - aSlope);
+        Center.y = AB_Mid.y - (Center.x - AB_Mid.x) / aSlope;
+    }
+
+    float Radius = current.DistTo(Center);
+
+    if (Radius < 5.0f || Radius > 500.0f)
+        return std::nullopt;
+
+    float Angle         = atan2(current.y - Center.y, current.x - Center.x);
+    float PreviousAngle = atan2(past1.y - Center.y, past1.x - Center.x);
+
+    return StrafePredictionData{ Angle < PreviousAngle, Radius, Center };
 }
 
-Vector Predict(Vector &pos, Vector &vel, Vector acceleration, std::optional<float> grounddistance, float &time)
+// Applies strafe predictions to the next position
+void applyStrafePrediction(Vector &pos, StrafePredictionData &data, float prediction_distance)
 {
-    PROF_SECTION(PredictNew);
-    Vector result = pos;
-    result += (acceleration / 2.0f) * pow(time, 2) + vel * time;
-    vel += acceleration * time;
-    if (grounddistance)
-        if (result.z < pos.z - *grounddistance)
-            result.z = pos.z - *grounddistance;
-    return result;
+    // Calculate our current angle on the circle
+    float curangle = atan2(pos.y - data.center.y, pos.x - data.center.x);
+
+    // Ok so here we calculate the angle based on the distance the normal prediction threw out, stored in prediction_distance
+    // central angle = arclength / radius
+    float newangle = prediction_distance / data.radius;
+
+    // We then use that angle to calculate the actual 2d position and insert that into PosOnCircle
+    Vector PosOnCircle;
+    if (!data.strafing_dir)
+        PosOnCircle = Vector(data.center.x + data.radius * cos(curangle + newangle), data.center.y + data.radius * sin(curangle + newangle), 0);
+    else
+        PosOnCircle = Vector(data.center.x + data.radius * cos(curangle - newangle), data.center.y + data.radius * sin(curangle - newangle), 0);
+
+    pos.x = PosOnCircle.x;
+    pos.y = PosOnCircle.y;
 }
 
-Vector PredictStep(Vector pos, Vector &vel, Vector acceleration, std::pair<Vector, Vector> &minmax, float time, float steplength, bool vischeck, std::optional<float> grounddistance)
+// Check if this target is eligible for strafe prediction and return an object containing info if it is
+std::optional<StrafePredictionData> initializeStrafePrediction(CachedEntity *ent)
+{
+    if (g_pLocalPlayer->weapon_mode == weapon_projectile && ent->m_Type() == ENTITY_PLAYER && ent->m_IDX > 0 && ent->m_IDX <= g_GlobalVars->maxClients && !(CE_INT(ent, netvar.iFlags) & FL_ONGROUND))
+    {
+        auto &buffer = previous_positions.at(ent->m_IDX - 1);
+        if (buffer.full())
+            return findCircle(buffer.front(), buffer.at(buffer.capacity() / 2), buffer.back());
+    }
+    return std::nullopt;
+}
+
+Vector PredictStep(Vector pos, Vector &vel, const Vector &acceleration, std::pair<Vector, Vector> *minmax, float steplength, StrafePredictionData *strafepred, bool vischeck, std::optional<float> grounddistance)
 {
     PROF_SECTION(PredictNew)
     Vector result = pos;
 
-    result += (acceleration / 2.0f) * pow(steplength, 2) + vel * steplength;
+    // If we should do strafe prediction, then we still need to do the calculations, but instead of applying them we simply calculate the distance traveled and use that info together with strafe pred
+    if (strafepred)
+    {
+        auto newpos = result + (acceleration / 2.0f) * pow(steplength, 2) + vel * steplength;
+        // Strafe pred does not predict Z! The player can't control his Z anyway, so it is pointless.
+        result.z = newpos.z;
+        applyStrafePrediction(result, *strafepred, newpos.AsVector2D().DistTo(result.AsVector2D()));
+    }
+    else
+        result += (acceleration / 2.0f) * pow(steplength, 2) + vel * steplength;
+
     vel += acceleration * steplength;
+
     if (vischeck)
     {
         Vector modify = result;
@@ -75,7 +166,10 @@ Vector PredictStep(Vector pos, Vector &vel, Vector acceleration, std::pair<Vecto
             PROF_SECTION(PredictTraces)
             Ray_t ray;
             trace_t trace;
-            ray.Init(modify, low, minmax.first, minmax.second);
+            if (minmax)
+                ray.Init(modify, low, minmax->first, minmax->second);
+            else
+                ray.Init(modify, low);
             g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &trace);
 
             float dist = pos.z - trace.endpos.z;
@@ -89,35 +183,23 @@ Vector PredictStep(Vector pos, Vector &vel, Vector acceleration, std::pair<Vecto
     return result;
 }
 
-std::vector<Vector> Predict(Vector pos, float offset, Vector vel, Vector acceleration, std::pair<Vector, Vector> minmax, float time, int count, bool vischeck)
+std::vector<Vector> Predict(CachedEntity *player, Vector pos, float offset, Vector vel, Vector acceleration, std::pair<Vector, Vector> minmax, int count, bool vischeck)
 {
     std::vector<Vector> positions;
     positions.reserve(count);
-    Vector prev;
 
     pos.z -= offset;
 
-    float dist = DistanceToGround(pos, minmax.first, minmax.second);
-    Vector prediction;
+    float dist       = DistanceToGround(pos, minmax.first, minmax.second);
+    auto strafe_pred = initializeStrafePrediction(player);
 
     for (int i = 0; i < count; i++)
     {
-        time += 1.0f * g_GlobalVars->interval_per_tick;
-        if (positions.size() > 0)
-        {
-            prev = positions.back();
-            if (vischeck)
-                prediction = PredictStep(prediction, vel, acceleration, minmax, time);
-            else
-                prediction = PredictStep(prediction, vel, acceleration, minmax, time, g_GlobalVars->interval_per_tick, false, dist);
-            positions.push_back({ prediction.x, prediction.y, prediction.z + offset });
-        }
+        if (vischeck)
+            pos = PredictStep(pos, vel, acceleration, &minmax, g_GlobalVars->interval_per_tick, strafe_pred ? &*strafe_pred : nullptr);
         else
-        {
-            prediction = Predict(pos, vel, acceleration, dist, time);
-            prediction.z += offset;
-            positions.push_back(prediction);
-        }
+            pos = PredictStep(pos, vel, acceleration, &minmax, g_GlobalVars->interval_per_tick, strafe_pred ? &*strafe_pred : nullptr, false, dist);
+        positions.push_back({ pos.x, pos.y, pos.z + offset });
     }
     return positions;
 }
@@ -129,7 +211,6 @@ void Prediction_PaintTraverse()
         return;
     if (debug_pp_draw)
     {
-        static ConVar *sv_gravity = g_ICvar->FindVar("sv_gravity");
         if (!sv_gravity)
         {
             sv_gravity = g_ICvar->FindVar("sv_gravity");
@@ -141,9 +222,10 @@ void Prediction_PaintTraverse()
             auto ent = ENTITY(i);
             if (CE_BAD(ent) || !ent->m_bAlivePlayer())
                 continue;
+
             Vector velocity;
             velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
-            auto data = Predict(ent->m_vecOrigin(), 0.0f, velocity, Vector(0, 0, -sv_gravity->GetFloat()), std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs()), 0.0f, 32);
+            auto data = Predict(ent, ent->m_vecOrigin(), 0.0f, velocity, Vector(0, 0, -sv_gravity->GetFloat()), std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs()), 64);
             Vector previous_screen;
             if (!draw::WorldToScreen(ent->m_vecOrigin(), previous_screen))
                 continue;
@@ -162,6 +244,14 @@ void Prediction_PaintTraverse()
                 }
                 color.r -= 1.0f / 20.0f;
             }
+
+            /*if (!ent->m_bEnemy())
+                continue;
+            auto pos = ProjectilePrediction(ent, hitbox_t::spine_3, 1980.0f, 0.0f, 1.0f, 0.0f);
+
+            Vector aaa;
+            if (draw::WorldToScreen(pos, aaa))
+                draw::Rectangle(aaa.x, aaa.y, 5, 5, colors::yellow);*/
         }
     }
 }
@@ -235,10 +325,11 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
     GetHitbox(ent, hb, hitbox);
     Vector hitbox_offset = hitbox - origin;
 
-    if (speed == 0.0f)
-        return Vector();
+    if (!sv_gravity)
+        sv_gravity = g_ICvar->FindVar("sv_gravity");
 
-    static ConVar *sv_gravity = g_ICvar->FindVar("sv_gravity");
+    if (speed == 0.0f || !sv_gravity)
+        return Vector();
 
     // TODO ProjAim
     float medianTime  = g_pLocalPlayer->v_Eye.DistTo(hitbox) / speed;
@@ -273,7 +364,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
 
         float rockettime = g_pLocalPlayer->v_Eye.DistTo(current) / speed;
         // Compensate for ping
-        rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
+        // rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
         if (fabs(rockettime - currenttime) < mindelta)
         {
             besttime = currenttime;
@@ -284,7 +375,7 @@ Vector ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float
     const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = origin;
     CE_VECTOR(ent, 0x354)                              = origin;
     // Compensate for ping
-    besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
+    // besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
     bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravitymod - proj_startvelocity * besttime);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result = bestpos + hitbox_offset;
@@ -303,9 +394,12 @@ Vector BuildingPrediction(CachedEntity *building, Vector vec, float speed, float
     //
     //}
 
-    if (speed == 0.0f)
+    if (!sv_gravity)
+        sv_gravity = g_ICvar->FindVar("sv_gravity");
+
+    if (speed == 0.0f || !sv_gravity)
         return Vector();
-    static ConVar *sv_gravity = g_ICvar->FindVar("sv_gravity");
+
     trace::filter_no_player.SetSelf(RAW_ENT(building));
     float dtg = DistanceToGround(vec, RAW_ENT(building)->GetCollideable()->OBBMins(), RAW_ENT(building)->GetCollideable()->OBBMaxs());
     // TODO ProjAim
@@ -350,7 +444,10 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
     GetHitbox(ent, hb, hitbox);
     Vector hitbox_offset = hitbox - origin;
 
-    if (speed == 0.0f)
+    if (!sv_gravity)
+        sv_gravity = g_ICvar->FindVar("sv_gravity");
+
+    if (speed == 0.0f || !sv_gravity)
         return Vector();
 
     // TODO ProjAim
@@ -373,23 +470,19 @@ Vector ProjectilePrediction(CachedEntity *ent, int hb, float speed, float gravit
 
     Vector velocity;
     velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
-    static ConVar *sv_gravity = g_ICvar->FindVar("sv_gravity");
-    Vector acceleration       = { 0.0f, 0.0f, -(sv_gravity->GetFloat() * entgmod) };
-    float steplength          = ((float) (2 * range) / (float) maxsteps);
-    auto minmax               = std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs());
 
-    float dist_to_ground = DistanceToGround(origin, minmax.first, minmax.second);
+    Vector acceleration = { 0.0f, 0.0f, -sv_gravity->GetFloat() * entgmod };
+    float steplength    = ((float) (2 * range) / (float) maxsteps);
+    auto minmax         = std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs());
 
     Vector last = origin;
 
+    auto strafe_pred = initializeStrafePrediction(ent);
+
     for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
     {
-        if (steps == 0)
-            last = Predict(last, velocity, acceleration, dist_to_ground, currenttime);
-        else
-            last = PredictStep(last, velocity, acceleration, minmax, currenttime, steplength);
+        current = last = PredictStep(last, velocity, acceleration, &minmax, steplength, strafe_pred ? &*strafe_pred : nullptr);
 
-        current = last;
         if (onground)
         {
             float toground = DistanceToGround(current, minmax.first, minmax.second);
@@ -445,3 +538,25 @@ float DistanceToGround(Vector origin)
     g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_no_player, &ground_trace);
     return std::fabs(origin.z - ground_trace.endpos.z);
 }
+
+static InitRoutine init([]() {
+    previous_positions.fill(boost::circular_buffer<Vector2D>(*sample_size));
+    sample_size.installChangeCallback([](settings::VariableBase<int> &, int after) { previous_positions.fill(boost::circular_buffer<Vector2D>(after)); });
+    EC::Register(
+        EC::CreateMove,
+        []() {
+            for (int i = 1; i <= g_GlobalVars->maxClients; i++)
+            {
+                auto ent     = ENTITY(i);
+                auto &buffer = previous_positions.at(i - 1);
+                if (CE_BAD(ent) || !ent->m_bAlivePlayer() || CE_VECTOR(ent, netvar.vVelocity).IsZero())
+                {
+                    buffer.clear();
+                    continue;
+                }
+
+                buffer.push_front(ent->m_vecOrigin().AsVector2D());
+            }
+        },
+        "cm_prediction", EC::very_early);
+});

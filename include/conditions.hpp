@@ -177,6 +177,7 @@ template <typename... ConditionList> constexpr condition_data_s CreateConditionM
 
 // Should be either expanded or unused
 constexpr condition_data_s KInvisibilityMask = CreateConditionMask(TFCond_Cloaked);
+constexpr condition_data_s KStealthedMask    = CreateConditionMask(TFCond_Stealthed);
 constexpr condition_data_s KDisguisedMask    = CreateConditionMask(TFCond_Disguised);
 // Original name
 constexpr condition_data_s KVisibilityMask      = CreateConditionMask(TFCond_OnFire, TFCond_Jarated, TFCond_CloakFlicker, TFCond_Milked, TFCond_Bleeding);
