@@ -1488,9 +1488,9 @@ bool IsPlayerCritBoosted(CachedEntity *player)
     return HasConditionMask<KCritBoostMask.cond_0, KCritBoostMask.cond_1, KCritBoostMask.cond_2, KCritBoostMask.cond_3>(player);
 }
 
-bool IsPlayerInvisible(CachedEntity *player, bool check_stealth)
+bool IsPlayerInvisible(CachedEntity *player)
 {
-    return HasConditionMask<KInvisibilityMask.cond_0, KInvisibilityMask.cond_1, KInvisibilityMask.cond_2, KInvisibilityMask.cond_3>(player) || (check_stealth && HasConditionMask<KStealthedMask.cond_0, KStealthedMask.cond_1, KStealthedMask.cond_2, KStealthedMask.cond_3>(player));
+    return HasConditionMask<KInvisibilityMask.cond_0, KInvisibilityMask.cond_1, KInvisibilityMask.cond_2, KInvisibilityMask.cond_3>(player);
 }
 
 bool IsPlayerDisguised(CachedEntity *player)

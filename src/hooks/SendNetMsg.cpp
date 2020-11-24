@@ -80,7 +80,7 @@ void ProcessSendline(IGameEvent *kv)
             return;
         // CA7 = Reply and change state
         // CA8 = Change state
-        if (id == CAT_IDENTIFY && *answerIdentify && player_idx != g_pLocalPlayer->entity_idx)
+        if (id == CAT_IDENTIFY && *answerIdentify && player_idx != g_pLocalPlayer->entity_idx && playerlist::AccessData(info.friendsID).state != playerlist::k_EState::RAGE)
             send_drawline_reply = true;
         if (playerlist::ChangeState(info.friendsID, playerlist::k_EState::CAT))
             PrintChat("\x07%06X%s\x01 Marked as CAT (Cathook user)", 0xe05938, info.name);
