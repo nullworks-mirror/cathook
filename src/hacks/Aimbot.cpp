@@ -465,7 +465,7 @@ bool ShouldAim()
         if (HasCondition<TFCond_Taunting>(g_pLocalPlayer->entity))
             return false;
         // Is cloaked
-        if (IsPlayerInvisible(g_pLocalPlayer->entity, false))
+        if (IsPlayerInvisible(g_pLocalPlayer->entity))
             return false;
     }
 #if ENABLE_VISUALS
