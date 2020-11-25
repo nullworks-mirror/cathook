@@ -1,4 +1,4 @@
-/*
+﻿/*
  * entity.h
  *
  *  Created on: Oct 6, 2016
@@ -47,11 +47,11 @@ public:
     offset_t iHealth;
 
     // sentry
-    offset_t m_iAmmoShells;  // sentry shells
-    offset_t m_iAmmoRockets; // use only with if (GetLevel() == 3)
-    offset_t m_iSentryState; // sentry state
+    offset_t m_iAmmoShells;       // sentry shells
+    offset_t m_iAmmoRockets;      // use only with if (GetLevel() == 3)
+    offset_t m_iSentryState;      // sentry state
     offset_t m_bPlayerControlled; // controlled via wrangler and sort
-    offset_t m_bDisabled; // this should be sentry only, not sure
+    offset_t m_bDisabled;         // this should be sentry only, not sure
 
     // dispenser
     offset_t m_iAmmoMetal; // dispenser metal reserve
@@ -101,7 +101,6 @@ public:
     offset_t iHitboxSet;
     offset_t vVelocity;
     offset_t bGlowEnabled;
-    offset_t movetype;
     offset_t iGlowIndex;
     offset_t iReloadMode;
     offset_t res_iMaxHealth;
@@ -207,6 +206,7 @@ public:
 
     offset_t m_iPlayerIndex;
     offset_t m_hTargetPlayer;
+    offset_t m_flResetTime;
 };
 
 extern NetVars netvar;

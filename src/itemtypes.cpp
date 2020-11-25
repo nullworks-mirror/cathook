@@ -24,6 +24,14 @@ ItemManager::ItemManager() : mapper()
     RegisterModelMapping("models/items/medkit_large_bday.mdl", ITEM_HEALTH_LARGE);
     // Medieval
     RegisterModelMapping("models/props_medieval/medieval_meat.mdl", ITEM_HEALTH_MEDIUM);
+    // Edibles / Lunchboxes
+    RegisterModelMapping("models/items/plate.mdl", EDIBLE_MEDIUM);
+    RegisterModelMapping("models/items/plate_sandwich_xmas.mdl", EDIBLE_MEDIUM);
+    RegisterModelMapping("models/items/plate_robo_sandwich.mdl", EDIBLE_MEDIUM);
+    RegisterModelMapping("models/workshop/weapons/c_models/c_fishcake/plate_fishcake.mdl", EDIBLE_SMALL);
+    RegisterModelMapping("models/workshop/weapons/c_models/c_buffalo_steak/plate_buffalo_steak.mdl", EDIBLE_SMALL);
+    RegisterModelMapping("models/workshop/weapons/c_models/c_chocolate/plate_chocolate.mdl", EDIBLE_SMALL);
+    RegisterModelMapping("models/items/banana/plate_banana.mdl", EDIBLE_SMALL);
 
     // == AMMOPACKS
     // Normal
@@ -70,8 +78,10 @@ ItemManager::ItemManager() : mapper()
     // Spellbooks
     RegisterModelMapping("models/props_halloween/hwn_spellbook_upright.mdl", ITEM_SPELL);
     RegisterModelMapping("models/items/crystal_ball_pickup.mdl", ITEM_SPELL);
+    RegisterModelMapping("models/props_monster_mash/flask_vial_green.mdl", ITEM_SPELL);
     RegisterModelMapping("models/props_halloween/hwn_spellbook_upright_major.mdl", ITEM_SPELL_RARE);
     RegisterModelMapping("models/items/crystal_ball_pickup_major.mdl", ITEM_SPELL_RARE);
+    RegisterModelMapping("models/props_monster_mash/flask_vial_purple.mdl", ITEM_SPELL_RARE);
 
     // == GHOSTS
     RegisterModelMapping("models/props_halloween/ghost.mdl", HALLOWEEN_GHOST);
@@ -82,6 +92,24 @@ ItemManager::ItemManager() : mapper()
     RegisterModelMapping("models/props_laughter/balloonbomb.mdl", BOMB_BALLOONBOMB);
     RegisterModelMapping("models/props_coast/wooden_barrel.mdl", BOMB_WOODENBARREL);
     RegisterModelMapping("models/props_invasion/props_alien/walker_explode.mdl", BOMB_WALKEREXPLODE);
+
+    // == FLAGS
+    RegisterModelMapping("models/props_td/atom_bomb.mdl", FLAG_ATOMBOMB);
+    RegisterModelMapping("models/props_pirate/pd_skull_pickup.mdl", FLAG_SKULLPICKUP);
+    RegisterModelMapping("models/effects/playersoul.mdl", FLAG_SKULLPICKUP);
+    RegisterModelMapping("models/props_monster_mash/gib_bucket.mdl", FLAG_GIBBUCKET);
+    RegisterModelMapping("models/props_watergate/bottle_pickup.mdl", FLAG_BOTTLEPICKUP);
+    RegisterModelMapping("models/props_doomsday/australium_container.mdl", FLAG_AUSSIECONTAINER);
+    RegisterModelMapping("models/flag/ticket_case.mdl", FLAG_TICKETCASE);
+
+    // == BOMB CARTS
+    RegisterModelMapping("models/props_trainyard/bomb_cart.mdl", CART_BOMBCART);
+    RegisterModelMapping("models/custom/dirty_bomb_cart.mdl", CART_BOMBCART);
+    RegisterModelMapping("models/lilchewchew/lilchewchew_v3.mdl", CART_BOMBCART);
+    RegisterModelMapping("models/props_trainyard/bomb_redmond.mdl", CART_BOMBCART);
+    RegisterModelMapping("models/props_snowycoast/gasoline_bomb_cart.mdl", CART_BOMBCART);
+    RegisterModelMapping("models/props_trainyard/bomb_blutarch.mdl", CART_BOMBCART_RED);
+    RegisterModelMapping("models/props_trainyard/bomb_cart_red.mdl", CART_BOMBCART_RED);
 
     RegisterSpecialMapping([](CachedEntity *ent) -> bool { return ent->m_iClassID() == CL_CLASS(CTFAmmoPack) && g_ItemManager.mapper.GetItemType(ent) != ITEM_CRUMPKIN; }, ITEM_AMMO_MEDIUM);
 
