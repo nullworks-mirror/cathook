@@ -132,18 +132,19 @@ void CreateMove()
     {
     case CL_CLASS(CTFSyringeGun):
     {
+        if (g_pLocalPlayer->v_OrigViewangles == current_user_cmd->viewangles)
+            g_pLocalPlayer->bUseSilentAngles = true;
         float spread = 1.5f;
         current_user_cmd->viewangles.x -= RandomFloat(-spread, spread);
         current_user_cmd->viewangles.y -= RandomFloat(-spread, spread);
         fClampAngle(current_user_cmd->viewangles);
-        g_pLocalPlayer->bUseSilentAngles = true;
         break;
     }
     case CL_CLASS(CTFCompoundBow):
     {
-        Vector view = current_user_cmd->viewangles;
-        if (g_pLocalPlayer->bUseSilentAngles)
-            view = g_pLocalPlayer->v_OrigViewangles;
+        Vector view = re::C_BasePlayer::GetLocalEyeAngles(RAW_ENT(LOCAL_E));
+        if (g_pLocalPlayer->v_OrigViewangles == current_user_cmd->viewangles)
+            g_pLocalPlayer->bUseSilentAngles = true;
 
         Vector spread;
         Vector src;
@@ -152,20 +153,18 @@ void CreateMove()
 
         spread -= view;
         current_user_cmd->viewangles -= spread;
-        g_pLocalPlayer->bUseSilentAngles = true;
         fClampAngle(current_user_cmd->viewangles);
         break;
     }
     default:
-        Vector view = current_user_cmd->viewangles;
-        if (g_pLocalPlayer->bUseSilentAngles)
-            view = g_pLocalPlayer->v_OrigViewangles;
+        Vector view = re::C_BasePlayer::GetLocalEyeAngles(RAW_ENT(LOCAL_E));
+        if (g_pLocalPlayer->v_OrigViewangles == current_user_cmd->viewangles)
+            g_pLocalPlayer->bUseSilentAngles = true;
 
         Vector spread = re::C_TFWeaponBase::GetSpreadAngles(RAW_ENT(LOCAL_W));
 
         spread -= view;
         current_user_cmd->viewangles -= spread;
-        g_pLocalPlayer->bUseSilentAngles = true;
         fClampAngle(current_user_cmd->viewangles);
         break;
     }
