@@ -238,6 +238,7 @@ void Draw()
 
 static InitRoutine EC([]() {
     EC::Register(EC::CreateMove, CreateMove, "cm_auto_reflect", EC::average);
+    EC::Register(EC::CreateMoveWarp, CreateMove, "cmw_auto_reflect", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, Draw, "draw_auto_reflect", EC::average);
 #endif

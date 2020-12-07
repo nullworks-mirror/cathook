@@ -335,7 +335,10 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
             g_pLocalPlayer->UpdateEye();
         }
 
-        EC::run(EC::CreateMove);
+        if (hacks::tf2::warp::in_warp)
+            EC::run(EC::CreateMoveWarp);
+        else
+            EC::run(EC::CreateMove);
     }
     if (time_replaced)
         g_GlobalVars->curtime = curtime_old;

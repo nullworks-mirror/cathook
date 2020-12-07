@@ -549,7 +549,9 @@ std::optional<std::pair<CachedEntity *, BacktrackData>> getClosestTick(Vector ve
 
 static InitRoutine init([]() {
     EC::Register(EC::CreateMove, CreateMove, "backtrack_cm", EC::early);
+    EC::Register(EC::CreateMoveWarp, CreateMove, "backtrack_cmw", EC::early);
     EC::Register(EC::CreateMove, CreateMoveLate, "backtrack_cmlate", EC::very_late);
+    EC::Register(EC::CreateMoveWarp, CreateMoveLate, "backtrack_cmwlate", EC::very_late);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, Draw, "backtrack_draw");
 #endif

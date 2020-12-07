@@ -14,7 +14,7 @@ static settings::Boolean debug{ "anti-anti-aim.debug.enable", "false" };
 std::unordered_map<unsigned, brutedata> resolver_map;
 std::array<CachedEntity *, 32> sniperdot_array;
 
-static inline void modifyAnlges()
+static inline void modifyAngles()
 {
     for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
@@ -55,7 +55,7 @@ void frameStageNotify(ClientFrameStage_t stage)
         return;
     if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_START)
     {
-        modifyAnlges();
+        modifyAngles();
     }
 #endif
 }
@@ -259,8 +259,10 @@ static InitRoutine init([]() {
     hook();
     EC::Register(EC::Shutdown, shutdown, "antiantiaim_shutdown");
     EC::Register(EC::CreateMove, CreateMove, "cm_antiantiaim");
+    EC::Register(EC::CreateMoveWarp, CreateMove, "cmw_antiantiaim");
 #if ENABLE_TEXTMODE
-    EC::Register(EC::CreateMove, modifyAnlges, "cm_textmodeantiantiaim");
+    EC::Register(EC::CreateMove, modifyAngles, "cm_textmodeantiantiaim");
+    EC::Register(EC::CreateMoveWarp, modifyAngles, "cmw_textmodeantiantiaim");
 #endif
 });
 } // namespace hacks::shared::anti_anti_aim

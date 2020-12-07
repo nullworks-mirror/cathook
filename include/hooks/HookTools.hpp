@@ -20,6 +20,8 @@ enum ec_types
     CreateMove_NoEnginePred,
     /* Note: this is still CreateMove, just ran before original is called, needed in some cases like changing tickcount before original gets called*/
     CreateMoveEarly,
+    /* Note: This will replace the normal CreateMove when we are warping. Used for performance purposes. */
+    CreateMoveWarp,
 #if ENABLE_VISUALS
     Draw,
 #endif

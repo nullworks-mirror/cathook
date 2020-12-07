@@ -934,6 +934,7 @@ static InitRoutine init([]() {
 
     EC::Register(EC::LevelShutdown, LevelShutdown, "warp_levelshutdown");
     EC::Register(EC::CreateMove, CreateMove, "warp_createmove", EC::very_late);
+    EC::Register(EC::CreateMoveWarp, CreateMove, "warp_createmovew", EC::very_late);
     EC::Register(EC::CreateMove_NoEnginePred, CreateMovePrePredict, "warp_prepredict");
     EC::Register(EC::CreateMoveEarly, CreateMoveEarly, "warp_createmove_early", EC::very_early);
     g_IEventManager2->AddListener(&listener, "player_hurt", false);
