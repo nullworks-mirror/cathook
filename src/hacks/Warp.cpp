@@ -14,6 +14,7 @@
 #include "DetourHook.hpp"
 #include "WeaponData.hpp"
 #include "MiscTemporary.hpp"
+#include "Think.hpp"
 
 namespace hacks::tf2::warp
 {
@@ -109,6 +110,12 @@ bool UpdateRFKey()
     return allow_key;
 }
 
+float getFireDelay()
+{
+    auto weapon_data = GetWeaponData(RAW_ENT(LOCAL_W));
+    return re::C_TFWeaponBase::ApplyFireDelay(RAW_ENT(LOCAL_W), weapon_data->m_flTimeFireDelay);
+}
+
 bool shouldRapidfire()
 {
     if (!rapidfire)
@@ -139,8 +146,7 @@ bool shouldRapidfire()
         return false;
 
     // We do not have the amount of ticks needed, don't try it
-    auto weapon_data = GetWeaponData(RAW_ENT(LOCAL_W));
-    if (warp_amount < TIME_TO_TICKS(weapon_data->m_flTimeFireDelay) && (TIME_TO_TICKS(weapon_data->m_flTimeFireDelay) < *maxusrcmdprocessticks - 1 || (wait_full && warp_amount != GetMaxWarpTicks())))
+    if (warp_amount < TIME_TO_TICKS(getFireDelay()) && (TIME_TO_TICKS(getFireDelay()) < *maxusrcmdprocessticks - 1 || (wait_full && warp_amount != GetMaxWarpTicks())))
         return false;
 
     // Mouse 1 is held, do it.
@@ -175,9 +181,17 @@ int GetWarpAmount(bool finalTick)
 {
     int max_extra_ticks = *maxusrcmdprocessticks - 1;
 
-    // Rapidfire ignores speed
+    // Rapidfire ignores speed, and we send 15 + 7, aka maximum new + backup commands
     if (in_rapidfire)
-        return max_extra_ticks;
+    {
+        // Warp right before the next shot
+        float shot_time = getFireDelay();
+        // This is to prevent Minigun/Pistol from only shooting once
+        if (TICKS_TO_TIME(22) / shot_time >= 2)
+            shot_time = TICKS_TO_TIME(23);
+        return std::min(22, TIME_TO_TICKS(shot_time) - 2);
+        // return 22;
+    }
     // No limit set
     if (!*maxusrcmdprocessticks)
         max_extra_ticks = INT_MAX;
@@ -239,6 +253,8 @@ void Warp(float accumulated_extra_samples, bool finalTick)
                 choke_packet = false;
                 packets_sent = -1;
             }
+            else
+                hooked_methods::UpdatePred();
 
             original(accumulated_extra_samples, finalTick);
             // Only decrease ticks for the final CL_Move tick
@@ -346,11 +362,6 @@ static bool was_overridden = false;
 static int ticks_in_revved     = 0;
 static bool replaced_last_tick = false;
 
-// Original Player origin and velocity, needed to not break because our engine pred.
-// We adjust it as the ticks go.
-static Vector original_origin;
-static Vector original_velocity;
-
 // Reset all the revv data
 void resetRevvstate()
 {
@@ -414,15 +425,7 @@ void CL_Move_hook(float accumulated_extra_samples, bool bFinalTick)
     {
         in_warp = true;
         if (shouldRapidfire())
-        {
             in_rapidfire = true;
-            // Store original info
-            original_origin = LOCAL_E->m_vecOrigin();
-            velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), original_velocity);
-            // Zero out non z movement, it will just get messy else
-            original_velocity.x = 0.0f;
-            original_velocity.y = 0.0f;
-        }
 
         Warp(accumulated_extra_samples, bFinalTick);
         if (warp_amount < GetMaxWarpTicks())
@@ -449,26 +452,12 @@ void CreateMoveEarly()
     }
 }
 
-// Fix the player origin after engine prediction, as it tries to predict the local
-// player linearly and just breaks doubletap when falling/moving
-void CreateMoveFixPrediction()
+// Run before prediction so we can do Faststop logic
+void CreateMovePrePredict()
 {
-    if (hacks::tf2::warp::in_rapidfire && current_user_cmd)
-    {
-        // Run very simple gravity calculations to ensure we do not miss
-        if (no_movement)
-        {
-            static ConVar *sv_gravity = g_ICvar->FindVar("sv_gravity");
-            Vector gravity{ 0.0f, 0.0f, -sv_gravity->GetFloat() };
-
-            auto mins = RAW_ENT(LOCAL_E)->GetCollideable()->OBBMins();
-            auto maxs = RAW_ENT(LOCAL_E)->GetCollideable()->OBBMaxs();
-            std::pair<Vector, Vector> minmax{ mins, maxs };
-            PredictStep(original_origin, original_velocity, gravity, &minmax);
-            // Restore from the engine prediction
-            const_cast<Vector &>(RAW_ENT(LOCAL_E)->GetAbsOrigin()) = original_origin;
-        }
-    }
+    // Attempt to stop fast in place to make movement smoother
+    if (in_rapidfire && no_movement)
+        FastStop();
 }
 
 // This calls the warp logic and applies some rapidfire specific logic afterwards
@@ -490,10 +479,6 @@ void CreateMove()
 
         was_in_warp = false;
     }
-
-    // Attempt to stop fast in place to make movement smoother
-    if (in_rapidfire && no_movement)
-        FastStop();
 }
 
 // Does all the logic related to charging and mode/settings specific actions like peek warp
@@ -948,8 +933,8 @@ static InitRoutine init([]() {
     cl_move_detour.Init(cl_move_addr, (void *) CL_Move_hook);
 
     EC::Register(EC::LevelShutdown, LevelShutdown, "warp_levelshutdown");
-    EC::Register(EC::CreateMove, CreateMoveFixPrediction, "warp_createmove_fixpred", EC::very_early);
     EC::Register(EC::CreateMove, CreateMove, "warp_createmove", EC::very_late);
+    EC::Register(EC::CreateMove_NoEnginePred, CreateMovePrePredict, "warp_prepredict");
     EC::Register(EC::CreateMoveEarly, CreateMoveEarly, "warp_createmove_early", EC::very_early);
     g_IEventManager2->AddListener(&listener, "player_hurt", false);
     EC::Register(

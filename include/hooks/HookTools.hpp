@@ -15,6 +15,7 @@ enum ec_types
     CreateMoveLate,
     /* This kind of CreateMove will run earlier than "CreateMove" events
      * and guranteed to run before EnginePrediction
+     * This is NEEDED for any kind of movement
      */
     CreateMove_NoEnginePred,
     /* Note: this is still CreateMove, just ran before original is called, needed in some cases like changing tickcount before original gets called*/

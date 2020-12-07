@@ -18,44 +18,45 @@
 
 // class ISteamFriends002;
 
-IVModelRender *g_IVModelRender          = nullptr;
-ISteamClient *g_ISteamClient            = nullptr;
-ISteamFriends *g_ISteamFriends          = nullptr;
-IVEngineClient013 *g_IEngine            = nullptr;
-void *demoplayer                        = nullptr;
-IEngineSound *g_ISoundEngine            = nullptr;
-vgui::ISurface *g_ISurface              = nullptr;
-vgui::IPanel *g_IPanel                  = nullptr;
-IClientEntityList *g_IEntityList        = nullptr;
-ICvar *g_ICvar                          = nullptr;
-IGameEventManager2 *g_IEventManager2    = nullptr;
-IBaseClientDLL *g_IBaseClient           = nullptr;
-IEngineTrace *g_ITrace                  = nullptr;
-IVModelInfoClient *g_IModelInfo         = nullptr;
-IInputSystem *g_IInputSystem            = nullptr;
-CGlobalVarsBase **rg_GlobalVars         = nullptr;
-IPrediction *g_IPrediction              = nullptr;
-IGameMovement *g_IGameMovement          = nullptr;
-IInput *g_IInput                        = nullptr;
-ISteamUser *g_ISteamUser                = nullptr;
-IAchievementMgr *g_IAchievementMgr      = nullptr;
-ISteamUserStats *g_ISteamUserStats      = nullptr;
-IStudioRender *g_IStudioRender          = nullptr;
-IVDebugOverlay *g_IVDebugOverlay        = nullptr;
-IMaterialSystemFixed *g_IMaterialSystem = nullptr;
-IVRenderView *g_IVRenderView            = nullptr;
-IMaterialSystem *g_IMaterialSystemHL    = nullptr;
-IMoveHelperServer *g_IMoveHelperServer  = nullptr;
-CBaseClientState *g_IBaseClientState    = nullptr;
-IGameEventManager *g_IGameEventManager  = nullptr;
-TFGCClientSystem *g_TFGCClientSystem    = nullptr;
-CHud *g_CHUD                            = nullptr;
-CGameRules *g_pGameRules                = nullptr;
-IEngineVGui *g_IEngineVGui              = nullptr;
-IUniformRandomStream *g_pUniformStream  = nullptr;
-int *g_PredictionRandomSeed             = nullptr;
-IFileSystem *g_IFileSystem              = nullptr;
-IMDLCache *g_IMDLCache                  = nullptr;
+IVModelRender *g_IVModelRender           = nullptr;
+ISteamClient *g_ISteamClient             = nullptr;
+ISteamFriends *g_ISteamFriends           = nullptr;
+IVEngineClient013 *g_IEngine             = nullptr;
+void *demoplayer                         = nullptr;
+IEngineSound *g_ISoundEngine             = nullptr;
+vgui::ISurface *g_ISurface               = nullptr;
+vgui::IPanel *g_IPanel                   = nullptr;
+IClientEntityList *g_IEntityList         = nullptr;
+ICvar *g_ICvar                           = nullptr;
+IGameEventManager2 *g_IEventManager2     = nullptr;
+IBaseClientDLL *g_IBaseClient            = nullptr;
+IEngineTrace *g_ITrace                   = nullptr;
+IVModelInfoClient *g_IModelInfo          = nullptr;
+IInputSystem *g_IInputSystem             = nullptr;
+CGlobalVarsBase **rg_GlobalVars          = nullptr;
+IPrediction *g_IPrediction               = nullptr;
+IGameMovement *g_IGameMovement           = nullptr;
+IInput *g_IInput                         = nullptr;
+ISteamUser *g_ISteamUser                 = nullptr;
+IAchievementMgr *g_IAchievementMgr       = nullptr;
+ISteamUserStats *g_ISteamUserStats       = nullptr;
+IStudioRender *g_IStudioRender           = nullptr;
+IVDebugOverlay *g_IVDebugOverlay         = nullptr;
+IMaterialSystemFixed *g_IMaterialSystem  = nullptr;
+IVRenderView *g_IVRenderView             = nullptr;
+IMaterialSystem *g_IMaterialSystemHL     = nullptr;
+IMoveHelperServer *g_IMoveHelperServer   = nullptr;
+CBaseClientState *g_IBaseClientState     = nullptr;
+IGameEventManager *g_IGameEventManager   = nullptr;
+TFGCClientSystem *g_TFGCClientSystem     = nullptr;
+CHud *g_CHUD                             = nullptr;
+CGameRules *g_pGameRules                 = nullptr;
+IEngineVGui *g_IEngineVGui               = nullptr;
+IUniformRandomStream *g_pUniformStream   = nullptr;
+int *g_PredictionRandomSeed              = nullptr;
+IFileSystem *g_IFileSystem               = nullptr;
+IMDLCache *g_IMDLCache                   = nullptr;
+IToolFrameworkInternal *g_IToolFramework = nullptr;
 
 template <typename T> T *BruteforceInterface(std::string name, sharedobj::SharedObject &object, int start = 0)
 {
@@ -169,6 +170,7 @@ void CreateInterfaces()
     g_IStudioRender     = BruteforceInterface<IStudioRender>("VStudioRender", sharedobj::studiorender());
     g_IVRenderView      = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine());
     g_IMaterialSystemHL = (IMaterialSystem *) g_IMaterialSystem;
+    g_IToolFramework    = BruteforceInterface<IToolFrameworkInternal>("VTOOLFRAMEWORKVERSION", sharedobj::engine());
     IF_GAME(IsTF2())
     {
         g_pScreenSpaceEffects           = **(IScreenSpaceEffectManager ***) (gSignatures.GetClientSignature("8D 74 26 00 55 89 E5 57 56 53 83 EC 1C 8B 5D 08 8B 7D 0C 8B 75 10 ") + 0x1c3);

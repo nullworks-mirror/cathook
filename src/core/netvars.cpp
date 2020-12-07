@@ -33,6 +33,7 @@ void NetVars::Init()
 
     IF_GAME(IsTF2())
     {
+        this->m_flMaxspeed         = gNetvars.get_offset("DT_BasePlayer", "m_flMaxspeed");
         res_iTeam                  = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_iTeam");
         res_bAlive                 = gNetvars.get_offset("DT_TFPlayerResource", "baseclass", "m_bAlive");
         this->res_iMaxBuffedHealth = gNetvars.get_offset("DT_TFPlayerResource", "m_iMaxBuffedHealth");

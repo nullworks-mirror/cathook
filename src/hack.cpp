@@ -257,6 +257,10 @@ void hack::Hook()
     hooks::prediction.HookMethod(HOOK_ARGS(RunCommand));
     hooks::prediction.Apply();
 
+    hooks::toolbox.Set(g_IToolFramework);
+    hooks::toolbox.HookMethod(HOOK_ARGS(Think));
+    hooks::toolbox.Apply();
+
 #if ENABLE_VISUALS
     sdl_hooks::applySdlHooks();
 #endif

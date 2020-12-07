@@ -1621,28 +1621,40 @@ void AimAtHitbox(CachedEntity *ent, int hitbox, CUserCmd *cmd, bool compensate_p
     AimAt(g_pLocalPlayer->v_Eye, r, cmd, compensate_punch);
 }
 
-// Thanks to "copypaste" on UnknownCheats, this really helped
 void FastStop()
 {
     // Get velocity
     Vector vel;
     velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), vel);
 
-    Vector direction;
-    VectorAngles(vel, direction);
-    float speed = vel.Length();
+    static auto sv_friction  = g_ICvar->FindVar("sv_friction");
+    static auto sv_stopspeed = g_ICvar->FindVar("sv_stopspeed");
 
-    // Prevent overshooting
-    speed *= 0.5f;
+    auto speed    = vel.Length2D();
+    auto friction = sv_friction->GetFloat() * CE_FLOAT(LOCAL_E, 0x12b8);
+    auto control  = (speed < sv_stopspeed->GetFloat()) ? sv_stopspeed->GetFloat() : speed;
+    auto drop     = control * friction * g_GlobalVars->interval_per_tick;
 
-    direction.y = current_user_cmd->viewangles.y - direction.y;
+    if (speed > drop - 1.0f)
+    {
+        Vector velocity = vel;
+        Vector direction;
+        VectorAngles(vel, direction);
+        float speed = velocity.Length();
 
-    Vector negated_direction;
-    AngleVectors2(VectorToQAngle(direction), &negated_direction);
-    negated_direction *= -speed;
+        direction.y = current_user_cmd->viewangles.y - direction.y;
 
-    current_user_cmd->forwardmove = negated_direction.x;
-    current_user_cmd->sidemove    = negated_direction.y;
+        Vector forward;
+        AngleVectors2(VectorToQAngle(direction), &forward);
+        Vector negated_direction = forward * -speed;
+
+        current_user_cmd->forwardmove = negated_direction.x;
+        current_user_cmd->sidemove    = negated_direction.y;
+    }
+    else
+    {
+        current_user_cmd->forwardmove = current_user_cmd->sidemove = 0.0f;
+    }
 }
 
 bool IsEntityVisiblePenetration(CachedEntity *entity, int hb)
