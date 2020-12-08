@@ -513,6 +513,7 @@ bool DispatchUserMessage(bf_read *buf, int type)
         last_was_player_perf = true;
         should_call_original = false;
         bad_mantissa         = true;
+        no_spread_synced     = NOT_SYNCED;
         return should_call_original;
     }
 
@@ -890,6 +891,13 @@ static InitRoutine init_bulletnospread([]() {
             }
         },
         "nospread_createmove2");
+    bullet.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
+        if (!after)
+        {
+            is_syncing       = false;
+            no_spread_synced = NOT_SYNCED;
+        }
+    });
 #if ENABLE_VISUALS
     EC::Register(
         EC::Draw,
