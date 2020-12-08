@@ -233,6 +233,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     }
 
     //	PROF_BEGIN();
+    // Do not update if in warp, since the entities will stay identical either way
+    if (!hacks::tf2::warp::in_warp)
     {
         PROF_SECTION(EntityCache);
         entity_cache::Update();
