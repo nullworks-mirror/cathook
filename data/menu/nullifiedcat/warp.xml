@@ -5,7 +5,10 @@
             <AutoVariable width="fill" target="warp.speed" label="Warp speed" tooltip="The discharge speed (0.5 = +50%, 2 = +200%. +2300% is the maximum possible)."/>
             <AutoVariable width="fill" target="warp.key" label="Warp key" tooltip="Pressing this key will use all stored ticks to accelerate you."/>
             <AutoVariable width="fill" target="warp.charge-key" label="Charge key" tooltip="Hold down this key to charge warp."/>
-            <AutoVariable width="fill" target="warp.draw" label="Draw warp" tooltip="Draws a bar indicating your warp readiness."/>
+            <AutoVariable width="fill" target="warp.draw" label="Draw warp text"/>
+            <AutoVariable width="fill" target="warp.draw-info.x" label="Text x position"/>
+            <AutoVariable width="fill" target="warp.draw-info.y" label="Text y position"/>
+            <AutoVariable width="fill" target="warp.draw-bar" label="Draw warp bar" tooltip="Draws a bar indicating your warp readiness."/>
             <AutoVariable width="fill" target="warp.bar-size" label="Bar size"/>
             <AutoVariable width="fill" target="warp.bar-x" label="X position"/>
             <AutoVariable width="fill" target="warp.bar-y" label="Y position"/>
@@ -34,6 +37,14 @@
                     <Option name="Pressed" value="1"/>
                     <Option name="Not Pressed" value="2"/>
                     <Option name="Toggle" value="3"/>
+                </Select>
+            </LabeledObject>
+            <LabeledObject width="fill" label="Disable Rapidfire on">
+                <Select target="warp.rapidfire.disable-on">
+                    <Option name="None" value="0"/>
+                    <Option name="Projectile" value="1"/>
+                    <Option name="Melee" value="2"/>
+                    <Option name="Projectile + Melee" value="3"/>
                 </Select>
             </LabeledObject>
         </List>

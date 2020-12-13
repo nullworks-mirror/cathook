@@ -25,8 +25,10 @@ static settings::Boolean rapidfire_zoom{ "warp.rapidfire.zoom", "true" };
 static settings::Boolean wait_full{ "warp.rapidfire.wait-full", "true" };
 static settings::Button rapidfire_key{ "warp.rapidfire.key", "<null>" };
 static settings::Int rapidfire_key_mode{ "warp.rapidfire.key-mode", "1" };
+static settings::Int rf_disable_on{ "warp.rapidfire.disable-on", "0" };
 static settings::Float speed{ "warp.speed", "23" };
 static settings::Boolean draw{ "warp.draw", "false" };
+static settings::Boolean draw_bar{ "warp.draw-bar", "false" };
 static settings::Button warp_key{ "warp.key", "<null>" };
 static settings::Button charge_key{ "warp.charge-key", "<null>" };
 static settings::Boolean charge_passively{ "warp.charge-passively", "true" };
@@ -65,6 +67,34 @@ void warpLogic();
 static settings::Int size{ "warp.bar-size", "100" };
 static settings::Int bar_x{ "warp.bar-x", "50" };
 static settings::Int bar_y{ "warp.bar-y", "200" };
+static settings::Int draw_string_x{ "warp.draw-info.x", "8" };
+static settings::Int draw_string_y{ "warp.draw-info.y", "800" };
+
+// Need our own Text drawing
+static std::array<std::string, 32> warp_strings;
+static size_t warp_strings_count{ 0 };
+static std::array<rgba_t, 32> warp_strings_colors{ colors::empty };
+
+void AddWarpString(const std::string &string, const rgba_t &color)
+{
+    warp_strings[warp_strings_count]        = string;
+    warp_strings_colors[warp_strings_count] = color;
+    ++warp_strings_count;
+}
+
+void DrawWarpStrings()
+{
+    float x = *draw_string_x;
+    float y = *draw_string_y;
+    for (size_t i = 0; i < warp_strings_count; ++i)
+    {
+        float sx, sy;
+        fonts::menu->stringSize(warp_strings[i], &sx, &sy);
+        draw::String(x, y, warp_strings_colors[i], warp_strings[i].c_str(), *fonts::center_screen);
+        y += fonts::center_screen->size + 1;
+    }
+    warp_strings_count = 0;
+}
 
 static bool should_charge       = false;
 static int warp_amount          = 0;
@@ -194,6 +224,24 @@ bool shouldRapidfire()
         // Heatmaker is the only exception here, it can also run on m1
         if (!buttons_pressed && HasCondition<TFCond_FocusBuff>(LOCAL_E))
             buttons_pressed = current_user_cmd && current_user_cmd->buttons & IN_ATTACK;
+    }
+
+    switch (*rf_disable_on)
+    {
+    case 0: // Always on
+        return buttons_pressed;
+    case 1: // Disable on projectile
+        if (g_pLocalPlayer->weapon_mode == weapon_projectile)
+            return false;
+        break;
+    case 2: // Disable on melee
+        if (g_pLocalPlayer->weapon_mode == weapon_melee)
+            return false;
+        break;
+    case 3: // Disable on projectile and melee
+        if (g_pLocalPlayer->weapon_mode == weapon_projectile || g_pLocalPlayer->weapon_mode == weapon_melee)
+            return false;
+        break;
     }
 
     return buttons_pressed;
@@ -915,25 +963,44 @@ void SendNetMessage(INetMessage &msg)
 #if ENABLE_VISUALS
 void Draw()
 {
-    if (!enabled || !draw)
+    if (!enabled)
+        return;
+    if (!draw && !draw_bar)
         return;
     if (!g_IEngine->IsInGame())
         return;
     if (CE_BAD(LOCAL_E))
         return;
+    if (!LOCAL_E->m_bAlivePlayer())
+        return;
 
-    float charge_percent = (float) warp_amount / (float) GetMaxWarpTicks();
-    // Draw background
-    static rgba_t background_color = colors::FromRGBA8(96, 96, 96, 150);
-    float bar_bg_x_size            = *size * 2.0f;
-    float bar_bg_y_size            = *size / 5.0f;
-    draw::Rectangle(*bar_x - 5.0f, *bar_y - 5.0f, bar_bg_x_size + 10.0f, bar_bg_y_size + 10.0f, background_color);
-    // Draw bar
-    rgba_t color_bar = colors::orange;
-    if (GetMaxWarpTicks() == warp_amount)
-        color_bar = colors::green;
-    color_bar.a = 100 / 255.0f;
-    draw::Rectangle(*bar_x, *bar_y, *size * 2.0f * charge_percent, *size / 5.0f, color_bar);
+    if (draw)
+    {
+        rgba_t color = colors::orange;
+        if (warp_amount == 0)
+            color = colors::FromRGBA8(128.0f, 128.0f, 128.0f, 255.0f);
+        else if (GetMaxWarpTicks() == warp_amount)
+            color = colors::green;
+        AddWarpString("Shiftable ticks: " + std::to_string(warp_amount), color);
+    }
+
+    if (draw_bar)
+    {
+        float charge_percent = (float) warp_amount / (float) GetMaxWarpTicks();
+        // Draw background
+        static rgba_t background_color = colors::FromRGBA8(96, 96, 96, 150);
+        float bar_bg_x_size            = *size * 2.0f;
+        float bar_bg_y_size            = *size / 5.0f;
+        draw::Rectangle(*bar_x - 5.0f, *bar_y - 5.0f, bar_bg_x_size + 10.0f, bar_bg_y_size + 10.0f, background_color);
+        // Draw bar
+        rgba_t color_bar = colors::orange;
+        if (GetMaxWarpTicks() == warp_amount)
+            color_bar = colors::green;
+        color_bar.a = 100 / 255.0f;
+        draw::Rectangle(*bar_x, *bar_y, *size * 2.0f * charge_percent, *size / 5.0f, color_bar);
+    }
+
+    DrawWarpStrings();
 }
 #endif
 
