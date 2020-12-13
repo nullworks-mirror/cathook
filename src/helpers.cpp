@@ -705,6 +705,22 @@ CachedEntity *getClosestEntity(Vector vec)
     return best_ent;
 }
 
+CachedEntity *getClosestNonlocalEntity(Vector vec)
+{
+    float distance         = FLT_MAX;
+    CachedEntity *best_ent = nullptr;
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_VALID(ent) && ent->m_IDX != g_pLocalPlayer->entity_idx && ent->m_vecDormantOrigin() && ent->m_bAlivePlayer() && ent->m_bEnemy() && vec.DistTo(ent->m_vecOrigin()) < distance)
+        {
+            distance = vec.DistTo(*ent->m_vecDormantOrigin());
+            best_ent = ent;
+        }
+    }
+    return best_ent;
+}
+
 void VectorTransform(const float *in1, const matrix3x4_t &in2, float *out)
 {
     out[0] = (in1[0] * in2[0][0] + in1[1] * in2[0][1] + in1[2] * in2[0][2]) + in2[0][3];

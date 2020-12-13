@@ -21,6 +21,7 @@ namespace hacks::tf2::warp
 static settings::Boolean enabled{ "warp.enabled", "false" };
 static settings::Boolean no_movement{ "warp.rapidfire.no-movement", "true" };
 static settings::Boolean rapidfire{ "warp.rapidfire", "false" };
+static settings::Int distance{ "warp.rapidfire.distance", "0" };
 static settings::Boolean rapidfire_zoom{ "warp.rapidfire.zoom", "true" };
 static settings::Boolean wait_full{ "warp.rapidfire.wait-full", "true" };
 static settings::Button rapidfire_key{ "warp.rapidfire.key", "<null>" };
@@ -205,6 +206,14 @@ bool shouldRapidfire()
     // Unrevved minigun cannot rapidfire
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun) && CE_INT(LOCAL_W, netvar.iWeaponState) != 3 && CE_INT(LOCAL_W, netvar.iWeaponState) != 2)
         return false;
+
+    // Check if enemies are close enough
+    if (distance)
+    {
+        auto closest = getClosestNonlocalEntity(LOCAL_E->m_vecOrigin());
+        if (!closest || closest->m_flDistance() > *distance)
+            return false;
+    }
 
     // We do not have the amount of ticks needed, don't try it
     if (warp_amount < TIME_TO_TICKS(getFireDelay()) && (TIME_TO_TICKS(getFireDelay()) < *maxusrcmdprocessticks - 1 || (wait_full && warp_amount != GetMaxWarpTicks())))

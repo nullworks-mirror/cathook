@@ -121,6 +121,7 @@ Vector getShootPos(Vector angle);
 Vector GetForwardVector(Vector origin, Vector viewangles, float distance, CachedEntity *punch_entity = nullptr);
 Vector GetForwardVector(float distance, CachedEntity *punch_entity = nullptr);
 CachedEntity *getClosestEntity(Vector vec);
+CachedEntity *getClosestNonlocalEntity(Vector vec);
 bool IsSentryBuster(CachedEntity *ent);
 std::unique_ptr<char[]> strfmt(const char *fmt, ...);
 // TODO move that to weaponid.h
@@ -218,7 +219,7 @@ template <typename T, typename... Targs> void format_internal(std::stringstream 
     stream << value;
     format_internal(stream, args...);
 }
-template <typename... Args> std::string format(const Args &... args)
+template <typename... Args> std::string format(const Args &...args)
 {
     std::stringstream stream;
     format_internal(stream, args...);
