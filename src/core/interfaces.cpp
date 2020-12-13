@@ -164,13 +164,13 @@ void CreateInterfaces()
 
     g_IPanel         = BruteforceInterface<vgui::IPanel>("VGUI_Panel", sharedobj::vgui2());
     g_pUniformStream = **(IUniformRandomStream ***) (gSignatures.GetVstdSignature("A3 ? ? ? ? C3 89 F6") + 0x1);
+    g_IToolFramework = BruteforceInterface<IToolFrameworkInternal>("VTOOLFRAMEWORKVERSION", sharedobj::engine());
 #if ENABLE_VISUALS
     g_IVDebugOverlay    = BruteforceInterface<IVDebugOverlay>("VDebugOverlay", sharedobj::engine());
     g_ISurface          = BruteforceInterface<vgui::ISurface>("VGUI_Surface", sharedobj::vguimatsurface());
     g_IStudioRender     = BruteforceInterface<IStudioRender>("VStudioRender", sharedobj::studiorender());
     g_IVRenderView      = BruteforceInterface<IVRenderView>("VEngineRenderView", sharedobj::engine());
     g_IMaterialSystemHL = (IMaterialSystem *) g_IMaterialSystem;
-    g_IToolFramework    = BruteforceInterface<IToolFrameworkInternal>("VTOOLFRAMEWORKVERSION", sharedobj::engine());
     IF_GAME(IsTF2())
     {
         g_pScreenSpaceEffects           = **(IScreenSpaceEffectManager ***) (gSignatures.GetClientSignature("8D 74 26 00 55 89 E5 57 56 53 83 EC 1C 8B 5D 08 8B 7D 0C 8B 75 10 ") + 0x1c3);
