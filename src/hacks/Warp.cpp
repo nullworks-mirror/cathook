@@ -14,17 +14,22 @@
 #include "DetourHook.hpp"
 #include "WeaponData.hpp"
 #include "MiscTemporary.hpp"
+#include "Think.hpp"
 
 namespace hacks::tf2::warp
 {
 static settings::Boolean enabled{ "warp.enabled", "false" };
 static settings::Boolean no_movement{ "warp.rapidfire.no-movement", "true" };
 static settings::Boolean rapidfire{ "warp.rapidfire", "false" };
+static settings::Int distance{ "warp.rapidfire.distance", "0" };
+static settings::Boolean rapidfire_zoom{ "warp.rapidfire.zoom", "true" };
 static settings::Boolean wait_full{ "warp.rapidfire.wait-full", "true" };
 static settings::Button rapidfire_key{ "warp.rapidfire.key", "<null>" };
 static settings::Int rapidfire_key_mode{ "warp.rapidfire.key-mode", "1" };
+static settings::Int rf_disable_on{ "warp.rapidfire.disable-on", "0" };
 static settings::Float speed{ "warp.speed", "23" };
 static settings::Boolean draw{ "warp.draw", "false" };
+static settings::Boolean draw_bar{ "warp.draw-bar", "false" };
 static settings::Button warp_key{ "warp.key", "<null>" };
 static settings::Button charge_key{ "warp.charge-key", "<null>" };
 static settings::Boolean charge_passively{ "warp.charge-passively", "true" };
@@ -42,13 +47,16 @@ static settings::Boolean warp_right{ "warp.on-hit.right", "true" };
 // Hidden control rvars for communtiy servers
 static settings::Int maxusrcmdprocessticks("warp.maxusrcmdprocessticks", "24");
 
-bool in_warp      = false;
-bool in_rapidfire = false;
+bool in_warp           = false;
+bool in_rapidfire      = false;
+bool in_rapidfire_zoom = false;
 // Should we choke the packet or not? (in rapidfire)
 bool choke_packet = false;
 // Were we warping last tick?
 // why is this needed at all, why do i have to write this janky bs
 bool was_in_warp = false;
+// Is this the first warp tick?
+bool first_warp_tick = false;
 
 // How many ticks we have to add to our CreateMove packet
 int ticks_to_add = 0;
@@ -60,6 +68,34 @@ void warpLogic();
 static settings::Int size{ "warp.bar-size", "100" };
 static settings::Int bar_x{ "warp.bar-x", "50" };
 static settings::Int bar_y{ "warp.bar-y", "200" };
+static settings::Int draw_string_x{ "warp.draw-info.x", "8" };
+static settings::Int draw_string_y{ "warp.draw-info.y", "800" };
+
+// Need our own Text drawing
+static std::array<std::string, 32> warp_strings;
+static size_t warp_strings_count{ 0 };
+static std::array<rgba_t, 32> warp_strings_colors{ colors::empty };
+
+void AddWarpString(const std::string &string, const rgba_t &color)
+{
+    warp_strings[warp_strings_count]        = string;
+    warp_strings_colors[warp_strings_count] = color;
+    ++warp_strings_count;
+}
+
+void DrawWarpStrings()
+{
+    float x = *draw_string_x;
+    float y = *draw_string_y;
+    for (size_t i = 0; i < warp_strings_count; ++i)
+    {
+        float sx, sy;
+        fonts::menu->stringSize(warp_strings[i], &sx, &sy);
+        draw::String(x, y, warp_strings_colors[i], warp_strings[i].c_str(), *fonts::center_screen);
+        y += fonts::center_screen->size + 1;
+    }
+    warp_strings_count = 0;
+}
 
 static bool should_charge       = false;
 static int warp_amount          = 0;
@@ -109,6 +145,39 @@ bool UpdateRFKey()
     return allow_key;
 }
 
+float getFireDelay()
+{
+    auto weapon_data = GetWeaponData(RAW_ENT(LOCAL_W));
+    return re::C_TFWeaponBase::ApplyFireDelay(RAW_ENT(LOCAL_W), weapon_data->m_flTimeFireDelay);
+}
+
+bool canInstaZoom()
+{
+    return in_rapidfire_zoom || (g_pLocalPlayer->holding_sniper_rifle && current_user_cmd->buttons & IN_ATTACK2 && !HasCondition<TFCond_Zoomed>(LOCAL_E) && CE_FLOAT(LOCAL_W, netvar.flNextSecondaryAttack) <= g_GlobalVars->curtime);
+}
+
+// This is needed in order to make zoom/unzoom smooth even with insta zoom
+static int ignore_ticks = 0;
+
+void handleSniper()
+{
+    // Prevent unzooming
+    if (in_rapidfire)
+    {
+        // Holding ready sniper rifle
+        if (canInstaZoom())
+        {
+            current_user_cmd->buttons &= ~IN_ATTACK2;
+            ignore_ticks = TIME_TO_TICKS(0.2f);
+        }
+    }
+    else if (ignore_ticks)
+    {
+        ignore_ticks--;
+        current_user_cmd->buttons &= ~IN_ATTACK2;
+    }
+}
+
 bool shouldRapidfire()
 {
     if (!rapidfire)
@@ -138,9 +207,16 @@ bool shouldRapidfire()
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFMinigun) && CE_INT(LOCAL_W, netvar.iWeaponState) != 3 && CE_INT(LOCAL_W, netvar.iWeaponState) != 2)
         return false;
 
+    // Check if enemies are close enough
+    if (distance)
+    {
+        auto closest = getClosestNonlocalEntity(LOCAL_E->m_vecOrigin());
+        if (!closest || closest->m_flDistance() > *distance)
+            return false;
+    }
+
     // We do not have the amount of ticks needed, don't try it
-    auto weapon_data = GetWeaponData(RAW_ENT(LOCAL_W));
-    if (warp_amount < TIME_TO_TICKS(weapon_data->m_flTimeFireDelay) && (TIME_TO_TICKS(weapon_data->m_flTimeFireDelay) < *maxusrcmdprocessticks - 1 || (wait_full && warp_amount != GetMaxWarpTicks())))
+    if (warp_amount < TIME_TO_TICKS(getFireDelay()) && (TIME_TO_TICKS(getFireDelay()) < *maxusrcmdprocessticks - 1 || (wait_full && warp_amount != GetMaxWarpTicks())))
         return false;
 
     // Mouse 1 is held, do it.
@@ -149,6 +225,33 @@ bool shouldRapidfire()
     // Unless we are on a flamethrower, where we only want m2.
     if (LOCAL_W->m_iClassID() == CL_CLASS(CTFFlameThrower))
         buttons_pressed = current_user_cmd && current_user_cmd->buttons & IN_ATTACK2;
+
+    if (g_pLocalPlayer->holding_sniper_rifle)
+    {
+        // Run if m2 is pressed and sniper rifle is ready
+        buttons_pressed = rapidfire_zoom && current_user_cmd && current_user_cmd->buttons & IN_ATTACK2 && canInstaZoom();
+        // Heatmaker is the only exception here, it can also run on m1
+        if (!buttons_pressed && HasCondition<TFCond_FocusBuff>(LOCAL_E))
+            buttons_pressed = current_user_cmd && current_user_cmd->buttons & IN_ATTACK;
+    }
+
+    switch (*rf_disable_on)
+    {
+    case 0: // Always on
+        return buttons_pressed;
+    case 1: // Disable on projectile
+        if (g_pLocalPlayer->weapon_mode == weapon_projectile)
+            return false;
+        break;
+    case 2: // Disable on melee
+        if (g_pLocalPlayer->weapon_mode == weapon_melee)
+            return false;
+        break;
+    case 3: // Disable on projectile and melee
+        if (g_pLocalPlayer->weapon_mode == weapon_projectile || g_pLocalPlayer->weapon_mode == weapon_melee)
+            return false;
+        break;
+    }
 
     return buttons_pressed;
 }
@@ -175,9 +278,17 @@ int GetWarpAmount(bool finalTick)
 {
     int max_extra_ticks = *maxusrcmdprocessticks - 1;
 
-    // Rapidfire ignores speed
+    // Rapidfire ignores speed, and we send 15 + 7, aka maximum new + backup commands
     if (in_rapidfire)
-        return max_extra_ticks;
+    {
+        // Warp right before the next shot
+        float shot_time = getFireDelay();
+        // This is to prevent Minigun/Pistol from only shooting once
+        if (TICKS_TO_TIME(22) / shot_time >= 2)
+            shot_time = TICKS_TO_TIME(23);
+        return std::min(22, TIME_TO_TICKS(shot_time) - 2);
+        // return 22;
+    }
     // No limit set
     if (!*maxusrcmdprocessticks)
         max_extra_ticks = INT_MAX;
@@ -214,6 +325,8 @@ void Warp(float accumulated_extra_samples, bool finalTick)
         return;
     }
 
+    PROF_SECTION(warp_profiler);
+
     int warp_ticks = warp_amount;
     if (warp_amount_override)
         warp_ticks = warp_amount_override;
@@ -230,6 +343,10 @@ void Warp(float accumulated_extra_samples, bool finalTick)
         int packets_sent = 1;
         for (int i = 0; i < calls; i++)
         {
+            if (!i)
+                first_warp_tick = true;
+            else
+                first_warp_tick = false;
             // Choke unless we sent too many already
             choke_packet = true;
 
@@ -239,6 +356,8 @@ void Warp(float accumulated_extra_samples, bool finalTick)
                 choke_packet = false;
                 packets_sent = -1;
             }
+            else
+                hooked_methods::UpdatePred();
 
             original(accumulated_extra_samples, finalTick);
             // Only decrease ticks for the final CL_Move tick
@@ -346,11 +465,6 @@ static bool was_overridden = false;
 static int ticks_in_revved     = 0;
 static bool replaced_last_tick = false;
 
-// Original Player origin and velocity, needed to not break because our engine pred.
-// We adjust it as the ticks go.
-static Vector original_origin;
-static Vector original_velocity;
-
 // Reset all the revv data
 void resetRevvstate()
 {
@@ -416,20 +530,17 @@ void CL_Move_hook(float accumulated_extra_samples, bool bFinalTick)
         if (shouldRapidfire())
         {
             in_rapidfire = true;
-            // Store original info
-            original_origin = LOCAL_E->m_vecOrigin();
-            velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), original_velocity);
-            // Zero out non z movement, it will just get messy else
-            original_velocity.x = 0.0f;
-            original_velocity.y = 0.0f;
+            if (canInstaZoom())
+                in_rapidfire_zoom = true;
         }
 
         Warp(accumulated_extra_samples, bFinalTick);
         if (warp_amount < GetMaxWarpTicks())
             charged = false;
-        in_warp      = false;
-        in_rapidfire = false;
-        was_in_warp  = true;
+        in_warp           = false;
+        in_rapidfire      = false;
+        in_rapidfire_zoom = false;
+        was_in_warp       = true;
     }
 }
 
@@ -449,24 +560,28 @@ void CreateMoveEarly()
     }
 }
 
-// Fix the player origin after engine prediction, as it tries to predict the local
-// player linearly and just breaks doubletap when falling/moving
-void CreateMoveFixPrediction()
-{
-    if (hacks::tf2::warp::in_rapidfire && current_user_cmd)
-    {
-        // Run very simple gravity calculations to ensure we do not miss
-        if (no_movement)
-        {
-            static ConVar *sv_gravity = g_ICvar->FindVar("sv_gravity");
-            Vector gravity{ 0.0f, 0.0f, -sv_gravity->GetFloat() };
+static float original_curtime = 0.0f;
 
-            auto mins = RAW_ENT(LOCAL_E)->GetCollideable()->OBBMins();
-            auto maxs = RAW_ENT(LOCAL_E)->GetCollideable()->OBBMaxs();
-            std::pair<Vector, Vector> minmax{ mins, maxs };
-            PredictStep(original_origin, original_velocity, gravity, &minmax);
-            // Restore from the engine prediction
-            const_cast<Vector &>(RAW_ENT(LOCAL_E)->GetAbsOrigin()) = original_origin;
+// Run before prediction so we can do Faststop logic
+void CreateMovePrePredict()
+{
+    // Attempt to stop fast in place to make movement smoother
+    if (in_rapidfire && no_movement)
+        FastStop();
+    if (in_rapidfire_zoom)
+    {
+        float adjusted_curtime = g_GlobalVars->curtime;
+        // Original curtime we need to use while in here
+        if (first_warp_tick)
+            original_curtime = g_GlobalVars->curtime;
+
+        // Update the data
+        g_pLocalPlayer->bZoomed     = true;
+        g_pLocalPlayer->flZoomBegin = adjusted_curtime;
+        // Do not exceed headshot time, we can only hs next tick
+        if (adjusted_curtime - original_curtime > 0.2f)
+        {
+            g_pLocalPlayer->flZoomBegin = original_curtime - 0.2f - TICKS_TO_TIME(1);
         }
     }
 }
@@ -490,10 +605,6 @@ void CreateMove()
 
         was_in_warp = false;
     }
-
-    // Attempt to stop fast in place to make movement smoother
-    if (in_rapidfire && no_movement)
-        FastStop();
 }
 
 // Does all the logic related to charging and mode/settings specific actions like peek warp
@@ -507,6 +618,8 @@ void warpLogic()
 
     // Handle minigun in rapidfire
     handleMinigun();
+    // Handle sniper in rapidfire
+    handleSniper();
 
     // Charge logic
     if (!shouldWarp(false))
@@ -859,25 +972,44 @@ void SendNetMessage(INetMessage &msg)
 #if ENABLE_VISUALS
 void Draw()
 {
-    if (!enabled || !draw)
+    if (!enabled)
+        return;
+    if (!draw && !draw_bar)
         return;
     if (!g_IEngine->IsInGame())
         return;
     if (CE_BAD(LOCAL_E))
         return;
+    if (!LOCAL_E->m_bAlivePlayer())
+        return;
 
-    float charge_percent = (float) warp_amount / (float) GetMaxWarpTicks();
-    // Draw background
-    static rgba_t background_color = colors::FromRGBA8(96, 96, 96, 150);
-    float bar_bg_x_size            = *size * 2.0f;
-    float bar_bg_y_size            = *size / 5.0f;
-    draw::Rectangle(*bar_x - 5.0f, *bar_y - 5.0f, bar_bg_x_size + 10.0f, bar_bg_y_size + 10.0f, background_color);
-    // Draw bar
-    rgba_t color_bar = colors::orange;
-    if (GetMaxWarpTicks() == warp_amount)
-        color_bar = colors::green;
-    color_bar.a = 100 / 255.0f;
-    draw::Rectangle(*bar_x, *bar_y, *size * 2.0f * charge_percent, *size / 5.0f, color_bar);
+    if (draw)
+    {
+        rgba_t color = colors::orange;
+        if (warp_amount == 0)
+            color = colors::FromRGBA8(128.0f, 128.0f, 128.0f, 255.0f);
+        else if (GetMaxWarpTicks() == warp_amount)
+            color = colors::green;
+        AddWarpString("Shiftable ticks: " + std::to_string(warp_amount), color);
+    }
+
+    if (draw_bar)
+    {
+        float charge_percent = (float) warp_amount / (float) GetMaxWarpTicks();
+        // Draw background
+        static rgba_t background_color = colors::FromRGBA8(96, 96, 96, 150);
+        float bar_bg_x_size            = *size * 2.0f;
+        float bar_bg_y_size            = *size / 5.0f;
+        draw::Rectangle(*bar_x - 5.0f, *bar_y - 5.0f, bar_bg_x_size + 10.0f, bar_bg_y_size + 10.0f, background_color);
+        // Draw bar
+        rgba_t color_bar = colors::orange;
+        if (GetMaxWarpTicks() == warp_amount)
+            color_bar = colors::green;
+        color_bar.a = 100 / 255.0f;
+        draw::Rectangle(*bar_x, *bar_y, *size * 2.0f * charge_percent, *size / 5.0f, color_bar);
+    }
+
+    DrawWarpStrings();
 }
 #endif
 
@@ -948,8 +1080,9 @@ static InitRoutine init([]() {
     cl_move_detour.Init(cl_move_addr, (void *) CL_Move_hook);
 
     EC::Register(EC::LevelShutdown, LevelShutdown, "warp_levelshutdown");
-    EC::Register(EC::CreateMove, CreateMoveFixPrediction, "warp_createmove_fixpred", EC::very_early);
     EC::Register(EC::CreateMove, CreateMove, "warp_createmove", EC::very_late);
+    EC::Register(EC::CreateMoveWarp, CreateMove, "warp_createmovew", EC::very_late);
+    EC::Register(EC::CreateMove_NoEnginePred, CreateMovePrePredict, "warp_prepredict");
     EC::Register(EC::CreateMoveEarly, CreateMoveEarly, "warp_createmove_early", EC::very_early);
     g_IEventManager2->AddListener(&listener, "player_hurt", false);
     EC::Register(

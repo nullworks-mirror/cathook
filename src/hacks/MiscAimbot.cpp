@@ -589,6 +589,7 @@ float CAM_CapYaw_Hook(IInput *this_, float fVal)
 #define foffset(p, i) ((unsigned char *) &p)[i]
 static InitRoutine init([]() {
     EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::average);
+    EC::Register(EC::CreateMoveWarp, CreateMove, "cmw_miscaimbot", EC::average);
 
     static auto signature = gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 E8 ? ? ? ? 85 C0 74 ? 8D 98 ? ? ? ? C7 44 24 ? 11 00 00 00");
 

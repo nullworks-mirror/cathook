@@ -1395,6 +1395,7 @@ ObjectDestroyListener &listener()
 static InitRoutine runinit([]() {
     g_IEventManager2->AddListener(&listener(), "object_destroyed", false);
     EC::Register(EC::CreateMove, CreateMove, "navbot", EC::early);
+    EC::Register(EC::CreateMoveWarp, CreateMove, "navbot_w", EC::early);
     EC::Register(
         EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener()); }, "navbot_shutdown");
 });

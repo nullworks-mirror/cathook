@@ -1219,7 +1219,7 @@ static void cm()
 }
 
 static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, cm, "cm_walkbot", EC::average);
+    EC::Register(EC::CreateMove_NoEnginePred, cm, "cm_walkbot", EC::average);
     EC::Register(EC::LevelInit, OnLevelInit, "init_walkbot", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, Draw, "draw_walkbot", EC::average);

@@ -26,6 +26,8 @@ public:
 
     // Start of CM
     void Update();
+    // After prediction
+    void UpdateEye();
     // End of CM
     void UpdateEnd();
     int team;

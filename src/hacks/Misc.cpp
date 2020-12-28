@@ -960,6 +960,7 @@ static InitRoutine init([]() {
     teammatesPushaway = g_ICvar->FindVar("tf_avoidteammates_pushaway");
     EC::Register(EC::Shutdown, Shutdown, "draw_local_player", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "cm_misc_hacks", EC::average);
+    EC::Register(EC::CreateMoveWarp, CreateMove, "cmw_misc_hacks", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, Draw, "draw_misc_hacks", EC::average);
 #if !ENFORCE_STREAM_SAFETY

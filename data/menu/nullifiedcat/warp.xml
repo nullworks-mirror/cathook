@@ -5,7 +5,10 @@
             <AutoVariable width="fill" target="warp.speed" label="Warp speed" tooltip="The discharge speed (0.5 = +50%, 2 = +200%. +2300% is the maximum possible)."/>
             <AutoVariable width="fill" target="warp.key" label="Warp key" tooltip="Pressing this key will use all stored ticks to accelerate you."/>
             <AutoVariable width="fill" target="warp.charge-key" label="Charge key" tooltip="Hold down this key to charge warp."/>
-            <AutoVariable width="fill" target="warp.draw" label="Draw warp" tooltip="Draws a bar indicating your warp readiness."/>
+            <AutoVariable width="fill" target="warp.draw" label="Draw warp text"/>
+            <AutoVariable width="fill" target="warp.draw-info.x" label="Text x position"/>
+            <AutoVariable width="fill" target="warp.draw-info.y" label="Text y position"/>
+            <AutoVariable width="fill" target="warp.draw-bar" label="Draw warp bar" tooltip="Draws a bar indicating your warp readiness."/>
             <AutoVariable width="fill" target="warp.bar-size" label="Bar size"/>
             <AutoVariable width="fill" target="warp.bar-x" label="X position"/>
             <AutoVariable width="fill" target="warp.bar-y" label="Y position"/>
@@ -25,6 +28,8 @@
     <Box padding="12 6 6 6" width="content" height="content" name="Rapidfire" x="210">
         <List width="185">
             <AutoVariable width="fill" target="warp.rapidfire" label="Enable Rapidfire" tooltip="Allows you to shoot multiple shots at once or reduce time between shots."/>
+            <AutoVariable width="fill" target="warp.rapidfire.distance" label="Minimum distance" tooltip="How close an enemy has to be to be able to rapidfire. 0 is off."/>
+            <AutoVariable width="fill" target="warp.rapidfire.zoom" label="Enable Rapid zoom" tooltip="Allows you to instantly zoom in."/>
             <AutoVariable width="fill" target="warp.rapidfire.no-movement" label="Prevent movement in rapidfire" tooltip="Attempt to not move when Rapidfiring."/>
             <AutoVariable width="fill" target="warp.rapidfire.key" label="Rapidfire key" tooltip="Optional. If set you can use this key to control when to rapidfire."/>
             <LabeledObject width="fill" label="Rapidfire key mode" tooltip="Controls what the rapidfire key does.">
@@ -33,6 +38,14 @@
                     <Option name="Pressed" value="1"/>
                     <Option name="Not Pressed" value="2"/>
                     <Option name="Toggle" value="3"/>
+                </Select>
+            </LabeledObject>
+            <LabeledObject width="fill" label="Disable Rapidfire on">
+                <Select target="warp.rapidfire.disable-on">
+                    <Option name="None" value="0"/>
+                    <Option name="Projectile" value="1"/>
+                    <Option name="Melee" value="2"/>
+                    <Option name="Projectile + Melee" value="3"/>
                 </Select>
             </LabeledObject>
         </List>

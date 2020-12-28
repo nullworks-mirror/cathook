@@ -627,5 +627,8 @@ void Draw()
 {
 }
 
-static InitRoutine EC([]() { EC::Register(EC::CreateMove, CreateMove, "triggerbot", EC::average); });
+static InitRoutine EC([]() {
+    EC::Register(EC::CreateMove, CreateMove, "triggerbot", EC::average);
+    EC::Register(EC::CreateMoveWarp, CreateMove, "triggerbot_w", EC::average);
+});
 } // namespace hacks::shared::triggerbot

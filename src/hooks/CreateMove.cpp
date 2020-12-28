@@ -23,7 +23,7 @@
 static settings::Boolean minigun_jump{ "misc.minigun-jump-tf2c", "false" };
 static settings::Boolean roll_speedhack{ "misc.roll-speedhack", "false" };
 static settings::Boolean forward_speedhack{ "misc.roll-speedhack.forward", "false" };
-static settings::Boolean engine_pred{ "misc.engine-prediction", "true" };
+settings::Boolean engine_pred{ "misc.engine-prediction", "true" };
 static settings::Boolean debug_projectiles{ "debug.projectiles", "false" };
 static settings::Int fullauto{ "misc.full-auto", "0" };
 static settings::Boolean fuckmode{ "misc.fuckmode", "false" };
@@ -31,6 +31,7 @@ static settings::Boolean fuckmode{ "misc.fuckmode", "false" };
 class CMoveData;
 namespace engine_prediction
 {
+static Vector original_origin;
 
 void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 {
@@ -51,6 +52,8 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
     // Backup
     float frameTime = g_GlobalVars->frametime;
     float curTime   = g_GlobalVars->curtime;
+    int tickcount   = g_GlobalVars->tickcount;
+    original_origin = ent->GetAbsOrigin();
 
     CUserCmd defaultCmd{};
     if (ucmd == nullptr)
@@ -79,10 +82,18 @@ void RunEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
 
     g_GlobalVars->frametime = frameTime;
     g_GlobalVars->curtime   = curTime;
+    g_GlobalVars->tickcount = tickcount;
 
     // Adjust tickbase
     NET_INT(ent, netvar.nTickBase)++;
+
     return;
+}
+// Restore Origin
+void FinishEnginePrediction(IClientEntity *ent, CUserCmd *ucmd)
+{
+    const_cast<Vector &>(ent->GetAbsOrigin()) = original_origin;
+    original_origin.Invalidate();
 }
 } // namespace engine_prediction
 
@@ -222,6 +233,8 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     }
 
     //	PROF_BEGIN();
+    // Do not update if in warp, since the entities will stay identical either way
+    if (!hacks::tf2::warp::in_warp)
     {
         PROF_SECTION(EntityCache);
         entity_cache::Update();
@@ -317,10 +330,17 @@ DEFINE_HOOKED_METHOD(CreateMove, bool, void *this_, float input_sample_time, CUs
     {
         PROF_SECTION(CM_WRAPPER);
         EC::run(EC::CreateMove_NoEnginePred);
-        if (engine_pred)
-            engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
 
-        EC::run(EC::CreateMove);
+        if (engine_pred)
+        {
+            engine_prediction::RunEnginePrediction(RAW_ENT(LOCAL_E), current_user_cmd);
+            g_pLocalPlayer->UpdateEye();
+        }
+
+        if (hacks::tf2::warp::in_warp)
+            EC::run(EC::CreateMoveWarp);
+        else
+            EC::run(EC::CreateMove);
     }
     if (time_replaced)
         g_GlobalVars->curtime = curtime_old;
@@ -464,6 +484,12 @@ DEFINE_HOOKED_METHOD(CreateMoveInput, void, IInput *this_, int sequence_nr, floa
     // Run EC
     EC::run(EC::CreateMoveLate);
 
+    if (CE_GOOD(LOCAL_E))
+    {
+        // Restore prediction
+        if (engine_prediction::original_origin.IsValid())
+            engine_prediction::FinishEnginePrediction(RAW_ENT(LOCAL_E), current_late_user_cmd);
+    }
     // Write the usercmd
     WriteCmd(this_, current_late_user_cmd, sequence_nr);
 }

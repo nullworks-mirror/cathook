@@ -774,7 +774,7 @@ void rvarCallback(settings::VariableBase<int> &var, int after)
 }
 
 static InitRoutine runinit([]() {
-    EC::Register(EC::CreateMove, cm, "cm_followbot", EC::average);
+    EC::Register(EC::CreateMove_NoEnginePred, cm, "cm_followbot", EC::average);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, draw, "draw_followbot", EC::average);
 #endif

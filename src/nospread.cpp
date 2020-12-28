@@ -845,6 +845,41 @@ void FX_FireBullets_hook(IClientEntity *weapon, int player, Vector *origin, Vect
 }*/
 
 static Timer update_nospread_timer{};
+void CreateMove2()
+{
+    if (bullet)
+    {
+        static auto sv_usercmd_custom_random_seed = g_ICvar->FindVar("sv_usercmd_custom_random_seed");
+        if (!sv_usercmd_custom_random_seed)
+            sv_usercmd_custom_random_seed = g_ICvar->FindVar("sv_usercmd_custom_random_seed");
+
+        // Server owner decided it would be a great idea to give the user control over the random seed
+        else if (!sv_usercmd_custom_random_seed->GetBool())
+        {
+            auto seed        = MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF;
+            prediction_seed  = *reinterpret_cast<float *>(&seed);
+            use_usercmd_seed = true;
+        }
+        // Normal server
+        else
+            use_usercmd_seed = false;
+
+        // Synced, mark as such to other modules
+        if (no_spread_synced == SYNCED)
+            is_syncing = false;
+        // Not synced currently, try to sync
+        if (no_spread_synced == NOT_SYNCED && !bad_mantissa)
+        {
+            is_syncing         = true;
+            should_update_time = true;
+            update_nospread_timer.update();
+        }
+        // Else if mantissa bad, update every 10 mins
+        else if (no_spread_synced == NOT_SYNCED && update_nospread_timer.test_and_set(10 * 60 * 1000))
+            no_spread_synced = CORRECTING;
+    }
+}
+
 static InitRoutine init_bulletnospread([]() {
     // Get our detour hooks running
     static auto writeusercmd_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 2C 8B 45 ? 8B 7D ? 8B 5D ? 89 45 ? 8B 40");
@@ -855,42 +890,8 @@ static InitRoutine init_bulletnospread([]() {
     net_sendpacket_detour.Init(net_sendpacket_addr, (void *) NET_SendPacket_hook);*/
 
     // Register Event callbacks
-    EC::Register(
-        EC::CreateMove,
-        []() {
-            if (bullet)
-            {
-                static auto sv_usercmd_custom_random_seed = g_ICvar->FindVar("sv_usercmd_custom_random_seed");
-                if (!sv_usercmd_custom_random_seed)
-                    sv_usercmd_custom_random_seed = g_ICvar->FindVar("sv_usercmd_custom_random_seed");
-
-                // Server owner decided it would be a great idea to give the user control over the random seed
-                else if (!sv_usercmd_custom_random_seed->GetBool())
-                {
-                    auto seed        = MD5_PseudoRandom(current_user_cmd->command_number) & 0x7FFFFFFF;
-                    prediction_seed  = *reinterpret_cast<float *>(&seed);
-                    use_usercmd_seed = true;
-                }
-                // Normal server
-                else
-                    use_usercmd_seed = false;
-
-                // Synced, mark as such to other modules
-                if (no_spread_synced == SYNCED)
-                    is_syncing = false;
-                // Not synced currently, try to sync
-                if (no_spread_synced == NOT_SYNCED && !bad_mantissa)
-                {
-                    is_syncing         = true;
-                    should_update_time = true;
-                    update_nospread_timer.update();
-                }
-                // Else if mantissa bad, update every 10 mins
-                else if (no_spread_synced == NOT_SYNCED && update_nospread_timer.test_and_set(10 * 60 * 1000))
-                    no_spread_synced = CORRECTING;
-            }
-        },
-        "nospread_createmove2");
+    EC::Register(EC::CreateMove, CreateMove2, "nospread_createmove2");
+    EC::Register(EC::CreateMoveWarp, CreateMove2, "nospread_createmove2w");
 #if ENABLE_VISUALS
     EC::Register(
         EC::Draw,

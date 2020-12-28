@@ -17,6 +17,7 @@ class ISurface;
 class IPanel;
 } // namespace vgui
 
+class IToolFrameworkInternal;
 class ISteamClient;
 class ISteamFriends;
 class IVEngineClient013;
@@ -95,6 +96,7 @@ extern IUniformRandomStream *g_pUniformStream;
 extern int *g_PredictionRandomSeed;
 extern IFileSystem *g_IFileSystem;
 extern IMDLCache *g_IMDLCache;
+extern IToolFrameworkInternal *g_IToolFramework;
 
 void CreateInterfaces();
 void CreateEarlyInterfaces();

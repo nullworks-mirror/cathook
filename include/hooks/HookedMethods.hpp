@@ -94,6 +94,8 @@ DECLARE_HOOKED_METHOD(EmitSound2, void, void *, IRecipientFilter &, int, int, co
 DECLARE_HOOKED_METHOD(EmitSound3, void, void *, IRecipientFilter &, int, int, int, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 // g_IPrediction
 DECLARE_HOOKED_METHOD(RunCommand, void, IPrediction *, IClientEntity *, CUserCmd *, IMoveHelper *);
+// g_IToolFramework
+DECLARE_HOOKED_METHOD(Think, void, IToolFrameworkInternal *, bool);
 } // namespace hooked_methods
 
 // TODO

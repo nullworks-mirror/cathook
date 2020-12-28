@@ -228,4 +228,8 @@ struct offsets
     {
         return PlatformOffset(0x2fb8, undefined, undefined);
     }
+    static constexpr uint32_t Think()
+    {
+        return PlatformOffset(27, undefined, undefined);
+    }
 };
