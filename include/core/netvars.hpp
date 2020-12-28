@@ -83,6 +83,7 @@ public:
     offset_t m_bPlacing;
     offset_t m_bBuilding;
     offset_t m_bPlasmaDisable;
+    offset_t m_bCarryDeploy;
 
     // teleporter
     offset_t m_iTeleState; // teleport state [1 = idle, 2 = active, 3 = teleporting, 4 = charging]
@@ -204,6 +205,19 @@ public:
     offset_t m_iHealing_Resource;
     offset_t m_iHealingAssist_Resource;
     offset_t m_iPlayerLevel_Resource;
+
+    offset_t m_nFlagType;
+    offset_t m_nFlagStatus;
+
+    offset_t m_bTeamCanCap;
+    offset_t m_iNumControlPoints;
+    offset_t m_vCPPositions;
+    offset_t m_iOwningTeam;
+    offset_t m_bCPLocked;
+    offset_t m_bPlayingMiniRounds;
+    offset_t m_bInMiniRound;
+    offset_t m_iPreviousPoints;
+    offset_t m_iBaseControlPoints;
 
     offset_t m_iPlayerIndex;
     offset_t m_hTargetPlayer;

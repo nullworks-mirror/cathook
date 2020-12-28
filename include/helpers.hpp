@@ -202,7 +202,7 @@ float GetFov(Vector ang, Vector src, Vector dst);
 void ReplaceString(std::string &input, const std::string &what, const std::string &with_what);
 void ReplaceSpecials(std::string &input);
 
-std::pair<float, float> ComputeMove(const Vector &a, const Vector &b);
+Vector ComputeMove(const Vector &a, const Vector &b);
 std::pair<float, float> ComputeMovePrecise(const Vector &a, const Vector &b);
 void WalkTo(const Vector &vector);
 

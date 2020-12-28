@@ -223,6 +223,7 @@ static void doAutoZoom(bool target_found)
 
 // Current Entity
 CachedEntity *target_last = 0;
+bool aimed_this_tick      = false;
 
 // If slow aimbot allows autoshoot
 bool slow_can_shoot = false;
@@ -242,6 +243,8 @@ static void CreateMove()
 
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         enable = false;
+
+    aimed_this_tick = false;
 
     if (!enable)
     {
@@ -989,6 +992,7 @@ void Aim(CachedEntity *entity)
         if (data)
             hacks::tf2::backtrack::SetBacktrackData(entity, *data);
     }
+    aimed_this_tick = true;
     // Finish function
     return;
 }
@@ -1520,6 +1524,12 @@ float EffectiveTargetingRange()
         return 512.0f; // Dragons Fury is fast but short range
 
     return (float) max_range;
+}
+
+// Used mostly by navbot to not accidentally look at path when aiming
+bool isAiming()
+{
+    return aimed_this_tick;
 }
 
 // A function used by gui elements to determine the current target

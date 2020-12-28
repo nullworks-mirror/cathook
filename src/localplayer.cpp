@@ -88,14 +88,23 @@ void LocalPlayer::Update()
     holding_sniper_rifle     = false;
     holding_sapper           = false;
     weapon_melee_damage_tick = false;
+    bRevving                 = false;
+    bRevved                  = false;
     wep                      = weapon();
     if (CE_GOOD(wep))
     {
         weapon_mode = GetWeaponModeloc();
         if (wep->m_iClassID() == CL_CLASS(CTFSniperRifle) || wep->m_iClassID() == CL_CLASS(CTFSniperRifleDecap))
             holding_sniper_rifle = true;
-        if (wep->m_iClassID() == CL_CLASS(CTFWeaponBuilder) || wep->m_iClassID() == CL_CLASS(CTFWeaponSapper))
+        else if (wep->m_iClassID() == CL_CLASS(CTFWeaponBuilder) || wep->m_iClassID() == CL_CLASS(CTFWeaponSapper))
             holding_sapper = true;
+        else if (wep->m_iClassID() == CL_CLASS(CTFMinigun))
+        {
+            if (CE_INT(LOCAL_W, netvar.iWeaponState) == 2 || CE_INT(LOCAL_W, netvar.iWeaponState) == 1)
+                bRevving = true;
+            else if (CE_INT(LOCAL_W, netvar.iWeaponState) == 3)
+                bRevved = true;
+        }
         // Detect when a melee hit will result in damage, useful for aimbot and antiaim
         if (CE_FLOAT(wep, netvar.flNextPrimaryAttack) > g_GlobalVars->curtime && weapon_mode == weapon_melee)
         {

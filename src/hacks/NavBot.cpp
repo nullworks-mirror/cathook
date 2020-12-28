@@ -1,1075 +1,83 @@
-#include "common.hpp"
+#include "Settings.hpp"
+#include "init.hpp"
+#include "HookTools.hpp"
+#include "interfaces.hpp"
 #include "navparser.hpp"
-#include "NavBot.hpp"
+#include "playerresource.h"
+#include "localplayer.hpp"
+#include "sdk.hpp"
+#include "entitycache.hpp"
+#include "CaptureLogic.hpp"
 #include "PlayerTools.hpp"
 #include "Aimbot.hpp"
-#include "Misc.hpp"
-#include "teamroundtimer.hpp"
-#include "MiscAimbot.hpp"
+#include "navparser.hpp"
 
 namespace hacks::tf2::NavBot
 {
-// -Rvars-
 static settings::Boolean enabled("navbot.enabled", "false");
+static settings::Boolean search_health("navbot.search-health", "true");
+static settings::Boolean search_ammo("navbot.search-ammo", "true");
 static settings::Boolean stay_near("navbot.stay-near", "true");
-static settings::Boolean heavy_mode("navbot.other-mode", "false");
-static settings::Boolean spy_mode("navbot.spy-mode", "false");
-static settings::Boolean engineer_mode("navbot.engineer-mode", "false");
-static settings::Boolean get_health("navbot.get-health-and-ammo", "true");
-static settings::Float jump_distance("navbot.autojump.trigger-distance", "300");
+static settings::Boolean capture_objectives("navbot.capture-objectives", "true");
+static settings::Boolean snipe_sentries("navbot.snipe-sentries", "true");
+static settings::Boolean snipe_sentries_shortrange("navbot.snipe-sentries.shortrange", "false");
+static settings::Boolean escape_danger("navbot.escape-danger", "true");
+static settings::Boolean escape_danger_ctf_cap("navbot.escape-danger.ctf-cap", "false");
+static settings::Boolean enable_slight_danger_when_capping("navbot.escape-danger.slight-danger.capping", "false");
 static settings::Boolean autojump("navbot.autojump.enabled", "false");
 static settings::Boolean primary_only("navbot.primary-only", "true");
-static settings::Int spy_ignore_time("navbot.spy-ignore-time", "5000");
+static settings::Float jump_distance("navbot.autojump.trigger-distance", "300");
+static settings::Int blacklist_delay("navbot.proximity-blacklist.delay", "500");
+static settings::Boolean blacklist_dormat("navbot.proximity-blacklist.dormant", "false");
+static settings::Int blacklist_delay_dormat("navbot.proximity-blacklist.delay-dormant", "1000");
+static settings::Int blacklist_slightdanger_limit("navbot.proximity-blacklist.slight-danger.amount", "2");
+#if ENABLE_VISUALS
+static settings::Boolean draw_danger("navbot.draw-danger", "false");
+#endif
 
-// -Forward declarations-
-bool init(bool first_cm);
-static bool navToSniperSpot();
-static bool navToBuildingSpot();
-static bool stayNear();
-static bool stayNearEngineer();
-static bool getDispenserHealthAndAmmo(int metal = -1);
-static bool getHealthAndAmmo(int metal = -1);
-static void autoJump();
-static void updateSlot();
-static void update_building_spots();
-static bool engineerLogic();
-static std::pair<CachedEntity *, float> getNearestPlayerDistance(bool vischeck = true);
-using task::current_engineer_task;
-using task::current_task;
+// Allow for custom danger configs, mainly for debugging purposes
+static settings::Boolean danger_config_custom("navbot.danger-config.enabled", "false");
+static settings::Boolean danger_config_custom_prefer_far("navbot.danger-config.perfer_far", "true");
+static settings::Float danger_config_custom_min_full_danger("navbot.danger-config.min_full_danger", "300");
+static settings::Float danger_config_custom_min_slight_danger("navbot.danger-config.min_slight_danger", "500");
+static settings::Float danger_config_custom_max_slight_danger("navbot.danger-config.max_slight_danger", "3000");
 
-// -Variables-
-static std::vector<std::pair<CNavArea *, Vector>> sniper_spots;
-static std::vector<std::pair<CNavArea *, Vector>> building_spots;
-static std::vector<CNavArea *> blacklisted_build_spots;
-// Our Buildings. We need this so we can remove them on object_destroyed.
-static std::vector<CachedEntity *> local_buildings;
-// Needed for blacklisting
-static CNavArea *current_build_area;
-// How long should the bot wait until pathing again?
-static Timer wait_until_path{};
-// Engineer version of above
-static Timer wait_until_path_engineer{};
-// Time before following target cloaked spy again
-static std::array<Timer, PLAYER_ARRAY_SIZE> spy_cloak{};
-// Don't spam spy path thanks
-static Timer spy_path{};
-// Big wait between updating Engineer building spots
-static Timer engineer_update{};
-// Recheck Building Area
-static Timer engineer_recheck{};
-// Timer for resetting Build attempts
-static Timer build_timer{};
-// Timer for wait between rotation and checking if we can place
-static Timer rotation_timer{};
-// Uses to check how long until we should resend the "build" command
-static Timer build_command_timer{};
-// Dispenser Nav cooldown
-static Timer dispenser_nav_timer{};
-// Last Yaw used for building
-static float build_current_rotation = -180.0f;
-// How many times have we tried to place?
-static int build_attempts = 0;
-// Enum for Building types
-enum Building
+// Controls the bot parameters like distance from enemy
+struct bot_class_config
 {
-    None      = -1,
-    Dispenser = 0,
-    TP_Entrace,
-    Sentry,
-    TP_Exit
+    float min_full_danger;
+    float min_slight_danger;
+    float max;
+    bool prefer_far;
 };
 
-// Successfully built? (Unknown == Bot is still trying to build and isn't sure if it will work or not yet)
-enum success_build
+constexpr bot_class_config CONFIG_SHORT_RANGE = { 140.0f, 400.0f, 600.0f, false };
+constexpr bot_class_config CONFIG_MID_RANGE   = { 200.0f, 500.0f, 3000.0f, true };
+constexpr bot_class_config CONFIG_LONG_RANGE  = { 300.0f, 500.0f, 4000.0f, true };
+bot_class_config selected_config              = CONFIG_MID_RANGE;
+
+static Timer health_cooldown{};
+static Timer ammo_cooldown{};
+// Should we search health at all?
+bool shouldSearchHealth(bool low_priority = false)
 {
-    Failure = 0,
-    Unknown,
-    Success
-};
-
-// What is the bot currently doing
-namespace task
-{
-Task current_task                   = task::none;
-engineer_task current_engineer_task = engineer_task::nothing;
-} // namespace task
-
-constexpr bot_class_config DIST_SPY{ 10.0f, 50.0f, 1000.0f };
-constexpr bot_class_config DIST_OTHER{ 100.0f, 200.0f, 300.0f };
-constexpr bot_class_config DIST_SNIPER{ 1000.0f, 1500.0f, 3000.0f };
-constexpr bot_class_config DIST_ENGINEER{ 600.0f, 1000.0f, 2500.0f };
-
-// Gunslinger Engineers really don't care at all
-constexpr bot_class_config DIST_GUNSLINGER_ENGINEER{ 50.0f, 200.0f, 900.0f };
-
-inline bool HasGunslinger(CachedEntity *ent)
-{
-    return HasWeapon(ent, 142);
-}
-static void CreateMove()
-{
-    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || !LOCAL_E->m_bAlivePlayer())
-        return;
-    if (!init(false))
-        return;
-    // blocking actions implement their own functions and shouldn't be interrupted by anything else
-    bool blocking = std::find(task::blocking_tasks.begin(), task::blocking_tasks.end(), task::current_task.id) != task::blocking_tasks.end();
-
-    if (!nav::ReadyForCommands || blocking)
-        wait_until_path.update();
-    else
-        current_task = task::none;
-    // Check if we should path at all
-    if (!blocking || task::current_task == task::engineer)
-    {
-        round_states round_state = g_pTeamRoundTimer->GetRoundState();
-        // Still in setuptime, if on fitting team, then do not path yet
-        if (round_state == RT_STATE_SETUP && g_pLocalPlayer->team == TEAM_BLU)
-        {
-            // Clear instructions
-            if (!nav::ReadyForCommands)
-                nav::clearInstructions();
-            return;
-        }
-    }
-
-    if (autojump)
-        autoJump();
-    if (primary_only)
-        updateSlot();
-    if (engineer_mode)
-    {
-        if (CE_GOOD(LOCAL_E))
-        {
-            for (int i = g_IEngine->GetMaxClients() + 1; i < MAX_ENTITIES; i++)
-            {
-                CachedEntity *ent = ENTITY(i);
-                if (!ent || CE_BAD(ent) || ent->m_bEnemy() || !ent->m_bAlivePlayer())
-                    continue;
-                if (HandleToIDX(CE_INT(ent, netvar.m_hBuilder)) != LOCAL_E->m_IDX)
-                    continue;
-                if (std::find(local_buildings.begin(), local_buildings.end(), ent) == local_buildings.end())
-                    local_buildings.push_back(ent);
-            }
-            update_building_spots();
-        }
-    }
-
-    if (get_health)
-    {
-        int metal = -1;
-        if (engineer_mode && g_pLocalPlayer->clazz == tf_engineer)
-            metal = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
-        if ((dispenser_nav_timer.test_and_set(1000) && getDispenserHealthAndAmmo(metal)))
-            return;
-        if (getHealthAndAmmo(metal))
-            return;
-    }
-
-    // Engineer stuff
-    if (engineer_mode && g_pLocalPlayer->clazz == tf_engineer)
-    {
-        if (engineerLogic())
-            return;
-    }
-    // Reset Engi task stuff if not engineer
-    else if (!engineer_mode && task::current_task == task::engineer)
-    {
-        task::current_task          = task::none;
-        task::current_engineer_task = task::nothing;
-    }
-
-    if (blocking)
-        return;
-    // Spy can just walk into the enemy
-    if (spy_mode)
-    {
-        if (spy_path.check(1000))
-        {
-            auto nearest = getNearestPlayerDistance(false);
-            if (CE_VALID(nearest.first) && nearest.first->m_vecDormantOrigin())
-            {
-                if (current_task != task::stay_near)
-                {
-                    if (nav::navTo(*nearest.first->m_vecDormantOrigin(), 6, true, false))
-                    {
-                        spy_path.update();
-                        current_task = task::stay_near;
-                        return;
-                    }
-                }
-                else
-                {
-                    if (nav::navTo(*nearest.first->m_vecDormantOrigin(), 6, false, false))
-                    {
-                        spy_path.update();
-                        return;
-                    }
-                }
-            }
-        }
-        if (current_task == task::stay_near)
-            return;
-    }
-    // Try to stay near enemies to increase efficiency
-    if ((stay_near || heavy_mode) && !spy_mode)
-        if (stayNear())
-            return;
-    // We don't have anything else to do. Just nav to sniper spots.
-    if (navToSniperSpot())
-        return;
-    // Uhh... Just stand around I guess?
-}
-
-bool init(bool first_cm)
-{
-    static bool inited = false;
-    if (first_cm)
-        inited = false;
-    if (!enabled)
+    // Priority too high
+    if (navparser::NavEngine::current_priority > health)
         return false;
-    if (!nav::prepare())
-        return false;
-    if (!inited)
-    {
-        blacklisted_build_spots.clear();
-        local_buildings.clear();
-        sniper_spots.clear();
-        // Add all sniper spots to vector
-        for (auto &area : nav::navfile->m_areas)
-        {
-            for (auto hide : area.m_hidingSpots)
-                if (hide.IsGoodSniperSpot() || hide.IsIdealSniperSpot() || hide.IsExposed())
-                    sniper_spots.emplace_back(&area, hide.m_pos);
-        }
-        inited = true;
-    }
-    return true;
+    float health_percent = LOCAL_E->m_iHealth() / (float) g_pPlayerResource->GetMaxHealth(LOCAL_E);
+    // Get health when below 65%, or below 80% and just patroling
+    return health_percent < 0.64f || (low_priority && (navparser::NavEngine::current_priority <= patrol || navparser::NavEngine::current_priority == lowprio_health) && health_percent <= 0.80f);
 }
 
-struct area_struct
-{
-    // The Area
-    CNavArea *navarea;
-    // Distance away from enemies
-    float min_distance;
-    // Valid enemies to area
-    std::vector<Vector *> enemy_list;
-};
-
-void update_building_spots()
-{
-    if (engineer_update.test_and_set(10000))
-    {
-        building_spots.clear();
-        // Store in here to reduce operations
-        std::vector<Vector> enemy_positions;
-        // Stores valid areas, the float is the minimum distance away from enemies, needed for sorting later
-        std::vector<area_struct> areas;
-
-        for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
-        {
-            CachedEntity *ent = ENTITY(i);
-            // Grab only Enemies and only if they are in soundcache
-            if (!ent || CE_INVALID(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy())
-                continue;
-            if (ent->m_vecDormantOrigin())
-                enemy_positions.push_back(*ent->m_vecDormantOrigin());
-        }
-        auto config = &DIST_ENGINEER;
-        if (HasGunslinger(LOCAL_E))
-            config = &DIST_GUNSLINGER_ENGINEER;
-        for (auto &area : nav::navfile->m_areas)
-        {
-            // Blacklisted for building
-            if (std::find(blacklisted_build_spots.begin(), blacklisted_build_spots.end(), &area) != blacklisted_build_spots.end())
-                continue;
-
-            // These positions we should vischeck
-            std::vector<Vector *> vischeck_positions;
-
-            // Minimum distance the area was away from enemies
-            float min_dist_away = FLT_MAX;
-
-            // Area Center
-            auto area_pos = area.m_center;
-            // Don't want to instantly hit the floor
-            area_pos.z += 42.0f;
-
-            // Found enemy below min/above max range away from area
-            bool enemy_found  = false;
-            bool out_of_reach = true;
-
-            for (auto &pos : enemy_positions)
-            {
-                auto dist = area_pos.DistTo(pos);
-                if (dist < config->min)
-                {
-                    enemy_found = true;
-                    break;
-                }
-                // Found someone within min and max range
-                if (dist < config->max)
-                {
-                    out_of_reach = false;
-                    // Should vischeck this one
-                    vischeck_positions.push_back(&pos);
-                    if (dist < min_dist_away)
-                        min_dist_away = dist;
-                }
-            }
-            // Too close/Too far away
-            if (enemy_found || out_of_reach)
-                continue;
-
-            // Area is valid (Distance wise)
-            areas.push_back({ &area, min_dist_away, vischeck_positions });
-        }
-
-        // Sort, be as close to preferred as possible
-        std::sort(areas.begin(), areas.end(), [&](area_struct a, area_struct b) { return std::abs(a.min_distance - config->preferred) < std::abs(b.min_distance - config->preferred); });
-
-        // Still need to do vischeck stuff
-        for (auto &area : areas)
-        {
-            // Is the enemy able to see the area?
-            bool can_see_area = false;
-            // Area Center
-            auto area_pos = area.navarea->m_center;
-            // Don't want to instantly hit the floor
-            area_pos.z += 42.0f;
-            // Loop all valid enemies
-            for (auto pos : area.enemy_list)
-            {
-                if (IsVectorVisible(area_pos, *pos))
-                {
-                    can_see_area = true;
-                    break;
-                }
-            }
-            // Someone can see the area. Abort! (Gunslinger Engineer does not care)
-            if (can_see_area && !HasGunslinger(LOCAL_E))
-                continue;
-            // All good!
-            building_spots.push_back(std::pair<CNavArea *, Vector>(area.navarea, area.navarea->m_center));
-        }
-    }
-}
-
-static bool navToSniperSpot()
-{
-    // Don't path if you already have commands. But also don't error out.
-    if (!nav::ReadyForCommands || current_task != task::none)
-        return true;
-    // Wait arround a bit before pathing again
-    if (!wait_until_path.check(2000))
-        return false;
-    // Max 10 attempts
-    for (int attempts = 0; attempts < 10; attempts++)
-    {
-        // Get a random sniper spot
-        auto random = select_randomly(sniper_spots.begin(), sniper_spots.end());
-        // Check if spot is considered safe (no sentry, no sticky)
-        if (!nav::isSafe(random.base()->first))
-            continue;
-        // Try to nav there
-        if (nav::navTo(random.base()->second, 1, true, true, false))
-        {
-            current_task = { task::sniper_spot, 1 };
-        }
-    }
-    return false;
-}
-
-static bool navToBuildingSpot()
-{
-    // Don't path if you already have commands. But also don't error out.
-    if (!nav::ReadyForCommands || (current_task != task::engineer && current_task != task::none))
-        return true;
-    // Wait a bit before pathing again
-    if (!wait_until_path_engineer.test_and_set(2000))
-        return false;
-    // Max 10 attempts
-    for (int attempts = 0; attempts < 10 && attempts < building_spots.size(); attempts++)
-    {
-        // Get a Building spot
-        auto &area = building_spots[attempts];
-        // Check if spot is considered safe (no sentry, no sticky)
-        if (!nav::isSafe(area.first))
-            continue;
-        // Try to nav there
-        if (nav::navTo(area.second, 5, true, true, false))
-        {
-            current_task          = { task::engineer, 5 };
-            current_build_area    = area.first;
-            current_engineer_task = task::engineer_task::goto_build_spot;
-            return true;
-        }
-    }
-    return false;
-}
-
-static Building selectBuilding()
-{
-    int metal        = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
-    int metal_sentry = 130;
-
-    // We have a mini sentry, costs less
-    if (HasGunslinger(LOCAL_E))
-        metal_sentry = 100;
-
-    // Do we already have these?
-    bool sentry_built    = false;
-    bool dispenser_built = false;
-    // Loop all buildings
-    for (auto &building : local_buildings)
-    {
-        if (building->m_iClassID() == CL_CLASS(CObjectSentrygun))
-            sentry_built = true;
-        else if (building->m_iClassID() == CL_CLASS(CObjectDispenser))
-            dispenser_built = true;
-    }
-
-    if (metal >= metal_sentry && !sentry_built)
-        return Sentry;
-    else if (metal >= 100 && !dispenser_built)
-        return Dispenser;
-    return None;
-}
-
-static success_build buildBuilding()
-{
-    int metal = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
-    // Out of Metal
-    if (metal < 100)
-        return Failure;
-    // Last building
-    static Building last_building = selectBuilding();
-    // Get best building to build right now
-    Building building = selectBuilding();
-    // Reset Rotation on these conditions
-    if (building != last_building || build_timer.check(1000))
-    {
-        // We changed the target building, means it was successful!
-        if (!build_timer.check(1000))
-            return Success;
-
-        // No building
-        if (building == None)
-            return Failure;
-
-        build_attempts         = 0;
-        build_current_rotation = -180.0f;
-        build_timer.update();
-    }
-    // No building
-    if (building == None)
-        return Failure;
-
-    last_building = building;
-    build_timer.update();
-    if (rotation_timer.test_and_set(300))
-    {
-        // Look slightly downwards for building process
-        current_user_cmd->viewangles.x = 20.0f;
-        // Set Yaw
-        current_user_cmd->viewangles.y = build_current_rotation;
-        // Rotate
-        build_current_rotation += 20.0f;
-        build_attempts++;
-        // Put building in hand if not already
-        if (hacks::shared::misc::getCarriedBuilding() == -1 && build_command_timer.test_and_set(50))
-            g_IEngine->ClientCmd_Unrestricted(("build " + std::to_string(building)).c_str());
-    }
-    else if (rotation_timer.check(200))
-    {
-        if (hacks::shared::misc::getCarriedBuilding() != -1)
-        {
-            int carried_building = hacks::shared::misc::getCarriedBuilding();
-            // It works! Place building
-            if (CE_INT(ENTITY(carried_building), netvar.m_bCanPlace))
-                current_user_cmd->buttons |= IN_ATTACK;
-        }
-    }
-    // Bad area
-    if (build_attempts >= 14)
-    {
-        blacklisted_build_spots.push_back(current_build_area);
-        return Failure;
-    }
-    return Unknown;
-}
-
-static bool navToBuilding(CachedEntity *target = nullptr)
-{
-    if (local_buildings.size())
-    {
-        int priority = 5;
-        if (current_engineer_task == task::staynear_engineer)
-            priority = 7;
-        // Just grab target and nav there
-        if (target)
-            if (nav::navTo(target->m_vecOrigin(), priority, true))
-            {
-                current_task          = { task::engineer, priority };
-                current_engineer_task = task::engineer_task::goto_building;
-                return true;
-            }
-        // Nav to random building
-        for (auto &building : local_buildings)
-        {
-            if (nav::navTo(building->m_vecOrigin(), priority, true))
-            {
-                current_task          = { task::engineer, priority };
-                current_engineer_task = task::engineer_task::goto_building;
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-static bool engineerLogic()
-{
-    std::vector<CachedEntity *> new_building_list;
-    for (auto &building : local_buildings)
-        if (CE_VALID(building) && !CE_INT(building, netvar.m_bPlacing))
-            new_building_list.push_back(building);
-    local_buildings = new_building_list;
-
-    // Overwrites and Not yet running engineer task
-    if ((current_task != task::engineer || current_engineer_task == task::engineer_task::nothing || current_engineer_task == task::engineer_task::staynear_engineer) && current_task != task::health && current_task != task::ammo)
-    {
-        // Already have a building
-        if (local_buildings.size())
-        {
-            int metal = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
-            if (metal)
-                for (auto &building : local_buildings)
-                    // Hey hit the building thanks (gunslinger engineer shouldn't care)
-                    if (hacks::tf2::misc_aimbot::ShouldHitBuilding(building) && !HasGunslinger(LOCAL_E))
-                    {
-                        if (navToBuilding(building))
-                            return true;
-                    }
-
-            // Gunslinger engineer should run at people, given their building isn't too far away
-            if (HasGunslinger(LOCAL_E))
-            {
-                // Deconstruct too far away buildings
-                for (auto &building : local_buildings)
-                {
-                    // Too far away, destroy it
-                    if (building->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) >= 1800.0f)
-                    {
-                        Building building_type = None;
-                        switch (building->m_iClassID())
-                        {
-                        case CL_CLASS(CObjectDispenser):
-                        {
-                            building_type = Dispenser;
-                            break;
-                        }
-                        case CL_CLASS(CObjectTeleporter):
-                        {
-                            // We cannot reliably detect entrance and exit, so just destruct both but mark as "Entrance"
-                            building_type = TP_Entrace;
-                            break;
-                        }
-                        case CL_CLASS(CObjectSentrygun):
-                        {
-                            building_type = Sentry;
-                            break;
-                        }
-                        }
-                        // If we have a valid building
-                        if (building_type != None)
-                        {
-                            // Destroy exit too because we have no idea what is what
-                            if (building_type == TP_Entrace)
-                                g_IEngine->ClientCmd_Unrestricted("destroy 3");
-                            g_IEngine->ClientCmd_Unrestricted(("destroy " + std::to_string(building_type)).c_str());
-                        }
-                    }
-                }
-                stayNearEngineer();
-            }
-
-            else if (selectBuilding() != None)
-            {
-                // If we're near our buildings and have the metal, build another one
-                for (auto &building : local_buildings)
-                    if (building->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) <= 300.0f)
-                    {
-                        current_task          = { task::engineer, 4 };
-                        current_engineer_task = task::engineer_task::build_building;
-                        return true;
-                    }
-                    // We're too far away, go to building
-                    else if (navToBuilding())
-                        return true;
-            }
-            // If it's metal we're missing, get some metal
-            /*else if (metal < 100)
-            {
-                if ((dispenser_nav_timer.test_and_set(1000) && getDispenserHealthAndAmmo(metal)) || getHealthAndAmmo(metal))
-                    return true;
-            }*/
-            // Else just Roam around the map and kill people
-            else if (stayNearEngineer())
-                return true;
-        }
-        // Nav to a Building spot
-        else if (navToBuildingSpot())
-        {
-            engineer_recheck.update();
-            return false;
-        }
-    }
-    // Metal
-    int metal = CE_INT(LOCAL_E, netvar.m_iAmmo + 12);
-    /*if ((dispenser_nav_timer.test_and_set(1000) && getDispenserHealthAndAmmo(metal)) || getHealthAndAmmo(metal))
-        return true;*/
-    switch (current_engineer_task)
-    {
-    // Upgrade/repair
-    case (task::engineer_task::upgradeorrepair_building):
-    {
-        if (metal)
-            if (local_buildings.size())
-                for (auto &building : local_buildings)
-                {
-                    if (building->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) <= 300.0f)
-                    {
-                        if (hacks::tf2::misc_aimbot::ShouldHitBuilding(building))
-                            break;
-                    }
-                }
-
-        current_task          = { task::engineer, 4 };
-        current_engineer_task = task::engineer_task::nothing;
-    }
-    // Going to existing building
-    case (task::engineer_task::goto_building):
-    {
-        if (nav::ReadyForCommands)
-        {
-            bool found = false;
-            if (local_buildings.size())
-                for (auto &building : local_buildings)
-                {
-                    if (building->m_vecOrigin().DistTo(LOCAL_E->m_vecOrigin()) <= 300.0f)
-                    {
-                        if (metal && hacks::tf2::misc_aimbot::ShouldHitBuilding(building))
-                        {
-                            current_task          = { task::engineer, 4 };
-                            current_engineer_task = task::engineer_task::upgradeorrepair_building;
-                        }
-                        if (current_engineer_task != task::engineer_task::upgradeorrepair_building)
-                        {
-                            current_task          = { task::engineer, 4 };
-                            current_engineer_task = task::engineer_task::nothing;
-                        }
-                        found = true;
-                    }
-                }
-            if (found)
-                break;
-
-            current_task          = { task::engineer, 4 };
-            current_engineer_task = task::engineer_task::nothing;
-        }
-        break;
-    }
-    // Going to spot to build
-    case (task::engineer_task::goto_build_spot):
-    {
-        // We Arrived, time to (try) to build!
-        if (nav::ReadyForCommands)
-        {
-            current_task          = { task::engineer, 4 };
-            current_engineer_task = task::engineer_task::build_building;
-        }
-        else if (engineer_recheck.test_and_set(15000))
-        {
-            if (navToBuildingSpot())
-                return true;
-        }
-        break;
-    }
-    // Build building
-    case (task::engineer_task::build_building):
-    {
-        auto status = buildBuilding();
-        // Failed, Get a new Task
-        if (status == Failure)
-        {
-            current_task          = { task::engineer, 4 };
-            current_engineer_task = task::engineer_task::nothing;
-        }
-        else if (status == Success)
-        {
-
-            current_task          = { task::engineer, 4 };
-            current_engineer_task = task::engineer_task::nothing;
-            return true;
-        }
-        // Still building
-        else if (status == Unknown)
-            return true;
-        break;
-    }
-    default:
-        break;
-    }
-    return false;
-}
-
-static std::pair<CachedEntity *, float> getNearestPlayerDistance(bool vischeck)
-{
-    float distance         = FLT_MAX;
-    CachedEntity *best_ent = nullptr;
-    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
-    {
-        CachedEntity *ent = ENTITY(i);
-        if (CE_VALID(ent) && ent->m_vecDormantOrigin() && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) && (!vischeck || VisCheckEntFromEnt(LOCAL_E, ent)))
-        {
-            if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent))
-            {
-                spy_cloak[i].update();
-                continue;
-            }
-            if (!spy_cloak[i].check(*spy_ignore_time))
-                continue;
-            distance = g_pLocalPlayer->v_Origin.DistTo(*ent->m_vecDormantOrigin());
-            best_ent = ent;
-        }
-    }
-    return { best_ent, distance };
-}
-
-namespace stayNearHelpers
-{
-// Check if the location is close enough/far enough and has a visual to target
-static bool isValidNearPosition(Vector vec, Vector target, const bot_class_config &config)
-{
-    vec.z += 40;
-    target.z += 40;
-    float dist = vec.DistTo(target);
-    if (dist < config.min || dist > config.max)
-        return false;
-    if (!IsVectorVisible(vec, target, true, LOCAL_E, MASK_PLAYERSOLID))
-        return false;
-    // Check if safe
-    if (!nav::isSafe(nav::findClosestNavSquare(target)))
-        return false;
-    return true;
-}
-
-// Returns true if began pathing
-static bool stayNearPlayer(CachedEntity *&ent, const bot_class_config &config, CNavArea *&result, bool engineer = false)
-{
-    if (!CE_VALID(ent))
-        return false;
-    auto position = ent->m_vecDormantOrigin();
-    if (!position)
-        return false;
-    // Get some valid areas
-    std::vector<CNavArea *> areas;
-    for (auto &area : nav::navfile->m_areas)
-    {
-        if (!isValidNearPosition(area.m_center, *position, config))
-            continue;
-        areas.push_back(&area);
-    }
-    if (areas.empty())
-        return false;
-
-    const Vector ent_orig = *position;
-    // Area dist to target should be as close as possible to config.preferred
-    std::sort(areas.begin(), areas.end(), [&](CNavArea *a, CNavArea *b) { return std::abs(a->m_center.DistTo(ent_orig) - config.preferred) < std::abs(b->m_center.DistTo(ent_orig) - config.preferred); });
-
-    size_t size = 20;
-    if (areas.size() < size)
-        size = areas.size();
-
-    // Get some areas that are close to the player
-    std::vector<CNavArea *> preferred_areas(areas.begin(), areas.end());
-    preferred_areas.resize(size / 2);
-    if (preferred_areas.empty())
-        return false;
-    std::sort(preferred_areas.begin(), preferred_areas.end(), [](CNavArea *a, CNavArea *b) { return a->m_center.DistTo(g_pLocalPlayer->v_Origin) < b->m_center.DistTo(g_pLocalPlayer->v_Origin); });
-
-    preferred_areas.resize(size / 4);
-    if (preferred_areas.empty())
-        return false;
-    for (auto &i : preferred_areas)
-    {
-        if (nav::navTo(i->m_center, 7, true, false))
-        {
-            result = i;
-            if (engineer)
-            {
-                current_task          = { task::engineer, 4 };
-                current_engineer_task = task::staynear_engineer;
-            }
-            else
-                current_task = task::stay_near;
-            return true;
-        }
-    }
-
-    for (size_t attempts = 0; attempts < size / 4; attempts++)
-    {
-        auto it = select_randomly(areas.begin(), areas.end());
-        if (nav::navTo((*it.base())->m_center, 7, true, false))
-        {
-            result = *it.base();
-            if (engineer)
-            {
-                current_task          = { task::engineer, 4 };
-                current_engineer_task = task::staynear_engineer;
-            }
-            else
-                current_task = task::stay_near;
-            return true;
-        }
-    }
-    return false;
-}
-
-// Loop thru all players and find one we can path to
-static bool stayNearPlayers(const bot_class_config &config, CachedEntity *&result_ent, CNavArea *&result_area)
-{
-    std::vector<CachedEntity *> players;
-    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
-    {
-        CachedEntity *ent = ENTITY(i);
-        if (CE_INVALID(ent) || !g_pPlayerResource->isAlive(ent->m_IDX) || !ent->m_bEnemy() || !player_tools::shouldTarget(ent))
-            continue;
-        if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(ent))
-        {
-            spy_cloak[i].update();
-            continue;
-        }
-        if (!spy_cloak[i].check(*spy_ignore_time))
-            continue;
-        if (ent->m_vecDormantOrigin())
-            players.push_back(ent);
-    }
-    if (players.empty())
-        return false;
-    std::sort(players.begin(), players.end(), [](CachedEntity *a, CachedEntity *b) {
-        Vector position_a = *a->m_vecDormantOrigin(), position_b = *b->m_vecDormantOrigin();
-        return position_a.DistTo(g_pLocalPlayer->v_Origin) < position_b.DistTo(g_pLocalPlayer->v_Origin);
-    });
-    for (auto player : players)
-    {
-        if (stayNearPlayer(player, config, result_area))
-        {
-            result_ent = player;
-            return true;
-        }
-    }
-    return false;
-}
-} // namespace stayNearHelpers
-
-// stayNear()'s Little Texan brother
-static bool stayNearEngineer()
-{
-    static CachedEntity *last_target = nullptr;
-    static CNavArea *last_area       = nullptr;
-
-    // What distances do we have to use?
-    bot_class_config config = DIST_ENGINEER;
-    if (HasGunslinger(LOCAL_E))
-        config = DIST_GUNSLINGER_ENGINEER;
-
-    // Check if someone is too close to us and then target them instead
-    std::pair<CachedEntity *, float> nearest = getNearestPlayerDistance();
-    if (nearest.first && nearest.first != last_target && nearest.second < config.min)
-        if (stayNearHelpers::stayNearPlayer(nearest.first, config, last_area, true))
-        {
-            last_target = nearest.first;
-            return true;
-        }
-    bool valid_dormant = false;
-    if (CE_VALID(last_target) && RAW_ENT(last_target)->IsDormant())
-    {
-        if (last_target->m_vecDormantOrigin())
-            valid_dormant = true;
-    }
-    if (current_task == task::stay_near)
-    {
-        static Timer invalid_area_time{};
-        static Timer invalid_target_time{};
-        // Do we already have a stay near target? Check if its still good.
-        if (CE_GOOD(last_target) || valid_dormant)
-            invalid_target_time.update();
-        else
-            invalid_area_time.update();
-        // Check if we still have LOS and are close enough/far enough
-        Vector position;
-        if (CE_GOOD(last_target) || valid_dormant)
-        {
-            position = *last_target->m_vecDormantOrigin();
-        }
-        if ((CE_GOOD(last_target) || valid_dormant) && stayNearHelpers::isValidNearPosition(last_area->m_center, position, config))
-            invalid_area_time.update();
-
-        if ((CE_GOOD(last_target) || valid_dormant) && (!g_pPlayerResource->isAlive(last_target->m_IDX) || !last_target->m_bEnemy() || !player_tools::shouldTarget(last_target) || !spy_cloak[last_target->m_IDX].check(*spy_ignore_time) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
-        {
-            if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))
-                spy_cloak[last_target->m_IDX].update();
-            nav::clearInstructions();
-            current_engineer_task = task::engineer_task::nothing;
-        }
-        else if (invalid_area_time.test_and_set(300))
-        {
-            current_engineer_task = task::engineer_task::nothing;
-        }
-        else if (invalid_target_time.test_and_set(5000))
-        {
-            current_engineer_task = task::engineer_task::nothing;
-        }
-    }
-    // Are we doing nothing? Check if our current location can still attack our
-    // last target
-    if (current_engineer_task != task::engineer_task::staynear_engineer && (CE_GOOD(last_target) || valid_dormant) && g_pPlayerResource->isAlive(last_target->m_IDX) && last_target->m_bEnemy())
-    {
-        if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))
-            spy_cloak[last_target->m_IDX].update();
-        if (spy_cloak[last_target->m_IDX].check(*spy_ignore_time))
-        {
-            Vector position = *last_target->m_vecDormantOrigin();
-
-            if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, position, config))
-                return true;
-            // If not, can we try pathing to our last target again?
-            if (stayNearHelpers::stayNearPlayer(last_target, config, last_area, true))
-                return true;
-        }
-        last_target = nullptr;
-    }
-
-    static Timer wait_until_stay_near{};
-    if (current_engineer_task == task::engineer_task::staynear_engineer)
-        return true;
-    else if (wait_until_stay_near.test_and_set(4000))
-    {
-        // We're doing nothing? Do something!
-        return stayNearHelpers::stayNearPlayers(config, last_target, last_area);
-    }
-
-    return false;
-}
-// Main stay near function
-static bool stayNear()
-{
-    static CachedEntity *last_target = nullptr;
-    static CNavArea *last_area       = nullptr;
-
-    // What distances do we have to use?
-    const bot_class_config *config;
-    if (spy_mode)
-    {
-        config = &DIST_SPY;
-    }
-    else if (heavy_mode)
-    {
-        config = &DIST_OTHER;
-    }
-    else
-    {
-        config = &DIST_SNIPER;
-    }
-
-    // Check if someone is too close to us and then target them instead
-    std::pair<CachedEntity *, float> nearest = getNearestPlayerDistance();
-    if (nearest.first && nearest.first != last_target && nearest.second < config->min)
-        if (stayNearHelpers::stayNearPlayer(nearest.first, *config, last_area))
-        {
-            last_target = nearest.first;
-            return true;
-        }
-    bool valid_dormant = false;
-    if (CE_VALID(last_target) && RAW_ENT(last_target)->IsDormant())
-    {
-        if (last_target->m_vecDormantOrigin())
-            valid_dormant = true;
-    }
-    if (current_task == task::stay_near)
-    {
-        static Timer invalid_area_time{};
-        static Timer invalid_target_time{};
-        // Do we already have a stay near target? Check if its still good.
-        if (CE_GOOD(last_target) || valid_dormant)
-            invalid_target_time.update();
-        else
-            invalid_area_time.update();
-        // Check if we still have LOS and are close enough/far enough
-        Vector position;
-        if (CE_GOOD(last_target) || valid_dormant)
-        {
-            position = *last_target->m_vecDormantOrigin();
-        }
-        if ((CE_GOOD(last_target) || valid_dormant) && stayNearHelpers::isValidNearPosition(last_area->m_center, position, *config))
-            invalid_area_time.update();
-
-        if ((CE_GOOD(last_target) || valid_dormant) && (!g_pPlayerResource->isAlive(last_target->m_IDX) || !last_target->m_bEnemy() || !player_tools::shouldTarget(last_target) || !spy_cloak[last_target->m_IDX].check(*spy_ignore_time) || (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))))
-        {
-            if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))
-                spy_cloak[last_target->m_IDX].update();
-            nav::clearInstructions();
-            current_task = task::none;
-        }
-        else if (invalid_area_time.test_and_set(300))
-        {
-            current_task = task::none;
-        }
-        else if (invalid_target_time.test_and_set(5000))
-        {
-            current_task = task::none;
-        }
-    }
-    // Are we doing nothing? Check if our current location can still attack our
-    // last target
-    if (current_task != task::stay_near && (CE_GOOD(last_target) || valid_dormant) && g_pPlayerResource->isAlive(last_target->m_IDX) && last_target->m_bEnemy())
-    {
-        if (hacks::shared::aimbot::ignore_cloak && IsPlayerInvisible(last_target))
-            spy_cloak[last_target->m_IDX].update();
-        if (spy_cloak[last_target->m_IDX].check(*spy_ignore_time))
-        {
-            Vector position = *last_target->m_vecDormantOrigin();
-
-            if (stayNearHelpers::isValidNearPosition(g_pLocalPlayer->v_Origin, position, *config))
-                return true;
-            // If not, can we try pathing to our last target again?
-            if (stayNearHelpers::stayNearPlayer(last_target, *config, last_area))
-                return true;
-        }
-        last_target = nullptr;
-    }
-
-    static Timer wait_until_stay_near{};
-    if (current_task == task::stay_near)
-    {
-        return true;
-    }
-    else if (wait_until_stay_near.test_and_set(1000))
-    {
-        // We're doing nothing? Do something!
-        return stayNearHelpers::stayNearPlayers(*config, last_target, last_area);
-    }
-
-    return false;
-}
-
-static inline bool hasLowAmmo()
+// Should we search ammo at all?
+bool shouldSearchAmmo()
 {
     if (CE_BAD(LOCAL_W))
         return false;
+    // Priority too high
+    if (navparser::NavEngine::current_priority > ammo)
+        return false;
+
     int *weapon_list = (int *) ((uint64_t)(RAW_ENT(LOCAL_E)) + netvar.hMyWeapons);
     if (!weapon_list)
         return false;
@@ -1089,195 +97,823 @@ static inline bool hasLowAmmo()
     return false;
 }
 
-static std::vector<Vector> getDispensers()
+// Get Valid Dispensers (Used for health/ammo)
+std::vector<CachedEntity *> getDispensers()
 {
-    std::vector<Vector> dispensers;
-    for (int i = 1; i <= HIGHEST_ENTITY; i++)
+    std::vector<CachedEntity *> entities;
+    for (int i = g_IEngine->GetMaxClients() + 1; i < MAX_ENTITIES; i++)
     {
         CachedEntity *ent = ENTITY(i);
-        if (CE_INVALID(ent))
+        if (CE_BAD(ent) || ent->m_iClassID() != CL_CLASS(CObjectDispenser) || ent->m_iTeam() != g_pLocalPlayer->team)
             continue;
-        if (!ent->m_vecDormantOrigin())
+        if (CE_BYTE(ent, netvar.m_bCarryDeploy) || CE_BYTE(ent, netvar.m_bHasSapper) || CE_BYTE(ent, netvar.m_bBuilding))
             continue;
-        if (ent->m_iClassID() != CL_CLASS(CObjectDispenser) || ent->m_bEnemy())
+
+        // This fixes the fact that players can just place dispensers in unreachable locations
+        auto local_nav = navparser::NavEngine::findClosestNavSquare(ent->m_vecOrigin());
+        if (local_nav->getNearestPoint(ent->m_vecOrigin().AsVector2D()).DistTo(ent->m_vecOrigin()) > 300.0f || local_nav->getNearestPoint(ent->m_vecOrigin().AsVector2D()).z - ent->m_vecOrigin().z > navparser::PLAYER_JUMP_HEIGHT)
             continue;
-        if (CE_BYTE(ent, netvar.m_bHasSapper))
-            continue;
-        if (CE_BYTE(ent, netvar.m_bBuilding))
-            continue;
-        if (CE_BYTE(ent, netvar.m_bPlacing))
-            continue;
-        dispensers.push_back(*ent->m_vecDormantOrigin());
+        entities.push_back(ent);
     }
-    std::sort(dispensers.begin(), dispensers.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
-    return dispensers;
+    // Sort by distance, closer is better
+    std::sort(entities.begin(), entities.end(), [](CachedEntity *a, CachedEntity *b) { return a->m_flDistance() < b->m_flDistance(); });
+    return entities;
 }
 
-static bool getDispenserHealthAndAmmo(int metal)
+// Get entities of given itemtypes (Used for health/ammo)
+std::vector<CachedEntity *> getEntities(const std::vector<k_EItemType> &itemtypes)
 {
-    // Timeout for standing next to dispenser
-    static Timer dispenser_timeout{};
-    // Cooldown after standing next to one for too long
-    static Timer dispenser_cooldown{};
-    float health = static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth();
-    bool lowAmmo = hasLowAmmo();
-    if (metal != -1)
+    std::vector<CachedEntity *> entities;
+    for (int i = g_IEngine->GetMaxClients() + 1; i < MAX_ENTITIES; i++)
     {
-        lowAmmo = metal < 100 && selectBuilding() == None;
-        if (current_engineer_task == task::engineer_task::upgradeorrepair_building)
-            lowAmmo = metal == 0;
-    }
-    // Check if we should cancel this task
-    if (current_task == task::dispenser)
-    {
-        if (health > 0.99f && !lowAmmo)
+        CachedEntity *ent = ENTITY(i);
+        if (CE_BAD(ent))
+            continue;
+        for (auto &itemtype : itemtypes)
         {
-            nav::clearInstructions();
-            current_task = task::none;
-            return false;
+            if (ent->m_ItemType() == itemtype)
+            {
+                entities.push_back(ent);
+                break;
+            }
         }
-        if (health > 0.64f && !lowAmmo)
-            current_task.priority = 3;
     }
+    // Sort by distance, closer is better
+    std::sort(entities.begin(), entities.end(), [](CachedEntity *a, CachedEntity *b) { return a->m_flDistance() < b->m_flDistance(); });
+    return entities;
+}
 
-    // Check if we're standing next to a dispenser for too long.
-    if (current_task == task::dispenser)
+// Find health if needed
+bool getHealth(bool low_priority = false)
+{
+    Priority_list priority = low_priority ? lowprio_health : health;
+    if (!health_cooldown.check(1000))
+        return navparser::NavEngine::current_priority == priority;
+    if (shouldSearchHealth(low_priority))
     {
+        // Already pathing, only try to repath every 2s
+        if (navparser::NavEngine::current_priority == priority)
+        {
+            static Timer repath_timer;
+            if (!repath_timer.test_and_set(2000))
+                return true;
+        }
+        auto healthpacks = getEntities({ ITEM_HEALTH_SMALL, ITEM_HEALTH_MEDIUM, ITEM_HEALTH_LARGE });
+        auto dispensers  = getDispensers();
+
+        auto total_ents = healthpacks;
+
+        // Add dispensers and sort list again
+        if (!dispensers.empty())
+        {
+            total_ents.reserve(healthpacks.size() + dispensers.size());
+            total_ents.insert(total_ents.end(), dispensers.begin(), dispensers.end());
+            std::sort(total_ents.begin(), total_ents.end(), [](CachedEntity *a, CachedEntity *b) { return a->m_flDistance() < b->m_flDistance(); });
+        }
+
+        for (auto healthpack : total_ents)
+            // If we succeeed, don't try to path to other packs
+            if (navparser::NavEngine::navTo(healthpack->m_vecOrigin(), priority, true, healthpack->m_vecOrigin().DistToSqr(g_pLocalPlayer->v_Origin) > 200.0f * 200.0f))
+                return true;
+        health_cooldown.update();
+    }
+    else if (navparser::NavEngine::current_priority == priority)
+        navparser::NavEngine::cancelPath();
+    return false;
+}
+
+// Find ammo if needed
+bool getAmmo()
+{
+    if (!ammo_cooldown.check(1000))
+        return navparser::NavEngine::current_priority == ammo;
+    if (shouldSearchAmmo())
+    {
+        // Already pathing, only try to repath every 2s
+        if (navparser::NavEngine::current_priority == ammo)
+        {
+            static Timer repath_timer;
+            if (!repath_timer.test_and_set(2000))
+                return true;
+        }
+        auto ammopacks  = getEntities({ ITEM_AMMO_SMALL, ITEM_AMMO_MEDIUM, ITEM_AMMO_LARGE });
         auto dispensers = getDispensers();
-        // If near enough to dispenser
-        if (dispensers.size() && dispensers[0].DistTo(g_pLocalPlayer->v_Origin) < 60.0f)
+
+        auto total_ents = ammopacks;
+
+        // Add dispensers and sort list again
+        if (!dispensers.empty())
         {
-            // Standing next to it for too long
-            if (dispenser_timeout.check(10000))
-            {
-                dispenser_cooldown.update();
-                current_task = task::none;
-                nav::clearInstructions();
-                return false;
-            }
+            total_ents.reserve(ammopacks.size() + dispensers.size());
+            total_ents.insert(total_ents.end(), dispensers.begin(), dispensers.end());
+            std::sort(total_ents.begin(), total_ents.end(), [](CachedEntity *a, CachedEntity *b) { return a->m_flDistance() < b->m_flDistance(); });
         }
-        else
-        {
-            dispenser_timeout.update();
-        }
+        for (auto ammopack : total_ents)
+            // If we succeeed, don't try to path to other packs
+            if (navparser::NavEngine::navTo(ammopack->m_vecOrigin(), ammo, true, ammopack->m_vecOrigin().DistToSqr(g_pLocalPlayer->v_Origin) > 200.0f * 200.0f))
+                return true;
+        ammo_cooldown.update();
     }
-
-    // If Low ammo/Health
-    if (current_task != task::dispenser)
-        if (health < 0.64f || (current_task.priority < 3 && health < 0.99f) || lowAmmo)
-        {
-            std::vector<Vector> dispensers = getDispensers();
-
-            for (auto &dispenser : dispensers)
-            {
-                // Nav To Dispenser
-                if (nav::navTo(dispenser, health < 0.64f || lowAmmo ? 11 : 3, true, false))
-                {
-                    // On Success, update task
-                    current_task = { task::dispenser, health < 0.64f || lowAmmo ? 10 : 3 };
-                }
-            }
-        }
-    if (current_task == task::dispenser && current_task.priority == 10)
-        return true;
-    else
-        return false;
+    else if (navparser::NavEngine::current_priority == ammo)
+        navparser::NavEngine::cancelPath();
+    return false;
 }
 
-static bool getHealthAndAmmo(int metal)
+// Former is position, latter is until which tick it is ignored
+std::vector<std::pair<Vector, int>> sniper_spots;
+
+// Used for time between refreshing sniperspots
+static Timer refresh_sniperspots_timer{};
+void refreshSniperSpots()
 {
-    float health = static_cast<float>(LOCAL_E->m_iHealth()) / LOCAL_E->m_iMaxHealth();
-    bool lowAmmo = hasLowAmmo();
-    if (metal != -1)
-    {
-        lowAmmo = metal < 100 && selectBuilding() == None;
-        if (current_engineer_task == task::engineer_task::upgradeorrepair_building)
-            lowAmmo = metal == 0;
-    }
-    // Check if we should cancel this task
-    if (current_task == task::health || current_task == task::ammo)
-    {
-        if (health > 0.99f && !lowAmmo)
-        {
-            nav::clearInstructions();
-            current_task = task::none;
-            return false;
-        }
-        if (health > 0.64f && !lowAmmo)
-            current_task.priority = 3;
-    }
-
-    // If Low Ammo/Health
-    if (current_task != task::health && current_task != task::ammo)
-        if (health < 0.64f || (current_task.priority < 3 && health < 0.99f) || lowAmmo)
-        {
-            bool gethealth;
-            if (health < 0.64f)
-                gethealth = true;
-            else if (lowAmmo)
-                gethealth = false;
-            else
-                gethealth = true;
-
-            if (gethealth)
-            {
-                std::vector<Vector> healthpacks;
-                for (int i = 1; i <= HIGHEST_ENTITY; i++)
-                {
-                    CachedEntity *ent = ENTITY(i);
-                    if (CE_BAD(ent))
-                        continue;
-                    if (ent->m_ItemType() != ITEM_HEALTH_SMALL && ent->m_ItemType() != ITEM_HEALTH_MEDIUM && ent->m_ItemType() != ITEM_HEALTH_LARGE)
-                        continue;
-                    healthpacks.push_back(ent->m_vecOrigin());
-                }
-                std::sort(healthpacks.begin(), healthpacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
-                for (auto &pack : healthpacks)
-                {
-                    if (nav::navTo(pack, health < 0.64f || lowAmmo ? 10 : 3, true, false))
-                    {
-                        current_task = { task::health, health < 0.64f ? 10 : 3 };
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                std::vector<Vector> ammopacks;
-                for (int i = 1; i <= HIGHEST_ENTITY; i++)
-                {
-                    CachedEntity *ent = ENTITY(i);
-                    if (CE_BAD(ent))
-                        continue;
-                    if (ent->m_ItemType() != ITEM_AMMO_SMALL && ent->m_ItemType() != ITEM_AMMO_MEDIUM && ent->m_ItemType() != ITEM_AMMO_LARGE)
-                        continue;
-                    ammopacks.push_back(ent->m_vecOrigin());
-                }
-                std::sort(ammopacks.begin(), ammopacks.end(), [](Vector &a, Vector &b) { return g_pLocalPlayer->v_Origin.DistTo(a) < g_pLocalPlayer->v_Origin.DistTo(b); });
-                for (auto &pack : ammopacks)
-                {
-                    if (nav::navTo(pack, health < 0.64f || lowAmmo ? 9 : 3, true, false))
-                    {
-                        current_task = { task::ammo, 10 };
-                        return true;
-                    }
-                }
-            }
-        }
-    if ((current_task == task::health || current_task == task::ammo) && current_task.priority == 10)
-        return true;
-    else
-        return false;
-}
-
-static void autoJump()
-{
-    static Timer last_jump{};
-    if (!last_jump.test_and_set(200))
+    if (!refresh_sniperspots_timer.test_and_set(60000))
         return;
 
-    if (getNearestPlayerDistance().second <= *jump_distance)
-        current_user_cmd->buttons |= IN_JUMP | IN_DUCK;
+    sniper_spots.clear();
+
+    // Search all nav areas for valid sniper spots
+    for (auto &area : navparser::NavEngine::getNavFile()->m_areas)
+        for (auto &hiding_spot : area.m_hidingSpots)
+            // Spots actually marked for sniping
+            if (hiding_spot.IsExposed() || hiding_spot.IsGoodSniperSpot() || hiding_spot.IsIdealSniperSpot())
+                sniper_spots.emplace_back(hiding_spot.m_pos, 0);
+}
+
+#if ENABLE_VISUALS
+std::vector<Vector> slight_danger_drawlist_normal;
+std::vector<Vector> slight_danger_drawlist_dormant;
+#endif
+static Timer blacklist_update_timer{};
+static Timer dormant_update_timer{};
+void updateEnemyBlacklist()
+{
+    bool should_run_normal  = blacklist_update_timer.test_and_set(*blacklist_delay);
+    bool should_run_dormant = blacklist_dormat && dormant_update_timer.test_and_set(*blacklist_delay_dormat);
+    // Don't run since we do not care here
+    if (!should_run_dormant && !should_run_normal)
+        return;
+
+    // Clear blacklist for normal entities
+    if (should_run_normal)
+        navparser::NavEngine::clearFreeBlacklist(navparser::ENEMY_NORMAL);
+    // Clear blacklist for dormant entities
+    if (should_run_dormant)
+        navparser::NavEngine::clearFreeBlacklist(navparser::ENEMY_DORMANT);
+
+    // Store the danger of the invidual nav areas
+    std::unordered_map<CNavArea *, int> dormant_slight_danger;
+    std::unordered_map<CNavArea *, int> normal_slight_danger;
+
+    // This is used to cache Dangerous areas between ents
+    std::unordered_map<CachedEntity *, std::vector<CNavArea *>> ent_marked_dormant_slight_danger;
+    std::unordered_map<CachedEntity *, std::vector<CNavArea *>> ent_marked_normal_slight_danger;
+
+    std::vector<std::pair<CachedEntity *, Vector>> checked_origins;
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        // Entity is generally invalid, ignore
+        if (CE_INVALID(ent) || !g_pPlayerResource->isAlive(i))
+            continue;
+        // On our team, do not care
+        if (g_pPlayerResource->GetTeam(i) == g_pLocalPlayer->team)
+            continue;
+
+        bool is_dormant = CE_BAD(ent);
+        // Should not run on dormant and entity is dormant, ignore.
+        if (!should_run_dormant && is_dormant)
+            continue;
+        // Should not run on normal entity and entity is not dormant, ignore
+        else if (!should_run_normal && !is_dormant)
+            continue;
+
+        // Avoid excessive calls by ignoring new checks if people are too close to eachother
+        auto origin = ent->m_vecDormantOrigin();
+        if (!origin)
+            continue;
+        bool should_check = true;
+
+        // Find already dangerous marked areas by other entities
+        auto to_loop = is_dormant ? &ent_marked_dormant_slight_danger : &ent_marked_normal_slight_danger;
+
+        // Add new danger entries
+        auto to_mark = is_dormant ? &dormant_slight_danger : &normal_slight_danger;
+
+        for (auto &checked_origin : checked_origins)
+        {
+            // If this origin is closer than a quarter of the min HU (or less than 100 HU) to a cached one, don't go through
+            // all nav areas again DistToSqr is much faster than DistTo which is why we use it here
+            auto distance = selected_config.min_slight_danger;
+
+            distance *= 0.25f;
+            distance = std::max(100.0f, distance);
+
+            // Square the distance
+            distance *= distance;
+
+            if ((*origin).DistToSqr(checked_origin.second) < distance)
+            {
+                should_check = false;
+
+                bool is_absolute_danger = distance < selected_config.min_full_danger;
+                if (!is_absolute_danger && (enable_slight_danger_when_capping || navparser::NavEngine::current_priority != capture))
+                    for (auto &area : (*to_loop)[checked_origin.first])
+                    {
+                        (*to_mark)[area]++;
+                        if ((*to_mark)[area] >= *blacklist_slightdanger_limit)
+                            (*navparser::NavEngine::getFreeBlacklist())[area] = is_dormant ? navparser::ENEMY_DORMANT : navparser::ENEMY_NORMAL;
+                    }
+
+                break;
+            }
+        }
+        if (!should_check)
+            continue;
+
+        // Now check which areas they are close to
+        for (CNavArea &nav_area : navparser::NavEngine::getNavFile()->m_areas)
+        {
+            float distance             = nav_area.m_center.DistTo(*origin);
+            float slight_danger_dist   = selected_config.min_slight_danger;
+            float absolute_danger_dist = selected_config.min_full_danger;
+
+            // Not dangerous, Still don't bump
+            if (!player_tools::shouldTarget(ent))
+            {
+                slight_danger_dist   = navparser::PLAYER_WIDTH * 1.2f;
+                absolute_danger_dist = navparser::PLAYER_WIDTH * 1.2f;
+            }
+
+            // Too close to count as slight danger
+            bool is_absolute_danger = distance < absolute_danger_dist;
+            if (distance < slight_danger_dist)
+            {
+                // Add as marked area
+                (*to_loop)[ent].push_back(&nav_area);
+
+                // Just slightly dangerous, only mark as such if it's clear
+                if (!is_absolute_danger && (enable_slight_danger_when_capping || navparser::NavEngine::current_priority != capture))
+                {
+                    (*to_mark)[&nav_area]++;
+                    if ((*to_mark)[&nav_area] < *blacklist_slightdanger_limit)
+                        continue;
+                }
+                (*navparser::NavEngine::getFreeBlacklist())[&nav_area] = is_dormant ? navparser::ENEMY_DORMANT : navparser::ENEMY_NORMAL;
+            }
+        }
+        checked_origins.emplace_back(ent, *origin);
+    }
+#if ENABLE_VISUALS
+    if (should_run_dormant)
+        slight_danger_drawlist_dormant.clear();
+    if (should_run_normal)
+        slight_danger_drawlist_normal.clear();
+
+    // Store slight danger areas for drawing
+    if (!normal_slight_danger.empty())
+    {
+        for (auto &area : normal_slight_danger)
+            if (area.second < *blacklist_slightdanger_limit)
+                slight_danger_drawlist_normal.push_back(area.first->m_center);
+    }
+    if (!dormant_slight_danger.empty())
+    {
+        for (auto &area : dormant_slight_danger)
+            if (area.second < *blacklist_slightdanger_limit)
+                slight_danger_drawlist_dormant.push_back(area.first->m_center);
+    }
+#endif
+}
+
+// Roam around map
+bool doRoam()
+{
+    static Timer fail_timer;
+    // No sniper spots :shrug:
+    if (sniper_spots.empty())
+        return false;
+    // Failed recently, wait a while
+    if (!fail_timer.check(1000))
+        return false;
+    // Don't overwrite current roam
+    if (navparser::NavEngine::current_priority == patrol)
+        return false;
+
+    // Get closest sniper spots
+    std::sort(sniper_spots.begin(), sniper_spots.end(), [](std::pair<Vector, int> a, std::pair<Vector, int> b) { return a.first.DistTo(g_pLocalPlayer->v_Origin) < b.first.DistTo(g_pLocalPlayer->v_Origin); });
+
+    bool tried_pathing = false;
+    for (auto &sniper_spot : sniper_spots)
+    {
+        // Timed out
+        if (sniper_spot.second > g_GlobalVars->tickcount)
+            continue;
+
+        tried_pathing = true;
+
+        // Ignore for spot for 30s
+        sniper_spot.second = TICKCOUNT_TIMESTAMP(30);
+        if (navparser::NavEngine::navTo(sniper_spot.first, patrol))
+            return true;
+    }
+
+    // Every sniper spot is on cooldown, refresh cooldowns
+    if (!tried_pathing)
+        for (auto &spot : sniper_spots)
+            spot.second = 0;
+    // Failed, time out
+    fail_timer.update();
+
+    return false;
+}
+
+// Check if an area is valid for stay near. the Third parameter is to save some performance.
+bool isAreaValidForStayNear(Vector ent_origin, CNavArea *area, bool fix_local_z = true)
+{
+    if (fix_local_z)
+        ent_origin.z += navparser::PLAYER_JUMP_HEIGHT;
+    auto area_origin = area->m_center;
+    area_origin.z += navparser::PLAYER_JUMP_HEIGHT;
+
+    // Do all the distance checks
+    float distance = ent_origin.DistToSqr(area_origin);
+
+    // Too close
+    if (distance < selected_config.min_full_danger * selected_config.min_full_danger)
+        return false;
+    // Blacklisted
+    if (navparser::NavEngine::getFreeBlacklist()->find(area) != navparser::NavEngine::getFreeBlacklist()->end())
+        return false;
+    // Too far away
+    if (distance > selected_config.max * selected_config.max)
+        return false;
+    // Attempt to vischeck
+    if (!IsVectorVisibleNavigation(ent_origin, area_origin))
+        return false;
+    return true;
+}
+
+// Actual logic, used to de-duplicate code
+bool stayNearTarget(CachedEntity *ent)
+{
+    auto ent_origin = ent->m_vecDormantOrigin();
+    // No origin recorded, don't bother
+    if (!ent_origin)
+        return false;
+
+    // Add the vischeck height
+    ent_origin->z += navparser::PLAYER_JUMP_HEIGHT;
+
+    // Use std::pair to avoid using the distance functions more than once
+    std::vector<std::pair<CNavArea *, float>> good_areas{};
+
+    for (auto &area : navparser::NavEngine::getNavFile()->m_areas)
+    {
+        auto area_origin = area.m_center;
+
+        // Is this area valid for stay near purposes?
+        if (!isAreaValidForStayNear(*ent_origin, &area, false))
+            continue;
+
+        float distance = (*ent_origin).DistToSqr(area_origin);
+        // Good area found
+        good_areas.push_back(std::pair<CNavArea *, float>(&area, distance));
+    }
+    // Sort based on distance
+    if (selected_config.prefer_far)
+        std::sort(good_areas.begin(), good_areas.end(), [](std::pair<CNavArea *, float> a, std::pair<CNavArea *, float> b) { return a.second > b.second; });
+    else
+        std::sort(good_areas.begin(), good_areas.end(), [](std::pair<CNavArea *, float> a, std::pair<CNavArea *, float> b) { return a.second < b.second; });
+
+    // If we're not already pathing we should reallign with the center of the area
+    bool should_path_to_local = !navparser::NavEngine::isPathing();
+    // Try to path to all the good areas, based on distance
+    for (auto &area : good_areas)
+        if (navparser::NavEngine::navTo(area.first->m_center, staynear, true, should_path_to_local))
+            return true;
+
+    return false;
+}
+
+// A bunch of basic checks to ensure we don't try to target an invalid entity
+bool isStayNearTargetValid(CachedEntity *ent)
+{
+    return CE_VALID(ent) && g_pPlayerResource->isAlive(ent->m_IDX) && ent->m_IDX != g_pLocalPlayer->entity_idx && g_pLocalPlayer->team != ent->m_iTeam() && player_tools::shouldTarget(ent) && !IsPlayerInvisible(ent) && !IsPlayerInvulnerable(ent);
+}
+
+// Try to stay near enemies and stalk them (or in case of sniper, try to stay far from them
+// and snipe them)
+bool stayNear()
+{
+    PROF_SECTION(stayNear)
+    static Timer staynear_cooldown{};
+    static CachedEntity *previous_target = nullptr;
+
+    // Stay near is expensive so we have to cache. We achieve this by only checking a pre-determined amount of players every
+    // CreateMove
+    constexpr int MAX_STAYNEAR_CHECKS_RANGE = 3;
+    constexpr int MAX_STAYNEAR_CHECKS_CLOSE = 2;
+    static int lowest_check_index           = 0;
+
+    // Stay near is off
+    if (!stay_near)
+        return false;
+    // Don't constantly path, it's slow.
+    // Far range classes do not need to repath nearly as often as close range ones.
+    if (!staynear_cooldown.test_and_set(selected_config.prefer_far ? 2000 : 500))
+        return navparser::NavEngine::current_priority == staynear;
+
+    // Too high priority, so don't try
+    if (navparser::NavEngine::current_priority > staynear)
+        return false;
+
+    // Check and use our previous target if available
+    if (isStayNearTargetValid(previous_target))
+    {
+        auto ent_origin = previous_target->m_vecDormantOrigin();
+        if (ent_origin)
+        {
+            // Check if current target area is valid
+            if (navparser::NavEngine::isPathing())
+            {
+                auto crumbs = navparser::NavEngine::getCrumbs();
+                // We cannot just use the last crumb, as it is always nullptr
+                if (crumbs->size() > 1)
+                {
+                    auto last_crumb = (*crumbs)[crumbs->size() - 2];
+                    // Area is still valid, stay on it
+                    if (isAreaValidForStayNear(*ent_origin, last_crumb.navarea))
+                        return true;
+                }
+            }
+            // Else Check our origin for validity (Only for ranged classes)
+            else if (selected_config.prefer_far && isAreaValidForStayNear(*ent_origin, navparser::NavEngine::findClosestNavSquare(LOCAL_E->m_vecOrigin())))
+                return true;
+        }
+        // Else we try to path again
+        if (stayNearTarget(previous_target))
+            return true;
+        // Failed, invalidate previous target and try others
+        previous_target = nullptr;
+    }
+
+    auto advance_count = selected_config.prefer_far ? MAX_STAYNEAR_CHECKS_RANGE : MAX_STAYNEAR_CHECKS_CLOSE;
+
+    // Ensure it is in bounds and also wrap around
+    if (lowest_check_index > g_IEngine->GetMaxClients())
+        lowest_check_index = 0;
+
+    int calls = 0;
+    // Test all entities
+    for (int i = lowest_check_index; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        if (calls >= advance_count)
+            break;
+        calls++;
+        lowest_check_index++;
+        CachedEntity *ent = ENTITY(i);
+        if (!isStayNearTargetValid(ent))
+        {
+            calls--;
+            continue;
+        }
+        // Succeeded pathing
+        if (stayNearTarget(ent))
+        {
+            previous_target = ent;
+            return true;
+        }
+    }
+    // Stay near failed to find any good targets, add extra delay
+    staynear_cooldown.last += std::chrono::seconds(3);
+    return false;
+}
+
+// Basically the same as isAreaValidForStayNear, but some restrictions lifted.
+bool isAreaValidForSnipe(Vector ent_origin, Vector area_origin, bool fix_sentry_z = true)
+{
+    if (fix_sentry_z)
+        ent_origin.z += 40.0f;
+    area_origin.z += navparser::PLAYER_JUMP_HEIGHT;
+
+    float distance = ent_origin.DistToSqr(area_origin);
+    // Too close to be valid
+    if (distance <= (1100.0f + navparser::HALF_PLAYER_WIDTH) * (1100.0f + navparser::HALF_PLAYER_WIDTH))
+        return false;
+    // Fails vischeck, bad
+    if (!IsVectorVisibleNavigation(area_origin, ent_origin))
+        return false;
+    return true;
+}
+
+// Try to snipe the sentry
+bool tryToSnipe(CachedEntity *ent)
+{
+    auto ent_origin = GetBuildingPosition(ent);
+    // Add some z to dormant sentries as it only returns origin
+    if (CE_BAD(ent))
+        ent_origin.z += 40.0f;
+
+    std::vector<std::pair<CNavArea *, float>> good_areas;
+    for (auto &area : navparser::NavEngine::getNavFile()->m_areas)
+    {
+        // Not usable
+        if (!isAreaValidForSnipe(ent_origin, area.m_center, false))
+            continue;
+        good_areas.push_back(std::pair<CNavArea *, float>(&area, area.m_center.DistToSqr(ent_origin)));
+    }
+
+    // Sort based on distance
+    if (selected_config.prefer_far)
+        std::sort(good_areas.begin(), good_areas.end(), [](std::pair<CNavArea *, float> a, std::pair<CNavArea *, float> b) { return a.second > b.second; });
+    else
+        std::sort(good_areas.begin(), good_areas.end(), [](std::pair<CNavArea *, float> a, std::pair<CNavArea *, float> b) { return a.second < b.second; });
+
+    for (auto &area : good_areas)
+        if (navparser::NavEngine::navTo(area.first->m_center, snipe_sentry))
+            return true;
+    return false;
+}
+
+// Is our target valid?
+bool isSnipeTargetValid(CachedEntity *ent)
+{
+    return CE_VALID(ent) && ent->m_bAlivePlayer() && ent->m_iTeam() != g_pLocalPlayer->team && ent->m_iClassID() == CL_CLASS(CObjectSentrygun);
+}
+
+// Try to Snipe sentries
+bool snipeSentries()
+{
+    static Timer sentry_snipe_cooldown;
+    static CachedEntity *previous_target = nullptr;
+
+    if (!snipe_sentries)
+        return false;
+
+    // Sentries don't move often, so we can use a slightly longer timer
+    if (!sentry_snipe_cooldown.test_and_set(2000))
+        return navparser::NavEngine::current_priority == snipe_sentry || isSnipeTargetValid(previous_target);
+
+    if (isSnipeTargetValid(previous_target))
+    {
+        auto crumbs = navparser::NavEngine::getCrumbs();
+        // We cannot just use the last crumb, as it is always nullptr
+        if (crumbs->size() > 1)
+        {
+            auto last_crumb = (*crumbs)[crumbs->size() - 2];
+            // Area is still valid, stay on it
+            if (isAreaValidForSnipe(GetBuildingPosition(previous_target), last_crumb.navarea->m_center))
+                return true;
+        }
+        if (tryToSnipe(previous_target))
+            return true;
+    }
+
+    // Make sure we don't try to do it on shortrange classes unless specified
+    if (!snipe_sentries_shortrange && (g_pLocalPlayer->clazz == tf_scout || g_pLocalPlayer->clazz == tf_pyro))
+        return false;
+
+    for (int i = g_IEngine->GetMaxClients() + 1; i < MAX_ENTITIES; i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        // Invalid sentry
+        if (!isSnipeTargetValid(ent))
+            continue;
+        // Succeeded in trying to snipe it
+        if (tryToSnipe(ent))
+        {
+            previous_target = ent;
+            return true;
+        }
+    }
+    return false;
+}
+
+enum capture_type
+{
+    no_capture,
+    ctf,
+    payload,
+    controlpoints
+};
+
+static capture_type current_capturetype = no_capture;
+// Overwrite to return true for payload carts as an example
+static bool overwrite_capture = false;
+// Doomsday is a ctf + payload map which breaks capturing...
+static bool is_doomsday = false;
+
+std::optional<Vector> getCtfGoal(int our_team, int enemy_team)
+{
+    // Get Flag related information
+    auto status   = flagcontroller::getStatus(enemy_team);
+    auto position = flagcontroller::getPosition(enemy_team);
+    auto carrier  = flagcontroller::getCarrier(enemy_team);
+
+    // No flag :(
+    if (!position)
+        return std::nullopt;
+
+    current_capturetype = ctf;
+
+    // Flag is taken by us
+    if (status == TF_FLAGINFO_STOLEN)
+    {
+        // CTF is the current capture type.
+        if (carrier == LOCAL_E)
+        {
+            // Return our capture point location
+            auto team_flag = flagcontroller::getFlag(our_team);
+            return team_flag.spawn_pos;
+        }
+    }
+    // Get the flag if not taken by us already
+    else
+    {
+        return position;
+    }
+    return std::nullopt;
+}
+
+std::optional<Vector> getPayloadGoal(int our_team)
+{
+    auto position = plcontroller::getClosestPayload(g_pLocalPlayer->v_Origin, our_team);
+    // No payloads found :(
+    if (!position)
+        return std::nullopt;
+    current_capturetype = payload;
+
+    // Adjust position so it's not floating high up, provided the local player is close.
+    if (LOCAL_E->m_vecOrigin().DistTo(*position) <= 150.0f)
+        (*position).z = LOCAL_E->m_vecOrigin().z;
+    // If close enough, don't move (mostly due to lifts)
+    if ((*position).DistTo(LOCAL_E->m_vecOrigin()) <= 50.0f)
+    {
+        overwrite_capture = true;
+        return std::nullopt;
+    }
+    else
+        return position;
+}
+
+std::optional<Vector> getControlPointGoal(int our_team)
+{
+    static Vector previous_position(0.0f);
+    static Vector randomized_position(0.0f);
+
+    auto position = cpcontroller::getClosestControlPoint(g_pLocalPlayer->v_Origin, our_team);
+    // No points found :(
+    if (!position)
+        return std::nullopt;
+
+    // Randomize where on the point we walk a bit so bots don't just stand there
+    if (previous_position != *position || !navparser::NavEngine::isPathing())
+    {
+        previous_position   = *position;
+        randomized_position = *position;
+        randomized_position.x += RandomFloat(0.0f, 100.0f);
+        randomized_position.y += RandomFloat(0.0f, 100.0f);
+    }
+
+    current_capturetype = controlpoints;
+    // Try to navigate
+    return randomized_position;
+}
+
+// Try to capture objectives
+bool captureObjectives()
+{
+    static Timer capture_timer;
+    static Vector previous_target(0.0f);
+    // Not active or on a doomsday map
+    if (!capture_objectives || is_doomsday || !capture_timer.check(2000))
+        return false;
+
+    // Priority too high, don't try
+    if (navparser::NavEngine::current_priority > capture)
+        return false;
+
+    // Where we want to go
+    std::optional<Vector> target;
+
+    int our_team   = g_pLocalPlayer->team;
+    int enemy_team = our_team == TEAM_BLU ? TEAM_RED : TEAM_BLU;
+
+    current_capturetype = no_capture;
+    overwrite_capture   = false;
+
+    // Run ctf logic
+    target = getCtfGoal(our_team, enemy_team);
+    // Not ctf, run payload
+    if (current_capturetype == no_capture)
+    {
+        target = getPayloadGoal(our_team);
+        // Not payload, run control points
+        if (current_capturetype == no_capture)
+        {
+            target = getControlPointGoal(our_team);
+        }
+    }
+
+    // Overwritten, for example because we are currently on the payload, cancel any sort of pathing and return true
+    if (overwrite_capture)
+    {
+        navparser::NavEngine::cancelPath();
+        return true;
+    }
+    // No target, bail and set on cooldown
+    else if (!target)
+    {
+        capture_timer.update();
+        return false;
+    }
+    // If priority is not capturing or we have a new target, try to path there
+    else if (navparser::NavEngine::current_priority != capture || *target != previous_target)
+    {
+        if (navparser::NavEngine::navTo(*target, capture, true, !navparser::NavEngine::isPathing()))
+        {
+            previous_target = *target;
+            return true;
+        }
+        else
+            capture_timer.update();
+    }
+    return false;
+}
+
+// Run away from dangerous areas
+bool escapeDanger()
+{
+    if (!escape_danger)
+        return false;
+    // Don't escape while we have the intel
+    if (!escape_danger_ctf_cap)
+    {
+        auto flag_carrier = flagcontroller::getCarrier(g_pLocalPlayer->team);
+        if (flag_carrier == LOCAL_E)
+            return false;
+    }
+    // Priority too high
+    if (navparser::NavEngine::current_priority > danger)
+        return false;
+
+    auto *local_nav = navparser::NavEngine::findClosestNavSquare(g_pLocalPlayer->v_Origin);
+    auto blacklist  = navparser::NavEngine::getFreeBlacklist();
+
+    // In danger, try to run
+    if (blacklist->find(local_nav) != blacklist->end())
+    {
+        static CNavArea *target_area = nullptr;
+        // Already running and our target is still valid
+        if (navparser::NavEngine::current_priority == danger && blacklist->find(target_area) == blacklist->end())
+            return true;
+
+        std::vector<CNavArea *> nav_areas_ptr;
+        // Copy a ptr list (sadly cat_nav_init exists so this cannot be only done once)
+        for (auto &nav_area : navparser::NavEngine::getNavFile()->m_areas)
+            nav_areas_ptr.push_back(&nav_area);
+
+        // Sort by distance
+        std::sort(nav_areas_ptr.begin(), nav_areas_ptr.end(), [](CNavArea *a, CNavArea *b) { return a->m_center.DistToSqr(g_pLocalPlayer->v_Origin) < b->m_center.DistToSqr(g_pLocalPlayer->v_Origin); });
+
+        int calls = 0;
+        // Try to path away
+        for (auto area : nav_areas_ptr)
+        {
+            if (blacklist->find(area) == blacklist->end())
+            {
+                // only try the 5 closest valid areas though, something is wrong if this fails
+                calls++;
+                if (calls > 5)
+                    break;
+                if (navparser::NavEngine::navTo(area->m_center, danger))
+                {
+                    target_area = area;
+                    return true;
+                }
+            }
+        }
+    }
+    // No longer in danger
+    else if (navparser::NavEngine::current_priority == danger)
+        navparser::NavEngine::cancelPath();
+    return false;
+}
+
+static std::pair<CachedEntity *, float> getNearestPlayerDistance()
+{
+    float distance         = FLT_MAX;
+    CachedEntity *best_ent = nullptr;
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        CachedEntity *ent = ENTITY(i);
+        if (CE_VALID(ent) && ent->m_vecDormantOrigin() && ent->m_bAlivePlayer() && ent->m_bEnemy() && g_pLocalPlayer->v_Origin.DistTo(ent->m_vecOrigin()) < distance && player_tools::shouldTarget(ent) && !IsPlayerInvisible(ent))
+        {
+            distance = g_pLocalPlayer->v_Origin.DistTo(*ent->m_vecDormantOrigin());
+            best_ent = ent;
+        }
+    }
+    return { best_ent, distance };
 }
 
 enum slots
@@ -1286,13 +922,28 @@ enum slots
     secondary = 2,
     melee     = 3
 };
+
+static int slot = primary;
+static std::pair<CachedEntity *, float> nearest;
+
+static void autoJump()
+{
+    if (!autojump)
+        return;
+    static Timer last_jump{};
+    if (!last_jump.test_and_set(200) || CE_BAD(nearest.first))
+        return;
+
+    if (nearest.second <= *jump_distance)
+        current_user_cmd->buttons |= IN_JUMP | IN_DUCK;
+}
+
 static slots getBestSlot(slots active_slot)
 {
-    auto nearest = getNearestPlayerDistance(false);
+    nearest = getNearestPlayerDistance();
     switch (g_pLocalPlayer->clazz)
     {
     case tf_scout:
-        return primary;
     case tf_heavy:
         return primary;
     case tf_medic:
@@ -1308,6 +959,10 @@ static slots getBestSlot(slots active_slot)
     }
     case tf_sniper:
     {
+        // Have a Huntsman, Always use primary
+        if (HasWeapon(LOCAL_E, 56) || HasWeapon(LOCAL_E, 1005) || HasWeapon(LOCAL_E, 1092))
+            return primary;
+
         if (nearest.second <= 300 && nearest.first->m_iHealth() < 75)
             return secondary;
         else if (nearest.second <= 400 && nearest.first->m_iHealth() < 75)
@@ -1324,18 +979,14 @@ static slots getBestSlot(slots active_slot)
         else
             return secondary;
     }
-    case tf_engineer:
+    case tf_soldier:
     {
-        if (current_task == task::engineer)
-        {
-            // We cannot build the building if we keep switching away from the PDA
-            if (current_engineer_task == task::engineer_task::build_building)
-                return active_slot;
-            // Use wrench to repair/upgrade
-            if (current_engineer_task == task::engineer_task::upgradeorrepair_building)
-                return melee;
-        }
-        return primary;
+        if (nearest.second <= 200)
+            return secondary;
+        else if (nearest.second <= 300)
+            return active_slot;
+        else
+            return primary;
     }
     default:
     {
@@ -1354,13 +1005,12 @@ static void updateSlot()
     static Timer slot_timer{};
     if (!slot_timer.test_and_set(300))
         return;
-    if (CE_GOOD(LOCAL_E) && CE_GOOD(LOCAL_W) && !g_pLocalPlayer->life_state)
+    if (CE_GOOD(LOCAL_E) && !HasCondition<TFCond_HalloweenGhostMode>(LOCAL_E) && CE_GOOD(LOCAL_W) && LOCAL_E->m_bAlivePlayer())
     {
         IClientEntity *weapon = RAW_ENT(LOCAL_W);
-        // IsBaseCombatWeapon()
         if (re::C_BaseCombatWeapon::IsBaseCombatWeapon(weapon))
         {
-            int slot    = re::C_BaseCombatWeapon::GetSlot(weapon) + 1;
+            slot        = re::C_BaseCombatWeapon::GetSlot(weapon) + 1;
             int newslot = getBestSlot(static_cast<slots>(slot));
             if (slot != newslot)
                 g_IEngine->ClientCmd_Unrestricted(format("slot", newslot).c_str());
@@ -1368,41 +1018,115 @@ static void updateSlot()
     }
 }
 
-class ObjectDestroyListener : public IGameEventListener2
+void CreateMove()
 {
-    virtual void FireGameEvent(IGameEvent *event)
-    {
-        if (!isHackActive() || !engineer_mode)
-            return;
-        // Get index of destroyed object
-        int index = event->GetInt("index");
-        // Destroyed Entity
-        CachedEntity *ent = ENTITY(index);
-        // Get Entry in the vector
-        auto it = std::find(local_buildings.begin(), local_buildings.end(), ent);
-        // If found, erase
-        if (it != local_buildings.end())
-            local_buildings.erase(it);
-    }
-};
+    if (!enabled || !navparser::NavEngine::isReady())
+        return;
+    if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || HasCondition<TFCond_HalloweenGhostMode>(LOCAL_E))
+        return;
 
-ObjectDestroyListener &listener()
-{
-    static ObjectDestroyListener object{};
-    return object;
+    refreshSniperSpots();
+
+    if (danger_config_custom)
+    {
+        selected_config = { *danger_config_custom_min_full_danger, *danger_config_custom_min_slight_danger, *danger_config_custom_max_slight_danger, *danger_config_custom_prefer_far };
+    }
+    else
+    {
+        // Update the distance config
+        switch (g_pLocalPlayer->clazz)
+        {
+        case tf_scout:
+        case tf_heavy:
+            selected_config = CONFIG_SHORT_RANGE;
+            break;
+        case tf_sniper:
+            selected_config = g_pLocalPlayer->weapon()->m_iClassID() == CL_CLASS(CTFCompoundBow) ? CONFIG_MID_RANGE : CONFIG_LONG_RANGE;
+            break;
+        default:
+            selected_config = CONFIG_MID_RANGE;
+        }
+    }
+
+    updateSlot();
+    autoJump();
+    updateEnemyBlacklist();
+
+    // Try to escape danger first of all
+    if (escapeDanger())
+        return;
+    // Second priority should be getting health
+    else if (getHealth())
+        return;
+    // If we aren't getting health, get ammo
+    else if (getAmmo())
+        return;
+    // Try to capture objectives
+    else if (captureObjectives())
+        return;
+    // Try to snipe sentries
+    else if (snipeSentries())
+        return;
+    // Try to stalk enemies
+    else if (stayNear())
+        return;
+    // Try to get health with a lower prioritiy
+    else if (getHealth(true))
+        return;
+    // We have nothing else to do, roam
+    else if (doRoam())
+        return;
 }
 
-static InitRoutine runinit([]() {
-    g_IEventManager2->AddListener(&listener(), "object_destroyed", false);
-    EC::Register(EC::CreateMove, CreateMove, "navbot", EC::early);
-    EC::Register(
-        EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener()); }, "navbot_shutdown");
+void LevelInit()
+{
+    // Make it run asap
+    refresh_sniperspots_timer.last -= std::chrono::seconds(60);
+    sniper_spots.clear();
+    is_doomsday = false;
+
+    // Doomsday sucks
+    // TODO: add proper doomsday implementation
+    auto map_name = std::string(g_IEngine->GetLevelName());
+    if (g_IEngine->GetLevelName() && map_name.find("sd_doomsday") != map_name.npos)
+        is_doomsday = true;
+}
+#if ENABLE_VISUALS
+void Draw()
+{
+    if (!draw_danger || !navparser::NavEngine::isReady())
+        return;
+    for (auto &area : slight_danger_drawlist_normal)
+    {
+        Vector out;
+
+        if (draw::WorldToScreen(area, out))
+            draw::Rectangle(out.x - 2.0f, out.y - 2.0f, 4.0f, 4.0f, colors::orange);
+    }
+    for (auto &area : slight_danger_drawlist_dormant)
+    {
+        Vector out;
+
+        if (draw::WorldToScreen(area, out))
+            draw::Rectangle(out.x - 2.0f, out.y - 2.0f, 4.0f, 4.0f, colors::orange);
+    }
+    for (auto &area : *navparser::NavEngine::getFreeBlacklist())
+    {
+        Vector out;
+
+        if (draw::WorldToScreen(area.first->m_center, out))
+            draw::Rectangle(out.x - 2.0f, out.y - 2.0f, 4.0f, 4.0f, colors::red);
+    }
+}
+#endif
+
+static InitRoutine init([]() {
+    EC::Register(EC::CreateMove, CreateMove, "navbot_cm");
+    EC::Register(EC::LevelInit, LevelInit, "navbot_levelinit");
+#if ENABLE_VISUALS
+    EC::Register(EC::Draw, Draw, "navbot_draw");
+#endif
+    LevelInit();
 });
 
-void change(settings::VariableBase<bool> &, bool)
-{
-    nav::clearInstructions();
-}
-
-static InitRoutine routine([]() { enabled.installChangeCallback(change); });
 } // namespace hacks::tf2::NavBot

@@ -111,6 +111,17 @@ void NetVars::Init()
         this->m_bMiniBuilding           = gNetvars.get_offset("DT_BaseObject", "m_bMiniBuilding");
         this->m_bPlasmaDisable          = gNetvars.get_offset("DT_BaseObject", "m_bPlasmaDisable");
 
+        // any building
+        this->iUpgradeLevel   = gNetvars.get_offset("DT_BaseObject", "m_iUpgradeLevel");
+        this->m_hBuilder      = gNetvars.get_offset("DT_BaseObject", "m_hBuilder");
+        this->m_bCanPlace     = gNetvars.get_offset("DT_BaseObject", "m_bServerOverridePlacement");
+        this->m_bBuilding     = gNetvars.get_offset("DT_BaseObject", "m_bBuilding");
+        this->m_bCarryDeploy  = gNetvars.get_offset("DT_BaseObject", "m_bCarryDeploy");
+        this->m_iObjectType   = gNetvars.get_offset("DT_BaseObject", "m_iObjectType");
+        this->m_bHasSapper    = gNetvars.get_offset("DT_BaseObject", "m_bHasSapper");
+        this->m_bPlacing      = gNetvars.get_offset("DT_BaseObject", "m_bPlacing");
+        this->m_bMiniBuilding = gNetvars.get_offset("DT_BaseObject", "m_bMiniBuilding");
+
         // teleporter
         this->m_iTeleState                    = gNetvars.get_offset("DT_ObjectTeleporter", "m_iState");
         this->m_flTeleRechargeTime            = gNetvars.get_offset("DT_ObjectTeleporter", "m_flRechargeTime");
@@ -118,6 +129,21 @@ void NetVars::Init()
         this->m_iTeleTimesUsed                = gNetvars.get_offset("DT_ObjectTeleporter", "m_iTimesUsed");
         this->m_flTeleYawToExit               = gNetvars.get_offset("DT_ObjectTeleporter", "m_flYawToExit");
         this->m_bMatchBuilding                = gNetvars.get_offset("DT_ObjectTeleporter", "m_bMatchBuilding");
+
+        // CTF Flag
+        this->m_nFlagType   = gNetvars.get_offset("DT_CaptureFlag", "m_nType");
+        this->m_nFlagStatus = gNetvars.get_offset("DT_CaptureFlag", "m_nFlagStatus");
+
+        // ObjectiveResource
+        this->m_bTeamCanCap        = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_bTeamCanCap");
+        this->m_iNumControlPoints  = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_iNumControlPoints");
+        this->m_vCPPositions       = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_vCPPositions[0]");
+        this->m_iOwningTeam        = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_iOwner");
+        this->m_bCPLocked          = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_bCPLocked");
+        this->m_bPlayingMiniRounds = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_bPlayingMiniRounds");
+        this->m_bInMiniRound       = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_bInMiniRound");
+        this->m_iPreviousPoints    = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_iPreviousPoints");
+        this->m_iBaseControlPoints = gNetvars.get_offset("DT_BaseTeamObjectiveResource", "m_iBaseControlPoints");
 
         this->m_DmgRadius                   = gNetvars.get_offset("DT_BaseGrenade", "m_DmgRadius");
         this->iPipeType                     = gNetvars.get_offset("DT_TFProjectile_Pipebomb", "m_iType");

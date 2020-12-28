@@ -36,6 +36,7 @@ bool BacktrackVisCheck(CachedEntity *entity);
 void Reset();
 
 // Stuff to make storing functions easy
+bool isAiming();
 CachedEntity *CurrentTarget();
 bool ShouldAim();
 CachedEntity *RetrieveBestTarget(bool aimkey_state);
