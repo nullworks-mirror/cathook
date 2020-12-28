@@ -133,6 +133,11 @@ static settings::Boolean local_weapon_chams_overlay_chams{ "chams.overlay.local-
 static settings::Rgba local_weapon_overlaychams_color{ "chams.local-weapon.overlaycolor", "000000ff" };
 static settings::Rgba local_weapon_basechams_color{ "chams.local-weapon.basecolor", "000000ff" };
 
+// Can we render arms/weapon chams right now? We need to draw on some player atleast once before it works without flat
+// chams.
+static bool should_draw_fp_chams = false;
+static Timer should_draw_fp_chams_timer;
+
 class Materials
 {
 public:
@@ -241,7 +246,15 @@ static InitRoutine init_dme([]() {
 // Purpose => Returns true if we should render provided internal entity
 bool ShouldRenderChams(IClientEntity *entity)
 {
-    if (!enable || CE_BAD(LOCAL_E))
+    if (CE_BAD(LOCAL_E))
+        return false;
+    if ((arms_chams || local_weapon_chams) && !should_draw_fp_chams)
+    {
+        should_draw_fp_chams = true;
+        should_draw_fp_chams_timer.update();
+        return true;
+    }
+    if (!enable)
         return false;
     if (entity->entindex() < 0)
         return false;
@@ -628,7 +641,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
         if (name)
         {
             std::string sname = name;
-            if ((sname.find("arms") != std::string::npos && sname.find("yeti") == std::string::npos) || sname.find("c_engineer_gunslinger") != std::string::npos)
+            if (should_draw_fp_chams && should_draw_fp_chams_timer.check(500) && ((sname.find("arms") != std::string::npos && sname.find("yeti") == std::string::npos) || sname.find("c_engineer_gunslinger") != std::string::npos))
             {
                 if (no_arms)
                     return;
@@ -681,7 +694,7 @@ DEFINE_HOOKED_METHOD(DrawModelExecute, void, IVModelRender *this_, const DrawMod
             if (!do_draw)
                 return;
 
-            if (local_weapon_chams && info.entity_index == -1 && sname.find("arms") == std::string::npos && (sname.find("models/weapons") != std::string::npos || sname.find("models/workshop/weapons") != std::string::npos || sname.find("models/workshop_partner/weapons") != std::string::npos))
+            if (should_draw_fp_chams && should_draw_fp_chams_timer.check(500) && local_weapon_chams && info.entity_index == -1 && sname.find("arms") == std::string::npos && (sname.find("models/weapons") != std::string::npos || sname.find("models/workshop/weapons") != std::string::npos || sname.find("models/workshop_partner/weapons") != std::string::npos))
             {
                 // Backup original colors
                 rgba_t original_color;
