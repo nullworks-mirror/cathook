@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include <array>
 #include <stdint.h>
@@ -19,7 +19,8 @@ enum task : uint8_t
     dispenser,
     followbot,
     outofbounds,
-    engineer
+    engineer,
+    capture
 };
 
 enum engineer_task : uint8_t
@@ -70,3 +71,4 @@ struct bot_class_config
     float max;
 };
 } // namespace hacks::tf2::NavBot
+*/

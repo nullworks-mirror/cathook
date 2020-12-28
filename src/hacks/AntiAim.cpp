@@ -369,6 +369,9 @@ void ProcessUserCmd(CUserCmd *cmd)
         return;
     if (!ShouldAA(cmd))
         return;
+    // Not running
+    if (!pitch && !yaw)
+        return;
     static bool keepmode  = true;
     keepmode              = !keepmode;
     float &p              = cmd->viewangles.x;

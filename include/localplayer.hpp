@@ -36,6 +36,8 @@ public:
     char life_state;
     int clazz;
     bool bZoomed;
+    bool bRevving;
+    bool bRevved;
     float flZoomBegin;
     bool holding_sniper_rifle;
     bool holding_sapper;

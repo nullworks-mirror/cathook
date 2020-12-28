@@ -1,42 +1,101 @@
 #pragma once
 
 #include <memory>
-#include "mathlib/vector.h"
+#include <vector>
+#include "CNavFile.h"
 
-class CNavFile;
-class CNavArea;
-
-namespace nav
+enum Priority_list
 {
-
-enum init_status : uint8_t
-{
-    off = 0,
-    unavailable,
-    initing,
-    on
+    patrol = 5,
+    lowprio_health,
+    staynear,
+    snipe_sentry,
+    followbot,
+    ammo,
+    capture,
+    health,
+    danger,
 };
 
-// Call prepare first and check its return value
-extern std::unique_ptr<CNavFile> navfile;
+namespace navparser
+{
+constexpr float PLAYER_WIDTH       = 49;
+constexpr float HALF_PLAYER_WIDTH  = PLAYER_WIDTH / 2.0f;
+constexpr float PLAYER_JUMP_HEIGHT = 72.0f;
 
-// Current path priority
-extern int curr_priority;
-// Check if ready to recieve another NavTo (to avoid overwriting of
-// instructions)
-extern bool ReadyForCommands;
-// Ignore. For level init only
-extern std::atomic<init_status> status;
+#define TICKCOUNT_TIMESTAMP(seconds) (g_GlobalVars->tickcount + int(seconds / g_GlobalVars->interval_per_tick))
 
-// Nav to vector
-bool navTo(const Vector &destination, int priority = 5, bool should_repath = true, bool nav_to_local = true, bool is_repath = false);
-// Find closest to vector area
-CNavArea *findClosestNavSquare(const Vector &vec);
-// Check and init navparser
-bool prepare();
-// Clear current path
-void clearInstructions();
-// Check if area is safe from stickies and sentries
-bool isSafe(CNavArea *area);
+// Basic Blacklist reasons, you can add your own externally and use them
+enum BlacklistReason_enum
+{
+    SENTRY,
+    STICKY,
+    ENEMY_NORMAL,
+    ENEMY_DORMANT,
+    // Always last
+    BLACKLIST_LENGTH
+};
 
-} // namespace nav
+class BlacklistReason
+{
+public:
+    BlacklistReason_enum value;
+    int time     = 0;
+    void operator=(BlacklistReason_enum const &reason)
+    {
+        this->value = reason;
+    }
+    BlacklistReason()
+    {
+        this->value = (BlacklistReason_enum) -1;
+        this->time  = 0;
+    }
+    BlacklistReason(BlacklistReason_enum reason)
+    {
+        this->value = reason;
+        this->time  = 0;
+    }
+    BlacklistReason(BlacklistReason_enum reason, int time)
+    {
+        this->value = reason;
+        this->time  = time;
+    }
+};
+
+struct Crumb
+{
+    CNavArea *navarea;
+    Vector vec;
+};
+
+namespace NavEngine
+{
+
+// Is the Nav engine ready to run?
+bool isReady();
+// Are we currently pathing?
+bool isPathing();
+CNavFile *getNavFile();
+// Get closest nav square to target vector
+CNavArea *findClosestNavSquare(const Vector origin);
+// Get the path nodes
+std::vector<Crumb> *getCrumbs();
+bool navTo(const Vector &destination, int priority = 5, bool should_repath = true, bool nav_to_local = true, bool is_repath = true);
+// Use when something unexpected happens, e.g. vischeck fails
+void abandonPath();
+// Use to cancel pathing completely
+void cancelPath();
+
+// Return the whole thing
+std::unordered_map<CNavArea *, BlacklistReason> *getFreeBlacklist();
+// Return a specific category, we keep the same indexes to provide single element erasing
+std::unordered_map<CNavArea *, BlacklistReason> getFreeBlacklist(BlacklistReason reason);
+
+// Clear whole blacklist
+void clearFreeBlacklist();
+// Clear by category
+void clearFreeBlacklist(BlacklistReason reason);
+
+extern int current_priority;
+} // namespace NavEngine
+} // namespace navparser

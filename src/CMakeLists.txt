@@ -1,4 +1,5 @@
 set(files "${CMAKE_CURRENT_LIST_DIR}/angles.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/CaptureLogic.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/chatlog.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/chatstack.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/conditions.cpp"

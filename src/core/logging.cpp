@@ -68,9 +68,8 @@ void logging::Info(const char *fmt, ...)
     // Fill buffer
     int size = vsnprintf(result, 512, fmt, list);
     va_end(list);
-    if(size < 0)
+    if (size < 0)
         return;
-
     Log(result, false);
 #endif
 }
@@ -88,7 +87,7 @@ void logging::File(const char *fmt, ...)
     // Fill buffer
     int size = vsnprintf(result, 512, fmt, list);
     va_end(list);
-    if(size < 0)
+    if (size < 0)
         return;
 
     Log(result, true);

@@ -37,8 +37,6 @@ static settings::Boolean ignore_textmode{ "follow-bot.ignore-textmode", "true" }
 static settings::Boolean mimic_crouch{ "follow-bot.mimic-crouch", "true" };
 static settings::Boolean autozoom_if_idle{ "follow-bot.autozoom-if-idle", "true" };
 
-namespace nb = hacks::tf2::NavBot;
-
 static Timer navBotInterval{};
 static unsigned steamid = 0x0;
 
@@ -270,7 +268,7 @@ static bool startFollow(CachedEntity *entity, bool useNavbot)
     }
     if (useNavbot)
     {
-        if (nav::navTo(entity->m_vecOrigin(), 8, true, false))
+        if (navparser::NavEngine::navTo(entity->m_vecOrigin(), Priority_list::followbot, true, false))
         {
             navtarget = true;
             return true;
@@ -310,14 +308,14 @@ static void cm()
     if (!enable || CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
     {
         follow_target = 0;
-        if (nb::task::current_task == nb::task::followbot)
-            nb::task::current_task = nb::task::none;
+        if (navparser::NavEngine::current_priority == Priority_list::followbot)
+            navparser::NavEngine::cancelPath();
         return;
     }
     if (!inited)
         init();
 
-    if (nb::task::current_task == nb::task::health || nb::task::current_task == nb::task::ammo)
+    if (navparser::NavEngine::current_priority > Priority_list::followbot)
     {
         follow_target = 0;
         return;
@@ -343,7 +341,7 @@ static void cm()
         crouch_timer.update();
     }
 
-    bool isNavBotCM           = navBotInterval.test_and_set(3000) && nav::prepare();
+    bool isNavBotCM           = navBotInterval.test_and_set(3000) && navparser::NavEngine::isReady();
     bool foundPreferredTarget = false;
 
     // Target Selection
@@ -467,18 +465,6 @@ static void cm()
             }
             if (entity->m_bEnemy())
                 continue;
-            // const model_t *model = ENTITY(follow_target)->InternalEntity()->GetModel();
-            // FIXME follow cart/point
-            /*if (followcart && model &&
-                (lagexploit::pointarr[0] || lagexploit::pointarr[1] ||
-                 lagexploit::pointarr[2] || lagexploit::pointarr[3] ||
-                 lagexploit::pointarr[4]) &&
-                (model == lagexploit::pointarr[0] ||
-                 model == lagexploit::pointarr[1] ||
-                 model == lagexploit::pointarr[2] ||
-                 model == lagexploit::pointarr[3] ||
-                 model == lagexploit::pointarr[4]))
-                follow_target = entity->m_IDX;*/
             // favor closer entitys
             if (CE_GOOD(entity))
             {
@@ -512,7 +498,7 @@ static void cm()
     if (navtarget)
     {
         auto ent = ENTITY(follow_target);
-        if (!nav::prepare())
+        if (!navparser::NavEngine::isReady())
         {
             follow_target = 0;
             navtarget     = 0;
@@ -531,7 +517,7 @@ static void cm()
                 }
                 if (pos && navtimer.test_and_set(800))
                 {
-                    if (nav::navTo(*pos, 8, true, false))
+                    if (navparser::NavEngine::navTo(*pos, Priority_list::followbot, true, false))
                         navinactivity.update();
                 }
             }
@@ -539,7 +525,6 @@ static void cm()
             {
                 follow_target = 0;
             }
-            nb::task::current_task = nb::task::followbot;
             return;
         }
     }
@@ -547,13 +532,11 @@ static void cm()
     // last check for entity before we continue
     if (!follow_target)
     {
-        if (nb::task::current_task == nb::task::followbot)
-            nb::task::current_task = nb::task::none;
+        if (navparser::NavEngine::current_priority == Priority_list::followbot)
+            navparser::NavEngine::cancelPath();
         return;
     }
-
-    nb::task::current_task = nb::task::followbot;
-    nav::clearInstructions();
+    navparser::NavEngine::cancelPath();
 
     CachedEntity *followtar = ENTITY(follow_target);
     // wtf is this needed

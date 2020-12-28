@@ -327,7 +327,7 @@ Upgradeinfo PickUpgrade()
 }
 static std::vector<Posinfo> spot_list;
 // Upgrade Navigation
-void NavUpgrade()
+/*void NavUpgrade()
 {
     std::string lvlname = g_IEngine->GetLevelName();
     std::vector<Posinfo> potential_spots{};
@@ -359,6 +359,7 @@ void NavUpgrade()
         return;
     }
 }
+
 static bool run = false;
 static Timer run_delay;
 static Timer buy_upgrade;
@@ -479,16 +480,17 @@ void MvM_Autoupgrade(KeyValues *event)
         run_delay.update();
     }
 }
-
+*/
 void SendNetMsg(INetMessage &msg)
 {
+    /*
     if (!strcmp(msg.GetName(), "clc_CmdKeyValues"))
     {
         if ((KeyValues *) (((unsigned *) &msg)[4]))
             MvM_Autoupgrade((KeyValues *) (((unsigned *) &msg)[4]));
-    }
+    }*/
 }
-
+/*
 class CatBotEventListener : public IGameEventListener2
 {
     void FireGameEvent(IGameEvent *event) override
@@ -509,7 +511,7 @@ CatBotEventListener &listener()
 {
     static CatBotEventListener object{};
     return object;
-}
+}*/
 
 class CatBotEventListener2 : public IGameEventListener2
 {
@@ -912,7 +914,7 @@ void update()
 
 void init()
 {
-    g_IEventManager2->AddListener(&listener(), "player_death", false);
+    // g_IEventManager2->AddListener(&listener(), "player_death", false);
     g_IEventManager2->AddListener(&listener2(), "vote_maps_changed", false);
 }
 
@@ -924,7 +926,7 @@ void level_init()
 
 void shutdown()
 {
-    g_IEventManager2->RemoveListener(&listener());
+    // g_IEventManager2->RemoveListener(&listener());
     g_IEventManager2->RemoveListener(&listener2());
 }
 

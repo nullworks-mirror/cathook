@@ -120,8 +120,9 @@ void WalkTo(const Vector &vector)
     // Calculate how to get to a vector
     auto result = ComputeMove(LOCAL_E->m_vecOrigin(), vector);
     // Push our move to usercmd
-    current_user_cmd->forwardmove = result.first;
-    current_user_cmd->sidemove    = result.second;
+    current_user_cmd->forwardmove = result.x;
+    current_user_cmd->sidemove    = result.y;
+    current_user_cmd->upmove      = result.z;
 }
 
 // Function to get the corner location that a vischeck to an entity is possible
@@ -436,7 +437,6 @@ bool canReachVector(Vector loc, Vector dest)
 
 std::string GetLevelName()
 {
-
     std::string name(g_IEngine->GetLevelName());
     size_t slash = name.find('/');
     if (slash == std::string::npos)
@@ -465,21 +465,30 @@ std::pair<float, float> ComputeMovePrecise(const Vector &a, const Vector &b)
     return { cos(yaw) * speed, -sin(yaw) * speed };
 }
 
-std::pair<float, float> ComputeMove(const Vector &a, const Vector &b)
+Vector ComputeMove(const Vector &a, const Vector &b)
 {
     Vector diff = (b - a);
     if (diff.Length() == 0.0f)
-        return { 0, 0 };
+        return Vector(0.0f);
     const float x = diff.x;
     const float y = diff.y;
     Vector vsilent(x, y, 0);
     float speed = sqrt(vsilent.x * vsilent.x + vsilent.y * vsilent.y);
     Vector ang;
     VectorAngles(vsilent, ang);
-    float yaw = DEG2RAD(ang.y - current_user_cmd->viewangles.y);
+    float yaw   = DEG2RAD(ang.y - current_user_cmd->viewangles.y);
+    float pitch = DEG2RAD(ang.x - current_user_cmd->viewangles.x);
     if (g_pLocalPlayer->bUseSilentAngles)
-        yaw = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y);
-    return { cos(yaw) * 450.0f, -sin(yaw) * 450.0f };
+    {
+        yaw   = DEG2RAD(ang.y - g_pLocalPlayer->v_OrigViewangles.y);
+        pitch = DEG2RAD(ang.x - g_pLocalPlayer->v_OrigViewangles.x);
+    }
+    Vector move = { cos(yaw) * 450.0f, -sin(yaw) * 450.0f, -cos(pitch) * 450.0f };
+
+    // Only apply upmove in water
+    if (!(g_ITrace->GetPointContents(g_pLocalPlayer->v_Eye) & CONTENTS_WATER))
+        move.z = current_user_cmd->upmove;
+    return move;
 }
 
 ConCommand *CreateConCommand(const char *name, FnCommandCallback_t callback, const char *help)
@@ -1462,7 +1471,6 @@ Vector GetForwardVector(Vector origin, Vector viewangles, float distance, Cached
     // Compensate for punch angle
     if (punch_entity && should_correct_punch)
         angle += VectorToQAngle(CE_VECTOR(punch_entity, netvar.vecPunchAngle));
-    trace_t trace;
 
     sy        = sinf(DEG2RAD(angle[1]));
     cy        = cosf(DEG2RAD(angle[1]));
