@@ -60,6 +60,10 @@ case "$DISTRO" in
         [ "$(type pacman)" ] || { printf "/etc/os-release outputs 'ID=manjaro' but Pacman is not present, exiting.."; exit; }
         OS="arch"
     ;;
+    "garuda")
+        [ "$(type pacman)" ] || { printf "/etc/os-release outputs 'ID=garuda' but Pacman is not present, exiting.."; exit; }
+        OS="arch"
+    ;;
     "arch")
         [ "$(type pacman)" ] || { printf "/etc/os-release outputs 'ID=arch' but Pacman is not present, exiting.."; exit; }
         OS="arch"
