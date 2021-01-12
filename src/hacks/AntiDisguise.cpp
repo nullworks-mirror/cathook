@@ -10,8 +10,12 @@
 
 namespace hacks::tf2::antidisguise
 {
-static settings::Boolean enable{ "remove.disguise", "0" };
-static settings::Boolean no_invisibility{ "remove.cloak", "0" };
+#if ENABLE_TEXTMODE
+static settings::Boolean enable{ "remove.disguise", "true" };
+#else
+static settings::Boolean enable{ "remove.disguise", "false" };
+#endif
+static settings::Boolean no_invisibility{ "remove.cloak", "false" };
 
 void cm()
 {
