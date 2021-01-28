@@ -12,7 +12,6 @@
 namespace hacks::shared::catbot
 {
 extern Timer timer_votekicks;
-bool should_ignore_player(CachedEntity *player);
 void update();
 void init();
 void level_init();

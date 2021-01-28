@@ -681,8 +681,6 @@ bool IsTargetStateGood(CachedEntity *entity)
             // Some global checks
             if (!player_tools::shouldTarget(entity))
                 return false;
-            if (hacks::shared::catbot::should_ignore_player(entity))
-                return false;
             // Invulnerable players, ex: uber, bonk
             if (IsPlayerInvulnerable(entity))
                 return false;

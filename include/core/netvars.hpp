@@ -1,4 +1,4 @@
-﻿/*
+/*
  * entity.h
  *
  *  Created on: Oct 6, 2016
@@ -169,7 +169,8 @@ public:
     offset_t res_bAlive;
     offset_t m_nChargeResistType;
     offset_t m_hHealingTarget;
-    offset_t m_flChargeLevel;
+    offset_t m_flChargeLevel; // Medigun
+    offset_t m_flChargeMeter; // Demoman Shield
 
     offset_t m_rgflCoordinateFrame;
     offset_t m_bFeignDeathReady;

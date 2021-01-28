@@ -541,14 +541,6 @@ static Timer waiting_for_quit_timer{};
 
 static std::vector<unsigned> ipc_blacklist{};
 
-bool should_ignore_player(CachedEntity *player)
-{
-    if (CE_INVALID(player))
-        return false;
-
-    return playerlist::IsFriend(player);
-}
-
 #if ENABLE_IPC
 void update_ipc_data(ipc::user_data_s &data)
 {
@@ -643,7 +635,7 @@ void smart_crouch()
         for (int i = 0; i <= g_IEngine->GetMaxClients(); i++)
         {
             auto ent = ENTITY(i);
-            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() || !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) || !player_tools::shouldTarget(ent) || should_ignore_player(ent))
+            if (CE_BAD(ent) || ent->m_Type() != ENTITY_PLAYER || ent->m_iTeam() == LOCAL_E->m_iTeam() || !(ent->hitboxes.GetHitbox(0)) || !(ent->m_bAlivePlayer()) || !player_tools::shouldTarget(ent))
                 continue;
             bool failedvis = false;
             for (int j = 0; j < 18; j++)

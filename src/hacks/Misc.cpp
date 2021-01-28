@@ -688,6 +688,24 @@ static CatCommand dump_vars_by_name("debug_dump_netvars_name", "Dump netvars of 
         DumpRecvTable(ent, clz->m_pRecvTable, 0, ft, 0);
     }
 });
+
+static CatCommand debug_print_weaponid("debug_weaponid", "Print the weapon IDs of all currently equiped weapons", [](const CCommand &) {
+    // Invalid player
+    if (CE_BAD(LOCAL_E))
+        return;
+    int *hWeapons = &CE_INT(LOCAL_E, netvar.hMyWeapons);
+    // Go through the handle array and search for the item
+    for (int i = 0; hWeapons[i]; i++)
+    {
+        if (IDX_BAD(HandleToIDX(hWeapons[i])))
+            continue;
+        // Get the weapon
+        CachedEntity *weapon = ENTITY(HandleToIDX(hWeapons[i]));
+        // Print weaponid
+        logging::Info("weapon %i: %i", i, re::C_TFWeaponBase::GetWeaponID(RAW_ENT(weapon)));
+    }
+});
+
 #if ENABLE_VISUALS && !ENFORCE_STREAM_SAFETY
 // This makes us able to see enemy class and status in scoreboard and player panel
 static std::unique_ptr<BytePatch> patch_playerpanel;

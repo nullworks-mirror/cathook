@@ -59,6 +59,7 @@ void NetVars::Init()
         this->m_nChargeResistType       = gNetvars.get_offset("DT_WeaponMedigun", "m_nChargeResistType");
         this->m_hHealingTarget          = gNetvars.get_offset("DT_WeaponMedigun", "m_hHealingTarget");
         this->m_flChargeLevel           = gNetvars.get_offset("DT_WeaponMedigun", "NonLocalTFWeaponMedigunData", "m_flChargeLevel");
+        this->m_flChargeMeter           = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_flChargeMeter");
         this->m_bFeignDeathReady        = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bFeignDeathReady");
         this->m_bCarryingObject         = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_bCarryingObject");
         this->m_hCarriedObject          = gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_hCarriedObject");

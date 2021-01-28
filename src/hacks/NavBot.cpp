@@ -617,10 +617,45 @@ bool meleeAttack(int slot, std::pair<CachedEntity *, float> &nearest)
     if (navparser::NavEngine::current_priority > prio_melee)
         return false;
 
-    static Timer melee_cooldown{};
+    auto raw_local = RAW_ENT(LOCAL_E);
 
+    // We are charging, let the charge aimbot do it's job
+    if (HasCondition<TFCond_Charging>(LOCAL_E))
+    {
+        navparser::NavEngine::cancelPath();
+        return true;
+    }
+
+    static Timer melee_cooldown{};
+    bool isVisible;
+
+    {
+        Ray_t ray;
+        trace_t trace;
+        trace::filter_default.SetSelf(raw_local);
+
+        auto hb = nearest.first->hitboxes.GetHitbox(spine_3);
+        if (hb)
+        {
+            ray.Init(g_pLocalPlayer->v_Origin + Vector{ 0, 0, 20 }, hb->center, raw_local->GetCollideable()->OBBMins(), raw_local->GetCollideable()->OBBMaxs());
+            g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_default, &trace);
+            isVisible = (IClientEntity *) trace.m_pEnt == RAW_ENT(nearest.first);
+        }
+        else
+            isVisible = false;
+    }
+
+    // TODO: FIXME We make no effort to determine if the charge aimbot is actually on or not
+    if (re::C_BasePlayer::GetEquippedDemoShield(raw_local) && re::CTFPlayerShared::GetChargeMeter(re::CTFPlayerShared::GetPlayerShared(raw_local)) == 100.0f && nearest.second < 1.5f * 750 - 100 && isVisible)
+    {
+        // Charge
+        current_user_cmd->buttons |= IN_ATTACK2;
+        AimAt(g_pLocalPlayer->v_Eye, nearest.first->m_vecOrigin(), current_user_cmd);
+        navparser::NavEngine::cancelPath();
+        return true;
+    }
     // If we are close enough, don't even bother with using the navparser to get there
-    if (nearest.second < 200 && nearest.first->IsVisible())
+    else if (nearest.second < 200 && isVisible)
     {
         WalkTo(nearest.first->m_vecOrigin());
         navparser::NavEngine::cancelPath();
