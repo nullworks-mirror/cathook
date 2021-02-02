@@ -11,6 +11,7 @@
 #include "PlayerTools.hpp"
 #include "Aimbot.hpp"
 #include "navparser.hpp"
+#include "MiscAimbot.hpp"
 
 namespace hacks::tf2::NavBot
 {
@@ -645,17 +646,33 @@ bool meleeAttack(int slot, std::pair<CachedEntity *, float> &nearest)
             isVisible = false;
     }
 
-    // TODO: FIXME We make no effort to determine if the charge aimbot is actually on or not
-    if (re::C_BasePlayer::GetEquippedDemoShield(raw_local) && re::CTFPlayerShared::GetChargeMeter(re::CTFPlayerShared::GetPlayerShared(raw_local)) == 100.0f && nearest.second < 1.5f * 750 - 100 && isVisible)
+    // Charge aimbot things
+    if (hacks::tf2::misc_aimbot::ShouldChargeAim() && re::C_BasePlayer::GetEquippedDemoShield(raw_local) && re::CTFPlayerShared::GetChargeMeter(re::CTFPlayerShared::GetPlayerShared(raw_local)) == 100.0f)
     {
-        // Charge
-        current_user_cmd->buttons |= IN_ATTACK2;
-        AimAt(g_pLocalPlayer->v_Eye, nearest.first->m_vecOrigin(), current_user_cmd);
-        navparser::NavEngine::cancelPath();
-        return true;
+        // Distance normally covered per second by charge
+        float distance_per_second = 750.0f;
+        // Apply modifiers to movespeed
+        distance_per_second = ATTRIB_HOOK_FLOAT(distance_per_second, "mult_player_movespeed_shieldrequired", raw_local, 0x0, true);
+        distance_per_second = ATTRIB_HOOK_FLOAT(distance_per_second, "mult_player_movespeed", raw_local, 0x0, true);
+        // Max is still 750.0f
+        distance_per_second = std::min(distance_per_second, 750.0f);
+        // Time spent charging
+        float seconds = 1.5f;
+        // Apply modifiers that change charge length
+        seconds = ATTRIB_HOOK_FLOAT(seconds, "mod_charge_time", RAW_ENT(LOCAL_E), 0x0, true);
+        // Total distance covered by charge
+        float total_distance = seconds * distance_per_second;
+        if (nearest.second < total_distance && isVisible)
+        {
+            // Charge
+            current_user_cmd->buttons |= IN_ATTACK2;
+            AimAt(g_pLocalPlayer->v_Eye, nearest.first->m_vecOrigin(), current_user_cmd);
+            navparser::NavEngine::cancelPath();
+            return true;
+        }
     }
     // If we are close enough, don't even bother with using the navparser to get there
-    else if (nearest.second < 200 && isVisible)
+    if (nearest.second < 200 && isVisible)
     {
         WalkTo(nearest.first->m_vecOrigin());
         navparser::NavEngine::cancelPath();

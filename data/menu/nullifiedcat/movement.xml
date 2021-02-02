@@ -69,7 +69,13 @@
             <AutoVariable width="fill" target="antibackstab.nope" label="Nope!" tooltip="Have the charachter say 'no'."/>
         </List>
     </Box>
-    <Box padding="12 6 6 6" width="content" height="content" name="Misc" x="370">
+    <Box padding="12 6 6 6" width="content" height="content" name="Shield aimbot" x="370">
+        <List width="150">
+            <AutoVariable width="fill" target="chargeaim.enable" label="Enabled" tooltip="Makes your demoman charge automatically go towards the enemy. Only active when key is held, and does not trigger the charge itself."/>
+            <AutoVariable width="fill" target="chargeaim.key" label="Key to hold"/>
+        </List>
+    </Box>
+    <Box padding="12 6 6 6" width="content" height="content" name="Misc" x="370" y="50">
         <List width="150">
             <AutoVariable width="fill" target="misc.no-push" label="Nopush"/>
             <AutoVariable width="fill" target="misc.roll-speedhack" label="Moonwalk"/>

@@ -250,14 +250,22 @@ static void SandwichAim()
 }
 
 static settings::Boolean charge_aim{ "chargeaim.enable", "false" };
+bool ShouldChargeAim()
+{
+    return *charge_aim;
+}
+#if !ENABLE_TEXTMODE
 static settings::Button charge_key{ "chargeaim.key", "<null>" };
+#endif
 
 static void ChargeAimbot()
 {
     if (!*charge_aim)
         return;
+#if !ENABLE_TEXTMODE
     if (charge_key && !charge_key.isKeyDown())
         return;
+#endif
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return;
     if (!HasCondition<TFCond_Charging>(LOCAL_E))
