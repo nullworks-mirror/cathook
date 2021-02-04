@@ -33,7 +33,6 @@ static settings::Boolean tauntslide_tf2{ "misc.tauntslide", "false" };
 static settings::Boolean flashlight_spam{ "misc.flashlight-spam", "false" };
 static settings::Boolean auto_balance_spam{ "misc.auto-balance-spam", "false" };
 static settings::Boolean nopush_enabled{ "misc.no-push", "false" };
-static settings::Boolean dont_hide_stealth_kills{ "misc.dont-hide-stealth-kills", "true" };
 static settings::Boolean unlimit_bumpercart_movement{ "misc.bumpercarthax.enable", "true" };
 static settings::Boolean ping_reducer{ "misc.ping-reducer.enable", "false" };
 static settings::Int force_ping{ "misc.ping-reducer.target", "0" };
@@ -988,25 +987,16 @@ static InitRoutine init([]() {
     patch_scoreboard2->Patch();
     patch_scoreboard3->Patch();
 
-    static BytePatch stealth_kill{ gSignatures.GetClientSignature, "84 C0 75 28 A1", 2, { 0x90, 0x90 } }; // stealth kill patch
-    stealth_kill.Patch();
     static BytePatch cyoa_patch{ gSignatures.GetClientSignature, "74 20 A1 ? ? ? ? 8B 10 C7 44 24 ? ? ? ? ? 89 04 24", 0, { 0xEB } };
     cyoa_patch.Patch();
     EC::Register(
         EC::Shutdown,
         []() {
-            stealth_kill.Shutdown();
             cyoa_patch.Shutdown();
             tryPatchLocalPlayerShouldDraw(false);
             force_wait_func(false);
         },
         "shutdown_stealthkill");
-    dont_hide_stealth_kills.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
-        if (after)
-            stealth_kill.Patch();
-        else
-            stealth_kill.Shutdown();
-    });
 #endif
 #endif
 });
