@@ -9,6 +9,8 @@
 #include "PlayerTools.hpp"
 #include "Trigger.hpp"
 #include "Backtrack.hpp"
+#include "conditions.hpp"
+#include "helpers.hpp"
 
 namespace hacks::tf2::autobackstab
 {
@@ -52,6 +54,18 @@ int ClosestDistanceHitbox(hacks::tf2::backtrack::BacktrackData btd)
 
 bool canFaceStab(CachedEntity *ent)
 {
+    int w_index = CE_INT(LOCAL_W, netvar.iItemDefinitionIndex);
+
+    if (w_index == 40000)
+    {
+        return false;
+    }
+
+    if (HasCondition<TFCond_MiniCritOnKill>(g_pLocalPlayer->entity) || HasCondition<TFCond_Jarated>(ent))
+    {
+        return ent->m_iHealth() <= 54.0f;
+    }
+
     return ent->m_iHealth() <= 40.0f;
 }
 
