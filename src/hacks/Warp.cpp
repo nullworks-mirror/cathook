@@ -1033,29 +1033,29 @@ public:
         if (!warp_amount)
             return;
         // Store userids
-        int victim   = event->GetInt("userid");
-        int attacker = event->GetInt("attacker");
+        int victim       = event->GetInt("userid");
+        int attacker     = event->GetInt("attacker");
+        int attacker_idx = g_IEngine->GetPlayerForUserID(attacker);
+        int victim_idx   = g_IEngine->GetPlayerForUserID(victim);
         player_info_s kinfo{};
         player_info_s vinfo{};
 
         // Check if both are valid (Attacker & victim)
-        if (!g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(victim), &vinfo) || !g_IEngine->GetPlayerInfo(g_IEngine->GetPlayerForUserID(attacker), &kinfo))
+        if (IDX_BAD(attacker_idx) || IDX_BAD(victim_idx) || !g_IEngine->GetPlayerInfo(attacker_idx, &vinfo) || !g_IEngine->GetPlayerInfo(victim_idx, &kinfo))
             return;
         // Check if victim is local player
-        if (g_IEngine->GetPlayerForUserID(victim) != g_pLocalPlayer->entity_idx)
+        if (victim_idx != g_pLocalPlayer->entity_idx)
             return;
 
         // Check if the entities are alive and valid
-        CachedEntity *att = ENTITY(attacker);
+        CachedEntity *att = ENTITY(attacker_idx);
 
         // Don't run if we (the victim) are invalid
         if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer())
             return;
-        // Don't check weapon mode if the attacker is invalid
-        if (!CE_INVALID(att) && att->m_bAlivePlayer())
-            // Ignore projectiles for now
-            if (CE_VALID(ENTITY(attacker)) && GetWeaponMode(ENTITY(attacker)) == weapon_projectile)
-                return;
+        // Ignore projectile damage for now
+        if (CE_VALID(att) && att->m_bAlivePlayer() && GetWeaponMode(att) == weapon_projectile)
+            return;
 
         // We got hurt
         was_hurt = true;
