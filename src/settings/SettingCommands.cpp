@@ -22,6 +22,7 @@ namespace settings::commands
 {
 static settings::Boolean autosave{ "settings.autosave", "true" };
 
+#if ENABLE_VISUALS
 void refreshConfigList()
 {
     zerokernel::Container *cl = dynamic_cast<zerokernel::Container *>(zerokernel::Menu::instance->wm->getElementById("cfg-list"));
@@ -32,6 +33,7 @@ void refreshConfigList()
         printf("CL found\n");
     }
 }
+#endif
 
 static void getAndSortAllConfigs();
 static std::string getAutoSaveConfigPath()
@@ -156,7 +158,9 @@ static CatCommand save("save", "", [](const CCommand &args) {
     logging::Info("cat_save: Sorting configs...");
     getAndSortAllConfigs();
     logging::Info("cat_save: Closing dir...");
+#if ENABLE_VISUALS
     refreshConfigList();
+#endif
     closedir(config_directory);
 });
 
@@ -172,7 +176,7 @@ static CatCommand load("load", "", [](const CCommand &args) {
     }
 });
 
-
+#if ENABLE_VISUALS
 static CatCommand delete_config("delete_config", "", [](const CCommand &args) {
     if (args.ArgC() == 2)
     {
@@ -187,7 +191,7 @@ static CatCommand delete_config("delete_config", "", [](const CCommand &args) {
 });
 
 static CatCommand list_config("list_config", "", [](const CCommand &args) {
-    DIR           *direc;
+    DIR *direc;
     struct dirent *directory;
 
     direc = opendir(paths::getConfigPath().c_str());
@@ -202,6 +206,7 @@ static CatCommand list_config("list_config", "", [](const CCommand &args) {
         closedir(direc);
     }
 });
+#endif
 
 static std::vector<std::string> sortedVariables{};
 #if ENABLE_VISUALS
