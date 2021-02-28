@@ -11,11 +11,41 @@
 #include "Backtrack.hpp"
 #include "conditions.hpp"
 #include "helpers.hpp"
+#include "DetourHook.hpp"
 
 namespace hacks::tf2::autobackstab
 {
 static settings::Boolean enabled("autobackstab.enabled", "false");
+static settings::Boolean decrease_range("autobackstab.decrease-range", "false");
 static settings::Int mode("autobackstab.mode", "0");
+
+DetourHook melee_range_hook{};
+
+typedef int (*GetSwingRange_o)(IClientEntity *);
+int GetSwingRange_hook(IClientEntity *_this)
+{
+    float return_val = ((GetSwingRange_o) melee_range_hook.GetOriginalFunc())(_this);
+    if (decrease_range)
+        return_val *= 0.5f;
+    melee_range_hook.RestorePatch();
+    return return_val;
+}
+
+void ApplySwingHook()
+{
+    static bool inited = false;
+    if (!inited)
+    {
+        inited = true;
+        melee_range_hook.Init((uintptr_t) vfunc<GetSwingRange_o>(RAW_ENT(LOCAL_W), offsets::PlatformOffset(521, offsets::undefined, 521), 0), (void *) GetSwingRange_hook);
+    }
+    melee_range_hook.RestorePatch();
+}
+
+void RemoveSwingHook()
+{
+    melee_range_hook.Shutdown();
+}
 
 // Function to do swing trace in a specific direction
 bool doSwingTraceAngle(Vector angles, trace_t &trace)
@@ -23,7 +53,9 @@ bool doSwingTraceAngle(Vector angles, trace_t &trace)
     Vector original_angles = LOCAL_E->m_vecAngle();
 
     re::C_BasePlayer::GetEyeAngles(RAW_ENT(LOCAL_E)) = angles;
-    bool hit_trace                                   = re::C_TFWeaponBaseMelee::DoSwingTrace(RAW_ENT(LOCAL_W), &trace);
+    ApplySwingHook();
+    bool hit_trace = re::C_TFWeaponBaseMelee::DoSwingTrace(RAW_ENT(LOCAL_W), &trace);
+    RemoveSwingHook();
 
     re::C_BasePlayer::GetEyeAngles(RAW_ENT(LOCAL_E)) = original_angles;
     return hit_trace && (IClientEntity *) trace.m_pEnt != g_IEntityList->GetClientEntity(0);
@@ -200,8 +232,14 @@ static bool angleCheck(CachedEntity *target, std::optional<Vector> target_pos, V
 static bool doLegitBackstab()
 {
     trace_t trace;
+    ApplySwingHook();
     if (!re::C_TFWeaponBaseMelee::DoSwingTrace(RAW_ENT(LOCAL_W), &trace))
+    {
+        RemoveSwingHook();
         return false;
+    }
+    RemoveSwingHook();
+
     if (!trace.m_pEnt)
         return false;
     int index = reinterpret_cast<IClientEntity *>(trace.m_pEnt)->entindex();
