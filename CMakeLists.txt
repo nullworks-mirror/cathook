@@ -194,6 +194,9 @@ if(EnableWarnings)
 else()
     target_compile_options(cathook PRIVATE -w)
 endif()
+if(Internal_Binarymode)
+    target_compile_options(cathook PRIVATE -march=x86-64)
+endif()
 
 
 target_include_directories(cathook PRIVATE include include/hooks)
