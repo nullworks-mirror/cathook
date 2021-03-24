@@ -236,7 +236,6 @@ static void CreateMove()
     slow_aim = *normal_slow_aim;
     fov      = *normal_fov;
 
-    updateShouldBacktrack();
     spectatorUpdate();
 
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
@@ -291,6 +290,10 @@ static void CreateMove()
         if (proj_start_vel)
             cur_proj_start_vel = *proj_start_vel;
     }
+
+    // Update backtrack status
+    updateShouldBacktrack();
+
     // Refresh our best target
     CachedEntity *target_entity = target_last = RetrieveBestTarget(aimkey_status);
     if (CE_BAD(target_entity))
