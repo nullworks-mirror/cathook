@@ -57,6 +57,7 @@ SharedObject &studiorender();
 SharedObject &libsdl();
 #endif
 
+void LoadLauncher();
 void LoadEarlyObjects();
 void LoadAllSharedObjects();
 void UnloadAllSharedObjects();

@@ -308,6 +308,11 @@ free(logname);*/
 #endif /* TEXTMODE */
     logging::Info("Initializing...");
     InitRandom();
+    sharedobj::LoadLauncher();
+
+    // remove epic source lock
+    std::remove("/tmp/source_engine_2925226592.lock");
+
     sharedobj::LoadEarlyObjects();
 
 // Fix locale issues caused by steam update

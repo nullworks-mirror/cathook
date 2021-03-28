@@ -94,12 +94,23 @@ void *SharedObject::CreateInterface(const std::string &interface)
     return (void *) (fptr(interface.c_str(), nullptr));
 }
 
+void LoadLauncher()
+{
+    try
+    {
+        launcher().Load();
+    }
+    catch (std::exception &ex)
+    {
+        logging::Info("Exception: %s", ex.what());
+    }
+}
+
 void LoadEarlyObjects()
 {
     try
     {
         engine().Load();
-        launcher().Load();
         filesystem_stdio().Load();
         tier0().Load();
         materialsystem().Load();
