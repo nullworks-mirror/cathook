@@ -27,6 +27,7 @@ static settings::Boolean rockets{ "autoreflect.rockets", "true" };
 static settings::Boolean sentryrockets{ "autoreflect.sentryrockets", "true" };
 static settings::Boolean cleavers{ "autoreflect.cleavers", "false" };
 static settings::Boolean teammates{ "autoreflect.teammate", "false" };
+static settings::Boolean teammates_fire{ "autoreflect.teammatesfire", "false" };
 
 static settings::Float fov{ "autoreflect.fov", "85" };
 
@@ -38,6 +39,26 @@ static settings::Float fovcircle_opacity{ "autoreflect.draw-fov-opacity", "0.7" 
 // Function to determine whether an ent is good to reflect
 static bool ShouldReflect(CachedEntity *ent)
 {
+    // Check if entity is a burning teammate
+    if (ent->m_Type() == ENTITY_PLAYER && teammates_fire)
+    {
+        // check if player is local player
+        if (ent->m_IDX == LOCAL_E->m_IDX)
+            return false;
+        // check if player is on the same team
+        if (ent->m_iTeam() != g_pLocalPlayer->team)
+            return false;
+        // check if player is on fire
+        if (!HasCondition<TFCond_OnFire>(ent))
+            return false;
+
+        float dist = ent->m_flDistance();
+
+        // this isnt the correct distance value but it works, and looks legit.
+        if (dist < 1000.0f)
+            return *teammates_fire;
+    }
+
     // Check if the entity is a projectile
     if (ent->m_Type() != ENTITY_PROJECTILE)
         return false;
@@ -63,38 +84,49 @@ static bool ShouldReflect(CachedEntity *ent)
     // Checks if the projectile is x and if the user settings allow it to be reflected
     // If not, returns false
 
-    if (ent->m_iClassID() == CL_CLASS(CTFGrenadePipebombProjectile))
+    switch (ent->m_iClassID())
     {
-        // Checks the demoman projectile type (both stickies and pipes are combined under PipeBombProjectile)
+    default:
+    {
+        // Target is not known, return default value
+        return *proj_default;
+    }
+    case CL_CLASS(CTFGrenadePipebombProjectile):
+    {
         if (CE_INT(ent, netvar.iPipeType) == 1)
             return *stickies;
         if (CE_INT(ent, netvar.iPipeType) == 0)
             return *pipes;
     }
-
-    if (ent->m_iClassID() == CL_CLASS(CTFProjectile_Arrow))
+    case CL_CLASS(CTFProjectile_Arrow):
+    {
         return *arrows;
-
-    if (ent->m_iClassID() == CL_CLASS(CTFProjectile_Jar) || ent->m_iClassID() == CL_CLASS(CTFProjectile_JarMilk))
+    }
+    case CL_CLASS(CTFProjectile_Jar) || ent->m_iClassID() == CL_CLASS(CTFProjectile_JarMilk):
+    {
         return *jars;
-
-    if (ent->m_iClassID() == CL_CLASS(CTFProjectile_HealingBolt))
+    }
+    case CL_CLASS(CTFProjectile_HealingBolt):
+    {
         return *healingbolts;
-
-    if (ent->m_iClassID() == CL_CLASS(CTFProjectile_Rocket))
+    }
+    case CL_CLASS(CTFProjectile_Rocket):
+    {
         return *rockets;
-
-    if (ent->m_iClassID() == CL_CLASS(CTFProjectile_SentryRocket))
+    }
+    case CL_CLASS(CTFProjectile_SentryRocket):
+    {
         return *sentryrockets;
-
-    if (ent->m_iClassID() == CL_CLASS(CTFProjectile_Cleaver))
+    }
+    case CL_CLASS(CTFProjectile_Cleaver):
+    {
         return *cleavers;
-
-    if (ent->m_iClassID() == CL_CLASS(CTFGrapplingHook))
+    }
+    case CL_CLASS(CTFGrapplingHook):
+    {
         return false;
-
-    // Target is not known, return default value
-    return *proj_default;
+    }
+    }
 }
 
 // Function called by game for movement
