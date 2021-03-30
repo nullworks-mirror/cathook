@@ -31,7 +31,9 @@ CatCommand fix_deadlock("ipc_fix_deadlock", "Fix deadlock", []() {
         pthread_mutex_unlock(&peer->memory->mutex);
     }
 });
+
 CatCommand id("ipc_id", "Echo ipc id", []() { logging::Info("%d", ipc::peer->client_id); });
+
 CatCommand connect("ipc_connect", "Connect to IPC server", []() {
     if (peer)
     {
@@ -114,6 +116,72 @@ CatCommand exec_all("ipc_exec_all", "Execute command (on every peer)", [](const 
     else
     {
         peer->SendMessage(command.c_str(), -1, ipc::commands::execute_client_cmd, 0, 0);
+    }
+});
+
+CatCommand exec_sync("ipc_sync_all", "Sync's certain variable (on every peer)", [](const CCommand &args) {
+    if (!peer)
+    {
+        g_ICvar->ConsolePrintf("Youre not connected to the IPC\n");
+        return;
+    }
+
+    // Checks if 3 args have been passed
+
+    if (args.ArgC() < 3)
+    {
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Usage: cat_ipc_sync_all <variable> <value 1>\n");
+        return;
+    }
+
+    // check if its a valid variable
+
+    std::string rvar = args.Arg(1);
+    auto variable    = settings::Manager::instance().lookup(rvar);
+
+    if (variable == nullptr)
+    {
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Variable not found: %s\n", rvar.c_str());
+        return;
+    }
+
+    std::string command = std::string("cat set ") + args.ArgS();
+    ReplaceString(command, " && ", " ; ");
+
+    if (command.length() >= 63)
+    {
+        /* this could probaly be put in a function
+            it loops trough all IPC bots and ignores the local player. */
+
+        for (unsigned i = 0; i < peer->memory->peer_count; i++)
+        {
+            if (!peer->memory->peer_data[i].free)
+            {
+
+                int peer_fid  = peer->memory->peer_user_data[i].friendid;
+                int local_fid = peer->memory->peer_user_data[peer->client_id].friendid;
+
+                if (peer_fid != local_fid)
+                    peer->SendMessage(0, -1, ipc::commands::execute_client_cmd_long, command.c_str(), command.length() + 1);
+            }
+        }
+    }
+    else
+    {
+        {
+            for (unsigned i = 0; i < peer->memory->peer_count; i++)
+            {
+                if (!peer->memory->peer_data[i].free)
+                {
+
+                    int peer_fid  = peer->memory->peer_user_data[i].friendid;
+                    int local_fid = peer->memory->peer_user_data[peer->client_id].friendid;
+
+                    if (peer_fid != local_fid)
+                        peer->SendMessage(command.c_str(), i, ipc::commands::execute_client_cmd, 0, 0);
+                }
+            }
+        }
     }
 });
 
@@ -267,6 +335,99 @@ void UpdatePlayerlist()
         }
     }
 }
+
+static std::vector<std::string> sortedVariables{};
+
+static void getAndSortAllVariables()
+{
+    for (auto &v : settings::Manager::instance().registered)
+    {
+        sortedVariables.push_back(v.first);
+    }
+
+    std::sort(sortedVariables.begin(), sortedVariables.end());
+
+    logging::Info("Sorted %u variables\n", sortedVariables.size());
+}
+
+static int cat_completionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::string partial = c_partial;
+    std::array<std::string, 2> parts{};
+    auto j    = 0u;
+    auto f    = false;
+    int count = 0;
+
+    for (auto i = 0u; i < partial.size() && j < 3; ++i)
+    {
+        auto space = (bool) isspace(partial.at(i));
+        if (!space)
+        {
+            if (j)
+                parts.at(j - 1).push_back(partial[i]);
+            f = true;
+        }
+
+        if (i == partial.size() - 1 || (f && space))
+        {
+            if (space)
+                ++j;
+            f = false;
+        }
+    }
+
+    for (const auto &s : sortedVariables)
+    {
+        if (s.find(parts.at(0)) == 0)
+        {
+            auto variable = settings::Manager::instance().lookup(s);
+            if (variable)
+            {
+                if (s.compare(parts.at(0)))
+                    snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat_ipc_sync_all %s", s.c_str());
+                else
+                    snprintf(commands[count++], COMMAND_COMPLETION_ITEM_LENGTH - 1, "cat_ipc_sync_all %s %s", s.c_str(), variable->toString().c_str());
+                if (count == COMMAND_COMPLETION_MAXITEMS)
+                    break;
+            }
+        }
+    }
+    return count;
+}
+
+static int load_CompletionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    std::string partial = c_partial;
+    std::array<std::string, 2> parts{};
+    auto j    = 0u;
+    auto f    = false;
+    int count = 0;
+
+    for (auto i = 0u; i < partial.size() && j < 3; ++i)
+    {
+        auto space = (bool) isspace(partial.at(i));
+        if (!space)
+        {
+            if (j)
+                parts.at(j - 1).push_back(partial[i]);
+            f = true;
+        }
+
+        if (i == partial.size() - 1 || (f && space))
+        {
+            if (space)
+                ++j;
+            f = false;
+        }
+    }
+    return count;
+}
+
+static InitRoutine init([]() {
+    getAndSortAllVariables();
+    exec_sync.cmd->m_bHasCompletionCallback = true;
+    exec_sync.cmd->m_fnCompletionCallback   = cat_completionCallback;
+});
 } // namespace ipc
 
 #endif
