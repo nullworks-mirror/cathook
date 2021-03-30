@@ -395,34 +395,6 @@ static int cat_completionCallback(const char *c_partial, char commands[COMMAND_C
     return count;
 }
 
-static int load_CompletionCallback(const char *c_partial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
-{
-    std::string partial = c_partial;
-    std::array<std::string, 2> parts{};
-    auto j    = 0u;
-    auto f    = false;
-    int count = 0;
-
-    for (auto i = 0u; i < partial.size() && j < 3; ++i)
-    {
-        auto space = (bool) isspace(partial.at(i));
-        if (!space)
-        {
-            if (j)
-                parts.at(j - 1).push_back(partial[i]);
-            f = true;
-        }
-
-        if (i == partial.size() - 1 || (f && space))
-        {
-            if (space)
-                ++j;
-            f = false;
-        }
-    }
-    return count;
-}
-
 static InitRoutine init([]() {
     getAndSortAllVariables();
     exec_sync.cmd->m_bHasCompletionCallback = true;
