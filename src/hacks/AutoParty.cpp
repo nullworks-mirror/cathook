@@ -52,6 +52,7 @@
 
 #include "common.hpp"
 #include "hack.hpp"
+#include "ipc.hpp"
 
 namespace hacks::tf2::autoparty
 {
@@ -75,6 +76,10 @@ static settings::Boolean autoparty_log{ "autoparty.log", "true" };
 static settings::Boolean message_kicks{ "autoparty.message-kicks", "true" };
 // Extra debugging information like locking/unlocking the party
 static settings::Boolean autoparty_debug{ "autoparty.debug", "false" };
+// Use the longest-running IPC members as party hosts
+static settings::Boolean ipc_mode{ "autoparty.ipc-mode", "false" };
+// How many IPC members to use as party hosts
+static settings::Int ipc_count{ "autoparty.ipc-count", "0" };
 // How often to run the autoparty routine, in seconds
 static settings::Int timeout{ "autoparty.run-frequency", "60" };
 // Only run the autoparty routine once every N seconds
@@ -91,11 +96,47 @@ static std::vector<uint32> party_hosts = {};
     if (*autoparty_debug) \
     logging::Info("AutoParty (debug): " __VA_ARGS__)
 
+// I can't think of a better way to do this right now
+struct ipc_peer
+{
+    uint32 friendid;
+    time_t ts_injected;
+};
+
+bool compare_ts(ipc_peer &a, ipc_peer &b)
+{
+    return a.ts_injected < b.ts_injected;
+}
+
 // Re-populates party_hosts from the current or new configuration
 void repopulate(std::string str)
 {
     // Empty previous values
     party_hosts.clear();
+
+    // IPC autoparty mode
+    if (*ipc_mode)
+    {
+        if (!ipc::peer)
+        {
+            // uh oh
+            return;
+        }
+        auto &peer_data                           = ipc::peer->memory->peer_user_data;
+        std::vector<struct ipc_peer> sorted_peers = {};
+        for (int i = 0; i < cat_ipc::max_peers; i++)
+        {
+            ipc::user_data_s &data = peer_data[i];
+            struct ipc_peer peer   = { .friendid = data.friendid, .ts_injected = data.ts_injected };
+            sorted_peers.push_back(peer);
+        }
+        std::sort(sorted_peers.begin(), sorted_peers.end(), compare_ts);
+        for (int i = 0; i < *ipc_count; i++)
+        {
+            party_hosts.push_back(sorted_peers[i].friendid);
+        }
+        return;
+    }
 
     // Add Steam32 IDs to party_hosts
     std::stringstream ss(str);
@@ -202,79 +243,89 @@ void party_routine()
         else
         {
             // We are in a party!
-            // Get a list of party members, then check each one to determine the leader
-            std::vector<unsigned> members = client->GetPartySteamIDs();
-            uint32 leader_id              = 0;
-            for (int i = 0; i < members.size(); i++)
+            // Are we the *designated* leader of the current party?
+            if (is_host())
             {
-                CSteamID id = CSteamID(members[i], EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
-                // Are you my mummy?
-                if (client->GetCurrentPartyLeader(id))
+                // And are we actually the leader?
+                // Get a list of party members, then check each one to determine the leader
+                std::vector<unsigned> members = client->GetPartySteamIDs();
+                uint32 leader_id              = 0;
+                for (int i = 0; i < members.size(); i++)
                 {
-                    leader_id = members[i];
-                    break;
-                }
-            }
-
-            // Are we the leader of the current party?
-            // If so, manage it
-            if (leader_id == g_ISteamUser->GetSteamID().GetAccountID())
-            {
-                // If a member is offline, just leave the party and allow new join requests
-                if (*auto_leave and client->GetNumMembers() > client->GetNumOnlineMembers())
-                {
-                    leave_party(client, true);
-                    return;
-                }
-
-                // If enabled, check for any raged players who may have joined our party and kick them
-                // If there are any, return so we don't kick other members in the event we're also over the set size limit
-                if (*kick_rage)
-                {
-                    bool should_ret = false;
-                    for (int i = 0; i < members.size(); i++)
+                    CSteamID id = CSteamID(members[i], EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+                    // Are you my mummy?
+                    if (client->GetCurrentPartyLeader(id))
                     {
-                        auto &pl = playerlist::AccessData(members[i]);
-                        if (pl.state == playerlist::k_EState::RAGE)
+                        leader_id = members[i];
+                        break;
+                    }
+                }
+                if (leader_id == g_ISteamUser->GetSteamID().GetAccountID())
+                {
+                    // Great, let's manage it
+                    // If a member is offline, just leave the party and allow new join requests
+                    if (*auto_leave and client->GetNumMembers() > client->GetNumOnlineMembers())
+                    {
+                        leave_party(client, true);
+                        return;
+                    }
+
+                    // If enabled, check for any raged players who may have joined our party and kick them
+                    // If there are any, return so we don't kick other members in the event we're also over the set size limit
+                    if (*kick_rage)
+                    {
+                        bool should_ret = false;
+                        for (int i = 0; i < members.size(); i++)
                         {
-                            std::string message = "Kicking Steam32 ID " + std::to_string(members[i]) + " from the party because they are set to RAGE";
-                            logging::Info("AutoParty: %s", message);
-                            if (*message_kicks)
-                                client->SendPartyChat(message.c_str());
-                            CSteamID id = CSteamID(members[i], EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+                            auto &pl = playerlist::AccessData(members[i]);
+                            if (pl.state == playerlist::k_EState::RAGE)
+                            {
+                                std::string message = "Kicking Steam32 ID " + std::to_string(members[i]) + " from the party because they are set to RAGE";
+                                logging::Info("AutoParty: %s", message);
+                                if (*message_kicks)
+                                    client->SendPartyChat(message.c_str());
+                                CSteamID id = CSteamID(members[i], EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
+                                client->KickPlayer(id);
+                                should_ret = true;
+                            }
+                        }
+                        if (should_ret)
+                            return;
+                    }
+
+                    // If we are at or over the specified limit, lock the party so we auto-reject future join requests
+                    if (*auto_lock and members.size() >= *max_size)
+                    {
+                        log_debug("Locking the party because we have %d out of %d allowed members", members.size(), *max_size);
+                        lock_party();
+                    }
+
+                    // Kick extra members from the party
+                    if (members.size() > *max_size)
+                    {
+                        int num_to_kick     = members.size() - *max_size;
+                        std::string message = "Kicking " + std::to_string(num_to_kick) + " party members because there are " + std::to_string(members.size()) + " out of " + std::to_string(*max_size) + " allowed members";
+                        logging::Info("AutoParty: %s", message);
+                        if (*message_kicks)
+                            client->SendPartyChat(message.c_str());
+                        for (int i = 0; i < num_to_kick; i++)
+                        {
+                            CSteamID id = CSteamID(members[members.size() - (1 + i)], EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
                             client->KickPlayer(id);
-                            should_ret = true;
                         }
                     }
-                    if (should_ret)
-                        return;
-                }
 
-                // If we are at or over the specified limit, lock the party so we auto-reject future join requests
-                if (*auto_lock and members.size() >= *max_size)
+                    // Unlock the party if it's not full
+                    if (*auto_unlock and members.size() < *max_size)
+                        unlock_party();
+                }
+                else
                 {
-                    log_debug("Locking the party because we have %d out of %d allowed members", members.size(), *max_size);
-                    lock_party();
-                }
-
-                // Kick extra members from the party
-                if (members.size() > *max_size)
-                {
-                    int num_to_kick     = members.size() - *max_size;
-                    std::string message = "Kicking " + std::to_string(num_to_kick) + " party members because there are " + std::to_string(members.size()) + " out of " + std::to_string(*max_size) + " allowed members";
-                    logging::Info("AutoParty: %s", message);
-                    if (*message_kicks)
-                        client->SendPartyChat(message.c_str());
-                    for (int i = 0; i < num_to_kick; i++)
-                    {
-                        CSteamID id = CSteamID(members[members.size() - (1 + i)], EUniverse::k_EUniversePublic, EAccountType::k_EAccountTypeIndividual);
-                        client->KickPlayer(id);
-                    }
-                }
-
-                // Unlock the party if it's not full
-                if (*auto_unlock and members.size() < *max_size)
+                    // We are in someone else's party as a leader!
+                    // Leave the party and unlock our join request mode
+                    hack::ExecuteCommand("tf_party_leave");
                     unlock_party();
+                }
             }
             else
             {
@@ -297,6 +348,7 @@ void party_routine()
 
 static InitRoutine init([]() {
     host_list.installChangeCallback([](settings::VariableBase<std::string> &var, std::string after) { repopulate(after); });
+    ipc_mode.installChangeCallback([](settings::VariableBase<bool> &var, bool after) { repopulate(*host_list); });
     EC::Register(EC::Paint, party_routine, "paint_autoparty", EC::average);
 });
 } // namespace hacks::tf2::autoparty
