@@ -105,7 +105,7 @@ struct ipc_peer
 
 bool compare_ts(ipc_peer &a, ipc_peer &b)
 {
-    return a.ts_injected < b.ts_injected;
+    return a.ts_injected > b.ts_injected;
 }
 
 // Re-populates party_hosts from the current or new configuration
