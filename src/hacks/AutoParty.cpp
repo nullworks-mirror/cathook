@@ -354,7 +354,7 @@ void party_routine()
 
 static InitRoutine init([]() {
     host_list.installChangeCallback([](settings::VariableBase<std::string> &var, std::string after) { repopulate(after); });
-    ipc_mode.installChangeCallback([](settings::VariableBase<bool> &var, bool after) { repopulate(*host_list); });
+    ipc_mode.installChangeCallback([](settings::VariableBase<bool> &var, bool after) { party_hosts.clear(); });
     EC::Register(EC::Paint, party_routine, "paint_autoparty", EC::average);
 });
 } // namespace hacks::tf2::autoparty
