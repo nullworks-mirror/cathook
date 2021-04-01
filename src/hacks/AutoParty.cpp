@@ -194,6 +194,8 @@ void leave_party(re::CTFPartyClient *client, bool was_leader)
 {
     log("Leaving the party because %d/%d members are offline", client->GetNumMembers() - client->GetNumOnlineMembers(), client->GetNumMembers());
     hack::ExecuteCommand("tf_party_leave");
+    if (was_leader and *auto_unlock)
+        unlock_party();
 }
 
 // Automatically join/leave parties and kick bad members
@@ -232,8 +234,11 @@ void party_routine()
             if (is_host())
             {
                 // We are a party host but have no members; allow access to the party
-                log_debug("No members; unlocking the party");
-                unlock_party();
+                if (*auto_unlock)
+                {
+                    log_debug("No members; unlocking the party");
+                    unlock_party();
+                }
             }
             else
             {
@@ -324,7 +329,8 @@ void party_routine()
                     // We are in someone else's party as a leader!
                     // Leave the party and unlock our join request mode
                     hack::ExecuteCommand("tf_party_leave");
-                    unlock_party();
+                    if (*auto_unlock)
+                        unlock_party();
                 }
             }
             else
