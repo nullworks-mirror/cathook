@@ -7,6 +7,7 @@
 
 #include <hacks/CatBot.hpp>
 #include <settings/Bool.hpp>
+#include "interfaces.hpp"
 #include "ipc.hpp"
 
 #include "common.hpp"
@@ -69,6 +70,28 @@ CatCommand connect("ipc_connect", "Connect to IPC server", []() {
         peer = nullptr;
     }
 });
+CatCommand connect_ghost("ipc_connect_ghost", "Connect to ipc but do not actually receive any commands", []() {
+    if (peer)
+    {
+        logging::Info("Already connected!");
+        return;
+    }
+    peer = new peer_t(*server_name, false, false);
+    try
+    {
+        *const_cast<bool *>(&peer->is_ghost) = true;
+        peer->Connect();
+        logging::Info("peer count: %i", peer->memory->peer_count);
+        logging::Info("magic number: 0x%08x", peer->memory->global_data.magic_number);
+        logging::Info("magic number offset: 0x%08x", (uintptr_t) &peer->memory->global_data.magic_number - (uintptr_t) peer->memory);
+    }
+    catch (std::exception &error)
+    {
+        logging::Info("Runtime error: %s", error.what());
+        delete peer;
+        peer = nullptr;
+    }
+});
 CatCommand disconnect("ipc_disconnect", "Disconnect from IPC server", []() {
     if (peer)
         delete peer;
@@ -120,17 +143,32 @@ CatCommand exec_all("ipc_exec_all", "Execute command (on every peer)", [](const 
 });
 
 CatCommand exec_sync("ipc_sync_all", "Sync's certain variable (on every peer)", [](const CCommand &args) {
+    bool connected = false;
     if (!peer)
     {
-        g_ICvar->ConsolePrintf("Youre not connected to the IPC\n");
-        return;
+        connected                            = true;
+        peer                                 = new peer_t(*server_name, false, false);
+        *const_cast<bool *>(&peer->is_ghost) = true;
+
+        try
+        {
+            peer->Connect();
+        }
+        catch (std::exception &error)
+        {
+            logging::Info("Runtime error: %s", error.what());
+            g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Failed to connect to IPC.\n");
+            delete peer;
+            peer = nullptr;
+            return;
+        }
     }
 
     // Checks if 3 args have been passed
 
     if (args.ArgC() < 3)
     {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Usage: cat_ipc_sync_all <variable> <value 1>\n");
+        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Usage: cat_ipc_sync_all <variable> <value 1>.\n");
         return;
     }
 
@@ -146,7 +184,6 @@ CatCommand exec_sync("ipc_sync_all", "Sync's certain variable (on every peer)", 
     }
 
     std::string command = std::string("cat set ") + args.ArgS();
-    ReplaceString(command, " && ", " ; ");
 
     if (command.length() >= 63)
     {
@@ -182,6 +219,13 @@ CatCommand exec_sync("ipc_sync_all", "Sync's certain variable (on every peer)", 
                 }
             }
         }
+    }
+
+    /* if the user wasnt connected to the ipc before running sync_all, disconnect */
+    if (connected)
+    {
+        delete peer;
+        peer = nullptr;
     }
 });
 
