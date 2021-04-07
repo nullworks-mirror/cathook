@@ -55,13 +55,13 @@ static std::optional<StrafePredictionData> findCircle(const Vector &current, con
     float xDelta_a = past1.x - current.x;
     float yDelta_b = past2.y - past1.y;
     float xDelta_b = past2.x - past1.x;
-    Vector Center{};
+    Vector2D Center;
 
     float aSlope = yDelta_a / xDelta_a;
     float bSlope = yDelta_b / xDelta_b;
 
-    Vector AB_Mid = Vector((current.x + past1.x) / 2, (current.y + past1.y) / 2, current.z);
-    Vector BC_Mid = Vector((past1.x + past2.x) / 2, (past1.y + past2.y) / 2, current.z);
+    Vector2D AB_Mid = Vector2D((current.x + past1.x) / 2, (current.y + past1.y) / 2);
+    Vector2D BC_Mid = Vector2D((past1.x + past2.x) / 2, (past1.y + past2.y) / 2);
 
     if (yDelta_a == 0)
     {
@@ -92,7 +92,7 @@ static std::optional<StrafePredictionData> findCircle(const Vector &current, con
         Center.y = AB_Mid.y - (Center.x - AB_Mid.x) / aSlope;
     }
 
-    float Radius = current.DistTo(Center);
+    float Radius = current.AsVector2D().DistTo(Center);
 
     if (Radius < 5.0f || Radius > 500.0f)
         return std::nullopt;
@@ -100,7 +100,9 @@ static std::optional<StrafePredictionData> findCircle(const Vector &current, con
     float Angle         = atan2(current.y - Center.y, current.x - Center.x);
     float PreviousAngle = atan2(past1.y - Center.y, past1.x - Center.x);
 
-    return StrafePredictionData{ Angle < PreviousAngle, Radius, Center };
+    Vector Center3D(Center.x, Center.y, current.z);
+
+    return StrafePredictionData{ Angle < PreviousAngle, Radius, Center3D };
 }
 
 // Applies strafe predictions to the next position
@@ -142,7 +144,7 @@ Vector PredictStep(Vector pos, Vector &vel, const Vector &acceleration, std::pai
     Vector result = pos;
 
     // If we should do strafe prediction, then we still need to do the calculations, but instead of applying them we simply calculate the distance traveled and use that info together with strafe pred
-    if (strafepred)
+    if (strafepred && (grounddistance ? *grounddistance > 0.1f : DistanceToGround(pos, minmax->first, minmax->second) > 0.1f))
     {
         auto newpos = result + (acceleration / 2.0f) * pow(steplength, 2) + vel * steplength;
         // Strafe pred does not predict Z! The player can't control his Z anyway, so it is pointless.
@@ -549,7 +551,15 @@ static InitRoutine init([]() {
             {
                 auto ent     = ENTITY(i);
                 auto &buffer = previous_positions.at(i - 1);
-                if (CE_BAD(ent) || !ent->m_bAlivePlayer() || CE_VECTOR(ent, netvar.vVelocity).IsZero())
+
+                if (CE_BAD(ent) || !ent->m_bAlivePlayer())
+                {
+                    buffer.clear();
+                    continue;
+                }
+                Vector vel;
+                velocity::EstimateAbsVelocity(RAW_ENT(ent), vel);
+                if (vel.IsZero())
                 {
                     buffer.clear();
                     continue;
