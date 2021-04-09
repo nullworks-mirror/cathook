@@ -2,176 +2,147 @@
  *  Credits to UNKN0WN
  */
 #include "common.hpp"
+#include "DetourHook.hpp"
+#include "PlayerTools.hpp"
+#include <boost/algorithm/string.hpp>
+#include <regex>
+#include <locale>
+#include <codecvt>
+#include <string>
 
 #if !ENFORCE_STREAM_SAFETY
 namespace hacks::tf2::killfeed
 {
 static settings::Boolean enable{ "visual.killfeedcolor.enable", "true" };
-typedef void (*GetTeamColor_t)(Color *, void *, int, int);
+static settings::Boolean sort_names{ "visual.killfeedcolor.sort-names", "false" };
 
-static GetTeamColor_t GetTeamColor_fn;
+static DetourHook drawtext_detour;
 
-// This is used to Combine player IDX and team into one int for later usage
-int encodeTPI(void * /* g_PR this ptr */, int playerIDX)
+typedef void (*DrawText_t)(int *_this, int x, int y, vgui::HFont hFont, Color clr, const wchar_t *szText);
+
+void DrawText_hook(int *_this, int x, int y, vgui::HFont hFont, Color clr, const wchar_t *szText)
 {
-    int teamNum = g_pPlayerResource->GetTeam(playerIDX);
-    return (playerIDX << 12) | teamNum;
-}
-
-void GetTeamColor(Color *clr, void *this_, int data, int local)
-{
-    // Decode the data which was encoded above
-    int playerIdx = data >> 12;
-    int team      = data & 0x0FFF;
-    player_info_s pinfo;
-
-    // Our encoding uses quite a few bits, so let's just check for < 1000 and !playerIdx
-    if (data < 1000 || !playerIdx)
+    if (isHackActive() && enable)
     {
-        auto wc = colors::white;
-        clr->SetColor(wc.r * 255, wc.g * 255, wc.b * 255, 255);
-        return GetTeamColor_fn(clr, this_, data, local);
-    }
-    // No Color change
-    /*if (!g_IEngine->GetPlayerInfo(playerIdx, &pinfo) || playerlist::IsDefault(pinfo.friendsID))
-    {
-        return GetTeamColor_fn(clr, this_, team, local);
-    }*/
+        // Convert wchar_t * to std::string for easier manipulation
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        std::string normal_string = converter.to_bytes(szText);
 
-    // Get new color
-    g_IEngine->GetPlayerInfo(playerIdx, &pinfo);
-    auto wc = playerlist::Color(pinfo.friendsID);
-    if (!g_IEngine->GetPlayerInfo(playerIdx, &pinfo) || playerlist::IsDefault(pinfo.friendsID))
-    {
-        if (team != TEAM_SPEC && team != TEAM_UNK)
-            // Colors taken from game
-            wc = team == TEAM_BLU ? colors::FromRGBA8(153, 204, 255, 255) : colors::FromRGBA8(255, 64, 64, 255);
+        std::vector<std::string> names_array;
+
+        // Since we have no access to boost's regex split, we need to replace our sequence
+        // With a single character.
+        // Luckily names can never have a % in them, so i will use that as the delimeter.
+
+        static std::regex r("( \\+ |, )");
+        normal_string = std::regex_replace(normal_string, r, "%");
+
+        // Split at assists
+        boost::algorithm::split(names_array, normal_string, boost::is_any_of("%"));
+
+        // Sort all player names by priority
+        static int last_sort_tickcount = 0;
+        static std::map<std::string, int> player_names;
+        // Cache names for every tick
+        if (last_sort_tickcount != tickcount)
+        {
+            player_names.clear();
+            for (int i = 1; i < g_IEngine->GetMaxClients(); i++)
+            {
+                player_info_s player_info;
+                if (g_IEngine->GetPlayerInfo(i, &player_info))
+                    player_names[player_info.name] = i;
+            }
+        }
+
+        // Stored list of valid players in text
+        std::vector<player_info_s> displayed_players;
+
+        // Get entities by name
+        for (auto &name : names_array)
+        {
+            player_info_s pinfo;
+            if (player_names[name] != 0 && g_IEngine->GetPlayerInfo(player_names[name], &pinfo))
+                displayed_players.push_back(pinfo);
+        }
+
+        if (sort_names)
+        {
+            // Sort by state so we display the most important color
+            std::sort(displayed_players.begin(), displayed_players.end(), [](player_info_s a, player_info_s b) {
+                auto a_data = playerlist::AccessData(a.friendsID);
+                auto b_data = playerlist::AccessData(b.friendsID);
+
+                // Function to get priority of a state, RAGE > CAT/FRIEND > DEFAULT
+                static auto getPriority = [](playerlist::k_EState state) {
+                    switch (state)
+                    {
+                    case playerlist::k_EState::DEFAULT:
+                        return 0;
+                    case playerlist::k_EState::CAT:
+                    case playerlist::k_EState::FRIEND:
+                        return 2;
+                    case playerlist::k_EState::RAGE:
+                        return 3;
+                    default:
+                        return 1;
+                    }
+                };
+
+                return getPriority(a_data.state) > getPriority(b_data.state);
+            });
+        }
+
+        if (!displayed_players.empty())
+        {
+            auto original = (DrawText_t) drawtext_detour.GetOriginalFunc();
+            for (auto &player : displayed_players)
+            {
+                Color draw_clr      = clr;
+                rgba_t player_color = playerlist::Color(player.friendsID);
+                if (player_color != colors::empty)
+                    draw_clr.SetColor(player_color.r * 255, player_color.g * 255, player_color.b * 255, 255);
+
+                // Draw text
+                std::wstring wide = converter.from_bytes(player.name);
+                original(_this, x, y, hFont, draw_clr, wide.c_str());
+
+                int width, height = 0;
+                g_ISurface->GetTextSize(hFont, wide.c_str(), width, height);
+                x += width;
+
+                // Draw seperator if this is not the last entry
+                if (&player != &displayed_players.back())
+                {
+                    static std::wstring seperator = L", ";
+                    original(_this, x, y, hFont, clr, seperator.c_str());
+                    g_ISurface->GetTextSize(hFont, seperator.c_str(), width, height);
+                    x += width;
+                }
+            }
+            drawtext_detour.RestorePatch();
+        }
         else
-            wc = colors::white;
+        {
+            auto original = (DrawText_t) drawtext_detour.GetOriginalFunc();
+            original(_this, x, y, hFont, clr, szText);
+            drawtext_detour.RestorePatch();
+        }
     }
-    // Local player needs slightly different coloring in killfeed
-    if (local)
-        for (int i = 0; i < 3; i++)
-            wc[i] /= 1.125f;
-
-    clr->SetColor(wc.r * 255, wc.g * 255, wc.b * 255, 255);
+    else
+    {
+        auto original = (DrawText_t) drawtext_detour.GetOriginalFunc();
+        original(_this, x, y, hFont, clr, szText);
+        drawtext_detour.RestorePatch();
+    }
 }
-
-static std::vector<BytePatch> no_stack_smash{};
-static std::vector<BytePatch> color_patches{};
-// Defines to make our lives easier
-#define DONT_SMASH_SMACK(offset) no_stack_smash.push_back(BytePatch{ addr + offset, std::vector<unsigned char>{ 0xC3, 0x90, 0x90 } })
-#define PATCH_COLORS(patchNum) color_patches.push_back(BytePatch{ addrs[patchNum], patches[patchNum] })
 
 static InitRoutine init([] {
-    uintptr_t addr = gSignatures.GetClientSignature("55 89 E5 53 8B 55 10 8B 45 08 8B 4D 0C 8B 5D 14");
-    if (!addr)
-        return;
-
-    GetTeamColor_fn = GetTeamColor_t(addr);
-    /*
-    01143E7E
-     */
-    /* clang-format off */
-    std::array<uintptr_t, 8> addrs = {
-        gSignatures.GetClientSignature("8B 06 89 54 24 0C 8B 93"),                      // 26 bytes free
-        gSignatures.GetClientSignature("8B 06 89 54 24 0C 8B 53 40"),                   // 23 bytes free
-        gSignatures.GetClientSignature("FF 92 ? ? ? ? 89 47 40"),                       // 6 bytes free
-        addrs[2] + 47,                                                                  // 6 bytes free
-        gSignatures.GetClientSignature("FF 92 ? ? ? ? 8B 4D 10 89 43 40"),              // 6 bytes free
-        addrs[4] + 72,                                                                  // 6 bytes free
-        gSignatures.GetClientSignature("FF 92 ? ? ? ? 39 B5 ? ? ? ? 89 47 40 0F 85"),   // 6 bytes free
-        gSignatures.GetClientSignature("FF 92 ? ? ? ? 39 B5 ? ? ? ? 89 47 40 0F 84")    // 6 bytes free
-    };
-    /* clang-format on */
-
-    for (int i = 0; i < addrs.size(); i++) // null check
-        if (!addrs[i])
-            return;
-
-    std::array<std::vector<unsigned char>, addrs.size()> patches;
-    // 21 byte patch
-    // 1st 8 bytes free
-    // 2nd 5 bytes free (JUST ENOUGH)
-    /*
-mov [esp+12], edx
-mov edx, [ebx+0x84]
-mov [esp+8], edx
-mov [esp+4], esi
-mov [esp], ecx
- */
-    patches[0] = patches[1] = { 0x89, 0x54, 0x24, 0x0C, 0x8B, 0x93, 0x84, 0x00, 0x00, 0x00, 0x89, 0x54, 0x24, 0x08, 0x89, 0x74, 0x24, 0x04, 0x89, 0x0C, 0x24, 0xE8 };
-    for (int i = 2; i < addrs.size(); i++)
-        patches[i] = { 0xE8 };
-
-    for (int i = 0; i < addrs.size(); i++)
-    {
-        uintptr_t relAddr = ((i < 2 ? (uintptr_t) GetTeamColor : (uintptr_t) encodeTPI) - ((uintptr_t) addrs[i] + (i < 2 ? 21 : 0))) - 5;
-        for (int j = 0; j < 4; j++)
-            patches[i].push_back(((unsigned char *) &relAddr)[j]);
-    }
-
-    auto addNops = [](std::vector<unsigned char> &p, int totalSize) {
-        for (int i = p.size(); i < totalSize; i++)
-            p.push_back(0x90);
-    };
-    addNops(patches[0], 26 + 3); // 3 extra for removal of sub  esp, 4
-    for (int i = 2; i < addrs.size(); i++)
-        addNops(patches[i], 6);
-
-    for (int i = 0; i < 2; i++)
-    {
-        patches[i].insert(patches[i].end(), { 0x8D, 0x85, 0xE8, 0xFB, 0xFF, 0xFF });
-        if (i == 1)
-            patches[i][6] = 0x40, patches[i][29] = 0xF7;
-    }
-
-    PATCH_COLORS(0); // GetTeamColor call patch victim
-    PATCH_COLORS(1); // GetTeamColor call patch killer
-    PATCH_COLORS(2); // GetTeam call patch victim
-    PATCH_COLORS(3); // GetTeam call patch killer
-    PATCH_COLORS(4); // GetTeam call patch domination killer
-    PATCH_COLORS(5); // GetTeam call patch domination victim
-    PATCH_COLORS(6); // GetTeam call patch capture/defend flag, defend bomb 1
-    PATCH_COLORS(7); // GetTeam call patch (?) defend bomb 2
-
-    // This fixes release mode crashes due to double stack cleanups
-    DONT_SMASH_SMACK(68);
-    DONT_SMASH_SMACK(90);
-    DONT_SMASH_SMACK(121);
-    DONT_SMASH_SMACK(138);
-    DONT_SMASH_SMACK(154);
-
-    for (auto &i : color_patches)
-        i.Patch();
-    for (auto &i : no_stack_smash)
-        i.Patch();
+    auto drawtext_addr = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 1C A1 ? ? ? ? 8B 4D");
+    drawtext_detour.Init(drawtext_addr, (void *) DrawText_hook);
 
     EC::Register(
-        EC::Shutdown,
-        []() {
-            for (auto &i : color_patches)
-                i.Shutdown();
-            for (auto &i : no_stack_smash)
-                i.Shutdown();
-        },
-        "shutdown_kfc");
-    enable.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
-        if (!after)
-        {
-            for (auto &i : color_patches)
-                i.Shutdown();
-            for (auto &i : no_stack_smash)
-                i.Shutdown();
-        }
-        else
-        {
-            for (auto &i : color_patches)
-                i.Patch();
-            for (auto &i : no_stack_smash)
-                i.Patch();
-        }
-    });
+        EC::Shutdown, []() { drawtext_detour.Shutdown(); }, "shutdown_kf");
 });
 } // namespace hacks::tf2::killfeed
 #endif
