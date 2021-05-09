@@ -198,8 +198,8 @@ bool shouldRapidfire()
     if (CE_BAD(LOCAL_E) || !LOCAL_E->m_bAlivePlayer() || CE_BAD(LOCAL_W))
         return false;
 
-    // Weapon specific ignores, knives, Huntsman, Mediguns, and the grappling hook
-    if (re::C_TFWeaponBase::GetWeaponID(RAW_ENT(LOCAL_W)) == 7 || LOCAL_W->m_iClassID() == CL_CLASS(CTFCompoundBow) || LOCAL_W->m_iClassID() == CL_CLASS(CWeaponMedigun) || LOCAL_W->m_iClassID() == CL_CLASS(CTFGrapplingHook))
+    // Weapon specific ignores, knives, Thermal Thruster, Huntsman, Mediguns, and the grappling hook
+    if (re::C_TFWeaponBase::GetWeaponID(RAW_ENT(LOCAL_W)) == 7 || LOCAL_W->m_iClassID() == CL_CLASS(CTFRocketPack) || LOCAL_W->m_iClassID() == CL_CLASS(CTFCompoundBow) || LOCAL_W->m_iClassID() == CL_CLASS(CWeaponMedigun) || LOCAL_W->m_iClassID() == CL_CLASS(CTFGrapplingHook))
         return false;
 
     // Ignore throwables/consumables/etc
