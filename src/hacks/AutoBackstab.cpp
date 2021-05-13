@@ -355,6 +355,9 @@ static bool doBacktrackStab(bool legit = false)
     // Get the Best tick
     for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
     {
+        // Found a target, break out
+        if (stab_ent)
+            break;
         CachedEntity *ent = ENTITY(i);
         // Targeting checks
         if (CE_BAD(ent) || !ent->m_bAlivePlayer() || !ent->m_bEnemy() || !player_tools::shouldTarget(ent) || IsPlayerInvulnerable(ent))
