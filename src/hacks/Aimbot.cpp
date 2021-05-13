@@ -17,6 +17,7 @@
 #include <targethelper.hpp>
 #include "hitrate.hpp"
 #include "FollowBot.hpp"
+#include "Warp.hpp"
 
 namespace hacks::shared::aimbot
 {
@@ -241,6 +242,7 @@ static void doAutoZoom(bool target_found)
 // Current Entity
 CachedEntity *target_last = 0;
 bool aimed_this_tick      = false;
+Vector viewangles_this_tick(0.0f);
 
 // If slow aimbot allows autoshoot
 bool slow_can_shoot = false;
@@ -431,6 +433,20 @@ static void CreateMove()
             }
         }
     }
+}
+
+// Just hold m1 if we were aiming at something before and are in rapidfire
+static void CreateMoveWarp()
+{
+    if (hacks::tf2::warp::in_rapidfire && aimed_this_tick)
+    {
+        current_user_cmd->viewangles     = viewangles_this_tick;
+        g_pLocalPlayer->bUseSilentAngles = *silent;
+        current_user_cmd->buttons |= IN_ATTACK;
+    }
+    // Warp should call aimbot normally
+    else if (!hacks::tf2::warp::in_rapidfire)
+        CreateMove();
 }
 
 #if ENABLE_VISUALS
@@ -1022,7 +1038,9 @@ void Aim(CachedEntity *entity)
     // Set tick count to targets (backtrack messes with this)
     if (!shouldBacktrack(entity) && nolerp && entity->m_IDX <= g_IEngine->GetMaxClients())
         current_user_cmd->tick_count = TIME_TO_TICKS(CE_FLOAT(entity, netvar.m_flSimulationTime));
-    aimed_this_tick = true;
+    aimed_this_tick      = true;
+    viewangles_this_tick = angles;
+
     // Finish function
     return;
 }
@@ -1595,7 +1613,7 @@ static InitRoutine EC([]() {
     EC::Register(EC::LevelInit, Reset, "INIT_Aimbot", EC::average);
     EC::Register(EC::LevelShutdown, Reset, "RESET_Aimbot", EC::average);
     EC::Register(EC::CreateMove, CreateMove, "CM_Aimbot", EC::late);
-    EC::Register(EC::CreateMoveWarp, CreateMove, "CMW_Aimbot", EC::late);
+    EC::Register(EC::CreateMoveWarp, CreateMoveWarp, "CMW_Aimbot", EC::late);
 #if ENABLE_VISUALS
     EC::Register(EC::Draw, DrawText, "DRAW_Aimbot", EC::average);
 #endif
