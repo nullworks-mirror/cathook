@@ -714,6 +714,9 @@ void warpLogic()
         {
         case ATTACK:
         {
+            // Don't charge if we do not have atleast half of our warp bar
+            if (warp_amount < floor(GetMaxWarpTicks() / 2.0f))
+                break;
             // Get charge meter (0 - 100 range)
             float charge_meter = re::CTFPlayerShared::GetChargeMeter(re::CTFPlayerShared::GetPlayerShared(RAW_ENT(LOCAL_E)));
 
@@ -748,11 +751,11 @@ void warpLogic()
                     velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), vel);
                     // +11 to account for the melee delay, the -40.0f is so we don't just aim for the center, which would
                     // Make our range artifically shorter
-                    int charge_ticks = approximateTicksForDist(distance - 40.0f, vel.Length(), GetMaxWarpTicks() + 11);
+                    int charge_ticks = approximateTicksForDist(distance - 40.0f, vel.Length(), warp_amount + 11);
 
                     // Not in range, try again with melee range taken into compensation
                     if (charge_ticks <= 0)
-                        charge_ticks = approximateTicksForDist(distance - 128.0f, vel.Length(), GetMaxWarpTicks() + 11);
+                        charge_ticks = approximateTicksForDist(distance - 128.0f, vel.Length(), warp_amount + 11);
                     // Out of range
                     if (charge_ticks <= 0)
                     {
