@@ -615,8 +615,28 @@ static void followCrumbs()
         time_spent_on_crumb.update();
     current_crumb = crumbs[0];
 
+    // Ensure we do not try to walk downwards unless we are falling
+    static std::vector<float> fall_vec{};
+    Vector vel;
+    velocity::EstimateAbsVelocity(RAW_ENT(LOCAL_E), vel);
+
+    fall_vec.push_back(vel.z);
+    if (fall_vec.size() > 10)
+        fall_vec.erase(fall_vec.begin());
+
+    bool reset_z = true;
+    for (auto &entry : fall_vec)
+    {
+        if (!(entry <= 0.01f && entry >= -0.01f))
+            reset_z = false;
+    }
+
+    Vector current_vec = crumbs[0].vec;
+    if (reset_z)
+        current_vec.z = g_pLocalPlayer->v_Origin.z;
+
     // We are close enough to the crumb to have reached it
-    if (crumbs[0].vec.DistTo(g_pLocalPlayer->v_Origin) < 50)
+    if (current_vec.DistTo(g_pLocalPlayer->v_Origin) < 50)
     {
         last_crumb = crumbs[0];
         crumbs.erase(crumbs.begin());
@@ -625,6 +645,11 @@ static void followCrumbs()
             return;
         inactivity.update();
     }
+
+    current_vec = crumbs[0].vec;
+    if (reset_z)
+        current_vec.z = g_pLocalPlayer->v_Origin.z;
+
     // We are close enough to the second crumb, Skip both (This is espcially helpful with drop downs)
     if (crumbs.size() > 1 && crumbs[1].vec.DistTo(g_pLocalPlayer->v_Origin) < 50)
     {
@@ -700,7 +725,7 @@ static void followCrumbs()
         current_user_cmd->viewangles = next;
     }
 
-    WalkTo(crumbs[0].vec);
+    WalkTo(current_vec);
 }
 
 static Timer vischeck_timer{};
