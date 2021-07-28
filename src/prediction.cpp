@@ -11,6 +11,7 @@
 
 static settings::Boolean debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
 static settings::Boolean debug_pp_draw{ "debug.pp-draw", "false" };
+static settings::Boolean debug_pp_draw_engine{ "debug.pp-draw.engine", "false" };
 // The higher the sample size, the more previous positions we will take into account to calculate the next position. Lower = Faster reaction Higher = Stability
 static settings::Int sample_size("debug.strafepred.samplesize", "10");
 // TODO there is a Vector() object created each call.
@@ -300,7 +301,7 @@ void Prediction_PaintTraverse()
 {
     if (g_Settings.bInvalid)
         return;
-    if (debug_pp_draw)
+    if (debug_pp_draw || debug_pp_draw_engine)
     {
         if (!sv_gravity)
         {
@@ -308,6 +309,7 @@ void Prediction_PaintTraverse()
             if (!sv_gravity)
                 return;
         }
+
         for (int i = 1; i < g_GlobalVars->maxClients; i++)
         {
             auto ent = ENTITY(i);
@@ -316,33 +318,86 @@ void Prediction_PaintTraverse()
 
             Vector velocity;
             velocity::EstimateAbsVelocity(RAW_ENT(ent), velocity);
-            auto data = Predict(ent, ent->m_vecOrigin(), 0.0f, velocity, Vector(0, 0, -sv_gravity->GetFloat()), std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs()), 64);
-            Vector previous_screen;
-            if (!draw::WorldToScreen(ent->m_vecOrigin(), previous_screen))
-                continue;
-            rgba_t color = colors::FromRGBA8(255, 0, 0, 255);
-            for (size_t j = 0; j < data.size(); j++)
+
+            if (debug_pp_draw_engine)
             {
-                Vector screen;
-                if (draw::WorldToScreen(data[j], screen))
+                std::vector<Vector> data;
+                Vector original_origin = ent->m_vecOrigin();
+                Vector new_origin      = original_origin;
+
+                Vector original_velocity = CE_VECTOR(ent, 0x14c);
+                Vector new_velocity      = original_velocity;
+
+                Vector ent_mins = RAW_ENT(ent)->GetCollideable()->OBBMins();
+                Vector ent_maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs();
+
+                for (int i = 0; i < 64; i++)
                 {
-                    draw::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 2);
-                    previous_screen = screen;
+                    const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = new_origin;
+                    CE_VECTOR(ent, 0x354)                              = new_origin;
+                    CE_VECTOR(ent, 0x14c)                              = new_velocity;
+                    ent->m_vecOrigin()                                 = new_origin;
+                    new_origin                                         = EnginePrediction(ent, g_GlobalVars->interval_per_tick);
+                    // If we aren't grounded, apply velocity
+                    if (DistanceToGround(new_origin, ent_mins, ent_maxs) > 0.0f)
+                        new_velocity.z -= sv_gravity->GetFloat() * g_GlobalVars->interval_per_tick;
+                    data.push_back(new_origin);
                 }
-                else
+                ent->m_vecOrigin()                                 = original_origin;
+                const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = original_origin;
+                CE_VECTOR(ent, 0x354)                              = original_origin;
+                CE_VECTOR(ent, 0x14c)                              = original_velocity;
+
+                Vector previous_screen;
+                if (!draw::WorldToScreen(ent->m_vecOrigin(), previous_screen))
+                    continue;
+                rgba_t color = colors::FromRGBA8(0, 0, 255, 255);
+                for (size_t j = 0; j < data.size(); j++)
                 {
-                    break;
+                    Vector screen;
+                    if (draw::WorldToScreen(data[j], screen))
+                    {
+                        draw::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 2);
+                        previous_screen = screen;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    color.b -= 1.0f / 20.0f;
                 }
-                color.r -= 1.0f / 20.0f;
             }
+            if (debug_pp_draw)
+            {
 
-            /*if (!ent->m_bEnemy())
-                continue;
-            auto pos = ProjectilePrediction(ent, hitbox_t::spine_3, 1980.0f, 0.0f, 1.0f, 0.0f);
+                auto data = Predict(ent, ent->m_vecOrigin(), 0.0f, velocity, Vector(0, 0, -sv_gravity->GetFloat()), std::make_pair(RAW_ENT(ent)->GetCollideable()->OBBMins(), RAW_ENT(ent)->GetCollideable()->OBBMaxs()), 64);
+                Vector previous_screen;
+                if (!draw::WorldToScreen(ent->m_vecOrigin(), previous_screen))
+                    continue;
+                rgba_t color = colors::FromRGBA8(255, 0, 0, 255);
+                for (size_t j = 0; j < data.size(); j++)
+                {
+                    Vector screen;
+                    if (draw::WorldToScreen(data[j], screen))
+                    {
+                        draw::Line(screen.x, screen.y, previous_screen.x - screen.x, previous_screen.y - screen.y, color, 2);
+                        previous_screen = screen;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    color.r -= 1.0f / 20.0f;
+                }
 
-            Vector aaa;
-            if (draw::WorldToScreen(pos, aaa))
-                draw::Rectangle(aaa.x, aaa.y, 5, 5, colors::yellow);*/
+                /*if (!ent->m_bEnemy())
+                    continue;
+                auto pos = ProjectilePrediction(ent, hitbox_t::spine_3, 1980.0f, 0.0f, 1.0f, 0.0f);
+
+                Vector aaa;
+                if (draw::WorldToScreen(pos, aaa))
+                    draw::Rectangle(aaa.x, aaa.y, 5, 5, colors::yellow);*/
+            }
         }
     }
 }
@@ -408,9 +463,10 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     return result;
 }
 
-std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float gravitymod, float entgmod /* ignored */, float proj_startvelocity)
+std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float gravitymod, float entgmod, float proj_startvelocity)
 {
-    Vector origin = ent->m_vecOrigin();
+    Vector origin   = ent->m_vecOrigin();
+    Vector velocity = CE_VECTOR(ent, 0x14c);
     Vector hitbox;
     GetHitbox(ent, hb, hitbox);
     Vector hitbox_offset = hitbox - origin;
@@ -427,31 +483,34 @@ std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb,
     float currenttime = medianTime - range;
     if (currenttime <= 0.0f)
         currenttime = 0.01f;
-    float besttime = currenttime;
-    float mindelta = 65536.0f;
-    Vector bestpos = origin;
-    Vector current = origin;
-    int maxsteps   = 40;
-    bool onground  = false;
+    float besttime          = currenttime;
+    float mindelta          = 65536.0f;
+    Vector bestpos          = origin;
+    Vector current          = origin;
+    Vector current_velocity = CE_VECTOR(ent, 0x14c);
+    int maxsteps            = 40;
+    bool onground           = false;
     if (ent->m_Type() == ENTITY_PLAYER)
     {
         if (CE_INT(ent, netvar.iFlags) & FL_ONGROUND)
             onground = true;
     }
     float steplength = ((float) (2 * range) / (float) maxsteps);
-    Vector ent_mins  = RAW_ENT(ent)->GetCollideable()->OBBMins();
-    Vector ent_maxs  = RAW_ENT(ent)->GetCollideable()->OBBMaxs();
+
+    Vector ent_mins = RAW_ENT(ent)->GetCollideable()->OBBMins();
+    Vector ent_maxs = RAW_ENT(ent)->GetCollideable()->OBBMaxs();
+
     for (int steps = 0; steps < maxsteps; steps++, currenttime += steplength)
     {
-        ent->m_vecOrigin() = current;
-        current            = EnginePrediction(ent, steplength);
+        ent->m_vecOrigin()                                 = current;
+        const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = current;
+        CE_VECTOR(ent, 0x354)                              = current;
+        CE_VECTOR(ent, 0x14c)                              = current_velocity;
+        current                                            = EnginePrediction(ent, steplength);
 
-        if (onground)
-        {
-            float toground = DistanceToGround(current, ent_mins, ent_maxs);
-            current.z -= toground;
-        }
-
+        // If we aren't grounded, apply velocity
+        if (DistanceToGround(current, ent_mins, ent_maxs) > 0.0f)
+            current_velocity.z -= sv_gravity->GetFloat() * entgmod * steplength;
         float rockettime = g_pLocalPlayer->v_Eye.DistTo(current) / speed;
         // Compensate for ping
         // rockettime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
@@ -464,6 +523,7 @@ std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb,
     }
     const_cast<Vector &>(RAW_ENT(ent)->GetAbsOrigin()) = origin;
     CE_VECTOR(ent, 0x354)                              = origin;
+    CE_VECTOR(ent, 0x14c)                              = velocity;
     // Compensate for ping
     // besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
     bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravitymod);

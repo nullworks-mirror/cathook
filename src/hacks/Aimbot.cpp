@@ -54,7 +54,7 @@ static settings::Float proj_start_vel{ "aimbot.projectile.initial-velocity", "0"
 static settings::Float sticky_autoshoot{ "aimbot.projectile.sticky-autoshoot", "0.5" };
 
 static settings::Boolean aimbot_debug{ "aimbot.debug", "0" };
-static settings::Boolean engine_projpred{ "aimbot.debug.engine-pp", "0" };
+static settings::Boolean engine_projpred{ "aimbot.debug.engine-pp", "1" };
 
 static settings::Boolean auto_spin_up{ "aimbot.auto.spin-up", "0" };
 static settings::Boolean minigun_tapfire{ "aimbot.auto.tapfire", "false" };
@@ -1267,11 +1267,11 @@ int BestHitbox(CachedEntity *target)
         {
             int ci    = g_pLocalPlayer->weapon()->m_iClassID();
             preferred = hitbox_t::spine_3;
-            
+
             // Sniper rifle
             if (g_pLocalPlayer->holding_sniper_rifle)
                 headonly = CanHeadshot();
-            
+
             // Hunstman
             else if (ci == CL_CLASS(CTFCompoundBow))
             {
@@ -1283,7 +1283,7 @@ int BestHitbox(CachedEntity *target)
                 else
                     preferred = hitbox_t::head;
             }
-            
+
             // Ambassador
             else if (IsAmbassador(g_pLocalPlayer->weapon()))
             {
@@ -1294,17 +1294,13 @@ int BestHitbox(CachedEntity *target)
                 if (target->m_iHealth() <= 18 || IsPlayerCritBoosted(g_pLocalPlayer->entity) || target->m_flDistance() > 1200)
                     headonly = false;
             }
-            
+
             // Rockets and stickies should aim at the foot if the target is on the ground
-            else if (ci == CL_CLASS(CTFPipebombLauncher) || 
-				ci == CL_CLASS(CTFRocketLauncher) || 
-				ci == CL_CLASS(CTFParticleCannon) || 
-				ci == CL_CLASS(CTFRocketLauncher_AirStrike) || 
-				ci == CL_CLASS(CTFRocketLauncher_Mortar) ||
-				ci == CL_CLASS(CTFRocketLauncher_DirectHit))
+            else if (ci == CL_CLASS(CTFPipebombLauncher) || ci == CL_CLASS(CTFRocketLauncher) || ci == CL_CLASS(CTFParticleCannon) || ci == CL_CLASS(CTFRocketLauncher_AirStrike) || ci == CL_CLASS(CTFRocketLauncher_Mortar) || ci == CL_CLASS(CTFRocketLauncher_DirectHit))
             {
-				bool ground = CE_INT(target, netvar.iFlags) & (1 << 0);
-				if (ground) preferred = hitbox_t::foot_L;
+                bool ground = CE_INT(target, netvar.iFlags) & (1 << 0);
+                if (ground)
+                    preferred = hitbox_t::foot_L;
             }
 
             // Bodyshot handling
@@ -1312,7 +1308,7 @@ int BestHitbox(CachedEntity *target)
             {
                 float cdmg = CE_FLOAT(LOCAL_W, netvar.flChargedDamage);
                 float bdmg = 50;
-                 // Vaccinator damage correction, protects against 20% of damage
+                // Vaccinator damage correction, protects against 20% of damage
                 if (CarryingHeatmaker())
                 {
                     bdmg = (bdmg * .80) - 1;
@@ -1323,7 +1319,6 @@ int BestHitbox(CachedEntity *target)
                 {
                     bdmg = (bdmg * .25) - 1;
                     cdmg = (cdmg * .25) - 1;
-                    
                 }
                 // Passive bullet resist protects against 10% of damage
                 else if (HasCondition<TFCond_SmallBulletResist>(target))
@@ -1352,9 +1347,8 @@ int BestHitbox(CachedEntity *target)
             }
         }
         // In counter-strike source, headshots are what we want
-        else IF_GAME(IsCSS())
-            headonly = true;
-        
+        else IF_GAME(IsCSS()) headonly = true;
+
         // Head only
         if (headonly)
         {
