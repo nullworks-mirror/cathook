@@ -216,7 +216,19 @@ static void cm()
         has_changed = false;
         // Only passive should reconnect
         if (*namesteal == 1)
-            g_IEngine->ClientCmd_Unrestricted("retry");
+        {
+            static std::string previous_server = "";
+            static int retry_count             = 0;
+            if (previous_server != ((INetChannel *) g_IEngine->GetNetChannelInfo())->GetAddress())
+            {
+                previous_server = ((INetChannel *) g_IEngine->GetNetChannelInfo())->GetAddress();
+                retry_count     = 0;
+            }
+            retry_count++;
+            // Retry only up to 3 times, else you get an ad-hoc error
+            if (retry_count <= 3)
+                g_IEngine->ClientCmd_Unrestricted("retry");
+        }
     }
     if (!set_name.test_and_set(30000))
         return;
