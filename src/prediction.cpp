@@ -9,6 +9,11 @@
 #include <settings/Bool.hpp>
 #include <boost/circular_buffer.hpp>
 
+namespace hacks::shared::aimbot
+{
+extern settings::Boolean engine_projpred;
+}
+
 static settings::Boolean debug_pp_extrapolate{ "debug.pp-extrapolate", "false" };
 static settings::Boolean debug_pp_draw{ "debug.pp-draw", "false" };
 static settings::Boolean debug_pp_draw_engine{ "debug.pp-draw.engine", "false" };
@@ -720,6 +725,9 @@ static InitRoutine init(
             EC::CreateMove,
             []()
             {
+                // Don't run if we don't use it
+                if (!hacks::shared::aimbot::engine_projpred && !debug_pp_draw)
+                    return;
                 for (int i = 1; i < g_GlobalVars->maxClients; i++)
                 {
                     auto ent     = ENTITY(i);

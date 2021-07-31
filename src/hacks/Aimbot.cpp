@@ -54,7 +54,7 @@ static settings::Float proj_start_vel{ "aimbot.projectile.initial-velocity", "0"
 static settings::Float sticky_autoshoot{ "aimbot.projectile.sticky-autoshoot", "0.5" };
 
 static settings::Boolean aimbot_debug{ "aimbot.debug", "0" };
-static settings::Boolean engine_projpred{ "aimbot.debug.engine-pp", "1" };
+settings::Boolean engine_projpred{ "aimbot.debug.engine-pp", "1" };
 
 static settings::Boolean auto_spin_up{ "aimbot.auto.spin-up", "0" };
 static settings::Boolean minigun_tapfire{ "aimbot.auto.tapfire", "false" };
