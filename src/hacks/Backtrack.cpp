@@ -170,7 +170,12 @@ void adjustPing(INetChannel *ch)
 // Move target entity to tick
 void MoveToTick(BacktrackData data)
 {
+    if (IDX_BAD(data.entidx) || data.entidx > g_IEngine->GetMaxClients())
+        return;
     CachedEntity *target = ENTITY(data.entidx);
+
+    if (CE_BAD(target))
+        return;
 
     // Set entity data to match the target data
     re::C_BasePlayer::SetAbsOrigin(RAW_ENT(target), data.m_vecOrigin);
@@ -390,14 +395,16 @@ void Draw()
 }
 #endif
 
-static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, CreateMoveEarly, "bt_update", EC::very_early);
-    EC::Register(EC::CreateMove, CreateMoveLate, "bt_createmove", EC::very_late);
-    EC::Register(EC::Shutdown, Shutdown, "bt_shutdown");
-    EC::Register(EC::LevelInit, Shutdown, "bt_shutdown");
+static InitRoutine init(
+    []()
+    {
+        EC::Register(EC::CreateMove, CreateMoveEarly, "bt_update", EC::very_early);
+        EC::Register(EC::CreateMove, CreateMoveLate, "bt_createmove", EC::very_late);
+        EC::Register(EC::Shutdown, Shutdown, "bt_shutdown");
+        EC::Register(EC::LevelInit, Shutdown, "bt_shutdown");
 #if ENABLE_VISUALS
-    EC::Register(EC::Draw, Draw, "bt_draw");
+        EC::Register(EC::Draw, Draw, "bt_draw");
 #endif
-});
+    });
 
 } // namespace hacks::tf2::backtrack
