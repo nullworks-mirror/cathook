@@ -97,13 +97,13 @@ public:
         if (name == "player_activate")
         {
             int uid    = event->GetInt("userid");
-            int entity = g_IEngine->GetPlayerForUserID(uid);
+            int entity = GetPlayerForUserID(uid);
             ResetPlayer(entity);
         }
         else if (name == "player_disconnect")
         {
             int uid    = event->GetInt("userid");
-            int entity = g_IEngine->GetPlayerForUserID(uid);
+            int entity = GetPlayerForUserID(uid);
             ResetPlayer(entity);
         }
 

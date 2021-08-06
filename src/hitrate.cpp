@@ -68,7 +68,7 @@ void OnShot()
 
 void OnHit(bool crit, int idx, bool is_sniper)
 {
-    idx = g_IEngine->GetPlayerForUserID(idx);
+    idx = GetPlayerForUserID(idx);
     count_hits++;
     if (is_sniper)
         count_hits_sniper++;
@@ -134,7 +134,7 @@ public:
     {
         if (strcmp("player_hurt", event->GetName()))
             return;
-        if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
+        if (GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
             if (CE_GOOD(LOCAL_W) && (LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifle) || LOCAL_W->m_iClassID() == CL_CLASS(CTFSniperRifleDecap)))
                 OnHit(event->GetBool("crit"), event->GetInt("userid"), true);

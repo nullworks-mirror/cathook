@@ -1957,6 +1957,20 @@ bool GetPlayerInfo(int idx, player_info_s *info)
     return res;
 }
 
+int GetPlayerForUserID(int userID)
+{
+    for (int i = 1; i <= g_IEngine->GetMaxClients(); i++)
+    {
+        player_info_s player_info;
+        if (!GetPlayerInfo(i, &player_info))
+            continue;
+        // Found player
+        if (player_info.userID == userID)
+            return i;
+    }
+    return 0;
+}
+
 bool HookNetvar(std::vector<std::string> path, ProxyFnHook &hook, RecvVarProxyFn function)
 {
     auto pClass = g_IBaseClient->GetAllClasses();

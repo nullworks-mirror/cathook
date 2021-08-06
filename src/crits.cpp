@@ -975,7 +975,7 @@ public:
         // Something took damage
         else if (!strcmp(event->GetName(), "player_hurt"))
         {
-            int victim = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+            int victim = GetPlayerForUserID(event->GetInt("userid"));
             int health = event->GetInt("health");
 
             auto &status          = player_status_list[victim - 1];
@@ -984,7 +984,7 @@ public:
             status.just_updated   = true;
 
             // That something was hurt by us
-            if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_pLocalPlayer->entity_idx)
+            if (GetPlayerForUserID(event->GetInt("attacker")) == g_pLocalPlayer->entity_idx)
             {
                 // Don't count self damage
                 if (victim != g_pLocalPlayer->entity_idx)

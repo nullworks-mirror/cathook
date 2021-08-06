@@ -59,7 +59,7 @@ std::string ComposeKillSay(IGameEvent *event)
     int kid = event->GetInt("attacker");
     if (kid == vid)
         return "";
-    if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer())
+    if (GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer())
         return "";
     std::string msg = source->at(rand() % source->size());
     //	checks if the killsays.txt file is not 1 line. 100% sure it's going
@@ -68,14 +68,14 @@ std::string ComposeKillSay(IGameEvent *event)
         msg = source->at(rand() % source->size());
     lastmsg = msg;
     player_info_s info{};
-    GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
+    GetPlayerInfo(GetPlayerForUserID(vid), &info);
 
     ReplaceSpecials(msg);
-    CachedEntity *ent = ENTITY(g_IEngine->GetPlayerForUserID(vid));
+    CachedEntity *ent = ENTITY(GetPlayerForUserID(vid));
     int clz           = g_pPlayerResource->GetClass(ent);
     ReplaceString(msg, "%class%", tf_classes_killsay[clz]);
     player_info_s infok{};
-    GetPlayerInfo(g_IEngine->GetPlayerForUserID(kid), &infok);
+    GetPlayerInfo(GetPlayerForUserID(kid), &infok);
     ReplaceString(msg, "%killer%", std::string(infok.name));
     ReplaceString(msg, "%team%", tf_teams_killsay[ent->m_iTeam() - 2]);
     ReplaceString(msg, "%myteam%", tf_teams_killsay[LOCAL_E->m_iTeam() - 2]);

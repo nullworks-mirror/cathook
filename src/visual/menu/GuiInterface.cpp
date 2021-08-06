@@ -20,7 +20,7 @@ static std::unique_ptr<zerokernel::special::PlayerListController> controller{ nu
 static zerokernel::special::PlayerListData createPlayerListData(int userid)
 {
     zerokernel::special::PlayerListData data{};
-    auto idx = g_IEngine->GetPlayerForUserID(userid);
+    auto idx = GetPlayerForUserID(userid);
     player_info_s info{};
     GetPlayerInfo(idx, &info);
     data.classId = g_pPlayerResource->getClass(idx);
@@ -76,7 +76,7 @@ void sortPList()
         player_info_s info{};
         if (GetPlayerInfo(i, &info))
         {
-            auto idx = g_IEngine->GetPlayerForUserID(info.userID);
+            auto idx = GetPlayerForUserID(info.userID);
             if (g_pPlayerResource->getTeam(idx) == 2)
             {
                 controller->addPlayer(info.userID, createPlayerListData(info.userID));
@@ -88,7 +88,7 @@ void sortPList()
         player_info_s info{};
         if (GetPlayerInfo(i, &info))
         {
-            auto idx = g_IEngine->GetPlayerForUserID(info.userID);
+            auto idx = GetPlayerForUserID(info.userID);
             if (g_pPlayerResource->getTeam(idx) == 3)
             {
                 controller->addPlayer(info.userID, createPlayerListData(info.userID));
@@ -100,7 +100,7 @@ void sortPList()
         player_info_s info{};
         if (GetPlayerInfo(i, &info))
         {
-            auto idx = g_IEngine->GetPlayerForUserID(info.userID);
+            auto idx = GetPlayerForUserID(info.userID);
             if (g_pPlayerResource->getTeam(idx) != 2 && g_pPlayerResource->getTeam(idx) != 3)
             {
                 controller->addPlayer(info.userID, createPlayerListData(info.userID));

@@ -38,7 +38,7 @@ public:
         {
             return;
         }
-        if (g_IEngine->GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
+        if (GetPlayerForUserID(event->GetInt("attacker")) == g_IEngine->GetLocalPlayer())
         {
             bool nearby = false;
             for (int i = 1; i <= HIGHEST_ENTITY; i++)

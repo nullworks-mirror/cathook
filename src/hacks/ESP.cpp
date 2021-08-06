@@ -1359,7 +1359,7 @@ void _FASTCALL ProcessEntity(CachedEntity *ent)
 
         // Attempt to get player info, and if cant, return
         player_info_s info;
-        if (!g_IEngine->GetPlayerInfo(ent->m_IDX, &info))
+        if (!GetPlayerInfo(ent->m_IDX, &info))
             return;
 
         // TODO, check if u can just use "ent->m_bEnemy()" instead of m_iTeam

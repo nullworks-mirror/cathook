@@ -46,7 +46,7 @@ std::string ComposeDominateSay(IGameEvent *event)
     int dnum = event->GetInt("dominations");
 
     //	this is actually impossible but just in case.
-    if (g_IEngine->GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer())
+    if (GetPlayerForUserID(kid) != g_IEngine->GetLocalPlayer())
         return "";
 
     std::string msg = source->at(rand() % source->size());
@@ -56,15 +56,15 @@ std::string ComposeDominateSay(IGameEvent *event)
     lastmsg = msg;
     player_info_s info{};
 
-    GetPlayerInfo(g_IEngine->GetPlayerForUserID(vid), &info);
+    GetPlayerInfo(GetPlayerForUserID(vid), &info);
     ReplaceSpecials(msg);
 
-    CachedEntity *ent = ENTITY(g_IEngine->GetPlayerForUserID(vid));
+    CachedEntity *ent = ENTITY(GetPlayerForUserID(vid));
     int clz           = g_pPlayerResource->GetClass(ent);
 
     ReplaceString(msg, "%class%", tf_classes_dominatesay[clz]);
     player_info_s infok{};
-    GetPlayerInfo(g_IEngine->GetPlayerForUserID(kid), &infok);
+    GetPlayerInfo(GetPlayerForUserID(kid), &infok);
 
     ReplaceString(msg, "%dominum%", std::to_string(dnum));
     ReplaceString(msg, "%killer%", std::string(infok.name));

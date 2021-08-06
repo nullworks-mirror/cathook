@@ -223,7 +223,7 @@ void do_random_votekick()
 
     int target = targets[rand() % targets.size()];
     player_info_s info;
-    if (!GetPlayerInfo(g_IEngine->GetPlayerForUserID(target), &info))
+    if (!GetPlayerInfo(GetPlayerForUserID(target), &info))
         return;
     hack::ExecuteCommand("callvote kick \"" + std::to_string(target) + " cheating\"");
 }
@@ -496,8 +496,8 @@ class CatBotEventListener : public IGameEventListener2
     void FireGameEvent(IGameEvent *event) override
     {
 
-        int killer_id = g_IEngine->GetPlayerForUserID(event->GetInt("attacker"));
-        int victim_id = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+        int killer_id = GetPlayerForUserID(event->GetInt("attacker"));
+        int victim_id = GetPlayerForUserID(event->GetInt("userid"));
 
         if (victim_id == g_IEngine->GetLocalPlayer())
         {

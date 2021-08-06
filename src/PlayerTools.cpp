@@ -128,23 +128,25 @@ void onKilledBy(unsigned id)
     }
 }
 
-static CatCommand mark_betrayal("pl_mark_betrayal", "Mark a steamid32 as betrayal", [](const CCommand &args) {
-    if (args.ArgC() < 2)
-    {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please provide a valid steamid32!");
-        return;
-    }
-    try
-    {
-        // Grab steamid
-        unsigned steamid       = std::stoul(args.Arg(1));
-        betrayal_list[steamid] = *betrayal_limit;
-    }
-    catch (const std::invalid_argument &)
-    {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Invalid Steamid32 provided.");
-    }
-});
+static CatCommand mark_betrayal("pl_mark_betrayal", "Mark a steamid32 as betrayal",
+                                [](const CCommand &args)
+                                {
+                                    if (args.ArgC() < 2)
+                                    {
+                                        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Please provide a valid steamid32!");
+                                        return;
+                                    }
+                                    try
+                                    {
+                                        // Grab steamid
+                                        unsigned steamid       = std::stoul(args.Arg(1));
+                                        betrayal_list[steamid] = *betrayal_limit;
+                                    }
+                                    catch (const std::invalid_argument &)
+                                    {
+                                        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "Invalid Steamid32 provided.");
+                                    }
+                                });
 
 void onKilledBy(CachedEntity *entity)
 {
@@ -156,8 +158,8 @@ class PlayerToolsEventListener : public IGameEventListener2
     void FireGameEvent(IGameEvent *event) override
     {
 
-        int killer_id = g_IEngine->GetPlayerForUserID(event->GetInt("attacker"));
-        int victim_id = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+        int killer_id = GetPlayerForUserID(event->GetInt("attacker"));
+        int victim_id = GetPlayerForUserID(event->GetInt("userid"));
 
         if (victim_id == g_IEngine->GetLocalPlayer())
         {
@@ -173,9 +175,11 @@ PlayerToolsEventListener &listener()
     return object;
 }
 
-static InitRoutine register_event([]() {
-    g_IEventManager2->AddListener(&listener(), "player_death", false);
-    EC::Register(
-        EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener()); }, "playerlist_shutdown");
-});
+static InitRoutine register_event(
+    []()
+    {
+        g_IEventManager2->AddListener(&listener(), "player_death", false);
+        EC::Register(
+            EC::Shutdown, []() { g_IEventManager2->RemoveListener(&listener()); }, "playerlist_shutdown");
+    });
 } // namespace player_tools

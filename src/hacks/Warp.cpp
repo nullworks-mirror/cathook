@@ -1040,8 +1040,8 @@ public:
         // Store userids
         int victim       = event->GetInt("userid");
         int attacker     = event->GetInt("attacker");
-        int attacker_idx = g_IEngine->GetPlayerForUserID(attacker);
-        int victim_idx   = g_IEngine->GetPlayerForUserID(victim);
+        int attacker_idx = GetPlayerForUserID(attacker);
+        int victim_idx   = GetPlayerForUserID(victim);
         player_info_s kinfo{};
         player_info_s vinfo{};
 

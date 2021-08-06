@@ -53,7 +53,7 @@ CatCommand spectate("spectate", "Spectate", [](const CCommand &args) {
         spectator_target = 0;
     else
     {
-        spectator_target = g_IEngine->GetPlayerForUserID(id);
+        spectator_target = GetPlayerForUserID(id);
     }
 });
 

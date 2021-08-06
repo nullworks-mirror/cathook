@@ -71,8 +71,8 @@ void check_combos()
 
 void on_kill(IGameEvent *event)
 {
-    int killer_id = g_IEngine->GetPlayerForUserID(event->GetInt("attacker"));
-    int victim_id = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+    int killer_id = GetPlayerForUserID(event->GetInt("attacker"));
+    int victim_id = GetPlayerForUserID(event->GetInt("userid"));
 
     if (victim_id == g_IEngine->GetLocalPlayer())
     {
@@ -122,7 +122,7 @@ void on_kill(IGameEvent *event)
 
 void on_spawn(IGameEvent *event)
 {
-    int userid = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+    int userid = GetPlayerForUserID(event->GetInt("userid"));
 
     if (userid == g_IEngine->GetLocalPlayer())
     {
@@ -160,8 +160,10 @@ void shutdown()
     g_IEventManager2->RemoveListener(&listener());
 }
 
-static InitRoutine EC([]() {
-    EC::Register(EC::Shutdown, shutdown, "shutdown_announcer", EC::average);
-    init();
-});
+static InitRoutine EC(
+    []()
+    {
+        EC::Register(EC::Shutdown, shutdown, "shutdown_announcer", EC::average);
+        init();
+    });
 } // namespace hacks::shared::announcer

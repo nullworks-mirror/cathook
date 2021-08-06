@@ -105,8 +105,8 @@ void Event(KeyValues *event)
     {
         int attacker = event->GetInt("attacker");
         int victim   = event->GetInt("userid");
-        int eid      = g_IEngine->GetPlayerForUserID(attacker);
-        int vid      = g_IEngine->GetPlayerForUserID(victim);
+        int eid      = GetPlayerForUserID(attacker);
+        int vid      = GetPlayerForUserID(victim);
         if (eid > 0 && eid <= MAX_PLAYERS && vid > 0 && vid <= MAX_PLAYERS)
         {
             auto &Po_v = Player_origs[vid];

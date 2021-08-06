@@ -62,8 +62,8 @@ void apply_killstreaks()
 
 void on_kill(IGameEvent *event)
 {
-    int killer_id = g_IEngine->GetPlayerForUserID(event->GetInt("attacker"));
-    int victim_id = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+    int killer_id = GetPlayerForUserID(event->GetInt("attacker"));
+    int victim_id = GetPlayerForUserID(event->GetInt("userid"));
 
     if (victim_id == g_IEngine->GetLocalPlayer())
     {
@@ -91,7 +91,7 @@ void on_kill(IGameEvent *event)
 
 void on_spawn(IGameEvent *event)
 {
-    int userid = g_IEngine->GetPlayerForUserID(event->GetInt("userid"));
+    int userid = GetPlayerForUserID(event->GetInt("userid"));
 
     if (userid == g_IEngine->GetLocalPlayer())
     {
