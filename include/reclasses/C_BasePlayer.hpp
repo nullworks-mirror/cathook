@@ -29,7 +29,7 @@ public:
     }
     inline static IClientEntity *GetEquippedDemoShield(IClientEntity *self)
     {
-        static auto signature = gSignatures.GetClientSignature("55 89 E5 57 56 53 83 EC 2C 8B 45 ? 8B 98 ? ? ? ? 85 DB 7E");
+        static auto signature = e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 8B 55 ? 85 C0 0F 84 ? ? ? ? 89 5C 24"));
         typedef IClientEntity *(*GetEquippedDemoShield_t)(IClientEntity *);
         static GetEquippedDemoShield_t GetEquippedDemoShield_fn = GetEquippedDemoShield_t(signature);
         return GetEquippedDemoShield_fn(self);

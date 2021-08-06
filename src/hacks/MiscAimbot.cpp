@@ -62,7 +62,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
                 continue;
             float scr                                    = ent->m_flDistance();
             std::optional<backtrack::BacktrackData> data = std::nullopt;
-            if (!shouldBacktrack && demoknight_mode)
+            if (shouldBacktrack && demoknight_mode)
             {
                 auto good_ticks = backtrack::getGoodTicks(ent);
                 if (good_ticks)
@@ -144,7 +144,7 @@ std::pair<CachedEntity *, Vector> FindBestEnt(bool teammate, bool Predict, bool 
         float scr                                    = ent->m_flDistance();
         std::optional<backtrack::BacktrackData> data = std::nullopt;
 
-        if (!shouldBacktrack && demoknight_mode)
+        if (shouldBacktrack && demoknight_mode)
         {
             auto good_ticks = backtrack::getGoodTicks(ent);
             if (good_ticks)
@@ -649,14 +649,16 @@ float CAM_CapYaw_Hook(IInput *this_, float fVal)
 }
 
 #define foffset(p, i) ((unsigned char *) &p)[i]
-static InitRoutine init([]() {
-    EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::average);
-    EC::Register(EC::CreateMoveWarp, CreateMove, "cmw_miscaimbot", EC::average);
+static InitRoutine init(
+    []()
+    {
+        EC::Register(EC::CreateMove, CreateMove, "cm_miscaimbot", EC::average);
+        EC::Register(EC::CreateMoveWarp, CreateMove, "cmw_miscaimbot", EC::average);
 
-    static auto signature = gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 E8 ? ? ? ? 85 C0 74 ? 8D 98 ? ? ? ? C7 44 24 ? 11 00 00 00");
+        static auto signature = gSignatures.GetClientSignature("55 89 E5 53 83 EC 14 E8 ? ? ? ? 85 C0 74 ? 8D 98 ? ? ? ? C7 44 24 ? 11 00 00 00");
 
-    CAM_CapYaw_detour.Init(signature, (void *) CAM_CapYaw_Hook);
-    EC::Register(
-        EC::Shutdown, []() { CAM_CapYaw_detour.Shutdown(); }, "chargeaim_shutdown");
-});
+        CAM_CapYaw_detour.Init(signature, (void *) CAM_CapYaw_Hook);
+        EC::Register(
+            EC::Shutdown, []() { CAM_CapYaw_detour.Shutdown(); }, "chargeaim_shutdown");
+    });
 } // namespace hacks::tf2::misc_aimbot
