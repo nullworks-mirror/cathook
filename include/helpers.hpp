@@ -229,3 +229,4 @@ extern const char *powerups[POWERUP_COUNT];
 bool isTruce();
 bool GetPlayerInfo(int idx, player_info_s *info);
 void setTruce(bool status);
+int GetPlayerForUserID(int userID);
