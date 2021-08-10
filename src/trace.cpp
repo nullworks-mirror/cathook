@@ -52,7 +52,7 @@ bool trace::FilterDefault::ShouldHitEntity(IHandleEntity *handle, int mask)
         if (m_pSelf)
         {
             // If what we hit is an enemy it does not matter
-            if (entity && CE_VALID(ENTITY(entity->entindex())) && ENTITY(entity->entindex())->m_iTeam() == ENTITY(m_pSelf->entindex())->m_iTeam())
+            if (entity && entity->entindex() != 0 && CE_VALID(ENTITY(entity->entindex())) && ENTITY(entity->entindex())->m_iTeam() == ENTITY(m_pSelf->entindex())->m_iTeam())
             {
                 auto ent = ENTITY(m_pSelf->entindex());
                 if (CE_GOOD(ent) && ent->m_bAlivePlayer())

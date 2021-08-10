@@ -520,6 +520,8 @@ bool navTo(const Vector &destination, int priority, bool should_repath, bool nav
     // Don't path, priority is too low
     if (priority < current_priority)
         return false;
+    if (log_pathing)
+        logging::Info("Priority: %d", priority);
 
     CNavArea *start_area = map->findClosestNavSquare(g_pLocalPlayer->v_Origin);
     CNavArea *dest_area  = map->findClosestNavSquare(destination);
@@ -629,6 +631,21 @@ static void followCrumbs()
     {
         if (!(entry <= 0.01f && entry >= -0.01f))
             reset_z = false;
+    }
+    if (reset_z)
+    {
+        reset_z = false;
+
+        Ray_t ray;
+        trace_t trace;
+        Vector end = g_pLocalPlayer->v_Origin;
+        end.z -= 100.0f;
+
+        ray.Init(g_pLocalPlayer->v_Origin, end, RAW_ENT(LOCAL_E)->GetCollideable()->OBBMins(), RAW_ENT(LOCAL_E)->GetCollideable()->OBBMaxs());
+        g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_default, &trace);
+        // Only reset if we are standing on a building
+        if (trace.DidHit() && trace.m_pEnt && ENTITY(((IClientEntity *) trace.m_pEnt)->entindex())->m_Type() == ENTITY_BUILDING)
+            reset_z = true;
     }
 
     Vector current_vec = crumbs[0].vec;
@@ -1006,64 +1023,74 @@ static CatCommand nav_path("nav_path", "Debug nav path", []() { NavEngine::navTo
 
 static CatCommand nav_path_noreapth("nav_path_norepath", "Debug nav path", []() { NavEngine::navTo(loc, 20, false, true, false); });
 
-static CatCommand nav_init("nav_init", "Reload nav mesh", []() {
-    NavEngine::map.reset();
-    NavEngine::LevelInit();
-});
+static CatCommand nav_init("nav_init", "Reload nav mesh",
+                           []()
+                           {
+                               NavEngine::map.reset();
+                               NavEngine::LevelInit();
+                           });
 
-static CatCommand nav_debug_check("nav_debug_check", "Perform nav checks between two areas. First area: cat_nav_set Second area: Your location while running this command.", []() {
-    if (!NavEngine::isReady())
-        return;
-    auto next    = NavEngine::map->findClosestNavSquare(g_pLocalPlayer->v_Origin);
-    auto current = NavEngine::map->findClosestNavSquare(loc);
+static CatCommand nav_debug_check("nav_debug_check", "Perform nav checks between two areas. First area: cat_nav_set Second area: Your location while running this command.",
+                                  []()
+                                  {
+                                      if (!NavEngine::isReady())
+                                          return;
+                                      auto next    = NavEngine::map->findClosestNavSquare(g_pLocalPlayer->v_Origin);
+                                      auto current = NavEngine::map->findClosestNavSquare(loc);
 
-    auto points = determinePoints(current, next);
+                                      auto points = determinePoints(current, next);
 
-    points.center = handleDropdown(points.center, points.next);
+                                      points.center = handleDropdown(points.center, points.next);
 
-    // Too high for us to jump!
-    if (points.center_next.z - points.center.z > PLAYER_JUMP_HEIGHT)
+                                      // Too high for us to jump!
+                                      if (points.center_next.z - points.center.z > PLAYER_JUMP_HEIGHT)
+                                      {
+                                          return logging::Info("Nav: Area too high!");
+                                      }
+
+                                      points.current.z += PLAYER_JUMP_HEIGHT;
+                                      points.center.z += PLAYER_JUMP_HEIGHT;
+                                      points.next.z += PLAYER_JUMP_HEIGHT;
+
+                                      if (IsPlayerPassableNavigation(points.current, points.center) && IsPlayerPassableNavigation(points.center, points.next))
+                                      {
+                                          logging::Info("Nav: Area is player passable!");
+                                      }
+                                      else
+                                      {
+                                          logging::Info("Nav: Area is NOT player passable! %.2f,%.2f,%.2f %.2f,%.2f,%.2f %.2f,%.2f,%.2f", points.current.x, points.current.y, points.current.z, points.center.x, points.center.y, points.center.z, points.next.x, points.next.y, points.next.z);
+                                      }
+                                  });
+
+static CatCommand nav_debug_blacklist("nav_debug_blacklist", "Blacklist connection between two areas for 30s. First area: cat_nav_set Second area: Your location while running this command.",
+                                      []()
+                                      {
+                                          if (!NavEngine::isReady())
+                                              return;
+                                          auto next    = NavEngine::map->findClosestNavSquare(g_pLocalPlayer->v_Origin);
+                                          auto current = NavEngine::map->findClosestNavSquare(loc);
+
+                                          std::pair<CNavArea *, CNavArea *> key(current, next);
+                                          NavEngine::map->vischeck_cache[key].expire_tick    = TICKCOUNT_TIMESTAMP(30);
+                                          NavEngine::map->vischeck_cache[key].vischeck_state = false;
+                                          NavEngine::map->pather.Reset();
+                                          logging::Info("Nav: Connection %d->%d Blacklisted.", current->m_id, next->m_id);
+                                      });
+
+static InitRoutine init(
+    []()
     {
-        return logging::Info("Nav: Area too high!");
-    }
-
-    points.current.z += PLAYER_JUMP_HEIGHT;
-    points.center.z += PLAYER_JUMP_HEIGHT;
-    points.next.z += PLAYER_JUMP_HEIGHT;
-
-    if (IsPlayerPassableNavigation(points.current, points.center) && IsPlayerPassableNavigation(points.center, points.next))
-    {
-        logging::Info("Nav: Area is player passable!");
-    }
-    else
-    {
-        logging::Info("Nav: Area is NOT player passable! %.2f,%.2f,%.2f %.2f,%.2f,%.2f %.2f,%.2f,%.2f", points.current.x, points.current.y, points.current.z, points.center.x, points.center.y, points.center.z, points.next.x, points.next.y, points.next.z);
-    }
-});
-
-static CatCommand nav_debug_blacklist("nav_debug_blacklist", "Blacklist connection between two areas for 30s. First area: cat_nav_set Second area: Your location while running this command.", []() {
-    if (!NavEngine::isReady())
-        return;
-    auto next    = NavEngine::map->findClosestNavSquare(g_pLocalPlayer->v_Origin);
-    auto current = NavEngine::map->findClosestNavSquare(loc);
-
-    std::pair<CNavArea *, CNavArea *> key(current, next);
-    NavEngine::map->vischeck_cache[key].expire_tick    = TICKCOUNT_TIMESTAMP(30);
-    NavEngine::map->vischeck_cache[key].vischeck_state = false;
-    NavEngine::map->pather.Reset();
-    logging::Info("Nav: Connection %d->%d Blacklisted.", current->m_id, next->m_id);
-});
-
-static InitRoutine init([]() {
-    EC::Register(EC::CreateMove_NoEnginePred, NavEngine::CreateMove, "navengine_cm");
-    EC::Register(EC::LevelInit, NavEngine::LevelInit, "navengine_levelinit");
+        EC::Register(EC::CreateMove_NoEnginePred, NavEngine::CreateMove, "navengine_cm");
+        EC::Register(EC::LevelInit, NavEngine::LevelInit, "navengine_levelinit");
 #if ENABLE_VISUALS
-    EC::Register(EC::Draw, NavEngine::Draw, "navengine_draw");
+        EC::Register(EC::Draw, NavEngine::Draw, "navengine_draw");
 #endif
-    enabled.installChangeCallback([](settings::VariableBase<bool> &, bool after) {
-        if (after && g_IEngine->IsInGame())
-            NavEngine::LevelInit();
+        enabled.installChangeCallback(
+            [](settings::VariableBase<bool> &, bool after)
+            {
+                if (after && g_IEngine->IsInGame())
+                    NavEngine::LevelInit();
+            });
     });
-});
 
 } // namespace navparser
