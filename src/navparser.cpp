@@ -641,6 +641,8 @@ static void followCrumbs()
         Vector end = g_pLocalPlayer->v_Origin;
         end.z -= 100.0f;
 
+        trace::filter_default.SetSelf(RAW_ENT(LOCAL_E));
+
         ray.Init(g_pLocalPlayer->v_Origin, end, RAW_ENT(LOCAL_E)->GetCollideable()->OBBMins(), RAW_ENT(LOCAL_E)->GetCollideable()->OBBMaxs());
         g_ITrace->TraceRay(ray, MASK_PLAYERSOLID, &trace::filter_default, &trace);
         // Only reset if we are standing on a building
