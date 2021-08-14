@@ -468,7 +468,7 @@ Vector EnginePrediction(CachedEntity *entity, float time)
     return result;
 }
 
-std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float gravitymod, float entgmod, float proj_startvelocity)
+std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb, float speed, float gravity, float entgmod, float proj_startvelocity)
 {
     Vector origin   = ent->m_vecOrigin();
     Vector velocity = CE_VECTOR(ent, 0x14c);
@@ -531,7 +531,7 @@ std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb,
     CE_VECTOR(ent, 0x14c)                              = velocity;
     // Compensate for ping
     // besttime += g_IEngine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING) + cl_interp->GetFloat();
-    bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravitymod);
+    bestpos.z += (sv_gravity->GetFloat() / 2.0f * besttime * besttime * gravity);
     // S = at^2/2 ; t = sqrt(2S/a)*/
     Vector result            = bestpos + hitbox_offset;
     Vector result_initialvel = result;

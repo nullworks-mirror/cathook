@@ -1199,7 +1199,7 @@ Vector PredictEntity(CachedEntity *entity, bool vischeck)
             std::pair<Vector, Vector> tmp_result;
             // Use prediction engine if user settings allow
             if (engine_projpred)
-                tmp_result = ProjectilePrediction_Engine(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, 0, cur_proj_start_vel);
+                tmp_result = ProjectilePrediction_Engine(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity), cur_proj_start_vel);
             else
                 tmp_result = ProjectilePrediction(entity, cd.hitbox, cur_proj_speed, cur_proj_grav, PlayerGravityMod(entity), cur_proj_start_vel);
 
