@@ -238,14 +238,13 @@ void CreateMove()
             switch (*auto_strafe)
             {
             case 0: // Off
-                return;
                 break;
             case 1: // Regular strafe
             {
                 static bool was_jumping = false;
                 bool is_jumping         = current_user_cmd->buttons & IN_JUMP;
 
-                if (!(flags & FL_ONGROUND) || !(flags & FL_INWATER) && (!is_jumping || was_jumping))
+                if (!(flags & FL_ONGROUND) && !(flags & FL_INWATER) && (!is_jumping || was_jumping))
                     if (current_user_cmd->mousedx)
                         current_user_cmd->sidemove = current_user_cmd->mousedx > 1 ? 450.f : -450.f;
 
@@ -259,18 +258,13 @@ void CreateMove()
                     // Also credits to "zelta" for porting it to tf2,
                     // And "Cyanide" for making it work with cathook.
             {
-                static bool lastHeldJump = current_user_cmd->buttons & IN_JUMP;
-                const float speed        = CE_VECTOR(LOCAL_E, netvar.vVelocity).Length2D();
-                auto vel                 = CE_VECTOR(LOCAL_E, netvar.vVelocity);
+                const float speed = CE_VECTOR(LOCAL_E, netvar.vVelocity).Length2D();
+                auto vel          = CE_VECTOR(LOCAL_E, netvar.vVelocity);
 
                 if (flags & FL_ONGROUND || flags & FL_INWATER)
-                    return;
-                if (current_user_cmd->buttons & IN_JUMP)
-                    return;
-                if (~current_user_cmd->buttons & current_user_cmd->buttons & IN_JUMP && !lastHeldJump)
-                    return;
+                    break;
                 if (speed < 2.0f)
-                    return;
+                    break;
 
                 constexpr auto perfectDelta = [](float speed) noexcept
                 {
@@ -300,8 +294,6 @@ void CreateMove()
                     current_user_cmd->forwardmove = cosf(moveDir) * 450.0f;
                     current_user_cmd->sidemove    = -sinf(moveDir) * 450.0f;
                 }
-                lastHeldJump = current_user_cmd->buttons & current_user_cmd->buttons & IN_JUMP;
-
                 break;
             }
             default:
