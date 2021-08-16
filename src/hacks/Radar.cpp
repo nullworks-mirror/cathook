@@ -244,6 +244,8 @@ void Draw()
         ent = ENTITY(i);
         if (CE_INVALID(ent))
             continue;
+        if (ent->m_iTeam() == 0)
+            continue;
         if (!ent->m_bAlivePlayer())
             continue;
         if (i == g_IEngine->GetLocalPlayer())
