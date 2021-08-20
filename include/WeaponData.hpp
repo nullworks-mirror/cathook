@@ -30,7 +30,7 @@ public:
     unsigned unknown1{};
     unsigned unknown2{};
     bool unknown3{};
-    float unknown4{};
+    float m_flCritTime{};
     int crit_attempts{};
     int crit_count{};
     float observed_crit_chance{};
@@ -47,7 +47,7 @@ public:
         unknown1             = *(unsigned int *) ((uintptr_t) weapon + 0xb30);
         unknown2             = *(unsigned int *) ((uintptr_t) weapon + 0xb34);
         unknown3             = *(bool *) ((uintptr_t) weapon + 0xb17);
-        unknown4             = *(float *) ((uintptr_t) weapon + 0xb40);
+        m_flCritTime         = *(float *) ((uintptr_t) weapon + 0xb40);
         crit_attempts        = *(int *) ((uintptr_t) weapon + 0xa3c);
         crit_count           = *(int *) ((uintptr_t) weapon + 0xa40);
         observed_crit_chance = *(float *) ((uintptr_t) weapon + 0xbfc);
@@ -67,11 +67,19 @@ public:
         *(unsigned int *) ((uintptr_t) weapon + 0xb30) = unknown1;
         *(unsigned int *) ((uintptr_t) weapon + 0xb34) = unknown2;
         *(bool *) ((uintptr_t) weapon + 0xb17)         = unknown3;
-        *(float *) ((uintptr_t) weapon + 0xb40)        = unknown4;
+        *(float *) ((uintptr_t) weapon + 0xb40)        = m_flCritTime;
         *(int *) ((uintptr_t) weapon + 0xa3c)          = crit_attempts;
         *(int *) ((uintptr_t) weapon + 0xa40)          = crit_count;
         *(float *) ((uintptr_t) weapon + 0xbfc)        = observed_crit_chance;
         *(bool *) ((uintptr_t) weapon + 0xb18)         = unknown7;
+    }
+    bool operator==(const weapon_info &B) const
+    {
+        return crit_bucket == B.crit_bucket && weapon_seed == B.weapon_seed && unknown1 == B.unknown1 && unknown2 == B.unknown2 && unknown3 == B.unknown3 && m_flCritTime == B.m_flCritTime && crit_attempts == B.crit_attempts && crit_count == B.crit_count && observed_crit_chance == B.observed_crit_chance && unknown7 == B.unknown7;
+    }
+    bool operator!=(const weapon_info &B) const
+    {
+        return !(*this == B);
     }
 };
 

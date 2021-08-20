@@ -596,7 +596,7 @@ static void fixObservedCritchance(IClientEntity *weapon)
 }
 
 static std::vector<float> crit_mult_storage;
-static float last_bucket_fix = -1;
+static weapon_info last_weapon_info;
 // Fix bucket on non-local servers
 void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
 {
@@ -609,21 +609,24 @@ void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
     static int last_update_command;
 
     fixObservedCritchance(weapon);
+
+    weapon_info original_info(weapon);
+
     weapon_info info(weapon);
 
-    float bucket = info.crit_bucket;
-
     // Changed bucket more than once this tick, or fastfire weapon. Note that we check if it is within 20 tick range just in case.
-    if (weapon->entindex() == last_weapon && bucket != last_bucket_fix && last_update_command == cmd->command_number)
-        bucket = last_bucket_fix;
+    if (weapon->entindex() == last_weapon && info != last_weapon_info && last_update_command == cmd->command_number)
+    {
+        info = last_weapon_info;
+    }
 
     last_weapon = weapon->entindex();
     // Bucket changed, update
-    if (last_bucket_fix != bucket)
+    if (last_weapon_info != original_info)
         last_update_command = cmd->command_number;
 
-    last_bucket_fix  = bucket;
-    info.crit_bucket = bucket;
+    last_weapon_info = info;
+
     info.restore_data(weapon);
 }
 
@@ -874,7 +877,19 @@ void Draw()
             else if (!can_crit)
             {
                 if (isRapidFire(wep))
-                    AddCritString("Crit multiplier: " + std::to_string(getWithdrawMult(wep)), colors::orange);
+                {
+                    std::string crit_string = "Shots until crit: ";
+                    weapon_info info(wep);
+                    crit_string += std::to_string((info.crit_count + 1) * 10.0f - info.crit_attempts - 1);
+                    if (info.m_flCritTime + 1.0f >= g_GlobalVars->curtime)
+                    {
+                        crit_string += ", ";
+                        crit_string += std::to_string(info.m_flCritTime + 1.0f - g_GlobalVars->curtime) + "s";
+                        AddCritString(crit_string, colors::red);
+                    }
+                    else
+                        AddCritString(crit_string, colors::orange);
+                }
                 else
                     AddCritString("Shots until crit: " + std::to_string(shots_until_crit), colors::orange);
             }
@@ -947,7 +962,16 @@ void Draw()
                             bar_string = std::to_string(shots_until_crit) + " Shots until Crit!";
                         }
                         else
-                            bar_string = "Crit multiplier: " + std::to_string(getWithdrawMult(wep));
+                        {
+
+                            weapon_info info(wep);
+                            std::string crit_string = std::to_string((info.crit_count + 1) * 10.0f - info.crit_attempts - 1);
+                            crit_string += " Shots until Crit! ";
+                            if (info.m_flCritTime + 1.0f >= g_GlobalVars->curtime)
+                                crit_string += std::to_string(info.m_flCritTime + 1.0f - g_GlobalVars->curtime) + "s";
+
+                            bar_string = crit_string;
+                        }
                     }
                 }
                 // Still run when out of sync
@@ -1096,13 +1120,12 @@ static ProxyFnHook observed_crit_chance_hook{};
 // Reset everything
 void LevelShutdown()
 {
-    last_crit_tick  = -1;
-    cached_damage   = 0;
-    crit_damage     = 0;
-    melee_damage    = 0;
-    last_bucket_fix = -1;
-    round_damage    = 0;
-    is_out_of_sync  = false;
+    last_crit_tick = -1;
+    cached_damage  = 0;
+    crit_damage    = 0;
+    melee_damage   = 0;
+    round_damage   = 0;
+    is_out_of_sync = false;
     crit_cmds.clear();
     current_index = 0;
 }
