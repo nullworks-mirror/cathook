@@ -111,7 +111,7 @@ while read p; do
             if [ "$function" == "critical_error_handler(int)" ]; then
                 IN_APP=false
             fi
-            append_crumb "$(printf '{"%s":"%s","lineno":%s,"package":"cathook","in_app":%s,"function":"%s"}' "$PREFIX" "$FILE" "$LINE" "$IN_APP" "${function//\"/\\\"}")"
+            append_crumb "$(printf '{"%s":"%s","lineno":"%s","package":"cathook","in_app":%s,"function":"%s"}' "$PREFIX" "$FILE" "$LINE" "$IN_APP" "${function//\"/\\\"}")"
         done < <(addr2line "$addr" -iCfe $CATHOOK)
     else
         echo $p

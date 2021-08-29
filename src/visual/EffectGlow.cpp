@@ -124,10 +124,12 @@ static ShaderStencilState_t SS_SolidInvisible{};
 static ShaderStencilState_t SS_Null{};
 static ShaderStencilState_t SS_Drawing{};
 
-CatCommand fix_black_glow("fix_black_glow", "Fix Black Glow", []() {
-    effect_glow::g_EffectGlow.Shutdown();
-    effect_glow::g_EffectGlow.Init();
-});
+CatCommand fix_black_glow("fix_black_glow", "Fix Black Glow",
+                          []()
+                          {
+                              effect_glow::g_EffectGlow.Shutdown();
+                              effect_glow::g_EffectGlow.Init();
+                          });
 
 void EffectGlow::Init()
 {
@@ -316,7 +318,7 @@ bool EffectGlow::ShouldRenderGlow(IClientEntity *entity)
         }
         else if (type >= ITEM_POWERUP_FIRST && type <= ITEM_POWERUP_LAST)
         {
-            return powerups;
+            return *show_powerups;
         }
         break;
     }
@@ -512,14 +514,16 @@ void EffectGlow::Render(int x, int y, int w, int h)
 EffectGlow g_EffectGlow;
 CScreenSpaceEffectRegistration *g_pEffectGlow = nullptr;
 
-static InitRoutine init([]() {
-    EC::Register(
-        EC::LevelShutdown, []() { g_EffectGlow.Shutdown(); }, "glow");
-    if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects)
+static InitRoutine init(
+    []()
     {
-        effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
-        g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
-    }
-} // namespace effect_glow
+        EC::Register(
+            EC::LevelShutdown, []() { g_EffectGlow.Shutdown(); }, "glow");
+        if (g_ppScreenSpaceRegistrationHead && g_pScreenSpaceEffects)
+        {
+            effect_glow::g_pEffectGlow = new CScreenSpaceEffectRegistration("_cathook_glow", &effect_glow::g_EffectGlow);
+            g_pScreenSpaceEffects->EnableScreenSpaceEffect("_cathook_glow");
+        }
+    } // namespace effect_glow
 );
 } // namespace effect_glow

@@ -527,7 +527,7 @@ std::pair<Vector, Vector> ProjectilePrediction_Engine(CachedEntity *ent, int hb,
     Vector bestpos          = origin;
     Vector current          = origin;
     Vector current_velocity = velocity;
-    int maxsteps            = 300;
+    int maxsteps            = std::max(40.0f, 2.0f * range / g_GlobalVars->interval_per_tick);
     float steplength        = g_GlobalVars->interval_per_tick;
 
     Vector ent_mins = RAW_ENT(ent)->GetCollideable()->OBBMins();

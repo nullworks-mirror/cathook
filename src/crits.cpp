@@ -614,15 +614,13 @@ void fixBucket(IClientEntity *weapon, CUserCmd *cmd)
 
     weapon_info info(weapon);
 
-    // Changed bucket more than once this tick, or fastfire weapon. Note that we check if it is within 20 tick range just in case.
+    // Changed bucket more than once this tick, this is wrong and needs to be corrected.
     if (weapon->entindex() == last_weapon && info != last_weapon_info && last_update_command == cmd->command_number)
-    {
         info = last_weapon_info;
-    }
 
     last_weapon = weapon->entindex();
     // Bucket changed, update
-    if (last_weapon_info != original_info)
+    if (last_weapon_info.crit_bucket != original_info.crit_bucket)
         last_update_command = cmd->command_number;
 
     last_weapon_info = info;
