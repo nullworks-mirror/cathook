@@ -6,7 +6,6 @@
 #include <settings/String.hpp>
 #include "HookedMethods.hpp"
 #include "PlayerTools.hpp"
-#include "SteamIDStealer.hpp"
 
 static settings::String ipc_name{ "name.ipc", "" };
 settings::String force_name{ "name.custom", "" };
@@ -14,7 +13,6 @@ std::string name_forced = "";
 static settings::Int namesteal{ "name.namesteal", "0" };
 static settings::Boolean namesteal_reconnect("name.namesteal.reconnect", "true");
 static settings::Boolean glitchy_newlines("name.namesteal.use-newlines", "false");
-static settings::Boolean use_steamidzero("name.namesteal.steamid-zero", "false");
 
 static std::string stolen_name;
 static unsigned stolen_target;
@@ -95,7 +93,6 @@ bool StolenName()
         // If our name is the same as current, than change it and return true
         stolen_name   = std::string(info.name);
         stolen_target = info.friendsID;
-        hacks::tf2::steamidstealer::SetSteamID(hacks::tf2::steamidstealer::IDStorage(use_steamidzero ? 0 : stolen_target, "namestealer"));
         return true;
     }
 
@@ -198,11 +195,6 @@ static InitRoutine init(
                         setname.SetReliable(false);
                         ch->SendNetMsg(setname, false);
                     }
-                }
-                // Reset steamid stealer
-                else
-                {
-                    hacks::tf2::steamidstealer::SetSteamID(std::nullopt);
                 }
             });
     });

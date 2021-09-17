@@ -13,7 +13,6 @@
 #include "Warp.hpp"
 #include "nospread.hpp"
 #include "AntiCheatBypass.hpp"
-#include "SteamIDStealer.hpp"
 
 static settings::Int newlines_msg{ "chat.prefix-newlines", "0" };
 static settings::Boolean log_sent{ "debug.log-sent-chat", "false" };
@@ -30,10 +29,19 @@ void SendNetMsg(INetMessage &msg);
 namespace hooked_methods
 {
 
-static bool send_drawline_reply{};
-static Timer reply_timer{};
+static bool send_achievement_reply{};
+static Timer send_achievement_reply_timer{};
 
-void sendDrawlineKv(float x_value, float y_value)
+// Welcome back Achievement based identify.
+void sendAchievementKv(int value)
+{
+    KeyValues *kv = new KeyValues("AchievementEarned");
+    kv->SetInt("achievementID", value);
+    g_IEngine->ServerCmdKeyValues(kv);
+}
+
+// Goodbye old Friend.
+/*void sendDrawlineKv(float x_value, float y_value)
 {
     KeyValues *kv = new KeyValues("cl_drawline");
     kv->SetInt("panel", 2);
@@ -41,11 +49,12 @@ void sendDrawlineKv(float x_value, float y_value)
     kv->SetFloat("x", x_value);
     kv->SetFloat("y", y_value);
     g_IEngine->ServerCmdKeyValues(kv);
-}
+}*/
 
 void sendIdentifyMessage(bool reply)
 {
-    reply ? sendDrawlineKv(CAT_REPLY, AUTH_MESSAGE) : sendDrawlineKv(CAT_IDENTIFY, AUTH_MESSAGE);
+    reply ? sendAchievementKv(CAT_REPLY) : sendAchievementKv(CAT_IDENTIFY);
+    /*reply ? sendDrawlineKv(CAT_REPLY, AUTH_MESSAGE) : sendDrawlineKv(CAT_IDENTIFY, AUTH_MESSAGE);*/
 }
 
 static CatCommand debug_drawpanel("debug_drawline", "debug",
@@ -68,7 +77,7 @@ settings::Boolean identify{ "chat.identify", "true" };
 settings::Boolean identify{ "chat.identify", "false" };
 #endif
 
-void ProcessSendline(IGameEvent *kv)
+/*void ProcessSendline(IGameEvent *kv)
 {
     int player_idx = kv->GetInt("player", 0xDEAD);
 
@@ -90,7 +99,7 @@ void ProcessSendline(IGameEvent *kv)
         if (playerlist::ChangeState(info.friendsID, playerlist::k_EState::CAT))
             PrintChat("\x07%06X%s\x01 Marked as CAT (Cathook user)", 0xe05938, info.name);
     }
-}
+}*/
 
 std::vector<KeyValues *> Iterate(KeyValues *event, int depth)
 {
@@ -177,17 +186,37 @@ void ParseKeyValue(KeyValues *event)
     }
 }
 
-class IdentifyListener : public IGameEventListener2
+void ProcessAchievement(IGameEvent *ach)
+{
+    int player_idx  = ach->GetInt("player", 0xDEAD);
+    int achievement = ach->GetInt("achievement", 0xDEAD);
+    if (player_idx != 0xDEAD && (achievement == CAT_IDENTIFY || achievement == CAT_REPLY))
+    {
+        // Always reply and set on CA7 and only set on CA8
+        bool reply = achievement == CAT_IDENTIFY;
+        player_info_s info;
+        if (!g_IEngine->GetPlayerInfo(player_idx, &info))
+            return;
+        if (reply && *answerIdentify /* && player_idx != g_pLocalPlayer->entity_idx*/)
+        {
+            send_achievement_reply_timer.update();
+            send_achievement_reply = true;
+        }
+        if (playerlist::ChangeState(info.friendsID, playerlist::k_EState::CAT))
+            PrintChat("\x07%06X%s\x01 Marked as CAT (Cathook user)", 0xe05938, info.name);
+    }
+}
+
+class AchievementListener : public IGameEventListener2
 {
     virtual void FireGameEvent(IGameEvent *event)
     {
-        ProcessSendline(event);
+        ProcessAchievement(event);
     }
-}; // namespace hooked_methods
-
+};
 static CatCommand send_identify("debug_send_identify", "debug", []() { sendIdentifyMessage(false); });
 
-static IdentifyListener event_listener{};
+static AchievementListener event_listener{};
 
 static InitRoutine run_identify(
     []()
@@ -196,10 +225,10 @@ static InitRoutine run_identify(
             EC::CreateMove,
             []()
             {
-                if (send_drawline_reply && reply_timer.test_and_set(1000))
+                if (send_achievement_reply && send_achievement_reply_timer.check(10000))
                 {
                     sendIdentifyMessage(true);
-                    send_drawline_reply = false;
+                    send_achievement_reply = false;
                 }
                 // It is safe to send every 15ish seconds, small packet
                 if (!*identify || CE_BAD(LOCAL_E) || !identify_timer.test_and_set(15000))
@@ -207,7 +236,7 @@ static InitRoutine run_identify(
                 sendIdentifyMessage(false);
             },
             "sendnetmsg_createmove");
-        g_IEventManager2->AddListener(&event_listener, "cl_drawline", false);
+        g_IEventManager2->AddListener(&event_listener, "achievement_earned", false);
         EC::Register(
             EC::Shutdown, []() { g_IEventManager2->RemoveListener(&event_listener); }, "shutdown_event");
     });
@@ -221,7 +250,6 @@ DEFINE_HOOKED_METHOD(SendNetMsg, bool, INetChannel *this_, INetMessage &msg, boo
     std::string newlines{};
     NET_StringCmd stringcmd;
 
-    hacks::tf2::steamidstealer::SendNetMessage(msg);
     // Do we have to force reliable state?
     if (hacks::tf2::nospread::SendNetMessage(&msg))
         force_reliable = true;

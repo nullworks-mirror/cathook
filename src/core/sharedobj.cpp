@@ -129,6 +129,7 @@ void LoadAllSharedObjects()
         client().Load();
         server().Load();
         steamapi().Load();
+        steamnetworkingsockets().Load();
         vstdlib().Load();
         inputsystem().Load();
         datacache().Load();
@@ -174,6 +175,11 @@ SharedObject &steamclient()
 SharedObject &steamapi()
 {
     static SharedObject obj("libsteam_api.so", false);
+    return obj;
+}
+SharedObject &steamnetworkingsockets()
+{
+    static SharedObject obj("libsteamnetworkingsockets.so", true);
     return obj;
 }
 SharedObject &client()

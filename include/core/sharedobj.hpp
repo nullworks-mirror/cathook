@@ -44,6 +44,7 @@ SharedObject &client();
 SharedObject &engine();
 SharedObject &launcher();
 SharedObject &steamapi();
+SharedObject &steamnetworkingsockets();
 SharedObject &vstdlib();
 SharedObject &tier0();
 SharedObject &inputsystem();

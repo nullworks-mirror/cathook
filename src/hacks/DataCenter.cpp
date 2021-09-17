@@ -21,7 +21,7 @@ static settings::Boolean enable{ "dc.enable", "false" };
 /* List of preferred data centers separated by comma ',' */
 static settings::String regions{ "dc.regions", "" };
 /* Find servers only in data centers provided by regions */
-static settings::Boolean restrict{ "dc.restrict", "true" };
+static settings::Boolean restrict { "dc.restrict", "true" };
 /* Enable/disable individual continents */
 static settings::Boolean enable_eu{ "dc.toggle-europe", "false" };
 static settings::Boolean enable_north_america{ "dc.toggle-north-america", "false" };
@@ -93,32 +93,34 @@ static std::vector<std::string> asia_datacenters          = { { "bom" }, { "dxb"
 static std::vector<std::string> oceana_datacenters        = { { "syd" }, { "vie" } };
 static std::vector<std::string> africa_datacenters        = { { "jnb" } };
 
-static CatCommand print("dc_print", "Print codes of all available data centers", []() {
-    static auto GetPOPCount = *(int (**)(void *))(*(uintptr_t *) g_ISteamNetworkingUtils + 37);
-    static auto GetPOPList  = *(int (**)(void *, SteamNetworkingPOPID_decl *, int))(*(uintptr_t *) g_ISteamNetworkingUtils + 41);
+static CatCommand print("dc_print", "Print codes of all available data centers",
+                        []()
+                        {
+                            static auto GetPOPCount = *(int (**)(void *))(*(uintptr_t *) g_ISteamNetworkingUtils + 37);
+                            static auto GetPOPList  = *(int (**)(void *, SteamNetworkingPOPID_decl *, int))(*(uintptr_t *) g_ISteamNetworkingUtils + 41);
 
-    char region[5];
+                            char region[5];
 
-    int count = GetPOPCount(g_ISteamNetworkingUtils);
-    if (count <= 0)
-    {
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "List of regions is not available yet\n");
-        return;
-    }
-    SteamNetworkingPOPID_decl *list = new SteamNetworkingPOPID_decl[count];
-    GetPOPList(g_ISteamNetworkingUtils, list, count);
+                            int count = GetPOPCount(g_ISteamNetworkingUtils);
+                            if (count <= 0)
+                            {
+                                g_ICvar->ConsoleColorPrintf(MENU_COLOR, "List of regions is not available yet\n");
+                                return;
+                            }
+                            SteamNetworkingPOPID_decl *list = new SteamNetworkingPOPID_decl[count];
+                            GetPOPList(g_ISteamNetworkingUtils, list, count);
 
-    auto it = list;
-    while (count--)
-    {
-        (it++)->ToString(region);
-        std::string region_name = dc_name_map[region];
-        if (region_name == "")
-            region_name = "Not set";
-        g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%s [%s]\n", region_name.c_str(), region);
-    }
-    delete[] list;
-});
+                            auto it = list;
+                            while (count--)
+                            {
+                                (it++)->ToString(region);
+                                std::string region_name = dc_name_map[region];
+                                if (region_name == "")
+                                    region_name = "Not set";
+                                g_ICvar->ConsoleColorPrintf(MENU_COLOR, "%s [%s]\n", region_name.c_str(), region);
+                            }
+                            delete[] list;
+                        });
 
 static void Refresh()
 {
@@ -220,20 +222,20 @@ void manageRegions(std::vector<std::string> regions_vec, bool add)
 
 static void Init()
 {
-    enable.installChangeCallback([](settings::VariableBase<bool> &, bool on) {
-        static auto create_interface = (void **(*) (unsigned *) ) e8call_direct(gSignatures.GetClientSignature("E8 ? ? ? ? 83 38 00"));
-        static auto parameter        = *(uintptr_t *) (gSignatures.GetClientSignature("C7 04 24 ? ? ? ? E8 ? ? ? ? 8B 00 8B 10 C7 44 24 ? 00 00 00 00") + 3);
-        if (!g_ISteamNetworkingUtils)
+    enable.installChangeCallback(
+        [](settings::VariableBase<bool> &, bool on)
         {
-            g_ISteamNetworkingUtils = *create_interface((unsigned *) parameter);
             if (!g_ISteamNetworkingUtils)
             {
-                logging::Info("DataCenter.cpp: Failed to create ISteamNetworkingUtils!");
-                return;
+                g_ISteamNetworkingUtils = ((void *(*) ())(dlsym(sharedobj::steamnetworkingsockets().lmap, "SteamNetworkingUtils_LibV4")))();
+                if (!g_ISteamNetworkingUtils)
+                {
+                    logging::Info("DataCenter.cpp: Failed to create ISteamNetworkingUtils!");
+                    return;
+                }
             }
-        }
-        Hook(on);
-    });
+            Hook(on);
+        });
     regions.installChangeCallback([](settings::VariableBase<std::string> &, std::string regions) { OnRegionsUpdate(regions); });
     restrict.installChangeCallback([](settings::VariableBase<bool> &, bool) { Refresh(); });
     enable_eu.installChangeCallback([](settings::VariableBase<bool> &, bool after) { manageRegions(eu_datacenters, after); });

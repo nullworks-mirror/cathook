@@ -106,15 +106,15 @@ struct offsets
     }
     static constexpr uint32_t CanPacket()
     {
-        return PlatformOffset(57, undefined, undefined);
+        return PlatformOffset(54, undefined, undefined);
     }
     static constexpr uint32_t SendNetMsg()
     {
-        return PlatformOffset(41, undefined, undefined);
+        return PlatformOffset(38, undefined, undefined);
     }
     static constexpr uint32_t Shutdown()
     {
-        return PlatformOffset(37, undefined, undefined);
+        return PlatformOffset(35, undefined, undefined);
     }
     static constexpr uint32_t IN_KeyEvent()
     {
@@ -178,7 +178,7 @@ struct offsets
     }
     static constexpr uint32_t SendDatagram()
     {
-        return PlatformOffset(47, undefined, 47);
+        return PlatformOffset(44, undefined, 44);
     }
     static constexpr uint32_t IsPlayingTimeDemo()
     {
