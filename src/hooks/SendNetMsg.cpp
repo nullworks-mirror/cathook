@@ -197,7 +197,7 @@ void ProcessAchievement(IGameEvent *ach)
         player_info_s info;
         if (!g_IEngine->GetPlayerInfo(player_idx, &info))
             return;
-        if (reply && *answerIdentify /* && player_idx != g_pLocalPlayer->entity_idx*/)
+        if (reply && *answerIdentify && player_idx != g_pLocalPlayer->entity_idx)
         {
             send_achievement_reply_timer.update();
             send_achievement_reply = true;
