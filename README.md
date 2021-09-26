@@ -1,5 +1,6 @@
 # Cathook Training Software
-![banner](http://i.imgur.com/w96wdtE.png)
+![banner](https://user-images.githubusercontent.com/13179138/134817300-d4865695-af33-4e83-a017-5ec0d31ea0a1.png)
+
 [![CircleCI](https://circleci.com/gh/nullworks/cathook.svg?style=svg)](https://circleci.com/gh/nullworks/cathook)
 
 ## Risk of VAC detection
