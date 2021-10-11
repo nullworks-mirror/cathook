@@ -29,6 +29,7 @@ public:
     int getClass(int idx);
     int getTeam(int idx);
     bool isAlive(int idx);
+    bool isValid(int idx);
 
     int entity;
 };

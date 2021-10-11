@@ -8,5 +8,6 @@
         <Include path="nullifiedcat/misc/autoparty.xml"/>
         <Include path="nullifiedcat/misc/autoload.xml"/>
         <Include path="nullifiedcat/misc/datacenters.xml"/>
+        <Include path="nullifiedcat/misc/spellforcer.xml"/>
     </TabContainer>
 </Tab>

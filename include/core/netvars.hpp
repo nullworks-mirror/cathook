@@ -171,6 +171,7 @@ public:
     offset_t res_iTeam;
     offset_t res_iScore;
     offset_t res_bAlive;
+    offset_t res_bValid;
     offset_t m_nChargeResistType;
     offset_t m_hHealingTarget;
     offset_t m_flChargeLevel; // Medigun

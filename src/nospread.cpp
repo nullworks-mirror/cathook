@@ -609,7 +609,7 @@ void CL_SendMove_hook()
     current_weapon_spread = 0.0;
 
     // first try to get the player and check if he is valid
-    if (!RAW_ENT(LOCAL_E))
+    if (!RAW_ENT(LOCAL_E) || HasCondition<TFCond_HalloweenGhostMode>(LOCAL_E))
     {
         // don't set called_from_sendmove here cuz we don't care
         CL_SendMove_t original = (CL_SendMove_t) cl_nospread_sendmovedetour.GetOriginalFunc();

@@ -10,10 +10,6 @@ namespace hooked_methods
 
 DEFINE_HOOKED_METHOD(GetUserCmd, CUserCmd *, IInput *this_, int sequence_number)
 {
-    // We need to overwrite this if crithack is on
-    if (criticals::isEnabled())
-        return &GetCmds(this_)[sequence_number % VERIFIED_CMD_SIZE];
-    else
-        return original::GetUserCmd(this_, sequence_number);
+    return &GetCmds(this_)[sequence_number % VERIFIED_CMD_SIZE];
 }
 } // namespace hooked_methods

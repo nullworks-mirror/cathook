@@ -958,8 +958,6 @@ static InitRoutine init_pyrovision(
                 {
                     if (HasCondition<TFCond_HalloweenKartNoTurn>(LOCAL_E))
                         RemoveCondition<TFCond_HalloweenKartNoTurn>(LOCAL_E);
-                    if (HasCondition<TFCond_FreezeInput>(LOCAL_E))
-                        RemoveCondition<TFCond_FreezeInput>(LOCAL_E);
                 }
             },
             "remove_cart_cond");
