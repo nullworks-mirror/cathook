@@ -134,9 +134,9 @@ void EntityHitboxCache::UpdateBones()
     }
 
     // Mark for update
-    int *entity_flags = (int *) ((uintptr_t) RAW_ENT(parent_ref) + 400);
+    /*int *entity_flags = (int *) ((uintptr_t) RAW_ENT(parent_ref) + 400);
     // (EFL_DIRTY_SURROUNDING_COLLISION_BOUNDS | EFL_DIRTY_SPATIAL_PARTITION)
-    *entity_flags |= (1 << 14) | (1 << 15);
+    *entity_flags |= (1 << 14) | (1 << 15);*/
 }
 
 matrix3x4_t *EntityHitboxCache::GetBones(int numbones)
