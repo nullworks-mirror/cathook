@@ -5,6 +5,11 @@ namespace hacks::tf2::spellforcer
 {
 static settings::Boolean enabled("spellforce.enabled", "false");
 
+bool isEnabled()
+{
+    return enabled && g_pGameRules->halloweenScenario != 0;
+}
+
 static settings::Int default_spell("spellforce.default_spell", "-1");
 static settings::Int default_spell_rare("spellforce.default_spell.rare", "-1");
 static settings::Int default_spell_enemies("spellforce.default_spell.enemies", "-1");
@@ -18,9 +23,6 @@ static settings::Int helltower_spell_enemies("spellforce.helltower_spell.enemies
 
 static settings::Int bumper_spell("spellforce.bumper_spell", "-1");
 static settings::Int bumper_spell_enemies("spellforce.bumper_spell.enemies", "-1");
-
-static settings::Boolean debug_use_set_cmd("spellforce.debug.use_set_cmd", "false");
-static settings::Boolean debug_inverse_enemy("spellforce.debug.inverse-enemy", "false");
 
 enum spelltypes
 {
@@ -125,16 +127,6 @@ static const int g_doomsdayRareSpellIndexList[] = {
 // "Normal" Spell list
 static const int g_generalSpellIndexList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 7, 8, 9 };
 
-// Saves command that have a specific spell id
-std::unordered_map<int, int> command_to_spell_map;
-
-int current_index = 0;
-
-int getStaticCmd()
-{
-    return 4206982 + current_index;
-}
-
 CachedEntity *getClosestSpell()
 {
     CachedEntity *ent = nullptr;
@@ -161,80 +153,76 @@ CachedEntity *getClosestSpell()
 
 void CreateMoveLate()
 {
-    if (hacks::tf2::antianticheat::enabled || !g_pGameRules->isUsingSpells_fn())
+    if (!isEnabled() || !g_pGameRules->isUsingSpells_fn())
         return;
     auto cmd = 0;
-    if (debug_use_set_cmd)
-        cmd = getStaticCmd();
+
+    auto spell = getClosestSpell();
+
+    // Apply bad effects for enemies
+    if (CE_BAD(spell) || spell->m_flDistance() > 300.0f)
+    {
+        int spellindex;
+
+        auto spellmode = getSpellMode();
+        switch (spellmode)
+        {
+        case BUMPER_CARS:
+            spellindex = *bumper_spell_enemies;
+            break;
+        case DOOMSDAY:
+            spellindex = *doomsday_spell_enemies;
+            break;
+        case HELLTOWER:
+            spellindex = *helltower_spell_enemies;
+            break;
+        case NORMAL:
+            spellindex = *default_spell_enemies;
+            break;
+        }
+
+        cmd = getCommandForSpellID(spellindex, 0);
+    }
+    else if (spell->m_ItemType() == ITEM_SPELL)
+    {
+        int spellindex;
+
+        auto spellmode = getSpellMode();
+        switch (spellmode)
+        {
+        case BUMPER_CARS:
+            spellindex = *bumper_spell;
+            break;
+        case DOOMSDAY:
+            spellindex = *doomsday_spell;
+            break;
+        case HELLTOWER:
+            spellindex = *helltower_spell;
+            break;
+        case NORMAL:
+            spellindex = *default_spell;
+            break;
+        }
+
+        cmd = getCommandForSpellID(spellindex, 0);
+    }
     else
     {
-        auto spell = getClosestSpell();
+        int spellindex;
 
-        // Apply bad effects for enemies
-        if (debug_inverse_enemy || CE_BAD(spell) || spell->m_flDistance() > 300.0f)
+        auto spellmode = getSpellMode();
+        switch (spellmode)
         {
-            int spellindex;
-
-            auto spellmode = getSpellMode();
-            switch (spellmode)
-            {
-            case BUMPER_CARS:
-                spellindex = *bumper_spell_enemies;
-                break;
-            case DOOMSDAY:
-                spellindex = *doomsday_spell_enemies;
-                break;
-            case HELLTOWER:
-                spellindex = *helltower_spell_enemies;
-                break;
-            case NORMAL:
-                spellindex = *default_spell_enemies;
-                break;
-            }
-
-            cmd = getCommandForSpellID(spellindex, 0);
+        case DOOMSDAY:
+            spellindex = *doomsday_spell_rare;
+            break;
+        case HELLTOWER:
+        case BUMPER_CARS:
+        case NORMAL:
+            spellindex = *default_spell_rare;
+            break;
         }
-        else if (spell->m_ItemType() == ITEM_SPELL)
-        {
-            int spellindex;
-
-            auto spellmode = getSpellMode();
-            switch (spellmode)
-            {
-            case BUMPER_CARS:
-                spellindex = *bumper_spell;
-                break;
-            case DOOMSDAY:
-                spellindex = *doomsday_spell;
-                break;
-            case HELLTOWER:
-                spellindex = *helltower_spell;
-                break;
-            case NORMAL:
-                spellindex = *default_spell;
-                break;
-            }
-
-            cmd = getCommandForSpellID(spellindex, 0);
-        }
-        else
-        {
-            int spellindex;
-
-            auto spellmode = getSpellMode();
-            switch (spellmode)
-            {
-            case DOOMSDAY:
-                spellindex = *doomsday_spell_rare;
-                break;
-            case HELLTOWER:
-            case BUMPER_CARS:
-            case NORMAL:
-                spellindex = *default_spell_rare;
-                break;
-            }
-            cmd = getCommandForSpellID(spellindex, 1);
-        }
+        cmd = getCommandForSpellID(spellindex, 1);
     }
 
     if (cmd != -1)
@@ -248,7 +236,7 @@ void CreateMoveLate()
 static Timer draw_timer;
 void Draw()
 {
-    if (!enabled || !g_IEngine->IsInGame())
+    if (!isEnabled() || !g_IEngine->IsInGame())
     {
         draw_timer.update();
         return;
@@ -282,30 +270,6 @@ void Draw()
     }
 }
 #endif
-
-CatCommand enter_spell_data("spellforcer_enter_data", "Debug",
-                            [](const CCommand &args)
-                            {
-                                if (args.ArgC() < 2)
-                                {
-                                    return;
-                                }
-                                try
-                                {
-                                    // Grab spellidx
-                                    int spellidx = std::stoi(args.Arg(1));
-
-                                    if (command_to_spell_map[spellidx] == 0)
-                                        command_to_spell_map[spellidx] = getStaticCmd();
-                                    for (auto &entry : command_to_spell_map)
-                                        logging::Info("%d: %d", entry.first, entry.second);
-                                    current_index++;
-                                }
-                                catch (const std::invalid_argument &)
-                                {
-                                    logging::Info("Invalid Steamid32 provided.");
-                                }
-                            });
 
 static InitRoutine init(
     []()
