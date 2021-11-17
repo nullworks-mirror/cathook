@@ -42,19 +42,19 @@ public:
     }
     void Load(IClientEntity *weapon)
     {
-        crit_bucket          = *(float *) ((uintptr_t) weapon + 0xa38);
-        weapon_seed          = *(unsigned int *) ((uintptr_t) weapon + 0xb3c);
-        unknown1             = *(unsigned int *) ((uintptr_t) weapon + 0xb30);
-        unknown2             = *(unsigned int *) ((uintptr_t) weapon + 0xb34);
-        unknown3             = *(bool *) ((uintptr_t) weapon + 0xb17);
-        m_flCritTime         = *(float *) ((uintptr_t) weapon + 0xb40);
-        crit_attempts        = *(int *) ((uintptr_t) weapon + 0xa3c);
-        crit_count           = *(int *) ((uintptr_t) weapon + 0xa40);
-        observed_crit_chance = *(float *) ((uintptr_t) weapon + 0xbfc);
-        unknown7             = *(bool *) ((uintptr_t) weapon + 0xb18);
+        crit_bucket          = *(float *) ((uintptr_t) weapon + 0xa3c);
+        weapon_seed          = *(unsigned int *) ((uintptr_t) weapon + 0xb40);
+        unknown1             = *(unsigned int *) ((uintptr_t) weapon + 0xb34);
+        unknown2             = *(unsigned int *) ((uintptr_t) weapon + 0xb38);
+        unknown3             = *(bool *) ((uintptr_t) weapon + 0xb1b);
+        m_flCritTime         = *(float *) ((uintptr_t) weapon + 0xb44);
+        crit_attempts        = *(int *) ((uintptr_t) weapon + 0xa40);
+        crit_count           = *(int *) ((uintptr_t) weapon + 0xa44);
+        observed_crit_chance = *(float *) ((uintptr_t) weapon + 0xc00);
+        unknown7             = *(bool *) ((uintptr_t) weapon + 0xb1c);
         // No need to restore
-        weapon_mode = *(int *) ((uintptr_t) weapon + 0xb04);
-        weapon_data = *(int *) ((uintptr_t) weapon + 0xb10);
+        weapon_mode = *(int *) ((uintptr_t) weapon + 0xb08);
+        weapon_data = *(int *) ((uintptr_t) weapon + 0xb14);
     }
     weapon_info(IClientEntity *weapon)
     {
@@ -62,16 +62,16 @@ public:
     }
     void restore_data(IClientEntity *weapon)
     {
-        *(float *) ((uintptr_t) weapon + 0xa38)        = crit_bucket;
-        *(unsigned int *) ((uintptr_t) weapon + 0xb3c) = weapon_seed;
-        *(unsigned int *) ((uintptr_t) weapon + 0xb30) = unknown1;
-        *(unsigned int *) ((uintptr_t) weapon + 0xb34) = unknown2;
-        *(bool *) ((uintptr_t) weapon + 0xb17)         = unknown3;
-        *(float *) ((uintptr_t) weapon + 0xb40)        = m_flCritTime;
-        *(int *) ((uintptr_t) weapon + 0xa3c)          = crit_attempts;
-        *(int *) ((uintptr_t) weapon + 0xa40)          = crit_count;
-        *(float *) ((uintptr_t) weapon + 0xbfc)        = observed_crit_chance;
-        *(bool *) ((uintptr_t) weapon + 0xb18)         = unknown7;
+        *(float *) ((uintptr_t) weapon + 0xa3c)        = crit_bucket;
+        *(unsigned int *) ((uintptr_t) weapon + 0xb40) = weapon_seed;
+        *(unsigned int *) ((uintptr_t) weapon + 0xb34) = unknown1;
+        *(unsigned int *) ((uintptr_t) weapon + 0xb38) = unknown2;
+        *(bool *) ((uintptr_t) weapon + 0xb1b)         = unknown3;
+        *(float *) ((uintptr_t) weapon + 0xb44)        = m_flCritTime;
+        *(int *) ((uintptr_t) weapon + 0xa40)          = crit_attempts;
+        *(int *) ((uintptr_t) weapon + 0xa44)          = crit_count;
+        *(float *) ((uintptr_t) weapon + 0xc00)        = observed_crit_chance;
+        *(bool *) ((uintptr_t) weapon + 0xb1c)         = unknown7;
     }
     bool operator==(const weapon_info &B) const
     {

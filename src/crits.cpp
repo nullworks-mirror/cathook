@@ -1157,6 +1157,24 @@ static CatCommand debug_print_crit_info("debug_print_crit_info", "Print a bunch 
                                             }
                                         });
 
+static CatCommand debug_data("debug_data", "debug",
+                             []()
+                             {
+                                 IClientEntity *wep = RAW_ENT(LOCAL_W);
+                                 weapon_info info(wep);
+                                 logging::Info("%f", info.crit_bucket);
+                                 logging::Info("%d", info.weapon_seed);
+                                 logging::Info("%d", info.unknown1);
+                                 logging::Info("%d", info.unknown2);
+                                 logging::Info("%d", info.unknown3);
+                                 logging::Info("%f", info.m_flCritTime);
+                                 logging::Info("%d", info.crit_attempts);
+                                 logging::Info("%d", info.crit_count);
+                                 logging::Info("%f", info.observed_crit_chance);
+                                 logging::Info("%d", info.unknown7);
+                                 logging::Info("%d", info.weapon_mode);
+                                 logging::Info("%d", info.weapon_data);
+                             });
 static InitRoutine init(
     []()
     {

@@ -1104,7 +1104,7 @@ static InitRoutine init(
 
         static BytePatch stealth_kill{ gSignatures.GetClientSignature, "84 C0 75 28 A1", 2, { 0x90, 0x90 } }; // stealth kill patch
         stealth_kill.Patch();
-        static BytePatch cyoa_patch{ gSignatures.GetClientSignature, "74 20 A1 ? ? ? ? 8B 10 C7 44 24 ? ? ? ? ? 89 04 24", 0, { 0xEB } };
+        static BytePatch cyoa_patch{ gSignatures.GetClientSignature, "75 ? 80 BB ? ? ? ? 00 74 ? A1 ? ? ? ? 8B 10 C7 44 24", 0, { 0xEB } };
         cyoa_patch.Patch();
         EC::Register(
             EC::Shutdown,

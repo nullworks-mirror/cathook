@@ -1118,7 +1118,7 @@ void Aim(CachedEntity *entity)
         return;
 
     // Get angles from eye to target
-    Vector angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, PredictEntity(entity, false));
+    Vector angles = GetAimAtAngles(g_pLocalPlayer->v_Eye, PredictEntity(entity, false), LOCAL_E);
 
     // Slow aim
     if (slow_aim)
