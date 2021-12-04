@@ -105,7 +105,7 @@ void updateSearch()
 #if not ENABLE_VISUALS
     if (queue_time.test_and_set(1200000))
     {
-        g_IEngine->ClientCmd_Unrestricted("quit"); //lol
+        g_IEngine->ClientCmd_Unrestricted("quit"); // lol
     }
 #endif
 }

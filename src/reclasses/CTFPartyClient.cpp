@@ -50,7 +50,7 @@ bool re::CTFPartyClient::BCanQueueForStandby(re::CTFPartyClient *this_)
 {
     typedef bool (*BCanQueueForStandby_t)(re::CTFPartyClient *);
     static uintptr_t addr                               = gSignatures.GetClientSignature("55 89 E5 53 83 EC 24 8B 5D 08 80 7B 46 00 75 40 8B 4B 38 85 C9 74 39 "
-                                                           "E8 ? ? ? ? 89 04 24 E8 ? ? ? ? 84 C0 75 28");
+                                                                                                                       "E8 ? ? ? ? 89 04 24 E8 ? ? ? ? 84 C0 75 28");
     static BCanQueueForStandby_t BCanQueueForStandby_fn = BCanQueueForStandby_t(addr);
 
     return BCanQueueForStandby_fn(this_);
@@ -115,7 +115,7 @@ int re::CTFPartyClient::BInvitePlayerToParty(CSteamID steamid)
 {
     typedef int (*BInvitePlayerToParty_t)(re::CTFPartyClient *, CSteamID, bool);
     static uintptr_t addr                                 = gSignatures.GetClientSignature("55 89 E5 57 56 53 81 EC ? ? ? ? 8B 45 ? 8B 5D ? 8B 55 ? 89 85"
-                                                           "65 A1 ? ? ? ? 89 45 ? 31 C0 8B 45");
+                                                                                                                           "65 A1 ? ? ? ? 89 45 ? 31 C0 8B 45");
     static BInvitePlayerToParty_t BInvitePlayerToParty_fn = BInvitePlayerToParty_t(addr);
     return BInvitePlayerToParty_fn(this, steamid, false);
 }
@@ -160,7 +160,7 @@ int re::CTFPartyClient::KickPlayer(CSteamID steamid)
 }
 bool re::CTFPartyClient::GetCurrentPartyLeader(CSteamID &id)
 {
-    uintptr_t party = *reinterpret_cast<uintptr_t *>(reinterpret_cast<uintptr_t>(this) + 0x30);
+    uintptr_t party = *reinterpret_cast<uintptr_t *>(reinterpret_cast<uintptr_t>(this) + 0x18);
     if (!party)
         return false;
 
