@@ -89,6 +89,17 @@ static Timer routine_timer{};
 // Populated by the routine when empty and by configuration changes
 static std::vector<uint32> party_hosts = {};
 
+/*
+ *
+ *
+              _..----.._    _
+            .'  .--.    "-.(0)_
+'-.__.-'"'=:|   ,  _)_ \__ . c\'-..
+             '''------'---''---'-"
+             Credits to rathook
+ *
+ *
+ */
 static settings::Boolean no_autojoin("misc.remove_invite_timer", "false");
 
 // ha ha macros go brr
