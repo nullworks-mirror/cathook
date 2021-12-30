@@ -1080,7 +1080,9 @@ bool IsTargetStateGood(CachedEntity *entity)
             return false;
 
         // Moving Sticky?
-        if (!CE_VECTOR(entity, netvar.vVelocity).IsZero(1.0f))
+        Vector velocity; 
+        velocity::EstimateAbsVelocity(RAW_ENT(entity), velocity);
+        if (!velocity.IsZero())
             return false;
 
         // Grab the prediction var
