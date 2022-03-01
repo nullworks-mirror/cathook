@@ -37,7 +37,7 @@ int CTFPlayerInventory::GetItemCount()
     return *(int *) ((char *) this + 80);
 }
 
-#define SIZE_OF_ITEMVIEW 228
+#define SIZE_OF_ITEMVIEW 232
 CEconItemView *CTFPlayerInventory::GetItem(int idx)
 {
     uintptr_t item_start  = *(uintptr_t *) ((char *) this + 68);
