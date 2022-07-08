@@ -316,9 +316,7 @@ void doAutoZoom(bool target_found)
         if (target_found)
             zoomTime.update();
         if (isIdle || !zoomTime.check(3000))
-        {
             current_user_cmd->buttons |= IN_ATTACK2;
-        }
         return;
     }
 
@@ -378,6 +376,8 @@ static void CreateMove()
         target_last = nullptr;
         return;
     }
+
+    doAutoZoom(false);
 
     if (hacks::tf2::antianticheat::enabled)
         fov = std::min(fov > 0.0f ? fov : FLT_MAX, 10.0f);
