@@ -901,8 +901,6 @@ bool IsTargetStateGood(CachedEntity *entity)
             }
         }
 
-        // don't aim if holding sapper
-
         // Wait for charge
         if (wait_for_charge && g_pLocalPlayer->holding_sniper_rifle)
         {
@@ -1011,11 +1009,8 @@ bool IsTargetStateGood(CachedEntity *entity)
     // Check for buildings
     case (ENTITY_BUILDING):
     {
-        // Don't aim if holding sapper
-        if (g_pLocalPlayer->holding_sapper)
-            return false;
         // Enabled check
-        else if (!(buildings_other || buildings_sentry))
+        if (!(buildings_other || buildings_sentry))
             return false;
         // Teammates, Even with friendly fire enabled, buildings can NOT be
         // damaged
@@ -1054,12 +1049,8 @@ bool IsTargetStateGood(CachedEntity *entity)
     {
         // NPCs (Skeletons, Merasmus, etc)
 
-        // Sapper aimbot? no.
-        if (g_pLocalPlayer->holding_sapper)
-            return false;
-
         // NPC targeting is disabled
-        else if (!npcs)
+        if (!npcs)
             return false;
 
         // Cannot shoot this
