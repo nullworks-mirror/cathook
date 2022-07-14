@@ -21,7 +21,12 @@ endif()
 set(CMAKE_BUILD_TYPE_VALUES "Debug;Release" CACHE INTERNAL "List of supported build")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_BUILD_TYPE_VALUES})
 
+set(Force_CXX_23B 0 CACHE BOOL "Force 23B as the CXX Standard, useful for disrepancies in compiler and IDE")
+
 project(cathook VERSION 0.0.1)
+if (NOT Force_CXX_23B)
+    set(CMAKE_CXX_STANDARD 23)
+endif()
 add_library(cathook SHARED "")
 
 set(GameSpecific 1 CACHE BOOL "Build for specific target game (As opposed to universal, but slower, lib)")
@@ -169,7 +174,9 @@ if (Internal_Symbolized)
 else()
     set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -s -fvisibility=hidden -fvisibility-inlines-hidden")
 endif()
-set(CMAKE_CXX_FLAGS "-std=gnu++2b ${CMAKE_CXX_FLAGS}")
+if (Force_CXX_23B)
+    set(CMAKE_CXX_FLAGS "-std=gnu++2b ${CMAKE_CXX_FLAGS}")
+endif()
 
 
 target_compile_definitions(cathook PRIVATE
