@@ -190,6 +190,7 @@ std::vector<Vector> getValidHitpoints(CachedEntity *ent, int hitbox)
     for (int i = 0; i < 20; ++i)
     {
         trace_t trace;
+
         if (IsEntityVectorVisible(ent, positions[i], true, MASK_SHOT_HULL, &trace))
         {
             if (trace.hitbox == hitbox)
@@ -261,6 +262,7 @@ std::vector<Vector> getHitpointsVischeck(CachedEntity *ent, int hitbox)
     for (int i = 0; i < 20; ++i)
     {
         trace_t trace;
+
         if (IsEntityVectorVisible(ent, positions[i], true, MASK_SHOT_HULL, &trace))
         {
             if (trace.hitbox == hitbox)
@@ -693,21 +695,6 @@ bool ShouldAim()
     if (assistance_only && !MouseMoving())
         return false;
 #endif
-    switch (GetWeaponMode())
-    {
-    case weapon_hitscan:
-        break;
-    case weapon_melee:
-        break;
-    // Check we need to run projectile Aimbot code
-    case weapon_projectile:
-        if (!projectileAimbotRequired)
-            return false;
-        break;
-    // Check if player doesnt have a weapon usable by aimbot
-    default:
-        return false;
-    };
 
     return true;
 }
@@ -867,6 +854,7 @@ bool IsTargetStateGood(CachedEntity *entity)
     PROF_SECTION(PT_aimbot_targetstatecheck);
 
     const int current_type = entity->m_Type();
+    bool is_player         = false;
     switch (current_type)
     {
 
@@ -887,7 +875,7 @@ bool IsTargetStateGood(CachedEntity *entity)
         else if (IsPlayerInvulnerable(entity))
             return false;
         // Distance
-
+        is_player             = true;
         float targeting_range = EffectiveTargetingRange();
         if (entity->m_flDistance() - 40 > targeting_range && tickcount > hacks::shared::aimbot::last_target_ignore_timer) // m_flDistance includes the collision box. You have to subtract it (Should be the same for every model)
             return false;
@@ -973,7 +961,7 @@ bool IsTargetStateGood(CachedEntity *entity)
 
         AimbotCalculatedData_s &cd = calculated_data_array[entity->m_IDX];
         cd.hitbox                  = BestHitbox(entity);
-        if (*vischeck_hitboxes && !*multipoint)
+        if (*vischeck_hitboxes && !*multipoint && is_player)
         {
             if (*vischeck_hitboxes == 1 && playerlist::AccessData(entity).state != playerlist::k_EState::RAGE)
             {
@@ -984,13 +972,15 @@ bool IsTargetStateGood(CachedEntity *entity)
             {
                 int i = 0;
                 trace_t first_tracer;
+
                 if (IsEntityVectorVisible(entity, entity->hitboxes.GetHitbox(cd.hitbox)->center, true, MASK_SHOT_HULL, &first_tracer))
                     return true;
                 while (i <= 17) // Prevents returning empty at all costs. Loops through every hitbox
                 {
-                    if (i == cd.hitbox)
+                    if (i == cd.hitbox && i != 17)
                         i++;
                     trace_t test_trace;
+
                     std::vector<Vector> centered_hitbox = getHitpointsVischeck(entity, i);
 
                     if (IsEntityVectorVisible(entity, centered_hitbox[0], true, MASK_SHOT_HULL, &test_trace))
