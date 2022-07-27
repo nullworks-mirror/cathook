@@ -12,6 +12,7 @@ enum Priority_list
     patrol = 5,
     lowprio_health,
     staynear,
+    run_reload,
     snipe_sentry,
     followbot,
     ammo,
