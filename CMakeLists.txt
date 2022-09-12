@@ -157,11 +157,11 @@ endif()
 configure_file(include/config.h.in ${CMAKE_SOURCE_DIR}/include/config.h @ONLY)
 configure_file(include/version.h.in ${CMAKE_SOURCE_DIR}/include/version.h @ONLY)
 
-set(CMAKE_CXX_FLAGS "-m32 -march=native -fexceptions -DNDEBUG")
+set(CMAKE_CXX_FLAGS "-m32 -fexceptions -DNDEBUG")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-gnu-unique")
 endif()
-set(CMAKE_CXX_FLAGS_DEBUG "-march=native -rdynamic -ggdb -Og")
+set(CMAKE_CXX_FLAGS_DEBUG "-Og")
 if (Internal_Symbolized)
     set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -ggdb -fvisibility=hidden -fvisibility-inlines-hidden")
 else()
@@ -190,6 +190,7 @@ target_include_directories(cathook SYSTEM PRIVATE
         "external/source-sdk-2013-headers/mp/src/common"
         "external/source-sdk-2013-headers/mp/src/public/tier0"
         "external/source-sdk-2013-headers/mp/src/public/tier1"
+        "external/source-sdk-2013-headers/mp/src/public/steam"
         "external/source-sdk-2013-headers/mp/src/tier1"
         "external/source-sdk-2013-headers/mp/src")
 

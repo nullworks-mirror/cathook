@@ -1,9 +1,8 @@
 #include "config.h"
 #if ENABLE_NULLNEXUS
-#include "common.hpp"
 #include "libnullnexus/nullnexus.hpp"
+#include <boost/algorithm/string.hpp>
 #include "nullnexus.hpp"
-#include "netadr.h"
 #if ENABLE_VISUALS
 #include "colors.hpp"
 #include "MiscTemporary.hpp"
@@ -91,44 +90,99 @@ void authedplayers(std::vector<std::string> steamids)
 }
 } // namespace handlers
 
+static std::string server_steamid = "";
+
 // Update info about the current server we are on.
 void updateServer(NullNexus::UserSettings &settings)
 {
     INetChannel *ch = (INetChannel *) g_IEngine->GetNetChannelInfo();
     // Additional currently inactive security measure, may be activated at any time
     static int *gHostSpawnCount = *reinterpret_cast<int **>(gSignatures.GetEngineSignature("A3 ? ? ? ? A1 ? ? ? ? 8B 10 89 04 24 FF 52 ? 83 C4 2C") + sizeof(char));
-    if (ch && *authenticate)
+    if (ch && *authenticate && server_steamid != "")
     {
-        auto addr = ch->GetRemoteAddress();
-        // Local address! Don't send that to nullnexus.
-        if (!addr.IsReservedAdr())
+        // SDR Makes this unusable :(
+        // auto addr = ch->GetRemoteAddress();
+
+        player_info_s pinfo{};
+        if (GetPlayerInfo(g_pLocalPlayer->entity_idx, &pinfo))
         {
-            player_info_s pinfo{};
-            if (GetPlayerInfo(g_pLocalPlayer->entity_idx, &pinfo))
-            {
-                MD5Value_t result;
-                std::string steamidhash = std::to_string(pinfo.friendsID) + pinfo.name;
-                MD5_ProcessSingleBuffer(steamidhash.c_str(), strlen(steamidhash.c_str()), result);
-                std::stringstream ss;
-                ss << std::hex;
-                for (auto i : result.bits)
-                    ss << std::setw(2) << std::setfill('0') << (int) i;
-                steamidhash        = ss.str();
-                settings.tf2server = { true, addr.ToString(true), std::to_string(addr.port), steamidhash, *gHostSpawnCount };
-                return;
-            }
+            MD5Value_t result;
+            std::string steamidhash = std::to_string(pinfo.friendsID) + pinfo.name;
+            MD5_ProcessSingleBuffer(steamidhash.c_str(), strlen(steamidhash.c_str()), result);
+            std::stringstream ss;
+            ss << std::hex;
+            for (auto i : result.bits)
+                ss << std::setw(2) << std::setfill('0') << (int) i;
+            steamidhash        = ss.str();
+            settings.tf2server = NullNexus::TF2Server(true, server_steamid, steamidhash, *gHostSpawnCount);
+            return;
         }
     }
     // Not connected
-    settings.tf2server = { false };
+    settings.tf2server = NullNexus::TF2Server(false);
+}
+
+static bool waiting_status_data = false;
+
+static DetourHook ProcessPrint_detour_hook;
+
+typedef bool *(*ProcessPrint_t)(void *baseclient, SVC_Print *msg);
+
+// Need to do this so the function below resolves
+void updateServer();
+
+bool ProcessPrint_detour_fn(void *baseclient, SVC_Print *msg)
+{
+    if (waiting_status_data && msg->m_szText)
+    {
+        auto msg_str = std::string(msg->m_szText);
+        std::vector<std::string> lines;
+        boost::split(lines, msg_str, boost::is_any_of("\n"), boost::token_compress_on);
+        auto str = lines[0];
+
+        if (str.rfind("steamid : ", 0) == 0)
+        {
+            waiting_status_data = false;
+
+            if (str.length() < 12)
+                server_steamid = "";
+            else
+            {
+                str = str.substr(10);
+                if (str == "not logged in" || str.rfind("]") == str.npos)
+                    str = "";
+                else
+                    str = str.substr(0, str.rfind("]") + 1);
+                server_steamid = str;
+            }
+            updateServer();
+        }
+    }
+
+    auto original = (ProcessPrint_t) ProcessPrint_detour_hook.GetOriginalFunc();
+    auto ret_val  = original(baseclient, msg);
+    ProcessPrint_detour_hook.RestorePatch();
+    return ret_val;
+}
+
+// Update server steamid
+void updateSteamID()
+{
+    waiting_status_data = true;
+    g_IEngine->ServerCmd("status");
 }
 
 // Update info about the current server we are on.
 void updateServer()
 {
-    NullNexus::UserSettings settings;
-    updateServer(settings);
-    nexus.changeData(settings);
+    if (!g_IEngine->IsInGame() || server_steamid != "")
+    {
+        NullNexus::UserSettings settings;
+        updateServer(settings);
+        nexus.changeData(settings);
+    }
+    else
+        updateSteamID();
 }
 
 void updateData()
@@ -226,12 +280,28 @@ static InitRoutine init(
                 nexus.connect(*address, *port, *endpoint, true);
         }
 
+        uintptr_t processprint_addr = gSignatures.GetEngineSignature("55 89 E5 56 53 83 EC 50 C7 45 ? 00 00 00 00 A1 ? ? ? ? C7 45 ? 00 00 00 00 85 C0 0F 84 ? ? ? ? 8D 55 ? 89 04 24 89 54 24 ? C7 44 24 ? ? ? ? ? C7 44 24 ? ? ? ? ? C7 44 24 ? ? ? ? ? C7 44 24 ? ? ? ? ? C7 44 24 ? 4D 04 00 00");
+
+        ProcessPrint_detour_hook.Init(processprint_addr, (void *) ProcessPrint_detour_fn);
+
         EC::Register(
-            EC::Shutdown, []() { nexus.disconnect(); }, "shutdown_nullnexus");
+            EC::Shutdown,
+            []()
+            {
+                nexus.disconnect();
+                ProcessPrint_detour_hook.Shutdown();
+            },
+            "shutdown_nullnexus");
         EC::Register(
             EC::FirstCM, []() { updateServer(); }, "firstcm_nullnexus");
         EC::Register(
-            EC::LevelShutdown, []() { updateServer(); }, "firstcm_nullnexus");
+            EC::LevelShutdown,
+            []()
+            {
+                server_steamid = "";
+                updateServer();
+            },
+            "firstcm_nullnexus");
     });
 static CatCommand nullnexus_send("nullnexus_send", "Send message to IRC",
                                  [](const CCommand &args)

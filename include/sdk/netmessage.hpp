@@ -274,6 +274,30 @@ private:
     char m_szCvarNameBuffer[256];
 };
 
+class SVC_Print : public CNetMessage
+{
+    DECLARE_SVC_MESSAGE(Print);
+
+    SVC_Print()
+    {
+        m_bReliable = false;
+        m_szText    = NULL;
+    };
+
+    SVC_Print(const char *text)
+    {
+        m_bReliable = false;
+        m_szText    = text;
+    };
+
+public:
+    const char unk_pad[4]{};
+    const char *m_szText; // show this text
+
+private:
+    char m_szTextBuffer[2048]; // buffer for received messages
+};
+
 class CLC_Move : public CNetMessage
 {
     DECLARE_CLC_MESSAGE(Move);
