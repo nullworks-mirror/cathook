@@ -2,6 +2,7 @@
 #if ENABLE_NULLNEXUS
 #include "libnullnexus/nullnexus.hpp"
 #include <boost/algorithm/string.hpp>
+#include "DetourHook.hpp"
 #include "nullnexus.hpp"
 #if ENABLE_VISUALS
 #include "colors.hpp"
